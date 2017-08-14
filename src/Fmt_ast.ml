@@ -730,6 +730,45 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
   @@
   match pexp_desc with
   | Pexp_apply (_, []) -> impossible "not produced by parser"
+  | Pexp_sequence
+      ( { pexp_desc=
+            Pexp_extension
+              ( {txt}
+              , PStr [({pstr_desc= Pstr_eval (call_fun, []); _} as pld)] ) }
+      , e2 ) ->
+      let xargs, xbody = sugar_fun None (sub_exp ~ctx:(Str pld) call_fun) in
+      hvbox 0
+        (wrap_if parens "(" ")"
+           ( hvbox 2
+               (wrap "[" "]"
+                  ( str "%"
+                  $ hovbox 2
+                      ( str txt $ fmt " "
+                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "->") )
+                  $ fmt "@ " $ fmt_expression c xbody ))
+           $ fmt "@ ;@ "
+           $ list (sugar_sequence c width (sub_exp ~ctx e2)) " ;@;<1000 0>"
+               (fun grp -> list grp " ;@ " (fmt_expression c) ) ))
+  | Pexp_apply
+      ( {pexp_desc= Pexp_ident {txt= Lident "|>"}; pexp_attributes= []}
+      , [ (Nolabel, e0)
+        ; ( Nolabel
+          , { pexp_desc=
+                Pexp_extension
+                  ( {txt}
+                  , PStr [({pstr_desc= Pstr_eval (retn_fun, []); _} as pld)]
+                  ) } ) ] ) ->
+      let xargs, xbody = sugar_fun None (sub_exp ~ctx:(Str pld) retn_fun) in
+      hvbox 0
+        (wrap_fits_breaks_if parens "(" ")"
+           ( fmt_expression c (sub_exp ~ctx e0) $ fmt "@\n|>@\n"
+           $ hvbox 2
+               (wrap "[" "]"
+                  ( str "%"
+                  $ hovbox 2
+                      ( str txt $ fmt " "
+                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "->") )
+                  $ fmt "@ " $ fmt_expression c xbody )) ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "get")}
         ; pexp_attributes= [] }
