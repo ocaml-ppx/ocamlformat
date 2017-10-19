@@ -528,7 +528,7 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             cbox 2 (fmt_longident txt)
         | _ ->
             cbox 2
-              ( fmt_longident txt $ fmt "=@ "
+              ( fmt_longident txt $ fmt "@ =@ "
               $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) )
       in
       hvbox 0
@@ -1139,7 +1139,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
             Cmts.fmt loc @@ cbox 2 (fmt_longident txt)
         | _ ->
             cbox 2
-              ( fmt_longident txt $ fmt "=@ "
+              ( fmt_longident txt $ fmt "@ =@ "
               $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) )
       in
       hvbox 0
