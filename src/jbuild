@@ -1,0 +1,40 @@
+(* -*- tuareg -*- *)
+
+(**********************************************************************)
+(*                                                                    *)
+(*                            OCamlFormat                             *)
+(*                                                                    *)
+(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
+(*                                                                    *)
+(*  This source code is licensed under the MIT license found in the   *)
+(*  LICENSE file in the root directory of this source tree.           *)
+(*                                                                    *)
+(**********************************************************************)
+
+let ocamlc_flags =
+  match Jbuild_plugin.V1.context with
+  | "dbg" -> "-g -opaque"
+  | "opt" -> "-noassert"
+  | ctx -> failwith ("unknown context: " ^ ctx)
+
+let ocamlopt_flags =
+  match Jbuild_plugin.V1.context with
+  | "dbg" -> ocamlc_flags ^ " -w -a"
+  | "opt" -> ocamlc_flags ^ " -O3"
+  | ctx -> failwith ("unknown context: " ^ ctx)
+
+;; Format.sprintf "
+(executables
+ ((names (ocamlformat ocamlformat_reason))
+  (flags
+   (-w +a-4-6-9-40-41-42-44-45-48@50
+    -strict-formats -strict-sequence -principal
+    -short-paths -bin-annot -keep-docs -keep-locs
+    -safe-string -unboxed-types
+    -open Import))
+  (ocamlc_flags (%s))
+  (ocamlopt_flags (%s))
+  (libraries (cmdliner format_ import ocaml-migrate-parsetree unix))))
+"
+ocamlc_flags ocamlopt_flags
+|> Jbuild_plugin.V1.send

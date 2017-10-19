@@ -1,0 +1,22 @@
+opam-version: "1.2"
+name: "ocamlformat"
+maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
+authors: "Josh Berdine <jjb@fb.com>"
+homepage: "https://github.com/ocaml-ppx/ocamlformat"
+bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
+dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git"
+license: "MIT"
+depends: [
+  "base"
+  "base-unix"
+  "cmdliner"
+  "jbuilder" {build}
+  "ocaml-migrate-parsetree" {>= "1.0.5"}
+  "stdio"
+]
+build: [
+  ["jbuilder" "subst"] {pinned}
+  [make]
+]
+install: ["cp" "src/_build/opt/ocamlformat.exe" "%{bin}%/ocamlformat"]
+remove: ["rm" "-f" "%{bin}%/ocamlformat"]
