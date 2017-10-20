@@ -14,6 +14,8 @@ There is currently no single dominant style for OCaml code, and the code produce
 
 Another limitation originates from the treatment of comments by the OCaml parser: they are not included in the parsetree itself, but are only available as a separate list. This means that OCamlFormat must decide where to place the comments within the parsetree. It does this based on source locations of code and comments, as well as using a few heuristics such as whether only white space separates a comment and some code.
 
+A limitation of the current implementation, though not a fundamental issue, is that the object language is largely unimplemented.
+
 ## Influences
 
 OCamlFormat follows the same basic design as `refmt` from [Reason](https://github.com/facebook/reason), but outputs OCaml instead of Reason, and differs in details.
