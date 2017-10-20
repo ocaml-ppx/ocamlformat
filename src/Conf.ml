@@ -138,9 +138,7 @@ let name =
 
 let output =
   let docv = "DST" in
-  let doc =
-    "Output file. Mutually exclusive with --inplace. Write to stdout if omitted."
-  in
+  let doc = "Output file. Mutually exclusive with --inplace." in
   let default = None in
   mk ~default
     (Arg.(
