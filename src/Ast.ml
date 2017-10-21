@@ -546,6 +546,16 @@ end = struct
       [None]. *)
   let prec_ctx = function
     | { ctx= Sig {psig_desc= Psig_type (_, t1N)}
+      ; ast= Typ ({ptyp_desc= Ptyp_arrow _} as typ) }
+      when List.exists t1N ~f:(function
+             | {ptype_kind= Ptype_variant cd1N} ->
+                 List.exists cd1N ~f:(function
+                   | {pcd_args= Pcstr_tuple t1N} ->
+                       List.exists t1N ~f:(phys_equal typ)
+                   | _ -> false )
+             | _ -> false ) ->
+        Some (Apply, Non)
+    | { ctx= Sig {psig_desc= Psig_type (_, t1N)}
       ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
       when List.exists t1N ~f:(function
              | {ptype_kind= Ptype_variant cd1N} ->
