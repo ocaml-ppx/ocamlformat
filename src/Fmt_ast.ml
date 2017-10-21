@@ -434,15 +434,16 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs = list rfs "@ | " (fmt_row_field c ctx) in
       hvbox 0
-        (wrap_fits_breaks "[" "]"
-           ( match (flag, lbls) with
-           | Closed, None -> row_fields rfs
-           | Open, None -> fmt "> " $ row_fields rfs
-           | Closed, Some [] -> fmt "< " $ row_fields rfs
-           | Closed, Some ls ->
-               fmt "< " $ row_fields rfs $ fmt " > "
-               $ list ls "@ " (fmt "`" >$ str)
-           | Open, Some _ -> impossible "not produced by parser" ))
+        ( fits_breaks "[" "["
+        $ ( match (flag, lbls) with
+          | Closed, None -> fits_breaks "" " " $ row_fields rfs
+          | Open, None -> fmt "> " $ row_fields rfs
+          | Closed, Some [] -> fmt "< " $ row_fields rfs
+          | Closed, Some ls ->
+              fmt "< " $ row_fields rfs $ fmt " > "
+              $ list ls "@ " (fmt "`" >$ str)
+          | Open, Some _ -> impossible "not produced by parser" )
+        $ fits_breaks "]" "@ ]" )
   | Ptyp_object _ | Ptyp_class _ ->
       internal_error "classes not implemented" []
 
@@ -1314,10 +1315,11 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   let fmt_cstrs cstrs =
     fmt_if_k
       (not (List.is_empty cstrs))
-      (hvbox 0
-         (list cstrs "@ " (fun (t1, t2, _) ->
-              fmt "@;constraint@ " $ fmt_core_type c (sub_typ ~ctx t1)
-              $ fmt "@ = " $ fmt_core_type c (sub_typ ~ctx t2) )))
+      ( fmt "@;"
+      $ hvbox 2
+          (list cstrs "@ " (fun (t1, t2, _) ->
+               fmt "constraint@ " $ fmt_core_type c (sub_typ ~ctx t1)
+               $ fmt " =@ " $ fmt_core_type c (sub_typ ~ctx t2) )) )
   in
   let { ptype_name= {txt; loc}
       ; ptype_params
