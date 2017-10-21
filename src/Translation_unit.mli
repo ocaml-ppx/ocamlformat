@@ -29,13 +29,12 @@ type x = XUnit: 'a t -> x
 val parse :
   (Lexing.lexbuf -> 'a) -> ?warn:bool -> string -> string -> In_channel.t
   -> 'a * (string * Location.t) list
-(** [parse migrate_ast parse_ast ~warn input_name input_file input_channel]
-    parses the contents of [input_channel] assuming it corresponds to
-    [input_name] for the purposes of error reporting and to the contents of
-    [input_file] for the purposes of comment placement. Actual parsing is
-    done by [parse_ast] and the resulting ast is migrated to the current
-    version using [migrate_ast]. If [warn] is set, then parse-time warnings
-    are fatal, otherwise only enabled. *)
+(** [parse parse_ast ~warn input_name input_file input_channel] parses the
+    contents of [input_channel] assuming it corresponds to [input_name] for
+    the purposes of error reporting and to the contents of [input_file] for
+    the purposes of comment placement. Actual parsing is done by
+    [parse_ast]. If [warn] is set, then parse-time warnings are fatal,
+    otherwise only enabled. *)
 
 val parse_print :
   x -> Conf.t -> string -> string -> In_channel.t -> string -> unit
