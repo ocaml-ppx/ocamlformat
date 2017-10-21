@@ -81,10 +81,6 @@ let fmt_or cnd t f fs = fmt_or_k cnd (fmt t) (fmt f) fs
 
 let if_newline s fs = Format.pp_print_string_if_newline fs s
 
-let break_or_string_if_newline n o s fs =
-  Format.pp_print_break_or_string_if_newline fs n o s
-
-
 let break_unless_newline n o fs =
   Format.pp_print_break_or_string_if_newline fs n o ""
 

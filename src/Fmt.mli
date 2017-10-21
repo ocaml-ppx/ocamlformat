@@ -80,10 +80,6 @@ val if_newline : string -> t
 val break_unless_newline : int -> int -> t
 (** Format a break unless the line has just been broken. *)
 
-val break_or_string_if_newline : int -> int -> string -> t
-(** Format a break or a string depending on whether the line has just been
-    broken. *)
-
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 val fits_breaks :
