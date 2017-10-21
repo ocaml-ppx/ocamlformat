@@ -1316,7 +1316,7 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
       (not (List.is_empty cstrs))
       (hvbox 0
          (list cstrs "@ " (fun (t1, t2, _) ->
-              fmt "constraint@ " $ fmt_core_type c (sub_typ ~ctx t1)
+              fmt "@;constraint@ " $ fmt_core_type c (sub_typ ~ctx t1)
               $ fmt "@ = " $ fmt_core_type c (sub_typ ~ctx t2) )))
   in
   let { ptype_name= {txt; loc}
