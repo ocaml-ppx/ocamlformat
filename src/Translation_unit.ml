@@ -38,7 +38,7 @@ let parse parse_ast ?(warn= Conf.warn_error) input_name ifile ic =
   Location.init lexbuf ifile ;
   Location.input_name := input_name ;
   let ast = parse_ast lexbuf in
-  (match Conf.action with Inplace _ -> Warnings.check_fatal () | _ -> ()) ;
+  Warnings.check_fatal () ;
   let comments = Lexer.comments () in
   (ast, comments)
 
