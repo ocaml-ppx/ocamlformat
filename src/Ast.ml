@@ -506,7 +506,8 @@ end = struct
        |Pstr_attribute _
        |Pstr_extension _ ->
           assert false )
-    | Top | Typ _ | Pat _ | Mty _ | Mod _ | Sig _ -> assert false
+    | Mod {pmod_desc= Pmod_unpack e1} -> assert (e1 == exp)
+    | Mod _ | Top | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
 
 
   let check_exp ({ctx; ast= exp} as xexp) =
@@ -777,9 +778,14 @@ end = struct
       in context [ctx]. *)
   let parenze_typ ({ctx; ast= typ} as xtyp) =
     assert (check_typ xtyp ; true) ;
-    match ambig_prec (sub_ast ~ctx (Typ typ)) with
-    | Some Some true -> true
-    | _ -> false
+    match xtyp with
+    | { ctx= Exp {pexp_desc= Pexp_constraint _}
+      ; ast= {ptyp_desc= Ptyp_package _} } ->
+        true
+    | _ ->
+      match ambig_prec (sub_ast ~ctx (Typ typ)) with
+      | Some Some true -> true
+      | _ -> false
 
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
