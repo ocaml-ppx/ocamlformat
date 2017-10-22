@@ -163,7 +163,7 @@ let no_version_check =
 
 
 let no_warn_error =
-  let doc = "Do no treat warnings detected by the parser as errors." in
+  let doc = "Do no treat warnings detected by the parser as errors. These warnings almost always indicate an unrecoverable situation, so expect an unhandled exception." in
   let default = false in
   mk ~default Arg.(value & flag & info ["no-warn-error"] ~doc)
 
