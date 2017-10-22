@@ -67,10 +67,13 @@ let rec is_trivial exp =
   | _ -> false
 
 
-let has_attributes {pexp_attributes} =
-  List.exists pexp_attributes ~f:(function
-    | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-    | _ -> true )
+let has_trailing_attributes {pexp_desc; pexp_attributes} =
+  match pexp_desc with
+  | Pexp_function _ | Pexp_match _ | Pexp_try _ -> false
+  | _ ->
+      List.exists pexp_attributes ~f:(function
+        | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+        | _ -> true )
 
 
 (** Ast terms of various forms. *)
@@ -961,7 +964,7 @@ end = struct
   and parenze_exp ({ctx; ast= exp} as xexp) =
     assert (check_exp xexp ; true) ;
     is_displaced_prefix_op xexp || is_displaced_infix_op xexp
-    || has_attributes exp
+    || has_trailing_attributes exp
     ||
     match ctx with
     | Exp {pexp_desc} -> (
