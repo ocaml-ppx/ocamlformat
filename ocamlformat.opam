@@ -19,5 +19,10 @@ build: [
   ["jbuilder" "subst"] {pinned}
   [make]
 ]
-install: ["cp" "src/_build/opt/ocamlformat.exe" "%{bin}%/ocamlformat"]
-remove: ["rm" "-f" "%{bin}%/ocamlformat"]
+install: [
+  ["cp" "src/_build/opt/ocamlformat.exe" "%{bin}%/ocamlformat"]
+  ["cp" "emacs/ocamlformat.el" "%{share}%/emacs/site-lisp/ocamlformat.el"]
+]
+remove: [
+  ["rm" "-f" "%{bin}%/ocamlformat" "%{share}%/emacs/site-lisp/ocamlformat.el"]
+]
