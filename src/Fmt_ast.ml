@@ -436,7 +436,7 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
       hvbox 0
         ( fits_breaks "[" "["
         $ ( match (flag, lbls) with
-          | Closed, None -> row_fields rfs
+          | Closed, None -> fits_breaks "" " " $ row_fields rfs
           | Open, None -> fmt "> " $ row_fields rfs
           | Closed, Some [] -> fmt "< " $ row_fields rfs
           | Closed, Some ls ->
