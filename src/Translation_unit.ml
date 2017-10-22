@@ -51,11 +51,16 @@ let dump xunit dir base suf ext ast =
     xunit.printast (Caml.Format.formatter_of_out_channel oc) ast ;
     Out_channel.close oc
 
+let split_extension filename =
+  let root = Filename.chop_extension filename in
+  let root_length = String.length root in
+  let ext_length = String.length filename - root_length in
+  let ext = String.sub filename root_length ext_length in
+  root, ext
 
 let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
   let dir = Filename.dirname ofile in
-  let base = Filename.(remove_extension (basename ofile)) in
-  let ext = Filename.extension ofile in
+  let base, ext = split_extension (Filename.basename ofile) in
   (* iterate until formatting stabilizes *)
   let rec parse_print_ i source ifile ic =
     Format.pp_print_flush Format.err_formatter () ;
@@ -127,4 +132,3 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
   | Syntaxerr.Error _ as exc ->
       Location.report_exception Caml.Format.err_formatter exc ;
       Caml.exit 1
-

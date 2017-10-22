@@ -220,6 +220,13 @@ let rec read_conf_files conf dir =
 let to_absolute file =
   Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
 
+let ends_with (str: string) (ext: string) =
+  try
+    let len = String.length ext in
+    let str = String.sub str (String.length str - len) len in
+    String.equal str ext
+  with Invalid_argument _ ->
+    false
 
 let conf name =
   read_conf_files {margin= !margin; sparse= !sparse; max_iters= !max_iters}
@@ -233,10 +240,9 @@ type action =
   | Inplace of [`Impl | `Intf] input list
 
 let kind_of fname =
-  match Filename.extension fname with
-  | ".ml" -> `Impl
-  | ".mli" -> `Intf
-  | _ -> !kind
+  if ends_with fname ".ml" then `Impl
+  else if ends_with fname ".mli" then `Intf
+  else !kind
 
 
 let action =
