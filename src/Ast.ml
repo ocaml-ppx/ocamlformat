@@ -722,6 +722,8 @@ end = struct
     | Exp {pexp_desc} -> (
       match pexp_desc with
       | Pexp_tuple _ -> Some Comma
+      | Pexp_construct ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple _}) ->
+          Some ColonColon
       | Pexp_construct (_, Some _) -> Some Apply
       | Pexp_constant (Pconst_integer (i, _) | Pconst_float (i, _)) -> (
         match i.[0] with '-' | '+' -> Some UMinus | _ -> Some Atomic )
