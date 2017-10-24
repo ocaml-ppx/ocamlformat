@@ -343,14 +343,15 @@ let fmt_docstring ?pro ?epi doc =
 
 
 let rec fmt_attribute c pre = function
-  | ( {txt= "ocaml.doc" | "ocaml.text"}
+  | ( {txt= "ocaml.doc" | "ocaml.text" as txt}
     , PStr
         [ { pstr_desc=
               Pstr_eval
                 ( { pexp_desc= Pexp_constant Pconst_string (doc, None)
                   ; pexp_attributes= [] }
                 , [] ) } ] ) ->
-      fmt "@ " $ fmt "(**" $ str doc $ fmt "*)"
+      fmt_or (String.equal txt "ocaml.text") "@ " " " $ fmt "(**" $ str doc
+      $ fmt "*)"
   | {txt; loc}, pld ->
       let nullary = match pld with PStr [] -> true | _ -> false in
       Cmts.fmt loc
