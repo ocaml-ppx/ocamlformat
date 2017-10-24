@@ -988,7 +988,6 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
             ( fmt "function"
             $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes (fmt "") )
         $ fmt "@;<1 2>" $ hvbox 0 (fmt_cases c ctx cs) )
-      $ fmt_atrs
   | Pexp_ident {txt; loc} ->
       let wrap =
         if is_symbol exp then wrap_if parens "( " " )"
