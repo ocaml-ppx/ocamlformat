@@ -93,7 +93,9 @@ val fits_breaks :
     starts with a break hint specification such as ["@ "], ["@,"], or
     ["@;<nspaces offset>"]. *)
 
-val fits_breaks_if : bool -> string -> string -> t
+val fits_breaks_if :
+  ?force_fit_if:bool -> ?force_break_if:bool -> bool -> string -> string
+  -> t
 (** As [fits_breaks], but conditional. *)
 
 (** Wrapping ------------------------------------------------------------*)

@@ -113,8 +113,8 @@ let fits_breaks ?(force_fit_if= false) ?(force_break_if= false) fits breaks
   else Format.pp_print_fits_or_breaks fs fits n o b
 
 
-let fits_breaks_if cnd fits breaks fs =
-  if cnd then fits_breaks fits breaks fs
+let fits_breaks_if ?force_fit_if ?force_break_if cnd fits breaks fs =
+  if cnd then fits_breaks ?force_fit_if ?force_break_if fits breaks fs
 
 
 (** Wrapping ------------------------------------------------------------*)

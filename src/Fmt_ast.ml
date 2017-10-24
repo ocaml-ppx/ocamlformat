@@ -1058,8 +1058,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
         | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} -> not override
         | _ -> false
       in
-      let fits_breaks =
-        fits_breaks ~force_fit_if ~force_break_if:override
+      let fits_breaks = fits_breaks ~force_fit_if ~force_break_if:override
+      and fits_breaks_if =
+        fits_breaks_if ~force_fit_if ~force_break_if:override
       in
       let opn, cls =
         match e0.pexp_desc with

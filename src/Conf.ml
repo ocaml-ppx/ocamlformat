@@ -141,8 +141,8 @@ let output =
   let doc = "Output file. Mutually exclusive with --inplace." in
   let default = None in
   mk ~default
-    (Arg.(
-      value & opt (some string) default & info ["o"; "output"] ~doc ~docv))
+    Arg.(
+      value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
 
 
 let sparse =
