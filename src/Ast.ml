@@ -841,7 +841,10 @@ end = struct
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _}
       , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )
-     |( Pat {ppat_desc= Ppat_construct _ | Ppat_exception _ | Ppat_tuple _}
+     |( Pat
+          { ppat_desc=
+              ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
+              | Ppat_variant _ ) }
       , Ppat_or _ )
      |Pat {ppat_desc= Ppat_tuple _}, (Ppat_constraint _ | Ppat_tuple _)
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
