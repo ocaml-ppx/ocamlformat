@@ -791,7 +791,8 @@ end = struct
   let parenze_typ ({ctx; ast= typ} as xtyp) =
     assert (check_typ xtyp ; true) ;
     match xtyp with
-    | { ctx= Exp {pexp_desc= Pexp_constraint _}
+    | { ctx=
+          Exp {pexp_desc= Pexp_constraint _} | Str {pstr_desc= Pstr_type _}
       ; ast= {ptyp_desc= Ptyp_package _} } ->
         true
     | _ ->
