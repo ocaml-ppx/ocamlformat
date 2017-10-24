@@ -1130,7 +1130,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
   | Pexp_record (flds, default) ->
       let field_alias (li1: Longident.t) (li2: Longident.t) =
         match (li1, li2) with
-        | Lident x, Ldot (_, y) | Ldot (_, x), Lident y -> String.equal x y
+        | Ldot (_, x), Lident y -> String.equal x y
         | _ -> Poly.equal li1 li2
       in
       let fmt_field ({txt; loc}, f) =
