@@ -222,19 +222,19 @@ let rec sugar_functor_type ({ast= mty} as xmty) =
 
 let rec sugar_functor ?mt ({ast= me} as xme) =
   let ctx = Mod me in
-  match me with
-  | { pmod_desc= Pmod_functor (arg, arg_mt, body)
-    ; pmod_loc
-    ; pmod_attributes= [] }
+  match (me, mt) with
+  | ( { pmod_desc= Pmod_functor (arg, arg_mt, body)
+      ; pmod_loc
+      ; pmod_attributes= [] }
+    , None )
     -> (
       Cmts.relocate ~src:pmod_loc ~before:arg.loc ~after:body.pmod_loc ;
       let xarg_mt = Option.map arg_mt ~f:(sub_mty ~ctx) in
       let ctx = Mod body in
-      match (body, mt) with
-      | ( { pmod_desc= Pmod_constraint (body_me, body_mt)
-          ; pmod_loc
-          ; pmod_attributes= [] }
-        , None ) ->
+      match body with
+      | { pmod_desc= Pmod_constraint (body_me, body_mt)
+        ; pmod_loc
+        ; pmod_attributes= [] } ->
           Cmts.relocate ~src:pmod_loc ~before:body_me.pmod_loc
             ~after:body_mt.pmty_loc ;
           let xbody_mt0 = sub_mty ~ctx body_mt in
@@ -1817,13 +1817,13 @@ and fmt_module_expr c {ast= m} =
           Cmts.fmt pmod_loc
           @@ hvbox 0
                ( fmt "functor@ "
-               $ wrap_fits_breaks "(" ")"
+               $ wrap "(" ")"
                    ( str txt
                    $ opt mt (fun _ ->
                          fmt "@ : " $ Option.call ~f:pro_t $ psp_t
                          $ fmt "@;<1 2>" $ bdy_t $ esp_t
                          $ Option.call ~f:epi_t ) )
-               $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
+               $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
                $ Option.call ~f:epi_e )
       ; cls= cls_t $ cls_e
       ; esp= fmt ""
