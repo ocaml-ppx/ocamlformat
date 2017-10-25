@@ -838,8 +838,8 @@ end = struct
      |( ( Pat
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_tuple _ ) } | Exp {pexp_desc= Pexp_fun _}
-        | Str {pstr_desc= Pstr_value _} )
+                | Ppat_tuple _ | Ppat_variant _ ) }
+        | Exp {pexp_desc= Pexp_fun _} | Str {pstr_desc= Pstr_value _} )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _}
       , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )
