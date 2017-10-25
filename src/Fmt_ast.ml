@@ -484,7 +484,8 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   @@
   match ppat_desc with
   | Ppat_any -> fmt "_"
-  | Ppat_var {txt} -> wrap_if (is_symbol_id txt) "( " " )" (str txt)
+  | Ppat_var {txt; loc} ->
+      Cmts.fmt loc @@ wrap_if (is_symbol_id txt) "( " " )" (str txt)
   | Ppat_alias (pat, {txt}) ->
       hovbox 0
         (wrap_fits_breaks_if parens "(" ")"
@@ -602,28 +603,30 @@ and fmt_fun_args c args =
     | ( Labelled l
       , ( { ast=
               { ppat_desc=
-                  ( Ppat_var {txt}
+                  ( Ppat_var {txt; loc}
                   | Ppat_constraint
-                      ({ppat_desc= Ppat_var {txt}; ppat_attributes= []}, _) )
+                      ( {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}
+                      , _ ) )
               ; ppat_attributes= [] } } as xpat )
       , None )
       when String.equal l txt ->
-        cbox 0 (fmt "~" $ fmt_pattern c xpat)
+        Cmts.fmt loc @@ cbox 0 (fmt "~" $ fmt_pattern c xpat)
     | Labelled l, xpat, None ->
         cbox 0 (fmt "~" $ str l $ fmt ":" $ fmt_pattern c xpat)
     | ( Optional l
-      , {ast= {ppat_desc= Ppat_var {txt}; ppat_attributes= []}}
+      , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
       , None )
       when String.equal l txt ->
-        cbox 0 (fmt "?" $ str l)
+        Cmts.fmt loc @@ cbox 0 (fmt "?" $ str l)
     | Optional l, xpat, None ->
         cbox 0 (fmt "?" $ str l $ fmt ":" $ fmt_pattern c xpat)
     | ( Optional l
-      , {ast= {ppat_desc= Ppat_var {txt}; ppat_attributes= []}}
+      , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
       , Some xexp )
       when String.equal l txt ->
-        cbox 0
-          (fmt "?(" $ str l $ fmt "= " $ fmt_expression c xexp $ fmt ")")
+        Cmts.fmt loc
+        @@ cbox 0
+             (fmt "?(" $ str l $ fmt "= " $ fmt_expression c xexp $ fmt ")")
     | Optional l, xpat, Some xexp ->
         cbox 0
           ( fmt "?" $ str l $ fmt ":(" $ fmt_pattern c xpat $ fmt " = "
@@ -647,9 +650,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
   in
   let fmt_label_arg ?(box= box) ?eol ?parens (lbl, ({ast= arg} as xarg)) =
     match (lbl, arg.pexp_desc) with
-    | (Labelled l | Optional l), Pexp_ident {txt= Lident i}
+    | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
       when String.equal l i ->
-        Cmts.fmt ?eol arg.pexp_loc @@ fmt_label lbl ""
+        Cmts.fmt loc @@ Cmts.fmt ?eol arg.pexp_loc @@ fmt_label lbl ""
     | _ ->
         hvbox_if box 2
           (fmt_label lbl ":@," $ fmt_expression c ~box ?eol ?parens xarg)
