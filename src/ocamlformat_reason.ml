@@ -13,10 +13,7 @@
 
 (** Operations on binary serialized Reason implementations. *)
 let reason_impl : _ Translation_unit.t =
-  let parse =
-    Translation_unit.parse Migrate_ast.from_current.copy_structure
-      Parse.implementation
-  in
+  let parse = Translation_unit.parse Migrate_ast.Parse.implementation in
   { input= Reason.input_impl
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
@@ -28,10 +25,7 @@ let reason_impl : _ Translation_unit.t =
 
 (** Operations on binary serialized Reason interfaces. *)
 let reason_intf : _ Translation_unit.t =
-  let parse =
-    Translation_unit.parse Migrate_ast.from_current.copy_signature
-      Parse.interface
-  in
+  let parse = Translation_unit.parse Migrate_ast.Parse.interface in
   { input= Reason.input_intf
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
