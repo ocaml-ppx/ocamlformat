@@ -222,19 +222,19 @@ let rec sugar_functor_type ({ast= mty} as xmty) =
 
 let rec sugar_functor ?mt ({ast= me} as xme) =
   let ctx = Mod me in
-  match me with
-  | { pmod_desc= Pmod_functor (arg, arg_mt, body)
-    ; pmod_loc
-    ; pmod_attributes= [] }
+  match (me, mt) with
+  | ( { pmod_desc= Pmod_functor (arg, arg_mt, body)
+      ; pmod_loc
+      ; pmod_attributes= [] }
+    , None )
     -> (
       Cmts.relocate ~src:pmod_loc ~before:arg.loc ~after:body.pmod_loc ;
       let xarg_mt = Option.map arg_mt ~f:(sub_mty ~ctx) in
       let ctx = Mod body in
-      match (body, mt) with
-      | ( { pmod_desc= Pmod_constraint (body_me, body_mt)
-          ; pmod_loc
-          ; pmod_attributes= [] }
-        , None ) ->
+      match body with
+      | { pmod_desc= Pmod_constraint (body_me, body_mt)
+        ; pmod_loc
+        ; pmod_attributes= [] } ->
           Cmts.relocate ~src:pmod_loc ~before:body_me.pmod_loc
             ~after:body_mt.pmty_loc ;
           let xbody_mt0 = sub_mty ~ctx body_mt in
@@ -343,14 +343,15 @@ let fmt_docstring ?pro ?epi doc =
 
 
 let rec fmt_attribute c pre = function
-  | ( {txt= "ocaml.doc" | "ocaml.text"}
+  | ( {txt= "ocaml.doc" | "ocaml.text" as txt}
     , PStr
         [ { pstr_desc=
               Pstr_eval
                 ( { pexp_desc= Pexp_constant Pconst_string (doc, None)
                   ; pexp_attributes= [] }
                 , [] ) } ] ) ->
-      fmt "@ " $ fmt "(**" $ str doc $ fmt "*)"
+      fmt_or (String.equal txt "ocaml.text") "@ " " " $ fmt "(**" $ str doc
+      $ fmt "*)"
   | {txt; loc}, pld ->
       let nullary = match pld with PStr [] -> true | _ -> false in
       Cmts.fmt loc
@@ -483,7 +484,8 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   @@
   match ppat_desc with
   | Ppat_any -> fmt "_"
-  | Ppat_var {txt} -> wrap_if (is_symbol_id txt) "( " " )" (str txt)
+  | Ppat_var {txt; loc} ->
+      Cmts.fmt loc @@ wrap_if (is_symbol_id txt) "( " " )" (str txt)
   | Ppat_alias (pat, {txt}) ->
       hovbox 0
         (wrap_fits_breaks_if parens "(" ")"
@@ -601,28 +603,30 @@ and fmt_fun_args c args =
     | ( Labelled l
       , ( { ast=
               { ppat_desc=
-                  ( Ppat_var {txt}
+                  ( Ppat_var {txt; loc}
                   | Ppat_constraint
-                      ({ppat_desc= Ppat_var {txt}; ppat_attributes= []}, _) )
+                      ( {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}
+                      , _ ) )
               ; ppat_attributes= [] } } as xpat )
       , None )
       when String.equal l txt ->
-        cbox 0 (fmt "~" $ fmt_pattern c xpat)
+        Cmts.fmt loc @@ cbox 0 (fmt "~" $ fmt_pattern c xpat)
     | Labelled l, xpat, None ->
         cbox 0 (fmt "~" $ str l $ fmt ":" $ fmt_pattern c xpat)
     | ( Optional l
-      , {ast= {ppat_desc= Ppat_var {txt}; ppat_attributes= []}}
+      , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
       , None )
       when String.equal l txt ->
-        cbox 0 (fmt "?" $ str l)
+        Cmts.fmt loc @@ cbox 0 (fmt "?" $ str l)
     | Optional l, xpat, None ->
         cbox 0 (fmt "?" $ str l $ fmt ":" $ fmt_pattern c xpat)
     | ( Optional l
-      , {ast= {ppat_desc= Ppat_var {txt}; ppat_attributes= []}}
+      , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
       , Some xexp )
       when String.equal l txt ->
-        cbox 0
-          (fmt "?(" $ str l $ fmt "= " $ fmt_expression c xexp $ fmt ")")
+        Cmts.fmt loc
+        @@ cbox 0
+             (fmt "?(" $ str l $ fmt "= " $ fmt_expression c xexp $ fmt ")")
     | Optional l, xpat, Some xexp ->
         cbox 0
           ( fmt "?" $ str l $ fmt ":(" $ fmt_pattern c xpat $ fmt " = "
@@ -646,9 +650,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
   in
   let fmt_label_arg ?(box= box) ?eol ?parens (lbl, ({ast= arg} as xarg)) =
     match (lbl, arg.pexp_desc) with
-    | (Labelled l | Optional l), Pexp_ident {txt= Lident i}
+    | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
       when String.equal l i ->
-        Cmts.fmt ?eol arg.pexp_loc @@ fmt_label lbl ""
+        Cmts.fmt loc @@ Cmts.fmt ?eol arg.pexp_loc @@ fmt_label lbl ""
     | _ ->
         hvbox_if box 2
           (fmt_label lbl ":@," $ fmt_expression c ~box ?eol ?parens xarg)
@@ -988,7 +992,6 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
             ( fmt "function"
             $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes (fmt "") )
         $ fmt "@;<1 2>" $ hvbox 0 (fmt_cases c ctx cs) )
-      $ fmt_atrs
   | Pexp_ident {txt; loc} ->
       let wrap =
         if is_symbol exp then wrap_if parens "( " " )"
@@ -1059,8 +1062,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
         | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} -> not override
         | _ -> false
       in
-      let fits_breaks =
-        fits_breaks ~force_fit_if ~force_break_if:override
+      let fits_breaks = fits_breaks ~force_fit_if ~force_break_if:override
+      and fits_breaks_if =
+        fits_breaks_if ~force_fit_if ~force_break_if:override
       in
       let opn, cls =
         match e0.pexp_desc with
@@ -1129,7 +1133,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
   | Pexp_record (flds, default) ->
       let field_alias (li1: Longident.t) (li2: Longident.t) =
         match (li1, li2) with
-        | Lident x, Ldot (_, y) | Ldot (_, x), Lident y -> String.equal x y
+        | Ldot (_, x), Lident y -> String.equal x y
         | _ -> Poly.equal li1 li2
       in
       let fmt_field ({txt; loc}, f) =
@@ -1816,13 +1820,13 @@ and fmt_module_expr c {ast= m} =
           Cmts.fmt pmod_loc
           @@ hvbox 0
                ( fmt "functor@ "
-               $ wrap_fits_breaks "(" ")"
+               $ wrap "(" ")"
                    ( str txt
                    $ opt mt (fun _ ->
                          fmt "@ : " $ Option.call ~f:pro_t $ psp_t
                          $ fmt "@;<1 2>" $ bdy_t $ esp_t
                          $ Option.call ~f:epi_t ) )
-               $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
+               $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
                $ Option.call ~f:epi_e )
       ; cls= cls_t $ cls_e
       ; esp= fmt ""

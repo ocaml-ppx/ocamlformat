@@ -67,10 +67,13 @@ let rec is_trivial exp =
   | _ -> false
 
 
-let has_attributes {pexp_attributes} =
-  List.exists pexp_attributes ~f:(function
-    | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-    | _ -> true )
+let has_trailing_attributes {pexp_desc; pexp_attributes} =
+  match pexp_desc with
+  | Pexp_function _ | Pexp_match _ | Pexp_try _ -> false
+  | _ ->
+      List.exists pexp_attributes ~f:(function
+        | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+        | _ -> true )
 
 
 (** Ast terms of various forms. *)
@@ -646,7 +649,6 @@ end = struct
        |Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
-      | Pexp_apply (op, _) when op == exp -> Some (Low, Non)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_]) -> (
         match i with
         | "~-" | "~+" -> Some (UMinus, Non)
@@ -791,7 +793,8 @@ end = struct
   let parenze_typ ({ctx; ast= typ} as xtyp) =
     assert (check_typ xtyp ; true) ;
     match xtyp with
-    | { ctx= Exp {pexp_desc= Pexp_constraint _}
+    | { ctx=
+          Exp {pexp_desc= Pexp_constraint _} | Str {pstr_desc= Pstr_type _}
       ; ast= {ptyp_desc= Ptyp_package _} } ->
         true
     | _ ->
@@ -835,12 +838,15 @@ end = struct
      |( ( Pat
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_tuple _ ) } | Exp {pexp_desc= Pexp_fun _}
-        | Str {pstr_desc= Pstr_value _} )
+                | Ppat_tuple _ | Ppat_variant _ ) }
+        | Exp {pexp_desc= Pexp_fun _} | Str {pstr_desc= Pstr_value _} )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _}
       , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )
-     |( Pat {ppat_desc= Ppat_construct _ | Ppat_exception _ | Ppat_tuple _}
+     |( Pat
+          { ppat_desc=
+              ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
+              | Ppat_variant _ ) }
       , Ppat_or _ )
      |Pat {ppat_desc= Ppat_tuple _}, (Ppat_constraint _ | Ppat_tuple _)
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
@@ -957,7 +963,7 @@ end = struct
   and parenze_exp ({ctx; ast= exp} as xexp) =
     assert (check_exp xexp ; true) ;
     is_displaced_prefix_op xexp || is_displaced_infix_op xexp
-    || has_attributes exp
+    || has_trailing_attributes exp
     ||
     match ctx with
     | Exp {pexp_desc} -> (
