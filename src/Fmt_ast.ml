@@ -34,6 +34,8 @@ let protect =
       raise exc
 
 
+let assignment (c: Conf.t) : s = if c.sparse then "@ =@ " else "=@ "
+
 let rec sugar_arrow_typ ({ast= typ} as xtyp) =
   let ctx = Typ typ in
   let {ptyp_desc; ptyp_loc} = typ in
@@ -528,7 +530,7 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             cbox 2 (fmt_longident txt)
         | _ ->
             cbox 2
-              ( fmt_longident txt $ fmt "@ =@ "
+              ( fmt_longident txt $ fmt (assignment c)
               $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) )
       in
       hvbox 0
@@ -621,7 +623,8 @@ and fmt_fun_args c args =
       , Some xexp )
       when String.equal l txt ->
         cbox 0
-          (fmt "?(" $ str l $ fmt "= " $ fmt_expression c xexp $ fmt ")")
+          ( fmt "?(" $ str l $ fmt (assignment c) $ fmt_expression c xexp
+          $ fmt ")" )
     | Optional l, xpat, Some xexp ->
         cbox 0
           ( fmt "?" $ str l $ fmt ":(" $ fmt_pattern c xpat $ fmt " = "
@@ -1139,7 +1142,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
             Cmts.fmt loc @@ cbox 2 (fmt_longident txt)
         | _ ->
             cbox 2
-              ( fmt_longident txt $ fmt "@ =@ "
+              ( fmt_longident txt $ fmt (assignment c)
               $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) )
       in
       hvbox 0
