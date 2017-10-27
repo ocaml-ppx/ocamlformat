@@ -14,13 +14,13 @@
 let ocamlc_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> "-g -opaque"
-  | "opt" -> "-noassert"
+  | "default" -> "-noassert"
   | ctx -> failwith ("unknown context: " ^ ctx)
 
 let ocamlopt_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> ocamlc_flags ^ " -w -a"
-  | "opt" -> ocamlc_flags ^ " -O3"
+  | "default" -> ocamlc_flags ^ " -O3"
   | ctx -> failwith ("unknown context: " ^ ctx)
 
 ;; Format.sprintf "

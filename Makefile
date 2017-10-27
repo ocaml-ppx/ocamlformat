@@ -44,7 +44,7 @@ dbg: setup
 
 .PHONY: opt
 opt: setup
-	jbuilder build --root=src $(JBFLAGS) _build/opt/ocamlformat.exe
+	jbuilder build --root=src $(JBFLAGS) _build/default/ocamlformat.exe
 
 .PHONY: reason
 reason: setup
