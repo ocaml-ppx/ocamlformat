@@ -24,8 +24,7 @@ open Fmt
 let protect =
   let first = ref true in
   fun ast pp fs ->
-    try pp fs
-    with exc ->
+    try pp fs with exc ->
       ( if !first then
           let bt = Caml.Printexc.get_backtrace () in
           Format.pp_print_flush fs () ;
@@ -168,8 +167,8 @@ let sugar_infix_cons xexp =
             { pexp_desc= Pexp_tuple [hd; tl]
             ; pexp_loc= l3
             ; pexp_attributes= [] } ) -> (
-      match sugar_infix_cons_ (sub_exp ~ctx tl) with
-      | xtl -> ([l1; l2; l3], sub_exp ~ctx hd) :: xtl )
+      match sugar_infix_cons_ (sub_exp ~ctx tl) with xtl ->
+        ([l1; l2; l3], sub_exp ~ctx hd) :: xtl )
     | _ -> [([], xexp)]
   in
   sugar_infix_cons_ xexp
@@ -1085,29 +1084,8 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
         | Pexp_try _ -> "try"
         | _ -> impossible "previous match"
       in
-      match (cs, exp.pexp_desc) with
-      | [{pc_lhs; pc_guard; pc_rhs}], Pexp_try _ ->
-          wrap_fits_breaks_if parens "(" ")"
-            (hovbox 2
-               ( hvbox 0
-                   ( str keyword
-                   $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes
-                       (fmt "")
-                   $ hovbox 0
-                       (fmt "@;<1 -1>" $ fmt_expression c (sub_exp ~ctx e0))
-                   $ fmt "@;<1000 0>" )
-               $ hvbox 0
-                   ( fmt "with@ "
-                   $ hvbox 0
-                       ( fmt_pattern c ~pro:(if_newline "| ")
-                           (sub_pat ~ctx pc_lhs)
-                       $ opt pc_guard (fun g ->
-                             fmt "@ when "
-                             $ fmt_expression c (sub_exp ~ctx g) ) )
-                   $ fmt "@ ->" )
-               $ fmt "@ " $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-               ))
-      | _ ->
+      match cs with
+      | [] | _ :: _ :: _ | [{pc_lhs= {ppat_desc= Ppat_or _}}] ->
           hvbox 0
             (wrap_fits_breaks_if parens "(" ")"
                ( hvbox 0
@@ -1116,7 +1094,29 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
                        (fmt "")
                    $ fmt "@;<1 2>" $ fmt_expression c (sub_exp ~ctx e0)
                    $ fmt "@ with" )
-               $ fmt "@ " $ fmt_cases c ctx cs )) )
+               $ fmt "@ " $ fmt_cases c ctx cs ))
+      | [{pc_lhs; pc_guard; pc_rhs}] ->
+          wrap_fits_breaks_if parens "(" ")"
+            (hovbox 2
+               ( hvbox 0
+                   ( str keyword
+                   $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes
+                       (fmt "")
+                   $ hvbox 0
+                       (fmt "@;<1 -1>" $ fmt_expression c (sub_exp ~ctx e0))
+                   $ fmt "@," )
+               $ fmt "@;<0 -2>"
+               $ hvbox 0
+                   ( break_unless_newline 1 0 $ fmt "with@ "
+                   $ hvbox 0
+                       ( fmt_pattern c ~pro:(if_newline "| ")
+                           (sub_pat ~ctx pc_lhs)
+                       $ opt pc_guard (fun g ->
+                             fmt "@ when "
+                             $ fmt_expression c (sub_exp ~ctx g) ) )
+                   $ fmt "@ ->" )
+               $ fmt "@ " $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
+               )) )
   | Pexp_newtype ({txt}, exp) ->
       hvbox 0
         ( fmt "fun (type " $ str txt $ fmt ") ->@ "

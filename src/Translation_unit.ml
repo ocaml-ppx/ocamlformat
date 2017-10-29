@@ -82,8 +82,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
     Out_channel.close oc ;
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
     if not (String.equal source fmted) then (
-      ( try Cmts.final_check ()
-        with exc ->
+      ( try Cmts.final_check () with exc ->
           dump xunit dir base ".old" ".ast" ast ;
           if not Conf.debug then Unix.unlink tmp ;
           raise exc ) ;

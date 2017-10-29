@@ -211,10 +211,10 @@ let rec read_conf_files conf dir =
       In_channel.with_file (Filename.concat dir ".ocamlformat") ~f:
         (fun ic ->
           In_channel.fold_lines ic ~init:conf ~f:(fun conf line ->
-              try Scanf.sscanf line "%s %s" (update conf)
-              with Scanf.Scan_failure _ | End_of_file ->
-                user_error "malformed .ocamlformat file"
-                  [("line", Sexp.Atom line)] ) )
+              try Scanf.sscanf line "%s %s" (update conf) with
+              | Scanf.Scan_failure _ | End_of_file ->
+                  user_error "malformed .ocamlformat file"
+                    [("line", Sexp.Atom line)] ) )
     with Sys_error _ -> conf
   else conf
 

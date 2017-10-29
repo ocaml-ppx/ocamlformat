@@ -334,8 +334,7 @@ end = struct
 
 
   let check_typ ({ctx; ast= typ} as xtyp) =
-    try check_typ xtyp
-    with exc -> fail ctx (Typ typ) exc
+    try check_typ xtyp with exc -> fail ctx (Typ typ) exc
 
 
   let check_pat {ctx; ast= pat} =
@@ -423,8 +422,7 @@ end = struct
 
 
   let check_pat ({ctx; ast= pat} as xpat) =
-    try check_pat xpat
-    with exc -> fail ctx (Pat pat) exc
+    try check_pat xpat with exc -> fail ctx (Pat pat) exc
 
 
   let check_exp {ctx; ast= exp} =
@@ -514,8 +512,7 @@ end = struct
 
 
   let check_exp ({ctx; ast= exp} as xexp) =
-    try check_exp xexp
-    with exc -> fail ctx (Exp exp) exc
+    try check_exp xexp with exc -> fail ctx (Exp exp) exc
 
 
   let rec is_simple (c: Conf.t) width ({ast= exp} as xexp) =
