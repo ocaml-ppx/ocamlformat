@@ -1393,9 +1393,12 @@ and fmt_constructor_arguments c ctx pre args =
 
 and fmt_constructor_arguments_result c ctx args res =
   let pre : _ format = if Option.is_none res then " of@ " else ": " in
+  let before_type : _ format =
+    match args with Pcstr_tuple [] -> ": " | _ -> "-> "
+  in
   fmt_constructor_arguments c ctx pre args
   $ opt res (fun typ ->
-        fmt " " $ fmt "-> " $ fmt_core_type c (sub_typ ~ctx typ) )
+        fmt " " $ fmt before_type $ fmt_core_type c (sub_typ ~ctx typ) )
 
 
 and fmt_type_extension c ctx te =
