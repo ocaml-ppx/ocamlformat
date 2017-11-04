@@ -70,7 +70,7 @@ test_format: $(TEST_PP_ML) $(TEST_PP_MLI) $(TEST_PP_RE) $(TEST_PP_REI)
 
 .PHONY: test_inplace
 test_inplace:
-	parallel $(OCAMLFORMAT_EXE) -i -- $(TEST_ML) $(TEST_MLI)
+	parallel $(OCAMLFORMAT_EXE) --no-version-check -i ::: $(TEST_ML) $(TEST_MLI)
 
 .PHONY: test_convert
 test_convert: $(CONV_ML) $(CONV_MLI)
