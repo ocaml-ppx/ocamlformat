@@ -1067,7 +1067,8 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
       in
       let opn, cls =
         match e0.pexp_desc with
-        | Pexp_array _ | Pexp_constraint _ | Pexp_record _ -> (".", "")
+        | Pexp_array _ | Pexp_constraint _ | Pexp_record _ | Pexp_tuple _ ->
+            (".", "")
         | _ -> (".(", ")")
       in
       hvbox 0
