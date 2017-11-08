@@ -34,7 +34,7 @@ let ocamlopt_flags =
     -open Import))
   (ocamlc_flags (%s))
   (ocamlopt_flags (%s))
-  (libraries (cmdliner format_ import ocaml-migrate-parsetree unix))))
+  (libraries (cmdliner ocamlformat_support import ocaml-migrate-parsetree unix))))
 "
 ocamlc_flags ocamlopt_flags
 |> Jbuild_plugin.V1.send

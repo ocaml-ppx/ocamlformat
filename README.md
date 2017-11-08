@@ -24,10 +24,12 @@ OCamlFormat follows the same basic design as `refmt` from [Reason](https://githu
 
 OCamlFormat can be installed with `opam`:
 
+`opam pin add ocamlformat_support https://github.com/ocaml-ppx/ocamlformat.git#support`
 `opam pin add ocamlformat https://github.com/ocaml-ppx/ocamlformat.git`
 
 and for the Reason converter:
 
+`opam pin add ocamlformat_support https://github.com/ocaml-ppx/ocamlformat.git#support`
 `opam pin add ocamlformat_reason https://github.com/ocaml-ppx/ocamlformat.git`
 
 Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) and [`ocamlformat_reason.opam`](./ocamlformat_reason.opam) for manual build instructions.
@@ -51,5 +53,3 @@ See [CONTRIBUTING](./CONTRIBUTING.md) for how to help out.
 ## License
 
 OCamlFormat is MIT-licensed.
-
-Note that building OCamlFormat will download and patch a module of the OCaml standard library, which is licensed under LGPL 2.1 + linking exception.

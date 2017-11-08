@@ -20,26 +20,6 @@ default: exe
 src/jbuild-workspace: src/jbuild-workspace.in
 	sed -e "s|@OPAM_SWITCH[@]|$$(opam switch show)|g" $< > $@
 
-# patch changes from https://github.com/ocaml/ocaml/pull/1229
-
-src/format/format.ml:
-	curl -s https://raw.githubusercontent.com/ocaml/ocaml/4.04.2/stdlib/format.ml > $@
-
-src/format/format.mli:
-	curl -s https://raw.githubusercontent.com/ocaml/ocaml/4.04.2/stdlib/format.mli > $@
-
-src/format/format.ml.patch: src/format/format.ml
-	diff -u src/format/format.ml src/format/format_.ml > $@; [ $$? -eq 1 ]
-
-src/format/format.mli.patch: src/format/format.mli
-	diff -u src/format/format.mli src/format/format_.mli > $@; [ $$? -eq 1 ]
-
-src/format/format_.ml: src/format/format.ml
-	patch -s -d src/format -i format.ml.patch -o format_.ml
-
-src/format/format_.mli: src/format/format.mli
-	patch -s -d src/format -i format.mli.patch -o format_.mli
-
 src/Version.ml:
 	@touch src/Version.ml
 
@@ -48,7 +28,7 @@ version: src/Version.ml
 	@echo "let version = \"$(shell if [[ "%%VERSION%%" == "%%"*"%%" ]]; then git describe --tags --dirty --always; else echo "%%VERSION%%"; fi)\"" | diff -N src/Version.ml - | patch src/Version.ml
 
 .PHONY: setup
-setup: src/jbuild-workspace src/format/format_.ml src/format/format_.mli version
+setup: src/jbuild-workspace version
 
 .PHONY: exe
 exe: setup
@@ -77,7 +57,7 @@ mod_dep.dot: $(SRCS)
 
 .PHONY: clean
 clean:
-	rm -rf src/Version.ml src/_build src/jbuild-workspace src/format/format{,_}.ml{,i}
+	rm -rf src/Version.ml src/_build src/jbuild-workspace
 
 .PHONY: fmt
 fmt:
