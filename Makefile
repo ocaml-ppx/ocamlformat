@@ -25,7 +25,7 @@ src/Version.ml:
 
 .PHONY:
 version: src/Version.ml
-	@echo "let version = \"$(shell if [[ "%%VERSION%%" == "%%"*"%%" ]]; then git describe --tags --dirty --always; else echo "%%VERSION%%"; fi)\"" | diff -N src/Version.ml - | patch src/Version.ml
+	@echo "let version = \"$(shell if [[ "v0.2" == "%%"*"%%" ]]; then git describe --tags --dirty --always; else echo "v0.2"; fi)\"" | diff -N src/Version.ml - | patch src/Version.ml
 
 .PHONY: setup
 setup: src/jbuild-workspace version
