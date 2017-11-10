@@ -3,6 +3,7 @@ maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
 authors: "Pierre Weis"
 homepage: "https://github.com/ocaml-ppx/ocamlformat/tree/support"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
+dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git#support"
 license: "LGPL-2 with OCaml linking exception"
 available: [ ocaml-version >= "4.04.0" ]
 depends: [
