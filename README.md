@@ -25,14 +25,12 @@ OCamlFormat follows the same basic design as `refmt` from [Reason](https://githu
 OCamlFormat can be installed with `opam`:
 
 ```
-opam pin add ocamlformat_support https://github.com/ocaml-ppx/ocamlformat.git#support
-opam pin add ocamlformat https://github.com/ocaml-ppx/ocamlformat.git
+opam install ocamlformat
 ```
 
 and for the Reason converter:
 
 ```
-opam pin add ocamlformat_support https://github.com/ocaml-ppx/ocamlformat.git#support
 opam pin add ocamlformat_reason https://github.com/ocaml-ppx/ocamlformat.git
 ```
 
