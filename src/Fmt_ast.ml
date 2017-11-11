@@ -1897,13 +1897,18 @@ and fmt_structure c ?(sep= "") ctx itms =
         in
         has_doc itmJ || not (is_simple itmI) || not (is_simple itmJ) )
   in
-  let fmt_grp itms =
-    list itms "@\n" (sub_str ~ctx >> fmt_structure_item c ~sep)
+  let fmt_grp ~last:last_grp itms =
+    list_fl itms (fun ~first ~last itm ->
+        fmt_if (not first) "@\n"
+        $ fmt_structure_item c ~sep ~last:(last && last_grp)
+            (sub_str ~ctx itm) )
   in
-  hvbox 0 (list grps "\n@\n" fmt_grp)
+  hvbox 0
+    (list_fl grps (fun ~first ~last grp ->
+         fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
 
 
-and fmt_structure_item c ~sep {ctx; ast= si} =
+and fmt_structure_item c ~sep ~last:last_item {ctx; ast= si} =
   protect (Str si)
   @@
   let at_top = Poly.(ctx = Top) in
@@ -1961,7 +1966,7 @@ and fmt_structure_item c ~sep {ctx; ast= si} =
       hvbox 0
         (list_fl bindings (fun ~first ~last binding ->
              fmt_value_binding c ~rec_flag ~first ctx binding
-               ~epi:(fits_breaks "" "\n")
+               ~epi:(fits_breaks ~force_fit_if:last_item "" "\n")
              $ fmt_if (not last) "\n@\n" ))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Pstr_extension (ext, atrs) ->

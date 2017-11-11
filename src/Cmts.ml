@@ -91,7 +91,6 @@ end = struct
     in
     if Conf.debug then set_margin 100000000 $ dump_ tree tree.roots
     else Fn.const ()
-
 end
 
 module Position = struct
@@ -152,7 +151,6 @@ module Loc_tree = struct
     in
     map_ast {Ast_mapper.default_mapper with location} ast |> ignore ;
     of_list !locs
-
 end
 
 module Cmt = struct
@@ -163,7 +161,6 @@ module Cmt = struct
 
     let sexp_of_t (txt, loc) =
       Sexp.Atom (Format.asprintf "%s %a" txt Location.fmt loc)
-
   end
 
   include T
@@ -272,7 +269,6 @@ end = struct
         {loc with loc_end= loc.loc_start}
     in
     ((s_before, e_before), (s_within, e_within), (s_after, e_after))
-
 end
 
 (** Concrete syntax, set by [init]. *)
@@ -543,4 +539,3 @@ let diff x y =
       (List.map ~f:fst (List.dedup ~compare:Poly.compare z))
   in
   Set.symmetric_diff (norm x) (norm y)
-

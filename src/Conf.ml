@@ -58,7 +58,6 @@ end = struct
     | `Ok () -> ()
     | `Error _ -> Caml.exit 1
     | `Help | `Version -> Caml.exit 0
-
 end
 
 open Cmdliner
@@ -257,7 +256,6 @@ let action =
             ; conf= conf name }
           , !output )
     | _ -> impossible "checked by validate"
-
 
 and debug = !debug
 

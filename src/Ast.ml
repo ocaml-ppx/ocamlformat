@@ -111,7 +111,6 @@ module T = struct
         Format.fprintf fs "Str:@\n%a@\n%a" Pprintast.structure [s]
           Printast.implementation [s]
     | Top -> Format.pp_print_string fs "Top"
-
 end
 
 include T
@@ -954,7 +953,6 @@ end = struct
       in
       mem_cls cls exp || Hashtbl.Poly.find_or_add memo exp ~default:exposed_
 
-
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
   and parenze_exp ({ctx; ast= exp} as xexp) =
@@ -997,7 +995,6 @@ end = struct
               if is_right_infix_arg pexp_desc exp then is_sequence exp
               else exposed Non_apply exp )
     | _ -> false
-
 end
 
 include In_ctx

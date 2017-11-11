@@ -40,4 +40,3 @@ let check f x =
     ignore (f x) ;
     true ) ;
   x
-

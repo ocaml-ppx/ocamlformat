@@ -134,4 +134,3 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
   | Syntaxerr.Error _ as exc ->
       Location.report_exception Caml.Format.err_formatter exc ;
       Caml.exit 1
-

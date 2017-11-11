@@ -40,7 +40,6 @@ module Printast = struct
           PPat
             ( to_current.copy_pattern x
             , Option.map ~f:to_current.copy_expression y ) )
-
 end
 
 module Pprintast = struct
