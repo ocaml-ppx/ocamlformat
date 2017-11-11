@@ -37,8 +37,8 @@ val parse :
     otherwise only enabled. *)
 
 val parse_print :
-  x -> Conf.t -> string -> string -> In_channel.t -> string -> unit
-(** [parse_print xunit input_name input_file input_channel output_file]
+  x -> Conf.t -> string -> string -> In_channel.t -> string option -> unit
+(** [parse_print xunit conf input_name input_file input_channel output_file]
     parses the contents of [input_channel], using [input_name] for error
     messages, and referring to the contents of [input_file] to improve
     comment placement, and writes formatted code into [output_file]. *)

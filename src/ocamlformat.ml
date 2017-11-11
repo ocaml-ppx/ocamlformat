@@ -50,7 +50,7 @@ let xunit_of_kind : _ -> Translation_unit.x = function
        List.iter inputs (fun {Conf.kind; name; file; conf} ->
            In_channel.with_file file ~f:(fun ic ->
                Translation_unit.parse_print (xunit_of_kind kind) conf name
-                 file ic file ) )
+                 file ic (Some file) ) )
    | In_out
        ({kind= `Impl | `Intf as kind; file= input_file; conf}, output_file) ->
        In_channel.with_file input_file ~f:(fun ic ->

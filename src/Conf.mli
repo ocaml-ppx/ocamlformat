@@ -22,8 +22,9 @@ type t =
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
-  | In_out of [`Impl | `Intf] input * string
-      (** Format input file of given kind to output file. *)
+  | In_out of [`Impl | `Intf] input * string option
+      (** Format input file of given kind to output file, or stdout if
+          None. *)
   | Inplace of [`Impl | `Intf] input list
       (** Format in-place, overwriting input file(s). *)
 

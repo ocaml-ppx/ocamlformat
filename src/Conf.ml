@@ -138,7 +138,9 @@ let name =
 
 let output =
   let docv = "DST" in
-  let doc = "Output file. Mutually exclusive with --inplace." in
+  let doc =
+    "Output file. Mutually exclusive with --inplace. Write to stdout if omitted."
+  in
   let default = None in
   mk ~default
     Arg.(
@@ -179,8 +181,6 @@ let validate () =
     `Error (false, "Cannot specify --output with --inplace")
   else if not !inplace && List.length !inputs > 1 then
     `Error (false, "Must specify only one input file without --inplace")
-  else if not !inplace && Option.is_none !output then
-    `Error (false, "Must specify output file without --inplace")
   else `Ok ()
 
 
@@ -231,7 +231,7 @@ let conf name =
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
-  | In_out of [`Impl | `Intf] input * string
+  | In_out of [`Impl | `Intf] input * string option
   | Inplace of [`Impl | `Intf] input list
 
 let kind_of fname =
@@ -247,15 +247,15 @@ let action =
       (List.map !inputs ~f:(fun file ->
            {kind= kind_of file; name= file; file; conf= conf file} ))
   else
-    match (!inputs, !output) with
-    | [input_file], Some output_file ->
+    match !inputs with
+    | [input_file] ->
         let name = Option.value !name ~default:input_file in
         In_out
           ( { kind= kind_of input_file
             ; name
             ; file= input_file
             ; conf= conf name }
-          , output_file )
+          , !output )
     | _ -> impossible "checked by validate"
 
 

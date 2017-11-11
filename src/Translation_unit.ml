@@ -53,9 +53,13 @@ let dump xunit dir base suf ext ast =
 
 
 let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
-  let dir = Filename.dirname ofile in
-  let base = Filename.(remove_extension (basename ofile)) in
-  let ext = Filename.extension ofile in
+  let dir =
+    match ofile with
+    | Some ofile -> Filename.dirname ofile
+    | None -> Filename.get_temp_dir_name ()
+  in
+  let base = Filename.(remove_extension (basename ifile)) in
+  let ext = Filename.extension ifile in
   (* iterate until formatting stabilizes *)
   let rec parse_print_ i source ifile ic =
     Format.pp_print_flush Format.err_formatter () ;
@@ -95,7 +99,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
               (xunit.normalize (ast', cmts')) ;
             if not Conf.debug then Unix.unlink tmp ;
             internal_error "formatting changed ast"
-              [("output file", String.sexp_of_t ofile)] ) ;
+              [("output file", String.sexp_of_t tmp)] ) ;
           let diff_cmts = Cmts.diff cmts cmts' in
           if not (Sequence.is_empty diff_cmts) then (
             dump xunit dir base ".old" ".ast" ast ;
@@ -115,10 +119,14 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
           (Format.sprintf "formatting did not stabilize after %i iterations"
              i)
           [] )
-    else if match Conf.action with In_out _ -> true | _ -> i > 1 then
-      (* in inplace mode, only update file if contents would change *)
-      Unix.rename tmp ofile
-    else Unix.unlink tmp
+    else
+      match (Conf.action, ofile) with
+      | _, None ->
+          Stdio.Out_channel.output_string Stdio.stdout fmted ;
+          Unix.unlink tmp
+      | In_out _, Some ofile -> Unix.rename tmp ofile
+      | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile
+      | Inplace _, _ -> Unix.unlink tmp
   in
   let source = In_channel.with_file ifile ~f:In_channel.input_all in
   try parse_print_ 1 source ifile ic with
