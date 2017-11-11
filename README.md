@@ -28,7 +28,20 @@ OCamlFormat can be installed with `opam`:
 opam install ocamlformat
 ```
 
-and for the Reason converter:
+For the emacs integration:
+
+1.) add `$(opam config var share)/emacs/site-lisp` to `load-path` (as done by `opam user-setup install`)
+
+2.) add `(require 'ocamlformat)` to `.emacs`
+
+3.) optionally add the following to `.emacs` to bind `C-M-<tab>` to the ocamlformat command and install a hook to run ocamlformat when saving:
+```
+(add-hook 'tuareg-mode-hook (lambda ()
+  (define-key merlin-mode-map (kbd "C-M-<tab>") 'ocamlformat)
+  (add-hook 'before-save-hook 'ocamlformat-before-save)))
+```
+
+For the Reason converter:
 
 ```
 opam pin add ocamlformat_reason https://github.com/ocaml-ppx/ocamlformat.git
