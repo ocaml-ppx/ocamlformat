@@ -130,7 +130,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
   in
   let source = In_channel.with_file ifile ~f:In_channel.input_all in
   try parse_print_ 1 source ifile ic with
-  | Warnings.Errors _ -> Caml.exit 1
+  | Warnings.Errors -> Caml.exit 1
   | Syntaxerr.Error _ as exc ->
       Location.report_exception Caml.Format.err_formatter exc ;
       Caml.exit 1
