@@ -457,10 +457,10 @@ and fmt_package_type c ctx ({txt}, cnstrs) =
 
 
 and fmt_row_field c ctx = function
-  | Rtag (lbl, atrs, const, typs) ->
+  | Rtag ({txt; loc}, atrs, const, typs) ->
       let doc, atrs = doc_atrs atrs in
       hvbox 0
-        ( fmt "`" $ str lbl
+        ( Cmts.fmt loc @@ (fmt "`" $ str txt)
         $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "")
         $ fmt_if (not (const && List.is_empty typs)) " of "
         $ fmt_if (const && not (List.is_empty typs)) " & "
@@ -1672,10 +1672,10 @@ and fmt_with_constraint c ctx = function
       $ fmt_type_declaration c ctx ~fmt_name:(fmt_longident txt) td
   | Pwith_module ({txt= m1}, {txt= m2}) ->
       fmt " module " $ fmt_longident m1 $ fmt " = " $ fmt_longident m2
-  | Pwith_typesubst td ->
+  | Pwith_typesubst (_, td) ->
       fmt " type " $ fmt_type_declaration c ~eq:":=" ctx td
   | Pwith_modsubst ({txt= m1}, {txt= m2}) ->
-      fmt " module " $ str m1 $ fmt " := " $ fmt_longident m2
+      fmt " module " $ fmt_longident m1 $ fmt " := " $ fmt_longident m2
 
 
 and fmt_module_expr c {ast= m} =

@@ -311,7 +311,8 @@ end = struct
       | Pmty_with (_, c1N) ->
           assert (
             List.exists c1N ~f:(function
-              | Pwith_type (_, d1) | Pwith_typesubst d1 -> check_type d1
+              | Pwith_type (_, d1) | Pwith_typesubst (_, d1) ->
+                  check_type d1
               | _ -> false ) )
       | _ -> assert false )
     | Mod _ -> assert false

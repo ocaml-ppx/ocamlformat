@@ -9,17 +9,17 @@
 (*                                                                    *)
 (**********************************************************************)
 
-include Ast_405
+include Ast_406
 
 module Parse = struct
   open Migrate_parsetree
 
-  let implementation = Parse.implementation Versions.ocaml_405
+  let implementation = Parse.implementation Versions.ocaml_406
 
-  let interface = Parse.interface Versions.ocaml_405
+  let interface = Parse.interface Versions.ocaml_406
 end
 
-let to_current = Migrate_parsetree.Versions.(migrate ocaml_405 ocaml_current)
+let to_current = Migrate_parsetree.Versions.(migrate ocaml_406 ocaml_current)
 
 module Printast = struct
   open Printast
