@@ -1986,8 +1986,16 @@ and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
   in
   let xpat, xpcstr, (xargs, ({ast= body} as xbody)) =
     let xbody = sub_exp ~ctx pvb_expr in
-    match pvb_pat.ppat_desc with
-    | Ppat_constraint (pat, typ) ->
+    match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
+    (* recognize and undo the pattern of code introduced by
+       ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
+       https://caml.inria.fr/mantis/view.php?id=7344 *)
+    | ( Ppat_constraint (pat, {ptyp_desc= Ptyp_poly ([], typ1)})
+      , Pexp_constraint (_, typ2) )
+      when Poly.equal typ1 typ2 ->
+        let ctx = Pat pvb_pat in
+        (sub_pat ~ctx pat, None, sugar_fun None xbody)
+    | Ppat_constraint (pat, typ), _ ->
         let ctx = Pat pvb_pat in
         (sub_pat ~ctx pat, Some (sub_typ ~ctx typ), ([], xbody))
     | _ -> (sub_pat ~ctx pvb_pat, None, sugar_fun None xbody)
