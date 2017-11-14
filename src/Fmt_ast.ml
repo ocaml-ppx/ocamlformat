@@ -386,6 +386,9 @@ and fmt_payload c ctx pld =
 and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
+  let {ptyp_desc; ptyp_loc} = typ in
+  Cmts.fmt ptyp_loc
+  @@
   let parens = parenze_typ xtyp in
   hvbox_if box 0
   @@ wrap_if
@@ -393,9 +396,6 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
        "(" ")"
   @@
   let ctx = Typ typ in
-  let {ptyp_desc; ptyp_loc} = typ in
-  Cmts.fmt ptyp_loc
-  @@
   match ptyp_desc with
   | Ptyp_alias (typ, txt) ->
       hvbox 0 (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ '" $ str txt)
