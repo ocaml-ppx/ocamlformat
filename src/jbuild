@@ -29,8 +29,7 @@ let ocamlopt_flags =
   (flags
    (-w +a-4-6-9-40-41-42-44-45-48@50
     -strict-formats -strict-sequence -principal
-    -short-paths -bin-annot -keep-docs -keep-locs
-    -safe-string -unboxed-types
+    -short-paths -bin-annot -keep-docs -unboxed-types
     -open Import))
   (ocamlc_flags (%s))
   (ocamlopt_flags (%s))
