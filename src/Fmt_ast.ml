@@ -398,7 +398,7 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
   let ctx = Typ typ in
   match ptyp_desc with
   | Ptyp_alias (typ, txt) ->
-      hvbox 0 (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ '" $ str txt)
+      hvbox 0 (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ '" $ str txt)
   | Ptyp_any -> fmt "_"
   | Ptyp_arrow _ ->
       let arg_label lbl =
