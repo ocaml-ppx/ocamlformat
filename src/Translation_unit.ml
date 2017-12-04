@@ -129,8 +129,12 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
       | Inplace _, _ -> Unix.unlink tmp
   in
   let source = In_channel.with_file ifile ~f:In_channel.input_all in
-  try parse_print_ 1 source ifile ic with
-  | Warnings.Errors -> Caml.exit 1
+  (* NOTE: Warning 28 is suppressed due to a difference in exception
+     constructor arity between OCaml versions.  See this
+     ocaml-migrate-parsetree issue for potential future mitigation.
+     https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
+  try[@ocaml.warning "-28"] parse_print_ 1 source ifile ic with
+  | Warnings.Errors _ -> Caml.exit 1
   | Syntaxerr.Error _ as exc ->
       Location.report_exception Caml.Format.err_formatter exc ;
       Caml.exit 1
