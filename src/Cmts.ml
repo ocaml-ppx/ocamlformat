@@ -20,7 +20,7 @@ open Parsetree
     whenever 2 intervals share more than an end-point, then one contains the
     other. *)
 module Non_overlapping_interval_tree (Itv : sig
-  include Hashtbl_intf.Key_plain
+  include Hashtbl_intf.Key
 
   val contains : t -> t -> bool
 
@@ -65,7 +65,7 @@ end = struct
   let of_list elts =
     let elts_decreasing_width =
       List.sort ~cmp:Itv.compare_width_decreasing
-        (List.dedup ~compare:Poly.compare elts)
+        (List.dedup_and_sort ~compare:Poly.compare elts)
     in
     let tree = create () in
     List.iter elts_decreasing_width ~f:(fun elt ->
@@ -247,7 +247,7 @@ end = struct
 
   let split (smap, emap) (loc: Location.t) =
     let addo m kvo =
-      Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.add m ~key ~data)
+      Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
     let partition dir (smap, emap) (loc: Location.t) =
       let before, equal, after = Map.split smap loc in
@@ -536,6 +536,6 @@ let diff x y =
   let norm z =
     Set.of_list
       (module String)
-      (List.map ~f:fst (List.dedup ~compare:Poly.compare z))
+      (List.map ~f:fst (List.dedup_and_sort ~compare:Poly.compare z))
   in
   Set.symmetric_diff (norm x) (norm y)

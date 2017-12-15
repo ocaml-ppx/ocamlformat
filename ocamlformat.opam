@@ -8,7 +8,7 @@ dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git"
 license: "MIT"
 available: [ ocaml-version >= "4.04.0" ]
 depends: [
-  "base"
+  "base" {>= "v0.10.0"}
   "base-unix"
   "cmdliner"
   "jbuilder" {build}
