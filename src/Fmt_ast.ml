@@ -573,11 +573,14 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       ( {ppat_desc= Ppat_unpack {txt}; ppat_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
       wrap_if parens "(" ")"
-        (fmt "module " $ str txt $ fmt ":@ " $ fmt_package_type c ctx pty)
+        (fmt "module " $ str txt $ fmt "@ : " $ fmt_package_type c ctx pty)
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
-           ( fmt_pattern c (sub_pat ~ctx pat) $ fmt ":@ "
+           ( fmt_pattern c (sub_pat ~ctx pat)
+           $ ( match ctx0 with
+             | Exp {pexp_desc= Pexp_let _} -> fmt "@ : "
+             | _ -> fmt ":@ " )
            $ fmt_core_type c (sub_typ ~ctx typ) ))
   | Ppat_type {txt} -> fmt "#" $ fmt_longident txt
   | Ppat_lazy pat ->
@@ -1984,7 +1987,7 @@ and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
     if first then if Poly.(rec_flag = Recursive) then "let rec" else "let"
     else "and"
   in
-  let xpat, xpcstr, (xargs, ({ast= body} as xbody)) =
+  let xpat, (xargs, ({ast= body} as xbody)) =
     let xbody = sub_exp ~ctx pvb_expr in
     match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
     (* recognize and undo the pattern of code introduced by
@@ -1994,11 +1997,9 @@ and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
       , Pexp_constraint (_, typ2) )
       when Poly.equal typ1 typ2 ->
         let ctx = Pat pvb_pat in
-        (sub_pat ~ctx pat, None, sugar_fun None xbody)
-    | Ppat_constraint (pat, typ), _ ->
-        let ctx = Pat pvb_pat in
-        (sub_pat ~ctx pat, Some (sub_typ ~ctx typ), ([], xbody))
-    | _ -> (sub_pat ~ctx pvb_pat, None, sugar_fun None xbody)
+        (sub_pat ~ctx pat, sugar_fun None xbody)
+    | Ppat_constraint _, _ -> (sub_pat ~ctx pvb_pat, ([], xbody))
+    | _ -> (sub_pat ~ctx pvb_pat, sugar_fun None xbody)
   in
   let xecstr, xbody =
     let ctx = Exp body in
@@ -2025,9 +2026,7 @@ and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
       ( open_hovbox 2
       $ ( hovbox 4
             ( str keyword $ fmt_attributes c (fmt "") ~key:"@" atrs (fmt "")
-            $ fmt " " $ fmt_pattern c xpat
-            $ opt xpcstr (fmt "@ : " >$ fmt_core_type c) $ fmt "@ "
-            $ fmt_fun_args c xargs
+            $ fmt " " $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
             $ opt xecstr (fun xtyp ->
                   fmt ": " $ fmt_core_type c xtyp $ fmt "@ " ) )
         $ fmt "=" )
