@@ -452,8 +452,8 @@ and fmt_package_type c ctx ({txt}, cnstrs) =
   hvbox 0
     ( fmt_longident txt
     $ list_fl cnstrs (fun ~first ~last:_ ({txt}, typ) ->
-          fmt_or first " with type " " and " $ fmt_longident txt $ fmt " = "
-          $ fmt_core_type c (sub_typ ~ctx typ) ) )
+          fmt_or first " with type " " and type " $ fmt_longident txt
+          $ fmt " = " $ fmt_core_type c (sub_typ ~ctx typ) ) )
 
 
 and fmt_row_field c ctx = function
@@ -571,7 +571,8 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             (if nested then "" else "@;<1 2>)") )
   | Ppat_constraint
       ( {ppat_desc= Ppat_unpack {txt}; ppat_attributes= []}
-      , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
+      , ({ptyp_desc= Ptyp_package pty; ptyp_attributes= []} as typ) ) ->
+      let ctx = Typ typ in
       wrap_if parens "(" ")"
         (fmt "module " $ str txt $ fmt "@ : " $ fmt_package_type c ctx pty)
   | Ppat_constraint (pat, typ) ->
