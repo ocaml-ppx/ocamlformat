@@ -1042,7 +1042,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
                 ctx ext_cstr
             $ fmt "@ in" )
         $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs )
-  | Pexp_letmodule ({txt; loc}, pmod, exp) ->
+  | Pexp_letmodule (name, pmod, exp) ->
       let {pmod_desc; pmod_attributes} = pmod in
       let keyword = "let module" in
       let me, mt =
@@ -1051,13 +1051,12 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
         | _ -> (pmod, None)
       in
       let xargs, xbody, xmty = sugar_functor ?mt (sub_mod ~ctx me) in
-      Cmts.fmt loc
-      @@ hvbox 0
-           ( hvbox 2
-               ( fmt_module c keyword txt xargs (Some xbody) true xmty
-                   (List.append pmod_attributes me.pmod_attributes)
-               $ fmt " in" )
-           $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs )
+      hvbox 0
+        ( hvbox 2
+            ( fmt_module c keyword name xargs (Some xbody) true xmty
+                (List.append pmod_attributes me.pmod_attributes)
+            $ fmt " in" )
+        $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs )
   | Pexp_open (flag, {txt}, e0) ->
       let override = Poly.(flag = Override) in
       let force_fit_if =
@@ -1578,6 +1577,7 @@ and fmt_signature_item c {ast= si} =
 
 
 and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
+  let {txt= name; loc} = name in
   let doc, atrs = doc_atrs attributes in
   let arg_blks =
     List.map xargs ~f:(fun (name, xarg) ->
@@ -1616,7 +1616,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
       | (_, Some {opn; pro= Some _}) :: _ -> opn $ open_hvbox 0
       | _ -> fmt "" )
     $ hvbox 4
-        ( str keyword $ fmt " " $ str name
+        ( str keyword $ fmt " " $ Cmts.fmt loc @@ str name
         $ list_pn arg_blks (fun ?prev:_ ({txt}, arg_mtyp) ?next ->
               ( match arg_mtyp with
               | Some {pro= None} -> fmt "@ @[<hv 2>("
@@ -1646,18 +1646,18 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
 
 
 and fmt_module_declaration c ctx ~rec_flag pmd =
-  let {pmd_name= {txt}; pmd_type; pmd_attributes} = pmd in
+  let {pmd_name; pmd_type; pmd_attributes} = pmd in
   let keyword = if rec_flag then "module rec" else "module" in
   let xargs, xmty = sugar_functor_type (sub_mty ~ctx pmd_type) in
   let colon =
     match xmty.ast.pmty_desc with Pmty_alias _ -> false | _ -> true
   in
-  fmt_module c keyword txt xargs None colon (Some xmty) pmd_attributes
+  fmt_module c keyword pmd_name xargs None colon (Some xmty) pmd_attributes
 
 
 and fmt_module_type_declaration c ctx pmtd =
-  let {pmtd_name= {txt}; pmtd_type; pmtd_attributes} = pmtd in
-  fmt_module c "module type" txt [] None false
+  let {pmtd_name; pmtd_type; pmtd_attributes} = pmtd in
+  fmt_module c "module type" pmtd_name [] None false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
@@ -2036,7 +2036,7 @@ and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
 
 
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
-  let {pmb_name= {txt}; pmb_expr; pmb_attributes} = pmb in
+  let {pmb_name; pmb_expr; pmb_attributes} = pmb in
   let keyword =
     if first then if rec_flag then "module rec" else "module" else "and"
   in
@@ -2046,7 +2046,7 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
     | _ -> (pmb_expr, None)
   in
   let xargs, xbody, xmty = sugar_functor ?mt (sub_mod ~ctx me) in
-  fmt_module c ?epi keyword txt xargs (Some xbody) true xmty
+  fmt_module c ?epi keyword pmb_name xargs (Some xbody) true xmty
     (List.append pmb_attributes me.pmod_attributes)
 
 
