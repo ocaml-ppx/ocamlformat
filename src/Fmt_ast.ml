@@ -2003,6 +2003,8 @@ and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
   let xecstr, xbody =
     let ctx = Exp body in
     match body.pexp_desc with
+    | Pexp_constraint ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _}) ->
+        (None, xbody)
     | Pexp_constraint (exp, typ) ->
         (Some (sub_typ ~ctx typ), sub_exp ~ctx exp)
     | _ -> (None, xbody)
