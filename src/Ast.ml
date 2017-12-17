@@ -854,7 +854,7 @@ end = struct
           ({ppat_desc= Ppat_unpack _}, {ptyp_desc= Ptyp_package _}) )
      |Exp {pexp_desc= Pexp_let _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _}
-      , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _) ) ->
+      , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
         true
     | _ -> false
 
