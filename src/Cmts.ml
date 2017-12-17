@@ -498,8 +498,8 @@ let fmt_cmts ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
     $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (Option.call ~f:epi) )
 
 
-let fmt_before ?(epi= Fmt.fmt "@ ") ?eol ?adj =
-  fmt_cmts cmts_before ~epi ?eol ?adj
+let fmt_before ?pro ?(epi= Fmt.fmt "@ ") ?eol ?adj =
+  fmt_cmts cmts_before ?pro ~epi ?eol ?adj
 
 
 let fmt_after ?(pro= Fmt.fmt "@ ") ?epi =
@@ -507,7 +507,7 @@ let fmt_after ?(pro= Fmt.fmt "@ ") ?epi =
 
 
 let fmt ?pro ?epi ?eol ?adj loc =
-  Fmt.wrap_k (fmt_before ?epi ?eol ?adj loc) (fmt_after ?pro ?epi loc)
+  Fmt.wrap_k (fmt_before ?pro ?epi ?eol ?adj loc) (fmt_after ?pro ?epi loc)
 
 
 let fmt_list ?pro ?epi ?eol locs init =
