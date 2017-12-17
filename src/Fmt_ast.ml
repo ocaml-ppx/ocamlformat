@@ -52,6 +52,10 @@ let rec sugar_or_pat ({ast= pat} as xpat) =
   | _ -> [xpat]
 
 
+type arg_kind =
+  | Val of arg_label * pattern xt * expression xt option
+  | Newtype of string loc
+
 let sugar_fun pat xexp =
   let rec sugar_fun_ ({ast= exp} as xexp) =
     let ctx = Exp exp in
@@ -61,9 +65,17 @@ let sugar_fun pat xexp =
         Cmts.relocate ~src:pexp_loc ~before:pattern.ppat_loc
           ~after:body.pexp_loc ;
         let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
-        ( (label, sub_pat ~ctx pattern, Option.map default ~f:(sub_exp ~ctx))
+        ( Val
+            ( label
+            , sub_pat ~ctx pattern
+            , Option.map default ~f:(sub_exp ~ctx) )
           :: xargs
         , xbody )
+    | Pexp_newtype (name, body) ->
+        Cmts.relocate ~src:pexp_loc ~before:body.pexp_loc
+          ~after:body.pexp_loc ;
+        let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
+        (Newtype name :: xargs, xbody)
     | _ -> ([], xexp)
   in
   match pat with
@@ -602,40 +614,46 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
 
 and fmt_fun_args c args =
   let fmt_fun_arg = function
-    | Nolabel, xpat, None -> fmt_pattern c xpat
-    | ( Labelled l
-      , ( { ast=
-              { ppat_desc=
-                  ( Ppat_var {txt; loc}
-                  | Ppat_constraint
-                      ( {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}
-                      , _ ) )
-              ; ppat_attributes= [] } } as xpat )
-      , None )
+    | Val (Nolabel, xpat, None) -> fmt_pattern c xpat
+    | Val
+        ( Labelled l
+        , ( { ast=
+                { ppat_desc=
+                    ( Ppat_var {txt; loc}
+                    | Ppat_constraint
+                        ( { ppat_desc= Ppat_var {txt; loc}
+                          ; ppat_attributes= [] }
+                        , _ ) )
+                ; ppat_attributes= [] } } as xpat )
+        , None )
       when String.equal l txt ->
         Cmts.fmt loc @@ cbox 0 (fmt "~" $ fmt_pattern c xpat)
-    | Labelled l, xpat, None ->
+    | Val (Labelled l, xpat, None) ->
         cbox 0 (fmt "~" $ str l $ fmt ":" $ fmt_pattern c xpat)
-    | ( Optional l
-      , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
-      , None )
+    | Val
+        ( Optional l
+        , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
+        , None )
       when String.equal l txt ->
         Cmts.fmt loc @@ cbox 0 (fmt "?" $ str l)
-    | Optional l, xpat, None ->
+    | Val (Optional l, xpat, None) ->
         cbox 0 (fmt "?" $ str l $ fmt ":" $ fmt_pattern c xpat)
-    | ( Optional l
-      , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
-      , Some xexp )
+    | Val
+        ( Optional l
+        , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
+        , Some xexp )
       when String.equal l txt ->
         Cmts.fmt loc
         @@ cbox 0
              (fmt "?(" $ str l $ fmt "= " $ fmt_expression c xexp $ fmt ")")
-    | Optional l, xpat, Some xexp ->
+    | Val (Optional l, xpat, Some xexp) ->
         cbox 0
           ( fmt "?" $ str l $ fmt ":(" $ fmt_pattern c xpat $ fmt " = "
           $ fmt_expression c xexp $ fmt ")" )
-    | (Labelled _ | Nolabel), _, Some _ ->
+    | Val ((Labelled _ | Nolabel), _, Some _) ->
         impossible "not accepted by parser"
+    | Newtype {txt; loc} ->
+        cbox 0 (wrap "(" ")" (fmt "type " $ Cmts.fmt loc @@ str txt))
   in
   fmt_if_k (not (List.is_empty args)) (list args "@ " fmt_fun_arg $ fmt "@ ")
 
