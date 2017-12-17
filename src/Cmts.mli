@@ -48,7 +48,8 @@ val relocate :
     [after]. *)
 
 val fmt_before :
-  ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t -> Fmt.t
+  ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
+  -> Fmt.t
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
 

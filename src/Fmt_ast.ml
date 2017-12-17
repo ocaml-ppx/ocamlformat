@@ -134,14 +134,16 @@ let rec sugar_list_pat pat =
   let ctx = Pat pat in
   let {ppat_desc; ppat_loc= src} = pat in
   match ppat_desc with
-  | Ppat_construct ({txt= Lident "[]"; loc}, None) -> Some ([], [src; loc])
+  | Ppat_construct ({txt= Lident "[]"; loc}, None) ->
+      Cmts.relocate ~src ~before:loc ~after:loc ;
+      Some ([], Some loc)
   | Ppat_construct
       ( {txt= Lident "::"; loc}
       , Some {ppat_desc= Ppat_tuple [hd; tl]; ppat_loc; ppat_attributes= []}
       ) -> (
     match sugar_list_pat tl with
-    | Some (xtl, nil_locs) ->
-        Some (([src; loc; ppat_loc], sub_pat ~ctx hd) :: xtl, nil_locs)
+    | Some (xtl, nil_loc) ->
+        Some (([src; loc; ppat_loc], sub_pat ~ctx hd) :: xtl, nil_loc)
     | None -> None )
   | _ -> None
 
@@ -151,15 +153,17 @@ let sugar_list_exp exp =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc= src} = exp in
     match pexp_desc with
-    | Pexp_construct ({txt= Lident "[]"; loc}, None) -> Some ([], [src; loc])
+    | Pexp_construct ({txt= Lident "[]"; loc}, None) ->
+        Cmts.relocate ~src ~before:loc ~after:loc ;
+        Some ([], Some loc)
     | Pexp_construct
         ( {txt= Lident "::"; loc}
         , Some
             {pexp_desc= Pexp_tuple [hd; tl]; pexp_loc; pexp_attributes= []} )
       -> (
       match sugar_list_exp_ tl with
-      | Some (xtl, nil_locs) ->
-          Some (([src; loc; pexp_loc], sub_exp ~ctx hd) :: xtl, nil_locs)
+      | Some (xtl, nil_loc) ->
+          Some (([src; loc; pexp_loc], sub_exp ~ctx hd) :: xtl, nil_loc)
       | None -> None )
     | _ -> None
   in
@@ -513,12 +517,13 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       ( {txt= Lident "::"}
       , Some {ppat_desc= Ppat_tuple pats; ppat_attributes= []} ) -> (
     match sugar_list_pat pat with
-    | Some (loc_xpats, nil_locs) ->
+    | Some (loc_xpats, nil_loc) ->
         hvbox 0
           (wrap_fits_breaks "[" "]"
-             ( Cmts.fmt_list nil_locs
-             @@ list loc_xpats "@,; " (fun (locs, xpat) ->
-                    Cmts.fmt_list locs @@ fmt_pattern c xpat ) ))
+             ( list loc_xpats "@,; " (fun (locs, xpat) ->
+                   Cmts.fmt_list locs @@ fmt_pattern c xpat )
+             $ opt nil_loc (fun loc ->
+                   Cmts.fmt ~pro:(fmt " ") ~epi:(fmt "") loc @@ fmt "" ) ))
     | None ->
         hvbox 0
           (wrap_if_fits_and parens "(" ")"
@@ -930,13 +935,14 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
     match sugar_list_exp exp with
-    | Some (loc_xes, nil_locs) ->
+    | Some (loc_xes, nil_loc) ->
         hvbox 0
           (wrap_fits_breaks "[" "]"
-             ( Cmts.fmt_list nil_locs
-             @@ list loc_xes "@,; " (fun (locs, xexp) ->
-                    Cmts.fmt_list ~eol:(fmt "@;<2 2>") locs
-                    @@ fmt_expression c xexp ) ))
+             ( list loc_xes "@,; " (fun (locs, xexp) ->
+                   Cmts.fmt_list ~eol:(fmt "@;<1 2>") locs
+                   @@ fmt_expression c xexp )
+             $ opt nil_loc (fun loc ->
+                   Cmts.fmt ~pro:(fmt " ") ~epi:(fmt "") loc @@ fmt "" ) ))
     | None ->
         let loc_args = sugar_infix_cons xexp in
         let fmt_arg ~last_op ({ast= arg} as xarg) =
