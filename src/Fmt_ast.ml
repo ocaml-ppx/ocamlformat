@@ -869,7 +869,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                 (break 0 (if parens && first then -2 else 0)) )
         $ fmt_if_k (not last) (break_unless_newline 1 0)
       in
-      hovbox_if (box || parens) 0
+      hovbox 0
         ( wrap_fits_breaks_if parens "(" ")" (list_fl op_args fmt_op_args)
         $ fmt_atrs )
   | Pexp_apply (e0, a1N) when is_infix e0 ->
