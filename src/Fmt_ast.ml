@@ -663,7 +663,7 @@ and fmt_fun_args c args =
   fmt_if_k (not (List.is_empty args)) (list args "@ " fmt_fun_arg $ fmt "@ ")
 
 
-and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
+and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -1053,7 +1053,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
         (vbox 0
            ( hvbox 0
                (list_fl bindings (fun ~first ~last binding ->
-                    fmt_value_binding c ~rec_flag ~first ctx binding
+                    fmt_value_binding c ~rec_flag ~first ?ext ctx binding
                       ~in_:(fmt_if last "@;<1 -2>in")
                     $ fmt_if (not last) "@ " ))
            $ fmt "@;<1000 0>"
@@ -1208,6 +1208,12 @@ and fmt_expression c ?(box= true) ?eol ?parens ({ast= exp} as xexp) =
         ( wrap_fits_breaks_if parens "(" ")"
             (fmt "lazy@ " $ fmt_expression c (sub_exp ~ctx e))
         $ fmt_atrs )
+  | Pexp_extension
+      ( ext
+      , PStr
+          [ ( {pstr_desc= Pstr_eval (({pexp_desc= Pexp_let _} as e1), _)} as
+            str ) ] ) ->
+      fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
   | Pexp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs
   | Pexp_for (p1, e1, e2, dir, e3) ->
       hvbox 0
@@ -2005,7 +2011,7 @@ and fmt_structure_item c ~sep ~last:last_item {ctx; ast= si} =
       internal_error "classes not implemented" []
 
 
-and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
+and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = binding in
   let doc, atrs = doc_atrs pvb_attributes in
   let keyword =
@@ -2050,8 +2056,10 @@ and fmt_value_binding c ~rec_flag ~first ?in_ ?epi ctx binding =
   $ hvbox 2
       ( open_hovbox 2
       $ ( hovbox 4
-            ( str keyword $ fmt_attributes c (fmt "") ~key:"@" atrs (fmt "")
-            $ fmt " " $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
+            ( str keyword
+            $ opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt loc (str txt))
+            $ fmt_attributes c (fmt "") ~key:"@" atrs (fmt "") $ fmt " "
+            $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
             $ opt xecstr (fun xtyp ->
                   fmt ": " $ fmt_core_type c xtyp $ fmt "@ " ) )
         $ fmt "=" )
