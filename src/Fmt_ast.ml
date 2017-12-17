@@ -1047,11 +1047,11 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
   | Pexp_fun _ ->
       let xargs, xbody = sugar_fun None xexp in
       hvbox_if box 2
-        ( wrap_if parens "(" ")"
-            ( hovbox 2
-                (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
-            $ fmt "@ " $ fmt_expression c xbody )
-        $ fmt_atrs )
+        ( fmt_if parens "("
+        $ ( hovbox 2
+              (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
+          $ fmt "@ " $ fmt_expression c xbody )
+        $ fits_breaks_if parens ")" "@ )" $ fmt_atrs )
   | Pexp_function cs ->
       wrap_if parens "(" ")"
         ( hvbox 2

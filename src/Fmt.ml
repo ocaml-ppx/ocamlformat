@@ -58,7 +58,7 @@ let list_pn x1N (pp: ?prev:_ -> _ -> ?next:_ -> _ -> unit) fs =
 let list_fl xs pp fs =
   list_pn xs
     (fun ?prev x ?next fs ->
-      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs)
+      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs )
     fs
 
 
