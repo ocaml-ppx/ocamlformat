@@ -2068,7 +2068,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       when Poly.equal typ1 typ2 ->
         let ctx = Pat pvb_pat in
         (sub_pat ~ctx pat, sugar_fun None xbody)
-    | Ppat_constraint _, _ -> (sub_pat ~ctx pvb_pat, ([], xbody))
+    | (Ppat_any | Ppat_constraint _), _ ->
+        (sub_pat ~ctx pvb_pat, ([], xbody))
     | _ -> (sub_pat ~ctx pvb_pat, sugar_fun None xbody)
   in
   let xecstr, xbody =
