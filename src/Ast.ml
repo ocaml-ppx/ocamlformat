@@ -568,14 +568,16 @@ end = struct
     | { ctx=
           Sig
             { psig_desc=
-                Psig_exception {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} }
+                Psig_exception {pext_kind= Pext_decl (Pcstr_tuple t1N, _)}
+            }
       ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
       when List.mem ~equal:phys_equal t1N typ ->
         Some (InfixOp3, Non)
     | { ctx=
           Str
             { pstr_desc=
-                Pstr_exception {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} }
+                Pstr_exception {pext_kind= Pext_decl (Pcstr_tuple t1N, _)}
+            }
       ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
       when List.mem ~equal:phys_equal t1N typ ->
         Some (InfixOp3, Non)
@@ -809,7 +811,8 @@ end = struct
     | ( Pat
           { ppat_desc=
               Ppat_construct
-                ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [_; tl]}) }
+                ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [_; tl]})
+          }
       , Ppat_construct ({txt= Lident "::"}, _) )
       when tl == pat ->
         false

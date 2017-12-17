@@ -223,7 +223,8 @@ end = struct
 
   let invariant (smap, emap) =
     assert (
-      List.equal ~equal:Poly.equal (Map.to_alist smap) (Map.to_alist emap) )
+      List.equal ~equal:Poly.equal (Map.to_alist smap) (Map.to_alist emap)
+    )
 
 
   let is_empty (smap, _) = Map.is_empty smap

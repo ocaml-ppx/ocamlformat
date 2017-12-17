@@ -159,8 +159,8 @@ let sugar_list_exp exp =
     | Pexp_construct
         ( {txt= Lident "::"; loc}
         , Some
-            {pexp_desc= Pexp_tuple [hd; tl]; pexp_loc; pexp_attributes= []} )
-      -> (
+            {pexp_desc= Pexp_tuple [hd; tl]; pexp_loc; pexp_attributes= []}
+        ) -> (
       match sugar_list_exp_ tl with
       | Some (xtl, nil_loc) ->
           Some (([src; loc; pexp_loc], sub_exp ~ctx hd) :: xtl, nil_loc)
@@ -726,7 +726,8 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                      | Pexp_fun _ | Pexp_function _ -> Some false
                      | _ -> None )
                    (lbl, xarg))
-            $ fmt_if_k (Option.is_none next) close_box $ fmt_if spc "@ " ) )
+            $ fmt_if_k (Option.is_none next) close_box $ fmt_if spc "@ " )
+        )
   in
   let fmt_cmts = Cmts.fmt ?eol pexp_loc in
   let fmt_atrs =
@@ -740,7 +741,8 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
       ( { pexp_desc=
             Pexp_extension
               ( {txt}
-              , PStr [({pstr_desc= Pstr_eval (call_fun, []); _} as pld)] ) }
+              , PStr [({pstr_desc= Pstr_eval (call_fun, []); _} as pld)] )
+        }
       , e2 ) ->
       let xargs, xbody = sugar_fun None (sub_exp ~ctx:(Str pld) call_fun) in
       hvbox 0
@@ -1337,8 +1339,8 @@ and fmt_cases (c: Conf.t) ctx cs =
                   ~pro:(if first then if_newline "| " else fmt "| ")
                   ~parens:paren_lhs xlhs
               $ opt pc_guard (fun g ->
-                    fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g) )
-              )
+                    fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g)
+                ) )
           $ fmt_if_k (indent <= 2) fmt_arrow )
         $ fmt_if_k (indent > 2) fmt_arrow
       in
@@ -1510,8 +1512,8 @@ and fmt_type_extension c ctx te =
         $ hvbox 0
             ( if_newline "| "
             $ list ptyext_constructors "@ | " (fun ctor ->
-                  hvbox 0 (fmt_extension_constructor c " of@ " ctx ctor) ) )
-        )
+                  hvbox 0 (fmt_extension_constructor c " of@ " ctx ctor) )
+            ) )
     $ fmt_attributes c (fmt "") ~key:"@@" atrs (fmt "") )
 
 
