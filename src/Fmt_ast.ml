@@ -747,8 +747,10 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                       $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "->") )
                   $ fmt "@ " $ fmt_expression c xbody ))
            $ fmt "@ ;@ "
-           $ list (sugar_sequence c width (sub_exp ~ctx e2)) " ;@;<1000 0>"
-               (fun grp -> list grp " ;@ " (fmt_expression c) ) ))
+           $ list
+               (sugar_sequence c width (sub_exp ~ctx e2))
+               " ;@;<1000 0>"
+               (fun grp -> list grp " ;@ " (fmt_expression c)) ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident "|>"}; pexp_attributes= []}
       , [ (Nolabel, e0)
@@ -876,7 +878,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         $ fmt_atrs )
   | Pexp_apply (e0, e1N1) -> (
     match List.rev e1N1 with
-    | (lbl, ({pexp_desc= Pexp_fun _; pexp_loc} as eN1)) :: rev_e1N ->
+    | (lbl, ({pexp_desc= Pexp_fun _; pexp_loc} as eN1)) :: rev_e1N
+      when List.for_all rev_e1N ~f:(fun (_, eI) ->
+               is_simple c (fun _ -> 0) (sub_exp ~ctx eI) ) ->
         let e1N = List.rev rev_e1N in
         (* side effects of Cmts.fmt before sugar_fun is important *)
         let fmt_cmts = Cmts.fmt pexp_loc in
@@ -903,7 +907,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
     | ( lbl
       , ({pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]} as eN)
       )
-      :: rev_e1N ->
+      :: rev_e1N
+      when List.for_all rev_e1N ~f:(fun (_, eI) ->
+               is_simple c (fun _ -> 0) (sub_exp ~ctx eI) ) ->
         let e1N = List.rev rev_e1N in
         let ctx = Exp eN in
         hvbox 2
@@ -922,7 +928,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                  $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
                  $ fits_breaks ")" " )" ))
           $ fmt_atrs )
-    | (lbl, ({pexp_desc= Pexp_function cs} as eN)) :: rev_e1N ->
+    | (lbl, ({pexp_desc= Pexp_function cs} as eN)) :: rev_e1N
+      when List.for_all rev_e1N ~f:(fun (_, eI) ->
+               is_simple c (fun _ -> 0) (sub_exp ~ctx eI) ) ->
         let e1N = List.rev rev_e1N in
         let ctx'' = Exp eN in
         hvbox 2
