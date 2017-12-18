@@ -1160,7 +1160,11 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         | _ -> impossible "previous match"
       in
       match cs with
-      | [] | _ :: _ :: _ | [{pc_lhs= {ppat_desc= Ppat_or _}}] ->
+      | []
+       |_ :: _ :: _
+       |[ { pc_lhs=
+              {ppat_desc= Ppat_or _ | Ppat_alias ({ppat_desc= Ppat_or _}, _)}
+          } ] ->
           hvbox 0
             (wrap_fits_breaks_if parens "(" ")"
                ( hvbox 0
