@@ -660,7 +660,7 @@ end = struct
                   { txt=
                       Ldot
                         ( Lident ("Array" | "String")
-                        , ("get" | "set" as name) ) } }
+                        , (("get" | "set") as name) ) } }
           , (_, a1) :: (_, a2) :: _ ) ->
           if a1 == exp then
             match name with

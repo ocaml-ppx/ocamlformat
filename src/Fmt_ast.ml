@@ -326,7 +326,7 @@ let doc_atrs atrs =
     List.fold atrs ~init:(None, []) ~f:(fun (doc, rev_atrs) atr ->
         match (doc, atr) with
         | ( None
-          , ( {txt= "ocaml.doc" | "ocaml.text" as txt}
+          , ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
             , PStr
                 [ { pstr_desc=
                       Pstr_eval
@@ -358,7 +358,7 @@ let fmt_docstring ?pro ?epi doc =
 
 
 let rec fmt_attribute c pre = function
-  | ( {txt= "ocaml.doc" | "ocaml.text" as txt}
+  | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
     , PStr
         [ { pstr_desc=
               Pstr_eval
@@ -502,9 +502,15 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_var {txt; loc} ->
       Cmts.fmt loc @@ wrap_if (is_symbol_id txt) "( " " )" (str txt)
   | Ppat_alias (pat, {txt}) ->
+      let paren_pat =
+        match pat.ppat_desc with
+        | Ppat_or _ | Ppat_tuple _ -> true
+        | _ -> false
+      in
       hovbox 0
         (wrap_fits_breaks_if parens "(" ")"
-           (fmt_pattern c (sub_pat ~ctx pat) $ fmt "@ as@ " $ str txt))
+           ( fmt_pattern c ~parens:paren_pat (sub_pat ~ctx pat)
+           $ fmt "@ as@ " $ str txt ))
   | Ppat_constant c -> fmt_constant c
   | Ppat_interval (l, u) -> fmt_constant l $ fmt ".." $ fmt_constant u
   | Ppat_tuple pats ->
