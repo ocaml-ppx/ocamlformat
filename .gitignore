@@ -1,5 +1,3 @@
 .merlin
-/format_.ml
-/format_.mli
 /ocamlformat_support.install
 _build
