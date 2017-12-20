@@ -2,10 +2,10 @@
 default: lib
 
 format_.ml: format.ml
-	patch -s -i format.ml.patch -o format_.ml
+	patch -i format.ml.patch -o format_.ml
 
 format_.mli: format.mli
-	patch -s -i format.mli.patch -o format_.mli
+	patch -i format.mli.patch -o format_.mli
 
 .PHONY: setup
 setup: format_.ml format_.mli
