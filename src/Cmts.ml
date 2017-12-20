@@ -283,6 +283,19 @@ let string_between (l1: Location.t) (l2: Location.t) =
     None
 
 
+let begins_line (l: Location.t) =
+  let rec begins_line_ cnum =
+    cnum = 0
+    ||
+    let cnum = cnum - 1 in
+    match !source.[cnum] with
+    | '\n' | '\r' -> true
+    | c when Char.is_whitespace c -> begins_line_ cnum
+    | _ -> false
+  in
+  begins_line_ l.loc_start.pos_cnum
+
+
 let ends_line (l: Location.t) =
   let rec ends_line_ cnum =
     match !source.[cnum] with
@@ -293,30 +306,31 @@ let ends_line (l: Location.t) =
   ends_line_ l.loc_end.pos_cnum
 
 
-let is_whitespace_between (l1: Location.t) (l2: Location.t) =
-  string_between l1 l2
-  >>| fun btw ->
-  match String.strip btw with
-  | "" -> true
-  | "|" -> Position.column l1.loc_start <= Position.column l2.loc_start
-  | _ -> false
+(** Heuristic to determine if two locations should be considered
+    "adjacent". Holds if there is only whitespace between the locations, or
+    if there is a [|] character and the first location begins a line and the
+    start column of the first location is not greater than that of the
+    second location. *)
+let is_adjacent (l1: Location.t) (l2: Location.t) =
+  Option.value_map (string_between l1 l2) ~default:false ~f:(fun btw ->
+      match String.strip btw with
+      | "" -> true
+      | "|" ->
+          begins_line l1
+          && Position.column l1.loc_start <= Position.column l2.loc_start
+      | _ -> false )
 
 
 (** Heuristic to choose between placing a comment after the previous loc or
-    before the next loc. Places comment after prev loc only if there is only
-    whitespace between, and there is non-whitespace between the comment and
-    the next loc. *)
+    before the next loc. Places comment after prev loc only if they are
+    "adjacent", and the comment and next loc are not "adjacent". *)
 let partition_after_prev_or_before_next ~prev cmts ~next =
   match CmtSet.to_list cmts with
-  | (_, loc) :: _ as cmtl
-    when Option.value ~default:false (is_whitespace_between prev loc) -> (
+  | (_, loc) :: _ as cmtl when is_adjacent prev loc -> (
     match
-      List.group cmtl ~break:(fun (_, l1) (_, l2) ->
-          not (Option.value ~default:false (is_whitespace_between l1 l2)) )
+      List.group cmtl ~break:(fun (_, l1) (_, l2) -> not (is_adjacent l1 l2))
     with
-    | [cmtl]
-      when Option.value ~default:false
-             (is_whitespace_between (snd (List.last_exn cmtl)) next) ->
+    | [cmtl] when is_adjacent (snd (List.last_exn cmtl)) next ->
         (CmtSet.empty, cmts)
     | after :: befores ->
         (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
