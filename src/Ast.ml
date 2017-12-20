@@ -360,48 +360,22 @@ end = struct
          |Ppat_open (_, p1)
          |Ppat_variant (_, Some p1) ->
             assert (p1 == pat)
-        | Ppat_any
-         |Ppat_constant _
+        | Ppat_any | Ppat_constant _
          |Ppat_construct (_, None)
-         |Ppat_extension _
-         |Ppat_interval _
-         |Ppat_type _
-         |Ppat_unpack _
+         |Ppat_extension _ | Ppat_interval _ | Ppat_type _ | Ppat_unpack _
          |Ppat_var _
          |Ppat_variant (_, None) ->
             assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_apply _
-       |Pexp_array _
-       |Pexp_assert _
-       |Pexp_coerce _
-       |Pexp_constant _
-       |Pexp_constraint _
-       |Pexp_construct _
-       |Pexp_extension _
-       |Pexp_field _
-       |Pexp_ident _
-       |Pexp_ifthenelse _
-       |Pexp_lazy _
-       |Pexp_letexception _
-       |Pexp_letmodule _
-       |Pexp_new _
-       |Pexp_newtype _
-       |Pexp_object _
-       |Pexp_open _
-       |Pexp_override _
-       |Pexp_pack _
-       |Pexp_poly _
-       |Pexp_record _
-       |Pexp_send _
-       |Pexp_sequence _
-       |Pexp_setfield _
-       |Pexp_setinstvar _
-       |Pexp_tuple _
-       |Pexp_unreachable
-       |Pexp_variant _
-       |Pexp_while _ ->
+      | Pexp_apply _ | Pexp_array _ | Pexp_assert _ | Pexp_coerce _
+       |Pexp_constant _ | Pexp_constraint _ | Pexp_construct _
+       |Pexp_extension _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
+       |Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
+       |Pexp_newtype _ | Pexp_object _ | Pexp_open _ | Pexp_override _
+       |Pexp_pack _ | Pexp_poly _ | Pexp_record _ | Pexp_send _
+       |Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
+       |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _ ->
           assert false
       | Pexp_let (_, bindings, _) ->
           assert (List.exists bindings ~f:(fun {pvb_pat} -> pvb_pat == pat))
@@ -436,13 +410,8 @@ end = struct
         | Pexp_construct
             ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
             assert (e1 == exp || e2 == exp)
-        | Pexp_constant _
-         |Pexp_extension _
-         |Pexp_ident _
-         |Pexp_new _
-         |Pexp_object _
-         |Pexp_pack _
-         |Pexp_unreachable ->
+        | Pexp_constant _ | Pexp_extension _ | Pexp_ident _ | Pexp_new _
+         |Pexp_object _ | Pexp_pack _ | Pexp_unreachable ->
             assert false
         | Pexp_let (_, bindings, e) ->
             assert (
@@ -493,19 +462,10 @@ end = struct
           assert (List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
           )
       | Pstr_eval (_, _ :: _)
-       |Pstr_primitive _
-       |Pstr_type _
-       |Pstr_typext _
-       |Pstr_exception _
-       |Pstr_module _
-       |Pstr_recmodule _
-       |Pstr_modtype _
-       |Pstr_open _
-       |Pstr_class _
-       |Pstr_class_type _
-       |Pstr_include _
-       |Pstr_attribute _
-       |Pstr_extension _ ->
+       |Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
+       |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
+       |Pstr_class _ | Pstr_class_type _ | Pstr_include _
+       |Pstr_attribute _ | Pstr_extension _ ->
           assert false )
     | Mod {pmod_desc= Pmod_unpack e1} -> assert (e1 == exp)
     | Mod _ | Top | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
@@ -518,13 +478,8 @@ end = struct
   let rec is_simple (c: Conf.t) width ({ast= exp} as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
-    | Pexp_array _
-     |Pexp_constant _
-     |Pexp_field _
-     |Pexp_ident _
-     |Pexp_record _
-     |Pexp_tuple _
-     |Pexp_variant _
+    | Pexp_array _ | Pexp_constant _ | Pexp_field _ | Pexp_ident _
+     |Pexp_record _ | Pexp_tuple _ | Pexp_variant _
      |Pexp_construct (_, None) ->
         true
     | Pexp_construct
@@ -602,20 +557,10 @@ end = struct
                                   else None ) )
                       | Pcstr_record _ -> None )
               | _ -> None )
-      | Pstr_value _
-       |Pstr_recmodule _
-       |Pstr_class _
-       |Pstr_class_type _
-       |Pstr_eval _
-       |Pstr_primitive _
-       |Pstr_typext _
-       |Pstr_exception _
-       |Pstr_module _
-       |Pstr_modtype _
-       |Pstr_open _
-       |Pstr_include _
-       |Pstr_attribute _
-       |Pstr_extension _ ->
+      | Pstr_value _ | Pstr_recmodule _ | Pstr_class _ | Pstr_class_type _
+       |Pstr_eval _ | Pstr_primitive _ | Pstr_typext _ | Pstr_exception _
+       |Pstr_module _ | Pstr_modtype _ | Pstr_open _ | Pstr_include _
+       |Pstr_attribute _ | Pstr_extension _ ->
           None )
     | {ctx= Typ {ptyp_desc}; ast= Typ typ} -> (
       match ptyp_desc with
@@ -625,14 +570,8 @@ end = struct
       | Ptyp_alias _ -> Some (As, Non)
       | Ptyp_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Ptyp_constr _ -> Some (Apply, Non)
-      | Ptyp_any
-       |Ptyp_var _
-       |Ptyp_object _
-       |Ptyp_class _
-       |Ptyp_variant _
-       |Ptyp_poly _
-       |Ptyp_package _
-       |Ptyp_extension _ ->
+      | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
+       |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _ ->
           None )
     | {ast= Typ _} -> None
     | {ctx= Exp {pexp_desc}; ast= Exp exp} -> (
@@ -644,8 +583,7 @@ end = struct
           if is_sugared_list e2 then Some (Semi, Non)
           else Some (ColonColon, if exp == e2 then Right else Left)
       | Pexp_construct (_, Some _)
-       |Pexp_assert _
-       |Pexp_lazy _
+       |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_]) -> (
@@ -711,14 +649,8 @@ end = struct
       | Ptyp_arrow _ -> Some MinusGreater
       | Ptyp_tuple _ -> Some InfixOp3
       | Ptyp_alias _ -> Some As
-      | Ptyp_any
-       |Ptyp_var _
-       |Ptyp_constr _
-       |Ptyp_object _
-       |Ptyp_class _
-       |Ptyp_variant _
-       |Ptyp_poly _
-       |Ptyp_extension _ ->
+      | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
+       |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
           None )
     | Exp {pexp_desc} -> (
       match pexp_desc with
@@ -794,7 +726,8 @@ end = struct
     match xtyp with
     | { ctx=
           ( Exp {pexp_desc= Pexp_constraint _}
-          | Sig {psig_desc= Psig_type _} | Str {pstr_desc= Pstr_type _} )
+          | Sig {psig_desc= Psig_type _}
+          | Str {pstr_desc= Pstr_type _} )
       ; ast= {ptyp_desc= Ptyp_package _} } ->
         true
     | _ ->
@@ -840,7 +773,8 @@ end = struct
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
                 | Ppat_tuple _ | Ppat_variant _ ) }
-        | Exp {pexp_desc= Pexp_fun _} | Str {pstr_desc= Pstr_value _} )
+        | Exp {pexp_desc= Pexp_fun _}
+        | Str {pstr_desc= Pstr_value _} )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _}
       , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )
@@ -937,23 +871,11 @@ end = struct
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
-        | Pexp_array _
-         |Pexp_coerce _
-         |Pexp_constant _
-         |Pexp_constraint _
+        | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
          |Pexp_construct (_, None)
-         |Pexp_extension _
-         |Pexp_field _
-         |Pexp_for _
-         |Pexp_ident _
-         |Pexp_new _
-         |Pexp_object _
-         |Pexp_override _
-         |Pexp_pack _
-         |Pexp_poly _
-         |Pexp_record _
-         |Pexp_send _
-         |Pexp_unreachable
+         |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
+         |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
+         |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
          |Pexp_while _ ->
             false

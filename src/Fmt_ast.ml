@@ -491,11 +491,14 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   let ctx = Pat pat in
   let {ppat_desc; ppat_loc} = pat in
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
+  let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
   | Ppat_or _ -> Fn.id
   | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::") ->
-      fun k -> Cmts.fmt ppat_loc @@ Cmts.fmt loc @@ (Option.call ~f:pro $ k)
-  | _ -> fun k -> Cmts.fmt ppat_loc @@ (Option.call ~f:pro $ k) )
+      fun k ->
+        Cmts.fmt ~pro:spc ppat_loc @@ Cmts.fmt ~pro:spc loc
+        @@ (Option.call ~f:pro $ k)
+  | _ -> fun k -> Cmts.fmt ~pro:spc ppat_loc @@ (Option.call ~f:pro $ k) )
   @@
   match ppat_desc with
   | Ppat_any -> fmt "_"
@@ -582,13 +585,29 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
           when not c.sparse ->
-            fits_breaks "| " " |"
-        | _ -> fmt "| "
+            or_newline "| " " |"
+        | _ -> break_unless_newline 1 0 $ fmt "| "
       in
-      hovbox_if (not nested) 0
-        ( list_fl xpats (fun ~first ~last xpat ->
-              fmt_pattern c ~pro:(if first then pro0 else proI) xpat
-              $ fmt_if (not last) "@ " )
+      let is_simple {ppat_desc} =
+        match ppat_desc with
+        | Ppat_any | Ppat_constant _ | Ppat_var _
+         |Ppat_variant (_, (None | Some {ppat_desc= Ppat_any}))
+         |Ppat_construct (_, (None | Some {ppat_desc= Ppat_any})) ->
+            true
+        | _ -> false
+      in
+      hvbox 0
+        ( list_fl
+            (List.group xpats ~break:(fun {ast= p1} {ast= p2} ->
+                 c.sparse || not (is_simple p1) || not (is_simple p2) ))
+            (fun ~first:first_grp ~last:_ xpat_grp ->
+              list_fl xpat_grp (fun ~first ~last xpat ->
+                  let pro =
+                    if first_grp && first then pro0 $ open_hovbox (-2)
+                    else if first then proI $ open_hovbox (-2)
+                    else proI
+                  in
+                  fmt_pattern c ~pro xpat $ fmt_if_k last close_box ) )
         $ fits_breaks
             (if parens then ")" else "")
             (if nested then "" else "@;<1 2>)") )
@@ -845,15 +864,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         in
         let is_not_indented exp =
           match exp.pexp_desc with
-          | Pexp_ifthenelse _
-           |Pexp_let _
-           |Pexp_letexception _
-           |Pexp_letmodule _
-           |Pexp_match _
-           |Pexp_newtype _
-           |Pexp_open _
-           |Pexp_sequence _
-           |Pexp_try _ ->
+          | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
+           |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_open _
+           |Pexp_sequence _ | Pexp_try _ ->
               true
           | _ -> false
         in
@@ -1014,15 +1027,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         let fmt_loc_args ~first ~last (locs, xarg) =
           let is_not_indented exp =
             match exp.pexp_desc with
-            | Pexp_ifthenelse _
-             |Pexp_let _
-             |Pexp_letexception _
-             |Pexp_letmodule _
-             |Pexp_match _
-             |Pexp_newtype _
-             |Pexp_open _
-             |Pexp_sequence _
-             |Pexp_try _ ->
+            | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
+             |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _
+             |Pexp_open _ | Pexp_sequence _ | Pexp_try _ ->
                 true
             | _ -> false
           in
@@ -1301,12 +1308,8 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
             $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e2) )
         $ fmt "@ done" $ fmt_atrs )
   | Pexp_unreachable -> fmt "."
-  | Pexp_new _
-   |Pexp_object _
-   |Pexp_override _
-   |Pexp_poly _
-   |Pexp_send _
-   |Pexp_setinstvar _ ->
+  | Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_poly _
+   |Pexp_send _ | Pexp_setinstvar _ ->
       internal_error "classes not implemented" []
 
 

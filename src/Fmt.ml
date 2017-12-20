@@ -83,6 +83,10 @@ let if_newline s fs = Format.pp_print_string_if_newline fs s
 
 let break_unless_newline n o fs = Format.pp_print_or_newline fs n o "" ""
 
+let or_newline fits breaks fs =
+  Format.pp_print_or_newline fs 1 0 fits breaks
+
+
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 let fits_breaks ?(force_fit_if= false) ?(force_break_if= false) fits breaks

@@ -12,7 +12,7 @@
 # To test all source files below a directory
 #       make DIRS=<directory> test
 # By default, test projects used as regression tests
-DIRS=code/ocamlformat code/infer
+DIRS=code/ocamlformat code/sledge code/infer
 
 # To test using the dbg or opt executable
 #       make MODE=<mode>
@@ -32,7 +32,7 @@ test:
 	  || git -C code clone "https://github.com/facebook/infer.git"
 	$(MAKE) test_inplace test_convert
 	for dir in $(DIRS); do \
-	  test -z "$$(git -C $$dir status --porcelain)" \
+	  test -z "$$(git -C $$dir diff --quiet)" \
 	    || (echo FAIL test $$dir; exit 1); \
 	done
 
