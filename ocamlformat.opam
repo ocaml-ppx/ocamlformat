@@ -14,7 +14,7 @@ depends: [
   "cmdliner"
   "jbuilder" {build}
   "ocaml-migrate-parsetree" {>= "1.0.5"}
-  "ocamlformat_support"
+  "ocamlformat_support" {= "0.1"}
   "stdio"
 ]
 build: [
