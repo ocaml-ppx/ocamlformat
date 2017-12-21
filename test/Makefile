@@ -14,13 +14,13 @@
 # By default, test projects used as regression tests
 DIRS=code/ocamlformat code/sledge code/infer
 
-# To test using the dbg or opt executable
+# To test using the dbg or "default" (opt) executable
 #       make MODE=<mode>
 MODE=dbg
 
 REFMT=refmt
 
-OCAMLFORMAT_EXE=../src/_build/$(MODE)/ocamlformat.exe
+OCAMLFORMAT_EXE=../_build/$(MODE)/src/ocamlformat.exe
 
 .PHONY: test
 test:

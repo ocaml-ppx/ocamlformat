@@ -17,38 +17,35 @@ OCAMLDOT=ocamldot
 .PHONY: default
 default: exe
 
-src/jbuild-workspace: src/jbuild-workspace.in
+jbuild-workspace: jbuild-workspace.in
 	sed -e "s|@OPAM_SWITCH[@]|$$(opam switch show)|g" $< > $@
 
-src/Version.ml:
-	@touch src/Version.ml
-
-.PHONY:
-version: src/Version.ml
-	@echo "let version = \"$(shell if [[ "%%VERSION%%" == "%%"*"%%" ]]; then git describe --tags --dirty --always; else echo "%%VERSION%%"; fi)\"" | diff -N src/Version.ml - | patch src/Version.ml
-
 .PHONY: setup
-setup: src/jbuild-workspace version
+setup: jbuild-workspace
 
 .PHONY: exe
 exe: setup
-	jbuilder build --root=src $(JBFLAGS) ocamlformat.exe
+	jbuilder build $(JBFLAGS) src/ocamlformat.exe
 
 .PHONY: bc
 bc: setup
-	jbuilder build --root=src $(JBFLAGS) _build/dbg/ocamlformat.bc
+	jbuilder build $(JBFLAGS) _build/dbg/src/ocamlformat.bc
 
 .PHONY: dbg
 dbg: setup
-	jbuilder build --root=src $(JBFLAGS) _build/dbg/ocamlformat.exe
+	jbuilder build $(JBFLAGS) _build/dbg/src/ocamlformat.exe
 
 .PHONY: opt
 opt: setup
-	jbuilder build --root=src $(JBFLAGS) _build/opt/ocamlformat.exe
+	jbuilder build $(JBFLAGS) _build/default/src/ocamlformat.exe
 
 .PHONY: reason
 reason: setup
-	jbuilder build --root=src $(JBFLAGS) ocamlformat_reason.exe
+	jbuilder build $(JBFLAGS) src/ocamlformat_reason.exe
+
+.PHONY: install
+install:
+	jbuilder build $(JBFLAGS) -p ocamlformat,ocamlformat_reason,ocamlformat_support
 
 SRCS=$(shell \ls src/{,import/}*.ml{,i})
 
@@ -57,8 +54,8 @@ mod_dep.dot: $(SRCS)
 
 .PHONY: clean
 clean:
-	rm -rf src/Version.ml src/_build src/jbuild-workspace
+	rm -rf _build jbuild-workspace
 
 .PHONY: fmt
 fmt:
-	$(shell \ls -t src/_build/*/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
+	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -i $(SRCS)

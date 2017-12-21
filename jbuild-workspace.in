@@ -10,4 +10,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (context ((switch @OPAM_SWITCH@) (name dbg) (merlin)))
-(context ((switch @OPAM_SWITCH@) (name opt)))
+(context ((switch @OPAM_SWITCH@) (name default)))

@@ -14,16 +14,14 @@
 let ocamlc_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> "-g -opaque"
-  | "opt" -> "-noassert"
-  | ctx -> failwith ("unknown context: " ^ ctx)
+  | _ -> "-noassert"
 
 let ocamlopt_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> ocamlc_flags
-  | "opt" -> ocamlc_flags ^ " -O3"
-  | ctx -> failwith ("unknown context: " ^ ctx)
+  | _ -> ocamlc_flags ^ " -O3"
 
-;; Format.sprintf "
+;; Jbuild_plugin.V1.send @@ Format.sprintf "
 (library
  ((name import)
   (flags
@@ -36,4 +34,3 @@ let ocamlopt_flags =
   (libraries (base stdio))))
 "
 ocamlc_flags ocamlopt_flags
-|> Jbuild_plugin.V1.send

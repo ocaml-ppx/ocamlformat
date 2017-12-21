@@ -14,16 +14,24 @@
 let ocamlc_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> "-g -opaque"
-  | "opt" -> "-noassert"
-  | ctx -> failwith ("unknown context: " ^ ctx)
+  | _ -> "-noassert"
 
 let ocamlopt_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> ocamlc_flags ^ " -w -a"
-  | "opt" -> ocamlc_flags ^ " -O3"
-  | ctx -> failwith ("unknown context: " ^ ctx)
+  | _ -> ocamlc_flags ^ " -O3"
 
-;; Format.sprintf "
+;; Jbuild_plugin.V1.send @@ Format.sprintf "
+(rule
+ ((targets (Version.ml))
+  (action (run ../tools/gen_version.sh Version.ml))
+  (fallback)
+  (deps
+   (${SCOPE_ROOT}/../../.git/index
+    ${SCOPE_ROOT}/../../.git/HEAD
+    (files_recursively_in ${SCOPE_ROOT}/../../.git/refs/heads)
+    (files_recursively_in ${SCOPE_ROOT}/../../.git/refs/tags)))))
+
 (executables
  ((names (ocamlformat ocamlformat_reason))
   (flags
@@ -34,6 +42,15 @@ let ocamlopt_flags =
   (ocamlc_flags (%s))
   (ocamlopt_flags (%s))
   (libraries (cmdliner ocamlformat_support import ocaml-migrate-parsetree unix))))
+
+(install
+ ((section bin)
+  (files ((ocamlformat.exe as ocamlformat)))
+  (package ocamlformat)))
+
+(install
+ ((section bin)
+  (files ((ocamlformat_reason.exe as ocamlformat_reason)))
+  (package ocamlformat_reason)))
 "
 ocamlc_flags ocamlopt_flags
-|> Jbuild_plugin.V1.send

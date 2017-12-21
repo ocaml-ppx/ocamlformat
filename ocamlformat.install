@@ -1,6 +1,0 @@
-bin: [
-  "src/_build/opt/ocamlformat.exe" {"ocamlformat"}
-]
-share_root: [
-  "emacs/ocamlformat.el" {"emacs/site-lisp/ocamlformat.el"}
-]

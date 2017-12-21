@@ -1,12 +1,14 @@
 opam-version: "1.2"
-name: "ocamlformat"
 maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
 authors: "Josh Berdine <jjb@fb.com>"
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git"
 license: "MIT"
-available: [ ocaml-version >= "4.04.1" ]
+build: [
+  ["tools/gen_version.sh" "src/Version.ml" version] {pinned}
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
 depends: [
   "base" {>= "v0.10.0"}
   "base-unix"
@@ -16,7 +18,4 @@ depends: [
   "ocamlformat_support" {= "0.2"}
   "stdio"
 ]
-build: [
-  ["jbuilder" "subst"] {pinned}
-  [make]
-]
+available: [ ocaml-version >= "4.04.1" ]

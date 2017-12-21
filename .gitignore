@@ -1,7 +1,7 @@
 .merlin
-Makefile.local
-_build
-src/Version.ml
-src/jbuild-workspace
-src/mod_dep.dot
-test/code
+/_build
+/jbuild-workspace
+/ocamlformat.install
+/ocamlformat_reason.install
+/src/mod_dep.dot
+/test/code
