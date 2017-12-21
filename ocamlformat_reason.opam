@@ -1,3 +1,4 @@
+version: "0.3"
 opam-version: "1.2"
 name: "ocamlformat_reason"
 maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
