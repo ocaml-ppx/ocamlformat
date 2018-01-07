@@ -2016,12 +2016,8 @@ and fmt_structure_item c ~sep ~last:last_item {ctx; ast= si} =
   wrap_k fmt_cmts_before fmt_cmts_after
   @@
   match si.pstr_desc with
-  | Pstr_attribute ({txt= "ocamlformat.disable"; loc}, _) ->
-      internal_error
-        (Format.asprintf
-           "Not formatting because ocamlformat is disabled on line %d"
-           loc.loc_start.pos_lnum)
-        []
+  | Pstr_attribute ({txt= "ocamlformat.disable"; _}, _) ->
+      raise Formatting_disabled
   | Pstr_attribute atr ->
       let doc, atrs = doc_atrs [atr] in
       fmt_docstring ~epi:(fmt "") doc
