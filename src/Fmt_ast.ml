@@ -1646,11 +1646,13 @@ and fmt_signature_item c {ast= si} =
         $ fmt_attributes c (fmt "") ~key:"@@" atrs (fmt "") )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
-      hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false md)
+      hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
   | Psig_open od -> fmt_open_description c od
   | Psig_recmodule mds ->
       hvbox 0
-        (list mds "\n@\nand " (fmt_module_declaration c ctx ~rec_flag:true))
+        (list_fl mds (fun ~first ~last decl ->
+             fmt_module_declaration c ctx ~rec_flag:true ~first decl
+             $ fmt_if (not last) "@,@\n" ))
   | Psig_type (rec_flag, decls) ->
       hvbox 0
         (list_fl decls (fun ~first ~last decl ->
@@ -1737,9 +1739,11 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
     $ Option.call ~f:epi )
 
 
-and fmt_module_declaration c ctx ~rec_flag pmd =
+and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes} = pmd in
-  let keyword = if rec_flag then "module rec" else "module" in
+  let keyword =
+    if first then if rec_flag then "module rec" else "module" else "and"
+  in
   let xargs, xmty = sugar_functor_type (sub_mty ~ctx pmd_type) in
   let colon =
     match xmty.ast.pmty_desc with Pmty_alias _ -> false | _ -> true
