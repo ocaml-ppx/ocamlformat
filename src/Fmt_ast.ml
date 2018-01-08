@@ -1524,7 +1524,8 @@ and fmt_extension_constructor ?pre c sep ctx ec =
   let {pext_name= {txt}; pext_kind; pext_attributes} = ec in
   let doc, atrs = doc_atrs pext_attributes in
   hvbox 4
-    ( hvbox 2
+    ( fmt_if_k (Option.is_some pre) (fmt_docstring ~epi:(fmt "@,") doc)
+    $ hvbox 2
         ( hvbox 2
             ( Option.call ~f:pre $ str txt
             $ fmt_attributes c (fmt " ") ~key:"@" atrs
@@ -1544,7 +1545,8 @@ and fmt_extension_constructor ?pre c sep ctx ec =
         | Pext_decl (args, res) ->
             fmt_constructor_arguments_result c ctx args res
         | Pext_rebind {txt} -> fmt " = " $ fmt_longident txt )
-    $ fmt_docstring ~pro:(fmt "@;<2 0>") doc )
+    $ fmt_if_k (Option.is_none pre) (fmt_docstring ~pro:(fmt "@;<2 0>") doc)
+    )
 
 
 and fmt_module_type c {ast= mt} =
