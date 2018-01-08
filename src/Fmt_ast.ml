@@ -630,7 +630,8 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       cbox 2
         (wrap_if parens "(" ")"
            (fmt "lazy@ " $ fmt_pattern c (sub_pat ~ctx pat)))
-  | Ppat_unpack {txt} -> fmt "module@ " $ str txt
+  | Ppat_unpack {txt} ->
+      wrap_fits_breaks_if parens "(" ")" (fmt "module@ " $ str txt)
   | Ppat_exception pat ->
       cbox 2
         (wrap_if parens "(" ")"
