@@ -80,9 +80,18 @@ let mapper =
         ; pvb_attributes } =
       vb
     in
-    match ppat_desc with
+    match (ppat_desc, pvb_expr.pexp_desc) with
+    (* recognize and undo the pattern of code introduced by
+       ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
+       https://caml.inria.fr/mantis/view.php?id=7344 *)
+    | ( Ppat_constraint (p0, {ptyp_desc= Ptyp_poly ([], t0)})
+      , Pexp_constraint (e0, t1) )
+      when Poly.equal t0 t1 ->
+        m.value_binding m
+          (Vb.mk ~loc:pvb_loc ~attrs:pvb_attributes p0
+             (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes e0 t0))
     (* convert [let (x : t) = e] to [let x = (e : t)] *)
-    | Ppat_constraint (p0, t0) ->
+    | Ppat_constraint (p0, t0), _ ->
         m.value_binding m
           (Vb.mk ~loc:pvb_loc ~attrs:pvb_attributes p0
              (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes pvb_expr
