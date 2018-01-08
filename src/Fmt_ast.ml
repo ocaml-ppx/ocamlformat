@@ -79,7 +79,7 @@ let sugar_fun pat xexp =
     | _ -> ([], xexp)
   in
   match pat with
-  | Some {ppat_desc= Ppat_constraint _} -> ([], xexp)
+  | Some {ppat_desc= Ppat_any | Ppat_constraint _} -> ([], xexp)
   | Some {ppat_attributes} when not (List.is_empty ppat_attributes) ->
       ([], xexp)
   | _ -> sugar_fun_ xexp
@@ -2086,40 +2086,72 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     if first then if Poly.(rec_flag = Recursive) then "let rec" else "let"
     else "and"
   in
-  let xpat, (xargs, ({ast= body} as xbody)) =
-    let xbody = sub_exp ~ctx pvb_expr in
-    match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
-    (* recognize and undo the pattern of code introduced by
-       ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
-       https://caml.inria.fr/mantis/view.php?id=7344 *)
-    | ( Ppat_constraint (pat, {ptyp_desc= Ptyp_poly ([], typ1)})
-      , Pexp_constraint (_, typ2) )
-      when Poly.equal typ1 typ2 ->
-        let ctx = Pat pvb_pat in
-        (sub_pat ~ctx pat, sugar_fun None xbody)
-    | (Ppat_any | Ppat_constraint _), _ ->
-        (sub_pat ~ctx pvb_pat, ([], xbody))
-    | _ -> (sub_pat ~ctx pvb_pat, sugar_fun None xbody)
-  in
-  let xecstr, xbody =
-    let ctx = Exp body in
-    match body.pexp_desc with
-    | Pexp_constraint ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _}) ->
-        (None, xbody)
-    | Pexp_constraint (exp, typ) ->
-        (Some (sub_typ ~ctx typ), sub_exp ~ctx exp)
-    | _ -> (None, xbody)
+  let xpat, xargs, fmt_cstr, xbody =
+    let {ast= pat} as xpat =
+      match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
+      (* recognize and undo the pattern of code introduced by
+         ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
+         https://caml.inria.fr/mantis/view.php?id=7344 *)
+      | ( Ppat_constraint (pat, {ptyp_desc= Ptyp_poly ([], typ1)})
+        , Pexp_constraint (_, typ2) )
+        when Poly.equal typ1 typ2 ->
+          sub_pat ~ctx:(Pat pvb_pat) pat
+      | _ -> sub_pat ~ctx pvb_pat
+    in
+    let {ast= body} as xbody = sub_exp ~ctx pvb_expr in
+    let sugar_polynewtype pat body =
+      let ctx = Pat pat in
+      match pat.ppat_desc with
+      | Ppat_constraint (pat, {ptyp_desc= Ptyp_poly (pvars, _)}) ->
+          let rec sugar_polynewtype_ xpat pvars0 pvars body =
+            let ctx = Exp body in
+            match (pvars, body.pexp_desc) with
+            | [], Pexp_constraint (exp, typ) ->
+                Some (xpat, pvars0, sub_typ ~ctx typ, sub_exp ~ctx exp)
+            | {txt= pvar} :: pvars, Pexp_newtype ({txt= nvar}, exp)
+              when String.equal pvar nvar ->
+                sugar_polynewtype_ xpat pvars0 pvars exp
+            | _ -> None
+          in
+          sugar_polynewtype_ (sub_pat ~ctx pat) pvars pvars body
+      | _ -> None
+    in
+    match sugar_polynewtype pat body with
+    (* format
+          let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
+       as let f: type r s. r s t = e *)
+    | Some (xpat, pvars, xtyp, xbody) ->
+        let fmt_cstr =
+          fmt ": type " $ list pvars " " (fun {txt} -> str txt) $ fmt ".@ "
+          $ fmt_core_type c xtyp $ fmt "@ "
+        in
+        (xpat, [], Some fmt_cstr, xbody)
+    | _ ->
+        let xargs, ({ast= body} as xbody) = sugar_fun (Some pat) xbody in
+        let fmt_cstr, xbody =
+          let ctx = Exp body in
+          match body.pexp_desc with
+          | Pexp_constraint
+              ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _}) ->
+              (None, xbody)
+          | Pexp_constraint (exp, typ) ->
+              ( Some
+                  (fmt ": " $ fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ ")
+              , sub_exp ~ctx exp )
+          | _ -> (None, xbody)
+        in
+        (xpat, xargs, fmt_cstr, xbody)
   in
   let fmt_body ({ast= body} as xbody) =
+    let ctx = Exp body in
     match body with
     | {pexp_desc= Pexp_function cs; pexp_attributes} ->
-        let ctx = Exp body in
         fmt "@ function"
         $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes (fmt "")
         $ close_box $ fmt "@ " $ fmt_cases c ctx cs
     | _ ->
-        close_box
-        $ (fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
+        close_box $ fmt "@ "
+        $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
   in
   fmt_docstring ~epi:(fmt "@,") doc $ Cmts.fmt_before pvb_loc
   $ hvbox 2
@@ -2129,8 +2161,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt loc (str txt))
             $ fmt_attributes c (fmt "") ~key:"@" atrs (fmt "") $ fmt " "
             $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
-            $ opt xecstr (fun xtyp ->
-                  fmt ": " $ fmt_core_type c xtyp $ fmt "@ " ) )
+            $ Option.call ~f:fmt_cstr )
         $ fmt "=" )
       $ fmt_body xbody $ Cmts.fmt_after pvb_loc $ Option.call ~f:in_
       $ Option.call ~f:epi )
