@@ -34,10 +34,6 @@ val ( $ ) : ('a -> unit) -> ('a -> 'b) -> 'a -> 'b
 (** Sequential composition of functions: [(f $ g) x] is exactly equivalent
     to [(f x) ; (g x)]. Left associative. *)
 
-exception Formatting_disabled
-    (** Raise this exception to Indicate that formatting has been disabled for the
-        current file *)
-
 val impossible : string -> _
 (** Indicate why the call is expected to be impossible. *)
 

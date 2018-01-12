@@ -21,8 +21,6 @@ include (
 include Option.Monad_infix
 include Stdio
 
-exception Formatting_disabled
-
 let ( >> ) f g x = g (f x)
 
 let ( $ ) f g x = f x ; g x

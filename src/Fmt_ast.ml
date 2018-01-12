@@ -19,6 +19,8 @@ open Parsetree
 open Ast
 open Fmt
 
+exception Formatting_disabled
+
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
 let protect =
@@ -1617,6 +1619,8 @@ and fmt_signature_item c {ast= si} =
   @@
   let ctx = Sig si in
   match si.psig_desc with
+  | Psig_attribute ({txt= "ocamlformat.disable"; _}, _) ->
+      raise Formatting_disabled
   | Psig_attribute atr ->
       let doc, atrs = doc_atrs [atr] in
       fmt_docstring ~epi:(fmt "") doc
