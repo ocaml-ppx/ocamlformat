@@ -122,7 +122,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
     else
       match (Conf.action, ofile) with
       | _, None ->
-          Stdio.Out_channel.output_string Stdio.stdout fmted ;
+          Out_channel.output_string stdout fmted ;
           Unix.unlink tmp
       | In_out _, Some ofile -> Unix.rename tmp ofile
       | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile
@@ -134,6 +134,11 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
      ocaml-migrate-parsetree issue for potential future mitigation.
      https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
   try[@ocaml.warning "-28"] parse_print_ 1 source ifile ic with
+  | Fmt_ast.Formatting_disabled -> (
+    match (Conf.action, ofile) with
+    | _, None -> Out_channel.output_string stdout source
+    | In_out _, Some ofile -> Out_channel.write_all ofile source
+    | Inplace _, _ -> () )
   | Warnings.Errors _ -> Caml.exit 1
   | Syntaxerr.Error _ as exc ->
       Location.report_exception Caml.Format.err_formatter exc ;

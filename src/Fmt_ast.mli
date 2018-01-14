@@ -16,6 +16,10 @@ module Format = Format_
 open Migrate_ast
 open Parsetree
 
+(** Raise this exception to Indicate that formatting has been disabled for
+    the current file *)
+exception Formatting_disabled
+
 val fmt_signature : Conf.t -> signature -> Fmt.t
 (** Format a signature. *)
 
