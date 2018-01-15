@@ -509,12 +509,12 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_alias (pat, {txt}) ->
       let paren_pat =
         match pat.ppat_desc with
-        | Ppat_or _ | Ppat_tuple _ -> true
-        | _ -> false
+        | Ppat_or _ | Ppat_tuple _ -> Some true
+        | _ -> None
       in
       hovbox 0
         (wrap_fits_breaks_if parens "(" ")"
-           ( fmt_pattern c ~parens:paren_pat (sub_pat ~ctx pat)
+           ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ " $ str txt ))
   | Ppat_constant c -> fmt_constant c
   | Ppat_interval (l, u) -> fmt_constant l $ fmt ".." $ fmt_constant u
