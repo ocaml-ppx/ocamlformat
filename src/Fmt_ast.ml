@@ -1520,7 +1520,7 @@ and fmt_type_extension c ctx te =
             $ list ptyext_constructors "@ | " (fun ctor ->
                   hvbox 0 (fmt_extension_constructor c " of@ " ctx ctor) )
             ) )
-    $ fmt_attributes c (fmt "") ~key:"@@" atrs (fmt "") )
+    $ fmt_attributes c (fmt "@ ") ~key:"@@" atrs (fmt "") )
 
 
 and fmt_extension_constructor ?pre c sep ctx ec =
@@ -1529,17 +1529,7 @@ and fmt_extension_constructor ?pre c sep ctx ec =
   hvbox 4
     ( fmt_if_k (Option.is_some pre) (fmt_docstring ~epi:(fmt "@,") doc)
     $ hvbox 2
-        ( hvbox 2
-            ( Option.call ~f:pre $ str txt
-            $ fmt_attributes c (fmt " ") ~key:"@" atrs
-                ( match pext_kind with
-                | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), None)
-                 |Pext_decl (_, None)
-                 |Pext_rebind _ ->
-                    fmt ""
-                | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), Some _)
-                 |Pext_decl (_, Some _) ->
-                    fmt " " ) )
+        ( hvbox 2 (Option.call ~f:pre $ str txt)
         $
         match pext_kind with
         | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), None) -> fmt ""
@@ -1548,6 +1538,15 @@ and fmt_extension_constructor ?pre c sep ctx ec =
         | Pext_decl (args, res) ->
             fmt_constructor_arguments_result c ctx args res
         | Pext_rebind {txt} -> fmt " = " $ fmt_longident txt )
+    $ fmt_attributes c (fmt "@ ") ~key:"@" atrs
+        ( match pext_kind with
+        | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), None)
+         |Pext_decl (_, None)
+         |Pext_rebind _ ->
+            fmt ""
+        | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), Some _)
+         |Pext_decl (_, Some _) ->
+            fmt " " )
     $ fmt_if_k (Option.is_none pre) (fmt_docstring ~pro:(fmt "@;<2 0>") doc)
     )
 
