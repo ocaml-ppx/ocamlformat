@@ -410,6 +410,8 @@ end = struct
         | Pexp_construct
             ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
             assert (e1 == exp || e2 == exp)
+        | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
+            assert (e == exp)
         | Pexp_constant _ | Pexp_extension _ | Pexp_ident _ | Pexp_new _
          |Pexp_object _ | Pexp_pack _ | Pexp_unreachable ->
             assert false
@@ -856,6 +858,7 @@ end = struct
          |Pexp_construct
             ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; e]})
          |Pexp_construct (_, Some e)
+         |Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}])
          |Pexp_fun (_, _, _, e)
          |Pexp_ifthenelse (_, e, None)
          |Pexp_ifthenelse (_, _, Some e)

@@ -359,6 +359,10 @@ let fmt_docstring ?pro ?epi doc =
              $ Option.call ~f:epi ) ) )
 
 
+let fmt_extension_suffix ext =
+  opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt loc (str txt))
+
+
 let rec fmt_attribute c pre = function
   | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
     , PStr
@@ -1102,8 +1106,11 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                          | Some xcnd ->
                              hvbox 0
                                ( hvbox 2
-                                   ( fmt_if (not first) "else " $ fmt "if "
-                                   $ fmt_expression c xcnd )
+                                   ( fmt_if (not first) "else "
+                                   $ ( if first then
+                                         fmt "if" $ fmt_extension_suffix ext
+                                     else fmt "if" )
+                                   $ str " " $ fmt_expression c xcnd )
                                $ fmt "@ then" )
                          | None -> fmt "else" )
                        $ fmt_if parens " (" $ fmt "@ "
@@ -1194,7 +1201,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
           hvbox 0
             (wrap_fits_breaks_if parens "(" ")"
                ( hvbox 0
-                   ( str keyword
+                   ( str keyword $ fmt_extension_suffix ext
                    $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes
                        (fmt "")
                    $ fmt "@;<1 2>" $ fmt_expression c (sub_exp ~ctx e0)
@@ -1204,7 +1211,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
           wrap_fits_breaks_if parens "(" ")"
             (hovbox 2
                ( hvbox 0
-                   ( str keyword
+                   ( str keyword $ fmt_extension_suffix ext
                    $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes
                        (fmt "")
                    $ hvbox 0
@@ -1263,10 +1270,15 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                  $ hvbox (-2) (list flds "@,; " fmt_field) ) ))
         $ fmt_atrs )
   | Pexp_sequence _ ->
+      let fmt_sep =
+        match ext with
+        | None -> fmt " ;@ "
+        | Some {txt; _} -> fmt " ;%%" $ str txt $ fmt "@ "
+      in
       hvbox 0
         ( wrap_if parens "(" ")"
             (list (sugar_sequence c width xexp) " ;@;<1000 0>" (fun grp ->
-                 list grp " ;@ " (fmt_expression c) ))
+                 list_k grp fmt_sep (fmt_expression c) ))
         $ fmt_atrs )
   | Pexp_setfield (e1, {txt}, e2) ->
       hvbox 0
@@ -1288,8 +1300,13 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
   | Pexp_extension
       ( ext
       , PStr
-          [ ( {pstr_desc= Pstr_eval (({pexp_desc= Pexp_let _} as e1), _)} as
-            str ) ] ) ->
+          [ ( { pstr_desc=
+                  Pstr_eval
+                    ( ( { pexp_desc=
+                            ( Pexp_while _ | Pexp_for _ | Pexp_match _
+                            | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
+                            | Pexp_sequence _ ) } as e1 )
+                    , _ ) } as str ) ] ) ->
       fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
   | Pexp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs
   | Pexp_for (p1, e1, e2, dir, e3) ->
@@ -1297,8 +1314,9 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         (wrap_fits_breaks_if parens "(" ")"
            ( hvbox 2
                ( hvbox 0
-                   ( fmt "for@ " $ fmt_pattern c (sub_pat ~ctx p1)
-                   $ fmt "@ = " $ fmt_expression c (sub_exp ~ctx e1)
+                   ( fmt "for" $ fmt_extension_suffix ext $ fmt "@ "
+                   $ fmt_pattern c (sub_pat ~ctx p1) $ fmt "@ = "
+                   $ fmt_expression c (sub_exp ~ctx e1)
                    $ fmt (if Poly.(dir = Upto) then "@ to " else "@ downto ")
                    $ fmt_expression c (sub_exp ~ctx e2) $ fmt "@ do" )
                $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e3) )
@@ -1316,8 +1334,8 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         ( wrap_fits_breaks_if parens "(" ")"
             ( hvbox 2
                 ( hvbox 0
-                    ( fmt "while@ " $ fmt_expression c (sub_exp ~ctx e1)
-                    $ fmt "@ do" )
+                    ( fmt "while" $ fmt_extension_suffix ext $ fmt "@ "
+                    $ fmt_expression c (sub_exp ~ctx e1) $ fmt "@ do" )
                 $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e2) )
             $ fmt "@ done" )
         $ fmt_atrs )
@@ -2174,8 +2192,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   $ hvbox 2
       ( open_hovbox 2
       $ ( hovbox 4
-            ( str keyword
-            $ opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt loc (str txt))
+            ( str keyword $ fmt_extension_suffix ext
             $ fmt_attributes c (fmt "") ~key:"@" atrs (fmt "") $ fmt " "
             $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
             $ Option.call ~f:fmt_cstr )

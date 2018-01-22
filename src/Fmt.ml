@@ -67,6 +67,11 @@ let list xs sep pp fs =
   Format.pp_print_list ~pp_sep (fun fs x -> pp x fs) fs xs
 
 
+let list_k xs pp_sep pp fs =
+  let pp_sep fs () = pp_sep fs in
+  Format.pp_print_list ~pp_sep (fun fs x -> pp x fs) fs xs
+
+
 (** Conditional formatting ----------------------------------------------*)
 
 let fmt_if_k cnd k fs = if cnd then k fs
