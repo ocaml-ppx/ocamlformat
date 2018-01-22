@@ -1126,11 +1126,15 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
       $ fmt_atrs
   | Pexp_letexception (ext_cstr, exp) ->
       hvbox 0
-        ( hvbox 0
-            ( fmt_extension_constructor ~pre:(fmt "let exception@ ") c ": "
-                ctx ext_cstr
-            $ fmt "@ in" )
-        $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs )
+        ( wrap_if
+            (parens || not (List.is_empty pexp_attributes))
+            "(" ")"
+            ( hvbox 0
+                ( fmt_extension_constructor ~pre:(fmt "let exception@ ") c
+                    ": " ctx ext_cstr
+                $ fmt "@ in" )
+            $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) )
+        $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
       let {pmod_desc; pmod_attributes} = pmod in
       let keyword = "let module" in
@@ -1141,11 +1145,15 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
       in
       let xargs, xbody, xmty = sugar_functor ?mt (sub_mod ~ctx me) in
       hvbox 0
-        ( hvbox 2
-            ( fmt_module c keyword name xargs (Some xbody) true xmty
-                (List.append pmod_attributes me.pmod_attributes)
-            $ fmt " in" )
-        $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs )
+        ( wrap_if
+            (parens || not (List.is_empty pexp_attributes))
+            "(" ")"
+            ( hvbox 2
+                ( fmt_module c keyword name xargs (Some xbody) true xmty
+                    (List.append pmod_attributes me.pmod_attributes)
+                $ fmt " in" )
+            $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) )
+        $ fmt_atrs )
   | Pexp_open (flag, {txt}, e0) ->
       let override = Poly.(flag = Override) in
       let force_fit_if =
@@ -1286,14 +1294,15 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
   | Pexp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs
   | Pexp_for (p1, e1, e2, dir, e3) ->
       hvbox 0
-        ( hvbox 2
-            ( hvbox 0
-                ( fmt "for@ " $ fmt_pattern c (sub_pat ~ctx p1) $ fmt "@ = "
-                $ fmt_expression c (sub_exp ~ctx e1)
-                $ fmt (if Poly.(dir = Upto) then "@ to " else "@ downto ")
-                $ fmt_expression c (sub_exp ~ctx e2) $ fmt "@ do" )
-            $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e3) )
-        $ fmt "@ done" )
+        (wrap_fits_breaks_if parens "(" ")"
+           ( hvbox 2
+               ( hvbox 0
+                   ( fmt "for@ " $ fmt_pattern c (sub_pat ~ctx p1)
+                   $ fmt "@ = " $ fmt_expression c (sub_exp ~ctx e1)
+                   $ fmt (if Poly.(dir = Upto) then "@ to " else "@ downto ")
+                   $ fmt_expression c (sub_exp ~ctx e2) $ fmt "@ do" )
+               $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e3) )
+           $ fmt "@ done" ))
       $ fmt_atrs
   | Pexp_coerce (e1, t1, t2) ->
       hvbox 2
@@ -1304,12 +1313,14 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         $ fmt_atrs )
   | Pexp_while (e1, e2) ->
       hvbox 0
-        ( hvbox 2
-            ( hvbox 0
-                ( fmt "while@ " $ fmt_expression c (sub_exp ~ctx e1)
-                $ fmt "@ do" )
-            $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e2) )
-        $ fmt "@ done" $ fmt_atrs )
+        ( wrap_fits_breaks_if parens "(" ")"
+            ( hvbox 2
+                ( hvbox 0
+                    ( fmt "while@ " $ fmt_expression c (sub_exp ~ctx e1)
+                    $ fmt "@ do" )
+                $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e2) )
+            $ fmt "@ done" )
+        $ fmt_atrs )
   | Pexp_unreachable -> fmt "."
   | Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_poly _
    |Pexp_send _ | Pexp_setinstvar _ ->

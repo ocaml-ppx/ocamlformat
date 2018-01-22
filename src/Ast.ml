@@ -690,7 +690,10 @@ end = struct
         | '#', _ -> Some HashOp
         | _ -> Some Apply )
       | Pexp_apply _ -> Some Apply
-      | Pexp_assert _ | Pexp_lazy _ | Pexp_variant (_, Some _) -> Some Apply
+      | Pexp_assert _ | Pexp_lazy _ | Pexp_for _
+       |Pexp_variant (_, Some _)
+       |Pexp_while _ ->
+          Some Apply
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
