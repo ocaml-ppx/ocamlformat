@@ -16,10 +16,10 @@ type t =
   ; sparse: bool  (** Generate more sparsely formatted code if true. *)
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
-      [max_iters] iterations. *)
+            [max_iters] iterations. *)
   ; escape_chars: [`Hexadecimal | `Minimal | `Octal]
         (** How to escape characters (literals and within strings). *)
-  ; break_string_literals: [`Never | `New_lines]
+  ; break_string_literals: [`Never | `Newlines]
         (** How to potentially break string literals into new lines. *) }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}

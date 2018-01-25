@@ -303,31 +303,32 @@ let rec fmt_longident (li: Longident.t) =
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
 
-let fmt_constant (conf: Conf.t) const =
-  let ocaml_whitespace = function
-    | '\n' | '\t' | '\r' | ' ' -> true
-    | _ -> false
-  in
-  let escape_char c =
-    let code = Char.to_int c in
-    match conf.Conf.escape_chars with
-    | _ when ocaml_whitespace c || Char.equal c '\\' -> str (Char.escaped c)
-    | _ when 0x20 <= code && code <= 0x7E -> char c
+let fmt_constant (c: Conf.t) const =
+  let is_printable char_code = 0x20 <= char_code && char_code <= 0x7E in
+  let escape_char chr =
+    let code = Char.to_int chr in
+    match c.Conf.escape_chars with
+    | _ when Char.is_whitespace chr || Char.equal chr '\\' ->
+        str (Char.escaped chr)
+    | _ when is_printable code -> char chr
     | `Hexadecimal -> str (Printf.sprintf "\\x%02x" code)
-    | `Minimal -> char c
-    | `Octal -> str (Char.escaped c)
+    | `Minimal -> char chr
+    | `Octal -> str (Char.escaped chr)
   in
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
+  | Pconst_char '\'' -> wrap "'" "'" @@ str "\\'"
   | Pconst_char c -> wrap "'" "'" @@ escape_char c
   | Pconst_string (s, delim) ->
       let escape_literal string =
-        String.fold string ~init:(false, fmt "@[") ~f:
-          (fun (freshline, prev) ch ->
-            match (ch, conf.Conf.break_string_literals) with
+        String.foldi string ~init:(false, fmt "@[") ~f:
+          (fun index (freshline, prev) ch ->
+            match (ch, c.Conf.break_string_literals) with
             | ' ', _ when freshline -> (false, prev $ str "\\ ")
-            | '\n', `New_lines -> (true, prev $ fmt "\\n\\@\n")
+            | '"', _ -> (false, prev $ str "\\\"")
+            | '\n', `Newlines when index <> String.length string - 1 ->
+                (true, prev $ fmt "\\n\\@\n")
             | other, _ -> (false, prev $ escape_char other) )
         |> snd $ fmt "@]"
       in

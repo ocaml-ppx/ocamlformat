@@ -160,7 +160,7 @@ let escape_chars =
     "How to escape chars. Can be set in a config file with a `escape-chars {hexadecimal,octal,minimal}` line."
   in
   let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
-  let default = `Hexadecimal in
+  let default = `Minimal in
   mk ~default
     Arg.(
       value
@@ -169,7 +169,7 @@ let escape_chars =
              [ ("hexadecimal", `Hexadecimal)
              ; ("octal", `Octal)
              ; ("minimal", `Minimal) ])
-          `Hexadecimal
+          `Minimal
       & info ["escape-chars"] ~doc ~env)
 
 
@@ -178,11 +178,11 @@ let break_string_literals =
     "Break string literals. Can be set in a config file with a `break-string-literals {never,newlines}` line."
   in
   let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
-  let default = `New_lines in
+  let default = `Newlines in
   mk ~default
     Arg.(
       value
-      & opt (enum [("newlines", `New_lines); ("never", `Never)]) `New_lines
+      & opt (enum [("newlines", `Newlines); ("never", `Never)]) `Newlines
       & info ["break-string-literals"] ~doc ~env)
 
 
@@ -221,7 +221,7 @@ type t =
   ; sparse: bool
   ; max_iters: int
   ; escape_chars: [`Hexadecimal | `Minimal | `Octal]
-  ; break_string_literals: [`New_lines | `Never] }
+  ; break_string_literals: [`Newlines | `Never] }
 
 let update conf name value =
   match name with
@@ -236,17 +236,20 @@ let update conf name value =
           | "octal" -> `Octal
           | "minimal" -> `Minimal
           | other ->
-              Printf.ksprintf failwith "Unknown escape-chars value: %S"
-                other ) }
+              user_error
+                (Printf.sprintf "Unknown escape-chars value: %S" other)
+                [] ) }
   | "break-string-literals" ->
       { conf with
         break_string_literals=
           ( match value with
           | "never" -> `Never
-          | "newlines" -> `New_lines
+          | "newlines" -> `Newlines
           | other ->
-              Printf.ksprintf failwith
-                "Unknown break-string-literals value: %S" other ) }
+              user_error
+                (Printf.sprintf "Unknown break-string-literals value: %S"
+                   other)
+                [] ) }
   | "version" when not !no_version_check ->
       if String.equal Version.version value then conf
       else
