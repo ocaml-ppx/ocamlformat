@@ -322,12 +322,24 @@ let fmt_constant (c: Conf.t) const =
   | Pconst_char c -> wrap "'" "'" @@ escape_char c
   | Pconst_string (s, delim) ->
       let escape_literal string =
+        let looks_like_format =
+          String.fold string ~init:(false, true) ~f:
+            (fun (prev_is_at, acc) -> function
+            | '@' when prev_is_at -> (false, acc)
+            | '@' -> (true, acc)
+            | '\n' when prev_is_at -> (false, true && acc)
+            | '\n' -> (false, false)
+            | _ -> (false, acc) )
+          |> snd
+        in
         String.foldi string ~init:(false, fmt "@[") ~f:
           (fun index (freshline, prev) ch ->
             match (ch, c.Conf.break_string_literals) with
             | ' ', _ when freshline -> (false, prev $ str "\\ ")
             | '"', _ -> (false, prev $ str "\\\"")
-            | '\n', `Newlines when index <> String.length string - 1 ->
+            | '\n', `Newlines
+              when not looks_like_format
+                   && index <> String.length string - 1 ->
                 (true, prev $ fmt "\\n\\@\n")
             | other, _ -> (false, prev $ escape_char other) )
         |> snd $ fmt "@]"
