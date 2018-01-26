@@ -305,9 +305,9 @@ let rec fmt_longident (li: Longident.t) =
 
 let fmt_constant (c: Conf.t) const =
   let is_printable char_code = 0x20 <= char_code && char_code <= 0x7E in
-  let is_not_term_friendly char_code =
+  let is_control_code char_code =
     (* See discussion on PR #70 *)
-    char_code < 4 || char_code = 0x7F
+    char_code < 0x20 || char_code = 0x7F
   in
   let escape_char chr =
     let code = Char.to_int chr in
@@ -316,7 +316,7 @@ let fmt_constant (c: Conf.t) const =
         str (Char.escaped chr)
     | _ when is_printable code -> char chr
     | `Hexadecimal -> str (Printf.sprintf "\\x%02x" code)
-    | `Minimal when is_not_term_friendly code ->
+    | `Minimal when is_control_code code ->
         str (Printf.sprintf "\\x%02x" code)
     | `Minimal -> char chr
     | `Decimal -> str (Char.escaped chr)
