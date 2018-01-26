@@ -169,7 +169,7 @@ let escape_chars =
              [ ("hexadecimal", `Hexadecimal)
              ; ("decimal", `Decimal)
              ; ("minimal", `Minimal) ])
-          `Minimal
+          default
       & info ["escape-chars"] ~doc ~env)
 
 
@@ -182,7 +182,7 @@ let break_string_literals =
   mk ~default
     Arg.(
       value
-      & opt (enum [("newlines", `Newlines); ("never", `Never)]) `Newlines
+      & opt (enum [("newlines", `Newlines); ("never", `Never)]) default
       & info ["break-string-literals"] ~doc ~env)
 
 
