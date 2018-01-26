@@ -323,14 +323,15 @@ let fmt_constant (c: Conf.t) const =
   | Pconst_string (s, delim) ->
       let escape_literal string =
         let looks_like_format =
-          String.fold string ~init:(false, true) ~f:
-            (fun (prev_is_at, acc) -> function
-            | '@' when prev_is_at -> (false, acc)
-            | '@' -> (true, acc)
-            | '\n' when prev_is_at -> (false, true && acc)
-            | '\n' -> (false, false)
-            | _ -> (false, acc) )
-          |> snd
+          lazy
+            ( String.fold string ~init:(false, true) ~f:
+                (fun (prev_is_at, acc) -> function
+                | '@' when prev_is_at -> (false, acc)
+                | '@' -> (true, acc)
+                | '\n' when prev_is_at -> (false, true && acc)
+                | '\n' -> (false, false)
+                | _ -> (false, acc) )
+            |> snd )
         in
         String.foldi string ~init:(false, fmt "@[") ~f:
           (fun index (freshline, prev) ch ->
@@ -338,7 +339,7 @@ let fmt_constant (c: Conf.t) const =
             | ' ', _ when freshline -> (false, prev $ str "\\ ")
             | '"', _ -> (false, prev $ str "\\\"")
             | '\n', `Newlines
-              when not looks_like_format
+              when not (Lazy.force looks_like_format)
                    && index <> String.length string - 1 ->
                 (true, prev $ fmt "\\n\\@\n")
             | other, _ -> (false, prev $ escape_char other) )
