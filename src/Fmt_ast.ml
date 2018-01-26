@@ -726,6 +726,17 @@ and fmt_fun_args c args =
   fmt_if_k (not (List.is_empty args)) (list args "@ " fmt_fun_arg $ fmt "@ ")
 
 
+and fmt_body c ({ast= body} as xbody) =
+  let ctx = Exp body in
+  match body with
+  | {pexp_desc= Pexp_function cs; pexp_attributes} ->
+      fmt "@ function"
+      $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes (fmt "")
+      $ close_box $ fmt "@ " $ fmt_cases c ctx cs
+  | _ ->
+      close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
+
+
 and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
   protect (Exp exp)
   @@
@@ -1107,11 +1118,12 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
         $ fmt_atrs )
   | Pexp_fun _ ->
       let xargs, xbody = sugar_fun None xexp in
-      hvbox_if box 2
+      hvbox_if box
+        (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
-        $ ( hovbox 2
-              (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
-          $ fmt "@ " $ fmt_expression c xbody )
+        $ ( open_hovbox 2
+          $ (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
+          $ fmt_body c xbody )
         $ fits_breaks_if parens ")" "@ )" $ fmt_atrs )
   | Pexp_function cs ->
       wrap_if parens "(" ")"
@@ -1157,7 +1169,8 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
            ( hvbox 0
                (list_fl bindings (fun ~first ~last binding ->
                     fmt_value_binding c ~rec_flag ~first ?ext ctx binding
-                      ~in_:(fmt_if last "@;<1 -2>in")
+                      ~in_:(fun indent ->
+                        fmt_if_k last (break 1 (-indent) $ fmt "in") )
                     $ fmt_if (not last) "@ " ))
            $ fmt "@;<1000 0>"
            $ hvbox 0 (fmt_expression c (sub_exp ~ctx body)) ))
@@ -2208,19 +2221,11 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
         in
         (xpat, xargs, fmt_cstr, xbody)
   in
-  let fmt_body ({ast= body} as xbody) =
-    let ctx = Exp body in
-    match body with
-    | {pexp_desc= Pexp_function cs; pexp_attributes} ->
-        fmt "@ function"
-        $ fmt_attributes c (fmt "") ~key:"@" pexp_attributes (fmt "")
-        $ close_box $ fmt "@ " $ fmt_cases c ctx cs
-    | _ ->
-        close_box $ fmt "@ "
-        $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
+  let indent =
+    match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
   fmt_docstring ~epi:(fmt "@,") doc $ Cmts.fmt_before pvb_loc
-  $ hvbox 2
+  $ hvbox indent
       ( open_hovbox 2
       $ ( hovbox 4
             ( str keyword $ fmt_extension_suffix ext
@@ -2228,7 +2233,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
             $ Option.call ~f:fmt_cstr )
         $ fmt "=" )
-      $ fmt_body xbody $ Cmts.fmt_after pvb_loc $ Option.call ~f:in_
+      $ fmt_body c xbody $ Cmts.fmt_after pvb_loc
+      $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
 
 
