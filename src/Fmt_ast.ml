@@ -700,6 +700,19 @@ and fmt_fun_args c args =
         cbox 0 (fmt "~" $ str l $ fmt ":" $ fmt_pattern c xpat)
     | Val
         ( Optional l
+        , ( { ast=
+                { ppat_desc=
+                    ( Ppat_var {txt; loc}
+                    | Ppat_constraint
+                        ( { ppat_desc= Ppat_var {txt; loc}
+                          ; ppat_attributes= [] }
+                        , _ ) )
+                ; ppat_attributes= [] } } as xpat )
+        , None )
+      when String.equal l txt ->
+        Cmts.fmt loc @@ cbox 0 (fmt "?" $ fmt_pattern c xpat)
+    | Val
+        ( Optional l
         , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
         , None )
       when String.equal l txt ->
