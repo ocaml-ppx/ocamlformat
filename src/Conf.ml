@@ -157,7 +157,7 @@ let sparse =
 
 let escape_chars =
   let doc =
-    "How to escape chars. Can be set in a config file with a `escape-chars {hexadecimal,octal,minimal}` line."
+    "How to escape chars. Can be set in a config file with a `escape-chars {hexadecimal,decimal,minimal}` line."
   in
   let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
   let default = `Minimal in
@@ -167,7 +167,7 @@ let escape_chars =
       & opt
           (enum
              [ ("hexadecimal", `Hexadecimal)
-             ; ("octal", `Octal)
+             ; ("decimal", `Decimal)
              ; ("minimal", `Minimal) ])
           `Minimal
       & info ["escape-chars"] ~doc ~env)
@@ -220,7 +220,7 @@ type t =
   { margin: int
   ; sparse: bool
   ; max_iters: int
-  ; escape_chars: [`Hexadecimal | `Minimal | `Octal]
+  ; escape_chars: [`Hexadecimal | `Minimal | `Decimal]
   ; break_string_literals: [`Newlines | `Never] }
 
 let update conf name value =
@@ -233,7 +233,7 @@ let update conf name value =
         escape_chars=
           ( match value with
           | "hexadecimal" -> `Hexadecimal
-          | "octal" -> `Octal
+          | "decimal" -> `Decimal
           | "minimal" -> `Minimal
           | other ->
               user_error

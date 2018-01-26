@@ -319,7 +319,7 @@ let fmt_constant (c: Conf.t) const =
     | `Minimal when is_not_term_friendly code ->
         str (Printf.sprintf "\\x%02x" code)
     | `Minimal -> char chr
-    | `Octal -> str (Char.escaped chr)
+    | `Decimal -> str (Char.escaped chr)
   in
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
