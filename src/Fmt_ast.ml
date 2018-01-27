@@ -328,16 +328,13 @@ let fmt_constant (c: Conf.t) const =
   | Pconst_char c -> wrap "'" "'" @@ escape_char c
   | Pconst_string (s, delim) ->
       let escape_literal string =
-        let looks_like_format = lazy (Ast.looks_like_format string) in
         vbox 0
           ( String.foldi string ~init:(false, fmt "") ~f:
               (fun index (freshline, prev) ch ->
                 match (ch, c.break_string_literals) with
                 | ' ', _ when freshline -> (false, prev $ str "\\ ")
                 | '"', _ -> (false, prev $ str "\\\"")
-                | '\n', `Newlines
-                  when not (Lazy.force looks_like_format)
-                       && index <> String.length string - 1 ->
+                | '\n', `Newlines when index <> String.length string - 1 ->
                     (true, prev $ fmt "\\n\\@;<1000 0>")
                 | other, _ -> (false, prev $ escape_char other) )
           |> snd )

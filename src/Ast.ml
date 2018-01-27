@@ -60,28 +60,15 @@ let rec is_sugared_list exp =
   | _ -> false
 
 
-let looks_like_format str =
-  String.fold str ~init:(false, true) ~f:(fun (prev_is_at, acc) -> function
-    | '@' when prev_is_at -> (false, acc)
-    | '@' -> (true, acc)
-    | '\n' when prev_is_at -> (false, true && acc)
-    | '\n' -> (false, false)
-    | _ -> (false, acc) )
-  |> snd
-
-
 let would_force_break (c: Conf.t) s =
-  match c.break_string_literals with
-  | `Newlines ->
-      let n = String.length s in
-      let looks_like_format = lazy (looks_like_format s) in
-      let rec would_force_break_ i =
-        i < n
-        && ( Char.equal s.[i] '\n' && not (Lazy.force looks_like_format)
-           || would_force_break_ (i + 1) )
-      in
-      would_force_break_ 0
-  | _ -> false
+  let contains_internal_newline s =
+    match String.rindex s '\n' with
+    | None -> false
+    | Some i when i = String.length s - 1 -> false
+    | _ -> true
+  in
+  Poly.equal c.break_string_literals `Newlines
+  && contains_internal_newline s
 
 
 let rec is_trivial c exp =

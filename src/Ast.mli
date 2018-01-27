@@ -14,10 +14,6 @@
 open Migrate_ast
 open Parsetree
 
-val looks_like_format : string -> bool
-(** Holds of strings where all newline chars are escaped with '@', except
-    possibly the last char. *)
-
 val is_prefix : expression -> bool
 (** Holds of prefix symbol expressions. *)
 
