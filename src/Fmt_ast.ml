@@ -311,7 +311,7 @@ let fmt_constant (c: Conf.t) const =
   in
   let escape_char chr =
     let code = Char.to_int chr in
-    match c.Conf.escape_chars with
+    match c.escape_chars with
     | _ when Char.is_whitespace chr || Char.equal chr '\\' ->
         str (Char.escaped chr)
     | _ when is_printable code -> char chr
@@ -328,28 +328,19 @@ let fmt_constant (c: Conf.t) const =
   | Pconst_char c -> wrap "'" "'" @@ escape_char c
   | Pconst_string (s, delim) ->
       let escape_literal string =
-        let looks_like_format =
-          lazy
-            ( String.fold string ~init:(false, true) ~f:
-                (fun (prev_is_at, acc) -> function
-                | '@' when prev_is_at -> (false, acc)
-                | '@' -> (true, acc)
-                | '\n' when prev_is_at -> (false, true && acc)
-                | '\n' -> (false, false)
-                | _ -> (false, acc) )
-            |> snd )
-        in
-        String.foldi string ~init:(false, fmt "@[") ~f:
-          (fun index (freshline, prev) ch ->
-            match (ch, c.Conf.break_string_literals) with
-            | ' ', _ when freshline -> (false, prev $ str "\\ ")
-            | '"', _ -> (false, prev $ str "\\\"")
-            | '\n', `Newlines
-              when not (Lazy.force looks_like_format)
-                   && index <> String.length string - 1 ->
-                (true, prev $ fmt "\\n\\@\n")
-            | other, _ -> (false, prev $ escape_char other) )
-        |> snd $ fmt "@]"
+        let looks_like_format = lazy (Ast.looks_like_format string) in
+        vbox 0
+          ( String.foldi string ~init:(false, fmt "") ~f:
+              (fun index (freshline, prev) ch ->
+                match (ch, c.break_string_literals) with
+                | ' ', _ when freshline -> (false, prev $ str "\\ ")
+                | '"', _ -> (false, prev $ str "\\\"")
+                | '\n', `Newlines
+                  when not (Lazy.force looks_like_format)
+                       && index <> String.length string - 1 ->
+                    (true, prev $ fmt "\\n\\@;<1000 0>")
+                | other, _ -> (false, prev $ escape_char other) )
+          |> snd )
       in
       let pre, mid, suf =
         match delim with

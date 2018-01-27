@@ -60,10 +60,35 @@ let rec is_sugared_list exp =
   | _ -> false
 
 
-let rec is_trivial exp =
+let looks_like_format str =
+  String.fold str ~init:(false, true) ~f:(fun (prev_is_at, acc) -> function
+    | '@' when prev_is_at -> (false, acc)
+    | '@' -> (true, acc)
+    | '\n' when prev_is_at -> (false, true && acc)
+    | '\n' -> (false, false)
+    | _ -> (false, acc) )
+  |> snd
+
+
+let would_force_break (c: Conf.t) s =
+  match c.break_string_literals with
+  | `Newlines ->
+      let n = String.length s in
+      let looks_like_format = lazy (looks_like_format s) in
+      let rec would_force_break_ i =
+        i < n
+        && ( Char.equal s.[i] '\n' && not (Lazy.force looks_like_format)
+           || would_force_break_ (i + 1) )
+      in
+      would_force_break_ 0
+  | _ -> false
+
+
+let rec is_trivial c exp =
   match exp.pexp_desc with
+  | Pexp_constant Pconst_string (s, None) -> not (would_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ -> true
-  | Pexp_construct (_, exp) -> Option.for_all exp ~f:is_trivial
+  | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | _ -> false
 
 
@@ -480,8 +505,9 @@ end = struct
   let rec is_simple (c: Conf.t) width ({ast= exp} as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
-    | Pexp_array _ | Pexp_constant _ | Pexp_field _ | Pexp_ident _
-     |Pexp_record _ | Pexp_tuple _ | Pexp_variant _
+    | Pexp_constant _ -> is_trivial c exp
+    | Pexp_array _ | Pexp_field _ | Pexp_ident _ | Pexp_record _
+     |Pexp_tuple _ | Pexp_variant _
      |Pexp_construct (_, None) ->
         true
     | Pexp_construct
@@ -491,7 +517,7 @@ end = struct
     | Pexp_construct (_, Some e0) -> is_simple c width (sub_exp ~ctx e0)
     | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="}}, _) -> false
     | Pexp_apply (e0, e1N) ->
-        is_trivial e0 && List.for_all e1N ~f:(snd >> is_trivial)
+        is_trivial c e0 && List.for_all e1N ~f:(snd >> is_trivial c)
         && width xexp * 3 < c.margin
     | _ -> false
 
