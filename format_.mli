@@ -159,6 +159,8 @@ val print_break : int -> int -> unit
   the current indentation.
 *)
 
+val print_pre_break : int -> string -> int -> unit
+
 val print_flush : unit -> unit
 (** Flushes the pretty printer: all opened boxes are closed,
   and all pending text is displayed. *)
@@ -534,6 +536,7 @@ val pp_print_float : formatter -> float -> unit
 val pp_print_char : formatter -> char -> unit
 val pp_print_bool : formatter -> bool -> unit
 val pp_print_break : formatter -> int -> int -> unit
+val pp_print_pre_break : formatter -> int -> string -> int -> unit
 val pp_print_cut : formatter -> unit -> unit
 val pp_print_space : formatter -> unit -> unit
 val pp_force_newline : formatter -> unit -> unit
