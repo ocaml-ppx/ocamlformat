@@ -62,7 +62,7 @@ let rec is_sugared_list exp =
 
 let would_force_break (c: Conf.t) s =
   let contains_internal_newline s =
-    match String.rindex s '\n' with
+    match String.index s '\n' with
     | None -> false
     | Some i when i = String.length s - 1 -> false
     | _ -> true

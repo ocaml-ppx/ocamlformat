@@ -17,8 +17,10 @@ type t =
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
             [max_iters] iterations. *)
-  ; escape_chars: [`Hexadecimal | `Minimal | `Decimal]
-        (** How to escape characters (literals and within strings). *)
+  ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
+        (** Escape encoding for chars literals. *)
+  ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
+        (** Escape encoding for string literals. *)
   ; break_string_literals: [`Never | `Newlines]
         (** How to potentially break string literals into new lines. *) }
 
