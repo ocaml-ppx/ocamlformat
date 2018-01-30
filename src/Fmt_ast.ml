@@ -1397,8 +1397,14 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
             $ fmt "@ done" )
         $ fmt_atrs )
   | Pexp_unreachable -> fmt "."
+  | Pexp_send (exp, {txt; loc}) ->
+      Cmts.fmt loc
+      @@ hvbox 2
+           ( wrap_if parens "(" ")"
+               (fmt_expression c (sub_exp ~ctx exp) $ fmt "@,#" $ str txt)
+           $ fmt_atrs )
   | Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_poly _
-   |Pexp_send _ | Pexp_setinstvar _ ->
+   |Pexp_setinstvar _ ->
       internal_error "classes not implemented" []
 
 
