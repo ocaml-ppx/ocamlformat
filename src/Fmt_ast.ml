@@ -303,18 +303,49 @@ let rec fmt_longident (li: Longident.t) =
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
 
-let fmt_constant const =
+let fmt_constant (c: Conf.t) const =
+  let is_printable char_code = 0x20 <= char_code && char_code <= 0x7E in
+  let is_control_code char_code =
+    (* See discussion on PR #70 *)
+    char_code < 0x20 || char_code = 0x7F
+  in
+  let escape_char chr =
+    let code = Char.to_int chr in
+    match c.escape_chars with
+    | _ when Char.is_whitespace chr || Char.equal chr '\\' ->
+        str (Char.escaped chr)
+    | _ when is_printable code -> char chr
+    | `Hexadecimal -> str (Printf.sprintf "\\x%02x" code)
+    | `Minimal when is_control_code code ->
+        str (Printf.sprintf "\\x%02x" code)
+    | `Minimal -> char chr
+    | `Decimal -> str (Char.escaped chr)
+  in
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
-  | Pconst_char c -> wrap "'" "'" @@ str (Char.escaped c)
+  | Pconst_char '\'' -> wrap "'" "'" @@ str "\\'"
+  | Pconst_char c -> wrap "'" "'" @@ escape_char c
   | Pconst_string (s, delim) ->
+      let escape_literal string =
+        vbox 0
+          ( String.foldi string ~init:(false, fmt "") ~f:
+              (fun index (freshline, prev) ch ->
+                match (ch, c.break_string_literals) with
+                | ' ', _ when freshline -> (false, prev $ str "\\ ")
+                | '"', _ -> (false, prev $ str "\\\"")
+                | '\n', `Newlines when index <> String.length string - 1 ->
+                    (true, prev $ fmt "\\n\\@;<1000 0>")
+                | other, _ -> (false, prev $ escape_char other) )
+          |> snd )
+      in
       let pre, mid, suf =
         match delim with
-        | None -> ("\"", String.escaped s, "\"")
-        | Some delim -> ("{" ^ delim ^ "|", s, "|" ^ delim ^ "}")
+        | None -> (str "\"", escape_literal s, str "\"")
+        | Some delim ->
+            (str ("{" ^ delim ^ "|"), str s, str ("|" ^ delim ^ "}"))
       in
-      str pre $ str mid $ str suf
+      pre $ mid $ suf
 
 
 let fmt_variance = function
@@ -520,8 +551,8 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks_if parens "(" ")"
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ " $ str txt ))
-  | Ppat_constant c -> fmt_constant c
-  | Ppat_interval (l, u) -> fmt_constant l $ fmt ".." $ fmt_constant u
+  | Ppat_constant const -> fmt_constant c const
+  | Ppat_interval (l, u) -> fmt_constant c l $ fmt ".." $ fmt_constant c u
   | Ppat_tuple pats ->
       hvbox 0
         (wrap_if_breaks "( " "@ )"
@@ -989,7 +1020,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
             $ fmt "@," $ fmt_atrs )
         $ fits_breaks_if paren_body ")" "@ )" )
   | Pexp_constant const ->
-      wrap_if parens "(" ")" (fmt_constant const) $ fmt_atrs
+      wrap_if parens "(" ")" (fmt_constant c const) $ fmt_atrs
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->

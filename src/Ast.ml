@@ -60,10 +60,22 @@ let rec is_sugared_list exp =
   | _ -> false
 
 
-let rec is_trivial exp =
+let would_force_break (c: Conf.t) s =
+  let contains_internal_newline s =
+    match String.rindex s '\n' with
+    | None -> false
+    | Some i when i = String.length s - 1 -> false
+    | _ -> true
+  in
+  Poly.equal c.break_string_literals `Newlines
+  && contains_internal_newline s
+
+
+let rec is_trivial c exp =
   match exp.pexp_desc with
+  | Pexp_constant Pconst_string (s, None) -> not (would_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ -> true
-  | Pexp_construct (_, exp) -> Option.for_all exp ~f:is_trivial
+  | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | _ -> false
 
 
@@ -480,8 +492,9 @@ end = struct
   let rec is_simple (c: Conf.t) width ({ast= exp} as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
-    | Pexp_array _ | Pexp_constant _ | Pexp_field _ | Pexp_ident _
-     |Pexp_record _ | Pexp_tuple _ | Pexp_variant _
+    | Pexp_constant _ -> is_trivial c exp
+    | Pexp_array _ | Pexp_field _ | Pexp_ident _ | Pexp_record _
+     |Pexp_tuple _ | Pexp_variant _
      |Pexp_construct (_, None) ->
         true
     | Pexp_construct
@@ -491,7 +504,7 @@ end = struct
     | Pexp_construct (_, Some e0) -> is_simple c width (sub_exp ~ctx e0)
     | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="}}, _) -> false
     | Pexp_apply (e0, e1N) ->
-        is_trivial e0 && List.for_all e1N ~f:(snd >> is_trivial)
+        is_trivial c e0 && List.for_all e1N ~f:(snd >> is_trivial c)
         && width xexp * 3 < c.margin
     | _ -> false
 

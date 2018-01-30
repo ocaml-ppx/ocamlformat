@@ -1,1 +1,2 @@
 margin 77
+break-string-literals never

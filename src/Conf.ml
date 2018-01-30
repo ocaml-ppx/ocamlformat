@@ -155,6 +155,37 @@ let sparse =
   mk ~default Arg.(value & flag & info ["sparse"] ~doc ~env)
 
 
+let escape_chars =
+  let doc =
+    "How to escape chars. Can be set in a config file with a `escape-chars {hexadecimal,decimal,minimal}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
+  let default = `Minimal in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum
+             [ ("hexadecimal", `Hexadecimal)
+             ; ("decimal", `Decimal)
+             ; ("minimal", `Minimal) ])
+          default
+      & info ["escape-chars"] ~doc ~env)
+
+
+let break_string_literals =
+  let doc =
+    "Break string literals. Can be set in a config file with a `break-string-literals {never,newlines}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
+  let default = `Newlines in
+  mk ~default
+    Arg.(
+      value
+      & opt (enum [("newlines", `Newlines); ("never", `Never)]) default
+      & info ["break-string-literals"] ~doc ~env)
+
+
 let no_version_check =
   let doc =
     "Do no check version matches the one specified in .ocamlformat."
@@ -185,13 +216,40 @@ let validate () =
 
 ;; parse info validate
 
-type t = {margin: int; sparse: bool; max_iters: int}
+type t =
+  { margin: int
+  ; sparse: bool
+  ; max_iters: int
+  ; escape_chars: [`Hexadecimal | `Minimal | `Decimal]
+  ; break_string_literals: [`Newlines | `Never] }
 
 let update conf name value =
   match name with
   | "margin" -> {conf with margin= Int.of_string value}
   | "max-iters" -> {conf with max_iters= Int.of_string value}
   | "sparse" -> {conf with sparse= Bool.of_string value}
+  | "escape-chars" ->
+      { conf with
+        escape_chars=
+          ( match value with
+          | "hexadecimal" -> `Hexadecimal
+          | "decimal" -> `Decimal
+          | "minimal" -> `Minimal
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown escape-chars value: %S" other)
+                [] ) }
+  | "break-string-literals" ->
+      { conf with
+        break_string_literals=
+          ( match value with
+          | "never" -> `Never
+          | "newlines" -> `Newlines
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown break-string-literals value: %S"
+                   other)
+                [] ) }
   | "version" when not !no_version_check ->
       if String.equal Version.version value then conf
       else
@@ -223,7 +281,12 @@ let to_absolute file =
 
 
 let conf name =
-  read_conf_files {margin= !margin; sparse= !sparse; max_iters= !max_iters}
+  read_conf_files
+    { margin= !margin
+    ; sparse= !sparse
+    ; max_iters= !max_iters
+    ; escape_chars= !escape_chars
+    ; break_string_literals= !break_string_literals }
     (Filename.dirname (to_absolute name))
 
 
