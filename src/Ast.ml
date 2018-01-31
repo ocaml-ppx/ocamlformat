@@ -146,8 +146,8 @@ type prec =
   | InfixOp4
   | UMinus
   | Apply
-  | HashOp
   | Dot
+  | HashOp
   | High
   | Atomic
 
@@ -647,7 +647,7 @@ end = struct
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
       | Pexp_setinstvar _ -> Some (LessMinus, Non)
       | Pexp_field _ -> Some (Dot, Left)
-      | Pexp_send _ -> Some (HashOp, Left)
+      | Pexp_send _ -> Some (HashOp, Non)
       | _ -> None )
     | {ctx= Exp _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _}
      |{ ctx= Pld _ | Top | Typ _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
