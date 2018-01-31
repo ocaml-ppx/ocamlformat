@@ -822,8 +822,11 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
       ( { pexp_desc=
             Pexp_extension
               ( {txt}
-              , PStr [({pstr_desc= Pstr_eval (call_fun, []); _} as pld)] )
-        }
+              , PStr
+                  [ ( { pstr_desc=
+                          Pstr_eval
+                            (({pexp_desc= Pexp_fun _; _} as call_fun), []); _
+                      } as pld ) ] ) }
       , e2 ) ->
       let xargs, xbody = sugar_fun None (sub_exp ~ctx:(Str pld) call_fun) in
       hvbox 0
@@ -847,8 +850,11 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
           , { pexp_desc=
                 Pexp_extension
                   ( {txt}
-                  , PStr [({pstr_desc= Pstr_eval (retn_fun, []); _} as pld)]
-                  ) } ) ] ) ->
+                  , PStr
+                      [ ( { pstr_desc=
+                              Pstr_eval
+                                ( ({pexp_desc= Pexp_fun _; _} as retn_fun)
+                                , [] ); _ } as pld ) ] ) } ) ] ) ->
       let xargs, xbody = sugar_fun None (sub_exp ~ctx:(Str pld) retn_fun) in
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
