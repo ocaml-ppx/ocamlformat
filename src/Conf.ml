@@ -193,14 +193,16 @@ let escape_strings =
 
 let break_string_literals =
   let doc =
-    "Break string literals. Can be set in a config file with a `break-string-literals {never,newlines}` line."
+    "Break string literals. $(b,never) mode formats string literals as they are parsed, in particular, with escape sequences expanded. $(b,newlines) mode breaks lines at newlines. $(b,wrap) mode wraps string literals at the margin. Quoted strings such as $(i,{id|...|id}) are preserved. Can be set in a config file with a $(b,break-string-literals) $(i,{)$(b,never)$(i,,)$(b,newlines)$(i,,)$(b,wrap)$(i,}) line."
   in
   let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
-  let default = `Newlines in
+  let default = `Wrap in
   mk ~default
     Arg.(
       value
-      & opt (enum [("newlines", `Newlines); ("never", `Never)]) default
+      & opt
+          (enum [("newlines", `Newlines); ("never", `Never); ("wrap", `Wrap)])
+          default
       & info ["break-string-literals"] ~doc ~env)
 
 
@@ -218,6 +220,15 @@ let no_warn_error =
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["no-warn-error"] ~doc)
+
+
+let wrap_comments =
+  let doc =
+    "Wrap comments and docstrings. Comments and docstrings are divided into paragraphs by open lines (two or more consecutive newlines), and each paragraph is wrapped at the margin. Multi-line comments with vertically-aligned asterisks on the left margin are not wrapped. Can be set in a config file with a `wrap-comments {false,true}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_WRAP_COMMENTS" in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["wrap-comments"] ~doc ~env)
 
 
 let validate () =
@@ -240,7 +251,8 @@ type t =
   ; max_iters: int
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
-  ; break_string_literals: [`Newlines | `Never] }
+  ; break_string_literals: [`Newlines | `Never | `Wrap]
+  ; wrap_comments: bool }
 
 let update conf name value =
   match name with
@@ -275,6 +287,7 @@ let update conf name value =
           ( match value with
           | "never" -> `Never
           | "newlines" -> `Newlines
+          | "wrap" -> `Wrap
           | other ->
               user_error
                 (Printf.sprintf "Unknown break-string-literals value: %S"
@@ -287,6 +300,7 @@ let update conf name value =
           ( "version mismatch: .ocamlformat requested " ^ value
           ^ " but version is " ^ Version.version )
           []
+  | "wrap-comments" -> {conf with wrap_comments= Bool.of_string value}
   | _ -> conf
 
 
@@ -317,7 +331,8 @@ let conf name =
     ; max_iters= !max_iters
     ; escape_chars= !escape_chars
     ; escape_strings= !escape_strings
-    ; break_string_literals= !break_string_literals }
+    ; break_string_literals= !break_string_literals
+    ; wrap_comments= !wrap_comments }
     (Filename.dirname (to_absolute name))
 
 

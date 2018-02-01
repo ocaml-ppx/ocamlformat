@@ -92,6 +92,10 @@ let or_newline fits breaks fs =
   Format.pp_print_or_newline fs 1 0 fits breaks
 
 
+(** Conditional on immediately preceding a line break -------------------*)
+
+let pre_break n s o fs = Format.pp_print_pre_break fs n s o
+
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 let fits_breaks ?(force_fit_if= false) ?(force_break_if= false) fits breaks
@@ -181,3 +185,32 @@ and vbox_if cnd n = wrap_if_k cnd (open_vbox n) close_box
 and hvbox_if cnd n = wrap_if_k cnd (open_hvbox n) close_box
 
 and hovbox_if cnd n = wrap_if_k cnd (open_hovbox n) close_box
+
+(** Text filling --------------------------------------------------------*)
+
+let fill_text text =
+  let fmt_line line =
+    let words =
+      List.filter ~f:(Fn.non String.is_empty)
+        (String.split_on_chars line
+           ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '])
+    in
+    list words "@ " str
+  in
+  let lines =
+    List.remove_consecutive_duplicates
+      ~equal:(fun x y -> String.is_empty x && String.is_empty y)
+      (String.split (String.rstrip text) ~on:'\n')
+  in
+  fmt_if (Char.is_whitespace (String.nget text 0)) " "
+  $ vbox 0
+      (hovbox 0
+         (list_pn lines (fun ?prev:_ curr ?next ->
+              fmt_line curr
+              $
+              match next with
+              | Some str when String.for_all str Char.is_whitespace ->
+                  close_box $ fmt "\n@," $ open_hovbox 0
+              | Some _ when not (String.is_empty curr) -> fmt "@ "
+              | _ -> fmt "" )))
+  $ fmt_if (Char.is_whitespace (String.nget text (-1))) " "

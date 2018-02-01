@@ -60,20 +60,21 @@ let rec is_sugared_list exp =
   | _ -> false
 
 
-let would_force_break (c: Conf.t) s =
+let may_force_break (c: Conf.t) s =
   let contains_internal_newline s =
     match String.index s '\n' with
     | None -> false
     | Some i when i = String.length s - 1 -> false
     | _ -> true
   in
-  Poly.equal c.break_string_literals `Newlines
-  && contains_internal_newline s
+  match c.break_string_literals with
+  | `Newlines -> contains_internal_newline s
+  | _ -> false
 
 
 let rec is_trivial c exp =
   match exp.pexp_desc with
-  | Pexp_constant Pconst_string (s, None) -> not (would_force_break c s)
+  | Pexp_constant Pconst_string (s, None) -> not (may_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | _ -> false

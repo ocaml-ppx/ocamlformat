@@ -12,7 +12,7 @@
 # To test all source files below a directory
 #       make DIRS=<directory> test
 # By default, test projects used as regression tests
-DIRS=code/ocamlformat code/sledge code/infer
+DIRS=code/ocamlformat code/infer
 
 # To test using the dbg or "default" (opt) executable
 #       make MODE=<mode>

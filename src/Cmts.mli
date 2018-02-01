@@ -48,24 +48,24 @@ val relocate :
     [after]. *)
 
 val fmt_before :
-  ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
-  -> Fmt.t
+  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t
+  -> Location.t -> Fmt.t
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
 
-val fmt_after : ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+val fmt_after : Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
 val fmt :
-  ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
-  -> Fmt.t -> Fmt.t
+  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t
+  -> Location.t -> Fmt.t -> Fmt.t
 (** [fmt loc format_thunk] wraps [fmt_before] and [fmt_after] around
     [format_thunk]. *)
 
 val fmt_list :
-  ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> Location.t list -> Fmt.t
-  -> Fmt.t
+  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> Location.t list
+  -> Fmt.t -> Fmt.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
 val final_check : unit -> unit

@@ -21,8 +21,9 @@ type t =
         (** Escape encoding for chars literals. *)
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for string literals. *)
-  ; break_string_literals: [`Never | `Newlines]
-        (** How to potentially break string literals into new lines. *) }
+  ; break_string_literals: [`Never | `Newlines | `Wrap]
+        (** How to potentially break string literals into new lines. *)
+  ; wrap_comments: bool  (** Wrap comments at margin. *) }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 

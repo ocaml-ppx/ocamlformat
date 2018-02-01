@@ -88,6 +88,11 @@ val or_newline : string -> string -> t
 (** [or_newline fits breaks] prints [fits] if the line has not just been
     broken, and otherwise prints [breaks]. *)
 
+(** Conditional on immediately preceding a line break -------------------*)
+
+val pre_break : int -> string -> int -> t
+(** Format a pre break hint. *)
+
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 val fits_breaks :
@@ -170,3 +175,8 @@ val hvbox_if : bool -> int -> t -> t
 val hovbox_if : bool -> int -> t -> t
 (** Conditionally wrap a format thunk with an hovbox with specified
     indentation. *)
+
+(** Text filling --------------------------------------------------------*)
+
+val fill_text : string -> t
+(** Format a string as filled text wrapped at the margin. *)
