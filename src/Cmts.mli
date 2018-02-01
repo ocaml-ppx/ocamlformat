@@ -21,8 +21,7 @@
 
     When comments are formatted by one of the [fmt] functions, they are
     removed from the data structure. This is significant in cases where
-    there are multiple Ast terms with the same location.
-*)
+    there are multiple Ast terms with the same location. *)
 
 module Format = Format_
 open Migrate_ast

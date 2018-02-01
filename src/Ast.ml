@@ -512,7 +512,7 @@ end = struct
 
   (** [prec_ctx {ctx; ast}] is the precedence of the context of [ast] within
       [ctx], where [ast] is an immediate sub-term (modulo syntactic sugar)
-      of [ctx].  Also returns whether [ast] is the left, right, or neither
+      of [ctx]. Also returns whether [ast] is the left, right, or neither
       child of [ctx]. Meaningful for binary operators, otherwise returns
       [None]. *)
   let prec_ctx = function
@@ -720,7 +720,7 @@ end = struct
 
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context
-      [ctx], indicating that [ast] should be parenthesized.  Meaningful for
+      [ctx], indicating that [ast] should be parenthesized. Meaningful for
       binary operators, otherwise returns [None] if [ctx] has no precedence
       or [Some None] if [ctx] does but [ast] does not. *)
   let ambig_prec ({ast} as xast) =

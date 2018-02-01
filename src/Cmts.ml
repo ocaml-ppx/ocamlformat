@@ -307,11 +307,11 @@ let ends_line (l: Location.t) =
   ends_line_ l.loc_end.pos_cnum
 
 
-(** Heuristic to determine if two locations should be considered
-    "adjacent". Holds if there is only whitespace between the locations, or
-    if there is a [|] character and the first location begins a line and the
-    start column of the first location is not greater than that of the
-    second location. *)
+(** Heuristic to determine if two locations should be considered "adjacent".
+    Holds if there is only whitespace between the locations, or if there is
+    a [|] character and the first location begins a line and the start
+    column of the first location is not greater than that of the second
+    location. *)
 let is_adjacent (l1: Location.t) (l2: Location.t) =
   Option.value_map (string_between l1 l2) ~default:false ~f:(fun btw ->
       match String.strip btw with
