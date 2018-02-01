@@ -2274,8 +2274,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     in
     match sugar_polynewtype pat body with
     (* format
-          let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
-       as let f: type r s. r s t = e *)
+     *    let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
+     * as let f: type r s. r s t = e *)
     | Some (xpat, pvars, xtyp, xbody) ->
         let fmt_cstr =
           fmt ": type " $ list pvars " " (fun {txt} -> str txt) $ fmt ".@ "
