@@ -66,8 +66,8 @@ type prec =
   | InfixOp4
   | UMinus
   | Apply
-  | HashOp
   | Dot
+  | HashOp
   | High
   | Atomic
 

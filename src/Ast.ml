@@ -74,7 +74,7 @@ let would_force_break (c: Conf.t) s =
 let rec is_trivial c exp =
   match exp.pexp_desc with
   | Pexp_constant Pconst_string (s, None) -> not (would_force_break c s)
-  | Pexp_constant _ | Pexp_field _ | Pexp_ident _ -> true
+  | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | _ -> false
 
@@ -146,8 +146,8 @@ type prec =
   | InfixOp4
   | UMinus
   | Apply
-  | HashOp
   | Dot
+  | HashOp
   | High
   | Atomic
 
@@ -494,7 +494,7 @@ end = struct
     match exp.pexp_desc with
     | Pexp_constant _ -> is_trivial c exp
     | Pexp_array _ | Pexp_field _ | Pexp_ident _ | Pexp_record _
-     |Pexp_tuple _ | Pexp_variant _
+     |Pexp_send _ | Pexp_tuple _ | Pexp_variant _
      |Pexp_construct (_, None) ->
         true
     | Pexp_construct
@@ -647,6 +647,7 @@ end = struct
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
       | Pexp_setinstvar _ -> Some (LessMinus, Non)
       | Pexp_field _ -> Some (Dot, Left)
+      | Pexp_send _ -> Some (HashOp, Non)
       | _ -> None )
     | {ctx= Exp _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _}
      |{ ctx= Pld _ | Top | Typ _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
@@ -712,6 +713,7 @@ end = struct
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
+      | Pexp_send _ -> Some HashOp
       | _ -> None )
     | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ -> None
 
