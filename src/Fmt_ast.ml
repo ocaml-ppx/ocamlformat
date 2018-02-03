@@ -304,48 +304,96 @@ let rec fmt_longident (li: Longident.t) =
 
 
 let fmt_constant (c: Conf.t) const =
-  let is_printable char_code = 0x20 <= char_code && char_code <= 0x7E in
-  let is_control_code char_code =
-    (* See discussion on PR #70 *)
-    char_code < 0x20 || char_code = 0x7F
+  let fmt_char_escaped chr =
+    match (c.escape_chars, chr) with
+    | `Hexadecimal, _ ->
+        fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
+    | _, '\000'..'\128' -> str (Char.escaped chr)
+    | `Decimal, _ -> str (Char.escaped chr)
+    | `Preserve, _ -> char chr
   in
-  let escape_char chr =
-    let code = Char.to_int chr in
-    match c.escape_chars with
-    | _ when Char.is_whitespace chr || Char.equal chr '\\' ->
-        str (Char.escaped chr)
-    | _ when is_printable code -> char chr
-    | `Hexadecimal -> str (Printf.sprintf "\\x%02x" code)
-    | `Minimal when is_control_code code ->
-        str (Printf.sprintf "\\x%02x" code)
-    | `Minimal -> char chr
-    | `Decimal -> str (Char.escaped chr)
+  let escape_string str =
+    match c.escape_strings with
+    | `Hexadecimal ->
+        let buf = Bytes.create (4 * String.length str) in
+        for i = 0 to String.length str - 1 do
+          let src =
+            Bytes.of_string (Printf.sprintf "\\x%02x" (Char.to_int str.[i]))
+          in
+          Bytes.blit ~dst:buf ~dst_pos:(i * 4) ~src ~src_pos:0 ~len:4
+        done ;
+        Bytes.to_string buf
+    | _ ->
+        let n = ref 0 in
+        for i = 0 to String.length str - 1 do
+          let l =
+            match (str.[i], c.escape_strings) with
+            | ('"' | '\\' | '\n' | '\t' | '\r' | '\b'), _ -> 2
+            | ' '..'~', _ -> 1
+            | '\128'..'\255', `Preserve -> 1
+            | _ -> 4
+          in
+          n := !n + l
+        done ;
+        if !n = String.length str then str
+        else
+          let buf = Bytes.create !n in
+          n := 0 ;
+          let set c =
+            Bytes.set buf !n c ;
+            Int.incr n
+          in
+          for i = 0 to String.length str - 1 do
+            let chr = str.[i] in
+            match (chr, c.escape_strings) with
+            | ('"' | '\\'), _ -> set '\\' ; set chr
+            | '\n', _ -> set '\\' ; set 'n'
+            | '\t', _ -> set '\\' ; set 't'
+            | '\r', _ -> set '\\' ; set 'r'
+            | '\b', _ -> set '\\' ; set 'b'
+            | ' '..'~', _ -> set chr
+            | '\128'..'\255', `Preserve -> set chr
+            | _ ->
+                let code = Char.to_int chr in
+                set '\\' ;
+                set (Char.of_int_exn (48 + code / 100)) ;
+                set (Char.of_int_exn (48 + code / 10 % 10)) ;
+                set (Char.of_int_exn (48 + code % 10))
+          done ;
+          Bytes.to_string buf
   in
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
-  | Pconst_char '\'' -> wrap "'" "'" @@ str "\\'"
-  | Pconst_char c -> wrap "'" "'" @@ escape_char c
+  | Pconst_char c -> wrap "'" "'" @@ fmt_char_escaped c
   | Pconst_string (s, delim) ->
-      let escape_literal string =
+      let fmt_line s = str (escape_string s) in
+      let fmt_lines text =
+        let lines =
+          String.split (String.rstrip ~drop:(Char.equal '\n') text) ~on:'\n'
+        in
         vbox 0
-          ( String.foldi string ~init:(false, fmt "") ~f:
-              (fun index (freshline, prev) ch ->
-                match (ch, c.break_string_literals) with
-                | ' ', _ when freshline -> (false, prev $ str "\\ ")
-                | '"', _ -> (false, prev $ str "\\\"")
-                | '\n', `Newlines when index <> String.length string - 1 ->
-                    (true, prev $ fmt "\\n\\@;<1000 0>")
-                | other, _ -> (false, prev $ escape_char other) )
-          |> snd )
+          (list_pn lines (fun ?prev curr ?next ->
+               let equal_nget s i c =
+                 not (String.is_empty s) && Char.equal c (String.nget s i)
+               in
+               ( match prev with
+               | Some _ when equal_nget curr 0 ' ' -> fmt "\\"
+               | _ -> fmt "" )
+               $ fmt_line curr
+               $
+               match next with
+               | Some next when equal_nget next 0 ' ' ->
+                   fmt "\\n\\@;<1000 -1>"
+               | Some _ -> fmt "\\n\\@;<1000 0>"
+               | None when equal_nget text (-1) '\n' -> fmt "\\n"
+               | None -> fmt "" ))
       in
-      let pre, mid, suf =
-        match delim with
-        | None -> (str "\"", escape_literal s, str "\"")
-        | Some delim ->
-            (str ("{" ^ delim ^ "|"), str s, str ("|" ^ delim ^ "}"))
-      in
-      pre $ mid $ suf
+      match (delim, c.break_string_literals) with
+      | None, `Newlines -> str "\"" $ fmt_lines s $ str "\""
+      | None, _ -> str "\"" $ fmt_line s $ str "\""
+      | Some delim, _ ->
+          str ("{" ^ delim ^ "|") $ str s $ str ("|" ^ delim ^ "}")
 
 
 let fmt_variance = function

@@ -157,20 +157,38 @@ let sparse =
 
 let escape_chars =
   let doc =
-    "How to escape chars. Can be set in a config file with a `escape-chars {hexadecimal,decimal,minimal}` line."
+    "Escape encoding for character literals. Can be set in a config file with an `escape-chars {decimal,hexadecimal,preserve}` line. `hexadecimal` mode escapes every character, `decimal` produces ASCII printable characters using decimal escape sequences as needed, and `preserve` escapes ASCII control codes but leaves the upper 128 characters unchanged."
   in
   let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
-  let default = `Minimal in
+  let default = `Decimal in
   mk ~default
     Arg.(
       value
       & opt
           (enum
-             [ ("hexadecimal", `Hexadecimal)
-             ; ("decimal", `Decimal)
-             ; ("minimal", `Minimal) ])
+             [ ("decimal", `Decimal)
+             ; ("hexadecimal", `Hexadecimal)
+             ; ("preserve", `Preserve) ])
           default
       & info ["escape-chars"] ~doc ~env)
+
+
+let escape_strings =
+  let doc =
+    "Escape encoding for string literals. Can be set in a config file with an `escape-strings {decimal,hexadecimal,preserve}` line. See `--escape-chars` for the interpretation of the modes."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_ESCAPE_STRINGS" in
+  let default = `Preserve in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum
+             [ ("decimal", `Decimal)
+             ; ("hexadecimal", `Hexadecimal)
+             ; ("preserve", `Preserve) ])
+          default
+      & info ["escape-strings"] ~doc ~env)
 
 
 let break_string_literals =
@@ -220,7 +238,8 @@ type t =
   { margin: int
   ; sparse: bool
   ; max_iters: int
-  ; escape_chars: [`Hexadecimal | `Minimal | `Decimal]
+  ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
+  ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; break_string_literals: [`Newlines | `Never] }
 
 let update conf name value =
@@ -232,12 +251,23 @@ let update conf name value =
       { conf with
         escape_chars=
           ( match value with
-          | "hexadecimal" -> `Hexadecimal
           | "decimal" -> `Decimal
-          | "minimal" -> `Minimal
+          | "hexadecimal" -> `Hexadecimal
+          | "preserve" -> `Preserve
           | other ->
               user_error
                 (Printf.sprintf "Unknown escape-chars value: %S" other)
+                [] ) }
+  | "escape-strings" ->
+      { conf with
+        escape_strings=
+          ( match value with
+          | "decimal" -> `Decimal
+          | "hexadecimal" -> `Hexadecimal
+          | "preserve" -> `Preserve
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown escape-strings value: %S" other)
                 [] ) }
   | "break-string-literals" ->
       { conf with
@@ -286,6 +316,7 @@ let conf name =
     ; sparse= !sparse
     ; max_iters= !max_iters
     ; escape_chars= !escape_chars
+    ; escape_strings= !escape_strings
     ; break_string_literals= !break_string_literals }
     (Filename.dirname (to_absolute name))
 

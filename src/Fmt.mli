@@ -59,7 +59,7 @@ val list_pn : 'a list -> (?prev:'a -> 'a -> ?next:'a -> t) -> t
     the previous and next elements, if any. *)
 
 val list_k : 'a list -> t -> ('a -> t) -> t
-(** Format a list using the first function for the separators between
+(** Format a list using the format thunk for the separators between
     elements. *)
 
 (** Conditional formatting ----------------------------------------------*)
