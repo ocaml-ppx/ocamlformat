@@ -1078,7 +1078,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                    Cmts.fmt_list ~eol:(fmt "@;<1 2>") locs
                    @@ fmt_expression c xexp )
              $ opt nil_loc (fun loc ->
-                   Cmts.fmt ~pro:(fmt " ") ~epi:(fmt "") loc @@ fmt "" ) ))
+                   Cmts.fmt ~pro:(fmt "@ ") ~epi:(fmt "") loc @@ fmt "" ) ))
     | None ->
         let loc_args = sugar_infix_cons xexp in
         let fmt_arg ~last_op ({ast= arg} as xarg) =
