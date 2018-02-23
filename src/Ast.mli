@@ -108,7 +108,7 @@ val is_simple : Conf.t -> (expression xt -> int) -> expression xt -> bool
     applications of other simple expressions. *)
 
 (** 'Classes' of expressions which are parenthesized differently. *)
-type cls = Let_match | Match | Non_apply | Sequence | Then
+type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
 val exposed : cls -> expression -> bool
 (** [exposed cls exp] holds if there is a right-most subexpression of [exp]

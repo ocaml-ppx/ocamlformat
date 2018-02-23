@@ -27,11 +27,11 @@ let protect =
   let first = ref true in
   fun ast pp fs ->
     try pp fs with exc ->
-      ( if !first then
-          let bt = Caml.Printexc.get_backtrace () in
-          Format.pp_print_flush fs () ;
-          Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@." Ast.dump ast bt ;
-          first := false ) ;
+      if !first then (
+        let bt = Caml.Printexc.get_backtrace () in
+        Format.pp_print_flush fs () ;
+        Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@." Ast.dump ast bt ;
+        first := false ) ;
       raise exc
 
 

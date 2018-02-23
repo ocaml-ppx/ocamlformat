@@ -224,7 +224,7 @@ and Requires_sub_terms : sig
   val is_simple :
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
 
-  type cls = Let_match | Match | Non_apply | Sequence | Then
+  type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
   val exposed : cls -> expression -> bool
 
@@ -840,15 +840,15 @@ end = struct
 
 
   (** 'Classes' of expressions which are parenthesized differently. *)
-  type cls = Let_match | Match | Non_apply | Sequence | Then
+  type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
   (** [mem_cls cls exp] holds if [exp] is in the named class of expressions
       [cls]. *)
   let mem_cls cls exp =
     match (exp.pexp_desc, cls) with
-    | Pexp_ifthenelse (_, _, None), (Non_apply | Then)
+    | Pexp_ifthenelse (_, _, None), (Non_apply | ThenElse)
      |Pexp_ifthenelse _, Non_apply
-     |Pexp_sequence _, (Non_apply | Sequence)
+     |Pexp_sequence _, (Non_apply | Sequence | Then | ThenElse)
      |( (Pexp_function _ | Pexp_match _ | Pexp_try _)
       , (Match | Let_match | Non_apply) )
      |( ( Pexp_fun _ | Pexp_let _ | Pexp_letexception _ | Pexp_letmodule _
@@ -889,7 +889,11 @@ end = struct
         | Pexp_let (_, _, e)
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, e) -> (
-          match cls with Match | Then -> continue e | _ -> false )
+          match cls with
+          | Match | Then | ThenElse -> continue e
+          | _ -> false )
+        | Pexp_match _ when match cls with Then -> true | _ -> false ->
+            false
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
@@ -903,7 +907,8 @@ end = struct
          |Pexp_while _ ->
             false
       in
-      mem_cls cls exp || Hashtbl.Poly.find_or_add memo exp ~default:exposed_
+      mem_cls cls exp
+      || Hashtbl.Poly.find_or_add memo (cls, exp) ~default:exposed_
 
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
@@ -919,8 +924,9 @@ end = struct
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
           && (List.last_exn cases).pc_rhs != exp && exposed Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
-      | Pexp_ifthenelse (_, thn, els) when thn == exp ->
-          is_sequence exp || Option.is_some els && exposed Then exp
+      | Pexp_ifthenelse (_, thn, None) when thn == exp -> exposed Then exp
+      | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
+          exposed ThenElse exp
       | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
       | Pexp_record (flds, _)
         when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->

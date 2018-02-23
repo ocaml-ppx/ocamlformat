@@ -45,11 +45,11 @@ let parse parse_ast ?(warn= Conf.warn_error) input_name ifile ic =
 
 (** Debug: dump internal ast representation to file. *)
 let dump xunit dir base suf ext ast =
-  if Conf.debug then
+  if Conf.debug then (
     let tmp = Filename.concat dir (base ^ suf ^ ext) in
     let oc = Out_channel.create tmp in
     xunit.printast (Caml.Format.formatter_of_out_channel oc) ast ;
-    Out_channel.close oc
+    Out_channel.close oc )
 
 
 let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =

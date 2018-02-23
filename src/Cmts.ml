@@ -344,7 +344,7 @@ let cmts_before = Hashtbl.Poly.create ()
 let cmts_after = Hashtbl.Poly.create ()
 
 let add_cmts ?prev ?next tbl loc cmts =
-  if not (CmtSet.is_empty cmts) then
+  if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug then
       List.iter cmtl ~f:(fun (cmt_txt, cmt_loc) ->
@@ -365,7 +365,7 @@ let add_cmts ?prev ?next tbl loc cmts =
             (if phys_equal tbl cmts_before then "before" else "after")
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next) ) ;
-    Hashtbl.add_exn tbl loc cmtl
+    Hashtbl.add_exn tbl loc cmtl )
 
 
 (** Traverse the location tree from locs, find the deepest location that
@@ -450,13 +450,13 @@ let init map_ast loc_of_ast src asts comments_n_docstrings =
     List.iter comments ~f:(fun (txt, loc) ->
         Format.eprintf "%a %s %s@\n" Location.fmt loc txt
           (if ends_line loc then "eol" else "") ) ;
-  if not (List.is_empty comments) then
+  if not (List.is_empty comments) then (
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = List.map asts ~f:loc_of_ast in
     let cmts = CmtSet.of_list comments in
-    place loc_tree locs cmts
+    place loc_tree locs cmts )
 
 
 let init_impl = init map_structure (fun {Parsetree.pstr_loc} -> pstr_loc)
