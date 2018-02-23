@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 (** Abstract syntax tree term *)
 
@@ -60,20 +60,21 @@ let rec is_sugared_list exp =
   | _ -> false
 
 
-let would_force_break (c: Conf.t) s =
+let may_force_break (c: Conf.t) s =
   let contains_internal_newline s =
     match String.index s '\n' with
     | None -> false
     | Some i when i = String.length s - 1 -> false
     | _ -> true
   in
-  Poly.equal c.break_string_literals `Newlines
-  && contains_internal_newline s
+  match c.break_string_literals with
+  | `Newlines -> contains_internal_newline s
+  | _ -> false
 
 
 let rec is_trivial c exp =
   match exp.pexp_desc with
-  | Pexp_constant Pconst_string (s, None) -> not (would_force_break c s)
+  | Pexp_constant Pconst_string (s, None) -> not (may_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | _ -> false
@@ -511,7 +512,7 @@ end = struct
 
   (** [prec_ctx {ctx; ast}] is the precedence of the context of [ast] within
       [ctx], where [ast] is an immediate sub-term (modulo syntactic sugar)
-      of [ctx].  Also returns whether [ast] is the left, right, or neither
+      of [ctx]. Also returns whether [ast] is the left, right, or neither
       child of [ctx]. Meaningful for binary operators, otherwise returns
       [None]. *)
   let prec_ctx = function
@@ -719,7 +720,7 @@ end = struct
 
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context
-      [ctx], indicating that [ast] should be parenthesized.  Meaningful for
+      [ctx], indicating that [ast] should be parenthesized. Meaningful for
       binary operators, otherwise returns [None] if [ctx] has no precedence
       or [Some None] if [ctx] does but [ast] does not. *)
   let ambig_prec ({ast} as xast) =

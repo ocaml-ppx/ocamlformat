@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 (** Configuration options *)
 
@@ -21,9 +21,9 @@ module Cmdliner : sig
 
   val parse : Term.info -> (unit -> unit Term.ret) -> unit
   (** [parse info validate] parses the command line according to the options
-      declared by calls to [mk], using manual and version [info], and calling
-      [validate] to check usage constraints not expressible in the [Term]
-      language. *)
+      declared by calls to [mk], using manual and version [info], and
+      calling [validate] to check usage constraints not expressible in the
+      [Term] language. *)
 end = struct
   include Cmdliner
 
@@ -91,7 +91,8 @@ let kind : [`Impl | `Intf] ref =
 let margin =
   let docv = "COLS" in
   let doc =
-    "Format code to fit within $(docv) columns. Can be set in a config file with a `margin COLS` line."
+    "Format code to fit within $(docv) columns. Can be set in a config \
+     file with a `margin COLS` line."
   in
   let env = Arg.env_var "OCAMLFORMAT_MARGIN" in
   let default = 80 in
@@ -102,7 +103,8 @@ let margin =
 let max_iters =
   let docv = "N" in
   let doc =
-    "Fail if output of formatting does not stabilize within $(docv) iterations. Can be set in a config file with a `max-iters N` line."
+    "Fail if output of formatting does not stabilize within $(docv) \
+     iterations. Can be set in a config file with a `max-iters N` line."
   in
   let env = Arg.env_var "OCAMLFORMAT_MAX_ITERS" in
   let default = 10 in
@@ -119,7 +121,8 @@ let inplace =
 let inputs =
   let docv = "SRC" in
   let doc =
-    "Input files. At least one is required, and exactly one without --inplace."
+    "Input files. At least one is required, and exactly one without \
+     --inplace."
   in
   let default = [] in
   mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv)
@@ -128,7 +131,11 @@ let inputs =
 let name =
   let docv = "NAME" in
   let doc =
-    "Name of input file for use in error reporting. Defaults to the input file name. Some options can be specified in configuration files named '.ocamlformat' in the same or a parent directory of $(docv), see documentation of other options for details. Mutually exclusive with --inplace."
+    "Name of input file for use in error reporting. Defaults to the input \
+     file name. Some options can be specified in configuration files named \
+     '.ocamlformat' in the same or a parent directory of $(docv), see \
+     documentation of other options for details. Mutually exclusive with \
+     --inplace."
   in
   let default = None in
   mk ~default
@@ -138,7 +145,8 @@ let name =
 let output =
   let docv = "DST" in
   let doc =
-    "Output file. Mutually exclusive with --inplace. Write to stdout if omitted."
+    "Output file. Mutually exclusive with --inplace. Write to stdout if \
+     omitted."
   in
   let default = None in
   mk ~default
@@ -148,7 +156,8 @@ let output =
 
 let sparse =
   let doc =
-    "Generate more sparsely formatted code. Can be set in a config file with a `sparse true` line."
+    "Generate more sparsely formatted code. Can be set in a config file \
+     with a `sparse true` line."
   in
   let env = Arg.env_var "OCAMLFORMAT_SPARSE" in
   let default = false in
@@ -157,7 +166,12 @@ let sparse =
 
 let escape_chars =
   let doc =
-    "Escape encoding for character literals. Can be set in a config file with an `escape-chars {decimal,hexadecimal,preserve}` line. `hexadecimal` mode escapes every character, `decimal` produces ASCII printable characters using decimal escape sequences as needed, and `preserve` escapes ASCII control codes but leaves the upper 128 characters unchanged."
+    "Escape encoding for character literals. Can be set in a config file \
+     with an `escape-chars {decimal,hexadecimal,preserve}` line. \
+     `hexadecimal` mode escapes every character, `decimal` produces ASCII \
+     printable characters using decimal escape sequences as needed, and \
+     `preserve` escapes ASCII control codes but leaves the upper 128 \
+     characters unchanged."
   in
   let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
   let default = `Decimal in
@@ -175,7 +189,9 @@ let escape_chars =
 
 let escape_strings =
   let doc =
-    "Escape encoding for string literals. Can be set in a config file with an `escape-strings {decimal,hexadecimal,preserve}` line. See `--escape-chars` for the interpretation of the modes."
+    "Escape encoding for string literals. Can be set in a config file with \
+     an `escape-strings {decimal,hexadecimal,preserve}` line. See \
+     `--escape-chars` for the interpretation of the modes."
   in
   let env = Arg.env_var "OCAMLFORMAT_ESCAPE_STRINGS" in
   let default = `Preserve in
@@ -193,14 +209,22 @@ let escape_strings =
 
 let break_string_literals =
   let doc =
-    "Break string literals. Can be set in a config file with a `break-string-literals {never,newlines}` line."
+    "Break string literals. $(b,never) mode formats string literals as \
+     they are parsed, in particular, with escape sequences expanded. \
+     $(b,newlines) mode breaks lines at newlines. $(b,wrap) mode wraps \
+     string literals at the margin. Quoted strings such as \
+     $(i,{id|...|id}) are preserved. Can be set in a config file with a \
+     $(b,break-string-literals) \
+     $(i,{)$(b,never)$(i,,)$(b,newlines)$(i,,)$(b,wrap)$(i,}) line."
   in
   let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
-  let default = `Newlines in
+  let default = `Wrap in
   mk ~default
     Arg.(
       value
-      & opt (enum [("newlines", `Newlines); ("never", `Never)]) default
+      & opt
+          (enum [("newlines", `Newlines); ("never", `Never); ("wrap", `Wrap)])
+          default
       & info ["break-string-literals"] ~doc ~env)
 
 
@@ -214,10 +238,25 @@ let no_version_check =
 
 let no_warn_error =
   let doc =
-    "Do no treat warnings detected by the parser as errors. These warnings almost always indicate an unrecoverable situation, so expect an unhandled exception."
+    "Do no treat warnings detected by the parser as errors. These warnings \
+     almost always indicate an unrecoverable situation, so expect an \
+     unhandled exception."
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["no-warn-error"] ~doc)
+
+
+let wrap_comments =
+  let doc =
+    "Wrap comments and docstrings. Comments and docstrings are divided \
+     into paragraphs by open lines (two or more consecutive newlines), and \
+     each paragraph is wrapped at the margin. Multi-line comments with \
+     vertically-aligned asterisks on the left margin are not wrapped. Can \
+     be set in a config file with a `wrap-comments {false,true}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_WRAP_COMMENTS" in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["wrap-comments"] ~doc ~env)
 
 
 let validate () =
@@ -240,7 +279,8 @@ type t =
   ; max_iters: int
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
-  ; break_string_literals: [`Newlines | `Never] }
+  ; break_string_literals: [`Newlines | `Never | `Wrap]
+  ; wrap_comments: bool }
 
 let update conf name value =
   match name with
@@ -275,6 +315,7 @@ let update conf name value =
           ( match value with
           | "never" -> `Never
           | "newlines" -> `Newlines
+          | "wrap" -> `Wrap
           | other ->
               user_error
                 (Printf.sprintf "Unknown break-string-literals value: %S"
@@ -287,6 +328,7 @@ let update conf name value =
           ( "version mismatch: .ocamlformat requested " ^ value
           ^ " but version is " ^ Version.version )
           []
+  | "wrap-comments" -> {conf with wrap_comments= Bool.of_string value}
   | _ -> conf
 
 
@@ -317,7 +359,8 @@ let conf name =
     ; max_iters= !max_iters
     ; escape_chars= !escape_chars
     ; escape_strings= !escape_strings
-    ; break_string_literals= !break_string_literals }
+    ; break_string_literals= !break_string_literals
+    ; wrap_comments= !wrap_comments }
     (Filename.dirname (to_absolute name))
 
 

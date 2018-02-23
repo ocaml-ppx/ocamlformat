@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 (** Configuration options *)
 
@@ -21,15 +21,15 @@ type t =
         (** Escape encoding for chars literals. *)
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for string literals. *)
-  ; break_string_literals: [`Never | `Newlines]
-        (** How to potentially break string literals into new lines. *) }
+  ; break_string_literals: [`Never | `Newlines | `Wrap]
+        (** How to potentially break string literals into new lines. *)
+  ; wrap_comments: bool  (** Wrap comments at margin. *) }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf] input * string option
-      (** Format input file of given kind to output file, or stdout if
-          None. *)
+      (** Format input file of given kind to output file, or stdout if None. *)
   | Inplace of [`Impl | `Intf] input list
       (** Format in-place, overwriting input file(s). *)
 

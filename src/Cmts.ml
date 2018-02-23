@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 (** Placing and formatting comments in a parsetree. *)
 
@@ -307,11 +307,11 @@ let ends_line (l: Location.t) =
   ends_line_ l.loc_end.pos_cnum
 
 
-(** Heuristic to determine if two locations should be considered
-    "adjacent". Holds if there is only whitespace between the locations, or
-    if there is a [|] character and the first location begins a line and the
-    start column of the first location is not greater than that of the
-    second location. *)
+(** Heuristic to determine if two locations should be considered "adjacent".
+    Holds if there is only whitespace between the locations, or if there is
+    a [|] character and the first location begins a line and the start
+    column of the first location is not greater than that of the second
+    location. *)
 let is_adjacent (l1: Location.t) (l2: Location.t) =
   Option.value_map (string_between l1 l2) ~default:false ~f:(fun btw ->
       match String.strip btw with
@@ -489,8 +489,51 @@ let preserve f x =
   remove := save
 
 
+let split_asterisk_prefixed (txt, {Location.loc_start}) =
+  let len = Position.column loc_start + 3 in
+  let pat =
+    String.Search_pattern.create
+      (String.init len ~f:(function
+        | 0 -> '\n'
+        | n when n < len - 1 -> ' '
+        | _ -> '*' ))
+  in
+  let rec split_asterisk_prefixed_ pos =
+    match String.Search_pattern.index pat ~pos ~in_:txt with
+    | Some 0 -> "" :: split_asterisk_prefixed_ len
+    | Some idx ->
+        String.slice txt pos idx :: split_asterisk_prefixed_ (idx + len)
+    | _ ->
+        let drop = function ' ' | '\t' -> true | _ -> false in
+        let line = String.rstrip ~drop (String.slice txt pos 0) in
+        if String.is_empty line then [line]
+        else if Char.equal (String.nget line (-1)) '\n' then
+          [String.slice line 0 (-1); ""]
+        else if Char.is_whitespace (String.nget txt (-1)) then [line ^ " "]
+        else [line]
+  in
+  split_asterisk_prefixed_ 0
+
+
+let fmt_cmt (c: Conf.t) cmt =
+  let open Fmt in
+  if not c.wrap_comments then wrap "(*" "*)" (str (fst cmt))
+  else
+    match split_asterisk_prefixed cmt with
+    | [""] -> str "(* *)"
+    | [text] -> wrap "(*" "*)" (fill_text text)
+    | asterisk_prefixed_lines ->
+        vbox 1
+          ( fmt "(*"
+          $ list_pn asterisk_prefixed_lines (fun ?prev:_ line ?next ->
+                match (line, next) with
+                | "", None -> fmt ")"
+                | _, None -> str line $ fmt "*)"
+                | _, Some _ -> str line $ fmt "@,*" ) )
+
+
 (** Find, remove, and format comments for loc. *)
-let fmt_cmts ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
+let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   let cmts = Option.value (find tbl loc) ~default:[] in
@@ -507,26 +550,26 @@ let fmt_cmts ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   in
   fmt_if_k
     (not (List.is_empty cmts))
-    ( Option.call ~f:pro
-    $ vbox 0
-        (list cmts "@ " (fun (txt, _) -> fmt "(*" $ str txt $ fmt "*)"))
+    ( Option.call ~f:pro $ vbox 0 (list cmts "@ " (fmt_cmt c))
     $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (Option.call ~f:epi) )
 
 
-let fmt_before ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
-  fmt_cmts cmts_before ?pro ~epi ?eol ?adj
+let fmt_before c ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
+  fmt_cmts c cmts_before ?pro ~epi ?eol ?adj
 
 
-let fmt_after ?(pro= Fmt.break_unless_newline 1 0) ?epi =
-  fmt_cmts cmts_after ~pro ?epi ~eol:(Fmt.fmt "")
+let fmt_after c ?(pro= Fmt.break_unless_newline 1 0) ?epi =
+  fmt_cmts c cmts_after ~pro ?epi ~eol:(Fmt.fmt "")
 
 
-let fmt ?pro ?epi ?eol ?adj loc =
-  Fmt.wrap_k (fmt_before ?pro ?epi ?eol ?adj loc) (fmt_after ?pro ?epi loc)
+let fmt c ?pro ?epi ?eol ?adj loc =
+  Fmt.wrap_k
+    (fmt_before c ?pro ?epi ?eol ?adj loc)
+    (fmt_after c ?pro ?epi loc)
 
 
-let fmt_list ?pro ?epi ?eol locs init =
-  List.fold locs ~init ~f:(fun k loc -> fmt ?pro ?epi ?eol loc @@ k)
+let fmt_list c ?pro ?epi ?eol locs init =
+  List.fold locs ~init ~f:(fun k loc -> fmt c ?pro ?epi ?eol loc @@ k)
 
 
 (** check if any comments have not been formatted *)
@@ -549,8 +592,15 @@ let final_check () =
 
 let diff x y =
   let norm z =
+    (* normalize consecutive whitespace chars to a single space *)
+    let f (txt, _) =
+      String.concat ~sep:" "
+        (List.filter ~f:(Fn.non String.is_empty)
+           (String.split_on_chars txt
+              ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+    in
     Set.of_list
       (module String)
-      (List.map ~f:fst (List.dedup_and_sort ~compare:Poly.compare z))
+      (List.map ~f (List.dedup_and_sort ~compare:Poly.compare z))
   in
   Set.symmetric_diff (norm x) (norm y)

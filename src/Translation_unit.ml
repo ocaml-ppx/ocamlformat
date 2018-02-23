@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 module Format = Format_
 
@@ -130,7 +130,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
   in
   let source = In_channel.with_file ifile ~f:In_channel.input_all in
   (* NOTE: Warning 28 is suppressed due to a difference in exception
-     constructor arity between OCaml versions.  See this
+     constructor arity between OCaml versions. See this
      ocaml-migrate-parsetree issue for potential future mitigation.
      https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
   try[@ocaml.warning "-28"] parse_print_ 1 source ifile ic with

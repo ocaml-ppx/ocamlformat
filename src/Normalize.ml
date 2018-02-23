@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 (** Normalize abstract syntax trees *)
 
@@ -19,10 +19,42 @@ open Ast_helper
 let mapper =
   (* remove locations *)
   let location _ _ = Location.none in
+  let attribute (m: Ast_mapper.mapper) attr =
+    match attr with
+    | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
+      , PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( { pexp_desc= Pexp_constant Pconst_string (doc, None)
+                    ; pexp_loc
+                    ; pexp_attributes }
+                  , [] )
+            ; pstr_loc } ] ) ->
+        (* normalize consecutive whitespace chars to a single space *)
+        let doc' =
+          String.concat ~sep:" "
+            (List.filter ~f:(Fn.non String.is_empty)
+               (String.split_on_chars doc
+                  ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+        in
+        ( {txt; loc= m.location m loc}
+        , m.payload m
+            (PStr
+               [ { pstr_desc=
+                     Pstr_eval
+                       ( { pexp_desc=
+                             Pexp_constant (Pconst_string (doc', None))
+                         ; pexp_loc= m.location m pexp_loc
+                         ; pexp_attributes= m.attributes m pexp_attributes
+                         }
+                       , [] )
+                 ; pstr_loc= m.location m pstr_loc } ]) )
+    | attr -> Ast_mapper.default_mapper.attribute m attr
+  in
   (* sort attributes *)
   let attributes (m: Ast_mapper.mapper) atrs =
-    List.sort ~cmp:Poly.compare
-      (Ast_mapper.default_mapper.attributes m atrs)
+    Ast_mapper.default_mapper.attributes m
+      (List.sort ~cmp:Poly.compare atrs)
   in
   let expr (m: Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -99,7 +131,7 @@ let mapper =
     | _ -> Ast_mapper.default_mapper.value_binding m vb
   in
   { Ast_mapper.default_mapper with
-    location; attributes; expr; pat; value_binding }
+    location; attribute; attributes; expr; pat; value_binding }
 
 
 let impl = map_structure mapper

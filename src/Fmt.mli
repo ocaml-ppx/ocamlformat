@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 (** Formatting combinators *)
 
@@ -87,6 +87,11 @@ val break_unless_newline : int -> int -> t
 val or_newline : string -> string -> t
 (** [or_newline fits breaks] prints [fits] if the line has not just been
     broken, and otherwise prints [breaks]. *)
+
+(** Conditional on immediately preceding a line break -------------------*)
+
+val pre_break : int -> string -> int -> t
+(** Format a pre break hint. *)
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
@@ -170,3 +175,8 @@ val hvbox_if : bool -> int -> t -> t
 val hovbox_if : bool -> int -> t -> t
 (** Conditionally wrap a format thunk with an hovbox with specified
     indentation. *)
+
+(** Text filling --------------------------------------------------------*)
+
+val fill_text : string -> t
+(** Format a string as filled text wrapped at the margin. *)

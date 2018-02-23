@@ -1,13 +1,13 @@
-(**********************************************************************)
-(*                                                                    *)
-(*                            OCamlFormat                             *)
-(*                                                                    *)
-(*  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *)
-(*                                                                    *)
-(*  This source code is licensed under the MIT license found in the   *)
-(*  LICENSE file in the root directory of this source tree.           *)
-(*                                                                    *)
-(**********************************************************************)
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
 
 (** Placing and formatting comments in a parsetree.
 
@@ -21,8 +21,7 @@
 
     When comments are formatted by one of the [fmt] functions, they are
     removed from the data structure. This is significant in cases where
-    there are multiple Ast terms with the same location.
-*)
+    there are multiple Ast terms with the same location. *)
 
 module Format = Format_
 open Migrate_ast
@@ -48,24 +47,24 @@ val relocate :
     [after]. *)
 
 val fmt_before :
-  ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
-  -> Fmt.t
+  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t
+  -> Location.t -> Fmt.t
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
 
-val fmt_after : ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+val fmt_after : Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
 val fmt :
-  ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
-  -> Fmt.t -> Fmt.t
+  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t
+  -> Location.t -> Fmt.t -> Fmt.t
 (** [fmt loc format_thunk] wraps [fmt_before] and [fmt_after] around
     [format_thunk]. *)
 
 val fmt_list :
-  ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> Location.t list -> Fmt.t
-  -> Fmt.t
+  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> Location.t list
+  -> Fmt.t -> Fmt.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
 val final_check : unit -> unit

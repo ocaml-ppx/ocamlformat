@@ -15,7 +15,7 @@ depends: [
   "cmdliner"
   "jbuilder" {build}
   "ocaml-migrate-parsetree" {>= "1.0.6"}
-  "ocamlformat_support" {= "0.2"}
+  "ocamlformat_support" {= "0.3"}
   "stdio"
 ]
 available: [ ocaml-version >= "4.04.1" ]
