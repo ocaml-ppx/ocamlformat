@@ -110,8 +110,8 @@ let fits_breaks ?(force_fit_if= false) ?(force_break_if= false) fits breaks
         | Scanf.Scan_failure _ | End_of_file -> (1, 0, b) )
       | ',' -> (0, 0, b)
       | ' ' -> (1, 0, b)
-      | _ -> (0, -1, breaks)
-    else (0, -1, breaks)
+      | _ -> (0, Int.min_value, breaks)
+    else (0, Int.min_value, breaks)
   in
   if force_fit_if then Format.pp_print_string fs fits
   else if force_break_if then (

@@ -303,7 +303,7 @@ let rec fmt_longident (li: Longident.t) =
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
 
-let fmt_constant (c: Conf.t) const =
+let fmt_constant (c: Conf.t) ?epi const =
   let fmt_char_escaped chr =
     match (c.escape_chars, chr) with
     | `Hexadecimal, _ ->
@@ -376,27 +376,32 @@ let fmt_constant (c: Conf.t) const =
       in
       let fmt_lines s =
         let lines = String.split s ~on:'\n' in
-        hvbox 0
-          (list_pn lines (fun ?prev curr ?next ->
-               let drop = function ' ' -> true | _ -> false in
-               let line =
-                 if Option.is_none prev then curr
-                 else String.lstrip ~drop curr
-               in
-               fmt_line line
-               $ opt next (fun next ->
-                     let spc =
-                       match
-                         String.lfindi next ~f:(fun _ c -> not (drop c))
-                       with
-                       | Some 0 -> ""
-                       | Some i -> escape_string (String.slice next 0 i)
-                       | None -> escape_string next
-                     in
-                     fmt "\\n" $ str spc $ pre_break 0 "\\" 0 ) ))
+        hvbox 1
+          ( str "\""
+          $ list_pn lines (fun ?prev curr ?next ->
+                let drop = function ' ' -> true | _ -> false in
+                let line =
+                  if Option.is_none prev then curr
+                  else String.lstrip ~drop curr
+                in
+                fmt_line line
+                $ opt next (fun next ->
+                      let spc =
+                        match
+                          String.lfindi next ~f:(fun _ c -> not (drop c))
+                        with
+                        | Some 0 -> ""
+                        | Some i -> escape_string (String.slice next 0 i)
+                        | None -> escape_string next
+                      in
+                      fmt "\\n"
+                      $ fmt_if_k
+                          (not (String.is_empty next))
+                          (str spc $ pre_break 0 "\\" 0) ) )
+          $ str "\"" $ Option.call ~f:epi )
       in
       match (delim, c.break_string_literals) with
-      | None, (`Newlines | `Wrap) -> str "\"" $ fmt_lines s $ str "\""
+      | None, (`Newlines | `Wrap) -> fmt_lines s
       | None, `Never -> str "\"" $ fmt_line s $ str "\""
       | Some delim, _ ->
           str ("{" ^ delim ^ "|") $ str s $ str ("|" ^ delim ^ "}")
@@ -807,7 +812,8 @@ and fmt_body c ({ast= body} as xbody) =
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
 
-and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
+and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
+    ({ast= exp} as xexp) =
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -818,14 +824,14 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
     | Labelled l -> fmt "~" $ str l $ fmt sep
     | Optional l -> fmt "?" $ str l $ fmt sep
   in
-  let fmt_label_arg ?(box= box) ?eol ?parens (lbl, ({ast= arg} as xarg)) =
+  let fmt_label_arg ?(box= box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
     match (lbl, arg.pexp_desc) with
     | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
       when String.equal l i ->
         Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
     | _ ->
         hvbox_if box 2
-          (fmt_label lbl ":@," $ fmt_expression c ~box ?eol ?parens xarg)
+          (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
   in
   let ctx = Exp exp in
   let width xe =
@@ -863,9 +869,14 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
                      ( match ast.pexp_desc with
                      | Pexp_fun _ | Pexp_function _ -> Some false
                      | _ -> None )
+                   ?epi:
+                     ( match (lbl, next) with
+                     | _, None -> None
+                     | Nolabel, _ -> Some (fits_breaks "" "@;<1000 -1>")
+                     | _ -> Some (fits_breaks "" "@;<1000 -3>") )
                    (lbl, xarg))
-            $ fmt_if_k (Option.is_none next) close_box $ fmt_if spc "@ " )
-        )
+            $ fmt_if_k (Option.is_none next) close_box
+            $ fmt_if_k spc (break_unless_newline 1 0) ) )
   in
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
   let fmt_atrs =
@@ -1107,7 +1118,7 @@ and fmt_expression c ?(box= true) ?eol ?parens ?ext ({ast= exp} as xexp) =
             $ fmt "@," $ fmt_atrs )
         $ fits_breaks_if paren_body ")" "@ )" )
   | Pexp_constant const ->
-      wrap_if parens "(" ")" (fmt_constant c const) $ fmt_atrs
+      wrap_if parens "(" ")" (fmt_constant c ?epi const) $ fmt_atrs
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
@@ -1579,7 +1590,7 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   let fmt_cstrs cstrs =
     fmt_if_k
       (not (List.is_empty cstrs))
-      ( fmt "@;"
+      ( fmt "@ "
       $ hvbox 2
           (list cstrs "@ " (fun (t1, t2, _) ->
                fmt "constraint@ " $ fmt_core_type c (sub_typ ~ctx t1)
