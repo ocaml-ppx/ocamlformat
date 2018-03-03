@@ -788,8 +788,8 @@ end = struct
      |Pat {ppat_desc= Ppat_construct _ | Ppat_variant _}, Ppat_constraint _
      |( Pat
           { ppat_desc=
-              ( Ppat_alias _ | Ppat_constraint _ | Ppat_construct _
-              | Ppat_variant _ ) }
+              ( Ppat_alias _ | Ppat_array _ | Ppat_constraint _
+              | Ppat_construct _ | Ppat_variant _ ) }
       , Ppat_tuple _ )
      |( ( Pat
             { ppat_desc=
