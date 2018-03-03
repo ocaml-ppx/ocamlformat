@@ -1725,7 +1725,7 @@ and fmt_extension_constructor ?pre c sep ctx ec =
 
 and fmt_module_type c {ast= mt} =
   let ctx = Mty mt in
-  let {pmty_desc} = mt in
+  let {pmty_desc; pmty_loc} = mt in
   match pmty_desc with
   | Pmty_ident {txt} -> {empty with bdy= fmt_longident txt}
   | Pmty_signature s ->
@@ -1764,8 +1764,15 @@ and fmt_module_type c {ast= mt} =
   | Pmty_typeof me -> (
       let blk = fmt_module_expr c (sub_mod ~ctx me) in
       match blk.pro with
-      | Some pro -> {blk with pro= Some (fmt "module type of " $ pro)}
-      | _ -> {blk with bdy= hvbox 2 (fmt "module type of@ " $ blk.bdy)} )
+      | Some pro ->
+          { blk with
+            pro= Some (Cmts.fmt c pmty_loc @@ (fmt "module type of " $ pro))
+          }
+      | _ ->
+          { blk with
+            bdy=
+              Cmts.fmt c pmty_loc
+              @@ hvbox 2 (fmt "module type of@ " $ blk.bdy) } )
   | Pmty_extension ext -> {empty with bdy= fmt_extension c ctx "%" ext}
   | Pmty_alias {txt} -> {empty with bdy= fmt_longident txt}
 
