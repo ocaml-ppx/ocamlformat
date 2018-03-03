@@ -465,16 +465,13 @@ let rec fmt_attribute c pre = function
       fmt_or (String.equal txt "ocaml.text") "@ " " " $ fmt "(**" $ str doc
       $ fmt "*)"
   | {txt; loc}, pld ->
-      let nullary = match pld with PStr [] -> true | _ -> false in
       Cmts.fmt c loc
       @@ hvbox 2
-           (wrap "[" "]"
-              ( str pre $ str txt $ fmt_if (not nullary) "@ "
-              $ fmt_payload c (Pld pld) pld ))
+           (wrap "[" "]" (str pre $ str txt $ fmt_payload c (Pld pld) pld))
 
 
 and fmt_extension c ctx key ({txt}, pld) =
-  wrap "[" "]" (str key $ str txt $ fmt "@ " $ fmt_payload c ctx pld)
+  wrap "[" "]" (str key $ str txt $ fmt_payload c ctx pld)
 
 
 and fmt_attributes c pre ~key attrs suf =
@@ -487,11 +484,12 @@ and fmt_payload c ctx pld =
   protect (Pld pld)
   @@
   match pld with
-  | PStr mex -> fmt_structure c ctx mex
-  | PSig mty -> fmt ": " $ fmt_signature c ctx mty
-  | PTyp typ -> fmt ": " $ fmt_core_type c (sub_typ ~ctx typ)
+  | PStr mex ->
+      fmt_if (not (List.is_empty mex)) "@ " $ fmt_structure c ctx mex
+  | PSig mty -> fmt "@ : " $ fmt_signature c ctx mty
+  | PTyp typ -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ)
   | PPat (pat, exp) ->
-      fmt "? " $ fmt_pattern c (sub_pat ~ctx pat)
+      fmt "@ ? " $ fmt_pattern c (sub_pat ~ctx pat)
       $ opt exp (fun exp ->
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )
 
