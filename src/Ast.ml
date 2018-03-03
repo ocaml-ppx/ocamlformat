@@ -784,7 +784,8 @@ end = struct
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
               pvb_pat == pat
           | _ -> false )
-    | Pat {ppat_desc= Ppat_construct _ | Ppat_variant _}, Ppat_constraint _
+    | Pat {ppat_desc= Ppat_constraint _}, Ppat_unpack _
+     |Pat {ppat_desc= Ppat_construct _ | Ppat_variant _}, Ppat_constraint _
      |( Pat
           { ppat_desc=
               ( Ppat_alias _ | Ppat_constraint _ | Ppat_construct _
