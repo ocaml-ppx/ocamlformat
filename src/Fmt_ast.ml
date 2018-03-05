@@ -1255,7 +1255,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         (vbox 0
            ( hvbox 0
                (list_fl bindings (fun ~first ~last binding ->
-                    fmt_value_binding c ~rec_flag ~first ?ext ctx binding
+                    fmt_value_binding c ~rec_flag ~first
+                      ?ext:(if first then ext else None)
+                      ctx binding
                       ~in_:(fun indent ->
                         fmt_if_k last (break 1 (-indent) $ fmt "in") )
                     $ fmt_if (not last) "@ " ))
