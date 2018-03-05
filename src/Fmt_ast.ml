@@ -1446,8 +1446,13 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             $ fmt_expression c (sub_exp ~ctx e2) )
         $ fmt_atrs )
   | Pexp_tuple es ->
+      let parens =
+        match xexp.ctx with
+        | Str {pstr_desc= Pstr_eval _} -> false
+        | _ -> true
+      in
       hvbox 0
-        ( wrap_fits_breaks "(" ")"
+        ( wrap_fits_breaks_if parens "(" ")"
             (list es "@,, " (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
   | Pexp_lazy e ->
