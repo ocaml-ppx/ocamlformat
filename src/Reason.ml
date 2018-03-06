@@ -22,7 +22,7 @@ type 'a reason_data =
     has been compiled with the same version of `ocaml` as `ocamlformat`. *)
 let input ast_magic input_name ic =
   Location.input_name := input_name ;
-  let (magic, _, (ast: 'a), comments, _, _) : 'a reason_data =
+  let ((magic, _, (ast: 'a), comments, _, _) : 'a reason_data) =
     Caml.Marshal.from_channel ic
   in
   if String.equal magic ast_magic then

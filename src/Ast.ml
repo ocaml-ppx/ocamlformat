@@ -784,8 +784,8 @@ end = struct
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
               pvb_pat == pat
           | _ -> false )
-    | Pat {ppat_desc= Ppat_constraint _}, Ppat_unpack _
-     |Pat {ppat_desc= Ppat_construct _ | Ppat_variant _}, Ppat_constraint _
+    | _, Ppat_unpack _
+     |_, Ppat_constraint _
      |( Pat
           { ppat_desc=
               ( Ppat_alias _ | Ppat_array _ | Ppat_constraint _
@@ -805,13 +805,8 @@ end = struct
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
               | Ppat_variant _ ) }
       , Ppat_or _ )
-     |Pat {ppat_desc= Ppat_tuple _}, (Ppat_constraint _ | Ppat_tuple _)
+     |Pat {ppat_desc= Ppat_tuple _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
-     |Exp {pexp_desc= Pexp_fun _ | Pexp_function _}, Ppat_constraint _
-     |( (Pat {ppat_desc= Ppat_alias _} | Exp {pexp_desc= Pexp_let _})
-      , ( Ppat_unpack _
-        | Ppat_constraint
-            ({ppat_desc= Ppat_unpack _}, {ptyp_desc= Ptyp_package _}) ) )
      |Exp {pexp_desc= Pexp_let _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _}
       , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
