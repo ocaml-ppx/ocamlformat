@@ -1640,11 +1640,12 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
        ( fmt_docstring c ~epi:(fmt "@,") doc
-       $ hvbox 2
-           ( str pre $ fmt_tydcl_params c ctx ptype_params
-           $ (match fmt_name with Some pp -> pp | None -> str txt)
-           $ fmt_manifest_kind ptype_manifest ptype_private ptype_kind
-           $ fmt_cstrs ptype_cstrs
+       $ hvbox 0
+           ( hvbox 2
+               ( str pre $ fmt_tydcl_params c ctx ptype_params
+               $ (match fmt_name with Some pp -> pp | None -> str txt)
+               $ fmt_manifest_kind ptype_manifest ptype_private ptype_kind
+               $ fmt_cstrs ptype_cstrs )
            $ fmt_attributes c (fmt "@ ") ~key:"@@" atrs (fmt "") ) )
   $ fmt brk
 
