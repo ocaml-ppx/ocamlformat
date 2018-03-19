@@ -943,28 +943,32 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "get")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i)] ) ->
-      fmt_expression c (sub_exp ~ctx s) $ fmt ".("
-      $ fmt_expression c (sub_exp ~ctx i) $ fmt ")"
+      wrap_if parens "(" ")"
+        ( fmt_expression c (sub_exp ~ctx s) $ fmt ".("
+        $ fmt_expression c (sub_exp ~ctx i) $ fmt ")" )
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "get")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i)] ) ->
-      fmt_expression c (sub_exp ~ctx s) $ fmt ".["
-      $ fmt_expression c (sub_exp ~ctx i) $ fmt "]"
+      wrap_if parens "(" ")"
+        ( fmt_expression c (sub_exp ~ctx s) $ fmt ".["
+        $ fmt_expression c (sub_exp ~ctx i) $ fmt "]" )
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "set")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i); (Nolabel, e)] ) ->
-      fmt_expression c (sub_exp ~ctx s) $ fmt ".("
-      $ fmt_expression c (sub_exp ~ctx i) $ fmt ")@ <- "
-      $ fmt_expression c (sub_exp ~ctx e)
+      wrap_if parens "(" ")"
+        ( fmt_expression c (sub_exp ~ctx s) $ fmt ".("
+        $ fmt_expression c (sub_exp ~ctx i) $ fmt ")@ <- "
+        $ fmt_expression c (sub_exp ~ctx e) )
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "set")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i); (Nolabel, e)] ) ->
-      fmt_expression c (sub_exp ~ctx s) $ fmt ".["
-      $ fmt_expression c (sub_exp ~ctx i) $ fmt "]@ <- "
-      $ fmt_expression c (sub_exp ~ctx e)
+      wrap_if parens "(" ")"
+        ( fmt_expression c (sub_exp ~ctx s) $ fmt ".["
+        $ fmt_expression c (sub_exp ~ctx i) $ fmt "]@ <- "
+        $ fmt_expression c (sub_exp ~ctx e) )
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident "~-"}
         ; pexp_loc
