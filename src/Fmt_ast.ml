@@ -2269,7 +2269,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
              fmt_module_binding c ctx ~rec_flag:true ~first binding
              $ fmt_if (not last) "@,@\n" ))
   | Pstr_type (rec_flag, decls) ->
-      hvbox 0
+      vbox 0
         (list_fl decls (fun ~first ~last decl ->
              let pre =
                if first then
