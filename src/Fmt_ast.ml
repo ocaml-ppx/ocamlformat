@@ -504,11 +504,12 @@ and fmt_payload c ctx pld =
 and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
-  let {ptyp_desc; ptyp_loc} = typ in
+  let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
+  let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c ptyp_loc
   @@
   let parens = parenze_typ xtyp in
-  hvbox_if box 0
+  ( hvbox_if box 0
   @@ wrap_if
        (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
        "(" ")"
@@ -563,7 +564,9 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
           | Open, Some _ -> impossible "not produced by parser" )
         $ fits_breaks "]" "@ ]" )
   | Ptyp_object _ | Ptyp_class _ ->
-      internal_error "classes not implemented" []
+      internal_error "classes not implemented" [] )
+  $ fmt_docstring c ~pro:(fmt "@ ") doc
+  $ fmt_attributes c (fmt "@ ") ~key:"@@" atrs (fmt "")
 
 
 and fmt_package_type c ctx ({txt}, cnstrs) =
