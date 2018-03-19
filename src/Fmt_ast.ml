@@ -1371,8 +1371,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                )) )
   | Pexp_newtype ({txt}, exp) ->
       hvbox 0
-        ( fmt "fun (type " $ str txt $ fmt ") ->@ "
-        $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs )
+        (wrap_if parens "(" ")"
+           ( fmt "fun (type " $ str txt $ fmt ") ->@ "
+           $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs ))
   | Pexp_pack me ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
