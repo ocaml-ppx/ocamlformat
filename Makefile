@@ -11,7 +11,6 @@
 
 SHELL=bash
 
-JBFLAGS= -j $(shell opam config var jobs)
 OCAMLDOT=ocamldot
 
 .PHONY: default
@@ -25,27 +24,27 @@ setup: jbuild-workspace
 
 .PHONY: exe
 exe: setup
-	jbuilder build $(JBFLAGS) src/ocamlformat.exe
+	jbuilder build src/ocamlformat.exe
 
 .PHONY: bc
 bc: setup
-	jbuilder build $(JBFLAGS) _build/dbg/src/ocamlformat.bc
+	jbuilder build _build/dbg/src/ocamlformat.bc
 
 .PHONY: dbg
 dbg: setup
-	jbuilder build $(JBFLAGS) _build/dbg/src/ocamlformat.exe
+	jbuilder build _build/dbg/src/ocamlformat.exe
 
 .PHONY: opt
 opt: setup
-	jbuilder build $(JBFLAGS) _build/default/src/ocamlformat.exe
+	jbuilder build _build/default/src/ocamlformat.exe
 
 .PHONY: reason
 reason: setup
-	jbuilder build $(JBFLAGS) src/ocamlformat_reason.exe
+	jbuilder build src/ocamlformat_reason.exe
 
 .PHONY: install
 install:
-	jbuilder build $(JBFLAGS) -p ocamlformat,ocamlformat_reason,ocamlformat_support
+	jbuilder build -p ocamlformat,ocamlformat_reason,ocamlformat_support
 
 SRCS=$(shell \ls src/{,import/}*.ml{,i})
 
