@@ -1425,8 +1425,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       in
       hvbox 0
         ( wrap_if parens "(" ")"
-            (list (sugar_sequence c width xexp) " ;@;<1000 0>" (fun grp ->
-                 list_k grp fmt_sep (fmt_expression c) ))
+            (list_k
+               (sugar_sequence c width xexp)
+               (fmt " ;" $ fmt_extension_suffix c ext $ fmt "@;<1000 0>")
+               (fun grp -> list_k grp fmt_sep (fmt_expression c)))
         $ fmt_atrs )
   | Pexp_setfield (e1, {txt}, e2) ->
       hvbox 0
