@@ -371,7 +371,14 @@ let fmt_constant (c: Conf.t) ?epi const =
         match c.break_string_literals with
         | `Wrap ->
             let words = String.split (escape_string s) ~on:' ' in
-            hovbox 0 (list_k words (pre_break 1 " \\" 0) str)
+            hovbox 0
+              (list_pn words (fun ?prev:_ curr ?next ->
+                   str curr
+                   $
+                   match (curr, next) with
+                   | _, Some "" -> str " "
+                   | _, Some _ -> pre_break 1 " \\" 0
+                   | _ -> fmt "" ))
         | _ -> str (escape_string s)
       in
       let fmt_lines s =
