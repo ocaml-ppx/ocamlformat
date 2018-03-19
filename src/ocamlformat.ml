@@ -20,6 +20,7 @@ let impl : _ Translation_unit.t =
   ; fmt= Fmt_ast.fmt_structure
   ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_impl ast1 ast2)
   ; normalize= (fun (ast, _) -> Normalize.impl ast)
+  ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.implementation }
 
 
@@ -32,6 +33,7 @@ let intf : _ Translation_unit.t =
   ; fmt= Fmt_ast.fmt_signature
   ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_intf ast1 ast2)
   ; normalize= (fun (ast, _) -> Normalize.intf ast)
+  ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.interface }
 
 

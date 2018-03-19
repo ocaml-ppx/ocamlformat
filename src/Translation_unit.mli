@@ -21,6 +21,7 @@ type 'a t =
       'a * (string * Location.t) list -> 'a * (string * Location.t) list
       -> bool
   ; normalize: 'a * (string * Location.t) list -> 'a
+  ; no_translation: 'a -> bool
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)

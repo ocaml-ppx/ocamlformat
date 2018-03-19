@@ -27,6 +27,7 @@ type 'a t =
       'a * (string * Location.t) list -> 'a * (string * Location.t) list
       -> bool
   ; normalize: 'a * (string * Location.t) list -> 'a
+  ; no_translation: 'a -> bool
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)
@@ -79,10 +80,14 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
     if Conf.debug then
       dump xunit dir base ".old" ".ast" (xunit.normalize (ast, cmts)) ;
     xunit.init_cmts source ast cmts ;
-    let fs = Format.formatter_of_out_channel oc in
-    Fmt.set_margin conf.margin fs ;
-    xunit.fmt conf ast fs ;
-    Format.pp_print_newline fs () ;
+    ( if xunit.no_translation ast then (
+        In_channel.seek ic Int64.zero ;
+        Out_channel.output_string oc (In_channel.input_all ic) )
+    else
+      let fs = Format.formatter_of_out_channel oc in
+      Fmt.set_margin conf.margin fs ;
+      xunit.fmt conf ast fs ;
+      Format.pp_print_newline fs () ) ;
     Out_channel.close oc ;
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
     if not (String.equal source fmted) then (
