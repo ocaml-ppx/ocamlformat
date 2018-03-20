@@ -477,8 +477,11 @@ let rec fmt_attribute c pre = function
            (wrap "[" "]" (str pre $ str txt $ fmt_payload c (Pld pld) pld))
 
 
-and fmt_extension c ctx key ({txt}, pld) =
-  wrap "[" "]" (str key $ str txt $ fmt_payload c ctx pld)
+and fmt_extension c ctx key (({txt} as ext), pld) =
+  match pld with
+  | PStr [({pstr_desc= Pstr_value _; _} as si)] ->
+      fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
+  | _ -> wrap "[" "]" (str key $ str txt $ fmt_payload c ctx pld)
 
 
 and fmt_attributes c pre ~key attrs suf =
@@ -2215,7 +2218,7 @@ and fmt_structure c ?(sep= "") ctx itms =
          fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
 
 
-and fmt_structure_item c ~sep ~last:last_item {ctx; ast= si} =
+and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
   @@
   let at_top = Poly.(ctx = Top) in
@@ -2274,7 +2277,9 @@ and fmt_structure_item c ~sep ~last:last_item {ctx; ast= si} =
   | Pstr_value (rec_flag, bindings) ->
       hvbox 0
         (list_fl bindings (fun ~first ~last binding ->
-             fmt_value_binding c ~rec_flag ~first ctx binding
+             fmt_value_binding c ~rec_flag ~first
+               ?ext:(if first then ext else None)
+               ctx binding
                ~epi:(fits_breaks ~force_fit_if:last_item "" "\n")
              $ fmt_if (not last) "\n@\n" ))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
