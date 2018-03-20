@@ -245,6 +245,9 @@ let rec sugar_functor ?mt ({ast= me} as xme) =
       ; pmod_attributes= [] }
     , None )
     -> (
+      let arg =
+        if String.equal "*" arg.txt then {arg with txt= ""} else arg
+      in
       Cmts.relocate ~src:pmod_loc ~before:arg.loc ~after:body.pmod_loc ;
       let xarg_mt = Option.map arg_mt ~f:(sub_mty ~ctx) in
       let ctx = Mod body in
@@ -2114,6 +2117,7 @@ and fmt_module_expr c {ast= m} =
             ( Cmts.fmt_after c pmod_loc
             $ fmt_attributes c (fmt " ") ~key:"@@" atrs (fmt "") ) }
   | Pmod_functor ({txt}, mt, me) ->
+      let txt = if String.equal "*" txt then "" else txt in
       let { opn= opn_t
           ; pro= pro_t
           ; psp= psp_t
