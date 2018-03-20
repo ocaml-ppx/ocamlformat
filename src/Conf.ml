@@ -387,7 +387,7 @@ let action =
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
         In_out
-          ( { kind= kind_of input_file
+          ( { kind= kind_of name
             ; name
             ; file= input_file
             ; conf= conf name }
