@@ -387,10 +387,7 @@ let action =
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
         In_out
-          ( { kind= kind_of name
-            ; name
-            ; file= input_file
-            ; conf= conf name }
+          ( {kind= kind_of name; name; file= input_file; conf= conf name}
           , !output )
     | _ -> impossible "checked by validate"
 
