@@ -1402,6 +1402,11 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc} when field_alias txt txt' ->
             Cmts.fmt c loc @@ cbox 2 (fmt_longident txt)
+        | Pexp_constraint
+            (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
+          when field_alias txt txt' ->
+            Cmts.fmt c loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
+            $ fmt " : " $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
             cbox 2
               ( fmt_longident txt $ fmt "=@ "
