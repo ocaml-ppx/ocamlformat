@@ -1428,19 +1428,24 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                $ ( fmt_if (Option.is_some default) "with@;<1 2>"
                  $ hvbox (-2) (list flds "@,; " fmt_field) ) ))
         $ fmt_atrs )
-  | Pexp_sequence _ ->
-      let fmt_sep =
-        match ext with
-        | None -> fmt " ;@ "
-        | Some {txt; _} -> fmt " ;%%" $ str txt $ fmt "@ "
+  | Pexp_sequence (e1, e2) when Option.is_some ext ->
+      let parens1 =
+        match e1.pexp_desc with Pexp_sequence _ -> Some true | _ -> None
       in
       hvbox 0
-        ( wrap_if parens "(" ")"
-            (list_k
-               (sugar_sequence c width xexp)
-               (fmt " ;" $ fmt_extension_suffix c ext $ fmt "@;<1000 0>")
-               (fun grp -> list_k grp fmt_sep (fmt_expression c)))
-        $ fmt_atrs )
+        (hvbox_if parens 2
+           ( wrap_fits_breaks_if parens "(" ")"
+               ( fmt_expression c ?parens:parens1 (sub_exp ~ctx e1)
+               $ fmt " ;" $ fmt_extension_suffix c ext $ fmt "@ "
+               $ fmt_expression c (sub_exp ~ctx e2) )
+           $ fmt_atrs ))
+  | Pexp_sequence _ ->
+      hvbox 0
+        (hvbox_if parens 2
+           ( wrap_fits_breaks_if parens "(" ")"
+               (list (sugar_sequence c width xexp) " ;@;<1000 0>"
+                  (fun grp -> list grp " ;@ " (fmt_expression c) ))
+           $ fmt_atrs ))
   | Pexp_setfield (e1, {txt}, e2) ->
       hvbox 0
         ( wrap_fits_breaks_if parens "(" ")"

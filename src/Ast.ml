@@ -938,6 +938,17 @@ end = struct
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply _} as e0))
         when e0 == exp ->
           true
+      | Pexp_sequence
+          ( ( { pexp_desc=
+                  Pexp_extension
+                    ( _
+                    , PStr
+                        [ { pstr_desc=
+                              Pstr_eval ({pexp_desc= Pexp_sequence _}, [])
+                          } ] ) } as lhs )
+          , _ )
+        when lhs == exp ->
+          true
       | Pexp_sequence (lhs, _) when lhs == exp -> exposed Let_match exp
       | Pexp_sequence (_, rhs) when rhs == exp -> false
       | _ ->
