@@ -20,6 +20,7 @@ let reason_impl : _ Translation_unit.t =
   ; parse
   ; equal= Reason.equal_impl
   ; normalize= Reason.norm_impl
+  ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.implementation }
 
 
@@ -32,6 +33,7 @@ let reason_intf : _ Translation_unit.t =
   ; parse
   ; equal= Reason.equal_intf
   ; normalize= Reason.norm_intf
+  ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.interface }
 
 
