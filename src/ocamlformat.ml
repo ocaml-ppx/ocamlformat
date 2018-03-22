@@ -15,7 +15,7 @@
 let impl : _ Translation_unit.t =
   let parse = Translation_unit.parse Migrate_ast.Parse.implementation in
   { parse
-  ; input= parse Location.none.loc_start.pos_fname
+  ; input= (fun ~input_name ic -> parse ~input_name ic)
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_impl ast1 ast2)
@@ -28,7 +28,7 @@ let impl : _ Translation_unit.t =
 let intf : _ Translation_unit.t =
   let parse = Translation_unit.parse Migrate_ast.Parse.interface in
   { parse
-  ; input= parse Location.none.loc_start.pos_fname
+  ; input= (fun ~input_name ic -> parse ~input_name ic)
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_intf ast1 ast2)
@@ -54,7 +54,11 @@ let xunit_of_kind : _ -> Translation_unit.x = function
                Translation_unit.parse_print (xunit_of_kind kind) conf name
                  file ic (Some file) ) )
    | In_out
-       ({kind= (`Impl | `Intf) as kind; file= input_file; conf}, output_file) ->
+       ( { kind= (`Impl | `Intf) as kind
+         ; file= input_file
+         ; name= input_name
+         ; conf }
+       , output_file ) ->
        In_channel.with_file input_file ~f:(fun ic ->
-           Translation_unit.parse_print (xunit_of_kind kind) conf input_file
-             input_file ic output_file )
+           Translation_unit.parse_print (xunit_of_kind kind) conf
+             ~input_name ~input_file ic output_file )

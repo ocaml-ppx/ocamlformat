@@ -20,7 +20,7 @@ type 'a reason_data =
     [input_channel]. It is expected to have the given [magic_number] and is
     assumed to be the output of `refmt --print=binary_reason` where `refmt`
     has been compiled with the same version of `ocaml` as `ocamlformat`. *)
-let input ast_magic input_name ic =
+let input ast_magic ~input_name ic =
   Location.input_name := input_name ;
   let (magic, _, (ast: 'a), comments, _, _) : 'a reason_data =
     Caml.Marshal.from_channel ic
