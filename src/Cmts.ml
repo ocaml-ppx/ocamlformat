@@ -20,7 +20,7 @@ open Parsetree
     whenever 2 intervals share more than an end-point, then one contains the
     other. *)
 module Non_overlapping_interval_tree (Itv : sig
-  include Hashtbl_intf.Key
+  include Hashtbl.Key
 
   val contains : t -> t -> bool
 
@@ -41,7 +41,7 @@ end = struct
 
   type t = {mutable roots: Itv.t list; tbl: (Itv.t, Itv.t list) Hashtbl.t}
 
-  let create () = {roots= []; tbl= Hashtbl.create (module Itv) ()}
+  let create () = {roots= []; tbl= Hashtbl.create (module Itv)}
 
   (* Descend tree from roots, find deepest node that contains elt. *)
 
@@ -64,7 +64,7 @@ end = struct
 
   let of_list elts =
     let elts_decreasing_width =
-      List.sort ~cmp:Itv.compare_width_decreasing
+      List.sort ~compare:Itv.compare_width_decreasing
         (List.dedup_and_sort ~compare:Poly.compare elts)
     in
     let tree = create () in
@@ -72,7 +72,7 @@ end = struct
         match parent tree.tbl tree.roots elt with
         | Some parent -> Hashtbl.add_multi tree.tbl ~key:parent ~data:elt
         | None -> tree.roots <- elt :: tree.roots ) ;
-    {tree with tbl= Hashtbl.map tree.tbl ~f:(List.sort ~cmp:Poly.compare)}
+    {tree with tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare)}
 
 
   let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
@@ -502,14 +502,15 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
     match String.Search_pattern.index pat ~pos ~in_:txt with
     | Some 0 -> "" :: split_asterisk_prefixed_ len
     | Some idx ->
-        String.slice txt pos idx :: split_asterisk_prefixed_ (idx + len)
+        String.sub txt pos (idx - pos) :: split_asterisk_prefixed_ (idx + len)
     | _ ->
         let drop = function ' ' | '\t' -> true | _ -> false in
-        let line = String.rstrip ~drop (String.slice txt pos 0) in
+        let line = String.rstrip ~drop (String.drop_prefix txt pos) in
         if String.is_empty line then [line]
-        else if Char.equal (String.nget line (-1)) '\n' then
-          [String.slice line 0 (-1); ""]
-        else if Char.is_whitespace (String.nget txt (-1)) then [line ^ " "]
+        else if Char.equal (String.get line (String.length line - 1)) '\n' then
+          [String.drop_suffix line 1; ""]
+        else if Char.is_whitespace (String.get txt (String.length txt - 1)) then
+          [line ^ " "]
         else [line]
   in
   split_asterisk_prefixed_ 0

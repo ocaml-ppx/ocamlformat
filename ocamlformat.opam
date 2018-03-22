@@ -10,7 +10,7 @@ build: [
   ["jbuilder" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "base" {= "v0.10.0"}
+  "base" {>= "v0.11.0"}
   "base-unix"
   "cmdliner"
   "jbuilder" {build}
