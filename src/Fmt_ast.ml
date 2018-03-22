@@ -1623,7 +1623,7 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
         $ hvbox 0
             (wrap_fits_breaks "{" "}"
                (list lbl_decls "@,; " (fmt_label_declaration c ctx)))
-    | Ptype_open -> fmt " = .."
+    | Ptype_open -> fmt_manifest ~priv mfst $ fmt " = .."
   in
   let fmt_cstrs cstrs =
     fmt_if_k
