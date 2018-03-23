@@ -1478,8 +1478,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_sequence _ ) } as e1 )
                     , _ ) } as str ) ] ) ->
-      fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
-      $ fmt_atrs
+      hvbox 0
+        ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
+        $ fmt_atrs )
   | Pexp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs
   | Pexp_for (p1, e1, e2, dir, e3) ->
       hvbox 0
