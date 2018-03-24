@@ -15,7 +15,7 @@
 let impl : _ Translation_unit.t =
   let parse = Translation_unit.parse Migrate_ast.Parse.implementation in
   { parse
-  ; input= (fun ~input_name ic -> parse ~input_name ic)
+  ; input= parse ?warn:None
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_impl ast1 ast2)
@@ -28,7 +28,7 @@ let impl : _ Translation_unit.t =
 let intf : _ Translation_unit.t =
   let parse = Translation_unit.parse Migrate_ast.Parse.interface in
   { parse
-  ; input= (fun ~input_name ic -> parse ~input_name ic)
+  ; input= parse ?warn:None
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_intf ast1 ast2)
