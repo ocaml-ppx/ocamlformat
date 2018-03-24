@@ -1,0 +1,23 @@
+language: c
+env:
+  - OCAML_VERSION=4.06.1+flambda
+cache:
+  directories:
+    - ${HOME}/.opam
+before_install:
+  - wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.0-beta6/opam-2.0.0-beta6-x86_64-linux
+  - chmod +x ${HOME}/opam
+  - export PATH=${HOME}:${PATH}
+  - export OPAMYES=1
+  - export OPAMJOBS=2
+  - opam init --compiler=${OCAML_VERSION}
+  - eval `opam config env`
+  - export OPAMVERBOSE=1
+install:
+  - git clone --branch support https://github.com/ocaml-ppx/ocamlformat.git ocamlformat_support
+  - opam pin add --no-action ocamlformat_support https://github.com/ocaml-ppx/ocamlformat.git#support
+  - opam pin add --no-action ocamlformat .
+  - opam install --deps-only ocamlformat_support ocamlformat
+script:
+  - make test
+  - opam install ocamlformat

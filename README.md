@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ocaml-ppx/ocamlformat.svg?branch=master)](https://travis-ci.org/ocaml-ppx/ocamlformat)
+
 # OCamlFormat
 
 OCamlFormat is a tool to format OCaml code.

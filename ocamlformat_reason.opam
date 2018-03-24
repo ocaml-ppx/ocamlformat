@@ -7,7 +7,7 @@ bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git"
 license: "MIT"
 depends: [
-  "base" {>= "v0.10.0"}
+  "base" {= "v0.10.0"}
   "base-unix"
   "cmdliner"
   "jbuilder" {build & >= "1.0+beta9"}

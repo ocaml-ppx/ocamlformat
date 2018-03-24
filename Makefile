@@ -58,3 +58,7 @@ clean:
 .PHONY: fmt
 fmt:
 	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
+
+.PHONY: test
+test: exe reason
+	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -n 1 -i $(SRCS)
