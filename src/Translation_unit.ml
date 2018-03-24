@@ -17,11 +17,12 @@ open Migrate_ast
 
 (** Operations on translation units. *)
 type 'a t =
-  { input: string -> In_channel.t -> 'a * (string * Location.t) list
+  { input:
+      input_name:string -> In_channel.t -> 'a * (string * Location.t) list
   ; init_cmts: string -> 'a -> (string * Location.t) list -> unit
   ; fmt: Conf.t -> 'a -> Fmt.t
   ; parse:
-      ?warn:bool -> string -> string -> In_channel.t
+      ?warn:bool -> input_name:string -> In_channel.t
       -> 'a * (string * Location.t) list
   ; equal:
       'a * (string * Location.t) list -> 'a * (string * Location.t) list
@@ -33,10 +34,10 @@ type 'a t =
 (** Existential package of a type of translation unit and its operations. *)
 type x = XUnit: 'a t -> x
 
-let parse parse_ast ?(warn= Conf.warn_error) input_name ifile ic =
+let parse parse_ast ?(warn= Conf.warn_error) ~input_name ic =
   Warnings.parse_options false (if warn then "@50" else "-50") ;
   let lexbuf = Lexing.from_channel ic in
-  Location.init lexbuf ifile ;
+  Location.init lexbuf input_name ;
   Location.input_name := input_name ;
   let ast = parse_ast lexbuf in
   Warnings.check_fatal () ;
@@ -53,16 +54,17 @@ let dump xunit dir base suf ext ast =
     Out_channel.close oc )
 
 
-let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
+let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
+    ~input_file:ifile ic ofile =
   let dir =
     match ofile with
     | Some ofile -> Filename.dirname ofile
     | None -> Filename.get_temp_dir_name ()
   in
-  let base = Filename.(remove_extension (basename ifile)) in
-  let ext = Filename.extension ifile in
+  let base = Filename.(remove_extension (basename iname)) in
+  let ext = Filename.extension iname in
   (* iterate until formatting stabilizes *)
-  let rec parse_print_ i source ifile ic =
+  let rec parse_print_ i source ic =
     Format.pp_print_flush Format.err_formatter () ;
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
@@ -74,8 +76,8 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
         (tmp, oc)
     in
     let ast, cmts =
-      if i = 1 then xunit.input iname ic
-      else xunit.parse ~warn:false tmp ifile ic
+      if i = 1 then xunit.input ~input_name:iname ic
+      else xunit.parse ~warn:false ~input_name:tmp ic
     in
     if Conf.debug then
       dump xunit dir base ".old" ".ast" (xunit.normalize (ast, cmts)) ;
@@ -96,7 +98,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
           if not Conf.debug then Unix.unlink tmp ;
           raise exc ) ;
       In_channel.with_file tmp ~f:(fun ic' ->
-          let ast', cmts' = xunit.parse tmp tmp ic' in
+          let ast', cmts' = xunit.parse ~input_name:tmp ic' in
           let eq_ast = xunit.equal (ast, cmts) (ast', cmts') in
           if not eq_ast then (
             dump xunit dir base ".old" ".ast" (xunit.normalize (ast, cmts)) ;
@@ -116,8 +118,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
                     (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
                     diff_cmts ) ] ) ) ;
       if i < conf.max_iters then (
-        In_channel.with_file tmp ~f:(fun ic ->
-            parse_print_ (i + 1) fmted tmp ic ) ;
+        In_channel.with_file tmp ~f:(fun ic -> parse_print_ (i + 1) fmted ic) ;
         Unix.unlink tmp )
       else
         internal_error
@@ -138,7 +139,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) iname ifile ic ofile =
      constructor arity between OCaml versions. See this
      ocaml-migrate-parsetree issue for potential future mitigation.
      https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
-  try[@ocaml.warning "-28"] parse_print_ 1 source ifile ic with
+  try[@ocaml.warning "-28"] parse_print_ 1 source ic with
   | Fmt_ast.Formatting_disabled -> (
     match (Conf.action, ofile) with
     | _, None -> Out_channel.output_string stdout source
