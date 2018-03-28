@@ -2374,7 +2374,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let indent =
     match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
-  fmt_docstring c ~epi:(fmt "@,") doc $ Cmts.fmt_before c pvb_loc
+  fmt_docstring c
+    ~epi:(match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
+    doc
+  $ Cmts.fmt_before c pvb_loc
   $ hvbox indent
       ( open_hovbox 2
       $ ( hovbox 4
