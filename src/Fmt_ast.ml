@@ -569,8 +569,29 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
               $ list ls "@ " (fmt "`" >$ str)
           | Open, Some _ -> impossible "not produced by parser" )
         $ fits_breaks "]" "@ ]" )
-  | Ptyp_object _ | Ptyp_class _ ->
-      internal_error "classes not implemented" [] )
+  | Ptyp_object (fields, closedness) ->
+      hvbox 0
+        (wrap_fits_breaks "<" ">"
+           ( list fields "@ ; " (function
+               | Otag (lab_loc, attrs, typ) ->
+                   (* label loc * attributes * core_type -> object_field *)
+                   let doc, atrs = doc_atrs attrs in
+                   let fmt_cmts = Cmts.fmt c lab_loc.loc in
+                   fmt_cmts
+                   @@ hvbox 4
+                        ( hvbox 2
+                            ( Cmts.fmt c lab_loc.loc @@ str lab_loc.txt
+                            $ fmt ":@ " $ fmt_core_type c (sub_typ ~ctx typ)
+                            )
+                        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
+                        $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "")
+                        )
+               | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
+           $ fmt_if
+               Poly.(closedness = Open)
+               (match fields with [] -> "@ .. " | _ -> "@ ; .. ") ))
+  | Ptyp_class _ -> internal_error "Ptyp_class: classes not implemented" []
+  )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
   $ fmt_attributes c (fmt "@ ") ~key:"@@" atrs (fmt "")
 
