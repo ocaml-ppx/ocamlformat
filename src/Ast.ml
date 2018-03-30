@@ -303,8 +303,12 @@ end = struct
               | Rtag (_, _, _, t1N) -> List.exists t1N ~f
               | Rinherit t1 -> typ == t1 ) )
       | Ptyp_package (_, it1N) -> assert (List.exists it1N ~f:snd_f)
-      | Ptyp_object _ | Ptyp_class _ ->
-          internal_error "objects not implemented" [] )
+      | Ptyp_object (fields, _) ->
+          assert (
+            List.exists fields ~f:(function
+              | Otag (_, _, t1) -> typ == t1
+              | Oinherit t1 -> typ == t1 ) )
+      | Ptyp_class _ -> internal_error "objects not implemented" [] )
     | Pat ctx -> (
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
