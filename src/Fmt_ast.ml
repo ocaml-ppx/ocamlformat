@@ -489,8 +489,8 @@ and fmt_extension c ctx key (({txt} as ext), pld) =
 
 and fmt_attributes c pre ~key attrs suf =
   list_fl attrs (fun ~first ~last atr ->
-      fmt_or_k first pre (fmt "@ ") $ fmt_attribute c key atr
-      $ fmt_if_k last suf )
+      fmt_or_k first (pre $ open_hvbox 0) (fmt "@ ")
+      $ fmt_attribute c key atr $ fmt_if_k last (close_box $ suf) )
 
 
 and fmt_payload c ctx pld =
