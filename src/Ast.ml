@@ -16,7 +16,11 @@ open Parsetree
 
 (** Predicates recognizing special symbol identifiers. *)
 
-let is_prefix_id i = match i.[0] with '!' | '?' | '~' -> true | _ -> false
+let is_prefix_id i =
+  match i with
+  | "!=" -> false
+  | _ -> match i.[0] with '!' | '?' | '~' -> true | _ -> false
+
 
 let is_prefix exp =
   match exp.pexp_desc with
