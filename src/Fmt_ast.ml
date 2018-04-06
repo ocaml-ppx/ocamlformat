@@ -2091,7 +2091,17 @@ and fmt_module_expr c {ast= m} =
           ; cls= cls_a
           ; esp= esp_a
           ; epi= epi_a } =
-        fmt_module_expr c (sub_mod ~ctx me_a)
+        match me_a with
+        | {pmod_desc= Pmod_structure []; _} ->
+            (* arguments of generative functors *)
+            { opn= open_hvbox 0
+            ; pro= None
+            ; psp= fmt ""
+            ; bdy= fmt ""
+            ; cls= close_box
+            ; esp= fmt ""
+            ; epi= None }
+        | _ -> fmt_module_expr c (sub_mod ~ctx me_a)
       in
       { empty with
         opn= opn_a $ opn_f $ open_hvbox 2
