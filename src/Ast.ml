@@ -621,16 +621,10 @@ end = struct
       | Pexp_apply
           ( { pexp_desc=
                 Pexp_ident
-                  { txt=
-                      Ldot
-                        ( Lident ("Array" | "String")
-                        , (("get" | "set") as name) ) } }
+                  {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
+            }
           , (_, a1) :: (_, a2) :: _ ) ->
-          if a1 == exp then
-            match name with
-            | "get" -> Some (Dot, Non)
-            | "set" -> Some (LessMinus, Non)
-            | _ -> impossible "matched pattern"
+          if a1 == exp then Some (Dot, Non)
           else if a2 == exp then Some (Comma, Left)
           else Some (Comma, Right)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [(_, e1); _])
