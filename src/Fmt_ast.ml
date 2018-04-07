@@ -1710,7 +1710,7 @@ and fmt_label_declaration c ctx lbl_decl =
     lbl_decl
   in
   let doc, atrs = doc_atrs pld_attributes in
-  let fmt_cmts = Cmts.fmt c pld_loc in
+  let fmt_cmts = Cmts.fmt c ~eol:(break_unless_newline 1 2) pld_loc in
   fmt_cmts
   @@ hvbox 4
        ( hvbox 2
