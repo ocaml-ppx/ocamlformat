@@ -1691,7 +1691,10 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   let doc, atrs = doc_atrs ptype_attributes in
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
-       ( fmt_docstring c ~epi:(fmt "@,") doc
+       ( fmt_docstring c
+           ~epi:
+             (match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
+           doc
        $ hvbox 0
            ( hvbox 2
                ( str pre $ fmt_tydcl_params c ctx ptype_params
