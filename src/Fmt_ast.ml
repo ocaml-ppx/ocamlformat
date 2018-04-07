@@ -546,8 +546,7 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
            (list t1N "@,, " (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident txt
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
-  | Ptyp_package pty ->
-      hvbox 0 (wrap "(" ")" (fmt "module@ " $ fmt_package_type c ctx pty))
+  | Ptyp_package pty -> hvbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
   | Ptyp_poly (a1N, t) ->
       hovbox_if box 0
         ( list a1N "@ " (fun {txt} -> fmt "'" $ str txt) $ fmt ".@ "

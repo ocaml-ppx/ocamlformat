@@ -748,12 +748,7 @@ end = struct
   let parenze_typ ({ctx; ast= typ} as xtyp) =
     assert (check_typ xtyp ; true) ;
     match xtyp with
-    | { ctx=
-          ( Exp {pexp_desc= Pexp_constraint _}
-          | Sig {psig_desc= Psig_type _}
-          | Str {pstr_desc= Pstr_type _} )
-      ; ast= {ptyp_desc= Ptyp_package _} } ->
-        true
+    | {ast= {ptyp_desc= Ptyp_package _}} -> true
     | _ ->
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
       | Some Some true -> true
