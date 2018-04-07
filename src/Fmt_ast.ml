@@ -336,7 +336,7 @@ let fmt_constant (c: Conf.t) ?epi const =
             | '\128'..'\255', `Preserve -> 1
             | _ -> 4
           in
-          n := !n + l
+          n := (!n + l)
         done ;
         if !n = String.length str then str
         else
@@ -359,9 +359,9 @@ let fmt_constant (c: Conf.t) ?epi const =
             | _ ->
                 let code = Char.to_int chr in
                 set '\\' ;
-                set (Char.of_int_exn (48 + code / 100)) ;
-                set (Char.of_int_exn (48 + code / 10 % 10)) ;
-                set (Char.of_int_exn (48 + code % 10))
+                set (Char.of_int_exn (48 + (code / 100))) ;
+                set (Char.of_int_exn (48 + (code / 10 % 10))) ;
+                set (Char.of_int_exn (48 + (code % 10)))
           done ;
           Bytes.to_string buf
   in
@@ -538,7 +538,7 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
              hvbox 0 (arg_label lI $ fmt_core_type c xtI) ))
   | Ptyp_constr ({txt; loc}, []) -> Cmts.fmt c loc @@ fmt_longident txt
   | Ptyp_constr ({txt; loc}, [t1]) ->
-      Cmts.fmt c loc @@ fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ "
+      (Cmts.fmt c loc @@ fmt_core_type c (sub_typ ~ctx t1)) $ fmt "@ "
       $ fmt_longident txt
   | Ptyp_constr ({txt; loc}, t1N) ->
       Cmts.fmt c loc
@@ -581,7 +581,7 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
                    fmt_cmts
                    @@ hvbox 4
                         ( hvbox 2
-                            ( Cmts.fmt c lab_loc.loc @@ str lab_loc.txt
+                            ( (Cmts.fmt c lab_loc.loc @@ str lab_loc.txt)
                             $ fmt ":@ " $ fmt_core_type c (sub_typ ~ctx typ)
                             )
                         $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
@@ -609,7 +609,7 @@ and fmt_row_field c ctx = function
   | Rtag ({txt; loc}, atrs, const, typs) ->
       let doc, atrs = doc_atrs atrs in
       hvbox 0
-        ( Cmts.fmt c loc @@ (fmt "`" $ str txt)
+        ( (Cmts.fmt c loc @@ (fmt "`" $ str txt))
         $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "")
         $ fmt_if (not (const && List.is_empty typs)) " of "
         $ fmt_if (const && not (List.is_empty typs)) " & "
@@ -837,7 +837,7 @@ and fmt_fun_args c args =
     | Val ((Labelled _ | Nolabel), _, Some _) ->
         impossible "not accepted by parser"
     | Newtype {txt; loc} ->
-        cbox 0 (wrap "(" ")" (fmt "type " $ Cmts.fmt c loc @@ str txt))
+        cbox 0 (wrap "(" ")" (fmt "type " $ (Cmts.fmt c loc @@ str txt)))
   in
   fmt_if_k (not (List.is_empty args)) (list args "@ " fmt_fun_arg $ fmt "@ ")
 
@@ -900,7 +900,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             in
             let spc =
               consecutive_prefix_ops
-              || (not (is_prefix ast) || Option.is_none next && not last_grp)
+              || ( not (is_prefix ast)
+                 || (Option.is_none next && not last_grp) )
                  && (not last_grp || Option.is_some next)
             in
             openbox
@@ -1027,7 +1028,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
         let _, ({ast= arg} as xarg) = lbl_xarg in
         let parens =
-          not last_op && exposed Ast.Non_apply arg || parenze_exp xarg
+          (not last_op && exposed Ast.Non_apply arg) || parenze_exp xarg
         in
         fmt_label_arg
           ?box:
@@ -1071,8 +1072,22 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                 (break 0 (if parens && first then -2 else 0)) )
         $ fmt_if_k (not last) (break_unless_newline 1 0)
       in
+      let is_nested_diff_prec_infix_ops =
+        match (xexp.ctx, xexp.ast.pexp_desc) with
+        | Exp {pexp_desc= Pexp_apply (f, _)}, Pexp_apply (e, _) ->
+            is_infix e && is_infix f
+            && Poly.(prec_ast xexp.ctx <> prec_ast (Exp xexp.ast))
+        | _ -> false
+      in
+      let wrap parens nested k =
+        let parens_or_nested = parens || nested in
+        fits_breaks_if parens_or_nested "(" (if parens then "( " else "")
+        $ k
+        $ fits_breaks_if parens_or_nested ")" (if parens then "@ )" else "")
+      in
       hovbox 0
-        ( wrap_fits_breaks_if parens "(" ")" (list_fl op_args fmt_op_args)
+        ( wrap parens is_nested_diff_prec_infix_ops
+            (list_fl op_args fmt_op_args)
         $ fmt_atrs )
   | Pexp_apply (e0, a1N) when is_infix e0 ->
       hvbox 2
@@ -1197,7 +1212,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         let loc_args = sugar_infix_cons xexp in
         let fmt_arg ~last_op ({ast= arg} as xarg) =
           let parens =
-            not last_op && exposed Ast.Non_apply arg || parenze_exp xarg
+            (not last_op && exposed Ast.Non_apply arg) || parenze_exp xarg
           in
           fmt_label_arg
             ?box:
@@ -1438,7 +1453,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         | Pexp_constraint
             (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
           when field_alias txt txt' ->
-            Cmts.fmt c loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
+            (Cmts.fmt c loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e))
             $ fmt " : " $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
             cbox 2
@@ -1697,7 +1712,7 @@ and fmt_label_declaration c ctx lbl_decl =
   @@ hvbox 4
        ( hvbox 2
            ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-           $ Cmts.fmt c loc @@ str txt $ fmt ":@ "
+           $ (Cmts.fmt c loc @@ str txt) $ fmt ":@ "
            $ fmt_core_type c (sub_typ ~ctx pld_type) )
        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
        $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
@@ -1963,7 +1978,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
       | (_, Some {opn; pro= Some _}) :: _ -> opn $ open_hvbox 0
       | _ -> fmt "" )
     $ hvbox 4
-        ( str keyword $ fmt " " $ Cmts.fmt c loc @@ str name
+        ( str keyword $ fmt " " $ (Cmts.fmt c loc @@ str name)
         $ list_pn arg_blks (fun ?prev:_ ({txt}, arg_mtyp) ?next ->
               ( match arg_mtyp with
               | Some {pro= None} -> fmt "@ @[<hv 2>("
