@@ -622,7 +622,7 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   protect (Pat pat)
   @@
   let ctx = Pat pat in
-  let {ppat_desc; ppat_loc} = pat in
+  let {ppat_desc; ppat_attributes; ppat_loc} = pat in
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
@@ -633,6 +633,11 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         @@ (Option.call ~f:pro $ k)
   | _ -> fun k -> Cmts.fmt c ~pro:spc ppat_loc @@ (Option.call ~f:pro $ k)
   )
+  @@ ( if List.is_empty ppat_attributes then Fn.id
+     else fun k ->
+       wrap "(" ")"
+         (k $ fmt_attributes c (fmt "") ~key:"@" ppat_attributes (fmt ""))
+     )
   @@
   match ppat_desc with
   | Ppat_any -> fmt "_"
