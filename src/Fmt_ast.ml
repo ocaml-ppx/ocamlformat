@@ -757,8 +757,14 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       wrap_if parens "(" ")"
         (fmt "module " $ str txt $ fmt "@ : " $ fmt_package_type c ctx pty)
   | Ppat_constraint (pat, typ) ->
+      let in_pat =
+        match ctx0 with
+        | Pat _ -> true
+        | Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> true
+        | _ -> false
+      in
       hvbox 2
-        (wrap_if parens "(" ")"
+        (wrap_if (in_pat || parens) "(" ")"
            ( fmt_pattern c (sub_pat ~ctx pat)
            $ ( match ctx0 with
              | Exp {pexp_desc= Pexp_let _} -> fmt "@ : "
