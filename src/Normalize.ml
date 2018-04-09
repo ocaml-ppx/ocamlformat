@@ -25,7 +25,7 @@ let mapper =
       , PStr
           [ { pstr_desc=
                 Pstr_eval
-                  ( { pexp_desc= Pexp_constant Pconst_string (doc, None)
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
                     ; pexp_attributes }
                   , [] )
@@ -69,7 +69,7 @@ let mapper =
           ; pexp_loc
           ; pexp_attributes= atrs0 }
         , [ ( _
-            , { pexp_desc= Pexp_constant Pconst_integer (lit, suf)
+            , { pexp_desc= Pexp_constant (Pconst_integer (lit, suf))
               ; pexp_attributes= atrs1 } ) ] ) ->
         m.expr m
           (Exp.constant ~loc:pexp_loc ~attrs:(atrs0 @ atrs1)

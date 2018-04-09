@@ -78,7 +78,7 @@ let may_force_break (c: Conf.t) s =
 
 let rec is_trivial c exp =
   match exp.pexp_desc with
-  | Pexp_constant Pconst_string (s, None) -> not (may_force_break c s)
+  | Pexp_constant (Pconst_string (s, None)) -> not (may_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | _ -> false
@@ -293,7 +293,7 @@ end = struct
       || Option.exists ptype_manifest ~f
     in
     match ctx with
-    | Pld PTyp t1 -> assert (typ == t1)
+    | Pld (PTyp t1) -> assert (typ == t1)
     | Pld _ -> assert false
     | Typ ctx -> (
       match ctx.ptyp_desc with
@@ -360,7 +360,7 @@ end = struct
 
   let check_pat {ctx; ast= pat} =
     match ctx with
-    | Pld PPat (p1, _) -> assert (p1 == pat)
+    | Pld (PPat (p1, _)) -> assert (p1 == pat)
     | Pld _ -> assert false
     | Typ _ -> assert false
     | Pat ctx -> (
@@ -422,7 +422,7 @@ end = struct
 
   let check_exp {ctx; ast= exp} =
     match ctx with
-    | Pld PPat (_, Some e1) -> assert (e1 == exp)
+    | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
     | Pld _ -> assert false
     | Exp ctx -> (
         let f eI = eI == exp in
@@ -751,7 +751,7 @@ end = struct
     | {ast= {ptyp_desc= Ptyp_package _}} -> true
     | _ ->
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
-      | Some Some true -> true
+      | Some (Some true) -> true
       | _ -> false
 
 
@@ -816,8 +816,10 @@ end = struct
      |Exp {pexp_desc= Pexp_let _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _}
       , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
-       true
-    | Pat {ppat_desc=(Ppat_construct _ | Ppat_variant _); _}, (Ppat_construct (_, Some _) | Ppat_variant (_, Some _)) -> true
+        true
+    | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
+      , (Ppat_construct (_, Some _) | Ppat_variant (_, Some _)) ) ->
+        true
     | _ -> false
 
 
@@ -962,7 +964,7 @@ end = struct
           in
           match ambig_prec (sub_ast ~ctx (Exp exp)) with
           | None -> false (* ctx not apply *)
-          | Some Some true -> true (* exp is apply and ambig *)
+          | Some (Some true) -> true (* exp is apply and ambig *)
           | _ ->
               if is_right_infix_arg pexp_desc exp then is_sequence exp
               else exposed Non_apply exp )

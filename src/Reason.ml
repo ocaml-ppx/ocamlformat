@@ -50,7 +50,7 @@ let mapper cmts =
         , PStr
             [ { pstr_desc=
                   Pstr_eval
-                    ( {pexp_desc= Pexp_constant Pconst_string (txt, None)}
+                    ( {pexp_desc= Pexp_constant (Pconst_string (txt, None))}
                     , [] ) } ] ) ->
           Set.mem cmts ("*" ^ txt)
       | _ -> false
