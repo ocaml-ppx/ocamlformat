@@ -1089,9 +1089,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             (list_fl op_args fmt_op_args)
         $ fmt_atrs )
   | Pexp_apply (e0, a1N) when is_infix e0 ->
-      hvbox 2
-        ( wrap_fits_breaks_if parens "(" ")" (fmt_args_grouped e0 a1N)
-        $ fmt_atrs )
+      hvbox 2 (wrap "(" ")" (fmt_args_grouped e0 a1N) $ fmt_atrs)
   | Pexp_apply (e0, e1N1) -> (
     match List.rev e1N1 with
     | (lbl, ({pexp_desc= Pexp_fun _; pexp_loc} as eN1)) :: rev_e1N
