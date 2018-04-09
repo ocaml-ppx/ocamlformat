@@ -816,7 +816,8 @@ end = struct
      |Exp {pexp_desc= Pexp_let _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _}
       , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
-        true
+       true
+    | Pat {ppat_desc=(Ppat_construct _ | Ppat_variant _); _}, (Ppat_construct (_, Some _) | Ppat_variant (_, Some _)) -> true
     | _ -> false
 
 
