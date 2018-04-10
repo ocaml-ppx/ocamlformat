@@ -404,10 +404,7 @@ let fmt_constant (c: Conf.t) ?epi const =
                         | Some i -> escape_string (String.slice next 0 i)
                         | None -> escape_string next
                       in
-                      fmt "\\n"
-                      $ fmt_if_k
-                          (not (String.is_empty next))
-                          (str spc $ pre_break 0 "\\" 0) ) )
+                      fmt "\\n" $ (str spc $ pre_break 0 "\\" 0) ) )
           $ str "\"" $ Option.call ~f:epi )
       in
       match (delim, c.break_string_literals) with
