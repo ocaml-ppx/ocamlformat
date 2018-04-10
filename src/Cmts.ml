@@ -416,7 +416,7 @@ let dedup_cmts map_ast ast comments =
         , PStr
             [ { pstr_desc=
                   Pstr_eval
-                    ( { pexp_desc= Pexp_constant Pconst_string (doc, None)
+                    ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                       ; pexp_loc }
                     , [] ) } ] ) ->
           docs := Set.add !docs ("*" ^ doc, pexp_loc) ;

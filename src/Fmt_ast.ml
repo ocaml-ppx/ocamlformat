@@ -433,7 +433,7 @@ let doc_atrs atrs =
                 [ { pstr_desc=
                       Pstr_eval
                         ( { pexp_desc=
-                              Pexp_constant Pconst_string (doc, None)
+                              Pexp_constant (Pconst_string (doc, None))
                           ; pexp_loc= loc
                           ; pexp_attributes= [] }
                         , [] ) } ] ) ) ->
@@ -469,7 +469,7 @@ let rec fmt_attribute c pre = function
     , PStr
         [ { pstr_desc=
               Pstr_eval
-                ( { pexp_desc= Pexp_constant Pconst_string (doc, None)
+                ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                   ; pexp_attributes= [] }
                 , [] ) } ] ) ->
       fmt_or (String.equal txt "ocaml.text") "@ " " " $ fmt "(**" $ str doc
