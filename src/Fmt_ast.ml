@@ -513,6 +513,10 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c ptyp_loc
+  @@ ( if List.is_empty atrs then Fn.id
+     else fun k ->
+       wrap "(" ")" (k $ fmt_attributes c (fmt "") ~key:"@" atrs (fmt ""))
+     )
   @@
   let parens = parenze_typ xtyp in
   ( hvbox_if box 0
@@ -593,7 +597,6 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
   | Ptyp_class _ -> internal_error "Ptyp_class: classes not implemented" []
   )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
-  $ fmt_attributes c (fmt "@ ") ~key:"@@" atrs (fmt "")
 
 
 and fmt_package_type c ctx ({txt}, cnstrs) =
