@@ -679,7 +679,7 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
              ))
     | None ->
         hvbox 0
-          (wrap_if_fits_and parens "(" ")"
+          (wrap_if parens "(" ")"
              (list pats "@ :: " (sub_pat ~ctx >> fmt_pattern c))) )
   | Ppat_construct ({txt}, Some pat) ->
       cbox 2
