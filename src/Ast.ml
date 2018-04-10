@@ -682,6 +682,7 @@ end = struct
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_]) -> (
         match i with
         | "~-" | "~+" -> Some UMinus
+        | "!=" -> Some Apply
         | _ ->
           match i.[0] with
           | '-' | '+' -> Some UMinus
