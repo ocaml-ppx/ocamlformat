@@ -54,7 +54,7 @@ let mapper =
   (* sort attributes *)
   let attributes (m: Ast_mapper.mapper) atrs =
     Ast_mapper.default_mapper.attributes m
-      (List.sort ~cmp:Poly.compare atrs)
+      (List.sort ~compare:Poly.compare atrs)
   in
   let expr (m: Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_loc; pexp_attributes} = exp in

@@ -403,7 +403,7 @@ let fmt_constant (c: Conf.t) ?epi const =
                           String.lfindi next ~f:(fun _ c -> not (drop c))
                         with
                         | Some 0 -> ""
-                        | Some i -> escape_string (String.slice next 0 i)
+                        | Some i -> escape_string (String.sub next 0 i)
                         | None -> escape_string next
                       in
                       fmt "\\n"
