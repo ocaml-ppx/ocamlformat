@@ -606,6 +606,7 @@ end = struct
           ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; e2]}) ->
           if is_sugared_list e2 then Some (Semi, Non)
           else Some (ColonColon, if exp == e2 then Right else Left)
+      | Pexp_array _ -> Some (Semi, Non)
       | Pexp_construct (_, Some _)
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
