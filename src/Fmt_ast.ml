@@ -374,7 +374,9 @@ let fmt_constant (c: Conf.t) ?epi const =
         match c.break_string_literals with
         | `Wrap ->
             let words = String.split (escape_string s) ~on:' ' in
-            hovbox 0
+            hovbox_if
+              (match words with [] | [_] -> false | _ -> true)
+              0
               (list_pn words (fun ?prev:_ curr ?next ->
                    str curr
                    $
@@ -404,7 +406,10 @@ let fmt_constant (c: Conf.t) ?epi const =
                         | Some i -> escape_string (String.slice next 0 i)
                         | None -> escape_string next
                       in
-                      fmt "\\n" $ (str spc $ pre_break 0 "\\" 0) ) )
+                      fmt "\\n"
+                      $ fmt_if_k
+                          (not (String.is_empty next))
+                          (str spc $ pre_break 0 "\\" 0) ) )
           $ str "\"" $ Option.call ~f:epi )
       in
       match (delim, c.break_string_literals) with
