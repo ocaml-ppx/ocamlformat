@@ -799,7 +799,9 @@ end = struct
      |Pat {ppat_desc= Ppat_tuple _}, (Ppat_constraint _ | Ppat_tuple _)
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
      |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
-     |( Exp {pexp_desc= Pexp_fun _ | Pexp_function _}
+     |( Exp
+          { pexp_desc=
+              Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _ }
       , (Ppat_constraint _ | Ppat_unpack _) )
      |( (Pat {ppat_desc= Ppat_alias _} | Exp {pexp_desc= Pexp_let _})
       , ( Ppat_unpack _
