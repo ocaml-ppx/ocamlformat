@@ -560,7 +560,7 @@ end = struct
       ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
       when List.mem ~equal:phys_equal t1N typ ->
         Some (InfixOp3, Non)
-    | {ctx= Str {pstr_desc}; ast= Typ typ} -> (
+    | {ctx= Str {pstr_desc}; ast= Typ _} -> (
       match pstr_desc with
       | Pstr_type (_, td1N) ->
           List.find_map td1N ~f:(fun {ptype_kind} ->
@@ -569,16 +569,7 @@ end = struct
                   List.find_map cd1N ~f:(fun {pcd_args} ->
                       match pcd_args with
                       | Pcstr_tuple t1N -> (
-                        match t1N with
-                        | [] -> None
-                        | [_] -> Some (Apply, Non)
-                        | _ ->
-                            let tN = List.last_exn t1N in
-                            if typ == tN then Some (InfixOp3, Right)
-                            else
-                              List.find_map t1N ~f:(fun tI ->
-                                  if typ == tI then Some (InfixOp3, Left)
-                                  else None ) )
+                        match t1N with [] -> None | _ -> Some (Apply, Non) )
                       | Pcstr_record _ -> None )
               | _ -> None )
       | Pstr_value _ | Pstr_recmodule _ | Pstr_class _ | Pstr_class_type _

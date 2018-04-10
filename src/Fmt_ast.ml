@@ -1739,15 +1739,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
 and fmt_constructor_arguments c ctx pre args =
   match args with
   | Pcstr_tuple [] -> fmt ""
-  | Pcstr_tuple [typ] ->
-      fmt pre $ hvbox 0 ((sub_typ ~ctx >> fmt_core_type c) typ)
   | Pcstr_tuple typs ->
-      let ctx =
-        Typ
-          { ptyp_desc= Ptyp_tuple typs
-          ; ptyp_attributes= []
-          ; ptyp_loc= Location.none }
-      in
       fmt pre $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
       fmt pre
