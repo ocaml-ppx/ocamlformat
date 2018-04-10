@@ -202,7 +202,7 @@ let fill_text text =
       ~equal:(fun x y -> String.is_empty x && String.is_empty y)
       (String.split (String.rstrip text) ~on:'\n')
   in
-  fmt_if (Char.is_whitespace (String.get text 0)) " "
+  fmt_if (Char.is_whitespace text.[0]) " "
   $ vbox 0
       (hovbox 0
          (list_pn lines (fun ?prev:_ curr ?next ->
@@ -213,4 +213,4 @@ let fill_text text =
                   close_box $ fmt "\n@," $ open_hovbox 0
               | Some _ when not (String.is_empty curr) -> fmt "@ "
               | _ -> fmt "" )))
-  $ fmt_if (Char.is_whitespace (String.get text (String.length text - 1))) " "
+  $ fmt_if (Char.is_whitespace text.[String.length text - 1]) " "

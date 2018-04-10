@@ -72,7 +72,8 @@ end = struct
         match parent tree.tbl tree.roots elt with
         | Some parent -> Hashtbl.add_multi tree.tbl ~key:parent ~data:elt
         | None -> tree.roots <- elt :: tree.roots ) ;
-    {tree with tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare)}
+    { tree with
+      tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare) }
 
 
   let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
@@ -502,14 +503,15 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
     match String.Search_pattern.index pat ~pos ~in_:txt with
     | Some 0 -> "" :: split_asterisk_prefixed_ len
     | Some idx ->
-        String.sub txt pos (idx - pos) :: split_asterisk_prefixed_ (idx + len)
+        String.sub txt pos (idx - pos)
+        :: split_asterisk_prefixed_ (idx + len)
     | _ ->
         let drop = function ' ' | '\t' -> true | _ -> false in
         let line = String.rstrip ~drop (String.drop_prefix txt pos) in
         if String.is_empty line then [line]
-        else if Char.equal (String.get line (String.length line - 1)) '\n' then
+        else if Char.equal line.[String.length line - 1] '\n' then
           [String.drop_suffix line 1; ""]
-        else if Char.is_whitespace (String.get txt (String.length txt - 1)) then
+        else if Char.is_whitespace txt.[String.length txt - 1] then
           [line ^ " "]
         else [line]
   in
