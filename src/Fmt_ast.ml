@@ -1306,7 +1306,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                                          fmt "if"
                                          $ fmt_extension_suffix c ext
                                      else fmt "if" )
-                                   $ str " " $ fmt_expression c xcnd )
+                                   $ fmt "@ " $ fmt_expression c xcnd )
                                $ fmt "@ then" )
                          | None -> fmt "else" )
                        $ fmt_if parens " (" $ fmt "@ "

@@ -728,8 +728,8 @@ end = struct
       false
     else if cmp > 0 then (* context higher prec than ast: add parens *)
       true
-    else if let open Poly in
-            (assoc_of_prec prec_ast = which_child) && (which_child <> Non)
+    else if
+      Poly.((assoc_of_prec prec_ast = which_child) && (which_child <> Non))
     then (* which child and associativity match: no parens *)
       false
     else (* which child and assoc conflict: add parens *)
