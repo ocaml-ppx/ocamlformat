@@ -1375,7 +1375,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         match e0.pexp_desc with
         | Pexp_array _ | Pexp_constraint _ | Pexp_record _ | Pexp_tuple _ ->
             (".", "")
-        | _ -> (".(", ")")
+        | _ ->
+          match sugar_list_exp e0 with
+          | Some _ -> (".", "")
+          | None   -> (".(", ")")
       in
       hvbox 0
         ( fits_breaks_if parens "" "("
