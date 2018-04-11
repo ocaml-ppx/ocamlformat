@@ -1372,13 +1372,14 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         fits_breaks_if ~force_fit_if ~force_break_if:override
       in
       let opn, cls =
-        match e0.pexp_desc with
-        | Pexp_array _ | Pexp_constraint _ | Pexp_record _ | Pexp_tuple _ ->
-            (".", "")
-        | _ ->
-          match sugar_list_exp e0 with
-          | Some _ -> (".", "")
-          | None   -> (".(", ")")
+        let can_skip_parens =
+          match e0.pexp_desc with
+          | Pexp_array _ | Pexp_constraint _ | Pexp_record _ | Pexp_tuple _ ->
+              true
+          | _ ->
+            match sugar_list_exp e0 with Some _ -> true | None -> false
+        in
+        if can_skip_parens then (".", "") else (".(", ")")
       in
       hvbox 0
         ( fits_breaks_if parens "" "("
