@@ -62,3 +62,7 @@ fmt:
 .PHONY: test
 test: exe reason
 	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -n 1 -i $(SRCS)
+
+.PHONY: regtests
+regtests:
+	$(MAKE) -C test regtests
