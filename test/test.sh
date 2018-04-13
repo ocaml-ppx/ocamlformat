@@ -86,7 +86,8 @@ trap "rm -rf /tmp/ocamlformat-${TMP#/tmp/ocamlformat-}" EXIT
 ocamlformat() {
     [ $# -eq 1 ]
     opts=$(cat $1.opts 2>/dev/null || true)
-    "$OCAMLFORMAT" $opts "$1" >$TMP/$(basename $1) 2>&1 || true
+    tmpfile=$TMP/$(basename $1)
+    "$OCAMLFORMAT" $opts "$1" >$tmpfile 2>&1 || echo "NON-ZERO EXIT CODE" > $tmpfile
 }
 
 reffile() {
