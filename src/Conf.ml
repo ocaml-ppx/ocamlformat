@@ -40,7 +40,7 @@ end = struct
       Arg (trm_xy, set_xy)
     in
     let init = Arg (Term.const (), fun () -> ()) in
-    let Arg (trm, set) = List.fold_right ~f:pair args ~init in
+    let (Arg (trm, set)) = List.fold_right ~f:pair args ~init in
     Term.app (Term.const set) trm
 
   let args : arg list ref = ref []
