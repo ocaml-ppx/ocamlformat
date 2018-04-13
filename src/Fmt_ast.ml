@@ -1358,15 +1358,21 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         $ fmt_atrs )
   | Pexp_open (flag, {txt}, e0) ->
       let override = Poly.(flag = Override) in
+      let force_break_if =
+        match e0.pexp_desc with
+        | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
+         |Pexp_letmodule _ | Pexp_open _ ->
+            true
+        | _ -> override
+      in
       let force_fit_if =
         match xexp.ctx with
-        | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} -> not override
+        | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} ->
+            not force_break_if
         | _ -> false
       in
-      let fits_breaks = fits_breaks ~force_fit_if ~force_break_if:override
-      and fits_breaks_if =
-        fits_breaks_if ~force_fit_if ~force_break_if:override
-      in
+      let fits_breaks = fits_breaks ~force_fit_if ~force_break_if
+      and fits_breaks_if = fits_breaks_if ~force_fit_if ~force_break_if in
       let opn, cls =
         let can_skip_parens =
           match e0.pexp_desc with
