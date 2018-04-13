@@ -15,7 +15,7 @@
 shopt -s nullglob
 
 ROOT=$(git rev-parse --show-toplevel)
-OCAMLFORMAT="$ROOT"/_build/default/src/ocamlformat.exe
+OCAMLFORMAT="$ROOT"/_build/dbg/src/ocamlformat.exe
 cd $ROOT/test
 
 UPDATE=

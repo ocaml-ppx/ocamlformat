@@ -65,10 +65,10 @@ test: exe reason
 	$(MAKE) regtests
 
 .PHONY: regtests fixpoint
-fixpoint:
+fixpoint: exe reason
 	# check fix-point
 	$(shell (ls -t _build/*/src/ocamlformat.{exe,bc} 2> /dev/null) | head -1) -n 1 -i $(SRCS)
 
-regtests:
+regtests: exe reason dbg
 	# check regtests
 	$(MAKE) -C test regtests
