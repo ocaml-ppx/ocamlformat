@@ -57,12 +57,18 @@ clean:
 
 .PHONY: fmt
 fmt:
-	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
+	$(shell (ls -t _build/*/src/ocamlformat.{exe,bc} 2> /dev/null) | head -1) -i $(SRCS)
 
 .PHONY: test
 test: exe reason
-	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -n 1 -i $(SRCS)
+	$(MAKE) fixpoint
+	$(MAKE) regtests
 
-.PHONY: regtests
+.PHONY: regtests fixpoint
+fixpoint:
+	# check fix-point
+	$(shell (ls -t _build/*/src/ocamlformat.{exe,bc} 2> /dev/null) | head -1) -n 1 -i $(SRCS)
+
 regtests:
+	# check regtests
 	$(MAKE) -C test regtests
