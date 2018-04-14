@@ -2079,6 +2079,12 @@ and fmt_with_constraint c ctx = function
       fmt " module " $ fmt_longident m1 $ fmt " := " $ fmt_longident m2
 
 
+and maybe_generative c ~ctx m =
+  match m with
+  | {pmod_desc= Pmod_structure []; _} -> empty
+  | _ -> fmt_module_expr c (sub_mod ~ctx m)
+
+
 and fmt_module_expr c {ast= m} =
   let ctx = Mod m in
   let {pmod_desc; pmod_loc; pmod_attributes} = m in
@@ -2096,7 +2102,7 @@ and fmt_module_expr c {ast= m} =
       in
       let {opn= opn_a; pro= pro_a; bdy= bdy_a; cls= cls_a; epi= epi_a} as
           blk_a =
-        fmt_module_expr c (sub_mod ~ctx me_a)
+        maybe_generative c ~ctx me_a
       in
       let fmt_rator =
         fmt_docstring c ~epi:(fmt "@,") doc $ opn_f $ psp_f
@@ -2144,17 +2150,7 @@ and fmt_module_expr c {ast= m} =
           ; cls= cls_a
           ; esp= esp_a
           ; epi= epi_a } =
-        match me_a with
-        | {pmod_desc= Pmod_structure []; _} ->
-            (* arguments of generative functors *)
-            { opn= open_hvbox 0
-            ; pro= None
-            ; psp= fmt ""
-            ; bdy= fmt ""
-            ; cls= close_box
-            ; esp= fmt ""
-            ; epi= None }
-        | _ -> fmt_module_expr c (sub_mod ~ctx me_a)
+        maybe_generative c ~ctx me_a
       in
       { empty with
         opn= opn_a $ opn_f $ open_hvbox 2
