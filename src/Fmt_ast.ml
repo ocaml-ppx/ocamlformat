@@ -1336,8 +1336,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
             ( hvbox 0
-                ( fmt_extension_constructor ~pre:(fmt "let exception@ ") c
-                    ": " ctx ext_cstr
+                ( fmt_exception ~pre:(fmt "let exception@ ") c ": " ctx
+                    ext_cstr
                 $ fmt "@ in" )
             $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
@@ -1785,13 +1785,35 @@ and fmt_type_extension c ctx te =
     $ fmt_attributes c (fmt "@ ") ~key:"@@" atrs (fmt "") )
 
 
-and fmt_extension_constructor ?pre c sep ctx ec =
+and fmt_exception ~pre c sep ctx te =
+  let atrs, te =
+    (* This won't be needed once https://github.com/ocaml/ocaml/pull/1705 is
+       merged in the compiler and ocaml-migrate-parsetree. Until then, this
+       heuristic will try to discriminate between attributes belonging to
+       the constructor, and the one belonging to the exception construct. *)
+    let at, atat =
+      List.partition_tf
+        ~f:(fun (s, _) ->
+          match s.txt with
+          | "deprecated" | "ocaml.deprecated" -> true
+          | _ -> false )
+        te.pext_attributes
+    in
+    (atat, {te with pext_attributes= at})
+  in
+  let doc, atrs = doc_atrs atrs in
+  hvbox 2
+    ( fmt_docstring c ~epi:(fmt "@,") doc
+    $ hvbox 2 (pre $ fmt_extension_constructor c sep ctx te)
+    $ fmt_attributes c (fmt "@ ") ~key:"@@" atrs (fmt "") )
+
+
+and fmt_extension_constructor c sep ctx ec =
   let {pext_name= {txt}; pext_kind; pext_attributes} = ec in
   let doc, atrs = doc_atrs pext_attributes in
   hvbox 4
-    ( fmt_if_k (Option.is_some pre) (fmt_docstring c ~epi:(fmt "@,") doc)
-    $ hvbox 2
-        ( hvbox 2 (Option.call ~f:pre $ str txt)
+    ( hvbox 2
+        ( str txt
         $
         match pext_kind with
         | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), None) -> fmt ""
@@ -1809,8 +1831,7 @@ and fmt_extension_constructor ?pre c sep ctx ec =
         | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), Some _)
          |Pext_decl (_, Some _) ->
             fmt " " )
-    $ fmt_if_k (Option.is_none pre)
-        (fmt_docstring c ~pro:(fmt "@;<2 0>") doc) )
+    $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
 
 
 and fmt_module_type c {ast= mt} =
@@ -1897,8 +1918,7 @@ and fmt_signature_item c {ast= si} =
       fmt_docstring c ~epi:(fmt "") doc
       $ fmt_attributes c (fmt "") ~key:"@@@" atrs (fmt "")
   | Psig_exception exc ->
-      hvbox 2
-        (fmt_extension_constructor ~pre:(fmt "exception@ ") c " of " ctx exc)
+      hvbox 2 (fmt_exception ~pre:(fmt "exception@ ") c " of " ctx exc)
   | Psig_extension (ext, atrs) ->
       hvbox 0
         ( fmt_extension c ctx "%%" ext $ fmt "@ "
@@ -2319,8 +2339,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
       $ fmt_attributes c (fmt " ") ~key:"@@" atrs (fmt "")
   | Pstr_exception extn_constr ->
       hvbox 2
-        (fmt_extension_constructor ~pre:(fmt "exception@ ") c ": " ctx
-           extn_constr)
+        (fmt_exception ~pre:(fmt "exception@ ") c ": " ctx extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes} ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
