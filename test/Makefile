@@ -94,3 +94,7 @@ clean_pp:
 
 print-%:
 	@echo '$*=$($*)'
+
+.PHONY: regtests
+regtests:
+	@./test.sh
