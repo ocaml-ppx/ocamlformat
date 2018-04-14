@@ -1787,11 +1787,10 @@ and fmt_type_extension c ctx te =
 
 and fmt_exception ~pre c sep ctx te =
   let atrs, te =
-    (* This won't be need once https://github.com/ocaml/ocaml/pull/1705 is
-       merged in the compiler.
-       Until then, this heuristic will try to discriminate between attributes
-       belonging to the constructor, and the one belonging to the exception construct.
-     *)
+    (* This won't be needed once https://github.com/ocaml/ocaml/pull/1705 is
+       merged in the compiler and ocaml-migrate-parsetree. Until then, this
+       heuristic will try to discriminate between attributes belonging to
+       the constructor, and the one belonging to the exception construct. *)
     let at, atat =
       List.partition_tf
         ~f:(fun (s, _) ->
