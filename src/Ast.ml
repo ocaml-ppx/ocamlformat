@@ -297,7 +297,8 @@ end = struct
     | Pld _ -> assert false
     | Typ ctx -> (
       match ctx.ptyp_desc with
-      | Ptyp_any | Ptyp_var _ | Ptyp_extension _ -> assert false
+      | Ptyp_extension _ -> ()
+      | Ptyp_any | Ptyp_var _ -> assert false
       | Ptyp_alias (t1, _) | Ptyp_poly (_, t1) -> assert (typ == t1)
       | Ptyp_arrow (_, t1, t2) -> assert ((typ == t1) || (typ == t2))
       | Ptyp_tuple t1N | Ptyp_constr (_, t1N) -> assert (List.exists t1N ~f)
