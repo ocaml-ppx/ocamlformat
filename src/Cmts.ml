@@ -525,6 +525,7 @@ let fmt_cmt (c: Conf.t) cmt =
     match split_asterisk_prefixed cmt with
     | [""] -> str "(* *)"
     | [text] -> wrap "(*" "*)" (fill_text text)
+    | [text; ""] -> wrap "(*" " *)" (fill_text text)
     | asterisk_prefixed_lines ->
         vbox 1
           ( fmt "(*"
