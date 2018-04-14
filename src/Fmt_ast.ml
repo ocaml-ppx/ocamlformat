@@ -1526,7 +1526,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                     ( ( { pexp_desc=
                             ( Pexp_while _ | Pexp_for _ | Pexp_match _
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
-                            | Pexp_sequence _ ) } as e1 )
+                            | Pexp_sequence _ | Pexp_new _ ) } as e1 )
                     , _ ) } as str ) ] ) ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
@@ -1572,7 +1572,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
   | Pexp_new {txt; loc} ->
       Cmts.fmt c loc
       @@ hvbox 2
-           ( wrap_if parens "(" ")" (fmt "new@ " $ fmt_longident txt)
+           ( wrap_if parens "(" ")"
+               ( fmt "new" $ fmt_extension_suffix c ext $ fmt "@ "
+               $ fmt_longident txt )
            $ fmt_atrs )
   | Pexp_object _ | Pexp_override _ | Pexp_poly _ | Pexp_setinstvar _ ->
       internal_error "classes not implemented" []
