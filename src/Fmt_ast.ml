@@ -1740,7 +1740,8 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   $ Cmts.fmt_before c loc $ fmt_or_k first (if_newline "| ") (fmt "| ")
   $ hovbox 2
       ( hvbox 2
-          (str txt $ fmt_constructor_arguments_result c ctx pcd_args pcd_res)
+          ( wrap_if (is_symbol_id txt) "( " " )" (str txt)
+          $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
       $ fmt_if (Option.is_some doc) "@;<2 0>" $ fmt_docstring c doc
       $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
   $ Cmts.fmt_after c ?pro:None ~epi:(fmt "@ ") loc
