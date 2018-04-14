@@ -1,1 +1,1 @@
-exception EvalError of Error.t [@deriving sexp]
+exception EvalError of Error.t [@@deriving sexp]

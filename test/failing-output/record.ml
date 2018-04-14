@@ -1,6 +1,6 @@
 (* - [b: float] gets misaligned in the first case.
-   - comments and doc comments behave differently.
- *)
+
+   - comments and doc comments behave differently. *)
 
 type t =
   { a: int
