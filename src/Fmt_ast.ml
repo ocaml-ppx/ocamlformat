@@ -2337,7 +2337,7 @@ and fmt_structure c ?(sep= "") ctx itms =
          fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
 
 
-and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
+and fmt_structure_item (c: Conf.t) ~sep ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
   @@
   let at_top = Poly.(ctx = Top) in
@@ -2398,7 +2398,9 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
              fmt_value_binding c ~rec_flag ~first
                ?ext:(if first then ext else None)
                ctx binding
-               ~epi:(fits_breaks ~force_fit_if:last_item "" "\n")
+               ?epi:
+                 (Option.some_if c.sparse
+                    (fits_breaks ~force_fit_if:last_item "" "\n"))
              $ fmt_if (not last) "\n@\n" ))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Pstr_extension (ext, atrs) ->
