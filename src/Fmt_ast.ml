@@ -56,7 +56,7 @@ let rec sugar_or_pat ({ast= pat} as xpat) =
 
 type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
-  | Newtype of string loc
+  | Newtypes of string loc list
 
 let sugar_fun pat xexp =
   let rec sugar_fun_ ({ast= exp} as xexp) =
@@ -77,7 +77,12 @@ let sugar_fun pat xexp =
         Cmts.relocate ~src:pexp_loc ~before:body.pexp_loc
           ~after:body.pexp_loc ;
         let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
-        (Newtype name :: xargs, xbody)
+        let xargs =
+          match xargs with
+          | Newtypes names :: xargs -> Newtypes (name :: names) :: xargs
+          | xargs -> Newtypes [name] :: xargs
+        in
+        (xargs, xbody)
     | _ -> ([], xexp)
   in
   match pat with
@@ -840,8 +845,13 @@ and fmt_fun_args c args =
           $ fmt_expression c xexp $ fmt ")" )
     | Val ((Labelled _ | Nolabel), _, Some _) ->
         impossible "not accepted by parser"
-    | Newtype {txt; loc} ->
-        cbox 0 (wrap "(" ")" (fmt "type " $ (Cmts.fmt c loc @@ str txt)))
+    | Newtypes [] -> impossible "not accepted by parser"
+    | Newtypes names ->
+        cbox 0
+          (wrap "(" ")"
+             ( fmt "type "
+             $ list names "@ " (fun {txt; loc} -> Cmts.fmt c loc @@ str txt)
+             ))
   in
   fmt_if_k (not (List.is_empty args)) (list args "@ " fmt_fun_arg $ fmt "@ ")
 
@@ -1268,7 +1278,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             ( fmt_expression c (sub_exp ~ctx exp) $ fmt "@,."
             $ fmt_longident txt )
         $ fmt_atrs )
-  | Pexp_fun _ ->
+  | Pexp_newtype _ | Pexp_fun _ ->
       let xargs, xbody = sugar_fun None xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
@@ -1432,11 +1442,6 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                    $ fmt "@ ->" )
                $ fmt "@ " $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
                )) )
-  | Pexp_newtype ({txt}, exp) ->
-      hvbox 0
-        (wrap_if parens "(" ")"
-           ( fmt "fun (type " $ str txt $ fmt ") ->@ "
-           $ fmt_expression c (sub_exp ~ctx exp) $ fmt_atrs ))
   | Pexp_pack me ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
