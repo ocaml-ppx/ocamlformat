@@ -29,7 +29,6 @@ let input ast_magic ~input_name ic =
     (ast, List.map comments ~f:(fun (txt, _, loc) -> (txt, loc)))
   else user_error "input not a serialized translation unit" []
 
-
 let input_impl = input Config.ast_impl_magic_number
 
 let input_intf = input Config.ast_intf_magic_number
@@ -115,7 +114,6 @@ let mapper cmts =
         | _ -> true ))
   in
   {Normalize.mapper with attributes; pat; expr; structure; signature}
-
 
 let norm_impl (ast, cmts) = map_structure (mapper cmts) ast
 

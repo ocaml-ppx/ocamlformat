@@ -133,7 +133,6 @@ let mapper =
   { Ast_mapper.default_mapper with
     location; attribute; attributes; expr; pat; value_binding }
 
-
 let impl = map_structure mapper
 
 let intf = map_signature mapper

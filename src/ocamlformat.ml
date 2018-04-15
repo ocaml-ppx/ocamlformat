@@ -23,7 +23,6 @@ let impl : _ Translation_unit.t =
   ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.implementation }
 
-
 (** Operations on interface files. *)
 let intf : _ Translation_unit.t =
   let parse = Translation_unit.parse Migrate_ast.Parse.interface in
@@ -36,12 +35,10 @@ let intf : _ Translation_unit.t =
   ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.interface }
 
-
 (** Select translation unit type and operations based on kind. *)
 let xunit_of_kind : _ -> Translation_unit.x = function
   | `Impl -> XUnit impl
   | `Intf -> XUnit intf
-
 
 ;; Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 

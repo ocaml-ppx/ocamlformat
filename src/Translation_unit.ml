@@ -44,7 +44,6 @@ let parse parse_ast ?(warn= Conf.warn_error) ~input_name ic =
   let comments = Lexer.comments () in
   (ast, comments)
 
-
 (** Debug: dump internal ast representation to file. *)
 let dump xunit dir base suf ext ast =
   if Conf.debug then (
@@ -52,7 +51,6 @@ let dump xunit dir base suf ext ast =
     let oc = Out_channel.create tmp in
     xunit.printast (Caml.Format.formatter_of_out_channel oc) ast ;
     Out_channel.close oc )
-
 
 let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
     ~input_file:ifile ic ofile =

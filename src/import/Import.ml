@@ -30,10 +30,8 @@ let impossible msg = failwith msg
 let internal_error msg kvs =
   Error.raise_s (Sexp.message ("Internal Error: " ^ msg) kvs)
 
-
 let user_error msg kvs =
   Error.raise_s (Sexp.message ("User Error: " ^ msg) kvs)
-
 
 let check f x =
   assert (

@@ -56,7 +56,6 @@ end = struct
            else None ))
       ancestor
 
-
   (* Add elements in decreasing width order to construct tree from roots to
      leaves. That is, when adding an interval to a partially constructed
      tree, it will already contain all wider intervals, so the new
@@ -74,7 +73,6 @@ end = struct
         | None -> tree.roots <- elt :: tree.roots ) ;
     { tree with
       tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare) }
-
 
   let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
 
@@ -103,10 +101,8 @@ module Position = struct
     if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
     else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 
-
   let compare p1 p2 =
     if phys_equal p1 p2 then 0 else Int.compare p1.pos_cnum p2.pos_cnum
-
 
   let distance p1 p2 = p2.pos_cnum - p1.pos_cnum
 end
@@ -118,7 +114,6 @@ module Location = struct
     Format.fprintf fs "(%a..%a)%s" Position.fmt loc_start Position.fmt
       loc_end
       (if loc_ghost then " ghost" else "")
-
 
   let to_string x = Format.asprintf "%a" fmt x
 
@@ -227,14 +222,12 @@ end = struct
       List.equal ~equal:Poly.equal (Map.to_alist smap) (Map.to_alist emap)
     )
 
-
   let is_empty (smap, _) = Map.is_empty smap
 
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun (smap, emap) cmt ->
         let _, loc = cmt in
         (Map.add_multi smap loc cmt, Map.add_multi emap loc cmt) )
-
 
   let to_list (smap, _) = List.concat (Map.data smap)
 
@@ -245,7 +238,6 @@ end = struct
     with
     | `Ok smap, `Ok emap -> (smap, emap)
     | _ -> internal_error "overlapping key ranges" []
-
 
   let split (smap, emap) (loc: Location.t) =
     let addo m kvo =
@@ -284,7 +276,6 @@ let string_between (l1: Location.t) (l2: Location.t) =
     (* can happen e.g. if comment is within a parenthesized expression *)
     None
 
-
 let begins_line (l: Location.t) =
   let rec begins_line_ cnum =
     cnum = 0
@@ -297,7 +288,6 @@ let begins_line (l: Location.t) =
   in
   begins_line_ l.loc_start.pos_cnum
 
-
 let ends_line (l: Location.t) =
   let rec ends_line_ cnum =
     match !source.[cnum] with
@@ -306,7 +296,6 @@ let ends_line (l: Location.t) =
     | _ -> false
   in
   ends_line_ l.loc_end.pos_cnum
-
 
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is
@@ -321,7 +310,6 @@ let is_adjacent (l1: Location.t) (l2: Location.t) =
           begins_line l1
           && Position.column l1.loc_start <= Position.column l2.loc_start
       | _ -> false )
-
 
 (** Heuristic to choose between placing a comment after the previous loc or
     before the next loc. Places comment after prev loc only if they are
@@ -338,7 +326,6 @@ let partition_after_prev_or_before_next ~prev cmts ~next =
         (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
     | [] -> impossible "by parent match" )
   | _ -> (CmtSet.empty, cmts)
-
 
 let cmts_before = Hashtbl.Poly.create ()
 
@@ -367,7 +354,6 @@ let add_cmts ?prev ?next tbl loc cmts =
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next) ) ;
     Hashtbl.add_exn tbl loc cmtl )
-
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
@@ -406,7 +392,6 @@ let rec place loc_tree ?prev_loc locs cmts =
           List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
               Format.eprintf "lost: %s@\n" txt )
 
-
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts map_ast ast comments =
   let of_ast map_ast ast =
@@ -429,7 +414,6 @@ let dedup_cmts map_ast ast comments =
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
-
 let docs_memo = Hashtbl.Poly.create ()
 
 (** Remember all docstrings that have been formatted, to avoid duplication
@@ -438,7 +422,6 @@ let doc_is_dup doc =
   match Hashtbl.add docs_memo ~key:doc ~data:() with
   | `Ok -> false
   | `Duplicate -> true
-
 
 (** Initialize global state and place comments. *)
 let init map_ast loc_of_ast src asts comments_n_docstrings =
@@ -458,7 +441,6 @@ let init map_ast loc_of_ast src asts comments_n_docstrings =
     let locs = List.map asts ~f:loc_of_ast in
     let cmts = CmtSet.of_list comments in
     place loc_tree locs cmts )
-
 
 let init_impl = init map_structure (fun {Parsetree.pstr_loc} -> pstr_loc)
 
@@ -480,7 +462,6 @@ let relocate ~src ~before ~after =
   update_multi cmts_after src after ~f:(fun src_cmts dst_cmts ->
       List.append dst_cmts src_cmts )
 
-
 let remove = ref true
 
 let preserve f x =
@@ -488,7 +469,6 @@ let preserve f x =
   remove := false ;
   f () x ;
   remove := save
-
 
 let split_asterisk_prefixed (txt, {Location.loc_start}) =
   let len = Position.column loc_start + 3 in
@@ -517,7 +497,6 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
   in
   split_asterisk_prefixed_ 0
 
-
 let fmt_cmt (c: Conf.t) cmt =
   let open Fmt in
   if not c.wrap_comments then wrap "(*" "*)" (str (fst cmt))
@@ -534,7 +513,6 @@ let fmt_cmt (c: Conf.t) cmt =
                 | "", None -> fmt ")"
                 | _, None -> str line $ fmt "*)"
                 | _, Some _ -> str line $ fmt "@,*" ) )
-
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
@@ -557,24 +535,19 @@ let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
     ( Option.call ~f:pro $ vbox 0 (list cmts "@ " (fmt_cmt c))
     $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (Option.call ~f:epi) )
 
-
 let fmt_before c ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
   fmt_cmts c cmts_before ?pro ~epi ?eol ?adj
 
-
 let fmt_after c ?(pro= Fmt.break_unless_newline 1 0) ?epi =
   fmt_cmts c cmts_after ~pro ?epi ~eol:(Fmt.fmt "")
-
 
 let fmt c ?pro ?epi ?eol ?adj loc =
   Fmt.wrap_k
     (fmt_before c ?pro ?epi ?eol ?adj loc)
     (fmt_after c ?pro ?epi loc)
 
-
 let fmt_list c ?pro ?epi ?eol locs init =
   List.fold locs ~init ~f:(fun k loc -> fmt c ?pro ?epi ?eol loc @@ k)
-
 
 (** check if any comments have not been formatted *)
 let final_check () =
@@ -592,7 +565,6 @@ let final_check () =
     internal_error "formatting lost comments"
       (Hashtbl.fold cmts_before ~f:(f "before")
          ~init:(Hashtbl.fold cmts_after ~f:(f "after") ~init:[]))
-
 
 let diff x y =
   let norm z =
