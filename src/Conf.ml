@@ -70,98 +70,32 @@ let info =
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
 
+let break_string_literals =
+  let doc =
+    "Break string literals. $(b,never) mode formats string literals as \
+     they are parsed, in particular, with escape sequences expanded. \
+     $(b,newlines) mode breaks lines at newlines. $(b,wrap) mode wraps \
+     string literals at the margin. Quoted strings such as \
+     $(i,{id|...|id}) are preserved. Can be set in a config file with a \
+     $(b,break-string-literals) \
+     $(i,{)$(b,never)$(i,,)$(b,newlines)$(i,,)$(b,wrap)$(i,}) line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
+  let default = `Wrap in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum [("newlines", `Newlines); ("never", `Never); ("wrap", `Wrap)])
+          default
+      & info ["break-string-literals"] ~doc ~env)
+
+
 let debug =
   let doc = "Generate debugging output." in
   let env = Arg.env_var "OCAMLFORMAT_DEBUG" in
   let default = false in
   mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~env)
-
-
-let kind : [`Impl | `Intf] ref =
-  let doc =
-    "Parse file with unrecognized extension as an implementation."
-  in
-  let impl = (`Impl, Arg.info ["impl"] ~doc) in
-  let doc = "Parse file with unrecognized extension as an interface." in
-  let intf = (`Intf, Arg.info ["intf"] ~doc) in
-  let default = `Impl in
-  mk ~default Arg.(value & vflag default [impl; intf])
-
-
-let margin =
-  let docv = "COLS" in
-  let doc =
-    "Format code to fit within $(docv) columns. Can be set in a config \
-     file with a `margin COLS` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_MARGIN" in
-  let default = 80 in
-  mk ~default
-    Arg.(value & opt int default & info ["m"; "margin"] ~doc ~docv ~env)
-
-
-let max_iters =
-  let docv = "N" in
-  let doc =
-    "Fail if output of formatting does not stabilize within $(docv) \
-     iterations. Can be set in a config file with a `max-iters N` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_MAX_ITERS" in
-  let default = 10 in
-  mk ~default
-    Arg.(value & opt int default & info ["n"; "max-iters"] ~doc ~docv ~env)
-
-
-let inplace =
-  let doc = "Format in-place, overwriting input file(s)." in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc)
-
-
-let inputs =
-  let docv = "SRC" in
-  let doc =
-    "Input files. At least one is required, and exactly one without \
-     --inplace."
-  in
-  let default = [] in
-  mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv)
-
-
-let name =
-  let docv = "NAME" in
-  let doc =
-    "Name of input file for use in error reporting. Defaults to the input \
-     file name. Some options can be specified in configuration files named \
-     '.ocamlformat' in the same or a parent directory of $(docv), see \
-     documentation of other options for details. Mutually exclusive with \
-     --inplace."
-  in
-  let default = None in
-  mk ~default
-    Arg.(value & opt (some string) default & info ["name"] ~doc ~docv)
-
-
-let output =
-  let docv = "DST" in
-  let doc =
-    "Output file. Mutually exclusive with --inplace. Write to stdout if \
-     omitted."
-  in
-  let default = None in
-  mk ~default
-    Arg.(
-      value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
-
-
-let sparse =
-  let doc =
-    "Generate more sparsely formatted code. Can be set in a config file \
-     with a `sparse true` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_SPARSE" in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["sparse"] ~doc ~env)
 
 
 let escape_chars =
@@ -207,25 +141,91 @@ let escape_strings =
       & info ["escape-strings"] ~doc ~env)
 
 
-let break_string_literals =
+let inplace =
+  let doc = "Format in-place, overwriting input file(s)." in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc)
+
+
+let inputs =
+  let docv = "SRC" in
   let doc =
-    "Break string literals. $(b,never) mode formats string literals as \
-     they are parsed, in particular, with escape sequences expanded. \
-     $(b,newlines) mode breaks lines at newlines. $(b,wrap) mode wraps \
-     string literals at the margin. Quoted strings such as \
-     $(i,{id|...|id}) are preserved. Can be set in a config file with a \
-     $(b,break-string-literals) \
-     $(i,{)$(b,never)$(i,,)$(b,newlines)$(i,,)$(b,wrap)$(i,}) line."
+    "Input files. At least one is required, and exactly one without \
+     --inplace."
   in
-  let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
-  let default = `Wrap in
+  let default = [] in
+  mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv)
+
+
+let kind : [`Impl | `Intf] ref =
+  let doc =
+    "Parse file with unrecognized extension as an implementation."
+  in
+  let impl = (`Impl, Arg.info ["impl"] ~doc) in
+  let doc = "Parse file with unrecognized extension as an interface." in
+  let intf = (`Intf, Arg.info ["intf"] ~doc) in
+  let default = `Impl in
+  mk ~default Arg.(value & vflag default [impl; intf])
+
+
+let margin =
+  let docv = "COLS" in
+  let doc =
+    "Format code to fit within $(docv) columns. Can be set in a config \
+     file with a `margin COLS` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_MARGIN" in
+  let default = 80 in
+  mk ~default
+    Arg.(value & opt int default & info ["m"; "margin"] ~doc ~docv ~env)
+
+
+let max_iters =
+  let docv = "N" in
+  let doc =
+    "Fail if output of formatting does not stabilize within $(docv) \
+     iterations. Can be set in a config file with a `max-iters N` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_MAX_ITERS" in
+  let default = 10 in
+  mk ~default
+    Arg.(value & opt int default & info ["n"; "max-iters"] ~doc ~docv ~env)
+
+
+let name =
+  let docv = "NAME" in
+  let doc =
+    "Name of input file for use in error reporting. Defaults to the input \
+     file name. Some options can be specified in configuration files named \
+     '.ocamlformat' in the same or a parent directory of $(docv), see \
+     documentation of other options for details. Mutually exclusive with \
+     --inplace."
+  in
+  let default = None in
+  mk ~default
+    Arg.(value & opt (some string) default & info ["name"] ~doc ~docv)
+
+
+let output =
+  let docv = "DST" in
+  let doc =
+    "Output file. Mutually exclusive with --inplace. Write to stdout if \
+     omitted."
+  in
+  let default = None in
   mk ~default
     Arg.(
-      value
-      & opt
-          (enum [("newlines", `Newlines); ("never", `Never); ("wrap", `Wrap)])
-          default
-      & info ["break-string-literals"] ~doc ~env)
+      value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
+
+
+let sparse =
+  let doc =
+    "Generate more sparsely formatted code. Can be set in a config file \
+     with a `sparse true` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_SPARSE" in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["sparse"] ~doc ~env)
 
 
 let no_version_check =
