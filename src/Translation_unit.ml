@@ -120,11 +120,12 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
       if i < conf.max_iters then (
         In_channel.with_file tmp ~f:(fun ic -> parse_print_ (i + 1) fmted ic) ;
         Unix.unlink tmp )
-      else
+      else (
+        ignore (Unix.system ("diff " ^ ifile ^ " " ^ tmp)) ;
         internal_error
           (Format.sprintf "formatting did not stabilize after %i iterations"
              i)
-          [] )
+          [] ) )
     else
       match (Conf.action, ofile) with
       | _, None ->
