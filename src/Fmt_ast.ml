@@ -1087,10 +1087,17 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         $ fmt_if_k (not last) (break_unless_newline 1 0)
       in
       let is_nested_diff_prec_infix_ops =
+        (* Make the precedence explicit for infix operators *)
         match (xexp.ctx, xexp.ast.pexp_desc) with
-        | Exp {pexp_desc= Pexp_apply (f, _)}, Pexp_apply (e, _) ->
-            is_infix e && is_infix f
-            && Poly.(prec_ast xexp.ctx <> prec_ast (Exp xexp.ast))
+        | Exp {pexp_desc= Pexp_apply (f, _)}, Pexp_apply (e, _)
+          when is_infix f && is_infix e -> (
+          match (prec_ast xexp.ctx, prec_ast (Exp xexp.ast)) with
+          | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
+              (* special case for refs update and all InfixOp0 to reduce
+                 parens noise *)
+              false
+          | None, _ | _, None -> false
+          | Some p1, Some p2 -> Poly.(p1 <> p2) )
         | _ -> false
       in
       let wrap parens nested k =
