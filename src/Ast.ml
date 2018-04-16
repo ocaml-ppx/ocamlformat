@@ -68,7 +68,7 @@ let may_force_break (c: Conf.t) s =
   let contains_internal_newline s =
     match String.index s '\n' with
     | None -> false
-    | Some i when i = (String.length s - 1) -> false
+    | Some i when i = String.length s - 1 -> false
     | _ -> true
   in
   match c.break_string_literals with
@@ -282,7 +282,7 @@ end = struct
     let check_type {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest} =
       List.exists ptype_params ~f:fst_f
       || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
-             (typ == t1) || (typ == t2) )
+             typ == t1 || typ == t2 )
       || ( match ptype_kind with
          | Ptype_variant cd1N ->
              List.exists cd1N ~f:(fun {pcd_args; pcd_res} ->
@@ -300,7 +300,7 @@ end = struct
       | Ptyp_extension _ -> ()
       | Ptyp_any | Ptyp_var _ -> assert false
       | Ptyp_alias (t1, _) | Ptyp_poly (_, t1) -> assert (typ == t1)
-      | Ptyp_arrow (_, t1, t2) -> assert ((typ == t1) || (typ == t2))
+      | Ptyp_arrow (_, t1, t2) -> assert (typ == t1 || typ == t2)
       | Ptyp_tuple t1N | Ptyp_constr (_, t1N) -> assert (List.exists t1N ~f)
       | Ptyp_variant (r1N, _, _) ->
           assert (
@@ -325,7 +325,7 @@ end = struct
        |Pexp_poly (_, Some t1)
        |Pexp_extension (_, PTyp t1) ->
           assert (typ == t1)
-      | Pexp_coerce (_, Some t1, t2) -> assert ((typ == t1) || (typ == t2))
+      | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
       | Pexp_letexception (ext, _) -> assert (check_ext ext)
       | _ -> assert false )
     | Mty ctx -> (
@@ -373,7 +373,7 @@ end = struct
         | Ppat_construct
             ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [p1; p2]})
          |Ppat_or (p1, p2) ->
-            assert ((p1 == pat) || (p2 == pat))
+            assert (p1 == pat || p2 == pat)
         | Ppat_alias (p1, _)
          |Ppat_constraint (p1, _)
          |Ppat_construct (_, Some p1)
@@ -431,7 +431,7 @@ end = struct
         match ctx.pexp_desc with
         | Pexp_construct
             ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
-            assert ((e1 == exp) || (e2 == exp))
+            assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
             assert (e == exp)
         | Pexp_constant _ | Pexp_extension _ | Pexp_ident _ | Pexp_new _
@@ -440,7 +440,7 @@ end = struct
         | Pexp_let (_, bindings, e) ->
             assert (
               List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
-              || (e == exp) )
+              || e == exp )
         | (Pexp_match (e, _) | Pexp_try (e, _)) when e == exp -> ()
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
             assert (
@@ -450,9 +450,9 @@ end = struct
                 | _ -> false ) )
         | Pexp_fun (_, default, _, body) ->
             assert (
-              Option.value_map default ~default:false ~f || (body == exp) )
+              Option.value_map default ~default:false ~f || body == exp )
         | Pexp_apply (e0, e1N) ->
-            assert ((e0 == exp) || List.exists e1N ~f:snd_f)
+            assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
         | Pexp_construct (_, e) | Pexp_variant (_, e) ->
             assert (Option.exists e ~f)
@@ -471,13 +471,13 @@ end = struct
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
             assert (e == exp)
-        | Pexp_sequence (e1, e2) -> assert ((e1 == exp) || (e2 == exp))
+        | Pexp_sequence (e1, e2) -> assert (e1 == exp || e2 == exp)
         | Pexp_setfield (e1, _, e2) | Pexp_while (e1, e2) ->
-            assert ((e1 == exp) || (e2 == exp))
+            assert (e1 == exp || e2 == exp)
         | Pexp_ifthenelse (e1, e2, e3) ->
-            assert ((e1 == exp) || (e2 == exp) || Option.exists e3 ~f)
+            assert (e1 == exp || e2 == exp || Option.exists e3 ~f)
         | Pexp_for (_, e1, e2, _, e3) ->
-            assert ((e1 == exp) || (e2 == exp) || (e3 == exp))
+            assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
     | Str str -> (
       match str.pstr_desc with
@@ -515,7 +515,7 @@ end = struct
     | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="}}, _) -> false
     | Pexp_apply (e0, e1N) ->
         is_trivial c e0 && List.for_all e1N ~f:(snd >> is_trivial c)
-        && ((width xexp * 3) < c.margin)
+        && width xexp * 3 < c.margin
     | _ -> false
 
 
@@ -631,7 +631,7 @@ end = struct
               Some (InfixOp0, child)
           | ('@' | '^'), _ -> Some (InfixOp1, child)
           | ('+' | '-'), _ -> Some (InfixOp2, child)
-          | '*', _ when Poly.((i <> "*") && (i.[1] = '*')) ->
+          | '*', _ when Poly.(i <> "*" && i.[1] = '*') ->
               Some (InfixOp4, child)
           | ('*' | '/' | '%'), _ | _, ("lor" | "lxor" | "mod" | "land") ->
               Some (InfixOp3, child)
@@ -696,7 +696,7 @@ end = struct
         | ('=' | '<' | '>' | '|' | '&' | '$'), _ | _, "!=" -> Some InfixOp0
         | ('@' | '^'), _ -> Some InfixOp1
         | ('+' | '-'), _ -> Some InfixOp2
-        | '*', _ when Poly.((i <> "*") && (i.[1] = '*')) -> Some InfixOp4
+        | '*', _ when Poly.(i <> "*" && i.[1] = '*') -> Some InfixOp4
         | ('*' | '/' | '%'), _ | _, ("lor" | "lxor" | "mod" | "land") ->
             Some InfixOp3
         | _, ("lsl" | "lsr" | "asr") -> Some InfixOp4
@@ -729,8 +729,7 @@ end = struct
       false
     else if cmp > 0 then (* context higher prec than ast: add parens *)
       true
-    else if
-      Poly.((assoc_of_prec prec_ast = which_child) && (which_child <> Non))
+    else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
     then (* which child and associativity match: no parens *)
       false
     else (* which child and assoc conflict: add parens *)
@@ -825,7 +824,7 @@ end = struct
   let is_displaced_prefix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
     | Exp {pexp_desc= Pexp_apply (e0, _ :: _)}, Pexp_ident {txt= Lident i}
-      when (e0 == exp) && is_prefix_id i ->
+      when e0 == exp && is_prefix_id i ->
         false
     | _, Pexp_ident {txt= Lident i} when is_prefix_id i -> true
     | _ -> false
@@ -836,7 +835,7 @@ end = struct
     match (ctx, exp.pexp_desc) with
     | ( Exp {pexp_desc= Pexp_apply (e0, (Nolabel, _) :: (Nolabel, _) :: _)}
       , Pexp_ident {txt= Lident i} )
-      when (e0 == exp) && is_infix_id i ->
+      when e0 == exp && is_infix_id i ->
         false
     | _, Pexp_ident {txt= Lident i} when is_infix_id i -> true
     | _ -> false
@@ -925,7 +924,7 @@ end = struct
       match pexp_desc with
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
-          && ((List.last_exn cases).pc_rhs != exp) && exposed Match exp
+          && (List.last_exn cases).pc_rhs != exp && exposed Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
       | Pexp_ifthenelse (_, thn, None) when thn == exp -> exposed Then exp
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
@@ -935,7 +934,7 @@ end = struct
         when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->
           exposed Non_apply exp (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_])} as e0))
-        when (e0 == exp) && is_prefix ident ->
+        when e0 == exp && is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply _} as e0))
@@ -959,7 +958,7 @@ end = struct
             match ctx_desc with
             | Pexp_apply
                 ({pexp_desc= Pexp_ident {txt= Lident i}}, _ :: (_, e2) :: _)
-              when (e2 == exp) && is_infix_id i ->
+              when e2 == exp && is_infix_id i ->
                 true
             | Pexp_tuple e1N -> List.last_exn e1N == exp
             | _ -> false

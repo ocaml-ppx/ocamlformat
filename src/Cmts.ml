@@ -132,7 +132,7 @@ module Location = struct
 
   let compare_end x y = Position.compare x.loc_end y.loc_end
 
-  let contains l1 l2 = (compare_start l1 l2 <= 0) && (compare_end l1 l2 >= 0)
+  let contains l1 l2 = compare_start l1 l2 <= 0 && compare_end l1 l2 >= 0
 
   let width x = Position.distance x.loc_start x.loc_end
 
@@ -287,7 +287,7 @@ let string_between (l1: Location.t) (l2: Location.t) =
 
 let begins_line (l: Location.t) =
   let rec begins_line_ cnum =
-    (cnum = 0)
+    cnum = 0
     ||
     let cnum = cnum - 1 in
     match !source.[cnum] with
@@ -319,7 +319,7 @@ let is_adjacent (l1: Location.t) (l2: Location.t) =
       | "" -> true
       | "|" ->
           begins_line l1
-          && (Position.column l1.loc_start <= Position.column l2.loc_start)
+          && Position.column l1.loc_start <= Position.column l2.loc_start
       | _ -> false )
 
 
@@ -496,7 +496,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
     String.Search_pattern.create
       (String.init len ~f:(function
         | 0 -> '\n'
-        | n when n < (len - 1) -> ' '
+        | n when n < len - 1 -> ' '
         | _ -> '*' ))
   in
   let rec split_asterisk_prefixed_ pos =
@@ -550,7 +550,7 @@ let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
     && Option.value ~default:false
          ( last_cmt
          >>| fun (_, {Location.loc_end= {pos_lnum}}) ->
-         (pos_lnum + 1) = loc.Location.loc_start.pos_lnum )
+         pos_lnum + 1 = loc.Location.loc_start.pos_lnum )
   in
   fmt_if_k
     (not (List.is_empty cmts))
