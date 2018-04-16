@@ -1024,8 +1024,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       ( {pexp_desc= Pexp_ident {txt= Lident ":="}; pexp_attributes= []}
       , [(Nolabel, r); (Nolabel, v)] ) ->
       wrap_if parens "(" ")"
-        ( fmt_expression c (sub_exp ~ctx r) $ fmt " :=@;<1 2>"
-        $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) )
+        (hovbox 0
+           ( fmt_expression c (sub_exp ~ctx r) $ fmt " :=@;<1 2>"
+           $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident "~-"}
         ; pexp_loc

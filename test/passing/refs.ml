@@ -7,4 +7,8 @@ let _ =
       looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
   xx :=
     something very
-      loooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+      loooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
+  if something loooooooooooong then
+    xx :=
+      something very
+        loooooooooooooooooooooooooooooooooooooooooooooooooooooooong
