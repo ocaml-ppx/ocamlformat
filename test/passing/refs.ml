@@ -5,6 +5,10 @@ let _ =
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :=
     something very
       looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
+  xxxxxxxxxxxxx xxxxxxxxxxx xxxxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx xxxxxxxxxx
+    xxxxxxxxxxxxx :=
+    something very
+      looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
   xx :=
     something very
       loooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
