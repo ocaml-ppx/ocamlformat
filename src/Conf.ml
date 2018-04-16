@@ -266,7 +266,7 @@ let validate () =
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
-  else if not !inplace && (List.length !inputs > 1) then
+  else if not !inplace && List.length !inputs > 1 then
     `Error (false, "Must specify only one input file without --inplace")
   else `Ok ()
 
