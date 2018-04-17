@@ -14,15 +14,17 @@
 open Migrate_ast
 open Parsetree
 
-val input_impl :
-  input_name:string -> In_channel.t
+val input_impl
+  :  input_name:string
+  -> In_channel.t
   -> structure * (string * Location.t) list
 (** Reads a serialized structure from an input channel. It is assumed to be
     the output of `refmt --print=binary_reason` where `refmt` has been
     compiled with the same version of `ocaml` as `ocamlformat`. *)
 
-val input_intf :
-  input_name:string -> In_channel.t
+val input_intf
+  :  input_name:string
+  -> In_channel.t
   -> signature * (string * Location.t) list
 (** Reads a serialized signature from an input channel. It is assumed to be
     the output of `refmt --print=binary_reason` where `refmt` has been
@@ -34,12 +36,14 @@ val norm_impl : structure * (string * Location.t) list -> structure
 val norm_intf : signature * (string * Location.t) list -> signature
 (** Normalize a signature. *)
 
-val equal_impl :
-  structure * (string * Location.t) list
-  -> structure * (string * Location.t) list -> bool
+val equal_impl
+  :  structure * (string * Location.t) list
+  -> structure * (string * Location.t) list
+  -> bool
 (** Compare structures for equality up to normalization. *)
 
-val equal_intf :
-  signature * (string * Location.t) list
-  -> signature * (string * Location.t) list -> bool
+val equal_intf
+  :  signature * (string * Location.t) list
+  -> signature * (string * Location.t) list
+  -> bool
 (** Compare signatures for equality up to normalization. *)
