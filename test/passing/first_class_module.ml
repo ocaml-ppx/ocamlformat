@@ -19,7 +19,6 @@ let () =
   (* error here *)
   ()
 
-
 module type S = sig
   val x : int
 end

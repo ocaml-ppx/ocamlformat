@@ -23,7 +23,6 @@ let set_margin n fs =
   Format.pp_set_margin fs n ;
   Format.pp_set_max_indent fs (n - 1)
 
-
 (** Break hints and format strings --------------------------------------*)
 
 let break n o fs = Format.pp_print_break fs n o
@@ -54,23 +53,19 @@ let list_pn x1N (pp: ?prev:_ -> _ -> ?next:_ -> _ -> unit) fs =
       in
       list_pn_ fs x1 x2N
 
-
 let list_fl xs pp fs =
   list_pn xs
     (fun ?prev x ?next fs ->
       pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs )
     fs
 
-
 let list xs sep pp fs =
   let pp_sep fs () = Format.fprintf fs sep in
   Format.pp_print_list ~pp_sep (fun fs x -> pp x fs) fs xs
 
-
 let list_k xs pp_sep pp fs =
   let pp_sep fs () = pp_sep fs in
   Format.pp_print_list ~pp_sep (fun fs x -> pp x fs) fs xs
-
 
 (** Conditional formatting ----------------------------------------------*)
 
@@ -90,7 +85,6 @@ let break_unless_newline n o fs = Format.pp_print_or_newline fs n o "" ""
 
 let or_newline fits breaks fs =
   Format.pp_print_or_newline fs 1 0 fits breaks
-
 
 (** Conditional on immediately preceding a line break -------------------*)
 
@@ -119,10 +113,8 @@ let fits_breaks ?(force_fit_if= false) ?(force_break_if= false) fits breaks
     Format.pp_print_string fs b )
   else Format.pp_print_fits_or_breaks fs fits n o b
 
-
 let fits_breaks_if ?force_fit_if ?force_break_if cnd fits breaks fs =
   if cnd then fits_breaks ?force_fit_if ?force_break_if fits breaks fs
-
 
 (** Wrapping ------------------------------------------------------------*)
 
@@ -130,7 +122,6 @@ let wrap_if_k cnd pre suf k fs =
   if cnd then pre fs ;
   k fs ;
   if cnd then suf fs
-
 
 let wrap_k x = wrap_if_k true x
 
@@ -141,18 +132,15 @@ and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 let wrap_if_breaks pre suf k fs =
   fits_breaks "" pre fs ; k fs ; fits_breaks "" suf fs
 
-
 let wrap_if_fits_and cnd pre suf k fs =
   fits_breaks_if cnd pre "" fs ;
   k fs ;
   fits_breaks_if cnd suf "" fs
 
-
 let wrap_fits_breaks_if cnd pre suf k fs =
   fits_breaks_if cnd pre (pre ^ " ") fs ;
   k fs ;
   fits_breaks_if cnd suf ("@ " ^ suf) fs
-
 
 let wrap_fits_breaks x = wrap_fits_breaks_if true x
 

@@ -21,12 +21,10 @@ let is_prefix_id i =
   | "!=" -> false
   | _ -> match i.[0] with '!' | '?' | '~' -> true | _ -> false
 
-
 let is_prefix exp =
   match exp.pexp_desc with
   | Pexp_ident {txt= Lident i} -> is_prefix_id i
   | _ -> false
-
 
 let is_infix_id i =
   match (i.[0], i) with
@@ -39,12 +37,10 @@ let is_infix_id i =
       true
   | _ -> false
 
-
 let is_infix e =
   match e.pexp_desc with
   | Pexp_ident {txt= Lident i} -> is_infix_id i
   | _ -> false
-
 
 let is_symbol_id i = is_prefix_id i || is_infix_id i
 
@@ -55,14 +51,12 @@ let is_symbol e = is_prefix e || is_infix e
 let is_sequence exp =
   match exp.pexp_desc with Pexp_sequence _ -> true | _ -> false
 
-
 let rec is_sugared_list exp =
   match exp.pexp_desc with
   | Pexp_construct ({txt= Lident "[]"}, None) -> true
   | Pexp_construct ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; tl]}) ->
       is_sugared_list tl
   | _ -> false
-
 
 let may_force_break (c: Conf.t) s =
   let contains_internal_newline s =
@@ -75,14 +69,12 @@ let may_force_break (c: Conf.t) s =
   | `Newlines -> contains_internal_newline s
   | _ -> false
 
-
 let rec is_trivial c exp =
   match exp.pexp_desc with
   | Pexp_constant (Pconst_string (s, None)) -> not (may_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | _ -> false
-
 
 let has_trailing_attributes {pexp_desc; pexp_attributes} =
   match pexp_desc with
@@ -91,7 +83,6 @@ let has_trailing_attributes {pexp_desc; pexp_attributes} =
       List.exists pexp_attributes ~f:(function
         | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
         | _ -> true )
-
 
 (** Ast terms of various forms. *)
 module T = struct
@@ -178,7 +169,6 @@ let assoc_of_prec = function
   | High -> Non
   | Atomic -> Non
 
-
 (** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be)
     an immediate sub-term of [ctx] as assumed by the operations in
     [Requires_sub_terms]. *)
@@ -251,13 +241,11 @@ end = struct
   let dump fs ctx ast =
     Format.fprintf fs "ast: %a@\nctx: %a@\n" T.dump ast T.dump ctx
 
-
   let fail ctx ast exc =
     let bt = Caml.Printexc.get_backtrace () in
     dump Format.err_formatter ctx ast ;
     Format.eprintf "%s" bt ;
     raise exc
-
 
   (** Predicates to check the claimed sub-term relation. *)
 
@@ -354,10 +342,8 @@ end = struct
       | _ -> assert false )
     | Top -> assert false
 
-
   let check_typ ({ctx; ast= typ} as xtyp) =
     try check_typ xtyp with exc -> fail ctx (Typ typ) exc
-
 
   let check_pat {ctx; ast= pat} =
     match ctx with
@@ -416,10 +402,8 @@ end = struct
       | _ -> assert false )
     | Top -> assert false
 
-
   let check_pat ({ctx; ast= pat} as xpat) =
     try check_pat xpat with exc -> fail ctx (Pat pat) exc
-
 
   let check_exp {ctx; ast= exp} =
     match ctx with
@@ -494,10 +478,8 @@ end = struct
     | Mod {pmod_desc= Pmod_unpack e1} -> assert (e1 == exp)
     | Mod _ | Top | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
 
-
   let check_exp ({ctx; ast= exp} as xexp) =
     try check_exp xexp with exc -> fail ctx (Exp exp) exc
-
 
   let rec is_simple (c: Conf.t) width ({ast= exp} as xexp) =
     let ctx = Exp exp in
@@ -517,7 +499,6 @@ end = struct
         is_trivial c e0 && List.for_all e1N ~f:(snd >> is_trivial c)
         && width xexp * 3 < c.margin
     | _ -> false
-
 
   (** [prec_ctx {ctx; ast}] is the precedence of the context of [ast] within
       [ctx], where [ast] is an immediate sub-term (modulo syntactic sugar)
@@ -650,7 +631,6 @@ end = struct
       ; ast= Pld _ | Top | Pat _ | Exp _ | Mty _ | Mod _ | Sig _ | Str _ } ->
         None
 
-
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
       operators, otherwise returns [None]. *)
   let prec_ast = function
@@ -714,7 +694,6 @@ end = struct
       | _ -> None )
     | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ -> None
 
-
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context
       [ctx], indicating that [ast] should be parenthesized. Meaningful for
       binary operators, otherwise returns [None] if [ctx] has no precedence
@@ -735,7 +714,6 @@ end = struct
     else (* which child and assoc conflict: add parens *)
       true
 
-
   (** [parenze_typ {ctx; ast}] holds when type [ast] should be parenthesized
       in context [ctx]. *)
   let parenze_typ ({ctx; ast= typ} as xtyp) =
@@ -746,7 +724,6 @@ end = struct
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
       | Some (Some true) -> true
       | _ -> false
-
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
@@ -819,7 +796,6 @@ end = struct
         true
     | _ -> false
 
-
   (** Check if an exp is a prefix op that is not fully applied *)
   let is_displaced_prefix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
@@ -828,7 +804,6 @@ end = struct
         false
     | _, Pexp_ident {txt= Lident i} when is_prefix_id i -> true
     | _ -> false
-
 
   (** Check if an exp is an infix op that is not fully applied *)
   let is_displaced_infix_op {ctx; ast= exp} =
@@ -839,7 +814,6 @@ end = struct
         false
     | _, Pexp_ident {txt= Lident i} when is_infix_id i -> true
     | _ -> false
-
 
   (** 'Classes' of expressions which are parenthesized differently. *)
   type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
@@ -858,7 +832,6 @@ end = struct
       , (Let_match | Non_apply) ) ->
         true
     | _ -> false
-
 
   (** [exposed cls exp] holds if there is a right-most subexpression of
       [exp] which satisfies [mem_cls cls] and is not parenthesized. *)

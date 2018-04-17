@@ -43,7 +43,6 @@ end = struct
     let Arg (trm, set) = List.fold_right ~f:pair args ~init in
     Term.app (Term.const set) trm
 
-
   let args : arg list ref = ref []
 
   let mk ~default arg =
@@ -51,7 +50,6 @@ end = struct
     let set x = var := x in
     args := Arg (arg, set) :: !args ;
     var
-
 
   let parse info validate =
     match Term.eval (Term.(ret (const validate $ tuple !args)), info) with
@@ -68,7 +66,6 @@ let info =
     [`S "DESCRIPTION"; `P "$(tname) automatically formats OCaml code."]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
-
 
 let break_string_literals =
   let doc =
@@ -90,13 +87,11 @@ let break_string_literals =
           default
       & info ["break-string-literals"] ~doc ~env)
 
-
 let debug =
   let doc = "Generate debugging output." in
   let env = Arg.env_var "OCAMLFORMAT_DEBUG" in
   let default = false in
   mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~env)
-
 
 let escape_chars =
   let doc =
@@ -120,7 +115,6 @@ let escape_chars =
           default
       & info ["escape-chars"] ~doc ~env)
 
-
 let escape_strings =
   let doc =
     "Escape encoding for string literals. Can be set in a config file with \
@@ -140,12 +134,10 @@ let escape_strings =
           default
       & info ["escape-strings"] ~doc ~env)
 
-
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
   mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc)
-
 
 let inputs =
   let docv = "SRC" in
@@ -156,7 +148,6 @@ let inputs =
   let default = [] in
   mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv)
 
-
 let kind : [`Impl | `Intf] ref =
   let doc =
     "Parse file with unrecognized extension as an implementation."
@@ -166,7 +157,6 @@ let kind : [`Impl | `Intf] ref =
   let intf = (`Intf, Arg.info ["intf"] ~doc) in
   let default = `Impl in
   mk ~default Arg.(value & vflag default [impl; intf])
-
 
 let margin =
   let docv = "COLS" in
@@ -179,7 +169,6 @@ let margin =
   mk ~default
     Arg.(value & opt int default & info ["m"; "margin"] ~doc ~docv ~env)
 
-
 let max_iters =
   let docv = "N" in
   let doc =
@@ -190,7 +179,6 @@ let max_iters =
   let default = 10 in
   mk ~default
     Arg.(value & opt int default & info ["n"; "max-iters"] ~doc ~docv ~env)
-
 
 let name =
   let docv = "NAME" in
@@ -205,7 +193,6 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docv)
 
-
 let output =
   let docv = "DST" in
   let doc =
@@ -217,7 +204,6 @@ let output =
     Arg.(
       value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
 
-
 let sparse =
   let doc =
     "Generate more sparsely formatted code. Can be set in a config file \
@@ -227,14 +213,12 @@ let sparse =
   let default = false in
   mk ~default Arg.(value & flag & info ["sparse"] ~doc ~env)
 
-
 let no_version_check =
   let doc =
     "Do no check version matches the one specified in .ocamlformat."
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc)
-
 
 let no_warn_error =
   let doc =
@@ -244,7 +228,6 @@ let no_warn_error =
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["no-warn-error"] ~doc)
-
 
 let wrap_comments =
   let doc =
@@ -258,7 +241,6 @@ let wrap_comments =
   let default = false in
   mk ~default Arg.(value & flag & info ["wrap-comments"] ~doc ~env)
 
-
 let validate () =
   if List.is_empty !inputs then
     `Error (false, "Must specify at least one input file.")
@@ -269,7 +251,6 @@ let validate () =
   else if not !inplace && List.length !inputs > 1 then
     `Error (false, "Must specify only one input file without --inplace")
   else `Ok ()
-
 
 ;; parse info validate
 
@@ -331,7 +312,6 @@ let update conf name value =
   | "wrap-comments" -> {conf with wrap_comments= Bool.of_string value}
   | _ -> conf
 
-
 let rec read_conf_files conf dir =
   let dir' = Filename.dirname dir in
   if not (String.equal dir dir') && Caml.Sys.file_exists dir then
@@ -347,10 +327,8 @@ let rec read_conf_files conf dir =
     with Sys_error _ -> conf
   else conf
 
-
 let to_absolute file =
   Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
-
 
 let conf name =
   read_conf_files
@@ -363,7 +341,6 @@ let conf name =
     ; wrap_comments= !wrap_comments }
     (Filename.dirname (to_absolute name))
 
-
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
@@ -375,7 +352,6 @@ let kind_of fname =
   | ".ml" -> `Impl
   | ".mli" -> `Intf
   | _ -> !kind
-
 
 let action =
   if !inplace then

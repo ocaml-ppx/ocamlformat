@@ -23,7 +23,6 @@ let reason_impl : _ Translation_unit.t =
   ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.implementation }
 
-
 (** Operations on binary serialized Reason interfaces. *)
 let reason_intf : _ Translation_unit.t =
   let parse = Translation_unit.parse Migrate_ast.Parse.interface in
@@ -36,12 +35,10 @@ let reason_intf : _ Translation_unit.t =
   ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.interface }
 
-
 (** Select translation unit type and operations based on kind. *)
 let xunit_of_kind : _ -> Translation_unit.x = function
   | `Impl -> XUnit reason_impl
   | `Intf -> XUnit reason_intf
-
 
 ;; match Conf.action with
    | In_out
