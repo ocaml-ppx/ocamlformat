@@ -1738,8 +1738,8 @@ and fmt_label_declaration c ctx lbl_decl =
   @@ hvbox 4
        ( hvbox 2
            ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-           $ Cmts.fmt c loc @@ str txt $ fmt ":@ "
-           $ fmt_core_type c (sub_typ ~ctx pld_type) )
+           $ Cmts.fmt c loc @@ str txt $ fmt "@,:" $ fits_breaks " " "  "
+           $ fmt_core_type c ~box:false (sub_typ ~ctx pld_type) )
        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
        $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
 
