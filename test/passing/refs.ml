@@ -6,9 +6,9 @@ let _ =
     something very
       looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
   xxxxxxxxxxxxx xxxxxxxxxxx xxxxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx xxxxxxxxxx
-    xxxxxxxxxxxxx :=
-    something very
-      looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
+    xxxxxxxxxxxxx
+  := something very
+       looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
   xx :=
     something very
       loooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
