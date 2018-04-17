@@ -1022,7 +1022,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         $ fmt_expression c (sub_exp ~ctx e) )
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident ":="}; pexp_attributes= []}
-      , [(Nolabel, r); (Nolabel, v)] ) ->
+      , [(Nolabel, r); (Nolabel, v)] )
+    when is_simple c width (sub_exp ~ctx r) ->
       wrap_if parens "(" ")"
         (hovbox 0
            ( fmt_expression c (sub_exp ~ctx r) $ fmt " :=@;<1 2>"
