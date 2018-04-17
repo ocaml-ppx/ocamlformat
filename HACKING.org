@@ -1,0 +1,20 @@
+* release procedure
+- git checkout -t -b vM.N.O
+- topkg tag M.N.O
+- jbuilder subst
+- tools/gen_version.sh src/Version.ml M.N.O
+- git add src/Version.ml
+- update CHANGES.md by editing output of tools/gen_changes.sh vCURR vM.N.O
+- git commit -m "Update changes" -- CHANGES.md
+- git commit -a -m vM.N.O
+- topkg tag M.N.O -f
+- git push origin refs/heads/vM.N.O refs/tags/M.N.O
+- opam pin add -n -k git ocamlformat .
+- opam publish prepare ocamlformat.M.N.O https://github.com/ocaml-ppx/ocamlformat/archive/M.N.O.tar.gz
+- diff ocamlformat.opam ocamlformat.M.N.O/opam
+- if there are meaningful changes to ocamlformat.M.N.O/opam
+  + incorporate them into ocamlformat.opam
+  + git commit ... -- ocamlformat.opam
+  + go back to 'topkg tag M.N.O -f' step
+- grep -v "^version:" ocamlformat.opam > ocamlformat.M.N.O/opam
+- opam publish submit ocamlformat.M.N.O

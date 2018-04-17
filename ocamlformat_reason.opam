@@ -1,25 +1,23 @@
 opam-version: "1.2"
-name: "ocamlformat_reason"
 maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
 authors: "Josh Berdine <jjb@fb.com>"
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git"
 license: "MIT"
+build: [
+  ["tools/gen_version.sh" "src/Version.ml" version] {pinned}
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
 depends: [
-  "base" {= "v0.10.0"}
+  "base" {>= "v0.11.0"}
   "base-unix"
   "cmdliner"
-  "jbuilder" {build & >= "1.0+beta9"}
-  "ocaml-migrate-parsetree"
+  "jbuilder" {build & >= "1.0+beta20"}
+  "ocaml-migrate-parsetree" {>= "1.0.6"}
   "ocamlformat_support"
   "reason" {= "1.13.4"}
   "stdio"
   "lwt" {< "3.1.0"} (* ocamlformat does not need lwt, but reason requires utop requires lwt, so exclude 3.1.0 since it does not build *)
 ]
-build: [
-  ["jbuilder" "subst"] {pinned}
-  [make "reason"]
-]
-install: ["cp" "src/_build/opt/ocamlformat_reason.exe" "%{bin}%/ocamlformat_reason"]
-remove: ["rm" "-f" "%{bin}%/ocamlformat_reason"]
+available: [ ocaml-version >= "4.04.1" & ocaml-version < "4.05" ]

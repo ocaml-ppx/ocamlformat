@@ -13,7 +13,7 @@ depends: [
   "base" {>= "v0.11.0"}
   "base-unix"
   "cmdliner"
-  "jbuilder" {build}
+  "jbuilder" {build & >= "1.0+beta20"}
   "ocaml-migrate-parsetree" {>= "1.0.6"}
   "ocamlformat_support" {>= "0.4" & < "0.5"}
   "stdio"

@@ -5,7 +5,7 @@ cache:
   directories:
     - ${HOME}/.opam
 before_install:
-  - wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.0-beta6/opam-2.0.0-beta6-x86_64-linux
+  - wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.0-rc/opam-2.0.0-rc-x86_64-linux
   - chmod +x ${HOME}/opam
   - export PATH=${HOME}:${PATH}
   - export OPAMYES=1
@@ -14,6 +14,7 @@ before_install:
   - eval `opam config env`
   - export OPAMVERBOSE=1
 install:
+  - opam update --upgrade
   - git clone --branch support https://github.com/ocaml-ppx/ocamlformat.git ocamlformat_support
   - opam pin add --no-action ocamlformat_support https://github.com/ocaml-ppx/ocamlformat.git#support
   - opam pin add --no-action ocamlformat .

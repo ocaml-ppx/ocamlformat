@@ -24,13 +24,9 @@ let ocamlopt_flags =
 ;; Jbuild_plugin.V1.send @@ Format.sprintf "
 (rule
  ((targets (Version.ml))
+  (deps ((universe)))
   (action (run ../tools/gen_version.sh Version.ml))
-  (fallback)
-  (deps
-   (${SCOPE_ROOT}/../../.git/index
-    ${SCOPE_ROOT}/../../.git/HEAD
-    (files_recursively_in ${SCOPE_ROOT}/../../.git/refs/heads)
-    (files_recursively_in ${SCOPE_ROOT}/../../.git/refs/tags)))))
+  (mode fallback)))
 
 (executables
  ((names (ocamlformat ocamlformat_reason))
