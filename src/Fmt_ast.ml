@@ -481,11 +481,15 @@ and fmt_extension c ctx key (({txt} as ext), pld) =
       fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
   | _ -> wrap "[" "]" (str key $ str txt $ fmt_payload c ctx pld)
 
-and fmt_attributes c pre ~key attrs suf =
-  list_fl attrs (fun ~first ~last atr ->
-      fmt_or_k first (pre $ open_hvbox 0) (fmt "@ ")
-      $ fmt_attribute c key atr
-      $ fmt_if_k last (close_box $ suf) )
+and fmt_attributes c pre ?(box= true) ~key attrs suf =
+  let split = List.length attrs > 1 in
+  let box = split && box in
+  hvbox_if box 0
+      (list_fl attrs (fun ~first ~last atr ->
+           fmt_or_k first
+             (pre $ open_hvbox 0)
+             (fmt_or_k split (fmt "@;<1 0>") (fmt "@ "))
+           $ fmt_attribute c key atr $ fmt_if_k last (close_box $ suf) ))
 
 and fmt_payload c ctx pld =
   protect (Pld pld)
@@ -1698,7 +1702,7 @@ and fmt_value_description c ctx vd =
         $ fmt_core_type c (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
-    $ fmt_attributes c (fmt "@;<2 2>") ~key:"@@" atrs (fmt "")
+    $ fmt_attributes c (fmt "@;<2 2>") ~box:false ~key:"@@" atrs (fmt "")
     $ fmt_docstring c ~pro:(fmt "@\n") doc )
 
 and fmt_tydcl_params c ctx params =
@@ -1790,7 +1794,8 @@ and fmt_label_declaration c ctx lbl_decl =
            $ fmt ":@ "
            $ fmt_core_type c (sub_typ ~ctx pld_type) )
        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
-       $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
+       $ fmt_attributes c (fmt "@;<1 1>") ~box:false ~key:"@" atrs (fmt "")
+       )
 
 and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
