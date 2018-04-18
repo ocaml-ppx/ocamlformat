@@ -226,6 +226,9 @@ let rec sugar_functor_type ({ast= mty} as xmty) =
   | { pmty_desc= Pmty_functor (arg, arg_mty, body)
     ; pmty_loc
     ; pmty_attributes= [] } ->
+      let arg =
+        if String.equal "*" arg.txt then {arg with txt= ""} else arg
+      in
       Cmts.relocate ~src:pmty_loc ~before:arg.loc ~after:body.pmty_loc ;
       let xargs, xbody = sugar_functor_type (sub_mty ~ctx body) in
       ((arg, Option.map arg_mty ~f:(sub_mty ~ctx)) :: xargs, xbody)
@@ -1834,6 +1837,7 @@ and fmt_module_type c {ast= mt} =
       ; esp= fmt "@;<1000 0>"
       ; epi= Some (fmt "end") }
   | Pmty_functor ({txt}, mt1, mt2) ->
+      let txt = if String.equal "*" txt then "" else txt in
       let blk = fmt_module_type c (sub_mty ~ctx mt2) in
       { blk with
         pro=
