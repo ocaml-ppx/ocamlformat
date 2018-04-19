@@ -300,74 +300,75 @@ let rec fmt_longident (li: Longident.t) =
   | Lapply (li1, li2) ->
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
-let fmt_constant (c: Conf.t) ?epi const =
-  let fmt_char_escaped chr =
-    match (c.escape_chars, chr) with
-    | `Hexadecimal, _ ->
-        fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
-    | _, '\000'..'\128' -> str (Char.escaped chr)
-    | `Decimal, _ -> str (Char.escaped chr)
-    | `Preserve, _ -> char chr
-  in
-  let escape_string str =
-    match c.escape_strings with
-    | `Hexadecimal ->
-        let buf = Bytes.create (4 * String.length str) in
+let fmt_char_escaped (c: Conf.t) ~loc chr =
+  match (c.escape_chars, chr) with
+  | `Hexadecimal, _ ->
+      fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
+  | `Preserve, _ -> str (Source.char_litteral loc)
+  | _, '\000'..'\128' -> str (Char.escaped chr)
+  | `Decimal, _ -> str (Char.escaped chr)
+
+let escape_string (c: Conf.t) str =
+  match c.escape_strings with
+  | `Hexadecimal ->
+      let buf = Bytes.create (4 * String.length str) in
+      for i = 0 to String.length str - 1 do
+        let src =
+          Bytes.of_string (Printf.sprintf "\\x%02x" (Char.to_int str.[i]))
+        in
+        Bytes.blit ~dst:buf ~dst_pos:(i * 4) ~src ~src_pos:0 ~len:4
+      done ;
+      Bytes.to_string buf
+  | `Preserve -> str
+  | `Decimal ->
+      let n = ref 0 in
+      for i = 0 to String.length str - 1 do
+        let l =
+          match str.[i] with
+          | '"' | '\\' | '\n' | '\t' | '\r' | '\b' -> 2
+          | ' '..'~' -> 1
+          | _ -> 4
+        in
+        n := !n + l
+      done ;
+      if !n = String.length str then str
+      else
+        let buf = Bytes.create !n in
+        n := 0 ;
+        let set c =
+          Bytes.set buf !n c ;
+          Int.incr n
+        in
         for i = 0 to String.length str - 1 do
-          let src =
-            Bytes.of_string (Printf.sprintf "\\x%02x" (Char.to_int str.[i]))
-          in
-          Bytes.blit ~dst:buf ~dst_pos:(i * 4) ~src ~src_pos:0 ~len:4
+          let chr = str.[i] in
+          match chr with
+          | '"' | '\\' -> set '\\' ; set chr
+          | '\n' -> set '\\' ; set 'n'
+          | '\t' -> set '\\' ; set 't'
+          | '\r' -> set '\\' ; set 'r'
+          | '\b' -> set '\\' ; set 'b'
+          | ' '..'~' -> set chr
+          | _ ->
+              let code = Char.to_int chr in
+              set '\\' ;
+              set (Char.of_int_exn (48 + (code / 100))) ;
+              set (Char.of_int_exn (48 + (code / 10 % 10))) ;
+              set (Char.of_int_exn (48 + (code % 10)))
         done ;
         Bytes.to_string buf
-    | _ ->
-        let n = ref 0 in
-        for i = 0 to String.length str - 1 do
-          let l =
-            match (str.[i], c.escape_strings) with
-            | ('"' | '\\' | '\n' | '\t' | '\r' | '\b'), _ -> 2
-            | ' '..'~', _ -> 1
-            | '\128'..'\255', `Preserve -> 1
-            | _ -> 4
-          in
-          n := !n + l
-        done ;
-        if !n = String.length str then str
-        else
-          let buf = Bytes.create !n in
-          n := 0 ;
-          let set c =
-            Bytes.set buf !n c ;
-            Int.incr n
-          in
-          for i = 0 to String.length str - 1 do
-            let chr = str.[i] in
-            match (chr, c.escape_strings) with
-            | ('"' | '\\'), _ -> set '\\' ; set chr
-            | '\n', _ -> set '\\' ; set 'n'
-            | '\t', _ -> set '\\' ; set 't'
-            | '\r', _ -> set '\\' ; set 'r'
-            | '\b', _ -> set '\\' ; set 'b'
-            | ' '..'~', _ -> set chr
-            | '\128'..'\255', `Preserve -> set chr
-            | _ ->
-                let code = Char.to_int chr in
-                set '\\' ;
-                set (Char.of_int_exn (48 + (code / 100))) ;
-                set (Char.of_int_exn (48 + (code / 10 % 10))) ;
-                set (Char.of_int_exn (48 + (code % 10)))
-          done ;
-          Bytes.to_string buf
-  in
+
+let fmt_constant (c: Conf.t) ~loc ?epi const =
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
-  | Pconst_char c -> wrap "'" "'" @@ fmt_char_escaped c
-  | Pconst_string (s, delim) ->
+  | Pconst_char x -> wrap "'" "'" @@ fmt_char_escaped ~loc c x
+  | Pconst_string (s, Some delim) ->
+      str ("{" ^ delim ^ "|") $ str s $ str ("|" ^ delim ^ "}")
+  | Pconst_string (s, None) ->
       let fmt_line s =
         match c.break_string_literals with
         | `Wrap ->
-            let words = String.split (escape_string s) ~on:' ' in
+            let words = String.split (escape_string c s) ~on:' ' in
             hovbox_if
               (match words with [] | [_] -> false | _ -> true)
               0
@@ -378,10 +379,9 @@ let fmt_constant (c: Conf.t) ?epi const =
                    | _, Some "" -> str " "
                    | _, Some _ -> pre_break 1 " \\" 0
                    | _ -> fmt "" ))
-        | _ -> str (escape_string s)
+        | _ -> str (escape_string c s)
       in
-      let fmt_lines s =
-        let lines = String.split s ~on:'\n' in
+      let fmt_lines lines =
         hvbox 1
           ( str "\""
           $ list_pn lines (fun ?prev curr ?next ->
@@ -397,8 +397,8 @@ let fmt_constant (c: Conf.t) ?epi const =
                           String.lfindi next ~f:(fun _ c -> not (drop c))
                         with
                         | Some 0 -> ""
-                        | Some i -> escape_string (String.sub next 0 i)
-                        | None -> escape_string next
+                        | Some i -> escape_string c (String.sub next 0 i)
+                        | None -> escape_string c next
                       in
                       fmt "\\n"
                       $ fmt_if_k
@@ -406,11 +406,16 @@ let fmt_constant (c: Conf.t) ?epi const =
                           (str spc $ pre_break 0 "\\" 0) ) )
           $ str "\"" $ Option.call ~f:epi )
       in
-      match (delim, c.break_string_literals) with
-      | None, (`Newlines | `Wrap) -> fmt_lines s
-      | None, `Never -> str "\"" $ fmt_line s $ str "\""
-      | Some delim, _ ->
-          str ("{" ^ delim ^ "|") $ str s $ str ("|" ^ delim ^ "}")
+      let s =
+        match (c.break_string_literals, c.escape_strings) with
+        | `Never, `Preserve -> Source.string_litteral `Preserve loc
+        | (`Newlines | `Wrap), `Preserve ->
+            Source.string_litteral `Normalize_nl loc
+        | _ -> s
+      in
+      match c.break_string_literals with
+      | `Newlines | `Wrap -> fmt_lines (String.split ~on:'\n' s)
+      | `Never -> str "\"" $ fmt_line s $ str "\""
 
 let fmt_variance = function
   | Covariant -> fmt "+"
@@ -649,8 +654,34 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks_if parens "(" ")"
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ " $ str txt ))
-  | Ppat_constant const -> fmt_constant c const
-  | Ppat_interval (l, u) -> fmt_constant c l $ fmt ".." $ fmt_constant c u
+  | Ppat_constant const -> fmt_constant c ~loc:ppat_loc const
+  | Ppat_interval (l, u) ->
+      (* we need to reconstruct locations for both side of the interval *)
+      let rec tok b =
+        match Lexer.token b with
+        | (Parser.CHAR _ | Parser.DOTDOT) as tok ->
+            let l, r = (Lexing.lexeme_start b, Lexing.lexeme_end b) in
+            let loc =
+              { ppat_loc with
+                loc_start=
+                  { ppat_loc.loc_start with
+                    pos_cnum= ppat_loc.loc_start.pos_cnum + l }
+              ; loc_end=
+                  { ppat_loc.loc_end with
+                    pos_cnum= ppat_loc.loc_start.pos_cnum + r } }
+            in
+            (tok, loc)
+        | _ -> tok b
+      in
+      let b = Lexing.from_string (Source.string_at ppat_loc) in
+      let t1, loc1 = tok b in
+      let dotdot, _ = tok b in
+      let t2, loc2 = tok b in
+      assert (
+        match (t1, dotdot, t2) with
+        | CHAR _, DOTDOT, CHAR _ -> true
+        | _ -> false ) ;
+      fmt_constant ~loc:loc1 c l $ fmt ".." $ fmt_constant ~loc:loc2 c u
   | Ppat_tuple pats ->
       hvbox 0
         (wrap_if_breaks "( " "@ )"
@@ -1220,7 +1251,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             $ fmt "@," $ fmt_atrs )
         $ fits_breaks_if paren_body ")" "@ )" )
   | Pexp_constant const ->
-      wrap_if parens "(" ")" (fmt_constant c ?epi const) $ fmt_atrs
+      wrap_if parens "(" ")" (fmt_constant c ~loc:pexp_loc ?epi const)
+      $ fmt_atrs
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->

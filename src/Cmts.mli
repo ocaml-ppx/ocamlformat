@@ -26,19 +26,17 @@
 module Format = Format_
 open Migrate_ast
 
-val init_impl :
-  string -> Parsetree.structure -> (string * Location.t) list -> unit
-(** [init_impl source_text structure comments] associates each comment in
-    [comments] with a source location appearing in [structure], using
-    [source_text] to help resolve ambiguities. Initializes the state used by
-    the [fmt] functions. *)
+val init_impl : Parsetree.structure -> (string * Location.t) list -> unit
+(** [init_impl structure comments] associates each comment in [comments]
+    with a source location appearing in [structure]. It uses [Source] to
+    help resolve ambiguities. Initializes the state used by the [fmt]
+    functions. *)
 
-val init_intf :
-  string -> Parsetree.signature -> (string * Location.t) list -> unit
-(** [init_inft source_text signature comments] associates each comment in
-    [comments] with a source location appearing in [signature], using
-    [source_text] to help resolve ambiguities. Initializes the state used by
-    the [fmt] functions. *)
+val init_intf : Parsetree.signature -> (string * Location.t) list -> unit
+(** [init_inft signature comments] associates each comment in [comments]
+    with a source location appearing in [signature]. It uses [Source] to
+    help resolve ambiguities. Initializes the state used by the [fmt]
+    functions. *)
 
 val relocate :
   src:Location.t -> before:Location.t -> after:Location.t -> unit

@@ -19,7 +19,7 @@ open Migrate_ast
 type 'a t =
   { input:
       input_name:string -> In_channel.t -> 'a * (string * Location.t) list
-  ; init_cmts: string -> 'a -> (string * Location.t) list -> unit
+  ; init_cmts: 'a -> (string * Location.t) list -> unit
   ; fmt: Conf.t -> 'a -> Fmt.t
   ; parse:
       ?warn:bool -> input_name:string -> In_channel.t
@@ -79,7 +79,8 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
     in
     if Conf.debug then
       dump xunit dir base ".old" ".ast" (xunit.normalize (ast, cmts)) ;
-    xunit.init_cmts source ast cmts ;
+    Source.init source ;
+    xunit.init_cmts ast cmts ;
     ( if xunit.no_translation ast then (
         In_channel.seek ic Int64.zero ;
         Out_channel.output_string oc (In_channel.input_all ic) )

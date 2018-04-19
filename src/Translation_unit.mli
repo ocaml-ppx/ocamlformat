@@ -13,7 +13,7 @@
 type 'a t =
   { input:
       input_name:string -> In_channel.t -> 'a * (string * Location.t) list
-  ; init_cmts: string -> 'a -> (string * Location.t) list -> unit
+  ; init_cmts: 'a -> (string * Location.t) list -> unit
   ; fmt: Conf.t -> 'a -> Fmt.t
   ; parse:
       ?warn:bool -> input_name:string -> In_channel.t

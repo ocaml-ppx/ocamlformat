@@ -265,49 +265,18 @@ end = struct
     ((s_before, e_before), (s_within, e_within), (s_after, e_after))
 end
 
-(** Concrete syntax, set by [init]. *)
-let source = ref ""
-
-let string_between (l1: Location.t) (l2: Location.t) =
-  let pos = l1.loc_end.pos_cnum + 1 in
-  let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum - 1 in
-  if len >= 0 then Some (String.sub !source ~pos ~len)
-  else
-    (* can happen e.g. if comment is within a parenthesized expression *)
-    None
-
-let begins_line (l: Location.t) =
-  let rec begins_line_ cnum =
-    cnum = 0
-    ||
-    let cnum = cnum - 1 in
-    match !source.[cnum] with
-    | '\n' | '\r' -> true
-    | c when Char.is_whitespace c -> begins_line_ cnum
-    | _ -> false
-  in
-  begins_line_ l.loc_start.pos_cnum
-
-let ends_line (l: Location.t) =
-  let rec ends_line_ cnum =
-    match !source.[cnum] with
-    | '\n' | '\r' -> true
-    | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
-    | _ -> false
-  in
-  ends_line_ l.loc_end.pos_cnum
-
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is
     a [|] character and the first location begins a line and the start
     column of the first location is not greater than that of the second
     location. *)
 let is_adjacent (l1: Location.t) (l2: Location.t) =
-  Option.value_map (string_between l1 l2) ~default:false ~f:(fun btw ->
+  Option.value_map (Source.string_between l1 l2) ~default:false ~f:
+    (fun btw ->
       match String.strip btw with
       | "" -> true
       | "|" ->
-          begins_line l1
+          Source.begins_line l1
           && Position.column l1.loc_start <= Position.column l2.loc_start
       | _ -> false )
 
@@ -339,7 +308,7 @@ let add_cmts ?prev ?next tbl loc cmts =
           let string_between_inclusive (l1: Location.t) (l2: Location.t) =
             let pos = l1.loc_end.pos_cnum in
             let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum in
-            if len >= 0 then String.sub !source ~pos ~len else "swapped"
+            if len >= 0 then Source.sub ~pos ~len else "swapped"
           in
           let btw_prev =
             Option.value_map prev ~default:"no prev"
@@ -424,8 +393,7 @@ let doc_is_dup doc =
   | `Duplicate -> true
 
 (** Initialize global state and place comments. *)
-let init map_ast loc_of_ast src asts comments_n_docstrings =
-  source := src ;
+let init map_ast loc_of_ast asts comments_n_docstrings =
   Hashtbl.clear docs_memo ;
   Hashtbl.clear cmts_before ;
   Hashtbl.clear cmts_after ;
@@ -433,7 +401,7 @@ let init map_ast loc_of_ast src asts comments_n_docstrings =
   if Conf.debug then
     List.iter comments ~f:(fun (txt, loc) ->
         Format.eprintf "%a %s %s@\n" Location.fmt loc txt
-          (if ends_line loc then "eol" else "") ) ;
+          (if Source.ends_line loc then "eol" else "") ) ;
   if not (List.is_empty comments) then (
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
@@ -521,7 +489,8 @@ let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   let cmts = Option.value (find tbl loc) ~default:[] in
   let last_cmt = List.last cmts in
   let eol_cmt =
-    Option.value ~default:false (last_cmt >>| fun (_, loc) -> ends_line loc)
+    Option.value ~default:false
+      (last_cmt >>| fun (_, loc) -> Source.ends_line loc)
   in
   let adj_cmt =
     eol_cmt
