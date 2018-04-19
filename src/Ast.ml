@@ -215,8 +215,11 @@ end
 (** Operations determining precedence and necessary parenthesization of
     terms based on their super-terms. *)
 and Requires_sub_terms : sig
-  val is_simple :
-    Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
+  val is_simple
+    :  Conf.t
+    -> (expression In_ctx.xt -> int)
+    -> expression In_ctx.xt
+    -> bool
 
   type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 

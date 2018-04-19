@@ -11,15 +11,20 @@
 
 (** Operations on translation units. *)
 type 'a t =
-  { input:
-      input_name:string -> In_channel.t -> 'a * (string * Location.t) list
+  { input
+      :  input_name:string
+      -> In_channel.t
+      -> 'a * (string * Location.t) list
   ; init_cmts: string -> 'a -> (string * Location.t) list -> unit
   ; fmt: Conf.t -> 'a -> Fmt.t
-  ; parse:
-      ?warn:bool -> input_name:string -> In_channel.t
+  ; parse
+      :  ?warn:bool
+      -> input_name:string
+      -> In_channel.t
       -> 'a * (string * Location.t) list
-  ; equal:
-      'a * (string * Location.t) list -> 'a * (string * Location.t) list
+  ; equal
+      :  'a * (string * Location.t) list
+      -> 'a * (string * Location.t) list
       -> bool
   ; normalize: 'a * (string * Location.t) list -> 'a
   ; no_translation: 'a -> bool
@@ -28,8 +33,11 @@ type 'a t =
 (** Existential package of a type of translation unit and its operations. *)
 type x = XUnit: 'a t -> x
 
-val parse :
-  (Lexing.lexbuf -> 'a) -> ?warn:bool -> input_name:string -> In_channel.t
+val parse
+  :  (Lexing.lexbuf -> 'a)
+  -> ?warn:bool
+  -> input_name:string
+  -> In_channel.t
   -> 'a * (string * Location.t) list
 (** [parse parse_ast ~warn input_name input_file input_channel] parses the
     contents of [input_channel] assuming it corresponds to [input_name] for
@@ -38,9 +46,14 @@ val parse :
     [parse_ast]. If [warn] is set, then parse-time warnings are fatal,
     otherwise only enabled. *)
 
-val parse_print :
-  x -> Conf.t -> input_name:string -> input_file:string -> In_channel.t
-  -> string option -> unit
+val parse_print
+  :  x
+  -> Conf.t
+  -> input_name:string
+  -> input_file:string
+  -> In_channel.t
+  -> string option
+  -> unit
 (** [parse_print xunit conf input_name input_file input_channel output_file]
     parses the contents of [input_channel], using [input_name] for error
     messages, and referring to the contents of [input_file] to improve

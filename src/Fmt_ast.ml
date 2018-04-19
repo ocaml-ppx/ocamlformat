@@ -524,8 +524,8 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
         | Optional l -> fmt "?" $ str l $ fmt ":"
       in
       let xt1N = sugar_arrow_typ xtyp in
-      hovbox_if box 0
-        (list xt1N "@ -> " (fun (lI, xtI) ->
+      hvbox_if box 0
+        (list xt1N "@;<1 0>-> " (fun (lI, xtI) ->
              hvbox 0 (arg_label lI $ fmt_core_type c xtI) ))
   | Ptyp_constr ({txt; loc}, []) -> Cmts.fmt c loc @@ fmt_longident txt
   | Ptyp_constr ({txt; loc}, [t1]) ->
@@ -1627,7 +1627,8 @@ and fmt_value_description c ctx vd =
   hvbox 0
     ( hvbox 2
         ( str pre $ fmt " " $ wrap_if (is_symbol_id txt) "( " " )" (str txt)
-        $ fmt " :@ " $ fmt_core_type c (sub_typ ~ctx pval_type)
+        $ fmt "@;:" $ fits_breaks " " "  "
+        $ fmt_core_type ~box:false c (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
     $ fmt_attributes c (fmt "@;<2 2>") ~key:"@@" atrs (fmt "")
@@ -1710,12 +1711,16 @@ and fmt_label_declaration c ctx lbl_decl =
   in
   let doc, atrs = doc_atrs pld_attributes in
   let fmt_cmts = Cmts.fmt c ~eol:(break_unless_newline 1 2) pld_loc in
+  let is_fun =
+    match pld_type with {ptyp_desc= Ptyp_arrow _} -> true | _ -> false
+  in
   fmt_cmts
   @@ hvbox 4
        ( hvbox 2
            ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-           $ Cmts.fmt c loc @@ str txt $ fmt ":@ "
-           $ fmt_core_type c (sub_typ ~ctx pld_type) )
+           $ Cmts.fmt c loc @@ str txt $ fmt_or is_fun "@," "" $ fmt ": "
+           $ fits_breaks_if is_fun "" " "
+           $ fmt_core_type c ~box:false (sub_typ ~ctx pld_type) )
        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
        $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
 

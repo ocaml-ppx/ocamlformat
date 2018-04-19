@@ -95,15 +95,23 @@ val pre_break : int -> string -> int -> t
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
-val fits_breaks :
-  ?force_fit_if:bool -> ?force_break_if:bool -> string -> string -> t
+val fits_breaks
+  :  ?force_fit_if:bool
+  -> ?force_break_if:bool
+  -> string
+  -> string
+  -> t
 (** [fits_breaks fits breaks] prints [fits] if the enclosing box fits on one
     line, and otherwise prints [breaks], which is a string that optionally
     starts with a break hint specification such as ["@ "], ["@,"], or
     ["@;<nspaces offset>"]. *)
 
-val fits_breaks_if :
-  ?force_fit_if:bool -> ?force_break_if:bool -> bool -> string -> string
+val fits_breaks_if
+  :  ?force_fit_if:bool
+  -> ?force_break_if:bool
+  -> bool
+  -> string
+  -> string
   -> t
 (** As [fits_breaks], but conditional. *)
 
