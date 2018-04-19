@@ -27,4 +27,6 @@ type t =
       -> b_is_loooooooooooooooooooooooooooooooong
       -> c
       -> d
-      -> e }
+      -> e
+  ; f4: a loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+      typ }
