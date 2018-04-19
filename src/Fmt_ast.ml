@@ -455,6 +455,11 @@ let fmt_docstring (c: Conf.t) ?pro ?epi doc =
 let fmt_extension_suffix c ext =
   opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt c loc (str txt))
 
+let field_alias (li1: Longident.t) (li2: Longident.t) =
+  match (li1, li2) with
+  | Ldot (_, x), Lident y -> String.equal x y
+  | _ -> Poly.equal li1 li2
+
 let rec fmt_attribute c pre = function
   | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
     , PStr
@@ -678,8 +683,12 @@ and fmt_pattern (c: Conf.t) ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         Cmts.fmt c ppat_loc
         @@
         match ppat_desc with
-        | Ppat_var {txt= txt'} when String.equal (Longident.last txt) txt' ->
+        | Ppat_var {txt= txt'} when field_alias txt (Longident.parse txt') ->
             cbox 2 (fmt_longident txt)
+        | Ppat_constraint ({ppat_desc= Ppat_var {txt= txt'; _}}, t)
+          when field_alias txt (Longident.parse txt') ->
+            fmt_longident txt $ fmt " : "
+            $ fmt_core_type c (sub_typ ~ctx:(Pat pat) t)
         | _ ->
             cbox 2
               ( fmt_longident txt $ fmt "=@ "
@@ -1441,11 +1450,6 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
           $ Option.call ~f:epi )
       $ fmt_atrs
   | Pexp_record (flds, default) ->
-      let field_alias (li1: Longident.t) (li2: Longident.t) =
-        match (li1, li2) with
-        | Ldot (_, x), Lident y -> String.equal x y
-        | _ -> Poly.equal li1 li2
-      in
       let fmt_field ({txt; loc}, f) =
         Cmts.fmt c loc
         @@
