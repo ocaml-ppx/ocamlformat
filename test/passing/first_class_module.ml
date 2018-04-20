@@ -31,6 +31,10 @@ let m = (module M : S)
 
 let f ((module M : S) as u) = ignore u ; M.x
 
+let f (T {m= (module M)}) = ignore u ; M.x
+
+let f (T {m= (module M : S)}) = ignore u ; M.x
+
 module type S = sig
   type a
 
