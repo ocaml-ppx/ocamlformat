@@ -498,6 +498,9 @@ end = struct
     | Pexp_apply (e0, e1N) ->
         is_trivial c e0 && List.for_all e1N ~f:(snd >> is_trivial c)
         && width xexp * 3 < c.margin
+    | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
+        is_simple c width (sub_exp ~ctx e0)
+    | Pexp_extension (_, (PStr [] | PTyp _)) -> true
     | _ -> false
 
   (** [prec_ctx {ctx; ast}] is the precedence of the context of [ast] within

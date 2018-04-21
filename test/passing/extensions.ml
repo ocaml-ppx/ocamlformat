@@ -1,7 +1,9 @@
-let () =
-  [%ext expr] ;
-  ()
+let () = [%ext expr] ; ()
 
 let _ = (match%ext x with () -> ()) [@attr y]
 
 val f : compare:[%compare : 'a] -> sexp_of:[%sexp_of : 'a] -> t
+
+let invariant t =
+  Invariant.invariant [%here] t [%sexp_of : t] (fun () ->
+      assert (check_t_invariant t) )
