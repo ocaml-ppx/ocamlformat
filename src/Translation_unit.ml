@@ -22,10 +22,13 @@ type 'a t =
   ; init_cmts: string -> 'a -> (string * Location.t) list -> unit
   ; fmt: Conf.t -> 'a -> Fmt.t
   ; parse:
-      ?warn:bool -> input_name:string -> In_channel.t
+         ?warn:bool
+      -> input_name:string
+      -> In_channel.t
       -> 'a * (string * Location.t) list
   ; equal:
-      'a * (string * Location.t) list -> 'a * (string * Location.t) list
+         'a * (string * Location.t) list
+      -> 'a * (string * Location.t) list
       -> bool
   ; normalize: 'a * (string * Location.t) list -> 'a
   ; no_translation: 'a -> bool
