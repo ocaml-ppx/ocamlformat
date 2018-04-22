@@ -30,3 +30,5 @@ let%ext _ =
   let%ext _ : int = x in
   let%ext _ : int = x in
   ()
+
+let f : 'a. 'a ty -> 'a = fun y -> g y
