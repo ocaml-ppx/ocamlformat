@@ -755,8 +755,8 @@ end = struct
               pvb_pat == pat
           | _ -> false )
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
-      , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _}) )
-      -> false
+      , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _}) ) ->
+        false
     | _, Ppat_unpack _
      |_, Ppat_constraint ({ppat_desc= Ppat_unpack _}, _)
      |( Pat {ppat_desc= Ppat_construct _ | Ppat_record _ | Ppat_variant _}
