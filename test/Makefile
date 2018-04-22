@@ -52,8 +52,8 @@ test:
 	@rm -f $*.pp.mli $*.old.ast $*.new.ast
 	$(REFMT) --print=binary_reason $< | $(OCAMLFORMAT_EXE) $< --reason-intf -o $@
 
-TEST_ML:=$(shell find $(DIRS) -name _build -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
-TEST_MLI:=$(shell find $(DIRS) -name _build -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
+TEST_ML:=$(shell find $(DIRS) -name _build -not -prune -or -name failing -not -prune -or -name failing-output -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
+TEST_MLI:=$(shell find $(DIRS) -name _build -not -prune -or -name failing -not -prune -or -name failing-output -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
 TEST_RE:=$(shell find $(DIRS) -name '*'.re 2>/dev/null)
 TEST_REI:=$(shell find $(DIRS) -name '*'.rei 2>/dev/null)
 
