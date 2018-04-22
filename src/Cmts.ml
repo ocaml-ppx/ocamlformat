@@ -532,7 +532,8 @@ let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   in
   fmt_if_k
     (not (List.is_empty cmts))
-    ( Option.call ~f:pro $ vbox 0 (list cmts "@ " (fmt_cmt c))
+    ( Option.call ~f:pro
+    $ vbox 0 (list cmts "@ " (fmt_cmt c))
     $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (Option.call ~f:epi) )
 
 let fmt_before c ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =

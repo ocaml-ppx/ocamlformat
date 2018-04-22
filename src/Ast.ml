@@ -485,18 +485,26 @@ end = struct
     let ctx = Exp exp in
     match exp.pexp_desc with
     | Pexp_constant _ -> is_trivial c exp
-    | Pexp_array _ | Pexp_field _ | Pexp_ident _ | Pexp_record _
-     |Pexp_send _ | Pexp_tuple _ | Pexp_variant _
-     |Pexp_construct (_, None) ->
+    | Pexp_field _ | Pexp_ident _ | Pexp_send _
+     |Pexp_construct (_, None)
+     |Pexp_variant (_, None) ->
         true
     | Pexp_construct
         ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
         is_simple c width (sub_exp ~ctx e1)
         && is_simple c width (sub_exp ~ctx e2)
-    | Pexp_construct (_, Some e0) -> is_simple c width (sub_exp ~ctx e0)
+    | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
+        is_trivial c e0
+    | Pexp_array e1N | Pexp_tuple e1N ->
+        List.for_all e1N ~f:(is_trivial c) && width xexp * 3 < c.margin
+    | Pexp_record (e1N, e0) ->
+        Option.for_all e0 ~f:(is_trivial c)
+        && List.for_all e1N ~f:(snd >> is_trivial c)
+        && width xexp * 3 < c.margin
     | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="}}, _) -> false
     | Pexp_apply (e0, e1N) ->
-        is_trivial c e0 && List.for_all e1N ~f:(snd >> is_trivial c)
+        is_trivial c e0
+        && List.for_all e1N ~f:(snd >> is_trivial c)
         && width xexp * 3 < c.margin
     | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
         is_simple c width (sub_exp ~ctx e0)
@@ -894,7 +902,8 @@ end = struct
       parenthesized in context [ctx]. *)
   and parenze_exp ({ctx; ast= exp} as xexp) =
     assert (check_exp xexp ; true) ;
-    is_displaced_prefix_op xexp || is_displaced_infix_op xexp
+    is_displaced_prefix_op xexp
+    || is_displaced_infix_op xexp
     || has_trailing_attributes exp
     ||
     match ctx with
@@ -902,7 +911,8 @@ end = struct
       match pexp_desc with
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
-          && (List.last_exn cases).pc_rhs != exp && exposed Match exp
+          && (List.last_exn cases).pc_rhs != exp
+          && exposed Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
       | Pexp_ifthenelse (_, thn, None) when thn == exp -> exposed Then exp
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->

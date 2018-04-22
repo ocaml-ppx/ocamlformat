@@ -82,7 +82,8 @@ let mapper =
         , e1N ) ->
         m.expr m
           (Exp.apply ~loc:pexp_loc ~attrs:pexp_attributes
-             {e1 with pexp_desc= Pexp_ident {lid with txt= Lident "-"}} e1N)
+             {e1 with pexp_desc= Pexp_ident {lid with txt= Lident "-"}}
+             e1N)
     (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
     | Pexp_sequence
         ({pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= []}, e3) ->
