@@ -193,6 +193,16 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docv)
 
+let ocp_indent_compat =
+  let doc =
+    "Attempt to generate output which does not change (much) when \
+     post-processing with ocp-indent. Can be set in a config file with a \
+     `ocp-indent-compat true` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_OCP_INDENT_COMPAT" in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["ocp-indent-compat"] ~doc ~env)
+
 let output =
   let docv = "DST" in
   let doc =
@@ -260,14 +270,15 @@ type t =
   ; max_iters: int
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
-  ; break_string_literals: [`Newlines | `Never | `Wrap]
-  ; wrap_comments: bool }
+  ; break_string_literals: [`Never | `Newlines | `Wrap]
+  ; wrap_comments: bool
+  ; ocp_indent_compat: bool }
 
 let update conf name value =
   match name with
   | "margin" -> {conf with margin= Int.of_string value}
-  | "max-iters" -> {conf with max_iters= Int.of_string value}
   | "sparse" -> {conf with sparse= Bool.of_string value}
+  | "max-iters" -> {conf with max_iters= Int.of_string value}
   | "escape-chars" ->
       { conf with
         escape_chars=
@@ -310,6 +321,8 @@ let update conf name value =
           ^ " but version is " ^ Version.version )
           []
   | "wrap-comments" -> {conf with wrap_comments= Bool.of_string value}
+  | "ocp-indent-compat" ->
+      {conf with ocp_indent_compat= Bool.of_string value}
   | _ -> conf
 
 let rec read_conf_files conf dir =
@@ -338,7 +351,8 @@ let conf name =
     ; escape_chars= !escape_chars
     ; escape_strings= !escape_strings
     ; break_string_literals= !break_string_literals
-    ; wrap_comments= !wrap_comments }
+    ; wrap_comments= !wrap_comments
+    ; ocp_indent_compat= !ocp_indent_compat }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}

@@ -23,7 +23,8 @@ type t =
         (** Escape encoding for string literals. *)
   ; break_string_literals: [`Never | `Newlines | `Wrap]
         (** How to potentially break string literals into new lines. *)
-  ; wrap_comments: bool  (** Wrap comments at margin. *) }
+  ; wrap_comments: bool  (** Wrap comments at margin. *)
+  ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *) }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
