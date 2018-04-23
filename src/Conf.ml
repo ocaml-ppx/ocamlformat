@@ -102,7 +102,8 @@ let doc_comments_position =
   let default = `After in
   mk ~default
     Arg.(
-      value & opt (enum [("after", `After); ("before", `Before)]) default
+      value
+      & opt (enum [("after", `After); ("before", `Before)]) default
       & info ["doc-comments"] ~doc ~env)
 
 let escape_chars =
