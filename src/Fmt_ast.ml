@@ -2386,7 +2386,9 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       (* recognize and undo the pattern of code introduced by
          ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
          https://caml.inria.fr/mantis/view.php?id=7344 *)
-      | ( Ppat_constraint (pat, {ptyp_desc= Ptyp_poly ([], typ1)})
+      | ( Ppat_constraint
+            ( ({ppat_desc= Ppat_var _} as pat)
+            , {ptyp_desc= Ptyp_poly ([], typ1)} )
         , Pexp_constraint (_, typ2) )
         when Poly.equal typ1 typ2 ->
           sub_pat ~ctx:(Pat pvb_pat) pat

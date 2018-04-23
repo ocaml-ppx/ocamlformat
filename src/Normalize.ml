@@ -116,7 +116,8 @@ let mapper =
     (* recognize and undo the pattern of code introduced by
        ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
        https://caml.inria.fr/mantis/view.php?id=7344 *)
-    | ( Ppat_constraint (p0, {ptyp_desc= Ptyp_poly ([], t0)})
+    | ( Ppat_constraint
+          (({ppat_desc= Ppat_var _} as p0), {ptyp_desc= Ptyp_poly ([], t0)})
       , Pexp_constraint (e0, t1) )
       when Poly.equal t0 t1 ->
         m.value_binding m
