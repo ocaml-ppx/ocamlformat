@@ -9,18 +9,21 @@
  *                                                                    *
  **********************************************************************)
 
-val init : string -> unit
+type t
 
-val string_between : Location.t -> Location.t -> string option
+val create : string -> t
 
-val string_literal : [`Normalize_nl | `Preserve] -> Location.t -> string
+val string_between : t -> Location.t -> Location.t -> string option
 
-val char_literal : Location.t -> string
+val string_literal :
+  t -> [`Normalize_nl | `Preserve] -> Location.t -> string
 
-val string_at : Location.t -> string
+val char_literal : t -> Location.t -> string
 
-val begins_line : Location.t -> bool
+val string_at : t -> Location.t -> string
 
-val ends_line : Location.t -> bool
+val begins_line : t -> Location.t -> bool
 
-val sub : pos:int -> len:int -> string
+val ends_line : t -> Location.t -> bool
+
+val sub : t -> pos:int -> len:int -> string

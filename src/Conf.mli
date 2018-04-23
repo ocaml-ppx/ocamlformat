@@ -11,7 +11,7 @@
 
 (** Configuration options *)
 
-type t =
+type t = private
   { margin: int  (** Format code to fit within [margin] columns. *)
   ; sparse: bool  (** Generate more sparsely formatted code if true. *)
   ; max_iters: int

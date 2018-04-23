@@ -20,8 +20,8 @@ open Parsetree
     the current file *)
 exception Formatting_disabled
 
-val fmt_signature : Conf.t -> signature -> Fmt.t
+val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
 (** Format a signature. *)
 
-val fmt_structure : Conf.t -> structure -> Fmt.t
+val fmt_structure : Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
 (** Format a structure. *)

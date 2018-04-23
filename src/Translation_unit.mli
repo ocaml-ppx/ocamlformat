@@ -13,8 +13,9 @@
 type 'a t =
   { input:
       input_name:string -> In_channel.t -> 'a * (string * Location.t) list
-  ; init_cmts: 'a -> (string * Location.t) list -> unit
-  ; fmt: Conf.t -> 'a -> Fmt.t
+  ; init_cmts:
+      Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
+  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse:
       ?warn:bool -> input_name:string -> In_channel.t
       -> 'a * (string * Location.t) list

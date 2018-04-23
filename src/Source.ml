@@ -9,15 +9,15 @@
  *                                                                    *
  **********************************************************************)
 
-(** Concrete syntax, set by [init]. *)
-let source = ref ""
+(** Concrete syntax. *)
+type t = string
 
-let init s = source := s
+let create s = s
 
-let string_between (l1: Location.t) (l2: Location.t) =
+let string_between t (l1: Location.t) (l2: Location.t) =
   let pos = l1.loc_end.pos_cnum + 1 in
   let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum - 1 in
-  if len >= 0 then Some (String.sub !source ~pos ~len)
+  if len >= 0 then Some (String.sub t ~pos ~len)
   else
     (* can happen e.g. if comment is within a parenthesized expression *)
     None
@@ -45,40 +45,40 @@ let normalize_char s =
   let s = Literal_lexer.char (Lexing.from_string s) in
   String.sub s 1 (String.length s - 2)
 
-let string_at (l: Location.t) =
+let string_at t (l: Location.t) =
   let pos = l.loc_start.pos_cnum in
   let len = l.loc_end.pos_cnum - pos in
-  String.sub !source ~pos ~len
+  String.sub t ~pos ~len
 
-let string_literal mode (l: Location.t) =
-  let s = string_at l in
+let string_literal t mode (l: Location.t) =
+  let s = string_at t l in
   assert (String.length s >= 2) ;
   normalize_string mode s
 
-let char_literal (l: Location.t) =
-  let s = string_at l in
+let char_literal t (l: Location.t) =
+  let s = string_at t l in
   assert (String.length s >= 2) ;
   normalize_char s
 
-let begins_line (l: Location.t) =
+let begins_line t (l: Location.t) =
   let rec begins_line_ cnum =
     cnum = 0
     ||
     let cnum = cnum - 1 in
-    match !source.[cnum] with
+    match t.[cnum] with
     | '\n' | '\r' -> true
     | c when Char.is_whitespace c -> begins_line_ cnum
     | _ -> false
   in
   begins_line_ l.loc_start.pos_cnum
 
-let ends_line (l: Location.t) =
+let ends_line t (l: Location.t) =
   let rec ends_line_ cnum =
-    match !source.[cnum] with
+    match t.[cnum] with
     | '\n' | '\r' -> true
     | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
     | _ -> false
   in
   ends_line_ l.loc_end.pos_cnum
 
-let sub ~pos ~len = String.sub !source ~pos ~len
+let sub t ~pos ~len = String.sub t ~pos ~len
