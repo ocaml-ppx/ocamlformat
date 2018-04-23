@@ -93,6 +93,19 @@ let debug =
   let default = false in
   mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~env)
 
+let doc_comments =
+  let doc =
+    "Doc comments position. Can be set in a config file with a \
+     `doc-comments {before,after}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_DOC_COMMENTS" in
+  let default = `After in
+  mk ~default
+    Arg.(
+      value
+      & opt (enum [("after", `After); ("before", `Before)]) default
+      & info ["doc-comments"] ~doc ~env)
+
 let escape_chars =
   let doc =
     "Escape encoding for character literals. Can be set in a config file \
@@ -261,13 +274,24 @@ type t =
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
-  ; wrap_comments: bool }
+  ; wrap_comments: bool
+  ; doc_comments: [`Before | `After] }
 
 let update conf name value =
   match name with
   | "margin" -> {conf with margin= Int.of_string value}
   | "max-iters" -> {conf with max_iters= Int.of_string value}
   | "sparse" -> {conf with sparse= Bool.of_string value}
+  | "doc-comments" ->
+      { conf with
+        doc_comments=
+          ( match value with
+          | "before" -> `Before
+          | "after" -> `After
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown doc-comments value: %S" other)
+                [] ) }
   | "escape-chars" ->
       { conf with
         escape_chars=
@@ -338,7 +362,8 @@ let conf name =
     ; escape_chars= !escape_chars
     ; escape_strings= !escape_strings
     ; break_string_literals= !break_string_literals
-    ; wrap_comments= !wrap_comments }
+    ; wrap_comments= !wrap_comments
+    ; doc_comments= !doc_comments }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}

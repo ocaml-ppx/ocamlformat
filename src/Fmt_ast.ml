@@ -1690,8 +1690,12 @@ and fmt_value_description c ctx vd =
   let {pval_name= {txt}; pval_type; pval_prim; pval_attributes} = vd in
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc, atrs = doc_atrs pval_attributes in
+  let doc_before =
+    match c.Conf.doc_comments with `Before -> true | `After -> false
+  in
   hvbox 0
-    ( hvbox 2
+    ( fmt_if_k doc_before (fmt_docstring c ~epi:(fmt "@\n") doc)
+    $ hvbox 2
         ( str pre $ fmt " "
         $ wrap_if (is_symbol_id txt) "( " " )" (str txt)
         $ fmt " :@ "
@@ -1699,7 +1703,7 @@ and fmt_value_description c ctx vd =
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
     $ fmt_attributes c (fmt "@;<2 2>") ~key:"@@" atrs (fmt "")
-    $ fmt_docstring c ~pro:(fmt "@\n") doc )
+    $ fmt_if_k (not doc_before) (fmt_docstring c ~pro:(fmt "@\n") doc) )
 
 and fmt_tydcl_params c ctx params =
   fmt_if_k
