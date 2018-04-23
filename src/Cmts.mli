@@ -26,52 +26,56 @@
 module Format = Format_
 open Migrate_ast
 
+type t
+
 val init_impl :
-  string -> Parsetree.structure -> (string * Location.t) list -> unit
-(** [init_impl source_text structure comments] associates each comment in
-    [comments] with a source location appearing in [structure], using
-    [source_text] to help resolve ambiguities. Initializes the state used by
-    the [fmt] functions. *)
+  Source.t -> Conf.t -> Parsetree.structure -> (string * Location.t) list
+  -> t
+(** [init_impl source structure comments] associates each comment in
+    [comments] with a source location appearing in [structure]. It uses
+    [Source] to help resolve ambiguities. Initializes the state used by the
+    [fmt] functions. *)
 
 val init_intf :
-  string -> Parsetree.signature -> (string * Location.t) list -> unit
-(** [init_inft source_text signature comments] associates each comment in
-    [comments] with a source location appearing in [signature], using
-    [source_text] to help resolve ambiguities. Initializes the state used by
-    the [fmt] functions. *)
+  Source.t -> Conf.t -> Parsetree.signature -> (string * Location.t) list
+  -> t
+(** [init_inft source signature comments] associates each comment in
+    [comments] with a source location appearing in [signature]. It uses
+    [Source] to help resolve ambiguities. Initializes the state used by the
+    [fmt] functions. *)
 
 val relocate :
-  src:Location.t -> before:Location.t -> after:Location.t -> unit
+  t -> src:Location.t -> before:Location.t -> after:Location.t -> unit
 (** [relocate src before after] moves (changes the association with
     locations) comments before [src] to [before] and comments after [src] to
     [after]. *)
 
 val fmt_before :
-  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t
-  -> Location.t -> Fmt.t
+  t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
+  -> Fmt.t
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
 
-val fmt_after : Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+val fmt_after : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
 val fmt :
-  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t
-  -> Location.t -> Fmt.t -> Fmt.t
+  t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
+  -> Fmt.t -> Fmt.t
 (** [fmt loc format_thunk] wraps [fmt_before] and [fmt_after] around
     [format_thunk]. *)
 
 val fmt_list :
-  Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> Location.t list
-  -> Fmt.t -> Fmt.t
+  t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> Location.t list -> Fmt.t
+  -> Fmt.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
-val final_check : unit -> unit
+val final_check : t -> unit
 (** Check that all comments passed to the initialization function have been
     formatted. *)
 
-val doc_is_dup : string Asttypes.loc -> bool
+val doc_is_dup : t -> string Asttypes.loc -> bool
 (** [doc_is_dup docstring] holds if [docstring] has been passed to
     [doc_is_dup] already. *)
 

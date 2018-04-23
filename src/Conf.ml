@@ -116,7 +116,7 @@ let escape_chars =
      characters unchanged."
   in
   let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
-  let default = `Decimal in
+  let default = `Preserve in
   mk ~default
     Arg.(
       value

@@ -28,6 +28,8 @@ let ocamlopt_flags =
   (action (run ../tools/gen_version.sh Version.ml))
   (mode fallback)))
 
+(ocamllex (Literal_lexer))
+
 (executables
  ((names (ocamlformat ocamlformat_reason))
   (flags
