@@ -304,7 +304,7 @@ let fmt_char_escaped (c: Conf.t) ~loc chr =
   match (c.escape_chars, chr) with
   | `Hexadecimal, _ ->
       fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
-  | `Preserve, _ -> str (Source.char_litteral loc)
+  | `Preserve, _ -> str (Source.char_literal loc)
   | _, '\000'..'\128' -> str (Char.escaped chr)
   | `Decimal, _ -> str (Char.escaped chr)
 
@@ -408,9 +408,9 @@ let fmt_constant (c: Conf.t) ~loc ?epi const =
       in
       let s =
         match (c.break_string_literals, c.escape_strings) with
-        | `Never, `Preserve -> Source.string_litteral `Preserve loc
+        | `Never, `Preserve -> Source.string_literal `Preserve loc
         | (`Newlines | `Wrap), `Preserve ->
-            Source.string_litteral `Normalize_nl loc
+            Source.string_literal `Normalize_nl loc
         | _ -> s
       in
       match c.break_string_literals with

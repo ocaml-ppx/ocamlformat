@@ -13,9 +13,9 @@ val init : string -> unit
 
 val string_between : Location.t -> Location.t -> string option
 
-val string_litteral : [`Normalize_nl | `Preserve] -> Location.t -> string
+val string_literal : [`Normalize_nl | `Preserve] -> Location.t -> string
 
-val char_litteral : Location.t -> string
+val char_literal : Location.t -> string
 
 val string_at : Location.t -> string
 

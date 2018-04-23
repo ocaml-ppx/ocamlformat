@@ -50,12 +50,12 @@ let string_at (l: Location.t) =
   let len = l.loc_end.pos_cnum - pos in
   String.sub !source ~pos ~len
 
-let string_litteral mode (l: Location.t) =
+let string_literal mode (l: Location.t) =
   let s = string_at l in
   assert (String.length s >= 2) ;
   normalize_string mode s
 
-let char_litteral (l: Location.t) =
+let char_literal (l: Location.t) =
   let s = string_at l in
   assert (String.length s >= 2) ;
   normalize_char s
