@@ -1338,7 +1338,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                 ( fmt_exception ~pre:(fmt "let exception@ ") c ": " ctx
                     ext_cstr
                 $ fmt "@ in" )
-            $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) )
+            $ fmt "@;<1000 0>" $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
       let {pmod_desc; pmod_attributes} = pmod in
@@ -1357,19 +1357,25 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                 ( fmt_module c keyword name xargs (Some xbody) true xmty
                     (List.append pmod_attributes me.pmod_attributes)
                 $ fmt " in" )
-            $ fmt "@ " $ fmt_expression c (sub_exp ~ctx exp) )
+            $ fmt "@;<1000 0>" $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_open (flag, {txt}, e0) ->
       let override = Poly.(flag = Override) in
+      let force_break_if =
+        match e0.pexp_desc with
+        | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
+         |Pexp_letmodule _ | Pexp_open _ ->
+            true
+        | _ -> override
+      in
       let force_fit_if =
         match xexp.ctx with
-        | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} -> not override
+        | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} ->
+            not force_break_if
         | _ -> false
       in
-      let fits_breaks = fits_breaks ~force_fit_if ~force_break_if:override
-      and fits_breaks_if =
-        fits_breaks_if ~force_fit_if ~force_break_if:override
-      in
+      let fits_breaks = fits_breaks ~force_fit_if ~force_break_if
+      and fits_breaks_if = fits_breaks_if ~force_fit_if ~force_break_if in
       let opn, cls =
         let can_skip_parens =
           match e0.pexp_desc with
@@ -1384,7 +1390,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         ( fits_breaks_if parens "" "("
         $ fits_breaks "" (if override then "let open! " else "let open ")
         $ fmt_longident txt $ fits_breaks opn " in"
-        $ fmt_or_k force_fit_if (fmt "@;<0 2>") (fits_breaks "" "@ ")
+        $ fmt_or_k force_fit_if (fmt "@;<0 2>")
+            (fits_breaks "" "@;<1000 0>")
         $ fmt_expression c (sub_exp ~ctx e0) $ fits_breaks cls ""
         $ fits_breaks_if parens "" ")" $ fmt_atrs )
   | Pexp_match (e0, cs) | Pexp_try (e0, cs) -> (

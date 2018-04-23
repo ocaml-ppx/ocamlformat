@@ -1,1 +1,4 @@
-let _ = Some (let open! List in 1)
+let _ =
+  Some
+    (let open! List in
+    1)
