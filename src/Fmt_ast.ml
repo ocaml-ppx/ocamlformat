@@ -919,7 +919,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
     match (lbl, arg.pexp_desc) with
     | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
       when String.equal l i ->
-        Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ?eol arg.pexp_loc
+        Cmts.fmt c.cmts loc
+        @@ Cmts.fmt c.cmts ?eol arg.pexp_loc
         @@ fmt_label lbl ""
     | _ ->
         hvbox_if box 2
@@ -1851,7 +1852,8 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   in
   let doc, atrs = doc_atrs pcd_attributes in
   fmt_if (not first) "@ "
-  $ Cmts.fmt_before c.cmts pcd_loc $ Cmts.fmt_before c.cmts loc
+  $ Cmts.fmt_before c.cmts pcd_loc
+  $ Cmts.fmt_before c.cmts loc
   $ fmt_or_k first (if_newline "| ") (fmt "| ")
   $ hovbox 2
       ( hvbox 2
@@ -2246,8 +2248,8 @@ and fmt_module_expr c {ast= m} =
         { blk_a with
           opn= open_hvbox 2 $ opn_a
         ; bdy=
-            Cmts.fmt_before c.cmts pmod_loc $ open_hvbox 2 $ fmt_rator
-            $ bdy_a
+            Cmts.fmt_before c.cmts pmod_loc
+            $ open_hvbox 2 $ fmt_rator $ bdy_a
         ; cls= close_box $ cls_a $ close_box
         ; epi=
             Some
@@ -2597,7 +2599,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt " " $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
             $ Option.call ~f:fmt_cstr )
         $ fmt "=" )
-      $ fmt_body c xbody $ Cmts.fmt_after c.cmts pvb_loc
+      $ fmt_body c xbody
+      $ Cmts.fmt_after c.cmts pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
 
