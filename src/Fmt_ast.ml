@@ -485,11 +485,12 @@ and fmt_attributes c pre ?(box= true) ~key attrs suf =
   let split = List.length attrs > 1 in
   let box = split && box in
   hvbox_if box 0
-      (list_fl attrs (fun ~first ~last atr ->
-           fmt_or_k first
-             (pre $ open_hvbox 0)
-             (fmt_or_k split (fmt "@;<1 0>") (fmt "@ "))
-           $ fmt_attribute c key atr $ fmt_if_k last (close_box $ suf) ))
+    (list_fl attrs (fun ~first ~last atr ->
+         fmt_or_k first
+           (pre $ open_hvbox 0)
+           (fmt_or_k split (fmt "@;<1 0>") (fmt "@ "))
+         $ fmt_attribute c key atr
+         $ fmt_if_k last (close_box $ suf) ))
 
 and fmt_payload c ctx pld =
   protect (Pld pld)
