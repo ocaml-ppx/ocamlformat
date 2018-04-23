@@ -764,9 +764,6 @@ end = struct
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _ ) ) ->
-        (* let (Some p) = e *)
-        (* let (P1 | P2) = e *)
-        (* let (pat as ident) = e *)
         true
     | Exp {pexp_desc= Pexp_let (_, bindings, _)}, Ppat_tuple _ ->
         List.exists bindings ~f:(function
