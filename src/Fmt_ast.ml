@@ -889,7 +889,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
            || not (is_simple c width (sub_exp ~ctx a2)) ))
       (fun ~first:first_grp ~last:last_grp args ->
         list_pn args (fun ?prev (lbl, arg) ?next ->
-            let {ast} as xarg = sub_exp ~ctx arg in
+            let ({ast} as xarg) = sub_exp ~ctx arg in
             let openbox =
               fmt_if_k (Option.is_none prev)
                 (open_hovbox (if first_grp then 2 else 0))
@@ -2164,8 +2164,8 @@ and fmt_module_expr c {ast= m} =
           ; epi= epi_f } =
         fmt_module_expr c (sub_mod ~ctx me_f)
       in
-      let {opn= opn_a; pro= pro_a; bdy= bdy_a; cls= cls_a; epi= epi_a} as
-          blk_a =
+      let ( {opn= opn_a; pro= pro_a; bdy= bdy_a; cls= cls_a; epi= epi_a} as
+          blk_a ) =
         maybe_generative c ~ctx me_a
       in
       let fmt_rator =
@@ -2463,7 +2463,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     else "and"
   in
   let xpat, xargs, fmt_cstr, xbody =
-    let {ast= pat} as xpat =
+    let ({ast= pat} as xpat) =
       match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
       (* recognize and undo the pattern of code introduced by
          ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
@@ -2476,7 +2476,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
           sub_pat ~ctx:(Pat pvb_pat) pat
       | _ -> sub_pat ~ctx pvb_pat
     in
-    let {ast= body} as xbody = sub_exp ~ctx pvb_expr in
+    let ({ast= body} as xbody) = sub_exp ~ctx pvb_expr in
     let sugar_polynewtype pat body =
       let ctx = Pat pat in
       match pat.ppat_desc with
