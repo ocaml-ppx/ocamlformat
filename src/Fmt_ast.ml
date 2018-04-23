@@ -1691,9 +1691,7 @@ and fmt_value_description c ctx vd =
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc, atrs = doc_atrs pval_attributes in
   let doc_before =
-    match c.Conf.doc_comments_position with
-    | `Before -> true
-    | `After -> false
+    match c.Conf.doc_comments with `Before -> true | `After -> false
   in
   hvbox 0
     ( fmt_if_k doc_before (fmt_docstring c ~epi:(fmt "@\n") doc)

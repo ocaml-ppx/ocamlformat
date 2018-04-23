@@ -93,7 +93,7 @@ let debug =
   let default = false in
   mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~env)
 
-let doc_comments_position =
+let doc_comments =
   let doc =
     "Doc comments position. Can be set in a config file with a \
      `doc-comments {before,after}` line."
@@ -275,7 +275,7 @@ type t =
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; wrap_comments: bool
-  ; doc_comments_position: [`Before | `After] }
+  ; doc_comments: [`Before | `After] }
 
 let update conf name value =
   match name with
@@ -284,7 +284,7 @@ let update conf name value =
   | "sparse" -> {conf with sparse= Bool.of_string value}
   | "doc-comments" ->
       { conf with
-        doc_comments_position=
+        doc_comments=
           ( match value with
           | "before" -> `Before
           | "after" -> `After
@@ -363,7 +363,7 @@ let conf name =
     ; escape_strings= !escape_strings
     ; break_string_literals= !break_string_literals
     ; wrap_comments= !wrap_comments
-    ; doc_comments_position= !doc_comments_position }
+    ; doc_comments= !doc_comments }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}

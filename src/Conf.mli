@@ -24,7 +24,7 @@ type t =
   ; break_string_literals: [`Never | `Newlines | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; wrap_comments: bool  (** Wrap comments at margin. *)
-  ; doc_comments_position: [`Before | `After] }
+  ; doc_comments: [`Before | `After] }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
