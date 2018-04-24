@@ -16,6 +16,13 @@ open Migrate_ast
 open Asttypes
 open Parsetree
 
+type t =
+  { cmts_before: (Location.t, (string * Location.t) list) Hashtbl.t
+  ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
+  ; source: Source.t
+  ; docs_memo: (string loc, unit) Hashtbl.t
+  ; conf: Conf.t }
+
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
     other. *)
@@ -265,73 +272,39 @@ end = struct
     ((s_before, e_before), (s_within, e_within), (s_after, e_after))
 end
 
-(** Concrete syntax, set by [init]. *)
-let source = ref ""
-
-let string_between (l1: Location.t) (l2: Location.t) =
-  let pos = l1.loc_end.pos_cnum + 1 in
-  let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum - 1 in
-  if len >= 0 then Some (String.sub !source ~pos ~len)
-  else
-    (* can happen e.g. if comment is within a parenthesized expression *)
-    None
-
-let begins_line (l: Location.t) =
-  let rec begins_line_ cnum =
-    cnum = 0
-    ||
-    let cnum = cnum - 1 in
-    match !source.[cnum] with
-    | '\n' | '\r' -> true
-    | c when Char.is_whitespace c -> begins_line_ cnum
-    | _ -> false
-  in
-  begins_line_ l.loc_start.pos_cnum
-
-let ends_line (l: Location.t) =
-  let rec ends_line_ cnum =
-    match !source.[cnum] with
-    | '\n' | '\r' -> true
-    | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
-    | _ -> false
-  in
-  ends_line_ l.loc_end.pos_cnum
-
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is
     a [|] character and the first location begins a line and the start
     column of the first location is not greater than that of the second
     location. *)
-let is_adjacent (l1: Location.t) (l2: Location.t) =
-  Option.value_map (string_between l1 l2) ~default:false ~f:(fun btw ->
+let is_adjacent t (l1: Location.t) (l2: Location.t) =
+  Option.value_map (Source.string_between t.source l1 l2) ~default:false ~f:
+    (fun btw ->
       match String.strip btw with
       | "" -> true
       | "|" ->
-          begins_line l1
+          Source.begins_line t.source l1
           && Position.column l1.loc_start <= Position.column l2.loc_start
       | _ -> false )
 
 (** Heuristic to choose between placing a comment after the previous loc or
     before the next loc. Places comment after prev loc only if they are
     "adjacent", and the comment and next loc are not "adjacent". *)
-let partition_after_prev_or_before_next ~prev cmts ~next =
+let partition_after_prev_or_before_next t ~prev cmts ~next =
   match CmtSet.to_list cmts with
-  | (_, loc) :: _ as cmtl when is_adjacent prev loc -> (
+  | (_, loc) :: _ as cmtl when is_adjacent t prev loc -> (
     match
-      List.group cmtl ~break:(fun (_, l1) (_, l2) -> not (is_adjacent l1 l2))
+      List.group cmtl ~break:(fun (_, l1) (_, l2) ->
+          not (is_adjacent t l1 l2) )
     with
-    | [cmtl] when is_adjacent (snd (List.last_exn cmtl)) next ->
+    | [cmtl] when is_adjacent t (snd (List.last_exn cmtl)) next ->
         (CmtSet.empty, cmts)
     | after :: befores ->
         (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
     | [] -> impossible "by parent match" )
   | _ -> (CmtSet.empty, cmts)
 
-let cmts_before = Hashtbl.Poly.create ()
-
-let cmts_after = Hashtbl.Poly.create ()
-
-let add_cmts ?prev ?next tbl loc cmts =
+let add_cmts t ?prev ?next tbl loc cmts =
   if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug then
@@ -339,7 +312,7 @@ let add_cmts ?prev ?next tbl loc cmts =
           let string_between_inclusive (l1: Location.t) (l2: Location.t) =
             let pos = l1.loc_end.pos_cnum in
             let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum in
-            if len >= 0 then String.sub !source ~pos ~len else "swapped"
+            if len >= 0 then Source.sub t.source ~pos ~len else "swapped"
           in
           let btw_prev =
             Option.value_map prev ~default:"no prev"
@@ -350,7 +323,7 @@ let add_cmts ?prev ?next tbl loc cmts =
               ~f:(string_between_inclusive cmt_loc)
           in
           Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n"
-            (if phys_equal tbl cmts_before then "before" else "after")
+            (if phys_equal tbl t.cmts_before then "before" else "after")
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next) ) ;
     Hashtbl.add_exn tbl loc cmtl )
@@ -358,7 +331,7 @@ let add_cmts ?prev ?next tbl loc cmts =
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
     children. *)
-let rec place loc_tree ?prev_loc locs cmts =
+let rec place t loc_tree ?prev_loc locs cmts =
   match locs with
   | curr_loc :: next_locs ->
       let before, within, after = CmtSet.split cmts curr_loc in
@@ -367,26 +340,26 @@ let rec place loc_tree ?prev_loc locs cmts =
         | None -> before
         | Some prev_loc ->
             let after_prev, before_curr =
-              partition_after_prev_or_before_next ~prev:prev_loc before
+              partition_after_prev_or_before_next t ~prev:prev_loc before
                 ~next:curr_loc
             in
-            add_cmts ~prev:prev_loc ~next:curr_loc cmts_after prev_loc
+            add_cmts t ~prev:prev_loc ~next:curr_loc t.cmts_after prev_loc
               after_prev ;
             before_curr
       in
-      add_cmts ?prev:prev_loc ~next:curr_loc cmts_before curr_loc
+      add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_before curr_loc
         before_curr ;
       let after =
         match Loc_tree.children loc_tree curr_loc with
         | [] -> CmtSet.append within after
         | children ->
-            place loc_tree children within ;
+            place t loc_tree children within ;
             after
       in
-      place loc_tree ~prev_loc:curr_loc next_locs after
+      place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] ->
     match prev_loc with
-    | Some prev_loc -> add_cmts ~prev:prev_loc cmts_after prev_loc cmts
+    | Some prev_loc -> add_cmts t ~prev:prev_loc t.cmts_after prev_loc cmts
     | None ->
         if Conf.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
@@ -414,40 +387,42 @@ let dedup_cmts map_ast ast comments =
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
-let docs_memo = Hashtbl.Poly.create ()
-
 (** Remember all docstrings that have been formatted, to avoid duplication
     in case of ambibuous placement. *)
-let doc_is_dup doc =
-  match Hashtbl.add docs_memo ~key:doc ~data:() with
+let doc_is_dup t doc =
+  match Hashtbl.add t.docs_memo ~key:doc ~data:() with
   | `Ok -> false
   | `Duplicate -> true
 
 (** Initialize global state and place comments. *)
-let init map_ast loc_of_ast src asts comments_n_docstrings =
-  source := src ;
-  Hashtbl.clear docs_memo ;
-  Hashtbl.clear cmts_before ;
-  Hashtbl.clear cmts_after ;
+let init map_ast loc_of_ast source conf asts comments_n_docstrings =
+  let t =
+    { docs_memo= Hashtbl.Poly.create ()
+    ; cmts_before= Hashtbl.Poly.create ()
+    ; cmts_after= Hashtbl.Poly.create ()
+    ; source
+    ; conf }
+  in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then
     List.iter comments ~f:(fun (txt, loc) ->
         Format.eprintf "%a %s %s@\n" Location.fmt loc txt
-          (if ends_line loc then "eol" else "") ) ;
+          (if Source.ends_line source loc then "eol" else "") ) ;
   if not (List.is_empty comments) then (
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = List.map asts ~f:loc_of_ast in
     let cmts = CmtSet.of_list comments in
-    place loc_tree locs cmts )
+    place t loc_tree locs cmts ) ;
+  t
 
 let init_impl = init map_structure (fun {Parsetree.pstr_loc} -> pstr_loc)
 
 let init_intf = init map_signature (fun {Parsetree.psig_loc} -> psig_loc)
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
-let relocate ~src ~before ~after =
+let relocate t ~src ~before ~after =
   let update_multi tbl src dst ~f =
     Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
         Hashtbl.update tbl dst ~f:(fun dst_data ->
@@ -457,9 +432,9 @@ let relocate ~src ~before ~after =
   if Conf.debug then
     Format.eprintf "relocate %a to %a and %a@\n" Location.fmt src
       Location.fmt before Location.fmt after ;
-  update_multi cmts_before src before ~f:(fun src_cmts dst_cmts ->
+  update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
       List.append src_cmts dst_cmts ) ;
-  update_multi cmts_after src after ~f:(fun src_cmts dst_cmts ->
+  update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
       List.append dst_cmts src_cmts )
 
 let remove = ref true
@@ -497,9 +472,9 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
   in
   split_asterisk_prefixed_ 0
 
-let fmt_cmt (c: Conf.t) cmt =
+let fmt_cmt t cmt =
   let open Fmt in
-  if not c.wrap_comments then wrap "(*" "*)" (str (fst cmt))
+  if not t.conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
   else
     match split_asterisk_prefixed cmt with
     | [""] -> str "(* *)"
@@ -515,13 +490,14 @@ let fmt_cmt (c: Conf.t) cmt =
                 | _, Some _ -> str line $ fmt "@,*" ) )
 
 (** Find, remove, and format comments for loc. *)
-let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
+let fmt_cmts t ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   let cmts = Option.value (find tbl loc) ~default:[] in
   let last_cmt = List.last cmts in
   let eol_cmt =
-    Option.value ~default:false (last_cmt >>| fun (_, loc) -> ends_line loc)
+    Option.value ~default:false
+      (last_cmt >>| fun (_, loc) -> Source.ends_line t.source loc)
   in
   let adj_cmt =
     eol_cmt
@@ -533,26 +509,27 @@ let fmt_cmts c ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   fmt_if_k
     (not (List.is_empty cmts))
     ( Option.call ~f:pro
-    $ vbox 0 (list cmts "@ " (fmt_cmt c))
+    $ vbox 0 (list cmts "@ " (fmt_cmt t))
     $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (Option.call ~f:epi) )
 
-let fmt_before c ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
-  fmt_cmts c cmts_before ?pro ~epi ?eol ?adj
+let fmt_before t ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
+  fmt_cmts t t.cmts_before ?pro ~epi ?eol ?adj
 
-let fmt_after c ?(pro= Fmt.break_unless_newline 1 0) ?epi =
-  fmt_cmts c cmts_after ~pro ?epi ~eol:(Fmt.fmt "")
+let fmt_after t ?(pro= Fmt.break_unless_newline 1 0) ?epi =
+  fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "")
 
-let fmt c ?pro ?epi ?eol ?adj loc =
+let fmt t ?pro ?epi ?eol ?adj loc =
   Fmt.wrap_k
-    (fmt_before c ?pro ?epi ?eol ?adj loc)
-    (fmt_after c ?pro ?epi loc)
+    (fmt_before t ?pro ?epi ?eol ?adj loc)
+    (fmt_after t ?pro ?epi loc)
 
-let fmt_list c ?pro ?epi ?eol locs init =
-  List.fold locs ~init ~f:(fun k loc -> fmt c ?pro ?epi ?eol loc @@ k)
+let fmt_list t ?pro ?epi ?eol locs init =
+  List.fold locs ~init ~f:(fun k loc -> fmt t ?pro ?epi ?eol loc @@ k)
 
 (** check if any comments have not been formatted *)
-let final_check () =
-  if not (Hashtbl.is_empty cmts_before && Hashtbl.is_empty cmts_after) then
+let final_check t =
+  if not (Hashtbl.is_empty t.cmts_before && Hashtbl.is_empty t.cmts_after)
+  then
     let f before_after ~key:ast_loc ~data init =
       List.fold data ~init ~f:(fun z (cmt_txt, cmt_loc) ->
           let open Sexp in
@@ -564,8 +541,8 @@ let final_check () =
           :: z )
     in
     internal_error "formatting lost comments"
-      (Hashtbl.fold cmts_before ~f:(f "before")
-         ~init:(Hashtbl.fold cmts_after ~f:(f "after") ~init:[]))
+      (Hashtbl.fold t.cmts_before ~f:(f "before")
+         ~init:(Hashtbl.fold t.cmts_after ~f:(f "after") ~init:[]))
 
 let diff x y =
   let norm z =

@@ -9,19 +9,6 @@
  *                                                                    *
  **********************************************************************)
 
-module Format = Format_
+val string : [`Normalize_nl | `Preserve] -> Caml.Lexing.lexbuf -> string
 
-(** Format OCaml Ast *)
-
-open Migrate_ast
-open Parsetree
-
-(** Raise this exception to Indicate that formatting has been disabled for
-    the current file *)
-exception Formatting_disabled
-
-val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
-(** Format a signature. *)
-
-val fmt_structure : Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
-(** Format a structure. *)
+val char : Caml.Lexing.lexbuf -> string
