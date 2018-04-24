@@ -147,6 +147,21 @@ let escape_strings =
           default
       & info ["escape-strings"] ~doc ~env)
 
+let if_then_else =
+  let doc =
+    "If-then-else formatting. Can be set in a config file with an \
+     `if-then-else {keyword-first,compact}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_IF_THEN_ELSE" in
+  let default = `Compact in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum [("keyword-first", `Keyword_first); ("compact", `Compact)])
+          default
+      & info ["if-then-else"] ~doc ~env)
+
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
@@ -275,7 +290,8 @@ type t =
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; wrap_comments: bool
-  ; doc_comments: [`Before | `After] }
+  ; doc_comments: [`Before | `After]
+  ; if_then_else: [`Compact | `Keyword_first] }
 
 let update conf name value =
   match name with
@@ -291,6 +307,16 @@ let update conf name value =
           | other ->
               user_error
                 (Printf.sprintf "Unknown doc-comments value: %S" other)
+                [] ) }
+  | "if-then-else" ->
+      { conf with
+        if_then_else=
+          ( match value with
+          | "keyword-first" -> `Keyword_first
+          | "compact" -> `Compact
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown if-then-else value: %S" other)
                 [] ) }
   | "escape-chars" ->
       { conf with
@@ -363,7 +389,8 @@ let conf name =
     ; escape_strings= !escape_strings
     ; break_string_literals= !break_string_literals
     ; wrap_comments= !wrap_comments
-    ; doc_comments= !doc_comments }
+    ; doc_comments= !doc_comments
+    ; if_then_else= !if_then_else }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}

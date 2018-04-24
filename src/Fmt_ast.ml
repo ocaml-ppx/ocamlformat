@@ -1394,24 +1394,41 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         ( wrap_fits_breaks_if parens "(" ")"
             (list_fl cnd_exps (fun ~first ~last (xcnd, xbch) ->
                  let parens = parenze_exp xbch in
-                 hovbox 0
-                   ( hovbox 2
-                       ( ( match xcnd with
-                         | Some xcnd ->
-                             hvbox 0
-                               ( hvbox 2
-                                   ( fmt_if (not first) "else "
-                                   $ ( if first then
-                                         fmt "if"
-                                         $ fmt_extension_suffix c ext
-                                     else fmt "if" )
-                                   $ fmt "@ " $ fmt_expression c xcnd )
-                               $ fmt "@ then" )
-                         | None -> fmt "else" )
-                       $ fmt_if parens " (" $ fmt "@ "
-                       $ fmt_expression c ~box:false ~parens:false xbch )
-                   $ fmt_if parens " )" )
-                 $ fmt_if (not last) "@ " ))
+                 match c.conf.if_then_else with
+                 | `Compact ->
+                     hovbox 0
+                       ( hovbox 2
+                           ( ( match xcnd with
+                             | Some xcnd ->
+                                 hvbox 0
+                                   ( hvbox 2
+                                       ( fmt_if (not first) "else "
+                                       $ fmt_or_k first
+                                           ( fmt "if"
+                                           $ fmt_extension_suffix c ext )
+                                           (fmt "if")
+                                       $ fmt "@ " $ fmt_expression c xcnd )
+                                   $ fmt "@ then" )
+                             | None -> fmt "else" )
+                           $ fmt_if parens " (" $ fmt "@ "
+                           $ fmt_expression c ~box:false ~parens:false xbch
+                           )
+                       $ fmt_if parens " )" )
+                     $ fmt_if (not last) "@ "
+                 | `Keyword_first ->
+                     opt xcnd (fun xcnd ->
+                         hvbox 2
+                           ( fmt_or_k first
+                               (fmt "if" $ fmt_extension_suffix c ext)
+                               (fmt "else if")
+                           $ str " " $ fmt_expression c xcnd )
+                         $ fmt "@ " )
+                     $ hvbox 2
+                         ( fmt_or (Option.is_some xcnd) "then" "else"
+                         $ fmt_if parens " (" $ fmt "@ "
+                         $ fmt_expression c ~box:false ~parens:false xbch
+                         $ fmt_if parens " )" )
+                     $ fmt_if (not last) "@ " ))
         $ fmt_atrs )
   | Pexp_let (rec_flag, bindings, body) ->
       wrap_if
