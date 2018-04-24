@@ -1608,6 +1608,11 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             $ fmt_expression c (sub_exp ~ctx e2) )
         $ fmt_atrs )
   | Pexp_tuple es ->
+      let parens =
+        match xexp.ctx with
+        | Str {pstr_desc= Pstr_eval _} -> false
+        | _ -> parens || Poly.(c.conf.parens_tuple = `Always)
+      in
       let no_parens_if_break =
         match xexp.ctx with
         | Exp {pexp_desc= Pexp_extension _} -> true
@@ -1616,8 +1621,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         | _ -> false
       in
       let wrap =
-        if parens || Poly.(c.conf.parens_tuple = `Always) then
-          wrap_fits_breaks "(" ")"
+        if parens then wrap_fits_breaks "(" ")"
         else if no_parens_if_break then Fn.id
         else wrap_if_breaks "( " "@ )"
       in

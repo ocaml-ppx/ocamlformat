@@ -9,22 +9,21 @@ let _ =
       , f x y
       , g y x )
 
-let _ = [%ext (1, 2, 3)]
+let _ = [%ext 1, 2, 3]
 
 let _ =
   [%ext
-    ( loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+    loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
     , 2
-    , 3 )]
+    , 3]
 
-type t = int [@@deriving (1, 2, 3)]
+type t = int [@@deriving 1, 2, 3]
 
 type t = int
 [@@deriving
-  ( sexp
+  sexp
   , compare
-  , loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
-  )]
+  , loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
 
 let _ =
   ( 1
@@ -35,10 +34,9 @@ let _ =
 
 let _ = (1, 2, 3, short)
 
-;; ( 1
+;; 1
    , 2
    , 3
    , looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
-   )
 
-;; (1, 2, 3, short)
+;; 1, 2, 3, short
