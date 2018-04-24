@@ -530,8 +530,8 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
   ( match (ptyp_desc, pro) with
-  | Ptyp_arrow _, Some _ when c.conf.ocp_indent_compat -> fmt "@ "
-  | _, Some pro -> fmt " " $ str pro $ fmt "@ "
+  | Ptyp_arrow _, Some _ when c.conf.ocp_indent_compat -> fmt "@,"
+  | _, Some pro -> str pro $ fmt "@ "
   | _ -> fmt "" )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
@@ -1764,6 +1764,7 @@ and fmt_value_description c ctx vd =
     $ hvbox 2
         ( str pre $ fmt " "
         $ wrap_if (is_symbol_id txt) "( " " )" (str txt)
+        $ fmt " "
         $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
@@ -2594,8 +2595,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
               ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _}) ->
               (None, xbody)
           | Pexp_constraint (exp, typ) ->
-              ( Some
-                  (fmt ": " $ fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ ")
+              ( Some (fmt_core_type c ~pro:":" (sub_typ ~ctx typ) $ fmt "@ ")
               , sub_exp ~ctx exp )
           | _ -> (None, xbody)
         in

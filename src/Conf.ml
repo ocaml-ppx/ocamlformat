@@ -283,7 +283,7 @@ type t =
   ; max_iters: int
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
-  ; break_string_literals: [`Never | `Newlines | `Wrap]
+  ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; wrap_comments: bool
   ; doc_comments: [`Before | `After]
   ; ocp_indent_compat: bool }
@@ -291,8 +291,8 @@ type t =
 let update conf name value =
   match name with
   | "margin" -> {conf with margin= Int.of_string value}
-  | "sparse" -> {conf with sparse= Bool.of_string value}
   | "max-iters" -> {conf with max_iters= Int.of_string value}
+  | "sparse" -> {conf with sparse= Bool.of_string value}
   | "doc-comments" ->
       { conf with
         doc_comments=
