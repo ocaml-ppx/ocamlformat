@@ -1482,6 +1482,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         let can_skip_parens =
           match e0.pexp_desc with
           | Pexp_array _ | Pexp_constraint _ | Pexp_record _ -> true
+          | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
           | _ ->
             match sugar_list_exp c e0 with Some _ -> true | None -> false
         in
@@ -1552,11 +1553,6 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
           $ Option.call ~f:epi )
       $ fmt_atrs
   | Pexp_record (flds, default) ->
-      let field_alias (li1: Longident.t) (li2: Longident.t) =
-        match (li1, li2) with
-        | Ldot (_, x), Lident y -> String.equal x y
-        | _ -> Poly.equal li1 li2
-      in
       let fmt_field ({txt; loc}, f) =
         Cmts.fmt c.cmts loc
         @@

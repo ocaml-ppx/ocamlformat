@@ -40,3 +40,6 @@ let _ = 1, 2, 3, short
    , looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
 
 ;; 1, 2, 3, short
+
+(* make sure to not drop parens for local open. *)
+let _ = A.(1, 2)
