@@ -217,6 +217,22 @@ let output =
     Arg.(
       value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
 
+let parens_tuple =
+  let doc =
+    "Parens tuples. Can be set in a config file with a `parens-tuple \
+     {multi-line-only,always}` line. `multi-line-only` mode will try to \
+     skip parens for single-line tuples."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_PARENS_TUPLE" in
+  let default = `Always in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum [("multi-line-only", `Multi_line_only); ("always", `Always)])
+          default
+      & info ["parens-tuple"] ~doc ~env)
+
 let sparse =
   let doc =
     "Generate more sparsely formatted code. Can be set in a config file \
@@ -275,7 +291,8 @@ type t =
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; wrap_comments: bool
-  ; doc_comments: [`Before | `After] }
+  ; doc_comments: [`Before | `After]
+  ; parens_tuple: [`Always | `Multi_line_only] }
 
 let update conf name value =
   match name with
@@ -326,6 +343,16 @@ let update conf name value =
                 (Printf.sprintf "Unknown break-string-literals value: %S"
                    other)
                 [] ) }
+  | "parens-tuple" ->
+      { conf with
+        parens_tuple=
+          ( match value with
+          | "always" -> `Always
+          | "multi-line-only" -> `Multi_line_only
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown parens-tuple value: %S" other)
+                [] ) }
   | "version" when not !no_version_check ->
       if String.equal Version.version value then conf
       else
@@ -363,7 +390,8 @@ let conf name =
     ; escape_strings= !escape_strings
     ; break_string_literals= !break_string_literals
     ; wrap_comments= !wrap_comments
-    ; doc_comments= !doc_comments }
+    ; doc_comments= !doc_comments
+    ; parens_tuple= !parens_tuple }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
