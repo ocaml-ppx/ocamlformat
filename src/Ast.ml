@@ -308,6 +308,8 @@ end = struct
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
+      | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N)} as ty)) ->
+          assert (typ == ty || List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
        |Pexp_poly (_, Some t1)
@@ -760,6 +762,11 @@ end = struct
     | ( Pat {ppat_desc= Ppat_construct _}
       , Ppat_construct ({txt= Lident "::"}, _) ) ->
         true
+    | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
+      , ( Ppat_construct (_, Some _)
+        | Ppat_variant (_, Some _)
+        | Ppat_or _ | Ppat_alias _ ) ) ->
+        true
     | Exp {pexp_desc= Pexp_let (_, bindings, _)}, Ppat_tuple _ ->
         List.exists bindings ~f:(function
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
@@ -781,8 +788,7 @@ end = struct
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
                 | Ppat_tuple _ | Ppat_variant _ ) }
-        | Exp {pexp_desc= Pexp_fun _}
-        | Str {pstr_desc= Pstr_value _} )
+        | Exp {pexp_desc= Pexp_fun _} )
       , Ppat_alias _ )
      |( Pat {ppat_desc= Ppat_lazy _}
       , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )

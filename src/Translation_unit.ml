@@ -19,8 +19,9 @@ open Migrate_ast
 type 'a t =
   { input:
       input_name:string -> In_channel.t -> 'a * (string * Location.t) list
-  ; init_cmts: string -> 'a -> (string * Location.t) list -> unit
-  ; fmt: Conf.t -> 'a -> Fmt.t
+  ; init_cmts:
+      Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
+  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse:
          ?warn:bool
       -> input_name:string
@@ -65,7 +66,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
   let base = Filename.(remove_extension (basename iname)) in
   let ext = Filename.extension iname in
   (* iterate until formatting stabilizes *)
-  let rec parse_print_ i source ic =
+  let rec parse_print_ i source_txt ic =
     Format.pp_print_flush Format.err_formatter () ;
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
@@ -82,19 +83,20 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
     in
     if Conf.debug then
       dump xunit dir base ".old" ".ast" (xunit.normalize (ast, cmts)) ;
-    xunit.init_cmts source ast cmts ;
+    let source = Source.create source_txt in
+    let cmts_t = xunit.init_cmts source conf ast cmts in
     ( if xunit.no_translation ast then (
         In_channel.seek ic Int64.zero ;
         Out_channel.output_string oc (In_channel.input_all ic) )
     else
       let fs = Format.formatter_of_out_channel oc in
       Fmt.set_margin conf.margin fs ;
-      xunit.fmt conf ast fs ;
+      xunit.fmt source cmts_t conf ast fs ;
       Format.pp_print_newline fs () ) ;
     Out_channel.close oc ;
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
-    if not (String.equal source fmted) then (
-      ( try Cmts.final_check () with exc ->
+    if not (String.equal source_txt fmted) then (
+      ( try Cmts.final_check cmts_t with exc ->
           dump xunit dir base ".old" ".ast" ast ;
           if not Conf.debug then Unix.unlink tmp ;
           raise exc ) ;
@@ -136,16 +138,16 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
       | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile
       | Inplace _, _ -> Unix.unlink tmp
   in
-  let source = In_channel.with_file ifile ~f:In_channel.input_all in
+  let source_txt = In_channel.with_file ifile ~f:In_channel.input_all in
   (* NOTE: Warning 28 is suppressed due to a difference in exception
      constructor arity between OCaml versions. See this
      ocaml-migrate-parsetree issue for potential future mitigation.
      https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
-  try[@ocaml.warning "-28"] parse_print_ 1 source ic with
+  try[@ocaml.warning "-28"] parse_print_ 1 source_txt ic with
   | Fmt_ast.Formatting_disabled -> (
     match (Conf.action, ofile) with
-    | _, None -> Out_channel.output_string stdout source
-    | In_out _, Some ofile -> Out_channel.write_all ofile source
+    | _, None -> Out_channel.output_string stdout source_txt
+    | In_out _, Some ofile -> Out_channel.write_all ofile source_txt
     | Inplace _, _ -> () )
   | Warnings.Errors _ -> Caml.exit 1
   | Syntaxerr.Error _ as exc ->

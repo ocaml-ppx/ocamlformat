@@ -11,7 +11,7 @@
 
 (** Configuration options *)
 
-type t =
+type t = private
   { margin: int  (** Format code to fit within [margin] columns. *)
   ; sparse: bool  (** Generate more sparsely formatted code if true. *)
   ; max_iters: int
@@ -24,6 +24,7 @@ type t =
   ; break_string_literals: [`Never | `Newlines | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; wrap_comments: bool  (** Wrap comments at margin. *)
+  ; doc_comments: [`Before | `After]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *) }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
