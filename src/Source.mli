@@ -9,19 +9,21 @@
  *                                                                    *
  **********************************************************************)
 
-module Format = Format_
+type t
 
-(** Format OCaml Ast *)
+val create : string -> t
 
-open Migrate_ast
-open Parsetree
+val string_between : t -> Location.t -> Location.t -> string option
 
-(** Raise this exception to Indicate that formatting has been disabled for
-    the current file *)
-exception Formatting_disabled
+val string_literal :
+  t -> [`Normalize_nl | `Preserve] -> Location.t -> string
 
-val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
-(** Format a signature. *)
+val char_literal : t -> Location.t -> string
 
-val fmt_structure : Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
-(** Format a structure. *)
+val string_at : t -> Location.t -> string
+
+val begins_line : t -> Location.t -> bool
+
+val ends_line : t -> Location.t -> bool
+
+val sub : t -> pos:int -> len:int -> string
