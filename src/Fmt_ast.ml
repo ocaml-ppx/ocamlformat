@@ -1488,7 +1488,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
-  | Pexp_open (flag, {txt}, e0) ->
+  | Pexp_open (flag, {txt; loc}, e0) ->
       let override = Poly.(flag = Override) in
       let force_break_if =
         match e0.pexp_desc with
@@ -1516,7 +1516,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         if can_skip_parens then (".", "") else (".(", ")")
       in
       hvbox 0
-        ( fits_breaks_if parens "" "("
+        ( Cmts.fmt c.cmts loc @@ fits_breaks_if parens "" "("
         $ fits_breaks "" (if override then "let open! " else "let open ")
         $ fmt_longident txt $ fits_breaks opn " in"
         $ fmt_or_k force_fit_if (fmt "@;<0 2>")
