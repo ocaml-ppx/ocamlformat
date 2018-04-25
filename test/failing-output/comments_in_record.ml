@@ -14,3 +14,16 @@ type t =
   ; b: float
   ; c: string
   ; d: [`something_looooooooooooooooooooooooooooooooong] }
+
+let { (* cmts *)
+      pat
+    ; loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+    ; a
+    ; (* b *) b
+    ; (* c *) c
+    ; d=
+        (* d *)
+        (D: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
+    ; (* d *)
+      e : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
+  exp

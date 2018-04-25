@@ -740,21 +740,23 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_if parens "(" ")"
            (fmt "`" $ str lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_record (flds, closed_flag) ->
-      let fmt_field ({txt}, pat) =
+      let fmt_field ({txt; loc}, pat) =
         let {ppat_desc; ppat_loc} = pat in
-        Cmts.fmt c.cmts ppat_loc
-        @@
-        match ppat_desc with
-        | Ppat_var {txt= txt'} when field_alias txt (Longident.parse txt') ->
-            cbox 2 (fmt_longident txt)
-        | Ppat_constraint ({ppat_desc= Ppat_var {txt= txt'; _}}, t)
-          when field_alias txt (Longident.parse txt') ->
-            fmt_longident txt $ fmt " : "
-            $ fmt_core_type c (sub_typ ~ctx:(Pat pat) t)
-        | _ ->
-            cbox 2
-              ( fmt_longident txt $ fmt "=@ "
-              $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) )
+        hvbox 0
+          ( Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ppat_loc
+          @@
+          match ppat_desc with
+          | Ppat_var {txt= txt'} when field_alias txt (Longident.parse txt') ->
+              cbox 2 (fmt_longident txt)
+          | Ppat_constraint ({ppat_desc= Ppat_var {txt= txt'; _}}, t)
+            when field_alias txt (Longident.parse txt') ->
+              cbox 2
+                ( fmt_longident txt $ fmt " : "
+                $ fmt_core_type c (sub_typ ~ctx:(Pat pat) t) )
+          | _ ->
+              cbox 2
+                ( fmt_longident txt $ fmt "=@ "
+                $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) ) )
       in
       hvbox 0
         (wrap_fits_breaks "{" "}"
