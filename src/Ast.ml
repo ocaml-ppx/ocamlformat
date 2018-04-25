@@ -74,6 +74,9 @@ let rec is_trivial c exp =
   | Pexp_constant (Pconst_string (s, None)) -> not (may_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
+  | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial c e1
+  | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, [(_, e1)]) ->
+      is_trivial c e1
   | _ -> false
 
 let has_trailing_attributes {pexp_desc; pexp_attributes} =

@@ -349,10 +349,7 @@ let escape_string c str =
       else
         let buf = Bytes.create !n in
         n := 0 ;
-        let set c =
-          Bytes.set buf !n c ;
-          Int.incr n
-        in
+        let set c = Bytes.set buf !n c ; Int.incr n in
         for i = 0 to String.length str - 1 do
           let chr = str.[i] in
           match chr with
