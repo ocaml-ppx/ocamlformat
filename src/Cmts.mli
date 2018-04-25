@@ -29,7 +29,10 @@ open Migrate_ast
 type t
 
 val init_impl :
-  Source.t -> Conf.t -> Parsetree.structure -> (string * Location.t) list
+     Source.t
+  -> Conf.t
+  -> Parsetree.structure
+  -> (string * Location.t) list
   -> t
 (** [init_impl source structure comments] associates each comment in
     [comments] with a source location appearing in [structure]. It uses
@@ -37,7 +40,10 @@ val init_impl :
     [fmt] functions. *)
 
 val init_intf :
-  Source.t -> Conf.t -> Parsetree.signature -> (string * Location.t) list
+     Source.t
+  -> Conf.t
+  -> Parsetree.signature
+  -> (string * Location.t) list
   -> t
 (** [init_inft source signature comments] associates each comment in
     [comments] with a source location appearing in [signature]. It uses
@@ -51,7 +57,12 @@ val relocate :
     [after]. *)
 
 val fmt_before :
-  t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
+     t
+  -> ?pro:Fmt.t
+  -> ?epi:Fmt.t
+  -> ?eol:Fmt.t
+  -> ?adj:Fmt.t
+  -> Location.t
   -> Fmt.t
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
@@ -61,13 +72,24 @@ val fmt_after : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
     after [loc]. *)
 
 val fmt :
-  t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> ?adj:Fmt.t -> Location.t
-  -> Fmt.t -> Fmt.t
+     t
+  -> ?pro:Fmt.t
+  -> ?epi:Fmt.t
+  -> ?eol:Fmt.t
+  -> ?adj:Fmt.t
+  -> Location.t
+  -> Fmt.t
+  -> Fmt.t
 (** [fmt loc format_thunk] wraps [fmt_before] and [fmt_after] around
     [format_thunk]. *)
 
 val fmt_list :
-  t -> ?pro:Fmt.t -> ?epi:Fmt.t -> ?eol:Fmt.t -> Location.t list -> Fmt.t
+     t
+  -> ?pro:Fmt.t
+  -> ?epi:Fmt.t
+  -> ?eol:Fmt.t
+  -> Location.t list
+  -> Fmt.t
   -> Fmt.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
@@ -80,7 +102,8 @@ val doc_is_dup : t -> string Asttypes.loc -> bool
     [doc_is_dup] already. *)
 
 val diff :
-  (string * Location.t) list -> (string * Location.t) list
+     (string * Location.t) list
+  -> (string * Location.t) list
   -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)
 

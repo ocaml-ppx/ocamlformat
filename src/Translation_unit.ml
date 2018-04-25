@@ -23,10 +23,13 @@ type 'a t =
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse:
-      ?warn:bool -> input_name:string -> In_channel.t
+         ?warn:bool
+      -> input_name:string
+      -> In_channel.t
       -> 'a * (string * Location.t) list
   ; equal:
-      'a * (string * Location.t) list -> 'a * (string * Location.t) list
+         'a * (string * Location.t) list
+      -> 'a * (string * Location.t) list
       -> bool
   ; normalize: 'a * (string * Location.t) list -> 'a
   ; no_translation: 'a -> bool

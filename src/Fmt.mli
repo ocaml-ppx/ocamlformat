@@ -103,7 +103,11 @@ val fits_breaks :
     ["@;<nspaces offset>"]. *)
 
 val fits_breaks_if :
-  ?force_fit_if:bool -> ?force_break_if:bool -> bool -> string -> string
+     ?force_fit_if:bool
+  -> ?force_break_if:bool
+  -> bool
+  -> string
+  -> string
   -> t
 (** As [fits_breaks], but conditional. *)
 
@@ -118,6 +122,9 @@ val wrap_k : t -> t -> t -> t
 
 val wrap_if : bool -> s -> s -> t -> t
 (** As [wrap], but prologue and epilogue are only formatted conditionally. *)
+
+val wrap_if_k : bool -> t -> t -> t -> t
+(** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)
 
 val wrap_if_breaks : string -> string -> t -> t
 (** As [wrap], but prologue and epilogue are only formatted if the enclosing

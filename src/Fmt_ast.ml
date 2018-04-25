@@ -525,10 +525,12 @@ and fmt_payload c ctx pld =
       $ opt exp (fun exp ->
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )
 
-and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
+and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
+  (match pro with Some pro -> fmt " " $ pro $ fmt "@ " | _ -> fmt "")
+  $
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c.cmts ptyp_loc
   @@ ( if List.is_empty atrs then Fn.id
@@ -554,9 +556,10 @@ and fmt_core_type c ?(box= true) ({ast= typ} as xtyp) =
         | Optional l -> fmt "?" $ str l $ fmt ":"
       in
       let xt1N = sugar_arrow_typ c xtyp in
-      hovbox_if box 0
-        (list xt1N "@ -> " (fun (lI, xtI) ->
-             hvbox 0 (arg_label lI $ fmt_core_type c xtI) ))
+      hvbox_if box 0
+        ( fits_breaks "" "   "
+        $ list xt1N "@;<1 0>-> " (fun (lI, xtI) ->
+              hvbox 0 (arg_label lI $ fmt_core_type c xtI) ) )
   | Ptyp_constr ({txt; loc}, []) -> Cmts.fmt c.cmts loc @@ fmt_longident txt
   | Ptyp_constr ({txt; loc}, [t1]) ->
       Cmts.fmt c.cmts loc @@ fmt_core_type c (sub_typ ~ctx t1)
@@ -1780,8 +1783,7 @@ and fmt_value_description c ctx vd =
     $ hvbox 2
         ( str pre $ fmt " "
         $ wrap_if (is_symbol_id txt) "( " " )" (str txt)
-        $ fmt " :@ "
-        $ fmt_core_type c (sub_typ ~ctx pval_type)
+        $ fmt_core_type c ~pro:(fmt ":") (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
     $ fmt_attributes c ~pre:(fmt "@;<2 2>") ~box:false ~key:"@@" atrs
