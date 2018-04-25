@@ -921,7 +921,15 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
+  let fmt_cmts = Cmts.fmt c.cmts ?eol pexp_loc in
+  let fmt_atrs =
+    fmt_attributes c ~pre:(fmt " ") ~key:"@" pexp_attributes (fmt "")
+  in
   let parens = match parens with Some b -> b | None -> parenze_exp xexp in
+  let width xe =
+    String.length
+      (Format.asprintf "%t" (Cmts.preserve (fun () -> fmt_expression c xe)))
+  in
   let fmt_label lbl sep =
     match lbl with
     | Nolabel -> fmt ""
@@ -939,11 +947,95 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         hvbox_if box 2
           (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
   in
-  let ctx = Exp exp in
-  let width xe =
-    String.length
-      (Format.asprintf "%t" (Cmts.preserve (fun () -> fmt_expression c xe)))
+  let fmt_op_args op_args =
+    let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
+      let _, ({ast= arg} as xarg) = lbl_xarg in
+      let parens =
+        (not last_op && exposed Ast.Non_apply arg) || parenze_exp xarg
+      in
+      fmt_label_arg
+        ?box:
+          ( match (snd lbl_xarg).ast.pexp_desc with
+          | Pexp_fun _ | Pexp_function _ -> Some (not last)
+          | _ -> None )
+        ~parens lbl_xarg
+      $ fmt_if (not last) "@ "
+    in
+    let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
+    let fmt_op_args ~first ~last (xop, xargs) =
+      let fmt_xop = function
+        | Some op -> fmt_expression c op
+        | None -> fmt ""
+      in
+      let is_not_indented exp =
+        match exp.pexp_desc with
+        | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
+         |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_open _
+         |Pexp_sequence _ | Pexp_try _ ->
+            true
+        | _ -> false
+      in
+      let final_break =
+        match xargs with
+        | (_, {ast= a0}) :: _ -> last && is_not_indented a0
+        | _ -> false
+      in
+      (* side effects of Cmts.fmt_before first is important *)
+      let fmt_xop_cmts =
+        match xop with
+        | Some {ast= {pexp_loc}} -> Cmts.fmt_before c.cmts pexp_loc
+        | None -> fmt ""
+      in
+      fmt_xop_cmts
+      $ hvbox 0
+          ( fmt_xop xop
+          $ (if final_break then fmt "@ " else fmt_if (not first) " ")
+          $ hovbox_if (not last) 2 (fmt_args ~last_op:last xargs) )
+      $ fmt_if_k (not last) (break 0 0)
+    in
+    let is_nested_diff_prec_infix_ops =
+      let infix_prec ast =
+        match ast with
+        | Exp {pexp_desc= Pexp_apply (e, _)} when is_infix e -> prec_ast ast
+        | _ -> None
+      in
+      (* Make the precedence explicit for infix operators *)
+      match (infix_prec xexp.ctx, infix_prec (Exp xexp.ast)) with
+      | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
+          (* special case for refs update and all InfixOp0 to reduce parens
+             noise *)
+          false
+      | None, _ | _, None -> false
+      | Some p1, Some p2 -> Poly.(p1 <> p2)
+    in
+    let parens_or_nested = parens || is_nested_diff_prec_infix_ops in
+    let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
+      list_fl args (fun ~first ~last op_args ->
+          let very_first = first_grp && first in
+          let very_last = last_grp && last in
+          fmt_if_k very_first
+            (fits_breaks_if parens_or_nested "("
+               (if parens then "( " else ""))
+          $ fmt_if_k first
+              (open_hovbox (if first_grp && parens then -2 else 0))
+          $ fmt_op_args ~first:very_first op_args ~last:very_last
+          $ fmt_if_k last close_box
+          $ fmt_if_k (not very_last) (break_unless_newline 1 0)
+          $ fmt_if_k (very_last && last_grp)
+              (fits_breaks_if parens_or_nested ")"
+                 (if parens then "@ )" else "")) )
+    in
+    let op_args_grouped =
+      List.group op_args ~break:(fun (_, args1) (_, args2) ->
+          let exists_not_simple args =
+            List.exists args ~f:(fun (_, arg) ->
+                not (is_simple c.conf width arg) )
+          in
+          exists_not_simple args1 || exists_not_simple args2 )
+    in
+    hvbox 0 (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
   in
+  let ctx = Exp exp in
   let fmt_args_grouped e0 a1N =
     list_fl
       (List.group ((Nolabel, e0) :: a1N) ~break:(fun (_, a1) (_, a2) ->
@@ -984,10 +1076,6 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                    (lbl, xarg))
             $ fmt_if_k (Option.is_none next) close_box
             $ fmt_if_k spc (break_unless_newline 1 0) ) )
-  in
-  let fmt_cmts = Cmts.fmt c.cmts ?eol pexp_loc in
-  let fmt_atrs =
-    fmt_attributes c ~pre:(fmt " ") ~key:"@" pexp_attributes (fmt "")
   in
   hvbox_if box 0 @@ fmt_cmts
   @@
@@ -1111,92 +1199,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       ( {pexp_desc= Pexp_ident {txt= Lident id}}
       , (Nolabel, _) :: (Nolabel, _) :: _ )
     when is_infix_id id ->
-      let op_args = sugar_infix c (prec_ast (Exp exp)) xexp in
-      let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
-        let _, ({ast= arg} as xarg) = lbl_xarg in
-        let parens =
-          (not last_op && exposed Ast.Non_apply arg) || parenze_exp xarg
-        in
-        fmt_label_arg
-          ?box:
-            ( match (snd lbl_xarg).ast.pexp_desc with
-            | Pexp_fun _ | Pexp_function _ -> Some (not last)
-            | _ -> None )
-          ~parens lbl_xarg
-        $ fmt_if (not last) "@ "
-      in
-      let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
-      let fmt_op_args ~first ~last (xop, xargs) =
-        let fmt_xop = function
-          | Some op -> fmt_expression c op
-          | None -> fmt ""
-        in
-        let is_not_indented exp =
-          match exp.pexp_desc with
-          | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
-           |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_open _
-           |Pexp_sequence _ | Pexp_try _ ->
-              true
-          | _ -> false
-        in
-        let final_break =
-          match xargs with
-          | (_, {ast= a0}) :: _ -> last && is_not_indented a0
-          | _ -> false
-        in
-        (* side effects of Cmts.fmt_before first is important *)
-        let fmt_xop_cmts =
-          match xop with
-          | Some {ast= {pexp_loc}} -> Cmts.fmt_before c.cmts pexp_loc
-          | None -> fmt ""
-        in
-        fmt_xop_cmts
-        $ hvbox 0
-            ( fmt_xop xop
-            $ (if final_break then fmt "@ " else fmt_if (not first) " ")
-            $ hovbox_if (not last) 2 (fmt_args ~last_op:last xargs) )
-        $ fmt_if_k (not last) (break 0 0)
-      in
-      let is_nested_diff_prec_infix_ops =
-        (* Make the precedence explicit for infix operators *)
-        match (xexp.ctx, xexp.ast.pexp_desc) with
-        | Exp {pexp_desc= Pexp_apply (f, _)}, Pexp_apply (e, _)
-          when is_infix f && is_infix e -> (
-          match (prec_ast xexp.ctx, prec_ast (Exp xexp.ast)) with
-          | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
-              (* special case for refs update and all InfixOp0 to reduce
-                 parens noise *)
-              false
-          | None, _ | _, None -> false
-          | Some p1, Some p2 -> Poly.(p1 <> p2) )
-        | _ -> false
-      in
-      let op_args_grouped =
-        List.group op_args ~break:(fun (_, args1) (_, args2) ->
-            let exists_not_simple args =
-              List.exists args ~f:(fun (_, arg) ->
-                  not (is_simple c.conf width arg) )
-            in
-            exists_not_simple args1 || exists_not_simple args2 )
-      in
-      let parens_or_nested = parens || is_nested_diff_prec_infix_ops in
-      let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
-        list_fl args (fun ~first ~last op_args ->
-            let very_first = first_grp && first in
-            let very_last = last_grp && last in
-            fmt_if_k very_first
-              (fits_breaks_if parens_or_nested "("
-                 (if parens then "( " else ""))
-            $ fmt_if_k first
-                (open_hovbox (if first_grp && parens then -2 else 0))
-            $ fmt_op_args ~first:very_first op_args ~last:very_last
-            $ fmt_if_k last close_box
-            $ fmt_if_k (not very_last) (break_unless_newline 1 0)
-            $ fmt_if_k (very_last && last_grp)
-                (fits_breaks_if parens_or_nested ")"
-                   (if parens then "@ )" else "")) )
-      in
-      hvbox 0 (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
+      fmt_op_args (sugar_infix c (prec_ast (Exp exp)) xexp)
   | Pexp_apply (e0, a1N) when is_infix e0 ->
       hvbox 2
         ( wrap_fits_breaks_if parens "(" ")" (fmt_args_grouped e0 a1N)
