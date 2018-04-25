@@ -147,6 +147,21 @@ let escape_strings =
           default
       & info ["escape-strings"] ~doc ~env)
 
+let if_then_else =
+  let doc =
+    "If-then-else formatting. Can be set in a config file with an \
+     `if-then-else {keyword-first,compact}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_IF_THEN_ELSE" in
+  let default = `Compact in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum [("keyword-first", `Keyword_first); ("compact", `Compact)])
+          default
+      & info ["if-then-else"] ~doc ~env)
+
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
@@ -227,6 +242,22 @@ let output =
     Arg.(
       value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
 
+let parens_tuple =
+  let doc =
+    "Parens tuples. Can be set in a config file with a `parens-tuple \
+     {multi-line-only,always}` line. `multi-line-only` mode will try to \
+     skip parens for single-line tuples."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_PARENS_TUPLE" in
+  let default = `Always in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum [("multi-line-only", `Multi_line_only); ("always", `Always)])
+          default
+      & info ["parens-tuple"] ~doc ~env)
+
 let sparse =
   let doc =
     "Generate more sparsely formatted code. Can be set in a config file \
@@ -286,6 +317,8 @@ type t =
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; wrap_comments: bool
   ; doc_comments: [`Before | `After]
+  ; parens_tuple: [`Always | `Multi_line_only]
+  ; if_then_else: [`Compact | `Keyword_first]
   ; ocp_indent_compat: bool }
 
 let update conf name value =
@@ -302,6 +335,16 @@ let update conf name value =
           | other ->
               user_error
                 (Printf.sprintf "Unknown doc-comments value: %S" other)
+                [] ) }
+  | "if-then-else" ->
+      { conf with
+        if_then_else=
+          ( match value with
+          | "keyword-first" -> `Keyword_first
+          | "compact" -> `Compact
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown if-then-else value: %S" other)
                 [] ) }
   | "escape-chars" ->
       { conf with
@@ -336,6 +379,16 @@ let update conf name value =
               user_error
                 (Printf.sprintf "Unknown break-string-literals value: %S"
                    other)
+                [] ) }
+  | "parens-tuple" ->
+      { conf with
+        parens_tuple=
+          ( match value with
+          | "always" -> `Always
+          | "multi-line-only" -> `Multi_line_only
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown parens-tuple value: %S" other)
                 [] ) }
   | "version" when not !no_version_check ->
       if String.equal Version.version value then conf
@@ -377,6 +430,8 @@ let conf name =
     ; break_string_literals= !break_string_literals
     ; wrap_comments= !wrap_comments
     ; doc_comments= !doc_comments
+    ; parens_tuple= !parens_tuple
+    ; if_then_else= !if_then_else
     ; ocp_indent_compat= !ocp_indent_compat }
     (Filename.dirname (to_absolute name))
 

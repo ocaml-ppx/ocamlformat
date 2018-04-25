@@ -156,7 +156,7 @@ let assoc_of_prec = function
   | Low | Semi | LessMinus -> Non
   | ColonEqual -> Right
   | As -> Non
-  | Comma -> Left
+  | Comma -> Non
   | MinusGreater | BarBar | AmperAmper -> Right
   | InfixOp0 -> Left
   | InfixOp1 -> Right
@@ -912,8 +912,11 @@ end = struct
     || is_displaced_infix_op xexp
     || has_trailing_attributes exp
     ||
-    match ctx with
-    | Exp {pexp_desc} -> (
+    match (ctx, exp) with
+    | Exp {pexp_desc= Pexp_extension _}, {pexp_desc= Pexp_tuple _} -> false
+    | Pld _, {pexp_desc= Pexp_tuple _} -> false
+    | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false
+    | Exp {pexp_desc}, _ -> (
       match pexp_desc with
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)

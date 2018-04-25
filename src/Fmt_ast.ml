@@ -1405,24 +1405,41 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         ( wrap_fits_breaks_if parens "(" ")"
             (list_fl cnd_exps (fun ~first ~last (xcnd, xbch) ->
                  let parens = parenze_exp xbch in
-                 hovbox 0
-                   ( hovbox 2
-                       ( ( match xcnd with
-                         | Some xcnd ->
-                             hvbox 0
-                               ( hvbox 2
-                                   ( fmt_if (not first) "else "
-                                   $ ( if first then
-                                         fmt "if"
-                                         $ fmt_extension_suffix c ext
-                                     else fmt "if" )
-                                   $ fmt "@ " $ fmt_expression c xcnd )
-                               $ fmt "@ then" )
-                         | None -> fmt "else" )
-                       $ fmt_if parens " (" $ fmt "@ "
-                       $ fmt_expression c ~box:false ~parens:false xbch )
-                   $ fmt_if parens " )" )
-                 $ fmt_if (not last) "@ " ))
+                 match c.conf.if_then_else with
+                 | `Compact ->
+                     hovbox 0
+                       ( hovbox 2
+                           ( ( match xcnd with
+                             | Some xcnd ->
+                                 hvbox 0
+                                   ( hvbox 2
+                                       ( fmt_if (not first) "else "
+                                       $ fmt_or_k first
+                                           ( fmt "if"
+                                           $ fmt_extension_suffix c ext )
+                                           (fmt "if")
+                                       $ fmt "@ " $ fmt_expression c xcnd )
+                                   $ fmt "@ then" )
+                             | None -> fmt "else" )
+                           $ fmt_if parens " (" $ fmt "@ "
+                           $ fmt_expression c ~box:false ~parens:false xbch
+                           )
+                       $ fmt_if parens " )" )
+                     $ fmt_if (not last) "@ "
+                 | `Keyword_first ->
+                     opt xcnd (fun xcnd ->
+                         hvbox 2
+                           ( fmt_or_k first
+                               (fmt "if" $ fmt_extension_suffix c ext)
+                               (fmt "else if")
+                           $ str " " $ fmt_expression c xcnd )
+                         $ fmt "@ " )
+                     $ hvbox 2
+                         ( fmt_or (Option.is_some xcnd) "then" "else"
+                         $ fmt_if parens " (" $ fmt "@ "
+                         $ fmt_expression c ~box:false ~parens:false xbch
+                         $ fmt_if parens " )" )
+                     $ fmt_if (not last) "@ " ))
         $ fmt_atrs )
   | Pexp_let (rec_flag, bindings, body) ->
       wrap_if
@@ -1492,8 +1509,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       let opn, cls =
         let can_skip_parens =
           match e0.pexp_desc with
-          | Pexp_array _ | Pexp_constraint _ | Pexp_record _ | Pexp_tuple _ ->
-              true
+          | Pexp_array _ | Pexp_constraint _ | Pexp_record _ -> true
+          | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
           | _ ->
             match sugar_list_exp c e0 with Some _ -> true | None -> false
         in
@@ -1622,12 +1639,22 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       let parens =
         match xexp.ctx with
         | Str {pstr_desc= Pstr_eval _} -> false
-        | _ -> true
+        | _ -> parens || Poly.(c.conf.parens_tuple = `Always)
+      in
+      let no_parens_if_break =
+        match xexp.ctx with
+        | Exp {pexp_desc= Pexp_extension _} -> true
+        | Pld _ -> true
+        | Str {pstr_desc= Pstr_eval _} -> true
+        | _ -> false
+      in
+      let wrap =
+        if parens then wrap_fits_breaks "(" ")"
+        else if no_parens_if_break then Fn.id
+        else wrap_if_breaks "( " "@ )"
       in
       hvbox 0
-        ( wrap_fits_breaks_if parens "(" ")"
-            (list es "@,, " (sub_exp ~ctx >> fmt_expression c))
-        $ fmt_atrs )
+        (wrap (list es "@,, " (sub_exp ~ctx >> fmt_expression c)) $ fmt_atrs)
   | Pexp_lazy e ->
       hvbox 2
         ( wrap_fits_breaks_if parens "(" ")"
