@@ -24,7 +24,9 @@ type t = private
   ; break_string_literals: [`Never | `Newlines | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; wrap_comments: bool  (** Wrap comments at margin. *)
-  ; doc_comments: [`Before | `After] }
+  ; doc_comments: [`Before | `After]
+  ; parens_tuple: [`Always | `Multi_line_only]
+  ; if_then_else: [`Compact | `Keyword_first] }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 

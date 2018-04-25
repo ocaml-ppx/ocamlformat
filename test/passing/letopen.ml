@@ -1,5 +1,7 @@
 let _ = Some_module.Submodule.(a + b)
 
+let _ = A.(a, b)
+
 let _ =
   let open Some_module.Submodule in
   AAAAAAAAAAAAAAAAAAAAAAAAAAAA.(a + b)
