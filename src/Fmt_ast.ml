@@ -529,7 +529,10 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
-  (match pro with Some pro -> fmt " " $ pro $ fmt "@ " | _ -> fmt "")
+  ( match (ptyp_desc, pro) with
+  | Ptyp_arrow _, Some _ when c.conf.ocp_indent_compat -> fmt "@,"
+  | _, Some pro -> str pro $ fmt "@ "
+  | _ -> fmt "" )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c.cmts ptyp_loc
@@ -557,7 +560,12 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
       in
       let xt1N = sugar_arrow_typ c xtyp in
       hvbox_if box 0
-        ( fits_breaks "" "   "
+        ( ( match pro with
+          | Some pro when c.conf.ocp_indent_compat ->
+              str pro
+              $ fits_breaks " "
+                  (String.make (Int.max 1 (3 - String.length pro)) ' ')
+          | _ -> fits_breaks "" "   " )
         $ list xt1N "@;<1 0>-> " (fun (lI, xtI) ->
               hvbox 0 (arg_label lI $ fmt_core_type c xtI) ) )
   | Ptyp_constr ({txt; loc}, []) -> Cmts.fmt c.cmts loc @@ fmt_longident txt
@@ -1783,7 +1791,8 @@ and fmt_value_description c ctx vd =
     $ hvbox 2
         ( str pre $ fmt " "
         $ wrap_if (is_symbol_id txt) "( " " )" (str txt)
-        $ fmt_core_type c ~pro:(fmt ":") (sub_typ ~ctx pval_type)
+        $ fmt " "
+        $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
     $ fmt_attributes c ~pre:(fmt "@;<2 2>") ~box:false ~key:"@@" atrs
@@ -2613,8 +2622,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
               ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _}) ->
               (None, xbody)
           | Pexp_constraint (exp, typ) ->
-              ( Some
-                  (fmt ": " $ fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ ")
+              ( Some (fmt_core_type c ~pro:":" (sub_typ ~ctx typ) $ fmt "@ ")
               , sub_exp ~ctx exp )
           | _ -> (None, xbody)
         in

@@ -221,6 +221,16 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docv)
 
+let ocp_indent_compat =
+  let doc =
+    "Attempt to generate output which does not change (much) when \
+     post-processing with ocp-indent. Can be set in a config file with a \
+     `ocp-indent-compat true` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_OCP_INDENT_COMPAT" in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["ocp-indent-compat"] ~doc ~env)
+
 let output =
   let docv = "DST" in
   let doc =
@@ -308,7 +318,8 @@ type t =
   ; wrap_comments: bool
   ; doc_comments: [`Before | `After]
   ; parens_tuple: [`Always | `Multi_line_only]
-  ; if_then_else: [`Compact | `Keyword_first] }
+  ; if_then_else: [`Compact | `Keyword_first]
+  ; ocp_indent_compat: bool }
 
 let update conf name value =
   match name with
@@ -387,6 +398,8 @@ let update conf name value =
           ^ " but version is " ^ Version.version )
           []
   | "wrap-comments" -> {conf with wrap_comments= Bool.of_string value}
+  | "ocp-indent-compat" ->
+      {conf with ocp_indent_compat= Bool.of_string value}
   | _ -> conf
 
 let rec read_conf_files conf dir =
@@ -418,7 +431,8 @@ let conf name =
     ; wrap_comments= !wrap_comments
     ; doc_comments= !doc_comments
     ; parens_tuple= !parens_tuple
-    ; if_then_else= !if_then_else }
+    ; if_then_else= !if_then_else
+    ; ocp_indent_compat= !ocp_indent_compat }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
