@@ -736,6 +736,7 @@ end = struct
     assert (check_typ xtyp ; true) ;
     match xtyp with
     | {ast= {ptyp_desc= Ptyp_package _}} -> true
+    | {ast= {ptyp_desc= Ptyp_alias _}; ctx = Typ _} -> true
     | _ ->
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
       | Some (Some true) -> true
