@@ -599,6 +599,8 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
               $ list ls "@ " (fmt "`" >$ str)
           | Open, Some _ -> impossible "not produced by parser" )
         $ fits_breaks "]" "@ ]" )
+  | Ptyp_object ([], Open) -> fmt "< .. >"
+  | Ptyp_object ([], Closed) -> fmt "< >"
   | Ptyp_object (fields, closedness) ->
       hvbox 0
         (wrap_fits_breaks "<" ">"
@@ -617,9 +619,7 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
                         $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
                             (fmt "") )
                | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
-           $ fmt_if
-               Poly.(closedness = Open)
-               (match fields with [] -> "@ .. " | _ -> "@ ; .. ") ))
+           $ fmt_if Poly.(closedness = Open) "@ ; .. " ))
   | Ptyp_class _ -> internal_error "Ptyp_class: classes not implemented" []
   )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
