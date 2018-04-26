@@ -1023,12 +1023,15 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                  (if parens then "@ )" else "")) )
     in
     let op_args_grouped =
-      List.group op_args ~break:(fun (_, (_, args1)) (_, (_, args2)) ->
-          let exists_not_simple args =
-            List.exists args ~f:(fun (_, arg) ->
-                not (is_simple c.conf width arg) )
-          in
-          exists_not_simple args1 || exists_not_simple args2 )
+      match c.conf.break_infix with
+      | `Wrap ->
+          List.group op_args ~break:(fun (_, (_, args1)) (_, (_, args2)) ->
+              let exists_not_simple args =
+                List.exists args ~f:(fun (_, arg) ->
+                    not (is_simple c.conf width arg) )
+              in
+              exists_not_simple args1 || exists_not_simple args2 )
+      | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
     in
     hvbox 0 (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
   in

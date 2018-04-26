@@ -147,6 +147,22 @@ let escape_strings =
           default
       & info ["escape-strings"] ~doc ~env)
 
+let break_infix =
+  let doc =
+    "Break sequence of infix operators. Can be set in a config file with a \
+     `break-infix {wrap,fit-or-vertical}` line. `wrap` will group simple \
+     expressions and try to format them in a single line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_BREAK_INFIX" in
+  let default = `Wrap in
+  mk ~default
+    Arg.(
+      value
+      & opt
+          (enum [("wrap", `Wrap); ("fit-or-vertical", `Fit_or_vertical)])
+          default
+      & info ["break-infix"] ~doc ~env)
+
 let if_then_else =
   let doc =
     "If-then-else formatting. Can be set in a config file with an \
@@ -319,6 +335,7 @@ type t =
   ; doc_comments: [`Before | `After]
   ; parens_tuple: [`Always | `Multi_line_only]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; break_infix: [`Wrap | `Fit_or_vertical]
   ; ocp_indent_compat: bool }
 
 let update conf name value =
@@ -345,6 +362,16 @@ let update conf name value =
           | other ->
               user_error
                 (Printf.sprintf "Unknown if-then-else value: %S" other)
+                [] ) }
+  | "break-infix" ->
+      { conf with
+        break_infix=
+          ( match value with
+          | "wrap" -> `Wrap
+          | "fit-or-vertical" -> `Fit_or_vertical
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown break-infix value: %S" other)
                 [] ) }
   | "escape-chars" ->
       { conf with
@@ -432,6 +459,7 @@ let conf name =
     ; doc_comments= !doc_comments
     ; parens_tuple= !parens_tuple
     ; if_then_else= !if_then_else
+    ; break_infix= !break_infix
     ; ocp_indent_compat= !ocp_indent_compat }
     (Filename.dirname (to_absolute name))
 
