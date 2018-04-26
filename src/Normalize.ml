@@ -132,8 +132,22 @@ let mapper =
                 t0))
     | _ -> Ast_mapper.default_mapper.value_binding m vb
   in
+  let structure_item (m: Ast_mapper.mapper) (si: structure_item) =
+    match si.pstr_desc with
+    | Pstr_eval ({pexp_desc= Pexp_extension e}, []) ->
+        let e = m.extension m e in
+        let pstr_loc = m.location m si.pstr_loc in
+        {pstr_desc= Pstr_extension (e, []); pstr_loc}
+    | _ -> Ast_mapper.default_mapper.structure_item m si
+  in
   { Ast_mapper.default_mapper with
-    location; attribute; attributes; expr; pat; value_binding }
+    location
+  ; attribute
+  ; attributes
+  ; expr
+  ; pat
+  ; value_binding
+  ; structure_item }
 
 let impl = map_structure mapper
 
