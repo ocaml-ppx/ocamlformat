@@ -27,13 +27,12 @@ let newline = ('\013'* '\010')
 let hex_digit =
   ['0'-'9' 'A'-'F' 'a'-'f']
 
-    (* the string sometime include its surrounding parens *)
 rule string mode = parse
   | '\"'
       { reset_string_buffer ();
         string_aux mode lexbuf;
         get_stored_string () }
-  | _ { assert false }
+  | _ { user_error "not a string literal" [] }
 
 
 and string_aux mode = parse
@@ -72,23 +71,23 @@ and string_aux mode = parse
       { store_string (Lexing.lexeme lexbuf);
         string_aux mode lexbuf }
   | eof
-      { assert false }
+      { user_error "not a string literal" [] }
   | _
       { store_string_char (Lexing.lexeme_char lexbuf 0);
         string_aux mode lexbuf }
 
 and char = parse
   | "\'" newline "\'"
-      { "\n" }
-  | "\'" [^ '\\' '\'' '\010' '\013'] "\'"
-      { Lexing.lexeme lexbuf }
-  | "\'\\" ['\\' '\'' '\"' 'n' 't' 'b' 'r' ' '] "\'"
-      { Lexing.lexeme lexbuf }
-  | "\'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "\'"
-      { Lexing.lexeme lexbuf }
-  | "\'\\" 'o' ['0'-'3'] ['0'-'7'] ['0'-'7'] "\'"
-      { Lexing.lexeme lexbuf }
-  | "\'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "\'"
-      { Lexing.lexeme lexbuf }
-  | "\'\\" _
-      { assert false }
+      { "\\n" }
+  | "\'" ([^ '\\' '\'' '\010' '\013'] as x) "\'"
+      { String.make 1 x }
+  | "\'" ("\\" ['\\' '\'' '\"' 'n' 't' 'b' 'r' ' '] as x) "\'"
+      { x }
+  | "\'" ("\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] as x) "\'"
+      { x }
+  | "\'" ("\\" 'o' ['0'-'3'] ['0'-'7'] ['0'-'7'] as x) "\'"
+      { x }
+  | "\'" ("\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] as x) "\'"
+      { x }
+  | _
+      { user_error "not a char literal" [] }

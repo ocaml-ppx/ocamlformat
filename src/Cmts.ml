@@ -234,7 +234,8 @@ end = struct
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun (smap, emap) cmt ->
         let _, loc = cmt in
-        (Map.add_multi smap loc cmt, Map.add_multi emap loc cmt) )
+        ( Map.add_multi smap ~key:loc ~data:cmt
+        , Map.add_multi emap ~key:loc ~data:cmt ) )
 
   let to_list (smap, _) = List.concat (Map.data smap)
 
@@ -310,9 +311,9 @@ let add_cmts t ?prev ?next tbl loc cmts =
     if Conf.debug then
       List.iter cmtl ~f:(fun (cmt_txt, cmt_loc) ->
           let string_between_inclusive (l1: Location.t) (l2: Location.t) =
-            let pos = l1.loc_end.pos_cnum in
-            let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum in
-            if len >= 0 then Source.sub t.source ~pos ~len else "swapped"
+            match Source.string_between t.source ~inclusive:true l1 l2 with
+            | None -> "swapped"
+            | Some s -> s
           in
           let btw_prev =
             Option.value_map prev ~default:"no prev"
@@ -326,7 +327,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
             (if phys_equal tbl t.cmts_before then "before" else "after")
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next) ) ;
-    Hashtbl.add_exn tbl loc cmtl )
+    Hashtbl.add_exn tbl ~key:loc ~data:cmtl )
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
@@ -458,7 +459,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
     match String.Search_pattern.index pat ~pos ~in_:txt with
     | Some 0 -> "" :: split_asterisk_prefixed_ len
     | Some idx ->
-        String.sub txt pos (idx - pos)
+        String.sub txt ~pos ~len:(idx - pos)
         :: split_asterisk_prefixed_ (idx + len)
     | _ ->
         let drop = function ' ' | '\t' -> true | _ -> false in

@@ -14,51 +14,61 @@ type t = string
 
 let create s = s
 
-let string_between t (l1: Location.t) (l2: Location.t) =
-  let pos = l1.loc_end.pos_cnum + 1 in
-  let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum - 1 in
+let string_between t ?(inclusive= false) (l1: Location.t) (l2: Location.t) =
+  let inclusive_or_not = if inclusive then 0 else 1 in
+  let pos = l1.loc_end.pos_cnum + inclusive_or_not in
+  let len =
+    l2.loc_start.pos_cnum - l1.loc_end.pos_cnum - inclusive_or_not
+  in
   if len >= 0 then Some (String.sub t ~pos ~len)
   else
     (* can happen e.g. if comment is within a parenthesized expression *)
     None
 
-let normalize_string mode s =
-  let lexbuf = Lexing.from_string s in
-  let rec loop () =
-    match Lexer.token lexbuf with Parser.STRING _ -> () | _ -> loop ()
-  in
-  loop () ;
-  let start = Lexing.lexeme_start lexbuf in
-  let stop = Lexing.lexeme_end lexbuf in
-  let s = String.sub s start (stop - start) in
-  Literal_lexer.string mode (Lexing.from_string s)
+let merge (l1: Location.t) ~(sub: Location.t) =
+  let base = l1.loc_start.pos_cnum in
+  { l1 with
+    loc_start= {l1.loc_start with pos_cnum= base + sub.loc_start.pos_cnum}
+  ; loc_end= {l1.loc_end with pos_cnum= base + sub.loc_end.pos_cnum} }
 
-let normalize_char s =
-  let lexbuf = Lexing.from_string s in
-  let rec loop () =
-    match Lexer.token lexbuf with Parser.CHAR _ -> () | _ -> loop ()
-  in
-  loop () ;
-  let start = Lexing.lexeme_start lexbuf in
-  let stop = Lexing.lexeme_end lexbuf in
-  let s = String.sub s start (stop - start) in
-  let s = Literal_lexer.char (Lexing.from_string s) in
-  String.sub s 1 (String.length s - 2)
-
-let string_at t (l: Location.t) =
+let lexbuf_from_loc t (l: Location.t) =
   let pos = l.loc_start.pos_cnum in
   let len = l.loc_end.pos_cnum - pos in
-  String.sub t ~pos ~len
+  let s = String.sub t ~pos ~len in
+  Lexing.from_string s
+
+let tokens_at t ?(filter= fun _ -> true) (l: Location.t) :
+    (Parser.token * Location.t) list =
+  let lexbuf = lexbuf_from_loc t l in
+  let rec loop acc =
+    match Lexer.token lexbuf with
+    | Parser.EOF -> List.rev acc
+    | tok ->
+        if filter tok then
+          let sub = Location.curr lexbuf in
+          loop ((tok, merge l ~sub) :: acc)
+        else loop acc
+  in
+  loop []
 
 let string_literal t mode (l: Location.t) =
-  let s = string_at t l in
-  assert (String.length s >= 2) ;
-  normalize_string mode s
+  let toks =
+    tokens_at t
+      ~filter:(function Parser.STRING (_, None) -> true | _ -> false)
+      l
+  in
+  match toks with
+  | [(Parser.STRING (_, None), loc)] ->
+      Literal_lexer.string mode (lexbuf_from_loc t loc)
+  | _ -> user_error "location does not contain a string literal" []
 
 let char_literal t (l: Location.t) =
-  let s = string_at t l in
-  assert (String.length s >= 2) ;
-  normalize_char s
+  let toks =
+    tokens_at t ~filter:(function Parser.CHAR _ -> true | _ -> false) l
+  in
+  match toks with
+  | [(Parser.CHAR _, loc)] -> Literal_lexer.char (lexbuf_from_loc t loc)
+  | _ -> user_error "location does not contain a string literal" []
 
 let begins_line t (l: Location.t) =
   let rec begins_line_ cnum =
@@ -80,5 +90,3 @@ let ends_line t (l: Location.t) =
     | _ -> false
   in
   ends_line_ l.loc_end.pos_cnum
-
-let sub t ~pos ~len = String.sub t ~pos ~len

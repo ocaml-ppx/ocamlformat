@@ -147,7 +147,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
   | Fmt_ast.Formatting_disabled -> (
     match (Conf.action, ofile) with
     | _, None -> Out_channel.output_string stdout source_txt
-    | In_out _, Some ofile -> Out_channel.write_all ofile source_txt
+    | In_out _, Some ofile -> Out_channel.write_all ofile ~data:source_txt
     | Inplace _, _ -> () )
   | Warnings.Errors _ -> Caml.exit 1
   | Syntaxerr.Error _ as exc ->
