@@ -11,6 +11,18 @@
 (*                                                                    *)
 (**********************************************************************)
 
+#require "unix"
+let bisect_exists =
+  try
+    let ic =
+      Unix.open_process_in
+        "ocamlfind query -a-format -predicates byte,ppx_driver bisect_ppx"
+    in
+    let path = input_line ic in
+    close_in ic;
+    Sys.file_exists path
+  with _ -> false
+
 let ocamlc_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> "-g -opaque"
@@ -20,6 +32,11 @@ let ocamlopt_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" -> ocamlc_flags ^ " -w -a"
   | _ -> ocamlc_flags ^ " -O3"
+
+let preprocess =
+  match Jbuild_plugin.V1.context, bisect_exists with
+  | "coverage",true -> "(preprocess (pps (bisect_ppx)))"
+  | _ -> ""
 
 ;; Jbuild_plugin.V1.send @@ Format.sprintf "
 (rule
@@ -39,6 +56,7 @@ let ocamlopt_flags =
     -open Import))
   (ocamlc_flags (%s))
   (ocamlopt_flags (%s))
+  %s
   (libraries (cmdliner ocamlformat_support import ocaml-migrate-parsetree unix))))
 
 (install
@@ -51,4 +69,4 @@ let ocamlopt_flags =
   (files ((ocamlformat_reason.exe as ocamlformat_reason)))
   (package ocamlformat_reason)))
 "
-ocamlc_flags ocamlopt_flags
+ocamlc_flags ocamlopt_flags preprocess 

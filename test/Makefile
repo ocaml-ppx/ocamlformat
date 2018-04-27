@@ -16,7 +16,7 @@ DIRS=code/ocamlformat code/infer
 
 # To test using the dbg or "default" (opt) executable
 #       make MODE=<mode>
-MODE=dbg
+MODE?=dbg
 
 REFMT=refmt
 
@@ -97,4 +97,5 @@ print-%:
 
 .PHONY: regtests
 regtests:
-	@./test.sh
+	echo running regtests with $(OCAMLFORMAT_EXE)
+	@./test.sh --ocamlformat $(OCAMLFORMAT_EXE)

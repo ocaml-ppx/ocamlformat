@@ -51,9 +51,12 @@ SRCS=$(shell \ls src/{,import/}*.ml{,i})
 mod_dep.dot: $(SRCS)
 	ocamldep.opt $(SRCS) | $(OCAMLDOT) -r Ocamlformat -fullgraph > mod_dep.dot
 
-.PHONY: clean
-clean:
+.PHONY: clean cleanbisect
+clean: cleanbisect
 	rm -rf _build jbuild-workspace
+cleanbisect:
+	rm -Rf _coverage
+	find ./ -name 'bisect*.out' -delete
 
 .PHONY: fmt
 fmt:
@@ -72,3 +75,12 @@ fixpoint: exe reason
 regtests: exe reason dbg
 #       check regtests
 	$(MAKE) -C test regtests
+
+.PHONY: coverage
+coverage: setup
+	jbuilder build _build/coverage/src/ocamlformat.exe
+	$(MAKE) cleanbisect
+	$(MAKE) MODE=coverage -C test regtests
+	_build/coverage/src/ocamlformat.exe -i $(SRCS)
+	bisect-ppx-report -I _build/coverage/ -html _coverage/ `find test -name 'bisect*.out'`
+	@echo "open _coverage/index.html"
