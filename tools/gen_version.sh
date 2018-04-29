@@ -9,9 +9,9 @@ if [[ ! -z "$2" ]]; then
     VERSION="$2"
 else
     # second arg omitted when called from src/jbuild
-    if [[ ! "%%VERSION%%" == "%%"*"%%" ]]; then
+    if [[ ! "0.6" == "%%"*"%%" ]]; then
         # file has been watermarked when building distrib archive
-        VERSION="%%VERSION%%"
+        VERSION="0.6"
     else
         # file has not been watermarked when building in dev git tree
         VERSION=$(git describe --tags --dirty --always)
