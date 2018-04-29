@@ -14,9 +14,11 @@
 include module type of (
   Base :
     module type of Base
-    with module Filename := Caml.Filename
-     and module Format = Caml.Format
-     and module Scanf = Caml.Scanf )
+    (* [Filename], [Format], [Scanf] are all deprecated in [Base], let's
+       erase them and use the one from the stdlib. *)
+    with module Filename := Base.Filename
+     and module Format := Base.Format
+     and module Scanf := Base.Scanf )
 
 include module type of Option.Monad_infix
 
