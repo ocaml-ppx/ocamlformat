@@ -784,10 +784,9 @@ end = struct
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
       , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _}) ) ->
         false
-    | _, Ppat_unpack _
+    | Pat _, Ppat_constraint _
+     |_, Ppat_unpack _
      |_, Ppat_constraint ({ppat_desc= Ppat_unpack _}, _)
-     |( Pat {ppat_desc= Ppat_construct _ | Ppat_record _ | Ppat_variant _}
-      , Ppat_constraint _ )
      |( Pat
           { ppat_desc=
               ( Ppat_alias _ | Ppat_array _ | Ppat_constraint _
@@ -806,7 +805,7 @@ end = struct
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
               | Ppat_variant _ ) }
       , Ppat_or _ )
-     |Pat {ppat_desc= Ppat_tuple _}, (Ppat_constraint _ | Ppat_tuple _)
+     |Pat {ppat_desc= Ppat_tuple _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
      |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
      |( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
