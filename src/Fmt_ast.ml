@@ -408,7 +408,8 @@ let fmt_constant c ~loc ?epi const =
                           String.lfindi next ~f:(fun _ c -> not (drop c))
                         with
                         | Some 0 -> ""
-                        | Some i -> escape_string c (String.sub next 0 i)
+                        | Some i ->
+                            escape_string c (String.sub next ~pos:0 ~len:i)
                         | None -> escape_string c next
                       in
                       fmt "\\n"
@@ -681,33 +682,20 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ " $ str txt ))
   | Ppat_constant const -> fmt_constant c ~loc:ppat_loc const
-  | Ppat_interval (l, u) ->
+  | Ppat_interval (l, u) -> (
       (* we need to reconstruct locations for both side of the interval *)
-      let rec tok b =
-        match Lexer.token b with
-        | (Parser.CHAR _ | Parser.DOTDOT) as tok ->
-            let l, r = (Lexing.lexeme_start b, Lexing.lexeme_end b) in
-            let loc =
-              { ppat_loc with
-                loc_start=
-                  { ppat_loc.loc_start with
-                    pos_cnum= ppat_loc.loc_start.pos_cnum + l }
-              ; loc_end=
-                  { ppat_loc.loc_end with
-                    pos_cnum= ppat_loc.loc_start.pos_cnum + r } }
-            in
-            (tok, loc)
-        | _ -> tok b
+      let toks =
+        Source.tokens_at c.source ppat_loc ~filter:(function
+          | Parser.CHAR _ | Parser.DOTDOT -> true
+          | _ -> false )
       in
-      let b = Lexing.from_string (Source.string_at c.source ppat_loc) in
-      let t1, loc1 = tok b in
-      let dotdot, _ = tok b in
-      let t2, loc2 = tok b in
-      assert (
-        match (t1, dotdot, t2) with
-        | CHAR _, DOTDOT, CHAR _ -> true
-        | _ -> false ) ;
-      fmt_constant ~loc:loc1 c l $ fmt ".." $ fmt_constant ~loc:loc2 c u
+      match toks with
+      | [(Parser.CHAR _, loc1); (Parser.DOTDOT, _); (Parser.CHAR _, loc2)] ->
+          fmt_constant ~loc:loc1 c l $ fmt ".." $ fmt_constant ~loc:loc2 c u
+      | _ ->
+          impossible
+            "Ppat_interval is only produced by the sequence of 3 tokens: \
+             CHAR-DOTDOT-CHAR " )
   | Ppat_tuple pats ->
       hvbox 0
         (wrap_if_breaks "( " "@ )"

@@ -13,17 +13,20 @@ type t
 
 val create : string -> t
 
-val string_between : t -> Location.t -> Location.t -> string option
+val string_between :
+  t -> ?inclusive:bool -> Location.t -> Location.t -> string option
 
 val string_literal :
   t -> [`Normalize_nl | `Preserve] -> Location.t -> string
 
 val char_literal : t -> Location.t -> string
 
-val string_at : t -> Location.t -> string
+val tokens_at :
+     t
+  -> ?filter:(Parser.token -> bool)
+  -> Location.t
+  -> (Parser.token * Location.t) list
 
 val begins_line : t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool
-
-val sub : t -> pos:int -> len:int -> string
