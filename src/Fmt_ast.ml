@@ -2262,7 +2262,7 @@ and fmt_module_expr c {ast= m} =
         ; epi=
             Some
               ( Option.call ~f:epi_a $ fmt ")"
-              $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs (fmt "")
+              $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "")
               $ Cmts.fmt_after c.cmts pmod_loc ) }
       else
         { blk_a with
@@ -2274,7 +2274,7 @@ and fmt_module_expr c {ast= m} =
         ; epi=
             Some
               ( Option.call ~f:epi_a $ fmt ")"
-              $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs (fmt "")
+              $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "")
               $ Cmts.fmt_after c.cmts pmod_loc ) }
   | Pmod_apply (me_f, me_a) ->
       let doc, atrs = doc_atrs pmod_attributes in
@@ -2310,7 +2310,7 @@ and fmt_module_expr c {ast= m} =
       ; epi=
           Some
             ( Cmts.fmt_after c.cmts pmod_loc
-            $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs (fmt "") ) }
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "") ) }
   | Pmod_constraint (me, mt) ->
       let doc, atrs = doc_atrs pmod_attributes in
       let { opn= opn_e
@@ -2349,8 +2349,9 @@ and fmt_module_expr c {ast= m} =
       ; epi=
           Some
             ( Cmts.fmt_after c.cmts pmod_loc
-            $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs (fmt "") ) }
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "") ) }
   | Pmod_functor ({txt}, mt, me) ->
+      let doc, atrs = doc_atrs pmod_attributes in
       let txt = if String.equal "*" txt then "" else txt in
       let { opn= opn_t
           ; pro= pro_t
@@ -2376,38 +2377,78 @@ and fmt_module_expr c {ast= m} =
       ; psp= fmt ""
       ; bdy=
           Cmts.fmt c.cmts pmod_loc
-          @@ hvbox 0
-               ( fmt "functor@ "
-               $ wrap "(" ")"
-                   ( str txt
-                   $ opt mt (fun _ ->
-                         fmt "@ : " $ Option.call ~f:pro_t $ psp_t
-                         $ fmt "@;<1 2>" $ bdy_t $ esp_t
-                         $ Option.call ~f:epi_t ) )
-               $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
-               $ Option.call ~f:epi_e )
+          @@ ( fmt_docstring c ~epi:(fmt "@,") doc
+             $ hvbox 0
+                 ( fmt "functor"
+                 $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "")
+                 $ fmt "@ "
+                 $ wrap "(" ")"
+                     ( str txt
+                     $ opt mt (fun _ ->
+                           fmt "@ :" $ Option.call ~f:pro_t $ psp_t
+                           $ fmt "@;<1 2>" $ bdy_t $ esp_t
+                           $ Option.call ~f:epi_t ) )
+                 $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e
+                 $ esp_e $ Option.call ~f:epi_e ) )
       ; cls= cls_t $ cls_e
       ; esp= fmt ""
       ; epi= None }
   | Pmod_ident {txt} ->
-      {empty with bdy= Cmts.fmt c.cmts pmod_loc @@ fmt_longident txt}
+      let doc, atrs = doc_atrs pmod_attributes in
+      { empty with
+        pro=
+          Some
+            ( Cmts.fmt_before c.cmts pmod_loc
+            $ fmt_docstring c ~epi:(fmt "@,") doc )
+      ; bdy= Cmts.fmt c.cmts pmod_loc @@ fmt_longident txt
+      ; epi=
+          Some
+            ( Cmts.fmt_after c.cmts pmod_loc
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "") ) }
   | Pmod_structure sis ->
+      let doc, atrs = doc_atrs pmod_attributes in
       { opn= open_hvbox 0
-      ; pro= Some (Cmts.fmt_before c.cmts pmod_loc $ fmt "struct")
+      ; pro=
+          Some
+            ( Cmts.fmt_before c.cmts pmod_loc
+            $ fmt_docstring c ~epi:(fmt "@,") doc
+            $ fmt "struct" )
       ; psp= fmt "@;<1000 2>"
       ; bdy= fmt_structure c ~sep:";; " ctx sis
       ; cls= close_box
       ; esp= fmt "@ "
-      ; epi= Some (fmt "end" $ Cmts.fmt_after c.cmts pmod_loc) }
+      ; epi=
+          Some
+            ( fmt "end"
+            $ Cmts.fmt_after c.cmts pmod_loc
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "") ) }
   | Pmod_unpack e1 ->
+      let doc, atrs = doc_atrs pmod_attributes in
       { empty with
-        bdy=
+        pro=
+          Some
+            ( Cmts.fmt_before c.cmts pmod_loc
+            $ fmt_docstring c ~epi:(fmt "@,") doc )
+      ; bdy=
           Cmts.fmt c.cmts pmod_loc
           @@ wrap_fits_breaks "(" ")"
-               (fmt "val " $ fmt_expression c (sub_exp ~ctx e1)) }
+               (fmt "val " $ fmt_expression c (sub_exp ~ctx e1))
+      ; epi=
+          Some
+            ( Cmts.fmt_after c.cmts pmod_loc
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "") ) }
   | Pmod_extension x1 ->
+      let doc, atrs = doc_atrs pmod_attributes in
       { empty with
-        bdy= Cmts.fmt c.cmts pmod_loc @@ fmt_extension c ctx "%" x1 }
+        pro=
+          Some
+            ( Cmts.fmt_before c.cmts pmod_loc
+            $ fmt_docstring c ~epi:(fmt "@,") doc )
+      ; bdy= Cmts.fmt c.cmts pmod_loc @@ fmt_extension c ctx "%" x1
+      ; epi=
+          Some
+            ( Cmts.fmt_after c.cmts pmod_loc
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs (fmt "") ) }
 
 and fmt_structure c ?(sep= "") ctx itms =
   let grps =
@@ -2636,7 +2677,7 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
   in
   let xargs, xbody, xmty = sugar_functor c ?mt (sub_mod ~ctx me) in
   fmt_module c ?epi keyword pmb_name xargs (Some xbody) true xmty
-    (List.append pmb_attributes me.pmod_attributes)
+    pmb_attributes
 
 (** Entry points *)
 
