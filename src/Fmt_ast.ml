@@ -2021,7 +2021,10 @@ and fmt_module_type c {ast= mt} =
           { blk with
             pro=
               Some
-                (Cmts.fmt c.cmts pmty_loc @@ (fmt "module type of " $ pro))
+                ( Cmts.fmt_before c.cmts pmty_loc
+                $ (fmt "module type of " $ pro) )
+          ; epi=
+              Some (Option.call ~f:blk.epi $ Cmts.fmt_after c.cmts pmty_loc)
           }
       | _ ->
           { blk with
@@ -2400,7 +2403,7 @@ and fmt_module_expr c {ast= m} =
           Some
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
-      ; bdy= Cmts.fmt c.cmts pmod_loc @@ fmt_longident txt
+      ; bdy= fmt_longident txt
       ; epi=
           Some
             ( Cmts.fmt_after c.cmts pmod_loc
