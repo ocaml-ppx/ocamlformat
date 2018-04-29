@@ -14,13 +14,12 @@
 include (
   Base :
     module type of Base
+    (* [Filename], [Format], [Scanf] are all deprecated in [Base], let's
+       erase them and use the one from the stdlib. *)
     with module Filename := Base.Filename
      and module Format := Base.Format
      and module Scanf := Base.Scanf )
 
-module Filename = Filename
-module Format = Format
-module Scanf = Scanf
 include Option.Monad_infix
 include Stdio
 

@@ -25,12 +25,12 @@ let bisect_exists =
 
 let ocamlc_flags =
   match Jbuild_plugin.V1.context with
-  | "dbg" -> "-g -opaque"
+  | "dbg" | "coverage" -> "-g -opaque"
   | _ -> "-noassert"
 
 let ocamlopt_flags =
   match Jbuild_plugin.V1.context with
-  | "dbg" -> ocamlc_flags ^ " -w -a"
+  | "dbg" | "coverage" -> ocamlc_flags ^ " -w -a"
   | _ -> ocamlc_flags ^ " -O3"
 
 let preprocess =
