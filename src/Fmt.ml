@@ -197,7 +197,7 @@ let fill_text text =
               fmt_line curr
               $
               match next with
-              | Some str when String.for_all str Char.is_whitespace ->
+              | Some str when String.for_all str ~f:Char.is_whitespace ->
                   close_box $ fmt "\n@," $ open_hovbox 0
               | Some _ when not (String.is_empty curr) -> fmt "@ "
               | _ -> fmt "" )))
