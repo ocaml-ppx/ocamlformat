@@ -56,6 +56,15 @@ let rec sugar_or_pat c ({ast= pat} as xpat) =
       @ sugar_or_pat c (sub_pat ~ctx pat2)
   | _ -> [xpat]
 
+let rec protect_token c = function
+  | Typ typ -> (
+    match (typ.ptyp_desc, c) with
+    | Ptyp_arrow (_, _, t2), _ -> protect_token c (Typ t2)
+    | Ptyp_object _, (']' | '}') -> true
+    | _ -> false )
+  | Pld (PTyp t) -> protect_token c (Typ t)
+  | _ -> false
+
 type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list
@@ -490,13 +499,19 @@ let rec fmt_attribute c pre = function
   | {txt; loc}, pld ->
       Cmts.fmt c.cmts loc
       @@ hvbox 2
-           (wrap "[" "]" (str pre $ str txt $ fmt_payload c (Pld pld) pld))
+           (wrap "[" "]"
+              ( str pre $ str txt
+              $ fmt_payload c (Pld pld) pld
+              $ fmt_if (protect_token ']' (Pld pld)) " " ))
 
 and fmt_extension c ctx key (({txt} as ext), pld) =
   match pld with
   | PStr [({pstr_desc= Pstr_value _; _} as si)] ->
       fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
-  | _ -> wrap "[" "]" (str key $ str txt $ fmt_payload c ctx pld)
+  | _ ->
+      wrap "[" "]"
+        ( str key $ str txt $ fmt_payload c ctx pld
+        $ fmt_if (protect_token ']' (Pld pld)) " " )
 
 and fmt_attributes c ?(pre= fmt "") ?(box= true) ~key attrs suf =
   let split = List.length attrs > 1 in
@@ -589,6 +604,16 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
   | Ptyp_var s -> fmt "'" $ str s
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs = list rfs "@ | " (fmt_row_field c ctx) in
+      let protect_token =
+        match (lbls, rfs) with
+        | _, [] -> assert false
+        | None, l -> (
+          match List.last_exn l with
+          | Rinherit _ -> false
+          | Rtag (_, _, _, [x]) -> protect_token ']' (Typ x)
+          | Rtag (_, _, _, _) -> false )
+        | Some _, _ -> false
+      in
       hvbox 0
         ( fits_breaks "[" "["
         $ ( match (flag, lbls) with
@@ -599,7 +624,7 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
               fmt "< " $ row_fields rfs $ fmt " > "
               $ list ls "@ " (fmt "`" >$ str)
           | Open, Some _ -> impossible "not produced by parser" )
-        $ fits_breaks "]" "@ ]" )
+        $ fits_breaks (if protect_token then " ]" else "]") "@ ]" )
   | Ptyp_object ([], Open) -> fmt "< .. >"
   | Ptyp_object ([], Closed) -> fmt "< >"
   | Ptyp_object (fields, closedness) ->
@@ -1808,7 +1833,12 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
         $ fmt "@ "
         $ hvbox 0
             (wrap_fits_breaks "{" "}"
-               (list lbl_decls "@,; " (fmt_label_declaration c ctx)))
+               (list_fl lbl_decls (fun ~first ~last x ->
+                    fmt_if_k (not first) (fmt "@,; ")
+                    $ fmt_label_declaration c ctx x
+                    $ fmt_if
+                        (last && protect_token '}' (Typ x.pld_type))
+                        " " )))
     | Ptype_open -> fmt_manifest ~priv mfst $ fmt " = .."
   in
   let fmt_cstrs cstrs =

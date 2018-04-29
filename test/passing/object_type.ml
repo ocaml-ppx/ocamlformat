@@ -18,3 +18,15 @@ type z = < > t
 let x : unit -> <bouh: string ; .. > = fun () -> assert false
 
 let lookup_obj : < .. > -> (< .. > as 'a) list -> 'a = fun _ -> assert false
+
+let _ = [%ext : <a ; b> ]
+
+let _ = (x [@att : <a ; b> ])
+
+type t = [`A of <a ; b> ]
+
+type t = {a: < >; b: int}
+
+type t = {b: int; a: < > }
+
+type 'a u = [< `A | `B of < > > `B] as 'a
