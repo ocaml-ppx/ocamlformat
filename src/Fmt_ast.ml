@@ -603,7 +603,7 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
       let row_fields rfs = list rfs "@ | " (fmt_row_field c ctx) in
       let protect_token =
         match (lbls, rfs) with
-        | _, [] -> impossible "not produced by parser"
+        | _, [] -> false
         | None, l -> (
           match List.last_exn l with
           | Rinherit _ -> false

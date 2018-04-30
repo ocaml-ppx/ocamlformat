@@ -25,6 +25,8 @@ let _ = (x [@att : <a ; b> ])
 
 type t = [`A of <a ; b> ]
 
+type t = private [> ]
+
 type t = {a: < >; b: int}
 
 type t = {b: int; a: < > }
