@@ -706,7 +706,9 @@ end = struct
       | Pexp_apply _ -> Some Apply
       | Pexp_assert _ | Pexp_lazy _ | Pexp_for _
        |Pexp_variant (_, Some _)
-       |Pexp_while _ ->
+       |Pexp_while _ | Pexp_new _
+       |Pexp_extension
+          (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_new _}, _)}]) ->
           Some Apply
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
