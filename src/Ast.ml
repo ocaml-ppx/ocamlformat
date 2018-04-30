@@ -225,6 +225,12 @@ and Requires_sub_terms : sig
 
   val exposed : cls -> expression -> bool
 
+  type ltgt = LT | GT
+
+  val typ_exposed_left : ltgt -> core_type -> bool
+
+  val typ_exposed_right : ltgt -> core_type -> bool
+
   val prec_ast : T.t -> prec option
 
   val parenze_typ : core_type In_ctx.xt -> bool
@@ -971,6 +977,20 @@ end = struct
           | _ ->
               if is_right_infix_arg pexp_desc exp then is_sequence exp
               else exposed Non_apply exp )
+    | _ -> false
+
+  type ltgt = LT | GT
+
+  let rec typ_exposed_left c typ =
+    match (typ.ptyp_desc, c) with
+    | Ptyp_arrow (_, t, _), _ -> typ_exposed_left c t
+    | Ptyp_object _, LT -> true
+    | _ -> false
+
+  let rec typ_exposed_right c typ =
+    match (typ.ptyp_desc, c) with
+    | Ptyp_arrow (_, _, t), _ -> typ_exposed_right c t
+    | Ptyp_object _, GT -> true
     | _ -> false
 end
 

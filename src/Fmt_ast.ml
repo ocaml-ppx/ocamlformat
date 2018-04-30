@@ -56,15 +56,6 @@ let rec sugar_or_pat c ({ast= pat} as xpat) =
       @ sugar_or_pat c (sub_pat ~ctx pat2)
   | _ -> [xpat]
 
-let rec protect_token c = function
-  | Typ typ -> (
-    match (typ.ptyp_desc, c) with
-    | Ptyp_arrow (_, _, t2), _ -> protect_token c (Typ t2)
-    | Ptyp_object _, (']' | '}') -> true
-    | _ -> false )
-  | Pld (PTyp t) -> protect_token c (Typ t)
-  | _ -> false
-
 type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list
@@ -497,21 +488,27 @@ let rec fmt_attribute c pre = function
       fmt_or (String.equal txt "ocaml.text") "@ " " "
       $ fmt "(**" $ str doc $ fmt "*)"
   | {txt; loc}, pld ->
+      let protect_token =
+        match pld with PTyp t -> typ_exposed_right GT t | _ -> false
+      in
       Cmts.fmt c.cmts loc
       @@ hvbox 2
            (wrap "[" "]"
               ( str pre $ str txt
               $ fmt_payload c (Pld pld) pld
-              $ fmt_if (protect_token ']' (Pld pld)) " " ))
+              $ fmt_if protect_token " " ))
 
 and fmt_extension c ctx key (({txt} as ext), pld) =
   match pld with
   | PStr [({pstr_desc= Pstr_value _; _} as si)] ->
       fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
   | _ ->
+      let protect_token =
+        match pld with PTyp t -> typ_exposed_right GT t | _ -> false
+      in
       wrap "[" "]"
         ( str key $ str txt $ fmt_payload c ctx pld
-        $ fmt_if (protect_token ']' (Pld pld)) " " )
+        $ fmt_if protect_token " " )
 
 and fmt_attributes c ?(pre= fmt "") ?(box= true) ~key attrs suf =
   let split = List.length attrs > 1 in
@@ -606,11 +603,11 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
       let row_fields rfs = list rfs "@ | " (fmt_row_field c ctx) in
       let protect_token =
         match (lbls, rfs) with
-        | _, [] -> assert false
+        | _, [] -> impossible "not produced by parser"
         | None, l -> (
           match List.last_exn l with
           | Rinherit _ -> false
-          | Rtag (_, _, _, [x]) -> protect_token ']' (Typ x)
+          | Rtag (_, _, _, [x]) -> typ_exposed_right GT x
           | Rtag (_, _, _, _) -> false )
         | Some _, _ -> false
       in
@@ -1836,9 +1833,8 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
                (list_fl lbl_decls (fun ~first ~last x ->
                     fmt_if_k (not first) (fmt "@,; ")
                     $ fmt_label_declaration c ctx x
-                    $ fmt_if
-                        (last && protect_token '}' (Typ x.pld_type))
-                        " " )))
+                    $ fmt_if (last && typ_exposed_right GT x.pld_type) " "
+                )))
     | Ptype_open -> fmt_manifest ~priv mfst $ fmt " = .."
   in
   let fmt_cstrs cstrs =
