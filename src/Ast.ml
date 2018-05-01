@@ -984,12 +984,14 @@ end = struct
   let rec typ_exposed_left c typ =
     match (typ.ptyp_desc, c) with
     | Ptyp_arrow (_, t, _), _ -> typ_exposed_left c t
+    | Ptyp_tuple l, _ -> typ_exposed_left c (List.hd_exn l)
     | Ptyp_object _, LT -> true
     | _ -> false
 
   let rec typ_exposed_right c typ =
     match (typ.ptyp_desc, c) with
     | Ptyp_arrow (_, _, t), _ -> typ_exposed_right c t
+    | Ptyp_tuple l, _ -> typ_exposed_right c (List.last_exn l)
     | Ptyp_object _, GT -> true
     | _ -> false
 end

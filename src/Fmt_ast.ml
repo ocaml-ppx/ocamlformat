@@ -602,14 +602,13 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs = list rfs "@ | " (fmt_row_field c ctx) in
       let protect_token =
-        match (lbls, rfs) with
-        | _, [] -> false
-        | None, l -> (
-          match List.last_exn l with
-          | Rinherit _ -> false
-          | Rtag (_, _, _, [x]) -> typ_exposed_right GT x
-          | Rtag (_, _, _, _) -> false )
-        | Some _, _ -> false
+        match List.last rfs with
+        | None -> false
+        | Some (Rinherit _) -> false
+        | Some (Rtag (_, _, _, l)) ->
+          match List.last l with
+          | None -> false
+          | Some x -> typ_exposed_right GT x
       in
       hvbox 0
         ( fits_breaks "[" "["
@@ -626,7 +625,7 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
   | Ptyp_object ([], Closed) -> fmt "< >"
   | Ptyp_object (fields, closedness) ->
       hvbox 0
-        (wrap_fits_breaks "<" ">"
+        (wrap "< " " >"
            ( list fields "@ ; " (function
                | Otag (lab_loc, attrs, typ) ->
                    (* label loc * attributes * core_type -> object_field *)
