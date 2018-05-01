@@ -2694,11 +2694,14 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ ( hovbox 4
             ( str keyword
             $ fmt_extension_suffix c ext
-            $ fmt_attributes c ~key:"@" atrs (fmt "")
+            $ fmt_if_k (Option.is_some in_)
+                (fmt_attributes c ~key:"@" atrs (fmt ""))
             $ fmt " " $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
             $ Option.call ~f:fmt_cstr )
         $ fmt "=" )
       $ fmt_body c xbody
+      $ fmt_if_k (Option.is_none in_)
+          (fmt_attributes c ~key:"@@" atrs (fmt ""))
       $ Cmts.fmt_after c.cmts pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
