@@ -1067,10 +1067,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
               (open_hovbox (if first_grp && parens then -2 else 0))
           $ fmt_op_args ~first:very_first op_args ~last:very_last
           $ fmt_if_k last close_box
-          $ fmt_if_k (not very_last) (break_unless_newline 1 0)
-          $ fmt_if_k (very_last && last_grp)
+          $ fmt_or_k very_last
               (fits_breaks_if parens_or_nested ")"
-                 (if parens then "@ )" else "")) )
+                 (if parens then "@ )" else ""))
+              (break_unless_newline 1 0) )
     in
     let op_args_grouped =
       match c.conf.break_infix with
@@ -2400,7 +2400,7 @@ and fmt_constructor_arguments c ctx pre args =
           (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
-  let pre : _ format6 = if Option.is_none res then " of@ " else ":@ " in
+  let pre : _ format = if Option.is_none res then " of@ " else ":@ " in
   let before_type : _ format =
     match args with Pcstr_tuple [] -> ": " | _ -> "-> "
   in
