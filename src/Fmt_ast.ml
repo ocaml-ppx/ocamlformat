@@ -2254,8 +2254,9 @@ and fmt_with_constraint c ctx = function
       $ fmt_type_declaration c ctx ~fmt_name:(fmt_longident txt) td
   | Pwith_module ({txt= m1}, {txt= m2}) ->
       fmt " module " $ fmt_longident m1 $ fmt " = " $ fmt_longident m2
-  | Pwith_typesubst (_, td) ->
-      fmt " type " $ fmt_type_declaration c ~eq:":=" ctx td
+  | Pwith_typesubst ({txt}, td) ->
+      fmt " type "
+      $ fmt_type_declaration c ~eq:":=" ctx ~fmt_name:(fmt_longident txt) td
   | Pwith_modsubst ({txt= m1}, {txt= m2}) ->
       fmt " module " $ fmt_longident m1 $ fmt " := " $ fmt_longident m2
 
