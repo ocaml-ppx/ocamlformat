@@ -1460,8 +1460,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
             ( hvbox 0
-                ( fmt_exception ~pre:(fmt "let exception@ ") c ": " ctx
-                    ext_cstr
+                ( fmt_exception ~pre:(fmt "let exception@ ") c (fmt ": ")
+                    ctx ext_cstr
                 $ fmt "@ in" )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
@@ -1921,7 +1921,7 @@ and fmt_constructor_arguments c ctx pre args =
           (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
-  let pre : _ format = if Option.is_none res then " of@ " else ":@ " in
+  let pre : _ format6 = if Option.is_none res then " of@ " else ":@ " in
   let before_type : _ format =
     match args with Pcstr_tuple [] -> ": " | _ -> "-> "
   in
@@ -1949,8 +1949,15 @@ and fmt_type_extension c ctx te =
         $ hvbox 0
             ( if_newline "| "
             $ list ptyext_constructors "@ | " (fun ctor ->
-                  hvbox 0 (fmt_extension_constructor c " of@ " ctx ctor) )
-            ) )
+                  let has_res =
+                    match ctor.pext_kind with
+                    | Pext_decl (_, r) -> Option.is_some r
+                    | Pext_rebind _ -> false
+                  in
+                  hvbox 0
+                    (fmt_extension_constructor c
+                       (if has_res then fmt " :@ " else fmt " of@ ")
+                       ctx ctor) ) ) )
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs (fmt "") )
 
 and fmt_exception ~pre c sep ctx te =
@@ -1985,7 +1992,7 @@ and fmt_extension_constructor c sep ctx ec =
         match pext_kind with
         | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), None) -> fmt ""
         | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), Some res) ->
-            str sep $ fmt_core_type c (sub_typ ~ctx res)
+            sep $ fmt_core_type c (sub_typ ~ctx res)
         | Pext_decl (args, res) ->
             fmt_constructor_arguments_result c ctx args res
         | Pext_rebind {txt} -> fmt " = " $ fmt_longident txt )
@@ -2088,7 +2095,8 @@ and fmt_signature_item c {ast= si} =
       fmt_docstring c ~epi:(fmt "") doc
       $ fmt_attributes c ~key:"@@@" atrs (fmt "")
   | Psig_exception exc ->
-      hvbox 2 (fmt_exception ~pre:(fmt "exception@ ") c " of " ctx exc)
+      hvbox 2
+        (fmt_exception ~pre:(fmt "exception@ ") c (fmt " of ") ctx exc)
   | Psig_extension (ext, atrs) ->
       hvbox 0
         ( fmt_extension c ctx "%%" ext
@@ -2557,7 +2565,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs (fmt "")
   | Pstr_exception extn_constr ->
       hvbox 2
-        (fmt_exception ~pre:(fmt "exception@ ") c ": " ctx extn_constr)
+        (fmt_exception ~pre:(fmt "exception@ ") c (fmt ": ") ctx extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes} ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
