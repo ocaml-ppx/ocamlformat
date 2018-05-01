@@ -223,13 +223,11 @@ and Requires_sub_terms : sig
 
   type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
-  val exposed : cls -> expression -> bool
+  val exposed_right_exp : cls -> expression -> bool
 
-  type ltgt = LT | GT
+  val exposed_left_typ : core_type -> bool
 
-  val typ_exposed_left : ltgt -> core_type -> bool
-
-  val typ_exposed_right : ltgt -> core_type -> bool
+  val exposed_right_typ : core_type -> bool
 
   val prec_ast : T.t -> prec option
 
@@ -865,14 +863,14 @@ end = struct
 
   (** [exposed cls exp] holds if there is a right-most subexpression of
       [exp] which satisfies [mem_cls cls] and is not parenthesized. *)
-  let rec exposed =
+  let rec exposed_right_exp =
     (* exponential without memoization *)
     let memo = Hashtbl.Poly.create () in
     fun cls exp ->
       let exposed_ () =
         let continue subexp =
           not (parenze_exp (sub_exp ~ctx:(Exp exp) subexp))
-          && exposed cls subexp
+          && exposed_right_exp cls subexp
         in
         match exp.pexp_desc with
         | Pexp_assert e
@@ -932,15 +930,17 @@ end = struct
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
           && (List.last_exn cases).pc_rhs != exp
-          && exposed Match exp
+          && exposed_right_exp Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
-      | Pexp_ifthenelse (_, thn, None) when thn == exp -> exposed Then exp
+      | Pexp_ifthenelse (_, thn, None) when thn == exp ->
+          exposed_right_exp Then exp
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
-          exposed ThenElse exp
+          exposed_right_exp ThenElse exp
       | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
       | Pexp_record (flds, _)
         when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->
-          exposed Non_apply exp (* Non_apply is perhaps pessimistic *)
+          exposed_right_exp Non_apply exp
+          (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_])} as e0))
         when e0 == exp && is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
@@ -959,7 +959,8 @@ end = struct
           , _ )
         when lhs == exp ->
           true
-      | Pexp_sequence (lhs, _) when lhs == exp -> exposed Let_match exp
+      | Pexp_sequence (lhs, _) when lhs == exp ->
+          exposed_right_exp Let_match exp
       | Pexp_sequence (_, rhs) when rhs == exp -> false
       | _ ->
           let is_right_infix_arg ctx_desc exp =
@@ -976,23 +977,21 @@ end = struct
           | Some (Some true) -> true (* exp is apply and ambig *)
           | _ ->
               if is_right_infix_arg pexp_desc exp then is_sequence exp
-              else exposed Non_apply exp )
+              else exposed_right_exp Non_apply exp )
     | _ -> false
 
-  type ltgt = LT | GT
-
-  let rec typ_exposed_left c typ =
-    match (typ.ptyp_desc, c) with
-    | Ptyp_arrow (_, t, _), _ -> typ_exposed_left c t
-    | Ptyp_tuple l, _ -> typ_exposed_left c (List.hd_exn l)
-    | Ptyp_object _, LT -> true
+  let rec exposed_left_typ typ =
+    match typ.ptyp_desc with
+    | Ptyp_arrow (_, t, _) -> exposed_left_typ t
+    | Ptyp_tuple l -> exposed_left_typ (List.hd_exn l)
+    | Ptyp_object _ -> true
     | _ -> false
 
-  let rec typ_exposed_right c typ =
-    match (typ.ptyp_desc, c) with
-    | Ptyp_arrow (_, _, t), _ -> typ_exposed_right c t
-    | Ptyp_tuple l, _ -> typ_exposed_right c (List.last_exn l)
-    | Ptyp_object _, GT -> true
+  let rec exposed_right_typ typ =
+    match typ.ptyp_desc with
+    | Ptyp_arrow (_, _, t) -> exposed_right_typ t
+    | Ptyp_tuple l -> exposed_right_typ (List.last_exn l)
+    | Ptyp_object _ -> true
     | _ -> false
 end
 

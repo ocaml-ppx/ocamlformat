@@ -107,16 +107,14 @@ val is_simple : Conf.t -> (expression xt -> int) -> expression xt -> bool
 (** Holds of "simple" expressions: constants and constructor and function
     applications of other simple expressions. *)
 
-type ltgt = LT | GT
+val exposed_left_typ : core_type -> bool
 
-val typ_exposed_left : ltgt -> core_type -> bool
-
-val typ_exposed_right : ltgt -> core_type -> bool
+val exposed_right_typ : core_type -> bool
 
 (** 'Classes' of expressions which are parenthesized differently. *)
 type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
-val exposed : cls -> expression -> bool
+val exposed_right_exp : cls -> expression -> bool
 (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
     which is of class [cls] and is not parenthesized. *)
 

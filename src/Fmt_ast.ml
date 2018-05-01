@@ -220,7 +220,7 @@ let sugar_sequence c width xexp =
     | Pexp_sequence (e1, e2) ->
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;
-        if Ast.exposed Ast.Let_match e1 then
+        if Ast.exposed_right_exp Ast.Let_match e1 then
           [sub_exp ~ctx e1; sub_exp ~ctx e2]
         else
           List.append
@@ -489,7 +489,7 @@ let rec fmt_attribute c pre = function
       $ fmt "(**" $ str doc $ fmt "*)"
   | {txt; loc}, pld ->
       let protect_token =
-        match pld with PTyp t -> typ_exposed_right GT t | _ -> false
+        match pld with PTyp t -> exposed_right_typ t | _ -> false
       in
       Cmts.fmt c.cmts loc
       @@ hvbox 2
@@ -504,7 +504,7 @@ and fmt_extension c ctx key (({txt} as ext), pld) =
       fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
   | _ ->
       let protect_token =
-        match pld with PTyp t -> typ_exposed_right GT t | _ -> false
+        match pld with PTyp t -> exposed_right_typ t | _ -> false
       in
       wrap "[" "]"
         ( str key $ str txt $ fmt_payload c ctx pld
@@ -608,7 +608,7 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
         | Some (Rtag (_, _, _, l)) ->
           match List.last l with
           | None -> false
-          | Some x -> typ_exposed_right GT x
+          | Some x -> exposed_right_typ x
       in
       hvbox 0
         ( fits_breaks "[" "["
@@ -641,7 +641,7 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
                         $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
                             (fmt "") )
                | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
-           $ fmt_if Poly.(closedness = Open) "@ ; .. " ))
+           $ fmt_if Poly.(closedness = Open) "@ ; .." ))
   | Ptyp_class _ -> internal_error "Ptyp_class: classes not implemented" []
   )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
@@ -960,7 +960,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
     let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
       let _, ({ast= arg} as xarg) = lbl_xarg in
       let parens =
-        (not last_op && exposed Ast.Non_apply arg) || parenze_exp xarg
+        (not last_op && exposed_right_exp Ast.Non_apply arg)
+        || parenze_exp xarg
       in
       fmt_label_arg
         ?box:
@@ -1830,10 +1831,9 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
         $ hvbox 0
             (wrap_fits_breaks "{" "}"
                (list_fl lbl_decls (fun ~first ~last x ->
-                    fmt_if_k (not first) (fmt "@,; ")
+                    fmt_if (not first) "@,; "
                     $ fmt_label_declaration c ctx x
-                    $ fmt_if (last && typ_exposed_right GT x.pld_type) " "
-                )))
+                    $ fmt_if (last && exposed_right_typ x.pld_type) " " )))
     | Ptype_open -> fmt_manifest ~priv mfst $ fmt " = .."
   in
   let fmt_cstrs cstrs =
