@@ -29,3 +29,27 @@ type t = [`A of int[@default] | `B of (float[@default])]
 let f x =
   let[@something] e = 1 in
   e[@@inline always]
+
+module type M = S [@test1]
+
+module type M = sig
+  module T (T : sig
+    
+  end) : (S with type t = r) [@test2]
+
+  module T (S : S [@test]) : S
+
+  module T : (S with type t = (r[@test3])) [@test4]
+
+  module T :
+    (S with type t = t and type u := u and module R = R and module S := S)
+  [@test]
+
+  module T : module type of X [@test5]
+
+  module T : (module type of X) [@test6]
+
+  module T : [%ext] [@test7]
+
+  module T = T [@@test8]
+end
