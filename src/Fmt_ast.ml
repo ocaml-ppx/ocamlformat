@@ -659,10 +659,10 @@ and fmt_row_field c ctx = function
       let doc, atrs = doc_atrs atrs in
       hvbox 0
         ( Cmts.fmt c.cmts loc @@ (fmt "`" $ str txt)
-        $ fmt_attributes c ~key:"@" atrs (fmt "")
         $ fmt_if (not (const && List.is_empty typs)) " of "
         $ fmt_if (const && not (List.is_empty typs)) " & "
         $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
+        $ fmt_attributes c ~key:"@" atrs (fmt "")
         $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
   | Rinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
 
