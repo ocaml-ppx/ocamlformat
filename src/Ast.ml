@@ -768,6 +768,7 @@ end = struct
                 ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [_; _]}) }
       , inner ) -> (
       match inner with
+      | Ppat_construct ({txt= Lident "::"}, _) -> true
       | Ppat_construct _ | Ppat_variant _ -> false
       | _ -> true )
     | ( Pat {ppat_desc= Ppat_construct _}
