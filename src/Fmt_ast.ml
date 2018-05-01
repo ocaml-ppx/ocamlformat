@@ -1834,7 +1834,9 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
                     fmt_if (not first) "@,; "
                     $ fmt_label_declaration c ctx x
                     $ fmt_if (last && exposed_right_typ x.pld_type) " " )))
-    | Ptype_open -> fmt_manifest ~priv mfst $ fmt " = .."
+    | Ptype_open ->
+        fmt_manifest ~priv:Public mfst
+        $ fmt " =" $ fmt_private_flag priv $ fmt " .."
   in
   let fmt_cstrs cstrs =
     fmt_if_k
