@@ -947,7 +947,8 @@ end = struct
         when e0 == exp && is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
-      | Pexp_record (_, Some ({pexp_desc= Pexp_apply _} as e0))
+      | Pexp_record
+          (_, Some ({pexp_desc= Pexp_apply _ | Pexp_sequence _} as e0))
         when e0 == exp ->
           true
       | Pexp_sequence
