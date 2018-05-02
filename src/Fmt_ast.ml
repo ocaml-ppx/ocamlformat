@@ -659,10 +659,10 @@ and fmt_row_field c ctx = function
       let doc, atrs = doc_atrs atrs in
       hvbox 0
         ( Cmts.fmt c.cmts loc @@ (fmt "`" $ str txt)
-        $ fmt_attributes c ~key:"@" atrs (fmt "")
         $ fmt_if (not (const && List.is_empty typs)) " of "
         $ fmt_if (const && not (List.is_empty typs)) " & "
         $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
+        $ fmt_attributes c ~key:"@" atrs (fmt "")
         $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
   | Rinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
 
@@ -1460,8 +1460,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
             ( hvbox 0
-                ( fmt_exception ~pre:(fmt "let exception@ ") c ": " ctx
-                    ext_cstr
+                ( fmt_exception ~pre:(fmt "let exception@ ") c (fmt ": ")
+                    ctx ext_cstr
                 $ fmt "@ in" )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
@@ -1834,7 +1834,9 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
                     fmt_if (not first) "@,; "
                     $ fmt_label_declaration c ctx x
                     $ fmt_if (last && exposed_right_typ x.pld_type) " " )))
-    | Ptype_open -> fmt_manifest ~priv mfst $ fmt " = .."
+    | Ptype_open ->
+        fmt_manifest ~priv:Public mfst
+        $ fmt " =" $ fmt_private_flag priv $ fmt " .."
   in
   let fmt_cstrs cstrs =
     fmt_if_k
@@ -1921,7 +1923,7 @@ and fmt_constructor_arguments c ctx pre args =
           (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
-  let pre : _ format = if Option.is_none res then " of@ " else ":@ " in
+  let pre : _ format6 = if Option.is_none res then " of@ " else ":@ " in
   let before_type : _ format =
     match args with Pcstr_tuple [] -> ": " | _ -> "-> "
   in
@@ -1949,8 +1951,15 @@ and fmt_type_extension c ctx te =
         $ hvbox 0
             ( if_newline "| "
             $ list ptyext_constructors "@ | " (fun ctor ->
-                  hvbox 0 (fmt_extension_constructor c " of@ " ctx ctor) )
-            ) )
+                  let has_res =
+                    match ctor.pext_kind with
+                    | Pext_decl (_, r) -> Option.is_some r
+                    | Pext_rebind _ -> false
+                  in
+                  hvbox 0
+                    (fmt_extension_constructor c
+                       (if has_res then fmt " :@ " else fmt " of@ ")
+                       ctx ctor) ) ) )
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs (fmt "") )
 
 and fmt_exception ~pre c sep ctx te =
@@ -1985,7 +1994,7 @@ and fmt_extension_constructor c sep ctx ec =
         match pext_kind with
         | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), None) -> fmt ""
         | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), Some res) ->
-            str sep $ fmt_core_type c (sub_typ ~ctx res)
+            sep $ fmt_core_type c (sub_typ ~ctx res)
         | Pext_decl (args, res) ->
             fmt_constructor_arguments_result c ctx args res
         | Pext_rebind {txt} -> fmt " = " $ fmt_longident txt )
@@ -2088,7 +2097,8 @@ and fmt_signature_item c {ast= si} =
       fmt_docstring c ~epi:(fmt "") doc
       $ fmt_attributes c ~key:"@@@" atrs (fmt "")
   | Psig_exception exc ->
-      hvbox 2 (fmt_exception ~pre:(fmt "exception@ ") c " of " ctx exc)
+      hvbox 2
+        (fmt_exception ~pre:(fmt "exception@ ") c (fmt " of ") ctx exc)
   | Psig_extension (ext, atrs) ->
       hvbox 0
         ( fmt_extension c ctx "%%" ext
@@ -2244,8 +2254,9 @@ and fmt_with_constraint c ctx = function
       $ fmt_type_declaration c ctx ~fmt_name:(fmt_longident txt) td
   | Pwith_module ({txt= m1}, {txt= m2}) ->
       fmt " module " $ fmt_longident m1 $ fmt " = " $ fmt_longident m2
-  | Pwith_typesubst (_, td) ->
-      fmt " type " $ fmt_type_declaration c ~eq:":=" ctx td
+  | Pwith_typesubst ({txt}, td) ->
+      fmt " type "
+      $ fmt_type_declaration c ~eq:":=" ctx ~fmt_name:(fmt_longident txt) td
   | Pwith_modsubst ({txt= m1}, {txt= m2}) ->
       fmt " module " $ fmt_longident m1 $ fmt " := " $ fmt_longident m2
 
@@ -2557,7 +2568,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs (fmt "")
   | Pstr_exception extn_constr ->
       hvbox 2
-        (fmt_exception ~pre:(fmt "exception@ ") c ": " ctx extn_constr)
+        (fmt_exception ~pre:(fmt "exception@ ") c (fmt ": ") ctx extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes} ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
@@ -2684,11 +2695,14 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ ( hovbox 4
             ( str keyword
             $ fmt_extension_suffix c ext
-            $ fmt_attributes c ~key:"@" atrs (fmt "")
+            $ fmt_if_k (Option.is_some in_)
+                (fmt_attributes c ~key:"@" atrs (fmt ""))
             $ fmt " " $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
             $ Option.call ~f:fmt_cstr )
         $ fmt "=" )
       $ fmt_body c xbody
+      $ fmt_if_k (Option.is_none in_)
+          (fmt_attributes c ~key:"@@" atrs (fmt ""))
       $ Cmts.fmt_after c.cmts pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )

@@ -706,7 +706,9 @@ end = struct
       | Pexp_apply _ -> Some Apply
       | Pexp_assert _ | Pexp_lazy _ | Pexp_for _
        |Pexp_variant (_, Some _)
-       |Pexp_while _ ->
+       |Pexp_while _ | Pexp_new _
+       |Pexp_extension
+          (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_new _}, _)}]) ->
           Some Apply
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
@@ -766,6 +768,7 @@ end = struct
                 ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [_; _]}) }
       , inner ) -> (
       match inner with
+      | Ppat_construct ({txt= Lident "::"}, _) -> true
       | Ppat_construct _ | Ppat_variant _ -> false
       | _ -> true )
     | ( Pat {ppat_desc= Ppat_construct _}
@@ -784,10 +787,9 @@ end = struct
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
       , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _}) ) ->
         false
-    | _, Ppat_unpack _
+    | Pat _, Ppat_constraint _
+     |_, Ppat_unpack _
      |_, Ppat_constraint ({ppat_desc= Ppat_unpack _}, _)
-     |( Pat {ppat_desc= Ppat_construct _ | Ppat_record _ | Ppat_variant _}
-      , Ppat_constraint _ )
      |( Pat
           { ppat_desc=
               ( Ppat_alias _ | Ppat_array _ | Ppat_constraint _
@@ -806,7 +808,7 @@ end = struct
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
               | Ppat_variant _ ) }
       , Ppat_or _ )
-     |Pat {ppat_desc= Ppat_tuple _}, (Ppat_constraint _ | Ppat_tuple _)
+     |Pat {ppat_desc= Ppat_tuple _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
      |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
      |( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
@@ -945,7 +947,8 @@ end = struct
         when e0 == exp && is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
-      | Pexp_record (_, Some ({pexp_desc= Pexp_apply _} as e0))
+      | Pexp_record
+          (_, Some ({pexp_desc= Pexp_apply _ | Pexp_sequence _} as e0))
         when e0 == exp ->
           true
       | Pexp_sequence
