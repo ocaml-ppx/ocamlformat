@@ -23,3 +23,9 @@ val foo : int
   [@@warning "-32"]
   [@@warning "-99"]
   [@@some long comment]
+
+type t = [`A of int[@default] | `B of (float[@default])]
+
+let f x =
+  let[@something] e = 1 in
+  e[@@inline always]
