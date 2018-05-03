@@ -1470,7 +1470,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
       let {pmod_desc; pmod_attributes} = pmod in
-      let keyword = "let module" in
+      let keyword = fmt "let module" $ fmt_extension_suffix c ext in
       let me, mt =
         match pmod_desc with
         | Pmod_constraint (me, mt) -> (me, Some (sub_mty ~ctx mt))
@@ -1667,7 +1667,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                     ( ( { pexp_desc=
                             ( Pexp_while _ | Pexp_for _ | Pexp_match _
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
-                            | Pexp_sequence _ | Pexp_new _ ) } as e1 )
+                            | Pexp_sequence _ | Pexp_new _
+                            | Pexp_letmodule _ ) } as e1 )
                     , _ ) } as str ) ] ) ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
@@ -2191,7 +2192,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
       | (_, Some {opn; pro= Some _}) :: _ -> opn $ open_hvbox 0
       | _ -> fmt "" )
     $ hvbox 4
-        ( str keyword $ fmt " "
+        ( keyword $ fmt " "
         $ Cmts.fmt c.cmts loc @@ str name
         $ list_pn arg_blks (fun ?prev:_ ({txt}, arg_mtyp) ?next ->
               ( match arg_mtyp with
@@ -2227,7 +2228,8 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes} = pmd in
   let keyword =
-    if first then if rec_flag then "module rec" else "module" else "and"
+    if first then if rec_flag then str "module rec" else str "module"
+    else str "and"
   in
   let xargs, xmty = sugar_functor_type c (sub_mty ~ctx pmd_type) in
   let colon =
@@ -2237,7 +2239,7 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
 
 and fmt_module_type_declaration c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes} = pmtd in
-  fmt_module c "module type" pmtd_name [] None false
+  fmt_module c (fmt "module type") pmtd_name [] None false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
@@ -2712,7 +2714,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
   let {pmb_name; pmb_expr; pmb_attributes} = pmb in
   let keyword =
-    if first then if rec_flag then "module rec" else "module" else "and"
+    if first then if rec_flag then str "module rec" else str "module"
+    else str "and"
   in
   let me, mt =
     match pmb_expr.pmod_desc with
