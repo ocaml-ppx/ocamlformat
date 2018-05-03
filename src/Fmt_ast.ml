@@ -499,8 +499,9 @@ let rec fmt_attribute c pre = function
               $ fmt_if protect_token " " ))
 
 and fmt_extension c ctx key (({txt} as ext), pld) =
-  match pld with
-  | PStr [({pstr_desc= Pstr_value _; _} as si)] ->
+  match (pld, ctx) with
+  | ( PStr [({pstr_desc= Pstr_value _; _} as si)]
+    , (Exp _ | Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
   | _ ->
       let protect_token =

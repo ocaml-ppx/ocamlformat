@@ -312,6 +312,7 @@ end = struct
     | Pat ctx -> (
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
+      | Ppat_extension (_, PTyp t) -> assert (typ == t)
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
