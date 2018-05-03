@@ -702,7 +702,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       hovbox 0
         (wrap_fits_breaks_if parens "(" ")"
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
-           $ fmt "@ as@ " $ str txt ))
+           $ fmt "@ as@ "
+           $ wrap_if (is_symbol_id txt) "( " " )" (str txt) ))
   | Ppat_constant const -> fmt_constant c ~loc:ppat_loc const
   | Ppat_interval (l, u) -> (
       (* we need to reconstruct locations for both side of the interval *)
