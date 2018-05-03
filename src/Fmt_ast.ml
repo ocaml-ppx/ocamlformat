@@ -88,7 +88,8 @@ let sugar_fun c pat xexp =
     | _ -> ([], xexp)
   in
   match pat with
-  | Some {ppat_desc= Ppat_any | Ppat_constraint _} -> ([], xexp)
+  | Some {ppat_desc= Ppat_any | Ppat_constraint _ | Ppat_constant _} ->
+      ([], xexp)
   | Some {ppat_attributes} when not (List.is_empty ppat_attributes) ->
       ([], xexp)
   | _ -> sugar_fun_ xexp
