@@ -33,6 +33,17 @@ type t = {a: < >; b: int}
 
 type t = {b: int; a: < > }
 
-type 'a u = [< `A | `B of < > > `B ] as 'a
+class type c =
+  object
+    inherit [ < a: 'a ; b: 'b > ] a
+    inherit [a, b, c] a
+  end 
 
-type t = [`A of int * < > ]
+class c =
+  object
+    inherit [ < a: 'a ; b: 'b > ] a
+    inherit [a, b, c] a
+  end
+  
+
+type 'a u = [< `A | `B of < > > `B ] as 'a
