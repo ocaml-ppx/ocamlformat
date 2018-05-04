@@ -312,6 +312,7 @@ end = struct
     | Pat ctx -> (
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
+      | Ppat_extension (_, PTyp t) -> assert (typ == t)
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
@@ -387,13 +388,15 @@ end = struct
       match ctx.pexp_desc with
       | Pexp_apply _ | Pexp_array _ | Pexp_assert _ | Pexp_coerce _
        |Pexp_constant _ | Pexp_constraint _ | Pexp_construct _
-       |Pexp_extension _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
-       |Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
+       |Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _ | Pexp_lazy _
+       |Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
        |Pexp_newtype _ | Pexp_object _ | Pexp_open _ | Pexp_override _
        |Pexp_pack _ | Pexp_poly _ | Pexp_record _ | Pexp_send _
        |Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
        |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _ ->
           assert false
+      | Pexp_extension (_, PPat (p, _)) -> assert (p == pat)
+      | Pexp_extension (_, _) -> assert false
       | Pexp_let (_, bindings, _) ->
           assert (List.exists bindings ~f:(fun {pvb_pat} -> pvb_pat == pat))
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
@@ -427,6 +430,7 @@ end = struct
             assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
             assert (e == exp)
+        | Pexp_extension (_, PPat (_, Some e)) -> assert (e == exp)
         | Pexp_constant _ | Pexp_extension _ | Pexp_ident _ | Pexp_new _
          |Pexp_object _ | Pexp_pack _ | Pexp_unreachable ->
             assert false
