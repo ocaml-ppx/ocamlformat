@@ -11,8 +11,6 @@
 
 SHELL=bash
 
-OCAMLDOT=ocamldot
-
 .PHONY: default
 default: exe
 
@@ -46,17 +44,14 @@ reason: setup
 install:
 	jbuilder build -p ocamlformat,ocamlformat_reason,ocamlformat_support
 
-SRCS=$(shell \ls src/{,import/}*.ml{,i})
-
-mod_dep.dot: $(SRCS)
-	ocamldep.opt $(SRCS) | $(OCAMLDOT) -r Ocamlformat -fullgraph > mod_dep.dot
-
 .PHONY: clean cleanbisect
 clean: cleanbisect
 	rm -rf _build jbuild-workspace
 cleanbisect:
 	rm -Rf _coverage
 	find ./ -name 'bisect*.out' -delete
+
+SRCS=$(shell \ls src/{,import/}*.ml{,i})
 
 .PHONY: fmt
 fmt:
