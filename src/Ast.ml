@@ -566,7 +566,7 @@ end = struct
       ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
       when List.mem ~equal:phys_equal t1N typ ->
         Some (InfixOp3, Non)
-    | {ctx= Str {pstr_desc}; ast= Typ _} -> (
+    | {ctx= Str {pstr_desc}; ast= Typ typ} -> (
       match pstr_desc with
       | Pstr_type (_, td1N) ->
           List.find_map td1N ~f:(fun {ptype_kind} ->
@@ -574,8 +574,10 @@ end = struct
               | Ptype_variant cd1N ->
                   List.find_map cd1N ~f:(fun {pcd_args} ->
                       match pcd_args with
-                      | Pcstr_tuple t1N -> (
-                        match t1N with [] -> None | _ -> Some (Apply, Non) )
+                      | Pcstr_tuple t1N ->
+                          if List.mem t1N typ ~equal:phys_equal then
+                            Some (Apply, Non)
+                          else None
                       | Pcstr_record _ -> None )
               | _ -> None )
       | Pstr_value _ | Pstr_recmodule _ | Pstr_class _ | Pstr_class_type _
