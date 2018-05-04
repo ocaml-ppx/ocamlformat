@@ -2113,7 +2113,7 @@ and fmt_signature_item c {ast= si} =
             ( fmt "include module type of"
               $ fmt_or (Option.is_some blk.pro) " " "@ "
             , blk )
-        | _ -> (fmt "include ", fmt_module_type c (sub_mty ~ctx pincl_mod))
+        | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       hvbox 0
         ( fmt_docstring c ~epi:(fmt "@,") doc
