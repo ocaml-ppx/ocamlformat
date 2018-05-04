@@ -1,0 +1,33 @@
+(* -*- tuareg -*- *)
+
+let preprocess =
+  match Jbuild_plugin.V1.context with
+  | "coverage" -> "(preprocess (pps bisect_ppx))"
+  | _ -> ""
+
+;; Jbuild_plugin.V1.send @@ Format.sprintf "
+(rule
+ (targets Version.ml)
+ (deps (universe))
+ (action (run ../tools/gen_version.sh Version.ml))
+ (mode fallback))
+
+(ocamllex (modules Literal_lexer))
+
+(executables
+ (names ocamlformat ocamlformat_reason)
+ (flags (:standard -open Import))
+ %s
+ (libraries cmdliner ocamlformat_support import ocaml-migrate-parsetree unix))
+
+(install
+ (section bin)
+ (files (ocamlformat.exe as ocamlformat))
+ (package ocamlformat))
+
+(install
+ (section bin)
+ (files (ocamlformat_reason.exe as ocamlformat_reason))
+ (package ocamlformat_reason))
+"
+preprocess 

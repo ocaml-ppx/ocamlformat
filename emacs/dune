@@ -1,0 +1,4 @@
+(install
+ (package ocamlformat)  
+ (section share_root)
+ (files (ocamlformat.el as emacs/site-lisp/ocamlformat.el)))

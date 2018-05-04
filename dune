@@ -1,0 +1,16 @@
+(env
+ (dev
+  (flags
+   (-w +a-4-9-40-41-42-44-45-48@50
+    -strict-formats -strict-sequence -principal
+    -short-paths -bin-annot -keep-docs -unboxed-types
+    -g -opaque))
+  (ocamlc_flags ())
+  (ocamlopt_flags ()))
+ (release
+  (flags
+   (-w -a
+    -unboxed-types
+    -noassert))
+  (ocamlc_flags ())
+  (ocamlopt_flags (-O3))))
