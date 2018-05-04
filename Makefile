@@ -22,7 +22,7 @@ setup: jbuild-workspace
 
 .PHONY: exe
 exe: setup
-	jbuilder build src/ocamlformat.exe
+	jbuilder build _build/dbg/src/ocamlformat.exe _build/default/src/ocamlformat.exe
 
 .PHONY: bc
 bc: setup
