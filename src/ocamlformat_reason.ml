@@ -13,26 +13,26 @@
 
 (** Operations on binary serialized Reason implementations. *)
 let reason_impl : _ Translation_unit.t =
-  let parse = Translation_unit.parse Migrate_ast.Parse.implementation in
+  let parse = Migrate_ast.Parse.implementation in
   { input= Reason.input_impl
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; parse
   ; equal= Reason.equal_impl
   ; normalize= Reason.norm_impl
-  ; no_translation= List.is_empty
+  ; no_translation= Fn.const false
   ; printast= Migrate_ast.Printast.implementation }
 
 (** Operations on binary serialized Reason interfaces. *)
 let reason_intf : _ Translation_unit.t =
-  let parse = Translation_unit.parse Migrate_ast.Parse.interface in
+  let parse = Migrate_ast.Parse.interface in
   { input= Reason.input_intf
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; parse
   ; equal= Reason.equal_intf
   ; normalize= Reason.norm_intf
-  ; no_translation= List.is_empty
+  ; no_translation= Fn.const false
   ; printast= Migrate_ast.Printast.interface }
 
 (** Select translation unit type and operations based on kind. *)

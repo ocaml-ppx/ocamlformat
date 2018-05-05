@@ -9,41 +9,28 @@
  *                                                                    *
  **********************************************************************)
 
+type 'a with_comments = {ast: 'a; comments: (string * Location.t) list}
+
 (** Operations on translation units. *)
 type 'a t =
-  { input:
-      input_name:string -> In_channel.t -> 'a * (string * Location.t) list
+  { input: In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
-  ; parse:
-         ?warn:bool
-      -> input_name:string
-      -> In_channel.t
-      -> 'a * (string * Location.t) list
-  ; equal:
-         'a * (string * Location.t) list
-      -> 'a * (string * Location.t) list
-      -> bool
-  ; normalize: 'a * (string * Location.t) list -> 'a
+  ; parse: Lexing.lexbuf -> 'a
+  ; equal: 'a with_comments -> 'a with_comments -> bool
+  ; normalize: 'a with_comments -> 'a
   ; no_translation: 'a -> bool
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)
 type x = XUnit: 'a t -> x
 
-val parse :
-     (Lexing.lexbuf -> 'a)
-  -> ?warn:bool
-  -> input_name:string
-  -> In_channel.t
-  -> 'a * (string * Location.t) list
-(** [parse parse_ast ~warn input_name input_file input_channel] parses the
-    contents of [input_channel] assuming it corresponds to [input_name] for
-    the purposes of error reporting and to the contents of [input_file] for
-    the purposes of comment placement. Actual parsing is done by
-    [parse_ast]. If [warn] is set, then parse-time warnings are fatal,
-    otherwise only enabled. *)
+exception Warning50 of (Location.t * Warnings.t) list
+
+type result = Ok | Invalid_source of exn | Ocamlformat_bug of exn
+
+val parse : (Lexing.lexbuf -> 'a) -> In_channel.t -> 'a with_comments
 
 val parse_print :
      x
@@ -52,7 +39,7 @@ val parse_print :
   -> input_file:string
   -> In_channel.t
   -> string option
-  -> unit
+  -> result
 (** [parse_print xunit conf input_name input_file input_channel output_file]
     parses the contents of [input_channel], using [input_name] for error
     messages, and referring to the contents of [input_file] to improve

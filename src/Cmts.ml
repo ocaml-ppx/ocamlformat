@@ -334,7 +334,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
             Option.value_map next ~default:"no next"
               ~f:(string_between cmt_loc)
           in
-          Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n"
+          Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
             ( if phys_equal tbl t.cmts_before then "before"
             else if phys_equal tbl t.cmts_after then "after"
             else "within" )
@@ -375,7 +375,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
     | None ->
         if Conf.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
-              Format.eprintf "lost: %s@\n" txt )
+              Format.eprintf "lost: %s@\n%!" txt )
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts map_ast ast comments =
@@ -419,12 +419,12 @@ let init map_ast loc_of_ast source conf asts comments_n_docstrings =
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then
     List.iter comments ~f:(fun (txt, loc) ->
-        Format.eprintf "%a %s %s@\n" Location.fmt loc txt
+        Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "") ) ;
   if not (List.is_empty comments) then (
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
-      Format.eprintf "@\n%a@\n@\n" (Fn.flip Loc_tree.dump) loc_tree ;
+      Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = loc_of_ast asts in
     let cmts = CmtSet.of_list comments in
     place t loc_tree locs cmts ) ;
@@ -453,7 +453,7 @@ let relocate t ~src ~before ~after =
                 f src_data dst_data ) ) )
   in
   if Conf.debug then
-    Format.eprintf "relocate %a to %a and %a@\n" Location.fmt src
+    Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
       Location.fmt before Location.fmt after ;
   update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
       List.append src_cmts dst_cmts ) ;
@@ -556,25 +556,23 @@ let fmt t ?pro ?epi ?eol ?adj loc k =
 let fmt_list t ?pro ?epi ?eol locs init =
   List.fold locs ~init ~f:(fun k loc -> fmt t ?pro ?epi ?eol loc @@ k)
 
-(** check if any comments have not been formatted *)
-let final_check t =
-  if not (Hashtbl.is_empty t.cmts_before && Hashtbl.is_empty t.cmts_after)
-  then
-    let f before_after ~key:ast_loc ~data init =
-      List.fold data ~init ~f:(fun z (cmt_txt, cmt_loc) ->
-          let open Sexp in
-          ( before_after
-          , List
-              [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
-              ; List [Atom "cmt_loc"; Location.sexp_of_t cmt_loc]
-              ; List [Atom "cmt_txt"; Atom cmt_txt] ] )
-          :: z )
-    in
-    internal_error "formatting lost comments"
-      (Hashtbl.fold t.cmts_before ~f:(f "before")
-         ~init:
-           (Hashtbl.fold t.cmts_after ~f:(f "after")
-              ~init:(Hashtbl.fold t.cmts_within ~f:(f "within") ~init:[])))
+(** returns comments that have not been formatted *)
+let remaining_comments t =
+  let get t before_after =
+    Hashtbl.to_alist t
+    |> List.concat_map ~f:(fun (ast_loc, cmts) ->
+           List.map cmts ~f:(fun (cmt_txt, cmt_loc) ->
+               ( before_after
+               , let open Sexp in
+                 List
+                   [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
+                   ; List [Atom "cmt_loc"; Location.sexp_of_t cmt_loc]
+                   ; List [Atom "cmt_txt"; Atom cmt_txt] ] ) ) )
+  in
+  List.concat
+    [ get t.cmts_before "before"
+    ; get t.cmts_within "within"
+    ; get t.cmts_after "after" ]
 
 let diff x y =
   let norm z =

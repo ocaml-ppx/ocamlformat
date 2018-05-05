@@ -108,9 +108,8 @@ val fmt_list :
   -> Fmt.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
-val final_check : t -> unit
-(** Check that all comments passed to the initialization function have been
-    formatted. *)
+val remaining_comments : t -> (string * Sexp.t) list
+(** Returns comments that have not been formatted yet. *)
 
 val doc_is_dup : t -> string Asttypes.loc -> bool
 (** [doc_is_dup docstring] holds if [docstring] has been passed to

@@ -183,6 +183,11 @@ let inplace =
   let default = false in
   mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc)
 
+let quiet =
+  let doc = "Quiet" in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["q"; "quiet"] ~doc)
+
 let inputs =
   let docv = "SRC" in
   let doc =
@@ -292,15 +297,6 @@ let no_version_check =
   let default = false in
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc)
 
-let no_warn_error =
-  let doc =
-    "Do no treat warnings detected by the parser as errors. These warnings \
-     almost always indicate an unrecoverable situation, so expect an \
-     unhandled exception."
-  in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["no-warn-error"] ~doc)
-
 let wrap_comments =
   let doc =
     "Wrap comments and docstrings. Comments and docstrings are divided \
@@ -338,7 +334,8 @@ type t =
   ; parens_tuple: [`Always | `Multi_line_only]
   ; if_then_else: [`Compact | `Keyword_first]
   ; break_infix: [`Wrap | `Fit_or_vertical]
-  ; ocp_indent_compat: bool }
+  ; ocp_indent_compat: bool
+  ; quiet: bool }
 
 let update conf name value =
   match name with
@@ -462,7 +459,8 @@ let conf name =
     ; parens_tuple= !parens_tuple
     ; if_then_else= !if_then_else
     ; break_infix= !break_infix
-    ; ocp_indent_compat= !ocp_indent_compat }
+    ; ocp_indent_compat= !ocp_indent_compat
+    ; quiet= !quiet }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
@@ -493,5 +491,3 @@ let action =
     | _ -> impossible "checked by validate"
 
 and debug = !debug
-
-and warn_error = not !no_warn_error

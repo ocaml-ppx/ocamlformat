@@ -159,3 +159,43 @@ let equal_impl ast1 ast2 = Poly.equal (impl ast1) (impl ast2)
 let equal_intf ast1 ast2 = Poly.equal (intf ast1) (intf ast2)
 
 let equal_use_file ast1 ast2 = Poly.equal (use_file ast1) (use_file ast2)
+
+exception Formatting_disabled
+
+let iter =
+  let structure_item _ (si: structure_item) =
+    match si.pstr_desc with
+    | Pstr_attribute ({txt= "ocamlformat.disable"; _}, _) ->
+        raise Formatting_disabled
+    | _ -> ()
+  in
+  let signature_item _ (si: signature_item) =
+    match si.psig_desc with
+    | Psig_attribute ({txt= "ocamlformat.disable"; _}, _) ->
+        raise Formatting_disabled
+    | _ -> ()
+  in
+  {Ast_iterator.default_iterator with structure_item; signature_item}
+
+let disabled_impl impl =
+  match impl with
+  | [] -> true
+  | _ ->
+    try iter.structure iter impl ; false with Formatting_disabled -> true
+
+let disabled_intf intf =
+  match intf with
+  | [] -> true
+  | _ ->
+    try iter.signature iter intf ; false with Formatting_disabled -> true
+
+let disabled_use_file l =
+  match l with
+  | [] -> true
+  | l ->
+    try
+      List.iter l ~f:(function
+        | Ptop_dir _ -> ()
+        | Ptop_def l -> iter.structure iter l ) ;
+      false
+    with Formatting_disabled -> true

@@ -34,3 +34,9 @@ val equal_use_file : toplevel_phrase list -> toplevel_phrase list -> bool
 
 val mapper : Ast_mapper.mapper
 (** Ast_mapper for normalization transformations. *)
+
+val disabled_impl : structure -> bool
+
+val disabled_intf : signature -> bool
+
+val disabled_use_file : toplevel_phrase list -> bool
