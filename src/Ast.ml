@@ -244,13 +244,13 @@ end = struct
 
   let sub_typ ~ctx typ = check parenze_typ {ctx; ast= typ}
 
-  let sub_cty ~ctx typ = {ctx; ast= typ}
+  let sub_cty ~ctx cty = {ctx; ast= cty}
 
   let sub_pat ~ctx pat = check parenze_pat {ctx; ast= pat}
 
   let sub_exp ~ctx exp = check parenze_exp {ctx; ast= exp}
 
-  let sub_cl ~ctx typ = {ctx; ast= typ}
+  let sub_cl ~ctx cl = {ctx; ast= cl}
 
   let sub_mty ~ctx mty = {ctx; ast= mty}
 
@@ -1053,8 +1053,8 @@ end = struct
       | Some (Some true) -> true
       | _ -> false
 
-  (** [parenze_cty {ctx; ast}] holds when type [ast] should be parenthesized
-      in context [ctx]. *)
+  (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
+      parenthesized in context [ctx]. *)
   let parenze_cty ({ctx; ast= cty} as xcty) =
     assert (check_cty xcty ; true) ;
     match xcty with _ ->
@@ -1325,8 +1325,8 @@ end = struct
               else exposed_right_exp Non_apply exp )
     | _ -> false
 
-  (** [parenze_cl {ctx; ast}] holds when type [ast] should be parenthesized
-      in context [ctx]. *)
+  (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
+      parenthesized in context [ctx]. *)
   and parenze_cl ({ctx; ast= cl} as xcl) =
     assert (check_cl xcl ; true) ;
     match xcl with _ ->

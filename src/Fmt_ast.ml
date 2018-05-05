@@ -1933,7 +1933,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
       (Format.asprintf "%t" (Cmts.preserve (fun () -> fmt_expression c xe)))
   in
   let fmt_args_grouped e0 a1N =
-    (* TODO: consider [e0] when groupping *)
+    (* TODO: consider [e0] when grouping *)
     fmt_class_expr c (sub_cl ~ctx e0)
     $ fmt "@ "
     $ list_fl
