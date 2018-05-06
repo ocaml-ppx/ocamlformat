@@ -1072,7 +1072,13 @@ end = struct
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_mty {ctx= _; ast= mty} = has_trailing_attributes_mty mty
+  let parenze_mty {ctx; ast= mty} =
+    has_trailing_attributes_mty mty
+    ||
+    match (ctx, mty.pmty_desc) with
+    | Str {pstr_desc= Pstr_recmodule _}, Pmty_with _ -> true
+    | Sig {psig_desc= Psig_recmodule _}, Pmty_with _ -> true
+    | _ -> false
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
