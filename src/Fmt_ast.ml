@@ -3126,7 +3126,11 @@ and fmt_structure c ?(sep= "") ctx itms =
 and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
   @@
-  let at_top = Poly.(ctx = Top) in
+  let at_top =
+    match ctx with
+    | Top | Str {pstr_desc= Pstr_extension _} -> true
+    | _ -> false
+  in
   let ctx = Str si in
   let fmt_cmts_before =
     Cmts.fmt_before c.cmts ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n")

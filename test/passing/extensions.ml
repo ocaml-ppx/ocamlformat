@@ -23,3 +23,10 @@ let invariant t =
        , xxxxxxxxxxxxxx
        , xxxxxxxxxxx
        , xxxxxxxxxxxxxxxxxxxx ) when a < b]
+
+[%%ext
+;; 11111111111111111111
+
+;; 22222222222222222222
+
+;; 33333333333333333333]
