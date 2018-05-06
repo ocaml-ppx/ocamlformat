@@ -41,7 +41,6 @@ let _ = (1, 2, 3, short)
 
 ;; 1, 2, 3, short
 
-
-let (a, b) : int * int =
-  let (a, b) : int * int = 1,2 in
-  a, b
+let (a, b): int * int =
+  let (a, b) : int * int = (1, 2) in
+  (a, b)

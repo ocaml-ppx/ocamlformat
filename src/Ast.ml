@@ -1104,16 +1104,15 @@ end = struct
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
-    | ( ( Exp {pexp_desc= Pexp_let (_, bindings, _)}
-        | Str {pstr_desc= Pstr_value (_, bindings)} )
-      , Ppat_tuple _ ) ->
-        List.exists bindings ~f:(function
-          | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
-              pvb_pat == pat
-          | _ -> false )
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
       , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _}) ) ->
         false
+    | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
+      , Ppat_constraint ({ppat_desc= Ppat_any | Ppat_tuple _}, _) ) ->
+        false
+    | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
+      , Ppat_constraint _ ) ->
+        true
     | Pat _, Ppat_constraint _
      |_, Ppat_unpack _
      |_, Ppat_constraint ({ppat_desc= Ppat_unpack _}, _)
@@ -1138,8 +1137,6 @@ end = struct
      |Pat {ppat_desc= Ppat_tuple _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
      |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
-     |( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
-      , Ppat_constraint ({ppat_desc= Ppat_var _}, _) )
      |Cl {pcl_desc= Pcl_fun _}, Ppat_constraint _
      |Cl {pcl_desc= Pcl_fun _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _}, Ppat_construct _
@@ -1154,6 +1151,13 @@ end = struct
     | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_variant (_, Some _)) ) ->
         true
+    | ( ( Exp {pexp_desc= Pexp_let (_, bindings, _)}
+        | Str {pstr_desc= Pstr_value (_, bindings)} )
+      , _ ) ->
+        List.exists bindings ~f:(function
+          | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
+              pvb_pat == pat
+          | _ -> false )
     | _ -> false
 
   (** Check if an exp is a prefix op that is not fully applied *)
