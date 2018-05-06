@@ -1104,7 +1104,9 @@ end = struct
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
-    | Exp {pexp_desc= Pexp_let (_, bindings, _)}, Ppat_tuple _ ->
+    | ( ( Exp {pexp_desc= Pexp_let (_, bindings, _)}
+        | Str {pstr_desc= Pstr_value (_, bindings)} )
+      , Ppat_tuple _ ) ->
         List.exists bindings ~f:(function
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
               pvb_pat == pat
