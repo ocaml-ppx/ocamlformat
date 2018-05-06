@@ -2,6 +2,8 @@ let _ = (function[@warning "-4"] None -> true | _ -> false) None
 
 let f (x[@warning ""]) = ()
 
+let v = (fun [@inline] x -> x) 1
+
 external f : (float[@unboxed]) -> int = "blah"  [@@noalloc]
 
 val x : ?x:unit (** not dropped *) -> unit

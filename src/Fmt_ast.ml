@@ -1454,10 +1454,13 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
         $ ( open_hovbox 2
-          $ (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
+          $ ( hovbox 4
+                ( fmt "fun "
+                $ fmt_attributes c ~key:"@" pexp_attributes ~suf:(fmt " ")
+                $ fmt_fun_args c xargs )
+            $ fmt "->" )
           $ fmt_body c xbody )
-        $ fits_breaks_if parens ")" "@ )"
-        $ fmt_atrs )
+        $ fits_breaks_if parens ")" "@ )" )
   | Pexp_function cs ->
       wrap_if parens "(" ")"
         ( hvbox 2
