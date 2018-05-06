@@ -42,9 +42,42 @@ let is_infix e =
   | Pexp_ident {txt= Lident i} -> is_infix_id i
   | _ -> false
 
-let is_symbol_id i = is_prefix_id i || is_infix_id i
+let parens_kind i =
+  let len = String.length i in
+  if len <= 2 then None
+  else
+    let opn, cls = (i.[len - 2], i.[len - 1]) in
+    match (opn, cls) with
+    | '(', ')' | '[', ']' | '{', '}' ->
+        let txt = String.drop_suffix i 2 in
+        Some (txt, opn, cls)
+    | _ -> None
 
-let is_symbol e = is_prefix e || is_infix e
+let index_op_get i =
+  match (i.[0], parens_kind i) with
+  | '.', Some (s, o, c) -> Some (s, o, c)
+  | _ -> None
+
+let index_op_set i =
+  match String.chop_suffix i ~suffix:"<-" with
+  | None -> None
+  | Some i ->
+    match (i.[0], parens_kind i) with
+    | '.', Some (s, o, c) -> Some (s, o, c)
+    | _ -> None
+
+let is_index_op exp =
+  match exp.pexp_desc with
+  | Pexp_ident {txt= Lident i} ->
+      Option.is_some (index_op_get i) || Option.is_some (index_op_set i)
+  | _ -> false
+
+let is_symbol_id i =
+  is_prefix_id i || is_infix_id i
+  || Option.is_some (index_op_get i)
+  || Option.is_some (index_op_set i)
+
+let is_symbol e = is_prefix e || is_infix e || is_index_op e
 
 (** Predicates recognizing classes of expressions. *)
 

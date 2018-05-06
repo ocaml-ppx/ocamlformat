@@ -23,6 +23,10 @@ val is_infix_id : string -> bool
 val is_infix : expression -> bool
 (** Holds of infix symbol expressions. *)
 
+val index_op_get : string -> (string * Char.t * Char.t) option
+
+val index_op_set : string -> (string * Char.t * Char.t) option
+
 val is_symbol_id : string -> bool
 (** Holds of prefix or infix symbols. *)
 
