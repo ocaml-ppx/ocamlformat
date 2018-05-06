@@ -321,8 +321,9 @@ let validate () =
   else if not !inplace && List.length !inputs > 1 then
     `Error (false, "Must specify only one input file without --inplace")
   else `Ok ()
+;;
 
-;; parse info validate
+parse info validate
 
 type t =
   { margin: int

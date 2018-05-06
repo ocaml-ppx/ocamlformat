@@ -39,14 +39,15 @@ let reason_intf : _ Translation_unit.t =
 let xunit_of_kind : _ -> Translation_unit.x = function
   | `Impl -> XUnit reason_impl
   | `Intf -> XUnit reason_intf
+;;
 
-;; match Conf.action with
-   | In_out
-       ( { kind= (`Impl | `Intf) as kind
-         ; name= input_name
-         ; file= input_file
-         ; conf }
-       , output_file ) ->
-       Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-         ~input_file In_channel.stdin output_file
-   | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
+match Conf.action with
+| In_out
+    ( { kind= (`Impl | `Intf) as kind
+      ; name= input_name
+      ; file= input_file
+      ; conf }
+    , output_file ) ->
+    Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+      ~input_file In_channel.stdin output_file
+| Inplace _ -> user_error "Cannot convert Reason code with --inplace" []

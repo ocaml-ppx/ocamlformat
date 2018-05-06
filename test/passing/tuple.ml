@@ -33,10 +33,12 @@ let _ =
   )
 
 let _ = (1, 2, 3, short)
+;;
 
-;; 1
-   , 2
-   , 3
-   , looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+1
+, 2
+, 3
+, looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+;;
 
-;; 1, 2, 3, short
+1, 2, 3, short
