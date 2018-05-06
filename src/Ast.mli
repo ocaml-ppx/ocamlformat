@@ -149,3 +149,7 @@ val parenze_pat : pattern xt -> bool
 val parenze_exp : expression xt -> bool
 (** [parenze_exp xexp] holds when expression-in-context [xexp] should be
     parenthesized. *)
+
+val parenze_mty : module_type xt -> bool
+(** [parenze_mty xmty] holds when module_type-in-context [xmty] should be
+    parenthesized. *)

@@ -79,13 +79,19 @@ let rec is_trivial c exp =
       is_trivial c e1
   | _ -> false
 
-let has_trailing_attributes {pexp_desc; pexp_attributes} =
+let has_trailing_attributes_exp {pexp_desc; pexp_attributes} =
   match pexp_desc with
   | Pexp_function _ | Pexp_match _ | Pexp_try _ -> false
   | _ ->
       List.exists pexp_attributes ~f:(function
         | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
         | _ -> true )
+
+let has_trailing_attributes_mty {pmty_desc; pmty_attributes} =
+  match pmty_desc with _ ->
+    List.exists pmty_attributes ~f:(function
+      | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+      | _ -> true )
 
 (** Ast terms of various forms. *)
 module T = struct
@@ -278,6 +284,8 @@ and Requires_sub_terms : sig
   val prec_ast : T.t -> prec option
 
   val parenze_typ : core_type In_ctx.xt -> bool
+
+  val parenze_mty : module_type In_ctx.xt -> bool
 
   val parenze_cty : class_type In_ctx.xt -> bool
 
@@ -1062,6 +1070,10 @@ end = struct
       | Some (Some true) -> true
       | _ -> false
 
+  (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
+      parenthesized in context [ctx]. *)
+  let parenze_mty {ctx= _; ast= mty} = has_trailing_attributes_mty mty
+
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_pat ({ctx; ast= pat} as xpat) =
@@ -1262,7 +1274,7 @@ end = struct
     assert (check_exp xexp ; true) ;
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
-    || has_trailing_attributes exp
+    || has_trailing_attributes_exp exp
     ||
     match (ctx, exp) with
     | Exp {pexp_desc= Pexp_extension _}, {pexp_desc= Pexp_tuple _} -> false

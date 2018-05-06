@@ -8,9 +8,7 @@ let foo () =
   let module X = (val (get : (module S))) in
   X.x ()
 
-module type S = sig
-  
-end
+module type S = sig end
 
 type t = (module S)
 
