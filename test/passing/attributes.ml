@@ -33,9 +33,7 @@ let f x =
 module type M = S [@test1]
 
 module type M = sig
-  module T (T : sig
-    
-  end) : (S with type t = r) [@test2]
+  module T (T : sig end) : (S with type t = r) [@test2]
 
   module T (S : S [@test]) : S
 

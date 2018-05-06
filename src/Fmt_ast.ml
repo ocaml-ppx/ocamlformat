@@ -2470,12 +2470,13 @@ and fmt_module_type c ({ast= mty} as xmty) =
           Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
   | Pmty_signature s ->
+      let empty = List.is_empty s in
       { opn= open_hvbox 0
-      ; pro= Some (fmt "sig")
-      ; psp= fmt "@;<1000 2>"
+      ; pro= Some (fmt "sig" $ fmt_if empty " ")
+      ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= fmt_signature c ctx s
       ; cls= close_box
-      ; esp= fmt "@;<1000 0>"
+      ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
           Some
             ( fmt "end"
