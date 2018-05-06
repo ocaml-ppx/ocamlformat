@@ -1,4 +1,4 @@
-include functor [@warning "item"] (M : S) -> N [@@warning "structure"]
+include (functor [@warning "item"] (M : S) -> N) [@@warning "structure"]
 
 include struct
   type t
