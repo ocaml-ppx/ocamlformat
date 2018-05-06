@@ -15,3 +15,9 @@ type t = u = private ..
 type t += A
 
 type t += B = A
+
+type 'a foo = A of (int -> 'a)
+
+type 'a foo += A of (int -> 'a)
+
+type 'a foo += A: (int -> 'a) -> int foo

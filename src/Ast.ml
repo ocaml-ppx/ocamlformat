@@ -857,6 +857,20 @@ end = struct
                    | _ -> false )
              | _ -> false ) ->
         Some (InfixOp3, Non)
+    | { ctx= Sig {psig_desc= Psig_typext {ptyext_constructors= l}}
+      ; ast= Typ ({ptyp_desc= Ptyp_arrow _} as typ) }
+      when List.exists l ~f:(function
+             | {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} ->
+                 List.exists t1N ~f:(phys_equal typ)
+             | _ -> false ) ->
+        Some (Apply, Non)
+    | { ctx= Sig {psig_desc= Psig_typext {ptyext_constructors= l}}
+      ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
+      when List.exists l ~f:(function
+             | {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} ->
+                 List.exists t1N ~f:(phys_equal typ)
+             | _ -> false ) ->
+        Some (InfixOp3, Non)
     | { ctx=
           Sig
             { psig_desc=
@@ -887,10 +901,19 @@ end = struct
                           else None
                       | Pcstr_record _ -> None )
               | _ -> None )
+      | Pstr_typext {ptyext_constructors= l} ->
+          List.find_map l ~f:(fun {pext_kind} ->
+              match pext_kind with
+              | Pext_decl (Pcstr_tuple t1N, _) ->
+                  if List.mem t1N typ ~equal:phys_equal then
+                    Some (Apply, Non)
+                  else None
+              | Pext_decl (Pcstr_record _, _) -> None
+              | Pext_rebind _ -> None )
       | Pstr_value _ | Pstr_recmodule _ | Pstr_class _ | Pstr_class_type _
-       |Pstr_eval _ | Pstr_primitive _ | Pstr_typext _ | Pstr_exception _
-       |Pstr_module _ | Pstr_modtype _ | Pstr_open _ | Pstr_include _
-       |Pstr_attribute _ | Pstr_extension _ ->
+       |Pstr_eval _ | Pstr_primitive _ | Pstr_exception _ | Pstr_module _
+       |Pstr_modtype _ | Pstr_open _ | Pstr_include _ | Pstr_attribute _
+       |Pstr_extension _ ->
           None )
     | {ctx= Typ {ptyp_desc}; ast= Typ typ} -> (
       match ptyp_desc with
