@@ -1,3 +1,3 @@
-;; []
+[]
 
 (* this list is empty *)

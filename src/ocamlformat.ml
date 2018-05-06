@@ -39,24 +39,27 @@ let intf : _ Translation_unit.t =
 let xunit_of_kind : _ -> Translation_unit.x = function
   | `Impl -> XUnit impl
   | `Intf -> XUnit intf
+;;
 
-;; Caml.at_exit (Format.pp_print_flush Format.err_formatter)
+Caml.at_exit (Format.pp_print_flush Format.err_formatter)
+;;
 
-;; Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
+Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
+;;
 
-;; match Conf.action with
-   | Inplace inputs ->
-       List.iter inputs ~f:
-         (fun {Conf.kind; name= input_name; file= input_file; conf} ->
-           In_channel.with_file input_file ~f:(fun ic ->
-               Translation_unit.parse_print (xunit_of_kind kind) conf
-                 ~input_name ~input_file ic (Some input_file) ) )
-   | In_out
-       ( { kind= (`Impl | `Intf) as kind
-         ; file= input_file
-         ; name= input_name
-         ; conf }
-       , output_file ) ->
-       In_channel.with_file input_file ~f:(fun ic ->
-           Translation_unit.parse_print (xunit_of_kind kind) conf
-             ~input_name ~input_file ic output_file )
+match Conf.action with
+| Inplace inputs ->
+    List.iter inputs ~f:
+      (fun {Conf.kind; name= input_name; file= input_file; conf} ->
+        In_channel.with_file input_file ~f:(fun ic ->
+            Translation_unit.parse_print (xunit_of_kind kind) conf
+              ~input_name ~input_file ic (Some input_file) ) )
+| In_out
+    ( { kind= (`Impl | `Intf) as kind
+      ; file= input_file
+      ; name= input_name
+      ; conf }
+    , output_file ) ->
+    In_channel.with_file input_file ~f:(fun ic ->
+        Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+          ~input_file ic output_file )

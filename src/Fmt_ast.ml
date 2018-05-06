@@ -537,7 +537,7 @@ and fmt_extension c ctx key (({txt} as ext), pld) =
   match (pld, ctx) with
   | ( PStr [({pstr_desc= Pstr_value _; _} as si)]
     , (Exp _ | Pld _ | Str _ | Top) ) ->
-      fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
+      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | _ ->
       let protect_token =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
@@ -3001,7 +3001,7 @@ and fmt_module_expr c {ast= m} =
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt "struct" )
       ; psp= fmt "@;<1000 2>"
-      ; bdy= fmt_structure c ~sep:";; " ctx sis
+      ; bdy= fmt_structure c ctx sis
       ; cls= close_box
       ; esp= fmt "@ "
       ; epi=
@@ -3037,9 +3037,17 @@ and fmt_module_expr c {ast= m} =
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
 
-and fmt_structure c ?(sep= "") ctx itms =
+and fmt_structure c ctx itms =
+  let itms =
+    List.fold_map (List.rev itms) ~init:false ~f:(fun need_semi item ->
+        let next_need_semi =
+          match item.pstr_desc with Pstr_eval _ -> true | _ -> false
+        in
+        (next_need_semi, (item, need_semi)) )
+    |> snd |> List.rev
+  in
   let grps =
-    List.group itms ~break:(fun itmI itmJ ->
+    List.group itms ~break:(fun (itmI, _) (itmJ, _) ->
         let has_doc itm =
           match itm.pstr_desc with
           | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
@@ -3084,19 +3092,18 @@ and fmt_structure c ?(sep= "") ctx itms =
         has_doc itmJ || not (is_simple itmI) || not (is_simple itmJ) )
   in
   let fmt_grp ~last:last_grp itms =
-    list_fl itms (fun ~first ~last itm ->
+    list_fl itms (fun ~first ~last (itm, semisemi) ->
         fmt_if (not first) "@\n"
-        $ fmt_structure_item c ~sep ~last:(last && last_grp)
-            (sub_str ~ctx itm) )
+        $ fmt_structure_item c ~last:(last && last_grp) (sub_str ~ctx itm)
+        $ fmt_if semisemi "@\n;;" )
   in
   hvbox 0
     (list_fl grps (fun ~first ~last grp ->
          fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
 
-and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
+and fmt_structure_item c ~last:last_item ?ext {ast= si} =
   protect (Str si)
   @@
-  let at_top = Poly.(ctx = Top) in
   let ctx = Str si in
   let fmt_cmts_before =
     Cmts.fmt_before c.cmts ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n")
@@ -3114,8 +3121,8 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
-      str sep $ fmt_docstring c doc
-      $ cbox 0 (fmt_if at_top ";; " $ fmt_expression c (sub_exp ~ctx exp))
+      fmt_docstring c doc
+      $ cbox 0 (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
       hvbox 2
