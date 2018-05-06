@@ -3019,6 +3019,7 @@ and fmt_module_expr c {ast= m} =
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_structure sis ->
+      let empty = List.is_empty sis in
       let doc, atrs = doc_atrs pmod_attributes in
       { opn= open_hvbox 0
       ; pro=
@@ -3026,7 +3027,7 @@ and fmt_module_expr c {ast= m} =
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt "struct" )
-      ; psp= fmt "@;<1000 2>"
+      ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= fmt_structure c ~sep:";; " ctx sis
       ; cls= close_box
       ; esp= fmt "@ "

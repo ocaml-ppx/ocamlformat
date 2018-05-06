@@ -1,6 +1,4 @@
-module Generative () = struct
-  
-end
+module Generative () = struct end
 
 module M = Generative ()
 
