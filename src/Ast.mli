@@ -157,3 +157,7 @@ val parenze_exp : expression xt -> bool
 val parenze_mty : module_type xt -> bool
 (** [parenze_mty xmty] holds when module_type-in-context [xmty] should be
     parenthesized. *)
+
+val parenze_mod : module_expr xt -> bool
+(** [parenze_mod xmod] holds when module_expr-in-context [xmod] should be
+    parenthesized. *)

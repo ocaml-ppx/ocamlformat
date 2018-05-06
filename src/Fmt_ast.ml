@@ -2839,9 +2839,10 @@ and maybe_generative c ~ctx m =
   | {pmod_desc= Pmod_structure []; _} -> empty
   | _ -> fmt_module_expr c (sub_mod ~ctx m)
 
-and fmt_module_expr c {ast= m} =
+and fmt_module_expr c ({ast= m} as xmod) =
   let ctx = Mod m in
   let {pmod_desc; pmod_loc; pmod_attributes} = m in
+  let parens = parenze_mod xmod in
   match pmod_desc with
   | Pmod_apply (({pmod_desc= Pmod_ident _} as me_f), me_a) ->
       let doc, atrs = doc_atrs pmod_attributes in
@@ -2915,7 +2916,8 @@ and fmt_module_expr c {ast= m} =
           hvbox 2
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc
-            $ Option.call ~f:pro_f $ psp_f $ bdy_f $ esp_f
+            $ wrap_if parens "(" ")"
+                (Option.call ~f:pro_f $ psp_f $ bdy_f $ esp_f)
             $ Option.call ~f:epi_f $ fmt "@ " $ fmt "("
             $ Option.call ~f:pro_a $ psp_a $ bdy_a $ esp_a
             $ Option.call ~f:epi_a $ fmt ")" )
@@ -2992,17 +2994,18 @@ and fmt_module_expr c {ast= m} =
           Cmts.fmt c.cmts pmod_loc
           @@ ( fmt_docstring c ~epi:(fmt "@,") doc
              $ hvbox 0
-                 ( fmt "functor"
-                 $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
-                 $ fmt "@ "
-                 $ wrap "(" ")"
-                     ( str txt
-                     $ opt mt (fun _ ->
-                           fmt "@ :" $ Option.call ~f:pro_t $ psp_t
-                           $ fmt "@;<1 2>" $ bdy_t $ esp_t
-                           $ Option.call ~f:epi_t ) )
-                 $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e
-                 $ esp_e $ Option.call ~f:epi_e ) )
+                 (wrap_if parens "(" ")"
+                    ( fmt "functor"
+                    $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
+                    $ fmt "@ "
+                    $ wrap "(" ")"
+                        ( str txt
+                        $ opt mt (fun _ ->
+                              fmt "@ :" $ Option.call ~f:pro_t $ psp_t
+                              $ fmt "@;<1 2>" $ bdy_t $ esp_t
+                              $ Option.call ~f:epi_t ) )
+                    $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e
+                    $ esp_e $ Option.call ~f:epi_e )) )
       ; cls= cls_t $ cls_e
       ; esp= fmt ""
       ; epi= None }

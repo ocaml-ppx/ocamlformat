@@ -126,6 +126,12 @@ let has_trailing_attributes_mty {pmty_desc; pmty_attributes} =
       | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
       | _ -> true )
 
+let has_trailing_attributes_mod {pmod_desc; pmod_attributes} =
+  match pmod_desc with _ ->
+    List.exists pmod_attributes ~f:(function
+      | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+      | _ -> true )
+
 (** Ast terms of various forms. *)
 module T = struct
   type t =
@@ -319,6 +325,8 @@ and Requires_sub_terms : sig
   val parenze_typ : core_type In_ctx.xt -> bool
 
   val parenze_mty : module_type In_ctx.xt -> bool
+
+  val parenze_mod : module_expr In_ctx.xt -> bool
 
   val parenze_cty : class_type In_ctx.xt -> bool
 
@@ -1134,6 +1142,15 @@ end = struct
     match (ctx, mty.pmty_desc) with
     | Str {pstr_desc= Pstr_recmodule _}, Pmty_with _ -> true
     | Sig {psig_desc= Psig_recmodule _}, Pmty_with _ -> true
+    | _ -> false
+
+  (** [parenze_mod {ctx; ast}] holds when module expr [ast] should be
+      parenthesized in context [ctx]. *)
+  let parenze_mod {ctx; ast= m} =
+    has_trailing_attributes_mod m
+    ||
+    match (ctx, m.pmod_desc) with
+    | Mod {pmod_desc= Pmod_apply _}, Pmod_functor _ -> true
     | _ -> false
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
