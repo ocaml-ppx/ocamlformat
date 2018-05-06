@@ -38,7 +38,7 @@ opt: setup
 
 .PHONY: reason
 reason: setup
-	jbuilder build src/ocamlformat_reason.exe
+	jbuilder build _build/default/src/ocamlformat_reason.exe
 
 .PHONY: install
 install:
@@ -64,11 +64,9 @@ test: exe reason
 
 .PHONY: regtests fixpoint
 fixpoint: exe reason
-#       check fix-point
 	_build/default/src/ocamlformat.exe -n 1 -i $(SRCS)
 
-regtests: exe reason dbg
-#       check regtests
+regtests: exe
 	$(MAKE) -C test regtests
 
 .PHONY: coverage
