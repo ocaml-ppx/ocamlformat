@@ -11,18 +11,6 @@
 (*                                                                    *)
 (**********************************************************************)
 
-#require "unix"
-let bisect_exists =
-  try
-    let ic =
-      Unix.open_process_in
-        "ocamlfind query -a-format -predicates byte,ppx_driver bisect_ppx"
-    in
-    let path = input_line ic in
-    close_in ic;
-    Sys.file_exists path
-  with _ -> false
-
 let ocamlc_flags =
   match Jbuild_plugin.V1.context with
   | "dbg" | "coverage" -> "-g -opaque"
@@ -34,8 +22,8 @@ let ocamlopt_flags =
   | _ -> ocamlc_flags ^ " -O3"
 
 let preprocess =
-  match Jbuild_plugin.V1.context, bisect_exists with
-  | "coverage",true -> "(preprocess (pps (bisect_ppx)))"
+  match Jbuild_plugin.V1.context with
+  | "coverage" -> "(preprocess (pps (bisect_ppx)))"
   | _ -> ""
 
 ;; Jbuild_plugin.V1.send @@ Format.sprintf "
