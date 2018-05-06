@@ -16,8 +16,6 @@ OCamlFormat requires source code that meets the following conditions:
 
 - Is either a module implementation (`.ml`) or interface (`.mli`) but not a sequence of toplevel phrases (that is, including toplevel directives such as `#use`). jbuild files in ocaml syntax also work.
 
-- Does not use the object language, which is not a fundamental issue, but is simply not currently implemented.
-
 Under those conditions, ocamlformat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, ocamlformat enforces the following checks:
 
 - The parse trees obtained by parsing the original and formatted files are equal up to some minor normalization (see [`Normalize`](./src/Normalize.ml)`.equal_impl` or `equal_intf`).

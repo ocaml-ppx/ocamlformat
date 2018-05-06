@@ -36,8 +36,10 @@ val is_sugared_list : expression -> bool
 type t =
   | Pld of payload
   | Typ of core_type
+  | Cty of class_type
   | Pat of pattern
   | Exp of expression
+  | Cl of class_expr
   | Mty of module_type
   | Mod of module_expr
   | Sig of signature_item
@@ -85,11 +87,17 @@ type 'a xt = private {ctx: t; ast: 'a}
 val sub_typ : ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)
 
+val sub_cty : ctx:t -> class_type -> class_type xt
+(** Construct a class_type-in-context. *)
+
 val sub_pat : ctx:t -> pattern -> pattern xt
 (** Construct a pattern-in-context. *)
 
 val sub_exp : ctx:t -> expression -> expression xt
 (** Construct a expression-in-context. *)
+
+val sub_cl : ctx:t -> class_expr -> class_expr xt
+(** Construct a class_expr-in-context. *)
 
 val sub_mty : ctx:t -> module_type -> module_type xt
 (** Construct a module_type-in-context. *)
@@ -115,8 +123,8 @@ val exposed_right_typ : core_type -> bool
 type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
 val exposed_right_exp : cls -> expression -> bool
-(** [exposed cls exp] holds if there is a right-most subexpression of [exp]
-    which is of class [cls] and is not parenthesized. *)
+(** [exposed_right_exp cls exp] holds if there is a right-most subexpression
+    of [exp] which is of class [cls] and is not parenthesized. *)
 
 val prec_ast : t -> prec option
 (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -124,6 +132,14 @@ val prec_ast : t -> prec option
 
 val parenze_typ : core_type xt -> bool
 (** [parenze_typ xtyp] holds when core_type-in-context [xtyp] should be
+    parenthesized. *)
+
+val parenze_cty : class_type xt -> bool
+(** [parenze_cty xcty] holds when class_type-in-context [xcty] should be
+    parenthesized. *)
+
+val parenze_cl : class_expr xt -> bool
+(** [parenze_cl xcl] holds when class-in-context [xcl] should be
     parenthesized. *)
 
 val parenze_pat : pattern xt -> bool

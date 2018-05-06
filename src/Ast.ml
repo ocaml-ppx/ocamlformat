@@ -92,8 +92,10 @@ module T = struct
   type t =
     | Pld of payload
     | Typ of core_type
+    | Cty of class_type
     | Pat of pattern
     | Exp of expression
+    | Cl of class_expr
     | Mty of module_type
     | Mod of module_expr
     | Sig of signature_item
@@ -107,6 +109,19 @@ module T = struct
     | Exp e ->
         Format.fprintf fs "Exp:@\n%a@\n@\n%a" Pprintast.expression e
           (Printast.expression 0) e
+    | Cl cl ->
+        let str =
+          let open Ast_helper in
+          Str.class_
+            [ { pci_virt= Concrete
+              ; pci_params= []
+              ; pci_name= {txt= ""; loc= Location.none}
+              ; pci_expr= cl
+              ; pci_loc= Location.none
+              ; pci_attributes= [] } ]
+        in
+        Format.fprintf fs "Cl:@\n%a@\n%a" Pprintast.structure [str]
+          Printast.implementation [str]
     | Mty mt ->
         let si =
           let open Ast_helper in
@@ -114,7 +129,30 @@ module T = struct
         in
         Format.fprintf fs "Mty:@\n%a@\n%a" Pprintast.signature [si]
           Printast.interface [si]
-    | Mod _ -> Format.pp_print_string fs "Mod"
+    | Cty cty ->
+        let si =
+          let open Ast_helper in
+          Sig.class_type
+            [ { pci_virt= Concrete
+              ; pci_params= []
+              ; pci_name= {txt= ""; loc= Location.none}
+              ; pci_expr= cty
+              ; pci_loc= Location.none
+              ; pci_attributes= [] } ]
+        in
+        Format.fprintf fs "Cty:@\n%a@\n%a" Pprintast.signature [si]
+          Printast.interface [si]
+    | Mod m ->
+        let m =
+          let open Ast_helper in
+          Str.module_
+            { pmb_name= {txt= ""; loc= Location.none}
+            ; pmb_expr= m
+            ; pmb_attributes= []
+            ; pmb_loc= Location.none }
+        in
+        Format.fprintf fs "Mod:@\n%a@\n%a" Pprintast.structure [m]
+          Printast.implementation [m]
     | Sig s ->
         Format.fprintf fs "Sig:@\n%a@\n%a" Pprintast.signature [s]
           Printast.interface [s]
@@ -182,9 +220,13 @@ module rec In_ctx : sig
 
   val sub_typ : ctx:T.t -> core_type -> core_type xt
 
+  val sub_cty : ctx:T.t -> class_type -> class_type xt
+
   val sub_pat : ctx:T.t -> pattern -> pattern xt
 
   val sub_exp : ctx:T.t -> expression -> expression xt
+
+  val sub_cl : ctx:T.t -> class_expr -> class_expr xt
 
   val sub_mty : ctx:T.t -> module_type -> module_type xt
 
@@ -202,9 +244,13 @@ end = struct
 
   let sub_typ ~ctx typ = check parenze_typ {ctx; ast= typ}
 
+  let sub_cty ~ctx cty = {ctx; ast= cty}
+
   let sub_pat ~ctx pat = check parenze_pat {ctx; ast= pat}
 
   let sub_exp ~ctx exp = check parenze_exp {ctx; ast= exp}
+
+  let sub_cl ~ctx cl = {ctx; ast= cl}
 
   let sub_mty ~ctx mty = {ctx; ast= mty}
 
@@ -232,6 +278,10 @@ and Requires_sub_terms : sig
   val prec_ast : T.t -> prec option
 
   val parenze_typ : core_type In_ctx.xt -> bool
+
+  val parenze_cty : class_type In_ctx.xt -> bool
+
+  val parenze_cl : class_expr In_ctx.xt -> bool
 
   val parenze_pat : pattern In_ctx.xt -> bool
 
@@ -287,6 +337,32 @@ end = struct
          | _ -> false )
       || Option.exists ptype_manifest ~f
     in
+    let check_pcstr_fields pcstr_fields =
+      List.exists pcstr_fields ~f:(fun f ->
+          match f.pcf_desc with
+          | Pcf_inherit (_, _, _) -> false
+          | Pcf_val (_, _, Cfk_virtual t) -> typ == t
+          | Pcf_val
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)})) ->
+              typ == t
+          | Pcf_val (_, _, Cfk_concrete _) -> false
+          | Pcf_method (_, _, Cfk_virtual t) -> typ == t
+          | Pcf_method
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)})) ->
+              typ == t
+          | Pcf_method
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, Some t)})) ->
+              let rec loop = function
+                | {pexp_desc= Pexp_newtype (_, e)} -> loop e
+                | {pexp_desc= Pexp_constraint (_, t)} -> t == typ
+                | _ -> false
+              in
+              typ == t || loop e
+          | Pcf_method (_, _, Cfk_concrete _) -> false
+          | Pcf_constraint (t1, t2) -> t1 == typ || t2 == typ
+          | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false
+      )
+    in
     match ctx with
     | Pld (PTyp t1) -> assert (typ == t1)
     | Pld _ -> assert false
@@ -308,7 +384,24 @@ end = struct
             List.exists fields ~f:(function
               | Otag (_, _, t1) -> typ == t1
               | Oinherit t1 -> typ == t1 ) )
-      | Ptyp_class _ -> internal_error "objects not implemented" [] )
+      | Ptyp_class (_, l) -> assert (List.exists l ~f) )
+    | Cty {pcty_desc} ->
+        assert (
+          match pcty_desc with
+          | Pcty_constr (_, l) -> List.exists l ~f
+          | Pcty_arrow (_, t, _) -> t == typ
+          | Pcty_open _ -> false
+          | Pcty_extension _ -> false
+          | Pcty_signature {pcsig_self; pcsig_fields} ->
+              pcsig_self == typ
+              || List.exists pcsig_fields ~f:(fun {pctf_desc} ->
+                     match pctf_desc with
+                     | Pctf_constraint (t1, t2) -> t1 == typ || t2 == typ
+                     | Pctf_val (_, _, _, t) -> t == typ
+                     | Pctf_method (_, _, _, t) -> t == typ
+                     | Pctf_inherit _ -> false
+                     | Pctf_attribute _ -> false
+                     | Pctf_extension _ -> false ) )
     | Pat ctx -> (
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
@@ -325,7 +418,21 @@ end = struct
           assert (typ == t1)
       | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
       | Pexp_letexception (ext, _) -> assert (check_ext ext)
+      | Pexp_object {pcstr_fields} ->
+          assert (check_pcstr_fields pcstr_fields)
       | _ -> assert false )
+    | Cl {pcl_desc} ->
+        assert (
+          match pcl_desc with
+          | Pcl_constr (_, l) -> List.exists l ~f
+          | Pcl_constraint _ -> false
+          | Pcl_let _ -> false
+          | Pcl_apply _ -> false
+          | Pcl_fun _ -> false
+          | Pcl_open _ -> false
+          | Pcl_extension _ -> false
+          | Pcl_structure {pcstr_fields} -> check_pcstr_fields pcstr_fields
+        )
     | Mty ctx -> (
       match ctx.pmty_desc with
       | Pmty_with (_, c1N) ->
@@ -354,6 +461,99 @@ end = struct
 
   let check_typ ({ctx; ast= typ} as xtyp) =
     try check_typ xtyp with exc -> fail ctx (Typ typ) exc
+
+  let check_cty {ctx; ast= cty} =
+    match (ctx : t) with
+    | Exp _ -> assert false
+    | Pld _ -> assert false
+    | Str ctx -> (
+      match ctx.pstr_desc with
+      | Pstr_class_type l ->
+          assert (List.exists l ~f:(fun {pci_expr} -> cty == pci_expr))
+      | _ -> assert false )
+    | Sig ctx -> (
+      match ctx.psig_desc with
+      | Psig_class_type l ->
+          assert (List.exists l ~f:(fun {pci_expr} -> cty == pci_expr))
+      | Psig_class l ->
+          assert (List.exists l ~f:(fun {pci_expr} -> cty == pci_expr))
+      | _ -> assert false )
+    | Cty {pcty_desc} -> (
+      match pcty_desc with
+      | Pcty_arrow (_, _, t) -> assert (t == cty)
+      | Pcty_signature {pcsig_fields} ->
+          assert (
+            List.exists pcsig_fields ~f:(fun {pctf_desc} ->
+                match pctf_desc with
+                | Pctf_inherit t -> t == cty
+                | Pctf_val _ -> false
+                | Pctf_method _ -> false
+                | Pctf_constraint _ -> false
+                | Pctf_attribute _ -> false
+                | Pctf_extension _ -> false ) )
+      | Pcty_open (_, _, t) -> assert (t == cty)
+      | Pcty_constr _ -> assert false
+      | Pcty_extension _ -> assert false )
+    | Top -> assert false
+    | Typ _ -> assert false
+    | Pat _ -> assert false
+    | Cl ctx ->
+        assert (
+          match ctx.pcl_desc with
+          | Pcl_fun (_, _, _, _) -> false
+          | Pcl_constr _ -> false
+          | Pcl_structure _ -> false
+          | Pcl_apply _ -> false
+          | Pcl_let (_, _, _) -> false
+          | Pcl_constraint (_, x) -> x == cty
+          | Pcl_extension _ -> false
+          | Pcl_open _ -> false )
+    | Mty _ -> assert false
+    | Mod _ -> assert false
+
+  let check_cty ({ctx; ast= cty} as xcty) =
+    try check_cty xcty with exc -> fail ctx (Cty cty) exc
+
+  let check_cl {ctx; ast= cl} =
+    let check_pcstr_fields pcstr_fields =
+      List.exists pcstr_fields ~f:(fun f ->
+          match f.pcf_desc with
+          | Pcf_inherit (_, x, _) -> x == cl
+          | _ -> assert false )
+    in
+    match (ctx : t) with
+    | Exp e -> (
+      match e.pexp_desc with
+      | Pexp_object {pcstr_fields} ->
+          assert (check_pcstr_fields pcstr_fields)
+      | _ -> assert false )
+    | Pld _ -> assert false
+    | Str ctx -> (
+      match ctx.pstr_desc with
+      | Pstr_class l ->
+          assert (List.exists l ~f:(fun {pci_expr} -> cl == pci_expr))
+      | _ -> assert false )
+    | Sig _ -> assert false
+    | Cty _ -> assert false
+    | Top -> assert false
+    | Typ _ -> assert false
+    | Pat _ -> assert false
+    | Cl {pcl_desc} ->
+        assert (
+          match pcl_desc with
+          | Pcl_structure {pcstr_fields} -> check_pcstr_fields pcstr_fields
+          | Pcl_fun (_, _, _, x) -> x == cl
+          | Pcl_apply (x, _) -> x == cl
+          | Pcl_let (_, _, x) -> x == cl
+          | Pcl_constraint (x, _) -> x == cl
+          | Pcl_open (_, _, x) -> x == cl
+          | Pcl_constr _ -> false
+          | Pcl_extension _ -> false )
+    | Mty _ -> assert false
+    | Mod _ -> assert false
+
+  let check_cl ({ctx; ast= cl} as xcl) =
+    try check_cl xcl with exc -> fail ctx (Cl cl) exc
 
   let check_pat {ctx; ast= pat} =
     match ctx with
@@ -390,13 +590,14 @@ end = struct
        |Pexp_constant _ | Pexp_constraint _ | Pexp_construct _
        |Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _ | Pexp_lazy _
        |Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
-       |Pexp_newtype _ | Pexp_object _ | Pexp_open _ | Pexp_override _
-       |Pexp_pack _ | Pexp_poly _ | Pexp_record _ | Pexp_send _
-       |Pexp_sequence _ | Pexp_setfield _ | Pexp_setinstvar _
-       |Pexp_tuple _ | Pexp_unreachable | Pexp_variant _ | Pexp_while _ ->
+       |Pexp_newtype _ | Pexp_open _ | Pexp_override _ | Pexp_pack _
+       |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
+       |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
+       |Pexp_unreachable | Pexp_variant _ | Pexp_while _ ->
           assert false
       | Pexp_extension (_, PPat (p, _)) -> assert (p == pat)
       | Pexp_extension (_, _) -> assert false
+      | Pexp_object {pcstr_self} -> assert (pcstr_self == pat)
       | Pexp_let (_, bindings, _) ->
           assert (List.exists bindings ~f:(fun {pvb_pat} -> pvb_pat == pat))
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
@@ -406,6 +607,19 @@ end = struct
               | _ -> false ) )
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
+    | Cl ctx ->
+        assert (
+          match ctx.pcl_desc with
+          | Pcl_fun (_, _, p, _) -> p == pat
+          | Pcl_constr _ -> false
+          | Pcl_structure _ -> false
+          | Pcl_apply _ -> false
+          | Pcl_let (_, l, _) ->
+              List.exists l ~f:(fun {pvb_pat} -> pvb_pat == pat)
+          | Pcl_constraint _ -> false
+          | Pcl_extension _ -> false
+          | Pcl_open _ -> false )
+    | Cty _ -> assert false
     | Mty _ | Mod _ | Sig _ -> assert false
     | Str str -> (
       match str.pstr_desc with
@@ -418,6 +632,40 @@ end = struct
     try check_pat xpat with exc -> fail ctx (Pat pat) exc
 
   let check_exp {ctx; ast= exp} =
+    let check_pcstr_fields pcstr_fields =
+      List.exists pcstr_fields ~f:(fun {pcf_desc} ->
+          match pcf_desc with
+          | Pcf_initializer e -> e == exp
+          | Pcf_val (_, _, Cfk_concrete (_, e)) ->
+              let rec loop x =
+                x == exp
+                ||
+                match x with
+                | {pexp_desc= Pexp_constraint (e, _)} -> loop e
+                | _ -> false
+              in
+              loop e
+          | Pcf_val (_, _, Cfk_virtual _) -> false
+          | Pcf_method
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, _)}))
+           |Pcf_method (_, _, Cfk_concrete (_, e)) ->
+              let rec loop x =
+                x == exp
+                ||
+                match x with
+                | {pexp_desc= Pexp_newtype (_, e)} -> loop e
+                | {pexp_desc= Pexp_constraint (e, _)} -> loop e
+                | _ -> false
+              in
+              loop e
+          | Pcf_method (_, _, Cfk_virtual _) -> false
+          | Pcf_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
+              e == exp
+          | Pcf_extension (_, _) -> false
+          | Pcf_inherit _ -> false
+          | Pcf_constraint _ -> false
+          | Pcf_attribute _ -> false )
+    in
     match ctx with
     | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
     | Pld _ -> assert false
@@ -432,8 +680,10 @@ end = struct
             assert (e == exp)
         | Pexp_extension (_, PPat (_, Some e)) -> assert (e == exp)
         | Pexp_constant _ | Pexp_extension _ | Pexp_ident _ | Pexp_new _
-         |Pexp_object _ | Pexp_pack _ | Pexp_unreachable ->
+         |Pexp_pack _ | Pexp_unreachable ->
             assert false
+        | Pexp_object {pcstr_fields} ->
+            assert (check_pcstr_fields pcstr_fields)
         | Pexp_let (_, bindings, e) ->
             assert (
               List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
@@ -489,6 +739,22 @@ end = struct
        |Pstr_attribute _ | Pstr_extension _ ->
           assert false )
     | Mod {pmod_desc= Pmod_unpack e1} -> assert (e1 == exp)
+    | Cl ctx ->
+        let rec loop ctx =
+          match ctx.pcl_desc with
+          | Pcl_fun (_, eopt, _, e) ->
+              Option.exists eopt ~f:(fun e -> e == exp) || loop e
+          | Pcl_constr _ -> false
+          | Pcl_structure {pcstr_fields} -> check_pcstr_fields pcstr_fields
+          | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
+          | Pcl_let (_, l, _) ->
+              List.exists l ~f:(fun {pvb_expr} -> pvb_expr == exp)
+          | Pcl_constraint _ -> false
+          | Pcl_extension _ -> false
+          | Pcl_open _ -> false
+        in
+        assert (loop ctx)
+    | Cty _ -> assert false
     | Mod _ | Top | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
 
   let check_exp ({ctx; ast= exp} as xexp) =
@@ -596,6 +862,18 @@ end = struct
       | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
        |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _ ->
           None )
+    | {ctx= Cty {pcty_desc}; ast= Typ typ} -> (
+      match pcty_desc with
+      | Pcty_constr (_, _ :: _ :: _) -> Some (Comma, Non)
+      | Pcty_arrow (_, t1, _) ->
+          Some (MinusGreater, if t1 == typ then Left else Right)
+      | _ -> None )
+    | {ctx= Cty {pcty_desc}; ast= Cty typ} -> (
+      match pcty_desc with
+      | Pcty_arrow (_, _, t2) ->
+          Some (MinusGreater, if t2 == typ then Right else Left)
+      | _ -> None )
+    | {ast= Cty _} -> None
     | {ast= Typ _} -> None
     | {ctx= Exp {pexp_desc}; ast= Exp exp} -> (
       match pexp_desc with
@@ -653,9 +931,18 @@ end = struct
       | Pexp_field _ -> Some (Dot, Left)
       | Pexp_send _ -> Some (HashOp, Non)
       | _ -> None )
-    | {ctx= Exp _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _}
-     |{ ctx= Pld _ | Top | Typ _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
-      ; ast= Pld _ | Top | Pat _ | Exp _ | Mty _ | Mod _ | Sig _ | Str _ } ->
+    | {ctx= Cl {pcl_desc}; ast= Cl _} -> (
+      match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
+    | { ctx= Exp _
+      ; ast= Pld _ | Top | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _ }
+     |{ ctx= Cl _
+      ; ast= Pld _ | Top | Pat _ | Exp _ | Mty _ | Mod _ | Sig _ | Str _ }
+     |{ ctx=
+          ( Pld _ | Top | Typ _ | Cty _ | Pat _ | Mty _ | Mod _ | Sig _
+          | Str _ )
+      ; ast=
+          Pld _ | Top | Pat _ | Exp _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
+      } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -671,6 +958,8 @@ end = struct
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
        |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
           None )
+    | Cty {pcty_desc} -> (
+      match pcty_desc with Pcty_arrow _ -> Some MinusGreater | _ -> None )
     | Exp {pexp_desc} -> (
       match pexp_desc with
       | Pexp_tuple _ -> Some Comma
@@ -712,14 +1001,23 @@ end = struct
       | Pexp_apply _ -> Some Apply
       | Pexp_assert _ | Pexp_lazy _ | Pexp_for _
        |Pexp_variant (_, Some _)
-       |Pexp_while _ | Pexp_new _
+       |Pexp_while _ | Pexp_new _ | Pexp_object _
        |Pexp_extension
-          (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_new _}, _)}]) ->
+          ( _
+          , PStr
+              [ { pstr_desc=
+                    Pstr_eval ({pexp_desc= Pexp_new _ | Pexp_object _}, _)
+                } ] ) ->
           Some Apply
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
       | Pexp_send _ -> Some HashOp
+      | _ -> None )
+    | Cl c -> (
+      match c.pcl_desc with
+      | Pcl_apply _ -> Some Apply
+      | Pcl_structure _ -> Some Apply
       | _ -> None )
     | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ -> None
 
@@ -752,6 +1050,15 @@ end = struct
     | {ast= {ptyp_desc= Ptyp_alias _}; ctx= Typ _} -> true
     | _ ->
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
+      | Some (Some true) -> true
+      | _ -> false
+
+  (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
+      parenthesized in context [ctx]. *)
+  let parenze_cty ({ctx; ast= cty} as xcty) =
+    assert (check_cty xcty ; true) ;
+    match xcty with _ ->
+      match ambig_prec (sub_ast ~ctx (Cty cty)) with
       | Some (Some true) -> true
       | _ -> false
 
@@ -819,6 +1126,9 @@ end = struct
      |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
      |( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
       , Ppat_constraint ({ppat_desc= Ppat_var _}, _) )
+     |Cl {pcl_desc= Pcl_fun _}, Ppat_constraint _
+     |Cl {pcl_desc= Pcl_fun _}, Ppat_tuple _
+     |Cl {pcl_desc= Pcl_fun _}, Ppat_construct _
      |( Exp
           { pexp_desc=
               Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _ }
@@ -854,23 +1164,31 @@ end = struct
   (** 'Classes' of expressions which are parenthesized differently. *)
   type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
-  (** [mem_cls cls exp] holds if [exp] is in the named class of expressions
-      [cls]. *)
-  let mem_cls cls exp =
-    match (exp.pexp_desc, cls) with
-    | Pexp_ifthenelse (_, _, None), (Non_apply | ThenElse)
-     |Pexp_ifthenelse _, Non_apply
-     |Pexp_sequence _, (Non_apply | Sequence | Then | ThenElse)
-     |( (Pexp_function _ | Pexp_match _ | Pexp_try _)
+  (** [mem_cls_exp cls exp] holds if [exp] is in the named class of
+      expressions [cls]. *)
+  let mem_cls_exp cls ast =
+    match (ast, cls) with
+    | {pexp_desc= Pexp_ifthenelse (_, _, None)}, (Non_apply | ThenElse)
+     |{pexp_desc= Pexp_ifthenelse _}, Non_apply
+     |{pexp_desc= Pexp_sequence _}, (Non_apply | Sequence | Then | ThenElse)
+     |( {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
       , (Match | Let_match | Non_apply) )
-     |( ( Pexp_fun _ | Pexp_let _ | Pexp_letexception _ | Pexp_letmodule _
-        | Pexp_newtype _ | Pexp_open _ )
+     |( { pexp_desc=
+            ( Pexp_fun _ | Pexp_let _ | Pexp_letexception _
+            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ ) }
       , (Let_match | Non_apply) ) ->
         true
     | _ -> false
 
+  (** [mem_cls_cl cls cl] holds if [cl] is in the named class of expressions
+      [cls]. *)
+  let mem_cls_cl cls ast =
+    match (ast, cls) with
+    | {pcl_desc= Pcl_fun _}, Non_apply -> true
+    | _ -> false
+
   (** [exposed cls exp] holds if there is a right-most subexpression of
-      [exp] which satisfies [mem_cls cls] and is not parenthesized. *)
+      [exp] which satisfies [mem_cls_exp cls] and is not parenthesized. *)
   let rec exposed_right_exp =
     (* exponential without memoization *)
     let memo = Hashtbl.Poly.create () in
@@ -918,8 +1236,25 @@ end = struct
          |Pexp_while _ ->
             false
       in
-      mem_cls cls exp
+      mem_cls_exp cls exp
       || Hashtbl.Poly.find_or_add memo (cls, exp) ~default:exposed_
+
+  and exposed_right_cl =
+    let memo = Hashtbl.Poly.create () in
+    fun cls cl ->
+      let exposed_ () =
+        match cl.pcl_desc with
+        | Pcl_apply (_, args) ->
+            let exp = snd (List.last_exn args) in
+            not (parenze_exp (sub_exp ~ctx:(Cl cl) exp))
+            && exposed_right_exp cls exp
+        | Pcl_fun (_, _, _, e) ->
+            not (parenze_cl (sub_cl ~ctx:(Cl cl) e))
+            && exposed_right_cl cls e
+        | _ -> false
+      in
+      mem_cls_cl cls cl
+      || Hashtbl.Poly.find_or_add memo (cls, cl) ~default:exposed_
 
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
@@ -933,6 +1268,7 @@ end = struct
     | Exp {pexp_desc= Pexp_extension _}, {pexp_desc= Pexp_tuple _} -> false
     | Pld _, {pexp_desc= Pexp_tuple _} -> false
     | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false
+    | Cl {pcl_desc= Pcl_apply _}, {pexp_desc= Pexp_apply _} -> true
     | Exp {pexp_desc}, _ -> (
       match pexp_desc with
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
@@ -988,6 +1324,15 @@ end = struct
               if is_right_infix_arg pexp_desc exp then is_sequence exp
               else exposed_right_exp Non_apply exp )
     | _ -> false
+
+  (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
+      parenthesized in context [ctx]. *)
+  and parenze_cl ({ctx; ast= cl} as xcl) =
+    assert (check_cl xcl ; true) ;
+    match xcl with _ ->
+      match ambig_prec (sub_ast ~ctx (Cl cl)) with
+      | Some (Some true) -> true
+      | _ -> exposed_right_cl Non_apply cl
 
   let rec exposed_left_typ typ =
     match typ.ptyp_desc with
