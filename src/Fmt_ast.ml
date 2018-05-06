@@ -1269,6 +1269,32 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                  let fmt_op = fmt_expression c op in
                  (fmt_cmts, (fmt_op, args))
              | None -> (fmt "", (fmt "", args)) ))
+  | Pexp_apply
+      ( {pexp_desc= Pexp_ident {txt= Lident id}}
+      , (Nolabel, l) :: (Nolabel, i) :: _ )
+    when Option.is_some (index_op_get id) -> (
+    match index_op_get id with
+    | Some (s, opn, cls) ->
+        wrap_if parens "(" ")"
+          ( fmt_expression c (sub_exp ~ctx l)
+          $ str (Printf.sprintf "%s%c" s opn)
+          $ fmt_expression c (sub_exp ~ctx i)
+          $ str (Printf.sprintf "%c" cls) )
+    | None -> impossible "previous match" )
+  | Pexp_apply
+      ( {pexp_desc= Pexp_ident {txt= Lident id}}
+      , (Nolabel, l) :: (Nolabel, i) :: (Nolabel, e) :: _ )
+    when Option.is_some (index_op_set id) -> (
+    match index_op_set id with
+    | Some (s, opn, cls) ->
+        wrap_if parens "(" ")"
+          ( fmt_expression c (sub_exp ~ctx l)
+          $ str (Printf.sprintf "%s%c" s opn)
+          $ fmt_expression c (sub_exp ~ctx i)
+          $ str (Printf.sprintf "%c" cls)
+          $ fmt "@ <- "
+          $ fmt_expression c (sub_exp ~ctx e) )
+    | None -> impossible "previous match" )
   | Pexp_apply (e0, a1N) when is_infix e0 ->
       hvbox 2
         ( wrap_fits_breaks_if parens "(" ")" (fmt_args_grouped e0 a1N)
