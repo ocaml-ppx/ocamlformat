@@ -89,6 +89,9 @@ let mapper =
         ({pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= []}, e3) ->
         m.expr m
           (Exp.sequence e1 (Exp.sequence ~attrs:pexp_attributes e2 e3))
+    | Pexp_poly ({pexp_desc= Pexp_constraint (e, t)}, None) ->
+        m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
+    | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t)}) -> m.expr m e
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m: Ast_mapper.mapper) pat =
