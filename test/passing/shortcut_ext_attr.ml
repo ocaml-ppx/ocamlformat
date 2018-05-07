@@ -1,5 +1,3 @@
-(* Copied the the OCaml compiler testsuite -
-   testsuite/tests/parsing/shortcut_ext_attr.ml *)
 (* Expressions *)
 let () =
   let%foo[@foo] x = 3 and[@foo] y = 4 in
