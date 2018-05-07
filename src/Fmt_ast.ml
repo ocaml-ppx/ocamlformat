@@ -2520,7 +2520,9 @@ and fmt_module_type c ({ast= mty} as xmty) =
       { blk with
         pro=
           Some
-            ( fmt "functor (" $ str txt
+            ( fmt "functor"
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
+            $ fmt " (" $ str txt
             $ opt mt1 (fun mt1 ->
                   let {opn; pro; psp; bdy; cls; esp; epi} =
                     fmt_module_type c (sub_mty ~ctx mt1)
@@ -2528,11 +2530,8 @@ and fmt_module_type c ({ast= mty} as xmty) =
                   fmt " :" $ opn $ Option.call ~f:pro $ psp $ fmt "@;<1 2>"
                   $ bdy $ cls $ esp $ Option.call ~f:epi )
             $ fmt ") -> " $ Option.call ~f:blk.pro )
-      ; epi=
-          Some
-            ( Option.call ~f:blk.epi
-            $ Cmts.fmt_after c.cmts pmty_loc
-            $ fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ") ) }
+      ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c.cmts pmty_loc)
+      }
   | Pmty_with (mt, wcs) ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_type c (sub_mty ~ctx mt)
