@@ -1809,6 +1809,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
            $ fmt_atrs )
   | Pexp_object {pcstr_self; pcstr_fields} ->
       fmt_class_structure c ~ctx ~parens ?ext pcstr_self pcstr_fields
+      $ fmt_atrs
   | Pexp_override l ->
       let field_alias (x: string) (li: Longident.t) =
         match li with Lident y -> String.equal x y | _ -> false
