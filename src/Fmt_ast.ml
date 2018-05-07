@@ -2843,7 +2843,7 @@ and fmt_with_constraint c ctx = function
 
 and maybe_generative c ~ctx m =
   match m with
-  | {pmod_desc= Pmod_structure []; _} -> empty
+  | {pmod_desc= Pmod_structure []; pmod_attributes= []} -> empty
   | _ -> fmt_module_expr c (sub_mod ~ctx m)
 
 and fmt_module_expr c ({ast= m} as xmod) =
