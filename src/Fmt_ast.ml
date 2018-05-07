@@ -124,9 +124,8 @@ let sugar_cl_fun c pat xexp =
   in
   match pat with
   | Some {ppat_desc= Ppat_any | Ppat_constraint _} -> ([], xexp)
-  | Some {ppat_attributes} when not (List.is_empty ppat_attributes) ->
-      ([], xexp)
-  | _ -> sugar_fun_ xexp
+  | None | Some {ppat_attributes= []} -> sugar_fun_ xexp
+  | _ -> ([], xexp)
 
 let sugar_infix c prec xexp =
   let assoc = Option.value_map prec ~default:Non ~f:assoc_of_prec in
@@ -1745,7 +1744,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                             ( Pexp_while _ | Pexp_for _ | Pexp_match _
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_sequence _ | Pexp_new _
-                            | Pexp_letmodule _ | Pexp_object _ ) } as e1 )
+                            | Pexp_letmodule _ | Pexp_object _ )
+                        ; pexp_attributes= [] } as e1 )
                     , _ ) } as str ) ] ) ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
@@ -1808,6 +1808,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
            $ fmt_atrs )
   | Pexp_object {pcstr_self; pcstr_fields} ->
       fmt_class_structure c ~ctx ~parens ?ext pcstr_self pcstr_fields
+      $ fmt_atrs
   | Pexp_override l ->
       let field_alias (x: string) (li: Longident.t) =
         match li with Lident y -> String.equal x y | _ -> false
@@ -2012,8 +2013,8 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
       $ fmt_longident txt
   | Pcl_structure {pcstr_fields; pcstr_self} ->
       fmt_class_structure c ~ctx ~parens ?ext:None pcstr_self pcstr_fields
-  | Pcl_fun (_, _, _, _) ->
-      let xargs, xbody = sugar_cl_fun c None xexp in
+  | Pcl_fun (_, _, p, _) ->
+      let xargs, xbody = sugar_cl_fun c (Some p) xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -2021,8 +2022,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
           $ (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
           $ close_box $ fmt "@ "
           $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody )
-        $ fits_breaks_if parens ")" "@ )"
-        $ fmt_atrs )
+        $ fits_breaks_if parens ")" "@ )" )
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
@@ -2518,7 +2518,9 @@ and fmt_module_type c ({ast= mty} as xmty) =
       { blk with
         pro=
           Some
-            ( fmt "functor (" $ str txt
+            ( fmt "functor"
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
+            $ fmt " (" $ str txt
             $ opt mt1 (fun mt1 ->
                   let {opn; pro; psp; bdy; cls; esp; epi} =
                     fmt_module_type c (sub_mty ~ctx mt1)
@@ -2526,11 +2528,8 @@ and fmt_module_type c ({ast= mty} as xmty) =
                   fmt " :" $ opn $ Option.call ~f:pro $ psp $ fmt "@;<1 2>"
                   $ bdy $ cls $ esp $ Option.call ~f:epi )
             $ fmt ") -> " $ Option.call ~f:blk.pro )
-      ; epi=
-          Some
-            ( Option.call ~f:blk.epi
-            $ Cmts.fmt_after c.cmts pmty_loc
-            $ fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ") ) }
+      ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c.cmts pmty_loc)
+      }
   | Pmty_with (mt, wcs) ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_type c (sub_mty ~ctx mt)
@@ -2698,7 +2697,11 @@ and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
           =
         cl
       in
-      let xargs, xbody = sugar_cl_fun c None (sub_cl ~ctx pci_expr) in
+      let xargs, xbody =
+        match pci_expr.pcl_attributes with
+        | [] -> sugar_cl_fun c None (sub_cl ~ctx pci_expr)
+        | _ -> ([], sub_cl ~ctx pci_expr)
+      in
       let ty, e =
         match xbody.ast with
         | {pcl_desc= Pcl_constraint (e, t)} -> (Some t, sub_cl ~ctx e)
@@ -2841,7 +2844,7 @@ and fmt_with_constraint c ctx = function
 
 and maybe_generative c ~ctx m =
   match m with
-  | {pmod_desc= Pmod_structure []; _} -> empty
+  | {pmod_desc= Pmod_structure []; pmod_attributes= []} -> empty
   | _ -> fmt_module_expr c (sub_mod ~ctx m)
 
 and fmt_module_expr c ({ast= m} as xmod) =
