@@ -124,9 +124,8 @@ let sugar_cl_fun c pat xexp =
   in
   match pat with
   | Some {ppat_desc= Ppat_any | Ppat_constraint _} -> ([], xexp)
-  | Some {ppat_attributes} when not (List.is_empty ppat_attributes) ->
-      ([], xexp)
-  | _ -> sugar_fun_ xexp
+  | None | Some {ppat_attributes= []} -> sugar_fun_ xexp
+  | _ -> ([], xexp)
 
 let sugar_infix c prec xexp =
   let assoc = Option.value_map prec ~default:Non ~f:assoc_of_prec in
@@ -2014,8 +2013,8 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
       $ fmt_longident txt
   | Pcl_structure {pcstr_fields; pcstr_self} ->
       fmt_class_structure c ~ctx ~parens ?ext:None pcstr_self pcstr_fields
-  | Pcl_fun (_, _, _, _) ->
-      let xargs, xbody = sugar_cl_fun c None xexp in
+  | Pcl_fun (_, _, p, _) ->
+      let xargs, xbody = sugar_cl_fun c (Some p) xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -2023,8 +2022,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
           $ (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
           $ close_box $ fmt "@ "
           $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody )
-        $ fits_breaks_if parens ")" "@ )"
-        $ fmt_atrs )
+        $ fits_breaks_if parens ")" "@ )" )
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
@@ -2699,7 +2697,11 @@ and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
           =
         cl
       in
-      let xargs, xbody = sugar_cl_fun c None (sub_cl ~ctx pci_expr) in
+      let xargs, xbody =
+        match pci_expr.pcl_attributes with
+        | [] -> sugar_cl_fun c None (sub_cl ~ctx pci_expr)
+        | _ -> ([], sub_cl ~ctx pci_expr)
+      in
       let ty, e =
         match xbody.ast with
         | {pcl_desc= Pcl_constraint (e, t)} -> (Some t, sub_cl ~ctx e)
