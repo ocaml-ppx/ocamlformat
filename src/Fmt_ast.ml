@@ -624,6 +624,8 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
       $ fmt "@ " $ fmt_longident txt
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
   | Ptyp_package pty -> hvbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
+  | Ptyp_poly ([], _) ->
+      impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
       hovbox_if box 0
         ( list a1N "@ " (fun {txt} -> fmt "'" $ str txt)
