@@ -535,14 +535,15 @@ let rec fmt_attribute c pre = function
 and fmt_extension c ctx key (({txt} as ext), pld) =
   match (pld, ctx) with
   | PStr [({pstr_desc= Pstr_value _; _} as si)], (Pld _ | Str _ | Top) ->
-      fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
+      fmt_structure_item c ~sep:"" ~first:true ~last:true ~ext (sub_str ~ctx si)
   | _ ->
       let protect_token =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
       in
-      wrap "[" "]"
-        ( str key $ str txt $ fmt_payload c ctx pld
-        $ fmt_if protect_token " " )
+      hvbox 2
+        (wrap "[" "]"
+           ( str key $ str txt $ fmt_payload c ctx pld
+           $ fmt_if protect_token " " ))
 
 and fmt_attributes c ?(pre= fmt "") ?(suf= fmt "") ?(box= true) ~key attrs =
   let split = List.length attrs > 1 in
@@ -3120,22 +3121,24 @@ and fmt_structure c ?(sep= "") ctx itms =
         in
         has_doc itmJ || not (is_simple itmI) || not (is_simple itmJ) )
   in
-  let fmt_grp ~last:last_grp itms =
+  let fmt_grp ~first:first_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last itm ->
         fmt_if (not first) "@\n"
-        $ fmt_structure_item c ~sep ~last:(last && last_grp)
-            (sub_str ~ctx itm) )
+        $ fmt_structure_item c ~sep ~first:(first_grp && first)
+            ~last:(last && last_grp) (sub_str ~ctx itm) )
   in
   hvbox 0
     (list_fl grps (fun ~first ~last grp ->
-         fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
+         fmt_if (not first) "\n@\n" $ fmt_grp ~first ~last grp ))
 
-and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
+and fmt_structure_item c ~sep ~first:first_item ~last:last_item ?ext
+    {ctx; ast= si} =
   protect (Str si)
   @@
-  let at_top =
+  let at_top = match ctx with Top -> true | _ -> false in
+  let in_ext =
     match ctx with
-    | Top | Str {pstr_desc= Pstr_extension _} -> true
+    | Str {pstr_desc= Pstr_extension ((_, PStr (_ :: _ :: _)), _)} -> true
     | _ -> false
   in
   let ctx = Str si in
@@ -3156,7 +3159,10 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
       str sep $ fmt_docstring c doc
-      $ cbox 0 (fmt_if at_top ";; " $ fmt_expression c (sub_exp ~ctx exp))
+      $ cbox 0
+          ( fmt_if (in_ext && first_item) "@;<1000 0>"
+          $ fmt_if_k (at_top || in_ext) (fmt ";; ")
+          $ fmt_expression c (sub_exp ~ctx exp) )
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
       hvbox 2
