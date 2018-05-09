@@ -3137,7 +3137,8 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
   @@
   let at_top =
     match ctx with
-    | Top | Str {pstr_desc= Pstr_extension _} -> true
+    | Top | Str {pstr_desc= Pstr_extension ((_, PStr (_ :: _ :: _)), _)} ->
+        true
     | _ -> false
   in
   let ctx = Str si in
