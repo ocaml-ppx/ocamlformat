@@ -147,12 +147,39 @@ module Loc_tree = struct
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
   let of_ast map_ast ast =
+    let attribute (m: Ast_mapper.mapper) attr =
+      match attr with
+      | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
+        , PStr
+            [ { pstr_desc=
+                  Pstr_eval
+                    ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                      ; pexp_attributes }
+                    , [] ) } ] ) ->
+          (* ignore location of docstrings *)
+          ( {txt; loc= Location.none}
+          , m.payload m
+              (PStr
+                 [ { pstr_desc=
+                       Pstr_eval
+                         ( { pexp_desc=
+                               Pexp_constant (Pconst_string (doc, None))
+                           ; pexp_loc= Location.none
+                           ; pexp_attributes= m.attributes m pexp_attributes
+                           }
+                         , [] )
+                   ; pstr_loc= Location.none } ]) )
+      | attr -> Ast_mapper.default_mapper.attribute m attr
+    in
     let locs = ref [] in
     let location _ loc =
       locs := loc :: !locs ;
       loc
     in
-    map_ast {Ast_mapper.default_mapper with location} ast |> ignore ;
+    map_ast
+      Ast_mapper.{default_mapper with location}
+      (map_ast Ast_mapper.{default_mapper with attribute} ast)
+    |> ignore ;
     of_list !locs
 end
 
