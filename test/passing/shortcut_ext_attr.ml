@@ -5,10 +5,10 @@ let () =
     (let module M = M in
     ()) [@foo]] ;
   [%foo M.(()) [@foo]] ;
-  [%foo (fun [@foo] x -> ())] ;
+  [%foo fun [@foo] x -> ()] ;
   [%foo function[@foo] x -> ()] ;
   [%foo try[@foo] () with _ -> ()] ;
-  [%foo (if () then () else ()) [@foo]] ;
+  [%foo if [@foo] () then () else ()] ;
   [%foo (while () do () done) [@foo]] ;
   [%foo (for x = () to () do () done) [@foo]] ;
   () ;%foo

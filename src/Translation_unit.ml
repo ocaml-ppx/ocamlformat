@@ -86,8 +86,8 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
     let source = Source.create source_txt in
     let cmts_t = xunit.init_cmts source conf ast cmts in
     ( if xunit.no_translation ast then (
-        In_channel.seek ic Int64.zero ;
-        Out_channel.output_string oc (In_channel.input_all ic) )
+      In_channel.seek ic Int64.zero ;
+      Out_channel.output_string oc (In_channel.input_all ic) )
     else
       let fs = Format.formatter_of_out_channel oc in
       Fmt.set_margin conf.margin fs ;

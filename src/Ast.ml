@@ -114,7 +114,9 @@ let rec is_trivial c exp =
 
 let has_trailing_attributes_exp {pexp_desc; pexp_attributes} =
   match pexp_desc with
-  | Pexp_function _ | Pexp_match _ | Pexp_try _ -> false
+  | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
+   |Pexp_newtype _ | Pexp_try _ ->
+      false
   | _ ->
       List.exists pexp_attributes ~f:(function
         | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
