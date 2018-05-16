@@ -1312,19 +1312,20 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
           ( wrap_if parens "(" ")"
               (hovbox 0
                  ( hovbox 2
-                     ( fmt_args_grouped e0 e1N $ fmt "@ "
-                     $ fmt_label lbl ":@,"
-                     $ fmt_cmts
-                       @@ hvbox 0
-                            (fmt "(fun " $ fmt_fun_args c xargs $ fmt "->")
-                     )
-                 $ fmt "@;<1 4>"
-                 $ fmt_expression c
-                     ?box:
-                       ( match xbody.ast.pexp_desc with
-                       | Pexp_fun _ | Pexp_function _ -> Some false
-                       | _ -> None )
-                     xbody
+                     ( hovbox 2
+                         ( fmt_args_grouped e0 e1N $ fmt "@ "
+                         $ fmt_label lbl ":@,"
+                         $ fmt_cmts
+                           @@ hvbox 0
+                                ( fmt "(fun " $ fmt_fun_args c xargs
+                                $ fmt "->" ) )
+                     $ fmt "@;<1 2>"
+                     $ fmt_expression c
+                         ?box:
+                           ( match xbody.ast.pexp_desc with
+                           | Pexp_fun _ | Pexp_function _ -> Some false
+                           | _ -> None )
+                         xbody )
                  $ fits_breaks ")" "@ )" ))
           $ fmt_atrs )
     | ( lbl
@@ -1465,7 +1466,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       wrap_if parens "(" ")"
         ( hvbox 2
             (fmt "function" $ fmt_attributes c ~key:"@" pexp_attributes)
-        $ fmt "@;<1 2>"
+        $ fmt "@ "
         $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
       let wrap =

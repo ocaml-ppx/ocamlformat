@@ -45,14 +45,14 @@ let mapper cmts =
   let atr_is_dup =
     let cmts = Set.of_list (module String) (List.map cmts ~f:fst) in
     function
-      | ( {txt= "ocaml.doc" | "ocaml.text"}
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( {pexp_desc= Pexp_constant (Pconst_string (txt, None))}
-                    , [] ) } ] ) ->
-          Set.mem cmts ("*" ^ txt)
-      | _ -> false
+    | ( {txt= "ocaml.doc" | "ocaml.text"}
+      , PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( {pexp_desc= Pexp_constant (Pconst_string (txt, None))}
+                  , [] ) } ] ) ->
+        Set.mem cmts ("*" ^ txt)
+    | _ -> false
   in
   let attributes (m: Ast_mapper.mapper) atrs =
     (* remove docstrings that duplicate comments *)
