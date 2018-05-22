@@ -1041,7 +1041,6 @@ end = struct
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
-      | Pexp_apply (op, _) when op == exp -> Some (Low, Non)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_]) -> (
         match i with
         | "~-" | "~+" -> Some (UMinus, Non)
