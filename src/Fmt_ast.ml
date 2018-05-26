@@ -647,14 +647,15 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
       in
       hvbox 0
         ( fits_breaks "[" "["
-        $ ( match (flag, lbls) with
-          | Closed, None -> fits_breaks "" " " $ row_fields rfs
-          | Open, None -> fmt "> " $ row_fields rfs
-          | Closed, Some [] -> fmt "< " $ row_fields rfs
-          | Closed, Some ls ->
+        $ ( match (flag, lbls, rfs) with
+          | Closed, None, [Rinherit _] -> fmt " | " $ row_fields rfs
+          | Closed, None, _ -> fits_breaks "" " " $ row_fields rfs
+          | Open, None, _ -> fmt "> " $ row_fields rfs
+          | Closed, Some [], _ -> fmt "< " $ row_fields rfs
+          | Closed, Some ls, _ ->
               fmt "< " $ row_fields rfs $ fmt " > "
               $ list ls "@ " (fmt "`" >$ str)
-          | Open, Some _ -> impossible "not produced by parser" )
+          | Open, Some _, _ -> impossible "not produced by parser" )
         $ fits_breaks (if protect_token then " ]" else "]") "@ ]" )
   | Ptyp_object ([], Open) -> fmt "< .. >"
   | Ptyp_object ([], Closed) -> fmt "< >"
