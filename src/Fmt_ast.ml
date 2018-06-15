@@ -2765,8 +2765,7 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
               $ str pci_name.txt $ fmt "@ " $ str sep )
           $ fmt "@;<1000 0>"
           $ fmt_class_type c (sub_cty ~ctx pci_expr)
-          $ fmt "@;"
-          $ fmt_attributes c ~key:"@@" atrs )
+          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
       $ fmt_if_k (not last) (fmt "@\n@\n") )
 
 and fmt_class_exprs c ctx (cls: class_expr class_infos list) =

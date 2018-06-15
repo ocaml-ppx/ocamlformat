@@ -61,7 +61,7 @@ class t ~a =
   
 
 class type mapper =
-  [%test] 
+  [%test]
 
 module type A = sig
   class mapper :
@@ -70,12 +70,12 @@ module type A = sig
     -> ?y:int
     -> object
          method xxxxxxxxxxxxxxxxxxxxxxxxxxx : int
-       end 
+       end
 
   class tttttttttttt :
     aaaaaaaaaaaaaaaaaa:int
     -> bbbbbbbbbbbbbbbbbbbbb:float
-    -> cccccccccccccccccccc 
+    -> cccccccccccccccccccc
 
   class c :
     object
@@ -85,7 +85,7 @@ module type A = sig
       [@@@attr something]
       val virtual mutable a : int
       method virtual private b : int -> int -> int
-    end 
+    end
 end
 
 class type mapper =
@@ -102,7 +102,7 @@ class type mapper =
       -> ccccccccccc
       -> d
       -> e
-  end 
+  end
 
 class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbb =
