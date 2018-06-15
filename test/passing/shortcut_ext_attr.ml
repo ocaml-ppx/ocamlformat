@@ -49,7 +49,7 @@ class type t =
     method x : t [@@foo]
     method private x : t [@@foo]
     constraint t = t' [@@foo]
-  end[@foo] 
+  end[@foo]
 
 (* Type expressions *)
 type t = [%foo : ((module M)[@foo])]
