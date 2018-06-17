@@ -281,14 +281,11 @@ let rec sugar_functor_type c ({ast= mty} as xmty) =
       ((arg, Option.map arg_mty ~f:(sub_mty ~ctx)) :: xargs, xbody)
   | _ -> ([], xmty)
 
-let rec sugar_functor c ?mt ({ast= me} as xme) =
+let rec sugar_functor c ~allow_attributes ({ast= me} as xme) =
   let ctx = Mod me in
-  match (me, mt) with
-  | ( { pmod_desc= Pmod_functor (arg, arg_mt, body)
-      ; pmod_loc
-      ; pmod_attributes= [] }
-    , None )
-    -> (
+  match me with
+  | {pmod_desc= Pmod_functor (arg, arg_mt, body); pmod_loc; pmod_attributes}
+    when match pmod_attributes with [] -> true | _ -> allow_attributes ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
@@ -296,23 +293,14 @@ let rec sugar_functor c ?mt ({ast= me} as xme) =
         ~after:body.pmod_loc ;
       let xarg_mt = Option.map arg_mt ~f:(sub_mty ~ctx) in
       let ctx = Mod body in
-      match body with
-      | { pmod_desc= Pmod_constraint (body_me, body_mt)
-        ; pmod_loc
-        ; pmod_attributes= [] } ->
-          Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
-            ~after:body_mt.pmty_loc ;
-          let xbody_mt0 = sub_mty ~ctx body_mt in
-          let xargs, xbody_me, xbody_mt1 =
-            sugar_functor c ~mt:xbody_mt0 (sub_mod ~ctx body_me)
-          in
-          ((arg, xarg_mt) :: xargs, xbody_me, xbody_mt1)
-      | _ ->
-          let xargs, xbody_me, xbody_mt =
-            sugar_functor c (sub_mod ~ctx body)
-          in
-          ((arg, xarg_mt) :: xargs, xbody_me, xbody_mt) )
-  | _ -> ([], xme, mt)
+      let body = sub_mod ~ctx body in
+      let xargs, xbody_me =
+        match pmod_attributes with
+        | [] -> sugar_functor c ~allow_attributes body
+        | _ -> ([], body)
+      in
+      ((arg, xarg_mt) :: xargs, xbody_me)
+  | _ -> ([], xme)
 
 type block =
   { opn: Fmt.t
@@ -1556,21 +1544,28 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
-      let {pmod_desc; pmod_attributes} = pmod in
+      let {pmod_desc= _; pmod_attributes} = pmod in
       let keyword = fmt "let module" $ fmt_extension_suffix c ext in
-      let me, mt =
-        match pmod_desc with
-        | Pmod_constraint (me, mt) -> (me, Some (sub_mty ~ctx mt))
-        | _ -> (pmod, None)
+      let xargs, xbody =
+        sugar_functor c ~allow_attributes:false (sub_mod ~ctx pmod)
       in
-      let xargs, xbody, xmty = sugar_functor c ?mt (sub_mod ~ctx me) in
+      let xbody, xmty =
+        match xbody.ast with
+        | { pmod_desc= Pmod_constraint (body_me, body_mt)
+          ; pmod_loc
+          ; pmod_attributes= [] } ->
+            Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
+              ~after:body_mt.pmty_loc ;
+            (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
+        | _ -> (xbody, None)
+      in
       hvbox 0
         ( wrap_if
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
             ( hvbox 2
                 ( fmt_module c keyword name xargs (Some xbody) true xmty
-                    (List.append pmod_attributes me.pmod_attributes)
+                    (List.append pmod_attributes pmod.pmod_attributes)
                 $ fmt " in" )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
@@ -2989,19 +2984,9 @@ and fmt_module_expr c ({ast= m} as xmod) =
           Some
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
-  | Pmod_functor ({txt}, mt, me) ->
+  | Pmod_functor _ ->
+      let xargs, me = sugar_functor c ~allow_attributes:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
-      let txt = if String.equal "*" txt then "" else txt in
-      let { opn= opn_t
-          ; pro= pro_t
-          ; psp= psp_t
-          ; bdy= bdy_t
-          ; cls= cls_t
-          ; esp= esp_t
-          ; epi= epi_t } =
-        Option.value_map mt ~default:empty
-          ~f:(sub_mty ~ctx >> fmt_module_type c)
-      in
       let { opn= opn_e
           ; pro= pro_e
           ; psp= psp_e
@@ -3009,9 +2994,9 @@ and fmt_module_expr c ({ast= m} as xmod) =
           ; cls= cls_e
           ; esp= esp_e
           ; epi= epi_e } =
-        fmt_module_expr c (sub_mod ~ctx me)
+        fmt_module_expr c me
       in
-      { opn= opn_e $ opn_t
+      { opn= opn_e
       ; pro= None
       ; psp= fmt ""
       ; bdy=
@@ -3022,15 +3007,26 @@ and fmt_module_expr c ({ast= m} as xmod) =
                     ( fmt "functor"
                     $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
                     $ fmt "@ "
-                    $ wrap "(" ")"
-                        ( str txt
-                        $ opt mt (fun _ ->
-                              fmt "@ :" $ Option.call ~f:pro_t $ psp_t
-                              $ fmt "@;<1 2>" $ bdy_t $ esp_t
-                              $ Option.call ~f:epi_t ) )
+                    $ list xargs "@ " (fun ({txt; _}, mt) ->
+                          let { opn= opn_t
+                              ; pro= pro_t
+                              ; psp= psp_t
+                              ; bdy= bdy_t
+                              ; cls= cls_t
+                              ; esp= esp_t
+                              ; epi= epi_t } =
+                            Option.value_map mt ~default:empty
+                              ~f:(fmt_module_type c)
+                          in
+                          wrap "(" ")"
+                            ( str txt
+                            $ opt mt (fun _ ->
+                                  opn_t $ fmt "@ :" $ Option.call ~f:pro_t
+                                  $ psp_t $ fmt "@;<1 2>" $ bdy_t $ esp_t
+                                  $ Option.call ~f:epi_t $ cls_t ) ) )
                     $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e
                     $ esp_e $ Option.call ~f:epi_e )) )
-      ; cls= cls_t $ cls_e
+      ; cls= cls_e
       ; esp= fmt ""
       ; epi= None }
   | Pmod_ident {txt} ->
@@ -3355,12 +3351,19 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"
   in
-  let me, mt =
-    match pmb_expr.pmod_desc with
-    | Pmod_constraint (me, mt) -> (me, Some (sub_mty ~ctx mt))
-    | _ -> (pmb_expr, None)
+  let xargs, xbody =
+    sugar_functor c ~allow_attributes:false (sub_mod ~ctx pmb_expr)
   in
-  let xargs, xbody, xmty = sugar_functor c ?mt (sub_mod ~ctx me) in
+  let xbody, xmty =
+    match xbody.ast with
+    | { pmod_desc= Pmod_constraint (body_me, body_mt)
+      ; pmod_loc
+      ; pmod_attributes= [] } ->
+        Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
+          ~after:body_mt.pmty_loc ;
+        (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
+    | _ -> (xbody, None)
+  in
   fmt_module c ?epi keyword pmb_name xargs (Some xbody) true xmty
     pmb_attributes
 
