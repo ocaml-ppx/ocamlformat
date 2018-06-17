@@ -956,7 +956,9 @@ and fmt_fun_args c args =
              $ list names "@ " (fun {txt; loc} ->
                    Cmts.fmt c.cmts loc @@ str txt ) ))
   in
-  fmt_if_k (not (List.is_empty args)) (list args "@ " fmt_fun_arg $ fmt "@ ")
+  fmt_if_k
+    (not (List.is_empty args))
+    (list args "@;" (fun x -> hovbox 0 (fmt_fun_arg x)) $ fmt "@ ")
 
 and fmt_body c ({ast= body} as xbody) =
   let ctx = Exp body in
