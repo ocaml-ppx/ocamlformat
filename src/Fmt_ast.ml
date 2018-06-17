@@ -689,12 +689,13 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
 and fmt_package_type c ctx ({txt}, cnstrs) =
-  hvbox 0
-    ( fmt_longident txt
-    $ list_fl cnstrs (fun ~first ~last:_ ({txt}, typ) ->
-          fmt_or first "@;with type " "@;<1 1>and type "
-          $ fmt_longident txt $ fmt " = "
-          $ fmt_core_type c (sub_typ ~ctx typ) ) )
+  fmt_longident txt
+  $ fmt_if (not (List.is_empty cnstrs)) "@;<1 2>"
+  $ hvbox 0
+      (list_fl cnstrs (fun ~first ~last:_ ({txt}, typ) ->
+           fmt_or first "with type " "@;<1 1>and type "
+           $ fmt_longident txt $ fmt " = "
+           $ fmt_core_type c (sub_typ ~ctx typ) ))
 
 and fmt_row_field c ctx = function
   | Rtag ({txt; loc}, atrs, const, typs) ->
@@ -867,7 +868,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       , ({ptyp_desc= Ptyp_package pty; ptyp_attributes= []} as typ) ) ->
       let ctx = Typ typ in
       wrap_if parens "(" ")"
-        (fmt "module " $ str txt $ fmt "@ : " $ fmt_package_type c ctx pty)
+        ( fmt "module " $ str txt $ fmt "@;<1 2>: "
+        $ fmt_package_type c ctx pty )
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
