@@ -233,18 +233,18 @@ let sugar_infix_cons xexp =
 
 let rec sugar_ite c ({ast= exp} as xexp) =
   let ctx = Exp exp in
-  let {pexp_desc; pexp_loc} = exp in
+  let {pexp_desc; pexp_loc; pexp_attributes} = exp in
   match pexp_desc with
   | Pexp_ifthenelse (cnd, thn, Some els) ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:cnd.pexp_loc
         ~after:els.pexp_loc ;
-      (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn)
+      (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)
       :: sugar_ite c (sub_exp ~ctx els)
   | Pexp_ifthenelse (cnd, thn, None) ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:cnd.pexp_loc
         ~after:thn.pexp_loc ;
-      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn)]
-  | _ -> [(None, xexp)]
+      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
+  | _ -> [(None, xexp, pexp_attributes)]
 
 let sugar_sequence c width xexp =
   let rec sugar_sequence_ ({ast= exp} as xexp) =
@@ -1478,7 +1478,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
       let cnd_exps = sugar_ite c xexp in
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
-           (list_fl cnd_exps (fun ~first ~last (xcnd, xbch) ->
+           (list_fl cnd_exps
+              (fun ~first ~last (xcnd, xbch, pexp_attributes) ->
                 let parens_bch = parenze_exp xbch in
                 match c.conf.if_then_else with
                 | `Compact ->
@@ -1495,8 +1496,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                                       $ fmt "if"
                                       $ fmt_if_k first
                                           (fmt_extension_suffix c ext)
-                                      $ fmt_atrs $ fmt "@ "
-                                      $ fmt_expression c xcnd )
+                                      $ fmt_attributes c ~pre:(fmt " ")
+                                          ~key:"@" pexp_attributes
+                                      $ fmt "@ " $ fmt_expression c xcnd )
                                   $ fmt "@ then" )
                             | None -> fmt "else" )
                           $ fmt_if parens_bch " (" $ fmt "@ "
@@ -1510,6 +1512,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                           ( fmt_or_k first
                               (fmt "if" $ fmt_extension_suffix c ext)
                               (fmt "else if")
+                          $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
+                              pexp_attributes
                           $ str " " $ fmt_expression c xcnd )
                         $ fmt "@ " )
                     $ hvbox 2
