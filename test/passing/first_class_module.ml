@@ -47,6 +47,10 @@ end
 
 let f (module M : S with type a = int and type b = int) = M.va + M.vb
 
+let f (module M : S with type a = int and type b = int)
+    (module N : S with type a = int and type b = int) =
+  M.va + N.vb
+
 module type M = sig
   val storage : (module S with type t = t)
 end
