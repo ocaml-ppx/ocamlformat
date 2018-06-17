@@ -692,7 +692,7 @@ and fmt_package_type c ctx ({txt}, cnstrs) =
   hvbox 0
     ( fmt_longident txt
     $ list_fl cnstrs (fun ~first ~last:_ ({txt}, typ) ->
-          fmt_or first " with type " " and type "
+          fmt_or first "@;with type " "@;<1 1>and type "
           $ fmt_longident txt $ fmt " = "
           $ fmt_core_type c (sub_typ ~ctx typ) ) )
 
