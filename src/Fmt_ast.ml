@@ -3049,6 +3049,28 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( fmt "end"
             $ Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
+  | Pmod_unpack
+      { pexp_desc=
+          Pexp_constraint
+            (e1, {ptyp_desc= Ptyp_package pty; ptyp_attributes= []})
+      ; pexp_attributes= [] } ->
+      let doc, atrs = doc_atrs pmod_attributes in
+      { empty with
+        pro=
+          Some
+            ( Cmts.fmt_before c.cmts pmod_loc
+            $ fmt_docstring c ~epi:(fmt "@,") doc )
+      ; bdy=
+          Cmts.fmt c.cmts pmod_loc
+          @@ wrap_fits_breaks "(" ")"
+               ( fmt "val "
+               $ fmt_expression c (sub_exp ~ctx e1)
+               $ fmt "@;<1 2>: "
+               $ fmt_package_type c ctx pty )
+      ; epi=
+          Some
+            ( Cmts.fmt_after c.cmts pmod_loc
+            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_unpack e1 ->
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
