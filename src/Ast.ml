@@ -563,15 +563,18 @@ end = struct
           | Pcl_extension _ -> false
           | Pcl_structure {pcstr_fields} -> check_pcstr_fields pcstr_fields
         )
-    | Mty ctx -> (
-      match ctx.pmty_desc with
-      | Pmty_with (_, c1N) ->
-          assert (
-            List.exists c1N ~f:(function
-              | Pwith_type (_, d1) | Pwith_typesubst (_, d1) ->
-                  check_type d1
-              | _ -> false ) )
-      | _ -> assert false )
+    | Mty ctx ->
+        let rec loop m =
+          match m with
+          | Pmty_with (m, c1N) ->
+              List.exists c1N ~f:(function
+                | Pwith_type (_, d1) | Pwith_typesubst (_, d1) ->
+                    check_type d1
+                | _ -> false )
+              || loop m.pmty_desc
+          | _ -> false
+        in
+        assert (loop ctx.pmty_desc)
     | Mod ctx -> (
       match ctx.pmod_desc with
       | Pmod_unpack e1 -> (
