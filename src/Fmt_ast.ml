@@ -266,18 +266,22 @@ let sugar_sequence c width xexp =
       not (is_simple c.conf width xexp1)
       || not (is_simple c.conf width xexp2) )
 
-let rec sugar_functor_type c ({ast= mty} as xmty) =
+let rec sugar_functor_type c ~allow_attributes ({ast= mty} as xmty) =
   let ctx = Mty mty in
   match mty with
-  | { pmty_desc= Pmty_functor (arg, arg_mty, body)
-    ; pmty_loc
-    ; pmty_attributes= [] } ->
+  | {pmty_desc= Pmty_functor (arg, arg_mty, body); pmty_loc; pmty_attributes}
+    when match pmty_attributes with [] -> true | _ -> allow_attributes ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
       Cmts.relocate c.cmts ~src:pmty_loc ~before:arg.loc
         ~after:body.pmty_loc ;
-      let xargs, xbody = sugar_functor_type c (sub_mty ~ctx body) in
+      let body = sub_mty ~ctx body in
+      let xargs, xbody =
+        match pmty_attributes with
+        | [] -> sugar_functor_type c ~allow_attributes body
+        | _ -> ([], body)
+      in
       ((arg, Option.map arg_mty ~f:(sub_mty ~ctx)) :: xargs, xbody)
   | _ -> ([], xmty)
 
@@ -2513,22 +2517,28 @@ and fmt_module_type c ({ast= mty} as xmty) =
           Some
             ( fmt "end"
             $ fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ") ) }
-  | Pmty_functor ({txt}, mt1, mt2) ->
-      let txt = if String.equal "*" txt then "" else txt in
-      let blk = fmt_module_type c (sub_mty ~ctx mt2) in
+  | Pmty_functor _ ->
+      let xargs, mt2 = sugar_functor_type c ~allow_attributes:true xmty in
+      let blk = fmt_module_type c mt2 in
       { blk with
         pro=
           Some
             ( fmt "functor"
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
-            $ fmt " (" $ str txt
-            $ opt mt1 (fun mt1 ->
-                  let {opn; pro; psp; bdy; cls; esp; epi} =
-                    fmt_module_type c (sub_mty ~ctx mt1)
-                  in
-                  fmt " :" $ opn $ Option.call ~f:pro $ psp $ fmt "@;<1 2>"
-                  $ bdy $ cls $ esp $ Option.call ~f:epi )
-            $ fmt ") -> " $ Option.call ~f:blk.pro )
+            $ fmt " "
+            $ list xargs "@;" (fun ({txt; _}, mt1) ->
+                  let mt1 = Option.map ~f:(fmt_module_type c) mt1 in
+                  wrap "(" ")"
+                    (hovbox 0
+                       ( str txt
+                       $ opt mt1 (fun mt1 ->
+                             let {opn; pro; psp; bdy; cls; esp; epi} =
+                               mt1
+                             in
+                             opn $ fmt " :@ " $ Option.call ~f:pro $ psp
+                             $ fmt "@;<1 2>" $ bdy $ esp
+                             $ Option.call ~f:epi $ cls ) )) )
+            $ fmt "@ -> " $ Option.call ~f:blk.pro )
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c.cmts pmty_loc)
       }
   | Pmty_with (mt, wcs) ->
@@ -2810,7 +2820,9 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"
   in
-  let xargs, xmty = sugar_functor_type c (sub_mty ~ctx pmd_type) in
+  let xargs, xmty =
+    sugar_functor_type c ~allow_attributes:false (sub_mty ~ctx pmd_type)
+  in
   let colon =
     match xmty.ast.pmty_desc with Pmty_alias _ -> false | _ -> true
   in
@@ -2997,7 +3009,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
                     ( fmt "functor"
                     $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
                     $ fmt "@ "
-                    $ list xargs "@ " (fun ({txt; _}, mt) ->
+                    $ list xargs "@;" (fun ({txt; _}, mt) ->
                           let { opn= opn_t
                               ; pro= pro_t
                               ; psp= psp_t
@@ -3009,11 +3021,13 @@ and fmt_module_expr c ({ast= m} as xmod) =
                               ~f:(fmt_module_type c)
                           in
                           wrap "(" ")"
-                            ( str txt
-                            $ opt mt (fun _ ->
-                                  opn_t $ fmt "@ :" $ Option.call ~f:pro_t
-                                  $ psp_t $ fmt "@;<1 2>" $ bdy_t $ esp_t
-                                  $ Option.call ~f:epi_t $ cls_t ) ) )
+                            (hovbox 0
+                               ( str txt
+                               $ opt mt (fun _ ->
+                                     opn_t $ fmt "@ :"
+                                     $ Option.call ~f:pro_t $ psp_t
+                                     $ fmt "@;<1 2>" $ bdy_t $ esp_t
+                                     $ Option.call ~f:epi_t $ cls_t ) )) )
                     $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e
                     $ esp_e $ Option.call ~f:epi_e )) )
       ; cls= cls_e
