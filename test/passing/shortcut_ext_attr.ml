@@ -64,10 +64,9 @@ type t = [%foo : ((module M)[@foo])]
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 
 (* Module type expression *)
-module type S = functor [@foo1] (M :
-  S) -> functor (_ :(module type of 
-  M)
-[@foo2]) -> sig end [@foo3]
+module type S = functor [@foo1] (M :  S)
+-> functor (_ : (module type of  M) [@foo2])
+-> sig end [@foo3]
 
 (* Structure items *)
 let%foo x = 4[@@foo]
