@@ -428,6 +428,22 @@ let rec sugar_functor c ~for_functor_kw ({ast= me} as xme) =
       ((arg, xarg_mt) :: xargs, xbody_me)
   | _ -> ([], xme)
 
+let sugar_mod_with c pmty =
+  let rec sugar_mod_with_ c ({ast= me} as xme) =
+    let ctx = Mty me in
+    match me with
+    | {pmty_desc= Pmty_with (mt, wcs); pmty_attributes; pmty_loc} ->
+        let args, rest =
+          match pmty_attributes with
+          | [] -> sugar_mod_with_ c (sub_mty ~ctx mt)
+          | _ -> ([], sub_mty ~ctx mt)
+        in
+        ((wcs, pmty_loc) :: args, rest)
+    | _ -> ([], xme)
+  in
+  let l_rev, m = sugar_mod_with_ c pmty in
+  (List.rev l_rev, m)
+
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
 (* In several places, a break such as "@;<1000 0>" is used to force the
@@ -2968,19 +2984,20 @@ and fmt_module_type c ({ast= mty} as xmty) =
             $ fmt "@;<1 2>-> " $ Option.call ~f:blk.pro )
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c.cmts pmty_loc)
       }
-  | Pmty_with (mt, wcs) ->
-      let {opn; pro; psp; bdy; cls; esp; epi} =
-        fmt_module_type c (sub_mty ~ctx mt)
-      in
+  | Pmty_with _ ->
+      let wcs, mt = sugar_mod_with c (sub_mty ~ctx mty) in
+      let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_type c mt in
       { empty with
         bdy=
           hvbox 0
             (wrap_if parens "(" ")"
                ( opn $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
                $ Option.call ~f:epi
-               $ list_fl wcs (fun ~first ~last:_ wc ->
-                     fmt_or first "@ with" "@;<1 1>and"
-                     $ fmt_with_constraint c ctx wc ) ))
+               $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
+                     Cmts.fmt c.cmts loc
+                     @@ list_fl wcs_and (fun ~first ~last:_ wc ->
+                            fmt_or first "@ with" "@;<1 1>and"
+                            $ fmt_with_constraint c ctx wc ) ) ))
       ; epi=
           Some
             ( fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ")

@@ -33,3 +33,19 @@ module type M =
   with module A = A
   (*test*)
   with module A = A
+
+module U :
+  S
+  with type ttttttttt = int
+   and type uuuuuuuu = int
+   and type vvvvvvvvvvv = int = struct end
+
+module U :
+  S
+  with type ttttttttt = int
+   and type uuuuuuu = int
+  with type vvvvvvvvv = int = struct end
+
+module U = (val S : S with type t = int and type u = int)
+
+module U = (val S : S with type t = int and type u = int)
