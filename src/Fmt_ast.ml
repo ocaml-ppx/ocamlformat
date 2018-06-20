@@ -2504,16 +2504,22 @@ and fmt_module_type c ({ast= mty} as xmty) =
       }
   | Pmty_signature s ->
       let empty = List.is_empty s in
+      let doc, atrs = doc_atrs pmty_attributes in
       { opn= open_hvbox 0
-      ; pro= Some (fmt "sig" $ fmt_if empty " ")
+      ; pro=
+          Some
+            ( Cmts.fmt_before c.cmts pmty_loc
+            $ fmt_docstring c ~epi:(fmt "@,") doc
+            $ fmt "sig" )
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= fmt_signature c ctx s
       ; cls= close_box
-      ; esp= fmt_if (not empty) "@;<1000 0>"
+      ; esp= fmt_or empty " " "@;<1000 0>"
       ; epi=
           Some
             ( fmt "end"
-            $ fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ") ) }
+            $ Cmts.fmt_after c.cmts pmty_loc
+            $ fmt_attributes c ~key:"@" atrs ~pre:(fmt "@ ") ) }
   | Pmty_functor ({txt}, mt1, mt2) ->
       let txt = if String.equal "*" txt then "" else txt in
       let blk = fmt_module_type c (sub_mty ~ctx mt2) in
@@ -3043,7 +3049,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= fmt_structure c ~sep:";; " ctx sis
       ; cls= close_box
-      ; esp= fmt "@ "
+      ; esp= fmt_or empty " " "@;<1000 0>"
       ; epi=
           Some
             ( fmt "end"
