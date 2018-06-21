@@ -101,11 +101,11 @@ reffile() {
 PASSING=("")
 FAILING=("")
 if [ -n "$GIT" ]; then
-    PASSING+=($(git ls-files 'passing/*.ml' 'passing/*.ml[iyl]'))
-    FAILING+=($(git ls-files 'failing/*.ml' 'failing/*.ml[iyl]'))
+    PASSING+=($(git ls-files 'passing/*.ml' 'passing/*.ml[iylt]'))
+    FAILING+=($(git ls-files 'failing/*.ml' 'failing/*.ml[iylt]'))
 else
-    PASSING+=(passing/*.ml passing/*.ml[iyl])
-    FAILING+=(failing/*.ml failing/*.ml[iyl])
+    PASSING+=(passing/*.ml passing/*.ml[iylt])
+    FAILING+=(failing/*.ml failing/*.ml[iylt])
 fi
 CHANGES=()
 

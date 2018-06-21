@@ -440,14 +440,24 @@ let init map_ast loc_of_ast source conf asts comments_n_docstrings =
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n" (Fn.flip Loc_tree.dump) loc_tree ;
-    let locs = List.map asts ~f:loc_of_ast in
+    let locs = loc_of_ast asts in
     let cmts = CmtSet.of_list comments in
     place t loc_tree locs cmts ) ;
   t
 
-let init_impl = init map_structure (fun {Parsetree.pstr_loc} -> pstr_loc)
+let init_impl =
+  init map_structure (List.map ~f:(fun {Parsetree.pstr_loc} -> pstr_loc))
 
-let init_intf = init map_signature (fun {Parsetree.psig_loc} -> psig_loc)
+let init_intf =
+  init map_signature (List.map ~f:(fun {Parsetree.psig_loc} -> psig_loc))
+
+let init_use_file =
+  init Migrate_ast.map_use_file
+    (List.concat_map ~f:(fun toplevel_phrase ->
+         match (toplevel_phrase : toplevel_phrase) with
+         | Ptop_def items ->
+             List.map items ~f:(fun {Parsetree.pstr_loc} -> pstr_loc)
+         | Ptop_dir _ -> [] ))
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate t ~src ~before ~after =

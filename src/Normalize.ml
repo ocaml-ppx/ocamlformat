@@ -156,6 +156,10 @@ let impl = map_structure mapper
 
 let intf = map_signature mapper
 
+let use_file = map_use_file mapper
+
 let equal_impl ast1 ast2 = Poly.equal (impl ast1) (impl ast2)
 
 let equal_intf ast1 ast2 = Poly.equal (intf ast1) (intf ast2)
+
+let equal_use_file ast1 ast2 = Poly.equal (use_file ast1) (use_file ast2)

@@ -17,6 +17,8 @@ module Parse = struct
   let implementation = Parse.implementation Versions.ocaml_406
 
   let interface = Parse.interface Versions.ocaml_406
+
+  let use_file = Parse.use_file Versions.ocaml_406
 end
 
 let to_current = Migrate_parsetree.Versions.(migrate ocaml_406 ocaml_current)
@@ -40,6 +42,13 @@ module Printast = struct
           PPat
             ( to_current.copy_pattern x
             , Option.map ~f:to_current.copy_expression y ) )
+
+  let use_file f (x: Parsetree.toplevel_phrase list) =
+    List.iter x ~f:(fun x ->
+        top_phrase f
+          ( match x with
+          | Parsetree.Ptop_def x -> Ptop_def (to_current.copy_structure x)
+          | Parsetree.Ptop_dir _ as x -> x ) )
 end
 
 module Pprintast = struct
@@ -55,3 +64,12 @@ module Pprintast = struct
 
   let pattern f x = pattern f (to_current.copy_pattern x)
 end
+
+(* Missing from ocaml_migrate_parsetree *)
+let map_use_file mapper use_file =
+  let open Parsetree in
+  List.map use_file ~f:(fun toplevel_phrase ->
+      match (toplevel_phrase : toplevel_phrase) with
+      | Ptop_def structure ->
+          Ptop_def (mapper.Ast_mapper.structure mapper structure)
+      | Ptop_dir _ as d -> d )
