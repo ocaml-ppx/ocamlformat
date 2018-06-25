@@ -2535,8 +2535,8 @@ and fmt_module_type c ({ast= mty} as xmty) =
           Some
             ( fmt "functor"
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
-            $ fmt " "
-            $ list xargs "@;" (fun ({txt; _}, mt1) ->
+            $ fmt "@;<1 2>"
+            $ list xargs "@;<1 2>" (fun ({txt; _}, mt1) ->
                   let mt1 = Option.map ~f:(fmt_module_type c) mt1 in
                   wrap "(" ")"
                     (hovbox 0
@@ -2545,10 +2545,10 @@ and fmt_module_type c ({ast= mty} as xmty) =
                              let {opn; pro; psp; bdy; cls; esp; epi} =
                                mt1
                              in
-                             opn $ fmt " :@ " $ Option.call ~f:pro $ psp
+                             opn $ fmt " :@," $ Option.call ~f:pro $ psp
                              $ fmt "@;<1 2>" $ bdy $ esp
                              $ Option.call ~f:epi $ cls ) )) )
-            $ fmt "@ -> " $ Option.call ~f:blk.pro )
+            $ fmt "@;<1 2>-> " $ Option.call ~f:blk.pro )
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c.cmts pmty_loc)
       }
   | Pmty_with (mt, wcs) ->
@@ -3018,8 +3018,8 @@ and fmt_module_expr c ({ast= m} as xmod) =
                  (wrap_if parens "(" ")"
                     ( fmt "functor"
                     $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
-                    $ fmt "@ "
-                    $ list xargs "@;" (fun ({txt; _}, mt) ->
+                    $ fmt "@;<1 2>"
+                    $ list xargs "@;<1 2>" (fun ({txt; _}, mt) ->
                           let { opn= opn_t
                               ; pro= pro_t
                               ; psp= psp_t
@@ -3038,8 +3038,10 @@ and fmt_module_expr c ({ast= m} as xmod) =
                                      $ Option.call ~f:pro_t $ psp_t
                                      $ fmt "@;<1 2>" $ bdy_t $ esp_t
                                      $ Option.call ~f:epi_t $ cls_t ) )) )
-                    $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e
-                    $ esp_e $ Option.call ~f:epi_e )) )
+                    $ fmt "@;<1 2>->" $ fmt "@;<1 2>"
+                    $ hvbox 0
+                        ( Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
+                        $ Option.call ~f:epi_e ) )) )
       ; cls= cls_e
       ; esp= fmt ""
       ; epi= None }
