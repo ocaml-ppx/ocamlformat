@@ -46,9 +46,19 @@ module Printast = struct
   let use_file f (x: Parsetree.toplevel_phrase list) =
     List.iter x ~f:(fun x ->
         top_phrase f
-          ( match x with
+          ( match (x : Parsetree.toplevel_phrase) with
           | Parsetree.Ptop_def x -> Ptop_def (to_current.copy_structure x)
-          | Parsetree.Ptop_dir _ as x -> x ) )
+          | Ptop_dir (a, b) ->
+              let open Parsetree in
+              let b =
+                match b with
+                | Pdir_none -> Pdir_none
+                | Pdir_string s -> Pdir_string s
+                | Pdir_int (s, c) -> Pdir_int (s, c)
+                | Pdir_ident i -> Pdir_ident i
+                | Pdir_bool b -> Pdir_bool b
+              in
+              Ptop_dir (a, b) ) )
 end
 
 module Pprintast = struct

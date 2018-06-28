@@ -39,8 +39,9 @@ let intf : _ Translation_unit.t =
 let use_file : _ Translation_unit.t =
   let use_file lexbuf =
     List.filter (Migrate_ast.Parse.use_file lexbuf) ~f:(function
-      | Parsetree.Ptop_def [] -> false
-      | Parsetree.Ptop_def (_ :: _) | Ptop_dir _ -> true )
+      | Ast_406.Parsetree.Ptop_def [] -> false
+      | Ast_406.Parsetree.Ptop_def (_ :: _) | Ast_406.Parsetree.Ptop_dir _ ->
+          true )
   in
   let parse = Translation_unit.parse use_file in
   { parse
