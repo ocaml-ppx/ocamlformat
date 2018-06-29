@@ -1918,7 +1918,7 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
                      $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_)) )
                )
            $ cmts_after_self
-           $ fmt_if Poly.(fields <> []) "@\n"
+           $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
                (list fields "@\n" (fun cf -> fmt_class_field c ctx cf)) )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
@@ -1944,7 +1944,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                      $ wrap "(" ")" (fmt_core_type c (sub_typ ~ctx self_))
                  ) )
            $ cmts_after_self
-           $ fmt_if Poly.(fields <> []) "@\n"
+           $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
                (list fields "@\n" (fun cf -> fmt_class_type_field c ctx cf))
            )
@@ -2747,7 +2747,7 @@ and fmt_signature_item c {ast= si} =
       fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
 
 and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
-  list_fl cls (fun ~first ~last cl ->
+  list_fl cls (fun ~first ~last:_ cl ->
       let {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}
         =
         cl
@@ -2765,10 +2765,9 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
               $ fmt "@ "
               $ fmt_class_params c ctx ~epi:(fmt "@ ") pci_params
               $ str pci_name.txt $ fmt "@ " $ str sep )
-          $ fmt "@;<1000 0>"
+          $ fmt "@;"
           $ fmt_class_type c (sub_cty ~ctx pci_expr)
-          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
-      $ fmt_if_k (not last) (fmt "@\n@\n") )
+          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs ))
 
 and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
@@ -2792,7 +2791,7 @@ and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
            ~epi:
              (match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
            doc
-      $ hvbox 2
+      $ hovbox 2
           ( hovbox 2
               ( str (if first then "class" else "and")
               $ fmt_if Poly.(pci_virt = Virtual) "@ virtual"
@@ -2803,8 +2802,8 @@ and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
                 $ opt ty (fun t ->
                       fmt "@ :@ " $ fmt_class_type c (sub_cty ~ctx t) )
                 $ fmt "@ =" ) )
-          $ fmt "@;<1000 0>" $ fmt_class_expr c e $ fmt "@;" )
-      $ fmt_attributes c ~key:"@@" atrs )
+          $ fmt "@;" $ fmt_class_expr c e )
+      $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
 
 and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
   let {txt= name; loc} = name in

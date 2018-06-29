@@ -44,7 +44,6 @@ class x =
       method! private x = 3 [@@foo]
       initializer x [@@foo]
     end [@foo] ) [@foo]
-  
 
 (* Class type expressions *)
 class type t =
@@ -84,13 +83,10 @@ and t = int [@@foo]]
 type t += T [@@foo]]
 
 [%%foo
-class x =
-  x
-  [@@foo]]
+class x = x [@@foo]]
 
 [%%foo
-class type x =
-  x [@@foo]]
+class type x = x [@@foo]]
 
 [%%foo
 external x : _ = ""  [@@foo]]
@@ -140,13 +136,7 @@ module type S = sig
 
   [%%foo : open M [@@foo]] 
 
-  [%%foo
-  : class x :
-      t [@@foo]]
-  
+  [%%foo : class x : t [@@foo]] 
 
-  [%%foo
-  : class type x =
-      x [@@foo]]
-  
+  [%%foo : class type x = x [@@foo]] 
 end
