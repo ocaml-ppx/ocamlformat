@@ -7,14 +7,14 @@ let _ =
     method virtual x : t
     method virtual private x : t
     method! private x = 3
-    method! private x  : t= 4
+    method! private x : t = 4
     method! private x : type a b c. r = 5
     method! private x : type a. r = 6
     val virtual x : t
     val virtual mutable x : t
     val virtual mutable x : t
     val! mutable x = 7
-    val! mutable x : t = 8
+    val! mutable x : t  = 8
     constraint t = 'a t
     [%%ext salut, "hello"] 
     [@@@attr]
@@ -25,7 +25,7 @@ let _ =
     method x : type a b c. (a, b) t -> c =
       let f = {<a; b = e>} in
       x <- expr
-    method x  : (a, b) t -> c=
+    method x : (a, b) t -> c =
       let f =
         {< a
         ;  b = something very
