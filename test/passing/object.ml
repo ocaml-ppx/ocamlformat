@@ -16,7 +16,7 @@ let _ =
     val! mutable x = 7
     val! mutable x : t  = 8
     constraint t = 'a t
-    [%%ext salut, "hello"] 
+    [%%ext salut, "hello"]
     [@@@attr]
     initializer f x ; 9
     method x =
@@ -79,7 +79,7 @@ module type A = sig
     object
       inherit ['a a] d
       constraint 'a = int
-      [%%ext something] 
+      [%%ext something]
       [@@@attr something]
       val virtual mutable a : int
       method virtual private b : int -> int -> int

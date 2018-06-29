@@ -2158,7 +2158,7 @@ and fmt_class_field c ctx (cf: class_field) =
            let doc, atrs = doc_atrs [atr] in
            fmt_docstring c ~epi:(fmt "") doc
            $ fmt_attributes c ~key:"@@@" atrs
-       | Pcf_extension ext -> fmt_extension c ctx "%%" ext $ fmt "@ " )
+       | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
 
 and fmt_class_type_field c ctx (cf: class_type_field) =
@@ -2197,7 +2197,7 @@ and fmt_class_type_field c ctx (cf: class_type_field) =
              let doc, atrs = doc_atrs [atr] in
              fmt_docstring c ~epi:(fmt "@\n") ~pro:(fmt "@\n") doc
              $ fmt_attributes c ~key:"@@@" atrs
-         | Pctf_extension ext -> fmt_extension c ctx "%%" ext $ fmt "@ " )
+         | Pctf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
 
 and fmt_cases c ctx cs =
@@ -2263,7 +2263,7 @@ and fmt_value_description c ctx vd =
         $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
-    $ fmt_attributes c ~pre:(fmt "@;<2 2>") ~box:false ~key:"@@" atrs
+    $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~box:false ~key:"@@" atrs
     $ fmt_if_k (not doc_before) (fmt_docstring c ~pro:(fmt "@\n") doc) )
 
 and fmt_tydcl_params c ctx params =
@@ -2625,8 +2625,7 @@ and fmt_signature_item c {ast= si} =
   | Psig_extension (ext, atrs) ->
       hvbox 0
         ( fmt_extension c ctx "%%" ext
-        $ fmt "@ "
-        $ fmt_attributes c ~key:"@@" atrs )
+        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
   | Psig_include {pincl_mod; pincl_attributes} ->
       let doc, atrs = doc_atrs pincl_attributes in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
@@ -2691,7 +2690,7 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
               $ str pci_name.txt $ fmt "@ " $ str sep )
           $ fmt "@;"
           $ fmt_class_type c (sub_cty ~ctx pci_expr)
-          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs ))
+          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs ) )
 
 and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
