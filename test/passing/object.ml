@@ -58,10 +58,8 @@ class t ~a =
     inherit f a
     method x a b = a + b
   end
-  
 
-class type mapper =
-  [%test]
+class type mapper = [%test]
 
 module type A = sig
   class mapper :
@@ -110,30 +108,30 @@ class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
     inherit f a
     method x a b = a + b
   end
-  
 
 class tttttttttttttttttttttttttt x y =
   let open Mod in
   let x = 2 in
-  let f x = object
-              inherit f a
-              method x a b = a + b
-            end in
+  let f x =
+    object
+      inherit f a
+      method x a b = a + b
+    end
+  in
   f 0
-  
 
 class tttttttttttttttttttttttttt x y =
   let open Mod in
   let x = 2 in
-  (fun x -> object
-              inherit f a
-              method x a b = a + b
-            end) 0
-  
+  (fun x ->
+    object
+      inherit f a
+      method x a b = a + b
+    end )
+    0
 
 class c =
   object
     method a : type a b c. d -> e -> f = g
     method a : 'a. d -> e -> f = g
   end
-  
