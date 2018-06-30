@@ -67,3 +67,16 @@ let i = fun [@inline] x -> x[@@inline]
 ;; if [@test] true then () else ()
 
 ;; if [@test] true then () else if [@test] true then () else ()
+
+type blocklist =
+  { f1: int [@version 1, 1, 0]  (** short comment *)
+  ; f2: (int64 * int64) list
+        (** loooooooooooooooooooooooooooooong
+            commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *) }
+
+type blocklist =
+  | F1 of int [@version 1, 1, 0]  (** short comment *)
+  | F2: int -> blocklist [@version 1, 1, 0]  (** short comment *)
+  | F3 of (int64 * int64) list
+      (** loooooooooooooooooooooooooooooong
+          commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *)
