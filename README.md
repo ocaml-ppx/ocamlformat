@@ -14,7 +14,7 @@ OCamlFormat requires source code that meets the following conditions:
 
 - Parses without any preprocessing, using the version of the standard ocaml (not camlp4) parser used to build ocamlformat. Attributes and extension points should be correctly preserved, but other mechanisms such as camlp4, cppo, etc. will not work.
 
-- Is either a module implementation (`.ml`) or interface (`.mli`) but not a sequence of toplevel phrases (that is, including toplevel directives such as `#use`). jbuild files in ocaml syntax also work.
+- Is either a module implementation (`.ml`), an interface (`.mli`) or a sequence of toplevel phrases (`.mlt`). jbuild files in ocaml syntax also work.
 
 Under those conditions, ocamlformat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, ocamlformat enforces the following checks:
 
