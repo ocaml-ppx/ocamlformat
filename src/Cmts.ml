@@ -330,18 +330,18 @@ let add_cmts t ?prev ?next tbl loc cmts =
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug then
       List.iter cmtl ~f:(fun (cmt_txt, cmt_loc) ->
-          let string_between_inclusive (l1: Location.t) (l2: Location.t) =
-            match Source.string_between t.source ~inclusive:true l1 l2 with
+          let string_between (l1: Location.t) (l2: Location.t) =
+            match Source.string_between t.source l1 l2 with
             | None -> "swapped"
             | Some s -> s
           in
           let btw_prev =
             Option.value_map prev ~default:"no prev"
-              ~f:(Fn.flip string_between_inclusive cmt_loc)
+              ~f:(Fn.flip string_between cmt_loc)
           in
           let btw_next =
             Option.value_map next ~default:"no next"
-              ~f:(string_between_inclusive cmt_loc)
+              ~f:(string_between cmt_loc)
           in
           Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n"
             (if phys_equal tbl t.cmts_before then "before" else "after")
