@@ -274,30 +274,23 @@ end = struct
     | `Ok smap, `Ok emap -> (smap, emap)
     | _ -> internal_error "overlapping key ranges" []
 
-  let split (smap, emap) (loc: Location.t) =
+  let split (t: t) (loc: Location.t) =
     let addo m kvo =
       Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
-    let partition dir (smap, emap) (loc: Location.t) =
-      let before, equal, after = Map.split smap loc in
-      let s_dir, s_ndir =
-        match dir with
-        | `Before -> (before, addo after equal)
-        | `After -> (after, addo before equal)
+    let partition ((smap, emap): t) (loc: Location.t) =
+      let s_before, s_equal, s_after = Map.split smap loc in
+      let s_after = addo s_after s_equal in
+      let e_before, e_after =
+        Map.partitioni_tf emap ~f:(fun ~key ~data:_ -> Map.mem s_before key)
       in
-      let e_dir, e_ndir =
-        Map.partitioni_tf emap ~f:(fun ~key ~data:_ -> Map.mem s_dir key)
-      in
-      ((s_dir, e_dir), (s_ndir, e_ndir))
+      ((s_before, e_before), (s_after, e_after))
     in
-    let (s_after, e_after), (s_nafter, e_nafter) =
-      partition `After (smap, emap) {loc with loc_start= loc.loc_end}
+    let nafter, after = partition t {loc with loc_start= loc.loc_end} in
+    let before, within =
+      partition nafter {loc with loc_end= loc.loc_start}
     in
-    let (e_before, s_before), (e_within, s_within) =
-      partition `Before (e_nafter, s_nafter)
-        {loc with loc_end= loc.loc_start}
-    in
-    ((s_before, e_before), (s_within, e_within), (s_after, e_after))
+    (before, within, after)
 end
 
 (** Heuristic to determine if two locations should be considered "adjacent".
