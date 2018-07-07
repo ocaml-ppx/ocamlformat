@@ -1458,6 +1458,20 @@ end = struct
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
           exposed_right_exp ThenElse exp
       | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
+      | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _)
+        when exp2 == exp ->
+          false
+      | Pexp_apply
+          ( ( { pexp_desc=
+                  Pexp_extension
+                    ( _
+                    , PStr
+                        [ { pstr_desc=
+                              Pstr_eval ({pexp_desc= Pexp_new _}, []) } ] )
+              } as exp2 )
+          , _ )
+        when exp2 == exp ->
+          false
       | Pexp_record (flds, _)
         when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->
           exposed_right_exp Non_apply exp
