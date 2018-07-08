@@ -952,7 +952,7 @@ and fmt_fun_args c ?(pro= fmt "") args =
   in
   fmt_if_k
     (not (List.is_empty args))
-    (pro $ list args "@;" (fun x -> hovbox 0 (fmt_fun_arg x)) $ fmt "@ ")
+    (pro $ list args "@;" (fun x -> hovbox 0 (fmt_fun_arg x)))
 
 and fmt_body c ({ast= body} as xbody) =
   let ctx = Exp body in
