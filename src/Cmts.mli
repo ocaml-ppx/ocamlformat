@@ -50,6 +50,17 @@ val init_intf :
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
+val init_use_file :
+     Source.t
+  -> Conf.t
+  -> Parsetree.toplevel_phrase list
+  -> (string * Location.t) list
+  -> t
+(** [init_use_file source use_file comments] associates each comment in
+    [comments] with a source location appearing in [use_file]. It uses
+    [Source] to help resolve ambiguities. Initializes the state used by the
+    [fmt] functions. *)
+
 val relocate :
   t -> src:Location.t -> before:Location.t -> after:Location.t -> unit
 (** [relocate src before after] moves (changes the association with
