@@ -895,7 +895,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         $ fmt_pattern c (sub_pat ~ctx pat)
         $ fmt ")" )
 
-and fmt_fun_args c args =
+and fmt_fun_args c ?(pro= fmt "") args =
   let fmt_fun_arg = function
     | Val (Nolabel, xpat, None) -> fmt_pattern c xpat
     | Val
@@ -956,7 +956,7 @@ and fmt_fun_args c args =
              $ list names "@ " (fun {txt; loc} ->
                    Cmts.fmt c.cmts loc @@ str txt ) ))
   in
-  fmt_if_k (not (List.is_empty args)) (list args "@ " fmt_fun_arg $ fmt "@ ")
+  fmt_if_k (not (List.is_empty args)) (pro $ list args "@ " fmt_fun_arg)
 
 and fmt_body c ({ast= body} as xbody) =
   let ctx = Exp body in
@@ -968,8 +968,8 @@ and fmt_body c ({ast= body} as xbody) =
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
-and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
-    ({ast= exp} as xexp) =
+and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
+  =
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -1152,7 +1152,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                   ( str "%"
                   $ hovbox 2
                       ( str txt $ fmt " "
-                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "->") )
+                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "@ ->") )
                   $ fmt "@ " $ fmt_expression c xbody ))
            $ fmt "@ ;@ "
            $ list
@@ -1183,7 +1183,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                   ( str "%"
                   $ hovbox 2
                       ( str txt $ fmt " "
-                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "->") )
+                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "@ ->") )
                   $ fmt "@ " $ fmt_expression c xbody )) ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "get")}
@@ -1319,7 +1319,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
                          $ fmt_cmts
                            @@ hvbox 0
                                 ( fmt "(fun " $ fmt_fun_args c xargs
-                                $ fmt "->" ) )
+                                $ fmt "@ ->" ) )
                      $ fmt "@;<1 2>"
                      $ fmt_expression c
                          ?box:
@@ -1459,7 +1459,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
           $ ( hovbox 4
                 ( fmt "fun "
                 $ fmt_attributes c ~key:"@" pexp_attributes ~suf:(fmt " ")
-                $ fmt_fun_args c xargs )
+                $ fmt_fun_args c xargs $ fmt "@ " )
             $ fmt "->" )
           $ fmt_body c xbody )
         $ fits_breaks_if parens ")" "@ )" )
@@ -1866,7 +1866,7 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
                      fmt "@;"
                      $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_)) )
                )
-           $ fmt_if Poly.(fields <> []) "@\n"
+           $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
                (list fields "@\n" (fun cf -> fmt_class_field c ctx cf)) )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
@@ -1886,7 +1886,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                      fmt "@;"
                      $ wrap "(" ")" (fmt_core_type c (sub_typ ~ctx self_))
                  ) )
-           $ fmt_if Poly.(fields <> []) "@\n"
+           $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
                (list fields "@\n" (fun cf -> fmt_class_type_field c ctx cf))
            )
@@ -2026,7 +2026,8 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
         $ ( open_hovbox 2
-          $ (hovbox 4 (fmt "fun " $ fmt_fun_args c xargs) $ fmt "->")
+          $ ( hovbox 4 (fmt "fun " $ fmt_fun_args c xargs $ fmt "@ ")
+            $ fmt "->" )
           $ close_box $ fmt "@ "
           $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody )
         $ fits_breaks_if parens ")" "@ )" )
@@ -2067,7 +2068,7 @@ and fmt_class_field c ctx (cf: class_field) =
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pcf_loc in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" pcf_attributes in
   let fmt_kind = function
-    | Cfk_virtual typ -> fmt ": " $ fmt_core_type c (sub_typ ~ctx typ)
+    | Cfk_virtual typ -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ)
     | Cfk_concrete
         ( _
         , { pexp_desc=
@@ -2087,7 +2088,7 @@ and fmt_class_field c ctx (cf: class_field) =
         in
         match cleanup [] e poly_args with
         | Some (args, t, e) ->
-            fmt ": " $ fmt "type "
+            fmt "@ : " $ fmt "type "
             $ list args "@ " (fun {txt; loc} ->
                   Cmts.fmt c.cmts loc @@ str txt )
             $ fmt ". "
@@ -2095,7 +2096,7 @@ and fmt_class_field c ctx (cf: class_field) =
             $ fmt " =@;"
             $ hvbox 2 (fmt_expression c (sub_exp ~ctx e))
         | None ->
-            fmt ": "
+            fmt "@ : "
             $ fmt_core_type c (sub_typ ~ctx poly)
             $ fmt " =@;"
             $ hvbox 2 (fmt_expression c (sub_exp ~ctx e)) )
@@ -2112,9 +2113,9 @@ and fmt_class_field c ctx (cf: class_field) =
           | {pexp_desc= Pexp_constraint _}, Some _ -> (poly, xbody)
           | _, poly -> (poly, xbody)
         in
-        fmt_fun_args c xargs
+        fmt_fun_args ~pro:(fmt "@ ") c xargs
         $ opt ty (fun t -> fmt " : " $ fmt_core_type c (sub_typ ~ctx t))
-        $ fmt "=@;"
+        $ fmt "@ =@;"
         $ hvbox 2 (fmt_expression c e)
     | Cfk_concrete (_, e) ->
         let ty, e =
@@ -2123,8 +2124,8 @@ and fmt_class_field c ctx (cf: class_field) =
           | _ -> (None, e)
         in
         opt ty (fun t ->
-            fmt ": " $ fmt_core_type c (sub_typ ~ctx t) $ fmt "@ " )
-        $ fmt "= "
+            fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t) $ fmt "@ " )
+        $ fmt "@ = "
         $ fmt_expression c (sub_exp ~ctx e)
   in
   let virtual_or_override = function
@@ -2145,12 +2146,12 @@ and fmt_class_field c ctx (cf: class_field) =
            hovbox 2
              ( fmt "method" $ virtual_or_override kind
              $ fmt_if Poly.(priv = Private) "@ private"
-             $ fmt "@ " $ str name.txt $ fmt "@ " $ fmt_kind kind )
+             $ fmt "@ " $ str name.txt $ fmt_kind kind )
        | Pcf_val (name, mut, kind) ->
            hovbox 2
              ( fmt "val" $ virtual_or_override kind
              $ fmt_if Poly.(mut = Mutable) "@ mutable"
-             $ fmt "@ " $ str name.txt $ fmt "@ " $ fmt_kind kind )
+             $ fmt "@ " $ str name.txt $ fmt_kind kind )
        | Pcf_constraint (t1, t2) ->
            fmt "constraint" $ fmt "@ "
            $ fmt_core_type c (sub_typ ~ctx t1)
@@ -2162,7 +2163,7 @@ and fmt_class_field c ctx (cf: class_field) =
            let doc, atrs = doc_atrs [atr] in
            fmt_docstring c ~epi:(fmt "") doc
            $ fmt_attributes c ~key:"@@@" atrs
-       | Pcf_extension ext -> fmt_extension c ctx "%%" ext $ fmt "@ " )
+       | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
 
 and fmt_class_type_field c ctx (cf: class_type_field) =
@@ -2201,7 +2202,7 @@ and fmt_class_type_field c ctx (cf: class_type_field) =
              let doc, atrs = doc_atrs [atr] in
              fmt_docstring c ~epi:(fmt "@\n") ~pro:(fmt "@\n") doc
              $ fmt_attributes c ~key:"@@@" atrs
-         | Pctf_extension ext -> fmt_extension c ctx "%%" ext $ fmt "@ " )
+         | Pctf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
 
 and fmt_cases c ctx cs =
@@ -2267,7 +2268,7 @@ and fmt_value_description c ctx vd =
         $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
-    $ fmt_attributes c ~pre:(fmt "@;<2 2>") ~box:false ~key:"@@" atrs
+    $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~box:false ~key:"@@" atrs
     $ fmt_if_k (not doc_before) (fmt_docstring c ~pro:(fmt "@\n") doc) )
 
 and fmt_tydcl_params c ctx params =
@@ -2364,7 +2365,8 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   $ fmt brk
 
 and fmt_label_declaration c ctx lbl_decl =
-  let {pld_mutable; pld_name= {txt; loc}; pld_type; pld_loc; pld_attributes} =
+  let {pld_mutable; pld_name= {txt; loc}; pld_type; pld_loc; pld_attributes}
+    =
     lbl_decl
   in
   let doc, atrs = doc_atrs pld_attributes in
@@ -2628,8 +2630,7 @@ and fmt_signature_item c {ast= si} =
   | Psig_extension (ext, atrs) ->
       hvbox 0
         ( fmt_extension c ctx "%%" ext
-        $ fmt "@ "
-        $ fmt_attributes c ~key:"@@" atrs )
+        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
   | Psig_include {pincl_mod; pincl_attributes} ->
       let doc, atrs = doc_atrs pincl_attributes in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
@@ -2674,9 +2675,9 @@ and fmt_signature_item c {ast= si} =
       fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
 
 and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
-  list_fl cls (fun ~first ~last cl ->
+  list_fl cls (fun ~first ~last:_ cl ->
       let {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}
-          =
+        =
         cl
       in
       let doc, atrs = doc_atrs pci_attributes in
@@ -2692,16 +2693,14 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
               $ fmt "@ "
               $ fmt_class_params c ctx ~epi:(fmt "@ ") pci_params
               $ str pci_name.txt $ fmt "@ " $ str sep )
-          $ fmt "@;<1000 0>"
-          $ fmt_class_type c (sub_cty ~ctx pci_expr)
           $ fmt "@;"
-          $ fmt_attributes c ~key:"@@" atrs )
-      $ fmt_if_k (not last) (fmt "@\n@\n") )
+          $ fmt_class_type c (sub_cty ~ctx pci_expr)
+          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs ) )
 
 and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
       let {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}
-          =
+        =
         cl
       in
       let xargs, xbody =
@@ -2720,19 +2719,19 @@ and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
            ~epi:
              (match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
            doc
-      $ hvbox 2
+      $ hovbox 2
           ( hovbox 2
               ( str (if first then "class" else "and")
               $ fmt_if Poly.(pci_virt = Virtual) "@ virtual"
               $ fmt "@ "
               $ fmt_class_params c ctx ~epi:(fmt "@ ") pci_params
-              $ str pci_name.txt $ fmt "@;<1 2>"
-              $ ( fmt_fun_args c xargs
+              $ str pci_name.txt
+              $ ( fmt_fun_args c ~pro:(fmt "@ ") xargs
                 $ opt ty (fun t ->
-                      fmt ":@ " $ fmt_class_type c (sub_cty ~ctx t) )
-                $ fmt "=" ) )
-          $ fmt "@;<1000 0>" $ fmt_class_expr c e $ fmt "@;" )
-      $ fmt_attributes c ~key:"@@" atrs )
+                      fmt "@ :@ " $ fmt_class_type c (sub_cty ~ctx t) )
+                $ fmt "@ =" ) )
+          $ fmt "@;" $ fmt_class_expr c e )
+      $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
 
 and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
   let {txt= name; loc} = name in
@@ -3267,9 +3266,9 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
        * as let f: type r s. r s t = e *)
       | Some (xpat, pvars, xtyp, xbody) ->
           let fmt_cstr =
-            fmt ": type "
+            fmt "@ : type "
             $ list pvars " " (fun {txt} -> str txt)
-            $ fmt ".@ " $ fmt_core_type c xtyp $ fmt "@ "
+            $ fmt ".@ " $ fmt_core_type c xtyp
           in
           (xpat, [], Some fmt_cstr, xbody)
       | None ->
@@ -3290,7 +3289,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
                 (None, xbody)
             | Pexp_constraint (exp, typ) ->
                 ( Some
-                    (fmt_core_type c ~pro:":" (sub_typ ~ctx typ) $ fmt "@ ")
+                    (fmt "@ " $ fmt_core_type c ~pro:":" (sub_typ ~ctx typ))
                 , sub_exp ~ctx exp )
             | _ -> (None, xbody)
           in
@@ -3309,9 +3308,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             ( str keyword
             $ fmt_extension_suffix c ext
             $ fmt_if_k (Option.is_some in_) (fmt_attributes c ~key:"@" atrs)
-            $ fmt " " $ fmt_pattern c xpat $ fmt "@ " $ fmt_fun_args c xargs
+            $ fmt " " $ fmt_pattern c xpat
+            $ fmt_fun_args c ~pro:(fmt "@ ") xargs
             $ Option.call ~f:fmt_cstr )
-        $ fmt "=" )
+        $ fmt "@ =" )
       $ fmt_body c xbody
       $ fmt_if_k (Option.is_none in_) (fmt_attributes c ~key:"@@" atrs)
       $ Cmts.fmt_after c.cmts pvb_loc

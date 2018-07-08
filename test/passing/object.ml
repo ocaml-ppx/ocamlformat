@@ -7,16 +7,16 @@ let _ =
     method virtual x : t
     method virtual private x : t
     method! private x = 3
-    method! private x  : t= 4
+    method! private x : t = 4
     method! private x : type a b c. r = 5
     method! private x : type a. r = 6
     val virtual x : t
     val virtual mutable x : t
     val virtual mutable x : t
     val! mutable x = 7
-    val! mutable x : t = 8
+    val! mutable x : t  = 8
     constraint t = 'a t
-    [%%ext salut, "hello"] 
+    [%%ext salut, "hello"]
     [@@@attr]
     initializer f x ; 9
     method x =
@@ -25,7 +25,7 @@ let _ =
     method x : type a b c. (a, b) t -> c =
       let f = {<a; b = e>} in
       x <- expr
-    method x  : (a, b) t -> c=
+    method x : (a, b) t -> c =
       let f =
         {< a
         ;  b = something very
@@ -58,10 +58,8 @@ class t ~a =
     inherit f a
     method x a b = a + b
   end
-  
 
-class type mapper =
-  [%test] 
+class type mapper = [%test]
 
 module type A = sig
   class mapper :
@@ -70,22 +68,22 @@ module type A = sig
     -> ?y:int
     -> object
          method xxxxxxxxxxxxxxxxxxxxxxxxxxx : int
-       end 
+       end
 
   class tttttttttttt :
     aaaaaaaaaaaaaaaaaa:int
     -> bbbbbbbbbbbbbbbbbbbbb:float
-    -> cccccccccccccccccccc 
+    -> cccccccccccccccccccc
 
   class c :
     object
       inherit ['a a] d
       constraint 'a = int
-      [%%ext something] 
+      [%%ext something]
       [@@@attr something]
       val virtual mutable a : int
       method virtual private b : int -> int -> int
-    end 
+    end
 end
 
 class type mapper =
@@ -102,7 +100,7 @@ class type mapper =
       -> ccccccccccc
       -> d
       -> e
-  end 
+  end
 
 class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbb =
@@ -110,30 +108,30 @@ class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
     inherit f a
     method x a b = a + b
   end
-  
 
 class tttttttttttttttttttttttttt x y =
   let open Mod in
   let x = 2 in
-  let f x = object
-              inherit f a
-              method x a b = a + b
-            end in
+  let f x =
+    object
+      inherit f a
+      method x a b = a + b
+    end
+  in
   f 0
-  
 
 class tttttttttttttttttttttttttt x y =
   let open Mod in
   let x = 2 in
-  (fun x -> object
-              inherit f a
-              method x a b = a + b
-            end) 0
-  
+  (fun x ->
+    object
+      inherit f a
+      method x a b = a + b
+    end )
+    0
 
 class c =
   object
     method a : type a b c. d -> e -> f = g
     method a : 'a. d -> e -> f = g
   end
-  
