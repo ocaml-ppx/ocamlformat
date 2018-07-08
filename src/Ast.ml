@@ -868,7 +868,10 @@ end = struct
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
        |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _ ->
           assert false )
-    | Mod {pmod_desc= Pmod_unpack e1} -> assert (e1 == exp)
+    | Mod {pmod_desc= Pmod_unpack e1} -> (
+      match e1 with
+      | {pexp_desc= Pexp_constraint (e, _); _} -> assert (e == exp)
+      | e -> assert (e == exp) )
     | Cl ctx ->
         let rec loop ctx =
           match ctx.pcl_desc with

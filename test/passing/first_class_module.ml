@@ -50,3 +50,7 @@ let f (module M : S with type a = int and type b = int) = M.va + M.vb
 module type M = sig
   val storage : (module S with type t = t)
 end
+
+let _ =
+  let module M = (val m : M) in
+  ()
