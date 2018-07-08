@@ -8,6 +8,12 @@ let f = function
 
 let _ = "\010\xFFa\o123\n\\\u{12345}aa🐪🐪🐪🐪🐪\n"
 
+let _ =
+  "aaaaaaaaaaaaaaaaaaaaaaaaa\n	\
+   bbbbbbbbbbbbbbbbbbbbbbbbbb\n	\
+   cccccccccccccccccc\n	\
+   "
+
 let _ = ('\xff', '\255', '\n')
 
 let f = function '\xff'..'\255' -> ()

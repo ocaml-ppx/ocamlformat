@@ -10,7 +10,6 @@
  **********************************************************************)
 
 include Ast_407
-
 module Current = Migrate_parsetree.OCaml_current.Ast
 
 module Parse = struct
