@@ -1761,20 +1761,24 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
   | Pexp_for (p1, e1, e2, dir, e3) ->
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
-           ( hvbox 2
-               ( hvbox 0
-                   ( fmt "for"
-                   $ fmt_extension_suffix c ext
-                   $ fmt "@ "
-                   $ fmt_pattern c (sub_pat ~ctx p1)
-                   $ fmt "@ = "
-                   $ fmt_expression c (sub_exp ~ctx e1)
-                   $ fmt (if Poly.(dir = Upto) then "@ to " else "@ downto ")
-                   $ fmt_expression c (sub_exp ~ctx e2)
-                   $ fmt "@ do" )
-               $ fmt "@ "
-               $ fmt_expression c (sub_exp ~ctx e3) )
-           $ fmt "@ done" ))
+           (hovbox 0
+              ( hvbox 2
+                  ( hvbox 0
+                      ( fmt "for"
+                      $ fmt_extension_suffix c ext
+                      $ fmt "@;<1 2>"
+                      $ hovbox 0
+                          ( fmt_pattern c (sub_pat ~ctx p1)
+                          $ fmt "@ =@;<1 2>"
+                          $ fmt_expression c (sub_exp ~ctx e1)
+                          $ fmt
+                              ( if Poly.(dir = Upto) then "@ to "
+                              else "@ downto " )
+                          $ fmt_expression c (sub_exp ~ctx e2) )
+                      $ fmt "@;do" )
+                  $ fmt "@;<1000 0>"
+                  $ fmt_expression c (sub_exp ~ctx e3) )
+              $ fmt "@;<1000 0>done" )))
       $ fmt_atrs
   | Pexp_coerce (e1, t1, t2) ->
       hvbox 2
@@ -1787,16 +1791,17 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
   | Pexp_while (e1, e2) ->
       hvbox 0
         ( wrap_fits_breaks_if parens "(" ")"
-            ( hvbox 2
-                ( hvbox 0
-                    ( fmt "while"
-                    $ fmt_extension_suffix c ext
-                    $ fmt "@ "
-                    $ fmt_expression c (sub_exp ~ctx e1)
-                    $ fmt "@ do" )
-                $ fmt "@ "
-                $ fmt_expression c (sub_exp ~ctx e2) )
-            $ fmt "@ done" )
+            (hovbox 0
+               ( hvbox 2
+                   ( hvbox 0
+                       ( fmt "while"
+                       $ fmt_extension_suffix c ext
+                       $ fmt "@;<1 2>"
+                       $ fmt_expression c (sub_exp ~ctx e1)
+                       $ fmt "@;do" )
+                   $ fmt "@;<1000 0>"
+                   $ fmt_expression c (sub_exp ~ctx e2) )
+               $ fmt "@;<1000 0>done" ))
         $ fmt_atrs )
   | Pexp_unreachable -> fmt "."
   | Pexp_send (exp, {txt; loc}) ->

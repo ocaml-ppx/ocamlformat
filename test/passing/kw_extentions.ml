@@ -12,8 +12,12 @@ let () =
   if%ext true then () else () ;
   if%ext true then () else if true then () else () ;
   let%ext x = () in
-  for%ext i = 1 to 10 do () done ;
-  while%ext false do () done ;
+  for%ext i = 1 to 10 do
+    ()
+  done ;
+  while%ext false do
+    ()
+  done ;
   match%ext x with _ -> ()
 
 let () =
