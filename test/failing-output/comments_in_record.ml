@@ -10,7 +10,7 @@ type t =
   ; d: [`something_looooooooooooooooooooooooooooooooong] }
 
 type t =
-  { a: int  (** some comment *)
+  { a: int (** some comment *)
   ; b: float
   ; c: string
   ; d: [`something_looooooooooooooooooooooooooooooooong] }
