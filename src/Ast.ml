@@ -1046,7 +1046,6 @@ end = struct
         | "~-" | "~+" -> Some (UMinus, Non)
         | _ ->
           match i.[0] with
-          | '-' | '+' -> Some (UMinus, Non)
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) )
       | Pexp_apply
@@ -1125,10 +1124,7 @@ end = struct
         | "~-" | "~+" -> Some UMinus
         | "!=" -> Some Apply
         | _ ->
-          match i.[0] with
-          | '-' | '+' -> Some UMinus
-          | '!' | '?' | '~' -> Some High
-          | _ -> Some Apply )
+          match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
       | Pexp_apply
           ( { pexp_desc=
                 Pexp_ident
