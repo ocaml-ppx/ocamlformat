@@ -82,6 +82,10 @@ val fmt_after : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
+val fmt_within : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+(** [fmt_within loc] formats the comments associated with [loc] that appear
+    within [loc]. *)
+
 val fmt :
      t
   -> ?pro:Fmt.t
