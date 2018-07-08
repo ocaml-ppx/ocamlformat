@@ -19,6 +19,7 @@ open Parsetree
 type t =
   { cmts_before: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
+  ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
   ; docs_memo: (string loc, unit) Hashtbl.t
   ; conf: Conf.t }
@@ -210,8 +211,6 @@ module CmtSet : sig
 
   val is_empty : t -> bool
 
-  val append : t -> t -> t
-
   val split : t -> Location.t -> t * t * t
   (** [split s {loc_start; loc_end}] splits [s] into the subset of comments
       that end before [loc_start], those that start after [loc_end], and
@@ -265,14 +264,6 @@ end = struct
         , Map.add_multi emap ~key:loc ~data:cmt ) )
 
   let to_list (smap, _) = List.concat (Map.data smap)
-
-  let append (smap1, emap1) (smap2, emap2) =
-    match
-      ( Map.append ~lower_part:smap1 ~upper_part:smap2
-      , Map.append ~lower_part:emap1 ~upper_part:emap2 )
-    with
-    | `Ok smap, `Ok emap -> (smap, emap)
-    | _ -> internal_error "overlapping key ranges" []
 
   let split (t: t) (loc: Location.t) =
     let addo m kvo =
@@ -344,7 +335,9 @@ let add_cmts t ?prev ?next tbl loc cmts =
               ~f:(string_between cmt_loc)
           in
           Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n"
-            (if phys_equal tbl t.cmts_before then "before" else "after")
+            ( if phys_equal tbl t.cmts_before then "before"
+            else if phys_equal tbl t.cmts_after then "after"
+            else "within" )
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next) ) ;
     Hashtbl.add_exn tbl ~key:loc ~data:cmtl )
@@ -370,13 +363,11 @@ let rec place t loc_tree ?prev_loc locs cmts =
       in
       add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_before curr_loc
         before_curr ;
-      let after =
-        match Loc_tree.children loc_tree curr_loc with
-        | [] -> CmtSet.append within after
-        | children ->
-            place t loc_tree children within ;
-            after
-      in
+      ( match Loc_tree.children loc_tree curr_loc with
+      | [] ->
+          add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_within curr_loc
+            within
+      | children -> place t loc_tree children within ) ;
       place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] ->
     match prev_loc with
@@ -421,6 +412,7 @@ let init map_ast loc_of_ast source conf asts comments_n_docstrings =
     { docs_memo= Hashtbl.Poly.create ()
     ; cmts_before= Hashtbl.Poly.create ()
     ; cmts_after= Hashtbl.Poly.create ()
+    ; cmts_within= Hashtbl.Poly.create ()
     ; source
     ; conf }
   in
@@ -547,12 +539,19 @@ let fmt_before t ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
   fmt_cmts t t.cmts_before ?pro ~epi ?eol ?adj
 
 let fmt_after t ?(pro= Fmt.break_unless_newline 1 0) ?epi =
-  fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "")
+  let within = fmt_cmts t t.cmts_within ~pro ?epi in
+  let after = fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "") in
+  fun loc -> within loc $ after loc
 
-let fmt t ?pro ?epi ?eol ?adj loc =
-  Fmt.wrap_k
-    (fmt_before t ?pro ?epi ?eol ?adj loc)
-    (fmt_after t ?pro ?epi loc)
+let fmt_within t ?(pro= Fmt.break_unless_newline 1 0)
+    ?(epi= Fmt.break_unless_newline 1 0) =
+  fmt_cmts t t.cmts_within ~pro ~epi ~eol:(Fmt.fmt "")
+
+let fmt t ?pro ?epi ?eol ?adj loc k =
+  let before = fmt_before t ?pro ?epi ?eol ?adj loc in
+  let inner = k in
+  let after = fmt_after t ?pro ?epi loc in
+  before $ inner $ after
 
 let fmt_list t ?pro ?epi ?eol locs init =
   List.fold locs ~init ~f:(fun k loc -> fmt t ?pro ?epi ?eol loc @@ k)
@@ -573,7 +572,9 @@ let final_check t =
     in
     internal_error "formatting lost comments"
       (Hashtbl.fold t.cmts_before ~f:(f "before")
-         ~init:(Hashtbl.fold t.cmts_after ~f:(f "after") ~init:[]))
+         ~init:
+           (Hashtbl.fold t.cmts_after ~f:(f "after")
+              ~init:(Hashtbl.fold t.cmts_within ~f:(f "within") ~init:[])))
 
 let diff x y =
   let norm z =
