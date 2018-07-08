@@ -83,10 +83,13 @@ let begins_line t (l: Location.t) =
   begins_line_ l.loc_start.pos_cnum
 
 let ends_line t (l: Location.t) =
+  let len = String.length t in
   let rec ends_line_ cnum =
-    match t.[cnum] with
-    | '\n' | '\r' -> true
-    | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
-    | _ -> false
+    if cnum >= len then true
+    else
+      match t.[cnum] with
+      | '\n' | '\r' -> true
+      | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
+      | _ -> false
   in
   ends_line_ l.loc_end.pos_cnum
