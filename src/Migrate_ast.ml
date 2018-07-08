@@ -9,19 +9,21 @@
  *                                                                    *
  **********************************************************************)
 
-include Ast_406
+include Ast_407
+
+module Current = Migrate_parsetree.OCaml_current.Ast
 
 module Parse = struct
   open Migrate_parsetree
 
-  let implementation = Parse.implementation Versions.ocaml_406
+  let implementation = Parse.implementation Versions.ocaml_407
 
-  let interface = Parse.interface Versions.ocaml_406
+  let interface = Parse.interface Versions.ocaml_407
 
-  let use_file = Parse.use_file Versions.ocaml_406
+  let use_file = Parse.use_file Versions.ocaml_407
 end
 
-let to_current = Migrate_parsetree.Versions.(migrate ocaml_406 ocaml_current)
+let to_current = Migrate_parsetree.Versions.(migrate ocaml_407 ocaml_current)
 
 module Printast = struct
   open Printast
@@ -48,15 +50,14 @@ module Printast = struct
         top_phrase f
           ( match (x : Parsetree.toplevel_phrase) with
           | Parsetree.Ptop_def x -> Ptop_def (to_current.copy_structure x)
-          | Ptop_dir (a, b) ->
-              let open Parsetree in
+          | Parsetree.Ptop_dir (a, b) ->
               let b =
                 match b with
-                | Pdir_none -> Pdir_none
-                | Pdir_string s -> Pdir_string s
-                | Pdir_int (s, c) -> Pdir_int (s, c)
-                | Pdir_ident i -> Pdir_ident i
-                | Pdir_bool b -> Pdir_bool b
+                | Pdir_none -> Current.Parsetree.Pdir_none
+                | Pdir_string s -> Current.Parsetree.Pdir_string s
+                | Pdir_int (s, c) -> Current.Parsetree.Pdir_int (s, c)
+                | Pdir_ident i -> Current.Parsetree.Pdir_ident i
+                | Pdir_bool b -> Current.Parsetree.Pdir_bool b
               in
               Ptop_dir (a, b) ) )
 end
