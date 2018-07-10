@@ -14,12 +14,9 @@ type t = string
 
 let create s = s
 
-let string_between t ?(inclusive= false) (l1: Location.t) (l2: Location.t) =
-  let inclusive_or_not = if inclusive then 0 else 1 in
-  let pos = l1.loc_end.pos_cnum + inclusive_or_not in
-  let len =
-    l2.loc_start.pos_cnum - l1.loc_end.pos_cnum - inclusive_or_not
-  in
+let string_between t (l1: Location.t) (l2: Location.t) =
+  let pos = l1.loc_end.pos_cnum in
+  let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum in
   if len >= 0 then Some (String.sub t ~pos ~len)
   else
     (* can happen e.g. if comment is within a parenthesized expression *)
@@ -83,10 +80,13 @@ let begins_line t (l: Location.t) =
   begins_line_ l.loc_start.pos_cnum
 
 let ends_line t (l: Location.t) =
+  let len = String.length t in
   let rec ends_line_ cnum =
-    match t.[cnum] with
-    | '\n' | '\r' -> true
-    | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
-    | _ -> false
+    if cnum >= len then true
+    else
+      match t.[cnum] with
+      | '\n' | '\r' -> true
+      | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
+      | _ -> false
   in
   ends_line_ l.loc_end.pos_cnum

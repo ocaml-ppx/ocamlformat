@@ -9,8 +9,14 @@ let () =
   [%foo function[@foo] x -> ()] ;
   [%foo try[@foo] () with _ -> ()] ;
   [%foo if [@foo] () then () else ()] ;
-  [%foo (while () do () done) [@foo]] ;
-  [%foo (for x = () to () do () done) [@foo]] ;
+  [%foo
+    ( while () do
+        ()
+      done ) [@foo]] ;
+  [%foo
+    ( for x = () to () do
+        ()
+      done ) [@foo]] ;
   () ;%foo
   () ;
   [%foo (assert true) [@foo]] ;
@@ -38,7 +44,6 @@ class x =
       method! private x = 3 [@@foo]
       initializer x [@@foo]
     end [@foo] ) [@foo]
-  
 
 (* Class type expressions *)
 class type t =
@@ -49,7 +54,7 @@ class type t =
     method x : t [@@foo]
     method private x : t [@@foo]
     constraint t = t' [@@foo]
-  end[@foo] 
+  end[@foo]
 
 (* Type expressions *)
 type t = [%foo : ((module M)[@foo])]
@@ -58,10 +63,11 @@ type t = [%foo : ((module M)[@foo])]
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 
 (* Module type expression *)
-module type S = functor [@foo1] (M :
-  S) -> functor (_ :(module type of 
-  M)
-[@foo2]) -> sig end [@foo3]
+module type S = functor [@foo1]
+  (M : S)
+  -> functor
+  (_ :(module type of  M) [@foo2])
+  -> sig end [@foo3]
 
 (* Structure items *)
 let%foo x = 4[@@foo]
@@ -77,16 +83,13 @@ and t = int [@@foo]]
 type t += T [@@foo]]
 
 [%%foo
-class x =
-  x
-  [@@foo]]
+class x = x [@@foo]]
 
 [%%foo
-class type x =
-  x [@@foo]]
+class type x = x [@@foo]]
 
 [%%foo
-external x : _ = ""  [@@foo]]
+external x : _ = "" [@@foo]]
 
 [%%foo
 exception X [@@foo]]
@@ -109,37 +112,31 @@ open M [@@foo]]
 
 (* Signature items *)
 module type S = sig
-  [%%foo : val x : t  [@@foo]] 
+  [%%foo : val x : t [@@foo]]
 
-  [%%foo : external x : t = ""  [@@foo]] 
+  [%%foo : external x : t = "" [@@foo]]
 
   [%%foo : type t = int [@@foo]
- and t' = int [@@foo]] 
+ and t' = int [@@foo]]
 
-  [%%foo : type t += T [@@foo]] 
+  [%%foo : type t += T [@@foo]]
 
-  [%%foo : exception X [@@foo]] 
+  [%%foo : exception X [@@foo]]
 
-  [%%foo : module M : S [@@foo]] 
+  [%%foo : module M : S [@@foo]]
 
   [%%foo : module rec M : S [@@foo]
-           and M : S [@@foo]] 
+           and M : S [@@foo]]
 
-  [%%foo : module M = M [@@foo]] 
+  [%%foo : module M = M [@@foo]]
 
-  [%%foo : module type S = S [@@foo]] 
+  [%%foo : module type S = S [@@foo]]
 
-  [%%foo : include M[@@foo]] 
+  [%%foo : include M[@@foo]]
 
-  [%%foo : open M [@@foo]] 
+  [%%foo : open M [@@foo]]
 
-  [%%foo
-  : class x :
-      t [@@foo]]
-  
+  [%%foo : class x : t [@@foo]]
 
-  [%%foo
-  : class type x =
-      x [@@foo]]
-  
+  [%%foo : class type x = x [@@foo]]
 end

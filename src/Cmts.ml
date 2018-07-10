@@ -19,6 +19,7 @@ open Parsetree
 type t =
   { cmts_before: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
+  ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
   ; docs_memo: (string loc, unit) Hashtbl.t
   ; conf: Conf.t }
@@ -210,8 +211,6 @@ module CmtSet : sig
 
   val is_empty : t -> bool
 
-  val append : t -> t -> t
-
   val split : t -> Location.t -> t * t * t
   (** [split s {loc_start; loc_end}] splits [s] into the subset of comments
       that end before [loc_start], those that start after [loc_end], and
@@ -266,38 +265,23 @@ end = struct
 
   let to_list (smap, _) = List.concat (Map.data smap)
 
-  let append (smap1, emap1) (smap2, emap2) =
-    match
-      ( Map.append ~lower_part:smap1 ~upper_part:smap2
-      , Map.append ~lower_part:emap1 ~upper_part:emap2 )
-    with
-    | `Ok smap, `Ok emap -> (smap, emap)
-    | _ -> internal_error "overlapping key ranges" []
-
-  let split (smap, emap) (loc: Location.t) =
+  let split (t: t) (loc: Location.t) =
     let addo m kvo =
       Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
-    let partition dir (smap, emap) (loc: Location.t) =
-      let before, equal, after = Map.split smap loc in
-      let s_dir, s_ndir =
-        match dir with
-        | `Before -> (before, addo after equal)
-        | `After -> (after, addo before equal)
+    let partition ((smap, emap): t) (loc: Location.t) =
+      let s_before, s_equal, s_after = Map.split smap loc in
+      let s_after = addo s_after s_equal in
+      let e_before, e_after =
+        Map.partitioni_tf emap ~f:(fun ~key ~data:_ -> Map.mem s_before key)
       in
-      let e_dir, e_ndir =
-        Map.partitioni_tf emap ~f:(fun ~key ~data:_ -> Map.mem s_dir key)
-      in
-      ((s_dir, e_dir), (s_ndir, e_ndir))
+      ((s_before, e_before), (s_after, e_after))
     in
-    let (s_after, e_after), (s_nafter, e_nafter) =
-      partition `After (smap, emap) {loc with loc_start= loc.loc_end}
+    let nafter, after = partition t {loc with loc_start= loc.loc_end} in
+    let before, within =
+      partition nafter {loc with loc_end= loc.loc_start}
     in
-    let (e_before, s_before), (e_within, s_within) =
-      partition `Before (e_nafter, s_nafter)
-        {loc with loc_end= loc.loc_start}
-    in
-    ((s_before, e_before), (s_within, e_within), (s_after, e_after))
+    (before, within, after)
 end
 
 (** Heuristic to determine if two locations should be considered "adjacent".
@@ -337,21 +321,23 @@ let add_cmts t ?prev ?next tbl loc cmts =
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug then
       List.iter cmtl ~f:(fun (cmt_txt, cmt_loc) ->
-          let string_between_inclusive (l1: Location.t) (l2: Location.t) =
-            match Source.string_between t.source ~inclusive:true l1 l2 with
+          let string_between (l1: Location.t) (l2: Location.t) =
+            match Source.string_between t.source l1 l2 with
             | None -> "swapped"
             | Some s -> s
           in
           let btw_prev =
             Option.value_map prev ~default:"no prev"
-              ~f:(Fn.flip string_between_inclusive cmt_loc)
+              ~f:(Fn.flip string_between cmt_loc)
           in
           let btw_next =
             Option.value_map next ~default:"no next"
-              ~f:(string_between_inclusive cmt_loc)
+              ~f:(string_between cmt_loc)
           in
           Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n"
-            (if phys_equal tbl t.cmts_before then "before" else "after")
+            ( if phys_equal tbl t.cmts_before then "before"
+            else if phys_equal tbl t.cmts_after then "after"
+            else "within" )
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next) ) ;
     Hashtbl.add_exn tbl ~key:loc ~data:cmtl )
@@ -377,13 +363,11 @@ let rec place t loc_tree ?prev_loc locs cmts =
       in
       add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_before curr_loc
         before_curr ;
-      let after =
-        match Loc_tree.children loc_tree curr_loc with
-        | [] -> CmtSet.append within after
-        | children ->
-            place t loc_tree children within ;
-            after
-      in
+      ( match Loc_tree.children loc_tree curr_loc with
+      | [] ->
+          add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_within curr_loc
+            within
+      | children -> place t loc_tree children within ) ;
       place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] ->
     match prev_loc with
@@ -428,6 +412,7 @@ let init map_ast loc_of_ast source conf asts comments_n_docstrings =
     { docs_memo= Hashtbl.Poly.create ()
     ; cmts_before= Hashtbl.Poly.create ()
     ; cmts_after= Hashtbl.Poly.create ()
+    ; cmts_within= Hashtbl.Poly.create ()
     ; source
     ; conf }
   in
@@ -440,14 +425,24 @@ let init map_ast loc_of_ast source conf asts comments_n_docstrings =
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n" (Fn.flip Loc_tree.dump) loc_tree ;
-    let locs = List.map asts ~f:loc_of_ast in
+    let locs = loc_of_ast asts in
     let cmts = CmtSet.of_list comments in
     place t loc_tree locs cmts ) ;
   t
 
-let init_impl = init map_structure (fun {Parsetree.pstr_loc} -> pstr_loc)
+let init_impl =
+  init map_structure (List.map ~f:(fun {Parsetree.pstr_loc} -> pstr_loc))
 
-let init_intf = init map_signature (fun {Parsetree.psig_loc} -> psig_loc)
+let init_intf =
+  init map_signature (List.map ~f:(fun {Parsetree.psig_loc} -> psig_loc))
+
+let init_use_file =
+  init Migrate_ast.map_use_file
+    (List.concat_map ~f:(fun toplevel_phrase ->
+         match (toplevel_phrase : toplevel_phrase) with
+         | Ptop_def items ->
+             List.map items ~f:(fun {Parsetree.pstr_loc} -> pstr_loc)
+         | Ptop_dir _ -> [] ))
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate t ~src ~before ~after =
@@ -544,12 +539,19 @@ let fmt_before t ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
   fmt_cmts t t.cmts_before ?pro ~epi ?eol ?adj
 
 let fmt_after t ?(pro= Fmt.break_unless_newline 1 0) ?epi =
-  fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "")
+  let within = fmt_cmts t t.cmts_within ~pro ?epi in
+  let after = fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "") in
+  fun loc -> within loc $ after loc
 
-let fmt t ?pro ?epi ?eol ?adj loc =
-  Fmt.wrap_k
-    (fmt_before t ?pro ?epi ?eol ?adj loc)
-    (fmt_after t ?pro ?epi loc)
+let fmt_within t ?(pro= Fmt.break_unless_newline 1 0)
+    ?(epi= Fmt.break_unless_newline 1 0) =
+  fmt_cmts t t.cmts_within ~pro ~epi ~eol:(Fmt.fmt "")
+
+let fmt t ?pro ?epi ?eol ?adj loc k =
+  let before = fmt_before t ?pro ?epi ?eol ?adj loc in
+  let inner = k in
+  let after = fmt_after t ?pro ?epi loc in
+  before $ inner $ after
 
 let fmt_list t ?pro ?epi ?eol locs init =
   List.fold locs ~init ~f:(fun k loc -> fmt t ?pro ?epi ?eol loc @@ k)
@@ -570,7 +572,9 @@ let final_check t =
     in
     internal_error "formatting lost comments"
       (Hashtbl.fold t.cmts_before ~f:(f "before")
-         ~init:(Hashtbl.fold t.cmts_after ~f:(f "after") ~init:[]))
+         ~init:
+           (Hashtbl.fold t.cmts_after ~f:(f "after")
+              ~init:(Hashtbl.fold t.cmts_within ~f:(f "within") ~init:[])))
 
 let diff x y =
   let norm z =

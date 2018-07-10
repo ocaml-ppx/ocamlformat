@@ -37,3 +37,5 @@ let _ =
          loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
      then ()
      else () )
+
+let () = if [@test] true then () else if [@other] true then ()

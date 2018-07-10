@@ -12,8 +12,8 @@
 (** Configuration options *)
 
 type t = private
-  { margin: int  (** Format code to fit within [margin] columns. *)
-  ; sparse: bool  (** Generate more sparsely formatted code if true. *)
+  { margin: int (** Format code to fit within [margin] columns. *)
+  ; sparse: bool (** Generate more sparsely formatted code if true. *)
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
             [max_iters] iterations. *)
@@ -23,19 +23,19 @@ type t = private
         (** Escape encoding for string literals. *)
   ; break_string_literals: [`Never | `Newlines | `Wrap]
         (** How to potentially break string literals into new lines. *)
-  ; wrap_comments: bool  (** Wrap comments at margin. *)
+  ; wrap_comments: bool (** Wrap comments at margin. *)
   ; doc_comments: [`Before | `After]
   ; parens_tuple: [`Always | `Multi_line_only]
   ; if_then_else: [`Compact | `Keyword_first]
   ; break_infix: [`Wrap | `Fit_or_vertical]
-  ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *) }
+  ; ocp_indent_compat: bool (** Try to indent like ocp-indent *) }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
-  | In_out of [`Impl | `Intf] input * string option
+  | In_out of [`Impl | `Intf | `Use_file] input * string option
       (** Format input file of given kind to output file, or stdout if None. *)
-  | Inplace of [`Impl | `Intf] input list
+  | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
 
 val action : action

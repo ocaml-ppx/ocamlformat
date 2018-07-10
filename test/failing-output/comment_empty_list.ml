@@ -1,3 +1,0 @@
-;; []
-
-(* this list is empty *)

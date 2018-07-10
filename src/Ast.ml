@@ -235,8 +235,40 @@ type prec =
   | High
   | Atomic
 
+let string_of_prec = function
+  | Low -> "Low"
+  | Semi -> "Semi"
+  | LessMinus -> "LessMinus"
+  | ColonEqual -> "ColonEqual"
+  | As -> "As"
+  | Comma -> "Comma"
+  | MinusGreater -> "MinusGreater"
+  | BarBar -> "BarBar"
+  | AmperAmper -> "AmperAmper"
+  | InfixOp0 -> "InfixOp0"
+  | InfixOp1 -> "InfixOp1"
+  | ColonColon -> "ColonColon"
+  | InfixOp2 -> "InfixOp2"
+  | InfixOp3 -> "InfixOp3"
+  | InfixOp4 -> "InfixOp4"
+  | UMinus -> "UMinus"
+  | Apply -> "Apply"
+  | Dot -> "Dot"
+  | HashOp -> "HashOp"
+  | High -> "High"
+  | Atomic -> "Atomic"
+
+let _ = string_of_prec
+
 (** Associativities of Ast terms. *)
 type assoc = Left | Non | Right
+
+let string_of_assoc = function
+  | Left -> "Left"
+  | Non -> "Non"
+  | Right -> "Right"
+
+let _ = string_of_assoc
 
 (** Compute associativity from precedence, since associativity is uniform
     across precedence levels. *)
@@ -868,7 +900,10 @@ end = struct
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
        |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _ ->
           assert false )
-    | Mod {pmod_desc= Pmod_unpack e1} -> assert (e1 == exp)
+    | Mod {pmod_desc= Pmod_unpack e1} -> (
+      match e1 with
+      | {pexp_desc= Pexp_constraint (e, _); _} -> assert (e == exp)
+      | e -> assert (e == exp) )
     | Cl ctx ->
         let rec loop ctx =
           match ctx.pcl_desc with
@@ -1041,13 +1076,11 @@ end = struct
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
-      | Pexp_apply (op, _) when op == exp -> Some (Low, Non)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_]) -> (
         match i with
         | "~-" | "~+" -> Some (UMinus, Non)
         | _ ->
           match i.[0] with
-          | '-' | '+' -> Some (UMinus, Non)
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) )
       | Pexp_apply
@@ -1056,7 +1089,7 @@ end = struct
                   {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
             }
           , (_, a1) :: (_, a2) :: _ ) ->
-          if a1 == exp then Some (Dot, Non)
+          if a1 == exp then Some (Dot, Left)
           else if a2 == exp then Some (Comma, Left)
           else Some (Comma, Right)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [(_, e1); _])
@@ -1126,10 +1159,7 @@ end = struct
         | "~-" | "~+" -> Some UMinus
         | "!=" -> Some Apply
         | _ ->
-          match i.[0] with
-          | '-' | '+' -> Some UMinus
-          | '!' | '?' | '~' -> Some High
-          | _ -> Some Apply )
+          match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
       | Pexp_apply
           ( { pexp_desc=
                 Pexp_ident
@@ -1294,6 +1324,7 @@ end = struct
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
               | Ppat_variant _ ) }
       , Ppat_or _ )
+     |Pat {ppat_desc= Ppat_lazy _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_tuple _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
      |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
@@ -1308,6 +1339,7 @@ end = struct
      |( Exp {pexp_desc= Pexp_fun _}
       , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
         true
+    | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
       , (Ppat_construct (_, Some _) | Ppat_variant (_, Some _)) ) ->
         true
@@ -1459,6 +1491,20 @@ end = struct
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
           exposed_right_exp ThenElse exp
       | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
+      | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _)
+        when exp2 == exp ->
+          false
+      | Pexp_apply
+          ( ( { pexp_desc=
+                  Pexp_extension
+                    ( _
+                    , PStr
+                        [ { pstr_desc=
+                              Pstr_eval ({pexp_desc= Pexp_new _}, []) } ] )
+              } as exp2 )
+          , _ )
+        when exp2 == exp ->
+          false
       | Pexp_record (flds, _)
         when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->
           exposed_right_exp Non_apply exp

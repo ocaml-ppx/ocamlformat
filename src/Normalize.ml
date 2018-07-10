@@ -57,12 +57,8 @@ let mapper =
       (List.sort ~compare:Poly.compare atrs)
   in
   let expr (m: Ast_mapper.mapper) exp =
-    let {pexp_desc; pexp_loc; pexp_attributes} = exp in
+    let {pexp_desc; pexp_attributes} = exp in
     match pexp_desc with
-    (* convert [(f x) y] to [f x y] *)
-    | Pexp_apply ({pexp_desc= Pexp_apply (f, xs)}, ys) ->
-        m.expr m
-          (Exp.apply ~loc:pexp_loc ~attrs:pexp_attributes f (xs @ ys))
     (* convert [~- int_const] to [-int_const] *)
     | Pexp_apply
         ( { pexp_desc= Pexp_ident {txt= Lident "~-"}
@@ -156,6 +152,10 @@ let impl = map_structure mapper
 
 let intf = map_signature mapper
 
+let use_file = map_use_file mapper
+
 let equal_impl ast1 ast2 = Poly.equal (impl ast1) (impl ast2)
 
 let equal_intf ast1 ast2 = Poly.equal (intf ast1) (intf ast2)
+
+let equal_use_file ast1 ast2 = Poly.equal (use_file ast1) (use_file ast2)
