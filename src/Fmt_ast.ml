@@ -2173,8 +2173,7 @@ and fmt_class_field c ctx (cf: class_field) =
           | {pexp_desc= Pexp_constraint (e, t)} -> (Some t, e)
           | _ -> (None, e)
         in
-        opt ty (fun t ->
-            fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t) $ fmt "@ " )
+        opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
         $ fmt "@ = "
         $ fmt_expression c (sub_exp ~ctx e)
   in
