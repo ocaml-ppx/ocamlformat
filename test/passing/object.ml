@@ -14,7 +14,7 @@ let _ =
     val virtual mutable x : t
     val virtual mutable x : t
     val! mutable x = 7
-    val! mutable x : t  = 8
+    val! mutable x : t = 8
     constraint t = 'a t
     [%%ext salut, "hello"]
     [@@@attr]
