@@ -2426,8 +2426,8 @@ and fmt_label_declaration c ctx lbl_decl =
            $ Cmts.fmt c.cmts loc @@ str txt
            $ fmt ":@ "
            $ fmt_core_type c (sub_typ ~ctx pld_type) )
-       $ fmt_attributes c ~pre:(fmt "@;") ~box:false ~key:"@" atrs
-       $ fmt_docstring c ~pro:(fmt "@;") doc )
+       $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
+       $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
 
 and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
@@ -2443,7 +2443,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
           ( wrap_if (is_symbol_id txt) "( " " )" (str txt)
           $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
-      $ fmt_docstring c ~pro:(fmt "@;") doc )
+      $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
   $ Cmts.fmt_after c.cmts ?pro:None ~epi:(fmt "@ ") loc
   $ Cmts.fmt_after c.cmts ?pro:None ~epi:(fmt "@ ") pcd_loc
 
