@@ -5,7 +5,7 @@ end
 let get = failwith "TODO"
 
 let foo () =
-  let module X = (val (get : (module S))) in
+  let module X = (val get : S) in
   X.x ()
 
 module type S = sig end
