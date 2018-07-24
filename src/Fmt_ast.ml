@@ -422,7 +422,7 @@ let fmt_constant c ~loc ?epi const =
         hvbox 1
           ( str "\""
           $ list_pn lines (fun ?prev curr ?next ->
-                let drop = function ' ' -> true | _ -> false in
+                let drop = function ' ' | '\t' -> true | _ -> false in
                 let line =
                   if Option.is_none prev then curr
                   else String.lstrip ~drop curr
