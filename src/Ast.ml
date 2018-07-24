@@ -235,8 +235,40 @@ type prec =
   | High
   | Atomic
 
+let string_of_prec = function
+  | Low -> "Low"
+  | Semi -> "Semi"
+  | LessMinus -> "LessMinus"
+  | ColonEqual -> "ColonEqual"
+  | As -> "As"
+  | Comma -> "Comma"
+  | MinusGreater -> "MinusGreater"
+  | BarBar -> "BarBar"
+  | AmperAmper -> "AmperAmper"
+  | InfixOp0 -> "InfixOp0"
+  | InfixOp1 -> "InfixOp1"
+  | ColonColon -> "ColonColon"
+  | InfixOp2 -> "InfixOp2"
+  | InfixOp3 -> "InfixOp3"
+  | InfixOp4 -> "InfixOp4"
+  | UMinus -> "UMinus"
+  | Apply -> "Apply"
+  | Dot -> "Dot"
+  | HashOp -> "HashOp"
+  | High -> "High"
+  | Atomic -> "Atomic"
+
+let _ = string_of_prec
+
 (** Associativities of Ast terms. *)
 type assoc = Left | Non | Right
+
+let string_of_assoc = function
+  | Left -> "Left"
+  | Non -> "Non"
+  | Right -> "Right"
+
+let _ = string_of_assoc
 
 (** Compute associativity from precedence, since associativity is uniform
     across precedence levels. *)
@@ -1058,7 +1090,7 @@ end = struct
                   {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
             }
           , (_, a1) :: (_, a2) :: _ ) ->
-          if a1 == exp then Some (Dot, Non)
+          if a1 == exp then Some (Dot, Left)
           else if a2 == exp then Some (Comma, Left)
           else Some (Comma, Right)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [(_, e1); _])
