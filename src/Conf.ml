@@ -192,15 +192,17 @@ let inputs =
   let default = [] in
   mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv)
 
-let kind : [`Impl | `Intf] ref =
+let kind : [`Impl | `Intf | `Use_file] ref =
   let doc =
     "Parse file with unrecognized extension as an implementation."
   in
   let impl = (`Impl, Arg.info ["impl"] ~doc) in
   let doc = "Parse file with unrecognized extension as an interface." in
   let intf = (`Intf, Arg.info ["intf"] ~doc) in
+  let doc = "Parse file with unrecognized extension as a use_file." in
+  let use_file = (`Use_file, Arg.info ["use-file"] ~doc) in
   let default = `Impl in
-  mk ~default Arg.(value & vflag default [impl; intf])
+  mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
 let margin =
   let docv = "COLS" in
@@ -466,13 +468,14 @@ let conf name =
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
-  | In_out of [`Impl | `Intf] input * string option
-  | Inplace of [`Impl | `Intf] input list
+  | In_out of [`Impl | `Intf | `Use_file] input * string option
+  | Inplace of [`Impl | `Intf | `Use_file] input list
 
 let kind_of fname =
   match Filename.extension fname with
   | ".ml" -> `Impl
   | ".mli" -> `Intf
+  | ".mlt" -> `Use_file
   | _ -> !kind
 
 let action =

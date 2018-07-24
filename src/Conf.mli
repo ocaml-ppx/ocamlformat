@@ -33,9 +33,9 @@ type t = private
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
-  | In_out of [`Impl | `Intf] input * string option
+  | In_out of [`Impl | `Intf | `Use_file] input * string option
       (** Format input file of given kind to output file, or stdout if None. *)
-  | Inplace of [`Impl | `Intf] input list
+  | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
 
 val action : action

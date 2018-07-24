@@ -35,10 +35,29 @@ let intf : _ Translation_unit.t =
   ; no_translation= List.is_empty
   ; printast= Migrate_ast.Printast.interface }
 
+(** Operations on use_file files. *)
+let use_file : _ Translation_unit.t =
+  let use_file lexbuf =
+    List.filter (Migrate_ast.Parse.use_file lexbuf) ~f:(function
+      | Ast_406.Parsetree.Ptop_def [] -> false
+      | Ast_406.Parsetree.Ptop_def (_ :: _) | Ast_406.Parsetree.Ptop_dir _ ->
+          true )
+  in
+  let parse = Translation_unit.parse use_file in
+  { parse
+  ; input= parse ?warn:None
+  ; init_cmts= Cmts.init_use_file
+  ; fmt= Fmt_ast.fmt_use_file
+  ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_use_file ast1 ast2)
+  ; normalize= (fun (ast, _) -> Normalize.use_file ast)
+  ; no_translation= List.is_empty
+  ; printast= Migrate_ast.Printast.use_file }
+
 (** Select translation unit type and operations based on kind. *)
 let xunit_of_kind : _ -> Translation_unit.x = function
   | `Impl -> XUnit impl
   | `Intf -> XUnit intf
+  | `Use_file -> XUnit use_file
 
 ;; Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 
@@ -52,7 +71,7 @@ let xunit_of_kind : _ -> Translation_unit.x = function
                Translation_unit.parse_print (xunit_of_kind kind) conf
                  ~input_name ~input_file ic (Some input_file) ) )
    | In_out
-       ( { kind= (`Impl | `Intf) as kind
+       ( { kind= (`Impl | `Intf | `Use_file) as kind
          ; file= input_file
          ; name= input_name
          ; conf }

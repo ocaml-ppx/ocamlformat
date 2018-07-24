@@ -3125,7 +3125,24 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
 
-and fmt_structure c ?(sep= "") ctx itms =
+and fmt_use_file c ctx itms =
+  list itms ";;\n@\n" (fun item -> fmt_toplevel_phrase c ctx item)
+
+and fmt_toplevel_phrase c ctx = function
+  | Ptop_def structure -> fmt_structure c ctx ~use_file:true structure
+  | Ptop_dir (dir, directive_argument) ->
+      str "#" $ str dir
+      $
+      match directive_argument with
+      | Pdir_none -> fmt ""
+      | Pdir_string s -> fmt " " $ str (Printf.sprintf "%S" s)
+      | Pdir_int (lit, Some m) ->
+          fmt " " $ str (Printf.sprintf "%s%c" lit m)
+      | Pdir_int (lit, None) -> fmt " " $ str lit
+      | Pdir_ident longident -> fmt " " $ fmt_longident longident
+      | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool)
+
+and fmt_structure c ?(sep= "") ?use_file ctx itms =
   let grps =
     List.group itms ~break:(fun itmI itmJ ->
         let has_doc itm =
@@ -3174,14 +3191,15 @@ and fmt_structure c ?(sep= "") ctx itms =
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last itm ->
         fmt_if (not first) "@\n"
-        $ fmt_structure_item c ~sep ~last:(last && last_grp)
+        $ fmt_structure_item c ~sep ~last:(last && last_grp) ?use_file
             (sub_str ~ctx itm) )
   in
   hvbox 0
     (list_fl grps (fun ~first ~last grp ->
          fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
 
-and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
+and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
+    {ctx; ast= si} =
   protect (Str si)
   @@
   let at_top =
@@ -3208,7 +3226,9 @@ and fmt_structure_item c ~sep ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
       str sep $ fmt_docstring c doc
-      $ cbox 0 (fmt_if at_top ";; " $ fmt_expression c (sub_exp ~ctx exp))
+      $ cbox 0
+          ( fmt_if (at_top && not use_file) ";; "
+          $ fmt_expression c (sub_exp ~ctx exp) )
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
       hvbox 2
@@ -3392,3 +3412,7 @@ let fmt_signature s cmts c =
 let fmt_structure s cmts c =
   let c = {source= s; cmts; conf= c} in
   fmt_structure c Top
+
+let fmt_use_file s cmts c =
+  let c = {source= s; cmts; conf= c} in
+  fmt_use_file c Top
