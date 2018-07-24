@@ -199,7 +199,7 @@ let kind : [`Impl | `Intf | `Use_file] ref =
   let impl = (`Impl, Arg.info ["impl"] ~doc) in
   let doc = "Parse file with unrecognized extension as an interface." in
   let intf = (`Intf, Arg.info ["intf"] ~doc) in
-  let doc = "Parse file with unrecognized extension as an use_file." in
+  let doc = "Parse file with unrecognized extension as a use_file." in
   let use_file = (`Use_file, Arg.info ["use-file"] ~doc) in
   let default = `Impl in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
