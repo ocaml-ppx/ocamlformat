@@ -9,19 +9,24 @@
  *                                                                    *
  **********************************************************************)
 
-include Ast_406
+include Ast_407
 
 module Parse = struct
   open Migrate_parsetree
 
-  let implementation = Parse.implementation Versions.ocaml_406
+  let implementation = Parse.implementation Versions.ocaml_407
 
-  let interface = Parse.interface Versions.ocaml_406
+  let interface = Parse.interface Versions.ocaml_407
 
-  let use_file = Parse.use_file Versions.ocaml_406
+  let use_file lexbuf =
+    List.filter (Parse.use_file Versions.ocaml_407 lexbuf) ~f:
+      (fun (p: Parsetree.toplevel_phrase) ->
+        match p with
+        | Ptop_def [] -> false
+        | Ptop_def (_ :: _) | Ptop_dir _ -> true )
 end
 
-let to_current = Migrate_parsetree.Versions.(migrate ocaml_406 ocaml_current)
+let to_current = Migrate_parsetree.Versions.(migrate ocaml_407 ocaml_current)
 
 module Printast = struct
   open Printast
@@ -53,11 +58,12 @@ module Printast = struct
     | Pdir_bool b -> Pdir_bool b
 
   let use_file f (x: Parsetree.toplevel_phrase list) =
-    List.iter x ~f:(fun x ->
-        top_phrase f
-          ( match (x : Parsetree.toplevel_phrase) with
-          | Ptop_def x -> Ptop_def (to_current.copy_structure x)
-          | Ptop_dir (a, b) -> Ptop_dir (a, copy_directive_argument b) ) )
+    List.iter x ~f:(fun (p: Parsetree.toplevel_phrase) ->
+        match p with
+        | Ptop_def s ->
+            top_phrase f (Ptop_def (to_current.copy_structure s))
+        | Ptop_dir (d, a) ->
+            top_phrase f (Ptop_dir (d, copy_directive_argument a)) )
 end
 
 module Pprintast = struct
