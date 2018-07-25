@@ -86,18 +86,5 @@ type u =
       [@doc
         [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
         ; "Etiam vel mauris fermentum, condimentum quam a, porta nisi" ]]
-                                                                         [@@deriving
-                                                                           something]
-                                                                         [@@doc
-                                                                           [ 
-                                                                           "Ut \
-                                                                            at \
-                                                                            dolor \
-                                                                            a \
-                                                                            eros \
-                                                                            venenatis \
-                                                                            maximus \
-                                                                            ut \
-                                                                            at \
-                                                                            nisi."
-                                                                           ]]
+[@@deriving something]
+[@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
