@@ -12,4 +12,7 @@ include M (N) [@warning "item"] [@@warning "structure"]
 
 include [%ext] [@warning "item"] [@@warning "structure"]
 
-include ( val M ) [@warning "item"] [@@warning "structure"]
+include (val M) [@warning "item"] [@@warning "structure"]
+
+include ( val Aaaaaaaaaaaaaaaa.Bbbbbbbbbbbbbbbb.Cccccccccccccccc.
+              Dddddddddddddddd ) [@warning "item"] [@@warning "structure"]
