@@ -983,6 +983,18 @@ and fmt_body c ({ast= body} as xbody) =
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
+and fmt_index_op c ctx ~parens ?set (s, opn, cls) l i =
+  wrap_if parens "(" ")"
+    (hovbox 0
+       ( fmt_expression c (sub_exp ~ctx l)
+       $ str (Printf.sprintf "%s%c" s opn)
+       $ fmt_expression c (sub_exp ~ctx i)
+       $ str (Printf.sprintf "%c" cls)
+       $
+       match set with
+       | None -> fmt ""
+       | Some e -> fmt "@ <- " $ fmt_expression c (sub_exp ~ctx e) ))
+
 and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
     =
   protect (Exp exp)
@@ -1204,44 +1216,22 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "get")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i)] ) ->
-      wrap_if parens "(" ")"
-        (hovbox 0
-           ( fmt_expression c (sub_exp ~ctx s)
-           $ fmt ".("
-           $ fmt_expression c (sub_exp ~ctx i)
-           $ fmt ")" ))
+      fmt_index_op c ctx ~parens index_op_array s i
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "get")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i)] ) ->
-      wrap_if parens "(" ")"
-        (hovbox 0
-           ( fmt_expression c (sub_exp ~ctx s)
-           $ fmt ".["
-           $ fmt_expression c (sub_exp ~ctx i)
-           $ fmt "]" ))
+      fmt_index_op c ctx ~parens index_op_string s i
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "set")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i); (Nolabel, e)] ) ->
-      wrap_if parens "(" ")"
-        (hovbox 0
-           ( fmt_expression c (sub_exp ~ctx s)
-           $ fmt ".("
-           $ fmt_expression c (sub_exp ~ctx i)
-           $ fmt ")@ <- "
-           $ fmt_expression c (sub_exp ~ctx e) ))
+      fmt_index_op c ctx ~parens index_op_array s i ~set:e
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "set")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i); (Nolabel, e)] ) ->
-      wrap_if parens "(" ")"
-        (hovbox 0
-           ( fmt_expression c (sub_exp ~ctx s)
-           $ fmt ".["
-           $ fmt_expression c (sub_exp ~ctx i)
-           $ fmt "]@ <- "
-           $ fmt_expression c (sub_exp ~ctx e) ))
+      fmt_index_op c ctx ~parens index_op_string s i ~set:e
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident ":="}; pexp_attributes= []}
       , [(Nolabel, r); (Nolabel, v)] )
@@ -1291,31 +1281,17 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
              | None -> (fmt "", (fmt "", args)) ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id}}
-      , (Nolabel, l) :: (Nolabel, i) :: _ )
+      , (Nolabel, s) :: (Nolabel, i) :: _ )
     when Option.is_some (index_op_get id) -> (
     match index_op_get id with
-    | Some (s, opn, cls) ->
-        wrap_if parens "(" ")"
-          (hovbox 0
-             ( fmt_expression c (sub_exp ~ctx l)
-             $ str (Printf.sprintf "%s%c" s opn)
-             $ fmt_expression c (sub_exp ~ctx i)
-             $ str (Printf.sprintf "%c" cls) ))
+    | Some index_op -> fmt_index_op c ctx ~parens index_op s i
     | None -> impossible "previous match" )
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id}}
-      , (Nolabel, l) :: (Nolabel, i) :: (Nolabel, e) :: _ )
+      , (Nolabel, s) :: (Nolabel, i) :: (Nolabel, e) :: _ )
     when Option.is_some (index_op_set id) -> (
     match index_op_set id with
-    | Some (s, opn, cls) ->
-        wrap_if parens "(" ")"
-          (hovbox 0
-             ( fmt_expression c (sub_exp ~ctx l)
-             $ str (Printf.sprintf "%s%c" s opn)
-             $ fmt_expression c (sub_exp ~ctx i)
-             $ str (Printf.sprintf "%c" cls)
-             $ fmt "@ <- "
-             $ fmt_expression c (sub_exp ~ctx e) ))
+    | Some index_op -> fmt_index_op c ctx ~parens index_op s i ~set:e
     | None -> impossible "previous match" )
   | Pexp_apply (e0, a1N) when is_infix e0 ->
       hvbox 2

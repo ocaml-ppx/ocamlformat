@@ -66,6 +66,10 @@ let index_op_set i =
     | '.', Some (s, o, c) -> Some (s, o, c)
     | _ -> None
 
+let index_op_string = (".", '[', ']')
+
+let index_op_array = (".", '(', ')')
+
 let is_index_op exp =
   match exp.pexp_desc with
   | Pexp_ident {txt= Lident i} ->

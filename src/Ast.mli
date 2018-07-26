@@ -27,6 +27,10 @@ val index_op_get : string -> (string * Char.t * Char.t) option
 
 val index_op_set : string -> (string * Char.t * Char.t) option
 
+val index_op_string : string * Char.t * Char.t
+
+val index_op_array : string * Char.t * Char.t
+
 val is_symbol_id : string -> bool
 (** Holds of prefix or infix symbols. *)
 
