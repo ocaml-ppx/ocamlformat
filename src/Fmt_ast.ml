@@ -984,7 +984,7 @@ and fmt_body c ({ast= body} as xbody) =
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
 and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
-  =
+    =
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -2423,7 +2423,7 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
 
 and fmt_label_declaration c ctx lbl_decl =
   let {pld_mutable; pld_name= {txt; loc}; pld_type; pld_loc; pld_attributes}
-    =
+      =
     lbl_decl
   in
   let doc, atrs = doc_atrs pld_attributes in
@@ -2747,7 +2747,7 @@ and fmt_signature_item c {ast= si} =
 and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
       let {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}
-        =
+          =
         cl
       in
       let doc, atrs = doc_atrs pci_attributes in
@@ -2770,7 +2770,7 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
 and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
       let {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}
-        =
+          =
         cl
       in
       let xargs, xbody =
@@ -3434,7 +3434,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt " " $ fmt_pattern c xpat
             $ fmt_fun_args c ~pro:(fmt "@ ") xargs
             $ Option.call ~f:fmt_cstr )
-        $ fmt "@ =" )
+        $ fmt "@;<1 2>=" )
       $ fmt_body c xbody
       $ fmt_if_k (Option.is_none in_) (fmt_attributes c ~key:"@@" atrs)
       $ Cmts.fmt_after c.cmts pvb_loc
