@@ -2,8 +2,7 @@ module M = struct (* this module is empty *) end
 
 module type M = sig (* this module type is empty *) end
 
-class type m =
-  object (* this class type is empty *) end 
+class type m = object (* this class type is empty *) end
 
 let x = object (* this object is empty *) end
 
@@ -25,9 +24,10 @@ let x = function
    |( (* unit pat *) ) | "" (* comment *) ->
       ()
 
-let x = object
-          method x () = {< (* this override is empty *) >}
-        end
+let x =
+  object
+    method x () = {< (* this override is empty *) >}
+  end
 
 type t = private [> (*this variant is empty *) ]
 
