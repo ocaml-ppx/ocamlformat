@@ -14,39 +14,35 @@ SHELL=bash
 .PHONY: default
 default: exe
 
-jbuild-workspace: jbuild-workspace.in
+dune-workspace: dune-workspace.in
 	sed -e "s|@OPAM_SWITCH[@]|$$(opam switch show)|g" $< > $@
 
 .PHONY: setup
-setup: jbuild-workspace
+setup: dune-workspace
 
 .PHONY: exe
 exe: setup
-	jbuilder build _build/dbg/src/ocamlformat.exe _build/default/src/ocamlformat.exe
+	dune build _build/dev/src/ocamlformat.exe _build/release/src/ocamlformat.exe
 
 .PHONY: bc
 bc: setup
-	jbuilder build _build/dbg/src/ocamlformat.bc
+	dune build _build/dev/src/ocamlformat.bc
 
-.PHONY: dbg
-dbg: setup
-	jbuilder build _build/dbg/src/ocamlformat.exe
+.PHONY: dev
+dev: setup
+	dune build _build/dev/src/ocamlformat.exe
 
 .PHONY: opt
 opt: setup
-	jbuilder build _build/default/src/ocamlformat.exe
+	dune build _build/release/src/ocamlformat.exe
 
 .PHONY: reason
 reason: setup
-	jbuilder build _build/default/src/ocamlformat_reason.exe
-
-.PHONY: install
-install:
-	jbuilder build -p ocamlformat,ocamlformat_reason,ocamlformat_support
+	dune build _build/release/src/ocamlformat_reason.exe
 
 .PHONY: clean cleanbisect
 clean: cleanbisect
-	rm -rf _build jbuild-workspace
+	rm -rf _build dune-workspace
 cleanbisect:
 	rm -Rf _coverage
 	find ./ -name 'bisect*.out' -delete
@@ -64,14 +60,14 @@ test: exe reason
 
 .PHONY: regtests fixpoint
 fixpoint: exe reason
-	_build/default/src/ocamlformat.exe -n 1 -i $(SRCS)
+	_build/release/src/ocamlformat.exe -n 1 -i $(SRCS)
 
 regtests: exe
 	$(MAKE) -C test regtests
 
 .PHONY: coverage
 coverage: setup
-	jbuilder build _build/coverage/src/ocamlformat.exe
+	dune build _build/coverage/src/ocamlformat.exe
 	$(MAKE) cleanbisect
 	$(MAKE) MODE=coverage -C test regtests
 	_build/coverage/src/ocamlformat.exe -i $(SRCS)

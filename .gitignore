@@ -1,6 +1,6 @@
 .merlin
 /_build
-/jbuild-workspace
+/dune-workspace
 /ocamlformat.install
 /ocamlformat_reason.install
 /src/mod_dep.dot

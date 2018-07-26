@@ -1,0 +1,5 @@
+(lang dune 1.0)
+
+(context (opam (switch @OPAM_SWITCH@) (name dev) (profile dev) (merlin)))
+(context (opam (switch @OPAM_SWITCH@) (name release) (profile release)))
+(context (opam (switch @OPAM_SWITCH@) (name coverage) (profile dev)))

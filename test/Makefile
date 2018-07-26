@@ -14,9 +14,9 @@
 # By default, test projects used as regression tests
 DIRS=code/ocamlformat code/infer
 
-# To test using the dbg or "default" (opt) executable
+# To test using the dev or release executable
 #       make MODE=<mode>
-MODE?=dbg
+MODE?=dev
 
 REFMT=refmt
 

@@ -7,13 +7,13 @@ dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git"
 license: "MIT"
 build: [
   ["tools/gen_version.sh" "src/Version.ml" version] {pinned}
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "base" {>= "v0.11.0"}
   "base-unix"
   "cmdliner"
-  "jbuilder" {build & >= "1.0+beta20"}
+  "dune" {build}
   "ocaml-migrate-parsetree" {>= "1.0.6"}
   "ocamlformat_support"
   "reason" {= "1.13.4"}
