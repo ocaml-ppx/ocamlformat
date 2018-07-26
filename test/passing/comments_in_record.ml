@@ -21,6 +21,6 @@ let { (* cmts *)
     ; d=
       (* d *)
       (D: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
-        (* d *)
-    ; e : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
+    ; (* e *)
+      e : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
   exp

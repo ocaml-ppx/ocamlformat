@@ -37,13 +37,12 @@ class type c =
   object
     inherit [ < a: 'a ; b: 'b > ] a
     inherit [a, b, c] a
-  end 
+  end
 
 class c =
   object
     inherit [ < a: 'a ; b: 'b > ] a
     inherit [a, b, c] a
   end
-  
 
 type 'a u = [< `A | `B of < > > `B ] as 'a
