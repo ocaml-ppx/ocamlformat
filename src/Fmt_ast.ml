@@ -1203,39 +1203,43 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i)] ) ->
       wrap_if parens "(" ")"
-        ( fmt_expression c (sub_exp ~ctx s)
-        $ fmt ".("
-        $ fmt_expression c (sub_exp ~ctx i)
-        $ fmt ")" )
+        (hovbox 0
+           ( fmt_expression c (sub_exp ~ctx s)
+           $ fmt ".("
+           $ fmt_expression c (sub_exp ~ctx i)
+           $ fmt ")" ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "get")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i)] ) ->
       wrap_if parens "(" ")"
-        ( fmt_expression c (sub_exp ~ctx s)
-        $ fmt ".["
-        $ fmt_expression c (sub_exp ~ctx i)
-        $ fmt "]" )
+        (hovbox 0
+           ( fmt_expression c (sub_exp ~ctx s)
+           $ fmt ".["
+           $ fmt_expression c (sub_exp ~ctx i)
+           $ fmt "]" ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "set")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i); (Nolabel, e)] ) ->
       wrap_if parens "(" ")"
-        ( fmt_expression c (sub_exp ~ctx s)
-        $ fmt ".("
-        $ fmt_expression c (sub_exp ~ctx i)
-        $ fmt ")@ <- "
-        $ fmt_expression c (sub_exp ~ctx e) )
+        (hovbox 0
+           ( fmt_expression c (sub_exp ~ctx s)
+           $ fmt ".("
+           $ fmt_expression c (sub_exp ~ctx i)
+           $ fmt ")@ <- "
+           $ fmt_expression c (sub_exp ~ctx e) ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "String", "set")}
         ; pexp_attributes= [] }
       , [(Nolabel, s); (Nolabel, i); (Nolabel, e)] ) ->
       wrap_if parens "(" ")"
-        ( fmt_expression c (sub_exp ~ctx s)
-        $ fmt ".["
-        $ fmt_expression c (sub_exp ~ctx i)
-        $ fmt "]@ <- "
-        $ fmt_expression c (sub_exp ~ctx e) )
+        (hovbox 0
+           ( fmt_expression c (sub_exp ~ctx s)
+           $ fmt ".["
+           $ fmt_expression c (sub_exp ~ctx i)
+           $ fmt "]@ <- "
+           $ fmt_expression c (sub_exp ~ctx e) ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident ":="}; pexp_attributes= []}
       , [(Nolabel, r); (Nolabel, v)] )
@@ -1290,10 +1294,11 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
     match index_op_get id with
     | Some (s, opn, cls) ->
         wrap_if parens "(" ")"
-          ( fmt_expression c (sub_exp ~ctx l)
-          $ str (Printf.sprintf "%s%c" s opn)
-          $ fmt_expression c (sub_exp ~ctx i)
-          $ str (Printf.sprintf "%c" cls) )
+          (hovbox 0
+             ( fmt_expression c (sub_exp ~ctx l)
+             $ str (Printf.sprintf "%s%c" s opn)
+             $ fmt_expression c (sub_exp ~ctx i)
+             $ str (Printf.sprintf "%c" cls) ))
     | None -> impossible "previous match" )
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id}}
@@ -1302,12 +1307,13 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext
     match index_op_set id with
     | Some (s, opn, cls) ->
         wrap_if parens "(" ")"
-          ( fmt_expression c (sub_exp ~ctx l)
-          $ str (Printf.sprintf "%s%c" s opn)
-          $ fmt_expression c (sub_exp ~ctx i)
-          $ str (Printf.sprintf "%c" cls)
-          $ fmt "@ <- "
-          $ fmt_expression c (sub_exp ~ctx e) )
+          (hovbox 0
+             ( fmt_expression c (sub_exp ~ctx l)
+             $ str (Printf.sprintf "%s%c" s opn)
+             $ fmt_expression c (sub_exp ~ctx i)
+             $ str (Printf.sprintf "%c" cls)
+             $ fmt "@ <- "
+             $ fmt_expression c (sub_exp ~ctx e) ))
     | None -> impossible "previous match" )
   | Pexp_apply (e0, a1N) when is_infix e0 ->
       hvbox 2

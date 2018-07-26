@@ -16,3 +16,6 @@ let _ =
     xx :=
       something very
         loooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+
+;; if row <> row' && col <> col' then
+     b.(row').(col') <- remove b.(row').(col') value
