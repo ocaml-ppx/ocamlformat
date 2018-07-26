@@ -80,3 +80,11 @@ type blocklist =
   | F3 of (int64 * int64) list
       (** loooooooooooooooooooooooooooooong
           commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *)
+
+type u =
+  | C of int * int
+      [@doc
+        [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+        ; "Etiam vel mauris fermentum, condimentum quam a, porta nisi" ]]
+[@@deriving something]
+[@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
