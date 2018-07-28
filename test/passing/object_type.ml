@@ -36,13 +36,31 @@ type t = {b: int; a: < > }
 class type c =
   object
     inherit [ < a: 'a ; b: 'b > ] a
+
     inherit [a, b, c] a
   end
 
 class c =
   object
     inherit [ < a: 'a ; b: 'b > ] a
+
     inherit [a, b, c] a
   end
 
 type 'a u = [< `A | `B of < > > `B ] as 'a
+
+(** about a *)
+class type a =
+  object
+    (** about a *)
+    method a : int
+
+    (** floatting *)
+
+    (** about b *)
+    method b : int
+  end
+
+(** floatting *)
+
+and b = object end  (** about b *)
