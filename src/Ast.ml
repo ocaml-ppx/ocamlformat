@@ -1239,7 +1239,7 @@ end = struct
     prec_ast ast
     >>| fun prec_ast ->
     let cmp = Poly.compare prec_ctx prec_ast in
-    if cmp < 0 then (* ast higher precedence than context: no parens *)
+    if cmp < 0 (* ast higher precedence than context: no parens *) then
       false
     else if cmp > 0 then (* context higher prec than ast: add parens *)
       true

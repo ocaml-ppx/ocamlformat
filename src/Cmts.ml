@@ -300,12 +300,17 @@ end
 let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
   Option.value_map (Source.string_between t.source l1 l2) ~default:false ~f:
     (fun btw ->
-      match String.strip btw with
-      | "" -> true
-      | "|" ->
-          Source.begins_line t.source l1
-          && Position.column l1.loc_start <= Position.column l2.loc_start
-      | _ -> false )
+      let i_cr = String.index btw '\n' in
+      let j_cr = String.rindex btw '\n' in
+      match (i_cr, j_cr) with
+      | Some i, Some j when i <> j -> false
+      | _ -> (
+        match String.strip btw with
+        | "" -> true
+        | "|" ->
+            Source.begins_line t.source l1
+            && Position.column l1.loc_start <= Position.column l2.loc_start
+        | _ -> false ) )
 
 (** Heuristic to choose between placing a comment after the previous loc or
     before the next loc. Places comment after prev loc only if they are
@@ -317,10 +322,39 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
       List.group cmtl ~break:(fun (_, l1) (_, l2) ->
           not (is_adjacent t l1 l2) )
     with
-    | [cmtl] when is_adjacent t (snd (List.last_exn cmtl)) next ->
+    | [cmtl]
+      when is_adjacent t (snd (List.last_exn cmtl)) next
+           && (not (is_adjacent t prev loc)) ->
         (CmtSet.empty, cmts)
     | after :: befores ->
-        (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
+        let loc_prev = prev.Location.loc_start in
+        let loc_prev_end = prev.Location.loc_end in
+        let loc_cmt = (snd (List.hd_exn after)).Location.loc_start in
+        let loc_cmt_end = (snd (List.hd_exn after)).Location.loc_end in
+        let loc_next = next.Location.loc_start in
+        if
+          is_adjacent t prev loc
+          && (not (is_adjacent t (snd (List.last_exn cmtl)) next))
+        then (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
+        else if
+          Position.column loc_prev = Position.column loc_cmt
+          && Position.column loc_next <> Position.column loc_cmt
+        then (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
+        else if
+          loc_prev_end.pos_lnum = loc_cmt.pos_lnum
+          && loc_cmt_end.pos_lnum <> loc_next.pos_lnum
+        then (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
+        else if
+          loc_cmt.pos_lnum - loc_prev_end.pos_lnum
+          < loc_next.pos_lnum - loc_cmt_end.pos_lnum
+        then (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
+        else if
+          is_adjacent t prev loc
+          && is_adjacent t (snd (List.last_exn cmtl)) next
+          && loc_prev_end.pos_lnum = loc_cmt.pos_lnum
+          && loc_cmt_end.pos_lnum = loc_next.pos_lnum
+        then (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
+        else (CmtSet.empty, cmts)
     | [] -> impossible "by parent match" )
   | _ -> (CmtSet.empty, cmts)
 
