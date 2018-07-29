@@ -34,3 +34,13 @@ type t = private [> (*this variant is empty *) ]
 type t = < (* this object type is empty *) >
 
 type t = < .. (* this object type is empty *) >
+
+let x =
+  ( (* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non
+       risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec,
+       ultricies sed, dolor. *) )
+
+let x =
+  [ (* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non
+       risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec,
+       ultricies sed, dolor. *) ]
