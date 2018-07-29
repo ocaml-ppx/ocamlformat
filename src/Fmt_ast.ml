@@ -345,7 +345,7 @@ let fmt_char_escaped c ~loc chr =
   | `Hexadecimal, _ ->
       fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
   | `Preserve, _ -> str (Source.char_literal c.source loc)
-  | _, '\000'..'\128' -> str (Char.escaped chr)
+  | _, '\000' .. '\128' -> str (Char.escaped chr)
   | `Decimal, _ -> str (Char.escaped chr)
 
 let escape_string c str =
@@ -366,7 +366,7 @@ let escape_string c str =
         let l =
           match str.[i] with
           | '"' | '\\' | '\n' | '\t' | '\r' | '\b' -> 2
-          | ' '..'~' -> 1
+          | ' ' .. '~' -> 1
           | _ -> 4
         in
         n := !n + l
@@ -384,7 +384,7 @@ let escape_string c str =
           | '\t' -> set '\\' ; set 't'
           | '\r' -> set '\\' ; set 'r'
           | '\b' -> set '\\' ; set 'b'
-          | ' '..'~' -> set chr
+          | ' ' .. '~' -> set chr
           | _ ->
               let code = Char.to_int chr in
               set '\\' ;
@@ -752,16 +752,22 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       (* we need to reconstruct locations for both side of the interval *)
       let toks =
         Source.tokens_at c.source ppat_loc ~filter:(function
-          | Parser.CHAR _ | Parser.DOTDOT -> true
+          | Parser.CHAR _ | Parser.DOTDOT
+           |Parser.(INT _ | STRING _ | FLOAT _) ->
+              true
           | _ -> false )
       in
       match toks with
-      | [(Parser.CHAR _, loc1); (Parser.DOTDOT, _); (Parser.CHAR _, loc2)] ->
-          fmt_constant ~loc:loc1 c l $ fmt ".." $ fmt_constant ~loc:loc2 c u
+      | [ (Parser.(CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
+        ; (Parser.DOTDOT, _)
+        ; (Parser.(CHAR _ | INT _ | STRING _ | FLOAT _), loc2) ] ->
+          fmt_constant ~loc:loc1 c l
+          $ fmt " .. "
+          $ fmt_constant ~loc:loc2 c u
       | _ ->
           impossible
             "Ppat_interval is only produced by the sequence of 3 tokens: \
-             CHAR-DOTDOT-CHAR " )
+             CONSTANT-DOTDOT-CONSTANT " )
   | Ppat_tuple pats ->
       hvbox 0
         (wrap_if_breaks "( " "@ )"

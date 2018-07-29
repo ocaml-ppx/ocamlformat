@@ -18,6 +18,6 @@ let _ = 'a'
 
 let _ = 'a'
 
-let _ = function 'a'..'z' -> ()
+let _ = function 'a' .. 'z' -> ()
 
 let _ = "aaa\n\n         e"
