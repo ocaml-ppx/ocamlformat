@@ -2340,6 +2340,10 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   let fmt_manifest_kind mfst priv kind =
     match kind with
     | Ptype_abstract -> fmt_manifest ~priv mfst
+    | Ptype_variant [] ->
+        hvbox 2
+          (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
+        $ fmt "@ |"
     | Ptype_variant ctor_decls ->
         hvbox 2
           (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)

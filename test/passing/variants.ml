@@ -33,3 +33,5 @@ type t = [a | b]
 type t = [a | b | `C]
 
 type t = [`a | b]
+
+type t = |
