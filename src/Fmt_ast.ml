@@ -838,8 +838,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let nested =
         match ctx0 with
         | Pat {ppat_desc= Ppat_or _} -> true
-        | Pat _ -> false
-        | _ -> true
+        | Exp {pexp_desc= Pexp_match _ | Pexp_function _} -> true
+        | _ -> false
       in
       let xpats = sugar_or_pat c xpat in
       let pro0 =

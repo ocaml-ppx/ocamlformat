@@ -36,3 +36,28 @@ let [%ext let x = 3] = 2
 let [%ext : [%exp let x = 3]] = 2
 
 let f: 'a. 'a ty -> 'a = fun y -> g y
+
+let f (A _ | B | C) = ()
+
+let f
+    ( AAAAAAAAAAAAAAAAAAAAAAAAAAAAa _ | BBBBBBBBBBBBBBBBBBBBBbb
+    | CCCCCCCCCCCCCCCCCCCCCCccccc ) =
+  ()
+
+let f
+    ( AAAAAAAAAAAAAAAAAAAAAAAAAAAAa
+        ( EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEe | FFFFFFFFFFFFFFFFFFFFFFFFFFf
+        | GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGggggggggg )
+    | BBBBBBBBBBBBBBBBBBBBBbb | CCCCCCCCCCCCCCCCCCCCCCccccc ) =
+  ()
+
+let f (AAA (EEEEEEE | FFFFF | GGGGG) | BBBBBB | CCCCCCC) = ()
+
+let f = function AAA (EEEEEEE | FFFFF | GGGGG) | BBBBBB | CCCCCCC -> ()
+
+let f = function EEEEEEE | F | GGGGG | B | CCCCCCC -> ()
+
+let f = function
+  | EEEEEEE | FFFFFFFFFFFFFFFFFFFFFFF | GGGGG
+   |BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBbb | CCCCCCC ->
+      ()
