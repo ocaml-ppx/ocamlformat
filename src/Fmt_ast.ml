@@ -1368,7 +1368,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         wrap_if parens "(" ")"
           (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs) )
   | Pexp_array [] ->
-      hvbox 0 (wrap_fits_breaks "[|" "|]" (Cmts.fmt_within c.cmts pexp_loc))
+      hvbox 0
+        ( wrap_fits_breaks "[|" "|]" (Cmts.fmt_within c.cmts pexp_loc)
+        $ fmt_atrs )
   | Pexp_array e1N ->
       hvbox 0
         ( wrap_fits_breaks "[|" "|]"
@@ -1414,7 +1416,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
              (wrap_fits_breaks (String.of_char opn) (String.of_char cls)
                 (Cmts.fmt_within c.cmts ~pro:(fmt "@ ") ~epi:(fmt "@ ")
                    pexp_loc))
-    | _ -> fmt_longident txt )
+        $ fmt_atrs
+    | _ -> fmt_longident txt $ fmt_atrs )
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (

@@ -68,6 +68,8 @@ let i = fun [@inline] x -> x[@@inline]
 
 ;; if [@test] true then () else if [@test] true then () else ()
 
+let _ = (A [@test], () [@test], [] [@test], [||] [@test])
+
 type blocklist =
   { f1: int [@version 1, 1, 0]  (** short comment *)
   ; f2: (int64 * int64) list
