@@ -90,3 +90,31 @@ type u =
         ; "Etiam vel mauris fermentum, condimentum quam a, porta nisi" ]]
 [@@deriving something]
 [@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
+
+let ((A, B)[@test]) = ()
+
+let ((lazy a)[@test]) = ()
+
+let ((exception a)[@test]) = ()
+
+let ((B x)[@test]) = ()
+
+let ((`B x)[@test]) = ()
+
+let (B[@test]) = ()
+
+let (`B[@test]) = ()
+
+let (B.(A)[@test]) = ()
+
+let ('x' .. 'z'[@test]) = ()
+
+let (#test[@test]) = ()
+
+let ((module X)[@test]) = ()
+
+let (a[@test]) = ()
+
+let (_[@test]) = ()
+
+let (""[@test]) = ()
