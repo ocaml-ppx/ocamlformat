@@ -12,3 +12,11 @@ let plus a ?(b= 0) c = a + b + c
    type-checking (and dynamic semantics) distinction. *)
 
 ;; (id (plus 1)) ~b:1
+
+let ( !!! ) a ~b = a + b
+
+let _ = ( !!! ) a b
+
+let _ = ( !!! ) ~b
+
+let _ = !!!!a b d

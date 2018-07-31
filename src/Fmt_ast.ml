@@ -1138,10 +1138,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
               | _ -> false
             in
             let spc =
-              consecutive_prefix_ops
-              || ( not (is_prefix ast)
-                 || (Option.is_none next && not last_grp) )
-                 && (not last_grp || Option.is_some next)
+              consecutive_prefix_ops || not last_grp || Option.is_some next
             in
             openbox
             $ hovbox 2
@@ -1297,6 +1294,12 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
     match index_op_set id with
     | Some index_op -> fmt_index_op c ctx ~parens index_op s i ~set:e
     | None -> impossible "previous match" )
+  | Pexp_apply (e0, [(Nolabel, e1)]) when is_prefix e0 ->
+      hvbox 2
+        (wrap_fits_breaks_if parens "(" ")"
+           ( fmt_expression c ~box (sub_exp ~ctx e0)
+           $ fmt_expression c ~box (sub_exp ~ctx e1)
+           $ fmt_atrs ))
   | Pexp_apply (e0, a1N) when is_infix e0 ->
       hvbox 2
         ( wrap_fits_breaks_if parens "(" ")" (fmt_args_grouped e0 a1N)
@@ -2029,10 +2032,8 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
                 | _ -> false
               in
               let spc =
-                consecutive_prefix_ops
-                || ( not (is_prefix ast)
-                   || (Option.is_none next && not last_grp) )
-                   && (not last_grp || Option.is_some next)
+                consecutive_prefix_ops || not last_grp
+                || Option.is_some next
               in
               openbox
               $ hovbox 2
