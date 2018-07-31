@@ -1423,7 +1423,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                 (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
                    pexp_loc))
         $ fmt_atrs
-    | _ -> fmt_longident txt $ fmt_atrs )
+    | _ -> Cmts.fmt c.cmts loc @@ fmt_longident txt $ fmt_atrs )
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
