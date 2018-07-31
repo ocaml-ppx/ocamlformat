@@ -928,6 +928,12 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             or_newline "| " " |"
         | _ -> break_unless_newline 1 0 $ fmt "| "
       in
+      let pro2 =
+        fmt_or_k
+          (c.conf.break_cases && c.conf.sparse)
+          (break_unless_newline 1000 0 $ fmt "| ")
+          proI
+      in
       let is_simple {ppat_desc} =
         match ppat_desc with
         | Ppat_any | Ppat_constant _ | Ppat_var _
@@ -947,7 +953,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   let pro =
                     if first_grp && first then pro0 $ open_hovbox (-2)
                     else if first then proI $ open_hovbox (-2)
-                    else proI
+                    else pro2
                   in
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
@@ -2483,11 +2489,14 @@ and fmt_cases c ctx cs =
             (fmt_or_k parens_here (fmt "@;<1 2>->") (fmt " ->@;<0 3>"))
             (fmt_or_k parens_here (fmt "@;<1 -2>-> (") (fmt " ->@;<0 -1>"))
         in
+        let pro =
+          fmt_or_k c.conf.break_cases
+            (break_unless_newline 1000 0 $ fmt "| ")
+            (if first then if_newline "| " else fmt "| ")
+        in
         hovbox 4
           ( hvbox 0
-              ( fmt_pattern c
-                  ~pro:(if first then if_newline "| " else fmt "| ")
-                  ~parens:paren_lhs xlhs
+              ( fmt_pattern c ~pro ~parens:paren_lhs xlhs
               $ opt pc_guard (fun g ->
                     fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g)
                 ) )

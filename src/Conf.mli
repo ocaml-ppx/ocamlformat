@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_infix: [`Wrap | `Fit_or_vertical]
+  { break_cases: bool
+  ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; no_comment_check: bool

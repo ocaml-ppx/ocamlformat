@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_infix: [`Wrap | `Fit_or_vertical]
+  { break_cases: bool
+  ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; no_comment_check: bool
   ; doc_comments: [`Before | `After]
@@ -201,6 +202,15 @@ let info =
 
 (** Options affecting formatting *)
 module Formatting = struct
+  let break_cases =
+    let doc =
+      "Break pattern match cases. Can be set in a config file with a \
+       `break-cases = {true,false}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_BREAK_CASES" in
+    C.flag ~names:["break-cases"] ~doc ~env ~allow_inline:true ~update:
+      (fun conf x -> {conf with break_cases= x} )
+
   let break_infix =
     let doc =
       "Break sequence of infix operators. Can be set in a config file with \
@@ -611,7 +621,8 @@ let read_config ~filename conf =
   read_conf_files conf ~dir:(Filename.dirname (to_absolute filename))
 
 let config =
-  { break_infix= C.get Formatting.break_infix
+  { break_cases= C.get Formatting.break_cases
+  ; break_infix= C.get Formatting.break_infix
   ; break_string_literals= C.get Formatting.break_string_literals
   ; no_comment_check= C.get no_comment_check
   ; doc_comments= C.get Formatting.doc_comments
