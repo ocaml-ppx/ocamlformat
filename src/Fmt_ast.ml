@@ -3210,14 +3210,15 @@ and fmt_structure c ?(sep= "") ?use_file ctx itms =
            |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
            |Pstr_modtype {pmtd_attributes= atrs}
            |Pstr_open {popen_attributes= atrs}
-           |Pstr_include {pincl_mod= {pmod_attributes= atrs}}
            |Pstr_extension (_, atrs)
            |Pstr_class_type ({pci_attributes= atrs} :: _)
            |Pstr_class ({pci_attributes= atrs} :: _) ->
               Option.is_some (fst (doc_atrs atrs))
-          | Pstr_module {pmb_attributes; pmb_expr= {pmod_attributes}} ->
-              Option.is_some
-                (fst (doc_atrs (List.append pmb_attributes pmod_attributes)))
+          | Pstr_include
+              {pincl_mod= {pmod_attributes= atrs1}; pincl_attributes= atrs2}
+           |Pstr_module
+              {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2}} ->
+              Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
           | Pstr_value (_, [])
            |Pstr_type (_, [])
            |Pstr_recmodule []
@@ -3239,7 +3240,9 @@ and fmt_structure c ?(sep= "") ?use_file ctx itms =
           | Pstr_open _ -> true
           | _ -> false
         in
-        has_doc itmJ || not (is_simple itmI) || not (is_simple itmJ) )
+        has_doc itmI || has_doc itmJ
+        || not (is_simple itmI)
+        || not (is_simple itmJ) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last itm ->
