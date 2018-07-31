@@ -36,12 +36,19 @@ class x =
     let[@foo] x = 33 in
     object
       inherit x [@@foo]
+
       val x = 333 [@@foo]
+
       val virtual x : t [@@foo]
+
       val! mutable x = 3 [@@foo]
+
       method x = 3 [@@foo]
+
       method virtual x : t [@@foo]
+
       method! private x = 3 [@@foo]
+
       initializer x [@@foo]
     end [@foo] ) [@foo]
 
@@ -49,10 +56,15 @@ class x =
 class type t =
   object
     inherit t [@@foo]
+
     val x : t [@@foo]
+
     val mutable x : t [@@foo]
+
     method x : t [@@foo]
+
     method private x : t [@@foo]
+
     constraint t = t' [@@foo]
   end[@foo]
 

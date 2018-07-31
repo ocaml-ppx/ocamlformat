@@ -1905,7 +1905,7 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
            $ cmts_after_self
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
-               (list fields "@\n" (fun cf -> fmt_class_field c ctx cf)) )
+               (list fields "\n@\n" (fun cf -> fmt_class_field c ctx cf)) )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
        $ fmt "end" ))
 
@@ -1931,7 +1931,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
            $ cmts_after_self
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
-               (list fields "@\n" (fun cf -> fmt_class_type_field c ctx cf))
+               (list fields "\n@\n" (fun cf -> fmt_class_type_field c ctx cf))
            )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
        $ fmt "end" ))
@@ -2109,7 +2109,8 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
 and fmt_class_field c ctx (cf: class_field) =
   let {pcf_desc; pcf_loc; pcf_attributes} = cf in
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pcf_loc in
-  let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" pcf_attributes in
+  let doc, atrs = doc_atrs pcf_attributes in
+  let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
   let fmt_kind = function
     | Cfk_virtual typ -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ)
     | Cfk_concrete
@@ -2175,37 +2176,39 @@ and fmt_class_field c ctx (cf: class_field) =
     | Cfk_concrete (Override, _) -> fmt "!"
     | Cfk_concrete (Fresh, _) -> fmt ""
   in
-  hvbox_if true 0
-  @@ fmt_cmts
-       ( match pcf_desc with
-       | Pcf_inherit (override, cl, parent) ->
-           fmt "inherit"
-           $ fmt_if Poly.(override = Override) "!"
-           $ fmt " "
-           $ fmt_class_expr c (sub_cl ~ctx cl)
-           $ opt parent (fun p -> fmt " as " $ str p.txt)
-       | Pcf_method (name, priv, kind) ->
-           hovbox 2
-             ( fmt "method" $ virtual_or_override kind
-             $ fmt_if Poly.(priv = Private) "@ private"
-             $ fmt "@ " $ str name.txt $ fmt_kind kind )
-       | Pcf_val (name, mut, kind) ->
-           hovbox 2
-             ( fmt "val" $ virtual_or_override kind
-             $ fmt_if Poly.(mut = Mutable) "@ mutable"
-             $ fmt "@ " $ str name.txt $ fmt_kind kind )
-       | Pcf_constraint (t1, t2) ->
-           fmt "constraint" $ fmt "@ "
-           $ fmt_core_type c (sub_typ ~ctx t1)
-           $ fmt " = "
-           $ fmt_core_type c (sub_typ ~ctx t2)
-       | Pcf_initializer e ->
-           fmt "initializer" $ fmt "@ " $ fmt_expression c (sub_exp ~ctx e)
-       | Pcf_attribute atr ->
-           let doc, atrs = doc_atrs [atr] in
-           fmt_docstring c ~epi:(fmt "") doc
-           $ fmt_attributes c ~key:"@@@" atrs
-       | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
+  fmt_docstring c ~epi:(fmt "@\n") doc
+  $ hvbox_if true 0
+    @@ fmt_cmts
+         ( match pcf_desc with
+         | Pcf_inherit (override, cl, parent) ->
+             fmt "inherit"
+             $ fmt_if Poly.(override = Override) "!"
+             $ fmt " "
+             $ fmt_class_expr c (sub_cl ~ctx cl)
+             $ opt parent (fun p -> fmt " as " $ str p.txt)
+         | Pcf_method (name, priv, kind) ->
+             hovbox 2
+               ( fmt "method" $ virtual_or_override kind
+               $ fmt_if Poly.(priv = Private) "@ private"
+               $ fmt "@ " $ str name.txt $ fmt_kind kind )
+         | Pcf_val (name, mut, kind) ->
+             hovbox 2
+               ( fmt "val" $ virtual_or_override kind
+               $ fmt_if Poly.(mut = Mutable) "@ mutable"
+               $ fmt "@ " $ str name.txt $ fmt_kind kind )
+         | Pcf_constraint (t1, t2) ->
+             fmt "constraint" $ fmt "@ "
+             $ fmt_core_type c (sub_typ ~ctx t1)
+             $ fmt " = "
+             $ fmt_core_type c (sub_typ ~ctx t2)
+         | Pcf_initializer e ->
+             fmt "initializer" $ fmt "@ "
+             $ fmt_expression c (sub_exp ~ctx e)
+         | Pcf_attribute atr ->
+             let doc, atrs = doc_atrs [atr] in
+             fmt_docstring c ~epi:(fmt "") doc
+             $ fmt_attributes c ~key:"@@@" atrs
+         | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
 
 and fmt_class_type_field c ctx (cf: class_type_field) =
@@ -2213,9 +2216,7 @@ and fmt_class_type_field c ctx (cf: class_type_field) =
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pctf_loc in
   let doc, atrs = doc_atrs pctf_attributes in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
-  fmt_docstring c ~pro:(fmt "@\n")
-    ~epi:(match doc with Some (_, true) -> fmt "@\n@\n" | _ -> fmt "@\n")
-    doc
+  fmt_docstring c ~epi:(fmt "@\n") doc
   $ hvbox_if true 0
     @@ fmt_cmts
          ( match pctf_desc with
@@ -2242,7 +2243,7 @@ and fmt_class_type_field c ctx (cf: class_type_field) =
              $ fmt_core_type c (sub_typ ~ctx t2)
          | Pctf_attribute atr ->
              let doc, atrs = doc_atrs [atr] in
-             fmt_docstring c ~epi:(fmt "@\n") ~pro:(fmt "@\n") doc
+             fmt_docstring c ~epi:(fmt "") doc
              $ fmt_attributes c ~key:"@@@" atrs
          | Pctf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
@@ -2398,7 +2399,9 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   @@ hvbox 0
        ( fmt_docstring c
            ~epi:
-             (match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
+             ( match doc with
+             | Some (_, true) -> fmt "\n@\n"
+             | _ -> fmt "@\n" )
            doc
        $ hvbox 0
            ( hvbox 2
@@ -2740,11 +2743,14 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
         cl
       in
       let doc, atrs = doc_atrs pci_attributes in
-      Cmts.fmt c.cmts pci_loc
-      @@ fmt_docstring c
-           ~epi:
-             (match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
-           doc
+      fmt_if (not first) "\n@\n"
+      $ Cmts.fmt c.cmts pci_loc
+        @@ fmt_docstring c
+             ~epi:
+               ( match doc with
+               | Some (_, true) -> fmt "\n@\n"
+               | _ -> fmt "@\n" )
+             doc
       $ hovbox 2
           ( hvbox 2
               ( str (if first then pre else "and")
@@ -2773,11 +2779,14 @@ and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
         | _ -> (None, xbody)
       in
       let doc, atrs = doc_atrs pci_attributes in
-      Cmts.fmt c.cmts pci_loc
-      @@ fmt_docstring c
-           ~epi:
-             (match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
-           doc
+      fmt_if (not first) "\n@\n"
+      $ Cmts.fmt c.cmts pci_loc
+        @@ fmt_docstring c
+             ~epi:
+               ( match doc with
+               | Some (_, true) -> fmt "\n@\n"
+               | _ -> fmt "@\n" )
+             doc
       $ hovbox 2
           ( hovbox 2
               ( str (if first then "class" else "and")
@@ -3411,7 +3420,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
   fmt_docstring c
-    ~epi:(match doc with Some (_, true) -> fmt "@,@," | _ -> fmt "@,")
+    ~epi:(match doc with Some (_, true) -> fmt "\n@\n" | _ -> fmt "@\n")
     doc
   $ Cmts.fmt_before c.cmts pvb_loc
   $ hvbox indent

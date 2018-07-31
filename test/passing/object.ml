@@ -2,29 +2,48 @@ let _ =
   object
     (* some comment *)
     inherit M.t as p [@@attr]
+
     (* some comment *)
     method! x = 2 [@@attr]
+
     method virtual x : t
+
     method virtual private x : t
+
     method! private x = 3
+
     method! private x : t = 4
+
     method! private x : type a b c. r = 5
+
     method! private x : type a. r = 6
+
     val virtual x : t
+
     val virtual mutable x : t
+
     val virtual mutable x : t
+
     val! mutable x = 7
+
     val! mutable x : t = 8
+
     constraint t = 'a t
+
     [%%ext salut, "hello"]
+
     [@@@attr]
+
     initializer f x ; 9
+
     method x =
       let f = {<a; b = e>} in
       x <- expr
+
     method x : type a b c. (a, b) t -> c =
       let f = {<a; b = e>} in
       x <- expr
+
     method x : (a, b) t -> c =
       let f =
         {< a
@@ -56,6 +75,7 @@ let _ = f (object%js end)
 class t ~a =
   object
     inherit f a
+
     method x a b = a + b
   end
 
@@ -78,10 +98,15 @@ module type A = sig
   class c :
     object
       inherit ['a a] d
+
       constraint 'a = int
+
       [%%ext something]
+
       [@@@attr something]
+
       val virtual mutable a : int
+
       method virtual private b : int -> int -> int
     end
 end
@@ -90,8 +115,10 @@ class type mapper =
   let open Modl1 in
   object
     method expression : Javascript.expression -> Javascript.expression
+
     method expression_o :
       Javascript.expression option -> Javascript.expression option
+
     method switch_case :
          Javascript.expression
       -> Javascript.expression
@@ -106,6 +133,7 @@ class tttttttttttttttttttttttttt ~aaaaaaaaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbb =
   object
     inherit f a
+
     method x a b = a + b
   end
 
@@ -115,6 +143,7 @@ class tttttttttttttttttttttttttt x y =
   let f x =
     object
       inherit f a
+
       method x a b = a + b
     end
   in
@@ -126,12 +155,26 @@ class tttttttttttttttttttttttttt x y =
   (fun x ->
     object
       inherit f a
+
       method x a b = a + b
     end )
     0
 
 class c =
   object
+    (** about a *)
     method a : type a b c. d -> e -> f = g
+
+    (** floatting *)
+
+    (** about a *)
     method a : 'a. d -> e -> f = g
   end
+
+(** about a *)
+class a = object end
+
+(** floatting *)
+
+and b = object end
+ (** about b *)
