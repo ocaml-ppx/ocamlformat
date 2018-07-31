@@ -22,3 +22,14 @@ module type BAR = sig
   module rec A : (FOO with type t = < b: B.t >)
   and B : FOO
 end
+
+module type M =
+  module type of M
+  with module A := A
+  (*test*)
+   and module A = A
+  (*test*)
+   and module A = A
+  with module A = A
+  (*test*)
+  with module A = A

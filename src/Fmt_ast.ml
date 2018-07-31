@@ -2663,8 +2663,9 @@ and fmt_module_type c ({ast= mty} as xmty) =
                      fmt_or first "@ with" "@;<1 1>and"
                      $ fmt_with_constraint c ctx wc ) ))
       ; epi=
-          Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
-      }
+          Some
+            ( fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ")
+            $ Cmts.fmt_after c.cmts pmty_loc ) }
   | Pmty_typeof me -> (
       let blk = fmt_module_expr c (sub_mod ~ctx me) in
       match blk.pro with
