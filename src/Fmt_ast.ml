@@ -779,8 +779,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         let opn = txt.[0] and cls = txt.[1] in
         Cmts.fmt c.cmts loc
           (hvbox 0
-             (wrap_fits_breaks (String.of_char opn) (String.of_char cls)
-                (Cmts.fmt_within c.cmts ~pro:(fmt "@ ") ~epi:(fmt "@ ")
+             (wrap_k (char opn) (char cls)
+                (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
                    ppat_loc)))
     | _ -> fmt_longident txt )
   | Ppat_construct
@@ -1419,8 +1419,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         let opn = txt.[0] and cls = txt.[1] in
         Cmts.fmt c.cmts loc
         @@ hvbox 0
-             (wrap_fits_breaks (String.of_char opn) (String.of_char cls)
-                (Cmts.fmt_within c.cmts ~pro:(fmt "@ ") ~epi:(fmt "@ ")
+             (wrap_k (char opn) (char cls)
+                (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
                    pexp_loc))
         $ fmt_atrs
     | _ -> fmt_longident txt $ fmt_atrs )
