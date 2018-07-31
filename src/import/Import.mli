@@ -44,9 +44,6 @@ val ( $ ) : ('a -> unit) -> ('a -> 'b) -> 'a -> 'b
 val impossible : string -> _
 (** Indicate why the call is expected to be impossible. *)
 
-val internal_error : string -> (string * Sexp.t) list -> _
-(** Raise an internal error. *)
-
 val user_error : string -> (string * Sexp.t) list -> _
 (** Raise a user error (e.g. due to malformed or illegal input). *)
 

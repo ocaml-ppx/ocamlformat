@@ -15,7 +15,7 @@
 shopt -s nullglob
 
 ROOT=$(git rev-parse --show-toplevel)
-OCAMLFORMAT="$ROOT"/_build/dbg/src/ocamlformat.exe
+OCAMLFORMAT="$ROOT"/_build/dev/src/ocamlformat.exe
 cd $ROOT/test
 
 UPDATE=
@@ -87,7 +87,7 @@ ocamlformat() {
     [ $# -eq 1 ]
     opts=$(cat $1.opts 2>/dev/null || true)
     tmpfile=$TMP/$(basename $1)
-    "$OCAMLFORMAT" $opts "$1" >$tmpfile 2>&1 || echo "NON-ZERO EXIT CODE" > $tmpfile
+    bash -c "(\"$OCAMLFORMAT\" $opts \"$1\" || true) 2>&1" > $tmpfile
 }
 
 reffile() {

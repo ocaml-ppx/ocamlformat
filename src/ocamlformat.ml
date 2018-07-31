@@ -11,40 +11,44 @@
 
 (** OCamlFormat *)
 
+let normalize norm {Translation_unit.ast; _} = norm ast
+
+let equal eq a b = eq a.Translation_unit.ast b.Translation_unit.ast
+
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
-  let parse = Translation_unit.parse Migrate_ast.Parse.implementation in
-  { parse
-  ; input= parse ?warn:None
+  let parse = Migrate_ast.Parse.implementation in
+  { input= Translation_unit.parse parse
+  ; parse
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
-  ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_impl ast1 ast2)
-  ; normalize= (fun (ast, _) -> Normalize.impl ast)
-  ; no_translation= List.is_empty
+  ; equal= equal Normalize.equal_impl
+  ; normalize= normalize Normalize.impl
+  ; no_translation= Normalize.disabled_impl
   ; printast= Migrate_ast.Printast.implementation }
 
 (** Operations on interface files. *)
 let intf : _ Translation_unit.t =
-  let parse = Translation_unit.parse Migrate_ast.Parse.interface in
-  { parse
-  ; input= parse ?warn:None
+  let parse = Migrate_ast.Parse.interface in
+  { input= Translation_unit.parse parse
+  ; parse
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
-  ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_intf ast1 ast2)
-  ; normalize= (fun (ast, _) -> Normalize.intf ast)
-  ; no_translation= List.is_empty
+  ; equal= equal Normalize.equal_intf
+  ; normalize= normalize Normalize.intf
+  ; no_translation= Normalize.disabled_intf
   ; printast= Migrate_ast.Printast.interface }
 
 (** Operations on use_file files. *)
 let use_file : _ Translation_unit.t =
-  let parse = Translation_unit.parse Migrate_ast.Parse.use_file in
-  { parse
-  ; input= parse ?warn:None
+  let parse = Migrate_ast.Parse.use_file in
+  { input= Translation_unit.parse parse
+  ; parse
   ; init_cmts= Cmts.init_use_file
   ; fmt= Fmt_ast.fmt_use_file
-  ; equal= (fun (ast1, _) (ast2, _) -> Normalize.equal_use_file ast1 ast2)
-  ; normalize= (fun (ast, _) -> Normalize.use_file ast)
-  ; no_translation= List.is_empty
+  ; equal= equal Normalize.equal_use_file
+  ; normalize= normalize Normalize.use_file
+  ; no_translation= Normalize.disabled_use_file
   ; printast= Migrate_ast.Printast.use_file }
 
 (** Select translation unit type and operations based on kind. *)
@@ -58,18 +62,32 @@ let xunit_of_kind : _ -> Translation_unit.x = function
 ;; Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 ;; match Conf.action with
-   | Inplace inputs ->
-       List.iter inputs ~f:
+   | Inplace inputs -> (
+     match
+       List.filter_map inputs ~f:
          (fun {Conf.kind; name= input_name; file= input_file; conf} ->
-           In_channel.with_file input_file ~f:(fun ic ->
-               Translation_unit.parse_print (xunit_of_kind kind) conf
-                 ~input_name ~input_file ic (Some input_file) ) )
+           match
+             In_channel.with_file input_file ~f:(fun ic ->
+                 Translation_unit.parse_print (xunit_of_kind kind) conf
+                   ~input_name ~input_file ic (Some input_file) )
+           with
+           | Ok -> None
+           | Ocamlformat_bug _ -> Some ()
+           | Invalid_source _ -> Some () )
+     with
+     | [] -> Caml.exit 0
+     | _ :: _ -> Caml.exit 1 )
    | In_out
        ( { kind= (`Impl | `Intf | `Use_file) as kind
          ; file= input_file
          ; name= input_name
          ; conf }
        , output_file ) ->
+     match
        In_channel.with_file input_file ~f:(fun ic ->
            Translation_unit.parse_print (xunit_of_kind kind) conf
              ~input_name ~input_file ic output_file )
+     with
+     | Ok -> Caml.exit 0
+     | Ocamlformat_bug _ -> Caml.exit 1
+     | Invalid_source _ -> Caml.exit 1

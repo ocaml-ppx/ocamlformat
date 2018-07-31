@@ -20,13 +20,13 @@ type 'a reason_data =
     [input_channel]. It is expected to have the given [magic_number] and is
     assumed to be the output of `refmt --print=binary_reason` where `refmt`
     has been compiled with the same version of `ocaml` as `ocamlformat`. *)
-let input ast_magic ~input_name ic =
-  Location.input_name := input_name ;
+let input ast_magic ic =
   let (magic, _, (ast: 'a), comments, _, _) : 'a reason_data =
     Caml.Marshal.from_channel ic
   in
   if String.equal magic ast_magic then
-    (ast, List.map comments ~f:(fun (txt, _, loc) -> (txt, loc)))
+    let comments = List.map comments ~f:(fun (txt, _, loc) -> (txt, loc)) in
+    {Translation_unit.ast; comments}
   else user_error "input not a serialized translation unit" []
 
 let input_impl = input Config.ast_impl_magic_number
@@ -115,10 +115,12 @@ let mapper cmts =
   in
   {Normalize.mapper with attributes; pat; expr; structure; signature}
 
-let norm_impl (ast, cmts) = map_structure (mapper cmts) ast
+let norm_impl {Translation_unit.ast; comments} =
+  map_structure (mapper comments) ast
 
-let norm_intf (ast, cmts) = map_signature (mapper cmts) ast
+let norm_intf {Translation_unit.ast; comments} =
+  map_signature (mapper comments) ast
 
-let equal_impl x y = Poly.equal (norm_impl x) (norm_impl y)
+let equal_impl x y = Normalize.equal_impl (norm_impl x) (norm_impl y)
 
-let equal_intf x y = Poly.equal (norm_intf x) (norm_intf y)
+let equal_intf x y = Normalize.equal_intf (norm_intf x) (norm_intf y)

@@ -65,7 +65,7 @@ let char_literal t (l: Location.t) =
   in
   match toks with
   | [(Parser.CHAR _, loc)] -> Literal_lexer.char (lexbuf_from_loc t loc)
-  | _ -> user_error "location does not contain a string literal" []
+  | _ -> user_error "location does not contain a char literal" []
 
 let begins_line t (l: Location.t) =
   let rec begins_line_ cnum =

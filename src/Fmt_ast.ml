@@ -21,8 +21,6 @@ open Fmt
 
 type c = {conf: Conf.t; source: Source.t; cmts: Cmts.t}
 
-exception Formatting_disabled
-
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
 let protect =
@@ -32,7 +30,7 @@ let protect =
       if !first then (
         let bt = Caml.Printexc.get_backtrace () in
         Format.pp_print_flush fs () ;
-        Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@." Ast.dump ast bt ;
+        Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
         first := false ) ;
       raise exc
 
@@ -2681,8 +2679,6 @@ and fmt_signature_item c {ast= si} =
   @@
   let ctx = Sig si in
   match si.psig_desc with
-  | Psig_attribute ({txt= "ocamlformat.disable"; _}, _) ->
-      raise Formatting_disabled
   | Psig_attribute atr ->
       let doc, atrs = doc_atrs [atr] in
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
@@ -3275,8 +3271,6 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
   wrap_k fmt_cmts_before fmt_cmts_after
   @@
   match si.pstr_desc with
-  | Pstr_attribute ({txt= "ocamlformat.disable"; _}, _) ->
-      raise Formatting_disabled
   | Pstr_attribute atr ->
       let doc, atrs = doc_atrs [atr] in
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs

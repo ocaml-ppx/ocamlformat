@@ -15,38 +15,52 @@ module Format = Format_
 
 open Migrate_ast
 
+type 'a with_comments = {ast: 'a; comments: (string * Location.t) list}
+
 (** Operations on translation units. *)
 type 'a t =
-  { input:
-      input_name:string -> In_channel.t -> 'a * (string * Location.t) list
+  { input: In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
-  ; parse:
-         ?warn:bool
-      -> input_name:string
-      -> In_channel.t
-      -> 'a * (string * Location.t) list
-  ; equal:
-         'a * (string * Location.t) list
-      -> 'a * (string * Location.t) list
-      -> bool
-  ; normalize: 'a * (string * Location.t) list -> 'a
+  ; parse: Lexing.lexbuf -> 'a
+  ; equal: 'a with_comments -> 'a with_comments -> bool
+  ; normalize: 'a with_comments -> 'a
   ; no_translation: 'a -> bool
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)
 type x = XUnit: 'a t -> x
 
-let parse parse_ast ?(warn= Conf.warn_error) ~input_name ic =
-  Warnings.parse_options false (if warn then "@50" else "-50") ;
+exception Warning50 of (Location.t * Warnings.t) list
+
+exception Internal_error of string * (string * Sexp.t) list
+
+let internal_error msg kvs = raise (Internal_error (msg, kvs))
+
+let parse parse_ast ic =
+  Warnings.parse_options false "+50" ;
   let lexbuf = Lexing.from_channel ic in
-  Location.init lexbuf input_name ;
-  Location.input_name := input_name ;
-  let ast = parse_ast lexbuf in
-  Warnings.check_fatal () ;
-  let comments = Lexer.comments () in
-  (ast, comments)
+  Location.init lexbuf !Location.input_name ;
+  let warning_printer = !Location.warning_printer in
+  let w50 = ref [] in
+  (Location.warning_printer :=
+     fun loc fmt warn ->
+       match warn with
+       | Warnings.Bad_docstring _ -> w50 := (loc, warn) :: !w50
+       | _ -> warning_printer loc fmt warn) ;
+  try
+    let ast = parse_ast lexbuf in
+    Warnings.check_fatal () ;
+    Location.warning_printer := warning_printer ;
+    match List.rev !w50 with
+    | [] ->
+        let comments = Lexer.comments () in
+        {ast; comments}
+    | w50 -> raise (Warning50 w50)
+  with e ->
+    Location.warning_printer := warning_printer ;
+    raise e
 
 (** Debug: dump internal ast representation to file. *)
 let dump xunit dir base suf ext ast =
@@ -56,100 +70,156 @@ let dump xunit dir base suf ext ast =
     xunit.printast (Caml.Format.formatter_of_out_channel oc) ast ;
     Out_channel.close oc )
 
-let parse_print (XUnit xunit) (conf: Conf.t) ~input_name:iname
-    ~input_file:ifile ic ofile =
+type result = Ok | Invalid_source of exn | Ocamlformat_bug of exn
+
+let parse_print (XUnit xunit) (conf: Conf.t) ~input_name ~input_file ic
+    ofile =
   let dir =
     match ofile with
     | Some ofile -> Filename.dirname ofile
     | None -> Filename.get_temp_dir_name ()
   in
-  let base = Filename.(remove_extension (basename iname)) in
-  let ext = Filename.extension iname in
+  let base = Filename.(remove_extension (basename input_name)) in
+  let ext = Filename.extension input_name in
   (* iterate until formatting stabilizes *)
-  let rec parse_print_ i source_txt ic =
-    Format.pp_print_flush Format.err_formatter () ;
+  let rec print_check ~i ~ast ~comments ~source_txt ~source_file : result =
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
       else
         let name = Format.sprintf "%s.%i%s" base i ext in
         let tmp = Filename.concat dir name in
-        Format.eprintf "%s@\n" tmp ;
+        Format.eprintf "%s@\n%!" tmp ;
         let oc = Out_channel.create ~fail_if_exists:(not Conf.debug) tmp in
         (tmp, oc)
     in
-    let ast, cmts =
-      if i = 1 then xunit.input ~input_name:iname ic
-      else xunit.parse ~warn:false ~input_name:tmp ic
-    in
-    if Conf.debug then
-      dump xunit dir base ".old" ".ast" (xunit.normalize (ast, cmts)) ;
+    dump xunit dir base ".old" ".ast" ast ;
     let source = Source.create source_txt in
-    let cmts_t = xunit.init_cmts source conf ast cmts in
-    ( if xunit.no_translation ast then (
-      In_channel.seek ic Int64.zero ;
-      Out_channel.output_string oc (In_channel.input_all ic) )
-    else
-      let fs = Format.formatter_of_out_channel oc in
-      Fmt.set_margin conf.margin fs ;
-      xunit.fmt source cmts_t conf ast fs ;
-      Format.pp_print_newline fs () ) ;
+    let cmts_t = xunit.init_cmts source conf ast comments in
+    let fs = Format.formatter_of_out_channel oc in
+    Fmt.set_margin conf.margin fs ;
+    xunit.fmt source cmts_t conf ast fs ;
+    Format.pp_print_newline fs () ;
     Out_channel.close oc ;
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
-    if not (String.equal source_txt fmted) then (
-      ( try Cmts.final_check cmts_t with exc ->
-          dump xunit dir base ".old" ".ast" ast ;
-          if not Conf.debug then Unix.unlink tmp ;
-          raise exc ) ;
-      In_channel.with_file tmp ~f:(fun ic' ->
-          let ast', cmts' = xunit.parse ~input_name:tmp ic' in
-          let eq_ast = xunit.equal (ast, cmts) (ast', cmts') in
-          if not eq_ast then (
-            dump xunit dir base ".old" ".ast" (xunit.normalize (ast, cmts)) ;
-            dump xunit dir base ".new" ".ast"
-              (xunit.normalize (ast', cmts')) ;
+    if String.equal source_txt fmted then (
+      match (Conf.action, ofile) with
+      | _, None ->
+          Out_channel.output_string stdout fmted ;
+          Unix.unlink tmp ;
+          Ok
+      | In_out _, Some ofile -> Unix.rename tmp ofile ; Ok
+      | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile ; Ok
+      | Inplace _, Some _ -> Unix.unlink tmp ; Ok )
+    else
+      match
+        Location.input_name := input_name ;
+        In_channel.with_file tmp ~f:(parse xunit.parse)
+      with
+      | exception e -> Ocamlformat_bug e
+      | new_ ->
+          let old = {ast; comments} in
+          if (* Ast not preserved ? *)
+             not (xunit.equal old new_) then (
+            dump xunit dir base ".old" ".ast" (xunit.normalize old) ;
+            dump xunit dir base ".new" ".ast" (xunit.normalize new_) ;
             if not Conf.debug then Unix.unlink tmp ;
             internal_error "formatting changed ast"
               [("output file", String.sexp_of_t tmp)] ) ;
-          let diff_cmts = Cmts.diff cmts cmts' in
+          (* Comments not preserved ? *)
+          ( match Cmts.remaining_comments cmts_t with
+          | [] -> ()
+          | l -> internal_error "formatting lost comments" l ) ;
+          let diff_cmts = Cmts.diff comments new_.comments in
           if not (Sequence.is_empty diff_cmts) then (
-            dump xunit dir base ".old" ".ast" ast ;
-            dump xunit dir base ".new" ".ast" ast' ;
+            dump xunit dir base ".old" ".ast" old.ast ;
+            dump xunit dir base ".new" ".ast" new_.ast ;
             if not Conf.debug then Unix.unlink tmp ;
             internal_error "formatting changed comments"
               [ ( "diff"
                 , Sequence.sexp_of_t
                     (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
-                    diff_cmts ) ] ) ) ;
-      if i < conf.max_iters then (
-        In_channel.with_file tmp ~f:(fun ic -> parse_print_ (i + 1) fmted ic) ;
-        Unix.unlink tmp )
-      else (
-        ignore (Unix.system ("diff " ^ ifile ^ " " ^ tmp)) ;
-        internal_error
-          (Format.sprintf "formatting did not stabilize after %i iterations"
-             i)
-          [] ) )
-    else
-      match (Conf.action, ofile) with
-      | _, None ->
-          Out_channel.output_string stdout fmted ;
-          Unix.unlink tmp
-      | In_out _, Some ofile -> Unix.rename tmp ofile
-      | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile
-      | Inplace _, _ -> Unix.unlink tmp
+                    diff_cmts ) ] ) ;
+          if (* Too many iteration ? *)
+             i >= conf.max_iters then (
+            Caml.flush_all () ;
+            ( if Conf.debug then
+              let command =
+                Printf.sprintf "diff %s %s 1>&2" source_file tmp
+              in
+              ignore (Unix.system command) ) ;
+            internal_error
+              (Format.sprintf
+                 "formatting did not stabilize after %i iterations" i)
+              [] ) ;
+          let result =
+            print_check ~i:(i + 1) ~ast:new_.ast ~comments:new_.comments
+              ~source_txt:fmted ~source_file:tmp
+          in
+          Unix.unlink tmp ; result
   in
-  let source_txt = In_channel.with_file ifile ~f:In_channel.input_all in
-  (* NOTE: Warning 28 is suppressed due to a difference in exception
-     constructor arity between OCaml versions. See this
-     ocaml-migrate-parsetree issue for potential future mitigation.
-     https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
-  try[@ocaml.warning "-28"] parse_print_ 1 source_txt ic with
-  | Fmt_ast.Formatting_disabled -> (
-    match (Conf.action, ofile) with
-    | _, None -> Out_channel.output_string stdout source_txt
-    | In_out _, Some ofile -> Out_channel.write_all ofile ~data:source_txt
-    | Inplace _, _ -> () )
-  | Warnings.Errors _ -> Caml.exit 1
-  | Syntaxerr.Error _ as exc ->
-      Location.report_exception Caml.Format.err_formatter exc ;
-      Caml.exit 1
+  let source_txt =
+    In_channel.with_file input_file ~f:In_channel.input_all
+  in
+  Location.input_name := input_name ;
+  let result =
+    match xunit.input ic with
+    | exception exn -> Invalid_source exn
+    | {ast; _} when xunit.no_translation ast ->
+        ( match (Conf.action, ofile) with
+        | _, None -> Out_channel.output_string stdout source_txt
+        | In_out _, Some ofile ->
+            Out_channel.write_all ofile ~data:source_txt
+        | Inplace _, _ -> () ) ;
+        Ok
+    | {ast; comments} ->
+      try
+        print_check ~i:1 ~ast ~comments ~source_txt ~source_file:input_file
+      with exc -> Ocamlformat_bug exc
+  in
+  let fmt = Caml.Format.err_formatter in
+  let exe = Filename.basename Sys.argv.(0) in
+  ( match result with
+  | Ok -> ()
+  | Invalid_source _ when conf.Conf.quiet -> ()
+  | Invalid_source exn -> (
+      let reason =
+        (* NOTE: Warning 28 is suppressed due to a difference in exception
+           constructor arit y between OCaml versions. See this
+           ocaml-migrate-parsetree issue for potential future mitigation.
+           https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
+        match[@ocaml.warning "-28"] exn with
+        | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
+        | Warning50 _ -> " (misplaced documentation comments - warning 50)"
+        | _ -> ""
+      in
+      Format.eprintf "%s: ignoring %S%s\n%!" exe input_file reason ;
+      match[@ocaml.warning "-28"] exn with
+      | Syntaxerr.Error _ | Lexer.Error _ ->
+          Location.report_exception fmt exn
+      | Warning50 l ->
+          List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
+      | exn -> Format.eprintf "%s\n%!" (Exn.to_string exn) )
+  | Ocamlformat_bug exn ->
+      Format.eprintf
+        "%s: Cannot process %S.\n  \
+         Please report this bug at \
+         https://github.com/ocaml-ppx/ocamlformat/issues.\n\
+         %!"
+        exe input_file ;
+      match[@ocaml.warning "-28"] exn with
+      | Syntaxerr.Error _ | Lexer.Error _ ->
+          Format.eprintf "  BUG: generating invalid ocaml syntax.\n%!" ;
+          if Conf.debug then Location.report_exception fmt exn
+      | Warning50 l ->
+          Format.eprintf "  BUG: misplaced documentation comments.\n%!" ;
+          if Conf.debug then
+            List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
+      | Internal_error (m, l) ->
+          Format.eprintf "%s: BUG: %s.\n%!" exe m ;
+          if Conf.debug then
+            List.iter l ~f:(fun (msg, sexp) ->
+                Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )
+      | exn ->
+          Format.eprintf "  BUG: unhandled exception.\n%!" ;
+          if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) ) ;
+  result
