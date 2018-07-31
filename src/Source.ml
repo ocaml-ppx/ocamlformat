@@ -28,10 +28,13 @@ let merge (l1: Location.t) ~(sub: Location.t) =
     loc_start= {l1.loc_start with pos_cnum= base + sub.loc_start.pos_cnum}
   ; loc_end= {l1.loc_end with pos_cnum= base + sub.loc_end.pos_cnum} }
 
-let lexbuf_from_loc t (l: Location.t) =
+let string_from_loc t (l: Location.t) =
   let pos = l.loc_start.pos_cnum in
   let len = l.loc_end.pos_cnum - pos in
-  let s = String.sub t ~pos ~len in
+  String.sub t ~pos ~len
+
+let lexbuf_from_loc t (l: Location.t) =
+  let s = string_from_loc t l in
   Lexing.from_string s
 
 let tokens_at t ?(filter= fun _ -> true) (l: Location.t) :
@@ -49,23 +52,54 @@ let tokens_at t ?(filter= fun _ -> true) (l: Location.t) :
   loop []
 
 let string_literal t mode (l: Location.t) =
+  (* the location of a [string] might include surrounding comments and
+     attributes because of [reloc_{exp,pat}] and a [string] can be found in
+     attributes payloads. {[ f ((* comments *) "c" [@attributes]) ]} *)
   let toks =
     tokens_at t
-      ~filter:(function Parser.STRING (_, None) -> true | _ -> false)
+      ~filter:(function
+        | Parser.STRING (_, None) -> true
+        | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
+            true
+        | _ -> false)
       l
   in
   match toks with
-  | [(Parser.STRING (_, None), loc)] ->
+  | [(Parser.STRING (_, None), loc)]
+   |(Parser.STRING (_, None), loc)
+    :: ( Parser.LBRACKETATATAT, _
+       | Parser.LBRACKETATAT, _
+       | Parser.LBRACKETAT, _ )
+       :: _ ->
       Literal_lexer.string mode (lexbuf_from_loc t loc)
-  | _ -> user_error "location does not contain a string literal" []
+  | _ ->
+      user_error "location does not contain a string literal"
+        [("text", Sexp.Atom (string_from_loc t l))]
 
 let char_literal t (l: Location.t) =
+  (* the location of a [char] might include surrounding comments and
+     attributes because of [reloc_{exp,pat}] and a [char] can be found in
+     attributes payloads. {[ f ((* comments *) 'c' [@attributes]) ]} *)
   let toks =
-    tokens_at t ~filter:(function Parser.CHAR _ -> true | _ -> false) l
+    tokens_at t
+      ~filter:(function
+        | Parser.CHAR _ -> true
+        | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
+            true
+        | _ -> false)
+      l
   in
   match toks with
-  | [(Parser.CHAR _, loc)] -> Literal_lexer.char (lexbuf_from_loc t loc)
-  | _ -> user_error "location does not contain a char literal" []
+  | [(Parser.CHAR _, loc)]
+   |(Parser.CHAR _, loc)
+    :: ( Parser.LBRACKETATATAT, _
+       | Parser.LBRACKETATAT, _
+       | Parser.LBRACKETAT, _ )
+       :: _ ->
+      Literal_lexer.char (lexbuf_from_loc t loc)
+  | _ ->
+      user_error "location does not contain a char literal"
+        [("text", Sexp.Atom (string_from_loc t l))]
 
 let begins_line t (l: Location.t) =
   let rec begins_line_ cnum =

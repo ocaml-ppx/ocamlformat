@@ -18,3 +18,6 @@ let _ =
 let _ = ('\xff', '\255', '\n')
 
 let f = function '\xff'..'\255' -> ()
+
+
+let f ("test" [@test "test"]) = 2
