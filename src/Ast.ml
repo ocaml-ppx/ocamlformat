@@ -1336,7 +1336,8 @@ end = struct
   (** Check if an exp is a prefix op that is not fully applied *)
   let is_displaced_prefix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
-    | Exp {pexp_desc= Pexp_apply (e0, _ :: _)}, Pexp_ident {txt= Lident i}
+    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _)])}
+      , Pexp_ident {txt= Lident i} )
       when e0 == exp && is_prefix_id i ->
         false
     | _, Pexp_ident {txt= Lident i} when is_prefix_id i -> true
