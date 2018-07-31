@@ -126,6 +126,19 @@ let has_trailing_attributes_exp {pexp_desc; pexp_attributes} =
         | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
         | _ -> true )
 
+let has_trailing_attributes_pat {ppat_desc; ppat_attributes} =
+  match ppat_desc with
+  | Ppat_construct (_, None)
+   |Ppat_constant _ | Ppat_any | Ppat_var _
+   |Ppat_variant (_, None)
+   |Ppat_record _ | Ppat_array _ | Ppat_type _ | Ppat_unpack _
+   |Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
+      false
+  | _ ->
+      List.exists ppat_attributes ~f:(function
+        | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+        | _ -> true )
+
 let has_trailing_attributes_mty {pmty_desc; pmty_attributes} =
   match pmty_desc with _ ->
     List.exists pmty_attributes ~f:(function
@@ -1272,6 +1285,8 @@ end = struct
       parenthesized in context [ctx]. *)
   let parenze_pat ({ctx; ast= pat} as xpat) =
     assert (check_pat xpat ; true) ;
+    has_trailing_attributes_pat pat
+    ||
     match (ctx, pat.ppat_desc) with
     | ( Pat
           { ppat_desc=
@@ -1330,7 +1345,8 @@ end = struct
       , Ppat_or _ )
      |Pat {ppat_desc= Ppat_lazy _}, Ppat_tuple _
      |Pat {ppat_desc= Ppat_tuple _}, Ppat_tuple _
-     |Pat {ppat_desc= Ppat_lazy _}, Ppat_lazy _
+     |Pat _, Ppat_lazy _
+     |Pat _, Ppat_exception _
      |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
      |Cl {pcl_desc= Pcl_fun _}, Ppat_constraint _
      |Cl {pcl_desc= Pcl_fun _}, Ppat_tuple _
