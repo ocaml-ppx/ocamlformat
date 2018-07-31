@@ -977,85 +977,46 @@ end = struct
       of [ctx]. Also returns whether [ast] is the left, right, or neither
       child of [ctx]. Meaningful for binary operators, otherwise returns
       [None]. *)
-  let prec_ctx = function
-    | { ctx= Sig {psig_desc= Psig_type (_, t1N)}
-      ; ast= Typ ({ptyp_desc= Ptyp_arrow _} as typ) }
-      when List.exists t1N ~f:(function
-             | {ptype_kind= Ptype_variant cd1N} ->
-                 List.exists cd1N ~f:(function
-                   | {pcd_args= Pcstr_tuple t1N} ->
-                       List.exists t1N ~f:(phys_equal typ)
-                   | _ -> false )
-             | _ -> false ) ->
-        Some (Apply, Non)
-    | { ctx= Sig {psig_desc= Psig_type (_, t1N)}
-      ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
-      when List.exists t1N ~f:(function
-             | {ptype_kind= Ptype_variant cd1N} ->
-                 List.exists cd1N ~f:(function
-                   | {pcd_args= Pcstr_tuple t1N} ->
-                       List.exists t1N ~f:(phys_equal typ)
-                   | _ -> false )
-             | _ -> false ) ->
-        Some (InfixOp3, Non)
-    | { ctx= Sig {psig_desc= Psig_typext {ptyext_constructors= l}}
-      ; ast= Typ ({ptyp_desc= Ptyp_arrow _} as typ) }
-      when List.exists l ~f:(function
-             | {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} ->
-                 List.exists t1N ~f:(phys_equal typ)
-             | _ -> false ) ->
-        Some (Apply, Non)
-    | { ctx= Sig {psig_desc= Psig_typext {ptyext_constructors= l}}
-      ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
-      when List.exists l ~f:(function
-             | {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} ->
-                 List.exists t1N ~f:(phys_equal typ)
-             | _ -> false ) ->
-        Some (InfixOp3, Non)
+  let prec_ctx ctx =
+    let is_tuple_lvl1_in_constructor ty = function
+      | {ptype_kind= Ptype_variant cd1N} ->
+          List.exists cd1N ~f:(function
+            | {pcd_args= Pcstr_tuple t1N} ->
+                List.exists t1N ~f:(phys_equal ty)
+            | _ -> false )
+      | _ -> false
+    in
+    let is_tuple_lvl1_in_ext_constructor ty = function
+      | {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} ->
+          List.exists t1N ~f:(phys_equal ty)
+      | _ -> false
+    in
+    let constructor_cxt_prec_of_inner = function
+      | {ptyp_desc= Ptyp_arrow _} -> Some (Apply, Non)
+      | {ptyp_desc= Ptyp_tuple _} -> Some (InfixOp3, Non)
+      | _ -> None
+    in
+    match ctx with
     | { ctx=
-          Sig
-            { psig_desc=
-                Psig_exception {pext_kind= Pext_decl (Pcstr_tuple t1N, _)}
-            }
-      ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
-      when List.mem ~equal:phys_equal t1N typ ->
-        Some (InfixOp3, Non)
+          ( Str {pstr_desc= Pstr_type (_, t1N)}
+          | Sig {psig_desc= Psig_type (_, t1N)} )
+      ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _} as typ) }
+      when List.exists t1N ~f:(is_tuple_lvl1_in_constructor typ) ->
+        constructor_cxt_prec_of_inner typ
     | { ctx=
-          Str
-            { pstr_desc=
-                Pstr_exception {pext_kind= Pext_decl (Pcstr_tuple t1N, _)}
-            }
-      ; ast= Typ ({ptyp_desc= Ptyp_tuple _} as typ) }
-      when List.mem ~equal:phys_equal t1N typ ->
-        Some (InfixOp3, Non)
-    | {ctx= Str {pstr_desc}; ast= Typ typ} -> (
-      match pstr_desc with
-      | Pstr_type (_, td1N) ->
-          List.find_map td1N ~f:(fun {ptype_kind} ->
-              match ptype_kind with
-              | Ptype_variant cd1N ->
-                  List.find_map cd1N ~f:(fun {pcd_args} ->
-                      match pcd_args with
-                      | Pcstr_tuple t1N ->
-                          if List.mem t1N typ ~equal:phys_equal then
-                            Some (Apply, Non)
-                          else None
-                      | Pcstr_record _ -> None )
-              | _ -> None )
-      | Pstr_typext {ptyext_constructors= l} ->
-          List.find_map l ~f:(fun {pext_kind} ->
-              match pext_kind with
-              | Pext_decl (Pcstr_tuple t1N, _) ->
-                  if List.mem t1N typ ~equal:phys_equal then
-                    Some (Apply, Non)
-                  else None
-              | Pext_decl (Pcstr_record _, _) -> None
-              | Pext_rebind _ -> None )
-      | Pstr_value _ | Pstr_recmodule _ | Pstr_class _ | Pstr_class_type _
-       |Pstr_eval _ | Pstr_primitive _ | Pstr_exception _ | Pstr_module _
-       |Pstr_modtype _ | Pstr_open _ | Pstr_include _ | Pstr_attribute _
-       |Pstr_extension _ ->
-          None )
+          ( Str {pstr_desc= Pstr_typext {ptyext_constructors= l}}
+          | Sig {psig_desc= Psig_typext {ptyext_constructors= l}} )
+      ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _} as typ) }
+      when List.exists l ~f:(is_tuple_lvl1_in_ext_constructor typ) ->
+        constructor_cxt_prec_of_inner typ
+    | { ctx=
+          ( Str {pstr_desc= Pstr_exception constr}
+          | Sig {psig_desc= Psig_exception constr}
+          | Exp {pexp_desc= Pexp_letexception (constr, _)} )
+      ; ast= Typ ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _} as typ) }
+      when is_tuple_lvl1_in_ext_constructor typ constr ->
+        constructor_cxt_prec_of_inner typ
+    | {ctx= Str _; ast= Typ _} -> None
     | {ctx= Typ {ptyp_desc}; ast= Typ typ} -> (
       match ptyp_desc with
       | Ptyp_arrow (_, t1, _) ->
