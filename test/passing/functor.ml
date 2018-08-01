@@ -45,3 +45,11 @@ module M =
     end)
     (S)
     (T)
+
+module type Module_type_fail = sig
+  include S
+
+  module F : functor (_ : T) -> sig end
+
+  include S
+end
