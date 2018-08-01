@@ -160,42 +160,32 @@ let equal_intf ast1 ast2 = Poly.equal (intf ast1) (intf ast2)
 
 let equal_use_file ast1 ast2 = Poly.equal (use_file ast1) (use_file ast2)
 
-exception Formatting_disabled
+let disabled_attribute (attribute: attribute) =
+  match attribute with
+  | {txt= "ocamlformat.disable"; _}, _ -> true
+  | _ -> false
 
-let iter =
-  let structure_item _ (si: structure_item) =
-    match si.pstr_desc with
-    | Pstr_attribute ({txt= "ocamlformat.disable"; _}, _) ->
-        raise Formatting_disabled
-    | _ -> ()
-  in
-  let signature_item _ (si: signature_item) =
-    match si.psig_desc with
-    | Psig_attribute ({txt= "ocamlformat.disable"; _}, _) ->
-        raise Formatting_disabled
-    | _ -> ()
-  in
-  {Ast_iterator.default_iterator with structure_item; signature_item}
+let disabled_structure_item (si: structure_item) =
+  match si.pstr_desc with
+  | Pstr_attribute a -> disabled_attribute a
+  | _ -> false
 
-let disabled_impl impl =
-  match impl with
+let disabled_signature_item (si: signature_item) =
+  match si.psig_desc with
+  | Psig_attribute a -> disabled_attribute a
+  | _ -> false
+
+let disabled_impl = function
   | [] -> true
-  | _ ->
-    try iter.structure iter impl ; false with Formatting_disabled -> true
+  | l -> List.exists l ~f:disabled_structure_item
 
-let disabled_intf intf =
-  match intf with
+let disabled_intf = function
   | [] -> true
-  | _ ->
-    try iter.signature iter intf ; false with Formatting_disabled -> true
+  | l -> List.exists l ~f:disabled_signature_item
 
-let disabled_use_file l =
-  match l with
+let disabled_use_file = function
   | [] -> true
   | l ->
-    try
-      List.iter l ~f:(function
-        | Ptop_dir _ -> ()
-        | Ptop_def l -> iter.structure iter l ) ;
-      false
-    with Formatting_disabled -> true
+      List.exists l ~f:(function
+        | Ptop_dir _ -> false
+        | Ptop_def l -> List.exists l ~f:disabled_structure_item )
