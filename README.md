@@ -78,10 +78,7 @@ OCamlFormat is documented in its man page and through its internal help:
 
 OCamlFormat is influenced by and follows the same basic design as `refmt` for [Reason](https://github.com/facebook/reason), but outputs OCaml instead of Reason.
 
-Support for converting Reason to OCaml is included in the `ocamlformat_reason` package, which works by using `refmt` to parse Reason into an OCaml parse tree. The Reason converter can be installed using `opam`:
-```
-opam pin add ocamlformat_reason https://github.com/ocaml-ppx/ocamlformat.git
-```
+Converting Reason to OCaml was previously supported but was removed due to lack of active use and maintenance. Contributors wishing to revive and maintain this support would be very welcome.
 
 ## Community
 
