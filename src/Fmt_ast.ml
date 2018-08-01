@@ -264,11 +264,14 @@ let sugar_sequence c width xexp =
       not (is_simple c.conf width xexp1)
       || not (is_simple c.conf width xexp2) )
 
-let rec sugar_functor_type c ~allow_attributes ({ast= mty} as xmty) =
+(* The sugar is different when used with the [functor] keyword. The syntax
+   M(A : A)(B : B) cannot handle [_] as module name. *)
+let rec sugar_functor_type c ~for_functor_kw ({ast= mty} as xmty) =
   let ctx = Mty mty in
   match mty with
   | {pmty_desc= Pmty_functor (arg, arg_mty, body); pmty_loc; pmty_attributes}
-    when match pmty_attributes with [] -> true | _ -> allow_attributes ->
+    when for_functor_kw
+         || (List.is_empty pmty_attributes && not (String.equal arg.txt "_")) ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
@@ -277,17 +280,20 @@ let rec sugar_functor_type c ~allow_attributes ({ast= mty} as xmty) =
       let body = sub_mty ~ctx body in
       let xargs, xbody =
         match pmty_attributes with
-        | [] -> sugar_functor_type c ~allow_attributes body
+        | [] -> sugar_functor_type c ~for_functor_kw body
         | _ -> ([], body)
       in
       ((arg, Option.map arg_mty ~f:(sub_mty ~ctx)) :: xargs, xbody)
   | _ -> ([], xmty)
 
-let rec sugar_functor c ~allow_attributes ({ast= me} as xme) =
+(* The sugar is different when used with the [functor] keyword. The syntax
+   M(A : A)(B : B) cannot handle [_] as module name. *)
+let rec sugar_functor c ~for_functor_kw ({ast= me} as xme) =
   let ctx = Mod me in
   match me with
   | {pmod_desc= Pmod_functor (arg, arg_mt, body); pmod_loc; pmod_attributes}
-    when match pmod_attributes with [] -> true | _ -> allow_attributes ->
+    when for_functor_kw
+         || (List.is_empty pmod_attributes && not (String.equal arg.txt "_")) ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
@@ -298,7 +304,7 @@ let rec sugar_functor c ~allow_attributes ({ast= me} as xme) =
       let body = sub_mod ~ctx body in
       let xargs, xbody_me =
         match pmod_attributes with
-        | [] -> sugar_functor c ~allow_attributes body
+        | [] -> sugar_functor c ~for_functor_kw body
         | _ -> ([], body)
       in
       ((arg, xarg_mt) :: xargs, xbody_me)
@@ -1572,7 +1578,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       let {pmod_desc= _; pmod_attributes} = pmod in
       let keyword = fmt "let module" $ fmt_extension_suffix c ext in
       let xargs, xbody =
-        sugar_functor c ~allow_attributes:false (sub_mod ~ctx pmod)
+        sugar_functor c ~for_functor_kw:false (sub_mod ~ctx pmod)
       in
       let xbody, xmty =
         match xbody.ast with
@@ -2577,7 +2583,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
             ( fmt "end" $ after
             $ fmt_attributes c ~key:"@" atrs ~pre:(fmt "@ ") ) }
   | Pmty_functor _ ->
-      let xargs, mt2 = sugar_functor_type c ~allow_attributes:true xmty in
+      let xargs, mt2 = sugar_functor_type c ~for_functor_kw:true xmty in
       let blk = fmt_module_type c mt2 in
       { blk with
         pro=
@@ -2881,7 +2887,7 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
     else str "and"
   in
   let xargs, xmty =
-    sugar_functor_type c ~allow_attributes:false (sub_mty ~ctx pmd_type)
+    sugar_functor_type c ~for_functor_kw:false (sub_mty ~ctx pmd_type)
   in
   let colon =
     match xmty.ast.pmty_desc with Pmty_alias _ -> false | _ -> true
@@ -3047,7 +3053,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_functor _ ->
-      let xargs, me = sugar_functor c ~allow_attributes:true xmod in
+      let xargs, me = sugar_functor c ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
       let { opn= opn_e
           ; pro= pro_e
@@ -3444,7 +3450,7 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
     else str "and"
   in
   let xargs, xbody =
-    sugar_functor c ~allow_attributes:false (sub_mod ~ctx pmb_expr)
+    sugar_functor c ~for_functor_kw:false (sub_mod ~ctx pmb_expr)
   in
   let xbody, xmty =
     match xbody.ast with
