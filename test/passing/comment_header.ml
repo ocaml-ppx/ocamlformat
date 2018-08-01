@@ -1,26 +1,26 @@
 (**************************************************************************)
 (*                                                                        *)
-(*                                 OCaml                                  *)
+(*                                 XXXXX                                  *)
 (*                                                                        *)
-(*             Xavier Leroy, projet Gallium, INRIA Rocquencourt           *)
+(*             XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx           *)
 (*                                                                        *)
-(*   Copyright 2014 Institut National de Recherche en Informatique et     *)
-(*     en Automatique.                                                    *)
+(*   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     *)
+(*     XXXXXXXXXXXxXX.                                                    *)
 (*                                                                        *)
-(*   All rights reserved.  This file is distributed under the terms of    *)
-(*   the GNU Lesser General Public License version 2.1, with the          *)
-(*   special exception on linking described in the file LICENSE.          *)
+(*   XXXXXXXXXXXXXXXXXXX.  XXXXXXXXXXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXXXX    *)
+(*   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxX          *)
+(*   XXXXXXX XXXXXXXXXXXXXXXXXXXX XXXXXXXXXXXX XXXXXXXXXXXXXXXXX          *)
 (*                                                                        *)
 (**************************************************************************)
 
-(* Common subexpression elimination by value numbering over extended basic
-   blocks. *)
+(* XXXXXXX xxxxxxxxxxxxx XXXXXXXXXXXXXXXXXXXXx xxxxxxxxx xxxxxxxxx x xxxxxx
+   xxxxxx. *)
 
-open Mach
+open Module
 
-type valnum = int
+type typ = typ
 
-(* Classification of operations *)
+(* XXXXXXXXXXXXXX XX XXxxxxxxxx *)
 
 
 (* b *)(*******)
@@ -37,3 +37,9 @@ type valnum = int
 (*     *)
 (*     *)
 (*****)
+
+
+(* xxxxxxxxxxxxxxxxx, xxxxxxx xxxxxx (xxxxxxxxxxxxxx) xxxxxxxxx xxxxxxx
+   xxxxxxxxxxxxxx xxxxxxxxxxxxx. *)
+(* xx xxxxxxxxxxxxxx, x xxxxxxxxxxxxxx "xxxxxxxxx" xxxxxxxxxxxxxxxxxxxx
+   xxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxx xxxxx. *)

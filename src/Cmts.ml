@@ -527,16 +527,16 @@ let fmt_cmts t ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   match find tbl loc with
   | None -> fmt ""
   | Some cmts ->
+      let line_dist a b =
+        b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
+      in
       let groups =
-        let on_consecutive_lines a b =
-          b.Location.loc_start.pos_lnum - a.Location.loc_start.pos_lnum = 1
-        in
         List.group cmts ~break:(fun (_, a) (_, b) ->
             not
               ( Location.is_single_line a && Location.is_single_line b
-              && on_consecutive_lines a b
+              && line_dist a b = 1
               && Location.compare_start_col a b = 0
-              && Location.compare_end_col a b >= 0 ) )
+              && Location.compare_end_col a b = 0 ) )
       in
       let last_cmt = List.last cmts in
       let eol_cmt =
@@ -550,18 +550,24 @@ let fmt_cmts t ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
              >>| fun (_, {Location.loc_end= {pos_lnum}}) ->
              pos_lnum + 1 = loc.Location.loc_start.pos_lnum )
       in
-      list_fl groups (fun ~first ~last group ->
-          fmt_if_k first (Option.call ~f:pro $ open_vbox 0)
-          $ fmt_if (not first) "@ "
+      let maybe_newline ~next (_, cur_last_loc) =
+        match next with
+        | Some ((_, next_loc) :: _) ->
+            fmt_if (line_dist cur_last_loc next_loc > 1) "@;<1000 0>"
+        | _ -> fmt ""
+      in
+      list_pn groups (fun ?prev group ?next ->
+          fmt_or_k (Option.is_none prev)
+            (Option.call ~f:pro $ open_vbox 0)
+            (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
-            | [cmt] -> fmt_cmt t cmt
+            | [cmt] -> fmt_cmt t cmt $ maybe_newline ~next cmt
             | group ->
-                list_fl group (fun ~first ~last:last_inner cmt ->
-                    fmt_if_k first (Fmt.break_unless_newline 0 0)
-                    $ wrap "(*" "*)" (str (fst cmt))
-                    $ fmt_if (not (last && last_inner)) "@;<1000 0>" ) )
-          $ fmt_if_k last
+                list group "@;<1000 0>" (fun cmt ->
+                    wrap "(*" "*)" (str (fst cmt)) )
+                $ maybe_newline ~next (List.last_exn group) )
+          $ fmt_if_k (Option.is_none next)
               ( close_box
               $ fmt_or_k eol_cmt
                   (fmt_or_k adj_cmt adj eol)
