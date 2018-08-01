@@ -144,6 +144,9 @@ val wrap_fits_breaks_if : bool -> string -> string -> t -> t
 
 (** Boxes ---------------------------------------------------------------*)
 
+val open_vbox : int -> t
+(** Open an vbox with specified indentation. *)
+
 val open_hvbox : int -> t
 (** Open an hvbox with specified indentation. *)
 
