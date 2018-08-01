@@ -1209,6 +1209,23 @@ end = struct
     match xtyp with
     | {ast= {ptyp_desc= Ptyp_package _}} -> true
     | {ast= {ptyp_desc= Ptyp_alias _}; ctx= Typ _} -> true
+    | { ast= {ptyp_desc= Ptyp_alias _}
+      ; ctx= Str {pstr_desc= Pstr_typext _} | Sig {psig_desc= Psig_typext _}
+      } ->
+        true
+    | { ast= {ptyp_desc= Ptyp_alias _}
+      ; ctx=
+          ( Str {pstr_desc= Pstr_type (_, t)}
+          | Sig {psig_desc= Psig_type (_, t)} ) }
+      when List.exists t ~f:(fun t ->
+               match t.ptype_kind with
+               | Ptype_variant l ->
+                   List.exists l ~f:(fun c ->
+                       match c.pcd_args with
+                       | Pcstr_tuple l -> List.exists l ~f:(phys_equal typ)
+                       | _ -> false )
+               | _ -> false ) ->
+        true
     | _ ->
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
       | Some (Some true) -> true
