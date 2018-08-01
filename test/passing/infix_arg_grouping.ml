@@ -74,3 +74,12 @@ let rename (us, q) sub =
       (Var.Subst.range sub)
   , rename_q q sub )
   |> check invariant
+
+let _ =
+  List.map ~f
+    ( [ aaaaaaaaaaaaaaa
+      ; bbbbbbbbbbbbbbb
+      ; ccccccccccccccc
+      ; ddddddddddddddd
+      ; eeeeeeeeeeeeeee ]
+    @ l )
