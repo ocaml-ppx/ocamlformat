@@ -547,11 +547,15 @@ let fmt_within t ?(pro= Fmt.break_unless_newline 1 0)
     ?(epi= Fmt.break_unless_newline 1 0) =
   fmt_cmts t t.cmts_within ~pro ~epi ~eol:(Fmt.fmt "")
 
-let fmt t ?pro ?epi ?eol ?adj loc k =
+let fmt t ?pro ?epi ?eol ?adj loc =
+  (* remove the before comments from the map first *)
   let before = fmt_before t ?pro ?epi ?eol ?adj loc in
-  let inner = k in
-  let after = fmt_after t ?pro ?epi loc in
-  before $ inner $ after
+  (* remove the within comments from the map by accepting the continuation *)
+  fun k ->
+    (* delay the after comments until the within comments have been removed *)
+    let after = fmt_after t ?pro ?epi loc in
+    let inner = k in
+    before $ inner $ after
 
 let fmt_list t ?pro ?epi ?eol locs init =
   List.fold locs ~init ~f:(fun k loc -> fmt t ?pro ?epi ?eol loc @@ k)
