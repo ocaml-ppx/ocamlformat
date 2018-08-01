@@ -954,6 +954,7 @@ end = struct
         ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
         is_simple c width (sub_exp ~ctx e1)
         && is_simple c width (sub_exp ~ctx e2)
+        && width xexp * 3 < c.margin
     | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
         is_trivial c e0
     | Pexp_array e1N | Pexp_tuple e1N ->
