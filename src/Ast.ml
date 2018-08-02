@@ -91,8 +91,9 @@ let is_sequence exp =
 let rec is_sugared_list exp =
   match exp.pexp_desc with
   | Pexp_construct ({txt= Lident "[]"}, None) -> true
-  | Pexp_construct ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; tl]}) ->
-      is_sugared_list tl
+  | Pexp_construct
+      ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [t1; tl]}) ->
+      List.is_empty t1.pexp_attributes && is_sugared_list tl
   | _ -> false
 
 let may_force_break (c: Conf.t) s =
@@ -553,7 +554,23 @@ end = struct
                   check_type d1
               | _ -> false ) )
       | _ -> assert false )
-    | Mod _ -> assert false
+    | Mod ctx -> (
+      match ctx.pmod_desc with
+      | Pmod_unpack e1 -> (
+        match e1.pexp_desc with
+        | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N)} as ty)) ->
+            assert (typ == ty || List.exists it1N ~f:snd_f)
+        | Pexp_constraint (_, t1)
+         |Pexp_coerce (_, None, t1)
+         |Pexp_poly (_, Some t1)
+         |Pexp_extension (_, PTyp t1) ->
+            assert (typ == t1)
+        | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
+        | Pexp_letexception (ext, _) -> assert (check_ext ext)
+        | Pexp_object {pcstr_fields} ->
+            assert (check_pcstr_fields pcstr_fields)
+        | _ -> assert false )
+      | _ -> assert false )
     | Sig ctx -> (
       match ctx.psig_desc with
       | Psig_value {pval_type= t1} -> assert (typ == t1)
@@ -1366,7 +1383,7 @@ end = struct
     match (ctx, exp.pexp_desc) with
     | ( Exp {pexp_desc= Pexp_apply (e0, (Nolabel, _) :: (Nolabel, _) :: _)}
       , Pexp_ident {txt= Lident i} )
-      when e0 == exp && is_infix_id i ->
+      when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes ->
         false
     | _, Pexp_ident {txt= Lident i} when is_infix_id i -> true
     | _ -> false
@@ -1475,6 +1492,10 @@ end = struct
     || has_trailing_attributes_exp exp
     ||
     match (ctx, exp) with
+    | ( Exp {pexp_desc= Pexp_construct ({txt= Lident id}, _)}
+      , {pexp_attributes= _ :: _} )
+      when is_infix_id id ->
+        true
     | Exp {pexp_desc= Pexp_extension _}, {pexp_desc= Pexp_tuple _} -> false
     | Pld _, {pexp_desc= Pexp_tuple _} -> false
     | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false

@@ -55,14 +55,18 @@ let rec sugar_class_arrow_typ c ({ast= typ} as xtyp) =
       :: sugar_class_arrow_typ c (sub_cty ~ctx t2)
   | _ -> [(Nolabel, `class_type xtyp)]
 
-let rec sugar_or_pat c ({ast= pat} as xpat) =
+let rec sugar_or_pat ?(allow_attribute= true) c ({ast= pat} as xpat) =
   let ctx = Pat pat in
   match pat with
   | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc; ppat_attributes= []} ->
       Cmts.relocate c.cmts ~src:ppat_loc ~before:pat1.ppat_loc
         ~after:pat2.ppat_loc ;
-      sugar_or_pat c (sub_pat ~ctx pat1)
-      @ sugar_or_pat c (sub_pat ~ctx pat2)
+      sugar_or_pat ~allow_attribute:false c (sub_pat ~ctx pat1)
+      @ sugar_or_pat ~allow_attribute:false c (sub_pat ~ctx pat2)
+  | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc} when allow_attribute ->
+      Cmts.relocate c.cmts ~src:ppat_loc ~before:pat1.ppat_loc
+        ~after:pat2.ppat_loc ;
+      [sub_pat ~ctx pat1; sub_pat ~ctx pat2]
   | _ -> [xpat]
 
 type arg_kind =
@@ -184,9 +188,9 @@ let rec sugar_list_pat c pat =
       , Some {ppat_desc= Ppat_tuple [hd; tl]; ppat_loc; ppat_attributes= []}
       ) -> (
     match sugar_list_pat c tl with
-    | Some (xtl, nil_loc) ->
+    | Some (xtl, nil_loc) when List.is_empty tl.ppat_attributes ->
         Some (([src; loc; ppat_loc], sub_pat ~ctx hd) :: xtl, nil_loc)
-    | None -> None )
+    | _ -> None )
   | _ -> None
 
 let sugar_list_exp c exp =
@@ -203,9 +207,9 @@ let sugar_list_exp c exp =
             {pexp_desc= Pexp_tuple [hd; tl]; pexp_loc; pexp_attributes= []}
         ) -> (
       match sugar_list_exp_ tl with
-      | Some (xtl, nil_loc) ->
+      | Some (xtl, nil_loc) when List.is_empty tl.pexp_attributes ->
           Some (([src; loc; pexp_loc], sub_exp ~ctx hd) :: xtl, nil_loc)
-      | None -> None )
+      | _ -> None )
     | _ -> None
   in
   let r = sugar_list_exp_ exp in
@@ -223,8 +227,10 @@ let sugar_infix_cons xexp =
             { pexp_desc= Pexp_tuple [hd; tl]
             ; pexp_loc= l3
             ; pexp_attributes= [] } ) -> (
-      match sugar_infix_cons_ (sub_exp ~ctx tl) with xtl ->
-        ([l1; l2; l3], sub_exp ~ctx hd) :: xtl )
+      match sugar_infix_cons_ (sub_exp ~ctx tl) with
+      | xtl when List.is_empty tl.pexp_attributes ->
+          ([l1; l2; l3], sub_exp ~ctx hd) :: xtl
+      | _ -> [([l1; l2; l3], sub_exp ~ctx hd); ([], sub_exp ~ctx tl)] )
     | _ -> [([], xexp)]
   in
   sugar_infix_cons_ xexp
@@ -245,19 +251,21 @@ let rec sugar_ite c ({ast= exp} as xexp) =
   | _ -> [(None, xexp, pexp_attributes)]
 
 let sugar_sequence c width xexp =
-  let rec sugar_sequence_ ({ast= exp} as xexp) =
+  let rec sugar_sequence_ ?(allow_attribute= true) ({ast= exp} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc} = exp in
     match pexp_desc with
     | Pexp_sequence (e1, e2) ->
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;
-        if Ast.exposed_right_exp Ast.Let_match e1 then
+        if not allow_attribute && not (List.is_empty exp.pexp_attributes)
+        then [xexp]
+        else if Ast.exposed_right_exp Ast.Let_match e1 then
           [sub_exp ~ctx e1; sub_exp ~ctx e2]
         else
           List.append
-            (sugar_sequence_ (sub_exp ~ctx e1))
-            (sugar_sequence_ (sub_exp ~ctx e2))
+            (sugar_sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
+            (sugar_sequence_ ~allow_attribute:false (sub_exp ~ctx e2))
     | _ -> [xexp]
   in
   List.group (sugar_sequence_ xexp) ~break:(fun xexp1 xexp2 ->
@@ -818,10 +826,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           ( Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ppat_loc
           @@
           match ppat_desc with
-          | Ppat_var {txt= txt'} when field_alias txt (Longident.parse txt') ->
+          | Ppat_var {txt= txt'}
+            when field_alias txt (Longident.parse txt')
+                 && List.is_empty pat.ppat_attributes ->
               cbox 2 (fmt_longident txt)
           | Ppat_constraint ({ppat_desc= Ppat_var {txt= txt'; _}}, t)
-            when field_alias txt (Longident.parse txt') ->
+            when field_alias txt (Longident.parse txt')
+                 && List.is_empty pat.ppat_attributes ->
               cbox 2
                 ( fmt_longident txt $ fmt " : "
                 $ fmt_core_type c (sub_typ ~ctx:(Pat pat) t) )
@@ -1026,7 +1037,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
   let fmt_label_arg ?(box= box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
     match (lbl, arg.pexp_desc) with
     | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
-      when String.equal l i ->
+      when String.equal l i && List.is_empty arg.pexp_attributes ->
         Cmts.fmt c.cmts loc
         @@ Cmts.fmt c.cmts ?eol arg.pexp_loc
         @@ fmt_label lbl ""
@@ -1186,7 +1197,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                   ( str "%"
                   $ hovbox 2
                       ( str txt $ fmt " "
-                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "@ ->") )
+                      $ ( fmt "fun "
+                        $ fmt_attributes c ~suf:(fmt " ")
+                            call_fun.pexp_attributes ~key:"@"
+                        $ fmt_fun_args c xargs $ fmt "@ ->" ) )
                   $ fmt "@ " $ fmt_expression c xbody ))
            $ fmt "@ ;@ "
            $ list
@@ -1217,7 +1231,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                   ( str "%"
                   $ hovbox 2
                       ( str txt $ fmt " "
-                      $ (fmt "fun " $ fmt_fun_args c xargs $ fmt "@ ->") )
+                      $ ( fmt "fun "
+                        $ fmt_attributes c ~suf:(fmt " ")
+                            retn_fun.pexp_attributes ~key:"@"
+                        $ fmt_fun_args c xargs $ fmt "@ ->" ) )
                   $ fmt "@ " $ fmt_expression c xbody )) ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Ldot (Lident "Array", "get")}
@@ -1272,9 +1289,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         $ fmt_expression c (sub_exp ~ctx op)
         $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_apply
-      ( {pexp_desc= Pexp_ident {txt= Lident id}}
+      ( ({pexp_desc= Pexp_ident {txt= Lident id}} as e0)
       , (Nolabel, _) :: (Nolabel, _) :: _ )
-    when is_infix_id id ->
+    when is_infix_id id && List.is_empty e0.pexp_attributes ->
       let op_args = sugar_infix c (prec_ast (Exp exp)) xexp in
       fmt_op_args
         (List.map op_args ~f:(fun (op, args) ->
@@ -1306,7 +1323,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
            ( fmt_expression c ~box (sub_exp ~ctx e0)
            $ fmt_expression c ~box (sub_exp ~ctx e1)
            $ fmt_atrs ))
-  | Pexp_apply (e0, a1N) when is_infix e0 ->
+  | Pexp_apply (e0, a1N)
+    when is_infix e0 && List.is_empty e0.pexp_attributes ->
       hvbox 2
         ( wrap_fits_breaks_if parens "(" ")" (fmt_args_grouped e0 a1N)
         $ fmt_atrs )
@@ -1437,12 +1455,13 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
     match sugar_list_exp c exp with
     | Some (loc_xes, nil_loc) ->
         hvbox 0
-          (wrap_fits_breaks "[" "]"
-             ( list loc_xes "@,; " (fun (locs, xexp) ->
-                   Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
-                   @@ fmt_expression c xexp )
-             $ Cmts.fmt c.cmts ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
-               @@ fmt "" ))
+          ( wrap_fits_breaks "[" "]"
+              ( list loc_xes "@,; " (fun (locs, xexp) ->
+                    Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
+                    @@ fmt_expression c xexp )
+              $ Cmts.fmt c.cmts ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
+                @@ fmt "" )
+          $ fmt_atrs )
     | None ->
         let loc_args = sugar_infix_cons xexp in
         fmt_op_args
@@ -1457,10 +1476,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
   | Pexp_construct ({txt; loc}, Some arg) ->
       Cmts.fmt c.cmts loc
       @@ wrap_if parens "(" ")"
-           (hvbox 2
-              ( fmt_longident txt $ fmt "@ "
-              $ fmt_expression c (sub_exp ~ctx arg) ))
-      $ fmt_atrs
+           ( hvbox 2
+               ( fmt_longident txt $ fmt "@ "
+               $ fmt_expression c (sub_exp ~ctx arg) )
+           $ fmt_atrs )
   | Pexp_variant (s, arg) ->
       hvbox 2
         ( wrap_if parens "(" ")"
@@ -1493,11 +1512,14 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         $ fmt "@ "
         $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
-      let wrap =
-        if is_symbol exp then wrap_if parens "( " " )"
-        else wrap_if parens "(" ")"
+      let wrap, wrap_ident =
+        if is_symbol exp && not (List.is_empty pexp_attributes) then
+          (wrap_if true "( " " )", true)
+        else if is_symbol exp then (wrap_if parens "( " " )", false)
+        else (wrap_if parens "(" ")", false)
       in
-      Cmts.fmt c.cmts loc @@ wrap (fmt_longident txt $ fmt_atrs)
+      Cmts.fmt c.cmts loc
+      @@ wrap (wrap_if wrap_ident "(" ")" (fmt_longident txt) $ fmt_atrs)
   | Pexp_ifthenelse _ ->
       let cnd_exps = sugar_ite c xexp in
       hvbox 0
@@ -1697,11 +1719,12 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         Cmts.fmt c.cmts loc
         @@
         match f.pexp_desc with
-        | Pexp_ident {txt= txt'; loc} when field_alias txt txt' ->
+        | Pexp_ident {txt= txt'; loc}
+          when field_alias txt txt' && List.is_empty f.pexp_attributes ->
             Cmts.fmt c.cmts loc @@ cbox 2 (fmt_longident txt)
         | Pexp_constraint
             (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
-          when field_alias txt txt' ->
+          when field_alias txt txt' && List.is_empty f.pexp_attributes ->
             Cmts.fmt c.cmts loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
             $ fmt " : "
             $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
@@ -1897,7 +1920,9 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
     | _ -> fmt ""
   in
   let self_ =
-    match self_ with {ppat_desc= Ppat_any; _} -> None | s -> Some s
+    match self_ with
+    | {ppat_desc= Ppat_any; ppat_attributes= []} -> None
+    | s -> Some s
   in
   hvbox 0
     (wrap_if parens "(" ")"
@@ -1923,7 +1948,9 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | _ -> fmt ""
   in
   let self_ =
-    match self_ with {ptyp_desc= Ptyp_any; _} -> None | s -> Some s
+    match self_ with
+    | {ptyp_desc= Ptyp_any; ptyp_attributes= []} -> None
+    | s -> Some s
   in
   hvbox 0
     (wrap_if parens "(" ")"
