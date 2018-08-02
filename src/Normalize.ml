@@ -16,9 +16,13 @@ open Asttypes
 open Parsetree
 open Ast_helper
 
-let mapper =
+let make_mapper ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
+  let doc_attribute = function
+    | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
+    | _ -> false
+  in
   let attribute (m: Ast_mapper.mapper) attr =
     match attr with
     | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
@@ -32,10 +36,12 @@ let mapper =
             ; pstr_loc } ] ) ->
         (* normalize consecutive whitespace chars to a single space *)
         let doc' =
-          String.concat ~sep:" "
-            (List.filter ~f:(Fn.non String.is_empty)
-               (String.split_on_chars doc
-                  ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+          if ignore_doc_comment then "IGNORED"
+          else
+            String.concat ~sep:" "
+              (List.filter ~f:(Fn.non String.is_empty)
+                 (String.split_on_chars doc
+                    ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
         in
         ( {txt; loc= m.location m loc}
         , m.payload m
@@ -53,6 +59,11 @@ let mapper =
   in
   (* sort attributes *)
   let attributes (m: Ast_mapper.mapper) atrs =
+    let atrs =
+      if ignore_doc_comment then
+        List.filter atrs ~f:(fun a -> not (doc_attribute a))
+      else atrs
+    in
     Ast_mapper.default_mapper.attributes m
       (List.sort ~compare:Poly.compare atrs)
   in
@@ -139,6 +150,28 @@ let mapper =
         {pstr_desc= Pstr_extension (e, []); pstr_loc}
     | _ -> Ast_mapper.default_mapper.structure_item m si
   in
+  let structure (m: Ast_mapper.mapper) (si: structure) =
+    let si =
+      if ignore_doc_comment then
+        List.filter si ~f:(fun si ->
+            match si.pstr_desc with
+            | Pstr_attribute a -> not (doc_attribute a)
+            | _ -> true )
+      else si
+    in
+    Ast_mapper.default_mapper.structure m si
+  in
+  let signature (m: Ast_mapper.mapper) (si: signature) =
+    let si =
+      if ignore_doc_comment then
+        List.filter si ~f:(fun si ->
+            match si.psig_desc with
+            | Psig_attribute a -> not (doc_attribute a)
+            | _ -> true )
+      else si
+    in
+    Ast_mapper.default_mapper.signature m si
+  in
   { Ast_mapper.default_mapper with
     location
   ; attribute
@@ -146,7 +179,13 @@ let mapper =
   ; expr
   ; pat
   ; value_binding
-  ; structure_item }
+  ; structure_item
+  ; signature
+  ; structure }
+
+let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
+
+let mapper = make_mapper ~ignore_doc_comment:false
 
 let impl = map_structure mapper
 
@@ -154,11 +193,26 @@ let intf = map_signature mapper
 
 let use_file = map_use_file mapper
 
-let equal_impl ast1 ast2 = Poly.equal (impl ast1) (impl ast2)
+let equal_impl ~ignore_doc_comments ast1 ast2 =
+  let map =
+    if ignore_doc_comments then map_structure mapper_ignore_doc_comment
+    else map_structure mapper
+  in
+  Poly.equal (map ast1) (map ast2)
 
-let equal_intf ast1 ast2 = Poly.equal (intf ast1) (intf ast2)
+let equal_intf ~ignore_doc_comments ast1 ast2 =
+  let map =
+    if ignore_doc_comments then map_signature mapper_ignore_doc_comment
+    else map_signature mapper
+  in
+  Poly.equal (map ast1) (map ast2)
 
-let equal_use_file ast1 ast2 = Poly.equal (use_file ast1) (use_file ast2)
+let equal_use_file ~ignore_doc_comments ast1 ast2 =
+  let map =
+    if ignore_doc_comments then map_use_file mapper_ignore_doc_comment
+    else map_use_file mapper
+  in
+  Poly.equal (map ast1) (map ast2)
 
 let disabled_attribute (attribute: attribute) =
   match attribute with

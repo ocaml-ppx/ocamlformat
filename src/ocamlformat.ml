@@ -13,7 +13,8 @@
 
 let normalize norm {Translation_unit.ast; _} = norm ast
 
-let equal eq a b = eq a.Translation_unit.ast b.Translation_unit.ast
+let equal eq ~ignore_doc_comments a b =
+  eq ~ignore_doc_comments a.Translation_unit.ast b.Translation_unit.ast
 
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =

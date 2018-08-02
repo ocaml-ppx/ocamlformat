@@ -13,12 +13,16 @@ type 'a with_comments = {ast: 'a; comments: (string * Location.t) list}
 
 (** Operations on translation units. *)
 type 'a t =
-  { input: In_channel.t -> 'a with_comments
+  { input: Conf.t -> In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
-  ; equal: 'a with_comments -> 'a with_comments -> bool
+  ; equal:
+         ignore_doc_comments:bool
+      -> 'a with_comments
+      -> 'a with_comments
+      -> bool
   ; normalize: 'a with_comments -> 'a
   ; no_translation: 'a -> bool
   ; printast: Caml.Format.formatter -> 'a -> unit }
@@ -30,7 +34,8 @@ exception Warning50 of (Location.t * Warnings.t) list
 
 type result = Ok | Invalid_source of exn | Ocamlformat_bug of exn
 
-val parse : (Lexing.lexbuf -> 'a) -> In_channel.t -> 'a with_comments
+val parse :
+  (Lexing.lexbuf -> 'a) -> Conf.t -> In_channel.t -> 'a with_comments
 
 val parse_print :
      x
