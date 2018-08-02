@@ -118,6 +118,24 @@ type result =
   | Ocamlformat_bug of exn
   | User_error of string
 
+let lf_to_crlf =
+  Staged.unstage
+    (String.Escaping.escape_gen_exn ~escapeworthy_map:[('\n', '\n')]
+       ~escape_char:'\r')
+
+let crlf_translated_to_lf () =
+  let prefix = "ocamlformat_crlf_testing" and ext = ".ml" in
+  let filename, oc = Filename.open_temp_file prefix ext in
+  Out_channel.output_string oc "\r\n" ;
+  Out_channel.close oc ;
+  let read = In_channel.input_line ~fix_win_eol:false in
+  let res =
+    match In_channel.with_file ~binary:true filename ~f:read with
+    | Some l when Char.equal l.[String.length l - 1] '\r' -> false
+    | _ -> true
+  in
+  Unix.unlink filename ; res
+
 let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     ofile =
   let dir =
@@ -130,25 +148,39 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~source_txt
       ~source_file : result =
+    let binary = Poly.(Conf.line_endings conf input_file = `Unix) in
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
       else
         let name = Format.sprintf "%s.%i%s" base i ext in
         let tmp = Filename.concat dir name in
         Format.eprintf "%s@\n%!" tmp ;
-        let oc = Out_channel.create ~fail_if_exists:(not Conf.debug) tmp in
+        let oc =
+          Out_channel.create ~binary ~fail_if_exists:(not Conf.debug) tmp
+        in
         (tmp, oc)
     in
     dump xunit dir base ".old" ".ast" ast ;
     let source = Source.create source_txt in
     let cmts_t = xunit.init_cmts source conf ast comments in
     let fs = Format.formatter_of_out_channel oc in
+    ( if
+      (Sys.unix && Poly.(Conf.line_endings conf input_file = `Windows))
+      || ((not Sys.unix) && crlf_translated_to_lf ())
+    then
+      let out, flush = Format.pp_get_formatter_output_functions fs () in
+      let out_dos str pos len =
+        let str' = lf_to_crlf str in
+        let len' = len + (String.length str' - String.length str) in
+        out str' pos len'
+      in
+      Format.pp_set_formatter_output_functions fs out_dos flush ) ;
     Fmt.set_margin conf.margin fs ;
     xunit.fmt source cmts_t conf ast fs ;
     Format.pp_print_newline fs () ;
     Out_channel.close oc ;
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
-    let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
+    let fmted = In_channel.with_file ~binary tmp ~f:In_channel.input_all in
     if String.equal source_txt fmted then (
       match (Conf.action, ofile) with
       | _, None ->
@@ -161,7 +193,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     else
       match
         Location.input_name := tmp ;
-        In_channel.with_file tmp ~f:(parse xunit.parse conf)
+        In_channel.with_file ~binary tmp ~f:(parse xunit.parse conf)
       with
       | exception Sys_error msg -> User_error msg
       | exception e -> Ocamlformat_bug e

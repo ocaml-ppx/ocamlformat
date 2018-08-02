@@ -37,6 +37,7 @@ type t =
   ; let_and: [`Compact | `Sparse]
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
+  ; line_endings: [`Preserve | `Unix | `Windows]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
@@ -74,3 +75,6 @@ val parse_line_in_attribute :
        | `Malformed of string
        | `Misplaced of string * string ] )
      Result.t
+
+val line_endings : t -> string -> [`Unix | `Windows]
+(** [line_endings f] returns the type of line endings used in the file [f]. *)

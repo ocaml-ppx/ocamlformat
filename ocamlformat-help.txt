@@ -129,6 +129,11 @@ OPTIONS (CODE FORMATTING STYLE)
            Module in (...) style is used. auto means the one fitting best is
            used. The default value is preserve.
 
+       --line-endings={preserve|unix|windows}
+           Line endings used. preserve preserves the original line endings.
+           unix uses Unix line endings. windows uses Windows line endings.
+           The default value is preserve. Cannot be set in attributes.
+
        -m COLS, --margin=COLS
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.

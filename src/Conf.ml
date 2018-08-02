@@ -34,6 +34,7 @@ type t =
   ; let_and: [`Compact | `Sparse]
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
+  ; line_endings: [`Preserve | `Unix | `Windows]
   ; margin: int
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Sparse]
@@ -780,6 +781,18 @@ module Formatting = struct
       (fun conf x -> {conf with let_open= x})
       (fun conf -> conf.let_open)
 
+  let line_endings =
+    let doc = "Line endings used." in
+    let all =
+      [ ( "preserve"
+        , `Preserve
+        , "$(b,preserve) preserves the original line endings." )
+      ; ("unix", `Unix, "$(b,unix) uses Unix line endings.")
+      ; ("windows", `Windows, "$(b,windows) uses Windows line endings.") ]
+    in
+    C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~section
+      (fun conf x -> {conf with line_endings= x} )
+
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
@@ -1114,6 +1127,7 @@ let default_profile =
   ; let_and= C.default Formatting.let_and
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_open= C.default Formatting.let_open
+  ; line_endings= C.default Formatting.line_endings
   ; margin= C.default Formatting.margin
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
@@ -1183,6 +1197,7 @@ let janestreet_profile =
   ; let_and= `Sparse
   ; let_binding_spacing= `Double_semicolon
   ; let_open= `Preserve
+  ; line_endings= `Preserve
   ; margin= 90
   ; max_iters= default_profile.max_iters
   ; module_item_spacing= `Compact
@@ -1550,3 +1565,13 @@ let action =
 and debug = !debug
 
 let parse_line_in_attribute = parse_line ~from:`Attribute
+
+let line_endings c file =
+  match c.line_endings with
+  | `Unix -> `Unix
+  | `Windows -> `Windows
+  | `Preserve -> (
+      let read_line = Stdio.In_channel.input_line ~fix_win_eol:false in
+      match Stdio.In_channel.with_file ~binary:true file ~f:read_line with
+      | Some l when Char.equal l.[String.length l - 1] '\r' -> `Windows
+      | _ -> `Unix )
