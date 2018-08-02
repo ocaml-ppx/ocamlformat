@@ -3104,11 +3104,14 @@ and fmt_module_expr c ({ast= m} as xmod) =
   | Pmod_ident {txt} ->
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
-        pro=
-          Some
+        opn= open_hvbox 2
+      ; pro=
+          Option.some_if
+            (Cmts.has_before c.cmts pmod_loc || Option.is_some doc)
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy= fmt_longident txt
+      ; cls= close_box
       ; epi=
           Some
             ( Cmts.fmt_after c.cmts pmod_loc
@@ -3160,7 +3163,8 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         pro=
-          Some
+          Option.some_if
+            (Cmts.has_before c.cmts pmod_loc || Option.is_some doc)
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy=
@@ -3176,7 +3180,8 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         pro=
-          Some
+          Option.some_if
+            (Cmts.has_before c.cmts pmod_loc || Option.is_some doc)
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy= Cmts.fmt c.cmts pmod_loc @@ fmt_extension c ctx "%" x1
