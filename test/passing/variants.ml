@@ -35,3 +35,5 @@ type t = [a | b | `C]
 type t = [`a | b]
 
 type t = |
+
+let ((`A | `B)[@bar]) = ()
