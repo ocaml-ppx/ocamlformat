@@ -109,6 +109,8 @@ module Position = struct
     if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
     else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 
+  let compare_col p1 p2 = Int.compare (column p1) (column p2)
+
   let compare p1 p2 =
     if phys_equal p1 p2 then 0 else Int.compare p1.pos_cnum p2.pos_cnum
 
@@ -131,9 +133,15 @@ module Location = struct
 
   let hash = Hashtbl.hash
 
+  let is_single_line x = x.loc_start.pos_lnum = x.loc_end.pos_lnum
+
   let compare_start x y = Position.compare x.loc_start y.loc_start
 
+  let compare_start_col x y = Position.compare_col x.loc_start y.loc_start
+
   let compare_end x y = Position.compare x.loc_end y.loc_end
+
+  let compare_end_col x y = Position.compare_col x.loc_end y.loc_end
 
   let contains l1 l2 = compare_start l1 l2 <= 0 && compare_end l1 l2 >= 0
 
@@ -516,24 +524,54 @@ let fmt_cmt t cmt =
 let fmt_cmts t ?pro ?epi ?(eol= Fmt.fmt "@\n") ?(adj= eol) tbl loc =
   let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
-  let cmts = Option.value (find tbl loc) ~default:[] in
-  let last_cmt = List.last cmts in
-  let eol_cmt =
-    Option.value ~default:false
-      (last_cmt >>| fun (_, loc) -> Source.ends_line t.source loc)
-  in
-  let adj_cmt =
-    eol_cmt
-    && Option.value ~default:false
-         ( last_cmt
-         >>| fun (_, {Location.loc_end= {pos_lnum}}) ->
-         pos_lnum + 1 = loc.Location.loc_start.pos_lnum )
-  in
-  fmt_if_k
-    (not (List.is_empty cmts))
-    ( Option.call ~f:pro
-    $ vbox 0 (list cmts "@ " (fmt_cmt t))
-    $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (Option.call ~f:epi) )
+  match find tbl loc with
+  | None -> fmt ""
+  | Some cmts ->
+      let line_dist a b =
+        b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
+      in
+      let groups =
+        List.group cmts ~break:(fun (_, a) (_, b) ->
+            not
+              ( Location.is_single_line a && Location.is_single_line b
+              && line_dist a b = 1
+              && Location.compare_start_col a b = 0
+              && Location.compare_end_col a b = 0 ) )
+      in
+      let last_cmt = List.last cmts in
+      let eol_cmt =
+        Option.value ~default:false
+          (last_cmt >>| fun (_, loc) -> Source.ends_line t.source loc)
+      in
+      let adj_cmt =
+        eol_cmt
+        && Option.value ~default:false
+             ( last_cmt
+             >>| fun (_, {Location.loc_end= {pos_lnum}}) ->
+             pos_lnum + 1 = loc.Location.loc_start.pos_lnum )
+      in
+      let maybe_newline ~next (_, cur_last_loc) =
+        match next with
+        | Some ((_, next_loc) :: _) ->
+            fmt_if (line_dist cur_last_loc next_loc > 1) "@;<1000 0>"
+        | _ -> fmt ""
+      in
+      list_pn groups (fun ?prev group ?next ->
+          fmt_or_k (Option.is_none prev)
+            (Option.call ~f:pro $ open_vbox 0)
+            (fmt "@ ")
+          $ ( match group with
+            | [] -> impossible "previous match"
+            | [cmt] -> fmt_cmt t cmt $ maybe_newline ~next cmt
+            | group ->
+                list group "@;<1000 0>" (fun cmt ->
+                    wrap "(*" "*)" (str (fst cmt)) )
+                $ maybe_newline ~next (List.last_exn group) )
+          $ fmt_if_k (Option.is_none next)
+              ( close_box
+              $ fmt_or_k eol_cmt
+                  (fmt_or_k adj_cmt adj eol)
+                  (Option.call ~f:epi) ) )
 
 let fmt_before t ?pro ?(epi= Fmt.break_unless_newline 1 0) ?eol ?adj =
   fmt_cmts t t.cmts_before ?pro ~epi ?eol ?adj

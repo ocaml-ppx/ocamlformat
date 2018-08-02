@@ -302,8 +302,10 @@ let wrap_comments =
     "Wrap comments and docstrings. Comments and docstrings are divided \
      into paragraphs by open lines (two or more consecutive newlines), and \
      each paragraph is wrapped at the margin. Multi-line comments with \
-     vertically-aligned asterisks on the left margin are not wrapped. Can \
-     be set in a config file with a `wrap-comments {false,true}` line."
+     vertically-aligned asterisks on the left margin are not wrapped. \
+     Consecutive comments with both left and right margin aligned are not \
+     wrapped either. Can be set in a config file with a `wrap-comments \
+     {false,true}` line."
   in
   let env = Arg.env_var "OCAMLFORMAT_WRAP_COMMENTS" in
   let default = false in
