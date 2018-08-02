@@ -20,7 +20,7 @@ type 'a reason_data =
     [input_channel]. It is expected to have the given [magic_number] and is
     assumed to be the output of `refmt --print=binary_reason` where `refmt`
     has been compiled with the same version of `ocaml` as `ocamlformat`. *)
-let input ast_magic ic =
+let input ast_magic _conf ic =
   let (magic, _, (ast: 'a), comments, _, _) : 'a reason_data =
     Caml.Marshal.from_channel ic
   in
@@ -40,7 +40,7 @@ open Ast_helper
 
 (* extend Normalize.mapper with additional transformations for Reason code *)
 
-let mapper cmts =
+let mapper cmts ~ignore_doc_comments =
   (* holds if an attribute is a docstring that also appears as a comment *)
   let atr_is_dup =
     let cmts = Set.of_list (module String) (List.map cmts ~f:fst) in
@@ -55,6 +55,13 @@ let mapper cmts =
     | _ -> false
   in
   let attributes (m: Ast_mapper.mapper) atrs =
+    let atrs =
+      if ignore_doc_comments then
+        List.filter atrs ~f:(function
+          | {txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+          | _ -> true )
+      else atrs
+    in
     (* remove docstrings that duplicate comments *)
     let atrs = List.filter atrs ~f:(Fn.non atr_is_dup) in
     Normalize.mapper.attributes m atrs
@@ -116,11 +123,13 @@ let mapper cmts =
   {Normalize.mapper with attributes; pat; expr; structure; signature}
 
 let norm_impl {Translation_unit.ast; comments} =
-  map_structure (mapper comments) ast
+  map_structure (mapper ~ignore_doc_comments:false comments) ast
 
 let norm_intf {Translation_unit.ast; comments} =
-  map_signature (mapper comments) ast
+  map_signature (mapper ~ignore_doc_comments:false comments) ast
 
-let equal_impl x y = Normalize.equal_impl (norm_impl x) (norm_impl y)
+let equal_impl ~ignore_doc_comments x y =
+  Normalize.equal_impl ~ignore_doc_comments (norm_impl x) (norm_impl y)
 
-let equal_intf x y = Normalize.equal_intf (norm_intf x) (norm_intf y)
+let equal_intf ~ignore_doc_comments x y =
+  Normalize.equal_intf ~ignore_doc_comments (norm_intf x) (norm_intf y)

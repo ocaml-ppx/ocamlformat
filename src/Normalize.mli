@@ -23,13 +23,17 @@ val intf : signature -> signature
 val use_file : toplevel_phrase list -> toplevel_phrase list
 (** Normalize a use_file. *)
 
-val equal_impl : structure -> structure -> bool
+val equal_impl : ignore_doc_comments:bool -> structure -> structure -> bool
 (** Compare structures for equality up to normalization. *)
 
-val equal_intf : signature -> signature -> bool
+val equal_intf : ignore_doc_comments:bool -> signature -> signature -> bool
 (** Compare signatures for equality up to normalization. *)
 
-val equal_use_file : toplevel_phrase list -> toplevel_phrase list -> bool
+val equal_use_file :
+     ignore_doc_comments:bool
+  -> toplevel_phrase list
+  -> toplevel_phrase list
+  -> bool
 (** Compare use_file for equality up to normalization. *)
 
 val mapper : Ast_mapper.mapper

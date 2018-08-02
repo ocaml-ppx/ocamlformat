@@ -29,7 +29,8 @@ type t = private
   ; if_then_else: [`Compact | `Keyword_first]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
-  ; quiet: bool }
+  ; quiet: bool
+  ; dont_check_comments: bool }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
