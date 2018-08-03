@@ -61,3 +61,5 @@ let f = function
   | EEEEEEE | FFFFFFFFFFFFFFFFFFFFFFF | GGGGG
    |BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBbb | CCCCCCC ->
       ()
+
+let _: t -> t -> int = (compare : int list -> int list -> int)
