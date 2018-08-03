@@ -92,8 +92,11 @@ let rec is_sugared_list exp =
   match exp.pexp_desc with
   | Pexp_construct ({txt= Lident "[]"}, None) -> true
   | Pexp_construct
-      ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [t1; tl]}) ->
-      List.is_empty t1.pexp_attributes && is_sugared_list tl
+      ( {txt= Lident "::"}
+      , Some
+          { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []} as tl)]
+          ; pexp_attributes= [] } ) ->
+      is_sugared_list tl
   | _ -> false
 
 let may_force_break (c: Conf.t) s =
