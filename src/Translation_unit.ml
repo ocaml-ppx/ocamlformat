@@ -42,8 +42,35 @@ exception Internal_error of string * (string * Sexp.t) list
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
 
+module W : sig
+  type t
+
+  val in_lexer : int list
+
+  val disable : int -> t
+
+  val enable : int -> t
+
+  val to_string : t list -> string
+end = struct
+  type t = int
+
+  let in_lexer = [1; 2; 14; 29]
+
+  let disable x = ~-(abs x)
+
+  let enable x = abs x
+
+  let to_string x =
+    String.concat ~sep:"" (List.map ~f:(Format.sprintf "%+d") x)
+end
+
 let parse parse_ast (conf: Conf.t) ic =
-  Warnings.parse_options false "+50" ;
+  let warnings =
+    W.enable 50
+    :: (if conf.quiet then List.map ~f:W.disable W.in_lexer else [])
+  in
+  Warnings.parse_options false (W.to_string warnings) ;
   let lexbuf = Lexing.from_channel ic in
   Location.init lexbuf !Location.input_name ;
   let warning_printer = !Location.warning_printer in
