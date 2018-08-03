@@ -3439,9 +3439,12 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
           sub_pat ~ctx:(Pat pvb_pat) pat
       | _ -> sub_pat ~ctx pvb_pat
     in
+    let pat_is_extension {ppat_desc} =
+      match ppat_desc with Ppat_extension _ -> true | _ -> false
+    in
     let ({ast= body} as xbody) = sub_exp ~ctx pvb_expr in
-    if not (List.is_empty xbody.ast.pexp_attributes) then
-      (xpat, [], None, xbody)
+    if not (List.is_empty xbody.ast.pexp_attributes) || pat_is_extension pat
+    then (xpat, [], None, xbody)
     else
       let sugar_polynewtype pat body =
         let ctx = Pat pat in
