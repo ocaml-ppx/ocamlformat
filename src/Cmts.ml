@@ -600,6 +600,8 @@ let fmt_list t ?pro ?epi ?eol locs init =
 
 let has_before t loc = Hashtbl.mem t.cmts_before loc
 
+let has_within t loc = Hashtbl.mem t.cmts_within loc
+
 let has_after t loc =
   Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
 

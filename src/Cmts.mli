@@ -111,6 +111,9 @@ val fmt_list :
 val has_before : t -> Location.t -> bool
 (** [has_before t loc] holds if [t] contains some comment before [loc]. *)
 
+val has_within : t -> Location.t -> bool
+(** [has_within t loc] holds if [t] contains some comment within [loc]. *)
+
 val has_after : t -> Location.t -> bool
 (** [has_after t loc] holds if [t] contains some comment after [loc]. *)
 
