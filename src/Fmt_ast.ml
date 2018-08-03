@@ -1845,7 +1845,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                             | Pexp_sequence _ | Pexp_new _
                             | Pexp_letmodule _ | Pexp_object _ )
                         ; pexp_attributes= [] } as e1 )
-                    , _ ) } as str ) ] ) ->
+                    , _ )
+              } as str ) ] ) when List.is_empty pexp_attributes ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
         $ fmt_atrs )

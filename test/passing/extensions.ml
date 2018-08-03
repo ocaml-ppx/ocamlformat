@@ -70,3 +70,7 @@ let _ =
   [ x;
     x ---> [%expr [%e x ~loc [%expr x] x] ; iter tail]
     ;x]
+
+
+let _ =
+  [%expr let x = e in f y][@x]

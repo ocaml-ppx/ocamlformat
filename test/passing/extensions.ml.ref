@@ -1,6 +1,6 @@
 let () = [%ext expr] ; ()
 
-let _ = (match%ext x with () -> ()) [@attr y]
+let _ = [%ext match x with () -> ()] [@attr y]
 
 let _ =
   match%ext x with () ->
@@ -61,3 +61,8 @@ let _: [%ext ? (x: x)] = [%ext ? (x: x)]
 let _ = [%stri let [%p xxx] = fun (t: [%t tt]) (ut: [%t tt]) -> [%e xxx]]
 
 let _ = [x; x ---> ([%e x ~loc [%expr x] x] ;%expr iter tail); x]
+
+let _ =
+  [%expr
+    let x = e in
+    f y] [@x]
