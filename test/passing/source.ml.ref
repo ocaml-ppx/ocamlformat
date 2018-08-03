@@ -9102,7 +9102,7 @@ let () = proj1 (inj1 42)
 
 let () = proj1 (inj2 42)
 
-let _ = -1
+let _ = ~-1
 
 class id = [%exp]
 

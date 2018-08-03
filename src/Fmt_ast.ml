@@ -346,7 +346,6 @@ let empty =
 
 let rec fmt_longident (li: Longident.t) =
   match li with
-  | Lident "~+" -> str "+"
   | Lident id -> str id
   | Ldot (li, id) ->
       cbox 0
@@ -1289,10 +1288,19 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
            $ fmt " :=@;<1 2>"
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ))
   | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= Lident "~-"}
+      ( { pexp_desc=
+            Pexp_ident
+              {txt= Lident (("~-" | "~-." | "~+" | "~+.") as op); loc}
         ; pexp_loc
         ; pexp_attributes= [] }
       , [(Nolabel, e1)] ) ->
+      let op =
+        if
+          loc.loc_end.pos_cnum - loc.loc_start.pos_cnum
+          = String.length op - 1
+        then String.sub op ~pos:1 ~len:(String.length op - 1)
+        else op
+      in
       let spc =
         match e1 with
         | {pexp_desc= Pexp_apply (op, _)} when is_prefix op -> fmt "@ "
@@ -1300,7 +1308,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       in
       wrap_if parens "(" ")"
         ( Cmts.fmt c.cmts pexp_loc
-        @@ hvbox 2 (str "-" $ spc $ fmt_expression c (sub_exp ~ctx e1)) )
+        @@ hvbox 2 (str op $ spc $ fmt_expression c (sub_exp ~ctx e1)) )
       $ fmt_atrs
   | Pexp_apply
       ( ( { pexp_desc= Pexp_ident {txt= Lident maybe_hash}
@@ -3464,9 +3472,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       match ppat_desc with Ppat_extension _ -> true | _ -> false
     in
     let ({ast= body} as xbody) = sub_exp ~ctx pvb_expr in
-    if
-      (not (List.is_empty xbody.ast.pexp_attributes))
-      || pat_is_extension pat
+    if not (List.is_empty xbody.ast.pexp_attributes) || pat_is_extension pat
     then (xpat, [], None, xbody)
     else
       let sugar_polynewtype pat body =

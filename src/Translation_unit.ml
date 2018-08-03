@@ -57,7 +57,7 @@ end = struct
 
   let in_lexer = [1; 2; 14; 29]
 
-  let disable x = ~-(abs x)
+  let disable x = -abs x
 
   let enable x = abs x
 

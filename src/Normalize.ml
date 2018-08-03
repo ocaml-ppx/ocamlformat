@@ -70,27 +70,6 @@ let make_mapper ~ignore_doc_comment =
   let expr (m: Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_attributes} = exp in
     match pexp_desc with
-    (* convert [~- int_const] to [-int_const] *)
-    | Pexp_apply
-        ( { pexp_desc= Pexp_ident {txt= Lident "~-"}
-          ; pexp_loc
-          ; pexp_attributes= atrs0 }
-        , [ ( _
-            , { pexp_desc= Pexp_constant (Pconst_integer (lit, suf))
-              ; pexp_attributes= atrs1 } ) ] ) ->
-        m.expr m
-          (Exp.constant ~loc:pexp_loc ~attrs:(atrs0 @ atrs1)
-             (Pconst_integer ("-" ^ lit, suf)))
-    (* convert [~-] ident to [-] *)
-    | Pexp_apply
-        ( ( { pexp_desc= Pexp_ident ({txt= Lident "~-"} as lid)
-            ; pexp_loc
-            ; pexp_attributes } as e1 )
-        , e1N ) ->
-        m.expr m
-          (Exp.apply ~loc:pexp_loc ~attrs:pexp_attributes
-             {e1 with pexp_desc= Pexp_ident {lid with txt= Lident "-"}}
-             e1N)
     (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
     | Pexp_sequence
         ({pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= []}, e3) ->
