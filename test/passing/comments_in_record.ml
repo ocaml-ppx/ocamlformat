@@ -27,5 +27,5 @@ let { (* cmts *)
 
 let x =
   { (* Xxxx xxxxxxxx xxxxx xx xx xx xxxx xxxxxx - XXxx_xxxxx xxx'x. *)
-  Irure_sed_a.in_nisi_sed= Irure_sed_fugiat.LaboRum sint_sed
+    Irure_sed_a.in_nisi_sed= Irure_sed_fugiat.LaboRum sint_sed
   ; in_ea_deserunt= nulla }
