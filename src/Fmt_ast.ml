@@ -3486,11 +3486,13 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
           in
           let fmt_cstr, xbody =
             let ctx = Exp body in
-            match body.pexp_desc with
-            | Pexp_constraint
-                ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _}) ->
+            match (body.pexp_desc, pat.ppat_desc) with
+            | ( Pexp_constraint
+                  ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _})
+              , _ )
+             |Pexp_constraint _, Ppat_constraint _ ->
                 (None, xbody)
-            | Pexp_constraint (exp, typ) ->
+            | Pexp_constraint (exp, typ), _ ->
                 ( Some
                     (fmt "@ " $ fmt_core_type c ~pro:":" (sub_typ ~ctx typ))
                 , sub_exp ~ctx exp )
