@@ -47,3 +47,21 @@ let _ = if ((* a3 *) B (* c3 *))
    | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
    (* this comment should not change the formatting of the following case *)
    | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+;; try f x
+   with
+   (* this comment is intended to refer to the entire case below *)
+   | Caml.Not_found
+   -> ()
+
+;; match x
+   with
+   (* this comment is intended to refer to the entire case below *)
+   | false
+   -> ()
+
+;; match x with
+   | Aaaaaaaaaaaaaaaaaaaa
+   (* this comment is intended to refer to the case below *)
+    |Bbbbbbbbbbbbbbbbbbbb ->
+       ()
