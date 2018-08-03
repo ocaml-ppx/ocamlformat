@@ -172,6 +172,34 @@ let make_mapper ~ignore_doc_comment =
     in
     Ast_mapper.default_mapper.signature m si
   in
+  let class_signature (m: Ast_mapper.mapper) (si: class_signature) =
+    let si =
+      if ignore_doc_comment then
+        let pcsig_fields =
+          List.filter si.pcsig_fields ~f:(fun si ->
+              match si.pctf_desc with
+              | Pctf_attribute a -> not (doc_attribute a)
+              | _ -> true )
+        in
+        {si with pcsig_fields}
+      else si
+    in
+    Ast_mapper.default_mapper.class_signature m si
+  in
+  let class_structure (m: Ast_mapper.mapper) (si: class_structure) =
+    let si =
+      if ignore_doc_comment then
+        let pcstr_fields =
+          List.filter si.pcstr_fields ~f:(fun si ->
+              match si.pcf_desc with
+              | Pcf_attribute a -> not (doc_attribute a)
+              | _ -> true )
+        in
+        {si with pcstr_fields}
+      else si
+    in
+    Ast_mapper.default_mapper.class_structure m si
+  in
   { Ast_mapper.default_mapper with
     location
   ; attribute
@@ -181,7 +209,9 @@ let make_mapper ~ignore_doc_comment =
   ; value_binding
   ; structure_item
   ; signature
-  ; structure }
+  ; structure
+  ; class_signature
+  ; class_structure }
 
 let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
 
