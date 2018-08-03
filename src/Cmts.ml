@@ -598,6 +598,11 @@ let fmt t ?pro ?epi ?eol ?adj loc =
 let fmt_list t ?pro ?epi ?eol locs init =
   List.fold locs ~init ~f:(fun k loc -> fmt t ?pro ?epi ?eol loc @@ k)
 
+let has_before t loc = Hashtbl.mem t.cmts_before loc
+
+let has_after t loc =
+  Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
+
 (** returns comments that have not been formatted *)
 let remaining_comments t =
   let get t before_after =

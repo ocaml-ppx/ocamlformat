@@ -180,7 +180,7 @@ module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 module type S = functor [@foo]
   (M : S)
   -> functor
-  (_ :(module type of  M) [@foo])
+  (_ : (module type of M) [@foo])
   -> sig end [@foo]
 
 module type S = functor (_ : S) (_ : S) -> S
@@ -3390,7 +3390,8 @@ module rec Typ : sig
     | Int of ('a, int) TypEq.t
     | String of ('a, string) TypEq.t
     | Pair of (module PAIR with type t = 'a)
-end = Typ
+end =
+  Typ
 
 let int = Typ.Int TypEq.refl
 
@@ -3458,7 +3459,7 @@ module SSMap = struct
 end
 
 let ssmap =
-  ( module SSMap
+  (module SSMap
   : MapT
     with type key = string and type data = string and type map = SSMap.map
   )
@@ -4423,7 +4424,8 @@ module Hash1 : module type of Hash = Hash
 
 module Hash2 : sig
   include module type of Hash
-end = Hash
+end =
+  Hash
 
 let f1 (x: (_, _) Hash1.t) : (_, _) Hashtbl.t = x
 
@@ -4536,13 +4538,15 @@ module Good : sig
   val bar : t
 
   val foo : t -> t -> unit
-end = T
+end =
+  T
 
 module Bad : sig
   val foo : t -> t -> unit
 
   val bar : t
-end = T
+end =
+  T
 
 module M : sig
   module type T
@@ -5196,7 +5200,8 @@ module M'' : sig
   module N' : sig
     val x : int
   end
-end = M'
+end =
+  M'
 
 ;; M''.N'.x
 
@@ -5218,7 +5223,8 @@ module M3' : sig
   module N' : sig
     val x : int
   end
-end = M2
+end =
+  M2
 
 ;; M3'.N'.x
 
@@ -5248,7 +5254,8 @@ module G : functor (X :sig  end) -> sig
   module N' : sig
     val x : int
   end
-end = F
+end =
+  F
 
 module M5 = G ()
 
@@ -5272,7 +5279,8 @@ module M1 : sig
   end
 
   module N' = N
-end = M
+end =
+  M
 
 ;; M1.N'.x
 
@@ -5307,7 +5315,8 @@ module M1 : sig
   end
 
   module C' = C
-end = M
+end =
+  M
 
 (* sound, but should probably fail *)
 
@@ -5594,7 +5603,8 @@ module P : sig
   type t = M.t = A
 
   module B = M.B
-end = M
+end =
+  M
 
 (* should be ok *)
 module P : sig
@@ -6538,7 +6548,8 @@ end
 
 module F0 : sig
   type t = private int
-end = Foobar
+end =
+  Foobar
 
 let f (x: F0.t) : Foobar.t = x
 
@@ -6554,11 +6565,13 @@ end
 
 module M1 : sig
   type t = private < m: int ; .. >
-end = M
+end =
+  M
 
 module M2 : sig
   type t = private < m: int ; .. >
-end = M1
+end =
+  M1
 
 ;; fun (x: M1.t) -> (x : M2.t)
 
@@ -6566,7 +6579,8 @@ end = M1
 
 module M3 : sig
   type t = private M1.t
-end = M1
+end =
+  M1
 
 ;; fun x -> (x : M3.t :> M1.t)
 
@@ -6574,26 +6588,31 @@ end = M1
 
 module M4 : sig
   type t = private M3.t
-end = M2
+end =
+  M2
 
 (* fails *)
 module M4 : sig
   type t = private M3.t
-end = M
+end =
+  M
 
 (* fails *)
 module M4 : sig
   type t = private M3.t
-end = M1
+end =
+  M1
 
 (* might be ok *)
 module M5 : sig
   type t = private M1.t
-end = M3
+end =
+  M3
 
 module M6 : sig
   type t = private < n: int ; .. >
-end = M1
+end =
+  M1
 
 (* fails *)
 
@@ -6641,13 +6660,15 @@ module M3 : sig
   type t = M.t
 
   val mk : int -> t
-end = M
+end =
+  M
 
 module M4 : sig
   type t = M.t = T of int
 
   val mk : int -> t
-end = M
+end =
+  M
 
 (* Error: The variant or record definition does not match that of type M.t *)
 
@@ -6655,13 +6676,15 @@ module M5 : sig
   type t = M.t = private T of int
 
   val mk : int -> t
-end = M
+end =
+  M
 
 module M6 : sig
   type t = private T of int
 
   val mk : int -> t
-end = M
+end =
+  M
 
 module M' : sig
   type t_priv = private T of int
@@ -6681,7 +6704,8 @@ module M3' : sig
   type t = M'.t
 
   val mk : int -> t
-end = M'
+end =
+  M'
 
 module M : sig
   type 'a t = private T of 'a
@@ -6999,7 +7023,7 @@ module Bootstrap2 (MakeDiet : functor (X : ORD) -> SET
   end
   
   and Diet : (SET with type t = Elt.t tree and type elt = Elt.t) =
-  MakeDiet (Elt)
+    MakeDiet (Elt)
 
   type t = Diet.t
 
@@ -7586,7 +7610,8 @@ module rec Coerce1 : sig
 end = struct
   module A : sig
     val f : int -> int
-  end = Coerce1
+  end =
+    Coerce1
 
   let g x = x
 
@@ -7609,7 +7634,8 @@ end
 
 module rec Coerce2 : sig
   val f1 : unit -> int
-end = CoerceF (Coerce3)
+end =
+  CoerceF (Coerce3)
 
 and Coerce3 : sig end = struct end
 
@@ -7636,7 +7662,8 @@ end
 
 and Coerce6 : sig
   val at : int -> int
-end = Coerce4 (Coerce5)
+end =
+  Coerce4 (Coerce5)
 
 let _ = test 82 (Coerce6.at 100) 5
 
@@ -7672,7 +7699,8 @@ let _ = Lazy.force M1.x
 
 module rec M2 : sig
   val x : int Lazy.t
-end = G (M1)
+end =
+  G (M1)
 
 let _ = test 102 (Lazy.force M2.x) 3
 
@@ -7682,7 +7710,8 @@ let _ = Gc.full_major ()
 
 module rec M3 : sig
   val x : int Lazy.t
-end = G (M1)
+end =
+  G (M1)
 
 let _ = test 103 (Lazy.force M3.x) 3
 

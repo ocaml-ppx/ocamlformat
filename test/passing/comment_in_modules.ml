@@ -12,3 +12,8 @@ module type M = sig
   (* comments *)
 end
 
+(** Xxxxxxx xxxxxxxx xx xxxxxxx xxxxxxxxxxxxx xxxxxxxxx xx xxxx *)
+module Mmmmmmmmmmmmmmmmmmmmmm = Aaaaaaaaaaaaaaaaaaaaaa.Bbbbbbbbbbbbbbbbbbbbbbbb
+
+(** Xxxxxxx xxxxxxxx xx xxxxxxx xxxxxxxxxxxxx xxxxxxxxx xx xxxx *)
+module Fffffffffffffff (Yyyyyyyyyyyyyyy : Z.S) = Gggggggggg (Wwwwwwwwww.Make (Yyyyyyyyyy))

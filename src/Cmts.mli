@@ -108,6 +108,12 @@ val fmt_list :
   -> Fmt.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
+val has_before : t -> Location.t -> bool
+(** [has_before t loc] holds if [t] contains some comment before [loc]. *)
+
+val has_after : t -> Location.t -> bool
+(** [has_after t loc] holds if [t] contains some comment after [loc]. *)
+
 val remaining_comments : t -> (string * Sexp.t) list
 (** Returns comments that have not been formatted yet. *)
 
