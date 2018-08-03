@@ -552,7 +552,8 @@ and fmt_extension c ctx key (({txt} as ext), pld) =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
       in
       wrap "[" "]"
-        ( str key $ str txt $ fmt_payload c ctx pld
+        ( str key $ str txt
+        $ fmt_payload c (Pld pld) pld
         $ fmt_if protect_token " " )
 
 and fmt_attributes c ?(pre= fmt "") ?(suf= fmt "") ?(box= true) ~key attrs =
@@ -3342,10 +3343,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
   protect (Str si)
   @@
   let at_top =
-    match ctx with
-    | Top | Str {pstr_desc= Pstr_extension ((_, PStr (_ :: _ :: _)), _)} ->
-        true
-    | _ -> false
+    match ctx with Top | Pld (PStr (_ :: _ :: _)) -> true | _ -> false
   in
   let ctx = Str si in
   let fmt_cmts_before =
