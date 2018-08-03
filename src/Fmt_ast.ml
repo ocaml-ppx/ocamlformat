@@ -2631,7 +2631,9 @@ and fmt_module_type c ({ast= mty} as xmty) =
           Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
   | Pmty_signature s ->
-      let empty = List.is_empty s in
+      let empty =
+        List.is_empty s && not (Cmts.has_within c.cmts pmty_loc)
+      in
       let doc, atrs = doc_atrs pmty_attributes in
       let before = Cmts.fmt_before c.cmts pmty_loc in
       let within = Cmts.fmt_within c.cmts ~pro:(fmt "") pmty_loc in
@@ -3189,7 +3191,9 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_structure sis ->
-      let empty = List.is_empty sis in
+      let empty =
+        List.is_empty sis && not (Cmts.has_within c.cmts pmod_loc)
+      in
       let doc, atrs = doc_atrs pmod_attributes in
       let before = Cmts.fmt_before c.cmts pmod_loc in
       let within = Cmts.fmt_within c.cmts ~pro:(fmt "") pmod_loc in
