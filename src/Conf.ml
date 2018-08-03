@@ -188,12 +188,13 @@ let quiet =
   let default = false in
   mk ~default Arg.(value & flag & info ["q"; "quiet"] ~doc)
 
-let dont_check_comments =
+let no_comment_check =
   let doc =
-    "UNSAFE: Don't perform any check about comments & doc-comments"
+    "UNSAFE: Do not perform any checking of comments and documentation \
+     comments."
   in
   let default = false in
-  mk ~default Arg.(value & flag & info ["dont-check-comments"] ~doc)
+  mk ~default Arg.(value & flag & info ["no-comment-check"] ~doc)
 
 let inputs =
   let docv = "SRC" in
@@ -345,7 +346,7 @@ type t =
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; ocp_indent_compat: bool
   ; quiet: bool
-  ; dont_check_comments: bool }
+  ; no_comment_check: bool }
 
 let update conf name value =
   match name with
@@ -471,7 +472,7 @@ let conf name =
     ; break_infix= !break_infix
     ; ocp_indent_compat= !ocp_indent_compat
     ; quiet= !quiet
-    ; dont_check_comments= !dont_check_comments }
+    ; no_comment_check= !no_comment_check }
     (Filename.dirname (to_absolute name))
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
