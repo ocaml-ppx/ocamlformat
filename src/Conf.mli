@@ -27,6 +27,7 @@ type t = private
   ; doc_comments: [`Before | `After]
   ; parens_tuple: [`Always | `Multi_line_only]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; infix_precedence: [`Indent | `Parens]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; quiet: bool
