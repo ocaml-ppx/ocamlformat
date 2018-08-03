@@ -1082,9 +1082,14 @@ end = struct
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_]) -> (
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc}}, [_]) -> (
         match i with
-        | "~-" | "~+" -> Some (UMinus, Non)
+        | "~-" | "~-." | "~+" | "~+." ->
+            if
+              loc.loc_end.pos_cnum - loc.loc_start.pos_cnum
+              = String.length i - 1
+            then Some (UMinus, Non)
+            else Some (High, Non)
         | _ ->
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
@@ -1160,9 +1165,14 @@ end = struct
       | Pexp_construct (_, Some _) -> Some Apply
       | Pexp_constant (Pconst_integer (i, _) | Pconst_float (i, _)) -> (
         match i.[0] with '-' | '+' -> Some UMinus | _ -> Some Atomic )
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_]) -> (
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc}}, [_]) -> (
         match i with
-        | "~-" | "~+" -> Some UMinus
+        | "~-" | "~-." | "~+." | "~+" ->
+            if
+              loc.loc_end.pos_cnum - loc.loc_start.pos_cnum
+              = String.length i - 1
+            then Some UMinus
+            else Some High
         | "!=" -> Some Apply
         | _ ->
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
@@ -1551,14 +1561,14 @@ end = struct
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
       | Pexp_record
-          (_, Some ({pexp_desc= Pexp_ident _ | Pexp_constant _ | Pexp_record _
-                                | Pexp_field _
-                    } as e0))
+          ( _
+          , Some
+              ( { pexp_desc=
+                    ( Pexp_ident _ | Pexp_constant _ | Pexp_record _
+                    | Pexp_field _ ) } as e0 ) )
         when e0 == exp ->
           false
-      | Pexp_record (_, Some e0)
-        when e0 == exp ->
-          true
+      | Pexp_record (_, Some e0) when e0 == exp -> true
       | Pexp_sequence
           ( ( { pexp_desc=
                   Pexp_extension
