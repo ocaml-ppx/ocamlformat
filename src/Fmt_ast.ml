@@ -2299,6 +2299,8 @@ and fmt_cases c ctx cs =
         | _ -> 4
       in
       let paren_body = parenze_exp xrhs in
+      (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
+      let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in
       let fmt_lhs =
         let xlhs = sub_pat ~ctx pc_lhs in
         let paren_lhs =
@@ -2322,7 +2324,7 @@ and fmt_cases c ctx cs =
           $ fmt_if_k (indent <= 2) fmt_arrow )
         $ fmt_if_k (indent > 2) fmt_arrow
       in
-      fmt_if (not first) "@ "
+      fmt_if (not first) "@ " $ leading_cmt
       $ cbox_if (not c.conf.sparse) indent
           ( hvbox_if (not c.conf.sparse) indent fmt_lhs
           $ ( match (c.conf.sparse, indent > 2, paren_body) with
