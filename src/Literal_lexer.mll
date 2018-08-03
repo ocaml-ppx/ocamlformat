@@ -65,6 +65,7 @@ and string_aux mode = parse
             raise (Error (Illegal_escape (Lexing.lexeme lexbuf),
             Location.curr lexbuf))
         *)
+        store_string (Lexing.lexeme lexbuf);
         string_aux mode lexbuf
       }
   | newline
