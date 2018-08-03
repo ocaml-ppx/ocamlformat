@@ -1,6 +1,6 @@
 [@@@foo]
 
-let ((x[@foo]): (unit[@foo])) = () [@foo][@@foo]
+let ((x[@foo]): (unit[@foo])) = (() [@foo])[@@foo]
 
 type t = Foo of (t[@foo]) [@foo] [@@foo]
 
@@ -118,7 +118,7 @@ let () =
   [%foo (assert true) [@foo]] ;
   [%foo (lazy x) [@foo]] ;
   [%foo (object end) [@foo]] ;
-  [%foo (3) [@foo]] ;
+  [%foo (3 [@foo])] ;
   [%foo (new x) [@foo]] ;
   [%foo
     match[@foo] () with
@@ -407,6 +407,7 @@ type foo
 type foo += A of int
 
 (* Error type is not open *)
+
 (* The type parameters must match *)
 
 type 'a foo = ..
@@ -414,6 +415,7 @@ type 'a foo = ..
 type ('a, 'b) foo += A of int
 
 (* Error: type parameter mismatch *)
+
 (* In a signature the type does not have to be open *)
 
 module type S = sig
@@ -473,6 +475,7 @@ let a = A 9
 type 'a foo += B : int foo
 
 (* ERROR: Constraints not met *)
+
 (* Signatures can make an extension private *)
 
 type foo = ..
@@ -494,6 +497,7 @@ let is_s x = match x with M_S.A _ -> true | _ -> false
 let a2 = M_S.A 20
 
 (* ERROR: Cannot create a value using a private constructor *)
+
 (* Extensions can be rebound *)
 
 type foo = ..
@@ -523,6 +527,7 @@ type foo += B3 = M.B1
 type foo += C = Unknown
 
 (* Error: unbound extension *)
+
 (* Extensions can be rebound even if type is closed *)
 
 module M : sig
@@ -568,6 +573,7 @@ type 'a bar = ..
 type +'a bar += D of (int -> 'a)
 
 (* ERROR: type variances do not match *)
+
 (* Exceptions are compatible with extensions *)
 
 module M : sig
@@ -627,6 +633,7 @@ type foo += Foo of string
 let y = x
 
 (* Prints Bar and part of Foo (which has been shadowed) *)
+
 (* Test Obj functions *)
 
 type foo = ..
@@ -666,6 +673,7 @@ let _ =
     end)
 
 (* Invald_arg *)
+
 (* Typed names *)
 
 module Msg : sig
@@ -1047,6 +1055,7 @@ let g (type t) (x: t) (tag: t ty) =
 (* Encoding generics using GADTs *)
 (* (c) Alain Frisch / Lexifi *)
 (* cf. http://www.lexifi.com/blog/dynamic-types *)
+
 (* Basic tag *)
 
 type 'a ty =
@@ -1511,6 +1520,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 (* An attempt at encoding omega examples from the 2nd Central European
    Functional Programming School: Generic Programming in Omega, by Tim
    Sheard and Nathan Linger http://web.cecs.pdx.edu/~sheard/ *)
+
 (* Basic types *)
 
 type ('a, 'b) sum = Inl of 'a | Inr of 'b
@@ -1555,6 +1565,7 @@ let rec app : type a n m. (a, n) seq -> (a, m) seq -> (a, n, m) app =
       App (Scons (x, xs''), PlusS pl)
 
 (* 3.1 Feature: kinds *)
+
 (* We do not have kinds, but we can encode them as predicates *)
 
 type tp = TP
@@ -1677,6 +1688,7 @@ let rec plus_assoc : type a b c ab bc m n.
       Eq
 
 (* 3.9 Computing Programs and Properties Simultaneously *)
+
 (* Plus and app1 are moved to section 2 *)
 
 let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
@@ -2096,6 +2108,7 @@ let ex3 = App (double, _3)
 let v3 = eval_lam env0 ex3
 
 (* 5.13: Constructing typing derivations at runtime *)
+
 (* Modified slightly to use the language of 5.10, since this is more fun. Of
    course this works also with the language of 5.12. *)
 
@@ -2288,6 +2301,7 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | _ -> .
 
 (* error *)
+
 (* let x = f Tint (Tvar Zero) ;; *)
 type inkind = [`Link | `Nonlink]
 
@@ -2746,8 +2760,10 @@ end
 (* First-Order Unification by Structural Recursion *)
 (* Conor McBride, JFP 13(6) *)
 (* http://strictlypositive.org/publications.html *)
+
 (* This is a translation of the code part to ocaml *)
 (* Of course, we do not prove other properties, not even termination *)
+
 (* 2.2 Inductive Families *)
 
 type zero = Zero
@@ -2760,6 +2776,7 @@ type _ fin = FZ : 'a succ fin | FS: 'a fin -> 'a succ fin
 
 (* We cannot define val empty : zero fin -> 'a because we cannot write an
    empty pattern matching. This might be useful to have *)
+
 (* In place, prove that the parameter is 'a succ *)
 type _ is_succ = IS : 'a succ is_succ
 
@@ -2782,6 +2799,7 @@ let comp_subst f g (x: 'a fin) = pre_subst f (g x)
 
 (* val comp_subst : ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin ->
    'c term *)
+
 (* 4 The Occur-Check, through thick and thin *)
 
 let rec thin : type n. n succ fin -> n fin -> n succ fin =
@@ -2823,6 +2841,7 @@ let subst_var x t' y = match thick x y with None -> t' | Some y' -> Var y'
 let subst x t' = pre_subst (subst_var x t')
 
 (* val subst : 'a succ fin -> 'a term -> 'a succ term -> 'a term *)
+
 (* 5 A Refinement of Substitution *)
 
 type (_, _) alist =
@@ -2863,6 +2882,7 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
 let subst' d = pre_subst (sub' d)
 
 (* val subst' : 'a ealist -> 'a term -> 'a term *)
+
 (* 6 First-Order Unification *)
 
 let flex_flex x y =
@@ -3108,7 +3128,9 @@ val test_bar : unit -> unit = <fun>
 (* Uncomment these to test. Should see substantial speedup! let () =
    Printf.printf "No @@immediate: %fs\n" (test test_foo) let () =
    Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
+
 (* INVALID DECLARATIONS *)
+
 (* Cannot directly declare a non-immediate type as immediate *)
 module B = struct
   type t = string [@@immediate]
@@ -3201,6 +3223,7 @@ Error: Types marked with the immediate attribute must be
    New: implicit pack is also supported, and you only need to be able to
    infer the the module type path from the context. *)
 (* ocaml -principal *)
+
 (* Use a module pattern *)
 let sort (type s) (module Set : Set.S with type elt = s) l =
   Set.elements (List.fold_right Set.add l Set.empty)
@@ -4271,6 +4294,7 @@ let f (x: [< `A | `B]) = match x with `A | `B | `C -> 0
 let f (x: [`A | `B]) = match x with `A | `B | `C -> 0
 
 (* fail *)
+
 (* PR#6787 *)
 let revapply x f = f x
 
@@ -5054,6 +5078,7 @@ module type S' = S with module M := String
    MakeSeeded := Hashtbl.MakeSeeded and module type SeededS :=
    Hashtbl.SeededS and module type HashedType := Hashtbl.HashedType and
    module type SeededHashedType := Hashtbl.SeededHashedType) end;; *)
+
 (* A subtle problem appearing with -principal *)
 type -'a t
 
@@ -5101,6 +5126,7 @@ type u = X of bool
 module type B = A with type t = u
 
 (* fail *)
+
 (* PR#5815 *)
 (* ---> duplicated exception name is now an error *)
 
@@ -5399,6 +5425,7 @@ struct end
 module G = F (M.Y)
 
 (*module N = G (M);; module N = F (M.Y) (M);;*)
+
 (* PR#6307 *)
 
 module A1 = struct end
@@ -5420,6 +5447,7 @@ module F1 = F (L1)
 module F2 = F (L2)
 
 (* should succeed too *)
+
 (* Counter example: why we need to be careful with PR#6307 *)
 module Int = struct
   type t = int
@@ -5456,6 +5484,7 @@ module type S' = sig
 end
 
 (* fail *)
+
 (* (* if the above succeeded, one could break invariants *) module rec M2 :
    S' = M2;; (* should succeed! (but this is bad) *)
 
@@ -5465,6 +5494,7 @@ end
    Set.Make(Int2);; let conv : type a b. (a,b) eq -> a -> b = fun Eq x ->
    x;; let s' : SInt2.t = conv eq s;; SInt2.elements s';; SInt2.mem 2 s';;
    (* invariants are broken *) *)
+
 (* Check behavior with submodules *)
 module M = struct
   module N = struct
@@ -5518,6 +5548,7 @@ module H' = H
 module type S' = S with module M = H'
 
 (* shouldn't introduce an alias *)
+
 (* PR#6376 *)
 module type Alias = sig
   module N : sig end
@@ -5608,6 +5639,7 @@ end
 module R' : S = R
 
 (* should be ok *)
+
 (* PR#6578 *)
 
 module M = struct
@@ -5663,6 +5695,7 @@ end
 
 (* The following introduces a (useless) dependency on A: module C : sig
    module L : module type of List end = A *)
+
 (* No dependency on D *)
 let x = 3
 
@@ -5707,6 +5740,7 @@ let f2 (x: (module S2 with type t = 'a and type u = 'b)) : (module S') = x
 let k (x: (module S2 with type t = 'a)) : (module S with type t = 'a) = x
 
 (* fail *)
+
 (* but you cannot forget values (no physical coercions) *)
 module type S3 = sig
   type u
@@ -5720,6 +5754,7 @@ let g3 x = (x : (module S3 with type t = 'a and type u = 'b) :> (module S'))
 
 (* fail *)
 (* Using generative functors *)
+
 (* Without type *)
 module type S = sig
   val x : int
@@ -5740,6 +5775,7 @@ module G (X : sig end) : S = F ()
 module H (X : sig end) = (val v)
 
 (* ok *)
+
 (* With type *)
 module type S = sig
   type t
@@ -5764,6 +5800,7 @@ module G (X : sig end) : S = F ()
 module H () = F ()
 
 (* ok *)
+
 (* Alias *)
 module U = struct end
 
@@ -5773,6 +5810,7 @@ module M = F ()
 module M = F (U)
 
 (* fail *)
+
 (* Cannot coerce between applicative and generative *)
 module F1 (X : sig end) = struct end
 
@@ -5784,6 +5822,7 @@ module F3 () = struct end
 module F4 : functor (X :sig  end) -> sig end = F3
 
 (* fail *)
+
 (* tests for shortened functor notation () *)
 module X (X : sig end) (Y : sig end) (Z : sig end) = struct end
 
@@ -7168,8 +7207,10 @@ let _ =
   test 30 res true
 
 (* Early strict evaluation *)
+
 (* module rec Cyclic : sig val x : int end = struct let x = Cyclic.x + 1 end
    ;; *)
+
 (* Reordering of evaluation based on dependencies *)
 
 module rec After : sig
@@ -7253,6 +7294,7 @@ end = struct
 end
 
 (* Wrong LHS signatures (PR#4336) *)
+
 (* module type ASig = sig type a val a:a val print:a -> unit end module type
    BSig = sig type b val b:b val print:b -> unit end
 
@@ -7264,6 +7306,7 @@ end
 
    module rec NewA : ASig = MakeA (struct end) and NewB : BSig with type b =
    NewA.a = MakeB (struct end);; *)
+
 (* Expressions and bindings *)
 
 module StringSet = Set.Make (String)
@@ -8425,6 +8468,7 @@ let f : type a b c d e f g.
   | _, _, _, _, _, _, _, G, _, _ -> 1
 
 (*| _ -> _ *)
+
 (* Unused cases *)
 let f (x: int t) = match x with A -> 1 | _ -> 2
 
@@ -8440,6 +8484,7 @@ let f (x: int t option) = match x with None -> 1 | _ -> 2
 let f (x: int t option) = match x with None -> 1
 
 (* warn *)
+
 (* Example with record, type, single case *)
 
 type 'a box = Box of 'a
@@ -8514,6 +8559,7 @@ type _ t = Int : int t
 let f (x: bool t) = match x with _ -> .
 
 (* ok *)
+
 (* trefis in PR#6437 *)
 
 let f () = match None with _ -> .
@@ -8528,6 +8574,7 @@ let h () = match None with _ -> . | exception _ -> .
 let f x = match x with _ -> () | None -> .
 
 (* do not warn *)
+
 (* #7059, all clauses guarded *)
 
 let f x y = match 1 with 1 when x = y -> 1
@@ -8652,6 +8699,7 @@ module F2 = struct
 end
 
 (* fails for -principal *)
+
 (* Use type information with modules*)
 module M = struct
   type t = {x: int}
@@ -8731,6 +8779,7 @@ module OK = struct
 end
 
 (* ok *)
+
 (* Corner cases *)
 
 module F4 = struct
@@ -8768,6 +8817,7 @@ end
 let r = {MN.x= 3; NM.y= 4}
 
 (* error: type would change with order *)
+
 (* Lpw25 *)
 
 module M = struct
@@ -8817,6 +8867,7 @@ end
 let f (r: B.t) = r.A.x
 
 (* fail *)
+
 (* Spellchecking *)
 
 module F8 = struct
@@ -8842,6 +8893,7 @@ class f (_: 'a) (_: 'a) = object end
 class g = f (A : t) A
 
 (* warn with -principal *)
+
 (* PR#5980 *)
 
 module Shadow1 = struct
@@ -9034,6 +9086,7 @@ let _ = -1
 class id = [%exp]
 
 (* checkpoint *)
+
 (* Subtyping is "syntactic" *)
 let _ = fun (x: < x: int >) y z -> ((y :> 'a), (x :> 'a), (z :> 'a))
 
