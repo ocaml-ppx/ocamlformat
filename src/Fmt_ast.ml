@@ -1953,6 +1953,12 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       impossible "only used for methods, handled during method formatting"
 
 and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
+  let fields =
+    List.sort fields
+      ~compare:
+        (Comparable.lift Int.compare ~f:(fun x ->
+             x.pcf_loc.loc_start.pos_cnum ))
+  in
   let cmts_after_self =
     match fields with
     | [] -> Cmts.fmt_after c.cmts self_.ppat_loc
@@ -1981,6 +1987,12 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
        $ fmt "end" ))
 
 and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
+  let fields =
+    List.sort fields
+      ~compare:
+        (Comparable.lift Int.compare ~f:(fun x ->
+             x.pctf_loc.loc_start.pos_cnum ))
+  in
   let cmts_after_self =
     match fields with
     | [] -> Cmts.fmt_after c.cmts self_.ptyp_loc
