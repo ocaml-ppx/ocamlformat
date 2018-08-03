@@ -29,15 +29,14 @@ let invariant t =
        , xxxxxxxxxxxxxx
        , xxxxxxxxxxx
        , xxxxxxxxxxxxxxxxxxxx ) when a < b]
-
-
-[%ext let f = () and g () = () in e]
-(let%ext f = () and g () = () in e)
-
-
-[%ext let rec f = () and g () = () in e]
-(let%ext rec f = () and g () = () in e)
-
+     (let%ext f = () and g () = () in
+      e)
+     (let%ext f = () and g () = () in
+      e)
+     (let%ext rec f = () and g () = () in
+      e)
+     (let%ext rec f = () and g () = () in
+      e)
 
 [%%ext
 11111111111111111111]
