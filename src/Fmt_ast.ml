@@ -1108,13 +1108,16 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       | Some p1, Some p2 -> Poly.(p1 <> p2)
     in
     let parens_or_nested = parens || is_nested_diff_prec_infix_ops in
+    let parens_or_forced =
+      parens || Poly.equal c.conf.infix_precedence `Parens
+    in
     let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
       list_fl args (fun ~first ~last (fmt_cmts, op_args) ->
           let very_first = first_grp && first in
           let very_last = last_grp && last in
           fmt_if_k very_first
             (fits_breaks_if parens_or_nested "("
-               (if parens then "( " else ""))
+               (if parens_or_forced then "( " else ""))
           $ fmt_cmts
           $ fmt_if_k first
               (open_hovbox (if first_grp && parens then -2 else 0))
@@ -1122,7 +1125,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
           $ fmt_if_k last close_box
           $ fmt_or_k very_last
               (fits_breaks_if parens_or_nested ")"
-                 (if parens then "@ )" else ""))
+                 (if parens_or_forced then "@ )" else ""))
               (break_unless_newline 1 0) )
     in
     let op_args_grouped =

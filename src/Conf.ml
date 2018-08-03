@@ -178,6 +178,19 @@ let if_then_else =
           default
       & info ["if-then-else"] ~doc ~env)
 
+let infix_precedence =
+  let doc =
+    "Use indentation or also discretionary parentheses to explicitly \
+     disambiguate precedences of infix operators."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_INFIX_PRECEDENCE" in
+  let default = `Indent in
+  mk ~default
+    Arg.(
+      value
+      & opt (enum [("indent", `Indent); ("parens", `Parens)]) default
+      & info ["infix-precedence"] ~doc ~env)
+
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
@@ -343,6 +356,7 @@ type t =
   ; doc_comments: [`Before | `After]
   ; parens_tuple: [`Always | `Multi_line_only]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; infix_precedence: [`Indent | `Parens]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; ocp_indent_compat: bool
   ; quiet: bool
@@ -372,6 +386,16 @@ let update conf name value =
           | other ->
               user_error
                 (Printf.sprintf "Unknown if-then-else value: %S" other)
+                [] ) }
+  | "infix-precedence" ->
+      { conf with
+        infix_precedence=
+          ( match value with
+          | "indent" -> `Indent
+          | "parens" -> `Parens
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown infix-precedence value: %S" other)
                 [] ) }
   | "break-infix" ->
       { conf with
@@ -469,6 +493,7 @@ let conf name =
     ; doc_comments= !doc_comments
     ; parens_tuple= !parens_tuple
     ; if_then_else= !if_then_else
+    ; infix_precedence= !infix_precedence
     ; break_infix= !break_infix
     ; ocp_indent_compat= !ocp_indent_compat
     ; quiet= !quiet
