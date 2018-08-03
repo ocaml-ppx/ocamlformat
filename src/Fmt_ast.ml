@@ -895,7 +895,17 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                     else if first then proI $ open_hovbox (-2)
                     else proI
                   in
-                  fmt_pattern c ~pro xpat $ fmt_if_k last close_box ) )
+                  (* side effects of Cmts.fmt_before before [fmt_pattern] is
+                     important *)
+                  let leading_cmt =
+                    let loc = xpat.ast.ppat_loc in
+                    if Cmts.has_before c.cmts loc then
+                      let loc_before = Cmts.fmt_before c.cmts loc in
+                      fmt "@;<1000 0>" $ loc_before
+                    else fmt ""
+                  in
+                  leading_cmt $ fmt_pattern c ~pro xpat
+                  $ fmt_if_k last close_box ) )
         $ fits_breaks
             (if parens then ")" else "")
             (if nested then "" else "@;<1 2>)") )
@@ -1368,6 +1378,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
         let e1N = List.rev rev_e1N in
         let ctx = Exp eN in
+        (* side effects of Cmts.fmt_before before [fmt_pattern] is important *)
+        let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in
         hvbox 2
           ( wrap_if parens "(" ")"
               (hovbox 4
@@ -1375,7 +1387,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                  $ fmt "(function"
                  $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
                      eN.pexp_attributes
-                 $ fmt "@ "
+                 $ fmt "@ " $ leading_cmt
                  $ hvbox 0
                      ( fmt_pattern c ~pro:(if_newline "| ")
                          (sub_pat ~ctx pc_lhs)
@@ -1694,6 +1706,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                    $ fmt "@ with" )
                $ fmt "@ " $ fmt_cases c ctx cs ))
       | [{pc_lhs; pc_guard; pc_rhs}] ->
+          (* side effects of Cmts.fmt_before before [fmt_pattern] is
+             important *)
+          let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in
           wrap_fits_breaks_if parens "(" ")"
             (hovbox 2
                ( hvbox 0
@@ -1705,7 +1720,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                    $ fmt "@," )
                $ fmt "@;<0 -2>"
                $ hvbox 0
-                   ( break_unless_newline 1 0 $ fmt "with@ "
+                   ( break_unless_newline 1 0 $ fmt "with@ " $ leading_cmt
                    $ hvbox 0
                        ( fmt_pattern c ~pro:(if_newline "| ")
                            (sub_pat ~ctx pc_lhs)
@@ -1726,20 +1741,27 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       $ fmt_atrs
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
-        match f.pexp_desc with
-        | Pexp_ident {txt= txt'; loc}
-          when field_alias lid1.txt txt' && List.is_empty f.pexp_attributes ->
-            Cmts.fmt c.cmts loc @@ cbox 2 (fmt_longident_loc c lid1)
-        | Pexp_constraint
-            (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
-          when field_alias lid1.txt txt' && List.is_empty f.pexp_attributes ->
-            Cmts.fmt c.cmts loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
-            $ fmt " : "
-            $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
-        | _ ->
-            cbox 2
-              ( fmt_longident_loc c lid1 $ fmt "=@ "
-              $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) )
+        hvbox 0
+          (let leading_cmt = Cmts.fmt_before c.cmts lid1.loc in
+           leading_cmt
+           $
+           match f.pexp_desc with
+           | Pexp_ident {txt= txt'; loc}
+             when field_alias lid1.txt txt'
+                  && List.is_empty f.pexp_attributes ->
+               Cmts.fmt c.cmts loc @@ cbox 2 (fmt_longident_loc c lid1)
+           | Pexp_constraint
+               (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
+             when field_alias lid1.txt txt'
+                  && List.is_empty f.pexp_attributes ->
+               Cmts.fmt c.cmts loc
+               @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
+               $ fmt " : "
+               $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
+           | _ ->
+               cbox 2
+                 ( fmt_longident_loc c lid1 $ fmt "=@ "
+                 $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) ))
       in
       hvbox 0
         ( wrap_fits_breaks "{" "}"
