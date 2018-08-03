@@ -86,7 +86,14 @@ let is_symbol e = is_prefix e || is_infix e || is_index_op e
 (** Predicates recognizing classes of expressions. *)
 
 let is_sequence exp =
-  match exp.pexp_desc with Pexp_sequence _ -> true | _ -> false
+  match exp.pexp_desc with
+  | Pexp_sequence _
+   |Pexp_extension
+      ( _
+      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
+      ) ->
+      true
+  | _ -> false
 
 let rec is_sugared_list exp =
   match exp.pexp_desc with

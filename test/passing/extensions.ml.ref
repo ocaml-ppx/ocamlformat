@@ -59,3 +59,5 @@ let _: [%ext ? (x: x)] = [%ext ? (x: x)]
 ;; 33333333333333333333]
 
 let _ = [%stri let [%p xxx] = fun (t: [%t tt]) (ut: [%t tt]) -> [%e xxx]]
+
+let _ = [x; x ---> ([%e x ~loc [%expr x] x] ;%expr iter tail); x]
