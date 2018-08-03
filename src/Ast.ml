@@ -1551,7 +1551,12 @@ end = struct
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
       | Pexp_record
-          (_, Some ({pexp_desc= Pexp_apply _ | Pexp_sequence _} as e0))
+          (_, Some ({pexp_desc= Pexp_ident _ | Pexp_constant _ | Pexp_record _
+                                | Pexp_field _
+                    } as e0))
+        when e0 == exp ->
+          false
+      | Pexp_record (_, Some e0)
         when e0 == exp ->
           true
       | Pexp_sequence
