@@ -352,7 +352,7 @@ let rec fmt_longident (li: Longident.t) =
   | Lapply (li1, li2) ->
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
-let fmt_longident_loc c ?(pre= Caml.format_of_string "")
+let fmt_longident_loc c ?(pre= ("" : _ format))
     ({txt; loc}: Longident.t loc) =
   Cmts.fmt c.cmts loc @@ (fmt pre $ fmt_longident txt)
 
