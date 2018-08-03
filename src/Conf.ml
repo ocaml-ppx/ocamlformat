@@ -326,7 +326,7 @@ let validate () =
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
-  else if not !inplace && List.length !inputs > 1 then
+  else if (not !inplace) && List.length !inputs > 1 then
     `Error (false, "Must specify only one input file without --inplace")
   else `Ok ()
 
@@ -441,7 +441,7 @@ let update conf name value =
 
 let rec read_conf_files conf dir =
   let dir' = Filename.dirname dir in
-  if not (String.equal dir dir') && Caml.Sys.file_exists dir then
+  if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
     let conf = read_conf_files conf dir' in
     try
       In_channel.with_file (Filename.concat dir ".ocamlformat") ~f:

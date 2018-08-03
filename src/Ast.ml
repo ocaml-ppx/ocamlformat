@@ -1425,7 +1425,7 @@ end = struct
     fun cls exp ->
       let exposed_ () =
         let continue subexp =
-          not (parenze_exp (sub_exp ~ctx:(Exp exp) subexp))
+          (not (parenze_exp (sub_exp ~ctx:(Exp exp) subexp)))
           && exposed_right_exp cls subexp
         in
         match exp.pexp_desc with
@@ -1476,10 +1476,10 @@ end = struct
         match cl.pcl_desc with
         | Pcl_apply (_, args) ->
             let exp = snd (List.last_exn args) in
-            not (parenze_exp (sub_exp ~ctx:(Cl cl) exp))
+            (not (parenze_exp (sub_exp ~ctx:(Cl cl) exp)))
             && exposed_right_exp cls exp
         | Pcl_fun (_, _, _, e) ->
-            not (parenze_cl (sub_cl ~ctx:(Cl cl) e))
+            (not (parenze_cl (sub_cl ~ctx:(Cl cl) e)))
             && exposed_right_cl cls e
         | _ -> false
       in
@@ -1503,6 +1503,11 @@ end = struct
     | Pld _, {pexp_desc= Pexp_tuple _} -> false
     | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false
     | Cl {pcl_desc= Pcl_apply _}, {pexp_desc= Pexp_apply _} -> true
+    | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, _) :: _)}
+      , { pexp_desc=
+            Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, _) } )
+      when is_infix op ->
+        true
     | Exp {pexp_desc}, _ -> (
       match pexp_desc with
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
