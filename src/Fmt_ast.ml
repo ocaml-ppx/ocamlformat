@@ -517,10 +517,11 @@ let fmt_docstring c ?pro ?epi doc =
 let fmt_extension_suffix c ext =
   opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt c.cmts loc (str txt))
 
-let field_alias (li1: Longident.t) (li2: Longident.t) =
+let field_alias ~field:(li1: Longident.t) (li2: Longident.t) =
   match (li1, li2) with
   | Ldot (_, x), Lident y -> String.equal x y
-  | _ -> Poly.equal li1 li2
+  | Lident x, Lident y -> String.equal x y
+  | _ -> false
 
 let rec fmt_attribute c pre = function
   | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
@@ -834,11 +835,11 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           @@
           match ppat_desc with
           | Ppat_var {txt= txt'}
-            when field_alias lid1.txt (Longident.parse txt')
+            when field_alias ~field:lid1.txt (Longident.parse txt')
                  && List.is_empty pat.ppat_attributes ->
               cbox 2 (fmt_longident_loc c lid1)
           | Ppat_constraint ({ppat_desc= Ppat_var {txt= txt'; _}}, t)
-            when field_alias lid1.txt (Longident.parse txt')
+            when field_alias ~field:lid1.txt (Longident.parse txt')
                  && List.is_empty pat.ppat_attributes ->
               cbox 2
                 ( fmt_longident_loc c lid1 $ fmt " : "
@@ -1756,12 +1757,12 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
            $
            match f.pexp_desc with
            | Pexp_ident {txt= txt'; loc}
-             when field_alias lid1.txt txt'
+             when field_alias ~field:lid1.txt txt'
                   && List.is_empty f.pexp_attributes ->
                Cmts.fmt c.cmts loc @@ cbox 2 (fmt_longident_loc c lid1)
            | Pexp_constraint
                (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
-             when field_alias lid1.txt txt'
+             when field_alias ~field:lid1.txt txt'
                   && List.is_empty f.pexp_attributes ->
                Cmts.fmt c.cmts loc
                @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
@@ -1915,22 +1916,20 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       fmt_class_structure c ~ctx ~parens ?ext pcstr_self pcstr_fields
       $ fmt_atrs
   | Pexp_override l -> (
-      let field_alias (x: string) (li: Longident.t) =
-        match li with Lident y -> String.equal x y | _ -> false
-      in
       let field ({txt; loc}, f) =
+        let txt = Longident.parse txt in
         match f.pexp_desc with
-        | Pexp_ident {txt= txt'; loc} when field_alias txt txt' ->
+        | Pexp_ident {txt= txt'; loc} when field_alias ~field:txt txt' ->
             Cmts.fmt c.cmts ~eol:(fmt "") loc @@ fmt_longident txt'
         | Pexp_constraint
             (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
-          when field_alias txt txt' ->
+          when field_alias ~field:txt txt' ->
             Cmts.fmt c.cmts ~eol:(fmt "") loc
             @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
             $ fmt " : "
             $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
-            Cmts.fmt c.cmts ~eol:(fmt "") loc @@ str txt
+            Cmts.fmt c.cmts ~eol:(fmt "") loc @@ fmt_longident txt
             $ fmt " = "
             $ fmt_expression c (sub_exp ~ctx f)
       in
@@ -3444,7 +3443,9 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       match ppat_desc with Ppat_extension _ -> true | _ -> false
     in
     let ({ast= body} as xbody) = sub_exp ~ctx pvb_expr in
-    if not (List.is_empty xbody.ast.pexp_attributes) || pat_is_extension pat
+    if
+      (not (List.is_empty xbody.ast.pexp_attributes))
+      || pat_is_extension pat
     then (xpat, [], None, xbody)
     else
       let sugar_polynewtype pat body =
