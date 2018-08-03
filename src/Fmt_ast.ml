@@ -1674,7 +1674,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       let opn, cls =
         let can_skip_parens =
           match e0.pexp_desc with
-          | Pexp_array _ | Pexp_constraint _ | Pexp_record _ -> true
+          | Pexp_array _ | Pexp_record _ -> true
           | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
           | _ ->
             match sugar_list_exp c e0 with Some _ -> true | None -> false
@@ -1845,8 +1845,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                             | Pexp_sequence _ | Pexp_new _
                             | Pexp_letmodule _ | Pexp_object _ )
                         ; pexp_attributes= [] } as e1 )
-                    , _ )
-              } as str ) ] ) when List.is_empty pexp_attributes ->
+                    , _ ) } as str ) ] )
+    when List.is_empty pexp_attributes ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
         $ fmt_atrs )
