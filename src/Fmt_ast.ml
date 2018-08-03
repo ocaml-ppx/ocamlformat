@@ -1418,8 +1418,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
             $ fmt "@," $ fmt_atrs )
         $ fits_breaks_if paren_body ")" "@ )" )
   | Pexp_constant const ->
-      wrap_if parens "(" ")" (fmt_constant c ~loc:pexp_loc ?epi const)
-      $ fmt_atrs
+      wrap_if
+        (parens || not (List.is_empty pexp_attributes))
+        "(" ")"
+        (fmt_constant c ~loc:pexp_loc ?epi const $ fmt_atrs)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
@@ -1444,10 +1446,13 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         let opn = txt.[0] and cls = txt.[1] in
         Cmts.fmt c.cmts loc
         @@ hvbox 0
-             (wrap_k (char opn) (char cls)
-                (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
-                   pexp_loc))
-        $ fmt_atrs
+             (wrap_if
+                (not (List.is_empty pexp_attributes))
+                "(" ")"
+                ( wrap_k (char opn) (char cls)
+                    (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
+                       pexp_loc)
+                $ fmt_atrs ))
     | _ -> Cmts.fmt c.cmts loc @@ fmt_longident txt $ fmt_atrs )
   | Pexp_construct
       ( {txt= Lident "::"}
@@ -1455,13 +1460,16 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
     match sugar_list_exp c exp with
     | Some (loc_xes, nil_loc) ->
         hvbox 0
-          ( wrap_fits_breaks "[" "]"
-              ( list loc_xes "@,; " (fun (locs, xexp) ->
-                    Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
-                    @@ fmt_expression c xexp )
-              $ Cmts.fmt c.cmts ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
-                @@ fmt "" )
-          $ fmt_atrs )
+          (wrap_if
+             (not (List.is_empty pexp_attributes))
+             "(" ")"
+             ( wrap_fits_breaks "[" "]"
+                 ( list loc_xes "@,; " (fun (locs, xexp) ->
+                       Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
+                       @@ fmt_expression c xexp )
+                 $ Cmts.fmt c.cmts ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
+                   @@ fmt "" )
+             $ fmt_atrs ))
     | None ->
         let loc_args = sugar_infix_cons xexp in
         fmt_op_args
