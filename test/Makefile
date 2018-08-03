@@ -14,6 +14,11 @@
 # By default, test projects used as regression tests
 DIRS=code/ocamlformat code/infer
 
+# Extra test directories, for which looser checking is done
+XDIRS=code/ocaml
+
+ALL_DIRS=$(DIRS) $(XDIRS)
+
 # To test using the dev or release executable
 #       make MODE=<mode>
 MODE?=dev
@@ -24,16 +29,56 @@ OCAMLFORMAT_EXE=../_build/$(MODE)/src/ocamlformat.exe
 
 .PHONY: test
 test:
-	test -d code \
+	@test -d code \
 	  || mkdir code
-	test -d code/ocamlformat \
+	@test -d code/ocamlformat \
 	  || git -C code clone ../../../ocamlformat
-	test -d code/infer \
+	@test -d code/infer \
 	  || git -C code clone "https://github.com/facebook/infer.git"
-	$(MAKE) test_inplace test_convert
-	for dir in $(DIRS); do \
+	@test -d code/ocaml \
+	  || git -C code clone "https://github.com/ocaml/ocaml.git"
+	@$(MAKE) test_inplace test_convert
+	@for dir in $(ALL_DIRS); do \
 	  test -z "$$(git -C $$dir diff --quiet)" \
 	    || (echo FAIL test $$dir; exit 1); \
+	done
+
+.PHONY: test_status
+test_status:
+	@for dir in $(ALL_DIRS); do \
+	  echo ; echo $$dir; \
+	  git -C $$dir status; \
+	done
+
+.PHONY: test_diff
+test_diff:
+	@for dir in $(ALL_DIRS); do \
+	  git -C $$dir diff --no-ext-diff; \
+	done
+
+.PHONY: test_stage
+test_stage:
+	@for dir in $(ALL_DIRS); do \
+	  git -C $$dir add .; \
+	done
+
+.PHONY: test_unstage
+test_unstage:
+	@for dir in $(ALL_DIRS); do \
+	  git -C $$dir reset HEAD .; \
+	done
+
+.PHONY: test_clean
+test_clean:
+	@for dir in $(ALL_DIRS); do \
+	  git -C $$dir checkout -- .; \
+	  git -C $$dir clean -f; \
+	done
+
+.PHONY: test_pull
+test_pull:
+	@for dir in $(ALL_DIRS); do \
+	  git -C $$dir pull; \
 	done
 
 %.pp.ml: %.ml $(OCAMLFORMAT_EXE)
@@ -52,8 +97,12 @@ test:
 	@rm -f $*.pp.mli $*.old.ast $*.new.ast
 	$(REFMT) --print=binary_reason $< | $(OCAMLFORMAT_EXE) $< --reason-intf -o $@
 
-TEST_ML:=$(shell find $(DIRS) -name _build -not -prune -or -name failing -not -prune -or -name failing-output -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
-TEST_MLI:=$(shell find $(DIRS) -name _build -not -prune -or -name failing -not -prune -or -name failing-output -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
+TEST_ML:=$(shell find $(DIRS) -name _build -not -prune -or -path code/ocamlformat/test -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
+TEST_MLI:=$(shell find $(DIRS) -name _build -not -prune -or -path code/ocamlformat/test -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
+
+XTEST_ML:=$(shell find $(XDIRS) -path code/ocaml/experimental -not -prune -or -path code/ocaml/testsuite/tests/parse-errors -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
+XTEST_MLI:=$(shell find $(XDIRS) -path code/ocaml/experimental -not -prune -or -path code/ocaml/testsuite/tests/parse-errors -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
+
 TEST_RE:=$(shell find $(DIRS) -name '*'.re 2>/dev/null)
 TEST_REI:=$(shell find $(DIRS) -name '*'.rei 2>/dev/null)
 
@@ -62,6 +111,10 @@ CONV_MLI:=$(patsubst %.rei,%.mli,$(TEST_REI))
 
 TEST_PP_ML:=$(patsubst %.ml,%.pp.ml,$(TEST_ML))
 TEST_PP_MLI:=$(patsubst %.mli,%.pp.mli,$(TEST_MLI))
+
+XTEST_PP_ML:=$(patsubst %.ml,%.pp.ml,$(XTEST_ML))
+XTEST_PP_MLI:=$(patsubst %.mli,%.pp.mli,$(XTEST_MLI))
+
 TEST_PP_RE:=$(patsubst %.re,%.pp.ml,$(TEST_RE))
 TEST_PP_REI:=$(patsubst %.rei,%.pp.mli,$(TEST_REI))
 
@@ -70,7 +123,11 @@ test_format: $(TEST_PP_ML) $(TEST_PP_MLI) $(TEST_PP_RE) $(TEST_PP_REI)
 
 .PHONY: test_inplace
 test_inplace:
-	parallel $(OCAMLFORMAT_EXE) --no-version-check -i ::: $(TEST_ML) $(TEST_MLI)
+	@parallel --bar $(OCAMLFORMAT_EXE) --no-version-check -i ::: $(TEST_ML) $(TEST_MLI)
+
+.PHONY: test_inplace
+test_extra:
+	@parallel --bar $(OCAMLFORMAT_EXE) --no-version-check --quiet -i ::: $(XTEST_ML) $(XTEST_MLI)
 
 .PHONY: test_convert
 test_convert: $(CONV_ML) $(CONV_MLI)
@@ -86,7 +143,7 @@ test_margins:
 
 .PHONY: clean_pp
 clean_pp:
-	@find $(DIRS) \
+	@find $(ALL_DIRS) \
 	 \(  -name '*'.pp'*'.ml \
 	 -or -name '*'.pp'*'.mli \
 	 -or -name '*'.ast \
