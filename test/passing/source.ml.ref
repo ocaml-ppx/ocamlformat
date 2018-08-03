@@ -5837,14 +5837,6 @@ module F (X : sig end) = struct
   type t = int
 end
 
-module F =
-functor
-  (_ :sig  end)
-  ->
-  struct
-    type t = int
-  end
-
 type t = F(Does_not_exist).t
 
 type expr = [`Abs of string * expr | `App of expr * expr]
@@ -9141,8 +9133,13 @@ let ( ~$ ) x y = (x, y)
 let g x y = ~$(x.contents) y.contents
 
 (* PR#7506: attributes on list tail *)
-(* OCAMLFORMAT TODO: uncomment let tail1 = ([1; 2])[@hello] let tail2 =
-   0::(([1; 2])[@hello]) let tail3 = 0::(([])[@hello]) *)
+
+let tail1 = ([1; 2] [@hello])
+
+let tail2 = 0 :: ([1; 2] [@hello])
+
+let tail3 = 0 :: ([] [@hello])
+
 let f ~l:(l[@foo]) = l
 
 let test x y = ( (+) [@foo] ) x y

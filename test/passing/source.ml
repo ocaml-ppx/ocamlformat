@@ -4822,7 +4822,6 @@ module Z = functor (_: sig end) (_:sig end) (_: sig end) -> struct end;;
 module GZ : functor (X: sig end) () (Z: sig end) -> sig end
           = functor (X: sig end) () (Z: sig end) -> struct end;;
 module F (X : sig end) = struct type t = int end;;
-module F (_ : sig end) = struct type t = int end;;
 type t = F(Does_not_exist).t;;
 type expr =
   [ `Abs of string * expr
@@ -7293,11 +7292,11 @@ let g x y =
 
 
 (* PR#7506: attributes on list tail *)
-(* OCAMLFORMAT TODO: uncomment
+
 let tail1 = ([1; 2])[@hello]
 let tail2 = 0::(([1; 2])[@hello])
 let tail3 = 0::(([])[@hello])
- *)
+
 let f ~l:(l[@foo]) = l;;
 let test x y = ((+)[@foo]) x y;;
 let test x = ((~-)[@foo]) x;;
