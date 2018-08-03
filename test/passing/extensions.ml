@@ -36,7 +36,9 @@ let invariant t =
 
 
 [%ext let rec f = () and g () = () in e]
-(let%ext rec f = () and g () = () in e)
+(let%ext rec f = () and g () = () in e);;
+
+let _ = ([%ext? (x:x)] : [%ext? (x:x)]);;
 
 
 [%%ext

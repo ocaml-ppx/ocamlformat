@@ -1369,6 +1369,7 @@ end = struct
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
               pvb_pat == pat
           | _ -> false )
+    | Pld _, Ppat_constraint _ -> true
     | _ -> false
 
   (** Check if an exp is a prefix op that is not fully applied *)
