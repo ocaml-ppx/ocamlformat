@@ -63,3 +63,7 @@ let f = function
       ()
 
 let _: t -> t -> int = (compare : int list -> int list -> int)
+
+let _ =
+  let[@test] rec f = x in
+  y
