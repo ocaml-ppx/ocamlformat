@@ -3420,11 +3420,6 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
 and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = binding in
   let doc, atrs = doc_atrs pvb_attributes in
-  let keyword_and_extension_suffic =
-    fmt_or first "let" "and"
-    $ fmt_extension_suffix c ext
-    $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
-  in
   let xpat, xargs, fmt_cstr, xbody =
     let ({ast= pat} as xpat) =
       match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
@@ -3512,8 +3507,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   $ hvbox indent
       ( open_hovbox 2
       $ ( hovbox 4
-            ( keyword_and_extension_suffic
+            ( fmt_or first "let" "and"
+            $ fmt_extension_suffix c ext
             $ fmt_if_k (Option.is_some in_) (fmt_attributes c ~key:"@" atrs)
+            $ fmt_if (first && Poly.(rec_flag = Recursive)) "@ rec"
             $ fmt " " $ fmt_pattern c xpat
             $ fmt_fun_args c ~pro:(fmt "@ ") xargs
             $ Option.call ~f:fmt_cstr )
