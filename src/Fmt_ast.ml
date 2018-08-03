@@ -258,7 +258,8 @@ let sugar_sequence c width xexp =
     | Pexp_sequence (e1, e2) ->
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;
-        if not allow_attribute && not (List.is_empty exp.pexp_attributes)
+        if
+          (not allow_attribute) && (not (List.is_empty exp.pexp_attributes))
         then [xexp]
         else if Ast.exposed_right_exp Ast.Let_match e1 then
           [sub_exp ~ctx e1; sub_exp ~ctx e2]
@@ -269,8 +270,8 @@ let sugar_sequence c width xexp =
     | _ -> [xexp]
   in
   List.group (sugar_sequence_ xexp) ~break:(fun xexp1 xexp2 ->
-      not (is_simple c.conf width xexp1)
-      || not (is_simple c.conf width xexp2) )
+      (not (is_simple c.conf width xexp1))
+      || (not (is_simple c.conf width xexp2)) )
 
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
@@ -279,7 +280,8 @@ let rec sugar_functor_type c ~for_functor_kw ({ast= mty} as xmty) =
   match mty with
   | {pmty_desc= Pmty_functor (arg, arg_mty, body); pmty_loc; pmty_attributes}
     when for_functor_kw
-         || (List.is_empty pmty_attributes && not (String.equal arg.txt "_")) ->
+         || List.is_empty pmty_attributes
+            && (not (String.equal arg.txt "_")) ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
@@ -301,7 +303,8 @@ let rec sugar_functor c ~for_functor_kw ({ast= me} as xme) =
   match me with
   | {pmod_desc= Pmod_functor (arg, arg_mt, body); pmod_loc; pmod_attributes}
     when for_functor_kw
-         || (List.is_empty pmod_attributes && not (String.equal arg.txt "_")) ->
+         || List.is_empty pmod_attributes
+            && (not (String.equal arg.txt "_")) ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
@@ -717,7 +720,7 @@ and fmt_row_field c ctx = function
       hvbox 0
         ( Cmts.fmt c.cmts loc @@ (fmt "`" $ str txt)
         $ fmt_if (not (const && List.is_empty typs)) " of "
-        $ fmt_if (const && not (List.is_empty typs)) " & "
+        $ fmt_if (const && (not (List.is_empty typs))) " & "
         $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
         $ fmt_attributes c ~key:"@" atrs
         $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
@@ -883,8 +886,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       hvbox 0
         ( list_fl
             (List.group xpats ~break:(fun {ast= p1} {ast= p2} ->
-                 c.conf.sparse || not (is_simple p1) || not (is_simple p2)
-             ))
+                 c.conf.sparse
+                 || (not (is_simple p1))
+                 || (not (is_simple p2)) ))
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last xpat ->
                   let pro =
@@ -1049,7 +1053,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
     let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
       let _, ({ast= arg} as xarg) = lbl_xarg in
       let parens =
-        (not last_op && exposed_right_exp Ast.Non_apply arg)
+        ((not last_op) && exposed_right_exp Ast.Non_apply arg)
         || parenze_exp xarg
       in
       fmt_label_arg
@@ -1138,8 +1142,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
   let fmt_args_grouped e0 a1N =
     list_fl
       (List.group ((Nolabel, e0) :: a1N) ~break:(fun (_, a1) (_, a2) ->
-           not (is_simple c.conf width (sub_exp ~ctx a1))
-           || not (is_simple c.conf width (sub_exp ~ctx a2)) ))
+           (not (is_simple c.conf width (sub_exp ~ctx a1)))
+           || (not (is_simple c.conf width (sub_exp ~ctx a2))) ))
       (fun ~first:first_grp ~last:last_grp args ->
         list_pn args (fun ?prev (lbl, arg) ?next ->
             let ({ast} as xarg) = sub_exp ~ctx arg in
@@ -1155,7 +1159,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
               | _ -> false
             in
             let spc =
-              consecutive_prefix_ops || not last_grp || Option.is_some next
+              consecutive_prefix_ops || (not last_grp)
+              || Option.is_some next
             in
             openbox
             $ hovbox 2
@@ -1419,7 +1424,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         $ fits_breaks_if paren_body ")" "@ )" )
   | Pexp_constant const ->
       wrap_if
-        (parens || not (List.is_empty pexp_attributes))
+        (parens || (not (List.is_empty pexp_attributes)))
         "(" ")"
         (fmt_constant c ~loc:pexp_loc ?epi const $ fmt_atrs)
   | Pexp_constraint
@@ -1521,7 +1526,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
-        if is_symbol exp && not (List.is_empty pexp_attributes) then
+        if is_symbol exp && (not (List.is_empty pexp_attributes)) then
           (wrap_if true "( " " )", true)
         else if is_symbol exp then (wrap_if parens "( " " )", false)
         else (wrap_if parens "(" ")", false)
@@ -1578,7 +1583,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                     $ fmt_if (not last) "@ " )))
   | Pexp_let (rec_flag, bindings, body) ->
       wrap_if
-        (parens || not (List.is_empty pexp_attributes))
+        (parens || (not (List.is_empty pexp_attributes)))
         "(" ")"
         (vbox 0
            ( hvbox 0
@@ -1595,7 +1600,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
   | Pexp_letexception (ext_cstr, exp) ->
       hvbox 0
         ( wrap_if
-            (parens || not (List.is_empty pexp_attributes))
+            (parens || (not (List.is_empty pexp_attributes)))
             "(" ")"
             ( hvbox 0
                 ( fmt_exception ~pre:(fmt "let exception@ ") c (fmt ": ")
@@ -1622,7 +1627,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       in
       hvbox 0
         ( wrap_if
-            (parens || not (List.is_empty pexp_attributes))
+            (parens || (not (List.is_empty pexp_attributes)))
             "(" ")"
             ( hvbox 2
                 ( fmt_module c keyword name xargs (Some xbody) true xmty
@@ -2056,8 +2061,8 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
     $ fmt "@ "
     $ list_fl
         (List.group a1N ~break:(fun (_, a1) (_, a2) ->
-             not (is_simple c.conf width (sub_exp ~ctx a1))
-             || not (is_simple c.conf width (sub_exp ~ctx a2)) ))
+             (not (is_simple c.conf width (sub_exp ~ctx a1)))
+             || (not (is_simple c.conf width (sub_exp ~ctx a2))) ))
         (fun ~first:first_grp ~last:last_grp args ->
           list_pn args (fun ?prev (lbl, arg) ?next ->
               let ({ast} as xarg) = sub_exp ~ctx arg in
@@ -2073,7 +2078,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
                 | _ -> false
               in
               let spc =
-                consecutive_prefix_ops || not last_grp
+                consecutive_prefix_ops || (not last_grp)
                 || Option.is_some next
               in
               openbox
@@ -2708,7 +2713,7 @@ and fmt_signature c ctx itms =
           | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
           | _ -> false
         in
-        not (is_simple itmI) || not (is_simple itmJ) )
+        (not (is_simple itmI)) || (not (is_simple itmJ)) )
   in
   let fmt_grp itms =
     list itms "@\n" (sub_sig ~ctx >> fmt_signature_item c)
@@ -3288,8 +3293,8 @@ and fmt_structure c ?(sep= "") ?use_file ctx itms =
           | _ -> false
         in
         has_doc itmI || has_doc itmJ
-        || not (is_simple itmI)
-        || not (is_simple itmJ) )
+        || (not (is_simple itmI))
+        || (not (is_simple itmJ)) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last itm ->
@@ -3328,7 +3333,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
       let doc, atrs = doc_atrs atrs in
       str sep $ fmt_docstring c doc
       $ cbox 0
-          ( fmt_if (at_top && not use_file) ";; "
+          ( fmt_if (at_top && (not use_file)) ";; "
           $ fmt_expression c (sub_exp ~ctx exp) )
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
