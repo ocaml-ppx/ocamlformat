@@ -11,7 +11,7 @@ type t =
   ; d: [`something_looooooooooooooooooooooooooooooooong] }
 
 let { (* cmts *)
-      pat
+        pat
     ; loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
     ; a
     ; (* b *) b

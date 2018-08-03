@@ -352,6 +352,10 @@ let rec fmt_longident (li: Longident.t) =
   | Lapply (li1, li2) ->
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
+let fmt_longident_loc c ?(pre= Caml.format_of_string "")
+    ({txt; loc}: Longident.t loc) =
+  Cmts.fmt c.cmts loc @@ (fmt pre $ fmt_longident txt)
+
 let fmt_char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
   | `Hexadecimal, _ ->
@@ -617,15 +621,13 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
           | _ -> fits_breaks "" "   " )
         $ list xt1N "@;<1 0>-> " (fun (lI, xtI) ->
               hvbox 0 (arg_label lI $ fmt_core_type c xtI) ) )
-  | Ptyp_constr ({txt; loc}, []) -> Cmts.fmt c.cmts loc @@ fmt_longident txt
-  | Ptyp_constr ({txt; loc}, [t1]) ->
-      Cmts.fmt c.cmts loc @@ fmt_core_type c (sub_typ ~ctx t1)
-      $ fmt "@ " $ fmt_longident txt
-  | Ptyp_constr ({txt; loc}, t1N) ->
-      Cmts.fmt c.cmts loc
-      @@ wrap_fits_breaks "(" ")"
-           (list t1N "@,, " (sub_typ ~ctx >> fmt_core_type c))
-      $ fmt "@ " $ fmt_longident txt
+  | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
+  | Ptyp_constr (lid, [t1]) ->
+      fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
+  | Ptyp_constr (lid, t1N) ->
+      wrap_fits_breaks "(" ")"
+        (list t1N "@,, " (sub_typ ~ctx >> fmt_core_type c))
+      $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
   | Ptyp_package pty -> hvbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
   | Ptyp_poly ([], _) ->
@@ -690,25 +692,25 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
                         $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs )
                | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
            $ fmt_if Poly.(closedness = Open) "@ ; .." ))
-  | Ptyp_class ({txt; loc}, []) ->
-      Cmts.fmt c.cmts loc @@ str "#" $ fmt_longident txt
-  | Ptyp_class ({txt; loc}, [t1]) ->
-      Cmts.fmt c.cmts loc @@ fmt_core_type c (sub_typ ~ctx t1)
-      $ fmt "@ " $ str "#" $ fmt_longident txt
-  | Ptyp_class ({txt; loc}, t1N) ->
-      Cmts.fmt c.cmts loc
-      @@ wrap_fits_breaks "(" ")"
-           (list t1N "@,, " (sub_typ ~ctx >> fmt_core_type c))
-      $ fmt "@ " $ str "#" $ fmt_longident txt )
+  | Ptyp_class (lid, []) -> fmt_longident_loc c ~pre:"#" lid
+  | Ptyp_class (lid, [t1]) ->
+      fmt_core_type c (sub_typ ~ctx t1)
+      $ fmt "@ "
+      $ fmt_longident_loc c ~pre:"#" lid
+  | Ptyp_class (lid, t1N) ->
+      wrap_fits_breaks "(" ")"
+        (list t1N "@,, " (sub_typ ~ctx >> fmt_core_type c))
+      $ fmt "@ "
+      $ fmt_longident_loc c ~pre:"#" lid )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
-and fmt_package_type c ctx ({txt}, cnstrs) =
-  fmt_longident txt
+and fmt_package_type c ctx (lid, cnstrs) =
+  fmt_longident_loc c lid
   $ fmt_if (not (List.is_empty cnstrs)) "@;<1 2>"
   $ hvbox 0
-      (list_fl cnstrs (fun ~first ~last:_ ({txt}, typ) ->
+      (list_fl cnstrs (fun ~first ~last:_ (lid, typ) ->
            fmt_or first "with type " "@;<1 1>and type "
-           $ fmt_longident txt $ fmt " = "
+           $ fmt_longident_loc c lid $ fmt " = "
            $ fmt_core_type c (sub_typ ~ctx typ) ))
 
 and fmt_row_field c ctx = function
@@ -785,16 +787,16 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_if_breaks "( " "@ )"
            (wrap_if_fits_and parens "(" ")"
               (list pats "@,, " (sub_pat ~ctx >> fmt_pattern c))))
-  | Ppat_construct ({txt; loc}, None) -> (
-    match txt with
+  | Ppat_construct (lid, None) -> (
+    match lid.txt with
     | Lident (("()" | "[]") as txt) ->
         let opn = txt.[0] and cls = txt.[1] in
-        Cmts.fmt c.cmts loc
+        Cmts.fmt c.cmts lid.loc
           (hvbox 0
              (wrap_k (char opn) (char cls)
                 (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
                    ppat_loc)))
-    | _ -> fmt_longident txt )
+    | _ -> fmt_longident_loc c lid )
   | Ppat_construct
       ( {txt= Lident "::"}
       , Some {ppat_desc= Ppat_tuple pats; ppat_attributes= []} ) -> (
@@ -810,35 +812,36 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         hvbox 0
           (wrap_if parens "(" ")"
              (list pats "@ :: " (sub_pat ~ctx >> fmt_pattern c))) )
-  | Ppat_construct ({txt}, Some pat) ->
+  | Ppat_construct (lid, Some pat) ->
       cbox 2
         (wrap_if parens "(" ")"
-           (fmt_longident txt $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)))
+           ( fmt_longident_loc c lid $ fmt "@ "
+           $ fmt_pattern c (sub_pat ~ctx pat) ))
   | Ppat_variant (lbl, None) -> fmt "`" $ str lbl
   | Ppat_variant (lbl, Some pat) ->
       cbox 2
         (wrap_if parens "(" ")"
            (fmt "`" $ str lbl $ fmt "@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_record (flds, closed_flag) ->
-      let fmt_field ({txt; loc}, pat) =
+      let fmt_field (lid1, pat) =
         let {ppat_desc; ppat_loc} = pat in
         hvbox 0
-          ( Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ppat_loc
+          ( Cmts.fmt c.cmts lid1.loc @@ Cmts.fmt c.cmts ppat_loc
           @@
           match ppat_desc with
           | Ppat_var {txt= txt'}
-            when field_alias txt (Longident.parse txt')
+            when field_alias lid1.txt (Longident.parse txt')
                  && List.is_empty pat.ppat_attributes ->
-              cbox 2 (fmt_longident txt)
+              cbox 2 (fmt_longident_loc c lid1)
           | Ppat_constraint ({ppat_desc= Ppat_var {txt= txt'; _}}, t)
-            when field_alias txt (Longident.parse txt')
+            when field_alias lid1.txt (Longident.parse txt')
                  && List.is_empty pat.ppat_attributes ->
               cbox 2
-                ( fmt_longident txt $ fmt " : "
+                ( fmt_longident_loc c lid1 $ fmt " : "
                 $ fmt_core_type c (sub_typ ~ctx:(Pat pat) t) )
           | _ ->
               cbox 2
-                ( fmt_longident txt $ fmt "=@ "
+                ( fmt_longident_loc c lid1 $ fmt "=@ "
                 $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) ) )
       in
       hvbox 0
@@ -911,7 +914,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
              | Exp {pexp_desc= Pexp_let _} -> fmt "@ : "
              | _ -> fmt ":@ " )
            $ fmt_core_type c (sub_typ ~ctx typ) ))
-  | Ppat_type {txt} -> fmt "#" $ fmt_longident txt
+  | Ppat_type lid -> fmt_longident_loc c ~pre:"#" lid
   | Ppat_lazy pat ->
       cbox 2
         (wrap_if parens "(" ")"
@@ -923,9 +926,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_if parens "(" ")"
            (fmt "exception@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
-  | Ppat_open ({txt}, pat) ->
+  | Ppat_open (lid, pat) ->
       cbox 0
-        ( fmt_longident txt $ fmt ".("
+        ( fmt_longident_loc c lid $ fmt ".("
         $ fmt_pattern c (sub_pat ~ctx pat)
         $ fmt ")" )
 
@@ -1440,11 +1443,11 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         $ fmt "@ : "
         $ fmt_core_type c (sub_typ ~ctx t) )
       $ fmt_atrs
-  | Pexp_construct ({txt; loc}, None) -> (
-    match txt with
+  | Pexp_construct (lid, None) -> (
+    match lid.txt with
     | Lident (("()" | "[]") as txt) ->
         let opn = txt.[0] and cls = txt.[1] in
-        Cmts.fmt c.cmts loc
+        Cmts.fmt c.cmts lid.loc
         @@ hvbox 0
              (wrap_if
                 (not (List.is_empty pexp_attributes))
@@ -1453,7 +1456,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                     (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
                        pexp_loc)
                 $ fmt_atrs ))
-    | _ -> Cmts.fmt c.cmts loc @@ fmt_longident txt $ fmt_atrs )
+    | _ -> fmt_longident_loc c lid $ fmt_atrs )
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
@@ -1481,24 +1484,23 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                in
                let fmt_op = match i with 0 -> fmt "" | _ -> fmt "::" in
                (fmt_cmts, (fmt_op, [(Nolabel, arg)])) )) )
-  | Pexp_construct ({txt; loc}, Some arg) ->
-      Cmts.fmt c.cmts loc
-      @@ wrap_if parens "(" ")"
-           ( hvbox 2
-               ( fmt_longident txt $ fmt "@ "
-               $ fmt_expression c (sub_exp ~ctx arg) )
-           $ fmt_atrs )
+  | Pexp_construct (lid, Some arg) ->
+      wrap_if parens "(" ")"
+        ( hvbox 2
+            ( fmt_longident_loc c lid $ fmt "@ "
+            $ fmt_expression c (sub_exp ~ctx arg) )
+        $ fmt_atrs )
   | Pexp_variant (s, arg) ->
       hvbox 2
         ( wrap_if parens "(" ")"
             ( fmt "`" $ str s
             $ opt arg (fmt "@ " >$ (sub_exp ~ctx >> fmt_expression c)) )
         $ fmt_atrs )
-  | Pexp_field (exp, {txt}) ->
+  | Pexp_field (exp, lid) ->
       hvbox 2
         ( wrap_if parens "(" ")"
             ( fmt_expression c (sub_exp ~ctx exp)
-            $ fmt "@,." $ fmt_longident txt )
+            $ fmt "@,." $ fmt_longident_loc c lid )
         $ fmt_atrs )
   | Pexp_newtype _ | Pexp_fun _ ->
       let xargs, xbody = sugar_fun c None xexp in
@@ -1723,22 +1725,20 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
           $ Option.call ~f:epi )
       $ fmt_atrs
   | Pexp_record (flds, default) ->
-      let fmt_field ({txt; loc}, f) =
-        Cmts.fmt c.cmts loc
-        @@
+      let fmt_field (lid1, f) =
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc}
-          when field_alias txt txt' && List.is_empty f.pexp_attributes ->
-            Cmts.fmt c.cmts loc @@ cbox 2 (fmt_longident txt)
+          when field_alias lid1.txt txt' && List.is_empty f.pexp_attributes ->
+            Cmts.fmt c.cmts loc @@ cbox 2 (fmt_longident_loc c lid1)
         | Pexp_constraint
             (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
-          when field_alias txt txt' && List.is_empty f.pexp_attributes ->
+          when field_alias lid1.txt txt' && List.is_empty f.pexp_attributes ->
             Cmts.fmt c.cmts loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
             $ fmt " : "
             $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
             cbox 2
-              ( fmt_longident txt $ fmt "=@ "
+              ( fmt_longident_loc c lid1 $ fmt "=@ "
               $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) )
       in
       hvbox 0
@@ -1771,11 +1771,11 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                (list (sugar_sequence c width xexp) " ;@;<1000 0>"
                   (fun grp -> list grp " ;@ " (fmt_expression c) ))
            $ fmt_atrs ))
-  | Pexp_setfield (e1, {txt}, e2) ->
+  | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
         ( wrap_fits_breaks_if parens "(" ")"
             ( fmt_expression c (sub_exp ~ctx e1)
-            $ fmt "." $ fmt_longident txt $ fmt "@ <- "
+            $ fmt "." $ fmt_longident_loc c lid $ fmt "@ <- "
             $ fmt_expression c (sub_exp ~ctx e2) )
         $ fmt_atrs )
   | Pexp_tuple es ->
@@ -2015,11 +2015,11 @@ and fmt_class_type c ?(box= true) ({ast= typ} as xtyp) =
                | `core_type ct -> fmt_core_type c ct
                | `class_type ct -> fmt_class_type c ct ) ))
   | Pcty_extension ext -> fmt_extension c ctx "%" ext
-  | Pcty_open (flag, {txt}, cl) ->
+  | Pcty_open (flag, lid, cl) ->
       hvbox 0
         ( str "let open"
         $ fmt_if Poly.(flag = Override) "!"
-        $ str " " $ fmt_longident txt $ fmt " in@;<1000 0>"
+        $ str " " $ fmt_longident_loc c lid $ fmt " in@;<1000 0>"
         $ fmt_class_type c (sub_cty ~ctx cl) ) )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
@@ -2137,11 +2137,11 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
         $ fmt_class_type c (sub_cty ~ctx t) )
       $ fmt_atrs
   | Pcl_extension ext -> fmt_extension c ctx "%" ext $ fmt_atrs
-  | Pcl_open (flag, {txt}, cl) ->
+  | Pcl_open (flag, lid, cl) ->
       hvbox 0
         ( str "let open"
         $ fmt_if Poly.(flag = Override) "!"
-        $ str " " $ fmt_longident txt $ fmt " in@;<1000 0>"
+        $ str " " $ fmt_longident_loc c lid $ fmt " in@;<1000 0>"
         $ fmt_class_expr c (sub_cl ~ctx cl)
         $ fmt_atrs ) )
   $ fmt_atrs
@@ -2509,7 +2509,7 @@ and fmt_constructor_arguments_result c ctx args res =
 
 and fmt_type_extension c ctx te =
   let { ptyext_params
-      ; ptyext_path= {txt}
+      ; ptyext_path= lid
       ; ptyext_private
       ; ptyext_constructors
       ; ptyext_attributes } =
@@ -2521,7 +2521,7 @@ and fmt_type_extension c ctx te =
     $ hvbox 2
         ( fmt "type "
         $ fmt_tydcl_params c ctx ptyext_params
-        $ fmt_longident txt $ fmt " +="
+        $ fmt_longident_loc c lid $ fmt " +="
         $ fmt_private_flag ptyext_private
         $ fmt "@ "
         $ hvbox 0
@@ -2573,7 +2573,7 @@ and fmt_extension_constructor c sep ctx ec =
             sep $ fmt_core_type c (sub_typ ~ctx res)
         | Pext_decl (args, res) ->
             fmt_constructor_arguments_result c ctx args res
-        | Pext_rebind {txt} -> fmt " = " $ fmt_longident txt )
+        | Pext_rebind lid -> fmt " = " $ fmt_longident_loc c lid )
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@" atrs
         ~suf:
           ( match pext_kind with
@@ -2591,9 +2591,9 @@ and fmt_module_type c ({ast= mty} as xmty) =
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
   let parens = parenze_mty xmty in
   match pmty_desc with
-  | Pmty_ident {txt} ->
+  | Pmty_ident lid ->
       { empty with
-        bdy= fmt_longident txt
+        bdy= fmt_longident_loc c lid
       ; epi=
           Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
@@ -2693,9 +2693,9 @@ and fmt_module_type c ({ast= mty} as xmty) =
       ; epi=
           Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
-  | Pmty_alias {txt} ->
+  | Pmty_alias lid ->
       { empty with
-        bdy= fmt_longident txt
+        bdy= fmt_longident_loc c lid
       ; epi=
           Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
@@ -2942,20 +2942,23 @@ and fmt_open_description c {popen_lid; popen_override; popen_attributes} =
   $ fmt "open"
   $ fmt_if Poly.(popen_override = Override) "!"
   $ fmt " "
-  $ fmt_longident popen_lid.txt
+  $ fmt_longident_loc c popen_lid
   $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
 
 and fmt_with_constraint c ctx = function
-  | Pwith_type ({txt}, td) ->
-      fmt " type "
+  | Pwith_type ({txt; loc}, td) ->
+      Cmts.fmt c.cmts loc @@ fmt " type "
       $ fmt_type_declaration c ctx ~fmt_name:(fmt_longident txt) td
-  | Pwith_module ({txt= m1}, {txt= m2}) ->
-      fmt " module " $ fmt_longident m1 $ fmt " = " $ fmt_longident m2
-  | Pwith_typesubst ({txt}, td) ->
+  | Pwith_module (m1, m2) ->
+      fmt " module " $ fmt_longident_loc c m1 $ fmt " = "
+      $ fmt_longident_loc c m2
+  | Pwith_typesubst (lid, td) ->
       fmt " type "
-      $ fmt_type_declaration c ~eq:":=" ctx ~fmt_name:(fmt_longident txt) td
-  | Pwith_modsubst ({txt= m1}, {txt= m2}) ->
-      fmt " module " $ fmt_longident m1 $ fmt " := " $ fmt_longident m2
+      $ fmt_type_declaration c ~eq:":=" ctx
+          ~fmt_name:(fmt_longident_loc c lid) td
+  | Pwith_modsubst (m1, m2) ->
+      fmt " module " $ fmt_longident_loc c m1 $ fmt " := "
+      $ fmt_longident_loc c m2
 
 and maybe_generative c ~ctx m =
   match m with
@@ -3137,7 +3140,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; cls= cls_e
       ; esp= fmt ""
       ; epi= None }
-  | Pmod_ident {txt} ->
+  | Pmod_ident lid ->
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         opn= open_hvbox 2
@@ -3146,7 +3149,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             (Cmts.has_before c.cmts pmod_loc || Option.is_some doc)
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
-      ; bdy= fmt_longident txt
+      ; bdy= fmt_longident_loc c lid
       ; cls= close_box
       ; epi=
           Some

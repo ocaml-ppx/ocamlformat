@@ -40,3 +40,10 @@ let _ = if (* a2 *) B (* c2 *)
 let _ = if ((* a3 *) B (* c3 *))
         then ((* d3 *) E (* f3 *))
         else ((* g3 *) H (* i3 *))
+
+
+;; match x with
+   | true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   (* this comment should not change the formatting of the following case *)
+   | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
