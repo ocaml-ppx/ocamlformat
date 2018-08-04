@@ -29,6 +29,7 @@ type t = private
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
   ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; type_decl: [`Sparse | `Auto]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; quiet: bool
   ; no_comment_check: bool }
