@@ -1980,6 +1980,11 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
                      $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_)) )
                )
            $ cmts_after_self
+           $ ( match fields with
+             | {pcf_desc= Pcf_attribute a} :: _
+               when Option.is_some (fst (doc_atrs [a])) ->
+                 fmt "\n"
+             | _ -> fmt "" )
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
                (list fields "\n@\n" (fun cf -> fmt_class_field c ctx cf)) )
@@ -2014,6 +2019,11 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                      $ wrap "(" ")" (fmt_core_type c (sub_typ ~ctx self_))
                  ) )
            $ cmts_after_self
+           $ ( match fields with
+             | {pctf_desc= Pctf_attribute a} :: _
+               when Option.is_some (fst (doc_atrs [a])) ->
+                 fmt "\n"
+             | _ -> fmt "" )
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
                (list fields "\n@\n" (fun cf -> fmt_class_type_field c ctx cf))
@@ -2644,7 +2654,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
       }
   | Pmty_signature s ->
       let empty =
-        List.is_empty s && not (Cmts.has_within c.cmts pmty_loc)
+        List.is_empty s && (not (Cmts.has_within c.cmts pmty_loc))
       in
       let doc, atrs = doc_atrs pmty_attributes in
       let before = Cmts.fmt_before c.cmts pmty_loc in
@@ -3204,7 +3214,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_structure sis ->
       let empty =
-        List.is_empty sis && not (Cmts.has_within c.cmts pmod_loc)
+        List.is_empty sis && (not (Cmts.has_within c.cmts pmod_loc))
       in
       let doc, atrs = doc_atrs pmod_attributes in
       let before = Cmts.fmt_before c.cmts pmod_loc in
