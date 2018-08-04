@@ -178,3 +178,27 @@ class a = object end
 
 and b = object end
  (** about b *)
+
+class type x =
+  object
+
+    (** floatting1 *)
+
+    (** floatting2 *)
+
+    method x : int
+
+    (** floatting3 *)
+  end
+
+class x =
+  object
+
+    (** floatting1 *)
+
+    (** floatting2 *)
+
+    method x = 2
+
+    (** floatting3 *)
+  end
