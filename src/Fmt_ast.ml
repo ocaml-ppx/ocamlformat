@@ -2478,7 +2478,7 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
                     fmt_if (not first)
                       ( match c.conf.type_decl with
                       | `Sparse -> "@;<1000 0>; "
-                      | `Auto -> "@,; " )
+                      | `Compact -> "@,; " )
                     $ fmt_label_declaration c ctx x
                     $ fmt_if (last && exposed_right_typ x.pld_type) " " )))
     | Ptype_open ->
@@ -2548,7 +2548,9 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   in
   let doc, atrs = doc_atrs pcd_attributes in
   fmt_if (not first)
-    (match c.conf.type_decl with `Sparse -> "@;<1000 0>" | `Auto -> "@ ")
+    ( match c.conf.type_decl with
+    | `Sparse -> "@;<1000 0>"
+    | `Compact -> "@ " )
   $ Cmts.fmt_before c.cmts pcd_loc
   $ Cmts.fmt_before c.cmts loc
   $ fmt_or_k first (if_newline "| ") (fmt "| ")

@@ -166,15 +166,16 @@ let break_infix =
 let type_decl =
   let doc =
     "Style of type declaration. Can be set in a config file with a \
-     `break-infix {wrap,fit-or-vertical}` line. `wrap` will group simple \
-     expressions and try to format them in a single line."
+     `type-decl {compact,sparse}` line. `compact` will try to format \
+     constructors and records definition in a single line. `sparse` will \
+     always break between constructors and record fields."
   in
   let env = Arg.env_var "OCAMLFORMAT_TYPE_DECL" in
-  let default = `Auto in
+  let default = `Compact in
   mk ~default
     Arg.(
       value
-      & opt (enum [("sparse", `Sparse); ("auto", `Auto)]) default
+      & opt (enum [("compact", `Compact); ("sparse", `Sparse)]) default
       & info ["type-decl"] ~doc ~env)
 
 let if_then_else =
@@ -372,7 +373,7 @@ type t =
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
   ; break_infix: [`Wrap | `Fit_or_vertical]
-  ; type_decl: [`Sparse | `Auto]
+  ; type_decl: [`Compact | `Sparse]
   ; ocp_indent_compat: bool
   ; quiet: bool
   ; no_comment_check: bool }
@@ -426,8 +427,8 @@ let update conf name value =
       { conf with
         type_decl=
           ( match value with
+          | "compact" -> `Compact
           | "sparse" -> `Sparse
-          | "auto" -> `Auto
           | other ->
               user_error
                 (Printf.sprintf "Unknown type-decl value: %S" other)
