@@ -14,18 +14,22 @@
 open Migrate_ast
 open Parsetree
 
-let reset, register_reset =
+let init, register_reset, nested_match =
   let l = ref [] in
+  let nested_match = ref `Parent in
   let register f = l := f :: !l in
-  let reset () = List.iter !l ~f:(fun f -> f ()) in
-  (reset, register)
+  let init conf =
+    nested_match := conf.Conf.nested_match ;
+    List.iter !l ~f:(fun f -> f ())
+  in
+  (init, register, nested_match)
 
 (** Predicates recognizing special symbol identifiers. *)
 
 let is_prefix_id i =
   match i with
   | "!=" -> false
-  | _ -> match i.[0] with '!' | '?' | '~' -> true | _ -> false
+  | _ -> ( match i.[0] with '!' | '?' | '~' -> true | _ -> false )
 
 let is_prefix exp =
   match exp.pexp_desc with
@@ -67,10 +71,10 @@ let index_op_get i =
 let index_op_set i =
   match String.chop_suffix i ~suffix:"<-" with
   | None -> None
-  | Some i ->
+  | Some i -> (
     match (i.[0], parens_kind i) with
     | '.', Some (s, o, c) -> Some (s, o, c)
-    | _ -> None
+    | _ -> None )
 
 let index_op_string = (".", '[', ']')
 
@@ -1094,10 +1098,10 @@ end = struct
               = String.length i - 1
             then Some (UMinus, Non)
             else Some (High, Non)
-        | _ ->
+        | _ -> (
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
-          | _ -> Some (Apply, Non) )
+          | _ -> Some (Apply, Non) ) )
       | Pexp_apply
           ( { pexp_desc=
                 Pexp_ident
@@ -1178,8 +1182,9 @@ end = struct
             then Some UMinus
             else Some High
         | "!=" -> Some Apply
-        | _ ->
+        | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
+        )
       | Pexp_apply
           ( { pexp_desc=
                 Pexp_ident
@@ -1269,19 +1274,19 @@ end = struct
                        | _ -> false )
                | _ -> false ) ->
         true
-    | _ ->
+    | _ -> (
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
       | Some (Some true) -> true
-      | _ -> false
+      | _ -> false )
 
   (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_cty ({ctx; ast= cty} as xcty) =
     assert (check_cty xcty ; true) ;
-    match xcty with _ ->
+    match xcty with _ -> (
       match ambig_prec (sub_ast ~ctx (Cty cty)) with
       | Some (Some true) -> true
-      | _ -> false
+      | _ -> false )
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
@@ -1440,6 +1445,11 @@ end = struct
     | {pcl_desc= Pcl_fun _}, Non_apply -> true
     | _ -> false
 
+  let marked_parenzed_inner_nested_match =
+    let memo = Hashtbl.Poly.create () in
+    register_reset (fun () -> Hashtbl.clear memo) ;
+    memo
+
   (** [exposed cls exp] holds if there is a right-most subexpression of
       [exp] which satisfies [mem_cls_exp cls] and is not parenthesized. *)
   let rec exposed_right_exp =
@@ -1511,6 +1521,59 @@ end = struct
       mem_cls_cl cls cl
       || Hashtbl.Poly.find_or_add memo (cls, cl) ~default:exposed_
 
+  and mark_parenzed_inner_nested_match exp =
+    let exposed_ () =
+      let continue subexp =
+        if not (parenze_exp (sub_exp ~ctx:(Exp exp) subexp)) then
+          mark_parenzed_inner_nested_match subexp ;
+        false
+      in
+      match exp.pexp_desc with
+      | Pexp_assert e
+       |Pexp_construct
+          ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; e]})
+       |Pexp_construct (_, Some e)
+       |Pexp_ifthenelse (_, e, None)
+       |Pexp_ifthenelse (_, _, Some e)
+       |Pexp_lazy e
+       |Pexp_newtype (_, e)
+       |Pexp_open (_, _, e)
+       |Pexp_fun (_, _, _, e)
+       |Pexp_sequence (_, e)
+       |Pexp_setfield (_, _, e)
+       |Pexp_setinstvar (_, e)
+       |Pexp_variant (_, Some e) ->
+          continue e
+      | Pexp_let (_, _, e)
+       |Pexp_letexception (_, e)
+       |Pexp_letmodule (_, _, e) ->
+          continue e
+      | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) -> (
+        match e.pexp_desc with
+        | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
+            List.iter cases ~f:(fun case ->
+                mark_parenzed_inner_nested_match case.pc_rhs ) ;
+            true
+        | _ -> continue e )
+      | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
+          List.iter cases ~f:(fun case ->
+              mark_parenzed_inner_nested_match case.pc_rhs ) ;
+          true
+      | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
+      | Pexp_tuple es -> continue (List.last_exn es)
+      | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
+       |Pexp_construct (_, None)
+       |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
+       |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
+       |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
+       |Pexp_variant (_, None)
+       |Pexp_while _ ->
+          false
+    in
+    Hashtbl.Poly.find_or_add marked_parenzed_inner_nested_match exp
+      ~default:exposed_
+    |> (ignore : bool -> _)
+
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
   and parenze_exp ({ctx; ast= exp} as xexp) =
@@ -1518,6 +1581,8 @@ end = struct
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
     || has_trailing_attributes_exp exp
+    || Hashtbl.find marked_parenzed_inner_nested_match exp
+       |> Option.value ~default:false
     ||
     match (ctx, exp) with
     | ( Exp {pexp_desc= Pexp_construct ({txt= Lident id}, _)}
@@ -1535,7 +1600,24 @@ end = struct
         true
     | Exp {pexp_desc}, _ -> (
       match pexp_desc with
-      | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
+      | Pexp_extension
+          ( _
+          , PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            ( Pexp_function cases
+                            | Pexp_match (_, cases)
+                            | Pexp_try (_, cases) ) }
+                      , _ ) } ] )
+       |Pexp_function cases
+       |Pexp_match (_, cases)
+       |Pexp_try (_, cases) ->
+          ( match !nested_match with
+          | `Child ->
+              List.iter cases ~f:(fun {pc_rhs; _} ->
+                  mark_parenzed_inner_nested_match pc_rhs )
+          | _ -> () ) ;
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
           && exposed_right_exp Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
@@ -1589,7 +1671,7 @@ end = struct
       | Pexp_sequence (lhs, _) when lhs == exp ->
           exposed_right_exp Let_match exp
       | Pexp_sequence (_, rhs) when rhs == exp -> false
-      | _ ->
+      | _ -> (
           let is_right_infix_arg ctx_desc exp =
             match ctx_desc with
             | Pexp_apply
@@ -1604,17 +1686,17 @@ end = struct
           | Some (Some true) -> true (* exp is apply and ambig *)
           | _ ->
               if is_right_infix_arg pexp_desc exp then is_sequence exp
-              else exposed_right_exp Non_apply exp )
+              else exposed_right_exp Non_apply exp ) )
     | _ -> false
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
       parenthesized in context [ctx]. *)
   and parenze_cl ({ctx; ast= cl} as xcl) =
     assert (check_cl xcl ; true) ;
-    match xcl with _ ->
+    match xcl with _ -> (
       match ambig_prec (sub_ast ~ctx (Cl cl)) with
       | Some (Some true) -> true
-      | _ -> exposed_right_cl Non_apply cl
+      | _ -> exposed_right_cl Non_apply cl )
 
   let rec exposed_left_typ typ =
     match typ.ptyp_desc with

@@ -208,10 +208,10 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name ~input_file ic
             Out_channel.write_all ofile ~data:source_txt
         | Inplace _, _ -> () ) ;
         Ok
-    | {ast; comments} ->
+    | {ast; comments} -> (
       try
         print_check ~i:1 ~ast ~comments ~source_txt ~source_file:input_file
-      with exc -> Ocamlformat_bug exc
+      with exc -> Ocamlformat_bug exc )
   in
   let fmt = Caml.Format.err_formatter in
   let exe = Filename.basename Sys.argv.(0) in
@@ -236,7 +236,7 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name ~input_file ic
       | Warning50 l ->
           List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
       | exn -> Format.eprintf "%s\n%!" (Exn.to_string exn) )
-  | Ocamlformat_bug exn ->
+  | Ocamlformat_bug exn -> (
       Format.eprintf
         "%s: Cannot process %S.\n  \
          Please report this bug at \
@@ -258,5 +258,6 @@ let parse_print (XUnit xunit) (conf: Conf.t) ~input_name ~input_file ic
                 Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )
       | exn ->
           Format.eprintf "  BUG: unhandled exception.\n%!" ;
-          if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) ) ;
+          if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) )
+  ) ;
   result

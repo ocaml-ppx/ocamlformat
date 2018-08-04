@@ -377,13 +377,13 @@ let rec place t loc_tree ?prev_loc locs cmts =
             within
       | children -> place t loc_tree children within ) ;
       place t loc_tree ~prev_loc:curr_loc next_locs after
-  | [] ->
+  | [] -> (
     match prev_loc with
     | Some prev_loc -> add_cmts t ~prev:prev_loc t.cmts_after prev_loc cmts
     | None ->
         if Conf.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
-              Format.eprintf "lost: %s@\n%!" txt )
+              Format.eprintf "lost: %s@\n%!" txt ) )
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts map_ast ast comments =

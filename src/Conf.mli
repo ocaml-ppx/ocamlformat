@@ -30,6 +30,7 @@ type t =
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
             [max_iters] iterations. *)
+  ; nested_match: [`Parent | `Child]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool

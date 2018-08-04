@@ -198,16 +198,18 @@ let sugar_infix c prec xexp =
             | Some {ast} ->
                 Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
             | None -> Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )
-          | None ->
+          | None -> (
             match xop with
             | Some {ast} ->
                 Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
             | None -> Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )
-        | _ ->
+          )
+        | _ -> (
           match xop with
           | Some {ast} ->
               Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
-          | None -> Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after ) ;
+          | None -> Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )
+        ) ;
         (xop, [(l1, sub_exp ~ctx e1)]) :: op_args2
     | _ -> [(xop, [xexp])]
   in
@@ -456,7 +458,7 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_char x -> wrap "'" "'" @@ fmt_char_escaped ~loc c x
   | Pconst_string (s, Some delim) ->
       str ("{" ^ delim ^ "|") $ str s $ str ("|" ^ delim ^ "}")
-  | Pconst_string (s, None) ->
+  | Pconst_string (s, None) -> (
       let fmt_line s =
         match c.conf.break_string_literals with
         | `Wrap ->
@@ -508,7 +510,7 @@ let fmt_constant c ~loc ?epi const =
       in
       match c.conf.break_string_literals with
       | `Newlines | `Wrap -> fmt_lines (String.split ~on:'\n' s)
-      | `Never -> str "\"" $ fmt_line s $ str "\""
+      | `Never -> str "\"" $ fmt_line s $ str "\"" )
 
 let fmt_variance = function
   | Covariant -> fmt "+"
@@ -700,10 +702,10 @@ and fmt_core_type c ?(box= true) ?(in_type_declaration= false) ?pro
         match List.last rfs with
         | None -> false
         | Some (Rinherit _) -> false
-        | Some (Rtag (_, _, _, l)) ->
+        | Some (Rtag (_, _, _, l)) -> (
           match List.last l with
           | None -> false
-          | Some x -> exposed_right_typ x
+          | Some x -> exposed_right_typ x )
       in
       hvbox 0
         ( fits_breaks "[" "["
@@ -1061,12 +1063,15 @@ and fmt_fun_args c ?(pro= fmt "") args =
 
 and fmt_body c ({ast= body} as xbody) =
   let ctx = Exp body in
+  let parens = parenze_exp xbody in
   match body with
   | {pexp_desc= Pexp_function cs; pexp_attributes} ->
       let c = update_config c pexp_attributes in
-      fmt "@ function"
-      $ fmt_attributes c ~key:"@" pexp_attributes
-      $ close_box $ fmt "@ " $ fmt_cases c ctx cs
+      fmt "@ "
+      $ wrap_if parens "(" ")"
+          ( fmt "function"
+          $ fmt_attributes c ~key:"@" pexp_attributes
+          $ close_box $ fmt "@ " $ fmt_cases c ctx cs )
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
@@ -1749,8 +1754,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
           match e0.pexp_desc with
           | Pexp_array _ | Pexp_record _ -> true
           | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
-          | _ ->
-            match sugar_list_exp c e0 with Some _ -> true | None -> false
+          | _ -> (
+            match sugar_list_exp c e0 with Some _ -> true | None -> false )
         in
         if can_skip_parens then (".", "") else (".(", ")")
       in
@@ -1790,7 +1795,13 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       | [{pc_lhs; pc_guard; pc_rhs}] ->
           (* side effects of Cmts.fmt_before before [fmt_pattern] is
              important *)
+          let xpc_rhs = sub_exp ~ctx pc_rhs in
           let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in
+          let parens_here, parens_for_exp =
+            match c.conf.nested_match with
+            | `Parent -> (parenze_exp xpc_rhs, Some false)
+            | `Child -> (false, None)
+          in
           wrap_fits_breaks_if parens "(" ")"
             (hovbox 2
                ( hvbox 0
@@ -1809,9 +1820,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                        $ opt pc_guard (fun g ->
                              fmt "@ when "
                              $ fmt_expression c (sub_exp ~ctx g) ) )
-                   $ fmt "@ ->" )
+                   $ fmt "@ ->" $ fmt_if parens_here " (" )
                $ fmt "@ "
-               $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs)) )) )
+               $ cbox 0 (fmt_expression c ?parens:parens_for_exp xpc_rhs)
+               $ fmt_if parens_here " )" )) )
   | Pexp_pack me ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
@@ -2451,7 +2463,11 @@ and fmt_cases c ctx cs =
             2
         | _ -> 4
       in
-      let paren_body = parenze_exp xrhs in
+      let parens_here, parens_for_exp =
+        match c.conf.nested_match with
+        | `Parent -> (parenze_exp xrhs, Some false)
+        | `Child -> (false, None)
+      in
       (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
       let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in
       let fmt_lhs =
@@ -2463,8 +2479,8 @@ and fmt_cases c ctx cs =
         in
         let fmt_arrow =
           fmt_or_k c.conf.sparse
-            (fmt_or_k paren_body (fmt "@;<1 2>->") (fmt " ->@;<0 3>"))
-            (fmt_or_k paren_body (fmt "@;<1 -2>-> (") (fmt " ->@;<0 -1>"))
+            (fmt_or_k parens_here (fmt "@;<1 2>->") (fmt " ->@;<0 3>"))
+            (fmt_or_k parens_here (fmt "@;<1 -2>-> (") (fmt " ->@;<0 -1>"))
         in
         hovbox 4
           ( hvbox 0
@@ -2480,15 +2496,15 @@ and fmt_cases c ctx cs =
       fmt_if (not first) "@ " $ leading_cmt
       $ cbox_if (not c.conf.sparse) indent
           ( hvbox_if (not c.conf.sparse) indent fmt_lhs
-          $ ( match (c.conf.sparse, indent > 2, paren_body) with
+          $ ( match (c.conf.sparse, indent > 2, parens_here) with
             | false, _, _ -> fmt "@ "
             | true, false, false -> fmt "@;<1 2>"
             | true, false, true -> fmt " (@;<1 2>"
             | true, true, false -> fmt " "
             | true, true, true -> fmt " (@;<1 4>" )
           $ hovbox 0
-              ( hovbox 0 (fmt_expression c ~parens:false xrhs)
-              $ fmt_if paren_body "@ )" ) ) )
+              ( hovbox 0 (fmt_expression c ?parens:parens_for_exp xrhs)
+              $ fmt_if parens_here "@ )" ) ) )
 
 and fmt_value_description c ctx vd =
   let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes} = vd in
@@ -3423,7 +3439,7 @@ and fmt_use_file c ctx itms =
 
 and fmt_toplevel_phrase c ctx = function
   | Ptop_def structure -> fmt_structure c ctx structure
-  | Ptop_dir (dir, directive_argument) ->
+  | Ptop_dir (dir, directive_argument) -> (
       fmt ";;@\n" $ str "#" $ str dir
       $
       match directive_argument with
@@ -3433,7 +3449,7 @@ and fmt_toplevel_phrase c ctx = function
           fmt " " $ str (Printf.sprintf "%s%c" lit m)
       | Pdir_int (lit, None) -> fmt " " $ str lit
       | Pdir_ident longident -> fmt " " $ fmt_longident longident
-      | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool)
+      | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool) )
 
 and fmt_structure c ctx itms =
   let _, itms =
@@ -3713,12 +3729,12 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
 
 let fmt_signature s cmts c =
   let c = {source= s; cmts; conf= c} in
-  Ast.reset () ; fmt_signature c Top
+  Ast.init c.conf ; fmt_signature c Top
 
 let fmt_structure s cmts c =
   let c = {source= s; cmts; conf= c} in
-  Ast.reset () ; fmt_structure c Top
+  Ast.init c.conf ; fmt_structure c Top
 
 let fmt_use_file s cmts c =
   let c = {source= s; cmts; conf= c} in
-  Ast.reset () ; fmt_use_file c Top
+  Ast.init c.conf ; fmt_use_file c Top
