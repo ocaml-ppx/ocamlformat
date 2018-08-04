@@ -21,6 +21,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
+  ; let_and: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
@@ -308,6 +309,18 @@ module Formatting = struct
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with infix_precedence= x} )
 
+  let let_and =
+    let doc =
+      "Style of let_and. Can be set in a config file with a `let-and = \
+       {compact,sparse}` line. `compact` will try to format `let p = e and \
+       p = e` in a single line. `sparse` will always break between them."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_LET_AND" in
+    let names = ["let-and"] in
+    let all = [("compact", `Compact); ("sparse", `Sparse)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with let_and= x} )
+
   let let_open =
     let doc =
       "Module open formatting. Can be set in a config file with a \
@@ -586,24 +599,25 @@ let read_config ~filename conf =
   read_conf_files conf ~dir:(Filename.dirname (to_absolute filename))
 
 let config =
-  { margin= C.get Formatting.margin
-  ; sparse= C.get Formatting.sparse
+  { break_infix= C.get Formatting.break_infix
+  ; break_string_literals= C.get Formatting.break_string_literals
+  ; no_comment_check= C.get no_comment_check
+  ; doc_comments= C.get Formatting.doc_comments
   ; escape_chars= C.get Formatting.escape_chars
   ; escape_strings= C.get Formatting.escape_strings
   ; extension_sugar= C.get Formatting.extension_sugar
-  ; break_string_literals= C.get Formatting.break_string_literals
-  ; wrap_comments= C.get Formatting.wrap_comments
-  ; doc_comments= C.get Formatting.doc_comments
-  ; parens_tuple= C.get Formatting.parens_tuple
   ; if_then_else= C.get Formatting.if_then_else
   ; infix_precedence= C.get Formatting.infix_precedence
+  ; let_and= C.get Formatting.let_and
   ; let_open= C.get Formatting.let_open
-  ; break_infix= C.get Formatting.break_infix
-  ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
-  ; type_decl= C.get Formatting.type_decl
+  ; margin= C.get Formatting.margin
   ; max_iters= C.get max_iters
+  ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
+  ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet
-  ; no_comment_check= C.get no_comment_check }
+  ; sparse= C.get Formatting.sparse
+  ; type_decl= C.get Formatting.type_decl
+  ; wrap_comments= C.get Formatting.wrap_comments }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
