@@ -546,7 +546,7 @@ let rec fmt_attribute c pre = function
 and fmt_extension c ctx key (({txt} as ext), pld) =
   match (pld, ctx) with
   | PStr [({pstr_desc= Pstr_value _; _} as si)], (Pld _ | Str _ | Top) ->
-      fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
+      fmt_structure_item c ~semisemi:`No ~last:true ~ext (sub_str ~ctx si)
   | _ ->
       let protect_token =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
@@ -2766,20 +2766,27 @@ and fmt_module_type c ({ast= mty} as xmty) =
       }
 
 and fmt_signature c ctx itms =
-  let grps =
-    List.group itms ~break:(fun itmI itmJ ->
-        let is_simple itm =
-          match itm.psig_desc with
-          | Psig_open _ -> true
-          | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
-          | _ -> false
-        in
-        (not (is_simple itmI)) || (not (is_simple itmJ)) )
-  in
-  let fmt_grp itms =
-    list itms "@\n" (sub_sig ~ctx >> fmt_signature_item c)
-  in
-  hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
+  hvbox 0
+    (list_pn itms (fun ?prev itm ?next:_ ->
+         let nl =
+           match prev with
+           | None -> fmt ""
+           | Some {psig_loc} ->
+               let dist =
+                 itm.psig_loc.loc_start.pos_lnum - psig_loc.loc_end.pos_lnum
+               in
+               if
+                 dist <= 1
+                 && List.is_empty
+                      (Source.tokens_at c.source
+                         { psig_loc with
+                           loc_start= psig_loc.loc_end
+                         ; loc_end= itm.psig_loc.loc_start } ~filter:
+                         (fun _ -> true ))
+               then fmt "@\n"
+               else fmt "\n@\n"
+         in
+         nl $ fmt_signature_item c (sub_sig ~ctx itm) ))
 
 and fmt_signature_item c {ast= si} =
   protect (Sig si)
@@ -3235,7 +3242,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt "struct" $ fmt_if empty " " )
       ; psp= fmt_if (not empty) "@;<1000 2>"
-      ; bdy= within $ fmt_structure c ~sep:";; " ctx sis
+      ; bdy= within $ fmt_structure c ctx sis
       ; cls= close_box
       ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
@@ -3297,10 +3304,12 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
 
 and fmt_use_file c ctx itms =
-  list itms ";;\n@\n" (fun item -> fmt_toplevel_phrase c ctx item)
+  list_fl itms (fun ~first:_ ~last item ->
+      fmt_toplevel_phrase c ctx item $ fmt ";;" $ fmt_if (not last) "\n@\n"
+  )
 
 and fmt_toplevel_phrase c ctx = function
-  | Ptop_def structure -> fmt_structure c ctx ~use_file:true structure
+  | Ptop_def structure -> fmt_structure c ~use_file:true ctx structure
   | Ptop_dir (dir, directive_argument) ->
       str "#" $ str dir
       $
@@ -3313,72 +3322,81 @@ and fmt_toplevel_phrase c ctx = function
       | Pdir_ident longident -> fmt " " $ fmt_longident longident
       | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool)
 
-and fmt_structure c ?(sep= "") ?use_file ctx itms =
-  let grps =
-    List.group itms ~break:(fun itmI itmJ ->
-        let has_doc itm =
-          match itm.pstr_desc with
-          | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
-          | Pstr_eval (_, atrs)
-           |Pstr_value (_, {pvb_attributes= atrs} :: _)
-           |Pstr_primitive {pval_attributes= atrs}
-           |Pstr_type (_, {ptype_attributes= atrs} :: _)
-           |Pstr_typext {ptyext_attributes= atrs}
-           |Pstr_exception {pext_attributes= atrs}
-           |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
-           |Pstr_modtype {pmtd_attributes= atrs}
-           |Pstr_open {popen_attributes= atrs}
-           |Pstr_extension (_, atrs)
-           |Pstr_class_type ({pci_attributes= atrs} :: _)
-           |Pstr_class ({pci_attributes= atrs} :: _) ->
-              Option.is_some (fst (doc_atrs atrs))
-          | Pstr_include
-              {pincl_mod= {pmod_attributes= atrs1}; pincl_attributes= atrs2}
-           |Pstr_module
-              {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2}} ->
-              Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
-          | Pstr_value (_, [])
-           |Pstr_type (_, [])
-           |Pstr_recmodule []
-           |Pstr_class_type []
-           |Pstr_class [] ->
-              false
-        in
-        let rec is_simple_mod me =
-          match me.pmod_desc with
-          | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-          | Pmod_functor (_, _, me) -> is_simple_mod me
-          | Pmod_ident _ -> true
-          | _ -> false
-        in
-        let is_simple itm =
-          match itm.pstr_desc with
-          | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
-              is_simple_mod me
-          | Pstr_open _ -> true
-          | _ -> false
-        in
-        has_doc itmI || has_doc itmJ
-        || (not (is_simple itmI))
-        || (not (is_simple itmJ)) )
-  in
-  let fmt_grp ~last:last_grp itms =
-    list_fl itms (fun ~first ~last itm ->
-        fmt_if (not first) "@\n"
-        $ fmt_structure_item c ~sep ~last:(last && last_grp) ?use_file
-            (sub_str ~ctx itm) )
+and fmt_structure c ?(use_file= false) ctx itms =
+  let has_doc itm =
+    match itm.pstr_desc with
+    | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pstr_eval (_, atrs)
+     |Pstr_value (_, {pvb_attributes= atrs} :: _)
+     |Pstr_primitive {pval_attributes= atrs}
+     |Pstr_type (_, {ptype_attributes= atrs} :: _)
+     |Pstr_typext {ptyext_attributes= atrs}
+     |Pstr_exception {pext_attributes= atrs}
+     |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
+     |Pstr_modtype {pmtd_attributes= atrs}
+     |Pstr_open {popen_attributes= atrs}
+     |Pstr_extension (_, atrs)
+     |Pstr_class_type ({pci_attributes= atrs} :: _)
+     |Pstr_class ({pci_attributes= atrs} :: _) ->
+        Option.is_some (fst (doc_atrs atrs))
+    | Pstr_include
+        {pincl_mod= {pmod_attributes= atrs1}; pincl_attributes= atrs2}
+     |Pstr_module {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2}} ->
+        Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
+    | Pstr_value (_, [])
+     |Pstr_type (_, [])
+     |Pstr_recmodule []
+     |Pstr_class_type []
+     |Pstr_class [] ->
+        false
   in
   hvbox 0
-    (list_fl grps (fun ~first ~last grp ->
-         fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
+    (list_pn itms (fun ?prev itm ?next ->
+         let last = Option.is_none next in
+         let nl =
+           match prev with
+           | None -> fmt ""
+           | Some {pstr_loc} ->
+               let dist =
+                 itm.pstr_loc.loc_start.pos_lnum - pstr_loc.loc_end.pos_lnum
+               in
+               if
+                 dist <= 1
+                 && List.is_empty
+                      (Source.tokens_at c.source
+                         { pstr_loc with
+                           loc_start= pstr_loc.loc_end
+                         ; loc_end= itm.pstr_loc.loc_start } ~filter:
+                         (fun _ -> true ))
+                 && (not (has_doc itm))
+               then fmt "@\n"
+               else fmt "\n@\n"
+         in
+         let semisemi =
+           if use_file then `No
+           else
+             let mode = c.conf.semi_semi in
+             match (mode, next, prev, itm) with
+             | `End, Some {pstr_desc= Pstr_eval _}, _, _ -> `Last
+             | `End, (Some _ | None), _, _ -> `No
+             | `Begin, _, _, {pstr_desc= Pstr_eval _} -> (
+               match ctx with
+               | Pld (PStr [_]) -> `No
+               | Top | Pld (PStr (_ :: _ :: _)) -> `First
+               | _ -> `First )
+             | `Begin, _, _, _ -> `No
+         in
+         nl
+         $ fmt_structure_item c ~semisemi ~last (sub_str ~ctx itm)
+         $
+         match semisemi with
+         | `Last -> fits_breaks " ;;" "@;<1000 0>;;"
+         | _ -> fmt "" ))
 
-and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
-    {ctx; ast= si} =
+and fmt_structure_item c ~semisemi ~last:last_item ?ext {ast= si} =
+  ignore (semisemi : [`No | `First | `Last]) ;
   protect (Str si)
   @@
-  let at_top =
-    match ctx with Top | Pld (PStr (_ :: _ :: _)) -> true | _ -> false
-  in
   let ctx = Str si in
   let fmt_cmts_before =
     Cmts.fmt_before c.cmts ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n")
@@ -3394,9 +3412,9 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
-      str sep $ fmt_docstring c doc
+      fmt_docstring c doc
       $ cbox 0
-          ( fmt_if (at_top && (not use_file)) ";; "
+          ( fmt_if Poly.(semisemi = `First) ";; "
           $ fmt_expression c (sub_exp ~ctx exp) )
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->

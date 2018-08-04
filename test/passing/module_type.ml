@@ -33,3 +33,23 @@ module type M =
   with module A = A
   (*test*)
   with module A = A
+
+(** test*)
+module A = A
+
+module A = A
+module A = A
+
+module A = A
+
+module type A = sig
+  (** test*)
+  module A = A
+
+  (*test*)
+
+  module A = A
+  module A = A
+
+  module A = A
+end

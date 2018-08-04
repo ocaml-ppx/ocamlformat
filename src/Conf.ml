@@ -147,6 +147,19 @@ let escape_strings =
           default
       & info ["escape-strings"] ~doc ~env)
 
+let semi_semi =
+  let doc =
+    ";; position. Can be set in a config file with an `semi-semi \
+     {begin,end}` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_SEMI_SEMI" in
+  let default = `Begin in
+  mk ~default
+    Arg.(
+      value
+      & opt (enum [("begin", `Begin); ("end", `End)]) default
+      & info ["semi-semi"] ~doc ~env)
+
 let break_infix =
   let doc =
     "Break sequence of infix operators. Can be set in a config file with a \
@@ -358,6 +371,7 @@ type t =
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
   ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; semi_semi: [`Begin | `End]
   ; ocp_indent_compat: bool
   ; quiet: bool
   ; no_comment_check: bool }
@@ -429,6 +443,16 @@ let update conf name value =
               user_error
                 (Printf.sprintf "Unknown escape-strings value: %S" other)
                 [] ) }
+  | "semi-semi" ->
+      { conf with
+        semi_semi=
+          ( match value with
+          | "begin" -> `Begin
+          | "end" -> `End
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown semi-semi value: %S" other)
+                [] ) }
   | "break-string-literals" ->
       { conf with
         break_string_literals=
@@ -495,6 +519,7 @@ let conf name =
     ; if_then_else= !if_then_else
     ; infix_precedence= !infix_precedence
     ; break_infix= !break_infix
+    ; semi_semi= !semi_semi
     ; ocp_indent_compat= !ocp_indent_compat
     ; quiet= !quiet
     ; no_comment_check= !no_comment_check }
