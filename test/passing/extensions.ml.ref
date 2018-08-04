@@ -8,27 +8,27 @@ let _ =
     let%test x = d in
     d
 
-val f : compare:[%compare : 'a] -> sexp_of:[%sexp_of : 'a] -> t
+val f : compare:[%compare: 'a] -> sexp_of:[%sexp_of: 'a] -> t
 
 let invariant t =
-  Invariant.invariant [%here] t [%sexp_of : t] (fun () ->
+  Invariant.invariant [%here] t [%sexp_of: t] (fun () ->
       assert (check_t_invariant t) )
 
-;; [%e
-     ? ( xxxxxxxxx
-       , xxxxxxxxxxxxx
-       , xxxxxxxxxxxxxxxx
-       , xxxxxxxxxxxxxx
-       , xxxxxxxxxxx
-       , xxxxxxxxxxxxxxxxxxxx )]
+;; [%e?
+     ( xxxxxxxxx
+     , xxxxxxxxxxxxx
+     , xxxxxxxxxxxxxxxx
+     , xxxxxxxxxxxxxx
+     , xxxxxxxxxxx
+     , xxxxxxxxxxxxxxxxxxxx )]
 
-;; [%e
-     ? ( xxxxxxxxx
-       , xxxxxxxxxxxxx
-       , xxxxxxxxxxxxxxxx
-       , xxxxxxxxxxxxxx
-       , xxxxxxxxxxx
-       , xxxxxxxxxxxxxxxxxxxx ) when a < b]
+;; [%e?
+     ( xxxxxxxxx
+     , xxxxxxxxxxxxx
+     , xxxxxxxxxxxxxxxx
+     , xxxxxxxxxxxxxx
+     , xxxxxxxxxxx
+     , xxxxxxxxxxxxxxxxxxxx ) when a < b]
      (let%ext f = () and g () = () in
       e)
      (let%ext f = () and g () = () in
@@ -38,7 +38,7 @@ let invariant t =
      (let%ext rec f = () and g () = () in
       e)
 
-let _: [%ext ? (x: x)] = [%ext ? (x: x)]
+let _: [%ext? (x: x)] = [%ext? (x: x)]
 
 [%%ext
 11111111111111111111]

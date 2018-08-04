@@ -33,7 +33,7 @@ let%ext _ =
 
 let [%ext let x = 3] = 2
 
-let [%ext : [%exp let x = 3]] = 2
+let [%ext: [%exp let x = 3]] = 2
 
 let f: 'a. 'a ty -> 'a = fun y -> g y
 

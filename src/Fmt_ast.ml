@@ -575,10 +575,10 @@ and fmt_payload c ctx pld =
   match pld with
   | PStr mex ->
       fmt_if (not (List.is_empty mex)) "@ " $ fmt_structure c ctx mex
-  | PSig mty -> fmt "@ : " $ fmt_signature c ctx mty
-  | PTyp typ -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ)
+  | PSig mty -> fmt ":@ " $ fmt_signature c ctx mty
+  | PTyp typ -> fmt ":@ " $ fmt_core_type c (sub_typ ~ctx typ)
   | PPat (pat, exp) ->
-      fmt "@ ? "
+      fmt "?@ "
       $ fmt_pattern c (sub_pat ~ctx pat)
       $ opt exp (fun exp ->
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )

@@ -26,9 +26,9 @@ let () =
   [%foo (new x) [@foo]] ;
   [%foo
     match[@foo] () with
-    | [%foo ?  (* Pattern expressions *)
+    | [%foo?  (* Pattern expressions *)
         ((lazy x)[@foo])] -> ()
-    | [%foo ? ((exception x)[@foo])] -> ()]
+    | [%foo? ((exception x)[@foo])] -> ()]
 
 (* Class expressions *)
 class x =
@@ -69,7 +69,7 @@ class type t =
   end[@foo]
 
 (* Type expressions *)
-type t = [%foo : ((module M)[@foo])]
+type t = [%foo: ((module M)[@foo])]
 
 (* Module expressions *)
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
@@ -124,31 +124,31 @@ open M [@@foo]]
 
 (* Signature items *)
 module type S = sig
-  [%%foo : val x : t [@@foo]]
+  [%%foo: val x : t [@@foo]]
 
-  [%%foo : external x : t = "" [@@foo]]
+  [%%foo: external x : t = "" [@@foo]]
 
-  [%%foo : type t = int [@@foo]
+  [%%foo: type t = int [@@foo]
  and t' = int [@@foo]]
 
-  [%%foo : type t += T [@@foo]]
+  [%%foo: type t += T [@@foo]]
 
-  [%%foo : exception X [@@foo]]
+  [%%foo: exception X [@@foo]]
 
-  [%%foo : module M : S [@@foo]]
+  [%%foo: module M : S [@@foo]]
 
-  [%%foo : module rec M : S [@@foo]
-           and M : S [@@foo]]
+  [%%foo: module rec M : S [@@foo]
+          and M : S [@@foo]]
 
-  [%%foo : module M = M [@@foo]]
+  [%%foo: module M = M [@@foo]]
 
-  [%%foo : module type S = S [@@foo]]
+  [%%foo: module type S = S [@@foo]]
 
-  [%%foo : include M[@@foo]]
+  [%%foo: include M[@@foo]]
 
-  [%%foo : open M [@@foo]]
+  [%%foo: open M [@@foo]]
 
-  [%%foo : class x : t [@@foo]]
+  [%%foo: class x : t [@@foo]]
 
-  [%%foo : class type x = x [@@foo]]
+  [%%foo: class type x = x [@@foo]]
 end

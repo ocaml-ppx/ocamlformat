@@ -45,28 +45,28 @@ module M = [%bar]]
 
 let ([%foo let () = ()]: [%foo type t = t]) = [%foo class c = object end]
 
-[%%foo
-: 'a list]
+[%%foo:
+'a list]
 
-let ([%foo : [`Foo]]: [%foo : t -> t]) = [%foo : < foo: t > ]
+let ([%foo: [`Foo]]: [%foo: t -> t]) = [%foo: < foo: t > ]
 
-[%%foo
-? _]
+[%%foo?
+_]
 
-[%%foo
-? Some y when y > 0]
+[%%foo?
+Some y when y > 0]
 
-let ([%foo ? Bar x | Baz x]: [%foo ? #bar]) = [%foo ? {x}]
+let ([%foo? Bar x | Baz x]: [%foo? #bar]) = [%foo? {x}]
 
-[%%foo
-: module M : [%baz]]
+[%%foo:
+module M : [%baz]]
 
-let ([%foo : include S with type t = t]:
-      [%foo
-        : val x : t
+let ([%foo: include S with type t = t]:
+      [%foo:
+        val x : t
 
-          val y : t]) =
-  [%foo : type t = t]
+        val y : t]) =
+  [%foo: type t = t]
 
 let int_with_custom_modifier =
   1234567890_1234567890_1234567890_1234567890_1234567890z
@@ -122,9 +122,9 @@ let () =
   [%foo (new x) [@foo]] ;
   [%foo
     match[@foo] () with
-    | [%foo ?  (* Pattern expressions *)
+    | [%foo?  (* Pattern expressions *)
         ((lazy x)[@foo])] -> ()
-    | [%foo ? ((exception x)[@foo])] -> ()]
+    | [%foo? ((exception x)[@foo])] -> ()]
 
 (* Class expressions *)
 class x =
@@ -171,7 +171,7 @@ class type t =
   end[@foo]
 
 (* Type expressions *)
-type t = [%foo : ((module M)[@foo])]
+type t = [%foo: ((module M)[@foo])]
 
 (* Module expressions *)
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
@@ -243,33 +243,33 @@ open M [@@foo]]
 
 (* Signature items *)
 module type S = sig
-  [%%foo : val x : t [@@foo]]
+  [%%foo: val x : t [@@foo]]
 
-  [%%foo : external x : t = "" [@@foo]]
+  [%%foo: external x : t = "" [@@foo]]
 
-  [%%foo : type t = int [@@foo]
+  [%%foo: type t = int [@@foo]
  and t' = int [@@foo]]
 
-  [%%foo : type t += T [@@foo]]
+  [%%foo: type t += T [@@foo]]
 
-  [%%foo : exception X [@@foo]]
+  [%%foo: exception X [@@foo]]
 
-  [%%foo : module M : S [@@foo]]
+  [%%foo: module M : S [@@foo]]
 
-  [%%foo : module rec M : S [@@foo]
-           and M : S [@@foo]]
+  [%%foo: module rec M : S [@@foo]
+          and M : S [@@foo]]
 
-  [%%foo : module M = M [@@foo]]
+  [%%foo: module M = M [@@foo]]
 
-  [%%foo : module type S = S [@@foo]]
+  [%%foo: module type S = S [@@foo]]
 
-  [%%foo : include M[@@foo]]
+  [%%foo: include M[@@foo]]
 
-  [%%foo : open M [@@foo]]
+  [%%foo: open M [@@foo]]
 
-  [%%foo : class x : t [@@foo]]
+  [%%foo: class x : t [@@foo]]
 
-  [%%foo : class type x = x [@@foo]]
+  [%%foo: class type x = x [@@foo]]
 end
 
 type t = ..
@@ -9035,7 +9035,7 @@ end
 
 type t = < foo: int [@foo] >
 
-let _ = [%foo : < foo: t > ]
+let _ = [%foo: < foo: t > ]
 
 type foo += private A of int
 
