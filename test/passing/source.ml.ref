@@ -2275,8 +2275,8 @@ let rec rule : type a b.
  fun v1 v2 ->
   match (v1, v2) with
   | Lam (x, body), v -> (
-    match subst body (Bind (x, v, Id)) with Ex term ->
-      (match mode term with Pexp -> Inl term | Pval -> Inr term) )
+    match subst body (Bind (x, v, Id)) with Ex term -> (
+      match mode term with Pexp -> Inl term | Pval -> Inr term ) )
   | Const (IntTo b, f), Const (IntR, x) -> Inr (Const (b, f x))
 
 let rec onestep : type m t. (m, closed, t) lam -> t rlam = function

@@ -86,7 +86,7 @@ match Conf.action with
       ; file= input_file
       ; name= input_name
       ; conf }
-    , output_file ) ->
+    , output_file ) -> (
   match
     In_channel.with_file input_file ~f:(fun ic ->
         Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
@@ -94,4 +94,4 @@ match Conf.action with
   with
   | Ok -> Caml.exit 0
   | Ocamlformat_bug _ -> Caml.exit 1
-  | Invalid_source _ -> Caml.exit 1
+  | Invalid_source _ -> Caml.exit 1 )

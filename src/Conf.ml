@@ -25,6 +25,7 @@ type t =
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
+  ; nested_match: [`Parent | `Child]
   ; ocp_indent_compat: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
@@ -349,6 +350,17 @@ module Formatting = struct
     C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~env
       ~allow_inline:false ~update:(fun conf x -> {conf with margin= x} )
 
+  let nested_match =
+    let doc =
+      "Nested match formatting. Can be set in a config file with an \
+       `nested-match = {parent,child}` line. Cannot be set in attributes."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_NESTED_MATCH" in
+    let names = ["nested-match"] in
+    let all = [("parent", `Parent); ("child", `Child)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:false ~update:
+      (fun conf x -> {conf with nested_match= x} )
+
   let ocp_indent_compat =
     let doc =
       "Attempt to generate output which does not change (much) when \
@@ -612,6 +624,7 @@ let config =
   ; let_open= C.get Formatting.let_open
   ; margin= C.get Formatting.margin
   ; max_iters= C.get max_iters
+  ; nested_match= C.get Formatting.nested_match
   ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
   ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet

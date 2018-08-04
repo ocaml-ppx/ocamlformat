@@ -14,8 +14,8 @@
 open Migrate_ast
 open Parsetree
 
-val reset : unit -> unit
-(** Reset internal state *)
+val init : Conf.t -> unit
+(** Initialize internal state *)
 
 val is_prefix : expression -> bool
 (** Holds of prefix symbol expressions. *)
