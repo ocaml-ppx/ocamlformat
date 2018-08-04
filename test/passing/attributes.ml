@@ -80,7 +80,7 @@ type blocklist =
 
 type blocklist =
   | F1 of int [@version 1, 1, 0]  (** short comment *)
-  | F2: int -> blocklist [@version 1, 1, 0]  (** short comment *)
+  | F2 : int -> blocklist [@version 1, 1, 0]  (** short comment *)
   | F3 of (int64 * int64) list
       (** loooooooooooooooooooooooooooooong
           commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *)

@@ -6,9 +6,9 @@ exception Duplicate_found of ((unit -> Base.Sexp.t) -> string)
 
 type t = Duplicate_found of (unit -> Base.Sexp.t) * string
 
-type t = Duplicate_found: (unit -> Base.Sexp.t) * string -> t
+type t = Duplicate_found : (unit -> Base.Sexp.t) * string -> t
 
-type t = Duplicate_found: ((unit -> Base.Sexp.t) -> string) -> t
+type t = Duplicate_found : ((unit -> Base.Sexp.t) -> string) -> t
 
 module type S = sig
   exception EvalError of Error.t [@@deriving sexp]
@@ -19,9 +19,9 @@ module type S = sig
 
   type t = Duplicate_found of (unit -> Base.Sexp.t) * string
 
-  type t = Duplicate_found: (unit -> Base.Sexp.t) * string -> t
+  type t = Duplicate_found : (unit -> Base.Sexp.t) * string -> t
 
-  type t = Duplicate_found: ((unit -> Base.Sexp.t) -> string) -> t
+  type t = Duplicate_found : ((unit -> Base.Sexp.t) -> string) -> t
 end
 
 let _ =

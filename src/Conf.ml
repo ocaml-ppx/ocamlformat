@@ -20,7 +20,9 @@ type t =
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; extension_sugar: [`Preserve | `Always]
+  ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
@@ -30,6 +32,7 @@ type t =
   ; ocp_indent_compat: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
+  ; sequence_style: [`Separator | `Terminator]
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
@@ -52,7 +55,7 @@ end = struct
 
   (** existential package of a Term and a setter for a ref to receive the
       parsed value *)
-  type arg = Arg: 'a Term.t * ('a -> unit) -> arg
+  type arg = Arg : 'a Term.t * ('a -> unit) -> arg
 
   (** convert a list of arg packages to a term for the tuple of all the arg
       terms, and apply it to a function that sets all the receiver refs *)
@@ -133,7 +136,7 @@ end = struct
     -> allow_inline:bool
     -> 'a t
 
-  type pack = Pack: 'a t -> pack
+  type pack = Pack : 'a t -> pack
 
   let store = ref []
 
@@ -312,6 +315,18 @@ module Formatting = struct
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with extension_sugar= x} )
 
+  let field_space =
+    let doc =
+      "Whether or not to use a space between a field name and the rhs. \
+       This option affects records and objects. Can be set in a config \
+       file with a `field-space = {tight,loose}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_FIELD_SPACE" in
+    let names = ["field-space"] in
+    let all = [("tight", `Tight); ("loose", `Loose)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with field_space= x} )
+
   let if_then_else =
     let doc =
       "If-then-else formatting. Can be set in a config file with an \
@@ -322,6 +337,17 @@ module Formatting = struct
     let all = [("compact", `Compact); ("keyword-first", `Keyword_first)] in
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with if_then_else= x} )
+
+  let indicate_nested_or_patterns =
+    let default = true in
+    let doc =
+      "Control whether or not to indicate nested or-pattern using \
+       indentation."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_INDICATE_NESTED_OR_PATTERNS" in
+    let names = ["indicate-nested-or-patterns"] in
+    C.flag ~names ~env ~default ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with indicate_nested_or_patterns= x} )
 
   let infix_precedence =
     let doc =
@@ -409,6 +435,17 @@ module Formatting = struct
     in
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with parens_tuple= x} )
+
+  let sequence_style =
+    let doc =
+      "Style of sequence. Can be set in a config file with a \
+       `sequence-style = {separator,terminator}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_SEQUENCE_STYLE" in
+    let names = ["sequence-style"] in
+    let all = [("separator", `Separator); ("terminator", `Terminator)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with sequence_style= x} )
 
   let type_decl =
     let doc =
@@ -646,7 +683,10 @@ let config =
   ; escape_chars= C.get Formatting.escape_chars
   ; escape_strings= C.get Formatting.escape_strings
   ; extension_sugar= C.get Formatting.extension_sugar
+  ; field_space= C.get Formatting.field_space
   ; if_then_else= C.get Formatting.if_then_else
+  ; indicate_nested_or_patterns=
+      C.get Formatting.indicate_nested_or_patterns
   ; infix_precedence= C.get Formatting.infix_precedence
   ; leading_nested_match_parens=
       C.get Formatting.leading_nested_match_parens
@@ -657,6 +697,7 @@ let config =
   ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
   ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet
+  ; sequence_style= C.get Formatting.sequence_style
   ; type_decl= C.get Formatting.type_decl
   ; wrap_comments= C.get Formatting.wrap_comments
   ; wrap_fun_args= C.get Formatting.wrap_fun_args }
