@@ -410,8 +410,6 @@ end = struct
 
   let ( == ) = Caml.Pervasives.( == )
 
-  let ( != ) = Caml.Pervasives.( != )
-
   let dump fs ctx ast =
     Format.fprintf fs "ast: %a@\nctx: %a@\n" T.dump ast T.dump ctx
 
@@ -1539,7 +1537,6 @@ end = struct
       match pexp_desc with
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
-          && (List.last_exn cases).pc_rhs != exp
           && exposed_right_exp Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
       | Pexp_ifthenelse (_, thn, None) when thn == exp ->

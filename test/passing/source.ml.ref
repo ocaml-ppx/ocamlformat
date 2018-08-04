@@ -1714,8 +1714,8 @@ let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
  fun le a b ->
   match (le, a, b) with
   | LeZ _, _, m -> Diff (m, PlusZ m)
-  | LeS q, NS x, NS y ->
-    match diff q x y with Diff (m, p) -> Diff (m, PlusS p)
+  | LeS q, NS x, NS y -> (
+    match diff q x y with Diff (m, p) -> Diff (m, PlusS p) )
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
  fun le a b ->
@@ -1730,7 +1730,8 @@ let rec diff : type a b. (a, b) le -> b nat -> (a, b) diff =
  fun le b ->
   match (b, le) with
   | m, LeZ _ -> Diff (m, PlusZ m)
-  | NS y, LeS q -> match diff q y with Diff (m, p) -> Diff (m, PlusS p)
+  | NS y, LeS q -> (
+    match diff q y with Diff (m, p) -> Diff (m, PlusS p) )
 
 type (_, _) filter = Filter: ('m, 'n) le * ('a, 'm) seq -> ('a, 'n) filter
 
@@ -1742,9 +1743,9 @@ let rec filter : type a n. (a -> bool) -> (a, n) seq -> (a, n) filter =
  fun f s ->
   match s with
   | Snil -> Filter (LeZ NZ, Snil)
-  | Scons (a, l) ->
+  | Scons (a, l) -> (
     match filter f l with Filter (le, l') ->
-      if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l')
+      if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l') )
 
 (* 4.1 AVL trees *)
 
@@ -1805,24 +1806,24 @@ let rec ins : type n. int -> n avl -> (n avl, n succ avl) sum =
  fun x t ->
   match t with
   | Leaf -> Inr (Node (Same, Leaf, x, Leaf))
-  | Node (bal, a, y, b) ->
+  | Node (bal, a, y, b) -> (
       if x = y then Inl t
       else if x < y then
         match ins x a with
         | Inl a -> Inl (Node (bal, a, y, b))
-        | Inr a ->
+        | Inr a -> (
           match bal with
           | Less -> Inl (Node (Same, a, y, b))
           | Same -> Inr (Node (More, a, y, b))
-          | More -> rotr a y b
+          | More -> rotr a y b )
       else
         match ins x b with
         | Inl b -> Inl (Node (bal, a, y, b) : n avl)
-        | Inr b ->
+        | Inr b -> (
           match bal with
           | More -> Inl (Node (Same, a, y, b) : n avl)
           | Same -> Inr (Node (Less, a, y, b) : n succ avl)
-          | Less -> rotl a y b
+          | Less -> rotl a y b ) )
 
 let insert x (Avl t) = match ins x t with Inl t -> Avl t | Inr t -> Avl t
 
@@ -1830,15 +1831,15 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum =
   function
   | Node (Less, Leaf, x, r) -> (x, Inl r)
   | Node (Same, Leaf, x, r) -> (x, Inl r)
-  | Node (bal, (Node _ as l), x, r) ->
+  | Node (bal, (Node _ as l), x, r) -> (
     match del_min l with
     | y, Inr l -> (y, Inr (Node (bal, l, x, r)))
-    | y, Inl l ->
+    | y, Inl l -> (
         ( y
         , match bal with
           | Same -> Inr (Node (Less, l, x, r))
           | More -> Inl (Node (Same, l, x, r))
-          | Less -> rotl l x r )
+          | Less -> rotl l x r ) ) )
 
 type _ avl_del =
   | Dsame: 'n avl -> 'n avl_del
@@ -1848,42 +1849,42 @@ let rec del : type n. int -> n avl -> n avl_del =
  fun y t ->
   match t with
   | Leaf -> Dsame Leaf
-  | Node (bal, l, x, r) ->
+  | Node (bal, l, x, r) -> (
       if x = y then
         match r with
         | Leaf -> (
           match bal with Same -> Ddecr (Eq, l) | More -> Ddecr (Eq, l) )
-        | Node _ ->
+        | Node _ -> (
           match (bal, del_min r) with
           | _, (z, Inr r) -> Dsame (Node (bal, l, z, r))
           | Same, (z, Inl r) -> Dsame (Node (More, l, z, r))
           | Less, (z, Inl r) -> Ddecr (Eq, Node (Same, l, z, r))
-          | More, (z, Inl r) ->
+          | More, (z, Inl r) -> (
             match rotr l z r with
             | Inl t -> Ddecr (Eq, t)
-            | Inr t -> Dsame t
+            | Inr t -> Dsame t ) )
       else if y < x then
         match del y l with
         | Dsame l -> Dsame (Node (bal, l, x, r))
-        | Ddecr (Eq, l) ->
+        | Ddecr (Eq, l) -> (
           match bal with
           | Same -> Dsame (Node (Less, l, x, r))
           | More -> Ddecr (Eq, Node (Same, l, x, r))
-          | Less ->
+          | Less -> (
             match rotl l x r with
             | Inl t -> Ddecr (Eq, t)
-            | Inr t -> Dsame t
+            | Inr t -> Dsame t ) )
       else
         match del y r with
         | Dsame r -> Dsame (Node (bal, l, x, r))
-        | Ddecr (Eq, r) ->
+        | Ddecr (Eq, r) -> (
           match bal with
           | Same -> Dsame (Node (More, l, x, r))
           | Less -> Ddecr (Eq, Node (Same, l, x, r))
-          | More ->
+          | More -> (
             match rotr l x r with
             | Inl t -> Ddecr (Eq, t)
-            | Inr t -> Dsame t
+            | Inr t -> Dsame t ) ) )
 
 let delete x (Avl t) =
   match del x t with Dsame t -> Avl t | Ddecr (_, t) -> Avl t
@@ -1954,10 +1955,10 @@ let rec repair : type c n. (red, n) sub_tree -> (c, n) ctxt -> rb_tree =
   | CNil -> Root (blacken t)
   | CBlk (e, LeftD, sib, c) -> fill c (Bnode (sib, e, t))
   | CBlk (e, RightD, sib, c) -> fill c (Bnode (t, e, sib))
-  | CRed (e, dir, sib, CBlk (e', dir', uncle, ct)) ->
+  | CRed (e, dir, sib, CBlk (e', dir', uncle, ct)) -> (
     match color uncle with
     | Red -> repair (recolor dir e sib dir' e' (blacken uncle) t) ct
-    | Black -> fill ct (rotate dir e sib dir' e' uncle t)
+    | Black -> fill ct (rotate dir e sib dir' e' uncle t) )
 
 let rec ins : type c n. int -> (c, n) sub_tree -> (c, n) ctxt -> rb_tree =
  fun e t ct ->
@@ -2008,13 +2009,13 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
   | Rpair (a1, a2), Rpair (b1, b2) -> (
     match rep_equal a1 b1 with
     | None -> None
-    | Some Eq ->
-      match rep_equal a2 b2 with None -> None | Some Eq -> Some Eq )
+    | Some Eq -> (
+      match rep_equal a2 b2 with None -> None | Some Eq -> Some Eq ) )
   | Rfun (a1, a2), Rfun (b1, b2) -> (
     match rep_equal a1 b1 with
     | None -> None
-    | Some Eq ->
-      match rep_equal a2 b2 with None -> None | Some Eq -> Some Eq )
+    | Some Eq -> (
+      match rep_equal a2 b2 with None -> None | Some Eq -> Some Eq ) )
   | _ -> None
 
 type assoc = Assoc: string * 'a rep * 'a -> assoc
@@ -2130,7 +2131,8 @@ let rec compare : type a b. a rep -> b rep -> (string, (a, b) equal) sum =
   | Ar (x, y), Ar (s, t) -> (
     match compare x s with
     | Inl _ as e -> e
-    | Inr Eq -> match compare y t with Inl _ as e -> e | Inr Eq as e -> e )
+    | Inr Eq -> (
+      match compare y t with Inl _ as e -> e | Inr Eq as e -> e ) )
   | I, Ar _ -> Inl "I <> Ar _"
   | Ar _, I -> Inl "Ar _ <> I"
 
@@ -2152,12 +2154,12 @@ let rec lookup : type e. string -> e ctx -> e checked =
  fun name ctx ->
   match ctx with
   | Cnil -> Cerror ("Name not found: " ^ name)
-  | Ccons (l, s, t, rs) ->
+  | Ccons (l, s, t, rs) -> (
       if s = name then Cok (Var l, t)
       else
         match lookup name rs with
         | Cerror m -> Cerror m
-        | Cok (v, t) -> Cok (Shift v, t)
+        | Cok (v, t) -> Cok (Shift v, t) )
 
 let rec tc : type n e. n nat -> e ctx -> term -> e checked =
  fun n ctx t ->
@@ -2166,16 +2168,16 @@ let rec tc : type n e. n nat -> e ctx -> term -> e checked =
   | Ap (f, x) -> (
     match tc n ctx f with
     | Cerror _ as e -> e
-    | Cok (f', ft) ->
+    | Cok (f', ft) -> (
       match tc n ctx x with
       | Cerror _ as e -> e
-      | Cok (x', xt) ->
+      | Cok (x', xt) -> (
         match ft with
         | Ar (a, b) -> (
           match compare a xt with
           | Inl s -> Cerror s
           | Inr Eq -> Cok (App (f', x'), b) )
-        | _ -> Cerror "Non fun in Ap" )
+        | _ -> Cerror "Non fun in Ap" ) ) )
   | Ab (s, t, body) -> (
     match tc (NS n) (Ccons (n, s, t, ctx)) body with
     | Cerror _ as e -> e
@@ -2261,8 +2263,8 @@ let rec subst : type m1 r t s. (m1, r, t) lam -> (r, s) sub -> (s, t) lam' =
   | Shift e, Push sub -> ( match subst e sub with Ex a -> Ex (Shift a) )
   | App (f, x), sub -> (
     match (subst f sub, subst x sub) with Ex g, Ex y -> Ex (App (g, y)) )
-  | Lam (v, x), sub ->
-    match subst x (Push sub) with Ex body -> Ex (Lam (v, body))
+  | Lam (v, x), sub -> (
+    match subst x (Push sub) with Ex body -> Ex (Lam (v, body)) )
 
 type closed = rnil
 
@@ -2274,13 +2276,13 @@ let rec rule : type a b.
   match (v1, v2) with
   | Lam (x, body), v -> (
     match subst body (Bind (x, v, Id)) with Ex term ->
-      match mode term with Pexp -> Inl term | Pval -> Inr term )
+      (match mode term with Pexp -> Inl term | Pval -> Inr term) )
   | Const (IntTo b, f), Const (IntR, x) -> Inr (Const (b, f x))
 
 let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
   | Lam (v, body) -> Inr (Lam (v, body))
   | Const (r, v) -> Inr (Const (r, v))
-  | App (e1, e2) ->
+  | App (e1, e2) -> (
     match (mode e1, mode e2) with
     | Pexp, _ -> (
       match onestep e1 with
@@ -2290,7 +2292,7 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
       match onestep e2 with
       | Inl e -> Inl (App (e1, e))
       | Inr v -> Inl (App (e1, v)) )
-    | Pval, Pval -> rule e1 e2
+    | Pval, Pval -> rule e1 e2 )
 
 type ('env, 'a) var =
   | Zero : ('a * 'env, 'a) var
@@ -3531,7 +3533,7 @@ end)
 type var = [`Var of string]
 
 let subst_var ~subst : var -> _ = function
-  | `Var s as x -> try Subst.find s subst with Not_found -> x
+  | `Var s as x -> ( try Subst.find s subst with Not_found -> x )
 
 let free_var : var -> _ = function `Var s -> Names.singleton s
 
@@ -7542,14 +7544,14 @@ module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP
 
   let deleteMin = function
     | BE.E -> raise Not_found
-    | BE.H (x, p) ->
+    | BE.H (x, p) -> (
         if PrimH.isEmpty p then BE.E
         else
           match PrimH.findMin p with
           | BE.H (y, p1) ->
               let p2 = PrimH.deleteMin p in
               BE.H (y, PrimH.merge p1 p2)
-          | BE.E -> assert false
+          | BE.E -> assert false )
 end
 
 module LeftistHeap (Element : ORDERED) : HEAP with module Elem = Element =
