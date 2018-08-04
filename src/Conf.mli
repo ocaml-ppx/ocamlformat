@@ -47,3 +47,5 @@ val action : action
 
 val debug : bool
 (** Generate debugging output if true. *)
+
+val update : t -> name:string -> value:string -> t
