@@ -1,0 +1,85 @@
+File "passing/option.ml", line 13, characters 3-19:
+Warning 47: illegal payload for attribute 'ocamlformat.typo'.
+unknown suffix "typo"
+File "passing/option.ml", line 21, characters 3-14:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+string expected
+File "passing/option.ml", line 28, characters 3-14:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+("User Error: Unknown if-then-else value: \"bad\"")
+File "passing/option.ml", line 39, characters 14-25:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+("User Error: Unknown if-then-else value: \"bad\"")
+File "passing/option.ml", line 12, characters 21-37:
+Warning 47: illegal payload for attribute 'ocamlformat.typo'.
+unknown suffix "typo"
+File "passing/option.ml", line 18, characters 21-32:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+string expected
+File "passing/option.ml", line 24, characters 21-32:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+("User Error: Unknown if-then-else value: \"bad\"")
+File "passing/option.ml", line 35, characters 23-34:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+("User Error: Unknown if-then-else value: \"bad\"")
+let _ =
+  if b
+  then e
+  else (
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    this is more )[@@ocamlformat "if-then-else=keyword-first"]
+
+let _ =
+  if b then e
+  else (
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    this is more )[@@ocamlformat.typo "if-then-else=keyword-first"]
+
+let _ =
+  if b then e
+  else (
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    this is more )[@@ocamlformat 1, "if-then-else=keyword-first"]
+
+let _ =
+  if b then e
+  else (
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    this is more )[@@ocamlformat "if-then-else=bad"]
+
+module M = struct
+  [@@@ocamlformat "if-then-else=keyword-first"]
+
+  let _ =
+    if b
+    then e
+    else (
+      something loooooooooooooooooooooooooooooooong enough to_trigger a
+        break ;
+      this is more )[@@ocamlformat "if-then-else=bad"]
+
+  let _ =
+    if b
+    then e
+    else (
+      something loooooooooooooooooooooooooooooooong enough to_trigger a
+        break ;
+      this is more )
+
+  let _ =
+    if b
+    then e
+    else (
+      something loooooooooooooooooooooooooooooooong enough to_trigger a
+        break ;
+      this is more )
+
+  [@@@ocamlformat "if-then-else=compact"]
+
+  let _ =
+    if b then e
+    else (
+      something loooooooooooooooooooooooooooooooong enough to_trigger a
+        break ;
+      this is more )
+end
