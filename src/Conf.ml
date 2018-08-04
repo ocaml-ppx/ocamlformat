@@ -378,7 +378,7 @@ type t =
   ; quiet: bool
   ; no_comment_check: bool }
 
-let update conf name value =
+let update conf ~name ~value =
   match name with
   | "margin" -> {conf with margin= Int.of_string value}
   | "max-iters" -> {conf with max_iters= Int.of_string value}
@@ -497,7 +497,10 @@ let rec read_conf_files conf dir =
       In_channel.with_file (Filename.concat dir ".ocamlformat") ~f:
         (fun ic ->
           In_channel.fold_lines ic ~init:conf ~f:(fun conf line ->
-              try Scanf.sscanf line "%s %s" (update conf) with
+              try
+                Scanf.sscanf line "%s %s" (fun n v ->
+                    update conf ~name:n ~value:v )
+              with
               | Scanf.Scan_failure _ | End_of_file ->
                   user_error "malformed .ocamlformat file"
                     [("line", Sexp.Atom line)] ) )

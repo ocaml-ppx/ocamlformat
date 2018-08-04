@@ -34,6 +34,40 @@ let protect =
         first := false ) ;
       raise exc
 
+let update_config c a =
+  let error {loc; txt} reason =
+    let w = Warnings.Attribute_payload (txt, reason) in
+    !Location.warning_printer loc Caml.Format.err_formatter w ;
+    c
+  in
+  match a with
+  | ({txt= "ocamlformat"} as aname), payload -> (
+    match payload with
+    | PStr
+        [ { pstr_desc=
+              Pstr_eval
+                ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
+                  ; pexp_attributes= [] }
+                , [] ) } ] ->
+        List.fold ~init:c (String.split ~on:';' str) ~f:(fun c s ->
+            match String.lsplit2 ~on:'=' s with
+            | Some (name, value) -> (
+              try
+                Conf.update c ~name:(String.strip name)
+                  ~value:(String.strip value)
+              with e -> error aname (Exn.to_string e) )
+            | None ->
+                error aname "malformed option, should be [name=value]+" )
+    | _ -> error aname "string expected" )
+  | ({txt} as aname), _ when String.is_prefix ~prefix:"ocamlformat." txt ->
+      error aname
+        (Format.sprintf "unknown suffix %S"
+           (String.chop_prefix_exn ~prefix:"ocamlformat." txt))
+  | _ -> c
+
+let update_config c l =
+  {c with conf= List.fold ~init:c.conf l ~f:update_config}
+
 let rec sugar_arrow_typ c ({ast= typ} as xtyp) =
   let ctx = Typ typ in
   let {ptyp_desc; ptyp_loc} = typ in
@@ -593,6 +627,7 @@ and fmt_core_type c ?(box= true) ?(in_type_declaration= false) ?pro
   | _, Some pro -> str pro $ fmt "@ "
   | _ -> fmt "" )
   $
+  let c = update_config c ptyp_attributes in
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c.cmts ptyp_loc
   @@ ( if List.is_empty atrs then Fn.id
@@ -725,6 +760,7 @@ and fmt_package_type c ctx (lid, cnstrs) =
 
 and fmt_row_field c ctx = function
   | Rtag ({txt; loc}, atrs, const, typs) ->
+      let c = update_config c atrs in
       let doc, atrs = doc_atrs atrs in
       hvbox 0
         ( Cmts.fmt c.cmts loc @@ (fmt "`" $ str txt)
@@ -740,6 +776,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   @@
   let ctx = Pat pat in
   let {ppat_desc; ppat_attributes; ppat_loc} = pat in
+  let c = update_config c ppat_attributes in
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
@@ -1022,6 +1059,7 @@ and fmt_body c ({ast= body} as xbody) =
   let ctx = Exp body in
   match body with
   | {pexp_desc= Pexp_function cs; pexp_attributes} ->
+      let c = update_config c pexp_attributes in
       fmt "@ function"
       $ fmt_attributes c ~key:"@" pexp_attributes
       $ close_box $ fmt "@ " $ fmt_cases c ctx cs
@@ -1045,6 +1083,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
+  let c = update_config c pexp_attributes in
   let fmt_cmts = Cmts.fmt c.cmts ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@" pexp_attributes in
   let parens = match parens with Some b -> b | None -> parenze_exp xexp in
@@ -1973,6 +2012,15 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
         (Comparable.lift Int.compare ~f:(fun x ->
              x.pcf_loc.loc_start.pos_cnum ))
   in
+  let _, fields =
+    List.fold_map fields ~init:c ~f:(fun c i ->
+        let c =
+          match i.pcf_desc with
+          | Pcf_attribute atr -> update_config c [atr]
+          | _ -> c
+        in
+        (c, (i, c)) )
+  in
   let cmts_after_self =
     match fields with
     | [] -> Cmts.fmt_after c.cmts self_.ppat_loc
@@ -1995,13 +2043,14 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
                )
            $ cmts_after_self
            $ ( match fields with
-             | {pcf_desc= Pcf_attribute a} :: _
+             | ({pcf_desc= Pcf_attribute a}, _) :: _
                when Option.is_some (fst (doc_atrs [a])) ->
                  fmt "\n"
              | _ -> fmt "" )
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
-               (list fields "\n@\n" (fun cf -> fmt_class_field c ctx cf)) )
+               (list fields "\n@\n" (fun (cf, c) -> fmt_class_field c ctx cf))
+           )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
        $ fmt "end" ))
 
@@ -2011,6 +2060,15 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
       ~compare:
         (Comparable.lift Int.compare ~f:(fun x ->
              x.pctf_loc.loc_start.pos_cnum ))
+  in
+  let _, fields =
+    List.fold_map fields ~init:c ~f:(fun c i ->
+        let c =
+          match i.pctf_desc with
+          | Pctf_attribute atr -> update_config c [atr]
+          | _ -> c
+        in
+        (c, (i, c)) )
   in
   let cmts_after_self =
     match fields with
@@ -2034,14 +2092,14 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                  ) )
            $ cmts_after_self
            $ ( match fields with
-             | {pctf_desc= Pctf_attribute a} :: _
+             | ({pctf_desc= Pctf_attribute a}, _) :: _
                when Option.is_some (fst (doc_atrs [a])) ->
                  fmt "\n"
              | _ -> fmt "" )
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
-               (list fields "\n@\n" (fun cf -> fmt_class_type_field c ctx cf))
-           )
+               (list fields "\n@\n" (fun (cf, c) ->
+                    fmt_class_type_field c ctx cf )) )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
        $ fmt "end" ))
 
@@ -2049,6 +2107,7 @@ and fmt_class_type c ?(box= true) ({ast= typ} as xtyp) =
   protect (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
+  let c = update_config c pcty_attributes in
   let doc, atrs = doc_atrs pcty_attributes in
   Cmts.fmt c.cmts pcty_loc
   @@ ( if List.is_empty atrs then Fn.id
@@ -2094,6 +2153,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
   protect (Cl exp)
   @@
   let {pcl_desc; pcl_loc; pcl_attributes} = exp in
+  let c = update_config c pcl_attributes in
   let parens = parenze_cl xexp in
   let fmt_label lbl sep =
     match lbl with
@@ -2215,6 +2275,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
 
 and fmt_class_field c ctx (cf: class_field) =
   let {pcf_desc; pcf_loc; pcf_attributes} = cf in
+  let c = update_config c pcf_attributes in
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pcf_loc in
   let doc, atrs = doc_atrs pcf_attributes in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
@@ -2320,6 +2381,7 @@ and fmt_class_field c ctx (cf: class_field) =
 
 and fmt_class_type_field c ctx (cf: class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
+  let c = update_config c pctf_attributes in
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pctf_loc in
   let doc, atrs = doc_atrs pctf_attributes in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
@@ -2406,6 +2468,7 @@ and fmt_cases c ctx cs =
 
 and fmt_value_description c ctx vd =
   let {pval_name= {txt}; pval_type; pval_prim; pval_attributes} = vd in
+  let c = update_config c pval_attributes in
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc, atrs = doc_atrs pval_attributes in
   let doc_before =
@@ -2506,6 +2569,7 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
       ; ptype_loc } =
     decl
   in
+  let c = update_config c ptype_attributes in
   let doc, atrs = doc_atrs ptype_attributes in
   Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ptype_loc
   @@ hvbox 0
@@ -2530,6 +2594,7 @@ and fmt_label_declaration c ctx lbl_decl =
       =
     lbl_decl
   in
+  let c = update_config c pld_attributes in
   let doc, atrs = doc_atrs pld_attributes in
   let fmt_cmts = Cmts.fmt c.cmts ~eol:(break_unless_newline 1 2) pld_loc in
   fmt_cmts
@@ -2546,6 +2611,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
     cstr_decl
   in
+  let c = update_config c pcd_attributes in
   let doc, atrs = doc_atrs pcd_attributes in
   fmt_if (not first)
     ( match c.conf.type_decl with
@@ -2590,6 +2656,7 @@ and fmt_type_extension c ctx te =
       ; ptyext_attributes } =
     te
   in
+  let c = update_config c ptyext_attributes in
   let doc, atrs = doc_atrs ptyext_attributes in
   hvbox 2
     ( fmt_docstring c ~epi:(fmt "@,") doc
@@ -2637,6 +2704,7 @@ and fmt_exception ~pre c sep ctx te =
 
 and fmt_extension_constructor c sep ctx ec =
   let {pext_name= {txt}; pext_kind; pext_attributes} = ec in
+  let c = update_config c pext_attributes in
   let doc, atrs = doc_atrs pext_attributes in
   hvbox 4
     ( hvbox 2
@@ -2664,6 +2732,7 @@ and fmt_extension_constructor c sep ctx ec =
 and fmt_module_type c ({ast= mty} as xmty) =
   let ctx = Mty mty in
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
+  let c = update_config c pmty_attributes in
   let parens = parenze_mty xmty in
   match pmty_desc with
   | Pmty_ident lid ->
@@ -2778,8 +2847,17 @@ and fmt_module_type c ({ast= mty} as xmty) =
       }
 
 and fmt_signature c ctx itms =
+  let _, itms =
+    List.fold_map itms ~init:c ~f:(fun c i ->
+        let c =
+          match i.psig_desc with
+          | Psig_attribute atr -> update_config c [atr]
+          | _ -> c
+        in
+        (c, (i, c)) )
+  in
   let grps =
-    List.group itms ~break:(fun itmI itmJ ->
+    List.group itms ~break:(fun (itmI, _) (itmJ, _) ->
         let is_simple itm =
           match itm.psig_desc with
           | Psig_open _ -> true
@@ -2789,7 +2867,7 @@ and fmt_signature c ctx itms =
         (not (is_simple itmI)) || (not (is_simple itmJ)) )
   in
   let fmt_grp itms =
-    list itms "@\n" (sub_sig ~ctx >> fmt_signature_item c)
+    list itms "@\n" (fun (i, c) -> fmt_signature_item c (sub_sig ~ctx i))
   in
   hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
 
@@ -2810,6 +2888,7 @@ and fmt_signature_item c {ast= si} =
         ( fmt_extension c ctx "%%" ext
         $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
   | Psig_include {pincl_mod; pincl_attributes} ->
+      let c = update_config c pincl_attributes in
       let doc, atrs = doc_atrs pincl_attributes in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
         match pincl_mod with
@@ -2858,6 +2937,7 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
           =
         cl
       in
+      let c = update_config c pci_attributes in
       let doc, atrs = doc_atrs pci_attributes in
       fmt_if (not first) "\n@\n"
       $ Cmts.fmt c.cmts pci_loc
@@ -2884,6 +2964,7 @@ and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
           =
         cl
       in
+      let c = update_config c pci_attributes in
       let xargs, xbody =
         match pci_expr.pcl_attributes with
         | [] -> sugar_cl_fun c None (sub_cl ~ctx pci_expr)
@@ -2995,6 +3076,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes} = pmd in
+  let c = update_config c pmd_attributes in
   let keyword =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"
@@ -3009,11 +3091,13 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
 
 and fmt_module_type_declaration c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes} = pmtd in
+  let c = update_config c pmtd_attributes in
   fmt_module c (fmt "module type") pmtd_name [] None false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
 and fmt_open_description c {popen_lid; popen_override; popen_attributes} =
+  let c = update_config c popen_attributes in
   let doc, atrs = doc_atrs popen_attributes in
   fmt_docstring c ~epi:(fmt "@,") doc
   $ fmt "open"
@@ -3045,6 +3129,7 @@ and maybe_generative c ~ctx m =
 and fmt_module_expr c ({ast= m} as xmod) =
   let ctx = Mod m in
   let {pmod_desc; pmod_loc; pmod_attributes} = m in
+  let c = update_config c pmod_attributes in
   let parens = parenze_mod xmod in
   match pmod_desc with
   | Pmod_apply (({pmod_desc= Pmod_ident _} as me_f), me_a) ->
@@ -3326,8 +3411,17 @@ and fmt_toplevel_phrase c ctx = function
       | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool)
 
 and fmt_structure c ?(sep= "") ?use_file ctx itms =
+  let _, itms =
+    List.fold_map itms ~init:c ~f:(fun c i ->
+        let c =
+          match i.pstr_desc with
+          | Pstr_attribute atr -> update_config c [atr]
+          | _ -> c
+        in
+        (c, (i, c)) )
+  in
   let grps =
-    List.group itms ~break:(fun itmI itmJ ->
+    List.group itms ~break:(fun (itmI, _) (itmJ, _) ->
         let has_doc itm =
           match itm.pstr_desc with
           | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
@@ -3375,7 +3469,7 @@ and fmt_structure c ?(sep= "") ?use_file ctx itms =
         || (not (is_simple itmJ)) )
   in
   let fmt_grp ~last:last_grp itms =
-    list_fl itms (fun ~first ~last itm ->
+    list_fl itms (fun ~first ~last (itm, c) ->
         fmt_if (not first) "@\n"
         $ fmt_structure_item c ~sep ~last:(last && last_grp) ?use_file
             (sub_str ~ctx itm) )
@@ -3415,6 +3509,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
       hvbox 2
         (fmt_exception ~pre:(fmt "exception@ ") c (fmt ": ") ctx extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes} ->
+      let c = update_config c pincl_attributes in
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
@@ -3465,6 +3560,7 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
 
 and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = binding in
+  let c = update_config c pvb_attributes in
   let doc, atrs = doc_atrs pvb_attributes in
   let xpat, xargs, fmt_cstr, xbody =
     let ({ast= pat} as xpat) =
@@ -3569,6 +3665,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
 
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
   let {pmb_name; pmb_expr; pmb_attributes} = pmb in
+  let c = update_config c pmb_attributes in
   let keyword =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"
