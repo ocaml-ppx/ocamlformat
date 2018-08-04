@@ -3581,12 +3581,12 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
 
 let fmt_signature s cmts c =
   let c = {source= s; cmts; conf= c} in
-  fmt_signature c Top
+  Ast.reset () ; fmt_signature c Top
 
 let fmt_structure s cmts c =
   let c = {source= s; cmts; conf= c} in
-  fmt_structure c Top
+  Ast.reset () ; fmt_structure c Top
 
 let fmt_use_file s cmts c =
   let c = {source= s; cmts; conf= c} in
-  fmt_use_file c Top
+  Ast.reset () ; fmt_use_file c Top

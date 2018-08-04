@@ -14,6 +14,12 @@
 open Migrate_ast
 open Parsetree
 
+let reset, register_reset =
+  let l = ref [] in
+  let register f = l := f :: !l in
+  let reset () = List.iter !l ~f:(fun f -> f ()) in
+  (reset, register)
+
 (** Predicates recognizing special symbol identifiers. *)
 
 let is_prefix_id i =
@@ -1440,6 +1446,7 @@ end = struct
   let rec exposed_right_exp =
     (* exponential without memoization *)
     let memo = Hashtbl.Poly.create () in
+    register_reset (fun () -> Hashtbl.clear memo) ;
     fun cls exp ->
       let exposed_ () =
         let continue subexp =
@@ -1489,6 +1496,7 @@ end = struct
 
   and exposed_right_cl =
     let memo = Hashtbl.Poly.create () in
+    register_reset (fun () -> Hashtbl.clear memo) ;
     fun cls cl ->
       let exposed_ () =
         match cl.pcl_desc with
