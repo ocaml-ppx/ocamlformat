@@ -1669,7 +1669,10 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                       ctx binding
                       ~in_:(fun indent ->
                         fmt_if_k last (break 1 (-indent) $ fmt "in") )
-                    $ fmt_if (not last) "@ " ))
+                    $ fmt_if (not last)
+                        ( match c.conf.let_and with
+                        | `Sparse -> "@;<1000 0>"
+                        | `Compact -> "@ " ) ))
            $ fmt "@;<1000 0>"
            $ hvbox 0 (fmt_expression c (sub_exp ~ctx body)) ))
       $ fmt_atrs
@@ -2271,7 +2274,10 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
                       ctx binding
                       ~in_:(fun indent ->
                         fmt_if_k last (break 1 (-indent) $ fmt "in") )
-                    $ fmt_if (not last) "@ " ))
+                    $ fmt_if (not last)
+                        ( match c.conf.let_and with
+                        | `Sparse -> "@;<1000 0>"
+                        | `Compact -> "@ " ) ))
            $ fmt "@;<1000 0>"
            $ hvbox 0 (fmt_class_expr c (sub_cl ~ctx body)) ))
       $ fmt_atrs

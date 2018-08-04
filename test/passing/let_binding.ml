@@ -67,3 +67,37 @@ let _: t -> t -> int = (compare : int list -> int list -> int)
 let _ =
   let[@test] rec f = x in
   y
+
+module Let_and_compact = struct
+  [@@@ocamlformat "let-and=compact"]
+
+  let x = 2
+
+  and y = 2
+
+  let _ =
+    let x = 2 and y = 2 in
+    3
+
+  let _ =
+    let%ext x = 2 and y = 2 in
+    3
+end
+
+module Let_and_sparse = struct
+  [@@@ocamlformat "let-and=sparse"]
+
+  let x = 2
+
+  and y = 2
+
+  let _ =
+    let x = 2
+    and y = 2 in
+    3
+
+  let _ =
+    let%ext x = 2
+    and y = 2 in
+    3
+end
