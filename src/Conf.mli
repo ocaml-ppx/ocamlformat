@@ -11,28 +11,28 @@
 
 (** Configuration options *)
 
-type t = private
-  { margin: int  (** Format code to fit within [margin] columns. *)
-  ; sparse: bool  (** Generate more sparsely formatted code if true. *)
-  ; max_iters: int
-        (** Fail if output of formatting does not stabilize within
-            [max_iters] iterations. *)
+type t =
+  { break_infix: [`Wrap | `Fit_or_vertical]
+  ; break_string_literals: [`Newlines | `Never | `Wrap]
+        (** How to potentially break string literals into new lines. *)
+  ; no_comment_check: bool
+  ; doc_comments: [`Before | `After]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for chars literals. *)
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for string literals. *)
-  ; break_string_literals: [`Never | `Newlines | `Wrap]
-        (** How to potentially break string literals into new lines. *)
-  ; wrap_comments: bool  (** Wrap comments at margin. *)
-  ; doc_comments: [`Before | `After]
-  ; parens_tuple: [`Always | `Multi_line_only]
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
-  ; break_infix: [`Wrap | `Fit_or_vertical]
-  ; type_decl: [`Compact | `Sparse]
+  ; margin: int  (** Format code to fit within [margin] columns. *)
+  ; max_iters: int
+        (** Fail if output of formatting does not stabilize within
+            [max_iters] iterations. *)
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
+  ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
-  ; no_comment_check: bool }
+  ; sparse: bool  (** Generate more sparsely formatted code if true. *)
+  ; type_decl: [`Compact | `Sparse]
+  ; wrap_comments: bool  (** Wrap comments at margin. *) }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
@@ -48,4 +48,12 @@ val action : action
 val debug : bool
 (** Generate debugging output if true. *)
 
-val update : t -> name:string -> value:string -> t
+val parse_line_in_attribute :
+     t
+  -> string
+  -> ( t
+     , [ `Unknown of string * string
+       | `Bad_value of string * string
+       | `Malformed of string
+       | `Misplaced of string * string ] )
+     Result.t

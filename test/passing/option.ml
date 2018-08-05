@@ -59,3 +59,6 @@ module M = struct
       this is more )
            
 end
+
+             [@@@ocamlformat "margin=90"]
+               
