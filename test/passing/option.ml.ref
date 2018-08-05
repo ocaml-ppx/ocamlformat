@@ -1,27 +1,33 @@
+File "passing/option.ml", line 63, characters 17-28:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+margin not allowed here
 File "passing/option.ml", line 13, characters 3-19:
 Warning 47: illegal payload for attribute 'ocamlformat.typo'.
-unknown suffix "typo"
+Invalid format "unknown suffix \"typo\""
 File "passing/option.ml", line 21, characters 3-14:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-string expected
+Invalid format "string expected"
 File "passing/option.ml", line 28, characters 3-14:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-("User Error: Unknown if-then-else value: \"bad\"")
+Invalid value for if-then-else: "bad"
 File "passing/option.ml", line 39, characters 14-25:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-("User Error: Unknown if-then-else value: \"bad\"")
+Invalid value for if-then-else: "bad"
+File "passing/option.ml", line 63, characters 4-15:
+Warning 47: illegal payload for attribute 'ocamlformat'.
+margin not allowed here
 File "passing/option.ml", line 12, characters 21-37:
 Warning 47: illegal payload for attribute 'ocamlformat.typo'.
-unknown suffix "typo"
+Invalid format "unknown suffix \"typo\""
 File "passing/option.ml", line 18, characters 21-32:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-string expected
+Invalid format "string expected"
 File "passing/option.ml", line 24, characters 21-32:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-("User Error: Unknown if-then-else value: \"bad\"")
+Invalid value for if-then-else: "bad"
 File "passing/option.ml", line 35, characters 23-34:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-("User Error: Unknown if-then-else value: \"bad\"")
+Invalid value for if-then-else: "bad"
 let _ =
   if b
   then e
@@ -83,3 +89,5 @@ module M = struct
         break ;
       this is more )
 end
+
+[@@@ocamlformat "margin=90"]

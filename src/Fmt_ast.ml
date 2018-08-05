@@ -34,36 +34,39 @@ let protect =
         first := false ) ;
       raise exc
 
-let update_config c a =
-  let error {loc; txt} reason =
-    let w = Warnings.Attribute_payload (txt, reason) in
-    !Location.warning_printer loc Caml.Format.err_formatter w ;
-    c
+let update_config c ({txt; loc}, payload) =
+  let result =
+    match txt with
+    | "ocamlformat" -> (
+      match payload with
+      | PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
+                    ; pexp_attributes= [] }
+                  , [] ) } ] ->
+          Conf.parse_line_in_attribute c str
+      | _ -> Error (`Malformed "string expected") )
+    | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
+        Error
+          (`Malformed
+            (Format.sprintf "unknown suffix %S"
+               (String.chop_prefix_exn ~prefix:"ocamlformat." txt)))
+    | _ -> Ok c
   in
-  match a with
-  | ({txt= "ocamlformat"} as aname), payload -> (
-    match payload with
-    | PStr
-        [ { pstr_desc=
-              Pstr_eval
-                ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
-                  ; pexp_attributes= [] }
-                , [] ) } ] ->
-        List.fold ~init:c (String.split ~on:';' str) ~f:(fun c s ->
-            match String.lsplit2 ~on:'=' s with
-            | Some (name, value) -> (
-              try
-                Conf.update c ~name:(String.strip name)
-                  ~value:(String.strip value)
-              with e -> error aname (Exn.to_string e) )
-            | None ->
-                error aname "malformed option, should be [name=value]+" )
-    | _ -> error aname "string expected" )
-  | ({txt} as aname), _ when String.is_prefix ~prefix:"ocamlformat." txt ->
-      error aname
-        (Format.sprintf "unknown suffix %S"
-           (String.chop_prefix_exn ~prefix:"ocamlformat." txt))
-  | _ -> c
+  match result with
+  | Ok c -> c
+  | Error error ->
+      let reason = function
+        | `Malformed line -> Format.sprintf "Invalid format %S" line
+        | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
+        | `Unknown (name, _) -> Format.sprintf "Unknown option %s" name
+        | `Bad_value (name, value) ->
+            Format.sprintf "Invalid value for %s: %S" name value
+      in
+      let w = Warnings.Attribute_payload (txt, reason error) in
+      !Location.warning_printer loc Caml.Format.err_formatter w ;
+      c
 
 let update_config c l =
   {c with conf= List.fold ~init:c.conf l ~f:update_config}

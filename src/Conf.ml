@@ -11,6 +11,24 @@
 
 (** Configuration options *)
 
+type t =
+  { break_infix: [`Wrap | `Fit_or_vertical]
+  ; break_string_literals: [`Newlines | `Never | `Wrap]
+  ; no_comment_check: bool
+  ; doc_comments: [`Before | `After]
+  ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
+  ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
+  ; if_then_else: [`Compact | `Keyword_first]
+  ; infix_precedence: [`Indent | `Parens]
+  ; margin: int
+  ; max_iters: int
+  ; ocp_indent_compat: bool
+  ; parens_tuple: [`Always | `Multi_line_only]
+  ; quiet: bool
+  ; sparse: bool
+  ; type_decl: [`Compact | `Sparse]
+  ; wrap_comments: bool }
+
 (** Extension of Cmdliner supporting lighter-weight option definition *)
 module Cmdliner : sig
   include module type of Cmdliner
@@ -60,6 +78,116 @@ end
 
 open Cmdliner
 
+module C : sig
+  type config = t
+
+  type 'a t
+
+  type 'a option_decl =
+       names:string list
+    -> update:(config -> 'a -> config)
+    -> env:Term.env_info
+    -> doc:string
+    -> allow_inline:bool
+    -> 'a t
+
+  val choice : all:(string * 'a) list -> 'a option_decl
+
+  val flag : bool option_decl
+
+  val int : default:int -> docv:string -> int option_decl
+
+  val get : 'a t -> 'a
+
+  val update :
+       config:config
+    -> name:string
+    -> value:string
+    -> inline:bool
+    -> ( config
+       , [ `Unknown of string * string
+         | `Bad_value of string * string
+         | `Malformed of string
+         | `Misplaced of string * string ] )
+       Result.t
+end = struct
+  type config = t
+
+  type 'a t =
+    { names: string list
+    ; parse: string -> 'a
+    ; update: config -> 'a -> config
+    ; allow_inline: bool
+    ; r: 'a ref }
+
+  type 'a option_decl =
+       names:string list
+    -> update:(config -> 'a -> config)
+    -> env:Term.env_info
+    -> doc:string
+    -> allow_inline:bool
+    -> 'a t
+
+  type pack = Pack: 'a t -> pack
+
+  let store = ref []
+
+  let choice ~all ~names ~update ~env ~doc ~allow_inline =
+    let open Cmdliner in
+    let default = snd (List.hd_exn all) in
+    let term =
+      Arg.(value & opt (enum all) default & info names ~doc ~env)
+    in
+    let parse s =
+      match
+        List.find_map all ~f:(fun (n, v) ->
+            Option.some_if (String.equal n s) v )
+      with
+      | Some v -> v
+      | None ->
+          user_error
+            (Printf.sprintf "Unknown %s value: %S" (List.hd_exn names) s)
+            []
+    in
+    let r = mk ~default term in
+    let opt = {names; parse; update; r; allow_inline} in
+    store := Pack opt :: !store ;
+    opt
+
+  let flag ~names ~update ~env ~doc ~allow_inline =
+    let open Cmdliner in
+    let term = Arg.(value & flag & info names ~doc ~env) in
+    let parse = Bool.of_string in
+    let default = false in
+    let r = mk ~default term in
+    let opt = {names; parse; update; r; allow_inline} in
+    store := Pack opt :: !store ;
+    opt
+
+  let int ~default ~docv ~names ~update ~env ~doc ~allow_inline =
+    let open Cmdliner in
+    let term = Arg.(value & opt int default & info names ~doc ~docv ~env) in
+    let parse = Int.of_string in
+    let r = mk ~default term in
+    let opt = {names; parse; update; r; allow_inline} in
+    store := Pack opt :: !store ;
+    opt
+
+  let update ~config ~name ~value ~inline =
+    List.find_map !store ~f:
+      (fun (Pack {names; parse; update; allow_inline}) ->
+        if List.exists names ~f:(String.equal name) then
+          if inline && (not allow_inline) then
+            Some (Error (`Misplaced (name, value)))
+          else
+            try Some (Ok (update config (parse value))) with _ ->
+              Some (Error (`Bad_value (name, value)))
+        else None )
+    |> Option.value ~default:(Error (`Unknown (name, value)))
+
+  let get {r} = !r
+end
+
 let info =
   let doc = "A tool to format OCaml code." in
   let man =
@@ -67,25 +195,214 @@ let info =
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
-let break_string_literals =
+(** Options affecting formatting *)
+module Formatting = struct
+  let break_infix =
+    let doc =
+      "Break sequence of infix operators. Can be set in a config file with \
+       a `break-infix = {wrap,fit-or-vertical}` line. `wrap` will group \
+       simple expressions and try to format them in a single line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_BREAK_INFIX" in
+    let names = ["break-infix"] in
+    let all = [("wrap", `Wrap); ("fit-or-vertical", `Fit_or_vertical)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with break_infix= x} )
+
+  let break_string_literals =
+    let doc =
+      "Break string literals. $(b,never) mode formats string literals as \
+       they are parsed, in particular, with escape sequences expanded. \
+       $(b,newlines) mode breaks lines at newlines. $(b,wrap) mode wraps \
+       string literals at the margin. Quoted strings such as \
+       $(i,{id|...|id}) are preserved. Can be set in a config file with a \
+       $(b,break-string-literals) = \
+       $(i,{)$(b,never)$(i,,)$(b,newlines)$(i,,)$(b,wrap)$(i,}) line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
+    let names = ["break-string-literals"] in
+    let all =
+      [("wrap", `Wrap); ("newlines", `Newlines); ("never", `Never)]
+    in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with break_string_literals= x} )
+
+  let doc_comments =
+    let doc =
+      "Doc comments position. Can be set in a config file with a \
+       `doc-comments = {before,after}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_DOC_COMMENTS" in
+    let names = ["doc-comments"] in
+    let all = [("after", `After); ("before", `Before)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with doc_comments= x} )
+
+  let escape_chars =
+    let doc =
+      "Escape encoding for character literals. Can be set in a config file \
+       with an `escape-chars = {decimal,hexadecimal,preserve}` line. \
+       `hexadecimal` mode escapes every character, `decimal` produces \
+       ASCII printable characters using decimal escape sequences as \
+       needed, and `preserve` escapes ASCII control codes but leaves the \
+       upper 128 characters unchanged."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
+    let names = ["escape-chars"] in
+    let all =
+      [ ("preserve", `Preserve)
+      ; ("decimal", `Decimal)
+      ; ("hexadecimal", `Hexadecimal) ]
+    in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with escape_chars= x} )
+
+  let escape_strings =
+    let doc =
+      "Escape encoding for string literals. Can be set in a config file \
+       with an `escape-strings = {decimal,hexadecimal,preserve}` line. See \
+       `--escape-chars` for the interpretation of the modes."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_ESCAPE_STRINGS" in
+    let names = ["escape-strings"] in
+    let all =
+      [ ("preserve", `Preserve)
+      ; ("decimal", `Decimal)
+      ; ("hexadecimal", `Hexadecimal) ]
+    in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with escape_strings= x} )
+
+  let if_then_else =
+    let doc =
+      "If-then-else formatting. Can be set in a config file with an \
+       `if-then-else = {keyword-first,compact}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_IF_THEN_ELSE" in
+    let names = ["if-then-else"] in
+    let all = [("compact", `Compact); ("keyword-first", `Keyword_first)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with if_then_else= x} )
+
+  let infix_precedence =
+    let doc =
+      "Use indentation or also discretionary parentheses to explicitly \
+       disambiguate precedences of infix operators."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_INFIX_PRECEDENCE" in
+    let names = ["infix-precedence"] in
+    let all = [("indent", `Indent); ("parens", `Parens)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with infix_precedence= x} )
+
+  let margin =
+    let docv = "COLS" in
+    let doc =
+      "Format code to fit within $(docv) columns. Can be set in a config \
+       file with a `margin = COLS` line. Cannot be set in attributes."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_MARGIN" in
+    C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~env
+      ~allow_inline:false ~update:(fun conf x -> {conf with margin= x} )
+
+  let ocp_indent_compat =
+    let doc =
+      "Attempt to generate output which does not change (much) when \
+       post-processing with ocp-indent. Can be set in a config file with a \
+       `ocp-indent-compat = {true,false}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_OCP_INDENT_COMPAT" in
+    let names = ["ocp-indent-compat"] in
+    C.flag ~names ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with ocp_indent_compat= x} )
+
+  let parens_tuple =
+    let doc =
+      "Parens tuples. Can be set in a config file with a `parens-tuple = \
+       {multi-line-only,always}` line. `multi-line-only` mode will try to \
+       skip parens for single-line tuples."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_PARENS_TUPLE" in
+    let names = ["parens-tuple"] in
+    let all =
+      [("always", `Always); ("multi-line-only", `Multi_line_only)]
+    in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with parens_tuple= x} )
+
+  let sparse =
+    let doc =
+      "Generate more sparsely formatted code. Can be set in a config file \
+       with a `sparse = {true,false}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_SPARSE" in
+    C.flag ~names:["sparse"] ~doc ~env ~allow_inline:true ~update:
+      (fun conf x -> {conf with sparse= x} )
+
+  let type_decl =
+    let doc =
+      "Style of type declaration. Can be set in a config file with a \
+       `type-decl = {compact,sparse}` line. `compact` will try to format \
+       constructors and records definition in a single line. `sparse` will \
+       always break between constructors and record fields."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_TYPE_DECL" in
+    let names = ["type-decl"] in
+    let all = [("compact", `Compact); ("sparse", `Sparse)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with type_decl= x} )
+
+  let wrap_comments =
+    let doc =
+      "Wrap comments and docstrings. Comments and docstrings are divided \
+       into paragraphs by open lines (two or more consecutive newlines), \
+       and each paragraph is wrapped at the margin. Multi-line comments \
+       with vertically-aligned asterisks on the left margin are not \
+       wrapped. Consecutive comments with both left and right margin \
+       aligned are not wrapped either. Can be set in a config file with a \
+       `wrap-comments = {false,true}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_WRAP_COMMENTS" in
+    C.flag ~names:["wrap-comments"] ~doc ~env ~allow_inline:true ~update:
+      (fun conf x -> {conf with wrap_comments= x} )
+end
+
+(* Flags that can be modified in the config file that don't affect
+   formatting *)
+
+let no_comment_check =
   let doc =
-    "Break string literals. $(b,never) mode formats string literals as \
-     they are parsed, in particular, with escape sequences expanded. \
-     $(b,newlines) mode breaks lines at newlines. $(b,wrap) mode wraps \
-     string literals at the margin. Quoted strings such as \
-     $(i,{id|...|id}) are preserved. Can be set in a config file with a \
-     $(b,break-string-literals) \
-     $(i,{)$(b,never)$(i,,)$(b,newlines)$(i,,)$(b,wrap)$(i,}) line."
+    "UNSAFE: Do not perform any checking of comments and documentation \
+     comments."
   in
-  let env = Arg.env_var "OCAMLFORMAT_BREAK_STRING_LITERALS" in
-  let default = `Wrap in
-  mk ~default
-    Arg.(
-      value
-      & opt
-          (enum [("newlines", `Newlines); ("never", `Never); ("wrap", `Wrap)])
-          default
-      & info ["break-string-literals"] ~doc ~env)
+  let env = Arg.env_var "OCAMLFORMAT_NO_COMMENT_CHECK" in
+  C.flag ~names:["no-comment-check"] ~doc ~env ~allow_inline:false ~update:
+    (fun conf x -> {conf with no_comment_check= x} )
+
+let max_iters =
+  let docv = "N" in
+  let doc =
+    "Fail if output of formatting does not stabilize within $(docv) \
+     iterations. Can be set in a config file with a `max-iters = N` line."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_MAX_ITERS" in
+  C.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~env
+    ~allow_inline:false ~update:(fun conf x -> {conf with max_iters= x} )
+
+let quiet =
+  let doc = "Quiet" in
+  let env = Arg.env_var "OCAMLFORMAT_QUIET" in
+  C.flag ~names:["q"; "quiet"] ~doc ~env ~allow_inline:false ~update:
+    (fun conf x -> {conf with quiet= x} )
+
+let no_version_check =
+  let doc =
+    "Do no check version matches the one specified in .ocamlformat."
+  in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["no-version-check"] ~doc)
+
+(* Other Flags *)
 
 let debug =
   let doc = "Generate debugging output." in
@@ -93,136 +410,10 @@ let debug =
   let default = false in
   mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~env)
 
-let doc_comments =
-  let doc =
-    "Doc comments position. Can be set in a config file with a \
-     `doc-comments {before,after}` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_DOC_COMMENTS" in
-  let default = `After in
-  mk ~default
-    Arg.(
-      value
-      & opt (enum [("after", `After); ("before", `Before)]) default
-      & info ["doc-comments"] ~doc ~env)
-
-let escape_chars =
-  let doc =
-    "Escape encoding for character literals. Can be set in a config file \
-     with an `escape-chars {decimal,hexadecimal,preserve}` line. \
-     `hexadecimal` mode escapes every character, `decimal` produces ASCII \
-     printable characters using decimal escape sequences as needed, and \
-     `preserve` escapes ASCII control codes but leaves the upper 128 \
-     characters unchanged."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_ESCAPE_CHARS" in
-  let default = `Preserve in
-  mk ~default
-    Arg.(
-      value
-      & opt
-          (enum
-             [ ("decimal", `Decimal)
-             ; ("hexadecimal", `Hexadecimal)
-             ; ("preserve", `Preserve) ])
-          default
-      & info ["escape-chars"] ~doc ~env)
-
-let escape_strings =
-  let doc =
-    "Escape encoding for string literals. Can be set in a config file with \
-     an `escape-strings {decimal,hexadecimal,preserve}` line. See \
-     `--escape-chars` for the interpretation of the modes."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_ESCAPE_STRINGS" in
-  let default = `Preserve in
-  mk ~default
-    Arg.(
-      value
-      & opt
-          (enum
-             [ ("decimal", `Decimal)
-             ; ("hexadecimal", `Hexadecimal)
-             ; ("preserve", `Preserve) ])
-          default
-      & info ["escape-strings"] ~doc ~env)
-
-let break_infix =
-  let doc =
-    "Break sequence of infix operators. Can be set in a config file with a \
-     `break-infix {wrap,fit-or-vertical}` line. `wrap` will group simple \
-     expressions and try to format them in a single line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_BREAK_INFIX" in
-  let default = `Wrap in
-  mk ~default
-    Arg.(
-      value
-      & opt
-          (enum [("wrap", `Wrap); ("fit-or-vertical", `Fit_or_vertical)])
-          default
-      & info ["break-infix"] ~doc ~env)
-
-let type_decl =
-  let doc =
-    "Style of type declaration. Can be set in a config file with a \
-     `type-decl {compact,sparse}` line. `compact` will try to format \
-     constructors and records definition in a single line. `sparse` will \
-     always break between constructors and record fields."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_TYPE_DECL" in
-  let default = `Compact in
-  mk ~default
-    Arg.(
-      value
-      & opt (enum [("compact", `Compact); ("sparse", `Sparse)]) default
-      & info ["type-decl"] ~doc ~env)
-
-let if_then_else =
-  let doc =
-    "If-then-else formatting. Can be set in a config file with an \
-     `if-then-else {keyword-first,compact}` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_IF_THEN_ELSE" in
-  let default = `Compact in
-  mk ~default
-    Arg.(
-      value
-      & opt
-          (enum [("keyword-first", `Keyword_first); ("compact", `Compact)])
-          default
-      & info ["if-then-else"] ~doc ~env)
-
-let infix_precedence =
-  let doc =
-    "Use indentation or also discretionary parentheses to explicitly \
-     disambiguate precedences of infix operators."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_INFIX_PRECEDENCE" in
-  let default = `Indent in
-  mk ~default
-    Arg.(
-      value
-      & opt (enum [("indent", `Indent); ("parens", `Parens)]) default
-      & info ["infix-precedence"] ~doc ~env)
-
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
   mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc)
-
-let quiet =
-  let doc = "Quiet" in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["q"; "quiet"] ~doc)
-
-let no_comment_check =
-  let doc =
-    "UNSAFE: Do not perform any checking of comments and documentation \
-     comments."
-  in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["no-comment-check"] ~doc)
 
 let inputs =
   let docv = "SRC" in
@@ -245,28 +436,6 @@ let kind : [`Impl | `Intf | `Use_file] ref =
   let default = `Impl in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
-let margin =
-  let docv = "COLS" in
-  let doc =
-    "Format code to fit within $(docv) columns. Can be set in a config \
-     file with a `margin COLS` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_MARGIN" in
-  let default = 80 in
-  mk ~default
-    Arg.(value & opt int default & info ["m"; "margin"] ~doc ~docv ~env)
-
-let max_iters =
-  let docv = "N" in
-  let doc =
-    "Fail if output of formatting does not stabilize within $(docv) \
-     iterations. Can be set in a config file with a `max-iters N` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_MAX_ITERS" in
-  let default = 10 in
-  mk ~default
-    Arg.(value & opt int default & info ["n"; "max-iters"] ~doc ~docv ~env)
-
 let name =
   let docv = "NAME" in
   let doc =
@@ -280,16 +449,6 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docv)
 
-let ocp_indent_compat =
-  let doc =
-    "Attempt to generate output which does not change (much) when \
-     post-processing with ocp-indent. Can be set in a config file with a \
-     `ocp-indent-compat true` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_OCP_INDENT_COMPAT" in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["ocp-indent-compat"] ~doc ~env)
-
 let output =
   let docv = "DST" in
   let doc =
@@ -300,52 +459,6 @@ let output =
   mk ~default
     Arg.(
       value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
-
-let parens_tuple =
-  let doc =
-    "Parens tuples. Can be set in a config file with a `parens-tuple \
-     {multi-line-only,always}` line. `multi-line-only` mode will try to \
-     skip parens for single-line tuples."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_PARENS_TUPLE" in
-  let default = `Always in
-  mk ~default
-    Arg.(
-      value
-      & opt
-          (enum [("multi-line-only", `Multi_line_only); ("always", `Always)])
-          default
-      & info ["parens-tuple"] ~doc ~env)
-
-let sparse =
-  let doc =
-    "Generate more sparsely formatted code. Can be set in a config file \
-     with a `sparse true` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_SPARSE" in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["sparse"] ~doc ~env)
-
-let no_version_check =
-  let doc =
-    "Do no check version matches the one specified in .ocamlformat."
-  in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["no-version-check"] ~doc)
-
-let wrap_comments =
-  let doc =
-    "Wrap comments and docstrings. Comments and docstrings are divided \
-     into paragraphs by open lines (two or more consecutive newlines), and \
-     each paragraph is wrapped at the margin. Multi-line comments with \
-     vertically-aligned asterisks on the left margin are not wrapped. \
-     Consecutive comments with both left and right margin aligned are not \
-     wrapped either. Can be set in a config file with a `wrap-comments \
-     {false,true}` line."
-  in
-  let env = Arg.env_var "OCAMLFORMAT_WRAP_COMMENTS" in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["wrap-comments"] ~doc ~env)
 
 let validate () =
   if List.is_empty !inputs then
@@ -360,175 +473,103 @@ let validate () =
 
 ;; parse info validate
 
-type t =
-  { margin: int
-  ; sparse: bool
-  ; max_iters: int
-  ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
-  ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
-  ; break_string_literals: [`Newlines | `Never | `Wrap]
-  ; wrap_comments: bool
-  ; doc_comments: [`Before | `After]
-  ; parens_tuple: [`Always | `Multi_line_only]
-  ; if_then_else: [`Compact | `Keyword_first]
-  ; infix_precedence: [`Indent | `Parens]
-  ; break_infix: [`Wrap | `Fit_or_vertical]
-  ; type_decl: [`Compact | `Sparse]
-  ; ocp_indent_compat: bool
-  ; quiet: bool
-  ; no_comment_check: bool }
+let parse_line config ~from s =
+  let update ~config ~from ~name ~value =
+    let name = String.strip name in
+    let value = String.strip value in
+    match (name, from) with
+    | "version", `File _ ->
+        if String.equal Version.version value || !no_version_check then
+          Ok config
+        else Error (`Bad_value (value, name))
+    | name, `File _ -> C.update ~config ~name ~value ~inline:false
+    | name, `Attribute -> C.update ~config ~name ~value ~inline:true
+  in
+  let s =
+    match String.index s '#' with
+    | Some i -> String.sub s ~pos:0 ~len:i
+    | None -> s
+  in
+  let s = String.strip s in
+  match String.split ~on:'=' s with
+  | [] | [""] -> Ok config
+  | [name; value] -> update ~config ~from ~name ~value
+  | [s] -> (
+    match
+      ( List.filter
+          ~f:(fun s -> not (String.is_empty s))
+          (String.split ~on:' ' s)
+      , from )
+    with
+    | ([] | [""]), _ -> impossible "previous match"
+    | [name; value], `File (filename, lnum) ->
+        (* tolerate space separated [var value] to compatibility with older
+           config file format *)
+        Format.eprintf
+          "File %S, line %d:\n\
+           Warning: Using deprecated ocamlformat config syntax.\n\
+           Please use `%s = %s`\n"
+          filename lnum name value ;
+        update ~config ~from ~name ~value
+    | [name], _ -> update ~config ~from ~name ~value:"true"
+    | _ -> Error (`Malformed s) )
+  | _ -> Error (`Malformed s)
 
-let update conf ~name ~value =
-  match name with
-  | "margin" -> {conf with margin= Int.of_string value}
-  | "max-iters" -> {conf with max_iters= Int.of_string value}
-  | "sparse" -> {conf with sparse= Bool.of_string value}
-  | "doc-comments" ->
-      { conf with
-        doc_comments=
-          ( match value with
-          | "before" -> `Before
-          | "after" -> `After
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown doc-comments value: %S" other)
-                [] ) }
-  | "if-then-else" ->
-      { conf with
-        if_then_else=
-          ( match value with
-          | "keyword-first" -> `Keyword_first
-          | "compact" -> `Compact
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown if-then-else value: %S" other)
-                [] ) }
-  | "infix-precedence" ->
-      { conf with
-        infix_precedence=
-          ( match value with
-          | "indent" -> `Indent
-          | "parens" -> `Parens
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown infix-precedence value: %S" other)
-                [] ) }
-  | "break-infix" ->
-      { conf with
-        break_infix=
-          ( match value with
-          | "wrap" -> `Wrap
-          | "fit-or-vertical" -> `Fit_or_vertical
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown break-infix value: %S" other)
-                [] ) }
-  | "type-doc" ->
-      { conf with
-        type_decl=
-          ( match value with
-          | "compact" -> `Compact
-          | "sparse" -> `Sparse
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown type-decl value: %S" other)
-                [] ) }
-  | "escape-chars" ->
-      { conf with
-        escape_chars=
-          ( match value with
-          | "decimal" -> `Decimal
-          | "hexadecimal" -> `Hexadecimal
-          | "preserve" -> `Preserve
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown escape-chars value: %S" other)
-                [] ) }
-  | "escape-strings" ->
-      { conf with
-        escape_strings=
-          ( match value with
-          | "decimal" -> `Decimal
-          | "hexadecimal" -> `Hexadecimal
-          | "preserve" -> `Preserve
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown escape-strings value: %S" other)
-                [] ) }
-  | "break-string-literals" ->
-      { conf with
-        break_string_literals=
-          ( match value with
-          | "never" -> `Never
-          | "newlines" -> `Newlines
-          | "wrap" -> `Wrap
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown break-string-literals value: %S"
-                   other)
-                [] ) }
-  | "parens-tuple" ->
-      { conf with
-        parens_tuple=
-          ( match value with
-          | "always" -> `Always
-          | "multi-line-only" -> `Multi_line_only
-          | other ->
-              user_error
-                (Printf.sprintf "Unknown parens-tuple value: %S" other)
-                [] ) }
-  | "version" when not !no_version_check ->
-      if String.equal Version.version value then conf
-      else
-        user_error
-          ( "version mismatch: .ocamlformat requested " ^ value
-          ^ " but version is " ^ Version.version )
-          []
-  | "wrap-comments" -> {conf with wrap_comments= Bool.of_string value}
-  | "ocp-indent-compat" ->
-      {conf with ocp_indent_compat= Bool.of_string value}
-  | _ -> conf
-
-let rec read_conf_files conf dir =
+let rec read_conf_files conf ~dir =
   let dir' = Filename.dirname dir in
   if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
-    let conf = read_conf_files conf dir' in
+    let conf = read_conf_files conf ~dir:dir' in
     try
-      In_channel.with_file (Filename.concat dir ".ocamlformat") ~f:
-        (fun ic ->
-          In_channel.fold_lines ic ~init:conf ~f:(fun conf line ->
-              try
-                Scanf.sscanf line "%s %s" (fun n v ->
-                    update conf ~name:n ~value:v )
-              with
-              | Scanf.Scan_failure _ | End_of_file ->
-                  user_error "malformed .ocamlformat file"
-                    [("line", Sexp.Atom line)] ) )
+      let filename = Filename.concat dir ".ocamlformat" in
+      In_channel.with_file filename ~f:(fun ic ->
+          let c, errors, _ =
+            In_channel.fold_lines ic ~init:(conf, [], 1) ~f:
+              (fun (conf, errors, num) line ->
+                match
+                  parse_line conf ~from:(`File (filename, num)) line
+                with
+                | Ok conf -> (conf, errors, Int.succ num)
+                | Error e -> (conf, e :: errors, Int.succ num) )
+          in
+          match List.rev errors with
+          | [] -> c
+          | l ->
+              user_error "malformed .ocamlformat file"
+                (List.map l ~f:(function
+                  | `Malformed line -> ("invalid format", Sexp.Atom line)
+                  | `Misplaced (name, _) ->
+                      ("not allowed here", Sexp.Atom name)
+                  | `Unknown (name, _value) ->
+                      ("unknown option", Sexp.Atom name)
+                  | `Bad_value (name, value) ->
+                      ( "bad value for"
+                      , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) )) )
     with Sys_error _ -> conf
   else conf
 
 let to_absolute file =
   Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
 
-let conf name =
-  read_conf_files
-    { margin= !margin
-    ; sparse= !sparse
-    ; max_iters= !max_iters
-    ; escape_chars= !escape_chars
-    ; escape_strings= !escape_strings
-    ; break_string_literals= !break_string_literals
-    ; wrap_comments= !wrap_comments
-    ; doc_comments= !doc_comments
-    ; parens_tuple= !parens_tuple
-    ; if_then_else= !if_then_else
-    ; infix_precedence= !infix_precedence
-    ; break_infix= !break_infix
-    ; type_decl= !type_decl
-    ; ocp_indent_compat= !ocp_indent_compat
-    ; quiet= !quiet
-    ; no_comment_check= !no_comment_check }
-    (Filename.dirname (to_absolute name))
+let read_config ~filename conf =
+  read_conf_files conf ~dir:(Filename.dirname (to_absolute filename))
+
+let config =
+  { margin= C.get Formatting.margin
+  ; sparse= C.get Formatting.sparse
+  ; escape_chars= C.get Formatting.escape_chars
+  ; escape_strings= C.get Formatting.escape_strings
+  ; break_string_literals= C.get Formatting.break_string_literals
+  ; wrap_comments= C.get Formatting.wrap_comments
+  ; doc_comments= C.get Formatting.doc_comments
+  ; parens_tuple= C.get Formatting.parens_tuple
+  ; if_then_else= C.get Formatting.if_then_else
+  ; infix_precedence= C.get Formatting.infix_precedence
+  ; break_infix= C.get Formatting.break_infix
+  ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
+  ; type_decl= C.get Formatting.type_decl
+  ; max_iters= C.get max_iters
+  ; quiet= C.get quiet
+  ; no_comment_check= C.get no_comment_check }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
@@ -547,14 +588,22 @@ let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
-           {kind= kind_of file; name= file; file; conf= conf file} ))
+           { kind= kind_of file
+           ; name= file
+           ; file
+           ; conf= read_config ~filename:file config } ))
   else
     match !inputs with
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
         In_out
-          ( {kind= kind_of name; name; file= input_file; conf= conf name}
+          ( { kind= kind_of name
+            ; name
+            ; file= input_file
+            ; conf= read_config ~filename:name config }
           , !output )
     | _ -> impossible "checked by validate"
 
 and debug = !debug
+
+let parse_line_in_attribute = parse_line ~from:`Attribute
