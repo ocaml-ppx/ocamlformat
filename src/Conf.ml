@@ -163,6 +163,21 @@ let break_infix =
           default
       & info ["break-infix"] ~doc ~env)
 
+let type_decl =
+  let doc =
+    "Style of type declaration. Can be set in a config file with a \
+     `type-decl {compact,sparse}` line. `compact` will try to format \
+     constructors and records definition in a single line. `sparse` will \
+     always break between constructors and record fields."
+  in
+  let env = Arg.env_var "OCAMLFORMAT_TYPE_DECL" in
+  let default = `Compact in
+  mk ~default
+    Arg.(
+      value
+      & opt (enum [("compact", `Compact); ("sparse", `Sparse)]) default
+      & info ["type-decl"] ~doc ~env)
+
 let if_then_else =
   let doc =
     "If-then-else formatting. Can be set in a config file with an \
@@ -358,6 +373,7 @@ type t =
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
   ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; type_decl: [`Compact | `Sparse]
   ; ocp_indent_compat: bool
   ; quiet: bool
   ; no_comment_check: bool }
@@ -406,6 +422,16 @@ let update conf name value =
           | other ->
               user_error
                 (Printf.sprintf "Unknown break-infix value: %S" other)
+                [] ) }
+  | "type-doc" ->
+      { conf with
+        type_decl=
+          ( match value with
+          | "compact" -> `Compact
+          | "sparse" -> `Sparse
+          | other ->
+              user_error
+                (Printf.sprintf "Unknown type-decl value: %S" other)
                 [] ) }
   | "escape-chars" ->
       { conf with
@@ -495,6 +521,7 @@ let conf name =
     ; if_then_else= !if_then_else
     ; infix_precedence= !infix_precedence
     ; break_infix= !break_infix
+    ; type_decl= !type_decl
     ; ocp_indent_compat= !ocp_indent_compat
     ; quiet= !quiet
     ; no_comment_check= !no_comment_check }

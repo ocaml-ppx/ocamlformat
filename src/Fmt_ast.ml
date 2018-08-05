@@ -583,7 +583,8 @@ and fmt_payload c ctx pld =
       $ opt exp (fun exp ->
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )
 
-and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
+and fmt_core_type c ?(box= true) ?(in_type_declaration= false) ?pro
+    ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
@@ -650,7 +651,12 @@ and fmt_core_type c ?(box= true) ?pro ({ast= typ} as xtyp) =
       let row_fields rfs =
         match rfs with
         | [] -> Cmts.fmt_within c.cmts ~pro:(fmt "") ptyp_loc
-        | _ -> list rfs "@ | " (fmt_row_field c ctx)
+        | _ ->
+            list rfs
+              ( if in_type_declaration && Poly.(c.conf.type_decl = `Sparse)
+              then "@;<1000 0>| "
+              else "@ | " )
+              (fmt_row_field c ctx)
       in
       let protect_token =
         match List.last rfs with
@@ -2448,7 +2454,7 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
   let fmt_manifest ~priv manifest =
     opt manifest (fun typ ->
         fmt " " $ str eq $ fmt_private_flag priv $ fmt "@ "
-        $ fmt_core_type c (sub_typ ~ctx typ) )
+        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ) )
   in
   let fmt_manifest_kind mfst priv kind =
     match kind with
@@ -2469,7 +2475,10 @@ and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
         $ hvbox 0
             (wrap_fits_breaks "{" "}"
                (list_fl lbl_decls (fun ~first ~last x ->
-                    fmt_if (not first) "@,; "
+                    fmt_if (not first)
+                      ( match c.conf.type_decl with
+                      | `Sparse -> "@;<1000 0>; "
+                      | `Compact -> "@,; " )
                     $ fmt_label_declaration c ctx x
                     $ fmt_if (last && exposed_right_typ x.pld_type) " " )))
     | Ptype_open ->
@@ -2538,7 +2547,10 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
     cstr_decl
   in
   let doc, atrs = doc_atrs pcd_attributes in
-  fmt_if (not first) "@ "
+  fmt_if (not first)
+    ( match c.conf.type_decl with
+    | `Sparse -> "@;<1000 0>"
+    | `Compact -> "@ " )
   $ Cmts.fmt_before c.cmts pcd_loc
   $ Cmts.fmt_before c.cmts loc
   $ fmt_or_k first (if_newline "| ") (fmt "| ")
