@@ -471,7 +471,8 @@ let validate () =
     `Error (false, "Must specify only one input file without --inplace")
   else `Ok ()
 
-;; parse info validate
+;;
+parse info validate
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =

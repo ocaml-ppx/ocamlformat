@@ -64,9 +64,11 @@ let v = (fun [@inline] [@inlined] x -> x) 1
 
 let i = fun [@inline] x -> x[@@inline]
 
-;; if [@test] true then () else ()
+;;
+if [@test] true then () else ()
 
-;; if [@test] true then () else if [@test] true then () else ()
+;;
+if [@test] true then () else if [@test] true then () else ()
 
 let _ = (A [@test], (() [@test]), ([] [@test]), [||] [@test])
 
