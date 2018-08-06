@@ -3402,8 +3402,7 @@ and fmt_use_file c ctx itms =
 and fmt_toplevel_phrase c ctx = function
   | Ptop_def structure -> fmt_structure c ctx structure
   | Ptop_dir (dir, directive_argument) ->
-      fmt ";;@\n"
-      $ str "#" $ str dir
+      fmt ";;@\n" $ str "#" $ str dir
       $
       match directive_argument with
       | Pdir_none -> fmt ""
@@ -3486,8 +3485,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
   @@
   let skip_double_semi =
-    match ctx with Pld (PStr [_]) -> true
-                 | _ -> false
+    match ctx with Pld (PStr [_]) -> true | _ -> false
   in
   let ctx = Str si in
   let fmt_cmts_before =
@@ -3504,7 +3502,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
-      fmt_if (not skip_double_semi) ";;@\n" $ fmt_docstring c doc
+      fmt_if (not skip_double_semi) ";;@\n"
+      $ fmt_docstring c doc
       $ cbox 0 (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
