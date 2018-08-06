@@ -36,10 +36,6 @@ dev: setup
 opt: setup
 	dune build _build/release/src/ocamlformat.exe
 
-.PHONY: reason
-reason: setup
-	dune build _build/release/src/ocamlformat_reason.exe
-
 .PHONY: clean cleanbisect
 clean: cleanbisect
 	rm -rf _build dune-workspace
@@ -54,12 +50,12 @@ fmt:
 	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
 
 .PHONY: test
-test: exe reason
+test: exe
 	$(MAKE) fixpoint
 	$(MAKE) regtests
 
 .PHONY: regtests fixpoint
-fixpoint: exe reason
+fixpoint: exe
 	_build/release/src/ocamlformat.exe -n 1 -i $(SRCS)
 
 regtests: exe

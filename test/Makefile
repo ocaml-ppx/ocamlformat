@@ -23,8 +23,6 @@ ALL_DIRS=$(DIRS) $(XDIRS)
 #       make MODE=<mode>
 MODE?=dev
 
-REFMT=refmt
-
 OCAMLFORMAT_EXE=../_build/$(MODE)/src/ocamlformat.exe
 
 .PHONY: test
@@ -89,25 +87,11 @@ test_pull:
 	@rm -f $*.pp*.mli $*.old.ast $*.new.ast
 	$(OCAMLFORMAT_EXE) $< -o $*.pp.mli
 
-%.ml: %.re $(OCAMLFORMAT_EXE)
-	@rm -f $*.pp.ml $*.old.ast $*.new.ast
-	$(REFMT) --print=binary_reason $< | $(OCAMLFORMAT_EXE) $< --reason-impl -o $@
-
-%.mli: %.rei $(OCAMLFORMAT_EXE)
-	@rm -f $*.pp.mli $*.old.ast $*.new.ast
-	$(REFMT) --print=binary_reason $< | $(OCAMLFORMAT_EXE) $< --reason-intf -o $@
-
 TEST_ML:=$(shell find $(DIRS) -name _build -not -prune -or -path code/ocamlformat/test -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
 TEST_MLI:=$(shell find $(DIRS) -name _build -not -prune -or -path code/ocamlformat/test -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
 
 XTEST_ML:=$(shell find $(XDIRS) -path code/ocaml/experimental -not -prune -or -path code/ocaml/testsuite/tests/parse-errors -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
 XTEST_MLI:=$(shell find $(XDIRS) -path code/ocaml/experimental -not -prune -or -path code/ocaml/testsuite/tests/parse-errors -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
-
-TEST_RE:=$(shell find $(DIRS) -name '*'.re 2>/dev/null)
-TEST_REI:=$(shell find $(DIRS) -name '*'.rei 2>/dev/null)
-
-CONV_ML:=$(patsubst %.re,%.ml,$(TEST_RE))
-CONV_MLI:=$(patsubst %.rei,%.mli,$(TEST_REI))
 
 TEST_PP_ML:=$(patsubst %.ml,%.pp.ml,$(TEST_ML))
 TEST_PP_MLI:=$(patsubst %.mli,%.pp.mli,$(TEST_MLI))
@@ -115,11 +99,8 @@ TEST_PP_MLI:=$(patsubst %.mli,%.pp.mli,$(TEST_MLI))
 XTEST_PP_ML:=$(patsubst %.ml,%.pp.ml,$(XTEST_ML))
 XTEST_PP_MLI:=$(patsubst %.mli,%.pp.mli,$(XTEST_MLI))
 
-TEST_PP_RE:=$(patsubst %.re,%.pp.ml,$(TEST_RE))
-TEST_PP_REI:=$(patsubst %.rei,%.pp.mli,$(TEST_REI))
-
 .PHONY: test_format
-test_format: $(TEST_PP_ML) $(TEST_PP_MLI) $(TEST_PP_RE) $(TEST_PP_REI)
+test_format: $(TEST_PP_ML) $(TEST_PP_MLI)
 
 .PHONY: test_inplace
 test_inplace:
@@ -128,14 +109,6 @@ test_inplace:
 .PHONY: test_inplace
 test_extra:
 	@parallel --bar $(OCAMLFORMAT_EXE) --no-version-check --quiet -i ::: $(XTEST_ML) $(XTEST_MLI)
-
-.PHONY: test_convert
-test_convert: $(CONV_ML) $(CONV_MLI)
-
-.PHONY: test_convert_inplace
-test_convert_inplace:
-	parallel -i sh -c "$(REFMT) --print=binary_reason {} | $(OCAMLFORMAT_EXE) {} --reason-impl -o {}" -- $(TEST_RE)
-	parallel -i sh -c "$(REFMT) --print=binary_reason {} | $(OCAMLFORMAT_EXE) {} --reason-intf -o {}" -- $(TEST_REI)
 
 .PHONY: test_margins
 test_margins:
