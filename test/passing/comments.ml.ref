@@ -42,26 +42,30 @@ let _ = if (* a3 *) B (* c3 *) then (* d3 *) E (* f3 *) else (* g3 *) H
 
 (* i3 *)
 
-;; match x with
-   | true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-   | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-   (* this comment should not change the formatting of the following case *)
-   | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+;;
+match x with
+| true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+| false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+(* this comment should not change the formatting of the following case *)
+| false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 
-;; try f x
-   with
-   (* this comment is intended to refer to the entire case below *)
-   | Caml.Not_found
-   -> ()
+;;
+try f x
+with
+(* this comment is intended to refer to the entire case below *)
+| Caml.Not_found
+-> ()
 
-;; match x
-   with
-   (* this comment is intended to refer to the entire case below *)
-   | false
-   -> ()
+;;
+match x
+with
+(* this comment is intended to refer to the entire case below *)
+| false
+-> ()
 
-;; match x with
-   | Aaaaaaaaaaaaaaaaaaaa
-   (* this comment is intended to refer to the case below *)
-    |Bbbbbbbbbbbbbbbbbbbb ->
-       ()
+;;
+match x with
+| Aaaaaaaaaaaaaaaaaaaa
+(* this comment is intended to refer to the case below *)
+ |Bbbbbbbbbbbbbbbbbbbb ->
+    ()

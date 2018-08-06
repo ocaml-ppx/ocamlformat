@@ -34,12 +34,14 @@ let _ =
 
 let _ = 1, 2, 3, short
 
-;; 1
-   , 2
-   , 3
-   , looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+;;
+1
+, 2
+, 3
+, looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
 
-;; 1, 2, 3, short
+;;
+1, 2, 3, short
 
 (* make sure to not drop parens for local open. *)
 let _ = A.(1, 2)

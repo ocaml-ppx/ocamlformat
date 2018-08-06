@@ -17,5 +17,6 @@ let _ =
       something very
         loooooooooooooooooooooooooooooooooooooooooooooooooooooooong
 
-;; if row <> row' && col <> col' then
-     b.(row').(col') <- remove b.(row').(col') value
+;;
+if row <> row' && col <> col' then
+  b.(row').(col') <- remove b.(row').(col') value

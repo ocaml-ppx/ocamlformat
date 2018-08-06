@@ -583,7 +583,7 @@ let rec fmt_attribute c pre = function
 and fmt_extension c ctx key (({txt} as ext), pld) =
   match (pld, ctx) with
   | PStr [({pstr_desc= Pstr_value _; _} as si)], (Pld _ | Str _ | Top) ->
-      fmt_structure_item c ~sep:"" ~last:true ~ext (sub_str ~ctx si)
+      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | _ ->
       let protect_token =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
@@ -3335,7 +3335,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt "struct" $ fmt_if empty " " )
       ; psp= fmt_if (not empty) "@;<1000 2>"
-      ; bdy= within $ fmt_structure c ~sep:";; " ctx sis
+      ; bdy= within $ fmt_structure c ctx sis
       ; cls= close_box
       ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
@@ -3397,12 +3397,12 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
 
 and fmt_use_file c ctx itms =
-  list itms ";;\n@\n" (fun item -> fmt_toplevel_phrase c ctx item)
+  list itms "\n@\n" (fun item -> fmt_toplevel_phrase c ctx item)
 
 and fmt_toplevel_phrase c ctx = function
-  | Ptop_def structure -> fmt_structure c ctx ~use_file:true structure
+  | Ptop_def structure -> fmt_structure c ctx structure
   | Ptop_dir (dir, directive_argument) ->
-      str "#" $ str dir
+      fmt ";;@\n" $ str "#" $ str dir
       $
       match directive_argument with
       | Pdir_none -> fmt ""
@@ -3413,7 +3413,7 @@ and fmt_toplevel_phrase c ctx = function
       | Pdir_ident longident -> fmt " " $ fmt_longident longident
       | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool)
 
-and fmt_structure c ?(sep= "") ?use_file ctx itms =
+and fmt_structure c ctx itms =
   let _, itms =
     List.fold_map itms ~init:c ~f:(fun c i ->
         let c =
@@ -3474,19 +3474,18 @@ and fmt_structure c ?(sep= "") ?use_file ctx itms =
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
         fmt_if (not first) "@\n"
-        $ fmt_structure_item c ~sep ~last:(last && last_grp) ?use_file
-            (sub_str ~ctx itm) )
+        $ fmt_structure_item c ~last:(last && last_grp) (sub_str ~ctx itm)
+    )
   in
   hvbox 0
     (list_fl grps (fun ~first ~last grp ->
          fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
 
-and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
-    {ctx; ast= si} =
+and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
   @@
-  let at_top =
-    match ctx with Top | Pld (PStr (_ :: _ :: _)) -> true | _ -> false
+  let skip_double_semi =
+    match ctx with Pld (PStr [_]) -> true | _ -> false
   in
   let ctx = Str si in
   let fmt_cmts_before =
@@ -3503,10 +3502,9 @@ and fmt_structure_item c ~sep ~last:last_item ?ext ?(use_file= false)
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
-      str sep $ fmt_docstring c doc
-      $ cbox 0
-          ( fmt_if (at_top && (not use_file)) ";; "
-          $ fmt_expression c (sub_exp ~ctx exp) )
+      fmt_if (not skip_double_semi) ";;@\n"
+      $ fmt_docstring c doc
+      $ cbox 0 (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
       hvbox 2
