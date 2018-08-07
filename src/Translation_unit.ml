@@ -65,7 +65,7 @@ end = struct
     String.concat ~sep:"" (List.map ~f:(Format.sprintf "%+d") x)
 end
 
-let parse parse_ast (conf: Conf.t) ic =
+let parse parse_ast (conf : Conf.t) ic =
   let warnings =
     W.enable 50
     :: (if conf.quiet then List.map ~f:W.disable W.in_lexer else [])
@@ -104,7 +104,7 @@ let dump xunit dir base suf ext ast =
 
 type result = Ok | Invalid_source of exn | Ocamlformat_bug of exn
 
-let parse_print (XUnit xunit) (conf: Conf.t) ~input_name ~input_file ic
+let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     ofile =
   let dir =
     match ofile with

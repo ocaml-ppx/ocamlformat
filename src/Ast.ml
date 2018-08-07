@@ -112,7 +112,7 @@ let rec is_sugared_list exp =
       is_sugared_list tl
   | _ -> false
 
-let may_force_break (c: Conf.t) s =
+let may_force_break (c : Conf.t) s =
   let contains_internal_newline s =
     match String.index s '\n' with
     | None -> false
@@ -975,7 +975,7 @@ end = struct
   let check_exp ({ctx; ast= exp} as xexp) =
     try check_exp xexp with exc -> fail ctx (Exp exp) exc
 
-  let rec is_simple (c: Conf.t) width ({ast= exp} as xexp) =
+  let rec is_simple (c : Conf.t) width ({ast= exp} as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
     | Pexp_constant _ -> is_trivial c exp

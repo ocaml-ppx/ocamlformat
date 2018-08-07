@@ -156,7 +156,7 @@ module Loc_tree = struct
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
   let of_ast map_ast ast =
-    let attribute (m: Ast_mapper.mapper) attr =
+    let attribute (m : Ast_mapper.mapper) attr =
       match attr with
       | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
         , PStr
@@ -273,11 +273,11 @@ end = struct
 
   let to_list (smap, _) = List.concat (Map.data smap)
 
-  let split (t: t) (loc: Location.t) =
+  let split (t : t) (loc : Location.t) =
     let addo m kvo =
       Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
-    let partition ((smap, emap): t) (loc: Location.t) =
+    let partition ((smap, emap) : t) (loc : Location.t) =
       let s_before, s_equal, s_after = Map.split smap loc in
       let s_after = addo s_after s_equal in
       let e_before, e_after =
@@ -297,7 +297,7 @@ end
     a [|] character and the first location begins a line and the start
     column of the first location is not greater than that of the second
     location. *)
-let is_adjacent t (l1: Location.t) (l2: Location.t) =
+let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
   Option.value_map (Source.string_between t.source l1 l2) ~default:false ~f:
     (fun btw ->
       match String.strip btw with
@@ -329,7 +329,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug then
       List.iter cmtl ~f:(fun (cmt_txt, cmt_loc) ->
-          let string_between (l1: Location.t) (l2: Location.t) =
+          let string_between (l1 : Location.t) (l2 : Location.t) =
             match Source.string_between t.source l1 l2 with
             | None -> "swapped"
             | Some s -> s

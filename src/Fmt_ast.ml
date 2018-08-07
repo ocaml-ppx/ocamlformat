@@ -381,7 +381,7 @@ let empty =
 (* In several places, a break such as "@;<1000 0>" is used to force the
    enclosing box to break across multiple lines. *)
 
-let rec fmt_longident (li: Longident.t) =
+let rec fmt_longident (li : Longident.t) =
   match li with
   | Lident id -> str id
   | Ldot (li, id) ->
@@ -392,7 +392,7 @@ let rec fmt_longident (li: Longident.t) =
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
 let fmt_longident_loc c ?(pre= ("" : _ format))
-    ({txt; loc}: Longident.t loc) =
+    ({txt; loc} : Longident.t loc) =
   Cmts.fmt c.cmts loc @@ (fmt pre $ fmt_longident txt)
 
 let fmt_char_escaped c ~loc chr =
@@ -553,7 +553,7 @@ let fmt_docstring c ?pro ?epi doc =
 let fmt_extension_suffix c ext =
   opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt c.cmts loc (str txt))
 
-let field_alias ~field:(li1: Longident.t) (li2: Longident.t) =
+let field_alias ~field:(li1 : Longident.t) (li2 : Longident.t) =
   match (li1, li2) with
   | Ldot (_, x), Lident y -> String.equal x y
   | Lident x, Lident y -> String.equal x y
@@ -965,15 +965,14 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       , ({ptyp_desc= Ptyp_package pty; ptyp_attributes= []} as typ) ) ->
       let ctx = Typ typ in
       wrap_if parens "(" ")"
-        ( fmt "module " $ str txt $ fmt "@;<1 2>: "
-        $ fmt_package_type c ctx pty )
+        (fmt "module " $ str txt $ fmt "@ : " $ fmt_package_type c ctx pty)
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
            ( fmt_pattern c (sub_pat ~ctx pat)
            $ ( match ctx0 with
              | Exp {pexp_desc= Pexp_let _} -> fmt "@ : "
-             | _ -> fmt ":@ " )
+             | _ -> fmt " :@ " )
            $ fmt_core_type c (sub_typ ~ctx typ) ))
   | Ppat_type lid -> fmt_longident_loc c ~pre:"#" lid
   | Ppat_lazy pat ->
@@ -1516,10 +1515,11 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
           $ fmt_package_type c ctx pty )
       $ fmt_atrs
   | Pexp_constraint (e, t) ->
-      wrap_fits_breaks "(" ")"
-        ( fmt_expression c (sub_exp ~ctx e)
-        $ fmt "@ : "
-        $ fmt_core_type c (sub_typ ~ctx t) )
+      hvbox 2
+        (wrap_fits_breaks "(" ")"
+           ( fmt_expression c (sub_exp ~ctx e)
+           $ fmt "@ : "
+           $ fmt_core_type c (sub_typ ~ctx t) ))
       $ fmt_atrs
   | Pexp_construct (lid, None) -> (
     match lid.txt with
@@ -2277,7 +2277,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
   | Pcl_constraint (e, t) ->
       wrap_fits_breaks "(" ")"
         ( fmt_class_expr c (sub_cl ~ctx e)
-        $ fmt "@ : "
+        $ fmt "@;<1 2>: "
         $ fmt_class_type c (sub_cty ~ctx t) )
       $ fmt_atrs
   | Pcl_extension ext -> fmt_extension c ctx "%" ext $ fmt_atrs
@@ -2290,7 +2290,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
         $ fmt_atrs ) )
   $ fmt_atrs
 
-and fmt_class_field c ctx (cf: class_field) =
+and fmt_class_field c ctx (cf : class_field) =
   let {pcf_desc; pcf_loc; pcf_attributes} = cf in
   let c = update_config c pcf_attributes in
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pcf_loc in
@@ -2396,7 +2396,7 @@ and fmt_class_field c ctx (cf: class_field) =
          | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
 
-and fmt_class_type_field c ctx (cf: class_type_field) =
+and fmt_class_type_field c ctx (cf : class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
   let c = update_config c pctf_attributes in
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pctf_loc in
@@ -2948,7 +2948,7 @@ and fmt_signature_item c {ast= si} =
   | Psig_class_type cl ->
       fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
 
-and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
+and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
       let {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}
           =
@@ -2975,7 +2975,7 @@ and fmt_class_types c ctx ~pre ~sep (cls: class_type class_infos list) =
           $ fmt_class_type c (sub_cty ~ctx pci_expr)
           $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs ) )
 
-and fmt_class_exprs c ctx (cls: class_expr class_infos list) =
+and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
       let {pci_virt; pci_params; pci_name; pci_expr; pci_loc; pci_attributes}
           =

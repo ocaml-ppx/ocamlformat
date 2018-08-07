@@ -23,7 +23,7 @@ let make_mapper ~ignore_doc_comment =
     | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
     | _ -> false
   in
-  let attribute (m: Ast_mapper.mapper) attr =
+  let attribute (m : Ast_mapper.mapper) attr =
     match attr with
     | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
       , PStr
@@ -58,7 +58,7 @@ let make_mapper ~ignore_doc_comment =
     | attr -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
-  let attributes (m: Ast_mapper.mapper) atrs =
+  let attributes (m : Ast_mapper.mapper) atrs =
     let atrs =
       if ignore_doc_comment then
         List.filter atrs ~f:(fun a -> not (doc_attribute a))
@@ -67,7 +67,7 @@ let make_mapper ~ignore_doc_comment =
     Ast_mapper.default_mapper.attributes m
       (List.sort ~compare:Poly.compare atrs)
   in
-  let expr (m: Ast_mapper.mapper) exp =
+  let expr (m : Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_attributes} = exp in
     match pexp_desc with
     (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
@@ -80,7 +80,7 @@ let make_mapper ~ignore_doc_comment =
     | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t)}) -> m.expr m e
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
-  let pat (m: Ast_mapper.mapper) pat =
+  let pat (m : Ast_mapper.mapper) pat =
     let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1} = pat in
     (* normalize nested or patterns *)
     match ppat_desc with
@@ -95,7 +95,7 @@ let make_mapper ~ignore_doc_comment =
              pat3)
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
-  let value_binding (m: Ast_mapper.mapper) vb =
+  let value_binding (m : Ast_mapper.mapper) vb =
     let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes}
         ; pvb_expr
         ; pvb_loc
@@ -121,7 +121,7 @@ let make_mapper ~ignore_doc_comment =
                 t0))
     | _ -> Ast_mapper.default_mapper.value_binding m vb
   in
-  let structure_item (m: Ast_mapper.mapper) (si: structure_item) =
+  let structure_item (m : Ast_mapper.mapper) (si : structure_item) =
     match si.pstr_desc with
     | Pstr_eval ({pexp_desc= Pexp_extension e}, []) ->
         let e = m.extension m e in
@@ -129,7 +129,7 @@ let make_mapper ~ignore_doc_comment =
         {pstr_desc= Pstr_extension (e, []); pstr_loc}
     | _ -> Ast_mapper.default_mapper.structure_item m si
   in
-  let structure (m: Ast_mapper.mapper) (si: structure) =
+  let structure (m : Ast_mapper.mapper) (si : structure) =
     let si =
       if ignore_doc_comment then
         List.filter si ~f:(fun si ->
@@ -140,7 +140,7 @@ let make_mapper ~ignore_doc_comment =
     in
     Ast_mapper.default_mapper.structure m si
   in
-  let signature (m: Ast_mapper.mapper) (si: signature) =
+  let signature (m : Ast_mapper.mapper) (si : signature) =
     let si =
       if ignore_doc_comment then
         List.filter si ~f:(fun si ->
@@ -151,7 +151,7 @@ let make_mapper ~ignore_doc_comment =
     in
     Ast_mapper.default_mapper.signature m si
   in
-  let class_signature (m: Ast_mapper.mapper) (si: class_signature) =
+  let class_signature (m : Ast_mapper.mapper) (si : class_signature) =
     let si =
       if ignore_doc_comment then
         let pcsig_fields =
@@ -165,7 +165,7 @@ let make_mapper ~ignore_doc_comment =
     in
     Ast_mapper.default_mapper.class_signature m si
   in
-  let class_structure (m: Ast_mapper.mapper) (si: class_structure) =
+  let class_structure (m : Ast_mapper.mapper) (si : class_structure) =
     let si =
       if ignore_doc_comment then
         let pcstr_fields =
@@ -223,17 +223,17 @@ let equal_use_file ~ignore_doc_comments ast1 ast2 =
   in
   Poly.equal (map ast1) (map ast2)
 
-let disabled_attribute (attribute: attribute) =
+let disabled_attribute (attribute : attribute) =
   match attribute with
   | {txt= "ocamlformat.disable"; _}, _ -> true
   | _ -> false
 
-let disabled_structure_item (si: structure_item) =
+let disabled_structure_item (si : structure_item) =
   match si.pstr_desc with
   | Pstr_attribute a -> disabled_attribute a
   | _ -> false
 
-let disabled_signature_item (si: signature_item) =
+let disabled_signature_item (si : signature_item) =
   match si.psig_desc with
   | Psig_attribute a -> disabled_attribute a
   | _ -> false

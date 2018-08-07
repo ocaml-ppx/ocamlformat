@@ -39,7 +39,7 @@ let str s fs = Format.pp_print_string fs s
 
 let opt o pp fs = Option.iter o ~f:(Fn.flip pp fs)
 
-let list_pn x1N (pp: ?prev:_ -> _ -> ?next:_ -> _ -> unit) fs =
+let list_pn x1N (pp : ?prev:_ -> _ -> ?next:_ -> _ -> unit) fs =
   match x1N with
   | [] -> ()
   | [x1] -> pp ?prev:None x1 ?next:None fs
