@@ -8,6 +8,7 @@
  *  LICENSE file in the root directory of this source tree.           *
  *                                                                    *
  **********************************************************************)
+open Migrate_ast
 
 type t
 
@@ -29,3 +30,6 @@ val tokens_at :
 val begins_line : t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool
+
+val extension_using_sugar :
+  name:string Location.loc -> payload:Parsetree.expression -> bool

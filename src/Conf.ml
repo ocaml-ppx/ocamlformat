@@ -18,6 +18,7 @@ type t =
   ; doc_comments: [`Before | `After]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
+  ; extension_sugar: [`Preserve | `Always]
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
   ; margin: int
@@ -272,6 +273,17 @@ module Formatting = struct
     in
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with escape_strings= x} )
+
+  let extension_sugar =
+    let doc =
+      "Extension formatting. Can be set in a config file with an \
+       `extension-such = {preserve,always}` line."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_EXTENSION_SUGAR" in
+    let names = ["extension-sugar"] in
+    let all = [("preserve", `Preserve); ("always", `Always)] in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with extension_sugar= x} )
 
   let if_then_else =
     let doc =
@@ -559,6 +571,7 @@ let config =
   ; sparse= C.get Formatting.sparse
   ; escape_chars= C.get Formatting.escape_chars
   ; escape_strings= C.get Formatting.escape_strings
+  ; extension_sugar= C.get Formatting.extension_sugar
   ; break_string_literals= C.get Formatting.break_string_literals
   ; wrap_comments= C.get Formatting.wrap_comments
   ; doc_comments= C.get Formatting.doc_comments
