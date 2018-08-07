@@ -1903,7 +1903,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                             | Pexp_letmodule _ | Pexp_object _ )
                         ; pexp_attributes= [] } as e1 )
                     , _ ) } as str ) ] )
-    when List.is_empty pexp_attributes ->
+    when List.is_empty pexp_attributes
+         && ( Poly.(c.conf.extension_sugar = `Always)
+            || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
         $ fmt_atrs )

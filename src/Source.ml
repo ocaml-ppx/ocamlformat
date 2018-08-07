@@ -8,6 +8,7 @@
  *  LICENSE file in the root directory of this source tree.           *
  *                                                                    *
  **********************************************************************)
+open Migrate_ast
 
 (** Concrete syntax. *)
 type t = string
@@ -124,3 +125,9 @@ let ends_line t (l: Location.t) =
       | _ -> false
   in
   ends_line_ l.loc_end.pos_cnum
+
+let extension_using_sugar ~(name: string Location.loc)
+    ~(payload: Parsetree.expression) =
+  Source_code_position.ascending name.loc.loc_start
+    payload.pexp_loc.loc_start
+  > 0
