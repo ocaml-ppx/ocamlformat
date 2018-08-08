@@ -65,3 +65,13 @@ let _ = if ((* a3 *) B (* c3 *))
    (* this comment is intended to refer to the case below *)
     |Bbbbbbbbbbbbbbbbbbbb ->
        ()
+
+
+module type M = sig
+
+  val f
+    (* A list of [name], [count] pairs. *)
+    :  (string * int) list
+    -> int
+
+end
