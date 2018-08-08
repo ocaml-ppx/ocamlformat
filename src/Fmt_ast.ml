@@ -800,7 +800,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_any -> fmt "_"
   | Ppat_var {txt; loc} ->
       Cmts.fmt c.cmts loc @@ wrap_if (is_symbol_id txt) "( " " )" (str txt)
-  | Ppat_alias (pat, {txt}) ->
+  | Ppat_alias (pat, {txt; loc}) ->
       let paren_pat =
         match pat.ppat_desc with
         | Ppat_or _ | Ppat_tuple _ -> Some true
@@ -810,7 +810,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks_if parens "(" ")"
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ "
-           $ wrap_if (is_symbol_id txt) "( " " )" (str txt) ))
+           $ Cmts.fmt c.cmts loc
+               (wrap_if (is_symbol_id txt) "( " " )" (str txt)) ))
   | Ppat_constant const -> fmt_constant c ~loc:ppat_loc const
   | Ppat_interval (l, u) -> (
       (* we need to reconstruct locations for both side of the interval *)
@@ -2484,7 +2485,7 @@ and fmt_cases c ctx cs =
               $ fmt_if paren_body "@ )" ) ) )
 
 and fmt_value_description c ctx vd =
-  let {pval_name= {txt}; pval_type; pval_prim; pval_attributes} = vd in
+  let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes} = vd in
   let c = update_config c pval_attributes in
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc, atrs = doc_atrs pval_attributes in
@@ -2495,7 +2496,8 @@ and fmt_value_description c ctx vd =
     ( fmt_if_k doc_before (fmt_docstring c ~epi:(fmt "@\n") doc)
     $ hvbox 2
         ( str pre $ fmt " "
-        $ wrap_if (is_symbol_id txt) "( " " )" (str txt)
+        $ Cmts.fmt c.cmts loc
+            (wrap_if (is_symbol_id txt) "( " " )" (str txt))
         $ fmt " "
         $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
@@ -2639,11 +2641,11 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   $ fmt_or_k first (if_newline "| ") (fmt "| ")
   $ hovbox 2
       ( hvbox 2
-          ( wrap_if (is_symbol_id txt) "( " " )" (str txt)
+          ( Cmts.fmt c.cmts loc
+              (wrap_if (is_symbol_id txt) "( " " )" (str txt))
           $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
       $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
-  $ Cmts.fmt_after c.cmts ?pro:None ~epi:(fmt "@ ") loc
   $ Cmts.fmt_after c.cmts ?pro:None ~epi:(fmt "@ ") pcd_loc
 
 and fmt_constructor_arguments c ctx pre args =
