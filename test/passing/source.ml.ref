@@ -102,7 +102,9 @@ let () =
   [%foo
     (let module M = M in
     ()) [@foo]] ;
-  [%foo M.(()) [@foo]] ;
+  [%foo
+    (let open M in
+    ()) [@foo]] ;
   [%foo fun [@foo] x -> ()] ;
   [%foo function[@foo] x -> ()] ;
   [%foo try[@foo] () with _ -> ()] ;

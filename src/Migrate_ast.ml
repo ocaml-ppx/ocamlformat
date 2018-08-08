@@ -26,7 +26,8 @@ module Parse = struct
         | Ptop_def (_ :: _) | Ptop_dir _ -> true )
 end
 
-let to_current = Migrate_parsetree.Versions.(migrate ocaml_407 ocaml_current)
+let to_current =
+  Migrate_parsetree.Versions.(migrate ocaml_407 ocaml_current)
 
 module Printast = struct
   open Printast

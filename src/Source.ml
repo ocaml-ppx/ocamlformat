@@ -52,6 +52,18 @@ let tokens_at t ?(filter= fun _ -> true) (l: Location.t) :
   in
   loop []
 
+let loc_between ~(from: Location.t) ~(upto: Location.t) : Location.t =
+  {from with loc_start= from.loc_end; loc_end= upto.loc_start}
+
+let tokens_between t ?(filter= fun _ -> true) ~(from: Location.t)
+    ~(upto: Location.t) : (Parser.token * Location.t) list =
+  tokens_at t ~filter (loc_between ~from ~upto)
+
+let contains_IN_token_between t ~(from: Location.t) ~(upto: Location.t) =
+  let filter = function Parser.IN -> true | _ -> false in
+  Source_code_position.ascending from.loc_start upto.loc_start < 0
+  && (not (List.is_empty (tokens_between t ~from ~upto ~filter)))
+
 let string_literal t mode (l: Location.t) =
   (* the location of a [string] might include surrounding comments and
      attributes because of [reloc_{exp,pat}] and a [string] can be found in

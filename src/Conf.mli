@@ -24,6 +24,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
+  ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
