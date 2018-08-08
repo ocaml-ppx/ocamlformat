@@ -66,7 +66,7 @@ let _ = object%js end
 
 let _ = object%js (super) end
 
-let _ = object%js (super: 'a) end
+let _ = object%js (super : 'a) end
 
 let _ = f (object end)
 

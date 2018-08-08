@@ -20,7 +20,7 @@ module Parse = struct
 
   let use_file lexbuf =
     List.filter (Parse.use_file Versions.ocaml_407 lexbuf) ~f:
-      (fun (p: Parsetree.toplevel_phrase) ->
+      (fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
         | Ptop_def (_ :: _) | Ptop_dir _ -> true )
@@ -38,7 +38,7 @@ module Printast = struct
 
   let expression n f x = expression n f (to_current.copy_expression x)
 
-  let payload n f (x: Parsetree.payload) =
+  let payload n f (x : Parsetree.payload) =
     payload n f
       ( match x with
       | PStr x -> PStr (to_current.copy_structure x)
@@ -49,7 +49,7 @@ module Printast = struct
             ( to_current.copy_pattern x
             , Option.map ~f:to_current.copy_expression y ) )
 
-  let copy_directive_argument (x: Parsetree.directive_argument) =
+  let copy_directive_argument (x : Parsetree.directive_argument) =
     let open Migrate_parsetree.Versions.OCaml_current.Ast.Parsetree in
     match x with
     | Pdir_none -> Pdir_none
@@ -58,8 +58,8 @@ module Printast = struct
     | Pdir_ident i -> Pdir_ident i
     | Pdir_bool b -> Pdir_bool b
 
-  let use_file f (x: Parsetree.toplevel_phrase list) =
-    List.iter x ~f:(fun (p: Parsetree.toplevel_phrase) ->
+  let use_file f (x : Parsetree.toplevel_phrase list) =
+    List.iter x ~f:(fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def s ->
             top_phrase f (Ptop_def (to_current.copy_structure s))

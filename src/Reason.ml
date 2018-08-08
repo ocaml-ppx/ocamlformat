@@ -21,7 +21,7 @@ type 'a reason_data =
     assumed to be the output of `refmt --print=binary_reason` where `refmt`
     has been compiled with the same version of `ocaml` as `ocamlformat`. *)
 let input ast_magic _conf ic =
-  let (magic, _, (ast: 'a), comments, _, _) : 'a reason_data =
+  let (magic, _, (ast : 'a), comments, _, _) : 'a reason_data =
     Caml.Marshal.from_channel ic
   in
   if String.equal magic ast_magic then
@@ -54,7 +54,7 @@ let mapper cmts ~ignore_doc_comments =
         Set.mem cmts ("*" ^ txt)
     | _ -> false
   in
-  let attributes (m: Ast_mapper.mapper) atrs =
+  let attributes (m : Ast_mapper.mapper) atrs =
     let atrs =
       if ignore_doc_comments then
         List.filter atrs ~f:(function
@@ -66,7 +66,7 @@ let mapper cmts ~ignore_doc_comments =
     let atrs = List.filter atrs ~f:(Fn.non atr_is_dup) in
     Normalize.mapper.attributes m atrs
   in
-  let pat (m: Ast_mapper.mapper) pat =
+  let pat (m : Ast_mapper.mapper) pat =
     let {ppat_desc; ppat_loc; ppat_attributes} = pat in
     (* remove explicit_arity attributes *)
     let explicit_arity, attrs =
@@ -85,7 +85,7 @@ let mapper cmts ~ignore_doc_comments =
         in
         Normalize.mapper.pat m pat
   in
-  let expr (m: Ast_mapper.mapper) exp =
+  let expr (m : Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_loc; pexp_attributes} = exp in
     (* remove explicit_arity attributes *)
     let explicit_arity, attrs =
@@ -104,7 +104,7 @@ let mapper cmts ~ignore_doc_comments =
         in
         Normalize.mapper.expr m exp
   in
-  let structure (m: Ast_mapper.mapper) pstr =
+  let structure (m : Ast_mapper.mapper) pstr =
     (* remove structure items that are attributes that duplicate comments,
        when converting Reason *)
     Normalize.mapper.structure m
@@ -112,7 +112,7 @@ let mapper cmts ~ignore_doc_comments =
         | {pstr_desc= Pstr_attribute atr} -> not (atr_is_dup atr)
         | _ -> true ))
   in
-  let signature (m: Ast_mapper.mapper) psig =
+  let signature (m : Ast_mapper.mapper) psig =
     (* remove signature items that are attributes that duplicate comments,
        when converting Reason *)
     Normalize.mapper.signature m

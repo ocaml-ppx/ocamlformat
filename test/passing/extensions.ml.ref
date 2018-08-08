@@ -42,7 +42,7 @@ let invariant t =
   (let%ext rec f = () and g () = () in
    e)
 
-let _: [%ext? (x: x)] = [%ext? (x: x)]
+let _ : [%ext? (x : x)] = [%ext? (x : x)]
 
 [%%ext
 11111111111111111111]
@@ -67,7 +67,7 @@ let _: [%ext? (x: x)] = [%ext? (x: x)]
 ;;
 33333333333333333333]
 
-let _ = [%stri let [%p xxx] = fun (t: [%t tt]) (ut: [%t tt]) -> [%e xxx]]
+let _ = [%stri let [%p xxx] = fun (t : [%t tt]) (ut : [%t tt]) -> [%e xxx]]
 
 let _ =
   [ x

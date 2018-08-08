@@ -1,11 +1,11 @@
 (* Note that {[ let ident : typ = exp ]} is different from {[ let (ident :
    typ) = exp ]}. The difference should be maintained *)
 
-let _: int = x1
+let _ : int = x1
 
-let (x: int) = x2
+let (x : int) = x2
 
-let _: int = x3
+let _ : int = x3
 
 let x : int = x4
 
@@ -16,11 +16,11 @@ let _ =
   let _ : int = x in
   ()
 
-let%ext _: int = x1
+let%ext _ : int = x1
 
-let%ext (x: int) = x2
+let%ext (x : int) = x2
 
-let%ext _: int = x3
+let%ext _ : int = x3
 
 let%ext x : int = x4
 
@@ -35,7 +35,7 @@ let [%ext let x = 3] = 2
 
 let [%ext: [%exp let x = 3]] = 2
 
-let f: 'a. 'a ty -> 'a = fun y -> g y
+let f : 'a. 'a ty -> 'a = fun y -> g y
 
 let f (A _ | B | C) = ()
 
@@ -62,7 +62,7 @@ let f = function
    |BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBbb | CCCCCCC ->
       ()
 
-let _: t -> t -> int = (compare : int list -> int list -> int)
+let _ : t -> t -> int = (compare : int list -> int list -> int)
 
 let _ =
   let[@test] rec f = x in

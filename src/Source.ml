@@ -15,7 +15,7 @@ type t = string
 
 let create s = s
 
-let string_between t (l1: Location.t) (l2: Location.t) =
+let string_between t (l1 : Location.t) (l2 : Location.t) =
   let pos = l1.loc_end.pos_cnum in
   let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum in
   if len >= 0 then Some (String.sub t ~pos ~len)
@@ -23,22 +23,22 @@ let string_between t (l1: Location.t) (l2: Location.t) =
     (* can happen e.g. if comment is within a parenthesized expression *)
     None
 
-let merge (l1: Location.t) ~(sub: Location.t) =
+let merge (l1 : Location.t) ~(sub : Location.t) =
   let base = l1.loc_start.pos_cnum in
   { l1 with
     loc_start= {l1.loc_start with pos_cnum= base + sub.loc_start.pos_cnum}
   ; loc_end= {l1.loc_end with pos_cnum= base + sub.loc_end.pos_cnum} }
 
-let string_from_loc t (l: Location.t) =
+let string_from_loc t (l : Location.t) =
   let pos = l.loc_start.pos_cnum in
   let len = l.loc_end.pos_cnum - pos in
   String.sub t ~pos ~len
 
-let lexbuf_from_loc t (l: Location.t) =
+let lexbuf_from_loc t (l : Location.t) =
   let s = string_from_loc t l in
   Lexing.from_string s
 
-let tokens_at t ?(filter= fun _ -> true) (l: Location.t) :
+let tokens_at t ?(filter= fun _ -> true) (l : Location.t) :
     (Parser.token * Location.t) list =
   let lexbuf = lexbuf_from_loc t l in
   let rec loop acc =
@@ -52,19 +52,19 @@ let tokens_at t ?(filter= fun _ -> true) (l: Location.t) :
   in
   loop []
 
-let loc_between ~(from: Location.t) ~(upto: Location.t) : Location.t =
+let loc_between ~(from : Location.t) ~(upto : Location.t) : Location.t =
   {from with loc_start= from.loc_end; loc_end= upto.loc_start}
 
-let tokens_between t ?(filter= fun _ -> true) ~(from: Location.t)
-    ~(upto: Location.t) : (Parser.token * Location.t) list =
+let tokens_between t ?(filter= fun _ -> true) ~(from : Location.t)
+    ~(upto : Location.t) : (Parser.token * Location.t) list =
   tokens_at t ~filter (loc_between ~from ~upto)
 
-let contains_IN_token_between t ~(from: Location.t) ~(upto: Location.t) =
+let contains_IN_token_between t ~(from : Location.t) ~(upto : Location.t) =
   let filter = function Parser.IN -> true | _ -> false in
   Source_code_position.ascending from.loc_start upto.loc_start < 0
   && (not (List.is_empty (tokens_between t ~from ~upto ~filter)))
 
-let string_literal t mode (l: Location.t) =
+let string_literal t mode (l : Location.t) =
   (* the location of a [string] might include surrounding comments and
      attributes because of [reloc_{exp,pat}] and a [string] can be found in
      attributes payloads. {[ f ((* comments *) "c" [@attributes]) ]} *)
@@ -89,7 +89,7 @@ let string_literal t mode (l: Location.t) =
       user_error "location does not contain a string literal"
         [("text", Sexp.Atom (string_from_loc t l))]
 
-let char_literal t (l: Location.t) =
+let char_literal t (l : Location.t) =
   (* the location of a [char] might include surrounding comments and
      attributes because of [reloc_{exp,pat}] and a [char] can be found in
      attributes payloads. {[ f ((* comments *) 'c' [@attributes]) ]} *)
@@ -114,7 +114,7 @@ let char_literal t (l: Location.t) =
       user_error "location does not contain a char literal"
         [("text", Sexp.Atom (string_from_loc t l))]
 
-let begins_line t (l: Location.t) =
+let begins_line t (l : Location.t) =
   let rec begins_line_ cnum =
     cnum = 0
     ||
@@ -126,7 +126,7 @@ let begins_line t (l: Location.t) =
   in
   begins_line_ l.loc_start.pos_cnum
 
-let ends_line t (l: Location.t) =
+let ends_line t (l : Location.t) =
   let len = String.length t in
   let rec ends_line_ cnum =
     if cnum >= len then true
@@ -138,8 +138,8 @@ let ends_line t (l: Location.t) =
   in
   ends_line_ l.loc_end.pos_cnum
 
-let extension_using_sugar ~(name: string Location.loc)
-    ~(payload: Parsetree.expression) =
+let extension_using_sugar ~(name : string Location.loc)
+    ~(payload : Parsetree.expression) =
   Source_code_position.ascending name.loc.loc_start
     payload.pexp_loc.loc_start
   > 0

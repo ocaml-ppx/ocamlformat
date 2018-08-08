@@ -16,7 +16,7 @@ type 'a monoid_a = (module Monoid with type t = 'a)
 
 type 'a monoid_a = (module Monoid with type F.t = 'a)
 
-let sumi (type a) ((module A): a monoid_a) (n: a) = A.mappend n A.mempty
+let sumi (type a) ((module A) : a monoid_a) (n : a) = A.mappend n A.mempty
 
 module type BAR = sig
   module rec A : (FOO with type t = < b: B.t >)
