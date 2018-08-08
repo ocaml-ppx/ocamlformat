@@ -2275,10 +2275,11 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
            $ hvbox 0 (fmt_class_expr c (sub_cl ~ctx body)) ))
       $ fmt_atrs
   | Pcl_constraint (e, t) ->
-      wrap_fits_breaks "(" ")"
-        ( fmt_class_expr c (sub_cl ~ctx e)
-        $ fmt "@;<1 2>: "
-        $ fmt_class_type c (sub_cty ~ctx t) )
+      hvbox 2
+        (wrap_fits_breaks "(" ")"
+           ( fmt_class_expr c (sub_cl ~ctx e)
+           $ fmt "@ : "
+           $ fmt_class_type c (sub_cty ~ctx t) ))
       $ fmt_atrs
   | Pcl_extension ext -> fmt_extension c ctx "%" ext $ fmt_atrs
   | Pcl_open (flag, lid, cl) ->
