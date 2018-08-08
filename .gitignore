@@ -8,3 +8,4 @@
 /test/bisect*out
 /bisect*out
 /_coverage
+_opam
