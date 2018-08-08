@@ -21,6 +21,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
+  ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
   ; ocp_indent_compat: bool
@@ -307,6 +308,24 @@ module Formatting = struct
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with infix_precedence= x} )
 
+  let let_open =
+    let doc =
+      "Module open formatting. Can be set in a config file with a \
+       `let-open = {preserve,auto,short,long}` line. $(b,long) means the \
+       $(i,let open Module in (...)) style is used. $(b,short) means the \
+       $(i,Module.(...)) style is used. $(b,auto) means the one fitting \
+       best is used. $(b,preserve) keeps the original style."
+    in
+    let all =
+      [ ("preserve", `Preserve)
+      ; ("auto", `Auto)
+      ; ("short", `Short)
+      ; ("long", `Long) ]
+    in
+    let env = Arg.env_var "OCAMLFORMAT_LET_OPEN" in
+    C.choice ~names:["let-open"] ~all ~doc ~env ~allow_inline:true ~update:
+      (fun conf x -> {conf with let_open= x} )
+
   let margin =
     let docv = "COLS" in
     let doc =
@@ -578,6 +597,7 @@ let config =
   ; parens_tuple= C.get Formatting.parens_tuple
   ; if_then_else= C.get Formatting.if_then_else
   ; infix_precedence= C.get Formatting.infix_precedence
+  ; let_open= C.get Formatting.let_open
   ; break_infix= C.get Formatting.break_infix
   ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
   ; type_decl= C.get Formatting.type_decl

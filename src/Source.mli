@@ -28,6 +28,26 @@ val tokens_at :
   -> Location.t
   -> (Parser.token * Location.t) list
 
+val loc_between : from:Location.t -> upto:Location.t -> Location.t
+(** [loc_between ~from ~upto] returns a location starting from [from] and
+    ending before [upto]. *)
+
+val tokens_between :
+     t
+  -> ?filter:(Parser.token -> bool)
+  -> from:Location.t
+  -> upto:Location.t
+  -> (Parser.token * Location.t) list
+(** [tokens_between s ~filter ~from ~upto] returns the list of tokens
+    starting from [from] and ending before [upto] and respecting the
+    [filter] property. [from] must start before [upto]. *)
+
+val contains_IN_token_between :
+  t -> from:Location.t -> upto:Location.t -> bool
+(** [contains_IN_token_between s ~from ~upto] returns [true] if and only if
+    an IN token is contained in the tokens starting from [from] and ending
+    before [upto]. [from] must start before [upto]. *)
+
 val begins_line : t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool

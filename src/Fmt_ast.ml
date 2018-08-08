@@ -1713,16 +1713,28 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
         $ fmt_atrs )
   | Pexp_open (flag, {txt; loc}, e0) ->
       let override = Poly.(flag = Override) in
+      let let_open =
+        match c.conf.let_open with
+        | `Preserve ->
+            let from = loc and upto = e0.pexp_loc in
+            if Source.contains_IN_token_between c.source ~from ~upto then
+              `Long
+            else `Short
+        | x -> x
+      in
       let force_break_if =
-        match e0.pexp_desc with
-        | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
-         |Pexp_letmodule _ | Pexp_open _ ->
+        match (let_open, e0.pexp_desc) with
+        | `Long, _
+         |( _
+          , ( Pexp_let _ | Pexp_extension _ | Pexp_letexception _
+            | Pexp_letmodule _ | Pexp_open _ ) ) ->
             true
         | _ -> override
       in
       let force_fit_if =
-        match xexp.ctx with
-        | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} ->
+        match (let_open, xexp.ctx) with
+        | `Short, _ when not override -> true
+        | _, Exp {pexp_desc= Pexp_apply _ | Pexp_construct _} ->
             not force_break_if
         | _ -> false
       in
