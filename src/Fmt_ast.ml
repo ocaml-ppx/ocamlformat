@@ -1049,6 +1049,17 @@ and fmt_fun_args c ?(pro= fmt "") args =
         cbox 0 (fmt "?" $ str l $ fmt ":" $ fmt_pattern c xpat)
     | Val
         ( Optional l
+        , ( { ast=
+                { ppat_desc= Ppat_constraint ({ppat_desc= Ppat_var {txt}}, _)
+                ; ppat_attributes= [] } } as xpat )
+        , Some xexp )
+      when String.equal l txt ->
+        cbox 0
+          ( fmt "?("
+          $ fmt_pattern c ~parens:false xpat
+          $ fmt " = " $ fmt_expression c xexp $ fmt ")" )
+    | Val
+        ( Optional l
         , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
         , Some xexp )
       when String.equal l txt ->
