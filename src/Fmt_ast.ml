@@ -1015,38 +1015,39 @@ and fmt_fun_args c ?(pro= fmt "") args =
         ( Labelled l
         , ( { ast=
                 { ppat_desc=
-                    ( Ppat_var {txt; loc}
+                    ( Ppat_var {txt}
                     | Ppat_constraint
-                        ( { ppat_desc= Ppat_var {txt; loc}
-                          ; ppat_attributes= [] }
-                        , _ ) )
+                        ({ppat_desc= Ppat_var {txt}; ppat_attributes= []}, _)
+                      )
                 ; ppat_attributes= [] } } as xpat )
         , None )
       when String.equal l txt ->
-        Cmts.fmt c.cmts loc @@ cbox 0 (fmt "~" $ fmt_pattern c xpat)
+        cbox 0 (fmt "~" $ fmt_pattern c xpat)
     | Val (Labelled l, xpat, None) ->
         cbox 0 (fmt "~" $ str l $ fmt ":" $ fmt_pattern c xpat)
     | Val
         ( Optional l
         , ( { ast=
                 { ppat_desc=
-                    ( Ppat_var {txt; loc}
+                    ( Ppat_var {txt}
                     | Ppat_constraint
-                        ( { ppat_desc= Ppat_var {txt; loc}
-                          ; ppat_attributes= [] }
-                        , _ ) )
+                        ({ppat_desc= Ppat_var {txt}; ppat_attributes= []}, _)
+                      )
                 ; ppat_attributes= [] } } as xpat )
         , None )
       when String.equal l txt ->
-        Cmts.fmt c.cmts loc @@ cbox 0 (fmt "?" $ fmt_pattern c xpat)
-    | Val
-        ( Optional l
-        , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
-        , None )
-      when String.equal l txt ->
-        Cmts.fmt c.cmts loc @@ cbox 0 (fmt "?" $ str l)
+        cbox 0 (fmt "?" $ fmt_pattern c xpat)
     | Val (Optional l, xpat, None) ->
         cbox 0 (fmt "?" $ str l $ fmt ":" $ fmt_pattern c xpat)
+    | Val
+        ( Optional l
+        , ({ast= {ppat_desc= Ppat_var {txt}; ppat_attributes= []}} as xpat)
+        , Some xexp )
+      when String.equal l txt ->
+        cbox 0
+          ( fmt "?(" $ fmt_pattern c xpat $ fmt " =@;<1 2>"
+          $ hovbox 2 (fmt_expression c xexp)
+          $ fmt ")" )
     | Val
         ( Optional l
         , ( { ast=
@@ -1057,21 +1058,12 @@ and fmt_fun_args c ?(pro= fmt "") args =
         cbox 0
           ( fmt "?("
           $ fmt_pattern c ~parens:false xpat
-          $ fmt " = " $ fmt_expression c xexp $ fmt ")" )
-    | Val
-        ( Optional l
-        , {ast= {ppat_desc= Ppat_var {txt; loc}; ppat_attributes= []}}
-        , Some xexp )
-      when String.equal l txt ->
-        Cmts.fmt c.cmts loc
-        @@ cbox 0
-             ( fmt "?(" $ str l $ fmt "=@;<1 2>"
-             $ hovbox 2 (fmt_expression c xexp)
-             $ fmt ")" )
+          $ fmt " =@;<1 2>" $ fmt_expression c xexp $ fmt ")" )
     | Val (Optional l, xpat, Some xexp) ->
         cbox 0
-          ( fmt "?" $ str l $ fmt ":(" $ fmt_pattern c xpat $ fmt " = "
-          $ fmt_expression c xexp $ fmt ")" )
+          ( fmt "?" $ str l $ fmt ":("
+          $ fmt_pattern c ~parens:false xpat
+          $ fmt " =@;<1 2>" $ fmt_expression c xexp $ fmt ")" )
     | Val ((Labelled _ | Nolabel), _, Some _) ->
         impossible "not accepted by parser"
     | Newtypes [] -> impossible "not accepted by parser"
