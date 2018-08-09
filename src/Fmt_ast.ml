@@ -3530,9 +3530,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   let fmt_cmts_before =
     Cmts.fmt_before c.cmts ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n")
       ~adj:(fmt "@\n") si.pstr_loc
-  and fmt_cmts_after =
-    Cmts.fmt_after c.cmts ~pro:(fmt "\n@\n") si.pstr_loc
-  in
+  and fmt_cmts_after = Cmts.fmt_after c.cmts ?pro:None si.pstr_loc in
   wrap_k fmt_cmts_before fmt_cmts_after
   @@
   match si.pstr_desc with
