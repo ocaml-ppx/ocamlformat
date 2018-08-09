@@ -101,3 +101,12 @@ module Let_and_sparse = struct
     and y = 2 in
     3
 end
+
+let f aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb
+    cccccccccccccccccccccccc dddddddddddddddddd eeeeeeeeeeeeee =
+  ()
+
+let _ =
+ fun aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc
+     dddddddddddddddddd eeeeeeeeeeeeee ->
+  ()

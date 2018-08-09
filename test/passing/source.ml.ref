@@ -1491,9 +1491,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
          ; ("B", TCarg (Ttl Thd, String))
          ; ("C", TCnoarg (Ttl (Ttl Thd))) ]
 
-       method inj
-         : type c.    (int -> string -> noarg -> unit, c) ty_sel * c
-                   -> [`A of int | `B of string | `C] =
+       method inj : type c.
+              (int -> string -> noarg -> unit, c) ty_sel * c
+           -> [`A of int | `B of string | `C] =
          function
          | Thd, v -> `A v | Ttl Thd, v -> `B v | Ttl (Ttl Thd), Noarg -> `C
     end)
@@ -1514,9 +1514,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
           method cases =
             [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
 
-          method inj
-            : type c.    (noarg -> a * a vlist -> unit, c) ty_sel * c
-                      -> a vlist =
+          method inj : type c.
+              (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
             function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
        end))
 

@@ -78,7 +78,7 @@ let parse parse_ast (conf : Conf.t) ic =
   (Location.warning_printer :=
      fun loc fmt warn ->
        match warn with
-       | Warnings.Bad_docstring _ when not conf.no_comment_check ->
+       | Warnings.Bad_docstring _ when conf.comment_check ->
            w50 := (loc, warn) :: !w50
        | _ -> if not conf.quiet then warning_printer loc fmt warn) ;
   try
@@ -153,7 +153,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           if
             (* Ast not preserved ? *)
             not
-              (xunit.equal ~ignore_doc_comments:conf.no_comment_check old
+              (xunit.equal ~ignore_doc_comments:(not conf.comment_check) old
                  new_)
           then (
             dump xunit dir base ".old" ".ast" (xunit.normalize old) ;
@@ -162,7 +162,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             internal_error "formatting changed ast"
               [("output file", String.sexp_of_t tmp)] ) ;
           (* Comments not preserved ? *)
-          if not conf.no_comment_check then (
+          if conf.comment_check then (
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
             | l -> internal_error "formatting lost comments" l ) ;

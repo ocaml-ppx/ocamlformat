@@ -16,7 +16,7 @@ type t =
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)
-  ; no_comment_check: bool
+  ; comment_check: bool
   ; doc_comments: [`Before | `After]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for chars literals. *)
@@ -36,7 +36,8 @@ type t =
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
   ; type_decl: [`Compact | `Sparse]
-  ; wrap_comments: bool  (** Wrap comments at margin. *) }
+  ; wrap_comments: bool  (** Wrap comments at margin. *)
+  ; wrap_fun_args: bool }
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
 

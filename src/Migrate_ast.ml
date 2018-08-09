@@ -19,8 +19,8 @@ module Parse = struct
   let interface = Parse.interface Versions.ocaml_407
 
   let use_file lexbuf =
-    List.filter (Parse.use_file Versions.ocaml_407 lexbuf) ~f:
-      (fun (p : Parsetree.toplevel_phrase) ->
+    List.filter (Parse.use_file Versions.ocaml_407 lexbuf)
+      ~f:(fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
         | Ptop_def (_ :: _) | Ptop_dir _ -> true )

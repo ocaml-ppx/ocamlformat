@@ -298,8 +298,8 @@ end
     column of the first location is not greater than that of the second
     location. *)
 let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
-  Option.value_map (Source.string_between t.source l1 l2) ~default:false ~f:
-    (fun btw ->
+  Option.value_map (Source.string_between t.source l1 l2) ~default:false
+    ~f:(fun btw ->
       match String.strip btw with
       | "" -> true
       | "|" ->

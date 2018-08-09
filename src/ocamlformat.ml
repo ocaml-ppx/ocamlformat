@@ -68,8 +68,8 @@ Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 match Conf.action with
 | Inplace inputs -> (
   match
-    List.filter_map inputs ~f:
-      (fun {Conf.kind; name= input_name; file= input_file; conf} ->
+    List.filter_map inputs
+      ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
         match
           In_channel.with_file input_file ~f:(fun ic ->
               Translation_unit.parse_print (xunit_of_kind kind) conf
