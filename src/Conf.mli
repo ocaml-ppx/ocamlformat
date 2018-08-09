@@ -24,13 +24,13 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
+  ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
             [max_iters] iterations. *)
-  ; nested_match: [`Parent | `Child]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool

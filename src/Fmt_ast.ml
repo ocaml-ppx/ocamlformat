@@ -1798,9 +1798,8 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
           let xpc_rhs = sub_exp ~ctx pc_rhs in
           let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in
           let parens_here, parens_for_exp =
-            match c.conf.nested_match with
-            | `Parent -> (parenze_exp xpc_rhs, Some false)
-            | `Child -> (false, None)
+            if c.conf.leading_nested_match_parens then (false, None)
+            else (parenze_exp xpc_rhs, Some false)
           in
           wrap_fits_breaks_if parens "(" ")"
             (hovbox 2
@@ -2465,9 +2464,8 @@ and fmt_cases c ctx cs =
         | _ -> 4
       in
       let parens_here, parens_for_exp =
-        match c.conf.nested_match with
-        | `Parent -> (parenze_exp xrhs, Some false)
-        | `Child -> (false, None)
+        if c.conf.leading_nested_match_parens then (false, None)
+        else (parenze_exp xrhs, Some false)
       in
       (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
       let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in

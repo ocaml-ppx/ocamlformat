@@ -14,15 +14,15 @@
 open Migrate_ast
 open Parsetree
 
-let init, register_reset, nested_match =
+let init, register_reset, leading_nested_match_parens =
   let l = ref [] in
-  let nested_match = ref `Parent in
+  let leading_nested_match_parens = ref false in
   let register f = l := f :: !l in
   let init conf =
-    nested_match := conf.Conf.nested_match ;
+    leading_nested_match_parens := conf.Conf.leading_nested_match_parens ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, register, nested_match)
+  (init, register, leading_nested_match_parens)
 
 (** Predicates recognizing special symbol identifiers. *)
 
@@ -1613,11 +1613,9 @@ end = struct
        |Pexp_function cases
        |Pexp_match (_, cases)
        |Pexp_try (_, cases) ->
-          ( match !nested_match with
-          | `Child ->
-              List.iter cases ~f:(fun {pc_rhs; _} ->
-                  mark_parenzed_inner_nested_match pc_rhs )
-          | _ -> () ) ;
+          if !leading_nested_match_parens then
+            List.iter cases ~f:(fun {pc_rhs; _} ->
+                mark_parenzed_inner_nested_match pc_rhs ) ;
           List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
           && exposed_right_exp Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
