@@ -12,7 +12,7 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: bool
+  { break_cases: [`Fit | `Nested | `All]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; no_comment_check: bool
@@ -30,7 +30,6 @@ type t =
   ; ocp_indent_compat: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
-  ; sparse: bool
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool }
 
@@ -205,11 +204,16 @@ module Formatting = struct
   let break_cases =
     let doc =
       "Break pattern match cases. Can be set in a config file with a \
-       `break-cases = {true,false}` line."
+       `break-cases = {fit,nested,all}` line. $(b,fit) means the code is \
+       formatted to fit as much as possible in a single line. $(b,nested) \
+       means the code is nested whenever possible. $(b,all) means the code \
+       is sparsed as much as possible."
     in
     let env = Arg.env_var "OCAMLFORMAT_BREAK_CASES" in
-    C.flag ~names:["break-cases"] ~doc ~env ~allow_inline:true ~update:
-      (fun conf x -> {conf with break_cases= x} )
+    let names = ["break-cases"] in
+    let all = [("fit", `Fit); ("nested", `Nested); ("all", `All)] in
+    C.choice ~names ~all ~doc ~env ~allow_inline:true ~update:(fun conf x ->
+        {conf with break_cases= x} )
 
   let break_infix =
     let doc =
@@ -395,15 +399,6 @@ module Formatting = struct
     in
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with parens_tuple= x} )
-
-  let sparse =
-    let doc =
-      "Generate more sparsely formatted code. Can be set in a config file \
-       with a `sparse = {true,false}` line."
-    in
-    let env = Arg.env_var "OCAMLFORMAT_SPARSE" in
-    C.flag ~names:["sparse"] ~doc ~env ~allow_inline:true ~update:
-      (fun conf x -> {conf with sparse= x} )
 
   let type_decl =
     let doc =
@@ -639,7 +634,6 @@ let config =
   ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
   ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet
-  ; sparse= C.get Formatting.sparse
   ; type_decl= C.get Formatting.type_decl
   ; wrap_comments= C.get Formatting.wrap_comments }
 

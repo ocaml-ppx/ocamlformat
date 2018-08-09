@@ -1,35 +1,21 @@
 let f x = function
-  | C
-   |P (this, test, [is; wide; enough; _to; break], [the; line])
-   |A | K ->
+  | C | P (this, test, [is; wide; enough; _to; break], [the; line]) | A | K ->
       1
   | D ->
       let a = "this" in
       let b = "breaks" in
       ()
 
+
 let f =
-  let g = function
-    | H
-      when x y <> k ->
-        2
-    | T | P | U ->
-        3
-  in
+  let g = function H when x y <> k -> 2 | T | P | U -> 3 in
   fun x g t h y u ->
     match x with
     | E ->
         4
     | Z | P | M -> (
-      match y with
-      | O ->
-          5
-      | P
-        when h x
-        -> (
-          function
-          | A ->
-              6 ) )
+      match y with O -> 5 | P when h x -> ( function A -> 6 ) )
+
 
 ;;
 match x with
@@ -53,7 +39,7 @@ match x with
 let is_sequence exp =
   match exp.pexp_desc with
   | Pexp_sequence _
-   |Pexp_extension
+  | Pexp_extension
       ( _
       , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
       ) ->

@@ -517,6 +517,9 @@ let fmt_variance = function
   | Contravariant -> fmt "-"
   | Invariant -> fmt ""
 
+let break_cases_level c =
+  match c.conf.break_cases with `Fit -> 0 | `Nested -> 1 | `All -> 2
+
 let doc_atrs atrs =
   let doc, rev_atrs =
     List.fold atrs ~init:(None, []) ~f:(fun (doc, rev_atrs) atr ->
@@ -924,13 +927,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let proI =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
-          when not c.conf.sparse ->
+          when break_cases_level c = 0 ->
             or_newline "| " " |"
         | _ -> break_unless_newline 1 0 $ fmt "| "
       in
       let pro2 =
         fmt_or_k
-          (c.conf.break_cases && c.conf.sparse)
+          (break_cases_level c > 1)
           (break_unless_newline 1000 0 $ fmt "| ")
           proI
       in
@@ -945,7 +948,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       hvbox 0
         ( list_fl
             (List.group xpats ~break:(fun {ast= p1} {ast= p2} ->
-                 c.conf.sparse
+                 break_cases_level c > 0
                  || (not (is_simple p1))
                  || (not (is_simple p2)) ))
             (fun ~first:first_grp ~last:_ xpat_grp ->
@@ -2485,12 +2488,14 @@ and fmt_cases c ctx cs =
           | _ -> parenze_pat xlhs
         in
         let fmt_arrow =
-          fmt_or_k c.conf.sparse
+          fmt_or_k
+            (break_cases_level c > 0)
             (fmt_or_k parens_here (fmt "@;<1 2>->") (fmt " ->@;<0 3>"))
             (fmt_or_k parens_here (fmt "@;<1 -2>-> (") (fmt " ->@;<0 -1>"))
         in
         let pro =
-          fmt_or_k c.conf.break_cases
+          fmt_or_k
+            (break_cases_level c > 1)
             (break_unless_newline 1000 0 $ fmt "| ")
             (if first then if_newline "| " else fmt "| ")
         in
@@ -2504,9 +2509,11 @@ and fmt_cases c ctx cs =
         $ fmt_if_k (indent > 2) fmt_arrow
       in
       fmt_if (not first) "@ " $ leading_cmt
-      $ cbox_if (not c.conf.sparse) indent
-          ( hvbox_if (not c.conf.sparse) indent fmt_lhs
-          $ ( match (c.conf.sparse, indent > 2, parens_here) with
+      $ cbox_if
+          (break_cases_level c = 0)
+          indent
+          ( hvbox_if (break_cases_level c = 0) indent fmt_lhs
+          $ ( match (break_cases_level c > 0, indent > 2, parens_here) with
             | false, _, _ -> fmt "@ "
             | true, false, false -> fmt "@;<1 2>"
             | true, false, true -> fmt " (@;<1 2>"
@@ -3594,7 +3601,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                ?ext:(if first then ext else None)
                ctx binding
                ?epi:
-                 (Option.some_if c.conf.sparse
+                 (Option.some_if
+                    (break_cases_level c > 0)
                     (fits_breaks ~force_fit_if:last_item "" "\n"))
              $ fmt_if (not last) "\n@\n" ))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
