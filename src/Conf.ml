@@ -204,10 +204,10 @@ module Formatting = struct
   let break_cases =
     let doc =
       "Break pattern match cases. Can be set in a config file with a \
-       `break-cases = {fit,nested,all}` line. $(b,fit) means the code is \
-       formatted to fit as much as possible in a single line. $(b,nested) \
-       means the code is nested whenever possible. $(b,all) means the code \
-       is sparsed as much as possible."
+       `break-cases = {fit,nested,all}` line. Specifying $(b,fit) lets \
+       pattern matches break at the margin naturally, $(b,nested) forces a \
+       break after nested or-patterns to highlight the case body, and \
+       $(b,all) forces all pattern matches to break across lines."
     in
     let env = Arg.env_var "OCAMLFORMAT_BREAK_CASES" in
     let names = ["break-cases"] in
