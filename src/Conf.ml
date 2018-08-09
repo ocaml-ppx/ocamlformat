@@ -21,11 +21,11 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; if_then_else: [`Compact | `Keyword_first]
   ; infix_precedence: [`Indent | `Parens]
+  ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
-  ; nested_match: [`Parent | `Child]
   ; ocp_indent_compat: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
@@ -310,6 +310,17 @@ module Formatting = struct
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with infix_precedence= x} )
 
+  let leading_nested_match_parens =
+    let doc =
+      "Nested match parens formatting. Can be set in a config file with a \
+       `leading_nested_match_parens = {false,true}` line. Cannot be set in \
+       attributes."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_LEADING_NESTED_MATCH_PARENS" in
+    let names = ["leading-nested-match-parens"] in
+    C.flag ~names ~env ~doc ~allow_inline:false ~update:(fun conf x ->
+        {conf with leading_nested_match_parens= x} )
+
   let let_and =
     let doc =
       "Style of let_and. Can be set in a config file with a `let-and = \
@@ -349,17 +360,6 @@ module Formatting = struct
     let env = Arg.env_var "OCAMLFORMAT_MARGIN" in
     C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~env
       ~allow_inline:false ~update:(fun conf x -> {conf with margin= x} )
-
-  let nested_match =
-    let doc =
-      "Nested match formatting. Can be set in a config file with an \
-       `nested-match = {parent,child}` line. Cannot be set in attributes."
-    in
-    let env = Arg.env_var "OCAMLFORMAT_NESTED_MATCH" in
-    let names = ["nested-match"] in
-    let all = [("parent", `Parent); ("child", `Child)] in
-    C.choice ~names ~all ~env ~doc ~allow_inline:false ~update:
-      (fun conf x -> {conf with nested_match= x} )
 
   let ocp_indent_compat =
     let doc =
@@ -620,11 +620,12 @@ let config =
   ; extension_sugar= C.get Formatting.extension_sugar
   ; if_then_else= C.get Formatting.if_then_else
   ; infix_precedence= C.get Formatting.infix_precedence
+  ; leading_nested_match_parens=
+      C.get Formatting.leading_nested_match_parens
   ; let_and= C.get Formatting.let_and
   ; let_open= C.get Formatting.let_open
   ; margin= C.get Formatting.margin
   ; max_iters= C.get max_iters
-  ; nested_match= C.get Formatting.nested_match
   ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
   ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet
