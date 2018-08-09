@@ -1,3 +1,5 @@
+[@@@ocamlformat "break-cases=all"]
+
 let f x = function
   | C
   | P (this, test, [is; wide; enough; _to; break], [the; line])

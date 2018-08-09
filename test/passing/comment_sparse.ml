@@ -1,3 +1,5 @@
+[@@@ocamlformat "break-cases=nested"]
+
 let f x =
   match x with
   | `A ->
