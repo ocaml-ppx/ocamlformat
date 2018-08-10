@@ -23,7 +23,9 @@ type t =
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for string literals. *)
   ; extension_sugar: [`Preserve | `Always]
+  ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
@@ -35,6 +37,7 @@ type t =
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
+  ; sequence_style: [`Separator | `Terminator]
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }

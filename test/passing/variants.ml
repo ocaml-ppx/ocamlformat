@@ -20,7 +20,7 @@ type 'a foo = A of (int -> 'a)
 
 type 'a foo += A of (int -> 'a)
 
-type 'a foo += A: (int -> 'a) -> int foo
+type 'a foo += A : (int -> 'a) -> int foo
 
 type t = [ | a]
 

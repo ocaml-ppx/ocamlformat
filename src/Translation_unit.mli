@@ -28,7 +28,7 @@ type 'a t =
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)
-type x = XUnit: 'a t -> x
+type x = XUnit : 'a t -> x
 
 exception Warning50 of (Location.t * Warnings.t) list
 

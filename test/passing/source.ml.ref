@@ -297,7 +297,7 @@ open M
 type 'a class_name = .. constraint 'a = < cast: 'a. 'a name -> 'a ; .. >
 
 and 'a name =
-  | Class: 'a class_name -> (< cast: 'a. 'a name -> 'a ; .. > as 'a) name
+  | Class : 'a class_name -> (< cast: 'a. 'a name -> 'a ; .. > as 'a) name
 
 exception Bad_cast
 
@@ -465,7 +465,7 @@ module M_S : S = M
 
 type 'a foo = ..
 
-type _ foo += A: int -> int foo | B : int foo
+type _ foo += A : int -> int foo | B : int foo
 
 let get_num : type a. a foo -> a -> a option =
  fun f i1 -> match f with A i2 -> Some (i1 + i2) | _ -> None
@@ -572,7 +572,7 @@ type 'a foo += B of ('a -> int)
 
 (* ERROR: Parameter variances are not satisfied *)
 
-type _ foo += C: ('a -> int) -> 'a foo
+type _ foo += C : ('a -> int) -> 'a foo
 
 (* ERROR: Parameter variances are not satisfied *)
 
@@ -585,27 +585,27 @@ type +'a bar += D of (int -> 'a)
 (* Exceptions are compatible with extensions *)
 
 module M : sig
-  type exn += Foo of int * float | Bar: 'a list -> exn
+  type exn += Foo of int * float | Bar : 'a list -> exn
 end = struct
-  exception Bar: 'a list -> exn
+  exception Bar : 'a list -> exn
 
   exception Foo of int * float
 end
 
 module M : sig
-  exception Bar: 'a list -> exn
+  exception Bar : 'a list -> exn
 
   exception Foo of int * float
 end = struct
-  type exn += Foo of int * float | Bar: 'a list -> exn
+  type exn += Foo of int * float | Bar : 'a list -> exn
 end
 
 exception Foo of int * float
 
-exception Bar: 'a list -> exn
+exception Bar : 'a list -> exn
 
 module M : sig
-  type exn += Foo of int * float | Bar: 'a list -> exn
+  type exn += Foo of int * float | Bar : 'a list -> exn
 end = struct
   exception Bar = Bar
 
@@ -687,7 +687,7 @@ let _ =
 module Msg : sig
   type 'a tag
 
-  type result = Result: 'a tag * 'a -> result
+  type result = Result : 'a tag * 'a -> result
 
   val write : 'a tag -> 'a -> unit
 
@@ -711,12 +711,12 @@ module Msg : sig
 end = struct
   type 'a tag = ..
 
-  type ktag = T: 'a tag -> ktag
+  type ktag = T : 'a tag -> ktag
 
   type 'a kind =
     {tag: 'a tag; label: string; write: 'a -> string; read: string -> 'a}
 
-  type rkind = K: 'a kind -> rkind
+  type rkind = K : 'a kind -> rkind
 
   type wkind = {f: 'a. 'a tag -> 'a kind}
 
@@ -726,7 +726,7 @@ end = struct
 
   let read_raw () : string * string = raise (Failure "Not implemented")
 
-  type result = Result: 'a tag * 'a -> result
+  type result = Result : 'a tag * 'a -> result
 
   let read () =
     let label, content = read_raw () in
@@ -1070,8 +1070,8 @@ let g (type t) (x : t) (tag : t ty) =
 type 'a ty =
   | Int : int ty
   | String : string ty
-  | List: 'a ty -> 'a list ty
-  | Pair: ('a ty * 'b ty) -> ('a * 'b) ty
+  | List : 'a ty -> 'a list ty
+  | Pair : ('a ty * 'b ty) -> ('a * 'b) ty
 
 (* Tagging data *)
 
@@ -1110,13 +1110,13 @@ let rec devariantize : type t. t ty -> variant -> t =
 type 'a ty =
   | Int : int ty
   | String : string ty
-  | List: 'a ty -> 'a list ty
-  | Pair: ('a ty * 'b ty) -> ('a * 'b) ty
-  | Record: 'a record -> 'a ty
+  | List : 'a ty -> 'a list ty
+  | Pair : ('a ty * 'b ty) -> ('a * 'b) ty
+  | Record : 'a record -> 'a ty
 
 and 'a record = {path: string; fields: 'a field_ list}
 
-and 'a field_ = Field: ('a, 'b) field -> 'a field_
+and 'a field_ = Field : ('a, 'b) field -> 'a field_
 
 and ('a, 'b) field = {label: string; field_type: 'b ty; get: 'a -> 'b}
 
@@ -1152,9 +1152,9 @@ let rec variantize : type t. t ty -> t -> variant =
 type 'a ty =
   | Int : int ty
   | String : string ty
-  | List: 'a ty -> 'a list ty
-  | Pair: ('a ty * 'b ty) -> ('a * 'b) ty
-  | Record: ('a, 'builder) record -> 'a ty
+  | List : 'a ty -> 'a list ty
+  | Pair : ('a ty * 'b ty) -> ('a * 'b) ty
+  | Record : ('a, 'builder) record -> 'a ty
 
 and ('a, 'builder) record =
   { path: string
@@ -1163,7 +1163,7 @@ and ('a, 'builder) record =
   ; of_builder: 'builder -> 'a }
 
 and ('a, 'builder) field =
-  | Field: ('a, 'builder, 'b) field_ -> ('a, 'builder) field
+  | Field : ('a, 'builder, 'b) field_ -> ('a, 'builder) field
 
 and ('a, 'builder, 'b) field_ =
   { label: string
@@ -1221,17 +1221,17 @@ type noarg = Noarg
 type (_, _) ty =
   | Int : (int, _) ty
   | String : (string, _) ty
-  | List: ('a, 'e) ty -> ('a list, 'e) ty
-  | Option: ('a, 'e) ty -> ('a option, 'e) ty
-  | Pair: (('a, 'e) ty * ('b, 'e) ty) -> ('a * 'b, 'e) ty
+  | List : ('a, 'e) ty -> ('a list, 'e) ty
+  | Option : ('a, 'e) ty -> ('a option, 'e) ty
+  | Pair : (('a, 'e) ty * ('b, 'e) ty) -> ('a * 'b, 'e) ty
   (* Support for type variables and recursive types *)
   | Var : ('a, 'a -> 'e) ty
-  | Rec: ('a, 'a -> 'e) ty -> ('a, 'e) ty
-  | Pop: ('a, 'e) ty -> ('a, 'b -> 'e) ty
+  | Rec : ('a, 'a -> 'e) ty -> ('a, 'e) ty
+  | Pop : ('a, 'e) ty -> ('a, 'b -> 'e) ty
   (* Change the representation of a type *)
-  | Conv: string * ('a -> 'b) * ('b -> 'a) * ('b, 'e) ty -> ('a, 'e) ty
+  | Conv : string * ('a -> 'b) * ('b -> 'a) * ('b, 'e) ty -> ('a, 'e) ty
   (* Sum types (both normal sums and polymorphic variants) *)
-  | Sum: ('a, 'e, 'b) ty_sum -> ('a, 'e) ty
+  | Sum : ('a, 'e, 'b) ty_sum -> ('a, 'e) ty
 
 and ('a, 'e, 'b) ty_sum =
   { sum_proj: 'a -> string * 'e ty_dyn option
@@ -1239,22 +1239,22 @@ and ('a, 'e, 'b) ty_sum =
   ; sum_inj: 'c. ('b, 'c) ty_sel * 'c -> 'a }
 
 and 'e ty_dyn = (* dynamic type *)
-  | Tdyn: ('a, 'e) ty * 'a -> 'e ty_dyn
+  | Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 and (_, _) ty_sel =
   (* selector from a list of types *)
   | Thd : ('a -> 'b, 'a) ty_sel
-  | Ttl: ('b -> 'c, 'd) ty_sel -> ('a -> 'b -> 'c, 'd) ty_sel
+  | Ttl : ('b -> 'c, 'd) ty_sel -> ('a -> 'b -> 'c, 'd) ty_sel
 
 and (_, _) ty_case =
   (* type a sum case *)
-  | TCarg: ('b, 'a) ty_sel * ('a, 'e) ty -> ('e, 'b) ty_case
-  | TCnoarg: ('b, noarg) ty_sel -> ('e, 'b) ty_case
+  | TCarg : ('b, 'a) ty_sel * ('a, 'e) ty -> ('e, 'b) ty_case
+  | TCnoarg : ('b, noarg) ty_sel -> ('e, 'b) ty_case
 
 type _ ty_env =
   (* type variable substitution *)
   | Enil : unit ty_env
-  | Econs: ('a, 'e) ty * 'e ty_env -> ('a -> 'e) ty_env
+  | Econs : ('a, 'e) ty * 'e ty_env -> ('a -> 'e) ty_env
 
 (* Comparing selectors *)
 type (_, _) eq = Eq : ('a, 'a) eq
@@ -1410,18 +1410,18 @@ let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
 type (_, _) ty =
   | Int : (int, _) ty
   | String : (string, _) ty
-  | List: ('a, 'e) ty -> ('a list, 'e) ty
-  | Option: ('a, 'e) ty -> ('a option, 'e) ty
-  | Pair: (('a, 'e) ty * ('b, 'e) ty) -> ('a * 'b, 'e) ty
+  | List : ('a, 'e) ty -> ('a list, 'e) ty
+  | Option : ('a, 'e) ty -> ('a option, 'e) ty
+  | Pair : (('a, 'e) ty * ('b, 'e) ty) -> ('a * 'b, 'e) ty
   | Var : ('a, 'a -> 'e) ty
-  | Rec: ('a, 'a -> 'e) ty -> ('a, 'e) ty
-  | Pop: ('a, 'e) ty -> ('a, 'b -> 'e) ty
-  | Conv: string * ('a -> 'b) * ('b -> 'a) * ('b, 'e) ty -> ('a, 'e) ty
-  | Sum:
+  | Rec : ('a, 'a -> 'e) ty -> ('a, 'e) ty
+  | Pop : ('a, 'e) ty -> ('a, 'b -> 'e) ty
+  | Conv : string * ('a -> 'b) * ('b -> 'a) * ('b, 'e) ty -> ('a, 'e) ty
+  | Sum :
       ('a -> string * 'e ty_dyn option) * (string * 'e ty_dyn option -> 'a)
       -> ('a, 'e) ty
 
-and 'e ty_dyn = Tdyn: ('a, 'e) ty * 'a -> 'e ty_dyn
+and 'e ty_dyn = Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
@@ -1454,28 +1454,28 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 type (_, _) ty =
   | Int : (int, _) ty
   | String : (string, _) ty
-  | List: ('a, 'e) ty -> ('a list, 'e) ty
-  | Option: ('a, 'e) ty -> ('a option, 'e) ty
-  | Pair: (('a, 'e) ty * ('b, 'e) ty) -> ('a * 'b, 'e) ty
+  | List : ('a, 'e) ty -> ('a list, 'e) ty
+  | Option : ('a, 'e) ty -> ('a option, 'e) ty
+  | Pair : (('a, 'e) ty * ('b, 'e) ty) -> ('a * 'b, 'e) ty
   | Var : ('a, 'a -> 'e) ty
-  | Rec: ('a, 'a -> 'e) ty -> ('a, 'e) ty
-  | Pop: ('a, 'e) ty -> ('a, 'b -> 'e) ty
-  | Conv: string * ('a -> 'b) * ('b -> 'a) * ('b, 'e) ty -> ('a, 'e) ty
-  | Sum:
+  | Rec : ('a, 'a -> 'e) ty -> ('a, 'e) ty
+  | Pop : ('a, 'e) ty -> ('a, 'b -> 'e) ty
+  | Conv : string * ('a -> 'b) * ('b -> 'a) * ('b, 'e) ty -> ('a, 'e) ty
+  | Sum :
       < proj: 'a -> string * 'e ty_dyn option
       ; cases: (string * ('e, 'b) ty_case) list
       ; inj: 'c. ('b, 'c) ty_sel * 'c -> 'a >
       -> ('a, 'e) ty
 
-and 'e ty_dyn = Tdyn: ('a, 'e) ty * 'a -> 'e ty_dyn
+and 'e ty_dyn = Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 and (_, _) ty_sel =
   | Thd : ('a -> 'b, 'a) ty_sel
-  | Ttl: ('b -> 'c, 'd) ty_sel -> ('a -> 'b -> 'c, 'd) ty_sel
+  | Ttl : ('b -> 'c, 'd) ty_sel -> ('a -> 'b -> 'c, 'd) ty_sel
 
 and (_, _) ty_case =
-  | TCarg: ('b, 'a) ty_sel * ('a, 'e) ty -> ('e, 'b) ty_case
-  | TCnoarg: ('b, noarg) ty_sel -> ('e, 'b) ty_case
+  | TCarg : ('b, 'a) ty_sel * ('a, 'e) ty -> ('e, 'b) ty_case
+  | TCnoarg : ('b, noarg) ty_sel -> ('e, 'b) ty_case
 
 let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
   Sum
@@ -1537,13 +1537,13 @@ type zero = Zero
 
 type 'a succ = Succ of 'a
 
-type _ nat = NZ : zero nat | NS: 'a nat -> 'a succ nat
+type _ nat = NZ : zero nat | NS : 'a nat -> 'a succ nat
 
 (* 2: A simple example *)
 
 type (_, _) seq =
   | Snil : ('a, zero) seq
-  | Scons: 'a * ('a, 'n) seq -> ('a, 'n succ) seq
+  | Scons : 'a * ('a, 'n) seq -> ('a, 'n succ) seq
 
 let l1 = Scons (3, Scons (5, Snil))
 
@@ -1552,8 +1552,8 @@ let l1 = Scons (3, Scons (5, Snil))
 (* Note the addition of the ['a nat] argument to PlusZ, since we do not have
    kinds *)
 type (_, _, _) plus =
-  | PlusZ: 'a nat -> (zero, 'a, 'a) plus
-  | PlusS: ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
+  | PlusZ : 'a nat -> (zero, 'a, 'a) plus
+  | PlusS : ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
 
 let rec length : type a n. (a, n) seq -> n nat = function
   | Snil -> NZ
@@ -1562,7 +1562,7 @@ let rec length : type a n. (a, n) seq -> n nat = function
 (* app returns the catenated lists with a witness proving that the size is
    the sum of its two inputs *)
 type (_, _, _) app =
-  | App: ('a, 'p) seq * ('n, 'm, 'p) plus -> ('a, 'n, 'm) app
+  | App : ('a, 'p) seq * ('n, 'm, 'p) plus -> ('a, 'n, 'm) app
 
 let rec app : type a n m. (a, n) seq -> (a, m) seq -> (a, n, m) app =
  fun xs ys ->
@@ -1585,7 +1585,7 @@ type ('a, 'b) fk = FK
 type _ shape =
   | Tp : tp shape
   | Nd : nd shape
-  | Fk: 'a shape * 'b shape -> ('a, 'b) fk shape
+  | Fk : 'a shape * 'b shape -> ('a, 'b) fk shape
 
 type tt = TT
 
@@ -1596,15 +1596,15 @@ type _ boolean = BT : tt boolean | BF : ff boolean
 (* 3.3 Feature : GADTs *)
 
 type (_, _) path =
-  | Pnone: 'a -> (tp, 'a) path
+  | Pnone : 'a -> (tp, 'a) path
   | Phere : (nd, 'a) path
-  | Pleft: ('x, 'a) path -> (('x, 'y) fk, 'a) path
-  | Pright: ('y, 'a) path -> (('x, 'y) fk, 'a) path
+  | Pleft : ('x, 'a) path -> (('x, 'y) fk, 'a) path
+  | Pright : ('y, 'a) path -> (('x, 'y) fk, 'a) path
 
 type (_, _) tree =
   | Ttip : (tp, 'a) tree
-  | Tnode: 'a -> (nd, 'a) tree
-  | Tfork: ('x, 'a) tree * ('y, 'a) tree -> (('x, 'y) fk, 'a) tree
+  | Tnode : 'a -> (nd, 'a) tree
+  | Tfork : ('x, 'a) tree * ('y, 'a) tree -> (('x, 'y) fk, 'a) tree
 
 let tree1 = Tfork (Tfork (Ttip, Tnode 4), Tfork (Tnode 4, Tnode 3))
 
@@ -1629,10 +1629,10 @@ let rec extract : type sh. (sh, 'a) path -> (sh, 'a) tree -> 'a =
 (* 3.4 Pattern : Witness *)
 
 type (_, _) le =
-  | LeZ: 'a nat -> (zero, 'a) le
-  | LeS: ('n, 'm) le -> ('n succ, 'm succ) le
+  | LeZ : 'a nat -> (zero, 'a) le
+  | LeS : ('n, 'm) le -> ('n succ, 'm succ) le
 
-type _ even = EvenZ : zero even | EvenSS: 'n even -> 'n succ succ even
+type _ even = EvenZ : zero even | EvenSS : 'n even -> 'n succ succ even
 
 type one = zero succ
 
@@ -1702,7 +1702,7 @@ let rec plus_assoc : type a b c ab bc m n.
 let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
   | LeS x -> x
 
-type (_, _) diff = Diff: 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
+type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 
 (* let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff = fun
    le a b -> match a, b, le with | NZ, m, _ -> Diff (m, PlusZ m) | NS x, NZ,
@@ -1732,7 +1732,8 @@ let rec diff : type a b. (a, b) le -> b nat -> (a, b) diff =
   | NS y, LeS q -> (
     match diff q y with Diff (m, p) -> Diff (m, PlusS p) )
 
-type (_, _) filter = Filter: ('m, 'n) le * ('a, 'm) seq -> ('a, 'n) filter
+type (_, _) filter =
+  | Filter : ('m, 'n) le * ('a, 'm) seq -> ('a, 'n) filter
 
 let rec leS' : type m n. (m, n) le -> (m, n succ) le = function
   | LeZ n -> LeZ (NS n)
@@ -1755,11 +1756,11 @@ type (_, _, _) balance =
 
 type _ avl =
   | Leaf : zero avl
-  | Node:
+  | Node :
       ('hL, 'hR, 'hMax) balance * 'hL avl * int * 'hR avl
       -> 'hMax succ avl
 
-type avl' = Avl: 'h avl -> avl'
+type avl' = Avl : 'h avl -> avl'
 
 let empty = Avl Leaf
 
@@ -1841,8 +1842,8 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum =
           | Less -> rotl l x r ) ) )
 
 type _ avl_del =
-  | Dsame: 'n avl -> 'n avl_del
-  | Ddecr: ('m succ, 'n) equal * 'm avl -> 'n avl_del
+  | Dsame : 'n avl -> 'n avl_del
+  | Ddecr : ('m succ, 'n) equal * 'm avl -> 'n avl_del
 
 let rec del : type n. int -> n avl -> n avl_del =
  fun y t ->
@@ -1896,23 +1897,23 @@ type black = BLACK
 
 type (_, _) sub_tree =
   | Bleaf : (black, zero) sub_tree
-  | Rnode:
+  | Rnode :
       (black, 'n) sub_tree * int * (black, 'n) sub_tree
       -> (red, 'n) sub_tree
-  | Bnode:
+  | Bnode :
       ('cL, 'n) sub_tree * int * ('cR, 'n) sub_tree
       -> (black, 'n succ) sub_tree
 
-type rb_tree = Root: (black, 'n) sub_tree -> rb_tree
+type rb_tree = Root : (black, 'n) sub_tree -> rb_tree
 
 type dir = LeftD | RightD
 
 type (_, _) ctxt =
   | CNil : (black, 'n) ctxt
-  | CRed:
+  | CRed :
       int * dir * (black, 'n) sub_tree * (red, 'n) ctxt
       -> (black, 'n) ctxt
-  | CBlk:
+  | CBlk :
       int * dir * ('c1, 'n) sub_tree * (black, 'n succ) ctxt
       -> ('c, 'n) ctxt
 
@@ -1975,11 +1976,11 @@ let insert e (Root t) = ins e t CNil
 (* 5.7 typed object languages using GADTs *)
 
 type _ term =
-  | Const: int -> int term
+  | Const : int -> int term
   | Add : (int * int -> int) term
   | LT : (int * int -> bool) term
-  | Ap: ('a -> 'b) term * 'a term -> 'b term
-  | Pair: 'a term * 'b term -> ('a * 'b) term
+  | Ap : ('a -> 'b) term * 'a term -> 'b term
+  | Pair : 'a term * 'b term -> ('a * 'b) term
 
 let ex1 = Ap (Add, Pair (Const 3, Const 5))
 
@@ -1995,8 +1996,8 @@ let rec eval_term : type a. a term -> a = function
 type _ rep =
   | Rint : int rep
   | Rbool : bool rep
-  | Rpair: 'a rep * 'b rep -> ('a * 'b) rep
-  | Rfun: 'a rep * 'b rep -> ('a -> 'b) rep
+  | Rpair : 'a rep * 'b rep -> ('a * 'b) rep
+  | Rfun : 'a rep * 'b rep -> ('a -> 'b) rep
 
 type (_, _) equal = Eq : ('a, 'a) equal
 
@@ -2017,7 +2018,7 @@ let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
       match rep_equal a2 b2 with None -> None | Some Eq -> Some Eq ) )
   | _ -> None
 
-type assoc = Assoc: string * 'a rep * 'a -> assoc
+type assoc = Assoc : string * 'a rep * 'a -> assoc
 
 let rec assoc : type a. string -> a rep -> assoc list -> a =
  fun x r -> function
@@ -2030,13 +2031,13 @@ let rec assoc : type a. string -> a rep -> assoc list -> a =
       else assoc x r env
 
 type _ term =
-  | Var: string * 'a rep -> 'a term
-  | Abs: string * 'a rep * 'b term -> ('a -> 'b) term
-  | Const: int -> int term
+  | Var : string * 'a rep -> 'a term
+  | Abs : string * 'a rep * 'b term -> ('a -> 'b) term
+  | Const : int -> int term
   | Add : (int * int -> int) term
   | LT : (int * int -> bool) term
-  | Ap: ('a -> 'b) term * 'a term -> 'b term
-  | Pair: 'a term * 'b term -> ('a * 'b) term
+  | Ap : ('a -> 'b) term * 'a term -> 'b term
+  | Pair : 'a term * 'b term -> ('a * 'b) term
 
 let rec eval_term : type a. assoc list -> a term -> a =
  fun env -> function
@@ -2062,14 +2063,14 @@ type ('a, 'b, 'c) rcons = RCons of 'a * 'b * 'c
 
 type _ is_row =
   | Rnil : rnil is_row
-  | Rcons: 'c is_row -> ('a, 'b, 'c) rcons is_row
+  | Rcons : 'c is_row -> ('a, 'b, 'c) rcons is_row
 
 type (_, _) lam =
-  | Const: int -> ('e, int) lam
-  | Var: 'a -> (('a, 't, 'e) rcons, 't) lam
-  | Shift: ('e, 't) lam -> (('a, 'q, 'e) rcons, 't) lam
-  | Abs: 'a * (('a, 's, 'e) rcons, 't) lam -> ('e, 's -> 't) lam
-  | App: ('e, 's -> 't) lam * ('e, 's) lam -> ('e, 't) lam
+  | Const : int -> ('e, int) lam
+  | Var : 'a -> (('a, 't, 'e) rcons, 't) lam
+  | Shift : ('e, 't) lam -> (('a, 'q, 'e) rcons, 't) lam
+  | Abs : 'a * (('a, 's, 'e) rcons, 't) lam -> ('e, 's -> 't) lam
+  | App : ('e, 's -> 't) lam * ('e, 's) lam -> ('e, 't) lam
 
 type x = X
 
@@ -2081,7 +2082,7 @@ let ex2 = Abs (X, Abs (Y, App (Shift (Var X), Var Y)))
 
 type _ env =
   | Enil : rnil env
-  | Econs: 'a * 't * 'e env -> ('a, 't, 'e) rcons env
+  | Econs : 'a * 't * 'e env -> ('a, 't, 'e) rcons env
 
 let rec eval_lam : type e t. e env -> (e, t) lam -> t =
  fun env m ->
@@ -2121,7 +2122,7 @@ let v3 = eval_lam env0 ex3
 (* Modified slightly to use the language of 5.10, since this is more fun. Of
    course this works also with the language of 5.12. *)
 
-type _ rep = I : int rep | Ar: 'a rep * 'b rep -> ('a -> 'b) rep
+type _ rep = I : int rep | Ar : 'a rep * 'b rep -> ('a -> 'b) rep
 
 let rec compare : type a b. a rep -> b rep -> (string, (a, b) equal) sum =
  fun a b ->
@@ -2137,17 +2138,17 @@ let rec compare : type a b. a rep -> b rep -> (string, (a, b) equal) sum =
 
 type term =
   | C of int
-  | Ab: string * 'a rep * term -> term
+  | Ab : string * 'a rep * term -> term
   | Ap of term * term
   | V of string
 
 type _ ctx =
   | Cnil : rnil ctx
-  | Ccons: 't * string * 'x rep * 'e ctx -> ('t, 'x, 'e) rcons ctx
+  | Ccons : 't * string * 'x rep * 'e ctx -> ('t, 'x, 'e) rcons ctx
 
 type _ checked =
   | Cerror of string
-  | Cok: ('e, 't) lam * 't rep -> 'e checked
+  | Cok : ('e, 't) lam * 't rep -> 'e checked
 
 let rec lookup : type e. string -> e ctx -> e checked =
  fun name ctx ->
@@ -2220,16 +2221,16 @@ type tint = TINT
 
 type (_, _) rel =
   | IntR : (tint, int) rel
-  | IntTo: ('b, 's) rel -> ((tint, 'b) tarr, int -> 's) rel
+  | IntTo : ('b, 's) rel -> ((tint, 'b) tarr, int -> 's) rel
 
 type (_, _, _) lam =
-  | Const: ('a, 'b) rel * 'b -> (pval, 'env, 'a) lam
-  | Var: 'a -> (pval, ('a, 't, 'e) rcons, 't) lam
-  | Shift: ('m, 'e, 't) lam -> ('m, ('a, 'q, 'e) rcons, 't) lam
-  | Lam:
+  | Const : ('a, 'b) rel * 'b -> (pval, 'env, 'a) lam
+  | Var : 'a -> (pval, ('a, 't, 'e) rcons, 't) lam
+  | Shift : ('m, 'e, 't) lam -> ('m, ('a, 'q, 'e) rcons, 't) lam
+  | Lam :
       'a * ('m, ('a, 's, 'e) rcons, 't) lam
       -> (pval, 'e, ('s, 't) tarr) lam
-  | App:
+  | App :
       ('m1, 'e, ('s, 't) tarr) lam * ('m2, 'e, 's) lam
       -> (pexp, 'e, 't) lam
 
@@ -2244,12 +2245,12 @@ let rec mode : type m e t. (m, e, t) lam -> m mode = function
 
 type (_, _) sub =
   | Id : ('r, 'r) sub
-  | Bind:
+  | Bind :
       't * ('m, 'r2, 'x) lam * ('r, 'r2) sub
       -> (('t, 'x, 'r) rcons, 'r2) sub
-  | Push: ('r1, 'r2) sub -> (('a, 'b, 'r1) rcons, ('a, 'b, 'r2) rcons) sub
+  | Push : ('r1, 'r2) sub -> (('a, 'b, 'r1) rcons, ('a, 'b, 'r2) rcons) sub
 
-type (_, _) lam' = Ex: ('m, 's, 't) lam -> ('s, 't) lam'
+type (_, _) lam' = Ex : ('m, 's, 't) lam -> ('s, 't) lam'
 
 let rec subst : type m1 r t s. (m1, r, t) lam -> (r, s) sub -> (s, t) lam' =
  fun t s ->
@@ -2295,12 +2296,12 @@ let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
 
 type ('env, 'a) var =
   | Zero : ('a * 'env, 'a) var
-  | Succ: ('env, 'a) var -> ('b * 'env, 'a) var
+  | Succ : ('env, 'a) var -> ('b * 'env, 'a) var
 
 type ('env, 'a) typ =
   | Tint : ('env, int) typ
   | Tbool : ('env, bool) typ
-  | Tvar: ('env, 'a) var -> ('env, 'a) typ
+  | Tvar : ('env, 'a) var -> ('env, 'a) typ
 
 let f : type env a. (env, a) typ -> (env, a) typ -> int =
  fun ta tb ->
@@ -2316,10 +2317,10 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
 type inkind = [`Link | `Nonlink]
 
 type _ inline_t =
-  | Text: string -> [< inkind > `Nonlink] inline_t
-  | Bold: 'a inline_t list -> 'a inline_t
-  | Link: string -> [< inkind > `Link] inline_t
-  | Mref: string * [`Nonlink] inline_t list -> [< inkind > `Link] inline_t
+  | Text : string -> [< inkind > `Nonlink] inline_t
+  | Bold : 'a inline_t list -> 'a inline_t
+  | Link : string -> [< inkind > `Link] inline_t
+  | Mref : string * [`Nonlink] inline_t list -> [< inkind > `Link] inline_t
 
 let uppercase seq =
   let rec process : type a. a inline_t -> a inline_t = function
@@ -2369,7 +2370,7 @@ let inlineseq_from_astseq seq =
   List.map (process Maylink) seq
 
 (* Bad *)
-type _ linkp2 = Kind: 'a linkp -> ([< inkind] as 'a) linkp2
+type _ linkp2 = Kind : 'a linkp -> ([< inkind] as 'a) linkp2
 
 let inlineseq_from_astseq seq =
   let rec process : type a. a linkp2 -> ast_t -> a inline_t =
@@ -2408,7 +2409,7 @@ end
 
 let of_type : type a. a -> a = fun x -> match B.f x 4 with Eq -> 5
 
-type _ constant = Int: int -> int constant | Bool: bool -> bool constant
+type _ constant = Int : int -> int constant | Bool : bool -> bool constant
 
 type (_, _, _) binop =
   | Eq : ('a, 'a, bool) binop
@@ -2440,7 +2441,7 @@ let intB = function `TagB -> 4
 let intAorB = function `TagA i -> i | `TagB -> 4
 
 type _ wrapPoly =
-  | WrapPoly: 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
+  | WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
 
 let example6 : type a. a wrapPoly -> a -> int =
  fun w -> match w with WrapPoly ATag -> intA | WrapPoly _ -> intA
@@ -2557,12 +2558,12 @@ struct
   let f : ('a S.s, 'a S.t) eq -> unit = function Refl -> ()
 end
 
-type _ nat = Zero : [`Zero] nat | Succ: 'a nat -> [`Succ of 'a] nat
+type _ nat = Zero : [`Zero] nat | Succ : 'a nat -> [`Succ of 'a] nat
 
 type 'a pre_nat = [`Zero | `Succ of 'a]
 
 type aux =
-  | Aux: [`Succ of [< [< [< [`Zero] pre_nat] pre_nat] pre_nat]] nat -> aux
+  | Aux : [`Succ of [< [< [< [`Zero] pre_nat] pre_nat] pre_nat]] nat -> aux
 
 let f (Aux x) =
   match x with
@@ -2579,7 +2580,7 @@ type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
 let f : type a o. ((a -> o) -> o) t -> (a -> o) -> o =
  fun C k -> k (fun x -> x)
 
-type (_, _) t = A : ('a, 'a) t | B: string -> ('a, 'b) t
+type (_, _) t = A : ('a, 'a) t | B : string -> ('a, 'b) t
 
 module M (A : sig
   module type T
@@ -2629,13 +2630,13 @@ end
 
 open A
 
-type _ s = Nil : nil s | Cons: 't s -> ('h -> 't) s
+type _ s = Nil : nil s | Cons : 't s -> ('h -> 't) s
 
 type ('stack, 'typ) var =
   | Head : (('typ -> _) s, 'typ) var
-  | Tail: ('tail s, 'typ) var -> ((_ -> 'tail) s, 'typ) var
+  | Tail : ('tail s, 'typ) var -> ((_ -> 'tail) s, 'typ) var
 
-type _ lst = CNil : nil lst | CCons: 'h * 't lst -> ('h -> 't) lst
+type _ lst = CNil : nil lst | CCons : 'h * 't lst -> ('h -> 't) lst
 
 let rec get_var : type stk ret. (stk s, ret) var -> stk lst -> ret =
  fun n s ->
@@ -2647,17 +2648,17 @@ type 'a t = [< `Foo | `Bar] as 'a
 
 type 'a s = [< `Foo | `Bar | `Baz > `Bar] as 'a
 
-type 'a first = First: 'a second -> ('b t as 'a) first
+type 'a first = First : 'a second -> ('b t as 'a) first
 
 and 'a second = Second : ('b s as 'a) second
 
-type aux = Aux: 'a t second * ('a -> int) -> aux
+type aux = Aux : 'a t second * ('a -> int) -> aux
 
 let it : 'a. ([< `Bar | `Foo > `Bar] as 'a) = `Bar
 
 let g (Aux (Second, f)) = f it
 
-type (_, _) eqp = Y : ('a, 'a) eqp | N: string -> ('a, 'b) eqp
+type (_, _) eqp = Y : ('a, 'a) eqp | N : string -> ('a, 'b) eqp
 
 let f : ('a list, 'a) eqp -> unit = function N s -> print_string s
 
@@ -2682,7 +2683,7 @@ f B.eq
 
 type (_, _) t =
   | Nil : ('tl, 'tl) t
-  | Cons: 'a * ('b, 'tl) t -> ('a * 'b, 'tl) t
+  | Cons : 'a * ('b, 'tl) t -> ('a * 'b, 'tl) t
 
 let get1 (Cons (x, _) : (_ * 'a, 'a) t) = x
 
@@ -2694,16 +2695,16 @@ let get1' = function
 
 (* ok *)
 type _ t =
-  | Int: int -> int t
-  | String: string -> string t
-  | Same: 'l t -> 'l t
+  | Int : int -> int t
+  | String : string -> string t
+  | Same : 'l t -> 'l t
 
 let rec f = function Int x -> x | Same s -> f s
 
 type 'a tt = 'a t =
-  | Int: int -> int tt
-  | String: string -> string tt
-  | Same: 'l1 t -> 'l2 tt
+  | Int : int -> int tt
+  | String : string -> string tt
+  | Same : 'l1 t -> 'l2 tt
 
 type _ t = I : int t
 
@@ -2738,10 +2739,10 @@ type +'a n = private int
 type nil = private Nil_type
 
 type (_, _) elt =
-  | Elt_fine: 'nat n -> ('l, 'nat * 'l) elt
-  | Elt: 'nat n -> ('l, 'nat -> 'l) elt
+  | Elt_fine : 'nat n -> ('l, 'nat * 'l) elt
+  | Elt : 'nat n -> ('l, 'nat -> 'l) elt
 
-type _ t = Nil : nil t | Cons: ('x, 'fx) elt * 'x t -> 'fx t
+type _ t = Nil : nil t | Cons : ('x, 'fx) elt * 'x t -> 'fx t
 
 let undetected : ('a -> 'b -> nil) t -> 'a n -> 'b n -> unit =
  fun sh i j ->
@@ -2753,7 +2754,7 @@ type _ t = T : int t
 (* Should raise Not_found *)
 let _ = match (raise Not_found : float t) with _ -> .
 
-type (_, _) eq = Eq : ('a, 'a) eq | Neq: int -> ('a, 'b) eq
+type (_, _) eq = Eq : ('a, 'a) eq | Neq : int -> ('a, 'b) eq
 
 type 'a t
 
@@ -2783,9 +2784,9 @@ type zero = Zero
 
 type _ succ = Succ
 
-type _ nat = NZ : zero nat | NS: 'a nat -> 'a succ nat
+type _ nat = NZ : zero nat | NS : 'a nat -> 'a succ nat
 
-type _ fin = FZ : 'a succ fin | FS: 'a fin -> 'a succ fin
+type _ fin = FZ : 'a succ fin | FS : 'a fin -> 'a succ fin
 
 (* We cannot define val empty : zero fin -> 'a because we cannot write an
    empty pattern matching. This might be useful to have *)
@@ -2859,7 +2860,7 @@ let subst x t' = pre_subst (subst_var x t')
 
 type (_, _) alist =
   | Anil : ('n, 'n) alist
-  | Asnoc: ('m, 'n) alist * 'm term * 'm succ fin -> ('m succ, 'n) alist
+  | Asnoc : ('m, 'n) alist * 'm term * 'm succ fin -> ('m succ, 'n) alist
 
 let rec sub : type m n. (m, n) alist -> m fin -> n term = function
   | Anil -> var
@@ -2869,7 +2870,7 @@ let rec append : type m n l. (m, n) alist -> (l, m) alist -> (l, n) alist =
  fun r s ->
   match s with Anil -> r | Asnoc (s, t, x) -> Asnoc (append r s, t, x)
 
-type _ ealist = EAlist: ('a, 'b) alist -> 'a ealist
+type _ ealist = EAlist : ('a, 'b) alist -> 'a ealist
 
 let asnoc a t' x = EAlist (Asnoc (a, t', x))
 
@@ -7794,7 +7795,7 @@ let f () = A {x= 1; y= 3}
 
 (* ok *)
 
-type _ t = A: {x: 'a; y: 'b} -> 'a t
+type _ t = A : {x: 'a; y: 'b} -> 'a t
 
 let f (A {x; y}) = A {x; y= ()}
 
@@ -7804,17 +7805,17 @@ let f (A ({x; y} as r)) = A {x= r.x; y= r.y}
 (* ok *)
 
 module M = struct
-  type 'a t = A of {x: 'a} | B: {u: 'b} -> unit t
+  type 'a t = A of {x: 'a} | B : {u: 'b} -> unit t
 
   exception Foo of {x: int}
 end
 
 module N : sig
-  type 'b t = 'b M.t = A of {x: 'b} | B: {u: 'bla} -> unit t
+  type 'b t = 'b M.t = A of {x: 'b} | B : {u: 'bla} -> unit t
 
   exception Foo of {x: int}
 end = struct
-  type 'b t = 'b M.t = A of {x: 'b} | B: {u: 'z} -> unit t
+  type 'b t = 'b M.t = A of {x: 'b} | B : {u: 'z} -> unit t
 
   exception Foo = M.Foo
 end
@@ -7885,7 +7886,7 @@ end
 
 type _ c = C : [`A] c
 
-type t = T: {x: [< `A] c} -> t
+type t = T : {x: [< `A] c} -> t
 
 let f (T {x= C}) = ()
 
@@ -8619,7 +8620,7 @@ type _ succ = Succ
 
 type (_, _, _) plus =
   | Plus0 : (zero, 'a, 'a) plus
-  | PlusS: ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
+  | PlusS : ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
 
 let trivial : (zero succ, zero, zero) plus option -> bool = function
   | None -> false
@@ -8697,7 +8698,7 @@ module TypEq = struct
 end
 
 module type T = sig
-  type _ is_t = Is: ('a, 'b) TypEq.t -> 'a is_t
+  type _ is_t = Is : ('a, 'b) TypEq.t -> 'a is_t
 
   val is_t : unit -> unit is_t option
 end

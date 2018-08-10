@@ -739,6 +739,7 @@ and fmt_core_type c ?(box= true) ?(in_type_declaration= false) ?pro
                    @@ hvbox 4
                         ( hvbox 2
                             ( Cmts.fmt c.cmts lab_loc.loc @@ str lab_loc.txt
+                            $ fmt_if Poly.(c.conf.field_space = `Loose) " "
                             $ fmt ":@ "
                             $ fmt_core_type c (sub_typ ~ctx typ) )
                         $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
@@ -897,7 +898,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                 $ fmt_core_type c (sub_typ ~ctx:(Pat pat) t) )
           | _ ->
               cbox 2
-                ( fmt_longident_loc c lid1 $ fmt "=@ "
+                ( fmt_longident_loc c lid1
+                $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+                $ fmt "=@ "
                 $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) ) )
       in
       hvbox 0
@@ -928,7 +931,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
           when break_cases_level c = 0 ->
-            or_newline "| " " |"
+            if c.conf.indicate_nested_or_patterns then or_newline "| " " |"
+            else or_newline "| " "| "
         | _ -> break_unless_newline 1 0 $ fmt "| "
       in
       let pro2 =
@@ -1876,7 +1880,9 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
                $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
            | _ ->
                cbox 2
-                 ( fmt_longident_loc c lid1 $ fmt "=@ "
+                 ( fmt_longident_loc c lid1
+                 $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+                 $ fmt "=@ "
                  $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) ))
       in
       hvbox 0
@@ -1906,8 +1912,17 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
       hvbox 0
         (hvbox_if parens 2
            ( wrap_fits_breaks_if parens "(" ")"
-               (list (sugar_sequence c width xexp) " ;@;<1000 0>"
-                  (fun grp -> list grp " ;@ " (fmt_expression c) ))
+               (list
+                  (sugar_sequence c width xexp)
+                  ( match c.conf.sequence_style with
+                  | `Separator -> " ;@;<1000 0>"
+                  | `Terminator -> ";@;<1000 0>" )
+                  (fun grp ->
+                    list grp
+                      ( match c.conf.sequence_style with
+                      | `Separator -> " ;@ "
+                      | `Terminator -> ";@ " )
+                      (fmt_expression c) ))
            $ fmt_atrs ))
   | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
@@ -2471,14 +2486,14 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
                ( fmt "method"
                $ fmt_if Poly.(virt = Virtual) "@ virtual"
                $ fmt_if Poly.(priv = Private) "@ private"
-               $ fmt "@ " $ str name.txt $ fmt "@ :@ "
+               $ fmt "@ " $ str name.txt $ fmt " :@ "
                $ fmt_core_type c (sub_typ ~ctx ty) )
          | Pctf_val (name, mut, virt, ty) ->
              hovbox 2
                ( fmt "val"
                $ fmt_if Poly.(virt = Virtual) "@ virtual"
                $ fmt_if Poly.(mut = Mutable) "@ mutable"
-               $ fmt "@ " $ str name.txt $ fmt "@ :@ "
+               $ fmt "@ " $ str name.txt $ fmt " :@ "
                $ fmt_core_type c (sub_typ ~ctx ty) )
          | Pctf_constraint (t1, t2) ->
              fmt "constraint" $ fmt "@ "
@@ -2688,6 +2703,7 @@ and fmt_label_declaration c ctx lbl_decl =
        ( hvbox 2
            ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
            $ Cmts.fmt c.cmts loc @@ str txt
+           $ fmt_if Poly.(c.conf.field_space = `Loose) " "
            $ fmt ":@ "
            $ fmt_core_type c (sub_typ ~ctx pld_type) )
        $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
@@ -2726,7 +2742,7 @@ and fmt_constructor_arguments c ctx pre args =
           (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
-  let pre : _ format = if Option.is_none res then " of@ " else ":@ " in
+  let pre : _ format = if Option.is_none res then " of@ " else " :@ " in
   let before_type : _ format =
     match args with Pcstr_tuple [] -> ": " | _ -> "-> "
   in
@@ -2867,7 +2883,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
                              let {opn; pro; psp; bdy; cls; esp; epi} =
                                mt1
                              in
-                             opn $ fmt " :@," $ Option.call ~f:pro $ psp
+                             opn $ fmt " :" $ Option.call ~f:pro $ psp
                              $ fmt "@;<1 2>" $ bdy $ esp
                              $ Option.call ~f:epi $ cls ) )) )
             $ fmt "@;<1 2>-> " $ Option.call ~f:blk.pro )
@@ -3079,7 +3095,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               $ str pci_name.txt
               $ ( fmt_fun_args c ~pro:(fmt "@;") xargs
                 $ opt ty (fun t ->
-                      fmt "@ :@ " $ fmt_class_type c (sub_cty ~ctx t) )
+                      fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t) )
                 $ fmt "@ =" ) )
           $ fmt "@;" $ fmt_class_expr c e )
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
