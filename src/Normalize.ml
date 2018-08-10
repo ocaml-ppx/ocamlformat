@@ -223,32 +223,8 @@ let equal_use_file ~ignore_doc_comments ast1 ast2 =
   in
   Poly.equal (map ast1) (map ast2)
 
-let disabled_attribute (attribute : attribute) =
-  match attribute with
-  | {txt= "ocamlformat.disable"; _}, _ -> true
-  | _ -> false
+let disabled_impl = function [] -> true | _ -> false
 
-let disabled_structure_item (si : structure_item) =
-  match si.pstr_desc with
-  | Pstr_attribute a -> disabled_attribute a
-  | _ -> false
+let disabled_intf = function [] -> true | _ -> false
 
-let disabled_signature_item (si : signature_item) =
-  match si.psig_desc with
-  | Psig_attribute a -> disabled_attribute a
-  | _ -> false
-
-let disabled_impl = function
-  | [] -> true
-  | l -> List.exists l ~f:disabled_structure_item
-
-let disabled_intf = function
-  | [] -> true
-  | l -> List.exists l ~f:disabled_signature_item
-
-let disabled_use_file = function
-  | [] -> true
-  | l ->
-      List.exists l ~f:(function
-        | Ptop_dir _ -> false
-        | Ptop_def l -> List.exists l ~f:disabled_structure_item )
+let disabled_use_file = function [] -> true | _ -> false

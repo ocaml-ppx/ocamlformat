@@ -17,6 +17,7 @@ type t =
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; comment_check: bool
+  ; disable: bool
   ; doc_comments: [`Before | `After]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for chars literals. *)

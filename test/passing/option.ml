@@ -49,7 +49,7 @@ module M = struct
     else (
       something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
       this is more )
-           
+
            [@@@ocamlformat "if-then-else=compact"]
 
                  let _ =
@@ -57,8 +57,7 @@ module M = struct
     else (
       something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
       this is more )
-           
+
 end
 
              [@@@ocamlformat "margin=90"]
-               
