@@ -21,6 +21,24 @@ open Fmt
 
 type c = {conf: Conf.t; source: Source.t; cmts: Cmts.t}
 
+type block =
+  { opn: Fmt.t
+  ; pro: Fmt.t option
+  ; psp: Fmt.t
+  ; bdy: Fmt.t
+  ; cls: Fmt.t
+  ; esp: Fmt.t
+  ; epi: Fmt.t option }
+
+let empty =
+  { opn= Fn.const ()
+  ; pro= None
+  ; psp= Fn.const ()
+  ; bdy= Fn.const ()
+  ; cls= Fn.const ()
+  ; esp= Fn.const ()
+  ; epi= None }
+
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
 let protect =
@@ -34,42 +52,78 @@ let protect =
         first := false ) ;
       raise exc
 
-let update_config c ({txt; loc}, payload) =
-  let result =
-    match txt with
-    | "ocamlformat" -> (
-      match payload with
-      | PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
-                    ; pexp_attributes= [] }
-                  , [] ) } ] ->
-          Conf.parse_line_in_attribute c str
-      | _ -> Error (`Malformed "string expected") )
-    | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
-        Error
-          (`Malformed
-            (Format.sprintf "unknown suffix %S"
-               (String.chop_prefix_exn ~prefix:"ocamlformat." txt)))
-    | _ -> Ok c
-  in
-  match result with
-  | Ok c -> c
-  | Error error ->
-      let reason = function
-        | `Malformed line -> Format.sprintf "Invalid format %S" line
-        | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
-        | `Unknown (name, _) -> Format.sprintf "Unknown option %s" name
-        | `Bad_value (name, value) ->
-            Format.sprintf "Invalid value for %s: %S" name value
-      in
-      let w = Warnings.Attribute_payload (txt, reason error) in
-      !Location.warning_printer loc Caml.Format.err_formatter w ;
-      c
-
 let update_config c l =
-  {c with conf= List.fold ~init:c.conf l ~f:update_config}
+  let update_one c ({txt; loc}, payload) =
+    let result =
+      match txt with
+      | "ocamlformat" -> (
+        match payload with
+        | PStr
+            [ { pstr_desc=
+                  Pstr_eval
+                    ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
+                      ; pexp_attributes= [] }
+                    , [] ) } ] ->
+            Conf.parse_line_in_attribute c.conf str
+        | _ -> Error (`Malformed "string expected") )
+      | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
+          Error
+            (`Malformed
+              (Format.sprintf "unknown suffix %S"
+                 (String.chop_prefix_exn ~prefix:"ocamlformat." txt)))
+      | _ -> Ok c.conf
+    in
+    match result with
+    | Ok conf -> {c with conf}
+    | Error error ->
+        let reason = function
+          | `Malformed line -> Format.sprintf "Invalid format %S" line
+          | `Misplaced (name, _) ->
+              Format.sprintf "%s not allowed here" name
+          | `Unknown (name, _) -> Format.sprintf "Unknown option %s" name
+          | `Bad_value (name, value) ->
+              Format.sprintf "Invalid value for %s: %S" name value
+        in
+        let w = Warnings.Attribute_payload (txt, reason error) in
+        !Location.warning_printer loc Caml.Format.err_formatter w ;
+        c
+  in
+  List.fold ~init:c l ~f:update_one
+
+let drop_while ~f s =
+  let i = ref 0 in
+  while !i < String.length s && f !i s.[!i] do
+    Int.incr i
+  done ;
+  String.sub s ~pos:!i ~len:(String.length s - !i)
+
+let maybe_disabled_k c (loc : Location.t) l f k =
+  if not c.conf.disable then f c
+  else
+    let loc = Source.extend_loc_to_include_attributes c.source loc l in
+    Cmts.drop_inside c.cmts loc ;
+    let s = Source.string_at c.source loc in
+    let indent_of_first_line = Position.column loc.loc_start in
+    let l = String.split ~on:'\n' s in
+    let l =
+      List.mapi l ~f:(fun i s ->
+          if i = 0 then s
+          else
+            drop_while s ~f:(fun i c ->
+                Char.is_whitespace c && i < indent_of_first_line ) )
+    in
+    k (list l "@\n" (fun s -> str s))
+
+let maybe_disabled c loc l f = maybe_disabled_k c loc l f Fn.id
+
+let update_config_maybe_disabled c loc l f =
+  let c = update_config c l in
+  maybe_disabled c loc l f
+
+let update_config_maybe_disabled_block c loc l f =
+  let c = update_config c l in
+  maybe_disabled_k c loc l f (fun bdy ->
+      {empty with opn= open_vbox 2; bdy; cls= close_box} )
 
 let rec sugar_arrow_typ c ({ast= typ} as xtyp) =
   let ctx = Typ typ in
@@ -360,24 +414,6 @@ let rec sugar_functor c ~for_functor_kw ({ast= me} as xme) =
       ((arg, xarg_mt) :: xargs, xbody_me)
   | _ -> ([], xme)
 
-type block =
-  { opn: Fmt.t
-  ; pro: Fmt.t option
-  ; psp: Fmt.t
-  ; bdy: Fmt.t
-  ; cls: Fmt.t
-  ; esp: Fmt.t
-  ; epi: Fmt.t option }
-
-let empty =
-  { opn= Fn.const ()
-  ; pro= None
-  ; psp= Fn.const ()
-  ; bdy= Fn.const ()
-  ; cls= Fn.const ()
-  ; esp= Fn.const ()
-  ; epi= None }
-
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
 (* In several places, a break such as "@;<1000 0>" is used to force the
@@ -631,12 +667,13 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   protect (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
+  update_config_maybe_disabled c ptyp_loc ptyp_attributes
+  @@ fun c ->
   ( match (ptyp_desc, pro) with
   | Ptyp_arrow _, Some _ when c.conf.ocp_indent_compat -> fmt "@,"
   | _, Some pro -> str pro $ fmt "@ "
   | _ -> fmt "" )
   $
-  let c = update_config c ptyp_attributes in
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c.cmts ptyp_loc
   @@ ( if List.is_empty atrs then Fn.id
@@ -786,7 +823,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   @@
   let ctx = Pat pat in
   let {ppat_desc; ppat_attributes; ppat_loc} = pat in
-  let c = update_config c ppat_attributes in
+  update_config_maybe_disabled c ppat_loc ppat_attributes
+  @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
@@ -1083,8 +1121,9 @@ and fmt_body c ({ast= body} as xbody) =
   let ctx = Exp body in
   let parens = parenze_exp xbody in
   match body with
-  | {pexp_desc= Pexp_function cs; pexp_attributes} ->
-      let c = update_config c pexp_attributes in
+  | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc} ->
+      update_config_maybe_disabled c pexp_loc pexp_attributes
+      @@ fun c ->
       fmt "@ "
       $ wrap_if parens "(" ")"
           ( fmt "function"
@@ -1110,7 +1149,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
-  let c = update_config c pexp_attributes in
+  update_config_maybe_disabled c pexp_loc pexp_attributes
+  @@ fun c ->
   let fmt_cmts = Cmts.fmt c.cmts ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@" pexp_attributes in
   let parens = match parens with Some b -> b | None -> parenze_exp xexp in
@@ -1371,10 +1411,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         ; pexp_attributes= [] }
       , [(Nolabel, e1)] ) ->
       let op =
-        if
-          loc.loc_end.pos_cnum - loc.loc_start.pos_cnum
-          = String.length op - 1
-        then String.sub op ~pos:1 ~len:(String.length op - 1)
+        if Location.width loc = String.length op - 1 then
+          String.sub op ~pos:1 ~len:(String.length op - 1)
         else op
       in
       let spc =
@@ -2086,8 +2124,7 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
   let fields =
     List.sort fields
       ~compare:
-        (Comparable.lift Int.compare ~f:(fun x ->
-             x.pcf_loc.loc_start.pos_cnum ))
+        (Comparable.lift Location.compare_start ~f:(fun x -> x.pcf_loc))
   in
   let _, fields =
     List.fold_map fields ~init:c ~f:(fun c i ->
@@ -2126,8 +2163,9 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
              | _ -> fmt "" )
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
-               (list fields "\n@\n" (fun (cf, c) -> fmt_class_field c ctx cf))
-           )
+               (list fields "\n@\n" (fun (cf, c) ->
+                    maybe_disabled c cf.pcf_loc []
+                    @@ fun c -> fmt_class_field c ctx cf )) )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
        $ fmt "end" ))
 
@@ -2135,8 +2173,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
   let fields =
     List.sort fields
       ~compare:
-        (Comparable.lift Int.compare ~f:(fun x ->
-             x.pctf_loc.loc_start.pos_cnum ))
+        (Comparable.lift Location.compare_start ~f:(fun x -> x.pctf_loc))
   in
   let _, fields =
     List.fold_map fields ~init:c ~f:(fun c i ->
@@ -2176,7 +2213,8 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
            $ fmt_if Poly.(fields <> []) "@;<1000 0>"
            $ hvbox 0
                (list fields "\n@\n" (fun (cf, c) ->
-                    fmt_class_type_field c ctx cf )) )
+                    maybe_disabled c cf.pctf_loc []
+                    @@ fun c -> fmt_class_type_field c ctx cf )) )
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
        $ fmt "end" ))
 
@@ -2184,7 +2222,8 @@ and fmt_class_type c ?(box = true) ({ast= typ} as xtyp) =
   protect (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
-  let c = update_config c pcty_attributes in
+  update_config_maybe_disabled c pcty_loc pcty_attributes
+  @@ fun c ->
   let doc, atrs = doc_atrs pcty_attributes in
   Cmts.fmt c.cmts pcty_loc
   @@ ( if List.is_empty atrs then Fn.id
@@ -2230,7 +2269,8 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   protect (Cl exp)
   @@
   let {pcl_desc; pcl_loc; pcl_attributes} = exp in
-  let c = update_config c pcl_attributes in
+  update_config_maybe_disabled c pcl_loc pcl_attributes
+  @@ fun c ->
   let parens = parenze_cl xexp in
   let fmt_label lbl sep =
     match lbl with
@@ -2361,7 +2401,8 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
 
 and fmt_class_field c ctx (cf : class_field) =
   let {pcf_desc; pcf_loc; pcf_attributes} = cf in
-  let c = update_config c pcf_attributes in
+  update_config_maybe_disabled c pcf_loc pcf_attributes
+  @@ fun c ->
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pcf_loc in
   let doc, atrs = doc_atrs pcf_attributes in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
@@ -2478,7 +2519,8 @@ and fmt_class_field c ctx (cf : class_field) =
 
 and fmt_class_type_field c ctx (cf : class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
-  let c = update_config c pctf_attributes in
+  update_config_maybe_disabled c pctf_loc pctf_attributes
+  @@ fun c ->
   let fmt_cmts = Cmts.fmt c.cmts ?eol:None pctf_loc in
   let doc, atrs = doc_atrs pctf_attributes in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
@@ -2574,8 +2616,15 @@ and fmt_cases c ctx cs =
               $ fmt_if parens_here "@ )" ) ) )
 
 and fmt_value_description c ctx vd =
-  let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes} = vd in
-  let c = update_config c pval_attributes in
+  let { pval_name= {txt; loc}
+      ; pval_type
+      ; pval_prim
+      ; pval_attributes
+      ; pval_loc } =
+    vd
+  in
+  update_config_maybe_disabled c pval_loc pval_attributes
+  @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc, atrs = doc_atrs pval_attributes in
   let doc_before =
@@ -2677,7 +2726,8 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
       ; ptype_loc } =
     decl
   in
-  let c = update_config c ptype_attributes in
+  update_config_maybe_disabled c ptype_loc ptype_attributes
+  @@ fun c ->
   let doc, atrs = doc_atrs ptype_attributes in
   Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ptype_loc
   @@ hvbox 0
@@ -2702,7 +2752,8 @@ and fmt_label_declaration c ctx lbl_decl =
       =
     lbl_decl
   in
-  let c = update_config c pld_attributes in
+  update_config_maybe_disabled c pld_loc pld_attributes
+  @@ fun c ->
   let doc, atrs = doc_atrs pld_attributes in
   let fmt_cmts = Cmts.fmt c.cmts ~eol:(break_unless_newline 1 2) pld_loc in
   fmt_cmts
@@ -2720,7 +2771,8 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
     cstr_decl
   in
-  let c = update_config c pcd_attributes in
+  update_config_maybe_disabled c pcd_loc pcd_attributes
+  @@ fun c ->
   let doc, atrs = doc_atrs pcd_attributes in
   fmt_if (not first)
     ( match c.conf.type_decl with
@@ -2812,8 +2864,9 @@ and fmt_exception ~pre c sep ctx te =
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
 
 and fmt_extension_constructor c sep ctx ec =
-  let {pext_name= {txt}; pext_kind; pext_attributes} = ec in
-  let c = update_config c pext_attributes in
+  let {pext_name= {txt}; pext_kind; pext_attributes; pext_loc} = ec in
+  update_config_maybe_disabled c pext_loc pext_attributes
+  @@ fun c ->
   let doc, atrs = doc_atrs pext_attributes in
   hvbox 4
     ( hvbox 2
@@ -2841,7 +2894,8 @@ and fmt_extension_constructor c sep ctx ec =
 and fmt_module_type c ({ast= mty} as xmty) =
   let ctx = Mty mty in
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
-  let c = update_config c pmty_attributes in
+  update_config_maybe_disabled_block c pmty_loc pmty_attributes
+  @@ fun c ->
   let parens = parenze_mty xmty in
   match pmty_desc with
   | Pmty_ident lid ->
@@ -2976,7 +3030,9 @@ and fmt_signature c ctx itms =
         (not (is_simple itmI)) || (not (is_simple itmJ)) )
   in
   let fmt_grp itms =
-    list itms "@\n" (fun (i, c) -> fmt_signature_item c (sub_sig ~ctx i))
+    list itms "@\n" (fun (i, c) ->
+        maybe_disabled c i.psig_loc []
+        @@ fun c -> fmt_signature_item c (sub_sig ~ctx i) )
   in
   hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
 
@@ -2996,8 +3052,9 @@ and fmt_signature_item c {ast= si} =
       hvbox 0
         ( fmt_extension c ctx "%%" ext
         $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
-  | Psig_include {pincl_mod; pincl_attributes} ->
-      let c = update_config c pincl_attributes in
+  | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
+      update_config_maybe_disabled c pincl_loc pincl_attributes
+      @@ fun c ->
       let doc, atrs = doc_atrs pincl_attributes in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
         match pincl_mod with
@@ -3046,7 +3103,8 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
           =
         cl
       in
-      let c = update_config c pci_attributes in
+      update_config_maybe_disabled c pci_loc pci_attributes
+      @@ fun c ->
       let doc, atrs = doc_atrs pci_attributes in
       fmt_if (not first) "\n@\n"
       $ Cmts.fmt c.cmts pci_loc
@@ -3073,7 +3131,8 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
           =
         cl
       in
-      let c = update_config c pci_attributes in
+      update_config_maybe_disabled c pci_loc pci_attributes
+      @@ fun c ->
       let xargs, xbody =
         match pci_expr.pcl_attributes with
         | [] -> sugar_cl_fun c None (sub_cl ~ctx pci_expr)
@@ -3184,8 +3243,9 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
     $ Option.call ~f:epi )
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
-  let {pmd_name; pmd_type; pmd_attributes} = pmd in
-  let c = update_config c pmd_attributes in
+  let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
+  update_config_maybe_disabled c pmd_loc pmd_attributes
+  @@ fun c ->
   let keyword =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"
@@ -3199,14 +3259,17 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   fmt_module c keyword pmd_name xargs None colon (Some xmty) pmd_attributes
 
 and fmt_module_type_declaration c ctx pmtd =
-  let {pmtd_name; pmtd_type; pmtd_attributes} = pmtd in
-  let c = update_config c pmtd_attributes in
+  let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
+  update_config_maybe_disabled c pmtd_loc pmtd_attributes
+  @@ fun c ->
   fmt_module c (fmt "module type") pmtd_name [] None false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
-and fmt_open_description c {popen_lid; popen_override; popen_attributes} =
-  let c = update_config c popen_attributes in
+and fmt_open_description c
+    {popen_lid; popen_override; popen_attributes; popen_loc} =
+  update_config_maybe_disabled c popen_loc popen_attributes
+  @@ fun c ->
   let doc, atrs = doc_atrs popen_attributes in
   fmt_docstring c ~epi:(fmt "@,") doc
   $ fmt "open"
@@ -3238,7 +3301,8 @@ and maybe_generative c ~ctx m =
 and fmt_module_expr c ({ast= m} as xmod) =
   let ctx = Mod m in
   let {pmod_desc; pmod_loc; pmod_attributes} = m in
-  let c = update_config c pmod_attributes in
+  update_config_maybe_disabled_block c pmod_loc pmod_attributes
+  @@ fun c ->
   let parens = parenze_mod xmod in
   match pmod_desc with
   | Pmod_apply (({pmod_desc= Pmod_ident _} as me_f), me_a) ->
@@ -3580,7 +3644,9 @@ and fmt_structure c ctx itms =
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
         fmt_if (not first) "@\n"
-        $ fmt_structure_item c ~last:(last && last_grp) (sub_str ~ctx itm)
+        $ maybe_disabled c itm.pstr_loc []
+          @@ fun c ->
+          fmt_structure_item c ~last:(last && last_grp) (sub_str ~ctx itm)
     )
   in
   hvbox 0
@@ -3615,8 +3681,9 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_exception extn_constr ->
       hvbox 2
         (fmt_exception ~pre:(fmt "exception@ ") c (fmt ": ") ctx extn_constr)
-  | Pstr_include {pincl_mod; pincl_attributes} ->
-      let c = update_config c pincl_attributes in
+  | Pstr_include {pincl_mod; pincl_attributes; pincl_loc} ->
+      update_config_maybe_disabled c pincl_loc pincl_attributes
+      @@ fun c ->
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
@@ -3668,7 +3735,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
 
 and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = binding in
-  let c = update_config c pvb_attributes in
+  update_config_maybe_disabled c pvb_loc pvb_attributes
+  @@ fun c ->
   let doc, atrs = doc_atrs pvb_attributes in
   let xpat, xargs, fmt_cstr, xbody =
     let ({ast= pat} as xpat) =
@@ -3773,8 +3841,9 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ Option.call ~f:epi )
 
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
-  let {pmb_name; pmb_expr; pmb_attributes} = pmb in
-  let c = update_config c pmb_attributes in
+  let {pmb_name; pmb_expr; pmb_attributes; pmb_loc} = pmb in
+  update_config_maybe_disabled c pmb_loc pmb_attributes
+  @@ fun c ->
   let keyword =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"

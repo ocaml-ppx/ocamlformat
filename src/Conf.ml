@@ -16,6 +16,7 @@ type t =
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; comment_check: bool
+  ; disable: bool
   ; doc_comments: [`Before | `After]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
@@ -257,6 +258,16 @@ module Formatting = struct
     in
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with break_string_literals= x} )
+
+  let disable =
+    let doc =
+      "Disable ocamlformat. This is used in attributes to locally disable \
+       automatic code formatting. One can also use $(i,[@@@ocamlformat \
+       \"enable\"]) instead of $(i,[@@@ocamlformat \"disable=false\"])"
+    in
+    let env = Arg.env_var "OCAMLFORMAT_DISABLE" in
+    C.flag ~names:["disable"] ~default:false ~doc ~env ~allow_inline:true
+      ~update:(fun conf x -> {conf with disable= x} )
 
   let doc_comments =
     let doc =
@@ -632,6 +643,8 @@ let parse_line config ~from s =
            Please use `%s = %s`\n"
           filename lnum name value ;
         update ~config ~from ~name ~value
+    (* special case for disable/enable *)
+    | ["enable"], _ -> update ~config ~from ~name:"disable" ~value:"false"
     | [name], _ -> update ~config ~from ~name ~value:"true"
     | _ -> Error (`Malformed s) )
   | _ -> Error (`Malformed s)
@@ -679,6 +692,7 @@ let config =
   ; break_infix= C.get Formatting.break_infix
   ; break_string_literals= C.get Formatting.break_string_literals
   ; comment_check= C.get comment_check
+  ; disable= C.get Formatting.disable
   ; doc_comments= C.get Formatting.doc_comments
   ; escape_chars= C.get Formatting.escape_chars
   ; escape_strings= C.get Formatting.escape_strings

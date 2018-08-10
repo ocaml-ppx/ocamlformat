@@ -17,6 +17,8 @@ val create : string -> t
 
 val string_between : t -> Location.t -> Location.t -> string option
 
+val string_at : t -> Location.t -> string
+
 val string_literal :
   t -> [`Normalize_nl | `Preserve] -> Location.t -> string
 
@@ -54,3 +56,6 @@ val ends_line : t -> Location.t -> bool
 
 val extension_using_sugar :
   name:string Location.loc -> payload:Parsetree.expression -> bool
+
+val extend_loc_to_include_attributes :
+  t -> Location.t -> Parsetree.attributes -> Location.t

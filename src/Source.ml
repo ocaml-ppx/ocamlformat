@@ -17,11 +17,16 @@ let create s = s
 
 let string_between t (l1 : Location.t) (l2 : Location.t) =
   let pos = l1.loc_end.pos_cnum in
-  let len = l2.loc_start.pos_cnum - l1.loc_end.pos_cnum in
+  let len = Position.distance l1.loc_end l2.loc_start in
   if len >= 0 then Some (String.sub t ~pos ~len)
   else
     (* can happen e.g. if comment is within a parenthesized expression *)
     None
+
+let string_at t (l : Location.t) =
+  let pos = l.loc_start.pos_cnum in
+  let len = Location.width l in
+  String.sub t ~pos ~len
 
 let merge (l1 : Location.t) ~(sub : Location.t) =
   let base = l1.loc_start.pos_cnum in
@@ -31,7 +36,7 @@ let merge (l1 : Location.t) ~(sub : Location.t) =
 
 let string_from_loc t (l : Location.t) =
   let pos = l.loc_start.pos_cnum in
-  let len = l.loc_end.pos_cnum - pos in
+  let len = Location.width l in
   String.sub t ~pos ~len
 
 let lexbuf_from_loc t (l : Location.t) =
@@ -51,6 +56,74 @@ let tokens_at t ?(filter = fun _ -> true) (l : Location.t) :
         else loop acc
   in
   loop []
+
+let find_after t f (loc : Location.t) =
+  let loc = {loc with loc_start= loc.loc_end} in
+  let pos = ref loc.loc_end.pos_cnum in
+  let lexbuf =
+    Lexing.from_function (fun bytes available ->
+        let to_write = min (String.length t - !pos) available in
+        Bytes.From_string.blit ~src:t ~src_pos:!pos ~dst:bytes ~dst_pos:0
+          ~len:to_write ;
+        pos := !pos + to_write ;
+        to_write )
+  in
+  let rec loop () =
+    match Lexer.token lexbuf with
+    | Parser.EOF -> None
+    | tok ->
+        if f tok then
+          let sub = Location.curr lexbuf in
+          Some (merge loc ~sub)
+        else loop ()
+  in
+  loop ()
+
+let extend_loc_to_include_attributes t (loc : Location.t)
+    (l : Parsetree.attributes) =
+  let last_loc =
+    List.fold l ~init:loc
+      ~f:(fun (acc : Location.t)
+         (({loc; _}, payload) : Parsetree.attribute)
+         ->
+        if loc.loc_ghost then acc
+        else
+          let loc =
+            match payload with
+            | PStr [] -> loc
+            | PStr l -> (List.last_exn l).pstr_loc
+            | PSig [] -> loc
+            | PSig l -> (List.last_exn l).psig_loc
+            | PTyp c -> c.ptyp_loc
+            | PPat (p, None) -> p.ppat_loc
+            | PPat (_, Some e) -> e.pexp_loc
+          in
+          if Location.compare_end loc acc <= 0 then acc else loc )
+  in
+  if phys_equal last_loc loc then loc
+  else
+    let loc =
+      { loc with
+        loc_end= {loc.loc_end with pos_cnum= last_loc.loc_end.pos_cnum} }
+    in
+    let count = ref 0 in
+    let l =
+      find_after t
+        (function
+          | RBRACKET ->
+              if !count = 0 then true else ( Int.decr count ; false )
+          (* It is not clear that an LBRACKET* will ever happen in practice,
+             we're just being defensive here. *)
+          | LBRACKET | LBRACKETBAR | LBRACKETLESS | LBRACKETGREATER
+           |LBRACKETPERCENT | LBRACKETPERCENTPERCENT | LBRACKETAT
+           |LBRACKETATAT | LBRACKETATATAT ->
+              Int.incr count ; false
+          | _ -> false)
+        loc
+    in
+    match l with
+    | None -> impossible "Invariant of the token stream"
+    | Some e -> {loc with loc_end= e.loc_end}
 
 let loc_between ~(from : Location.t) ~(upto : Location.t) : Location.t =
   {from with loc_start= from.loc_end; loc_end= upto.loc_start}

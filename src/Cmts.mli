@@ -108,6 +108,8 @@ val fmt_list :
   -> Fmt.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
+val drop_inside : t -> Location.t -> unit
+
 val has_before : t -> Location.t -> bool
 (** [has_before t loc] holds if [t] contains some comment before [loc]. *)
 

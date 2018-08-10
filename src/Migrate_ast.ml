@@ -9,7 +9,12 @@
  *                                                                    *
  **********************************************************************)
 
-include Ast_407
+include (
+  Ast_407 :
+    module type of struct
+      include Ast_407
+    end
+    with module Location := Ast_407.Location )
 
 module Parse = struct
   open Migrate_parsetree
@@ -89,3 +94,55 @@ let map_use_file mapper use_file =
       | Ptop_def structure ->
           Ptop_def (mapper.Ast_mapper.structure mapper structure)
       | Ptop_dir _ as d -> d )
+
+module Position = struct
+  open Lexing
+  module Format = Format_
+
+  let column {pos_bol; pos_cnum} = pos_cnum - pos_bol
+
+  let fmt fs {pos_lnum; pos_bol; pos_cnum} =
+    if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
+    else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
+
+  let compare_col p1 p2 = Int.compare (column p1) (column p2)
+
+  let compare p1 p2 =
+    if phys_equal p1 p2 then 0 else Int.compare p1.pos_cnum p2.pos_cnum
+
+  let distance p1 p2 = p2.pos_cnum - p1.pos_cnum
+end
+
+module Location = struct
+  include Ast_407.Location
+  module Format = Format_
+
+  let fmt fs {loc_start; loc_end; loc_ghost} =
+    Format.fprintf fs "(%a..%a)%s" Position.fmt loc_start Position.fmt
+      loc_end
+      (if loc_ghost then " ghost" else "")
+
+  let to_string x = Format.asprintf "%a" fmt x
+
+  let sexp_of_t x = Sexp.Atom (to_string x)
+
+  let compare = Poly.compare
+
+  let hash = Hashtbl.hash
+
+  let is_single_line x = x.loc_start.pos_lnum = x.loc_end.pos_lnum
+
+  let compare_start x y = Position.compare x.loc_start y.loc_start
+
+  let compare_start_col x y = Position.compare_col x.loc_start y.loc_start
+
+  let compare_end x y = Position.compare x.loc_end y.loc_end
+
+  let compare_end_col x y = Position.compare_col x.loc_end y.loc_end
+
+  let contains l1 l2 = compare_start l1 l2 <= 0 && compare_end l1 l2 >= 0
+
+  let width x = Position.distance x.loc_start x.loc_end
+
+  let compare_width_decreasing l1 l2 = Int.compare (width l2) (width l1)
+end
