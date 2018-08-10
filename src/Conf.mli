@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_infix: [`Wrap | `Fit_or_vertical]
+  { break_cases: [`Fit | `Nested | `All]
+  ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; no_comment_check: bool
@@ -34,7 +35,6 @@ type t =
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
-  ; sparse: bool  (** Generate more sparsely formatted code if true. *)
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *) }
 

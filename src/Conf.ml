@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_infix: [`Wrap | `Fit_or_vertical]
+  { break_cases: [`Fit | `Nested | `All]
+  ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; no_comment_check: bool
   ; doc_comments: [`Before | `After]
@@ -29,7 +30,6 @@ type t =
   ; ocp_indent_compat: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
-  ; sparse: bool
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool }
 
@@ -201,6 +201,20 @@ let info =
 
 (** Options affecting formatting *)
 module Formatting = struct
+  let break_cases =
+    let doc =
+      "Break pattern match cases. Can be set in a config file with a \
+       `break-cases = {fit,nested,all}` line. Specifying $(b,fit) lets \
+       pattern matches break at the margin naturally, $(b,nested) forces a \
+       break after nested or-patterns to highlight the case body, and \
+       $(b,all) forces all pattern matches to break across lines."
+    in
+    let env = Arg.env_var "OCAMLFORMAT_BREAK_CASES" in
+    let names = ["break-cases"] in
+    let all = [("fit", `Fit); ("nested", `Nested); ("all", `All)] in
+    C.choice ~names ~all ~doc ~env ~allow_inline:true ~update:(fun conf x ->
+        {conf with break_cases= x} )
+
   let break_infix =
     let doc =
       "Break sequence of infix operators. Can be set in a config file with \
@@ -385,15 +399,6 @@ module Formatting = struct
     in
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with parens_tuple= x} )
-
-  let sparse =
-    let doc =
-      "Generate more sparsely formatted code. Can be set in a config file \
-       with a `sparse = {true,false}` line."
-    in
-    let env = Arg.env_var "OCAMLFORMAT_SPARSE" in
-    C.flag ~names:["sparse"] ~doc ~env ~allow_inline:true ~update:
-      (fun conf x -> {conf with sparse= x} )
 
   let type_decl =
     let doc =
@@ -611,7 +616,8 @@ let read_config ~filename conf =
   read_conf_files conf ~dir:(Filename.dirname (to_absolute filename))
 
 let config =
-  { break_infix= C.get Formatting.break_infix
+  { break_cases= C.get Formatting.break_cases
+  ; break_infix= C.get Formatting.break_infix
   ; break_string_literals= C.get Formatting.break_string_literals
   ; no_comment_check= C.get no_comment_check
   ; doc_comments= C.get Formatting.doc_comments
@@ -629,7 +635,6 @@ let config =
   ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
   ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet
-  ; sparse= C.get Formatting.sparse
   ; type_decl= C.get Formatting.type_decl
   ; wrap_comments= C.get Formatting.wrap_comments }
 
