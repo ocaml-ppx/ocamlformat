@@ -3703,23 +3703,50 @@ and fmt_structure c ctx itms =
            |Pstr_class [] ->
               false
         in
-        let rec is_simple_mod me =
-          match me.pmod_desc with
-          | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-          | Pmod_functor (_, _, me) -> is_simple_mod me
-          | Pmod_ident _ -> true
-          | _ -> false
-        in
         let is_simple itm =
-          match itm.pstr_desc with
-          | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
-              is_simple_mod me
-          | Pstr_open _ -> true
-          | _ -> false
+          match c.conf.structure_item_grouping with
+          | `Compact -> Location.width itm.pstr_loc <= c.conf.margin
+          | `Sparse -> (
+            match itm.pstr_desc with
+            | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
+                let rec is_simple_mod me =
+                  match me.pmod_desc with
+                  | Pmod_apply (me1, me2) ->
+                      is_simple_mod me1 && is_simple_mod me2
+                  | Pmod_functor (_, _, me) -> is_simple_mod me
+                  | Pmod_ident _ -> true
+                  | _ -> false
+                in
+                is_simple_mod me
+            | Pstr_open _ -> true
+            | _ -> false )
+        in
+        let allow_adjacent itmI itmJ =
+          match c.conf.structure_item_grouping with
+          | `Sparse -> true
+          | `Compact -> (
+            match (itmI.pstr_desc, itmJ.pstr_desc) with
+            | Pstr_eval _, Pstr_eval _
+             |Pstr_value _, Pstr_value _
+             |Pstr_primitive _, Pstr_primitive _
+             |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
+             |Pstr_exception _, Pstr_exception _
+             |( ( Pstr_module _ | Pstr_recmodule _ | Pstr_open _
+                | Pstr_include _ )
+              , ( Pstr_module _ | Pstr_recmodule _ | Pstr_open _
+                | Pstr_include _ ) )
+             |Pstr_modtype _, Pstr_modtype _
+             |Pstr_class _, Pstr_class _
+             |Pstr_class_type _, Pstr_class_type _
+             |Pstr_attribute _, Pstr_attribute _
+             |Pstr_extension _, Pstr_extension _ ->
+                true
+            | _ -> false )
         in
         has_doc itmI || has_doc itmJ
         || (not (is_simple itmI))
-        || not (is_simple itmJ) )
+        || (not (is_simple itmJ))
+        || not (allow_adjacent itmI itmJ) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->

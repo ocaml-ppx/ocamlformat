@@ -39,6 +39,7 @@ type t =
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
+  ; structure_item_grouping: [`Compact | `Sparse]
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }

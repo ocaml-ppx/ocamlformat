@@ -34,6 +34,7 @@ type t =
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
+  ; structure_item_grouping: [`Compact | `Sparse]
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
@@ -514,6 +515,20 @@ module Formatting = struct
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with sequence_style= x} )
 
+  let structure_item_grouping =
+    let doc = "Line breaks between structure items." in
+    let env = Arg.env_var "OCAMLFORMAT_STRUCTURE_ITEM_GROUPING" in
+    let names = ["structure-item-grouping"] in
+    let all =
+      [ ( "sparse"
+        , `Sparse
+        , "$(b,sparse) will always break a line between two structure items."
+        )
+      ; ("compact", `Compact, "$(b,compact) will not.") ]
+    in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with structure_item_grouping= x} )
+
   let type_decl =
     let doc = "Style of type declaration." in
     let env = Arg.env_var "OCAMLFORMAT_TYPE_DECL" in
@@ -768,6 +783,7 @@ let config =
   ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet
   ; sequence_style= C.get Formatting.sequence_style
+  ; structure_item_grouping= C.get Formatting.structure_item_grouping
   ; type_decl= C.get Formatting.type_decl
   ; wrap_comments= C.get Formatting.wrap_comments
   ; wrap_fun_args= C.get Formatting.wrap_fun_args }
