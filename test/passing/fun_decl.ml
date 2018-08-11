@@ -28,22 +28,22 @@ let rec func
   body
 
 let to_loc_trace
-    ?(desc_of_source=
+    ?(desc_of_source =
       fun source ->
         let callsite = Source.call_site source in
         Format.asprintf
           "return from %a"
           Typ.Procname.pp
           (CallSite.pname callsite))
-    ?(source_should_nest= fun _ -> true)
-    ?(desc_of_sink=
+    ?(source_should_nest = fun _ -> true)
+    ?(desc_of_sink =
       fun sink ->
         let callsite = Sink.call_site sink in
         Format.asprintf
           "call to %a"
           Typ.Procname.pp
           (CallSite.pname callsite))
-    ?(sink_should_nest= fun _ -> true)
+    ?(sink_should_nest = fun _ -> true)
     (passthroughs, sources, sinks) =
   ()
 
@@ -73,16 +73,16 @@ let rec func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
   body
 
 let to_loc_trace
-    ?(desc_of_source=
+    ?(desc_of_source =
       fun source ->
         let callsite = Source.call_site source in
         Format.asprintf "return from %a" Typ.Procname.pp
-          (CallSite.pname callsite)) ?(source_should_nest= fun _ -> true)
-    ?(desc_of_sink=
+          (CallSite.pname callsite)) ?(source_should_nest = fun _ -> true)
+    ?(desc_of_sink =
       fun sink ->
         let callsite = Sink.call_site sink in
         Format.asprintf "call to %a" Typ.Procname.pp
-          (CallSite.pname callsite)) ?(sink_should_nest= fun _ -> true)
+          (CallSite.pname callsite)) ?(sink_should_nest = fun _ -> true)
     (passthroughs, sources, sinks) =
   ()
 

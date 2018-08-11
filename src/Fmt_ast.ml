@@ -92,7 +92,7 @@ let rec sugar_class_arrow_typ c ({ast= typ} as xtyp) =
       :: sugar_class_arrow_typ c (sub_cty ~ctx t2)
   | _ -> [(Nolabel, `class_type xtyp)]
 
-let rec sugar_or_pat ?(allow_attribute= true) c ({ast= pat} as xpat) =
+let rec sugar_or_pat ?(allow_attribute = true) c ({ast= pat} as xpat) =
   let ctx = Pat pat in
   match pat with
   | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc; ppat_attributes= []} ->
@@ -290,7 +290,7 @@ let rec sugar_ite c ({ast= exp} as xexp) =
   | _ -> [(None, xexp, pexp_attributes)]
 
 let sugar_sequence c width xexp =
-  let rec sugar_sequence_ ?(allow_attribute= true) ({ast= exp} as xexp) =
+  let rec sugar_sequence_ ?(allow_attribute = true) ({ast= exp} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc} = exp in
     match pexp_desc with
@@ -393,7 +393,7 @@ let rec fmt_longident (li : Longident.t) =
   | Lapply (li1, li2) ->
       cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
 
-let fmt_longident_loc c ?(pre= ("" : _ format))
+let fmt_longident_loc c ?(pre = ("" : _ format))
     ({txt; loc} : Longident.t loc) =
   Cmts.fmt c.cmts loc @@ (fmt pre $ fmt_longident txt)
 
@@ -598,7 +598,8 @@ and fmt_extension c ctx key (({txt} as ext), pld) =
         $ fmt_payload c (Pld pld) pld
         $ fmt_if protect_token " " )
 
-and fmt_attributes c ?(pre= fmt "") ?(suf= fmt "") ?(box= true) ~key attrs =
+and fmt_attributes c ?(pre = fmt "") ?(suf = fmt "") ?(box = true) ~key
+    attrs =
   let num = List.length attrs in
   if num = 0 then fmt ""
   else
@@ -625,7 +626,7 @@ and fmt_payload c ctx pld =
       $ opt exp (fun exp ->
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )
 
-and fmt_core_type c ?(box= true) ?(in_type_declaration= false) ?pro
+and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
@@ -1008,7 +1009,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         $ fmt_pattern c (sub_pat ~ctx pat)
         $ fmt ")" )
 
-and fmt_fun_args c ?(pro= fmt "") args =
+and fmt_fun_args c ?(pro = fmt "") args =
   let fmt_fun_arg = function
     | Val (Nolabel, xpat, None) -> fmt_pattern c xpat
     | Val
@@ -1104,8 +1105,8 @@ and fmt_index_op c ctx ~parens ?set (s, opn, cls) l i =
        | None -> fmt ""
        | Some e -> fmt "@ <- " $ fmt_expression c (sub_exp ~ctx e) ))
 
-and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
-    =
+and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
+    ({ast= exp} as xexp) =
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -1123,7 +1124,7 @@ and fmt_expression c ?(box= true) ?epi ?eol ?parens ?ext ({ast= exp} as xexp)
     | Labelled l -> fmt "~" $ str l $ fmt sep
     | Optional l -> fmt "?" $ str l $ fmt sep
   in
-  let fmt_label_arg ?(box= box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
+  let fmt_label_arg ?(box = box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
     match (lbl, arg.pexp_desc) with
     | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
       when String.equal l i && List.is_empty arg.pexp_attributes ->
@@ -2176,7 +2177,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
        $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
        $ fmt "end" ))
 
-and fmt_class_type c ?(box= true) ({ast= typ} as xtyp) =
+and fmt_class_type c ?(box = true) ({ast= typ} as xtyp) =
   protect (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
@@ -2222,7 +2223,7 @@ and fmt_class_type c ?(box= true) ({ast= typ} as xtyp) =
         $ fmt_class_type c (sub_cty ~ctx cl) ) )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
-and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
+and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   protect (Cl exp)
   @@
   let {pcl_desc; pcl_loc; pcl_attributes} = exp in
@@ -2234,7 +2235,7 @@ and fmt_class_expr c ?eol ?(box= true) ({ast= exp} as xexp) =
     | Labelled l -> fmt "~" $ str l $ fmt sep
     | Optional l -> fmt "?" $ str l $ fmt sep
   in
-  let fmt_label_arg ?(box= box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
+  let fmt_label_arg ?(box = box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
     match (lbl, arg.pexp_desc) with
     | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
       when String.equal l i ->
@@ -2616,8 +2617,8 @@ and fmt_class_params c ctx ~epi params =
 
 and fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
-and fmt_type_declaration c ?(pre= "") ?(suf= ("" : _ format)) ?(brk= suf)
-    ctx ?fmt_name ?(eq= "=") decl =
+and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
+    ctx ?fmt_name ?(eq = "=") decl =
   let fmt_manifest ~priv manifest =
     opt manifest (fun typ ->
         fmt " " $ str eq $ fmt_private_flag priv $ fmt "@ "
