@@ -1329,11 +1329,12 @@ end = struct
       , inner ) -> (
       match inner with
       | Ppat_construct ({txt= Lident "::"}, _) -> true
-      | Ppat_construct _ | Ppat_variant _ -> false
+      | Ppat_construct _ | Ppat_record _ | Ppat_variant _ -> false
       | _ -> true )
     | ( Pat {ppat_desc= Ppat_construct _}
       , Ppat_construct ({txt= Lident "::"}, _) ) ->
         true
+    | Exp {pexp_desc= Pexp_fun (Optional _, _, _, _)}, Ppat_record _ -> true
     | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)
