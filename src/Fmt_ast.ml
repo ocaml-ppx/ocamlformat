@@ -943,9 +943,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                 $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) ) )
       in
       hvbox 0
-        (wrap_fits_breaks "{" "}"
-           ( list flds "@,; " fmt_field
-           $ fmt_if Poly.(closed_flag = Open) "; _" ))
+        (wrap_if parens "(" ")"
+           (wrap_fits_breaks "{" "}"
+              ( list flds "@,; " fmt_field
+              $ fmt_if Poly.(closed_flag = Open) "; _" )))
   | Ppat_array [] ->
       hvbox 0 (wrap_fits_breaks "[|" "|]" (Cmts.fmt_within c.cmts ppat_loc))
   | Ppat_array pats ->
