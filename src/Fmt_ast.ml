@@ -1456,7 +1456,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                              @@ hvbox 0
                                   ( fmt "(fun " $ fmt_fun_args c xargs
                                   $ fmt "@ ->" ) )
-                       $ fmt "@;<1 2>"
+                       $ fmt
+                           ( match xbody.ast.pexp_desc with
+                           | Pexp_function _ -> "@ "
+                           | _ -> "@;<1 2>" )
                        $ fmt_expression c
                            ?box:
                              ( match xbody.ast.pexp_desc with
