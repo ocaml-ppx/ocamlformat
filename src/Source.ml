@@ -38,7 +38,7 @@ let lexbuf_from_loc t (l : Location.t) =
   let s = string_from_loc t l in
   Lexing.from_string s
 
-let tokens_at t ?(filter= fun _ -> true) (l : Location.t) :
+let tokens_at t ?(filter = fun _ -> true) (l : Location.t) :
     (Parser.token * Location.t) list =
   let lexbuf = lexbuf_from_loc t l in
   let rec loop acc =
@@ -55,7 +55,7 @@ let tokens_at t ?(filter= fun _ -> true) (l : Location.t) :
 let loc_between ~(from : Location.t) ~(upto : Location.t) : Location.t =
   {from with loc_start= from.loc_end; loc_end= upto.loc_start}
 
-let tokens_between t ?(filter= fun _ -> true) ~(from : Location.t)
+let tokens_between t ?(filter = fun _ -> true) ~(from : Location.t)
     ~(upto : Location.t) : (Parser.token * Location.t) list =
   tokens_at t ~filter (loc_between ~from ~upto)
 

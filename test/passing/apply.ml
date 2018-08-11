@@ -2,7 +2,7 @@ let _ = List.map ~f:(( + ) (M.f x))
 
 let id x = x
 
-let plus a ?(b= 0) c = a + b + c
+let plus a ?(b = 0) c = a + b + c
 
 ;;
 id (plus 1) ~b:1

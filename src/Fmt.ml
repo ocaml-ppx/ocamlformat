@@ -92,8 +92,8 @@ let pre_break n s o fs = Format.pp_print_pre_break fs n s o
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
-let fits_breaks ?(force_fit_if= false) ?(force_break_if= false) fits breaks
-    fs =
+let fits_breaks ?(force_fit_if = false) ?(force_break_if = false) fits
+    breaks fs =
   let n, o, b =
     let len = String.length breaks in
     if len >= 2 && Char.equal breaks.[0] '@' then
