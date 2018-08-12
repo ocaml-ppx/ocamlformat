@@ -64,6 +64,16 @@ let contains_IN_token_between t ~(from : Location.t) ~(upto : Location.t) =
   Source_code_position.ascending from.loc_start upto.loc_start < 0
   && (not (List.is_empty (tokens_between t ~from ~upto ~filter)))
 
+let is_long_pexp_open (conf : Conf.t) source {Parsetree.pexp_desc} =
+  match pexp_desc with
+  | Pexp_open (_, {loc}, {pexp_loc}) -> (
+    match conf.let_open with
+    | `Auto | `Long -> true
+    | `Short -> false
+    | `Preserve -> contains_IN_token_between source ~from:loc ~upto:pexp_loc
+    )
+  | _ -> false
+
 let string_literal t mode (l : Location.t) =
   (* the location of a [string] might include surrounding comments and
      attributes because of [reloc_{exp,pat}] and a [string] can be found in

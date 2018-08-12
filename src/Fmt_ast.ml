@@ -1155,10 +1155,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       let is_not_indented exp =
         match exp.pexp_desc with
         | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
-         |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_open _
+         |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _
          |Pexp_sequence _ | Pexp_try _ ->
             true
-        | _ -> false
+        | _ -> Source.is_long_pexp_open c.conf c.source exp
       in
       let final_break =
         match xargs with
@@ -1759,9 +1759,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       let let_open =
         match c.conf.let_open with
         | `Preserve ->
-            let from = loc and upto = e0.pexp_loc in
-            if Source.contains_IN_token_between c.source ~from ~upto then
-              `Long
+            if Source.is_long_pexp_open c.conf c.source exp then `Long
             else `Short
         | x -> x
       in
