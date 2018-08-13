@@ -423,11 +423,11 @@ let rec fmt_longident (li : Longident.t) =
   match li with
   | Lident id -> str id
   | Ldot (li, id) ->
-      cbox 0
+      hovbox 0
         ( fmt_longident li $ fmt ".@,"
         $ wrap_if (is_symbol_id id) "( " " )" (str id) )
   | Lapply (li1, li2) ->
-      cbox 0 (fmt_longident li1 $ wrap "(" ")" (fmt_longident li2))
+      hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
 let fmt_longident_loc c ?(pre = ("" : _ format))
     ({txt; loc} : Longident.t loc) =
