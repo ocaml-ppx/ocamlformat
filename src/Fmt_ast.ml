@@ -1158,7 +1158,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
          |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _
          |Pexp_sequence _ | Pexp_try _ ->
             true
-        | _ -> Source.is_long_pexp_open c.conf c.source exp
+        | Pexp_open _ -> (
+          match c.conf.let_open with
+          | `Auto | `Long -> true
+          | `Short -> false
+          | `Preserve -> Source.is_long_pexp_open c.source exp )
+        | _ -> false
       in
       let final_break =
         match xargs with
@@ -1759,8 +1764,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       let let_open =
         match c.conf.let_open with
         | `Preserve ->
-            if Source.is_long_pexp_open c.conf c.source exp then `Long
-            else `Short
+            if Source.is_long_pexp_open c.source exp then `Long else `Short
         | x -> x
       in
       let force_break_if =

@@ -42,8 +42,8 @@ val tokens_between :
     starting from [from] and ending before [upto] and respecting the
     [filter] property. [from] must start before [upto]. *)
 
-val is_long_pexp_open : Conf.t -> t -> Parsetree.expression -> bool
-(** [is_long_pexp_open conf source exp] holds if [exp] is a [Pexp_open]
+val is_long_pexp_open : t -> Parsetree.expression -> bool
+(** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open]
     expression that is expressed in long ('let open') form in source. *)
 
 val begins_line : t -> Location.t -> bool
