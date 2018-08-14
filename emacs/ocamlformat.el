@@ -46,7 +46,7 @@ Please note that Emacs outputs to the echo area when writing
 files and will overwrite ocamlformat's echo output if used from inside
 a `before-save-hook'."
     :type '(choice
-            (const :tag "Own buffer" buffer)
+            (const :tag "*compilation* buffer" buffer)
             (const :tag "Echo area" echo)
             (const :tag "None" nil))
       :group 'ocamlformat)
@@ -141,9 +141,7 @@ function."
 (defun ocamlformat--process-errors (filename tmpfile errorfile errbuf)
   (with-current-buffer errbuf
     (if (eq ocamlformat-show-errors 'echo)
-        (progn
-          (message "%s" (buffer-string))
-          (ocamlformat--kill-error-buffer errbuf))
+      (message "%s" (buffer-string))
       (insert-file-contents errorfile nil nil nil)
       ;; Convert the ocamlformat stderr to something understood by the compilation mode.
       (goto-char (point-min))
@@ -168,7 +166,12 @@ function."
           (bufferfile (make-temp-file "ocamlformat" nil ext))
           (outputfile (make-temp-file "ocamlformat" nil ext))
           (errorfile (make-temp-file "ocamlformat" nil ext))
-          (errbuf (if ocamlformat-show-errors (get-buffer-create "*compilation*")))
+          (errbuf
+            (cond
+              ((eq ocamlformat-show-errors 'buffer)
+                (get-buffer-create "*compilation*"))
+              ((eq ocamlformat-show-errors 'echo)
+                (get-buffer-create "*OCamlFormat stderr*"))))
           (patchbuf (get-buffer-create "*OCamlFormat patch*"))
           (coding-system-for-read 'utf-8)
           (coding-system-for-write 'utf-8)
@@ -199,14 +202,14 @@ function."
                  outputfile)
                (ocamlformat--apply-rcs-patch patchbuf)
                (message "Applied ocamlformat"))
-             (message "Could not apply ocamlformat")
              (if errbuf
                (progn
                  (with-current-buffer errbuf
                    (setq buffer-read-only nil)
                    (erase-buffer))
                  (ocamlformat--process-errors
-                   (buffer-file-name) bufferfile errorfile errbuf))))))
+                   (buffer-file-name) bufferfile errorfile errbuf)))
+             (message "Could not apply ocamlformat"))))
      (kill-buffer patchbuf)
      (delete-file errorfile)
      (delete-file bufferfile)
