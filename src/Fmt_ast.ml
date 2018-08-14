@@ -1492,8 +1492,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                            $ fmt_label lbl ":"
                            $ fmt_cmts
                              @@ hvbox 0
-                                  ( fmt "(fun " $ fmt_fun_args c xargs
-                                  $ fmt "@ ->" ) )
+                                  ( fmt "(fun "
+                                  $ fmt_attributes c ~key:"@"
+                                      eN1.pexp_attributes ~suf:(fmt " ")
+                                  $ fmt_fun_args c xargs $ fmt "@ ->" ) )
                        $ fmt
                            ( match xbody.ast.pexp_desc with
                            | Pexp_function _ -> "@ "
