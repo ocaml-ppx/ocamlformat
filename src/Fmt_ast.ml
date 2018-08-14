@@ -1396,9 +1396,9 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         $ fmt_expression c (sub_exp ~ctx op)
         $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_apply
-      ( ({pexp_desc= Pexp_ident {txt= Lident id}} as e0)
+      ( {pexp_desc= Pexp_ident {txt= Lident id}; pexp_attributes= []}
       , (Nolabel, _) :: (Nolabel, _) :: _ )
-    when is_infix_id id && List.is_empty e0.pexp_attributes ->
+    when is_infix_id id ->
       let op_args = sugar_infix c (prec_ast (Exp exp)) xexp in
       fmt_op_args
         (List.map op_args ~f:(fun (op, args) ->
@@ -1456,7 +1456,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                              @@ hvbox 0
                                   ( fmt "(fun " $ fmt_fun_args c xargs
                                   $ fmt "@ ->" ) )
-                       $ fmt "@;<1 2>"
+                       $ fmt
+                           ( match xbody.ast.pexp_desc with
+                           | Pexp_function _ -> "@ "
+                           | _ -> "@;<1 2>" )
                        $ fmt_expression c
                            ?box:
                              ( match xbody.ast.pexp_desc with

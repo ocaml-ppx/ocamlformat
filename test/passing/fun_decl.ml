@@ -92,3 +92,10 @@ let translate_captured
     ; lci_capture_this
     ; lci_capture_kind } ((trans_results_acc, captured_vars_acc) as acc) =
   ()
+
+let f ssssssssss =
+  String.fold ssssssssss ~init:innnnnnnnnnit ~f:(fun accuuuuuuuuuum ->
+    function
+    | '0' -> g accuuuuuuuuuum
+    | '1' -> h accuuuuuuuuuum
+    | _ -> i accuuuuuuuuuum )
