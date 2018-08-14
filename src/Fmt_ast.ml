@@ -1766,7 +1766,6 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
-      let {pmod_desc= _; pmod_attributes} = pmod in
       let keyword = fmt "let module" $ fmt_extension_suffix c ext in
       let xargs, xbody =
         sugar_functor c ~for_functor_kw:false (sub_mod ~ctx pmod)
@@ -1786,8 +1785,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             (parens || (not (List.is_empty pexp_attributes)))
             "(" ")"
             ( hvbox 2
-                ( fmt_module c keyword name xargs (Some xbody) true xmty
-                    (List.append pmod_attributes pmod.pmod_attributes)
+                ( fmt_module c keyword name xargs (Some xbody) true xmty []
                 $ fmt " in" )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
