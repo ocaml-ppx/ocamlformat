@@ -3732,15 +3732,18 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_typext te -> fmt_type_extension c ctx te
   | Pstr_value (rec_flag, bindings) ->
       hvbox 0
-        (list_fl bindings (fun ~first ~last binding ->
-             fmt_value_binding c ~rec_flag ~first
-               ?ext:(if first then ext else None)
-               ctx binding
-               ?epi:
-                 (Option.some_if
-                    (break_cases_level c > 0)
-                    (fits_breaks ~force_fit_if:last_item "" "\n"))
-             $ fmt_if (not last) "\n@\n" ))
+        (list_fl bindings (fun ~first ~last:_ binding ->
+             ( match (first, fst (doc_atrs binding.pvb_attributes)) with
+             | true, _ -> fmt ""
+             | false, None -> fmt "@\n"
+             | false, Some _ -> fmt "\n@\n" )
+             $ fmt_value_binding c ~rec_flag ~first
+                 ?ext:(if first then ext else None)
+                 ctx binding
+                 ?epi:
+                   (Option.some_if
+                      (break_cases_level c > 0)
+                      (fits_breaks ~force_fit_if:last_item "" "\n")) ))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc, atrs = doc_atrs atrs in
