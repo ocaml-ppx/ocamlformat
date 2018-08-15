@@ -132,7 +132,12 @@ let rec sugar_arrow_typ c ({ast= typ} as xtyp) =
   | Ptyp_arrow (l, t1, t2) ->
       Cmts.relocate c.cmts ~src:ptyp_loc ~before:t1.ptyp_loc
         ~after:t2.ptyp_loc ;
-      (l, sub_typ ~ctx t1) :: sugar_arrow_typ c (sub_typ ~ctx t2)
+      let rest =
+        match t2.ptyp_attributes with
+        | [] -> sugar_arrow_typ c (sub_typ ~ctx t2)
+        | _ -> [(Nolabel, sub_typ ~ctx t2)]
+      in
+      (l, sub_typ ~ctx t1) :: rest
   | _ -> [(Nolabel, xtyp)]
 
 let rec sugar_class_arrow_typ c ({ast= typ} as xtyp) =
@@ -142,8 +147,12 @@ let rec sugar_class_arrow_typ c ({ast= typ} as xtyp) =
   | Pcty_arrow (l, t1, t2) ->
       Cmts.relocate c.cmts ~src:pcty_loc ~before:t1.ptyp_loc
         ~after:t2.pcty_loc ;
-      (l, `core_type (sub_typ ~ctx t1))
-      :: sugar_class_arrow_typ c (sub_cty ~ctx t2)
+      let rest =
+        match t2.pcty_attributes with
+        | [] -> sugar_class_arrow_typ c (sub_cty ~ctx t2)
+        | _ -> [(Nolabel, `class_type (sub_cty ~ctx t2))]
+      in
+      (l, `core_type (sub_typ ~ctx t1)) :: rest
   | _ -> [(Nolabel, `class_type xtyp)]
 
 let rec sugar_or_pat ?(allow_attribute = true) c ({ast= pat} as xpat) =
@@ -167,13 +176,17 @@ type arg_kind =
 let sugar_fun c pat xexp =
   let rec sugar_fun_ ?(relocate = true) ({ast= exp} as xexp) =
     let ctx = Exp exp in
-    let {pexp_desc; pexp_loc} = exp in
+    let {pexp_desc; pexp_loc; pexp_attributes} = exp in
     match pexp_desc with
     | Pexp_fun (label, default, pattern, body) ->
         if relocate then
           Cmts.relocate c.cmts ~src:pexp_loc ~before:pattern.ppat_loc
             ~after:body.pexp_loc ;
-        let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
+        let xargs, xbody =
+          match (pexp_attributes, body.pexp_attributes) with
+          | [], [] -> sugar_fun_ (sub_exp ~ctx body)
+          | _ -> ([], sub_exp ~ctx body)
+        in
         ( Val
             ( label
             , sub_pat ~ctx pattern
@@ -184,7 +197,11 @@ let sugar_fun c pat xexp =
         if relocate then
           Cmts.relocate c.cmts ~src:pexp_loc ~before:body.pexp_loc
             ~after:body.pexp_loc ;
-        let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
+        let xargs, xbody =
+          match (pexp_attributes, body.pexp_attributes) with
+          | [], [] -> sugar_fun_ (sub_exp ~ctx body)
+          | _ -> ([], sub_exp ~ctx body)
+        in
         let xargs =
           match xargs with
           | Newtypes names :: xargs -> Newtypes (name :: names) :: xargs
@@ -198,19 +215,26 @@ let sugar_fun c pat xexp =
       ([], xexp)
   | Some {ppat_attributes} when not (List.is_empty ppat_attributes) ->
       ([], xexp)
-  | Some _ -> sugar_fun_ ~relocate:true xexp
+  | Some _ ->
+      if List.is_empty xexp.ast.pexp_attributes then
+        sugar_fun_ ~relocate:true xexp
+      else ([], xexp)
   | None -> sugar_fun_ ~relocate:false xexp
 
 let sugar_cl_fun c pat xexp =
   let rec sugar_fun_ ?(relocate = true) ({ast= exp} as xexp) =
     let ctx = Cl exp in
-    let {pcl_desc; pcl_loc} = exp in
+    let {pcl_desc; pcl_loc; pcl_attributes} = exp in
     match pcl_desc with
     | Pcl_fun (label, default, pattern, body) ->
         if relocate then
           Cmts.relocate c.cmts ~src:pcl_loc ~before:pattern.ppat_loc
             ~after:body.pcl_loc ;
-        let xargs, xbody = sugar_fun_ (sub_cl ~ctx body) in
+        let xargs, xbody =
+          match (pcl_attributes, body.pcl_attributes) with
+          | [], [] -> sugar_fun_ (sub_cl ~ctx body)
+          | _ -> ([], sub_cl ~ctx body)
+        in
         ( Val
             ( label
             , sub_pat ~ctx pattern
