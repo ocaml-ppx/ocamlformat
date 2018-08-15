@@ -135,7 +135,7 @@ let tokens_between t ?(filter = fun _ -> true) ~(from : Location.t)
 let contains_IN_token_between t ~(from : Location.t) ~(upto : Location.t) =
   let filter = function Parser.IN -> true | _ -> false in
   Source_code_position.ascending from.loc_start upto.loc_start < 0
-  && (not (List.is_empty (tokens_between t ~from ~upto ~filter)))
+  && not (List.is_empty (tokens_between t ~from ~upto ~filter))
 
 let is_long_pexp_open source {Parsetree.pexp_desc} =
   match pexp_desc with

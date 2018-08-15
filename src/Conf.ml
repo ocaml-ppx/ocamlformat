@@ -215,7 +215,7 @@ end = struct
     List.find_map !store
       ~f:(fun (Pack {names; parse; update; allow_inline}) ->
         if List.exists names ~f:(String.equal name) then
-          if inline && (not allow_inline) then
+          if inline && not allow_inline then
             Some (Error (`Misplaced (name, value)))
           else
             try Some (Ok (update config (parse value))) with _ ->

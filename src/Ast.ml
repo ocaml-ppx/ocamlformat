@@ -1597,10 +1597,10 @@ end = struct
     | Pld _, {pexp_desc= Pexp_tuple _} -> false
     | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false
     | Cl {pcl_desc= Pcl_apply _}, {pexp_desc= Pexp_apply _} -> true
-    | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, _) :: _)}
+    | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _)}
       , { pexp_desc=
             Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, _) } )
-      when is_infix op ->
+      when is_infix op && not (e1 == exp) ->
         true
     | Exp {pexp_desc}, _ -> (
       match pexp_desc with
