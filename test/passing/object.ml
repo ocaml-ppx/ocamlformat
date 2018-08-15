@@ -202,3 +202,5 @@ class x =
 
     (** floatting3 *)
   end
+
+let _ = f ##= (fun x -> x)

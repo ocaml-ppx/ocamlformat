@@ -1678,7 +1678,9 @@ end = struct
             match ctx_desc with
             | Pexp_apply
                 ({pexp_desc= Pexp_ident {txt= Lident i}}, _ :: (_, e2) :: _)
-              when e2 == exp && is_infix_id i ->
+              when e2 == exp && is_infix_id i
+                   && Option.value_map ~default:false (prec_ast ctx)
+                        ~f:(fun p -> Poly.(p < Apply) ) ->
                 true
             | Pexp_tuple e1N -> List.last_exn e1N == exp
             | _ -> false
