@@ -7,6 +7,6 @@ let dolore_tempor_in_duis duis_esse esse =
               Qui.Occaecat.Enim.do_commodo_dolore esse_magna
           | _ -> false ))
      && Occaecat.sed_aliqua duis_esse <> PariAtur.Aliquip
-     && (not
-           (Adipisicing.magna_tempor_ipsum_elit_nisi duis_esse
-              Adipisicing.loremipSumDolorsi)) )
+     && not
+          (Adipisicing.magna_tempor_ipsum_elit_nisi duis_esse
+             Adipisicing.loremipSumDolorsi) )
