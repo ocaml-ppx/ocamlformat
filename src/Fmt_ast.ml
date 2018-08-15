@@ -561,7 +561,8 @@ let doc_atrs atrs =
     List.fold atrs ~init:(None, []) ~f:(fun (doc, rev_atrs) atr ->
         match (doc, atr) with
         | ( None
-          , ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
+          , ( { txt= ("ocaml.doc" | "ocaml.text") as txt
+              ; loc= {loc_ghost= true} }
             , PStr
                 [ { pstr_desc=
                       Pstr_eval
@@ -601,7 +602,7 @@ let field_alias ~field:(li1 : Longident.t) (li2 : Longident.t) =
   | _ -> false
 
 let rec fmt_attribute c pre = function
-  | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
+  | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true}}
     , PStr
         [ { pstr_desc=
               Pstr_eval
