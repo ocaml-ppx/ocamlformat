@@ -130,3 +130,20 @@ let _ = f x ~f:(function [@test] X -> x | X -> x)
 let () = ()
 
 and[@warning "-32"] f = ()
+
+external x : a -> b -> (a -> b[@test]) = ""
+
+let f = fun [@test] x -> fun y -> ()
+
+let f y = fun [@test] y -> ()
+
+let (f[@test]) = fun y -> fun [@test] y -> ()
+
+module type T = sig
+  class subst :
+    ((ident -> ident)[@attr])
+    -> (ident -> ident)
+    -> object
+         inherit mapper
+       end[@attr]
+end
