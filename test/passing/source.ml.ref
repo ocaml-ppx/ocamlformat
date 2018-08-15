@@ -1401,7 +1401,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
            (fun (type c) ->
              ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
                : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist )
-             (* One can also write the type annotation directly *) ) })
+             )
+           (* One can also write the type annotation directly *) })
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
 

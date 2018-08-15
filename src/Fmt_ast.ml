@@ -165,13 +165,14 @@ type arg_kind =
   | Newtypes of string loc list
 
 let sugar_fun c pat xexp =
-  let rec sugar_fun_ ({ast= exp} as xexp) =
+  let rec sugar_fun_ ?(relocate = true) ({ast= exp} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc} = exp in
     match pexp_desc with
     | Pexp_fun (label, default, pattern, body) ->
-        Cmts.relocate c.cmts ~src:pexp_loc ~before:pattern.ppat_loc
-          ~after:body.pexp_loc ;
+        if relocate then
+          Cmts.relocate c.cmts ~src:pexp_loc ~before:pattern.ppat_loc
+            ~after:body.pexp_loc ;
         let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
         ( Val
             ( label
@@ -180,8 +181,9 @@ let sugar_fun c pat xexp =
           :: xargs
         , xbody )
     | Pexp_newtype (name, body) ->
-        Cmts.relocate c.cmts ~src:pexp_loc ~before:body.pexp_loc
-          ~after:body.pexp_loc ;
+        if relocate then
+          Cmts.relocate c.cmts ~src:pexp_loc ~before:body.pexp_loc
+            ~after:body.pexp_loc ;
         let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
         let xargs =
           match xargs with
@@ -196,16 +198,18 @@ let sugar_fun c pat xexp =
       ([], xexp)
   | Some {ppat_attributes} when not (List.is_empty ppat_attributes) ->
       ([], xexp)
-  | _ -> sugar_fun_ xexp
+  | Some _ -> sugar_fun_ ~relocate:true xexp
+  | None -> sugar_fun_ ~relocate:false xexp
 
 let sugar_cl_fun c pat xexp =
-  let rec sugar_fun_ ({ast= exp} as xexp) =
+  let rec sugar_fun_ ?(relocate = true) ({ast= exp} as xexp) =
     let ctx = Cl exp in
     let {pcl_desc; pcl_loc} = exp in
     match pcl_desc with
     | Pcl_fun (label, default, pattern, body) ->
-        Cmts.relocate c.cmts ~src:pcl_loc ~before:pattern.ppat_loc
-          ~after:body.pcl_loc ;
+        if relocate then
+          Cmts.relocate c.cmts ~src:pcl_loc ~before:pattern.ppat_loc
+            ~after:body.pcl_loc ;
         let xargs, xbody = sugar_fun_ (sub_cl ~ctx body) in
         ( Val
             ( label
@@ -217,7 +221,8 @@ let sugar_cl_fun c pat xexp =
   in
   match pat with
   | Some {ppat_desc= Ppat_any | Ppat_constraint _} -> ([], xexp)
-  | None | Some {ppat_attributes= []} -> sugar_fun_ xexp
+  | Some {ppat_attributes= []} -> sugar_fun_ ~relocate:true xexp
+  | None -> sugar_fun_ ~relocate:false xexp
   | _ -> ([], xexp)
 
 let sugar_infix c prec xexp =

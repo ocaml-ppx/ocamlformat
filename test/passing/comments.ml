@@ -75,3 +75,7 @@ module type M = sig
     -> int
 
 end
+
+let _ = f ~f:(fun a b -> c) (* comment *) ~f:(fun a b -> c)
+let _ = f (fun x -> g h) (* comment *) ~f:(fun a b -> c)
+let _ = f (g h) (* comment *) ~f:(fun a b -> c)
