@@ -8187,8 +8187,8 @@ module USERCODE (X : TYPEVIEW) = struct
   module type F = functor (C : CORE with type V.usert = X.combined) -> BARECODE
                                                                        with type 
                                                                        state :=
-                                                                         C.V.
-                                                                         state
+                                                                         C.V
+                                                                         .state
 end
 
 module Weapon = struct
