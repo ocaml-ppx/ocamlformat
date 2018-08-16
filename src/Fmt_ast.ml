@@ -227,7 +227,7 @@ let sugar_cl_fun c pat xexp =
 
 let sugar_infix c prec xexp =
   let assoc = Option.value_map prec ~default:Non ~f:assoc_of_prec in
-  let rec sugar_infix_ xop ((lbl, {ast= exp}) as xexp) =
+  let rec sugar_infix_ ?(relocate = true) xop ((lbl, {ast= exp}) as xexp) =
     assert (Poly.(lbl = Nolabel)) ;
     let ctx = Exp exp in
     match (assoc, exp) with
@@ -239,8 +239,10 @@ let sugar_infix c prec xexp =
         ( match op_args1 with
         | (Some {ast= {pexp_loc= before}}, _) :: _
          |(None, (_, {ast= {pexp_loc= before}}) :: _) :: _ ->
-            Cmts.relocate c.cmts ~src ~before ~after
-        | _ -> Cmts.relocate c.cmts ~src ~before:e0.pexp_loc ~after ) ;
+            if relocate then Cmts.relocate c.cmts ~src ~before ~after
+        | _ ->
+            if relocate then
+              Cmts.relocate c.cmts ~src ~before:e0.pexp_loc ~after ) ;
         op_args1 @ [(Some (sub_exp ~ctx e0), [(l2, sub_exp ~ctx e2)])]
     | Right, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc}
       when Poly.(prec = prec_ast (Exp exp)) ->
@@ -255,24 +257,31 @@ let sugar_infix c prec xexp =
           | Some (_, {ast= {pexp_loc= after}}) -> (
             match xop with
             | Some {ast} ->
-                Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
-            | None -> Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )
+                if relocate then
+                  Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
+            | None ->
+                if relocate then
+                  Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )
           | None -> (
             match xop with
             | Some {ast} ->
-                Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
-            | None -> Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )
-          )
+                if relocate then
+                  Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
+            | None ->
+                if relocate then
+                  Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after ) )
         | _ -> (
           match xop with
           | Some {ast} ->
-              Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
-          | None -> Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )
-        ) ;
+              if relocate then
+                Cmts.relocate c.cmts ~src ~before:ast.pexp_loc ~after
+          | None ->
+              if relocate then
+                Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after ) ) ;
         (xop, [(l1, sub_exp ~ctx e1)]) :: op_args2
     | _ -> [(xop, [xexp])]
   in
-  sugar_infix_ None (Nolabel, xexp)
+  sugar_infix_ None ~relocate:false (Nolabel, xexp)
 
 let rec sugar_list_pat c pat =
   let ctx = Pat pat in

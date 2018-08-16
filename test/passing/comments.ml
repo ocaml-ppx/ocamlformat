@@ -79,3 +79,9 @@ end
 let _ = f ~f:(fun a b -> c) (* comment *) ~f:(fun a b -> c)
 let _ = f (fun x -> g h) (* comment *) ~f:(fun a b -> c)
 let _ = f (g h) (* comment *) ~f:(fun a b -> c)
+
+
+
+let _ = f ((0 + 0) (* test *) + (1 * 1) (* test *))
+
+let _ = f ((1 * 1) (* test *) + (0 + 0) (* test *))
