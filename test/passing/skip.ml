@@ -93,16 +93,14 @@ let _ = (x [@ocamlformat "disable"]  [@test? _ when e [@test 2]]) 3
 let _ =
   let module X = struct
     let x = 4
-  end
-  in
+  end in
   X.x
 
 let _ =
   let module X =
     struct
             let x    =   4
-    end   [@ocamlformat "disable"]
-  in
+    end   [@ocamlformat "disable"] in
   X.x
 
 let _ =
@@ -111,6 +109,5 @@ let _ =
       struct
           let x    =   4
       end   [@ocamlformat "disable"]
-  end
-  in
+  end in
   X.x

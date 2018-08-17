@@ -1809,7 +1809,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             "(" ")"
             ( hvbox 2
                 ( fmt_module c keyword name xargs (Some xbody) true xmty []
-                $ fmt "@;<1 -2>in" )
+                $
+                match xbody.ast.pmod_desc with
+                | Pmod_structure _ -> fmt " in"
+                | _ -> fmt "@;<1 -2>in" )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )

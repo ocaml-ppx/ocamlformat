@@ -854,8 +854,7 @@ let create (type s) to_string apply x =
     let apply = apply
 
     let x = x
-  end
-  in
+  end in
   (module M : S with type t = s)
 
 let forget (type s) x =
@@ -872,8 +871,7 @@ let apply x =
     include M
 
     let x = apply x
-  end
-  in
+  end in
   (module N : S)
 
 let () =
@@ -960,8 +958,7 @@ let pair (type s1 s2) t1 t2 =
     let t1 = t1
 
     let t2 = t2
-  end
-  in
+  end in
   let pair = (module P : PAIR with type t = s1 * s2) in
   Pair pair
 
@@ -2719,8 +2716,7 @@ let f (type a) (x : a t) =
 
     (* fail because of toplevel let *)
     let x : a t = I
-  end
-  in
+  end in
   ()
 
 (* extra example by Stephen Dolan, using recursive modules *)
@@ -2737,8 +2733,7 @@ let bad (type a) =
       (* must fail for soundness *)
       let e : (int, a) eq = Refl
     end
-  end
-  in
+  end in
   N.M.e
 
 type +'a n = private int
@@ -3438,8 +3433,7 @@ let pair (type s1 s2) t1 t2 =
     let t1 = t1
 
     let t2 = t2
-  end
-  in
+  end in
   Typ.Pair (module P)
 
 open Typ
@@ -3510,8 +3504,7 @@ let ssmap :
         and type map = SSMap.map) =
   let module S = struct
     include SSMap
-  end
-  in
+  end in
   (module S)
 
 let ssmap =
@@ -4446,8 +4439,7 @@ let f : type t. t prod -> _ = function
   | Prod ->
       let module M = struct
         type d = d * d
-      end
-      in
+      end in
       ()
 
 let (a : M.a) = 2
@@ -5213,8 +5205,7 @@ C3.chr 66
 let f x =
   let module M = struct
     module L = List
-  end
-  in
+  end in
   M.L.length x
 
 let g x =
@@ -7288,8 +7279,7 @@ let _ =
             let y = Bad.f 5 in
             fun x -> x + y
         end
-      end
-      in
+      end in
       false
     with Undefined_recursive_module _ -> true
   in
@@ -7670,8 +7660,7 @@ let _ =
       end = struct
         let x = (new BadClass1.c)#m
       end
-    end
-    in
+    end in
     test 71 true false
   with Undefined_recursive_module _ -> test 71 true true
 
@@ -8319,8 +8308,7 @@ module type S =
 let property (type t) () =
   let module M = struct
     exception E of t
-  end
-  in
+  end in
   ((fun x -> M.E x), function M.E x -> Some x | _ -> None)
 
 let () =
@@ -9218,8 +9206,7 @@ and ['a] d () =
 let _ =
   let module M = struct
     type t = {x: int}
-  end
-  in
+  end in
   let f M.(x) = () in
   let g M.({x}) = () in
   let h = function M.([]) | M.([a]) | M.(a :: q) -> () in
