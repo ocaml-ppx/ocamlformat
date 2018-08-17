@@ -40,12 +40,22 @@ and string_aux mode = parse
       { () }
   | '\\' newline ([' ' '\t'] *)
       { string_aux mode lexbuf }
-  | '\\' ['\\' '\'' '\"' 't' 'b' 'r' ' ']
+  | '\\' ['\\' '\'' '\"' 't' 'b' 'r']
       { store_string (Lexing.lexeme lexbuf);
+        string_aux mode lexbuf }
+  | "\\ "
+      { begin match mode with
+          | `Normalize -> store_string " "
+          | `Preserve -> store_string "\\ " end;
+        string_aux mode lexbuf }
+  | "\t"
+      { begin match mode with
+          | `Normalize -> store_string "\\t"
+          | `Preserve -> store_string "\t" end;
         string_aux mode lexbuf }
   | "\\n"
       { begin match mode with
-          | `Normalize_nl -> store_string "\n"
+          | `Normalize -> store_string "\n"
           | `Preserve -> store_string "\\n" end;
         string_aux mode lexbuf }
   | '\\' ['0'-'9'] ['0'-'9'] ['0'-'9']

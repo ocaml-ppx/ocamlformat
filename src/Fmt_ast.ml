@@ -548,34 +548,20 @@ let fmt_constant c ~loc ?epi const =
       let fmt_lines lines =
         hvbox 1
           ( str "\""
-          $ list_pn lines (fun ?prev curr ?next ->
-                let drop = function ' ' | '\t' -> true | _ -> false in
-                let line =
-                  if Option.is_none prev then curr
-                  else String.lstrip ~drop curr
-                in
-                fmt_line line
+          $ list_pn lines (fun ?prev:_ curr ?next ->
+                fmt_line curr
                 $ opt next (fun next ->
-                      let spc =
-                        match
-                          String.lfindi next ~f:(fun _ c -> not (drop c))
-                        with
-                        | Some 0 -> ""
-                        | Some i ->
-                            escape_string c (String.sub next ~pos:0 ~len:i)
-                        | None -> escape_string c next
-                      in
-                      fmt "\\n"
-                      $ fmt_if_k
-                          (not (String.is_empty next))
-                          (str spc $ pre_break 0 "\\" 0) ) )
+                      if String.is_empty next then fmt "\\n"
+                      else if Char.equal next.[0] ' ' then
+                        fmt "\\n" $ pre_break 0 "\\" (-1) $ if_newline "\\"
+                      else fmt "\\n" $ pre_break 0 "\\" 0 ) )
           $ str "\"" $ Option.call ~f:epi )
       in
       let s =
         match (c.conf.break_string_literals, c.conf.escape_strings) with
         | `Never, `Preserve -> Source.string_literal c.source `Preserve loc
         | (`Newlines | `Wrap), `Preserve ->
-            Source.string_literal c.source `Normalize_nl loc
+            Source.string_literal c.source `Normalize loc
         | _ -> s
       in
       match c.conf.break_string_literals with

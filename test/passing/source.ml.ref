@@ -3667,7 +3667,7 @@ let rec eval : lexpr -> _ = function
 let rec print = function
   | `Var id -> print_string id
   | `Abs (id, l) ->
-      print_string ("\ " ^ id ^ " . ") ;
+      print_string (" " ^ id ^ " . ") ;
       print l
   | `App (l1, l2) -> print l1 ; print_string " " ; print l2
   | `Num x -> print_int x
@@ -3885,7 +3885,7 @@ let lexpr = lazy_fix (new lexpr_ops)
 let rec print = function
   | `Var id -> print_string id
   | `Abs (id, l) ->
-      print_string ("\ " ^ id ^ " . ") ;
+      print_string (" " ^ id ^ " . ") ;
       print l
   | `App (l1, l2) -> print l1 ; print_string " " ; print l2
   | `Num x -> print_int x
@@ -4093,7 +4093,7 @@ let lexpr = lazy_fix lexpr_ops
 let rec print = function
   | `Var id -> print_string id
   | `Abs (id, l) ->
-      print_string ("\ " ^ id ^ " . ") ;
+      print_string (" " ^ id ^ " . ") ;
       print l
   | `App (l1, l2) -> print l1 ; print_string " " ; print l2
   | `Num x -> print_int x
