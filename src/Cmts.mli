@@ -122,10 +122,6 @@ val has_after : t -> Location.t -> bool
 val remaining_comments : t -> (string * Sexp.t) list
 (** Returns comments that have not been formatted yet. *)
 
-val doc_is_dup : t -> string Asttypes.loc -> bool
-(** [doc_is_dup docstring] holds if [docstring] has been passed to
-    [doc_is_dup] already. *)
-
 val diff :
      (string * Location.t) list
   -> (string * Location.t) list
