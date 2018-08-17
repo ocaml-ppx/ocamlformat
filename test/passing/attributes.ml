@@ -126,3 +126,7 @@ let _ = f x ~f:(fun [@test] x -> x)
 let _ = f x ~f:(function [@test] x -> x)
 
 let _ = f x ~f:(function [@test] X -> x | X -> x)
+
+let () = ()
+
+and[@warning "-32"] f = ()
