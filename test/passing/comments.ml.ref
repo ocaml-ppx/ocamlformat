@@ -83,3 +83,17 @@ let _ = f (g h) (* comment *) ~f:(fun a b -> c)
 let _ = f (0 + 0 (* test *) + (1 * 1) (* test *))
 
 let _ = f ((1 * 1) (* test *) + (0 + 0) (* test *))
+
+let _ = match e with 3 (* test *) -> e | 3 (* test *) :: tail -> e
+
+module rec A = struct end
+(*test*)
+and B = struct end
+
+module type T = sig
+  module rec A : sig end
+  (*test*)
+  and B : sig end
+end
+
+let f = (* comment *) function x -> x

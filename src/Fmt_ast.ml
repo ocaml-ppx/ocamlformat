@@ -949,8 +949,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                    ppat_loc)))
     | _ -> fmt_longident_loc c lid )
   | Ppat_construct
-      ( {txt= Lident "::"}
-      , Some {ppat_desc= Ppat_tuple pats; ppat_attributes= []} ) -> (
+      ( {txt= Lident "::"; loc}
+      , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []} ) -> (
     match sugar_list_pat c pat with
     | Some (loc_xpats, nil_loc) ->
         hvbox 0
@@ -962,7 +962,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
     | None ->
         hvbox 0
           (wrap_if parens "(" ")"
-             (list pats "@ :: " (sub_pat ~ctx >> fmt_pattern c))) )
+             ( fmt_pattern c (sub_pat ~ctx x)
+             $ Cmts.fmt c.cmts ~pro:(fmt " ") ~epi:(fmt "") loc
+                 (fmt "@ :: ")
+             $ fmt_pattern c (sub_pat ~ctx y) )) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2
         (wrap_if parens "(" ")"
@@ -1181,10 +1184,11 @@ and fmt_body c ({ast= body} as xbody) =
       update_config_maybe_disabled c pexp_loc pexp_attributes
       @@ fun c ->
       fmt "@ "
-      $ wrap_if parens "(" ")"
-          ( fmt "function"
-          $ fmt_attributes c ~key:"@" pexp_attributes
-          $ close_box $ fmt "@ " $ fmt_cases c ctx cs )
+      $ Cmts.fmt c.cmts pexp_loc
+          (wrap_if parens "(" ")"
+             ( fmt "function"
+             $ fmt_attributes c ~key:"@" pexp_attributes
+             $ close_box $ fmt "@ " $ fmt_cases c ctx cs ))
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
@@ -3316,7 +3320,9 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let colon =
     match xmty.ast.pmty_desc with Pmty_alias _ -> false | _ -> true
   in
-  fmt_module c keyword pmd_name xargs None colon (Some xmty) pmd_attributes
+  Cmts.fmt c.cmts pmd_loc
+    (fmt_module c keyword pmd_name xargs None colon (Some xmty)
+       pmd_attributes)
 
 and fmt_module_type_declaration c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
@@ -3938,8 +3944,9 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
         (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
     | _ -> (xbody, None)
   in
-  fmt_module c ?epi keyword pmb_name xargs (Some xbody) true xmty
-    pmb_attributes
+  Cmts.fmt c.cmts pmb_loc
+    (fmt_module c ?epi keyword pmb_name xargs (Some xbody) true xmty
+       pmb_attributes)
 
 (** Entry points *)
 
