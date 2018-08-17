@@ -1824,8 +1824,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             (parens || (not (List.is_empty pexp_attributes)))
             "(" ")"
             ( hvbox 2
-                ( fmt_module c keyword name xargs (Some xbody) true xmty []
-                $ fmt " in" )
+                (fmt_module c keyword name xargs (Some xbody) true xmty []
+                   ~epi:(fmt "in"))
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
@@ -3275,6 +3275,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
     $ fmt_if (Option.is_none pro_b && Option.is_some xbody) "@ "
     $ bdy_b $ cls_b $ esp_b $ Option.call ~f:epi_b
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+    $ fmt_if_k (Option.is_some epi) (fmt_or (Option.is_some epi_b) " " "@ ")
     $ Option.call ~f:epi )
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
@@ -3406,6 +3407,9 @@ and fmt_module_expr c ({ast= m} as xmod) =
           ; epi= epi_a } =
         maybe_generative c ~ctx me_a
       in
+      let has_epi =
+        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+      in
       { empty with
         opn= opn_a $ opn_f $ open_hvbox 2
       ; bdy=
@@ -3419,7 +3423,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ Option.call ~f:epi_a $ fmt ")" )
       ; cls= close_box $ cls_f $ cls_a
       ; epi=
-          Some
+          Option.some_if has_epi
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_constraint (me, mt) ->
@@ -3442,6 +3446,9 @@ and fmt_module_expr c ({ast= m} as xmod) =
           ; epi= epi_t } =
         fmt_module_type c (sub_mty ~ctx mt)
       in
+      let has_epi =
+        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+      in
       { opn= opn_t $ opn_e $ open_hvbox 2
       ; pro=
           Some
@@ -3458,7 +3465,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; cls= close_box $ cls_e $ cls_t
       ; esp= fmt ""
       ; epi=
-          Some
+          Option.some_if has_epi
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_functor _ ->
@@ -3512,17 +3519,20 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; epi= None }
   | Pmod_ident lid ->
       let doc, atrs = doc_atrs pmod_attributes in
+      let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
+      let has_epi =
+        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+      in
       { empty with
         opn= open_hvbox 2
       ; pro=
-          Option.some_if
-            (Cmts.has_before c.cmts pmod_loc || Option.is_some doc)
+          Option.some_if has_pro
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy= fmt_longident_loc c lid
       ; cls= close_box
       ; epi=
-          Some
+          Option.some_if has_epi
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_structure sis ->
@@ -3553,6 +3563,9 @@ and fmt_module_expr c ({ast= m} as xmod) =
             (e1, {ptyp_desc= Ptyp_package pty; ptyp_attributes= []})
       ; pexp_attributes= [] } ->
       let doc, atrs = doc_atrs pmod_attributes in
+      let has_epi =
+        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+      in
       { empty with
         pro=
           Some
@@ -3567,15 +3580,18 @@ and fmt_module_expr c ({ast= m} as xmod) =
                   $ fmt "@;<1 2>: "
                   $ fmt_package_type c ctx pty ))
       ; epi=
-          Some
+          Option.some_if has_epi
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_unpack e1 ->
       let doc, atrs = doc_atrs pmod_attributes in
+      let has_epi =
+        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+      in
+      let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
       { empty with
         pro=
-          Option.some_if
-            (Cmts.has_before c.cmts pmod_loc || Option.is_some doc)
+          Option.some_if has_pro
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy=
@@ -3584,20 +3600,23 @@ and fmt_module_expr c ({ast= m} as xmod) =
                (wrap_fits_breaks "(" ")"
                   (fmt "val " $ fmt_expression c (sub_exp ~ctx e1)))
       ; epi=
-          Some
+          Option.some_if has_epi
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_extension x1 ->
       let doc, atrs = doc_atrs pmod_attributes in
+      let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
+      let has_epi =
+        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+      in
       { empty with
         pro=
-          Option.some_if
-            (Cmts.has_before c.cmts pmod_loc || Option.is_some doc)
+          Option.some_if has_pro
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy= Cmts.fmt c.cmts pmod_loc @@ fmt_extension c ctx "%" x1
       ; epi=
-          Some
+          Option.some_if has_epi
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
 

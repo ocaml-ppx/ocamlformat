@@ -2965,7 +2965,8 @@ let magic : 'a 'b. 'a -> 'b =
        end)
        (struct
          type 'a t = unit
-       end) in
+       end)
+   in
    M.f Refl
 
 (* Variance and subtyping *)
@@ -3464,7 +3465,8 @@ type ('k, 'd, 'm) map =
 let add (type k d m) (m : (k, d, m) map) x y s =
   let module M = ( val m
                      : MapT
-                     with type key = k and type data = d and type map = m ) in
+                     with type key = k and type data = d and type map = m )
+  in
   M.of_t (M.add x y (M.to_t s))
 
 module SSMap = struct
