@@ -1503,7 +1503,6 @@ end = struct
       in
       mem_cls_exp cls exp
       || Hashtbl.Poly.find_or_add memo (cls, exp) ~default:exposed_
-
   and exposed_right_cl =
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
@@ -1521,7 +1520,6 @@ end = struct
       in
       mem_cls_cl cls cl
       || Hashtbl.Poly.find_or_add memo (cls, cl) ~default:exposed_
-
   and mark_parenzed_inner_nested_match exp =
     let exposed_ () =
       let continue subexp =

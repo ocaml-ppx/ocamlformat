@@ -126,7 +126,6 @@ let wrap_if_k cnd pre suf k fs =
 let wrap_k x = wrap_if_k true x
 
 let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
-
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
 let wrap_if_breaks pre suf k fs =
@@ -147,31 +146,20 @@ let wrap_fits_breaks x = wrap_fits_breaks_if true x
 (** Boxes ---------------------------------------------------------------*)
 
 let open_box n fs = Format.pp_open_box fs n
-
 and open_vbox n fs = Format.pp_open_vbox fs n
-
 and open_hvbox n fs = Format.pp_open_hvbox fs n
-
 and open_hovbox n fs = Format.pp_open_hovbox fs n
-
 and close_box fs = Format.pp_close_box fs ()
 
 (** Wrapping boxes ------------------------------------------------------*)
 
 let cbox n = wrap_k (open_box n) close_box
-
 and vbox n = wrap_k (open_vbox n) close_box
-
 and hvbox n = wrap_k (open_hvbox n) close_box
-
 and hovbox n = wrap_k (open_hovbox n) close_box
-
 and cbox_if cnd n = wrap_if_k cnd (open_box n) close_box
-
 and vbox_if cnd n = wrap_if_k cnd (open_vbox n) close_box
-
 and hvbox_if cnd n = wrap_if_k cnd (open_hvbox n) close_box
-
 and hovbox_if cnd n = wrap_if_k cnd (open_hovbox n) close_box
 
 (** Text filling --------------------------------------------------------*)

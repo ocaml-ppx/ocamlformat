@@ -91,7 +91,6 @@ let float_with_modifer = 1.2g
 let%foo x = 42
 
 let%foo _ = ()
-
 and _ = ()
 
 let%foo _ = ()
@@ -204,7 +203,6 @@ end
 
 (* Structure items *)
 let%foo x = 4[@@foo]
-
 and y = x[@@foo]
 
 [%%foo
@@ -4335,7 +4333,6 @@ let rec x = [|x|] ; 1.
 let rec x =
   let u = [|y|] in
   10.
-
 and y = 1.
 
 type 'a t
@@ -7256,7 +7253,6 @@ module rec Fib2 : sig
   val f : int -> int
 end = struct
   let rec g x = Fib2.f (x - 1) + Fib2.f (x - 2)
-
   and f x = if x < 2 then 1 else g x
 end
 

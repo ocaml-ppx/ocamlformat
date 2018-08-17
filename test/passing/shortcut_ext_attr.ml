@@ -83,7 +83,6 @@ module type S = functor [@foo1]
 
 (* Structure items *)
 let%foo x = 4[@@foo]
-
 and y = x[@@foo]
 
 [%%foo

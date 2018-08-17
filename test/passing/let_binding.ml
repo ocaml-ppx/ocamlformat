@@ -72,7 +72,6 @@ module Let_and_compact = struct
   [@@@ocamlformat "let-and=compact"]
 
   let x = 2
-
   and y = 2
 
   let _ =
@@ -88,7 +87,6 @@ module Let_and_sparse = struct
   [@@@ocamlformat "let-and=sparse"]
 
   let x = 2
-
   and y = 2
 
   let _ =

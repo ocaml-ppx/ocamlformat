@@ -804,7 +804,6 @@ let action =
             ; conf= read_config ~filename:name config }
           , !output )
     | _ -> impossible "checked by validate"
-
 and debug = !debug
 
 let parse_line_in_attribute = parse_line ~from:`Attribute
