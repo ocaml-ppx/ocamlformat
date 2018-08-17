@@ -1208,10 +1208,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   let fmt_cmts = Cmts.fmt c.cmts ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@" pexp_attributes in
   let parens = match parens with Some b -> b | None -> parenze_exp xexp in
-  let width xe =
-    String.length
-      (Format.asprintf "%t" (Cmts.preserve (fun () -> fmt_expression c xe)))
-  in
+  let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   let fmt_label lbl sep =
     match lbl with
     | Nolabel -> fmt ""
@@ -2346,10 +2343,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
           (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
   in
   let ctx = Cl exp in
-  let width xe =
-    String.length
-      (Format.asprintf "%t" (Cmts.preserve (fun () -> fmt_expression c xe)))
-  in
+  let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   let fmt_args_grouped e0 a1N =
     (* TODO: consider [e0] when grouping *)
     fmt_class_expr c (sub_cl ~ctx e0)

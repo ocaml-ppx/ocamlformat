@@ -128,5 +128,6 @@ val diff :
   -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)
 
-val preserve : (unit -> 'a -> unit) -> 'a -> unit
-(** Execute a function without removing comments from the internal state. *)
+val preserve : ('a -> Fmt.t) -> 'a -> string
+(** [preserve fmt_x x] formats like [fmt_x x] but returns a string and does
+    not consume comments from the internal state. *)
