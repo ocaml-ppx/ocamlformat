@@ -631,20 +631,18 @@ let doc_atrs atrs =
   (doc, List.rev rev_atrs)
 
 let fmt_docstring c ?pro ?epi doc =
-  opt doc (fun (({txt; loc} as doc), floating) ->
+  opt doc (fun ({txt; loc}, floating) ->
       let epi =
         match epi with
         | Some _ -> epi
         | None when floating -> Some (fmt "@,")
         | None -> None
       in
-      fmt_if_k
-        (not (Cmts.doc_is_dup c.cmts doc))
-        ( Cmts.fmt c.cmts loc
-        @@ vbox_if (Option.is_none pro) 0
-             ( Option.call ~f:pro $ fmt "(**"
-             $ (if c.conf.wrap_comments then fill_text else str) txt
-             $ fmt "*)" $ Option.call ~f:epi ) ) )
+      Cmts.fmt c.cmts loc
+      @@ vbox_if (Option.is_none pro) 0
+           ( Option.call ~f:pro $ fmt "(**"
+           $ (if c.conf.wrap_comments then fill_text else str) txt
+           $ fmt "*)" $ Option.call ~f:epi ) )
 
 let fmt_extension_suffix c ext =
   opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt c.cmts loc (str txt))

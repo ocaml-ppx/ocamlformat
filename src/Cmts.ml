@@ -21,7 +21,6 @@ type t =
   ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
-  ; docs_memo: (string loc, unit) Hashtbl.t
   ; conf: Conf.t }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
@@ -357,18 +356,10 @@ let dedup_cmts map_ast ast comments =
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
-(** Remember all docstrings that have been formatted, to avoid duplication
-    in case of ambibuous placement. *)
-let doc_is_dup t doc =
-  match Hashtbl.add t.docs_memo ~key:doc ~data:() with
-  | `Ok -> false
-  | `Duplicate -> true
-
 (** Initialize global state and place comments. *)
 let init map_ast loc_of_ast source conf asts comments_n_docstrings =
   let t =
-    { docs_memo= Hashtbl.Poly.create ()
-    ; cmts_before= Hashtbl.Poly.create ()
+    { cmts_before= Hashtbl.Poly.create ()
     ; cmts_after= Hashtbl.Poly.create ()
     ; cmts_within= Hashtbl.Poly.create ()
     ; source
