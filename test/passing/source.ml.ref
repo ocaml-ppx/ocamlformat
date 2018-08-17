@@ -1,6 +1,6 @@
 [@@@foo]
 
-let ((x[@foo]) : (unit[@foo])) = (() [@foo])[@@foo]
+let[@foo] ((x[@foo]) : (unit[@foo])) = (() [@foo])
 
 type t = Foo of (t[@foo]) [@foo] [@@foo]
 
@@ -203,9 +203,9 @@ module type S = sig
 end
 
 (* Structure items *)
-let%foo x = 4[@@foo]
+let%foo[@foo] x = 4
 
-and y = x[@@foo]
+and[@foo] y = x
 
 [%%foo
 type t = int [@@foo]

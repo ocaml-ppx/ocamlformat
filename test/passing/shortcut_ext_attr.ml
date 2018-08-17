@@ -82,9 +82,9 @@ module type S = functor [@foo1]
   -> sig end [@foo3]
 
 (* Structure items *)
-let%foo x = 4[@@foo]
+let%foo[@foo] x = 4
 
-and y = x[@@foo]
+and[@foo] y = x
 
 [%%foo
 type t = int [@@foo]

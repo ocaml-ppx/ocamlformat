@@ -16,53 +16,53 @@ Invalid value for if-then-else: "bad"
 File "passing/option.ml", line 63, characters 4-15:
 Warning 47: illegal payload for attribute 'ocamlformat'.
 margin not allowed here
-File "passing/option.ml", line 12, characters 21-37:
+File "passing/option.ml", line 8, characters 5-21:
 Warning 47: illegal payload for attribute 'ocamlformat.typo'.
 Invalid format "unknown suffix \"typo\""
-File "passing/option.ml", line 18, characters 21-32:
+File "passing/option.ml", line 14, characters 5-16:
 Warning 47: illegal payload for attribute 'ocamlformat'.
 Invalid format "string expected"
-File "passing/option.ml", line 24, characters 21-32:
+File "passing/option.ml", line 20, characters 5-16:
 Warning 47: illegal payload for attribute 'ocamlformat'.
 Invalid value for if-then-else: "bad"
-File "passing/option.ml", line 35, characters 23-34:
+File "passing/option.ml", line 29, characters 7-18:
 Warning 47: illegal payload for attribute 'ocamlformat'.
 Invalid value for if-then-else: "bad"
-let _ =
+let[@ocamlformat "if-then-else=keyword-first"] _ =
   if b
   then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )[@@ocamlformat "if-then-else=keyword-first"]
+    this is more )
 
-let _ =
+let[@ocamlformat.typo "if-then-else=keyword-first"] _ =
   if b then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )[@@ocamlformat.typo "if-then-else=keyword-first"]
+    this is more )
 
-let _ =
+let[@ocamlformat 1, "if-then-else=keyword-first"] _ =
   if b then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )[@@ocamlformat 1, "if-then-else=keyword-first"]
+    this is more )
 
-let _ =
+let[@ocamlformat "if-then-else=bad"] _ =
   if b then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )[@@ocamlformat "if-then-else=bad"]
+    this is more )
 
 module M = struct
   [@@@ocamlformat "if-then-else=keyword-first"]
 
-  let _ =
+  let[@ocamlformat "if-then-else=bad"] _ =
     if b
     then e
     else (
       something loooooooooooooooooooooooooooooooong enough to_trigger a
         break ;
-      this is more )[@@ocamlformat "if-then-else=bad"]
+      this is more )
 
   let _ =
     if b
