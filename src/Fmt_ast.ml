@@ -3845,7 +3845,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ ( hovbox 4
             ( fmt_or first "let" "and"
             $ fmt_extension_suffix c ext
-            $ fmt_if_k (Option.is_some in_) (fmt_attributes c ~key:"@" atrs)
+            $ fmt_attributes c ~key:"@" atrs
             $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
             $ fmt " " $ fmt_pattern c xpat
             $ fmt_if (not (List.is_empty xargs)) "@ "
@@ -3853,7 +3853,6 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ Option.call ~f:fmt_cstr )
         $ fmt "@;<1 2>=" )
       $ fmt_body c xbody
-      $ fmt_if_k (Option.is_none in_) (fmt_attributes c ~key:"@@" atrs)
       $ Cmts.fmt_after c.cmts pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
