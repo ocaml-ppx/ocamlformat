@@ -393,29 +393,34 @@ let init_use_file =
              List.map items ~f:(fun {Parsetree.pstr_loc} -> pstr_loc)
          | Ptop_dir _ -> [] ))
 
-(** Relocate comments, for Ast transformations such as sugaring. *)
-let relocate t ~src ~before ~after =
-  let update_multi tbl src dst ~f =
-    Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
-        Hashtbl.update tbl dst ~f:(fun dst_data ->
-            Option.fold dst_data ~init:src_data ~f:(fun src_data dst_data ->
-                f src_data dst_data ) ) )
-  in
-  if Conf.debug then
-    Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
-      Location.fmt before Location.fmt after ;
-  update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
-      List.append src_cmts dst_cmts ) ;
-  update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
-      List.append dst_cmts src_cmts )
-
 let remove = ref true
 
-let preserve f x =
+let preserve fmt_x x =
+  let buf = Buffer.create 128 in
+  let fs = Format.formatter_of_buffer buf in
   let save = !remove in
   remove := false ;
-  f () x ;
-  remove := save
+  fmt_x x fs ;
+  Format.pp_print_flush fs () ;
+  remove := save ;
+  Buffer.contents buf
+
+(** Relocate comments, for Ast transformations such as sugaring. *)
+let relocate t ~src ~before ~after =
+  if !remove then (
+    let update_multi tbl src dst ~f =
+      Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
+          Hashtbl.update tbl dst ~f:(fun dst_data ->
+              Option.fold dst_data ~init:src_data
+                ~f:(fun src_data dst_data -> f src_data dst_data ) ) )
+    in
+    if Conf.debug then
+      Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+        Location.fmt before Location.fmt after ;
+    update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
+        List.append src_cmts dst_cmts ) ;
+    update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
+        List.append dst_cmts src_cmts ) )
 
 let split_asterisk_prefixed (txt, {Location.loc_start}) =
   let len = Position.column loc_start + 3 in
