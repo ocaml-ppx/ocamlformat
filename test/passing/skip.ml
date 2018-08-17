@@ -100,7 +100,8 @@ let _ =
   let module X =
     struct
             let x    =   4
-    end   [@ocamlformat "disable"] in
+    end   [@ocamlformat "disable"]
+  in
   X.x
 
 let _ =

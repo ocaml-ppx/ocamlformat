@@ -819,7 +819,8 @@ let make_set (type s) cmp =
     type t = s
 
     let compare = cmp
-  end) in
+  end)
+  in
   (module S : Set.S with type elt = s)
 
 let both l =
@@ -2965,7 +2966,8 @@ let magic : 'a 'b. 'a -> 'b =
        end)
        (struct
          type 'a t = unit
-       end) in
+       end)
+   in
    M.f Refl
 
 (* Variance and subtyping *)
@@ -3464,7 +3466,8 @@ type ('k, 'd, 'm) map =
 let add (type k d m) (m : (k, d, m) map) x y s =
   let module M = ( val m
                      : MapT
-                     with type key = k and type data = d and type map = m ) in
+                     with type key = k and type data = d and type map = m )
+  in
   M.of_t (M.add x y (M.to_t s))
 
 module SSMap = struct
@@ -6487,7 +6490,8 @@ let f flag =
     type t = int
 
     let compare = compare
-  end) in
+  end)
+  in
   let _ = match flag with `A -> 0 | `B r -> r in
   let _ = match flag with `A -> T.mem | `B r -> r in
   ()
@@ -8322,7 +8326,8 @@ let sort_uniq (type s) cmp l =
     type t = s
 
     let compare = cmp
-  end) in
+  end)
+  in
   S.elements (List.fold_right S.add l S.empty)
 
 let () =
