@@ -243,8 +243,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         input_file
   | Unstable i ->
       Format.eprintf
-        "%s: Cannot process %S.\n  \
-         Please report this bug at \
+        "%s: Cannot process %S.\n\
+        \  Please report this bug at \
          https://github.com/ocaml-ppx/ocamlformat/issues.\n\
          %!"
         exe input_file ;
@@ -252,8 +252,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         "  BUG: formatting did not stabilize after %i iterations.\n%!" i
   | Ocamlformat_bug exn -> (
       Format.eprintf
-        "%s: Cannot process %S.\n  \
-         Please report this bug at \
+        "%s: Cannot process %S.\n\
+        \  Please report this bug at \
          https://github.com/ocaml-ppx/ocamlformat/issues.\n\
          %!"
         exe input_file ;

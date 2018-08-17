@@ -15,9 +15,19 @@ let _ =
    cccccccccccccccccc\n	\
    "
 
+let _ =
+  "aaaaaaaaaaaaaaaaaaaaaaaaa\n \
+   bbbbbbbbbbbbbbbbbbbbbbbbbb\n \
+   cccccccccccccccccc\n \
+   "
+
 let _ = ('\xff', '\255', '\n')
 
 let f = function '\xff'..'\255' -> ()
 
 
 let f ("test" [@test "test"]) = 2
+
+;;
+"@\n \
+ xxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxx xxxxxxxx xxxxxxxxxxx"

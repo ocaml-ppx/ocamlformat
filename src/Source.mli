@@ -19,8 +19,7 @@ val string_between : t -> Location.t -> Location.t -> string option
 
 val string_at : t -> Location.t -> string
 
-val string_literal :
-  t -> [`Normalize_nl | `Preserve] -> Location.t -> string
+val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
 val char_literal : t -> Location.t -> string
 
