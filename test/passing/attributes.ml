@@ -28,9 +28,9 @@ val foo : int
 
 type t = [`A of int[@default] | `B of (float[@default])]
 
-let f x =
+let[@inline always] f x =
   let[@something] e = 1 in
-  e[@@inline always]
+  e
 
 module type M = S [@test1]
 
@@ -62,7 +62,7 @@ let h x = (g [@inlined] [@ocaml.inlined never]) x
 
 let v = (fun [@inline] [@inlined] x -> x) 1
 
-let i = fun [@inline] x -> x[@@inline]
+let[@inline] i = fun [@inline] x -> x
 
 ;;
 if [@test] true then () else ()
