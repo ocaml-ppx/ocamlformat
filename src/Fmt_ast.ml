@@ -1916,9 +1916,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
        |[ { pc_lhs=
               {ppat_desc= Ppat_or _ | Ppat_alias ({ppat_desc= Ppat_or _}, _)}
           } ] ->
+          let leading_cmt = Cmts.fmt_before c.cmts e0.pexp_loc in
           hvbox 0
             (wrap_fits_breaks_if parens "(" ")"
-               ( hvbox 0
+               ( leading_cmt
+               $ hvbox 0
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes

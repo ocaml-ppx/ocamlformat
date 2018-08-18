@@ -66,6 +66,13 @@ let _ = if ((* a3 *) B (* c3 *))
     |Bbbbbbbbbbbbbbbbbbbb ->
        ()
 
+let _ =
+  (* this comment is intended to refer to the entire match below *)
+  match x with
+  | "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" -> ()
+  | "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" -> ()
+
+
 
 module type M = sig
 

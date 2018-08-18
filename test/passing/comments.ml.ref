@@ -70,6 +70,12 @@ match x with
  |Bbbbbbbbbbbbbbbbbbbb ->
     ()
 
+let _ =
+  (* this comment is intended to refer to the entire match below *)
+  match x with
+  | "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" -> ()
+  | "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" -> ()
+
 module type M = sig
   val f (* A list of [name], [count] pairs. *) : (string * int) list -> int
 end
