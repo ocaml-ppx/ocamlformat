@@ -222,9 +222,3 @@ let equal_use_file ~ignore_doc_comments ast1 ast2 =
     else map_use_file mapper
   in
   Poly.equal (map ast1) (map ast2)
-
-let disabled_impl = function [] -> true | _ -> false
-
-let disabled_intf = function [] -> true | _ -> false
-
-let disabled_use_file = function [] -> true | _ -> false

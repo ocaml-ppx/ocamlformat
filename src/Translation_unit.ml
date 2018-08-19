@@ -30,7 +30,6 @@ type 'a t =
       -> 'a with_comments
       -> bool
   ; normalize: 'a with_comments -> 'a
-  ; no_translation: 'a -> bool
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)
@@ -203,7 +202,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   let result =
     match xunit.input conf ic with
     | exception exn -> Invalid_source exn
-    | {ast; _} when xunit.no_translation ast || conf.disable ->
+    | _ when conf.disable ->
         ( match (Conf.action, ofile) with
         | _, None -> Out_channel.output_string stdout source_txt
         | In_out _, Some ofile ->

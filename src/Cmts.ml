@@ -376,7 +376,10 @@ let init map_ast loc_of_ast source conf asts comments_n_docstrings =
       Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = loc_of_ast asts in
     let cmts = CmtSet.of_list comments in
-    place t loc_tree locs cmts ) ;
+    match (locs, comments) with
+    | [], _ :: _ ->
+        add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
+    | _ -> place t loc_tree locs cmts ) ;
   t
 
 let init_impl =
