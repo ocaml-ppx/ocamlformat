@@ -1289,15 +1289,17 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       parens || Poly.equal c.conf.infix_precedence `Parens
     in
     let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
-      list_fl args (fun ~first ~last (fmt_cmts, op_args) ->
+      list_fl args
+        (fun ~first ~last (fmt_before_cmts, fmt_afer_cmts, op_args) ->
           let very_first = first_grp && first in
           let very_last = last_grp && last in
           fmt_if_k very_first
             (fits_breaks_if parens_or_nested "("
                (if parens_or_forced then "( " else ""))
-          $ fmt_cmts
+          $ fmt_before_cmts
           $ fmt_if_k first
               (open_hovbox (if first_grp && parens then -2 else 0))
+          $ fmt_afer_cmts
           $ fmt_op_args ~first:very_first op_args ~last:very_last
           $ fmt_if_k last close_box
           $ fmt_or_k very_last
@@ -1308,7 +1310,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
     let op_args_grouped =
       match c.conf.break_infix with
       | `Wrap ->
-          List.group op_args ~break:(fun (_, (_, args1)) (_, (_, args2)) ->
+          List.group op_args
+            ~break:(fun (_, _, (_, args1)) (_, _, (_, args2)) ->
               let exists_not_simple args =
                 List.exists args ~f:(fun (_, arg) ->
                     not (is_simple c.conf width arg) )
@@ -1491,10 +1494,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
              | Some ({ast= {pexp_loc}} as op) ->
                  (* side effects of Cmts.fmt_before before fmt_expression is
                     important *)
-                 let fmt_cmts = Cmts.fmt_before c.cmts pexp_loc in
+                 let fmt_before_cmts = Cmts.fmt_before c.cmts pexp_loc in
+                 let fmt_after_cmts = Cmts.fmt_after c.cmts pexp_loc in
                  let fmt_op = fmt_expression c op in
-                 (fmt_cmts, (fmt_op, args))
-             | None -> (fmt "", (fmt "", args)) ))
+                 (fmt_before_cmts, fmt_after_cmts, (fmt_op, args))
+             | None -> (fmt "", fmt "", (fmt "", args)) ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_loc}
       , (Nolabel, s) :: (Nolabel, i) :: _ )
@@ -1687,13 +1691,13 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         let loc_args = sugar_infix_cons xexp in
         fmt_op_args
           (List.mapi loc_args ~f:(fun i (locs, arg) ->
-               let fmt_cmts =
-                 match locs with
-                 | [] -> fmt ""
-                 | locs -> list locs "" (Cmts.fmt_before c.cmts)
+               let fmt_before_cmts =
+                 list locs "" (Cmts.fmt_before c.cmts)
                in
+               let fmt_after_cmts = list locs "" (Cmts.fmt_after c.cmts) in
                let fmt_op = match i with 0 -> fmt "" | _ -> fmt "::" in
-               (fmt_cmts, (fmt_op, [(Nolabel, arg)])) )) )
+               (fmt_before_cmts, fmt_after_cmts, (fmt_op, [(Nolabel, arg)]))
+           )) )
   | Pexp_construct (lid, Some arg) ->
       wrap_if parens "(" ")"
         ( hvbox 2
@@ -2861,7 +2865,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
           $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
       $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
-  $ Cmts.fmt_after c.cmts ?pro:None ~epi:(fmt "@ ") pcd_loc
+  $ Cmts.fmt_after c.cmts ~pro:(fmt " ") ~epi:(fmt "@ ") pcd_loc
 
 and fmt_constructor_arguments c ctx pre args =
   match args with

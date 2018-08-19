@@ -256,9 +256,11 @@ let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
           && Position.column l1.loc_start <= Position.column l2.loc_start
       | _ -> false )
 
-(** Heuristic to choose between placing a comment after the previous loc or
-    before the next loc. Places comment after prev loc only if they are
-    "adjacent", and the comment and next loc are not "adjacent". *)
+(** Heuristic to choose between placing a comment after the previous
+    location or before the next one. Places comment after the previous
+    location only if they are "adjacent", and the comment and the next
+    location are not "adjacent" or the comment and the previous location are
+    on the same line (different from the next location) *)
 let partition_after_prev_or_before_next t ~prev cmts ~next =
   match CmtSet.to_list cmts with
   | (_, loc) :: _ as cmtl when is_adjacent t prev loc -> (
@@ -267,7 +269,15 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
           not (is_adjacent t l1 l2) )
     with
     | [cmtl] when is_adjacent t (snd (List.last_exn cmtl)) next ->
-        (CmtSet.empty, cmts)
+        let same_line_as_prev l =
+          prev.Location.loc_end.pos_lnum = l.Location.loc_start.pos_lnum
+        in
+        let prev, next =
+          if not (same_line_as_prev next) then
+            List.partition_tf cmtl ~f:(fun (_, l1) -> same_line_as_prev l1)
+          else ([], cmtl)
+        in
+        (CmtSet.of_list prev, CmtSet.of_list next)
     | after :: befores ->
         (CmtSet.of_list after, CmtSet.of_list (List.concat befores))
     | [] -> impossible "by parent match" )
