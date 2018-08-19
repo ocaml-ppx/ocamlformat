@@ -33,8 +33,7 @@ let f =
       | O ->
           5
       | P
-        when h x
-        -> (
+        when h x -> (
           function
           | A ->
               6 ) )
