@@ -471,7 +471,7 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
   let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
-  | None -> fmt ""
+  | None | Some [] -> fmt ""
   | Some cmts ->
       let line_dist a b =
         b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
@@ -484,17 +484,12 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
               && Location.compare_start_col a b = 0
               && Location.compare_end_col a b = 0 ) )
       in
-      let last_cmt = List.last cmts in
-      let eol_cmt =
-        Option.value ~default:false
-          (last_cmt >>| fun (_, loc) -> Source.ends_line t.source loc)
-      in
+      let last_loc = snd (List.last_exn cmts) in
+      let eol_cmt = Source.ends_line t.source last_loc in
       let adj_cmt =
         eol_cmt
-        && Option.value ~default:false
-             ( last_cmt
-             >>| fun (_, {Location.loc_end= {pos_lnum}}) ->
-             pos_lnum + 1 = loc.Location.loc_start.pos_lnum )
+        && last_loc.Location.loc_end.pos_lnum + 1
+           = loc.Location.loc_start.pos_lnum
       in
       let maybe_newline ~next (_, cur_last_loc) =
         match next with
