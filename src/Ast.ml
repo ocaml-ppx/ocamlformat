@@ -462,12 +462,14 @@ end = struct
           | Pcf_inherit (_, _, _) -> false
           | Pcf_val (_, _, Cfk_virtual t) -> typ == t
           | Pcf_val
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)})) ->
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)}))
+            ->
               typ == t
           | Pcf_val (_, _, Cfk_concrete _) -> false
           | Pcf_method (_, _, Cfk_virtual t) -> typ == t
           | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)})) ->
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)}))
+            ->
               typ == t
           | Pcf_method
               (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, topt)})) ->
@@ -579,7 +581,8 @@ end = struct
       match ctx.pmod_desc with
       | Pmod_unpack e1 -> (
         match e1.pexp_desc with
-        | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N)} as ty)) ->
+        | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N)} as ty))
+          ->
             assert (typ == ty || List.exists it1N ~f:snd_f)
         | Pexp_constraint (_, t1)
          |Pexp_coerce (_, None, t1)
@@ -907,7 +910,8 @@ end = struct
               List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
               || e == exp )
         | (Pexp_match (e, _) | Pexp_try (e, _)) when e == exp -> ()
-        | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
+        | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
+          ->
             assert (
               List.exists cases ~f:(function
                 | {pc_guard= Some g} when g == exp -> true
@@ -953,7 +957,8 @@ end = struct
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
-       |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _ ->
+       |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
+        ->
           assert false )
     | Mod {pmod_desc= Pmod_unpack e1} -> (
       match e1 with
@@ -1171,7 +1176,8 @@ end = struct
     | Exp {pexp_desc} -> (
       match pexp_desc with
       | Pexp_tuple _ -> Some Comma
-      | Pexp_construct ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple _}) ->
+      | Pexp_construct ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple _})
+        ->
           Some ColonColon
       | Pexp_construct (_, Some _) -> Some Apply
       | Pexp_constant (Pconst_integer (i, _) | Pconst_float (i, _)) -> (
@@ -1387,7 +1393,8 @@ end = struct
       , Ppat_constraint _ )
      |Exp {pexp_desc= Pexp_let _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _}
-      , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
+      , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) )
+      ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
@@ -1418,7 +1425,8 @@ end = struct
     match (ctx, exp.pexp_desc) with
     | ( Exp {pexp_desc= Pexp_apply (e0, (Nolabel, _) :: (Nolabel, _) :: _)}
       , Pexp_ident {txt= Lident i} )
-      when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes ->
+      when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes
+      ->
         false
     | _, Pexp_ident {txt= Lident i} when is_infix_id i -> true
     | _ -> false
@@ -1491,7 +1499,8 @@ end = struct
           | _ -> false )
         | Pexp_match _ when match cls with Then -> true | _ -> false ->
             false
-        | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
+        | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
+          ->
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
@@ -1554,7 +1563,8 @@ end = struct
           continue e
       | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) -> (
         match e.pexp_desc with
-        | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
+        | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
+          ->
             List.iter cases ~f:(fun case ->
                 mark_parenzed_inner_nested_match case.pc_rhs ) ;
             true

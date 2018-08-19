@@ -410,7 +410,8 @@ let rec sugar_functor_type c ~for_functor_kw ({ast= mty} as xmty) =
   match mty with
   | {pmty_desc= Pmty_functor (arg, arg_mty, body); pmty_loc; pmty_attributes}
     when for_functor_kw
-         || (List.is_empty pmty_attributes && not (String.equal arg.txt "_")) ->
+         || (List.is_empty pmty_attributes && not (String.equal arg.txt "_"))
+    ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
@@ -432,7 +433,8 @@ let rec sugar_functor c ~for_functor_kw ({ast= me} as xme) =
   match me with
   | {pmod_desc= Pmod_functor (arg, arg_mt, body); pmod_loc; pmod_attributes}
     when for_functor_kw
-         || (List.is_empty pmod_attributes && not (String.equal arg.txt "_")) ->
+         || (List.is_empty pmod_attributes && not (String.equal arg.txt "_"))
+    ->
       let arg =
         if String.equal "*" arg.txt then {arg with txt= ""} else arg
       in
@@ -879,7 +881,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
   | Ppat_or _ -> Fn.id
-  | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::") ->
+  | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::")
+    ->
       fun k ->
         Cmts.fmt c.cmts ~pro:spc ppat_loc
         @@ Cmts.fmt c.cmts ~pro:spc loc
@@ -2467,8 +2470,7 @@ and fmt_class_field c ctx (cf : class_field) =
         , { pexp_desc=
               Pexp_poly
                 (e, Some ({ptyp_desc= Ptyp_poly (poly_args, _)} as poly)) }
-        )
-      -> (
+        ) -> (
         let rec cleanup names e args' =
           match (e, args') with
           | {pexp_desc= Pexp_constraint (e, t)}, [] ->
@@ -2632,11 +2634,13 @@ and fmt_cases c ctx cs =
           | Ppat_or _ when Option.is_some pc_guard -> true
           | _ -> parenze_pat xlhs
         in
-        let fmt_arrow =
+        let fmt_arrow_close_box =
           fmt_or_k
             (break_cases_level c > 0)
-            (fmt_or_k parens_here (fmt "@;<1 2>->") (fmt " ->@;<0 3>"))
-            (fmt_or_k parens_here (fmt "@;<1 -2>-> (") (fmt " ->@;<0 -1>"))
+            (fmt_or_k parens_here (fmt "@;<1 2>->@]")
+               (fmt "@;<1 -2>->@]@;<0 3>"))
+            ( fmt "@;<1 -2>->"
+            $ fmt_or_k parens_here (fmt " (@]") (fmt "@]@;<0 -1>") )
         in
         let pro =
           fmt_or_k
@@ -2645,13 +2649,14 @@ and fmt_cases c ctx cs =
             (if first then if_newline "| " else fmt "| ")
         in
         hovbox 4
-          ( hvbox 0
+          ( open_hovbox 0
+          $ hvbox 0
               ( fmt_pattern c ~pro ~parens:paren_lhs xlhs
               $ opt pc_guard (fun g ->
                     fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g)
                 ) )
-          $ fmt_if_k (indent <= 2) fmt_arrow )
-        $ fmt_if_k (indent > 2) fmt_arrow
+          $ fmt_if_k (indent <= 2) fmt_arrow_close_box )
+        $ fmt_if_k (indent > 2) fmt_arrow_close_box
       in
       fmt_if (not first) "@ " $ leading_cmt
       $ cbox_if
