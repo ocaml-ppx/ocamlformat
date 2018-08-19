@@ -65,6 +65,9 @@ while [ $# -gt 0 ]; do
         --html)
             HTML=1
             ;;
+	--accept)
+	    ACCEPT=1
+	    ;;
         *)
             cat <<EOF >/dev/stderr
 Usage:
@@ -74,6 +77,7 @@ Usage:
   --show               show a diff of changed results
   --meld               show progressions/regressions using meld
   --html               generate an html page showing the diff of failing tests
+  --accept             accept the current formatting
 EOF
             exit 1
     esac
@@ -118,7 +122,9 @@ for f in ${PASSING[@]}; do
         printf "%-12s\t\t\e[32m[PASSED]\e[m\n" $name
     else
         printf "%-12s\t\t\e[31m[FAILED]\e[m \e[41m\e[30m[REGRESSION]\e[m\n" $name
-        if [ -n "$UPDATE" ]; then
+        if [ -n "$ACCEPT" ]; then
+	    cp $TMP/$base "$(reffile "$f")"
+        elif [ -n "$UPDATE" ]; then
             mkdir -p failing
             $GIT mv -f $f* failing/
             f=failing/${f#passing/}
@@ -162,7 +168,9 @@ for f in ${FAILING[@]}; do
               elif [ $progress -eq 0 ]; then echo 43; \
               else echo 41; fi) \
             $progress
-        if [ -n "$UPDATE" ]; then
+        if [ -n "$ACCEPT" ]; then
+	    cp $TMP/$base failing-output/$base
+        elif [ -n "$UPDATE" ]; then
             mkdir -p failing-output
             cp $TMP/$base failing-output/
             if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
