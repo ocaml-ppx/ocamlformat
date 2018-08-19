@@ -66,21 +66,21 @@ Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 ;;
 match Conf.action with
-| Inplace inputs -> (
-  match
-    List.filter_map inputs
-      ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
-        match
+| Inplace inputs ->
+    let results : Translation_unit.result list =
+      List.map inputs
+        ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
           In_channel.with_file input_file ~f:(fun ic ->
               Translation_unit.parse_print (xunit_of_kind kind) conf
-                ~input_name ~input_file ic (Some input_file) )
-        with
-        | Ok -> None
-        | Ocamlformat_bug _ -> Some ()
-        | Invalid_source _ -> Some () )
-  with
-  | [] -> Caml.exit 0
-  | _ :: _ -> Caml.exit 1 )
+                ~input_name ~input_file ic (Some input_file) ) )
+    in
+    if
+      List.for_all results ~f:(fun result ->
+          match (result : Translation_unit.result) with
+          | Ok -> true
+          | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> false )
+    then Caml.exit 0
+    else Caml.exit 1
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
       ; file= input_file
@@ -93,5 +93,4 @@ match Conf.action with
           ~input_file ic output_file )
   with
   | Ok -> Caml.exit 0
-  | Ocamlformat_bug _ -> Caml.exit 1
-  | Invalid_source _ -> Caml.exit 1 )
+  | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )
