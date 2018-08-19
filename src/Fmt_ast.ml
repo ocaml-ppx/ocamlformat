@@ -2509,7 +2509,7 @@ and fmt_class_field c ctx (cf : class_field) =
         in
         ( [ fmt_if (not (List.is_empty xargs)) "@;<1 2>"
             $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
-          ; opt ty (fun t -> fmt " : " $ fmt_core_type c (sub_typ ~ctx t))
+          ; opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
           ]
         , fmt "@;<1 2>="
         , fmt "@ " $ fmt_expression c e )
