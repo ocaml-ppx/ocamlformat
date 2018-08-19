@@ -102,7 +102,11 @@ let dump xunit dir base suf ext ast =
     xunit.printast (Caml.Format.formatter_of_out_channel oc) ast ;
     Out_channel.close oc )
 
-type result = Ok | Invalid_source of exn | Ocamlformat_bug of exn
+type result =
+  | Ok
+  | Invalid_source of exn
+  | Unstable of int
+  | Ocamlformat_bug of exn
 
 let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     ofile =
@@ -176,23 +180,21 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
                   , Sequence.sexp_of_t
                       (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
                       diff_cmts ) ] ) ) ;
-          if (* Too many iteration ? *)
-             i >= conf.max_iters then (
+          (* Too many iteration ? *)
+          if i >= conf.max_iters then (
             Caml.flush_all () ;
             ( if Conf.debug then
               let command =
                 Printf.sprintf "diff %s %s 1>&2" source_file tmp
               in
               ignore (Unix.system command) ) ;
-            internal_error
-              (Format.sprintf
-                 "formatting did not stabilize after %i iterations" i)
-              [] ) ;
-          let result =
-            print_check ~i:(i + 1) ~ast:new_.ast ~comments:new_.comments
-              ~source_txt:fmted ~source_file:tmp
-          in
-          Unix.unlink tmp ; result
+            Unstable i )
+          else
+            let result =
+              print_check ~i:(i + 1) ~ast:new_.ast ~comments:new_.comments
+                ~source_txt:fmted ~source_file:tmp
+            in
+            Unix.unlink tmp ; result
   in
   let source_txt =
     In_channel.with_file input_file ~f:In_channel.input_all
@@ -236,6 +238,19 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
       | Warning50 l ->
           List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
       | exn -> Format.eprintf "%s\n%!" (Exn.to_string exn) )
+  | Unstable i when i <= 1 ->
+      Format.eprintf
+        "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
+        input_file
+  | Unstable i ->
+      Format.eprintf
+        "%s: Cannot process %S.\n  \
+         Please report this bug at \
+         https://github.com/ocaml-ppx/ocamlformat/issues.\n\
+         %!"
+        exe input_file ;
+      Format.eprintf
+        "  BUG: formatting did not stabilize after %i iterations.\n%!" i
   | Ocamlformat_bug exn -> (
       Format.eprintf
         "%s: Cannot process %S.\n  \

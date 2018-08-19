@@ -32,7 +32,11 @@ type x = XUnit : 'a t -> x
 
 exception Warning50 of (Location.t * Warnings.t) list
 
-type result = Ok | Invalid_source of exn | Ocamlformat_bug of exn
+type result =
+  | Ok
+  | Invalid_source of exn
+  | Unstable of int
+  | Ocamlformat_bug of exn
 
 val parse :
   (Lexing.lexbuf -> 'a) -> Conf.t -> In_channel.t -> 'a with_comments
