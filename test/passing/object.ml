@@ -204,3 +204,19 @@ class x =
   end
 
 let _ = f ##= (fun x -> x)
+
+let o =
+  object
+    method int_bin_op
+        : int t * [`Plus | `Minus | `Mult | `Div | `Mod] * int t -> int t =
+      fun (a, op, b) -> Int_bin_op (self#expression a, op, self#expression b)
+
+    method int_bin_comparison aaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbb
+        ccccccccccccccccccccc ddddddddddddddddddddddddd
+        :    int t * [`Eq | `Ne | `Gt | `Ge | `Lt | `Le] * int ttttttttt
+          -> bool tttttttttttttttt rrrrrrrrrrrrrrrrrrrrr
+             rrrrrrrrrrrrrrrrrrrrr
+             rrrrrrrrrrrrrrrrrrrrrrr =
+      fun (a, op, b) ->
+        Int_bin_comparison (self#expression a, op, self#expression b)
+  end
