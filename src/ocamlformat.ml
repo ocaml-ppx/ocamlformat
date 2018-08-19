@@ -25,7 +25,6 @@ let impl : _ Translation_unit.t =
   ; fmt= Fmt_ast.fmt_structure
   ; equal= equal Normalize.equal_impl
   ; normalize= normalize Normalize.impl
-  ; no_translation= Normalize.disabled_impl
   ; printast= Migrate_ast.Printast.implementation }
 
 (** Operations on interface files. *)
@@ -37,7 +36,6 @@ let intf : _ Translation_unit.t =
   ; fmt= Fmt_ast.fmt_signature
   ; equal= equal Normalize.equal_intf
   ; normalize= normalize Normalize.intf
-  ; no_translation= Normalize.disabled_intf
   ; printast= Migrate_ast.Printast.interface }
 
 (** Operations on use_file files. *)
@@ -49,7 +47,6 @@ let use_file : _ Translation_unit.t =
   ; fmt= Fmt_ast.fmt_use_file
   ; equal= equal Normalize.equal_use_file
   ; normalize= normalize Normalize.use_file
-  ; no_translation= Normalize.disabled_use_file
   ; printast= Migrate_ast.Printast.use_file }
 
 (** Select translation unit type and operations based on kind. *)

@@ -215,7 +215,8 @@ let ends_line t (l : Location.t) =
       | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
       | _ -> false
   in
-  ends_line_ l.loc_end.pos_cnum
+  if Location.compare Location.none l = 0 then false
+  else ends_line_ l.loc_end.pos_cnum
 
 let extension_using_sugar ~(name : string Location.loc)
     ~(payload : Parsetree.expression) =

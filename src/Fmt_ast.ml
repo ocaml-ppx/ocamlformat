@@ -3946,14 +3946,23 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
 
 (** Entry points *)
 
-let fmt_signature s cmts c =
+let fmt_signature s cmts c itms =
   let c = {source= s; cmts; conf= c} in
-  Ast.init c.conf ; fmt_signature c Top
+  Ast.init c.conf ;
+  match itms with
+  | [] -> Cmts.fmt_after c.cmts Location.none
+  | l -> fmt_signature c Top l
 
-let fmt_structure s cmts c =
+let fmt_structure s cmts c itms =
   let c = {source= s; cmts; conf= c} in
-  Ast.init c.conf ; fmt_structure c Top
+  Ast.init c.conf ;
+  match itms with
+  | [] -> Cmts.fmt_after c.cmts Location.none
+  | l -> fmt_structure c Top l
 
-let fmt_use_file s cmts c =
+let fmt_use_file s cmts c itms =
   let c = {source= s; cmts; conf= c} in
-  Ast.init c.conf ; fmt_use_file c Top
+  Ast.init c.conf ;
+  match itms with
+  | [] -> Cmts.fmt_after c.cmts Location.none
+  | l -> fmt_use_file c Top l
