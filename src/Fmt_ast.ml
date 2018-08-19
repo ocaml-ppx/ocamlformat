@@ -3429,7 +3429,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
         maybe_generative c ~ctx me_a
       in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
         opn= opn_a $ opn_f $ open_hvbox 2
@@ -3468,7 +3468,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
         fmt_module_type c (sub_mty ~ctx mt)
       in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { opn= opn_t $ opn_e $ open_hvbox 2
       ; pro=
@@ -3542,7 +3542,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let doc, atrs = doc_atrs pmod_attributes in
       let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
         opn= open_hvbox 2
@@ -3585,7 +3585,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; pexp_attributes= [] } ->
       let doc, atrs = doc_atrs pmod_attributes in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
         pro=
@@ -3607,7 +3607,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
   | Pmod_unpack e1 ->
       let doc, atrs = doc_atrs pmod_attributes in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
       { empty with
@@ -3628,7 +3628,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let doc, atrs = doc_atrs pmod_attributes in
       let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
       let has_epi =
-        Cmts.has_after c.cmts pmod_loc || (not (List.is_empty atrs))
+        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
         pro=
