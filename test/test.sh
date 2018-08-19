@@ -18,6 +18,7 @@ ROOT=$(git rev-parse --show-toplevel)
 OCAMLFORMAT="$ROOT"/_build/dev/src/ocamlformat.exe
 cd $ROOT/test
 
+ACCEPT=
 UPDATE=
 GIT=
 SHOW=
