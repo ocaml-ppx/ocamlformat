@@ -3674,7 +3674,7 @@ and fmt_structure c ctx itms =
         (c, (i, c)) )
   in
   let grps =
-    List.group itms ~break:(fun (itmI, _) (itmJ, _) ->
+    List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
         let has_doc itm =
           match itm.pstr_desc with
           | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
@@ -3710,7 +3710,7 @@ and fmt_structure c ctx itms =
           | Pmod_ident _ -> true
           | _ -> false
         in
-        let is_simple itm =
+        let is_simple (itm, c) =
           match c.conf.structure_item_grouping with
           | `Compact -> (
             match itm.pstr_desc with
@@ -3723,10 +3723,12 @@ and fmt_structure c ctx itms =
             | Pstr_open _ -> true
             | _ -> false )
         in
-        let allow_adjacent itmI itmJ =
-          match c.conf.structure_item_grouping with
-          | `Sparse -> true
-          | `Compact -> (
+        let allow_adjacent (itmI, cI) (itmJ, cJ) =
+          match
+            ( cI.conf.structure_item_grouping
+            , cJ.conf.structure_item_grouping )
+          with
+          | `Compact, `Compact -> (
             match (itmI.pstr_desc, itmJ.pstr_desc) with
             | Pstr_eval _, Pstr_eval _
              |Pstr_value _, Pstr_value _
@@ -3744,11 +3746,12 @@ and fmt_structure c ctx itms =
              |Pstr_extension _, Pstr_extension _ ->
                 true
             | _ -> false )
+          | _ -> true
         in
         has_doc itmI || has_doc itmJ
-        || (not (is_simple itmI))
-        || (not (is_simple itmJ))
-        || not (allow_adjacent itmI itmJ) )
+        || (not (is_simple (itmI, cI)))
+        || (not (is_simple (itmJ, cJ)))
+        || not (allow_adjacent (itmI, cI) (itmJ, cJ)) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
