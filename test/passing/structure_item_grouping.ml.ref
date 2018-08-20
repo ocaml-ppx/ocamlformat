@@ -24,6 +24,7 @@ module A = AA
 module B = BB
 open AA
 module C = CC
+
 module M =
   X
     (Y)

@@ -3703,20 +3703,22 @@ and fmt_structure c ctx itms =
            |Pstr_class [] ->
               false
         in
+        let rec is_simple_mod me =
+          match me.pmod_desc with
+          | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
+          | Pmod_functor (_, _, me) -> is_simple_mod me
+          | Pmod_ident _ -> true
+          | _ -> false
+        in
         let is_simple itm =
           match c.conf.structure_item_grouping with
-          | `Compact -> Location.width itm.pstr_loc <= c.conf.margin
+          | `Compact -> (
+            match itm.pstr_desc with
+            | Pstr_module {pmb_expr= me} -> is_simple_mod me
+            | _ -> Location.width itm.pstr_loc <= c.conf.margin )
           | `Sparse -> (
             match itm.pstr_desc with
             | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
-                let rec is_simple_mod me =
-                  match me.pmod_desc with
-                  | Pmod_apply (me1, me2) ->
-                      is_simple_mod me1 && is_simple_mod me2
-                  | Pmod_functor (_, _, me) -> is_simple_mod me
-                  | Pmod_ident _ -> true
-                  | _ -> false
-                in
                 is_simple_mod me
             | Pstr_open _ -> true
             | _ -> false )
