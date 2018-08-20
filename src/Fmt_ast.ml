@@ -3712,10 +3712,9 @@ and fmt_structure c ctx itms =
         in
         let is_simple (itm, c) =
           match c.conf.structure_item_grouping with
-          | `Compact -> (
-            match itm.pstr_desc with
-            | Pstr_module {pmb_expr= me} -> is_simple_mod me
-            | _ -> Location.width itm.pstr_loc <= c.conf.margin )
+          | `Compact ->
+              Location.width itm.pstr_loc <= c.conf.margin
+              && Location.is_single_line itm.pstr_loc
           | `Sparse -> (
             match itm.pstr_desc with
             | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
