@@ -22,3 +22,5 @@ let _ = ( !!! ) a b
 let _ = ( !!! ) ~b
 
 let _ = !!!!a b d
+
+let _ = ( + ) a b c d

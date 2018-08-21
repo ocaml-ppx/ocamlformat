@@ -1495,7 +1495,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id}; pexp_attributes= []}
-      , (Nolabel, _) :: (Nolabel, _) :: _ )
+      , [(Nolabel, _); (Nolabel, _)] )
     when is_infix_id id ->
       let op_args = sugar_infix c (prec_ast (Exp exp)) xexp in
       fmt_op_args
@@ -1528,11 +1528,6 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
            ( fmt_expression c ~box (sub_exp ~ctx e0)
            $ fmt_expression c ~box (sub_exp ~ctx e1)
            $ fmt_atrs ))
-  | Pexp_apply (e0, a1N)
-    when is_infix e0 && List.is_empty e0.pexp_attributes ->
-      hvbox 2
-        ( wrap_fits_breaks_if parens "(" ")" (fmt_args_grouped e0 a1N)
-        $ fmt_atrs )
   | Pexp_apply (e0, e1N1) -> (
       let wrap = if c.conf.wrap_fun_args then Fn.id else hvbox 2 in
       match List.rev e1N1 with
