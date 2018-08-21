@@ -3,13 +3,20 @@
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone
 val f : k -> k -> k -> k -> k k -> k k -> k k
+(** [f o o o o o o] is a great function. *)
+
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone
 val g : unit
 
 val f : aaaaaaaaaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb -> cccccccccccccccccccccccc -> dddddddddddd
+
+(** [x] is a great value. *)
 val x : k
+val z : k
 val y : k
+(** [y] is a great value. *)
+
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone
 
