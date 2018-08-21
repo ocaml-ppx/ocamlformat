@@ -1,4 +1,4 @@
-[@@@ocamlformat "structure-item-grouping=compact"]
+[@@@ocamlformat "module-item-spacing=compact"]
 
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone

@@ -3081,7 +3081,7 @@ and fmt_signature c ctx itms =
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
         let is_simple (itm, c) =
-          match c.conf.structure_item_grouping with
+          match c.conf.module_item_spacing with
           | `Compact ->
               Location.width itm.psig_loc <= c.conf.margin
               && Location.is_single_line itm.psig_loc
@@ -3093,8 +3093,7 @@ and fmt_signature c ctx itms =
         in
         let allow_adjacent (itmI, cI) (itmJ, cJ) =
           match
-            ( cI.conf.structure_item_grouping
-            , cJ.conf.structure_item_grouping )
+            (cI.conf.module_item_spacing, cJ.conf.module_item_spacing)
           with
           | `Compact, `Compact -> (
             match (itmI.psig_desc, itmJ.psig_desc) with
@@ -3741,7 +3740,7 @@ and fmt_structure c ctx itms =
           | _ -> false
         in
         let is_simple (itm, c) =
-          match c.conf.structure_item_grouping with
+          match c.conf.module_item_spacing with
           | `Compact ->
               Location.width itm.pstr_loc <= c.conf.margin
               && Location.is_single_line itm.pstr_loc
@@ -3754,8 +3753,7 @@ and fmt_structure c ctx itms =
         in
         let allow_adjacent (itmI, cI) (itmJ, cJ) =
           match
-            ( cI.conf.structure_item_grouping
-            , cJ.conf.structure_item_grouping )
+            (cI.conf.module_item_spacing, cJ.conf.module_item_spacing)
           with
           | `Compact, `Compact -> (
             match (itmI.pstr_desc, itmJ.pstr_desc) with

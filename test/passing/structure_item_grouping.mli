@@ -1,4 +1,4 @@
-[@@@ocamlformat "structure-item-grouping=compact"]
+[@@@ocamlformat "module-item-spacing=compact"]
 
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone
