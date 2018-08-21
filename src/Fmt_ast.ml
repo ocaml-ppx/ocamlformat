@@ -3079,14 +3079,44 @@ and fmt_signature c ctx itms =
         (c, (i, c)) )
   in
   let grps =
-    List.group itms ~break:(fun (itmI, _) (itmJ, _) ->
-        let is_simple itm =
-          match itm.psig_desc with
-          | Psig_open _ -> true
-          | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
-          | _ -> false
+    List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
+        let is_simple (itm, c) =
+          match c.conf.structure_item_grouping with
+          | `Compact ->
+              Location.width itm.psig_loc <= c.conf.margin
+              && Location.is_single_line itm.psig_loc
+          | `Sparse -> (
+            match itm.psig_desc with
+            | Psig_open _ -> true
+            | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
+            | _ -> false )
         in
-        (not (is_simple itmI)) || not (is_simple itmJ) )
+        let allow_adjacent (itmI, cI) (itmJ, cJ) =
+          match
+            ( cI.conf.structure_item_grouping
+            , cJ.conf.structure_item_grouping )
+          with
+          | `Compact, `Compact -> (
+            match (itmI.psig_desc, itmJ.psig_desc) with
+            | Psig_value _, Psig_value _
+             |(Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
+             |Psig_exception _, Psig_exception _
+             |( ( Psig_module _ | Psig_recmodule _ | Psig_open _
+                | Psig_include _ )
+              , ( Psig_module _ | Psig_recmodule _ | Psig_open _
+                | Psig_include _ ) )
+             |Psig_modtype _, Psig_modtype _
+             |Psig_class _, Psig_class _
+             |Psig_class_type _, Psig_class_type _
+             |Psig_attribute _, Psig_attribute _
+             |Psig_extension _, Psig_extension _ ->
+                true
+            | _ -> false )
+          | _ -> true
+        in
+        (not (is_simple (itmI, cI)))
+        || (not (is_simple (itmJ, cJ)))
+        || not (allow_adjacent (itmI, cI) (itmJ, cJ)) )
   in
   let fmt_grp itms =
     list itms "@\n" (fun (i, c) ->
