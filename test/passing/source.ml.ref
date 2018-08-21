@@ -130,7 +130,7 @@ let () =
 
 (* Class expressions *)
 class x =
-  (fun x ->
+  fun [@foo] x ->
     let[@foo] x = 3 in
     object
       inherit x [@@foo]
@@ -148,7 +148,7 @@ class x =
       method! private x = 3 [@@foo]
 
       initializer x [@@foo]
-    end [@foo] ) [@foo]
+    end [@foo]
 
 (* Class type expressions *)
 class type t =
@@ -9123,7 +9123,7 @@ let () =
 
 class c =
   object
-    inherit ((fun () -> object end [@wee]) : object end) ()
+    inherit (fun () -> object end [@wee] : object end) ()
   end
 
 let f = function (x[@wee]) -> ()

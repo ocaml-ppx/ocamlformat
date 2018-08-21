@@ -32,7 +32,7 @@ let () =
 
 (* Class expressions *)
 class x =
-  (fun x ->
+  fun [@foo] x ->
     let[@foo] x = 33 in
     object
       inherit x [@@foo]
@@ -50,7 +50,7 @@ class x =
       method! private x = 3 [@@foo]
 
       initializer x [@@foo]
-    end [@foo] ) [@foo]
+    end [@foo]
 
 (* Class type expressions *)
 class type t =
