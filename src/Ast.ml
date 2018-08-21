@@ -178,13 +178,6 @@ module Structure_item : Module_item with type t = structure_item = struct
      |Pstr_class [] ->
         false
 
-  let rec is_simple_mod me =
-    match me.pmod_desc with
-    | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-    | Pmod_functor (_, _, me) -> is_simple_mod me
-    | Pmod_ident _ -> true
-    | _ -> false
-
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
     | `Compact ->
@@ -193,6 +186,13 @@ module Structure_item : Module_item with type t = structure_item = struct
     | `Sparse -> (
       match itm.pstr_desc with
       | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
+          let rec is_simple_mod me =
+            match me.pmod_desc with
+            | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
+            | Pmod_functor (_, _, me) -> is_simple_mod me
+            | Pmod_ident _ -> true
+            | _ -> false
+          in
           is_simple_mod me
       | Pstr_open _ -> true
       | _ -> false )
