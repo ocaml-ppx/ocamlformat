@@ -159,6 +159,26 @@ function."
         (erase-buffer))
       (kill-buffer errbuf))))
 
+;; replace-buffer-contents is broken in emacs-26.1
+;; try to detect broken implementation.
+;; https://bugzilla.redhat.com/show_bug.cgi?id=1597251
+(setq ocamlformat--support-replace-buffer-contents
+  (if (fboundp 'replace-buffer-contents)
+      (let* ((a (generate-new-buffer "tmp"))
+	     (b (generate-new-buffer "tmp")))
+	(with-current-buffer a
+	  (erase-buffer)
+	  (insert "\u2666\nabc\n"))
+	(let ((ok (with-current-buffer b
+		    (erase-buffer)
+		    (insert "\u2666\naXbc\n")
+		    (replace-buffer-contents a)
+		    (string= (buffer-string) "\u2666\nabc\n"))))
+	  (kill-buffer a)
+	  (kill-buffer b)
+	  ok))
+    nil))
+
 (defun ocamlformat ()
    "Format the current buffer according to the ocamlformat tool."
    (interactive)
@@ -197,10 +217,13 @@ function."
                        "--name" buffer-file-name
                        "--output" outputfile bufferfile))))
              (progn
-               (call-process-region
-                 (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
-                 outputfile)
-               (ocamlformat--apply-rcs-patch patchbuf)
+               (if (ocamlformat--support-replace-buffer-contents)
+		   (replace-buffer-contents (find-file-noselect outputfile))
+		 (progn
+		   (call-process-region
+		    (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
+		    outputfile)
+		   (ocamlformat--apply-rcs-patch patchbuf)))
                (message "Applied ocamlformat"))
              (if errbuf
                (progn
