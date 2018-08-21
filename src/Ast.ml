@@ -116,6 +116,194 @@ let rec is_sugared_list exp =
       is_sugared_list tl
   | _ -> false
 
+let doc_atrs atrs =
+  let doc, rev_atrs =
+    List.fold atrs ~init:(None, []) ~f:(fun (doc, rev_atrs) atr ->
+        let open Asttypes in
+        match (doc, atr) with
+        | ( None
+          , ( { txt= ("ocaml.doc" | "ocaml.text") as txt
+              ; loc= {loc_ghost= true} }
+            , PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( { pexp_desc=
+                              Pexp_constant (Pconst_string (doc, None))
+                          ; pexp_loc= loc
+                          ; pexp_attributes= [] }
+                        , [] ) } ] ) ) ->
+            (Some ({txt= doc; loc}, String.equal "ocaml.text" txt), rev_atrs)
+        | _ -> (doc, atr :: rev_atrs) )
+  in
+  (doc, List.rev rev_atrs)
+
+module type Module_item = sig
+  type t
+
+  val has_doc : t -> bool
+
+  val is_simple : t * Conf.t -> bool
+
+  val allow_adjacent : t * Conf.t -> t * Conf.t -> bool
+end
+
+module Structure_item : Module_item with type t = structure_item = struct
+  type t = structure_item
+
+  let has_doc itm =
+    match itm.pstr_desc with
+    | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pstr_eval (_, atrs)
+     |Pstr_value (_, {pvb_attributes= atrs} :: _)
+     |Pstr_primitive {pval_attributes= atrs}
+     |Pstr_type (_, {ptype_attributes= atrs} :: _)
+     |Pstr_typext {ptyext_attributes= atrs}
+     |Pstr_exception {pext_attributes= atrs}
+     |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
+     |Pstr_modtype {pmtd_attributes= atrs}
+     |Pstr_open {popen_attributes= atrs}
+     |Pstr_extension (_, atrs)
+     |Pstr_class_type ({pci_attributes= atrs} :: _)
+     |Pstr_class ({pci_attributes= atrs} :: _) ->
+        Option.is_some (fst (doc_atrs atrs))
+    | Pstr_include
+        {pincl_mod= {pmod_attributes= atrs1}; pincl_attributes= atrs2}
+     |Pstr_module {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2}}
+      ->
+        Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
+    | Pstr_value (_, [])
+     |Pstr_type (_, [])
+     |Pstr_recmodule []
+     |Pstr_class_type []
+     |Pstr_class [] ->
+        false
+
+  let rec is_simple_mod me =
+    match me.pmod_desc with
+    | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
+    | Pmod_functor (_, _, me) -> is_simple_mod me
+    | Pmod_ident _ -> true
+    | _ -> false
+
+  let is_simple (itm, c) =
+    match c.Conf.module_item_spacing with
+    | `Compact ->
+        Location.width itm.pstr_loc <= c.Conf.margin
+        && Location.is_single_line itm.pstr_loc
+    | `Sparse -> (
+      match itm.pstr_desc with
+      | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
+          is_simple_mod me
+      | Pstr_open _ -> true
+      | _ -> false )
+
+  let allow_adjacent (itmI, cI) (itmJ, cJ) =
+    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
+    | `Compact, `Compact -> (
+      match (itmI.pstr_desc, itmJ.pstr_desc) with
+      | Pstr_eval _, Pstr_eval _
+       |Pstr_value _, Pstr_value _
+       |Pstr_primitive _, Pstr_primitive _
+       |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
+       |Pstr_exception _, Pstr_exception _
+       |( (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
+        , (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
+        )
+       |Pstr_modtype _, Pstr_modtype _
+       |Pstr_class _, Pstr_class _
+       |Pstr_class_type _, Pstr_class_type _
+       |Pstr_attribute _, Pstr_attribute _
+       |Pstr_extension _, Pstr_extension _ ->
+          true
+      | _ -> false )
+    | _ -> true
+end
+
+module Signature_item : Module_item with type t = signature_item = struct
+  type t = signature_item
+
+  let has_doc itm =
+    match itm.psig_desc with
+    | Psig_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Psig_value {pval_attributes= atrs}
+     |Psig_type (_, {ptype_attributes= atrs} :: _)
+     |Psig_typext {ptyext_attributes= atrs}
+     |Psig_exception {pext_attributes= atrs}
+     |Psig_modtype {pmtd_attributes= atrs}
+     |Psig_open {popen_attributes= atrs}
+     |Psig_extension (_, atrs)
+     |Psig_class_type ({pci_attributes= atrs} :: _)
+     |Psig_class ({pci_attributes= atrs} :: _) ->
+        Option.is_some (fst (doc_atrs atrs))
+    | Psig_recmodule
+        ({pmd_type= {pmty_attributes= atrs1}; pmd_attributes= atrs2} :: _)
+     |Psig_include
+        {pincl_mod= {pmty_attributes= atrs1}; pincl_attributes= atrs2}
+     |Psig_module {pmd_attributes= atrs1; pmd_type= {pmty_attributes= atrs2}}
+      ->
+        Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
+    | Psig_type (_, [])
+     |Psig_recmodule []
+     |Psig_class_type []
+     |Psig_class [] ->
+        false
+
+  let is_simple (itm, c) =
+    match c.Conf.module_item_spacing with
+    | `Compact ->
+        Location.width itm.psig_loc <= c.Conf.margin
+        && Location.is_single_line itm.psig_loc
+    | `Sparse -> (
+      match itm.psig_desc with
+      | Psig_open _ -> true
+      | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
+      | _ -> false )
+
+  let allow_adjacent (itmI, cI) (itmJ, cJ) =
+    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
+    | `Compact, `Compact -> (
+      match (itmI.psig_desc, itmJ.psig_desc) with
+      | Psig_value _, Psig_value _
+       |(Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
+       |Psig_exception _, Psig_exception _
+       |( (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
+        , (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
+        )
+       |Psig_modtype _, Psig_modtype _
+       |Psig_class _, Psig_class _
+       |Psig_class_type _, Psig_class_type _
+       |Psig_attribute _, Psig_attribute _
+       |Psig_extension _, Psig_extension _ ->
+          true
+      | _ -> false )
+    | _ -> true
+end
+
+module type Module_item_spacing = sig
+  type t
+
+  val break_between : t * Conf.t -> t * Conf.t -> bool
+end
+
+module Make_module_item_spacing (M : Module_item) :
+  Module_item_spacing with type t = M.t = struct
+  type t = M.t
+
+  let break_between (i1, c1) (i2, c2) =
+    M.has_doc i1 || M.has_doc i2
+    || (not (M.is_simple (i1, c1)))
+    || (not (M.is_simple (i2, c2)))
+    || not (M.allow_adjacent (i1, c1) (i2, c2))
+end
+
+module Structure_item_spacing :
+  Module_item_spacing with type t = structure_item =
+  Make_module_item_spacing (Structure_item)
+
+module Signature_item_spacing :
+  Module_item_spacing with type t = signature_item =
+  Make_module_item_spacing (Signature_item)
+
 let may_force_break (c : Conf.t) s =
   let contains_internal_newline s =
     match String.index s '\n' with

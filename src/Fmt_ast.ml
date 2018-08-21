@@ -609,25 +609,7 @@ let fmt_variance = function
 let break_cases_level c =
   match c.conf.break_cases with `Fit -> 0 | `Nested -> 1 | `All -> 2
 
-let doc_atrs atrs =
-  let doc, rev_atrs =
-    List.fold atrs ~init:(None, []) ~f:(fun (doc, rev_atrs) atr ->
-        match (doc, atr) with
-        | ( None
-          , ( { txt= ("ocaml.doc" | "ocaml.text") as txt
-              ; loc= {loc_ghost= true} }
-            , PStr
-                [ { pstr_desc=
-                      Pstr_eval
-                        ( { pexp_desc=
-                              Pexp_constant (Pconst_string (doc, None))
-                          ; pexp_loc= loc
-                          ; pexp_attributes= [] }
-                        , [] ) } ] ) ) ->
-            (Some ({txt= doc; loc}, String.equal "ocaml.text" txt), rev_atrs)
-        | _ -> (doc, atr :: rev_atrs) )
-  in
-  (doc, List.rev rev_atrs)
+let doc_atrs = Ast.doc_atrs
 
 let fmt_docstring c ?pro ?epi doc =
   opt doc (fun ({txt; loc}, floating) ->
@@ -3080,42 +3062,8 @@ and fmt_signature c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        let is_simple (itm, c) =
-          match c.conf.module_item_spacing with
-          | `Compact ->
-              Location.width itm.psig_loc <= c.conf.margin
-              && Location.is_single_line itm.psig_loc
-          | `Sparse -> (
-            match itm.psig_desc with
-            | Psig_open _ -> true
-            | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
-            | _ -> false )
-        in
-        let allow_adjacent (itmI, cI) (itmJ, cJ) =
-          match
-            (cI.conf.module_item_spacing, cJ.conf.module_item_spacing)
-          with
-          | `Compact, `Compact -> (
-            match (itmI.psig_desc, itmJ.psig_desc) with
-            | Psig_value _, Psig_value _
-             |(Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
-             |Psig_exception _, Psig_exception _
-             |( ( Psig_module _ | Psig_recmodule _ | Psig_open _
-                | Psig_include _ )
-              , ( Psig_module _ | Psig_recmodule _ | Psig_open _
-                | Psig_include _ ) )
-             |Psig_modtype _, Psig_modtype _
-             |Psig_class _, Psig_class _
-             |Psig_class_type _, Psig_class_type _
-             |Psig_attribute _, Psig_attribute _
-             |Psig_extension _, Psig_extension _ ->
-                true
-            | _ -> false )
-          | _ -> true
-        in
-        (not (is_simple (itmI, cI)))
-        || (not (is_simple (itmJ, cJ)))
-        || not (allow_adjacent (itmI, cI) (itmJ, cJ)) )
+        Ast.Signature_item_spacing.break_between (itmI, cI.conf)
+          (itmJ, cJ.conf) )
   in
   let fmt_grp itms =
     list itms "@\n" (fun (i, c) ->
@@ -3704,81 +3652,8 @@ and fmt_structure c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        let has_doc itm =
-          match itm.pstr_desc with
-          | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
-          | Pstr_eval (_, atrs)
-           |Pstr_value (_, {pvb_attributes= atrs} :: _)
-           |Pstr_primitive {pval_attributes= atrs}
-           |Pstr_type (_, {ptype_attributes= atrs} :: _)
-           |Pstr_typext {ptyext_attributes= atrs}
-           |Pstr_exception {pext_attributes= atrs}
-           |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
-           |Pstr_modtype {pmtd_attributes= atrs}
-           |Pstr_open {popen_attributes= atrs}
-           |Pstr_extension (_, atrs)
-           |Pstr_class_type ({pci_attributes= atrs} :: _)
-           |Pstr_class ({pci_attributes= atrs} :: _) ->
-              Option.is_some (fst (doc_atrs atrs))
-          | Pstr_include
-              {pincl_mod= {pmod_attributes= atrs1}; pincl_attributes= atrs2}
-           |Pstr_module
-              {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2}} ->
-              Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
-          | Pstr_value (_, [])
-           |Pstr_type (_, [])
-           |Pstr_recmodule []
-           |Pstr_class_type []
-           |Pstr_class [] ->
-              false
-        in
-        let rec is_simple_mod me =
-          match me.pmod_desc with
-          | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-          | Pmod_functor (_, _, me) -> is_simple_mod me
-          | Pmod_ident _ -> true
-          | _ -> false
-        in
-        let is_simple (itm, c) =
-          match c.conf.module_item_spacing with
-          | `Compact ->
-              Location.width itm.pstr_loc <= c.conf.margin
-              && Location.is_single_line itm.pstr_loc
-          | `Sparse -> (
-            match itm.pstr_desc with
-            | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
-                is_simple_mod me
-            | Pstr_open _ -> true
-            | _ -> false )
-        in
-        let allow_adjacent (itmI, cI) (itmJ, cJ) =
-          match
-            (cI.conf.module_item_spacing, cJ.conf.module_item_spacing)
-          with
-          | `Compact, `Compact -> (
-            match (itmI.pstr_desc, itmJ.pstr_desc) with
-            | Pstr_eval _, Pstr_eval _
-             |Pstr_value _, Pstr_value _
-             |Pstr_primitive _, Pstr_primitive _
-             |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
-             |Pstr_exception _, Pstr_exception _
-             |( ( Pstr_module _ | Pstr_recmodule _ | Pstr_open _
-                | Pstr_include _ )
-              , ( Pstr_module _ | Pstr_recmodule _ | Pstr_open _
-                | Pstr_include _ ) )
-             |Pstr_modtype _, Pstr_modtype _
-             |Pstr_class _, Pstr_class _
-             |Pstr_class_type _, Pstr_class_type _
-             |Pstr_attribute _, Pstr_attribute _
-             |Pstr_extension _, Pstr_extension _ ->
-                true
-            | _ -> false )
-          | _ -> true
-        in
-        has_doc itmI || has_doc itmJ
-        || (not (is_simple (itmI, cI)))
-        || (not (is_simple (itmJ, cJ)))
-        || not (allow_adjacent (itmI, cI) (itmJ, cJ)) )
+        Ast.Structure_item_spacing.break_between (itmI, cI.conf)
+          (itmJ, cJ.conf) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->

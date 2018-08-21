@@ -43,6 +43,23 @@ val is_symbol : expression -> bool
 val is_sugared_list : expression -> bool
 (** Holds of expressions that can be sugared into [[e1; ...; eN]] form. *)
 
+val doc_atrs :
+     (string Location.loc * payload) list
+  -> (string Location.loc * bool) option
+     * (string Location.loc * payload) list
+
+module type Module_item_spacing = sig
+  type t
+
+  val break_between : t * Conf.t -> t * Conf.t -> bool
+end
+
+module Structure_item_spacing :
+  Module_item_spacing with type t = structure_item
+
+module Signature_item_spacing :
+  Module_item_spacing with type t = signature_item
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload
