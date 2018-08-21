@@ -43,6 +43,11 @@ val is_symbol : expression -> bool
 val is_sugared_list : expression -> bool
 (** Holds of expressions that can be sugared into [[e1; ...; eN]] form. *)
 
+val doc_atrs :
+     (string Location.loc * payload) list
+  -> (string Location.loc * bool) option
+     * (string Location.loc * payload) list
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload
@@ -56,6 +61,8 @@ type t =
   | Sig of signature_item
   | Str of structure_item
   | Top
+
+val break_between : t * Conf.t -> t * Conf.t -> bool
 
 val dump : Format.formatter -> t -> unit
 (** Debug: Dump the representation of an Ast term. *)

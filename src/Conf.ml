@@ -30,6 +30,7 @@ type t =
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
+  ; module_item_spacing: [`Compact | `Sparse]
   ; ocp_indent_compat: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
@@ -478,6 +479,22 @@ module Formatting = struct
     C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~env
       ~allow_inline:false ~update:(fun conf x -> {conf with margin= x} )
 
+  let module_item_spacing =
+    let doc = "Spacing between items of structures and signatures." in
+    let env = Arg.env_var "OCAMLFORMAT_MODULE_ITEM_SPACING" in
+    let names = ["module-item-spacing"] in
+    let all =
+      [ ( "sparse"
+        , `Sparse
+        , "$(b,sparse) will always break a line between two items." )
+      ; ( "compact"
+        , `Compact
+        , "$(b,compact) will not leave open lines between one-liners of \
+           similar sorts." ) ]
+    in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with module_item_spacing= x} )
+
   let ocp_indent_compat =
     let doc =
       "Attempt to generate output which does not change (much) when \
@@ -764,6 +781,7 @@ let config =
   ; let_open= C.get Formatting.let_open
   ; margin= C.get Formatting.margin
   ; max_iters= C.get max_iters
+  ; module_item_spacing= C.get Formatting.module_item_spacing
   ; ocp_indent_compat= C.get Formatting.ocp_indent_compat
   ; parens_tuple= C.get Formatting.parens_tuple
   ; quiet= C.get quiet

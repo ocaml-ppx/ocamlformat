@@ -609,25 +609,7 @@ let fmt_variance = function
 let break_cases_level c =
   match c.conf.break_cases with `Fit -> 0 | `Nested -> 1 | `All -> 2
 
-let doc_atrs atrs =
-  let doc, rev_atrs =
-    List.fold atrs ~init:(None, []) ~f:(fun (doc, rev_atrs) atr ->
-        match (doc, atr) with
-        | ( None
-          , ( { txt= ("ocaml.doc" | "ocaml.text") as txt
-              ; loc= {loc_ghost= true} }
-            , PStr
-                [ { pstr_desc=
-                      Pstr_eval
-                        ( { pexp_desc=
-                              Pexp_constant (Pconst_string (doc, None))
-                          ; pexp_loc= loc
-                          ; pexp_attributes= [] }
-                        , [] ) } ] ) ) ->
-            (Some ({txt= doc; loc}, String.equal "ocaml.text" txt), rev_atrs)
-        | _ -> (doc, atr :: rev_atrs) )
-  in
-  (doc, List.rev rev_atrs)
+let doc_atrs = Ast.doc_atrs
 
 let fmt_docstring c ?pro ?epi doc =
   opt doc (fun ({txt; loc}, floating) ->
@@ -3074,14 +3056,8 @@ and fmt_signature c ctx itms =
         (c, (i, c)) )
   in
   let grps =
-    List.group itms ~break:(fun (itmI, _) (itmJ, _) ->
-        let is_simple itm =
-          match itm.psig_desc with
-          | Psig_open _ -> true
-          | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
-          | _ -> false
-        in
-        (not (is_simple itmI)) || not (is_simple itmJ) )
+    List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
+        Ast.break_between (Sig itmI, cI.conf) (Sig itmJ, cJ.conf) )
   in
   let fmt_grp itms =
     list itms "@\n" (fun (i, c) ->
@@ -3669,52 +3645,8 @@ and fmt_structure c ctx itms =
         (c, (i, c)) )
   in
   let grps =
-    List.group itms ~break:(fun (itmI, _) (itmJ, _) ->
-        let has_doc itm =
-          match itm.pstr_desc with
-          | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
-          | Pstr_eval (_, atrs)
-           |Pstr_value (_, {pvb_attributes= atrs} :: _)
-           |Pstr_primitive {pval_attributes= atrs}
-           |Pstr_type (_, {ptype_attributes= atrs} :: _)
-           |Pstr_typext {ptyext_attributes= atrs}
-           |Pstr_exception {pext_attributes= atrs}
-           |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
-           |Pstr_modtype {pmtd_attributes= atrs}
-           |Pstr_open {popen_attributes= atrs}
-           |Pstr_extension (_, atrs)
-           |Pstr_class_type ({pci_attributes= atrs} :: _)
-           |Pstr_class ({pci_attributes= atrs} :: _) ->
-              Option.is_some (fst (doc_atrs atrs))
-          | Pstr_include
-              {pincl_mod= {pmod_attributes= atrs1}; pincl_attributes= atrs2}
-           |Pstr_module
-              {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2}} ->
-              Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
-          | Pstr_value (_, [])
-           |Pstr_type (_, [])
-           |Pstr_recmodule []
-           |Pstr_class_type []
-           |Pstr_class [] ->
-              false
-        in
-        let rec is_simple_mod me =
-          match me.pmod_desc with
-          | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-          | Pmod_functor (_, _, me) -> is_simple_mod me
-          | Pmod_ident _ -> true
-          | _ -> false
-        in
-        let is_simple itm =
-          match itm.pstr_desc with
-          | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
-              is_simple_mod me
-          | Pstr_open _ -> true
-          | _ -> false
-        in
-        has_doc itmI || has_doc itmJ
-        || (not (is_simple itmI))
-        || not (is_simple itmJ) )
+    List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
+        Ast.break_between (Str itmI, cI.conf) (Str itmJ, cJ.conf) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
