@@ -3546,10 +3546,14 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( before
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt "struct" $ fmt_if empty " " )
-      ; psp= fmt_if (not empty) "@;<1000 2>"
+      ; psp=
+          fmt_if_k (not empty)
+            (fmt_or c.conf.break_struct "@;<1000 2>" "@;<1 2>")
       ; bdy= within $ fmt_structure c ctx sis
       ; cls= close_box
-      ; esp= fmt_if (not empty) "@;<1000 0>"
+      ; esp=
+          fmt_if_k (not empty)
+            (fmt_or c.conf.break_struct "@;<1000 0>" "@;<1 0>")
       ; epi=
           Some
             ( fmt "end" $ after
