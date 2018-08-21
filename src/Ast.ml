@@ -1887,6 +1887,7 @@ end = struct
     assert (check_cl xcl ; true) ;
     match xcl with _ -> (
       match ambig_prec (sub_ast ~ctx (Cl cl)) with
+      | None -> false
       | Some (Some true) -> true
       | _ -> exposed_right_cl Non_apply cl )
 

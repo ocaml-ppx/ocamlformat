@@ -133,7 +133,7 @@ and[@warning "-32"] f = ()
 
 external x : a -> b -> (a -> b[@test]) = ""
 
-let f = fun [@test] x -> fun y -> ()
+let f = fun [@test] x y -> ()
 
 let f y = fun [@test] y -> ()
 
@@ -147,3 +147,5 @@ module type T = sig
          inherit mapper
        end[@attr]
 end
+
+let _ = fun [@inlined always] x y -> z

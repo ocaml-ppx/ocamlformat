@@ -173,81 +173,62 @@ type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list
 
-let sugar_fun c pat xexp =
-  let rec sugar_fun_ ?(relocate = true) ({ast= exp} as xexp) =
+let sugar_fun c ?(will_keep_first_ast_node = true) xexp =
+  let rec sugar_fun_ ?(will_keep_first_ast_node = false) ({ast= exp} as xexp)
+      =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc; pexp_attributes} = exp in
-    match pexp_desc with
-    | Pexp_fun (label, default, pattern, body) ->
-        if relocate then
-          Cmts.relocate c.cmts ~src:pexp_loc ~before:pattern.ppat_loc
-            ~after:body.pexp_loc ;
-        let xargs, xbody =
-          match (pexp_attributes, body.pexp_attributes) with
-          | [], [] -> sugar_fun_ (sub_exp ~ctx body)
-          | _ -> ([], sub_exp ~ctx body)
-        in
-        ( Val
-            ( label
-            , sub_pat ~ctx pattern
-            , Option.map default ~f:(sub_exp ~ctx) )
-          :: xargs
-        , xbody )
-    | Pexp_newtype (name, body) ->
-        if relocate then
-          Cmts.relocate c.cmts ~src:pexp_loc ~before:body.pexp_loc
-            ~after:body.pexp_loc ;
-        let xargs, xbody =
-          match (pexp_attributes, body.pexp_attributes) with
-          | [], [] -> sugar_fun_ (sub_exp ~ctx body)
-          | _ -> ([], sub_exp ~ctx body)
-        in
-        let xargs =
-          match xargs with
-          | Newtypes names :: xargs -> Newtypes (name :: names) :: xargs
-          | xargs -> Newtypes [name] :: xargs
-        in
-        (xargs, xbody)
-    | _ -> ([], xexp)
+    if will_keep_first_ast_node || List.is_empty pexp_attributes then
+      match pexp_desc with
+      | Pexp_fun (label, default, pattern, body) ->
+          if not will_keep_first_ast_node then
+            Cmts.relocate c.cmts ~src:pexp_loc ~before:pattern.ppat_loc
+              ~after:body.pexp_loc ;
+          let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
+          ( Val
+              ( label
+              , sub_pat ~ctx pattern
+              , Option.map default ~f:(sub_exp ~ctx) )
+            :: xargs
+          , xbody )
+      | Pexp_newtype (name, body) ->
+          if not will_keep_first_ast_node then
+            Cmts.relocate c.cmts ~src:pexp_loc ~before:body.pexp_loc
+              ~after:body.pexp_loc ;
+          let xargs, xbody = sugar_fun_ (sub_exp ~ctx body) in
+          let xargs =
+            match xargs with
+            | Newtypes names :: xargs -> Newtypes (name :: names) :: xargs
+            | xargs -> Newtypes [name] :: xargs
+          in
+          (xargs, xbody)
+      | _ -> ([], xexp)
+    else ([], xexp)
   in
-  match pat with
-  | Some {ppat_desc= Ppat_any | Ppat_constraint _ | Ppat_constant _} ->
-      ([], xexp)
-  | Some {ppat_attributes} when not (List.is_empty ppat_attributes) ->
-      ([], xexp)
-  | Some _ ->
-      if List.is_empty xexp.ast.pexp_attributes then
-        sugar_fun_ ~relocate:true xexp
-      else ([], xexp)
-  | None -> sugar_fun_ ~relocate:false xexp
+  sugar_fun_ ~will_keep_first_ast_node xexp
 
-let sugar_cl_fun c pat xexp =
-  let rec sugar_fun_ ?(relocate = true) ({ast= exp} as xexp) =
+let sugar_cl_fun c xexp =
+  let rec sugar_fun_ ?(will_keep_first_ast_node = false) ({ast= exp} as xexp)
+      =
     let ctx = Cl exp in
     let {pcl_desc; pcl_loc; pcl_attributes} = exp in
-    match pcl_desc with
-    | Pcl_fun (label, default, pattern, body) ->
-        if relocate then
-          Cmts.relocate c.cmts ~src:pcl_loc ~before:pattern.ppat_loc
-            ~after:body.pcl_loc ;
-        let xargs, xbody =
-          match (pcl_attributes, body.pcl_attributes) with
-          | [], [] -> sugar_fun_ (sub_cl ~ctx body)
-          | _ -> ([], sub_cl ~ctx body)
-        in
-        ( Val
-            ( label
-            , sub_pat ~ctx pattern
-            , Option.map default ~f:(sub_exp ~ctx) )
-          :: xargs
-        , xbody )
-    | _ -> ([], xexp)
+    if will_keep_first_ast_node || List.is_empty pcl_attributes then
+      match pcl_desc with
+      | Pcl_fun (label, default, pattern, body) ->
+          if not will_keep_first_ast_node then
+            Cmts.relocate c.cmts ~src:pcl_loc ~before:pattern.ppat_loc
+              ~after:body.pcl_loc ;
+          let xargs, xbody = sugar_fun_ (sub_cl ~ctx body) in
+          ( Val
+              ( label
+              , sub_pat ~ctx pattern
+              , Option.map default ~f:(sub_exp ~ctx) )
+            :: xargs
+          , xbody )
+      | _ -> ([], xexp)
+    else ([], xexp)
   in
-  match pat with
-  | Some {ppat_desc= Ppat_any | Ppat_constraint _} -> ([], xexp)
-  | Some {ppat_attributes= []} -> sugar_fun_ ~relocate:true xexp
-  | None -> sugar_fun_ ~relocate:false xexp
-  | _ -> ([], xexp)
+  sugar_fun_ ~will_keep_first_ast_node:true xexp
 
 let sugar_infix c prec xexp =
   let assoc = Option.value_map prec ~default:Non ~f:assoc_of_prec in
@@ -1367,9 +1348,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                             (({pexp_desc= Pexp_fun _; _} as call_fun), []); _
                       } as pld ) ] ) }
       , e2 ) ->
-      let xargs, xbody =
-        sugar_fun c None (sub_exp ~ctx:(Str pld) call_fun)
-      in
+      let xargs, xbody = sugar_fun c (sub_exp ~ctx:(Str pld) call_fun) in
       hvbox 0
         (wrap_if parens "(" ")"
            ( hvbox 2
@@ -1399,9 +1378,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                               Pstr_eval
                                 ( ({pexp_desc= Pexp_fun _; _} as retn_fun)
                                 , [] ); _ } as pld ) ] ) } ) ] ) ->
-      let xargs, xbody =
-        sugar_fun c None (sub_exp ~ctx:(Str pld) retn_fun)
-      in
+      let xargs, xbody = sugar_fun c (sub_exp ~ctx:(Str pld) retn_fun) in
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
            ( fmt_expression c (sub_exp ~ctx e0)
@@ -1519,7 +1496,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
           let e1N = List.rev rev_e1N in
           (* side effects of Cmts.fmt c.cmts before sugar_fun is important *)
           let fmt_cmts = Cmts.fmt c.cmts pexp_loc in
-          let xargs, xbody = sugar_fun c None (sub_exp ~ctx eN1) in
+          let xargs, xbody = sugar_fun c (sub_exp ~ctx eN1) in
           hvbox 0
             ( wrap_if parens "(" ")"
                 (hovbox 0
@@ -1695,7 +1672,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             $ fmt "@,." $ fmt_longident_loc c lid )
         $ fmt_atrs )
   | Pexp_newtype _ | Pexp_fun _ ->
-      let xargs, xbody = sugar_fun c None xexp in
+      let xargs, xbody = sugar_fun c xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -2371,23 +2348,25 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   in
   let fmt_cmts = Cmts.fmt c.cmts ?eol pcl_loc in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@" pcl_attributes in
-  ( hvbox_if box 0 @@ fmt_cmts
+  hvbox_if box 0 @@ fmt_cmts
   @@
   match pcl_desc with
   | Pcl_constr ({txt; loc}, params) ->
       let params = List.map params ~f:(fun x -> (x, Invariant)) in
       Cmts.fmt c.cmts loc @@ fmt_class_params c ctx ~epi:(fmt "@ ") params
-      $ fmt_longident txt
+      $ fmt_longident txt $ fmt_atrs
   | Pcl_structure {pcstr_fields; pcstr_self} ->
       fmt_class_structure c ~ctx ~parens ?ext:None pcstr_self pcstr_fields
-  | Pcl_fun (_, _, p, _) ->
-      let xargs, xbody = sugar_cl_fun c (Some p) xexp in
+      $ fmt_atrs
+  | Pcl_fun _ ->
+      let xargs, xbody = sugar_cl_fun c xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
         $ ( open_hovbox 2
           $ ( hovbox 4
                 ( fmt "fun "
+                $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(fmt " ")
                 $ hvbox_if
                     (not c.conf.wrap_fun_args)
                     0 (fmt_fun_args c xargs)
@@ -2429,8 +2408,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
         $ fmt_if Poly.(flag = Override) "!"
         $ str " " $ fmt_longident_loc c lid $ fmt " in@;<1000 0>"
         $ fmt_class_expr c (sub_cl ~ctx cl)
-        $ fmt_atrs ) )
-  $ fmt_atrs
+        $ fmt_atrs )
 
 and fmt_class_field c ctx (cf : class_field) =
   let {pcf_desc; pcf_loc; pcf_attributes} = cf in
@@ -2473,7 +2451,7 @@ and fmt_class_field c ctx (cf : class_field) =
     | Cfk_concrete (_, {pexp_desc= Pexp_poly (e, poly)}) ->
         let xargs, xbody =
           match poly with
-          | None -> sugar_fun c None (sub_exp ~ctx e)
+          | None -> sugar_fun c (sub_exp ~ctx e)
           | Some _ -> ([], sub_exp ~ctx e)
         in
         let ty, e =
@@ -3165,7 +3143,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
       @@ fun c ->
       let xargs, xbody =
         match pci_expr.pcl_attributes with
-        | [] -> sugar_cl_fun c None (sub_cl ~ctx pci_expr)
+        | [] -> sugar_cl_fun c (sub_cl ~ctx pci_expr)
         | _ -> ([], sub_cl ~ctx pci_expr)
       in
       let ty, e =
@@ -3804,7 +3782,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             | _ -> xpat
           in
           let xargs, ({ast= body} as xbody) =
-            sugar_fun c (Some pat) xbody
+            match pat with
+            | {ppat_desc= Ppat_var _; ppat_attributes= []; _} ->
+                sugar_fun c ~will_keep_first_ast_node:false xbody
+            | _ -> ([], xbody)
           in
           let fmt_cstr, xbody =
             let ctx = Exp body in
