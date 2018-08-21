@@ -3062,8 +3062,7 @@ and fmt_signature c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        Ast.Signature_item_spacing.break_between (itmI, cI.conf)
-          (itmJ, cJ.conf) )
+        Ast.break_between (Sig itmI, cI.conf) (Sig itmJ, cJ.conf) )
   in
   let fmt_grp itms =
     list itms "@\n" (fun (i, c) ->
@@ -3652,8 +3651,7 @@ and fmt_structure c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        Ast.Structure_item_spacing.break_between (itmI, cI.conf)
-          (itmJ, cJ.conf) )
+        Ast.break_between (Str itmI, cI.conf) (Str itmJ, cJ.conf) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->

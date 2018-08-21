@@ -140,11 +140,7 @@ let doc_atrs atrs =
 module type Module_item = sig
   type t
 
-  val has_doc : t -> bool
-
-  val is_simple : t * Conf.t -> bool
-
-  val allow_adjacent : t * Conf.t -> t * Conf.t -> bool
+  val break_between : t * Conf.t -> t * Conf.t -> bool
 end
 
 module Structure_item : Module_item with type t = structure_item = struct
@@ -188,7 +184,8 @@ module Structure_item : Module_item with type t = structure_item = struct
       | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
           let rec is_simple_mod me =
             match me.pmod_desc with
-            | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
+            | Pmod_apply (me1, me2) ->
+                is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, _, me) -> is_simple_mod me
             | Pmod_ident _ -> true
             | _ -> false
@@ -217,6 +214,12 @@ module Structure_item : Module_item with type t = structure_item = struct
           true
       | _ -> false )
     | _ -> true
+
+  let break_between (i1, c1) (i2, c2) =
+    has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || (not (is_simple (i2, c2)))
+    || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
 module Signature_item : Module_item with type t = signature_item = struct
@@ -277,32 +280,13 @@ module Signature_item : Module_item with type t = signature_item = struct
           true
       | _ -> false )
     | _ -> true
-end
-
-module type Module_item_spacing = sig
-  type t
-
-  val break_between : t * Conf.t -> t * Conf.t -> bool
-end
-
-module Make_module_item_spacing (M : Module_item) :
-  Module_item_spacing with type t = M.t = struct
-  type t = M.t
 
   let break_between (i1, c1) (i2, c2) =
-    M.has_doc i1 || M.has_doc i2
-    || (not (M.is_simple (i1, c1)))
-    || (not (M.is_simple (i2, c2)))
-    || not (M.allow_adjacent (i1, c1) (i2, c2))
+    has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || (not (is_simple (i2, c2)))
+    || not (allow_adjacent (i1, c1) (i2, c2))
 end
-
-module Structure_item_spacing :
-  Module_item_spacing with type t = structure_item =
-  Make_module_item_spacing (Structure_item)
-
-module Signature_item_spacing :
-  Module_item_spacing with type t = signature_item =
-  Make_module_item_spacing (Signature_item)
 
 let may_force_break (c : Conf.t) s =
   let contains_internal_newline s =
@@ -436,6 +420,12 @@ module T = struct
 end
 
 include T
+
+let break_between (i1, c1) (i2, c2) =
+  match (i1, i2) with
+  | Str i1, Str i2 -> Structure_item.break_between (i1, c1) (i2, c2)
+  | Sig i1, Sig i2 -> Signature_item.break_between (i1, c1) (i2, c2)
+  | _ -> assert false
 
 (** Precedence levels of Ast terms. *)
 type prec =
