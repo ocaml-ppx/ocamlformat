@@ -524,7 +524,10 @@ module Formatting = struct
         , `Sparse
         , "$(b,sparse) will always break a line between two structure items."
         )
-      ; ("compact", `Compact, "$(b,compact) will not.") ]
+      ; ( "compact"
+        , `Compact
+        , "$(b,compact) will not leave open lines between one-liners of \
+           similar sorts." ) ]
     in
     C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
         {conf with structure_item_grouping= x} )
