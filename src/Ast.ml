@@ -1423,7 +1423,7 @@ end = struct
   (** Check if an exp is an infix op that is not fully applied *)
   let is_displaced_infix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, (Nolabel, _) :: (Nolabel, _) :: _)}
+    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _); (Nolabel, _)])}
       , Pexp_ident {txt= Lident i} )
       when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes
       ->
