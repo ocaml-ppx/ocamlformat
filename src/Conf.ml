@@ -146,30 +146,32 @@ end = struct
 
   let store = ref []
 
-  let in_attributes cond =
-    if cond then "" else "Cannot be set in attributes."
+  let in_attributes ~section cond =
+    if cond || Poly.(section = `Operational) then ""
+    else "Cannot be set in attributes."
 
-  let generated_choice_doc ~allow_inline ~all ~doc =
+  let generated_choice_doc ~allow_inline ~all ~doc ~section =
     let each_opt =
       let f acc (_, _, d) = Format.sprintf "%s@,%s" acc d in
       List.fold all ~init:"" ~f
     in
-    Format.sprintf "%s %s %s" doc each_opt (in_attributes allow_inline)
+    Format.sprintf "%s %s %s" doc each_opt
+      (in_attributes ~section allow_inline)
 
-  let generated_flag_doc ~allow_inline ~doc =
-    Format.sprintf "%s %s" doc (in_attributes allow_inline)
+  let generated_flag_doc ~allow_inline ~doc ~section =
+    Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
 
-  let generated_int_doc ~allow_inline ~doc =
-    Format.sprintf "%s %s" doc (in_attributes allow_inline)
+  let generated_int_doc ~allow_inline ~doc ~section =
+    Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
 
   let section_name = function
-    | `Formatting -> Cmdliner.Manpage.s_options ^ " (FORMATTING)"
-    | `Operational -> Cmdliner.Manpage.s_options ^ " (OPERATIONAL)"
+    | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
+    | `Operational -> Cmdliner.Manpage.s_options
 
   let choice ~all ~names ~update ~env ~doc ~allow_inline ~section =
     let open Cmdliner in
     let _, default, _ = List.hd_exn all in
-    let doc = generated_choice_doc ~allow_inline ~all ~doc in
+    let doc = generated_choice_doc ~allow_inline ~all ~doc ~section in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let docs = section_name section in
     let term =
@@ -202,7 +204,7 @@ end = struct
             if String.length n = 1 then None else Some ("no-" ^ n) )
       else names
     in
-    let doc = generated_flag_doc ~allow_inline ~doc in
+    let doc = generated_flag_doc ~allow_inline ~doc ~section in
     let docs = section_name section in
     let term =
       Arg.(value & flag & info names_for_cmdline ~doc ~docs ~env)
@@ -216,7 +218,7 @@ end = struct
 
   let int ~default ~docv ~names ~update ~env ~doc ~allow_inline ~section =
     let open Cmdliner in
-    let doc = generated_int_doc ~allow_inline ~doc in
+    let doc = generated_int_doc ~allow_inline ~doc ~section in
     let docs = section_name section in
     let term =
       Arg.(value & opt int default & info names ~doc ~docs ~docv ~env)
@@ -248,12 +250,12 @@ let info =
   let man =
     [ `S Cmdliner.Manpage.s_description
     ; `P "$(tname) automatically formats OCaml code."
-    ; `S (C.section_name `Operational)
+    ; `S (C.section_name `Formatting)
     ; `P
-        "Unless otherwise noted, any option $(b,--option)=$(b,value) can \
-         be set in a configuration file with an '$(b,option) = $(b,value)' \
-         line, or with an $(b,ocamlformat) \"$(b,option)=$(b,value)\" \
-         attribute." ]
+        "Unless otherwise noted, any option $(b,--option)=$(b,value) \
+         detailed in this section can be set in a configuration file with \
+         an '$(b,option) = $(b,value)' line, or with an $(b,ocamlformat) \
+         \"$(b,option)=$(b,value)\" attribute." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -634,7 +636,7 @@ let max_iters =
     ~allow_inline:false ~update:(fun conf x -> {conf with max_iters= x} )
 
 let quiet =
-  let doc = "Quiet" in
+  let doc = "Quiet." in
   let env = Arg.env_var "OCAMLFORMAT_QUIET" in
   C.flag ~default:false ~names:["q"; "quiet"] ~doc ~env ~allow_inline:false
     ~update:(fun conf x -> {conf with quiet= x})
