@@ -179,6 +179,14 @@ function."
 	  ok))
     nil))
 
+(defun ocamlformat--patch-buffer (outputfile)
+  (let ((patchbuf (get-buffer-create "*OCamlFormat patch*")))
+    (with-current-buffer patchbuf (erase-buffer))
+    (call-process-region
+     (point-min) (point-max) "diff" nil patchbuf nil "-n" "-" outputfile)
+    (ocamlformat--apply-rcs-patch patchbuf)
+    (kill-buffer patchbuf)))
+
 (defun ocamlformat ()
    "Format the current buffer according to the ocamlformat tool."
    (interactive)
@@ -192,7 +200,6 @@ function."
                 (get-buffer-create "*compilation*"))
               ((eq ocamlformat-show-errors 'echo)
                 (get-buffer-create "*OCamlFormat stderr*"))))
-          (patchbuf (get-buffer-create "*OCamlFormat patch*"))
           (coding-system-for-read 'utf-8)
           (coding-system-for-write 'utf-8)
           (margin-args
@@ -207,8 +214,6 @@ function."
          (save-restriction
            (widen)
            (write-region nil nil bufferfile)
-           (with-current-buffer patchbuf
-             (erase-buffer))
            (if (zerop
                  (apply 'call-process
                    ocamlformat-command nil (list :file errorfile) nil
@@ -217,13 +222,9 @@ function."
                        "--name" buffer-file-name
                        "--output" outputfile bufferfile))))
              (progn
-               (if (ocamlformat--support-replace-buffer-contents)
+               (if ocamlformat--support-replace-buffer-contents
 		   (replace-buffer-contents (find-file-noselect outputfile))
-		 (progn
-		   (call-process-region
-		    (point-min) (point-max) "diff" nil patchbuf nil "-n" "-"
-		    outputfile)
-		   (ocamlformat--apply-rcs-patch patchbuf)))
+		 (ocamlformat--patch-buffer outputfile))
                (message "Applied ocamlformat"))
              (if errbuf
                (progn
@@ -233,7 +234,6 @@ function."
                  (ocamlformat--process-errors
                    (buffer-file-name) bufferfile errorfile errbuf)))
              (message "Could not apply ocamlformat"))))
-     (kill-buffer patchbuf)
      (delete-file errorfile)
      (delete-file bufferfile)
      (delete-file outputfile)))
