@@ -14,8 +14,8 @@ depends: [
   "base-unix"
   "cmdliner"
   "dune" {build}
-  "ocaml-migrate-parsetree" {>= "1.0.10"}
   "ocamlformat_support" {>= "0.4" & < "0.5"}
+  "ppxlib" {>= "0.3.0"}
   "stdio"
 ]
 available: [ ocaml-version >= "4.04.1" ]

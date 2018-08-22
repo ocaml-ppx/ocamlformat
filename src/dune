@@ -18,7 +18,7 @@ let preprocess =
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
  %s
- (libraries cmdliner ocamlformat_support import ocaml-migrate-parsetree unix))
+ (libraries cmdliner ocamlformat_support import ppxlib.ast unix))
 
 (install
  (section bin)
