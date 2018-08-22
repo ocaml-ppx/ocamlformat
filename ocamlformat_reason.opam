@@ -15,7 +15,6 @@ depends: [
   "cmdliner"
   "dune" {build}
   "ocaml-migrate-parsetree" {>= "1.0.6"}
-  "ocamlformat_support"
   "reason" {= "1.13.4"}
   "stdio"
   "lwt" {< "3.1.0"} (* ocamlformat does not need lwt, but reason requires utop requires lwt, so exclude 3.1.0 since it does not build *)
