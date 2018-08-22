@@ -99,7 +99,10 @@ module C : sig
     -> env:Term.env_info
     -> doc:string
     -> allow_inline:bool
+    -> section:[`Formatting | `Operational]
     -> 'a t
+
+  val section_name : [`Formatting | `Operational] -> string
 
   val choice : all:(string * 'a * string) list -> 'a option_decl
 
@@ -136,35 +139,44 @@ end = struct
     -> env:Term.env_info
     -> doc:string
     -> allow_inline:bool
+    -> section:[`Formatting | `Operational]
     -> 'a t
 
   type pack = Pack : 'a t -> pack
 
   let store = ref []
 
-  let in_attributes cond =
-    if cond then "" else "Cannot be set in attributes."
+  let in_attributes ~section cond =
+    if cond || Poly.(section = `Operational) then ""
+    else "Cannot be set in attributes."
 
-  let generated_choice_doc ~allow_inline ~all ~doc =
+  let generated_choice_doc ~allow_inline ~all ~doc ~section =
     let each_opt =
       let f acc (_, _, d) = Format.sprintf "%s@,%s" acc d in
       List.fold all ~init:"" ~f
     in
-    Format.sprintf "%s %s %s" doc each_opt (in_attributes allow_inline)
+    Format.sprintf "%s %s %s" doc each_opt
+      (in_attributes ~section allow_inline)
 
-  let generated_flag_doc ~allow_inline ~doc =
-    Format.sprintf "%s %s" doc (in_attributes allow_inline)
+  let generated_flag_doc ~allow_inline ~doc ~section =
+    Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
 
-  let generated_int_doc ~allow_inline ~doc =
-    Format.sprintf "%s %s" doc (in_attributes allow_inline)
+  let generated_int_doc ~allow_inline ~doc ~section =
+    Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
 
-  let choice ~all ~names ~update ~env ~doc ~allow_inline =
+  let section_name = function
+    | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
+    | `Operational -> Cmdliner.Manpage.s_options
+
+  let choice ~all ~names ~update ~env ~doc ~allow_inline ~section =
     let open Cmdliner in
     let _, default, _ = List.hd_exn all in
-    let doc = generated_choice_doc ~allow_inline ~all ~doc in
+    let doc = generated_choice_doc ~allow_inline ~all ~doc ~section in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
+    let docs = section_name section in
     let term =
-      Arg.(value & opt (enum opt_names) default & info names ~doc ~env)
+      Arg.(
+        value & opt (enum opt_names) default & info names ~doc ~docs ~env)
     in
     let parse s =
       match
@@ -183,7 +195,7 @@ end = struct
     store := Pack opt :: !store ;
     opt
 
-  let flag ~default ~names ~update ~env ~doc ~allow_inline =
+  let flag ~default ~names ~update ~env ~doc ~allow_inline ~section =
     let open Cmdliner in
     let invert_flag = default in
     let names_for_cmdline =
@@ -192,8 +204,11 @@ end = struct
             if String.length n = 1 then None else Some ("no-" ^ n) )
       else names
     in
-    let doc = generated_flag_doc ~allow_inline ~doc in
-    let term = Arg.(value & flag & info names_for_cmdline ~doc ~env) in
+    let doc = generated_flag_doc ~allow_inline ~doc ~section in
+    let docs = section_name section in
+    let term =
+      Arg.(value & flag & info names_for_cmdline ~doc ~docs ~env)
+    in
     let parse = Bool.of_string in
     let r = mk ~default term in
     let get () = if invert_flag then not !r else !r in
@@ -201,10 +216,13 @@ end = struct
     store := Pack opt :: !store ;
     opt
 
-  let int ~default ~docv ~names ~update ~env ~doc ~allow_inline =
+  let int ~default ~docv ~names ~update ~env ~doc ~allow_inline ~section =
     let open Cmdliner in
-    let doc = generated_int_doc ~allow_inline ~doc in
-    let term = Arg.(value & opt int default & info names ~doc ~docv ~env) in
+    let doc = generated_int_doc ~allow_inline ~doc ~section in
+    let docs = section_name section in
+    let term =
+      Arg.(value & opt int default & info names ~doc ~docs ~docv ~env)
+    in
     let parse = Int.of_string in
     let r = mk ~default term in
     let get () = !r in
@@ -232,17 +250,19 @@ let info =
   let man =
     [ `S Cmdliner.Manpage.s_description
     ; `P "$(tname) automatically formats OCaml code."
-    ; `S Cmdliner.Manpage.s_options
+    ; `S (C.section_name `Formatting)
     ; `P
-        "Unless otherwise noted, any option $(b,--option)=$(b,value) can \
-         be set in a configuration file with an '$(b,option) = $(b,value)' \
-         line, or with an $(b,ocamlformat) \"$(b,option)=$(b,value)\" \
-         attribute." ]
+        "Unless otherwise noted, any option $(b,--option)=$(b,value) \
+         detailed in this section can be set in a configuration file with \
+         an '$(b,option) = $(b,value)' line, or with an $(b,ocamlformat) \
+         \"$(b,option)=$(b,value)\" attribute." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
 (** Options affecting formatting *)
 module Formatting = struct
+  let section = `Formatting
+
   let break_cases =
     let doc = "Break pattern match cases." in
     let env = Arg.env_var "OCAMLFORMAT_BREAK_CASES" in
@@ -260,8 +280,9 @@ module Formatting = struct
         , `All
         , "$(b,all) forces all pattern matches to break across lines." ) ]
     in
-    C.choice ~names ~all ~doc ~env ~allow_inline:true ~update:(fun conf x ->
-        {conf with break_cases= x} )
+    C.choice ~names ~all ~doc ~env ~allow_inline:true
+      ~update:(fun conf x -> {conf with break_cases= x})
+      ~section
 
   let break_infix =
     let doc = "Break sequence of infix operators." in
@@ -277,8 +298,9 @@ module Formatting = struct
         , "$(b,fit-or-vertical) vertically breaks expression if they do \
            not fit on a single line." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with break_infix= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with break_infix= x})
+      ~section
 
   let break_string_literals =
     let doc = "Break string literals." in
@@ -297,8 +319,9 @@ module Formatting = struct
         , "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with break_string_literals= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with break_string_literals= x})
+      ~section
 
   let disable =
     let doc =
@@ -308,7 +331,8 @@ module Formatting = struct
     in
     let env = Arg.env_var "OCAMLFORMAT_DISABLE" in
     C.flag ~names:["disable"] ~default:false ~doc ~env ~allow_inline:true
-      ~update:(fun conf x -> {conf with disable= x} )
+      ~update:(fun conf x -> {conf with disable= x})
+      ~section
 
   let doc_comments =
     let doc = "Doc comments position." in
@@ -322,8 +346,9 @@ module Formatting = struct
         , `Before
         , "$(b,before) puts comments before the corresponding code." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with doc_comments= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with doc_comments= x})
+      ~section
 
   let escape_chars =
     let doc = "Escape encoding for character literals." in
@@ -342,8 +367,9 @@ module Formatting = struct
         , `Hexadecimal
         , "$(b,hexadecimal) mode escapes every character." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with escape_chars= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with escape_chars= x})
+      ~section
 
   let escape_strings =
     let doc =
@@ -357,16 +383,18 @@ module Formatting = struct
       ; ("decimal", `Decimal, "")
       ; ("hexadecimal", `Hexadecimal, "") ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with escape_strings= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with escape_strings= x})
+      ~section
 
   let extension_sugar =
     let doc = "Extension formatting." in
     let env = Arg.env_var "OCAMLFORMAT_EXTENSION_SUGAR" in
     let names = ["extension-sugar"] in
     let all = [("preserve", `Preserve, ""); ("always", `Always, "")] in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with extension_sugar= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with extension_sugar= x})
+      ~section
 
   let field_space =
     let doc =
@@ -382,8 +410,9 @@ module Formatting = struct
            punctuation symbol (`:`or `=`)." )
       ; ("loose", `Loose, "$(b,loose) does.") ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with field_space= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with field_space= x})
+      ~section
 
   let if_then_else =
     let doc = "If-then-else formatting." in
@@ -399,8 +428,9 @@ module Formatting = struct
         , "$(b,keyword-first) formats if-then-else expressions such that \
            the if-then-else keywords are the first on the line." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with if_then_else= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with if_then_else= x})
+      ~section
 
   let indicate_nested_or_patterns =
     let default = true in
@@ -410,7 +440,7 @@ module Formatting = struct
     in
     let env = Arg.env_var "OCAMLFORMAT_INDICATE_NESTED_OR_PATTERNS" in
     let names = ["indicate-nested-or-patterns"] in
-    C.flag ~names ~env ~default ~doc ~allow_inline:true
+    C.flag ~names ~env ~default ~doc ~allow_inline:true ~section
       ~update:(fun conf x -> {conf with indicate_nested_or_patterns= x} )
 
   let infix_precedence =
@@ -430,14 +460,15 @@ module Formatting = struct
         , "$(b,parens) uses parentheses to explicitly disambiguate \
            precedences of infix operators." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with infix_precedence= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with infix_precedence= x})
+      ~section
 
   let leading_nested_match_parens =
     let doc = "Nested match parens formatting." in
     let env = Arg.env_var "OCAMLFORMAT_LEADING_NESTED_MATCH_PARENS" in
     let names = ["leading-nested-match-parens"] in
-    C.flag ~default:false ~names ~env ~doc ~allow_inline:false
+    C.flag ~default:false ~names ~env ~doc ~allow_inline:false ~section
       ~update:(fun conf x -> {conf with leading_nested_match_parens= x} )
 
   let let_and =
@@ -452,8 +483,9 @@ module Formatting = struct
       ; ("sparse", `Sparse, "$(b,sparse) will always break between them.")
       ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with let_and= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with let_and= x})
+      ~section
 
   let let_open =
     let doc = "Module open formatting." in
@@ -470,13 +502,14 @@ module Formatting = struct
     in
     let env = Arg.env_var "OCAMLFORMAT_LET_OPEN" in
     C.choice ~names:["let-open"] ~all ~doc ~env ~allow_inline:true
-      ~update:(fun conf x -> {conf with let_open= x} )
+      ~update:(fun conf x -> {conf with let_open= x})
+      ~section
 
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
     let env = Arg.env_var "OCAMLFORMAT_MARGIN" in
-    C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~env
+    C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~env ~section
       ~allow_inline:false ~update:(fun conf x -> {conf with margin= x} )
 
   let module_item_spacing =
@@ -492,8 +525,9 @@ module Formatting = struct
         , "$(b,compact) will not leave open lines between one-liners of \
            similar sorts." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with module_item_spacing= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with module_item_spacing= x})
+      ~section
 
   let ocp_indent_compat =
     let doc =
@@ -502,7 +536,7 @@ module Formatting = struct
     in
     let env = Arg.env_var "OCAMLFORMAT_OCP_INDENT_COMPAT" in
     let names = ["ocp-indent-compat"] in
-    C.flag ~default:false ~names ~env ~doc ~allow_inline:true
+    C.flag ~default:false ~names ~env ~doc ~allow_inline:true ~section
       ~update:(fun conf x -> {conf with ocp_indent_compat= x} )
 
   let parens_tuple =
@@ -518,8 +552,9 @@ module Formatting = struct
         , "$(b,multi-line-only) mode will try to skip parens for \
            single-line tuples." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with parens_tuple= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with parens_tuple= x})
+      ~section
 
   let sequence_style =
     let doc = "Style of sequence." in
@@ -528,8 +563,9 @@ module Formatting = struct
     let all =
       [("separator", `Separator, ""); ("terminator", `Terminator, "")]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with sequence_style= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with sequence_style= x})
+      ~section
 
   let type_decl =
     let doc = "Style of type declaration." in
@@ -545,8 +581,9 @@ module Formatting = struct
         , "$(b,sparse) will always break between constructors and record \
            fields." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
-        {conf with type_decl= x} )
+    C.choice ~names ~all ~env ~doc ~allow_inline:true
+      ~update:(fun conf x -> {conf with type_decl= x})
+      ~section
 
   let wrap_comments =
     let doc =
@@ -558,7 +595,7 @@ module Formatting = struct
        aligned are not wrapped either."
     in
     let env = Arg.env_var "OCAMLFORMAT_WRAP_COMMENTS" in
-    C.flag ~default:false ~names:["wrap-comments"] ~doc ~env
+    C.flag ~default:false ~names:["wrap-comments"] ~doc ~env ~section
       ~allow_inline:true ~update:(fun conf x -> {conf with wrap_comments= x}
     )
 
@@ -567,12 +604,16 @@ module Formatting = struct
     let doc = "Style for function call and function definition." in
     let env = Arg.env_var "OCAMLFORMAT_WRAP_FUN_ARGS" in
     let names = ["wrap-fun-args"] in
-    C.flag ~default ~names ~env ~doc ~allow_inline:true
+    C.flag ~default ~names ~env ~doc ~allow_inline:true ~section
       ~update:(fun conf wrap_fun_args -> {conf with wrap_fun_args} )
 end
 
 (* Flags that can be modified in the config file that don't affect
    formatting *)
+
+let section = `Operational
+
+let docs = C.section_name section
 
 let comment_check =
   let default = true in
@@ -581,7 +622,8 @@ let comment_check =
   in
   let env = Arg.env_var "OCAMLFORMAT_COMMENT_CHECK" in
   C.flag ~default ~names:["comment-check"] ~doc ~env ~allow_inline:false
-    ~update:(fun conf x -> {conf with comment_check= x} )
+    ~update:(fun conf x -> {conf with comment_check= x})
+    ~section
 
 let max_iters =
   let docv = "N" in
@@ -590,21 +632,22 @@ let max_iters =
      iterations."
   in
   let env = Arg.env_var "OCAMLFORMAT_MAX_ITERS" in
-  C.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~env
+  C.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~env ~section
     ~allow_inline:false ~update:(fun conf x -> {conf with max_iters= x} )
 
 let quiet =
-  let doc = "Quiet" in
+  let doc = "Quiet." in
   let env = Arg.env_var "OCAMLFORMAT_QUIET" in
   C.flag ~default:false ~names:["q"; "quiet"] ~doc ~env ~allow_inline:false
-    ~update:(fun conf x -> {conf with quiet= x} )
+    ~update:(fun conf x -> {conf with quiet= x})
+    ~section
 
 let no_version_check =
   let doc =
     "Do no check version matches the one specified in .ocamlformat."
   in
   let default = false in
-  mk ~default Arg.(value & flag & info ["no-version-check"] ~doc)
+  mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
 (* Other Flags *)
 
@@ -612,12 +655,12 @@ let debug =
   let doc = "Generate debugging output." in
   let env = Arg.env_var "OCAMLFORMAT_DEBUG" in
   let default = false in
-  mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~env)
+  mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~docs ~env)
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
-  mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc)
+  mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
 
 let inputs =
   let docv = "SRC" in
@@ -626,17 +669,17 @@ let inputs =
      --inplace."
   in
   let default = [] in
-  mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv)
+  mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv ~docs)
 
 let kind : [`Impl | `Intf | `Use_file] ref =
   let doc =
     "Parse file with unrecognized extension as an implementation."
   in
-  let impl = (`Impl, Arg.info ["impl"] ~doc) in
+  let impl = (`Impl, Arg.info ["impl"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as an interface." in
-  let intf = (`Intf, Arg.info ["intf"] ~doc) in
+  let intf = (`Intf, Arg.info ["intf"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as a use_file." in
-  let use_file = (`Use_file, Arg.info ["use-file"] ~doc) in
+  let use_file = (`Use_file, Arg.info ["use-file"] ~doc ~docs) in
   let default = `Impl in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
@@ -651,7 +694,7 @@ let name =
   in
   let default = None in
   mk ~default
-    Arg.(value & opt (some string) default & info ["name"] ~doc ~docv)
+    Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
 let output =
   let docv = "DST" in
@@ -662,7 +705,9 @@ let output =
   let default = None in
   mk ~default
     Arg.(
-      value & opt (some string) default & info ["o"; "output"] ~doc ~docv)
+      value
+      & opt (some string) default
+      & info ["o"; "output"] ~doc ~docs ~docv)
 
 let validate () =
   if List.is_empty !inputs then
