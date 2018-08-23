@@ -1,0 +1,12 @@
+opam-version: "1.2"
+maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
+authors: "Pierre Weis"
+homepage: "https://github.com/ocaml-ppx/ocamlformat/tree/support"
+bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
+license: "LGPL-2 with OCaml linking exception"
+build: ["dune" "build" "-p" name "-j" jobs]
+depends: [
+  "dune" {build}
+]
+available: [ocaml-version >= "4.04.0"]
+
