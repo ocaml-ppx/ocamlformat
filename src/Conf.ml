@@ -338,7 +338,7 @@ module Formatting = struct
         , "$(b,natural) will break struct-end phrases naturally at the \
            margin." ) ]
     in
-    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+    C.choice ~names ~all ~env ~doc ~section (fun conf x ->
         {conf with break_struct= Poly.(x = `Force)} )
 
   let disable =

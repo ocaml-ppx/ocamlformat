@@ -9,3 +9,4 @@
 /bisect*out
 /_coverage
 _opam
+/vendor/ocamlformat_support/ocamlformat_support.install
