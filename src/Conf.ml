@@ -15,6 +15,7 @@ type t =
   { break_cases: [`Fit | `Nested | `All]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
+  ; break_struct: bool
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
@@ -322,6 +323,22 @@ module Formatting = struct
     C.choice ~names ~all ~env ~doc ~allow_inline:true
       ~update:(fun conf x -> {conf with break_string_literals= x})
       ~section
+
+  let break_struct =
+    let doc = "Break struct-end module items." in
+    let env = Arg.env_var "OCAMLFORMAT_BREAK_STRUCT" in
+    let names = ["break-struct"] in
+    let all =
+      [ ( "force"
+        , `Force
+        , "$(b,force) will break struct-end phrases unconditionally." )
+      ; ( "natural"
+        , `Natural
+        , "$(b,natural) will break struct-end phrases naturally at the \
+           margin." ) ]
+    in
+    C.choice ~names ~all ~env ~doc ~allow_inline:true ~update:(fun conf x ->
+        {conf with break_struct= Poly.(x = `Force)} )
 
   let disable =
     let doc =
@@ -809,6 +826,7 @@ let config =
   { break_cases= C.get Formatting.break_cases
   ; break_infix= C.get Formatting.break_infix
   ; break_string_literals= C.get Formatting.break_string_literals
+  ; break_struct= Poly.(C.get Formatting.break_struct = `Force)
   ; comment_check= C.get comment_check
   ; disable= C.get Formatting.disable
   ; doc_comments= C.get Formatting.doc_comments

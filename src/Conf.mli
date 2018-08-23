@@ -16,6 +16,7 @@ type t =
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)
+  ; break_struct: bool
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
