@@ -7,7 +7,7 @@ dev-repo: "https://github.com/ocaml-ppx/ocamlformat.git"
 license: "MIT"
 build: [
   ["tools/gen_version.sh" "src/Version.ml" version] {pinned}
-  ["dune" "build" "-p" "ocamlformat_support,ocamlformat" "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "base" {>= "v0.11.0"}
