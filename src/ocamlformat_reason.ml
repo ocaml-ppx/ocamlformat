@@ -43,7 +43,7 @@ match Conf.action with
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; name= input_name
-      ; file= input_file
+      ; file= _, input_file
       ; conf }
     , output_file ) ->
     Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name

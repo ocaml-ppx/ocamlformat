@@ -668,8 +668,8 @@ let inplace =
 let inputs =
   let docv = "SRC" in
   let doc =
-    "Input files. At least one is required, and exactly one without \
-     --inplace."
+    "Input files. If none are passed, will read from stdin. Exactly one is \
+     needed for --inplace."
   in
   let default = [] in
   mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv ~docs)
@@ -734,14 +734,14 @@ let config =
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
 let validate () =
-  if List.is_empty !inputs then
-    `Error (false, "Must specify at least one input file.")
+  if List.length !inputs = 0 && Option.is_none !name then
+    `Error (false, "Must specify name when reading from stdin")
   else if !inplace && Option.is_some !name then
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
   else if (not !inplace) && List.length !inputs > 1 then
-    `Error (false, "Must specify only one input file without --inplace")
+    `Error (false, "Must specify exactly one input file without --inplace")
   else `Ok ()
 
 ;;
@@ -880,7 +880,8 @@ let update_using_env conf =
                 , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) ))
   with Sys_error _ -> conf
 
-type 'a input = {kind: 'a; name: string; file: string; conf: t}
+type 'a input =
+  {kind: 'a; name: string; file: [`Tmp | `Input] * string; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
@@ -907,6 +908,21 @@ let action =
            ; conf= build_config ~filename:file } ))
   else
     match !inputs with
+    | [] ->
+        let name = Option.value_exn !name in
+        let file, oc =
+          Filename.open_temp_file "ocamlformat" (Filename.basename name)
+        in
+        In_channel.iter_lines stdin ~f:(fun s ->
+            Out_channel.output_string oc s ;
+            Out_channel.newline oc ) ;
+        Out_channel.close oc ;
+        In_out
+          ( { kind= kind_of name
+            ; name
+            ; file= (`Tmp, file)
+            ; conf= read_config ~filename:name config }
+          , !output )
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
         In_out

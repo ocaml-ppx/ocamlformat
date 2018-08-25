@@ -45,7 +45,8 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-type 'a input = {kind: 'a; name: string; file: string; conf: t}
+type 'a input =
+  {kind: 'a; name: string; file: [`Tmp | `Input] * string; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
