@@ -159,6 +159,14 @@ end = struct
     Format.sprintf "%s %s %s" doc each_opt
       (in_attributes ~section allow_inline)
 
+  let generated_choice_docv ~all =
+    let open Format in
+    asprintf "@[<1>{%a}@]"
+      (pp_print_list
+         ~pp_sep:(fun fs () -> fprintf fs "@,|")
+         (fun fs (v, _, _) -> fprintf fs "%s" v))
+      all
+
   let generated_flag_doc ~allow_inline ~doc ~section =
     Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
 
@@ -174,11 +182,14 @@ end = struct
     let open Cmdliner in
     let _, default, _ = List.hd_exn all in
     let doc = generated_choice_doc ~allow_inline ~all ~doc ~section in
+    let docv = generated_choice_docv ~all in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let docs = section_name section in
     let term =
       Arg.(
-        value & opt (enum opt_names) default & info names ~doc ~docs ~env)
+        value
+        & opt (enum opt_names) default
+        & info names ~doc ~docv ~docs ~env)
     in
     let parse s =
       match
