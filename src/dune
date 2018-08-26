@@ -20,6 +20,11 @@ let preprocess =
  %s
  (libraries cmdliner ocamlformat_support import ocaml-migrate-parsetree unix))
 
+(rule
+  (targets ocamlformat.1)
+  (deps ocamlformat.exe)
+  (action (with-stdout-to %%{targets} (run ./ocamlformat.exe --help=groff))))
+
 (install
  (section bin)
  (files (ocamlformat.exe as ocamlformat))
@@ -29,5 +34,11 @@ let preprocess =
  (section bin)
  (files (ocamlformat_reason.exe as ocamlformat_reason))
  (package ocamlformat_reason))
+
+(install
+ (section man)
+ (files ocamlformat.1)
+ (package ocamlformat))
+
 "
 preprocess 
