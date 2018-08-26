@@ -86,7 +86,7 @@ match Conf.action with
     , output_file ) -> (
     let after, input_file =
       match input_file with
-      | `Tmp, tmp_file -> ((fun () -> Caml.Sys.remove tmp_file), tmp_file)
+      | `Tmp, tmp_file -> ((fun () -> Unix.unlink tmp_file), tmp_file)
       | `Input, input_file -> (Fn.id, input_file)
     in
     let result =

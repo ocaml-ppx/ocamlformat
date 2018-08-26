@@ -668,8 +668,8 @@ let inplace =
 let inputs =
   let docv = "SRC" in
   let doc =
-    "Input files. If none are passed, will read from stdin. Exactly one is \
-     needed for --inplace."
+    "Input files. At least one is required, and exactly one without \
+     --inplace. If - is passed, will read from stdin."
   in
   let default = [] in
   mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv ~docs)
@@ -734,8 +734,11 @@ let config =
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
 let validate () =
-  if List.length !inputs = 0 && Option.is_none !name then
-    `Error (false, "Must specify name when reading from stdin")
+  if List.is_empty !inputs then
+    `Error (false, "Must specify at least one input file.")
+  else if
+    List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
+  then `Error (false, "Must specify name when reading from stdin")
   else if !inplace && Option.is_some !name then
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
@@ -908,8 +911,10 @@ let action =
            ; conf= build_config ~filename:file } ))
   else
     match !inputs with
-    | [] ->
-        let name = Option.value_exn !name in
+    | ["-"] ->
+        let name =
+          Option.value !name ~default:(impossible "checked by validate")
+        in
         let file, oc =
           Filename.open_temp_file "ocamlformat" (Filename.basename name)
         in
