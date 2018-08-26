@@ -107,6 +107,13 @@ OPTIONS (CODE FORMATTING STYLE)
            in a single line. sparse will always break between them. The
            default value is compact. 
 
+       --let-binding-spacing={compact|sparse|double-semicolon}
+           Spacing between let binding. compact will put a single newline
+           after any let binding. sparse will put two empty newlines after
+           let bindings spanning multiple lines. double-semicolon will put
+           double semicolons after let bindings spanning multiple lines. The
+           default value is compact. 
+
        --let-open={preserve|short|long|auto}
            Module open formatting. preserve keeps the original style. short
            means the Module.(...) style is used. long means the let open

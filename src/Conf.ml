@@ -28,6 +28,7 @@ type t =
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
+  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_and: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
@@ -529,6 +530,25 @@ module Formatting = struct
     C.flag ~default:false ~names ~doc ~section ~allow_inline:false
       (fun conf x -> {conf with leading_nested_match_parens= x} )
 
+  let let_binding_spacing =
+    let doc = "Spacing between let binding." in
+    let names = ["let-binding-spacing"] in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) will put a single newline after any let binding." )
+      ; ( "sparse"
+        , `Sparse
+        , "$(b,sparse) will put two empty newlines after\n\
+           let bindings spanning multiple lines." )
+      ; ( "double-semicolon"
+        , `Double_semicolon
+        , "$(b,double-semicolon) will put double semicolons after let \
+           bindings spanning multiple lines." ) ]
+    in
+    C.choice ~names ~all ~doc ~section (fun conf x ->
+        {conf with let_binding_spacing= x} )
+
   let let_and =
     let doc = "Style of let_and." in
     let names = ["let-and"] in
@@ -785,6 +805,7 @@ let default =
   ; leading_nested_match_parens=
       C.default Formatting.leading_nested_match_parens
   ; let_and= C.default Formatting.let_and
+  ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
   ; max_iters= C.default max_iters

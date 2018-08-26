@@ -9,7 +9,6 @@ let f x = function
       let b = "breaks" in
       ()
 
-
 let f =
   let g = function H when x y <> k -> 2 | T | P | U -> 3 in
   fun x g t h y u ->
@@ -18,7 +17,6 @@ let f =
         4
     | Z | P | M -> (
       match y with O -> 5 | P when h x -> ( function A -> 6 ) )
-
 
 ;;
 match x with

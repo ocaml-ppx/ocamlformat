@@ -3711,16 +3711,20 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                  (Exp itmI.pvb_expr, cI.conf)
                  (Exp itmJ.pvb_expr, cJ.conf) )
       in
-      let fmt_grp ~first:first_grp ~last:_ bindings =
-        list_fl bindings (fun ~first ~last:_ (binding, c) ->
+      let fmt_grp ~first:first_grp ~last:last_grp bindings =
+        list_fl bindings (fun ~first ~last (binding, c) ->
             fmt_if (not first) "@\n"
             $ fmt_value_binding c ~rec_flag ~first:(first && first_grp)
                 ?ext:(if first && first_grp then ext else None)
                 ctx binding
                 ?epi:
-                  (Option.some_if
-                     (break_cases_level c > 0)
-                     (fits_breaks ~force_fit_if:last_item "" "\n")) )
+                  ( match c.conf.let_binding_spacing with
+                  | `Compact -> None
+                  | `Sparse ->
+                      Some (fits_breaks ~force_fit_if:last_item "" "\n")
+                  | `Double_semicolon ->
+                      Option.some_if (last && last_grp)
+                        (fits_breaks "" "@;<1000 -2>;;") ) )
       in
       hvbox 0
         (list_fl grps (fun ~first ~last grp ->
