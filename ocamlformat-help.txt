@@ -1,0 +1,281 @@
+NAME
+       ocamlformat - A tool to format OCaml code.
+
+SYNOPSIS
+       ocamlformat [OPTION]... [SRC]...
+
+DESCRIPTION
+       ocamlformat automatically formats OCaml code.
+
+OPTIONS (CODE FORMATTING STYLE)
+       Unless otherwise noted, any option --option=VAL detailed in this
+       section can be set in an .ocamlformat configuration file with an
+       'option = VAL' line, or with an [@@@ocamlformat "option=VAL"]
+       attribute.
+
+       --break-cases=VAL (absent=fit or OCAMLFORMAT_BREAK_CASES env)
+           Break pattern match cases. Specifying fit lets pattern matches
+           break at the margin naturally. nested forces a break after nested
+           or-patterns to highlight the case body. all forces all pattern
+           matches to break across lines. 
+
+       --break-infix=VAL (absent=wrap or OCAMLFORMAT_BREAK_INFIX env)
+           Break sequence of infix operators. wrap will group simple
+           expressions and try to format them in a single line.
+           fit-or-vertical vertically breaks expression if they do not fit on
+           a single line. 
+
+       --break-string-literals=VAL (absent=wrap or
+       OCAMLFORMAT_BREAK_STRING_LITERALS env)
+           Break string literals. wrap mode wraps string literals at the
+           margin. Quoted strings such as {id|...|id} are preserved. newlines
+           mode breaks lines at newlines. never mode formats string literals
+           as they are parsed, in particular, with escape sequences expanded. 
+
+       --break-struct=VAL (absent=force or OCAMLFORMAT_BREAK_STRUCT env)
+           Break struct-end module items. force will break struct-end phrases
+           unconditionally. natural will break struct-end phrases naturally
+           at the margin. 
+
+       --disable (absent OCAMLFORMAT_DISABLE env)
+           Disable ocamlformat. This is used in attributes to locally disable
+           automatic code formatting. One can also use [@@@ocamlformat
+           "enable"] instead of [@@@ocamlformat "disable=false"] 
+
+       --doc-comments=VAL (absent=after or OCAMLFORMAT_DOC_COMMENTS env)
+           Doc comments position. after puts doc comments after the
+           corresponding code. before puts comments before the corresponding
+           code. 
+
+       --escape-chars=VAL (absent=preserve or OCAMLFORMAT_ESCAPE_CHARS env)
+           Escape encoding for character literals. preserve escapes ASCII
+           control codes but leaves the upper 128 characters unchanged.
+           decimal produces ASCII printable characters using decimal escape
+           sequences as needed. hexadecimal mode escapes every character. 
+
+       --escape-strings=VAL (absent=preserve or OCAMLFORMAT_ESCAPE_STRINGS
+       env)
+           Escape encoding for string literals. See `--escape-chars` for the
+           interpretation of the modes. 
+
+       --extension-sugar=VAL (absent=preserve or OCAMLFORMAT_EXTENSION_SUGAR
+       env)
+           Extension formatting. 
+
+       --field-space=VAL (absent=tight or OCAMLFORMAT_FIELD_SPACE env)
+           Whether or not to use a space between a field name and the rhs.
+           This option affects records and objects. tight does not use a
+           space between a field name and the punctuation symbol (`:`or `=`).
+           loose does. 
+
+       --if-then-else=VAL (absent=compact or OCAMLFORMAT_IF_THEN_ELSE env)
+           If-then-else formatting. compact tries to format an if-then-else
+           expression on a single line. keyword-first formats if-then-else
+           expressions such that the if-then-else keywords are the first on
+           the line. 
+
+       --infix-precedence=VAL (absent=indent or OCAMLFORMAT_INFIX_PRECEDENCE
+       env)
+           Use indentation or also discretionary parentheses to explicitly
+           disambiguate precedences of infix operators. indent uses
+           indentation to explicitly disambiguate precedences of infix
+           operators. parens uses parentheses to explicitly disambiguate
+           precedences of infix operators. 
+
+       --leading-nested-match-parens (absent
+       OCAMLFORMAT_LEADING_NESTED_MATCH_PARENS env)
+           Nested match parens formatting. Cannot be set in attributes.
+
+       --let-and=VAL (absent=compact or OCAMLFORMAT_LET_AND env)
+           Style of let_and. compact will try to format `let p = e and p = e`
+           in a single line. sparse will always break between them. 
+
+       --let-open=VAL (absent=preserve or OCAMLFORMAT_LET_OPEN env)
+           Module open formatting. preserve keeps the original style. short
+           means the Module.(...) style is used. long means the let open
+           Module in (...) style is used. auto means the one fitting best is
+           used. 
+
+       -m COLS, --margin=COLS (absent=80 or OCAMLFORMAT_MARGIN env)
+           Format code to fit within COLS columns. Cannot be set in
+           attributes.
+
+       --module-item-spacing=VAL (absent=sparse or
+       OCAMLFORMAT_MODULE_ITEM_SPACING env)
+           Spacing between items of structures and signatures. sparse will
+           always break a line between two items. compact will not leave open
+           lines between one-liners of similar sorts. 
+
+       --no-indicate-nested-or-patterns (absent
+       OCAMLFORMAT_INDICATE_NESTED_OR_PATTERNS env)
+           Control whether or not to indicate nested or-pattern using
+           indentation. 
+
+       --no-wrap-fun-args (absent OCAMLFORMAT_WRAP_FUN_ARGS env)
+           Style for function call and function definition. 
+
+       --ocp-indent-compat (absent OCAMLFORMAT_OCP_INDENT_COMPAT env)
+           Attempt to generate output which does not change (much) when
+           post-processing with ocp-indent. 
+
+       --parens-tuple=VAL (absent=always or OCAMLFORMAT_PARENS_TUPLE env)
+           Parens tuples. always always uses parentheses around tuples.
+           multi-line-only mode will try to skip parens for single-line
+           tuples. 
+
+       --sequence-style=VAL (absent=separator or OCAMLFORMAT_SEQUENCE_STYLE
+       env)
+           Style of sequence. 
+
+       --type-decl=VAL (absent=compact or OCAMLFORMAT_TYPE_DECL env)
+           Style of type declaration. compact will try to format constructors
+           and records definition in a single line. sparse will always break
+           between constructors and record fields. 
+
+       --wrap-comments (absent OCAMLFORMAT_WRAP_COMMENTS env)
+           Wrap comments and docstrings. Comments and docstrings are divided
+           into paragraphs by open lines (two or more consecutive newlines),
+           and each paragraph is wrapped at the margin. Multi-line comments
+           with vertically-aligned asterisks on the left margin are not
+           wrapped. Consecutive comments with both left and right margin
+           aligned are not wrapped either. 
+
+OPTIONS
+       -g, --debug (absent OCAMLFORMAT_DEBUG env)
+           Generate debugging output.
+
+       --help[=FMT] (default=auto)
+           Show this help in format FMT. The value FMT must be one of `auto',
+           `pager', `groff' or `plain'. With `auto', the format is `pager` or
+           `plain' whenever the TERM env var is `dumb' or undefined.
+
+       -i, --inplace
+           Format in-place, overwriting input file(s).
+
+       --impl
+           Parse file with unrecognized extension as an implementation.
+
+       --intf
+           Parse file with unrecognized extension as an interface.
+
+       -n N, --max-iters=N (absent=10 or OCAMLFORMAT_MAX_ITERS env)
+           Fail if output of formatting does not stabilize within N
+           iterations. May be set in .ocamlformat. 
+
+       --name=NAME
+           Name of input file for use in error reporting. Defaults to the
+           input file name. Some options can be specified in configuration
+           files named '.ocamlformat' in the same or a parent directory of
+           NAME, see documentation of other options for details. Mutually
+           exclusive with --inplace.
+
+       --no-comment-check (absent OCAMLFORMAT_COMMENT_CHECK env)
+           UNSAFE: Control wether to check comments and documentation
+           comments. May be set in .ocamlformat. 
+
+       --no-version-check
+           Do no check version matches the one specified in .ocamlformat.
+
+       -o DST, --output=DST
+           Output file. Mutually exclusive with --inplace. Write to stdout if
+           omitted.
+
+       -q, --quiet (absent OCAMLFORMAT_QUIET env)
+           Quiet. May be set in .ocamlformat. 
+
+       --use-file
+           Parse file with unrecognized extension as a use_file.
+
+       --version
+           Show version information.
+
+       SRC Input files. At least one is required, and exactly one without
+           --inplace.
+
+ENVIRONMENT
+       These environment variables affect the execution of ocamlformat:
+
+       OCAMLFORMAT_BREAK_CASES
+           See option --break-cases.
+
+       OCAMLFORMAT_BREAK_INFIX
+           See option --break-infix.
+
+       OCAMLFORMAT_BREAK_STRING_LITERALS
+           See option --break-string-literals.
+
+       OCAMLFORMAT_BREAK_STRUCT
+           See option --break-struct.
+
+       OCAMLFORMAT_COMMENT_CHECK
+           See option --no-comment-check.
+
+       OCAMLFORMAT_DEBUG
+           See option --debug.
+
+       OCAMLFORMAT_DISABLE
+           See option --disable.
+
+       OCAMLFORMAT_DOC_COMMENTS
+           See option --doc-comments.
+
+       OCAMLFORMAT_ESCAPE_CHARS
+           See option --escape-chars.
+
+       OCAMLFORMAT_ESCAPE_STRINGS
+           See option --escape-strings.
+
+       OCAMLFORMAT_EXTENSION_SUGAR
+           See option --extension-sugar.
+
+       OCAMLFORMAT_FIELD_SPACE
+           See option --field-space.
+
+       OCAMLFORMAT_IF_THEN_ELSE
+           See option --if-then-else.
+
+       OCAMLFORMAT_INDICATE_NESTED_OR_PATTERNS
+           See option --no-indicate-nested-or-patterns.
+
+       OCAMLFORMAT_INFIX_PRECEDENCE
+           See option --infix-precedence.
+
+       OCAMLFORMAT_LEADING_NESTED_MATCH_PARENS
+           See option --leading-nested-match-parens.
+
+       OCAMLFORMAT_LET_AND
+           See option --let-and.
+
+       OCAMLFORMAT_LET_OPEN
+           See option --let-open.
+
+       OCAMLFORMAT_MARGIN
+           See option --margin.
+
+       OCAMLFORMAT_MAX_ITERS
+           See option --max-iters.
+
+       OCAMLFORMAT_MODULE_ITEM_SPACING
+           See option --module-item-spacing.
+
+       OCAMLFORMAT_OCP_INDENT_COMPAT
+           See option --ocp-indent-compat.
+
+       OCAMLFORMAT_PARENS_TUPLE
+           See option --parens-tuple.
+
+       OCAMLFORMAT_QUIET
+           See option --quiet.
+
+       OCAMLFORMAT_SEQUENCE_STYLE
+           See option --sequence-style.
+
+       OCAMLFORMAT_TYPE_DECL
+           See option --type-decl.
+
+       OCAMLFORMAT_WRAP_COMMENTS
+           See option --wrap-comments.
+
+       OCAMLFORMAT_WRAP_FUN_ARGS
+           See option --no-wrap-fun-args.
+
