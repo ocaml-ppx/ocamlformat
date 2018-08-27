@@ -667,12 +667,18 @@ let inplace =
 
 let inputs =
   let docv = "SRC" in
+  let file_or_dash =
+    let parse, print = Arg.non_dir_file in
+    let parse = function "-" -> `Ok "-" | s -> parse s in
+    (parse, print)
+  in
   let doc =
     "Input files. At least one is required, and exactly one without \
      --inplace. If - is passed, will read from stdin."
   in
   let default = [] in
-  mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv ~docs)
+  mk ~default
+    Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
 let kind : [`Impl | `Intf | `Use_file] ref =
   let doc =
@@ -735,7 +741,7 @@ let config =
 
 let validate () =
   if List.is_empty !inputs then
-    `Error (false, "Must specify at least one input file.")
+    `Error (false, "Must specify at least one input file, or `-` for stdin")
   else if
     List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
   then `Error (false, "Must specify name when reading from stdin")
@@ -913,7 +919,9 @@ let action =
     match !inputs with
     | ["-"] ->
         let name =
-          Option.value !name ~default:(impossible "checked by validate")
+          match !name with
+          | None -> impossible "checked by validate"
+          | Some name -> name
         in
         let file, oc =
           Filename.open_temp_file "ocamlformat" (Filename.basename name)
