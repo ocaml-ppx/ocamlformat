@@ -13,26 +13,29 @@ OPTIONS (CODE FORMATTING STYLE)
        'option = VAL' line, or with an [@@@ocamlformat "option=VAL"]
        attribute.
 
-       --break-cases=VAL (absent=fit or OCAMLFORMAT_BREAK_CASES env)
+       --break-cases={fit|nested|all} (absent=fit or OCAMLFORMAT_BREAK_CASES
+       env)
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
            or-patterns to highlight the case body. all forces all pattern
            matches to break across lines. 
 
-       --break-infix=VAL (absent=wrap or OCAMLFORMAT_BREAK_INFIX env)
+       --break-infix={wrap|fit-or-vertical} (absent=wrap or
+       OCAMLFORMAT_BREAK_INFIX env)
            Break sequence of infix operators. wrap will group simple
            expressions and try to format them in a single line.
            fit-or-vertical vertically breaks expression if they do not fit on
            a single line. 
 
-       --break-string-literals=VAL (absent=wrap or
+       --break-string-literals={wrap|newlines|never} (absent=wrap or
        OCAMLFORMAT_BREAK_STRING_LITERALS env)
            Break string literals. wrap mode wraps string literals at the
            margin. Quoted strings such as {id|...|id} are preserved. newlines
            mode breaks lines at newlines. never mode formats string literals
            as they are parsed, in particular, with escape sequences expanded. 
 
-       --break-struct=VAL (absent=force or OCAMLFORMAT_BREAK_STRUCT env)
+       --break-struct={force|natural} (absent=force or
+       OCAMLFORMAT_BREAK_STRUCT env)
            Break struct-end module items. force will break struct-end phrases
            unconditionally. natural will break struct-end phrases naturally
            at the margin. 
@@ -42,40 +45,44 @@ OPTIONS (CODE FORMATTING STYLE)
            automatic code formatting. One can also use [@@@ocamlformat
            "enable"] instead of [@@@ocamlformat "disable=false"] 
 
-       --doc-comments=VAL (absent=after or OCAMLFORMAT_DOC_COMMENTS env)
+       --doc-comments={after|before} (absent=after or
+       OCAMLFORMAT_DOC_COMMENTS env)
            Doc comments position. after puts doc comments after the
            corresponding code. before puts comments before the corresponding
            code. 
 
-       --escape-chars=VAL (absent=preserve or OCAMLFORMAT_ESCAPE_CHARS env)
+       --escape-chars={preserve|decimal|hexadecimal} (absent=preserve or
+       OCAMLFORMAT_ESCAPE_CHARS env)
            Escape encoding for character literals. preserve escapes ASCII
            control codes but leaves the upper 128 characters unchanged.
            decimal produces ASCII printable characters using decimal escape
            sequences as needed. hexadecimal mode escapes every character. 
 
-       --escape-strings=VAL (absent=preserve or OCAMLFORMAT_ESCAPE_STRINGS
-       env)
+       --escape-strings={preserve|decimal|hexadecimal} (absent=preserve or
+       OCAMLFORMAT_ESCAPE_STRINGS env)
            Escape encoding for string literals. See `--escape-chars` for the
            interpretation of the modes. 
 
-       --extension-sugar=VAL (absent=preserve or OCAMLFORMAT_EXTENSION_SUGAR
-       env)
+       --extension-sugar={preserve|always} (absent=preserve or
+       OCAMLFORMAT_EXTENSION_SUGAR env)
            Extension formatting. 
 
-       --field-space=VAL (absent=tight or OCAMLFORMAT_FIELD_SPACE env)
+       --field-space={tight|loose} (absent=tight or OCAMLFORMAT_FIELD_SPACE
+       env)
            Whether or not to use a space between a field name and the rhs.
            This option affects records and objects. tight does not use a
            space between a field name and the punctuation symbol (`:`or `=`).
            loose does. 
 
-       --if-then-else=VAL (absent=compact or OCAMLFORMAT_IF_THEN_ELSE env)
+       --if-then-else={compact|keyword-first} (absent=compact or
+       OCAMLFORMAT_IF_THEN_ELSE env)
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. keyword-first formats if-then-else
            expressions such that the if-then-else keywords are the first on
            the line. 
 
-       --infix-precedence=VAL (absent=indent or OCAMLFORMAT_INFIX_PRECEDENCE
-       env)
+       --infix-precedence={indent|parens} (absent=indent or
+       OCAMLFORMAT_INFIX_PRECEDENCE env)
            Use indentation or also discretionary parentheses to explicitly
            disambiguate precedences of infix operators. indent uses
            indentation to explicitly disambiguate precedences of infix
@@ -86,11 +93,12 @@ OPTIONS (CODE FORMATTING STYLE)
        OCAMLFORMAT_LEADING_NESTED_MATCH_PARENS env)
            Nested match parens formatting. Cannot be set in attributes.
 
-       --let-and=VAL (absent=compact or OCAMLFORMAT_LET_AND env)
+       --let-and={compact|sparse} (absent=compact or OCAMLFORMAT_LET_AND env)
            Style of let_and. compact will try to format `let p = e and p = e`
            in a single line. sparse will always break between them. 
 
-       --let-open=VAL (absent=preserve or OCAMLFORMAT_LET_OPEN env)
+       --let-open={preserve|short|long|auto} (absent=preserve or
+       OCAMLFORMAT_LET_OPEN env)
            Module open formatting. preserve keeps the original style. short
            means the Module.(...) style is used. long means the let open
            Module in (...) style is used. auto means the one fitting best is
@@ -100,7 +108,7 @@ OPTIONS (CODE FORMATTING STYLE)
            Format code to fit within COLS columns. Cannot be set in
            attributes.
 
-       --module-item-spacing=VAL (absent=sparse or
+       --module-item-spacing={sparse|compact} (absent=sparse or
        OCAMLFORMAT_MODULE_ITEM_SPACING env)
            Spacing between items of structures and signatures. sparse will
            always break a line between two items. compact will not leave open
@@ -118,16 +126,18 @@ OPTIONS (CODE FORMATTING STYLE)
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent. 
 
-       --parens-tuple=VAL (absent=always or OCAMLFORMAT_PARENS_TUPLE env)
+       --parens-tuple={always|multi-line-only} (absent=always or
+       OCAMLFORMAT_PARENS_TUPLE env)
            Parens tuples. always always uses parentheses around tuples.
            multi-line-only mode will try to skip parens for single-line
            tuples. 
 
-       --sequence-style=VAL (absent=separator or OCAMLFORMAT_SEQUENCE_STYLE
-       env)
+       --sequence-style={separator|terminator} (absent=separator or
+       OCAMLFORMAT_SEQUENCE_STYLE env)
            Style of sequence. 
 
-       --type-decl=VAL (absent=compact or OCAMLFORMAT_TYPE_DECL env)
+       --type-decl={compact|sparse} (absent=compact or OCAMLFORMAT_TYPE_DECL
+       env)
            Style of type declaration. compact will try to format constructors
            and records definition in a single line. sparse will always break
            between constructors and record fields. 
