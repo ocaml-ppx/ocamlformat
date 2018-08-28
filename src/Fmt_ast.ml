@@ -104,7 +104,7 @@ let maybe_disabled_k c (loc : Location.t) l f k =
     let loc = Source.extend_loc_to_include_attributes c.source loc l in
     match c.conf.lines with
     | `Fragment (start, end_) ->
-        loc.loc_start.pos_lnum < start || loc.loc_end.pos_lnum > end_
+        loc.loc_start.pos_lnum > end_ || loc.loc_end.pos_lnum < start
     | _ -> false
   in
   if not disable then f c
