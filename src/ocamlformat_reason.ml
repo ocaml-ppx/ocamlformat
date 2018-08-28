@@ -48,4 +48,6 @@ match Conf.action with
     , output_file ) ->
     Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
       ~input_file In_channel.stdin output_file
+| In_out ({kind= `Use_file}, _) ->
+    user_error "Cannot convert toplevel Reason file" []
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []

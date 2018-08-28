@@ -42,7 +42,7 @@ opt: setup
 
 .PHONY: reason
 reason: setup
-	dune build _build/release/src/ocamlformat_reason.exe
+	dune build _build/dev/src/ocamlformat_reason.exe _build/release/src/ocamlformat_reason.exe
 
 .PHONY: clean cleanbisect
 clean: cleanbisect
