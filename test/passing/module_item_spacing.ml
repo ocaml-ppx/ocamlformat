@@ -1,7 +1,7 @@
 [@@@ocamlformat "module-item-spacing=compact"]
 
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
-let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
+and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 let f x = x + 1
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
@@ -16,7 +16,7 @@ let f = function
         zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
 let x = 1
-let y = 2
+and y = 2
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 
@@ -35,10 +35,10 @@ module M =
 let x = 1
 let y = 2
 let x = 1
-let y = 2
-let c = {a : int; b : toto; c : char * char * char; d : [`Foo | `Bar]}
-let z = this one is pretty looooooooooooooooooooooooooooooooooong
-let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
+and y = 2
+and c = {a : int; b : toto; c : char * char * char; d : [`Foo | `Bar]}
+and z = this one is pretty looooooooooooooooooooooooooooooooooong
+and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 
 type k = A | B | K of int * char * string | E
 
@@ -69,3 +69,36 @@ module N = struct
   module B = BB
   open B
 end
+
+let x = x
+
+(** comment *)
+and y = y
+
+let x = x
+
+(** floating comment *)
+
+and y = y
+
+let x = x
+and y = something veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery veeeeeeeeeeeeeeeeeeeeeeeeeeeery long
+
+let y = something veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery veeeeeeeeeeeeeeeeeeeeeeeeeeeery long
+and x = x
+
+let a = a
+and a = a
+and a = a
+
+[@@ocamlformat "module-item-spacing=sparse"]
+
+and a = a
+and a = a
+and a = a
+
+[@@ocamlformat "module-item-spacing=compact"]
+
+and a = a
+and a = a
+and a = a

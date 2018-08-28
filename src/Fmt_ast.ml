@@ -52,7 +52,7 @@ let protect =
         first := false ) ;
       raise exc
 
-let update_config c l =
+let update_config ?(quiet = false) c l =
   let update_one c ({txt; loc}, payload) =
     let result =
       match txt with
@@ -85,7 +85,7 @@ let update_config c l =
               Format.sprintf "Invalid value for %s: %S" name value
         in
         let w = Warnings.Attribute_payload (txt, reason error) in
-        if not c.conf.quiet then
+        if (not c.conf.quiet) && not quiet then
           !Location.warning_printer loc Caml.Format.err_formatter w ;
         c
   in
@@ -3683,16 +3683,33 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
              $ fmt_if (not last) "@ " ))
   | Pstr_typext te -> fmt_type_extension c ctx te
   | Pstr_value (rec_flag, bindings) ->
+      let _, bindings =
+        List.fold_map bindings ~init:c ~f:(fun c b ->
+            let c = update_config ~quiet:true c b.pvb_attributes in
+            (c, (b, c)) )
+      in
+      let grps =
+        List.group bindings ~break:(fun (itmI, cI) (itmJ, cJ) ->
+            (not (List.is_empty itmI.pvb_attributes))
+            || (not (List.is_empty itmJ.pvb_attributes))
+            || Ast.break_between
+                 (Exp itmI.pvb_expr, cI.conf)
+                 (Exp itmJ.pvb_expr, cJ.conf) )
+      in
+      let fmt_grp ~first:first_grp ~last:_ bindings =
+        list_fl bindings (fun ~first ~last:_ (binding, c) ->
+            fmt_if (not first) "@\n"
+            $ fmt_value_binding c ~rec_flag ~first:(first && first_grp)
+                ?ext:(if first && first_grp then ext else None)
+                ctx binding
+                ?epi:
+                  (Option.some_if
+                     (break_cases_level c > 0)
+                     (fits_breaks ~force_fit_if:last_item "" "\n")) )
+      in
       hvbox 0
-        (list_fl bindings (fun ~first ~last binding ->
-             fmt_value_binding c ~rec_flag ~first
-               ?ext:(if first then ext else None)
-               ctx binding
-               ?epi:
-                 (Option.some_if
-                    (break_cases_level c > 0)
-                    (fits_breaks ~force_fit_if:last_item "" "\n"))
-             $ fmt_if (not last) "\n@\n" ))
+        (list_fl grps (fun ~first ~last grp ->
+             fmt_grp ~first ~last grp $ fmt_if (not last) "\n@\n" ))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc, atrs = doc_atrs atrs in
