@@ -45,14 +45,19 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-type 'a input =
-  {kind: 'a; name: string; file: [`Tmp | `Input] * string; conf: t}
+type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
       (** Format input file of given kind to output file, or stdout if None. *)
   | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
+  | Stdin of
+      { kind: [`Impl | `Intf | `Use_file]
+      ; name: string
+      ; conf: t
+      ; output_file: string option }
+      (** Format stdin of given kind to an output file, or stdout if None. *)
 
 val action : action
 (** Formatting action: input type and source, and output destination. *)

@@ -66,7 +66,7 @@ match Conf.action with
 | Inplace inputs ->
     let results : Translation_unit.result list =
       List.map inputs
-        ~f:(fun {Conf.kind; name= input_name; file= _, input_file; conf} ->
+        ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
           In_channel.with_file input_file ~f:(fun ic ->
               Translation_unit.parse_print (xunit_of_kind kind) conf
                 ~input_name ~input_file ic (Some input_file) ) )
@@ -78,23 +78,35 @@ match Conf.action with
           | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> false )
     then Caml.exit 0
     else Caml.exit 1
+| Stdin
+    { kind= (`Impl | `Intf | `Use_file) as kind
+    ; name= input_name
+    ; conf
+    ; output_file } -> (
+    let file, oc =
+      Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
+    in
+    In_channel.iter_lines stdin ~f:(fun s ->
+        Out_channel.output_string oc s ;
+        Out_channel.newline oc ) ;
+    Out_channel.close oc ;
+    match
+      In_channel.with_file file ~f:(fun ic ->
+          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+            ~input_file:file ic output_file )
+    with
+    | Ok -> Caml.exit 0
+    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
       ; file= input_file
       ; name= input_name
       ; conf }
     , output_file ) -> (
-    let after, input_file =
-      match input_file with
-      | `Tmp, tmp_file -> ((fun () -> Unix.unlink tmp_file), tmp_file)
-      | `Input, input_file -> (Fn.id, input_file)
-    in
-    let result =
-      In_channel.with_file input_file ~f:(fun ic ->
-          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-            ~input_file ic output_file )
-    in
-    after () ;
-    match result with
-    | Ok -> Caml.exit 0
-    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )
+  match
+    In_channel.with_file input_file ~f:(fun ic ->
+        Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+          ~input_file ic output_file )
+  with
+  | Ok -> Caml.exit 0
+  | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )

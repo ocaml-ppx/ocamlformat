@@ -889,12 +889,16 @@ let update_using_env conf =
                 , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) ))
   with Sys_error _ -> conf
 
-type 'a input =
-  {kind: 'a; name: string; file: [`Tmp | `Input] * string; conf: t}
+type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
   | Inplace of [`Impl | `Intf | `Use_file] input list
+  | Stdin of
+      { kind: [`Impl | `Intf | `Use_file]
+      ; name: string
+      ; conf: t
+      ; output_file: string option }
 
 let kind_of fname =
   match Filename.extension fname with
@@ -923,19 +927,11 @@ let action =
           | None -> impossible "checked by validate"
           | Some name -> name
         in
-        let file, oc =
-          Filename.open_temp_file "ocamlformat" (Filename.basename name)
-        in
-        In_channel.iter_lines stdin ~f:(fun s ->
-            Out_channel.output_string oc s ;
-            Out_channel.newline oc ) ;
-        Out_channel.close oc ;
-        In_out
-          ( { kind= kind_of name
-            ; name
-            ; file= (`Tmp, file)
-            ; conf= read_config ~filename:name config }
-          , !output )
+        Stdin
+          { kind= kind_of name
+          ; name
+          ; conf= read_config ~filename:name config
+          ; output_file= !output }
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
         In_out
