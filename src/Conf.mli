@@ -32,6 +32,7 @@ type t =
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
+  ; lines: [`All | `Fragment of int * int]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within

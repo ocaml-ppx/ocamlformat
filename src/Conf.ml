@@ -29,6 +29,7 @@ type t =
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
+  ; lines: [`All | `Fragment of int * int]
   ; margin: int
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Sparse]
@@ -109,6 +110,8 @@ module C : sig
   val flag : default:bool -> bool option_decl
 
   val int : default:int -> docv:string -> int option_decl
+
+  val lines : docv:string -> [`All | `Fragment of int * int] option_decl
 
   val default : 'a t -> 'a
 
@@ -248,6 +251,38 @@ end = struct
     let parse = Int.of_string in
     let r = mk ~default:None term in
     let cmdline_get () = !r in
+    let opt = {names; parse; update; cmdline_get; allow_inline; default} in
+    store := Pack opt :: !store ;
+    opt
+
+  let lines ~docv ~names ~doc ~section
+      ?(allow_inline = Poly.(section = `Formatting)) update =
+    let open Cmdliner in
+    let default = `All in
+    let doc =
+      Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
+    in
+    let docs = section_name section in
+    let term =
+      Arg.(
+        value
+        & opt (some (pair ~sep:',' int int)) None
+        & info names ~doc ~docs ~docv)
+    in
+    let parse s =
+      try
+        let lhs, rhs = String.lsplit2_exn s ~on:',' in
+        `Fragment (Int.of_string lhs, Int.of_string rhs)
+      with
+      | Caml.Not_found | Not_found_s _ ->
+          user_error
+            (Printf.sprintf "Unknown %s value: %S" (List.hd_exn names) s)
+            []
+    in
+    let r = mk ~default:None term in
+    let cmdline_get () =
+      Option.value_map !r ~default:None ~f:(fun x -> Some (`Fragment x))
+    in
     let opt = {names; parse; update; cmdline_get; allow_inline; default} in
     store := Pack opt :: !store ;
     opt
@@ -533,6 +568,16 @@ module Formatting = struct
     C.choice ~names:["let-open"] ~all ~doc ~section (fun conf x ->
         {conf with let_open= x} )
 
+  let lines =
+    let docv = "RANGE" in
+    let doc =
+      "Only format the lines in $(docv), adapting to the current \
+       indentation of the surrounding lines. Lines start at 1."
+    in
+    let names = ["l"; "lines"] in
+    C.lines ~docv ~names ~doc ~section ~allow_inline:false (fun conf x ->
+        {conf with lines= x} )
+
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
@@ -767,6 +812,7 @@ let default =
       C.default Formatting.leading_nested_match_parens
   ; let_and= C.default Formatting.let_and
   ; let_open= C.default Formatting.let_open
+  ; lines= C.default Formatting.lines
   ; margin= C.default Formatting.margin
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
