@@ -90,11 +90,13 @@ match Conf.action with
         Out_channel.output_string oc s ;
         Out_channel.newline oc ) ;
     Out_channel.close oc ;
-    match
+    let result =
       In_channel.with_file file ~f:(fun ic ->
           Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
             ~input_file:file ic output_file )
-    with
+    in
+    Unix.unlink file ;
+    match result with
     | Ok -> Caml.exit 0
     | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )
 | In_out
