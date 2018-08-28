@@ -98,7 +98,16 @@ let drop_while ~f s =
   String.sub s ~pos:!i ~len:(String.length s - !i)
 
 let maybe_disabled_k c (loc : Location.t) l f k =
-  if not c.conf.disable then f c
+  let disable =
+    c.conf.disable
+    ||
+    let loc = Source.extend_loc_to_include_attributes c.source loc l in
+    match c.conf.lines with
+    | `Fragment (start, end_) ->
+        loc.loc_start.pos_lnum < start || loc.loc_end.pos_lnum > end_
+    | _ -> false
+  in
+  if not disable then f c
   else
     let loc = Source.extend_loc_to_include_attributes c.source loc l in
     Cmts.drop_inside c.cmts loc ;
