@@ -142,8 +142,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           Out_channel.output_string stdout fmted ;
           Unix.unlink tmp ;
           Ok
-      | In_out _, Some ofile | Stdin _, Some ofile ->
-          Unix.rename tmp ofile ; Ok
+      | In_out _, Some ofile -> Unix.rename tmp ofile ; Ok
       | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile ; Ok
       | Inplace _, Some _ -> Unix.unlink tmp ; Ok )
     else
@@ -206,7 +205,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     | _ when conf.disable ->
         ( match (Conf.action, ofile) with
         | _, None -> Out_channel.output_string stdout source_txt
-        | In_out _, Some ofile | Stdin _, Some ofile ->
+        | In_out _, Some ofile ->
             Out_channel.write_all ofile ~data:source_txt
         | Inplace _, _ -> () ) ;
         Ok

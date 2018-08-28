@@ -78,11 +78,12 @@ match Conf.action with
           | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> false )
     then Caml.exit 0
     else Caml.exit 1
-| Stdin
-    { kind= (`Impl | `Intf | `Use_file) as kind
-    ; name= input_name
-    ; conf
-    ; output_file } -> (
+| In_out
+    ( { kind= (`Impl | `Intf | `Use_file) as kind
+      ; file= "-"
+      ; name= input_name
+      ; conf }
+    , output_file ) -> (
     let file, oc =
       Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
     in

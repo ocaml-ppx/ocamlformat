@@ -674,7 +674,7 @@ let inputs =
   in
   let doc =
     "Input files. At least one is required, and exactly one without \
-     --inplace. If - is passed, will read from stdin."
+     $(b,--inplace). If $(b,-) is passed, will read from stdin."
   in
   let default = [] in
   mk ~default
@@ -894,11 +894,6 @@ type 'a input = {kind: 'a; name: string; file: string; conf: t}
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
   | Inplace of [`Impl | `Intf | `Use_file] input list
-  | Stdin of
-      { kind: [`Impl | `Intf | `Use_file]
-      ; name: string
-      ; conf: t
-      ; output_file: string option }
 
 let kind_of fname =
   match Filename.extension fname with
@@ -921,17 +916,6 @@ let action =
            ; conf= build_config ~filename:file } ))
   else
     match !inputs with
-    | ["-"] ->
-        let name =
-          match !name with
-          | None -> impossible "checked by validate"
-          | Some name -> name
-        in
-        Stdin
-          { kind= kind_of name
-          ; name
-          ; conf= build_config ~filename:name
-          ; output_file= !output }
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
         In_out

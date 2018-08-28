@@ -41,18 +41,11 @@ let xunit_of_kind : _ -> Translation_unit.x = function
 ;;
 match Conf.action with
 | In_out
-    ( { kind= (`Impl | `Intf) as kind
-      ; name= input_name
-      ; file= input_file
-      ; conf }
+    ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
     , output_file ) ->
-    Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-      ~input_file In_channel.stdin output_file
 | In_out ({kind= `Use_file}, _) ->
-    user_error "Cannot convert toplevel Reason file" []
+    user_error "Cannot convert Reason code with --use-file" []
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
-| Stdin {kind= (`Impl | `Intf) as kind; name= input_name; conf; output_file}
-  ->
     let file, oc =
       Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
     in
@@ -66,3 +59,11 @@ match Conf.action with
             ~input_file:file ic output_file )
     in
     Unix.unlink file ; result
+| In_out
+    ( { kind= (`Impl | `Intf) as kind
+      ; name= input_name
+      ; file= input_file
+      ; conf }
+    , output_file ) ->
+    Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+      ~input_file In_channel.stdin output_file
