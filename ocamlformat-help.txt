@@ -20,8 +20,10 @@ OPTIONS (CODE FORMATTING STYLE)
        "option=VAL"] attribute on expression in the processed file.
 
        (*) .ocamlformat files in current and all ancestor directories for
-       each input file are used, with more distant ancestors having lower
-       priority.
+       each input file are used, as well as the global .ocamlformat file
+       defined in $XDG_CONFIG_HOME/ocamlformat. The global .ocamlformat file
+       has the lowest priority, then the closer the directory is to the
+       processed file, the higher the priority.
 
        --break-cases={fit|nested|all}
            Break pattern match cases. Specifying fit lets pattern matches
@@ -201,7 +203,7 @@ OPTIONS
            Show version information.
 
        SRC Input files. At least one is required, and exactly one without
-           --inplace.
+           --inplace. If - is passed, will read from stdin.
 
 ENVIRONMENT
        These environment variables affect the execution of ocamlformat:
