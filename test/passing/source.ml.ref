@@ -9147,19 +9147,14 @@ let _ = function
   | a, s, ba1, ba2, ba3, bg ->
       ignore (x.(1) + [||].(0) + [|1|].(1) + [|1; 2|].(2)) ;
       ignore [s.[1]; "".[2]; "123".[3]] ;
-      ignore
-        ( Bigarray.Array1.get ba1 0
-        + Bigarray.Array2.get ba2 1 2
-        + Bigarray.Array3.get ba3 3 4 5 )
-        ignore
-        (Bigarray.Genarray.get bg [|1; 2; 3; 4|])
+      ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore (bg.{1, 2, 3, 4})
   | b, s, ba1, ba2, ba3, bg ->
       y.(0) <- 1 ;
       s.[1] <- 'c' ;
-      Bigarray.Array1.set ba1 1 2 ;
-      Bigarray.Array2.set ba2 1 2 3 ;
-      Bigarray.Array3.set ba3 1 2 3 4 ;
-      Bigarray.Genarray.set bg [|1; 2; 3; 4; 5|] 0
+      ba1.{1} <- 2 ;
+      ba2.{1, 2} <- 3 ;
+      ba3.{1, 2, 3} <- 4 ;
+      bg.{1, 2, 3, 4, 5} <- 0
 
 let f (type t) () =
   let exception F of t in
