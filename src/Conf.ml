@@ -930,7 +930,7 @@ let action =
         Stdin
           { kind= kind_of name
           ; name
-          ; conf= read_config ~filename:name config
+          ; conf= build_config ~filename:name
           ; output_file= !output }
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
