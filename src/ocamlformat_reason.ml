@@ -43,9 +43,6 @@ match Conf.action with
 | In_out
     ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
     , output_file ) ->
-| In_out ({kind= `Use_file}, _) ->
-    user_error "Cannot convert Reason code with --use-file" []
-| Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
     let file, oc =
       Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
     in
@@ -59,6 +56,9 @@ match Conf.action with
             ~input_file:file ic output_file )
     in
     Unix.unlink file ; result
+| In_out ({kind= `Use_file; _}, _) ->
+    user_error "Cannot convert Reason code with --use-file" []
+| Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; name= input_name
