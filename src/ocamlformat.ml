@@ -80,6 +80,28 @@ match Conf.action with
     else Caml.exit 1
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
+      ; file= "-"
+      ; name= input_name
+      ; conf }
+    , output_file ) -> (
+    let file, oc =
+      Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
+    in
+    In_channel.iter_lines stdin ~f:(fun s ->
+        Out_channel.output_string oc s ;
+        Out_channel.newline oc ) ;
+    Out_channel.close oc ;
+    let result =
+      In_channel.with_file file ~f:(fun ic ->
+          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+            ~input_file:file ic output_file )
+    in
+    Unix.unlink file ;
+    match result with
+    | Ok -> Caml.exit 0
+    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )
+| In_out
+    ( { kind= (`Impl | `Intf | `Use_file) as kind
       ; file= input_file
       ; name= input_name
       ; conf }

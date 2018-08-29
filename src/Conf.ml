@@ -667,12 +667,18 @@ let inplace =
 
 let inputs =
   let docv = "SRC" in
+  let file_or_dash =
+    let parse, print = Arg.non_dir_file in
+    let parse = function "-" -> `Ok "-" | s -> parse s in
+    (parse, print)
+  in
   let doc =
     "Input files. At least one is required, and exactly one without \
-     --inplace."
+     $(b,--inplace). If $(b,-) is passed, will read from stdin."
   in
   let default = [] in
-  mk ~default Arg.(value & pos_all file default & info [] ~doc ~docv ~docs)
+  mk ~default
+    Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
 let kind : [`Impl | `Intf | `Use_file] ref =
   let doc =
@@ -735,13 +741,16 @@ let config =
 
 let validate () =
   if List.is_empty !inputs then
-    `Error (false, "Must specify at least one input file.")
+    `Error (false, "Must specify at least one input file, or `-` for stdin")
+  else if
+    List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
+  then `Error (false, "Must specify name when reading from stdin")
   else if !inplace && Option.is_some !name then
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
   else if (not !inplace) && List.length !inputs > 1 then
-    `Error (false, "Must specify only one input file without --inplace")
+    `Error (false, "Must specify exactly one input file without --inplace")
   else `Ok ()
 
 ;;
