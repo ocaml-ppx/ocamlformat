@@ -80,6 +80,53 @@ let index_op_string = (".", '[', ']')
 
 let index_op_array = (".", '(', ')')
 
+let index_op_bigarray = (".", '{', '}')
+
+let all_args_unlabeled args =
+  List.fold_right args ~init:(Some []) ~f:(fun arg acc ->
+      match (acc, arg) with
+      | Some args, (Asttypes.Nolabel, e) -> Some (e :: args)
+      | _ -> None )
+
+let index_op_get_sugar (ident : Longident.t) args =
+  match all_args_unlabeled args with
+  | None -> None
+  | Some args -> (
+    match (ident, args) with
+    | Ldot (Lident "String", "get"), [_] -> Some (index_op_string, args)
+    | Ldot (Lident "Array", "get"), [_] -> Some (index_op_array, args)
+    | Ldot (Ldot (Lident "Bigarray", "Array1"), "get"), [_] ->
+        Some (index_op_bigarray, args)
+    | Ldot (Ldot (Lident "Bigarray", "Array2"), "get"), [_; _] ->
+        Some (index_op_bigarray, args)
+    | Ldot (Ldot (Lident "Bigarray", "Array3"), "get"), [_; _; _] ->
+        Some (index_op_bigarray, args)
+    | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "get")
+      , [{pexp_desc= Pexp_array l}] )
+      when List.length l > 3 ->
+        Some (index_op_bigarray, l)
+    | _ -> None )
+
+let index_op_set_sugar (ident : Longident.t) args =
+  match all_args_unlabeled args with
+  | None -> None
+  | Some args -> (
+    match (ident, args) with
+    | Ldot (Lident "String", "set"), [a1; e] ->
+        Some (index_op_string, [a1], e)
+    | Ldot (Lident "Array", "set"), [a1; e] -> Some (index_op_array, [a1], e)
+    | Ldot (Ldot (Lident "Bigarray", "Array1"), "set"), [a1; e] ->
+        Some (index_op_bigarray, [a1], e)
+    | Ldot (Ldot (Lident "Bigarray", "Array2"), "set"), [a1; a2; e] ->
+        Some (index_op_bigarray, [a1; a2], e)
+    | Ldot (Ldot (Lident "Bigarray", "Array3"), "set"), [a1; a2; a3; e] ->
+        Some (index_op_bigarray, [a1; a2; a3], e)
+    | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "set")
+      , [{pexp_desc= Pexp_array l}; e] )
+      when List.length l > 3 ->
+        Some (index_op_bigarray, l, e)
+    | _ -> None )
+
 let is_index_op exp =
   match exp.pexp_desc with
   | Pexp_ident {txt= Lident i} ->
@@ -1098,6 +1145,23 @@ end = struct
         | Pexp_fun (_, default, _, body) ->
             assert (
               Option.value_map default ~default:false ~f || body == exp )
+        | Pexp_apply
+            ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
+            , e1 :: indices )
+          when Option.is_some (index_op_get_sugar txt indices) ->
+            let _, indices =
+              Option.value_exn (index_op_get_sugar txt indices)
+            in
+            assert (e0 == exp || snd_f e1 || List.exists indices ~f)
+        | Pexp_apply
+            ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
+            , e1 :: indices )
+          when Option.is_some (index_op_set_sugar txt indices) ->
+            let _, indices, e =
+              Option.value_exn (index_op_set_sugar txt indices)
+            in
+            assert (
+              e0 == exp || snd_f e1 || List.exists indices ~f || e == exp )
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
