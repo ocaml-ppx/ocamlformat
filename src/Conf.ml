@@ -296,8 +296,10 @@ let info =
          the processed file."
     ; `P
         "(*) .ocamlformat files in current and all ancestor directories \
-         for each input file are used, with more distant ancestors having \
-         lower priority." ]
+         for each input file are used, as well as the global .ocamlformat \
+         file defined in $(b,\\$XDG_CONFIG_HOME/ocamlformat). The global \
+         .ocamlformat file has the lowest priority, then the closer the \
+         directory is to the processed file, the higher the priority." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -830,10 +832,12 @@ let parse_line config ~from s =
     | _ -> Error (`Malformed s) )
   | _ -> Error (`Malformed s)
 
-let rec read_conf_files conf ~dir =
+let rec read_conf_files conf ~dir ~parents =
   let dir' = Filename.dirname dir in
   if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
-    let conf = read_conf_files conf ~dir:dir' in
+    let conf =
+      if parents then read_conf_files conf ~dir:dir' ~parents else conf
+    in
     try
       let filename = Filename.concat dir ".ocamlformat" in
       In_channel.with_file filename ~f:(fun ic ->
@@ -902,9 +906,20 @@ let kind_of fname =
   | ".mlt" -> `Use_file
   | _ -> !kind
 
+let update_using_xdg =
+  match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
+  | Some xdg_config_home ->
+      let filename =
+        Filename.concat xdg_config_home "ocamlformat/.ocamlformat"
+      in
+      Staged.stage (fun conf -> read_config ~filename ~parents:false conf)
+  | None -> Staged.stage (fun conf -> conf)
+
 let build_config ~filename =
-  default |> read_config ~filename |> update_using_env
-  |> C.update_using_cmdline
+  default
+  |> Staged.unstage update_using_xdg
+  |> read_config ~filename ~parents:true
+  |> update_using_env |> C.update_using_cmdline
 
 let action =
   if !inplace then
