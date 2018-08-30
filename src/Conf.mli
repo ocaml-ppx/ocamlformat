@@ -13,6 +13,7 @@
 
 type t =
   { break_cases: [`Fit | `Nested | `All]
+  ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)

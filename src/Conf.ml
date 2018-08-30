@@ -13,6 +13,7 @@
 
 type t =
   { break_cases: [`Fit | `Nested | `All]
+  ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; break_struct: bool
@@ -326,6 +327,24 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with break_cases= x} )
 
+  let break_collection_expressions =
+    let doc =
+      "Break collection expressions (lists and arrays) elements by elements."
+    in
+    let names = ["break-collection-expressions"] in
+    let all =
+      [ ( "fit-or-vertical"
+        , `Fit_or_vertical
+        , "$(b,fit-or-vertical) vertically breaks expressions if they do \
+           not fit on a single line." )
+      ; ( "wrap"
+        , `Wrap
+        , "$(b,wrap) will group simple expressions and try to format them \
+           in a single line." ) ]
+    in
+    C.choice ~names ~all ~doc ~section (fun conf x ->
+        {conf with break_collection_expressions= x} )
+
   let break_infix =
     let doc = "Break sequence of infix operators." in
     let names = ["break-infix"] in
@@ -336,7 +355,7 @@ module Formatting = struct
            in a single line." )
       ; ( "fit-or-vertical"
         , `Fit_or_vertical
-        , "$(b,fit-or-vertical) vertically breaks expression if they do \
+        , "$(b,fit-or-vertical) vertically breaks expressions if they do \
            not fit on a single line." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
@@ -760,6 +779,8 @@ parse info validate
 
 let default =
   { break_cases= C.default Formatting.break_cases
+  ; break_collection_expressions=
+      C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
