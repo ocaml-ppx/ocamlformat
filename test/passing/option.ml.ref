@@ -13,21 +13,6 @@ Invalid value for if-then-else: "bad"
 File "passing/option.ml", line 39, characters 14-25:
 Warning 47: illegal payload for attribute 'ocamlformat'.
 Invalid value for if-then-else: "bad"
-File "passing/option.ml", line 63, characters 4-15:
-Warning 47: illegal payload for attribute 'ocamlformat'.
-margin not allowed here
-File "passing/option.ml", line 8, characters 5-21:
-Warning 47: illegal payload for attribute 'ocamlformat.typo'.
-Invalid format "unknown suffix \"typo\""
-File "passing/option.ml", line 14, characters 5-16:
-Warning 47: illegal payload for attribute 'ocamlformat'.
-Invalid format "string expected"
-File "passing/option.ml", line 20, characters 5-16:
-Warning 47: illegal payload for attribute 'ocamlformat'.
-Invalid value for if-then-else: "bad"
-File "passing/option.ml", line 29, characters 7-18:
-Warning 47: illegal payload for attribute 'ocamlformat'.
-Invalid value for if-then-else: "bad"
 let[@ocamlformat "if-then-else=keyword-first"] _ =
   if b
   then e

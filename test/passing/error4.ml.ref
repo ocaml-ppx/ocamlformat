@@ -2,8 +2,6 @@ File "passing/error4.ml", line 2, characters 0-13:
 Warning 50: ambiguous documentation comment
 File "passing/error4.ml", line 3, characters 8-16:
 Warning 50: unattached documentation comment (ignored)
-File "passing/error4.ml", line 5, characters 8-16:
-Warning 50: unattached documentation comment (ignored)
 (** a or b *)
 let a = ()
 
