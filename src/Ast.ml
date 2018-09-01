@@ -1386,12 +1386,11 @@ end = struct
       | Pexp_field _ -> Some (Dot, Left)
       | Pexp_send _ -> Some (HashOp, Non)
       | _ -> None )
-    | {ctx= Cl {pcl_desc}; ast= Cl _} -> (
+    | {ctx= Cl {pcl_desc}; ast= Cl _ | Exp _} -> (
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
     | { ctx= Exp _
       ; ast= Pld _ | Top | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _ }
-     |{ ctx= Cl _
-      ; ast= Pld _ | Top | Pat _ | Exp _ | Mty _ | Mod _ | Sig _ | Str _ }
+     |{ctx= Cl _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _}
      |{ ctx=
           ( Pld _ | Top | Typ _ | Cty _ | Pat _ | Mty _ | Mod _ | Sig _
           | Str _ )
@@ -1833,6 +1832,28 @@ end = struct
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
   and parenze_exp ({ctx; ast= exp} as xexp) =
+    let parenze () =
+      let is_right_infix_arg ctx_desc exp =
+        match ctx_desc with
+        | Pexp_apply
+            ({pexp_desc= Pexp_ident {txt= Lident i}}, _ :: (_, e2) :: _)
+          when e2 == exp && is_infix_id i
+               && Option.value_map ~default:false (prec_ast ctx)
+                    ~f:(fun p -> Poly.(p < Apply) ) ->
+            true
+        | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
+        | _ -> false
+      in
+      match ambig_prec (sub_ast ~ctx (Exp exp)) with
+      | None -> false (* ctx not apply *)
+      | Some (Some true) -> true (* exp is apply and ambig *)
+      | _ -> (
+        match ctx with
+        | Exp {pexp_desc} ->
+            if is_right_infix_arg pexp_desc exp then is_sequence exp
+            else exposed_right_exp Non_apply exp
+        | _ -> exposed_right_exp Non_apply exp )
+    in
     assert (check_exp xexp ; true) ;
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
@@ -1848,7 +1869,7 @@ end = struct
     | Exp {pexp_desc= Pexp_extension _}, {pexp_desc= Pexp_tuple _} -> false
     | Pld _, {pexp_desc= Pexp_tuple _} -> false
     | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false
-    | Cl {pcl_desc= Pcl_apply _}, {pexp_desc= Pexp_apply _} -> true
+    | Cl {pcl_desc= Pcl_apply _}, _ -> parenze ()
     | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _)}
       , { pexp_desc=
             Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, _) } )
@@ -1925,24 +1946,7 @@ end = struct
       | Pexp_sequence (lhs, _) when lhs == exp ->
           exposed_right_exp Let_match exp
       | Pexp_sequence (_, rhs) when rhs == exp -> false
-      | _ -> (
-          let is_right_infix_arg ctx_desc exp =
-            match ctx_desc with
-            | Pexp_apply
-                ({pexp_desc= Pexp_ident {txt= Lident i}}, _ :: (_, e2) :: _)
-              when e2 == exp && is_infix_id i
-                   && Option.value_map ~default:false (prec_ast ctx)
-                        ~f:(fun p -> Poly.(p < Apply) ) ->
-                true
-            | Pexp_tuple e1N -> List.last_exn e1N == exp
-            | _ -> false
-          in
-          match ambig_prec (sub_ast ~ctx (Exp exp)) with
-          | None -> false (* ctx not apply *)
-          | Some (Some true) -> true (* exp is apply and ambig *)
-          | _ ->
-              if is_right_infix_arg pexp_desc exp then is_sequence exp
-              else exposed_right_exp Non_apply exp ) )
+      | _ -> parenze () )
     | _ -> false
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
