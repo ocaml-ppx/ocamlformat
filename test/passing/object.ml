@@ -226,3 +226,8 @@ class f = fun [@inline] (b[@inline]) -> object end
 class f = [%test] [@test]
 
 class f a (b[@inline]) = object end
+
+class f =
+  object (self)
+    inherit [a] c (f 1) (fun x -> x) (match x with x -> x) as p
+  end
