@@ -1628,6 +1628,7 @@ end = struct
      |Cl {pcl_desc= Pcl_fun _}, Ppat_constraint _
      |Cl {pcl_desc= Pcl_fun _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _}, Ppat_construct _
+     |Cl {pcl_desc= Pcl_fun _}, Ppat_alias _
      |( Exp
           { pexp_desc=
               Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _ }
