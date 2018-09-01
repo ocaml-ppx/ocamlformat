@@ -1605,7 +1605,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                     (Cmts.fmt_within c.cmts ~pro:(fmt " ") ~epi:(fmt " ")
                        pexp_loc)
                 $ fmt_atrs ))
-    | _ -> fmt_longident_loc c lid $ fmt_atrs )
+    | Lident "::" ->
+        wrap_if parens "(" ")"
+          (wrap "(" ")" (fmt_longident_loc c lid $ fmt_atrs))
+    | _ -> wrap_if parens "(" ")" (fmt_longident_loc c lid $ fmt_atrs) )
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
