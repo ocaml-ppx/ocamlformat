@@ -1464,8 +1464,11 @@ end = struct
           ( _
           , PStr
               [ { pstr_desc=
-                    Pstr_eval ({pexp_desc= Pexp_new _ | Pexp_object _}, _)
-                } ] ) ->
+                    Pstr_eval
+                      ( { pexp_desc=
+                            ( Pexp_new _ | Pexp_object _ | Pexp_while _
+                            | Pexp_for _ ) }
+                      , _ ) } ] ) ->
           Some Apply
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus

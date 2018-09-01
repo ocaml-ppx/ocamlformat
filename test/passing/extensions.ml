@@ -74,3 +74,7 @@ let _ =
 
 let _ =
   [%expr let x = e in f y][@x]
+
+
+let _ = f (for i = 0 to 1 do () done) (while true do () done)
+let _ = f (for%ext i = 0 to 1 do () done) (while%ext true do () done)
