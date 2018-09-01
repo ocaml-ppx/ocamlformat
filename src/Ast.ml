@@ -1171,19 +1171,24 @@ end = struct
             ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
             , e1 :: indices )
           when Option.is_some (index_op_get_sugar txt indices) ->
-            let _, indices =
+            let _, indices' =
               Option.value_exn (index_op_get_sugar txt indices)
             in
-            assert (e0 == exp || snd_f e1 || List.exists indices ~f)
+            assert (
+              e0 == exp || snd_f e1
+              || List.exists indices ~f:snd_f
+              || List.exists indices' ~f )
         | Pexp_apply
             ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
             , e1 :: indices )
           when Option.is_some (index_op_set_sugar txt indices) ->
-            let _, indices, e =
+            let _, indices', e =
               Option.value_exn (index_op_set_sugar txt indices)
             in
             assert (
-              e0 == exp || snd_f e1 || List.exists indices ~f || e == exp )
+              e0 == exp || snd_f e1
+              || List.exists indices ~f:snd_f
+              || List.exists indices' ~f || e == exp )
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
@@ -1374,15 +1379,15 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_apply
-          ( { pexp_desc=
-                Pexp_ident
-                  {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
-            }
-          , (_, a1) :: (_, a2) :: _ ) ->
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, a1) :: args)
+        when Option.is_some (index_op_get_sugar txt args) ->
+          if a1 == exp then Some (Dot, Left) else Some (Comma, Left)
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, a1) :: args)
+        when Option.is_some (index_op_set_sugar txt args) ->
+          let _, _, e = Option.value_exn (index_op_set_sugar txt args) in
           if a1 == exp then Some (Dot, Left)
-          else if a2 == exp then Some (Comma, Left)
-          else Some (Comma, Right)
+          else if e == exp then Some (Comma, Right)
+          else Some (Comma, Left)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [(_, e1); _])
         -> (
           let child = if e1 == exp then Left else Right in
@@ -1457,13 +1462,12 @@ end = struct
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
         )
-      | Pexp_apply
-          ( { pexp_desc=
-                Pexp_ident
-                  {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
-            }
-          , _ :: _ :: _ ) ->
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+        when Option.is_some (index_op_get_sugar txt args) ->
           Some Dot
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+        when Option.is_some (index_op_set_sugar txt args) ->
+          Some Comma
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_; _]) -> (
         match (i.[0], i) with
         | _, ":=" -> Some ColonEqual
