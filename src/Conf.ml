@@ -105,7 +105,8 @@ module C : sig
 
   val section_name : [`Formatting | `Operational] -> string
 
-  val choice : all:(string * 'a * string) list -> 'a option_decl
+  val choice :
+    ?has_default:bool -> all:(string * 'a * string) list -> 'a option_decl
 
   val flag : default:bool -> bool option_decl
 
@@ -153,12 +154,14 @@ end = struct
     if cond || Poly.(section = `Operational) then ""
     else "Cannot be set in attributes."
 
-  let generated_choice_doc ~allow_inline ~all ~doc ~section =
+  let generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default =
     let open Format in
     let default =
-      asprintf "The default value is $(b,%a)."
-        (fun fs (v, _, _) -> fprintf fs "%s" v)
-        (List.hd_exn all)
+      if has_default then
+        asprintf "The default value is $(b,%a)."
+          (fun fs (v, _, _) -> fprintf fs "%s" v)
+          (List.hd_exn all)
+      else ""
     in
     asprintf "%s %a %s %s" doc
       (pp_print_list
@@ -187,11 +190,12 @@ end = struct
     | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
     | `Operational -> Cmdliner.Manpage.s_options
 
-  let choice ~all ~names ~doc ~section
+  let choice ?(has_default = true) ~all ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) update =
-    let open Cmdliner in
     let _, default, _ = List.hd_exn all in
-    let doc = generated_choice_doc ~allow_inline ~all ~doc ~section in
+    let doc =
+      generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default
+    in
     let docv = generated_choice_docv ~all in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let docs = section_name section in
@@ -760,23 +764,6 @@ let config =
     Arg.(
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
-let validate () =
-  if List.is_empty !inputs then
-    `Error (false, "Must specify at least one input file, or `-` for stdin")
-  else if
-    List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
-  then `Error (false, "Must specify name when reading from stdin")
-  else if !inplace && Option.is_some !name then
-    `Error (false, "Cannot specify --name with --inplace")
-  else if !inplace && Option.is_some !output then
-    `Error (false, "Cannot specify --output with --inplace")
-  else if (not !inplace) && List.length !inputs > 1 then
-    `Error (false, "Must specify exactly one input file without --inplace")
-  else `Ok ()
-
-;;
-parse info validate
-
 let default =
   { break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
@@ -809,6 +796,62 @@ let default =
   ; type_decl= C.default Formatting.type_decl
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
+
+let janestreet_profile =
+  { default with
+    break_cases= `Fit
+  ; break_infix= `Fit_or_vertical
+  ; break_string_literals= `Wrap
+  ; doc_comments= `Before
+  ; extension_sugar= `Preserve
+  ; field_space= `Loose
+  ; if_then_else= `Keyword_first
+  ; indicate_nested_or_patterns= false
+  ; infix_precedence= `Parens
+  ; leading_nested_match_parens= true
+  ; let_and= `Sparse
+  ; let_open= `Preserve
+  ; margin= 90
+  ; ocp_indent_compat= true
+  ; parens_tuple= `Multi_line_only
+  ; sequence_style= `Terminator
+  ; type_decl= `Sparse
+  ; wrap_fun_args= false
+  ; module_item_spacing= `Compact }
+
+let _profile =
+  let doc =
+    "Preset profiles which set $(i,all) options, overriding lower priority \
+     configuration."
+  in
+  let names = ["p"; "profile"] in
+  let all =
+    [ ( "default"
+      , Some default
+      , "$(b,default) sets each option to its default value." )
+    ; ( "janestreet"
+      , Some janestreet_profile
+      , "$(b,janestreet) is the profile used at JaneStreet." ) ]
+  in
+  C.choice ~names ~all ~doc ~section ~has_default:false (fun conf p ->
+      Option.value p ~default:conf )
+
+let validate () =
+  if List.is_empty !inputs then
+    `Error (false, "Must specify at least one input file, or `-` for stdin")
+  else if
+    List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
+  then `Error (false, "Must specify name when reading from stdin")
+  else if !inplace && Option.is_some !name then
+    `Error (false, "Cannot specify --name with --inplace")
+  else if !inplace && Option.is_some !output then
+    `Error (false, "Cannot specify --output with --inplace")
+  else if (not !inplace) && List.length !inputs > 1 then
+    `Error (false, "Must specify exactly one input file without --inplace")
+  else `Ok ()
+
+;;
+parse info validate
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
