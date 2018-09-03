@@ -150,6 +150,10 @@ val exposed_right_exp : cls -> expression -> bool
 (** [exposed_right_exp cls exp] holds if there is a right-most subexpression
     of [exp] which is of class [cls] and is not parenthesized. *)
 
+val exposed_left_exp : expression -> bool
+(** [exposed_left_exp exp] holds if the left-most subexpression of [exp] is
+    a prefix operators. *)
+
 val prec_ast : t -> prec option
 (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
     operators, otherwise returns [None]. *)

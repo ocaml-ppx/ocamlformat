@@ -1415,11 +1415,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
           String.sub op ~pos:1 ~len:(String.length op - 1)
         else op
       in
-      let spc =
-        match e1 with
-        | {pexp_desc= Pexp_apply (op, _)} when is_prefix op -> fmt "@ "
-        | _ -> fmt ""
-      in
+      let spc = if exposed_left_exp e1 then fmt "@ " else fmt "" in
       wrap_if parens "(" ")"
         ( Cmts.fmt c.cmts pexp_loc
         @@ hvbox 2 (str op $ spc $ fmt_expression c (sub_exp ~ctx e1)) )
@@ -2307,7 +2303,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
                 is_prefix ast
                 &&
                 match next with
-                | Some (_, {pexp_desc= Pexp_apply (op, _)}) -> is_prefix op
+                | Some (_, e) -> exposed_left_exp e
                 | _ -> false
               in
               let spc =

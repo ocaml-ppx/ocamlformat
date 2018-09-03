@@ -613,6 +613,8 @@ and Requires_sub_terms : sig
 
   val exposed_right_exp : cls -> expression -> bool
 
+  val exposed_left_exp : expression -> bool
+
   val exposed_left_typ : core_type -> bool
 
   val exposed_right_typ : core_type -> bool
@@ -1706,6 +1708,12 @@ end = struct
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
     memo
+
+  let rec exposed_left_exp e =
+    match e.pexp_desc with
+    | Pexp_apply (op, _) -> is_prefix op || exposed_left_exp op
+    | Pexp_field (e, _) -> exposed_left_exp e
+    | _ -> false
 
   (** [exposed cls exp] holds if there is a right-most subexpression of
       [exp] which satisfies [mem_cls_exp cls] and is not parenthesized. *)
