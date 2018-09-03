@@ -1879,6 +1879,10 @@ end = struct
             Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, _) } )
       when is_infix op && not (e1 == exp) ->
         true
+    | ( Exp {pexp_desc= Pexp_apply (e, _)}
+      , {pexp_desc= Pexp_construct _ | Pexp_variant _} )
+      when e == exp ->
+        true
     | Exp {pexp_desc}, _ -> (
       match pexp_desc with
       | Pexp_extension
