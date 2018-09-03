@@ -953,6 +953,31 @@ let rec read_conf_files conf ~dir ~parents =
     with Sys_error _ -> conf
   else conf
 
+let is_project_root dir =
+  Caml.Sys.file_exists (Filename.concat dir ".git")
+  || Caml.Sys.file_exists (Filename.concat dir ".hg")
+  || Caml.Sys.file_exists (Filename.concat dir "dune-project")
+
+let with_parent ~dir f =
+  let dir' = Filename.dirname dir in
+  (not (String.equal dir dir')) && Caml.Sys.file_exists dir' && f ~dir:dir'
+
+let rec has_dot_ocamlformat_enabled_in_project ~dir =
+  if Caml.Sys.file_exists (Filename.concat dir ".ocamlformat") then
+    let rec check_inside_project ~dir =
+      is_project_root dir || with_parent ~dir check_inside_project
+    in
+    check_inside_project ~dir
+  else if is_project_root dir then false
+  else with_parent ~dir has_dot_ocamlformat_enabled_in_project
+
+let maybe_disable ~dir config =
+  match Caml.Sys.getenv_opt "OCAMLFORMAT_SCOPE" with
+  | Some "project" ->
+      let enable = has_dot_ocamlformat_enabled_in_project ~dir in
+      {config with disable= not enable}
+  | Some _ | None -> config
+
 let to_absolute file =
   Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
 
@@ -1007,6 +1032,7 @@ let build_config ~filename =
   |> Staged.unstage update_using_xdg
   |> read_config ~filename ~parents:true
   |> update_using_env |> C.update_using_cmdline
+  |> maybe_disable ~dir:(Filename.dirname (to_absolute filename))
 
 let action =
   if !inplace then
