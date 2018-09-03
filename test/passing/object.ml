@@ -236,3 +236,8 @@ class f ((i, o) as io) =
   object (self)
     inherit [a] c (f 1) (fun x -> x) (match x with x -> x) as p
   end
+
+class type ['a] tsv =
+  object
+    inherit [ < sep: [`tab] ; comment: [`sharp] ; .. > as 'a] tabular
+  end

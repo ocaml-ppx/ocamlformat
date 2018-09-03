@@ -1968,6 +1968,7 @@ end = struct
     | Ptyp_arrow (_, t, _) -> exposed_left_typ t
     | Ptyp_tuple l -> exposed_left_typ (List.hd_exn l)
     | Ptyp_object _ -> true
+    | Ptyp_alias (typ, _) -> exposed_left_typ typ
     | _ -> false
 
   let rec exposed_right_typ typ =
