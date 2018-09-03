@@ -1707,7 +1707,7 @@ end = struct
 
   let rec exposed_left_exp e =
     match e.pexp_desc with
-    | Pexp_apply (op, _) when is_prefix op -> true
+    | Pexp_apply (op, _) -> is_prefix op || exposed_left_exp op
     | Pexp_field (e, _) -> exposed_left_exp e
     | _ -> false
 
