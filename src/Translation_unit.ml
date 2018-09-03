@@ -37,7 +37,10 @@ type x = XUnit : 'a t -> x
 
 exception Warning50 of (Location.t * Warnings.t) list
 
-exception Internal_error of string * (string * Sexp.t) list
+exception
+  Internal_error of
+    [`Ast | `Doc_comment | `Comment | `Comment_dropped]
+    * (string * Sexp.t) list
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
 
@@ -117,7 +120,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   let base = Filename.(remove_extension (basename input_name)) in
   let ext = Filename.extension input_name in
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~ast ~comments ~source_txt ~source_file : result =
+  let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~source_txt
+      ~source_file : result =
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
       else
@@ -135,6 +139,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     xunit.fmt source cmts_t conf ast fs ;
     Format.pp_print_newline fs () ;
     Out_channel.close oc ;
+    let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
     if String.equal source_txt fmted then (
       match (Conf.action, ofile) with
@@ -147,7 +152,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
       | Inplace _, Some _ -> Unix.unlink tmp ; Ok )
     else
       match
-        Location.input_name := input_name ;
+        Location.input_name := tmp ;
         In_channel.with_file tmp ~f:(parse xunit.parse conf)
       with
       | exception e -> Ocamlformat_bug e
@@ -162,19 +167,21 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             dump xunit dir base ".old" ".ast" (xunit.normalize old) ;
             dump xunit dir base ".new" ".ast" (xunit.normalize new_) ;
             if not Conf.debug then Unix.unlink tmp ;
-            internal_error "formatting changed ast"
-              [("output file", String.sexp_of_t tmp)] ) ;
+            if xunit.equal ~ignore_doc_comments:true old new_ then
+              internal_error `Doc_comment
+                [("output file", String.sexp_of_t tmp)]
+            else internal_error `Ast [("output file", String.sexp_of_t tmp)] ) ;
           (* Comments not preserved ? *)
           if conf.comment_check then (
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
-            | l -> internal_error "formatting lost comments" l ) ;
+            | l -> internal_error `Comment_dropped l ) ;
             let diff_cmts = Cmts.diff comments new_.comments in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;
               dump xunit dir base ".new" ".ast" new_.ast ;
               if not Conf.debug then Unix.unlink tmp ;
-              internal_error "formatting changed comments"
+              internal_error `Comment
                 [ ( "diff"
                   , Sequence.sexp_of_t
                       (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
@@ -190,8 +197,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             Unstable i )
           else
             let result =
-              print_check ~i:(i + 1) ~ast:new_.ast ~comments:new_.comments
-                ~source_txt:fmted ~source_file:tmp
+              print_check ~i:(i + 1) ~conf ~ast:new_.ast
+                ~comments:new_.comments ~source_txt:fmted ~source_file:tmp
             in
             Unix.unlink tmp ; result
   in
@@ -211,11 +218,25 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         Ok
     | {ast; comments} -> (
       try
-        print_check ~i:1 ~ast ~comments ~source_txt ~source_file:input_file
+        print_check ~i:1 ~conf ~ast ~comments ~source_txt
+          ~source_file:input_file
       with exc -> Ocamlformat_bug exc )
   in
   let fmt = Caml.Format.err_formatter in
   let exe = Filename.basename Sys.argv.(0) in
+  let quiet_unstable = false in
+  let quiet_comments = false in
+  let quiet_doc_comments = false in
+  let quiet_exn exn =
+    match[@ocaml.warning "-28"] exn with
+    | Internal_error ((`Comment | `Comment_dropped), _) -> quiet_comments
+    | Warning50 _ -> quiet_doc_comments
+    | Internal_error (`Doc_comment, _) -> quiet_doc_comments
+    | Internal_error (`Ast, _) -> false
+    | Internal_error (_, _) -> .
+    | Syntaxerr.Error _ | Lexer.Error _ -> false
+    | _ -> false
+  in
   ( match result with
   | Ok -> ()
   | Invalid_source _ when conf.Conf.quiet -> ()
@@ -237,6 +258,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
       | Warning50 l ->
           List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
       | exn -> Format.eprintf "%s\n%!" (Exn.to_string exn) )
+  | Unstable _ when quiet_unstable -> ()
   | Unstable i when i <= 1 ->
       Format.eprintf
         "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
@@ -250,6 +272,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         exe input_file ;
       Format.eprintf
         "  BUG: formatting did not stabilize after %i iterations.\n%!" i
+  | Ocamlformat_bug exn when quiet_exn exn -> ()
   | Ocamlformat_bug exn -> (
       Format.eprintf
         "%s: Cannot process %S.\n\
@@ -266,7 +289,14 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           if Conf.debug then
             List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
       | Internal_error (m, l) ->
-          Format.eprintf "  BUG: %s.\n%!" m ;
+          let s =
+            match m with
+            | `Ast -> "ast changed"
+            | `Doc_comment -> "doc comments changed"
+            | `Comment -> "comments changed"
+            | `Comment_dropped -> "comments dropped"
+          in
+          Format.eprintf "  BUG: %s.\n%!" s ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
                 Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )

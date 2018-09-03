@@ -820,11 +820,12 @@ let parse_line config ~from s =
     | [name; value], `File (filename, lnum) ->
         (* tolerate space separated [var value] to compatibility with older
            config file format *)
-        Format.eprintf
-          "File %S, line %d:\n\
-           Warning: Using deprecated ocamlformat config syntax.\n\
-           Please use `%s = %s`\n"
-          filename lnum name value ;
+        if not config.quiet then
+          Format.eprintf
+            "File %S, line %d:\n\
+             Warning: Using deprecated ocamlformat config syntax.\n\
+             Please use `%s = %s`\n"
+            filename lnum name value ;
         update ~config ~from ~name ~value
     (* special case for disable/enable *)
     | ["enable"], _ -> update ~config ~from ~name:"disable" ~value:"false"
