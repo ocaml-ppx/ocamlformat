@@ -33,6 +33,12 @@ module M = (functor (S : S) () -> struct end : U) (S) (T)
 
 module M = (functor (S : S) (T : T) -> (struct end : U)) (S) (T)
 
+module rec A (S : S) = S
+
+module type S = sig
+  module rec A : functor (S : S) -> S
+end
+
 module M =
   (functor
     (SSSSS : sssssSSSSSSSSSSSSSS)

@@ -3240,7 +3240,8 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
     else str "and"
   in
   let xargs, xmty =
-    sugar_functor_type c ~for_functor_kw:false (sub_mty ~ctx pmd_type)
+    if rec_flag then ([], sub_mty ~ctx pmd_type)
+    else sugar_functor_type c ~for_functor_kw:false (sub_mty ~ctx pmd_type)
   in
   let colon =
     match xmty.ast.pmty_desc with Pmty_alias _ -> false | _ -> true
