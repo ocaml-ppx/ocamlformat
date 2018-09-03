@@ -1177,7 +1177,8 @@ end = struct
             assert (
               e0 == exp || snd_f e1
               || List.exists indices ~f:snd_f
-              || List.exists indices' ~f )
+              || List.length indices <> List.length indices'
+                 && List.exists indices' ~f )
         | Pexp_apply
             ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
             , e1 :: indices )
@@ -1188,7 +1189,9 @@ end = struct
             assert (
               e0 == exp || snd_f e1
               || List.exists indices ~f:snd_f
-              || List.exists indices' ~f || e == exp )
+              || List.length indices = 2
+                 && List.length indices' > 3
+                 && (List.exists indices' ~f || e == exp) )
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
