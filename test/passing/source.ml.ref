@@ -3692,6 +3692,7 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
+
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -3910,6 +3911,7 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
+
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -5422,6 +5424,7 @@ end
 
 (* Applicative functors *)
 module S = String
+
 module StringSet = Set.Make (String)
 module SSet = Set.Make (S)
 
@@ -5506,6 +5509,7 @@ end
 module F (L : module type of L1) = struct end
 
 module F1 = F (L1)
+
 (* ok *)
 module F2 = F (L2)
 
@@ -5746,6 +5750,7 @@ end
    module L : module type of List end = A *)
 
 include D'
+
 (* let () = print_endline (string_of_int D'.M.y) *)
 open A
 

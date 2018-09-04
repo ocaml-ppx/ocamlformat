@@ -102,3 +102,9 @@ and a = a
 and a = a
 and a = a
 and a = a
+
+let x = 1
+
+(* floating *)
+
+let y = 2
