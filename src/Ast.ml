@@ -193,11 +193,6 @@ end
 module Structure_item : Module_item with type t = structure_item = struct
   type t = structure_item
 
-  let has_cmts cmts itm =
-    Cmts.has_before cmts itm.pstr_loc
-    || Cmts.has_within cmts itm.pstr_loc
-    || Cmts.has_after cmts itm.pstr_loc
-
   let has_doc itm =
     match itm.pstr_desc with
     | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
@@ -268,7 +263,9 @@ module Structure_item : Module_item with type t = structure_item = struct
     | _ -> true
 
   let break_between cmts (i1, c1) (i2, c2) =
-    has_cmts cmts i1 || has_cmts cmts i2 || has_doc i1 || has_doc i2
+    Cmts.has_after cmts i1.pstr_loc
+    || Cmts.has_before cmts i2.pstr_loc
+    || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || (not (is_simple (i2, c2)))
     || not (allow_adjacent (i1, c1) (i2, c2))
@@ -276,11 +273,6 @@ end
 
 module Signature_item : Module_item with type t = signature_item = struct
   type t = signature_item
-
-  let has_cmts cmts itm =
-    Cmts.has_before cmts itm.psig_loc
-    || Cmts.has_within cmts itm.psig_loc
-    || Cmts.has_after cmts itm.psig_loc
 
   let has_doc itm =
     match itm.psig_desc with
@@ -339,7 +331,9 @@ module Signature_item : Module_item with type t = signature_item = struct
     | _ -> true
 
   let break_between cmts (i1, c1) (i2, c2) =
-    has_cmts cmts i1 || has_cmts cmts i2 || has_doc i1 || has_doc i2
+    Cmts.has_after cmts i1.psig_loc
+    || Cmts.has_before cmts i2.psig_loc
+    || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || (not (is_simple (i2, c2)))
     || not (allow_adjacent (i1, c1) (i2, c2))
@@ -348,18 +342,14 @@ end
 module Expression : Module_item with type t = expression = struct
   type t = expression
 
-  let has_cmts cmts itm =
-    Cmts.has_before cmts itm.pexp_loc
-    || Cmts.has_within cmts itm.pexp_loc
-    || Cmts.has_after cmts itm.pexp_loc
-
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.width i.pexp_loc <= c.Conf.margin
     && Location.is_single_line i.pexp_loc
 
   let break_between cmts (i1, c1) (i2, c2) =
-    has_cmts cmts i1 || has_cmts cmts i2
+    Cmts.has_after cmts i1.pexp_loc
+    || Cmts.has_before cmts i2.pexp_loc
     || (not (is_simple (i1, c1)))
     || not (is_simple (i2, c2))
 end

@@ -3692,7 +3692,6 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
-
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -3911,7 +3910,6 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
-
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -5424,7 +5422,6 @@ end
 
 (* Applicative functors *)
 module S = String
-
 module StringSet = Set.Make (String)
 module SSet = Set.Make (S)
 
