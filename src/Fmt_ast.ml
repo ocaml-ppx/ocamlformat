@@ -3508,7 +3508,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; psp=
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 2>" "@;<1 2>")
-      ; bdy= within $ fmt_structure c ctx sis
+      ; bdy= within $ fmt_structure ~in_module:true c ctx sis
       ; cls= close_box
       ; esp=
           fmt_if_k (not empty)
@@ -3597,7 +3597,7 @@ and fmt_toplevel_phrase c ctx = function
       | Pdir_ident longident -> fmt " " $ fmt_longident longident
       | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool) )
 
-and fmt_structure c ctx itms =
+and fmt_structure ?(in_module = false) c ctx itms =
   let _, itms =
     List.fold_map itms ~init:c ~f:(fun c i ->
         let c =
@@ -3621,7 +3621,11 @@ and fmt_structure c ctx itms =
   in
   hvbox 0
     (list_fl grps (fun ~first ~last grp ->
-         fmt_if (not first) "\n@\n" $ fmt_grp ~last grp ))
+         fmt_if_k (not first)
+           (fmt_or
+              (in_module && (not c.conf.break_struct) && (last || first))
+              "@;<1 0>" "\n@\n")
+         $ fmt_grp ~last grp ))
 
 and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
