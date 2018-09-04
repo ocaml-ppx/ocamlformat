@@ -187,7 +187,7 @@ let doc_atrs atrs =
 module type Module_item = sig
   type t
 
-  val break_between : t * Conf.t -> t * Conf.t -> bool
+  val break_between : Cmts.t -> t * Conf.t -> t * Conf.t -> bool
 end
 
 module Structure_item : Module_item with type t = structure_item = struct
@@ -262,8 +262,10 @@ module Structure_item : Module_item with type t = structure_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between (i1, c1) (i2, c2) =
-    has_doc i1 || has_doc i2
+  let break_between cmts (i1, c1) (i2, c2) =
+    Cmts.has_after cmts i1.pstr_loc
+    || Cmts.has_before cmts i2.pstr_loc
+    || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || (not (is_simple (i2, c2)))
     || not (allow_adjacent (i1, c1) (i2, c2))
@@ -328,8 +330,10 @@ module Signature_item : Module_item with type t = signature_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between (i1, c1) (i2, c2) =
-    has_doc i1 || has_doc i2
+  let break_between cmts (i1, c1) (i2, c2) =
+    Cmts.has_after cmts i1.psig_loc
+    || Cmts.has_before cmts i2.psig_loc
+    || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || (not (is_simple (i2, c2)))
     || not (allow_adjacent (i1, c1) (i2, c2))
@@ -343,8 +347,11 @@ module Expression : Module_item with type t = expression = struct
     && Location.width i.pexp_loc <= c.Conf.margin
     && Location.is_single_line i.pexp_loc
 
-  let break_between (i1, c1) (i2, c2) =
-    (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
+  let break_between cmts (i1, c1) (i2, c2) =
+    Cmts.has_after cmts i1.pexp_loc
+    || Cmts.has_before cmts i2.pexp_loc
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
 end
 
 let may_force_break (c : Conf.t) s =
@@ -480,11 +487,11 @@ end
 
 include T
 
-let break_between (i1, c1) (i2, c2) =
+let break_between cmts (i1, c1) (i2, c2) =
   match (i1, i2) with
-  | Str i1, Str i2 -> Structure_item.break_between (i1, c1) (i2, c2)
-  | Sig i1, Sig i2 -> Signature_item.break_between (i1, c1) (i2, c2)
-  | Exp i1, Exp i2 -> Expression.break_between (i1, c1) (i2, c2)
+  | Str i1, Str i2 -> Structure_item.break_between cmts (i1, c1) (i2, c2)
+  | Sig i1, Sig i2 -> Signature_item.break_between cmts (i1, c1) (i2, c2)
+  | Exp i1, Exp i2 -> Expression.break_between cmts (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Precedence levels of Ast terms. *)

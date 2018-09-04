@@ -3016,7 +3016,7 @@ and fmt_signature c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        Ast.break_between (Sig itmI, cI.conf) (Sig itmJ, cJ.conf) )
+        Ast.break_between c.cmts (Sig itmI, cI.conf) (Sig itmJ, cJ.conf) )
   in
   let fmt_grp itms =
     list itms "@\n" (fun (i, c) ->
@@ -3610,7 +3610,7 @@ and fmt_structure c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        Ast.break_between (Str itmI, cI.conf) (Str itmJ, cJ.conf) )
+        Ast.break_between c.cmts (Str itmI, cI.conf) (Str itmJ, cJ.conf) )
   in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
@@ -3693,7 +3693,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         List.group bindings ~break:(fun (itmI, cI) (itmJ, cJ) ->
             (not (List.is_empty itmI.pvb_attributes))
             || (not (List.is_empty itmJ.pvb_attributes))
-            || Ast.break_between
+            || Ast.break_between c.cmts
                  (Exp itmI.pvb_expr, cI.conf)
                  (Exp itmJ.pvb_expr, cJ.conf) )
       in

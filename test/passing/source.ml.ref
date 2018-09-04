@@ -5506,6 +5506,7 @@ end
 module F (L : module type of L1) = struct end
 
 module F1 = F (L1)
+
 (* ok *)
 module F2 = F (L2)
 
@@ -5746,6 +5747,7 @@ end
    module L : module type of List end = A *)
 
 include D'
+
 (* let () = print_endline (string_of_int D'.M.y) *)
 open A
 

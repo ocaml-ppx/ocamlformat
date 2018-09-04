@@ -68,7 +68,7 @@ type t =
   | Str of structure_item
   | Top
 
-val break_between : t * Conf.t -> t * Conf.t -> bool
+val break_between : Cmts.t -> t * Conf.t -> t * Conf.t -> bool
 
 val dump : Format.formatter -> t -> unit
 (** Debug: Dump the representation of an Ast term. *)
