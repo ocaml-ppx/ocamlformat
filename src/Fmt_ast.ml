@@ -1354,7 +1354,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                " ;@;<1000 0>"
                (fun grp -> list grp " ;@ " (fmt_expression c)) ))
   | Pexp_apply
-      ( {pexp_desc= Pexp_ident {txt= Lident "|>"}; pexp_attributes= []}
+      ( {pexp_desc= Pexp_ident {txt= Lident "|>"; loc}; pexp_attributes= []}
       , [ (Nolabel, e0)
         ; ( Nolabel
           , { pexp_desc=
@@ -1369,7 +1369,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
            ( fmt_expression c (sub_exp ~ctx e0)
-           $ fmt "@\n|>@\n"
+           $ fmt "@\n"
+           $ Cmts.fmt c.cmts loc (fmt "|>@\n")
            $ hvbox 2
                (wrap "[" "]"
                   ( str "%"
