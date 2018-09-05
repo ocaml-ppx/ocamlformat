@@ -14,7 +14,7 @@ include (
     module type of struct
       include Ast_407
     end
-    with module Location := Ast_407.Location )
+    with module Location := Ast_407.Location)
 
 module Parse = struct
   open Migrate_parsetree
@@ -28,7 +28,7 @@ module Parse = struct
       ~f:(fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
-        | Ptop_def (_ :: _) | Ptop_dir _ -> true )
+        | Ptop_def (_ :: _) | Ptop_dir _ -> true)
 end
 
 let to_current =
@@ -45,14 +45,14 @@ module Printast = struct
 
   let payload n f (x : Parsetree.payload) =
     payload n f
-      ( match x with
+      (match x with
       | PStr x -> PStr (to_current.copy_structure x)
       | PSig x -> PSig (to_current.copy_signature x)
       | PTyp x -> PTyp (to_current.copy_core_type x)
       | PPat (x, y) ->
           PPat
             ( to_current.copy_pattern x
-            , Option.map ~f:to_current.copy_expression y ) )
+            , Option.map ~f:to_current.copy_expression y ))
 
   let copy_directive_argument (x : Parsetree.directive_argument) =
     let open Migrate_parsetree.Versions.OCaml_current.Ast.Parsetree in
@@ -69,7 +69,7 @@ module Printast = struct
         | Ptop_def s ->
             top_phrase f (Ptop_def (to_current.copy_structure s))
         | Ptop_dir (d, a) ->
-            top_phrase f (Ptop_dir (d, copy_directive_argument a)) )
+            top_phrase f (Ptop_dir (d, copy_directive_argument a)))
 end
 
 module Pprintast = struct
@@ -93,15 +93,15 @@ let map_use_file mapper use_file =
       match (toplevel_phrase : toplevel_phrase) with
       | Ptop_def structure ->
           Ptop_def (mapper.Ast_mapper.structure mapper structure)
-      | Ptop_dir _ as d -> d )
+      | Ptop_dir _ as d -> d)
 
 module Position = struct
   open Lexing
   module Format = Format_
 
-  let column {pos_bol; pos_cnum} = pos_cnum - pos_bol
+  let column { pos_bol; pos_cnum } = pos_cnum - pos_bol
 
-  let fmt fs {pos_lnum; pos_bol; pos_cnum} =
+  let fmt fs { pos_lnum; pos_bol; pos_cnum } =
     if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
     else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 
@@ -117,7 +117,7 @@ module Location = struct
   include Ast_407.Location
   module Format = Format_
 
-  let fmt fs {loc_start; loc_end; loc_ghost} =
+  let fmt fs { loc_start; loc_end; loc_ghost } =
     Format.fprintf fs "(%a..%a)%s" Position.fmt loc_start Position.fmt
       loc_end
       (if loc_ghost then " ghost" else "")

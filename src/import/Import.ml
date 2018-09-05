@@ -23,7 +23,7 @@ include (
         with module Filename := Base.Filename
          and module Format := Base.Format
          and module Scanf := Base.Scanf
-    end )
+    end)
 
 include Option.Monad_infix
 include Stdio
@@ -40,5 +40,5 @@ let user_error msg kvs =
 let check f x =
   assert (
     ignore (f x) ;
-    true ) ;
+    true) ;
   x

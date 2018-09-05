@@ -142,6 +142,10 @@ val wrap_fits_breaks_if : bool -> string -> string -> t -> t
 (** As [wrap_fits_breaks], but prologue and epilogue are formatted subject
     to the additional condition. *)
 
+val wrap_fits_breaks_and_space : string -> string -> t -> t
+(** As [wrap], but a space is added after prologue and a space hint is added
+    before epilogue in case the enclosing box breaks. *)
+
 (** Boxes ---------------------------------------------------------------*)
 
 val open_vbox : int -> t

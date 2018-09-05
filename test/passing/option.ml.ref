@@ -18,7 +18,7 @@ let[@ocamlformat "if-then-else=keyword-first"] _ =
   then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )
+    this is more)
 
 let[@ocamlformat.typo "if-then-else=keyword-first"] _ =
   if b then e
@@ -47,7 +47,7 @@ module M = struct
     else (
       something loooooooooooooooooooooooooooooooong enough to_trigger a
         break ;
-      this is more )
+      this is more)
 
   let _ =
     if b
@@ -55,7 +55,7 @@ module M = struct
     else (
       something loooooooooooooooooooooooooooooooong enough to_trigger a
         break ;
-      this is more )
+      this is more)
 
   let _ =
     if b
@@ -63,7 +63,7 @@ module M = struct
     else (
       something loooooooooooooooooooooooooooooooong enough to_trigger a
         break ;
-      this is more )
+      this is more)
 
   [@@@ocamlformat "if-then-else=compact"]
 

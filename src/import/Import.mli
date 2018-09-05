@@ -23,7 +23,7 @@ include module type of (
         with module Filename := Base.Filename
          and module Format := Base.Format
          and module Scanf := Base.Scanf
-    end )
+    end)
 
 include module type of Option.Monad_infix
 

@@ -31,8 +31,9 @@ let string_at t (l : Location.t) =
 let merge (l1 : Location.t) ~(sub : Location.t) =
   let base = l1.loc_start.pos_cnum in
   { l1 with
-    loc_start= {l1.loc_start with pos_cnum= base + sub.loc_start.pos_cnum}
-  ; loc_end= {l1.loc_end with pos_cnum= base + sub.loc_end.pos_cnum} }
+    loc_start= { l1.loc_start with pos_cnum= base + sub.loc_start.pos_cnum }
+  ; loc_end= { l1.loc_end with pos_cnum= base + sub.loc_end.pos_cnum }
+  }
 
 let string_from_loc t (l : Location.t) =
   let pos = l.loc_start.pos_cnum in
@@ -58,7 +59,7 @@ let tokens_at t ?(filter = fun _ -> true) (l : Location.t) :
   loop []
 
 let find_after t f (loc : Location.t) =
-  let loc = {loc with loc_start= loc.loc_end} in
+  let loc = { loc with loc_start= loc.loc_end } in
   let pos = ref loc.loc_end.pos_cnum in
   let lexbuf =
     Lexing.from_function (fun bytes available ->
@@ -66,7 +67,7 @@ let find_after t f (loc : Location.t) =
         Bytes.From_string.blit ~src:t ~src_pos:!pos ~dst:bytes ~dst_pos:0
           ~len:to_write ;
         pos := !pos + to_write ;
-        to_write )
+        to_write)
   in
   let rec loop () =
     match Lexer.token lexbuf with
@@ -84,7 +85,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
   let last_loc =
     List.fold l ~init:loc
       ~f:(fun (acc : Location.t)
-         (({loc; _}, payload) : Parsetree.attribute)
+         (({ loc; _ }, payload) : Parsetree.attribute)
          ->
         if loc.loc_ghost then acc
         else
@@ -98,13 +99,14 @@ let extend_loc_to_include_attributes t (loc : Location.t)
             | PPat (p, None) -> p.ppat_loc
             | PPat (_, Some e) -> e.pexp_loc
           in
-          if Location.compare_end loc acc <= 0 then acc else loc )
+          if Location.compare_end loc acc <= 0 then acc else loc)
   in
   if phys_equal last_loc loc then loc
   else
     let loc =
       { loc with
-        loc_end= {loc.loc_end with pos_cnum= last_loc.loc_end.pos_cnum} }
+        loc_end= { loc.loc_end with pos_cnum= last_loc.loc_end.pos_cnum }
+      }
     in
     let count = ref 0 in
     let l =
@@ -123,10 +125,10 @@ let extend_loc_to_include_attributes t (loc : Location.t)
     in
     match l with
     | None -> impossible "Invariant of the token stream"
-    | Some e -> {loc with loc_end= e.loc_end}
+    | Some e -> { loc with loc_end= e.loc_end }
 
 let loc_between ~(from : Location.t) ~(upto : Location.t) : Location.t =
-  {from with loc_start= from.loc_end; loc_end= upto.loc_start}
+  { from with loc_start= from.loc_end; loc_end= upto.loc_start }
 
 let tokens_between t ?(filter = fun _ -> true) ~(from : Location.t)
     ~(upto : Location.t) : (Parser.token * Location.t) list =
@@ -137,9 +139,9 @@ let contains_IN_token_between t ~(from : Location.t) ~(upto : Location.t) =
   Source_code_position.ascending from.loc_start upto.loc_start < 0
   && not (List.is_empty (tokens_between t ~from ~upto ~filter))
 
-let is_long_pexp_open source {Parsetree.pexp_desc} =
+let is_long_pexp_open source { Parsetree.pexp_desc } =
   match pexp_desc with
-  | Pexp_open (_, {loc}, {pexp_loc}) ->
+  | Pexp_open (_, { loc }, { pexp_loc }) ->
       contains_IN_token_between source ~from:loc ~upto:pexp_loc
   | _ -> false
 
@@ -157,7 +159,7 @@ let string_literal t mode (l : Location.t) =
       l
   in
   match toks with
-  | [(Parser.STRING (_, None), loc)]
+  | [ (Parser.STRING (_, None), loc) ]
    |(Parser.STRING (_, None), loc)
     :: ( Parser.LBRACKETATATAT, _
        | Parser.LBRACKETATAT, _
@@ -166,7 +168,7 @@ let string_literal t mode (l : Location.t) =
       Literal_lexer.string mode (lexbuf_from_loc t loc)
   | _ ->
       user_error "location does not contain a string literal"
-        [("text", Sexp.Atom (string_from_loc t l))]
+        [ ("text", Sexp.Atom (string_from_loc t l)) ]
 
 let char_literal t (l : Location.t) =
   (* the location of a [char] might include surrounding comments and
@@ -182,7 +184,7 @@ let char_literal t (l : Location.t) =
       l
   in
   match toks with
-  | [(Parser.CHAR _, loc)]
+  | [ (Parser.CHAR _, loc) ]
    |(Parser.CHAR _, loc)
     :: ( Parser.LBRACKETATATAT, _
        | Parser.LBRACKETATAT, _
@@ -191,7 +193,7 @@ let char_literal t (l : Location.t) =
       Literal_lexer.char (lexbuf_from_loc t loc)
   | _ ->
       user_error "location does not contain a char literal"
-        [("text", Sexp.Atom (string_from_loc t l))]
+        [ ("text", Sexp.Atom (string_from_loc t l)) ]
 
 let begins_line t (l : Location.t) =
   let rec begins_line_ cnum =

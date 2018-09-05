@@ -17,27 +17,26 @@ let _ =
 
 ;;
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then ()
-  else () )
+  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then ()
+  else ())
 
 ;;
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
-    ()
-  else () )
+  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
+   ()
+  else ())
 
 ;;
 f
-  ( if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-  then ()
-  else () )
+  (if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+ then ()
+  else ())
 
 ;;
 f
-  ( if
-    and_ even
-      loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-  then ()
-  else () )
+  (if
+   and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+ then ()
+  else ())
 
 let () = if [@test] true then () else if [@other] true then ()

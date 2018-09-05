@@ -1,1 +1,1 @@
-let x = {a= 1; b= true}
+let x = { a= 1; b= true }

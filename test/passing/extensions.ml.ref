@@ -12,7 +12,7 @@ val f : compare:[%compare: 'a] -> sexp_of:[%sexp_of: 'a] -> t
 
 let invariant t =
   Invariant.invariant [%here] t [%sexp_of: t] (fun () ->
-      assert (check_t_invariant t) )
+      assert (check_t_invariant t))
 
 ;;
 [%e?
@@ -75,7 +75,8 @@ let _ =
     ---> [%expr
            [%e x ~loc [%expr x] x] ;
            iter tail]
-  ; x ]
+  ; x
+  ]
 
 let _ =
   [%expr
@@ -84,18 +85,18 @@ let _ =
 
 let _ =
   f
-    ( for i = 0 to 1 do
-        ()
-      done )
-    ( while true do
-        ()
-      done )
+    (for i = 0 to 1 do
+       ()
+     done)
+    (while true do
+       ()
+     done)
 
 let _ =
   f
-    ( for%ext i = 0 to 1 do
-        ()
-      done )
-    ( while%ext true do
-        ()
-      done )
+    (for%ext i = 0 to 1 do
+       ()
+     done)
+    (while%ext true do
+       ()
+     done)

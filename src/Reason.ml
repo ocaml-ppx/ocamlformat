@@ -26,7 +26,7 @@ let input ast_magic _conf ic =
   in
   if String.equal magic ast_magic then
     let comments = List.map comments ~f:(fun (txt, _, loc) -> (txt, loc)) in
-    {Translation_unit.ast; comments}
+    { Translation_unit.ast; comments }
   else user_error "input not a serialized translation unit" []
 
 let input_impl = input Config.ast_impl_magic_number
@@ -45,12 +45,14 @@ let mapper cmts ~ignore_doc_comments =
   let atr_is_dup =
     let cmts = Set.of_list (module String) (List.map cmts ~f:fst) in
     function
-    | ( {txt= "ocaml.doc" | "ocaml.text"}
+    | ( { txt= "ocaml.doc" | "ocaml.text" }
       , PStr
           [ { pstr_desc=
                 Pstr_eval
-                  ( {pexp_desc= Pexp_constant (Pconst_string (txt, None))}
-                  , [] ) } ] ) ->
+                  ( { pexp_desc= Pexp_constant (Pconst_string (txt, None)) }
+                  , [] )
+            }
+          ] ) ->
         Set.mem cmts ("*" ^ txt)
     | _ -> false
   in
@@ -58,8 +60,8 @@ let mapper cmts ~ignore_doc_comments =
     let atrs =
       if ignore_doc_comments then
         List.filter atrs ~f:(function
-          | {txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-          | _ -> true )
+          | { txt= "ocaml.doc" | "ocaml.text" }, _ -> false
+          | _ -> true)
       else atrs
     in
     (* remove docstrings that duplicate comments *)
@@ -67,15 +69,15 @@ let mapper cmts ~ignore_doc_comments =
     Normalize.mapper.attributes m atrs
   in
   let pat (m : Ast_mapper.mapper) pat =
-    let {ppat_desc; ppat_loc; ppat_attributes} = pat in
+    let { ppat_desc; ppat_loc; ppat_attributes } = pat in
     (* remove explicit_arity attributes *)
     let explicit_arity, attrs =
       List.partition_tf ppat_attributes ~f:(function
-        | {txt= "explicit_arity"}, _ -> true
-        | _ -> false )
+        | { txt= "explicit_arity" }, _ -> true
+        | _ -> false)
     in
     match ppat_desc with
-    | Ppat_construct (id, Some {ppat_desc= Ppat_tuple [p0]})
+    | Ppat_construct (id, Some { ppat_desc= Ppat_tuple [ p0 ] })
       when not (List.is_empty explicit_arity) ->
         m.pat m (Pat.construct ~loc:ppat_loc ~attrs id (Some p0))
     | _ ->
@@ -86,15 +88,15 @@ let mapper cmts ~ignore_doc_comments =
         Normalize.mapper.pat m pat
   in
   let expr (m : Ast_mapper.mapper) exp =
-    let {pexp_desc; pexp_loc; pexp_attributes} = exp in
+    let { pexp_desc; pexp_loc; pexp_attributes } = exp in
     (* remove explicit_arity attributes *)
     let explicit_arity, attrs =
       List.partition_tf pexp_attributes ~f:(function
-        | {txt= "explicit_arity"}, _ -> true
-        | _ -> false )
+        | { txt= "explicit_arity" }, _ -> true
+        | _ -> false)
     in
     match pexp_desc with
-    | Pexp_construct (id, Some {pexp_desc= Pexp_tuple [e0]})
+    | Pexp_construct (id, Some { pexp_desc= Pexp_tuple [ e0 ] })
       when not (List.is_empty explicit_arity) ->
         m.expr m (Exp.construct ~loc:pexp_loc ~attrs id (Some e0))
     | _ ->
@@ -109,23 +111,23 @@ let mapper cmts ~ignore_doc_comments =
        when converting Reason *)
     Normalize.mapper.structure m
       (List.filter pstr ~f:(function
-        | {pstr_desc= Pstr_attribute atr} -> not (atr_is_dup atr)
-        | _ -> true ))
+        | { pstr_desc= Pstr_attribute atr } -> not (atr_is_dup atr)
+        | _ -> true))
   in
   let signature (m : Ast_mapper.mapper) psig =
     (* remove signature items that are attributes that duplicate comments,
        when converting Reason *)
     Normalize.mapper.signature m
       (List.filter psig ~f:(function
-        | {psig_desc= Psig_attribute atr} -> not (atr_is_dup atr)
-        | _ -> true ))
+        | { psig_desc= Psig_attribute atr } -> not (atr_is_dup atr)
+        | _ -> true))
   in
-  {Normalize.mapper with attributes; pat; expr; structure; signature}
+  { Normalize.mapper with attributes; pat; expr; structure; signature }
 
-let norm_impl {Translation_unit.ast; comments} =
+let norm_impl { Translation_unit.ast; comments } =
   map_structure (mapper ~ignore_doc_comments:false comments) ast
 
-let norm_intf {Translation_unit.ast; comments} =
+let norm_intf { Translation_unit.ast; comments } =
   map_signature (mapper ~ignore_doc_comments:false comments) ast
 
 let equal_impl ~ignore_doc_comments x y =
