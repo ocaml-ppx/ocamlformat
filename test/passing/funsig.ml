@@ -57,10 +57,10 @@ external ident :
   arg1_is_loooooooooooooooooooooooooooooooong -> arg2 -> arg3 -> arg4
   = "something" "else"
 
-type t = {field1: a -> b -> c; field2: int; field3: a -> b -> c -> d -> e}
+type t = { field1: a -> b -> c; field2: int; field3: a -> b -> c -> d -> e }
 
 type t =
-  {field1: a -> b -> c; field2: int; field3: a -> b -> c -> d -> e -> f}
+  { field1: a -> b -> c; field2: int; field3: a -> b -> c -> d -> e -> f }
 
 type t =
   { field1: a -> b -> c
@@ -75,4 +75,5 @@ type t =
       a_is_loooooooooooooooooooong -> b_is_loooooooooong -> c -> d -> e
   ; field5:
       a loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
-      typ }
+      typ
+  }

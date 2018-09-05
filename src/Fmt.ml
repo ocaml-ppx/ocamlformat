@@ -42,12 +42,12 @@ let opt o pp fs = Option.iter o ~f:(Fn.flip pp fs)
 let list_pn x1N (pp : ?prev:_ -> _ -> ?next:_ -> _ -> unit) fs =
   match x1N with
   | [] -> ()
-  | [x1] -> pp ?prev:None x1 ?next:None fs
+  | [ x1 ] -> pp ?prev:None x1 ?next:None fs
   | x1 :: (x2 :: _ as x2N) ->
       pp ?prev:None x1 ~next:x2 fs ;
       let rec list_pn_ fs prev = function
         | [] -> ()
-        | [xI] -> pp ~prev xI ?next:None fs
+        | [ xI ] -> pp ~prev xI ?next:None fs
         | xI :: (xJ :: _ as xJN) ->
             pp ~prev xI ~next:xJ fs ; list_pn_ fs xI xJN
       in
@@ -56,7 +56,7 @@ let list_pn x1N (pp : ?prev:_ -> _ -> ?next:_ -> _ -> unit) fs =
 let list_fl xs pp fs =
   list_pn xs
     (fun ?prev x ?next fs ->
-      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs )
+      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs)
     fs
 
 let list xs sep pp fs =
@@ -137,6 +137,12 @@ let wrap_if_fits_and cnd pre suf k fs =
   k fs ;
   fits_breaks_if cnd suf "" fs
 
+let wrap_fits_breaks_and_space pre suf k fs =
+  let pre = pre ^ " " in
+  fits_breaks_if true pre pre fs ;
+  k fs ;
+  fits_breaks_if true (" " ^ suf) ("@;<1000 0>" ^ suf) fs
+
 let wrap_fits_breaks_if cnd pre suf k fs =
   fits_breaks_if cnd pre (pre ^ " ") fs ;
   k fs ;
@@ -200,5 +206,5 @@ let fill_text text =
               | Some str when String.for_all str ~f:Char.is_whitespace ->
                   close_box $ fmt "\n@," $ open_hovbox 0
               | Some _ when not (String.is_empty curr) -> fmt "@ "
-              | _ -> fmt "" )))
+              | _ -> fmt "")))
   $ fmt_if (Char.is_whitespace text.[String.length text - 1]) " "

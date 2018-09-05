@@ -8,14 +8,15 @@ external f : (float[@unboxed]) -> int = "blah" [@@noalloc]
 
 val x : ?x:unit (** not dropped *) -> unit
 
-type t = {a: int; b: int [@default 1] [@drop_if]}
+type t = { a: int; b: int [@default 1] [@drop_if] }
 
 type t =
   { a: int
   ; b: someloooooooooooooooooooooooooooooong typ
          [@default looooooooooooooooooooooooooooooooooooooooong]
          [@drop_if somethingelse]
-  ; b: somelong typ [@default 1] }
+  ; b: somelong typ [@default 1]
+  }
 
 val foo : int
   [@@deprecated "it is good the salad"] [@@warning "-32"] [@@warning "-99"]
@@ -76,7 +77,8 @@ type blocklist =
   { f1: int [@version 1, 1, 0]  (** short comment *)
   ; f2: (int64 * int64) list
         (** loooooooooooooooooooooooooooooong
-            commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *) }
+            commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *)
+  }
 
 type blocklist =
   | F1 of int [@version 1, 1, 0]  (** short comment *)

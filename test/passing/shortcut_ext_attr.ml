@@ -10,13 +10,13 @@ let () =
   [%foo try[@foo] () with _ -> ()] ;
   [%foo if [@foo] () then () else ()] ;
   [%foo
-    ( while () do
-        ()
-      done ) [@foo]] ;
+    (while () do
+       ()
+     done) [@foo]] ;
   [%foo
-    ( for x = () to () do
-        ()
-      done ) [@foo]] ;
+    (for x = () to () do
+       ()
+     done) [@foo]] ;
   () ;%foo
   () ;
   [%foo (assert true) [@foo]] ;

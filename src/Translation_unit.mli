@@ -9,7 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-type 'a with_comments = {ast: 'a; comments: (string * Location.t) list}
+type 'a with_comments = { ast: 'a; comments: (string * Location.t) list }
 
 (** Operations on translation units. *)
 type 'a t =
@@ -24,7 +24,8 @@ type 'a t =
       -> 'a with_comments
       -> bool
   ; normalize: 'a with_comments -> 'a
-  ; printast: Caml.Format.formatter -> 'a -> unit }
+  ; printast: Caml.Format.formatter -> 'a -> unit
+  }
 
 (** Existential package of a type of translation unit and its operations. *)
 type x = XUnit : 'a t -> x

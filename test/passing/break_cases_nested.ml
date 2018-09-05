@@ -1,8 +1,10 @@
 [@@@ocamlformat "break-cases=nested"]
 
 let f x = function
-  | C | P (this, test, [is; wide; enough; _to; break], [the; line]) | A | K
-    ->
+  | C
+  | P (this, test, [ is; wide; enough; _to; break ], [ the; line ])
+  | A
+  | K ->
       1
   | D ->
       let a = "this" in
@@ -44,8 +46,9 @@ let is_sequence exp =
   | Pexp_sequence _
   | Pexp_extension
       ( _
-      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
-      ) ->
+      , PStr
+          [ { pstr_desc= Pstr_eval ({ pexp_desc= Pexp_sequence _ }, []); _ }
+          ] ) ->
       true
   | _ ->
       false

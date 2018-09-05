@@ -20,7 +20,8 @@ let reason_impl : _ Translation_unit.t =
   ; parse
   ; equal= Reason.equal_impl
   ; normalize= Reason.norm_impl
-  ; printast= Migrate_ast.Printast.implementation }
+  ; printast= Migrate_ast.Printast.implementation
+  }
 
 (** Operations on binary serialized Reason interfaces. *)
 let reason_intf : _ Translation_unit.t =
@@ -31,7 +32,8 @@ let reason_intf : _ Translation_unit.t =
   ; parse
   ; equal= Reason.equal_intf
   ; normalize= Reason.norm_intf
-  ; printast= Migrate_ast.Printast.interface }
+  ; printast= Migrate_ast.Printast.interface
+  }
 
 (** Select translation unit type and operations based on kind. *)
 let xunit_of_kind : _ -> Translation_unit.x = function
@@ -41,29 +43,30 @@ let xunit_of_kind : _ -> Translation_unit.x = function
 ;;
 match Conf.action with
 | In_out
-    ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
+    ( { kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf }
     , output_file ) ->
     let file, oc =
       Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
     in
     In_channel.iter_lines stdin ~f:(fun s ->
         Out_channel.output_string oc s ;
-        Out_channel.newline oc ) ;
+        Out_channel.newline oc) ;
     Out_channel.close oc ;
     let result =
       In_channel.with_file file ~f:(fun ic ->
           Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-            ~input_file:file ic output_file )
+            ~input_file:file ic output_file)
     in
     Unix.unlink file ; result
-| In_out ({kind= `Use_file; _}, _) ->
+| In_out ({ kind= `Use_file; _ }, _) ->
     user_error "Cannot convert Reason code with --use-file" []
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; name= input_name
       ; file= input_file
-      ; conf }
+      ; conf
+      }
     , output_file ) ->
     Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
       ~input_file In_channel.stdin output_file

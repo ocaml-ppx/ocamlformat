@@ -33,7 +33,7 @@ let is_prefix_id i =
 
 let is_prefix exp =
   match exp.pexp_desc with
-  | Pexp_ident {txt= Lident i} -> is_prefix_id i
+  | Pexp_ident { txt= Lident i } -> is_prefix_id i
   | _ -> false
 
 let is_infix_id i =
@@ -49,7 +49,7 @@ let is_infix_id i =
 
 let is_infix e =
   match e.pexp_desc with
-  | Pexp_ident {txt= Lident i} -> is_infix_id i
+  | Pexp_ident { txt= Lident i } -> is_infix_id i
   | _ -> false
 
 let parens_kind i =
@@ -86,23 +86,23 @@ let all_args_unlabeled args =
   List.fold_right args ~init:(Some []) ~f:(fun arg acc ->
       match (acc, arg) with
       | Some args, (Asttypes.Nolabel, e) -> Some (e :: args)
-      | _ -> None )
+      | _ -> None)
 
 let index_op_get_sugar (ident : Longident.t) args =
   match all_args_unlabeled args with
   | None -> None
   | Some args -> (
     match (ident, args) with
-    | Ldot (Lident "String", "get"), [_] -> Some (index_op_string, args)
-    | Ldot (Lident "Array", "get"), [_] -> Some (index_op_array, args)
-    | Ldot (Ldot (Lident "Bigarray", "Array1"), "get"), [_] ->
+    | Ldot (Lident "String", "get"), [ _ ] -> Some (index_op_string, args)
+    | Ldot (Lident "Array", "get"), [ _ ] -> Some (index_op_array, args)
+    | Ldot (Ldot (Lident "Bigarray", "Array1"), "get"), [ _ ] ->
         Some (index_op_bigarray, args)
-    | Ldot (Ldot (Lident "Bigarray", "Array2"), "get"), [_; _] ->
+    | Ldot (Ldot (Lident "Bigarray", "Array2"), "get"), [ _; _ ] ->
         Some (index_op_bigarray, args)
-    | Ldot (Ldot (Lident "Bigarray", "Array3"), "get"), [_; _; _] ->
+    | Ldot (Ldot (Lident "Bigarray", "Array3"), "get"), [ _; _; _ ] ->
         Some (index_op_bigarray, args)
     | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "get")
-      , [{pexp_desc= Pexp_array l}] )
+      , [ { pexp_desc= Pexp_array l } ] )
       when List.length l > 3 ->
         Some (index_op_bigarray, l)
     | _ -> None )
@@ -112,24 +112,25 @@ let index_op_set_sugar (ident : Longident.t) args =
   | None -> None
   | Some args -> (
     match (ident, args) with
-    | Ldot (Lident "String", "set"), [a1; e] ->
+    | Ldot (Lident "String", "set"), [ a1; e ] ->
         Some (index_op_string, [a1], e)
-    | Ldot (Lident "Array", "set"), [a1; e] -> Some (index_op_array, [a1], e)
-    | Ldot (Ldot (Lident "Bigarray", "Array1"), "set"), [a1; e] ->
+    | Ldot (Lident "Array", "set"), [ a1; e ] ->
+        Some (index_op_array, [a1], e)
+    | Ldot (Ldot (Lident "Bigarray", "Array1"), "set"), [ a1; e ] ->
         Some (index_op_bigarray, [a1], e)
-    | Ldot (Ldot (Lident "Bigarray", "Array2"), "set"), [a1; a2; e] ->
+    | Ldot (Ldot (Lident "Bigarray", "Array2"), "set"), [ a1; a2; e ] ->
         Some (index_op_bigarray, [a1; a2], e)
-    | Ldot (Ldot (Lident "Bigarray", "Array3"), "set"), [a1; a2; a3; e] ->
+    | Ldot (Ldot (Lident "Bigarray", "Array3"), "set"), [ a1; a2; a3; e ] ->
         Some (index_op_bigarray, [a1; a2; a3], e)
     | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "set")
-      , [{pexp_desc= Pexp_array l}; e] )
+      , [ { pexp_desc= Pexp_array l }; e ] )
       when List.length l > 3 ->
         Some (index_op_bigarray, l, e)
     | _ -> None )
 
 let is_index_op exp =
   match exp.pexp_desc with
-  | Pexp_ident {txt= Lident i} ->
+  | Pexp_ident { txt= Lident i } ->
       Option.is_some (index_op_get i) || Option.is_some (index_op_set i)
   | _ -> false
 
@@ -147,19 +148,21 @@ let is_sequence exp =
   | Pexp_sequence _
    |Pexp_extension
       ( _
-      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
-      ) ->
+      , PStr
+          [ { pstr_desc= Pstr_eval ({ pexp_desc= Pexp_sequence _ }, []); _ }
+          ] ) ->
       true
   | _ -> false
 
 let rec is_sugared_list exp =
   match exp.pexp_desc with
-  | Pexp_construct ({txt= Lident "[]"}, None) -> true
+  | Pexp_construct ({ txt= Lident "[]" }, None) -> true
   | Pexp_construct
-      ( {txt= Lident "::"}
+      ( { txt= Lident "::" }
       , Some
-          { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []} as tl)]
-          ; pexp_attributes= [] } ) ->
+          { pexp_desc= Pexp_tuple [ _; ({ pexp_attributes= [] } as tl) ]
+          ; pexp_attributes= []
+          } ) ->
       is_sugared_list tl
   | _ -> false
 
@@ -170,17 +173,22 @@ let doc_atrs atrs =
         match (doc, atr) with
         | ( None
           , ( { txt= ("ocaml.doc" | "ocaml.text") as txt
-              ; loc= {loc_ghost= true} }
+              ; loc= { loc_ghost= true }
+              }
             , PStr
                 [ { pstr_desc=
                       Pstr_eval
                         ( { pexp_desc=
                               Pexp_constant (Pconst_string (doc, None))
                           ; pexp_loc= loc
-                          ; pexp_attributes= [] }
-                        , [] ) } ] ) ) ->
-            (Some ({txt= doc; loc}, String.equal "ocaml.text" txt), rev_atrs)
-        | _ -> (doc, atr :: rev_atrs) )
+                          ; pexp_attributes= []
+                          }
+                        , [] )
+                  }
+                ] ) ) ->
+            ( Some ({ txt= doc; loc }, String.equal "ocaml.text" txt)
+            , rev_atrs )
+        | _ -> (doc, atr :: rev_atrs))
   in
   (doc, List.rev rev_atrs)
 
@@ -197,22 +205,22 @@ module Structure_item : Module_item with type t = structure_item = struct
     match itm.pstr_desc with
     | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
     | Pstr_eval (_, atrs)
-     |Pstr_value (_, {pvb_attributes= atrs} :: _)
-     |Pstr_primitive {pval_attributes= atrs}
-     |Pstr_type (_, {ptype_attributes= atrs} :: _)
-     |Pstr_typext {ptyext_attributes= atrs}
-     |Pstr_exception {pext_attributes= atrs}
-     |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
-     |Pstr_modtype {pmtd_attributes= atrs}
-     |Pstr_open {popen_attributes= atrs}
+     |Pstr_value (_, { pvb_attributes= atrs } :: _)
+     |Pstr_primitive { pval_attributes= atrs }
+     |Pstr_type (_, { ptype_attributes= atrs } :: _)
+     |Pstr_typext { ptyext_attributes= atrs }
+     |Pstr_exception { pext_attributes= atrs }
+     |Pstr_recmodule ({ pmb_expr= { pmod_attributes= atrs } } :: _)
+     |Pstr_modtype { pmtd_attributes= atrs }
+     |Pstr_open { popen_attributes= atrs }
      |Pstr_extension (_, atrs)
-     |Pstr_class_type ({pci_attributes= atrs} :: _)
-     |Pstr_class ({pci_attributes= atrs} :: _) ->
+     |Pstr_class_type ({ pci_attributes= atrs } :: _)
+     |Pstr_class ({ pci_attributes= atrs } :: _) ->
         Option.is_some (fst (doc_atrs atrs))
     | Pstr_include
-        {pincl_mod= {pmod_attributes= atrs1}; pincl_attributes= atrs2}
-     |Pstr_module {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2}}
-      ->
+        { pincl_mod= { pmod_attributes= atrs1 }; pincl_attributes= atrs2 }
+     |Pstr_module
+        { pmb_attributes= atrs1; pmb_expr= { pmod_attributes= atrs2 } } ->
         Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
     | Pstr_value (_, [])
      |Pstr_type (_, [])
@@ -228,7 +236,7 @@ module Structure_item : Module_item with type t = structure_item = struct
         && Location.is_single_line itm.pstr_loc
     | `Sparse -> (
       match itm.pstr_desc with
-      | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
+      | Pstr_include { pincl_mod= me } | Pstr_module { pmb_expr= me } ->
           let rec is_simple_mod me =
             match me.pmod_desc with
             | Pmod_apply (me1, me2) ->
@@ -277,22 +285,23 @@ module Signature_item : Module_item with type t = signature_item = struct
   let has_doc itm =
     match itm.psig_desc with
     | Psig_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
-    | Psig_value {pval_attributes= atrs}
-     |Psig_type (_, {ptype_attributes= atrs} :: _)
-     |Psig_typext {ptyext_attributes= atrs}
-     |Psig_exception {pext_attributes= atrs}
-     |Psig_modtype {pmtd_attributes= atrs}
-     |Psig_open {popen_attributes= atrs}
+    | Psig_value { pval_attributes= atrs }
+     |Psig_type (_, { ptype_attributes= atrs } :: _)
+     |Psig_typext { ptyext_attributes= atrs }
+     |Psig_exception { pext_attributes= atrs }
+     |Psig_modtype { pmtd_attributes= atrs }
+     |Psig_open { popen_attributes= atrs }
      |Psig_extension (_, atrs)
-     |Psig_class_type ({pci_attributes= atrs} :: _)
-     |Psig_class ({pci_attributes= atrs} :: _) ->
+     |Psig_class_type ({ pci_attributes= atrs } :: _)
+     |Psig_class ({ pci_attributes= atrs } :: _) ->
         Option.is_some (fst (doc_atrs atrs))
     | Psig_recmodule
-        ({pmd_type= {pmty_attributes= atrs1}; pmd_attributes= atrs2} :: _)
+        ({ pmd_type= { pmty_attributes= atrs1 }; pmd_attributes= atrs2 }
+        :: _)
      |Psig_include
-        {pincl_mod= {pmty_attributes= atrs1}; pincl_attributes= atrs2}
-     |Psig_module {pmd_attributes= atrs1; pmd_type= {pmty_attributes= atrs2}}
-      ->
+        { pincl_mod= { pmty_attributes= atrs1 }; pincl_attributes= atrs2 }
+     |Psig_module
+        { pmd_attributes= atrs1; pmd_type= { pmty_attributes= atrs2 } } ->
         Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
     | Psig_type (_, [])
      |Psig_recmodule []
@@ -308,7 +317,7 @@ module Signature_item : Module_item with type t = signature_item = struct
     | `Sparse -> (
       match itm.psig_desc with
       | Psig_open _ -> true
-      | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
+      | Psig_module { pmd_type= { pmty_desc= Pmty_alias _ } } -> true
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -370,22 +379,23 @@ let rec is_trivial c exp =
   | Pexp_constant (Pconst_string (s, None)) -> not (may_force_break c s)
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
-  | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial c e1
-  | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, [(_, e1)]) ->
+  | Pexp_apply (e0, [ (_, e1) ]) when is_prefix e0 -> is_trivial c e1
+  | Pexp_apply ({ pexp_desc= Pexp_ident { txt= Lident "not" } }, [ (_, e1) ])
+    ->
       is_trivial c e1
   | _ -> false
 
-let has_trailing_attributes_exp {pexp_desc; pexp_attributes} =
+let has_trailing_attributes_exp { pexp_desc; pexp_attributes } =
   match pexp_desc with
   | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
    |Pexp_newtype _ | Pexp_try _ ->
       false
   | _ ->
       List.exists pexp_attributes ~f:(function
-        | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-        | _ -> true )
+        | { Location.txt= "ocaml.doc" | "ocaml.text" }, _ -> false
+        | _ -> true)
 
-let has_trailing_attributes_pat {ppat_desc; ppat_attributes} =
+let has_trailing_attributes_pat { ppat_desc; ppat_attributes } =
   match ppat_desc with
   | Ppat_construct (_, None)
    |Ppat_constant _ | Ppat_any | Ppat_var _
@@ -395,20 +405,20 @@ let has_trailing_attributes_pat {ppat_desc; ppat_attributes} =
       false
   | _ ->
       List.exists ppat_attributes ~f:(function
-        | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-        | _ -> true )
+        | { Location.txt= "ocaml.doc" | "ocaml.text" }, _ -> false
+        | _ -> true)
 
-let has_trailing_attributes_mty {pmty_desc; pmty_attributes} =
+let has_trailing_attributes_mty { pmty_desc; pmty_attributes } =
   match pmty_desc with _ ->
     List.exists pmty_attributes ~f:(function
-      | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-      | _ -> true )
+      | { Location.txt= "ocaml.doc" | "ocaml.text" }, _ -> false
+      | _ -> true)
 
-let has_trailing_attributes_mod {pmod_desc; pmod_attributes} =
+let has_trailing_attributes_mod { pmod_desc; pmod_attributes } =
   match pmod_desc with _ ->
     List.exists pmod_attributes ~f:(function
-      | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-      | _ -> true )
+      | { Location.txt= "ocaml.doc" | "ocaml.text" }, _ -> false
+      | _ -> true)
 
 (** Ast terms of various forms. *)
 module T = struct
@@ -438,17 +448,18 @@ module T = struct
           Str.class_
             [ { pci_virt= Concrete
               ; pci_params= []
-              ; pci_name= {txt= ""; loc= Location.none}
+              ; pci_name= { txt= ""; loc= Location.none }
               ; pci_expr= cl
               ; pci_loc= Location.none
-              ; pci_attributes= [] } ]
+              ; pci_attributes= []
+              } ]
         in
         Format.fprintf fs "Cl:@\n%a@\n%a" Pprintast.structure [str]
           Printast.implementation [str]
     | Mty mt ->
         let si =
           let open Ast_helper in
-          Sig.modtype (Mtd.mk {txt= ""; loc= Location.none} ~typ:mt)
+          Sig.modtype (Mtd.mk { txt= ""; loc= Location.none } ~typ:mt)
         in
         Format.fprintf fs "Mty:@\n%a@\n%a" Pprintast.signature [si]
           Printast.interface [si]
@@ -458,10 +469,11 @@ module T = struct
           Sig.class_type
             [ { pci_virt= Concrete
               ; pci_params= []
-              ; pci_name= {txt= ""; loc= Location.none}
+              ; pci_name= { txt= ""; loc= Location.none }
               ; pci_expr= cty
               ; pci_loc= Location.none
-              ; pci_attributes= [] } ]
+              ; pci_attributes= []
+              } ]
         in
         Format.fprintf fs "Cty:@\n%a@\n%a" Pprintast.signature [si]
           Printast.interface [si]
@@ -469,10 +481,11 @@ module T = struct
         let m =
           let open Ast_helper in
           Str.module_
-            { pmb_name= {txt= ""; loc= Location.none}
+            { pmb_name= { txt= ""; loc= Location.none }
             ; pmb_expr= m
             ; pmb_attributes= []
-            ; pmb_loc= Location.none }
+            ; pmb_loc= Location.none
+            }
         in
         Format.fprintf fs "Mod:@\n%a@\n%a" Pprintast.structure [m]
           Printast.implementation [m]
@@ -576,7 +589,7 @@ let assoc_of_prec = function
     an immediate sub-term of [ctx] as assumed by the operations in
     [Requires_sub_terms]. *)
 module rec In_ctx : sig
-  type 'a xt = private {ctx: T.t; ast: 'a}
+  type 'a xt = private { ctx: T.t; ast: 'a }
 
   val sub_ast : ctx:T.t -> T.t -> T.t xt
 
@@ -600,27 +613,27 @@ module rec In_ctx : sig
 end = struct
   open Requires_sub_terms
 
-  type 'a xt = {ctx: T.t; ast: 'a}
+  type 'a xt = { ctx: T.t; ast: 'a }
 
-  let sub_ast ~ctx ast = {ctx; ast}
+  let sub_ast ~ctx ast = { ctx; ast }
 
-  let sub_typ ~ctx typ = check parenze_typ {ctx; ast= typ}
+  let sub_typ ~ctx typ = check parenze_typ { ctx; ast= typ }
 
-  let sub_cty ~ctx cty = {ctx; ast= cty}
+  let sub_cty ~ctx cty = { ctx; ast= cty }
 
-  let sub_pat ~ctx pat = check parenze_pat {ctx; ast= pat}
+  let sub_pat ~ctx pat = check parenze_pat { ctx; ast= pat }
 
-  let sub_exp ~ctx exp = check parenze_exp {ctx; ast= exp}
+  let sub_exp ~ctx exp = check parenze_exp { ctx; ast= exp }
 
-  let sub_cl ~ctx cl = {ctx; ast= cl}
+  let sub_cl ~ctx cl = { ctx; ast= cl }
 
-  let sub_mty ~ctx mty = {ctx; ast= mty}
+  let sub_mty ~ctx mty = { ctx; ast= mty }
 
-  let sub_mod ~ctx mod_ = {ctx; ast= mod_}
+  let sub_mod ~ctx mod_ = { ctx; ast= mod_ }
 
-  let sub_sig ~ctx sig_ = {ctx; ast= sig_}
+  let sub_sig ~ctx sig_ = { ctx; ast= sig_ }
 
-  let sub_str ~ctx str = {ctx; ast= str}
+  let sub_str ~ctx str = { ctx; ast= str }
 end
 
 (** Operations determining precedence and necessary parenthesization of
@@ -672,35 +685,36 @@ end = struct
 
   (** Predicates to check the claimed sub-term relation. *)
 
-  let check_typ {ctx; ast= typ} =
+  let check_typ { ctx; ast= typ } =
     let f tI = typ == tI in
     let fst_f (tI, _) = typ == tI in
     let snd_f (_, tI) = typ == tI in
     let check_cstr = function
       | Pcstr_tuple t1N -> List.exists t1N ~f
       | Pcstr_record ld1N ->
-          List.exists ld1N ~f:(fun {pld_type} -> typ == pld_type)
+          List.exists ld1N ~f:(fun { pld_type } -> typ == pld_type)
     in
-    let check_ext {pext_kind} =
+    let check_ext { pext_kind } =
       match pext_kind with
       | Pext_decl (cstr, t0) -> check_cstr cstr || Option.exists t0 ~f
       | _ -> false
     in
-    let check_typext {ptyext_params; ptyext_constructors} =
+    let check_typext { ptyext_params; ptyext_constructors } =
       List.exists ptyext_params ~f:fst_f
       || List.exists ptyext_constructors ~f:check_ext
     in
-    let check_type {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest} =
+    let check_type { ptype_params; ptype_cstrs; ptype_kind; ptype_manifest }
+        =
       List.exists ptype_params ~f:fst_f
       || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
-             typ == t1 || typ == t2 )
-      || ( match ptype_kind with
+             typ == t1 || typ == t2)
+      || (match ptype_kind with
          | Ptype_variant cd1N ->
-             List.exists cd1N ~f:(fun {pcd_args; pcd_res} ->
-                 check_cstr pcd_args || Option.exists pcd_res ~f )
+             List.exists cd1N ~f:(fun { pcd_args; pcd_res } ->
+                 check_cstr pcd_args || Option.exists pcd_res ~f)
          | Ptype_record ld1N ->
-             List.exists ld1N ~f:(fun {pld_type} -> typ == pld_type)
-         | _ -> false )
+             List.exists ld1N ~f:(fun { pld_type } -> typ == pld_type)
+         | _ -> false)
       || Option.exists ptype_manifest ~f
     in
     let check_pcstr_fields pcstr_fields =
@@ -709,38 +723,38 @@ end = struct
           | Pcf_inherit (_, _, _) -> false
           | Pcf_val (_, _, Cfk_virtual t) -> typ == t
           | Pcf_val
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)}))
+              (_, _, Cfk_concrete (_, { pexp_desc= Pexp_constraint (_, t) }))
             ->
               typ == t
           | Pcf_val (_, _, Cfk_concrete _) -> false
           | Pcf_method (_, _, Cfk_virtual t) -> typ == t
           | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t)}))
+              (_, _, Cfk_concrete (_, { pexp_desc= Pexp_constraint (_, t) }))
             ->
               typ == t
           | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, topt)})) ->
+              (_, _, Cfk_concrete (_, { pexp_desc= Pexp_poly (e, topt) }))
+            ->
               let rec loop = function
-                | {pexp_desc= Pexp_newtype (_, e)} -> loop e
-                | {pexp_desc= Pexp_constraint (_, t)} -> t == typ
-                | {pexp_desc= Pexp_fun (_, _, _, e)} -> loop e
+                | { pexp_desc= Pexp_newtype (_, e) } -> loop e
+                | { pexp_desc= Pexp_constraint (_, t) } -> t == typ
+                | { pexp_desc= Pexp_fun (_, _, _, e) } -> loop e
                 | _ -> false
               in
               (match topt with None -> false | Some t -> typ == t)
               || loop e
           | Pcf_method (_, _, Cfk_concrete _) -> false
           | Pcf_constraint (t1, t2) -> t1 == typ || t2 == typ
-          | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false
-      )
+          | Pcf_initializer _ | Pcf_attribute _ | Pcf_extension _ -> false)
     in
     let check_class_type l =
-      List.exists l ~f:(fun {pci_expr= {pcty_desc}; pci_params} ->
+      List.exists l ~f:(fun { pci_expr= { pcty_desc }; pci_params } ->
           List.exists pci_params ~f:(fun (t, _) -> t == typ)
           ||
           match pcty_desc with
           | Pcty_constr (_, l) -> List.exists l ~f:(fun x -> x == typ)
           | Pcty_arrow (_, t, _) -> t == typ
-          | _ -> false )
+          | _ -> false)
     in
     match ctx with
     | Pld (PTyp t1) -> assert (typ == t1)
@@ -756,31 +770,31 @@ end = struct
           assert (
             List.exists r1N ~f:(function
               | Rtag (_, _, _, t1N) -> List.exists t1N ~f
-              | Rinherit t1 -> typ == t1 ) )
+              | Rinherit t1 -> typ == t1))
       | Ptyp_package (_, it1N) -> assert (List.exists it1N ~f:snd_f)
       | Ptyp_object (fields, _) ->
           assert (
             List.exists fields ~f:(function
               | Otag (_, _, t1) -> typ == t1
-              | Oinherit t1 -> typ == t1 ) )
+              | Oinherit t1 -> typ == t1))
       | Ptyp_class (_, l) -> assert (List.exists l ~f) )
-    | Cty {pcty_desc} ->
+    | Cty { pcty_desc } ->
         assert (
           match pcty_desc with
           | Pcty_constr (_, l) -> List.exists l ~f
           | Pcty_arrow (_, t, _) -> t == typ
           | Pcty_open _ -> false
           | Pcty_extension _ -> false
-          | Pcty_signature {pcsig_self; pcsig_fields} ->
+          | Pcty_signature { pcsig_self; pcsig_fields } ->
               pcsig_self == typ
-              || List.exists pcsig_fields ~f:(fun {pctf_desc} ->
+              || List.exists pcsig_fields ~f:(fun { pctf_desc } ->
                      match pctf_desc with
                      | Pctf_constraint (t1, t2) -> t1 == typ || t2 == typ
                      | Pctf_val (_, _, _, t) -> t == typ
                      | Pctf_method (_, _, _, t) -> t == typ
                      | Pctf_inherit _ -> false
                      | Pctf_attribute _ -> false
-                     | Pctf_extension _ -> false ) )
+                     | Pctf_extension _ -> false))
     | Pat ctx -> (
       match ctx.ppat_desc with
       | Ppat_constraint (_, t1) -> assert (typ == t1)
@@ -788,7 +802,8 @@ end = struct
       | _ -> assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N)} as ty)) ->
+      | Pexp_constraint (_, ({ ptyp_desc= Ptyp_package (_, it1N) } as ty))
+        ->
           assert (typ == ty || List.exists it1N ~f:snd_f)
       | Pexp_constraint (_, t1)
        |Pexp_coerce (_, None, t1)
@@ -797,10 +812,10 @@ end = struct
           assert (typ == t1)
       | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
       | Pexp_letexception (ext, _) -> assert (check_ext ext)
-      | Pexp_object {pcstr_fields} ->
+      | Pexp_object { pcstr_fields } ->
           assert (check_pcstr_fields pcstr_fields)
       | _ -> assert false )
-    | Cl {pcl_desc} ->
+    | Cl { pcl_desc } ->
         assert (
           match pcl_desc with
           | Pcl_constr (_, l) -> List.exists l ~f
@@ -810,8 +825,8 @@ end = struct
           | Pcl_fun _ -> false
           | Pcl_open _ -> false
           | Pcl_extension _ -> false
-          | Pcl_structure {pcstr_fields} -> check_pcstr_fields pcstr_fields
-        )
+          | Pcl_structure { pcstr_fields } ->
+              check_pcstr_fields pcstr_fields)
     | Mty ctx ->
         let rec loop m =
           match m with
@@ -819,7 +834,7 @@ end = struct
               List.exists c1N ~f:(function
                 | Pwith_type (_, d1) | Pwith_typesubst (_, d1) ->
                     check_type d1
-                | _ -> false )
+                | _ -> false)
               || loop m.pmty_desc
           | _ -> false
         in
@@ -828,7 +843,7 @@ end = struct
       match ctx.pmod_desc with
       | Pmod_unpack e1 -> (
         match e1.pexp_desc with
-        | Pexp_constraint (_, ({ptyp_desc= Ptyp_package (_, it1N)} as ty))
+        | Pexp_constraint (_, ({ ptyp_desc= Ptyp_package (_, it1N) } as ty))
           ->
             assert (typ == ty || List.exists it1N ~f:snd_f)
         | Pexp_constraint (_, t1)
@@ -838,13 +853,13 @@ end = struct
             assert (typ == t1)
         | Pexp_coerce (_, Some t1, t2) -> assert (typ == t1 || typ == t2)
         | Pexp_letexception (ext, _) -> assert (check_ext ext)
-        | Pexp_object {pcstr_fields} ->
+        | Pexp_object { pcstr_fields } ->
             assert (check_pcstr_fields pcstr_fields)
         | _ -> assert false )
       | _ -> assert false )
     | Sig ctx -> (
       match ctx.psig_desc with
-      | Psig_value {pval_type= t1} -> assert (typ == t1)
+      | Psig_value { pval_type= t1 } -> assert (typ == t1)
       | Psig_type (_, d1N) -> assert (List.exists d1N ~f:check_type)
       | Psig_typext typext -> assert (check_typext typext)
       | Psig_exception ext -> assert (check_ext ext)
@@ -853,30 +868,30 @@ end = struct
       | _ -> assert false )
     | Str ctx -> (
       match ctx.pstr_desc with
-      | Pstr_primitive {pval_type= t1} -> assert (typ == t1)
+      | Pstr_primitive { pval_type= t1 } -> assert (typ == t1)
       | Pstr_type (_, d1N) -> assert (List.exists d1N ~f:check_type)
       | Pstr_typext typext -> assert (check_typext typext)
       | Pstr_exception ext -> assert (check_ext ext)
       | Pstr_class l ->
           assert (
-            List.exists l ~f:(fun {pci_expr= {pcl_desc}; pci_params} ->
+            List.exists l ~f:(fun { pci_expr= { pcl_desc }; pci_params } ->
                 List.exists pci_params ~f:(fun (t, _) -> t == typ)
                 ||
                 match pcl_desc with
                 | Pcl_constr (_, l) -> List.exists l ~f:(fun x -> x == typ)
-                | _ -> false ) )
+                | _ -> false))
       | Pstr_class_type l -> assert (check_class_type l)
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
       | _ -> assert false )
     | Top -> assert false
 
-  let check_typ ({ctx; ast= typ} as xtyp) =
+  let check_typ ({ ctx; ast= typ } as xtyp) =
     try check_typ xtyp with exc -> fail ctx (Typ typ) exc
 
-  let check_cty {ctx; ast= cty} =
+  let check_cty { ctx; ast= cty } =
     let check_class_type l =
-      List.exists l ~f:(fun {pci_expr} ->
+      List.exists l ~f:(fun { pci_expr } ->
           let rec loop x =
             x == cty
             ||
@@ -884,7 +899,7 @@ end = struct
             | Pcty_arrow (_, _, x) -> loop x
             | _ -> false
           in
-          loop pci_expr )
+          loop pci_expr)
     in
     match (ctx : t) with
     | Exp _ -> assert false
@@ -894,33 +909,33 @@ end = struct
       | Pstr_class_type l -> assert (check_class_type l)
       | Pstr_class l ->
           assert (
-            List.exists l ~f:(fun {pci_expr} ->
+            List.exists l ~f:(fun { pci_expr } ->
                 let rec loop x =
                   match x.pcl_desc with
                   | Pcl_fun (_, _, _, x) -> loop x
                   | Pcl_constraint (_, x) -> x == cty
                   | _ -> false
                 in
-                loop pci_expr ) )
+                loop pci_expr))
       | _ -> assert false )
     | Sig ctx -> (
       match ctx.psig_desc with
       | Psig_class_type l -> assert (check_class_type l)
       | Psig_class l -> assert (check_class_type l)
       | _ -> assert false )
-    | Cty {pcty_desc} -> (
+    | Cty { pcty_desc } -> (
       match pcty_desc with
       | Pcty_arrow (_, _, t) -> assert (t == cty)
-      | Pcty_signature {pcsig_fields} ->
+      | Pcty_signature { pcsig_fields } ->
           assert (
-            List.exists pcsig_fields ~f:(fun {pctf_desc} ->
+            List.exists pcsig_fields ~f:(fun { pctf_desc } ->
                 match pctf_desc with
                 | Pctf_inherit t -> t == cty
                 | Pctf_val _ -> false
                 | Pctf_method _ -> false
                 | Pctf_constraint _ -> false
                 | Pctf_attribute _ -> false
-                | Pctf_extension _ -> false ) )
+                | Pctf_extension _ -> false))
       | Pcty_open (_, _, t) -> assert (t == cty)
       | Pcty_constr _ -> assert false
       | Pcty_extension _ -> assert false )
@@ -937,24 +952,24 @@ end = struct
           | Pcl_let (_, _, _) -> false
           | Pcl_constraint (_, x) -> x == cty
           | Pcl_extension _ -> false
-          | Pcl_open _ -> false )
+          | Pcl_open _ -> false)
     | Mty _ -> assert false
     | Mod _ -> assert false
 
-  let check_cty ({ctx; ast= cty} as xcty) =
+  let check_cty ({ ctx; ast= cty } as xcty) =
     try check_cty xcty with exc -> fail ctx (Cty cty) exc
 
-  let check_cl {ctx; ast= cl} =
+  let check_cl { ctx; ast= cl } =
     let check_pcstr_fields pcstr_fields =
       List.exists pcstr_fields ~f:(fun f ->
           match f.pcf_desc with
           | Pcf_inherit (_, x, _) -> x == cl
-          | _ -> false )
+          | _ -> false)
     in
     match (ctx : t) with
     | Exp e -> (
       match e.pexp_desc with
-      | Pexp_object {pcstr_fields} ->
+      | Pexp_object { pcstr_fields } ->
           assert (check_pcstr_fields pcstr_fields)
       | _ -> assert false )
     | Pld _ -> assert false
@@ -962,7 +977,7 @@ end = struct
       match ctx.pstr_desc with
       | Pstr_class l ->
           assert (
-            List.exists l ~f:(fun {pci_expr} ->
+            List.exists l ~f:(fun { pci_expr } ->
                 let rec loop x =
                   cl == x
                   ||
@@ -971,33 +986,34 @@ end = struct
                   | Pcl_constraint (x, _) -> loop x
                   | _ -> false
                 in
-                loop pci_expr ) )
+                loop pci_expr))
       | _ -> assert false )
     | Sig _ -> assert false
     | Cty _ -> assert false
     | Top -> assert false
     | Typ _ -> assert false
     | Pat _ -> assert false
-    | Cl {pcl_desc} ->
+    | Cl { pcl_desc } ->
         assert (
           match pcl_desc with
-          | Pcl_structure {pcstr_fields} -> check_pcstr_fields pcstr_fields
+          | Pcl_structure { pcstr_fields } ->
+              check_pcstr_fields pcstr_fields
           | Pcl_fun (_, _, _, x) -> x == cl
           | Pcl_apply (x, _) -> x == cl
           | Pcl_let (_, _, x) -> x == cl
           | Pcl_constraint (x, _) -> x == cl
           | Pcl_open (_, _, x) -> x == cl
           | Pcl_constr _ -> false
-          | Pcl_extension _ -> false )
+          | Pcl_extension _ -> false)
     | Mty _ -> assert false
     | Mod _ -> assert false
 
-  let check_cl ({ctx; ast= cl} as xcl) =
+  let check_cl ({ ctx; ast= cl } as xcl) =
     try check_cl xcl with exc -> fail ctx (Cl cl) exc
 
-  let check_pat {ctx; ast= pat} =
+  let check_pat { ctx; ast= pat } =
     let check_pcstr_fields pcstr_fields =
-      List.exists pcstr_fields ~f:(fun {pcf_desc} ->
+      List.exists pcstr_fields ~f:(fun { pcf_desc } ->
           match pcf_desc with
           | Pcf_initializer _ -> false
           | Pcf_val (_, _, _) -> false
@@ -1006,19 +1022,19 @@ end = struct
           | Pcf_extension (_, _) -> false
           | Pcf_inherit _ -> false
           | Pcf_constraint _ -> false
-          | Pcf_attribute _ -> false )
+          | Pcf_attribute _ -> false)
     in
     let check_extensions = function
       | PPat (p, _) -> p == pat
       | _ -> false
     in
     let check_bindings l =
-      List.exists l ~f:(fun {pvb_pat} ->
+      List.exists l ~f:(fun { pvb_pat } ->
           pvb_pat == pat
           ||
           match pvb_pat.ppat_desc with
           | Ppat_constraint (p, _) -> p == pat
-          | _ -> false )
+          | _ -> false)
     in
     match ctx with
     | Pld (PPat (p1, _)) -> assert (p1 == pat)
@@ -1034,7 +1050,7 @@ end = struct
         | Ppat_array p1N | Ppat_tuple p1N -> assert (List.exists p1N ~f)
         | Ppat_record (p1N, _) -> assert (List.exists p1N ~f:snd_f)
         | Ppat_construct
-            ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [p1; p2]})
+            ({ txt= Lident "::" }, Some { ppat_desc= Ppat_tuple [ p1; p2 ] })
          |Ppat_or (p1, p2) ->
             assert (p1 == pat || p2 == pat)
         | Ppat_alias (p1, _)
@@ -1063,14 +1079,14 @@ end = struct
        |Pexp_unreachable | Pexp_variant _ | Pexp_while _ ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
-      | Pexp_object {pcstr_self; pcstr_fields} ->
+      | Pexp_object { pcstr_self; pcstr_fields } ->
           assert (pcstr_self == pat || check_pcstr_fields pcstr_fields)
       | Pexp_let (_, bindings, _) -> assert (check_bindings bindings)
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           assert (
             List.exists cases ~f:(function
-              | {pc_lhs} when pc_lhs == pat -> true
-              | _ -> false ) )
+              | { pc_lhs } when pc_lhs == pat -> true
+              | _ -> false))
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
     | Cl ctx ->
@@ -1078,13 +1094,13 @@ end = struct
           match ctx.pcl_desc with
           | Pcl_fun (_, _, p, _) -> p == pat
           | Pcl_constr _ -> false
-          | Pcl_structure {pcstr_self; pcstr_fields} ->
+          | Pcl_structure { pcstr_self; pcstr_fields } ->
               pcstr_self == pat || check_pcstr_fields pcstr_fields
           | Pcl_apply _ -> false
           | Pcl_let (_, l, _) -> check_bindings l
           | Pcl_constraint _ -> false
           | Pcl_extension (_, ext) -> check_extensions ext
-          | Pcl_open _ -> false )
+          | Pcl_open _ -> false)
     | Cty _ -> assert false
     | Mty _ | Mod _ | Sig _ -> assert false
     | Str str -> (
@@ -1094,17 +1110,17 @@ end = struct
       | _ -> assert false )
     | Top -> assert false
 
-  let check_pat ({ctx; ast= pat} as xpat) =
+  let check_pat ({ ctx; ast= pat } as xpat) =
     try check_pat xpat with exc -> fail ctx (Pat pat) exc
 
-  let check_exp {ctx; ast= exp} =
+  let check_exp { ctx; ast= exp } =
     let check_extensions = function
       | PPat (_, Some e) -> e == exp
-      | PStr [{pstr_desc= Pstr_eval (e, _)}] -> e == exp
+      | PStr [ { pstr_desc= Pstr_eval (e, _) } ] -> e == exp
       | _ -> false
     in
     let check_pcstr_fields pcstr_fields =
-      List.exists pcstr_fields ~f:(fun {pcf_desc} ->
+      List.exists pcstr_fields ~f:(fun { pcf_desc } ->
           match pcf_desc with
           | Pcf_initializer e -> e == exp
           | Pcf_val (_, _, Cfk_concrete (_, e)) ->
@@ -1112,21 +1128,21 @@ end = struct
                 x == exp
                 ||
                 match x with
-                | {pexp_desc= Pexp_constraint (e, _)} -> loop e
+                | { pexp_desc= Pexp_constraint (e, _) } -> loop e
                 | _ -> false
               in
               loop e
           | Pcf_val (_, _, Cfk_virtual _) -> false
           | Pcf_method
-              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_poly (e, _)}))
+              (_, _, Cfk_concrete (_, { pexp_desc= Pexp_poly (e, _) }))
            |Pcf_method (_, _, Cfk_concrete (_, e)) ->
               let rec loop x =
                 x == exp
                 ||
                 match x with
-                | {pexp_desc= Pexp_newtype (_, e)} -> loop e
-                | {pexp_desc= Pexp_constraint (e, _)} -> loop e
-                | {pexp_desc= Pexp_fun (_, _, _, e)} -> loop e
+                | { pexp_desc= Pexp_newtype (_, e) } -> loop e
+                | { pexp_desc= Pexp_constraint (e, _) } -> loop e
+                | { pexp_desc= Pexp_fun (_, _, _, e) } -> loop e
                 | _ -> false
               in
               loop e
@@ -1134,7 +1150,7 @@ end = struct
           | Pcf_extension (_, ext) -> check_extensions ext
           | Pcf_inherit _ -> false
           | Pcf_constraint _ -> false
-          | Pcf_attribute _ -> false )
+          | Pcf_attribute _ -> false)
     in
     match ctx with
     | Pld (PPat (_, Some e1)) -> assert (e1 == exp)
@@ -1144,31 +1160,32 @@ end = struct
         let snd_f (_, eI) = eI == exp in
         match ctx.pexp_desc with
         | Pexp_construct
-            ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
+            ({ txt= Lident "::" }, Some { pexp_desc= Pexp_tuple [ e1; e2 ] })
+          ->
             assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, ext) -> assert (check_extensions ext)
         | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
          |Pexp_unreachable ->
             assert false
-        | Pexp_object {pcstr_fields} ->
+        | Pexp_object { pcstr_fields } ->
             assert (check_pcstr_fields pcstr_fields)
         | Pexp_let (_, bindings, e) ->
             assert (
-              List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
-              || e == exp )
+              List.exists bindings ~f:(fun { pvb_expr } -> pvb_expr == exp)
+              || e == exp)
         | (Pexp_match (e, _) | Pexp_try (e, _)) when e == exp -> ()
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             assert (
               List.exists cases ~f:(function
-                | {pc_guard= Some g} when g == exp -> true
-                | {pc_rhs} when pc_rhs == exp -> true
-                | _ -> false ) )
+                | { pc_guard= Some g } when g == exp -> true
+                | { pc_rhs } when pc_rhs == exp -> true
+                | _ -> false))
         | Pexp_fun (_, default, _, body) ->
             assert (
-              Option.value_map default ~default:false ~f || body == exp )
+              Option.value_map default ~default:false ~f || body == exp)
         | Pexp_apply
-            ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
+            ( ({ pexp_desc= Pexp_ident { txt }; pexp_attributes= [] } as e0)
             , e1 :: indices )
           when Option.is_some (index_op_get_sugar txt indices) ->
             let _, indices =
@@ -1176,14 +1193,14 @@ end = struct
             in
             assert (e0 == exp || snd_f e1 || List.exists indices ~f)
         | Pexp_apply
-            ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
+            ( ({ pexp_desc= Pexp_ident { txt }; pexp_attributes= [] } as e0)
             , e1 :: indices )
           when Option.is_some (index_op_set_sugar txt indices) ->
             let _, indices, e =
               Option.value_exn (index_op_set_sugar txt indices)
             in
             assert (
-              e0 == exp || snd_f e1 || List.exists indices ~f || e == exp )
+              e0 == exp || snd_f e1 || List.exists indices ~f || e == exp)
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
@@ -1216,17 +1233,17 @@ end = struct
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
       | Pstr_value (_, bindings) ->
-          assert (List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
-          )
+          assert (
+            List.exists bindings ~f:(fun { pvb_expr } -> pvb_expr == exp))
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
        |Pstr_class _ | Pstr_class_type _ | Pstr_include _ | Pstr_attribute _
         ->
           assert false )
-    | Mod {pmod_desc= Pmod_unpack e1} -> (
+    | Mod { pmod_desc= Pmod_unpack e1 } -> (
       match e1 with
-      | {pexp_desc= Pexp_constraint (e, _); _} -> assert (e == exp)
+      | { pexp_desc= Pexp_constraint (e, _); _ } -> assert (e == exp)
       | e -> assert (e == exp) )
     | Cl ctx ->
         let rec loop ctx =
@@ -1234,10 +1251,11 @@ end = struct
           | Pcl_fun (_, eopt, _, e) ->
               Option.exists eopt ~f:(fun e -> e == exp) || loop e
           | Pcl_constr _ -> false
-          | Pcl_structure {pcstr_fields} -> check_pcstr_fields pcstr_fields
+          | Pcl_structure { pcstr_fields } ->
+              check_pcstr_fields pcstr_fields
           | Pcl_apply (_, l) -> List.exists l ~f:(fun (_, e) -> e == exp)
           | Pcl_let (_, l, _) ->
-              List.exists l ~f:(fun {pvb_expr} -> pvb_expr == exp)
+              List.exists l ~f:(fun { pvb_expr } -> pvb_expr == exp)
           | Pcl_constraint _ -> false
           | Pcl_extension _ -> false
           | Pcl_open _ -> false
@@ -1246,10 +1264,10 @@ end = struct
     | Cty _ -> assert false
     | Mod _ | Top | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
 
-  let check_exp ({ctx; ast= exp} as xexp) =
+  let check_exp ({ ctx; ast= exp } as xexp) =
     try check_exp xexp with exc -> fail ctx (Exp exp) exc
 
-  let rec is_simple (c : Conf.t) width ({ast= exp} as xexp) =
+  let rec is_simple (c : Conf.t) width ({ ast= exp } as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
     | Pexp_constant _ -> is_trivial c exp
@@ -1258,7 +1276,7 @@ end = struct
      |Pexp_variant (_, None) ->
         true
     | Pexp_construct
-        ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
+        ({ txt= Lident "::" }, Some { pexp_desc= Pexp_tuple [ e1; e2 ] }) ->
         is_simple c width (sub_exp ~ctx e1)
         && is_simple c width (sub_exp ~ctx e2)
         && width xexp * 3 < c.margin
@@ -1270,12 +1288,13 @@ end = struct
         Option.for_all e0 ~f:(is_trivial c)
         && List.for_all e1N ~f:(snd >> is_trivial c)
         && width xexp * 3 < c.margin
-    | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="}}, _) -> false
+    | Pexp_apply ({ pexp_desc= Pexp_ident { txt= Lident ":=" } }, _) ->
+        false
     | Pexp_apply (e0, e1N) ->
         is_trivial c e0
         && List.for_all e1N ~f:(snd >> is_trivial c)
         && width xexp * 3 < c.margin
-    | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
+    | Pexp_extension (_, PStr [ { pstr_desc= Pstr_eval (e0, []); _ } ]) ->
         is_simple c width (sub_exp ~ctx e0)
     | Pexp_extension (_, (PStr [] | PTyp _)) -> true
     | _ -> false
@@ -1287,45 +1306,48 @@ end = struct
       [None]. *)
   let prec_ctx ctx =
     let is_tuple_lvl1_in_constructor ty = function
-      | {ptype_kind= Ptype_variant cd1N} ->
+      | { ptype_kind= Ptype_variant cd1N } ->
           List.exists cd1N ~f:(function
-            | {pcd_args= Pcstr_tuple t1N} ->
+            | { pcd_args= Pcstr_tuple t1N } ->
                 List.exists t1N ~f:(phys_equal ty)
-            | _ -> false )
+            | _ -> false)
       | _ -> false
     in
     let is_tuple_lvl1_in_ext_constructor ty = function
-      | {pext_kind= Pext_decl (Pcstr_tuple t1N, _)} ->
+      | { pext_kind= Pext_decl (Pcstr_tuple t1N, _) } ->
           List.exists t1N ~f:(phys_equal ty)
       | _ -> false
     in
     let constructor_cxt_prec_of_inner = function
-      | {ptyp_desc= Ptyp_arrow _} -> Some (Apply, Non)
-      | {ptyp_desc= Ptyp_tuple _} -> Some (InfixOp3, Non)
+      | { ptyp_desc= Ptyp_arrow _ } -> Some (Apply, Non)
+      | { ptyp_desc= Ptyp_tuple _ } -> Some (InfixOp3, Non)
       | _ -> None
     in
     match ctx with
     | { ctx=
-          ( Str {pstr_desc= Pstr_type (_, t1N)}
-          | Sig {psig_desc= Psig_type (_, t1N)} )
-      ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _} as typ) }
+          ( Str { pstr_desc= Pstr_type (_, t1N) }
+          | Sig { psig_desc= Psig_type (_, t1N) } )
+      ; ast= Typ ({ ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _ } as typ)
+      }
       when List.exists t1N ~f:(is_tuple_lvl1_in_constructor typ) ->
         constructor_cxt_prec_of_inner typ
     | { ctx=
-          ( Str {pstr_desc= Pstr_typext {ptyext_constructors= l}}
-          | Sig {psig_desc= Psig_typext {ptyext_constructors= l}} )
-      ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _} as typ) }
+          ( Str { pstr_desc= Pstr_typext { ptyext_constructors= l } }
+          | Sig { psig_desc= Psig_typext { ptyext_constructors= l } } )
+      ; ast= Typ ({ ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _ } as typ)
+      }
       when List.exists l ~f:(is_tuple_lvl1_in_ext_constructor typ) ->
         constructor_cxt_prec_of_inner typ
     | { ctx=
-          ( Str {pstr_desc= Pstr_exception constr}
-          | Sig {psig_desc= Psig_exception constr}
-          | Exp {pexp_desc= Pexp_letexception (constr, _)} )
-      ; ast= Typ ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _} as typ) }
+          ( Str { pstr_desc= Pstr_exception constr }
+          | Sig { psig_desc= Psig_exception constr }
+          | Exp { pexp_desc= Pexp_letexception (constr, _) } )
+      ; ast= Typ ({ ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _ } as typ)
+      }
       when is_tuple_lvl1_in_ext_constructor typ constr ->
         constructor_cxt_prec_of_inner typ
-    | {ctx= Str _; ast= Typ _} -> None
-    | {ctx= Typ {ptyp_desc}; ast= Typ typ} -> (
+    | { ctx= Str _; ast= Typ _ } -> None
+    | { ctx= Typ { ptyp_desc }; ast= Typ typ } -> (
       match ptyp_desc with
       | Ptyp_arrow (_, t1, _) ->
           Some (MinusGreater, if t1 == typ then Left else Right)
@@ -1336,25 +1358,26 @@ end = struct
       | Ptyp_any | Ptyp_var _ | Ptyp_object _ | Ptyp_class _
        |Ptyp_variant _ | Ptyp_poly _ | Ptyp_package _ | Ptyp_extension _ ->
           None )
-    | {ctx= Cty {pcty_desc}; ast= Typ typ} -> (
+    | { ctx= Cty { pcty_desc }; ast= Typ typ } -> (
       match pcty_desc with
       | Pcty_constr (_, _ :: _ :: _) -> Some (Comma, Non)
       | Pcty_arrow (_, t1, _) ->
           Some (MinusGreater, if t1 == typ then Left else Right)
       | _ -> None )
-    | {ctx= Cty {pcty_desc}; ast= Cty typ} -> (
+    | { ctx= Cty { pcty_desc }; ast= Cty typ } -> (
       match pcty_desc with
       | Pcty_arrow (_, _, t2) ->
           Some (MinusGreater, if t2 == typ then Right else Left)
       | _ -> None )
-    | {ast= Cty _} -> None
-    | {ast= Typ _} -> None
-    | {ctx= Exp {pexp_desc}; ast= Exp exp} -> (
+    | { ast= Cty _ } -> None
+    | { ast= Typ _ } -> None
+    | { ctx= Exp { pexp_desc }; ast= Exp exp } -> (
       match pexp_desc with
       | Pexp_tuple (e0 :: _) ->
           Some (Comma, if exp == e0 then Left else Right)
       | Pexp_construct
-          ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; e2]}) ->
+          ({ txt= Lident "::" }, Some { pexp_desc= Pexp_tuple [ _; e2 ] })
+        ->
           if is_sugared_list e2 then Some (Semi, Non)
           else Some (ColonColon, if exp == e2 then Right else Left)
       | Pexp_array _ -> Some (Semi, Non)
@@ -1362,7 +1385,8 @@ end = struct
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc}}, [_]) -> (
+      | Pexp_apply ({ pexp_desc= Pexp_ident { txt= Lident i; loc } }, [ _ ])
+    -> (
         match i with
         | "~-" | "~-." | "~+" | "~+." ->
             if
@@ -1377,14 +1401,15 @@ end = struct
       | Pexp_apply
           ( { pexp_desc=
                 Pexp_ident
-                  {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
+                  { txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))
+                  }
             }
           , (_, a1) :: (_, a2) :: _ ) ->
           if a1 == exp then Some (Dot, Left)
           else if a2 == exp then Some (Comma, Left)
           else Some (Comma, Right)
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [(_, e1); _])
-        -> (
+      | Pexp_apply
+          ({ pexp_desc= Pexp_ident { txt= Lident i } }, [ (_, e1); _ ]) -> (
           let child = if e1 == exp then Left else Right in
           match (i.[0], i) with
           | _, ":=" -> Some (ColonEqual, child)
@@ -1408,11 +1433,12 @@ end = struct
       | Pexp_field _ -> Some (Dot, Left)
       | Pexp_send _ -> Some (HashOp, Non)
       | _ -> None )
-    | {ctx= Cl {pcl_desc}; ast= Cl _ | Exp _} -> (
+    | { ctx= Cl { pcl_desc }; ast= Cl _ | Exp _ } -> (
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
     | { ctx= Exp _
-      ; ast= Pld _ | Top | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _ }
-     |{ctx= Cl _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _}
+      ; ast= Pld _ | Top | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
+      }
+     |{ ctx= Cl _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ }
      |{ ctx=
           ( Pld _ | Top | Typ _ | Cty _ | Pat _ | Mty _ | Mod _ | Sig _
           | Str _ )
@@ -1425,7 +1451,7 @@ end = struct
       operators, otherwise returns [None]. *)
   let prec_ast = function
     | Pld _ -> None
-    | Typ {ptyp_desc} -> (
+    | Typ { ptyp_desc } -> (
       match ptyp_desc with
       | Ptyp_package _ -> Some Low
       | Ptyp_arrow _ -> Some MinusGreater
@@ -1434,18 +1460,19 @@ end = struct
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
        |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
           None )
-    | Cty {pcty_desc} -> (
+    | Cty { pcty_desc } -> (
       match pcty_desc with Pcty_arrow _ -> Some MinusGreater | _ -> None )
-    | Exp {pexp_desc} -> (
+    | Exp { pexp_desc } -> (
       match pexp_desc with
       | Pexp_tuple _ -> Some Comma
-      | Pexp_construct ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple _})
-        ->
+      | Pexp_construct
+          ({ txt= Lident "::" }, Some { pexp_desc= Pexp_tuple _ }) ->
           Some ColonColon
       | Pexp_construct (_, Some _) -> Some Apply
       | Pexp_constant (Pconst_integer (i, _) | Pconst_float (i, _)) -> (
         match i.[0] with '-' | '+' -> Some UMinus | _ -> Some Atomic )
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc}}, [_]) -> (
+      | Pexp_apply ({ pexp_desc= Pexp_ident { txt= Lident i; loc } }, [ _ ])
+    -> (
         match i with
         | "~-" | "~-." | "~+." | "~+" ->
             if
@@ -1460,11 +1487,13 @@ end = struct
       | Pexp_apply
           ( { pexp_desc=
                 Pexp_ident
-                  {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
+                  { txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))
+                  }
             }
           , _ :: _ :: _ ) ->
           Some Dot
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_; _]) -> (
+      | Pexp_apply ({ pexp_desc= Pexp_ident { txt= Lident i } }, [ _; _ ])
+    -> (
         match (i.[0], i) with
         | _, ":=" -> Some ColonEqual
         | _, ("or" | "||") -> Some BarBar
@@ -1489,8 +1518,11 @@ end = struct
                     Pstr_eval
                       ( { pexp_desc=
                             ( Pexp_new _ | Pexp_object _ | Pexp_while _
-                            | Pexp_for _ ) }
-                      , _ ) } ] ) ->
+                            | Pexp_for _ )
+                        }
+                      , _ )
+                }
+              ] ) ->
           Some Apply
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
@@ -1508,7 +1540,7 @@ end = struct
       [ctx], indicating that [ast] should be parenthesized. Meaningful for
       binary operators, otherwise returns [None] if [ctx] has no precedence
       or [Some None] if [ctx] does but [ast] does not. *)
-  let ambig_prec ({ast} as xast) =
+  let ambig_prec ({ ast } as xast) =
     prec_ctx xast
     >>| fun (prec_ctx, which_child) ->
     prec_ast ast
@@ -1527,27 +1559,29 @@ end = struct
 
   (** [parenze_typ {ctx; ast}] holds when type [ast] should be parenthesized
       in context [ctx]. *)
-  let parenze_typ ({ctx; ast= typ} as xtyp) =
+  let parenze_typ ({ ctx; ast= typ } as xtyp) =
     assert (check_typ xtyp ; true) ;
     match xtyp with
-    | {ast= {ptyp_desc= Ptyp_package _}} -> true
-    | {ast= {ptyp_desc= Ptyp_alias _}; ctx= Typ _} -> true
-    | { ast= {ptyp_desc= Ptyp_alias _}
-      ; ctx= Str {pstr_desc= Pstr_typext _} | Sig {psig_desc= Psig_typext _}
+    | { ast= { ptyp_desc= Ptyp_package _ } } -> true
+    | { ast= { ptyp_desc= Ptyp_alias _ }; ctx= Typ _ } -> true
+    | { ast= { ptyp_desc= Ptyp_alias _ }
+      ; ctx=
+          Str { pstr_desc= Pstr_typext _ } | Sig { psig_desc= Psig_typext _ }
       } ->
         true
-    | { ast= {ptyp_desc= Ptyp_alias _}
+    | { ast= { ptyp_desc= Ptyp_alias _ }
       ; ctx=
-          ( Str {pstr_desc= Pstr_type (_, t)}
-          | Sig {psig_desc= Psig_type (_, t)} ) }
+          ( Str { pstr_desc= Pstr_type (_, t) }
+          | Sig { psig_desc= Psig_type (_, t) } )
+      }
       when List.exists t ~f:(fun t ->
                match t.ptype_kind with
                | Ptype_variant l ->
                    List.exists l ~f:(fun c ->
                        match c.pcd_args with
                        | Pcstr_tuple l -> List.exists l ~f:(phys_equal typ)
-                       | _ -> false )
-               | _ -> false ) ->
+                       | _ -> false)
+               | _ -> false) ->
         true
     | _ -> (
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
@@ -1556,7 +1590,7 @@ end = struct
 
   (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_cty ({ctx; ast= cty} as xcty) =
+  let parenze_cty ({ ctx; ast= cty } as xcty) =
     assert (check_cty xcty ; true) ;
     match xcty with _ -> (
       match ambig_prec (sub_ast ~ctx (Cty cty)) with
@@ -1565,26 +1599,26 @@ end = struct
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_mty {ctx; ast= mty} =
+  let parenze_mty { ctx; ast= mty } =
     has_trailing_attributes_mty mty
     ||
     match (ctx, mty.pmty_desc) with
-    | Str {pstr_desc= Pstr_recmodule _}, Pmty_with _ -> true
-    | Sig {psig_desc= Psig_recmodule _}, Pmty_with _ -> true
+    | Str { pstr_desc= Pstr_recmodule _ }, Pmty_with _ -> true
+    | Sig { psig_desc= Psig_recmodule _ }, Pmty_with _ -> true
     | _ -> false
 
   (** [parenze_mod {ctx; ast}] holds when module expr [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_mod {ctx; ast= m} =
+  let parenze_mod { ctx; ast= m } =
     has_trailing_attributes_mod m
     ||
     match (ctx, m.pmod_desc) with
-    | Mod {pmod_desc= Pmod_apply _}, Pmod_functor _ -> true
+    | Mod { pmod_desc= Pmod_apply _ }, Pmod_functor _ -> true
     | _ -> false
 
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_pat ({ctx; ast= pat} as xpat) =
+  let parenze_pat ({ ctx; ast= pat } as xpat) =
     assert (check_pat xpat ; true) ;
     has_trailing_attributes_pat pat
     ||
@@ -1592,110 +1626,119 @@ end = struct
     | ( Pat
           { ppat_desc=
               Ppat_construct
-                ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [_; tl]})
+                ( { txt= Lident "::" }
+                , Some { ppat_desc= Ppat_tuple [ _; tl ] } )
           }
-      , Ppat_construct ({txt= Lident "::"}, _) )
+      , Ppat_construct ({ txt= Lident "::" }, _) )
       when tl == pat ->
         false
     | ( Pat
           { ppat_desc=
               Ppat_construct
-                ({txt= Lident "::"}, Some {ppat_desc= Ppat_tuple [_; _]}) }
+                ( { txt= Lident "::" }
+                , Some { ppat_desc= Ppat_tuple [ _; _ ] } )
+          }
       , inner ) -> (
       match inner with
-      | Ppat_construct ({txt= Lident "::"}, _) -> true
+      | Ppat_construct ({ txt= Lident "::" }, _) -> true
       | Ppat_construct _ | Ppat_record _ | Ppat_variant _ -> false
       | _ -> true )
-    | ( Pat {ppat_desc= Ppat_construct _}
-      , Ppat_construct ({txt= Lident "::"}, _) ) ->
+    | ( Pat { ppat_desc= Ppat_construct _ }
+      , Ppat_construct ({ txt= Lident "::" }, _) ) ->
         true
-    | Exp {pexp_desc= Pexp_fun (Optional _, _, _, _)}, Ppat_record _ -> true
-    | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
+    | Exp { pexp_desc= Pexp_fun (Optional _, _, _, _) }, Ppat_record _ ->
+        true
+    | ( ( Exp { pexp_desc= Pexp_let _; _ }
+        | Str { pstr_desc= Pstr_value _; _ } )
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
-    | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
-      , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _}) ) ->
+    | ( (Exp { pexp_desc= Pexp_let _ } | Str { pstr_desc= Pstr_value _ })
+      , Ppat_constraint (_, { ptyp_desc= Ptyp_poly _ }) ) ->
         false
-    | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
-      , Ppat_constraint ({ppat_desc= Ppat_any | Ppat_tuple _}, _) ) ->
+    | ( (Exp { pexp_desc= Pexp_let _ } | Str { pstr_desc= Pstr_value _ })
+      , Ppat_constraint ({ ppat_desc= Ppat_any | Ppat_tuple _ }, _) ) ->
         false
-    | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
+    | ( (Exp { pexp_desc= Pexp_let _ } | Str { pstr_desc= Pstr_value _ })
       , Ppat_constraint _ ) ->
         true
     | Pat _, Ppat_constraint _
      |_, Ppat_unpack _
-     |_, Ppat_constraint ({ppat_desc= Ppat_unpack _}, _)
+     |_, Ppat_constraint ({ ppat_desc= Ppat_unpack _ }, _)
      |( Pat
           { ppat_desc=
               ( Ppat_alias _ | Ppat_array _ | Ppat_constraint _
-              | Ppat_construct _ | Ppat_variant _ ) }
+              | Ppat_construct _ | Ppat_variant _ )
+          }
       , Ppat_tuple _ )
      |( ( Pat
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ ) }
-        | Exp {pexp_desc= Pexp_fun _} )
+                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ )
+            }
+        | Exp { pexp_desc= Pexp_fun _ } )
       , Ppat_alias _ )
-     |( Pat {ppat_desc= Ppat_lazy _}
+     |( Pat { ppat_desc= Ppat_lazy _ }
       , (Ppat_construct _ | Ppat_variant (_, Some _) | Ppat_or _) )
      |( Pat
           { ppat_desc=
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
-              | Ppat_variant _ ) }
+              | Ppat_variant _ )
+          }
       , Ppat_or _ )
-     |Pat {ppat_desc= Ppat_lazy _}, Ppat_tuple _
-     |Pat {ppat_desc= Ppat_tuple _}, Ppat_tuple _
+     |Pat { ppat_desc= Ppat_lazy _ }, Ppat_tuple _
+     |Pat { ppat_desc= Ppat_tuple _ }, Ppat_tuple _
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
-     |Exp {pexp_desc= Pexp_fun _}, Ppat_or _
-     |Cl {pcl_desc= Pcl_fun _}, Ppat_constraint _
-     |Cl {pcl_desc= Pcl_fun _}, Ppat_tuple _
-     |Cl {pcl_desc= Pcl_fun _}, Ppat_construct _
-     |Cl {pcl_desc= Pcl_fun _}, Ppat_alias _
+     |Exp { pexp_desc= Pexp_fun _ }, Ppat_or _
+     |Cl { pcl_desc= Pcl_fun _ }, Ppat_constraint _
+     |Cl { pcl_desc= Pcl_fun _ }, Ppat_tuple _
+     |Cl { pcl_desc= Pcl_fun _ }, Ppat_construct _
+     |Cl { pcl_desc= Pcl_fun _ }, Ppat_alias _
      |( Exp
           { pexp_desc=
-              Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _ }
+              Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _
+          }
       , Ppat_constraint _ )
-     |Exp {pexp_desc= Pexp_let _}, Ppat_exception _
-     |( Exp {pexp_desc= Pexp_fun _}
+     |Exp { pexp_desc= Pexp_let _ }, Ppat_exception _
+     |( Exp { pexp_desc= Pexp_fun _ }
       , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) )
       ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
-    | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
+    | ( Pat { ppat_desc= Ppat_construct _ | Ppat_variant _; _ }
       , (Ppat_construct (_, Some _) | Ppat_variant (_, Some _)) ) ->
         true
-    | ( ( Exp {pexp_desc= Pexp_let (_, bindings, _)}
-        | Str {pstr_desc= Pstr_value (_, bindings)} )
+    | ( ( Exp { pexp_desc= Pexp_let (_, bindings, _) }
+        | Str { pstr_desc= Pstr_value (_, bindings) } )
       , _ ) ->
         List.exists bindings ~f:(function
-          | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
+          | { pvb_pat; pvb_expr= { pexp_desc= Pexp_constraint _ } } ->
               pvb_pat == pat
-          | _ -> false )
+          | _ -> false)
     | Pld _, Ppat_constraint _ -> true
     | _ -> false
 
   (** Check if an exp is a prefix op that is not fully applied *)
-  let is_displaced_prefix_op {ctx; ast= exp} =
+  let is_displaced_prefix_op { ctx; ast= exp } =
     match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _)])}
-      , Pexp_ident {txt= Lident i} )
+    | ( Exp { pexp_desc= Pexp_apply (e0, [ (Nolabel, _) ]) }
+      , Pexp_ident { txt= Lident i } )
       when e0 == exp && is_prefix_id i ->
         false
-    | _, Pexp_ident {txt= Lident i} when is_prefix_id i -> true
+    | _, Pexp_ident { txt= Lident i } when is_prefix_id i -> true
     | _ -> false
 
   (** Check if an exp is an infix op that is not fully applied *)
-  let is_displaced_infix_op {ctx; ast= exp} =
+  let is_displaced_infix_op { ctx; ast= exp } =
     match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _); (Nolabel, _)])}
-      , Pexp_ident {txt= Lident i} )
+    | ( Exp { pexp_desc= Pexp_apply (e0, [ (Nolabel, _); (Nolabel, _) ]) }
+      , Pexp_ident { txt= Lident i } )
       when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes
       ->
         false
-    | _, Pexp_ident {txt= Lident i} when is_infix_id i -> true
+    | _, Pexp_ident { txt= Lident i } when is_infix_id i -> true
     | _ -> false
 
   (** 'Classes' of expressions which are parenthesized differently. *)
@@ -1705,14 +1748,16 @@ end = struct
       expressions [cls]. *)
   let mem_cls_exp cls ast =
     match (ast, cls) with
-    | {pexp_desc= Pexp_ifthenelse (_, _, None)}, (Non_apply | ThenElse)
-     |{pexp_desc= Pexp_ifthenelse _}, Non_apply
-     |{pexp_desc= Pexp_sequence _}, (Non_apply | Sequence | Then | ThenElse)
-     |( {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
+    | { pexp_desc= Pexp_ifthenelse (_, _, None) }, (Non_apply | ThenElse)
+     |{ pexp_desc= Pexp_ifthenelse _ }, Non_apply
+     |( { pexp_desc= Pexp_sequence _ }
+      , (Non_apply | Sequence | Then | ThenElse) )
+     |( { pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _ }
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
             ( Pexp_fun _ | Pexp_let _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ ) }
+            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ )
+        }
       , (Let_match | Non_apply) ) ->
         true
     | _ -> false
@@ -1721,7 +1766,7 @@ end = struct
       [cls]. *)
   let mem_cls_cl cls ast =
     match (ast, cls) with
-    | {pcl_desc= Pcl_fun _}, Non_apply -> true
+    | { pcl_desc= Pcl_fun _ }, Non_apply -> true
     | _ -> false
 
   let marked_parenzed_inner_nested_match =
@@ -1750,9 +1795,9 @@ end = struct
         match exp.pexp_desc with
         | Pexp_assert e
          |Pexp_construct
-            ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; e]})
+            ({ txt= Lident "::" }, Some { pexp_desc= Pexp_tuple [ _; e ] })
          |Pexp_construct (_, Some e)
-         |Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}])
+         |Pexp_extension (_, PStr [ { pstr_desc= Pstr_eval (e, _) } ])
          |Pexp_fun (_, _, _, e)
          |Pexp_ifthenelse (_, e, None)
          |Pexp_ifthenelse (_, _, Some e)
@@ -1817,7 +1862,7 @@ end = struct
       match exp.pexp_desc with
       | Pexp_assert e
        |Pexp_construct
-          ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; e]})
+          ({ txt= Lident "::" }, Some { pexp_desc= Pexp_tuple [ _; e ] })
        |Pexp_construct (_, Some e)
        |Pexp_ifthenelse (_, e, None)
        |Pexp_ifthenelse (_, _, Some e)
@@ -1834,17 +1879,17 @@ end = struct
        |Pexp_letexception (_, e)
        |Pexp_letmodule (_, _, e) ->
           continue e
-      | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) -> (
+      | Pexp_extension (_, PStr [ { pstr_desc= Pstr_eval (e, _) } ]) -> (
         match e.pexp_desc with
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             List.iter cases ~f:(fun case ->
-                mark_parenzed_inner_nested_match case.pc_rhs ) ;
+                mark_parenzed_inner_nested_match case.pc_rhs) ;
             true
         | _ -> continue e )
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.iter cases ~f:(fun case ->
-              mark_parenzed_inner_nested_match case.pc_rhs ) ;
+              mark_parenzed_inner_nested_match case.pc_rhs) ;
           true
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (List.last_exn es)
@@ -1863,15 +1908,15 @@ end = struct
 
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
-  and parenze_exp ({ctx; ast= exp} as xexp) =
+  and parenze_exp ({ ctx; ast= exp } as xexp) =
     let parenze () =
       let is_right_infix_arg ctx_desc exp =
         match ctx_desc with
         | Pexp_apply
-            ({pexp_desc= Pexp_ident {txt= Lident i}}, _ :: (_, e2) :: _)
+            ({ pexp_desc= Pexp_ident { txt= Lident i } }, _ :: (_, e2) :: _)
           when e2 == exp && is_infix_id i
                && Option.value_map ~default:false (prec_ast ctx)
-                    ~f:(fun p -> Poly.(p < Apply) ) ->
+                    ~f:(fun p -> Poly.(p < Apply)) ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
@@ -1881,7 +1926,7 @@ end = struct
       | Some (Some true) -> true (* exp is apply and ambig *)
       | _ -> (
         match ctx with
-        | Exp {pexp_desc} ->
+        | Exp { pexp_desc } ->
             if is_right_infix_arg pexp_desc exp then is_sequence exp
             else exposed_right_exp Non_apply exp
         | _ -> exposed_right_exp Non_apply exp )
@@ -1894,24 +1939,27 @@ end = struct
        |> Option.value ~default:false
     ||
     match (ctx, exp) with
-    | ( Exp {pexp_desc= Pexp_construct ({txt= Lident id}, _)}
-      , {pexp_attributes= _ :: _} )
+    | ( Exp { pexp_desc= Pexp_construct ({ txt= Lident id }, _) }
+      , { pexp_attributes= _ :: _ } )
       when is_infix_id id ->
         true
-    | Exp {pexp_desc= Pexp_extension _}, {pexp_desc= Pexp_tuple _} -> false
-    | Pld _, {pexp_desc= Pexp_tuple _} -> false
-    | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false
-    | Cl {pcl_desc= Pcl_apply _}, _ -> parenze ()
-    | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _)}
+    | Exp { pexp_desc= Pexp_extension _ }, { pexp_desc= Pexp_tuple _ } ->
+        false
+    | Pld _, { pexp_desc= Pexp_tuple _ } -> false
+    | Str { pstr_desc= Pstr_eval _ }, { pexp_desc= Pexp_tuple _ } -> false
+    | Cl { pcl_desc= Pcl_apply _ }, _ -> parenze ()
+    | ( Exp
+          { pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _) }
       , { pexp_desc=
-            Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, _) } )
+            Pexp_apply ({ pexp_desc= Pexp_ident { txt= Lident "not" } }, _)
+        } )
       when is_infix op && not (e1 == exp) ->
         true
-    | ( Exp {pexp_desc= Pexp_apply (e, _)}
-      , {pexp_desc= Pexp_construct _ | Pexp_variant _} )
+    | ( Exp { pexp_desc= Pexp_apply (e, _) }
+      , { pexp_desc= Pexp_construct _ | Pexp_variant _ } )
       when e == exp ->
         true
-    | Exp {pexp_desc}, _ -> (
+    | Exp { pexp_desc }, _ -> (
       match pexp_desc with
       | Pexp_extension
           ( _
@@ -1921,15 +1969,18 @@ end = struct
                       ( { pexp_desc=
                             ( Pexp_function cases
                             | Pexp_match (_, cases)
-                            | Pexp_try (_, cases) ) }
-                      , _ ) } ] )
+                            | Pexp_try (_, cases) )
+                        }
+                      , _ )
+                }
+              ] )
        |Pexp_function cases
        |Pexp_match (_, cases)
        |Pexp_try (_, cases) ->
           if !leading_nested_match_parens then
-            List.iter cases ~f:(fun {pc_rhs; _} ->
-                mark_parenzed_inner_nested_match pc_rhs ) ;
-          List.exists cases ~f:(fun {pc_rhs} -> pc_rhs == exp)
+            List.iter cases ~f:(fun { pc_rhs; _ } ->
+                mark_parenzed_inner_nested_match pc_rhs) ;
+          List.exists cases ~f:(fun { pc_rhs } -> pc_rhs == exp)
           && exposed_right_exp Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
       | Pexp_ifthenelse (_, thn, None) when thn == exp ->
@@ -1937,17 +1988,19 @@ end = struct
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
           exposed_right_exp ThenElse exp
       | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
-      | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _)
+      | Pexp_apply (({ pexp_desc= Pexp_new _; _ } as exp2), _)
         when exp2 == exp ->
           false
       | Pexp_apply
-          ( ( { pexp_desc=
-                  Pexp_extension
-                    ( _
-                    , PStr
-                        [ { pstr_desc=
-                              Pstr_eval ({pexp_desc= Pexp_new _}, []) } ] )
-              } as exp2 )
+          ( ({ pexp_desc=
+                 Pexp_extension
+                   ( _
+                   , PStr
+                       [ { pstr_desc=
+                             Pstr_eval ({ pexp_desc= Pexp_new _ }, [])
+                         }
+                       ] )
+             } as exp2)
           , _ )
         when exp2 == exp ->
           false
@@ -1955,27 +2008,31 @@ end = struct
         when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->
           exposed_right_exp Non_apply exp
           (* Non_apply is perhaps pessimistic *)
-      | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_])} as e0))
+      | Pexp_record
+          (_, Some ({ pexp_desc= Pexp_apply (ident, [ _ ]) } as e0))
         when e0 == exp && is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
       | Pexp_record
           ( _
           , Some
-              ( { pexp_desc=
-                    ( Pexp_ident _ | Pexp_constant _ | Pexp_record _
-                    | Pexp_field _ ) } as e0 ) )
+              ({ pexp_desc=
+                   ( Pexp_ident _ | Pexp_constant _ | Pexp_record _
+                   | Pexp_field _ )
+               } as e0) )
         when e0 == exp ->
           false
       | Pexp_record (_, Some e0) when e0 == exp -> true
       | Pexp_sequence
-          ( ( { pexp_desc=
-                  Pexp_extension
-                    ( _
-                    , PStr
-                        [ { pstr_desc=
-                              Pstr_eval ({pexp_desc= Pexp_sequence _}, [])
-                          } ] ) } as lhs )
+          ( ({ pexp_desc=
+                 Pexp_extension
+                   ( _
+                   , PStr
+                       [ { pstr_desc=
+                             Pstr_eval ({ pexp_desc= Pexp_sequence _ }, [])
+                         }
+                       ] )
+             } as lhs)
           , _ )
         when lhs == exp ->
           true
@@ -1987,7 +2044,7 @@ end = struct
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
       parenthesized in context [ctx]. *)
-  and parenze_cl ({ctx; ast= cl} as xcl) =
+  and parenze_cl ({ ctx; ast= cl } as xcl) =
     assert (check_cl xcl ; true) ;
     match xcl with _ -> (
       match ambig_prec (sub_ast ~ctx (Cl cl)) with

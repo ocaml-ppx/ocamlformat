@@ -18,7 +18,8 @@ let _ = ignore Async_unix.Fd.(([stdin (); stdout (); stderr ()] : t list))
 
 type t =
   { a: int
-  ; b: int }
+  ; b: int
+  }
 
 type t =
   [ `A

@@ -29,9 +29,9 @@ type t = private [> ]
 
 type t = < a: < > >
 
-type t = {a: < >; b: int}
+type t = { a: < >; b: int }
 
-type t = {b: int; a: < > }
+type t = { b: int; a: < >  }
 
 class type c =
   object

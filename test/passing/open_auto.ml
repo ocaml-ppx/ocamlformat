@@ -1,8 +1,8 @@
 let () =
   ( (let open Term in
     term_result
-      ( const Phases.phase1 $ arch $ hub_id $ build_dir $ logs_dir
-      $ setup_logs ))
+      (const Phases.phase1 $ arch $ hub_id $ build_dir $ logs_dir
+     $ setup_logs))
   , Term.info "phase1" ~doc ~sdocs:Manpage.s_common_options ~exits ~man )
 
 let () =

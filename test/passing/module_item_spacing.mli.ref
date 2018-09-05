@@ -43,7 +43,7 @@ val y : k
 val x : k
 val y : k
 
-type c = {a: int; b: toto; c: char * char * char; d: [`Foo | `Bar]}
+type c = { a: int; b: toto; c: char * char * char; d: [`Foo | `Bar] }
 
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone

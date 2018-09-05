@@ -2,7 +2,7 @@
 
 let f x = function
   | C
-  | P (this, test, [is; wide; enough; _to; break], [the; line])
+  | P (this, test, [ is; wide; enough; _to; break ], [ the; line ])
   | A
   | K ->
       1
@@ -63,8 +63,9 @@ let is_sequence exp =
   | Pexp_sequence _
   | Pexp_extension
       ( _
-      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
-      ) ->
+      , PStr
+          [ { pstr_desc= Pstr_eval ({ pexp_desc= Pexp_sequence _ }, []); _ }
+          ] ) ->
       true
   | _ ->
       false

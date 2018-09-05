@@ -20,20 +20,23 @@ let make_mapper ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
   let doc_attribute = function
-    | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
+    | { txt= "ocaml.doc" | "ocaml.text"; _ }, _ -> true
     | _ -> false
   in
   let attribute (m : Ast_mapper.mapper) attr =
     match attr with
-    | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
+    | ( { txt= ("ocaml.doc" | "ocaml.text") as txt; loc }
       , PStr
           [ { pstr_desc=
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
-                    ; pexp_attributes }
+                    ; pexp_attributes
+                    }
                   , [] )
-            ; pstr_loc } ] ) ->
+            ; pstr_loc
+            }
+          ] ) ->
         (* normalize consecutive whitespace chars to a single space *)
         let doc' =
           if ignore_doc_comment then "IGNORED"
@@ -43,7 +46,7 @@ let make_mapper ~ignore_doc_comment =
                  (String.split_on_chars doc
                     ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
         in
-        ( {txt; loc= m.location m loc}
+        ( { txt; loc= m.location m loc }
         , m.payload m
             (PStr
                [ { pstr_desc=
@@ -54,7 +57,8 @@ let make_mapper ~ignore_doc_comment =
                          ; pexp_attributes= m.attributes m pexp_attributes
                          }
                        , [] )
-                 ; pstr_loc= m.location m pstr_loc } ]) )
+                 ; pstr_loc= m.location m pstr_loc
+                 } ]) )
     | attr -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
@@ -68,27 +72,28 @@ let make_mapper ~ignore_doc_comment =
       (List.sort ~compare:Poly.compare atrs)
   in
   let expr (m : Ast_mapper.mapper) exp =
-    let {pexp_desc; pexp_attributes} = exp in
+    let { pexp_desc; pexp_attributes } = exp in
     match pexp_desc with
     (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
     | Pexp_sequence
-        ({pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= []}, e3) ->
+        ({ pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= [] }, e3) ->
         m.expr m
           (Exp.sequence e1 (Exp.sequence ~attrs:pexp_attributes e2 e3))
-    | Pexp_poly ({pexp_desc= Pexp_constraint (e, t)}, None) ->
-        m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
-    | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t)}) -> m.expr m e
+    | Pexp_poly ({ pexp_desc= Pexp_constraint (e, t) }, None) ->
+        m.expr m { exp with pexp_desc= Pexp_poly (e, Some t) }
+    | Pexp_constraint (e, { ptyp_desc= Ptyp_poly ([], _t) }) -> m.expr m e
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
-    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1} = pat in
+    let { ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1 } = pat in
     (* normalize nested or patterns *)
     match ppat_desc with
     | Ppat_or
         ( pat1
         , { ppat_desc= Ppat_or (pat2, pat3)
           ; ppat_loc= loc2
-          ; ppat_attributes= attrs2 } ) ->
+          ; ppat_attributes= attrs2
+          } ) ->
         m.pat m
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
@@ -96,10 +101,11 @@ let make_mapper ~ignore_doc_comment =
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let value_binding (m : Ast_mapper.mapper) vb =
-    let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes}
+    let { pvb_pat= { ppat_desc; ppat_loc; ppat_attributes }
         ; pvb_expr
         ; pvb_loc
-        ; pvb_attributes } =
+        ; pvb_attributes
+        } =
       vb
     in
     match (ppat_desc, pvb_expr.pexp_desc) with
@@ -107,7 +113,8 @@ let make_mapper ~ignore_doc_comment =
        ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
        https://caml.inria.fr/mantis/view.php?id=7344 *)
     | ( Ppat_constraint
-          (({ppat_desc= Ppat_var _} as p0), {ptyp_desc= Ptyp_poly ([], t0)})
+          ( ({ ppat_desc= Ppat_var _ } as p0)
+          , { ptyp_desc= Ptyp_poly ([], t0) } )
       , Pexp_constraint (e0, t1) )
       when Poly.equal t0 t1 ->
         m.value_binding m
@@ -123,10 +130,10 @@ let make_mapper ~ignore_doc_comment =
   in
   let structure_item (m : Ast_mapper.mapper) (si : structure_item) =
     match si.pstr_desc with
-    | Pstr_eval ({pexp_desc= Pexp_extension e}, []) ->
+    | Pstr_eval ({ pexp_desc= Pexp_extension e }, []) ->
         let e = m.extension m e in
         let pstr_loc = m.location m si.pstr_loc in
-        {pstr_desc= Pstr_extension (e, []); pstr_loc}
+        { pstr_desc= Pstr_extension (e, []); pstr_loc }
     | _ -> Ast_mapper.default_mapper.structure_item m si
   in
   let structure (m : Ast_mapper.mapper) (si : structure) =
@@ -135,7 +142,7 @@ let make_mapper ~ignore_doc_comment =
         List.filter si ~f:(fun si ->
             match si.pstr_desc with
             | Pstr_attribute a -> not (doc_attribute a)
-            | _ -> true )
+            | _ -> true)
       else si
     in
     Ast_mapper.default_mapper.structure m si
@@ -146,7 +153,7 @@ let make_mapper ~ignore_doc_comment =
         List.filter si ~f:(fun si ->
             match si.psig_desc with
             | Psig_attribute a -> not (doc_attribute a)
-            | _ -> true )
+            | _ -> true)
       else si
     in
     Ast_mapper.default_mapper.signature m si
@@ -158,9 +165,9 @@ let make_mapper ~ignore_doc_comment =
           List.filter si.pcsig_fields ~f:(fun si ->
               match si.pctf_desc with
               | Pctf_attribute a -> not (doc_attribute a)
-              | _ -> true )
+              | _ -> true)
         in
-        {si with pcsig_fields}
+        { si with pcsig_fields }
       else si
     in
     Ast_mapper.default_mapper.class_signature m si
@@ -172,9 +179,9 @@ let make_mapper ~ignore_doc_comment =
           List.filter si.pcstr_fields ~f:(fun si ->
               match si.pcf_desc with
               | Pcf_attribute a -> not (doc_attribute a)
-              | _ -> true )
+              | _ -> true)
         in
-        {si with pcstr_fields}
+        { si with pcstr_fields }
       else si
     in
     Ast_mapper.default_mapper.class_structure m si
@@ -190,7 +197,8 @@ let make_mapper ~ignore_doc_comment =
   ; signature
   ; structure
   ; class_signature
-  ; class_structure }
+  ; class_structure
+  }
 
 let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
 

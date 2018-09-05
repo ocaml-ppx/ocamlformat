@@ -51,7 +51,8 @@ let translate_captured
     { Clang_ast_t.lci_captured_var
     ; lci_init_captured_vardecl
     ; lci_capture_this
-    ; lci_capture_kind }
+    ; lci_capture_kind
+    }
     ((trans_results_acc, captured_vars_acc) as acc) =
   ()
 
@@ -90,7 +91,8 @@ let translate_captured
     { Clang_ast_t.lci_captured_var
     ; lci_init_captured_vardecl
     ; lci_capture_this
-    ; lci_capture_kind } ((trans_results_acc, captured_vars_acc) as acc) =
+    ; lci_capture_kind
+    } ((trans_results_acc, captured_vars_acc) as acc) =
   ()
 
 let f ssssssssss =
@@ -98,4 +100,4 @@ let f ssssssssss =
     function
     | '0' -> g accuuuuuuuuuum
     | '1' -> h accuuuuuuuuuum
-    | _ -> i accuuuuuuuuuum )
+    | _ -> i accuuuuuuuuuum)

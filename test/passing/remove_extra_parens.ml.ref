@@ -1,1 +1,1 @@
-let f = function [{xxxxxx}; {yyyyyyyy}] -> ()
+let f = function [ { xxxxxx }; { yyyyyyyy } ] -> ()

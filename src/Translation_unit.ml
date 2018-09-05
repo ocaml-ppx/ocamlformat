@@ -15,7 +15,7 @@ module Format = Format_
 
 open Migrate_ast
 
-type 'a with_comments = {ast: 'a; comments: (string * Location.t) list}
+type 'a with_comments = { ast: 'a; comments: (string * Location.t) list }
 
 (** Operations on translation units. *)
 type 'a t =
@@ -30,7 +30,8 @@ type 'a t =
       -> 'a with_comments
       -> bool
   ; normalize: 'a with_comments -> 'a
-  ; printast: Caml.Format.formatter -> 'a -> unit }
+  ; printast: Caml.Format.formatter -> 'a -> unit
+  }
 
 (** Existential package of a type of translation unit and its operations. *)
 type x = XUnit : 'a t -> x
@@ -90,7 +91,7 @@ let parse parse_ast (conf : Conf.t) ic =
     match List.rev !w50 with
     | [] ->
         let comments = Lexer.comments () in
-        {ast; comments}
+        { ast; comments }
     | w50 -> raise (Warning50 w50)
   with e ->
     Location.warning_printer := warning_printer ;
@@ -139,7 +140,9 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     xunit.fmt source cmts_t conf ast fs ;
     Format.pp_print_newline fs () ;
     Out_channel.close oc ;
-    let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
+    let conf =
+      if Conf.debug then conf else { conf with Conf.quiet= true }
+    in
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
     if String.equal source_txt fmted then (
       match (Conf.action, ofile) with
@@ -157,7 +160,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
       with
       | exception e -> Ocamlformat_bug e
       | new_ ->
-          let old = {ast; comments} in
+          let old = { ast; comments } in
           if
             (* Ast not preserved ? *)
             not
@@ -173,9 +176,9 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             else internal_error `Ast [("output file", String.sexp_of_t tmp)] ) ;
           (* Comments not preserved ? *)
           if conf.comment_check then (
-            ( match Cmts.remaining_comments cmts_t with
+            (match Cmts.remaining_comments cmts_t with
             | [] -> ()
-            | l -> internal_error `Comment_dropped l ) ;
+            | l -> internal_error `Comment_dropped l) ;
             let diff_cmts = Cmts.diff comments new_.comments in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;
@@ -189,11 +192,11 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           (* Too many iteration ? *)
           if i >= conf.max_iters then (
             Caml.flush_all () ;
-            ( if Conf.debug then
-              let command =
-                Printf.sprintf "diff %s %s 1>&2" source_file tmp
-              in
-              ignore (Unix.system command) ) ;
+            (if Conf.debug then
+             let command =
+               Printf.sprintf "diff %s %s 1>&2" source_file tmp
+             in
+             ignore (Unix.system command)) ;
             Unstable i )
           else
             let result =
@@ -210,13 +213,13 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     match xunit.input conf ic with
     | exception exn -> Invalid_source exn
     | _ when conf.disable ->
-        ( match (Conf.action, ofile) with
+        (match (Conf.action, ofile) with
         | _, None -> Out_channel.output_string stdout source_txt
         | In_out _, Some ofile ->
             Out_channel.write_all ofile ~data:source_txt
-        | Inplace _, _ -> () ) ;
+        | Inplace _, _ -> ()) ;
         Ok
-    | {ast; comments} -> (
+    | { ast; comments } -> (
       try
         print_check ~i:1 ~conf ~ast ~comments ~source_txt
           ~source_file:input_file
@@ -237,7 +240,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     | Syntaxerr.Error _ | Lexer.Error _ -> false
     | _ -> false
   in
-  ( match result with
+  (match result with
   | Ok -> ()
   | Invalid_source _ when conf.Conf.quiet -> ()
   | Invalid_source exn -> (
@@ -299,9 +302,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           Format.eprintf "  BUG: %s.\n%!" s ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )
+                Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp))
       | exn ->
           Format.eprintf "  BUG: unhandled exception.\n%!" ;
-          if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) )
-  ) ;
+          if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) )) ;
   result
