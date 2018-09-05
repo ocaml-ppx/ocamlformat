@@ -91,14 +91,14 @@ let update_config ?(quiet = false) c l =
   in
   List.fold ~init:c l ~f:update_one
 
-let fmt_expressions c width to_exp to_xt exprs fmt fmt_expr =
+let fmt_expressions c width sub_exp exprs fmt fmt_expr =
   match c.conf.break_collection_expressions with
   | `Fit_or_vertical -> list exprs fmt fmt_expr
   | `Wrap ->
       let grps =
         List.group exprs ~break:(fun x1 x2 ->
-            (not (is_simple c.conf width (x1 |> to_exp |> to_xt)))
-            || not (is_simple c.conf width (x2 |> to_exp |> to_xt)) )
+            (not (is_simple c.conf width (sub_exp x1)))
+            || not (is_simple c.conf width (sub_exp x2)) )
       in
       let fmt_grp exprs = hovbox (-2) (list exprs "@,; " fmt_expr) in
       list grps fmt fmt_grp
@@ -1566,7 +1566,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_array e1N ->
       hvbox 0
         ( wrap_fits_breaks "[|" "|]"
-            (fmt_expressions c width Fn.id (sub_exp ~ctx) e1N "@;<0 1>; "
+            (fmt_expressions c width (sub_exp ~ctx) e1N "@;<0 1>; "
                (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
   | Pexp_assert e0 ->
@@ -1630,7 +1630,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
              (not (List.is_empty pexp_attributes))
              "(" ")"
              ( wrap_fits_breaks "[" "]"
-                 ( fmt_expressions c width snd Fn.id loc_xes "@,; "
+                 ( fmt_expressions c width snd loc_xes "@,; "
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
                        @@ fmt_expression c xexp )
