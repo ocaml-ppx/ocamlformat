@@ -8,10 +8,10 @@ let () =
 let () =
   Arg.(
     let doc = "Output all." in
-    value & flag & info [ "all" ] ~doc)
+    value & flag & info ["all"] ~doc)
   $ Arg.(
       let doc = "Commit to git." in
-      value & flag & info [ "commit"; "c" ] ~doc)
+      value & flag & info ["commit"; "c"] ~doc)
 
 let () = X.(f y i)
 

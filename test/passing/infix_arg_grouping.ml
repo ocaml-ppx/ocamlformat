@@ -66,8 +66,7 @@ let to_json { integers; floats; strings } =
   `Assoc
     [ ("int", yojson_of_integers integers)
     ; ("double", yojson_of_floats floats)
-    ; ("normal", yojson_of_strings strings)
-    ]
+    ; ("normal", yojson_of_strings strings) ]
   |> Yojson.Basic.to_string
 
 let rename (us, q) sub =
@@ -83,6 +82,5 @@ let _ =
      ; bbbbbbbbbbbbbbb
      ; ccccccccccccccc
      ; ddddddddddddddd
-     ; eeeeeeeeeeeeeee
-     ]
+     ; eeeeeeeeeeeeeee ]
     @ l)

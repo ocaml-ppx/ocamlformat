@@ -8,11 +8,11 @@ let () =
 let () =
   (let open Arg in
   let doc = "Output all." in
-  value & flag & info [ "all" ] ~doc)
+  value & flag & info ["all"] ~doc)
   $
   let open Arg in
   let doc = "Commit to git." in
-  value & flag & info [ "commit"; "c" ] ~doc
+  value & flag & info ["commit"; "c"] ~doc
 
 let () = X.(f y i)
 

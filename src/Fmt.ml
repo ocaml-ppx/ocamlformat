@@ -187,7 +187,7 @@ let fill_text text =
     let words =
       List.filter ~f:(Fn.non String.is_empty)
         (String.split_on_chars line
-           ~on:[ '\t'; '\n'; '\011'; '\012'; '\r'; ' ' ])
+           ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '])
     in
     list words "@ " str
   in

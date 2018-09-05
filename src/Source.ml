@@ -168,7 +168,7 @@ let string_literal t mode (l : Location.t) =
       Literal_lexer.string mode (lexbuf_from_loc t loc)
   | _ ->
       user_error "location does not contain a string literal"
-        [ ("text", Sexp.Atom (string_from_loc t l)) ]
+        [("text", Sexp.Atom (string_from_loc t l))]
 
 let char_literal t (l : Location.t) =
   (* the location of a [char] might include surrounding comments and
@@ -193,7 +193,7 @@ let char_literal t (l : Location.t) =
       Literal_lexer.char (lexbuf_from_loc t loc)
   | _ ->
       user_error "location does not contain a char literal"
-        [ ("text", Sexp.Atom (string_from_loc t l)) ]
+        [("text", Sexp.Atom (string_from_loc t l))]
 
 let begins_line t (l : Location.t) =
   let rec begins_line_ cnum =

@@ -75,8 +75,7 @@ let _ =
     ---> [%expr
            [%e x ~loc [%expr x] x] ;
            iter tail]
-  ; x
-  ]
+  ; x ]
 
 let _ =
   [%expr

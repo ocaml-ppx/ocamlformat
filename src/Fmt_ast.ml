@@ -103,7 +103,7 @@ let fmt_expressions c width sub_exp exprs fmt fmt_expr =
       let grps =
         List.group exprs ~break:(fun x1 x2 ->
             (not (is_simple c.conf width (sub_exp x1)))
-            || not (is_simple c.conf width (sub_exp x2)) )
+            || not (is_simple c.conf width (sub_exp x2)))
       in
       let fmt_grp exprs = hovbox (-2) (list exprs "@,; " fmt_expr) in
       list grps fmt fmt_grp
@@ -153,10 +153,10 @@ let rec sugar_arrow_typ c ({ ast= typ } as xtyp) =
       let rest =
         match t2.ptyp_attributes with
         | [] -> sugar_arrow_typ c (sub_typ ~ctx t2)
-        | _ -> [ (Nolabel, sub_typ ~ctx t2) ]
+        | _ -> [(Nolabel, sub_typ ~ctx t2)]
       in
       (l, sub_typ ~ctx t1) :: rest
-  | _ -> [ (Nolabel, xtyp) ]
+  | _ -> [(Nolabel, xtyp)]
 
 let rec sugar_class_arrow_typ c ({ ast= typ } as xtyp) =
   let ctx = Cty typ in
@@ -168,10 +168,10 @@ let rec sugar_class_arrow_typ c ({ ast= typ } as xtyp) =
       let rest =
         match t2.pcty_attributes with
         | [] -> sugar_class_arrow_typ c (sub_cty ~ctx t2)
-        | _ -> [ (Nolabel, `class_type (sub_cty ~ctx t2)) ]
+        | _ -> [(Nolabel, `class_type (sub_cty ~ctx t2))]
       in
       (l, `core_type (sub_typ ~ctx t1)) :: rest
-  | _ -> [ (Nolabel, `class_type xtyp) ]
+  | _ -> [(Nolabel, `class_type xtyp)]
 
 let rec sugar_or_pat ?(allow_attribute = true) c ({ ast= pat } as xpat) =
   let ctx = Pat pat in
@@ -184,8 +184,8 @@ let rec sugar_or_pat ?(allow_attribute = true) c ({ ast= pat } as xpat) =
   | { ppat_desc= Ppat_or (pat1, pat2); ppat_loc } when allow_attribute ->
       Cmts.relocate c.cmts ~src:ppat_loc ~before:pat1.ppat_loc
         ~after:pat2.ppat_loc ;
-      [ sub_pat ~ctx pat1; sub_pat ~ctx pat2 ]
-  | _ -> [ xpat ]
+      [sub_pat ~ctx pat1; sub_pat ~ctx pat2]
+  | _ -> [xpat]
 
 type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
@@ -217,7 +217,7 @@ let sugar_fun c ?(will_keep_first_ast_node = true) xexp =
           let xargs =
             match xargs with
             | Newtypes names :: xargs -> Newtypes (name :: names) :: xargs
-            | xargs -> Newtypes [ name ] :: xargs
+            | xargs -> Newtypes [name] :: xargs
           in
           (xargs, xbody)
       | _ -> ([], xexp)
@@ -267,7 +267,7 @@ let sugar_infix c prec xexp =
         | _ ->
             if relocate then
               Cmts.relocate c.cmts ~src ~before:e0.pexp_loc ~after) ;
-        op_args1 @ [ (Some (sub_exp ~ctx e0), [ (l2, sub_exp ~ctx e2) ]) ]
+        op_args1 @ [(Some (sub_exp ~ctx e0), [(l2, sub_exp ~ctx e2)])]
     | Right, { pexp_desc= Pexp_apply (e0, [ (l1, e1); (l2, e2) ]); pexp_loc }
       when Poly.(prec = prec_ast (Exp exp)) ->
         let op_args2 =
@@ -302,8 +302,8 @@ let sugar_infix c prec xexp =
           | None ->
               if relocate then
                 Cmts.relocate c.cmts ~src ~before:e1.pexp_loc ~after )) ;
-        (xop, [ (l1, sub_exp ~ctx e1) ]) :: op_args2
-    | _ -> [ (xop, [ xexp ]) ]
+        (xop, [(l1, sub_exp ~ctx e1)]) :: op_args2
+    | _ -> [(xop, [xexp])]
   in
   sugar_infix_ None ~relocate:false (Nolabel, xexp)
 
@@ -321,7 +321,7 @@ let rec sugar_list_pat c pat =
       ) -> (
     match sugar_list_pat c tl with
     | Some (xtl, nil_loc) when List.is_empty tl.ppat_attributes ->
-        Some (([ src; loc; ppat_loc ], sub_pat ~ctx hd) :: xtl, nil_loc)
+        Some (([src; loc; ppat_loc], sub_pat ~ctx hd) :: xtl, nil_loc)
     | _ -> None )
   | _ -> None
 
@@ -342,7 +342,7 @@ let sugar_list_exp c exp =
             } ) -> (
       match sugar_list_exp_ tl with
       | Some (xtl, nil_loc) when List.is_empty tl.pexp_attributes ->
-          Some (([ src; loc; pexp_loc ], sub_exp ~ctx hd) :: xtl, nil_loc)
+          Some (([src; loc; pexp_loc], sub_exp ~ctx hd) :: xtl, nil_loc)
       | _ -> None )
     | _ -> None
   in
@@ -364,9 +364,9 @@ let sugar_infix_cons xexp =
             } ) -> (
       match sugar_infix_cons_ (sub_exp ~ctx tl) with
       | xtl when List.is_empty tl.pexp_attributes ->
-          ([ l1; l2; l3 ], sub_exp ~ctx hd) :: xtl
-      | _ -> [ ([ l1; l2; l3 ], sub_exp ~ctx hd); ([], sub_exp ~ctx tl) ] )
-    | _ -> [ ([], xexp) ]
+          ([l1; l2; l3], sub_exp ~ctx hd) :: xtl
+      | _ -> [([l1; l2; l3], sub_exp ~ctx hd); ([], sub_exp ~ctx tl)] )
+    | _ -> [([], xexp)]
   in
   sugar_infix_cons_ xexp
 
@@ -382,8 +382,8 @@ let rec sugar_ite c ({ ast= exp } as xexp) =
   | Pexp_ifthenelse (cnd, thn, None) ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:cnd.pexp_loc
         ~after:thn.pexp_loc ;
-      [ (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes) ]
-  | _ -> [ (None, xexp, pexp_attributes) ]
+      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
+  | _ -> [(None, xexp, pexp_attributes)]
 
 let sugar_sequence c width xexp =
   let rec sugar_sequence_ ?(allow_attribute = true) ({ ast= exp } as xexp) =
@@ -394,14 +394,14 @@ let sugar_sequence c width xexp =
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
-        then [ xexp ]
+        then [xexp]
         else if Ast.exposed_right_exp Ast.Let_match e1 then
-          [ sub_exp ~ctx e1; sub_exp ~ctx e2 ]
+          [sub_exp ~ctx e1; sub_exp ~ctx e2]
         else
           List.append
             (sugar_sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
             (sugar_sequence_ ~allow_attribute:false (sub_exp ~ctx e2))
-    | _ -> [ xexp ]
+    | _ -> [xexp]
   in
   List.group (sugar_sequence_ xexp) ~break:(fun xexp1 xexp2 ->
       (not (is_simple c.conf width xexp1))
@@ -1317,7 +1317,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                     not (is_simple c.conf width arg))
               in
               exists_not_simple args1 || exists_not_simple args2)
-      | `Fit_or_vertical -> List.map ~f:(fun x -> [ x ]) op_args
+      | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
     in
     hvbox 0 (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
   in
@@ -1329,7 +1329,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         List.group all ~break:(fun (_, a1) (_, a2) ->
             (not (is_simple c.conf width (sub_exp ~ctx a1)))
             || not (is_simple c.conf width (sub_exp ~ctx a2)))
-      else List.map all ~f:(fun x -> [ x ])
+      else List.map all ~f:(fun x -> [x])
     in
     list_fl groups (fun ~first:first_grp ~last:last_grp args ->
         list_pn args (fun ?prev (lbl, arg) ?next ->
@@ -1504,14 +1504,14 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       , (Nolabel, s) :: (Nolabel, i) :: _ )
     when Option.is_some (index_op_get id) -> (
     match index_op_get id with
-    | Some index_op -> fmt_index_op c ctx ~parens index_op s [ i ]
+    | Some index_op -> fmt_index_op c ctx ~parens index_op s [i]
     | None -> impossible "previous match" )
   | Pexp_apply
       ( { pexp_desc= Pexp_ident { txt= Lident id } }
       , (Nolabel, s) :: (Nolabel, i) :: (Nolabel, e) :: _ )
     when Option.is_some (index_op_set id) -> (
     match index_op_set id with
-    | Some index_op -> fmt_index_op c ctx ~parens index_op s [ i ] ~set:e
+    | Some index_op -> fmt_index_op c ctx ~parens index_op s [i] ~set:e
     | None -> impossible "previous match" )
   | Pexp_apply (e0, [ (Nolabel, e1) ]) when is_prefix e0 ->
       hvbox 2
@@ -1608,8 +1608,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_array e1N ->
       hvbox 0
         (wrap_fits_breaks "[|" "|]"
-            (fmt_expressions c width (sub_exp ~ctx) e1N "@;<0 1>; "
-               (sub_exp ~ctx >> fmt_expression c))
+           (fmt_expressions c width (sub_exp ~ctx) e1N "@;<0 1>; "
+              (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs)
   | Pexp_assert e0 ->
       let paren_body = parenze_exp (sub_exp ~ctx e0) in
@@ -1672,12 +1672,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
              (not (List.is_empty pexp_attributes))
              "(" ")"
              (wrap_fits_breaks "[" "]"
-                 (fmt_expressions c width snd loc_xes "@,; "
-                     (fun (locs, xexp) ->
-                       Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
-                       @@ fmt_expression c xexp)
-                 $ Cmts.fmt c.cmts ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
-                   @@ fmt "")
+                (fmt_expressions c width snd loc_xes "@,; "
+                   (fun (locs, xexp) ->
+                     Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
+                     @@ fmt_expression c xexp)
+                $ Cmts.fmt c.cmts ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
+                  @@ fmt "")
              $ fmt_atrs))
     | None ->
         let loc_args = sugar_infix_cons xexp in
@@ -1689,7 +1689,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                  | locs -> list locs "" (Cmts.fmt_before c.cmts)
                in
                let fmt_op = match i with 0 -> fmt "" | _ -> fmt "::" in
-               (fmt_cmts, (fmt_op, [ (Nolabel, arg) ])))) )
+               (fmt_cmts, (fmt_op, [(Nolabel, arg)])))) )
   | Pexp_construct (lid, Some arg) ->
       wrap_if parens "(" ")"
         (hvbox 2
@@ -2185,7 +2185,7 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
     List.fold_map fields ~init:c ~f:(fun c i ->
         let c =
           match i.pcf_desc with
-          | Pcf_attribute atr -> update_config c [ atr ]
+          | Pcf_attribute atr -> update_config c [atr]
           | _ -> c
         in
         (c, (i, c)))
@@ -2212,7 +2212,7 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
           $ cmts_after_self
           $ (match fields with
             | ({ pcf_desc= Pcf_attribute a }, _) :: _
-              when Option.is_some (fst (doc_atrs [ a ])) ->
+              when Option.is_some (fst (doc_atrs [a])) ->
                 fmt "\n"
             | _ -> fmt "")
           $ fmt_if Poly.(fields <> []) "@;<1000 0>"
@@ -2233,7 +2233,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     List.fold_map fields ~init:c ~f:(fun c i ->
         let c =
           match i.pctf_desc with
-          | Pctf_attribute atr -> update_config c [ atr ]
+          | Pctf_attribute atr -> update_config c [atr]
           | _ -> c
         in
         (c, (i, c)))
@@ -2260,7 +2260,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
           $ cmts_after_self
           $ (match fields with
             | ({ pctf_desc= Pctf_attribute a }, _) :: _
-              when Option.is_some (fst (doc_atrs [ a ])) ->
+              when Option.is_some (fst (doc_atrs [a])) ->
                 fmt "\n"
             | _ -> fmt "")
           $ fmt_if Poly.(fields <> []) "@;<1000 0>"
@@ -2460,7 +2460,7 @@ and fmt_class_field c ctx (cf : class_field) =
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
   let fmt_kind = function
     | Cfk_virtual typ ->
-        ([ fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ) ], fmt "", fmt "")
+        ([fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ)], fmt "", fmt "")
     | Cfk_concrete
         ( _
         , { pexp_desc=
@@ -2482,12 +2482,11 @@ and fmt_class_field c ctx (cf : class_field) =
             ( [ fmt "@ : " $ fmt "type "
                 $ list args "@ " (fun { txt; loc } ->
                       Cmts.fmt c.cmts loc @@ str txt)
-              ; fmt_core_type c ~pro:"." (sub_typ ~ctx t)
-              ]
+              ; fmt_core_type c ~pro:"." (sub_typ ~ctx t) ]
             , fmt "@;<1 2>="
             , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) )
         | None ->
-            ( [ fmt "@ : " $ fmt_core_type c (sub_typ ~ctx poly) ]
+            ( [fmt "@ : " $ fmt_core_type c (sub_typ ~ctx poly)]
             , fmt "@;<1 2>="
             , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) ) )
     | Cfk_concrete (_, { pexp_desc= Pexp_poly (e, poly) }) ->
@@ -2515,7 +2514,7 @@ and fmt_class_field c ctx (cf : class_field) =
           | { pexp_desc= Pexp_constraint (e, t) } -> (Some t, e)
           | _ -> (None, e)
         in
-        ( [ opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t)) ]
+        ( [opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))]
         , fmt "@;<1 2>="
         , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) )
   in
@@ -2563,7 +2562,7 @@ and fmt_class_field c ctx (cf : class_field) =
              fmt "initializer" $ fmt "@ "
              $ fmt_expression c (sub_exp ~ctx e)
          | Pcf_attribute atr ->
-             let doc, atrs = doc_atrs [ atr ] in
+             let doc, atrs = doc_atrs [atr] in
              fmt_docstring c ~epi:(fmt "") doc
              $ fmt_attributes c ~key:"@@@" atrs
          | Pcf_extension ext -> fmt_extension c ctx "%%" ext)
@@ -2602,7 +2601,7 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
              $ fmt " = "
              $ fmt_core_type c (sub_typ ~ctx t2)
          | Pctf_attribute atr ->
-             let doc, atrs = doc_atrs [ atr ] in
+             let doc, atrs = doc_atrs [atr] in
              fmt_docstring c ~epi:(fmt "") doc
              $ fmt_attributes c ~key:"@@@" atrs
          | Pctf_extension ext -> fmt_extension c ctx "%%" ext)
@@ -3079,7 +3078,7 @@ and fmt_signature c ctx itms =
     List.fold_map itms ~init:c ~f:(fun c i ->
         let c =
           match i.psig_desc with
-          | Psig_attribute atr -> update_config c [ atr ]
+          | Psig_attribute atr -> update_config c [atr]
           | _ -> c
         in
         (c, (i, c)))
@@ -3102,7 +3101,7 @@ and fmt_signature_item c { ast= si } =
   let ctx = Sig si in
   match si.psig_desc with
   | Psig_attribute atr ->
-      let doc, atrs = doc_atrs [ atr ] in
+      let doc, atrs = doc_atrs [atr] in
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
   | Psig_exception exc ->
       hvbox 2
@@ -3703,7 +3702,7 @@ and fmt_structure c ctx itms =
     List.fold_map itms ~init:c ~f:(fun c i ->
         let c =
           match i.pstr_desc with
-          | Pstr_attribute atr -> update_config c [ atr ]
+          | Pstr_attribute atr -> update_config c [atr]
           | _ -> c
         in
         (c, (i, c)))
@@ -3740,7 +3739,7 @@ and fmt_structure_item c ~last:last_item ?ext { ctx; ast= si } =
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->
-      let doc, atrs = doc_atrs [ atr ] in
+      let doc, atrs = doc_atrs [atr] in
       fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in

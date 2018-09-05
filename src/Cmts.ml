@@ -132,8 +132,7 @@ module Loc_tree = struct
                            }
                          , [] )
                    ; pstr_loc= Location.none
-                   }
-                 ]) )
+                   } ]) )
       | attr -> Ast_mapper.default_mapper.attribute m attr
     in
     let locs = ref [] in
@@ -453,12 +452,12 @@ let split_asterisk_prefixed (txt, { Location.loc_start }) =
     | _ ->
         let drop = function ' ' | '\t' -> true | _ -> false in
         let line = String.rstrip ~drop (String.drop_prefix txt pos) in
-        if String.is_empty line then [ line ]
+        if String.is_empty line then [line]
         else if Char.equal line.[String.length line - 1] '\n' then
-          [ String.drop_suffix line 1; "" ]
+          [String.drop_suffix line 1; ""]
         else if Char.is_whitespace txt.[String.length txt - 1] then
-          [ line ^ " " ]
-        else [ line ]
+          [line ^ " "]
+        else [line]
   in
   split_asterisk_prefixed_ 0
 
@@ -576,16 +575,14 @@ let remaining_comments t =
                ( before_after
                , let open Sexp in
                  List
-                   [ List [ Atom "ast_loc"; Location.sexp_of_t ast_loc ]
-                   ; List [ Atom "cmt_loc"; Location.sexp_of_t cmt_loc ]
-                   ; List [ Atom "cmt_txt"; Atom cmt_txt ]
-                   ] )))
+                   [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
+                   ; List [Atom "cmt_loc"; Location.sexp_of_t cmt_loc]
+                   ; List [Atom "cmt_txt"; Atom cmt_txt] ] )))
   in
   List.concat
     [ get t.cmts_before "before"
     ; get t.cmts_within "within"
-    ; get t.cmts_after "after"
-    ]
+    ; get t.cmts_after "after" ]
 
 let diff x y =
   let norm z =
@@ -594,7 +591,7 @@ let diff x y =
       String.concat ~sep:" "
         (List.filter ~f:(Fn.non String.is_empty)
            (String.split_on_chars txt
-              ~on:[ '\t'; '\n'; '\011'; '\012'; '\r'; ' ' ]))
+              ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
     in
     Set.of_list
       (module String)

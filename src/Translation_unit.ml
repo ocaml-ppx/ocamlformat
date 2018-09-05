@@ -58,7 +58,7 @@ module W : sig
 end = struct
   type t = int
 
-  let in_lexer = [ 1; 2; 14; 29 ]
+  let in_lexer = [1; 2; 14; 29]
 
   let disable x = -abs x
 
@@ -172,9 +172,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             if not Conf.debug then Unix.unlink tmp ;
             if xunit.equal ~ignore_doc_comments:true old new_ then
               internal_error `Doc_comment
-                [ ("output file", String.sexp_of_t tmp) ]
-            else
-              internal_error `Ast [ ("output file", String.sexp_of_t tmp) ] ) ;
+                [("output file", String.sexp_of_t tmp)]
+            else internal_error `Ast [("output file", String.sexp_of_t tmp)] ) ;
           (* Comments not preserved ? *)
           if conf.comment_check then (
             (match Cmts.remaining_comments cmts_t with
@@ -189,8 +188,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
                 [ ( "diff"
                   , Sequence.sexp_of_t
                       (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
-                      diff_cmts )
-                ] ) ) ;
+                      diff_cmts ) ] ) ) ;
           (* Too many iteration ? *)
           if i >= conf.max_iters then (
             Caml.flush_all () ;

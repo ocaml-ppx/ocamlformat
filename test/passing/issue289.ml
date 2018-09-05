@@ -61,8 +61,7 @@ let foo =
       ~doc:"Date created."
       ~args:[]
       ~typ:(non_null Scalar.date_time)
-      ~resolve:(fun _ctx x -> x.created_at)
-  ]
+      ~resolve:(fun _ctx x -> x.created_at) ]
 
 [@@@ocamlformat "wrap-fun-args=true"]
 

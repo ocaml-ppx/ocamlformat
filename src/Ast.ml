@@ -113,15 +113,15 @@ let index_op_set_sugar (ident : Longident.t) args =
   | Some args -> (
     match (ident, args) with
     | Ldot (Lident "String", "set"), [ a1; e ] ->
-        Some (index_op_string, [ a1 ], e)
+        Some (index_op_string, [a1], e)
     | Ldot (Lident "Array", "set"), [ a1; e ] ->
-        Some (index_op_array, [ a1 ], e)
+        Some (index_op_array, [a1], e)
     | Ldot (Ldot (Lident "Bigarray", "Array1"), "set"), [ a1; e ] ->
-        Some (index_op_bigarray, [ a1 ], e)
+        Some (index_op_bigarray, [a1], e)
     | Ldot (Ldot (Lident "Bigarray", "Array2"), "set"), [ a1; a2; e ] ->
-        Some (index_op_bigarray, [ a1; a2 ], e)
+        Some (index_op_bigarray, [a1; a2], e)
     | Ldot (Ldot (Lident "Bigarray", "Array3"), "set"), [ a1; a2; a3; e ] ->
-        Some (index_op_bigarray, [ a1; a2; a3 ], e)
+        Some (index_op_bigarray, [a1; a2; a3], e)
     | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "set")
       , [ { pexp_desc= Pexp_array l }; e ] )
       when List.length l > 3 ->
@@ -203,7 +203,7 @@ module Structure_item : Module_item with type t = structure_item = struct
 
   let has_doc itm =
     match itm.pstr_desc with
-    | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [ atr ]))
+    | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
     | Pstr_eval (_, atrs)
      |Pstr_value (_, { pvb_attributes= atrs } :: _)
      |Pstr_primitive { pval_attributes= atrs }
@@ -284,7 +284,7 @@ module Signature_item : Module_item with type t = signature_item = struct
 
   let has_doc itm =
     match itm.psig_desc with
-    | Psig_attribute atr -> Option.is_some (fst (doc_atrs [ atr ]))
+    | Psig_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
     | Psig_value { pval_attributes= atrs }
      |Psig_type (_, { ptype_attributes= atrs } :: _)
      |Psig_typext { ptyext_attributes= atrs }
@@ -452,18 +452,17 @@ module T = struct
               ; pci_expr= cl
               ; pci_loc= Location.none
               ; pci_attributes= []
-              }
-            ]
+              } ]
         in
-        Format.fprintf fs "Cl:@\n%a@\n%a" Pprintast.structure [ str ]
-          Printast.implementation [ str ]
+        Format.fprintf fs "Cl:@\n%a@\n%a" Pprintast.structure [str]
+          Printast.implementation [str]
     | Mty mt ->
         let si =
           let open Ast_helper in
           Sig.modtype (Mtd.mk { txt= ""; loc= Location.none } ~typ:mt)
         in
-        Format.fprintf fs "Mty:@\n%a@\n%a" Pprintast.signature [ si ]
-          Printast.interface [ si ]
+        Format.fprintf fs "Mty:@\n%a@\n%a" Pprintast.signature [si]
+          Printast.interface [si]
     | Cty cty ->
         let si =
           let open Ast_helper in
@@ -474,11 +473,10 @@ module T = struct
               ; pci_expr= cty
               ; pci_loc= Location.none
               ; pci_attributes= []
-              }
-            ]
+              } ]
         in
-        Format.fprintf fs "Cty:@\n%a@\n%a" Pprintast.signature [ si ]
-          Printast.interface [ si ]
+        Format.fprintf fs "Cty:@\n%a@\n%a" Pprintast.signature [si]
+          Printast.interface [si]
     | Mod m ->
         let m =
           let open Ast_helper in
@@ -489,14 +487,14 @@ module T = struct
             ; pmb_loc= Location.none
             }
         in
-        Format.fprintf fs "Mod:@\n%a@\n%a" Pprintast.structure [ m ]
-          Printast.implementation [ m ]
+        Format.fprintf fs "Mod:@\n%a@\n%a" Pprintast.structure [m]
+          Printast.implementation [m]
     | Sig s ->
-        Format.fprintf fs "Sig:@\n%a@\n%a" Pprintast.signature [ s ]
-          Printast.interface [ s ]
+        Format.fprintf fs "Sig:@\n%a@\n%a" Pprintast.signature [s]
+          Printast.interface [s]
     | Str s ->
-        Format.fprintf fs "Str:@\n%a@\n%a" Pprintast.structure [ s ]
-          Printast.implementation [ s ]
+        Format.fprintf fs "Str:@\n%a@\n%a" Pprintast.structure [s]
+          Printast.implementation [s]
     | Top -> Format.pp_print_string fs "Top"
 end
 

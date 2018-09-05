@@ -8,7 +8,7 @@ type uu += A of (int as 'a)
 
 type uu += B of 'a * (< leq: 'a > as 'a)
 
-let _ = ignore Async_unix.Fd.(([ stdin (); stdout (); stderr () ] : t list))
+let _ = ignore Async_unix.Fd.(([stdin (); stdout (); stderr ()] : t list))
 
 type t = { a: int; b: int }
 

@@ -308,8 +308,7 @@ let info =
          for each input file are used, as well as the global .ocamlformat \
          file defined in $(b,\\$XDG_CONFIG_HOME/ocamlformat). The global \
          .ocamlformat file has the lowest priority, then the closer the \
-         directory is to the processed file, the higher the priority."
-    ]
+         directory is to the processed file, the higher the priority." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -319,7 +318,7 @@ module Formatting = struct
 
   let break_cases =
     let doc = "Break pattern match cases." in
-    let names = [ "break-cases" ] in
+    let names = ["break-cases"] in
     let all =
       [ ( "fit"
         , `Fit
@@ -331,8 +330,7 @@ module Formatting = struct
            highlight the case body." )
       ; ( "all"
         , `All
-        , "$(b,all) forces all pattern matches to break across lines." )
-      ]
+        , "$(b,all) forces all pattern matches to break across lines." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with break_cases= x })
@@ -353,11 +351,11 @@ module Formatting = struct
            in a single line." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with break_collection_expressions= x} )
+        { conf with break_collection_expressions= x })
 
   let break_infix =
     let doc = "Break sequence of infix operators." in
-    let names = [ "break-infix" ] in
+    let names = ["break-infix"] in
     let all =
       [ ( "wrap"
         , `Wrap
@@ -366,15 +364,14 @@ module Formatting = struct
       ; ( "fit-or-vertical"
         , `Fit_or_vertical
         , "$(b,fit-or-vertical) vertically breaks expressions if they do \
-           not fit on a single line." )
-      ]
+           not fit on a single line." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with break_infix= x })
 
   let break_string_literals =
     let doc = "Break string literals." in
-    let names = [ "break-string-literals" ] in
+    let names = ["break-string-literals"] in
     let all =
       [ ( "wrap"
         , `Wrap
@@ -386,15 +383,14 @@ module Formatting = struct
       ; ( "never"
         , `Never
         , "$(b,never) mode formats string literals as they are parsed, in \
-           particular, with escape sequences expanded." )
-      ]
+           particular, with escape sequences expanded." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with break_string_literals= x })
 
   let break_struct =
     let doc = "Break struct-end module items." in
-    let names = [ "break-struct" ] in
+    let names = ["break-struct"] in
     let all =
       [ ( "force"
         , `Force
@@ -402,8 +398,7 @@ module Formatting = struct
       ; ( "natural"
         , `Natural
         , "$(b,natural) will break struct-end phrases naturally at the \
-           margin." )
-      ]
+           margin." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with break_struct= Poly.(x = `Force) })
@@ -414,27 +409,26 @@ module Formatting = struct
        automatic code formatting. One can also use $(b,[@@@ocamlformat \
        \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])"
     in
-    C.flag ~names:[ "disable" ] ~default:false ~doc ~section (fun conf x ->
+    C.flag ~names:["disable"] ~default:false ~doc ~section (fun conf x ->
         { conf with disable= x })
 
   let doc_comments =
     let doc = "Doc comments position." in
-    let names = [ "doc-comments" ] in
+    let names = ["doc-comments"] in
     let all =
       [ ( "after"
         , `After
         , "$(b,after) puts doc comments after the corresponding code." )
       ; ( "before"
         , `Before
-        , "$(b,before) puts comments before the corresponding code." )
-      ]
+        , "$(b,before) puts comments before the corresponding code." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with doc_comments= x })
 
   let escape_chars =
     let doc = "Escape encoding for character literals." in
-    let names = [ "escape-chars" ] in
+    let names = ["escape-chars"] in
     let all =
       [ ( "preserve"
         , `Preserve
@@ -446,8 +440,7 @@ module Formatting = struct
            escape sequences as needed." )
       ; ( "hexadecimal"
         , `Hexadecimal
-        , "$(b,hexadecimal) mode escapes every character." )
-      ]
+        , "$(b,hexadecimal) mode escapes every character." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with escape_chars= x })
@@ -457,20 +450,19 @@ module Formatting = struct
       "Escape encoding for string literals. See `--escape-chars` for the \
        interpretation of the modes."
     in
-    let names = [ "escape-strings" ] in
+    let names = ["escape-strings"] in
     let all =
       [ ("preserve", `Preserve, "")
       ; ("decimal", `Decimal, "")
-      ; ("hexadecimal", `Hexadecimal, "")
-      ]
+      ; ("hexadecimal", `Hexadecimal, "") ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with escape_strings= x })
 
   let extension_sugar =
     let doc = "Extension formatting." in
-    let names = [ "extension-sugar" ] in
-    let all = [ ("preserve", `Preserve, ""); ("always", `Always, "") ] in
+    let names = ["extension-sugar"] in
+    let all = [("preserve", `Preserve, ""); ("always", `Always, "")] in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with extension_sugar= x })
 
@@ -479,21 +471,20 @@ module Formatting = struct
       "Whether or not to use a space between a field name and the rhs. \
        This option affects records and objects."
     in
-    let names = [ "field-space" ] in
+    let names = ["field-space"] in
     let all =
       [ ( "tight"
         , `Tight
         , "$(b,tight) does not use a space between a field name and the \
            punctuation symbol (`:`or `=`)." )
-      ; ("loose", `Loose, "$(b,loose) does.")
-      ]
+      ; ("loose", `Loose, "$(b,loose) does.") ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with field_space= x })
 
   let if_then_else =
     let doc = "If-then-else formatting." in
-    let names = [ "if-then-else" ] in
+    let names = ["if-then-else"] in
     let all =
       [ ( "compact"
         , `Compact
@@ -502,8 +493,7 @@ module Formatting = struct
       ; ( "keyword-first"
         , `Keyword_first
         , "$(b,keyword-first) formats if-then-else expressions such that \
-           the if-then-else keywords are the first on the line." )
-      ]
+           the if-then-else keywords are the first on the line." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with if_then_else= x })
@@ -514,7 +504,7 @@ module Formatting = struct
       "Control whether or not to indicate nested or-pattern using \
        indentation."
     in
-    let names = [ "indicate-nested-or-patterns" ] in
+    let names = ["indicate-nested-or-patterns"] in
     C.flag ~names ~default ~doc ~section (fun conf x ->
         { conf with indicate_nested_or_patterns= x })
 
@@ -523,7 +513,7 @@ module Formatting = struct
       "Use indentation or also discretionary parentheses to explicitly \
        disambiguate precedences of infix operators."
     in
-    let names = [ "infix-precedence" ] in
+    let names = ["infix-precedence"] in
     let all =
       [ ( "indent"
         , `Indent
@@ -532,21 +522,20 @@ module Formatting = struct
       ; ( "parens"
         , `Parens
         , "$(b,parens) uses parentheses to explicitly disambiguate \
-           precedences of infix operators." )
-      ]
+           precedences of infix operators." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with infix_precedence= x })
 
   let leading_nested_match_parens =
     let doc = "Nested match parens formatting." in
-    let names = [ "leading-nested-match-parens" ] in
+    let names = ["leading-nested-match-parens"] in
     C.flag ~default:false ~names ~doc ~section ~allow_inline:false
       (fun conf x -> { conf with leading_nested_match_parens= x })
 
   let let_and =
     let doc = "Style of let_and." in
-    let names = [ "let-and" ] in
+    let names = ["let-and"] in
     let all =
       [ ( "compact"
         , `Compact
@@ -569,21 +558,20 @@ module Formatting = struct
         , `Long
         , "$(b,long) means the $(i,let open Module in (...)) style is used."
         )
-      ; ("auto", `Auto, "$(b,auto) means the one fitting best is used.")
-      ]
+      ; ("auto", `Auto, "$(b,auto) means the one fitting best is used.") ]
     in
-    C.choice ~names:[ "let-open" ] ~all ~doc ~section (fun conf x ->
+    C.choice ~names:["let-open"] ~all ~doc ~section (fun conf x ->
         { conf with let_open= x })
 
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
-    C.int ~names:[ "m"; "margin" ] ~default:80 ~doc ~docv ~section
+    C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~section
       ~allow_inline:false (fun conf x -> { conf with margin= x })
 
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
-    let names = [ "module-item-spacing" ] in
+    let names = ["module-item-spacing"] in
     let all =
       [ ( "sparse"
         , `Sparse
@@ -591,8 +579,7 @@ module Formatting = struct
       ; ( "compact"
         , `Compact
         , "$(b,compact) will not leave open lines between one-liners of \
-           similar sorts." )
-      ]
+           similar sorts." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with module_item_spacing= x })
@@ -602,13 +589,13 @@ module Formatting = struct
       "Attempt to generate output which does not change (much) when \
        post-processing with ocp-indent."
     in
-    let names = [ "ocp-indent-compat" ] in
+    let names = ["ocp-indent-compat"] in
     C.flag ~default:false ~names ~doc ~section (fun conf x ->
         { conf with ocp_indent_compat= x })
 
   let parens_tuple =
     let doc = "Parens tuples." in
-    let names = [ "parens-tuple" ] in
+    let names = ["parens-tuple"] in
     let all =
       [ ( "always"
         , `Always
@@ -616,24 +603,23 @@ module Formatting = struct
       ; ( "multi-line-only"
         , `Multi_line_only
         , "$(b,multi-line-only) mode will try to skip parens for \
-           single-line tuples." )
-      ]
+           single-line tuples." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with parens_tuple= x })
 
   let sequence_style =
     let doc = "Style of sequence." in
-    let names = [ "sequence-style" ] in
+    let names = ["sequence-style"] in
     let all =
-      [ ("separator", `Separator, ""); ("terminator", `Terminator, "") ]
+      [("separator", `Separator, ""); ("terminator", `Terminator, "")]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with sequence_style= x })
 
   let type_decl =
     let doc = "Style of type declaration." in
-    let names = [ "type-decl" ] in
+    let names = ["type-decl"] in
     let all =
       [ ( "compact"
         , `Compact
@@ -642,8 +628,7 @@ module Formatting = struct
       ; ( "sparse"
         , `Sparse
         , "$(b,sparse) will always break between constructors and record \
-           fields." )
-      ]
+           fields." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         { conf with type_decl= x })
@@ -657,13 +642,13 @@ module Formatting = struct
        wrapped. Consecutive comments with both left and right margin \
        aligned are not wrapped either."
     in
-    C.flag ~default:false ~names:[ "wrap-comments" ] ~doc ~section
+    C.flag ~default:false ~names:["wrap-comments"] ~doc ~section
       (fun conf x -> { conf with wrap_comments= x })
 
   let wrap_fun_args =
     let default = true in
     let doc = "Style for function call and function definition." in
-    let names = [ "wrap-fun-args" ] in
+    let names = ["wrap-fun-args"] in
     C.flag ~default ~names ~doc ~section (fun conf wrap_fun_args ->
         { conf with wrap_fun_args })
 end
@@ -681,7 +666,7 @@ let comment_check =
     "UNSAFE: Control wether to check comments and documentation comments. \
      May be set in $(b,.ocamlformat)."
   in
-  C.flag ~default ~names:[ "comment-check" ] ~doc ~section (fun conf x ->
+  C.flag ~default ~names:["comment-check"] ~doc ~section (fun conf x ->
       { conf with comment_check= x })
 
 let max_iters =
@@ -690,12 +675,12 @@ let max_iters =
     "Fail if output of formatting does not stabilize within $(docv) \
      iterations. May be set in $(b,.ocamlformat)."
   in
-  C.int ~names:[ "n"; "max-iters" ] ~default:10 ~doc ~docv ~section
+  C.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~section
     (fun conf x -> { conf with max_iters= x })
 
 let quiet =
   let doc = "Quiet. May be set in $(b,.ocamlformat)." in
-  C.flag ~default:false ~names:[ "q"; "quiet" ] ~doc ~section (fun conf x ->
+  C.flag ~default:false ~names:["q"; "quiet"] ~doc ~section (fun conf x ->
       { conf with quiet= x })
 
 (* Other Flags *)
@@ -703,12 +688,12 @@ let quiet =
 let debug =
   let doc = "Generate debugging output." in
   let default = false in
-  mk ~default Arg.(value & flag & info [ "g"; "debug" ] ~doc ~docs)
+  mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~docs)
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
-  mk ~default Arg.(value & flag & info [ "i"; "inplace" ] ~doc ~docs)
+  mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
 
 let inputs =
   let docv = "SRC" in
@@ -729,13 +714,13 @@ let kind : [`Impl | `Intf | `Use_file] ref =
   let doc =
     "Parse file with unrecognized extension as an implementation."
   in
-  let impl = (`Impl, Arg.info [ "impl" ] ~doc ~docs) in
+  let impl = (`Impl, Arg.info ["impl"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as an interface." in
-  let intf = (`Intf, Arg.info [ "intf" ] ~doc ~docs) in
+  let intf = (`Intf, Arg.info ["intf"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as a use_file." in
-  let use_file = (`Use_file, Arg.info [ "use-file" ] ~doc ~docs) in
+  let use_file = (`Use_file, Arg.info ["use-file"] ~doc ~docs) in
   let default = `Impl in
-  mk ~default Arg.(value & vflag default [ impl; intf; use_file ])
+  mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
 let name =
   let docv = "NAME" in
@@ -748,8 +733,7 @@ let name =
   in
   let default = None in
   mk ~default
-    Arg.(
-      value & opt (some string) default & info [ "name" ] ~doc ~docs ~docv)
+    Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
 let output =
   let docv = "DST" in
@@ -762,14 +746,14 @@ let output =
     Arg.(
       value
       & opt (some string) default
-      & info [ "o"; "output" ] ~doc ~docs ~docv)
+      & info ["o"; "output"] ~doc ~docs ~docv)
 
 let no_version_check =
   let doc =
     "Do no check version matches the one specified in .ocamlformat."
   in
   let default = false in
-  mk ~default Arg.(value & flag & info [ "no-version-check" ] ~doc ~docs)
+  mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
 let config =
   let doc =
@@ -783,14 +767,13 @@ let config =
   let list_assoc = Arg.(list ~sep:',' assoc) in
   mk ~default
     Arg.(
-      value & opt list_assoc default
-      & info [ "c"; "config" ] ~doc ~docs ~env)
+      value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
 let validate () =
   if List.is_empty !inputs then
     `Error (false, "Must specify at least one input file, or `-` for stdin")
   else if
-    List.equal ~equal:String.equal !inputs [ "-" ] && Option.is_none !name
+    List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
   then `Error (false, "Must specify name when reading from stdin")
   else if !inplace && Option.is_some !name then
     `Error (false, "Cannot specify --name with --inplace")
@@ -911,7 +894,7 @@ let rec read_conf_files conf ~dir ~parents =
                       ("unknown option", Sexp.Atom name)
                   | `Bad_value (name, value) ->
                       ( "bad value for"
-                      , Sexp.List [ Sexp.Atom name; Sexp.Atom value ] ))))
+                      , Sexp.List [Sexp.Atom name; Sexp.Atom value] ))))
     with Sys_error _ -> conf
   else conf
 
@@ -939,7 +922,7 @@ let update_using_env conf =
             | `Unknown (name, _value) -> ("unknown option", Sexp.Atom name)
             | `Bad_value (name, value) ->
                 ( "bad value for"
-                , Sexp.List [ Sexp.Atom name; Sexp.Atom value ] )))
+                , Sexp.List [Sexp.Atom name; Sexp.Atom value] )))
   with Sys_error _ -> conf
 
 type 'a input = { kind: 'a; name: string; file: string; conf: t }

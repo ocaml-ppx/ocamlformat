@@ -44,7 +44,7 @@ let make_mapper ~ignore_doc_comment =
             String.concat ~sep:" "
               (List.filter ~f:(Fn.non String.is_empty)
                  (String.split_on_chars doc
-                    ~on:[ '\t'; '\n'; '\011'; '\012'; '\r'; ' ' ]))
+                    ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
         in
         ( { txt; loc= m.location m loc }
         , m.payload m
@@ -58,8 +58,7 @@ let make_mapper ~ignore_doc_comment =
                          }
                        , [] )
                  ; pstr_loc= m.location m pstr_loc
-                 }
-               ]) )
+                 } ]) )
     | attr -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
