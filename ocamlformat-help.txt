@@ -31,11 +31,18 @@ OPTIONS (CODE FORMATTING STYLE)
            or-patterns to highlight the case body. all forces all pattern
            matches to break across lines. The default value is fit. 
 
+       --break-collection-expressions={fit-or-vertical|wrap}
+           Break collection expressions (lists and arrays) elements by
+           elements. fit-or-vertical vertically breaks expressions if they do
+           not fit on a single line. wrap will group simple expressions and
+           try to format them in a single line. The default value is
+           fit-or-vertical. 
+
        --break-infix={wrap|fit-or-vertical}
            Break sequence of infix operators. wrap will group simple
            expressions and try to format them in a single line.
-           fit-or-vertical vertically breaks expression if they do not fit on
-           a single line. The default value is wrap. 
+           fit-or-vertical vertically breaks expressions if they do not fit
+           on a single line. The default value is wrap. 
 
        --break-string-literals={wrap|newlines|never}
            Break string literals. wrap mode wraps string literals at the
