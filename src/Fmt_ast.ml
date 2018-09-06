@@ -3214,11 +3214,11 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
     $ hvbox 4
         ( keyword $ fmt " "
         $ Cmts.fmt c.cmts loc @@ str name
-        $ list_pn arg_blks (fun ?prev:_ ({txt}, arg_mtyp) ?next ->
+        $ list_pn arg_blks (fun ?prev:_ ({txt; loc}, arg_mtyp) ?next ->
               ( match arg_mtyp with
               | Some {pro= None} -> fmt "@ @[<hv 2>("
               | _ -> fmt "@ (" )
-              $ str txt
+              $ Cmts.fmt c.cmts loc @@ str txt
               $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi} ->
                     fmt " : " $ Option.call ~f:pro
                     $ fmt_if_k (Option.is_some pro) close_box
