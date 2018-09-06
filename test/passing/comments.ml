@@ -108,3 +108,5 @@ module type T = sig
 end
 
 let f = (* comment *) function x -> x
+
+let foo x = (* comment *) (y : z)

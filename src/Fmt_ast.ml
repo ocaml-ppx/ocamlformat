@@ -3813,6 +3813,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
              |Pexp_constraint _, Ppat_constraint _ ->
                 (None, xbody)
             | Pexp_constraint (exp, typ), _ ->
+                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+                  ~after:exp.pexp_loc ;
                 ( Some
                     (fmt "@ " $ fmt_core_type c ~pro:":" (sub_typ ~ctx typ))
                 , sub_exp ~ctx exp )
