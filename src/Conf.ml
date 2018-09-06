@@ -911,6 +911,17 @@ let print_config =
   let default = false in
   mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
 
+let root =
+  let docv = "DIR" in
+  let doc =
+    "Root of the project. If specified, only take into account \
+     .ocamlformat configuration files inside $(docv) and its \
+     subdirectories."
+  in
+  let default = None in
+  mk ~default
+    Arg.(value & opt (some dir) default & info ["root"] ~doc ~docs ~docv)
+
 let no_version_check =
   let doc =
     "Do no check version matches the one specified in .ocamlformat."
@@ -1199,8 +1210,10 @@ let parse_line config ~verbose ~from s =
   | _ -> Error (`Malformed s)
 
 let is_project_root dir =
-  List.exists project_root_witness ~f:(fun name ->
-      Caml.Sys.file_exists (Filename.concat dir name) )
+  Option.value_map !root ~f:(String.equal dir)
+    ~default:
+      (List.exists project_root_witness ~f:(fun name ->
+           Caml.Sys.file_exists (Filename.concat dir name) ))
 
 let rec collect_files ~dir acc =
   let acc =
