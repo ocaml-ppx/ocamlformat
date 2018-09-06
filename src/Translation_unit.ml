@@ -39,8 +39,22 @@ exception Warning50 of (Location.t * Warnings.t) list
 
 exception
   Internal_error of
-    [`Ast | `Doc_comment | `Comment | `Comment_dropped]
+    [ `Ast
+    | `Doc_comment
+    | `Comment
+    | `Comment_dropped of Location.t * string ]
     * (string * Sexp.t) list
+
+let () =
+  Location.(
+    register_error_of_exn (function
+      | Internal_error (`Comment_dropped (loc, txt), _infos) ->
+          Some
+            { loc
+            ; msg= Format.sprintf "Comment '%s' dropped" txt
+            ; sub= []
+            ; if_highlight= "" }
+      | _ -> None ))
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
 
@@ -175,7 +189,16 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           if conf.comment_check then (
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
-            | l -> internal_error `Comment_dropped l ) ;
+            | l ->
+                let locs_names, l =
+                  List.fold l ~init:([], [])
+                    ~f:(fun (acc1, acc2) (l, n, t, s) ->
+                      ((l, n) :: acc1, (t, s) :: acc2) )
+                in
+                let compare (l1, _) (l2, _) = Location.compare l1 l2 in
+                let locs_names = List.sort ~compare locs_names in
+                let loc_name = List.hd_exn locs_names in
+                internal_error (`Comment_dropped loc_name) l ) ;
             let diff_cmts = Cmts.diff comments new_.comments in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;
@@ -229,7 +252,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   let quiet_doc_comments = false in
   let quiet_exn exn =
     match[@ocaml.warning "-28"] exn with
-    | Internal_error ((`Comment | `Comment_dropped), _) -> quiet_comments
+    | Internal_error ((`Comment | `Comment_dropped _), _) -> quiet_comments
     | Warning50 _ -> quiet_doc_comments
     | Internal_error (`Doc_comment, _) -> quiet_doc_comments
     | Internal_error (`Ast, _) -> false
@@ -294,12 +317,13 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             | `Ast -> "ast changed"
             | `Doc_comment -> "doc comments changed"
             | `Comment -> "comments changed"
-            | `Comment_dropped -> "comments dropped"
+            | `Comment_dropped _ -> "comments dropped"
           in
           Format.eprintf "  BUG: %s.\n%!" s ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )
+                Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) ) ;
+          Location.report_exception fmt exn
       | exn ->
           Format.eprintf "  BUG: unhandled exception.\n%!" ;
           if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) )
