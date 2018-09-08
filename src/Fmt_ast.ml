@@ -2037,7 +2037,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
         $ fmt_atrs )
-  | Pexp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs
+  | Pexp_extension ext ->
+      hvbox 0
+        (wrap_fits_breaks_if parens "(" ")"
+           (hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs))
   | Pexp_for (p1, e1, e2, dir, e3) ->
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
