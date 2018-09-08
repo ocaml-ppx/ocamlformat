@@ -536,17 +536,16 @@ module Formatting = struct
     let all =
       [ ( "compact"
         , `Compact
-        , "$(b,compact) compact spacing separates adjacent let bindings in \
-           a module according to module-item-spacing." )
+        , "$(b,compact) spacing separates adjacent let bindings in a \
+           module according to module-item-spacing." )
       ; ( "sparse"
         , `Sparse
-        , "$(b,sparse) sparse places two open lines between a multi-line \
+        , "$(b,sparse) places two open lines between a multi-line \
            module-level let binding and the next." )
       ; ( "double-semicolon"
         , `Double_semicolon
-        , "$(b,double-semicolon) double-semicolon places double semicolons \
-           and an open line between a multi-line module-level let binding \
-           and the next." ) ]
+        , "$(b,double-semicolon) places double semicolons and an open line \
+           between a multi-line module-level let binding and the next." ) ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with let_binding_spacing= x} )
