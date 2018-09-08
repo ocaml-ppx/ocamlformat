@@ -857,7 +857,7 @@ let config =
     Arg.(
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
-let default =
+let default_profile =
   { break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
@@ -893,10 +893,11 @@ let default =
 
 let janestreet_profile =
   { break_cases= `Fit
-  ; break_collection_expressions= default.break_collection_expressions
+  ; break_collection_expressions=
+      default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
   ; break_string_literals= `Wrap
-  ; break_struct= default.break_struct
+  ; break_struct= default_profile.break_struct
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before
@@ -912,11 +913,11 @@ let janestreet_profile =
   ; let_binding_spacing= `Double_semicolon
   ; let_open= `Preserve
   ; margin= 90
-  ; max_iters= default.max_iters
+  ; max_iters= default_profile.max_iters
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= false
   ; parens_tuple= `Multi_line_only
-  ; quiet= default.quiet
+  ; quiet= default_profile.quiet
   ; sequence_style= `Terminator
   ; type_decl= `Sparse
   ; wrap_comments= false
@@ -930,7 +931,7 @@ let (_profile : t option C.t) =
   let names = ["p"; "profile"] in
   let all =
     [ ( "default"
-      , Some default
+      , Some default_profile
       , "$(b,default) sets each option to its default value." )
     ; ( "janestreet"
       , Some janestreet_profile
@@ -1112,7 +1113,7 @@ let build_config ~filename =
   if verbose then
     Option.iter project_root ~f:(Format.eprintf "project-root=%s@\n%!") ;
   let conf =
-    List.fold files ~init:default ~f:(read_config_file ~verbose)
+    List.fold files ~init:default_profile ~f:(read_config_file ~verbose)
     |> update_using_env ~verbose
     |> C.update_using_cmdline ~verbose
   in
