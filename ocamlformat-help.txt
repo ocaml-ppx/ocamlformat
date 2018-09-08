@@ -216,14 +216,14 @@ OPTIONS
            configuration. default sets each option to its default value.
            janestreet is the profile used at JaneStreet. 
 
+       --print-config
+           Print config
+
        -q, --quiet
            Quiet. May be set in .ocamlformat.
 
        --use-file
            Parse file with unrecognized extension as a use_file.
-
-       --verbose
-           Print config
 
        --version
            Show version information.

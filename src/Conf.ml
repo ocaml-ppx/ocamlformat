@@ -809,7 +809,7 @@ let output =
 let print_config =
   let doc = "Print config" in
   let default = false in
-  mk ~default Arg.(value & flag & info ["verbose"] ~doc ~docs)
+  mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
 
 let no_version_check =
   let doc =
@@ -1071,6 +1071,8 @@ let build_config ~filename =
     | Some f, false -> f :: files
   in
   let verbose = !print_config in
+  if verbose then
+    Option.iter project_root ~f:(Format.eprintf "project-root=%s\n%!") ;
   let conf =
     List.fold files ~init:default ~f:(read_config_file ~verbose)
     |> update_using_env ~verbose

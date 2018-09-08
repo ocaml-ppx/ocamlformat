@@ -1,0 +1,6 @@
+project-root=/home/hugo/l/ocamlformat
+margin=77 (/home/hugo/l/ocamlformat/.ocamlformat:1)
+wrap-comments=true (/home/hugo/l/ocamlformat/.ocamlformat:2)
+doc-comments=before (Environment variable or --config)
+doc-comments=before (Environment variable or --config)
+
