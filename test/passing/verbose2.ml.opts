@@ -1,0 +1,1 @@
+--disable-outside-project --print-config --doc-comments=before --config="doc-comments=before"

@@ -28,8 +28,8 @@ type t =
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
-  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_and: [`Compact | `Sparse]
+  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
@@ -115,10 +115,12 @@ module C : sig
 
   val default : 'a t -> 'a
 
-  val update_using_cmdline : config -> config
+  val update_using_cmdline : config -> verbose:bool -> config
 
   val update :
        config:config
+    -> verbose:bool
+    -> from:[`File of string * int | `Config | `Commandline | `Attribute]
     -> name:string
     -> value:string
     -> inline:bool
@@ -133,10 +135,11 @@ end = struct
 
   type 'a t =
     { names: string list
-    ; parse: string -> 'a
+    ; parse: string -> ('a, string) Result.t
     ; update: config -> 'a -> config
     ; allow_inline: bool
     ; cmdline_get: unit -> 'a option
+    ; to_string: 'a -> string
     ; default: 'a }
 
   type 'a option_decl =
@@ -199,6 +202,10 @@ end = struct
     in
     let docv = generated_choice_docv ~all in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
+    let to_string v' =
+      List.find_map_exn all ~f:(fun (str, v, _) ->
+          if Poly.equal v v' then Some str else None )
+    in
     let docs = section_name section in
     let term =
       Arg.(
@@ -211,15 +218,18 @@ end = struct
         List.find_map all ~f:(fun (n, v, _) ->
             Option.some_if (String.equal n s) v )
       with
-      | Some v -> v
+      | Some v -> Ok v
       | None ->
-          user_error
-            (Printf.sprintf "Unknown %s value: %S" (List.hd_exn names) s)
-            []
+          Error
+            (Printf.sprintf "Invalid value '%s', expecting %s" s
+               ( List.map all ~f:(fun (s, _, _) -> Format.sprintf "'%s'" s)
+               |> String.concat ~sep:" or " ))
     in
     let r = mk ~default:None term in
     let cmdline_get () = !r in
-    let opt = {names; parse; update; cmdline_get; allow_inline; default} in
+    let opt =
+      {names; parse; update; cmdline_get; allow_inline; default; to_string}
+    in
     store := Pack opt :: !store ;
     opt
 
@@ -236,10 +246,18 @@ end = struct
     let doc = generated_flag_doc ~allow_inline ~doc ~section in
     let docs = section_name section in
     let term = Arg.(value & flag & info names_for_cmdline ~doc ~docs) in
-    let parse = Bool.of_string in
+    let parse s =
+      try Ok (Bool.of_string s) with _ ->
+        Error
+          (Format.sprintf "invalid value '%s', expecting 'true' or 'false'"
+             s)
+    in
     let r = mk ~default term in
+    let to_string = Bool.to_string in
     let cmdline_get () = if !r then Some (not invert_flag) else None in
-    let opt = {names; parse; update; cmdline_get; allow_inline; default} in
+    let opt =
+      {names; parse; update; cmdline_get; allow_inline; default; to_string}
+    in
     store := Pack opt :: !store ;
     opt
 
@@ -251,32 +269,61 @@ end = struct
     let term =
       Arg.(value & opt (some int) None & info names ~doc ~docs ~docv)
     in
-    let parse = Int.of_string in
+    let parse s =
+      try Ok (Int.of_string s) with _ ->
+        Error (Format.sprintf "invalid value '%s', expecting an integer" s)
+    in
     let r = mk ~default:None term in
+    let to_string = Int.to_string in
     let cmdline_get () = !r in
-    let opt = {names; parse; update; cmdline_get; allow_inline; default} in
+    let opt =
+      {names; parse; update; cmdline_get; allow_inline; default; to_string}
+    in
     store := Pack opt :: !store ;
     opt
 
-  let update ~config ~name ~value ~inline =
+  let log_update ~from ~name ~value =
+    match from with
+    | `Attribute -> ()
+    | (`File _ | `Config | `Commandline) as from ->
+        let from =
+          match from with
+          | `File (file, lnum) -> Format.sprintf " (%s:%d)" file lnum
+          | `Config -> " (Environment variable or --config)"
+          | `Commandline -> " (command line)"
+        in
+        Format.eprintf "%s=%s%s@\n%!" name value from
+
+  let update ~config ~verbose ~from ~name ~value ~inline =
     List.find_map !store
       ~f:(fun (Pack {names; parse; update; allow_inline}) ->
         if List.exists names ~f:(String.equal name) then
           if inline && not allow_inline then
             Some (Error (`Misplaced (name, value)))
           else
-            try Some (Ok (update config (parse value))) with _ ->
-              Some (Error (`Bad_value (name, value)))
+            match parse value with
+            | Ok packed_value ->
+                let config = update config packed_value in
+                if verbose then log_update ~from ~name ~value ;
+                Some (Ok config)
+            | Error error -> Some (Error (`Bad_value (name, error)))
         else None )
     |> Option.value ~default:(Error (`Unknown (name, value)))
 
   let default {default} = default
 
-  let update_using_cmdline conf =
-    let on_pack conf (Pack {cmdline_get; update}) =
-      match cmdline_get () with None -> conf | Some x -> update conf x
+  let update_using_cmdline config ~verbose =
+    let on_pack config (Pack {names; cmdline_get; update; to_string}) =
+      let name = List.hd_exn names in
+      match cmdline_get () with
+      | None -> config
+      | Some x ->
+          let config = update config x in
+          if verbose then
+            log_update ~from:`Commandline ~name ~value:(to_string x) ;
+          config
     in
-    List.fold !store ~init:conf ~f:on_pack
+    List.fold !store ~init:config ~f:on_pack
 end
 
 let info =
@@ -672,6 +719,8 @@ end
 (* Flags that can be modified in the config file that don't affect
    formatting *)
 
+let project_root_witness = [".git"; ".hg"; "dune-project"]
+
 let section = `Operational
 
 let docs = C.section_name section
@@ -684,6 +733,24 @@ let comment_check =
   in
   C.flag ~default ~names:["comment-check"] ~doc ~section (fun conf x ->
       {conf with comment_check= x} )
+
+let disable_outside_project =
+  let witness =
+    String.concat ~sep:" or "
+      (List.map project_root_witness ~f:(fun name ->
+           Format.sprintf "$(b,%s)" name ))
+  in
+  let doc =
+    Format.sprintf
+      "Do not read $(b,.ocamlformat) config files outside the current \
+       project. The project root of an input file is taken to be the \
+       nearest ancestor directory that contains a %s file. If no config \
+       file is found, formatting is disabled."
+      witness
+  in
+  let default = false in
+  mk ~default
+    Arg.(value & flag & info ["disable-outside-project"] ~doc ~docs)
 
 let max_iters =
   let docv = "N" in
@@ -764,6 +831,11 @@ let output =
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
 
+let print_config =
+  let doc = "Print config." in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
+
 let no_version_check =
   let doc =
     "Do no check version matches the one specified in .ocamlformat."
@@ -841,7 +913,7 @@ let janestreet_profile =
   ; wrap_fun_args= false
   ; module_item_spacing= `Compact }
 
-let _profile =
+let (_profile : t option C.t) =
   let doc =
     "Preset profiles which set $(i,all) options, overriding lower priority \
      configuration."
@@ -875,7 +947,7 @@ let validate () =
 ;;
 parse info validate
 
-let parse_line config ~from s =
+let parse_line config ~verbose ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
     let value = String.strip value in
@@ -883,9 +955,16 @@ let parse_line config ~from s =
     | "version", `File _ ->
         if String.equal Version.version value || !no_version_check then
           Ok config
-        else Error (`Bad_value (value, name))
-    | name, `File _ -> C.update ~config ~name ~value ~inline:false
-    | name, `Attribute -> C.update ~config ~name ~value ~inline:true
+        else
+          Error
+            (`Bad_value
+              ( value
+              , Format.sprintf "expecting %s but got %s" Version.version
+                  value ))
+    | name, (`File _ | `Config | `Commandline) ->
+        C.update ~config ~verbose ~from ~name ~value ~inline:false
+    | name, `Attribute ->
+        C.update ~config ~verbose ~from ~name ~value ~inline:true
   in
   let s =
     match String.index s '#' with
@@ -919,49 +998,58 @@ let parse_line config ~from s =
     | _ -> Error (`Malformed s) )
   | _ -> Error (`Malformed s)
 
-let rec read_conf_files conf ~dir ~parents =
-  let dir' = Filename.dirname dir in
-  if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
-    let conf =
-      if parents then read_conf_files conf ~dir:dir' ~parents else conf
-    in
-    try
-      let filename = Filename.concat dir ".ocamlformat" in
-      In_channel.with_file filename ~f:(fun ic ->
-          let c, errors, _ =
-            In_channel.fold_lines ic ~init:(conf, [], 1)
-              ~f:(fun (conf, errors, num) line ->
-                match
-                  parse_line conf ~from:(`File (filename, num)) line
-                with
-                | Ok conf -> (conf, errors, Int.succ num)
-                | Error e -> (conf, e :: errors, Int.succ num) )
-          in
-          match List.rev errors with
-          | [] -> c
-          | l ->
-              user_error "malformed .ocamlformat file"
-                (List.map l ~f:(function
-                  | `Malformed line -> ("invalid format", Sexp.Atom line)
-                  | `Misplaced (name, _) ->
-                      ("not allowed here", Sexp.Atom name)
-                  | `Unknown (name, _value) ->
-                      ("unknown option", Sexp.Atom name)
-                  | `Bad_value (name, value) ->
-                      ( "bad value for"
-                      , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) )) )
-    with Sys_error _ -> conf
-  else conf
+let is_project_root dir =
+  List.exists project_root_witness ~f:(fun name ->
+      Caml.Sys.file_exists (Filename.concat dir name) )
+
+let rec collect_files ~dir acc =
+  let acc =
+    let filename = Filename.concat dir ".ocamlformat" in
+    if Caml.Sys.file_exists filename then filename :: acc else acc
+  in
+  if is_project_root dir && !disable_outside_project then (acc, Some dir)
+  else
+    let dir' = Filename.dirname dir in
+    if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
+      collect_files ~dir:dir' acc
+    else if !disable_outside_project then ([], None)
+    else (acc, None)
+
+let read_config_file ~verbose conf filename =
+  try
+    In_channel.with_file filename ~f:(fun ic ->
+        let c, errors, _ =
+          In_channel.fold_lines ic ~init:(conf, [], 1)
+            ~f:(fun (conf, errors, num) line ->
+              match
+                parse_line conf ~verbose ~from:(`File (filename, num)) line
+              with
+              | Ok conf -> (conf, errors, Int.succ num)
+              | Error e -> (conf, e :: errors, Int.succ num) )
+        in
+        match List.rev errors with
+        | [] -> c
+        | l ->
+            user_error "malformed .ocamlformat file"
+              (List.map l ~f:(function
+                | `Malformed line -> ("invalid format", Sexp.Atom line)
+                | `Misplaced (name, _) ->
+                    ("not allowed here", Sexp.Atom name)
+                | `Unknown (name, _value) ->
+                    ("unknown option", Sexp.Atom name)
+                | `Bad_value (name, reason) ->
+                    ( "bad value for"
+                    , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
+  with Sys_error _ -> conf
 
 let to_absolute file =
   Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
 
-let read_config ~filename conf =
-  read_conf_files conf ~dir:(Filename.dirname (to_absolute filename))
-
-let update_using_env conf =
+let update_using_env ~verbose conf =
   let f (config, errors) (name, value) =
-    match C.update ~config ~name ~value ~inline:false with
+    match
+      C.update ~config ~verbose ~from:`Config ~name ~value ~inline:false
+    with
     | Ok c -> (c, errors)
     | Error e -> (config, e :: errors)
   in
@@ -975,9 +1063,9 @@ let update_using_env conf =
             | `Malformed line -> ("invalid format", Sexp.Atom line)
             | `Misplaced (name, _) -> ("not allowed here", Sexp.Atom name)
             | `Unknown (name, _value) -> ("unknown option", Sexp.Atom name)
-            | `Bad_value (name, value) ->
+            | `Bad_value (name, reason) ->
                 ( "bad value for"
-                , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) ))
+                , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) ))
   with Sys_error _ -> conf
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
@@ -993,20 +1081,50 @@ let kind_of fname =
   | ".mlt" -> `Use_file
   | _ -> !kind
 
-let update_using_xdg =
+let xdg_config =
   match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
   | Some xdg_config_home ->
       let filename =
         Filename.concat xdg_config_home "ocamlformat/.ocamlformat"
       in
-      Staged.stage (fun conf -> read_config ~filename ~parents:false conf)
-  | None -> Staged.stage (fun conf -> conf)
+      if Caml.Sys.file_exists filename then Some filename else None
+  | None -> None
 
 let build_config ~filename =
-  default
-  |> Staged.unstage update_using_xdg
-  |> read_config ~filename ~parents:true
-  |> update_using_env |> C.update_using_cmdline
+  let files, project_root =
+    collect_files ~dir:(Filename.dirname (to_absolute filename)) []
+  in
+  let files =
+    match (xdg_config, !disable_outside_project) with
+    | None, _ | Some _, true -> files
+    | Some f, false -> f :: files
+  in
+  let verbose = !print_config in
+  if verbose then
+    Option.iter project_root ~f:(Format.eprintf "project-root=%s@\n%!") ;
+  let conf =
+    List.fold files ~init:default ~f:(read_config_file ~verbose)
+    |> update_using_env ~verbose
+    |> C.update_using_cmdline ~verbose
+  in
+  if !disable_outside_project && List.is_empty files then (
+    ( if not conf.quiet then
+      let reason =
+        match project_root with
+        | Some root ->
+            Printf.sprintf
+              "no [.ocamlformat] was found within the project (root: %s)"
+              root
+        | None -> "no project root was found"
+      in
+      Format.eprintf
+        "File %S:@\n\
+         Warning: Ocamlformat disabled because [--disable-outside-project] \
+         was given and %s@\n\
+         %!"
+        filename reason ) ;
+    {conf with disable= true} )
+  else conf
 
 let action =
   if !inplace then
@@ -1030,4 +1148,4 @@ let action =
 
 and debug = !debug
 
-let parse_line_in_attribute = parse_line ~from:`Attribute
+let parse_line_in_attribute = parse_line ~from:`Attribute ~verbose:false

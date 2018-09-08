@@ -169,6 +169,12 @@ OPTIONS
            Aggregate options. Options are specified as a comma-separated list
            of pairs: option=VAL,...,option=VAL.
 
+       --disable-outside-project
+           Do not read .ocamlformat config files outside the current project.
+           The project root of an input file is taken to be the nearest
+           ancestor directory that contains a .git or .hg or dune-project
+           file. If no config file is found, formatting is disabled.
+
        -g, --debug
            Generate debugging output.
 
@@ -212,6 +218,9 @@ OPTIONS
            Preset profiles which set all options, overriding lower priority
            configuration. default sets each option to its default value.
            janestreet is the profile used at JaneStreet. 
+
+       --print-config
+           Print config
 
        -q, --quiet
            Quiet. May be set in .ocamlformat.
