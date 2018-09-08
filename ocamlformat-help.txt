@@ -99,6 +99,11 @@ OPTIONS (CODE FORMATTING STYLE)
            operators. parens uses parentheses to explicitly disambiguate
            precedences of infix operators. The default value is indent.
 
+       -l RANGE, --lines=RANGE
+           Only format the lines in RANGE, adapting to the current
+           indentation of the surrounding lines. Lines start at 1. Cannot be
+           set in attributes.
+
        --leading-nested-match-parens
            Nested match parens formatting. Cannot be set in attributes.
 
