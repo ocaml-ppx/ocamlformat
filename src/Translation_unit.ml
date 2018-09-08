@@ -42,19 +42,8 @@ exception
     [ `Ast
     | `Doc_comment
     | `Comment
-    | `Comment_dropped of Location.t * string ]
+    | `Comment_dropped of (Location.t * string) list ]
     * (string * Sexp.t) list
-
-let () =
-  Location.(
-    register_error_of_exn (function
-      | Internal_error (`Comment_dropped (loc, txt), _infos) ->
-          Some
-            { loc
-            ; msg= Format.sprintf "Comment '%s' dropped" txt
-            ; sub= []
-            ; if_highlight= "" }
-      | _ -> None ))
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
 
@@ -190,15 +179,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
             | l ->
-                let locs_names, l =
-                  List.fold l ~init:([], [])
-                    ~f:(fun (acc1, acc2) (l, n, t, s) ->
-                      ((l, n) :: acc1, (t, s) :: acc2) )
-                in
-                let compare (l1, _) (l2, _) = Location.compare l1 l2 in
-                let locs_names = List.sort ~compare locs_names in
-                let loc_name = List.hd_exn locs_names in
-                internal_error (`Comment_dropped loc_name) l ) ;
+                let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
+                internal_error (`Comment_dropped l) [] ) ;
             let diff_cmts = Cmts.diff comments new_.comments in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;
@@ -320,10 +302,15 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             | `Comment_dropped _ -> "comments dropped"
           in
           Format.eprintf "  BUG: %s.\n%!" s ;
+          ( match m with
+          | `Comment_dropped l when not conf.Conf.quiet ->
+              List.iter l ~f:(fun (loc, msg) ->
+                  Caml.Format.eprintf "%!@{<loc>%a@}:@,%S\n%!"
+                    Location.print_loc loc (String.strip msg) )
+          | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) ) ;
-          Location.report_exception fmt exn
+                Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )
       | exn ->
           Format.eprintf "  BUG: unhandled exception.\n%!" ;
           if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) )
