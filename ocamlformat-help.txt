@@ -169,6 +169,12 @@ OPTIONS
            Aggregate options. Options are specified as a comma-separated list
            of pairs: option=VAL,...,option=VAL.
 
+       --disable-outside-project
+           Do not read .ocamlformat config files outside the current project.
+           The project root of an input file is taken to be the nearest
+           ancestor directory that contains a .git or .hg or dune-project
+           file. If no config file is found, formatting is disabled.
+
        -g, --debug
            Generate debugging output.
 
@@ -182,10 +188,6 @@ OPTIONS
 
        --impl
            Parse file with unrecognized extension as an implementation.
-
-       --inside-project-only
-           Do not read .ocamlformat config files outside the project. If no
-           config file is found, disable ocamlformat.
 
        --intf
            Parse file with unrecognized extension as an interface.

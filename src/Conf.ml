@@ -283,7 +283,7 @@ end = struct
           | `Config -> " (Environment variable or --config)"
           | `Commandline -> " (command line)"
         in
-        Format.eprintf "%s=%s%s\n%!" name value from
+        Format.eprintf "%s=%s%s@\n%!" name value from
 
   let update ~config ~verbose ~from ~name ~value ~inline =
     List.find_map !store
@@ -292,11 +292,11 @@ end = struct
           if inline && not allow_inline then
             Some (Error (`Misplaced (name, value)))
           else
-            try
-              let config = update config (parse value) in
-              if verbose then log_update ~from ~name ~value ;
-              Some (Ok config)
-            with _ -> Some (Error (`Bad_value (name, value)))
+            match update config (parse value) with
+            | config ->
+                if verbose then log_update ~from ~name ~value ;
+                Some (Ok config)
+            | exception _ -> Some (Error (`Bad_value (name, value)))
         else None )
     |> Option.value ~default:(Error (`Unknown (name, value)))
 
@@ -709,6 +709,8 @@ end
 (* Flags that can be modified in the config file that don't affect
    formatting *)
 
+let project_root_witness = [".git"; ".hg"; "dune-project"]
+
 let section = `Operational
 
 let docs = C.section_name section
@@ -721,6 +723,24 @@ let comment_check =
   in
   C.flag ~default ~names:["comment-check"] ~doc ~section (fun conf x ->
       {conf with comment_check= x} )
+
+let disable_outside_project =
+  let withness =
+    String.concat ~sep:" or "
+      (List.map project_root_witness ~f:(fun name ->
+           Format.sprintf "$(b,%s)" name ))
+  in
+  let doc =
+    Format.sprintf
+      "Do not read $(b,.ocamlformat) config files outside the current \
+       project. The project root of an input file is taken to be the \
+       nearest ancestor directory that contains a %s file. If no config \
+       file is found, formatting is disabled."
+      withness
+  in
+  let default = false in
+  mk ~default
+    Arg.(value & flag & info ["disable-outside-project"] ~doc ~docs)
 
 let max_iters =
   let docv = "N" in
@@ -762,14 +782,6 @@ let inputs =
   let default = [] in
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
-
-let inside_project_only =
-  let doc =
-    "Do not read .ocamlformat config files outside the project. If no \
-     config file is found, disable ocamlformat."
-  in
-  let default = false in
-  mk ~default Arg.(value & flag & info ["inside-project-only"] ~doc ~docs)
 
 let kind : [`Impl | `Intf | `Use_file] ref =
   let doc =
@@ -972,21 +984,20 @@ let parse_line config ~verbose ~from s =
   | _ -> Error (`Malformed s)
 
 let is_project_root dir =
-  Caml.Sys.file_exists (Filename.concat dir ".git")
-  || Caml.Sys.file_exists (Filename.concat dir ".hg")
-  || Caml.Sys.file_exists (Filename.concat dir "dune-project")
+  List.exists project_root_witness ~f:(fun name ->
+      Caml.Sys.file_exists (Filename.concat dir name) )
 
 let rec collect_files ~dir acc =
   let acc =
     let filename = Filename.concat dir ".ocamlformat" in
     if Caml.Sys.file_exists filename then filename :: acc else acc
   in
-  if is_project_root dir && !inside_project_only then (acc, Some dir)
+  if is_project_root dir && !disable_outside_project then (acc, Some dir)
   else
     let dir' = Filename.dirname dir in
     if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
       collect_files ~dir:dir' acc
-    else if !inside_project_only then ([], None)
+    else if !disable_outside_project then ([], None)
     else (acc, None)
 
 let read_config_file ~verbose conf filename =
@@ -1069,19 +1080,19 @@ let build_config ~filename =
     collect_files ~dir:(Filename.dirname (to_absolute filename)) []
   in
   let files =
-    match (xdg_config, !inside_project_only) with
+    match (xdg_config, !disable_outside_project) with
     | None, _ | Some _, true -> files
     | Some f, false -> f :: files
   in
   let verbose = !print_config in
   if verbose then
-    Option.iter project_root ~f:(Format.eprintf "project-root=%s\n%!") ;
+    Option.iter project_root ~f:(Format.eprintf "project-root=%s@\n%!") ;
   let conf =
     List.fold files ~init:default ~f:(read_config_file ~verbose)
     |> update_using_env ~verbose
     |> C.update_using_cmdline ~verbose
   in
-  if !inside_project_only && List.is_empty files then (
+  if !disable_outside_project && List.is_empty files then (
     ( if not conf.quiet then
       let reason =
         match project_root with
@@ -1092,9 +1103,9 @@ let build_config ~filename =
         | None -> "no project root was found"
       in
       Format.eprintf
-        "File %S:\n\
+        "File %S:@\n\
          Warning: Ocamlformat disabled because [--inside-project-only] was \
-         given and %s\n\
+         given and %s@\n\
          %!"
         filename reason ) ;
     {conf with disable= true} )
