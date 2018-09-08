@@ -764,7 +764,10 @@ let inputs =
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
 let inside_project_only =
-  let doc = "TODO" in
+  let doc =
+    "Do not read .ocamlformat config files outside the project. If no \
+     config file is found, disable ocamlformat."
+  in
   let default = false in
   mk ~default Arg.(value & flag & info ["inside-project-only"] ~doc ~docs)
 

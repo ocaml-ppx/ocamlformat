@@ -184,7 +184,8 @@ OPTIONS
            Parse file with unrecognized extension as an implementation.
 
        --inside-project-only
-           TODO
+           Do not read .ocamlformat config files outside the project. If no
+           config file is found, disable ocamlformat.
 
        --intf
            Parse file with unrecognized extension as an interface.
