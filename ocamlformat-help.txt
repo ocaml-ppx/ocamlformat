@@ -29,75 +29,75 @@ OPTIONS (CODE FORMATTING STYLE)
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
            or-patterns to highlight the case body. all forces all pattern
-           matches to break across lines. The default value is fit. 
+           matches to break across lines. The default value is fit.
 
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by
            elements. fit-or-vertical vertically breaks expressions if they do
            not fit on a single line. wrap will group simple expressions and
            try to format them in a single line. The default value is
-           fit-or-vertical. 
+           fit-or-vertical.
 
        --break-infix={wrap|fit-or-vertical}
            Break sequence of infix operators. wrap will group simple
            expressions and try to format them in a single line.
            fit-or-vertical vertically breaks expressions if they do not fit
-           on a single line. The default value is wrap. 
+           on a single line. The default value is wrap.
 
        --break-string-literals={wrap|newlines|never}
            Break string literals. wrap mode wraps string literals at the
            margin. Quoted strings such as {id|...|id} are preserved. newlines
            mode breaks lines at newlines. never mode formats string literals
            as they are parsed, in particular, with escape sequences expanded.
-           The default value is wrap. 
+           The default value is wrap.
 
        --break-struct={force|natural}
            Break struct-end module items. force will break struct-end phrases
            unconditionally. natural will break struct-end phrases naturally
-           at the margin. The default value is force. 
+           at the margin. The default value is force.
 
        --disable
            Disable ocamlformat. This is used in attributes to locally disable
            automatic code formatting. One can also use [@@@ocamlformat
-           "enable"] instead of [@@@ocamlformat "disable=false"] 
+           "enable"] instead of [@@@ocamlformat "disable=false"]
 
        --doc-comments={after|before}
            Doc comments position. after puts doc comments after the
            corresponding code. before puts comments before the corresponding
-           code. The default value is after. 
+           code. The default value is after.
 
        --escape-chars={preserve|decimal|hexadecimal}
            Escape encoding for character literals. preserve escapes ASCII
            control codes but leaves the upper 128 characters unchanged.
            decimal produces ASCII printable characters using decimal escape
            sequences as needed. hexadecimal mode escapes every character. The
-           default value is preserve. 
+           default value is preserve.
 
        --escape-strings={preserve|decimal|hexadecimal}
            Escape encoding for string literals. See `--escape-chars` for the
-           interpretation of the modes. The default value is preserve. 
+           interpretation of the modes. The default value is preserve.
 
        --extension-sugar={preserve|always}
-           Extension formatting. The default value is preserve. 
+           Extension formatting. The default value is preserve.
 
        --field-space={tight|loose}
            Whether or not to use a space between a field name and the rhs.
            This option affects records and objects. tight does not use a
            space between a field name and the punctuation symbol (`:`or `=`).
-           loose does. The default value is tight. 
+           loose does. The default value is tight.
 
        --if-then-else={compact|keyword-first}
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. keyword-first formats if-then-else
            expressions such that the if-then-else keywords are the first on
-           the line. The default value is compact. 
+           the line. The default value is compact.
 
        --infix-precedence={indent|parens}
            Use indentation or also discretionary parentheses to explicitly
            disambiguate precedences of infix operators. indent uses
            indentation to explicitly disambiguate precedences of infix
            operators. parens uses parentheses to explicitly disambiguate
-           precedences of infix operators. The default value is indent. 
+           precedences of infix operators. The default value is indent.
 
        --leading-nested-match-parens
            Nested match parens formatting. Cannot be set in attributes.
@@ -105,7 +105,7 @@ OPTIONS (CODE FORMATTING STYLE)
        --let-and={compact|sparse}
            Style of let_and. compact will try to format `let p = e and p = e`
            in a single line. sparse will always break between them. The
-           default value is compact. 
+           default value is compact.
 
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
@@ -113,13 +113,13 @@ OPTIONS (CODE FORMATTING STYLE)
            places two open lines between a multi-line module-level let
            binding and the next. double-semicolon places double semicolons
            and an open line between a multi-line module-level let binding and
-           the next. The default value is compact. 
+           the next. The default value is compact.
 
        --let-open={preserve|short|long|auto}
            Module open formatting. preserve keeps the original style. short
            means the Module.(...) style is used. long means the let open
            Module in (...) style is used. auto means the one fitting best is
-           used. The default value is preserve. 
+           used. The default value is preserve.
 
        -m COLS, --margin=COLS
            Format code to fit within COLS columns. The default value is 80.
@@ -129,32 +129,32 @@ OPTIONS (CODE FORMATTING STYLE)
            Spacing between items of structures and signatures. sparse will
            always break a line between two items. compact will not leave open
            lines between one-liners of similar sorts. The default value is
-           sparse. 
+           sparse.
 
        --no-indicate-nested-or-patterns
            Control whether or not to indicate nested or-pattern using
-           indentation. 
+           indentation.
 
        --no-wrap-fun-args
-           Style for function call and function definition. 
+           Style for function call and function definition.
 
        --ocp-indent-compat
            Attempt to generate output which does not change (much) when
-           post-processing with ocp-indent. 
+           post-processing with ocp-indent.
 
        --parens-tuple={always|multi-line-only}
            Parens tuples. always always uses parentheses around tuples.
            multi-line-only mode will try to skip parens for single-line
-           tuples. The default value is always. 
+           tuples. The default value is always.
 
        --sequence-style={separator|terminator}
-           Style of sequence. The default value is separator. 
+           Style of sequence. The default value is separator.
 
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
            and records definition in a single line. sparse will always break
            between constructors and record fields. The default value is
-           compact. 
+           compact.
 
        --wrap-comments
            Wrap comments and docstrings. Comments and docstrings are divided
@@ -162,7 +162,7 @@ OPTIONS (CODE FORMATTING STYLE)
            and each paragraph is wrapped at the margin. Multi-line comments
            with vertically-aligned asterisks on the left margin are not
            wrapped. Consecutive comments with both left and right margin
-           aligned are not wrapped either. 
+           aligned are not wrapped either.
 
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)
@@ -188,7 +188,7 @@ OPTIONS
 
        -n N, --max-iters=N
            Fail if output of formatting does not stabilize within N
-           iterations. May be set in .ocamlformat. The default value is 10. 
+           iterations. May be set in .ocamlformat. The default value is 10.
 
        --name=NAME
            Name of input file for use in error reporting. Defaults to the
@@ -199,7 +199,7 @@ OPTIONS
 
        --no-comment-check
            UNSAFE: Control wether to check comments and documentation
-           comments. May be set in .ocamlformat. 
+           comments. May be set in .ocamlformat.
 
        --no-version-check
            Do no check version matches the one specified in .ocamlformat.
@@ -214,7 +214,7 @@ OPTIONS
            janestreet is the profile used at JaneStreet. 
 
        -q, --quiet
-           Quiet. May be set in .ocamlformat. 
+           Quiet. May be set in .ocamlformat.
 
        --use-file
            Parse file with unrecognized extension as a use_file.

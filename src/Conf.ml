@@ -153,7 +153,7 @@ end = struct
 
   let in_attributes ~section cond =
     if cond || Poly.(section = `Operational) then ""
-    else "Cannot be set in attributes."
+    else " Cannot be set in attributes."
 
   let generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default =
     let open Format in
@@ -164,7 +164,7 @@ end = struct
           (List.hd_exn all)
       else ""
     in
-    asprintf "%s %a %s %s" doc
+    asprintf "%s %a %s%s" doc
       (pp_print_list
          ~pp_sep:(fun fs () -> fprintf fs "@,")
          (fun fs (_, _, d) -> fprintf fs "%s" d))
@@ -180,11 +180,11 @@ end = struct
       all
 
   let generated_flag_doc ~allow_inline ~doc ~section =
-    Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
+    Format.sprintf "%s%s" doc (in_attributes ~section allow_inline)
 
   let generated_int_doc ~allow_inline ~doc ~section ~default =
     let default = Format.sprintf "The default value is $(b,%i)." default in
-    Format.sprintf "%s %s %s" doc default
+    Format.sprintf "%s %s%s" doc default
       (in_attributes ~section allow_inline)
 
   let section_name = function
