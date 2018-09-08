@@ -292,10 +292,10 @@ end = struct
           if inline && not allow_inline then
             Some (Error (`Misplaced (name, value)))
           else
-            match update config (parse value) with
-            | config ->
+            match parse value with
+            | packed_value ->
                 if verbose then log_update ~from ~name ~value ;
-                Some (Ok config)
+                Some (Ok (update config packed_value))
             | exception _ -> Some (Error (`Bad_value (name, value)))
         else None )
     |> Option.value ~default:(Error (`Unknown (name, value)))
@@ -725,7 +725,7 @@ let comment_check =
       {conf with comment_check= x} )
 
 let disable_outside_project =
-  let withness =
+  let witness =
     String.concat ~sep:" or "
       (List.map project_root_witness ~f:(fun name ->
            Format.sprintf "$(b,%s)" name ))
@@ -736,7 +736,7 @@ let disable_outside_project =
        project. The project root of an input file is taken to be the \
        nearest ancestor directory that contains a %s file. If no config \
        file is found, formatting is disabled."
-      withness
+      witness
   in
   let default = false in
   mk ~default
@@ -1104,8 +1104,8 @@ let build_config ~filename =
       in
       Format.eprintf
         "File %S:@\n\
-         Warning: Ocamlformat disabled because [--inside-project-only] was \
-         given and %s@\n\
+         Warning: Ocamlformat disabled because [--disable-outside-project] \
+         was given and %s@\n\
          %!"
         filename reason ) ;
     {conf with disable= true} )
