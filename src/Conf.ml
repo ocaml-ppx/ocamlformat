@@ -28,6 +28,7 @@ type t =
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
+  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_and: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
@@ -152,7 +153,7 @@ end = struct
 
   let in_attributes ~section cond =
     if cond || Poly.(section = `Operational) then ""
-    else "Cannot be set in attributes."
+    else " Cannot be set in attributes."
 
   let generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default =
     let open Format in
@@ -163,7 +164,7 @@ end = struct
           (List.hd_exn all)
       else ""
     in
-    asprintf "%s %a %s %s" doc
+    asprintf "%s %a %s%s" doc
       (pp_print_list
          ~pp_sep:(fun fs () -> fprintf fs "@,")
          (fun fs (_, _, d) -> fprintf fs "%s" d))
@@ -179,11 +180,11 @@ end = struct
       all
 
   let generated_flag_doc ~allow_inline ~doc ~section =
-    Format.sprintf "%s %s" doc (in_attributes ~section allow_inline)
+    Format.sprintf "%s%s" doc (in_attributes ~section allow_inline)
 
   let generated_int_doc ~allow_inline ~doc ~section ~default =
     let default = Format.sprintf "The default value is $(b,%i)." default in
-    Format.sprintf "%s %s %s" doc default
+    Format.sprintf "%s %s%s" doc default
       (in_attributes ~section allow_inline)
 
   let section_name = function
@@ -529,6 +530,26 @@ module Formatting = struct
     C.flag ~default:false ~names ~doc ~section ~allow_inline:false
       (fun conf x -> {conf with leading_nested_match_parens= x} )
 
+  let let_binding_spacing =
+    let doc = "Spacing between let binding." in
+    let names = ["let-binding-spacing"] in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) spacing separates adjacent let bindings in a \
+           module according to module-item-spacing." )
+      ; ( "sparse"
+        , `Sparse
+        , "$(b,sparse) places two open lines between a multi-line \
+           module-level let binding and the next." )
+      ; ( "double-semicolon"
+        , `Double_semicolon
+        , "$(b,double-semicolon) places double semicolons and an open line \
+           between a multi-line module-level let binding and the next." ) ]
+    in
+    C.choice ~names ~all ~doc ~section (fun conf x ->
+        {conf with let_binding_spacing= x} )
+
   let let_and =
     let doc = "Style of let_and." in
     let names = ["let-and"] in
@@ -785,6 +806,7 @@ let default =
   ; leading_nested_match_parens=
       C.default Formatting.leading_nested_match_parens
   ; let_and= C.default Formatting.let_and
+  ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
   ; max_iters= C.default max_iters

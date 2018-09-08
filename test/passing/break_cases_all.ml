@@ -11,7 +11,6 @@ let f x = function
       let b = "breaks" in
       ()
 
-
 let f =
   let g = function
     | H
@@ -37,7 +36,6 @@ let f =
           function
           | A ->
               6 ) )
-
 
 ;;
 match x with
