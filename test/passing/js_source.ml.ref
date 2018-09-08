@@ -1,0 +1,583 @@
+ast: Exp:
+[|1;2;3;4|]
+
+expression (passing/js_source.ml[7226,179513+14]..[7226,179513+29]) ghost
+  Pexp_array
+  [
+    expression (passing/js_source.ml[7226,179513+18]..[7226,179513+19])
+      Pexp_constant PConst_int (1,None)
+    expression (passing/js_source.ml[7226,179513+21]..[7226,179513+22])
+      Pexp_constant PConst_int (2,None)
+    expression (passing/js_source.ml[7226,179513+24]..[7226,179513+25])
+      Pexp_constant PConst_int (3,None)
+    expression (passing/js_source.ml[7226,179513+27]..[7226,179513+28])
+      Pexp_constant PConst_int (4,None)
+  ]
+
+ctx: Exp:
+bg.{1,2,3,4}
+
+expression (passing/js_source.ml[7226,179513+13]..[7226,179513+30])
+  Pexp_apply
+  expression (passing/js_source.ml[7226,179513+14]..[7226,179513+29]) ghost
+    Pexp_ident "Bigarray.Genarray.get" (passing/js_source.ml[7226,179513+14]..[7226,179513+29]) ghost
+  [
+    <arg>
+    Nolabel
+      expression (passing/js_source.ml[7226,179513+14]..[7226,179513+16])
+        Pexp_ident "bg" (passing/js_source.ml[7226,179513+14]..[7226,179513+16])
+    <arg>
+    Nolabel
+      expression (passing/js_source.ml[7226,179513+14]..[7226,179513+29]) ghost
+        Pexp_array
+        [
+          expression (passing/js_source.ml[7226,179513+18]..[7226,179513+19])
+            Pexp_constant PConst_int (1,None)
+          expression (passing/js_source.ml[7226,179513+21]..[7226,179513+22])
+            Pexp_constant PConst_int (2,None)
+          expression (passing/js_source.ml[7226,179513+24]..[7226,179513+25])
+            Pexp_constant PConst_int (3,None)
+          expression (passing/js_source.ml[7226,179513+27]..[7226,179513+28])
+            Pexp_constant PConst_int (4,None)
+        ]
+  ]
+
+Raised at file "src/Ast.ml", line 1177, characters 12-68
+Called from file "src/Ast.ml", line 1250, characters 8-22
+
+FAIL
+Str:
+let _ =
+  function
+  | (a, s, ba1, ba2, ba3, bg) ->
+      (ignore ((((x.(1)) + ([||].(0))) + ([|1|].(1))) + ([|1;2|].(2)));
+       ignore [s.[1]; "".[2]; "123".[3]];
+       ignore (((ba1.{0}) + (ba2.{1,2})) + (ba3.{3,4,5})) ignore
+         (bg.{1,2,3,4}))
+  | (b, s, ba1, ba2, ba3, bg) ->
+      (y.(0) <- 1;
+       s.[1] <- 'c';
+       ba1.{1} <- 2;
+       ba2.{1,2} <- 3;
+       ba3.{1,2,3} <- 4;
+       bg.{1,2,3,4,5} <- 0)
+[
+  structure_item (passing/js_source.ml[7220,179228+0]..[7232,179708+7])
+    Pstr_value Nonrec
+    [
+      <def>
+        pattern (passing/js_source.ml[7220,179228+4]..[7220,179228+5])
+          Ppat_any
+        expression (passing/js_source.ml[7220,179228+8]..[7232,179708+7])
+          Pexp_function
+          [
+            <case>
+              pattern (passing/js_source.ml[7221,179245+4]..[7221,179245+27])
+                Ppat_tuple
+                [
+                  pattern (passing/js_source.ml[7221,179245+4]..[7221,179245+5])
+                    Ppat_var "a" (passing/js_source.ml[7221,179245+4]..[7221,179245+5])
+                  pattern (passing/js_source.ml[7221,179245+7]..[7221,179245+8])
+                    Ppat_var "s" (passing/js_source.ml[7221,179245+7]..[7221,179245+8])
+                  pattern (passing/js_source.ml[7221,179245+10]..[7221,179245+13])
+                    Ppat_var "ba1" (passing/js_source.ml[7221,179245+10]..[7221,179245+13])
+                  pattern (passing/js_source.ml[7221,179245+15]..[7221,179245+18])
+                    Ppat_var "ba2" (passing/js_source.ml[7221,179245+15]..[7221,179245+18])
+                  pattern (passing/js_source.ml[7221,179245+20]..[7221,179245+23])
+                    Ppat_var "ba3" (passing/js_source.ml[7221,179245+20]..[7221,179245+23])
+                  pattern (passing/js_source.ml[7221,179245+25]..[7221,179245+27])
+                    Ppat_var "bg" (passing/js_source.ml[7221,179245+25]..[7221,179245+27])
+                ]
+              expression (passing/js_source.ml[7221,179245+31]..[7227,179544+7])
+                Pexp_sequence
+                expression (passing/js_source.ml[7222,179282+6]..[7223,179332+57])
+                  Pexp_apply
+                  expression (passing/js_source.ml[7222,179282+6]..[7222,179282+12])
+                    Pexp_ident "ignore" (passing/js_source.ml[7222,179282+6]..[7222,179282+12])
+                  [
+                    <arg>
+                    Nolabel
+                      expression (passing/js_source.ml[7222,179282+13]..[7223,179332+57])
+                        Pexp_apply
+                        expression (passing/js_source.ml[7223,179332+34]..[7223,179332+35])
+                          Pexp_ident "+" (passing/js_source.ml[7223,179332+34]..[7223,179332+35])
+                        [
+                          <arg>
+                          Nolabel
+                            expression (passing/js_source.ml[7222,179282+14]..[7223,179332+33])
+                              Pexp_apply
+                              expression (passing/js_source.ml[7222,179282+48]..[7222,179282+49])
+                                Pexp_ident "+" (passing/js_source.ml[7222,179282+48]..[7222,179282+49])
+                              [
+                                <arg>
+                                Nolabel
+                                  expression (passing/js_source.ml[7222,179282+14]..[7222,179282+47])
+                                    Pexp_apply
+                                    expression (passing/js_source.ml[7222,179282+28]..[7222,179282+29])
+                                      Pexp_ident "+" (passing/js_source.ml[7222,179282+28]..[7222,179282+29])
+                                    [
+                                      <arg>
+                                      Nolabel
+                                        expression (passing/js_source.ml[7222,179282+14]..[7222,179282+27])
+                                          Pexp_apply
+                                          expression (passing/js_source.ml[7222,179282+14]..[7222,179282+23])
+                                            Pexp_ident "Array.get" (passing/js_source.ml[7222,179282+14]..[7222,179282+23])
+                                          [
+                                            <arg>
+                                            Nolabel
+                                              expression (passing/js_source.ml[7222,179282+24]..[7222,179282+25])
+                                                Pexp_ident "x" (passing/js_source.ml[7222,179282+24]..[7222,179282+25])
+                                            <arg>
+                                            Nolabel
+                                              expression (passing/js_source.ml[7222,179282+26]..[7222,179282+27])
+                                                Pexp_constant PConst_int (1,None)
+                                          ]
+                                      <arg>
+                                      Nolabel
+                                        expression (passing/js_source.ml[7222,179282+30]..[7222,179282+47])
+                                          Pexp_apply
+                                          expression (passing/js_source.ml[7222,179282+30]..[7222,179282+39])
+                                            Pexp_ident "Array.get" (passing/js_source.ml[7222,179282+30]..[7222,179282+39])
+                                          [
+                                            <arg>
+                                            Nolabel
+                                              expression (passing/js_source.ml[7222,179282+40]..[7222,179282+45])
+                                                Pexp_array
+                                                []
+                                            <arg>
+                                            Nolabel
+                                              expression (passing/js_source.ml[7222,179282+46]..[7222,179282+47])
+                                                Pexp_constant PConst_int (0,None)
+                                          ]
+                                    ]
+                                <arg>
+                                Nolabel
+                                  expression (passing/js_source.ml[7223,179332+14]..[7223,179332+33])
+                                    Pexp_apply
+                                    expression (passing/js_source.ml[7223,179332+14]..[7223,179332+23])
+                                      Pexp_ident "Array.get" (passing/js_source.ml[7223,179332+14]..[7223,179332+23])
+                                    [
+                                      <arg>
+                                      Nolabel
+                                        expression (passing/js_source.ml[7223,179332+24]..[7223,179332+31])
+                                          Pexp_array
+                                          [
+                                            expression (passing/js_source.ml[7223,179332+27]..[7223,179332+28])
+                                              Pexp_constant PConst_int (1,None)
+                                          ]
+                                      <arg>
+                                      Nolabel
+                                        expression (passing/js_source.ml[7223,179332+32]..[7223,179332+33])
+                                          Pexp_constant PConst_int (1,None)
+                                    ]
+                              ]
+                          <arg>
+                          Nolabel
+                            expression (passing/js_source.ml[7223,179332+36]..[7223,179332+56])
+                              Pexp_apply
+                              expression (passing/js_source.ml[7223,179332+36]..[7223,179332+45])
+                                Pexp_ident "Array.get" (passing/js_source.ml[7223,179332+36]..[7223,179332+45])
+                              [
+                                <arg>
+                                Nolabel
+                                  expression (passing/js_source.ml[7223,179332+46]..[7223,179332+54])
+                                    Pexp_array
+                                    [
+                                      expression (passing/js_source.ml[7223,179332+48]..[7223,179332+49])
+                                        Pexp_constant PConst_int (1,None)
+                                      expression (passing/js_source.ml[7223,179332+51]..[7223,179332+52])
+                                        Pexp_constant PConst_int (2,None)
+                                    ]
+                                <arg>
+                                Nolabel
+                                  expression (passing/js_source.ml[7223,179332+55]..[7223,179332+56])
+                                    Pexp_constant PConst_int (2,None)
+                              ]
+                        ]
+                  ]
+                expression (passing/js_source.ml[7224,179391+6]..[7226,179513+30])
+                  Pexp_sequence
+                  expression (passing/js_source.ml[7224,179391+6]..[7224,179391+68])
+                    Pexp_apply
+                    expression (passing/js_source.ml[7224,179391+6]..[7224,179391+12])
+                      Pexp_ident "ignore" (passing/js_source.ml[7224,179391+6]..[7224,179391+12])
+                    [
+                      <arg>
+                      Nolabel
+                        expression (passing/js_source.ml[7224,179391+13]..[7224,179391+68])
+                          Pexp_construct "::" (passing/js_source.ml[7224,179391+15]..[7224,179391+67]) ghost
+                          Some
+                            expression (passing/js_source.ml[7224,179391+15]..[7224,179391+67]) ghost
+                              Pexp_tuple
+                              [
+                                expression (passing/js_source.ml[7224,179391+15]..[7224,179391+29])
+                                  Pexp_apply
+                                  expression (passing/js_source.ml[7224,179391+15]..[7224,179391+25])
+                                    Pexp_ident "String.get" (passing/js_source.ml[7224,179391+15]..[7224,179391+25])
+                                  [
+                                    <arg>
+                                    Nolabel
+                                      expression (passing/js_source.ml[7224,179391+26]..[7224,179391+27])
+                                        Pexp_ident "s" (passing/js_source.ml[7224,179391+26]..[7224,179391+27])
+                                    <arg>
+                                    Nolabel
+                                      expression (passing/js_source.ml[7224,179391+28]..[7224,179391+29])
+                                        Pexp_constant PConst_int (1,None)
+                                  ]
+                                expression (passing/js_source.ml[7224,179391+31]..[7224,179391+67]) ghost
+                                  Pexp_construct "::" (passing/js_source.ml[7224,179391+31]..[7224,179391+67]) ghost
+                                  Some
+                                    expression (passing/js_source.ml[7224,179391+31]..[7224,179391+67]) ghost
+                                      Pexp_tuple
+                                      [
+                                        expression (passing/js_source.ml[7224,179391+31]..[7224,179391+46])
+                                          Pexp_apply
+                                          expression (passing/js_source.ml[7224,179391+31]..[7224,179391+41])
+                                            Pexp_ident "String.get" (passing/js_source.ml[7224,179391+31]..[7224,179391+41])
+                                          [
+                                            <arg>
+                                            Nolabel
+                                              expression (passing/js_source.ml[7224,179391+42]..[7224,179391+44])
+                                                Pexp_constant PConst_string("",None)
+                                            <arg>
+                                            Nolabel
+                                              expression (passing/js_source.ml[7224,179391+45]..[7224,179391+46])
+                                                Pexp_constant PConst_int (2,None)
+                                          ]
+                                        expression (passing/js_source.ml[7224,179391+48]..[7224,179391+67]) ghost
+                                          Pexp_construct "::" (passing/js_source.ml[7224,179391+48]..[7224,179391+67]) ghost
+                                          Some
+                                            expression (passing/js_source.ml[7224,179391+48]..[7224,179391+67]) ghost
+                                              Pexp_tuple
+                                              [
+                                                expression (passing/js_source.ml[7224,179391+48]..[7224,179391+66])
+                                                  Pexp_apply
+                                                  expression (passing/js_source.ml[7224,179391+48]..[7224,179391+58])
+                                                    Pexp_ident "String.get" (passing/js_source.ml[7224,179391+48]..[7224,179391+58])
+                                                  [
+                                                    <arg>
+                                                    Nolabel
+                                                      expression (passing/js_source.ml[7224,179391+59]..[7224,179391+64])
+                                                        Pexp_constant PConst_string("123",None)
+                                                    <arg>
+                                                    Nolabel
+                                                      expression (passing/js_source.ml[7224,179391+65]..[7224,179391+66])
+                                                        Pexp_constant PConst_int (3,None)
+                                                  ]
+                                                expression (passing/js_source.ml[7224,179391+66]..[7224,179391+67]) ghost
+                                                  Pexp_construct "[]" (passing/js_source.ml[7224,179391+66]..[7224,179391+67]) ghost
+                                                  None
+                                              ]
+                                      ]
+                              ]
+                    ]
+                  expression (passing/js_source.ml[7225,179461+6]..[7226,179513+30])
+                    Pexp_apply
+                    expression (passing/js_source.ml[7225,179461+6]..[7225,179461+12])
+                      Pexp_ident "ignore" (passing/js_source.ml[7225,179461+6]..[7225,179461+12])
+                    [
+                      <arg>
+                      Nolabel
+                        expression (passing/js_source.ml[7225,179461+13]..[7225,179461+51])
+                          Pexp_apply
+                          expression (passing/js_source.ml[7225,179461+35]..[7225,179461+36])
+                            Pexp_ident "+" (passing/js_source.ml[7225,179461+35]..[7225,179461+36])
+                          [
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7225,179461+14]..[7225,179461+34])
+                                Pexp_apply
+                                expression (passing/js_source.ml[7225,179461+22]..[7225,179461+23])
+                                  Pexp_ident "+" (passing/js_source.ml[7225,179461+22]..[7225,179461+23])
+                                [
+                                  <arg>
+                                  Nolabel
+                                    expression (passing/js_source.ml[7225,179461+14]..[7225,179461+21])
+                                      Pexp_apply
+                                      expression (passing/js_source.ml[7225,179461+14]..[7225,179461+21]) ghost
+                                        Pexp_ident "Bigarray.Array1.get" (passing/js_source.ml[7225,179461+14]..[7225,179461+21]) ghost
+                                      [
+                                        <arg>
+                                        Nolabel
+                                          expression (passing/js_source.ml[7225,179461+14]..[7225,179461+17])
+                                            Pexp_ident "ba1" (passing/js_source.ml[7225,179461+14]..[7225,179461+17])
+                                        <arg>
+                                        Nolabel
+                                          expression (passing/js_source.ml[7225,179461+19]..[7225,179461+20])
+                                            Pexp_constant PConst_int (0,None)
+                                      ]
+                                  <arg>
+                                  Nolabel
+                                    expression (passing/js_source.ml[7225,179461+24]..[7225,179461+34])
+                                      Pexp_apply
+                                      expression (passing/js_source.ml[7225,179461+24]..[7225,179461+34]) ghost
+                                        Pexp_ident "Bigarray.Array2.get" (passing/js_source.ml[7225,179461+24]..[7225,179461+34]) ghost
+                                      [
+                                        <arg>
+                                        Nolabel
+                                          expression (passing/js_source.ml[7225,179461+24]..[7225,179461+27])
+                                            Pexp_ident "ba2" (passing/js_source.ml[7225,179461+24]..[7225,179461+27])
+                                        <arg>
+                                        Nolabel
+                                          expression (passing/js_source.ml[7225,179461+29]..[7225,179461+30])
+                                            Pexp_constant PConst_int (1,None)
+                                        <arg>
+                                        Nolabel
+                                          expression (passing/js_source.ml[7225,179461+32]..[7225,179461+33])
+                                            Pexp_constant PConst_int (2,None)
+                                      ]
+                                ]
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7225,179461+37]..[7225,179461+50])
+                                Pexp_apply
+                                expression (passing/js_source.ml[7225,179461+37]..[7225,179461+50]) ghost
+                                  Pexp_ident "Bigarray.Array3.get" (passing/js_source.ml[7225,179461+37]..[7225,179461+50]) ghost
+                                [
+                                  <arg>
+                                  Nolabel
+                                    expression (passing/js_source.ml[7225,179461+37]..[7225,179461+40])
+                                      Pexp_ident "ba3" (passing/js_source.ml[7225,179461+37]..[7225,179461+40])
+                                  <arg>
+                                  Nolabel
+                                    expression (passing/js_source.ml[7225,179461+42]..[7225,179461+43])
+                                      Pexp_constant PConst_int (3,None)
+                                  <arg>
+                                  Nolabel
+                                    expression (passing/js_source.ml[7225,179461+45]..[7225,179461+46])
+                                      Pexp_constant PConst_int (4,None)
+                                  <arg>
+                                  Nolabel
+                                    expression (passing/js_source.ml[7225,179461+48]..[7225,179461+49])
+                                      Pexp_constant PConst_int (5,None)
+                                ]
+                          ]
+                      <arg>
+                      Nolabel
+                        expression (passing/js_source.ml[7226,179513+6]..[7226,179513+12])
+                          Pexp_ident "ignore" (passing/js_source.ml[7226,179513+6]..[7226,179513+12])
+                      <arg>
+                      Nolabel
+                        expression (passing/js_source.ml[7226,179513+13]..[7226,179513+30])
+                          Pexp_apply
+                          expression (passing/js_source.ml[7226,179513+14]..[7226,179513+29]) ghost
+                            Pexp_ident "Bigarray.Genarray.get" (passing/js_source.ml[7226,179513+14]..[7226,179513+29]) ghost
+                          [
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7226,179513+14]..[7226,179513+16])
+                                Pexp_ident "bg" (passing/js_source.ml[7226,179513+14]..[7226,179513+16])
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7226,179513+14]..[7226,179513+29]) ghost
+                                Pexp_array
+                                [
+                                  expression (passing/js_source.ml[7226,179513+18]..[7226,179513+19])
+                                    Pexp_constant PConst_int (1,None)
+                                  expression (passing/js_source.ml[7226,179513+21]..[7226,179513+22])
+                                    Pexp_constant PConst_int (2,None)
+                                  expression (passing/js_source.ml[7226,179513+24]..[7226,179513+25])
+                                    Pexp_constant PConst_int (3,None)
+                                  expression (passing/js_source.ml[7226,179513+27]..[7226,179513+28])
+                                    Pexp_constant PConst_int (4,None)
+                                ]
+                          ]
+                    ]
+            <case>
+              pattern (passing/js_source.ml[7228,179552+4]..[7228,179552+27])
+                Ppat_tuple
+                [
+                  pattern (passing/js_source.ml[7228,179552+4]..[7228,179552+5])
+                    Ppat_var "b" (passing/js_source.ml[7228,179552+4]..[7228,179552+5])
+                  pattern (passing/js_source.ml[7228,179552+7]..[7228,179552+8])
+                    Ppat_var "s" (passing/js_source.ml[7228,179552+7]..[7228,179552+8])
+                  pattern (passing/js_source.ml[7228,179552+10]..[7228,179552+13])
+                    Ppat_var "ba1" (passing/js_source.ml[7228,179552+10]..[7228,179552+13])
+                  pattern (passing/js_source.ml[7228,179552+15]..[7228,179552+18])
+                    Ppat_var "ba2" (passing/js_source.ml[7228,179552+15]..[7228,179552+18])
+                  pattern (passing/js_source.ml[7228,179552+20]..[7228,179552+23])
+                    Ppat_var "ba3" (passing/js_source.ml[7228,179552+20]..[7228,179552+23])
+                  pattern (passing/js_source.ml[7228,179552+25]..[7228,179552+27])
+                    Ppat_var "bg" (passing/js_source.ml[7228,179552+25]..[7228,179552+27])
+                ]
+              expression (passing/js_source.ml[7228,179552+31]..[7232,179708+7])
+                Pexp_sequence
+                expression (passing/js_source.ml[7229,179589+6]..[7229,179589+16])
+                  Pexp_apply
+                  expression (passing/js_source.ml[7229,179589+6]..[7229,179589+16]) ghost
+                    Pexp_ident "Array.set" (passing/js_source.ml[7229,179589+6]..[7229,179589+16]) ghost
+                  [
+                    <arg>
+                    Nolabel
+                      expression (passing/js_source.ml[7229,179589+6]..[7229,179589+7])
+                        Pexp_ident "y" (passing/js_source.ml[7229,179589+6]..[7229,179589+7])
+                    <arg>
+                    Nolabel
+                      expression (passing/js_source.ml[7229,179589+9]..[7229,179589+10])
+                        Pexp_constant PConst_int (0,None)
+                    <arg>
+                    Nolabel
+                      expression (passing/js_source.ml[7229,179589+15]..[7229,179589+16])
+                        Pexp_constant PConst_int (1,None)
+                  ]
+                expression (passing/js_source.ml[7229,179589+18]..[7231,179678+29])
+                  Pexp_sequence
+                  expression (passing/js_source.ml[7229,179589+18]..[7229,179589+30])
+                    Pexp_apply
+                    expression (passing/js_source.ml[7229,179589+18]..[7229,179589+30]) ghost
+                      Pexp_ident "String.set" (passing/js_source.ml[7229,179589+18]..[7229,179589+30]) ghost
+                    [
+                      <arg>
+                      Nolabel
+                        expression (passing/js_source.ml[7229,179589+18]..[7229,179589+19])
+                          Pexp_ident "s" (passing/js_source.ml[7229,179589+18]..[7229,179589+19])
+                      <arg>
+                      Nolabel
+                        expression (passing/js_source.ml[7229,179589+21]..[7229,179589+22])
+                          Pexp_constant PConst_int (1,None)
+                      <arg>
+                      Nolabel
+                        expression (passing/js_source.ml[7229,179589+27]..[7229,179589+30])
+                          Pexp_constant PConst_char 63
+                    ]
+                  expression (passing/js_source.ml[7230,179621+6]..[7231,179678+29])
+                    Pexp_sequence
+                    expression (passing/js_source.ml[7230,179621+6]..[7230,179621+18])
+                      Pexp_apply
+                      expression (passing/js_source.ml[7230,179621+6]..[7230,179621+18]) ghost
+                        Pexp_ident "Bigarray.Array1.set" (passing/js_source.ml[7230,179621+6]..[7230,179621+18]) ghost
+                      [
+                        <arg>
+                        Nolabel
+                          expression (passing/js_source.ml[7230,179621+6]..[7230,179621+9])
+                            Pexp_ident "ba1" (passing/js_source.ml[7230,179621+6]..[7230,179621+9])
+                        <arg>
+                        Nolabel
+                          expression (passing/js_source.ml[7230,179621+11]..[7230,179621+12])
+                            Pexp_constant PConst_int (1,None)
+                        <arg>
+                        Nolabel
+                          expression (passing/js_source.ml[7230,179621+17]..[7230,179621+18])
+                            Pexp_constant PConst_int (2,None)
+                      ]
+                    expression (passing/js_source.ml[7230,179621+20]..[7231,179678+29])
+                      Pexp_sequence
+                      expression (passing/js_source.ml[7230,179621+20]..[7230,179621+35])
+                        Pexp_apply
+                        expression (passing/js_source.ml[7230,179621+20]..[7230,179621+35]) ghost
+                          Pexp_ident "Bigarray.Array2.set" (passing/js_source.ml[7230,179621+20]..[7230,179621+35]) ghost
+                        [
+                          <arg>
+                          Nolabel
+                            expression (passing/js_source.ml[7230,179621+20]..[7230,179621+23])
+                              Pexp_ident "ba2" (passing/js_source.ml[7230,179621+20]..[7230,179621+23])
+                          <arg>
+                          Nolabel
+                            expression (passing/js_source.ml[7230,179621+25]..[7230,179621+26])
+                              Pexp_constant PConst_int (1,None)
+                          <arg>
+                          Nolabel
+                            expression (passing/js_source.ml[7230,179621+28]..[7230,179621+29])
+                              Pexp_constant PConst_int (2,None)
+                          <arg>
+                          Nolabel
+                            expression (passing/js_source.ml[7230,179621+34]..[7230,179621+35])
+                              Pexp_constant PConst_int (3,None)
+                        ]
+                      expression (passing/js_source.ml[7230,179621+37]..[7231,179678+29])
+                        Pexp_sequence
+                        expression (passing/js_source.ml[7230,179621+37]..[7230,179621+55])
+                          Pexp_apply
+                          expression (passing/js_source.ml[7230,179621+37]..[7230,179621+55]) ghost
+                            Pexp_ident "Bigarray.Array3.set" (passing/js_source.ml[7230,179621+37]..[7230,179621+55]) ghost
+                          [
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7230,179621+37]..[7230,179621+40])
+                                Pexp_ident "ba3" (passing/js_source.ml[7230,179621+37]..[7230,179621+40])
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7230,179621+42]..[7230,179621+43])
+                                Pexp_constant PConst_int (1,None)
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7230,179621+45]..[7230,179621+46])
+                                Pexp_constant PConst_int (2,None)
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7230,179621+48]..[7230,179621+49])
+                                Pexp_constant PConst_int (3,None)
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7230,179621+54]..[7230,179621+55])
+                                Pexp_constant PConst_int (4,None)
+                          ]
+                        expression (passing/js_source.ml[7231,179678+6]..[7231,179678+29])
+                          Pexp_apply
+                          expression (passing/js_source.ml[7231,179678+6]..[7231,179678+29]) ghost
+                            Pexp_ident "Bigarray.Genarray.set" (passing/js_source.ml[7231,179678+6]..[7231,179678+29]) ghost
+                          [
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7231,179678+6]..[7231,179678+8])
+                                Pexp_ident "bg" (passing/js_source.ml[7231,179678+6]..[7231,179678+8])
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7231,179678+6]..[7231,179678+29]) ghost
+                                Pexp_array
+                                [
+                                  expression (passing/js_source.ml[7231,179678+10]..[7231,179678+11])
+                                    Pexp_constant PConst_int (1,None)
+                                  expression (passing/js_source.ml[7231,179678+13]..[7231,179678+14])
+                                    Pexp_constant PConst_int (2,None)
+                                  expression (passing/js_source.ml[7231,179678+16]..[7231,179678+17])
+                                    Pexp_constant PConst_int (3,None)
+                                  expression (passing/js_source.ml[7231,179678+19]..[7231,179678+20])
+                                    Pexp_constant PConst_int (4,None)
+                                  expression (passing/js_source.ml[7231,179678+22]..[7231,179678+23])
+                                    Pexp_constant PConst_int (5,None)
+                                ]
+                            <arg>
+                            Nolabel
+                              expression (passing/js_source.ml[7231,179678+28]..[7231,179678+29])
+                                Pexp_constant PConst_int (0,None)
+                          ]
+          ]
+    ]
+]
+
+Raised at file "src/Ast.ml", line 671, characters 4-13
+Called from file "src/Ast.ml", line 1898, characters 12-26
+Called from file "src/import/Import.ml", line 42, characters 11-16
+Called from file "src/Ast.ml", line 1822, characters 28-59
+Called from file "src/hashtbl.ml", line 357, characters 18-28
+Called from file "src/Ast.ml", line 1869, characters 4-91
+Called from file "src/Ast.ml", line 1823, characters 10-49
+Called from file "src/hashtbl.ml", line 357, characters 18-28
+Called from file "src/Ast.ml", line 1869, characters 4-91
+Called from file "src/Ast.ml", line 1823, characters 10-49
+Called from file "src/hashtbl.ml", line 357, characters 18-28
+Called from file "src/Ast.ml", line 1869, characters 4-91
+Called from file "src/Ast.ml", line 1823, characters 10-49
+Called from file "src/hashtbl.ml", line 357, characters 18-28
+Called from file "src/Ast.ml", line 1869, characters 4-91
+Called from file "list.ml", line 106, characters 12-15
+Called from file "src/list0.ml" (inlined), line 26, characters 40-75
+Called from file "src/Ast.ml", line 1939, characters 12-108
+Called from file "src/import/Import.ml", line 42, characters 11-16
+Called from file "src/Fmt_ast.ml", line 2566, characters 17-36
+Called from file "src/Fmt.ml", line 47, characters 6-34
+Called from file "src/Fmt.ml", line 123, characters 2-6
+Called from file "src/import/Import.ml", line 33, characters 18-21
+Called from file "src/import/Import.ml", line 33, characters 18-21
+Called from file "src/import/Import.ml", line 33, characters 18-21
+Called from file "src/import/Import.ml", line 33, characters 18-21
+Called from file "src/Fmt.ml", line 123, characters 2-6
+Called from file "src/import/Import.ml", line 33, characters 18-21
+Called from file "src/Fmt.ml", line 123, characters 2-6
+Called from file "src/Fmt.ml", line 123, characters 2-6
+Called from file "src/Fmt_ast.ml", line 47, characters 8-13
+
+ocamlformat.exe: Cannot process "passing/js_source.ml".
+  Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
+  BUG: unhandled exception.
