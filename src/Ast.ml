@@ -1855,6 +1855,14 @@ end = struct
           List.iter cases ~f:(fun case ->
               mark_parenzed_inner_nested_match case.pc_rhs ) ;
           true
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+        when Option.is_some (index_op_set_sugar txt args) ->
+          let _, _, e = Option.value_exn (index_op_set_sugar txt args) in
+          continue e
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+        when Option.is_some (index_op_get_sugar txt args) ->
+          let _, indices = Option.value_exn (index_op_get_sugar txt args) in
+          continue (List.last_exn indices)
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (List.last_exn es)
       | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
