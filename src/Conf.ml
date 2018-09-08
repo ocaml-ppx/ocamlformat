@@ -221,8 +221,8 @@ end = struct
       | Some v -> Ok v
       | None ->
           Error
-            (Printf.sprintf "Invalid value %S, expecting %s" s
-               ( List.map all ~f:(fun (s, _, _) -> s)
+            (Printf.sprintf "Invalid value '%s', expecting %s" s
+               ( List.map all ~f:(fun (s, _, _) -> Format.sprintf "'%s'" s)
                |> String.concat ~sep:" or " ))
     in
     let r = mk ~default:None term in
@@ -249,7 +249,8 @@ end = struct
     let parse s =
       try Ok (Bool.of_string s) with _ ->
         Error
-          (Format.sprintf "invalid value %S, expecting 'true' or 'false'" s)
+          (Format.sprintf "invalid value '%s', expecting 'true' or 'false'"
+             s)
     in
     let r = mk ~default term in
     let to_string = Bool.to_string in
@@ -270,7 +271,7 @@ end = struct
     in
     let parse s =
       try Ok (Int.of_string s) with _ ->
-        Error (Format.sprintf "invalid value %S, expecting an integer" s)
+        Error (Format.sprintf "invalid value '%s', expecting an integer" s)
     in
     let r = mk ~default:None term in
     let to_string = Int.to_string in
