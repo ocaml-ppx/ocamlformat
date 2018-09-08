@@ -135,7 +135,7 @@ end = struct
 
   type 'a t =
     { names: string list
-    ; parse: string -> 'a
+    ; parse: string -> ('a, string) Result.t
     ; update: config -> 'a -> config
     ; allow_inline: bool
     ; cmdline_get: unit -> 'a option
@@ -218,11 +218,12 @@ end = struct
         List.find_map all ~f:(fun (n, v, _) ->
             Option.some_if (String.equal n s) v )
       with
-      | Some v -> v
+      | Some v -> Ok v
       | None ->
-          user_error
-            (Printf.sprintf "Unknown %s value: %S" (List.hd_exn names) s)
-            []
+          Error
+            (Printf.sprintf "Invalid value %S, expecting %s" s
+               ( List.map all ~f:(fun (s, _, _) -> s)
+               |> String.concat ~sep:" or " ))
     in
     let r = mk ~default:None term in
     let cmdline_get () = !r in
@@ -245,7 +246,11 @@ end = struct
     let doc = generated_flag_doc ~allow_inline ~doc ~section in
     let docs = section_name section in
     let term = Arg.(value & flag & info names_for_cmdline ~doc ~docs) in
-    let parse = Bool.of_string in
+    let parse s =
+      try Ok (Bool.of_string s) with _ ->
+        Error
+          (Format.sprintf "invalid value %S, expecting 'true' or 'false'" s)
+    in
     let r = mk ~default term in
     let to_string = Bool.to_string in
     let cmdline_get () = if !r then Some (not invert_flag) else None in
@@ -263,7 +268,10 @@ end = struct
     let term =
       Arg.(value & opt (some int) None & info names ~doc ~docs ~docv)
     in
-    let parse = Int.of_string in
+    let parse s =
+      try Ok (Int.of_string s) with _ ->
+        Error (Format.sprintf "invalid value %S, expecting an integer" s)
+    in
     let r = mk ~default:None term in
     let to_string = Int.to_string in
     let cmdline_get () = !r in
@@ -293,10 +301,11 @@ end = struct
             Some (Error (`Misplaced (name, value)))
           else
             match parse value with
-            | packed_value ->
+            | Ok packed_value ->
+                let config = update config packed_value in
                 if verbose then log_update ~from ~name ~value ;
-                Some (Ok (update config packed_value))
-            | exception _ -> Some (Error (`Bad_value (name, value)))
+                Some (Ok config)
+            | Error error -> Some (Error (`Bad_value (name, error)))
         else None )
     |> Option.value ~default:(Error (`Unknown (name, value)))
 
@@ -945,7 +954,12 @@ let parse_line config ~verbose ~from s =
     | "version", `File _ ->
         if String.equal Version.version value || !no_version_check then
           Ok config
-        else Error (`Bad_value (value, name))
+        else
+          Error
+            (`Bad_value
+              ( value
+              , Format.sprintf "expecting %s but got %s" Version.version
+                  value ))
     | name, (`File _ | `Config | `Commandline) ->
         C.update ~config ~verbose ~from ~name ~value ~inline:false
     | name, `Attribute ->
@@ -1022,9 +1036,9 @@ let read_config_file ~verbose conf filename =
                     ("not allowed here", Sexp.Atom name)
                 | `Unknown (name, _value) ->
                     ("unknown option", Sexp.Atom name)
-                | `Bad_value (name, value) ->
+                | `Bad_value (name, reason) ->
                     ( "bad value for"
-                    , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) )) )
+                    , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
   with Sys_error _ -> conf
 
 let to_absolute file =
@@ -1048,9 +1062,9 @@ let update_using_env ~verbose conf =
             | `Malformed line -> ("invalid format", Sexp.Atom line)
             | `Misplaced (name, _) -> ("not allowed here", Sexp.Atom name)
             | `Unknown (name, _value) -> ("unknown option", Sexp.Atom name)
-            | `Bad_value (name, value) ->
+            | `Bad_value (name, reason) ->
                 ( "bad value for"
-                , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) ))
+                , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) ))
   with Sys_error _ -> conf
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}
