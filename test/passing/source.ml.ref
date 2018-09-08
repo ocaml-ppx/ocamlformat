@@ -5986,11 +5986,12 @@ class c (v : int) =
   object
     method v0 = v
 
-    inherit (fun v ->
-              object
-                method v : string = v
-              end )
-              "42"
+    inherit
+      (fun v ->
+        object
+          method v : string = v
+        end )
+        "42"
   end
 
 ;;
