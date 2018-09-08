@@ -214,10 +214,13 @@ OPTIONS
            Output file. Mutually exclusive with --inplace. Write to stdout if
            omitted.
 
-       -p {default|janestreet}, --profile={default|janestreet}
+       -p {default|compact|sparse|janestreet},
+       --profile={default|compact|sparse|janestreet}
            Preset profiles which set all options, overriding lower priority
            configuration. default sets each option to its default value.
-           janestreet is the profile used at JaneStreet. 
+           compact sets options for a generally compact code style. sparse
+           sets options for a generally sparse code style. janestreet is the
+           profile used at JaneStreet. 
 
        --print-config
            Print config.
