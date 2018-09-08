@@ -63,4 +63,5 @@ class type a =
 
 (** floatting *)
 
-and b = object end  (** about b *)
+(** about b *)
+and b = object end

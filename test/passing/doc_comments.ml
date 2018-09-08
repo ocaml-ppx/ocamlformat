@@ -1,9 +1,11 @@
 (** test *)
 module A = B
 
-include A  (** @open *)
+(** @open *)
+include A
 
-include B  (** @open *)
+(** @open *)
+include B
 
 include A
 

@@ -51,7 +51,7 @@ val is_sugared_list : expression -> bool
 
 val doc_atrs :
      (string Location.loc * payload) list
-  -> (string Location.loc * bool) option
+  -> (string Location.loc * bool) list option
      * (string Location.loc * payload) list
 
 (** Ast terms of various forms. *)
