@@ -3721,7 +3721,10 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                   ( match c.conf.let_binding_spacing with
                   | `Compact -> None
                   | `Sparse ->
-                      Some (fits_breaks ~force_fit_if:last_item "" "\n")
+                      Some
+                        (fits_breaks
+                           ~force_fit_if:(last && last_grp && last_item)
+                           "" "\n")
                   | `Double_semicolon ->
                       Option.some_if (last && last_grp)
                         (fits_breaks "" "@;<1000 -2>;;") ) )
