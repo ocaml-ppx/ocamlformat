@@ -2482,11 +2482,12 @@ and fmt_class_field c ctx (cf : class_field) =
     @@ fmt_cmts
          ( match pcf_desc with
          | Pcf_inherit (override, cl, parent) ->
-             fmt "inherit"
-             $ fmt_if Poly.(override = Override) "!"
-             $ fmt " "
-             $ fmt_class_expr c (sub_cl ~ctx cl)
-             $ opt parent (fun p -> fmt " as " $ str p.txt)
+             hovbox 2
+               ( fmt "inherit"
+               $ fmt_if Poly.(override = Override) "!"
+               $ fmt "@ "
+               $ ( fmt_class_expr c (sub_cl ~ctx cl)
+                 $ opt parent (fun p -> fmt " as " $ str p.txt) ) )
          | Pcf_method (name, priv, kind) ->
              let l, eq, expr = fmt_kind kind in
              hvbox 2
@@ -2534,7 +2535,9 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     @@ fmt_cmts
          ( match pctf_desc with
          | Pctf_inherit ct ->
-             fmt "inherit " $ fmt_class_type c (sub_cty ~ctx ct)
+             hovbox 2
+               ( fmt "inherit" $ fmt "@ "
+               $ fmt_class_type c (sub_cty ~ctx ct) )
          | Pctf_method (name, priv, virt, ty) ->
              hovbox 2
                ( fmt "method"
