@@ -832,7 +832,7 @@ let output =
       & info ["o"; "output"] ~doc ~docs ~docv)
 
 let print_config =
-  let doc = "Print config" in
+  let doc = "Print config." in
   let default = false in
   mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
 
