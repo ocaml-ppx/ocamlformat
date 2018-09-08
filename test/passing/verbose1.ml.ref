@@ -1,4 +1,3 @@
-margin=90 (/home/hugo/.ocamlformat:6)
 margin=77 ({CWD}/.ocamlformat:1)
 wrap-comments=true ({CWD}/.ocamlformat:2)
 doc-comments=before (Environment variable or --config)
