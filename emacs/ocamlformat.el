@@ -219,6 +219,7 @@ function."
                    ocamlformat-command nil (list :file errorfile) nil
                    (append margin-args
                      (list
+                       "--inside-project-only"
                        "--name" buffer-file-name
                        "--output" outputfile bufferfile))))
              (progn

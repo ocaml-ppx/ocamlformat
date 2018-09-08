@@ -183,6 +183,9 @@ OPTIONS
        --impl
            Parse file with unrecognized extension as an implementation.
 
+       --inside-project-only
+           TODO
+
        --intf
            Parse file with unrecognized extension as an interface.
 

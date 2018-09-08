@@ -771,6 +771,11 @@ let no_version_check =
   let default = false in
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
+let inside_project_only =
+  let doc = "TODO" in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["inside-project-only"] ~doc ~docs)
+
 let config =
   let doc =
     "Aggregate options. Options are specified as a comma-separated list of \
@@ -919,70 +924,50 @@ let parse_line config ~from s =
     | _ -> Error (`Malformed s) )
   | _ -> Error (`Malformed s)
 
-let rec read_conf_files conf ~dir ~parents =
-  let dir' = Filename.dirname dir in
-  if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
-    let conf =
-      if parents then read_conf_files conf ~dir:dir' ~parents else conf
-    in
-    try
-      let filename = Filename.concat dir ".ocamlformat" in
-      In_channel.with_file filename ~f:(fun ic ->
-          let c, errors, _ =
-            In_channel.fold_lines ic ~init:(conf, [], 1)
-              ~f:(fun (conf, errors, num) line ->
-                match
-                  parse_line conf ~from:(`File (filename, num)) line
-                with
-                | Ok conf -> (conf, errors, Int.succ num)
-                | Error e -> (conf, e :: errors, Int.succ num) )
-          in
-          match List.rev errors with
-          | [] -> c
-          | l ->
-              user_error "malformed .ocamlformat file"
-                (List.map l ~f:(function
-                  | `Malformed line -> ("invalid format", Sexp.Atom line)
-                  | `Misplaced (name, _) ->
-                      ("not allowed here", Sexp.Atom name)
-                  | `Unknown (name, _value) ->
-                      ("unknown option", Sexp.Atom name)
-                  | `Bad_value (name, value) ->
-                      ( "bad value for"
-                      , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) )) )
-    with Sys_error _ -> conf
-  else conf
-
 let is_project_root dir =
   Caml.Sys.file_exists (Filename.concat dir ".git")
   || Caml.Sys.file_exists (Filename.concat dir ".hg")
   || Caml.Sys.file_exists (Filename.concat dir "dune-project")
 
-let with_parent ~dir f =
-  let dir' = Filename.dirname dir in
-  (not (String.equal dir dir')) && Caml.Sys.file_exists dir' && f ~dir:dir'
+let rec collect_files ~dir acc =
+  let acc =
+    let filename = Filename.concat dir ".ocamlformat" in
+    if Caml.Sys.file_exists filename then filename :: acc else acc
+  in
+  if is_project_root dir && !inside_project_only then acc
+  else
+    let dir' = Filename.dirname dir in
+    if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
+      collect_files ~dir:dir' acc
+    else acc
 
-let rec has_dot_ocamlformat_enabled_in_project ~dir =
-  if Caml.Sys.file_exists (Filename.concat dir ".ocamlformat") then
-    let rec check_inside_project ~dir =
-      is_project_root dir || with_parent ~dir check_inside_project
-    in
-    check_inside_project ~dir
-  else if is_project_root dir then false
-  else with_parent ~dir has_dot_ocamlformat_enabled_in_project
-
-let maybe_disable ~dir config =
-  match Caml.Sys.getenv_opt "OCAMLFORMAT_SCOPE" with
-  | Some "project" ->
-      let enable = has_dot_ocamlformat_enabled_in_project ~dir in
-      {config with disable= not enable}
-  | Some _ | None -> config
+let read_config_file conf filename =
+  try
+    In_channel.with_file filename ~f:(fun ic ->
+        let c, errors, _ =
+          In_channel.fold_lines ic ~init:(conf, [], 1)
+            ~f:(fun (conf, errors, num) line ->
+              match parse_line conf ~from:(`File (filename, num)) line with
+              | Ok conf -> (conf, errors, Int.succ num)
+              | Error e -> (conf, e :: errors, Int.succ num) )
+        in
+        match List.rev errors with
+        | [] -> c
+        | l ->
+            user_error "malformed .ocamlformat file"
+              (List.map l ~f:(function
+                | `Malformed line -> ("invalid format", Sexp.Atom line)
+                | `Misplaced (name, _) ->
+                    ("not allowed here", Sexp.Atom name)
+                | `Unknown (name, _value) ->
+                    ("unknown option", Sexp.Atom name)
+                | `Bad_value (name, value) ->
+                    ( "bad value for"
+                    , Sexp.List [Sexp.Atom name; Sexp.Atom value] ) )) )
+  with Sys_error _ -> conf
 
 let to_absolute file =
   Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
-
-let read_config ~filename conf =
-  read_conf_files conf ~dir:(Filename.dirname (to_absolute filename))
 
 let update_using_env conf =
   let f (config, errors) (name, value) =
@@ -1024,15 +1009,22 @@ let update_using_xdg =
       let filename =
         Filename.concat xdg_config_home "ocamlformat/.ocamlformat"
       in
-      Staged.stage (fun conf -> read_config ~filename ~parents:false conf)
+      Staged.stage (fun conf -> read_config_file conf filename)
   | None -> Staged.stage (fun conf -> conf)
 
 let build_config ~filename =
-  default
-  |> Staged.unstage update_using_xdg
-  |> read_config ~filename ~parents:true
-  |> update_using_env |> C.update_using_cmdline
-  |> maybe_disable ~dir:(Filename.dirname (to_absolute filename))
+  let files =
+    collect_files ~dir:(Filename.dirname (to_absolute filename)) []
+  in
+  if !inside_project_only && List.is_empty files then
+    {default with disable= true}
+  else
+    let read_config_files conf =
+      List.fold files ~init:conf ~f:read_config_file
+    in
+    default
+    |> Staged.unstage update_using_xdg
+    |> read_config_files |> update_using_env |> C.update_using_cmdline
 
 let action =
   if !inplace then
