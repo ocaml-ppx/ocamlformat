@@ -93,7 +93,7 @@ ocamlformat() {
     [ $# -eq 1 ]
     opts=$(cat $1.opts 2>/dev/null || true)
     tmpfile=$TMP/$(basename $1)
-    OCAMLFORMAT=max-iter=2 bash -c "(\"$OCAMLFORMAT\" $opts \"$1\" || true) 2>&1" | sed "s#${CWD}#{CWD}#" > $tmpfile
+    OCAMLFORMAT=max-iters=2 bash -c "(\"$OCAMLFORMAT\" $opts \"$1\" || true) 2>&1" | sed "s#${CWD}#{CWD}#" > $tmpfile
 }
 
 reffile() {
