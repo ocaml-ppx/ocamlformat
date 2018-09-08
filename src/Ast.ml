@@ -1171,27 +1171,19 @@ end = struct
             ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
             , e1 :: indices )
           when Option.is_some (index_op_get_sugar txt indices) ->
-            let _, indices' =
+            let _, indices =
               Option.value_exn (index_op_get_sugar txt indices)
             in
-            assert (
-              e0 == exp || snd_f e1
-              || List.exists indices ~f:snd_f
-              || List.length indices <> List.length indices'
-                 && List.exists indices' ~f )
+            assert (e0 == exp || snd_f e1 || List.exists indices ~f)
         | Pexp_apply
             ( ({pexp_desc= Pexp_ident {txt}; pexp_attributes= []} as e0)
             , e1 :: indices )
           when Option.is_some (index_op_set_sugar txt indices) ->
-            let _, indices', e =
+            let _, indices, e =
               Option.value_exn (index_op_set_sugar txt indices)
             in
             assert (
-              e0 == exp || snd_f e1
-              || List.exists indices ~f:snd_f
-              || List.length indices = 2
-                 && List.length indices' > 3
-                 && (List.exists indices' ~f || e == exp) )
+              e0 == exp || snd_f e1 || List.exists indices ~f || e == exp )
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
@@ -1782,6 +1774,16 @@ end = struct
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             continue (List.last_exn cases).pc_rhs
+        | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+          when Option.is_some (index_op_set_sugar txt args) ->
+            let _, _, e = Option.value_exn (index_op_set_sugar txt args) in
+            continue e
+        | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+          when Option.is_some (index_op_get_sugar txt args) ->
+            let _, indices =
+              Option.value_exn (index_op_get_sugar txt args)
+            in
+            continue (List.last_exn indices)
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
         | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
