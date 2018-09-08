@@ -310,7 +310,7 @@ end = struct
       | Some x ->
           let config = update config x in
           if verbose then
-            log_update ~from:`Config ~name ~value:(to_string x) ;
+            log_update ~from:`Commandline ~name ~value:(to_string x) ;
           config
     in
     List.fold !store ~init:config ~f:on_pack
