@@ -1374,15 +1374,15 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_apply
-          ( { pexp_desc=
-                Pexp_ident
-                  {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
-            }
-          , (_, a1) :: (_, a2) :: _ ) ->
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, a1) :: args)
+        when Option.is_some (index_op_get_sugar txt args) ->
+          if a1 == exp then Some (Dot, Left) else Some (Comma, Left)
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, a1) :: args)
+        when Option.is_some (index_op_set_sugar txt args) ->
+          let _, _, e = Option.value_exn (index_op_set_sugar txt args) in
           if a1 == exp then Some (Dot, Left)
-          else if a2 == exp then Some (Comma, Left)
-          else Some (Comma, Right)
+          else if e == exp then Some (Comma, Right)
+          else Some (Comma, Left)
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [(_, e1); _])
         -> (
           let child = if e1 == exp then Left else Right in
@@ -1457,13 +1457,12 @@ end = struct
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
         )
-      | Pexp_apply
-          ( { pexp_desc=
-                Pexp_ident
-                  {txt= Ldot (Lident ("Array" | "String"), ("get" | "set"))}
-            }
-          , _ :: _ :: _ ) ->
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+        when Option.is_some (index_op_get_sugar txt args) ->
           Some Dot
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+        when Option.is_some (index_op_set_sugar txt args) ->
+          Some Comma
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i}}, [_; _]) -> (
         match (i.[0], i) with
         | _, ":=" -> Some ColonEqual
@@ -1775,6 +1774,16 @@ end = struct
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             continue (List.last_exn cases).pc_rhs
+        | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+          when Option.is_some (index_op_set_sugar txt args) ->
+            let _, _, e = Option.value_exn (index_op_set_sugar txt args) in
+            continue e
+        | Pexp_apply ({pexp_desc= Pexp_ident {txt}}, (Nolabel, _) :: args)
+          when Option.is_some (index_op_get_sugar txt args) ->
+            let _, indices =
+              Option.value_exn (index_op_get_sugar txt args)
+            in
+            continue (List.last_exn indices)
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
         | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
