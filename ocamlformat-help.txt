@@ -220,7 +220,7 @@ OPTIONS
            janestreet is the profile used at JaneStreet. 
 
        --print-config
-           Print config
+           Print config.
 
        -q, --quiet
            Quiet. May be set in .ocamlformat.
