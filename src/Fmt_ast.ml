@@ -2024,7 +2024,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                             ( Pexp_while _ | Pexp_for _ | Pexp_match _
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_sequence _ | Pexp_new _
-                            | Pexp_letmodule _ | Pexp_object _ )
+                            | Pexp_letmodule _ | Pexp_object _
+                            | Pexp_function _ )
                         ; pexp_attributes= [] } as e1 )
                     , _ ) } as str ) ] )
     when List.is_empty pexp_attributes

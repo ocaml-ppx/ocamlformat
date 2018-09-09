@@ -1786,6 +1786,21 @@ end = struct
          |Pexp_setinstvar (_, e)
          |Pexp_variant (_, Some e) ->
             continue e
+        | Pexp_extension
+            ( ext
+            , PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( ( { pexp_desc=
+                                ( Pexp_while _ | Pexp_for _ | Pexp_match _
+                                | Pexp_try _ | Pexp_let _
+                                | Pexp_ifthenelse _ | Pexp_sequence _
+                                | Pexp_new _ | Pexp_letmodule _
+                                | Pexp_object _ | Pexp_function _ )
+                            ; pexp_attributes= [] } as e )
+                        , _ ) } ] )
+          when Source.extension_using_sugar ~name:ext ~payload:e ->
+            continue e
         | Pexp_let (_, _, e)
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, e) -> (
