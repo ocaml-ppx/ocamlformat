@@ -18,7 +18,7 @@ let preprocess =
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
  %s
- (libraries cmdliner format_ import ocaml-migrate-parsetree unix))
+ (libraries cmdliner format_ import ocaml-migrate-parsetree unix fpath))
 
 (rule
   (targets ocamlformat.1)

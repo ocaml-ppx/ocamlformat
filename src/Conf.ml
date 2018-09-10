@@ -92,6 +92,26 @@ end = struct
     | `Help | `Version -> Caml.exit 0
 end
 
+let pretty path =
+  let env_vars = ["PWD"; "XDG_CONFIG_HOME"; "HOME"] in
+  let rec aux = function
+    | var :: t -> (
+      match Caml.Sys.getenv_opt var with
+      | Some var_path -> (
+          let var_path = Fpath.v var_path in
+          match Fpath.(rem_prefix var_path path) with
+          | Some no_prefix
+            when String.equal (Fpath.to_string no_prefix) "./" ->
+              Format.sprintf "{%s}" var
+          | Some no_prefix ->
+              Format.sprintf "{%s}/%s" var Fpath.(no_prefix |> to_string)
+          | None when Fpath.equal var_path path -> Format.sprintf "{%s}" var
+          | None -> aux t )
+      | None -> aux t )
+    | [] -> Fpath.to_string path
+  in
+  aux env_vars
+
 open Cmdliner
 
 module C : sig
@@ -291,7 +311,8 @@ end = struct
     | (`File _ | `Config | `Commandline) as from ->
         let from =
           match from with
-          | `File (file, lnum) -> Format.sprintf " (%s:%d)" file lnum
+          | `File (file, lnum) ->
+              Format.sprintf " (%s:%d)" (pretty (Fpath.v file)) lnum
           | `Config -> " (Environment variable or --config)"
           | `Commandline -> " (command line)"
         in
@@ -916,7 +937,8 @@ let root =
   let doc =
     "Root of the project. If specified, only take into account \
      .ocamlformat configuration files inside $(docv) and its \
-     subdirectories."
+     subdirectories. Input files and project root need to be specified \
+     using the same symbolic or hard links."
   in
   let default = None in
   mk ~default
@@ -1209,12 +1231,16 @@ let parse_line config ~verbose ~from s =
     | _ -> Error (`Malformed s) )
   | _ -> Error (`Malformed s)
 
+let dirname path = Fpath.split_base path |> fst
+
+let file_exists path = Fpath.to_string path |> Caml.Sys.file_exists
+
 let is_project_root dir =
   match !root with
-  | Some root -> String.equal dir root
+  | Some root -> Fpath.(equal (normalize (v root)) dir)
   | None ->
       List.exists project_root_witness ~f:(fun name ->
-          Caml.Sys.file_exists (Filename.concat dir name) )
+          file_exists Fpath.(dir // v name) )
 
 let rec collect_files ~dir acc =
   let acc =
@@ -1229,8 +1255,8 @@ let rec collect_files ~dir acc =
   in
   if is_project_root dir && !disable_outside_project then (acc, Some dir)
   else
-    let dir' = Filename.dirname dir in
-    if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
+    let dir' = dirname dir in
+    if (not (Fpath.equal dir dir')) && file_exists dir then
       collect_files ~dir:dir' acc
     else if !disable_outside_project then ([], None)
     else (acc, None)
@@ -1274,7 +1300,7 @@ let read_config_file ~verbose conf filename_kind =
     with Sys_error _ -> conf )
 
 let to_absolute file =
-  Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
+  Fpath.(if is_rel file then v (Unix.getcwd ()) // file else file)
 
 let update_using_env ~verbose conf =
   let f (config, errors) (name, value) =
@@ -1315,15 +1341,15 @@ let kind_of fname =
 let xdg_config =
   match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
   | Some xdg_config_home ->
-      let filename =
-        Filename.concat xdg_config_home "ocamlformat/.ocamlformat"
+      let file =
+        Fpath.(v xdg_config_home // v "ocamlformat" // v ".ocamlformat")
       in
-      if Caml.Sys.file_exists filename then Some filename else None
+      if file_exists file then Some file else None
   | None -> None
 
-let build_config ~filename =
+let build_config ~file =
   let files, project_root =
-    collect_files ~dir:(Filename.dirname (to_absolute filename)) []
+    collect_files ~dir:(dirname (to_absolute file)) []
   in
   let files =
     match (xdg_config, !disable_outside_project) with
@@ -1332,9 +1358,11 @@ let build_config ~filename =
   in
   let verbose = !print_config in
   if verbose then
-    Option.iter project_root ~f:(Format.eprintf "project-root=%s@\n%!") ;
+    Option.iter project_root ~f:(fun x ->
+        Format.eprintf "project-root=%s@\n%!" (pretty x) ) ;
   let conf =
-    List.fold files ~init:default_profile ~f:(read_config_file ~verbose)
+    List.fold files ~init:default_profile ~f:(fun acc file ->
+        read_config_file ~verbose acc (Fpath.to_string file) )
     |> update_using_env ~verbose
     |> C.update_using_cmdline ~verbose
   in
@@ -1343,9 +1371,9 @@ let build_config ~filename =
       let reason =
         match project_root with
         | Some root ->
-            Printf.sprintf
+            Format.asprintf
               "no [.ocamlformat] was found within the project (root: %s)"
-              root
+              (pretty root)
         | None -> "no project root was found"
       in
       Format.eprintf
@@ -1353,7 +1381,7 @@ let build_config ~filename =
          Warning: Ocamlformat disabled because [--disable-outside-project] \
          was given and %s@\n\
          %!"
-        filename reason ) ;
+        (pretty file) reason ) ;
     {conf with disable= true} )
   else conf
 
@@ -1364,7 +1392,7 @@ let action =
            { kind= kind_of file
            ; name= file
            ; file
-           ; conf= build_config ~filename:file } ))
+           ; conf= build_config ~file:Fpath.(v file |> normalize) } ))
   else
     match !inputs with
     | [input_file] ->
@@ -1373,7 +1401,7 @@ let action =
           ( { kind= kind_of name
             ; name
             ; file= input_file
-            ; conf= build_config ~filename:name }
+            ; conf= build_config ~file:Fpath.(v name |> normalize) }
           , !output )
     | _ -> impossible "checked by validate"
 
