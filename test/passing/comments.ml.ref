@@ -105,3 +105,8 @@ end
 let f = (* comment *) function x -> x
 
 let foo x : z = (* comment *) y
+
+;;
+{< (* Debug.print ("free var: "^string_of_int x); *)
+     free_vars = IntSet.add x free_vars
+>}
