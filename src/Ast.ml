@@ -665,9 +665,10 @@ end = struct
     Format.fprintf fs "ast: %a@\nctx: %a@\n" T.dump ast T.dump ctx
 
   let fail ctx ast exc =
-    let bt = Caml.Printexc.get_backtrace () in
-    dump Format.err_formatter ctx ast ;
-    Format.eprintf "%s%!" bt ;
+    if Conf.debug then (
+      let bt = Caml.Printexc.get_backtrace () in
+      dump Format.err_formatter ctx ast ;
+      Format.eprintf "%s%!" bt ) ;
     raise exc
 
   (** Predicates to check the claimed sub-term relation. *)

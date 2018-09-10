@@ -301,7 +301,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             List.iter l ~f:(fun (msg, sexp) ->
                 Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )
       | exn ->
-          Format.eprintf "  BUG: unhandled exception.\n%!" ;
+          Format.eprintf
+            "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
           if Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) )
   ) ;
   result
