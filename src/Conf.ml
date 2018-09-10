@@ -1210,10 +1210,11 @@ let parse_line config ~verbose ~from s =
   | _ -> Error (`Malformed s)
 
 let is_project_root dir =
-  Option.value_map !root ~f:(String.equal dir)
-    ~default:
-      (List.exists project_root_witness ~f:(fun name ->
-           Caml.Sys.file_exists (Filename.concat dir name) ))
+  match !root with
+  | Some root -> String.equal dir root
+  | None ->
+      List.exists project_root_witness ~f:(fun name ->
+          Caml.Sys.file_exists (Filename.concat dir name) )
 
 let rec collect_files ~dir acc =
   let acc =
