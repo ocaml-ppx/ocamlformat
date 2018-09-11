@@ -1226,7 +1226,11 @@ end = struct
           assert false )
     | Mod {pmod_desc= Pmod_unpack e1} -> (
       match e1 with
-      | {pexp_desc= Pexp_constraint (e, _); _} -> assert (e == exp)
+      | { pexp_desc=
+            Pexp_constraint
+              (e, {ptyp_desc= Ptyp_package _; ptyp_attributes= []})
+        ; pexp_attributes= [] } ->
+          assert (e == exp)
       | e -> assert (e == exp) )
     | Cl ctx ->
         let rec loop ctx =
