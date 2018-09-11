@@ -677,7 +677,7 @@ and fmt_payload c ctx pld =
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )
 
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
-    ?(many = false) ({ast= typ} as xtyp) =
+    ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
@@ -696,10 +696,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   let parens = parenze_typ xtyp in
   ( hvbox_if box 0
   @@ wrap_if
-       ( match typ.ptyp_desc with
-       | Ptyp_tuple _ -> false
-       | Ptyp_alias _ when many -> true
-       | _ -> parens )
+       (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
        "(" ")"
   @@
   let ctx = Typ typ in
@@ -2805,9 +2802,7 @@ and fmt_constructor_arguments c ctx pre args =
   match args with
   | Pcstr_tuple [] -> fmt ""
   | Pcstr_tuple typs ->
-      let many = List.length typs > 1 in
-      fmt pre
-      $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c ~many))
+      fmt pre $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
       fmt pre
       $ wrap_fits_breaks "{" "}"
