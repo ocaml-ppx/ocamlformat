@@ -277,6 +277,9 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         exe input_name ;
       Format.eprintf
         "  BUG: formatting did not stabilize after %i iterations.\n%!" i
+  | Ocamlformat_bug (Sys_error msg)
+       when String.is_substring msg ~substring:"Permission denied" ->
+     Format.eprintf "%s: %s.\n%!" exe msg
   | Ocamlformat_bug exn when quiet_exn exn -> ()
   | Ocamlformat_bug exn -> (
       Format.eprintf
