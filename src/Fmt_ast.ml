@@ -2096,16 +2096,16 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         let txt = Longident.parse txt in
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc} when field_alias ~field:txt txt' ->
-            Cmts.fmt c.cmts ~eol:(fmt "@;<1 2>") loc @@ fmt_longident txt'
+            Cmts.fmt c.cmts ~eol:(fmt "@;<1 0>") loc @@ fmt_longident txt'
         | Pexp_constraint
             (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
           when field_alias ~field:txt txt' ->
-            Cmts.fmt c.cmts ~eol:(fmt "@;<1 2>") loc
+            Cmts.fmt c.cmts ~eol:(fmt "@;<1 0>") loc
             @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
             $ fmt " : "
             $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
-            Cmts.fmt c.cmts ~eol:(fmt "@;<1 2>") loc @@ fmt_longident txt
+            Cmts.fmt c.cmts ~eol:(fmt "@;<1 0>") loc @@ fmt_longident txt
             $ fmt " = "
             $ fmt_expression c (sub_exp ~ctx f)
       in
