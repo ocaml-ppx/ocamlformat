@@ -36,6 +36,7 @@ type result =
   | Invalid_source of exn
   | Unstable of int
   | Ocamlformat_bug of exn
+  | User_error of string
 
 val parse :
   (Lexing.lexbuf -> 'a) -> Conf.t -> In_channel.t -> 'a with_comments

@@ -112,6 +112,7 @@ type result =
   | Invalid_source of exn
   | Unstable of int
   | Ocamlformat_bug of exn
+  | User_error of string
 
 let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     ofile =
@@ -158,6 +159,9 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         Location.input_name := tmp ;
         In_channel.with_file tmp ~f:(parse xunit.parse conf)
       with
+      | exception Sys_error msg
+        when String.is_substring msg ~substring:"Permission denied" ->
+          User_error msg
       | exception e -> Ocamlformat_bug e
       | new_ ->
           let old = {ast; comments} in
@@ -225,7 +229,11 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
       try
         print_check ~i:1 ~conf ~ast ~comments ~source_txt
           ~source_file:input_file
-      with exc -> Ocamlformat_bug exc )
+      with
+      | Sys_error msg
+        when String.is_substring msg ~substring:"Permission denied" ->
+          User_error msg
+      | exc -> Ocamlformat_bug exc )
   in
   let fmt = Caml.Format.err_formatter in
   let exe = Filename.basename Sys.argv.(0) in
@@ -277,9 +285,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         exe input_name ;
       Format.eprintf
         "  BUG: formatting did not stabilize after %i iterations.\n%!" i
-  | Ocamlformat_bug (Sys_error msg)
-    when String.is_substring msg ~substring:"Permission denied" ->
-      Format.eprintf "%s: %s.\n%!" exe msg
+  | User_error msg -> Format.eprintf "%s: %s.\n%!" exe msg
   | Ocamlformat_bug exn when quiet_exn exn -> ()
   | Ocamlformat_bug exn -> (
       Format.eprintf
