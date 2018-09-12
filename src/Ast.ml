@@ -1553,6 +1553,18 @@ end = struct
                        | _ -> false )
                | _ -> false ) ->
         true
+    | { ast= {ptyp_desc= Ptyp_alias _}
+      ; ctx=
+          ( Str
+              { pstr_desc=
+                  Pstr_exception {pext_kind= Pext_decl (Pcstr_tuple t, _)}
+              }
+          | Sig
+              { psig_desc=
+                  Psig_exception {pext_kind= Pext_decl (Pcstr_tuple t, _)}
+              } ) }
+      when List.exists t ~f:(phys_equal typ) ->
+        true
     | _ -> (
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
       | Some (Some true) -> true

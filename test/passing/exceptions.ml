@@ -28,3 +28,5 @@ let _ =
   let exception Duplicate_found of (unit -> Base.Sexp.t) * string in
   let exception Duplicate_found of ((unit -> Base.Sexp.t) -> string) in
   ()
+
+exception Recursion_error of (Lv6Id.long as 'id) * (string list as 'stack)
