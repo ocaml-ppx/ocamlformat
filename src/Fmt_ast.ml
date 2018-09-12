@@ -2113,11 +2113,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       | [] -> wrap "{<" ">}" (Cmts.fmt_within c.cmts pexp_loc)
       | _ ->
           hvbox 0
-            (wrap_fits_breaks "{<" ">}"
-               ( fmt_expressions c width
-                   (fun (_, x) -> sub_exp ~ctx x)
-                   l "@;<0 1>; " field
-               $ fmt_atrs )) )
+            (wrap_if parens "(" ")"
+               (wrap_fits_breaks "{<" ">}" (list l "@;<0 1>; " field))) )
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"

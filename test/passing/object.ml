@@ -257,3 +257,8 @@ class type ['a] tsv =
    x = (Some k : t)
  ; (* Debug.print ("free var: "^string_of_int x); *)
    y = yet another value >}
+
+;;
+{< (* check: e is effectively the index associated with e, and check that
+      already in *)
+   x = y >}
