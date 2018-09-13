@@ -1,34 +1,3 @@
-profile=default
-quiet=false
-max-iters=2 (environment variable)
-comment-check=true
-wrap-fun-args=true
-wrap-comments=true (file ../.ocamlformat:2)
-type-decl=compact
-sequence-style=separator
-parse-docstrings=true
-parens-tuple=always
-ocp-indent-compat=false
-module-item-spacing=sparse (file passing/dir1/dir2/.ocamlformat:1)
-margin=77 (file ../.ocamlformat:1)
-let-open=short (command line)
-let-and=compact
-let-binding-spacing=compact
-leading-nested-match-parens=false
-infix-precedence=indent
-indicate-nested-or-patterns=true
-indicate-multiline-delimiters=true
-if-then-else=compact
-field-space=tight
-extension-sugar=preserve
-escape-strings=preserve
-escape-chars=preserve
-doc-comments=after
-disable=false
-break-struct=force
-cases-exp-indent=4
-break-string-literals=wrap
-break-sequences=false
-break-infix=wrap
-break-collection-expressions=fit-or-vertical
-break-cases=fit
+ocamlformat: unknown option `--disable-outside-detected-project'.
+Usage: ocamlformat [OPTION]... [SRC]...
+Try `ocamlformat --help' for more information.

@@ -42,6 +42,7 @@ type t =
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
+  ; single_case: [`Compact | `Sparse]
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
@@ -853,6 +854,22 @@ module Formatting = struct
       (fun conf x -> {conf with sequence_style= x})
       (fun conf -> conf.sequence_style)
 
+  let single_case =
+    let doc = "Style of single cases." in
+    let names = ["single_case"] in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) will try to format single cases in a single line."
+        )
+      ; ( "sparse"
+        , `Sparse
+        , "$(b,sparse) will always break the line before a single case." )
+      ]
+    in
+    C.choice ~names ~all ~doc ~section (fun conf x ->
+        {conf with single_case= x} )
+
   let type_decl =
     let doc = "Style of type declaration." in
     let names = ["type-decl"] in
@@ -1130,6 +1147,7 @@ let default_profile =
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
   ; sequence_style= C.default Formatting.sequence_style
+  ; single_case= C.default Formatting.single_case
   ; type_decl= C.default Formatting.type_decl
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
@@ -1200,6 +1218,7 @@ let janestreet_profile =
   ; parse_docstrings= true
   ; quiet= default_profile.quiet
   ; sequence_style= `Terminator
+  ; single_case= `Sparse
   ; type_decl= `Sparse
   ; wrap_comments= false
   ; wrap_fun_args= false }

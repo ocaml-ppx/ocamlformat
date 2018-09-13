@@ -1226,12 +1226,22 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
   | Var, _ -> (match e with Econs (t, e') -> devariantize e' t v)
   | Conv (s, proj, inj, t), VConv (s', v) when s = s' -> inj (devariantize e t v)
   | Sum ops, VSum (tag, a) ->
+<<<<<<< HEAD
     (try
        match List.assoc tag ops.sum_cases, a with
        | TCarg (sel, t), Some a -> ops.sum_inj (sel, devariantize e t a)
        | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
        | _ -> raise VariantMismatch
      with Not_found -> raise VariantMismatch)
+=======
+    ( try
+        match List.assoc tag ops.sum_cases, a with
+        | TCarg (sel, t), Some a -> ops.sum_inj (sel, devariantize e t a)
+        | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
+        | _ -> raise VariantMismatch
+      with
+    | Not_found -> raise VariantMismatch )
+>>>>>>> [JS] Improve: option 'single-case' = compact/sparse
   | _ -> raise VariantMismatch
 ;;
 
@@ -1654,8 +1664,14 @@ let rec filter : type a n. (a -> bool) -> (a, n) seq -> (a, n) filter =
   match s with
   | Snil -> Filter (LeZ NZ, Snil)
   | Scons (a, l) ->
+<<<<<<< HEAD
     (match filter f l with Filter (le, l') ->
        if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l'))
+=======
+    ( match filter f l with
+    | Filter (le, l') ->
+        if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l') )
+>>>>>>> [JS] Improve: option 'single-case' = compact/sparse
 ;;
 
 (* 4.1 AVL trees *)
@@ -2156,8 +2172,13 @@ let rec rule : type a b.
  fun v1 v2 ->
   match v1, v2 with
   | Lam (x, body), v ->
+<<<<<<< HEAD
     (match subst body (Bind (x, v, Id)) with Ex term ->
        (match mode term with Pexp -> Inl term | Pval -> Inr term))
+=======
+    ( match subst body (Bind (x, v, Id)) with
+    | Ex term -> (match mode term with Pexp -> Inl term | Pval -> Inr term) )
+>>>>>>> [JS] Improve: option 'single-case' = compact/sparse
   | Const (IntTo b, f), Const (IntR, x) -> Inr (Const (b, f x))
 ;;
 
@@ -7247,7 +7268,8 @@ let _ =
         end
       end in
       false
-    with Undefined_recursive_module _ -> true
+    with
+    | Undefined_recursive_module _ -> true
   in
   test 30 res true
 ;;
@@ -7630,7 +7652,8 @@ let _ =
       end
     end in
     test 71 true false
-  with Undefined_recursive_module _ -> test 71 true true
+  with
+  | Undefined_recursive_module _ -> test 71 true true
 ;;
 
 (* Coercions *)
