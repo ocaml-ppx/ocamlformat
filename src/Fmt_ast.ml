@@ -2638,7 +2638,7 @@ and fmt_cases c ctx cs =
         | ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
           , (Pexp_match _ | Pexp_try _) ) ->
             2
-        | _ -> 4
+        | _ -> c.conf.cases_exp_indent
       in
       let parens_here, parens_for_exp =
         if c.conf.leading_nested_match_parens then (false, None)

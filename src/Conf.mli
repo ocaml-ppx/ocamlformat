@@ -18,6 +18,7 @@ type t =
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; break_struct: bool
+  ; cases_exp_indent: int
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
