@@ -14,15 +14,17 @@
 open Migrate_ast
 open Parsetree
 
-let init, register_reset, leading_nested_match_parens =
+let init, register_reset, leading_nested_match_parens, parens_ite =
   let l = ref [] in
   let leading_nested_match_parens = ref false in
+  let parens_ite = ref false in
   let register f = l := f :: !l in
   let init conf =
     leading_nested_match_parens := conf.Conf.leading_nested_match_parens ;
+    parens_ite := conf.Conf.parens_ite ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, register, leading_nested_match_parens)
+  (init, register, leading_nested_match_parens, parens_ite)
 
 (** Predicates recognizing special symbol identifiers. *)
 
@@ -1949,6 +1951,13 @@ end = struct
             else exposed_right_exp Non_apply exp
         | _ -> exposed_right_exp Non_apply exp )
     in
+    let rec ifthenelse pexp_desc =
+      match pexp_desc with
+      | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
+          ifthenelse e.pexp_desc
+      | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
+      | _ -> false
+    in
     assert (check_exp xexp ; true) ;
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
@@ -1965,6 +1974,12 @@ end = struct
     | Pld _, {pexp_desc= Pexp_tuple _} -> false
     | Str {pstr_desc= Pstr_eval _}, {pexp_desc= Pexp_tuple _} -> false
     | Cl {pcl_desc= Pcl_apply _}, _ -> parenze ()
+    | Exp {pexp_desc= Pexp_ifthenelse (_, e, _)}, {pexp_desc}
+      when !parens_ite && e == exp && ifthenelse pexp_desc ->
+        true
+    | Exp {pexp_desc= Pexp_ifthenelse (_, _, Some e)}, {pexp_desc}
+      when !parens_ite && e == exp && ifthenelse pexp_desc ->
+        true
     | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _)}
       , { pexp_desc=
             Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, _) } )
