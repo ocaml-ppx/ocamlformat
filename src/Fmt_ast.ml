@@ -764,8 +764,12 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         $ fmt ".@ "
         $ fmt_core_type c ~box:false (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
-        (wrap_fits_breaks_if parens "(" ")"
+        (wrap_if parens "(" ")"
            (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)))
   | Ptyp_var s ->
       fmt "'"
@@ -897,8 +901,12 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         | Ppat_or _ | Ppat_tuple _ -> Some true
         | _ -> None
       in
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hovbox 0
-        (wrap_fits_breaks_if parens "(" ")"
+        (wrap_if parens "(" ")"
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ "
            $ Cmts.fmt c.cmts loc
@@ -999,8 +1007,12 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_array [] ->
       hvbox 0 (wrap_fits_breaks "[|" "|]" (Cmts.fmt_within c.cmts ppat_loc))
   | Ppat_array pats ->
+      let wrap =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        else wrap_str
+      in
       hvbox 0
-        (wrap_fits_breaks "[|" "|]"
+        (wrap "[|" "|]"
            (list pats "@;<0 1>; " (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_or _ ->
       let nested =
@@ -1086,8 +1098,11 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_if parens "(" ")"
            (fmt "lazy@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_unpack name ->
-      wrap_fits_breaks_if parens "(" ")"
-        (fmt "module@ " $ fmt_str_loc c name)
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
+      wrap_if parens "(" ")" (fmt "module@ " $ fmt_str_loc c name)
   | Ppat_exception pat ->
       cbox 2
         (wrap_if parens "(" ")"
@@ -1412,8 +1427,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                                 ( ({pexp_desc= Pexp_fun _; _} as retn_fun)
                                 , [] ); _ } as pld ) ] ) } ) ] ) ->
       let xargs, xbody = sugar_fun c (sub_exp ~ctx:(Str pld) retn_fun) in
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
-        (wrap_fits_breaks_if parens "(" ")"
+        (wrap_if parens "(" ")"
            ( fmt_expression c (sub_exp ~ctx e0)
            $ fmt "@\n"
            $ Cmts.fmt c.cmts loc (fmt "|>@\n")
@@ -1755,8 +1774,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
            $ fmt_atrs )
   | Pexp_ifthenelse _ ->
       let cnd_exps = sugar_ite c xexp in
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
-        (wrap_fits_breaks_if parens "(" ")"
+        (wrap_if parens "(" ")"
            (list_fl cnd_exps
               (fun ~first ~last (xcnd, xbch, pexp_attributes) ->
                 let parens_bch = parenze_exp xbch in
@@ -1917,8 +1940,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
               {ppat_desc= Ppat_or _ | Ppat_alias ({ppat_desc= Ppat_or _}, _)}
           } ] ->
           let leading_cmt = Cmts.fmt_before c.cmts e0.pexp_loc in
+          let wrap_if =
+            if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+            else wrap_if_str
+          in
           hvbox 0
-            (wrap_fits_breaks_if parens "(" ")"
+            (wrap_if parens "(" ")"
                ( leading_cmt
                $ hvbox 0
                    ( str keyword
@@ -1937,7 +1964,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             if c.conf.leading_nested_match_parens then (false, None)
             else (parenze_exp xpc_rhs, Some false)
           in
-          wrap_fits_breaks_if parens "(" ")"
+          let wrap_if =
+            if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+            else wrap_if_str
+          in
+          wrap_if parens "(" ")"
             (hovbox 2
                ( hvbox 0
                    ( str keyword
@@ -2008,9 +2039,13 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       let parens1 =
         match e1.pexp_desc with Pexp_sequence _ -> Some true | _ -> None
       in
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
         (hvbox_if parens 2
-           ( wrap_fits_breaks_if parens "(" ")"
+           ( wrap_if parens "(" ")"
                ( fmt_expression c ?parens:parens1 (sub_exp ~ctx e1)
                $ fmt " ;"
                $ fmt_extension_suffix c ext
@@ -2018,9 +2053,13 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                $ fmt_expression c (sub_exp ~ctx e2) )
            $ fmt_atrs ))
   | Pexp_sequence _ ->
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
         (hvbox_if parens 2
-           ( wrap_fits_breaks_if parens "(" ")"
+           ( wrap_if parens "(" ")"
                (list
                   (sugar_sequence c width xexp)
                   ( match c.conf.sequence_style with
@@ -2034,8 +2073,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                       (fmt_expression c) ))
            $ fmt_atrs ))
   | Pexp_setfield (e1, lid, e2) ->
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
-        ( wrap_fits_breaks_if parens "(" ")"
+        ( wrap_if parens "(" ")"
             ( fmt_expression c (sub_exp ~ctx e1)
             $ fmt "." $ fmt_longident_loc c lid $ fmt "@ <- "
             $ fmt_expression c (sub_exp ~ctx e2) )
@@ -2061,8 +2104,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       hvbox 0
         (wrap (list es "@,, " (sub_exp ~ctx >> fmt_expression c)) $ fmt_atrs)
   | Pexp_lazy e ->
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 2
-        ( wrap_fits_breaks_if parens "(" ")"
+        ( wrap_if parens "(" ")"
             (fmt "lazy@ " $ fmt_expression c (sub_exp ~ctx e))
         $ fmt_atrs )
   | Pexp_extension
@@ -2089,8 +2136,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         (wrap_fits_breaks_if parens "(" ")"
            (hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs))
   | Pexp_for (p1, e1, e2, dir, e3) ->
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
-        (wrap_fits_breaks_if parens "(" ")"
+        (wrap_if parens "(" ")"
            (hovbox 0
               ( hvbox 2
                   ( hvbox 0
@@ -2119,8 +2170,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             $ fmt_core_type c (sub_typ ~ctx t2) )
         $ fmt_atrs )
   | Pexp_while (e1, e2) ->
+      let wrap_if =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        else wrap_if_str
+      in
       hvbox 0
-        ( wrap_fits_breaks_if parens "(" ")"
+        ( wrap_if parens "(" ")"
             (hovbox 0
                ( hvbox 2
                    ( hvbox 0

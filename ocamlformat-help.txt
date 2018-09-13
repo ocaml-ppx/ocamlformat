@@ -25,6 +25,11 @@ OPTIONS (CODE FORMATTING STYLE)
        has the lowest priority, then the closer the directory is to the
        processed file, the higher the priority.
 
+       --braces-space={loose|tight}
+           Whether or not to use a space between insides braces. loose does.
+           tight does not use a space between a field name and the
+           punctuation symbol (`:`or `=`). The default value is loose.
+
        --break-cases={fit|nested|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested

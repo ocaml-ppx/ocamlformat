@@ -127,7 +127,11 @@ let wrap_k x = wrap_if_k true x
 
 let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 
+and wrap_if_str cnd pre suf = wrap_if_k cnd (str pre) (str suf)
+
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
+
+and wrap_str pre suf = wrap_k (str pre) (str suf)
 
 let wrap_if_breaks pre suf k fs =
   fits_breaks "" pre fs ; k fs ; fits_breaks "" suf fs

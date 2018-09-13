@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: [`Fit | `Nested | `All]
+  { braces_space: [`Tight | `Loose]
+  ; break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
@@ -379,6 +380,19 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with break_cases= x} )
+
+  let braces_space =
+    let doc = "Whether or not to use a space between insides braces." in
+    let names = ["braces-space"] in
+    let all =
+      [ ("loose", `Loose, "$(b,loose) does.")
+      ; ( "tight"
+        , `Tight
+        , "$(b,tight) does not use a space between a field name and the \
+           punctuation symbol (`:`or `=`)." ) ]
+    in
+    C.choice ~names ~all ~doc ~section (fun conf x ->
+        {conf with braces_space= x} )
 
   let break_collection_expressions =
     let doc =
@@ -869,7 +883,8 @@ let config =
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
 let default_profile =
-  { break_cases= C.default Formatting.break_cases
+  { braces_space= C.default Formatting.braces_space
+  ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
@@ -936,7 +951,8 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { break_cases= `Fit
+  { braces_space= `Tight
+  ; break_cases= `Fit
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical

@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: [`Fit | `Nested | `All]
+  { braces_space: [`Tight | `Loose]
+  ; break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
