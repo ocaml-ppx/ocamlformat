@@ -43,7 +43,7 @@ let invariant t =
   (let%ext rec f = () and g () = () in
    e)
 
-let _ : [%ext? (x : x)] = [%ext? (x : x)]
+let (_ : [%ext? (x : x)]) = [%ext? (x : x)]
 
 [%%ext
 11111111111111111111]

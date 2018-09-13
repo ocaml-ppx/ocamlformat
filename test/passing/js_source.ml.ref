@@ -7314,7 +7314,7 @@ end = struct
     | A
     | B
 
-  let _ : Strengthen.t = A
+  let (_ : Strengthen.t) = A
   let f x = if true then A else Strengthen.f B
 end
 
@@ -7335,13 +7335,13 @@ end = struct
     | A
     | B
 
-  let _ : Strengthen2.t = A
+  let (_ : Strengthen2.t) = A
   let f x = if true then A else Strengthen2.f B
 
   module M = struct
     type u = C
 
-    let _ : Strengthen2.M.u = C
+    let (_ : Strengthen2.M.u) = C
   end
 
   module rec R : sig
@@ -7349,8 +7349,8 @@ end = struct
   end = struct
     type v = D
 
-    let _ : R.v = D
-    let _ : Strengthen2.R.v = D
+    let (_ : R.v) = D
+    let (_ : Strengthen2.R.v) = D
   end
 end
 
