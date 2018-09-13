@@ -916,9 +916,9 @@ print_endline
   (string_of_int
      (f
         (Some
-           ( module struct
+           (module struct
              let x = false
-           end ))))
+           end))))
 
 type 'a ty =
   | Int : int ty
@@ -3178,11 +3178,11 @@ let make_set (type s) cmp =
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
   sort
-    ( module Set.Make (struct
+    (module Set.Make (struct
       type t = s
 
       let compare = cmp
-    end) )
+    end))
 ;;
 
 module type S = sig
@@ -3199,21 +3199,21 @@ let f (type a) (module M : S with type t = a) = M.x
 
 ;;
 f
-  ( module struct
+  (module struct
     type t = int
 
     let x = 1
-  end )
+  end)
 
 type 'a s = {s : (module S with type t = 'a)}
 
 ;;
 { s =
-    ( module struct
+    (module struct
       type t = int
 
       let x = 1
-    end ) }
+    end) }
 
 let f {s = (module M)} = M.x
 
@@ -3232,9 +3232,9 @@ end
 let f (module M : S) y (module N : S) = M.x + y + N.x
 
 let m =
-  ( module struct
+  (module struct
     let x = 3
-  end )
+  end)
 ;;
 
 (* Error *)
@@ -3252,9 +3252,9 @@ f m 1 m
 f
   m
   1
-  ( module struct
+  (module struct
     let x = 2
-  end )
+  end)
 
 ;;
 let (module M) = m in

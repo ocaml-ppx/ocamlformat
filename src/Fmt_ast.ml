@@ -1994,8 +1994,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
+      let wrap =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        else wrap_str
+      in
       opn
-      $ wrap_fits_breaks "(" ")"
+      $ wrap "(" ")"
           ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
           $ Option.call ~f:epi )
       $ fmt_atrs
@@ -3652,6 +3656,10 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
+      let wrap =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        else wrap_str
+      in
       { empty with
         pro=
           Some
@@ -3660,7 +3668,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; bdy=
           Cmts.fmt c.cmts pmod_loc
           @@ hvbox 2
-               (wrap_fits_breaks "(" ")"
+               (wrap "(" ")"
                   ( fmt "val "
                   $ fmt_expression c (sub_exp ~ctx e1)
                   $ fmt "@;<1 2>: "
@@ -3675,6 +3683,10 @@ and fmt_module_expr c ({ast= m} as xmod) =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
+      let wrap =
+        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        else wrap_str
+      in
       { empty with
         pro=
           Option.some_if has_pro
@@ -3683,7 +3695,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; bdy=
           Cmts.fmt c.cmts pmod_loc
           @@ hvbox 2
-               (wrap_fits_breaks "(" ")"
+               (wrap "(" ")"
                   (fmt "val " $ fmt_expression c (sub_exp ~ctx e1)))
       ; epi=
           Option.some_if has_epi
