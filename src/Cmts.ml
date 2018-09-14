@@ -563,7 +563,9 @@ let remaining_comments t =
     Hashtbl.to_alist t
     |> List.concat_map ~f:(fun (ast_loc, cmts) ->
            List.map cmts ~f:(fun (cmt_txt, cmt_loc) ->
-               ( before_after
+               ( cmt_loc
+               , cmt_txt
+               , before_after
                , let open Sexp in
                  List
                    [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
