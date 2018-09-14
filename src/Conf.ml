@@ -15,6 +15,7 @@ type t =
   { break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; break_struct: bool
   ; cases_exp_indent: int
@@ -414,6 +415,12 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with break_infix= x} )
+
+  let break_sequences =
+    let doc = "Break sequences." in
+    let names = ["break-sequences"] in
+    C.flag ~names ~default:false ~doc ~section (fun conf x ->
+        {conf with break_sequences= x} )
 
   let break_string_literals =
     let doc = "Break string literals." in
@@ -884,6 +891,7 @@ let default_profile =
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
+  ; break_sequences= C.default Formatting.break_sequences
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
@@ -953,6 +961,7 @@ let janestreet_profile =
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
+  ; break_sequences= true
   ; break_string_literals= `Wrap
   ; break_struct= default_profile.break_struct
   ; cases_exp_indent= 2

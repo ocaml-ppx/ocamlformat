@@ -2031,6 +2031,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                     list grp
                       ( match c.conf.sequence_style with
                       | `Separator -> " ;@ "
+                      | `Terminator when c.conf.break_sequences ->
+                          ";@;<1000 0>"
                       | `Terminator -> ";@ " )
                       (fmt_expression c) ))
            $ fmt_atrs ))

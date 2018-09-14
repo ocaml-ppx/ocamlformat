@@ -44,6 +44,9 @@ OPTIONS (CODE FORMATTING STYLE)
            fit-or-vertical vertically breaks expressions if they do not fit
            on a single line. The default value is wrap.
 
+       --break-sequences
+           Break sequences.
+
        --break-string-literals={wrap|newlines|never}
            Break string literals. wrap mode wraps string literals at the
            margin. Quoted strings such as {id|...|id} are preserved. newlines
