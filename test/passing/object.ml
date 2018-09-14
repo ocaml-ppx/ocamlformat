@@ -176,8 +176,8 @@ class a = object end
 
 (** floatting *)
 
+(** about b *)
 and b = object end
- (** about b *)
 
 class type x =
   object

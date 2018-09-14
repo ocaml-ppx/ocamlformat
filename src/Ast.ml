@@ -164,25 +164,31 @@ let rec is_sugared_list exp =
   | _ -> false
 
 let doc_atrs atrs =
-  let doc, rev_atrs =
-    List.fold atrs ~init:(None, []) ~f:(fun (doc, rev_atrs) atr ->
+  let docs, rev_atrs =
+    List.fold atrs ~init:([], []) ~f:(fun (docs, rev_atrs) atr ->
         let open Asttypes in
-        match (doc, atr) with
-        | ( None
-          , ( { txt= ("ocaml.doc" | "ocaml.text") as txt
-              ; loc= {loc_ghost= true} }
-            , PStr
-                [ { pstr_desc=
-                      Pstr_eval
-                        ( { pexp_desc=
-                              Pexp_constant (Pconst_string (doc, None))
-                          ; pexp_loc= loc
-                          ; pexp_attributes= [] }
-                        , [] ) } ] ) ) ->
-            (Some ({txt= doc; loc}, String.equal "ocaml.text" txt), rev_atrs)
-        | _ -> (doc, atr :: rev_atrs) )
+        match atr with
+        | ( { txt= ("ocaml.doc" | "ocaml.text") as txt
+            ; loc= {loc_ghost= true} }
+          , PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, None))
+                        ; pexp_loc= loc
+                        ; pexp_attributes= [] }
+                      , [] ) } ] ) -> (
+          match (txt, docs) with
+          | "ocaml.doc", (_, false) :: _ ->
+              (* cannot put two doc comment next to each other *)
+              (docs, atr :: rev_atrs)
+          | _ ->
+              ( ({txt= doc; loc}, String.equal "ocaml.text" txt) :: docs
+              , rev_atrs ) )
+        | _ -> (docs, atr :: rev_atrs) )
   in
-  (doc, List.rev rev_atrs)
+  let docs = match docs with [] -> None | l -> Some (List.rev l) in
+  (docs, List.rev rev_atrs)
 
 module type Module_item = sig
   type t

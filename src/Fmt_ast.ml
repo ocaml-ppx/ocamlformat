@@ -591,19 +591,25 @@ let break_cases_level c =
 
 let doc_atrs = Ast.doc_atrs
 
-let fmt_docstring c ?pro ?epi doc =
-  opt doc (fun ({txt; loc}, floating) ->
-      let epi =
-        match epi with
-        | Some _ -> epi
-        | None when floating -> Some (fmt "@,")
-        | None -> None
+let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
+  list_pn (Option.value ~default:[] doc)
+    (fun ?prev:_ ({txt; loc}, floating) ?next ->
+      let need_break =
+        (not standalone)
+        &&
+        match (next, floating) with
+        | None, true -> true
+        | Some (_, true), true -> false
+        | Some (_, false), true -> true
+        | _, false -> false
       in
       Cmts.fmt c.cmts loc
       @@ vbox_if (Option.is_none pro) 0
            ( Option.call ~f:pro $ fmt "(**"
            $ (if c.conf.wrap_comments then fill_text else str) txt
-           $ fmt "*)" $ Option.call ~f:epi ) )
+           $ fmt "*)" $ fmt_if need_break "\n"
+           $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi)
+           ) )
 
 let fmt_extension_suffix c ext =
   opt ext (fun {txt; loc} -> str "%" $ Cmts.fmt c.cmts loc (str txt))
@@ -2518,7 +2524,7 @@ and fmt_class_field c ctx (cf : class_field) =
              $ fmt_expression c (sub_exp ~ctx e)
          | Pcf_attribute atr ->
              let doc, atrs = doc_atrs [atr] in
-             fmt_docstring c ~epi:(fmt "") doc
+             fmt_docstring c ~standalone:true ~epi:(fmt "") doc
              $ fmt_attributes c ~key:"@@@" atrs
          | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
@@ -2559,7 +2565,7 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
              $ fmt_core_type c (sub_typ ~ctx t2)
          | Pctf_attribute atr ->
              let doc, atrs = doc_atrs [atr] in
-             fmt_docstring c ~epi:(fmt "") doc
+             fmt_docstring c ~standalone:true ~epi:(fmt "") doc
              $ fmt_attributes c ~key:"@@@" atrs
          | Pctf_extension ext -> fmt_extension c ctx "%%" ext )
   $ fmt_atrs
@@ -2742,12 +2748,7 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
   let doc, atrs = doc_atrs ptype_attributes in
   Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ptype_loc
   @@ hvbox 0
-       ( fmt_docstring c
-           ~epi:
-             ( match doc with
-             | Some (_, true) -> fmt "\n@\n"
-             | _ -> fmt "@\n" )
-           doc
+       ( fmt_docstring c ~epi:(fmt "@\n") doc
        $ hvbox 0
            ( hvbox 2
                ( str pre
@@ -3050,7 +3051,8 @@ and fmt_signature_item c {ast= si} =
   match si.psig_desc with
   | Psig_attribute atr ->
       let doc, atrs = doc_atrs [atr] in
-      fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
+      fmt_docstring c ~standalone:true ~epi:(fmt "") doc
+      $ fmt_attributes c ~key:"@@@" atrs
   | Psig_exception exc ->
       hvbox 2
         (fmt_exception ~pre:(fmt "exception@ ") c (fmt " of ") ctx exc)
@@ -3113,13 +3115,7 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
       @@ fun c ->
       let doc, atrs = doc_atrs pci_attributes in
       fmt_if (not first) "\n@\n"
-      $ Cmts.fmt c.cmts pci_loc
-        @@ fmt_docstring c
-             ~epi:
-               ( match doc with
-               | Some (_, true) -> fmt "\n@\n"
-               | _ -> fmt "@\n" )
-             doc
+      $ Cmts.fmt c.cmts pci_loc @@ fmt_docstring c ~epi:(fmt "@\n") doc
       $ hovbox 2
           ( hvbox 2
               ( str (if first then pre else "and")
@@ -3151,13 +3147,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
       in
       let doc, atrs = doc_atrs pci_attributes in
       fmt_if (not first) "\n@\n"
-      $ Cmts.fmt c.cmts pci_loc
-        @@ fmt_docstring c
-             ~epi:
-               ( match doc with
-               | Some (_, true) -> fmt "\n@\n"
-               | _ -> fmt "@\n" )
-             doc
+      $ Cmts.fmt c.cmts pci_loc @@ fmt_docstring c ~epi:(fmt "@\n") doc
       $ hovbox 2
           ( hovbox 2
               ( str (if first then "class" else "and")
@@ -3206,7 +3196,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
     Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
   in
   hvbox 0
-    ( fmt_docstring c ~epi:(fmt "@,") doc
+    ( fmt_docstring c ~epi:(fmt "@\n") doc
     $ opn_b
     $ (if Option.is_some epi_t then open_hovbox else open_hvbox) 0
     $ opn_t
@@ -3659,7 +3649,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   match si.pstr_desc with
   | Pstr_attribute atr ->
       let doc, atrs = doc_atrs [atr] in
-      fmt_docstring c ~epi:(fmt "") doc $ fmt_attributes c ~key:"@@@" atrs
+      fmt_docstring c ~standalone:true ~epi:(fmt "") doc
+      $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
       fmt_if (not skip_double_semi) ";;@\n"
@@ -3672,13 +3663,15 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
+      let doc, atrs = doc_atrs pincl_attributes in
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
       opn
+      $ fmt_docstring c ~epi:(fmt "@\n") doc
       $ ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
         $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
-        $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" pincl_attributes )
+        $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open open_descr -> fmt_open_description c open_descr
@@ -3749,7 +3742,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = binding in
   update_config_maybe_disabled c pvb_loc pvb_attributes
   @@ fun c ->
-  let doc, atrs = doc_atrs pvb_attributes in
+  let doc1, atrs = doc_atrs pvb_attributes in
+  let doc2, atrs = doc_atrs atrs in
   let xpat, xargs, fmt_cstr, xbody =
     let ({ast= pat} as xpat) =
       match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
@@ -3835,9 +3829,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let indent =
     match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
-  fmt_docstring c
-    ~epi:(match doc with Some (_, true) -> fmt "\n@\n" | _ -> fmt "@\n")
-    doc
+  fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c.cmts pvb_loc
   $ hvbox indent
       ( open_hovbox 2
@@ -3855,6 +3847,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ Cmts.fmt_after c.cmts pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
+  $ fmt_docstring c ~pro:(fmt "@ ") doc2
 
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
   let {pmb_name; pmb_expr; pmb_attributes; pmb_loc} = pmb in
