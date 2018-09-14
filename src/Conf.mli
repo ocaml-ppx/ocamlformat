@@ -15,7 +15,6 @@ type t =
   { break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
-  ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap]
         (** How to potentially break string literals into new lines. *)
   ; break_struct: bool
@@ -45,7 +44,7 @@ type t =
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_tuple: [`Always | `Multi_line_only]
   ; quiet: bool
-  ; sequence_style: [`Separator | `Terminator]
+  ; sequence_style: [`Separator | `Terminator | `Breaker]
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
