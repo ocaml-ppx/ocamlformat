@@ -251,7 +251,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         | Warning50 _ -> " (misplaced documentation comments - warning 50)"
         | _ -> ""
       in
-      Format.eprintf "%s: ignoring %S%s\n%!" exe input_file reason ;
+      Format.eprintf "%s: ignoring %S%s\n%!" exe input_name reason ;
       match[@ocaml.warning "-28"] exn with
       | Syntaxerr.Error _ | Lexer.Error _ ->
           Location.report_exception fmt exn
@@ -262,14 +262,14 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   | Unstable i when i <= 1 ->
       Format.eprintf
         "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
-        input_file
+        input_name
   | Unstable i ->
       Format.eprintf
         "%s: Cannot process %S.\n\
         \  Please report this bug at \
          https://github.com/ocaml-ppx/ocamlformat/issues.\n\
          %!"
-        exe input_file ;
+        exe input_name ;
       Format.eprintf
         "  BUG: formatting did not stabilize after %i iterations.\n%!" i
   | Ocamlformat_bug exn when quiet_exn exn -> ()
@@ -279,7 +279,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         \  Please report this bug at \
          https://github.com/ocaml-ppx/ocamlformat/issues.\n\
          %!"
-        exe input_file ;
+        exe input_name ;
       match[@ocaml.warning "-28"] exn with
       | Syntaxerr.Error _ | Lexer.Error _ ->
           Format.eprintf "  BUG: generating invalid ocaml syntax.\n%!" ;
