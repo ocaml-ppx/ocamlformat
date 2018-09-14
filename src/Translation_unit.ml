@@ -305,7 +305,10 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           ( match m with
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
-                  Caml.Format.eprintf "%!@{<loc>%a@}:@,%S\n%!"
+                  Caml.Format.eprintf
+                    "%!@{<loc>%a@}:@,@{<error>Error@}: Comment (* %s *) \
+                     dropped.\n\
+                     %!"
                     Location.print_loc loc (String.strip msg) )
           | _ -> () ) ;
           if Conf.debug then
