@@ -78,3 +78,15 @@ let _ =
 
 let _ = f (for i = 0 to 1 do () done) (while true do () done)
 let _ = f (for%ext i = 0 to 1 do () done) (while%ext true do () done)
+
+let _ = function%ext x -> x
+
+let _ = f (function%ext x -> x)
+
+let _ = f (function%ext x -> x) x
+
+let _ = [%ext function x -> x]
+
+let _ = f [%ext function x -> x]
+
+let _ = f [%ext function x -> x] x
