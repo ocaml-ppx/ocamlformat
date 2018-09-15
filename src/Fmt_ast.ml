@@ -1142,7 +1142,7 @@ and fmt_fun_args c ?(pro = fmt "") args =
     (not (List.is_empty args))
     (pro $ list args "@;" (fun x -> hovbox 0 (fmt_fun_arg x)))
 
-and fmt_body c ({ast= body} as xbody) =
+and fmt_body c ?ext ({ast= body} as xbody) =
   let ctx = Exp body in
   let parens = parenze_exp xbody in
   match body with
@@ -1153,6 +1153,7 @@ and fmt_body c ({ast= body} as xbody) =
       $ Cmts.fmt c.cmts pexp_loc
           (wrap_if parens "(" ")"
              ( fmt "function"
+             $ fmt_extension_suffix c ext
              $ fmt_attributes c ~key:"@" pexp_attributes
              $ close_box $ fmt "@ " $ fmt_cases c ctx cs ))
   | _ ->
@@ -1686,12 +1687,14 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                     0 (fmt_fun_args c xargs)
                 $ fmt "@ " )
             $ fmt "->" )
-          $ fmt_body c xbody )
+          $ fmt_body c ?ext xbody )
         $ fits_breaks_if parens ")" "@ )" )
   | Pexp_function cs ->
       wrap_if parens "(" ")"
         ( hvbox 2
-            (fmt "function" $ fmt_attributes c ~key:"@" pexp_attributes)
+            ( fmt "function"
+            $ fmt_extension_suffix c ext
+            $ fmt_attributes c ~key:"@" pexp_attributes )
         $ fmt "@ "
         $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
@@ -3845,7 +3848,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
             $ Option.call ~f:fmt_cstr )
         $ fmt "@;<1 2>=" )
-      $ fmt_body c xbody
+      $ fmt_body c ?ext xbody
       $ Cmts.fmt_after c.cmts pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )

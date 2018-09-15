@@ -1774,7 +1774,6 @@ end = struct
          |Pexp_construct
             ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [_; e]})
          |Pexp_construct (_, Some e)
-         |Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}])
          |Pexp_fun (_, _, _, e)
          |Pexp_ifthenelse (_, e, None)
          |Pexp_ifthenelse (_, _, Some e)
@@ -1800,6 +1799,8 @@ end = struct
                             ; pexp_attributes= [] } as e )
                         , _ ) } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e ->
+            continue e
+        | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
             continue e
         | Pexp_let (_, _, e)
          |Pexp_letexception (_, e)
