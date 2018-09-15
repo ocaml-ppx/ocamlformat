@@ -767,7 +767,11 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
            (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)))
-  | Ptyp_var s -> fmt "'" $ str s
+  | Ptyp_var s ->
+      fmt "'"
+      (* [' a'] is a valid type variable *)
+      $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
+      $ str s
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs =
         match rfs with
