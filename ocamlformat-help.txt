@@ -249,8 +249,7 @@ OPTIONS
        --root=DIR
            Root of the project. If specified, only take into account
            .ocamlformat configuration files inside DIR and its
-           subdirectories. Input files and project root need to be specified
-           using the same symbolic or hard links.
+           subdirectories.
 
        --use-file
            Parse file with unrecognized extension as a use_file.
