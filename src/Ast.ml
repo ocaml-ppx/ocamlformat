@@ -144,11 +144,13 @@ let is_symbol e = is_prefix e || is_infix e || is_index_op e
 
 let is_sequence exp =
   match exp.pexp_desc with
-  | Pexp_sequence _
-   |Pexp_extension
-      ( _
-      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
-      ) ->
+  | Pexp_sequence _ -> true
+  | Pexp_extension
+      ( ext
+      , PStr
+          [ { pstr_desc= Pstr_eval (({pexp_desc= Pexp_sequence _} as e), []); _
+            } ] )
+    when Source.extension_using_sugar ~name:ext ~payload:e ->
       true
   | _ -> false
 
