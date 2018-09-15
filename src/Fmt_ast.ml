@@ -634,6 +634,12 @@ let rec fmt_attribute c pre = function
       fmt_or (String.equal txt "ocaml.text") "@ " " "
       $ fmt "(**" $ str doc $ fmt "*)"
   | ({loc} as name), pld ->
+      let cmts_last =
+        match pld with
+        | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
+            Cmts.fmt_after c.cmts pstr_loc $ Cmts.fmt_after c.cmts pexp_loc
+        | _ -> fmt ""
+      in
       let protect_token =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
       in
@@ -643,12 +649,19 @@ let rec fmt_attribute c pre = function
              ( str pre $ fmt_str_loc c name
              $ fmt_payload c (Pld pld) pld
              $ fmt_if protect_token " " ))
+      $ cmts_last
 
 and fmt_extension c ctx key (({loc} as ext), pld) =
   match (pld, ctx) with
   | PStr [({pstr_desc= Pstr_value _; _} as si)], (Pld _ | Str _ | Top) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | _ ->
+      let cmts_last =
+        match pld with
+        | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
+            Cmts.fmt_after c.cmts pstr_loc $ Cmts.fmt_after c.cmts pexp_loc
+        | _ -> fmt ""
+      in
       let protect_token =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
       in
@@ -657,6 +670,7 @@ and fmt_extension c ctx key (({loc} as ext), pld) =
           ( str key $ fmt_str_loc c ext
           $ fmt_payload c (Pld pld) pld
           $ fmt_if protect_token " " )
+      $ cmts_last
 
 and fmt_attributes c ?(pre = fmt "") ?(suf = fmt "") ?(box = true) ~key
     attrs =
@@ -1163,11 +1177,13 @@ and fmt_body c ?ext ({ast= body} as xbody) =
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
-and fmt_index_op c ctx ~parens ?set (s, opn, cls) l is =
+and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
     (hovbox 0
        ( fmt_expression c (sub_exp ~ctx l)
+       $ Cmts.fmt_before c.cmts loc
        $ str (Printf.sprintf "%s%c" s opn)
+       $ Cmts.fmt_after c.cmts loc
        $ list is "@,, " (fun i -> fmt_expression c (sub_exp ~ctx i))
        $ str (Printf.sprintf "%c" cls)
        $
@@ -1405,31 +1421,30 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                         $ fmt_fun_args c xargs $ fmt "@ ->" ) )
                   $ fmt "@ " $ fmt_expression c xbody )) ))
   | Pexp_apply
-      ( {pexp_desc= Pexp_ident {txt; loc}; pexp_attributes= []; pexp_loc}
+      ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc}
       , (Nolabel, s) :: indices )
-    when Option.is_some (index_op_get_sugar txt indices) ->
-      let op, indices = Option.value_exn (index_op_get_sugar txt indices) in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc
-        ~after:(List.last_exn indices).pexp_loc ;
-      Cmts.fmt_before c.cmts loc $ fmt_index_op c ctx ~parens op s indices
-  | Pexp_apply
-      ( {pexp_desc= Pexp_ident {txt; loc}; pexp_attributes= []; pexp_loc}
-      , (Nolabel, s) :: indices_and_e )
-    when Option.is_some (index_op_set_sugar txt indices_and_e) ->
-      let op, indices, e =
-        Option.value_exn (index_op_set_sugar txt indices_and_e)
+    when Option.is_some (index_op_get_sugar ident indices) ->
+      let op, indices =
+        Option.value_exn (index_op_get_sugar ident indices)
       in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:e.pexp_loc ;
-      Cmts.fmt_before c.cmts loc
-      $ fmt_index_op c ctx ~parens op s indices ~set:e
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
+      fmt_index_op c ctx ~parens op s indices
+  | Pexp_apply
+      ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc}
+      , (Nolabel, s) :: indices_and_e )
+    when Option.is_some (index_op_set_sugar ident indices_and_e) ->
+      let op, indices, e =
+        Option.value_exn (index_op_set_sugar ident indices_and_e)
+      in
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
+      fmt_index_op c ctx ~parens op s indices ~set:e
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident ":="; loc}
         ; pexp_attributes= []
         ; pexp_loc }
       , [(Nolabel, r); (Nolabel, v)] )
     when is_simple c.conf width (sub_exp ~ctx r) ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:r.pexp_loc
-        ~after:v.pexp_loc ;
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       wrap_if parens "(" ")"
         (hovbox 0
            ( fmt_expression c (sub_exp ~ctx r)
@@ -1458,9 +1473,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
           ; pexp_loc } as op )
       , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_ident _} as r))] )
     when String.is_prefix ~prefix:"#" maybe_hash ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:l.pexp_loc
-        ~after:r.pexp_loc ;
-      Cmts.relocate c.cmts ~src:loc ~before:pexp_loc ~after:pexp_loc ;
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       wrap_if parens "(" ")"
         ( fmt_expression c (sub_exp ~ctx l)
         $ fmt_expression c (sub_exp ~ctx op)
@@ -1486,9 +1499,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
     when Option.is_some (index_op_get id) -> (
     match index_op_get id with
     | Some index_op ->
-        Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:i.pexp_loc ;
-        Cmts.fmt_before c.cmts loc
-        $ fmt_index_op c ctx ~parens index_op s [i]
+        Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+        fmt_index_op c ctx ~parens {txt= index_op; loc} s [i]
     | None -> impossible "previous match" )
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_loc}
@@ -1496,9 +1508,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
     when Option.is_some (index_op_set id) -> (
     match index_op_set id with
     | Some index_op ->
-        Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:e.pexp_loc ;
-        Cmts.fmt_before c.cmts loc
-        $ fmt_index_op c ctx ~parens index_op s [i] ~set:e
+        Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+        fmt_index_op c ctx ~parens {txt= index_op; loc} s [i] ~set:e
     | None -> impossible "previous match" )
   | Pexp_apply (e0, [(Nolabel, e1)]) when is_prefix e0 ->
       hvbox 2
@@ -2507,13 +2518,8 @@ and fmt_class_field c ctx (cf : class_field) =
           | {pexp_desc= Pexp_constraint _}, Some _ -> (poly, xbody)
           | _, poly -> (poly, xbody)
         in
-        ( match xargs with
-        | [] ->
-            Cmts.relocate c.cmts ~src:pexp_loc ~before:xbody.ast.pexp_loc
-              ~after:e.ast.pexp_loc
-        | _ :: _ ->
-            Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
-              ~after:e.ast.pexp_loc ) ;
+        Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
+          ~after:e.ast.pexp_loc ;
         ( [ fmt_if (not (List.is_empty xargs)) "@;<1 2>"
             $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
           ; opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
@@ -3808,8 +3814,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             , {ptyp_desc= Ptyp_poly ([], typ1)} )
         , Pexp_constraint (_, typ2) )
         when Poly.equal typ1 typ2 ->
-          Cmts.relocate c.cmts ~src:pvb_pat.ppat_loc
-            ~before:pvb_expr.pexp_loc ~after:pvb_expr.pexp_loc ;
+          Cmts.relocate c.cmts ~src:pvb_pat.ppat_loc ~before:pat.ppat_loc
+            ~after:pat.ppat_loc ;
           sub_pat ~ctx:(Pat pvb_pat) pat
       | _ -> sub_pat ~ctx pvb_pat
     in
@@ -3825,7 +3831,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       let sugar_polynewtype pat body =
         let ctx = Pat pat in
         match pat.ppat_desc with
-        | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, typ)}) ->
+        | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, _typ)}) ->
             let rec sugar_polynewtype_ xpat pvars0 pvars body =
               let ctx = Exp body in
               match (pvars, body.pexp_desc) with
@@ -3839,7 +3845,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
               | _ -> None
             in
             Cmts.relocate c.cmts ~src:pat.ppat_loc ~before:pat2.ppat_loc
-              ~after:typ.ptyp_loc ;
+              ~after:pat2.ppat_loc ;
             sugar_polynewtype_ (sub_pat ~ctx pat2) pvars pvars body
         | _ -> None
       in

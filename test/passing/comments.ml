@@ -110,3 +110,22 @@ end
 let f = (* comment *) function x -> x
 
 let foo x = (* comment *) (y : z)
+
+
+let _ = (*a*)s(*b*).(*c*)((*d*)i(*e*))
+let _ = (*a*)s(*b*).(*c*)((*d*)i(*e*))(*f*)<-(*g*)x 
+
+let _ = (*a*)s(*b*).(*c*)[(*d*)i(*e*)]
+let _ = (*a*)s(*b*).(*c*)[(*d*)i(*e*)](*f*)<-(*g*)x 
+
+let _ = (*a*)s(*b*).(*c*){(*d*)i(*e*)}
+let _ = (*a*)s(*b*).(*c*){(*d*)i(*e*)}(*f*)<-(*g*)x 
+
+let _ = (*a*)s(*b*).%{(*c*)i(*d*)}
+let _ = (*a*)s(*b*).%{(*c*)i(*d*)}(*e*)<-(*f*)x 
+
+
+type t = {
+a : int [@default a]
+(* comment *)
+;  b : flag }

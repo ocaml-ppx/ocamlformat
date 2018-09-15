@@ -31,14 +31,15 @@ val index_op_get : string -> (string * Char.t * Char.t) option
 val index_op_set : string -> (string * Char.t * Char.t) option
 
 val index_op_get_sugar :
-     Longident.t
+     Longident.t Location.loc
   -> (Asttypes.arg_label * expression) list
-  -> ((string * Char.t * Char.t) * expression list) option
+  -> ((string * Char.t * Char.t) Location.loc * expression list) option
 
 val index_op_set_sugar :
-     Longident.t
+     Longident.t Location.loc
   -> (Asttypes.arg_label * expression) list
-  -> ((string * Char.t * Char.t) * expression list * expression) option
+  -> ((string * Char.t * Char.t) Location.loc * expression list * expression)
+     option
 
 val is_symbol_id : string -> bool
 (** Holds of prefix or infix symbols. *)
