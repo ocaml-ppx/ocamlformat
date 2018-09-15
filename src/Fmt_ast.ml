@@ -2784,12 +2784,14 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
     fmt_if_k
       (not (List.is_empty cstrs))
       ( fmt "@ "
-      $ hvbox 2
-          (list cstrs "@ " (fun (t1, t2, _) ->
-               fmt "constraint@ "
-               $ fmt_core_type c (sub_typ ~ctx t1)
-               $ fmt " =@ "
-               $ fmt_core_type c (sub_typ ~ctx t2) )) )
+      $ hvbox 0
+          (list cstrs "@ " (fun (t1, t2, loc) ->
+               Cmts.fmt c.cmts loc
+                 (hvbox 2
+                    ( fmt "constraint@ "
+                    $ fmt_core_type c (sub_typ ~ctx t1)
+                    $ fmt " =@ "
+                    $ fmt_core_type c (sub_typ ~ctx t2) )) )) )
   in
   let { ptype_name= {txt; loc}
       ; ptype_params
