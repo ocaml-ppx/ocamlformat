@@ -4928,7 +4928,6 @@ end
 
 module type BAR = sig
   (* Works: module rec A : (sig include FOO with type t = < b:B.t > end) *)
-
   module rec A : (FOO with type t = < b: B.t >)
   and B : FOO
 end
@@ -8085,11 +8084,9 @@ module type VALUE = sig
   type value
 
   (* a Lua value *)
-
   type state
 
   (* the state of a Lua interpreter *)
-
   type usert
   (* a user-defined value *)
 end
