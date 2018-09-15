@@ -90,3 +90,7 @@ let _ = [%ext function x -> x]
 let _ = f [%ext function x -> x]
 
 let _ = f [%ext function x -> x] x
+
+let _ = f ([%ext e] [@attr]) x
+
+let _ = a ;%ext b ; [%ext (a ; b)]

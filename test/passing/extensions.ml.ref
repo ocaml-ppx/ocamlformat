@@ -1,6 +1,6 @@
 let () = [%ext expr] ; ()
 
-let _ = [%ext match x with () -> ()] [@attr y]
+let _ = ([%ext match x with () -> ()] [@attr y])
 
 let _ =
   match%ext x with () ->
@@ -78,9 +78,9 @@ let _ =
   ; x ]
 
 let _ =
-  [%expr
-    let x = e in
-    f y] [@x]
+  ( [%expr
+      let x = e in
+      f y] [@x] )
 
 let _ =
   f
@@ -111,3 +111,10 @@ let _ = [%ext function x -> x]
 let _ = f [%ext function x -> x]
 
 let _ = f [%ext function x -> x] x
+
+let _ = f ([%ext e] [@attr]) x
+
+let _ =
+  a ;%ext
+  b ;
+  [%ext a ; b]
