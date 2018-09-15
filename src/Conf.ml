@@ -1211,7 +1211,7 @@ let parse_line config ~verbose ~from s =
 
 let is_project_root dir =
   match !root with
-  | Some root -> String.equal dir root
+  | Some root -> Fpath.(equal (v dir |> normalize) (v root |> normalize))
   | None ->
       List.exists project_root_witness ~f:(fun name ->
           Caml.Sys.file_exists (Filename.concat dir name) )
