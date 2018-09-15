@@ -436,8 +436,9 @@ module Formatting = struct
   let cases_exp_indent =
     let docv = "COLS" in
     let doc = "Indentation of cases expressions ($(docv) columns)." in
-    C.int ~names:["cases-exp-indent"] ~default:4 ~doc ~docv ~section
-      ~allow_inline:false (fun conf x -> {conf with cases_exp_indent= x} )
+    let names = ["cases-exp-indent"; "ocpi_match_clause"] in
+    C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with cases_exp_indent= x} )
 
   let break_struct =
     let doc = "Break struct-end module items." in
