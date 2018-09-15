@@ -1800,8 +1800,6 @@ end = struct
                         , _ ) } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e ->
             continue e
-        | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
-            continue e
         | Pexp_let (_, _, e)
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, e) -> (
