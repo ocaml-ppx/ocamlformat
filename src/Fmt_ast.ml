@@ -2156,16 +2156,16 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         let txt = Longident.parse txt in
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc} when field_alias ~field:txt txt' ->
-            Cmts.fmt c.cmts ~eol:(fmt "") loc @@ fmt_longident txt'
+            Cmts.fmt c.cmts ~eol:(fmt "@;<1 3>") loc @@ fmt_longident txt'
         | Pexp_constraint
             (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
           when field_alias ~field:txt txt' ->
-            Cmts.fmt c.cmts ~eol:(fmt "") loc
+            Cmts.fmt c.cmts ~eol:(fmt "@;<1 3>") loc
             @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
             $ fmt " : "
             $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
-            Cmts.fmt c.cmts ~eol:(fmt "") loc @@ fmt_longident txt
+            Cmts.fmt c.cmts ~eol:(fmt "@;<1 3>") loc @@ fmt_longident txt
             $ fmt " = "
             $ fmt_expression c (sub_exp ~ctx f)
       in
@@ -2173,13 +2173,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       | [] -> wrap "{<" ">}" (Cmts.fmt_within c.cmts pexp_loc)
       | _ ->
           hvbox 0
-            ( wrap "{<" ">}"
-                (list_fl l (fun ~first ~last:_ f ->
-                     fmt_if_k (not first) (fmt "; ")
-                     $ fits_breaks "" " "
-                     $ hvbox 0 (field f)
-                     $ fmt "@," ))
-            $ fmt_atrs ) )
+            (wrap_if parens "(" ")"
+               (wrap_fits_breaks "{<" ">}" (list l "@;<0 1>; " field))) )
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (wrap_fits_breaks_if parens "(" ")"
