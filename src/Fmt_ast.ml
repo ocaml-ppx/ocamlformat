@@ -1579,13 +1579,13 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_assert e0 ->
       let paren_body = parenze_exp (sub_exp ~ctx e0) in
       hovbox 0
-        ( hovbox 0
-            ( hvbox 2
-                (wrap_if parens "(" ")"
-                   ( fmt_or paren_body "assert (@," "assert@ "
-                   $ fmt_expression c ~parens:false (sub_exp ~ctx e0) ))
-            $ fmt "@," $ fmt_atrs )
-        $ fits_breaks_if paren_body ")" "@ )" )
+        (wrap_if parens "(" ")"
+           (hvbox 0
+              ( hvbox 2
+                  ( fmt_or paren_body "assert (@," "assert@ "
+                  $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
+              $ fits_breaks_if paren_body ")" "@ )"
+              $ fmt_atrs )))
   | Pexp_constant const ->
       wrap_if
         (parens || not (List.is_empty pexp_attributes))
