@@ -769,7 +769,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
            (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)))
   | Ptyp_var s ->
       fmt "'"
-      (* [' a'] is a valid type variable *)
+      (* [' a'] is a valid type variable, the space is required to not lex
+         as a char. https://github.com/ocaml/ocaml/pull/2034 *)
       $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
       $ str s
   | Ptyp_variant (rfs, flag, lbls) ->
