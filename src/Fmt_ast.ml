@@ -1581,11 +1581,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       hovbox 0
         (wrap_if parens "(" ")"
            (hvbox 0
-              ( wrap_if parens "(" ")"
-                  ( hvbox 2
-                      ( fmt_or paren_body "assert (@," "assert@ "
-                      $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
-                  $ fits_breaks_if paren_body ")" "@ )" )
+              ( hvbox 2
+                  ( fmt_or paren_body "assert (@," "assert@ "
+                  $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
+              $ fits_breaks_if paren_body ")" "@ )"
               $ fmt_atrs )))
   | Pexp_constant const ->
       wrap_if

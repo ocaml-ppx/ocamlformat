@@ -150,4 +150,6 @@ end
 
 let _ = fun [@inlined always] x y -> z
 
-let () = assert (((assert false) [@imp Show]) 1.0 = "1.")
+let () = assert ((assert false [@imp Show]) 1.0 = "1.")
+
+let () = f (assert false)
