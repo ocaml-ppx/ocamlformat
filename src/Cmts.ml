@@ -423,6 +423,8 @@ let relocate t ~src ~before ~after =
     update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
         List.append src_cmts dst_cmts ) ;
     update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
+        List.append dst_cmts src_cmts ) ;
+    update_multi t.cmts_within src after ~f:(fun src_cmts dst_cmts ->
         List.append dst_cmts src_cmts ) )
 
 let split_asterisk_prefixed (txt, {Location.loc_start}) =
