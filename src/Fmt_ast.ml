@@ -636,8 +636,9 @@ let rec fmt_attribute c pre = function
   | ({loc} as name), pld ->
       let cmts_last =
         match pld with
+        | PStr [] -> Cmts.fmt_after c.cmts loc
         | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
-            Cmts.fmt_after c.cmts pstr_loc $ Cmts.fmt_after c.cmts pexp_loc
+            Cmts.fmt_after c.cmts pexp_loc $ Cmts.fmt_after c.cmts pstr_loc
         | _ -> fmt ""
       in
       let protect_token =
@@ -658,8 +659,9 @@ and fmt_extension c ctx key (({loc} as ext), pld) =
   | _ ->
       let cmts_last =
         match pld with
+        | PStr [] -> Cmts.fmt_after c.cmts loc
         | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
-            Cmts.fmt_after c.cmts pstr_loc $ Cmts.fmt_after c.cmts pexp_loc
+            Cmts.fmt_after c.cmts pexp_loc $ Cmts.fmt_after c.cmts pstr_loc
         | _ -> fmt ""
       in
       let protect_token =
