@@ -2631,6 +2631,7 @@ let f (type a) (x : a t) =
     let (I : a t) = x
 
     (* fail because of toplevel let *)
+
     let x : a t = I
   end in
   ()
@@ -2648,6 +2649,7 @@ let bad (type a) =
       let (Refl : (int, a) eq) = M.e
 
       (* must fail for soundness *)
+
       let e : (int, a) eq = Refl
     end
   end in
@@ -4822,6 +4824,7 @@ module A_annotated_alias : S with type t = (module A.A_S) = A
 let _ = f (module A_annotated_alias)
 
 (* ok *)
+
 let _ = f (module A_annotated_alias : S with type t = (module A.A_S))
 
 (* ok *)
@@ -4835,6 +4838,7 @@ end
 let _ = f (module A_alias_expanded : S with type t = (module A.A_S))
 
 (* ok *)
+
 let _ = f (module A_alias_expanded)
 
 (* ok *)
@@ -4842,9 +4846,11 @@ let _ = f (module A_alias_expanded)
 let _ = f (module A_alias : S with type t = (module A.A_S))
 
 (* doesn't type *)
+
 let _ = f (module A_alias)
 
 (* doesn't type either *)
+
 module Foo (Bar : sig
   type a = private [> `A]
 end) (Baz : module type of struct
@@ -5464,6 +5470,7 @@ module M = struct
   module Y = FF (X)
 
   (* XXX *)
+
   type t = Y.t
 end
 
@@ -7124,6 +7131,7 @@ module PR_4758 = struct
   module C' = C
 
   (* check that we can take an alias *)
+
   module F (X : sig end) = struct
     type t
   end
@@ -8071,9 +8079,11 @@ module type VALUE = sig
   type value
 
   (* a Lua value *)
+
   type state
 
   (* the state of a Lua interpreter *)
+
   type usert
 
   (* a user-defined value *)
@@ -8673,6 +8683,7 @@ module X2 : sig end = struct
   let x = 42
 
   (* unused value *)
+
   let _f = function
     | A ->
       let x = () in
@@ -8717,6 +8728,7 @@ module OK = struct
   let f1 (r : t) = r.x
 
   (* ok *)
+
   let f2 r =
     ignore (r : t);
     r.x
@@ -8993,6 +9005,7 @@ module Shadow1 = struct
   open M
 
   (* this open is unused, it isn't reported as shadowing 'x' *)
+
   let y : t = { x = 0 }
 end
 
@@ -9006,6 +9019,7 @@ module Shadow2 = struct
   open M
 
   (* this open shadows label 'x' *)
+
   let y = { x = "" }
 end
 

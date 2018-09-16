@@ -8095,9 +8095,11 @@ module type VALUE = sig
   type value
 
   (* a Lua value *)
+
   type state
 
   (* the state of a Lua interpreter *)
+
   type usert
 
   (* a user-defined value *)
