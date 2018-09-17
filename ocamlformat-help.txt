@@ -142,7 +142,7 @@ OPTIONS (CODE FORMATTING STYLE)
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent.
 
-       --ocpi_match_clause=COLS, --cases-exp-indent=COLS
+       --ocp-indent-match-clause=COLS, --cases-exp-indent=COLS
            Indentation of cases expressions (COLS columns). The default value
            is 4. Cannot be set in attributes.
 
