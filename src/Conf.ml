@@ -1129,6 +1129,12 @@ let ocp_indent_janestreet_profile =
   ; ("align_ops", "true")
   ; ("align_params", "always") ]
 
+let to_absolute file =
+  Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
+
+let root =
+  Option.map !root ~f:Fpath.(fun x -> to_absolute x |> v |> normalize)
+
 let parse_line config ~verbose ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
@@ -1210,8 +1216,8 @@ let parse_line config ~verbose ~from s =
   | _ -> Error (`Malformed s)
 
 let is_project_root dir =
-  match !root with
-  | Some root -> Fpath.(equal (v dir |> normalize) (v root |> normalize))
+  match root with
+  | Some root -> Fpath.(equal (v dir |> normalize) root)
   | None ->
       List.exists project_root_witness ~f:(fun name ->
           Caml.Sys.file_exists (Filename.concat dir name) )
@@ -1272,9 +1278,6 @@ let read_config_file ~verbose conf filename_kind =
                       ( "bad value for"
                       , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
     with Sys_error _ -> conf )
-
-let to_absolute file =
-  Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
 
 let update_using_env ~verbose conf =
   let f (config, errors) (name, value) =

@@ -16,5 +16,6 @@ depends: [
   "dune" {build}
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "stdio"
+  "fpath"
 ]
 available: [ ocaml-version >= "4.04.1" ]
