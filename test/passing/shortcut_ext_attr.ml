@@ -21,7 +21,7 @@ let () =
   () ;
   [%foo (assert true [@foo])] ;
   [%foo (lazy x) [@foo]] ;
-  [%foo (object end) [@foo]] ;
+  [%foo (object end [@foo])] ;
   [%foo (3 [@foo])] ;
   [%foo (new x) [@foo]] ;
   [%foo

@@ -2154,8 +2154,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                $ fmt "@ " $ fmt_longident txt )
            $ fmt_atrs )
   | Pexp_object {pcstr_self; pcstr_fields} ->
-      fmt_class_structure c ~ctx ~parens ?ext pcstr_self pcstr_fields
-      $ fmt_atrs
+      hvbox 0
+        (wrap_if parens "(" ")"
+           ( fmt_class_structure c ~ctx ?ext pcstr_self pcstr_fields
+           $ fmt_atrs ))
   | Pexp_override l -> (
       let field ({txt; loc}, f) =
         let txt = Longident.parse txt in
@@ -2189,7 +2191,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
 
-and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
+and fmt_class_structure c ~ctx ?ext self_ fields =
   let fields =
     List.sort fields
       ~compare:
@@ -2214,29 +2216,26 @@ and fmt_class_structure c ~ctx ~parens ?ext self_ fields =
     | {ppat_desc= Ppat_any; ppat_attributes= []} -> None
     | s -> Some s
   in
-  hvbox 0
-    (wrap_if parens "(" ")"
-       ( hvbox 2
-           ( hvbox 0
-               ( fmt "object"
-               $ fmt_extension_suffix c ext
-               $ opt self_ (fun self_ ->
-                     fmt "@;"
-                     $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_)) )
-               )
-           $ cmts_after_self
-           $ ( match fields with
-             | ({pcf_desc= Pcf_attribute a}, _) :: _
-               when Option.is_some (fst (doc_atrs [a])) ->
-                 fmt "\n"
-             | _ -> fmt "" )
-           $ fmt_if Poly.(fields <> []) "@;<1000 0>"
-           $ hvbox 0
-               (list fields "\n@\n" (fun (cf, c) ->
-                    maybe_disabled c cf.pcf_loc []
-                    @@ fun c -> fmt_class_field c ctx cf )) )
-       $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
-       $ fmt "end" ))
+  hvbox 2
+    ( hvbox 0
+        ( fmt "object"
+        $ fmt_extension_suffix c ext
+        $ opt self_ (fun self_ ->
+              fmt "@;" $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_))
+          ) )
+    $ cmts_after_self
+    $ ( match fields with
+      | ({pcf_desc= Pcf_attribute a}, _) :: _
+        when Option.is_some (fst (doc_atrs [a])) ->
+          fmt "\n"
+      | _ -> fmt "" )
+    $ fmt_if Poly.(fields <> []) "@;<1000 0>"
+    $ hvbox 0
+        (list fields "\n@\n" (fun (cf, c) ->
+             maybe_disabled c cf.pcf_loc []
+             @@ fun c -> fmt_class_field c ctx cf )) )
+  $ fmt_or_k Poly.(fields <> []) (fmt "@\n") (fmt "@ ")
+  $ fmt "end"
 
 and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
   let fields =
@@ -2412,8 +2411,10 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
       fmt_class_params c ctx ~epi:(fmt "@ ") params
       $ fmt_longident_loc c name $ fmt_atrs
   | Pcl_structure {pcstr_fields; pcstr_self} ->
-      fmt_class_structure c ~ctx ~parens ?ext:None pcstr_self pcstr_fields
-      $ fmt_atrs
+      hvbox 0
+        (wrap_if parens "(" ")"
+           ( fmt_class_structure c ~ctx ?ext:None pcstr_self pcstr_fields
+           $ fmt_atrs ))
   | Pcl_fun _ ->
       let xargs, xbody = sugar_cl_fun c xexp in
       hvbox_if box
