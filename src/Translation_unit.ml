@@ -159,9 +159,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         Location.input_name := tmp ;
         In_channel.with_file tmp ~f:(parse xunit.parse conf)
       with
-      | exception Sys_error msg
-        when String.is_substring msg ~substring:"Permission denied" ->
-          User_error msg
+      | exception Sys_error msg -> User_error msg
       | exception e -> Ocamlformat_bug e
       | new_ ->
           let old = {ast; comments} in
@@ -230,9 +228,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         print_check ~i:1 ~conf ~ast ~comments ~source_txt
           ~source_file:input_file
       with
-      | Sys_error msg
-        when String.is_substring msg ~substring:"Permission denied" ->
-          User_error msg
+      | Sys_error msg -> User_error msg
       | exc -> Ocamlformat_bug exc )
   in
   let fmt = Caml.Format.err_formatter in
