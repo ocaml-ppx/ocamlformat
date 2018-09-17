@@ -697,8 +697,12 @@ module Formatting = struct
     let doc = "Style of sequence." in
     let names = ["sequence-style"] in
     let all =
-      [ ("separator", `Separator, "")
-      ; ("terminator", `Terminator, "")
+      [ ( "separator"
+        , `Separator
+        , "$(b,separator) puts spaces before and after semicolons." )
+      ; ( "terminator"
+        , `Terminator
+        , "$(b,terminator) only puts spaces after semicolons." )
       ; ("breaker", `Breaker, "$(b,breaker) always breaks sequences.") ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->

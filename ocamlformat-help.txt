@@ -157,8 +157,9 @@ OPTIONS (CODE FORMATTING STYLE)
            tuples. The default value is always.
 
        --sequence-style={separator|terminator|breaker}
-           Style of sequence. breaker always breaks sequences. The default
-           value is separator.
+           Style of sequence. separator puts spaces before and after
+           semicolons. terminator only puts spaces after semicolons. breaker
+           always breaks sequences. The default value is separator.
 
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
