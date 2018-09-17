@@ -20,11 +20,11 @@ let func
   body
 
 let rec func
-       aaaaaaaaaaa
-       bbbbbbbbbbbbbb
-       ccccccccccccccccccc
-       ddddddddddddddddddddd
-       eeeeeeeeeeeeeee =
+   aaaaaaaaaaa
+   bbbbbbbbbbbbbb
+   ccccccccccccccccccc
+   ddddddddddddddddddddd
+   eeeeeeeeeeeeeee =
   body
 
 let to_loc_trace
