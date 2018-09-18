@@ -75,7 +75,9 @@ match Conf.action with
       List.for_all results ~f:(fun result ->
           match (result : Translation_unit.result) with
           | Ok -> true
-          | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> false )
+          | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _
+            ->
+              false )
     then Caml.exit 0
     else Caml.exit 1
 | In_out
@@ -99,7 +101,8 @@ match Conf.action with
     Unix.unlink file ;
     match result with
     | Ok -> Caml.exit 0
-    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )
+    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
+        Caml.exit 1 )
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
       ; file= input_file
@@ -112,4 +115,5 @@ match Conf.action with
           ~input_file ic output_file )
   with
   | Ok -> Caml.exit 0
-  | Unstable _ | Ocamlformat_bug _ | Invalid_source _ -> Caml.exit 1 )
+  | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
+      Caml.exit 1 )
