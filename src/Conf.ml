@@ -1325,9 +1325,11 @@ let xdg_config =
   | None -> None
 
 let build_config ~filename =
-  let files, project_root =
-    collect_files ~dir:(Filename.dirname (to_absolute filename)) []
+  let dir =
+    filename |> to_absolute |> Filename.dirname |> Fpath.v
+    |> Fpath.normalize |> Fpath.to_string
   in
+  let files, project_root = collect_files ~dir [] in
   let files =
     match (xdg_config, !disable_outside_project) with
     | None, _ | Some _, true -> files
