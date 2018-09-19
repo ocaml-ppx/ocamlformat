@@ -1130,10 +1130,15 @@ let ocp_indent_janestreet_profile =
   ; ("align_params", "always") ]
 
 let to_absolute file =
-  Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
+  Fpath.(if is_rel file then append (Unix.getcwd () |> v) file else file)
+
+let path_exists p = Fpath.to_string p |> Caml.Sys.file_exists
+
+let dirname p = Fpath.split_base p |> fst
 
 let root =
-  Option.map !root ~f:Fpath.(fun x -> to_absolute x |> v |> normalize)
+  Option.map !root
+    ~f:Fpath.(fun x -> v x |> to_absolute |> normalize |> dirname)
 
 let parse_line config ~verbose ~from s =
   let update ~config ~from ~name ~value =
@@ -1217,26 +1222,26 @@ let parse_line config ~verbose ~from s =
 
 let is_project_root dir =
   match root with
-  | Some root -> Fpath.(equal (v dir |> normalize) root)
+  | Some root -> Fpath.equal dir root
   | None ->
       List.exists project_root_witness ~f:(fun name ->
-          Caml.Sys.file_exists (Filename.concat dir name) )
+          path_exists Fpath.(append dir (v name)) )
 
 let rec collect_files ~dir acc =
   let acc =
-    let filename = Filename.concat dir ".ocamlformat" in
-    if Caml.Sys.file_exists filename then `Ocamlformat filename :: acc
+    let filename = Fpath.(append dir (v ".ocamlformat")) in
+    if path_exists filename then `Ocamlformat (Fpath.to_string filename) :: acc
     else acc
   in
   let acc =
-    let filename = Filename.concat dir ".ocp-indent" in
-    if Caml.Sys.file_exists filename then `Ocp_indent filename :: acc
+    let filename = Fpath.(apend dir (v ".ocp-indent")) in
+    if path_exists filename then `Ocp_indent (Fpath.to_string filename) :: acc
     else acc
   in
   if is_project_root dir && !disable_outside_project then (acc, Some dir)
   else
-    let dir' = Filename.dirname dir in
-    if (not (String.equal dir dir')) && Caml.Sys.file_exists dir then
+    let dir' = dirname dir in
+    if (not (Fpath.equal dir dir')) && path_exists dir then
       collect_files ~dir:dir' acc
     else if !disable_outside_project then ([], None)
     else (acc, None)
@@ -1324,11 +1329,8 @@ let xdg_config =
       if Caml.Sys.file_exists filename then Some filename else None
   | None -> None
 
-let build_config ~filename =
-  let dir =
-    filename |> to_absolute |> Filename.dirname |> Fpath.v
-    |> Fpath.normalize |> Fpath.to_string
-  in
+let build_config ~file =
+  let dir = Fpath.(v file |> to_absolute |> normalize |> dirname) in
   let files, project_root = collect_files ~dir [] in
   let files =
     match (xdg_config, !disable_outside_project) with
@@ -1337,7 +1339,8 @@ let build_config ~filename =
   in
   let verbose = !print_config in
   if verbose then
-    Option.iter project_root ~f:(Format.eprintf "project-root=%s@\n%!") ;
+    Option.iter project_root ~f:(fun x ->
+        Format.eprintf "project-root=%a@\n%!" Fpath.pp x ) ;
   let conf =
     List.fold files ~init:default_profile ~f:(read_config_file ~verbose)
     |> update_using_env ~verbose
@@ -1348,9 +1351,9 @@ let build_config ~filename =
       let reason =
         match project_root with
         | Some root ->
-            Printf.sprintf
+            Format.sprintf
               "no [.ocamlformat] was found within the project (root: %s)"
-              root
+              (Fpath.to_string root)
         | None -> "no project root was found"
       in
       Format.eprintf
@@ -1358,7 +1361,7 @@ let build_config ~filename =
          Warning: Ocamlformat disabled because [--disable-outside-project] \
          was given and %s@\n\
          %!"
-        filename reason ) ;
+        file reason ) ;
     {conf with disable= true} )
   else conf
 
@@ -1366,10 +1369,8 @@ let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
-           { kind= kind_of file
-           ; name= file
-           ; file
-           ; conf= build_config ~filename:file } ))
+           {kind= kind_of file; name= file; file; conf= build_config ~file}
+       ))
   else
     match !inputs with
     | [input_file] ->
@@ -1378,7 +1379,7 @@ let action =
           ( { kind= kind_of name
             ; name
             ; file= input_file
-            ; conf= build_config ~filename:name }
+            ; conf= build_config ~file:name }
           , !output )
     | _ -> impossible "checked by validate"
 
