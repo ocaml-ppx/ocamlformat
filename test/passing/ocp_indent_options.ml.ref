@@ -1,0 +1,32 @@
+Warning: ocp-indent option "base" is unsupported.
+Warning: ocp-indent option "type" is unsupported.
+Warning: ocp-indent option "in" is unsupported.
+Warning: ocp-indent option "with" is unsupported.
+Warning: ocp-indent option "match_clause" is unsupported.
+Warning: ocp-indent option "ppx_stritem_ext" is unsupported.
+Warning: ocp-indent option "max_indent" is unsupported.
+Warning: ocp-indent option "strict_with" is unsupported.
+Warning: ocp-indent option "strict_else" is unsupported.
+Warning: ocp-indent option "strict_comments" is unsupported.
+Warning: ocp-indent option "align_ops" is unsupported.
+Warning: ocp-indent option "align_params" is unsupported.
+Warning: ocp-indent option "base" is unsupported.
+Warning: ocp-indent option "type" is unsupported.
+Warning: ocp-indent option "in" is unsupported.
+Warning: ocp-indent option "with" is unsupported.
+Warning: ocp-indent option "match_clause" is unsupported.
+Warning: ocp-indent option "ppx_stritem_ext" is unsupported.
+Warning: ocp-indent option "max_indent" is unsupported.
+Warning: ocp-indent option "strict_with" is unsupported.
+Warning: ocp-indent option "strict_else" is unsupported.
+Warning: ocp-indent option "strict_comments" is unsupported.
+Warning: ocp-indent option "align_ops" is unsupported.
+Warning: ocp-indent option "align_params" is unsupported.
+let _ =
+  let f x y =
+    match x with
+    | None -> false
+    | Some loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+  -> ( match y with Some _ -> true | None -> false )
+  in
+  ()
