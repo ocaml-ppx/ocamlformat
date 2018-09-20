@@ -19,6 +19,7 @@ let reason_impl : _ Translation_unit.t =
   ; fmt= Fmt_ast.fmt_structure
   ; parse
   ; equal= Reason.equal_impl
+  ; moved_docstrings= Reason.moved_docstrings_impl
   ; normalize= Reason.norm_impl
   ; printast= Migrate_ast.Printast.implementation }
 
@@ -30,6 +31,7 @@ let reason_intf : _ Translation_unit.t =
   ; fmt= Fmt_ast.fmt_signature
   ; parse
   ; equal= Reason.equal_intf
+  ; moved_docstrings= Reason.moved_docstrings_intf
   ; normalize= Reason.norm_intf
   ; printast= Migrate_ast.Printast.interface }
 

@@ -29,6 +29,10 @@ type 'a t =
       -> 'a with_comments
       -> 'a with_comments
       -> bool
+  ; moved_docstrings:
+         'a with_comments
+      -> 'a with_comments
+      -> (Location.t * Location.t * string) list
   ; normalize: 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
@@ -40,7 +44,7 @@ exception Warning50 of (Location.t * Warnings.t) list
 exception
   Internal_error of
     [ `Ast
-    | `Doc_comment
+    | `Doc_comment of (Location.t * Location.t * string) list
     | `Comment
     | `Comment_dropped of (Location.t * string) list ]
     * (string * Sexp.t) list
@@ -173,7 +177,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             dump xunit dir base ".new" ".ast" (xunit.normalize new_) ;
             if not Conf.debug then Unix.unlink tmp ;
             if xunit.equal ~ignore_doc_comments:true old new_ then
-              internal_error `Doc_comment
+              let docstrings = xunit.moved_docstrings old new_ in
+              internal_error (`Doc_comment docstrings)
                 [("output file", String.sexp_of_t tmp)]
             else internal_error `Ast [("output file", String.sexp_of_t tmp)] ) ;
           (* Comments not preserved ? *)
@@ -240,7 +245,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     match[@ocaml.warning "-28"] exn with
     | Internal_error ((`Comment | `Comment_dropped _), _) -> quiet_comments
     | Warning50 _ -> quiet_doc_comments
-    | Internal_error (`Doc_comment, _) -> quiet_doc_comments
+    | Internal_error (`Doc_comment _, _) -> quiet_doc_comments
     | Internal_error (`Ast, _) -> false
     | Internal_error (_, _) -> .
     | Syntaxerr.Error _ | Lexer.Error _ -> false
@@ -302,12 +307,20 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           let s =
             match m with
             | `Ast -> "ast changed"
-            | `Doc_comment -> "doc comments changed"
+            | `Doc_comment _ -> "doc comments changed"
             | `Comment -> "comments changed"
             | `Comment_dropped _ -> "comments dropped"
           in
           Format.eprintf "  BUG: %s.\n%!" s ;
           ( match m with
+          | `Doc_comment l when not conf.Conf.quiet ->
+              List.iter l ~f:(fun (loc1, loc2, msg) ->
+                  Caml.Format.eprintf
+                    "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s *) \
+                     moved to @{<loc>%a@}.\n\
+                     %!"
+                    Location.print_loc loc1 (String.strip msg)
+                    Location.print_loc loc2 )
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
                   Caml.Format.eprintf

@@ -23,6 +23,10 @@ type 'a t =
       -> 'a with_comments
       -> 'a with_comments
       -> bool
+  ; moved_docstrings:
+         'a with_comments
+      -> 'a with_comments
+      -> (Location.t * Location.t * string) list
   ; normalize: 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 

@@ -44,3 +44,13 @@ val equal_intf :
   -> signature with_comments
   -> bool
 (** Compare signatures for equality up to normalization. *)
+
+val moved_docstrings_impl :
+     structure with_comments
+  -> structure with_comments
+  -> (Location.t * Location.t * string) list
+
+val moved_docstrings_intf :
+     signature with_comments
+  -> signature with_comments
+  -> (Location.t * Location.t * string) list

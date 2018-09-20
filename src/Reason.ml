@@ -133,3 +133,11 @@ let equal_impl ~ignore_doc_comments x y =
 
 let equal_intf ~ignore_doc_comments x y =
   Normalize.equal_intf ~ignore_doc_comments (norm_intf x) (norm_intf y)
+
+let moved_docstrings_impl {Translation_unit.ast= x} {Translation_unit.ast= y}
+    =
+  Normalize.moved_docstrings_impl x y
+
+let moved_docstrings_intf {Translation_unit.ast= x} {Translation_unit.ast= y}
+    =
+  Normalize.moved_docstrings_intf x y
