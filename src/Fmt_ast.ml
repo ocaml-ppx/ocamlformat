@@ -2658,8 +2658,8 @@ and fmt_cases c ctx cs =
             (break_cases_level c > 0)
             (fmt_or_k parens_here (fmt "@;<1 2>->@]")
                (fmt "@;<1 -2>->@]@;<0 3>"))
-            ( fmt "@;<1 -2>->"
-            $ fmt_or_k parens_here (fmt " (@]") (fmt "@]@;<0 -1>") )
+            ( fmt "@;<1 -2>->@]"
+            $ fmt_or_k parens_here (fmt " (") (fmt "@;<0 -1>") )
         in
         let pro =
           fmt_or_k
