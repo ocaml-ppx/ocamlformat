@@ -56,6 +56,10 @@ OPTIONS (CODE FORMATTING STYLE)
            unconditionally. natural will break struct-end phrases naturally
            at the margin. The default value is force.
 
+       --cases-exp-indent=COLS
+           Indentation of cases expressions (COLS columns). The default value
+           is 4. Cannot be set in attributes.
+
        --disable
            Disable ocamlformat. This is used in attributes to locally disable
            automatic code formatting. One can also use [@@@ocamlformat
@@ -141,10 +145,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --ocp-indent-compat
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent.
-
-       --ocp-indent-match-clause=COLS, --cases-exp-indent=COLS
-           Indentation of cases expressions (COLS columns). The default value
-           is 4. Cannot be set in attributes.
 
        --parens-tuple={always|multi-line-only}
            Parens tuples. always always uses parentheses around tuples.
