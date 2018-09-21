@@ -165,8 +165,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     let cmts_t = xunit.init_cmts source conf ast comments in
     let fs = Format.formatter_of_out_channel oc in
     ( if
-      (Sys.unix && Poly.(Conf.line_endings conf input_file = `Windows))
-      || ((not Sys.unix) && crlf_translated_to_lf ())
+      Poly.(Conf.line_endings conf input_file = `Windows)
+      && (Sys.unix || crlf_translated_to_lf ())
     then
       let out, flush = Format.pp_get_formatter_output_functions fs () in
       let out_dos str pos len =
