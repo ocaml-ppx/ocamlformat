@@ -359,20 +359,6 @@ let info =
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
-let ocp_indent_options =
-  [ ("base", None)
-  ; ("type", None)
-  ; ("in", None)
-  ; ("with", None)
-  ; ("match_clause", None)
-  ; ("ppx_stritem_ext", None)
-  ; ("max_indent", None)
-  ; ("strict_with", None)
-  ; ("strict_else", None)
-  ; ("strict_comments", None)
-  ; ("align_ops", None)
-  ; ("align_params", None) ]
-
 (** Options affecting formatting *)
 module Formatting = struct
   let section = `Formatting
@@ -694,24 +680,8 @@ module Formatting = struct
 
   let ocp_indent_compat =
     let doc =
-      let open Format in
-      let unsupported =
-        let l =
-          List.filter_map ocp_indent_options ~f:(fun (s, o) ->
-              Option.value_map o ~default:(Some s) ~f:(fun _ -> None) )
-        in
-        if List.is_empty l then ""
-        else
-          asprintf " Options %a are unsupported."
-            (pp_print_list
-               ~pp_sep:(fun fs () -> fprintf fs ",@ ")
-               (fun fs s -> fprintf fs "$(b,%s)" s))
-            l
-      in
-      asprintf
-        "Attempt to generate output which does not change (much) when \
-         post-processing with ocp-indent.%s"
-        unsupported
+      "Attempt to generate output which does not change (much) when \
+       post-processing with ocp-indent."
     in
     let names = ["ocp-indent-compat"] in
     C.flag ~default:false ~names ~doc ~section (fun conf x ->
@@ -897,8 +867,38 @@ let output =
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
 
+let ocp_indent_options =
+  [ ("base", None)
+  ; ("type", None)
+  ; ("in", None)
+  ; ("with", None)
+  ; ("match_clause", None)
+  ; ("ppx_stritem_ext", None)
+  ; ("max_indent", None)
+  ; ("strict_with", None)
+  ; ("strict_else", None)
+  ; ("strict_comments", None)
+  ; ("align_ops", None)
+  ; ("align_params", None) ]
+
 let ocp_indent_config =
-  let doc = "Read .ocp-indent configuration files." in
+  let doc =
+    let open Format in
+    let unsupported =
+      let l =
+        List.filter_map ocp_indent_options ~f:(fun (s, o) ->
+            Option.value_map o ~default:(Some s) ~f:(fun _ -> None) )
+      in
+      if List.is_empty l then ""
+      else
+        asprintf " Options %a are unsupported."
+          (pp_print_list
+             ~pp_sep:(fun fs () -> fprintf fs ",@ ")
+             (fun fs s -> fprintf fs "$(b,%s)" s))
+          l
+    in
+    asprintf "Read .ocp-indent configuration files.%s" unsupported
+  in
   let default = false in
   mk ~default Arg.(value & flag & info ["ocp-indent-config"] ~doc ~docs)
 
