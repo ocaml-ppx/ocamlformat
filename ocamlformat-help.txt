@@ -57,8 +57,9 @@ OPTIONS (CODE FORMATTING STYLE)
            at the margin. The default value is force.
 
        --cases-exp-indent=COLS
-           Indentation of cases expressions (COLS columns). The default value
-           is 4. Cannot be set in attributes.
+           Indentation of cases expressions (COLS columns), except for nested
+           `match` or `try` expressions. The default value is 4. Cannot be
+           set in attributes.
 
        --disable
            Disable ocamlformat. This is used in attributes to locally disable

@@ -435,7 +435,10 @@ module Formatting = struct
 
   let cases_exp_indent =
     let docv = "COLS" in
-    let doc = "Indentation of cases expressions ($(docv) columns)." in
+    let doc =
+      "Indentation of cases expressions ($(docv) columns), except for \
+       nested `match` or `try` expressions."
+    in
     let names = ["cases-exp-indent"] in
     C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with cases_exp_indent= x} )
