@@ -382,14 +382,14 @@ module Formatting = struct
         {conf with break_cases= x} )
 
   let braces_space =
-    let doc = "Whether or not to use a space between insides braces." in
+    let doc = "Whether or not to use spaces inside braces." in
     let names = ["braces-space"] in
     let all =
-      [ ("loose", `Loose, "$(b,loose) does.")
-      ; ( "tight"
-        , `Tight
-        , "$(b,tight) does not use a space between a field name and the \
-           punctuation symbol (`:`or `=`)." ) ]
+      [ ( "loose"
+        , `Loose
+        , "$(b,loose) uses a space after opening braces and before closing \
+           braces." )
+      ; ("tight", `Tight, "$(b,tight) does not.") ]
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with braces_space= x} )

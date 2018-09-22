@@ -26,9 +26,9 @@ OPTIONS (CODE FORMATTING STYLE)
        processed file, the higher the priority.
 
        --braces-space={loose|tight}
-           Whether or not to use a space between insides braces. loose does.
-           tight does not use a space between a field name and the
-           punctuation symbol (`:`or `=`). The default value is loose.
+           Whether or not to use spaces inside braces. loose uses a space
+           after opening braces and before closing braces. tight does not.
+           The default value is loose.
 
        --break-cases={fit|nested|all}
            Break pattern match cases. Specifying fit lets pattern matches
