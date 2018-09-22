@@ -1138,11 +1138,7 @@ let parse_line config ~verbose ~from s =
       List.Assoc.find_exn ocp_indent_options ~equal:String.equal name
     in
     match opt with
-    | None ->
-        if not config.quiet then
-          Format.eprintf "Warning: ocp-indent option %S is unsupported.\n"
-            name ;
-        Ok config
+    | None -> Ok config
     | Some (ocamlformat_opt, f) ->
         update ~config ~from ~name:ocamlformat_opt ~value:(f value)
   in
