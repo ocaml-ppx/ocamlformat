@@ -1174,7 +1174,10 @@ let parse_line config ~verbose ~from s =
     | ["apprentice"], _ ->
         update_many ~config ~from ocp_indent_apprentice_profile
     | ["JaneStreet"], _ ->
-        update_many ~config ~from ocp_indent_janestreet_profile
+        Result.( >>= )
+          (update ~config ~from ~name:"profile" ~value:"janestreet")
+          (fun config ->
+            update_many ~config ~from ocp_indent_janestreet_profile )
     | [name], _ -> update ~config ~from ~name ~value:"true"
     | _ -> Error (`Malformed s) )
   | _ -> Error (`Malformed s)
