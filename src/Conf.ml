@@ -17,6 +17,7 @@ type t =
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; break_struct: bool
+  ; cases_exp_indent: int
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
@@ -431,6 +432,16 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with break_string_literals= x} )
+
+  let cases_exp_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of cases expressions ($(docv) columns), except for \
+       nested `match` or `try` expressions."
+    in
+    let names = ["cases-exp-indent"] in
+    C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with cases_exp_indent= x} )
 
   let break_struct =
     let doc = "Break struct-end module items." in
@@ -864,6 +875,7 @@ let default_profile =
   ; break_infix= C.default Formatting.break_infix
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
+  ; cases_exp_indent= C.default Formatting.cases_exp_indent
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; doc_comments= C.default Formatting.doc_comments
@@ -930,6 +942,7 @@ let janestreet_profile =
   ; break_infix= `Fit_or_vertical
   ; break_string_literals= `Wrap
   ; break_struct= default_profile.break_struct
+  ; cases_exp_indent= 2
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before
