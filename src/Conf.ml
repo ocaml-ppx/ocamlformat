@@ -891,6 +891,38 @@ let default_profile =
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
+let compact_profile =
+  { default_profile with
+    break_cases= `Fit
+  ; break_collection_expressions= `Wrap
+  ; break_infix= `Wrap
+  ; break_struct= false
+  ; field_space= `Tight
+  ; if_then_else= `Compact
+  ; indicate_nested_or_patterns= true
+  ; leading_nested_match_parens= false
+  ; let_and= `Compact
+  ; let_binding_spacing= `Compact
+  ; module_item_spacing= `Compact
+  ; type_decl= `Compact
+  ; wrap_fun_args= true }
+
+let sparse_profile =
+  { default_profile with
+    break_cases= `Nested
+  ; break_collection_expressions= `Fit_or_vertical
+  ; break_infix= `Fit_or_vertical
+  ; break_struct= true
+  ; field_space= `Loose
+  ; if_then_else= `Keyword_first
+  ; indicate_nested_or_patterns= true
+  ; leading_nested_match_parens= true
+  ; let_and= `Sparse
+  ; let_binding_spacing= `Sparse
+  ; module_item_spacing= `Sparse
+  ; type_decl= `Sparse
+  ; wrap_fun_args= false }
+
 let janestreet_profile =
   { break_cases= `Fit
   ; break_collection_expressions=
@@ -933,6 +965,12 @@ let (_profile : t option C.t) =
     [ ( "default"
       , Some default_profile
       , "$(b,default) sets each option to its default value." )
+    ; ( "compact"
+      , Some compact_profile
+      , "$(b,compact) sets options for a generally compact code style." )
+    ; ( "sparse"
+      , Some sparse_profile
+      , "$(b,sparse) sets options for a generally sparse code style." )
     ; ( "janestreet"
       , Some janestreet_profile
       , "$(b,janestreet) is the profile used at JaneStreet." ) ]
