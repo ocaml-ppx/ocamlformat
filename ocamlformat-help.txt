@@ -229,10 +229,8 @@ OPTIONS
            omitted.
 
        --ocp-indent-config
-           Read .ocp-indent configuration files. Options base, type, in,
-           with, match_clause, ppx_stritem_ext, max_indent, strict_with,
-           strict_else, strict_comments, align_ops, align_params are
-           unsupported.
+           Read .ocp-indent configuration files. match-clause is equivalent
+           to cases-exp-indent.
 
        -p {default|compact|sparse|janestreet},
        --profile={default|compact|sparse|janestreet}

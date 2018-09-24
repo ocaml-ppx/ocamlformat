@@ -872,7 +872,11 @@ let ocp_indent_options =
   ; ("type", None)
   ; ("in", None)
   ; ("with", None)
-  ; ("match_clause", None)
+  ; ( "match_clause"
+    , Some
+        ( "cases-exp-indent"
+        , "$(b,match-clause) is equivalent to $(b,cases-exp-indent)."
+        , Fn.id ) )
   ; ("ppx_stritem_ext", None)
   ; ("max_indent", None)
   ; ("strict_with", None)
@@ -884,20 +888,21 @@ let ocp_indent_options =
 let ocp_indent_config =
   let doc =
     let open Format in
-    let unsupported =
+    let supported =
       let l =
-        List.filter_map ocp_indent_options ~f:(fun (s, o) ->
-            Option.value_map o ~default:(Some s) ~f:(fun _ -> None) )
+        List.filter_map ocp_indent_options ~f:(fun (_, o) ->
+            Option.value_map o ~default:None ~f:(fun (_, doc, _) -> Some doc)
+        )
       in
       if List.is_empty l then ""
       else
-        asprintf " Options %a are unsupported."
+        asprintf " %a"
           (pp_print_list
              ~pp_sep:(fun fs () -> fprintf fs ",@ ")
-             (fun fs s -> fprintf fs "$(b,%s)" s))
+             (fun fs s -> fprintf fs "%s" s))
           l
     in
-    asprintf "Read .ocp-indent configuration files.%s" unsupported
+    asprintf "Read .ocp-indent configuration files.%s" supported
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["ocp-indent-config"] ~doc ~docs)
@@ -1139,7 +1144,7 @@ let parse_line config ~verbose ~from s =
     in
     match opt with
     | None -> Ok config
-    | Some (ocamlformat_opt, f) ->
+    | Some (ocamlformat_opt, _doc, f) ->
         update ~config ~from ~name:ocamlformat_opt ~value:(f value)
   in
   let rec update_many ~config ~from = function
