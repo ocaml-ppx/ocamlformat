@@ -46,7 +46,7 @@ let _ =
   let f x y =
     match x with
     | None -> false
-    | Some loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong -> (
-      match y with Some _ -> true | None -> false )
+    | Some looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+    -> ( match y with Some _ -> true | None -> false )
   in
   ()
