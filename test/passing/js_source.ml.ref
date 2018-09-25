@@ -1244,10 +1244,10 @@ let x = v (`A (Some (1, `A (Some (2, `A None)))))
 
 let triple t1 t2 t3 =
   Conv
-    ( "Triple"
+    ("Triple"
     , (fun (a, b, c) -> a, (b, c))
     , (fun (a, (b, c)) -> a, b, c)
-    , Pair (t1, Pair (t2, t3)) )
+    , Pair (t1, Pair (t2, t3)))
 ;;
 
 let v = variantize Enil (triple String Int Int) ("A", 2, 3)
@@ -1295,8 +1295,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        ; sum_cases = ["Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons)]
        ; sum_inj =
            (fun (type c) ->
-             ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
-               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ) )
+             (function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
+               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) )
            (* One can also write the type annotation directly *) })
 ;;
 
@@ -1323,15 +1323,15 @@ and 'e ty_dyn = Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
-    ( (function
-      | `A n -> "A", Some (Tdyn (Int, n))
-      | `B s -> "B", Some (Tdyn (String, s))
-      | `C -> "C", None)
+    ((function
+     | `A n -> "A", Some (Tdyn (Int, n))
+     | `B s -> "B", Some (Tdyn (String, s))
+     | `C -> "C", None)
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
       | "C", None -> `C
-      | _ -> invalid_arg "ty_abc" )
+      | _ -> invalid_arg "ty_abc")
 ;;
 
 (* Breaks: no way to pattern-match on a full recursive type *)
@@ -1340,10 +1340,10 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   let targ = Pair (Pop t, Var) in
   Rec
     (Sum
-       ( (function `Nil -> "Nil", None | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+       ((function `Nil -> "Nil", None | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
          | "Nil", None -> `Nil
-         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
+         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p))
 ;;
 
 (* Define Sum using object instead of record for first-class polymorphism *)
@@ -2077,7 +2077,10 @@ let rec tc : type n e. n nat -> e ctx -> term -> e checked =
 
 let ctx0 =
   Ccons
-    (Zero, "0", I, Ccons (Suc, "S", Ar (I, I), Ccons (Add, "+", Ar (I, Ar (I, I)), Cnil)))
+    (Zero
+    , "0"
+    , I
+    , Ccons (Suc, "S", Ar (I, I), Ccons (Add, "+", Ar (I, Ar (I, I)), Cnil)))
 ;;
 
 let ex1 = Ab ("x", I, Ap (Ap (V "+", V "x"), V "x"))
@@ -2261,7 +2264,8 @@ let inlineseq_from_astseq seq =
     | x, Ast_Bold xs -> Bold (List.map (process x) xs)
     | Kind Maylink, Ast_Link lnk -> Link lnk
     | Kind Nonlink, Ast_Link _ -> assert false
-    | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
+    | Kind Maylink, Ast_Mref (lnk, xs) ->
+      Mref (lnk, List.map (process (Kind Nonlink)) xs)
     | Kind Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process (Kind Maylink)) seq
@@ -2890,10 +2894,10 @@ let magic : 'a 'b. 'a -> 'b =
    in
    (downcast
       bad_proof
-      ( object
-          method m = x
-        end
-        :> < > ))
+      (object
+         method m = x
+       end
+        :> < >))
      #m
 ;;
 
@@ -3166,13 +3170,13 @@ let sort (type s) (module Set : Set.S with type elt = s) l =
 
 (* No real improvement here? *)
 let make_set (type s) cmp =
-  ( module Set.Make (struct
+  (module Set.Make (struct
     type t = s
 
     let compare = cmp
   end)
   : Set.S
-    with type elt = s )
+    with type elt = s)
 ;;
 
 (* No type annotation here *)
@@ -3239,10 +3243,10 @@ let m =
 
 (* Error *)
 let m =
-  ( module struct
+  (module struct
     let x = 3
   end
-  : S )
+  : S)
 ;;
 
 ;;
@@ -3278,10 +3282,10 @@ end
 
 ;;
 let rec (module M : S') =
-  ( module struct
+  (module struct
     let f n = if n <= 0 then 1 else n * M.f (n - 1)
   end
-  : S' )
+  : S')
 in
 M.f 3
 
@@ -3393,15 +3397,15 @@ end
 let ssmap =
   (module SSMap
   : MapT
-    with type key = string and type data = string and type map = SSMap.map )
+    with type key = string and type data = string and type map = SSMap.map)
 ;;
 
 let ssmap =
-  ( module struct
+  (module struct
     include SSMap
   end
   : MapT
-    with type key = string and type data = string and type map = SSMap.map )
+    with type key = string and type data = string and type map = SSMap.map)
 ;;
 
 let ssmap :
@@ -5725,10 +5729,10 @@ module type S = sig
 end
 
 let v =
-  ( module struct
+  (module struct
     let x = 3
   end
-  : S )
+  : S)
 ;;
 
 module F () = (val v)
@@ -5749,12 +5753,12 @@ module type S = sig
 end
 
 let v =
-  ( module struct
+  (module struct
     type t = int
 
     let x = 3
   end
-  : S )
+  : S)
 ;;
 
 module F () = (val v)
