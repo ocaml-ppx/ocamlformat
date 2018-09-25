@@ -69,43 +69,45 @@ val relocate :
 
 val fmt_before :
      t
-  -> ?pro:Fmt.t
-  -> ?epi:Fmt.t
-  -> ?eol:Fmt.t
-  -> ?adj:Fmt.t
+  -> ?pro:Formatting.t
+  -> ?epi:Formatting.t
+  -> ?eol:Formatting.t
+  -> ?adj:Formatting.t
   -> Location.t
-  -> Fmt.t
+  -> Formatting.t
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
 
-val fmt_after : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+val fmt_after :
+  t -> ?pro:Formatting.t -> ?epi:Formatting.t -> Location.t -> Formatting.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
-val fmt_within : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+val fmt_within :
+  t -> ?pro:Formatting.t -> ?epi:Formatting.t -> Location.t -> Formatting.t
 (** [fmt_within loc] formats the comments associated with [loc] that appear
     within [loc]. *)
 
 val fmt :
      t
-  -> ?pro:Fmt.t
-  -> ?epi:Fmt.t
-  -> ?eol:Fmt.t
-  -> ?adj:Fmt.t
+  -> ?pro:Formatting.t
+  -> ?epi:Formatting.t
+  -> ?eol:Formatting.t
+  -> ?adj:Formatting.t
   -> Location.t
-  -> Fmt.t
-  -> Fmt.t
+  -> Formatting.t
+  -> Formatting.t
 (** [fmt loc format_thunk] wraps [fmt_before] and [fmt_after] around
     [format_thunk]. *)
 
 val fmt_list :
      t
-  -> ?pro:Fmt.t
-  -> ?epi:Fmt.t
-  -> ?eol:Fmt.t
+  -> ?pro:Formatting.t
+  -> ?epi:Formatting.t
+  -> ?eol:Formatting.t
   -> Location.t list
-  -> Fmt.t
-  -> Fmt.t
+  -> Formatting.t
+  -> Formatting.t
 (** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
 
 val drop_inside : t -> Location.t -> unit
@@ -128,6 +130,6 @@ val diff :
   -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)
 
-val preserve : ('a -> Fmt.t) -> 'a -> string
+val preserve : ('a -> Formatting.t) -> 'a -> string
 (** [preserve fmt_x x] formats like [fmt_x x] but returns a string and does
     not consume comments from the internal state. *)

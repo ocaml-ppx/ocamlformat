@@ -16,7 +16,7 @@ type 'a t =
   { input: Conf.t -> In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
-  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
+  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Formatting.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
