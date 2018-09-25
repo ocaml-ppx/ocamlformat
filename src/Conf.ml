@@ -58,14 +58,11 @@ module Fpath = struct
   let to_absolute file =
     Fpath.(if is_rel file then append (cwd ()) file else file)
 
-  let dirname p = Fpath.split_base p |> fst
-
   let to_string ?(pretty = false) p =
     if pretty then
-      let cwd = cwd () in
-      match relativize ~root:cwd p with
-      | Some p -> to_string p
-      | None -> to_string p
+      Option.value_map
+        (relativize ~root:(cwd ()) p)
+        ~default:(to_string p) ~f:to_string
     else to_string p
 
   let pp ?(pretty = false) fmt p =
@@ -1258,27 +1255,34 @@ let is_project_root dir =
           | Ok r -> r
           | Error _ -> false )
 
-let rec collect_files ~dir acc =
-  let acc =
-    let filename = Fpath.(append dir (v ".ocamlformat")) in
-    if path_exists filename then `Ocamlformat (Fpath.to_string filename) :: acc
-    else acc
-  in
-  let acc =
-    let filename = Fpath.(apend dir (v ".ocp-indent")) in
-    if path_exists filename then `Ocp_indent (Fpath.to_string filename) :: acc
-    else acc
-  in
-  if is_project_root dir && !disable_outside_project then (acc, Some dir)
-  else
-    let dir' = Fpath.dirname dir in
-    let dir_exists =
-      match Bos.OS.Dir.exists dir with Ok r -> r | Error _ -> false
-    in
-    if (not (Fpath.equal dir dir')) && dir_exists then
-      collect_files ~dir:dir' acc
-    else if !disable_outside_project then ([], None)
-    else (acc, None)
+let rec collect_files ~segs acc =
+  match segs with
+  | [] | [""] -> (acc, None)
+  | "" :: upper_segs -> collect_files ~segs:upper_segs acc
+  | _ :: upper_segs ->
+      let dir =
+        String.concat ~sep:Fpath.dir_sep (List.rev segs) |> Fpath.v
+      in
+      let acc =
+        let filename = Fpath.(append dir (v ".ocamlformat")) in
+        match Bos.OS.File.exists filename with
+        | Ok true -> filename :: acc
+        | _ -> acc
+      in
+      let acc =
+        let filename = Fpath.(append dir (v ".ocp-indent")) in
+        match Bos.OS.File.exists filename with
+        | Ok true -> filename :: acc
+        | _ -> acc
+      in
+      if is_project_root dir && !disable_outside_project then (acc, Some dir)
+      else
+        let dir_exists =
+          match Bos.OS.Dir.exists dir with Ok r -> r | Error _ -> false
+        in
+        if dir_exists then collect_files ~segs:upper_segs acc
+        else if !disable_outside_project then ([], None)
+        else (acc, None)
 
 let read_config_file ~verbose conf filename_kind =
   match filename_kind with
@@ -1371,7 +1375,8 @@ let build_config ~file =
   let dir =
     Fpath.(v file |> to_absolute |> normalize |> split_base |> fst)
   in
-  let files, project_root = collect_files ~dir [] in
+  let segs = Fpath.segs dir |> List.rev in
+  let files, project_root = collect_files ~segs [] in
   let files =
     match (xdg_config, !disable_outside_project) with
     | None, _ | Some _, true -> files

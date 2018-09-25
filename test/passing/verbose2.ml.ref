@@ -1,4 +1,4 @@
-project-root=../
+project-root=../../ocamlformat
 margin=77 (../.ocamlformat:1)
 wrap-comments=true (../.ocamlformat:2)
 doc-comments=before (Environment variable or --config)
