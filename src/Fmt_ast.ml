@@ -2668,7 +2668,7 @@ and fmt_cases c ctx cs =
             (if first then if_newline "| " else fmt "| ")
         in
         hovbox 4
-          ( open_hovbox 2
+          ( open_hovbox (if break_cases_level c = 0 then 2 else 0)
           $ hvbox 0
               ( fmt_pattern c ~pro ~parens:paren_lhs xlhs
               $ opt pc_guard (fun g ->
