@@ -1,5 +1,5 @@
-margin=77 ({CWD}/.ocamlformat:1)
-wrap-comments=true ({CWD}/.ocamlformat:2)
+margin=77 (../.ocamlformat:1)
+wrap-comments=true (../.ocamlformat:2)
 doc-comments=before (Environment variable or --config)
 doc-comments=before (command line)
 

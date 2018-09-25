@@ -1,6 +1,6 @@
-project-root={CWD}
-margin=77 ({CWD}/.ocamlformat:1)
-wrap-comments=true ({CWD}/.ocamlformat:2)
+project-root=../
+margin=77 (../.ocamlformat:1)
+wrap-comments=true (../.ocamlformat:2)
 doc-comments=before (Environment variable or --config)
 doc-comments=before (command line)
 

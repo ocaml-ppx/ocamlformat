@@ -63,10 +63,8 @@ module Fpath = struct
   let to_string ?(pretty = false) p =
     if pretty then
       let cwd = cwd () in
-      match rem_prefix cwd p with
-      | Some q when String.equal (to_string q) "./" -> "{CWD}"
-      | Some q -> Format.sprintf "{CWD}%s%s" dir_sep (to_string q)
-      | None when equal cwd p -> "{CWD}"
+      match relativize ~root:cwd p with
+      | Some p -> to_string p
       | None -> to_string p
     else to_string p
 
