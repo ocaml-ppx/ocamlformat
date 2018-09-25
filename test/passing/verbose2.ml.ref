@@ -1,10 +1,6 @@
-project-root=/home/gpe/ocamlformat/
-margin=77 (/home/gpe/ocamlformat/.ocamlformat:1)
-wrap-comments=true (/home/gpe/ocamlformat/.ocamlformat:2)
-Fatal error: exception ("User Error: malformed OCAMLFORMAT environment variable"
-  ("unknown option" "\"doc-comments"))
-Raised at file "src/error.ml" (inlined), line 9, characters 14-30
-Called from file "src/error.ml", line 11, characters 19-40
-Called from file "src/Conf.ml", line 1093, characters 8-462
-Called from file "src/Conf.ml", line 1138, characters 4-105
-Called from file "src/Conf.ml", line 1175, characters 20-43
+project-root={CWD}
+margin=77 ({CWD}/.ocamlformat:1)
+wrap-comments=true ({CWD}/.ocamlformat:2)
+doc-comments=before (Environment variable or --config)
+doc-comments=before (command line)
+
