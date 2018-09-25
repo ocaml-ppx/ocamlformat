@@ -12,8 +12,7 @@
 (** Configuration options *)
 
 type t =
-  { braces_space: [`Tight | `Loose]
-  ; break_cases: [`Fit | `Nested | `All]
+  { break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
@@ -30,6 +29,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool

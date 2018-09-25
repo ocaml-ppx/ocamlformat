@@ -25,11 +25,6 @@ OPTIONS (CODE FORMATTING STYLE)
        has the lowest priority, then the closer the directory is to the
        processed file, the higher the priority.
 
-       --braces-space={loose|tight}
-           Whether or not to use spaces inside braces. loose uses a space
-           after opening braces and before closing braces. tight does not.
-           The default value is loose.
-
        --break-cases={fit|nested|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
@@ -140,6 +135,10 @@ OPTIONS (CODE FORMATTING STYLE)
            always break a line between two items. compact will not leave open
            lines between one-liners of similar sorts. The default value is
            sparse.
+
+       --no-indicate-multiline-delimiters
+           Print a space inside a delimiter to indicate that it's matching
+           delimiter is on a different line.
 
        --no-indicate-nested-or-patterns
            Control whether or not to indicate nested or-pattern using

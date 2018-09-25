@@ -12,8 +12,7 @@
 (** Configuration options *)
 
 type t =
-  { braces_space: [`Tight | `Loose]
-  ; break_cases: [`Fit | `Nested | `All]
+  { break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_string_literals: [`Newlines | `Never | `Wrap]
@@ -27,6 +26,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
@@ -381,19 +381,6 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with break_cases= x} )
 
-  let braces_space =
-    let doc = "Whether or not to use spaces inside braces." in
-    let names = ["braces-space"] in
-    let all =
-      [ ( "loose"
-        , `Loose
-        , "$(b,loose) uses a space after opening braces and before closing \
-           braces." )
-      ; ("tight", `Tight, "$(b,tight) does not.") ]
-    in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with braces_space= x} )
-
   let break_collection_expressions =
     let doc =
       "Break collection expressions (lists and arrays) elements by elements."
@@ -566,6 +553,16 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with if_then_else= x} )
+
+  let indicate_multiline_delimiters =
+    let doc =
+      "Print a space inside a delimiter to indicate that it's matching \
+       delimiter is on a different line."
+    in
+    let names = ["indicate-multiline-delimiters"] in
+    let default = true in
+    C.flag ~names ~default ~doc ~section (fun conf x ->
+        {conf with indicate_multiline_delimiters= x} )
 
   let indicate_nested_or_patterns =
     let default = true in
@@ -883,8 +880,7 @@ let config =
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
 let default_profile =
-  { braces_space= C.default Formatting.braces_space
-  ; break_cases= C.default Formatting.break_cases
+  { break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
@@ -899,6 +895,8 @@ let default_profile =
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; if_then_else= C.default Formatting.if_then_else
+  ; indicate_multiline_delimiters=
+      C.default Formatting.indicate_multiline_delimiters
   ; indicate_nested_or_patterns=
       C.default Formatting.indicate_nested_or_patterns
   ; infix_precedence= C.default Formatting.infix_precedence
@@ -951,8 +949,7 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { braces_space= `Tight
-  ; break_cases= `Fit
+  { break_cases= `Fit
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
@@ -967,6 +964,7 @@ let janestreet_profile =
   ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
+  ; indicate_multiline_delimiters= false
   ; indicate_nested_or_patterns= false
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true

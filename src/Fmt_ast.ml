@@ -765,7 +765,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         $ fmt_core_type c ~box:false (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -902,7 +902,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         | _ -> None
       in
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hovbox 0
@@ -1008,7 +1008,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       hvbox 0 (wrap_fits_breaks "[|" "|]" (Cmts.fmt_within c.cmts ppat_loc))
   | Ppat_array pats ->
       let wrap =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks
         else wrap_str
       in
       hvbox 0
@@ -1099,7 +1099,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            (fmt "lazy@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_unpack name ->
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       wrap_if parens "(" ")" (fmt "module@ " $ fmt_str_loc c name)
@@ -1428,7 +1428,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                                 , [] ); _ } as pld ) ] ) } ) ] ) ->
       let xargs, xbody = sugar_fun c (sub_exp ~ctx:(Str pld) retn_fun) in
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -1775,7 +1775,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_ifthenelse _ ->
       let cnd_exps = sugar_ite c xexp in
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -1941,7 +1941,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
           } ] ->
           let leading_cmt = Cmts.fmt_before c.cmts e0.pexp_loc in
           let wrap_if =
-            if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+            if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
             else wrap_if_str
           in
           hvbox 0
@@ -1965,7 +1965,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             else (parenze_exp xpc_rhs, Some false)
           in
           let wrap_if =
-            if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+            if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
             else wrap_if_str
           in
           wrap_if parens "(" ")"
@@ -1995,7 +1995,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         fmt_module_expr c (sub_mod ~ctx me)
       in
       let wrap =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks
         else wrap_str
       in
       opn
@@ -2044,7 +2044,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         match e1.pexp_desc with Pexp_sequence _ -> Some true | _ -> None
       in
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -2058,7 +2058,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
            $ fmt_atrs ))
   | Pexp_sequence _ ->
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -2078,7 +2078,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
            $ fmt_atrs ))
   | Pexp_setfield (e1, lid, e2) ->
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -2109,7 +2109,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         (wrap (list es "@,, " (sub_exp ~ctx >> fmt_expression c)) $ fmt_atrs)
   | Pexp_lazy e ->
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 2
@@ -2141,7 +2141,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
            (hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs))
   | Pexp_for (p1, e1, e2, dir, e3) ->
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -2175,7 +2175,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         $ fmt_atrs )
   | Pexp_while (e1, e2) ->
       let wrap_if =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks_if
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks_if
         else wrap_if_str
       in
       hvbox 0
@@ -3657,7 +3657,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       let wrap =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks
         else wrap_str
       in
       { empty with
@@ -3684,7 +3684,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       in
       let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
       let wrap =
-        if Poly.(c.conf.braces_space = `Loose) then wrap_fits_breaks
+        if c.conf.indicate_multiline_delimiters then wrap_fits_breaks
         else wrap_str
       in
       { empty with
