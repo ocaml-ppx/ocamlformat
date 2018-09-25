@@ -45,6 +45,35 @@ type t =
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
+module Fpath = struct
+  include Fpath
+
+  let cwd () =
+    match Bos.OS.Dir.current () with
+    | Ok p -> p
+    | error ->
+        (* should never append *)
+        Rresult.R.error_msg_to_invalid_arg error
+
+  let to_absolute file =
+    Fpath.(if is_rel file then append (cwd ()) file else file)
+
+  let dirname p = Fpath.split_base p |> fst
+
+  let to_string ?(pretty = false) p =
+    if pretty then
+      let cwd = cwd () in
+      match rem_prefix cwd p with
+      | Some q when String.equal (to_string q) "./" -> "{CWD}"
+      | Some q -> Format.sprintf "{CWD}%s%s" dir_sep (to_string q)
+      | None when equal cwd p -> "{CWD}"
+      | None -> to_string p
+    else to_string p
+
+  let pp ?(pretty = false) fmt p =
+    Format.fprintf fmt "%s" (to_string ~pretty p)
+end
+
 (** Extension of Cmdliner supporting lighter-weight option definition *)
 module Cmdliner : sig
   include module type of Cmdliner
@@ -123,7 +152,7 @@ module C : sig
   val update :
        config:config
     -> verbose:bool
-    -> from:[`File of string * int | `Config | `Commandline | `Attribute]
+    -> from:[`File of Fpath.t * int | `Config | `Commandline | `Attribute]
     -> name:string
     -> value:string
     -> inline:bool
@@ -291,7 +320,10 @@ end = struct
     | (`File _ | `Config | `Commandline) as from ->
         let from =
           match from with
-          | `File (file, lnum) -> Format.sprintf " (%s:%d)" file lnum
+          | `File (file, lnum) ->
+              Format.sprintf " (%s:%d)"
+                (Fpath.to_string ~pretty:true file)
+                lnum
           | `Config -> " (Environment variable or --config)"
           | `Commandline -> " (command line)"
         in
@@ -1201,10 +1233,10 @@ let parse_line config ~verbose ~from s =
            config file format *)
         if not config.quiet then
           Format.eprintf
-            "File %S, line %d:\n\
+            "File %a, line %d:\n\
              Warning: Using deprecated ocamlformat config syntax.\n\
              Please use `%s = %s`\n"
-            filename lnum name value ;
+            (Fpath.pp ~pretty:true) filename lnum name value ;
         update ~config ~from ~name ~value
     (* special case for disable/enable *)
     | ["enable"], _ -> update ~config ~from ~name:"disable" ~value:"false"
@@ -1225,7 +1257,9 @@ let is_project_root dir =
   | Some root -> Fpath.equal dir root
   | None ->
       List.exists project_root_witness ~f:(fun name ->
-          path_exists Fpath.(append dir (v name)) )
+          match Bos.OS.Dir.exists Fpath.(append dir (v name)) with
+          | Ok r -> r
+          | Error _ -> false )
 
 let rec collect_files ~dir acc =
   let acc =
@@ -1240,8 +1274,11 @@ let rec collect_files ~dir acc =
   in
   if is_project_root dir && !disable_outside_project then (acc, Some dir)
   else
-    let dir' = dirname dir in
-    if (not (Fpath.equal dir dir')) && path_exists dir then
+    let dir' = Fpath.dirname dir in
+    let dir_exists =
+      match Bos.OS.Dir.exists dir with Ok r -> r | Error _ -> false
+    in
+    if (not (Fpath.equal dir dir')) && dir_exists then
       collect_files ~dir:dir' acc
     else if !disable_outside_project then ([], None)
     else (acc, None)
@@ -1322,11 +1359,15 @@ let kind_of fname =
 
 let xdg_config =
   match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
-  | Some xdg_config_home ->
+  | Some xdg_config_home -> (
       let filename =
-        Filename.concat xdg_config_home "ocamlformat/.ocamlformat"
+        Fpath.(
+          append (v xdg_config_home)
+            (append (v "ocamlformat") (v ".ocamlformat")))
       in
-      if Caml.Sys.file_exists filename then Some filename else None
+      match Bos.OS.File.exists filename with
+      | Ok true -> Some filename
+      | _ -> None )
   | None -> None
 
 let build_config ~file =
@@ -1340,7 +1381,7 @@ let build_config ~file =
   let verbose = !print_config in
   if verbose then
     Option.iter project_root ~f:(fun x ->
-        Format.eprintf "project-root=%a@\n%!" Fpath.pp x ) ;
+        Format.eprintf "project-root=%a@\n%!" (Fpath.pp ~pretty:true) x ) ;
   let conf =
     List.fold files ~init:default_profile ~f:(read_config_file ~verbose)
     |> update_using_env ~verbose
@@ -1353,7 +1394,7 @@ let build_config ~file =
         | Some root ->
             Format.sprintf
               "no [.ocamlformat] was found within the project (root: %s)"
-              (Fpath.to_string root)
+              (Fpath.to_string ~pretty:true root)
         | None -> "no project root was found"
       in
       Format.eprintf
