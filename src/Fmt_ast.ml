@@ -2026,14 +2026,16 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                   (sugar_sequence c width xexp)
                   ( match c.conf.sequence_style with
                   | `Separator -> " ;@;<1000 0>"
-                  | `Terminator -> ";@;<1000 0>"
-                  | `Breaker -> ";@;<1000 0>" )
+                  | `Terminator -> ";@;<1000 0>" )
                   (fun grp ->
                     list grp
                       ( match c.conf.sequence_style with
+                      | `Separator when c.conf.break_sequences ->
+                          " ;@;<1000 0>"
                       | `Separator -> " ;@ "
-                      | `Terminator -> ";@ "
-                      | `Breaker -> ";@;<1000 0>" )
+                      | `Terminator when c.conf.break_sequences ->
+                          ";@;<1000 0>"
+                      | `Terminator -> ";@ " )
                       (fmt_expression c) ))
            $ fmt_atrs ))
   | Pexp_setfield (e1, lid, e2) ->

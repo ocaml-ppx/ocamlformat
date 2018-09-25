@@ -44,6 +44,9 @@ OPTIONS (CODE FORMATTING STYLE)
            fit-or-vertical vertically breaks expressions if they do not fit
            on a single line. The default value is wrap.
 
+       --break-sequences
+           Break sequences.
+
        --break-string-literals={wrap|newlines|never}
            Break string literals. wrap mode wraps string literals at the
            margin. Quoted strings such as {id|...|id} are preserved. newlines
@@ -156,10 +159,10 @@ OPTIONS (CODE FORMATTING STYLE)
            multi-line-only mode will try to skip parens for single-line
            tuples. The default value is always.
 
-       --sequence-style={separator|terminator|breaker}
+       --sequence-style={separator|terminator}
            Style of sequence. separator puts spaces before and after
-           semicolons. terminator only puts spaces after semicolons. breaker
-           always breaks sequences. The default value is separator.
+           semicolons. terminator only puts spaces after semicolons. The
+           default value is separator.
 
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
