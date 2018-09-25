@@ -1167,8 +1167,7 @@ let path_exists p = Fpath.to_string p |> Caml.Sys.file_exists
 let dirname p = Fpath.split_base p |> fst
 
 let root =
-  Option.map !root
-    ~f:Fpath.(fun x -> v x |> to_absolute |> normalize |> dirname)
+  Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
 
 let parse_line config ~verbose ~from s =
   let update ~config ~from ~name ~value =
@@ -1369,7 +1368,9 @@ let xdg_config =
   | None -> None
 
 let build_config ~file =
-  let dir = Fpath.(v file |> to_absolute |> normalize |> dirname) in
+  let dir =
+    Fpath.(v file |> to_absolute |> normalize |> split_base |> fst)
+  in
   let files, project_root = collect_files ~dir [] in
   let files =
     match (xdg_config, !disable_outside_project) with
