@@ -1,0 +1,4 @@
+(executable
+  (public_name ocamlformat_diff)
+  (package     ocamlformat)
+  (libraries   bos cmdliner))
