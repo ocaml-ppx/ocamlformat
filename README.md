@@ -52,7 +52,11 @@ OCamlFormat can be installed with `opam`:
 opam install ocamlformat
 ```
 
-For the emacs integration:
+Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instructions.
+
+## Editor setup
+
+### Emacs setup
 
 - add `$(opam config var share)/emacs/site-lisp` to `load-path` (as done by `opam user-setup install`)
 
@@ -65,7 +69,11 @@ For the emacs integration:
   (add-hook 'before-save-hook 'ocamlformat-before-save)))
 ```
 
-Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instructions.
+### Vim setup
+
+- be sure the `ocamlformat` binary can be found in PATH
+
+- install the [Neoformat](https://github.com/sbdchd/neoformat#install) plugin
 
 ## Documentation
 
