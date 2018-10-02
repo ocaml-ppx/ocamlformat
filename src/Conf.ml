@@ -1166,6 +1166,9 @@ let dirname p = Fpath.split_base p |> fst
 let root =
   Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
 
+let disable_outside_project =
+  !disable_outside_project || Option.is_some root
+
 let parse_line config ~verbose ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
@@ -1275,13 +1278,13 @@ let rec collect_files ~segs acc =
         | Ok true -> filename :: acc
         | _ -> acc
       in
-      if is_project_root dir && !disable_outside_project then (acc, Some dir)
+      if is_project_root dir && disable_outside_project then (acc, Some dir)
       else
         let dir_exists =
           match Bos.OS.Dir.exists dir with Ok r -> r | Error _ -> false
         in
         if dir_exists then collect_files ~segs:upper_segs acc
-        else if !disable_outside_project then ([], None)
+        else if disable_outside_project then ([], None)
         else (acc, None)
 
 let read_config_file ~verbose conf filename_kind =
@@ -1378,7 +1381,7 @@ let build_config ~file =
   let segs = Fpath.segs dir |> List.rev in
   let files, project_root = collect_files ~segs [] in
   let files =
-    match (xdg_config, !disable_outside_project) with
+    match (xdg_config, disable_outside_project) with
     | None, _ | Some _, true -> files
     | Some f, false -> `Ocamlformat f :: files
   in
@@ -1391,7 +1394,7 @@ let build_config ~file =
     |> update_using_env ~verbose
     |> C.update_using_cmdline ~verbose
   in
-  if !disable_outside_project && List.is_empty files then (
+  if disable_outside_project && List.is_empty files then (
     ( if not conf.quiet then
       let reason =
         match project_root with
