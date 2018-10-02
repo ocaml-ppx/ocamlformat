@@ -10,6 +10,8 @@ If you encounter a problem when using ocamlformat or if you have any questions, 
 4. Describe the expected and actual behavior.
 5. Do not unsubscribe from the issue until it is closed, the maintainers may ask for your feedback.
 
+When acknowledged, the project maintainers will add [labels](#ocamlformat-labels) to your issue throughout its lifespan.
+
 ## Pull Requests
 
 We actively welcome pull requests.
@@ -21,6 +23,9 @@ We actively welcome pull requests.
 '.
 5. Ensure the test suite passes (see [Running the tests](#running-the-tests)).
 6. If you haven't already, complete the Contributor License Agreement ("CLA").
+
+When acknowledged, the project maintainers will add [labels](#ocamlformat-labels) to your pull request throughout its lifespan.
+
 
 ### Running the tests
 
@@ -37,3 +42,38 @@ In order to accept your pull request, we need you to submit a CLA. You only need
 ## License
 
 By contributing to OCamlFormat, you agree that your contributions will be licensed under the LICENSE file in the root directory of this source tree.
+
+## Ocamlformat Labels
+
+### Pull Request specific
+
+- [CLA Signed](https://github.com/ocaml-ppx/ocamlformat/labels/CLA%20Signed): Added automatically as long as the user signed the Contributor License Agreement (see above)
+
+### Issue specific
+
+- [Good-first-issue](https://github.com/ocaml-ppx/ocamlformat/labels/Good-first-issue): This issue is a good entry point in the project for new contributors
+
+### Kind
+
+- [Kind/Bug](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FBug): This issue describes a problem or this contribution addresses a problem (erroneous/unintended behavior)
+- [Kind/Docs](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FDocs): This is related to a documentation change (user documentation or source code documentation)
+- [Kind/Feature-request](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FFeature-request): This issue or contribution proposes a new feature
+- [Kind/Style-suggestion](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FStyle%20suggestion): This issue or contribution proposes a style modification for the formatted output
+- [Kind/To-discuss](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FTo-discuss): Discussion needed to converge to a solution
+
+### Priority
+
+- [Priority/Critical](https://github.com/ocaml-ppx/ocamlformat/labels/Priority%2FCritical): Highest priority, for blocking bugs or features that prevent ocamlformat to be used
+- [Priority/High](https://github.com/ocaml-ppx/ocamlformat/labels/Priority%2FHigh): For non-blocking bugs or features, that don't prevent ocamformat to be used
+- [Priority/Medium](https://github.com/ocaml-ppx/ocamlformat/labels/Priority%2FMedium): For important documentation and style suggestions
+- [Priority/Low](https://github.com/ocaml-ppx/ocamlformat/labels/Priority%2FLow): Lowest priority, for less important documentation and style suggestions
+
+### Status
+
+- [Status/0-More-info-needed](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F0-More-info-needed): More information is needed before this issue can be triaged
+- [Status/0-Triage](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F0-Triage): This issue needs triaging
+- [Status/1-Acknowledged](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F1-Acknowledged): This issue has been triaged and is being investigated
+- [Status/2-Regression](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F2-Regression): Known workaround to be applied and tested
+- [Status/3-Fixed-need-test](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F3-Fixed-need-test): This issue has been fixed and needs checking
+- [Status/4-Fixed](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F4-Fixed): This issue has been fixed
+- [Status/5-Awaiting-feedback](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F5-Awaiting-feedback): This issue or contribution requires feedback from other maintainers or from its submitter
