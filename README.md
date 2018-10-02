@@ -79,7 +79,8 @@ When the option `--disable-outside-project` is set, .ocamlformat files outside o
 
 ### Preset profiles
 
-Preset profiles set all options, overriding lower priority configuration. A preset profile can be set using the `--profile` (or `-p`) option.
+Preset profiles set all options, overriding lower priority configuration. A preset profile can be set using the `--profile` (or `-p`) option. You can pass the option `--profile=<name>` on the command line or add `profile = <name>` in an .ocamlformat configuration file.
+
 The available profiles are:
 - `default` sets each option to its default value
 - `compact` sets options for a generally compact code style
