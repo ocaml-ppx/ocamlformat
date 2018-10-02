@@ -1,1 +1,1 @@
---disable-outside-project --print-config --doc-comments=before --config=doc-comments=before
+--disable-outside-detected-project --print-config --doc-comments=before --config=doc-comments=before

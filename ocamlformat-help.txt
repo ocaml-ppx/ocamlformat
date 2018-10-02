@@ -183,7 +183,7 @@ OPTIONS
            Aggregate options. Options are specified as a comma-separated list
            of pairs: option=VAL,...,option=VAL.
 
-       --disable-outside-project
+       --disable-outside-detected-project
            Do not read .ocamlformat config files outside the current project.
            The project root of an input file is taken to be the nearest
            ancestor directory that contains a .git or .hg or dune-project
