@@ -26,6 +26,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Keyword_first]
+  ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
@@ -553,6 +554,16 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section (fun conf x ->
         {conf with if_then_else= x} )
 
+  let indicate_multiline_delimiters =
+    let doc =
+      "Print a space inside a delimiter to indicate that it's matching \
+       delimiter is on a different line."
+    in
+    let names = ["indicate-multiline-delimiters"] in
+    let default = true in
+    C.flag ~names ~default ~doc ~section (fun conf x ->
+        {conf with indicate_multiline_delimiters= x} )
+
   let indicate_nested_or_patterns =
     let default = true in
     let doc =
@@ -884,6 +895,8 @@ let default_profile =
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; if_then_else= C.default Formatting.if_then_else
+  ; indicate_multiline_delimiters=
+      C.default Formatting.indicate_multiline_delimiters
   ; indicate_nested_or_patterns=
       C.default Formatting.indicate_nested_or_patterns
   ; infix_precedence= C.default Formatting.infix_precedence
@@ -951,6 +964,7 @@ let janestreet_profile =
   ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
+  ; indicate_multiline_delimiters= false
   ; indicate_nested_or_patterns= false
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true
