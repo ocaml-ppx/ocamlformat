@@ -127,11 +127,7 @@ let wrap_k x = wrap_if_k true x
 
 let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 
-and wrap_if_str cnd pre suf = wrap_if_k cnd (str pre) (str suf)
-
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
-
-and wrap_str pre suf = wrap_k (str pre) (str suf)
 
 let wrap_if_breaks pre suf k fs =
   fits_breaks "" pre fs ; k fs ; fits_breaks "" suf fs
@@ -143,7 +139,7 @@ let wrap_if_fits_and cnd pre suf k fs =
 
 let wrap_fits_breaks_if c cnd pre suf k fs =
   if (not c.Conf.indicate_multiline_delimiters) && String.equal pre "(" then
-    wrap_if_str cnd pre suf k fs
+    wrap_if_k cnd (str pre) (str suf) k fs
   else (
     fits_breaks_if cnd pre (pre ^ " ") fs ;
     k fs ;
