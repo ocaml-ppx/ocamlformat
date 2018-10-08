@@ -1259,7 +1259,7 @@ let rec collect_files ~segs acc =
         if Fpath.exists filename then `Ocamlformat filename :: acc else acc
       in
       let acc =
-        let filename = Fpath.(append dir (v ".ocp-indent")) in
+        let filename = Fpath.(dir / ".ocp-indent") in
         if Fpath.exists filename then `Ocp_indent filename :: acc else acc
       in
       if is_project_root dir && disable_outside_detected_project then
