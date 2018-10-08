@@ -73,7 +73,7 @@ By contributing to OCamlFormat, you agree that your contributions will be licens
 - [Status/0-More-info-needed](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F0-More-info-needed): More information is needed before this issue can be triaged
 - [Status/0-Triage](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F0-Triage): This issue needs triaging
 - [Status/1-Acknowledged](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F1-Acknowledged): This issue has been triaged and is being investigated
-- [Status/2-Regression](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F2-Regression): Known workaround to be applied and tested
+- [Status/2-Regression](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F2-Regression): Issue present in the current version but not in an earlier one
 - [Status/3-Fixed-need-test](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F3-Fixed-need-test): This issue has been fixed and needs checking
 - [Status/4-Fixed](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F4-Fixed): This issue has been fixed
 - [Status/5-Awaiting-feedback](https://github.com/ocaml-ppx/ocamlformat/labels/Status%2F5-Awaiting-feedback): This issue or contribution requires feedback from other maintainers or from its submitter
