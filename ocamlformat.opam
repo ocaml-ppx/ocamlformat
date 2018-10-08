@@ -14,6 +14,7 @@ depends: [
   "base-unix"
   "cmdliner"
   "dune" {build}
+  "fpath"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "stdio"
 ]
