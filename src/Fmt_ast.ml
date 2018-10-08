@@ -2658,8 +2658,8 @@ and fmt_cases c ctx cs =
             (break_cases_level c > 0)
             (fmt_or_k parens_here (fmt "@;<1 2>->@]")
                (fmt "@;<1 -2>->@]@;<0 3>"))
-            ( fmt "@;<1 -2>->"
-            $ fmt_or_k parens_here (fmt " (@]") (fmt "@]@;<0 -1>") )
+            ( fmt "@;<1 -2>->@]"
+            $ fmt_or_k parens_here (fmt " (") (fmt "@;<0 -1>") )
         in
         let pro =
           fmt_or_k
@@ -2668,7 +2668,7 @@ and fmt_cases c ctx cs =
             (if first then if_newline "| " else fmt "| ")
         in
         hovbox 4
-          ( open_hovbox 0
+          ( open_hovbox (if break_cases_level c = 0 then 2 else 0)
           $ hvbox 0
               ( fmt_pattern c ~pro ~parens:paren_lhs xlhs
               $ opt pc_guard (fun g ->

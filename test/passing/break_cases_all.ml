@@ -66,3 +66,18 @@ let is_sequence exp =
       true
   | _ ->
       false
+
+let _ =
+  let f x y =
+    match x with
+    | None ->
+        false
+    | Some looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+      -> (
+      match y with
+      | Some _ ->
+          true
+      | None ->
+          false )
+  in
+  ()
