@@ -48,15 +48,11 @@ type t =
 module Fpath = struct
   include Fpath
 
-  let cwd () =
-    match Bos.OS.Dir.current () with
-    | Ok p -> p
-    | error ->
-        (* should never append *)
-        Rresult.R.error_msg_to_invalid_arg error
+  let cwd () = Unix.getcwd () |> v
 
-  let to_absolute file =
-    Fpath.(if is_rel file then append (cwd ()) file else file)
+  let exists p = to_string p |> Caml.Sys.file_exists
+
+  let to_absolute file = if is_rel file then append (cwd ()) file else file
 
   let to_string ?(pretty = false) p =
     if pretty then
@@ -1255,9 +1251,7 @@ let is_project_root dir =
   | Some root -> Fpath.equal dir root
   | None ->
       List.exists project_root_witness ~f:(fun name ->
-          match Bos.OS.Dir.exists Fpath.(append dir (v name)) with
-          | Ok r -> r
-          | Error _ -> false )
+          Fpath.(exists (dir / name)) )
 
 let rec collect_files ~segs acc =
   match segs with
@@ -1268,10 +1262,8 @@ let rec collect_files ~segs acc =
         String.concat ~sep:Fpath.dir_sep (List.rev segs) |> Fpath.v
       in
       let acc =
-        let filename = Fpath.(append dir (v ".ocamlformat")) in
-        match Bos.OS.File.exists filename with
-        | Ok true -> filename :: acc
-        | _ -> acc
+        let filename = Fpath.(dir / ".ocamlformat") in
+        if Fpath.exists filename then filename :: acc else acc
       in
       let acc =
         let filename = Fpath.(append dir (v ".ocp-indent")) in
@@ -1281,13 +1273,9 @@ let rec collect_files ~segs acc =
       in
       if is_project_root dir && disable_outside_detected_project then
         (acc, Some dir)
-      else
-        let dir_exists =
-          match Bos.OS.Dir.exists dir with Ok r -> r | Error _ -> false
-        in
-        if dir_exists then collect_files ~segs:upper_segs acc
-        else if disable_outside_detected_project then ([], None)
-        else (acc, None)
+      else if Fpath.exists dir then collect_files ~segs:upper_segs acc
+      else if disable_outside_detected_project then ([], None)
+      else (acc, None)
 
 let read_config_file ~verbose conf filename_kind =
   match filename_kind with
@@ -1365,15 +1353,12 @@ let kind_of fname =
 
 let xdg_config =
   match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
-  | Some xdg_config_home -> (
+  | Some xdg_config_home ->
       let filename =
         Fpath.(
-          append (v xdg_config_home)
-            (append (v "ocamlformat") (v ".ocamlformat")))
+          append (v xdg_config_home) (v "ocamlformat" / ".ocamlformat"))
       in
-      match Bos.OS.File.exists filename with
-      | Ok true -> Some filename
-      | _ -> None )
+      if Fpath.exists filename then Some filename else None
   | None -> None
 
 let build_config ~file =
