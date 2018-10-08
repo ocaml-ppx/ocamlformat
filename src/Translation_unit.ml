@@ -22,7 +22,7 @@ type 'a t =
   { input: Conf.t -> In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
-  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Formatting.t
+  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
@@ -139,7 +139,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     let source = Source.create source_txt in
     let cmts_t = xunit.init_cmts source conf ast comments in
     let fs = Format.formatter_of_out_channel oc in
-    Formatting.set_margin conf.margin fs ;
+    Fmt.set_margin conf.margin fs ;
     xunit.fmt source cmts_t conf ast fs ;
     Format.pp_print_newline fs () ;
     Out_channel.close oc ;

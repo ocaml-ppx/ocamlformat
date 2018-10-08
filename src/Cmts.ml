@@ -41,7 +41,7 @@ end) : sig
 
   val children : t -> Itv.t -> Itv.t list
 
-  val dump : t -> Formatting.t
+  val dump : t -> Fmt.t
   (** Debug: dump debug representation of tree. *)
 end = struct
   (* simple but (asymptotically) suboptimal implementation *)
@@ -84,7 +84,7 @@ end = struct
   let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
 
   let dump tree =
-    let open Formatting in
+    let open Fmt in
     let rec dump_ tree roots =
       vbox 0
         (list roots "@," (fun root ->
@@ -455,7 +455,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
   split_asterisk_prefixed_ 0
 
 let fmt_cmt t cmt =
-  let open Formatting in
+  let open Fmt in
   if not t.conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
   else
     match split_asterisk_prefixed cmt with
@@ -472,9 +472,8 @@ let fmt_cmt t cmt =
                 | _, Some _ -> str line $ fmt "@,*" ) )
 
 (** Find, remove, and format comments for loc. *)
-let fmt_cmts t ?pro ?epi ?(eol = Formatting.fmt "@\n") ?(adj = eol) tbl loc
-    =
-  let open Formatting in
+let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
+  let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
   | None | Some [] -> fmt ""
@@ -520,18 +519,17 @@ let fmt_cmts t ?pro ?epi ?(eol = Formatting.fmt "@\n") ?(adj = eol) tbl loc
                   (fmt_or_k adj_cmt adj eol)
                   (Option.call ~f:epi) ) )
 
-let fmt_before t ?pro ?(epi = Formatting.break_unless_newline 1 0) ?eol ?adj
-    =
+let fmt_before t ?pro ?(epi = Fmt.break_unless_newline 1 0) ?eol ?adj =
   fmt_cmts t t.cmts_before ?pro ~epi ?eol ?adj
 
-let fmt_after t ?(pro = Formatting.break_unless_newline 1 0) ?epi =
+let fmt_after t ?(pro = Fmt.break_unless_newline 1 0) ?epi =
   let within = fmt_cmts t t.cmts_within ~pro ?epi in
-  let after = fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Formatting.fmt "") in
+  let after = fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "") in
   fun loc -> within loc $ after loc
 
-let fmt_within t ?(pro = Formatting.break_unless_newline 1 0)
-    ?(epi = Formatting.break_unless_newline 1 0) =
-  fmt_cmts t t.cmts_within ~pro ~epi ~eol:(Formatting.fmt "")
+let fmt_within t ?(pro = Fmt.break_unless_newline 1 0)
+    ?(epi = Fmt.break_unless_newline 1 0) =
+  fmt_cmts t t.cmts_within ~pro ~epi ~eol:(Fmt.fmt "")
 
 let fmt t ?pro ?epi ?eol ?adj loc =
   (* remove the before comments from the map first *)

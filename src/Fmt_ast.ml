@@ -17,18 +17,18 @@ open Migrate_ast
 open Asttypes
 open Parsetree
 open Ast
-open Formatting
+open Fmt
 
 type c = {conf: Conf.t; source: Source.t; cmts: Cmts.t}
 
 type block =
-  { opn: Formatting.t
-  ; pro: Formatting.t option
-  ; psp: Formatting.t
-  ; bdy: Formatting.t
-  ; cls: Formatting.t
-  ; esp: Formatting.t
-  ; epi: Formatting.t option }
+  { opn: Fmt.t
+  ; pro: Fmt.t option
+  ; psp: Fmt.t
+  ; bdy: Fmt.t
+  ; cls: Fmt.t
+  ; esp: Fmt.t
+  ; epi: Fmt.t option }
 
 let empty =
   { opn= Fn.const ()
