@@ -867,6 +867,45 @@ let output =
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
 
+let ocp_indent_options =
+  [ ("base", None)
+  ; ("type", None)
+  ; ("in", None)
+  ; ("with", None)
+  ; ( "match_clause"
+    , Some
+        ( "cases-exp-indent"
+        , "$(b,match-clause) sets $(b,cases-exp-indent) to the same value."
+        , Fn.id ) )
+  ; ("ppx_stritem_ext", None)
+  ; ("max_indent", None)
+  ; ("strict_with", None)
+  ; ("strict_else", None)
+  ; ("strict_comments", None)
+  ; ("align_ops", None)
+  ; ("align_params", None) ]
+
+let ocp_indent_config =
+  let doc =
+    let open Format in
+    let supported =
+      let l =
+        List.filter_map ocp_indent_options ~f:(fun (_, o) ->
+            Option.map o ~f:(fun (_, doc, _) -> doc) )
+      in
+      if List.is_empty l then ""
+      else
+        asprintf " %a"
+          (pp_print_list
+             ~pp_sep:(fun fs () -> fprintf fs ",@ ")
+             (fun fs s -> fprintf fs "%s" s))
+          l
+    in
+    asprintf "Read .ocp-indent configuration files.%s" supported
+  in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["ocp-indent-config"] ~doc ~docs)
+
 let print_config =
   let doc = "Print config." in
   let default = false in
@@ -1038,6 +1077,47 @@ let validate () =
 ;;
 parse info validate
 
+let ocp_indent_normal_profile =
+  [ ("base", "2")
+  ; ("type", "2")
+  ; ("in", "0")
+  ; ("with", "0")
+  ; ("match_clause", "2")
+  ; ("ppx_stritem_ext", "2")
+  ; ("max_indent", "4")
+  ; ("strict_with", "never")
+  ; ("strict_else", "always")
+  ; ("strict_comments", "false")
+  ; ("align_ops", "true")
+  ; ("align_params", "auto") ]
+
+let ocp_indent_apprentice_profile =
+  [ ("base", "2")
+  ; ("type", "4")
+  ; ("in", "2")
+  ; ("with", "2")
+  ; ("match_clause", "4")
+  ; ("ppx_stritem_ext", "2")
+  ; ("strict_with", "never")
+  ; ("strict_else", "always")
+  ; ("strict_comments", "false")
+  ; ("align_ops", "true")
+  ; ("align_params", "always") ]
+
+let ocp_indent_janestreet_profile =
+  [ ("base", "2")
+  ; ("type", "2")
+  ; ("in", "0")
+  ; ("with", "0")
+  ; ("match_clause", "2")
+  ; ("ppx_stritem_ext", "2")
+  ; ("max_indent", "2")
+  ; ("strict_with", "auto")
+  ; ("strict_else", "always")
+  ; ("strict_comments", "true")
+  ; ("align_ops", "true")
+  ; ("align_params", "always") ]
+
 let parse_line config ~verbose ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
@@ -1057,6 +1137,22 @@ let parse_line config ~verbose ~from s =
     | name, `Attribute ->
         C.update ~config ~verbose ~from ~name ~value ~inline:true
   in
+  let update_ocp_indent_option ~config ~from ~name ~value =
+    let opt =
+      List.Assoc.find_exn ocp_indent_options ~equal:String.equal name
+    in
+    match opt with
+    | None -> Ok config
+    | Some (ocamlformat_opt, _doc, f) ->
+        update ~config ~from ~name:ocamlformat_opt ~value:(f value)
+  in
+  let rec update_many ~config ~from = function
+    | [] -> Ok config
+    | (name, value) :: t -> (
+      match update_ocp_indent_option ~config ~from ~name ~value with
+      | Ok c -> update_many ~config:c ~from t
+      | Error e -> Error e )
+  in
   let s =
     match String.index s '#' with
     | Some i -> String.sub s ~pos:0 ~len:i
@@ -1065,7 +1161,12 @@ let parse_line config ~verbose ~from s =
   let s = String.strip s in
   match String.split ~on:'=' s with
   | [] | [""] -> Ok config
-  | [name; value] -> update ~config ~from ~name ~value
+  | [name; value] ->
+      let name = String.strip name in
+      let value = String.strip value in
+      if List.Assoc.mem ocp_indent_options ~equal:String.equal name then
+        update_ocp_indent_option ~config ~from ~name ~value
+      else update ~config ~from ~name ~value
   | [s] -> (
     match
       ( List.filter (String.split ~on:' ' s) ~f:(fun s ->
@@ -1085,6 +1186,14 @@ let parse_line config ~verbose ~from s =
         update ~config ~from ~name ~value
     (* special case for disable/enable *)
     | ["enable"], _ -> update ~config ~from ~name:"disable" ~value:"false"
+    | ["normal"], _ -> update_many ~config ~from ocp_indent_normal_profile
+    | ["apprentice"], _ ->
+        update_many ~config ~from ocp_indent_apprentice_profile
+    | ["JaneStreet"], _ ->
+        Result.( >>= )
+          (update ~config ~from ~name:"profile" ~value:"janestreet")
+          (fun config ->
+            update_many ~config ~from ocp_indent_janestreet_profile )
     | [name], _ -> update ~config ~from ~name ~value:"true"
     | _ -> Error (`Malformed s) )
   | _ -> Error (`Malformed s)
@@ -1096,7 +1205,13 @@ let is_project_root dir =
 let rec collect_files ~dir acc =
   let acc =
     let filename = Filename.concat dir ".ocamlformat" in
-    if Caml.Sys.file_exists filename then filename :: acc else acc
+    if Caml.Sys.file_exists filename then `Ocamlformat filename :: acc
+    else acc
+  in
+  let acc =
+    let filename = Filename.concat dir ".ocp-indent" in
+    if Caml.Sys.file_exists filename then `Ocp_indent filename :: acc
+    else acc
   in
   if is_project_root dir && !disable_outside_project then (acc, Some dir)
   else
@@ -1106,32 +1221,43 @@ let rec collect_files ~dir acc =
     else if !disable_outside_project then ([], None)
     else (acc, None)
 
-let read_config_file ~verbose conf filename =
-  try
-    In_channel.with_file filename ~f:(fun ic ->
-        let c, errors, _ =
-          In_channel.fold_lines ic ~init:(conf, [], 1)
-            ~f:(fun (conf, errors, num) line ->
-              match
-                parse_line conf ~verbose ~from:(`File (filename, num)) line
-              with
-              | Ok conf -> (conf, errors, Int.succ num)
-              | Error e -> (conf, e :: errors, Int.succ num) )
-        in
-        match List.rev errors with
-        | [] -> c
-        | l ->
-            user_error "malformed .ocamlformat file"
-              (List.map l ~f:(function
-                | `Malformed line -> ("invalid format", Sexp.Atom line)
-                | `Misplaced (name, _) ->
-                    ("not allowed here", Sexp.Atom name)
-                | `Unknown (name, _value) ->
-                    ("unknown option", Sexp.Atom name)
-                | `Bad_value (name, reason) ->
-                    ( "bad value for"
-                    , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
-  with Sys_error _ -> conf
+let read_config_file ~verbose conf filename_kind =
+  match filename_kind with
+  | `Ocp_indent _ when not !ocp_indent_config -> conf
+  | `Ocp_indent filename | `Ocamlformat filename -> (
+    try
+      In_channel.with_file filename ~f:(fun ic ->
+          let c, errors, _ =
+            In_channel.fold_lines ic ~init:(conf, [], 1)
+              ~f:(fun (conf, errors, num) line ->
+                match
+                  parse_line conf ~verbose
+                    ~from:(`File (filename, num))
+                    line
+                with
+                | Ok conf -> (conf, errors, Int.succ num)
+                | Error e -> (conf, e :: errors, Int.succ num) )
+          in
+          match List.rev errors with
+          | [] -> c
+          | l ->
+              let kind =
+                match filename_kind with
+                | `Ocp_indent _ -> ".ocp-indent"
+                | `Ocamlformat _ -> ".ocamlformat"
+              in
+              user_error
+                (Format.sprintf "malformed %s file" kind)
+                (List.map l ~f:(function
+                  | `Malformed line -> ("invalid format", Sexp.Atom line)
+                  | `Misplaced (name, _) ->
+                      ("not allowed here", Sexp.Atom name)
+                  | `Unknown (name, _value) ->
+                      ("unknown option", Sexp.Atom name)
+                  | `Bad_value (name, reason) ->
+                      ( "bad value for"
+                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
+    with Sys_error _ -> conf )
 
 let to_absolute file =
   Filename.(if is_relative file then concat (Unix.getcwd ()) file else file)
@@ -1188,7 +1314,7 @@ let build_config ~filename =
   let files =
     match (xdg_config, !disable_outside_project) with
     | None, _ | Some _, true -> files
-    | Some f, false -> f :: files
+    | Some f, false -> `Ocamlformat f :: files
   in
   let verbose = !print_config in
   if verbose then

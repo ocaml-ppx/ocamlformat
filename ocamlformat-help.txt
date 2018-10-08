@@ -228,6 +228,10 @@ OPTIONS
            Output file. Mutually exclusive with --inplace. Write to stdout if
            omitted.
 
+       --ocp-indent-config
+           Read .ocp-indent configuration files. match-clause sets
+           cases-exp-indent to the same value.
+
        -p {default|compact|sparse|janestreet},
        --profile={default|compact|sparse|janestreet}
            Preset profiles which set all options, overriding lower priority
