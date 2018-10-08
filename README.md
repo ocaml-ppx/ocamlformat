@@ -8,6 +8,25 @@ OCamlFormat works by parsing source code using the OCaml compiler's standard par
 
 See the source code of OCamlFormat itself and [Infer](https://github.com/facebook/infer) for examples of the styles of code it produces.
 
+## Table of Contents
+- [Features](#features)
+  - [Overview](#overview)
+  - [Code style](#code-style)
+  - [Options](#options)
+  - [Preset profiles](#preset-profiles)
+- [Installation](#installation)
+- [Editor setup](#editor-setup)
+  - [Emacs setup](#emacs-setup)
+  - [Vim setup](#vim-setup)
+- [Documentation](#documentation)
+- [Reason](#reason)
+- [Community](#community)
+- [License](#license)
+
+## Features
+
+### Overview
+
 OCamlFormat requires source code that meets the following conditions:
 
 - Does not trigger warning 50 (“Unexpected documentation comment.”). For code that triggers warning 50, it is unlikely that ocamlformat will happen to preserve the documentation string attachment.
@@ -24,7 +43,7 @@ Under those conditions, ocamlformat is expected to produce output equivalent to 
 
 - The set of comments in the original and formatted files is the same up to their location.
 
-## Code style
+### Code style
 
 There is currently no single dominant style for OCaml code, and the code produced by OCamlFormat does not attempt to closely mimic any of the common styles. Instead of familiarity, the focus is on legibility, keeping the common cases reasonably compact while attempting to avoid confusing formatting in corner cases. Improvement is inevitably possible.
 
@@ -44,6 +63,30 @@ There is a huge space for subjective and personal preferences here, and it would
 
 A limitation originates from the treatment of comments by the OCaml parser: they are not included in the parse tree itself, but are only available as a separate list. This means that OCamlFormat must decide where to place the comments within the parse tree. It does this based on source locations of code and comments, as well as using a few heuristics such as whether only white space separates a comment and some code.
 
+### Options
+
+The full options' documentation is available in [ocamlformat-help.txt] and through `ocamlformat --help`.
+Options can be modified by the means of:
+- an .ocamlformat configuration file with an `option = VAL` line
+- using the `OCAMLFORMAT` environment variable: `OCAMLFORMAT=option=VAL,...,option=VAL`
+- an optional parameter on the command line
+- a global `[@@@ocamlformat "option=VAL"]` attribute in the processed file
+- an `[@@ocamlformat "option=VAL"]` attribute on an expression in the processed file
+
+.ocamlformat files in the containing and all ancestor directories for each input file are used, as well as the global .ocamlformat file defined in `$XDG_CONFIG_HOME/ocamlformat`. The global .ocamlformat file has the lowest priority, then the closer the directory is to the processed file, the higher the priority.
+
+When the option `--disable-outside-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
+
+### Preset profiles
+
+Preset profiles set all options, overriding lower priority configuration. A preset profile can be set using the `--profile` (or `-p`) option. You can pass the option `--profile=<name>` on the command line or add `profile = <name>` in an .ocamlformat configuration file.
+
+The available profiles are:
+- `default` sets each option to its default value
+- `compact` sets options for a generally compact code style
+- `sparse` sets options for a generally sparse code style
+- `janestreet` is the profile used at JaneStreet
+
 ## Installation
 
 OCamlFormat can be installed with `opam`:
@@ -52,7 +95,11 @@ OCamlFormat can be installed with `opam`:
 opam install ocamlformat
 ```
 
-For the emacs integration:
+Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instructions.
+
+## Editor setup
+
+### Emacs setup
 
 - add `$(opam config var share)/emacs/site-lisp` to `load-path` (as done by `opam user-setup install`)
 
@@ -65,7 +112,11 @@ For the emacs integration:
   (add-hook 'before-save-hook 'ocamlformat-before-save)))
 ```
 
-Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instructions.
+### Vim setup
+
+- be sure the `ocamlformat` binary can be found in PATH
+
+- install the [Neoformat](https://github.com/sbdchd/neoformat#install) plugin
 
 ## Documentation
 
