@@ -875,7 +875,7 @@ let ocp_indent_options =
   ; ( "match_clause"
     , Some
         ( "cases-exp-indent"
-        , "$(b,match-clause) is equivalent to $(b,cases-exp-indent)."
+        , "$(b,match-clause) sets $(b,cases-exp-indent) to the same value."
         , Fn.id ) )
   ; ("ppx_stritem_ext", None)
   ; ("max_indent", None)

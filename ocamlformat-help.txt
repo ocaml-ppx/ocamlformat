@@ -229,8 +229,8 @@ OPTIONS
            omitted.
 
        --ocp-indent-config
-           Read .ocp-indent configuration files. match-clause is equivalent
-           to cases-exp-indent.
+           Read .ocp-indent configuration files. match-clause sets
+           cases-exp-indent to the same value.
 
        -p {default|compact|sparse|janestreet},
        --profile={default|compact|sparse|janestreet}
