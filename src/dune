@@ -9,7 +9,7 @@ let preprocess =
 (rule
  (targets Version.ml)
  (deps (universe))
- (action (run ../tools/gen_version.sh Version.ml))
+ (action (run sh %%{dep:../tools/gen_version.sh} Version.ml))
  (mode fallback))
 
 (ocamllex (modules Literal_lexer))
