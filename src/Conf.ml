@@ -1153,13 +1153,6 @@ let ocp_indent_janestreet_profile =
   ; ("align_ops", "true")
   ; ("align_params", "always") ]
 
-let to_absolute file =
-  Fpath.(if is_rel file then append (Unix.getcwd () |> v) file else file)
-
-let path_exists p = Fpath.to_string p |> Caml.Sys.file_exists
-
-let dirname p = Fpath.split_base p |> fst
-
 let root =
   Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
 
@@ -1263,13 +1256,11 @@ let rec collect_files ~segs acc =
       in
       let acc =
         let filename = Fpath.(dir / ".ocamlformat") in
-        if Fpath.exists filename then filename :: acc else acc
+        if Fpath.exists filename then `Ocamlformat filename :: acc else acc
       in
       let acc =
         let filename = Fpath.(append dir (v ".ocp-indent")) in
-        match Bos.OS.File.exists filename with
-        | Ok true -> filename :: acc
-        | _ -> acc
+        if Fpath.exists filename then `Ocp_indent filename :: acc else acc
       in
       if is_project_root dir && disable_outside_detected_project then
         (acc, Some dir)
@@ -1282,7 +1273,7 @@ let read_config_file ~verbose conf filename_kind =
   | `Ocp_indent _ when not !ocp_indent_config -> conf
   | `Ocp_indent filename | `Ocamlformat filename -> (
     try
-      In_channel.with_file filename ~f:(fun ic ->
+      In_channel.with_file (Fpath.to_string filename) ~f:(fun ic ->
           let c, errors, _ =
             In_channel.fold_lines ic ~init:(conf, [], 1)
               ~f:(fun (conf, errors, num) line ->
