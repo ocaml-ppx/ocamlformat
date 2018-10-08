@@ -71,9 +71,9 @@ Options can be modified by the means of:
 - using the `OCAMLFORMAT` environment variable: `OCAMLFORMAT=option=VAL,...,option=VAL`
 - an optional parameter on the command line
 - a global `[@@@ocamlformat "option=VAL"]` attribute in the processed file
-- an `[@@ocamlformat "option=VAL"]` attribute on expression in the processed file
+- an `[@@ocamlformat "option=VAL"]` attribute on an expression in the processed file
 
-.ocamlformat files in current and all ancestor directories for each input file are used, as well as the global .ocamlformat file defined in `$XDG_CONFIG_HOME/ocamlformat`. The global .ocamlformat file has the lowest priority, then the closer the directory is to the processed file, the higher the priority.
+.ocamlformat files in the containing and all ancestor directories for each input file are used, as well as the global .ocamlformat file defined in `$XDG_CONFIG_HOME/ocamlformat`. The global .ocamlformat file has the lowest priority, then the closer the directory is to the processed file, the higher the priority.
 
 When the option `--disable-outside-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
 
