@@ -1264,9 +1264,7 @@ let rec collect_files ~segs acc =
       in
       if is_project_root dir && disable_outside_detected_project then
         (acc, Some dir)
-      else if Fpath.exists dir then collect_files ~segs:upper_segs acc
-      else if disable_outside_detected_project then ([], None)
-      else (acc, None)
+      else collect_files ~segs:upper_segs acc
 
 let read_config_file ~verbose conf filename_kind =
   match filename_kind with
