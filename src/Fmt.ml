@@ -137,15 +137,16 @@ let wrap_if_fits_and cnd pre suf k fs =
   k fs ;
   fits_breaks_if cnd suf "" fs
 
-let wrap_fits_breaks_if c cnd pre suf k fs =
-  if (not c.Conf.indicate_multiline_delimiters) && String.equal pre "(" then
+let wrap_fits_breaks_if ?(space = false) c cnd pre suf k fs =
+  if (not c.Conf.indicate_multiline_delimiters) && not space then
     wrap_if_k cnd (str pre) (str suf) k fs
   else (
     fits_breaks_if cnd pre (pre ^ " ") fs ;
     k fs ;
     fits_breaks_if cnd suf ("@ " ^ suf) fs )
 
-let wrap_fits_breaks conf x = wrap_fits_breaks_if conf true x
+let wrap_fits_breaks ?(space = false) conf x =
+  wrap_fits_breaks_if ~space conf true x
 
 (** Boxes ---------------------------------------------------------------*)
 

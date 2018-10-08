@@ -751,7 +751,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_constr (lid, t1N) ->
-      wrap_fits_breaks c.conf "(" ")"
+      wrap_fits_breaks ~space:true c.conf "(" ")"
         (list t1N "@,, " (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
@@ -835,7 +835,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       $ fmt "@ "
       $ fmt_longident_loc c ~pre:"#" lid
   | Ptyp_class (lid, t1N) ->
-      wrap_fits_breaks c.conf "(" ")"
+      wrap_fits_breaks ~space:true c.conf "(" ")"
         (list t1N "@,, " (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ "
       $ fmt_longident_loc c ~pre:"#" lid )
@@ -945,7 +945,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
     match sugar_list_pat c pat with
     | Some (loc_xpats, nil_loc) ->
         hvbox 0
-          (wrap_fits_breaks c.conf "[" "]"
+          (wrap_fits_breaks ~space:true c.conf "[" "]"
              ( list loc_xpats "@,; " (fun (locs, xpat) ->
                    Cmts.fmt_list c.cmts locs @@ fmt_pattern c xpat )
              $ Cmts.fmt c.cmts ~pro:(fmt " ") ~epi:(fmt "") nil_loc
@@ -993,15 +993,16 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (wrap_fits_breaks c.conf "{" "}"
+           (wrap_fits_breaks ~space:true c.conf "{" "}"
               ( list flds "@,; " fmt_field
               $ fmt_if Poly.(closed_flag = Open) "; _" )))
   | Ppat_array [] ->
       hvbox 0
-        (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c.cmts ppat_loc))
+        (wrap_fits_breaks ~space:true c.conf "[|" "|]"
+           (Cmts.fmt_within c.cmts ppat_loc))
   | Ppat_array pats ->
       hvbox 0
-        (wrap_fits_breaks c.conf "[|" "|]"
+        (wrap_fits_breaks ~space:true c.conf "[|" "|]"
            (list pats "@;<0 1>; " (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_or _ ->
       let nested =
@@ -1613,11 +1614,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs) )
   | Pexp_array [] ->
       hvbox 0
-        ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c.cmts pexp_loc)
+        ( wrap_fits_breaks ~space:true c.conf "[|" "|]"
+            (Cmts.fmt_within c.cmts pexp_loc)
         $ fmt_atrs )
   | Pexp_array e1N ->
       hvbox 0
-        ( wrap_fits_breaks c.conf "[|" "|]"
+        ( wrap_fits_breaks ~space:true c.conf "[|" "|]"
             (fmt_expressions c width (sub_exp ~ctx) e1N "@;<0 1>; "
                (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
@@ -1681,7 +1683,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
           (wrap_if
              (not (List.is_empty pexp_attributes))
              "(" ")"
-             ( wrap_fits_breaks c.conf "[" "]"
+             ( wrap_fits_breaks ~space:true c.conf "[" "]"
                  ( fmt_expressions c width snd loc_xes "@,; "
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
@@ -2001,7 +2003,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                  $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) ))
       in
       hvbox 0
-        ( wrap_fits_breaks c.conf "{" "}"
+        ( wrap_fits_breaks ~space:true c.conf "{" "}"
             (hovbox (-2)
                ( opt default (fun d ->
                      hvbox 2
@@ -2064,7 +2066,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         | _ -> false
       in
       let wrap =
-        if parens then wrap_fits_breaks c.conf "(" ")"
+        if parens then wrap_fits_breaks ~space:true c.conf "(" ")"
         else if no_parens_if_break then Fn.id
         else wrap_if_breaks "( " "@ )"
       in
@@ -2744,7 +2746,7 @@ and fmt_class_params c ctx ~epi params =
   fmt_if_k
     (not (List.is_empty params))
     (hvbox 0
-       ( wrap_fits_breaks c.conf "[" "]"
+       ( wrap_fits_breaks ~space:true c.conf "[" "]"
            (list_fl params (fun ~first ~last (ty, vc) ->
                 fmt_if (first && exposed_left_typ ty) " "
                 $ fmt_if_k (not first) (fmt "@,, ")
@@ -2779,7 +2781,7 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
           (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
         $ fmt "@ "
         $ hvbox 0
-            (wrap_fits_breaks c.conf "{" "}"
+            (wrap_fits_breaks ~space:true c.conf "{" "}"
                (list_fl lbl_decls (fun ~first ~last x ->
                     fmt_if (not first)
                       ( match c.conf.type_decl with
@@ -2879,7 +2881,7 @@ and fmt_constructor_arguments c ctx pre args =
       fmt pre $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
       fmt pre
-      $ wrap_fits_breaks c.conf "{" "}"
+      $ wrap_fits_breaks ~space:true c.conf "{" "}"
           (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
