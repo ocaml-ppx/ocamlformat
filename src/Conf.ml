@@ -891,8 +891,7 @@ let ocp_indent_config =
     let supported =
       let l =
         List.filter_map ocp_indent_options ~f:(fun (_, o) ->
-            Option.value_map o ~default:None ~f:(fun (_, doc, _) -> Some doc)
-        )
+            Option.map o ~f:(fun (_, doc, _) -> doc) )
       in
       if List.is_empty l then ""
       else
