@@ -2,10 +2,10 @@
 
 ## Reporting Issues
 
-If you encounter a problem when using ocamlformat or if you have any questions, please open a [GitHub issue](https://github.com/ocaml-ppx/ocamlformat/issues/).
+If you encounter a problem when using OCamlFormat or if you have any questions, please open a [GitHub issue](https://github.com/ocaml-ppx/ocamlformat/issues/).
 
 1. Check first if your issue has already been [reported](https://github.com/ocaml-ppx/ocamlformat/issues/).
-2. Include the version of ocamlformat you are using (`ocamlformat --version`).
+2. Include the version of OCamlFormat you are using (`ocamlformat --version`).
 3. Include a (preferably short) source file which demonstrates the issue.
 4. Describe the expected and actual behavior.
 5. Do not unsubscribe from the issue until it is closed, the maintainers may ask for your feedback.
@@ -29,9 +29,9 @@ When acknowledged, the project maintainers will add [labels](#ocamlformat-labels
 
 ### Running the tests
 
-Once ocamlformat has been built, run `make test` to check for regressions.
+Once OCamlFormat has been built, run `make test` to check for regressions.
 
-The first step of `make test` is to ensure that invoking ocamlformat on its own source code produces the same source code (you can run `make fixpoint` to only check this). If ocamlformat is not integrated with the editor you use, you should run `make fmt` to reformat all ocamlformat source files.
+The first step of `make test` is to ensure that invoking OCamlFormat on its own source code produces the same source code (you can run `make fixpoint` to only check this). If OCamlFormat is not integrated with the editor you use, you should run `make fmt` to reformat all OCamlFormat source files.
 
 The second part of `make test` is to ensure the test suite passes, the test report is displayed in the terminal and you should only get `[PASSED]` (in green) and `[FAILED]` (in orange). You should not get any result in red nor any `[REGRESSION]`.
 
@@ -43,7 +43,7 @@ In order to accept your pull request, we need you to submit a CLA. You only need
 
 By contributing to OCamlFormat, you agree that your contributions will be licensed under the LICENSE file in the root directory of this source tree.
 
-## Ocamlformat Labels
+## OCamlFormat Labels
 
 ### Pull Request specific
 
