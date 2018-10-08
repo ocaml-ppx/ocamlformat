@@ -12,7 +12,6 @@ build: [
 depends: [
   "base" {>= "v0.11.0"}
   "base-unix"
-  "bos"
   "cmdliner"
   "dune" {build}
   "fpath"
