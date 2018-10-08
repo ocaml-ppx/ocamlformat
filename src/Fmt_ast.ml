@@ -1703,7 +1703,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_construct (({txt= Lident "::"} as lid), Some arg) ->
       wrap_if parens "(" ")"
         ( hvbox 2
-            ( wrap "(" ")" (fmt_longident_loc c lid)
+            ( wrap "( " " )" (fmt_longident_loc c lid)
             $ fmt "@ "
             $ fmt_expression c (sub_exp ~ctx arg) )
         $ fmt_atrs )
