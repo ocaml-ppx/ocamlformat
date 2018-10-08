@@ -417,7 +417,9 @@ module Formatting = struct
         {conf with break_infix= x} )
 
   let break_sequences =
-    let doc = "Break sequences." in
+    let doc =
+      "Force sequence expressions to break irrespective of margin."
+    in
     let names = ["break-sequences"] in
     C.flag ~default:false ~names ~doc ~section (fun conf x ->
         {conf with break_sequences= x} )

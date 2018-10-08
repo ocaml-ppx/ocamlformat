@@ -45,7 +45,7 @@ OPTIONS (CODE FORMATTING STYLE)
            on a single line. The default value is wrap.
 
        --break-sequences
-           Break sequences.
+           Force sequence expressions to break irrespective of margin.
 
        --break-string-literals={wrap|newlines|never}
            Break string literals. wrap mode wraps string literals at the
