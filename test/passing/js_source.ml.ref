@@ -1244,10 +1244,10 @@ let x = v (`A (Some (1, `A (Some (2, `A None)))))
 
 let triple t1 t2 t3 =
   Conv
-    ("Triple"
+    ( "Triple"
     , (fun (a, b, c) -> a, (b, c))
     , (fun (a, (b, c)) -> a, b, c)
-    , Pair (t1, Pair (t2, t3)))
+    , Pair (t1, Pair (t2, t3)) )
 ;;
 
 let v = variantize Enil (triple String Int Int) ("A", 2, 3)
@@ -1323,15 +1323,15 @@ and 'e ty_dyn = Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
-    ((function
-     | `A n -> "A", Some (Tdyn (Int, n))
-     | `B s -> "B", Some (Tdyn (String, s))
-     | `C -> "C", None)
+    ( (function
+      | `A n -> "A", Some (Tdyn (Int, n))
+      | `B s -> "B", Some (Tdyn (String, s))
+      | `C -> "C", None)
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
       | "C", None -> `C
-      | _ -> invalid_arg "ty_abc")
+      | _ -> invalid_arg "ty_abc" )
 ;;
 
 (* Breaks: no way to pattern-match on a full recursive type *)
@@ -1340,10 +1340,10 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   let targ = Pair (Pop t, Var) in
   Rec
     (Sum
-       ((function `Nil -> "Nil", None | `Cons p -> "Cons", Some (Tdyn (targ, p)))
+       ( (function `Nil -> "Nil", None | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
          | "Nil", None -> `Nil
-         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p))
+         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
 ;;
 
 (* Define Sum using object instead of record for first-class polymorphism *)
@@ -2077,10 +2077,7 @@ let rec tc : type n e. n nat -> e ctx -> term -> e checked =
 
 let ctx0 =
   Ccons
-    (Zero
-    , "0"
-    , I
-    , Ccons (Suc, "S", Ar (I, I), Ccons (Add, "+", Ar (I, Ar (I, I)), Cnil)))
+    (Zero, "0", I, Ccons (Suc, "S", Ar (I, I), Ccons (Add, "+", Ar (I, Ar (I, I)), Cnil)))
 ;;
 
 let ex1 = Ab ("x", I, Ap (Ap (V "+", V "x"), V "x"))
@@ -2264,8 +2261,7 @@ let inlineseq_from_astseq seq =
     | x, Ast_Bold xs -> Bold (List.map (process x) xs)
     | Kind Maylink, Ast_Link lnk -> Link lnk
     | Kind Nonlink, Ast_Link _ -> assert false
-    | Kind Maylink, Ast_Mref (lnk, xs) ->
-      Mref (lnk, List.map (process (Kind Nonlink)) xs)
+    | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
     | Kind Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process (Kind Maylink)) seq
