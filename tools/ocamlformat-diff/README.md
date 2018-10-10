@@ -7,14 +7,14 @@ The file comparison is then performed by any `diff` backend.
 
 ## Options
 
-The options' documentation is available in through `ocamlformat_diff --help`.
+The options' documentation is available through `ocamlformat_diff --help`.
 
 The option `--default-diff` allows you to configure the diff command that is used to compare the formatted files. The default value is the vanilla `diff`, but you can also use [patdiff](https://github.com/janestreet/patdiff) or any other similar comparison tool.
 
 
 ## Git integration
 
-To call `ocamlformat_diff` with `git diff`, yYou have to edit your `.git` configuration files on each project you want to use `ocamlformat_diff` with.
+To call `ocamlformat_diff` with `git diff`, you have to edit your `.git` configuration files on each project you want to use `ocamlformat_diff` with.
 
 The `.git/info/attributes` file must contain:
 ```
