@@ -19,14 +19,14 @@ let run_ocamlformat cmd ~ctx ~file_in =
 (** [diff_in_ctx ~ctx ~old_file ~new_file] runs the diff of files [old_file]
     and [new_file] in the context of file [ctx], so that they both inherit
     the same configuration. *)
-let diff_in_ctx ~ctx ~old_file ~new_file =
+let diff_in_ctx ~ctx ~old_file ~new_file ~default_diff =
   Bos.OS.Cmd.resolve (Bos.Cmd.v "ocamlformat")
   >>= fun fmt ->
   run_ocamlformat fmt ~ctx ~file_in:old_file
   >>= fun tmp_1 ->
   run_ocamlformat fmt ~ctx ~file_in:new_file
   >>= fun tmp_2 ->
-  Bos.OS.Cmd.must_exist (Bos.Cmd.v "diff")
+  Bos.OS.Cmd.must_exist (Bos.Cmd.v default_diff)
   >>= fun diff ->
   Bos.Cmd.(diff % Fpath.to_string tmp_1 % Fpath.to_string tmp_2)
   |> Bos.OS.Cmd.run_out |> Bos.OS.Cmd.out_string
@@ -52,7 +52,8 @@ let diff_prelude path _ old_hex old_mode _ new_hex _ =
   print_endline (Format.sprintf "--- a/%s" path) ;
   print_endline (Format.sprintf "+++ b/%s" path)
 
-let diff path old_file old_hex old_mode new_file new_hex new_mode =
+let diff path old_file old_hex old_mode new_file new_hex new_mode
+    default_diff =
   let diff =
     Bos.OS.File.must_exist (Fpath.v old_file)
     >>= fun old_file ->
@@ -60,7 +61,7 @@ let diff path old_file old_hex old_mode new_file new_hex new_mode =
     >>= fun new_file ->
     let tmp = Bos.OS.Dir.default_tmp () in
     let ctx = if Fpath.is_prefix tmp new_file then old_file else new_file in
-    diff_in_ctx ~ctx ~old_file ~new_file
+    diff_in_ctx ~ctx ~old_file ~new_file ~default_diff
   in
   match diff with
   | Ok (str, _) ->
@@ -73,6 +74,12 @@ let diff path old_file old_hex old_mode new_file new_hex new_mode =
   | _ -> `Ok ()
 
 open Cmdliner
+
+let default_diff =
+  let doc =
+    "Diff command used on formatted files. Default value is `diff`."
+  in
+  Arg.(value & opt string "diff" & info ["default-diff"] ~doc)
 
 let path =
   Arg.(
@@ -122,7 +129,7 @@ let cmd =
   ( Term.(
       ret
         ( const diff $ path $ old_file $ old_hex $ old_mode $ new_file
-        $ new_hex $ new_mode ))
+        $ new_hex $ new_mode $ default_diff ))
   , Term.info "ocamlformat_diff" ~doc ~exits )
 
 let () = Term.(exit @@ eval cmd)
