@@ -33,7 +33,7 @@ let diff_in_ctx ~ctx ~old_file ~new_file =
 
 let short_hash x = String.sub x 0 6
 
-let diff_prelude path _ old_hex old_mode _ _ _ =
+let diff_prelude path _ old_hex old_mode _ new_hex _ =
   let new_hex =
     match
       Bos.OS.Cmd.resolve (Bos.Cmd.v "git")
@@ -42,7 +42,7 @@ let diff_prelude path _ old_hex old_mode _ _ _ =
       |> Bos.OS.Cmd.run_out |> Bos.OS.Cmd.out_string
     with
     | Ok (x, _) -> x
-    | Error _ -> "0000000"
+    | Error _ -> new_hex
     (* should never fail *)
   in
   print_endline (Format.sprintf "diff --git a/%s b/%s" path path) ;
