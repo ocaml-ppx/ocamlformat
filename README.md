@@ -14,6 +14,7 @@ See the source code of OCamlFormat itself and [Infer](https://github.com/faceboo
   - [Code style](#code-style)
   - [Options](#options)
   - [Preset profiles](#preset-profiles)
+  - [Diff](#diff)
 - [Installation](#installation)
 - [Editor setup](#editor-setup)
   - [Emacs setup](#emacs-setup)
@@ -86,6 +87,10 @@ The available profiles are:
 - `compact` sets options for a generally compact code style
 - `sparse` sets options for a generally sparse code style
 - `janestreet` is the profile used at JaneStreet
+
+### Diff
+
+[`ocamlformat_diff`](./tools/ocamlformat-diff/README.md) uses OCamlFormat to apply the same formatting to compared OCaml files, so that the formatting differences between the two files are not displayed. It can easily be used with `git diff`.
 
 ## Installation
 
