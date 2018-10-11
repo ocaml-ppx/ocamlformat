@@ -15,7 +15,7 @@ depends: [
   "base" {>= "v0.11.0"}
   "base-unix"
   "cmdliner"
-  "dune" {build}
+  "dune" {build & >= "1.1.1"}
   "fpath"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "stdio"
