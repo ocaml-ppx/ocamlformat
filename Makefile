@@ -44,6 +44,10 @@ opt: setup
 reason: setup
 	dune build _build/dev/src/ocamlformat_reason.exe _build/release/src/ocamlformat_reason.exe
 
+.PHONY: ocamlformat-diff
+ocamlformat-diff:
+	dune build _build/dev/tools/ocamlformat-diff/ocamlformat_diff.exe _build/release/tools/ocamlformat-diff/ocamlformat_diff.exe
+
 .PHONY: clean cleanbisect
 clean: cleanbisect
 	rm -rf _build dune-workspace
@@ -51,7 +55,7 @@ cleanbisect:
 	rm -Rf _coverage
 	find ./ -name 'bisect*.out' -delete
 
-SRCS=$(shell \ls src/{,import/}*.ml{,i})
+SRCS=$(shell \ls {src/{,import/},tools/ocamlformat-diff/}*.ml{,i})
 
 .PHONY: fmt
 fmt:
