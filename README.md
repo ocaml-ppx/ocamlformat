@@ -90,7 +90,7 @@ The available profiles are:
 
 ### Diff
 
-[`ocamlformat_diff`](./tools/ocamlformat-diff/README.md) uses OCamlFormat to apply the same formatting to compared OCaml files, so that the formatting differences between the two files are not displayed. It can easily be used with `git diff`.
+[`ocamlformat-diff`](./tools/ocamlformat-diff/README.md) uses OCamlFormat to apply the same formatting to compared OCaml files, so that the formatting differences between the two files are not displayed. It can easily be used with `git diff`.
 
 ## Installation
 

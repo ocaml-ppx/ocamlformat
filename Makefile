@@ -44,6 +44,7 @@ opt: setup
 reason: setup
 	dune build _build/dev/src/ocamlformat_reason.exe _build/release/src/ocamlformat_reason.exe
 
+.PHONY: ocamlformat-diff
 ocamlformat-diff:
 	dune build _build/dev/tools/ocamlformat-diff/ocamlformat_diff.exe _build/release/tools/ocamlformat-diff/ocamlformat_diff.exe
 
