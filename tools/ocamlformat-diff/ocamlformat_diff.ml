@@ -130,6 +130,6 @@ let cmd =
       ret
         ( const diff $ path $ old_file $ old_hex $ old_mode $ new_file
         $ new_hex $ new_mode $ default_diff ))
-  , Term.info "ocamlformat_diff" ~doc ~exits )
+  , Term.info "ocamlformat-diff" ~doc ~exits )
 
 let () = Term.(exit @@ eval cmd)
