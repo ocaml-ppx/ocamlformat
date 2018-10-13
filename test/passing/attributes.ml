@@ -8,14 +8,22 @@ external f : (float[@unboxed]) -> int = "blah" [@@noalloc]
 
 val x : ?x:unit (** not dropped *) -> unit
 
-type t = {a: int; b: int [@default 1] [@drop_if]}
+type t =
+  { a: int
+  ; b: int [@default 1] [@drop_if]
+  ; c: int [@default 1] [@drop_if]
+        (** docstring that is long enough to break *) }
 
 type t =
   { a: int
   ; b: someloooooooooooooooooooooooooooooong typ
-         [@default looooooooooooooooooooooooooooooooooooooooong]
-         [@drop_if somethingelse]
-  ; b: somelong typ [@default 1] }
+      [@default looooooooooooooooooooooooooooooooooooooooong]
+      [@drop_if somethingelse]
+  ; b: somelong typ [@default 1]
+  ; c: someloooooooooooooooooooooooooooooong typ
+      [@default looooooooooooooooooooooooooooooooooooooooong]
+      [@drop_if somethingelse]
+        (** docstring that is long enough to break *) }
 
 val foo : int
   [@@deprecated "it is good the salad"] [@@warning "-32"] [@@warning "-99"]
