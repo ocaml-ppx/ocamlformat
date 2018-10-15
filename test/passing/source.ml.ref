@@ -438,6 +438,7 @@ module type S = sig
   type foo = A of int
 
   type foo += B of float
+
   (* Error foo does not have an extensible type *)
 end
 
@@ -8088,6 +8089,7 @@ module type VALUE = sig
 
   (* the state of a Lua interpreter *)
   type usert
+
   (* a user-defined value *)
 end
 
@@ -8095,6 +8097,7 @@ module type CORE0 = sig
   module V : VALUE
 
   val setglobal : V.state -> string -> V.value -> unit
+
   (* five more functions common to core and evaluator *)
 end
 
@@ -8102,6 +8105,7 @@ module type CORE = sig
   include CORE0
 
   val apply : V.value -> V.state -> V.value list -> V.value
+
   (* apply function f in state s to list of args *)
 end
 
