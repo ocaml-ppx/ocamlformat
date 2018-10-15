@@ -3116,8 +3116,14 @@ and fmt_signature c ctx itms =
 
 and fmt_signature_item c {ast= si} =
   protect (Sig si)
-  @@ Cmts.fmt c.cmts ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n") ~adj:(fmt "@\n")
-       si.psig_loc
+  @@
+  let fmt_cmts_before =
+    Cmts.fmt_before c.cmts ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n")
+      ~adj:(fmt "@\n") si.psig_loc
+  and fmt_cmts_after =
+    Cmts.fmt_after c.cmts ~pro:(fmt "\n@\n") si.psig_loc
+  in
+  wrap_k fmt_cmts_before fmt_cmts_after
   @@
   let ctx = Sig si in
   match si.psig_desc with
