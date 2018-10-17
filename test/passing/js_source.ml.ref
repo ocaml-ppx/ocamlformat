@@ -935,8 +935,8 @@ let fint (type t) (x : t) (tag : t ty) = match tag with Int -> x > 0
 
 (* val fint : 'a -> 'a ty -> bool = <fun> *)
 
-(** OK: the return value is x > 0 of type bool;
-This has used the equation t = bool, not visible in the return type **)
+(** OK: the return value is x > 0 of type bool; This has used the equation t = bool, not
+    visible in the return type **)
 
 let f (type t) (x : t) (tag : t ty) = match tag with Int -> x > 0 | Bool -> x
 
@@ -7742,7 +7742,7 @@ end =
 
 let _ = test 103 (Lazy.force M3.x) 3
 
-(** Pure type-checking tests: see recmod/*.ml  *)
+(** Pure type-checking tests: see recmod/*.ml *)
 type t = A of {x : int; mutable y : int}
 
 let f (A r) = r
