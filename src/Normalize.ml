@@ -291,13 +291,28 @@ let docstrings_use_file s =
 let moved_docstrings get_docstrings s1 s2 =
   let d1 = get_docstrings s1 in
   let d2 = get_docstrings s2 in
-  let f acc (loc1, str1) (loc2, str2) =
-    if String.equal str1 str2 then
-      if Location.compare loc1 loc2 = 0 then acc
-      else (loc1, loc2, str1) :: acc
-    else acc
-  in
-  List.fold2_exn d1 d2 ~init:[] ~f
+  let equal (_, s1) (_, s2) = String.equal s1 s2 in
+  match List.zip d1 d2 with
+  | None ->
+      (* We only return the ones that are not in both lists. *)
+      (* [l1] contains the ones that disappeared. *)
+      let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
+      let l1 = List.map ~f:(fun (l, s) -> (l, Location.none, s)) l1 in
+      (* [l2] contains the ones that appeared. *)
+      let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
+      let l2 = List.map ~f:(fun (l, s) -> (Location.none, l, s)) l2 in
+      List.rev_append l1 l2
+  | Some l ->
+      (* We suppose that no docstring appeared nor disappeared, meaning that
+         each docstring is present in both lists but may have different
+         locations. *)
+      let different ((_, s1), (_, s2)) = not (String.equal s1 s2) in
+      let l = List.filter l ~f:different in
+      let d1, d2 = List.unzip l in
+      List.map d1 ~f:(fun (l, s) ->
+          let str_equal (_, s') = String.equal s s' in
+          let l' = List.find_exn d2 ~f:str_equal |> fst in
+          (l, l', s) )
 
 let moved_docstrings_impl s1 s2 = moved_docstrings docstrings_impl s1 s2
 
