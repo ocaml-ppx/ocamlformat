@@ -30,12 +30,12 @@ include module type of Option.Monad_infix
 include module type of Stdio
 
 external ( @@ ) : ('a -> 'b) -> 'a -> 'b = "%apply"
-(** Function application: [g @@ f @@ x] is exactly equivalent to [g (f
-    (x))]. Right associative. *)
+(** Function application: [g @@ f @@ x] is exactly equivalent to
+    [g (f (x))]. Right associative. *)
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
-(** Composition of functions: [(f >> g) x] is exactly equivalent to [g (f
-    (x))]. Left associative. *)
+(** Composition of functions: [(f >> g) x] is exactly equivalent to
+    [g (f (x))]. Left associative. *)
 
 val ( $ ) : ('a -> unit) -> ('a -> 'b) -> 'a -> 'b
 (** Sequential composition of functions: [(f $ g) x] is exactly equivalent
