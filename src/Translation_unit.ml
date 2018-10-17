@@ -315,12 +315,25 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           ( match m with
           | `Doc_comment l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc1, loc2, msg) ->
-                  Caml.Format.eprintf
-                    "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s *) \
-                     moved to @{<loc>%a@}.\n\
-                     %!"
-                    Location.print_loc loc1 (String.strip msg)
-                    Location.print_loc loc2 )
+                  if Location.compare loc1 Location.none = 0 then
+                    Caml.Format.eprintf
+                      "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
+                       *) created.\n\
+                       %!"
+                      Location.print_loc loc2 (String.strip msg)
+                  else if Location.compare loc2 Location.none = 0 then
+                    Caml.Format.eprintf
+                      "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
+                       *) dropped.\n\
+                       %!"
+                      Location.print_loc loc1 (String.strip msg)
+                  else
+                    Caml.Format.eprintf
+                      "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
+                       *) moved to @{<loc>%a@}.\n\
+                       %!"
+                      Location.print_loc loc1 (String.strip msg)
+                      Location.print_loc loc2 )
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
                   Caml.Format.eprintf
