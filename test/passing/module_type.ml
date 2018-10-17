@@ -49,3 +49,9 @@ module U :
 module U = (val S : S with type t = int and type u = int)
 
 module U = (val S : S with type t = int and type u = int)
+
+module type S = sig
+  (* floating *)
+
+  exception E
+end
