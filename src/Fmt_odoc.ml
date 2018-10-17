@@ -114,11 +114,13 @@ let fmt_tag = function
       at () $ fmt "raise@ " $ str s $ fmt "@ " $ fmt_text txt
   | Return_value txt -> at () $ fmt "return@ " $ fmt_text txt
   | Inline -> at () $ str "inline"
+  | Custom (s, []) -> at () $ str s
   | Custom (s, txt) -> at () $ str s $ fmt "@ " $ fmt_text txt
   | Canonical s -> at () $ fmt "canonical@ " $ str s
 
 let fmt (txt, tags) =
   try
     if List.is_empty tags then Ok (hovbox 0 (fmt_text txt))
+    else if List.is_empty txt then Ok (hovbox 0 (list tags "@;" fmt_tag))
     else Ok (hovbox 0 (fmt_text txt $ fmt "@;" $ list tags "@;" fmt_tag))
   with err -> Error err
