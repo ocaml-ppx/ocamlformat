@@ -17,12 +17,12 @@ type t =
 type t =
   { a: int
   ; b: someloooooooooooooooooooooooooooooong typ
-      [@default looooooooooooooooooooooooooooooooooooooooong]
-      [@drop_if somethingelse]
+        [@default looooooooooooooooooooooooooooooooooooooooong]
+        [@drop_if somethingelse]
   ; b: somelong typ [@default 1]
   ; c: someloooooooooooooooooooooooooooooong typ
-      [@default looooooooooooooooooooooooooooooooooooooooong]
-      [@drop_if somethingelse]
+        [@default looooooooooooooooooooooooooooooooooooooooong]
+        [@drop_if somethingelse]
         (** docstring that is long enough to break *) }
 
 val foo : int

@@ -2840,7 +2840,7 @@ and fmt_label_declaration c ctx lbl_decl =
   let fmt_cmts = Cmts.fmt c.cmts ~eol:(break_unless_newline 1 2) pld_loc in
   fmt_cmts
   @@ hvbox 4
-       ( hvbox 1
+       ( hvbox 3
            ( hvbox 2
                ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
                $ fmt_str_loc c pld_name
