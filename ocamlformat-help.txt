@@ -44,6 +44,13 @@ OPTIONS (CODE FORMATTING STYLE)
            fit-or-vertical vertically breaks expressions if they do not fit
            on a single line. The default value is wrap.
 
+       --break-separators={before|after|after-and-docked}
+           Break before or after separators such as `;` in list or record
+           expressions. before breaks the expressions before the separator.
+           after breaks the expressions after the separator. after-and-docked
+           breaks the expressions after the separator and docks the brackets
+           for records. The default value is before.
+
        --break-sequences
            Force sequence expressions to break irrespective of margin.
 

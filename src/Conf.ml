@@ -15,6 +15,7 @@ type t =
   { break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; break_separators: [`Before | `After | `After_and_docked]
   ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; break_struct: bool
@@ -524,6 +525,28 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_infix= x})
       (fun conf -> conf.break_infix)
+
+  let break_separators =
+    let doc =
+      "Break before or after separators such as `;` in list or record \
+       expressions."
+    in
+    let names = ["break-separators"] in
+    let all =
+      [ ( "before"
+        , `Before
+        , "$(b,before) breaks the expressions before the separator." )
+      ; ( "after"
+        , `After
+        , "$(b,after) breaks the expressions after the separator." )
+      ; ( "after-and-docked"
+        , `After_and_docked
+        , "$(b,after-and-docked) breaks the expressions after the \
+           separator and docks the brackets for records." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_separators= x})
+      (fun conf -> conf.break_separators)
 
   let break_sequences =
     let doc =
@@ -1159,6 +1182,7 @@ let default_profile =
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
+  ; break_separators= C.default Formatting.break_separators
   ; break_sequences= C.default Formatting.break_sequences
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
@@ -1241,6 +1265,7 @@ let janestreet_profile =
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
+  ; break_separators= `Before
   ; break_sequences= true
   ; break_string_literals= `Wrap
   ; break_struct= default_profile.break_struct
