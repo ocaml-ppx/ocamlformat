@@ -12,7 +12,7 @@ let preprocess =
  (action (run sh %%{dep:../tools/gen_version.sh} Version.ml))
  (mode fallback))
 
-(ocamllex (modules Literal_lexer))
+(ocamllex Literal_lexer)
 
 (executables
  (names ocamlformat ocamlformat_reason)
