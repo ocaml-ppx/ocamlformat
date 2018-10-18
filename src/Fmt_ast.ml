@@ -2840,13 +2840,15 @@ and fmt_label_declaration c ctx lbl_decl =
   let fmt_cmts = Cmts.fmt c.cmts ~eol:(break_unless_newline 1 2) pld_loc in
   fmt_cmts
   @@ hvbox 4
-       ( hvbox 2
-           ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-           $ fmt_str_loc c pld_name
-           $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-           $ fmt ":@ "
-           $ fmt_core_type c (sub_typ ~ctx pld_type) )
-       $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
+       ( hvbox 3
+           ( hvbox 2
+               ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
+               $ fmt_str_loc c pld_name
+               $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+               $ fmt ":@ "
+               $ fmt_core_type c (sub_typ ~ctx pld_type) )
+           $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
+           )
        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
 
 and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
