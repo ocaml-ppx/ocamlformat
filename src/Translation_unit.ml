@@ -316,31 +316,31 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           | `Doc_comment l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc_before, loc_after, msg) ->
                   if Location.compare loc_before Location.none = 0 then
-                    Format.eprintf
+                    Caml.Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
                        *) created.\n\
                        %!"
-                      Location.fmt loc_after (String.strip msg)
+                      Location.print_loc loc_after (String.strip msg)
                   else if Location.compare loc_after Location.none = 0 then
-                    Format.eprintf
+                    Caml.Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
                        *) dropped.\n\
                        %!"
-                      Location.fmt loc_before (String.strip msg)
+                      Location.print_loc loc_before (String.strip msg)
                   else
-                    Format.eprintf
+                    Caml.Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
                        *) moved to @{<loc>%a@}.\n\
                        %!"
-                      Location.fmt loc_before (String.strip msg)
-                      Location.fmt loc_after )
+                      Location.print_loc loc_before (String.strip msg)
+                      Location.print_loc loc_after )
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
-                  Format.eprintf
+                  Caml.Format.eprintf
                     "%!@{<loc>%a@}:@,@{<error>Error@}: Comment (* %s *) \
                      dropped.\n\
                      %!"
-                    Location.fmt loc (String.strip msg) )
+                    Location.print_loc loc (String.strip msg) )
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
