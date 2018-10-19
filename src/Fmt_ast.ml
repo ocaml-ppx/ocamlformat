@@ -610,18 +610,16 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
         let if_fail = if c.conf.wrap_comments then fill_text else str in
         match Octavius.parse (Lexing.from_string str_cmt) with
         | Error _ -> if_fail str_cmt
-        | Ok parsed -> (
-          match Fmt_odoc.fmt parsed with
-          | Error _ -> if_fail str_cmt
-          | Ok fmted ->
-              let spaces = ['\t'; '\n'; '\011'; '\012'; '\r'; ' '] in
-              let is_space = List.mem ~equal:Char.equal spaces in
-              let space_0 = try is_space str_cmt.[0] with _ -> false in
-              let space_n =
-                try is_space str_cmt.[String.length str_cmt - 1] with _ ->
-                  false
-              in
-              fmt_if space_0 " " $ fmted $ fmt_if space_n " " )
+        | Ok parsed ->
+            let fmted = Fmt_odoc.fmt parsed in
+            let spaces = ['\t'; '\n'; '\011'; '\012'; '\r'; ' '] in
+            let is_space = List.mem ~equal:Char.equal spaces in
+            let space_0 = try is_space str_cmt.[0] with _ -> false in
+            let space_n =
+              try is_space str_cmt.[String.length str_cmt - 1] with _ ->
+                false
+            in
+            fmt_if space_0 " " $ fmted $ fmt_if space_n " "
       in
       Cmts.fmt c.cmts loc
       @@ vbox_if (Option.is_none pro) 0

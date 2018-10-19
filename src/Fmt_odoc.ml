@@ -12,8 +12,6 @@
 open Octavius.Types
 open Fmt
 
-exception Unsupported
-
 let str s =
   s
   |> String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
@@ -70,7 +68,11 @@ and fmt_text_elt = function
            ( str (Int.to_string i)
            $ str ":" $ str s $ fmt "@ " $ fmt_text txt ))
   | Ref (rk, s, None) -> hovbox 0 (wrap "{!" "}" (fmt_ref_kind rk $ str s))
-  | Ref _ -> raise Unsupported
+  | Ref (rk, s, Some txt) ->
+      hovbox 0
+        (wrap "{" "}"
+           ( hovbox 0 (wrap "{!" "}" (fmt_ref_kind rk $ str s))
+           $ fmt "@ " $ fmt_text txt ))
   | Special_ref (SRK_module_list l) ->
       hvbox 0 (wrap "{!modules:" "}" (list l "@," str))
   | Special_ref SRK_index_list -> str "{!indexlist}"
@@ -119,8 +121,7 @@ let fmt_tag = function
   | Canonical s -> at () $ fmt "canonical@ " $ str s
 
 let fmt (txt, tags) =
-  try
-    if List.is_empty tags then Ok (hovbox 0 (fmt_text txt))
-    else if List.is_empty txt then Ok (hovbox 0 (list tags "@;" fmt_tag))
-    else Ok (hovbox 0 (fmt_text txt $ fmt "@;" $ list tags "@;" fmt_tag))
-  with err -> Error err
+  hovbox 0
+    ( if List.is_empty tags then fmt_text txt
+    else if List.is_empty txt then list tags "@;" fmt_tag
+    else fmt_text txt $ fmt "@;" $ list tags "@;" fmt_tag )

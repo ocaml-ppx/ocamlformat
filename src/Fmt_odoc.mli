@@ -9,4 +9,4 @@
  *                                                                    *
  **********************************************************************)
 
-val fmt : Octavius.Types.t -> (Fmt.t, exn) Octavius.result
+val fmt : Octavius.Types.t -> Fmt.t
