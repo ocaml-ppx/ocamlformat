@@ -314,33 +314,33 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           Format.eprintf "  BUG: %s.\n%!" s ;
           ( match m with
           | `Doc_comment l when not conf.Conf.quiet ->
-              List.iter l ~f:(fun (loc1, loc2, msg) ->
-                  if Location.compare loc1 Location.none = 0 then
-                    Caml.Format.eprintf
+              List.iter l ~f:(fun (loc_before, loc_after, msg) ->
+                  if Location.compare loc_before Location.none = 0 then
+                    Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
                        *) created.\n\
                        %!"
-                      Location.print_loc loc2 (String.strip msg)
-                  else if Location.compare loc2 Location.none = 0 then
-                    Caml.Format.eprintf
+                      Location.fmt loc_after (String.strip msg)
+                  else if Location.compare loc_after Location.none = 0 then
+                    Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
                        *) dropped.\n\
                        %!"
-                      Location.print_loc loc1 (String.strip msg)
+                      Location.fmt loc_before (String.strip msg)
                   else
-                    Caml.Format.eprintf
+                    Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
                        *) moved to @{<loc>%a@}.\n\
                        %!"
-                      Location.print_loc loc1 (String.strip msg)
-                      Location.print_loc loc2 )
+                      Location.fmt loc_before (String.strip msg)
+                      Location.fmt loc_after )
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
-                  Caml.Format.eprintf
+                  Format.eprintf
                     "%!@{<loc>%a@}:@,@{<error>Error@}: Comment (* %s *) \
                      dropped.\n\
                      %!"
-                    Location.print_loc loc (String.strip msg) )
+                    Location.fmt loc (String.strip msg) )
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
