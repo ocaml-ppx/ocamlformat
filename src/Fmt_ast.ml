@@ -1549,6 +1549,62 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
            ( fmt_expression c ~box (sub_exp ~ctx e0)
            $ fmt_expression c ~box (sub_exp ~ctx e1)
            $ fmt_atrs ))
+  | Pexp_apply (e0, (lbl, ({pexp_desc= Pexp_fun _; pexp_loc} as f)) :: eN)
+    when not c.conf.break_before_func ->
+      let xargs, xbody = sugar_fun c (sub_exp ~ctx f) in
+      hvbox 2
+        (wrap_if parens "(" ")"
+           (hovbox 2
+              ( hovbox 4
+                  ( hovbox 2
+                      ( fmt_expression c (sub_exp ~ctx e0)
+                      $ fmt "@ "
+                      $ Cmts.fmt_before c.cmts pexp_loc
+                      $ fmt_label lbl ":"
+                      $ ( fmt "(fun "
+                        $ fmt_attributes c ~key:"@" pexp_attributes
+                            ~suf:(fmt " ")
+                        $ hvbox_if
+                            (not c.conf.wrap_fun_args)
+                            0 (fmt_fun_args c xargs)
+                        $ fmt "@ " $ fmt "->" ) )
+                  $ hovbox 0 (fmt_body c ?ext xbody) )
+              $ fmt "@ "
+              $ hovbox 0
+                  ( fmt ")"
+                  $ Cmts.fmt_after c.cmts pexp_loc
+                  $ fmt_if (not (List.is_empty eN)) "@;"
+                  $ fmt_expressions c width
+                      (fun (_, e) -> sub_exp ~ctx e)
+                      eN "@ "
+                      (fun (_, e) -> fmt_expression c (sub_exp ~ctx e)) )
+              $ fmt_atrs )))
+  | Pexp_apply
+      (e0, (lbl, ({pexp_desc= Pexp_function cs; pexp_loc} as f)) :: eN)
+    when not c.conf.break_before_func ->
+      hvbox 2
+        (wrap_if parens "(" ")"
+           (hvbox 2
+              ( hovbox 2
+                  ( fmt_expression c (sub_exp ~ctx e0)
+                  $ fmt "@ "
+                  $ Cmts.fmt_before c.cmts pexp_loc
+                  $ fmt_label lbl ":"
+                  $ ( fmt "(function"
+                    $ fmt_extension_suffix c ext
+                    $ fmt_attributes c ~key:"@" pexp_attributes ) )
+              $ fmt "@ " $ fmt_cases c (Exp f) cs $ fmt "@ "
+              $ hovbox 0
+                  ( fmt ")"
+                  $ Cmts.fmt_after c.cmts pexp_loc
+                  $ fmt_if (not (List.is_empty eN)) "@ "
+                  $ hovbox 2
+                      (fmt_expressions c width
+                         (fun (_, e) -> sub_exp ~ctx e)
+                         eN "@ "
+                         (fun (_, e) -> fmt_expression c (sub_exp ~ctx e)))
+                  )
+              $ fmt_atrs )))
   | Pexp_apply (e0, e1N1) -> (
       let wrap = if c.conf.wrap_fun_args then Fn.id else hvbox 2 in
       match List.rev e1N1 with
@@ -3953,22 +4009,75 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c.cmts pvb_loc
-  $ hvbox indent
-      ( open_hovbox 2
-      $ ( hovbox 4
-            ( fmt_or first "let" "and"
-            $ fmt_extension_suffix c ext
-            $ fmt_attributes c ~key:"@" atrs
-            $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
-            $ fmt " " $ fmt_pattern c xpat
-            $ fmt_if (not (List.is_empty xargs)) "@ "
-            $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
-            $ Option.call ~f:fmt_cstr )
-        $ fmt "@;<1 2>=" )
-      $ fmt_body c ?ext xbody
-      $ Cmts.fmt_after c.cmts pvb_loc
-      $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
-      $ Option.call ~f:epi )
+  $ ( match xbody.ast.pexp_desc with
+    | Pexp_fun _ when not c.conf.break_before_func ->
+        let xargs', xbody' =
+          sugar_fun c (sub_exp ~ctx:xbody.ctx xbody.ast)
+        in
+        hvbox 2
+          ( open_hovbox 2
+          $ ( hovbox 4
+                ( fmt_or first "let" "and"
+                $ fmt_extension_suffix c ext
+                $ fmt_attributes c ~key:"@" atrs
+                $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
+                $ fmt " " $ fmt_pattern c xpat
+                $ fmt_if (not (List.is_empty xargs)) "@ "
+                $ hvbox_if
+                    (not c.conf.wrap_fun_args)
+                    0 (fmt_fun_args c xargs)
+                $ Option.call ~f:fmt_cstr )
+            $ fmt "@;<1 2>=" $ fmt "@ " $ fmt "fun "
+            $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes
+                ~suf:(fmt " ")
+            $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs')
+            $ fmt "@ " $ fmt "->" )
+          $ fmt_body c ?ext xbody'
+          $ Cmts.fmt_after c.cmts pvb_loc
+          $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
+          $ Option.call ~f:epi )
+    | Pexp_function cs when not c.conf.break_before_func ->
+        hvbox 2
+          ( open_hovbox 2
+          $ ( hovbox 4
+                ( fmt_or first "let" "and"
+                $ fmt_extension_suffix c ext
+                $ fmt_attributes c ~key:"@" atrs
+                $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
+                $ fmt " " $ fmt_pattern c xpat
+                $ fmt_if (not (List.is_empty xargs)) "@ "
+                $ hvbox_if
+                    (not c.conf.wrap_fun_args)
+                    0 (fmt_fun_args c xargs)
+                $ Option.call ~f:fmt_cstr )
+            $ fmt "@;<1 2>=" $ fmt "@ "
+            $ ( fmt "function"
+              $ fmt_extension_suffix c ext
+              $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes ) )
+          $ fmt "@ "
+          $ fmt_cases c (Exp xbody.ast) cs
+          $ Cmts.fmt_after c.cmts pvb_loc
+          $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
+          $ Option.call ~f:epi )
+    | _ ->
+        hvbox indent
+          ( open_hovbox 2
+          $ ( hovbox 4
+                ( fmt_or first "let" "and"
+                $ fmt_extension_suffix c ext
+                $ fmt_attributes c ~key:"@" atrs
+                $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
+                $ fmt " " $ fmt_pattern c xpat
+                $ fmt_if (not (List.is_empty xargs)) "@ "
+                $ hvbox_if
+                    (not c.conf.wrap_fun_args)
+                    0 (fmt_fun_args c xargs)
+                $ Option.call ~f:fmt_cstr )
+            $ fmt "@;<1 2>=" )
+          $ fmt_body c ?ext xbody
+          $ Cmts.fmt_after c.cmts pvb_loc
+          $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
+          $ Option.call ~f:epi ) )
   $ fmt_docstring c ~pro:(fmt "@ ") doc2
 
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =

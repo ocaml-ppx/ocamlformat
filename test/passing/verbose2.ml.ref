@@ -35,4 +35,5 @@ break-sequences=false (profile default (file .ocamlformat:1))
 break-infix=wrap (profile default (file .ocamlformat:1))
 break-collection-expressions=fit-or-vertical (profile default (file .ocamlformat:1))
 break-cases=fit (profile default (file .ocamlformat:1))
+break-before-func=true (profile default (file .ocamlformat:1))
 

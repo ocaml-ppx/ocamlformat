@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: [`Fit | `Nested | `All]
+  { break_before_func: bool
+  ; break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_sequences: bool
@@ -467,6 +468,13 @@ let info =
 (** Options affecting formatting *)
 module Formatting = struct
   let section = `Formatting
+
+  let break_before_func =
+    let doc = "Forces a break before anonymous functions." in
+    let names = ["break-before-func"] in
+    C.flag ~default:true ~names ~doc ~section
+      (fun conf x -> {conf with break_before_func= x})
+      (fun conf -> conf.break_before_func)
 
   let break_cases =
     let doc = "Break pattern match cases." in
@@ -1144,7 +1152,8 @@ let config =
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
 let default_profile =
-  { break_cases= C.default Formatting.break_cases
+  { break_before_func= C.default Formatting.break_before_func
+  ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
@@ -1187,7 +1196,8 @@ let default_profile =
 
 let compact_profile =
   { default_profile with
-    break_cases= `Fit
+    break_before_func= false
+  ; break_cases= `Fit
   ; break_collection_expressions= `Wrap
   ; break_infix= `Wrap
   ; break_sequences= false
@@ -1205,7 +1215,8 @@ let compact_profile =
 
 let sparse_profile =
   { default_profile with
-    break_cases= `Nested
+    break_before_func= true
+  ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Fit_or_vertical
   ; break_sequences= true
@@ -1222,7 +1233,8 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { break_cases= `Fit
+  { break_before_func= true
+  ; break_cases= `Fit
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
