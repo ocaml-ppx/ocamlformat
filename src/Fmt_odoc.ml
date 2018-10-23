@@ -98,30 +98,35 @@ and fmt_text txt =
       | _ -> fmt_text_elt curr $ fmt "@ " )
     | None -> fmt_text_elt curr
   in
-  list_pn txt f
+  hovbox 0 (list_pn txt f)
 
 let at () = str "@"
 
-let fmt_tag = function
-  | Author s -> at () $ fmt "author@ " $ str s
-  | Version s -> at () $ fmt "version@ " $ str s
-  | See (_see_ref, txt) -> at () $ fmt "see@ " $ fmt_text txt
-  | Since s -> at () $ fmt "since@ " $ str s
-  | Before (s, txt) ->
-      at () $ fmt "before@ " $ str s $ fmt "@ " $ fmt_text txt
-  | Deprecated txt -> at () $ fmt "deprecated@ " $ fmt_text txt
-  | Param (s, txt) ->
-      at () $ fmt "param@ " $ str s $ fmt "@ " $ fmt_text txt
-  | Raised_exception (s, txt) ->
-      at () $ fmt "raise@ " $ str s $ fmt "@ " $ fmt_text txt
-  | Return_value txt -> at () $ fmt "return@ " $ fmt_text txt
-  | Inline -> at () $ str "inline"
-  | Custom (s, []) -> at () $ str s
-  | Custom (s, txt) -> at () $ str s $ fmt "@ " $ fmt_text txt
-  | Canonical s -> at () $ fmt "canonical@ " $ str s
+let fmt_see_ref = function
+  | See_url s | See_file s | See_doc s -> fmt "<" $ Fmt.str s $ fmt ">"
+
+let fmt_tag t =
+  hovbox 0
+    ( match t with
+    | Author s -> at () $ fmt "author@ " $ str s
+    | Version s -> at () $ fmt "version@ " $ str s
+    | See (sr, txt) ->
+        at () $ fmt "see@ " $ fmt_see_ref sr $ fmt "@ " $ fmt_text txt
+    | Since s -> at () $ fmt "since@ " $ str s
+    | Before (s, txt) ->
+        at () $ fmt "before@ " $ str s $ fmt "@ " $ fmt_text txt
+    | Deprecated txt -> at () $ fmt "deprecated@ " $ fmt_text txt
+    | Param (s, txt) ->
+        at () $ fmt "param@ " $ str s $ fmt "@ " $ fmt_text txt
+    | Raised_exception (s, txt) ->
+        at () $ fmt "raise@ " $ str s $ fmt "@ " $ fmt_text txt
+    | Return_value txt -> at () $ fmt "return@ " $ fmt_text txt
+    | Inline -> at () $ str "inline"
+    | Custom (s, []) -> at () $ str s
+    | Custom (s, txt) -> at () $ str s $ fmt "@ " $ fmt_text txt
+    | Canonical s -> at () $ fmt "canonical@ " $ str s )
 
 let fmt (txt, tags) =
-  hovbox 0
-    ( if List.is_empty tags then fmt_text txt
-    else if List.is_empty txt then list tags "@;" fmt_tag
-    else fmt_text txt $ fmt "@;" $ list tags "@;" fmt_tag )
+  if List.is_empty tags then fmt_text txt
+  else if List.is_empty txt then vbox 0 (list tags "@;" fmt_tag)
+  else vbox 0 (fmt_text txt $ fmt "@;" $ vbox 0 (list tags "@;" fmt_tag))
