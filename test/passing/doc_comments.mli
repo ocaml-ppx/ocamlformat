@@ -51,8 +51,8 @@ val subst_vars :
   -> string
 (** [subst b ~subst s], using [b], substitutes in [s] variables of the form
     "$(doc)" by their [subst] definition. This leaves escapes and markup
-    directives $(markup,...) intact. @raise Invalid_argument in case of
-    illegal syntax. *)
+    directives $(markup,...) intact.
+    @raise Invalid_argument in case of illegal syntax. *)
 
 val doc_to_plain :
      errs:Format.formatter
@@ -63,3 +63,21 @@ val doc_to_plain :
 (** [doc_to_plain b ~subst s] using [b], subsitutes in [s] variables by
     their [subst] definition and renders cmdliner directives to plain text.
     @raise Invalid_argument in case of illegal syntax. *)
+
+val k : k
+(** this is a comment
+    @author foo
+    @version foo
+    @see <foo> foo
+    @since foo
+    @before foo [foo]
+    @deprecated [foo]
+    @param foo [foo]
+    @raise foo [foo]
+    @return [foo]
+    @inline
+    @canonical foo *)
+
+val x : x
+(** a comment
+    @version foo *)
