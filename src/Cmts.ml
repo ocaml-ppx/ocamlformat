@@ -583,10 +583,16 @@ let diff x y =
   let norm z =
     (* normalize consecutive whitespace chars to a single space *)
     let f (txt, _) =
-      String.concat ~sep:" "
-        (List.filter ~f:(Fn.non String.is_empty)
-           (String.split_on_chars txt
-              ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+      match Octavius.parse (Lexing.from_string txt) with
+      | Ok parsed ->
+          let fmted = Fmt_odoc.fmt parsed in
+          fmted Format.str_formatter ;
+          Format.flush_str_formatter ()
+      | Error _ ->
+          String.concat ~sep:" "
+            (List.filter ~f:(Fn.non String.is_empty)
+               (String.split_on_chars txt
+                  ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
     in
     Set.of_list
       (module String)
