@@ -149,11 +149,10 @@ module C : sig
 
   val default : 'a t -> 'a
 
-  val update_using_cmdline : config -> verbose:bool -> config
+  val update_using_cmdline : config -> config
 
   val update :
        config:config
-    -> verbose:bool
     -> from:from
     -> name:string
     -> value:string
@@ -383,7 +382,7 @@ end = struct
     in
     store := List.map !store ~f:on_pack
 
-  let update ~config ~verbose:_ ~from ~name ~value ~inline =
+  let update ~config ~from ~name ~value ~inline =
     List.find_map !store
       ~f:(fun (Pack {names; parse; update; allow_inline}) ->
         if List.exists names ~f:(String.equal name) then
@@ -401,7 +400,7 @@ end = struct
 
   let default {default} = default
 
-  let update_using_cmdline config ~verbose:_ =
+  let update_using_cmdline config =
     let on_pack config (Pack {cmdline_get; update; names}) =
       match cmdline_get () with
       | None -> config
@@ -1288,7 +1287,7 @@ let root =
 let disable_outside_detected_project =
   !disable_outside_detected_project || Option.is_some root
 
-let parse_line config ~verbose ~from s =
+let parse_line config ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
     let value = String.strip value in
@@ -1302,10 +1301,8 @@ let parse_line config ~verbose ~from s =
               ( value
               , Format.sprintf "expecting %s but got %s" Version.version
                   value ))
-    | name, `File _ ->
-        C.update ~config ~verbose ~from ~name ~value ~inline:false
-    | name, `Attribute ->
-        C.update ~config ~verbose ~from ~name ~value ~inline:true
+    | name, `File _ -> C.update ~config ~from ~name ~value ~inline:false
+    | name, `Attribute -> C.update ~config ~from ~name ~value ~inline:true
     | _ -> assert false
     (* cannot happen *)
   in
@@ -1397,7 +1394,7 @@ let rec collect_files ~segs acc =
         (acc, Some dir)
       else collect_files ~segs:upper_segs acc
 
-let read_config_file ~verbose conf filename_kind =
+let read_config_file conf filename_kind =
   match filename_kind with
   | `Ocp_indent _ when not !ocp_indent_config -> conf
   | `Ocp_indent filename | `Ocamlformat filename -> (
@@ -1407,9 +1404,7 @@ let read_config_file ~verbose conf filename_kind =
             In_channel.fold_lines ic ~init:(conf, [], 1)
               ~f:(fun (conf, errors, num) line ->
                 match
-                  parse_line conf ~verbose
-                    ~from:(`File (filename, num))
-                    line
+                  parse_line conf ~from:(`File (filename, num)) line
                 with
                 | Ok conf -> (conf, errors, Int.succ num)
                 | Error e -> (conf, e :: errors, Int.succ num) )
@@ -1435,11 +1430,9 @@ let read_config_file ~verbose conf filename_kind =
                       , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
     with Sys_error _ -> conf )
 
-let update_using_env ~verbose conf =
+let update_using_env conf =
   let f (config, errors) (name, value) =
-    match
-      C.update ~config ~verbose ~from:`Env ~name ~value ~inline:false
-    with
+    match C.update ~config ~from:`Env ~name ~value ~inline:false with
     | Ok c -> (c, errors)
     | Error e -> (config, e :: errors)
   in
@@ -1493,14 +1486,12 @@ let build_config ~file =
     | None, _ | Some _, true -> files
     | Some f, false -> `Ocamlformat f :: files
   in
-  let verbose = !print_config in
-  if verbose then
+  if !print_config then
     Option.iter project_root ~f:(fun x ->
         Format.eprintf "project-root=%a@\n%!" (Fpath.pp ~pretty:true) x ) ;
   let conf =
-    List.fold files ~init:default_profile ~f:(read_config_file ~verbose)
-    |> update_using_env ~verbose
-    |> C.update_using_cmdline ~verbose
+    List.fold files ~init:default_profile ~f:read_config_file
+    |> update_using_env |> C.update_using_cmdline
   in
   if disable_outside_detected_project && List.is_empty files then (
     ( if not conf.quiet then
@@ -1545,6 +1536,6 @@ let action =
 
 and debug = !debug
 
-let parse_line_in_attribute = parse_line ~from:`Attribute ~verbose:false
+let parse_line_in_attribute = parse_line ~from:`Attribute
 
 let print c = C.print_config c
