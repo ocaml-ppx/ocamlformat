@@ -112,12 +112,22 @@ end = struct
     | `Help | `Version -> Caml.exit 0
 end
 
+let profile_option_names = ["p"; "profile"]
+
 open Cmdliner
 
 module C : sig
   type config = t
 
   type 'a t
+
+  type from =
+    [ `Default
+    | `File of Fpath.t * int
+    | `Env
+    | `Commandline
+    | `Profile of string * [`File of Fpath.t * int | `Env | `Commandline]
+    | `Attribute ]
 
   type 'a option_decl =
        names:string list
@@ -144,7 +154,7 @@ module C : sig
   val update :
        config:config
     -> verbose:bool
-    -> from:[`File of Fpath.t * int | `Config | `Commandline | `Attribute]
+    -> from:from
     -> name:string
     -> value:string
     -> inline:bool
@@ -159,6 +169,14 @@ module C : sig
 end = struct
   type config = t
 
+  type from =
+    [ `Default
+    | `File of Fpath.t * int
+    | `Env
+    | `Commandline
+    | `Profile of string * [`File of Fpath.t * int | `Env | `Commandline]
+    | `Attribute ]
+
   type 'a t =
     { names: string list
     ; parse: string -> ('a, string) Result.t
@@ -167,7 +185,8 @@ end = struct
     ; cmdline_get: unit -> 'a option
     ; to_string: 'a -> string
     ; default: 'a
-    ; get_value: config -> 'a }
+    ; get_value: config -> 'a
+    ; from: from }
 
   type 'a option_decl =
        names:string list
@@ -222,6 +241,8 @@ end = struct
     | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
     | `Operational -> Cmdliner.Manpage.s_options
 
+  let from = `Default
+
   let choice ?(has_default = true) ~all ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) update get_value =
     let _, default, _ = List.hd_exn all in
@@ -263,7 +284,8 @@ end = struct
       ; allow_inline
       ; default
       ; to_string
-      ; get_value }
+      ; get_value
+      ; from }
     in
     store := Pack opt :: !store ;
     opt
@@ -298,7 +320,8 @@ end = struct
       ; allow_inline
       ; default
       ; to_string
-      ; get_value }
+      ; get_value
+      ; from }
     in
     store := Pack opt :: !store ;
     opt
@@ -326,12 +349,41 @@ end = struct
       ; allow_inline
       ; default
       ; to_string
-      ; get_value }
+      ; get_value
+      ; from }
     in
     store := Pack opt :: !store ;
     opt
 
-  let update ~config ~verbose:_ ~from:_ ~name ~value ~inline =
+  let update_from config name from =
+    let is_profile_option_name x =
+      List.exists profile_option_names ~f:(String.equal x)
+    in
+    let on_pack (Pack {names; get_value; to_string}) =
+      if is_profile_option_name (List.hd_exn names) then
+        Some (to_string (get_value config))
+      else None
+    in
+    let on_pack (Pack ({names} as p)) =
+      if is_profile_option_name name then
+        if is_profile_option_name (List.hd_exn names) then
+          (* updating --profile option *)
+          Pack {p with from}
+        else
+          let profile_name = List.find_map_exn !store ~f:on_pack in
+          (* updating other options when --profile is set *)
+          match from with
+          | (`File _ | `Env | `Commandline) as from ->
+              Pack {p with from= `Profile (profile_name, from)}
+          | _ -> assert false (* cannot happen *)
+      else if List.exists names ~f:(String.equal name) then
+        (* updating a single option (without setting a profile) *)
+        Pack {p with from}
+      else Pack p
+    in
+    store := List.map !store ~f:on_pack
+
+  let update ~config ~verbose:_ ~from ~name ~value ~inline =
     List.find_map !store
       ~f:(fun (Pack {names; parse; update; allow_inline}) ->
         if List.exists names ~f:(String.equal name) then
@@ -341,6 +393,7 @@ end = struct
             match parse value with
             | Ok packed_value ->
                 let config = update config packed_value in
+                update_from config name from ;
                 Some (Ok config)
             | Error error -> Some (Error (`Bad_value (name, error)))
         else None )
@@ -349,8 +402,13 @@ end = struct
   let default {default} = default
 
   let update_using_cmdline config ~verbose:_ =
-    let on_pack config (Pack {cmdline_get; update}) =
-      match cmdline_get () with None -> config | Some x -> update config x
+    let on_pack config (Pack {cmdline_get; update; names}) =
+      match cmdline_get () with
+      | None -> config
+      | Some x ->
+          let config = update config x in
+          update_from config (List.hd_exn names) `Commandline ;
+          config
     in
     List.fold !store ~init:config ~f:on_pack
 
@@ -359,10 +417,24 @@ end = struct
       let compare x y = compare (String.length x) (String.length y) in
       List.max_elt ~compare
     in
-    let on_pack (Pack {names; to_string; get_value}) =
+    let on_pack (Pack {names; to_string; get_value; from}) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
-      Format.eprintf "%s=%s\n%!" name value
+      let aux_from = function
+        | `File (p, i) ->
+            Format.sprintf " (file %s:%i)"
+              (Fpath.to_string ~pretty:true p)
+              i
+        | `Env -> " (environment variable)"
+        | `Commandline -> " (command line)"
+      in
+      let aux_from = function
+        | `Default -> ""
+        | `Attribute -> " (attribute)"
+        | `Profile (s, p) -> " (profile " ^ s ^ aux_from p ^ ")"
+        | (`File _ | `Env | `Commandline) as x -> aux_from x
+      in
+      Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
     in
     List.iter !store ~f:on_pack
 end
@@ -980,7 +1052,7 @@ let ocp_indent_config =
   mk ~default Arg.(value & flag & info ["ocp-indent-config"] ~doc ~docs)
 
 let print_config =
-  let doc = "Print config." in
+  let doc = "Print configuration." in
   let default = false in
   mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
 
@@ -1130,7 +1202,7 @@ let (_profile : t option C.t) =
     "Preset profiles which set $(i,all) options, overriding lower priority \
      configuration."
   in
-  let names = ["p"; "profile"] in
+  let names = profile_option_names in
   let all =
     [ ( "default"
       , Some default_profile
@@ -1230,10 +1302,12 @@ let parse_line config ~verbose ~from s =
               ( value
               , Format.sprintf "expecting %s but got %s" Version.version
                   value ))
-    | name, (`File _ | `Config | `Commandline) ->
+    | name, `File _ ->
         C.update ~config ~verbose ~from ~name ~value ~inline:false
     | name, `Attribute ->
         C.update ~config ~verbose ~from ~name ~value ~inline:true
+    | _ -> assert false
+    (* cannot happen *)
   in
   let update_ocp_indent_option ~config ~from ~name ~value =
     let opt =
@@ -1364,7 +1438,7 @@ let read_config_file ~verbose conf filename_kind =
 let update_using_env ~verbose conf =
   let f (config, errors) (name, value) =
     match
-      C.update ~config ~verbose ~from:`Config ~name ~value ~inline:false
+      C.update ~config ~verbose ~from:`Env ~name ~value ~inline:false
     with
     | Ok c -> (c, errors)
     | Error e -> (config, e :: errors)
@@ -1449,9 +1523,8 @@ let build_config ~file =
 
 let action =
   if !print_config then
-    let file =
-      Option.value root ~default:(Fpath.cwd ()) |> Fpath.to_string
-    in
+    let file = Fpath.(cwd () / ".ocamlformat") in
+    let file = Option.value root ~default:file |> Fpath.to_string in
     Print_config (build_config ~file)
   else if !inplace then
     Inplace

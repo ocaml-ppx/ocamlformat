@@ -241,7 +241,7 @@ OPTIONS
            profile used at JaneStreet. 
 
        --print-config
-           Print config.
+           Print configuration.
 
        -q, --quiet
            Quiet. May be set in .ocamlformat.
