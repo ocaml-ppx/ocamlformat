@@ -81,3 +81,51 @@ val k : k
 val x : x
 (** a comment
     @version foo *)
+
+(** Managing Chunks.
+
+    This module exposes functors to store raw contents into append-only
+    stores as chunks of same size. It exposes the {{!AO} AO} functor which
+    split the raw contents into [Data] blocks, addressed by [Node] blocks.
+    That's the usual rope-like representation of strings, but chunk trees
+    are always build as perfectly well-balanced and blocks are addressed by
+    their hash (or by the stable keys returned by the underlying store).
+
+    A chunk has the following
+    structure:
+
+    {v
+    --------------------------      --------------------------
+    | uint8_t type            |     | uint8_t type            |
+    ---------------------------     ---------------------------
+    | uint16_t                |     | uint64_t                |
+    ---------------------------     ---------------------------
+    | key children[length]    |     | byte data[length]       |
+    ---------------------------     ---------------------------
+    v}
+
+    [type] is either [Data] (0) or [Index] (1). If the chunk contains data,
+    [length] is the payload length. Otherwise it is the number of children
+    that the node has.
+
+    It also exposes {{!AO_stable} AO_stable} which -- as {{!AO} AO} does --
+    stores raw contents into chunks of same size. But it also preserves the
+    nice properpty that values are addressed by their hash. instead of by
+    the hash of the root chunk node as it is the case for {{!AO} AO}. *)
+
+(** This is verbatim:
+
+    {v
+   o  o
+  /\  /\
+  /\  /\
+    v}
+
+    This is preformated
+    code:
+
+    {[
+      let verbatim s =
+        s |> String.split_lines |> List.map ~f:String.strip
+        |> fun s -> list s "@," Fmt.str
+    ]} *)

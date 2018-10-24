@@ -611,6 +611,10 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
         match Octavius.parse (Lexing.from_string str_cmt) with
         | Error _ -> if_fail str_cmt
         | Ok parsed ->
+            if Conf.debug then (
+              Octavius.print Caml.Format.str_formatter parsed ;
+              Caml.Format.eprintf "%s%!"
+                (Caml.Format.flush_str_formatter ()) ) ;
             let fmted = Fmt_odoc.fmt parsed in
             let spaces = ['\t'; '\n'; '\011'; '\012'; '\r'; ' '] in
             let is_space = List.mem ~equal:Char.equal spaces in

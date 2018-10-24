@@ -15,8 +15,10 @@ open Fmt
 let str s =
   s
   |> String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
-  |> List.filter ~f:(fun x -> not (String.is_empty x))
+  |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " str
+
+let verbatim s = Fmt.str s
 
 let fmt_ref_kind = function
   | RK_element -> str ""
@@ -48,13 +50,13 @@ let rec fmt_style style txt =
     | SK_subscript -> "_"
     | SK_custom s -> s
   in
-  hovbox 0 (wrap "{" "}" (str s $ fmt "@ " $ fmt_text txt))
+  hovbox 0 (wrap "{" "}" (Fmt.str s $ fmt "@ " $ fmt_text txt))
 
 and fmt_text_elt = function
   | Raw s -> str s
   | Code s -> hovbox 0 (wrap "[" "]" (str s))
-  | PreCode s -> hovbox 0 (wrap "{[" "]}" (str s))
-  | Verbatim s -> hovbox 0 (wrap "{v " " v}" (str s))
+  | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
+  | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
   | Style (st, txt) -> fmt_style st txt
   | List l -> vbox 0 (wrap "{ul " "}" (hovbox 2 (list l "@;" fmt_item)))
   | Enum l -> vbox 0 (wrap "{ol " "}" (hovbox 2 (list l "@;" fmt_item)))
@@ -79,9 +81,9 @@ and fmt_text_elt = function
   | Target (s, l) ->
       hovbox 0
         (wrap "{" "}"
-           ( str "%"
+           ( char '%'
            $ str (Option.value s ~default:"latex")
-           $ str ":" $ str l $ str "%" ))
+           $ char ':' $ str l $ char '%' ))
 
 and fmt_item txt = hovbox 0 (wrap "{- " "}" (fmt_text txt))
 
@@ -100,10 +102,10 @@ and fmt_text txt =
   in
   hovbox 0 (list_pn txt f)
 
-let at () = str "@"
+let at () = char '@'
 
 let fmt_see_ref = function
-  | See_url s | See_file s | See_doc s -> fmt "<" $ Fmt.str s $ fmt ">"
+  | See_url s | See_file s | See_doc s -> char '<' $ Fmt.str s $ char '>'
 
 let fmt_tag t =
   hovbox 0
