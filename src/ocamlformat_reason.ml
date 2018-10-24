@@ -67,3 +67,4 @@ match Conf.action with
     , output_file ) ->
     Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
       ~input_file In_channel.stdin output_file
+| Print_config c -> Conf.print c ; Translation_unit.Ok

@@ -125,6 +125,7 @@ module C : sig
     -> section:[`Formatting | `Operational]
     -> ?allow_inline:bool
     -> (config -> 'a -> config)
+    -> (config -> 'a)
     -> 'a t
 
   val section_name : [`Formatting | `Operational] -> string
@@ -153,6 +154,8 @@ module C : sig
          | `Malformed of string
          | `Misplaced of string * string ] )
        Result.t
+
+  val print_config : config -> unit
 end = struct
   type config = t
 
@@ -163,7 +166,8 @@ end = struct
     ; allow_inline: bool
     ; cmdline_get: unit -> 'a option
     ; to_string: 'a -> string
-    ; default: 'a }
+    ; default: 'a
+    ; get_value: config -> 'a }
 
   type 'a option_decl =
        names:string list
@@ -171,6 +175,7 @@ end = struct
     -> section:[`Formatting | `Operational]
     -> ?allow_inline:bool
     -> (config -> 'a -> config)
+    -> (config -> 'a)
     -> 'a t
 
   type pack = Pack : 'a t -> pack
@@ -218,7 +223,7 @@ end = struct
     | `Operational -> Cmdliner.Manpage.s_options
 
   let choice ?(has_default = true) ~all ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) update =
+      ?(allow_inline = Poly.(section = `Formatting)) update get_value =
     let _, default, _ = List.hd_exn all in
     let doc =
       generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default
@@ -251,13 +256,20 @@ end = struct
     let r = mk ~default:None term in
     let cmdline_get () = !r in
     let opt =
-      {names; parse; update; cmdline_get; allow_inline; default; to_string}
+      { names
+      ; parse
+      ; update
+      ; cmdline_get
+      ; allow_inline
+      ; default
+      ; to_string
+      ; get_value }
     in
     store := Pack opt :: !store ;
     opt
 
   let flag ~default ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) update =
+      ?(allow_inline = Poly.(section = `Formatting)) update get_value =
     let open Cmdliner in
     let invert_flag = default in
     let names_for_cmdline =
@@ -279,13 +291,20 @@ end = struct
     let to_string = Bool.to_string in
     let cmdline_get () = if !r then Some (not invert_flag) else None in
     let opt =
-      {names; parse; update; cmdline_get; allow_inline; default; to_string}
+      { names
+      ; parse
+      ; update
+      ; cmdline_get
+      ; allow_inline
+      ; default
+      ; to_string
+      ; get_value }
     in
     store := Pack opt :: !store ;
     opt
 
   let int ~default ~docv ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) update =
+      ?(allow_inline = Poly.(section = `Formatting)) update get_value =
     let open Cmdliner in
     let doc = generated_int_doc ~allow_inline ~doc ~section ~default in
     let docs = section_name section in
@@ -300,27 +319,19 @@ end = struct
     let to_string = Int.to_string in
     let cmdline_get () = !r in
     let opt =
-      {names; parse; update; cmdline_get; allow_inline; default; to_string}
+      { names
+      ; parse
+      ; update
+      ; cmdline_get
+      ; allow_inline
+      ; default
+      ; to_string
+      ; get_value }
     in
     store := Pack opt :: !store ;
     opt
 
-  let log_update ~from ~name ~value =
-    match from with
-    | `Attribute -> ()
-    | (`File _ | `Config | `Commandline) as from ->
-        let from =
-          match from with
-          | `File (file, lnum) ->
-              Format.sprintf " (%s:%d)"
-                (Fpath.to_string ~pretty:true file)
-                lnum
-          | `Config -> " (Environment variable or --config)"
-          | `Commandline -> " (command line)"
-        in
-        Format.eprintf "%s=%s%s@\n%!" name value from
-
-  let update ~config ~verbose ~from ~name ~value ~inline =
+  let update ~config ~verbose:_ ~from:_ ~name ~value ~inline =
     List.find_map !store
       ~f:(fun (Pack {names; parse; update; allow_inline}) ->
         if List.exists names ~f:(String.equal name) then
@@ -330,7 +341,6 @@ end = struct
             match parse value with
             | Ok packed_value ->
                 let config = update config packed_value in
-                if verbose then log_update ~from ~name ~value ;
                 Some (Ok config)
             | Error error -> Some (Error (`Bad_value (name, error)))
         else None )
@@ -338,18 +348,23 @@ end = struct
 
   let default {default} = default
 
-  let update_using_cmdline config ~verbose =
-    let on_pack config (Pack {names; cmdline_get; update; to_string}) =
-      let name = List.hd_exn names in
-      match cmdline_get () with
-      | None -> config
-      | Some x ->
-          let config = update config x in
-          if verbose then
-            log_update ~from:`Commandline ~name ~value:(to_string x) ;
-          config
+  let update_using_cmdline config ~verbose:_ =
+    let on_pack config (Pack {cmdline_get; update}) =
+      match cmdline_get () with None -> config | Some x -> update config x
     in
     List.fold !store ~init:config ~f:on_pack
+
+  let print_config c =
+    let longest =
+      let compare x y = compare (String.length x) (String.length y) in
+      List.max_elt ~compare
+    in
+    let on_pack (Pack {names; to_string; get_value}) =
+      let name = Option.value_exn (longest names) in
+      let value = to_string (get_value c) in
+      Format.eprintf "%s=%s\n%!" name value
+    in
+    List.iter !store ~f:on_pack
 end
 
 let info =
@@ -402,8 +417,9 @@ module Formatting = struct
         , `All
         , "$(b,all) forces all pattern matches to break across lines." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with break_cases= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_cases= x})
+      (fun conf -> conf.break_cases)
 
   let break_collection_expressions =
     let doc =
@@ -420,8 +436,9 @@ module Formatting = struct
         , "$(b,wrap) will group simple expressions and try to format them \
            in a single line." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with break_collection_expressions= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_collection_expressions= x})
+      (fun conf -> conf.break_collection_expressions)
 
   let break_infix =
     let doc = "Break sequence of infix operators." in
@@ -436,16 +453,18 @@ module Formatting = struct
         , "$(b,fit-or-vertical) vertically breaks expressions if they do \
            not fit on a single line." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with break_infix= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_infix= x})
+      (fun conf -> conf.break_infix)
 
   let break_sequences =
     let doc =
       "Force sequence expressions to break irrespective of margin."
     in
     let names = ["break-sequences"] in
-    C.flag ~default:false ~names ~doc ~section (fun conf x ->
-        {conf with break_sequences= x} )
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with break_sequences= x})
+      (fun conf -> conf.break_sequences)
 
   let break_string_literals =
     let doc = "Break string literals." in
@@ -463,8 +482,9 @@ module Formatting = struct
         , "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with break_string_literals= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_string_literals= x})
+      (fun conf -> conf.break_string_literals)
 
   let cases_exp_indent =
     let docv = "COLS" in
@@ -474,7 +494,8 @@ module Formatting = struct
     in
     let names = ["cases-exp-indent"] in
     C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
-      (fun conf x -> {conf with cases_exp_indent= x} )
+      (fun conf x -> {conf with cases_exp_indent= x})
+      (fun conf -> conf.cases_exp_indent)
 
   let break_struct =
     let doc = "Break struct-end module items." in
@@ -488,8 +509,9 @@ module Formatting = struct
         , "$(b,natural) will break struct-end phrases naturally at the \
            margin." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with break_struct= Poly.(x = `Force)} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_struct= Poly.(x = `Force)})
+      (fun conf -> if conf.break_struct then `Force else `Natural)
 
   let disable =
     let doc =
@@ -497,8 +519,9 @@ module Formatting = struct
        automatic code formatting. One can also use $(b,[@@@ocamlformat \
        \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])"
     in
-    C.flag ~names:["disable"] ~default:false ~doc ~section (fun conf x ->
-        {conf with disable= x} )
+    C.flag ~names:["disable"] ~default:false ~doc ~section
+      (fun conf x -> {conf with disable= x})
+      (fun conf -> conf.disable)
 
   let doc_comments =
     let doc = "Doc comments position." in
@@ -511,8 +534,9 @@ module Formatting = struct
         , `Before
         , "$(b,before) puts comments before the corresponding code." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with doc_comments= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with doc_comments= x})
+      (fun conf -> conf.doc_comments)
 
   let escape_chars =
     let doc = "Escape encoding for character literals." in
@@ -530,8 +554,9 @@ module Formatting = struct
         , `Hexadecimal
         , "$(b,hexadecimal) mode escapes every character." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with escape_chars= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with escape_chars= x})
+      (fun conf -> conf.escape_chars)
 
   let escape_strings =
     let doc =
@@ -544,15 +569,17 @@ module Formatting = struct
       ; ("decimal", `Decimal, "")
       ; ("hexadecimal", `Hexadecimal, "") ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with escape_strings= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with escape_strings= x})
+      (fun conf -> conf.escape_strings)
 
   let extension_sugar =
     let doc = "Extension formatting." in
     let names = ["extension-sugar"] in
     let all = [("preserve", `Preserve, ""); ("always", `Always, "")] in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with extension_sugar= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with extension_sugar= x})
+      (fun conf -> conf.extension_sugar)
 
   let field_space =
     let doc =
@@ -567,8 +594,9 @@ module Formatting = struct
            punctuation symbol (`:`or `=`)." )
       ; ("loose", `Loose, "$(b,loose) does.") ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with field_space= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with field_space= x})
+      (fun conf -> conf.field_space)
 
   let if_then_else =
     let doc = "If-then-else formatting." in
@@ -583,8 +611,9 @@ module Formatting = struct
         , "$(b,keyword-first) formats if-then-else expressions such that \
            the if-then-else keywords are the first on the line." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with if_then_else= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with if_then_else= x})
+      (fun conf -> conf.if_then_else)
 
   let indicate_multiline_delimiters =
     let doc =
@@ -593,8 +622,9 @@ module Formatting = struct
     in
     let names = ["indicate-multiline-delimiters"] in
     let default = true in
-    C.flag ~names ~default ~doc ~section (fun conf x ->
-        {conf with indicate_multiline_delimiters= x} )
+    C.flag ~names ~default ~doc ~section
+      (fun conf x -> {conf with indicate_multiline_delimiters= x})
+      (fun conf -> conf.indicate_multiline_delimiters)
 
   let indicate_nested_or_patterns =
     let default = true in
@@ -603,8 +633,9 @@ module Formatting = struct
        indentation."
     in
     let names = ["indicate-nested-or-patterns"] in
-    C.flag ~names ~default ~doc ~section (fun conf x ->
-        {conf with indicate_nested_or_patterns= x} )
+    C.flag ~names ~default ~doc ~section
+      (fun conf x -> {conf with indicate_nested_or_patterns= x})
+      (fun conf -> conf.indicate_nested_or_patterns)
 
   let infix_precedence =
     let doc =
@@ -622,14 +653,16 @@ module Formatting = struct
         , "$(b,parens) uses parentheses to explicitly disambiguate \
            precedences of infix operators." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with infix_precedence= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with infix_precedence= x})
+      (fun conf -> conf.infix_precedence)
 
   let leading_nested_match_parens =
     let doc = "Nested match parens formatting." in
     let names = ["leading-nested-match-parens"] in
     C.flag ~default:false ~names ~doc ~section ~allow_inline:false
-      (fun conf x -> {conf with leading_nested_match_parens= x} )
+      (fun conf x -> {conf with leading_nested_match_parens= x})
+      (fun conf -> conf.leading_nested_match_parens)
 
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
@@ -648,8 +681,9 @@ module Formatting = struct
         , "$(b,double-semicolon) places double semicolons and an open line \
            between a multi-line module-level let binding and the next." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with let_binding_spacing= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with let_binding_spacing= x})
+      (fun conf -> conf.let_binding_spacing)
 
   let let_and =
     let doc = "Style of let_and." in
@@ -662,7 +696,9 @@ module Formatting = struct
       ; ("sparse", `Sparse, "$(b,sparse) will always break between them.")
       ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x -> {conf with let_and= x})
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with let_and= x})
+      (fun conf -> conf.let_and)
 
   let let_open =
     let doc = "Module open formatting." in
@@ -677,14 +713,17 @@ module Formatting = struct
         )
       ; ("auto", `Auto, "$(b,auto) means the one fitting best is used.") ]
     in
-    C.choice ~names:["let-open"] ~all ~doc ~section (fun conf x ->
-        {conf with let_open= x} )
+    C.choice ~names:["let-open"] ~all ~doc ~section
+      (fun conf x -> {conf with let_open= x})
+      (fun conf -> conf.let_open)
 
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
     C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~section
-      ~allow_inline:false (fun conf x -> {conf with margin= x} )
+      ~allow_inline:false
+      (fun conf x -> {conf with margin= x})
+      (fun conf -> conf.margin)
 
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
@@ -698,8 +737,9 @@ module Formatting = struct
         , "$(b,compact) will not leave open lines between one-liners of \
            similar sorts." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with module_item_spacing= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with module_item_spacing= x})
+      (fun conf -> conf.module_item_spacing)
 
   let ocp_indent_compat =
     let doc =
@@ -707,8 +747,9 @@ module Formatting = struct
        post-processing with ocp-indent."
     in
     let names = ["ocp-indent-compat"] in
-    C.flag ~default:false ~names ~doc ~section (fun conf x ->
-        {conf with ocp_indent_compat= x} )
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with ocp_indent_compat= x})
+      (fun conf -> conf.ocp_indent_compat)
 
   let parens_tuple =
     let doc = "Parens tuples." in
@@ -722,8 +763,9 @@ module Formatting = struct
         , "$(b,multi-line-only) mode will try to skip parens for \
            single-line tuples." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with parens_tuple= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with parens_tuple= x})
+      (fun conf -> conf.parens_tuple)
 
   let sequence_style =
     let doc = "Style of sequence." in
@@ -736,8 +778,9 @@ module Formatting = struct
         , `Terminator
         , "$(b,terminator) only puts spaces after semicolons." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with sequence_style= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with sequence_style= x})
+      (fun conf -> conf.sequence_style)
 
   let type_decl =
     let doc = "Style of type declaration." in
@@ -752,8 +795,9 @@ module Formatting = struct
         , "$(b,sparse) will always break between constructors and record \
            fields." ) ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with type_decl= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with type_decl= x})
+      (fun conf -> conf.type_decl)
 
   let wrap_comments =
     let doc =
@@ -765,14 +809,16 @@ module Formatting = struct
        aligned are not wrapped either."
     in
     C.flag ~default:false ~names:["wrap-comments"] ~doc ~section
-      (fun conf x -> {conf with wrap_comments= x} )
+      (fun conf x -> {conf with wrap_comments= x})
+      (fun conf -> conf.wrap_comments)
 
   let wrap_fun_args =
     let default = true in
     let doc = "Style for function call and function definition." in
     let names = ["wrap-fun-args"] in
-    C.flag ~default ~names ~doc ~section (fun conf wrap_fun_args ->
-        {conf with wrap_fun_args} )
+    C.flag ~default ~names ~doc ~section
+      (fun conf wrap_fun_args -> {conf with wrap_fun_args})
+      (fun conf -> conf.wrap_fun_args)
 end
 
 (* Flags that can be modified in the config file that don't affect
@@ -790,8 +836,9 @@ let comment_check =
     "UNSAFE: Control wether to check comments and documentation comments. \
      May be set in $(b,.ocamlformat)."
   in
-  C.flag ~default ~names:["comment-check"] ~doc ~section (fun conf x ->
-      {conf with comment_check= x} )
+  C.flag ~default ~names:["comment-check"] ~doc ~section
+    (fun conf x -> {conf with comment_check= x})
+    (fun conf -> conf.comment_check)
 
 let disable_outside_detected_project =
   let witness =
@@ -819,12 +866,14 @@ let max_iters =
      iterations. May be set in $(b,.ocamlformat)."
   in
   C.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~section
-    (fun conf x -> {conf with max_iters= x} )
+    (fun conf x -> {conf with max_iters= x})
+    (fun conf -> conf.max_iters)
 
 let quiet =
   let doc = "Quiet. May be set in $(b,.ocamlformat)." in
-  C.flag ~default:false ~names:["q"; "quiet"] ~doc ~section (fun conf x ->
-      {conf with quiet= x} )
+  C.flag ~default:false ~names:["q"; "quiet"] ~doc ~section
+    (fun conf x -> {conf with quiet= x})
+    (fun conf -> conf.quiet)
 
 (* Other Flags *)
 
@@ -1074,6 +1123,8 @@ let janestreet_profile =
   ; wrap_comments= false
   ; wrap_fun_args= false }
 
+let selected_profile_ref = ref (Some default_profile)
+
 let (_profile : t option C.t) =
   let doc =
     "Preset profiles which set $(i,all) options, overriding lower priority \
@@ -1094,11 +1145,15 @@ let (_profile : t option C.t) =
       , Some janestreet_profile
       , "$(b,janestreet) is the profile used at JaneStreet." ) ]
   in
-  C.choice ~names ~all ~doc ~section ~has_default:false (fun conf p ->
+  C.choice ~names ~all ~doc ~section ~has_default:false
+    (fun conf p ->
+      selected_profile_ref := p ;
       Option.value p ~default:conf )
+    (fun _ -> !selected_profile_ref)
 
 let validate () =
-  if List.is_empty !inputs then
+  if !print_config then `Ok ()
+  else if List.is_empty !inputs then
     `Error (false, "Must specify at least one input file, or `-` for stdin")
   else if
     List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
@@ -1334,6 +1389,7 @@ type 'a input = {kind: 'a; name: string; file: string; conf: t}
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
   | Inplace of [`Impl | `Intf | `Use_file] input list
+  | Print_config of t
 
 let kind_of fname =
   match Filename.extension fname with
@@ -1392,7 +1448,12 @@ let build_config ~file =
   else conf
 
 let action =
-  if !inplace then
+  if !print_config then
+    let file =
+      Option.value root ~default:(Fpath.cwd ()) |> Fpath.to_string
+    in
+    Print_config (build_config ~file)
+  else if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
            {kind= kind_of file; name= file; file; conf= build_config ~file}
@@ -1412,3 +1473,5 @@ let action =
 and debug = !debug
 
 let parse_line_in_attribute = parse_line ~from:`Attribute ~verbose:false
+
+let print c = C.print_config c

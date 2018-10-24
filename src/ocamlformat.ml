@@ -117,3 +117,4 @@ match Conf.action with
   | Ok -> Caml.exit 0
   | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
       Caml.exit 1 )
+| Print_config c -> Conf.print c ; Caml.exit 0
