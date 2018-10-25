@@ -34,3 +34,51 @@ module Hash = struct
   include Hash
   module type S = S.HASH
 end
+
+module Vector = struct
+  include Vector
+
+  let pp sep pp_elt fs v = List.pp sep pp_elt fs (to_list v)
+end
+
+module Hash = struct
+  include Hash
+  include Hash
+
+  module type S = S.HASH
+
+  module type S = S.HASH
+end
+
+module M = struct
+  include A
+end
+
+module M = struct
+  include A
+  include B
+end
+
+module M = struct
+  include A
+  include B
+  include C
+end
+
+module M = struct
+  include A
+  include B
+  include C
+  include D
+end
+
+module M = struct
+  include A
+  include B
+  include C
+  include D
+
+  let x = xxxxxxxxxxx xxxxxxxxxxxxx
+
+  let z = zzzzzzzzzzzzz
+end
