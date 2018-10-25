@@ -119,10 +119,12 @@ CHANGES=()
 for f in ${PASSING[@]}; do
     base=$(basename $f)
     name=${base%.*}
+    printf "%-12s\t\t[RUNNING]\n" $name
     ocamlformat $f
     if diff -q "$(reffile "$f")" $TMP/$base >/dev/null; then
-        printf "%-12s\t\t\e[32m[PASSED]\e[m\n" $name
+        printf "\033[1A\033[2K"
     else
+        printf "\033[1A\033[2K"
         printf "%-12s\t\t\e[31m[FAILED]\e[m \e[41m\e[30m[REGRESSION]\e[m\n" $name
         if [ -n "$ACCEPT" ]; then
 	    cp $TMP/$base "$(reffile "$f")"
