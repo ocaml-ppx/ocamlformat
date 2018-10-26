@@ -135,3 +135,22 @@ let () =
   
   (* *)
   ()
+
+;;
+match (* comment about entire pattern matching *)
+      e with k -> z
+;;
+match (* comment about entire pattern matching *)
+      e [@foo] with k -> z
+;;
+match (* foo *) (* fooooooooooooooo *)
+  e (* foo *)  [@foo] with k -> z
+;;
+match (* comment about entire pattern matching *)
+      e with k -> z | foooooooooooooooooooooooooo -> foooooooooooooooooooooo
+;;
+match (* comment about entire pattern matching *)
+      e [@foo] with k -> z | fooooooooooooooooooooo -> foooooooooooooooooo
+;;
+match (* foo *) (* fooooooooooooooo *)
+  e (* foo *)  [@foo] with k -> z | foooooooooooooooooooo -> fooooooooooooooooo

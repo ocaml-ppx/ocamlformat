@@ -2017,16 +2017,14 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       in
       match compact with
       | None ->
-          let leading_cmt = Cmts.fmt_before c.cmts e0.pexp_loc in
           hvbox 0
             (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-               ( leading_cmt
-               $ hvbox 0
+               ( hvbox 0
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
                    $ fmt "@;<1 2>"
-                   $ fmt_expression c (sub_exp ~ctx e0)
+                   $ fmt_expression ~eol:(fmt "") c (sub_exp ~ctx e0)
                    $ fmt "@ with" )
                $ fmt "@ " $ fmt_cases c ctx cs ))
       | Some {pc_lhs; pc_guard; pc_rhs} ->
@@ -2045,7 +2043,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
                    $ hvbox 0
-                       (fmt "@;<1 -1>" $ fmt_expression c (sub_exp ~ctx e0))
+                       ( fmt "@;<1 -1>"
+                       $ fmt_expression ~eol:(fmt "") c (sub_exp ~ctx e0) )
                    $ fmt "@," )
                $ fmt "@;<0 -2>"
                $ hvbox 0
