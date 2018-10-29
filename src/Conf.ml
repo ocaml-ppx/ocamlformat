@@ -121,13 +121,9 @@ module C : sig
 
   type 'a t
 
-  type from =
-    [ `Default
-    | `File of Fpath.t * int
-    | `Env
-    | `Commandline
-    | `Profile of string * [`File of Fpath.t * int | `Env | `Commandline]
-    | `Attribute ]
+  type parsed_from = [`File of Fpath.t * int | `Attribute]
+
+  type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
   type 'a option_decl =
        names:string list
@@ -153,7 +149,7 @@ module C : sig
 
   val update :
        config:config
-    -> from:from
+    -> from:updated_from
     -> name:string
     -> value:string
     -> inline:bool
@@ -168,13 +164,12 @@ module C : sig
 end = struct
   type config = t
 
+  type parsed_from = [`File of Fpath.t * int | `Attribute]
+
+  type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+
   type from =
-    [ `Default
-    | `File of Fpath.t * int
-    | `Env
-    | `Commandline
-    | `Profile of string * [`File of Fpath.t * int | `Env | `Commandline]
-    | `Attribute ]
+    [`Default | `Profile of string * updated_from | `Updated of updated_from]
 
   type 'a t =
     { names: string list
@@ -367,17 +362,14 @@ end = struct
       if is_profile_option_name name then
         if is_profile_option_name (List.hd_exn names) then
           (* updating --profile option *)
-          Pack {p with from}
+          Pack {p with from= `Updated from}
         else
           let profile_name = List.find_map_exn !store ~f:on_pack in
           (* updating other options when --profile is set *)
-          match from with
-          | (`File _ | `Env | `Commandline) as from ->
-              Pack {p with from= `Profile (profile_name, from)}
-          | _ -> assert false (* cannot happen *)
+          Pack {p with from= `Profile (profile_name, from)}
       else if List.exists names ~f:(String.equal name) then
         (* updating a single option (without setting a profile) *)
-        Pack {p with from}
+        Pack {p with from= `Updated from}
       else Pack p
     in
     store := List.map !store ~f:on_pack
@@ -420,18 +412,18 @@ end = struct
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
       let aux_from = function
-        | `File (p, i) ->
+        | `Parsed (`File (p, i)) ->
             Format.sprintf " (file %s:%i)"
               (Fpath.to_string ~pretty:true p)
               i
+        | `Parsed `Attribute -> " (attribute)"
         | `Env -> " (environment variable)"
         | `Commandline -> " (command line)"
       in
       let aux_from = function
         | `Default -> ""
-        | `Attribute -> " (attribute)"
         | `Profile (s, p) -> " (profile " ^ s ^ aux_from p ^ ")"
-        | (`File _ | `Env | `Commandline) as x -> aux_from x
+        | `Updated x -> aux_from x
       in
       Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
     in
@@ -1301,10 +1293,14 @@ let parse_line config ~from s =
               ( value
               , Format.sprintf "expecting %s but got %s" Version.version
                   value ))
-    | name, `File _ -> C.update ~config ~from ~name ~value ~inline:false
-    | name, `Attribute -> C.update ~config ~from ~name ~value ~inline:true
-    | _ -> assert false
-    (* cannot happen *)
+    | name, `File x ->
+        C.update ~config
+          ~from:(`Parsed (`File x))
+          ~name ~value ~inline:false
+    | name, `Attribute ->
+        C.update ~config
+          ~from:(`Parsed `Attribute)
+          ~name ~value ~inline:true
   in
   let update_ocp_indent_option ~config ~from ~name ~value =
     let opt =
