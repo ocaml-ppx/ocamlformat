@@ -108,7 +108,7 @@ Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instr
 
 As mentioned in the Options section, when the option `--disable-outside-detected-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, then the formatting is disabled.
 
-This feature is often the behavior you can expect form OCamlFormat when it is directly run from your text editor, so it is advised to use this option.
+This feature is often the behavior you can expect from OCamlFormat when it is directly run from your text editor, so it is advised to use this option.
 
 ### Emacs setup
 
