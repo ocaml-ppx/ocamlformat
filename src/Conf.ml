@@ -1043,7 +1043,11 @@ let ocp_indent_config =
   mk ~default Arg.(value & flag & info ["ocp-indent-config"] ~doc ~docs)
 
 let print_config =
-  let doc = "Print configuration." in
+  let doc =
+    "Print the configuration determined by the environment variable, the \
+     configuration files, preset profiles and command line. Attributes are \
+     not considered."
+  in
   let default = false in
   mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
 

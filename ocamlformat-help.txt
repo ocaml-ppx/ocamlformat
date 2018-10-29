@@ -241,7 +241,9 @@ OPTIONS
            profile used at JaneStreet. 
 
        --print-config
-           Print configuration.
+           Print the configuration determined by the environment variable,
+           the configuration files, preset profiles and command line.
+           Attributes are not considered.
 
        -q, --quiet
            Quiet. May be set in .ocamlformat.
