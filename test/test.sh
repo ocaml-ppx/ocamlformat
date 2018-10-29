@@ -119,11 +119,11 @@ CHANGES=()
 for f in ${PASSING[@]}; do
     base=$(basename $f)
     name=${base%.*}
+    printf "[RUNNING]              %s\n" $name
     ocamlformat $f
-    if diff -q "$(reffile "$f")" $TMP/$base >/dev/null; then
-        printf "%-12s\t\t\e[32m[PASSED]\e[m\n" $name
-    else
-        printf "%-12s\t\t\e[31m[FAILED]\e[m \e[41m\e[30m[REGRESSION]\e[m\n" $name
+    printf "\033[1A\033[2K"
+    if ! diff -q "$(reffile "$f")" $TMP/$base >/dev/null; then
+        printf "\e[31m[FAILED]\e[m \e[41m\e[30m[REGRESSION]\e[m  %s\n" $name
         if [ -n "$ACCEPT" ]; then
 	    cp $TMP/$base "$(reffile "$f")"
         elif [ -n "$UPDATE" ]; then
@@ -141,19 +141,21 @@ done
 for f in ${FAILING[@]}; do
     base=$(basename $f)
     name=${base%.*}
+    printf "[RUNNING]              %s\n" $name
     ocamlformat $f
+    printf "\033[1A\033[2K"
     if diff -q $(reffile $f) $TMP/$base >/dev/null; then
-        printf "%-12s\t\e[32m[PASSED]\e[m \e[42m\e[30m[PROGRESSION]\e[m\n" $name
+        printf "\e[32m[PASSED]\e[m \e[42m\e[30m[PROGRESSION]\e[m %s\n" $name
         if [ -n "$UPDATE" ]; then
             $GIT mv -f $f* passing/
             $GIT rm -f failing-output/$base
         fi
     elif [ ! -e failing-output/$base ]; then
-        printf "%-12s\t\e[33m[FAILED]\e[m \e[43m\e[30m[NEW]\e[m\n" $name
+        printf "\e[33m[FAILED]\e[m \e[43m\e[30m[NEW]\e[m         %s\n" $name
         cp $TMP/$base failing-output/
         if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
     elif diff -q $TMP/$base failing-output/$base >/dev/null; then
-        printf "%-12s\t\e[33m[FAILED]\e[m\n" $name
+        printf "\e[33m[FAILED] [BASELINE]\e[m    %s\n" $name
         if [ -n "$GIT" ] && ! is_file_on_git failing-output/$base; then
             $GIT add failing-output/$base; fi
     else
@@ -164,7 +166,7 @@ for f in ${FAILING[@]}; do
             $(reffile $f) $TMP/$base \
             |wc -l)
         progress=$((refcount - curcount))
-        printf "%-12s\t\e[33m[FAILED]\e[m \e[%dm\e[30m[CHANGE: %+d]\e[m\n" \
+        printf "\e[33m[FAILED]\e[m \e[%dm\e[30m[CHANGE: %+d]\e[m %s\n" \
             $name \
             $(if [ $progress -gt 0 ]; then echo 42; \
               elif [ $progress -eq 0 ]; then echo 43; \
