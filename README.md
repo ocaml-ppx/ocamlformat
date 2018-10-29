@@ -123,13 +123,15 @@ This feature is often the behavior you can expect from OCamlFormat when it is di
   (add-hook 'before-save-hook 'ocamlformat-before-save)))
 ```
 
-To change the options passed to OCamlFormat (to use the option `--disable-outside-detected-project` for example):
+To pass the option `--disable-outside-detected-project` (or `--disable`) to OCamlFormat:
 - run `emacs`
 - run `M-x customize`
 - enter "ocamlformat" in the search field, and press the Search button
-- select the Ocamlformat Command item
-- enter your customized command in the Ocamlformat Command field, for example `ocamlformat --disable-outside-detected-project`
-- save the buffer (`C-x C-s`) and exit
+- select the Ocamlformat Enable item
+- select the OCamlformat mode in the Value Menu: `Enable` (by default), `Disable` or `Disable outside detected project`
+- save the buffer (`C-x C-s`), enter `yes` and exit
+
+Other OCamlFormat options can be set in .ocamlformat configuration files.
 
 ### Vim setup
 
