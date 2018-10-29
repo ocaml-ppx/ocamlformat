@@ -91,8 +91,7 @@ val x : x
     are always build as perfectly well-balanced and blocks are addressed by
     their hash (or by the stable keys returned by the underlying store).
 
-    A chunk has the following
-    structure:
+    A chunk has the following structure:
 
     {v
     --------------------------      --------------------------
@@ -121,8 +120,7 @@ val x : x
   /\  /\
     v}
 
-    This is preformated
-    code:
+    This is preformated code:
 
     {[
       let verbatim s =

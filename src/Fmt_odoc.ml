@@ -96,7 +96,7 @@ and fmt_text txt =
     | Some Newline -> fmt_text_elt curr
     | Some _ -> (
       match curr with
-      | Newline -> fmt_text_elt curr
+      | Newline -> close_box $ fmt_text_elt curr $ open_hovbox 0
       | _ -> fmt_text_elt curr $ fmt "@ " )
     | None -> fmt_text_elt curr
   in
@@ -129,6 +129,8 @@ let fmt_tag t =
     | Canonical s -> at () $ fmt "canonical@ " $ str s )
 
 let fmt (txt, tags) =
-  if List.is_empty tags then fmt_text txt
+  if List.is_empty tags then hovbox 0 (fmt_text txt)
   else if List.is_empty txt then vbox 0 (list tags "@;" fmt_tag)
-  else vbox 0 (fmt_text txt $ fmt "@;" $ vbox 0 (list tags "@;" fmt_tag))
+  else
+    vbox 0
+      (hovbox 0 (fmt_text txt) $ fmt "@;" $ vbox 0 (list tags "@;" fmt_tag))
