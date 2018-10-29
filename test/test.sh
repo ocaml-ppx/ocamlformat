@@ -155,7 +155,7 @@ for f in ${FAILING[@]}; do
         cp $TMP/$base failing-output/
         if [ -n "$GIT" ]; then $GIT add failing-output/$base; fi
     elif diff -q $TMP/$base failing-output/$base >/dev/null; then
-        printf "\e[33m[FAILED] [LEGACY]\e[m      %s\n" $name
+        printf "\e[33m[FAILED] [BASELINE]\e[m    %s\n" $name
         if [ -n "$GIT" ] && ! is_file_on_git failing-output/$base; then
             $GIT add failing-output/$base; fi
     else
