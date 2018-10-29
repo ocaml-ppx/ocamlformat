@@ -31,3 +31,4 @@ break-sequences=false
 break-infix=wrap
 break-collection-expressions=fit-or-vertical
 break-cases=fit
+

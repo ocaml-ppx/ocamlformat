@@ -1456,7 +1456,6 @@ type 'a input = {kind: 'a; name: string; file: string; conf: t}
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
   | Inplace of [`Impl | `Intf | `Use_file] input list
-  | Print_config of t
 
 let kind_of fname =
   match Filename.extension fname with
@@ -1486,9 +1485,6 @@ let build_config ~file =
     | None, _ | Some _, true -> files
     | Some f, false -> `Ocamlformat f :: files
   in
-  if !print_config then
-    Option.iter project_root ~f:(fun x ->
-        Format.eprintf "project-root=%a@\n%!" (Fpath.pp ~pretty:true) x ) ;
   let conf =
     List.fold files ~init:default_profile ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
@@ -1513,11 +1509,7 @@ let build_config ~file =
   else conf
 
 let action =
-  if !print_config then
-    let file = Fpath.(cwd () / ".ocamlformat") in
-    let file = Option.value root ~default:file |> Fpath.to_string in
-    Print_config (build_config ~file)
-  else if !inplace then
+  if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
            {kind= kind_of file; name= file; file; conf= build_config ~file}
@@ -1538,4 +1530,8 @@ and debug = !debug
 
 let parse_line_in_attribute = parse_line ~from:`Attribute
 
-let print c = C.print_config c
+;;
+if !print_config then
+  let file = Fpath.(cwd () / ".ocamlformat") in
+  let file = Option.value root ~default:file |> Fpath.to_string in
+  C.print_config (build_config ~file)

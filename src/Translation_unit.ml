@@ -145,7 +145,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     Out_channel.close oc ;
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
-    if String.equal source_txt fmted then
+    if String.equal source_txt fmted then (
       match (Conf.action, ofile) with
       | _, None ->
           Out_channel.output_string stdout fmted ;
@@ -153,8 +153,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           Ok
       | In_out _, Some ofile -> Unix.rename tmp ofile ; Ok
       | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile ; Ok
-      | Inplace _, Some _ -> Unix.unlink tmp ; Ok
-      | Print_config _, _ -> assert false (* can't happen *)
+      | Inplace _, Some _ -> Unix.unlink tmp ; Ok )
     else
       match
         Location.input_name := tmp ;
@@ -222,8 +221,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
         | _, None -> Out_channel.output_string stdout source_txt
         | In_out _, Some ofile ->
             Out_channel.write_all ofile ~data:source_txt
-        | Inplace _, _ -> ()
-        | Print_config _, _ -> assert false (* can't happen *) ) ;
+        | Inplace _, _ -> () ) ;
         Ok
     | {ast; comments} -> (
       try

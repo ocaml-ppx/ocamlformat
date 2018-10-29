@@ -58,7 +58,6 @@ type action =
           or stdout if None. *)
   | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
-  | Print_config of t
 
 val action : action
 (** Formatting action: input type and source, and output destination. *)
@@ -75,5 +74,3 @@ val parse_line_in_attribute :
        | `Malformed of string
        | `Misplaced of string * string ] )
      Result.t
-
-val print : t -> unit

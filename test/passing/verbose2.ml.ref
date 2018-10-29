@@ -1,4 +1,3 @@
-project-root=../../ocamlformat
 profile=default
 quiet=false
 max-iters=10
@@ -32,3 +31,4 @@ break-sequences=false
 break-infix=wrap
 break-collection-expressions=fit-or-vertical
 break-cases=fit
+
