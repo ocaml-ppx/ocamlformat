@@ -1508,6 +1508,17 @@ let build_config ~file =
     {conf with disable= true} )
   else conf
 
+;;
+if !print_config then
+  let file =
+    match !inputs with
+    | [] ->
+        let root = Option.value root ~default:(Fpath.cwd ()) in
+        Fpath.(root / ".ocamlformat" |> to_string)
+    | file :: _ -> file
+  in
+  C.print_config (build_config ~file)
+
 let action =
   if !inplace then
     Inplace
@@ -1524,14 +1535,10 @@ let action =
             ; file= input_file
             ; conf= build_config ~file:name }
           , !output )
-    | _ -> impossible "checked by validate"
+    | _ ->
+        if !print_config then Caml.exit 0
+        else impossible "checked by validate"
 
 and debug = !debug
 
 let parse_line_in_attribute = parse_line ~from:`Attribute
-
-;;
-if !print_config then
-  let file = Fpath.(cwd () / ".ocamlformat") in
-  let file = Option.value root ~default:file |> Fpath.to_string in
-  C.print_config (build_config ~file)
