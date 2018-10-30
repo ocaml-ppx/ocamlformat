@@ -76,7 +76,7 @@ Options can be modified by the means of:
 
 .ocamlformat files in the containing and all ancestor directories for each input file are used, as well as the global .ocamlformat file defined in `$XDG_CONFIG_HOME/ocamlformat`. The global .ocamlformat file has the lowest priority, then the closer the directory is to the processed file, the higher the priority.
 
-When the option `--disable-outside-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
+When the option `--disable-outside-detected-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
 
 ### Preset profiles
 
@@ -104,6 +104,12 @@ Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instr
 
 ## Editor setup
 
+### Disable outside project
+
+As mentioned in the Options section, when the option `--disable-outside-detected-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, then the formatting is disabled.
+
+This feature is often the behavior you can expect from OCamlFormat when it is directly run from your text editor, so it is advised to use this option.
+
 ### Emacs setup
 
 - add `$(opam config var share)/emacs/site-lisp` to `load-path` (as done by `opam user-setup install`)
@@ -117,11 +123,30 @@ Alternately, see [`ocamlformat.opam`](./ocamlformat.opam) for manual build instr
   (add-hook 'before-save-hook 'ocamlformat-before-save)))
 ```
 
+To pass the option `--disable-outside-detected-project` (or `--disable`) to OCamlFormat:
+- run `emacs`
+- run `M-x customize-group⏎` then enter `ocamlformat⏎`
+- select the Ocamlformat Enable item
+- select the OCamlformat mode in the Value Menu: `Enable` (by default), `Disable` or `Disable outside detected project`
+- save the buffer (`C-x C-s`) then enter `yes⏎` and exit
+
+Other OCamlFormat options can be set in .ocamlformat configuration files.
+
 ### Vim setup
 
 - be sure the `ocamlformat` binary can be found in PATH
 
 - install the [Neoformat](https://github.com/sbdchd/neoformat#install) plugin
+
+To change the options passed to OCamlFormat (to use the option `--disable-outside-detected-project` for example), you can [customize NeoFormat](https://github.com/sbdchd/neoformat#config-optional) with:
+```
+let g:neoformat_ocaml_ocamlformat = {
+            \ 'exe': 'ocamlformat',
+            \ 'args': ['--disable-outside-detected-project']
+            \ }
+
+let g:neoformat_enabled_ocaml = ['ocamlformat']
+```
 
 ## Documentation
 

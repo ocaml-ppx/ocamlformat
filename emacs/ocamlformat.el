@@ -39,6 +39,15 @@
   :type 'string
   :group 'ocamlformat)
 
+(defcustom ocamlformat-enable 'enable
+  "Enable or disable ocamlformat."
+  :type '(choice
+          (const :tag "Enable" enable)
+          (const :tag "Disable outside detected project"
+                 disable-outside-detected-project)
+          (const :tag "Disable" disable))
+  :group 'ocamlformat)
+
 (defcustom ocamlformat-show-errors 'buffer
     "Where to display ocamlformat error output.
 It can either be displayed in the *compilation* buffer, in the echo area, or not at all.
@@ -209,6 +218,14 @@ function."
             ((equal ocamlformat-margin-mode 'fill)
              (list "--margin" (number-to-string fill-column)))
             (t
+             '())))
+          (enable-args
+           (cond
+            ((equal ocamlformat-enable 'disable)
+             (list "--disable"))
+            ((equal ocamlformat-enable 'disable-outside-detected-project)
+             (list "--disable-outside-detected-project"))
+            (t
              '()))))
      (unwind-protect
          (save-restriction
@@ -218,9 +235,10 @@ function."
                  (apply 'call-process
                    ocamlformat-command nil (list :file errorfile) nil
                    (append margin-args
-                     (list
-                       "--name" buffer-file-name
-                       "--output" outputfile bufferfile))))
+                     (append enable-args
+                       (list
+                         "--name" buffer-file-name
+                         "--output" outputfile bufferfile)))))
              (progn
                (if ocamlformat--support-replace-buffer-contents
 		   (replace-buffer-contents (find-file-noselect outputfile))
