@@ -617,11 +617,8 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
                 (Caml.Format.flush_str_formatter ()) ) ;
             let space_i i =
               let spaces = ['\t'; '\n'; '\011'; '\012'; '\r'; ' '] in
-              let f = List.mem ~equal:Char.equal spaces in
-              let default = false in
-              Option.value_map
-                (List.nth (String.to_list str_cmt) i)
-                ~default ~f
+              let is_space = List.mem ~equal:Char.equal spaces in
+              0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
             in
             fmt_if (space_i 0) " "
             $ Fmt_odoc.fmt parsed
