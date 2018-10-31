@@ -913,8 +913,9 @@ let disable_outside_detected_project =
     Format.sprintf
       "Do not read $(b,.ocamlformat) config files outside the current \
        project. The project root of an input file is taken to be the \
-       nearest ancestor directory that contains a %s file. If no config \
-       file is found, formatting is disabled."
+       nearest ancestor directory that contains a %s file. If no \
+       $(b,.ocamlformat) configuration file is found, formatting is \
+       disabled."
       witness
   in
   let default = false in
@@ -1492,7 +1493,11 @@ let build_config ~file =
     List.fold files ~init:default_profile ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
-  if disable_outside_detected_project && List.is_empty files then (
+  let no_ocamlformat_files =
+    let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
+    List.for_all files ~f
+  in
+  if disable_outside_detected_project && no_ocamlformat_files then (
     ( if not conf.quiet then
       let reason =
         match project_root with
