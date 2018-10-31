@@ -34,14 +34,19 @@ let make_mapper ~ignore_doc_comment =
                     ; pexp_attributes }
                   , [] )
             ; pstr_loc } ] ) ->
-        (* normalize consecutive whitespace chars to a single space *)
         let doc' =
           if ignore_doc_comment then "IGNORED"
           else
-            String.concat ~sep:" "
-              (List.filter ~f:(Fn.non String.is_empty)
-                 (String.split_on_chars doc
-                    ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+            match Octavius.parse (Lexing.from_string doc) with
+            | Ok parsed ->
+                Fmt_odoc.fmt parsed Format_.str_formatter ;
+                Format_.flush_str_formatter ()
+            | Error _ ->
+                (* normalize consecutive whitespace chars to a single space *)
+                String.concat ~sep:" "
+                  (List.filter ~f:(Fn.non String.is_empty)
+                     (String.split_on_chars doc
+                        ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
         in
         ( {txt; loc= m.location m loc}
         , m.payload m

@@ -606,11 +606,28 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
         | Some (_, false), true -> true
         | _, false -> false
       in
+      let try_parse str_cmt =
+        match Octavius.parse (Lexing.from_string str_cmt) with
+        | Error _ ->
+            (if c.conf.wrap_comments then fill_text else str) str_cmt
+        | Ok parsed ->
+            if Conf.debug then (
+              Octavius.print Caml.Format.str_formatter parsed ;
+              Caml.Format.eprintf "%s%!"
+                (Caml.Format.flush_str_formatter ()) ) ;
+            let space_i i =
+              let spaces = ['\t'; '\n'; '\011'; '\012'; '\r'; ' '] in
+              let is_space = List.mem ~equal:Char.equal spaces in
+              0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
+            in
+            fmt_if (space_i 0) " "
+            $ Fmt_odoc.fmt parsed
+            $ fmt_if (space_i (String.length str_cmt - 1)) " "
+      in
       Cmts.fmt c.cmts loc
       @@ vbox_if (Option.is_none pro) 0
-           ( Option.call ~f:pro $ fmt "(**"
-           $ (if c.conf.wrap_comments then fill_text else str) txt
-           $ fmt "*)" $ fmt_if need_break "\n"
+           ( Option.call ~f:pro $ fmt "(**" $ try_parse txt $ fmt "*)"
+           $ fmt_if need_break "\n"
            $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi)
            ) )
 
