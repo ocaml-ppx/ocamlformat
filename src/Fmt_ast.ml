@@ -3042,8 +3042,8 @@ and fmt_module_type c ({ast= mty} as xmty) =
         bdy=
           hvbox 0
             (wrap_if parens "(" ")"
-               ( opn $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-               $ Option.call ~f:epi
+               ( opn $ Option.call ~f:pro $ psp $ bdy $ esp
+               $ Option.call ~f:epi $ cls
                $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
                      Cmts.fmt c.cmts loc
                      @@ list_fl wcs_and (fun ~first ~last:_ wc ->

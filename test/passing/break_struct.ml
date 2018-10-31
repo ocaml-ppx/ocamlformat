@@ -82,3 +82,9 @@ module M = struct
 
   let z = zzzzzzzzzzzzz
 end
+
+include (
+  Ast_407 :
+    module type of struct include Ast_407
+    end
+    with module Location := Ast_407.Location )
