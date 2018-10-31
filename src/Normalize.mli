@@ -38,3 +38,14 @@ val equal_use_file :
 
 val mapper : Ast_mapper.mapper
 (** Ast_mapper for normalization transformations. *)
+
+val moved_docstrings_impl :
+  structure -> structure -> (Location.t * Location.t * string) list
+
+val moved_docstrings_intf :
+  signature -> signature -> (Location.t * Location.t * string) list
+
+val moved_docstrings_use_file :
+     toplevel_phrase list
+  -> toplevel_phrase list
+  -> (Location.t * Location.t * string) list

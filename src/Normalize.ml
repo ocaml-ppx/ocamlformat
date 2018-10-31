@@ -227,3 +227,101 @@ let equal_use_file ~ignore_doc_comments ast1 ast2 =
     else map_use_file mapper
   in
   Poly.equal (map ast1) (map ast2)
+
+let make_docstring_mapper docstrings =
+  let doc_attribute = function
+    | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
+    | _ -> false
+  in
+  let attribute (m : Ast_mapper.mapper) attr =
+    match attr with
+    | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
+      , PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                    ; pexp_loc
+                    ; pexp_attributes }
+                  , [] )
+            ; pstr_loc } ] ) ->
+        (* normalize consecutive whitespace chars to a single space *)
+        let doc' =
+          String.concat ~sep:" "
+            (List.filter ~f:(Fn.non String.is_empty)
+               (String.split_on_chars doc
+                  ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+        in
+        let attr =
+          ( {txt; loc}
+          , m.payload m
+              (PStr
+                 [ { pstr_desc=
+                       Pstr_eval
+                         ( { pexp_desc=
+                               Pexp_constant (Pconst_string (doc', None))
+                           ; pexp_loc
+                           ; pexp_attributes }
+                         , [] )
+                   ; pstr_loc } ]) )
+        in
+        docstrings := (loc, doc') :: !docstrings ;
+        attr
+    | attr -> Ast_mapper.default_mapper.attribute m attr
+  in
+  (* sort attributes *)
+  let attributes (m : Ast_mapper.mapper) atrs =
+    let atrs = List.filter atrs ~f:doc_attribute in
+    Ast_mapper.default_mapper.attributes m
+      (List.sort ~compare:Poly.compare atrs)
+  in
+  {Ast_mapper.default_mapper with attribute; attributes}
+
+let docstrings_impl s =
+  let docstrings = ref [] in
+  let _ : structure = map_structure (make_docstring_mapper docstrings) s in
+  !docstrings
+
+let docstrings_intf s =
+  let docstrings = ref [] in
+  let _ : signature = map_signature (make_docstring_mapper docstrings) s in
+  !docstrings
+
+let docstrings_use_file s =
+  let docstrings = ref [] in
+  let _ : toplevel_phrase list =
+    map_use_file (make_docstring_mapper docstrings) s
+  in
+  !docstrings
+
+let moved_docstrings get_docstrings s1 s2 =
+  let d1 = get_docstrings s1 in
+  let d2 = get_docstrings s2 in
+  let equal (_, s1) (_, s2) = String.equal s1 s2 in
+  match List.zip d1 d2 with
+  | None ->
+      (* We only return the ones that are not in both lists. *)
+      (* [l1] contains the ones that disappeared. *)
+      let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
+      let l1 = List.map ~f:(fun (l, s) -> (l, Location.none, s)) l1 in
+      (* [l2] contains the ones that appeared. *)
+      let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
+      let l2 = List.map ~f:(fun (l, s) -> (Location.none, l, s)) l2 in
+      List.rev_append l1 l2
+  | Some l ->
+      (* We suppose that no docstring appeared nor disappeared, meaning that
+         each docstring is present in both lists but may have different
+         locations. *)
+      let different ((_, s1), (_, s2)) = not (String.equal s1 s2) in
+      let l = List.filter l ~f:different in
+      let d1, d2 = List.unzip l in
+      List.map d1 ~f:(fun (l, s) ->
+          let str_equal (_, s') = String.equal s s' in
+          let l' = List.find_exn d2 ~f:str_equal |> fst in
+          (l, l', s) )
+
+let moved_docstrings_impl s1 s2 = moved_docstrings docstrings_impl s1 s2
+
+let moved_docstrings_intf s1 s2 = moved_docstrings docstrings_intf s1 s2
+
+let moved_docstrings_use_file s1 s2 =
+  moved_docstrings docstrings_use_file s1 s2

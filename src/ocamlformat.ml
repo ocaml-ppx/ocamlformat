@@ -16,6 +16,8 @@ let normalize norm {Translation_unit.ast; _} = norm ast
 let equal eq ~ignore_doc_comments a b =
   eq ~ignore_doc_comments a.Translation_unit.ast b.Translation_unit.ast
 
+let moved_docstrings f a b = f a.Translation_unit.ast b.Translation_unit.ast
+
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
   let parse = Migrate_ast.Parse.implementation in
@@ -24,6 +26,7 @@ let impl : _ Translation_unit.t =
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; equal= equal Normalize.equal_impl
+  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_impl
   ; normalize= normalize Normalize.impl
   ; printast= Migrate_ast.Printast.implementation }
 
@@ -35,6 +38,7 @@ let intf : _ Translation_unit.t =
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; equal= equal Normalize.equal_intf
+  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_intf
   ; normalize= normalize Normalize.intf
   ; printast= Migrate_ast.Printast.interface }
 
@@ -46,6 +50,7 @@ let use_file : _ Translation_unit.t =
   ; init_cmts= Cmts.init_use_file
   ; fmt= Fmt_ast.fmt_use_file
   ; equal= equal Normalize.equal_use_file
+  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_use_file
   ; normalize= normalize Normalize.use_file
   ; printast= Migrate_ast.Printast.use_file }
 
