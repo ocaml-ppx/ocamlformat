@@ -187,7 +187,8 @@ OPTIONS
            Do not read .ocamlformat config files outside the current project.
            The project root of an input file is taken to be the nearest
            ancestor directory that contains a .git or .hg or dune-project
-           file. If no config file is found, formatting is disabled.
+           file. If no .ocamlformat configuration file is found, formatting
+           is disabled.
 
        -g, --debug
            Generate debugging output.
