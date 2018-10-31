@@ -241,7 +241,12 @@ OPTIONS
            profile used at JaneStreet. 
 
        --print-config
-           Print config.
+           Print the configuration determined by the environment variable,
+           the configuration files, preset profiles and command line.
+           Attributes are not considered. If many input files are specified,
+           only print the configuration for the first file. If no input file
+           is specified, print the configuration for the root directory if
+           specified, or for the current working directory otherwise.
 
        -q, --quiet
            Quiet. May be set in .ocamlformat.
