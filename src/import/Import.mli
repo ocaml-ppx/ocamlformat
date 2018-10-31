@@ -18,8 +18,8 @@ include module type of (
 
       include
         module type of Base
-        (* [Filename], [Format], [Scanf] are all deprecated in [Base], erase
-           them and use the ones from the stdlib. *)
+          (* [Filename], [Format], [Scanf] are all deprecated in [Base],
+             erase them and use the ones from the stdlib. *)
         with module Filename := Base.Filename
          and module Format := Base.Format
          and module Scanf := Base.Scanf

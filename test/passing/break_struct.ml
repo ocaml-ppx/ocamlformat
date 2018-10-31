@@ -6,3 +6,85 @@ module M =
     (struct
       let x = k
     end)
+
+module Hash = struct
+  include Hash
+  module type S = S.HASH
+end
+
+module Hash = struct
+  include Hash
+  include Hash
+  module type S = S.HASH
+  module type S = S.HASH
+end
+
+module Hash = struct
+  include Hash
+  include Hash
+  include Hash
+  module type S = S.HASH
+  module type S = S.HASH
+  module type S = S.HASH
+end
+
+module Hash = struct
+  let z = zzzzzzzzzzzzzzzzzzzzzz zzzzzzzzzzzzzzzzzzzzzz zzzzzzzzzzzzzzzzzz zzzzzzzzzzzzzzzz zzzzzzzzzzzzzzzzzz zzzzzzzzzzzzzzzz zzzzzzzzzz
+  let z = zzzzzzzzzzzzzz zzzzzzzzzzzzzzz zzzzzzzzzzzzzzz zzzzzzzzzzzzzzz zzzzzzzzzzzzzzzz zzzzzzzzzzzzzzzzzz zzzzzzzzzzzzzzzzzz
+  include Hash
+  module type S = S.HASH
+end
+
+module Vector = struct
+  include Vector
+
+  let pp sep pp_elt fs v = List.pp sep pp_elt fs (to_list v)
+end
+
+module Hash = struct
+  include Hash
+  include Hash
+
+  module type S = S.HASH
+
+  module type S = S.HASH
+end
+
+module M = struct
+  include A
+end
+
+module M = struct
+  include A
+  include B
+end
+
+module M = struct
+  include A
+  include B
+  include C
+end
+
+module M = struct
+  include A
+  include B
+  include C
+  include D
+end
+
+module M = struct
+  include A
+  include B
+  include C
+  include D
+
+  let x = xxxxxxxxxxx xxxxxxxxxxxxx
+
+  let z = zzzzzzzzzzzzz
+end
+
+include (
+  Ast_407 :
+    module type of struct include Ast_407
+    end
+    with module Location := Ast_407.Location )
