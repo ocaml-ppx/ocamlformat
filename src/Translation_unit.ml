@@ -318,7 +318,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
                   if Location.compare loc_before Location.none = 0 then
                     Caml.Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
-                       *) created.\n\
+                       *) added.\n\
                        %!"
                       Location.print_loc loc_after (String.strip msg)
                   else if Location.compare loc_after Location.none = 0 then
