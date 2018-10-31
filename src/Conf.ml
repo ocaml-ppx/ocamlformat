@@ -1046,7 +1046,10 @@ let print_config =
   let doc =
     "Print the configuration determined by the environment variable, the \
      configuration files, preset profiles and command line. Attributes are \
-     not considered."
+     not considered. If many input files are specified, only print the \
+     configuration for the first file. If no input file is specified, \
+     print the configuration for the root directory if specified, or for \
+     the current working directory otherwise."
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
