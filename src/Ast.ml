@@ -1953,7 +1953,8 @@ end = struct
     in
     let rec ifthenelse pexp_desc =
       match pexp_desc with
-      | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e, _)}]) ->
+      | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _)}])
+        when Source.extension_using_sugar ~name:ext ~payload:e ->
           ifthenelse e.pexp_desc
       | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
       | _ -> false
