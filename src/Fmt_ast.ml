@@ -1552,6 +1552,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_apply (e0, (lbl, ({pexp_desc= Pexp_fun _; pexp_loc} as f)) :: eN)
     when not c.conf.break_before_func ->
       let xargs, xbody = sugar_fun c (sub_exp ~ctx f) in
+      let func_after =
+        match eN with
+        | (_, {pexp_desc= Pexp_fun _ | Pexp_function _}) :: _ -> true
+        | _ -> false
+      in
       hvbox 2
         (wrap_if parens "(" ")"
            (hovbox 2
@@ -1567,12 +1572,13 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                         $ (if c.conf.wrap_fun_args then hovbox else hvbox)
                             2 (fmt_fun_args c xargs)
                         $ fmt "@ " $ fmt "->" ) )
-                  $ hovbox 0 (fmt_body c ?ext xbody) )
+                  $ hovbox 0 (fmt_body c ?ext xbody)
+                  $ fmt_if func_after " )" )
               $ fmt "@ "
               $ hovbox 0
-                  ( fmt ")"
+                  ( fmt_if (not func_after) ")"
                   $ Cmts.fmt_after c.cmts pexp_loc
-                  $ fmt_if (not (List.is_empty eN)) "@;"
+                  $ fmt_if ((not (List.is_empty eN)) && not func_after) "@;"
                   $ fmt_expressions c width
                       (fun (_, e) -> sub_exp ~ctx e)
                       eN "@ "
