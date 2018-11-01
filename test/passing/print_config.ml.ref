@@ -10,6 +10,7 @@ parens-tuple=always
 ocp-indent-compat=false
 module-item-spacing=sparse (file passing/dir1/dir2/.ocamlformat:1)
 margin=77 (file ../.ocamlformat:1)
+line-endings=preserve
 let-open=short (command line)
 let-and=compact
 let-binding-spacing=compact

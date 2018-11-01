@@ -791,7 +791,8 @@ module Formatting = struct
       ; ("windows", `Windows, "$(b,windows) uses Windows line endings.") ]
     in
     C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~section
-      (fun conf x -> {conf with line_endings= x} )
+      (fun conf x -> {conf with line_endings= x})
+      (fun conf -> conf.line_endings)
 
   let margin =
     let docv = "COLS" in
