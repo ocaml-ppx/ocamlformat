@@ -18,7 +18,7 @@ List.map
   (* this is a loooooooooooooooooooooooooooooong commmmmmmmmmment
      blablablabla *)
   (fun xxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzz
-  aaaaaaaaaaaaaaaa ->
+         aaaaaaaaaaaaaaaa ->
     xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx
   ) list

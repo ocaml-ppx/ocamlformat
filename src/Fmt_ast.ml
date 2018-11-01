@@ -1564,9 +1564,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                       $ ( fmt "(fun "
                         $ fmt_attributes c ~key:"@" pexp_attributes
                             ~suf:(fmt " ")
-                        $ hvbox_if
-                            (not c.conf.wrap_fun_args)
-                            0 (fmt_fun_args c xargs)
+                        $ (if c.conf.wrap_fun_args then hovbox else hvbox)
+                            2 (fmt_fun_args c xargs)
                         $ fmt "@ " $ fmt "->" ) )
                   $ hovbox 0 (fmt_body c ?ext xbody) )
               $ fmt "@ "
