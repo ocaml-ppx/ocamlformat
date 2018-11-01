@@ -7,6 +7,7 @@ wrap-comments=true (file ../.ocamlformat:2)
 type-decl=compact
 sequence-style=separator
 parens-tuple=always
+parens-ite=false
 ocp-indent-compat=false
 module-item-spacing=sparse (file passing/dir1/dir2/.ocamlformat:1)
 margin=77 (file ../.ocamlformat:1)
