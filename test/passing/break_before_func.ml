@@ -39,6 +39,18 @@ List.map (* toto *)
   ) list
 
 ;;
+List.map (* toto *)
+  (function
+  | Aaaaaaaaa
+      ( aaaaaaaaaaaaaaa
+      , aaaaaaaaaaaaaaaa
+      , {aaaaaaaaaaaaa; aaaaaaaaaaaaaaa; aaaaaaaaaaaa}
+      , (aaaaaaaaaa, aaaaaaaaaaaa) ) ->
+      xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
+        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx
+  ) list
+
+;;
 List.map
   (* this is a loooooooooooooooooooooooooooooong commmmmmmmmmment
      blablablabla *)
