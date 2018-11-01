@@ -127,3 +127,41 @@ val x : x
         s |> String.split_lines |> List.map ~f:String.strip
         |> fun s -> list s "@," Fmt.str
     ]} *)
+
+(** Lists:
+
+    list with short lines:
+
+    - x
+    - y
+    - z
+
+    list with long lines:
+
+    - xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx
+      xxx xxx xxx xxx xxx xxx xxx
+    - yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy
+      yyy yyy yyy yyy yyy yyy yyy
+    - zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz
+      zzz zzz zzz zzz zzz zzz zzz
+
+    enumerated list with long lines:
+
+    + xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx
+      xxx xxx xxx xxx xxx xxx xxx
+    + yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy
+      yyy yyy yyy yyy yyy yyy yyy
+    + zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz
+      zzz zzz zzz zzz zzz zzz zzz
+
+    list with sub lists:
+
+    {ul
+     {- xxx
+        - a
+        - b
+        - c}
+     {- yyy
+        + a
+        + b
+        + c}} *)
