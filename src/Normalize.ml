@@ -19,8 +19,7 @@ open Ast_helper
 let docstring s =
   match Octavius.parse (Lexing.from_string s) with
   | Ok parsed ->
-      Fmt_odoc.fmt parsed Format_.str_formatter ;
-      Format_.flush_str_formatter ()
+      Format_.asprintf "%a@!" (fun fs x -> Fmt_odoc.fmt x fs) parsed
   | Error _ ->
       (* normalize consecutive whitespace chars to a single space *)
       String.concat ~sep:" "
