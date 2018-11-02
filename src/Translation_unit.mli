@@ -20,14 +20,16 @@ type 'a t =
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
+      -> Conf.t
       -> 'a with_comments
       -> 'a with_comments
       -> bool
   ; moved_docstrings:
-         'a with_comments
+         Conf.t
+      -> 'a with_comments
       -> 'a with_comments
       -> (Location.t * Location.t * string) list
-  ; normalize: 'a with_comments -> 'a
+  ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)

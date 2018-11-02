@@ -11,12 +11,13 @@
 
 (** OCamlFormat *)
 
-let normalize norm {Translation_unit.ast; _} = norm ast
+let normalize norm c {Translation_unit.ast; _} = norm c ast
 
-let equal eq ~ignore_doc_comments a b =
-  eq ~ignore_doc_comments a.Translation_unit.ast b.Translation_unit.ast
+let equal eq ~ignore_doc_comments c a b =
+  eq ~ignore_doc_comments c a.Translation_unit.ast b.Translation_unit.ast
 
-let moved_docstrings f a b = f a.Translation_unit.ast b.Translation_unit.ast
+let moved_docstrings f c a b =
+  f c a.Translation_unit.ast b.Translation_unit.ast
 
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =

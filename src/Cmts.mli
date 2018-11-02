@@ -123,7 +123,8 @@ val remaining_comments : t -> (Location.t * string * string * Sexp.t) list
 (** Returns comments that have not been formatted yet. *)
 
 val diff :
-     (string * Location.t) list
+     Conf.t
+  -> (string * Location.t) list
   -> (string * Location.t) list
   -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)

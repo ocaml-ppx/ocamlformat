@@ -26,14 +26,16 @@ type 'a t =
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
+      -> Conf.t
       -> 'a with_comments
       -> 'a with_comments
       -> bool
   ; moved_docstrings:
-         'a with_comments
+         Conf.t
+      -> 'a with_comments
       -> 'a with_comments
       -> (Location.t * Location.t * string) list
-  ; normalize: 'a with_comments -> 'a
+  ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
 (** Existential package of a type of translation unit and its operations. *)
@@ -170,14 +172,14 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           if
             (* Ast not preserved ? *)
             not
-              (xunit.equal ~ignore_doc_comments:(not conf.comment_check) old
-                 new_)
+              (xunit.equal ~ignore_doc_comments:(not conf.comment_check)
+                 conf old new_)
           then (
-            dump xunit dir base ".old" ".ast" (xunit.normalize old) ;
-            dump xunit dir base ".new" ".ast" (xunit.normalize new_) ;
+            dump xunit dir base ".old" ".ast" (xunit.normalize conf old) ;
+            dump xunit dir base ".new" ".ast" (xunit.normalize conf new_) ;
             if not Conf.debug then Unix.unlink tmp ;
-            if xunit.equal ~ignore_doc_comments:true old new_ then
-              let docstrings = xunit.moved_docstrings old new_ in
+            if xunit.equal ~ignore_doc_comments:true conf old new_ then
+              let docstrings = xunit.moved_docstrings conf old new_ in
               internal_error (`Doc_comment docstrings)
                 [("output file", String.sexp_of_t tmp)]
             else internal_error `Ast [("output file", String.sexp_of_t tmp)] ) ;
@@ -188,7 +190,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             | l ->
                 let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
                 internal_error (`Comment_dropped l) [] ) ;
-            let diff_cmts = Cmts.diff comments new_.comments in
+            let diff_cmts = Cmts.diff conf comments new_.comments in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;
               dump xunit dir base ".new" ".ast" new_.ast ;

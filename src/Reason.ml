@@ -40,7 +40,7 @@ open Ast_helper
 
 (* extend Normalize.mapper with additional transformations for Reason code *)
 
-let mapper cmts ~ignore_doc_comments =
+let mapper c cmts ~ignore_doc_comments =
   (* holds if an attribute is a docstring that also appears as a comment *)
   let atr_is_dup =
     let cmts = Set.of_list (module String) (List.map cmts ~f:fst) in
@@ -64,7 +64,7 @@ let mapper cmts ~ignore_doc_comments =
     in
     (* remove docstrings that duplicate comments *)
     let atrs = List.filter atrs ~f:(Fn.non atr_is_dup) in
-    Normalize.mapper.attributes m atrs
+    Normalize.(mapper c).attributes m atrs
   in
   let pat (m : Ast_mapper.mapper) pat =
     let {ppat_desc; ppat_loc; ppat_attributes} = pat in
@@ -83,7 +83,7 @@ let mapper cmts ~ignore_doc_comments =
           if List.is_empty explicit_arity then pat
           else Pat.mk ~loc:ppat_loc ~attrs ppat_desc
         in
-        Normalize.mapper.pat m pat
+        Normalize.(mapper c).pat m pat
   in
   let expr (m : Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -102,12 +102,12 @@ let mapper cmts ~ignore_doc_comments =
           if List.is_empty explicit_arity then exp
           else Exp.mk ~loc:pexp_loc ~attrs pexp_desc
         in
-        Normalize.mapper.expr m exp
+        Normalize.(mapper c).expr m exp
   in
   let structure (m : Ast_mapper.mapper) pstr =
     (* remove structure items that are attributes that duplicate comments,
        when converting Reason *)
-    Normalize.mapper.structure m
+    Normalize.(mapper c).structure m
       (List.filter pstr ~f:(function
         | {pstr_desc= Pstr_attribute atr} -> not (atr_is_dup atr)
         | _ -> true ))
@@ -115,29 +115,31 @@ let mapper cmts ~ignore_doc_comments =
   let signature (m : Ast_mapper.mapper) psig =
     (* remove signature items that are attributes that duplicate comments,
        when converting Reason *)
-    Normalize.mapper.signature m
+    Normalize.(mapper c).signature m
       (List.filter psig ~f:(function
         | {psig_desc= Psig_attribute atr} -> not (atr_is_dup atr)
         | _ -> true ))
   in
-  {Normalize.mapper with attributes; pat; expr; structure; signature}
+  {(Normalize.mapper c) with attributes; pat; expr; structure; signature}
 
-let norm_impl {Translation_unit.ast; comments} =
-  map_structure (mapper ~ignore_doc_comments:false comments) ast
+let norm_impl c {Translation_unit.ast; comments} =
+  map_structure (mapper ~ignore_doc_comments:false c comments) ast
 
-let norm_intf {Translation_unit.ast; comments} =
-  map_signature (mapper ~ignore_doc_comments:false comments) ast
+let norm_intf c {Translation_unit.ast; comments} =
+  map_signature (mapper ~ignore_doc_comments:false c comments) ast
 
-let equal_impl ~ignore_doc_comments x y =
-  Normalize.equal_impl ~ignore_doc_comments (norm_impl x) (norm_impl y)
+let equal_impl ~ignore_doc_comments c x y =
+  Normalize.equal_impl ~ignore_doc_comments c (norm_impl c x)
+    (norm_impl c y)
 
-let equal_intf ~ignore_doc_comments x y =
-  Normalize.equal_intf ~ignore_doc_comments (norm_intf x) (norm_intf y)
+let equal_intf ~ignore_doc_comments c x y =
+  Normalize.equal_intf ~ignore_doc_comments c (norm_intf c x)
+    (norm_intf c y)
 
-let moved_docstrings_impl {Translation_unit.ast= x} {Translation_unit.ast= y}
-    =
-  Normalize.moved_docstrings_impl x y
+let moved_docstrings_impl c {Translation_unit.ast= x}
+    {Translation_unit.ast= y} =
+  Normalize.moved_docstrings_impl c x y
 
-let moved_docstrings_intf {Translation_unit.ast= x} {Translation_unit.ast= y}
-    =
-  Normalize.moved_docstrings_intf x y
+let moved_docstrings_intf c {Translation_unit.ast= x}
+    {Translation_unit.ast= y} =
+  Normalize.moved_docstrings_intf c x y
