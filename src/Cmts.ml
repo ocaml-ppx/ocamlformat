@@ -581,18 +581,7 @@ let remaining_comments t =
 
 let diff x y =
   let norm z =
-    let f (txt, _) =
-      match Octavius.parse (Lexing.from_string txt) with
-      | Ok parsed ->
-          Fmt_odoc.fmt parsed Format.str_formatter ;
-          Format.flush_str_formatter ()
-      | Error _ ->
-          (* normalize consecutive whitespace chars to a single space *)
-          String.concat ~sep:" "
-            (List.filter ~f:(Fn.non String.is_empty)
-               (String.split_on_chars txt
-                  ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
-    in
+    let f (txt, _) = Normalize.docstring txt in
     Set.of_list
       (module String)
       (List.map ~f (List.dedup_and_sort ~compare:Poly.compare z))

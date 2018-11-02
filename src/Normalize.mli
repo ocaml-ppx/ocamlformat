@@ -14,6 +14,9 @@
 open Migrate_ast
 open Parsetree
 
+val docstring : string -> string
+(** Normalize a docstring. *)
+
 val impl : structure -> structure
 (** Normalize a structure. *)
 

@@ -16,6 +16,18 @@ open Asttypes
 open Parsetree
 open Ast_helper
 
+let docstring s =
+  match Octavius.parse (Lexing.from_string s) with
+  | Ok parsed ->
+      Fmt_odoc.fmt parsed Format_.str_formatter ;
+      Format_.flush_str_formatter ()
+  | Error _ ->
+      (* normalize consecutive whitespace chars to a single space *)
+      String.concat ~sep:" "
+        (List.filter ~f:(Fn.non String.is_empty)
+           (String.split_on_chars s
+              ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+
 let make_mapper ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
@@ -35,18 +47,7 @@ let make_mapper ~ignore_doc_comment =
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
-          if ignore_doc_comment then "IGNORED"
-          else
-            match Octavius.parse (Lexing.from_string doc) with
-            | Ok parsed ->
-                Fmt_odoc.fmt parsed Format_.str_formatter ;
-                Format_.flush_str_formatter ()
-            | Error _ ->
-                (* normalize consecutive whitespace chars to a single space *)
-                String.concat ~sep:" "
-                  (List.filter ~f:(Fn.non String.is_empty)
-                     (String.split_on_chars doc
-                        ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+          if ignore_doc_comment then "IGNORED" else docstring doc
         in
         ( {txt; loc= m.location m loc}
         , m.payload m
@@ -244,28 +245,19 @@ let make_docstring_mapper docstrings =
                     ; pexp_attributes }
                   , [] )
             ; pstr_loc } ] ) ->
-        (* normalize consecutive whitespace chars to a single space *)
-        let doc' =
-          String.concat ~sep:" "
-            (List.filter ~f:(Fn.non String.is_empty)
-               (String.split_on_chars doc
-                  ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
-        in
-        let attr =
-          ( {txt; loc}
-          , m.payload m
-              (PStr
-                 [ { pstr_desc=
-                       Pstr_eval
-                         ( { pexp_desc=
-                               Pexp_constant (Pconst_string (doc', None))
-                           ; pexp_loc
-                           ; pexp_attributes }
-                         , [] )
-                   ; pstr_loc } ]) )
-        in
+        let doc' = docstring doc in
         docstrings := (loc, doc') :: !docstrings ;
-        attr
+        ( {txt; loc}
+        , m.payload m
+            (PStr
+               [ { pstr_desc=
+                     Pstr_eval
+                       ( { pexp_desc=
+                             Pexp_constant (Pconst_string (doc', None))
+                         ; pexp_loc
+                         ; pexp_attributes }
+                       , [] )
+                 ; pstr_loc } ]) )
     | attr -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
@@ -296,7 +288,7 @@ let docstrings_use_file s =
 let moved_docstrings get_docstrings s1 s2 =
   let d1 = get_docstrings s1 in
   let d2 = get_docstrings s2 in
-  let equal (_, s1) (_, s2) = String.equal s1 s2 in
+  let equal (_, x) (_, y) = String.equal (docstring x) (docstring y) in
   match List.zip d1 d2 with
   | None ->
       (* We only return the ones that are not in both lists. *)
@@ -308,16 +300,14 @@ let moved_docstrings get_docstrings s1 s2 =
       let l2 = List.map ~f:(fun (l, s) -> (Location.none, l, s)) l2 in
       List.rev_append l1 l2
   | Some l ->
-      (* We suppose that no docstring appeared nor disappeared, meaning that
-         each docstring is present in both lists but may have different
-         locations. *)
-      let different ((_, s1), (_, s2)) = not (String.equal s1 s2) in
-      let l = List.filter l ~f:different in
+      let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
       let d1, d2 = List.unzip l in
       List.map d1 ~f:(fun (l, s) ->
-          let str_equal (_, s') = String.equal s s' in
-          let l' = List.find_exn d2 ~f:str_equal |> fst in
-          (l, l', s) )
+          let new_loc =
+            List.find d2 ~f:(equal (l, s))
+            |> Option.value_map ~default:Location.none ~f:fst
+          in
+          (l, new_loc, s) )
 
 let moved_docstrings_impl s1 s2 = moved_docstrings docstrings_impl s1 s2
 
