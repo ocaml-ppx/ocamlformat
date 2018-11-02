@@ -39,6 +39,7 @@ type t =
   ; module_item_spacing: [`Compact | `Sparse]
   ; ocp_indent_compat: bool
   ; parens_tuple: [`Always | `Multi_line_only]
+  ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
   ; type_decl: [`Compact | `Sparse]
@@ -830,6 +831,13 @@ module Formatting = struct
       (fun conf x -> {conf with parens_tuple= x})
       (fun conf -> conf.parens_tuple)
 
+  let parse_docstrings =
+    let doc = "Parse and format docstrings." in
+    let names = ["parse-docstrings"] in
+    C.flag ~default:true ~names ~doc ~section
+      (fun conf x -> {conf with parse_docstrings= x})
+      (fun conf -> conf.parse_docstrings)
+
   let sequence_style =
     let doc = "Style of sequence." in
     let names = ["sequence-style"] in
@@ -1119,6 +1127,7 @@ let default_profile =
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_tuple= C.default Formatting.parens_tuple
+  ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
   ; sequence_style= C.default Formatting.sequence_style
   ; type_decl= C.default Formatting.type_decl
@@ -1188,6 +1197,7 @@ let janestreet_profile =
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= false
   ; parens_tuple= `Multi_line_only
+  ; parse_docstrings= true
   ; quiet= default_profile.quiet
   ; sequence_style= `Terminator
   ; type_decl= `Sparse

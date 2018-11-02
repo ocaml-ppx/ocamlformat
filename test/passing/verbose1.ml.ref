@@ -6,6 +6,7 @@ wrap-fun-args=true
 wrap-comments=true (file ../.ocamlformat:2)
 type-decl=compact
 sequence-style=separator
+parse-docstrings=true
 parens-tuple=always
 ocp-indent-compat=false
 module-item-spacing=sparse
