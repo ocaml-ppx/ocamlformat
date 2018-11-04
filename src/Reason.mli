@@ -51,10 +51,14 @@ val moved_docstrings_impl :
      Conf.t
   -> structure with_comments
   -> structure with_comments
-  -> (Location.t * Location.t * string) list
+  -> [ `Moved of Location.t * Location.t * string
+     | `Unstable of Location.t * string ]
+     list
 
 val moved_docstrings_intf :
      Conf.t
   -> signature with_comments
   -> signature with_comments
-  -> (Location.t * Location.t * string) list
+  -> [ `Moved of Location.t * Location.t * string
+     | `Unstable of Location.t * string ]
+     list

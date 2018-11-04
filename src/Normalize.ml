@@ -295,25 +295,30 @@ let moved_docstrings c get_docstrings s1 s2 =
   let d1 = get_docstrings c s1 in
   let d2 = get_docstrings c s2 in
   let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  let unstable x = `Unstable x in
   match List.zip d1 d2 with
   | None ->
       (* We only return the ones that are not in both lists. *)
       (* [l1] contains the ones that disappeared. *)
       let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
-      let l1 = List.map ~f:(fun (l, s) -> (l, Location.none, s)) l1 in
+      let l1 = List.map ~f:unstable l1 in
       (* [l2] contains the ones that appeared. *)
       let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
-      let l2 = List.map ~f:(fun (l, s) -> (Location.none, l, s)) l2 in
+      let l2 = List.map ~f:unstable l2 in
       List.rev_append l1 l2
   | Some l ->
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
-      let d1, d2 = List.unzip l in
-      List.map d1 ~f:(fun (l, s) ->
-          let new_loc =
-            List.find d2 ~f:(equal (l, s))
-            |> Option.value_map ~default:Location.none ~f:fst
-          in
-          (l, new_loc, s) )
+      let l1, l2 = List.unzip l in
+      let both, l1 =
+        List.partition_map l1 ~f:(fun x ->
+            match List.find l2 ~f:(equal x) with
+            | Some (l, s) -> `Fst (`Moved (fst x, l, s))
+            | None -> `Snd x )
+      in
+      let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
+      let l1 = List.map ~f:unstable l1 in
+      let l2 = List.map ~f:unstable l2 in
+      List.rev_append both (List.rev_append l1 l2)
 
 let moved_docstrings_impl c s1 s2 = moved_docstrings c docstrings_impl s1 s2
 

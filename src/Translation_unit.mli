@@ -28,7 +28,9 @@ type 'a t =
          Conf.t
       -> 'a with_comments
       -> 'a with_comments
-      -> (Location.t * Location.t * string) list
+      -> [ `Moved of Location.t * Location.t * string
+         | `Unstable of Location.t * string ]
+         list
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 

@@ -34,7 +34,9 @@ type 'a t =
          Conf.t
       -> 'a with_comments
       -> 'a with_comments
-      -> (Location.t * Location.t * string) list
+      -> [ `Moved of Location.t * Location.t * string
+         | `Unstable of Location.t * string ]
+         list
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
@@ -46,7 +48,9 @@ exception Warning50 of (Location.t * Warnings.t) list
 exception
   Internal_error of
     [ `Ast
-    | `Doc_comment of (Location.t * Location.t * string) list
+    | `Doc_comment of [ `Moved of Location.t * Location.t * string
+                      | `Unstable of Location.t * string ]
+                      list
     | `Comment
     | `Comment_dropped of (Location.t * string) list ]
     * (string * Sexp.t) list
@@ -316,26 +320,36 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           Format.eprintf "  BUG: %s.\n%!" s ;
           ( match m with
           | `Doc_comment l when not conf.Conf.quiet ->
-              List.iter l ~f:(fun (loc_before, loc_after, msg) ->
-                  if Location.compare loc_before Location.none = 0 then
+              List.iter l ~f:(function
+                | `Moved (loc_before, loc_after, msg) ->
+                    if Location.compare loc_before Location.none = 0 then
+                      Caml.Format.eprintf
+                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
+                         %s *) added.\n\
+                         %!"
+                        Location.print_loc loc_after (String.strip msg)
+                    else if Location.compare loc_after Location.none = 0
+                    then
+                      Caml.Format.eprintf
+                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
+                         %s *) dropped.\n\
+                         %!"
+                        Location.print_loc loc_before (String.strip msg)
+                    else
+                      Caml.Format.eprintf
+                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
+                         %s *) moved to @{<loc>%a@}.\n\
+                         %!"
+                        Location.print_loc loc_before (String.strip msg)
+                        Location.print_loc loc_after
+                | `Unstable (loc, s) ->
                     Caml.Format.eprintf
-                      "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
-                       *) added.\n\
+                      "%!@{<loc>%a@}:@,@{<error>Error@}: Formatting of (** \
+                       %s *) is unstable, please tighten up this comment \
+                       in the source or disable the formatting using the \
+                       option --no-parse-docstrings.\n\
                        %!"
-                      Location.print_loc loc_after (String.strip msg)
-                  else if Location.compare loc_after Location.none = 0 then
-                    Caml.Format.eprintf
-                      "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
-                       *) dropped.\n\
-                       %!"
-                      Location.print_loc loc_before (String.strip msg)
-                  else
-                    Caml.Format.eprintf
-                      "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** %s \
-                       *) moved to @{<loc>%a@}.\n\
-                       %!"
-                      Location.print_loc loc_before (String.strip msg)
-                      Location.print_loc loc_after )
+                      Location.print_loc loc (String.strip s) )
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
                   Caml.Format.eprintf

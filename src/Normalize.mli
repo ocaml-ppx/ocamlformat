@@ -49,16 +49,22 @@ val moved_docstrings_impl :
      Conf.t
   -> structure
   -> structure
-  -> (Location.t * Location.t * string) list
+  -> [ `Moved of Location.t * Location.t * string
+     | `Unstable of Location.t * string ]
+     list
 
 val moved_docstrings_intf :
      Conf.t
   -> signature
   -> signature
-  -> (Location.t * Location.t * string) list
+  -> [ `Moved of Location.t * Location.t * string
+     | `Unstable of Location.t * string ]
+     list
 
 val moved_docstrings_use_file :
      Conf.t
   -> toplevel_phrase list
   -> toplevel_phrase list
-  -> (Location.t * Location.t * string) list
+  -> [ `Moved of Location.t * Location.t * string
+     | `Unstable of Location.t * string ]
+     list
