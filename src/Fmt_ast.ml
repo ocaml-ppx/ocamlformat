@@ -607,7 +607,9 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
         | _, false -> false
       in
       let try_parse str_cmt =
-        if c.conf.parse_docstrings then (
+        if not c.conf.parse_docstrings then
+          (if c.conf.wrap_comments then fill_text else str) str_cmt
+        else
           match Octavius.parse (Lexing.from_string str_cmt) with
           | Error _ ->
               (if c.conf.wrap_comments then fill_text else str) str_cmt
@@ -623,8 +625,7 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
               in
               fmt_if (space_i 0) " "
               $ Fmt_odoc.fmt parsed
-              $ fmt_if (space_i (String.length str_cmt - 1)) " " )
-        else (if c.conf.wrap_comments then fill_text else str) str_cmt
+              $ fmt_if (space_i (String.length str_cmt - 1)) " "
       in
       Cmts.fmt c.cmts loc
       @@ vbox_if (Option.is_none pro) 0

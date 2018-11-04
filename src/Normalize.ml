@@ -23,12 +23,12 @@ let docstring c s =
       (List.filter ~f:(Fn.non String.is_empty)
          (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
   in
-  if c.Conf.parse_docstrings then
+  if not c.Conf.parse_docstrings then basic_normalize s
+  else
     match Octavius.parse (Lexing.from_string s) with
     | Ok parsed ->
         Format_.asprintf "%a@!" (fun fs x -> Fmt_odoc.fmt x fs) parsed
     | Error _ -> basic_normalize s
-  else basic_normalize s
 
 let make_mapper c ~ignore_doc_comment =
   (* remove locations *)
