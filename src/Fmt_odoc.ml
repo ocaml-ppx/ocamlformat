@@ -58,8 +58,8 @@ and fmt_text_elt = function
   | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
   | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
   | Style (st, txt) -> fmt_style st txt
-  | List l -> vbox 0 (wrap "{ul " "}" (hovbox 2 (list l "@;" fmt_item)))
-  | Enum l -> vbox 0 (wrap "{ol " "}" (hovbox 2 (list l "@;" fmt_item)))
+  | List l -> fmt_list `List l
+  | Enum l -> fmt_list `Enum l
   | Newline -> fmt "\n@\n"
   | Title (i, None, txt) ->
       hovbox 0
@@ -85,7 +85,31 @@ and fmt_text_elt = function
            $ str (Option.value s ~default:"latex")
            $ char ':' $ str l $ char '%' ))
 
-and fmt_item txt = hovbox 0 (wrap "{- " "}" (fmt_text txt))
+and fmt_list kind l =
+  let light_syntax =
+    let line_start =
+      fmt (match kind with `List -> "- " | `Enum -> "+ ")
+    in
+    let fmt_item txt = hovbox 2 (line_start $ fmt_text txt) in
+    vbox 0 (list l "@," fmt_item)
+  in
+  let heavy_syntax =
+    let fmt_item txt = hovbox 0 (wrap "{- " "}" (fmt_text txt)) in
+    let start : _ format =
+      match kind with `List -> "{ul@," | `Enum -> "{ol@,"
+    in
+    vbox 1 (wrap start "}" (list l "@," fmt_item))
+  in
+  let print_and_parse fmt =
+    let str = Format.asprintf "\n%t" fmt in
+    Octavius.parse (Lexing.from_string str)
+  in
+  if
+    Poly.equal (print_and_parse light_syntax) (print_and_parse heavy_syntax)
+  then light_syntax
+  else heavy_syntax
+
+and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
 
 and fmt_text txt =
   let ops = ['.'; ':'; ';'; ','] in
@@ -94,10 +118,13 @@ and fmt_text txt =
     match next with
     | Some (Raw x) when is_op x.[0] -> fmt_text_elt curr
     | Some Newline -> fmt_text_elt curr
-    | Some _ -> (
+    | Some next -> (
       match curr with
-      | Newline -> close_box $ fmt_text_elt curr $ open_hovbox 0
-      | _ -> fmt_text_elt curr $ fmt "@ " )
+      | Newline -> fmt_newline
+      | List _ | Enum _ -> fmt_text_elt curr $ fmt_newline
+      | _ -> (
+          fmt_text_elt curr
+          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "@ " ) )
     | None -> fmt_text_elt curr
   in
   hovbox 0 (list_pn txt f)
