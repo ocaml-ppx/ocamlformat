@@ -27,7 +27,7 @@ let docstring c s =
   else
     match Octavius.parse (Lexing.from_string s) with
     | Ok parsed ->
-        Format_.asprintf "%a@!" (fun fs x -> Fmt_odoc.fmt x fs) parsed
+        Format_.asprintf "%a%!" (fun fs x -> Fmt_odoc.fmt x fs) parsed
     | Error _ -> basic_normalize s
 
 let make_mapper c ~ignore_doc_comment =
