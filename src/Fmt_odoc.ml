@@ -97,7 +97,7 @@ and fmt_list (kind : List_kind.t) l =
   in
   let heavy_syntax =
     let fmt_item txt = hovbox 0 (wrap "{- " "}" (fmt_text txt)) in
-    let start : (_, _, _) format =
+    let start : _ format =
       match kind with List -> "{ul@," | Enum -> "{ol@,"
     in
     vbox 1 (wrap start "}" (list l "@," fmt_item))
