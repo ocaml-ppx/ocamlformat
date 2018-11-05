@@ -37,10 +37,6 @@ let fmt_ref_kind = function
   | RK_link -> str ":"
   | RK_custom s -> str s $ str ":"
 
-module List_kind = struct
-  type t = List | Enum
-end
-
 let rec fmt_style style txt =
   let s =
     match style with
@@ -62,8 +58,8 @@ and fmt_text_elt = function
   | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
   | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
   | Style (st, txt) -> fmt_style st txt
-  | List l -> fmt_list List_kind.List l
-  | Enum l -> fmt_list List_kind.Enum l
+  | List l -> fmt_list `List l
+  | Enum l -> fmt_list `Enum l
   | Newline -> fmt "\n@\n"
   | Title (i, None, txt) ->
       hovbox 0
@@ -89,16 +85,18 @@ and fmt_text_elt = function
            $ str (Option.value s ~default:"latex")
            $ char ':' $ str l $ char '%' ))
 
-and fmt_list (kind : List_kind.t) l =
+and fmt_list kind l =
   let light_syntax =
-    let line_start = fmt (match kind with List -> "- " | Enum -> "+ ") in
+    let line_start =
+      fmt (match kind with `List -> "- " | `Enum -> "+ ")
+    in
     let fmt_item txt = hovbox 2 (line_start $ fmt_text txt) in
     vbox 0 (list l "@," fmt_item)
   in
   let heavy_syntax =
     let fmt_item txt = hovbox 0 (wrap "{- " "}" (fmt_text txt)) in
     let start : _ format =
-      match kind with List -> "{ul@," | Enum -> "{ol@,"
+      match kind with `List -> "{ul@," | `Enum -> "{ol@,"
     in
     vbox 1 (wrap start "}" (list l "@," fmt_item))
   in
