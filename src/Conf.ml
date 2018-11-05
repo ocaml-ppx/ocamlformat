@@ -867,8 +867,9 @@ module Formatting = struct
         , "$(b,sparse) will always break the line before a single case." )
       ]
     in
-    C.choice ~names ~all ~doc ~section (fun conf x ->
-        {conf with single_case= x} )
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with single_case= x})
+      (fun conf -> conf.single_case)
 
   let type_decl =
     let doc = "Style of type declaration." in
