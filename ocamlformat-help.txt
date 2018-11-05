@@ -147,6 +147,9 @@ OPTIONS (CODE FORMATTING STYLE)
            Control whether or not to indicate nested or-pattern using
            indentation.
 
+       --no-parse-docstrings
+           Parse and format docstrings.
+
        --no-wrap-fun-args
            Style for function call and function definition.
 

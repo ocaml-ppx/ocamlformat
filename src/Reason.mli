@@ -25,14 +25,15 @@ val input_intf : Conf.t -> In_channel.t -> signature with_comments
     the output of `refmt --print=binary_reason` where `refmt` has been
     compiled with the same version of `ocaml` as `ocamlformat`. *)
 
-val norm_impl : structure with_comments -> structure
+val norm_impl : Conf.t -> structure with_comments -> structure
 (** Normalize a structure. *)
 
-val norm_intf : signature with_comments -> signature
+val norm_intf : Conf.t -> signature with_comments -> signature
 (** Normalize a signature. *)
 
 val equal_impl :
      ignore_doc_comments:bool
+  -> Conf.t
   -> structure with_comments
   -> structure with_comments
   -> bool
@@ -40,17 +41,20 @@ val equal_impl :
 
 val equal_intf :
      ignore_doc_comments:bool
+  -> Conf.t
   -> signature with_comments
   -> signature with_comments
   -> bool
 (** Compare signatures for equality up to normalization. *)
 
 val moved_docstrings_impl :
-     structure with_comments
+     Conf.t
   -> structure with_comments
-  -> (Location.t * Location.t * string) list
+  -> structure with_comments
+  -> Normalize.docstring_error list
 
 val moved_docstrings_intf :
-     signature with_comments
+     Conf.t
   -> signature with_comments
-  -> (Location.t * Location.t * string) list
+  -> signature with_comments
+  -> Normalize.docstring_error list

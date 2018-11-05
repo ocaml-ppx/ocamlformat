@@ -16,7 +16,21 @@ open Asttypes
 open Parsetree
 open Ast_helper
 
-let make_mapper ~ignore_doc_comment =
+let docstring c s =
+  let basic_normalize s =
+    (* normalize consecutive whitespace chars to a single space *)
+    String.concat ~sep:" "
+      (List.filter ~f:(Fn.non String.is_empty)
+         (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+  in
+  if not c.Conf.parse_docstrings then basic_normalize s
+  else
+    match Octavius.parse (Lexing.from_string s) with
+    | Ok parsed ->
+        Format_.asprintf "%a%!" (fun fs x -> Fmt_odoc.fmt x fs) parsed
+    | Error _ -> basic_normalize s
+
+let make_mapper c ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
   let doc_attribute = function
@@ -35,18 +49,7 @@ let make_mapper ~ignore_doc_comment =
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
-          if ignore_doc_comment then "IGNORED"
-          else
-            match Octavius.parse (Lexing.from_string doc) with
-            | Ok parsed ->
-                Fmt_odoc.fmt parsed Format_.str_formatter ;
-                Format_.flush_str_formatter ()
-            | Error _ ->
-                (* normalize consecutive whitespace chars to a single space *)
-                String.concat ~sep:" "
-                  (List.filter ~f:(Fn.non String.is_empty)
-                     (String.split_on_chars doc
-                        ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+          if ignore_doc_comment then "IGNORED" else docstring c doc
         in
         ( {txt; loc= m.location m loc}
         , m.payload m
@@ -201,34 +204,34 @@ let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
 
 let mapper = make_mapper ~ignore_doc_comment:false
 
-let impl = map_structure mapper
+let impl c = map_structure (mapper c)
 
-let intf = map_signature mapper
+let intf c = map_signature (mapper c)
 
-let use_file = map_use_file mapper
+let use_file c = map_use_file (mapper c)
 
-let equal_impl ~ignore_doc_comments ast1 ast2 =
+let equal_impl ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_structure mapper_ignore_doc_comment
-    else map_structure mapper
+    if ignore_doc_comments then map_structure (mapper_ignore_doc_comment c)
+    else map_structure (mapper c)
   in
   Poly.equal (map ast1) (map ast2)
 
-let equal_intf ~ignore_doc_comments ast1 ast2 =
+let equal_intf ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_signature mapper_ignore_doc_comment
-    else map_signature mapper
+    if ignore_doc_comments then map_signature (mapper_ignore_doc_comment c)
+    else map_signature (mapper c)
   in
   Poly.equal (map ast1) (map ast2)
 
-let equal_use_file ~ignore_doc_comments ast1 ast2 =
+let equal_use_file ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_use_file mapper_ignore_doc_comment
-    else map_use_file mapper
+    if ignore_doc_comments then map_use_file (mapper_ignore_doc_comment c)
+    else map_use_file (mapper c)
   in
   Poly.equal (map ast1) (map ast2)
 
-let make_docstring_mapper docstrings =
+let make_docstring_mapper c docstrings =
   let doc_attribute = function
     | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
     | _ -> false
@@ -244,28 +247,19 @@ let make_docstring_mapper docstrings =
                     ; pexp_attributes }
                   , [] )
             ; pstr_loc } ] ) ->
-        (* normalize consecutive whitespace chars to a single space *)
-        let doc' =
-          String.concat ~sep:" "
-            (List.filter ~f:(Fn.non String.is_empty)
-               (String.split_on_chars doc
-                  ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
-        in
-        let attr =
-          ( {txt; loc}
-          , m.payload m
-              (PStr
-                 [ { pstr_desc=
-                       Pstr_eval
-                         ( { pexp_desc=
-                               Pexp_constant (Pconst_string (doc', None))
-                           ; pexp_loc
-                           ; pexp_attributes }
-                         , [] )
-                   ; pstr_loc } ]) )
-        in
+        let doc' = docstring c doc in
         docstrings := (loc, doc') :: !docstrings ;
-        attr
+        ( {txt; loc}
+        , m.payload m
+            (PStr
+               [ { pstr_desc=
+                     Pstr_eval
+                       ( { pexp_desc=
+                             Pexp_constant (Pconst_string (doc', None))
+                         ; pexp_loc
+                         ; pexp_attributes }
+                       , [] )
+                 ; pstr_loc } ]) )
     | attr -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
@@ -276,52 +270,63 @@ let make_docstring_mapper docstrings =
   in
   {Ast_mapper.default_mapper with attribute; attributes}
 
-let docstrings_impl s =
+let docstrings_impl c s =
   let docstrings = ref [] in
-  let _ : structure = map_structure (make_docstring_mapper docstrings) s in
-  !docstrings
-
-let docstrings_intf s =
-  let docstrings = ref [] in
-  let _ : signature = map_signature (make_docstring_mapper docstrings) s in
-  !docstrings
-
-let docstrings_use_file s =
-  let docstrings = ref [] in
-  let _ : toplevel_phrase list =
-    map_use_file (make_docstring_mapper docstrings) s
+  let _ : structure =
+    map_structure (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
-let moved_docstrings get_docstrings s1 s2 =
-  let d1 = get_docstrings s1 in
-  let d2 = get_docstrings s2 in
-  let equal (_, s1) (_, s2) = String.equal s1 s2 in
+let docstrings_intf c s =
+  let docstrings = ref [] in
+  let _ : signature =
+    map_signature (make_docstring_mapper c docstrings) s
+  in
+  !docstrings
+
+let docstrings_use_file c s =
+  let docstrings = ref [] in
+  let _ : toplevel_phrase list =
+    map_use_file (make_docstring_mapper c docstrings) s
+  in
+  !docstrings
+
+type docstring_error =
+  | Moved of Location.t * Location.t * string
+  | Unstable of Location.t * string
+
+let moved_docstrings c get_docstrings s1 s2 =
+  let d1 = get_docstrings c s1 in
+  let d2 = get_docstrings c s2 in
+  let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  let unstable (x, y) = Unstable (x, y) in
   match List.zip d1 d2 with
   | None ->
       (* We only return the ones that are not in both lists. *)
       (* [l1] contains the ones that disappeared. *)
       let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
-      let l1 = List.map ~f:(fun (l, s) -> (l, Location.none, s)) l1 in
+      let l1 = List.map ~f:unstable l1 in
       (* [l2] contains the ones that appeared. *)
       let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
-      let l2 = List.map ~f:(fun (l, s) -> (Location.none, l, s)) l2 in
+      let l2 = List.map ~f:unstable l2 in
       List.rev_append l1 l2
   | Some l ->
-      (* We suppose that no docstring appeared nor disappeared, meaning that
-         each docstring is present in both lists but may have different
-         locations. *)
-      let different ((_, s1), (_, s2)) = not (String.equal s1 s2) in
-      let l = List.filter l ~f:different in
-      let d1, d2 = List.unzip l in
-      List.map d1 ~f:(fun (l, s) ->
-          let str_equal (_, s') = String.equal s s' in
-          let l' = List.find_exn d2 ~f:str_equal |> fst in
-          (l, l', s) )
+      let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
+      let l1, l2 = List.unzip l in
+      let both, l1 =
+        List.partition_map l1 ~f:(fun x ->
+            match List.find l2 ~f:(equal x) with
+            | Some (l, s) -> `Fst (Moved (fst x, l, s))
+            | None -> `Snd x )
+      in
+      let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
+      let l1 = List.map ~f:unstable l1 in
+      let l2 = List.map ~f:unstable l2 in
+      List.rev_append both (List.rev_append l1 l2)
 
-let moved_docstrings_impl s1 s2 = moved_docstrings docstrings_impl s1 s2
+let moved_docstrings_impl c s1 s2 = moved_docstrings c docstrings_impl s1 s2
 
-let moved_docstrings_intf s1 s2 = moved_docstrings docstrings_intf s1 s2
+let moved_docstrings_intf c s1 s2 = moved_docstrings c docstrings_intf s1 s2
 
-let moved_docstrings_use_file s1 s2 =
-  moved_docstrings docstrings_use_file s1 s2
+let moved_docstrings_use_file c s1 s2 =
+  moved_docstrings c docstrings_use_file s1 s2
