@@ -1167,6 +1167,7 @@ let compact_profile =
   ; let_and= `Compact
   ; let_binding_spacing= `Compact
   ; module_item_spacing= `Compact
+  ; single_case= `Compact
   ; type_decl= `Compact
   ; wrap_fun_args= true }
 
@@ -1184,6 +1185,7 @@ let sparse_profile =
   ; let_and= `Sparse
   ; let_binding_spacing= `Sparse
   ; module_item_spacing= `Sparse
+  ; single_case= `Sparse
   ; type_decl= `Sparse
   ; wrap_fun_args= false }
 
