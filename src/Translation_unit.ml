@@ -345,9 +345,10 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
                 | `Unstable (loc, s) ->
                     Caml.Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Formatting of (** \
-                       %s *) is unstable, please tighten up this comment \
-                       in the source or disable the formatting using the \
-                       option --no-parse-docstrings.\n\
+                       %s *) is unstable (e.g. parses as a list or not \
+                       depending on the margin), please tighten up this \
+                       comment in the source or disable the formatting \
+                       using the option --no-parse-docstrings.\n\
                        %!"
                       Location.print_loc loc (String.strip s) )
           | `Comment_dropped l when not conf.Conf.quiet ->
