@@ -51,14 +51,10 @@ val moved_docstrings_impl :
      Conf.t
   -> structure with_comments
   -> structure with_comments
-  -> [ `Moved of Location.t * Location.t * string
-     | `Unstable of Location.t * string ]
-     list
+  -> Normalize.docstring_error list
 
 val moved_docstrings_intf :
      Conf.t
   -> signature with_comments
   -> signature with_comments
-  -> [ `Moved of Location.t * Location.t * string
-     | `Unstable of Location.t * string ]
-     list
+  -> Normalize.docstring_error list

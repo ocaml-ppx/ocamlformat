@@ -45,26 +45,18 @@ val equal_use_file :
 val mapper : Conf.t -> Ast_mapper.mapper
 (** Ast_mapper for normalization transformations. *)
 
+type docstring_error =
+  | Moved of Location.t * Location.t * string
+  | Unstable of Location.t * string
+
 val moved_docstrings_impl :
-     Conf.t
-  -> structure
-  -> structure
-  -> [ `Moved of Location.t * Location.t * string
-     | `Unstable of Location.t * string ]
-     list
+  Conf.t -> structure -> structure -> docstring_error list
 
 val moved_docstrings_intf :
-     Conf.t
-  -> signature
-  -> signature
-  -> [ `Moved of Location.t * Location.t * string
-     | `Unstable of Location.t * string ]
-     list
+  Conf.t -> signature -> signature -> docstring_error list
 
 val moved_docstrings_use_file :
      Conf.t
   -> toplevel_phrase list
   -> toplevel_phrase list
-  -> [ `Moved of Location.t * Location.t * string
-     | `Unstable of Location.t * string ]
-     list
+  -> docstring_error list

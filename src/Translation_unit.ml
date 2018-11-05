@@ -34,9 +34,7 @@ type 'a t =
          Conf.t
       -> 'a with_comments
       -> 'a with_comments
-      -> [ `Moved of Location.t * Location.t * string
-         | `Unstable of Location.t * string ]
-         list
+      -> Normalize.docstring_error list
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
@@ -48,9 +46,7 @@ exception Warning50 of (Location.t * Warnings.t) list
 exception
   Internal_error of
     [ `Ast
-    | `Doc_comment of [ `Moved of Location.t * Location.t * string
-                      | `Unstable of Location.t * string ]
-                      list
+    | `Doc_comment of Normalize.docstring_error list
     | `Comment
     | `Comment_dropped of (Location.t * string) list ]
     * (string * Sexp.t) list
@@ -321,7 +317,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           ( match m with
           | `Doc_comment l when not conf.Conf.quiet ->
               List.iter l ~f:(function
-                | `Moved (loc_before, loc_after, msg) ->
+                | Normalize.Moved (loc_before, loc_after, msg) ->
                     if Location.compare loc_before Location.none = 0 then
                       Caml.Format.eprintf
                         "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
@@ -342,7 +338,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
                          %!"
                         Location.print_loc loc_before (String.strip msg)
                         Location.print_loc loc_after
-                | `Unstable (loc, s) ->
+                | Normalize.Unstable (loc, s) ->
                     Caml.Format.eprintf
                       "%!@{<loc>%a@}:@,@{<error>Error@}: Formatting of (** \
                        %s *) is unstable (e.g. parses as a list or not \

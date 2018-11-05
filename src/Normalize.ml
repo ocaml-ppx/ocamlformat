@@ -291,11 +291,15 @@ let docstrings_use_file c s =
   in
   !docstrings
 
+type docstring_error =
+  | Moved of Location.t * Location.t * string
+  | Unstable of Location.t * string
+
 let moved_docstrings c get_docstrings s1 s2 =
   let d1 = get_docstrings c s1 in
   let d2 = get_docstrings c s2 in
   let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
-  let unstable x = `Unstable x in
+  let unstable (x, y) = Unstable (x, y) in
   match List.zip d1 d2 with
   | None ->
       (* We only return the ones that are not in both lists. *)
@@ -312,7 +316,7 @@ let moved_docstrings c get_docstrings s1 s2 =
       let both, l1 =
         List.partition_map l1 ~f:(fun x ->
             match List.find l2 ~f:(equal x) with
-            | Some (l, s) -> `Fst (`Moved (fst x, l, s))
+            | Some (l, s) -> `Fst (Moved (fst x, l, s))
             | None -> `Snd x )
       in
       let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
