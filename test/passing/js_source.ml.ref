@@ -1232,7 +1232,7 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
        | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
        | _ -> raise VariantMismatch
      with
-    | Not_found -> raise VariantMismatch)
+     | Not_found -> raise VariantMismatch)
   | _ -> raise VariantMismatch
 ;;
 
@@ -1656,8 +1656,8 @@ let rec filter : type a n. (a -> bool) -> (a, n) seq -> (a, n) filter =
   | Snil -> Filter (LeZ NZ, Snil)
   | Scons (a, l) ->
     (match filter f l with
-    | Filter (le, l') ->
-      if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l'))
+     | Filter (le, l') ->
+       if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l'))
 ;;
 
 (* 4.1 AVL trees *)
@@ -2159,7 +2159,7 @@ let rec rule : type a b.
   match v1, v2 with
   | Lam (x, body), v ->
     (match subst body (Bind (x, v, Id)) with
-    | Ex term -> (match mode term with Pexp -> Inl term | Pval -> Inr term))
+     | Ex term -> (match mode term with Pexp -> Inl term | Pval -> Inr term))
   | Const (IntTo b, f), Const (IntR, x) -> Inr (Const (b, f x))
 ;;
 
