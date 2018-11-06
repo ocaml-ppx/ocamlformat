@@ -855,12 +855,14 @@ module Formatting = struct
       (fun conf -> conf.sequence_style)
 
   let single_case =
-    let doc = "Style of single cases." in
+    let doc =
+      "Style of pattern matching expressions with only a single case."
+    in
     let names = ["single_case"] in
     let all =
       [ ( "compact"
         , `Compact
-        , "$(b,compact) will try to format single cases in a single line."
+        , "$(b,compact) will try to format a single case on a single line."
         )
       ; ( "sparse"
         , `Sparse
