@@ -1554,6 +1554,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       let xargs, xbody = sugar_fun c (sub_exp ~ctx f) in
       let func_after =
         match eN with
+        | [] -> true
         | (_, {pexp_desc= Pexp_fun _ | Pexp_function _}) :: _ -> true
         | _ -> false
       in
@@ -1589,6 +1590,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
     when not c.conf.break_before_func ->
       let func_after =
         match eN with
+        | [] -> true
         | (_, {pexp_desc= Pexp_fun _ | Pexp_function _}) :: _ -> true
         | _ -> false
       in
