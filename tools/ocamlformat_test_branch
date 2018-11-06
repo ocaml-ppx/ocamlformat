@@ -1,0 +1,10 @@
+_ocamlformat_test_branch()
+{
+   branches=$(command git branch --no-color -a | sed 's/* //' | sed 's/ //g' | sed 's/^remotes\///')
+   local cur
+   COMPREPLY=()
+   cur="${COMP_WORDS[COMP_CWORD]}"
+   COMPREPLY=( $(compgen -W "${branches}" -- ${cur}) )
+   return 0
+}
+complete -F _ocamlformat_test_branch test_branch.sh

@@ -39,6 +39,18 @@ Once `make test` passes, pull requests should be tested on the code in a set of 
 
 The `tools/test_branch.sh` script runs two versions of `ocamlformat` (the specified branch, or `HEAD` if omitted, and its merge base with master) on the test code and reports the differences in the formatted code. Formatting failures may also be reported on the terminal, these will need to be fixed before a pull request can be merged. The differences should be inspected to ensure they are as intended. Pull requests changing the format of code should generally introduce an option to enable the alternate style (if in doubt, open an issue for discussion). Any differences in the formatted code with the option disabled should be summarized and explained in the pull request discussion.
 
+To benefit from the autocompletion of git branch names in the `tools/test_branch.sh` script, if you use the `bash` shell, add the following line to your `~/.bashrc` file:
+```
+source <path-to-ocamlformat>/tools/ocamlformat_test_branch
+```
+
+If you use the `zsh` shell, add the following lines to your `~/.zshrc` file:
+```
+autoload bashcompinit
+bashcompinit
+source <path-to-ocamlformat>/tools/ocamlformat_test_branch
+```
+
 ## Contributor License Agreement ("CLA")
 
 In order to accept your pull request, we need you to submit a CLA. You only need to do this once to work on any of Facebook's open source projects. Complete your CLA here: <https://code.facebook.com/cla>. If you have any questions, please drop us a line at cla@fb.com.
