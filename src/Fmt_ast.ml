@@ -1574,7 +1574,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                         $ fmt "@ " $ fmt "->" ) )
                   $ hovbox 0 (fmt_body c ?ext xbody)
                   $ fmt_if func_after " )" )
-              $ fmt "@ "
+              $ fmt_if (not (List.is_empty eN)) "@ "
               $ hovbox 0
                   ( fmt_if (not func_after) ")"
                   $ Cmts.fmt_after c.cmts pexp_loc
@@ -1605,7 +1605,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                   $ fmt_label lbl ":"
                   $ (fmt "(function" $ fmt_extension_suffix c ext) )
               $ fmt "@ " $ fmt_cases c (Exp f) cs $ fmt_if func_after " )"
-              $ fmt "@ "
+              $ fmt_if (not (List.is_empty eN)) "@ "
               $ hovbox 0
                   ( fmt_if (not func_after) ")"
                   $ Cmts.fmt_after c.cmts pexp_loc
