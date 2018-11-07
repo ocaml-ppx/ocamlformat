@@ -30,3 +30,9 @@ let _ =
   ()
 
 exception Recursion_error of (Lv6Id.long as 'id) * (string list as 'stack)
+
+exception
+  Internal_error of
+    [ `Doc_comment of
+      [ `Moved of Location.t * Location.t * string
+      | `Unstable of Location.t * string ] ]

@@ -13,3 +13,9 @@ let _ = ignore Async_unix.Fd.(([stdin (); stdout (); stderr ()] : t list))
 type t = {a: int; b: int}
 
 type t = [`A | `B]
+
+type t =
+  | Internal_error of
+      [ `Doc_comment of
+        [ `Moved of Location.t * Location.t * string
+        | `Unstable of Location.t * string ] ]
