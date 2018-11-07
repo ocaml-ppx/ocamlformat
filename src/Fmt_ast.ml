@@ -1569,8 +1569,6 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                       $ Cmts.fmt_before c.cmts pexp_loc
                       $ fmt_label lbl ":"
                       $ ( fmt "(fun "
-                        $ fmt_attributes c ~key:"@" pexp_attributes
-                            ~suf:(fmt " ")
                         $ (if c.conf.wrap_fun_args then hovbox else hvbox)
                             2 (fmt_fun_args c xargs)
                         $ fmt "@ " $ fmt "->" ) )
@@ -1605,9 +1603,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                   $ fmt "@ "
                   $ Cmts.fmt_before c.cmts pexp_loc
                   $ fmt_label lbl ":"
-                  $ ( fmt "(function"
-                    $ fmt_extension_suffix c ext
-                    $ fmt_attributes c ~key:"@" pexp_attributes ) )
+                  $ (fmt "(function" $ fmt_extension_suffix c ext) )
               $ fmt "@ " $ fmt_cases c (Exp f) cs $ fmt_if func_after " )"
               $ fmt "@ "
               $ hovbox 0

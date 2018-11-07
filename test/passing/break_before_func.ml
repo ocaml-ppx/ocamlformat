@@ -12,6 +12,22 @@ List.fooo (fun x ->
       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx )
   
 
+(* comment *)
+
+;;
+(List.fooo (fun x ->
+     xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
+       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx )
+   [@foo])
+
+;;
+(List.fooo (fun x ->
+     xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
+       xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx )
+   [@foo])
+
+(* comment *)
+
 (* foooooooooooo *)
 
 ;;
@@ -20,6 +36,31 @@ List.fooo (function
       xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
         xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx )
   
+
+;;
+List.fooo (function
+  | A ->
+      xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
+        xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx )
+  
+
+(* comment *)
+
+;;
+(List.fooo (function
+   | A ->
+       xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
+         xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx )
+    [@foo])
+
+;;
+(List.fooo (function
+   | A ->
+       xxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx
+         xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx )
+    [@foo])
+
+(* comment *)
 
 ;;
 List.fooo (function
