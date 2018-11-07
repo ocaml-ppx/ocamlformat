@@ -1552,6 +1552,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_apply (e0, (lbl, ({pexp_desc= Pexp_fun _; pexp_loc} as f)) :: eN)
     when not c.conf.break_before_func ->
       let xargs, xbody = sugar_fun c (sub_exp ~ctx f) in
+      let wrap = if c.conf.wrap_fun_args then Fn.id else hvbox 2 in
       let func_after =
         match eN with
         | [] -> true
@@ -1580,14 +1581,16 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                   ( fmt_if (not func_after) ")"
                   $ Cmts.fmt_after c.cmts pexp_loc
                   $ fmt_if ((not (List.is_empty eN)) && not func_after) "@;"
-                  $ fmt_expressions c width
-                      (fun (_, e) -> sub_exp ~ctx e)
-                      eN "@ "
-                      (fun (_, e) -> fmt_expression c (sub_exp ~ctx e)) )
+                  $
+                  match eN with
+                  | [] -> fmt ""
+                  | e0 :: eN ->
+                      hvbox 0 (wrap (fmt_args_grouped (snd e0) eN)) )
               $ fmt_atrs )))
   | Pexp_apply
       (e0, (lbl, ({pexp_desc= Pexp_function cs; pexp_loc} as f)) :: eN)
     when not c.conf.break_before_func ->
+      let wrap = if c.conf.wrap_fun_args then Fn.id else hvbox 2 in
       let func_after =
         match eN with
         | [] -> true
@@ -1611,10 +1614,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                   ( fmt_if (not func_after) ")"
                   $ Cmts.fmt_after c.cmts pexp_loc
                   $ fmt_if ((not (List.is_empty eN)) && not func_after) "@;"
-                  $ fmt_expressions c width
-                      (fun (_, e) -> sub_exp ~ctx e)
-                      eN "@ "
-                      (fun (_, e) -> fmt_expression c (sub_exp ~ctx e)) )
+                  $
+                  match eN with
+                  | [] -> fmt ""
+                  | e0 :: eN ->
+                      hvbox 0 (wrap (fmt_args_grouped (snd e0) eN)) )
               $ fmt_atrs )))
   | Pexp_apply (e0, e1N1) -> (
       let wrap = if c.conf.wrap_fun_args then Fn.id else hvbox 2 in
