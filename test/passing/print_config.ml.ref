@@ -8,6 +8,7 @@ type-decl=compact
 sequence-style=separator
 parse-docstrings=true
 parens-tuple=always
+parens-ite=false
 ocp-indent-compat=false
 module-item-spacing=sparse (file passing/dir1/dir2/.ocamlformat:1)
 margin=77 (file ../.ocamlformat:1)

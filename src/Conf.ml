@@ -38,6 +38,7 @@ type t =
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Sparse]
   ; ocp_indent_compat: bool
+  ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; quiet: bool
@@ -815,6 +816,16 @@ module Formatting = struct
       (fun conf x -> {conf with ocp_indent_compat= x})
       (fun conf -> conf.ocp_indent_compat)
 
+  let parens_ite =
+    let doc =
+      "Uses parentheses around if-then-else branches that spread across \
+       multiple lines."
+    in
+    let names = ["parens-ite"] in
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with parens_ite= x})
+      (fun conf -> conf.parens_ite)
+
   let parens_tuple =
     let doc = "Parens tuples." in
     let names = ["parens-tuple"] in
@@ -1126,6 +1137,7 @@ let default_profile =
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
+  ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
@@ -1196,6 +1208,7 @@ let janestreet_profile =
   ; max_iters= default_profile.max_iters
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= false
+  ; parens_ite= true
   ; parens_tuple= `Multi_line_only
   ; parse_docstrings= true
   ; quiet= default_profile.quiet

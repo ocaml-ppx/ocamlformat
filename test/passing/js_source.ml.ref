@@ -1716,14 +1716,14 @@ let rec ins : type n. int -> n avl -> (n avl, n succ avl) sum =
     if x = y
     then Inl t
     else if x < y
-    then
+    then (
       match ins x a with
       | Inl a -> Inl (Node (bal, a, y, b))
       | Inr a ->
         (match bal with
         | Less -> Inl (Node (Same, a, y, b))
         | Same -> Inr (Node (More, a, y, b))
-        | More -> rotr a y b)
+        | More -> rotr a y b) )
     else (
       match ins x b with
       | Inl b -> Inl (Node (bal, a, y, b) : n avl)
@@ -1760,7 +1760,7 @@ let rec del : type n. int -> n avl -> n avl_del =
   | Leaf -> Dsame Leaf
   | Node (bal, l, x, r) ->
     if x = y
-    then
+    then (
       match r with
       | Leaf -> (match bal with Same -> Ddecr (Eq, l) | More -> Ddecr (Eq, l))
       | Node _ ->
@@ -1769,16 +1769,16 @@ let rec del : type n. int -> n avl -> n avl_del =
         | Same, (z, Inl r) -> Dsame (Node (More, l, z, r))
         | Less, (z, Inl r) -> Ddecr (Eq, Node (Same, l, z, r))
         | More, (z, Inl r) ->
-          (match rotr l z r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t))
+          (match rotr l z r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t)) )
     else if y < x
-    then
+    then (
       match del y l with
       | Dsame l -> Dsame (Node (bal, l, x, r))
       | Ddecr (Eq, l) ->
         (match bal with
         | Same -> Dsame (Node (Less, l, x, r))
         | More -> Ddecr (Eq, Node (Same, l, x, r))
-        | Less -> (match rotl l x r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t))
+        | Less -> (match rotl l x r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t)) )
     else (
       match del y r with
       | Dsame r -> Dsame (Node (bal, l, x, r))
@@ -1929,8 +1929,8 @@ let rec assoc : type a. string -> a rep -> assoc list -> a =
   | [] -> raise Not_found
   | Assoc (x', r', v) :: env ->
     if x = x'
-    then
-      match rep_equal r r' with None -> failwith ("Wrong type for " ^ x) | Some Eq -> v
+    then (
+      match rep_equal r r' with None -> failwith ("Wrong type for " ^ x) | Some Eq -> v )
     else assoc x r env
 ;;
 
@@ -3487,9 +3487,9 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
           if Names.mem s used then data :: acc else acc )
     in
     if List.exists used_expr ~f:(fun t -> Names.mem s (free t))
-    then
+    then (
       let name = s ^ string_of_int (next_id ()) in
-      `Abs (name, subst_rec ~subst:(Subst.add ~key:s ~data:(`Var name) subst) t)
+      `Abs (name, subst_rec ~subst:(Subst.add ~key:s ~data:(`Var name) subst) t) )
     else map_lambda ~map_rec:(subst_rec ~subst:(Subst.remove s subst)) l
   | `App _ as l -> map_lambda ~map_rec:(subst_rec ~subst) l
 ;;
@@ -3724,9 +3724,9 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
               if Names.mem s used then data :: acc else acc )
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
-        then
+        then (
           let name = s ^ string_of_int (next_id ()) in
-          `Abs (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t)
+          `Abs (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t) )
         else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
       | `App _ as l -> self#map ~f:(!!subst ~sub) l
 
@@ -3956,9 +3956,9 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
               if Names.mem s used then data :: acc else acc )
         in
         if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t))
-        then
+        then (
           let name = s ^ string_of_int (next_id ()) in
-          `Abs (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t)
+          `Abs (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t) )
         else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
       | `App _ as l -> self#map ~f:(!!subst ~sub) l
 
@@ -6075,10 +6075,10 @@ class virtual ['a, 'cursor] storage_base =
         let rec loop count a =
           if count >= self#len
           then a
-          else
+          else (
             let a' = f cur#get count a in
             cur#incr ();
-            loop (count + 1) a'
+            loop (count + 1) a' )
         in
         loop 0 a0
 
@@ -6152,13 +6152,13 @@ module UText = struct
   let init_buf buf pos init =
     if init#len = 0
     then ()
-    else
+    else (
       let cur = init#first in
       for i = 0 to init#len - 2 do
         set_buf buf (pos + (i lsl 2)) cur#get;
         cur#incr ()
       done;
-      set_buf buf (pos + ((init#len - 1) lsl 2)) cur#get
+      set_buf buf (pos + ((init#len - 1) lsl 2)) cur#get )
   ;;
 
   let make_buf init =
