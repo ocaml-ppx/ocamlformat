@@ -11,7 +11,15 @@
 #                                                                    #
 ######################################################################
 
-# usage: OCAMLFORMAT=<option>=<value> test_branch.sh [<rev>]
+# usage: test_branch.sh [<rev>] [<option>=<value>*] [<option>=<value>*]
+#
+# The first arg is the revision/branch to test.
+#
+# The second arg is the value of OCAMLFORMAT to be used when formatting
+# the merge base of the test branch.
+#
+# The third arg is the value of OCAMLFORMAT to be used when formatting
+# the test branch.
 
 set -e
 
@@ -25,7 +33,7 @@ base=$(git merge-base master $branch)
 
 git checkout $base
 make
-make -C test test_setup test_unstage test_clean test_pull test test_stage
+OCAMLFORMAT="$2" make -C test test_setup test_unstage test_clean test_pull test test_stage
 git checkout $branch
 make
-make -C test test test_diff
+OCAMLFORMAT="$3" make -C test test test_diff
