@@ -137,10 +137,12 @@ let () =
   ()
 
 let foo =
+  (* foo *)
   match (* comment about entire pattern matching *)
     e with k -> z
 
 let foo =
+  (* foo *)
   match (* comment about entire pattern matching *)
     e [@foo] with k -> z
 
@@ -157,6 +159,7 @@ let foo =
     e [@foo] with k -> z | fooooooooooooooooooooo -> foooooooooooooooooo
 
 let foo =
+  (* foo *)
   match (* foo *) (* fooooooooooooooo *)
     e (* foo *)  [@foo] with k -> z
  | foooooooooooooooooooo -> fooooooooooooooooo
