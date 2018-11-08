@@ -3719,9 +3719,10 @@ and fmt_structure c ctx itms =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
         Ast.break_between c.cmts (Str itmI, cI.conf) (Str itmJ, cJ.conf) )
   in
+  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
-        fmt_if_k (not first) (fmt_or c.conf.break_struct "@\n" "@ ")
+        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
         $ maybe_disabled c itm.pstr_loc []
           @@ fun c ->
           fmt_structure_item c ~last:(last && last_grp) (sub_str ~ctx itm)
@@ -3729,10 +3730,10 @@ and fmt_structure c ctx itms =
   in
   hvbox 0
     (list_fl grps (fun ~first ~last grp ->
-         fmt_if (c.conf.break_struct && not first) "\n@\n"
-         $ fmt_if ((not c.conf.break_struct) && not first) "@;<1000 0>"
+         fmt_if (break_struct && not first) "\n@\n"
+         $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
          $ fmt_grp ~last grp
-         $ fits_breaks_if ((not c.conf.break_struct) && not last) "" "\n" ))
+         $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
 
 and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
