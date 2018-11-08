@@ -45,6 +45,7 @@ type t =
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
+  ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
