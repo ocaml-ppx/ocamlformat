@@ -3616,7 +3616,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       ; psp=
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 2>" "@;<1 2>")
-      ; bdy= within $ fmt_structure ~in_struct:true c ctx sis
+      ; bdy= within $ fmt_structure c ctx sis
       ; cls= close_box
       ; esp=
           fmt_if_k (not empty)
@@ -3705,7 +3705,7 @@ and fmt_toplevel_phrase c ctx = function
       | Pdir_ident longident -> fmt " " $ fmt_longident longident
       | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool) )
 
-and fmt_structure ?(in_struct = false) c ctx itms =
+and fmt_structure c ctx itms =
   let _, itms =
     List.fold_map itms ~init:c ~f:(fun c i ->
         let c =
@@ -3719,7 +3719,7 @@ and fmt_structure ?(in_struct = false) c ctx itms =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
         Ast.break_between c.cmts (Str itmI, cI.conf) (Str itmJ, cJ.conf) )
   in
-  let break_struct = c.conf.break_struct || not in_struct in
+  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
         fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
