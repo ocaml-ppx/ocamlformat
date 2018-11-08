@@ -876,7 +876,7 @@ and fmt_row_field c ctx = function
       let doc, atrs = doc_atrs atrs in
       hvbox 0
         ( fmt_str_loc c ~pre:"`" name
-        $ fmt_if (not (const && List.is_empty typs)) " of "
+        $ fmt_if (not (const && List.is_empty typs)) " of@ "
         $ fmt_if (const && not (List.is_empty typs)) " & "
         $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
         $ fmt_attributes c ~key:"@" atrs
@@ -3155,7 +3155,7 @@ and fmt_signature_item c {ast= si} =
       $ fmt_attributes c ~key:"@@@" atrs
   | Psig_exception exc ->
       hvbox 2
-        (fmt_exception ~pre:(fmt "exception@ ") c (fmt " of ") ctx exc)
+        (fmt_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
   | Psig_extension (ext, atrs) ->
       hvbox 0
         ( fmt_extension c ctx "%%" ext
