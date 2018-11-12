@@ -16,14 +16,14 @@ open Asttypes
 open Parsetree
 open Ast_helper
 
-let docstring c s =
+let docstring ?(parse = true) c s =
   let basic_normalize s =
     (* normalize consecutive whitespace chars to a single space *)
     String.concat ~sep:" "
       (List.filter ~f:(Fn.non String.is_empty)
          (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
   in
-  if not c.Conf.parse_docstrings then basic_normalize s
+  if (not parse) || not c.Conf.parse_docstrings then basic_normalize s
   else
     match Octavius.parse (Lexing.from_string s) with
     | Ok parsed ->
