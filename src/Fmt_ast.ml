@@ -1952,21 +1952,17 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       match compact with
       | None ->
           let leading_cmt = Cmts.fmt_before c.cmts e0.pexp_loc in
-          let one_case_sparse =
-            List.length cs = 1 && Poly.(c.conf.single_case = `Sparse)
-          in
           hvbox 0
             (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
                ( leading_cmt
-               $ hvbox_if one_case_sparse 0
-                   ( hvbox 0
-                       ( str keyword
-                       $ fmt_extension_suffix c ext
-                       $ fmt_attributes c ~key:"@" pexp_attributes
-                       $ fmt "@;<1 2>"
-                       $ fmt_expression c (sub_exp ~ctx e0)
-                       $ fmt "@ with" )
-                   $ fmt "@ " $ fmt_cases c ctx cs ) ))
+               $ hvbox 0
+                   ( str keyword
+                   $ fmt_extension_suffix c ext
+                   $ fmt_attributes c ~key:"@" pexp_attributes
+                   $ fmt "@;<1 2>"
+                   $ fmt_expression c (sub_exp ~ctx e0)
+                   $ fmt "@ with" )
+               $ fmt "@ " $ fmt_cases c ctx cs ))
       | Some {pc_lhs; pc_guard; pc_rhs} ->
           (* side effects of Cmts.fmt_before before [fmt_pattern] is
              important *)
