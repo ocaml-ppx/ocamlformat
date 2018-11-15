@@ -166,6 +166,6 @@ val x : x
         + b
         + c}} *)
 
-(** {{:https://google.fr/} Google} *)
+(** {{:https://github.com/} Github} *)
 
-(** {:https://google.fr/} *)
+(** {:https://github.com/} *)
