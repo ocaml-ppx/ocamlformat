@@ -14,9 +14,11 @@
 open Migrate_ast
 open Parsetree
 
-val docstring : ?parse:bool -> Conf.t -> string -> string
-(** Normalize a docstring, if [parse] is true comments are parsed as
-    ocamldoc comments. *)
+val comment : string -> string
+(** Normalize a comment. *)
+
+val docstring : Conf.t -> string -> string
+(** Normalize a docstring. *)
 
 val impl : Conf.t -> structure -> structure
 (** Normalize a structure. *)

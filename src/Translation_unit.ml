@@ -190,7 +190,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             | l ->
                 let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
                 internal_error (`Comment_dropped l) [] ) ;
-            let diff_cmts = Cmts.diff conf comments new_.comments in
+            let diff_cmts = Cmts.diff comments new_.comments in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;
               dump xunit dir base ".new" ".ast" new_.ast ;
