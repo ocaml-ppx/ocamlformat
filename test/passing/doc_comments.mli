@@ -165,3 +165,7 @@ val x : x
         + a
         + b
         + c}} *)
+
+(** {{:https://google.fr/} Google} *)
+
+(** {:https://google.fr/} *)

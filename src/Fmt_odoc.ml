@@ -21,21 +21,21 @@ let str s =
 let verbatim s = Fmt.str s
 
 let fmt_ref_kind = function
-  | RK_element -> str ""
-  | RK_module -> str "module:"
-  | RK_module_type -> str "modtype:"
-  | RK_class -> str "class:"
-  | RK_class_type -> str "classtype:"
-  | RK_value -> str "val:"
-  | RK_type -> str "type:"
-  | RK_exception -> str "exception:"
-  | RK_attribute -> str "attribute:"
-  | RK_method -> str "method:"
-  | RK_section -> str "section:"
-  | RK_recfield -> str "recfield:"
-  | RK_const -> str "const:"
+  | RK_element -> str "!"
+  | RK_module -> str "!module:"
+  | RK_module_type -> str "!modtype:"
+  | RK_class -> str "!class:"
+  | RK_class_type -> str "!classtype:"
+  | RK_value -> str "!val:"
+  | RK_type -> str "!type:"
+  | RK_exception -> str "!exception:"
+  | RK_attribute -> str "!attribute:"
+  | RK_method -> str "!method:"
+  | RK_section -> str "!section:"
+  | RK_recfield -> str "!recfield:"
+  | RK_const -> str "!const:"
   | RK_link -> str ":"
-  | RK_custom s -> str s $ str ":"
+  | RK_custom s -> str "!" $ str s $ str ":"
 
 let rec fmt_style style txt =
   let s =
@@ -69,11 +69,11 @@ and fmt_text_elt = function
         (wrap "{" "}"
            ( str (Int.to_string i)
            $ str ":" $ str s $ fmt "@ " $ fmt_text txt ))
-  | Ref (rk, s, None) -> hovbox 0 (wrap "{!" "}" (fmt_ref_kind rk $ str s))
+  | Ref (rk, s, None) -> hovbox 0 (wrap "{" "}" (fmt_ref_kind rk $ str s))
   | Ref (rk, s, Some txt) ->
       hovbox 0
         (wrap "{" "}"
-           ( hovbox 0 (wrap "{!" "}" (fmt_ref_kind rk $ str s))
+           ( hovbox 0 (wrap "{" "}" (fmt_ref_kind rk $ str s))
            $ fmt "@ " $ fmt_text txt ))
   | Special_ref (SRK_module_list l) ->
       hvbox 0 (wrap "{!modules:" "}" (list l "@," str))
