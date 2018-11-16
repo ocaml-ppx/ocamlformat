@@ -12,7 +12,11 @@
 open Octavius.Types
 open Fmt
 
-let str s = String.substr_replace_all s ~pattern:"@" ~with_:"\\@" |> str
+let str s =
+  String.substr_replace_all s ~pattern:"@" ~with_:"\\@"
+  |> String.substr_replace_all ~pattern:"{" ~with_:"\\{"
+  |> String.substr_replace_all ~pattern:"}" ~with_:"\\}"
+  |> str
 
 let str s =
   s
