@@ -12,6 +12,8 @@
 open Octavius.Types
 open Fmt
 
+let str s = String.substr_replace_all s ~pattern:"@" ~with_:"\\@" |> str
+
 let str s =
   s
   |> String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
@@ -54,7 +56,7 @@ let rec fmt_style style txt =
 
 and fmt_text_elt = function
   | Raw s -> str s
-  | Code s -> hovbox 0 (wrap "[" "]" (str s))
+  | Code s -> hovbox 0 (wrap "[" "]" (verbatim s))
   | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
   | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
   | Style (st, txt) -> fmt_style st txt
