@@ -14,6 +14,9 @@
 open Migrate_ast
 open Parsetree
 
+val comment : string -> string
+(** Normalize a comment. *)
+
 val docstring : Conf.t -> string -> string
 (** Normalize a docstring. *)
 

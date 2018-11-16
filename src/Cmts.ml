@@ -579,9 +579,9 @@ let remaining_comments t =
     ; get t.cmts_within "within"
     ; get t.cmts_after "after" ]
 
-let diff c x y =
+let diff x y =
   let norm z =
-    let f (txt, _) = Normalize.docstring c txt in
+    let f (txt, _) = Normalize.comment txt in
     Set.of_list
       (module String)
       (List.map ~f (List.dedup_and_sort ~compare:Poly.compare z))
