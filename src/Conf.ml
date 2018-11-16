@@ -40,6 +40,7 @@ type t =
   ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
+  ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
@@ -827,7 +828,7 @@ module Formatting = struct
       (fun conf -> conf.parens_ite)
 
   let parens_tuple =
-    let doc = "Parens tuples." in
+    let doc = "Parens tuple expressions." in
     let names = ["parens-tuple"] in
     let all =
       [ ( "always"
@@ -841,6 +842,22 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with parens_tuple= x})
       (fun conf -> conf.parens_tuple)
+
+  let parens_tuple_patterns =
+    let doc = "Parens tuple patterns." in
+    let names = ["parens-tuple-patterns"] in
+    let all =
+      [ ( "multi-line-only"
+        , `Multi_line_only
+        , "$(b,multi-line-only) mode will try to skip parens for \
+           single-line tuple patterns." )
+      ; ( "always"
+        , `Always
+        , "$(b,always) always uses parentheses around tuples patterns." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with parens_tuple_patterns= x})
+      (fun conf -> conf.parens_tuple_patterns)
 
   let parse_docstrings =
     let doc = "Parse and format docstrings." in
@@ -1139,6 +1156,7 @@ let default_profile =
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
+  ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
   ; sequence_style= C.default Formatting.sequence_style
@@ -1210,6 +1228,7 @@ let janestreet_profile =
   ; ocp_indent_compat= false
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
+  ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= true
   ; quiet= default_profile.quiet
   ; sequence_style= `Terminator

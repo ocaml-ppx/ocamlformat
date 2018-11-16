@@ -162,9 +162,15 @@ OPTIONS (CODE FORMATTING STYLE)
            multiple lines.
 
        --parens-tuple={always|multi-line-only}
-           Parens tuples. always always uses parentheses around tuples.
-           multi-line-only mode will try to skip parens for single-line
-           tuples. The default value is always.
+           Parens tuple expressions. always always uses parentheses around
+           tuples. multi-line-only mode will try to skip parens for
+           single-line tuples. The default value is always.
+
+       --parens-tuple-patterns={multi-line-only|always}
+           Parens tuple patterns. multi-line-only mode will try to skip
+           parens for single-line tuple patterns. always always uses
+           parentheses around tuples patterns. The default value is
+           multi-line-only.
 
        --sequence-style={separator|terminator}
            Style of sequence. separator puts spaces before and after

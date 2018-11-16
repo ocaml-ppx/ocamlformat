@@ -945,6 +945,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             "Ppat_interval is only produced by the sequence of 3 tokens: \
              CONSTANT-DOTDOT-CONSTANT " )
   | Ppat_tuple pats ->
+      let parens =
+        parens || Poly.(c.conf.parens_tuple_patterns = `Always)
+      in
       hvbox 0
         (wrap_if_breaks "( " "@ )"
            (wrap_if_fits_and parens "(" ")"

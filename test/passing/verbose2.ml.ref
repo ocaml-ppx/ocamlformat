@@ -7,6 +7,7 @@ wrap-comments=true (file ../.ocamlformat:2)
 type-decl=compact
 sequence-style=separator
 parse-docstrings=true
+parens-tuple-patterns=multi-line-only
 parens-tuple=always
 parens-ite=false
 ocp-indent-compat=false
