@@ -177,3 +177,5 @@ val x : x
 (** The different forms of references in \@see tags. *)
 
 (** Printf groff string for the \@before information. *)
+
+(** [a]'c [b]'s [c]'c *)

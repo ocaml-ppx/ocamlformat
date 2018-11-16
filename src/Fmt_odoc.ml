@@ -123,7 +123,7 @@ and fmt_list kind l =
 and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
 
 and fmt_text txt =
-  let no_space_before = ['.'; ':'; ';'; ','; '-'; ')'] in
+  let no_space_before = ['.'; ':'; ';'; ','; '-'; ')'; '\''] in
   let no_space_after = ['.'; '-'; '('] in
   let no_space_before c = List.mem no_space_before c ~equal:Char.equal in
   let no_space_after c = List.mem no_space_after c ~equal:Char.equal in
