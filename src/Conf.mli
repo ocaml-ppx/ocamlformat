@@ -49,6 +49,7 @@ type t =
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
+  ; single_case: [`Compact | `Sparse]
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }

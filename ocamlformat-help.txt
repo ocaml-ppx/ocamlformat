@@ -177,6 +177,12 @@ OPTIONS (CODE FORMATTING STYLE)
            semicolons. terminator only puts spaces after semicolons. The
            default value is separator.
 
+       --single-case={compact|sparse}
+           Style of pattern matching expressions with only a single case.
+           compact will try to format a single case on a single line. sparse
+           will always break the line before a single case. The default value
+           is compact.
+
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
            and records definition in a single line. sparse will always break

@@ -5,6 +5,7 @@ comment-check=true
 wrap-fun-args=true
 wrap-comments=true (file ../.ocamlformat:2)
 type-decl=compact
+single-case=compact
 sequence-style=separator
 parse-docstrings=true
 parens-tuple-patterns=multi-line-only

@@ -1941,12 +1941,20 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         | Pexp_try _ -> "try"
         | _ -> impossible "previous match"
       in
-      match cs with
-      | []
-       |_ :: _ :: _
-       |[ { pc_lhs=
-              {ppat_desc= Ppat_or _ | Ppat_alias ({ppat_desc= Ppat_or _}, _)}
-          } ] ->
+      let compact =
+        match cs with
+        | []
+         |_ :: _ :: _
+         |[ { pc_lhs=
+                { ppat_desc=
+                    Ppat_or _ | Ppat_alias ({ppat_desc= Ppat_or _}, _) } }
+          ] ->
+            None
+        | [x] ->
+            if Poly.(c.conf.single_case = `Compact) then Some x else None
+      in
+      match compact with
+      | None ->
           let leading_cmt = Cmts.fmt_before c.cmts e0.pexp_loc in
           hvbox 0
             (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
@@ -1959,7 +1967,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                    $ fmt_expression c (sub_exp ~ctx e0)
                    $ fmt "@ with" )
                $ fmt "@ " $ fmt_cases c ctx cs ))
-      | [{pc_lhs; pc_guard; pc_rhs}] ->
+      | Some {pc_lhs; pc_guard; pc_rhs} ->
           (* side effects of Cmts.fmt_before before [fmt_pattern] is
              important *)
           let xpc_rhs = sub_exp ~ctx pc_rhs in
