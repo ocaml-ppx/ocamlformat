@@ -48,7 +48,7 @@ val is_symbol : expression -> bool
 (** Holds of prefix or infix symbols. *)
 
 val is_sugared_list : expression -> bool
-(** Holds of expressions that can be sugared into [[e1; ...; eN]] form. *)
+(** Holds of expressions that can be sugared into [\[e1; ...; eN\]] form. *)
 
 val doc_atrs :
      (string Location.loc * payload) list

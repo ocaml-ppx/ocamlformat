@@ -12,11 +12,14 @@
 open Octavius.Types
 open Fmt
 
-let str s =
-  String.substr_replace_all s ~pattern:"@" ~with_:"\\@"
-  |> String.substr_replace_all ~pattern:"{" ~with_:"\\{"
-  |> String.substr_replace_all ~pattern:"}" ~with_:"\\}"
-  |> str
+let escape_brackets =
+  String.Escaping.escape ~escapeworthy:['['; ']'] ~escape_char:'\\'
+
+let escape_all =
+  String.Escaping.escape ~escapeworthy:['@'; '{'; '}'; '['; ']']
+    ~escape_char:'\\'
+
+let str s = s |> Staged.unstage escape_all |> str
 
 let str s =
   s
@@ -60,7 +63,9 @@ let rec fmt_style style txt =
 
 and fmt_text_elt = function
   | Raw s -> str s
-  | Code s -> hovbox 0 (wrap "[" "]" (verbatim s))
+  | Code s ->
+      hovbox 0
+        (wrap "[" "]" (verbatim ((Staged.unstage escape_brackets) s)))
   | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
   | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
   | Style (st, txt) -> fmt_style st txt
