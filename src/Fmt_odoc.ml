@@ -112,7 +112,7 @@ and fmt_list kind l =
 and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
 
 and fmt_text txt =
-  let ops = ['.'; ':'; ';'; ','] in
+  let ops = ['.'; ':'; ';'; ','; '-'; ')'] in
   let is_op c = List.mem ops c ~equal:Char.equal in
   let f ?prev:_ curr ?next =
     match next with
@@ -122,6 +122,9 @@ and fmt_text txt =
       match curr with
       | Newline -> fmt_newline
       | List _ | Enum _ -> fmt_text_elt curr $ fmt_newline
+      | Raw x when Char.equal x.[String.length x - 1] '(' -> (
+          fmt_text_elt curr
+          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "" )
       | _ -> (
           fmt_text_elt curr
           $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "@ " ) )
