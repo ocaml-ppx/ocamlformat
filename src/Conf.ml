@@ -858,7 +858,7 @@ module Formatting = struct
     let doc =
       "Style of pattern matching expressions with only a single case."
     in
-    let names = ["single_case"] in
+    let names = ["single-case"] in
     let all =
       [ ( "compact"
         , `Compact
