@@ -19,13 +19,12 @@ let escape_all =
   String.Escaping.escape ~escapeworthy:['@'; '{'; '}'; '['; ']']
     ~escape_char:'\\'
 
-let str s = s |> Staged.unstage escape_all |> str
-
-let str s =
+let str ?(escape = true) s =
+  let escape = if escape then Staged.unstage escape_all else Fn.id in
   s
   |> String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
   |> List.filter ~f:(Fn.non String.is_empty)
-  |> fun s -> list s "@ " str
+  |> fun s -> list s "@ " (fun s -> escape s |> str)
 
 let verbatim s = Fmt.str s
 
@@ -90,11 +89,11 @@ and fmt_text_elt = function
       hvbox 0 (wrap "{!modules:" "}" (list l "@," str))
   | Special_ref SRK_index_list -> str "{!indexlist}"
   | Target (s, l) ->
+      let target = Option.value_map s ~default:"" ~f:(fun s -> s ^ ":") in
+      let latex = String.is_empty target || String.equal target "latex:" in
+      let escape = not latex in
       hovbox 0
-        (wrap "{" "}"
-           ( char '%'
-           $ str (Option.value s ~default:"latex")
-           $ char ':' $ str l $ char '%' ))
+        (wrap "{" "}" (char '%' $ str target $ str ~escape l $ char '%'))
 
 and fmt_list kind l =
   let light_syntax =
