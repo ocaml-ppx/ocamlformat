@@ -90,10 +90,9 @@ and fmt_text_elt = function
   | Special_ref SRK_index_list -> str "{!indexlist}"
   | Target (s, l) ->
       let target = Option.value_map s ~default:"" ~f:(fun s -> s ^ ":") in
-      let latex = String.is_empty target || String.equal target "latex:" in
-      let escape = not latex in
       hovbox 0
-        (wrap "{" "}" (char '%' $ str target $ str ~escape l $ char '%'))
+        (wrap "{" "}"
+           (char '%' $ str target $ str ~escape:false l $ char '%'))
 
 and fmt_list kind l =
   let light_syntax =
