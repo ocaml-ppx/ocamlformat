@@ -22,10 +22,11 @@ let run_ocamlformat cmd ~ctx ~file_in =
     % "--disable-outside-detected-project" % "-o" % Fpath.to_string path_out)
   |> Bos.OS.Cmd.run_status
   |> function
-  | Ok (`Exited 0) -> Ok path_out
-  | Ok _ ->
-      R.error_msg ("ocamlformat on " ^ Fpath.to_string file_in ^ " failed!")
-  | Error e -> Error e
+     | Ok (`Exited 0) -> Ok path_out
+     | Ok _ ->
+         R.error_msg
+           ("ocamlformat on " ^ Fpath.to_string file_in ^ " failed!")
+     | Error e -> Error e
 
 (** [diff_in_ctx ~ctx ~old_file ~new_file] runs the diff of files [old_file]
     and [new_file] in the context of file [ctx], so that they both inherit

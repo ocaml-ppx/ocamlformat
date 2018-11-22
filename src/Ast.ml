@@ -1125,8 +1125,7 @@ end = struct
             List.exists cases ~f:(function
               | {pc_lhs} when pc_lhs == pat -> true
               | _ -> false ) )
-      | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
-      )
+      | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat) )
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
@@ -1513,8 +1512,7 @@ end = struct
             else Some High
         | "!=" -> Some Apply
         | _ -> (
-          match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
-        )
+          match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
       | Pexp_apply ({pexp_desc= Pexp_ident ident}, (Nolabel, _) :: args)
         when Option.is_some (index_op_get_sugar ident args) ->
           Some Dot
@@ -2073,7 +2071,7 @@ end = struct
       | Pexp_record (flds, _)
         when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->
           exposed_right_exp Non_apply exp
-          (* Non_apply is perhaps pessimistic *)
+      (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_])} as e0))
         when e0 == exp && is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)

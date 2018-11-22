@@ -1089,13 +1089,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           when break_cases_level c = 0 ->
             if c.conf.indicate_nested_or_patterns then or_newline "| " " |"
             else or_newline "| " "| "
-        | _ -> break_unless_newline 1 0 $ fmt "| "
-      in
-      let pro2 =
-        fmt_or_k
-          (break_cases_level c > 1)
-          (break_unless_newline 1000 0 $ fmt "| ")
-          proI
+        | _ -> fmt_if (break_cases_level c < 2) "@;<1 0>" $ fmt "| "
       in
       let is_simple {ppat_desc} =
         match ppat_desc with
@@ -1112,23 +1106,26 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                  || (not (is_simple p1))
                  || not (is_simple p2) ))
             (fun ~first:first_grp ~last:_ xpat_grp ->
-              list_fl xpat_grp (fun ~first ~last xpat ->
-                  let pro =
-                    if first_grp && first then pro0 $ open_hovbox (-2)
-                    else if first then proI $ open_hovbox (-2)
-                    else pro2
-                  in
-                  (* side effects of Cmts.fmt_before before [fmt_pattern] is
-                     important *)
-                  let leading_cmt =
-                    let loc = xpat.ast.ppat_loc in
-                    if Cmts.has_before c.cmts loc then
-                      let loc_before = Cmts.fmt_before c.cmts loc in
-                      fmt "@;<1000 0>" $ loc_before
-                    else fmt ""
-                  in
-                  leading_cmt $ fmt_pattern c ~pro xpat
-                  $ fmt_if_k last close_box ) )
+              fmt_if
+                ((not first_grp) && break_cases_level c > 1)
+                "@;<1000 0>"
+              $ list_fl xpat_grp (fun ~first ~last xpat ->
+                    let pro =
+                      if first_grp && first then pro0 $ open_hovbox (-2)
+                      else if first then proI $ open_hovbox (-2)
+                      else proI
+                    in
+                    (* side effects of Cmts.fmt_before before [fmt_pattern]
+                       is important *)
+                    let leading_cmt =
+                      let loc = xpat.ast.ppat_loc in
+                      if Cmts.has_before c.cmts loc then
+                        let loc_before = Cmts.fmt_before c.cmts loc in
+                        fmt "@;<1000 0>" $ loc_before
+                      else fmt ""
+                    in
+                    leading_cmt $ fmt_pattern c ~pro xpat
+                    $ fmt_if_k last close_box ) )
         $ fits_breaks
             (if parens then ")" else "")
             (if nested then "" else "@;<1 2>)") )
@@ -1823,12 +1820,13 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             (fits_breaks_if parens ")" "@,)") )
   | Pexp_function cs ->
       wrap_if parens "(" ")"
-        ( hvbox 2
-            ( fmt "function"
-            $ fmt_extension_suffix c ext
-            $ fmt_attributes c ~key:"@" pexp_attributes )
-        $ fmt "@ "
-        $ hvbox 0 (fmt_cases c ctx cs) )
+        ((if break_cases_level c > 0 then vbox else hvbox)
+           0
+           ( hvbox 2
+               ( fmt "function"
+               $ fmt_extension_suffix c ext
+               $ fmt_attributes c ~key:"@" pexp_attributes )
+           $ fmt "@ " $ fmt_cases c ctx cs ))
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then
@@ -2018,7 +2016,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       match compact with
       | None ->
           let leading_cmt = Cmts.fmt_before c.cmts e0.pexp_loc in
-          hvbox 0
+          (if break_cases_level c > 0 then vbox else hvbox)
+            0
             (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
                ( leading_cmt
                $ hvbox 0
@@ -2755,53 +2754,35 @@ and fmt_cases c ctx cs =
       in
       (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
       let leading_cmt = Cmts.fmt_before c.cmts pc_lhs.ppat_loc in
-      let fmt_lhs =
-        let xlhs = sub_pat ~ctx pc_lhs in
-        let paren_lhs =
-          match pc_lhs.ppat_desc with
-          | Ppat_or _ when Option.is_some pc_guard -> true
-          | _ -> parenze_pat xlhs
-        in
-        let fmt_arrow_close_box =
-          fmt_or_k
-            (break_cases_level c > 0)
-            (fmt_or_k parens_here (fmt "@;<1 2>->@]")
-               (fmt "@;<1 -2>->@]@;<0 3>"))
-            ( fmt "@;<1 -2>->@]"
-            $ fmt_or_k parens_here (fmt " (") (fmt "@;<0 -1>") )
-        in
-        let pro =
-          fmt_or_k
-            (break_cases_level c > 1)
-            (break_unless_newline 1000 0 $ fmt "| ")
-            (if first then if_newline "| " else fmt "| ")
-        in
-        hovbox 4
-          ( open_hovbox (if break_cases_level c = 0 then 2 else 0)
-          $ hvbox 0
-              ( fmt_pattern c ~pro ~parens:paren_lhs xlhs
-              $ opt pc_guard (fun g ->
-                    fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g)
-                ) )
-          $ fmt_if_k (indent <= 2) fmt_arrow_close_box )
-        $ fmt_if_k (indent > 2) fmt_arrow_close_box
+      let xlhs = sub_pat ~ctx pc_lhs in
+      let paren_lhs =
+        match pc_lhs.ppat_desc with
+        | Ppat_or _ when Option.is_some pc_guard -> true
+        | _ -> parenze_pat xlhs
       in
+      let pro =
+        fmt_or_k
+          (break_cases_level c > 1)
+          (fmt "| ")
+          (if first then if_newline "| " else fmt "| ")
+      in
+      let pat = fmt_pattern c ~pro ~parens:paren_lhs xlhs in
+      let guard =
+        opt pc_guard (fun g ->
+            fmt "@;<1 0>when " $ fmt_expression c (sub_exp ~ctx g) )
+      in
+      let lhs = hvbox 2 (hovbox 2 pat $ guard) $ fmt "@ ->" in
+      let rhs = fmt_expression c ?parens:parens_for_exp xrhs in
       fmt_if (not first) "@ " $ leading_cmt
-      $ cbox_if
-          (break_cases_level c = 0)
-          indent
-          ( hvbox_if (break_cases_level c = 0) indent fmt_lhs
-          $ ( match (break_cases_level c > 0, indent > 2, parens_here) with
-            | false, _, _ -> fmt "@ "
-            | true, false, false -> fmt "@;<1 2>"
-            | true, false, true -> fmt " (@;<1 2>"
-            | true, true, false -> fmt " "
-            | true, true, true -> fmt " (@;<1 4>" )
-          $ hovbox 0
-              ( hovbox 0 (fmt_expression c ?parens:parens_for_exp xrhs)
-              $ fmt_or_k c.conf.indicate_multiline_delimiters
-                  (fmt_if parens_here "@ )")
-                  (fmt_if parens_here "@,)") ) ) )
+      $ hvbox indent
+          ( hovbox indent (hovbox 2 lhs $ fmt_if parens_here " (")
+          $ fmt_or
+              (parens_here && break_cases_level c > 0)
+              "@;<1000 0>" "@;<1 0>"
+          $ rhs
+          $ fmt_or_k c.conf.indicate_multiline_delimiters
+              (fmt_if parens_here " )")
+              (fmt_if parens_here "@,)") ) )
 
 and fmt_value_description c ctx vd =
   let { pval_name= {txt; loc}

@@ -1341,9 +1341,9 @@ let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-      | `A n -> "A", Some (Tdyn (Int, n))
-      | `B s -> "B", Some (Tdyn (String, s))
-      | `C -> "C", None)
+       | `A n -> "A", Some (Tdyn (Int, n))
+       | `B s -> "B", Some (Tdyn (String, s))
+       | `C -> "C", None)
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
@@ -3804,7 +3804,8 @@ class ['a] expr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #var as x -> var#subst ~sub x | #expr as e -> self#map ~f:(!!subst ~sub) e
+      | #var as x -> var#subst ~sub x
+      | #expr as e -> self#map ~f:(!!subst ~sub) e
 
     method eval (#expr as e) =
       match self#map ~f:!!eval e with
@@ -4034,7 +4035,8 @@ let expr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #var as x -> var#subst ~sub x | #expr as e -> self#map ~f:(!!subst ~sub) e
+      | #var as x -> var#subst ~sub x
+      | #expr as e -> self#map ~f:(!!subst ~sub) e
 
     method eval (#expr as e) =
       match self#map ~f:!!eval e with
