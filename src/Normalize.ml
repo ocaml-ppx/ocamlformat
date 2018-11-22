@@ -18,7 +18,7 @@ open Ast_helper
 
 let comment s =
   (* normalize consecutive whitespace chars to a single space *)
-  String.concat ~sep:" "
+  String.concat ~sep:""
     (List.filter ~f:(Fn.non String.is_empty)
        (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
 
@@ -27,7 +27,8 @@ let docstring c s =
   else
     match Octavius.parse (Lexing.from_string s) with
     | Ok parsed ->
-        Format_.asprintf "%a%!" (fun fs x -> Fmt_odoc.fmt x fs) parsed
+        comment
+          (Format_.asprintf "%a%!" (fun fs x -> Fmt_odoc.fmt x fs) parsed)
     | Error _ -> comment s
 
 let make_mapper c ~ignore_doc_comment =
