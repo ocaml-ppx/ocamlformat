@@ -147,9 +147,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Control whether or not to indicate nested or-pattern using
            indentation.
 
-       --no-parse-docstrings
-           Parse and format docstrings.
-
        --no-wrap-fun-args
            Style for function call and function definition.
 
@@ -171,6 +168,9 @@ OPTIONS (CODE FORMATTING STYLE)
            parens for single-line tuple patterns. always always uses
            parentheses around tuples patterns. The default value is
            multi-line-only.
+
+       --parse-docstrings
+           Parse and format docstrings.
 
        --sequence-style={separator|terminator}
            Style of sequence. separator puts spaces before and after

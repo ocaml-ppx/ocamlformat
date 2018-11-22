@@ -863,7 +863,7 @@ module Formatting = struct
   let parse_docstrings =
     let doc = "Parse and format docstrings." in
     let names = ["parse-docstrings"] in
-    C.flag ~default:true ~names ~doc ~section
+    C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with parse_docstrings= x})
       (fun conf -> conf.parse_docstrings)
 
