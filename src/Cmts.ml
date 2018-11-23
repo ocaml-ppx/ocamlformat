@@ -445,7 +445,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
     | _ ->
         let drop = function ' ' | '\t' -> true | _ -> false in
         let line = String.rstrip ~drop (String.drop_prefix txt pos) in
-        if String.is_empty line then [line]
+        if String.is_empty line then [" "]
         else if Char.equal line.[String.length line - 1] '\n' then
           [String.drop_suffix line 1; ""]
         else if Char.is_whitespace txt.[String.length txt - 1] then
