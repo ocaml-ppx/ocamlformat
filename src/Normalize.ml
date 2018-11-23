@@ -249,7 +249,7 @@ let make_docstring_mapper c docstrings =
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' = docstring c doc in
-        docstrings := (loc, doc') :: !docstrings ;
+        docstrings := (loc, doc) :: !docstrings ;
         ( {txt; loc}
         , m.payload m
             (PStr
