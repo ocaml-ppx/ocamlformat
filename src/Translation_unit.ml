@@ -122,11 +122,9 @@ type result =
 
 let ellipsis n msg =
   let msg = String.strip msg in
-  if n > 0 && String.length msg > n * 2 + 10 then
-    Format.sprintf "%s ... %s"
-      (String.prefix msg n) (String.suffix msg n)
-  else
-    msg
+  if n > 0 && String.length msg > (n * 2) + 10 then
+    Format.sprintf "%s ... %s" (String.prefix msg n) (String.suffix msg n)
+  else msg
 
 let ellipsis_cmt = ellipsis 50
 
@@ -200,7 +198,11 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             | l ->
                 let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
                 internal_error (`Comment_dropped l) [] ) ;
-            let diff_cmts = Cmts.diff comments new_.comments in
+            let f = ellipsis_cmt in
+            let f x = Either.First.map ~f x |> Either.Second.map ~f in
+            let diff_cmts =
+              Cmts.diff comments new_.comments |> Sequence.map ~f
+            in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;
               dump xunit dir base ".new" ".ast" new_.ast ;
