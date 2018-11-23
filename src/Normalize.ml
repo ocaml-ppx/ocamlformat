@@ -36,21 +36,21 @@ open Octavius.Types
 
 let ref_kind fmt rk =
   let ref_kind fmt = function
-  | RK_element -> Format.fprintf fmt "RK_element"
-  | RK_module -> Format.fprintf fmt "RK_module"
-  | RK_module_type -> Format.fprintf fmt "RK_module_type"
-  | RK_class -> Format.fprintf fmt "RK_class"
-  | RK_class_type -> Format.fprintf fmt "RK_class_type"
-  | RK_value -> Format.fprintf fmt "RK_value"
-  | RK_type -> Format.fprintf fmt "RK_type"
-  | RK_exception -> Format.fprintf fmt "RK_exception"
-  | RK_attribute -> Format.fprintf fmt "RK_attribute"
-  | RK_method -> Format.fprintf fmt "RK_method"
-  | RK_section -> Format.fprintf fmt "RK_section"
-  | RK_recfield -> Format.fprintf fmt "RK_recfield"
-  | RK_const -> Format.fprintf fmt "RK_const"
-  | RK_link -> Format.fprintf fmt "RK_link"
-  | RK_custom s -> Format.fprintf fmt "RK_custom,%a" str s
+    | RK_element -> Format.fprintf fmt "RK_element"
+    | RK_module -> Format.fprintf fmt "RK_module"
+    | RK_module_type -> Format.fprintf fmt "RK_module_type"
+    | RK_class -> Format.fprintf fmt "RK_class"
+    | RK_class_type -> Format.fprintf fmt "RK_class_type"
+    | RK_value -> Format.fprintf fmt "RK_value"
+    | RK_type -> Format.fprintf fmt "RK_type"
+    | RK_exception -> Format.fprintf fmt "RK_exception"
+    | RK_attribute -> Format.fprintf fmt "RK_attribute"
+    | RK_method -> Format.fprintf fmt "RK_method"
+    | RK_section -> Format.fprintf fmt "RK_section"
+    | RK_recfield -> Format.fprintf fmt "RK_recfield"
+    | RK_const -> Format.fprintf fmt "RK_const"
+    | RK_link -> Format.fprintf fmt "RK_link"
+    | RK_custom s -> Format.fprintf fmt "RK_custom,%a" str s
   in
   Format.fprintf fmt "RK(%a)" ref_kind rk
 
@@ -70,24 +70,26 @@ let style fmt s =
 
 let rec odoc_text_elt fmt = function
   | Raw s ->
-     let s = Format.asprintf "%a" str s in
-     if String.equal s "" then Format.fprintf fmt ""
-     else Format.fprintf fmt "Raw,%s" s
+      let s = Format.asprintf "%a" str s in
+      if String.equal s "" then Format.fprintf fmt ""
+      else Format.fprintf fmt "Raw,%s" s
   | Code s -> Format.fprintf fmt "Code,%a" str s
   | PreCode s -> Format.fprintf fmt "PreCode,%a" str s
   | Verbatim s -> Format.fprintf fmt "Verbatim,%a" str s
-  | Style (st, txt) -> Format.fprintf fmt "Style,%a,%a" style st odoc_text txt
+  | Style (st, txt) ->
+      Format.fprintf fmt "Style,%a,%a" style st odoc_text txt
   | List l -> Format.fprintf fmt "List,%a" (list odoc_text) l
   | Enum l -> Format.fprintf fmt "Enum,%a" (list odoc_text) l
   | Newline -> Format.fprintf fmt ""
   | Title (i, s, txt) ->
-     Format.fprintf fmt "Title,%i,%a,%a" i (opt str) s odoc_text txt
+      Format.fprintf fmt "Title,%i,%a,%a" i (opt str) s odoc_text txt
   | Ref (rk, s, txt) ->
-     Format.fprintf fmt "Ref,%a,%a,%a" ref_kind rk str s (opt odoc_text) txt
+      Format.fprintf fmt "Ref,%a,%a,%a" ref_kind rk str s (opt odoc_text)
+        txt
   | Special_ref (SRK_module_list l) ->
-     Format.fprintf fmt "Special_ref,SRK_module_list(%a)" (list str) l
+      Format.fprintf fmt "Special_ref,SRK_module_list(%a)" (list str) l
   | Special_ref SRK_index_list ->
-     Format.fprintf fmt "Special_ref,SRK_index_list"
+      Format.fprintf fmt "Special_ref,SRK_index_list"
   | Target (s, l) -> Format.fprintf fmt "Target,%a,%a" (opt str) s str l
 
 and odoc_text fmt t = Format.fprintf fmt "%a" (list odoc_text_elt) t
@@ -104,16 +106,19 @@ let odoc_tag fmt t =
   let tag fmt = function
     | Author s -> Format.fprintf fmt "Author,%a" str s
     | Version s -> Format.fprintf fmt "Version,%a" str s
-    | See (sr, txt) -> Format.fprintf fmt "See,%a,%a" see_ref sr odoc_text txt
+    | See (sr, txt) ->
+        Format.fprintf fmt "See,%a,%a" see_ref sr odoc_text txt
     | Since s -> Format.fprintf fmt "Since,%a" str s
-    | Before (s, txt) -> Format.fprintf fmt "Before,%a,%a" str s odoc_text txt
+    | Before (s, txt) ->
+        Format.fprintf fmt "Before,%a,%a" str s odoc_text txt
     | Deprecated txt -> Format.fprintf fmt "Deprecated,%a" odoc_text txt
     | Param (s, txt) -> Format.fprintf fmt "Param,%a,%a" str s odoc_text txt
     | Raised_exception (s, txt) ->
-       Format.fprintf fmt "Raised_exception,%a,%a" str s odoc_text txt
+        Format.fprintf fmt "Raised_exception,%a,%a" str s odoc_text txt
     | Return_value txt -> Format.fprintf fmt "Return_value,%a" odoc_text txt
     | Inline -> Format.fprintf fmt "Inline"
-    | Custom (s, txt) -> Format.fprintf fmt "Custom,%a,%a" str s odoc_text txt
+    | Custom (s, txt) ->
+        Format.fprintf fmt "Custom,%a,%a" str s odoc_text txt
     | Canonical s -> Format.fprintf fmt "Canonical,%a" str s
   in
   Format.fprintf fmt "Tag(%a)" tag t
@@ -123,9 +128,8 @@ let docstring c s =
   else
     match Octavius.parse (Lexing.from_string s) with
     | Ok (text, tags) ->
-        Format.asprintf "Docstring(%a,%a)%!"
-          odoc_text text
-          (list odoc_tag) tags
+        Format.asprintf "Docstring(%a,%a)%!" odoc_text text (list odoc_tag)
+          tags
     | Error _ -> comment s
 
 let make_mapper c ~ignore_doc_comment =
