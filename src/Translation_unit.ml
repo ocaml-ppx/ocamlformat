@@ -120,6 +120,16 @@ type result =
   | Ocamlformat_bug of exn
   | User_error of string
 
+let ellipsis n msg =
+  let msg = String.strip msg in
+  if n > 0 && String.length msg > n * 2 + 10 then
+    Format.sprintf "%s ... %s"
+      (String.prefix msg n) (String.suffix msg n)
+  else
+    msg
+
+let ellipsis_cmt = ellipsis 50
+
 let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     ofile =
   let dir =
@@ -323,20 +333,20 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
                         "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
                          %s *) added.\n\
                          %!"
-                        Location.print_loc loc_after (String.strip msg)
+                        Location.print_loc loc_after (ellipsis_cmt msg)
                     else if Location.compare loc_after Location.none = 0
                     then
                       Caml.Format.eprintf
                         "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
                          %s *) dropped.\n\
                          %!"
-                        Location.print_loc loc_before (String.strip msg)
+                        Location.print_loc loc_before (ellipsis_cmt msg)
                     else
                       Caml.Format.eprintf
                         "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
                          %s *) moved to @{<loc>%a@}.\n\
                          %!"
-                        Location.print_loc loc_before (String.strip msg)
+                        Location.print_loc loc_before (ellipsis_cmt msg)
                         Location.print_loc loc_after
                 | Normalize.Unstable (loc, s) ->
                     Caml.Format.eprintf
@@ -346,14 +356,14 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
                        comment in the source or disable the formatting \
                        using the option --no-parse-docstrings.\n\
                        %!"
-                      Location.print_loc loc (String.strip s) )
+                      Location.print_loc loc (ellipsis_cmt s) )
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
                   Caml.Format.eprintf
                     "%!@{<loc>%a@}:@,@{<error>Error@}: Comment (* %s *) \
                      dropped.\n\
                      %!"
-                    Location.print_loc loc (String.strip msg) )
+                    Location.print_loc loc (ellipsis_cmt msg) )
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
