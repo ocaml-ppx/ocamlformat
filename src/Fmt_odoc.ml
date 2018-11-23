@@ -175,3 +175,12 @@ let fmt (txt, tags) =
   else
     vbox 0
       (hovbox 0 (fmt_text txt) $ fmt "@;" $ vbox 0 (list tags "@;" fmt_tag))
+
+let diff c x y =
+  let norm z =
+    let f (txt, _) = Normalize.docstring c txt in
+    Set.of_list
+      (module String)
+      (List.map ~f (List.dedup_and_sort ~compare:Poly.compare z))
+  in
+  Set.symmetric_diff (norm x) (norm y)
