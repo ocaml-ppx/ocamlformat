@@ -198,10 +198,25 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             | l ->
                 let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
                 internal_error (`Comment_dropped l) [] ) ;
+            let is_docstring s =
+              conf.Conf.parse_docstrings
+              && Char.equal s.[0] '*'
+              && Lexing.from_string s |> Octavius.parse |> Result.is_ok
+            in
+            let old_docstrings, old_comments =
+              List.partition_tf comments ~f:(fun (s, _) -> is_docstring s)
+            in
+            let new_docstrings, new_comments =
+              List.partition_tf new_.comments ~f:(fun (s, _) ->
+                  is_docstring s )
+            in
             let f = ellipsis_cmt in
             let f x = Either.First.map ~f x |> Either.Second.map ~f in
             let diff_cmts =
-              Cmts.diff comments new_.comments |> Sequence.map ~f
+              Sequence.append
+                (Cmts.diff old_comments new_comments)
+                (Fmt_odoc.diff conf old_docstrings new_docstrings)
+              |> Sequence.map ~f
             in
             if not (Sequence.is_empty diff_cmts) then (
               dump xunit dir base ".old" ".ast" old.ast ;

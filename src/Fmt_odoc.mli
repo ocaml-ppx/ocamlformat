@@ -10,3 +10,10 @@
  **********************************************************************)
 
 val fmt : Octavius.Types.t -> Fmt.t
+
+val diff :
+     Conf.t
+  -> (string * Location.t) list
+  -> (string * Location.t) list
+  -> (string, string) Either.t Sequence.t
+(** Difference between two lists of doc comments. *)
