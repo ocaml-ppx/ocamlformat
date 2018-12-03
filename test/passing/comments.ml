@@ -165,3 +165,9 @@ let foo =
   match (* foo *) (* fooooooooooooooo *)
     e (* foo *)  [@foo] with k -> z
  | foooooooooooooooooooo -> fooooooooooooooooo
+
+let foo =
+  match
+    (* each procedure has different scope: start names from id 0 *)
+    Ident.NameGenerator.reset ()
+  with _ -> x

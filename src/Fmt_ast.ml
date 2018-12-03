@@ -2024,7 +2024,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
                    $ fmt "@;<1 2>"
-                   $ fmt_expression ~eol:(fmt "") c (sub_exp ~ctx e0)
+                   $ fmt_expression ~eol:(fmt "@;<1 2>") c (sub_exp ~ctx e0)
                    $ fmt "@ with" )
                $ fmt "@ " $ fmt_cases c ctx cs ))
       | Some {pc_lhs; pc_guard; pc_rhs} ->
@@ -2042,9 +2042,9 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
-                   $ hvbox 0
-                       ( fmt "@;<1 -1>"
-                       $ fmt_expression ~eol:(fmt "") c (sub_exp ~ctx e0) )
+                   $ ( fmt "@;<1 2>"
+                     $ fmt_expression ~eol:(fmt "@;<1 0>") c
+                         (sub_exp ~ctx e0) )
                    $ fmt "@," )
                $ fmt "@;<0 -2>"
                $ hvbox 0
