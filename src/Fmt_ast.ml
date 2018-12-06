@@ -1350,7 +1350,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   in
   let ctx = Exp exp in
   let fmt_args_grouped e0 a1N =
-    let all = (Nolabel, e0) :: a1N in
+    let all = e0 :: a1N in
     let groups =
       if c.conf.wrap_fun_args then
         List.group all ~break:(fun (_, a1) (_, a2) ->
@@ -1582,8 +1582,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                   $
                   match eN with
                   | [] -> fmt ""
-                  | e0 :: eN ->
-                      hvbox 0 (wrap (fmt_args_grouped (snd e0) eN)) )
+                  | e0 :: eN -> hvbox 0 (wrap (fmt_args_grouped e0 eN)) )
               $ fmt_atrs )))
   | Pexp_apply
       (e0, (lbl, ({pexp_desc= Pexp_function cs; pexp_loc} as f)) :: eN)
@@ -1613,8 +1612,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                   $
                   match eN with
                   | [] -> fmt ""
-                  | e0 :: eN ->
-                      hvbox 0 (wrap (fmt_args_grouped (snd e0) eN)) )
+                  | e0 :: eN -> hvbox 0 (wrap (fmt_args_grouped e0 eN)) )
               $ fmt_atrs )))
   | Pexp_apply (e0, e1N1) -> (
       let wrap = if c.conf.wrap_fun_args then Fn.id else hvbox 2 in
@@ -1631,8 +1629,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                ( hovbox 0
                    ( hovbox 2
                        ( wrap
-                           ( fmt_args_grouped e0 e1N $ fmt "@ "
-                           $ fmt_label lbl ":"
+                           ( fmt_args_grouped (Nolabel, e0) e1N
+                           $ fmt "@ " $ fmt_label lbl ":"
                            $ fmt_cmts
                              @@ hvbox 0
                                   ( fmt "(fun "
@@ -1666,7 +1664,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             (wrap_if parens "(" ")"
                ( hovbox 4
                    ( wrap
-                       ( fmt_args_grouped e0 e1N $ fmt "@ "
+                       ( fmt_args_grouped (Nolabel, e0) e1N
+                       $ fmt "@ "
                        $ Cmts.fmt_before c.cmts pexp_loc
                        $ fmt_label lbl ":" $ fmt "(function"
                        $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
@@ -1691,7 +1690,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
             (wrap_if parens "(" ")"
                ( hovbox 2
                    (wrap
-                      ( fmt_args_grouped e0 e1N $ fmt "@ "
+                      ( fmt_args_grouped (Nolabel, e0) e1N
+                      $ fmt "@ "
                       $ Cmts.fmt_before c.cmts pexp_loc
                       $ fmt_label lbl ":" $ fmt "(function"
                       $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
@@ -1701,7 +1701,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                $ fmt_atrs ))
       | _ ->
           wrap_if parens "(" ")"
-            (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs) )
+            (hvbox 2 (fmt_args_grouped (Nolabel, e0) e1N1) $ fmt_atrs) )
   | Pexp_array [] ->
       hvbox 0
         ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c.cmts pexp_loc)

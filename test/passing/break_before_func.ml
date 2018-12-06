@@ -230,3 +230,9 @@ let myfunc : int -> int = function
   | x ->
       let y = x + 1 in
       y
+
+let foo =
+  protect ~f:(fun () ->
+      ignore (CType_decl.add_types_from_decl_to_tenv tenv dec) ;
+      ignore (CType_decl.add_types_from_decl_to_tenv tenv dec)
+    ) ~foo:bar
