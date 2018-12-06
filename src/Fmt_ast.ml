@@ -4038,19 +4038,23 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
                     (not c.conf.wrap_fun_args)
                     0 (fmt_fun_args c xargs)
                 $ Option.call ~f:fmt_cstr )
-            $ fmt "@;<1 2>=" $ fmt "@ " $ fmt "fun "
-            $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes
-                ~suf:(fmt " ")
-            $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs')
-            $ fmt "@ " $ fmt "->" )
+            $ fmt "@;<1 2>=" $ fmt "@ "
+            $ Cmts.fmt c.cmts xbody.ast.pexp_loc
+                ( fmt "fun "
+                $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes
+                    ~suf:(fmt " ")
+                $ hvbox_if
+                    (not c.conf.wrap_fun_args)
+                    0 (fmt_fun_args c xargs')
+                $ fmt "@ " $ fmt "->" ) )
           $ fmt_body c ?ext xbody'
           $ Cmts.fmt_after c.cmts pvb_loc
           $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
           $ Option.call ~f:epi )
     | Pexp_function cs when not c.conf.break_before_func ->
-        hvbox 2
+        hvbox 0
           ( open_hvbox 2
-          $ hovbox 4
+          $ hovbox 2
               ( fmt_or first "let" "and"
               $ fmt_extension_suffix c ext
               $ fmt_attributes c ~key:"@" atrs
@@ -4058,9 +4062,11 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
               $ fmt " " $ fmt_pattern c xpat
               $ fmt_if (not (List.is_empty xargs)) "@ "
               $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
-              $ Option.call ~f:fmt_cstr $ fmt "@;<1 2>=" $ fmt "@ function"
-              $ fmt_extension_suffix c ext
-              $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes )
+              $ Option.call ~f:fmt_cstr $ fmt "@;<1 2>=@ "
+              $ Cmts.fmt c.cmts xbody.ast.pexp_loc
+                  ( fmt "function"
+                  $ fmt_extension_suffix c ext
+                  $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes ) )
           $ fmt "@ "
           $ fmt_cases c (Exp xbody.ast) cs
           $ Cmts.fmt_after c.cmts pvb_loc
