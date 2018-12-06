@@ -4049,22 +4049,18 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
           $ Option.call ~f:epi )
     | Pexp_function cs when not c.conf.break_before_func ->
         hvbox 2
-          ( open_hovbox 2
-          $ ( hovbox 4
-                ( fmt_or first "let" "and"
-                $ fmt_extension_suffix c ext
-                $ fmt_attributes c ~key:"@" atrs
-                $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
-                $ fmt " " $ fmt_pattern c xpat
-                $ fmt_if (not (List.is_empty xargs)) "@ "
-                $ hvbox_if
-                    (not c.conf.wrap_fun_args)
-                    0 (fmt_fun_args c xargs)
-                $ Option.call ~f:fmt_cstr )
-            $ fmt "@;<1 2>=" $ fmt "@ "
-            $ ( fmt "function"
+          ( open_hvbox 2
+          $ hovbox 4
+              ( fmt_or first "let" "and"
               $ fmt_extension_suffix c ext
-              $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes ) )
+              $ fmt_attributes c ~key:"@" atrs
+              $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
+              $ fmt " " $ fmt_pattern c xpat
+              $ fmt_if (not (List.is_empty xargs)) "@ "
+              $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
+              $ Option.call ~f:fmt_cstr $ fmt "@;<1 2>=" $ fmt "@ function"
+              $ fmt_extension_suffix c ext
+              $ fmt_attributes c ~key:"@" xbody.ast.pexp_attributes )
           $ fmt "@ "
           $ fmt_cases c (Exp xbody.ast) cs
           $ Cmts.fmt_after c.cmts pvb_loc
