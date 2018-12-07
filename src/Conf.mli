@@ -50,6 +50,7 @@ type t =
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
+  ; space_around_collection_expressions: bool
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }

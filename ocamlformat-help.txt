@@ -183,6 +183,9 @@ OPTIONS (CODE FORMATTING STYLE)
            will always break the line before a single case. The default value
            is compact.
 
+       --space-around-collection-expressions
+           Add a space around collection expressions (lists, arrays).
+
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
            and records definition in a single line. sparse will always break

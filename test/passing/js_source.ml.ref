@@ -743,12 +743,14 @@ let make_set (type s) cmp =
 ;;
 
 let both l =
-  List.map (fun set -> sort set l) [make_set compare; make_set (fun x y -> compare y x)]
+  List.map
+    (fun set -> sort set l)
+    [ make_set compare; make_set (fun x y -> compare y x) ]
 ;;
 
 let () =
   print_endline
-    (String.concat "  " (List.map (String.concat "/") (both ["abc"; "xyz"; "def"])))
+    (String.concat "  " (List.map (String.concat "/") (both [ "abc"; "xyz"; "def" ])))
 ;;
 
 (* Hiding the internal representation *)
@@ -795,7 +797,7 @@ let apply x =
 let () =
   let int = forget (create string_of_int succ 0) in
   let str = forget (create (fun s -> s) (fun s -> s ^ s) "X") in
-  List.iter print (List.map apply [int; apply int; apply (apply str)])
+  List.iter print (List.map apply [ int; apply int; apply (apply str) ])
 ;;
 
 (* Existential types + type equality witnesses -> pseudo GADT *)
@@ -1108,7 +1110,8 @@ let my_record =
         { label = "b"
         ; field_type = List String
         ; get = (fun {b} -> b)
-        ; set = (fun (_, r) x -> r := Some x) } ]
+        ; set = (fun (_, r) x -> r := Some x) }
+    ]
   in
   let create_builder () = ref None, ref None in
   let of_builder (a, b) =
@@ -1276,7 +1279,8 @@ let ty_abc =
     ; sum_cases =
         [ "A", TCarg (Thd, Int)
         ; "B", TCarg (Ttl Thd, String)
-        ; "C", TCnoarg (Ttl (Ttl Thd)) ] }
+        ; "C", TCnoarg (Ttl (Ttl Thd))
+        ] }
 ;;
 
 let v = variantize Enil ty_abc (`A 3)
@@ -1294,7 +1298,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
     (Sum
        { sum_proj =
            (function `Nil -> "Nil", None | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
-       ; sum_cases = ["Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons)]
+       ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
        ; sum_inj =
            (fun (type c) ->
              (function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
@@ -1388,7 +1392,8 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
        method cases =
          [ "A", TCarg (Thd, Int)
          ; "B", TCarg (Ttl Thd, String)
-         ; "C", TCnoarg (Ttl (Ttl Thd)) ]
+         ; "C", TCnoarg (Ttl (Ttl Thd))
+         ]
 
        method inj : type c.
               (int -> string -> noarg -> unit, c) ty_sel * c
@@ -1410,7 +1415,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
           method proj =
             function `Nil -> "Nil", None | `Cons p -> "Cons", Some (Tdyn (tcons, p))
 
-          method cases = ["Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons)]
+          method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
 
           method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
             function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
@@ -1520,7 +1525,7 @@ let rec find : type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) pa
  fun eq n t ->
   match t with
   | Ttip -> []
-  | Tnode m -> if eq n m then [Phere] else []
+  | Tnode m -> if eq n m then [ Phere ] else []
   | Tfork (x, y) ->
     List.map (fun x -> Pleft x) (find eq n x)
     @ List.map (fun x -> Pright x) (find eq n y)
@@ -4300,12 +4305,12 @@ let f x (g : [< `Foo]) =
 (* f : 'a -> [< `Foo ] -> 'a *)
 
 let rec x =
-  [|x|];
+  [| x |];
   1.
 ;;
 
 let rec x =
-  let u = [|y|] in
+  let u = [| y |] in
   10.
 
 and y = 1.
@@ -4606,7 +4611,7 @@ let () = flag := true
 
 module M2 = M (Float) (Int)
 
-let _ = [|M2.X.x; M1.X.x|]
+let _ = [| M2.X.x; M1.X.x |]
 
 module type PR6513 = sig
   module type S = sig
@@ -5697,7 +5702,7 @@ R.M.f 3
 open A
 
 let f = L.map S.capitalize
-let () = L.iter print_endline (f ["jacques"; "garrigue"])
+let () = L.iter print_endline (f [ "jacques"; "garrigue" ])
 
 module C : sig
   module L : module type of List
@@ -5718,7 +5723,7 @@ let () =
 open A
 
 let f = L.map S.capitalize
-let () = L.iter print_endline (f ["jacques"; "garrigue"])
+let () = L.iter print_endline (f [ "jacques"; "garrigue" ])
 
 module C : sig
   module L : module type of List
@@ -7391,7 +7396,7 @@ end = struct
     | Add of t * t
     | Binding of Binding.t * t
 
-  let make_let id e1 e2 = Binding ([id, e1], e2)
+  let make_let id e1 e2 = Binding ([ id, e1 ], e2)
 
   let rec fv = function
     | Var s -> StringSet.singleton s
@@ -7432,7 +7437,7 @@ end
 let _ =
   let e = Expr.make_let "x" (Expr.Add (Expr.Var "y", Expr.Const 0)) (Expr.Var "x") in
   let e' = Expr.make_let "x" (Expr.Var "y") (Expr.Var "x") in
-  test 50 (StringSet.elements (Expr.fv e)) ["y"];
+  test 50 (StringSet.elements (Expr.fv e)) [ "y" ];
   test 51 (Expr.simpl e) e'
 ;;
 
@@ -7575,7 +7580,7 @@ end
 module C = Bootstrap (LeftistHeap) (Ints)
 
 let _ =
-  let h = List.fold_right C.insert [6; 4; 8; 7; 3; 1] C.empty in
+  let h = List.fold_right C.insert [ 6; 4; 8; 7; 3; 1 ] C.empty in
   test 60 (C.findMin h) 1;
   test 61 (C.findMin (C.deleteMin h)) 3;
   test 62 (C.findMin (C.deleteMin (C.deleteMin h))) 4
@@ -8279,7 +8284,7 @@ let sort_uniq (type s) cmp l =
   S.elements (List.fold_right S.add l S.empty)
 ;;
 
-let () = print_endline (String.concat "," (sort_uniq compare ["abc"; "xyz"; "abc"]))
+let () = print_endline (String.concat "," (sort_uniq compare [ "abc"; "xyz"; "abc" ]))
 let f x (type a) (y : a) = x = y
 
 (* Fails *)
@@ -9091,8 +9096,8 @@ let h ?l:(p = 1) ?y:u ?(x = 3) = 2
 
 let _ = function
   | a, s, ba1, ba2, ba3, bg ->
-    ignore (x.(1) + [||].(0) + [|1|].(1) + [|1; 2|].(2));
-    ignore [s.[1]; "".[2]; "123".[3]];
+    ignore (x.(1) + [||].(0) + [| 1 |].(1) + [| 1; 2 |].(2));
+    ignore [ s.[1]; "".[2]; "123".[3] ];
     ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
   | b, s, ba1, ba2, ba3, bg ->
     y.(0) <- 1;
@@ -9144,7 +9149,7 @@ let _ =
   end in
   let f M.(x) = () in
   let g M.({x}) = () in
-  let h = function M.([]) | M.([a]) | M.(a :: q) -> () in
+  let h = function M.([]) | M.([ a ]) | M.(a :: q) -> () in
   let i = function M.([||]) | M.([|x|]) -> true | _ -> false in
   ()
 ;;
@@ -9175,8 +9180,8 @@ let g x y = ~$(x.contents) y.contents
 
 (* PR#7506: attributes on list tail *)
 
-let tail1 = ([1; 2] [@hello])
-let tail2 = 0 :: ([1; 2] [@hello])
+let tail1 = ([ 1; 2 ] [@hello])
+let tail2 = 0 :: ([ 1; 2 ] [@hello])
 let tail3 = 0 :: ([] [@hello])
 let f ~l:(l[@foo]) = l
 let test x y = ( (+) [@foo] ) x y
