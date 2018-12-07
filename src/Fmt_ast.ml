@@ -760,24 +760,23 @@ and fmt_payload c ctx pld =
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )
 
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
-    ({ast= typ} as xtyp) =
-  protect (Typ typ)
-  @@
+    ?(space_before_pro = true) ({ast= typ} as xtyp) =
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
-  update_config_maybe_disabled c ptyp_loc ptyp_attributes
+  let parens = parenze_typ xtyp in
+  protect (Typ typ)
+  @@ update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
-  ( match (ptyp_desc, pro) with
-  | Ptyp_arrow _, Some _ when c.conf.ocp_indent_compat -> fmt "@,"
-  | _, Some pro -> str pro $ fmt "@ "
+  ( match pro with
+  | Some pro when c.conf.ocp_indent_compat ->
+      fmt_if space_before_pro "@;<1 0>" $ str pro $ fmt " "
+  | Some pro -> fmt_if space_before_pro " " $ str pro $ fmt "@ "
   | _ -> fmt "" )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
-  Cmts.fmt c.cmts ptyp_loc
-  @@ ( if List.is_empty atrs then Fn.id
+  ( Cmts.fmt c.cmts ptyp_loc
+  @@ ( if List.is_empty atrs then fun k -> Fn.id k
      else fun k -> wrap "(" ")" (k $ fmt_attributes c ~key:"@" atrs) )
-  @@
-  let parens = parenze_typ xtyp in
-  ( hvbox_if box 0
+  @@ hvbox_if box 0
   @@ wrap_if
        (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
        "(" ")"
@@ -795,12 +794,12 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         | Optional l -> fmt "?" $ str l $ fmt ":"
       in
       let xt1N = sugar_arrow_typ c xtyp in
-      hvbox_if box 0
+      hvbox_if box
+        (if c.conf.ocp_indent_compat then -2 else 0)
         ( ( match pro with
           | Some pro when c.conf.ocp_indent_compat ->
-              str pro
-              $ fits_breaks " "
-                  (String.make (Int.max 1 (3 - String.length pro)) ' ')
+              fits_breaks ""
+                (String.make (Int.max 1 (2 - String.length pro)) ' ')
           | _ -> fits_breaks "" "   " )
         $ list xt1N "@ -> " (fun (lI, xtI) ->
               hvbox 0 (arg_label lI $ fmt_core_type c xtI) ) )
@@ -2606,7 +2605,8 @@ and fmt_class_field c ctx (cf : class_field) =
                   ~after:e.pexp_loc ) ;
             ( [ fmt "@ : " $ fmt "type "
                 $ list args "@ " (fun name -> fmt_str_loc c name)
-              ; fmt_core_type c ~pro:"." (sub_typ ~ctx t) ]
+              ; fmt_core_type c ~pro:"." ~space_before_pro:false
+                  (sub_typ ~ctx t) ]
             , fmt "@;<1 2>="
             , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) )
         | None ->
@@ -2824,7 +2824,6 @@ and fmt_value_description c ctx vd =
         ( str pre $ fmt " "
         $ Cmts.fmt c.cmts loc
             (wrap_if (is_symbol_id txt) "( " " )" (str txt))
-        $ fmt " "
         $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
@@ -4011,7 +4010,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
                 Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                   ~after:exp.pexp_loc ;
                 ( Some
-                    (fmt "@ " $ fmt_core_type c ~pro:":" (sub_typ ~ctx typ))
+                    ( fmt "@;<0 -1>"
+                    $ fmt_core_type c ~pro:":" (sub_typ ~ctx typ) )
                 , sub_exp ~ctx exp )
             | _ -> (None, xbody)
           in
