@@ -2071,8 +2071,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                  $ fmt "=@ "
                  $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) ))
       in
+      let wrap =
+        if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
+        else wrap_fits_breaks c.conf "{" "}"
+      in
       hvbox 0
-        ( wrap_fits_breaks c.conf "{" "}"
+        ( wrap
             (hovbox (-2)
                ( opt default (fun d ->
                      hvbox 2
@@ -2852,11 +2856,15 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
         $ fmt "@ "
         $ list_fl ctor_decls (fmt_constructor_declaration c ctx)
     | Ptype_record lbl_decls ->
+        let wrap =
+          if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
+          else wrap_fits_breaks c.conf "{" "}"
+        in
         hvbox 2
           (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
         $ fmt "@ "
         $ hvbox 0
-            (wrap_fits_breaks c.conf "{" "}"
+            (wrap
                (list_fl lbl_decls (fun ~first ~last x ->
                     fmt_if (not first)
                       ( match c.conf.type_decl with
@@ -2957,9 +2965,11 @@ and fmt_constructor_arguments c ctx pre args =
   | Pcstr_tuple typs ->
       fmt pre $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
-      fmt pre
-      $ wrap_fits_breaks c.conf "{" "}"
-          (list lds "@,; " (fmt_label_declaration c ctx))
+      let wrap =
+        if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
+        else wrap_fits_breaks c.conf "{" "}"
+      in
+      fmt pre $ wrap (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
   let pre : _ format = if Option.is_none res then " of@ " else " :@ " in

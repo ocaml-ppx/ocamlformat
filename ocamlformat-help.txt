@@ -184,7 +184,8 @@ OPTIONS (CODE FORMATTING STYLE)
            is compact.
 
        --space-around-collection-expressions
-           Add a space around collection expressions (lists, arrays).
+           Add a space around collection expressions (lists, arrays,
+           records).
 
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
