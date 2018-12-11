@@ -904,7 +904,8 @@ module Formatting = struct
 
   let space_around_collection_expressions =
     let doc =
-      "Add a space around collection expressions (lists, arrays, records)."
+      "Add a space inside the delimiters of collection expressions (lists, \
+       arrays, records)."
     in
     let names = ["space-around-collection-expressions"] in
     C.flag ~default:false ~names ~doc ~section
