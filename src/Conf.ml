@@ -45,6 +45,7 @@ type t =
   ; quiet: bool
   ; sequence_style: [`Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
+  ; space_around_collection_expressions: bool
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
@@ -901,6 +902,16 @@ module Formatting = struct
       (fun conf x -> {conf with single_case= x})
       (fun conf -> conf.single_case)
 
+  let space_around_collection_expressions =
+    let doc =
+      "Add a space inside the delimiters of collection expressions (lists, \
+       arrays, records)."
+    in
+    let names = ["space-around-collection-expressions"] in
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with space_around_collection_expressions= x})
+      (fun conf -> conf.space_around_collection_expressions)
+
   let type_decl =
     let doc = "Style of type declaration." in
     let names = ["type-decl"] in
@@ -1181,6 +1192,8 @@ let default_profile =
   ; quiet= C.default quiet
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
+  ; space_around_collection_expressions=
+      C.default Formatting.space_around_collection_expressions
   ; type_decl= C.default Formatting.type_decl
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
@@ -1200,6 +1213,7 @@ let compact_profile =
   ; let_binding_spacing= `Compact
   ; module_item_spacing= `Compact
   ; single_case= `Compact
+  ; space_around_collection_expressions= false
   ; type_decl= `Compact
   ; wrap_fun_args= true }
 
@@ -1218,6 +1232,7 @@ let sparse_profile =
   ; let_binding_spacing= `Sparse
   ; module_item_spacing= `Sparse
   ; single_case= `Sparse
+  ; space_around_collection_expressions= true
   ; type_decl= `Sparse
   ; wrap_fun_args= false }
 
@@ -1256,6 +1271,7 @@ let janestreet_profile =
   ; quiet= default_profile.quiet
   ; sequence_style= `Terminator
   ; single_case= `Sparse
+  ; space_around_collection_expressions= true
   ; type_decl= `Sparse
   ; wrap_comments= false
   ; wrap_fun_args= false }
