@@ -593,16 +593,16 @@ let break_cases_level c =
   match c.conf.break_cases with `Fit -> 0 | `Nested -> 1 | `All -> 2
 
 let wrap_list c =
-  if c.Conf.space_around_collection_expressions then wrap "[ " "@ ]"
-  else wrap_fits_breaks c "[" "]"
+  if c.conf.space_around_collection_expressions then wrap "[ " "@ ]"
+  else wrap_fits_breaks c.conf "[" "]"
 
 let wrap_array c =
-  if c.Conf.space_around_collection_expressions then wrap "[| " "@ |]"
-  else wrap_fits_breaks c "[|" "|]"
+  if c.conf.space_around_collection_expressions then wrap "[| " "@ |]"
+  else wrap_fits_breaks c.conf "[|" "|]"
 
 let wrap_record c =
-  if c.Conf.space_around_collection_expressions then wrap "{ " "@ }"
-  else wrap_fits_breaks c "{" "}"
+  if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
+  else wrap_fits_breaks c.conf "{" "}"
 
 let doc_atrs = Ast.doc_atrs
 
@@ -985,7 +985,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
     match sugar_list_pat c pat with
     | Some (loc_xpats, nil_loc) ->
         hvbox 0
-          (wrap_list c.conf
+          (wrap_list c
              ( list loc_xpats "@,; " (fun (locs, xpat) ->
                    Cmts.fmt_list c.cmts locs @@ fmt_pattern c xpat )
              $ Cmts.fmt c.cmts ~pro:(fmt " ") ~epi:(fmt "") nil_loc
@@ -1033,7 +1033,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (wrap_record c.conf
+           (wrap_record c
               ( list flds "@,; " fmt_field
               $ fmt_if Poly.(closed_flag = Open) "; _" )))
   | Ppat_array [] ->
@@ -1041,7 +1041,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c.cmts ppat_loc))
   | Ppat_array pats ->
       hvbox 0
-        (wrap_array c.conf
+        (wrap_array c
            (list pats "@;<0 1>; " (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_or _ ->
       let nested =
@@ -1667,7 +1667,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         $ fmt_atrs )
   | Pexp_array e1N ->
       hvbox 0
-        ( wrap_array c.conf
+        ( wrap_array c
             (fmt_expressions c width (sub_exp ~ctx) e1N "@;<0 1>; "
                (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
@@ -1733,7 +1733,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
           (wrap_if
              (not (List.is_empty pexp_attributes))
              "(" ")"
-             ( wrap_list c.conf
+             ( wrap_list c
                  ( fmt_expressions c width snd loc_xes "@,; "
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
@@ -2072,7 +2072,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                  $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) ))
       in
       hvbox 0
-        ( wrap_record c.conf
+        ( wrap_record c
             (hovbox (-2)
                ( opt default (fun d ->
                      hvbox 2
@@ -2856,7 +2856,7 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
           (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
         $ fmt "@ "
         $ hvbox 0
-            (wrap_record c.conf
+            (wrap_record c
                (list_fl lbl_decls (fun ~first ~last x ->
                     fmt_if (not first)
                       ( match c.conf.type_decl with
@@ -2958,7 +2958,7 @@ and fmt_constructor_arguments c ctx pre args =
       fmt pre $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
       fmt pre
-      $ wrap_record c.conf (list lds "@,; " (fmt_label_declaration c ctx))
+      $ wrap_record c (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
   let pre : _ format = if Option.is_none res then " of@ " else " :@ " in
