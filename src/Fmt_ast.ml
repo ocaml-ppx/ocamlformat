@@ -948,13 +948,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let parens =
         parens || Poly.(c.conf.parens_tuple_patterns = `Always)
       in
-      let wrap =
+      let wrap_multiline =
         if c.conf.indicate_multiline_delimiters then
           wrap_if_breaks "( " "@ )"
         else wrap_if_breaks "(" ")"
       in
       hvbox 0
-        (wrap
+        (wrap_multiline
            (wrap_if_fits_and parens "(" ")"
               (list pats "@,, " (sub_pat ~ctx >> fmt_pattern c))))
   | Ppat_construct (lid, None) -> (
