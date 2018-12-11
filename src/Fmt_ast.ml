@@ -592,6 +592,18 @@ let fmt_variance = function
 let break_cases_level c =
   match c.conf.break_cases with `Fit -> 0 | `Nested -> 1 | `All -> 2
 
+let wrap_list c =
+  if c.Conf.space_around_collection_expressions then wrap "[ " "@ ]"
+  else wrap_fits_breaks c "[" "]"
+
+let wrap_array c =
+  if c.Conf.space_around_collection_expressions then wrap "[| " "@ |]"
+  else wrap_fits_breaks c "[|" "|]"
+
+let wrap_record c =
+  if c.Conf.space_around_collection_expressions then wrap "{ " "@ }"
+  else wrap_fits_breaks c "{" "}"
+
 let doc_atrs = Ast.doc_atrs
 
 let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
@@ -972,12 +984,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []} ) -> (
     match sugar_list_pat c pat with
     | Some (loc_xpats, nil_loc) ->
-        let wrap =
-          if c.conf.space_around_collection_expressions then wrap "[ " "@ ]"
-          else wrap_fits_breaks c.conf "[" "]"
-        in
         hvbox 0
-          (wrap
+          (wrap_list c.conf
              ( list loc_xpats "@,; " (fun (locs, xpat) ->
                    Cmts.fmt_list c.cmts locs @@ fmt_pattern c xpat )
              $ Cmts.fmt c.cmts ~pro:(fmt " ") ~epi:(fmt "") nil_loc
@@ -1658,12 +1666,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c.cmts pexp_loc)
         $ fmt_atrs )
   | Pexp_array e1N ->
-      let wrap =
-        if c.conf.space_around_collection_expressions then wrap "[| " "@ |]"
-        else wrap_fits_breaks c.conf "[|" "|]"
-      in
       hvbox 0
-        ( wrap
+        ( wrap_array c.conf
             (fmt_expressions c width (sub_exp ~ctx) e1N "@;<0 1>; "
                (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
@@ -1725,15 +1729,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
     match sugar_list_exp c exp with
     | Some (loc_xes, nil_loc) ->
-        let wrap =
-          if c.conf.space_around_collection_expressions then wrap "[ " "@ ]"
-          else wrap_fits_breaks c.conf "[" "]"
-        in
         hvbox 0
           (wrap_if
              (not (List.is_empty pexp_attributes))
              "(" ")"
-             ( wrap
+             ( wrap_list c.conf
                  ( fmt_expressions c width snd loc_xes "@,; "
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c.cmts ~eol:(fmt "@;<1 2>") locs
@@ -2071,12 +2071,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                  $ fmt "=@ "
                  $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) ))
       in
-      let wrap =
-        if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
-        else wrap_fits_breaks c.conf "{" "}"
-      in
       hvbox 0
-        ( wrap
+        ( wrap_record c.conf
             (hovbox (-2)
                ( opt default (fun d ->
                      hvbox 2
@@ -2856,15 +2852,11 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
         $ fmt "@ "
         $ list_fl ctor_decls (fmt_constructor_declaration c ctx)
     | Ptype_record lbl_decls ->
-        let wrap =
-          if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
-          else wrap_fits_breaks c.conf "{" "}"
-        in
         hvbox 2
           (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
         $ fmt "@ "
         $ hvbox 0
-            (wrap
+            (wrap_record c.conf
                (list_fl lbl_decls (fun ~first ~last x ->
                     fmt_if (not first)
                       ( match c.conf.type_decl with
@@ -2965,11 +2957,8 @@ and fmt_constructor_arguments c ctx pre args =
   | Pcstr_tuple typs ->
       fmt pre $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
-      let wrap =
-        if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
-        else wrap_fits_breaks c.conf "{" "}"
-      in
-      fmt pre $ wrap (list lds "@,; " (fmt_label_declaration c ctx))
+      fmt pre
+      $ wrap_record c.conf (list lds "@,; " (fmt_label_declaration c ctx))
 
 and fmt_constructor_arguments_result c ctx args res =
   let pre : _ format = if Option.is_none res then " of@ " else " :@ " in
