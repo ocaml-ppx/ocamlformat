@@ -1033,7 +1033,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (wrap_fits_breaks c.conf "{" "}"
+           (wrap_record c.conf
               ( list flds "@,; " fmt_field
               $ fmt_if Poly.(closed_flag = Open) "; _" )))
   | Ppat_array [] ->
@@ -1041,7 +1041,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c.cmts ppat_loc))
   | Ppat_array pats ->
       hvbox 0
-        (wrap_fits_breaks c.conf "[|" "|]"
+        (wrap_array c.conf
            (list pats "@;<0 1>; " (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_or _ ->
       let nested =

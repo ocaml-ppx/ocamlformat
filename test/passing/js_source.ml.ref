@@ -54,7 +54,7 @@ _]
 [%%foo?
 Some y when y > 0]
 
-let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? {x}]
+let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? { x }]
 
 [%%foo:
 module M : [%baz]]
@@ -664,7 +664,7 @@ end = struct
   let write_raw (label : string) (content : string) = raise (Failure "Not implemented")
 
   let write (tag : 'a tag) (body : 'a) =
-    let {f} = Hashtbl.find writeTbl (T tag) in
+    let { f } = Hashtbl.find writeTbl (T tag) in
     let k = f tag in
     let content = k.write body in
     write_raw k.label content
@@ -1048,10 +1048,10 @@ let rec variantize : type t. t ty -> t -> variant =
   | List ty1 -> VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
   | Pair (ty1, ty2) -> VPair (variantize ty1 (fst x), variantize ty2 (snd x))
   (* t = ('a, 'b) for some 'a and 'b *)
-  | Record {fields} ->
+  | Record { fields } ->
     VRecord
       (List.map
-         (fun (Field {field_type; label; get}) -> label, variantize field_type (get x))
+         (fun (Field { field_type; label; get }) -> label, variantize field_type (get x))
          fields)
 ;;
 
@@ -1087,11 +1087,11 @@ let rec devariantize : type t. t ty -> variant -> t =
   | String, VString x -> x
   | List ty1, VList vl -> List.map (devariantize ty1) vl
   | Pair (ty1, ty2), VPair (x1, x2) -> devariantize ty1 x1, devariantize ty2 x2
-  | Record {fields; create_builder; of_builder}, VRecord fl ->
+  | Record { fields; create_builder; of_builder }, VRecord fl ->
     if List.length fields <> List.length fl then raise VariantMismatch;
     let builder = create_builder () in
     List.iter2
-      (fun (Field {label; field_type; set}) (lab, v) ->
+      (fun (Field { label; field_type; set }) (lab, v) ->
         if label <> lab then raise VariantMismatch;
         set builder (devariantize field_type v))
       fields
@@ -1110,13 +1110,13 @@ let my_record =
     [ Field
         { label = "a"
         ; field_type = Int
-        ; get = (fun {a} -> a)
+        ; get = (fun { a } -> a)
         ; set = (fun (r, _) x -> r := Some x)
         }
     ; Field
         { label = "b"
         ; field_type = List String
-        ; get = (fun {b} -> b)
+        ; get = (fun { b } -> b)
         ; set = (fun (_, r) x -> r := Some x)
         }
     ]
@@ -2933,8 +2933,8 @@ type ('a, 'b) pair =
   }
 
 let check : type s. (s t, s) pair -> bool = function
-  | {fst = BoolLit; snd = false} -> false
-  | {fst = IntLit; snd = 6} -> false
+  | { fst = BoolLit; snd = false } -> false
+  | { fst = IntLit; snd = 6 } -> false
 ;;
 
 module type S = sig
@@ -3236,15 +3236,15 @@ type 'a s = { s : (module S with type t = 'a) }
     end)
 }
 
-let f {s = (module M)} = M.x
+let f { s = (module M) } = M.x
 
 (* Error *)
-let f (type a) ({s = (module M)} : a s) = M.x
+let f (type a) ({ s = (module M) } : a s) = M.x
 
 type s = { s : (module S with type t = int) }
 
-let f {s = (module M)} = M.x
-let f {s = (module M)} {s = (module N)} = M.x + N.x
+let f { s = (module M) } = M.x
+let f { s = (module M) } { s = (module N) } = M.x + N.x
 
 module type S = sig
   val x : int
@@ -4357,7 +4357,7 @@ type t =
 ;;
 { x = 3; z = 2 }
 ;;
-fun {x = 3; z = 2} -> ()
+fun { x = 3; z = 2 } -> ()
 
 (* mixed labels *)
 
@@ -4380,7 +4380,7 @@ module M = struct
     }
 end
 
-let f {M.x; y} = x + y
+let f { M.x; y } = x + y
 let r = { M.x = 1; y = 2 }
 let z = f r
 
@@ -7793,10 +7793,10 @@ let f () = A { x = 1; y = 3 }
 
 type _ t = A : { x : 'a; y : 'b } -> 'a t
 
-let f (A {x; y}) = A { x; y = () }
+let f (A { x; y }) = A { x; y = () }
 
 (* ok *)
-let f (A ({x; y} as r)) = A { x = r.x; y = r.y }
+let f (A ({ x; y } as r)) = A { x = r.x; y = r.y }
 
 (* ok *)
 
@@ -7885,7 +7885,7 @@ end
 type _ c = C : [`A] c
 type t = T : { x : [< `A] c } -> t
 
-let f (T {x = C}) = ()
+let f (T { x = C }) = ()
 
 module M : sig
   type 'a t
@@ -8724,7 +8724,7 @@ module OK = struct
 
   (* non principal *)
 
-  let f3 (r : t) = match r with {x; y} -> y + y
+  let f3 (r : t) = match r with { x; y } -> y + y
 
   (* ok *)
 end
@@ -8732,7 +8732,7 @@ end
 module F1 = struct
   open M1
 
-  let f r = match r with {x; y} -> y + y
+  let f r = match r with { x; y } -> y + y
 end
 
 (* fails *)
@@ -8742,7 +8742,7 @@ module F2 = struct
 
   let f r =
     ignore (r : t);
-    match r with {x; y} -> y + y
+    match r with { x; y } -> y + y
   ;;
 end
 
@@ -8760,7 +8760,7 @@ let f (r : M.t) = r.M.x
 let f (r : M.t) = r.x
 
 (* warning *)
-let f ({x} : M.t) = x
+let f ({ x } : M.t) = x
 
 (* warning *)
 
@@ -8818,7 +8818,7 @@ end
 module OK = struct
   open M
 
-  let f {x; z} = x, z
+  let f { x; z } = x, z
 end
 
 (* ok *)
@@ -9021,7 +9021,7 @@ module P6235 = struct
 
   type u = [`Key of t]
 
-  let f (u : u) = match u with `Key {loc} -> loc
+  let f (u : u) = match u with `Key { loc } -> loc
 end
 
 (* Remove interaction between branches *)
@@ -9036,7 +9036,7 @@ module P6235' = struct
 
   type u = [`Key of t]
 
-  let f = function (_ : u) when false -> "" | `Key {loc} -> loc
+  let f = function (_ : u) when false -> "" | `Key { loc } -> loc
 end
 
 module Unused : sig end = struct
@@ -9121,12 +9121,12 @@ class c =
 
 let f = function (x[@wee]) -> ()
 let f = function '1' .. '9' | '1' .. '8' -> () | 'a' .. 'z' -> ()
-let f = function [|x1; x2|] -> () | [||] -> () | ([|x|][@foo]) -> () | _ -> ()
+let f = function [| x1; x2 |] -> () | [||] -> () | ([| x |][@foo]) -> () | _ -> ()
 
 let g = function
-  | {l = x} -> ()
-  | ({l1 = x; l2 = y}[@foo]) -> ()
-  | {l1 = x; l2 = y; _} -> ()
+  | { l = x } -> ()
+  | ({ l1 = x; l2 = y }[@foo]) -> ()
+  | { l1 = x; l2 = y; _ } -> ()
 ;;
 
 let h ?l:(p = 1) ?y:u ?(x = 3) = 2
@@ -9185,9 +9185,9 @@ let _ =
     type t = { x : int }
   end in
   let f M.(x) = () in
-  let g M.({x}) = () in
+  let g M.({ x }) = () in
   let h = function M.([]) | M.([ a ]) | M.(a :: q) -> () in
-  let i = function M.([||]) | M.([|x|]) -> true | _ -> false in
+  let i = function M.([||]) | M.([| x |]) -> true | _ -> false in
   ()
 ;;
 
@@ -9232,7 +9232,7 @@ let f = function ((`A | `B)[@bar]) | `C -> ()
 let f = function _ :: ((_ :: _)[@foo]) -> () | _ -> ()
 
 ;;
-function {contents = (contents[@foo])} -> ()
+function { contents = (contents[@foo]) } -> ()
 ;;
 fun contents -> { contents = (contents [@foo]) }
 
