@@ -3240,10 +3240,32 @@ and fmt_signature_item c {ast= si} =
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
   | Psig_open od -> fmt_open_description c od
   | Psig_recmodule mds ->
+      let _, mds =
+        List.fold_map mds ~init:c ~f:(fun c i ->
+            let c = update_config c i.pmd_attributes in
+            (c, (i, c)) )
+      in
+      let grps =
+        List.group mds ~break:(fun (md1, c1) (md2, c2) ->
+            Ast.break_between c.cmts
+              (Mty md1.pmd_type, c1.conf)
+              (Mty md2.pmd_type, c2.conf) )
+      in
+      let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+      let fmt_grp ~first:first_grp itms =
+        list_fl itms (fun ~first ~last:_ (itm, c) ->
+            fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+            $ maybe_disabled c itm.pmd_loc []
+              @@ fun c ->
+              fmt_module_declaration c ctx ~rec_flag:true
+                ~first:(first && first_grp) itm )
+      in
       hvbox 0
-        (list_fl mds (fun ~first ~last decl ->
-             fmt_module_declaration c ctx ~rec_flag:true ~first decl
-             $ fmt_if (not last) "@,@\n" ))
+        (list_fl grps (fun ~first ~last grp ->
+             fmt_if (break_struct && not first) "\n@\n"
+             $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
+             $ fmt_grp ~first grp
+             $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
   | Psig_type (rec_flag, decls) ->
       hvbox 0
         (list_fl decls (fun ~first ~last decl ->
@@ -3838,10 +3860,32 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_open open_descr -> fmt_open_description c open_descr
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
+      let _, bindings =
+        List.fold_map bindings ~init:c ~f:(fun c i ->
+            let c = update_config c i.pmb_attributes in
+            (c, (i, c)) )
+      in
+      let grps =
+        List.group bindings ~break:(fun (md1, c1) (md2, c2) ->
+            Ast.break_between c.cmts
+              (Mod md1.pmb_expr, c1.conf)
+              (Mod md2.pmb_expr, c2.conf) )
+      in
+      let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+      let fmt_grp ~first:first_grp itms =
+        list_fl itms (fun ~first ~last:_ (itm, c) ->
+            fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+            $ maybe_disabled c itm.pmb_loc []
+              @@ fun c ->
+              fmt_module_binding c ctx ~rec_flag:true
+                ~first:(first && first_grp) itm )
+      in
       hvbox 0
-        (list_fl bindings (fun ~first ~last binding ->
-             fmt_module_binding c ctx ~rec_flag:true ~first binding
-             $ fmt_if (not last) "@,@\n" ))
+        (list_fl grps (fun ~first ~last grp ->
+             fmt_if (break_struct && not first) "\n@\n"
+             $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
+             $ fmt_grp ~first grp
+             $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
   | Pstr_type (rec_flag, decls) ->
       vbox 0
         (list_fl decls (fun ~first ~last decl ->

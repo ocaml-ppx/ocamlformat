@@ -367,6 +367,40 @@ module Expression : Module_item with type t = expression = struct
     || not (is_simple (i2, c2))
 end
 
+module Module_type : Module_item with type t = module_type = struct
+  type t = module_type
+
+  let has_doc itm = Option.is_some (fst (doc_atrs itm.pmty_attributes))
+
+  let is_simple (itm, c) =
+    Location.width itm.pmty_loc <= c.Conf.margin
+    && Location.is_single_line itm.pmty_loc
+
+  let break_between cmts (i1, c1) (i2, c2) =
+    Cmts.has_after cmts i1.pmty_loc
+    || Cmts.has_before cmts i2.pmty_loc
+    || has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
+module Module_expr : Module_item with type t = module_expr = struct
+  type t = module_expr
+
+  let has_doc itm = Option.is_some (fst (doc_atrs itm.pmod_attributes))
+
+  let is_simple (itm, c) =
+    Location.width itm.pmod_loc <= c.Conf.margin
+    && Location.is_single_line itm.pmod_loc
+
+  let break_between cmts (i1, c1) (i2, c2) =
+    Cmts.has_after cmts i1.pmod_loc
+    || Cmts.has_before cmts i2.pmod_loc
+    || has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
 let may_force_break (c : Conf.t) s =
   let contains_internal_newline s =
     match String.index s '\n' with
@@ -505,6 +539,8 @@ let break_between cmts (i1, c1) (i2, c2) =
   | Str i1, Str i2 -> Structure_item.break_between cmts (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between cmts (i1, c1) (i2, c2)
   | Exp i1, Exp i2 -> Expression.break_between cmts (i1, c1) (i2, c2)
+  | Mty i1, Mty i2 -> Module_type.break_between cmts (i1, c1) (i2, c2)
+  | Mod i1, Mod i2 -> Module_expr.break_between cmts (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Precedence levels of Ast terms. *)

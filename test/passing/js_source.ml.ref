@@ -7072,7 +7072,7 @@ module Bootstrap2 (MakeDiet : functor (X : ORD) -> SET
       | D (_, d, _) -> Diet.iter (iter f) d
     ;;
   end
-  
+
   and Diet : (SET with type t = Elt.t tree and type elt = Elt.t) = MakeDiet (Elt)
 
   type t = Diet.t
@@ -7114,7 +7114,7 @@ module PR_4758 = struct
   end
 
   module rec A : S = struct end
-  
+
   and C : sig
     include Mod with module Other = A
   end = struct
@@ -7158,7 +7158,7 @@ module PR_4557 = struct
 
       let compare x y = 0
     end
-    
+
     and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
   end
 end
@@ -7188,7 +7188,7 @@ module F (X : Set.OrderedType) = struct
 
     let compare x y = 0
   end
-  
+
   and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
 end
 
@@ -7523,7 +7523,7 @@ module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP with module Elem =
       | E, E -> false
     ;;
   end
-  
+
   and PrimH : (HEAP with type Elem.t = BE.t) = MakeH (BE)
 
   type heap = BE.t
@@ -7648,7 +7648,7 @@ let _ =
             method m = 123
           end
       end
-      
+
       and BadClass2 : sig
         val x : int
       end = struct
