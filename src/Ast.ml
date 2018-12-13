@@ -367,7 +367,7 @@ module Expression : Module_item with type t = expression = struct
     || not (is_simple (i2, c2))
 end
 
-module type Module_Getter = sig
+module type Module_getter = sig
   type t
 
   val attributes : t -> attributes
@@ -375,7 +375,7 @@ module type Module_Getter = sig
   val loc : t -> Location.t
 end
 
-module Make (S : Module_Getter) : Module_item with type t = S.t = struct
+module Make (S : Module_getter) : Module_item with type t = S.t = struct
   type t = S.t
 
   let has_doc itm = Option.is_some (fst (doc_atrs (S.attributes itm)))
@@ -392,21 +392,24 @@ module Make (S : Module_Getter) : Module_item with type t = S.t = struct
     || not (is_simple (i2, c2))
 end
 
-module Module_type = Make (struct
+module Module_type_fields = struct
   type t = module_type
 
   let attributes x = x.pmty_attributes
 
   let loc x = x.pmty_loc
-end)
+end
 
-module Module_expr = Make (struct
+module Module_expr_fields = struct
   type t = module_expr
 
   let attributes x = x.pmod_attributes
 
   let loc x = x.pmod_loc
-end)
+end
+
+module Module_type = Make (Module_type_fields)
+module Module_expr = Make (Module_expr_fields)
 
 let may_force_break (c : Conf.t) s =
   let contains_internal_newline s =
@@ -540,6 +543,38 @@ module T = struct
 end
 
 include T
+
+module type Module_fields_getter = sig
+  type ty
+
+  val attributes : ty -> attributes
+
+  val loc : ty -> Location.t
+
+  val ast : ty -> T.t
+end
+
+module Module_declaration_fields :
+  Module_fields_getter with type ty = module_declaration = struct
+  type ty = module_declaration
+
+  let attributes x = x.pmd_attributes
+
+  let loc x = x.pmd_loc
+
+  let ast x = Mty x.pmd_type
+end
+
+module Module_binding_fields :
+  Module_fields_getter with type ty = module_binding = struct
+  type ty = module_binding
+
+  let attributes x = x.pmb_attributes
+
+  let loc x = x.pmb_loc
+
+  let ast x = Mod x.pmb_expr
+end
 
 let break_between cmts (i1, c1) (i2, c2) =
   match (i1, i2) with
