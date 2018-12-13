@@ -367,39 +367,46 @@ module Expression : Module_item with type t = expression = struct
     || not (is_simple (i2, c2))
 end
 
-module Module_type : Module_item with type t = module_type = struct
+module type Module_Getter = sig
+  type t
+
+  val attributes : t -> attributes
+
+  val loc : t -> Location.t
+end
+
+module Make (S : Module_Getter) : Module_item with type t = S.t = struct
+  type t = S.t
+
+  let has_doc itm = Option.is_some (fst (doc_atrs (S.attributes itm)))
+
+  let is_simple (itm, c) =
+    Location.width (S.loc itm) <= c.Conf.margin
+    && Location.is_single_line (S.loc itm)
+
+  let break_between cmts (i1, c1) (i2, c2) =
+    Cmts.has_after cmts (S.loc i1)
+    || Cmts.has_before cmts (S.loc i2)
+    || has_doc i1 || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
+module Module_type = Make (struct
   type t = module_type
 
-  let has_doc itm = Option.is_some (fst (doc_atrs itm.pmty_attributes))
+  let attributes x = x.pmty_attributes
 
-  let is_simple (itm, c) =
-    Location.width itm.pmty_loc <= c.Conf.margin
-    && Location.is_single_line itm.pmty_loc
+  let loc x = x.pmty_loc
+end)
 
-  let break_between cmts (i1, c1) (i2, c2) =
-    Cmts.has_after cmts i1.pmty_loc
-    || Cmts.has_before cmts i2.pmty_loc
-    || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
-end
-
-module Module_expr : Module_item with type t = module_expr = struct
+module Module_expr = Make (struct
   type t = module_expr
 
-  let has_doc itm = Option.is_some (fst (doc_atrs itm.pmod_attributes))
+  let attributes x = x.pmod_attributes
 
-  let is_simple (itm, c) =
-    Location.width itm.pmod_loc <= c.Conf.margin
-    && Location.is_single_line itm.pmod_loc
-
-  let break_between cmts (i1, c1) (i2, c2) =
-    Cmts.has_after cmts i1.pmod_loc
-    || Cmts.has_before cmts i2.pmod_loc
-    || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
-end
+  let loc x = x.pmod_loc
+end)
 
 let may_force_break (c : Conf.t) s =
   let contains_internal_newline s =
