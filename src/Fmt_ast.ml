@@ -138,6 +138,35 @@ let update_config_maybe_disabled_block c loc l f =
   maybe_disabled_k c loc l f (fun bdy ->
       {empty with opn= open_vbox 2; bdy; cls= close_box} )
 
+let fmt_recmodule c ctx (items : 'a list)
+    (get_attributes : 'a -> attributes) (get_loc : 'a -> Location.t)
+    (to_ast : 'a -> Ast.t)
+    (f : c -> Ast.t -> rec_flag:bool -> first:bool -> 'a -> Fmt.t) =
+  let _, items =
+    List.fold_map items ~init:c ~f:(fun c i ->
+        let c = update_config c (get_attributes i) in
+        (c, (i, c)) )
+  in
+  let grps =
+    List.group items ~break:(fun (i1, c1) (i2, c2) ->
+        Ast.break_between c.cmts (to_ast i1, c1.conf) (to_ast i2, c2.conf)
+    )
+  in
+  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  let fmt_grp ~first:first_grp itms =
+    list_fl itms (fun ~first ~last:_ (itm, c) ->
+        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+        $ maybe_disabled c (get_loc itm) []
+          @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm
+    )
+  in
+  hvbox 0
+    (list_fl grps (fun ~first ~last grp ->
+         fmt_if (break_struct && not first) "\n@\n"
+         $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
+         $ fmt_grp ~first grp
+         $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
+
 let rec sugar_arrow_typ c ({ast= typ} as xtyp) =
   let ctx = Typ typ in
   let {ptyp_desc; ptyp_loc} = typ in
@@ -3240,32 +3269,11 @@ and fmt_signature_item c {ast= si} =
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
   | Psig_open od -> fmt_open_description c od
   | Psig_recmodule mds ->
-      let _, mds =
-        List.fold_map mds ~init:c ~f:(fun c i ->
-            let c = update_config c i.pmd_attributes in
-            (c, (i, c)) )
-      in
-      let grps =
-        List.group mds ~break:(fun (md1, c1) (md2, c2) ->
-            Ast.break_between c.cmts
-              (Mty md1.pmd_type, c1.conf)
-              (Mty md2.pmd_type, c2.conf) )
-      in
-      let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
-      let fmt_grp ~first:first_grp itms =
-        list_fl itms (fun ~first ~last:_ (itm, c) ->
-            fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-            $ maybe_disabled c itm.pmd_loc []
-              @@ fun c ->
-              fmt_module_declaration c ctx ~rec_flag:true
-                ~first:(first && first_grp) itm )
-      in
-      hvbox 0
-        (list_fl grps (fun ~first ~last grp ->
-             fmt_if (break_struct && not first) "\n@\n"
-             $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
-             $ fmt_grp ~first grp
-             $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
+      fmt_recmodule c ctx mds
+        (fun x -> x.pmd_attributes)
+        (fun x -> x.pmd_loc)
+        (fun x -> Mty x.pmd_type)
+        fmt_module_declaration
   | Psig_type (rec_flag, decls) ->
       hvbox 0
         (list_fl decls (fun ~first ~last decl ->
@@ -3860,32 +3868,15 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_open open_descr -> fmt_open_description c open_descr
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
-      let _, bindings =
-        List.fold_map bindings ~init:c ~f:(fun c i ->
-            let c = update_config c i.pmb_attributes in
-            (c, (i, c)) )
+      (* To ignore the ?epi parameter *)
+      let fmt_module_binding_aux c ctx ~rec_flag ~first b =
+        fmt_module_binding c ctx ~rec_flag ~first b
       in
-      let grps =
-        List.group bindings ~break:(fun (md1, c1) (md2, c2) ->
-            Ast.break_between c.cmts
-              (Mod md1.pmb_expr, c1.conf)
-              (Mod md2.pmb_expr, c2.conf) )
-      in
-      let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
-      let fmt_grp ~first:first_grp itms =
-        list_fl itms (fun ~first ~last:_ (itm, c) ->
-            fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-            $ maybe_disabled c itm.pmb_loc []
-              @@ fun c ->
-              fmt_module_binding c ctx ~rec_flag:true
-                ~first:(first && first_grp) itm )
-      in
-      hvbox 0
-        (list_fl grps (fun ~first ~last grp ->
-             fmt_if (break_struct && not first) "\n@\n"
-             $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
-             $ fmt_grp ~first grp
-             $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
+      fmt_recmodule c ctx bindings
+        (fun x -> x.pmb_attributes)
+        (fun x -> x.pmb_loc)
+        (fun x -> Mod x.pmb_expr)
+        fmt_module_binding_aux
   | Pstr_type (rec_flag, decls) ->
       vbox 0
         (list_fl decls (fun ~first ~last decl ->
