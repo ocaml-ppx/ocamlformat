@@ -63,6 +63,9 @@ type action =
           or stdout if None. *)
   | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
+  | Diff of [`Impl | `Intf | `Use_file] input
+      (** Print the diff after the formatting the input file (or [-] for
+          stdin) of given kind to stdout. *)
 
 val action : action
 (** Formatting action: input type and source, and output destination. *)

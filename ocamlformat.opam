@@ -31,6 +31,7 @@ depends: [
   "fpath"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "octavius"
+  "patdiff"
   "stdio"
 ]
 synopsis: "Auto-formatter for OCaml code"

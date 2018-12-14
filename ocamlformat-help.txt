@@ -206,6 +206,9 @@ OPTIONS
            Aggregate options. Options are specified as a comma-separated list
            of pairs: option=VAL,...,option=VAL.
 
+       --diff
+           Print the diff.
+
        --disable-outside-detected-project
            Do not read .ocamlformat config files outside the current project.
            The project root of an input file is taken to be the nearest

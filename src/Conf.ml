@@ -1013,6 +1013,11 @@ let debug =
   let default = false in
   mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~docs)
 
+let diff =
+  let doc = "Print the diff." in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["diff"] ~doc ~docs)
+
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
@@ -1317,6 +1322,10 @@ let validate () =
     `Error (false, "Cannot specify --output with --inplace")
   else if (not !inplace) && List.length !inputs > 1 then
     `Error (false, "Must specify exactly one input file without --inplace")
+  else if !diff && Option.is_some !output then
+    `Error (false, "Cannot specify --output with --diff")
+  else if !diff && !inplace then
+    `Error (false, "Cannot specify --inplace with --diff")
   else `Ok ()
 
 ;;
@@ -1542,6 +1551,7 @@ type 'a input = {kind: 'a; name: string; file: string; conf: t}
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
   | Inplace of [`Impl | `Intf | `Use_file] input list
+  | Diff of [`Impl | `Intf | `Use_file] input
 
 let kind_of fname =
   match Filename.extension fname with
@@ -1619,12 +1629,19 @@ let action =
     match !inputs with
     | [input_file] ->
         let name = Option.value !name ~default:input_file in
-        In_out
-          ( { kind= kind_of name
+        if !diff then
+          Diff
+            { kind= kind_of name
             ; name
             ; file= input_file
             ; conf= build_config ~file:name }
-          , !output )
+        else
+          In_out
+            ( { kind= kind_of name
+              ; name
+              ; file= input_file
+              ; conf= build_config ~file:name }
+            , !output )
     | _ ->
         if !print_config then Caml.exit 0
         else impossible "checked by validate"

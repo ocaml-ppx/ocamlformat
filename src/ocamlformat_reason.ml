@@ -69,3 +69,52 @@ match Conf.action with
     , output_file ) ->
     Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
       ~input_file In_channel.stdin output_file
+| Diff {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf} -> (
+    let file, oc =
+      Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
+    in
+    let output_file =
+      Filename.temp_file "ocamlformat" (Filename.basename input_name)
+    in
+    In_channel.iter_lines stdin ~f:(fun s ->
+        Out_channel.output_string oc s ;
+        Out_channel.newline oc ) ;
+    Out_channel.close oc ;
+    let result =
+      In_channel.with_file file ~f:(fun ic ->
+          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+            ~input_file:file ic (Some output_file) )
+    in
+    Unix.unlink file ;
+    match result with
+    | Ok ->
+        let config = Patdiff_lib.Configuration.get_config () in
+        let old_file = file in
+        let new_file = output_file in
+        ignore
+          (Patdiff_lib.Compare_core.diff_files config ~old_file ~new_file) ;
+        Caml.exit 0
+    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
+        Caml.exit 1 )
+| Diff
+    {kind= (`Impl | `Intf) as kind; file= input_file; name= input_name; conf}
+  -> (
+    let output_file =
+      Filename.temp_file "ocamlformat" (Filename.basename input_name)
+    in
+    match
+      In_channel.with_file input_file ~f:(fun ic ->
+          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+            ~input_file ic (Some output_file) )
+    with
+    | Ok ->
+        let config = Patdiff_lib.Configuration.get_config () in
+        let old_file = input_file in
+        let new_file = output_file in
+        ignore
+          (Patdiff_lib.Compare_core.diff_files config ~old_file ~new_file) ;
+        Caml.exit 0
+    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
+        Caml.exit 1 )
+| Diff {kind= `Use_file; _} ->
+    user_error "Cannot convert Reason code with --use-file" []
