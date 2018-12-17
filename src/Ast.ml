@@ -367,50 +367,6 @@ module Expression : Module_item with type t = expression = struct
     || not (is_simple (i2, c2))
 end
 
-module type Module_getter = sig
-  type t
-
-  val attributes : t -> attributes
-
-  val loc : t -> Location.t
-end
-
-module Make (S : Module_getter) : Module_item with type t = S.t = struct
-  type t = S.t
-
-  let has_doc itm = Option.is_some (fst (doc_atrs (S.attributes itm)))
-
-  let is_simple (itm, c) =
-    Location.width (S.loc itm) <= c.Conf.margin
-    && Location.is_single_line (S.loc itm)
-
-  let break_between cmts (i1, c1) (i2, c2) =
-    Cmts.has_after cmts (S.loc i1)
-    || Cmts.has_before cmts (S.loc i2)
-    || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
-end
-
-module Module_type_fields = struct
-  type t = module_type
-
-  let attributes x = x.pmty_attributes
-
-  let loc x = x.pmty_loc
-end
-
-module Module_expr_fields = struct
-  type t = module_expr
-
-  let attributes x = x.pmod_attributes
-
-  let loc x = x.pmod_loc
-end
-
-module Module_type = Make (Module_type_fields)
-module Module_expr = Make (Module_expr_fields)
-
 let may_force_break (c : Conf.t) s =
   let contains_internal_newline s =
     match String.index s '\n' with
@@ -544,6 +500,44 @@ end
 
 include T
 
+let attributes = function
+  | Pld _ -> assert false
+  | Typ x -> x.ptyp_attributes
+  | Cty x -> x.pcty_attributes
+  | Pat x -> x.ppat_attributes
+  | Exp x -> x.pexp_attributes
+  | Cl x -> x.pcl_attributes
+  | Mty x -> x.pmty_attributes
+  | Mod x -> x.pmod_attributes
+  | Sig _ -> assert false
+  | Str _ -> assert false
+  | Top -> assert false
+
+let rec location = function
+  | Pld _ -> assert false
+  | Typ x -> x.ptyp_loc
+  | Cty x -> x.pcty_loc
+  | Pat x -> x.ppat_loc
+  | Exp x -> x.pexp_loc
+  | Cl x -> x.pcl_loc
+  | Mty x -> x.pmty_loc
+  | Mod x -> x.pmod_loc
+  | Sig x -> x.psig_loc
+  | Str x -> x.pstr_loc
+  | Top -> assert false
+
+let break_between_modules cmts (i1, c1) (i2, c2) =
+  let has_doc itm = Option.is_some (fst (doc_atrs (attributes itm))) in
+  let is_simple (itm, c) =
+    Location.width (location itm) <= c.Conf.margin
+    && Location.is_single_line (location itm)
+  in
+  Cmts.has_after cmts (location i1)
+  || Cmts.has_before cmts (location i2)
+  || has_doc i1 || has_doc i2
+  || (not (is_simple (i1, c1)))
+  || not (is_simple (i2, c2))
+
 module type Module_fields_getter = sig
   type ty
 
@@ -581,8 +575,8 @@ let break_between cmts (i1, c1) (i2, c2) =
   | Str i1, Str i2 -> Structure_item.break_between cmts (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between cmts (i1, c1) (i2, c2)
   | Exp i1, Exp i2 -> Expression.break_between cmts (i1, c1) (i2, c2)
-  | Mty i1, Mty i2 -> Module_type.break_between cmts (i1, c1) (i2, c2)
-  | Mod i1, Mod i2 -> Module_expr.break_between cmts (i1, c1) (i2, c2)
+  | Mty _, Mty _ -> break_between_modules cmts (i1, c1) (i2, c2)
+  | Mod _, Mod _ -> break_between_modules cmts (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Precedence levels of Ast terms. *)
