@@ -71,12 +71,12 @@ type t =
 
 val break_between : Cmts.t -> t * Conf.t -> t * Conf.t -> bool
 
+val attributes : t -> attributes
+
+val location : t -> Location.t
+
 module type Module_fields_getter = sig
   type ty
-
-  val attributes : ty -> attributes
-
-  val loc : ty -> Location.t
 
   val ast : ty -> t
 end

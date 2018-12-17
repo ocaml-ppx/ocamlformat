@@ -142,7 +142,7 @@ let fmt_recmodule (type itm) c ctx (items : itm list)
     (module M : Ast.Module_fields_getter with type ty = itm) f =
   let _, items =
     List.fold_map items ~init:c ~f:(fun c i ->
-        let c = update_config c (M.attributes i) in
+        let c = update_config c (Ast.attributes (M.ast i)) in
         (c, (i, c)) )
   in
   let grps =
@@ -153,7 +153,7 @@ let fmt_recmodule (type itm) c ctx (items : itm list)
   let fmt_grp ~first:first_grp itms =
     list_fl itms (fun ~first ~last:_ (itm, c) ->
         fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c (M.loc itm) []
+        $ maybe_disabled c (Ast.location (M.ast itm)) []
           @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm
     )
   in

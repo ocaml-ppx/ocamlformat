@@ -541,10 +541,6 @@ let break_between_modules cmts (i1, c1) (i2, c2) =
 module type Module_fields_getter = sig
   type ty
 
-  val attributes : ty -> attributes
-
-  val loc : ty -> Location.t
-
   val ast : ty -> T.t
 end
 
@@ -552,20 +548,12 @@ module Module_declaration_fields :
   Module_fields_getter with type ty = module_declaration = struct
   type ty = module_declaration
 
-  let attributes x = x.pmd_attributes
-
-  let loc x = x.pmd_loc
-
   let ast x = Mty x.pmd_type
 end
 
 module Module_binding_fields :
   Module_fields_getter with type ty = module_binding = struct
   type ty = module_binding
-
-  let attributes x = x.pmb_attributes
-
-  let loc x = x.pmb_loc
 
   let ast x = Mod x.pmb_expr
 end
