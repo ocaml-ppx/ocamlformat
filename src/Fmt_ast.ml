@@ -138,22 +138,21 @@ let update_config_maybe_disabled_block c loc l f =
   maybe_disabled_k c loc l f (fun bdy ->
       {empty with opn= open_vbox 2; bdy; cls= close_box} )
 
-let fmt_recmodule (type itm) c ctx (items : itm list)
-    (module M : Ast.Module_fields_getter with type ty = itm) f =
+let fmt_recmodule c ctx items f ast =
   let _, items =
     List.fold_map items ~init:c ~f:(fun c i ->
-        let c = update_config c (Ast.attributes (M.ast i)) in
+        let c = update_config c (Ast.attributes (ast i)) in
         (c, (i, c)) )
   in
   let grps =
     List.group items ~break:(fun (i1, c1) (i2, c2) ->
-        Ast.break_between c.cmts (M.ast i1, c1.conf) (M.ast i2, c2.conf) )
+        Ast.break_between c.cmts (ast i1, c1.conf) (ast i2, c2.conf) )
   in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~first:first_grp itms =
     list_fl itms (fun ~first ~last:_ (itm, c) ->
         fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c (Ast.location (M.ast itm)) []
+        $ maybe_disabled c (Ast.location (ast itm)) []
           @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm
     )
   in
@@ -3266,9 +3265,8 @@ and fmt_signature_item c {ast= si} =
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
   | Psig_open od -> fmt_open_description c od
   | Psig_recmodule mds ->
-      fmt_recmodule c ctx mds
-        (module Ast.Module_declaration_fields)
-        fmt_module_declaration
+      fmt_recmodule c ctx mds fmt_module_declaration (fun x ->
+          Mty x.pmd_type )
   | Psig_type (rec_flag, decls) ->
       hvbox 0
         (list_fl decls (fun ~first ~last decl ->
@@ -3864,10 +3862,10 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
       fmt_recmodule c ctx bindings
-        (module Ast.Module_binding_fields)
         (fun c ctx ~rec_flag ~first b ->
           (* To ignore the ?epi parameter *)
           fmt_module_binding c ctx ~rec_flag ~first b )
+        (fun x -> Mod x.pmb_expr)
   | Pstr_type (rec_flag, decls) ->
       vbox 0
         (list_fl decls (fun ~first ~last decl ->

@@ -513,7 +513,7 @@ let attributes = function
   | Str _ -> assert false
   | Top -> assert false
 
-let rec location = function
+let location = function
   | Pld _ -> assert false
   | Typ x -> x.ptyp_loc
   | Cty x -> x.pcty_loc
@@ -537,26 +537,6 @@ let break_between_modules cmts (i1, c1) (i2, c2) =
   || has_doc i1 || has_doc i2
   || (not (is_simple (i1, c1)))
   || not (is_simple (i2, c2))
-
-module type Module_fields_getter = sig
-  type ty
-
-  val ast : ty -> T.t
-end
-
-module Module_declaration_fields :
-  Module_fields_getter with type ty = module_declaration = struct
-  type ty = module_declaration
-
-  let ast x = Mty x.pmd_type
-end
-
-module Module_binding_fields :
-  Module_fields_getter with type ty = module_binding = struct
-  type ty = module_binding
-
-  let ast x = Mod x.pmb_expr
-end
 
 let break_between cmts (i1, c1) (i2, c2) =
   match (i1, i2) with

@@ -75,18 +75,6 @@ val attributes : t -> attributes
 
 val location : t -> Location.t
 
-module type Module_fields_getter = sig
-  type ty
-
-  val ast : ty -> t
-end
-
-module Module_declaration_fields :
-  Module_fields_getter with type ty = module_declaration
-
-module Module_binding_fields :
-  Module_fields_getter with type ty = module_binding
-
 val dump : Format.formatter -> t -> unit
 (** Debug: Dump the representation of an Ast term. *)
 
