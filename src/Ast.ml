@@ -501,7 +501,7 @@ end
 include T
 
 let attributes = function
-  | Pld _ -> assert false
+  | Pld _ -> []
   | Typ x -> x.ptyp_attributes
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
@@ -509,12 +509,12 @@ let attributes = function
   | Cl x -> x.pcl_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
-  | Sig _ -> assert false
-  | Str _ -> assert false
-  | Top -> assert false
+  | Sig _ -> []
+  | Str _ -> []
+  | Top -> []
 
 let location = function
-  | Pld _ -> assert false
+  | Pld _ -> Location.none
   | Typ x -> x.ptyp_loc
   | Cty x -> x.pcty_loc
   | Pat x -> x.ppat_loc
@@ -524,7 +524,7 @@ let location = function
   | Mod x -> x.pmod_loc
   | Sig x -> x.psig_loc
   | Str x -> x.pstr_loc
-  | Top -> assert false
+  | Top -> Location.none
 
 let break_between_modules cmts (i1, c1) (i2, c2) =
   let has_doc itm = Option.is_some (fst (doc_atrs (attributes itm))) in
