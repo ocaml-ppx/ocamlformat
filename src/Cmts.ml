@@ -481,16 +481,11 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
       let line_dist a b =
         b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
       in
-      let nothing_between a b =
-        match Source.string_between t.source a b with
-        | None -> true
-        | Some s -> String.is_empty (String.strip s)
-      in
       let groups =
         List.group cmts ~break:(fun (_, a) (_, b) ->
             not
               ( Location.is_single_line a && Location.is_single_line b
-              && (line_dist a b = 1 || nothing_between a b)
+              && line_dist a b = 1
               && Location.compare_start_col a b = 0
               && Location.compare_end_col a b = 0 ) )
       in
@@ -504,7 +499,7 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
       let maybe_newline ~next (_, cur_last_loc) =
         match next with
         | Some ((_, next_loc) :: _) ->
-            fmt_if (line_dist cur_last_loc next_loc > 1) "@;<1000 0>"
+            fmt_if (line_dist cur_last_loc next_loc > 1) "\n"
         | _ -> fmt ""
       in
       list_pn groups (fun ?prev group ?next ->
