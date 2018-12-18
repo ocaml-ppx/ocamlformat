@@ -71,6 +71,10 @@ type t =
 
 val break_between : Cmts.t -> t * Conf.t -> t * Conf.t -> bool
 
+val attributes : t -> attributes
+
+val location : t -> Location.t
+
 val dump : Format.formatter -> t -> unit
 (** Debug: Dump the representation of an Ast term. *)
 

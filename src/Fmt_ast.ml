@@ -138,6 +138,31 @@ let update_config_maybe_disabled_block c loc l f =
   maybe_disabled_k c loc l f (fun bdy ->
       {empty with opn= open_vbox 2; bdy; cls= close_box} )
 
+let fmt_recmodule c ctx items f ast =
+  let _, items =
+    List.fold_map items ~init:c ~f:(fun c i ->
+        let c = update_config c (Ast.attributes (ast i)) in
+        (c, (i, c)) )
+  in
+  let grps =
+    List.group items ~break:(fun (i1, c1) (i2, c2) ->
+        Ast.break_between c.cmts (ast i1, c1.conf) (ast i2, c2.conf) )
+  in
+  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  let fmt_grp ~first:first_grp itms =
+    list_fl itms (fun ~first ~last:_ (itm, c) ->
+        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+        $ maybe_disabled c (Ast.location (ast itm)) []
+          @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm
+    )
+  in
+  hvbox 0
+    (list_fl grps (fun ~first ~last grp ->
+         fmt_if (break_struct && not first) "\n@\n"
+         $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
+         $ fmt_grp ~first grp
+         $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
+
 let rec sugar_arrow_typ c ({ast= typ} as xtyp) =
   let ctx = Typ typ in
   let {ptyp_desc; ptyp_loc} = typ in
@@ -3240,10 +3265,8 @@ and fmt_signature_item c {ast= si} =
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
   | Psig_open od -> fmt_open_description c od
   | Psig_recmodule mds ->
-      hvbox 0
-        (list_fl mds (fun ~first ~last decl ->
-             fmt_module_declaration c ctx ~rec_flag:true ~first decl
-             $ fmt_if (not last) "@,@\n" ))
+      fmt_recmodule c ctx mds fmt_module_declaration (fun x ->
+          Mty x.pmd_type )
   | Psig_type (rec_flag, decls) ->
       hvbox 0
         (list_fl decls (fun ~first ~last decl ->
@@ -3838,10 +3861,11 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_open open_descr -> fmt_open_description c open_descr
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
-      hvbox 0
-        (list_fl bindings (fun ~first ~last binding ->
-             fmt_module_binding c ctx ~rec_flag:true ~first binding
-             $ fmt_if (not last) "@,@\n" ))
+      fmt_recmodule c ctx bindings
+        (fun c ctx ~rec_flag ~first b ->
+          (* To ignore the ?epi parameter *)
+          fmt_module_binding c ctx ~rec_flag ~first b )
+        (fun x -> Mod x.pmb_expr)
   | Pstr_type (rec_flag, decls) ->
       vbox 0
         (list_fl decls (fun ~first ~last decl ->

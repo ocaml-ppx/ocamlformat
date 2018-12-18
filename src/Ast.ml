@@ -500,11 +500,51 @@ end
 
 include T
 
+let attributes = function
+  | Pld _ -> []
+  | Typ x -> x.ptyp_attributes
+  | Cty x -> x.pcty_attributes
+  | Pat x -> x.ppat_attributes
+  | Exp x -> x.pexp_attributes
+  | Cl x -> x.pcl_attributes
+  | Mty x -> x.pmty_attributes
+  | Mod x -> x.pmod_attributes
+  | Sig _ -> []
+  | Str _ -> []
+  | Top -> []
+
+let location = function
+  | Pld _ -> Location.none
+  | Typ x -> x.ptyp_loc
+  | Cty x -> x.pcty_loc
+  | Pat x -> x.ppat_loc
+  | Exp x -> x.pexp_loc
+  | Cl x -> x.pcl_loc
+  | Mty x -> x.pmty_loc
+  | Mod x -> x.pmod_loc
+  | Sig x -> x.psig_loc
+  | Str x -> x.pstr_loc
+  | Top -> Location.none
+
+let break_between_modules cmts (i1, c1) (i2, c2) =
+  let has_doc itm = Option.is_some (fst (doc_atrs (attributes itm))) in
+  let is_simple (itm, c) =
+    Location.width (location itm) <= c.Conf.margin
+    && Location.is_single_line (location itm)
+  in
+  Cmts.has_after cmts (location i1)
+  || Cmts.has_before cmts (location i2)
+  || has_doc i1 || has_doc i2
+  || (not (is_simple (i1, c1)))
+  || not (is_simple (i2, c2))
+
 let break_between cmts (i1, c1) (i2, c2) =
   match (i1, i2) with
   | Str i1, Str i2 -> Structure_item.break_between cmts (i1, c1) (i2, c2)
   | Sig i1, Sig i2 -> Signature_item.break_between cmts (i1, c1) (i2, c2)
   | Exp i1, Exp i2 -> Expression.break_between cmts (i1, c1) (i2, c2)
+  | Mty _, Mty _ -> break_between_modules cmts (i1, c1) (i2, c2)
+  | Mod _, Mod _ -> break_between_modules cmts (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Precedence levels of Ast terms. *)
