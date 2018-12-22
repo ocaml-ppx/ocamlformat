@@ -129,3 +129,9 @@ type t = {
 a : int [@default a]
 (* comment *)
 ;  b : flag }
+
+let () =
+  (* *)
+  
+  (* *)
+  ()

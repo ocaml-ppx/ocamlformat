@@ -499,7 +499,7 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
       let maybe_newline ~next (_, cur_last_loc) =
         match next with
         | Some ((_, next_loc) :: _) ->
-            fmt_if (line_dist cur_last_loc next_loc > 1) "@;<1000 0>"
+            fmt_if (line_dist cur_last_loc next_loc > 1) "\n"
         | _ -> fmt ""
       in
       list_pn groups (fun ?prev group ?next ->
