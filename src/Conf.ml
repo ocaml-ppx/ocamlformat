@@ -689,7 +689,7 @@ module Formatting = struct
        delimiter is on a different line."
     in
     let names = ["indicate-multiline-delimiters"] in
-    let default = true in
+    let default = false in
     C.flag ~names ~default ~doc ~section
       (fun conf x -> {conf with indicate_multiline_delimiters= x})
       (fun conf -> conf.indicate_multiline_delimiters)

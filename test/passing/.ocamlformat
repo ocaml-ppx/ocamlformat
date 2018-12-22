@@ -1,3 +1,4 @@
 margin = 77
 wrap-comments = true
 parse-docstrings = true
+indicate-multiline-delimiters = true

@@ -100,6 +100,10 @@ OPTIONS (CODE FORMATTING STYLE)
            expressions such that the if-then-else keywords are the first on
            the line. The default value is compact.
 
+       --indicate-multiline-delimiters
+           Print a space inside a delimiter to indicate that it's matching
+           delimiter is on a different line.
+
        --infix-precedence={indent|parens}
            Use indentation or also discretionary parentheses to explicitly
            disambiguate precedences of infix operators. indent uses
@@ -138,10 +142,6 @@ OPTIONS (CODE FORMATTING STYLE)
            always break a line between two items. compact will not leave open
            lines between one-liners of similar sorts. The default value is
            sparse.
-
-       --no-indicate-multiline-delimiters
-           Print a space inside a delimiter to indicate that it's matching
-           delimiter is on a different line.
 
        --no-indicate-nested-or-patterns
            Control whether or not to indicate nested or-pattern using
