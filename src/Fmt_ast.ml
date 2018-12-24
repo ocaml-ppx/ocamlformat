@@ -774,7 +774,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   $
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c.cmts ptyp_loc
-  @@ ( if List.is_empty atrs then fun k -> Fn.id k
+  @@ ( if List.is_empty atrs then Fn.id
      else fun k -> wrap "(" ")" (k $ fmt_attributes c ~key:"@" atrs) )
   @@
   let parens = parenze_typ xtyp in
