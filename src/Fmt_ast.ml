@@ -761,10 +761,10 @@ and fmt_payload c ctx pld =
 
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(space_before_pro = true) ({ast= typ} as xtyp) =
-  let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
-  let parens = parenze_typ xtyp in
   protect (Typ typ)
-  @@ update_config_maybe_disabled c ptyp_loc ptyp_attributes
+  @@
+  let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
+  update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
   ( match pro with
   | Some pro when c.conf.ocp_indent_compat ->
@@ -773,10 +773,12 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   | _ -> fmt "" )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
-  ( Cmts.fmt c.cmts ptyp_loc
+  Cmts.fmt c.cmts ptyp_loc
   @@ ( if List.is_empty atrs then fun k -> Fn.id k
      else fun k -> wrap "(" ")" (k $ fmt_attributes c ~key:"@" atrs) )
-  @@ hvbox_if box 0
+  @@
+  let parens = parenze_typ xtyp in
+  ( hvbox_if box 0
   @@ wrap_if
        (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
        "(" ")"
