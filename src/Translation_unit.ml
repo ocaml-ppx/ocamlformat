@@ -83,6 +83,7 @@ let parse parse_ast (conf : Conf.t) ic =
   in
   Warnings.parse_options false (W.to_string warnings) ;
   let lexbuf = Lexing.from_channel ic in
+  Lexer.skip_hash_bang lexbuf ;
   Location.init lexbuf !Location.input_name ;
   let warning_printer = !Location.warning_printer in
   let w50 = ref [] in
@@ -139,7 +140,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   let ext = Filename.extension input_name in
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~source_txt
-      ~source_file : result =
+      ~source_file postprocess : result =
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
       else
@@ -153,6 +154,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     let source = Source.create source_txt in
     let cmts_t = xunit.init_cmts source conf ast comments in
     let fs = Format.formatter_of_out_channel oc in
+    postprocess fs ;
     Fmt.set_margin conf.margin fs ;
     xunit.fmt source cmts_t conf ast fs ;
     Format.pp_print_newline fs () ;
@@ -238,10 +240,21 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             Unstable i )
           else
             let result =
-              print_check ~i:(i + 1) ~conf ~ast:new_.ast
+              print_check ~i:(i + 1) ~conf ~ast:new_.ast postprocess
                 ~comments:new_.comments ~source_txt:fmted ~source_file:tmp
             in
             Unix.unlink tmp ; result
+  in
+  let first_line =
+    In_channel.with_file input_file ~f:In_channel.input_line
+  in
+  let is_shebang l =
+    String.length l > 2 && Char.equal l.[0] '#' && Char.equal l.[1] '!'
+  in
+  let postprocess fs =
+    match first_line with
+    | Some l when is_shebang l -> Format.fprintf fs "%s\n%!" l
+    | _ -> ignore fs
   in
   let source_txt =
     In_channel.with_file input_file ~f:In_channel.input_all
@@ -260,7 +273,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     | {ast; comments} -> (
       try
         print_check ~i:1 ~conf ~ast ~comments ~source_txt
-          ~source_file:input_file
+          ~source_file:input_file postprocess
       with
       | Sys_error msg -> User_error msg
       | exc -> Ocamlformat_bug exc )
