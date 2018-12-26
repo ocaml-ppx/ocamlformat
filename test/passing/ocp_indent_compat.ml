@@ -9,8 +9,8 @@ module type M = sig
 
   val doc_atrs
     :  (string Location.loc * payload) list
-    -> (string Location.loc * bool) list option
-       * (string Location.loc * payload) list
+      -> (string Location.loc * bool) list option
+         * (string Location.loc * payload) list
 
   val transl_modtype_longident
     (* from Typemod *)
