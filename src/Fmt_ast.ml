@@ -766,10 +766,10 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
   update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
-  ( match pro with
-  | Some pro when c.conf.ocp_indent_compat ->
+  ( match (ptyp_desc, pro) with
+  | Ptyp_arrow _, Some pro when c.conf.ocp_indent_compat ->
       fmt_if space_before_pro "@;<1 0>" $ str pro $ fmt " "
-  | Some pro -> fmt_if space_before_pro " " $ str pro $ fmt "@ "
+  | _, Some pro -> fmt_if space_before_pro " " $ str pro $ fmt "@ "
   | _ -> fmt "" )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
