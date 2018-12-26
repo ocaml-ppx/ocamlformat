@@ -797,7 +797,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       in
       let xt1N = sugar_arrow_typ c xtyp in
       hvbox_if box
-        (if c.conf.ocp_indent_compat then -2 else 0)
+        (if Option.is_some pro && c.conf.ocp_indent_compat then -2 else 0)
         ( ( match pro with
           | Some pro when c.conf.ocp_indent_compat ->
               fits_breaks ""
