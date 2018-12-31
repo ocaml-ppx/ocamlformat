@@ -9203,9 +9203,9 @@ let _ =
     type t = {x: int}
   end in
   let f M.(x) = () in
-  let g M.({x}) = () in
-  let h = function M.([]) | M.([a]) | M.(a :: q) -> () in
-  let i = function M.([||]) | M.([|x|]) -> true | _ -> false in
+  let g M.{x} = () in
+  let h = function M.[] | M.[a] | M.(a :: q) -> () in
+  let i = function M.[||] | M.[|x|] -> true | _ -> false in
   ()
 
 class ['a] c () =
@@ -9293,7 +9293,7 @@ module Exotic_list = struct
     type ('a, 'b) t = [] | ( :: ) of 'a * 'b * ('a, 'b) t
   end
 
-  let (Inner.( :: ) (x, y, Inner.([]))) = Inner.( :: ) (1, "one", Inner.[])
+  let (Inner.( :: ) (x, y, Inner.[])) = Inner.( :: ) (1, "one", Inner.[])
 end
 
 (** Extended index operators *)

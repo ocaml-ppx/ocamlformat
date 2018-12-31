@@ -20,3 +20,9 @@ let () = X.(i)
 let () =
   let open! K in
   x y z
+
+let x =
+  let Cstruct.{buffer= bigstring; off= offset; len= length} =
+    Cstruct.{toto= foooo}
+  in
+  fooooooooo
