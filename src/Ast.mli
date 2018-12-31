@@ -70,7 +70,8 @@ type t =
   | Top
 
 val break_between :
-     cmts:'a
+     Source.t
+  -> cmts:'a
   -> has_cmts_before:('a -> Location.t -> bool)
   -> has_cmts_after:('a -> Location.t -> bool)
   -> t * Conf.t

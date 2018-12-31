@@ -68,3 +68,20 @@ module type N = sig
   module B = BB
   open B
 end
+
+;;
+[@@@ocamlformat "module-item-spacing=preserve"]
+
+val cmos_rtc_seconds : foo
+val cmos_rtc_seconds_alarm : foo
+val cmos_rtc_minutes : foo
+
+val x : foo
+
+val log_other : foo
+val log_cpu : foo
+val log_fpu : foo
+
+val cr0_pe : foo
+val cr0_mp : foo
+val cr0_em : foo

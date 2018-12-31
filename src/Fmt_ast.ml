@@ -38,8 +38,8 @@ end
 module Ast = struct
   include Ast
 
-  let break_between cmts =
-    Ast.break_between ~cmts ~has_cmts_before:Cmts.has_before
+  let break_between s cmts =
+    Ast.break_between s ~cmts ~has_cmts_before:Cmts.has_before
       ~has_cmts_after:Cmts.has_after
 end
 
@@ -184,7 +184,8 @@ let fmt_recmodule c ctx items f ast =
   in
   let grps =
     List.group items ~break:(fun (i1, c1) (i2, c2) ->
-        Ast.break_between c.cmts (ast i1, c1.conf) (ast i2, c2.conf) )
+        Ast.break_between c.source c.cmts (ast i1, c1.conf) (ast i2, c2.conf)
+    )
   in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~first:first_grp itms =
@@ -3188,7 +3189,8 @@ and fmt_signature c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        Ast.break_between c.cmts (Sig itmI, cI.conf) (Sig itmJ, cJ.conf) )
+        Ast.break_between c.source c.cmts (Sig itmI, cI.conf)
+          (Sig itmJ, cJ.conf) )
   in
   let fmt_grp itms =
     list itms "@\n" (fun (i, c) ->
@@ -3774,7 +3776,8 @@ and fmt_structure c ctx itms =
   in
   let grps =
     List.group itms ~break:(fun (itmI, cI) (itmJ, cJ) ->
-        Ast.break_between c.cmts (Str itmI, cI.conf) (Str itmJ, cJ.conf) )
+        Ast.break_between c.source c.cmts (Str itmI, cI.conf)
+          (Str itmJ, cJ.conf) )
   in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~last:last_grp itms =
@@ -3869,7 +3872,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         List.group bindings ~break:(fun (itmI, cI) (itmJ, cJ) ->
             (not (List.is_empty itmI.pvb_attributes))
             || (not (List.is_empty itmJ.pvb_attributes))
-            || Ast.break_between c.cmts
+            || Ast.break_between c.source c.cmts
                  (Exp itmI.pvb_expr, cI.conf)
                  (Exp itmJ.pvb_expr, cJ.conf) )
       in
