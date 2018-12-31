@@ -25,11 +25,13 @@ OPTIONS (CODE FORMATTING STYLE)
        has the lowest priority, then the closer the directory is to the
        processed file, the higher the priority.
 
-       --break-cases={fit|nested|all}
+       --break-cases={fit|nested|different|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
-           or-patterns to highlight the case body. all forces all pattern
-           matches to break across lines. The default value is fit.
+           or-patterns to highlight the case body. different forces different
+           pattern matches to break across lines. Equivalent or-cases are
+           grouped together. all forces all pattern matches to break across
+           lines. The default value is fit.
 
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by

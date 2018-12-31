@@ -36,4 +36,4 @@ type t = [`a | b]
 
 type t = |
 
-let ((`A | `B)[@bar]) = ()
+let (`A | `B)[@bar] = ()
