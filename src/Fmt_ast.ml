@@ -1286,7 +1286,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
     match grouping_kind with
     | `Parens -> ("(", ")", ("(" : _ format), (")" : _ format))
     | `Begin_end ->
-        ("begin", "end", ("begin@;<1 2>" : _ format), ("@;end" : _ format))
+        ("begin ", " end", ("begin@;<1 2>" : _ format), ("@;end" : _ format))
   in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
@@ -1633,7 +1633,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                            $ fmt_label lbl ":"
                            $ fmt_cmts
                              @@ hvbox 0
-                                  ( fmt "(fun "
+                                  ( fmt w_begin_fmt $ fmt "fun "
                                   $ fmt_attributes c ~key:"@"
                                       eN1.pexp_attributes ~suf:(fmt " ")
                                   $ fmt_fun_args c xargs $ fmt "@ ->" ) )
@@ -1647,8 +1647,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                              | Pexp_fun _ | Pexp_function _ -> Some false
                              | _ -> None )
                            xbody )
-                   $ fmt_or_k c.conf.indicate_multiline_delimiters
-                       (fits_breaks ")" "@ )") (fits_breaks ")" "@,)") )
+                   $ fmt_or_k (String.equal w_end ")")
+                       (fmt_or_k c.conf.indicate_multiline_delimiters
+                          (fits_breaks ")" "@ )") (fits_breaks ")" "@,)"))
+                       (fmt w_end_fmt) )
                $ fmt_atrs ))
       | ( lbl
         , ( { pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]
@@ -1667,7 +1669,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                    ( wrap
                        ( fmt_args_grouped e0 e1N $ fmt "@ "
                        $ Cmts.fmt_before c.cmts pexp_loc
-                       $ fmt_label lbl ":" $ fmt "(function"
+                       $ fmt_label lbl ":" $ fmt w_begin_fmt
+                       $ fmt "function"
                        $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
                            eN.pexp_attributes )
                    $ fmt "@ " $ leading_cmt
@@ -1677,8 +1680,10 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                        $ fmt "@ ->" )
                    $ fmt "@ "
                    $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                   $ fmt_or_k c.conf.indicate_multiline_delimiters
-                       (fits_breaks ")" " )") (fmt ")")
+                   $ fmt_or_k (String.equal w_end ")")
+                       (fmt_or_k c.conf.indicate_multiline_delimiters
+                          (fits_breaks ")" " )") (fmt ")"))
+                       (fmt w_end_fmt)
                    $ Cmts.fmt_after c.cmts pexp_loc )
                $ fmt_atrs ))
       | (lbl, ({pexp_desc= Pexp_function cs; pexp_loc} as eN)) :: rev_e1N
@@ -1693,12 +1698,14 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                    (wrap
                       ( fmt_args_grouped e0 e1N $ fmt "@ "
                       $ Cmts.fmt_before c.cmts pexp_loc
-                      $ fmt_label lbl ":" $ fmt "(function"
+                      $ fmt_label lbl ":" $ fmt w_begin_fmt $ fmt "function"
                       $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
                           eN.pexp_attributes ))
                $ fmt "@ " $ fmt_cases c ctx'' cs
-               $ fmt_or_k c.conf.indicate_multiline_delimiters
-                   (fits_breaks ")" " )") (fmt ")")
+               $ fmt_or_k (String.equal w_end ")")
+                   (fmt_or_k c.conf.indicate_multiline_delimiters
+                      (fits_breaks ")" " )") (fmt ")"))
+                   (fmt w_end_fmt)
                $ Cmts.fmt_after c.cmts pexp_loc
                $ fmt_atrs ))
       | _ ->
@@ -1738,14 +1745,14 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         fmt_module_expr c (sub_mod ~ctx me)
       in
       opn
-      $ wrap_fits_breaks ~space:false c.conf w_begin w_end
+      $ wrap_fits_breaks ~space:false c.conf "(" ")"
           ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
           $ Option.call ~f:epi $ fmt "@ : "
           $ fmt_package_type c ctx pty
           $ fmt_atrs )
   | Pexp_constraint (e, t) ->
       hvbox 2
-        (wrap_fits_breaks ~space:false c.conf w_begin w_end
+        (wrap_fits_breaks ~space:false c.conf "(" ")"
            ( fmt_expression c (sub_exp ~ctx e)
            $ fmt "@ : "
            $ fmt_core_type c (sub_typ ~ctx t)
@@ -1825,7 +1832,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       let xargs, xbody = sugar_fun c xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
-        ( fmt_if parens "("
+        ( fmt_if parens w_begin_fmt
         $ ( open_hovbox 2
           $ ( hovbox 4
                 ( fmt "fun "
@@ -1836,9 +1843,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
                 $ fmt "@ " )
             $ fmt "->" )
           $ fmt_body c ?ext xbody )
-        $ fmt_or_k c.conf.indicate_multiline_delimiters
-            (fits_breaks_if parens ")" "@ )")
-            (fits_breaks_if parens ")" "@,)") )
+        $ fmt_or_k (String.equal w_end ")")
+            (fmt_or_k c.conf.indicate_multiline_delimiters
+               (fits_breaks_if parens ")" "@ )")
+               (fits_breaks_if parens ")" "@,)"))
+            (fmt w_end_fmt) )
   | Pexp_function cs ->
       wrap_if parens w_begin_fmt w_end_fmt
         ( hvbox 2
@@ -2178,11 +2187,11 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         | _ -> false
       in
       let wrap =
-        if parens then wrap_fits_breaks c.conf w_begin w_end
+        if parens then wrap_fits_breaks c.conf "(" ")"
         else if no_parens_if_break then Fn.id
         else if c.conf.indicate_multiline_delimiters then
-          wrap_if_breaks (w_begin ^ " ") ("@ " ^ w_end)
-        else wrap_if_breaks w_begin w_end
+          wrap_if_breaks "( " "@ )"
+        else wrap_if_breaks "(" ")"
       in
       hvbox 0
         (wrap (list es "@,, " (sub_exp ~ctx >> fmt_expression c)) $ fmt_atrs)
