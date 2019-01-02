@@ -1264,7 +1264,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     match grouping_kind with
     | `Parens -> ("(", ")", ("(" : _ format), (")" : _ format))
     | `Begin_end ->
-        ("begin", "end", ("begin@;<1 2>" : _ format), ("@;end" : _ format))
+        ("begin ", " end", ("begin@;<1 2>" : _ format), ("@;end" : _ format))
   in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
@@ -1784,7 +1784,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt_atrs $ cls_paren )))
   | Pexp_constraint (e, t) ->
       hvbox 2
-        (wrap_fits_breaks ~space:false c.conf w_begin w_end
+        (wrap_fits_breaks ~space:false c.conf "(" ")"
            ( fmt_expression c (sub_exp ~ctx e)
            $ fmt "@ : "
            $ fmt_core_type c (sub_typ ~ctx t)
