@@ -24,6 +24,7 @@ type t =
   ; doc_comments: [`Before | `After]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
+  ; exp_grouping: [`Parens | `Preserve | `Begin_end]
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Keyword_first]
@@ -641,6 +642,24 @@ module Formatting = struct
       (fun conf x -> {conf with escape_strings= x})
       (fun conf -> conf.escape_strings)
 
+  let exp_grouping =
+    let doc = "Style of expression grouping." in
+    let names = ["exp-grouping"] in
+    let all =
+      [ ( "parens"
+        , `Parens
+        , "$(b,parens) groups expressions using parentheses." )
+      ; ( "preserve"
+        , `Preserve
+        , "$(b,preserve) preserves the original grouping syntax." )
+      ; ( "begin-end"
+        , `Begin_end
+        , "$(b,begin-end) groups expressions using `begin` and `end`." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with exp_grouping= x})
+      (fun conf -> conf.exp_grouping)
+
   let extension_sugar =
     let doc = "Extension formatting." in
     let names = ["extension-sugar"] in
@@ -1168,6 +1187,7 @@ let default_profile =
   ; doc_comments= C.default Formatting.doc_comments
   ; escape_chars= C.default Formatting.escape_chars
   ; escape_strings= C.default Formatting.escape_strings
+  ; exp_grouping= C.default Formatting.exp_grouping
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; if_then_else= C.default Formatting.if_then_else
@@ -1205,6 +1225,7 @@ let compact_profile =
   ; break_infix= `Wrap
   ; break_sequences= false
   ; break_struct= false
+  ; exp_grouping= `Parens
   ; field_space= `Tight
   ; if_then_else= `Compact
   ; indicate_nested_or_patterns= true
@@ -1250,6 +1271,7 @@ let janestreet_profile =
   ; doc_comments= `Before
   ; escape_chars= `Preserve
   ; escape_strings= `Preserve
+  ; exp_grouping= `Parens
   ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; if_then_else= `Keyword_first

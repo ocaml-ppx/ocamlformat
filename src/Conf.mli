@@ -27,6 +27,7 @@ type t =
         (** Escape encoding for chars literals. *)
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for string literals. *)
+  ; exp_grouping: [`Parens | `Preserve | `Begin_end]
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Keyword_first]
