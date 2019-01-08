@@ -125,9 +125,7 @@ and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
 
 and fmt_text txt =
   let no_space_before = ['.'; ':'; ';'; ','; '-'; ')'; '\''] in
-  let no_space_after = ['.'; '-'; '('] in
   let no_space_before c = List.mem no_space_before c ~equal:Char.equal in
-  let no_space_after c = List.mem no_space_after c ~equal:Char.equal in
   let is_space c = List.mem [' '; '\r'; '\t'; '\n'] c ~equal:Char.equal in
   let f ?prev:_ curr ?next =
     match next with
@@ -138,7 +136,7 @@ and fmt_text txt =
       match curr with
       | Newline -> fmt_newline
       | List _ | Enum _ -> fmt_text_elt curr $ fmt_newline
-      | Raw x when no_space_after x.[String.length x - 1] -> (
+      | Raw x when not (is_space x.[String.length x - 1]) -> (
           fmt_text_elt curr
           $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "" )
       | Code _ -> (
