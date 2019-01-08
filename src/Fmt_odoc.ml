@@ -64,7 +64,8 @@ and fmt_text_elt = function
   | Raw s -> str s
   | Code s ->
       hovbox 0
-        (wrap "[" "]" (verbatim ((Staged.unstage escape_brackets) s)))
+        (wrap "[" "]"
+           (str ~escape:false ((Staged.unstage escape_brackets) s)))
   | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
   | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
   | Style (st, txt) -> fmt_style st txt

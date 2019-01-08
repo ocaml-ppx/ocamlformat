@@ -182,11 +182,11 @@ val x : x
 
 (** return true if {%\gamma(lhs) \subseteq \gamma(rhs)%} *)
 
-(** Composition of functions: [(f >> g) x] is exactly equivalent to [g (f
-    (x))]. Left associative. *)
+(** Composition of functions: [(f >> g) x] is exactly equivalent to
+    [g (f (x))]. Left associative. *)
 
-(** [†] [Struct_rec] is *)
+(** [†]  [Struct_rec] is *)
 
-(** for [Global]s *)
+(** for [Global] s *)
 
-(** generic command: ∀xs.{foot}-{post} *)
+(** generic command: ∀xs.{foot }-{post } *)
