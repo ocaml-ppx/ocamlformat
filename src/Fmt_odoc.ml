@@ -131,6 +131,7 @@ and fmt_text txt =
   let is_space c = List.mem [' '; '\r'; '\t'; '\n'] c ~equal:Char.equal in
   let f ?prev:_ curr ?next =
     match next with
+    | Some (Raw " ") -> fmt_text_elt curr
     | Some (Raw x) when no_space_before x.[0] -> fmt_text_elt curr
     | Some Newline -> fmt_text_elt curr
     | Some next -> (

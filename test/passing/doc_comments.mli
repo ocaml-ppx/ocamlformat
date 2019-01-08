@@ -185,7 +185,7 @@ val x : x
 (** Composition of functions: [(f >> g) x] is exactly equivalent to
     [g (f (x))]. Left associative. *)
 
-(** [†]  [Struct_rec] is *)
+(** [†] [Struct_rec] is *)
 
 (** for [Global]s *)
 
