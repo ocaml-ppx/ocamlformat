@@ -128,6 +128,7 @@ and fmt_text txt =
   let no_space_after = ['.'; '-'; '('] in
   let no_space_before c = List.mem no_space_before c ~equal:Char.equal in
   let no_space_after c = List.mem no_space_after c ~equal:Char.equal in
+  let is_space c = List.mem [' '; '\r'; '\t'; '\n'] c ~equal:Char.equal in
   let f ?prev:_ curr ?next =
     match next with
     | Some (Raw x) when no_space_before x.[0] -> fmt_text_elt curr
@@ -139,6 +140,13 @@ and fmt_text txt =
       | Raw x when no_space_after x.[String.length x - 1] -> (
           fmt_text_elt curr
           $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "" )
+      | Code _ -> (
+          fmt_text_elt curr
+          $
+          match next with
+          | List _ | Enum _ -> fmt "@\n"
+          | Raw x -> fmt_if (is_space x.[0]) "@ "
+          | _ -> fmt "@ " )
       | _ -> (
           fmt_text_elt curr
           $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "@ " ) )

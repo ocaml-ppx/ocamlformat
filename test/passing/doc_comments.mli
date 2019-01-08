@@ -187,6 +187,6 @@ val x : x
 
 (** [†]  [Struct_rec] is *)
 
-(** for [Global] s *)
+(** for [Global]s *)
 
 (** generic command: ∀xs.{foot}-{post} *)
