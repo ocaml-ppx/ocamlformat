@@ -181,3 +181,12 @@ val x : x
 (** [a]'c [b]'s [c]'c *)
 
 (** return true if {%\gamma(lhs) \subseteq \gamma(rhs)%} *)
+
+(** Composition of functions: [(f >> g) x] is exactly equivalent to [g (f
+    (x))]. Left associative. *)
+
+(** [†] [Struct_rec] is *)
+
+(** for [Global]s *)
+
+(** generic command: ∀xs.{foot}-{post} *)
