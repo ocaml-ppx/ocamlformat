@@ -189,4 +189,4 @@ val x : x
 
 (** for [Global] s *)
 
-(** generic command: ∀xs.{foot }-{post } *)
+(** generic command: ∀xs.{foot}-{post} *)

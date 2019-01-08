@@ -58,7 +58,9 @@ let rec fmt_style style txt =
     | SK_subscript -> "_"
     | SK_custom s -> s
   in
-  hovbox 0 (wrap "{" "}" (Fmt.str s $ fmt "@ " $ fmt_text txt))
+  hovbox 0
+    (wrap "{" "}"
+       (Fmt.str s $ fmt_if (not (List.is_empty txt)) "@ " $ fmt_text txt))
 
 and fmt_text_elt = function
   | Raw s -> str s
