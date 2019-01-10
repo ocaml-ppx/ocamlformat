@@ -18,7 +18,7 @@ let preprocess =
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
  (preprocess (pps ppx_tools_versioned.metaquot_406 %s))
- (libraries cmdliner core format_ fpath import ocaml-migrate-parsetree octavius ppx_tools_versioned unix))
+ (libraries cmdliner format_ fpath import ocaml-migrate-parsetree octavius ppx_tools_versioned unix))
 
 (rule
   (targets ocamlformat.1)
