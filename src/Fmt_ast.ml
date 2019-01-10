@@ -380,18 +380,16 @@ let sugar_infix_cons xexp =
 
 let rec sugar_ite c ({ast= exp} as xexp) =
   let ctx = Exp exp in
-  let {pexp_desc; pexp_loc; pexp_attributes} = exp in
-  match pexp_desc with
-  | Pexp_ifthenelse (cnd, thn, Some els) ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:els.pexp_loc ;
-      (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)
+  let src = exp.pexp_loc in
+  match exp with
+  | [%expr if [%e? cnd] then [%e? thn] else [%e? els]] ->
+      Cmts.relocate c.cmts ~src ~before:cnd.pexp_loc ~after:els.pexp_loc ;
+      (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, exp.pexp_attributes)
       :: sugar_ite c (sub_exp ~ctx els)
-  | Pexp_ifthenelse (cnd, thn, None) ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:thn.pexp_loc ;
-      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
-  | _ -> [(None, xexp, pexp_attributes)]
+  | [%expr if [%e? cnd] then [%e? thn]] ->
+      Cmts.relocate c.cmts ~src ~before:cnd.pexp_loc ~after:thn.pexp_loc ;
+      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, exp.pexp_attributes)]
+  | _ -> [(None, xexp, exp.pexp_attributes)]
 
 let sugar_sequence c width xexp =
   let rec sugar_sequence_ ?(allow_attribute = true) ({ast= exp} as xexp) =
