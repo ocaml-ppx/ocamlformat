@@ -383,15 +383,16 @@ let rec is_trivial c exp =
       is_trivial c e1
   | _ -> false
 
+let is_doc = function
+  | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+  | _ -> true
+
 let has_trailing_attributes_exp {pexp_desc; pexp_attributes} =
   match pexp_desc with
   | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
    |Pexp_newtype _ | Pexp_try _ ->
       false
-  | _ ->
-      List.exists pexp_attributes ~f:(function
-        | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-        | _ -> true )
+  | _ -> List.exists pexp_attributes ~f:is_doc
 
 let has_trailing_attributes_pat {ppat_desc; ppat_attributes} =
   match ppat_desc with
@@ -401,22 +402,13 @@ let has_trailing_attributes_pat {ppat_desc; ppat_attributes} =
    |Ppat_record _ | Ppat_array _ | Ppat_type _ | Ppat_unpack _
    |Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
       false
-  | _ ->
-      List.exists ppat_attributes ~f:(function
-        | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-        | _ -> true )
+  | _ -> List.exists ppat_attributes ~f:is_doc
 
-let has_trailing_attributes_mty {pmty_desc; pmty_attributes} =
-  match pmty_desc with _ ->
-    List.exists pmty_attributes ~f:(function
-      | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-      | _ -> true )
+let has_trailing_attributes_mty {pmty_attributes} =
+  List.exists pmty_attributes ~f:is_doc
 
-let has_trailing_attributes_mod {pmod_desc; pmod_attributes} =
-  match pmod_desc with _ ->
-    List.exists pmod_attributes ~f:(function
-      | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-      | _ -> true )
+let has_trailing_attributes_mod {pmod_attributes} =
+  List.exists pmod_attributes ~f:is_doc
 
 (** Ast terms of various forms. *)
 module T = struct
