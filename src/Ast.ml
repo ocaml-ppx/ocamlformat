@@ -1345,8 +1345,8 @@ end = struct
       | _ -> false
     in
     let constructor_cxt_prec_of_inner = function
-      | {ptyp_desc= Ptyp_arrow _} -> Some (Apply, Non)
-      | {ptyp_desc= Ptyp_tuple _} -> Some (InfixOp3, Non)
+      | [%type: [%t? _] -> [%t? _]] -> Some (Apply, Non)
+      | [%type: [%t? _] * [%t? _]] -> Some (InfixOp3, Non)
       | _ -> None
     in
     match ctx with
