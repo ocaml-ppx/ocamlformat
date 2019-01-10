@@ -343,22 +343,15 @@ let rec sugar_list_pat c pat =
     | _ -> None )
   | _ -> None
 
-let sugar_list_exp c exp =
-  let rec sugar_list_exp_ exp =
+let sugar_list_exp exp =
+  let rec sugar_list_exp_ ({pexp_loc= loc} as exp) =
     let ctx = Exp exp in
-    let {pexp_desc; pexp_loc= src} = exp in
-    match pexp_desc with
-    | Pexp_construct ({txt= Lident "[]"; loc}, None) ->
-        Cmts.relocate c.cmts ~src ~before:loc ~after:loc ;
-        Some ([], loc)
-    | Pexp_construct
-        ( {txt= Lident "::"; loc}
-        , Some
-            {pexp_desc= Pexp_tuple [hd; tl]; pexp_loc; pexp_attributes= []}
-        ) -> (
+    match exp with
+    | [%expr []] -> Some ([], loc)
+    | [%expr [%e? hd] :: [%e? tl]] -> (
       match sugar_list_exp_ tl with
       | Some (xtl, nil_loc) when List.is_empty tl.pexp_attributes ->
-          Some (([src; loc; pexp_loc], sub_exp ~ctx hd) :: xtl, nil_loc)
+          Some (([loc; loc; loc], sub_exp ~ctx hd) :: xtl, nil_loc)
       | _ -> None )
     | _ -> None
   in
@@ -1752,7 +1745,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
-    match sugar_list_exp c exp with
+    match sugar_list_exp exp with
     | Some (loc_xes, nil_loc) ->
         hvbox 0
           (wrap_if
@@ -1982,7 +1975,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
           | Pexp_array _ | Pexp_record _ -> true
           | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
           | _ -> (
-            match sugar_list_exp c e0 with Some _ -> true | None -> false )
+            match sugar_list_exp e0 with Some _ -> true | None -> false )
         in
         if can_skip_parens then (".", "") else (".(", ")")
       in
