@@ -10,21 +10,21 @@
  **********************************************************************)
 
 include (
-  Ast_407 :
+  Ast_406 :
     module type of struct
-      include Ast_407
+      include Ast_406
     end
-    with module Location := Ast_407.Location )
+    with module Location := Ast_406.Location )
 
 module Parse = struct
   open Migrate_parsetree
 
-  let implementation = Parse.implementation Versions.ocaml_407
+  let implementation = Parse.implementation Versions.ocaml_406
 
-  let interface = Parse.interface Versions.ocaml_407
+  let interface = Parse.interface Versions.ocaml_406
 
   let use_file lexbuf =
-    List.filter (Parse.use_file Versions.ocaml_407 lexbuf)
+    List.filter (Parse.use_file Versions.ocaml_406 lexbuf)
       ~f:(fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
@@ -32,7 +32,7 @@ module Parse = struct
 end
 
 let to_current =
-  Migrate_parsetree.Versions.(migrate ocaml_407 ocaml_current)
+  Migrate_parsetree.Versions.(migrate ocaml_406 ocaml_current)
 
 module Printast = struct
   open Printast
@@ -114,7 +114,7 @@ module Position = struct
 end
 
 module Location = struct
-  include Ast_407.Location
+  include Ast_406.Location
   module Format = Format_
 
   let fmt fs {loc_start; loc_end; loc_ghost} =
