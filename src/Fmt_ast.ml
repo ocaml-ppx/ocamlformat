@@ -2160,20 +2160,9 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       hvbox 2
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            (fmt "lazy@ " $ fmt_expression c (sub_exp ~ctx e) $ fmt_atrs))
-  | Pexp_extension
-      ( ext
-      , PStr
-          [ ( { pstr_desc=
-                  Pstr_eval
-                    ( ( { pexp_desc=
-                            ( Pexp_while _ | Pexp_for _ | Pexp_match _
-                            | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
-                            | Pexp_sequence _ | Pexp_new _
-                            | Pexp_letmodule _ | Pexp_object _
-                            | Pexp_function _ )
-                        ; pexp_attributes= [] } as e1 )
-                    , _ ) } as str ) ] )
+  | Pexp_extension (ext, PStr [([%stri [%e? e1]] as str)])
     when List.is_empty pexp_attributes
+         && List.is_empty e1.pexp_attributes
          && ( Poly.(c.conf.extension_sugar = `Always)
             || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
       hvbox 0
