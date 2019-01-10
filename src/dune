@@ -2,7 +2,7 @@
 
 let preprocess =
   match Jbuild_plugin.V1.context with
-  | "coverage" -> "(preprocess (pps bisect_ppx))"
+  | "coverage" -> "bisect_ppx"
   | _ -> ""
 
 ;; Jbuild_plugin.V1.send @@ Format.sprintf "
@@ -17,8 +17,8 @@ let preprocess =
 (executables
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
- %s
- (libraries cmdliner format_ fpath import ocaml-migrate-parsetree octavius unix))
+ (preprocess (pps ppxlib.metaquot %s))
+ (libraries cmdliner format_ fpath import ocaml-migrate-parsetree octavius ppx_tools_versioned.metaquot_403 unix))
 
 (rule
   (targets ocamlformat.1)

@@ -159,14 +159,9 @@ let is_sequence exp =
       true
   | _ -> false
 
-let rec is_sugared_list exp =
-  match exp.pexp_desc with
-  | Pexp_construct ({txt= Lident "[]"}, None) -> true
-  | Pexp_construct
-      ( {txt= Lident "::"}
-      , Some
-          { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []} as tl)]
-          ; pexp_attributes= [] } ) ->
+let rec is_sugared_list = function
+  | [%expr []] -> true
+  | [%expr [%e? _] :: [%e? tl]] when List.is_empty tl.pexp_attributes ->
       is_sugared_list tl
   | _ -> false
 
