@@ -1508,17 +1508,14 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
       in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
       fmt_index_op c ctx ~parens op s indices ~set:e
-  | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= Lident ":="; loc}
-        ; pexp_attributes= []
-        ; pexp_loc }
-      , [(Nolabel, r); (Nolabel, v)] )
+  | Pexp_apply (([%expr ( := )] as ident), [(Nolabel, r); (Nolabel, v)])
     when is_simple c.conf width (sub_exp ~ctx r) ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.pexp_loc
+        ~after:ident.pexp_loc ;
       wrap_if parens "(" ")"
         (hovbox 0
            ( fmt_expression c (sub_exp ~ctx r)
-           $ Cmts.fmt c.cmts loc (fmt " :=@;<1 2>")
+           $ Cmts.fmt c.cmts ident.pexp_loc (fmt " :=@;<1 2>")
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ))
   | Pexp_apply
       ( { pexp_desc=
