@@ -249,7 +249,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     In_channel.with_file input_file ~f:In_channel.input_line
   in
   let is_shebang l =
-    String.length l > 2 && Char.equal l.[0] '#' && Char.equal l.[1] '!'
+    String.length l >= 2 && Char.equal l.[0] '#' && Char.equal l.[1] '!'
   in
   let postprocess fs =
     match first_line with
