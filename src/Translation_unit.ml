@@ -140,7 +140,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   let ext = Filename.extension input_name in
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~source_txt
-      ~source_file postprocess : result =
+      ~source_file ~postprocess : result =
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
       else
@@ -240,7 +240,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             Unstable i )
           else
             let result =
-              print_check ~i:(i + 1) ~conf ~ast:new_.ast postprocess
+              print_check ~i:(i + 1) ~conf ~ast:new_.ast ~postprocess
                 ~comments:new_.comments ~source_txt:fmted ~source_file:tmp
             in
             Unix.unlink tmp ; result
@@ -273,7 +273,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     | {ast; comments} -> (
       try
         print_check ~i:1 ~conf ~ast ~comments ~source_txt
-          ~source_file:input_file postprocess
+          ~source_file:input_file ~postprocess
       with
       | Sys_error msg -> User_error msg
       | exc -> Ocamlformat_bug exc )
