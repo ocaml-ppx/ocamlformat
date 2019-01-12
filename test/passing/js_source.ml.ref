@@ -938,8 +938,8 @@ let fint (type t) (x : t) (tag : t ty) = match tag with Int -> x > 0
 
 (* val fint : 'a -> 'a ty -> bool = <fun> *)
 
-(** OK: the return value is x > 0 of type bool; This has used the equation t = bool, not
-    visible in the return type **)
+(** OK: the return value is x > 0 of type bool;
+This has used the equation t = bool, not visible in the return type **)
 
 let f (type t) (x : t) (tag : t ty) = match tag with Int -> x > 0 | Bool -> x
 
@@ -1406,9 +1406,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
          ; "C", TCnoarg (Ttl (Ttl Thd))
          ]
 
-       method inj : type c.
-              (int -> string -> noarg -> unit, c) ty_sel * c
-           -> [`A of int | `B of string | `C] =
+       method inj
+           : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
+                   -> [`A of int | `B of string | `C] =
          function Thd, v -> `A v | Ttl Thd, v -> `B v | Ttl (Ttl Thd), Noarg -> `C
     end)
 ;;
@@ -2535,8 +2535,8 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
   | Global -> fun _ -> raise Exit
 ;;
 
-let vexpr (type result visit_action) :
-    (unit, result, visit_action) context -> unit -> visit_action = function
+let vexpr (type result visit_action)
+    : (unit, result, visit_action) context -> unit -> visit_action = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
@@ -7769,7 +7769,7 @@ end =
 
 let _ = test 103 (Lazy.force M3.x) 3
 
-(** Pure type-checking tests: see recmod/*.ml *)
+(** Pure type-checking tests: see recmod/*.ml  *)
 type t = A of { x : int; mutable y : int }
 
 let f (A r) = r
