@@ -760,7 +760,7 @@ and fmt_payload c ctx pld =
             fmt " when " $ fmt_expression c (sub_exp ~ctx exp) )
 
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
-    ?(space_before_pro = true) ({ast= typ} as xtyp) =
+    ?(pro_space = true) ({ast= typ} as xtyp) =
   protect (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc} = typ in
@@ -768,8 +768,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   @@ fun c ->
   ( match (ptyp_desc, pro) with
   | Ptyp_arrow _, Some pro when c.conf.ocp_indent_compat ->
-      fmt_if space_before_pro "@;<1 0>" $ str pro $ fmt " "
-  | _, Some pro -> fmt_if space_before_pro " " $ str pro $ fmt "@ "
+      fmt_if pro_space "@;<1 0>" $ str pro $ fmt " "
+  | _, Some pro -> fmt_if pro_space " " $ str pro $ fmt "@ "
   | _ -> fmt "" )
   $
   let doc, atrs = doc_atrs ptyp_attributes in
@@ -2607,8 +2607,8 @@ and fmt_class_field c ctx (cf : class_field) =
                   ~after:e.pexp_loc ) ;
             ( [ fmt "@ : " $ fmt "type "
                 $ list args "@ " (fun name -> fmt_str_loc c name)
-              ; fmt_core_type c ~pro:"." ~space_before_pro:false
-                  (sub_typ ~ctx t) ]
+              ; fmt_core_type c ~pro:"." ~pro_space:false (sub_typ ~ctx t)
+              ]
             , fmt "@;<1 2>="
             , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) )
         | None ->
