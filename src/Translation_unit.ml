@@ -76,6 +76,8 @@ end = struct
     String.concat ~sep:"" (List.map ~f:(Format.sprintf "%+d") x)
 end
 
+let lexbuf_last_pos_ref = ref None
+
 let parse parse_ast (conf : Conf.t) ic =
   let warnings =
     W.enable 50
@@ -85,6 +87,7 @@ let parse parse_ast (conf : Conf.t) ic =
   let lexbuf = Lexing.from_channel ic in
   Lexer.skip_hash_bang lexbuf ;
   Location.init lexbuf !Location.input_name ;
+  lexbuf_last_pos_ref := Some lexbuf.lex_last_pos ;
   let warning_printer = !Location.warning_printer in
   let w50 = ref [] in
   (Location.warning_printer :=
@@ -245,16 +248,18 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             in
             Unix.unlink tmp ; result
   in
-  let first_line =
-    In_channel.with_file input_file ~f:In_channel.input_line
-  in
-  let is_shebang l =
-    String.length l >= 2 && Char.equal l.[0] '#' && Char.equal l.[1] '!'
-  in
   let postprocess fs =
-    match first_line with
-    | Some l when is_shebang l -> Format.fprintf fs "%s\n%!" l
-    | _ -> ignore fs
+    let ignored_string =
+      let f ic =
+        let len = Option.value_exn !lexbuf_last_pos_ref in
+        let buf = Base.Buffer.create len in
+        ignore (In_channel.input_buffer ic buf ~len) ;
+        Base.Buffer.contents buf
+      in
+      In_channel.with_file input_file ~f
+    in
+    if not (String.is_empty ignored_string) then
+      Format.fprintf fs "%s%!" ignored_string
   in
   let source_txt =
     In_channel.with_file input_file ~f:In_channel.input_all
