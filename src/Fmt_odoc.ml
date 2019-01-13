@@ -58,13 +58,16 @@ let rec fmt_style style txt =
     | SK_subscript -> "_"
     | SK_custom s -> s
   in
-  hovbox 0 (wrap "{" "}" (Fmt.str s $ fmt "@ " $ fmt_text txt))
+  hovbox 0
+    (wrap "{" "}"
+       (Fmt.str s $ fmt_if (not (List.is_empty txt)) "@ " $ fmt_text txt))
 
 and fmt_text_elt = function
   | Raw s -> str s
   | Code s ->
       hovbox 0
-        (wrap "[" "]" (verbatim ((Staged.unstage escape_brackets) s)))
+        (wrap "[" "]"
+           (str ~escape:false ((Staged.unstage escape_brackets) s)))
   | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
   | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
   | Style (st, txt) -> fmt_style st txt
@@ -122,20 +125,27 @@ and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
 
 and fmt_text txt =
   let no_space_before = ['.'; ':'; ';'; ','; '-'; ')'; '\''] in
-  let no_space_after = ['.'; '-'; '('] in
   let no_space_before c = List.mem no_space_before c ~equal:Char.equal in
-  let no_space_after c = List.mem no_space_after c ~equal:Char.equal in
+  let is_space c = List.mem [' '; '\r'; '\t'; '\n'] c ~equal:Char.equal in
   let f ?prev:_ curr ?next =
     match next with
+    | Some (Raw " ") -> fmt_text_elt curr
     | Some (Raw x) when no_space_before x.[0] -> fmt_text_elt curr
     | Some Newline -> fmt_text_elt curr
     | Some next -> (
       match curr with
       | Newline -> fmt_newline
       | List _ | Enum _ -> fmt_text_elt curr $ fmt_newline
-      | Raw x when no_space_after x.[String.length x - 1] -> (
+      | Raw x when not (is_space x.[String.length x - 1]) -> (
           fmt_text_elt curr
           $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "" )
+      | Code _ -> (
+          fmt_text_elt curr
+          $
+          match next with
+          | List _ | Enum _ -> fmt "@\n"
+          | Raw x -> fmt_if (is_space x.[0]) "@ "
+          | _ -> fmt "@ " )
       | _ -> (
           fmt_text_elt curr
           $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "@ " ) )
