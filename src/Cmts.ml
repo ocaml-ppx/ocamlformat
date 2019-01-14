@@ -484,7 +484,8 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
       let groups =
         List.group cmts ~break:(fun (_, a) (_, b) ->
             not
-              ( Location.is_single_line a && Location.is_single_line b
+              ( Location.is_single_line a t.conf.margin
+              && Location.is_single_line b t.conf.margin
               && line_dist a b = 1
               && Location.compare_start_col a b = 0
               && Location.compare_end_col a b = 0 ) )
