@@ -1177,10 +1177,20 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            (fmt "exception@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
   | Ppat_open (lid, pat) ->
+      let opn, cls =
+        let can_skip_parens =
+          match pat.ppat_desc with
+          | Ppat_array _ | Ppat_record _ -> true
+          | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
+          | _ -> (
+            match sugar_list_pat c pat with Some _ -> true | None -> false )
+        in
+        if can_skip_parens then (".", "") else (".(", ")")
+      in
       cbox 0
-        ( fmt_longident_loc c lid $ fmt ".("
+        ( fmt_longident_loc c lid $ str opn
         $ fmt_pattern c (sub_pat ~ctx pat)
-        $ fmt ")" )
+        $ str cls )
 
 and fmt_fun_args c ?(pro = fmt "") args =
   let fmt_fun_arg = function
