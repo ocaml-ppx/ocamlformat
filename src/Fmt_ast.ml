@@ -1845,7 +1845,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                  | [] -> fmt ""
                  | locs -> list locs "" (Cmts.fmt_before c.cmts)
                in
-               let fmt_op = match i with 0 -> fmt "" | _ -> fmt "::" in
+               let fmt_op = fmt_if (i > 0) "::" in
                (fmt_cmts, (fmt_op, [(Nolabel, arg)])) )) )
   | Pexp_construct (({txt= Lident "::"} as lid), Some arg) ->
       wrap_if parens "(" ")"
@@ -2378,9 +2378,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
         (c, (i, c)) )
   in
   let cmts_after_self =
-    match fields with
-    | [] -> Cmts.fmt_after c.cmts self_.ppat_loc
-    | _ -> fmt ""
+    fmt_if_k (List.is_empty fields) (Cmts.fmt_after c.cmts self_.ppat_loc)
   in
   let self_ =
     match self_ with
@@ -2424,9 +2422,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
         (c, (i, c)) )
   in
   let cmts_after_self =
-    match fields with
-    | [] -> Cmts.fmt_after c.cmts self_.ptyp_loc
-    | _ -> fmt ""
+    fmt_if_k (List.is_empty fields) (Cmts.fmt_after c.cmts self_.ptyp_loc)
   in
   let self_ =
     match self_ with
