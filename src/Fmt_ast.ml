@@ -1165,6 +1165,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         let can_skip_parens =
           match pat.ppat_desc with
           | Ppat_array _ | Ppat_record _ -> true
+          | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
           | _ -> (
             match sugar_list_pat c pat with Some _ -> true | None -> false )
         in
