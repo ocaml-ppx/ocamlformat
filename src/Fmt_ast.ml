@@ -1281,7 +1281,7 @@ and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
        | None -> fmt ""
        | Some e -> fmt "@ <- " $ fmt_expression c (sub_exp ~ctx e) ))
 
-and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext ?(indent_wrap = 0)
+and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
     ({ast= exp} as xexp) =
   protect (Exp exp)
   @@
