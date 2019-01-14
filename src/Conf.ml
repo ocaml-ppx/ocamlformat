@@ -15,6 +15,7 @@ type t =
   { break_cases: [`Fit | `Nested | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
+  ; break_infix_before_func: bool
   ; break_separators: [`Before | `After | `After_and_docked]
   ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap]
@@ -525,6 +526,18 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_infix= x})
       (fun conf -> conf.break_infix)
+
+  let break_infix_before_func =
+    let doc =
+      "Break infix operators whose right arguments are anonymous functions \
+       specially: do not break after the operator so that the first line \
+       of the function appears docked at the end of line after the \
+       operator."
+    in
+    let names = ["break-infix-before-func"] in
+    C.flag ~default:true ~names ~doc ~section
+      (fun conf x -> {conf with break_infix_before_func= x})
+      (fun conf -> conf.break_infix_before_func)
 
   let break_separators =
     let doc =
@@ -1182,6 +1195,7 @@ let default_profile =
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
+  ; break_infix_before_func= C.default Formatting.break_infix_before_func
   ; break_separators= C.default Formatting.break_separators
   ; break_sequences= C.default Formatting.break_sequences
   ; break_string_literals= C.default Formatting.break_string_literals
@@ -1265,6 +1279,7 @@ let janestreet_profile =
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
+  ; break_infix_before_func= true
   ; break_separators= `Before
   ; break_sequences= true
   ; break_string_literals= `Wrap

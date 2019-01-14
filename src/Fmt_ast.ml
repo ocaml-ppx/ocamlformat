@@ -1281,7 +1281,7 @@ and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
        | None -> fmt ""
        | Some e -> fmt "@ <- " $ fmt_expression c (sub_exp ~ctx e) ))
 
-and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
+and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
     ({ast= exp} as xexp) =
   protect (Exp exp)
   @@
@@ -1409,7 +1409,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
               exists_not_simple args1 || exists_not_simple args2 )
       | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
     in
-    hvbox 0 (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
+    hvbox indent_wrap (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
   in
   let ctx = Exp exp in
   let fmt_args_grouped e0 a1N =
@@ -1573,6 +1573,47 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?ext
         ( fmt_expression c (sub_exp ~ctx l)
         $ fmt_expression c (sub_exp ~ctx op)
         $ fmt_expression c (sub_exp ~ctx r) )
+  | Pexp_apply
+      ( ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_attributes= []}
+        as op )
+      , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_fun _} as r))] )
+    when is_infix_id id && not c.conf.break_infix_before_func ->
+      let xargs, xbody = sugar_fun c (sub_exp ~ctx r) in
+      let indent_wrap = if parens then -2 else 0 in
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      wrap_fits_breaks_if c.conf parens "(" ")"
+        (hovbox 0
+           ( open_hvbox 2
+           $ hvbox indent_wrap
+               ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
+               $ fmt "@;"
+               $ hovbox 2
+                   ( fmt_expression c (sub_exp ~ctx op)
+                   $ fmt "@ " $ fmt "fun "
+                   $ fmt_attributes c ~key:"@" pexp_attributes
+                       ~suf:(fmt " ")
+                   $ hvbox_if
+                       (not c.conf.wrap_fun_args)
+                       4 (fmt_fun_args c xargs)
+                   $ fmt "@ " $ fmt "->" ) )
+           $ fmt_body c ?ext xbody ))
+  | Pexp_apply
+      ( ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_attributes= []}
+        as op )
+      , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_function cs} as r))] )
+    when is_infix_id id && not c.conf.break_infix_before_func ->
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      wrap_if parens "(" ")"
+        (hvbox 0
+           ( hvbox 0
+               ( fmt_expression c (sub_exp ~ctx l)
+               $ fmt "@;"
+               $ hovbox 2
+                   ( fmt_expression c (sub_exp ~ctx op)
+                   $ fmt "@ " $ fmt "function"
+                   $ fmt_extension_suffix c ext
+                   $ fmt_attributes c ~key:"@" pexp_attributes ) )
+           $ fmt "@ " $ fmt_cases c (Exp r) cs ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id}; pexp_attributes= []}
       , [(Nolabel, _); (Nolabel, _)] )

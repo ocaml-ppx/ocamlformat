@@ -146,6 +146,12 @@ OPTIONS (CODE FORMATTING STYLE)
            lines between one-liners of similar sorts. The default value is
            sparse.
 
+       --no-break-infix-before-func
+           Break infix operators whose right arguments are anonymous
+           functions specially: do not break after the operator so that the
+           first line of the function appears docked at the end of line after
+           the operator.
+
        --no-indicate-multiline-delimiters
            Print a space inside a delimiter to indicate that it's matching
            delimiter is on a different line.
