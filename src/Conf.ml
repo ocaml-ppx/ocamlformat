@@ -529,8 +529,10 @@ module Formatting = struct
 
   let break_infix_before_func =
     let doc =
-      "Breaks infix expressions before the operator if it does not fit on \
-       a single line and the operator is followed by an anonymous function."
+      "Break infix operators whose right arguments are anonymous functions \
+       specially: do not break after the operator so that the first line \
+       of the function appears docked at the end of line after the \
+       operator."
     in
     let names = ["break-infix-before-func"] in
     C.flag ~default:true ~names ~doc ~section
