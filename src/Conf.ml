@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: [`Fit | `Nested | `Toplevel | `All]
+  { break_before_in: bool
+  ; break_cases: [`Fit | `Nested | `Toplevel | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool
@@ -479,6 +480,17 @@ let info =
 (** Options affecting formatting *)
 module Formatting = struct
   let section = `Formatting
+
+  let break_before_in =
+    let default = true in
+    let doc =
+      "When a $(i,let)-$(i,in) binding does not fit on a whole line, place \
+       the the $(i,in) on a line of its own."
+    in
+    let names = ["break-before-in"] in
+    C.flag ~default ~names ~doc ~section
+      (fun conf break_before_in -> {conf with break_before_in})
+      (fun conf -> conf.break_before_in)
 
   let break_cases =
     let doc = "Break pattern match cases." in
@@ -1215,7 +1227,8 @@ let config =
       value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
 
 let default_profile =
-  { break_cases= C.default Formatting.break_cases
+  { break_before_in= C.default Formatting.break_before_in
+  ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
@@ -1300,7 +1313,8 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { break_cases= `Toplevel
+  { break_before_in= true
+  ; break_cases= `Toplevel
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical

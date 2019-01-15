@@ -383,7 +383,10 @@ let fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens ~attributes
                   ?ext:(if first then ext else None)
                   ctx binding
                   ~in_:(fun indent ->
-                    fmt_if_k last (break 1 (-indent) $ fmt "in") )
+                    fmt_if_k last
+                      (fmt_or_k c.conf.break_before_in
+                         (break 1 (-indent) $ fmt "in")
+                         (fits_breaks " in" "@;<1 -2>in")) )
                 $ fmt_if (not last)
                     ( match c.conf.let_and with
                     | `Sparse -> "@;<1000 0>"

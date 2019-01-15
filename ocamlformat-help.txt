@@ -157,6 +157,10 @@ OPTIONS (CODE FORMATTING STYLE)
            lines between one-liners of similar sorts. The default value is
            sparse.
 
+       --no-break-before-in
+           When a let-in binding does not fit on a whole line, place the the
+           in on a line of its own.
+
        --no-break-infix-before-func
            Break infix operators whose right arguments are anonymous
            functions specially: do not break after the operator so that the
