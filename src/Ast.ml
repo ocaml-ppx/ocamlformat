@@ -236,9 +236,7 @@ module Structure_item : Module_item with type t = structure_item = struct
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
-    | `Compact ->
-        Location.width itm.pstr_loc <= c.Conf.margin
-        && Location.is_single_line itm.pstr_loc
+    | `Compact -> Location.is_single_line itm.pstr_loc c.Conf.margin
     | `Sparse -> (
       match itm.pstr_desc with
       | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
@@ -247,11 +245,12 @@ module Structure_item : Module_item with type t = structure_item = struct
             | Pmod_apply (me1, me2) ->
                 is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, _, me) -> is_simple_mod me
-            | Pmod_ident _ -> true
+            | Pmod_ident _ ->
+                Location.is_single_line me.pmod_loc c.Conf.margin
             | _ -> false
           in
           is_simple_mod me
-      | Pstr_open _ -> true
+      | Pstr_open _ -> Location.is_single_line itm.pstr_loc c.Conf.margin
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -315,13 +314,11 @@ module Signature_item : Module_item with type t = signature_item = struct
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
-    | `Compact ->
-        Location.width itm.psig_loc <= c.Conf.margin
-        && Location.is_single_line itm.psig_loc
+    | `Compact -> Location.is_single_line itm.psig_loc c.Conf.margin
     | `Sparse -> (
       match itm.psig_desc with
-      | Psig_open _ -> true
-      | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} -> true
+      | Psig_open _ | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} ->
+          Location.is_single_line itm.psig_loc c.Conf.margin
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -357,8 +354,7 @@ module Expression : Module_item with type t = expression = struct
 
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
-    && Location.width i.pexp_loc <= c.Conf.margin
-    && Location.is_single_line i.pexp_loc
+    && Location.is_single_line i.pexp_loc c.Conf.margin
 
   let break_between cmts (i1, c1) (i2, c2) =
     Cmts.has_after cmts i1.pexp_loc
@@ -521,8 +517,7 @@ let location = function
 let break_between_modules cmts (i1, c1) (i2, c2) =
   let has_doc itm = Option.is_some (fst (doc_atrs (attributes itm))) in
   let is_simple (itm, c) =
-    Location.width (location itm) <= c.Conf.margin
-    && Location.is_single_line (location itm)
+    Location.is_single_line (location itm) c.Conf.margin
   in
   Cmts.has_after cmts (location i1)
   || Cmts.has_before cmts (location i2)

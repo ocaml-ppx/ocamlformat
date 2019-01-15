@@ -130,8 +130,6 @@ module Location = struct
 
   let hash = Hashtbl.hash
 
-  let is_single_line x = x.loc_start.pos_lnum = x.loc_end.pos_lnum
-
   let compare_start x y = Position.compare x.loc_start y.loc_start
 
   let compare_start_col x y = Position.compare_col x.loc_start y.loc_start
@@ -145,4 +143,7 @@ module Location = struct
   let width x = Position.distance x.loc_start x.loc_end
 
   let compare_width_decreasing l1 l2 = Int.compare (width l2) (width l1)
+
+  let is_single_line x margin =
+    width x <= margin && x.loc_start.pos_lnum = x.loc_end.pos_lnum
 end
