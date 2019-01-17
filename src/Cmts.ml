@@ -269,12 +269,30 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
           not (is_adjacent t l1 l2) )
     with
     | [cmtl] when is_adjacent t (snd (List.last_exn cmtl)) next ->
+        let open Location in
         let same_line_as_prev l =
-          prev.Location.loc_end.pos_lnum = l.Location.loc_start.pos_lnum
+          prev.loc_end.pos_lnum = l.loc_start.pos_lnum
+        in
+        let same_line_as_next l =
+          next.loc_start.pos_lnum = l.loc_start.pos_lnum
+        in
+        let colon_before =
+          let loc_end =
+            {prev.loc_end with pos_cnum= prev.loc_end.pos_cnum - 1}
+          in
+          let char_loc = {prev with loc_start= loc_end} in
+          let str = Source.string_at t.source char_loc in
+          String.equal str ";"
         in
         let prev, next =
           if not (same_line_as_prev next) then
-            List.partition_tf cmtl ~f:(fun (_, l1) -> same_line_as_prev l1)
+            let next, prev =
+              List.partition_tf cmtl ~f:(fun (_, l1) ->
+                  same_line_as_next l1
+                  || (same_line_as_prev l1 && colon_before)
+                  || not (same_line_as_prev l1) )
+            in
+            (prev, next)
           else ([], cmtl)
         in
         (CmtSet.of_list prev, CmtSet.of_list next)
