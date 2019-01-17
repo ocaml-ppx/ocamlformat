@@ -153,8 +153,8 @@ let is_sequence exp =
   | Pexp_extension
       ( ext
       , PStr
-          [ { pstr_desc= Pstr_eval (({pexp_desc= Pexp_sequence _} as e), []); _
-            } ] )
+          [ { pstr_desc= Pstr_eval (({pexp_desc= Pexp_sequence _} as e), [])
+            ; _ } ] )
     when Source.extension_using_sugar ~name:ext ~payload:e ->
       true
   | _ -> false
