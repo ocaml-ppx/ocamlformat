@@ -1076,7 +1076,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_if parens "(" ")"
            (wrap_record c
               ( list flds (semic_sep c) fmt_field
-              $ fmt_if Poly.(closed_flag = Open) "; _" )))
+              $ fmt_if Poly.(closed_flag = Open) "@,; _" )))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c.cmts ppat_loc))
@@ -1476,8 +1476,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
               , PStr
                   [ ( { pstr_desc=
                           Pstr_eval
-                            (({pexp_desc= Pexp_fun _; _} as call_fun), []); _
-                      } as pld ) ] ) }
+                            (({pexp_desc= Pexp_fun _; _} as call_fun), [])
+                      ; _ } as pld ) ] ) }
       , e2 ) ->
       let xargs, xbody = sugar_fun c (sub_exp ~ctx:(Str pld) call_fun) in
       hvbox 0
@@ -1508,7 +1508,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                       [ ( { pstr_desc=
                               Pstr_eval
                                 ( ({pexp_desc= Pexp_fun _; _} as retn_fun)
-                                , [] ); _ } as pld ) ] ) } ) ] ) ->
+                                , [] )
+                          ; _ } as pld ) ] ) } ) ] ) ->
       let xargs, xbody = sugar_fun c (sub_exp ~ctx:(Str pld) retn_fun) in
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
