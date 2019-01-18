@@ -135,3 +135,5 @@ let () =
   
   (* *)
   ()
+
+(* break when unicode sequence length measured in bytes but ¬ in code points *)
