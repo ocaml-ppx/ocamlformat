@@ -999,7 +999,7 @@ let docs = C.section_name section
 let comment_check =
   let default = true in
   let doc =
-    "UNSAFE: Control wether to check comments and documentation comments. \
+    "UNSAFE: Control whether to check comments and documentation comments. \
      May be set in $(b,.ocamlformat)."
   in
   C.flag ~default ~names:["comment-check"] ~doc ~section
