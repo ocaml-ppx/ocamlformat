@@ -1,11 +1,11 @@
 language: c
 env:
-  - OCAML_VERSION=4.07.0
+  - OCAML_VERSION=4.07.1
 cache:
   directories:
     - ${HOME}/.opam
 before_install:
-  - wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux
+  - wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.2/opam-2.0.2-x86_64-linux
   - chmod +x ${HOME}/opam
   - export PATH=${HOME}:${PATH}
   - export OPAMYES=1
