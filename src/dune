@@ -5,7 +5,10 @@ let preprocess =
   | "coverage" -> "(preprocess (pps bisect_ppx))"
   | _ -> ""
 
-;; Jbuild_plugin.V1.send @@ Format.sprintf "
+;;
+Jbuild_plugin.V1.send
+@@ Format.sprintf
+     {|
 (rule
  (targets Version.ml)
  (deps (universe))
@@ -18,12 +21,12 @@ let preprocess =
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
  %s
- (libraries cmdliner format_ fpath import ocaml-migrate-parsetree octavius unix))
+ (libraries cmdliner format_ fpath import ocaml-migrate-parsetree octavius unix uutf))
 
 (rule
-  (targets ocamlformat.1)
-  (deps ocamlformat.exe)
-  (action (with-stdout-to %%{targets} (run ./ocamlformat.exe --help=groff))))
+ (targets ocamlformat.1)
+ (deps ocamlformat.exe)
+ (action (with-stdout-to %%{targets} (run ./ocamlformat.exe --help=groff))))
 
 (install
  (section bin)
@@ -39,6 +42,5 @@ let preprocess =
  (section man)
  (files ocamlformat.1)
  (package ocamlformat))
-
-"
-preprocess 
+|}
+     preprocess

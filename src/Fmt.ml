@@ -180,6 +180,8 @@ and hovbox_if cnd n = wrap_if_k cnd (open_hovbox n) close_box
 
 (** Text filling --------------------------------------------------------*)
 
+let utf8_length s = Uutf.String.fold_utf_8 (fun n _ _ -> n + 1) 0 s
+
 let fill_text text =
   let fmt_line line =
     let words =
@@ -187,7 +189,7 @@ let fill_text text =
         (String.split_on_chars line
            ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '])
     in
-    list words "@ " str
+    list words "@ " (fun s fs -> Format.pp_print_as fs (utf8_length s) s)
   in
   let lines =
     List.remove_consecutive_duplicates
