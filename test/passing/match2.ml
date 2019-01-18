@@ -18,7 +18,8 @@ let _ =
   | DDDDDDDDDDDDDDd -> DDDDDDDDDDDDDDDDdD
 
 let _ =
-  match x with _ ->
+  match x with
+  | _ ->
     ( match
         something long enough to_break
           _________________________________________________________________
