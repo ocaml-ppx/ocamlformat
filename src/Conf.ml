@@ -305,7 +305,8 @@ end = struct
     let docs = section_name section in
     let term = Arg.(value & flag & info names_for_cmdline ~doc ~docs) in
     let parse s =
-      try Ok (Bool.of_string s) with _ ->
+      try Ok (Bool.of_string s)
+      with _ ->
         Error
           (Format.sprintf "invalid value '%s', expecting 'true' or 'false'"
              s)
@@ -336,7 +337,8 @@ end = struct
       Arg.(value & opt (some int) None & info names ~doc ~docs ~docv)
     in
     let parse s =
-      try Ok (Int.of_string s) with _ ->
+      try Ok (Int.of_string s)
+      with _ ->
         Error (Format.sprintf "invalid value '%s', expecting an integer" s)
     in
     let r = mk ~default:None term in

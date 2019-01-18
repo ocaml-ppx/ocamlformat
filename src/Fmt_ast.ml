@@ -44,7 +44,8 @@ let empty =
 let protect =
   let first = ref true in
   fun ast pp fs ->
-    try pp fs with exc ->
+    try pp fs
+    with exc ->
       if !first && Conf.debug then (
         let bt = Caml.Printexc.get_backtrace () in
         Format.pp_print_flush fs () ;

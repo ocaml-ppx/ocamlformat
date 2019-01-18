@@ -100,8 +100,8 @@ let fits_breaks ?(force_fit_if = false) ?(force_break_if = false) fits
       let b = String.sub breaks ~pos:2 ~len:(len - 2) in
       match breaks.[1] with
       | ';' -> (
-        try Scanf.sscanf breaks "@;<%d %d>%s" (fun x y z -> (x, y, z)) with
-        | Scanf.Scan_failure _ | End_of_file -> (1, 0, b) )
+        try Scanf.sscanf breaks "@;<%d %d>%s" (fun x y z -> (x, y, z))
+        with Scanf.Scan_failure _ | End_of_file -> (1, 0, b) )
       | ',' -> (0, 0, b)
       | ' ' -> (1, 0, b)
       | _ -> (0, Int.min_value, breaks)
