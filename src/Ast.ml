@@ -1614,10 +1614,9 @@ end = struct
       parenthesized in context [ctx]. *)
   let parenze_cty ({ctx; ast= cty} as xcty) =
     assert (check_cty xcty ; true) ;
-    match xcty with _ -> (
-      match ambig_prec (sub_ast ~ctx (Cty cty)) with
-      | Some (Some true) -> true
-      | _ -> false )
+    match ambig_prec (sub_ast ~ctx (Cty cty)) with
+    | Some (Some true) -> true
+    | _ -> false
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
@@ -2095,11 +2094,10 @@ end = struct
       parenthesized in context [ctx]. *)
   and parenze_cl ({ctx; ast= cl} as xcl) =
     assert (check_cl xcl ; true) ;
-    match xcl with _ -> (
-      match ambig_prec (sub_ast ~ctx (Cl cl)) with
-      | None -> false
-      | Some (Some true) -> true
-      | _ -> exposed_right_cl Non_apply cl )
+    match ambig_prec (sub_ast ~ctx (Cl cl)) with
+    | None -> false
+    | Some (Some true) -> true
+    | _ -> exposed_right_cl Non_apply cl
 
   let rec exposed_left_typ typ =
     match typ.ptyp_desc with

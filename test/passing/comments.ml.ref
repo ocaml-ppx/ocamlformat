@@ -53,15 +53,13 @@ match x with
 try f x
 with
 (* this comment is intended to refer to the entire case below *)
-| Caml.Not_found
--> ()
+| Caml.Not_found ->
+  ()
 
 ;;
-match x
-with
+match x with
 (* this comment is intended to refer to the entire case below *)
-| false
--> ()
+| false -> ()
 
 ;;
 match x with
