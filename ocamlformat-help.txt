@@ -255,7 +255,7 @@ OPTIONS
            exclusive with --inplace.
 
        --no-comment-check
-           UNSAFE: Control wether to check comments and documentation
+           UNSAFE: Control whether to check comments and documentation
            comments. May be set in .ocamlformat.
 
        --no-version-check
