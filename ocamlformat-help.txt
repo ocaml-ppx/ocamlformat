@@ -76,10 +76,10 @@ OPTIONS (CODE FORMATTING STYLE)
            automatic code formatting. One can also use [@@@ocamlformat
            "enable"] instead of [@@@ocamlformat "disable=false"]
 
-       --doc-comments={after|before}
-           Doc comments position. after puts doc comments after the
-           corresponding code. before puts comments before the corresponding
-           code. The default value is after.
+       --doc-comments={before|after}
+           Doc comments position. before puts comments before the
+           corresponding code. after puts doc comments after the
+           corresponding code. The default value is before.
 
        --escape-chars={preserve|decimal|hexadecimal}
            Escape encoding for character literals. preserve escapes ASCII
