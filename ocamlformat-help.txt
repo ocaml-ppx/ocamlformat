@@ -167,9 +167,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Attempt to generate output which does not change (much) when
            post-processing with ocp-indent.
 
-       --parens-constrained-any
-           Parens constrained any pattern `(_ : t)`.
-
        --parens-ite
            Uses parentheses around if-then-else branches that spread across
            multiple lines.

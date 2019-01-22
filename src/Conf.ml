@@ -40,7 +40,6 @@ type t =
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Sparse]
   ; ocp_indent_compat: bool
-  ; parens_constrained_any: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
@@ -858,13 +857,6 @@ module Formatting = struct
       (fun conf x -> {conf with ocp_indent_compat= x})
       (fun conf -> conf.ocp_indent_compat)
 
-  let parens_constrained_any =
-    let doc = "Parens constrained any pattern `(_ : t)`." in
-    let names = ["parens-constrained-any"] in
-    C.flag ~default:false ~names ~doc ~section
-      (fun conf x -> {conf with parens_constrained_any= x})
-      (fun conf -> conf.parens_constrained_any)
-
   let parens_ite =
     let doc =
       "Uses parentheses around if-then-else branches that spread across \
@@ -1233,7 +1225,6 @@ let default_profile =
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
-  ; parens_constrained_any= C.default Formatting.parens_constrained_any
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
   ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
@@ -1315,7 +1306,6 @@ let janestreet_profile =
   ; max_iters= default_profile.max_iters
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= true
-  ; parens_constrained_any= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
   ; parens_tuple_patterns= `Multi_line_only

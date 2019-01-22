@@ -14,27 +14,17 @@
 open Migrate_ast
 open Parsetree
 
-let ( init
-    , register_reset
-    , leading_nested_match_parens
-    , parens_constrained_any
-    , parens_ite ) =
+let init, register_reset, leading_nested_match_parens, parens_ite =
   let l = ref [] in
   let leading_nested_match_parens = ref false in
-  let parens_constrained_any = ref false in
   let parens_ite = ref false in
   let register f = l := f :: !l in
   let init conf =
     leading_nested_match_parens := conf.Conf.leading_nested_match_parens ;
-    parens_constrained_any := conf.Conf.parens_constrained_any ;
     parens_ite := conf.Conf.parens_ite ;
     List.iter !l ~f:(fun f -> f ())
   in
-  ( init
-  , register
-  , leading_nested_match_parens
-  , parens_constrained_any
-  , parens_ite )
+  (init, register, leading_nested_match_parens, parens_ite)
 
 (** Predicates recognizing special symbol identifiers. *)
 
@@ -1685,7 +1675,7 @@ end = struct
         false
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
       , Ppat_constraint ({ppat_desc= Ppat_any}, _) ) ->
-        !parens_constrained_any
+        true
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
       , Ppat_constraint ({ppat_desc= Ppat_tuple _}, _) ) ->
         false
