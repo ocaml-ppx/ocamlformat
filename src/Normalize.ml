@@ -374,21 +374,21 @@ let make_docstring_mapper c docstrings =
 
 let docstrings_impl c s =
   let docstrings = ref [] in
-  let _ : structure =
+  let (_ : structure) =
     map_structure (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
 let docstrings_intf c s =
   let docstrings = ref [] in
-  let _ : signature =
+  let (_ : signature) =
     map_signature (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
 let docstrings_use_file c s =
   let docstrings = ref [] in
-  let _ : toplevel_phrase list =
+  let (_ : toplevel_phrase list) =
     map_use_file (make_docstring_mapper c docstrings) s
   in
   !docstrings
