@@ -110,3 +110,14 @@ let _ =
  fun aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc
      dddddddddddddddddd eeeeeeeeeeeeee ->
   ()
+
+let _ =
+  let (x : int) = x in
+  let x : int = x in
+  let (_ : int) = x in
+  let (_ : int) = x in
+  let%ext (x : int) = x in
+  let%ext x : int = x in
+  let%ext (_ : int) = x in
+  let%ext (_ : int) = x in
+  ()
