@@ -257,10 +257,7 @@ let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
       | _ -> false )
 
 (** Heuristic to choose between placing a comment after the previous
-    location or before the next one. Places comment after the previous
-    location only if they are "adjacent", and the comment and the next
-    location are not "adjacent" or the comment and the previous location are
-    on the same line (different from the next location) *)
+    location or before the next one. *)
 let partition_after_prev_or_before_next t ~prev cmts ~next =
   match CmtSet.to_list cmts with
   | (_, loc) :: _ as cmtl when is_adjacent t prev loc -> (
