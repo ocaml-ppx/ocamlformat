@@ -188,6 +188,10 @@ function."
 	  ok))
     nil))
 
+(defun ocamlformat--replace-buffer-contents (outputfile)
+  (replace-buffer-contents (find-file-noselect outputfile))
+  (kill-buffer (get-file-buffer outputfile)))
+
 (defun ocamlformat--patch-buffer (outputfile)
   (let ((patchbuf (get-buffer-create "*OCamlFormat patch*")))
     (with-current-buffer patchbuf (erase-buffer))
@@ -241,7 +245,7 @@ function."
                          "--output" outputfile bufferfile)))))
              (progn
                (if ocamlformat--support-replace-buffer-contents
-		   (replace-buffer-contents (find-file-noselect outputfile))
+                   (ocamlformat--replace-buffer-contents outputfile)
 		 (ocamlformat--patch-buffer outputfile))
                (message "Applied ocamlformat"))
              (if errbuf
