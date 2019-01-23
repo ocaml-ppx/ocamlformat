@@ -1674,7 +1674,10 @@ end = struct
       , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _}) ) ->
         false
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
-      , Ppat_constraint ({ppat_desc= Ppat_any | Ppat_tuple _}, _) ) ->
+      , Ppat_constraint ({ppat_desc= Ppat_any}, _) ) ->
+        true
+    | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
+      , Ppat_constraint ({ppat_desc= Ppat_tuple _}, _) ) ->
         false
     | ( (Exp {pexp_desc= Pexp_let _} | Str {pstr_desc= Pstr_value _})
       , Ppat_constraint _ ) ->
