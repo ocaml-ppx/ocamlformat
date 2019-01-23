@@ -13,7 +13,7 @@ let _ =
   let (x : int) = x in
   let x : int = x in
   let (_ : int) = x in
-  let (_ : int) = x in
+  let _ : int = x in
   ()
 
 let%ext (_ : int) = x1
