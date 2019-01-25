@@ -16,10 +16,8 @@ let { (* cmts *)
     ; a
     ; (* b *) b
     ; (* c *) c
-    ; d=
-        (* d *)
-        (D :
-          loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
+    ; (* d *)
+      d : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int= D
     ; (* e *)
       e : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int }
     =
