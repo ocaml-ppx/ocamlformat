@@ -146,6 +146,10 @@ val wrap_fits_breaks_if :
 
 (** Boxes ---------------------------------------------------------------*)
 
+val with_box_debug : t -> t
+(** Represent boxes inside a format thunk with colored brackets. For debug
+    purposes *)
+
 val open_vbox : int -> t
 (** Open an vbox with specified indentation. *)
 

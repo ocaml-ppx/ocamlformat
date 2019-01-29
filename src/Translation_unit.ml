@@ -149,25 +149,39 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~prefix ~source_txt
       ~source_file : result =
-    let tmp, oc =
-      if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
-      else
-        let name = Format.sprintf "%s.%i%s" base i ext in
-        let tmp = Filename.concat dir name in
-        Format.eprintf "%s@\n%!" tmp ;
-        let oc = Out_channel.create ~fail_if_exists:(not Conf.debug) tmp in
-        (tmp, oc)
-    in
     dump xunit dir base ".old" ".ast" ast ;
-    let source = Source.create source_txt in
-    let cmts_t = xunit.init_cmts source conf ast comments in
-    let fs = Format.formatter_of_out_channel oc in
-    Fmt.set_margin conf.margin fs ;
-    (* note that [fprintf fs "%s" ""] is not a not-opt. *)
-    if not (String.is_empty prefix) then Format.fprintf fs "%s" prefix ;
-    xunit.fmt source cmts_t conf ast fs ;
-    Format.pp_print_newline fs () ;
-    Out_channel.close oc ;
+    let remaining_comments, tmp =
+      let print_and_get_remaining_comments ?(box_debug = false) oc =
+        let source = Source.create source_txt in
+        let cmts_t = xunit.init_cmts source conf ast comments in
+        let fs = Format.formatter_of_out_channel oc in
+        Fmt.set_margin conf.margin fs ;
+        (* note that [fprintf fs "%s" ""] is not a not-opt. *)
+        if not (String.is_empty prefix) then Format.fprintf fs "%s" prefix ;
+        let do_fmt = xunit.fmt source cmts_t conf ast in
+        if box_debug then Fmt.with_box_debug do_fmt fs else do_fmt fs ;
+        Format.pp_print_newline fs () ;
+        Out_channel.close oc ;
+        lazy (Cmts.remaining_comments cmts_t)
+      in
+      if not Conf.debug then
+        let tmp, oc = Filename.open_temp_file ~temp_dir:dir base ext in
+        let cmts = print_and_get_remaining_comments oc in
+        (cmts, tmp)
+      else
+        let print_to_file ?box_debug base_name =
+          let tmp = Filename.concat dir base_name in
+          Format.eprintf "%s@\n%!" tmp ;
+          let oc = Out_channel.create ~fail_if_exists:false tmp in
+          let cmts = print_and_get_remaining_comments ?box_debug oc in
+          (cmts, tmp)
+        in
+        let tmp = print_to_file (Format.sprintf "%s.%i%s" base i ext) in
+        ignore
+          (print_to_file ~box_debug:true
+             (Format.sprintf "%s.%i.boxes%s" base i ext)) ;
+        tmp
+    in
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
     if String.equal source_txt fmted then (
@@ -204,7 +218,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             else internal_error `Ast [("output file", String.sexp_of_t tmp)] ) ;
           (* Comments not preserved ? *)
           if conf.comment_check then (
-            ( match Cmts.remaining_comments cmts_t with
+            ( match Lazy.force remaining_comments with
             | [] -> ()
             | l ->
                 let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in

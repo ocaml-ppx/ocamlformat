@@ -23,6 +23,12 @@ let set_margin n fs =
   Format.pp_set_margin fs n ;
   Format.pp_set_max_indent fs (n - 1)
 
+(** Debug of formatting -------------------------------------------------*)
+
+let pp_color_k color_code k fs =
+  let c = Format.sprintf "\x1B[%dm" in
+  Format.fprintf fs "@<0>%s%t@<0>%s" (c color_code) k (c 0)
+
 (** Break hints and format strings --------------------------------------*)
 
 let break n o fs = Format.pp_print_break fs n o
@@ -150,15 +156,59 @@ let wrap_fits_breaks ?(space = true) conf x =
 
 (** Boxes ---------------------------------------------------------------*)
 
-let open_box n fs = Format.pp_open_box fs n
+let box_debug_enabled = ref false
 
-and open_vbox n fs = Format.pp_open_vbox fs n
+let with_box_debug k fs =
+  let g = !box_debug_enabled in
+  box_debug_enabled := true ;
+  k fs ;
+  box_debug_enabled := g
 
-and open_hvbox n fs = Format.pp_open_hvbox fs n
+let box_stack = ref []
 
-and open_hovbox n fs = Format.pp_open_hovbox fs n
+let box_depth_colors = [|32; 33; 34; 31; 35; 36|]
 
-and close_box fs = Format.pp_close_box fs ()
+let box_depth_color () =
+  let depth = List.length !box_stack in
+  box_depth_colors.(depth % Array.length box_depth_colors)
+
+let debug_box_open open_sym close_sym n fs =
+  if !box_debug_enabled then (
+    let openning =
+      if n = 0 then open_sym else Format.sprintf "%s‹%d›" open_sym n
+    in
+    pp_color_k (box_depth_color ())
+      (fun fs -> Format.fprintf fs "@<0>%s" openning)
+      fs ;
+    box_stack := close_sym :: !box_stack )
+
+let debug_box_close fs =
+  if !box_debug_enabled then
+    match !box_stack with
+    | [] -> pp_color_k 41 (fmt "@<0>]") fs
+    | close_sym :: tl ->
+        box_stack := tl ;
+        pp_color_k (box_depth_color ())
+          (fun fs -> fmt "@<0>%s" fs close_sym)
+          fs
+
+let open_box n fs =
+  debug_box_open "«" "»" n fs ;
+  Format.pp_open_box fs n
+
+and open_vbox n fs =
+  debug_box_open "⟨" "⟩" n fs ;
+  Format.pp_open_vbox fs n
+
+and open_hvbox n fs =
+  debug_box_open "⦑" "⦒" n fs ;
+  Format.pp_open_hvbox fs n
+
+and open_hovbox n fs =
+  debug_box_open "⟪" "⟫" n fs ;
+  Format.pp_open_hovbox fs n
+
+and close_box fs = debug_box_close fs ; Format.pp_close_box fs ()
 
 (** Wrapping boxes ------------------------------------------------------*)
 
