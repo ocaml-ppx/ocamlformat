@@ -25,6 +25,7 @@ type t =
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
+  ; doc_comments_padding: int
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for chars literals. *)
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]

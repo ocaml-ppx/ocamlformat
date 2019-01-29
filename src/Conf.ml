@@ -24,6 +24,7 @@ type t =
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
+  ; doc_comments_padding: int
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; extension_sugar: [`Preserve | `Always]
@@ -649,6 +650,16 @@ module Formatting = struct
       (fun conf x -> {conf with doc_comments= x})
       (fun conf -> conf.doc_comments)
 
+  let doc_comments_padding =
+    let docv = "PADDING" in
+    let doc =
+      "Add $(docv) spaces before doc comments in type declarations."
+    in
+    let names = ["doc-comments-padding"] in
+    C.int ~names ~default:2 ~doc ~docv ~section
+      (fun conf x -> {conf with doc_comments_padding= x})
+      (fun conf -> conf.doc_comments_padding)
+
   let escape_chars =
     let doc = "Escape encoding for character literals." in
     let names = ["escape-chars"] in
@@ -1211,6 +1222,7 @@ let default_profile =
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; doc_comments= C.default Formatting.doc_comments
+  ; doc_comments_padding= C.default Formatting.doc_comments_padding
   ; escape_chars= C.default Formatting.escape_chars
   ; escape_strings= C.default Formatting.escape_strings
   ; extension_sugar= C.default Formatting.extension_sugar
@@ -1295,6 +1307,7 @@ let janestreet_profile =
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before
+  ; doc_comments_padding= 1
   ; escape_chars= `Preserve
   ; escape_strings= `Preserve
   ; extension_sugar= `Preserve
