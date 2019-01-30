@@ -44,7 +44,7 @@ module Cases = struct
     ; break_before_arrow= fmt "@;<1 2>"
     ; break_after_arrow= fmt_if_k (not parens_here) (fmt "@;<0 3>")
     ; break_after_opening_paren=
-        fmt_or_k (indent > 2 || parens_here) (fmt "@,@ ") (fmt "@;<1 2>@ ")
+        fmt_or_k (indent > 2 || parens_here) (fmt "@,@ ") (fmt "@ ")
     ; box_rhs= hovbox 0 }
 
   let all ~first ~indent ~parens_here =
@@ -57,7 +57,7 @@ module Cases = struct
         fmt_or_k parens_here (fmt "@;<1 2>") (fmt "@;<1 -2>")
     ; break_after_arrow= fmt_if_k (not parens_here) (fmt "@;<0 3>")
     ; break_after_opening_paren=
-        fmt_or_k (indent > 2 || parens_here) (fmt "@,@ ") (fmt "@;<1 2>@ ")
+        fmt_or_k (indent > 2 || parens_here) (fmt "@,@ ") (fmt "@ ")
     ; box_rhs= hovbox 0 }
 
   let get c =

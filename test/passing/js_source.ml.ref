@@ -93,10 +93,10 @@ let () =
   [%foo fun [@foo] x -> ()];
   [%foo
     function[@foo]
-    | x ->  ()];
+    | x -> ()];
   [%foo
     try[@foo] () with
-    | _ ->  ()];
+    | _ -> ()];
   [%foo if [@foo] () then () else ()];
   [%foo
     (while () do
@@ -114,8 +114,8 @@ let () =
   [%foo
     match[@foo] () with
     | [%foo?  (* Pattern expressions *)
-        ((lazy x)[@foo])] ->  ()
-    | [%foo? ((exception x)[@foo])] ->  ()]
+        ((lazy x)[@foo])] -> ()
+    | [%foo? ((exception x)[@foo])] -> ()]
 ;;
 
 (* Class expressions *)
@@ -292,8 +292,8 @@ class foo : foo_t =
   object (self)
     method cast : type a. a name -> a =
       function
-      | Class Foo ->  (self :> foo_t)
-      | _ ->  (raise Bad_cast : a)
+      | Class Foo -> (self :> foo_t)
+      | _ -> (raise Bad_cast : a)
 
     method foo = "foo"
   end
@@ -315,8 +315,8 @@ class bar : bar_t =
 
     method cast : type a. a name -> a =
       function
-      | Class Bar ->  (self :> bar_t)
-      | other ->  super#cast other
+      | Class Bar -> (self :> bar_t)
+      | other -> super#cast other
 
     method bar = "bar"
 
@@ -332,10 +332,10 @@ let push_castable (c : #castable) = clist := (c :> castable) :: !clist
 
 let pop_castable () =
   match !clist with
-  | c :: rest -> 
+  | c :: rest ->
     clist := rest;
     c
-  | [] ->  raise Not_found
+  | [] -> raise Not_found
 ;;
 
 (* We can add foos and bars to this list, and retrive them *)
@@ -378,8 +378,8 @@ type foo += A | B of int
 
 let is_a x =
   match x with
-  | A ->  true
-  | _ ->  false
+  | A -> true
+  | _ -> false
 ;;
 
 (* The type must be open to create extension *)
@@ -437,8 +437,8 @@ type _ foo += A : int -> int foo | B : int foo
 let get_num : type a. a foo -> a -> a option =
  fun f i1 ->
   match f with
-  | A i2 ->  Some (i1 + i2)
-  | _ ->  None
+  | A i2 -> Some (i1 + i2)
+  | _ -> None
 ;;
 
 (* Extensions must obey constraints *)
@@ -472,8 +472,8 @@ module M_S : S = M
 
 let is_s x =
   match x with
-  | M_S.A _ ->  true
-  | _ ->  false
+  | M_S.A _ -> true
+  | _ -> false
 ;;
 
 let a2 = M_S.A 20
@@ -701,8 +701,8 @@ end = struct
   let () =
     let f (type t) (i : t tag) : t kind =
       match i with
-      | Int ->  ik
-      | _ ->  assert false
+      | Int -> ik
+      | _ -> assert false
     in
     Hashtbl.add writeTbl (T Int) { f }
   ;;
@@ -726,8 +726,8 @@ end = struct
     let () =
       let f (type t) (c : t tag) : t kind =
         match c with
-        | C ->  k
-        | _ ->  assert false
+        | C -> k
+        | _ -> assert false
       in
       Hashtbl.add writeTbl (T C) { f }
     ;;
@@ -751,9 +751,9 @@ let write_string s = Msg.write String s
 let read_one () =
   let (Msg.Result (tag, body)) = Msg.read () in
   match tag with
-  | Msg.Int ->  print_int body
-  | String ->  print_string body
-  | _ ->  print_string "Unknown"
+  | Msg.Int -> print_int body
+  | String -> print_string body
+  | _ -> print_string "Unknown"
 ;;
 
 (* Example of algorithm parametrized with modules *)
@@ -902,9 +902,9 @@ module rec Print : sig
 end = struct
   let to_string (type s) t x =
     match t with
-    | Int eq ->  string_of_int (TypEq.apply eq x)
-    | String eq ->  Printf.sprintf "%S" (TypEq.apply eq x)
-    | Pair p -> 
+    | Int eq -> string_of_int (TypEq.apply eq x)
+    | String eq -> Printf.sprintf "%S" (TypEq.apply eq x)
+    | Pair p ->
       let module P = (val p : PAIR with type t = s) in
       let x1, x2 = TypEq.apply P.eq x in
       Printf.sprintf "(%s,%s)" (Print.to_string P.t1 x1) (Print.to_string P.t2 x2)
@@ -939,9 +939,9 @@ module type S3 = sig
 end
 
 let f = function
-  | Some (module M : S3) when M.x ->  1
-  | ((Some _)[@foooo]) ->  2
-  | None ->  3
+  | Some (module M : S3) when M.x -> 1
+  | ((Some _)[@foooo]) -> 2
+  | None -> 3
 ;;
 
 ;;
@@ -959,7 +959,7 @@ type 'a ty =
 
 let fbool (type t) (x : t) (tag : t ty) =
   match tag with
-  | Bool ->  x
+  | Bool -> x
 ;;
 
 (* val fbool : 'a -> 'a ty -> 'a = <fun> *)
@@ -968,7 +968,7 @@ let fbool (type t) (x : t) (tag : t ty) =
 
 let fint (type t) (x : t) (tag : t ty) =
   match tag with
-  | Int ->  x > 0
+  | Int -> x > 0
 ;;
 
 (* val fint : 'a -> 'a ty -> bool = <fun> *)
@@ -978,16 +978,16 @@ This has used the equation t = bool, not visible in the return type **)
 
 let f (type t) (x : t) (tag : t ty) =
   match tag with
-  | Int ->  x > 0
-  | Bool ->  x
+  | Int -> x > 0
+  | Bool -> x
 ;;
 
 (* val f : 'a -> 'a ty -> bool = <fun> *)
 
 let g (type t) (x : t) (tag : t ty) =
   match tag with
-  | Bool ->  x
-  | Int ->  x > 0
+  | Bool -> x
+  | Int -> x > 0
 ;;
 
 (* Error: This expression has type bool but an expression was expected of type
@@ -1007,14 +1007,14 @@ let idb3 (_ : bool) = false
 
 let g (type t) (x : t) (tag : t ty) =
   match tag with
-  | Bool ->  idb3 x
-  | Int ->  x > 0
+  | Bool -> idb3 x
+  | Int -> x > 0
 ;;
 
 let g (type t) (x : t) (tag : t ty) =
   match tag with
-  | Bool ->  idb2 x
-  | Int ->  x > 0
+  | Bool -> idb2 x
+  | Int -> x > 0
 ;;
 
 (* Encoding generics using GADTs *)
@@ -1041,10 +1041,10 @@ let rec variantize : type t. t ty -> t -> variant =
  fun ty x ->
   (* type t is abstract here *)
   match ty with
-  | Int ->  VInt x (* in this branch: t = int *)
-  | String ->  VString x (* t = string *)
-  | List ty1 ->  VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
-  | Pair (ty1, ty2) ->  VPair (variantize ty1 (fst x), variantize ty2 (snd x))
+  | Int -> VInt x (* in this branch: t = int *)
+  | String -> VString x (* t = string *)
+  | List ty1 -> VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
+  | Pair (ty1, ty2) -> VPair (variantize ty1 (fst x), variantize ty2 (snd x))
 ;;
 
 (* t = ('a, 'b) for some 'a and 'b *)
@@ -1054,11 +1054,11 @@ exception VariantMismatch
 let rec devariantize : type t. t ty -> variant -> t =
  fun ty v ->
   match ty, v with
-  | Int, VInt x ->  x
-  | String, VString x ->  x
-  | List ty1, VList vl ->  List.map (devariantize ty1) vl
-  | Pair (ty1, ty2), VPair (x1, x2) ->  devariantize ty1 x1, devariantize ty2 x2
-  | _ ->  raise VariantMismatch
+  | Int, VInt x -> x
+  | String, VString x -> x
+  | List ty1, VList vl -> List.map (devariantize ty1) vl
+  | Pair (ty1, ty2), VPair (x1, x2) -> devariantize ty1 x1, devariantize ty2 x2
+  | _ -> raise VariantMismatch
 ;;
 
 (* Handling records *)
@@ -1096,12 +1096,12 @@ let rec variantize : type t. t ty -> t -> variant =
  fun ty x ->
   (* type t is abstract here *)
   match ty with
-  | Int ->  VInt x (* in this branch: t = int *)
-  | String ->  VString x (* t = string *)
-  | List ty1 ->  VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
-  | Pair (ty1, ty2) ->  VPair (variantize ty1 (fst x), variantize ty2 (snd x))
+  | Int -> VInt x (* in this branch: t = int *)
+  | String -> VString x (* t = string *)
+  | List ty1 -> VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
+  | Pair (ty1, ty2) -> VPair (variantize ty1 (fst x), variantize ty2 (snd x))
   (* t = ('a, 'b) for some 'a and 'b *)
-  | Record { fields } -> 
+  | Record { fields } ->
     VRecord
       (List.map
          (fun (Field { field_type; label; get }) -> label, variantize field_type (get x))
@@ -1136,11 +1136,11 @@ and ('a, 'builder, 'b) field_ =
 let rec devariantize : type t. t ty -> variant -> t =
  fun ty v ->
   match ty, v with
-  | Int, VInt x ->  x
-  | String, VString x ->  x
-  | List ty1, VList vl ->  List.map (devariantize ty1) vl
-  | Pair (ty1, ty2), VPair (x1, x2) ->  devariantize ty1 x1, devariantize ty2 x2
-  | Record { fields; create_builder; of_builder }, VRecord fl -> 
+  | Int, VInt x -> x
+  | String, VString x -> x
+  | List ty1, VList vl -> List.map (devariantize ty1) vl
+  | Pair (ty1, ty2), VPair (x1, x2) -> devariantize ty1 x1, devariantize ty2 x2
+  | Record { fields; create_builder; of_builder }, VRecord fl ->
     if List.length fields <> List.length fl then raise VariantMismatch;
     let builder = create_builder () in
     List.iter2
@@ -1150,7 +1150,7 @@ let rec devariantize : type t. t ty -> variant -> t =
       fields
       fl;
     of_builder builder
-  | _ ->  raise VariantMismatch
+  | _ -> raise VariantMismatch
 ;;
 
 type my_record =
@@ -1177,8 +1177,8 @@ let my_record =
   let create_builder () = ref None, ref None in
   let of_builder (a, b) =
     match !a, !b with
-    | Some a, Some b ->  { a; b }
-    | _ ->  failwith "Some fields are missing in record of type my_record"
+    | Some a, Some b -> { a; b }
+    | _ -> failwith "Some fields are missing in record of type my_record"
   in
   Record { path = "My_module.my_record"; fields; create_builder; of_builder }
 ;;
@@ -1233,12 +1233,12 @@ type (_, _) eq = Eq : ('a, 'a) eq
 let rec eq_sel : type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option =
  fun s1 s2 ->
   match s1, s2 with
-  | Thd, Thd ->  Some Eq
-  | Ttl s1, Ttl s2 -> 
+  | Thd, Thd -> Some Eq
+  | Ttl s1, Ttl s2 ->
     (match eq_sel s1 s2 with
-    | None ->  None
-    | Some Eq ->  Some Eq)
-  | _ ->  None
+    | None -> None
+    | Some Eq -> Some Eq)
+  | _ -> None
 ;;
 
 (* Auxiliary function to get the type of a case from its selector *)
@@ -1246,15 +1246,15 @@ let rec get_case : type a b e.
     (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option =
  fun sel cases ->
   match cases with
-  | (name, TCnoarg sel') :: rem -> 
+  | (name, TCnoarg sel') :: rem ->
     (match eq_sel sel sel' with
-    | None ->  get_case sel rem
-    | Some Eq ->  name, None)
-  | (name, TCarg (sel', ty)) :: rem -> 
+    | None -> get_case sel rem
+    | Some Eq -> name, None)
+  | (name, TCarg (sel', ty)) :: rem ->
     (match eq_sel sel sel' with
-    | None ->  get_case sel rem
-    | Some Eq ->  name, Some ty)
-  | [] ->  raise Not_found
+    | None -> get_case sel rem
+    | Some Eq -> name, Some ty)
+  | [] -> raise Not_found
 ;;
 
 (* Untyped representation of values *)
@@ -1268,60 +1268,60 @@ type variant =
   | VSum of string * variant option
 
 let may_map f = function
-  | Some x ->  Some (f x)
-  | None ->  None
+  | Some x -> Some (f x)
+  | None -> None
 ;;
 
 let rec variantize : type a e. e ty_env -> (a, e) ty -> a -> variant =
  fun e ty v ->
   match ty with
-  | Int ->  VInt v
-  | String ->  VString v
-  | List t ->  VList (List.map (variantize e t) v)
-  | Option t ->  VOption (may_map (variantize e t) v)
-  | Pair (t1, t2) ->  VPair (variantize e t1 (fst v), variantize e t2 (snd v))
-  | Rec t ->  variantize (Econs (ty, e)) t v
-  | Pop t -> 
+  | Int -> VInt v
+  | String -> VString v
+  | List t -> VList (List.map (variantize e t) v)
+  | Option t -> VOption (may_map (variantize e t) v)
+  | Pair (t1, t2) -> VPair (variantize e t1 (fst v), variantize e t2 (snd v))
+  | Rec t -> variantize (Econs (ty, e)) t v
+  | Pop t ->
     (match e with
-    | Econs (_, e') ->  variantize e' t v)
-  | Var -> 
+    | Econs (_, e') -> variantize e' t v)
+  | Var ->
     (match e with
-    | Econs (t, e') ->  variantize e' t v)
-  | Conv (s, proj, inj, t) ->  VConv (s, variantize e t (proj v))
-  | Sum ops -> 
+    | Econs (t, e') -> variantize e' t v)
+  | Conv (s, proj, inj, t) -> VConv (s, variantize e t (proj v))
+  | Sum ops ->
     let tag, arg = ops.sum_proj v in
     VSum
       ( tag
       , may_map
           (function
-            | Tdyn (ty, arg) ->  variantize e ty arg)
+            | Tdyn (ty, arg) -> variantize e ty arg)
           arg )
 ;;
 
 let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
  fun e ty v ->
   match ty, v with
-  | Int, VInt x ->  x
-  | String, VString x ->  x
-  | List ty1, VList vl ->  List.map (devariantize e ty1) vl
-  | Pair (ty1, ty2), VPair (x1, x2) ->  devariantize e ty1 x1, devariantize e ty2 x2
-  | Rec t, _ ->  devariantize (Econs (ty, e)) t v
-  | Pop t, _ -> 
+  | Int, VInt x -> x
+  | String, VString x -> x
+  | List ty1, VList vl -> List.map (devariantize e ty1) vl
+  | Pair (ty1, ty2), VPair (x1, x2) -> devariantize e ty1 x1, devariantize e ty2 x2
+  | Rec t, _ -> devariantize (Econs (ty, e)) t v
+  | Pop t, _ ->
     (match e with
-    | Econs (_, e') ->  devariantize e' t v)
-  | Var, _ -> 
+    | Econs (_, e') -> devariantize e' t v)
+  | Var, _ ->
     (match e with
-    | Econs (t, e') ->  devariantize e' t v)
-  | Conv (s, proj, inj, t), VConv (s', v) when s = s' ->  inj (devariantize e t v)
-  | Sum ops, VSum (tag, a) -> 
+    | Econs (t, e') -> devariantize e' t v)
+  | Conv (s, proj, inj, t), VConv (s', v) when s = s' -> inj (devariantize e t v)
+  | Sum ops, VSum (tag, a) ->
     (try
        match List.assoc tag ops.sum_cases, a with
-       | TCarg (sel, t), Some a ->  ops.sum_inj (sel, devariantize e t a)
-       | TCnoarg sel, None ->  ops.sum_inj (sel, Noarg)
-       | _ ->  raise VariantMismatch
+       | TCarg (sel, t), Some a -> ops.sum_inj (sel, devariantize e t a)
+       | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
+       | _ -> raise VariantMismatch
      with
-    | Not_found ->  raise VariantMismatch)
-  | _ ->  raise VariantMismatch
+    | Not_found -> raise VariantMismatch)
+  | _ -> raise VariantMismatch
 ;;
 
 (* First attempt: represent 1-constructor variants using Conv *)
@@ -1346,16 +1346,16 @@ let v = variantize Enil (triple String Int Int) ("A", 2, 3)
 let ty_abc =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   let proj = function
-    | `A n ->  "A", Some (Tdyn (Int, n))
-    | `B s ->  "B", Some (Tdyn (String, s))
-    | `C ->  "C", None
+    | `A n -> "A", Some (Tdyn (Int, n))
+    | `B s -> "B", Some (Tdyn (String, s))
+    | `C -> "C", None
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj : type c.
       (int -> string -> noarg -> unit, c) ty_sel * c -> [`A of int | `B of string | `C] =
     function
-    | Thd, v ->  `A v
-    | Ttl Thd, v ->  `B v
-    | Ttl (Ttl Thd), Noarg ->  `C
+    | Thd, v -> `A v
+    | Ttl Thd, v -> `B v
+    | Ttl (Ttl Thd), Noarg -> `C
   in
   (* Coherence of sum_inj and sum_cases is checked by the typing *)
   Sum
@@ -1385,14 +1385,14 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
     (Sum
        { sum_proj =
            (function
-           | `Nil ->  "Nil", None
-           | `Cons p ->  "Cons", Some (Tdyn (tcons, p)))
+           | `Nil -> "Nil", None
+           | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
        ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
        ; sum_inj =
            (fun (type c) ->
              (function
-              | Thd, Noarg ->  `Nil
-              | Ttl Thd, v ->  `Cons v
+              | Thd, Noarg -> `Nil
+              | Ttl Thd, v -> `Cons v
                : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist))
            (* One can also write the type annotation directly *)
        })
@@ -1422,14 +1422,14 @@ let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
-      | `A n ->  "A", Some (Tdyn (Int, n))
-      | `B s ->  "B", Some (Tdyn (String, s))
-      | `C ->  "C", None)
+      | `A n -> "A", Some (Tdyn (Int, n))
+      | `B s -> "B", Some (Tdyn (String, s))
+      | `C -> "C", None)
     , function
-      | "A", Some (Tdyn (Int, n)) ->  `A n
-      | "B", Some (Tdyn (String, s)) ->  `B s
-      | "C", None ->  `C
-      | _ ->  invalid_arg "ty_abc" )
+      | "A", Some (Tdyn (Int, n)) -> `A n
+      | "B", Some (Tdyn (String, s)) -> `B s
+      | "C", None -> `C
+      | _ -> invalid_arg "ty_abc" )
 ;;
 
 (* Breaks: no way to pattern-match on a full recursive type *)
@@ -1439,11 +1439,11 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-         | `Nil ->  "Nil", None
-         | `Cons p ->  "Cons", Some (Tdyn (targ, p)))
+         | `Nil -> "Nil", None
+         | `Cons p -> "Cons", Some (Tdyn (targ, p)))
        , function
-         | "Nil", None ->  `Nil
-         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) ->  `Cons p ))
+         | "Nil", None -> `Nil
+         | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p ))
 ;;
 
 (* Define Sum using object instead of record for first-class polymorphism *)
@@ -1479,9 +1479,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
     (object
        method proj =
          function
-         | `A n ->  "A", Some (Tdyn (Int, n))
-         | `B s ->  "B", Some (Tdyn (String, s))
-         | `C ->  "C", None
+         | `A n -> "A", Some (Tdyn (Int, n))
+         | `B s -> "B", Some (Tdyn (String, s))
+         | `C -> "C", None
 
        method cases =
          [ "A", TCarg (Thd, Int)
@@ -1493,9 +1493,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
            : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
                    -> [`A of int | `B of string | `C] =
          function
-         | Thd, v ->  `A v
-         | Ttl Thd, v ->  `B v
-         | Ttl (Ttl Thd), Noarg ->  `C
+         | Thd, v -> `A v
+         | Ttl Thd, v -> `B v
+         | Ttl (Ttl Thd), Noarg -> `C
     end)
 ;;
 
@@ -1512,15 +1512,15 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        (object
           method proj =
             function
-            | `Nil ->  "Nil", None
-            | `Cons p ->  "Cons", Some (Tdyn (tcons, p))
+            | `Nil -> "Nil", None
+            | `Cons p -> "Cons", Some (Tdyn (tcons, p))
 
           method cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
 
           method inj : type c. (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist =
             function
-            | Thd, Noarg ->  `Nil
-            | Ttl Thd, v ->  `Cons v
+            | Thd, Noarg -> `Nil
+            | Ttl Thd, v -> `Cons v
        end))
 ;;
 
@@ -1571,8 +1571,8 @@ type (_, _, _) plus =
   | PlusS : ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
 
 let rec length : type a n. (a, n) seq -> n nat = function
-  | Snil ->  NZ
-  | Scons (_, s) ->  NS (length s)
+  | Snil -> NZ
+  | Scons (_, s) -> NS (length s)
 ;;
 
 (* app returns the catenated lists with a witness proving that
@@ -1582,8 +1582,8 @@ type (_, _, _) app = App : ('a, 'p) seq * ('n, 'm, 'p) plus -> ('a, 'n, 'm) app
 let rec app : type a n m. (a, n) seq -> (a, m) seq -> (a, n, m) app =
  fun xs ys ->
   match xs with
-  | Snil ->  App (ys, PlusZ (length ys))
-  | Scons (x, xs') -> 
+  | Snil -> App (ys, PlusZ (length ys))
+  | Scons (x, xs') ->
     let (App (xs'', pl)) = app xs' ys in
     App (Scons (x, xs''), PlusS pl)
 ;;
@@ -1626,9 +1626,9 @@ let tree1 = Tfork (Tfork (Ttip, Tnode 4), Tfork (Tnode 4, Tnode 3))
 let rec find : type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) path list =
  fun eq n t ->
   match t with
-  | Ttip ->  []
-  | Tnode m ->  if eq n m then [ Phere ] else []
-  | Tfork (x, y) -> 
+  | Ttip -> []
+  | Tnode m -> if eq n m then [ Phere ] else []
+  | Tfork (x, y) ->
     List.map (fun x -> Pleft x) (find eq n x)
     @ List.map (fun x -> Pright x) (find eq n y)
 ;;
@@ -1636,10 +1636,10 @@ let rec find : type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) pa
 let rec extract : type sh. (sh, 'a) path -> (sh, 'a) tree -> 'a =
  fun p t ->
   match p, t with
-  | Pnone x, Ttip ->  x
-  | Phere, Tnode y ->  y
-  | Pleft p, Tfork (l, _) ->  extract p l
-  | Pright p, Tfork (_, r) ->  extract p r
+  | Pnone x, Ttip -> x
+  | Phere, Tnode y -> y
+  | Pleft p, Tfork (l, _) -> extract p l
+  | Pright p, Tfork (_, r) -> extract p r
 ;;
 
 (* 3.4 Pattern : Witness *)
@@ -1665,8 +1665,8 @@ let p1 : (two, one, three) plus = PlusS (PlusS (PlusZ (NS NZ)))
 let rec summandLessThanSum : type a b c. (a, b, c) plus -> (a, c) le =
  fun p ->
   match p with
-  | PlusZ n ->  LeZ n
-  | PlusS p' ->  LeS (summandLessThanSum p')
+  | PlusZ n -> LeZ n
+  | PlusS p' -> LeS (summandLessThanSum p')
 ;;
 
 (* 3.8 Pattern: Leibniz Equality *)
@@ -1678,12 +1678,12 @@ let convert : type a b. (a, b) equal -> a -> b = fun Eq x -> x
 let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
  fun a b ->
   match a, b with
-  | NZ, NZ ->  Some Eq
-  | NS a', NS b' -> 
+  | NZ, NZ -> Some Eq
+  | NS a', NS b' ->
     (match sameNat a' b' with
-    | Some Eq ->  Some Eq
-    | None ->  None)
-  | _ ->  None
+    | Some Eq -> Some Eq
+    | None -> None)
+  | _ -> None
 ;;
 
 (* Extra: associativity of addition *)
@@ -1691,8 +1691,8 @@ let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
 let rec plus_func : type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equal =
  fun p1 p2 ->
   match p1, p2 with
-  | PlusZ _, PlusZ _ ->  Eq
-  | PlusS p1', PlusS p2' -> 
+  | PlusZ _, PlusZ _ -> Eq
+  | PlusS p1', PlusS p2' ->
     let Eq = plus_func p1' p2' in
     Eq
 ;;
@@ -1705,10 +1705,10 @@ let rec plus_assoc : type a b c ab bc m n.
     -> (m, n) equal =
  fun p1 p2 p3 p4 ->
   match p1, p4 with
-  | PlusZ b, PlusZ bc -> 
+  | PlusZ b, PlusZ bc ->
     let Eq = plus_func p2 p3 in
     Eq
-  | PlusS p1', PlusS p4' -> 
+  | PlusS p1', PlusS p4' ->
     let (PlusS p2') = p2 in
     let Eq = plus_assoc p1' p2' p3 p4' in
     Eq
@@ -1719,7 +1719,7 @@ let rec plus_assoc : type a b c ab bc m n.
 (* Plus and app1 are moved to section 2 *)
 
 let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
-  | LeS x ->  x
+  | LeS x -> x
 ;;
 
 type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
@@ -1738,46 +1738,46 @@ let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff =
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
  fun le a b ->
   match le, a, b with
-  | LeZ _, _, m ->  Diff (m, PlusZ m)
-  | LeS q, NS x, NS y -> 
+  | LeZ _, _, m -> Diff (m, PlusZ m)
+  | LeS q, NS x, NS y ->
     (match diff q x y with
-    | Diff (m, p) ->  Diff (m, PlusS p))
+    | Diff (m, p) -> Diff (m, PlusS p))
 ;;
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
  fun le a b ->
   match a, b, le with
   (* warning *)
-  | NZ, m, LeZ _ ->  Diff (m, PlusZ m)
-  | NS x, NS y, LeS q -> 
+  | NZ, m, LeZ _ -> Diff (m, PlusZ m)
+  | NS x, NS y, LeS q ->
     (match diff q x y with
-    | Diff (m, p) ->  Diff (m, PlusS p))
-  | _ ->  .
+    | Diff (m, p) -> Diff (m, PlusS p))
+  | _ -> .
 ;;
 
 let rec diff : type a b. (a, b) le -> b nat -> (a, b) diff =
  fun le b ->
   match b, le with
-  | m, LeZ _ ->  Diff (m, PlusZ m)
-  | NS y, LeS q -> 
+  | m, LeZ _ -> Diff (m, PlusZ m)
+  | NS y, LeS q ->
     (match diff q y with
-    | Diff (m, p) ->  Diff (m, PlusS p))
+    | Diff (m, p) -> Diff (m, PlusS p))
 ;;
 
 type (_, _) filter = Filter : ('m, 'n) le * ('a, 'm) seq -> ('a, 'n) filter
 
 let rec leS' : type m n. (m, n) le -> (m, n succ) le = function
-  | LeZ n ->  LeZ (NS n)
-  | LeS le ->  LeS (leS' le)
+  | LeZ n -> LeZ (NS n)
+  | LeS le -> LeS (leS' le)
 ;;
 
 let rec filter : type a n. (a -> bool) -> (a, n) seq -> (a, n) filter =
  fun f s ->
   match s with
-  | Snil ->  Filter (LeZ NZ, Snil)
-  | Scons (a, l) -> 
+  | Snil -> Filter (LeZ NZ, Snil)
+  | Scons (a, l) ->
     (match filter f l with
-    | Filter (le, l') -> 
+    | Filter (le, l') ->
       if f a then Filter (LeS le, Scons (a, l')) else Filter (leS' le, l'))
 ;;
 
@@ -1799,21 +1799,21 @@ let empty = Avl Leaf
 let rec elem : type h. int -> h avl -> bool =
  fun x t ->
   match t with
-  | Leaf ->  false
-  | Node (_, l, y, r) ->  x = y || if x < y then elem x l else elem x r
+  | Leaf -> false
+  | Node (_, l, y, r) -> x = y || if x < y then elem x l else elem x r
 ;;
 
 let rec rotr : type n.
     n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum =
  fun tL y tR ->
   match tL with
-  | Node (Same, a, x, b) ->  Inr (Node (Less, a, x, Node (More, b, y, tR)))
-  | Node (More, a, x, b) ->  Inl (Node (Same, a, x, Node (Same, b, y, tR)))
-  | Node (Less, a, x, Node (Same, b, z, c)) -> 
+  | Node (Same, a, x, b) -> Inr (Node (Less, a, x, Node (More, b, y, tR)))
+  | Node (More, a, x, b) -> Inl (Node (Same, a, x, Node (Same, b, y, tR)))
+  | Node (Less, a, x, Node (Same, b, z, c)) ->
     Inl (Node (Same, Node (Same, a, x, b), z, Node (Same, c, y, tR)))
-  | Node (Less, a, x, Node (Less, b, z, c)) -> 
+  | Node (Less, a, x, Node (Less, b, z, c)) ->
     Inl (Node (Same, Node (More, a, x, b), z, Node (Same, c, y, tR)))
-  | Node (Less, a, x, Node (More, b, z, c)) -> 
+  | Node (Less, a, x, Node (More, b, z, c)) ->
     Inl (Node (Same, Node (Same, a, x, b), z, Node (Less, c, y, tR)))
 ;;
 
@@ -1821,60 +1821,60 @@ let rec rotl : type n.
     n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum =
  fun tL u tR ->
   match tR with
-  | Node (Same, a, x, b) ->  Inr (Node (More, Node (Less, tL, u, a), x, b))
-  | Node (Less, a, x, b) ->  Inl (Node (Same, Node (Same, tL, u, a), x, b))
-  | Node (More, Node (Same, a, x, b), y, c) -> 
+  | Node (Same, a, x, b) -> Inr (Node (More, Node (Less, tL, u, a), x, b))
+  | Node (Less, a, x, b) -> Inl (Node (Same, Node (Same, tL, u, a), x, b))
+  | Node (More, Node (Same, a, x, b), y, c) ->
     Inl (Node (Same, Node (Same, tL, u, a), x, Node (Same, b, y, c)))
-  | Node (More, Node (Less, a, x, b), y, c) -> 
+  | Node (More, Node (Less, a, x, b), y, c) ->
     Inl (Node (Same, Node (More, tL, u, a), x, Node (Same, b, y, c)))
-  | Node (More, Node (More, a, x, b), y, c) -> 
+  | Node (More, Node (More, a, x, b), y, c) ->
     Inl (Node (Same, Node (Same, tL, u, a), x, Node (Less, b, y, c)))
 ;;
 
 let rec ins : type n. int -> n avl -> (n avl, n succ avl) sum =
  fun x t ->
   match t with
-  | Leaf ->  Inr (Node (Same, Leaf, x, Leaf))
-  | Node (bal, a, y, b) -> 
+  | Leaf -> Inr (Node (Same, Leaf, x, Leaf))
+  | Node (bal, a, y, b) ->
     if x = y
     then Inl t
     else if x < y
     then (
       match ins x a with
-      | Inl a ->  Inl (Node (bal, a, y, b))
-      | Inr a -> 
+      | Inl a -> Inl (Node (bal, a, y, b))
+      | Inr a ->
         (match bal with
-        | Less ->  Inl (Node (Same, a, y, b))
-        | Same ->  Inr (Node (More, a, y, b))
-        | More ->  rotr a y b))
+        | Less -> Inl (Node (Same, a, y, b))
+        | Same -> Inr (Node (More, a, y, b))
+        | More -> rotr a y b))
     else (
       match ins x b with
-      | Inl b ->  Inl (Node (bal, a, y, b) : n avl)
-      | Inr b -> 
+      | Inl b -> Inl (Node (bal, a, y, b) : n avl)
+      | Inr b ->
         (match bal with
-        | More ->  Inl (Node (Same, a, y, b) : n avl)
-        | Same ->  Inr (Node (Less, a, y, b) : n succ avl)
-        | Less ->  rotl a y b))
+        | More -> Inl (Node (Same, a, y, b) : n avl)
+        | Same -> Inr (Node (Less, a, y, b) : n succ avl)
+        | Less -> rotl a y b))
 ;;
 
 let insert x (Avl t) =
   match ins x t with
-  | Inl t ->  Avl t
-  | Inr t ->  Avl t
+  | Inl t -> Avl t
+  | Inr t -> Avl t
 ;;
 
 let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum = function
-  | Node (Less, Leaf, x, r) ->  x, Inl r
-  | Node (Same, Leaf, x, r) ->  x, Inl r
-  | Node (bal, (Node _ as l), x, r) -> 
+  | Node (Less, Leaf, x, r) -> x, Inl r
+  | Node (Same, Leaf, x, r) -> x, Inl r
+  | Node (bal, (Node _ as l), x, r) ->
     (match del_min l with
-    | y, Inr l ->  y, Inr (Node (bal, l, x, r))
-    | y, Inl l -> 
+    | y, Inr l -> y, Inr (Node (bal, l, x, r))
+    | y, Inl l ->
       (y
       , (match bal with
-        | Same ->  Inr (Node (Less, l, x, r))
-        | More ->  Inl (Node (Same, l, x, r))
-        | Less ->  rotl l x r)))
+        | Same -> Inr (Node (Less, l, x, r))
+        | More -> Inl (Node (Same, l, x, r))
+        | Less -> rotl l x r)))
 ;;
 
 type _ avl_del =
@@ -1884,53 +1884,53 @@ type _ avl_del =
 let rec del : type n. int -> n avl -> n avl_del =
  fun y t ->
   match t with
-  | Leaf ->  Dsame Leaf
-  | Node (bal, l, x, r) -> 
+  | Leaf -> Dsame Leaf
+  | Node (bal, l, x, r) ->
     if x = y
     then (
       match r with
-      | Leaf -> 
+      | Leaf ->
         (match bal with
-        | Same ->  Ddecr (Eq, l)
-        | More ->  Ddecr (Eq, l))
-      | Node _ -> 
+        | Same -> Ddecr (Eq, l)
+        | More -> Ddecr (Eq, l))
+      | Node _ ->
         (match bal, del_min r with
-        | _, (z, Inr r) ->  Dsame (Node (bal, l, z, r))
-        | Same, (z, Inl r) ->  Dsame (Node (More, l, z, r))
-        | Less, (z, Inl r) ->  Ddecr (Eq, Node (Same, l, z, r))
-        | More, (z, Inl r) -> 
+        | _, (z, Inr r) -> Dsame (Node (bal, l, z, r))
+        | Same, (z, Inl r) -> Dsame (Node (More, l, z, r))
+        | Less, (z, Inl r) -> Ddecr (Eq, Node (Same, l, z, r))
+        | More, (z, Inl r) ->
           (match rotr l z r with
-          | Inl t ->  Ddecr (Eq, t)
-          | Inr t ->  Dsame t)))
+          | Inl t -> Ddecr (Eq, t)
+          | Inr t -> Dsame t)))
     else if y < x
     then (
       match del y l with
-      | Dsame l ->  Dsame (Node (bal, l, x, r))
-      | Ddecr (Eq, l) -> 
+      | Dsame l -> Dsame (Node (bal, l, x, r))
+      | Ddecr (Eq, l) ->
         (match bal with
-        | Same ->  Dsame (Node (Less, l, x, r))
-        | More ->  Ddecr (Eq, Node (Same, l, x, r))
-        | Less -> 
+        | Same -> Dsame (Node (Less, l, x, r))
+        | More -> Ddecr (Eq, Node (Same, l, x, r))
+        | Less ->
           (match rotl l x r with
-          | Inl t ->  Ddecr (Eq, t)
-          | Inr t ->  Dsame t)))
+          | Inl t -> Ddecr (Eq, t)
+          | Inr t -> Dsame t)))
     else (
       match del y r with
-      | Dsame r ->  Dsame (Node (bal, l, x, r))
-      | Ddecr (Eq, r) -> 
+      | Dsame r -> Dsame (Node (bal, l, x, r))
+      | Ddecr (Eq, r) ->
         (match bal with
-        | Same ->  Dsame (Node (More, l, x, r))
-        | Less ->  Ddecr (Eq, Node (Same, l, x, r))
-        | More -> 
+        | Same -> Dsame (Node (More, l, x, r))
+        | Less -> Ddecr (Eq, Node (Same, l, x, r))
+        | More ->
           (match rotr l x r with
-          | Inl t ->  Ddecr (Eq, t)
-          | Inr t ->  Dsame t)))
+          | Inl t -> Ddecr (Eq, t)
+          | Inr t -> Dsame t)))
 ;;
 
 let delete x (Avl t) =
   match del x t with
-  | Dsame t ->  Avl t
-  | Ddecr (_, t) ->  Avl t
+  | Dsame t -> Avl t
+  | Ddecr (_, t) -> Avl t
 ;;
 
 (* Exercise 22: Red-black trees *)
@@ -1955,7 +1955,7 @@ type (_, _) ctxt =
   | CBlk : int * dir * ('c1, 'n) sub_tree * (black, 'n succ) ctxt -> ('c, 'n) ctxt
 
 let blacken = function
-  | Rnode (l, e, r) ->  Bnode (l, e, r)
+  | Rnode (l, e, r) -> Bnode (l, e, r)
 ;;
 
 type _ crep =
@@ -1963,61 +1963,61 @@ type _ crep =
   | Black : black crep
 
 let color : type c n. (c, n) sub_tree -> c crep = function
-  | Bleaf ->  Black
-  | Rnode _ ->  Red
-  | Bnode _ ->  Black
+  | Bleaf -> Black
+  | Rnode _ -> Red
+  | Bnode _ -> Black
 ;;
 
 let rec fill : type c n. (c, n) ctxt -> (c, n) sub_tree -> rb_tree =
  fun ct t ->
   match ct with
-  | CNil ->  Root t
-  | CRed (e, LeftD, uncle, c) ->  fill c (Rnode (uncle, e, t))
-  | CRed (e, RightD, uncle, c) ->  fill c (Rnode (t, e, uncle))
-  | CBlk (e, LeftD, uncle, c) ->  fill c (Bnode (uncle, e, t))
-  | CBlk (e, RightD, uncle, c) ->  fill c (Bnode (t, e, uncle))
+  | CNil -> Root t
+  | CRed (e, LeftD, uncle, c) -> fill c (Rnode (uncle, e, t))
+  | CRed (e, RightD, uncle, c) -> fill c (Rnode (t, e, uncle))
+  | CBlk (e, LeftD, uncle, c) -> fill c (Bnode (uncle, e, t))
+  | CBlk (e, RightD, uncle, c) -> fill c (Bnode (t, e, uncle))
 ;;
 
 let recolor d1 pE sib d2 gE uncle t =
   match d1, d2 with
-  | LeftD, RightD ->  Rnode (Bnode (sib, pE, t), gE, uncle)
-  | RightD, RightD ->  Rnode (Bnode (t, pE, sib), gE, uncle)
-  | LeftD, LeftD ->  Rnode (uncle, gE, Bnode (sib, pE, t))
-  | RightD, LeftD ->  Rnode (uncle, gE, Bnode (t, pE, sib))
+  | LeftD, RightD -> Rnode (Bnode (sib, pE, t), gE, uncle)
+  | RightD, RightD -> Rnode (Bnode (t, pE, sib), gE, uncle)
+  | LeftD, LeftD -> Rnode (uncle, gE, Bnode (sib, pE, t))
+  | RightD, LeftD -> Rnode (uncle, gE, Bnode (t, pE, sib))
 ;;
 
 let rotate d1 pE sib d2 gE uncle (Rnode (x, e, y)) =
   match d1, d2 with
-  | RightD, RightD ->  Bnode (Rnode (x, e, y), pE, Rnode (sib, gE, uncle))
-  | LeftD, RightD ->  Bnode (Rnode (sib, pE, x), e, Rnode (y, gE, uncle))
-  | LeftD, LeftD ->  Bnode (Rnode (uncle, gE, sib), pE, Rnode (x, e, y))
-  | RightD, LeftD ->  Bnode (Rnode (uncle, gE, x), e, Rnode (y, pE, sib))
+  | RightD, RightD -> Bnode (Rnode (x, e, y), pE, Rnode (sib, gE, uncle))
+  | LeftD, RightD -> Bnode (Rnode (sib, pE, x), e, Rnode (y, gE, uncle))
+  | LeftD, LeftD -> Bnode (Rnode (uncle, gE, sib), pE, Rnode (x, e, y))
+  | RightD, LeftD -> Bnode (Rnode (uncle, gE, x), e, Rnode (y, pE, sib))
 ;;
 
 let rec repair : type c n. (red, n) sub_tree -> (c, n) ctxt -> rb_tree =
  fun t ct ->
   match ct with
-  | CNil ->  Root (blacken t)
-  | CBlk (e, LeftD, sib, c) ->  fill c (Bnode (sib, e, t))
-  | CBlk (e, RightD, sib, c) ->  fill c (Bnode (t, e, sib))
-  | CRed (e, dir, sib, CBlk (e', dir', uncle, ct)) -> 
+  | CNil -> Root (blacken t)
+  | CBlk (e, LeftD, sib, c) -> fill c (Bnode (sib, e, t))
+  | CBlk (e, RightD, sib, c) -> fill c (Bnode (t, e, sib))
+  | CRed (e, dir, sib, CBlk (e', dir', uncle, ct)) ->
     (match color uncle with
-    | Red ->  repair (recolor dir e sib dir' e' (blacken uncle) t) ct
-    | Black ->  fill ct (rotate dir e sib dir' e' uncle t))
+    | Red -> repair (recolor dir e sib dir' e' (blacken uncle) t) ct
+    | Black -> fill ct (rotate dir e sib dir' e' uncle t))
 ;;
 
 let rec ins : type c n. int -> (c, n) sub_tree -> (c, n) ctxt -> rb_tree =
  fun e t ct ->
   match t with
-  | Rnode (l, e', r) -> 
+  | Rnode (l, e', r) ->
     if e < e'
     then ins e l (CRed (e', RightD, r, ct))
     else ins e r (CRed (e', LeftD, l, ct))
-  | Bnode (l, e', r) -> 
+  | Bnode (l, e', r) ->
     if e < e'
     then ins e l (CBlk (e', RightD, r, ct))
     else ins e r (CBlk (e', LeftD, l, ct))
-  | Bleaf ->  repair (Rnode (Bleaf, e, Bleaf)) ct
+  | Bleaf -> repair (Rnode (Bleaf, e, Bleaf)) ct
 ;;
 
 let insert e (Root t) = ins e t CNil
@@ -2035,11 +2035,11 @@ let ex1 = Ap (Add, Pair (Const 3, Const 5))
 let ex2 = Pair (ex1, Const 1)
 
 let rec eval_term : type a. a term -> a = function
-  | Const x ->  x
-  | Add ->  fun (x, y) -> x + y
-  | LT ->  fun (x, y) -> x < y
-  | Ap (f, x) ->  eval_term f (eval_term x)
-  | Pair (x, y) ->  eval_term x, eval_term y
+  | Const x -> x
+  | Add -> fun (x, y) -> x + y
+  | LT -> fun (x, y) -> x < y
+  | Ap (f, x) -> eval_term f (eval_term x)
+  | Pair (x, y) -> eval_term x, eval_term y
 ;;
 
 type _ rep =
@@ -2053,36 +2053,36 @@ type (_, _) equal = Eq : ('a, 'a) equal
 let rec rep_equal : type a b. a rep -> b rep -> (a, b) equal option =
  fun ra rb ->
   match ra, rb with
-  | Rint, Rint ->  Some Eq
-  | Rbool, Rbool ->  Some Eq
-  | Rpair (a1, a2), Rpair (b1, b2) -> 
+  | Rint, Rint -> Some Eq
+  | Rbool, Rbool -> Some Eq
+  | Rpair (a1, a2), Rpair (b1, b2) ->
     (match rep_equal a1 b1 with
-    | None ->  None
-    | Some Eq -> 
+    | None -> None
+    | Some Eq ->
       (match rep_equal a2 b2 with
-      | None ->  None
-      | Some Eq ->  Some Eq))
-  | Rfun (a1, a2), Rfun (b1, b2) -> 
+      | None -> None
+      | Some Eq -> Some Eq))
+  | Rfun (a1, a2), Rfun (b1, b2) ->
     (match rep_equal a1 b1 with
-    | None ->  None
-    | Some Eq -> 
+    | None -> None
+    | Some Eq ->
       (match rep_equal a2 b2 with
-      | None ->  None
-      | Some Eq ->  Some Eq))
-  | _ ->  None
+      | None -> None
+      | Some Eq -> Some Eq))
+  | _ -> None
 ;;
 
 type assoc = Assoc : string * 'a rep * 'a -> assoc
 
 let rec assoc : type a. string -> a rep -> assoc list -> a =
  fun x r -> function
-  | [] ->  raise Not_found
-  | Assoc (x', r', v) :: env -> 
+  | [] -> raise Not_found
+  | Assoc (x', r', v) :: env ->
     if x = x'
     then (
       match rep_equal r r' with
-      | None ->  failwith ("Wrong type for " ^ x)
-      | Some Eq ->  v)
+      | None -> failwith ("Wrong type for " ^ x)
+      | Some Eq -> v)
     else assoc x r env
 ;;
 
@@ -2097,13 +2097,13 @@ type _ term =
 
 let rec eval_term : type a. assoc list -> a term -> a =
  fun env -> function
-  | Var (x, r) ->  assoc x r env
-  | Abs (x, r, e) ->  fun v -> eval_term (Assoc (x, r, v) :: env) e
-  | Const x ->  x
-  | Add ->  fun (x, y) -> x + y
-  | LT ->  fun (x, y) -> x < y
-  | Ap (f, x) ->  eval_term env f (eval_term env x)
-  | Pair (x, y) ->  eval_term env x, eval_term env y
+  | Var (x, r) -> assoc x r env
+  | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
+  | Const x -> x
+  | Add -> fun (x, y) -> x + y
+  | LT -> fun (x, y) -> x < y
+  | Ap (f, x) -> eval_term env f (eval_term env x)
+  | Pair (x, y) -> eval_term env x, eval_term env y
 ;;
 
 let ex3 = Abs ("x", Rint, Ap (Add, Pair (Var ("x", Rint), Var ("x", Rint))))
@@ -2139,11 +2139,11 @@ type _ env =
 let rec eval_lam : type e t. e env -> (e, t) lam -> t =
  fun env m ->
   match env, m with
-  | _, Const n ->  n
-  | Econs (_, v, r), Var _ ->  v
-  | Econs (_, _, r), Shift e ->  eval_lam r e
-  | _, Abs (n, body) ->  fun x -> eval_lam (Econs (n, x, env)) body
-  | _, App (f, x) ->  eval_lam env f (eval_lam env x)
+  | _, Const n -> n
+  | Econs (_, v, r), Var _ -> v
+  | Econs (_, _, r), Shift e -> eval_lam r e
+  | _, Abs (n, body) -> fun x -> eval_lam (Econs (n, x, env)) body
+  | _, App (f, x) -> eval_lam env f (eval_lam env x)
 ;;
 
 type add = Add
@@ -2172,16 +2172,16 @@ type _ rep =
 let rec compare : type a b. a rep -> b rep -> (string, (a, b) equal) sum =
  fun a b ->
   match a, b with
-  | I, I ->  Inr Eq
-  | Ar (x, y), Ar (s, t) -> 
+  | I, I -> Inr Eq
+  | Ar (x, y), Ar (s, t) ->
     (match compare x s with
-    | Inl _ as e ->  e
-    | Inr Eq -> 
+    | Inl _ as e -> e
+    | Inr Eq ->
       (match compare y t with
-      | Inl _ as e ->  e
-      | Inr Eq as e ->  e))
-  | I, Ar _ ->  Inl "I <> Ar _"
-  | Ar _, I ->  Inl "Ar _ <> I"
+      | Inl _ as e -> e
+      | Inr Eq as e -> e))
+  | I, Ar _ -> Inl "I <> Ar _"
+  | Ar _, I -> Inl "Ar _ <> I"
 ;;
 
 type term =
@@ -2201,38 +2201,38 @@ type _ checked =
 let rec lookup : type e. string -> e ctx -> e checked =
  fun name ctx ->
   match ctx with
-  | Cnil ->  Cerror ("Name not found: " ^ name)
-  | Ccons (l, s, t, rs) -> 
+  | Cnil -> Cerror ("Name not found: " ^ name)
+  | Ccons (l, s, t, rs) ->
     if s = name
     then Cok (Var l, t)
     else (
       match lookup name rs with
-      | Cerror m ->  Cerror m
-      | Cok (v, t) ->  Cok (Shift v, t))
+      | Cerror m -> Cerror m
+      | Cok (v, t) -> Cok (Shift v, t))
 ;;
 
 let rec tc : type n e. n nat -> e ctx -> term -> e checked =
  fun n ctx t ->
   match t with
-  | V s ->  lookup s ctx
-  | Ap (f, x) -> 
+  | V s -> lookup s ctx
+  | Ap (f, x) ->
     (match tc n ctx f with
-    | Cerror _ as e ->  e
-    | Cok (f', ft) -> 
+    | Cerror _ as e -> e
+    | Cok (f', ft) ->
       (match tc n ctx x with
-      | Cerror _ as e ->  e
-      | Cok (x', xt) -> 
+      | Cerror _ as e -> e
+      | Cok (x', xt) ->
         (match ft with
-        | Ar (a, b) -> 
+        | Ar (a, b) ->
           (match compare a xt with
-          | Inl s ->  Cerror s
-          | Inr Eq ->  Cok (App (f', x'), b))
-        | _ ->  Cerror "Non fun in Ap")))
-  | Ab (s, t, body) -> 
+          | Inl s -> Cerror s
+          | Inr Eq -> Cok (App (f', x'), b))
+        | _ -> Cerror "Non fun in Ap")))
+  | Ab (s, t, body) ->
     (match tc (NS n) (Ccons (n, s, t, ctx)) body with
-    | Cerror _ as e ->  e
-    | Cok (body', et) ->  Cok (Abs (n, body'), Ar (t, et)))
-  | C m ->  Cok (Const m, I)
+    | Cerror _ as e -> e
+    | Cok (body', et) -> Cok (Abs (n, body'), Ar (t, et)))
+  | C m -> Cok (Const m, I)
 ;;
 
 let ctx0 =
@@ -2246,9 +2246,9 @@ let ex2 = Ap (ex1, C 3)
 let c2 = tc NZ ctx0 ex2
 
 let eval_checked env = function
-  | Cerror s ->  failwith s
-  | Cok (e, I) ->  (eval_lam env e : int)
-  | Cok _ ->  failwith "Can only evaluate expressions of type I"
+  | Cerror s -> failwith s
+  | Cok (e, I) -> (eval_lam env e : int)
+  | Cok _ -> failwith "Can only evaluate expressions of type I"
 ;;
 
 let v2 = eval_checked env0 c2
@@ -2279,11 +2279,11 @@ type (_, _, _) lam =
 let ex1 = App (Lam (X, Var X), Const (IntR, 3))
 
 let rec mode : type m e t. (m, e, t) lam -> m mode = function
-  | Lam (v, body) ->  Pval
-  | Var v ->  Pval
-  | Const (r, v) ->  Pval
-  | Shift e ->  mode e
-  | App _ ->  Pexp
+  | Lam (v, body) -> Pval
+  | Var v -> Pval
+  | Const (r, v) -> Pval
+  | Shift e -> mode e
+  | App _ -> Pexp
 ;;
 
 type (_, _) sub =
@@ -2296,20 +2296,20 @@ type (_, _) lam' = Ex : ('m, 's, 't) lam -> ('s, 't) lam'
 let rec subst : type m1 r t s. (m1, r, t) lam -> (r, s) sub -> (s, t) lam' =
  fun t s ->
   match t, s with
-  | _, Id ->  Ex t
-  | Const (r, c), sub ->  Ex (Const (r, c))
-  | Var v, Bind (x, e, r) ->  Ex e
-  | Var v, Push sub ->  Ex (Var v)
-  | Shift e, Bind (_, _, r) ->  subst e r
-  | Shift e, Push sub -> 
+  | _, Id -> Ex t
+  | Const (r, c), sub -> Ex (Const (r, c))
+  | Var v, Bind (x, e, r) -> Ex e
+  | Var v, Push sub -> Ex (Var v)
+  | Shift e, Bind (_, _, r) -> subst e r
+  | Shift e, Push sub ->
     (match subst e sub with
-    | Ex a ->  Ex (Shift a))
-  | App (f, x), sub -> 
+    | Ex a -> Ex (Shift a))
+  | App (f, x), sub ->
     (match subst f sub, subst x sub with
-    | Ex g, Ex y ->  Ex (App (g, y)))
-  | Lam (v, x), sub -> 
+    | Ex g, Ex y -> Ex (App (g, y)))
+  | Lam (v, x), sub ->
     (match subst x (Push sub) with
-    | Ex body ->  Ex (Lam (v, body)))
+    | Ex body -> Ex (Lam (v, body)))
 ;;
 
 type closed = rnil
@@ -2319,29 +2319,29 @@ let rec rule : type a b.
     (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam =
  fun v1 v2 ->
   match v1, v2 with
-  | Lam (x, body), v -> 
+  | Lam (x, body), v ->
     (match subst body (Bind (x, v, Id)) with
-    | Ex term -> 
+    | Ex term ->
       (match mode term with
-      | Pexp ->  Inl term
-      | Pval ->  Inr term))
-  | Const (IntTo b, f), Const (IntR, x) ->  Inr (Const (b, f x))
+      | Pexp -> Inl term
+      | Pval -> Inr term))
+  | Const (IntTo b, f), Const (IntR, x) -> Inr (Const (b, f x))
 ;;
 
 let rec onestep : type m t. (m, closed, t) lam -> t rlam = function
-  | Lam (v, body) ->  Inr (Lam (v, body))
-  | Const (r, v) ->  Inr (Const (r, v))
-  | App (e1, e2) -> 
+  | Lam (v, body) -> Inr (Lam (v, body))
+  | Const (r, v) -> Inr (Const (r, v))
+  | App (e1, e2) ->
     (match mode e1, mode e2 with
-    | Pexp, _ -> 
+    | Pexp, _ ->
       (match onestep e1 with
-      | Inl e ->  Inl (App (e, e2))
-      | Inr v ->  Inl (App (v, e2)))
-    | Pval, Pexp -> 
+      | Inl e -> Inl (App (e, e2))
+      | Inr v -> Inl (App (v, e2)))
+    | Pval, Pexp ->
       (match onestep e2 with
-      | Inl e ->  Inl (App (e1, e))
-      | Inr v ->  Inl (App (e1, v)))
-    | Pval, Pval ->  rule e1 e2)
+      | Inl e -> Inl (App (e1, e))
+      | Inr v -> Inl (App (e1, v)))
+    | Pval, Pval -> rule e1 e2)
 ;;
 
 type ('env, 'a) var =
@@ -2356,10 +2356,10 @@ type ('env, 'a) typ =
 let f : type env a. (env, a) typ -> (env, a) typ -> int =
  fun ta tb ->
   match ta, tb with
-  | Tint, Tint ->  0
-  | Tbool, Tbool ->  1
-  | Tvar var, tb ->  2
-  | _ ->  .
+  | Tint, Tint -> 0
+  | Tbool, Tbool -> 1
+  | Tvar var, tb -> 2
+  | _ -> .
 ;;
 
 (* error *)
@@ -2378,10 +2378,10 @@ type _ inline_t =
 
 let uppercase seq =
   let rec process : type a. a inline_t -> a inline_t = function
-    | Text txt ->  Text (String.uppercase_ascii txt)
-    | Bold xs ->  Bold (List.map process xs)
-    | Link lnk ->  Link lnk
-    | Mref (lnk, xs) ->  Mref (lnk, List.map process xs)
+    | Text txt -> Text (String.uppercase_ascii txt)
+    | Bold xs -> Bold (List.map process xs)
+    | Link lnk -> Link lnk
+    | Mref (lnk, xs) -> Mref (lnk, List.map process xs)
   in
   List.map process seq
 ;;
@@ -2394,15 +2394,15 @@ type ast_t =
 
 let inlineseq_from_astseq seq =
   let rec process_nonlink = function
-    | Ast_Text txt ->  Text txt
-    | Ast_Bold xs ->  Bold (List.map process_nonlink xs)
-    | _ ->  assert false
+    | Ast_Text txt -> Text txt
+    | Ast_Bold xs -> Bold (List.map process_nonlink xs)
+    | _ -> assert false
   in
   let rec process_any = function
-    | Ast_Text txt ->  Text txt
-    | Ast_Bold xs ->  Bold (List.map process_any xs)
-    | Ast_Link lnk ->  Link lnk
-    | Ast_Mref (lnk, xs) ->  Mref (lnk, List.map process_nonlink xs)
+    | Ast_Text txt -> Text txt
+    | Ast_Bold xs -> Bold (List.map process_any xs)
+    | Ast_Link lnk -> Link lnk
+    | Ast_Mref (lnk, xs) -> Mref (lnk, List.map process_nonlink xs)
   in
   List.map process_any seq
 ;;
@@ -2416,13 +2416,13 @@ let inlineseq_from_astseq seq =
   let rec process : type a. a linkp -> ast_t -> a inline_t =
    fun allow_link ast ->
     match allow_link, ast with
-    | Maylink, Ast_Text txt ->  Text txt
-    | Nonlink, Ast_Text txt ->  Text txt
-    | x, Ast_Bold xs ->  Bold (List.map (process x) xs)
-    | Maylink, Ast_Link lnk ->  Link lnk
-    | Nonlink, Ast_Link _ ->  assert false
-    | Maylink, Ast_Mref (lnk, xs) ->  Mref (lnk, List.map (process Nonlink) xs)
-    | Nonlink, Ast_Mref _ ->  assert false
+    | Maylink, Ast_Text txt -> Text txt
+    | Nonlink, Ast_Text txt -> Text txt
+    | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+    | Maylink, Ast_Link lnk -> Link lnk
+    | Nonlink, Ast_Link _ -> assert false
+    | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
+    | Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process Maylink) seq
 ;;
@@ -2434,13 +2434,12 @@ let inlineseq_from_astseq seq =
   let rec process : type a. a linkp2 -> ast_t -> a inline_t =
    fun allow_link ast ->
     match allow_link, ast with
-    | Kind _, Ast_Text txt ->  Text txt
-    | x, Ast_Bold xs ->  Bold (List.map (process x) xs)
-    | Kind Maylink, Ast_Link lnk ->  Link lnk
-    | Kind Nonlink, Ast_Link _ ->  assert false
-    | Kind Maylink, Ast_Mref (lnk, xs) -> 
-      Mref (lnk, List.map (process (Kind Nonlink)) xs)
-    | Kind Nonlink, Ast_Mref _ ->  assert false
+    | Kind _, Ast_Text txt -> Text txt
+    | x, Ast_Bold xs -> Bold (List.map (process x) xs)
+    | Kind Maylink, Ast_Link lnk -> Link lnk
+    | Kind Nonlink, Ast_Link _ -> assert false
+    | Kind Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process (Kind Nonlink)) xs)
+    | Kind Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process (Kind Maylink)) seq
 ;;
@@ -2454,8 +2453,8 @@ struct
     | Two : T.two t
 
   let add (type a) : a t * a t -> string = function
-    | One, One ->  "two"
-    | Two, Two ->  "four"
+    | One, One -> "two"
+    | Two, Two -> "four"
   ;;
 end
 
@@ -2472,7 +2471,7 @@ end
 let of_type : type a. a -> a =
  fun x ->
   match B.f x 4 with
-  | Eq ->  5
+  | Eq -> 5
 ;;
 
 type _ constant =
@@ -2487,10 +2486,10 @@ type (_, _, _) binop =
 let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant) :
     c constant =
   match bop, x, y with
-  | Eq, Bool x, Bool y ->  Bool (if x then y else not y)
-  | Leq, Int x, Int y ->  Bool (x <= y)
-  | Leq, Bool x, Bool y ->  Bool (x <= y)
-  | Add, Int x, Int y ->  Int (x + y)
+  | Eq, Bool x, Bool y -> Bool (if x then y else not y)
+  | Leq, Int x, Int y -> Bool (x <= y)
+  | Leq, Bool x, Bool y -> Bool (x <= y)
+  | Add, Int x, Int y -> Int (x + y)
 ;;
 
 let _ = eval Eq (Int 2) (Int 3)
@@ -2508,16 +2507,16 @@ type 'a poly =
 (* constraint 'a = [< `TagA of int | `TagB] *)
 
 let intA = function
-  | `TagA i ->  i
+  | `TagA i -> i
 ;;
 
 let intB = function
-  | `TagB ->  4
+  | `TagB -> 4
 ;;
 
 let intAorB = function
-  | `TagA i ->  i
-  | `TagB ->  4
+  | `TagA i -> i
+  | `TagB -> 4
 ;;
 
 type _ wrapPoly = WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
@@ -2525,8 +2524,8 @@ type _ wrapPoly = WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPol
 let example6 : type a. a wrapPoly -> a -> int =
  fun w ->
   match w with
-  | WrapPoly ATag ->  intA
-  | WrapPoly _ ->  intA
+  | WrapPoly ATag -> intA
+  | WrapPoly _ -> intA
 ;;
 
 (* This should not be allowed *)
@@ -2546,7 +2545,7 @@ struct
   let f : int S.t ab -> float S.t ab -> string =
    fun (l : int S.t ab) (r : float S.t ab) ->
     match l, r with
-    | A, B ->  "f A B"
+    | A, B -> "f A B"
  ;;
 end
 
@@ -2564,7 +2563,7 @@ struct
   let f : a S.t ab -> b S.t ab -> string =
    fun l r ->
     match l, r with
-    | A, B ->  "f A B"
+    | A, B -> "f A B"
  ;;
 end
 
@@ -2586,7 +2585,7 @@ end = struct
 end
 
 let f : (M.s, [`A | `B]) t -> string = function
-  | Any ->  "Any"
+  | Any -> "Any"
 ;;
 
 let () = print_endline (f M.eq)
@@ -2602,7 +2601,7 @@ end = struct
 end
 
 let f : (N.s, < a : int ; b : bool >) t -> string = function
-  | Any ->  "Any"
+  | Any -> "Any"
 ;;
 
 type (_, _) comp =
@@ -2625,7 +2624,7 @@ end
 
 ;;
 match M.comp with
-| Diff ->  false
+| Diff -> false
 
 module U = struct
   type t = { x : int }
@@ -2643,14 +2642,14 @@ end
 
 ;;
 match M.comp with
-| Diff ->  false
+| Diff -> false
 
 type 'a t = T of 'a
 type 'a s = S of 'a
 type (_, _) eq = Refl : ('a, 'a) eq
 
 let f : (int s, int t) eq -> unit = function
-  | Refl ->  ()
+  | Refl -> ()
 ;;
 
 module M (S : sig
@@ -2659,7 +2658,7 @@ module M (S : sig
 end) =
 struct
   let f : ('a S.s, 'a S.t) eq -> unit = function
-    | Refl ->  ()
+    | Refl -> ()
   ;;
 end
 
@@ -2676,11 +2675,11 @@ type aux = Aux : [`Succ of [< [< [< [`Zero] pre_nat] pre_nat] pre_nat]] nat -> a
 
 let f (Aux x) =
   match x with
-  | Succ Zero ->  "1"
-  | Succ (Succ Zero) ->  "2"
-  | Succ (Succ (Succ Zero)) ->  "3"
-  | Succ (Succ (Succ (Succ Zero))) ->  "4"
-  | _ ->  .
+  | Succ Zero -> "1"
+  | Succ (Succ Zero) -> "2"
+  | Succ (Succ (Succ Zero)) -> "3"
+  | Succ (Succ (Succ (Succ Zero))) -> "4"
+  | _ -> .
 ;;
 
 (* error *)
@@ -2700,7 +2699,7 @@ end) (B : sig
 end) =
 struct
   let f : ((module A.T), (module B.T)) t -> string = function
-    | B s ->  s
+    | B s -> s
   ;;
 end
 
@@ -2722,20 +2721,20 @@ type ('a, 'result, 'visit_action) context =
 
 let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_action =
   function
-  | Local ->  fun _ -> raise Exit
-  | Global ->  fun _ -> raise Exit
+  | Local -> fun _ -> raise Exit
+  | Global -> fun _ -> raise Exit
 ;;
 
 let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> visit_action
     = function
-  | Local ->  fun _ -> raise Exit
-  | Global ->  fun _ -> raise Exit
+  | Local -> fun _ -> raise Exit
+  | Global -> fun _ -> raise Exit
 ;;
 
 let vexpr (type result visit_action)
     : (unit, result, visit_action) context -> unit -> visit_action = function
-  | Local ->  fun _ -> raise Exit
-  | Global ->  fun _ -> raise Exit
+  | Local -> fun _ -> raise Exit
+  | Global -> fun _ -> raise Exit
 ;;
 
 module A = struct
@@ -2759,8 +2758,8 @@ type _ lst =
 let rec get_var : type stk ret. (stk s, ret) var -> stk lst -> ret =
  fun n s ->
   match n, s with
-  | Head, CCons (h, _) ->  h
-  | Tail n', CCons (_, t) ->  get_var n' t
+  | Head, CCons (h, _) -> h
+  | Tail n', CCons (_, t) -> get_var n' t
 ;;
 
 type 'a t = [< `Foo | `Bar] as 'a
@@ -2780,7 +2779,7 @@ type (_, _) eqp =
   | N : string -> ('a, 'b) eqp
 
 let f : ('a list, 'a) eqp -> unit = function
-  | N s ->  print_string s
+  | N s -> print_string s
 ;;
 
 module rec A : sig
@@ -2811,8 +2810,8 @@ let get1 (Cons (x, _) : (_ * 'a, 'a) t) = x
 (* warn, cf PR#6993 *)
 
 let get1' = function
-  | (Cons (x, _) : (_ * 'a, 'a) t) ->  x
-  | Nil ->  assert false
+  | (Cons (x, _) : (_ * 'a, 'a) t) -> x
+  | Nil -> assert false
 ;;
 
 (* ok *)
@@ -2822,8 +2821,8 @@ type _ t =
   | Same : 'l t -> 'l t
 
 let rec f = function
-  | Int x ->  x
-  | Same s ->  f s
+  | Int x -> x
+  | Same s -> f s
 ;;
 
 type 'a tt = 'a t =
@@ -2885,7 +2884,7 @@ type _ t = T : int t
 (* Should raise Not_found *)
 let _ =
   match (raise Not_found : float t) with
-  | _ ->  .
+  | _ -> .
 ;;
 
 type (_, _) eq =
@@ -2936,8 +2935,8 @@ type _ fin =
 type _ is_succ = IS : 'a succ is_succ
 
 let fin_succ : type n. n fin -> n is_succ = function
-  | FZ ->  IS
-  | FS _ ->  IS
+  | FZ -> IS
+  | FS _ -> IS
 ;;
 
 (* 3 First-Order Terms, Renaming and Substitution *)
@@ -2951,9 +2950,9 @@ let var x = Var x
 let lift r : 'm fin -> 'n term = fun x -> Var (r x)
 
 let rec pre_subst f = function
-  | Var x ->  f x
-  | Leaf ->  Leaf
-  | Fork (t1, t2) ->  Fork (pre_subst f t1, pre_subst f t2)
+  | Var x -> f x
+  | Leaf -> Leaf
+  | Fork (t1, t2) -> Fork (pre_subst f t1, pre_subst f t2)
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
@@ -2966,15 +2965,15 @@ let comp_subst f g (x : 'a fin) = pre_subst f (g x)
 let rec thin : type n. n succ fin -> n fin -> n succ fin =
  fun x y ->
   match x, y with
-  | FZ, y ->  FS y
-  | FS x, FZ ->  FZ
-  | FS x, FS y ->  FS (thin x y)
+  | FZ, y -> FS y
+  | FS x, FZ -> FZ
+  | FS x, FS y -> FS (thin x y)
 ;;
 
 let bind t f =
   match t with
-  | None ->  None
-  | Some x ->  f x
+  | None -> None
+  | Some x -> f x
 ;;
 
 (* val bind : 'a option -> ('a -> 'b option) -> 'b option *)
@@ -2982,12 +2981,12 @@ let bind t f =
 let rec thick : type n. n succ fin -> n succ fin -> n fin option =
  fun x y ->
   match x, y with
-  | FZ, FZ ->  None
-  | FZ, FS y ->  Some y
-  | FS x, FZ -> 
+  | FZ, FZ -> None
+  | FZ, FS y -> Some y
+  | FS x, FZ ->
     let IS = fin_succ x in
     Some FZ
-  | FS x, FS y -> 
+  | FS x, FS y ->
     let IS = fin_succ x in
     bind (thick x y) (fun x -> Some (FS x))
 ;;
@@ -2995,16 +2994,16 @@ let rec thick : type n. n succ fin -> n succ fin -> n fin option =
 let rec check : type n. n succ fin -> n succ term -> n term option =
  fun x t ->
   match t with
-  | Var y ->  bind (thick x y) (fun x -> Some (Var x))
-  | Leaf ->  Some Leaf
-  | Fork (t1, t2) -> 
+  | Var y -> bind (thick x y) (fun x -> Some (Var x))
+  | Leaf -> Some Leaf
+  | Fork (t1, t2) ->
     bind (check x t1) (fun t1 -> bind (check x t2) (fun t2 -> Some (Fork (t1, t2))))
 ;;
 
 let subst_var x t' y =
   match thick x y with
-  | None ->  t'
-  | Some y' ->  Var y'
+  | None -> t'
+  | Some y' -> Var y'
 ;;
 
 (* val subst_var : 'a succ fin -> 'a term -> 'a succ fin -> 'a term *)
@@ -3020,15 +3019,15 @@ type (_, _) alist =
   | Asnoc : ('m, 'n) alist * 'm term * 'm succ fin -> ('m succ, 'n) alist
 
 let rec sub : type m n. (m, n) alist -> m fin -> n term = function
-  | Anil ->  var
-  | Asnoc (s, t, x) ->  comp_subst (sub s) (subst_var x t)
+  | Anil -> var
+  | Asnoc (s, t, x) -> comp_subst (sub s) (subst_var x t)
 ;;
 
 let rec append : type m n l. (m, n) alist -> (l, m) alist -> (l, n) alist =
  fun r s ->
   match s with
-  | Anil ->  r
-  | Asnoc (s, t, x) ->  Asnoc (append r s, t, x)
+  | Anil -> r
+  | Asnoc (s, t, x) -> Asnoc (append r s, t, x)
 ;;
 
 type _ ealist = EAlist : ('a, 'b) alist -> 'a ealist
@@ -3037,20 +3036,20 @@ let asnoc a t' x = EAlist (Asnoc (a, t', x))
 
 (* Extra work: we need sub to work on ealist too, for examples *)
 let rec weaken_fin : type n. n fin -> n succ fin = function
-  | FZ ->  FZ
-  | FS x ->  FS (weaken_fin x)
+  | FZ -> FZ
+  | FS x -> FS (weaken_fin x)
 ;;
 
 let weaken_term t = pre_subst (fun x -> Var (weaken_fin x)) t
 
 let rec weaken_alist : type m n. (m, n) alist -> (m succ, n succ) alist = function
-  | Anil ->  Anil
-  | Asnoc (s, t, x) ->  Asnoc (weaken_alist s, weaken_term t, weaken_fin x)
+  | Anil -> Anil
+  | Asnoc (s, t, x) -> Asnoc (weaken_alist s, weaken_term t, weaken_fin x)
 ;;
 
 let rec sub' : type m. m ealist -> m fin -> m term = function
-  | EAlist Anil ->  var
-  | EAlist (Asnoc (s, t, x)) -> 
+  | EAlist Anil -> var
+  | EAlist (Asnoc (s, t, x)) ->
     comp_subst (sub' (EAlist (weaken_alist s))) (fun t' -> weaken_term (subst_var x t t'))
 ;;
 
@@ -3062,8 +3061,8 @@ let subst' d = pre_subst (sub' d)
 
 let flex_flex x y =
   match thick x y with
-  | Some y' ->  asnoc Anil (Var y') x
-  | None ->  EAlist Anil
+  | Some y' -> asnoc Anil (Var y') x
+  | None -> EAlist Anil
 ;;
 
 (* val flex_flex : 'a succ fin -> 'a succ fin -> 'a succ ealist *)
@@ -3075,20 +3074,20 @@ let flex_rigid x t = bind (check x t) (fun t' -> Some (asnoc Anil t' x))
 let rec amgu : type m. m term -> m term -> m ealist -> m ealist option =
  fun s t acc ->
   match s, t, acc with
-  | Leaf, Leaf, _ ->  Some acc
-  | Leaf, Fork _, _ ->  None
-  | Fork _, Leaf, _ ->  None
-  | Fork (s1, s2), Fork (t1, t2), _ ->  bind (amgu s1 t1 acc) (amgu s2 t2)
-  | Var x, Var y, EAlist Anil -> 
+  | Leaf, Leaf, _ -> Some acc
+  | Leaf, Fork _, _ -> None
+  | Fork _, Leaf, _ -> None
+  | Fork (s1, s2), Fork (t1, t2), _ -> bind (amgu s1 t1 acc) (amgu s2 t2)
+  | Var x, Var y, EAlist Anil ->
     let IS = fin_succ x in
     Some (flex_flex x y)
-  | Var x, t, EAlist Anil -> 
+  | Var x, t, EAlist Anil ->
     let IS = fin_succ x in
     flex_rigid x t
-  | t, Var x, EAlist Anil -> 
+  | t, Var x, EAlist Anil ->
     let IS = fin_succ x in
     flex_rigid x t
-  | s, t, EAlist (Asnoc (d, r, z)) -> 
+  | s, t, EAlist (Asnoc (d, r, z)) ->
     bind
       (amgu (subst z r s) (subst z r t) (EAlist d))
       (fun (EAlist d) -> Some (asnoc d r z))
@@ -3103,8 +3102,8 @@ let t = Fork (Var (FS FZ), Var (FS FZ))
 
 let d =
   match mgu s t with
-  | Some x ->  x
-  | None ->  failwith "mgu"
+  | Some x -> x
+  | None -> failwith "mgu"
 ;;
 
 let s' = subst' d s
@@ -3160,8 +3159,8 @@ type _ t =
   | BoolLit : bool t
 
 let check : type s. s t * s -> bool = function
-  | BoolLit, false ->  false
-  | IntLit, 6 ->  false
+  | BoolLit, false -> false
+  | IntLit, 6 -> false
 ;;
 
 type ('a, 'b) pair =
@@ -3170,8 +3169,8 @@ type ('a, 'b) pair =
   }
 
 let check : type s. (s t, s) pair -> bool = function
-  | { fst = BoolLit; snd = false } ->  false
-  | { fst = IntLit; snd = 6 } ->  false
+  | { fst = BoolLit; snd = false } -> false
+  | { fst = IntLit; snd = 6 } -> false
 ;;
 
 module type S = sig
@@ -3612,9 +3611,9 @@ open Typ
 let rec to_string : 'a. 'a Typ.typ -> 'a -> string =
   fun (type s) t x ->
    match (t : s typ) with
-   | Int eq ->  string_of_int (TypEq.apply eq x)
-   | String eq ->  Printf.sprintf "%S" (TypEq.apply eq x)
-   | Pair (module P) -> 
+   | Int eq -> string_of_int (TypEq.apply eq x)
+   | String eq -> Printf.sprintf "%S" (TypEq.apply eq x)
+   | Pair (module P) ->
      let x1, x2 = TypEq.apply P.eq x in
      Printf.sprintf "(%s,%s)" (to_string P.t1 x1) (to_string P.t2 x2)
 ;;
@@ -3699,13 +3698,13 @@ end)
 type var = [`Var of string]
 
 let subst_var ~subst : var -> _ = function
-  | `Var s as x -> 
+  | `Var s as x ->
     (try Subst.find s subst with
-    | Not_found ->  x)
+    | Not_found -> x)
 ;;
 
 let free_var : var -> _ = function
-  | `Var s ->  Names.singleton s
+  | `Var s -> Names.singleton s
 ;;
 
 (* The lambda language: free variables, substitutions, and evaluation *)
@@ -3717,17 +3716,17 @@ type 'a lambda =
   ]
 
 let free_lambda ~free_rec : _ lambda -> _ = function
-  | #var as x ->  free_var x
-  | `Abs (s, t) ->  Names.remove s (free_rec t)
-  | `App (t1, t2) ->  Names.union (free_rec t1) (free_rec t2)
+  | #var as x -> free_var x
+  | `Abs (s, t) -> Names.remove s (free_rec t)
+  | `App (t1, t2) -> Names.union (free_rec t1) (free_rec t2)
 ;;
 
 let map_lambda ~map_rec : _ lambda -> _ = function
-  | #var as x ->  x
-  | `Abs (s, t) as l -> 
+  | #var as x -> x
+  | `Abs (s, t) as l ->
     let t' = map_rec t in
     if t == t' then l else `Abs (s, t')
-  | `App (t1, t2) as l -> 
+  | `App (t1, t2) as l ->
     let t'1 = map_rec t1
     and t'2 = map_rec t2 in
     if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
@@ -3741,8 +3740,8 @@ let next_id =
 ;;
 
 let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
-  | #var as x ->  subst_var ~subst x
-  | `Abs (s, t) as l -> 
+  | #var as x -> subst_var ~subst x
+  | `Abs (s, t) as l ->
     let used = free t in
     let used_expr =
       Subst.fold subst ~init:[] ~f:(fun ~key ~data acc ->
@@ -3753,14 +3752,14 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
       let name = s ^ string_of_int (next_id ()) in
       `Abs (name, subst_rec ~subst:(Subst.add ~key:s ~data:(`Var name) subst) t))
     else map_lambda ~map_rec:(subst_rec ~subst:(Subst.remove s subst)) l
-  | `App _ as l ->  map_lambda ~map_rec:(subst_rec ~subst) l
+  | `App _ as l -> map_lambda ~map_rec:(subst_rec ~subst) l
 ;;
 
 let eval_lambda ~eval_rec ~subst l =
   match map_lambda ~map_rec:eval_rec l with
-  | `App (`Abs (s, t1), t2) -> 
+  | `App (`Abs (s, t1), t2) ->
     eval_rec (subst ~subst:(Subst.add ~key:s ~data:t2 Subst.empty) t1)
-  | t ->  t
+  | t -> t
 ;;
 
 (* Specialized versions to use on lambda *)
@@ -3780,41 +3779,41 @@ type 'a expr =
   ]
 
 let free_expr ~free_rec : _ expr -> _ = function
-  | #var as x ->  free_var x
-  | `Num _ ->  Names.empty
-  | `Add (x, y) ->  Names.union (free_rec x) (free_rec y)
-  | `Neg x ->  free_rec x
-  | `Mult (x, y) ->  Names.union (free_rec x) (free_rec y)
+  | #var as x -> free_var x
+  | `Num _ -> Names.empty
+  | `Add (x, y) -> Names.union (free_rec x) (free_rec y)
+  | `Neg x -> free_rec x
+  | `Mult (x, y) -> Names.union (free_rec x) (free_rec y)
 ;;
 
 (* Here map_expr helps a lot *)
 let map_expr ~map_rec : _ expr -> _ = function
-  | #var as x ->  x
-  | `Num _ as x ->  x
-  | `Add (x, y) as e -> 
+  | #var as x -> x
+  | `Num _ as x -> x
+  | `Add (x, y) as e ->
     let x' = map_rec x
     and y' = map_rec y in
     if x == x' && y == y' then e else `Add (x', y')
-  | `Neg x as e -> 
+  | `Neg x as e ->
     let x' = map_rec x in
     if x == x' then e else `Neg x'
-  | `Mult (x, y) as e -> 
+  | `Mult (x, y) as e ->
     let x' = map_rec x
     and y' = map_rec y in
     if x == x' && y == y' then e else `Mult (x', y')
 ;;
 
 let subst_expr ~subst_rec ~subst : _ expr -> _ = function
-  | #var as x ->  subst_var ~subst x
-  | #expr as e ->  map_expr ~map_rec:(subst_rec ~subst) e
+  | #var as x -> subst_var ~subst x
+  | #expr as e -> map_expr ~map_rec:(subst_rec ~subst) e
 ;;
 
 let eval_expr ~eval_rec e =
   match map_expr ~map_rec:eval_rec e with
-  | `Add (`Num m, `Num n) ->  `Num (m + n)
-  | `Neg (`Num n) ->  `Num (-n)
-  | `Mult (`Num m, `Num n) ->  `Num (m * n)
-  | #expr as e ->  e
+  | `Add (`Num m, `Num n) -> `Num (m + n)
+  | `Neg (`Num n) -> `Num (-n)
+  | `Mult (`Num m, `Num n) -> `Num (m * n)
+  | #expr as e -> e
 ;;
 
 (* Specialized versions *)
@@ -3836,38 +3835,38 @@ type lexpr =
   ]
 
 let rec free : lexpr -> _ = function
-  | #lambda as x ->  free_lambda ~free_rec:free x
-  | #expr as x ->  free_expr ~free_rec:free x
+  | #lambda as x -> free_lambda ~free_rec:free x
+  | #expr as x -> free_expr ~free_rec:free x
 ;;
 
 let rec subst ~subst:s : lexpr -> _ = function
-  | #lambda as x ->  subst_lambda ~subst_rec:subst ~subst:s ~free x
-  | #expr as x ->  subst_expr ~subst_rec:subst ~subst:s x
+  | #lambda as x -> subst_lambda ~subst_rec:subst ~subst:s ~free x
+  | #expr as x -> subst_expr ~subst_rec:subst ~subst:s x
 ;;
 
 let rec eval : lexpr -> _ = function
-  | #lambda as x ->  eval_lambda ~eval_rec:eval ~subst x
-  | #expr as x ->  eval_expr ~eval_rec:eval x
+  | #lambda as x -> eval_lambda ~eval_rec:eval ~subst x
+  | #expr as x -> eval_expr ~eval_rec:eval x
 ;;
 
 let rec print = function
-  | `Var id ->  print_string id
-  | `Abs (id, l) -> 
+  | `Var id -> print_string id
+  | `Abs (id, l) ->
     print_string (" " ^ id ^ " . ");
     print l
-  | `App (l1, l2) -> 
+  | `App (l1, l2) ->
     print l1;
     print_string " ";
     print l2
-  | `Num x ->  print_int x
-  | `Add (e1, e2) -> 
+  | `Num x -> print_int x
+  | `Add (e1, e2) ->
     print e1;
     print_string " + ";
     print e2
-  | `Neg e -> 
+  | `Neg e ->
     print_string "-";
     print e
-  | `Mult (e1, e2) -> 
+  | `Mult (e1, e2) ->
     print e1;
     print_string " * ";
     print e2
@@ -3934,7 +3933,7 @@ class ['a] var_ops =
 
     method subst ~sub (`Var s as x) =
       try Subst.find s sub with
-      | Not_found ->  x
+      | Not_found -> x
 
     method free (`Var s) = Names.singleton s
 
@@ -3966,25 +3965,25 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method free =
       function
-      | #var as x ->  var#free x
-      | `Abs (s, t) ->  Names.remove s (!!free t)
-      | `App (t1, t2) ->  Names.union (!!free t1) (!!free t2)
+      | #var as x -> var#free x
+      | `Abs (s, t) -> Names.remove s (!!free t)
+      | `App (t1, t2) -> Names.union (!!free t1) (!!free t2)
 
     method map ~f =
       function
-      | #var as x ->  x
-      | `Abs (s, t) as l -> 
+      | #var as x -> x
+      | `Abs (s, t) as l ->
         let t' = f t in
         if t == t' then l else `Abs (s, t')
-      | `App (t1, t2) as l -> 
+      | `App (t1, t2) as l ->
         let t'1 = f t1
         and t'2 = f t2 in
         if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
 
     method subst ~sub =
       function
-      | #var as x ->  var#subst ~sub x
-      | `Abs (s, t) as l -> 
+      | #var as x -> var#subst ~sub x
+      | `Abs (s, t) as l ->
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
@@ -3995,13 +3994,13 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
           let name = s ^ string_of_int (next_id ()) in
           `Abs (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t))
         else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
-      | `App _ as l ->  self#map ~f:(!!subst ~sub) l
+      | `App _ as l -> self#map ~f:(!!subst ~sub) l
 
     method eval l =
       match self#map ~f:!!eval l with
-      | `App (`Abs (s, t1), t2) -> 
+      | `App (`Abs (s, t1), t2) ->
         !!eval (!!subst ~sub:(Subst.add ~key:s ~data:t2 Subst.empty) t1)
-      | t ->  t
+      | t -> t
   end
 
 (* Operations specialized to lambda *)
@@ -4028,39 +4027,39 @@ class ['a] expr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method free =
       function
-      | #var as x ->  var#free x
-      | `Num _ ->  Names.empty
-      | `Add (x, y) ->  Names.union (!!free x) (!!free y)
-      | `Neg x ->  !!free x
-      | `Mult (x, y) ->  Names.union (!!free x) (!!free y)
+      | #var as x -> var#free x
+      | `Num _ -> Names.empty
+      | `Add (x, y) -> Names.union (!!free x) (!!free y)
+      | `Neg x -> !!free x
+      | `Mult (x, y) -> Names.union (!!free x) (!!free y)
 
     method map ~f =
       function
-      | #var as x ->  x
-      | `Num _ as x ->  x
-      | `Add (x, y) as e -> 
+      | #var as x -> x
+      | `Num _ as x -> x
+      | `Add (x, y) as e ->
         let x' = f x
         and y' = f y in
         if x == x' && y == y' then e else `Add (x', y')
-      | `Neg x as e -> 
+      | `Neg x as e ->
         let x' = f x in
         if x == x' then e else `Neg x'
-      | `Mult (x, y) as e -> 
+      | `Mult (x, y) as e ->
         let x' = f x
         and y' = f y in
         if x == x' && y == y' then e else `Mult (x', y')
 
     method subst ~sub =
       function
-      | #var as x ->  var#subst ~sub x
-      | #expr as e ->  self#map ~f:(!!subst ~sub) e
+      | #var as x -> var#subst ~sub x
+      | #expr as e -> self#map ~f:(!!subst ~sub) e
 
     method eval (#expr as e) =
       match self#map ~f:!!eval e with
-      | `Add (`Num m, `Num n) ->  `Num (m + n)
-      | `Neg (`Num n) ->  `Num (-n)
-      | `Mult (`Num m, `Num n) ->  `Num (m * n)
-      | e ->  e
+      | `Add (`Num m, `Num n) -> `Num (m + n)
+      | `Neg (`Num n) -> `Num (-n)
+      | `Mult (`Num m, `Num n) -> `Num (m * n)
+      | e -> e
   end
 
 (* Specialized versions *)
@@ -4082,40 +4081,40 @@ class ['a] lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method free =
       function
-      | #lambda as x ->  lambda#free x
-      | #expr as x ->  expr#free x
+      | #lambda as x -> lambda#free x
+      | #expr as x -> expr#free x
 
     method subst ~sub =
       function
-      | #lambda as x ->  lambda#subst ~sub x
-      | #expr as x ->  expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x
+      | #expr as x -> expr#subst ~sub x
 
     method eval =
       function
-      | #lambda as x ->  lambda#eval x
-      | #expr as x ->  expr#eval x
+      | #lambda as x -> lambda#eval x
+      | #expr as x -> expr#eval x
   end
 
 let lexpr = lazy_fix (new lexpr_ops)
 
 let rec print = function
-  | `Var id ->  print_string id
-  | `Abs (id, l) -> 
+  | `Var id -> print_string id
+  | `Abs (id, l) ->
     print_string (" " ^ id ^ " . ");
     print l
-  | `App (l1, l2) -> 
+  | `App (l1, l2) ->
     print l1;
     print_string " ";
     print l2
-  | `Num x ->  print_int x
-  | `Add (e1, e2) -> 
+  | `Num x -> print_int x
+  | `Add (e1, e2) ->
     print e1;
     print_string " + ";
     print e2
-  | `Neg e -> 
+  | `Neg e ->
     print_string "-";
     print e
-  | `Mult (e1, e2) -> 
+  | `Mult (e1, e2) ->
     print e1;
     print_string " * ";
     print e2
@@ -4182,7 +4181,7 @@ let var =
   object (self : ([> var], var) #ops)
     method subst ~sub (`Var s as x) =
       try Subst.find s sub with
-      | Not_found ->  x
+      | Not_found -> x
 
     method free (`Var s) = Names.singleton s
 
@@ -4212,25 +4211,25 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
   object (self : ([> 'a lambda], 'a lambda) #ops)
     method free =
       function
-      | #var as x ->  var#free x
-      | `Abs (s, t) ->  Names.remove s (!!free t)
-      | `App (t1, t2) ->  Names.union (!!free t1) (!!free t2)
+      | #var as x -> var#free x
+      | `Abs (s, t) -> Names.remove s (!!free t)
+      | `App (t1, t2) -> Names.union (!!free t1) (!!free t2)
 
     method private map ~f =
       function
-      | #var as x ->  x
-      | `Abs (s, t) as l -> 
+      | #var as x -> x
+      | `Abs (s, t) as l ->
         let t' = f t in
         if t == t' then l else `Abs (s, t')
-      | `App (t1, t2) as l -> 
+      | `App (t1, t2) as l ->
         let t'1 = f t1
         and t'2 = f t2 in
         if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
 
     method subst ~sub =
       function
-      | #var as x ->  var#subst ~sub x
-      | `Abs (s, t) as l -> 
+      | #var as x -> var#subst ~sub x
+      | `Abs (s, t) as l ->
         let used = !!free t in
         let used_expr =
           Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
@@ -4241,13 +4240,13 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
           let name = s ^ string_of_int (next_id ()) in
           `Abs (name, !!subst ~sub:(Subst.add ~key:s ~data:(`Var name) sub) t))
         else self#map ~f:(!!subst ~sub:(Subst.remove s sub)) l
-      | `App _ as l ->  self#map ~f:(!!subst ~sub) l
+      | `App _ as l -> self#map ~f:(!!subst ~sub) l
 
     method eval l =
       match self#map ~f:!!eval l with
-      | `App (`Abs (s, t1), t2) -> 
+      | `App (`Abs (s, t1), t2) ->
         !!eval (!!subst ~sub:(Subst.add ~key:s ~data:t2 Subst.empty) t1)
-      | t ->  t
+      | t -> t
   end
 ;;
 
@@ -4272,39 +4271,39 @@ let expr_ops (ops : ('a, 'a) #ops Lazy.t) =
   object (self : ([> 'a expr], 'a expr) #ops)
     method free =
       function
-      | #var as x ->  var#free x
-      | `Num _ ->  Names.empty
-      | `Add (x, y) ->  Names.union (!!free x) (!!free y)
-      | `Neg x ->  !!free x
-      | `Mult (x, y) ->  Names.union (!!free x) (!!free y)
+      | #var as x -> var#free x
+      | `Num _ -> Names.empty
+      | `Add (x, y) -> Names.union (!!free x) (!!free y)
+      | `Neg x -> !!free x
+      | `Mult (x, y) -> Names.union (!!free x) (!!free y)
 
     method private map ~f =
       function
-      | #var as x ->  x
-      | `Num _ as x ->  x
-      | `Add (x, y) as e -> 
+      | #var as x -> x
+      | `Num _ as x -> x
+      | `Add (x, y) as e ->
         let x' = f x
         and y' = f y in
         if x == x' && y == y' then e else `Add (x', y')
-      | `Neg x as e -> 
+      | `Neg x as e ->
         let x' = f x in
         if x == x' then e else `Neg x'
-      | `Mult (x, y) as e -> 
+      | `Mult (x, y) as e ->
         let x' = f x
         and y' = f y in
         if x == x' && y == y' then e else `Mult (x', y')
 
     method subst ~sub =
       function
-      | #var as x ->  var#subst ~sub x
-      | #expr as e ->  self#map ~f:(!!subst ~sub) e
+      | #var as x -> var#subst ~sub x
+      | #expr as e -> self#map ~f:(!!subst ~sub) e
 
     method eval (#expr as e) =
       match self#map ~f:!!eval e with
-      | `Add (`Num m, `Num n) ->  `Num (m + n)
-      | `Neg (`Num n) ->  `Num (-n)
-      | `Mult (`Num m, `Num n) ->  `Num (m * n)
-      | e ->  e
+      | `Add (`Num m, `Num n) -> `Num (m + n)
+      | `Neg (`Num n) -> `Num (-n)
+      | `Mult (`Num m, `Num n) -> `Num (m * n)
+      | e -> e
   end
 ;;
 
@@ -4325,41 +4324,41 @@ let lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
   object (self : ([> 'a lexpr], 'a lexpr) #ops)
     method free =
       function
-      | #lambda as x ->  lambda#free x
-      | #expr as x ->  expr#free x
+      | #lambda as x -> lambda#free x
+      | #expr as x -> expr#free x
 
     method subst ~sub =
       function
-      | #lambda as x ->  lambda#subst ~sub x
-      | #expr as x ->  expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x
+      | #expr as x -> expr#subst ~sub x
 
     method eval =
       function
-      | #lambda as x ->  lambda#eval x
-      | #expr as x ->  expr#eval x
+      | #lambda as x -> lambda#eval x
+      | #expr as x -> expr#eval x
   end
 ;;
 
 let lexpr = lazy_fix lexpr_ops
 
 let rec print = function
-  | `Var id ->  print_string id
-  | `Abs (id, l) -> 
+  | `Var id -> print_string id
+  | `Abs (id, l) ->
     print_string (" " ^ id ^ " . ");
     print l
-  | `App (l1, l2) -> 
+  | `App (l1, l2) ->
     print l1;
     print_string " ";
     print l2
-  | `Num x ->  print_int x
-  | `Add (e1, e2) -> 
+  | `Num x -> print_int x
+  | `Add (e1, e2) ->
     print e1;
     print_string " + ";
     print e2
-  | `Neg e -> 
+  | `Neg e ->
     print_string "-";
     print e
-  | `Mult (e1, e2) -> 
+  | `Mult (e1, e2) ->
     print e1;
     print_string " * ";
     print e2
@@ -4564,32 +4563,32 @@ type ab =
 
 let f (x : [`A]) =
   match x with
-  | #ab ->  1
+  | #ab -> 1
 ;;
 
 let f x =
   ignore
     (match x with
-    | #ab ->  1);
+    | #ab -> 1);
   ignore (x : [`A])
 ;;
 
 let f x =
   ignore
     (match x with
-    | `A | `B ->  1);
+    | `A | `B -> 1);
   ignore (x : [`A])
 ;;
 
 let f (x : [< `A | `B]) =
   match x with
-  | `A | `B | `C ->  0
+  | `A | `B | `C -> 0
 ;;
 
 (* warn *)
 let f (x : [`A | `B]) =
   match x with
-  | `A | `B | `C ->  0
+  | `A | `B | `C -> 0
 ;;
 
 (* fail *)
@@ -4706,7 +4705,7 @@ end = struct
     | B
 
   let f = function
-    | A | B ->  0
+    | A | B -> 0
   ;;
 end
 
@@ -4715,7 +4714,7 @@ end
 type _ prod = Prod : ('a * 'y) prod
 
 let f : type t. t prod -> _ = function
-  | Prod -> 
+  | Prod ->
     let module M = struct
       type d = d * d
     end in
@@ -5032,9 +5031,9 @@ module M1 = struct
   type Common.msg += Reload of string | Alert of string
 
   let handle fallback = function
-    | Reload s ->  print_endline ("Reload " ^ s)
-    | Alert s ->  print_endline ("Alert " ^ s)
-    | x ->  fallback x
+    | Reload s -> print_endline ("Reload " ^ s)
+    | Alert s -> print_endline ("Alert " ^ s)
+    | x -> fallback x
   ;;
 
   let () = Common.extend_handle handle
@@ -5050,8 +5049,8 @@ let should_reject =
 type 'a t = 'a option
 
 let is_some = function
-  | None ->  false
-  | Some _ ->  true
+  | None -> false
+  | Some _ -> true
 ;;
 
 let should_accept ?x () = is_some x
@@ -5685,7 +5684,7 @@ exception QE = Q.Empty
 
 ;;
 try Q.pop (Q.create ()) with
-| QE ->  "Ok"
+| QE -> "Ok"
 
 module type Complex = module type of Complex with type t = Complex.t
 
@@ -6202,10 +6201,10 @@ class app e1 e2 : exp =
 
     method eval env =
       match l with
-      | `Abs (var, body) -> 
+      | `Abs (var, body) ->
         Hashtbl.add env var r;
         body
-      | _ ->  `App (l, r)
+      | _ -> `App (l, r)
   end
 
 class virtual ['subject, 'event] observer =
@@ -6440,7 +6439,7 @@ module UChar = struct
 
   let char_of c =
     try Char.chr c with
-    | Invalid_argument _ ->  raise Out_of_range
+    | Invalid_argument _ -> raise Out_of_range
   ;;
 
   let of_char = Char.code
@@ -6597,7 +6596,7 @@ class foo =
 
     method cast =
       function
-      | Foo ->  (self :> < foo : string >)
+      | Foo -> (self :> < foo : string >)
   end
 
 class foo : foo_t =
@@ -6606,8 +6605,8 @@ class foo : foo_t =
 
     method cast : type a. a name -> a =
       function
-      | Foo ->  (self :> foo_t)
-      | _ ->  raise Exit
+      | Foo -> (self :> foo_t)
+      | _ -> raise Exit
   end
 
 class type c = object end
@@ -6626,8 +6625,8 @@ and func (args_ty, ret_ty) =
 
     method arguments =
       match memo_args with
-      | Some xs ->  xs
-      | None -> 
+      | Some xs -> xs
+      | None ->
         let args = List.map (fun ty -> new argument (self, ty)) args_ty in
         memo_args <- Some args;
         args
@@ -6776,13 +6775,13 @@ let () =
     let module T = TT in
     let _ =
       match flag with
-      | `A ->  0
-      | `B r ->  r
+      | `A -> 0
+      | `B r -> r
     in
     let _ =
       match flag with
-      | `A ->  T.IntSet.mem
-      | `B r ->  r
+      | `A -> T.IntSet.mem
+      | `B r -> r
     in
     ()
   in
@@ -6799,13 +6798,13 @@ let f flag =
   end) in
   let _ =
     match flag with
-    | `A ->  0
-    | `B r ->  r
+    | `A -> 0
+    | `B r -> r
   in
   let _ =
     match flag with
-    | `A ->  T.mem
-    | `B r ->  r
+    | `A -> T.mem
+    | `B r -> r
   in
   ()
 ;;
@@ -6850,23 +6849,23 @@ module Fpc (X : T with type term = private [> 'a termpc] as 'a) = struct
   type term = X.term termpc
 
   let nnf = function
-    | `Not (`Atom _) as x ->  x
-    | `Not x ->  X.nnf_not x
-    | x ->  X.map X.nnf x
+    | `Not (`Atom _) as x -> x
+    | `Not x -> X.nnf_not x
+    | x -> X.map X.nnf x
   ;;
 
   let map f : term -> X.term = function
-    | `Not x ->  `Not (f x)
-    | `And (x, y) ->  `And (f x, f y)
-    | `Or (x, y) ->  `Or (f x, f y)
-    | `Atom _ as x ->  x
+    | `Not x -> `Not (f x)
+    | `And (x, y) -> `And (f x, f y)
+    | `Or (x, y) -> `Or (f x, f y)
+    | `Atom _ as x -> x
   ;;
 
   let nnf_not : term -> _ = function
-    | `Not x ->  X.nnf x
-    | `And (x, y) ->  `Or (X.nnf_not x, X.nnf_not y)
-    | `Or (x, y) ->  `And (X.nnf_not x, X.nnf_not y)
-    | `Atom _ as x ->  `Not x
+    | `Not x -> X.nnf x
+    | `And (x, y) -> `Or (X.nnf_not x, X.nnf_not y)
+    | `Or (x, y) -> `And (X.nnf_not x, X.nnf_not y)
+    | `Atom _ as x -> `Not x
   ;;
 end
 
@@ -6876,17 +6875,17 @@ module Fk (X : T with type term = private [> 'a termk] as 'a) = struct
   module Pc = Fpc (X)
 
   let map f : term -> _ = function
-    | `Dia x ->  `Dia (f x)
-    | `Box x ->  `Box (f x)
-    | #termpc as x ->  Pc.map f x
+    | `Dia x -> `Dia (f x)
+    | `Box x -> `Box (f x)
+    | #termpc as x -> Pc.map f x
   ;;
 
   let nnf = Pc.nnf
 
   let nnf_not : term -> _ = function
-    | `Dia x ->  `Box (X.nnf_not x)
-    | `Box x ->  `Dia (X.nnf_not x)
-    | #termpc as x ->  Pc.nnf_not x
+    | `Dia x -> `Box (X.nnf_not x)
+    | `Box x -> `Dia (X.nnf_not x)
+    | #termpc as x -> Pc.nnf_not x
   ;;
 end
 
@@ -7392,11 +7391,11 @@ module Bootstrap2 (MakeDiet : functor (X : ORD) -> SET
     let compare x1 x2 = 0
 
     let rec iter f = function
-      | I (l, r) -> 
+      | I (l, r) ->
         for i = l to r do
           f i
         done
-      | D (_, d, _) ->  Diet.iter (iter f) d
+      | D (_, d, _) -> Diet.iter (iter f) d
     ;;
   end
 
@@ -7544,10 +7543,10 @@ end = struct
 
   let compare x y =
     match x, y with
-    | Leaf i, Leaf j ->  Pervasives.compare i j
-    | Leaf i, Node t ->  -1
-    | Node s, Leaf j ->  1
-    | Node s, Node t ->  ASet.compare s t
+    | Leaf i, Leaf j -> Pervasives.compare i j
+    | Leaf i, Node t -> -1
+    | Node s, Leaf j -> 1
+    | Node s, Node t -> ASet.compare s t
   ;;
 end
 
@@ -7601,7 +7600,7 @@ let _ =
       end in
       false
     with
-    | Undefined_recursive_module _ ->  true
+    | Undefined_recursive_module _ -> true
   in
   test 30 res true
 ;;
@@ -7698,8 +7697,8 @@ end = struct
   let x : int t = PolyRec.Leaf 1
 
   let depth = function
-    | Leaf x ->  0
-    | Node (l, r) ->  1 + max (PolyRec.depth l) (PolyRec.depth r)
+    | Leaf x -> 0
+    | Node (l, r) -> 1 + max (PolyRec.depth l) (PolyRec.depth r)
   ;;
 end
 
@@ -7745,21 +7744,21 @@ end = struct
   let make_let id e1 e2 = Binding ([ id, e1 ], e2)
 
   let rec fv = function
-    | Var s ->  StringSet.singleton s
-    | Const n ->  StringSet.empty
-    | Add (t1, t2) ->  StringSet.union (fv t1) (fv t2)
-    | Binding (b, t) -> 
+    | Var s -> StringSet.singleton s
+    | Const n -> StringSet.empty
+    | Add (t1, t2) -> StringSet.union (fv t1) (fv t2)
+    | Binding (b, t) ->
       StringSet.union (Binding.fv b) (StringSet.diff (fv t) (Binding.bv b))
   ;;
 
   let rec simpl = function
-    | Var s ->  Var s
-    | Const n ->  Const n
-    | Add (Const i, Const j) ->  Const (i + j)
-    | Add (Const 0, t) ->  simpl t
-    | Add (t, Const 0) ->  simpl t
-    | Add (t1, t2) ->  Add (simpl t1, simpl t2)
-    | Binding (b, t) ->  Binding (Binding.simpl b, simpl t)
+    | Var s -> Var s
+    | Const n -> Const n
+    | Add (Const i, Const j) -> Const (i + j)
+    | Add (Const 0, t) -> simpl t
+    | Add (t, Const 0) -> simpl t
+    | Add (t1, t2) -> Add (simpl t1, simpl t2)
+    | Binding (b, t) -> Binding (Binding.simpl b, simpl t)
   ;;
 end
 
@@ -7829,26 +7828,26 @@ module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP with module Elem =
 
     let leq t1 t2 =
       match t1, t2 with
-      | H (x, _), H (y, _) ->  Elem.leq x y
-      | H _, E ->  false
-      | E, H _ ->  true
-      | E, E ->  true
+      | H (x, _), H (y, _) -> Elem.leq x y
+      | H _, E -> false
+      | E, H _ -> true
+      | E, E -> true
     ;;
 
     let eq t1 t2 =
       match t1, t2 with
-      | H (x, _), H (y, _) ->  Elem.eq x y
-      | H _, E ->  false
-      | E, H _ ->  false
-      | E, E ->  true
+      | H (x, _), H (y, _) -> Elem.eq x y
+      | H _, E -> false
+      | E, H _ -> false
+      | E, E -> true
     ;;
 
     let lt t1 t2 =
       match t1, t2 with
-      | H (x, _), H (y, _) ->  Elem.lt x y
-      | H _, E ->  false
-      | E, H _ ->  true
-      | E, E ->  false
+      | H (x, _), H (y, _) -> Elem.lt x y
+      | H _, E -> false
+      | E, H _ -> true
+      | E, E -> false
     ;;
   end
 
@@ -7859,15 +7858,15 @@ module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP with module Elem =
   let empty = BE.E
 
   let isEmpty = function
-    | BE.E ->  true
-    | _ ->  false
+    | BE.E -> true
+    | _ -> false
   ;;
 
   let rec merge x y =
     match x, y with
-    | BE.E, _ ->  y
-    | _, BE.E ->  x
-    | (BE.H (e1, p1) as h1), (BE.H (e2, p2) as h2) -> 
+    | BE.E, _ -> y
+    | _, BE.E -> x
+    | (BE.H (e1, p1) as h1), (BE.H (e2, p2) as h2) ->
       if Elem.leq e1 e2
       then BE.H (e1, PrimH.insert h2 p1)
       else BE.H (e2, PrimH.insert h1 p2)
@@ -7876,21 +7875,21 @@ module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP with module Elem =
   let insert x h = merge (BE.H (x, PrimH.empty)) h
 
   let findMin = function
-    | BE.E ->  raise Not_found
-    | BE.H (x, _) ->  x
+    | BE.E -> raise Not_found
+    | BE.H (x, _) -> x
   ;;
 
   let deleteMin = function
-    | BE.E ->  raise Not_found
-    | BE.H (x, p) -> 
+    | BE.E -> raise Not_found
+    | BE.H (x, p) ->
       if PrimH.isEmpty p
       then BE.E
       else (
         match PrimH.findMin p with
-        | BE.H (y, p1) -> 
+        | BE.H (y, p1) ->
           let p2 = PrimH.deleteMin p in
           BE.H (y, PrimH.merge p1 p2)
-        | BE.E ->  assert false)
+        | BE.E -> assert false)
   ;;
 end
 
@@ -7902,8 +7901,8 @@ module LeftistHeap (Element : ORDERED) : HEAP with module Elem = Element = struc
     | T of int * Elem.t * heap * heap
 
   let rank = function
-    | E ->  0
-    | T (r, _, _, _) ->  r
+    | E -> 0
+    | T (r, _, _, _) -> r
   ;;
 
   let make x a b =
@@ -7913,28 +7912,28 @@ module LeftistHeap (Element : ORDERED) : HEAP with module Elem = Element = struc
   let empty = E
 
   let isEmpty = function
-    | E ->  true
-    | _ ->  false
+    | E -> true
+    | _ -> false
   ;;
 
   let rec merge h1 h2 =
     match h1, h2 with
-    | _, E ->  h1
-    | E, _ ->  h2
-    | T (_, x1, a1, b1), T (_, x2, a2, b2) -> 
+    | _, E -> h1
+    | E, _ -> h2
+    | T (_, x1, a1, b1), T (_, x2, a2, b2) ->
       if Elem.leq x1 x2 then make x1 a1 (merge b1 h2) else make x2 a2 (merge h1 b2)
   ;;
 
   let insert x h = merge (T (1, x, E, E)) h
 
   let findMin = function
-    | E ->  raise Not_found
-    | T (_, x, _, _) ->  x
+    | E -> raise Not_found
+    | T (_, x, _, _) -> x
   ;;
 
   let deleteMin = function
-    | E ->  raise Not_found
-    | T (_, x, a, b) ->  merge a b
+    | E -> raise Not_found
+    | T (_, x, a, b) -> merge a b
   ;;
 end
 
@@ -8008,7 +8007,7 @@ let _ =
     end in
     test 71 true false
   with
-  | Undefined_recursive_module _ ->  test 71 true true
+  | Undefined_recursive_module _ -> test 71 true true
 ;;
 
 (* Coercions *)
@@ -8082,8 +8081,8 @@ end = struct
     | Y of int
 
   let f = function
-    | X _ ->  false
-    | _ ->  true
+    | X _ -> false
+    | _ -> true
   ;;
 end
 
@@ -8281,7 +8280,7 @@ type _ t =
 let y : string t = Y
 
 let f : string A.t -> unit = function
-  | A.X s ->  print_endline s
+  | A.X s -> print_endline s
 ;;
 
 let () = f A.y
@@ -8643,8 +8642,8 @@ let property (type t) () =
   end in
   ((fun x -> M.E x)
   , function
-    | M.E x ->  Some x
-    | _ ->  None)
+    | M.E x -> Some x
+    | _ -> None)
 ;;
 
 let () =
@@ -8845,8 +8844,8 @@ end
 
 (* Warn about all relevant cases when possible *)
 let f = function
-  | None, None ->  1
-  | Some _, Some _ ->  2
+  | None, None -> 1
+  | Some _, Some _ -> 2
 ;;
 
 (* Exhaustiveness check is very slow *)
@@ -8866,8 +8865,8 @@ type v =
 let f : type a b c d e f g.
     a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
     = function
-  | A, A, A, A, A, A, A, _, U, U ->  1
-  | _, _, _, _, _, _, _, G, _, _ ->  1
+  | A, A, A, A, A, A, A, _, U, U -> 1
+  | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;
 
 (*| _ -> _ *)
@@ -8875,34 +8874,34 @@ let f : type a b c d e f g.
 (* Unused cases *)
 let f (x : int t) =
   match x with
-  | A ->  1
-  | _ ->  2
+  | A -> 1
+  | _ -> 2
 ;;
 
 (* warn *)
 let f (x : unit t option) =
   match x with
-  | None ->  1
-  | _ ->  2
+  | None -> 1
+  | _ -> 2
 ;;
 
 (* warn? *)
 let f (x : unit t option) =
   match x with
-  | None ->  1
-  | Some _ ->  2
+  | None -> 1
+  | Some _ -> 2
 ;;
 
 (* warn *)
 let f (x : int t option) =
   match x with
-  | None ->  1
-  | _ ->  2
+  | None -> 1
+  | _ -> 2
 ;;
 
 let f (x : int t option) =
   match x with
-  | None ->  1
+  | None -> 1
 ;;
 
 (* warn *)
@@ -8917,11 +8916,11 @@ type 'a pair =
   }
 
 let f : (int t box pair * bool) option -> unit = function
-  | None ->  ()
+  | None -> ()
 ;;
 
 let f : (string t box pair * bool) option -> unit = function
-  | None ->  ()
+  | None -> ()
 ;;
 
 (* Examples from ML2015 paper *)
@@ -8931,19 +8930,19 @@ type _ t =
   | Bool : bool t
 
 let f : type a. a t -> a = function
-  | Int ->  1
-  | Bool ->  true
+  | Int -> 1
+  | Bool -> true
 ;;
 
 let g : int t -> int = function
-  | Int ->  1
+  | Int -> 1
 ;;
 
 let h : type a. a t -> a t -> bool =
  fun x y ->
   match x, y with
-  | Int, Int ->  true
-  | Bool, Bool ->  true
+  | Int, Int -> true
+  | Bool, Bool -> true
 ;;
 
 type (_, _) cmp =
@@ -8963,11 +8962,11 @@ end = struct
 end
 
 let f : (A.a, A.b) cmp -> unit = function
-  | Any ->  ()
+  | Any -> ()
 ;;
 
 let deep : char t option -> char = function
-  | None ->  'c'
+  | None -> 'c'
 ;;
 
 type zero = Zero
@@ -8978,26 +8977,26 @@ type (_, _, _) plus =
   | PlusS : ('a, 'b, 'c) plus -> ('a succ, 'b, 'c succ) plus
 
 let trivial : (zero succ, zero, zero) plus option -> bool = function
-  | None ->  false
+  | None -> false
 ;;
 
 let easy : (zero, zero succ, zero) plus option -> bool = function
-  | None ->  false
+  | None -> false
 ;;
 
 let harder : (zero succ, zero succ, zero succ) plus option -> bool = function
-  | None ->  false
+  | None -> false
 ;;
 
 let harder : (zero succ, zero succ, zero succ) plus option -> bool = function
-  | None ->  false
-  | Some (PlusS _) ->  .
+  | None -> false
+  | Some (PlusS _) -> .
 ;;
 
 let inv_zero : type a b c d. (a, b, c) plus -> (c, d, zero) plus -> bool =
  fun p1 p2 ->
   match p1, p2 with
-  | Plus0, Plus0 ->  true
+  | Plus0, Plus0 -> true
 ;;
 
 (* Empty match *)
@@ -9006,7 +9005,7 @@ type _ t = Int : int t
 
 let f (x : bool t) =
   match x with
-  | _ ->  .
+  | _ -> .
 ;;
 
 (* ok *)
@@ -9015,28 +9014,28 @@ let f (x : bool t) =
 
 let f () =
   match None with
-  | _ ->  .
+  | _ -> .
 ;;
 
 (* error *)
 let g () =
   match None with
-  | _ ->  ()
-  | exception _ ->  .
+  | _ -> ()
+  | exception _ -> .
 ;;
 
 (* error *)
 let h () =
   match None with
-  | _ ->  .
-  | exception _ ->  .
+  | _ -> .
+  | exception _ -> .
 ;;
 
 (* error *)
 let f x =
   match x with
-  | _ ->  ()
-  | None ->  .
+  | _ -> ()
+  | None -> .
 ;;
 
 (* do not warn *)
@@ -9045,7 +9044,7 @@ let f x =
 
 let f x y =
   match 1 with
-  | 1 when x = y ->  1
+  | 1 when x = y -> 1
 ;;
 
 open CamlinternalOO
@@ -9055,7 +9054,7 @@ type _ choice =
   | Right : tag choice
 
 let f : label choice -> bool = function
-  | Left ->  true
+  | Left -> true
 ;;
 
 (* warn *)
@@ -9072,13 +9071,13 @@ fun (A : a) -> ()
 
 ;;
 function
-| Not_found ->  1
-| A ->  2
-| _ ->  3
+| Not_found -> 1
+| A -> 2
+| _ -> 3
 
 ;;
 try raise A with
-| A ->  2
+| A -> 2
 
 module TypEq = struct
   type (_, _) t = Eq : ('a, 'a) t
@@ -9093,13 +9092,13 @@ end
 module Make (M : T) = struct
   let _ =
     match M.is_t () with
-    | None ->  0
-    | Some _ ->  0
+    | None -> 0
+    | Some _ -> 0
   ;;
 
   let f () =
     match M.is_t () with
-    | None ->  0
+    | None -> 0
   ;;
 end
 
@@ -9107,7 +9106,7 @@ module Make2 (M : T) = struct
   type t = T of unit M.is_t
 
   let g : t -> int = function
-    | _ ->  .
+    | _ -> .
   ;;
 end
 
@@ -9115,7 +9114,7 @@ type t = A : t
 
 module X1 : sig end = struct
   let _f ~x (* x unused argument *) = function
-    | A -> 
+    | A ->
       let x = () in
       x
   ;;
@@ -9127,7 +9126,7 @@ module X2 : sig end = struct
   (* unused value *)
 
   let _f = function
-    | A -> 
+    | A ->
       let x = () in
       x
   ;;
@@ -9145,7 +9144,7 @@ module X3 : sig end = struct
   (* unused open *)
 
   let _f = function
-    | A -> 
+    | A ->
       let x = () in
       x
   ;;
@@ -9180,7 +9179,7 @@ module OK = struct
 
   let f3 (r : t) =
     match r with
-    | { x; y } ->  y + y
+    | { x; y } -> y + y
   ;;
 
   (* ok *)
@@ -9191,7 +9190,7 @@ module F1 = struct
 
   let f r =
     match r with
-    | { x; y } ->  y + y
+    | { x; y } -> y + y
   ;;
 end
 
@@ -9203,7 +9202,7 @@ module F2 = struct
   let f r =
     ignore (r : t);
     match r with
-    | { x; y } ->  y + y
+    | { x; y } -> y + y
   ;;
 end
 
@@ -9486,7 +9485,7 @@ module P6235 = struct
 
   let f (u : u) =
     match u with
-    | `Key { loc } ->  loc
+    | `Key { loc } -> loc
   ;;
 end
 
@@ -9503,8 +9502,8 @@ module P6235' = struct
   type u = [`Key of t]
 
   let f = function
-    | (_ : u) when false ->  ""
-    | `Key { loc } ->  loc
+    | (_ : u) when false -> ""
+    | `Key { loc } -> loc
   ;;
 end
 
@@ -9538,8 +9537,8 @@ end = struct
   exception Nobody_constructs_me
 
   let falsity = function
-    | Nobody_constructs_me ->  true
-    | _ ->  false
+    | Nobody_constructs_me -> true
+    | _ -> false
   ;;
 end
 
@@ -9552,8 +9551,8 @@ end = struct
   type t += Nobody_constructs_me
 
   let falsity = function
-    | Nobody_constructs_me ->  true
-    | _ ->  false
+    | Nobody_constructs_me -> true
+    | _ -> false
   ;;
 end
 
@@ -9595,35 +9594,35 @@ class c =
   end
 
 let f = function
-  | (x[@wee]) ->  ()
+  | (x[@wee]) -> ()
 ;;
 
 let f = function
-  | '1' .. '9' | '1' .. '8' ->  ()
-  | 'a' .. 'z' ->  ()
+  | '1' .. '9' | '1' .. '8' -> ()
+  | 'a' .. 'z' -> ()
 ;;
 
 let f = function
-  | [| x1; x2 |] ->  ()
-  | [||] ->  ()
-  | ([| x |][@foo]) ->  ()
-  | _ ->  ()
+  | [| x1; x2 |] -> ()
+  | [||] -> ()
+  | ([| x |][@foo]) -> ()
+  | _ -> ()
 ;;
 
 let g = function
-  | { l = x } ->  ()
-  | ({ l1 = x; l2 = y }[@foo]) ->  ()
-  | { l1 = x; l2 = y; _ } ->  ()
+  | { l = x } -> ()
+  | ({ l1 = x; l2 = y }[@foo]) -> ()
+  | { l1 = x; l2 = y; _ } -> ()
 ;;
 
 let h ?l:(p = 1) ?y:u ?(x = 3) = 2
 
 let _ = function
-  | a, s, ba1, ba2, ba3, bg -> 
+  | a, s, ba1, ba2, ba3, bg ->
     ignore (x.(1) + [||].(0) + [| 1 |].(1) + [| 1; 2 |].(2));
     ignore [ s.[1]; "".[2]; "123".[3] ];
     ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
-  | b, s, ba1, ba2, ba3, bg -> 
+  | b, s, ba1, ba2, ba3, bg ->
     y.(0) <- 1;
     s.[1] <- 'c';
     ba1.{1} <- 2;
@@ -9640,8 +9639,8 @@ let f (type t) () =
   let exception E of t in
   ((fun x -> E x)
   , function
-    | E _ ->  print_endline "OK"
-    | _ ->  print_endline "KO")
+    | E _ -> print_endline "OK"
+    | _ -> print_endline "KO")
 ;;
 
 let inj1, proj1 = f ()
@@ -9677,11 +9676,11 @@ let _ =
   let f M.(x) = () in
   let g M.{ x } = () in
   let h = function
-    | M.[] | M.[ a ] | M.(a :: q) ->  ()
+    | M.[] | M.[ a ] | M.(a :: q) -> ()
   in
   let i = function
-    | M.[||] | M.[| x |] ->  true
-    | _ ->  false
+    | M.[||] | M.[| x |] -> true
+    | _ -> false
   in
   ()
 ;;
@@ -9725,17 +9724,17 @@ class type t = object ((_[@foo])) end
 let test f x = f ~x:(x [@foo])
 
 let f = function
-  | (`A | `B)[@bar] | `C ->  ()
+  | (`A | `B)[@bar] | `C -> ()
 ;;
 
 let f = function
-  | _ :: ((_ :: _)[@foo]) ->  ()
-  | _ ->  ()
+  | _ :: ((_ :: _)[@foo]) -> ()
+  | _ -> ()
 ;;
 
 ;;
 function
-| { contents = (contents[@foo]) } ->  ()
+| { contents = (contents[@foo]) } -> ()
 
 ;;
 fun contents -> { contents = (contents [@foo]) }
