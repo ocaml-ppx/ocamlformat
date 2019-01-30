@@ -93,3 +93,11 @@ val log_fpu : foo
 val cr0_pe : foo
 val cr0_mp : foo
 val cr0_em : foo
+
+module C : sig
+  type config = t
+
+  type 'a t
+
+  type parsed_from = [`File of Fpath.t * int | `Attribute]
+end
