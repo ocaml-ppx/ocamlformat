@@ -261,11 +261,12 @@ module Structure_item : Module_item with type t = structure_item = struct
       | Pstr_open _ -> Location.is_single_line itm.pstr_loc c.Conf.margin
       | _ -> false )
 
-  let allow_adjacent s (itmI, cI) (itmJ, cJ) =
+  let allow_adjacent (itmI, cI) (itmJ, cJ) =
     match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
-    | `Preserve, (`Preserve as sp) | `Compact, (`Compact as sp) -> (
+    | `Compact, `Compact -> (
       match (itmI.pstr_desc, itmJ.pstr_desc) with
       | Pstr_eval _, Pstr_eval _
+       |Pstr_value _, Pstr_value _
        |Pstr_primitive _, Pstr_primitive _
        |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
        |Pstr_exception _, Pstr_exception _
@@ -278,19 +279,20 @@ module Structure_item : Module_item with type t = structure_item = struct
        |Pstr_attribute _, Pstr_attribute _
        |Pstr_extension _, Pstr_extension _ ->
           true
-      | Pstr_value (_, [{pvb_loc= x}]), Pstr_value (_, [{pvb_loc= y}]) ->
-          Poly.(sp = `Compact) || not (Source.empty_line_between s x y)
       | _ -> false )
     | _ -> true
 
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
-      =
-    has_cmts_after cmts i1.pstr_loc
-    || has_cmts_before cmts i2.pstr_loc
-    || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || (not (is_simple (i2, c2)))
-    || not (allow_adjacent s (i1, c1) (i2, c2))
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    | `Preserve, `Preserve ->
+        Source.empty_line_between s i1.pstr_loc i2.pstr_loc
+    | _ ->
+        has_cmts_after cmts i1.pstr_loc
+        || has_cmts_before cmts i2.pstr_loc
+        || has_doc i1 || has_doc i2
+        || (not (is_simple (i1, c1)))
+        || (not (is_simple (i2, c2)))
+        || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
 module Signature_item : Module_item with type t = signature_item = struct
@@ -332,11 +334,12 @@ module Signature_item : Module_item with type t = signature_item = struct
           Location.is_single_line itm.psig_loc c.Conf.margin
       | _ -> false )
 
-  let allow_adjacent s (itmI, cI) (itmJ, cJ) =
+  let allow_adjacent (itmI, cI) (itmJ, cJ) =
     match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
-    | `Preserve, (`Preserve as sp) | `Compact, (`Compact as sp) -> (
+    | `Compact, `Compact -> (
       match (itmI.psig_desc, itmJ.psig_desc) with
-      | (Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
+      | Psig_value _, Psig_value _
+       |(Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
        |Psig_exception _, Psig_exception _
        |( (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
         , (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
@@ -347,19 +350,20 @@ module Signature_item : Module_item with type t = signature_item = struct
        |Psig_attribute _, Psig_attribute _
        |Psig_extension _, Psig_extension _ ->
           true
-      | Psig_value {pval_loc= x}, Psig_value {pval_loc= y} ->
-          Poly.(sp = `Compact) || not (Source.empty_line_between s x y)
       | _ -> false )
     | _ -> true
 
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
-      =
-    has_cmts_after cmts i1.psig_loc
-    || has_cmts_before cmts i2.psig_loc
-    || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || (not (is_simple (i2, c2)))
-    || not (allow_adjacent s (i1, c1) (i2, c2))
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    | `Preserve, `Preserve ->
+        Source.empty_line_between s i1.psig_loc i2.psig_loc
+    | _ ->
+        has_cmts_after cmts i1.psig_loc
+        || has_cmts_before cmts i2.psig_loc
+        || has_doc i1 || has_doc i2
+        || (not (is_simple (i1, c1)))
+        || (not (is_simple (i2, c2)))
+        || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
 module Expression : Module_item with type t = expression = struct
@@ -369,19 +373,15 @@ module Expression : Module_item with type t = expression = struct
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pexp_loc c.Conf.margin
 
-  let vspace_between s (i1, c1) (i2, c2) =
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.pexp_loc i2.pexp_loc
-    | _ -> false
-
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
-      =
-    has_cmts_after cmts i1.pexp_loc
-    || has_cmts_before cmts i2.pexp_loc
-    || vspace_between s (i1, c1) (i2, c2)
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
+    | _ ->
+        has_cmts_after cmts i1.pexp_loc
+        || has_cmts_before cmts i2.pexp_loc
+        || (not (is_simple (i1, c1)))
+        || not (is_simple (i2, c2))
 end
 
 let may_force_break (c : Conf.t) s =
