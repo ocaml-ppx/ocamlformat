@@ -12,8 +12,7 @@ let f x = function
 
 let f =
   let g = function
-    | H
-      when x y <> k -> 2
+    | H when x y <> k -> 2
     | T
     | P
     | U -> 3
@@ -26,8 +25,7 @@ let f =
     | M -> (
       match y with
       | O -> 5
-      | P
-        when h x -> (
+      | P when h x -> (
           function
           | A -> 6 ) )
 
@@ -78,6 +76,5 @@ let () =
   | y
   | foooooooooo
   | fooooooooo -> y
-  | foooooo
-    when ff fff fooooooooooooooooooo ->
+  | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo

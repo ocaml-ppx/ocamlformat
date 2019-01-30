@@ -52,7 +52,7 @@ module Cases = struct
     ; bar= break_unless_newline 1000 0 $ fmt "| "
     ; box_all= hovbox indent
     ; box_pattern_arrow= hovbox 0
-    ; box_pattern_guard= hvbox 0
+    ; box_pattern_guard= hovbox 0
     ; break_before_arrow=
         fmt_or_k parens_here (fmt "@;<1 2>") (fmt "@;<1 -2>")
     ; break_after_arrow= fmt_if_k (not parens_here) (fmt "@;<0 3>")
