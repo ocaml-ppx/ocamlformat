@@ -18,7 +18,7 @@ dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
 url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/%%VERSION%%.tar.gz" }
 license: "MIT"
 build: [
-  ["dune" "build" "-p" tools/ocamlformat-diff/ocamlformat_diff.exe "-j" jobs]
+  ["dune" "build" "-p" "tools/ocamlformat-diff/ocamlformat_diff.exe" "-j" jobs]
 ]
 depends: [
   "bos"
