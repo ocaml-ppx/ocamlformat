@@ -3081,6 +3081,7 @@ and fmt_label_declaration c ctx lbl_decl ?(last = false) =
                $ fmt_if Poly.(c.conf.field_space = `Loose) " "
                $ fmt ":@ "
                $ fmt_core_type c (sub_typ ~ctx pld_type)
+               $ Cmts.fmt_after c.cmts pld_loc
                $ fmt_if_k
                    (not Poly.(c.conf.break_separators = `Before))
                    (fmt_or last "" ";") )

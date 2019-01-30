@@ -20,8 +20,7 @@ type t = {a: int (* Comment *); b: int (* Comment *)}
 module X = struct
   type t =
     { a: int (* Comment *)
-    ; b: int
-    (* Comment *) }
+    ; b: int (* Comment *) }
 end
 [@@ocamlformat "type-decl=sparse"]
 
