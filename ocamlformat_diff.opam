@@ -18,20 +18,13 @@ dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
 url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/%%VERSION%%.tar.gz" }
 license: "MIT"
 build: [
-  ["tools/gen_version.sh" "src/Version.ml" version] {pinned}
-  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" tools/ocamlformat-diff/ocamlformat_diff.exe "-j" jobs]
 ]
 depends: [
-  "ocaml" {>= "4.05"}
-  "base" {>= "v0.11.0"}
-  "base-unix"
+  "bos"
   "cmdliner"
   "dune" {build & >= "1.1.1"}
-  "fpath"
-  "ocaml-migrate-parsetree" {>= "1.0.10"}
-  "octavius" {>= "1.2.0"}
-  "stdio"
-  "uutf"
+  "ocamlformat"
 ]
-synopsis: "Auto-formatter for OCaml code"
-description: "OCamlFormat is a tool to automatically format OCaml code in a uniform style."
+synopsis: "OCamlFormat diff tool"
+description: "OCamlFormat-Diff is a tool that uses OCamlFormat to apply the same formatting to compared OCaml files, so that the formatting differences between the two files are not displayed."
