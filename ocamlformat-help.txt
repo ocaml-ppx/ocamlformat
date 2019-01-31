@@ -167,7 +167,7 @@ OPTIONS (CODE FORMATTING STYLE)
        --module-item-spacing={sparse|preserve|compact}
            Spacing between items of structures and signatures. sparse will
            always break a line between two items. preserve will not leave
-           open lines between of-liners of similar sorts unless there is an
+           open lines between one-liners of similar sorts unless there is an
            open line in the input. compact will not leave open lines between
            one-liners of similar sorts. The default value is sparse.
 
