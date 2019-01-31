@@ -897,7 +897,7 @@ module Formatting = struct
         , "$(b,sparse) will always break a line between two items." )
       ; ( "preserve"
         , `Preserve
-        , "$(b,preserve) will not leave open lines between of-liners of \
+        , "$(b,preserve) will not leave open lines between one-liners of \
            similar sorts unless there is an open line in the input." )
       ; ( "compact"
         , `Compact
