@@ -375,14 +375,11 @@ module Expression : Module_item with type t = expression = struct
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pexp_loc c.Conf.margin
 
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+  let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
     has_cmts_after cmts i1.pexp_loc
     || has_cmts_before cmts i2.pexp_loc
-    ||
-    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
-    | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.pexp_loc i2.pexp_loc
-    | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
 end
 
 let may_force_break (c : Conf.t) s =
