@@ -40,7 +40,7 @@ match x with
 let is_sequence exp =
   match exp.pexp_desc with
   | Pexp_sequence _
-  | Pexp_extension
+   |Pexp_extension
       ( _
       , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
       ) -> true
@@ -68,3 +68,14 @@ let () =
   | y | foooooooooo | fooooooooo -> y
   | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
+
+[@@@ocamlformat "indicate-nested-or-patterns=false"]
+
+let is_sequence exp =
+  match exp.pexp_desc with
+  | Pexp_sequence _
+  | Pexp_extension
+      ( _
+      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
+      ) -> true
+  | _ -> false

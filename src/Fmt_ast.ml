@@ -1133,7 +1133,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let proI =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
-          when break_cases_level c = 0 ->
+          when break_cases_level c = 0 || break_cases_level c = 2 ->
             if c.conf.indicate_nested_or_patterns then or_newline "| " " |"
             else or_newline "| " "| "
         | _ -> break_unless_newline 1 0 $ fmt "| "
