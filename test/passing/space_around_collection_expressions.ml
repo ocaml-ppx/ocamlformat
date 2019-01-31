@@ -17,4 +17,5 @@ type t =
 
 type t =
   [ `X
-  | `Y ]
+  | `Y
+  ]
