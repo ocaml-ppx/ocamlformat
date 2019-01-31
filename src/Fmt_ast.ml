@@ -625,7 +625,7 @@ let break_cases_level c =
   match c.conf.break_cases with
   | `Fit -> 0
   | `Nested -> 1
-  | `Different -> 2
+  | `Toplevel -> 2
   | `All -> 3
 
 let wrap_list c =

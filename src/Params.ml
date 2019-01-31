@@ -46,7 +46,7 @@ module Cases = struct
         fmt_or_k (indent > 2) (fmt "@;<1 4>") (fmt "@;<1 2>")
     ; box_rhs= hovbox 0 }
 
-  let different ~first:_ ~indent ~parens_here =
+  let toplevel ~first:_ ~indent ~parens_here =
     { leading_space= break_unless_newline 1000 0
     ; bar= fmt "| "
     ; box_all= hovbox indent
@@ -75,6 +75,6 @@ module Cases = struct
     match c.Conf.break_cases with
     | `Fit -> fit
     | `Nested -> nested
-    | `Different -> different
+    | `Toplevel -> toplevel
     | `All -> all
 end
