@@ -15,7 +15,8 @@ module Format = Format_
 
 open Migrate_ast
 
-type 'a with_comments = {ast: 'a; comments: (string * Location.t) list}
+type 'a with_comments =
+  {ast: 'a; comments: (string * Location.t) list; prefix: string}
 
 (** Operations on translation units. *)
 type 'a t =
@@ -76,8 +77,6 @@ end = struct
     String.concat ~sep:"" (List.map ~f:(Format.sprintf "%+d") x)
 end
 
-let lexbuf_last_pos_ref = ref None
-
 let parse parse_ast (conf : Conf.t) ic =
   let warnings =
     W.enable 50
@@ -86,8 +85,14 @@ let parse parse_ast (conf : Conf.t) ic =
   Warnings.parse_options false (W.to_string warnings) ;
   let lexbuf = Lexing.from_channel ic in
   Lexer.skip_hash_bang lexbuf ;
+  let hash_bang =
+    let ic = In_channel.create !Location.input_name in
+    let len = lexbuf.lex_last_pos in
+    let buf = Base.Bytes.create len in
+    ignore (In_channel.really_input_exn ic ~buf ~pos:0 ~len) ;
+    Base.Bytes.to_string buf
+  in
   Location.init lexbuf !Location.input_name ;
-  lexbuf_last_pos_ref := Some lexbuf.lex_last_pos ;
   let warning_printer = !Location.warning_printer in
   let w50 = ref [] in
   (Location.warning_printer :=
@@ -103,7 +108,7 @@ let parse parse_ast (conf : Conf.t) ic =
     match List.rev !w50 with
     | [] ->
         let comments = Lexer.comments () in
-        {ast; comments}
+        {ast; comments; prefix= hash_bang}
     | w50 -> raise (Warning50 w50)
   with e ->
     Location.warning_printer := warning_printer ;
@@ -142,8 +147,8 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   let base = Filename.(remove_extension (basename input_name)) in
   let ext = Filename.extension input_name in
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~source_txt
-      ~source_file ~postprocess : result =
+  let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~prefix ~source_txt
+      ~source_file : result =
     let tmp, oc =
       if not Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
       else
@@ -157,8 +162,9 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     let source = Source.create source_txt in
     let cmts_t = xunit.init_cmts source conf ast comments in
     let fs = Format.formatter_of_out_channel oc in
-    postprocess fs ;
     Fmt.set_margin conf.margin fs ;
+    (* note that [fprintf fs "%s" ""] is not a not-opt. *)
+    if not (String.is_empty prefix) then Format.fprintf fs "%s" prefix ;
     xunit.fmt source cmts_t conf ast fs ;
     Format.pp_print_newline fs () ;
     Out_channel.close oc ;
@@ -181,7 +187,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
       | exception Sys_error msg -> User_error msg
       | exception e -> Ocamlformat_bug e
       | new_ ->
-          let old = {ast; comments} in
+          let old = {ast; comments; prefix} in
           if
             (* Ast not preserved ? *)
             not
@@ -243,23 +249,11 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             Unstable i )
           else
             let result =
-              print_check ~i:(i + 1) ~conf ~ast:new_.ast ~postprocess
-                ~comments:new_.comments ~source_txt:fmted ~source_file:tmp
+              print_check ~i:(i + 1) ~conf ~ast:new_.ast
+                ~comments:new_.comments ~prefix:new_.prefix
+                ~source_txt:fmted ~source_file:tmp
             in
             Unix.unlink tmp ; result
-  in
-  let postprocess fs =
-    let ignored_string =
-      let f ic =
-        let len = Option.value_exn !lexbuf_last_pos_ref in
-        let buf = Base.Buffer.create len in
-        ignore (In_channel.input_buffer ic buf ~len) ;
-        Base.Buffer.contents buf
-      in
-      In_channel.with_file input_file ~f
-    in
-    if not (String.is_empty ignored_string) then
-      Format.fprintf fs "%s%!" ignored_string
   in
   let source_txt =
     In_channel.with_file input_file ~f:In_channel.input_all
@@ -275,10 +269,10 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             Out_channel.write_all ofile ~data:source_txt
         | Inplace _, _ -> () ) ;
         Ok
-    | {ast; comments} -> (
+    | {ast; comments; prefix} -> (
       try
-        print_check ~i:1 ~conf ~ast ~comments ~source_txt
-          ~source_file:input_file ~postprocess
+        print_check ~i:1 ~conf ~ast ~comments ~prefix ~source_txt
+          ~source_file:input_file
       with
       | Sys_error msg -> User_error msg
       | exc -> Ocamlformat_bug exc )
