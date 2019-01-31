@@ -260,22 +260,25 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   in
   Location.input_name := input_name ;
   let result =
-    match xunit.input conf ic with
-    | exception exn -> Invalid_source exn
-    | _ when conf.disable ->
-        ( match (Conf.action, ofile) with
+    if conf.disable then
+      let () =
+        match (Conf.action, ofile) with
         | _, None -> Out_channel.output_string stdout source_txt
         | In_out _, Some ofile ->
             Out_channel.write_all ofile ~data:source_txt
-        | Inplace _, _ -> () ) ;
-        Ok
-    | {ast; comments; prefix} -> (
-      try
-        print_check ~i:1 ~conf ~ast ~comments ~prefix ~source_txt
-          ~source_file:input_file
-      with
-      | Sys_error msg -> User_error msg
-      | exc -> Ocamlformat_bug exc )
+        | Inplace _, _ -> ()
+      in
+      Ok
+    else
+      match xunit.input conf ic with
+      | exception exn -> Invalid_source exn
+      | {ast; comments; prefix} -> (
+        try
+          print_check ~i:1 ~conf ~ast ~comments ~prefix ~source_txt
+            ~source_file:input_file
+        with
+        | Sys_error msg -> User_error msg
+        | exc -> Ocamlformat_bug exc )
   in
   let fmt = Caml.Format.err_formatter in
   let exe = Filename.basename Sys.argv.(0) in
