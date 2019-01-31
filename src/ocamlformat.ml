@@ -68,7 +68,7 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 ;;
-match Conf.action with
+match Cli.action with
 | Inplace inputs ->
     let results : Translation_unit.result list =
       List.map inputs

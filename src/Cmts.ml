@@ -95,7 +95,7 @@ end = struct
                    (not (List.is_empty children))
                    "@,{" " }" (dump_ tree children) ) ))
     in
-    if Conf.debug then set_margin 100000000 $ dump_ tree tree.roots
+    if !Conf.debug then set_margin 100000000 $ dump_ tree tree.roots
     else Fn.const ()
 end
 
@@ -301,7 +301,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
 let add_cmts t ?prev ?next tbl loc cmts =
   if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
-    if Conf.debug then
+    if !Conf.debug then
       List.iter cmtl ~f:(fun (cmt_txt, cmt_loc) ->
           let string_between (l1 : Location.t) (l2 : Location.t) =
             match Source.string_between t.source l1 l2 with
@@ -355,7 +355,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
     match prev_loc with
     | Some prev_loc -> add_cmts t ~prev:prev_loc t.cmts_after prev_loc cmts
     | None ->
-        if Conf.debug then
+        if !Conf.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
               Format.eprintf "lost: %s@\n%!" txt ) )
 
@@ -391,13 +391,13 @@ let init map_ast loc_of_ast source conf asts comments_n_docstrings =
     ; conf }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
-  if Conf.debug then
+  if !Conf.debug then
     List.iter comments ~f:(fun (txt, loc) ->
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "") ) ;
   if not (List.is_empty comments) then (
     let loc_tree = Loc_tree.of_ast map_ast asts in
-    if Conf.debug then
+    if !Conf.debug then
       Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = loc_of_ast asts in
     let cmts = CmtSet.of_list comments in
@@ -442,7 +442,7 @@ let relocate t ~src ~before ~after =
               Option.fold dst_data ~init:src_data
                 ~f:(fun src_data dst_data -> f src_data dst_data ) ) )
     in
-    if Conf.debug then
+    if !Conf.debug then
       Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
         Location.fmt before Location.fmt after ;
     update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->

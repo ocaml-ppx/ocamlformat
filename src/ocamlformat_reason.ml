@@ -41,7 +41,7 @@ let xunit_of_kind : _ -> Translation_unit.x = function
   | `Intf -> XUnit reason_intf
 
 ;;
-match Conf.action with
+match Cli.action with
 | In_out
     ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
     , output_file ) ->

@@ -46,7 +46,7 @@ let protect =
   fun ast pp fs ->
     try pp fs
     with exc ->
-      if !first && Conf.debug then (
+      if !first && !Conf.debug then (
         let bt = Caml.Printexc.get_backtrace () in
         Format.pp_print_flush fs () ;
         Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
@@ -71,7 +71,7 @@ let update_config ?(quiet = false) c l =
                     ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
                       ; pexp_attributes= [] }
                     , [] ) } ] ->
-            Conf.parse_line_in_attribute c.conf str
+            !Conf.parse_line_in_attribute c.conf str
         | _ -> Error (`Malformed "string expected") )
       | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
           Error
@@ -658,7 +658,7 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
           | Error _ ->
               (if c.conf.wrap_comments then fill_text else str) str_cmt
           | Ok parsed ->
-              if Conf.debug then (
+              if !Conf.debug then (
                 Octavius.print Caml.Format.str_formatter parsed ;
                 Caml.Format.eprintf "%s%!"
                   (Caml.Format.flush_str_formatter ()) ) ;

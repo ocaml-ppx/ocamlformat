@@ -66,18 +66,19 @@ type action =
   | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
 
-val action : action
+val action : (unit -> action) ref
 (** Formatting action: input type and source, and output destination. *)
 
-val debug : bool
+val debug : bool ref
 (** Generate debugging output if true. *)
 
 val parse_line_in_attribute :
-     t
-  -> string
-  -> ( t
-     , [ `Unknown of string * string
-       | `Bad_value of string * string
-       | `Malformed of string
-       | `Misplaced of string * string ] )
-     Result.t
+  (   t
+   -> string
+   -> ( t
+      , [ `Unknown of string * string
+        | `Bad_value of string * string
+        | `Malformed of string
+        | `Misplaced of string * string ] )
+      Result.t)
+  ref
