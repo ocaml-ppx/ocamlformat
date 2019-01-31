@@ -9,7 +9,8 @@
  *                                                                    *
  **********************************************************************)
 
-type 'a with_comments = {ast: 'a; comments: (string * Location.t) list}
+type 'a with_comments =
+  {ast: 'a; comments: (string * Location.t) list; prefix: string}
 
 (** Operations on translation units. *)
 type 'a t =

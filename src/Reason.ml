@@ -26,7 +26,7 @@ let input ast_magic _conf ic =
   in
   if String.equal magic ast_magic then
     let comments = List.map comments ~f:(fun (txt, _, loc) -> (txt, loc)) in
-    {Translation_unit.ast; comments}
+    {Translation_unit.ast; comments; prefix= ""}
   else user_error "input not a serialized translation unit" []
 
 let input_impl = input Config.ast_impl_magic_number
