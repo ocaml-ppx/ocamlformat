@@ -23,7 +23,8 @@ type 'a t =
   { input: Conf.t -> In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
-  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
+  ; fmt:
+      Source.t -> Cmts.t -> Conf.t -> Conf.attribute_parser -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
@@ -137,8 +138,8 @@ let ellipsis n msg =
 
 let ellipsis_cmt = ellipsis 50
 
-let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
-    ofile =
+let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
+    ~input_file ~parse_line_in_attribute ic ofile =
   let dir =
     match ofile with
     | Some ofile -> Filename.dirname ofile
@@ -165,20 +166,20 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     Fmt.set_margin conf.margin fs ;
     (* note that [fprintf fs "%s" ""] is not a not-opt. *)
     if not (String.is_empty prefix) then Format.fprintf fs "%s" prefix ;
-    xunit.fmt source cmts_t conf ast fs ;
+    xunit.fmt source cmts_t conf parse_line_in_attribute ast fs ;
     Format.pp_print_newline fs () ;
     Out_channel.close oc ;
     let conf = if !Conf.debug then conf else {conf with Conf.quiet= true} in
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
     if String.equal source_txt fmted then (
-      match (!Conf.action (), ofile) with
+      match (action, ofile) with
       | _, None ->
           Out_channel.output_string stdout fmted ;
           Unix.unlink tmp ;
           Ok
-      | In_out _, Some ofile -> Unix.rename tmp ofile ; Ok
-      | Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile ; Ok
-      | Inplace _, Some _ -> Unix.unlink tmp ; Ok )
+      | Conf.In_out _, Some ofile -> Unix.rename tmp ofile ; Ok
+      | Conf.Inplace _, Some ofile when i > 1 -> Unix.rename tmp ofile ; Ok
+      | Conf.Inplace _, Some _ -> Unix.unlink tmp ; Ok )
     else
       match
         Location.input_name := tmp ;
@@ -262,11 +263,11 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
   let result =
     if conf.disable then
       let () =
-        match (!Conf.action (), ofile) with
+        match (action, ofile) with
         | _, None -> Out_channel.output_string stdout source_txt
-        | In_out _, Some ofile ->
+        | Conf.In_out _, Some ofile ->
             Out_channel.write_all ofile ~data:source_txt
-        | Inplace _, _ -> ()
+        | Conf.Inplace _, _ -> ()
       in
       Ok
     else

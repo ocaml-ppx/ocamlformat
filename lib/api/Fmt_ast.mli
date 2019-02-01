@@ -15,12 +15,29 @@ module Format = Format_
 open Migrate_ast
 open Parsetree
 
-val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
+val fmt_signature :
+     Source.t
+  -> Cmts.t
+  -> Conf.t
+  -> Conf.attribute_parser
+  -> signature
+  -> Fmt.t
 (** Format a signature. *)
 
-val fmt_structure : Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
+val fmt_structure :
+     Source.t
+  -> Cmts.t
+  -> Conf.t
+  -> Conf.attribute_parser
+  -> structure
+  -> Fmt.t
 (** Format a structure. *)
 
 val fmt_use_file :
-  Source.t -> Cmts.t -> Conf.t -> toplevel_phrase list -> Fmt.t
+     Source.t
+  -> Cmts.t
+  -> Conf.t
+  -> Conf.attribute_parser
+  -> toplevel_phrase list
+  -> Fmt.t
 (** Format a use_file. *)

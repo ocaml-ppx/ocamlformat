@@ -57,7 +57,25 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-type 'a input = {kind: 'a; name: string; file: string; conf: t}
+val debug : bool ref
+(** Generate debugging output if true. *)
+
+type attribute_parser =
+     t
+  -> string
+  -> ( t
+     , [ `Unknown of string * string
+       | `Bad_value of string * string
+       | `Malformed of string
+       | `Misplaced of string * string ] )
+     Result.t
+
+type 'a input =
+  { kind: 'a
+  ; name: string
+  ; file: string
+  ; conf: t
+  ; parse_line_in_attribute: attribute_parser }
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
@@ -65,20 +83,3 @@ type action =
           or stdout if None. *)
   | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
-
-val action : (unit -> action) ref
-(** Formatting action: input type and source, and output destination. *)
-
-val debug : bool ref
-(** Generate debugging output if true. *)
-
-val parse_line_in_attribute :
-  (   t
-   -> string
-   -> ( t
-      , [ `Unknown of string * string
-        | `Bad_value of string * string
-        | `Malformed of string
-        | `Misplaced of string * string ] )
-      Result.t)
-  ref

@@ -11,3 +11,5 @@
 
 val action : Ocamlformat_api.Conf.action
 (** Formatting action: input type and source, and output destination. *)
+
+val parse_line_in_attribute : Ocamlformat_api.Conf.attribute_parser

@@ -54,7 +54,22 @@ type t =
 
 let debug = ref false
 
-type 'a input = {kind: 'a; name: string; file: string; conf: t}
+type attribute_parser =
+     t
+  -> string
+  -> ( t
+     , [ `Unknown of string * string
+       | `Bad_value of string * string
+       | `Malformed of string
+       | `Misplaced of string * string ] )
+     Result.t
+
+type 'a input =
+  { kind: 'a
+  ; name: string
+  ; file: string
+  ; conf: t
+  ; parse_line_in_attribute: attribute_parser }
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
@@ -62,8 +77,3 @@ type action =
           or stdout if None. *)
   | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
-
-let action = ref (fun () -> failwith "action undefined")
-
-let parse_line_in_attribute =
-  ref (fun _ _ -> failwith "parse_line_in_attribute undefined")

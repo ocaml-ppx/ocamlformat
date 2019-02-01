@@ -19,7 +19,11 @@ open Parsetree
 open Ast
 open Fmt
 
-type c = {conf: Conf.t; source: Source.t; cmts: Cmts.t}
+type c =
+  { conf: Conf.t
+  ; source: Source.t
+  ; cmts: Cmts.t
+  ; parse_line_in_attribute: Conf.attribute_parser }
 
 type block =
   { opn: Fmt.t
@@ -71,7 +75,7 @@ let update_config ?(quiet = false) c l =
                     ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
                       ; pexp_attributes= [] }
                     , [] ) } ] ->
-            !Conf.parse_line_in_attribute c.conf str
+            c.parse_line_in_attribute c.conf str
         | _ -> Error (`Malformed "string expected") )
       | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
           Error
@@ -4223,22 +4227,22 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
 
 (** Entry points *)
 
-let fmt_signature s cmts c itms =
-  let c = {source= s; cmts; conf= c} in
+let fmt_signature s cmts c parse_line_in_attribute itms =
+  let c = {source= s; cmts; conf= c; parse_line_in_attribute} in
   Ast.init c.conf ;
   match itms with
   | [] -> Cmts.fmt_after c.cmts Location.none
   | l -> fmt_signature c Top l
 
-let fmt_structure s cmts c itms =
-  let c = {source= s; cmts; conf= c} in
+let fmt_structure s cmts c parse_line_in_attribute itms =
+  let c = {source= s; cmts; conf= c; parse_line_in_attribute} in
   Ast.init c.conf ;
   match itms with
   | [] -> Cmts.fmt_after c.cmts Location.none
   | l -> fmt_structure c Top l
 
-let fmt_use_file s cmts c itms =
-  let c = {source= s; cmts; conf= c} in
+let fmt_use_file s cmts c parse_line_in_attribute itms =
+  let c = {source= s; cmts; conf= c; parse_line_in_attribute} in
   Ast.init c.conf ;
   match itms with
   | [] -> Cmts.fmt_after c.cmts Location.none

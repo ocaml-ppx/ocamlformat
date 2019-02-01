@@ -17,7 +17,8 @@ type 'a t =
   { input: Conf.t -> In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
-  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
+  ; fmt:
+      Source.t -> Cmts.t -> Conf.t -> Conf.attribute_parser -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
@@ -51,8 +52,11 @@ val parse :
 val parse_print :
      x
   -> Conf.t
+  -> action:Conf.action
+     (** Formatting action: input type and source, and output destination. *)
   -> input_name:string
   -> input_file:string
+  -> parse_line_in_attribute:Conf.attribute_parser
   -> In_channel.t
   -> string option
   -> result

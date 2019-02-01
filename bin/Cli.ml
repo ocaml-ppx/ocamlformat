@@ -1604,12 +1604,17 @@ if !print_config then
   in
   C.print_config (build_config ~file)
 
+let parse_line_in_attribute = parse_line ~from:`Attribute
+
 let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
-           {kind= kind_of file; name= file; file; conf= build_config ~file}
-       ))
+           { kind= kind_of file
+           ; name= file
+           ; file
+           ; conf= build_config ~file
+           ; parse_line_in_attribute } ))
   else
     match !inputs with
     | [input_file] ->
@@ -1618,7 +1623,8 @@ let action =
           ( { kind= kind_of name
             ; name
             ; file= input_file
-            ; conf= build_config ~file:name }
+            ; conf= build_config ~file:name
+            ; parse_line_in_attribute }
           , !output )
     | _ ->
         if !print_config then Caml.exit 0
@@ -1626,11 +1632,4 @@ let action =
 
 and debug = !debug
 
-let () = Ocamlformat_api.Conf.action := fun () -> action
-
 let () = Ocamlformat_api.Conf.debug := debug
-
-let parse_line_in_attribute = parse_line ~from:`Attribute
-
-let () =
-  Ocamlformat_api.Conf.parse_line_in_attribute := parse_line_in_attribute

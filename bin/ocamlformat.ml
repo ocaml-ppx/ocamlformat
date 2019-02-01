@@ -77,7 +77,9 @@ match Cli.action with
         ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
           In_channel.with_file input_file ~f:(fun ic ->
               Translation_unit.parse_print (xunit_of_kind kind) conf
-                ~input_name ~input_file ic (Some input_file) ) )
+                ~action:Cli.action ~input_name ~input_file
+                ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
+                (Some input_file) ) )
     in
     if
       List.for_all results ~f:(fun result ->
@@ -103,8 +105,10 @@ match Cli.action with
     Out_channel.close oc ;
     let result =
       In_channel.with_file file ~f:(fun ic ->
-          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-            ~input_file:file ic output_file )
+          Translation_unit.parse_print (xunit_of_kind kind) conf
+            ~action:Cli.action ~input_name ~input_file:file
+            ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
+            output_file )
     in
     Unix.unlink file ;
     match result with
@@ -119,8 +123,10 @@ match Cli.action with
     , output_file ) -> (
   match
     In_channel.with_file input_file ~f:(fun ic ->
-        Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-          ~input_file ic output_file )
+        Translation_unit.parse_print (xunit_of_kind kind) conf
+          ~action:Cli.action ~input_name ~input_file
+          ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
+          output_file )
   with
   | Ok -> Caml.exit 0
   | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
