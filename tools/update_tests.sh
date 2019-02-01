@@ -19,7 +19,7 @@
 set -e
 
 ROOT=$(git rev-parse --show-toplevel)
-EXE="$ROOT"/_build/dev/src/ocamlformat.exe
+EXE="$ROOT"/_build/dev/bin/ocamlformat.exe
 OLD_DIR=$(pwd)
 RUN_DIR=$ROOT/test
 TEST_DIR=passing

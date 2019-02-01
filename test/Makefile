@@ -25,7 +25,7 @@ MODE?=dev
 
 REFMT=refmt
 
-OCAMLFORMAT_EXE=../_build/$(MODE)/src/ocamlformat.exe
+OCAMLFORMAT_EXE=../_build/$(MODE)/bin/ocamlformat.exe
 
 .PHONY: test_setup
 test_setup:
