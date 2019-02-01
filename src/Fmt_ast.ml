@@ -1072,16 +1072,19 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             when field_alias ~field:lid1.txt (Longident.parse txt)
                  && List.is_empty ppat_attributes ->
               cbox 2
-                ( fmt_longident_loc c lid1 $ fmt " : "
+                ( fmt_longident_loc c lid1
+                $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+                $ fmt ": "
                 $ fmt_core_type c (sub_typ ~ctx t) )
           | Ppat_constraint ({ppat_desc= Ppat_unpack _}, _) ->
               general_case ()
           | Ppat_constraint (p, t) when List.is_empty ppat_attributes ->
               cbox 2
-                ( fmt_longident_loc c lid1 $ fmt " : "
-                $ fmt_core_type c (sub_typ ~ctx t)
+                ( fmt_longident_loc c lid1
                 $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-                $ fmt "=@ "
+                $ fmt ": "
+                $ fmt_core_type c (sub_typ ~ctx t)
+                $ fmt " =@ "
                 $ cbox 0 (fmt_pattern c (sub_pat ~ctx p)) )
           | _ -> general_case () )
       in
@@ -2185,16 +2188,18 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
              when field_alias ~field:lid1.txt txt
                   && List.is_empty f.pexp_attributes ->
                Cmts.fmt c.cmts loc @@ fmt_expression c (sub_exp ~ctx e)
-               $ fmt " : "
+               $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+               $ fmt ": "
                $ fmt_core_type c (sub_typ ~ctx t)
            | Pexp_constraint ({pexp_desc= Pexp_pack _}, _) ->
                general_case ()
            | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
                cbox 2
-                 ( fmt_longident_loc c lid1 $ fmt " : "
-                 $ fmt_core_type c (sub_typ ~ctx t)
+                 ( fmt_longident_loc c lid1
                  $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-                 $ fmt "=@ "
+                 $ fmt ": "
+                 $ fmt_core_type c (sub_typ ~ctx t)
+                 $ fmt " =@ "
                  $ cbox 0 (fmt_expression c (sub_exp ~ctx e)) )
            | _ -> general_case ())
       in
