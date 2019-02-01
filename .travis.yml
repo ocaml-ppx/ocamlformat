@@ -15,6 +15,12 @@ before_install:
   - export OPAMVERBOSE=1
 install:
   - opam update --upgrade
+  - opam pin add --no-action ocamlformat-base .
+  - opam install --deps-only ocamlformat-base
+  - opam pin add --no-action ocamlformat-format .
+  - opam install --deps-only ocamlformat-format
+  - opam pin add --no-action ocamlformat-api .
+  - opam install --deps-only ocamlformat-api
   - opam pin add --no-action ocamlformat .
   - opam install --deps-only ocamlformat
 script:
