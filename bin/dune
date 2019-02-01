@@ -15,13 +15,11 @@ Jbuild_plugin.V1.send
  (action (run sh %%{dep:../tools/gen_version.sh} Version.ml))
  (mode fallback))
 
-(ocamllex Literal_lexer)
-
 (executables
  (names ocamlformat ocamlformat_reason)
- (flags (:standard -open Import))
+ (flags (:standard -open Ocamlformat_base.Import))
  %s
- (libraries cmdliner format_ fpath import ocaml-migrate-parsetree octavius unix uutf))
+ (libraries cmdliner format_ fpath ocamlformat-base ocamlformat-api unix ))
 
 (rule
  (targets ocamlformat.1)

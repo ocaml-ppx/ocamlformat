@@ -11,6 +11,6 @@
 
 (rule
  (targets ocamlformat-help.txt)
- (deps ./src/ocamlformat.exe)
+ (deps ./bin/ocamlformat.exe)
  (mode promote)
- (action (with-stdout-to %{targets} (run ./src/ocamlformat.exe --help=plain))))
+ (action (with-stdout-to %{targets} (run ./bin/ocamlformat.exe --help=plain))))

@@ -18,16 +18,17 @@ dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
 url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/%%VERSION%%.tar.gz" }
 license: "MIT"
 build: [
-  ["tools/gen_version.sh" "bin/Version.ml" version] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
+  "ocaml" {>= "4.05"}
   "base" {>= "v0.11.0"}
   "base-unix"
-  "cmdliner"
   "dune" {build & >= "1.1.1"}
-  "fpath"
+  "ocaml-migrate-parsetree" {>= "1.0.10"}
+  "octavius" {>= "1.2.0"}
   "stdio"
+  "uutf"
 ]
 synopsis: "Auto-formatter for OCaml code"
 description: "OCamlFormat is a tool to automatically format OCaml code in a uniform style."

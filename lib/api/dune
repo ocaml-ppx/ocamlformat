@@ -1,0 +1,22 @@
+(* -*- tuareg -*- *)
+
+let preprocess =
+  match Jbuild_plugin.V1.context with
+  | "coverage" -> "(preprocess (pps bisect_ppx))"
+  | _ -> ""
+
+;;
+Jbuild_plugin.V1.send
+@@ Format.sprintf
+     {|
+(ocamllex Literal_lexer)
+
+(library
+  (name ocamlformat_api)
+  (public_name ocamlformat-api)
+  (flags (:standard -open Ocamlformat_base.Import))
+  %s
+  (libraries format_ ocamlformat-base ocaml-migrate-parsetree octavius unix uutf)
+)
+|}
+     preprocess

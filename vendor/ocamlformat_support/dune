@@ -1,1 +1,4 @@
-(library (name format_))
+(library
+  (name format_)
+  (public_name ocamlformat-format)
+)

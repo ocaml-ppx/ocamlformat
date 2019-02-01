@@ -9,6 +9,8 @@
  *                                                                    *
  **********************************************************************)
 
+open Ocamlformat_api
+
 (** OCamlFormat to convert Reason code to OCaml *)
 
 (** Operations on binary serialized Reason implementations. *)

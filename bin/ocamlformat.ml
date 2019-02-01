@@ -9,6 +9,8 @@
  *                                                                    *
  **********************************************************************)
 
+open Ocamlformat_api
+
 (** OCamlFormat *)
 
 let normalize norm c {Translation_unit.ast; _} = norm c ast

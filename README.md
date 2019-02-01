@@ -38,7 +38,7 @@ OCamlFormat requires source code that meets the following conditions:
 
 Under those conditions, ocamlformat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, ocamlformat enforces the following checks:
 
-- The parse trees obtained by parsing the original and formatted files are equal up to some minor normalization (see [`Normalize`](./src/Normalize.ml)`.equal_impl` or `equal_intf`).
+- The parse trees obtained by parsing the original and formatted files are equal up to some minor normalization (see [`Normalize`](./lib/Normalize.ml)`.equal_impl` or `equal_intf`).
 
 - The documentation strings, and their attachment, has been preserved (implicit in the parse tree check).
 

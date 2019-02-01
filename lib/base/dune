@@ -10,5 +10,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (library
- (name import)
+ (name ocamlformat_base)
+ (public_name ocamlformat-base)
  (libraries base stdio))

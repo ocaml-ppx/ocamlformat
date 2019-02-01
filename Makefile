@@ -22,7 +22,7 @@ setup: dune-workspace
 
 .PHONY: exe
 exe: setup
-	dune build _build/dev/src/ocamlformat.exe _build/release/src/ocamlformat.exe _build/dev/ocamlformat.install _build/release/ocamlformat.install
+	dune build _build/dev/bin/ocamlformat.exe _build/release/bin/ocamlformat.exe _build/dev/ocamlformat.install _build/release/ocamlformat.install
 
 .PHONY: gen-help
 gen-help:
@@ -30,19 +30,19 @@ gen-help:
 
 .PHONY: bc
 bc: setup
-	dune build _build/dev/src/ocamlformat.bc
+	dune build _build/dev/bin/ocamlformat.bc
 
 .PHONY: dev
 dev: setup
-	dune build _build/dev/src/ocamlformat.exe _build/dev/ocamlformat.install
+	dune build _build/dev/bin/ocamlformat.exe _build/dev/ocamlformat.install
 
 .PHONY: opt
 opt: setup
-	dune build _build/release/src/ocamlformat.exe _build/release/ocamlformat.install
+	dune build _build/release/bin/ocamlformat.exe _build/release/ocamlformat.install
 
 .PHONY: reason
 reason: setup
-	dune build _build/dev/src/ocamlformat_reason.exe _build/release/src/ocamlformat_reason.exe
+	dune build _build/dev/bin/ocamlformat_reason.exe _build/release/bin/ocamlformat_reason.exe
 
 .PHONY: ocamlformat-diff
 ocamlformat-diff:
@@ -55,11 +55,11 @@ cleanbisect:
 	rm -Rf _coverage
 	find ./ -name 'bisect*.out' -delete
 
-SRCS=$(shell \ls {src/{,import/},tools/ocamlformat-diff/}*.ml{,i})
+SRCS=$(shell \ls {{lib,bin}/{,import/},tools/ocamlformat-diff/}*.ml{,i})
 
 .PHONY: fmt
 fmt:
-	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
+	$(shell \ls -t _build/*/bin/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
 
 .PHONY: test
 test: exe reason
@@ -68,16 +68,16 @@ test: exe reason
 
 .PHONY: regtests fixpoint
 fixpoint: exe reason
-	_build/release/src/ocamlformat.exe -n 1 -i $(SRCS)
+	_build/release/bin/ocamlformat.exe -n 1 -i $(SRCS)
 
 regtests: exe
 	$(MAKE) -C test regtests
 
 .PHONY: coverage
 coverage: setup
-	dune build _build/coverage/src/ocamlformat.exe
+	dune build _build/coverage/bin/ocamlformat.exe
 	$(MAKE) cleanbisect
 	$(MAKE) MODE=coverage -C test regtests
-	_build/coverage/src/ocamlformat.exe -i $(SRCS)
+	_build/coverage/bin/ocamlformat.exe -i $(SRCS)
 	bisect-ppx-report -I _build/coverage/ -html _coverage/ `find test -name 'bisect*.out'`
 	@echo "open _coverage/index.html"
