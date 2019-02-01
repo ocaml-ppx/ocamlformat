@@ -16,7 +16,7 @@ Jbuild_plugin.V1.send
   (public_name ocamlformat-api)
   (flags (:standard -open Ocamlformat_base.Import))
   %s
-  (libraries format_ ocamlformat-base ocaml-migrate-parsetree octavius unix uutf)
+  (libraries ocamlformat-base ocamlformat-format ocaml-migrate-parsetree octavius unix uutf)
 )
 |}
      preprocess

@@ -19,7 +19,7 @@ Jbuild_plugin.V1.send
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Ocamlformat_base.Import))
  %s
- (libraries cmdliner format_ fpath ocamlformat-base ocamlformat-api unix ))
+ (libraries cmdliner fpath ocamlformat-base ocamlformat-api ocamlformat-format unix ))
 
 (rule
  (targets ocamlformat.1)
