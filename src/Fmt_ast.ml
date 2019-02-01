@@ -829,7 +829,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
-  | Ptyp_package pty -> hvbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
+  | Ptyp_package pty ->
+      hovbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
@@ -1817,12 +1818,12 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt "@ : "
-          $ fmt_package_type c ctx pty
-          $ fmt_atrs )
+      hovbox 0
+      @@ wrap_fits_breaks ~space:false c.conf "(" ")"
+           ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ esp
+           $ Option.call ~f:epi $ fmt "@ : "
+           $ fmt_package_type c ctx pty
+           $ fmt_atrs )
   | Pexp_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -3870,18 +3871,19 @@ and fmt_module_expr c ({ast= m} as xmod) =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
-        pro=
+        opn= open_hovbox 0
+      ; pro=
           Some
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy=
           Cmts.fmt c.cmts pmod_loc
-          @@ hvbox 2
-               (wrap_fits_breaks ~space:false c.conf "(" ")"
-                  ( fmt "val "
-                  $ fmt_expression c (sub_exp ~ctx e1)
-                  $ fmt "@;<1 2>: "
-                  $ fmt_package_type c ctx pty ))
+          @@ wrap_fits_breaks ~space:false c.conf "(" ")"
+               ( fmt "val "
+               $ fmt_expression c (sub_exp ~ctx e1)
+               $ fmt "@;<1 2>: "
+               $ fmt_package_type c ctx pty )
+      ; cls= close_box
       ; epi=
           Option.some_if has_epi
             ( Cmts.fmt_after c.cmts pmod_loc

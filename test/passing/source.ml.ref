@@ -3256,9 +3256,7 @@ let make_set (type s) cmp =
     type t = s
 
     let compare = cmp
-  end)
-  : Set.S
-    with type elt = s )
+  end) : Set.S with type elt = s )
 
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
@@ -3326,8 +3324,7 @@ let m =
 let m =
   ( module struct
     let x = 3
-  end
-  : S )
+  end : S )
 
 ;;
 f m 1 m
@@ -3362,8 +3359,7 @@ end
 let rec (module M : S') =
   ( module struct
     let f n = if n <= 0 then 1 else n * M.f (n - 1)
-  end
-  : S' )
+  end : S' )
 in
 M.f 3
 
@@ -3469,9 +3465,8 @@ type ('k, 'd, 'm) map =
   (module MapT with type key = 'k and type data = 'd and type map = 'm)
 
 let add (type k d m) (m : (k, d, m) map) x y s =
-  let module M = ( val m
-                     : MapT
-                     with type key = k and type data = d and type map = m )
+  let module M = ( val m : MapT
+    with type key = k and type data = d and type map = m )
   in
   M.of_t (M.add x y (M.to_t s))
 
@@ -3488,22 +3483,19 @@ module SSMap = struct
 end
 
 let ssmap =
-  (module SSMap
-  : MapT
+  ( module SSMap : MapT
     with type key = string and type data = string and type map = SSMap.map
   )
 
 let ssmap =
   ( module struct
     include SSMap
-  end
-  : MapT
+  end : MapT
     with type key = string and type data = string and type map = SSMap.map
   )
 
 let ssmap :
-    (module
-     MapT
+    (module MapT
        with type key = string
         and type data = string
         and type map = SSMap.map) =
@@ -5841,8 +5833,7 @@ end
 let v =
   ( module struct
     let x = 3
-  end
-  : S )
+  end : S )
 
 module F () = (val v)
 
@@ -5866,8 +5857,7 @@ let v =
     type t = int
 
     let x = 3
-  end
-  : S )
+  end : S )
 
 module F () = (val v)
 

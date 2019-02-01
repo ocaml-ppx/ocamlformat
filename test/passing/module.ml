@@ -40,8 +40,7 @@ module type X = sig
   val n : (module S with type t = t)
 
   val o :
-    (module
-     S
+    (module S
        with type long_long_type = t
         and type long_long_long_type = u
         and type very_long_long_type = t)
@@ -49,15 +48,13 @@ end
 
 module X = (val X.n : S with type t = t)
 
-module Y = ( val X.o
-               : S
-               with type long_long_type = t
-                and type long_long_long_type = u
-                and type very_long_long_type = t )
+module Y = ( val X.o : S
+  with type long_long_type = t
+   and type long_long_long_type = u
+   and type very_long_long_type = t )
 
 let _ =
-  (module M
-  : S
+  ( module M : S
     with type long_long_type = t
      and type long_long_long_type = u
      and type very_long_long_type = t )
@@ -65,15 +62,12 @@ let _ =
 let _ =
   ( module struct
     type t
-  end
-  : S
-    with type t = t )
+  end : S with type t = t )
 
 let _ =
   ( module struct
     type t
-  end
-  : S )
+  end : S )
 
 let _ =
   ( module struct
@@ -93,17 +87,12 @@ let _ =
   ( module struct
     (* a *)
     type t
-  end
-  (* b *)
-  : S
-  (* c *)
-    with type t = t (* d *) )
+  end (* b *) : S (* c *) with type t = t (* d *) )
 
 let _ =
   ( module struct
     type t
-  end
-  : S
+  end : S
     with type long_long_type = t
      and type long_long_long_type = u
      and type very_long_long_type = t )
