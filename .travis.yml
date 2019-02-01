@@ -14,7 +14,7 @@ before_install:
   - eval `opam config env`
   - export OPAMVERBOSE=1
 install:
-  - opam update --upgrade
+  - opam update
   - opam pin add --no-action ocamlformat-base .
   - opam install --deps-only ocamlformat-base
   - opam pin add --no-action ocamlformat-format .
