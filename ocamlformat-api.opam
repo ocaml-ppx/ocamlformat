@@ -25,6 +25,8 @@ depends: [
   "base" {>= "v0.11.0"}
   "base-unix"
   "dune" {build & >= "1.1.1"}
+  "ocamlformat-base"
+  "ocamlformat-format"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "octavius" {>= "1.2.0"}
   "stdio"

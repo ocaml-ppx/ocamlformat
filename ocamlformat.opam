@@ -27,7 +27,9 @@ depends: [
   "cmdliner"
   "dune" {build & >= "1.1.1"}
   "fpath"
-  "stdio"
+  "ocamlformat-api"
+  "ocamlformat-base"
+  "ocamlformat-format"
 ]
 synopsis: "Auto-formatter for OCaml code"
 description: "OCamlFormat is a tool to automatically format OCaml code in a uniform style."
