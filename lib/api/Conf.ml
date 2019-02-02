@@ -64,12 +64,7 @@ type attribute_parser =
        | `Misplaced of string * string ] )
      Result.t
 
-type 'a input =
-  { kind: 'a
-  ; name: string
-  ; file: string
-  ; conf: t
-  ; parse_line_in_attribute: attribute_parser }
+type 'a input = {kind: 'a; name: string; file: string; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
