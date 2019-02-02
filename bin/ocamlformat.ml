@@ -69,16 +69,21 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
+let action = Cli.action
+
+and debug = Cli.debug
+
+and parse_line_in_attribute = Cli.parse_line_in_attribute
+
 ;;
-match Cli.action with
+match action with
 | Inplace inputs ->
     let results : Translation_unit.result list =
       List.map inputs
         ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
           In_channel.with_file input_file ~f:(fun ic ->
-              Translation_unit.parse_print (xunit_of_kind kind) conf
-                ~debug:Cli.debug ~action:Cli.action ~input_name ~input_file
-                ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
+              Translation_unit.parse_print (xunit_of_kind kind) conf ~debug
+                ~action ~input_name ~input_file ~parse_line_in_attribute ic
                 (Some input_file) ) )
     in
     if
@@ -105,9 +110,8 @@ match Cli.action with
     Out_channel.close oc ;
     let result =
       In_channel.with_file file ~f:(fun ic ->
-          Translation_unit.parse_print (xunit_of_kind kind) conf
-            ~debug:Cli.debug ~action:Cli.action ~input_name ~input_file:file
-            ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
+          Translation_unit.parse_print (xunit_of_kind kind) conf ~debug
+            ~action ~input_name ~input_file:file ~parse_line_in_attribute ic
             output_file )
     in
     Unix.unlink file ;
@@ -123,9 +127,8 @@ match Cli.action with
     , output_file ) -> (
   match
     In_channel.with_file input_file ~f:(fun ic ->
-        Translation_unit.parse_print (xunit_of_kind kind) conf
-          ~debug:Cli.debug ~action:Cli.action ~input_name ~input_file
-          ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
+        Translation_unit.parse_print (xunit_of_kind kind) conf ~debug
+          ~action ~input_name ~input_file ~parse_line_in_attribute ic
           output_file )
   with
   | Ok -> Caml.exit 0

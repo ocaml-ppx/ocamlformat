@@ -42,8 +42,14 @@ let xunit_of_kind : _ -> Translation_unit.x = function
   | `Impl -> XUnit reason_impl
   | `Intf -> XUnit reason_intf
 
+let action = Cli.action
+
+and debug = Cli.debug
+
+and parse_line_in_attribute = Cli.parse_line_in_attribute
+
 ;;
-match Cli.action with
+match action with
 | In_out
     ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
     , output_file ) ->
@@ -56,9 +62,9 @@ match Cli.action with
     Out_channel.close oc ;
     let result =
       In_channel.with_file file ~f:(fun ic ->
-          Translation_unit.parse_print (xunit_of_kind kind) conf
-            ~action:Cli.action ~input_name ~input_file:file ic output_file
-      )
+          Translation_unit.parse_print (xunit_of_kind kind) conf ~debug
+            ~action ~input_name ~input_file:file ~parse_line_in_attribute ic
+            output_file )
     in
     Unix.unlink file ; result
 | In_out ({kind= `Use_file; _}, _) ->
@@ -70,6 +76,6 @@ match Cli.action with
       ; file= input_file
       ; conf }
     , output_file ) ->
-    Translation_unit.parse_print (xunit_of_kind kind) conf
-      ~action:Cli.action ~input_name ~input_file In_channel.stdin
+    Translation_unit.parse_print (xunit_of_kind kind) conf ~debug ~action
+      ~input_name ~input_file ~parse_line_in_attribute In_channel.stdin
       output_file
