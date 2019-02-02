@@ -52,6 +52,7 @@ val parse :
 val parse_print :
      x
   -> Conf.t
+  -> debug:bool
   -> action:Conf.action
      (** Formatting action: input type and source, and output destination. *)
   -> input_name:string

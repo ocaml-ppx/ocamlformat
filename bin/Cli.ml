@@ -1630,4 +1630,4 @@ let action =
         if !print_config then Caml.exit 0
         else impossible "checked by validate"
 
-let () = Ocamlformat_api.Conf.debug := !debug
+let debug = !debug

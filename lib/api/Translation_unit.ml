@@ -116,8 +116,8 @@ let parse parse_ast (conf : Conf.t) ic =
     raise e
 
 (** Debug: dump internal ast representation to file. *)
-let dump xunit dir base suf ext ast =
-  if !Conf.debug then (
+let dump ~debug xunit dir base suf ext ast =
+  if debug then (
     let tmp = Filename.concat dir (base ^ suf ^ ext) in
     let oc = Out_channel.create tmp in
     xunit.printast (Caml.Format.formatter_of_out_channel oc) ast ;
@@ -138,8 +138,9 @@ let ellipsis n msg =
 
 let ellipsis_cmt = ellipsis 50
 
-let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
+let parse_print (XUnit xunit) (conf : Conf.t) ~debug ~action ~input_name
     ~input_file ~parse_line_in_attribute ic ofile =
+  Conf.debug := debug ;
   let dir =
     match ofile with
     | Some ofile -> Filename.dirname ofile
@@ -151,15 +152,15 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
   let rec print_check ~i ~(conf : Conf.t) ~ast ~comments ~prefix ~source_txt
       ~source_file : result =
     let tmp, oc =
-      if not !Conf.debug then Filename.open_temp_file ~temp_dir:dir base ext
+      if not debug then Filename.open_temp_file ~temp_dir:dir base ext
       else
         let name = Format.sprintf "%s.%i%s" base i ext in
         let tmp = Filename.concat dir name in
         Format.eprintf "%s@\n%!" tmp ;
-        let oc = Out_channel.create ~fail_if_exists:(not !Conf.debug) tmp in
+        let oc = Out_channel.create ~fail_if_exists:(not debug) tmp in
         (tmp, oc)
     in
-    dump xunit dir base ".old" ".ast" ast ;
+    dump ~debug xunit dir base ".old" ".ast" ast ;
     let source = Source.create source_txt in
     let cmts_t = xunit.init_cmts source conf ast comments in
     let fs = Format.formatter_of_out_channel oc in
@@ -169,7 +170,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
     xunit.fmt source cmts_t conf parse_line_in_attribute ast fs ;
     Format.pp_print_newline fs () ;
     Out_channel.close oc ;
-    let conf = if !Conf.debug then conf else {conf with Conf.quiet= true} in
+    let conf = if debug then conf else {conf with Conf.quiet= true} in
     let fmted = In_channel.with_file tmp ~f:In_channel.input_all in
     if String.equal source_txt fmted then (
       match (action, ofile) with
@@ -195,9 +196,11 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
               (xunit.equal ~ignore_doc_comments:(not conf.comment_check)
                  conf old new_)
           then (
-            dump xunit dir base ".old" ".ast" (xunit.normalize conf old) ;
-            dump xunit dir base ".new" ".ast" (xunit.normalize conf new_) ;
-            if not !Conf.debug then Unix.unlink tmp ;
+            dump ~debug xunit dir base ".old" ".ast"
+              (xunit.normalize conf old) ;
+            dump ~debug xunit dir base ".new" ".ast"
+              (xunit.normalize conf new_) ;
+            if not debug then Unix.unlink tmp ;
             if xunit.equal ~ignore_doc_comments:true conf old new_ then
               let docstrings = xunit.moved_docstrings conf old new_ in
               internal_error (`Doc_comment docstrings)
@@ -231,9 +234,9 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
               |> Sequence.map ~f
             in
             if not (Sequence.is_empty diff_cmts) then (
-              dump xunit dir base ".old" ".ast" old.ast ;
-              dump xunit dir base ".new" ".ast" new_.ast ;
-              if not !Conf.debug then Unix.unlink tmp ;
+              dump ~debug xunit dir base ".old" ".ast" old.ast ;
+              dump ~debug xunit dir base ".new" ".ast" new_.ast ;
+              if not debug then Unix.unlink tmp ;
               internal_error `Comment
                 [ ( "diff"
                   , Sequence.sexp_of_t
@@ -242,7 +245,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
           (* Too many iteration ? *)
           if i >= conf.max_iters then (
             Caml.flush_all () ;
-            ( if !Conf.debug then
+            ( if debug then
               let command =
                 Printf.sprintf "diff %s %s 1>&2" source_file tmp
               in
@@ -343,10 +346,10 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
       match[@ocaml.warning "-28"] exn with
       | Syntaxerr.Error _ | Lexer.Error _ ->
           Format.eprintf "  BUG: generating invalid ocaml syntax.\n%!" ;
-          if !Conf.debug then Location.report_exception fmt exn
+          if debug then Location.report_exception fmt exn
       | Warning50 l ->
           Format.eprintf "  BUG: misplaced documentation comments.\n%!" ;
-          if !Conf.debug then
+          if debug then
             List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
       | Internal_error (m, l) ->
           let s =
@@ -398,12 +401,11 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~action ~input_name
                      %!"
                     Location.print_loc loc (ellipsis_cmt msg) )
           | _ -> () ) ;
-          if !Conf.debug then
+          if debug then
             List.iter l ~f:(fun (msg, sexp) ->
                 Format.eprintf "  %s: %s\n%!" msg (Sexp.to_string sexp) )
       | exn ->
           Format.eprintf
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
-          if !Conf.debug then Format.eprintf "%s\n%!" (Exn.to_string exn) )
-  ) ;
+          if debug then Format.eprintf "%s\n%!" (Exn.to_string exn) ) ) ;
   result

@@ -77,7 +77,7 @@ match Cli.action with
         ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
           In_channel.with_file input_file ~f:(fun ic ->
               Translation_unit.parse_print (xunit_of_kind kind) conf
-                ~action:Cli.action ~input_name ~input_file
+                ~debug:Cli.debug ~action:Cli.action ~input_name ~input_file
                 ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
                 (Some input_file) ) )
     in
@@ -106,7 +106,7 @@ match Cli.action with
     let result =
       In_channel.with_file file ~f:(fun ic ->
           Translation_unit.parse_print (xunit_of_kind kind) conf
-            ~action:Cli.action ~input_name ~input_file:file
+            ~debug:Cli.debug ~action:Cli.action ~input_name ~input_file:file
             ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
             output_file )
     in
@@ -124,7 +124,7 @@ match Cli.action with
   match
     In_channel.with_file input_file ~f:(fun ic ->
         Translation_unit.parse_print (xunit_of_kind kind) conf
-          ~action:Cli.action ~input_name ~input_file
+          ~debug:Cli.debug ~action:Cli.action ~input_name ~input_file
           ~parse_line_in_attribute:Cli.parse_line_in_attribute ic
           output_file )
   with

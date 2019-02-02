@@ -56,8 +56,9 @@ match Cli.action with
     Out_channel.close oc ;
     let result =
       In_channel.with_file file ~f:(fun ic ->
-          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-            ~input_file:file ic output_file )
+          Translation_unit.parse_print (xunit_of_kind kind) conf
+            ~action:Cli.action ~input_name ~input_file:file ic output_file
+      )
     in
     Unix.unlink file ; result
 | In_out ({kind= `Use_file; _}, _) ->
@@ -69,5 +70,6 @@ match Cli.action with
       ; file= input_file
       ; conf }
     , output_file ) ->
-    Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-      ~input_file In_channel.stdin output_file
+    Translation_unit.parse_print (xunit_of_kind kind) conf
+      ~action:Cli.action ~input_name ~input_file In_channel.stdin
+      output_file
