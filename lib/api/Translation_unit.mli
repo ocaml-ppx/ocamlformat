@@ -61,7 +61,8 @@ val parse_print :
   -> In_channel.t
   -> string option
   -> result
-(** [parse_print xunit conf input_name input_file input_channel output_file]
-    parses the contents of [input_channel], using [input_name] for error
-    messages, and referring to the contents of [input_file] to improve
-    comment placement, and writes formatted code into [output_file]. *)
+(** [parse_print xunit conf ~debug ~action ~input_name ~input_file
+    ~parse_line_in_attribute input_channel output_file] parses the contents
+    of [input_channel], using [input_name] for error messages, and referring
+    to the contents of [input_file] to improve comment placement, and writes
+    formatted code into [output_file]. *)
