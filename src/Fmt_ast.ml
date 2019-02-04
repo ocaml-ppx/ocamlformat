@@ -884,10 +884,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           match pat.ppat_desc with
           | Ppat_array _ | Ppat_record _ -> true
           | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
-          | _ -> (
-            match Sugar.sugar_list_pat c.cmts pat with
-            | Some _ -> true
-            | None -> false )
+          | _ -> Option.is_some (Sugar.sugar_list_pat c.cmts pat)
         in
         if can_skip_parens then (".", "") else (".(", ")")
       in
@@ -1764,10 +1761,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
           match e0.pexp_desc with
           | Pexp_array _ | Pexp_record _ -> true
           | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
-          | _ -> (
-            match Sugar.sugar_list_exp c.cmts e0 with
-            | Some _ -> true
-            | None -> false )
+          | _ -> Option.is_some (Sugar.sugar_list_exp c.cmts e0)
         in
         if can_skip_parens then (".", "") else (".(", ")")
       in
