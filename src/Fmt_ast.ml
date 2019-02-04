@@ -303,6 +303,8 @@ let fmt_variance = function
   | Contravariant -> fmt "-"
   | Invariant -> fmt ""
 
+let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
+
 let wrap_list c =
   if c.conf.space_around_collection_expressions then wrap "[ " "@ ]"
   else wrap_fits_breaks c.conf "[" "]"
@@ -2629,8 +2631,6 @@ and fmt_class_params c ctx ~epi params =
                 $ fmt_core_type c (sub_typ ~ctx ty)
                 $ fmt_if (last && exposed_right_typ ty) " " ))
        $ epi ))
-
-and fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
 and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
     ctx ?fmt_name ?(eq = "=") decl =
