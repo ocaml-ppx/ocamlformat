@@ -102,15 +102,16 @@ val sugar_ite :
 (** [sugar_ite cmts exp] returns a list of conditional expressions from
     cascading if-then-else expressions, e.g.:
 
-    {v
-         if c1 then e1
-         else if c2 then e2
-         else e3
-    v}
+    {[
+        if c1 then e1
+        else if c2 then e2
+        else e3
+    ]}
 
-    will be sugarized as [\[(Some c1, e1); (Some c2, e2); (None, e3)\]]
-    (attributes are voluntarily omitted. [cmts] are relocated to the
-    sub-expressions to have more precise positions. *)
+    will return the following list:
+    [(Some c1, e1); (Some c2, e2); (None, e3)] (attributes are voluntarily
+    omitted. [cmts] are relocated to the sub-expressions to have more
+    precise positions. *)
 
 val sugar_sequence :
      Conf.t
@@ -154,3 +155,23 @@ val sugar_mod_with :
   -> (with_constraint list * Warnings.loc) list * module_type Ast.xt
 (** [sugar_mod_with m] returns the list of [with type] constraints of module
     type [m]. *)
+
+val sugar_polynewtype :
+     Cmts.t
+  -> pattern
+  -> expression
+  -> (pattern Ast.xt * label loc list * core_type Ast.xt * expression Ast.xt)
+     option
+(** [sugar_polynewtype cmts pat exp] returns expression of a
+    type-constrained pattern [pat] with body [exp]. [cmts] are relocated to
+    the sub-expressions to have more precise positions. e.g.:
+
+    {[
+        let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
+    ]}
+
+    Can be rewritten as:
+
+    {[
+        let f: type r s. r s t = e
+    ]} *)
