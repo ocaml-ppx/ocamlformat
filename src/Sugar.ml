@@ -319,8 +319,10 @@ let sugar_mod_with pmty =
 let sugar_polynewtype cmts pat body =
   let ctx = Pat pat in
   match pat.ppat_desc with
-  | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, _typ)}) ->
-      let rec sugar_polynewtype_ xpat pvars0 pvars body =
+  | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, _)}) ->
+      let pvars0 = pvars in
+      let xpat = sub_pat ~ctx pat2 in
+      let rec sugar_polynewtype_ pvars body =
         let ctx = Exp body in
         match (pvars, body.pexp_desc) with
         | [], Pexp_constraint (exp, typ) ->
@@ -329,10 +331,10 @@ let sugar_polynewtype cmts pat body =
           , Pexp_newtype ({txt= nvar; loc= loc2}, exp) )
           when String.equal pvar nvar ->
             Cmts.relocate cmts ~src:loc2 ~before:loc1 ~after:loc1 ;
-            sugar_polynewtype_ xpat pvars0 pvars exp
+            sugar_polynewtype_ pvars exp
         | _ -> None
       in
       Cmts.relocate cmts ~src:pat.ppat_loc ~before:pat2.ppat_loc
         ~after:pat2.ppat_loc ;
-      sugar_polynewtype_ (sub_pat ~ctx pat2) pvars pvars body
+      sugar_polynewtype_ pvars body
   | _ -> None
