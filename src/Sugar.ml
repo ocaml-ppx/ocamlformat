@@ -212,11 +212,13 @@ let sugar_infix_cons xexp =
         , Some
             { pexp_desc= Pexp_tuple [hd; tl]
             ; pexp_loc= l3
-            ; pexp_attributes= [] } ) -> (
-      match sugar_infix_cons_ (sub_exp ~ctx tl) with
-      | xtl when List.is_empty tl.pexp_attributes ->
-          ([l1; l2; l3], sub_exp ~ctx hd) :: xtl
-      | _ -> [([l1; l2; l3], sub_exp ~ctx hd); ([], sub_exp ~ctx tl)] )
+            ; pexp_attributes= [] } ) ->
+        let xtl =
+          match tl.pexp_attributes with
+          | [] -> sugar_infix_cons_ (sub_exp ~ctx tl)
+          | _ -> [([], sub_exp ~ctx tl)]
+        in
+        ([l1; l2; l3], sub_exp ~ctx hd) :: xtl
     | _ -> [([], xexp)]
   in
   sugar_infix_cons_ xexp
