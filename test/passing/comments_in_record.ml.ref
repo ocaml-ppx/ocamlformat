@@ -17,10 +17,9 @@ let { (* cmts *)
     ; (* b *) b
     ; (* c *) c
     ; (* d *)
-      d : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int= D
+      d: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int = D
     ; (* e *)
-      e : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int }
-    =
+      e: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
   exp
 
 let x =
