@@ -145,33 +145,18 @@ let sugar_infix cmts prec xexp =
         in
         let src = pexp_loc in
         let after = e1.pexp_loc in
+        let before =
+          match xop with Some {ast} -> ast.pexp_loc | None -> e1.pexp_loc
+        in
+        let may_relocate ~after =
+          if relocate then Cmts.relocate cmts ~src ~before ~after
+        in
         ( match List.last op_args2 with
         | Some (_, args2) -> (
           match List.last args2 with
-          | Some (_, {ast= {pexp_loc= after}}) -> (
-            match xop with
-            | Some {ast} ->
-                if relocate then
-                  Cmts.relocate cmts ~src ~before:ast.pexp_loc ~after
-            | None ->
-                if relocate then
-                  Cmts.relocate cmts ~src ~before:e1.pexp_loc ~after )
-          | None -> (
-            match xop with
-            | Some {ast} ->
-                if relocate then
-                  Cmts.relocate cmts ~src ~before:ast.pexp_loc ~after
-            | None ->
-                if relocate then
-                  Cmts.relocate cmts ~src ~before:e1.pexp_loc ~after ) )
-        | _ -> (
-          match xop with
-          | Some {ast} ->
-              if relocate then
-                Cmts.relocate cmts ~src ~before:ast.pexp_loc ~after
-          | None ->
-              if relocate then
-                Cmts.relocate cmts ~src ~before:e1.pexp_loc ~after ) ) ;
+          | Some (_, {ast= {pexp_loc= after}}) -> may_relocate ~after
+          | None -> may_relocate ~after )
+        | _ -> may_relocate ~after ) ;
         (xop, [(l1, sub_exp ~ctx e1)]) :: op_args2
     | _ -> [(xop, [xexp])]
   in
