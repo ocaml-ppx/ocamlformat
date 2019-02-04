@@ -3593,23 +3593,6 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
 
-and fmt_use_file c ctx itms =
-  list itms "\n@\n" (fun item -> fmt_toplevel_phrase c ctx item)
-
-and fmt_toplevel_phrase c ctx = function
-  | Ptop_def structure -> fmt_structure c ctx structure
-  | Ptop_dir (dir, directive_argument) -> (
-      fmt ";;@\n" $ str "#" $ str dir
-      $
-      match directive_argument with
-      | Pdir_none -> fmt ""
-      | Pdir_string s -> fmt " " $ str (Printf.sprintf "%S" s)
-      | Pdir_int (lit, Some m) ->
-          fmt " " $ str (Printf.sprintf "%s%c" lit m)
-      | Pdir_int (lit, None) -> fmt " " $ str lit
-      | Pdir_ident longident -> fmt " " $ fmt_longident longident
-      | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool) )
-
 and fmt_structure c ctx itms =
   let _, itms =
     List.fold_map itms ~init:c ~f:(fun c i ->
@@ -3890,6 +3873,23 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
   Cmts.fmt c.cmts pmb_loc
     (fmt_module c ?epi keyword pmb_name xargs (Some xbody) true xmty
        pmb_attributes)
+
+let fmt_toplevel_phrase c ctx = function
+  | Ptop_def structure -> fmt_structure c ctx structure
+  | Ptop_dir (dir, directive_argument) -> (
+      fmt ";;@\n" $ str "#" $ str dir
+      $
+      match directive_argument with
+      | Pdir_none -> fmt ""
+      | Pdir_string s -> fmt " " $ str (Printf.sprintf "%S" s)
+      | Pdir_int (lit, Some m) ->
+          fmt " " $ str (Printf.sprintf "%s%c" lit m)
+      | Pdir_int (lit, None) -> fmt " " $ str lit
+      | Pdir_ident longident -> fmt " " $ fmt_longident longident
+      | Pdir_bool bool -> fmt " " $ str (Bool.to_string bool) )
+
+let fmt_use_file c ctx itms =
+  list itms "\n@\n" (fun item -> fmt_toplevel_phrase c ctx item)
 
 (** Entry points *)
 
