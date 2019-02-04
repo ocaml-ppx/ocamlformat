@@ -113,18 +113,10 @@ val sugar_ite :
     omitted. [cmts] are relocated to the sub-expressions to have more
     precise positions. *)
 
-val sugar_sequence :
-     Conf.t
-  -> Cmts.t
-  -> (expression Ast.xt -> int)
-  -> expression Ast.xt
-  -> expression Ast.xt list list
-(** [sugar_sequence conf cmts width exp] returns the list of expressions
-    from a sequence of expressions [exp]. [width] is the function computing
-    the width (number of columns) of an expression. Sub-sequences will be
-    put in different sub-lists if one of they do not fit within the margin.
-    [cmts] are relocated to the sub-expressions to have more precise
-    positions. *)
+val sugar_sequence : Cmts.t -> expression Ast.xt -> expression Ast.xt list
+(** [sugar_sequence cmts exp] returns the list of expressions from a
+    sequence of expressions [exp]. [cmts] are relocated to the
+    sub-expressions to have more precise positions. *)
 
 val sugar_functor_type :
      Cmts.t

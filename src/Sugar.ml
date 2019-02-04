@@ -238,7 +238,7 @@ let rec sugar_ite cmts ({ast= exp} as xexp) =
       [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
   | _ -> [(None, xexp, pexp_attributes)]
 
-let sugar_sequence conf cmts width xexp =
+let sugar_sequence cmts xexp =
   let rec sugar_sequence_ ?(allow_attribute = true) ({ast= exp} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc} = exp in
@@ -256,9 +256,7 @@ let sugar_sequence conf cmts width xexp =
             (sugar_sequence_ ~allow_attribute:false (sub_exp ~ctx e2))
     | _ -> [xexp]
   in
-  List.group (sugar_sequence_ xexp) ~break:(fun xexp1 xexp2 ->
-      (not (is_simple conf width xexp1)) || not (is_simple conf width xexp2)
-  )
+  sugar_sequence_ xexp
 
 let rec sugar_functor_type cmts ~for_functor_kw ({ast= mty} as xmty) =
   let ctx = Mty mty in

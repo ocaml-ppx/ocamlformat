@@ -170,6 +170,11 @@ let fmt_recmodule c ctx items f ast =
          $ fmt_grp ~first grp
          $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
 
+let sugar_sequence c width xexp =
+  List.group (Sugar.sugar_sequence c.cmts xexp) ~break:(fun xexp1 xexp2 ->
+      (not (is_simple c.conf width xexp1))
+      || not (is_simple c.conf width xexp2) )
+
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
 (* In several places, a break such as "@;<1000 0>" is used to force the
@@ -1200,7 +1205,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                   $ fmt "@ " $ fmt_expression c xbody ))
            $ fmt "@ ;@ "
            $ list
-               (Sugar.sugar_sequence c.conf c.cmts width (sub_exp ~ctx e2))
+               (sugar_sequence c width (sub_exp ~ctx e2))
                " ;@;<1000 0>"
                (fun grp -> list grp " ;@ " (fmt_expression c)) ))
   | Pexp_apply
@@ -1919,7 +1924,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
         (hvbox_if parens 2
            ( wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
                (list
-                  (Sugar.sugar_sequence c.conf c.cmts width xexp)
+                  (sugar_sequence c width xexp)
                   ( match c.conf.sequence_style with
                   | `Separator -> " ;@;<1000 0>"
                   | `Terminator -> ";@;<1000 0>" )
