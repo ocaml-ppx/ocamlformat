@@ -368,6 +368,27 @@ let field_alias ~field:(li1 : Longident.t) (li2 : Longident.t) =
   | Lident x, Lident y -> String.equal x y
   | _ -> false
 
+let fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens ~attributes
+    ~fmt_atrs ~sub ~fmt_expr ~fmt_value_binding =
+  wrap_if
+    (parens || not (List.is_empty attributes))
+    "(" ")"
+    (vbox 0
+       ( hvbox 0
+           (list_fl bindings (fun ~first ~last binding ->
+                fmt_value_binding c ~rec_flag ~first
+                  ?ext:(if first then ext else None)
+                  ctx binding
+                  ~in_:(fun indent ->
+                    fmt_if_k last (break 1 (-indent) $ fmt "in") )
+                $ fmt_if (not last)
+                    ( match c.conf.let_and with
+                    | `Sparse -> "@;<1000 0>"
+                    | `Compact -> "@ " ) ))
+       $ fmt "@;<1000 0>"
+       $ hvbox 0 (fmt_expr c (sub ~ctx body)) ))
+  $ fmt_atrs
+
 let rec fmt_attribute c pre = function
   | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true}}
     , PStr
@@ -1682,24 +1703,15 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                             else ")" ) )
                     $ fmt_if (not last) "@ " )))
   | Pexp_let (rec_flag, bindings, body) ->
-      wrap_if
-        (parens || not (List.is_empty pexp_attributes))
-        "(" ")"
-        (vbox 0
-           ( hvbox 0
-               (list_fl bindings (fun ~first ~last binding ->
-                    fmt_value_binding c ~rec_flag ~first
-                      ?ext:(if first then ext else None)
-                      ctx binding
-                      ~in_:(fun indent ->
-                        fmt_if_k last (break 1 (-indent) $ fmt "in") )
-                    $ fmt_if (not last)
-                        ( match c.conf.let_and with
-                        | `Sparse -> "@;<1000 0>"
-                        | `Compact -> "@ " ) ))
-           $ fmt "@;<1000 0>"
-           $ hvbox 0 (fmt_expression c (sub_exp ~ctx body)) ))
-      $ fmt_atrs
+      let fmt_expr ?box ?epi ?eol ?parens ?indent_wrap ?ext =
+        fmt_expression ?box ?epi ?eol ?parens ?indent_wrap ?ext
+      in
+      let fmt_value_binding c ~rec_flag ~first ?ext ast b ~in_ =
+        fmt_value_binding ~rec_flag ~first ?ext c ast b ~in_
+      in
+      fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens
+        ~attributes:pexp_attributes ~fmt_atrs ~sub:sub_exp ~fmt_expr
+        ~fmt_value_binding
   | Pexp_letexception (ext_cstr, exp) ->
       hvbox 0
         ( wrap_if
@@ -2336,22 +2348,13 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
-      wrap_if parens "(" ")"
-        (vbox 0
-           ( hvbox 0
-               (list_fl bindings (fun ~first ~last binding ->
-                    fmt_value_binding c ~rec_flag ~first
-                      ?ext:(if first then None else None)
-                      ctx binding
-                      ~in_:(fun indent ->
-                        fmt_if_k last (break 1 (-indent) $ fmt "in") )
-                    $ fmt_if (not last)
-                        ( match c.conf.let_and with
-                        | `Sparse -> "@;<1000 0>"
-                        | `Compact -> "@ " ) ))
-           $ fmt "@;<1000 0>"
-           $ hvbox 0 (fmt_class_expr c (sub_cl ~ctx body)) ))
-      $ fmt_atrs
+      let fmt_expr ?eol ?box = fmt_class_expr ?eol ?box in
+      let fmt_value_binding c ~rec_flag ~first ?ext ast b ~in_ =
+        fmt_value_binding ~rec_flag ~first ?ext c ast b ~in_
+      in
+      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~body ~parens
+        ~attributes:pcl_attributes ~fmt_atrs ~sub:sub_cl ~fmt_expr
+        ~fmt_value_binding
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
