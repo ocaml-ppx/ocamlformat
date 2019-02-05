@@ -166,7 +166,8 @@ let with_box_debug k fs =
 
 let box_depth = ref 0
 
-let box_depth_colors = [|32; 33; 34; 31; 35; 36|]
+(* Numeric part of the ANSI escape sequence for colors *)
+let box_depth_colors = [|32; 33; 94; 31; 35; 36|]
 
 let box_depth_color () =
   box_depth_colors.(!box_depth % Array.length box_depth_colors)
@@ -184,6 +185,7 @@ let debug_box_open box_kind n fs =
 let debug_box_close fs =
   if !box_debug_enabled then
     if !box_depth = 0 then
+      (* mismatched close, red background *)
       pp_color_k 41 (fun fs -> Format.fprintf fs "@<0>]") fs
     else (
       Int.decr box_depth ;
