@@ -54,21 +54,19 @@ module Cases = struct
     ; box_pattern_guard= hvbox 0
     ; break_before_arrow= fmt "@;<1 2>"
     ; break_after_arrow= fmt_if_k (not parens_here) (fmt "@;<0 3>")
-    ; break_after_opening_paren=
-        fmt_or_k (indent > 2 || parens_here) (fmt "@,@ ") (fmt "@ ")
+    ; break_after_opening_paren= fmt "@ "
     ; box_rhs= hovbox 0 }
 
   let all ~first ~indent ~parens_here =
     { leading_space= fmt_if (not first) "@ "
     ; bar= break_unless_newline 1000 0 $ fmt "| "
-    ; box_all= hovbox indent
+    ; box_all= hvbox indent
     ; box_pattern_arrow= hovbox 0
-    ; box_pattern_guard= hovbox 0
+    ; box_pattern_guard= hvbox 0
     ; break_before_arrow=
         fmt_or_k parens_here (fmt "@;<1 2>") (fmt "@;<1 -2>")
     ; break_after_arrow= fmt_if_k (not parens_here) (fmt "@;<0 3>")
-    ; break_after_opening_paren=
-        fmt_or_k (indent > 2 || parens_here) (fmt "@,@ ") (fmt "@ ")
+    ; break_after_opening_paren= fmt "@ "
     ; box_rhs= hovbox 0 }
 
   let get c =
