@@ -125,10 +125,8 @@ val functor_type :
   -> (label loc * module_type Ast.xt option) list * module_type Ast.xt
 (** [functor_type cmts for_functor_kw m] returns the list of module types
     applied to the functor of module type [m]. [for_functor_kw] indicates if
-    the keyword [functor] is used. The sugar is different when used with the
-    [functor] keyword. The syntax M(A : A)(B : B) cannot handle [_] as
-    module name. [cmts] are relocated to the functor arguments or body to
-    have more precise positions. *)
+    the keyword [functor] is used. [cmts] are relocated to the functor
+    arguments or body to have more precise positions. *)
 
 val functor_ :
      Cmts.t
@@ -137,10 +135,8 @@ val functor_ :
   -> (label loc * module_type Ast.xt option) list * module_expr Ast.xt
 (** [functor_ cmts for_functor_kw m] returns the list of module types
     applied to the functor of module [m]. [for_functor_kw] indicates if the
-    keyword [functor] is used. The sugar is different when used with the
-    [functor] keyword. The syntax M(A : A)(B : B) cannot handle [_] as
-    module name. [cmts] are relocated to the functor arguments or body to
-    have more precise positions. *)
+    keyword [functor] is used. [cmts] are relocated to the functor arguments
+    or body to have more precise positions. *)
 
 val mod_with :
      module_type Ast.xt

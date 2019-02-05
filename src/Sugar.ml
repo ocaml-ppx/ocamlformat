@@ -256,6 +256,8 @@ let sequence cmts xexp =
   in
   sequence_ xexp
 
+(* The sugar is different when used with the [functor] keyword. The syntax
+   M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_type cmts ~for_functor_kw ({ast= mty} as xmty) =
   let ctx = Mty mty in
   match mty with
@@ -276,6 +278,8 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty} as xmty) =
       ((arg, Option.map arg_mty ~f:(sub_mty ~ctx)) :: xargs, xbody)
   | _ -> ([], xmty)
 
+(* The sugar is different when used with the [functor] keyword. The syntax
+   M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_ cmts ~for_functor_kw ({ast= me} as xme) =
   let ctx = Mod me in
   match me with
