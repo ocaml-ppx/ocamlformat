@@ -922,9 +922,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         $ str cls )
 
 and fmt_fun_args c ?(pro = fmt "") args =
-  let fmt_fun_arg = function
-    | Sugar.Val (Nolabel, xpat, None) -> fmt_pattern c xpat
-    | Sugar.Val
+  let fmt_fun_arg (a : Sugar.arg_kind) =
+    match a with
+    | Val (Nolabel, xpat, None) -> fmt_pattern c xpat
+    | Val
         ( Labelled l
         , ( { ast=
                 { ppat_desc=
@@ -936,9 +937,9 @@ and fmt_fun_args c ?(pro = fmt "") args =
         , None )
       when String.equal l txt ->
         cbox 0 (fmt "~" $ fmt_pattern c xpat)
-    | Sugar.Val (Labelled l, xpat, None) ->
+    | Val (Labelled l, xpat, None) ->
         cbox 0 (fmt "~" $ str l $ fmt ":" $ fmt_pattern c xpat)
-    | Sugar.Val
+    | Val
         ( Optional l
         , ( { ast=
                 { ppat_desc=
@@ -950,9 +951,9 @@ and fmt_fun_args c ?(pro = fmt "") args =
         , None )
       when String.equal l txt ->
         cbox 0 (fmt "?" $ fmt_pattern c xpat)
-    | Sugar.Val (Optional l, xpat, None) ->
+    | Val (Optional l, xpat, None) ->
         cbox 0 (fmt "?" $ str l $ fmt ":" $ fmt_pattern c xpat)
-    | Sugar.Val
+    | Val
         ( Optional l
         , ({ast= {ppat_desc= Ppat_var {txt}; ppat_attributes= []}} as xpat)
         , Some xexp )
@@ -961,7 +962,7 @@ and fmt_fun_args c ?(pro = fmt "") args =
           ( fmt "?(" $ fmt_pattern c xpat $ fmt " =@;<1 2>"
           $ hovbox 2 (fmt_expression c xexp)
           $ fmt ")" )
-    | Sugar.Val
+    | Val
         ( Optional l
         , ( { ast=
                 { ppat_desc= Ppat_constraint ({ppat_desc= Ppat_var {txt}}, _)
@@ -972,15 +973,15 @@ and fmt_fun_args c ?(pro = fmt "") args =
           ( fmt "?("
           $ fmt_pattern c ~parens:false xpat
           $ fmt " =@;<1 2>" $ fmt_expression c xexp $ fmt ")" )
-    | Sugar.Val (Optional l, xpat, Some xexp) ->
+    | Val (Optional l, xpat, Some xexp) ->
         cbox 0
           ( fmt "?" $ str l $ fmt ":("
           $ fmt_pattern c ~parens:false xpat
           $ fmt " =@;<1 2>" $ fmt_expression c xexp $ fmt ")" )
-    | Sugar.Val ((Labelled _ | Nolabel), _, Some _) ->
+    | Val ((Labelled _ | Nolabel), _, Some _) ->
         impossible "not accepted by parser"
-    | Sugar.Newtypes [] -> impossible "not accepted by parser"
-    | Sugar.Newtypes names ->
+    | Newtypes [] -> impossible "not accepted by parser"
+    | Newtypes names ->
         cbox 0
           (wrap "(" ")"
              (fmt "type " $ list names "@ " (fun name -> fmt_str_loc c name)))
