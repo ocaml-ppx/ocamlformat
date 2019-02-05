@@ -621,13 +621,6 @@ let fmt_variance = function
   | Contravariant -> fmt "-"
   | Invariant -> fmt ""
 
-let break_cases_level c =
-  match c.conf.break_cases with
-  | `Fit -> 0
-  | `Nested -> 1
-  | `Toplevel -> 2
-  | `All -> 3
-
 let wrap_list c =
   if c.conf.space_around_collection_expressions then wrap "[ " "@ ]"
   else wrap_fits_breaks c.conf "[" "]"
@@ -1133,14 +1126,14 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let proI =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
-          when break_cases_level c <> 1 ->
+          when Poly.(c.conf.break_cases <> `Nested) ->
             if c.conf.indicate_nested_or_patterns then or_newline "| " " |"
             else or_newline "| " "| "
         | _ -> break_unless_newline 1 0 $ fmt "| "
       in
       let pro2 =
         fmt_or_k
-          (break_cases_level c = 3)
+          Poly.(c.conf.break_cases = `All)
           ( break_unless_newline 1000 0
           $ fmt_or c.conf.indicate_nested_or_patterns " |" "| " )
           proI
@@ -1156,7 +1149,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       hvbox 0
         ( list_fl
             (List.group xpats ~break:(fun {ast= p1} {ast= p2} ->
-                 break_cases_level c = 1
+                 Poly.(c.conf.break_cases = `Nested)
                  || (not (is_simple p1))
                  || not (is_simple p2) ))
             (fun ~first:first_grp ~last:_ xpat_grp ->
