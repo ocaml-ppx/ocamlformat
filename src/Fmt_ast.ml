@@ -171,7 +171,7 @@ let fmt_recmodule c ctx items f ast =
          $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
 
 let sugar_sequence c width xexp =
-  List.group (Sugar.sugar_sequence c.cmts xexp) ~break:(fun xexp1 xexp2 ->
+  List.group (Sugar.sequence c.cmts xexp) ~break:(fun xexp1 xexp2 ->
       (not (is_simple c.conf width xexp1))
       || not (is_simple c.conf width xexp2) )
 
@@ -504,7 +504,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         | Labelled l -> str l $ fmt ":"
         | Optional l -> fmt "?" $ str l $ fmt ":"
       in
-      let xt1N = Sugar.sugar_arrow_typ c.cmts xtyp in
+      let xt1N = Sugar.arrow_typ c.cmts xtyp in
       let indent =
         if Poly.(c.conf.break_separators = `Before) then 2 else 0
       in
@@ -737,7 +737,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_construct
       ( {txt= Lident "::"; loc}
       , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []} ) -> (
-    match Sugar.sugar_list_pat c.cmts pat with
+    match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
         hvbox 0
           (wrap_list c
@@ -821,7 +821,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             true
         | _ -> false
       in
-      let xpats = Sugar.sugar_or_pat c.cmts xpat in
+      let xpats = Sugar.or_pat c.cmts xpat in
       let pro0 =
         Option.call ~f:pro
         $ fits_breaks
@@ -912,7 +912,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           match pat.ppat_desc with
           | Ppat_array _ | Ppat_record _ -> true
           | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
-          | _ -> Option.is_some (Sugar.sugar_list_pat c.cmts pat)
+          | _ -> Option.is_some (Sugar.list_pat c.cmts pat)
         in
         if can_skip_parens then (".", "") else (".(", ")")
       in
@@ -1213,7 +1213,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                       ; _ } as pld ) ] ) }
       , e2 ) ->
       let xargs, xbody =
-        Sugar.sugar_fun c.cmts (sub_exp ~ctx:(Str pld) call_fun)
+        Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call_fun)
       in
       hvbox 0
         (wrap_if parens "(" ")"
@@ -1246,7 +1246,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                                 , [] )
                           ; _ } as pld ) ] ) } ) ] ) ->
       let xargs, xbody =
-        Sugar.sugar_fun c.cmts (sub_exp ~ctx:(Str pld) retn_fun)
+        Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) retn_fun)
       in
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
@@ -1326,7 +1326,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
         as op )
       , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_fun _} as r))] )
     when is_infix_id id && not c.conf.break_infix_before_func ->
-      let xargs, xbody = Sugar.sugar_fun c.cmts (sub_exp ~ctx r) in
+      let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
       let indent_wrap = if parens then -2 else 0 in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       wrap_fits_breaks_if c.conf parens "(" ")"
@@ -1366,7 +1366,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
       ( {pexp_desc= Pexp_ident {txt= Lident id}; pexp_attributes= []}
       , [(Nolabel, _); (Nolabel, _)] )
     when is_infix_id id ->
-      let op_args = Sugar.sugar_infix c.cmts (prec_ast (Exp exp)) xexp in
+      let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
       fmt_op_args
         (List.map op_args ~f:(fun (op, args) ->
              match op with
@@ -1409,9 +1409,9 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let e1N = List.rev rev_e1N in
-          (* side effects of Cmts.fmt c.cmts before sugar_fun is important *)
+          (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
           let fmt_cmts = Cmts.fmt c.cmts pexp_loc in
-          let xargs, xbody = Sugar.sugar_fun c.cmts (sub_exp ~ctx eN1) in
+          let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx eN1) in
           hvbox 0
             (wrap_if parens "(" ")"
                ( hovbox 0
@@ -1561,7 +1561,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
-    match Sugar.sugar_list_exp c.cmts exp with
+    match Sugar.list_exp c.cmts exp with
     | Some (loc_xes, nil_loc) ->
         hvbox 0
           (wrap_if
@@ -1576,7 +1576,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                    @@ fmt "" )
              $ fmt_atrs ))
     | None ->
-        let loc_args = Sugar.sugar_infix_cons xexp in
+        let loc_args = Sugar.infix_cons xexp in
         fmt_op_args
           (List.mapi loc_args ~f:(fun i (locs, arg) ->
                let fmt_before_cmts =
@@ -1613,7 +1613,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
            ( fmt_expression c (sub_exp ~ctx exp)
            $ fmt "@,." $ fmt_longident_loc c lid $ fmt_atrs ))
   | Pexp_newtype _ | Pexp_fun _ ->
-      let xargs, xbody = Sugar.sugar_fun c.cmts xexp in
+      let xargs, xbody = Sugar.fun_ c.cmts xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -1651,7 +1651,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                (fmt_longident txt $ Cmts.fmt_within c.cmts loc)
            $ fmt_atrs )
   | Pexp_ifthenelse _ ->
-      let cnd_exps = Sugar.sugar_ite c.cmts xexp in
+      let cnd_exps = Sugar.ite c.cmts xexp in
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            (list_fl cnd_exps
@@ -1728,7 +1728,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
   | Pexp_letmodule (name, pmod, exp) ->
       let keyword = fmt "let module" $ fmt_extension_suffix c ext in
       let xargs, xbody =
-        Sugar.sugar_functor c.cmts ~for_functor_kw:false (sub_mod ~ctx pmod)
+        Sugar.functor_ c.cmts ~for_functor_kw:false (sub_mod ~ctx pmod)
       in
       let xbody, xmty =
         match xbody.ast with
@@ -1781,7 +1781,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
           match e0.pexp_desc with
           | Pexp_array _ | Pexp_record _ -> true
           | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
-          | _ -> Option.is_some (Sugar.sugar_list_exp c.cmts e0)
+          | _ -> Option.is_some (Sugar.list_exp c.cmts e0)
         in
         if can_skip_parens then (".", "") else (".(", ")")
       in
@@ -2227,7 +2227,7 @@ and fmt_class_type c ?(box = true) ({ast= typ} as xtyp) =
         | Labelled l -> str l $ fmt ":"
         | Optional l -> fmt "?" $ str l $ fmt ":"
       in
-      let xt1N = Sugar.sugar_class_arrow_typ c.cmts (sub_cty ~ctx typ) in
+      let xt1N = Sugar.class_arrow_typ c.cmts (sub_cty ~ctx typ) in
       hvbox_if box 0
         (list xt1N "@;-> " (fun (lI, xtI) ->
              hvbox 0
@@ -2328,7 +2328,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
            ( fmt_class_structure c ~ctx ?ext:None pcstr_self pcstr_fields
            $ fmt_atrs ))
   | Pcl_fun _ ->
-      let xargs, xbody = Sugar.sugar_cl_fun c.cmts xexp in
+      let xargs, xbody = Sugar.cl_fun c.cmts xexp in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -2421,7 +2421,7 @@ and fmt_class_field c ctx (cf : class_field) =
         let xargs, xbody =
           match poly with
           | None ->
-              Sugar.sugar_fun c.cmts ~will_keep_first_ast_node:false
+              Sugar.fun_ c.cmts ~will_keep_first_ast_node:false
                 (sub_exp ~ctx e)
           | Some _ -> ([], sub_exp ~ctx e)
         in
@@ -2937,7 +2937,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
             $ fmt_attributes c ~key:"@" atrs ~pre:(fmt "@ ") ) }
   | Pmty_functor _ ->
       let xargs, mt2 =
-        Sugar.sugar_functor_type c.cmts ~for_functor_kw:true xmty
+        Sugar.functor_type c.cmts ~for_functor_kw:true xmty
       in
       let blk = fmt_module_type c mt2 in
       { blk with
@@ -2962,7 +2962,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c.cmts pmty_loc)
       }
   | Pmty_with _ ->
-      let wcs, mt = Sugar.sugar_mod_with (sub_mty ~ctx mty) in
+      let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_type c mt in
       { empty with
         bdy=
@@ -3142,7 +3142,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
       let xargs, xbody =
         match pci_expr.pcl_attributes with
         | [] ->
-            Sugar.sugar_cl_fun c.cmts ~will_keep_first_ast_node:false
+            Sugar.cl_fun c.cmts ~will_keep_first_ast_node:false
               (sub_cl ~ctx pci_expr)
         | _ -> ([], sub_cl ~ctx pci_expr)
       in
@@ -3253,7 +3253,7 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let xargs, xmty =
     if rec_flag then ([], sub_mty ~ctx pmd_type)
     else
-      Sugar.sugar_functor_type c.cmts ~for_functor_kw:false
+      Sugar.functor_type c.cmts ~for_functor_kw:false
         (sub_mty ~ctx pmd_type)
   in
   let colon =
@@ -3439,9 +3439,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( Cmts.fmt_after c.cmts pmod_loc
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_functor _ ->
-      let xargs, me =
-        Sugar.sugar_functor c.cmts ~for_functor_kw:true xmod
-      in
+      let xargs, me = Sugar.functor_ c.cmts ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
       let { opn= opn_e
           ; pro= pro_e
@@ -3765,7 +3763,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       || pat_is_extension pat
     then (xpat, [], None, xbody)
     else
-      match Sugar.sugar_polynewtype c.cmts pat body with
+      match Sugar.polynewtype c.cmts pat body with
       | Some (xpat, pvars, xtyp, xbody) ->
           let fmt_cstr =
             fmt "@ : type "
@@ -3783,7 +3781,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
           let xargs, ({ast= body} as xbody) =
             match pat with
             | {ppat_desc= Ppat_var _; ppat_attributes= []; _} ->
-                Sugar.sugar_fun c.cmts ~will_keep_first_ast_node:false xbody
+                Sugar.fun_ c.cmts ~will_keep_first_ast_node:false xbody
             | _ -> ([], xbody)
           in
           let fmt_cstr, xbody =
@@ -3837,7 +3835,7 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
     else str "and"
   in
   let xargs, xbody =
-    Sugar.sugar_functor c.cmts ~for_functor_kw:false (sub_mod ~ctx pmb_expr)
+    Sugar.functor_ c.cmts ~for_functor_kw:false (sub_mod ~ctx pmb_expr)
   in
   let xbody, xmty =
     match xbody.ast with

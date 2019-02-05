@@ -13,27 +13,27 @@ open Migrate_ast
 open Asttypes
 open Parsetree
 
-val sugar_arrow_typ :
+val arrow_typ :
   Cmts.t -> core_type Ast.xt -> (arg_label * core_type Ast.xt) list
-(** [sugar_arrow_typ cmts ty] returns the list of labeled sub-arrow types of
-    the type [ty]. [cmts] are relocated on the sub-arrow types to have more
+(** [arrow_typ cmts ty] returns the list of labeled sub-arrow types of the
+    type [ty]. [cmts] are relocated on the sub-arrow types to have more
     precise positions. *)
 
-val sugar_class_arrow_typ :
+val class_arrow_typ :
      Cmts.t
   -> class_type Ast.xt
   -> ( arg_label
      * [`class_type of class_type Ast.xt | `core_type of core_type Ast.xt]
      )
      list
-(** [sugar_class_arrow_typ cmts ty] returns the list of labeled sub_arrow
-    types of the class type [ty]. [cmts] are relocated to the sub-arrow
-    types to have more precise positions. *)
+(** [class_arrow_typ cmts ty] returns the list of labeled sub_arrow types of
+    the class type [ty]. [cmts] are relocated to the sub-arrow types to have
+    more precise positions. *)
 
-val sugar_or_pat :
+val or_pat :
   ?allow_attribute:bool -> Cmts.t -> pattern Ast.xt -> pattern Ast.xt list
-(** [sugar_or_pat allow_attribute cmts pat] returns the list of patterns of
-    a pattern disjunction. [cmts] are relocated to the sub-patterns to have
+(** [or_pat allow_attribute cmts pat] returns the list of patterns of a
+    pattern disjunction. [cmts] are relocated to the sub-patterns to have
     more precise positions. [allow_attribute] is set by default, otherwise
     patterns with not empty attributes are not processed (i.e. they are
     returned without modification). *)
@@ -42,65 +42,65 @@ type arg_kind =
   | Val of arg_label * pattern Ast.xt * expression Ast.xt option
   | Newtypes of string loc list
 
-val sugar_fun :
+val fun_ :
      Cmts.t
   -> ?will_keep_first_ast_node:bool
   -> expression Ast.xt
   -> arg_kind sexp_list * expression Ast.xt
-(** [sugar_fun cmts will_keep_first_ast_node exp] returns the list of
-    arguments and the body of the function [exp]. [cmts] are relocated to
-    the arguments or the function body to have more precise positions.
+(** [fun_ cmts will_keep_first_ast_node exp] returns the list of arguments
+    and the body of the function [exp]. [cmts] are relocated to the
+    arguments or the function body to have more precise positions.
     [will_keep_first_ast_node] is set by default, otherwise the [exp] is
     returned without modification. *)
 
-val sugar_cl_fun :
+val cl_fun :
      ?will_keep_first_ast_node:bool
   -> Cmts.t
   -> class_expr Ast.xt
   -> arg_kind list * class_expr Ast.xt
-(** [sugar_cl_fun will_keep_first_ast_node cmts exp] returns the list of
-    arguments and the body of the function [exp]. [cmts] are relocated to
-    the arguments or the function body to have more precise positions.
+(** [cl_fun will_keep_first_ast_node cmts exp] returns the list of arguments
+    and the body of the function [exp]. [cmts] are relocated to the
+    arguments or the function body to have more precise positions.
     [will_keep_first_ast_node] is set by default, otherwise the [exp] is
     returned without modification. *)
 
-val sugar_infix :
+val infix :
      Cmts.t
   -> Ast.prec option
   -> expression Ast.xt
   -> (expression Ast.xt option * (arg_label * expression Ast.xt) list) list
-(** [sugar_infix cmts prec exp] returns the infix operator and the list of
+(** [infix cmts prec exp] returns the infix operator and the list of
     operands applied to this operator from expression [exp]. [prec] is the
     precedence of the infix operator. [cmts] are relocated to the operand to
     have more precise positions. *)
 
-val sugar_list_pat :
+val list_pat :
      Cmts.t
   -> pattern
   -> ((Warnings.loc list * pattern Ast.xt) list * Warnings.loc) option
-(** [sugar_list_pat cmts pat] returns a list of patterns if [pat] is a
-    pattern corresponding to a list (empty list or (::) application). [cmts]
-    are relocated to the list elements to have more precise positions. *)
+(** [list_pat cmts pat] returns a list of patterns if [pat] is a pattern
+    corresponding to a list (empty list or (::) application). [cmts] are
+    relocated to the list elements to have more precise positions. *)
 
-val sugar_list_exp :
+val list_exp :
      Cmts.t
   -> expression
   -> ((Warnings.loc list * expression Ast.xt) list * Warnings.loc) option
-(** [sugar_list_exp cmts exp] returns a list of expressions if [exp] is an
+(** [list_exp cmts exp] returns a list of expressions if [exp] is an
     expression corresponding to a list (empty list or (::) application).
     [cmts] are relocated to the list elements to have more positions. *)
 
-val sugar_infix_cons :
+val infix_cons :
   expression Ast.xt -> (Warnings.loc list * expression Ast.xt) list
-(** [sugar_infix_cons exp] returns a list of expressions if [exp] is an
-    expression corresponding to a list ((::) application). *)
+(** [infix_cons exp] returns a list of expressions if [exp] is an expression
+    corresponding to a list ((::) application). *)
 
-val sugar_ite :
+val ite :
      Cmts.t
   -> expression Ast.xt
   -> (expression Ast.xt option * expression Ast.xt * attributes) list
-(** [sugar_ite cmts exp] returns a list of conditional expressions from
-    cascading if-then-else expressions, e.g.:
+(** [ite cmts exp] returns a list of conditional expressions from cascading
+    if-then-else expressions, e.g.:
 
     {[
         if c1 then e1
@@ -113,50 +113,50 @@ val sugar_ite :
     omitted. [cmts] are relocated to the sub-expressions to have more
     precise positions. *)
 
-val sugar_sequence : Cmts.t -> expression Ast.xt -> expression Ast.xt list
-(** [sugar_sequence cmts exp] returns the list of expressions from a
-    sequence of expressions [exp]. [cmts] are relocated to the
-    sub-expressions to have more precise positions. *)
+val sequence : Cmts.t -> expression Ast.xt -> expression Ast.xt list
+(** [sequence cmts exp] returns the list of expressions from a sequence of
+    expressions [exp]. [cmts] are relocated to the sub-expressions to have
+    more precise positions. *)
 
-val sugar_functor_type :
+val functor_type :
      Cmts.t
   -> for_functor_kw:bool
   -> module_type Ast.xt
   -> (label loc * module_type Ast.xt option) list * module_type Ast.xt
-(** [sugar_functor_type cmts for_functor_kw m] returns the list of module
-    types applied to the functor of module type [m]. [for_functor_kw]
-    indicates if the keyword [functor] is used. The sugar is different when
-    used with the [functor] keyword. The syntax M(A : A)(B : B) cannot
-    handle [_] as module name. [cmts] are relocated to the functor arguments
-    or body to have more precise positions. *)
+(** [functor_type cmts for_functor_kw m] returns the list of module types
+    applied to the functor of module type [m]. [for_functor_kw] indicates if
+    the keyword [functor] is used. The sugar is different when used with the
+    [functor] keyword. The syntax M(A : A)(B : B) cannot handle [_] as
+    module name. [cmts] are relocated to the functor arguments or body to
+    have more precise positions. *)
 
-val sugar_functor :
+val functor_ :
      Cmts.t
   -> for_functor_kw:bool
   -> module_expr Ast.xt
   -> (label loc * module_type Ast.xt option) list * module_expr Ast.xt
-(** [sugar_functor cmts for_functor_kw m] returns the list of module types
+(** [functor_ cmts for_functor_kw m] returns the list of module types
     applied to the functor of module [m]. [for_functor_kw] indicates if the
     keyword [functor] is used. The sugar is different when used with the
     [functor] keyword. The syntax M(A : A)(B : B) cannot handle [_] as
     module name. [cmts] are relocated to the functor arguments or body to
     have more precise positions. *)
 
-val sugar_mod_with :
+val mod_with :
      module_type Ast.xt
   -> (with_constraint list * Warnings.loc) list * module_type Ast.xt
-(** [sugar_mod_with m] returns the list of [with type] constraints of module
-    type [m]. *)
+(** [mod_with m] returns the list of [with type] constraints of module type
+    [m]. *)
 
-val sugar_polynewtype :
+val polynewtype :
      Cmts.t
   -> pattern
   -> expression
   -> (pattern Ast.xt * label loc list * core_type Ast.xt * expression Ast.xt)
      option
-(** [sugar_polynewtype cmts pat exp] returns expression of a
-    type-constrained pattern [pat] with body [exp]. [cmts] are relocated to
-    the sub-expressions to have more precise positions. e.g.:
+(** [polynewtype cmts pat exp] returns expression of a type-constrained
+    pattern [pat] with body [exp]. [cmts] are relocated to the
+    sub-expressions to have more precise positions. e.g.:
 
     {[
         let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
