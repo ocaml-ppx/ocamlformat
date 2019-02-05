@@ -177,10 +177,9 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
           (cmts, tmp)
         in
         let tmp = print_to_file (Format.sprintf "%s.%i%s" base i ext) in
-        ignore
-          ( print_to_file ~box_debug:true
-              (Format.sprintf "%s.%i.boxes%s" base i ext)
-            : _ * _ ) ;
+        print_to_file ~box_debug:true
+          (Format.sprintf "%s.%i.boxes%s" base i ext)
+        |> (ignore : _ * _ -> _) ;
         tmp
     in
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
