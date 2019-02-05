@@ -867,6 +867,11 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
           | None -> false
           | Some x -> exposed_right_typ x )
       in
+      let force_break =
+        match c.conf.type_decl with
+        | `Sparse when c.conf.space_around_collection_expressions -> true
+        | _ -> false
+      in
       hvbox 0
         ( fits_breaks "[" "["
         $ ( match (flag, lbls, rfs) with
@@ -878,7 +883,9 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
               fmt "< " $ row_fields rfs $ fmt " > "
               $ list ls "@ " (fmt "`" >$ str)
           | Open, Some _, _ -> impossible "not produced by parser" )
-        $ fits_breaks (if protect_token then " ]" else "]") "@ ]" )
+        $ fits_breaks
+            (if protect_token then " ]" else "]")
+            (if force_break then "@;<1000 0>]" else "@ ]") )
   | Ptyp_object ([], o_c) ->
       fmt "<@ "
       $ fmt_if Poly.(o_c = Open) "..@ "

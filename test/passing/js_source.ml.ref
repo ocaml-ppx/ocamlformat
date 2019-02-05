@@ -30,7 +30,8 @@ type obj =
 
 type var =
   [ `Foo  (** foo *)
-  | `Bar of int * string  (** bar *) ]
+  | `Bar of int * string  (** bar *)
+  ]
 
 [%%foo
 let x = 1 in
@@ -1299,7 +1300,8 @@ let a = devariantize Enil ty_abc v
 (* And an example with recursion... *)
 type 'a vlist =
   [ `Nil
-  | `Cons of 'a * 'a vlist ]
+  | `Cons of 'a * 'a vlist
+  ]
 
 let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
  fun t ->
@@ -1415,7 +1417,8 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
 
 type 'a vlist =
   [ `Nil
-  | `Cons of 'a * 'a vlist ]
+  | `Cons of 'a * 'a vlist
+  ]
 
 let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
  fun t ->
@@ -2210,7 +2213,8 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
 (* let x = f Tint (Tvar Zero) ;; *)
 type inkind =
   [ `Link
-  | `Nonlink ]
+  | `Nonlink
+  ]
 
 type _ inline_t =
   | Text : string -> [< inkind > `Nonlink] inline_t
@@ -2335,7 +2339,8 @@ let _ = eval Eq (Int 2) (Int 3)
 type tag =
   [ `TagA
   | `TagB
-  | `TagC ]
+  | `TagC
+  ]
 
 type 'a poly =
   | AandBTags : [< `TagA of int | `TagB] poly
@@ -2397,7 +2402,8 @@ module M : sig
 end = struct
   type s =
     [ `A
-    | `B ]
+    | `B
+    ]
 
   let eq = Eq
 end
@@ -2475,7 +2481,8 @@ type _ nat =
 
 type 'a pre_nat =
   [ `Zero
-  | `Succ of 'a ]
+  | `Succ of 'a
+  ]
 
 type aux = Aux : [`Succ of [< [< [< [`Zero] pre_nat] pre_nat] pre_nat]] nat -> aux
 
@@ -3474,7 +3481,8 @@ let free_var : var -> _ = function `Var s -> Names.singleton s
 type 'a lambda =
   [ `Var of string
   | `Abs of string * 'a
-  | `App of 'a * 'a ]
+  | `App of 'a * 'a
+  ]
 
 let free_lambda ~free_rec : _ lambda -> _ = function
   | #var as x -> free_var x
@@ -3536,7 +3544,8 @@ type 'a expr =
   | `Num of int
   | `Add of 'a * 'a
   | `Neg of 'a
-  | `Mult of 'a * 'a ]
+  | `Mult of 'a * 'a
+  ]
 
 let free_expr ~free_rec : _ expr -> _ = function
   | #var as x -> free_var x
@@ -3591,7 +3600,8 @@ type lexpr =
   | `Num of int
   | `Add of lexpr * lexpr
   | `Neg of lexpr
-  | `Mult of lexpr * lexpr ]
+  | `Mult of lexpr * lexpr
+  ]
 
 let rec free : lexpr -> _ = function
   | #lambda as x -> free_lambda ~free_rec:free x
@@ -3702,7 +3712,8 @@ class ['a] var_ops =
 type 'a lambda =
   [ `Var of string
   | `Abs of string * 'a
-  | `App of 'a * 'a ]
+  | `App of 'a * 'a
+  ]
 
 let next_id =
   let current = ref 3 in
@@ -3770,7 +3781,8 @@ type 'a expr =
   | `Num of int
   | `Add of 'a * 'a
   | `Neg of 'a
-  | `Mult of 'a * 'a ]
+  | `Mult of 'a * 'a
+  ]
 
 class ['a] expr_ops (ops : ('a, 'a) #ops Lazy.t) =
   let var : 'a var_ops = new var_ops
@@ -3824,7 +3836,8 @@ let expr = lazy_fix (new expr_ops)
 
 type 'a lexpr =
   [ 'a lambda
-  | 'a expr ]
+  | 'a expr
+  ]
 
 class ['a] lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
   let lambda = new lambda_ops ops in
@@ -3937,7 +3950,8 @@ let var =
 type 'a lambda =
   [ `Var of string
   | `Abs of string * 'a
-  | `App of 'a * 'a ]
+  | `App of 'a * 'a
+  ]
 
 let next_id =
   let current = ref 3 in
@@ -4003,7 +4017,8 @@ type 'a expr =
   | `Num of int
   | `Add of 'a * 'a
   | `Neg of 'a
-  | `Mult of 'a * 'a ]
+  | `Mult of 'a * 'a
+  ]
 
 let expr_ops (ops : ('a, 'a) #ops Lazy.t) =
   let free = lazy !!ops#free
@@ -4055,7 +4070,8 @@ let expr = lazy_fix expr_ops
 
 type 'a lexpr =
   [ 'a lambda
-  | 'a expr ]
+  | 'a expr
+  ]
 
 let lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
   let lambda = lambda_ops ops in
@@ -4289,7 +4305,8 @@ let f (g : 'a * 'b -> 'a t -> 'a) s = g s s
 
 type ab =
   [ `A
-  | `B ]
+  | `B
+  ]
 
 let f (x : [`A]) = match x with #ab -> 1
 
@@ -4345,7 +4362,8 @@ let _ = fun (x : a t) -> h x
 
 type t =
   [ 'A_name
-  | `Hi ]
+  | `Hi
+  ]
 
 let f (x : 'id_arg) = x
 let f (x : 'Id_arg) = x
@@ -5894,7 +5912,8 @@ type t = F(Does_not_exist).t
 
 type expr =
   [ `Abs of string * expr
-  | `App of expr * expr ]
+  | `App of expr * expr
+  ]
 
 class type exp =
   object
@@ -6511,12 +6530,14 @@ type 'a termpc =
   [ `And of 'a * 'a
   | `Or of 'a * 'a
   | `Not of 'a
-  | `Atom of string ]
+  | `Atom of string
+  ]
 
 type 'a termk =
   [ `Dia of 'a
   | `Box of 'a
-  | 'a termpc ]
+  | 'a termpc
+  ]
 
 module type T = sig
   type term
@@ -7949,7 +7970,8 @@ end
 
 type t =
   [ `A
-  | `B ]
+  | `B
+  ]
 
 type 'a u = t
 
