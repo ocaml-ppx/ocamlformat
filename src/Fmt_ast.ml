@@ -1540,12 +1540,17 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt "@ : "
-          $ fmt_package_type c ctx pty
-          $ fmt_atrs )
+      let box k =
+        match c.conf.module_annotation with
+        | `Sparse -> hvbox 0 k
+        | `Compact -> hovbox 0 k
+      in
+      box
+      @@ wrap_fits_breaks ~space:false c.conf "(" ")"
+           ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ esp
+           $ Option.call ~f:epi $ fmt "@ : "
+           $ fmt_package_type c ctx pty
+           $ fmt_atrs )
   | Pexp_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"

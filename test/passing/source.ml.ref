@@ -3488,7 +3488,7 @@ module SSMap = struct
 end
 
 let ssmap =
-  (module SSMap
+  ( module SSMap
   : MapT
     with type key = string and type data = string and type map = SSMap.map
   )

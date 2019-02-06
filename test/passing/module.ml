@@ -56,7 +56,7 @@ module Y = ( val X.o
                 and type very_long_long_type = t )
 
 let _ =
-  (module M
+  ( module M
   : S
     with type long_long_type = t
      and type long_long_long_type = u
