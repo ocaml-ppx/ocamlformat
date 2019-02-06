@@ -151,6 +151,12 @@ OPTIONS (CODE FORMATTING STYLE)
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.
 
+       --module-annotation={sparse|compact}
+           Module signature annotations. sparse will break before signature
+           if the declaration span multiple lines compact will try to fit the
+           signature on the same line if possible The default value is
+           sparse.
+
        --module-item-spacing={sparse|compact}
            Spacing between items of structures and signatures. sparse will
            always break a line between two items. compact will not leave open

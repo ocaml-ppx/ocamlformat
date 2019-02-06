@@ -40,6 +40,7 @@ type t =
   ; margin: int
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Sparse]
+  ; module_annotation: [`Compact | `Sparse]
   ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
@@ -869,6 +870,23 @@ module Formatting = struct
       (fun conf x -> {conf with module_item_spacing= x})
       (fun conf -> conf.module_item_spacing)
 
+  let module_annotation =
+    let doc = "Module signature annotations." in
+    let names = ["module-annotation"] in
+    let all =
+      [ ( "sparse"
+        , `Sparse
+        , "$(b,sparse) will break before signature if the declaration span \
+           multiple lines" )
+      ; ( "compact"
+        , `Compact
+        , "$(b,compact) will try to fit the signature on the same line if \
+           possible" ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with module_annotation= x})
+      (fun conf -> conf.module_annotation)
+
   let ocp_indent_compat =
     let doc =
       "Attempt to generate output which does not change (much) when \
@@ -1247,6 +1265,7 @@ let default_profile =
   ; margin= C.default Formatting.margin
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
+  ; module_annotation= C.default Formatting.module_annotation
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
@@ -1275,6 +1294,7 @@ let compact_profile =
   ; let_and= `Compact
   ; let_binding_spacing= `Compact
   ; module_item_spacing= `Compact
+  ; module_annotation= `Compact
   ; single_case= `Compact
   ; space_around_collection_expressions= false
   ; type_decl= `Compact
@@ -1294,6 +1314,7 @@ let sparse_profile =
   ; let_and= `Sparse
   ; let_binding_spacing= `Sparse
   ; module_item_spacing= `Sparse
+  ; module_annotation= `Sparse
   ; single_case= `Sparse
   ; space_around_collection_expressions= true
   ; type_decl= `Sparse
@@ -1329,6 +1350,7 @@ let janestreet_profile =
   ; margin= 90
   ; max_iters= default_profile.max_iters
   ; module_item_spacing= `Compact
+  ; module_annotation= `Compact
   ; ocp_indent_compat= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
