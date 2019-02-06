@@ -14,7 +14,7 @@ type 'a with_comments =
 
 (** Operations on translation units. *)
 type 'a t =
-  { input: Conf.t -> In_channel.t -> 'a with_comments
+  { input: Conf.t -> input_file:string -> In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
@@ -46,7 +46,11 @@ type result =
   | User_error of string
 
 val parse :
-  (Lexing.lexbuf -> 'a) -> Conf.t -> In_channel.t -> 'a with_comments
+     (Lexing.lexbuf -> 'a)
+  -> Conf.t
+  -> input_file:string
+  -> In_channel.t
+  -> 'a with_comments
 
 val parse_print :
      x
