@@ -19,8 +19,3 @@ type t =
       [ `Doc_comment of
         [ `Moved of Location.t * Location.t * string
         | `Unstable of Location.t * string ] ]
-
-type t =
-  { a: int (* Comment *)
-  ; b: int (* Comment *) }
-[@@ocamlformat "type-decl=sparse"]
