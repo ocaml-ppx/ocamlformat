@@ -2971,6 +2971,18 @@ and fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
 and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
     ctx ?fmt_name ?(eq = "=") decl =
+  let { ptype_name= {txt; loc}
+      ; ptype_params
+      ; ptype_cstrs
+      ; ptype_kind
+      ; ptype_private
+      ; ptype_manifest
+      ; ptype_attributes
+      ; ptype_loc } =
+    decl
+  in
+  update_config_maybe_disabled c ptype_loc ptype_attributes
+  @@ fun c ->
   let fmt_manifest ~priv manifest =
     opt manifest (fun typ ->
         fmt " " $ str eq $ fmt_private_flag priv $ fmt "@ "
@@ -3048,18 +3060,6 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                     $ fmt " =@ "
                     $ fmt_core_type c (sub_typ ~ctx t2) )) )) )
   in
-  let { ptype_name= {txt; loc}
-      ; ptype_params
-      ; ptype_cstrs
-      ; ptype_kind
-      ; ptype_private
-      ; ptype_manifest
-      ; ptype_attributes
-      ; ptype_loc } =
-    decl
-  in
-  update_config_maybe_disabled c ptype_loc ptype_attributes
-  @@ fun c ->
   let doc, atrs = doc_atrs ptype_attributes in
   Cmts.fmt c.cmts loc @@ Cmts.fmt c.cmts ptype_loc
   @@ hvbox 0
