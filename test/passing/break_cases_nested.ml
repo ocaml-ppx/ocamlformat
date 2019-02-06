@@ -71,5 +71,6 @@ let foo =
       , Const (Cfun callee_pname)
       , (target_exp, _) :: (Sizeof {typ= cast_typ}, _) :: _
       , loc
-      , _ ) when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
+      , _ )
+    when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
       analyze_id_assignment (Var.of_id ret_id) target_exp cast_typ loc
