@@ -20,7 +20,7 @@ type 'a with_comments =
 
 (** Operations on translation units. *)
 type 'a t =
-  { input: Conf.t -> In_channel.t -> 'a with_comments
+  { input: Conf.t -> input_file:string -> In_channel.t -> 'a with_comments
   ; init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
@@ -77,7 +77,7 @@ end = struct
     String.concat ~sep:"" (List.map ~f:(Format.sprintf "%+d") x)
 end
 
-let parse parse_ast (conf : Conf.t) ic =
+let parse parse_ast (conf : Conf.t) ~input_file ic =
   let warnings =
     W.enable 50
     :: (if conf.quiet then List.map ~f:W.disable W.in_lexer else [])
@@ -86,7 +86,7 @@ let parse parse_ast (conf : Conf.t) ic =
   let lexbuf = Lexing.from_channel ic in
   Lexer.skip_hash_bang lexbuf ;
   let hash_bang =
-    let ic = In_channel.create !Location.input_name in
+    let ic = In_channel.create input_file in
     let len = lexbuf.lex_last_pos in
     let buf = Base.Bytes.create len in
     ignore (In_channel.really_input_exn ic ~buf ~pos:0 ~len) ;
@@ -196,7 +196,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
     else
       match
         Location.input_name := tmp ;
-        In_channel.with_file tmp ~f:(parse xunit.parse conf)
+        In_channel.with_file tmp ~f:(parse xunit.parse conf ~input_file:tmp)
       with
       | exception Sys_error msg -> User_error msg
       | exception e -> Ocamlformat_bug e
@@ -284,7 +284,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
       in
       Ok
     else
-      match xunit.input conf ic with
+      match xunit.input conf ~input_file ic with
       | exception exn -> Invalid_source exn
       | {ast; comments; prefix} -> (
         try
