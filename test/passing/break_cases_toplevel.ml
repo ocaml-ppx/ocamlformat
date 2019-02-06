@@ -69,6 +69,22 @@ let () =
   | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
 
+let foo =
+  match instr with
+  | Store (Lvar lhs_pvar, lhs_typ, rhs_exp, loc)
+    when Pvar.is_ssa_frontend_tmp lhs_pvar ->
+      (* do not need to add deref here as it is added implicitly in of_pvar
+         by forgetting the & *)
+      analyze_id_assignment (Var.of_pvar lhs_pvar) rhs_exp lhs_typ loc
+  | Call
+      ( (ret_id, _)
+      , Const (Cfun callee_pname)
+      , (target_exp, _) :: (Sizeof {typ= cast_typ}, _) :: _
+      , loc
+      , _ )
+    when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
+      analyze_id_assignment (Var.of_id ret_id) target_exp cast_typ loc
+
 [@@@ocamlformat "indicate-nested-or-patterns=false"]
 
 let is_sequence exp =
