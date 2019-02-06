@@ -12,7 +12,9 @@ type t =
 
 type t = {a: int (* Comment *); b: int (* Comment *)}
 
-type t = {a: int (* Comment *); b: int (* Comment *)}
+type t =
+  { a: int (* Comment *)
+  ; b: int (* Comment *) }
 [@@ocamlformat "type-decl=sparse"]
 
 (* TODO: delete this (module X) when the type t above is correctly formatted
