@@ -49,8 +49,7 @@ end
 
 module X = (val X.n : S with type t = t)
 
-module Y = ( val X.o
-               : S
+module Y = ( val X.o : S
                with type long_long_type = t
                 and type long_long_long_type = u
                 and type very_long_long_type = t )

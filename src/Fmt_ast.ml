@@ -3561,6 +3561,11 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
+      let box k =
+        match c.conf.module_annotation with
+        | `Sparse -> hvbox 2 k
+        | `Compact -> hovbox 2 k
+      in
       { empty with
         pro=
           Some
@@ -3568,7 +3573,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_docstring c ~epi:(fmt "@,") doc )
       ; bdy=
           Cmts.fmt c.cmts pmod_loc
-          @@ hvbox 2
+          @@ box
                (wrap_fits_breaks ~space:false c.conf "(" ")"
                   ( fmt "val "
                   $ fmt_expression c (sub_exp ~ctx e1)
