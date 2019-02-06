@@ -97,3 +97,17 @@ let _ =
     with type long_long_type = t
      and type long_long_long_type = u
      and type very_long_long_type = t )
+
+module M2 : sig
+  module N' : sig
+    val x : int
+  end
+end = (
+  M :
+    sig
+      module N : sig
+        val x : int
+      end
+
+      module N' = N
+    end )
