@@ -6,7 +6,7 @@ end [@warning "item"] [@@warning "structure"]
 
 include M [@warning "item"] [@@warning "structure"]
 
-include (M : S) [@warning "item"] [@@warning "structure"]
+include (M : S ) [@warning "item"] [@@warning "structure"]
 
 include M (N) [@warning "item"] [@@warning "structure"]
 

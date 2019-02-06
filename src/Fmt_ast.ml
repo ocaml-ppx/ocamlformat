@@ -1537,7 +1537,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
-      let {opn; pro; psp; bdy; cls; esp; epi} =
+      let {opn=_; pro; psp; bdy; cls=_; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
       let box k =
@@ -3436,8 +3436,10 @@ and fmt_module_expr c ({ast= m} as xmod) =
           ; epi= epi_t } =
         fmt_module_type c (sub_mty ~ctx mt)
       in
-      let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
+      let mod_expr =
+        Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e $ Option.call ~f:epi_e
+      and mod_sig =
+        Option.call ~f:pro_t $ psp_t $ bdy_t $ esp_t $ Option.call ~f:epi_t
       in
       { opn= opn_t $ opn_e $ open_hvbox 2
       ; pro=
@@ -3445,20 +3447,20 @@ and fmt_module_expr c ({ast= m} as xmod) =
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt "(" )
-      ; psp= fmt "@,"
+      ; psp= fmt ""
       ; bdy=
-          hvbox 2
-            ( Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
-            $ Option.call ~f:epi_e $ fmt " :@ " $ Option.call ~f:pro_t
-            $ psp_t $ bdy_t $ esp_t $ Option.call ~f:epi_t )
-          $ fmt_or_k c.conf.indicate_multiline_delimiters
-              (fits_breaks ")" " )") (fmt ")")
+          ( match c.conf.module_annotation with
+          | `Sparse -> fmt "@," $ hovbox 2 (mod_expr $ fmt " :@ " $ mod_sig)
+          | `Compact -> hovbox 0 (mod_expr $ fmt " : " $ mod_sig) )
       ; cls= close_box $ cls_e $ cls_t
       ; esp= fmt ""
       ; epi=
-          Option.some_if has_epi
-            ( Cmts.fmt_after c.cmts pmod_loc
-            $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
+          Some
+            ( fits_breaks
+                ~force_fit_if:(not c.conf.indicate_multiline_delimiters)
+                ")" " )"
+            $ ( Cmts.fmt_after c.cmts pmod_loc
+              $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) ) }
   | Pmod_functor _ ->
       let xargs, me = Sugar.functor_ c.cmts ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
