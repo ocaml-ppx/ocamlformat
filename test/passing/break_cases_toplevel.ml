@@ -2,7 +2,8 @@
 
 let f x = function
   | C | P (this, test, [is; wide; enough; _to; break], [the; line]) | A | K
-    -> 1
+    ->
+      1
   | D ->
       let a = "this" in
       let b = "breaks" in
@@ -34,7 +35,8 @@ match x with
 ;;
 match x with
 | "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", yyyyyyyyyy
-  when fffffffffffffff bbbbbbbbbb yyyyyyyyyy -> ()
+  when fffffffffffffff bbbbbbbbbb yyyyyyyyyy ->
+    ()
 | _ -> ()
 
 let is_sequence exp =
@@ -43,7 +45,8 @@ let is_sequence exp =
    |Pexp_extension
       ( _
       , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
-      ) -> true
+      ) ->
+      true
   | _ -> false
 
 let _ =
@@ -93,5 +96,6 @@ let is_sequence exp =
   | Pexp_extension
       ( _
       , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
-      ) -> true
+      ) ->
+      true
   | _ -> false
