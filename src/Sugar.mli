@@ -136,8 +136,7 @@ val polynewtype :
   -> (pattern Ast.xt * label loc list * core_type Ast.xt * expression Ast.xt)
      option
 (** [polynewtype cmts pat exp] returns expression of a type-constrained
-    pattern [pat] with body [exp]. [cmts] are relocated to the
-    sub-expressions to have more precise positions. e.g.:
+    pattern [pat] with body [exp]. e.g.:
 
     {[
         let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
