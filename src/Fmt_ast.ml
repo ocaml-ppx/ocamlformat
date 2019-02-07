@@ -915,7 +915,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         if can_skip_parens then (".", "") else (".(", ")")
       in
       cbox 0
-        ( fmt_longident_loc c lid $ str opn
+        ( fmt_longident_loc c lid $ str opn $ fmt "@;<0 2>"
         $ fmt_pattern c (sub_pat ~ctx pat)
         $ str cls )
 
