@@ -16,8 +16,7 @@ open Parsetree
 val arrow_typ :
   Cmts.t -> core_type Ast.xt -> (arg_label * core_type Ast.xt) list
 (** [arrow_typ cmts ty] returns the list of labeled sub-arrow types of the
-    type [ty]. [cmts] are relocated on the sub-arrow types to have more
-    precise positions. *)
+    type [ty]. *)
 
 val class_arrow_typ :
      Cmts.t
@@ -27,14 +26,12 @@ val class_arrow_typ :
      )
      list
 (** [class_arrow_typ cmts ty] returns the list of labeled sub_arrow types of
-    the class type [ty]. [cmts] are relocated to the sub-arrow types to have
-    more precise positions. *)
+    the class type [ty]. *)
 
 val or_pat :
   ?allow_attribute:bool -> Cmts.t -> pattern Ast.xt -> pattern Ast.xt list
 (** [or_pat allow_attribute cmts pat] returns the list of patterns of a
-    pattern disjunction. [cmts] are relocated to the sub-patterns to have
-    more precise positions. [allow_attribute] is set by default, otherwise
+    pattern disjunction. [allow_attribute] is set by default, otherwise
     patterns with not empty attributes are not processed (i.e. they are
     returned without modification). *)
 
@@ -48,10 +45,8 @@ val fun_ :
   -> expression Ast.xt
   -> arg_kind sexp_list * expression Ast.xt
 (** [fun_ cmts will_keep_first_ast_node exp] returns the list of arguments
-    and the body of the function [exp]. [cmts] are relocated to the
-    arguments or the function body to have more precise positions.
-    [will_keep_first_ast_node] is set by default, otherwise the [exp] is
-    returned without modification. *)
+    and the body of the function [exp]. [will_keep_first_ast_node] is set by
+    default, otherwise the [exp] is returned without modification. *)
 
 val cl_fun :
      ?will_keep_first_ast_node:bool
@@ -59,10 +54,8 @@ val cl_fun :
   -> class_expr Ast.xt
   -> arg_kind list * class_expr Ast.xt
 (** [cl_fun will_keep_first_ast_node cmts exp] returns the list of arguments
-    and the body of the function [exp]. [cmts] are relocated to the
-    arguments or the function body to have more precise positions.
-    [will_keep_first_ast_node] is set by default, otherwise the [exp] is
-    returned without modification. *)
+    and the body of the function [exp]. [will_keep_first_ast_node] is set by
+    default, otherwise the [exp] is returned without modification. *)
 
 val infix :
      Cmts.t
@@ -71,24 +64,21 @@ val infix :
   -> (expression Ast.xt option * (arg_label * expression Ast.xt) list) list
 (** [infix cmts prec exp] returns the infix operator and the list of
     operands applied to this operator from expression [exp]. [prec] is the
-    precedence of the infix operator. [cmts] are relocated to the operand to
-    have more precise positions. *)
+    precedence of the infix operator. *)
 
 val list_pat :
      Cmts.t
   -> pattern
   -> ((Warnings.loc list * pattern Ast.xt) list * Warnings.loc) option
 (** [list_pat cmts pat] returns a list of patterns if [pat] is a pattern
-    corresponding to a list (empty list or (::) application). [cmts] are
-    relocated to the list elements to have more precise positions. *)
+    corresponding to a list (empty list or (::) application). *)
 
 val list_exp :
      Cmts.t
   -> expression
   -> ((Warnings.loc list * expression Ast.xt) list * Warnings.loc) option
 (** [list_exp cmts exp] returns a list of expressions if [exp] is an
-    expression corresponding to a list (empty list or (::) application).
-    [cmts] are relocated to the list elements to have more positions. *)
+    expression corresponding to a list (empty list or (::) application). *)
 
 val infix_cons :
   expression Ast.xt -> (Warnings.loc list * expression Ast.xt) list
@@ -109,14 +99,11 @@ val ite :
     ]}
 
     will return the following list:
-    [(Some c1, e1); (Some c2, e2); (None, e3)] (attributes are voluntarily
-    omitted. [cmts] are relocated to the sub-expressions to have more
-    precise positions. *)
+    [(Some c1, e1); (Some c2, e2); (None, e3)]. *)
 
 val sequence : Cmts.t -> expression Ast.xt -> expression Ast.xt list
 (** [sequence cmts exp] returns the list of expressions from a sequence of
-    expressions [exp]. [cmts] are relocated to the sub-expressions to have
-    more precise positions. *)
+    expressions [exp]. *)
 
 val functor_type :
      Cmts.t
@@ -125,8 +112,7 @@ val functor_type :
   -> (label loc * module_type Ast.xt option) list * module_type Ast.xt
 (** [functor_type cmts for_functor_kw m] returns the list of module types
     applied to the functor of module type [m]. [for_functor_kw] indicates if
-    the keyword [functor] is used. [cmts] are relocated to the functor
-    arguments or body to have more precise positions. *)
+    the keyword [functor] is used. *)
 
 val functor_ :
      Cmts.t
@@ -135,8 +121,7 @@ val functor_ :
   -> (label loc * module_type Ast.xt option) list * module_expr Ast.xt
 (** [functor_ cmts for_functor_kw m] returns the list of module types
     applied to the functor of module [m]. [for_functor_kw] indicates if the
-    keyword [functor] is used. [cmts] are relocated to the functor arguments
-    or body to have more precise positions. *)
+    keyword [functor] is used. *)
 
 val mod_with :
      module_type Ast.xt
