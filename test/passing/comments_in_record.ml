@@ -17,12 +17,6 @@ type t = { a : int (* Comment *); b : int (* Comment *) }
 type t = { a : int (* Comment *); b : int (* Comment *) }
 [@@ocamlformat "type-decl=sparse"]
 
-(* TODO: delete this (module X) when the type t above is correctly formatted
-    (issue #578) *)
-module X = struct
-  type t = { a : int (* Comment *); b : int (* Comment *) }
-end [@@ocamlformat "type-decl=sparse"]
-
 let { (* cmts *)
       pat
     ; loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
