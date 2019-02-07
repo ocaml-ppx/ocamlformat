@@ -12,7 +12,7 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: [`Fit | `Nested | `All]
+  { break_cases: [`Fit | `Nested | `Toplevel | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool
@@ -485,6 +485,11 @@ module Formatting = struct
         , `Nested
         , "$(b,nested) forces a break after nested or-patterns to \
            highlight the case body." )
+      ; ( "toplevel"
+        , `Toplevel
+        , "$(b,toplevel) forces top-level cases (i.e. not nested \
+           or-patterns) to break across lines, otherwise break naturally \
+           at the margin." )
       ; ( "all"
         , `All
         , "$(b,all) forces all pattern matches to break across lines." ) ]
@@ -1277,7 +1282,7 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { break_cases= `Fit
+  { break_cases= `Toplevel
   ; break_collection_expressions=
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
