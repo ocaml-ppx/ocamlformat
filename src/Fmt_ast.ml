@@ -2875,8 +2875,8 @@ and fmt_cases c ctx cs =
         | Ppat_or _ when Option.is_some pc_guard -> true
         | _ -> parenze_pat xlhs
       in
-      Params.Cases.get c.conf ~first ~indent ~parens_here
-      |> fun (p : Params.Cases.t) ->
+      Params.get_cases c.conf ~first ~indent ~parens_here
+      |> fun (p : Params.cases) ->
       p.leading_space $ leading_cmt
       $ p.box_all
           ( p.box_pattern_arrow
