@@ -2875,9 +2875,6 @@ and fmt_cases c ctx cs =
         | Ppat_or _ when Option.is_some pc_guard -> true
         | _ -> parenze_pat xlhs
       in
-      let guard g =
-        fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g)
-      in
       Params.Cases.get c.conf ~first ~indent ~parens_here
       |> fun (p : Params.Cases.t) ->
       p.leading_space $ leading_cmt
@@ -2885,7 +2882,9 @@ and fmt_cases c ctx cs =
           ( p.box_pattern_arrow
               ( p.box_pattern_guard
                   ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
-                  $ opt pc_guard guard )
+                  $ opt pc_guard (fun g ->
+                        fmt "@;<1 2>when "
+                        $ fmt_expression c (sub_exp ~ctx g) ) )
               $ p.break_before_arrow $ fmt "->" $ p.break_after_arrow
               $ fmt_if parens_here " (" )
           $ p.break_after_opening_paren
