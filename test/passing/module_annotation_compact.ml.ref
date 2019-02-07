@@ -40,8 +40,7 @@ module type X = sig
   val n : (module S with type t = t)
 
   val o :
-    (module
-     S
+    (module S
        with type long_long_type = t
         and type long_long_long_type = u
         and type very_long_long_type = t)

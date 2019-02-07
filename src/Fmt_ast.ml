@@ -1537,7 +1537,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
-      let {opn=_; pro; psp; bdy; cls=_; esp; epi} =
+      let {opn= _; pro; psp; bdy; cls= _; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
       let box k =
@@ -3195,41 +3195,33 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
     List.map xargs ~f:(fun (name, xarg) ->
         (name, Option.map ~f:(fmt_module_type c) xarg) )
   in
-  let { opn= opn_t
-      ; pro= pro_t
-      ; psp= psp_t
-      ; bdy= bdy_t
-      ; cls= cls_t
-      ; esp= esp_t
-      ; epi= epi_t } =
-    Option.value_map xmty ~default:empty ~f:(fun xmty ->
-        let blk = fmt_module_type c xmty in
-        { blk with
-          pro=
-            Some
-              ( fmt_or colon " :" " ="
-              $ fmt_if (Option.is_some blk.pro) " "
-              $ Option.call ~f:blk.pro )
-        ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
+  let {pro= pro_t; psp= psp_t; bdy= bdy_t; esp= esp_t; epi= epi_t; _}, box_t
+      =
+    let blk =
+      Option.value_map xmty ~default:empty ~f:(fun xmty ->
+          let blk = fmt_module_type c xmty in
+          { blk with
+            pro=
+              Some
+                ( fmt_or colon " :" " ="
+                $ fmt_if (Option.is_some blk.pro) " "
+                $ Option.call ~f:blk.pro )
+          ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
+    in
+    (blk, fun k -> blk.opn $ k $ blk.cls)
   in
-  let { opn= opn_b
-      ; pro= pro_b
-      ; psp= psp_b
-      ; bdy= bdy_b
-      ; cls= cls_b
-      ; esp= esp_b
-      ; epi= epi_b } =
-    Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
+  let {pro= pro_b; psp= psp_b; bdy= bdy_b; esp= esp_b; epi= epi_b; _}, box_b
+      =
+    let blk =
+      Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
+    in
+    (blk, fun k -> blk.opn $ k $ blk.cls)
   in
-  hvbox 0
-    ( fmt_docstring c ~epi:(fmt "@\n") doc
-    $ opn_b
-    $ (if Option.is_some epi_t then open_hovbox else open_hvbox) 0
-    $ opn_t
-    $ fmt_if_k (Option.is_some pro_t) (open_hvbox 0)
-    $ ( match arg_blks with
-      | (_, Some {opn; pro= Some _}) :: _ -> opn $ open_hvbox 0
-      | _ -> fmt "" )
+  let stmt_box k = if Option.is_some epi_t then hovbox 0 k else hvbox 0 k in
+  let params =
+    ( match arg_blks with
+    | (_, Some {opn; pro= Some _}) :: _ -> opn $ open_hvbox 0
+    | _ -> fmt "" )
     $ hvbox 4
         ( keyword $ fmt " " $ fmt_str_loc c name
         $ list_pn arg_blks (fun ?prev:_ (name, arg_mtyp) ?next ->
@@ -3251,14 +3243,20 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                                  opn $ open_hvbox 0
                              | _ -> fmt "" )
                            $ Option.call ~f:epi ) )) ) )
-    $ Option.call ~f:pro_t
-    $ fmt_if_k (Option.is_some pro_t) close_box
-    $ psp_t $ bdy_t $ cls_t $ esp_t $ Option.call ~f:epi_t
-    $ fmt_if (Option.is_some xbody) " ="
-    $ fmt_if (Option.is_some pro_b) "@ "
-    $ Option.call ~f:pro_b $ close_box $ psp_b
-    $ fmt_if (Option.is_none pro_b && Option.is_some xbody) "@ "
-    $ bdy_b $ cls_b $ esp_b $ Option.call ~f:epi_b
+  in
+  hvbox 0
+    ( fmt_docstring c ~epi:(fmt "@\n") doc
+    $ box_b
+        ( stmt_box
+            ( box_t (hvbox 0 (params $ Option.call ~f:pro_t) $ psp_t $ bdy_t)
+            $ esp_t $ Option.call ~f:epi_t
+            $ fmt_if (Option.is_some xbody) " ="
+            $ fmt_if (Option.is_some pro_b) "@ "
+            $ Option.call ~f:pro_b )
+        $ psp_b
+        $ fmt_if (Option.is_none pro_b && Option.is_some xbody) "@ "
+        $ bdy_b )
+    $ esp_b $ Option.call ~f:epi_b
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
     $ fmt_if_k (Option.is_some epi) (fmt_or (Option.is_some epi_b) " " "@ ")
     $ Option.call ~f:epi )
