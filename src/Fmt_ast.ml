@@ -529,7 +529,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
-  | Ptyp_package pty -> hvbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
+  | Ptyp_package pty ->
+      hovbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
