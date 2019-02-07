@@ -637,10 +637,11 @@ and fmt_row_field c ctx = function
       let c = update_config c atrs in
       let doc, atrs = doc_atrs atrs in
       hvbox 0
-        ( fmt_str_loc c ~pre:"`" name
-        $ fmt_if (not (const && List.is_empty typs)) " of@ "
-        $ fmt_if (const && not (List.is_empty typs)) " & "
-        $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
+        ( hvbox 0
+            ( fmt_str_loc c ~pre:"`" name
+            $ fmt_if (not (const && List.is_empty typs)) " of@ "
+            $ fmt_if (const && not (List.is_empty typs)) " & "
+            $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c) )
         $ fmt_attributes c ~key:"@" atrs
         $ fmt_docstring_padded c doc )
   | Rinherit typ -> fmt_core_type c (sub_typ ~ctx typ)

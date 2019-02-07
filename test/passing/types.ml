@@ -19,3 +19,34 @@ type t =
       [ `Doc_comment of
         [ `Moved of Location.t * Location.t * string
         | `Unstable of Location.t * string ] ]
+
+val x :
+  [ `X of int
+    (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
+        fooooooooooooooooooo fooooooooooooooo*) ]
+
+val x :
+  [ `X of
+    int
+    * foooooooooooooo
+    * fooooooooooo
+    * fooooooooooo foooooooooo
+    * foooooooooooo
+    (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
+        fooooooooooooooooooo fooooooooooooooo*) ]
+
+val x :
+  [ `X of int (* booooom *)
+    (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
+        fooooooooooooooooooo fooooooooooooooo*) ]
+
+val x :
+  [ `X of
+    int
+    * foooooooooooooo
+    * fooooooooooo
+    * fooooooooooo foooooooooo
+    * foooooooooooo
+    (* boooooom *)
+    (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
+        fooooooooooooooooooo fooooooooooooooo*) ]
