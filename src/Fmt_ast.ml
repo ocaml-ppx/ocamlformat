@@ -384,6 +384,9 @@ let fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens ~attributes
        $ hvbox 0 (fmt_expr c (sub ~ctx body)) ))
   $ fmt_atrs
 
+let fmt_docstring_padded c doc =
+  fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
+
 let rec fmt_attribute c pre = function
   | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true}}
     , PStr
@@ -603,7 +606,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
                             $ fmt_if Poly.(c.conf.field_space = `Loose) " "
                             $ fmt ":@ "
                             $ fmt_core_type c (sub_typ ~ctx typ) )
-                        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
+                        $ fmt_docstring_padded c doc
                         $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs )
                | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
            $ fmt_if Poly.(closedness = Open) "@ ; .." ))
@@ -638,7 +641,7 @@ and fmt_row_field c ctx = function
         $ fmt_if (const && not (List.is_empty typs)) " & "
         $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
         $ fmt_attributes c ~key:"@" atrs
-        $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
+        $ fmt_docstring_padded c doc )
   | Rinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
 
 and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
@@ -2766,7 +2769,7 @@ and fmt_label_declaration c ctx lbl_decl ?(last = false) =
           $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
           )
       $ Cmts.fmt_after c.cmts pld_loc
-      $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
+      $ fmt_docstring_padded c doc )
 
 and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
@@ -2788,7 +2791,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
               (wrap_if (is_symbol_id txt) "( " " )" (str txt))
           $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
-      $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
+      $ fmt_docstring_padded c doc )
   $ Cmts.fmt_after c.cmts ~pro:(fmt " ") ~epi:(fmt "@ ") pcd_loc
 
 and fmt_constructor_arguments c ctx pre args =
@@ -2900,7 +2903,7 @@ and fmt_extension_constructor c sep ctx ec =
              | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), Some _)
               |Pext_decl (_, Some _) ->
                  fmt " " )
-       $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc )
+       $ fmt_docstring_padded c doc )
 
 and fmt_module_type c ({ast= mty} as xmty) =
   let ctx = Mty mty in

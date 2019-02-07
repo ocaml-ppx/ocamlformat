@@ -83,6 +83,10 @@ OPTIONS (CODE FORMATTING STYLE)
            corresponding code. before puts comments before the corresponding
            code. The default value is after.
 
+       --doc-comments-padding=PADDING
+           Add PADDING spaces before doc comments in type declarations. The
+           default value is 2.
+
        --escape-chars={preserve|decimal|hexadecimal}
            Escape encoding for character literals. preserve escapes ASCII
            control codes but leaves the upper 128 characters unchanged.
