@@ -1727,26 +1727,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                           ( if c.conf.indicate_multiline_delimiters then " )"
                           else ")" ) )
                     $ fmt_if (not last) "@ "
-                | `Keyword_first ->
-                    opt xcnd (fun xcnd ->
-                        hvbox 2
-                          ( fmt_or_k first
-                              (fmt "if" $ fmt_extension_suffix c ext)
-                              (fmt "else if")
-                          $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
-                              pexp_attributes
-                          $ str " " $ fmt_expression c xcnd )
-                        $ fmt "@ " )
-                    $ hvbox 2
-                        ( fmt_or (Option.is_some xcnd) "then" "else"
-                        $ fmt_if parens_bch " (" $ fmt "@ "
-                        $ fmt_expression c ~box:false ~parens:false xbch
-                        $ fmt_if parens_bch
-                            ( if c.conf.indicate_multiline_delimiters then
-                              " )"
-                            else ")" ) )
-                    $ fmt_if (not last) "@ "
-                | `Sparse ->
+                | `Fit_or_vertical ->
                     ( match xcnd with
                     | Some xcnd ->
                         hvbox
@@ -1766,6 +1747,25 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                     $ fmt_if parens_bch
                         ( if c.conf.indicate_multiline_delimiters then " )"
                         else ")" )
+                    $ fmt_if (not last) "@ "
+                | `Keyword_first ->
+                    opt xcnd (fun xcnd ->
+                        hvbox 2
+                          ( fmt_or_k first
+                              (fmt "if" $ fmt_extension_suffix c ext)
+                              (fmt "else if")
+                          $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
+                              pexp_attributes
+                          $ str " " $ fmt_expression c xcnd )
+                        $ fmt "@ " )
+                    $ hvbox 2
+                        ( fmt_or (Option.is_some xcnd) "then" "else"
+                        $ fmt_if parens_bch " (" $ fmt "@ "
+                        $ fmt_expression c ~box:false ~parens:false xbch
+                        $ fmt_if parens_bch
+                            ( if c.conf.indicate_multiline_delimiters then
+                              " )"
+                            else ")" ) )
                     $ fmt_if (not last) "@ " )))
   | Pexp_let (rec_flag, bindings, body) ->
       let fmt_expr ?box ?epi ?eol ?parens ?indent_wrap ?ext =
