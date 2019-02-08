@@ -41,3 +41,33 @@ f
   else () )
 
 let () = if [@test] true then () else if [@other] true then ()
+
+[@@@ocamlformat "if-then-else=sparse"]
+
+let foo =
+  if cond1 then
+    arm1
+  else if cond2 then
+    arm2
+  else
+    arm3
+
+let foo =
+  if cond1 then (
+    arm1 ;
+    foooooooooooooo ;
+    fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
+    List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
+        fooooooooooooo ) )
+  else if cond2 then (
+    arm2 ;
+    foooooooooooooo ;
+    fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
+    List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
+        fooooooooooooo ) )
+  else (
+    arm3 ;
+    foooooooooooooo ;
+    fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
+    List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
+        fooooooooooooo ) )
