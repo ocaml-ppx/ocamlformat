@@ -55,7 +55,7 @@ match Conf.action with
     , output_file ) ->
     In_channel.with_file input_file ~f:(fun ic ->
         Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-          ~input_file:"" ic output_file)
+          ~input_file:"" ic output_file )
 | In_out ({kind= `Use_file; _}, _) ->
     user_error "Cannot convert Reason code with --use-file" []
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []

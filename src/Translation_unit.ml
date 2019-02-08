@@ -270,8 +270,7 @@ let parse_print (XUnit xunit) (conf : Conf.t) ~input_name ~input_file ic
             Unix.unlink tmp ; result
   in
   let source_txt =
-    if String.is_empty input_file
-    then ""
+    if String.is_empty input_file then ""
     else In_channel.with_file input_file ~f:In_channel.input_all
   in
   Location.input_name := input_name ;
