@@ -30,7 +30,7 @@ type t =
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
-  ; if_then_else: [`Compact | `Keyword_first]
+  ; if_then_else: [`Compact | `Keyword_first | `Sparse]
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
@@ -749,7 +749,10 @@ module Formatting = struct
       ; ( "keyword-first"
         , `Keyword_first
         , "$(b,keyword-first) formats if-then-else expressions such that \
-           the if-then-else keywords are the first on the line." ) ]
+           the if-then-else keywords are the first on the line." )
+      ; ( "sparse"
+        , `Sparse
+        , "$(b,sparse) formats breaks a line for each branch." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with if_then_else= x})

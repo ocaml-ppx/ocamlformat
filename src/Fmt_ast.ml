@@ -1745,6 +1745,34 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                             ( if c.conf.indicate_multiline_delimiters then
                               " )"
                             else ")" ) )
+                    $ fmt_if (not last) "@ "
+                | `Sparse ->
+                    break_unless_newline 1000 0
+                    $ vbox 0
+                        ( vbox 2
+                            ( ( match xcnd with
+                              | Some xcnd ->
+                                  hvbox
+                                    (if parens then -2 else 0)
+                                    ( hvbox
+                                        (if parens then 0 else 2)
+                                        ( fmt_if (not first) "else "
+                                        $ fmt "if"
+                                        $ fmt_if_k first
+                                            (fmt_extension_suffix c ext)
+                                        $ fmt_attributes c ~pre:(fmt " ")
+                                            ~key:"@" pexp_attributes
+                                        $ fmt "@ " $ fmt_expression c xcnd
+                                        )
+                                    $ fmt "@ then" )
+                              | None -> fmt "else" )
+                            $ fmt_if parens_bch " (" $ fmt "@;"
+                            $ fmt_expression c ~box:false ~parens:false xbch
+                            )
+                        $ fmt_if parens_bch
+                            ( if c.conf.indicate_multiline_delimiters then
+                              " )"
+                            else ")" ) )
                     $ fmt_if (not last) "@ " )))
   | Pexp_let (rec_flag, bindings, body) ->
       let fmt_expr ?box ?epi ?eol ?parens ?indent_wrap ?ext =
