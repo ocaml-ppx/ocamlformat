@@ -66,6 +66,10 @@ test: exe reason
 	$(MAKE) fixpoint
 	$(MAKE) regtests
 
+.PHONY: test-reason
+test-reason: reason
+	dune build _build/dev/test-reason/test-gen.ml --auto-promote
+
 .PHONY: regtests fixpoint
 fixpoint: exe reason
 	_build/release/src/ocamlformat.exe -n 1 -i $(SRCS)
