@@ -35,20 +35,21 @@ type ast =
       * 'concrete
       -> ast
 
+let magic_kind magic = String.sub magic ~pos:0 ~len:9
+
+let is_intf_or_impl magic =
+  let x = magic_kind magic in
+  let x_intf = magic_kind Config.ast_intf_magic_number in
+  let x_impl = magic_kind Config.ast_impl_magic_number in
+  String.equal x x_impl || String.equal x x_intf
+
 let find_magic magic x =
   let rec loop = function
     | [] ->
-        let prefix = String.sub magic ~pos:0 ~len:9 in
-        if
-          String.equal prefix
-            (String.sub Ast_402.Config.ast_impl_magic_number ~pos:0 ~len:9)
-          || String.equal prefix
-               (String.sub Ast_402.Config.ast_intf_magic_number ~pos:0
-                  ~len:9)
-        then user_error "Unknown version" [("magic", Sexp.Atom prefix)]
+        if is_intf_or_impl magic then
+          user_error "Unknown version" [("magic", Sexp.Atom magic)]
         else
-          user_error "Not a binary reason file"
-            [("prefix", Sexp.Atom prefix)]
+          user_error "Not a binary reason file" [("prefix", Sexp.Atom magic)]
     | (module Frontend : Migrate_parsetree_versions.OCaml_version) :: tail
       ->
         if String.equal Frontend.Ast.Config.ast_impl_magic_number magic then
