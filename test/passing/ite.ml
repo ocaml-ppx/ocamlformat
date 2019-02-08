@@ -71,3 +71,25 @@ let foo =
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo ) )
+
+let _ =
+  if condition then
+    let a = 1 in
+    let b = 2 in
+    a + b
+  else if other_condition then
+    12
+  else
+    0
+
+let foo =
+  if is_sugared_list e2 then
+    Some (Semi, Non)
+  else
+    Some
+      ( ColonColon
+      , 
+        if exp == e2 then
+          Right
+        else
+          Left )
