@@ -31,3 +31,18 @@ let _ = {(x#x) with e1; e2}
 let f ~l:{f; g} = e
 
 let f ?l:({f; g}) = e
+
+let Mmmmmm.
+      { xxxx
+      ; xxxxxxxxx
+      ; xxxxxxxxxxxxxxxxxx
+      ; xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx } =
+  ()
+
+let Mmmmmm.
+      { xxxx
+      ; xxxxxxxxx
+      ; xxxxxxxxxxxxxxxxxx
+      ; xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (* foooooooooooo *) }
+    (* fooooooooo *) =
+  ()
