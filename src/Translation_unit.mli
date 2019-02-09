@@ -14,8 +14,7 @@ type 'a with_comments =
 
 (** Operations on translation units. *)
 type 'a t =
-  { input: Conf.t -> input_file:string -> In_channel.t -> 'a with_comments
-  ; init_cmts:
+  { init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
@@ -33,34 +32,34 @@ type 'a t =
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
-(** Existential package of a type of translation unit and its operations. *)
-type x = XUnit : 'a t -> x
-
-exception Warning50 of (Location.t * Warnings.t) list
-
-type result =
-  | Ok
-  | Invalid_source of exn
-  | Unstable of int
-  | Ocamlformat_bug of exn
+type error =
+  | Invalid_source of {input_name: string; exn: exn}
+  | Unstable of
+      { input_name: string
+      ; iteration: int
+      ; prev: string
+      ; next: string }
+  | Ocamlformat_bug of {input_name: string; exn: exn}
   | User_error of string
 
-val parse :
-     (Lexing.lexbuf -> 'a)
-  -> Conf.t
-  -> input_file:string
-  -> In_channel.t
-  -> 'a with_comments
+val parse : (Lexing.lexbuf -> 'a) -> Conf.t -> string -> 'a with_comments
 
-val parse_print :
-     x
+val format :
+     'a t
   -> Conf.t
+  -> ?dump_ast:(suffix:string -> (Formatter.t -> unit) -> unit)
+  -> ?dump_formatted:(suffix:string -> string -> string option)
   -> input_name:string
-  -> input_file:string
-  -> In_channel.t
-  -> string option
-  -> result
-(** [parse_print xunit conf input_name input_file input_channel output_file]
-    parses the contents of [input_channel], using [input_name] for error
-    messages, and referring to the contents of [input_file] to improve
-    comment placement, and writes formatted code into [output_file]. *)
+  -> source:string
+  -> parsed:('a with_comments, exn) Result.t
+  -> unit
+  -> (string, error) Result.t
+
+val print_error :
+     ?quiet_unstable:bool
+  -> ?quiet_comments:bool
+  -> ?quiet_doc_comments:bool
+  -> Conf.t
+  -> Formatter.t
+  -> error
+  -> unit

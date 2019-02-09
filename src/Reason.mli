@@ -15,12 +15,14 @@ open Migrate_ast
 open Parsetree
 open Translation_unit
 
-val input_impl : Conf.t -> In_channel.t -> structure with_comments
+type 'a t = {origin_filename: string; ast_and_comment: 'a with_comments}
+
+val input_bin_impl : In_channel.t -> structure t
 (** Reads a serialized structure from an input channel. It is assumed to be
     the output of `refmt --print=binary_reason` where `refmt` has been
     compiled with the same version of `ocaml` as `ocamlformat`. *)
 
-val input_intf : Conf.t -> In_channel.t -> signature with_comments
+val input_bin_intf : In_channel.t -> signature t
 (** Reads a serialized signature from an input channel. It is assumed to be
     the output of `refmt --print=binary_reason` where `refmt` has been
     compiled with the same version of `ocaml` as `ocamlformat`. *)

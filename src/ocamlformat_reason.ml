@@ -11,51 +11,62 @@
 
 (** OCamlFormat to convert Reason code to OCaml *)
 
-(** Operations on binary serialized Reason implementations. *)
-let reason_impl : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.implementation in
-  { input= (fun conf ~input_file:_ ic -> Reason.input_impl conf ic)
-  ; init_cmts= Cmts.init_impl
-  ; fmt= Fmt_ast.fmt_structure
-  ; parse
-  ; equal= Reason.equal_impl
-  ; moved_docstrings= Reason.moved_docstrings_impl
-  ; normalize= Reason.norm_impl
-  ; printast= Migrate_ast.Printast.implementation }
+let try_read_original_source filename =
+  try In_channel.read_all filename with _ -> ""
 
-(** Operations on binary serialized Reason interfaces. *)
-let reason_intf : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.interface in
-  { input= (fun conf ~input_file:_ ic -> Reason.input_intf conf ic)
-  ; init_cmts= Cmts.init_intf
-  ; fmt= Fmt_ast.fmt_signature
-  ; parse
-  ; equal= Reason.equal_intf
-  ; moved_docstrings= Reason.moved_docstrings_intf
-  ; normalize= Reason.norm_intf
-  ; printast= Migrate_ast.Printast.interface }
+open Ocamlformat_helper
 
-(** Select translation unit type and operations based on kind. *)
-let xunit_of_kind : _ -> Translation_unit.x = function
-  | `Impl -> XUnit reason_impl
-  | `Intf -> XUnit reason_intf
+type xunit =
+  | Pack :
+      { parse: In_channel.t -> 'a Reason.t
+      ; print: (module Reason_api.Formattable with type t = 'a) }
+      -> xunit
+
+let pack_of_kind = function
+  | `Impl ->
+      Pack {parse= Reason.input_bin_impl; print= (module Reason_api.Impl)}
+  | `Intf ->
+      Pack {parse= Reason.input_bin_intf; print= (module Reason_api.Intf)}
 
 ;;
 match Conf.action with
+| In_out ({kind= `Use_file; _}, _) ->
+    user_error "Cannot convert Reason code with --use-file" []
+| Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | In_out
     ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
-    , output_file ) ->
-    Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-      ~input_file:"" stdin output_file
+    , output_file ) -> (
+    let result =
+      let (Pack {parse; print= (module Print)}) = pack_of_kind kind in
+      let t = parse In_channel.stdin in
+      let source = try_read_original_source t.origin_filename in
+      let dump_ast = dump_ast ?output_file ~input_name in
+      let dump_formatted = dump_formatted ?output_file ~input_name in
+      Print.format conf ~dump_ast ~dump_formatted ~input_name ~source
+        ~parsed:t.ast_and_comment ()
+    in
+    match result with
+    | Ok s ->
+        to_output_file output_file s ;
+        Caml.exit 0
+    | Error err -> print_error conf err ; Caml.exit 1 )
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; name= input_name
       ; file= input_file
       ; conf }
-    , output_file ) ->
-    In_channel.with_file input_file ~f:(fun ic ->
-        Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-          ~input_file:"" ic output_file )
-| In_out ({kind= `Use_file; _}, _) ->
-    user_error "Cannot convert Reason code with --use-file" []
-| Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
+    , output_file ) -> (
+    let result =
+      let (Pack {parse; print= (module Print)}) = pack_of_kind kind in
+      let t = In_channel.with_file input_file ~f:parse in
+      let source = try_read_original_source t.origin_filename in
+      let dump_ast = dump_ast ?output_file ~input_name in
+      let dump_formatted = dump_formatted ?output_file ~input_name in
+      Print.format conf ~dump_ast ~dump_formatted ~input_name ~source
+        ~parsed:t.ast_and_comment ()
+    in
+    match result with
+    | Ok s ->
+        to_output_file output_file s ;
+        Caml.exit 0
+    | Error err -> print_error conf err ; Caml.exit 1 )

@@ -11,6 +11,10 @@
 
 (** Support for reading Reason code *)
 
+type 'a t =
+  { origin_filename: string
+  ; ast_and_comment: 'a Translation_unit.with_comments }
+
 (** Type of Reason binary serialized data, which must agree with the type
     used by the implementation of `refmt`. *)
 
@@ -65,15 +69,14 @@ let find_magic magic x =
     assumed to be the output of `refmt --print=binary_reason` where `refmt`
     has been compiled with the same version of `ocaml` as `ocamlformat`. *)
 let input ic =
-  let (magic, filename, ast, comments, _, _) : 'a reason_data =
+  let (magic, origin_filename, ast, comments, _, _) : 'a reason_data =
     Caml.Marshal.from_channel ic
   in
   let comments = List.map comments ~f:(fun c -> (c.text, c.location)) in
-  (filename, comments, find_magic magic ast)
+  (origin_filename, comments, find_magic magic ast)
 
-let input_impl _conf ic :
-    Migrate_ast.Parsetree.structure Translation_unit.with_comments =
-  let _filename, comments, x = input ic in
+let input_bin_impl ic : Migrate_ast.Parsetree.structure t =
+  let origin_filename, comments, x = input ic in
   match x with
   | Impl (bin_version, ast) ->
       let module Bin_version = (val bin_version) in
@@ -82,13 +85,13 @@ let input_impl _conf ic :
           migrate (module Bin_version) Migrate_ast.selected_version)
       in
       let ast = to_current.copy_structure ast in
-      {Translation_unit.ast; comments; prefix= ""}
+      { origin_filename
+      ; ast_and_comment= {Translation_unit.ast; comments; prefix= ""} }
   | Intf _ ->
       user_error "expected serialized implementation, found interface" []
 
-let input_intf _conf ic :
-    Migrate_ast.Parsetree.signature Translation_unit.with_comments =
-  let _filename, comments, x = input ic in
+let input_bin_intf ic : Migrate_ast.Parsetree.signature t =
+  let origin_filename, comments, x = input ic in
   match x with
   | Intf (bin_version, ast) ->
       let module Bin_version = (val bin_version) in
@@ -97,7 +100,8 @@ let input_intf _conf ic :
           migrate (module Bin_version) Migrate_ast.selected_version)
       in
       let ast = to_current.copy_signature ast in
-      {Translation_unit.ast; comments; prefix= ""}
+      { origin_filename
+      ; ast_and_comment= {Translation_unit.ast; comments; prefix= ""} }
   | Impl _ ->
       user_error "expected serialized interface, found implementation" []
 
