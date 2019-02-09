@@ -141,5 +141,6 @@ print-%:
 
 .PHONY: regtests
 regtests:
-	echo running regtests with $(OCAMLFORMAT_EXE)
+	dune build @disabled/runtest
+	@echo running regtests with $(OCAMLFORMAT_EXE)
 	@./test.sh --ocamlformat $(OCAMLFORMAT_EXE)
