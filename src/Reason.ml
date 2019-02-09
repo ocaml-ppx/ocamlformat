@@ -13,25 +13,93 @@
 
 (** Type of Reason binary serialized data, which must agree with the type
     used by the implementation of `refmt`. *)
-type 'a reason_data =
-  string * string * 'a * (string * int * Location.t) list * bool * bool
+
+type category = int
+
+(* | EndOfLine | SingleLine | Regular *)
+
+type comment = {location: Location.t; category: category; text: string}
+
+type 'a reason_data = string * string * 'a * comment list * bool * bool
+
+(* copy and adapted from ocaml-migrate_parsetree *)
+type ast =
+  | Impl :
+      (module Migrate_parsetree_versions.OCaml_version
+         with type Ast.Parsetree.structure = 'concrete)
+      * 'concrete
+      -> ast
+  | Intf :
+      (module Migrate_parsetree_versions.OCaml_version
+         with type Ast.Parsetree.signature = 'concrete)
+      * 'concrete
+      -> ast
+
+let magic_kind magic = String.sub magic ~pos:0 ~len:9
+
+let is_intf_or_impl magic =
+  let x = magic_kind magic in
+  let x_intf = magic_kind Config.ast_intf_magic_number in
+  let x_impl = magic_kind Config.ast_impl_magic_number in
+  String.equal x x_impl || String.equal x x_intf
+
+let find_magic magic x =
+  let rec loop = function
+    | [] ->
+        if is_intf_or_impl magic then
+          user_error "Unknown version" [("magic", Sexp.Atom magic)]
+        else
+          user_error "Not a binary reason file" [("prefix", Sexp.Atom magic)]
+    | (module Frontend : Migrate_parsetree_versions.OCaml_version) :: tail
+      ->
+        if String.equal Frontend.Ast.Config.ast_impl_magic_number magic then
+          Impl ((module Frontend), Caml.Obj.obj x)
+        else if String.equal Frontend.Ast.Config.ast_intf_magic_number magic
+        then Intf ((module Frontend), Caml.Obj.obj x)
+        else loop tail
+  in
+  loop Migrate_parsetree_versions.all_versions
 
 (** [input magic_number input_channel] reads a serialized ast from
     [input_channel]. It is expected to have the given [magic_number] and is
     assumed to be the output of `refmt --print=binary_reason` where `refmt`
     has been compiled with the same version of `ocaml` as `ocamlformat`. *)
-let input ast_magic _conf ic =
-  let (magic, _, (ast : 'a), comments, _, _) : 'a reason_data =
+let input ic =
+  let (magic, filename, ast, comments, _, _) : 'a reason_data =
     Caml.Marshal.from_channel ic
   in
-  if String.equal magic ast_magic then
-    let comments = List.map comments ~f:(fun (txt, _, loc) -> (txt, loc)) in
-    {Translation_unit.ast; comments; prefix= ""}
-  else user_error "input not a serialized translation unit" []
+  let comments = List.map comments ~f:(fun c -> (c.text, c.location)) in
+  (filename, comments, find_magic magic ast)
 
-let input_impl = input Config.ast_impl_magic_number
+let input_impl _conf ic :
+    Migrate_ast.Parsetree.structure Translation_unit.with_comments =
+  let _filename, comments, x = input ic in
+  match x with
+  | Impl (bin_version, ast) ->
+      let module Bin_version = (val bin_version) in
+      let to_current =
+        Migrate_parsetree.Versions.(
+          migrate (module Bin_version) Migrate_ast.selected_version)
+      in
+      let ast = to_current.copy_structure ast in
+      {Translation_unit.ast; comments; prefix= ""}
+  | Intf _ ->
+      user_error "expected serialized implementation, found interface" []
 
-let input_intf = input Config.ast_intf_magic_number
+let input_intf _conf ic :
+    Migrate_ast.Parsetree.signature Translation_unit.with_comments =
+  let _filename, comments, x = input ic in
+  match x with
+  | Intf (bin_version, ast) ->
+      let module Bin_version = (val bin_version) in
+      let to_current =
+        Migrate_parsetree.Versions.(
+          migrate (module Bin_version) Migrate_ast.selected_version)
+      in
+      let ast = to_current.copy_signature ast in
+      {Translation_unit.ast; comments; prefix= ""}
+  | Impl _ ->
+      user_error "expected serialized interface, found implementation" []
 
 open Migrate_ast
 open Asttypes

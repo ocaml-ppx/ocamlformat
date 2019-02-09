@@ -18,15 +18,21 @@ let create s = s
 let string_between t (l1 : Location.t) (l2 : Location.t) =
   let pos = l1.loc_end.pos_cnum in
   let len = Position.distance l1.loc_end l2.loc_start in
-  if len >= 0 then Some (String.sub t ~pos ~len)
-  else
+  if
+    len < 0
     (* can happen e.g. if comment is within a parenthesized expression *)
-    None
+  then None
+  else if
+    String.length t < pos + len
+    (* can happen e.g. if source is not available *)
+  then None
+  else Some (String.sub t ~pos ~len)
 
 let string_at t (l : Location.t) =
   let pos = l.loc_start.pos_cnum in
   let len = Location.width l in
-  String.sub t ~pos ~len
+  if String.length t < pos + len || pos < 0 || len < 0 then ""
+  else String.sub t ~pos ~len
 
 let merge (l1 : Location.t) ~(sub : Location.t) =
   let base = l1.loc_start.pos_cnum in
@@ -34,13 +40,8 @@ let merge (l1 : Location.t) ~(sub : Location.t) =
     loc_start= {l1.loc_start with pos_cnum= base + sub.loc_start.pos_cnum}
   ; loc_end= {l1.loc_end with pos_cnum= base + sub.loc_end.pos_cnum} }
 
-let string_from_loc t (l : Location.t) =
-  let pos = l.loc_start.pos_cnum in
-  let len = Location.width l in
-  String.sub t ~pos ~len
-
 let lexbuf_from_loc t (l : Location.t) =
-  let s = string_from_loc t l in
+  let s = string_at t l in
   Lexing.from_string s
 
 let tokens_at t ?(filter = fun _ -> true) (l : Location.t) :
@@ -163,10 +164,8 @@ let string_literal t mode (l : Location.t) =
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
        :: _ ->
-      Literal_lexer.string mode (lexbuf_from_loc t loc)
-  | _ ->
-      user_error "location does not contain a string literal"
-        [("text", Sexp.Atom (string_from_loc t l))]
+      Some (Literal_lexer.string mode (lexbuf_from_loc t loc))
+  | _ -> None
 
 let char_literal t (l : Location.t) =
   (* the location of a [char] might include surrounding comments and
@@ -188,10 +187,8 @@ let char_literal t (l : Location.t) =
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
        :: _ ->
-      Literal_lexer.char (lexbuf_from_loc t loc)
-  | _ ->
-      user_error "location does not contain a char literal"
-        [("text", Sexp.Atom (string_from_loc t l))]
+      Some (Literal_lexer.char (lexbuf_from_loc t loc))
+  | _ -> None
 
 let begins_line t (l : Location.t) =
   let rec begins_line_ cnum =
