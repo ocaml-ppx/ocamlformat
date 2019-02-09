@@ -78,7 +78,8 @@ let input_impl _conf ic :
   | Impl (bin_version, ast) ->
       let module Bin_version = (val bin_version) in
       let to_current =
-        Migrate_parsetree.Versions.(migrate (module Bin_version) ocaml_407)
+        Migrate_parsetree.Versions.(
+          migrate (module Bin_version) Migrate_ast.selected_version)
       in
       let ast = to_current.copy_structure ast in
       {Translation_unit.ast; comments; prefix= ""}
@@ -93,7 +94,7 @@ let input_intf _conf ic :
       let module Bin_version = (val bin_version) in
       let to_current =
         Migrate_parsetree.Versions.(
-          migrate (module Bin_version) ocaml_current)
+          migrate (module Bin_version) Migrate_ast.selected_version)
       in
       let ast = to_current.copy_signature ast in
       {Translation_unit.ast; comments; prefix= ""}
