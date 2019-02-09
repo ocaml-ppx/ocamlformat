@@ -31,7 +31,7 @@ depends: [
   "octavius" {>= "1.2.0"}
   "stdio"
   "uutf"
-  "reason" {= "3.3.7"}
+  "reason" {>= "3.2.0"}
 ]
 
 available: [ ocaml-version >= "4.04.1" & ocaml-version < "4.05" ]
