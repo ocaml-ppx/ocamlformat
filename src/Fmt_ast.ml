@@ -198,13 +198,13 @@ let fmt_char_escaped c ~loc chr =
       fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
   | `Preserve, _ -> (
     match Source.char_literal c.source loc with
-    | None -> str (String.make 1 chr)
+    | None -> str (Char.escaped chr)
     | Some c -> str c )
   | _, '\000' .. '\128' -> str (Char.escaped chr)
   | `Decimal, _ -> str (Char.escaped chr)
 
-let escape_string c str =
-  match c.conf.escape_strings with
+let escape_string mode str =
+  match mode with
   | `Hexadecimal ->
       let buf = Bytes.create (4 * String.length str) in
       for i = 0 to String.length str - 1 do
@@ -257,10 +257,10 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_string (s, Some delim) ->
       str ("{" ^ delim ^ "|") $ str s $ str ("|" ^ delim ^ "}")
   | Pconst_string (s, None) -> (
-      let fmt_line s =
+      let fmt_line mode s =
         match c.conf.break_string_literals with
         | `Wrap ->
-            let words = String.split (escape_string c s) ~on:' ' in
+            let words = String.split (escape_string mode s) ~on:' ' in
             hovbox_if
               (match words with [] | [_] -> false | _ -> true)
               0
@@ -271,13 +271,13 @@ let fmt_constant c ~loc ?epi const =
                    | _, Some "" -> str " "
                    | _, Some _ -> pre_break 1 " \\" 0
                    | _ -> fmt "" ))
-        | _ -> str (escape_string c s)
+        | _ -> str (escape_string mode s)
       in
-      let fmt_lines lines =
+      let fmt_lines mode lines =
         hvbox 1
           ( str "\""
           $ list_pn lines (fun ?prev:_ curr ?next ->
-                fmt_line curr
+                fmt_line mode curr
                 $ opt next (fun next ->
                       if String.is_empty next then fmt "\\n"
                       else if Char.equal next.[0] ' ' then
@@ -285,21 +285,21 @@ let fmt_constant c ~loc ?epi const =
                       else fmt "\\n" $ pre_break 0 "\\" 0 ) )
           $ str "\"" $ Option.call ~f:epi )
       in
-      let s =
+      let s, mode =
         match (c.conf.break_string_literals, c.conf.escape_strings) with
         | `Never, `Preserve -> (
           match Source.string_literal c.source `Preserve loc with
-          | None -> s
-          | Some s -> s )
+          | None -> (s, `Decimal)
+          | Some s -> (s, `Preserve) )
         | (`Newlines | `Wrap), `Preserve -> (
           match Source.string_literal c.source `Normalize loc with
-          | None -> s
-          | Some s -> s )
-        | _ -> s
+          | None -> (s, `Decimal)
+          | Some s -> (s, `Preserve) )
+        | _ -> (s, c.conf.escape_strings)
       in
       match c.conf.break_string_literals with
-      | `Newlines | `Wrap -> fmt_lines (String.split ~on:'\n' s)
-      | `Never -> str "\"" $ fmt_line s $ str "\"" )
+      | `Newlines | `Wrap -> fmt_lines mode (String.split ~on:'\n' s)
+      | `Never -> str "\"" $ fmt_line mode s $ str "\"" )
 
 let fmt_variance = function
   | Covariant -> fmt "+"

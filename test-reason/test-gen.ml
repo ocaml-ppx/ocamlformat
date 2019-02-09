@@ -15,3 +15,7 @@ let greeting person =
   | ((Student anyOtherName)[@explicit_arity]) ->
       ("Hey, " [@reason.raw_literal "Hey, "]) ^ anyOtherName
       ^ ("." [@reason.raw_literal "."])
+
+let x = ("\255" [@reason.raw_literal "\\xff"])
+
+let x = '\255'
