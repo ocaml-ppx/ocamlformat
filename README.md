@@ -78,6 +78,11 @@ Options can be modified by the means of:
 
 When the option `--disable-outside-detected-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
 
+An `.ocamlformat-ignore` file specifies files that OCamlFormat should
+ignore.  Each line in an ocamlformat-ignore file specifies a filename
+relative to the dir of the ocamlformat-ignore file. Lines starting
+with `#` are ignored and can be used as comments.
+
 ### Preset profiles
 
 Preset profiles set all options, overriding lower priority configuration. A preset profile can be set using the `--profile` (or `-p`) option. You can pass the option `--profile=<name>` on the command line or add `profile = <name>` in an .ocamlformat configuration file.

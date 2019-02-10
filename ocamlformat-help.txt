@@ -25,6 +25,11 @@ OPTIONS (CODE FORMATTING STYLE)
        has the lowest priority, then the closer the directory is to the
        processed file, the higher the priority.
 
+       An `.ocamlformat-ignore` file specifies files that OCamlFormat should
+       ignore. Each line in an ocamlformat-ignore file specifies a filename
+       relative to the dir of the ocamlformat-ignore file. Lines starting
+       with `#` are ignored and can be used as comments.
+
        --break-cases={fit|nested|toplevel|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
