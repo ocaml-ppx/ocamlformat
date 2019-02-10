@@ -75,6 +75,7 @@ fixpoint: exe reason
 	_build/release/src/ocamlformat.exe -n 1 -i $(SRCS)
 
 regtests: exe
+	dune build @_build/dev/test/disabled/runtest
 	$(MAKE) -C test regtests
 
 .PHONY: coverage
