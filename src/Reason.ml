@@ -12,7 +12,7 @@
 (** Support for reading Reason code *)
 
 module Binary_reason = struct
-  (* copy from reason (src/reason-parser/reason_comment.ml) *)
+  (* copied from reason (src/reason-parser/reason_comment.ml) *)
   module Reason_comment = struct
     [@@@ocaml.warning "-37"]
 
@@ -26,7 +26,8 @@ module Binary_reason = struct
   type 'a reason_data =
     string * string * 'a * Reason_comment.t list * bool * bool
 
-  (* copy and adapted from ocaml-migrate_parsetree *)
+  (* copied and adapted from ocaml-migrate_parsetree
+     (src/migrate_parsetree_ast_io.ml) *)
   type ast =
     | Impl :
         (module Migrate_parsetree_versions.OCaml_version
