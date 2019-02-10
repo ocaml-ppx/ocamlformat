@@ -467,11 +467,12 @@ let info =
          file defined in $(b,\\$XDG_CONFIG_HOME/ocamlformat). The global \
          .ocamlformat file has the lowest priority, then the closer the \
          directory is to the processed file, the higher the priority."
-    ; `P "An `.ocamlformat-ignore` file specifies files that \
-          OCamlFormat should ignore.  Each line in an \
-          ocamlformat-ignore file specifies a filename relative to the \
-          dir of the ocamlformat-ignore file. Lines starting with `#` \
-          are ignored and can be used as comments."]
+    ; `P
+        "An `.ocamlformat-ignore` file specifies files that OCamlFormat \
+         should ignore.  Each line in an ocamlformat-ignore file specifies \
+         a filename relative to the dir of the ocamlformat-ignore file. \
+         Lines starting with `#` are ignored and can be used as comments."
+    ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
