@@ -68,7 +68,7 @@ test: exe reason
 
 .PHONY: test-reason
 test-reason: reason
-	dune build _build/dev/test-reason/test-gen.ml --auto-promote
+	dune build _build/dev/test/reason/test-gen.ml --auto-promote
 
 .PHONY: regtests fixpoint
 fixpoint: exe reason
