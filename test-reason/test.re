@@ -11,3 +11,6 @@ let greeting = person =>
   | Student("Richard") => "Still here Ricky?"
   | Student(anyOtherName) => "Hey, " ++ anyOtherName ++ "."
   };
+
+let x = "\xff"
+let x = '\xff'
