@@ -75,7 +75,10 @@ module Binary_reason = struct
     let (magic, origin_filename, ast, comments, _, _) : 'a reason_data =
       Caml.Marshal.from_channel ic
     in
-    let comments = List.map comments ~f:(fun c -> (c.text, c.location)) in
+    let comments =
+      List.map comments ~f:(fun (c : Reason_comment.t) ->
+          (c.text, c.location) )
+    in
     (origin_filename, comments, find_magic magic ast)
 end
 
