@@ -12,16 +12,19 @@
 (** Support for reading Reason code *)
 
 module Binary_reason = struct
+  (* copy from reason (src/reason-parser/reason_comment.ml) *)
+  module Reason_comment = struct
+    [@@@ocaml.warning "-37"]
+
+    type category = EndOfLine | SingleLine | Regular
+
+    type t = {location: Location.t; category: category; text: string}
+  end
+
   (** Type of Reason binary serialized data, which must agree with the type
       used by the implementation of `refmt`. *)
-
-  type category = int
-
-  (* | EndOfLine | SingleLine | Regular *)
-
-  type comment = {location: Location.t; category: category; text: string}
-
-  type 'a reason_data = string * string * 'a * comment list * bool * bool
+  type 'a reason_data =
+    string * string * 'a * Reason_comment.t list * bool * bool
 
   (* copy and adapted from ocaml-migrate_parsetree *)
   type ast =
