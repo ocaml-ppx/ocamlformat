@@ -14,8 +14,7 @@ type 'a with_comments =
 
 (** Operations on translation units. *)
 type 'a t =
-  { input: Conf.t -> input_file:string -> In_channel.t -> 'a with_comments
-  ; init_cmts:
+  { init_cmts:
       Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
@@ -33,34 +32,36 @@ type 'a t =
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
 
-(** Existential package of a type of translation unit and its operations. *)
-type x = XUnit : 'a t -> x
-
-exception Warning50 of (Location.t * Warnings.t) list
-
-type result =
-  | Ok
-  | Invalid_source of exn
-  | Unstable of int
-  | Ocamlformat_bug of exn
+type error =
+  | Invalid_source of {exn: exn}
+  | Unstable of {iteration: int; prev: string; next: string}
+  | Ocamlformat_bug of {exn: exn}
   | User_error of string
 
 val parse :
-     (Lexing.lexbuf -> 'a)
-  -> Conf.t
-  -> input_file:string
-  -> In_channel.t
-  -> 'a with_comments
+  (Lexing.lexbuf -> 'a) -> Conf.t -> source:string -> 'a with_comments
 
-val parse_print :
-     x
+val format :
+     'a t
   -> Conf.t
+  -> ?output_file:string
   -> input_name:string
-  -> input_file:string
-  -> In_channel.t
-  -> string option
-  -> result
-(** [parse_print xunit conf input_name input_file input_channel output_file]
-    parses the contents of [input_channel], using [input_name] for error
-    messages, and referring to the contents of [input_file] to improve
-    comment placement, and writes formatted code into [output_file]. *)
+  -> source:string
+  -> parsed:('a with_comments, exn) Result.t
+  -> unit
+  -> (string, error) Result.t
+(** [format xunit conf ?output_file ~input_name ~source ~parsed ()] format
+    [parsed], using [input_name] for error messages, and referring to
+    [source] to improve comment placement. It returns the formatted string
+    or an error that prevented formatting. *)
+
+val parse_and_format :
+     'a t
+  -> Conf.t
+  -> ?output_file:string
+  -> input_name:string
+  -> source:string
+  -> unit
+  -> (string, error) Result.t
+(** [parse_and_format xunit conf ?output_file ~input_name ~source ()]
+    Similar to [format] but parses the source according to [xunit]. *)

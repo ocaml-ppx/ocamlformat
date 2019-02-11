@@ -14,3 +14,6 @@ let greeting = person =>
 
 let x = "\xff"
 let x = '\xff'
+
+let x = "\255"
+let x = '\255'

@@ -21,9 +21,7 @@ let moved_docstrings f c a b =
 
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.implementation in
-  { input= Translation_unit.parse parse
-  ; parse
+  { parse= Migrate_ast.Parse.implementation
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; equal= equal Normalize.equal_impl
@@ -33,9 +31,7 @@ let impl : _ Translation_unit.t =
 
 (** Operations on interface files. *)
 let intf : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.interface in
-  { input= Translation_unit.parse parse
-  ; parse
+  { parse= Migrate_ast.Parse.interface
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; equal= equal Normalize.equal_intf
@@ -45,9 +41,7 @@ let intf : _ Translation_unit.t =
 
 (** Operations on use_file files. *)
 let use_file : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.use_file in
-  { input= Translation_unit.parse parse
-  ; parse
+  { parse= Migrate_ast.Parse.use_file
   ; init_cmts= Cmts.init_use_file
   ; fmt= Fmt_ast.fmt_use_file
   ; equal= equal Normalize.equal_use_file
@@ -55,71 +49,67 @@ let use_file : _ Translation_unit.t =
   ; normalize= normalize Normalize.use_file
   ; printast= Migrate_ast.Printast.use_file }
 
-(** Select translation unit type and operations based on kind. *)
-let xunit_of_kind : _ -> Translation_unit.x = function
-  | `Impl -> XUnit impl
-  | `Intf -> XUnit intf
-  | `Use_file -> XUnit use_file
-
 ;;
 Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 
 ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
+let format ~kind =
+  match kind with
+  | `Impl -> Translation_unit.parse_and_format impl
+  | `Intf -> Translation_unit.parse_and_format intf
+  | `Use_file -> Translation_unit.parse_and_format use_file
+
+let to_output_file output_file data =
+  match output_file with
+  | None -> Out_channel.output_string Out_channel.stdout data
+  | Some output_file -> Out_channel.write_all output_file ~data
+
 ;;
 match Conf.action with
 | Inplace inputs ->
-    let results : Translation_unit.result list =
-      List.map inputs
+    let output_file = None in
+    let errors =
+      List.filter_map inputs
         ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
-          In_channel.with_file input_file ~f:(fun ic ->
-              Translation_unit.parse_print (xunit_of_kind kind) conf
-                ~input_name ~input_file ic (Some input_file) ) )
+          let source =
+            In_channel.with_file input_file ~f:In_channel.input_all
+          in
+          let result =
+            format conf ?output_file ~kind ~input_name ~source ()
+          in
+          match result with
+          | Error _ -> Some ()
+          | Ok formatted ->
+              if String.equal formatted source then ()
+              else Out_channel.write_all input_file ~data:formatted ;
+              None )
     in
-    if
-      List.for_all results ~f:(fun result ->
-          match (result : Translation_unit.result) with
-          | Ok -> true
-          | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _
-            ->
-              false )
-    then Caml.exit 0
-    else Caml.exit 1
+    if List.is_empty errors then Caml.exit 0 else Caml.exit 1
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
       ; file= "-"
       ; name= input_name
       ; conf }
     , output_file ) -> (
-    let file, oc =
-      Filename.open_temp_file "ocamlformat" (Filename.basename input_name)
-    in
-    In_channel.iter_lines stdin ~f:(fun s ->
-        Out_channel.output_string oc s ;
-        Out_channel.newline oc ) ;
-    Out_channel.close oc ;
-    let result =
-      In_channel.with_file file ~f:(fun ic ->
-          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-            ~input_file:file ic output_file )
-    in
-    Unix.unlink file ;
+    let source = In_channel.input_all In_channel.stdin in
+    let result = format conf ?output_file ~kind ~input_name ~source () in
     match result with
-    | Ok -> Caml.exit 0
-    | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
-        Caml.exit 1 )
+    | Ok s ->
+        to_output_file output_file s ;
+        Caml.exit 0
+    | Error _ -> Caml.exit 1 )
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
       ; file= input_file
       ; name= input_name
       ; conf }
     , output_file ) -> (
-  match
-    In_channel.with_file input_file ~f:(fun ic ->
-        Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-          ~input_file ic output_file )
-  with
-  | Ok -> Caml.exit 0
-  | Unstable _ | Ocamlformat_bug _ | Invalid_source _ | User_error _ ->
-      Caml.exit 1 )
+    let source = In_channel.with_file input_file ~f:In_channel.input_all in
+    let result = format conf ?output_file ~kind ~input_name ~source () in
+    match result with
+    | Ok s ->
+        to_output_file output_file s ;
+        Caml.exit 0
+    | Error _ -> Caml.exit 1 )
