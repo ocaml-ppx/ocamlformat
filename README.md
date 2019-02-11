@@ -80,7 +80,7 @@ When the option `--disable-outside-detected-project` is set, .ocamlformat files 
 
 An `.ocamlformat-ignore` file specifies files that OCamlFormat should
 ignore.  Each line in an ocamlformat-ignore file specifies a filename
-relative to the dir of the ocamlformat-ignore file. Lines starting
+relative to the directory containing the ocamlformat-ignore file. Lines starting
 with `#` are ignored and can be used as comments.
 
 ### Preset profiles
