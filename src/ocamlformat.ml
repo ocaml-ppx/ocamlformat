@@ -58,13 +58,8 @@ Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 let format conf ~kind =
   let with_xunit (xunit : _ Translation_unit.t) conf ~output_file
       ~input_name ~source () =
-    Location.input_name := input_name ;
-    let parsed =
-      try Ok (Translation_unit.parse xunit.parse conf ~source)
-      with e -> Error e
-    in
-    Translation_unit.format xunit conf ?output_file ~input_name ~source
-      ~parsed ()
+    Translation_unit.parse_and_format xunit conf ?output_file ~input_name
+      ~source ()
   in
   match kind with
   | `Impl -> with_xunit impl conf

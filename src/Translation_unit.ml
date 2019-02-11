@@ -409,3 +409,11 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
   | Ok _ -> ()
   | Error e -> print_error conf Format.err_formatter input_name e ) ;
   result
+
+let parse_and_format xunit (conf : Conf.t) ?output_file ~input_name ~source
+    () =
+  Location.input_name := input_name ;
+  let parsed =
+    try Ok (parse xunit.parse conf ~source) with e -> Error e
+  in
+  format xunit conf ?output_file ~input_name ~source ~parsed ()
