@@ -2803,7 +2803,9 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
               $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
           $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
           $ fmt_docstring_padded c doc )
-      $ Cmts.fmt_after c.cmts pcd_loc )
+      $ Cmts.fmt_after c.cmts
+          ~pro:(fmt_or c.conf.wrap_comments "@ " " ")
+          pcd_loc )
 
 and fmt_constructor_arguments c ctx pre args =
   match args with
