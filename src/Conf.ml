@@ -468,11 +468,11 @@ let info =
          .ocamlformat file has the lowest priority, then the closer the \
          directory is to the processed file, the higher the priority."
     ; `P
-        "An `.ocamlformat-ignore` file specifies files that OCamlFormat \
-         should ignore.  Each line in an ocamlformat-ignore file specifies \
-         a filename relative to the dir of the ocamlformat-ignore file. \
-         Lines starting with `#` are ignored and can be used as comments."
-    ]
+        "An $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
+         should ignore.  Each line in an $(b,.ocamlformat-ignore) file \
+         specifies a filename relative to the directory containing the \
+         $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
+         ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
