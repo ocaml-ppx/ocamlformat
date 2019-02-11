@@ -51,17 +51,38 @@ match Conf.action with
 | In_out
     ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
     , output_file ) ->
-    Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-      ~input_file:"" stdin output_file
+    let tmp_file =
+      Filename.temp_file "ocamlformat" (Filename.basename input_name)
+    in
+    let all = In_channel.input_all stdin in
+    Out_channel.write_all tmp_file ~data:all ;
+    let origin_filename =
+      In_channel.with_file tmp_file ~f:(fun ic ->
+          let t = Reason.input_bin_impl ic in
+          if Caml.Sys.file_exists t.origin_filename then t.origin_filename
+          else "" )
+    in
+    let result =
+      In_channel.with_file tmp_file ~f:(fun ic ->
+          Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
+            ~input_file:origin_filename ic output_file )
+    in
+    Unix.unlink tmp_file ; result
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; name= input_name
       ; file= input_file
       ; conf }
     , output_file ) ->
+    let origin_filename =
+      In_channel.with_file input_file ~f:(fun ic ->
+          let t = Reason.input_bin_impl ic in
+          if Caml.Sys.file_exists t.origin_filename then t.origin_filename
+          else "" )
+    in
     In_channel.with_file input_file ~f:(fun ic ->
         Translation_unit.parse_print (xunit_of_kind kind) conf ~input_name
-          ~input_file:"" ic output_file )
+          ~input_file:origin_filename ic output_file )
 | In_out ({kind= `Use_file; _}, _) ->
     user_error "Cannot convert Reason code with --use-file" []
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
