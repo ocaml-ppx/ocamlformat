@@ -2795,14 +2795,15 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   $ Cmts.fmt_before c.cmts pcd_loc
   $ Cmts.fmt_before c.cmts loc
   $ fmt_or_k first (if_newline "| ") (fmt "| ")
-  $ hovbox 2
-      ( hvbox 2
-          ( Cmts.fmt c.cmts loc
-              (wrap_if (is_symbol_id txt) "( " " )" (str txt))
-          $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
-      $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
-      $ fmt_docstring_padded c doc )
-  $ Cmts.fmt_after c.cmts ~pro:(fmt " ") ~epi:(fmt "@ ") pcd_loc
+  $ hvbox 0
+      ( hovbox 2
+          ( hvbox 2
+              ( Cmts.fmt c.cmts loc
+                  (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+              $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
+          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
+          $ fmt_docstring_padded c doc )
+      $ Cmts.fmt_after c.cmts pcd_loc )
 
 and fmt_constructor_arguments c ctx pre args =
   match args with
