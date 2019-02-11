@@ -466,7 +466,13 @@ let info =
          for each input file are used, as well as the global .ocamlformat \
          file defined in $(b,\\$XDG_CONFIG_HOME/ocamlformat). The global \
          .ocamlformat file has the lowest priority, then the closer the \
-         directory is to the processed file, the higher the priority." ]
+         directory is to the processed file, the higher the priority."
+    ; `P
+        "An $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
+         should ignore.  Each line in an $(b,.ocamlformat-ignore) file \
+         specifies a filename relative to the directory containing the \
+         $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
+         ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -1520,25 +1526,37 @@ let is_project_root dir =
       List.exists project_root_witness ~f:(fun name ->
           Fpath.(exists (dir / name)) )
 
-let rec collect_files ~segs acc =
+let dot_ocp_indent = ".ocp-indent"
+
+let dot_ocamlformat = ".ocamlformat"
+
+let dot_ocamlformat_ignore = ".ocamlformat-ignore"
+
+let rec collect_files ~segs ~ignores ~files =
   match segs with
-  | [] | [""] -> (acc, None)
-  | "" :: upper_segs -> collect_files ~segs:upper_segs acc
+  | [] | [""] -> (ignores, files, None)
+  | "" :: upper_segs -> collect_files ~segs:upper_segs ~ignores ~files
   | _ :: upper_segs ->
       let dir =
         String.concat ~sep:Fpath.dir_sep (List.rev segs) |> Fpath.v
       in
-      let acc =
-        let filename = Fpath.(dir / ".ocamlformat") in
-        if Fpath.exists filename then `Ocamlformat filename :: acc else acc
+      let files =
+        let filename = Fpath.(dir / dot_ocamlformat) in
+        if Fpath.exists filename then `Ocamlformat filename :: files
+        else files
       in
-      let acc =
-        let filename = Fpath.(dir / ".ocp-indent") in
-        if Fpath.exists filename then `Ocp_indent filename :: acc else acc
+      let ignores =
+        let filename = Fpath.(dir / dot_ocamlformat_ignore) in
+        if Fpath.exists filename then filename :: ignores else ignores
+      in
+      let files =
+        let filename = Fpath.(dir / dot_ocp_indent) in
+        if Fpath.exists filename then `Ocp_indent filename :: files
+        else files
       in
       if is_project_root dir && disable_outside_detected_project then
-        (acc, Some dir)
-      else collect_files ~segs:upper_segs acc
+        (ignores, files, Some dir)
+      else collect_files ~segs:upper_segs ~ignores ~files
 
 let read_config_file conf filename_kind =
   match filename_kind with
@@ -1560,8 +1578,8 @@ let read_config_file conf filename_kind =
           | l ->
               let kind =
                 match filename_kind with
-                | `Ocp_indent _ -> ".ocp-indent"
-                | `Ocamlformat _ -> ".ocamlformat"
+                | `Ocp_indent _ -> dot_ocp_indent
+                | `Ocamlformat _ -> dot_ocamlformat
               in
               user_error
                 (Format.sprintf "malformed %s file" kind)
@@ -1615,17 +1633,48 @@ let xdg_config =
   | Some xdg_config_home ->
       let filename =
         Fpath.(
-          append (v xdg_config_home) (v "ocamlformat" / ".ocamlformat"))
+          append (v xdg_config_home) (v "ocamlformat" / dot_ocamlformat))
       in
       if Fpath.exists filename then Some filename else None
   | None -> None
 
+let is_ignored ~quiet ~ignores ~filename =
+  let drop_line l = String.is_empty l || String.is_prefix l ~prefix:"#" in
+  (* process deeper files first *)
+  let ignores = List.rev ignores in
+  List.find_map ignores ~f:(fun ignore_file ->
+      let dir, _ = Fpath.split_base ignore_file in
+      try
+        In_channel.with_file (Fpath.to_string ignore_file) ~f:(fun ch ->
+            let lines =
+              In_channel.input_lines ch
+              |> List.mapi ~f:(fun i s -> (i + 1, String.strip s))
+              |> List.filter ~f:(fun (_, l) -> not (drop_line l))
+            in
+            List.find_map lines ~f:(fun (lno, line) ->
+                match Fpath.of_string line with
+                | Ok file_on_current_line ->
+                    let f = Fpath.(dir // file_on_current_line) in
+                    if Fpath.equal filename f then Some (ignore_file, lno)
+                    else None
+                | Error (`Msg msg) ->
+                    if not quiet then
+                      Format.eprintf "File %a, line %d:\nWarning: %s\n"
+                        (Fpath.pp ~pretty:true) ignore_file lno msg ;
+                    None ) )
+      with Sys_error err ->
+        if not quiet then
+          Format.eprintf "Warning: ignoring %a, %s\n"
+            (Fpath.pp ~pretty:true) ignore_file err ;
+        None )
+
 let build_config ~file =
-  let dir =
-    Fpath.(v file |> to_absolute |> normalize |> split_base |> fst)
-  in
+  let file_abs = Fpath.(v file |> to_absolute |> normalize) in
+  let dir = Fpath.(file_abs |> split_base |> fst) in
   let segs = Fpath.segs dir |> List.rev in
-  let files, project_root = collect_files ~segs [] in
+  let ignores, files, project_root =
+    collect_files ~segs ~ignores:[] ~files:[]
+  in
   let files =
     match (xdg_config, disable_outside_detected_project) with
     | None, _ | Some _, true -> files
@@ -1656,7 +1705,15 @@ let build_config ~file =
          %!"
         file reason ) ;
     {conf with disable= true} )
-  else conf
+  else
+    match is_ignored ~quiet:conf.quiet ~ignores ~filename:file_abs with
+    | None -> conf
+    | Some (ignored_in_file, lno) ->
+        if !debug then
+          Format.eprintf "File %a: ignored in %a:%d@\n"
+            (Fpath.pp ~pretty:true) file_abs (Fpath.pp ~pretty:true)
+            ignored_in_file lno ;
+        {conf with disable= true}
 
 ;;
 if !print_config then
@@ -1664,7 +1721,7 @@ if !print_config then
     match !inputs with
     | [] ->
         let root = Option.value root ~default:(Fpath.cwd ()) in
-        Fpath.(root / ".ocamlformat" |> to_string)
+        Fpath.(root / dot_ocamlformat |> to_string)
     | file :: _ -> file
   in
   C.print_config (build_config ~file)
