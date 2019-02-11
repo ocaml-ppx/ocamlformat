@@ -2674,23 +2674,19 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
   in
   let fmt_manifest_kind mfst priv kind =
     match kind with
-    | Ptype_abstract -> fmt_manifest ~priv mfst
+    | Ptype_abstract -> fmt_manifest ~priv mfst $ close_box
     | Ptype_variant [] ->
-        hvbox 2
-          (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
-        $ fmt "@ |"
+        fmt_manifest ~priv:Public mfst
+        $ fmt " =" $ fmt_private_flag priv $ close_box $ fmt "@ |"
     | Ptype_variant ctor_decls ->
-        hvbox 2
-          (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
-        $ fmt "@ "
+        fmt_manifest ~priv:Public mfst
+        $ fmt " =" $ fmt_private_flag priv $ close_box $ fmt "@ "
         $ list_fl ctor_decls (fmt_constructor_declaration c ctx)
     | Ptype_record lbl_decls -> (
       match c.conf.break_separators with
       | `Before ->
-          hvbox 2
-            ( fmt_manifest ~priv:Public mfst
-            $ fmt " =" $ fmt_private_flag priv )
-          $ fmt "@ "
+          fmt_manifest ~priv:Public mfst
+          $ fmt " =" $ fmt_private_flag priv $ close_box $ fmt "@ "
           $ hvbox 0
               (wrap_record c
                  (list_fl lbl_decls (fun ~first ~last x ->
@@ -2701,10 +2697,8 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                       $ fmt_label_declaration c ctx x ~last
                       $ fmt_if (last && exposed_right_typ x.pld_type) " " )))
       | `After ->
-          hvbox 2
-            ( fmt_manifest ~priv:Public mfst
-            $ fmt " =" $ fmt_private_flag priv )
-          $ fmt "@ "
+          fmt_manifest ~priv:Public mfst
+          $ fmt " =" $ fmt_private_flag priv $ close_box $ fmt "@ "
           $ hvbox 2
               (wrap_record c
                  (list_fl lbl_decls (fun ~first:_ ~last x ->
@@ -2715,10 +2709,9 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                           | `Sparse -> fmt "@;<1000 0>"
                           | `Compact -> fmt "@ " ) )))
       | `After_and_docked ->
-          hvbox 2
-            ( fmt_manifest ~priv:Public mfst
-            $ fmt " =" $ fmt_private_flag priv )
-          $ fmt " {@,"
+          fmt_manifest ~priv:Public mfst
+          $ fmt " =" $ fmt_private_flag priv $ fmt " {" $ close_box
+          $ fmt "@,"
           $ list_fl lbl_decls (fun ~first:_ ~last x ->
                 fmt_label_declaration c ctx x ~last
                 $ fmt_if (last && exposed_right_typ x.pld_type) " "
@@ -2729,7 +2722,7 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
           $ fmt "@;<0 -2>}" )
     | Ptype_open ->
         fmt_manifest ~priv:Public mfst
-        $ fmt " =" $ fmt_private_flag priv $ fmt " .."
+        $ fmt " =" $ fmt_private_flag priv $ fmt " .." $ close_box
   in
   let fmt_cstrs cstrs =
     fmt_if_k
@@ -2750,7 +2743,7 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
        ( fmt_docstring c ~epi:(fmt "@\n") doc
        $ hvbox 0
            ( hvbox 2
-               ( str pre
+               ( open_hvbox 2 $ str pre
                $ fmt_tydcl_params c ctx ptype_params
                $ (match fmt_name with Some pp -> pp | None -> str txt)
                $ fmt_manifest_kind ptype_manifest ptype_private ptype_kind
