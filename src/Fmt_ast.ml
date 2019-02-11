@@ -81,7 +81,7 @@ let update_config ?(quiet = false) c l =
       | _ -> Ok c.conf
     in
     match result with
-    | Ok conf -> {c with conf}
+    | Ok conf -> {c with conf; cmts= Cmts.update_conf conf c.cmts}
     | Error error ->
         let reason = function
           | `Malformed line -> Format.sprintf "Invalid format %S" line

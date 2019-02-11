@@ -28,6 +28,8 @@ open Migrate_ast
 
 type t
 
+val update_conf : Conf.t -> t -> t
+
 val init_impl :
      Source.t
   -> Conf.t

@@ -23,6 +23,8 @@ type t =
   ; source: Source.t
   ; conf: Conf.t }
 
+let update_conf conf t = {t with conf}
+
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
     other. *)
