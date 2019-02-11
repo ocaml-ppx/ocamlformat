@@ -38,7 +38,8 @@ type error =
   | Ocamlformat_bug of {exn: exn}
   | User_error of string
 
-val parse : (Lexing.lexbuf -> 'a) -> Conf.t -> string -> 'a with_comments
+val parse :
+  (Lexing.lexbuf -> 'a) -> Conf.t -> source:string -> 'a with_comments
 
 val format :
      'a t
@@ -52,4 +53,4 @@ val format :
 (** [format xunit conf ?output_file ~input_name ~source ~parsed ()] format
     [parsed], using [input_name] for error messages, and referring to
     [source] to improve comment placement. It returns the formatted string
-    or the error preventing the formatting to happen. *)
+    or an error that prevented formatting. *)

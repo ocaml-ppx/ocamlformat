@@ -71,7 +71,7 @@ end = struct
     String.concat ~sep:"" (List.map ~f:(Format.sprintf "%+d") x)
 end
 
-let parse parse_ast (conf : Conf.t) source =
+let parse parse_ast (conf : Conf.t) ~source =
   let lexbuf = Lexing.from_string source in
   let warnings =
     W.enable 50
@@ -133,11 +133,9 @@ let with_file input_name output_file suf ext f =
 let dump_ast ~input_name ?output_file ~suffix fmt =
   if Conf.debug then
     let ext = ".ast" in
-    let (_filename : string) =
-      with_file input_name output_file suffix ext (fun oc ->
-          fmt (Format.formatter_of_out_channel oc) )
-    in
-    ()
+    with_file input_name output_file suffix ext (fun oc ->
+        fmt (Format.formatter_of_out_channel oc) )
+    |> (ignore : string -> unit)
 
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
@@ -325,7 +323,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
     if String.equal source fmted then Ok fmted
     else
-      match parse xunit.parse conf fmted with
+      match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
       | exception exn -> Error (Ocamlformat_bug {exn})
       | t_new ->

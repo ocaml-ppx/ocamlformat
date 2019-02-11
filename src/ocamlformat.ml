@@ -21,8 +21,7 @@ let moved_docstrings f c a b =
 
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.implementation in
-  { parse
+  { parse= Migrate_ast.Parse.implementation
   ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; equal= equal Normalize.equal_impl
@@ -32,8 +31,7 @@ let impl : _ Translation_unit.t =
 
 (** Operations on interface files. *)
 let intf : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.interface in
-  { parse
+  { parse= Migrate_ast.Parse.interface
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; equal= equal Normalize.equal_intf
@@ -43,8 +41,7 @@ let intf : _ Translation_unit.t =
 
 (** Operations on use_file files. *)
 let use_file : _ Translation_unit.t =
-  let parse = Migrate_ast.Parse.use_file in
-  { parse
+  { parse= Migrate_ast.Parse.use_file
   ; init_cmts= Cmts.init_use_file
   ; fmt= Fmt_ast.fmt_use_file
   ; equal= equal Normalize.equal_use_file
@@ -63,7 +60,7 @@ let format conf ~kind =
       ~input_name ~source () =
     Location.input_name := input_name ;
     let parsed =
-      try Ok (Translation_unit.parse xunit.parse conf source)
+      try Ok (Translation_unit.parse xunit.parse conf ~source)
       with e -> Error e
     in
     Translation_unit.format xunit conf ?output_file ~input_name ~source
@@ -83,7 +80,7 @@ let to_output_file output_file data =
 match Conf.action with
 | Inplace inputs ->
     let output_file = None in
-    let results =
+    let errors =
       List.filter_map inputs
         ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
           let source =
@@ -99,7 +96,7 @@ match Conf.action with
               else Out_channel.write_all input_file ~data:formatted ;
               None )
     in
-    if List.is_empty results then Caml.exit 0 else Caml.exit 1
+    if List.is_empty errors then Caml.exit 0 else Caml.exit 1
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
       ; file= "-"
