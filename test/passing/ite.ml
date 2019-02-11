@@ -102,3 +102,18 @@ let foo =
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo ) )
+
+let foo =
+  if some condition then
+    if some nested condition then some action else some other action
+  else
+    some default action
+
+let foo =
+  if some condition then
+    if some nested condition then
+      some action + foooo + foooo + foooooooo + foooo + foooooo
+    else
+      some other action
+  else
+    some default action
