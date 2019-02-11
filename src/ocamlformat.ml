@@ -55,16 +55,11 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
-let format conf ~kind =
-  let with_xunit (xunit : _ Translation_unit.t) conf ~output_file
-      ~input_name ~source () =
-    Translation_unit.parse_and_format xunit conf ?output_file ~input_name
-      ~source ()
-  in
+let format ~kind =
   match kind with
-  | `Impl -> with_xunit impl conf
-  | `Intf -> with_xunit intf conf
-  | `Use_file -> with_xunit use_file conf
+  | `Impl -> Translation_unit.parse_and_format impl
+  | `Intf -> Translation_unit.parse_and_format intf
+  | `Use_file -> Translation_unit.parse_and_format use_file
 
 let to_output_file output_file data =
   match output_file with
@@ -82,7 +77,7 @@ match Conf.action with
             In_channel.with_file input_file ~f:In_channel.input_all
           in
           let result =
-            format conf ~output_file ~kind ~input_name ~source ()
+            format conf ?output_file ~kind ~input_name ~source ()
           in
           match result with
           | Error _ -> Some ()
@@ -99,7 +94,7 @@ match Conf.action with
       ; conf }
     , output_file ) -> (
     let source = In_channel.input_all In_channel.stdin in
-    let result = format conf ~output_file ~kind ~input_name ~source () in
+    let result = format conf ?output_file ~kind ~input_name ~source () in
     match result with
     | Ok s ->
         to_output_file output_file s ;
@@ -112,7 +107,7 @@ match Conf.action with
       ; conf }
     , output_file ) -> (
     let source = In_channel.with_file input_file ~f:In_channel.input_all in
-    let result = format conf ~output_file ~kind ~input_name ~source () in
+    let result = format conf ?output_file ~kind ~input_name ~source () in
     match result with
     | Ok s ->
         to_output_file output_file s ;
