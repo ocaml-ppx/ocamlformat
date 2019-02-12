@@ -25,8 +25,13 @@ end
 
 module type M =
   module type of M
-  with module A := A (*test*) and module A = A (*test*) and module A = A
-  with module A = A (*test*)
+  with module A := A
+  (*test*)
+   and module A = A
+  (*test*)
+   and module A = A
+  with module A = A
+  (*test*)
   with module A = A
 
 module U :
@@ -37,7 +42,8 @@ module U :
 
 module U :
   S
-  with type ttttttttt = int and type uuuuuuu = int
+  with type ttttttttt = int
+   and type uuuuuuu = int
   with type vvvvvvvvv = int = struct end
 
 module U = (val S : S with type t = int and type u = int)

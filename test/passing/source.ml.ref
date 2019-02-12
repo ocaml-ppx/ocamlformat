@@ -7071,7 +7071,8 @@ end
 type 'a tree = E | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2 (MakeDiet : functor (X : ORD) -> SET
-  with type t = X.t tree and type elt = X.t) :
+  with type t = X.t tree
+   and type elt = X.t) :
   SET
   with type elt = int = struct
   type elt = int
@@ -7095,7 +7096,8 @@ module Bootstrap2 (MakeDiet : functor (X : ORD) -> SET
       | D (_, d, _) -> Diet.iter (iter f) d
   end
 
-  and Diet : (SET with type t = Elt.t tree and type elt = Elt.t) =
+  and Diet : (SET with type t = Elt.t tree
+                   and type elt = Elt.t) =
     MakeDiet (Elt)
 
   type t = Diet.t

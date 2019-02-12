@@ -2985,6 +2985,11 @@ and fmt_module_type c ({ast= mty} as xmty) =
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_type c mt in
+      let constr_box =
+        match c.conf.module_annotation with
+        | `Compact -> hvbox 0
+        | `Sparse -> vbox 0
+      in
       { empty with
         bdy=
           wrap_if parens "(" ")"
@@ -2993,7 +2998,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
                 $ Option.call ~f:epi $ cls )
             $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
                   fmt "@;<1 2>"
-                  $ hvbox 0
+                  $ constr_box
                       ( Cmts.fmt c.cmts loc
                       @@ list_fl wcs_and (fun ~first ~last:_ wc ->
                              fmt_or first "with" "@;<1 1>and"
