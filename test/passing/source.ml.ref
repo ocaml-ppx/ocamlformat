@@ -4662,7 +4662,8 @@ module type PR6513 = sig
   end
 
   module Make (Html5 : T with type 'a wrap = 'a) :
-    S with type u = < foo: Html5.uri >
+    S
+    with type u = < foo: Html5.uri >
 end
 
 (* Requires -package tyxml module type PR6513_orig = sig module type S = sig
@@ -7070,9 +7071,9 @@ end
 type 'a tree = E | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2 (MakeDiet : functor (X : ORD) -> SET
-                                                   with type t = X.t tree
-                                                    and type elt = X.t) :
-  SET with type elt = int = struct
+  with type t = X.t tree and type elt = X.t) :
+  SET
+  with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7500,8 +7501,10 @@ module type HEAP = sig
 end
 
 module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP
-                                                         with module Elem = Element)
-(Element : ORDERED) : HEAP with module Elem = Element = struct
+  with module Elem = Element)
+(Element : ORDERED) :
+  HEAP
+  with module Elem = Element = struct
   module Elem = Element
 
   module rec BE : sig
@@ -8202,10 +8205,7 @@ end
 
 module USERCODE (X : TYPEVIEW) = struct
   module type F = functor (C : CORE with type V.usert = X.combined) -> BARECODE
-                                                                       with type 
-                                                                       state :=
-                                                                         C.V
-                                                                         .state
+    with type state := C.V.state
 end
 
 module Weapon = struct

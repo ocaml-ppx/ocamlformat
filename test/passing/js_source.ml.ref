@@ -7356,9 +7356,7 @@ type 'a tree =
   | N of 'a tree * 'a * 'a tree
 
 module Bootstrap2 (MakeDiet : functor (X : ORD) -> SET
-                                                   with type t = X.t tree
-                                                    and type elt = X.t) :
-  SET with type elt = int = struct
+  with type t = X.t tree and type elt = X.t) : SET with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7794,7 +7792,8 @@ module type HEAP = sig
   val deleteMin : heap -> heap
 end
 
-module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
+module Bootstrap (MakeH : functor (Element : ORDERED) -> HEAP
+  with module Elem = Element)
 (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
@@ -8513,9 +8512,7 @@ end
 
 module USERCODE (X : TYPEVIEW) = struct
   module type F = functor (C : CORE with type V.usert = X.combined) -> BARECODE
-                                                                       with type state :=
-                                                                                   C.V
-                                                                                   .state
+    with type state := C.V.state
 end
 
 module Weapon = struct
@@ -8541,8 +8538,7 @@ module type S =
     module M : sig
       type t
     end
-  end
-  with module M = M
+  end with module M = M
 
 module type Printable = sig
   type t
@@ -8617,8 +8613,7 @@ module type S' = S with module T := M
 module type S =
   sig
     type 'a t
-  end
-  with type 'a t := unit
+  end with type 'a t := unit
 
 (* Fails *)
 let property (type t) () =

@@ -17,8 +17,7 @@ include (
   Selected_version :
     module type of struct
       include Selected_version
-    end
-    with module Location := Selected_version.Location )
+    end with module Location := Selected_version.Location )
 
 module Parse = struct
   open Migrate_parsetree

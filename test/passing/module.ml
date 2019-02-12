@@ -120,3 +120,11 @@ end = (
 
       module N' = N
     end )
+
+module type T =
+  sig
+    type t
+
+    module A = B
+  end
+  with module A = C

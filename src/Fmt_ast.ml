@@ -2987,15 +2987,17 @@ and fmt_module_type c ({ast= mty} as xmty) =
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_type c mt in
       { empty with
         bdy=
-          hvbox 0
-            (wrap_if parens "(" ")"
-               ( opn $ Option.call ~f:pro $ psp $ bdy $ esp
-               $ Option.call ~f:epi $ cls
-               $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
-                     Cmts.fmt c.cmts loc
-                     @@ list_fl wcs_and (fun ~first ~last:_ wc ->
-                            fmt_or first "@ with" "@;<1 1>and"
-                            $ fmt_with_constraint c ctx wc ) ) ))
+          wrap_if parens "(" ")"
+            ( hvbox 0
+                ( opn $ Option.call ~f:pro $ psp $ bdy $ esp
+                $ Option.call ~f:epi $ cls )
+            $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
+                  fmt "@;<1 2>"
+                  $ hvbox 0
+                      ( Cmts.fmt c.cmts loc
+                      @@ list_fl wcs_and (fun ~first ~last:_ wc ->
+                             fmt_or first "with" "@;<1 1>and"
+                             $ fmt_with_constraint c ctx wc ) ) ) )
       ; epi=
           Some
             ( fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ")
@@ -3208,7 +3210,9 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                 $ Option.call ~f:blk.pro )
           ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
     in
-    (blk, fun k -> blk.opn $ k $ blk.cls)
+    match c.conf.module_annotation with
+    | `Compact -> (blk, fun k -> blk.opn $ k $ blk.cls)
+    | `Sparse -> (blk, hvbox 0)
   in
   let {pro= pro_b; psp= psp_b; bdy= bdy_b; esp= esp_b; epi= epi_b; _}, box_b
       =

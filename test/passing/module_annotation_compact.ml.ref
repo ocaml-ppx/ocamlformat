@@ -29,8 +29,7 @@ module C = struct
   and B : sig end = B
 end
 
-module M :
-  S
+module M : S
   with type long_long_type = t
    and type long_long_long_type = u
    and type very_long_long_type = t =
@@ -108,3 +107,10 @@ end = (M : sig
 
          module N' = N
        end )
+
+module type T =
+  sig
+    type t
+
+    module A = B
+  end with module A = C
