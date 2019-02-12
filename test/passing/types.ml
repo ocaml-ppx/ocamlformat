@@ -55,5 +55,14 @@ type voting_period =
     Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind =
   | Proposal
   | Testing_vote
-  | Testing
-  | Promotion_vote
+
+(** foooooooo *)
+type voting_period =
+    (* foooooooooooo *)
+    (* foooooooooo ooooooooooooooooo ooooooooooooo *)
+    Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind
+    (* fooooooooooooooo oooooooooooooooooooo ooooooooooooooooooooo *)
+    (* fooooo *) =
+  (* foooooooooo *)
+  | Proposal
+  | Testing_vote  (** fooooooooooo *)
