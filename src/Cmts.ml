@@ -477,7 +477,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
   in
   split_asterisk_prefixed_ 0
 
-let fmt_cmt t conf cmt =
+let fmt_cmt conf cmt =
   let open Fmt in
   if not conf.Conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
   else
@@ -532,7 +532,7 @@ let fmt_cmts t conf ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
             (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
-            | [cmt] -> fmt_cmt t conf cmt $ maybe_newline ~next cmt
+            | [cmt] -> fmt_cmt conf cmt $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
                     wrap "(*" "*)" (str (fst cmt)) )
