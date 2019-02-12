@@ -12,7 +12,7 @@
 # To test all source files below a directory
 #       make DIRS=<directory> test
 # By default, test projects used as regression tests
-DIRS=code/ocamlformat code/infer
+DIRS=code/ocamlformat code/infer code/js_of_ocaml
 
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml
@@ -35,6 +35,8 @@ test_setup:
 	  || git -C code clone ../../../ocamlformat
 	@test -d code/infer \
 	  || git -C code clone "https://github.com/facebook/infer.git"
+	@test -d code/js_of_ocaml \
+	  || git -C code clone "https://github.com/ocsigen/js_of_ocaml.git"
 	@test -d code/ocaml \
 	  || git -C code clone "https://github.com/ocaml/ocaml.git"
 
