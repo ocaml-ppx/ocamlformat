@@ -381,7 +381,7 @@ let dedup_cmts map_ast ast comments =
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
 (** Initialize global state and place comments. *)
-let init map_ast loc_of_ast source conf asts comments_n_docstrings =
+let init map_ast loc_of_ast source asts comments_n_docstrings =
   let t =
     { cmts_before= Hashtbl.Poly.create ()
     ; cmts_after= Hashtbl.Poly.create ()

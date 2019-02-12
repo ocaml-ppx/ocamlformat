@@ -18,8 +18,7 @@ type 'a with_comments =
 
 (** Operations on translation units. *)
 type 'a t =
-  { init_cmts:
-      Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
+  { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
@@ -304,7 +303,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
     let format ~box_debug =
       let buffer = Buffer.create (String.length source) in
       let source_t = Source.create source in
-      let cmts_t = xunit.init_cmts source_t conf t.ast t.comments in
+      let cmts_t = xunit.init_cmts source_t t.ast t.comments in
       let fs = Format_.formatter_of_buffer buffer in
       Fmt.set_margin conf.margin fs ;
       (* note that [fprintf fs "%s" ""] is not a not-opt. *)

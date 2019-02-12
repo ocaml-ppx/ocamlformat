@@ -14,8 +14,7 @@ type 'a with_comments =
 
 (** Operations on translation units. *)
 type 'a t =
-  { init_cmts:
-      Source.t -> Conf.t -> 'a -> (string * Location.t) list -> Cmts.t
+  { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
