@@ -28,8 +28,6 @@ open Migrate_ast
 
 type t
 
-val update_conf : Conf.t -> t -> t
-
 val init_impl :
      Source.t
   -> Conf.t
@@ -71,6 +69,7 @@ val relocate :
 
 val fmt_before :
      t
+  -> Conf.t
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -80,16 +79,19 @@ val fmt_before :
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
 
-val fmt_after : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+val fmt_after :
+  t -> Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
-val fmt_within : t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+val fmt_within :
+  t -> Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
 (** [fmt_within loc] formats the comments associated with [loc] that appear
     within [loc]. *)
 
 val fmt :
      t
+  -> Conf.t
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -102,6 +104,7 @@ val fmt :
 
 val fmt_list :
      t
+  -> Conf.t
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
