@@ -1743,9 +1743,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                           $ fmt "@ then" )
                     | None -> fmt "else" )
                     $ fmt_if parens_bch " (" $ fmt "@;<1 2>"
-                    $ hvbox 0
-                        (fmt_expression c ~eol:(fmt "@;<1 2>") ~box:false
-                           ~parens:false xbch)
+                    $ fmt_expression c ~box:false ~parens:false xbch
                     $ fmt_if parens_bch
                         ( if c.conf.indicate_multiline_delimiters then " )"
                         else ")" )

@@ -121,10 +121,10 @@ let foo =
 let foo = if cmp < 0 then (* foo *) a + b else (* foo *) a - b
 
 let foo =
-  if cmp < 0 then
-    (* ast higher precedence than context: no parens *) false
-  else if cmp > 0 then
-    (* context higher prec than ast: add parens *) true
+  if cmp < 0 then (* ast higher precedence than context: no parens *)
+    false
+  else if cmp > 0 then (* context higher prec than ast: add parens *)
+    true
   else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
   then
     foo
