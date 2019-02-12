@@ -52,7 +52,7 @@ val x :
         fooooooooooooooooooo fooooooooooooooo*) ]
 
 type voting_period =
-  Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind =
+    Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind =
   | Proposal
   | Testing_vote
   | Testing
