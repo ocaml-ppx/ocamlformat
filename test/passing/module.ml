@@ -128,3 +128,19 @@ module type T =
     module A = B
   end
   with module A = C
+
+let x =
+  ( module Soooooooooooooooooooooooome.Tooooooooooo
+           .Loooooooooooooooooooooooong
+           .Mod )
+
+let x :
+    (module AAAAAAAAAAAAAAAAAAA
+       with type loooooooooooong_type = also_long_type) =
+  x
+
+let x :
+    (module
+     Soooooooooooooooooooooooome.Toooooooooooo.Loooooooooooooooooooooooong
+     .Mod with type loooooooooooong_type = also_long_type) =
+  x
