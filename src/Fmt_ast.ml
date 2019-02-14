@@ -2670,7 +2670,8 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
   let break_before_manifest_kind =
     match ptype_kind with
     | Ptype_abstract -> fmt "@ "
-    | Ptype_variant _ | Ptype_record _ | Ptype_open -> fmt "@;<1 4>"
+    | Ptype_variant _ | Ptype_record _ | Ptype_open ->
+        fmt_or (Option.is_some ptype_manifest) "@;<1 4>" "@ "
   in
   let fmt_manifest ~priv manifest =
     opt manifest (fun typ ->
