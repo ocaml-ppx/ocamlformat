@@ -3448,16 +3448,16 @@ and fmt_module_expr c ({ast= m} as xmod) =
       and mod_sig =
         Option.call ~f:pro_t $ psp_t $ bdy_t $ esp_t $ Option.call ~f:epi_t
       in
-      { opn= opn_t $ opn_e $ open_hvbox 2
+      { opn= opn_t $ opn_e $ open_hovbox 2
       ; pro=
           Some
             ( Cmts.fmt_before c.cmts pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt "(" )
-      ; psp= fmt ""
+      ; psp= fmt "@,"
       ; bdy=
           ( match c.conf.module_annotation with
-          | `Sparse -> fmt "@," $ hovbox 2 (mod_expr $ fmt " :@ " $ mod_sig)
+          | `Sparse -> hovbox 2 (mod_expr $ fmt " :@ " $ mod_sig)
           | `Compact -> hovbox 0 (mod_expr $ fmt " : " $ mod_sig) )
       ; cls= close_box $ cls_e $ cls_t
       ; esp= fmt ""
@@ -3697,7 +3697,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       in
       opn
       $ fmt_docstring c ~epi:(fmt "@\n") doc
-      $ ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
+      $ ( hovbox 2 (fmt "include " $ Option.call ~f:pro)
         $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
         $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->

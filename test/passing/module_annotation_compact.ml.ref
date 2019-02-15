@@ -100,13 +100,14 @@ module M2 : sig
   module N' : sig
     val x : int
   end
-end = (M : sig
-         module N : sig
-           val x : int
-         end
+end = (
+  M : sig
+    module N : sig
+      val x : int
+    end
 
-         module N' = N
-       end )
+    module N' = N
+  end )
 
 module type T =
   sig

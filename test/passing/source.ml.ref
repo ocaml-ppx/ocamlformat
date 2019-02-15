@@ -3061,8 +3061,7 @@ end
 
 module Z : sig
   type t [@@immediate]
-end = (
-  Y : X with type t = int )
+end = (Y : X with type t = int )
 
 [%%expect
 {|
