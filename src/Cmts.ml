@@ -477,9 +477,9 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
   in
   split_asterisk_prefixed_ 0
 
-let fmt_cmt conf cmt =
+let fmt_cmt (conf : Conf.t) cmt =
   let open Fmt in
-  if not conf.Conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
+  if not conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
   else
     match split_asterisk_prefixed cmt with
     | [""] -> str "(* *)"
@@ -495,7 +495,8 @@ let fmt_cmt conf cmt =
                 | _, Some _ -> str line $ fmt "@,*" ) )
 
 (** Find, remove, and format comments for loc. *)
-let fmt_cmts t conf ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
+let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
+    tbl loc =
   let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
@@ -507,8 +508,8 @@ let fmt_cmts t conf ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
       let groups =
         List.group cmts ~break:(fun (_, a) (_, b) ->
             not
-              ( Location.is_single_line a conf.Conf.margin
-              && Location.is_single_line b conf.Conf.margin
+              ( Location.is_single_line a conf.margin
+              && Location.is_single_line b conf.margin
               && line_dist a b = 1
               && Location.compare_start_col a b = 0
               && Location.compare_end_col a b = 0 ) )
