@@ -16,8 +16,6 @@
 # The arguments are the names of the tests to update (without the directory),
 #  e.g.:  update_tests.sh comments.ml comments_in_record.ml
 
-set -e
-
 ROOT=$(git rev-parse --show-toplevel)
 EXE="$ROOT"/_build/dev/src/ocamlformat.exe
 OLD_DIR=$(pwd)
@@ -51,6 +49,11 @@ function update () {
 
     cd $OLD_DIR
 }
+
+if [[ $1 = "--all" ]]; then
+    ALL=($RUN_DIR/$TEST_DIR/*.ml{,i})
+    set "${ALL[@]##*/}"
+fi
 
 for F in "$@"; do
     update $F
