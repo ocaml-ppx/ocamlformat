@@ -20,8 +20,7 @@ type t =
   { cmts_before: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
-  ; source: Source.t
-  ; conf: Conf.t }
+  ; source: Source.t }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -382,13 +381,12 @@ let dedup_cmts map_ast ast comments =
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
 (** Initialize global state and place comments. *)
-let init map_ast loc_of_ast source conf asts comments_n_docstrings =
+let init map_ast loc_of_ast source asts comments_n_docstrings =
   let t =
     { cmts_before= Hashtbl.Poly.create ()
     ; cmts_after= Hashtbl.Poly.create ()
     ; cmts_within= Hashtbl.Poly.create ()
-    ; source
-    ; conf }
+    ; source }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then
@@ -479,9 +477,9 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
   in
   split_asterisk_prefixed_ 0
 
-let fmt_cmt t cmt =
+let fmt_cmt (conf : Conf.t) cmt =
   let open Fmt in
-  if not t.conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
+  if not conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
   else
     match split_asterisk_prefixed cmt with
     | [""] -> str "(* *)"
@@ -497,7 +495,8 @@ let fmt_cmt t cmt =
                 | _, Some _ -> str line $ fmt "@,*" ) )
 
 (** Find, remove, and format comments for loc. *)
-let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
+let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
+    tbl loc =
   let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
@@ -509,8 +508,8 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
       let groups =
         List.group cmts ~break:(fun (_, a) (_, b) ->
             not
-              ( Location.is_single_line a t.conf.margin
-              && Location.is_single_line b t.conf.margin
+              ( Location.is_single_line a conf.margin
+              && Location.is_single_line b conf.margin
               && line_dist a b = 1
               && Location.compare_start_col a b = 0
               && Location.compare_end_col a b = 0 ) )
@@ -534,7 +533,7 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
             (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
-            | [cmt] -> fmt_cmt t cmt $ maybe_newline ~next cmt
+            | [cmt] -> fmt_cmt conf cmt $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
                     wrap "(*" "*)" (str (fst cmt)) )
@@ -545,30 +544,30 @@ let fmt_cmts t ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol) tbl loc =
                   (fmt_or_k adj_cmt adj eol)
                   (Option.call ~f:epi) ) )
 
-let fmt_before t ?pro ?(epi = Fmt.break_unless_newline 1 0) ?eol ?adj =
-  fmt_cmts t t.cmts_before ?pro ~epi ?eol ?adj
+let fmt_before t conf ?pro ?(epi = Fmt.break_unless_newline 1 0) ?eol ?adj =
+  fmt_cmts t conf t.cmts_before ?pro ~epi ?eol ?adj
 
-let fmt_after t ?(pro = Fmt.break_unless_newline 1 0) ?epi =
-  let within = fmt_cmts t t.cmts_within ~pro ?epi in
-  let after = fmt_cmts t t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "") in
+let fmt_after t conf ?(pro = Fmt.break_unless_newline 1 0) ?epi =
+  let within = fmt_cmts t conf t.cmts_within ~pro ?epi in
+  let after = fmt_cmts t conf t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "") in
   fun loc -> within loc $ after loc
 
-let fmt_within t ?(pro = Fmt.break_unless_newline 1 0)
+let fmt_within t conf ?(pro = Fmt.break_unless_newline 1 0)
     ?(epi = Fmt.break_unless_newline 1 0) =
-  fmt_cmts t t.cmts_within ~pro ~epi ~eol:(Fmt.fmt "")
+  fmt_cmts t conf t.cmts_within ~pro ~epi ~eol:(Fmt.fmt "")
 
-let fmt t ?pro ?epi ?eol ?adj loc =
+let fmt t conf ?pro ?epi ?eol ?adj loc =
   (* remove the before comments from the map first *)
-  let before = fmt_before t ?pro ?epi ?eol ?adj loc in
+  let before = fmt_before t conf ?pro ?epi ?eol ?adj loc in
   (* remove the within comments from the map by accepting the continuation *)
   fun k ->
     (* delay the after comments until the within comments have been removed *)
-    let after = fmt_after t ?pro ?epi loc in
+    let after = fmt_after t conf ?pro ?epi loc in
     let inner = k in
     before $ inner $ after
 
-let fmt_list t ?pro ?epi ?eol locs init =
-  List.fold locs ~init ~f:(fun k loc -> fmt t ?pro ?epi ?eol loc @@ k)
+let fmt_list t conf ?pro ?epi ?eol locs init =
+  List.fold locs ~init ~f:(fun k loc -> fmt t conf ?pro ?epi ?eol loc @@ k)
 
 let drop_inside t loc =
   let clear tbl =
