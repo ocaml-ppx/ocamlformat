@@ -32,6 +32,20 @@ end = struct
   type t
 end
 
+(** @inline *)
+module rec A : sig
+  type t
+end = struct
+  type t
+end
+
+(** @author B *)
+and B : sig
+  type t
+end = struct
+  type t
+end
+
 [@@@ocamlformat "doc-tagonly-fit"]
 
 open Module (** @deprecated  *)
@@ -59,3 +73,15 @@ module A : sig
 end = struct
   type t
 end (** @inline *)
+
+module rec A : sig
+  type t
+end = struct
+  type t
+end (** @inline *)
+
+and B : sig
+  type t
+end = struct
+  type t
+end (** @author B *)
