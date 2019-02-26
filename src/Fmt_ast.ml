@@ -336,45 +336,50 @@ let wrap_record c =
 
 let doc_atrs = Ast.doc_atrs
 
+let _parse_docstring c str_cmt =
+  if not c.conf.parse_docstrings then Error ()
+  else
+    match Octavius.parse (Lexing.from_string str_cmt) with
+    | Error _ -> Error ()
+    | Ok parsed as ok ->
+        if Conf.debug then (
+          Octavius.print Caml.Format.str_formatter parsed ;
+          Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
+        ok
+
+let _fmt_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
+  let space_i i =
+    let is_space = function
+      | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> true
+      | _ -> false
+    in
+    0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
+  in
+  let doc =
+    match parsed with
+    | Error () ->
+        if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
+    | Ok parsed ->
+        fmt_if (space_i 0) " "
+        $ Fmt_odoc.fmt parsed
+        $ fmt_if (space_i (String.length str_cmt - 1)) " "
+  in
+  Cmts.fmt c loc
+  @@ vbox_if (Option.is_none pro) 0
+       ( Option.call ~f:pro $ fmt "(**" $ doc $ fmt "*)"
+       $ fmt_if need_break "\n"
+       $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi) )
+
 let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
       let need_break =
-        (not standalone)
-        &&
         match (next, floating) with
-        | None, true -> true
-        | Some (_, true), true -> false
-        | Some (_, false), true -> true
-        | _, false -> false
+        | (None | Some (_, false)), true -> not standalone
+        | _ -> false
       in
-      let try_parse str_cmt =
-        if not c.conf.parse_docstrings then
-          (if c.conf.wrap_comments then fill_text else str) str_cmt
-        else
-          match Octavius.parse (Lexing.from_string str_cmt) with
-          | Error _ ->
-              (if c.conf.wrap_comments then fill_text else str) str_cmt
-          | Ok parsed ->
-              if Conf.debug then (
-                Octavius.print Caml.Format.str_formatter parsed ;
-                Caml.Format.eprintf "%s%!"
-                  (Caml.Format.flush_str_formatter ()) ) ;
-              let space_i i =
-                let spaces = ['\t'; '\n'; '\011'; '\012'; '\r'; ' '] in
-                let is_space = List.mem ~equal:Char.equal spaces in
-                0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
-              in
-              fmt_if (space_i 0) " "
-              $ Fmt_odoc.fmt parsed
-              $ fmt_if (space_i (String.length str_cmt - 1)) " "
-      in
-      Cmts.fmt c loc
-      @@ vbox_if (Option.is_none pro) 0
-           ( Option.call ~f:pro $ fmt "(**" $ try_parse txt $ fmt "*)"
-           $ fmt_if need_break "\n"
-           $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi)
-           ) )
+      _fmt_docstring c ~need_break ~loc ?next ?pro ?epi txt
+        (_parse_docstring c txt) )
 
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
