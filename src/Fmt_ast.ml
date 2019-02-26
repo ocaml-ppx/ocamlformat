@@ -381,8 +381,8 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
       _fmt_docstring c ~need_break ~loc ?next ?pro ?epi txt
         (_parse_docstring c txt) )
 
-let conf_tag_only = true
-
+(** Handle the doc-tagonly-fit option: Fits tag-only comments on the same
+    line *)
 let fmt_docstring_around c doc k =
   let contains_text = function Ok ([], _) -> false | _ -> true in
   let doc = Option.value ~default:[] doc in
@@ -395,8 +395,8 @@ let fmt_docstring_around c doc k =
     )
   in
   let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
-  if (not conf_tag_only) || List.exists ~f:(fun (ct, _) -> ct) doc then
-    fmted ~epi:(fmt "@,") () $ k
+  if (not c.conf.doc_tagonly_fit) || List.exists ~f:(fun (ct, _) -> ct) doc
+  then fmted ~epi:(fmt "@,") () $ k
   else k $ fmted ~pro:(fmt " ") ()
 
 let fmt_extension_suffix c ext =

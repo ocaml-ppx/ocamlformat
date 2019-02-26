@@ -92,6 +92,9 @@ OPTIONS (CODE FORMATTING STYLE)
            Add PADDING spaces before doc comments in type declarations. The
            default value is 2.
 
+       --doc-tagonly-fit
+           Fit doc comments with only tags on the same line.
+
        --escape-chars={preserve|decimal|hexadecimal}
            Escape encoding for character literals. preserve escapes ASCII
            control codes but leaves the upper 128 characters unchanged.
