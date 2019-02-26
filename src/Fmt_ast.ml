@@ -381,6 +381,24 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
       _fmt_docstring c ~need_break ~loc ?next ?pro ?epi txt
         (_parse_docstring c txt) )
 
+let conf_tag_only = true
+
+let fmt_docstring_around c doc k =
+  let contains_text = function Ok ([], _) -> false | _ -> true in
+  let doc = Option.value ~default:[] doc in
+  let doc =
+    List.map doc ~f:(fun ({txt; loc}, _) ->
+        let parsed = _parse_docstring c txt in
+        ( contains_text parsed
+        , fun ?epi ?pro () ->
+            _fmt_docstring c ~need_break:false ~loc ?epi ?pro txt parsed )
+    )
+  in
+  let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
+  if (not conf_tag_only) || List.exists ~f:(fun (ct, _) -> ct) doc then
+    fmted ~epi:(fmt "@,") () $ k
+  else k $ fmted ~pro:(fmt " ") ()
+
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
 
@@ -3294,12 +3312,12 @@ and fmt_open_description c
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs popen_attributes in
-  fmt_docstring c ~epi:(fmt "@,") doc
-  $ fmt "open"
-  $ fmt_if Poly.(popen_override = Override) "!"
-  $ fmt " "
-  $ fmt_longident_loc c popen_lid
-  $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
+  fmt_docstring_around c doc
+    ( fmt "open"
+    $ fmt_if Poly.(popen_override = Override) "!"
+    $ fmt " "
+    $ fmt_longident_loc c popen_lid
+    $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
