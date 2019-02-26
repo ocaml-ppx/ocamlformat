@@ -3236,9 +3236,9 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
       ; epi= epi_b } =
     Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
   in
-  hvbox 0
-    ( fmt_docstring c ~epi:(fmt "@\n") doc
-    $ opn_b
+  Fn.compose (hvbox 0)
+    (fmt_docstring_around c doc)
+    ( opn_b
     $ (if Option.is_some epi_t then open_hovbox else open_hvbox) 0
     $ opn_t
     $ fmt_if_k (Option.is_some pro_t) (open_hvbox 0)
@@ -3694,9 +3694,9 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       in
       opn
       $ fmt_docstring_around c doc
-      ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
-        $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
-        $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
+          ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
+          $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
+          $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open open_descr -> fmt_open_description c open_descr

@@ -22,6 +22,16 @@ end
 (** @inline *)
 include (Module : Type)
 
+(** @inline *)
+module A = B
+
+(** @inline *)
+module A : sig
+  type t
+end = struct
+  type t
+end
+
 [@@@ocamlformat "doc-tagonly-fit"]
 
 open Module (** @deprecated  *)
@@ -41,3 +51,11 @@ include struct
 end (** @inline *)
 
 include (Module : Type) (** @inline *)
+
+module A = B (** @inline *)
+
+module A : sig
+  type t
+end = struct
+  type t
+end (** @inline *)
