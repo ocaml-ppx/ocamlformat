@@ -46,6 +46,14 @@ end = struct
   type t
 end
 
+(** @deprecated abc *)
+module type A = B
+
+(** @deprecated abc *)
+module type A = sig
+  type t
+end
+
 [@@@ocamlformat "doc-tagonly-fit"]
 
 open Module (** @deprecated  *)
@@ -85,3 +93,9 @@ and B : sig
 end = struct
   type t
 end (** @author B *)
+
+module type A = B (** @deprecated abc *)
+
+module type A = sig
+  type t
+end (** @deprecated abc *)
