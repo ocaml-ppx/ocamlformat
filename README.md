@@ -121,8 +121,8 @@ This feature is often the behavior you can expect from OCamlFormat when it is di
 - optionally add the following to `.emacs` to bind `C-M-<tab>` to the ocamlformat command and install a hook to run ocamlformat when saving:
 ```
 (add-hook 'tuareg-mode-hook (lambda ()
-  (define-key merlin-mode-map (kbd "C-M-<tab>") 'ocamlformat)
-  (add-hook 'before-save-hook 'ocamlformat-before-save)))
+  (define-key tuareg-mode-map (kbd "C-M-<tab>") #'ocamlformat)
+  (add-hook 'before-save-hook #'ocamlformat-before-save)))
 ```
 
 To pass the option `--disable-outside-detected-project` (or `--disable`) to OCamlFormat:
