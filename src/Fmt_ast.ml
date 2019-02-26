@@ -3693,8 +3693,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
       opn
-      $ fmt_docstring c ~epi:(fmt "@\n") doc
-      $ ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
+      $ fmt_docstring_around c doc
+      ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
         $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
         $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->
