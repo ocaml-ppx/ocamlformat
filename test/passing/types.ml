@@ -92,8 +92,7 @@ type ( 'context
       , 'captured_types
       , 'markers_in
       , 'markers_out
-      , 'list_constraint )
-      templ_matcher =
+      , 'list_constraint ) templ_matcher =
   { on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in
