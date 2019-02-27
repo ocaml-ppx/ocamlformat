@@ -2666,12 +2666,12 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
   in
   update_config_maybe_disabled c ptype_loc ptype_attributes
   @@ fun c ->
-  let break_before_manifest_kind =
-    match ptype_kind with
-    | Ptype_abstract -> fmt "@ "
-    | Ptype_variant _ | Ptype_record _ | Ptype_open -> fmt "@;<1 4>"
-  in
   let fmt_manifest ~priv manifest =
+    let break_before_manifest_kind =
+      match ptype_kind with
+      | Ptype_abstract -> fmt "@ "
+      | Ptype_variant _ | Ptype_record _ | Ptype_open -> fmt "@;<1 4>"
+    in
     opt manifest (fun typ ->
         fmt " " $ str eq $ fmt_private_flag priv
         $ break_before_manifest_kind
