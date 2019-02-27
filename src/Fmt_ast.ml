@@ -2632,13 +2632,12 @@ and fmt_value_description c ctx vd =
 and fmt_tydcl_params c ctx params =
   fmt_if_k
     (not (List.is_empty params))
-    (hvbox 0
-       ( wrap_fits_breaks_if ~space:false c.conf
-           (List.length params > 1)
-           "(" ")"
-           (list params (comma_sep c) (fun (ty, vc) ->
-                fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty) ))
-       $ fmt " " ))
+    ( wrap_fits_breaks_if ~space:false c.conf
+        (List.length params > 1)
+        "(" ")"
+        (list params (comma_sep c) (fun (ty, vc) ->
+             fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty) ))
+    $ fmt " " )
 
 and fmt_class_params c ctx ~epi params =
   fmt_if_k
@@ -2744,14 +2743,16 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                     $ fmt_core_type c (sub_typ ~ctx t2) )) )) )
   in
   let doc, atrs = doc_atrs ptype_attributes in
+  let maybe_box = if List.is_empty ptype_params then Fn.id else hvbox 0 in
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
        ( fmt_docstring c ~epi:(fmt "@\n") doc
        $ hvbox 0
            ( hvbox 2
                ( open_hvbox 2 $ str pre
-               $ fmt_tydcl_params c ctx ptype_params
-               $ (match fmt_name with Some pp -> pp | None -> str txt)
+               $ maybe_box
+                   ( fmt_tydcl_params c ctx ptype_params
+                   $ match fmt_name with Some pp -> pp | None -> str txt )
                $ fmt_manifest_kind ptype_manifest ptype_private ptype_kind
                $ fmt_cstrs ptype_cstrs )
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ) )
@@ -2844,11 +2845,12 @@ and fmt_type_extension c ctx te =
   in
   let c = update_config c ptyext_attributes in
   let doc, atrs = doc_atrs ptyext_attributes in
+  let maybe_box = if List.is_empty ptyext_params then Fn.id else hvbox 0 in
   hvbox 2
     ( fmt_docstring c ~epi:(fmt "@,") doc
     $ hvbox 2
         ( fmt "type "
-        $ fmt_tydcl_params c ctx ptyext_params
+        $ maybe_box (fmt_tydcl_params c ctx ptyext_params)
         $ fmt_longident_loc c lid $ fmt " +="
         $ fmt_private_flag ptyext_private
         $ fmt "@ "
