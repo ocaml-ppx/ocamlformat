@@ -545,11 +545,11 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         )
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
-      fmt_core_type c (sub_typ ~ctx t1) $ fmt " " $ fmt_longident_loc c lid
+      fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_constr (lid, t1N) ->
       wrap_fits_breaks c.conf "(" ")"
         (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
-      $ fmt " " $ fmt_longident_loc c lid
+      $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
   | Ptyp_package pty ->
       hovbox 0 (fmt "module@ " $ fmt_package_type c ctx pty)
