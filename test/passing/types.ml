@@ -78,3 +78,23 @@ type ( 'context
   ; on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in }
+
+type ( 'context
+     , 'f_in
+     , 'f_out
+     , 'captured_types
+     , 'markers_in
+     , 'markers_out
+     , 'list_constraint ) templ_matcher =
+      ( 'context
+      , 'f_in
+      , 'f_out
+      , 'captured_types
+      , 'markers_in
+      , 'markers_out
+      , 'list_constraint )
+      templ_matcher =
+  { on_objc_cpp: 'context -> 'f_in
+  ; on_objc_cpp: 'context -> 'f_in
+  ; on_objc_cpp: 'context -> 'f_in
+  ; on_objc_cpp: 'context -> 'f_in }
