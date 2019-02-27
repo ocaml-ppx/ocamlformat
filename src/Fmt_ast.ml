@@ -383,7 +383,7 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
 
 (** Handle the doc-tagonly-fit option: Fits tag-only comments on the same
     line *)
-let fmt_docstring_around c doc k =
+let fmt_docstring_around ~loc c doc k =
   let contains_text = function Ok ([], _) -> false | _ -> true in
   let doc = Option.value ~default:[] doc in
   let doc =
@@ -395,7 +395,10 @@ let fmt_docstring_around c doc k =
     )
   in
   let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
-  if (not c.conf.doc_tagonly_fit) || List.exists ~f:(fun (ct, _) -> ct) doc
+  if
+    (not c.conf.doc_tagonly_fit)
+    || (not (Location.is_single_line loc c.conf.margin))
+    || List.exists ~f:(fun (ct, _) -> ct) doc
   then fmted ~epi:(fmt "@,") () $ k
   else k $ fmted ~pro:(fmt " ") ()
 
@@ -3227,17 +3230,19 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
               $ Option.call ~f:blk.pro )
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
-  let { opn= opn_b
-      ; pro= pro_b
-      ; psp= psp_b
-      ; bdy= bdy_b
-      ; cls= cls_b
-      ; esp= esp_b
-      ; epi= epi_b } =
-    Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
+  let ( { opn= opn_b
+        ; pro= pro_b
+        ; psp= psp_b
+        ; bdy= bdy_b
+        ; cls= cls_b
+        ; esp= esp_b
+        ; epi= epi_b }
+      , loc ) =
+    Option.value_map xbody ~default:(empty, Location.none) ~f:(fun xbody ->
+        (fmt_module_expr c xbody, xbody.ast.pmod_loc) )
   in
   Fn.compose (hvbox 0)
-    (fmt_docstring_around c doc)
+    (fmt_docstring_around ~loc c doc)
     ( opn_b
     $ (if Option.is_some epi_t then open_hovbox else open_hvbox) 0
     $ opn_t
@@ -3312,7 +3317,7 @@ and fmt_open_description c
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs popen_attributes in
-  fmt_docstring_around c doc
+  fmt_docstring_around ~loc:popen_loc c doc
     ( fmt "open"
     $ fmt_if Poly.(popen_override = Override) "!"
     $ fmt " "
@@ -3693,7 +3698,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
       opn
-      $ fmt_docstring_around c doc
+      $ fmt_docstring_around ~loc:pincl_loc c doc
           ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
           $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
           $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )

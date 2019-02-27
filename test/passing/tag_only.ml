@@ -68,31 +68,35 @@ open Module (** @inline *)
 
 include Abc (** @inline *)
 
+(** @inline *)
 include struct
   type t
-end (** @inline *)
+end
 
 include (Module : Type) (** @inline *)
 
 module A = B (** @inline *)
 
+(** @inline *)
 module A : sig
   type t
 end = struct
   type t
-end (** @inline *)
+end
 
+(** @inline *)
 module rec A : sig
   type t
 end = struct
   type t
-end (** @inline *)
+end
 
+(** @author B *)
 and B : sig
   type t
 end = struct
   type t
-end (** @author B *)
+end
 
 module type A = B (** @deprecated abc *)
 
