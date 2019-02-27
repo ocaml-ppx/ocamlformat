@@ -2637,7 +2637,7 @@ and fmt_tydcl_params c ctx params =
         "(" ")"
         (list params (comma_sep c) (fun (ty, vc) ->
              fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty) ))
-    $ fmt " " )
+    $ fmt "@ " )
 
 and fmt_class_params c ctx ~epi params =
   fmt_if_k
