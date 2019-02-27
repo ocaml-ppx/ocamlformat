@@ -66,3 +66,15 @@ type voting_period =
   (* foooooooooo *)
   | Proposal
   | Testing_vote  (** fooooooooooo *)
+
+type ( 'context
+     , 'f_in
+     , 'f_out
+     , 'captured_types
+     , 'markers_in
+     , 'markers_out
+     , 'list_constraint ) templ_matcher =
+  { on_objc_cpp: 'context -> 'f_in
+  ; on_objc_cpp: 'context -> 'f_in
+  ; on_objc_cpp: 'context -> 'f_in
+  ; on_objc_cpp: 'context -> 'f_in }
