@@ -124,6 +124,14 @@ let fmt_expressions c width sub_exp exprs fmt fmt_expr =
       let fmt_grp exprs = hovbox (-2) (list exprs (semic_sep c) fmt_expr) in
       list grps fmt fmt_grp
 
+let wrap_fun_decl_args ~stmt_loc c k =
+  match c.conf.break_fun_decl with
+  | `Wrap -> k
+  | `Fit_or_vertical when Location.is_single_line stmt_loc c.conf.margin ->
+      hvbox 0 k
+  | `Fit_or_vertical -> vbox 0 k
+  | `Smart -> hvbox 0 k
+
 let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
@@ -2380,9 +2388,8 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
           $ ( hovbox 4
                 ( fmt "fun "
                 $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(fmt " ")
-                $ hvbox_if
-                    (not c.conf.wrap_fun_args)
-                    0 (fmt_fun_args c xargs)
+                $ wrap_fun_decl_args ~stmt_loc:pcl_loc c
+                    (fmt_fun_args c xargs)
                 $ fmt "@ " )
             $ fmt "->" )
           $ close_box $ fmt "@ "
@@ -2481,7 +2488,7 @@ and fmt_class_field c ctx (cf : class_field) =
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
           ~after:e.ast.pexp_loc ;
         ( [ fmt_if (not (List.is_empty xargs)) "@;<1 2>"
-            $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
+            $ wrap_fun_decl_args ~stmt_loc:pcf_loc c (fmt_fun_args c xargs)
           ; opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
           ]
         , fmt "@;<1 2>="
@@ -3887,7 +3894,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
             $ fmt " " $ fmt_pattern c xpat
             $ fmt_if (not (List.is_empty xargs)) "@ "
-            $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
+            $ wrap_fun_decl_args ~stmt_loc:pvb_loc c (fmt_fun_args c xargs)
             $ Option.call ~f:fmt_cstr )
         $ fmt "@;<1 2>=" )
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc
