@@ -106,11 +106,13 @@ end
 
 module type A = B (** @deprecated abc *)
 
+(** @deprecated abc *)
 module type A = sig
   type t
-end (** @deprecated abc *)
+end
 
+(** @open *)
 module A : sig
   type t
 end =
-  B (** @open *)
+  B

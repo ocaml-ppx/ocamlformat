@@ -3230,16 +3230,28 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
               $ Option.call ~f:blk.pro )
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
-  let ( { opn= opn_b
-        ; pro= pro_b
-        ; psp= psp_b
-        ; bdy= bdy_b
-        ; cls= cls_b
-        ; esp= esp_b
-        ; epi= epi_b }
-      , loc ) =
-    Option.value_map xbody ~default:(empty, Location.none) ~f:(fun xbody ->
-        (fmt_module_expr c xbody, xbody.ast.pmod_loc) )
+  let { opn= opn_b
+      ; pro= pro_b
+      ; psp= psp_b
+      ; bdy= bdy_b
+      ; cls= cls_b
+      ; esp= esp_b
+      ; epi= epi_b } =
+    Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
+  in
+  let loc =
+    match
+      ( Option.map ~f:(fun t -> t.ast.pmty_loc) xmty
+      , Option.map ~f:(fun b -> b.ast.pmod_loc) xbody )
+    with
+    | Some l, None | None, Some l -> l
+    | Some a, Some b ->
+        let open Location in
+        let {loc_start; _}, {loc_end; _} =
+          if compare_start a b > 0 then (b, a) else (a, b)
+        in
+        {loc_start; loc_end; loc_ghost= true}
+    | None, None -> Location.none
   in
   Fn.compose (hvbox 0)
     (fmt_docstring_around ~loc c doc)
