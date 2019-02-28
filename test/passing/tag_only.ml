@@ -54,6 +54,12 @@ module type A = sig
   type t
 end
 
+(** @open *)
+module A : sig
+  type t
+end =
+  B
+
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
 open Module (** @deprecated  *)
@@ -103,3 +109,8 @@ module type A = B (** @deprecated abc *)
 module type A = sig
   type t
 end (** @deprecated abc *)
+
+module A : sig
+  type t
+end =
+  B (** @open *)
