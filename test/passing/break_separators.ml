@@ -158,13 +158,15 @@ class
   k
 
 type ( 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
-       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbb ) a =
+       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbb )
+     a =
   ( 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
     'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb )
   e
 
 type ( 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
-       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbb ) a =
+       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbb )
+     a =
   ('aaaaaaaaa, 'bbbbbbbbbbbb) e
 
 let ( xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,
