@@ -94,3 +94,28 @@ let _ = f [%ext function x -> x] x
 let _ = f ([%ext e] [@attr]) x
 
 let _ = a ;%ext b ; [%ext (a ; b)]
+
+let _ =
+  try%lwt Lwt.return 2
+  with _ -> assert false
+
+let _ =
+  (* foooooooooooo *)
+  try%lwt
+    (* fooooooooooo *)
+    Lwt.return 2
+  with _ -> assert false
+
+let _ =
+  try%lwt
+    let a = 3 in
+    Lwt.return a
+  with _ -> assert false
+
+let _ =
+  (* foooooooooooo *)
+  try%lwt
+    (* fooooooooooo *)
+    let a = 3 in
+    Lwt.return a
+  with _ -> assert false

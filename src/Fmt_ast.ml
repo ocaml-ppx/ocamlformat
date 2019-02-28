@@ -1862,8 +1862,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
-                   $ hvbox 0
-                       (fmt "@;<1 -1>" $ fmt_expression c (sub_exp ~ctx e0))
+                   $ fmt "@;<1 2>"
+                   $ fmt_expression c (sub_exp ~ctx e0)
                    $ fmt "@," )
                $ break_unless_newline 1 (-2)
                $ hvbox 0
