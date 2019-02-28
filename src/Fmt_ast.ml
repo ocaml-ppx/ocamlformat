@@ -336,45 +336,71 @@ let wrap_record c =
 
 let doc_atrs = Ast.doc_atrs
 
+let _parse_docstring c str_cmt =
+  if not c.conf.parse_docstrings then Error ()
+  else
+    match Octavius.parse (Lexing.from_string str_cmt) with
+    | Error _ -> Error ()
+    | Ok parsed as ok ->
+        if Conf.debug then (
+          Octavius.print Caml.Format.str_formatter parsed ;
+          Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
+        ok
+
+let _fmt_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
+  let space_i i =
+    let is_space = function
+      | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> true
+      | _ -> false
+    in
+    0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
+  in
+  let doc =
+    match parsed with
+    | Error () ->
+        if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
+    | Ok parsed ->
+        fmt_if (space_i 0) " "
+        $ Fmt_odoc.fmt parsed
+        $ fmt_if (space_i (String.length str_cmt - 1)) " "
+  in
+  Cmts.fmt c loc
+  @@ vbox_if (Option.is_none pro) 0
+       ( Option.call ~f:pro $ fmt "(**" $ doc $ fmt "*)"
+       $ fmt_if need_break "\n"
+       $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi) )
+
 let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
       let need_break =
-        (not standalone)
-        &&
         match (next, floating) with
-        | None, true -> true
-        | Some (_, true), true -> false
-        | Some (_, false), true -> true
-        | _, false -> false
+        | (None | Some (_, false)), true -> not standalone
+        | _ -> false
       in
-      let try_parse str_cmt =
-        if not c.conf.parse_docstrings then
-          (if c.conf.wrap_comments then fill_text else str) str_cmt
-        else
-          match Octavius.parse (Lexing.from_string str_cmt) with
-          | Error _ ->
-              (if c.conf.wrap_comments then fill_text else str) str_cmt
-          | Ok parsed ->
-              if Conf.debug then (
-                Octavius.print Caml.Format.str_formatter parsed ;
-                Caml.Format.eprintf "%s%!"
-                  (Caml.Format.flush_str_formatter ()) ) ;
-              let space_i i =
-                let spaces = ['\t'; '\n'; '\011'; '\012'; '\r'; ' '] in
-                let is_space = List.mem ~equal:Char.equal spaces in
-                0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
-              in
-              fmt_if (space_i 0) " "
-              $ Fmt_odoc.fmt parsed
-              $ fmt_if (space_i (String.length str_cmt - 1)) " "
-      in
-      Cmts.fmt c loc
-      @@ vbox_if (Option.is_none pro) 0
-           ( Option.call ~f:pro $ fmt "(**" $ try_parse txt $ fmt "*)"
-           $ fmt_if need_break "\n"
-           $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi)
-           ) )
+      _fmt_docstring c ~need_break ~loc ?next ?pro ?epi txt
+        (_parse_docstring c txt) )
+
+(** Handle the doc-comments-tag-only option: Fits tag-only comments on the
+    same line *)
+let fmt_docstring_around ~loc c doc k =
+  let contains_text = function Ok ([], _) -> false | _ -> true in
+  let doc = Option.value ~default:[] doc in
+  let doc =
+    List.map doc ~f:(fun ({txt; loc}, _) ->
+        let parsed = _parse_docstring c txt in
+        ( contains_text parsed
+        , fun ?epi ?pro () ->
+            _fmt_docstring c ~need_break:false ~loc ?epi ?pro txt parsed )
+    )
+  in
+  let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
+  if
+    Poly.(c.conf.doc_comments_tag_only = `Default)
+    || (not (Location.is_single_line loc c.conf.margin))
+    || List.exists ~f:(fun (ct, _) -> ct) doc
+  then fmted ~epi:(fmt "@,") () $ k
+  else hvbox 0 (k $ fmted ~pro:(fmt "@ ") ())
 
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
@@ -3109,11 +3135,11 @@ and fmt_signature_item c {ast= si} =
         | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       hvbox 0
-        ( fmt_docstring c ~epi:(fmt "@,") doc
-        $ opn
-        $ hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy)
-        $ cls $ esp $ Option.call ~f:epi
-        $ fmt_attributes c ~key:"@@" atrs )
+        (fmt_docstring_around ~loc:pincl_loc c doc
+           ( opn
+           $ hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy)
+           $ cls $ esp $ Option.call ~f:epi
+           $ fmt_attributes c ~key:"@@" atrs ))
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
@@ -3229,9 +3255,23 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
       ; epi= epi_b } =
     Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
   in
-  hvbox 0
-    ( fmt_docstring c ~epi:(fmt "@\n") doc
-    $ opn_b
+  let loc =
+    match
+      ( Option.map ~f:(fun t -> t.ast.pmty_loc) xmty
+      , Option.map ~f:(fun b -> b.ast.pmod_loc) xbody )
+    with
+    | Some l, None | None, Some l -> l
+    | Some a, Some b ->
+        let open Location in
+        let {loc_start; _}, {loc_end; _} =
+          if compare_start a b > 0 then (b, a) else (a, b)
+        in
+        {loc_start; loc_end; loc_ghost= true}
+    | None, None -> Location.none
+  in
+  Fn.compose (hvbox 0)
+    (fmt_docstring_around ~loc c doc)
+    ( opn_b
     $ (if Option.is_some epi_t then open_hovbox else open_hvbox) 0
     $ opn_t
     $ fmt_if_k (Option.is_some pro_t) (open_hvbox 0)
@@ -3305,12 +3345,12 @@ and fmt_open_description c
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs popen_attributes in
-  fmt_docstring c ~epi:(fmt "@,") doc
-  $ fmt "open"
-  $ fmt_if Poly.(popen_override = Override) "!"
-  $ fmt " "
-  $ fmt_longident_loc c popen_lid
-  $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
+  fmt_docstring_around ~loc:popen_loc c doc
+    ( fmt "open"
+    $ fmt_if Poly.(popen_override = Override) "!"
+    $ fmt " "
+    $ fmt_longident_loc c popen_lid
+    $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
@@ -3685,9 +3725,9 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
-      opn
-      $ fmt_docstring c ~epi:(fmt "@\n") doc
-      $ ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
+      fmt_docstring_around ~loc:pincl_loc c doc
+        ( opn
+        $ hvbox 2 (fmt "include " $ Option.call ~f:pro)
         $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
         $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->
