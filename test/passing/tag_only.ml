@@ -126,11 +126,11 @@ module A : sig
 end =
   B
 
-open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame (** 
-@deprecated  *)
+open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+(** @deprecated  *)
 
-include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame (** 
-@deprecated  *)
+include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+(** @deprecated  *)
 
-module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame (** 
-@deprecated  *)
+module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+(** @deprecated  *)

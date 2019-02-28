@@ -400,7 +400,7 @@ let fmt_docstring_around ~loc c doc k =
     || (not (Location.is_single_line loc c.conf.margin))
     || List.exists ~f:(fun (ct, _) -> ct) doc
   then fmted ~epi:(fmt "@,") () $ k
-  else k $ fmted ~pro:(fmt " ") ()
+  else hvbox 0 (k $ fmted ~pro:(fmt "@ ") ())
 
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
@@ -3709,11 +3709,11 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
-      opn
-      $ fmt_docstring_around ~loc:pincl_loc c doc
-          ( hvbox 2 (fmt "include " $ Option.call ~f:pro)
-          $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
-          $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
+      fmt_docstring_around ~loc:pincl_loc c doc
+        ( opn
+        $ hvbox 2 (fmt "include " $ Option.call ~f:pro)
+        $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
+        $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open open_descr -> fmt_open_description c open_descr
