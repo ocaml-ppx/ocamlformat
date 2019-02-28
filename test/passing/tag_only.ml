@@ -60,6 +60,15 @@ module A : sig
 end =
   B
 
+(** @deprecated  *)
+open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+
+(** @deprecated  *)
+include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+
+(** @deprecated  *)
+module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
 open Module (** @deprecated  *)
@@ -116,3 +125,12 @@ module A : sig
   type t
 end =
   B
+
+open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame (** 
+@deprecated  *)
+
+include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame (** 
+@deprecated  *)
+
+module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame (** 
+@deprecated  *)
