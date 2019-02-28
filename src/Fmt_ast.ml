@@ -124,6 +124,7 @@ let fmt_expressions c width sub_exp exprs fmt fmt_expr =
       let fmt_grp exprs = hovbox (-2) (list exprs (semic_sep c) fmt_expr) in
       list grps fmt fmt_grp
 
+(** Handle the `break-fun-decl` option *)
 let wrap_fun_decl_args ~stmt_loc c k =
   match c.conf.break_fun_decl with
   | `Wrap -> k

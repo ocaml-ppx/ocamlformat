@@ -1,6 +1,19 @@
-[@@@ocamlformat "wrap-fun-args=false"]
-
 [@@@ocamlformat "break-fun-decl=wrap"]
+
+class t =
+  object
+    method meth aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
+        ddddddddddddddddddddd eeeeeeeeeeeeeee =
+      body
+  end
+
+let func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
+    ddddddddddddddddddddd eeeeeeeeeeeeeee =
+  body
+
+let rec func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
+    ddddddddddddddddddddd eeeeeeeeeeeeeee =
+  body
 
 let ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb = g
 
@@ -30,6 +43,33 @@ let ffffffffffffffffffff :
   g
 
 [@@@ocamlformat "break-fun-decl=fit_or_vertical"]
+
+class t =
+  object
+    method meth
+          aaaaaaaaaaa
+          bbbbbbbbbbbbbb
+          ccccccccccccccccccc
+          ddddddddddddddddddddd
+          eeeeeeeeeeeeeee =
+      body
+  end
+
+let func
+    aaaaaaaaaaa
+    bbbbbbbbbbbbbb
+    ccccccccccccccccccc
+    ddddddddddddddddddddd
+    eeeeeeeeeeeeeee =
+  body
+
+let rec func
+    aaaaaaaaaaa
+    bbbbbbbbbbbbbb
+    ccccccccccccccccccc
+    ddddddddddddddddddddd
+    eeeeeeeeeeeeeee =
+  body
 
 let ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb = g
 
@@ -64,6 +104,33 @@ let ffffffffffffffffffff :
   g
 
 [@@@ocamlformat "break-fun-decl=smart"]
+
+class t =
+  object
+    method meth
+          aaaaaaaaaaa
+          bbbbbbbbbbbbbb
+          ccccccccccccccccccc
+          ddddddddddddddddddddd
+          eeeeeeeeeeeeeee =
+      body
+  end
+
+let func
+    aaaaaaaaaaa
+    bbbbbbbbbbbbbb
+    ccccccccccccccccccc
+    ddddddddddddddddddddd
+    eeeeeeeeeeeeeee =
+  body
+
+let rec func
+    aaaaaaaaaaa
+    bbbbbbbbbbbbbb
+    ccccccccccccccccccc
+    ddddddddddddddddddddd
+    eeeeeeeeeeeeeee =
+  body
 
 let ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb = g
 
