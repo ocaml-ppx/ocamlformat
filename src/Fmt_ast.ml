@@ -3119,11 +3119,11 @@ and fmt_signature_item c {ast= si} =
         | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       hvbox 0
-        ( fmt_docstring c ~epi:(fmt "@,") doc
-        $ opn
-        $ hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy)
-        $ cls $ esp $ Option.call ~f:epi
-        $ fmt_attributes c ~key:"@@" atrs )
+        (fmt_docstring_around ~loc:pincl_loc c doc
+           ( opn
+           $ hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy)
+           $ cls $ esp $ Option.call ~f:epi
+           $ fmt_attributes c ~key:"@@" atrs ))
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)

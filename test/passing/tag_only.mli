@@ -47,11 +47,9 @@ include
     type t
 end
 
-(** @inline *)
-include Type
+include Type (** @inline *)
 
-(** @inline *)
-include module type of Module
+include module type of Module (** @inline *)
 
 module A : B (** @deprecated  *)
 
