@@ -25,7 +25,7 @@ type t =
   ; disable: bool
   ; doc_comments: [`Before | `After]
   ; doc_comments_padding: int
-  ; doc_tagonly_fit: bool
+  ; doc_comments_tag_only: [`Fit | `Default]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; extension_sugar: [`Preserve | `Always]
@@ -667,12 +667,16 @@ module Formatting = struct
       (fun conf x -> {conf with doc_comments_padding= x})
       (fun conf -> conf.doc_comments_padding)
 
-  let doc_tagonly_fit =
-    let doc = "Fit doc comments with only tags on the same line." in
-    let names = ["doc-tagonly-fit"] in
-    C.flag ~names ~default:false ~doc ~section
-      (fun conf x -> {conf with doc_tagonly_fit= x})
-      (fun conf -> conf.doc_tagonly_fit)
+  let doc_comments_tag_only =
+    let doc = "Position of doc comments with only tags." in
+    let names = ["doc-comments-tag-only"] in
+    let all =
+      [ ("default", `Default, "$(b,default) means no special treatment.")
+      ; ("fit", `Fit, "$(b,after) puts doc comments on the same line.") ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with doc_comments_tag_only= x})
+      (fun conf -> conf.doc_comments_tag_only)
 
   let escape_chars =
     let doc = "Escape encoding for character literals." in
@@ -1237,7 +1241,7 @@ let default_profile =
   ; disable= C.default Formatting.disable
   ; doc_comments= C.default Formatting.doc_comments
   ; doc_comments_padding= C.default Formatting.doc_comments_padding
-  ; doc_tagonly_fit= C.default Formatting.doc_tagonly_fit
+  ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
   ; escape_chars= C.default Formatting.escape_chars
   ; escape_strings= C.default Formatting.escape_strings
   ; extension_sugar= C.default Formatting.extension_sugar
@@ -1277,6 +1281,7 @@ let compact_profile =
   ; break_infix= `Wrap
   ; break_sequences= false
   ; break_struct= false
+  ; doc_comments_tag_only= `Fit
   ; field_space= `Tight
   ; if_then_else= `Compact
   ; indicate_nested_or_patterns= true
@@ -1323,7 +1328,7 @@ let janestreet_profile =
   ; disable= false
   ; doc_comments= `Before
   ; doc_comments_padding= 1
-  ; doc_tagonly_fit= true
+  ; doc_comments_tag_only= `Fit
   ; escape_chars= `Preserve
   ; escape_strings= `Preserve
   ; extension_sugar= `Preserve

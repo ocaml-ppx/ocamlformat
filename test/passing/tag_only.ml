@@ -54,7 +54,7 @@ module type A = sig
   type t
 end
 
-[@@@ocamlformat "doc-tagonly-fit"]
+[@@@ocamlformat "doc-comments-tag-only=fit"]
 
 open Module (** @deprecated  *)
 

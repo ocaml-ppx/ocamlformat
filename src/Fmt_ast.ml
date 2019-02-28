@@ -381,8 +381,8 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
       _fmt_docstring c ~need_break ~loc ?next ?pro ?epi txt
         (_parse_docstring c txt) )
 
-(** Handle the doc-tagonly-fit option: Fits tag-only comments on the same
-    line *)
+(** Handle the doc-comments-tag-only option: Fits tag-only comments on the
+    same line *)
 let fmt_docstring_around ~loc c doc k =
   let contains_text = function Ok ([], _) -> false | _ -> true in
   let doc = Option.value ~default:[] doc in
@@ -396,7 +396,7 @@ let fmt_docstring_around ~loc c doc k =
   in
   let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
   if
-    (not c.conf.doc_tagonly_fit)
+    Poly.(c.conf.doc_comments_tag_only = `Default)
     || (not (Location.is_single_line loc c.conf.margin))
     || List.exists ~f:(fun (ct, _) -> ct) doc
   then fmted ~epi:(fmt "@,") () $ k
