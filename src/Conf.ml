@@ -16,6 +16,7 @@ type t =
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool
+  ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After | `After_and_docked]
   ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap]
@@ -554,6 +555,24 @@ module Formatting = struct
       (fun conf x -> {conf with break_infix_before_func= x})
       (fun conf -> conf.break_infix_before_func)
 
+  let break_fun_decl =
+    let doc = "Style for function declarations and types." in
+    let names = ["break-fun-decl"] in
+    let all =
+      [ ("wrap", `Wrap, "$(b,wrap) breaks only if necessary.")
+      ; ( "fit_or_vertical"
+        , `Fit_or_vertical
+        , "$(b,fit_or_vertical) vertically breaks arguments if they do not \
+           fit on a single line." )
+      ; ( "smart"
+        , `Smart
+        , "$(b,smart) is like $(b,fit_or_vertical) but try to fit \
+           arguments on their line if they fit." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_fun_decl= x})
+      (fun conf -> conf.break_fun_decl)
+
   let break_separators =
     let doc =
       "Break before or after separators such as `;` in list or record \
@@ -1016,7 +1035,7 @@ module Formatting = struct
 
   let wrap_fun_args =
     let default = true in
-    let doc = "Style for function call and function definition." in
+    let doc = "Style for function call." in
     let names = ["wrap-fun-args"] in
     C.flag ~default ~names ~doc ~section
       (fun conf wrap_fun_args -> {conf with wrap_fun_args})
@@ -1232,6 +1251,7 @@ let default_profile =
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
   ; break_infix_before_func= C.default Formatting.break_infix_before_func
+  ; break_fun_decl= C.default Formatting.break_fun_decl
   ; break_separators= C.default Formatting.break_separators
   ; break_sequences= C.default Formatting.break_sequences
   ; break_string_literals= C.default Formatting.break_string_literals
@@ -1279,6 +1299,7 @@ let compact_profile =
     break_cases= `Fit
   ; break_collection_expressions= `Wrap
   ; break_infix= `Wrap
+  ; break_fun_decl= `Wrap
   ; break_sequences= false
   ; break_struct= false
   ; doc_comments_tag_only= `Fit
@@ -1299,6 +1320,7 @@ let sparse_profile =
     break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Fit_or_vertical
+  ; break_fun_decl= `Smart
   ; break_sequences= true
   ; break_struct= true
   ; field_space= `Loose
@@ -1319,6 +1341,7 @@ let janestreet_profile =
       default_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
   ; break_infix_before_func= true
+  ; break_fun_decl= `Fit_or_vertical
   ; break_separators= `Before
   ; break_sequences= true
   ; break_string_literals= `Wrap
