@@ -1,26 +1,41 @@
 class t =
   object
-    method meth aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
-        ddddddddddddddddddddd eeeeeeeeeeeeeee =
+    method meth
+          aaaaaaaaaaa
+          bbbbbbbbbbbbbb
+          ccccccccccccccccccc
+          ddddddddddddddddddddd
+          eeeeeeeeeeeeeee =
       body
   end
 
-let func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
-    ddddddddddddddddddddd eeeeeeeeeeeeeee =
+let func
+    aaaaaaaaaaa
+    bbbbbbbbbbbbbb
+    ccccccccccccccccccc
+    ddddddddddddddddddddd
+    eeeeeeeeeeeeeee =
   body
 
-let rec func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
-    ddddddddddddddddddddd eeeeeeeeeeeeeee =
+let rec func
+    aaaaaaaaaaa
+    bbbbbbbbbbbbbb
+    ccccccccccccccccccc
+    ddddddddddddddddddddd
+    eeeeeeeeeeeeeee =
   body
 
 let ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb = g
 
-let ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
-    cccccccccccccccccccccc =
+let ffffffffffffffffffff
+    aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccc =
   g
 
-let ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
-    cccccccccccccccccccccc dddddddddddddddddddddd =
+let ffffffffffffffffffff
+    aaaaaaaaaaaaaaaaaaaaaa
+    bbbbbbbbbbbbbbbbbbbbbb
+    cccccccccccccccccccccc
+    dddddddddddddddddddddd =
   g
 
 class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb = g
