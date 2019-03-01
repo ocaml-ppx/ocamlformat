@@ -3258,7 +3258,7 @@ let make_set (type s) cmp =
     let compare = cmp
   end)
   : Set.S
-    with type elt = s )
+      with type elt = s )
 
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
@@ -3471,9 +3471,9 @@ type ('k, 'd, 'm) map =
 let add (type k d m) (m : (k, d, m) map) x y s =
   let module M = ( val m
                      : MapT
-                     with type key = k
-                      and type data = d
-                      and type map = m )
+                         with type key = k
+                          and type data = d
+                          and type map = m )
   in
   M.of_t (M.add x y (M.to_t s))
 
@@ -3492,18 +3492,18 @@ end
 let ssmap =
   (module SSMap
   : MapT
-    with type key = string
-     and type data = string
-     and type map = SSMap.map )
+      with type key = string
+       and type data = string
+       and type map = SSMap.map )
 
 let ssmap =
   ( module struct
     include SSMap
   end
   : MapT
-    with type key = string
-     and type data = string
-     and type map = SSMap.map )
+      with type key = string
+       and type data = string
+       and type map = SSMap.map )
 
 let ssmap :
     (module MapT
@@ -4926,13 +4926,21 @@ module B' = B
 class b : B.a =
   object
     method a : 'a. 'a M.s -> 'a =
-      fun (type a) (module X : M.S with type a = a) -> X.v
+      fun (type a)
+          (module X
+          : M.S
+              with type a = a) ->
+        X.v
   end
 
 class b' : B.a =
   object
     method a : 'a. 'a M'.s -> 'a =
-      fun (type a) (module X : M'.S with type a = a) -> X.v
+      fun (type a)
+          (module X
+          : M'.S
+              with type a = a) ->
+        X.v
   end
 
 module type FOO = sig
