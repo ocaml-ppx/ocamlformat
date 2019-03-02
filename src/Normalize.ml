@@ -403,7 +403,7 @@ let moved_docstrings c get_docstrings s1 s2 =
   let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
   let unstable (x, y) = Unstable (x, y) in
   match List.zip d1 d2 with
-  | None ->
+  | Unequal_lengths ->
       (* We only return the ones that are not in both lists. *)
       (* [l1] contains the ones that disappeared. *)
       let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
@@ -412,7 +412,7 @@ let moved_docstrings c get_docstrings s1 s2 =
       let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
       let l2 = List.map ~f:unstable l2 in
       List.rev_append l1 l2
-  | Some l ->
+  | Ok l ->
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
       let l1, l2 = List.unzip l in
       let both, l1 =
