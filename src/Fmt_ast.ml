@@ -2382,6 +2382,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
            $ fmt_atrs ))
   | Pcl_fun _ ->
       let xargs, xbody = Sugar.cl_fun c.cmts xexp in
+      let stmt_loc = Sugar.args_location xargs in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -2389,8 +2390,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
           $ ( hovbox 4
                 ( fmt "fun "
                 $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(fmt " ")
-                $ wrap_fun_decl_args ~stmt_loc:pcl_loc c
-                    (fmt_fun_args c xargs)
+                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
                 $ fmt "@ " )
             $ fmt "->" )
           $ close_box $ fmt "@ "
@@ -2477,6 +2477,7 @@ and fmt_class_field c ctx (cf : class_field) =
                 (sub_exp ~ctx e)
           | Some _ -> ([], sub_exp ~ctx e)
         in
+        let stmt_loc = Sugar.args_location xargs in
         let ty, e =
           match (xbody.ast, poly) with
           | {pexp_desc= Pexp_constraint (e, t); pexp_loc}, None ->
@@ -3214,6 +3215,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               (sub_cl ~ctx pci_expr)
         | _ -> ([], sub_cl ~ctx pci_expr)
       in
+      let stmt_loc = Sugar.args_location xargs in
       let ty, e =
         match xbody.ast with
         | {pcl_desc= Pcl_constraint (e, t)} -> (Some t, sub_cl ~ctx e)
@@ -3229,7 +3231,8 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               $ fmt "@ "
               $ fmt_class_params c ctx ~epi:(fmt "@ ") pci_params
               $ fmt_str_loc c pci_name
-              $ ( fmt_fun_args c ~pro:(fmt "@;") xargs
+              $ ( fmt_if (not (List.is_empty xargs)) "@ "
+                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
                 $ opt ty (fun t ->
                       fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t) )
                 $ fmt "@ =" ) )
@@ -3884,15 +3887,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let indent =
     match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
-  let stmt_loc =
-    let last_arg =
-      List.fold_left
-        ~f:(fun p -> function Sugar.Newtypes _ -> p
-          | Sugar.Val (_, { ast= {ppat_loc; _}; _}, _) -> ppat_loc )
-        xargs ~init:Location.none
-    in
-    Location.{pvb_loc with loc_end = last_arg.loc_end}
-  in
+  let stmt_loc = Sugar.args_location xargs in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c pvb_loc
   $ hvbox indent

@@ -62,6 +62,27 @@ type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list
 
+let args_location xargs =
+  let rec first_loc xargs =
+    match xargs with
+    | Val (_, {ast= {ppat_loc}}, _) :: _ -> ppat_loc
+    | Newtypes ({loc} :: _) :: _ -> loc
+    | Newtypes [] :: tl -> first_loc tl
+    | [] -> Location.none
+  in
+  let first_loc = first_loc xargs in
+  let last_loc =
+    List.fold_left
+      ~f:(fun p -> function Val (_, {ast= {ppat_loc}}, _) -> ppat_loc
+        | Newtypes ts -> List.fold_left ~f:(fun _ {loc} -> loc) ~init:p ts
+        )
+      ~init:first_loc xargs
+  in
+  Location.
+    { loc_start= first_loc.loc_start
+    ; loc_end= last_loc.loc_end
+    ; loc_ghost= true }
+
 let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp} as xexp) =
     let ctx = Exp exp in

@@ -40,11 +40,14 @@ let ffffffffffffffffffff
 
 class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb = g
 
-class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
-  cccccccccccccccccccccc = g
+class ffffffffffffffffffff
+  aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccc = g
 
-class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
-  cccccccccccccccccccccc dddddddddddddddddddddd = g
+class ffffffffffffffffffff
+  aaaaaaaaaaaaaaaaaaaaaa
+  bbbbbbbbbbbbbbbbbbbbbb
+  cccccccccccccccccccccc
+  dddddddddddddddddddddd = g
 
 let ffffffffffffffffffff : aaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbb
     =
