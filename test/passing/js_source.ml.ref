@@ -2482,8 +2482,10 @@ type (_, _, _) binop =
   | Leq : ('a, 'a, bool) binop
   | Add : (int, int, int) binop
 
-let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant) :
-    c constant =
+let eval (type a b c)
+         (bop : (a, b, c) binop)
+         (x : a constant)
+         (y : b constant) : c constant =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
   | Leq, Int x, Int y -> Bool (x <= y)
@@ -3930,7 +3932,8 @@ class ['a] var_ops =
   object (self : ('a, var) #ops)
     constraint 'a = [> var]
 
-    method subst ~sub (`Var s as x) =
+    method subst ~sub
+                 (`Var s as x) =
       try Subst.find s sub with
       | Not_found -> x
 
@@ -4178,7 +4181,8 @@ type var = [`Var of string]
 
 let var =
   object (self : ([> var], var) #ops)
-    method subst ~sub (`Var s as x) =
+    method subst ~sub
+                 (`Var s as x) =
       try Subst.find s sub with
       | Not_found -> x
 
@@ -6511,7 +6515,8 @@ module UText = struct
 
       method copy = {<contents = String.copy contents>}
 
-      method sub pos len = {<contents = String.sub contents (pos * 4) (len * 4)>}
+      method sub pos
+                 len = {<contents = String.sub contents (pos * 4) (len * 4)>}
 
       method concat (text : ustorage) =
         let buf = String.create (String.length contents + (4 * text#len)) in

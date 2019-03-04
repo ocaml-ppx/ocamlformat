@@ -3884,6 +3884,15 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let indent =
     match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
+  let stmt_loc =
+    let last_arg =
+      List.fold_left
+        ~f:(fun p -> function Sugar.Newtypes _ -> p
+          | Sugar.Val (_, { ast= {ppat_loc; _}; _}, _) -> ppat_loc )
+        xargs ~init:Location.none
+    in
+    Location.{pvb_loc with loc_end = last_arg.loc_end}
+  in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c pvb_loc
   $ hvbox indent
@@ -3895,7 +3904,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
             $ fmt " " $ fmt_pattern c xpat
             $ fmt_if (not (List.is_empty xargs)) "@ "
-            $ wrap_fun_decl_args ~stmt_loc:pvb_loc c (fmt_fun_args c xargs)
+            $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
             $ Option.call ~f:fmt_cstr )
         $ fmt "@;<1 2>=" )
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc
