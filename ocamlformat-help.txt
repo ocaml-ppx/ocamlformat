@@ -45,10 +45,10 @@ OPTIONS (CODE FORMATTING STYLE)
            try to format them in a single line. The default value is
            fit-or-vertical.
 
-       --break-fun-decl={wrap|fit_or_vertical|smart}
+       --break-fun-decl={wrap|fit-or-vertical|smart}
            Style for function declarations and types. wrap breaks only if
-           necessary. fit_or_vertical vertically breaks arguments if they do
-           not fit on a single line. smart is like fit_or_vertical but try to
+           necessary. fit-or-vertical vertically breaks arguments if they do
+           not fit on a single line. smart is like fit-or-vertical but try to
            fit arguments on their line if they fit. The default value is
            wrap.
 

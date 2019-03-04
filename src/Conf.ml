@@ -560,13 +560,13 @@ module Formatting = struct
     let names = ["break-fun-decl"] in
     let all =
       [ ("wrap", `Wrap, "$(b,wrap) breaks only if necessary.")
-      ; ( "fit_or_vertical"
+      ; ( "fit-or-vertical"
         , `Fit_or_vertical
-        , "$(b,fit_or_vertical) vertically breaks arguments if they do not \
+        , "$(b,fit-or-vertical) vertically breaks arguments if they do not \
            fit on a single line." )
       ; ( "smart"
         , `Smart
-        , "$(b,smart) is like $(b,fit_or_vertical) but try to fit \
+        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
            arguments on their line if they fit." ) ]
     in
     C.choice ~names ~all ~doc ~section
