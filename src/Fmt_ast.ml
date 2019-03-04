@@ -2490,7 +2490,7 @@ and fmt_class_field c ctx (cf : class_field) =
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
           ~after:e.ast.pexp_loc ;
         ( [ fmt_if (not (List.is_empty xargs)) "@;<1 2>"
-            $ wrap_fun_decl_args ~stmt_loc:pcf_loc c (fmt_fun_args c xargs)
+            $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
           ; opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
           ]
         , fmt "@;<1 2>="
