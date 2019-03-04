@@ -1389,9 +1389,8 @@ let validate () =
   if !print_config then `Ok ()
   else if List.is_empty !inputs then
     `Error (false, "Must specify at least one input file, or `-` for stdin")
-  else if
-    List.equal ~equal:String.equal !inputs ["-"] && Option.is_none !name
-  then `Error (false, "Must specify name when reading from stdin")
+  else if List.equal String.equal !inputs ["-"] && Option.is_none !name then
+    `Error (false, "Must specify name when reading from stdin")
   else if !inplace && Option.is_some !name then
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
