@@ -99,3 +99,15 @@ let is_sequence exp =
       ) ->
       true
   | _ -> false
+
+let rec loop items =
+  match [] with
+  | _ :: _ :: items ->
+      (* a comment *)
+      loop items
+  | _ :: items ->
+      (* another comment*)
+      loop items
+  | _ ->
+      let a = 3 in
+      a

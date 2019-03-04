@@ -67,3 +67,15 @@ let foo =
       , _ )
     when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
       analyze_id_assignment (Var.of_id ret_id) target_exp cast_typ loc
+
+let rec loop items =
+  match [] with
+  | _ :: _ :: items ->
+      (* a comment *)
+      loop items
+  | _ :: items ->
+      (* another comment*)
+      loop items
+  | _ ->
+      let a = 3 in
+      a
