@@ -92,9 +92,9 @@ let extend_loc_to_include_attributes t (loc : Location.t)
           let loc =
             match payload with
             | PStr [] -> loc
-            | PStr l -> (List.last_exn l).pstr_loc
+            | PStr l -> (List.last_exn l).Parsetree.pstr_loc
             | PSig [] -> loc
-            | PSig l -> (List.last_exn l).psig_loc
+            | PSig l -> (List.last_exn l).Parsetree.psig_loc
             | PTyp c -> c.ptyp_loc
             | PPat (p, None) -> p.ppat_loc
             | PPat (_, Some e) -> e.pexp_loc
