@@ -2610,6 +2610,11 @@ and fmt_cases c ctx cs =
         | Ppat_or _ when Option.is_some pc_guard -> true
         | _ -> parenze_pat xlhs
       in
+      let eol =
+        if Cmts.has_before c.cmts pc_rhs.pexp_loc then
+          Some (fmt "@;<1000 0>")
+        else None
+      in
       Params.get_cases c.conf ~first ~indent ~parens_here
       |> fun (p : Params.cases) ->
       p.leading_space $ leading_cmt
@@ -2624,7 +2629,7 @@ and fmt_cases c ctx cs =
               $ fmt_if parens_here " (" )
           $ p.break_after_opening_paren
           $ p.box_rhs
-              ( fmt_expression c ?parens:parens_for_exp xrhs
+              ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
               $ fmt_if_k parens_here
                   (fmt_or c.conf.indicate_multiline_delimiters "@ )" "@,)")
               ) ) )

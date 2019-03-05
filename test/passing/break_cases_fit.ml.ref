@@ -50,23 +50,13 @@ let _ =
   in
   ()
 
-let () =
-  match fooooo with
-  | x ->
-      x
+let () = match fooooo with x -> x
 
 let () =
   match foooo with
-  | x
-   |x
-   |x ->
-      x
-  | y
-   |foooooooooo
-   |fooooooooo ->
-      y
-  | foooooo
-    when ff fff fooooooooooooooooooo ->
+  | x | x | x -> x
+  | y | foooooooooo | fooooooooo -> y
+  | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
 
 let foo =
@@ -99,16 +89,9 @@ let is_sequence exp =
 
 let () =
   match foooo with
-  | x
-  | x
-  | x ->
-      x
-  | y
-  | foooooooooo
-  | fooooooooo ->
-      y
-  | foooooo
-    when ff fff fooooooooooooooooooo ->
+  | x | x | x -> x
+  | y | foooooooooo | fooooooooo -> y
+  | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
 
 let rec loop items =
