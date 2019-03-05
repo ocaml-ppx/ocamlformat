@@ -35,10 +35,9 @@ let x =
   ; in_ea_deserunt= nulla }
 
 type t =
-  { a:
-      int option
-      (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
-         cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *)
+  { a: int option
+        (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
+           cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *)
   ; b: float
         (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
            cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *) }
