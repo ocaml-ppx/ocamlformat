@@ -270,20 +270,20 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
         let same_line_as_next l =
           next.loc_start.pos_lnum = l.loc_start.pos_lnum
         in
-        let char_before ~in_ =
+        let sequence_symbol_before =
           let pos_cnum = prev.loc_end.pos_cnum - 1 in
           let loc_end = {prev.loc_end with pos_cnum} in
           let char_loc = {prev with loc_start= loc_end} in
           let str = Source.string_at t.source char_loc in
-          List.mem in_ str ~equal:String.equal
+          let c = str.[0] in
+          Char.equal c ';' || Char.equal c '|' || Char.equal c '&'
         in
-        let symbol_before = char_before ~in_:[";"; "|"] in
         let prev, next =
           if not (same_line_as_prev next) then
             let next, prev =
               List.partition_tf cmtl ~f:(fun (_, l1) ->
                   same_line_as_next l1
-                  || (same_line_as_prev l1 && symbol_before)
+                  || (same_line_as_prev l1 && sequence_symbol_before)
                   || not (same_line_as_prev l1) )
             in
             (prev, next)
