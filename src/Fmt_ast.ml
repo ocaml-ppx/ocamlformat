@@ -788,8 +788,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         hvbox 0
           (wrap_list c
              ( list loc_xpats "@,; " (fun (locs, xpat) ->
-                   Cmts.fmt_list c locs @@ fmt_pattern c xpat )
-             $ Cmts.fmt c ~pro:(fmt " ") ~epi:(fmt "") nil_loc @@ fmt "" ))
+                   Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
+                   @@ fmt_pattern c xpat )
+             $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") nil_loc
+             $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc ))
     | None ->
         hvbox 0
           (wrap_if parens "(" ")"
