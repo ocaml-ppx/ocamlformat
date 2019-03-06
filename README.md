@@ -157,6 +157,8 @@ OCamlFormat is documented in its man page and through its internal help:
 * `ocamlformat --help`
 * `man ocamlformat`
 
+You can also view it [online](ocamlformat-help.txt).
+
 ## Reason
 
 OCamlFormat is influenced by and follows the same basic design as `refmt` for [Reason](https://github.com/facebook/reason), but outputs OCaml instead of Reason.
