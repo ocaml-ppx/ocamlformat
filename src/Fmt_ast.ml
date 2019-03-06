@@ -1617,8 +1617,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
                        @@ fmt_expression c xexp )
-                 $ Cmts.fmt c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
-                   @@ fmt "" )
+                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") nil_loc
+                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc )
              $ fmt_atrs ))
     | None ->
         let loc_args = Sugar.infix_cons xexp in
