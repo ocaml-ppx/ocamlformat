@@ -323,7 +323,8 @@ let fmt_variance = function
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
 let wrap_list c =
-  if c.conf.space_around_collection_expressions then wrap "[ " "@ ]"
+  if c.conf.space_around_collection_expressions then fun k ->
+    fmt "[ " $ k $ or_newline "]" "]"
   else wrap_fits_breaks c.conf "[" "]"
 
 let wrap_array c =
