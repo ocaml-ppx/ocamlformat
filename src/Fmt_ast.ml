@@ -791,7 +791,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
              ( list loc_xpats "@,; " (fun (locs, xpat) ->
                    Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
                    @@ fmt_pattern c xpat )
-             $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") nil_loc
+             $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:(fmt "") nil_loc
              $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc ))
     | None ->
         hvbox 0
@@ -1620,7 +1620,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
                        @@ fmt_expression c xexp )
-                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") nil_loc
+                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:(fmt "")
+                     nil_loc
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc )
              $ fmt_atrs ))
     | None ->
