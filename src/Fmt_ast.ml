@@ -2825,8 +2825,7 @@ and fmt_label_declaration c ctx lbl_decl ?(last = false) =
                   (fmt_or last "" ";") )
           $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
           )
-      $ Cmts.fmt_after c pld_loc
-      $ cmt_after_type
+      $ Cmts.fmt_after c pld_loc $ cmt_after_type
       $ fmt_docstring_padded c doc )
 
 and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
