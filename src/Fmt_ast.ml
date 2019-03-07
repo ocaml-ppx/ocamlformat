@@ -1696,9 +1696,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_atrs )
   | Pexp_ifthenelse _ ->
       let cnd_exps = Sugar.ite c.cmts xexp in
-      hvbox
-        ( if parens && Poly.(c.conf.if_then_else = `Fit_or_vertical) then 2
-        else 0 )
+      hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            (list_fl cnd_exps
               (fun ~first ~last (xcnd, xbch, pexp_attributes) ->
@@ -1742,7 +1740,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         | Some xcnd ->
                             hvbox
                               (if parens then -2 else 0)
-                              ( hvbox 2
+                              ( hvbox
+                                  (if parens then 0 else 2)
                                   ( fmt_if (not first) "else "
                                   $ fmt "if"
                                   $ fmt_if_k first
@@ -1750,8 +1749,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                                   $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
                                       pexp_attributes
                                   $ fmt "@ " $ fmt_expression c xcnd )
-                              $ fmt_or parens "@;<1 2>" "@ "
-                              $ fmt "then" )
+                              $ fmt "@ then" )
                         | None -> fmt "else" )
                       $ fmt_if parens_bch " (" $ fmt "@;<1 2>"
                       $ fmt_expression c ~pro ~eol:(fmt "@;<1 2>")
