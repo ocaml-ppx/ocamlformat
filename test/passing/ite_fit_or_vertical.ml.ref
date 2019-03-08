@@ -1,7 +1,8 @@
 let _ = if b then e else ( e1 ; e2 )
 
 let _ =
-  if b then e
+  if b then
+    e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
@@ -13,32 +14,40 @@ let _ =
   else if b1 then (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
-  else e
+  else
+    e
 
 ;;
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then ()
-  else () )
+  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
+      ()
+  else
+    () )
 
 ;;
 f
   ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
-    ()
-  else () )
+      ()
+  else
+    () )
 
 ;;
 f
   ( if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-  then ()
-  else () )
+  then
+      ()
+  else
+    () )
 
 ;;
 f
   ( if
     and_ even
       loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
-  then ()
-  else () )
+  then
+      ()
+  else
+    () )
 
 let () = if [@test] true then () else if [@other] true then ()
 
@@ -49,28 +58,37 @@ let _ =
     let a = 1 in
     let b = 2 in
     a + b
-  else if other_condition then 12
-  else 0
+  else if other_condition then
+    12
+  else
+    0
 
 let _ =
   if foo then
     let a = 1 in
     let b = 2 in
     a + b
-  else if foo then 12
-  else 0
+  else if foo then
+    12
+  else
+    0
 
 let foo =
-  if is_sugared_list e2 then Some (Semi, Non)
-  else Some (ColonColon, if exp == e2 then Right else Left)
+  if is_sugared_list e2 then
+    Some (Semi, Non)
+  else
+    Some (ColonColon, if exp == e2 then Right else Left)
 
 let foo =
-  if is_sugared_list e2 then Some (Semi, Non)
+  if is_sugared_list e2 then
+    Some (Semi, Non)
   else
     Some
       ( ColonColon
-      , if exp == e2 then Right
-        else (Left foooooo, foooo, fooo, foooooo, fooooooo, foooooooo) )
+      , if exp == e2 then
+          Right
+        else
+          (Left foooooo, foooo, fooo, foooooo, fooooooo, foooooooo) )
 
 let foo =
   if cond1 then (
@@ -95,14 +113,17 @@ let foo =
 let foo =
   if some condition then
     if some nested condition then some action else some other action
-  else some default action
+  else
+    some default action
 
 let foo =
   if some condition then
     if some nested condition then
       some action + foooo + foooo + foooooooo + foooo + foooooo
-    else some other action
-  else some default action
+    else
+      some other action
+  else
+    some default action
 
 let foo = if cmp < 0 then (* foo *) a + b else (* foo *) a - b
 
@@ -112,4 +133,5 @@ let foo =
   else if cmp > 0 then (* context higher prec than ast: add parens *)
     true
   else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
-  then foo
+  then
+    foo

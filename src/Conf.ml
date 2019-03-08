@@ -30,7 +30,7 @@ type t =
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
-  ; if_then_else: [`Compact | `Keyword_first]
+  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first]
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: bool
   ; infix_precedence: [`Indent | `Parens]
@@ -746,6 +746,10 @@ module Formatting = struct
         , `Compact
         , "$(b,compact) tries to format an if-then-else expression on a \
            single line." )
+      ; ( "fit-or-vertical"
+        , `Fit_or_vertical
+        , "$(b,fit-or-vertical) vertically breaks branches if they do not \
+           fit on a single line." )
       ; ( "keyword-first"
         , `Keyword_first
         , "$(b,keyword-first) formats if-then-else expressions such that \

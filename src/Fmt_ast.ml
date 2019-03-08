@@ -1065,8 +1065,8 @@ and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
        | None -> fmt ""
        | Some e -> fmt "@ <- " $ fmt_expression c (sub_exp ~ctx e) ))
 
-and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
-    ({ast= exp} as xexp) =
+and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
+    ?ext ({ast= exp} as xexp) =
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes} = exp in
@@ -1241,6 +1241,7 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
             $ fmt_if_k spc (break_unless_newline 1 0) ) )
   in
   hvbox_if box 0 @@ fmt_cmts
+  @@ (fun fmt -> Option.call ~f:pro $ fmt)
   @@
   match pexp_desc with
   | Pexp_apply (_, []) -> impossible "not produced by parser"
@@ -1727,6 +1728,36 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                           ( if c.conf.indicate_multiline_delimiters then " )"
                           else ")" ) )
                     $ fmt_if (not last) "@ "
+                | `Fit_or_vertical ->
+                    let pro =
+                      fmt_if_k
+                        (not
+                           (Location.is_single_line pexp_loc c.conf.margin))
+                        (break_unless_newline 1000 2)
+                    in
+                    hovbox 0
+                      ( ( match xcnd with
+                        | Some xcnd ->
+                            hvbox
+                              (if parens then -2 else 0)
+                              ( hvbox
+                                  (if parens then 0 else 2)
+                                  ( fmt_if (not first) "else "
+                                  $ fmt "if"
+                                  $ fmt_if_k first
+                                      (fmt_extension_suffix c ext)
+                                  $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
+                                      pexp_attributes
+                                  $ fmt "@ " $ fmt_expression c xcnd )
+                              $ fmt "@ then" )
+                        | None -> fmt "else" )
+                      $ fmt_if parens_bch " (" $ fmt "@;<1 2>"
+                      $ fmt_expression c ~pro ~eol:(fmt "@;<1 2>")
+                          ~box:false ~parens:false xbch
+                      $ fmt_if parens_bch
+                          ( if c.conf.indicate_multiline_delimiters then " )"
+                          else ")" ) )
+                    $ fmt_if (not last) "@ "
                 | `Keyword_first ->
                     opt xcnd (fun xcnd ->
                         hvbox 2
@@ -1747,8 +1778,8 @@ and fmt_expression c ?(box = true) ?epi ?eol ?parens ?(indent_wrap = 0) ?ext
                             else ")" ) )
                     $ fmt_if (not last) "@ " )))
   | Pexp_let (rec_flag, bindings, body) ->
-      let fmt_expr ?box ?epi ?eol ?parens ?indent_wrap ?ext =
-        fmt_expression ?box ?epi ?eol ?parens ?indent_wrap ?ext
+      let fmt_expr ?box ?pro ?epi ?eol ?parens ?indent_wrap ?ext =
+        fmt_expression ?box ?pro ?epi ?eol ?parens ?indent_wrap ?ext
       in
       let fmt_value_binding c ~rec_flag ~first ?ext ast b ~in_ =
         fmt_value_binding ~rec_flag ~first ?ext c ast b ~in_

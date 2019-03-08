@@ -117,11 +117,12 @@ OPTIONS (CODE FORMATTING STYLE)
            space between a field name and the punctuation symbol (`:`or `=`).
            loose does. The default value is tight.
 
-       --if-then-else={compact|keyword-first}
+       --if-then-else={compact|fit-or-vertical|keyword-first}
            If-then-else formatting. compact tries to format an if-then-else
-           expression on a single line. keyword-first formats if-then-else
-           expressions such that the if-then-else keywords are the first on
-           the line. The default value is compact.
+           expression on a single line. fit-or-vertical vertically breaks
+           branches if they do not fit on a single line. keyword-first
+           formats if-then-else expressions such that the if-then-else
+           keywords are the first on the line. The default value is compact.
 
        --infix-precedence={indent|parens}
            Use indentation or also discretionary parentheses to explicitly
