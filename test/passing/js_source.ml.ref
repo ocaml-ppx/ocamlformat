@@ -772,9 +772,7 @@ let make_set (type s) cmp =
 ;;
 
 let both l =
-  List.map
-    (fun set -> sort set l)
-    [ make_set compare; make_set (fun x y -> compare y x) ]
+  List.map (fun set -> sort set l) [ make_set compare; make_set (fun x y -> compare y x) ]
 ;;
 
 let () =

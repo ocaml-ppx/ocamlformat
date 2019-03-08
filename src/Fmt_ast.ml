@@ -323,7 +323,8 @@ let fmt_variance = function
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
 let wrap_list c =
-  if c.conf.space_around_collection_expressions then wrap "[ " "@ ]"
+  if c.conf.space_around_collection_expressions then fun k ->
+    fmt "[ " $ k $ or_newline "]" "]"
   else wrap_fits_breaks c.conf "[" "]"
 
 let wrap_array c =
@@ -788,8 +789,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         hvbox 0
           (wrap_list c
              ( list loc_xpats "@,; " (fun (locs, xpat) ->
-                   Cmts.fmt_list c locs @@ fmt_pattern c xpat )
-             $ Cmts.fmt c ~pro:(fmt " ") ~epi:(fmt "") nil_loc @@ fmt "" ))
+                   Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
+                   @@ fmt_pattern c xpat )
+             $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:(fmt "") nil_loc
+             $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc ))
     | None ->
         hvbox 0
           (wrap_if parens "(" ")"
@@ -1618,8 +1621,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
                        @@ fmt_expression c xexp )
-                 $ Cmts.fmt c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc
-                   @@ fmt "" )
+                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:(fmt "")
+                     nil_loc
+                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:(fmt "") nil_loc )
              $ fmt_atrs ))
     | None ->
         let loc_args = Sugar.infix_cons xexp in
