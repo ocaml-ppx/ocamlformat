@@ -67,12 +67,17 @@ type action =
           or stdout if None. *)
   | Inplace of [`Impl | `Intf | `Use_file] input list
       (** Format in-place, overwriting input file(s). *)
+  | Check of [`Impl | `Intf | `Use_file] input list
+      (** Check whether the input files already are formatted. *)
 
 val action : action
 (** Formatting action: input type and source, and output destination. *)
 
 val debug : bool
 (** Generate debugging output if true. *)
+
+val check : bool
+(** Check whether the input files already are formatted. *)
 
 val parse_line_in_attribute :
      t

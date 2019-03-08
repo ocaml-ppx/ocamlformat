@@ -1094,6 +1094,13 @@ let inplace =
   let default = false in
   mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
 
+let check =
+  let doc =
+    "Check whether the input files already are formatted. Mutually \
+     exclusive with --inplace and --output."
+  in
+  mk ~default:false Arg.(value & flag & info ["check"] ~doc ~docs)
+
 let inputs =
   let docv = "SRC" in
   let file_or_dash =
@@ -1403,8 +1410,15 @@ let validate () =
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
-  else if (not !inplace) && inputs_len > 1 then
-    `Error (false, "Must specify exactly one input file without --inplace")
+  else if !check && !inplace then
+    `Error (false, "Cannot specify --inplace with --check")
+  else if !check && Option.is_some !output then
+    `Error (false, "Cannot specify --output with --check")
+  else if (not (!inplace || !check)) && inputs_len > 1 then
+    `Error
+      ( false
+      , "Must specify exactly one input file without --inplace or --check"
+      )
   else `Ok ()
 
 ;;
@@ -1642,6 +1656,7 @@ type 'a input = {kind: 'a; name: string; file: string; conf: t}
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
   | Inplace of [`Impl | `Intf | `Use_file] input list
+  | Check of [`Impl | `Intf | `Use_file] input list
 
 let kind_of fname =
   match Filename.extension fname with
@@ -1754,6 +1769,12 @@ let action =
       (List.map !inputs ~f:(fun file ->
            {kind= kind_of file; name= file; file; conf= build_config ~file}
        ))
+  else if !check then
+    Check
+      (List.map !inputs ~f:(fun file ->
+           let conf = build_config ~file in
+           let conf = {conf with max_iters= 1} in
+           {kind= kind_of file; name= file; file; conf} ))
   else
     match !inputs with
     | [input_file] ->
@@ -1769,5 +1790,7 @@ let action =
         else impossible "checked by validate"
 
 and debug = !debug
+
+and check = !check
 
 let parse_line_in_attribute = parse_line ~from:`Attribute

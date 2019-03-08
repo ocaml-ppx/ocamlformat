@@ -113,3 +113,19 @@ match Conf.action with
         to_output_file output_file s ;
         Caml.exit 0
     | Error _ -> Caml.exit 1 )
+| Check inputs ->
+    let output_file = None in
+    let checked =
+      List.for_all inputs
+        ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
+          let source =
+            In_channel.with_file input_file ~f:In_channel.input_all
+          in
+          let result =
+            format conf ?output_file ~kind ~input_name ~source ()
+          in
+          match result with
+          | Ok res -> String.equal res source
+          | Error _ -> false )
+    in
+    Caml.exit (if checked then 0 else 1)
