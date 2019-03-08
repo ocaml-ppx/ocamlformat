@@ -30,6 +30,8 @@ val tokens_at :
   -> Location.t
   -> (Parser.token * Location.t) list
 
+val position_before : t -> Lexing.position -> Lexing.position option
+
 val loc_between : from:Location.t -> upto:Location.t -> Location.t
 (** [loc_between ~from ~upto] returns a location starting from [from] and
     ending before [upto]. *)
