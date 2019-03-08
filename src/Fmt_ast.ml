@@ -2845,18 +2845,21 @@ and fmt_label_declaration c ctx lbl_decl ?(last = false) =
   @@ fun c ->
   let doc, atrs = doc_atrs pld_attributes in
   let indent = if Poly.(c.conf.break_separators = `Before) then 2 else 0 in
+  let cmt_after_type = Cmts.fmt_after c pld_type.ptyp_loc in
   Cmts.fmt_before c ~eol:(break_unless_newline 1 indent) pld_loc
   $ hvbox 4
       ( hvbox 3
-          ( hvbox 2
-              ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-              $ fmt_str_loc c pld_name
-              $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-              $ fmt ":@ "
-              $ fmt_core_type c (sub_typ ~ctx pld_type)
-              $ fmt_if_k
-                  (not Poly.(c.conf.break_separators = `Before))
-                  (fmt_or last "" ";") )
+          ( hvbox 4
+              ( hvbox 2
+                  ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
+                  $ fmt_str_loc c pld_name
+                  $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+                  $ fmt ":@ "
+                  $ fmt_core_type c (sub_typ ~ctx pld_type)
+                  $ fmt_if_k
+                      (not Poly.(c.conf.break_separators = `Before))
+                      (fmt_or last "" ";") )
+              $ cmt_after_type )
           $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
           )
       $ Cmts.fmt_after c pld_loc
