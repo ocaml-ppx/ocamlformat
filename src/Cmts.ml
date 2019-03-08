@@ -270,7 +270,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
         let same_line_as_next l =
           next.loc_start.pos_lnum = l.loc_start.pos_lnum
         in
-        let sequence_symbol_before =
+        let infix_symbol_before =
           let pos_cnum = prev.loc_end.pos_cnum - 1 in
           let loc_end = {prev.loc_end with pos_cnum} in
           let char_loc = {prev with loc_start= loc_end} in
@@ -286,7 +286,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
             let next, prev =
               List.partition_tf cmtl ~f:(fun (_, l1) ->
                   same_line_as_next l1
-                  || (same_line_as_prev l1 && sequence_symbol_before)
+                  || (same_line_as_prev l1 && infix_symbol_before)
                   || not (same_line_as_prev l1) )
             in
             (prev, next)
