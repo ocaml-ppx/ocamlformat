@@ -62,6 +62,7 @@ match Conf.action with
 | In_out ({kind= `Use_file; _}, _) ->
     user_error "Cannot convert Reason code with --use-file" []
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
+| Check _ -> user_error "Cannot check Reason code with --check" []
 | In_out
     ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
     , output_file ) -> (
@@ -95,24 +96,3 @@ match Conf.action with
         to_output_file output_file s ;
         Caml.exit 0
     | Error _ -> Caml.exit 1 )
-| Check inputs ->
-    let output_file = None in
-    let checked =
-      List.for_all inputs
-        ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
-          match kind with
-          | `Use_file ->
-              user_error "Cannot check Reason formatting with --use-file" []
-          | (`Impl | `Intf) as kind -> (
-              let (Pack {parse; xunit}) = pack_of_kind kind in
-              let t = In_channel.with_file input_file ~f:parse in
-              let source = try_read_original_source t.origin_filename in
-              let result =
-                format xunit conf ?output_file ~input_name ~source
-                  ~parsed:t.ast_and_comment ()
-              in
-              match result with
-              | Ok res -> String.equal res source
-              | Error _ -> false ) )
-    in
-    Caml.exit (if checked then 0 else 1)
