@@ -275,8 +275,11 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
           let loc_end = {prev.loc_end with pos_cnum} in
           let char_loc = {prev with loc_start= loc_end} in
           let str = Source.string_at t.source char_loc in
-          let c = str.[0] in
-          Char.equal c ';' || Char.equal c '|' || Char.equal c '&'
+          match str.[0] with
+          | '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|'
+           |'&' | '@' | '^' | '#' | ';' ->
+              true
+          | _ -> false
         in
         let prev, next =
           if not (same_line_as_prev next) then
