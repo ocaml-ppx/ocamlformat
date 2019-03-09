@@ -270,17 +270,6 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
         let same_line_as_next l =
           next.loc_start.pos_lnum = l.loc_start.pos_lnum
         in
-        let is_infix_id i =
-          match (i.[0], i) with
-          | ( ( '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|'
-              | '&' | '@' | '^' | '#' )
-            , _ )
-           |( _
-            , ( "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr"
-              | "lsl" | "lsr" | "or" | "||" ) ) ->
-              true
-          | _ -> false
-        in
         let infix_symbol_before =
           let pos_cnum = prev.loc_end.pos_cnum - 1 in
           let loc_end = {prev.loc_end with pos_cnum} in
@@ -289,7 +278,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
               if loc_start.pos_cnum < prev.loc_end.pos_cnum then
                 let op_loc = {prev with loc_start} in
                 let str = Source.string_at t.source op_loc in
-                String.equal str ";" || is_infix_id str
+                String.equal str ";" || Ast.is_infix_id str
               else false
           | None -> false
         in
