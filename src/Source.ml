@@ -15,13 +15,18 @@ type t = string
 
 let create s = s
 
-let position_before t pos =
+let position_before t (pos : Lexing.position) =
   let is_closing c =
     Char.equal c ')' || Char.equal c ']' || Char.equal c '}'
   in
-  let f _ c = Char.is_alphanum c || Char.is_whitespace c || is_closing c in
-  let pos_cnum_opt = String.rfindi t ~pos:pos.Lexing.pos_cnum ~f in
-  Option.map pos_cnum_opt ~f:(fun x -> Lexing.{pos with pos_cnum= x + 1})
+  let maybe_check_alphanum c =
+    if Char.is_alphanum t.[pos.pos_cnum] then false else Char.is_alphanum c
+  in
+  let f _ c =
+    maybe_check_alphanum c || Char.is_whitespace c || is_closing c
+  in
+  let pos_cnum_opt = String.rfindi t ~pos:pos.pos_cnum ~f in
+  Option.map pos_cnum_opt ~f:(fun x -> {pos with pos_cnum= x + 1})
 
 let string_between t (l1 : Location.t) (l2 : Location.t) =
   let pos = l1.loc_end.pos_cnum in
