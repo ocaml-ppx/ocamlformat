@@ -69,7 +69,13 @@ type t =
   | Str of structure_item
   | Top
 
-val break_between : Cmts.t -> t * Conf.t -> t * Conf.t -> bool
+val break_between :
+     cmts:'a
+  -> has_cmts_before:('a -> Location.t -> bool)
+  -> has_cmts_after:('a -> Location.t -> bool)
+  -> t * Conf.t
+  -> t * Conf.t
+  -> bool
 
 val attributes : t -> attributes
 

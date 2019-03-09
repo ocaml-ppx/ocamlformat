@@ -35,6 +35,14 @@ module Cmts = struct
   let fmt_list c = fmt_list c.cmts c.conf
 end
 
+module Ast = struct
+  include Ast
+
+  let break_between cmts =
+    Ast.break_between ~cmts ~has_cmts_before:Cmts.has_before
+      ~has_cmts_after:Cmts.has_after
+end
+
 type block =
   { opn: Fmt.t
   ; pro: Fmt.t option
