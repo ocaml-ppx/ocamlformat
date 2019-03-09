@@ -1390,16 +1390,20 @@ let (_profile : t option C.t) =
     (fun _ -> !selected_profile_ref)
 
 let validate () =
+  let inputs_len = List.length !inputs in
+  let has_stdin = List.exists ~f:(String.equal "-") !inputs in
   if !print_config then `Ok ()
-  else if List.is_empty !inputs then
+  else if inputs_len = 0 then
     `Error (false, "Must specify at least one input file, or `-` for stdin")
-  else if List.equal String.equal !inputs ["-"] && Option.is_none !name then
+  else if has_stdin && inputs_len > 1 then
+    `Error (false, "Cannot specify stdin together with other inputs")
+  else if has_stdin && Option.is_none !name then
     `Error (false, "Must specify name when reading from stdin")
   else if !inplace && Option.is_some !name then
     `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
-  else if (not !inplace) && List.length !inputs > 1 then
+  else if (not !inplace) && inputs_len > 1 then
     `Error (false, "Must specify exactly one input file without --inplace")
   else `Ok ()
 
