@@ -282,7 +282,8 @@ module Structure_item : Module_item with type t = structure_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
     has_cmts_after cmts i1.pstr_loc
     || has_cmts_before cmts i2.pstr_loc
     || has_doc i1 || has_doc i2
@@ -354,7 +355,8 @@ module Signature_item : Module_item with type t = signature_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
     has_cmts_after cmts i1.psig_loc
     || has_cmts_before cmts i2.psig_loc
     || has_doc i1 || has_doc i2
@@ -375,7 +377,8 @@ module Expression : Module_item with type t = expression = struct
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pexp_loc c.Conf.margin
 
-  let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+  let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
     has_cmts_after cmts i1.pexp_loc
     || has_cmts_before cmts i2.pexp_loc
     || (not (is_simple (i1, c1)))
@@ -545,7 +548,8 @@ let break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
   || (not (is_simple (i1, c1)))
   || not (is_simple (i2, c2))
 
-let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+    =
   match (i1, i2) with
   | Str i1, Str i2 ->
       Structure_item.break_between s ~cmts ~has_cmts_before ~has_cmts_after
