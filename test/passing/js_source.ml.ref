@@ -3647,7 +3647,9 @@ end
 let ssmap =
   (module SSMap
   : MapT
-    with type key = string and type data = string and type map = SSMap.map)
+    with type key = string
+     and type data = string
+     and type map = SSMap.map)
 ;;
 
 let ssmap =
@@ -3655,12 +3657,15 @@ let ssmap =
     include SSMap
   end
   : MapT
-    with type key = string and type data = string and type map = SSMap.map)
+    with type key = string
+     and type data = string
+     and type map = SSMap.map)
 ;;
 
 let ssmap :
-    (module MapT with type key = string and type data = string and type map = SSMap.map)
-    =
+    (module MapT with type key = string
+                  and type data = string
+                  and type map = SSMap.map) =
   let module S = struct
     include SSMap
   end in
