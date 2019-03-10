@@ -253,6 +253,21 @@ let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
           && Position.column l1.loc_start <= Position.column l2.loc_start
       | _ -> false )
 
+(** Whether the symbol preceding location [loc] is an infix symbol or a
+    semicolon. If it is the case, comments attached to the following item
+    should be kept after the infix symbol. *)
+let infix_symbol_before t (loc : Location.t) =
+  let pos_cnum = loc.loc_end.pos_cnum - 1 in
+  let loc_end = {loc.loc_end with pos_cnum} in
+  match Source.position_before t.source loc_end with
+  | Some loc_start ->
+      if loc_start.pos_cnum < loc.loc_end.pos_cnum then
+        let op_loc = {loc with loc_start} in
+        let str = Source.string_at t.source op_loc in
+        String.equal str ";" || Ast.is_infix_id str
+      else false
+  | None -> false
+
 (** Heuristic to choose between placing a comment after the previous
     location or before the next one. *)
 let partition_after_prev_or_before_next t ~prev cmts ~next =
@@ -270,24 +285,12 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
         let same_line_as_next l =
           next.loc_start.pos_lnum = l.loc_start.pos_lnum
         in
-        let infix_symbol_before =
-          let pos_cnum = prev.loc_end.pos_cnum - 1 in
-          let loc_end = {prev.loc_end with pos_cnum} in
-          match Source.position_before t.source loc_end with
-          | Some loc_start ->
-              if loc_start.pos_cnum < prev.loc_end.pos_cnum then
-                let op_loc = {prev with loc_start} in
-                let str = Source.string_at t.source op_loc in
-                String.equal str ";" || Ast.is_infix_id str
-              else false
-          | None -> false
-        in
         let prev, next =
           if not (same_line_as_prev next) then
             let next, prev =
               List.partition_tf cmtl ~f:(fun (_, l1) ->
                   same_line_as_next l1
-                  || (same_line_as_prev l1 && infix_symbol_before)
+                  || (same_line_as_prev l1 && infix_symbol_before t prev)
                   || not (same_line_as_prev l1) )
             in
             (prev, next)
