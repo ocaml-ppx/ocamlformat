@@ -200,7 +200,13 @@ let doc_atrs atrs =
 module type Module_item = sig
   type t
 
-  val break_between : Cmts.t -> t * Conf.t -> t * Conf.t -> bool
+  val break_between :
+       cmts:'a
+    -> has_cmts_before:('a -> Location.t -> bool)
+    -> has_cmts_after:('a -> Location.t -> bool)
+    -> t * Conf.t
+    -> t * Conf.t
+    -> bool
 end
 
 module Structure_item : Module_item with type t = structure_item = struct
@@ -274,9 +280,10 @@ module Structure_item : Module_item with type t = structure_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between cmts (i1, c1) (i2, c2) =
-    Cmts.has_after cmts i1.pstr_loc
-    || Cmts.has_before cmts i2.pstr_loc
+  let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+      =
+    has_cmts_after cmts i1.pstr_loc
+    || has_cmts_before cmts i2.pstr_loc
     || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || (not (is_simple (i2, c2)))
@@ -340,9 +347,10 @@ module Signature_item : Module_item with type t = signature_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between cmts (i1, c1) (i2, c2) =
-    Cmts.has_after cmts i1.psig_loc
-    || Cmts.has_before cmts i2.psig_loc
+  let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+      =
+    has_cmts_after cmts i1.psig_loc
+    || has_cmts_before cmts i2.psig_loc
     || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || (not (is_simple (i2, c2)))
@@ -356,9 +364,10 @@ module Expression : Module_item with type t = expression = struct
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pexp_loc c.Conf.margin
 
-  let break_between cmts (i1, c1) (i2, c2) =
-    Cmts.has_after cmts i1.pexp_loc
-    || Cmts.has_before cmts i2.pexp_loc
+  let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+      =
+    has_cmts_after cmts i1.pexp_loc
+    || has_cmts_before cmts i2.pexp_loc
     || (not (is_simple (i1, c1)))
     || not (is_simple (i2, c2))
 end
@@ -514,24 +523,35 @@ let location = function
   | Str x -> x.pstr_loc
   | Top -> Location.none
 
-let break_between_modules cmts (i1, c1) (i2, c2) =
+let break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+    (i2, c2) =
   let has_doc itm = Option.is_some (fst (doc_atrs (attributes itm))) in
   let is_simple (itm, c) =
     Location.is_single_line (location itm) c.Conf.margin
   in
-  Cmts.has_after cmts (location i1)
-  || Cmts.has_before cmts (location i2)
+  has_cmts_after cmts (location i1)
+  || has_cmts_before cmts (location i2)
   || has_doc i1 || has_doc i2
   || (not (is_simple (i1, c1)))
   || not (is_simple (i2, c2))
 
-let break_between cmts (i1, c1) (i2, c2) =
+let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
   match (i1, i2) with
-  | Str i1, Str i2 -> Structure_item.break_between cmts (i1, c1) (i2, c2)
-  | Sig i1, Sig i2 -> Signature_item.break_between cmts (i1, c1) (i2, c2)
-  | Exp i1, Exp i2 -> Expression.break_between cmts (i1, c1) (i2, c2)
-  | Mty _, Mty _ -> break_between_modules cmts (i1, c1) (i2, c2)
-  | Mod _, Mod _ -> break_between_modules cmts (i1, c1) (i2, c2)
+  | Str i1, Str i2 ->
+      Structure_item.break_between ~cmts ~has_cmts_before ~has_cmts_after
+        (i1, c1) (i2, c2)
+  | Sig i1, Sig i2 ->
+      Signature_item.break_between ~cmts ~has_cmts_before ~has_cmts_after
+        (i1, c1) (i2, c2)
+  | Exp i1, Exp i2 ->
+      Expression.break_between ~cmts ~has_cmts_before ~has_cmts_after
+        (i1, c1) (i2, c2)
+  | Mty _, Mty _ ->
+      break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+        (i2, c2)
+  | Mod _, Mod _ ->
+      break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+        (i2, c2)
   | _ -> assert false
 
 (** Precedence levels of Ast terms. *)
