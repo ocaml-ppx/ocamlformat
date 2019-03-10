@@ -310,7 +310,7 @@ OPTIONS
            configuration. default sets each option to its default value.
            compact sets options for a generally compact code style. sparse
            sets options for a generally sparse code style. janestreet is the
-           profile used at JaneStreet. 
+           profile used at Jane Street. 
 
        --print-config
            Print the configuration determined by the environment variable,

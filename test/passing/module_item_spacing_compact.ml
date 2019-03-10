@@ -1,5 +1,3 @@
-[@@@ocamlformat "module-item-spacing=compact"]
-
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 let f x = x + 1
@@ -91,14 +89,6 @@ let a = a
 and a = a
 and a = a
 
-[@@ocamlformat "module-item-spacing=sparse"]
-
-and a = a
-and a = a
-and a = a
-
-[@@ocamlformat "module-item-spacing=compact"]
-
 and a = a
 and a = a
 and a = a
@@ -108,43 +98,6 @@ let x = 1
 (* floating *)
 
 let y = 2
-
-;;
-[@@@ocamlformat "module-item-spacing=sparse"]
-
-let cmos_rtc_seconds = 0x00
-let cmos_rtc_seconds_alarm = 0x01
-let cmos_rtc_minutes = 0x02
-
-let x = o
-
-let log_other = 0x000001
-let log_cpu = 0x000002
-let log_fpu = 0x000004
-
-let cr0_pe = 1 lsl 0
-let cr0_mp = 1 lsl 1
-let cr0_em = 1 lsl 2
-
-;;
-[@@@ocamlformat "module-item-spacing=compact"]
-
-let cmos_rtc_seconds = 0x00
-let cmos_rtc_seconds_alarm = 0x01
-let cmos_rtc_minutes = 0x02
-
-let x = o
-
-let log_other = 0x000001
-let log_cpu = 0x000002
-let log_fpu = 0x000004
-
-let cr0_pe = 1 lsl 0
-let cr0_mp = 1 lsl 1
-let cr0_em = 1 lsl 2
-
-;;
-[@@@ocamlformat "module-item-spacing=preserve"]
 
 let cmos_rtc_seconds = 0x00
 let cmos_rtc_seconds_alarm = 0x01
