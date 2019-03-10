@@ -1319,6 +1319,16 @@ let default_profile =
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
+let beginner_profile =
+  { default_profile with
+    break_infix_before_func= false
+  ; break_separators= `After
+  ; break_sequences= true
+  ; field_space= `Loose
+  ; sequence_style= `Terminator }
+
+let structure_left_margin_profile = default_profile
+
 let compact_profile =
   { default_profile with
     break_cases= `Fit
@@ -1417,6 +1427,15 @@ let (_profile : t option C.t) =
     [ ( "default"
       , Some default_profile
       , "$(b,default) sets each option to its default value." )
+    ; ( "beginner"
+      , Some beginner_profile
+      , "$(b,beginner) sets options for a beginner-friendly style, closer \
+         to imperative syntax." )
+    ; ( "structure-left-margin"
+      , Some structure_left_margin_profile
+      , "$(b,structure-left-margin) sets options so that the structure of \
+         the code is obvious by looking only at the left margin of the \
+         code." )
     ; ( "compact"
       , Some compact_profile
       , "$(b,compact) sets options for a generally compact code style." )
