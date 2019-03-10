@@ -39,7 +39,6 @@ let _ = if (* a2 *) B (* c2 *) then (* d2 *) E (* f2 *) else (* g2 *) H
 (* i2 *)
 
 let _ = if (* a3 *) B (* c3 *) then (* d3 *) E (* f3 *) else (* g3 *) H
-
 (* i3 *)
 
 ;;
@@ -180,7 +179,6 @@ type t =
      tempor incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb (* foo *)
   | Bbbbbbbbbb
-
 (* foo *)
 
 let () =

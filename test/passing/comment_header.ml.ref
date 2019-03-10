@@ -19,7 +19,6 @@
 open Module
 
 type typ = typ
-
 (* XXXXXXXXXXXXXX XX XXxxxxxxxx *)
 
 (* b *)

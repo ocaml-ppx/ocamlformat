@@ -362,7 +362,6 @@ let pop_castable () =
       clist := rest ;
       c
   | [] -> raise Not_found
-
 (* We can add foos and bars to this list, and retrive them *)
 
 ;;
@@ -2715,9 +2714,7 @@ type _ t = I : int t
 
 let f (type a) (x : a t) =
   let module M = struct
-    let (I : a t) = x
-
-    (* fail because of toplevel let *)
+    let (I : a t) = x (* fail because of toplevel let *)
 
     let x : a t = I
   end in
@@ -2773,9 +2770,7 @@ module F (T : sig
   type _ t
 end) =
 struct
-  let f (type a) (Neq n : (a, a T.t) eq) = n
-
-  (* warn! *)
+  let f (type a) (Neq n : (a, a T.t) eq) = n (* warn! *)
 end
 
 (* First-Order Unification by Structural Recursion *)
@@ -3355,7 +3350,6 @@ module M = (val m)
 module type S' = sig
   val f : int -> int
 end
-
 (* Even works with recursion, but must be fully explicit *)
 
 ;;
@@ -4298,7 +4292,6 @@ let g ?x () = ()
 
 ;;
 foo (() ; g)
-
 (* PR#5748 *)
 
 ;;
@@ -4381,7 +4374,6 @@ type t = {x: int; y: int}
 
 ;;
 fun {x= 3; z= 2} -> ()
-
 (* mixed labels *)
 
 ;;
@@ -5377,7 +5369,6 @@ module M1 : sig
   module C' = C
 end =
   M
-
 (* sound, but should probably fail *)
 
 ;;
@@ -5484,9 +5475,7 @@ end
 module M = struct
   module X = struct end
 
-  module Y = FF (X)
-
-  (* XXX *)
+  module Y = FF (X) (* XXX *)
 
   type t = Y.t
 end
@@ -8516,7 +8505,6 @@ external t : float -> float = "t" [@@unboxed]
 let _ = ignore ( + )
 
 let _ = raise Exit 3
-
 (* comment 9644 of PR#6000 *)
 
 ;;
@@ -8759,9 +8747,7 @@ end
 
 module X3 : sig end = struct
   module O = struct
-    let x = 42
-
-    (* unused *)
+    let x = 42 (* unused *)
   end
 
   open O
@@ -8795,7 +8781,6 @@ module OK = struct
   (* non principal *)
 
   let f3 (r : t) = match r with {x; y} -> y + y
-
   (* ok *)
 end
 
