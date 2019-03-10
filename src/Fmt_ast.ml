@@ -586,7 +586,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
-  | Ptyp_package pty -> hovbox 0 (fmt_package_type c ctx pty ptyp_loc true)
+  | Ptyp_package pty ->
+      hovbox 0 (fmt "module@ " $ fmt_package_type c ctx pty ptyp_loc)
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
@@ -679,21 +680,13 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       $ fmt_longident_loc c ~pre:"#" lid )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
-and fmt_package_type c ctx (lid, cnstrs) parent_loc module_kw =
-  let box_if =
-    if Location.is_single_line parent_loc c.conf.margin then hvbox_if
-    else vbox_if
+and fmt_package_type c ctx (lid, cnstrs) parent_loc =
+  let box =
+    if Location.is_single_line parent_loc c.conf.margin then hvbox else vbox
   in
-  ( if module_kw then hvbox 0 (fmt "module@ " $ fmt_longident_loc c lid)
-  else fmt_longident_loc c lid )
-  $ fmt_if_k
-      (not (List.is_empty cnstrs))
-      (fmt_or
-         (Location.is_single_line parent_loc c.conf.margin)
-         "@;<1 2>" "@;<1000 2>")
-  $ box_if
-      (not (List.is_empty cnstrs))
-      0
+  fmt_longident_loc c lid
+  $ fmt_if (not (List.is_empty cnstrs)) "@;<1 2>"
+  $ box 0
       (list_fl cnstrs (fun ~first ~last:_ (lid, typ) ->
            fmt_or first "with type " "@;<1 1>and type "
            $ fmt_longident_loc c lid $ fmt " = "
@@ -949,7 +942,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let ctx = Typ typ in
       wrap_if parens "(" ")"
         ( fmt "module " $ fmt_str_loc c name $ fmt "@ : "
-        $ hovbox 0 (fmt_package_type c ctx pty ppat_loc false) )
+        $ fmt_package_type c ctx pty ppat_loc )
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
@@ -1599,7 +1592,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       $ wrap_fits_breaks ~space:false c.conf "(" ")"
           ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
           $ Option.call ~f:epi $ fmt "@ : "
-          $ hovbox 0 (fmt_package_type c ctx pty pexp_loc false)
+          $ fmt_package_type c ctx pty pexp_loc
           $ fmt_atrs )
   | Pexp_constraint (e, t) ->
       hvbox 2
@@ -3680,7 +3673,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
                   ( fmt "val "
                   $ fmt_expression c (sub_exp ~ctx e1)
                   $ fmt "@;<1 2>: "
-                  $ hovbox 0 (fmt_package_type c ctx pty pmod_loc false) ))
+                  $ fmt_package_type c ctx pty pmod_loc ))
       ; epi=
           Option.some_if has_epi
             ( Cmts.fmt_after c pmod_loc

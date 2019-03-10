@@ -48,19 +48,17 @@ end
 let f (module M : S with type a = int and type b = int) = M.va + M.vb
 
 let f (module M : S with type a = int and type b = int)
-    (module N
-    : SSSS
-        with type a = int
-         and type b = int
-         and type c = int
-         and type d = int
-         and type e = int)
-    (module N
-    : SSSS
-        with type a = int
-         and type b = int
-         and type c = int
-         and type d = int)
+    (module N : SSSS
+      with type a = int
+       and type b = int
+       and type c = int
+       and type d = int
+       and type e = int)
+    (module N : SSSS
+      with type a = int
+       and type b = int
+       and type c = int
+       and type d = int)
     (module O : S with type a = int and type b = int and type c = int) =
   M.va + N.vb
 

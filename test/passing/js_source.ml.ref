@@ -3425,7 +3425,7 @@ let make_set (type s) cmp =
     let compare = cmp
   end)
   : Set.S
-      with type elt = s)
+    with type elt = s)
 ;;
 
 (* No type annotation here *)
@@ -3647,9 +3647,9 @@ end
 let ssmap =
   (module SSMap
   : MapT
-      with type key = string
-       and type data = string
-       and type map = SSMap.map)
+    with type key = string
+     and type data = string
+     and type map = SSMap.map)
 ;;
 
 let ssmap =
@@ -3657,16 +3657,15 @@ let ssmap =
     include SSMap
   end
   : MapT
-      with type key = string
-       and type data = string
-       and type map = SSMap.map)
+    with type key = string
+     and type data = string
+     and type map = SSMap.map)
 ;;
 
 let ssmap :
-    (module MapT
-       with type key = string
-        and type data = string
-        and type map = SSMap.map) =
+    (module MapT with type key = string
+                  and type data = string
+                  and type map = SSMap.map) =
   let module S = struct
     include SSMap
   end in
@@ -5199,22 +5198,12 @@ module B' = B
 
 class b : B.a =
   object
-    method a : 'a. 'a M.s -> 'a =
-      fun (type a)
-          (module X
-          : M.S
-              with type a = a) ->
-        X.v
+    method a : 'a. 'a M.s -> 'a = fun (type a) (module X : M.S with type a = a) -> X.v
   end
 
 class b' : B.a =
   object
-    method a : 'a. 'a M'.s -> 'a =
-      fun (type a)
-          (module X
-          : M'.S
-              with type a = a) ->
-        X.v
+    method a : 'a. 'a M'.s -> 'a = fun (type a) (module X : M'.S with type a = a) -> X.v
   end
 
 module type FOO = sig
