@@ -179,6 +179,7 @@ type t =
      tempor incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb (* foo *)
   | Bbbbbbbbbb
+
 (* foo *)
 
 let () =
