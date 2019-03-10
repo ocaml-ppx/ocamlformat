@@ -62,6 +62,7 @@ match Conf.action with
 | In_out ({kind= `Use_file; _}, _) ->
     user_error "Cannot convert Reason code with --use-file" []
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
+| Check _ -> user_error "Cannot check Reason code with --check" []
 | In_out
     ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
     , output_file ) -> (
