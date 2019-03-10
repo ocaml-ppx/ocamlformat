@@ -1459,7 +1459,7 @@ end = struct
               Some (InfixOp0, child)
           | ('@' | '^'), _ -> Some (InfixOp1, child)
           | ('+' | '-'), _ -> Some (InfixOp2, child)
-          | '*', _ when Poly.(i <> "*" && i.[1] = '*') ->
+          | '*', _ when String.(i <> "*") && Char.(i.[1] = '*') ->
               Some (InfixOp4, child)
           | ('*' | '/' | '%'), _ | _, ("lor" | "lxor" | "mod" | "land") ->
               Some (InfixOp3, child)
@@ -1536,7 +1536,8 @@ end = struct
         | ('=' | '<' | '>' | '|' | '&' | '$'), _ | _, "!=" -> Some InfixOp0
         | ('@' | '^'), _ -> Some InfixOp1
         | ('+' | '-'), _ -> Some InfixOp2
-        | '*', _ when Poly.(i <> "*" && i.[1] = '*') -> Some InfixOp4
+        | '*', _ when String.(i <> "*") && Char.(i.[1] = '*') ->
+            Some InfixOp4
         | ('*' | '/' | '%'), _ | _, ("lor" | "lxor" | "mod" | "land") ->
             Some InfixOp3
         | _, ("lsl" | "lsr" | "asr") -> Some InfixOp4

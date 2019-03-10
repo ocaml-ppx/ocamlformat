@@ -116,10 +116,10 @@ and fmt_list kind l =
     let str = Format.asprintf "\n%t" fmt in
     Octavius.parse (Lexing.from_string str)
   in
-  if
-    Poly.equal (print_and_parse light_syntax) (print_and_parse heavy_syntax)
-  then light_syntax
-  else heavy_syntax
+  match (print_and_parse light_syntax, print_and_parse heavy_syntax) with
+  | Ok x, Ok y when Poly.equal x y -> light_syntax
+  | Ok _, Ok _ -> heavy_syntax
+  | Error _, _ | _, Error _ -> heavy_syntax
 
 and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
 
@@ -189,8 +189,6 @@ let fmt (txt, tags) =
 let diff c x y =
   let norm z =
     let f (txt, _) = Normalize.docstring c txt in
-    Set.of_list
-      (module String)
-      (List.map ~f (List.dedup_and_sort ~compare:Poly.compare z))
+    Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)

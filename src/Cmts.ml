@@ -612,8 +612,6 @@ let remaining_comments t =
 let diff x y =
   let norm z =
     let f (txt, _) = Normalize.comment txt in
-    Set.of_list
-      (module String)
-      (List.map ~f (List.dedup_and_sort ~compare:Poly.compare z))
+    Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)
