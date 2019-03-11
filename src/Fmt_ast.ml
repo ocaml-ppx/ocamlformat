@@ -3569,6 +3569,25 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_functor _ ->
       let xargs, me = Sugar.functor_ c.cmts ~for_functor_kw:true xmod in
+      let fmt_arg (name, mt) =
+        let { opn= opn_t
+            ; pro= pro_t
+            ; psp= psp_t
+            ; bdy= bdy_t
+            ; cls= cls_t
+            ; esp= esp_t
+            ; epi= epi_t } =
+          Option.value_map mt ~default:empty ~f:(fmt_module_type c)
+        in
+        let box_t k = opn_t $ k $ cls_t in
+        let fmt_module_type _ =
+          box_t
+            ( fmt "@ :" $ Option.call ~f:pro_t $ psp_t $ fmt "@;<1 2>"
+            $ bdy_t $ esp_t $ Option.call ~f:epi_t )
+        in
+        wrap "(" ")"
+          (hovbox 0 (fmt_str_loc c name $ opt mt fmt_module_type))
+      in
       let doc, atrs = doc_atrs pmod_attributes in
       let { opn= opn_e
           ; pro= pro_e
@@ -3590,25 +3609,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
                     ( fmt "functor"
                     $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
                     $ fmt "@;<1 2>"
-                    $ list xargs "@;<1 2>" (fun (name, mt) ->
-                          let { opn= opn_t
-                              ; pro= pro_t
-                              ; psp= psp_t
-                              ; bdy= bdy_t
-                              ; cls= cls_t
-                              ; esp= esp_t
-                              ; epi= epi_t } =
-                            Option.value_map mt ~default:empty
-                              ~f:(fmt_module_type c)
-                          in
-                          wrap "(" ")"
-                            (hovbox 0
-                               ( fmt_str_loc c name
-                               $ opt mt (fun _ ->
-                                     opn_t $ fmt "@ :"
-                                     $ Option.call ~f:pro_t $ psp_t
-                                     $ fmt "@;<1 2>" $ bdy_t $ esp_t
-                                     $ Option.call ~f:epi_t $ cls_t ) )) )
+                    $ list xargs "@;<1 2>" fmt_arg
                     $ fmt "@;<1 2>->" $ fmt "@;<1 2>"
                     $ hvbox 0
                         ( Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
