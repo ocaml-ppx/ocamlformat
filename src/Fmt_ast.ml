@@ -3078,12 +3078,14 @@ and fmt_module_type c ({ast= mty} as xmty) =
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_type c mt in
+      let box k = opn $ k $ cls in
       { empty with
         bdy=
           hvbox 0
             (wrap_if parens "(" ")"
-               ( opn $ Option.call ~f:pro $ psp $ bdy $ esp
-               $ Option.call ~f:epi $ cls
+               ( box
+                   ( Option.call ~f:pro $ psp $ bdy $ esp
+                   $ Option.call ~f:epi )
                $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
                      Cmts.fmt c loc
                      @@ list_fl wcs_and (fun ~first ~last:_ wc ->
@@ -3189,11 +3191,11 @@ and fmt_signature_item c {ast= si} =
             , blk )
         | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
+      let box k = opn $ k $ cls in
       hvbox 0
         (fmt_docstring_around ~loc:pincl_loc c doc
-           ( opn
-           $ hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy)
-           $ cls $ esp $ Option.call ~f:epi
+           ( box (hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy))
+           $ esp $ Option.call ~f:epi
            $ fmt_attributes c ~key:"@@" atrs ))
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
