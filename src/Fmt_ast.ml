@@ -3344,33 +3344,34 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                    | _ -> fmt "" )
                  $ Option.call ~f:epi ) ))
   in
-  Fn.compose (hvbox 0)
-    (fmt_docstring_around ~loc c doc)
-    ( box_b
-        ( (if Option.is_some epi_t then hovbox else hvbox)
-            0
-            ( box_t
-                ( hvbox_if (Option.is_some pro_t) 0
-                    ( ( match arg_blks with
-                      | (_, Some {opn; pro= Some _}) :: _ ->
-                          opn $ open_hvbox 0
-                      | _ -> fmt "" )
-                    $ hvbox 4
-                        ( keyword $ fmt " " $ fmt_str_loc c name
-                        $ list_pn arg_blks fmt_arg )
-                    $ Option.call ~f:pro_t )
-                $ psp_t $ bdy_t )
-            $ esp_t $ Option.call ~f:epi_t
-            $ fmt_if (Option.is_some xbody) " ="
-            $ fmt_if (Option.is_some pro_b) "@ "
-            $ Option.call ~f:pro_b )
-        $ psp_b
-        $ fmt_if (Option.is_none pro_b && Option.is_some xbody) "@ "
-        $ bdy_b )
-    $ esp_b $ Option.call ~f:epi_b
-    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
-    $ fmt_if_k (Option.is_some epi) (fmt_or (Option.is_some epi_b) " " "@ ")
-    $ Option.call ~f:epi )
+  (fmt_docstring_around ~loc c doc)
+    (hvbox 0
+       ( box_b
+           ( (if Option.is_some epi_t then hovbox else hvbox)
+               0
+               ( box_t
+                   ( hvbox_if (Option.is_some pro_t) 0
+                       ( ( match arg_blks with
+                         | (_, Some {opn; pro= Some _}) :: _ ->
+                             opn $ open_hvbox 0
+                         | _ -> fmt "" )
+                       $ hvbox 4
+                           ( keyword $ fmt " " $ fmt_str_loc c name
+                           $ list_pn arg_blks fmt_arg )
+                       $ Option.call ~f:pro_t )
+                   $ psp_t $ bdy_t )
+               $ esp_t $ Option.call ~f:epi_t
+               $ fmt_if (Option.is_some xbody) " ="
+               $ fmt_if (Option.is_some pro_b) "@ "
+               $ Option.call ~f:pro_b )
+           $ psp_b
+           $ fmt_if (Option.is_none pro_b && Option.is_some xbody) "@ "
+           $ bdy_b )
+       $ esp_b $ Option.call ~f:epi_b
+       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+       $ fmt_if_k (Option.is_some epi)
+           (fmt_or (Option.is_some epi_b) " " "@ ")
+       $ Option.call ~f:epi ))
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
