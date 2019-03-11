@@ -3053,6 +3053,18 @@ and fmt_module_type c ({ast= mty} as xmty) =
       let xargs, mt2 =
         Sugar.functor_type c.cmts ~for_functor_kw:true xmty
       in
+      let fmt_arg (name, mt1) =
+        let mt1 = Option.map ~f:(fmt_module_type c) mt1 in
+        wrap "(" ")"
+          (hovbox 0
+             ( fmt_str_loc c name
+             $ opt mt1 (fun mt1 ->
+                   let {opn; pro; psp; bdy; cls; esp; epi} = mt1 in
+                   let box k = opn $ k $ cls in
+                   box
+                     ( fmt " :" $ Option.call ~f:pro $ psp $ fmt "@;<1 2>"
+                     $ bdy $ esp $ Option.call ~f:epi ) ) ))
+      in
       let blk = fmt_module_type c mt2 in
       { blk with
         pro=
@@ -3060,18 +3072,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
             ( fmt "functor"
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
             $ fmt "@;<1 2>"
-            $ list xargs "@;<1 2>" (fun (name, mt1) ->
-                  let mt1 = Option.map ~f:(fmt_module_type c) mt1 in
-                  wrap "(" ")"
-                    (hovbox 0
-                       ( fmt_str_loc c name
-                       $ opt mt1 (fun mt1 ->
-                             let {opn; pro; psp; bdy; cls; esp; epi} =
-                               mt1
-                             in
-                             opn $ fmt " :" $ Option.call ~f:pro $ psp
-                             $ fmt "@;<1 2>" $ bdy $ esp
-                             $ Option.call ~f:epi $ cls ) )) )
+            $ list xargs "@;<1 2>" fmt_arg
             $ fmt "@;<1 2>-> " $ Option.call ~f:blk.pro )
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc) }
   | Pmty_with _ ->
@@ -3788,10 +3789,10 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
+      let box k = opn $ k $ cls in
       fmt_docstring_around ~loc:pincl_loc c doc
-        ( opn
-        $ hvbox 2 (fmt "include " $ Option.call ~f:pro)
-        $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
+        ( box (hvbox 2 (fmt "include " $ Option.call ~f:pro) $ psp $ bdy)
+        $ esp $ Option.call ~f:epi
         $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
