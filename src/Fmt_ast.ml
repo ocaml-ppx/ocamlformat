@@ -3456,10 +3456,11 @@ and fmt_module_expr c ({ast= m} as xmod) =
           blk_a ) =
         maybe_generative c ~ctx me_a
       in
+      let box_f k = opn_f $ k $ cls_f in
       let fmt_rator =
         fmt_docstring c ~epi:(fmt "@,") doc
-        $ opn_f $ psp_f $ Option.call ~f:pro_f $ bdy_f $ cls_f $ esp_f
-        $ Option.call ~f:epi_f $ fmt "@ " $ fmt "("
+        $ box_f (psp_f $ Option.call ~f:pro_f $ bdy_f)
+        $ esp_f $ Option.call ~f:epi_f $ fmt "@ " $ fmt "("
       in
       if Option.is_some pro_a then
         { blk_a with
@@ -3467,8 +3468,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
         ; pro=
             Some
               ( Cmts.fmt_before c pmod_loc
-              $ open_hvbox 2 $ fmt_rator $ close_box $ Option.call ~f:pro_a
-              )
+              $ hvbox 2 fmt_rator $ Option.call ~f:pro_a )
         ; cls= cls_a
         ; epi=
             Some
