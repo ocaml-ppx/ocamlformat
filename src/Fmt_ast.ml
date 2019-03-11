@@ -3758,7 +3758,9 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   and fmt_cmts_after = Cmts.fmt_after ~pro:(fmt "@ ") c si.pstr_loc in
   (fun k ->
     fmt_cmts_before
-    $ hvbox_if (Cmts.has_after c.cmts si.pstr_loc) 0 (k $ fmt_cmts_after) )
+    $ hvbox_if
+        (Location.is_single_line (Ast.location ctx) c.conf.margin)
+        0 (k $ fmt_cmts_after) )
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->

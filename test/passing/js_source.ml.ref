@@ -38,26 +38,20 @@ x]
 
 let ([%foo 2 + 1] : [%foo bar.baz]) = [%foo "foo"]
 
-[%%foo
-module M = [%bar]]
+[%%foo module M = [%bar]]
 
 let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
 
-[%%foo:
-'a list]
+[%%foo: 'a list]
 
 let ([%foo: [`Foo]] : [%foo: t -> t]) = [%foo: < foo : t > ]
 
-[%%foo?
-_]
-
-[%%foo?
-Some y when y > 0]
+[%%foo? _]
+[%%foo? Some y when y > 0]
 
 let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? { x }]
 
-[%%foo:
-module M : [%baz]]
+[%%foo: module M : [%baz]]
 
 let ([%foo: include S with type t = t] : [%foo: val x : t
                                                 val y : t]) = [%foo: type t = t]
@@ -193,36 +187,20 @@ type t = int [@@foo]
 
 and t = int [@@foo]]
 
-[%%foo
-type t += T [@@foo]]
-
-[%%foo
-class x = x [@@foo]]
-
-[%%foo
-class type x = x [@@foo]]
-
-[%%foo
-external x : _ = "" [@@foo]]
-
-[%%foo
-exception X [@@foo]]
-
-[%%foo
-module M = M [@@foo]]
+[%%foo type t += T [@@foo]]
+[%%foo class x = x [@@foo]]
+[%%foo class type x = x [@@foo]]
+[%%foo external x : _ = "" [@@foo]]
+[%%foo exception X [@@foo]]
+[%%foo module M = M [@@foo]]
 
 [%%foo
 module rec M : S = M [@@foo]
 and M : S = M [@@foo]]
 
-[%%foo
-module type S = S [@@foo]]
-
-[%%foo
-include M [@@foo]]
-
-[%%foo
-open M [@@foo]]
+[%%foo module type S = S [@@foo]]
+[%%foo include M [@@foo]]
+[%%foo open M [@@foo]]
 
 (* Signature items *)
 module type S = sig
@@ -384,16 +362,12 @@ let is_a x =
 (* The type must be open to create extension *)
 
 type foo
-type foo += A of int
-
-(* Error type is not open *)
+type foo += A of int (* Error type is not open *)
 
 (* The type parameters must match *)
 
 type 'a foo = ..
-type ('a, 'b) foo += A of int
-
-(* Error: type parameter mismatch *)
+type ('a, 'b) foo += A of int (* Error: type parameter mismatch *)
 
 (* In a signature the type does not have to be open *)
 
@@ -445,13 +419,9 @@ let get_num : type a. a foo -> a -> a option =
 type 'a foo = .. constraint 'a = [> `Var]
 type 'a foo += A of 'a
 
-let a = A 9
+let a = A 9 (* ERROR: Constraints not met *)
 
-(* ERROR: Constraints not met *)
-
-type 'a foo += B : int foo
-
-(* ERROR: Constraints not met *)
+type 'a foo += B : int foo (* ERROR: Constraints not met *)
 
 (* Signatures can make an extension private *)
 
@@ -475,9 +445,7 @@ let is_s x =
   | _ -> false
 ;;
 
-let a2 = M_S.A 20
-
-(* ERROR: Cannot create a value using a private constructor *)
+let a2 = M_S.A 20 (* ERROR: Cannot create a value using a private constructor *)
 
 (* Extensions can be rebound *)
 
@@ -489,22 +457,16 @@ end
 
 type foo += A2 = M.A1
 type bar = ..
-type bar += A3 = M.A1
-
-(* Error: rebind wrong type *)
+type bar += A3 = M.A1 (* Error: rebind wrong type *)
 
 module M = struct
   type foo += private B1 of int
 end
 
 type foo += private B2 = M.B1
-type foo += B3 = M.B1
+type foo += B3 = M.B1 (* Error: rebind private extension *)
 
-(* Error: rebind private extension *)
-
-type foo += C = Unknown
-
-(* Error: unbound extension *)
+type foo += C = Unknown (* Error: unbound extension *)
 
 (* Extensions can be rebound even if type is closed *)
 
@@ -530,18 +492,14 @@ type 'a foo2 += D = A | E = B | F = C
 
 type +'a foo = ..
 type 'a foo += A of (int -> 'a)
-type 'a foo += B of ('a -> int)
-
-(* ERROR: Parameter variances are not satisfied *)
+type 'a foo += B of ('a -> int) (* ERROR: Parameter variances are not satisfied *)
 
 type _ foo += C : ('a -> int) -> 'a foo
 
 (* ERROR: Parameter variances are not satisfied *)
 
 type 'a bar = ..
-type +'a bar += D of (int -> 'a)
-
-(* ERROR: type variances do not match *)
+type +'a bar += D of (int -> 'a) (* ERROR: type variances do not match *)
 
 (* Exceptions are compatible with extensions *)
 
@@ -574,28 +532,20 @@ end
 type foo = ..
 type foo += Foo of int * int option | Bar of int option
 
-let x = Foo (3, Some 4), Bar (Some 5)
-
-(* Prints Foo and Bar successfully *)
+let x = Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully *)
 
 type foo += Foo of string
 
-let y = x
-
-(* Prints Bar but not Foo (which has been shadowed) *)
+let y = x (* Prints Bar but not Foo (which has been shadowed) *)
 
 exception Foo of int * int option
 exception Bar of int option
 
-let x = Foo (3, Some 4), Bar (Some 5)
-
-(* Prints Foo and Bar successfully *)
+let x = Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully *)
 
 type foo += Foo of string
 
-let y = x
-
-(* Prints Bar and part of Foo (which has been shadowed) *)
+let y = x (* Prints Bar and part of Foo (which has been shadowed) *)
 
 (* Test Obj functions *)
 
@@ -606,22 +556,16 @@ let extension_name e = Obj.extension_name (Obj.extension_constructor e)
 let extension_id e = Obj.extension_id (Obj.extension_constructor e)
 let n1 = extension_name Foo
 let n2 = extension_name (Bar 1)
-let t = extension_id (Bar 2) = extension_id (Bar 3)
+let t = extension_id (Bar 2) = extension_id (Bar 3) (* true *)
 
-(* true *)
-
-let f = extension_id (Bar 2) = extension_id Foo
-
-(* false *)
+let f = extension_id (Bar 2) = extension_id Foo (* false *)
 
 let is_foo x = extension_id Foo = extension_id x
 
 type foo += Foo
 
 let f = is_foo Foo
-let _ = Obj.extension_constructor 7
-
-(* Invald_arg *)
+let _ = Obj.extension_constructor 7 (* Invald_arg *)
 
 let _ =
   Obj.extension_constructor
@@ -2527,9 +2471,7 @@ let example6 : type a. a wrapPoly -> a -> int =
 
 (* This should not be allowed *)
 
-let _ = example6 (WrapPoly AandBTags) `TagB
-
-(* This causes a seg fault *)
+let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
 module F (S : sig
   type 'a t
@@ -2847,9 +2789,7 @@ let bad (type a) =
     module rec M : sig
       val e : (int, a) eq
     end = struct
-      let (Refl : (int, a) eq) = M.e
-
-      (* must fail for soundness *)
+      let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
 
       let e : (int, a) eq = Refl
     end
@@ -3046,9 +2986,7 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
     comp_subst (sub' (EAlist (weaken_alist s))) (fun t' -> weaken_term (subst_var x t t'))
 ;;
 
-let subst' d = pre_subst (sub' d)
-
-(*  val subst' : 'a ealist -> 'a term -> 'a term *)
+let subst' d = pre_subst (sub' d) (*  val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
 
@@ -4639,8 +4577,7 @@ type t =
 ;;
 { x = 3; z = 2 }
 ;;
-fun { x = 3; z = 2 } -> ()
-(* mixed labels *)
+fun { x = 3; z = 2 } -> () (* mixed labels *)
 
 ;;
 { x = 3; contents = 2 }
@@ -5100,19 +5037,13 @@ module type S = sig
 end
 
 let f (type a) (module X : S with type t = a) = ()
-let _ = f (module A)
-
-(* ok *)
+let _ = f (module A) (* ok *)
 
 module A_annotated_alias : S with type t = (module A.A_S) = A
 
-let _ = f (module A_annotated_alias)
+let _ = f (module A_annotated_alias) (* ok *)
 
-(* ok *)
-
-let _ = f (module A_annotated_alias : S with type t = (module A.A_S))
-
-(* ok *)
+let _ = f (module A_annotated_alias : S with type t = (module A.A_S)) (* ok *)
 
 module A_alias = A
 
@@ -5120,21 +5051,13 @@ module A_alias_expanded = struct
   include A_alias
 end
 
-let _ = f (module A_alias_expanded : S with type t = (module A.A_S))
+let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
 
-(* ok *)
+let _ = f (module A_alias_expanded) (* ok *)
 
-let _ = f (module A_alias_expanded)
+let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
 
-(* ok *)
-
-let _ = f (module A_alias : S with type t = (module A.A_S))
-
-(* doesn't type *)
-
-let _ = f (module A_alias)
-
-(* doesn't type either *)
+let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo (Bar : sig
   type a = private [> `A]
@@ -7439,9 +7362,7 @@ module PR_4758 = struct
     module Other = A
   end
 
-  module C' = C
-
-  (* check that we can take an alias *)
+  module C' = C (* check that we can take an alias *)
 
   module F (X : sig end) = struct
     type t
@@ -8103,9 +8024,7 @@ end =
   G (M1)
 
 let _ = test 102 (Lazy.force M2.x) 3
-let _ = Gc.full_major ()
-
-(* will shortcut forwarding in M1.x *)
+let _ = Gc.full_major () (* will shortcut forwarding in M1.x *)
 
 module rec M3 : sig
   val x : int Lazy.t
@@ -8798,8 +8717,7 @@ external s : int -> int = "s" [@@untagged]
 external t : float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
-let _ = raise Exit 3
-(* comment 9644 of PR#6000 *)
+let _ = raise Exit 3 (* comment 9644 of PR#6000 *)
 
 ;;
 fun b -> if b then format_of_string "x" else "y"
@@ -9112,9 +9030,7 @@ module X1 : sig end = struct
 end
 
 module X2 : sig end = struct
-  let x = 42
-
-  (* unused value *)
+  let x = 42 (* unused value *)
 
   let _f = function
     | A ->
@@ -9128,9 +9044,7 @@ module X3 : sig end = struct
     let x = 42 (* unused *)
   end
 
-  open O
-
-  (* unused open *)
+  open O (* unused open *)
 
   let _f = function
     | A ->
@@ -9155,9 +9069,7 @@ end
 module OK = struct
   open M1
 
-  let f1 (r : t) = r.x
-
-  (* ok *)
+  let f1 (r : t) = r.x (* ok *)
 
   let f2 r =
     ignore (r : t);
@@ -9438,9 +9350,7 @@ module Shadow1 = struct
     type s = { x : string }
   end
 
-  open M
-
-  (* this open is unused, it isn't reported as shadowing 'x' *)
+  open M (* this open is unused, it isn't reported as shadowing 'x' *)
 
   let y : t = { x = 0 }
 end
@@ -9452,9 +9362,7 @@ module Shadow2 = struct
     type s = { x : string }
   end
 
-  open M
-
-  (* this open shadows label 'x' *)
+  open M (* this open shadows label 'x' *)
 
   let y = { x = "" }
 end
