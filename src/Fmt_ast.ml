@@ -1588,12 +1588,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt "@ : "
-          $ fmt_package_type c ctx pty pexp_loc
-          $ fmt_atrs )
+      let box k = opn $ k $ cls in
+      wrap_fits_breaks ~space:false c.conf "(" ")"
+        ( box (fmt "module " $ Option.call ~f:pro $ psp $ bdy)
+        $ esp $ Option.call ~f:epi $ fmt "@ : "
+        $ fmt_package_type c ctx pty pexp_loc
+        $ fmt_atrs )
   | Pexp_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -1958,10 +1958,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt_atrs )
+      let box k = opn $ k $ cls in
+      wrap_fits_breaks ~space:false c.conf "(" ")"
+        ( box (fmt "module " $ Option.call ~f:pro $ psp $ bdy)
+        $ esp $ Option.call ~f:epi $ fmt_atrs )
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         hvbox 0

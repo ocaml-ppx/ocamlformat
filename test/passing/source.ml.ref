@@ -1015,7 +1015,7 @@ print_endline
      (f
         (Some
            ( module struct
-             let x = false
+               let x = false
            end ))))
 
 type 'a ty = Int : int ty | Bool : bool ty
@@ -3253,9 +3253,9 @@ let sort (type s) (module Set : Set.S with type elt = s) l =
 (* No real improvement here? *)
 let make_set (type s) cmp =
   ( module Set.Make (struct
-    type t = s
+      type t = s
 
-    let compare = cmp
+      let compare = cmp
   end)
   : Set.S
     with type elt = s )
@@ -3264,9 +3264,9 @@ let make_set (type s) cmp =
 let sort_cmp (type s) cmp =
   sort
     ( module Set.Make (struct
-      type t = s
+        type t = s
 
-      let compare = cmp
+        let compare = cmp
     end) )
 
 module type S = sig
@@ -3285,9 +3285,9 @@ let f (type a) (module M : S with type t = a) = M.x
 ;;
 f
   ( module struct
-    type t = int
+      type t = int
 
-    let x = 1
+      let x = 1
   end )
 
 type 'a s = {s: (module S with type t = 'a)}
@@ -3295,9 +3295,9 @@ type 'a s = {s: (module S with type t = 'a)}
 ;;
 { s=
     ( module struct
-      type t = int
+        type t = int
 
-      let x = 1
+        let x = 1
     end ) }
 
 let f {s= (module M)} = M.x
@@ -3319,13 +3319,13 @@ let f (module M : S) y (module N : S) = M.x + y + N.x
 
 let m =
   ( module struct
-    let x = 3
+      let x = 3
   end )
 
 (* Error *)
 let m =
   ( module struct
-    let x = 3
+      let x = 3
   end
   : S )
 
@@ -3335,7 +3335,7 @@ f m 1 m
 ;;
 f m 1
   ( module struct
-    let x = 2
+      let x = 2
   end )
 
 ;;
@@ -3361,7 +3361,7 @@ end
 ;;
 let rec (module M : S') =
   ( module struct
-    let f n = if n <= 0 then 1 else n * M.f (n - 1)
+      let f n = if n <= 0 then 1 else n * M.f (n - 1)
   end
   : S' )
 in
@@ -3490,7 +3490,7 @@ module SSMap = struct
 end
 
 let ssmap =
-  (module SSMap
+  ( module SSMap
   : MapT
     with type key = string
      and type data = string
@@ -3498,7 +3498,7 @@ let ssmap =
 
 let ssmap =
   ( module struct
-    include SSMap
+      include SSMap
   end
   : MapT
     with type key = string
@@ -5843,7 +5843,7 @@ end
 
 let v =
   ( module struct
-    let x = 3
+      let x = 3
   end
   : S )
 
@@ -5866,9 +5866,9 @@ end
 
 let v =
   ( module struct
-    type t = int
+      type t = int
 
-    let x = 3
+      let x = 3
   end
   : S )
 
