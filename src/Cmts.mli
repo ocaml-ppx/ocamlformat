@@ -80,6 +80,18 @@ val fmt_within :
 (** [fmt_within loc] formats the comments associated with [loc] that appear
     within [loc]. *)
 
+val number_of_comments_before : t -> Location.t -> int
+(** [number_of_comments_before t loc] returns the number of comments that
+    appear before [loc]. *)
+
+val number_of_comments_within : t -> Location.t -> int
+(** [number_of_comments_within t loc] returns the number of comments that
+    appear within [loc]. *)
+
+val number_of_comments_after : t -> Location.t -> int
+(** [number_of_comments_after t loc] returns the number of comments that
+    appear after [loc]. *)
+
 val fmt :
      t
   -> Conf.t

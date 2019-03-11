@@ -589,6 +589,15 @@ let has_within t loc = Hashtbl.mem t.cmts_within loc
 let has_after t loc =
   Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
 
+let number_of_comments tbl loc =
+  Option.value_map (Hashtbl.find tbl loc) ~default:0 ~f:List.length
+
+let number_of_comments_before t loc = number_of_comments t.cmts_before loc
+
+let number_of_comments_within t loc = number_of_comments t.cmts_within loc
+
+let number_of_comments_after t loc = number_of_comments t.cmts_after loc
+
 (** returns comments that have not been formatted *)
 let remaining_comments t =
   let get t before_after =
