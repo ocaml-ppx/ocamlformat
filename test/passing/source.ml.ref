@@ -40,21 +40,26 @@ x]
 
 let ([%foo 2 + 1] : [%foo bar.baz]) = [%foo "foo"]
 
-[%%foo module M = [%bar]]
+[%%foo
+module M = [%bar]]
 
 let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
 
-[%%foo: 'a list]
+[%%foo:
+'a list]
 
 let ([%foo: [`Foo]] : [%foo: t -> t]) = [%foo: < foo: t > ]
 
-[%%foo? _]
+[%%foo?
+_]
 
-[%%foo? Some y when y > 0]
+[%%foo?
+Some y when y > 0]
 
 let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? {x}]
 
-[%%foo: module M : [%baz]]
+[%%foo:
+module M : [%baz]]
 
 let ([%foo: include S with type t = t] :
       [%foo:
@@ -207,27 +212,36 @@ type t = int [@@foo]
 
 and t = int [@@foo]]
 
-[%%foo type t += T [@@foo]]
+[%%foo
+type t += T [@@foo]]
 
-[%%foo class x = x [@@foo]]
+[%%foo
+class x = x [@@foo]]
 
-[%%foo class type x = x [@@foo]]
+[%%foo
+class type x = x [@@foo]]
 
-[%%foo external x : _ = "" [@@foo]]
+[%%foo
+external x : _ = "" [@@foo]]
 
-[%%foo exception X [@@foo]]
+[%%foo
+exception X [@@foo]]
 
-[%%foo module M = M [@@foo]]
+[%%foo
+module M = M [@@foo]]
 
 [%%foo
 module rec M : S = M [@@foo]
 and M : S = M [@@foo]]
 
-[%%foo module type S = S [@@foo]]
+[%%foo
+module type S = S [@@foo]]
 
-[%%foo include M [@@foo]]
+[%%foo
+include M [@@foo]]
 
-[%%foo open M [@@foo]]
+[%%foo
+open M [@@foo]]
 
 (* Signature items *)
 module type S = sig
@@ -348,6 +362,7 @@ let pop_castable () =
       clist := rest ;
       c
   | [] -> raise Not_found
+
 (* We can add foos and bars to this list, and retrive them *)
 
 ;;
@@ -3306,6 +3321,7 @@ module M = (val m)
 module type S' = sig
   val f : int -> int
 end
+
 (* Even works with recursion, but must be fully explicit *)
 
 ;;
@@ -8446,7 +8462,9 @@ external t : float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
 
-let _ = raise Exit 3 (* comment 9644 of PR#6000 *)
+let _ = raise Exit 3
+
+(* comment 9644 of PR#6000 *)
 
 ;;
 fun b -> if b then format_of_string "x" else "y"
@@ -8715,7 +8733,9 @@ module OK = struct
 
   (* non principal *)
 
-  let f3 (r : t) = match r with {x; y} -> y + y (* ok *)
+  let f3 (r : t) = match r with {x; y} -> y + y
+
+  (* ok *)
 end
 
 module F1 = struct

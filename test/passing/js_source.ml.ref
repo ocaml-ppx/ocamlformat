@@ -38,20 +38,26 @@ x]
 
 let ([%foo 2 + 1] : [%foo bar.baz]) = [%foo "foo"]
 
-[%%foo module M = [%bar]]
+[%%foo
+module M = [%bar]]
 
 let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
 
-[%%foo: 'a list]
+[%%foo:
+'a list]
 
 let ([%foo: [`Foo]] : [%foo: t -> t]) = [%foo: < foo : t > ]
 
-[%%foo? _]
-[%%foo? Some y when y > 0]
+[%%foo?
+_]
+
+[%%foo?
+Some y when y > 0]
 
 let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? { x }]
 
-[%%foo: module M : [%baz]]
+[%%foo:
+module M : [%baz]]
 
 let ([%foo: include S with type t = t] : [%foo: val x : t
                                                 val y : t]) = [%foo: type t = t]
@@ -187,20 +193,36 @@ type t = int [@@foo]
 
 and t = int [@@foo]]
 
-[%%foo type t += T [@@foo]]
-[%%foo class x = x [@@foo]]
-[%%foo class type x = x [@@foo]]
-[%%foo external x : _ = "" [@@foo]]
-[%%foo exception X [@@foo]]
-[%%foo module M = M [@@foo]]
+[%%foo
+type t += T [@@foo]]
+
+[%%foo
+class x = x [@@foo]]
+
+[%%foo
+class type x = x [@@foo]]
+
+[%%foo
+external x : _ = "" [@@foo]]
+
+[%%foo
+exception X [@@foo]]
+
+[%%foo
+module M = M [@@foo]]
 
 [%%foo
 module rec M : S = M [@@foo]
 and M : S = M [@@foo]]
 
-[%%foo module type S = S [@@foo]]
-[%%foo include M [@@foo]]
-[%%foo open M [@@foo]]
+[%%foo
+module type S = S [@@foo]]
+
+[%%foo
+include M [@@foo]]
+
+[%%foo
+open M [@@foo]]
 
 (* Signature items *)
 module type S = sig
@@ -492,7 +514,9 @@ type 'a foo2 += D = A | E = B | F = C
 
 type +'a foo = ..
 type 'a foo += A of (int -> 'a)
-type 'a foo += B of ('a -> int) (* ERROR: Parameter variances are not satisfied *)
+type 'a foo += B of ('a -> int)
+
+(* ERROR: Parameter variances are not satisfied *)
 
 type _ foo += C : ('a -> int) -> 'a foo
 
@@ -2986,7 +3010,9 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
     comp_subst (sub' (EAlist (weaken_alist s))) (fun t' -> weaken_term (subst_var x t t'))
 ;;
 
-let subst' d = pre_subst (sub' d) (*  val subst' : 'a ealist -> 'a term -> 'a term *)
+let subst' d = pre_subst (sub' d)
+
+(*  val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
 
@@ -3461,6 +3487,7 @@ module M = (val m)
 module type S' = sig
   val f : int -> int
 end
+
 (* Even works with recursion, but must be fully explicit *)
 
 ;;
@@ -8717,7 +8744,9 @@ external s : int -> int = "s" [@@untagged]
 external t : float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
-let _ = raise Exit 3 (* comment 9644 of PR#6000 *)
+let _ = raise Exit 3
+
+(* comment 9644 of PR#6000 *)
 
 ;;
 fun b -> if b then format_of_string "x" else "y"
@@ -9082,6 +9111,7 @@ module OK = struct
     match r with
     | { x; y } -> y + y
   ;;
+
   (* ok *)
 end
 
