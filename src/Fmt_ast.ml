@@ -3160,14 +3160,13 @@ and fmt_signature_item c {ast= si} =
     Cmts.fmt_before c ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n") ~adj:(fmt "@\n")
       si.psig_loc
   in
-  (fun k ->
-    let maybe_box =
-      Location.is_single_line si.psig_loc c.conf.margin
-      && Source.has_cmt_same_line_after c.source si.psig_loc
-    in
-    let pro = fmt_or maybe_box "@ " "\n@\n" in
-    let fmt_cmts_after = Cmts.fmt_after ~pro c si.psig_loc in
-    fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after) )
+  let maybe_box =
+    Location.is_single_line si.psig_loc c.conf.margin
+    && Source.has_cmt_same_line_after c.source si.psig_loc
+  in
+  let pro = fmt_or maybe_box "@ " "\n@\n" in
+  let fmt_cmts_after = Cmts.fmt_after ~pro c si.psig_loc in
+  (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
   @@
   let ctx = Sig si in
   match si.psig_desc with
@@ -3763,14 +3762,13 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
     Cmts.fmt_before c ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n") ~adj:(fmt "@\n")
       si.pstr_loc
   in
-  (fun k ->
-    let maybe_box =
-      Location.is_single_line si.pstr_loc c.conf.margin
-      && Source.has_cmt_same_line_after c.source si.pstr_loc
-    in
-    let pro = fmt_or maybe_box "@ " "\n@\n" in
-    let fmt_cmts_after = Cmts.fmt_after ~pro c si.pstr_loc in
-    fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after) )
+  let maybe_box =
+    Location.is_single_line si.pstr_loc c.conf.margin
+    && Source.has_cmt_same_line_after c.source si.pstr_loc
+  in
+  let pro = fmt_or maybe_box "@ " "\n@\n" in
+  let fmt_cmts_after = Cmts.fmt_after ~pro c si.pstr_loc in
+  (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->

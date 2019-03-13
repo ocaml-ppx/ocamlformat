@@ -4261,7 +4261,9 @@ let foo (f : unit -> unit) = ()
 let g ?x () = ()
 
 ;;
-foo (() ; g) (* PR#5748 *)
+foo (() ; g)
+
+(* PR#5748 *)
 
 ;;
 foo (fun ?opt () -> ())
@@ -4342,7 +4344,9 @@ type t = {x: int; y: int}
 {x= 3; z= 2}
 
 ;;
-fun {x= 3; z= 2} -> () (* mixed labels *)
+fun {x= 3; z= 2} -> ()
+
+(* mixed labels *)
 
 ;;
 {x= 3; contents= 2}
@@ -5329,6 +5333,7 @@ module M1 : sig
   module C' = C
 end =
   M
+
 (* sound, but should probably fail *)
 
 ;;
