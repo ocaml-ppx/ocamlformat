@@ -1325,6 +1325,7 @@ let beginner_profile =
   ; break_separators= `After
   ; break_sequences= true
   ; field_space= `Loose
+  ; indicate_nested_or_patterns= false
   ; sequence_style= `Terminator }
 
 let structure_left_margin_profile = default_profile
