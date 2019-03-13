@@ -3755,16 +3755,12 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   let fmt_cmts_before =
     Cmts.fmt_before c ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n") ~adj:(fmt "@\n")
       si.pstr_loc
-  in
+  and fmt_cmts_after = Cmts.fmt_after ~pro:(fmt "@ ") c si.pstr_loc in
   (fun k ->
-    let maybe_box =
-      Location.is_single_line si.pstr_loc c.conf.margin
-      && Cmts.number_of_comments_within c.cmts si.pstr_loc
-         + Cmts.number_of_comments_after c.cmts si.pstr_loc
-         <= 1
-    in
-    let fmt_cmts_after = Cmts.fmt_after c si.pstr_loc in
-    fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after) )
+    fmt_cmts_before
+    $ hvbox_if
+        (Location.is_single_line (Ast.location ctx) c.conf.margin)
+        0 (k $ fmt_cmts_after) )
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->
