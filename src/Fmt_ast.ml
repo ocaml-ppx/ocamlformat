@@ -132,6 +132,15 @@ let fmt_expressions c width sub_exp exprs fmt fmt_expr =
       let fmt_grp exprs = hovbox (-2) (list exprs (semic_sep c) fmt_expr) in
       list grps fmt fmt_grp
 
+(** Handle the `break-fun-decl` option *)
+let wrap_fun_decl_args ~stmt_loc c k =
+  match c.conf.break_fun_decl with
+  | `Wrap -> k
+  | `Fit_or_vertical when Location.is_single_line stmt_loc c.conf.margin ->
+      hvbox 0 k
+  | `Fit_or_vertical -> vbox 0 k
+  | `Smart -> hvbox 0 k
+
 let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
@@ -2419,6 +2428,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
            $ fmt_atrs ))
   | Pcl_fun _ ->
       let xargs, xbody = Sugar.cl_fun c.cmts xexp in
+      let stmt_loc = Sugar.args_location xargs in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -2426,9 +2436,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
           $ ( hovbox 4
                 ( fmt "fun "
                 $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(fmt " ")
-                $ hvbox_if
-                    (not c.conf.wrap_fun_args)
-                    0 (fmt_fun_args c xargs)
+                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
                 $ fmt "@ " )
             $ fmt "->" )
           $ close_box $ fmt "@ "
@@ -2515,6 +2523,7 @@ and fmt_class_field c ctx (cf : class_field) =
                 (sub_exp ~ctx e)
           | Some _ -> ([], sub_exp ~ctx e)
         in
+        let stmt_loc = Sugar.args_location xargs in
         let ty, e =
           match (xbody.ast, poly) with
           | {pexp_desc= Pexp_constraint (e, t); pexp_loc}, None ->
@@ -2527,7 +2536,7 @@ and fmt_class_field c ctx (cf : class_field) =
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
           ~after:e.ast.pexp_loc ;
         ( [ fmt_if (not (List.is_empty xargs)) "@;<1 2>"
-            $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
+            $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
           ; opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
           ]
         , fmt "@;<1 2>="
@@ -3255,6 +3264,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               (sub_cl ~ctx pci_expr)
         | _ -> ([], sub_cl ~ctx pci_expr)
       in
+      let stmt_loc = Sugar.args_location xargs in
       let ty, e =
         match xbody.ast with
         | {pcl_desc= Pcl_constraint (e, t)} -> (Some t, sub_cl ~ctx e)
@@ -3270,7 +3280,8 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               $ fmt "@ "
               $ fmt_class_params c ctx ~epi:(fmt "@ ") pci_params
               $ fmt_str_loc c pci_name
-              $ ( fmt_fun_args c ~pro:(fmt "@;") xargs
+              $ ( fmt_if (not (List.is_empty xargs)) "@ "
+                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
                 $ opt ty (fun t ->
                       fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t) )
                 $ fmt "@ =" ) )
@@ -3925,6 +3936,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let indent =
     match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
+  let stmt_loc = Sugar.args_location xargs in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c pvb_loc
   $ hvbox indent
@@ -3936,7 +3948,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
             $ fmt " " $ fmt_pattern c xpat
             $ fmt_if (not (List.is_empty xargs)) "@ "
-            $ hvbox_if (not c.conf.wrap_fun_args) 0 (fmt_fun_args c xargs)
+            $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
             $ Option.call ~f:fmt_cstr )
         $ fmt "@;<1 2>=" )
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc

@@ -45,6 +45,13 @@ OPTIONS (CODE FORMATTING STYLE)
            try to format them in a single line. The default value is
            fit-or-vertical.
 
+       --break-fun-decl={wrap|fit-or-vertical|smart}
+           Style for function declarations and types. wrap breaks only if
+           necessary. fit-or-vertical vertically breaks arguments if they do
+           not fit on a single line. smart is like fit-or-vertical but try to
+           fit arguments on their line if they fit. The default value is
+           wrap.
+
        --break-infix={wrap|fit-or-vertical}
            Break sequence of infix operators. wrap will group simple
            expressions and try to format them in a single line.
@@ -178,7 +185,7 @@ OPTIONS (CODE FORMATTING STYLE)
            indentation.
 
        --no-wrap-fun-args
-           Style for function call and function definition.
+           Style for function call.
 
        --ocp-indent-compat
            Attempt to generate output which does not change (much) when
