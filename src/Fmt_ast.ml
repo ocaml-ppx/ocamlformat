@@ -3755,12 +3755,30 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   let fmt_cmts_before =
     Cmts.fmt_before c ~epi:(fmt "\n@\n") ~eol:(fmt "\n@\n") ~adj:(fmt "@\n")
       si.pstr_loc
-  and fmt_cmts_after = Cmts.fmt_after ~pro:(fmt "@ ") c si.pstr_loc in
+  in
   (fun k ->
-    fmt_cmts_before
-    $ hvbox_if
-        (Location.is_single_line (Ast.location ctx) c.conf.margin)
-        0 (k $ fmt_cmts_after) )
+    let loc_start =
+      {si.pstr_loc.loc_end with pos_cnum= si.pstr_loc.loc_end.pos_cnum}
+    in
+    let loc_end =
+      {si.pstr_loc.loc_end with pos_cnum= loc_start.pos_cnum + 20}
+    in
+    let loc = {si.pstr_loc with loc_start; loc_end} in
+    let str = Source.string_at c.source loc in
+    let has_cmt_same_line =
+      if String.is_empty str then false
+      else if Char.equal str.[0] '\n' then false
+      else
+        let str = String.lstrip str in
+        String.is_prefix str ~prefix:"(*"
+    in
+    let maybe_box =
+      Location.is_single_line (Ast.location ctx) c.conf.margin
+      && has_cmt_same_line
+    in
+    let pro = fmt_or maybe_box "@ " "\n@\n" in
+    let fmt_cmts_after = Cmts.fmt_after ~pro c si.pstr_loc in
+    fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after) )
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->
