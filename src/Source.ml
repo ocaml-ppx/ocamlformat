@@ -47,6 +47,17 @@ let string_at t (l : Location.t) =
   if String.length t < pos + len || pos < 0 || len < 0 then ""
   else String.sub t ~pos ~len
 
+let has_cmt_same_line_after t (loc : Location.t) =
+  let loc_start = {loc.loc_end with pos_cnum= loc.loc_end.pos_cnum} in
+  let loc_end = {loc.loc_end with pos_cnum= loc_start.pos_cnum + 20} in
+  let loc = {loc with loc_start; loc_end} in
+  let str = string_at t loc in
+  if String.is_empty str then false
+  else if Char.equal str.[0] '\n' then false
+  else
+    let str = String.lstrip str in
+    String.is_prefix str ~prefix:"(*"
+
 let merge (l1 : Location.t) ~(sub : Location.t) =
   let base = l1.loc_start.pos_cnum in
   { l1 with
