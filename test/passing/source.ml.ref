@@ -433,9 +433,7 @@ end
 module type S = sig
   type foo = A of int
 
-  type foo += B of float
-
-  (* Error foo does not have an extensible type *)
+  type foo += B of float (* Error foo does not have an extensible type *)
 end
 
 (* Signatures can change the grouping of extensions *)
@@ -8042,17 +8040,11 @@ end
    Kathleen Fisher and Paul Govereau *)
 
 module type VALUE = sig
-  type value
+  type value (* a Lua value *)
 
-  (* a Lua value *)
+  type state (* the state of a Lua interpreter *)
 
-  type state
-
-  (* the state of a Lua interpreter *)
-
-  type usert
-
-  (* a user-defined value *)
+  type usert (* a user-defined value *)
 end
 
 module type CORE0 = sig
