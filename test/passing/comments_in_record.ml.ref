@@ -39,8 +39,8 @@ type t =
         (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
            cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *)
   ; b: float
-        (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
-           cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *) }
+    (* aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
+       cccccccccccccccccccccccccccc ddddddddddddddddd eeeee *) }
 
 type t =
   | Tuple of {elts: t vector; packed: bool}

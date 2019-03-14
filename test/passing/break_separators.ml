@@ -38,16 +38,16 @@ type t =
     break_separators: bool;
     break_sequences: bool;
     break_string_literals: [`Newlines | `Never | `Wrap];
-        (** How to potentially break string literals into new lines. *)
+    (** How to potentially break string literals into new lines. *)
     break_struct: bool;
     cases_exp_indent: int;
     comment_check: bool;
     disable: bool;
     doc_comments: [`Before | `After];
     escape_chars: [`Decimal | `Hexadecimal | `Preserve];
-        (** Escape encoding for chars literals. *)
+    (** Escape encoding for chars literals. *)
     escape_strings: [`Decimal | `Hexadecimal | `Preserve];
-        (** Escape encoding for string literals. *)
+    (** Escape encoding for string literals. *)
     extension_sugar: [`Preserve | `Always];
     field_space: [`Tight | `Loose];
     if_then_else: [`Compact | `Keyword_first];
@@ -60,8 +60,8 @@ type t =
     let_open: [`Preserve | `Auto | `Short | `Long];
     margin: int;  (** Format code to fit within [margin] columns. *)
     max_iters: int;
-        (** Fail if output of formatting does not stabilize within
-            [max_iters] iterations. *)
+    (** Fail if output of formatting does not stabilize within [max_iters]
+        iterations. *)
     module_item_spacing: [`Compact | `Sparse];
     ocp_indent_compat: bool;  (** Try to indent like ocp-indent *)
     parens_ite: bool;

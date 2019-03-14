@@ -12,7 +12,7 @@ type t =
   { a: int
   ; b: int [@default 1] [@drop_if]
   ; c: int [@default 1] [@drop_if]
-        (** docstring that is long enough to break *) }
+    (** docstring that is long enough to break *) }
 
 type t =
   { a: int
@@ -23,7 +23,7 @@ type t =
   ; c: someloooooooooooooooooooooooooooooong typ
         [@default looooooooooooooooooooooooooooooooooooooooong]
         [@drop_if somethingelse]
-        (** docstring that is long enough to break *) }
+    (** docstring that is long enough to break *) }
 
 val foo : int
   [@@deprecated "it is good the salad"] [@@warning "-32"] [@@warning "-99"]
@@ -83,8 +83,8 @@ let _ = ((A [@test]), (() [@test]), ([] [@test]), [||] [@test])
 type blocklist =
   { f1: int [@version 1, 1, 0]  (** short comment *)
   ; f2: (int64 * int64) list
-        (** loooooooooooooooooooooooooooooong
-            commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *) }
+    (** loooooooooooooooooooooooooooooong
+        commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *) }
 
 type blocklist =
   | F1 of int [@version 1, 1, 0]  (** short comment *)

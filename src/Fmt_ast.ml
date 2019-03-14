@@ -2865,7 +2865,7 @@ and fmt_label_declaration c ctx lbl_decl ?(last = false) =
   let indent = if Poly.(c.conf.break_separators = `Before) then 2 else 0 in
   let cmt_after_type = Cmts.fmt_after c pld_type.ptyp_loc in
   Cmts.fmt_before c ~eol:(break_unless_newline 1 indent) pld_loc
-  $ hvbox 4
+  $ hvbox 0
       ( hvbox 3
           ( hvbox 4
               ( hvbox 2
