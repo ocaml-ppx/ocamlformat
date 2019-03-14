@@ -1323,7 +1323,7 @@ let beginner_profile =
   { default_profile with
     break_cases= `Nested
   ; break_infix_before_func= false
-  ; break_separators= `After
+  ; break_separators= `After_and_docked
   ; break_sequences= true
   ; field_space= `Loose
   ; sequence_style= `Terminator }
