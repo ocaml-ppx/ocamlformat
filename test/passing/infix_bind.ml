@@ -155,3 +155,12 @@ let end_gen_implementation ?toplevel ~ppf_dump
   ++ Profile.record "compile_phrases" (List.iter (compile_phrase ~ppf_dump))
   ++ fun () -> () ) ;
   fooooooooooooooo
+
+let foo =
+  (* get the tree origin *)
+  get_store_tree s >>= function
+  | None -> f t >|= fun x -> Ok x (* no transaction is needed *)
+  | Some (origin, old_tree) ->
+      let batch = {repo; tree= old_tree; origin} in
+      let b = Batch batch in
+      foo
