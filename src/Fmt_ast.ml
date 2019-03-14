@@ -2813,10 +2813,14 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                           | `Sparse -> fmt "@;<1000 0>"
                           | `Compact -> fmt "@ " ) )))
       | `After_and_docked ->
+          let break_around =
+            if c.conf.space_around_collection_expressions then break 1
+            else break 0
+          in
           box_manifest
             ( fmt_manifest ~priv:Public mfst
             $ fmt " =" $ fmt_private_flag priv $ fmt " {" )
-          $ fmt "@,"
+          $ break_around 0
           $ list_fl lbl_decls (fun ~first:_ ~last x ->
                 fmt_label_declaration c ctx x ~last
                 $ fmt_if (last && exposed_right_typ x.pld_type) " "
@@ -2824,7 +2828,7 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                     ( match c.conf.type_decl with
                     | `Sparse -> fmt "@;<1000 0>"
                     | `Compact -> fmt "@ " ) )
-          $ fmt "@;<0 -2>}" )
+          $ break_around (-2) $ fmt "}" )
     | Ptype_open ->
         box_manifest
           ( fmt_manifest ~priv:Public mfst
