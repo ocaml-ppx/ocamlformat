@@ -1326,7 +1326,8 @@ let conventional_profile =
   ; break_separators= `After_and_docked
   ; break_sequences= true
   ; field_space= `Loose
-  ; sequence_style= `Terminator }
+  ; sequence_style= `Terminator
+  ; space_around_collection_expressions= true }
 
 let structure_left_margin_profile = default_profile
 
