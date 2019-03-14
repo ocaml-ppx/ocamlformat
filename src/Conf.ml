@@ -1431,8 +1431,8 @@ let (_profile : t option C.t) =
       , "$(b,default) sets each option to its default value." )
     ; ( "conventional"
       , Some conventional_profile
-      , "$(b,conventional) sets options for a closer to imperative syntax."
-      )
+      , "$(b,conventional) sets options for a closer to imperative code \
+         style." )
     ; ( "structure-left-margin"
       , Some structure_left_margin_profile
       , "$(b,structure-left-margin) sets options so that the structure of \

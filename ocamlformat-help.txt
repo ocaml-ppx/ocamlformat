@@ -309,7 +309,7 @@ OPTIONS
        --profile={default|conventional|structure-left-margin|compact|sparse|janestreet}
            Preset profiles which set all options, overriding lower priority
            configuration. default sets each option to its default value.
-           conventional sets options for a closer to imperative syntax.
+           conventional sets options for a closer to imperative code style.
            structure-left-margin sets options so that the structure of the
            code is obvious by looking only at the left margin of the code.
            compact sets options for a generally compact code style. sparse
