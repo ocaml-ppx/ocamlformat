@@ -1321,11 +1321,11 @@ let default_profile =
 
 let conventional_profile =
   { default_profile with
-    break_cases= `Nested
-  ; break_infix_before_func= false
+    break_infix_before_func= false
   ; break_separators= `After_and_docked
   ; break_sequences= true
   ; field_space= `Loose
+  ; indicate_nested_or_patterns= false
   ; sequence_style= `Terminator
   ; space_around_collection_expressions= true }
 
