@@ -1319,7 +1319,7 @@ let default_profile =
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
-let beginner_profile =
+let conventional_profile =
   { default_profile with
     break_cases= `Nested
   ; break_infix_before_func= false
@@ -1428,10 +1428,10 @@ let (_profile : t option C.t) =
     [ ( "default"
       , Some default_profile
       , "$(b,default) sets each option to its default value." )
-    ; ( "beginner"
-      , Some beginner_profile
-      , "$(b,beginner) sets options for a beginner-friendly style, closer \
-         to imperative syntax." )
+    ; ( "conventional"
+      , Some conventional_profile
+      , "$(b,conventional) sets options for a closer to imperative syntax."
+      )
     ; ( "structure-left-margin"
       , Some structure_left_margin_profile
       , "$(b,structure-left-margin) sets options so that the structure of \

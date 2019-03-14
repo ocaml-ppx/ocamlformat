@@ -304,16 +304,17 @@ OPTIONS
            Read .ocp-indent configuration files. match-clause sets
            cases-exp-indent to the same value.
 
-       -p {default|beginner|structure-left-margin|compact|sparse|janestreet},
-       --profile={default|beginner|structure-left-margin|compact|sparse|janestreet}
+       -p
+       {default|conventional|structure-left-margin|compact|sparse|janestreet},
+       --profile={default|conventional|structure-left-margin|compact|sparse|janestreet}
            Preset profiles which set all options, overriding lower priority
            configuration. default sets each option to its default value.
-           beginner sets options for a beginner-friendly style, closer to
-           imperative syntax. structure-left-margin sets options so that the
-           structure of the code is obvious by looking only at the left
-           margin of the code. compact sets options for a generally compact
-           code style. sparse sets options for a generally sparse code style.
-           janestreet is the profile used at Jane Street. 
+           conventional sets options for a closer to imperative syntax.
+           structure-left-margin sets options so that the structure of the
+           code is obvious by looking only at the left margin of the code.
+           compact sets options for a generally compact code style. sparse
+           sets options for a generally sparse code style. janestreet is the
+           profile used at Jane Street. 
 
        --print-config
            Print the configuration determined by the environment variable,
