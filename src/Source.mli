@@ -17,6 +17,8 @@ val create : string -> t
 
 val string_between : t -> Location.t -> Location.t -> string option
 
+val has_cmt_same_line_after : t -> Location.t -> bool
+
 val string_at : t -> Location.t -> string
 
 val string_literal :

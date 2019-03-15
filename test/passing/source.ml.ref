@@ -412,17 +412,13 @@ let is_a x = match x with A -> true | _ -> false
 
 type foo
 
-type foo += A of int
-
-(* Error type is not open *)
+type foo += A of int (* Error type is not open *)
 
 (* The type parameters must match *)
 
 type 'a foo = ..
 
-type ('a, 'b) foo += A of int
-
-(* Error: type parameter mismatch *)
+type ('a, 'b) foo += A of int (* Error: type parameter mismatch *)
 
 (* In a signature the type does not have to be open *)
 
@@ -437,9 +433,7 @@ end
 module type S = sig
   type foo = A of int
 
-  type foo += B of float
-
-  (* Error foo does not have an extensible type *)
+  type foo += B of float (* Error foo does not have an extensible type *)
 end
 
 (* Signatures can change the grouping of extensions *)
@@ -477,13 +471,9 @@ type 'a foo = .. constraint 'a = [> `Var]
 
 type 'a foo += A of 'a
 
-let a = A 9
+let a = A 9 (* ERROR: Constraints not met *)
 
-(* ERROR: Constraints not met *)
-
-type 'a foo += B : int foo
-
-(* ERROR: Constraints not met *)
+type 'a foo += B : int foo (* ERROR: Constraints not met *)
 
 (* Signatures can make an extension private *)
 
@@ -519,9 +509,7 @@ type foo += A2 = M.A1
 
 type bar = ..
 
-type bar += A3 = M.A1
-
-(* Error: rebind wrong type *)
+type bar += A3 = M.A1 (* Error: rebind wrong type *)
 
 module M = struct
   type foo += private B1 of int
@@ -529,13 +517,9 @@ end
 
 type foo += private B2 = M.B1
 
-type foo += B3 = M.B1
+type foo += B3 = M.B1 (* Error: rebind private extension *)
 
-(* Error: rebind private extension *)
-
-type foo += C = Unknown
-
-(* Error: unbound extension *)
+type foo += C = Unknown (* Error: unbound extension *)
 
 (* Extensions can be rebound even if type is closed *)
 
@@ -579,9 +563,7 @@ type _ foo += C : ('a -> int) -> 'a foo
 
 type 'a bar = ..
 
-type +'a bar += D of (int -> 'a)
-
-(* ERROR: type variances do not match *)
+type +'a bar += D of (int -> 'a) (* ERROR: type variances do not match *)
 
 (* Exceptions are compatible with extensions *)
 
@@ -625,9 +607,7 @@ let x = (Foo (3, Some 4), Bar (Some 5))
 
 type foo += Foo of string
 
-let y = x
-
-(* Prints Bar but not Foo (which has been shadowed) *)
+let y = x (* Prints Bar but not Foo (which has been shadowed) *)
 
 exception Foo of int * int option
 
@@ -639,9 +619,7 @@ let x = (Foo (3, Some 4), Bar (Some 5))
 
 type foo += Foo of string
 
-let y = x
-
-(* Prints Bar and part of Foo (which has been shadowed) *)
+let y = x (* Prints Bar and part of Foo (which has been shadowed) *)
 
 (* Test Obj functions *)
 
@@ -657,13 +635,9 @@ let n1 = extension_name Foo
 
 let n2 = extension_name (Bar 1)
 
-let t = extension_id (Bar 2) = extension_id (Bar 3)
+let t = extension_id (Bar 2) = extension_id (Bar 3) (* true *)
 
-(* true *)
-
-let f = extension_id (Bar 2) = extension_id Foo
-
-(* false *)
+let f = extension_id (Bar 2) = extension_id Foo (* false *)
 
 let is_foo x = extension_id Foo = extension_id x
 
@@ -671,9 +645,7 @@ type foo += Foo
 
 let f = is_foo Foo
 
-let _ = Obj.extension_constructor 7
-
-(* Invald_arg *)
+let _ = Obj.extension_constructor 7 (* Invald_arg *)
 
 let _ =
   Obj.extension_constructor
@@ -2453,9 +2425,7 @@ let example6 : type a. a wrapPoly -> a -> int =
 
 (* This should not be allowed *)
 
-let _ = example6 (WrapPoly AandBTags) `TagB
-
-(* This causes a seg fault *)
+let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
 module F (S : sig
   type 'a t
@@ -2715,9 +2685,7 @@ type _ t = I : int t
 
 let f (type a) (x : a t) =
   let module M = struct
-    let (I : a t) = x
-
-    (* fail because of toplevel let *)
+    let (I : a t) = x (* fail because of toplevel let *)
 
     let x : a t = I
   end in
@@ -2732,9 +2700,7 @@ let bad (type a) =
     module rec M : sig
       val e : (int, a) eq
     end = struct
-      let (Refl : (int, a) eq) = M.e
-
-      (* must fail for soundness *)
+      let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
 
       let e : (int, a) eq = Refl
     end
@@ -2773,9 +2739,7 @@ module F (T : sig
   type _ t
 end) =
 struct
-  let f (type a) (Neq n : (a, a T.t) eq) = n
-
-  (* warn! *)
+  let f (type a) (Neq n : (a, a T.t) eq) = n (* warn! *)
 end
 
 (* First-Order Unification by Structural Recursion *)
@@ -4836,15 +4800,11 @@ end
 
 let f (type a) (module X : S with type t = a) = ()
 
-let _ = f (module A)
-
-(* ok *)
+let _ = f (module A) (* ok *)
 
 module A_annotated_alias : S with type t = (module A.A_S) = A
 
-let _ = f (module A_annotated_alias)
-
-(* ok *)
+let _ = f (module A_annotated_alias) (* ok *)
 
 let _ = f (module A_annotated_alias : S with type t = (module A.A_S))
 
@@ -4860,17 +4820,13 @@ let _ = f (module A_alias_expanded : S with type t = (module A.A_S))
 
 (* ok *)
 
-let _ = f (module A_alias_expanded)
-
-(* ok *)
+let _ = f (module A_alias_expanded) (* ok *)
 
 let _ = f (module A_alias : S with type t = (module A.A_S))
 
 (* doesn't type *)
 
-let _ = f (module A_alias)
-
-(* doesn't type either *)
+let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo (Bar : sig
   type a = private [> `A]
@@ -5484,9 +5440,7 @@ end
 module M = struct
   module X = struct end
 
-  module Y = FF (X)
-
-  (* XXX *)
+  module Y = FF (X) (* XXX *)
 
   type t = Y.t
 end
@@ -7143,9 +7097,7 @@ module PR_4758 = struct
     module Other = A
   end
 
-  module C' = C
-
-  (* check that we can take an alias *)
+  module C' = C (* check that we can take an alias *)
 
   module F (X : sig end) = struct
     type t
@@ -7781,9 +7733,7 @@ end =
 
 let _ = test 102 (Lazy.force M2.x) 3
 
-let _ = Gc.full_major ()
-
-(* will shortcut forwarding in M1.x *)
+let _ = Gc.full_major () (* will shortcut forwarding in M1.x *)
 
 module rec M3 : sig
   val x : int Lazy.t
@@ -8095,17 +8045,11 @@ end
    Kathleen Fisher and Paul Govereau *)
 
 module type VALUE = sig
-  type value
+  type value (* a Lua value *)
 
-  (* a Lua value *)
+  type state (* the state of a Lua interpreter *)
 
-  type state
-
-  (* the state of a Lua interpreter *)
-
-  type usert
-
-  (* a user-defined value *)
+  type usert (* a user-defined value *)
 end
 
 module type CORE0 = sig
@@ -8747,9 +8691,7 @@ module X1 : sig end = struct
 end
 
 module X2 : sig end = struct
-  let x = 42
-
-  (* unused value *)
+  let x = 42 (* unused value *)
 
   let _f = function
     | A ->
@@ -8759,14 +8701,10 @@ end
 
 module X3 : sig end = struct
   module O = struct
-    let x = 42
-
-    (* unused *)
+    let x = 42 (* unused *)
   end
 
-  open O
-
-  (* unused open *)
+  open O (* unused open *)
 
   let _f = function
     | A ->
@@ -8784,9 +8722,7 @@ end
 module OK = struct
   open M1
 
-  let f1 (r : t) = r.x
-
-  (* ok *)
+  let f1 (r : t) = r.x (* ok *)
 
   let f2 r =
     ignore (r : t) ;
@@ -9020,9 +8956,7 @@ module Shadow1 = struct
     type s = {x: string}
   end
 
-  open M
-
-  (* this open is unused, it isn't reported as shadowing 'x' *)
+  open M (* this open is unused, it isn't reported as shadowing 'x' *)
 
   let y : t = {x= 0}
 end
@@ -9034,9 +8968,7 @@ module Shadow2 = struct
     type s = {x: string}
   end
 
-  open M
-
-  (* this open shadows label 'x' *)
+  open M (* this open shadows label 'x' *)
 
   let y = {x= ""}
 end
