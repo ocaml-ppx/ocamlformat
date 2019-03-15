@@ -46,3 +46,5 @@ let Mmmmmm.
       ; xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (* foooooooooooo *) }
     (* fooooooooo *) =
   ()
+
+let _ = {a; b: c = (match b with `A -> A | `B -> B | `C -> C); c}

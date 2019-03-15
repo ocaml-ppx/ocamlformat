@@ -1998,13 +1998,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            | Pexp_constraint ({pexp_desc= Pexp_pack _}, _) ->
                general_case ()
            | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
+               let parens =
+                 match e.pexp_desc with
+                 | Pexp_match _ | Pexp_try _ -> Some true
+                 | _ -> None
+               in
                cbox 2
                  ( fmt_longident_loc c lid1
                  $ fmt_if Poly.(c.conf.field_space = `Loose) " "
                  $ fmt ": "
                  $ fmt_core_type c (sub_typ ~ctx t)
                  $ fmt " =@ "
-                 $ cbox 0 (fmt_expression c (sub_exp ~ctx e)) )
+                 $ cbox 0 (fmt_expression c ?parens (sub_exp ~ctx e)) )
            | _ -> general_case ())
       in
       hvbox 0
