@@ -860,6 +860,14 @@ end = struct
       | Pexp_letexception (ext, _) -> assert (check_ext ext)
       | Pexp_object {pcstr_fields} ->
           assert (check_pcstr_fields pcstr_fields)
+      | Pexp_record (en1, _) ->
+          assert (
+            List.exists en1 ~f:(fun (_, e) ->
+                match e with
+                | {pexp_desc= Pexp_constraint (_, t); pexp_attributes= []}
+                  ->
+                    t == typ
+                | _ -> false ) )
       | _ -> assert false )
     | Cl {pcl_desc} ->
         assert (
@@ -1251,7 +1259,14 @@ end = struct
         | Pexp_construct (_, e) | Pexp_variant (_, e) ->
             assert (Option.exists e ~f)
         | Pexp_record (e1N, e0) ->
-            assert (Option.exists e0 ~f || List.exists e1N ~f:snd_f)
+            assert (
+              Option.exists e0 ~f
+              || List.exists e1N ~f:(fun (_, e) ->
+                     match e with
+                     | { pexp_desc= Pexp_constraint (e, _)
+                       ; pexp_attributes= [] } ->
+                         e == exp
+                     | _ -> e == e ) )
         | Pexp_assert e
          |Pexp_constraint (e, _)
          |Pexp_coerce (e, _, _)
@@ -2081,7 +2096,12 @@ end = struct
         when exp2 == exp ->
           false
       | Pexp_record (flds, _)
-        when List.exists flds ~f:(fun (_, e0) -> e0 == exp) ->
+        when List.exists flds ~f:(fun (_, e0) ->
+                 match e0 with
+                 | {pexp_desc= Pexp_constraint (e, _); pexp_attributes= []}
+                   ->
+                     e == exp
+                 | _ -> e0 == exp ) ->
           exposed_right_exp Non_apply exp
           (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_])} as e0))
