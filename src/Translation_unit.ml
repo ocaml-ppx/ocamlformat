@@ -132,9 +132,12 @@ let with_file input_name output_file suf ext f =
 let dump_ast ~input_name ?output_file ~suffix fmt =
   if Conf.debug then
     let ext = ".ast" in
-    with_file input_name output_file suffix ext (fun oc ->
-        fmt (Format.formatter_of_out_channel oc) )
-    |> (ignore : string -> unit)
+    let file =
+      with_file input_name output_file suffix ext (fun oc ->
+          fmt (Format.formatter_of_out_channel oc) )
+    in
+    Some file
+  else None
 
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
@@ -300,7 +303,6 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) (t : _ with_comments) ~source :
       (string, error) Result.t =
-    dump_ast ~suffix:".old" t.ast ;
     let format ~box_debug =
       let buffer = Buffer.create (String.length source) in
       let source_t = Source.create source in
@@ -328,28 +330,38 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
       | exception exn -> Error (Ocamlformat_bug {exn})
       | t_new ->
           (* Ast not preserved ? *)
-          if
+          ( if
             not
               (xunit.equal ~ignore_doc_comments:(not conf.comment_check)
                  conf t t_new)
-          then (
-            dump_ast ~suffix:".old" (xunit.normalize conf t) ;
-            dump_ast ~suffix:".new" (xunit.normalize conf t_new) ;
+          then
+            let old_ast =
+              dump_ast ~suffix:".old" (xunit.normalize conf t)
+            in
+            let new_ast =
+              dump_ast ~suffix:".new" (xunit.normalize conf t_new)
+            in
             if xunit.equal ~ignore_doc_comments:true conf t t_new then
               let docstrings = xunit.moved_docstrings conf t t_new in
-              let file_opt = dump_formatted ~suffix:".unequal-docs" fmted in
               let args =
-                match file_opt with
-                | None -> []
-                | Some file -> [("output file", String.sexp_of_t file)]
+                [ ( "output file"
+                  , dump_formatted ~suffix:".unequal-docs" fmted )
+                ; ("old ast", old_ast)
+                ; ("new ast", new_ast) ]
+                |> List.filter_map ~f:(fun (s, f_opt) ->
+                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f))
+                   )
               in
               internal_error (`Doc_comment docstrings) args
             else
-              let file_opt = dump_formatted ~suffix:".unequal-ast" fmted in
               let args =
-                match file_opt with
-                | None -> []
-                | Some file -> [("output file", String.sexp_of_t file)]
+                [ ( "output file"
+                  , dump_formatted ~suffix:".unequal-ast" fmted )
+                ; ("old ast", old_ast)
+                ; ("new ast", new_ast) ]
+                |> List.filter_map ~f:(fun (s, f_opt) ->
+                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f))
+                   )
               in
               internal_error `Ast args ) ;
           (* Comments not preserved ? *)
@@ -379,14 +391,21 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                 (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
               |> Sequence.map ~f
             in
-            if not (Sequence.is_empty diff_cmts) then (
-              dump_ast ~suffix:".old" t.ast ;
-              dump_ast ~suffix:".new" t_new.ast ;
-              internal_error `Comment
+            if not (Sequence.is_empty diff_cmts) then
+              let old_ast = dump_ast ~suffix:".old" t.ast in
+              let new_ast = dump_ast ~suffix:".new" t_new.ast in
+              let args =
                 [ ( "diff"
-                  , Sequence.sexp_of_t
-                      (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
-                      diff_cmts ) ] ) ) ;
+                  , Some
+                      (Sequence.sexp_of_t
+                         (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
+                         diff_cmts) )
+                ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
+                ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
+                |> List.filter_map ~f:(fun (s, f_opt) ->
+                       Option.map f_opt ~f:(fun f -> (s, f)) )
+              in
+              internal_error `Comment args ) ;
           (* Too many iteration ? *)
           if i >= conf.max_iters then (
             Caml.flush_all () ;
