@@ -1,6 +1,6 @@
 (* Expressions *)
 let () =
-  let%foo[@foo] x = 3 and[@foo] y = 4 in
+  let%foo x = 3 [@@foo] and[@foo] y = 4 in
   [%foo
     (let module M = M in
     ()) [@foo]] ;
@@ -82,7 +82,7 @@ module type S = functor [@foo1]
   -> sig end [@foo3]
 
 (* Structure items *)
-let%foo[@foo] x = 4
+let%foo x = 4 [@@foo]
 
 and[@foo] y = x
 

@@ -81,7 +81,7 @@ let%foo _ = ()
 
 (* Expressions *)
 let () =
-  let%foo[@foo] x = 3
+  let%foo x = 3 [@@foo]
   and[@foo] y = 4 in
   [%foo
     (let module M = M in
@@ -184,7 +184,7 @@ module type S = sig
 end
 
 (* Structure items *)
-let%foo[@foo] x = 4
+let%foo x = 4 [@@foo]
 
 and[@foo] y = x
 

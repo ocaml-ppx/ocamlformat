@@ -3963,6 +3963,9 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let indent =
     match xbody.ast with {pexp_desc= Pexp_fun _} -> 1 | _ -> 2
   in
+  let at_attrs, at_at_attrs =
+    match ext with None -> (atrs, []) | Some _ -> ([], atrs)
+  in
   let stmt_loc = Sugar.args_location xargs in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c pvb_loc
@@ -3971,7 +3974,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ ( hovbox 4
             ( fmt_or first "let" "and"
             $ fmt_extension_suffix c ext
-            $ fmt_attributes c ~key:"@" atrs
+            $ fmt_attributes c ~key:"@" at_attrs
             $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
             $ fmt " " $ fmt_pattern c xpat
             $ fmt_if_k
@@ -3984,6 +3987,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             else fits_breaks " =" "@;<1000 0>=" )
             (fmt "@;<1 2>=") )
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc
+      $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" at_at_attrs
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
