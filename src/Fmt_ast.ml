@@ -592,7 +592,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
                 (String.make (Int.max 1 (indent - String.length pro)) ' ')
           | _ ->
               fmt_or_k
-                Poly.(c.conf.break_separators = `Before)
+                ( Poly.(c.conf.break_separators = `Before)
+                && not c.conf.ocp_indent_compat )
                 (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
                    (fits_breaks "" "   "))
                 (fmt "") )
