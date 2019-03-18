@@ -1595,12 +1595,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt "@ : "
-          $ fmt_package_type c ctx pty pexp_loc
-          $ fmt_atrs )
+      let box k = opn $ k $ cls in
+      wrap_fits_breaks ~space:false c.conf "(" ")"
+        ( box (fmt "module " $ Option.call ~f:pro $ psp $ bdy)
+        $ esp $ Option.call ~f:epi $ fmt "@ : "
+        $ fmt_package_type c ctx pty pexp_loc
+        $ fmt_atrs )
   | Pexp_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -1965,10 +1965,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt_atrs )
+      let box k = opn $ k $ cls in
+      wrap_fits_breaks ~space:false c.conf "(" ")"
+        ( box (fmt "module " $ Option.call ~f:pro $ psp $ bdy)
+        $ esp $ Option.call ~f:epi $ fmt_atrs )
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         hvbox 0
@@ -3059,6 +3059,18 @@ and fmt_module_type c ({ast= mty} as xmty) =
       let xargs, mt2 =
         Sugar.functor_type c.cmts ~for_functor_kw:true xmty
       in
+      let fmt_arg (name, mt1) =
+        let mt1 = Option.map ~f:(fmt_module_type c) mt1 in
+        wrap "(" ")"
+          (hovbox 0
+             ( fmt_str_loc c name
+             $ opt mt1 (fun mt1 ->
+                   let {opn; pro; psp; bdy; cls; esp; epi} = mt1 in
+                   let box k = opn $ k $ cls in
+                   box
+                     ( fmt " :" $ Option.call ~f:pro $ psp $ fmt "@;<1 2>"
+                     $ bdy $ esp $ Option.call ~f:epi ) ) ))
+      in
       let blk = fmt_module_type c mt2 in
       { blk with
         pro=
@@ -3066,29 +3078,20 @@ and fmt_module_type c ({ast= mty} as xmty) =
             ( fmt "functor"
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
             $ fmt "@;<1 2>"
-            $ list xargs "@;<1 2>" (fun (name, mt1) ->
-                  let mt1 = Option.map ~f:(fmt_module_type c) mt1 in
-                  wrap "(" ")"
-                    (hovbox 0
-                       ( fmt_str_loc c name
-                       $ opt mt1 (fun mt1 ->
-                             let {opn; pro; psp; bdy; cls; esp; epi} =
-                               mt1
-                             in
-                             opn $ fmt " :" $ Option.call ~f:pro $ psp
-                             $ fmt "@;<1 2>" $ bdy $ esp
-                             $ Option.call ~f:epi $ cls ) )) )
+            $ list xargs "@;<1 2>" fmt_arg
             $ fmt "@;<1 2>-> " $ Option.call ~f:blk.pro )
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc) }
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_type c mt in
+      let box k = opn $ k $ cls in
       { empty with
         bdy=
           hvbox 0
             (wrap_if parens "(" ")"
-               ( opn $ Option.call ~f:pro $ psp $ bdy $ esp
-               $ Option.call ~f:epi $ cls
+               ( box
+                   ( Option.call ~f:pro $ psp $ bdy $ esp
+                   $ Option.call ~f:epi )
                $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
                      Cmts.fmt c loc
                      @@ list_fl wcs_and (fun ~first ~last:_ wc ->
@@ -3200,11 +3203,11 @@ and fmt_signature_item c {ast= si} =
             , blk )
         | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
+      let box k = opn $ k $ cls in
       hvbox 0
         (fmt_docstring_around ~loc:pincl_loc c doc
-           ( opn
-           $ hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy)
-           $ cls $ esp $ Option.call ~f:epi
+           ( box (hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy))
+           $ esp $ Option.call ~f:epi
            $ fmt_attributes c ~key:"@@" atrs ))
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
@@ -3337,47 +3340,55 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
         {loc_start; loc_end; loc_ghost= true}
     | None, None -> Location.none
   in
-  Fn.compose (hvbox 0)
-    (fmt_docstring_around ~loc c doc)
-    ( opn_b
-    $ (if Option.is_some epi_t then open_hovbox else open_hvbox) 0
-    $ opn_t
-    $ fmt_if_k (Option.is_some pro_t) (open_hvbox 0)
-    $ ( match arg_blks with
-      | (_, Some {opn; pro= Some _}) :: _ -> opn $ open_hvbox 0
-      | _ -> fmt "" )
-    $ hvbox 4
-        ( keyword $ fmt " " $ fmt_str_loc c name
-        $ list_pn arg_blks (fun ?prev:_ (name, arg_mtyp) ?next ->
-              let maybe_box k =
-                match arg_mtyp with Some {pro= None} -> hvbox 2 k | _ -> k
-              in
-              fmt "@ "
-              $ maybe_box
-                  (wrap "(" ")"
-                     ( fmt_str_loc c name
-                     $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi} ->
-                           fmt " : " $ Option.call ~f:pro
-                           $ fmt_if_k (Option.is_some pro) close_box
-                           $ psp $ bdy
-                           $ fmt_if_k (Option.is_some pro) cls
-                           $ esp
-                           $ ( match next with
-                             | Some (_, Some {opn; pro= Some _}) ->
-                                 opn $ open_hvbox 0
-                             | _ -> fmt "" )
-                           $ Option.call ~f:epi ) )) ) )
-    $ Option.call ~f:pro_t
-    $ fmt_if_k (Option.is_some pro_t) close_box
-    $ psp_t $ bdy_t $ cls_t $ esp_t $ Option.call ~f:epi_t
-    $ fmt_if (Option.is_some xbody) " ="
-    $ fmt_if (Option.is_some pro_b) "@ "
-    $ Option.call ~f:pro_b $ close_box $ psp_b
-    $ fmt_if (Option.is_none pro_b && Option.is_some xbody) "@ "
-    $ bdy_b $ cls_b $ esp_b $ Option.call ~f:epi_b
-    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
-    $ fmt_if_k (Option.is_some epi) (fmt_or (Option.is_some epi_b) " " "@ ")
-    $ Option.call ~f:epi )
+  let box_t k = opn_t $ k $ cls_t in
+  let box_b k = opn_b $ k $ cls_b in
+  let fmt_arg ?prev:_ (name, arg_mtyp) ?next =
+    let maybe_box k =
+      match arg_mtyp with Some {pro= None} -> hvbox 2 k | _ -> k
+    in
+    fmt "@ "
+    $ maybe_box
+        (wrap "(" ")"
+           ( fmt_str_loc c name
+           $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi} ->
+                 fmt " : " $ Option.call ~f:pro
+                 $ fmt_if_k (Option.is_some pro) close_box
+                 $ psp $ bdy
+                 $ fmt_if_k (Option.is_some pro) cls
+                 $ esp
+                 $ ( match next with
+                   | Some (_, Some {opn; pro= Some _}) -> opn $ open_hvbox 0
+                   | _ -> fmt "" )
+                 $ Option.call ~f:epi ) ))
+  in
+  (fmt_docstring_around ~loc c doc)
+    (hvbox 0
+       ( box_b
+           ( (if Option.is_some epi_t then hovbox else hvbox)
+               0
+               ( box_t
+                   ( hvbox_if (Option.is_some pro_t) 0
+                       ( ( match arg_blks with
+                         | (_, Some {opn; pro= Some _}) :: _ ->
+                             opn $ open_hvbox 0
+                         | _ -> fmt "" )
+                       $ hvbox 4
+                           ( keyword $ fmt " " $ fmt_str_loc c name
+                           $ list_pn arg_blks fmt_arg )
+                       $ Option.call ~f:pro_t )
+                   $ psp_t $ bdy_t )
+               $ esp_t $ Option.call ~f:epi_t
+               $ fmt_if (Option.is_some xbody) " ="
+               $ fmt_if (Option.is_some pro_b) "@ "
+               $ Option.call ~f:pro_b )
+           $ psp_b
+           $ fmt_if (Option.is_none pro_b && Option.is_some xbody) "@ "
+           $ bdy_b )
+       $ esp_b $ Option.call ~f:epi_b
+       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+       $ fmt_if_k (Option.is_some epi)
+           (fmt_or (Option.is_some epi_b) " " "@ ")
+       $ Option.call ~f:epi ))
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
@@ -3462,20 +3473,18 @@ and fmt_module_expr c ({ast= m} as xmod) =
           blk_a ) =
         maybe_generative c ~ctx me_a
       in
+      let box_f k = opn_f $ k $ cls_f in
       let fmt_rator =
         fmt_docstring c ~epi:(fmt "@,") doc
-        $ opn_f $ psp_f $ Option.call ~f:pro_f $ bdy_f $ cls_f $ esp_f
-        $ Option.call ~f:epi_f $ fmt "@ " $ fmt "("
+        $ box_f (psp_f $ Option.call ~f:pro_f $ bdy_f)
+        $ esp_f $ Option.call ~f:epi_f $ fmt "@ " $ fmt "("
       in
       if Option.is_some pro_a then
         { blk_a with
-          opn= opn_a
-        ; pro=
+          pro=
             Some
               ( Cmts.fmt_before c pmod_loc
-              $ open_hvbox 2 $ fmt_rator $ close_box $ Option.call ~f:pro_a
-              )
-        ; cls= cls_a
+              $ hvbox 2 fmt_rator $ Option.call ~f:pro_a )
         ; epi=
             Some
               ( Option.call ~f:epi_a $ fmt ")"
@@ -3575,17 +3584,22 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_functor _ ->
       let xargs, me = Sugar.functor_ c.cmts ~for_functor_kw:true xmod in
-      let doc, atrs = doc_atrs pmod_attributes in
-      let { opn= opn_e
-          ; pro= pro_e
-          ; psp= psp_e
-          ; bdy= bdy_e
-          ; cls= cls_e
-          ; esp= esp_e
-          ; epi= epi_e } =
-        fmt_module_expr c me
+      let fmt_arg (name, mt) =
+        let {opn; pro; psp; bdy; cls; esp; epi} =
+          Option.value_map mt ~default:empty ~f:(fmt_module_type c)
+        in
+        let box_t k = opn $ k $ cls in
+        let fmt_module_type _ =
+          box_t
+            ( fmt "@ :" $ Option.call ~f:pro $ psp $ fmt "@;<1 2>" $ bdy
+            $ esp $ Option.call ~f:epi )
+        in
+        wrap "(" ")"
+          (hovbox 0 (fmt_str_loc c name $ opt mt fmt_module_type))
       in
-      { opn= opn_e
+      let doc, atrs = doc_atrs pmod_attributes in
+      let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_expr c me in
+      { opn
       ; pro= None
       ; psp= fmt ""
       ; bdy=
@@ -3596,30 +3610,12 @@ and fmt_module_expr c ({ast= m} as xmod) =
                     ( fmt "functor"
                     $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
                     $ fmt "@;<1 2>"
-                    $ list xargs "@;<1 2>" (fun (name, mt) ->
-                          let { opn= opn_t
-                              ; pro= pro_t
-                              ; psp= psp_t
-                              ; bdy= bdy_t
-                              ; cls= cls_t
-                              ; esp= esp_t
-                              ; epi= epi_t } =
-                            Option.value_map mt ~default:empty
-                              ~f:(fmt_module_type c)
-                          in
-                          wrap "(" ")"
-                            (hovbox 0
-                               ( fmt_str_loc c name
-                               $ opt mt (fun _ ->
-                                     opn_t $ fmt "@ :"
-                                     $ Option.call ~f:pro_t $ psp_t
-                                     $ fmt "@;<1 2>" $ bdy_t $ esp_t
-                                     $ Option.call ~f:epi_t $ cls_t ) )) )
+                    $ list xargs "@;<1 2>" fmt_arg
                     $ fmt "@;<1 2>->" $ fmt "@;<1 2>"
                     $ hvbox 0
-                        ( Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
-                        $ Option.call ~f:epi_e ) )) )
-      ; cls= cls_e
+                        ( Option.call ~f:pro $ psp $ bdy $ esp
+                        $ Option.call ~f:epi ) )) )
+      ; cls
       ; esp= fmt ""
       ; epi= None }
   | Pmod_ident lid ->
@@ -3799,10 +3795,10 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx pincl_mod)
       in
+      let box k = opn $ k $ cls in
       fmt_docstring_around ~loc:pincl_loc c doc
-        ( opn
-        $ hvbox 2 (fmt "include " $ Option.call ~f:pro)
-        $ psp $ bdy $ cls $ esp $ Option.call ~f:epi
+        ( box (hvbox 2 (fmt "include " $ Option.call ~f:pro) $ psp $ bdy)
+        $ esp $ Option.call ~f:epi
         $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs )
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
