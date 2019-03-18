@@ -190,3 +190,7 @@ val x : x
 (** for [Global]s *)
 
 (** generic command: ∀xs.{foot}-{post} *)
+
+(** A *)
+val reset : int -> unit
+(** B *)
