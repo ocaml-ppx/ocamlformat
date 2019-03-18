@@ -39,7 +39,8 @@ exception Warning50 of (Location.t * Warnings.t) list
 
 exception
   Internal_error of
-    [ `Ast
+    [ `Cannot_parse of exn
+    | `Ast_changed
     | `Doc_comment of Normalize.docstring_error list
     | `Comment
     | `Comment_dropped of (Location.t * string) list ]
@@ -153,13 +154,13 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
     ?(quiet_doc_comments = false) conf fmt input_name error =
   let exe = Filename.basename Sys.argv.(0) in
   let quiet_exn exn =
-    match[@ocaml.warning "-28"] exn with
+    match exn with
     | Internal_error ((`Comment | `Comment_dropped _), _) -> quiet_comments
     | Warning50 _ -> quiet_doc_comments
     | Internal_error (`Doc_comment _, _) -> quiet_doc_comments
-    | Internal_error (`Ast, _) -> false
+    | Internal_error (`Ast_changed, _) -> false
+    | Internal_error (`Cannot_parse _, _) -> false
     | Internal_error (_, _) -> .
-    | Syntaxerr.Error _ | Lexer.Error _ -> false
     | _ -> false
   in
   match error with
@@ -225,9 +226,6 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
          %!"
         exe input_name ;
       match[@ocaml.warning "-28"] exn with
-      | Syntaxerr.Error _ | Lexer.Error _ ->
-          Format.fprintf fmt "  BUG: generating invalid ocaml syntax.\n%!" ;
-          if Conf.debug then Location.report_exception fmt exn
       | Warning50 l ->
           Format.fprintf fmt "  BUG: misplaced documentation comments.\n%!" ;
           if Conf.debug then
@@ -235,7 +233,8 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
       | Internal_error (m, l) ->
           let s =
             match m with
-            | `Ast -> "ast changed"
+            | `Cannot_parse _ -> "generating invalid ocaml syntax"
+            | `Ast_changed -> "ast changed"
             | `Doc_comment _ -> "doc comments changed"
             | `Comment -> "comments changed"
             | `Comment_dropped _ -> "comments dropped"
@@ -281,6 +280,8 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                      dropped.\n\
                      %!"
                     Location.print_loc loc (ellipsis_cmt msg) )
+          | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
+              if Conf.debug then Location.report_exception fmt exn
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
@@ -327,7 +328,13 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
     else
       match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
-      | exception exn -> Error (Ocamlformat_bug {exn})
+      | exception exn ->
+          let args =
+            [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
+            |> List.filter_map ~f:(fun (s, f_opt) ->
+                   Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
+          in
+          internal_error (`Cannot_parse exn) args
       | t_new ->
           (* Ast not preserved ? *)
           ( if
@@ -363,7 +370,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                        Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f))
                    )
               in
-              internal_error `Ast args ) ;
+              internal_error `Ast_changed args ) ;
           (* Comments not preserved ? *)
           if conf.comment_check then (
             ( match Cmts.remaining_comments cmts_t with
