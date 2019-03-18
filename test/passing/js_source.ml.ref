@@ -1837,11 +1837,11 @@ let rec del_min : type n. n succ avl -> int * (n avl, n succ avl) sum = function
     (match del_min l with
     | y, Inr l -> y, Inr (Node (bal, l, x, r))
     | y, Inl l ->
-      (y
+      ( y
       , (match bal with
         | Same -> Inr (Node (Less, l, x, r))
         | More -> Inl (Node (Same, l, x, r))
-        | Less -> rotl l x r)))
+        | Less -> rotl l x r) ))
 ;;
 
 type _ avl_del =
@@ -8590,10 +8590,10 @@ let property (type t) () =
     exception E of t
   end
   in
-  ((fun x -> M.E x)
+  ( (fun x -> M.E x)
   , function
     | M.E x -> Some x
-    | _ -> None)
+    | _ -> None )
 ;;
 
 let () =
@@ -9576,10 +9576,10 @@ let f (type t) () =
   let exception G of t in
   ();
   let exception E of t in
-  ((fun x -> E x)
+  ( (fun x -> E x)
   , function
     | E _ -> print_endline "OK"
-    | _ -> print_endline "KO")
+    | _ -> print_endline "KO" )
 ;;
 
 let inj1, proj1 = f ()
