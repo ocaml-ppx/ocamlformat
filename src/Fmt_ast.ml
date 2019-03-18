@@ -546,7 +546,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   @@ fun c ->
   ( match (ptyp_desc, pro) with
   | Ptyp_arrow _, Some pro when c.conf.ocp_indent_compat ->
-      fmt_if pro_space "@;<1 0>" $ str pro $ fmt " "
+      fmt_or pro_space "@;" "@," $ str pro $ fmt " "
   | _, Some pro -> fmt_if pro_space " " $ str pro $ fmt "@ "
   | _ -> fmt "" )
   $
@@ -586,7 +586,9 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
           | _ ->
               fmt_or_k
                 Poly.(c.conf.break_separators = `Before)
-                (fits_breaks "" "   ") (fmt "") )
+                (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
+                   (fits_breaks "" "   "))
+                (fmt "") )
         $ list xt1N
             ( if Poly.(c.conf.break_separators = `Before) then "@ -> "
             else " ->@;<1 0>" )
@@ -2680,6 +2682,11 @@ and fmt_cases c ctx cs =
                   (fmt_or c.conf.indicate_multiline_delimiters "@ )" "@,)")
               ) ) )
 
+and is_arrow_or_poly = function
+  | {ptyp_desc= Ptyp_arrow _} -> true
+  | {ptyp_desc= Ptyp_poly _} -> true
+  | _ -> false
+
 and fmt_value_description c ctx vd =
   let { pval_name= {txt; loc}
       ; pval_type
@@ -2700,7 +2707,10 @@ and fmt_value_description c ctx vd =
     $ hvbox 2
         ( str pre $ fmt " "
         $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
-        $ fmt_core_type c ~pro:":" (sub_typ ~ctx pval_type)
+        $ fmt_core_type c ~pro:":"
+            ~box:
+              (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
+            ~pro_space:true (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
               fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
     $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~box:false ~key:"@@" atrs
@@ -3927,8 +3937,14 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
                 Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                   ~after:exp.pexp_loc ;
                 ( Some
-                    ( fmt "@;<0 -1>"
-                    $ fmt_core_type c ~pro:":" (sub_typ ~ctx typ) )
+                    ( fmt_or_k c.conf.ocp_indent_compat
+                        (fits_breaks " " "@;<1000 0>")
+                        (fmt "@;<0 -1>")
+                    $ cbox_if c.conf.ocp_indent_compat 0
+                        (fmt_core_type c ~pro:":"
+                           ~pro_space:(not c.conf.ocp_indent_compat)
+                           ~box:(not c.conf.ocp_indent_compat)
+                           (sub_typ ~ctx typ)) )
                 , sub_exp ~ctx exp )
             | _ -> (None, xbody)
           in
@@ -3951,7 +3967,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt_if (not (List.is_empty xargs)) "@ "
             $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
             $ Option.call ~f:fmt_cstr )
-        $ fmt "@;<1 2>=" )
+        $ fmt_or_k c.conf.ocp_indent_compat
+            ( if Option.is_some fmt_cstr then fmt "@ ="
+            else fits_breaks " =" "@;<1000 0>=" )
+            (fmt "@;<1 2>=") )
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
