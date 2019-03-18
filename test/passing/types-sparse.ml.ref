@@ -1,8 +1,14 @@
-type uu = A of int | B of (< leq: 'a > as 'a)
+type uu =
+  | A of int
+  | B of (< leq: 'a > as 'a)
 
-type uu = A of int | B of (< leq: 'a > as 'a) * 'a
+type uu =
+  | A of int
+  | B of (< leq: 'a > as 'a) * 'a
 
-type uu = A of (int as 'a) | B of 'a * (< leq: 'a > as 'a)
+type uu =
+  | A of (int as 'a)
+  | B of 'a * (< leq: 'a > as 'a)
 
 type uu += A of (int as 'a)
 
@@ -12,12 +18,17 @@ let _ = ignore Async_unix.Fd.(([stdin (); stdout (); stderr ()] : t list))
 
 type t = {x: int}
 
-type t = {a: int; b: int}
+type t =
+  { a: int
+  ; b: int }
 
-type t = [`A | `B]
+type t =
+  [ `A
+  | `B ]
 
 type loooooooooong_type =
-  {looooooooooooong_field: looooooooooooong_type; field2: type2}
+  { looooooooooooong_field: looooooooooooong_type
+  ; field2: type2 }
 
 type t = A of (int * int) * int
 
@@ -49,11 +60,18 @@ type t = private [< a]
 
 type t = private [> a]
 
-type t = [a | b]
+type t =
+  [ a
+  | b ]
 
-type t = [a | b | `C]
+type t =
+  [ a
+  | b
+  | `C ]
 
-type t = [`a | b]
+type t =
+  [ `a
+  | b ]
 
 type t = |
 
