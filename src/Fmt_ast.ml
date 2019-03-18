@@ -1982,7 +1982,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt "=@ "
                $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) )
            in
-           let ctx = Exp f in
            match f.pexp_desc with
            | Pexp_ident {txt; loc}
              when field_alias ~field:lid1.txt txt
