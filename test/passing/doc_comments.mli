@@ -192,5 +192,23 @@ val x : x
 (** generic command: ∀xs.{foot}-{post} *)
 
 (** A *)
-val reset : int -> unit
+val foo : int -> unit
 (** B *)
+
+(** C *)
+
+(** A *)
+val foo : int -> unit
+(** B *)
+
+module Foo : sig
+  (** A *)
+  val foo : int -> unit
+  (** B *)
+
+  (** C *)
+
+  (** A *)
+  val foo : int -> unit
+  (** B *)
+end

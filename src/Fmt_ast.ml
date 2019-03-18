@@ -2724,7 +2724,7 @@ and fmt_value_description c ctx vd =
       $ fmt_if_k
           ((not doc_before) && not both_docs)
           (fmt_docstring c ~pro:(fmt "@\n") doc1) )
-  $ fmt_if_k both_docs (fmt_docstring c ~pro:(fmt "@ ") doc2)
+  $ fmt_if_k both_docs (fmt_docstring c ~pro:(fmt "@\n") doc2)
 
 and fmt_tydcl_params c ctx params =
   fmt_if_k
