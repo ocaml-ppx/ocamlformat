@@ -352,6 +352,11 @@ let wrap_record c =
   if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
   else wrap_fits_breaks c.conf "{" "}"
 
+let wrap_tuple ~parens ~no_parens_if_break c =
+  if parens then wrap_fits_breaks c.conf "(" ")"
+  else if no_parens_if_break then Fn.id
+  else wrap_if_breaks "( " "@ )"
+
 let doc_atrs = Ast.doc_atrs
 
 let _parse_docstring c str_cmt =
@@ -783,15 +788,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let parens =
         parens || Poly.(c.conf.parens_tuple_patterns = `Always)
       in
-      let wrap_multiline =
-        if c.conf.indicate_multiline_delimiters then
-          wrap_if_breaks "( " "@ )"
-        else wrap_if_breaks "(" ")"
-      in
       hvbox 0
-        (wrap_multiline
-           (wrap_if_fits_and parens "(" ")"
-              (list pats (comma_sep c) (sub_pat ~ctx >> fmt_pattern c))))
+        (wrap_tuple ~parens ~no_parens_if_break:false c
+           (list pats (comma_sep c) (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_construct (lid, None) -> (
     match lid.txt with
     | Lident (("()" | "[]") as txt) ->
@@ -2072,15 +2071,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | Str {pstr_desc= Pstr_eval _} -> true
         | _ -> false
       in
-      let wrap =
-        if parens then wrap_fits_breaks c.conf "(" ")"
-        else if no_parens_if_break then Fn.id
-        else if c.conf.indicate_multiline_delimiters then
-          wrap_if_breaks "( " "@ )"
-        else wrap_if_breaks "(" ")"
-      in
       hvbox 0
-        ( wrap (list es (comma_sep c) (sub_exp ~ctx >> fmt_expression c))
+        ( wrap_tuple ~parens ~no_parens_if_break c
+            (list es (comma_sep c) (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
   | Pexp_lazy e ->
       hvbox 2
