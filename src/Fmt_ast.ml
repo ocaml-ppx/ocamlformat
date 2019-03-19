@@ -353,12 +353,7 @@ let wrap_record c =
   else wrap_fits_breaks c.conf "{" "}"
 
 let wrap_tuple ~parens ~no_parens_if_break c =
-  let wrap_fits_breaks_if _c cnd pre suf k fs =
-    fits_breaks_if cnd pre (pre ^ " ") fs ;
-    k fs ;
-    fits_breaks_if cnd suf ("@ " ^ suf) fs
-  in
-  if parens then wrap_fits_breaks_if c.conf true "(" ")"
+  if parens then wrap_fits_breaks c.conf "(" ")"
   else if no_parens_if_break then Fn.id
   else wrap_if_breaks "( " "@ )"
 
