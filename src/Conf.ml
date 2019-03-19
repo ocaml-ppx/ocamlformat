@@ -1519,17 +1519,18 @@ let parse_line config ~from s =
               , Format.sprintf "expecting %s but got %s" Version.version
                   value ))
     | name, `File x ->
-        if !disable_conf_files then
-          Error (`Malformed "Disabled file configuration of ocamlformat")
-        else
-          C.update ~config
-            ~from:(`Parsed (`File x))
-            ~name ~value ~inline:false
+        C.update ~config
+          ~from:(`Parsed (`File x))
+          ~name ~value ~inline:false
     | name, `Attribute ->
-        if !disable_conf_attrs && not (String.equal name "disable") then
-          Error
-            (`Malformed
-              "Disabled configuration of ocamlformat in attributes")
+        if
+          !disable_conf_attrs
+          && (not (String.equal name "disable"))
+          && not config.quiet
+        then (
+          Format.eprintf "Warning: Configuration in attribute %S ignored.\n"
+            s ;
+          Ok config )
         else
           C.update ~config
             ~from:(`Parsed `Attribute)
@@ -1758,6 +1759,7 @@ let build_config ~file =
     | None, _ | Some _, true -> files
     | Some f, false -> `Ocamlformat f :: files
   in
+  let files = if !disable_conf_files then [] else files in
   let conf =
     List.fold files ~init:default_profile ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
