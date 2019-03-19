@@ -1523,13 +1523,10 @@ let parse_line config ~from s =
           ~from:(`Parsed (`File x))
           ~name ~value ~inline:false
     | name, `Attribute ->
-        if
-          !disable_conf_attrs
-          && (not (String.equal name "disable"))
-          && not config.quiet
-        then (
-          Format.eprintf "Warning: Configuration in attribute %S ignored.\n"
-            s ;
+        if !disable_conf_attrs then (
+          if not config.quiet then
+            Format.eprintf
+              "Warning: Configuration in attribute %S ignored.\n" s ;
           Ok config )
         else
           C.update ~config
