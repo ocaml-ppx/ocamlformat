@@ -33,12 +33,17 @@ function update () {
             if [ -f $TEST_DIR/$FILE.ref ]; then
                 $EXE `cat $TEST_DIR/$FILE.opts` $TEST_DIR/$FILE \
                     &> $TEST_DIR/$FILE.ref
+            elif [ -f $TEST_DIR/$FILE.ref.ocpi ]; then
+                $EXE `cat $TEST_DIR/$FILE.opts` $TEST_DIR/$FILE \
+                    | ocp-indent &> $TEST_DIR/$FILE.ref.ocpi
             else
                 $EXE `cat $TEST_DIR/$FILE.opts` $TEST_DIR/$FILE -i
             fi
         else
             if [ -f $TEST_DIR/$FILE.ref ]; then
                 $EXE $TEST_DIR/$FILE &> $TEST_DIR/$FILE.ref
+            elif [ -f $TEST_DIR/$FILE.ref.ocpi ]; then
+                $EXE $TEST_DIR/$FILE | ocp-indent &> $TEST_DIR/$FILE.ref.ocpi
             else
                 $EXE $TEST_DIR/$FILE -i
             fi

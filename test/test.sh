@@ -93,13 +93,19 @@ ocamlformat() {
     [ $# -eq 1 ]
     opts=$(cat $1.opts 2>/dev/null || true)
     tmpfile=$TMP/$(basename $1)
-    OCAMLFORMAT=max-iters=2 bash -c "(\"$OCAMLFORMAT\" $opts \"$1\" || true) 2>&1" | sed "s#${CWD}#{CWD}#" > $tmpfile
+    if [ -e "$1.ref.ocpi" ]; then
+        OCAMLFORMAT=max-iters=2 bash -c "(\"$OCAMLFORMAT\" $opts \"$1\" | ocp-indent || true) 2>&1" | sed "s#${CWD}#{CWD}#" > $tmpfile
+    else
+        OCAMLFORMAT=max-iters=2 bash -c "(\"$OCAMLFORMAT\" $opts \"$1\" || true) 2>&1" | sed "s#${CWD}#{CWD}#" > $tmpfile
+    fi
 }
 
 reffile() {
     [ $# -eq 1 ]
     if [ -e "$1.ref" ]
     then echo "$1.ref"
+    elif [ -e "$1.ref.ocpi" ]
+    then echo "$1.ref.ocpi"
     else echo "$1"
     fi
 }
