@@ -3387,7 +3387,9 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
        $ esp_b $ Option.call ~f:epi_b
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
        $ fmt_if_k (Option.is_some epi)
-           (fmt_or (Option.is_some epi_b) " " "@ ")
+           (fmt_or
+              (Option.is_some epi_b && not c.conf.ocp_indent_compat)
+              " " "@ ")
        $ Option.call ~f:epi ))
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
