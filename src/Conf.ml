@@ -1065,6 +1065,16 @@ let comment_check =
     (fun conf x -> {conf with comment_check= x})
     (fun conf -> conf.comment_check)
 
+let disable_conf_attrs =
+  let doc = "Disable configuration in attributes." in
+  mk ~default:false
+    Arg.(value & flag & info ["disable-conf-attrs"] ~doc ~docs)
+
+let disable_conf_files =
+  let doc = "Disable .ocamlformat configuration files." in
+  mk ~default:false
+    Arg.(value & flag & info ["disable-conf-files"] ~doc ~docs)
+
 let disable_outside_detected_project =
   let witness =
     String.concat ~sep:" or "
@@ -1509,13 +1519,21 @@ let parse_line config ~from s =
               , Format.sprintf "expecting %s but got %s" Version.version
                   value ))
     | name, `File x ->
-        C.update ~config
-          ~from:(`Parsed (`File x))
-          ~name ~value ~inline:false
+        if !disable_conf_files then
+          Error (`Malformed "Disabled file configuration of ocamlformat")
+        else
+          C.update ~config
+            ~from:(`Parsed (`File x))
+            ~name ~value ~inline:false
     | name, `Attribute ->
-        C.update ~config
-          ~from:(`Parsed `Attribute)
-          ~name ~value ~inline:true
+        if !disable_conf_attrs && not (String.equal name "disable") then
+          Error
+            (`Malformed
+              "Disabled configuration of ocamlformat in attributes")
+        else
+          C.update ~config
+            ~from:(`Parsed `Attribute)
+            ~name ~value ~inline:true
   in
   let update_ocp_indent_option ~config ~from ~name ~value =
     let opt =
