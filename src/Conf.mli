@@ -49,6 +49,7 @@ type t =
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
+  ; parens_not: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool

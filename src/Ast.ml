@@ -14,17 +14,23 @@
 open Migrate_ast
 open Parsetree
 
-let init, register_reset, leading_nested_match_parens, parens_ite =
+let ( init
+    , register_reset
+    , leading_nested_match_parens
+    , parens_ite
+    , parens_not ) =
   let l = ref [] in
   let leading_nested_match_parens = ref false in
   let parens_ite = ref false in
+  let parens_not = ref false in
   let register f = l := f :: !l in
   let init conf =
     leading_nested_match_parens := conf.Conf.leading_nested_match_parens ;
     parens_ite := conf.Conf.parens_ite ;
+    parens_not := conf.Conf.parens_not ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, register, leading_nested_match_parens, parens_ite)
+  (init, register, leading_nested_match_parens, parens_ite, parens_not)
 
 (** Predicates recognizing special symbol identifiers. *)
 
@@ -2064,7 +2070,7 @@ end = struct
     | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _)}
       , { pexp_desc=
             Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"}}, _) } )
-      when is_infix op && not (e1 == exp) ->
+      when is_infix op && (not (e1 == exp)) && !parens_not ->
         true
     | ( Exp {pexp_desc= Pexp_apply (e, _)}
       , {pexp_desc= Pexp_construct _ | Pexp_variant _} )

@@ -44,6 +44,7 @@ type t =
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; ocp_indent_compat: bool
   ; parens_ite: bool
+  ; parens_not: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
@@ -941,6 +942,13 @@ module Formatting = struct
       (fun conf x -> {conf with parens_ite= x})
       (fun conf -> conf.parens_ite)
 
+  let parens_not =
+    let doc = "Uses parentheses around negated expressions." in
+    let names = ["parens-not"] in
+    C.flag ~default:true ~names ~doc ~section
+      (fun conf x -> {conf with parens_not= x})
+      (fun conf -> conf.parens_not)
+
   let parens_tuple =
     let doc = "Parens tuple expressions." in
     let names = ["parens-tuple"] in
@@ -1319,6 +1327,7 @@ let ocamlformat_profile =
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
+  ; parens_not= C.default Formatting.parens_not
   ; parens_tuple= C.default Formatting.parens_tuple
   ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
   ; parse_docstrings= C.default Formatting.parse_docstrings
@@ -1417,6 +1426,7 @@ let janestreet_profile =
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= true
   ; parens_ite= true
+  ; parens_not= false
   ; parens_tuple= `Multi_line_only
   ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false

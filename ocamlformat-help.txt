@@ -192,6 +192,9 @@ OPTIONS (CODE FORMATTING STYLE)
            Print a space inside a delimiter to indicate that its matching
            delimiter is on a different line.
 
+       --no-parens-not
+           Uses parentheses around negated expressions.
+
        --no-wrap-fun-args
            Style for function call.
 
