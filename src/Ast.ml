@@ -1292,8 +1292,8 @@ end = struct
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
       | Pstr_value (_, bindings) ->
-          assert (List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
-          )
+          assert (
+            List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp) )
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
@@ -2001,7 +2001,7 @@ end = struct
             ({pexp_desc= Pexp_ident {txt= Lident i}}, _ :: (_, e2) :: _)
           when e2 == exp && is_infix_id i
                && Option.value_map ~default:false (prec_ast ctx)
-                    ~f:(fun p -> Poly.(p < Apply) ) ->
+                    ~f:(fun p -> Poly.(p < Apply)) ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
