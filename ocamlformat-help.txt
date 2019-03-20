@@ -247,6 +247,12 @@ OPTIONS
            Check whether the input files already are formatted. Mutually
            exclusive with --inplace and --output.
 
+       --disable-conf-attrs
+           Disable configuration in attributes.
+
+       --disable-conf-files
+           Disable .ocamlformat configuration files.
+
        --disable-outside-detected-project
            Do not read .ocamlformat config files outside the current project.
            The project root of an input file is taken to be the nearest
