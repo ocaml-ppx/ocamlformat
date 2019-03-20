@@ -2016,7 +2016,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( wrap_record c
             ( opt default (fun d ->
                   hvbox 2
-                    (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>") )
+                    (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
+              )
             $ fmt_if (Option.is_some default) "with@;<1 2>"
             $ list flds (semic_sep c) fmt_field )
         $ fmt_atrs )
