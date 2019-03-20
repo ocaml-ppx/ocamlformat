@@ -1221,7 +1221,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     in
     let op_args_grouped =
       match c.conf.break_infix with
-      | `Wrap ->
+      | `Wrap when c.conf.wrap_comments ->
           List.group op_args
             ~break:(fun (_, _, (_, args1)) (_, _, (_, args2)) ->
               let exists_not_simple args =
@@ -1229,7 +1229,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     not (is_simple c.conf width arg) )
               in
               exists_not_simple args1 || exists_not_simple args2 )
-      | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
+      | _ -> List.map ~f:(fun x -> [x]) op_args
     in
     hvbox indent_wrap (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
   in
