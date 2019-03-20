@@ -2014,13 +2014,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       hvbox 0
         ( wrap_record c
-            (hovbox (-2)
-               ( opt default (fun d ->
-                     hvbox 2
-                       (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
-                 )
-               $ ( fmt_if (Option.is_some default) "with@;<1 2>"
-                 $ hvbox (-2) (list flds (semic_sep c) fmt_field) ) ))
+            ( opt default (fun d ->
+                  hvbox 2
+                    (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>") )
+            $ fmt_if (Option.is_some default) "with@;<1 2>"
+            $ list flds (semic_sep c) fmt_field )
         $ fmt_atrs )
   | Pexp_sequence (e1, e2) when Option.is_some ext ->
       let parens1 =
