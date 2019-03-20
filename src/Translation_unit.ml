@@ -285,8 +285,7 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp)
-            )
+                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp) )
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
@@ -356,8 +355,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                 ; ("old ast", old_ast)
                 ; ("new ast", new_ast) ]
                 |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f))
-                   )
+                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
               in
               internal_error (`Doc_comment docstrings) args
             else
@@ -367,8 +365,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                 ; ("old ast", old_ast)
                 ; ("new ast", new_ast) ]
                 |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f))
-                   )
+                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
               in
               internal_error `Ast_changed args ) ;
           (* Comments not preserved ? *)

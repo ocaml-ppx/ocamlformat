@@ -1504,7 +1504,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                              | _ -> None )
                            xbody )
                    $ fmt_or_k c.conf.indicate_multiline_delimiters
-                       (fits_breaks ")" "@ )") (fits_breaks ")" "@,)") )
+                       (fmt_or_k
+                          (Location.is_single_line pexp_loc c.conf.margin)
+                          (fmt ")")
+                          (fmt_or_k
+                             (Location.is_single_line xbody.ast.pexp_loc
+                                c.conf.margin)
+                             (fmt " )") (fits_breaks "@ )" "@ )")))
+                       (fmt ")") )
                $ fmt_atrs ))
       | ( lbl
         , ( { pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]
@@ -2233,8 +2240,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
         ( fmt "object"
         $ fmt_extension_suffix c ext
         $ opt self_ (fun self_ ->
-              fmt "@;" $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_))
-          ) )
+              fmt "@;" $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_)) )
+        )
     $ cmts_after_self
     $ ( match fields with
       | ({pcf_desc= Pcf_attribute a}, _) :: _
@@ -2797,7 +2804,8 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                         | `Sparse -> "@;<1000 0>; "
                         | `Compact -> "@,; " )
                       $ fmt_label_declaration c ctx x ~last
-                      $ fmt_if (last && exposed_right_typ x.pld_type) " " )))
+                      $ fmt_if (last && exposed_right_typ x.pld_type) " "
+                  )))
       | `After ->
           box_manifest
             ( fmt_manifest ~priv:Public mfst

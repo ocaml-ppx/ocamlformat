@@ -443,7 +443,7 @@ let relocate t ~src ~before ~after =
       Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
           Hashtbl.update tbl dst ~f:(fun dst_data ->
               Option.fold dst_data ~init:src_data
-                ~f:(fun src_data dst_data -> f src_data dst_data ) ) )
+                ~f:(fun src_data dst_data -> f src_data dst_data) ) )
     in
     if Conf.debug then
       Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
