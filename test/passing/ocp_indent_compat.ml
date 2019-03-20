@@ -26,7 +26,7 @@ module type M = sig
     Set_of_closures_id.Tbl.t
 
   type 'a option_decl =
-       names:string list
+    names:string list
     -> doc:string
     -> section:[`Formatting | `Operational]
     -> ?allow_inline:bool

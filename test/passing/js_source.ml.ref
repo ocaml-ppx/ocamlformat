@@ -1456,9 +1456,9 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
          ; "C", TCnoarg (Ttl (Ttl Thd))
          ]
 
-       method inj
-           : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-                   -> [`A of int | `B of string | `C] =
+       method inj : type c
+           .  (int -> string -> noarg -> unit, c) ty_sel * c
+           -> [`A of int | `B of string | `C] =
          function
          | Thd, v -> `A v
          | Ttl Thd, v -> `B v
@@ -1665,7 +1665,7 @@ let rec plus_func : type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equ
 ;;
 
 let rec plus_assoc : type a b c ab bc m n.
-       (a, b, ab) plus
+    (a, b, ab) plus
     -> (ab, c, m) plus
     -> (b, c, bc) plus
     -> (a, bc, n) plus
@@ -2453,7 +2453,8 @@ type (_, _, _) binop =
 let eval (type a b c)
          (bop : (a, b, c) binop)
          (x : a constant)
-         (y : b constant) : c constant =
+         (y : b constant)
+    : c constant =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
   | Leq, Int x, Int y -> Bool (x <= y)
@@ -2693,7 +2694,7 @@ let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_actio
 ;;
 
 let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> visit_action
-    = function
+  = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
@@ -3629,7 +3630,8 @@ let ssmap =
      and type map = SSMap.map)
 ;;
 
-let ssmap :
+let ssmap
+    :
     (module MapT with type key = string
                   and type data = string
                   and type map = SSMap.map) =
@@ -8815,7 +8817,7 @@ type v =
 
 let f : type a b c d e f g.
     a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
-    = function
+  = function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
 ;;
