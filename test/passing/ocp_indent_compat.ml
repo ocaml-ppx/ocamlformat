@@ -13,17 +13,17 @@ module type M = sig
        * (string Location.loc * payload) list
 
   val transl_modtype_longident
-    (* from Typemod *) :
-    (Location.t -> Env.t -> Longident.t -> Path.t) ref
+    (* from Typemod *)
+    : (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val transl_modtype_longident
     (* foooooooooo fooooooooooooo foooooooooooo foooooooooooooo
-       foooooooooooooo foooooooooooo *) :
-    (Location.t -> Env.t -> Longident.t -> Path.t) ref
+       foooooooooooooo foooooooooooo *)
+    : (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
-  val imported_sets_of_closures_table :
-    Simple_value_approx.function_declarations option
-    Set_of_closures_id.Tbl.t
+  val imported_sets_of_closures_table
+    : Simple_value_approx.function_declarations option
+      Set_of_closures_id.Tbl.t
 
   type 'a option_decl =
     names:string list

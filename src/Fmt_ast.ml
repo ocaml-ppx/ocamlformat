@@ -550,8 +550,10 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
   ( match (ptyp_desc, pro) with
-  | Ptyp_arrow _, Some pro when c.conf.ocp_indent_compat ->
+  | (Ptyp_arrow _ | Ptyp_poly _), Some pro when c.conf.ocp_indent_compat ->
       fmt_if pro_space "@;" $ str pro $ fmt " "
+  | _, Some pro when c.conf.ocp_indent_compat ->
+      fmt_if pro_space "@ " $ str pro $ fmt " "
   | _, Some pro -> fmt_if pro_space " " $ str pro $ fmt "@ "
   | _ -> fmt "" )
   $
