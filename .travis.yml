@@ -19,4 +19,4 @@ install:
   - opam install --with-test ocamlformat
 script:
   - make test
-  - opam install ocamlformat
+  - opam install --with-test ocamlformat
