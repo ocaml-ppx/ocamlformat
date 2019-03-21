@@ -551,7 +551,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   @@ fun c ->
   ( match (ptyp_desc, pro) with
   | Ptyp_arrow _, Some pro when c.conf.ocp_indent_compat ->
-      fmt_or pro_space "@;" "@," $ str pro $ fmt " "
+      fmt_if pro_space "@;" $ str pro $ fmt " "
   | _, Some pro -> fmt_if pro_space " " $ str pro $ fmt "@ "
   | _ -> fmt "" )
   $
