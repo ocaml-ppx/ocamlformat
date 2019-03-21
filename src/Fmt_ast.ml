@@ -3967,8 +3967,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     match ext with
     | None -> (atrs, [])
     | Some _ ->
-        List.partition_tf atrs ~f:(fun ({txt}, _) ->
-            not (String.equal txt "expect.uncaught_exn") )
+        List.partition_tf atrs ~f:(fun ({loc}, _) ->
+            Location.compare_start loc pvb_expr.pexp_loc < 1 )
   in
   let stmt_loc = Sugar.args_location xargs in
   fmt_docstring c ~epi:(fmt "@\n") doc1
