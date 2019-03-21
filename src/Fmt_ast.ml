@@ -434,6 +434,11 @@ let field_alias ~field:(li1 : Longident.t) (li2 : Longident.t) =
   | Lident x, Lident y -> String.equal x y
   | _ -> false
 
+let is_arrow_or_poly = function
+  | {ptyp_desc= Ptyp_arrow _} -> true
+  | {ptyp_desc= Ptyp_poly _} -> true
+  | _ -> false
+
 let fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens ~attributes
     ~fmt_atrs ~sub ~fmt_expr ~fmt_value_binding =
   wrap_if
@@ -2681,11 +2686,6 @@ and fmt_cases c ctx cs =
               $ fmt_if_k parens_here
                   (fmt_or c.conf.indicate_multiline_delimiters "@ )" "@,)")
               ) ) )
-
-and is_arrow_or_poly = function
-  | {ptyp_desc= Ptyp_arrow _} -> true
-  | {ptyp_desc= Ptyp_poly _} -> true
-  | _ -> false
 
 and fmt_value_description c ctx vd =
   let { pval_name= {txt; loc}
