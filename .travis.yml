@@ -16,7 +16,7 @@ before_install:
 install:
   - opam update --upgrade
   - opam pin add --no-action ocamlformat .
-  - opam install --with-test --deps-only ocamlformat
+  - opam install --with-test ocamlformat
 script:
   - make test
-  - opam install --with-test ocamlformat
+  - opam install ocamlformat
