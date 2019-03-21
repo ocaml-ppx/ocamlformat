@@ -26,3 +26,7 @@ let x = 2
 (**before*)
 and y = 2
 (** after *)
+
+(** A *)
+let a = 0
+(** A' *)

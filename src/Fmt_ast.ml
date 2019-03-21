@@ -3984,7 +3984,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
-  $ fmt_docstring c ~pro:(fmt "@ ") doc2
+  $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
   let {pmb_name; pmb_expr; pmb_attributes; pmb_loc} = pmb in
