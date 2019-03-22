@@ -13,41 +13,46 @@ Invalid value for if-then-else: "Invalid value 'bad', expecting 'compact' or 'fi
 File "passing/option.ml", line 39, characters 14-25:
 Warning 47: illegal payload for attribute 'ocamlformat'.
 Invalid value for if-then-else: "Invalid value 'bad', expecting 'compact' or 'fit-or-vertical' or 'keyword-first'"
-let[@ocamlformat "if-then-else=keyword-first"] _ =
+let _ =
   if b
   then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
+  [@@ocamlformat "if-then-else=keyword-first"]
 
-let[@ocamlformat.typo "if-then-else=keyword-first"] _ =
+let _ =
   if b then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
+  [@@ocamlformat.typo "if-then-else=keyword-first"]
 
-let[@ocamlformat 1, "if-then-else=keyword-first"] _ =
+let _ =
   if b then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
+  [@@ocamlformat 1, "if-then-else=keyword-first"]
 
-let[@ocamlformat "if-then-else=bad"] _ =
+let _ =
   if b then e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
+  [@@ocamlformat "if-then-else=bad"]
 
 module M = struct
   [@@@ocamlformat "if-then-else=keyword-first"]
 
-  let[@ocamlformat "if-then-else=bad"] _ =
+  let _ =
     if b
     then e
     else (
       something loooooooooooooooooooooooooooooooong enough to_trigger a
         break ;
       this is more )
+    [@@ocamlformat "if-then-else=bad"]
 
   let _ =
     if b

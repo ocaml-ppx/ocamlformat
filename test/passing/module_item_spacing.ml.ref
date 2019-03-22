@@ -97,13 +97,13 @@ and x = x
 let a = a
 and a = a
 
-and[@ocamlformat "module-item-spacing=sparse"] a = a
+and a = a [@@ocamlformat "module-item-spacing=sparse"]
 
 and a = a
 
 and a = a
 
-and[@ocamlformat "module-item-spacing=compact"] a = a
+and a = a [@@ocamlformat "module-item-spacing=compact"]
 
 and a = a
 and a = a
