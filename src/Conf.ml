@@ -1666,8 +1666,7 @@ let read_config_file conf filename_kind =
                       ("unknown option", Sexp.Atom name)
                   | `Bad_value (name, reason) ->
                       ( "bad value for"
-                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) ))
-      )
+                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
     with Sys_error _ -> conf )
 
 let update_using_env conf =
@@ -1808,7 +1807,8 @@ let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
-           {kind= kind_of file; name= file; file; conf= build_config ~file} ))
+           {kind= kind_of file; name= file; file; conf= build_config ~file}
+       ))
   else if !check then
     Check
       (List.map !inputs ~f:(fun file ->
