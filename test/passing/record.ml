@@ -50,3 +50,5 @@ let Mmmmmm.
   ()
 
 let _ = {a; b: c = (match b with `A -> A | `B -> B | `C -> C); c}
+
+let a () = A {A.a: t}
