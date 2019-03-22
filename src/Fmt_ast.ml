@@ -2700,23 +2700,31 @@ and fmt_value_description c ctx vd =
   update_config_maybe_disabled c pval_loc pval_attributes
   @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
-  let doc, atrs = doc_atrs pval_attributes in
+  let doc1, atrs = doc_atrs pval_attributes in
+  let doc2, atrs = doc_atrs atrs in
+  let both_docs = Option.is_some doc1 && Option.is_some doc2 in
   let doc_before =
     match c.conf.doc_comments with `Before -> true | `After -> false
   in
-  hvbox 0
-    ( fmt_if_k doc_before (fmt_docstring c ~epi:(fmt "@\n") doc)
-    $ hvbox 2
-        ( str pre $ fmt " "
-        $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
-        $ fmt_core_type c ~pro:":"
-            ~box:
-              (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
-            ~pro_space:true (sub_typ ~ctx pval_type)
-        $ list_fl pval_prim (fun ~first ~last:_ s ->
-              fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
-    $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~box:false ~key:"@@" atrs
-    $ fmt_if_k (not doc_before) (fmt_docstring c ~pro:(fmt "@\n") doc) )
+  fmt_if_k both_docs (fmt_docstring c ~epi:(fmt "@\n") doc1)
+  $ hvbox 0
+      ( fmt_if_k
+          (doc_before && not both_docs)
+          (fmt_docstring c ~epi:(fmt "@\n") doc1)
+      $ hvbox 2
+          ( str pre $ fmt " "
+          $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+          $ fmt_core_type c ~pro:":"
+              ~box:
+                (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
+              ~pro_space:true (sub_typ ~ctx pval_type)
+          $ list_fl pval_prim (fun ~first ~last:_ s ->
+                fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
+      $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~box:false ~key:"@@" atrs
+      $ fmt_if_k
+          ((not doc_before) && not both_docs)
+          (fmt_docstring c ~pro:(fmt "@\n") doc1) )
+  $ fmt_if_k both_docs (fmt_docstring c ~pro:(fmt "@\n") doc2)
 
 and fmt_tydcl_params c ctx params =
   fmt_if_k
@@ -3976,7 +3984,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc
       $ (match in_ with Some in_ -> in_ indent | None -> Fn.const ())
       $ Option.call ~f:epi )
-  $ fmt_docstring c ~pro:(fmt "@ ") doc2
+  $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
   let {pmb_name; pmb_expr; pmb_attributes; pmb_loc} = pmb in

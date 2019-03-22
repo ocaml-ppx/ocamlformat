@@ -190,3 +190,25 @@ val x : x
 (** for [Global]s *)
 
 (** generic command: ∀xs.{foot}-{post} *)
+
+(** A *)
+val foo : int -> unit
+(** B *)
+
+(** C *)
+
+(** A *)
+val foo : int -> unit
+(** B *)
+
+module Foo : sig
+  (** A *)
+  val foo : int -> unit
+  (** B *)
+
+  (** C *)
+
+  (** A *)
+  val foo : int -> unit
+  (** B *)
+end
