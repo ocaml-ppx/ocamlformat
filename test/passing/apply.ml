@@ -24,3 +24,7 @@ let _ = ( !!! ) ~b
 let _ = !!!!a b d
 
 let _ = ( + ) a b c d
+
+let cartesian_product l1 l2 =
+  List.concat
+    (l1 |> List.map (fun v1 -> l2 |> List.map (fun v2 -> (v1, v2))))
