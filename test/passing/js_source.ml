@@ -7367,3 +7367,8 @@ include struct
     end)
   ;;
 end
+
+;;
+if fffffffffffffff aaaaa bb
+then (if b then aaaaaaaaaaaaaaaa ffff)
+else aaaaaaaaaaaa qqqqqqqqqqq

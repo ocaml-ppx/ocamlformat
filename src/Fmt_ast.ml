@@ -1754,7 +1754,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                                       $ fmt "@ " $ fmt_expression c xcnd )
                                   $ fmt "@ then" )
                             | None -> fmt "else" )
-                          $ fmt_if parens_bch " (" $ fmt "@ "
+                          $ fmt_or parens_bch
+                              ( if c.conf.indicate_multiline_delimiters then
+                                " (@ "
+                              else " (@," )
+                              "@ "
                           $ fmt_expression c ~box:false ~parens:false xbch
                           )
                       $ fmt_if parens_bch
@@ -1784,7 +1788,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                                   $ fmt "@ " $ fmt_expression c xcnd )
                               $ fmt "@ then" )
                         | None -> fmt "else" )
-                      $ fmt_if parens_bch " (" $ fmt "@;<1 2>"
+                      $ fmt_or parens_bch
+                          ( if c.conf.indicate_multiline_delimiters then
+                            " (@;<1 2>"
+                          else " (@;<0 2>" )
+                          "@;<1 2>"
                       $ fmt_expression c ~pro ~eol:(fmt "@;<1 2>")
                           ~box:false ~parens:false xbch
                       $ fmt_if parens_bch
@@ -1803,7 +1811,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         $ fmt "@ " )
                     $ hvbox 2
                         ( fmt_or (Option.is_some xcnd) "then" "else"
-                        $ fmt_if parens_bch " (" $ fmt "@ "
+                        $ fmt_or parens_bch
+                            ( if c.conf.indicate_multiline_delimiters then
+                              " (@ "
+                            else " (@," )
+                            "@ "
                         $ fmt_expression c ~box:false ~parens:false xbch
                         $ fmt_if parens_bch
                             ( if c.conf.indicate_multiline_delimiters then
