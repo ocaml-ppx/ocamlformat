@@ -127,7 +127,7 @@ let fooo = fooooooooooo [@@foo];;
 let fooo = fooooooooooo [@@foo]
 and fooo = fooooooooooo [@@foo];;
 
-let foooo = fooooooooo [@foo] in
+let foooo = fooooooooo [@@foo] in
 fooooooooooooooooooooo
 
 let [@foo] fooo = fooooooooooo;;
