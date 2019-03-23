@@ -648,25 +648,30 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
           | None -> false
           | Some x -> exposed_right_typ x )
       in
-      let force_break =
-        match c.conf.type_decl with
-        | `Sparse when c.conf.space_around_collection_expressions -> true
-        | _ -> false
+      let space_around = c.conf.space_around_collection_expressions in
+      let closing =
+        let empty = List.is_empty rfs in
+        fits_breaks
+          ( if (protect_token || space_around) && not empty then " ]"
+          else "]" )
+          ( if Poly.(c.conf.type_decl = `Sparse) && space_around then
+            "@;<1000 0>]"
+          else "@ ]" )
       in
       hvbox 0
-        ( fits_breaks "[" "["
-        $ ( match (flag, lbls, rfs) with
-          | Closed, None, [Rinherit _] -> fmt " | " $ row_fields rfs
-          | Closed, None, _ -> fits_breaks "" " " $ row_fields rfs
-          | Open, None, _ -> fmt "> " $ row_fields rfs
-          | Closed, Some [], _ -> fmt "< " $ row_fields rfs
-          | Closed, Some ls, _ ->
-              fmt "< " $ row_fields rfs $ fmt " > "
-              $ list ls "@ " (fmt "`" >$ str)
-          | Open, Some _, _ -> impossible "not produced by parser" )
-        $ fits_breaks
-            (if protect_token then " ]" else "]")
-            (if force_break then "@;<1000 0>]" else "@ ]") )
+        ( match (flag, lbls, rfs) with
+        | Closed, None, [Rinherit _] ->
+            fmt "[ | " $ row_fields rfs $ closing
+        | Closed, None, _ ->
+            let opening = if space_around then "[ " else "[" in
+            fits_breaks opening "[ " $ row_fields rfs $ closing
+        | Open, None, _ -> fmt "[> " $ row_fields rfs $ closing
+        | Closed, Some [], _ -> fmt "[< " $ row_fields rfs $ closing
+        | Closed, Some ls, _ ->
+            fmt "[< " $ row_fields rfs $ fmt " > "
+            $ list ls "@ " (fmt "`" >$ str)
+            $ closing
+        | Open, Some _, _ -> impossible "not produced by parser" )
   | Ptyp_object ([], o_c) ->
       fmt "<@ "
       $ fmt_if Poly.(o_c = Open) "..@ "
@@ -2839,10 +2844,14 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                           | `Sparse -> fmt "@;<1000 0>"
                           | `Compact -> fmt "@ " ) )))
       | `After_and_docked ->
+          let break_around =
+            if c.conf.space_around_collection_expressions then break 1
+            else break 0
+          in
           box_manifest
             ( fmt_manifest ~priv:Public mfst
             $ fmt " =" $ fmt_private_flag priv $ fmt " {" )
-          $ fmt "@,"
+          $ break_around 0
           $ list_fl lbl_decls (fun ~first:_ ~last x ->
                 fmt_label_declaration c ctx x ~last
                 $ fmt_if (last && exposed_right_typ x.pld_type) " "
@@ -2850,7 +2859,7 @@ and fmt_type_declaration c ?(pre = "") ?(suf = ("" : _ format)) ?(brk = suf)
                     ( match c.conf.type_decl with
                     | `Sparse -> fmt "@;<1000 0>"
                     | `Compact -> fmt "@ " ) )
-          $ fmt "@;<0 -2>}" )
+          $ break_around (-2) $ fmt "}" )
     | Ptype_open ->
         box_manifest
           ( fmt_manifest ~priv:Public mfst

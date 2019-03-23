@@ -46,7 +46,7 @@ let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
 [%%foo:
 'a list]
 
-let ([%foo: [`Foo]] : [%foo: t -> t]) = [%foo: < foo : t > ]
+let ([%foo: [ `Foo ]] : [%foo: t -> t]) = [%foo: < foo : t > ]
 
 [%%foo?
 _]
@@ -436,7 +436,7 @@ let get_num : type a. a foo -> a -> a option =
 
 (* Extensions must obey constraints *)
 
-type 'a foo = .. constraint 'a = [> `Var]
+type 'a foo = .. constraint 'a = [> `Var ]
 type 'a foo += A of 'a
 
 let a = A 9 (* ERROR: Constraints not met *)
@@ -1318,8 +1318,8 @@ let ty_abc =
     | `C -> "C", None
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj : type c.
-      (int -> string -> noarg -> unit, c) ty_sel * c -> [`A of int | `B of string | `C] =
-    function
+      (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
+      = function
     | Thd, v -> `A v
     | Ttl Thd, v -> `B v
     | Ttl (Ttl Thd), Noarg -> `C
@@ -1385,7 +1385,7 @@ type (_, _) ty =
 
 and 'e ty_dyn = Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
-let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
+let ty_abc : ([ `A of int | `B of string | `C ], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
     ( (function
@@ -1441,7 +1441,7 @@ and (_, _) ty_case =
   | TCarg : ('b, 'a) ty_sel * ('a, 'e) ty -> ('e, 'b) ty_case
   | TCnoarg : ('b, noarg) ty_sel -> ('e, 'b) ty_case
 
-let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
+let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
   Sum
     (object
        method proj =
@@ -1458,7 +1458,7 @@ let ty_abc : (([`A of int | `B of string | `C] as 'a), 'e) ty =
 
        method inj
            : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-                   -> [`A of int | `B of string | `C] =
+                   -> [ `A of int | `B of string | `C ] =
          function
          | Thd, v -> `A v
          | Ttl Thd, v -> `B v
@@ -2338,10 +2338,10 @@ type inkind =
   ]
 
 type _ inline_t =
-  | Text : string -> [< inkind > `Nonlink] inline_t
+  | Text : string -> [< inkind > `Nonlink ] inline_t
   | Bold : 'a inline_t list -> 'a inline_t
-  | Link : string -> [< inkind > `Link] inline_t
-  | Mref : string * [`Nonlink] inline_t list -> [< inkind > `Link] inline_t
+  | Link : string -> [< inkind > `Link ] inline_t
+  | Mref : string * [ `Nonlink ] inline_t list -> [< inkind > `Link ] inline_t
 
 let uppercase seq =
   let rec process : type a. a inline_t -> a inline_t = function
@@ -2376,7 +2376,7 @@ let inlineseq_from_astseq seq =
 
 (* OK *)
 type _ linkp =
-  | Nonlink : [`Nonlink] linkp
+  | Nonlink : [ `Nonlink ] linkp
   | Maylink : inkind linkp
 
 let inlineseq_from_astseq seq =
@@ -2395,7 +2395,7 @@ let inlineseq_from_astseq seq =
 ;;
 
 (* Bad *)
-type _ linkp2 = Kind : 'a linkp -> ([< inkind] as 'a) linkp2
+type _ linkp2 = Kind : 'a linkp -> ([< inkind ] as 'a) linkp2
 
 let inlineseq_from_astseq seq =
   let rec process : type a. a linkp2 -> ast_t -> a inline_t =
@@ -2416,7 +2416,7 @@ module Add (T : sig
 end) =
 struct
   type _ t =
-    | One : [`One] t
+    | One : [ `One ] t
     | Two : T.two t
 
   let add (type a) : a t * a t -> string = function
@@ -2471,8 +2471,8 @@ type tag =
   ]
 
 type 'a poly =
-  | AandBTags : [< `TagA of int | `TagB] poly
-  | ATag : [< `TagA of int] poly
+  | AandBTags : [< `TagA of int | `TagB ] poly
+  | ATag : [< `TagA of int ] poly
 
 (* constraint 'a = [< `TagA of int | `TagB] *)
 
@@ -2489,7 +2489,7 @@ let intAorB = function
   | `TagB -> 4
 ;;
 
-type _ wrapPoly = WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
+type _ wrapPoly = WrapPoly : 'a poly -> ([< `TagA of int | `TagB ] as 'a) wrapPoly
 
 let example6 : type a. a wrapPoly -> a -> int =
  fun w ->
@@ -2540,9 +2540,9 @@ type (_, _) t =
   | Eq : ('a, 'a) t
 
 module M : sig
-  type s = private [> `A]
+  type s = private [> `A ]
 
-  val eq : (s, [`A | `B]) t
+  val eq : (s, [ `A | `B ]) t
 end = struct
   type s =
     [ `A
@@ -2552,7 +2552,7 @@ end = struct
   let eq = Eq
 end
 
-let f : (M.s, [`A | `B]) t -> string = function
+let f : (M.s, [ `A | `B ]) t -> string = function
   | Any -> "Any"
 ;;
 
@@ -2631,15 +2631,16 @@ struct
 end
 
 type _ nat =
-  | Zero : [`Zero] nat
-  | Succ : 'a nat -> [`Succ of 'a] nat
+  | Zero : [ `Zero ] nat
+  | Succ : 'a nat -> [ `Succ of 'a ] nat
 
 type 'a pre_nat =
   [ `Zero
   | `Succ of 'a
   ]
 
-type aux = Aux : [`Succ of [< [< [< [`Zero] pre_nat] pre_nat] pre_nat]] nat -> aux
+type aux =
+  | Aux : [ `Succ of [< [< [< [ `Zero ] pre_nat ] pre_nat ] pre_nat ] ] nat -> aux
 
 let f (Aux x) =
   match x with
@@ -2730,8 +2731,8 @@ let rec get_var : type stk ret. (stk s, ret) var -> stk lst -> ret =
   | Tail n', CCons (_, t) -> get_var n' t
 ;;
 
-type 'a t = [< `Foo | `Bar] as 'a
-type 'a s = [< `Foo | `Bar | `Baz > `Bar] as 'a
+type 'a t = [< `Foo | `Bar ] as 'a
+type 'a s = [< `Foo | `Bar | `Baz > `Bar ] as 'a
 
 type 'a first = First : 'a second -> ('b t as 'a) first
 
@@ -2739,7 +2740,7 @@ and 'a second = Second : ('b s as 'a) second
 
 type aux = Aux : 'a t second * ('a -> int) -> aux
 
-let it : 'a. ([< `Bar | `Foo > `Bar] as 'a) = `Bar
+let it : 'a. ([< `Bar | `Foo > `Bar ] as 'a) = `Bar
 let g (Aux (Second, f)) = f it
 
 type (_, _) eqp =
@@ -3666,7 +3667,7 @@ end)
 
 (* Variables are common to lambda and expr *)
 
-type var = [`Var of string]
+type var = [ `Var of string ]
 
 let subst_var ~subst : var -> _ = function
   | `Var s as x ->
@@ -3896,11 +3897,11 @@ class type ['a, 'b] ops =
 
 (* Variables are common to lambda and expr *)
 
-type var = [`Var of string]
+type var = [ `Var of string ]
 
 class ['a] var_ops =
   object (self : ('a, var) #ops)
-    constraint 'a = [> var]
+    constraint 'a = [> var ]
 
     method subst ~sub (`Var s as x) =
       try Subst.find s sub with
@@ -3932,7 +3933,7 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
   and subst = lazy !!ops#subst
   and eval = lazy !!ops#eval in
   object (self : ('a, 'a lambda) #ops)
-    constraint 'a = [> 'a lambda]
+    constraint 'a = [> 'a lambda ]
 
     method free =
       function
@@ -3994,7 +3995,7 @@ class ['a] expr_ops (ops : ('a, 'a) #ops Lazy.t) =
   and subst = lazy !!ops#subst
   and eval = lazy !!ops#eval in
   object (self : ('a, 'a expr) #ops)
-    constraint 'a = [> 'a expr]
+    constraint 'a = [> 'a expr ]
 
     method free =
       function
@@ -4048,7 +4049,7 @@ class ['a] lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
   let lambda = new lambda_ops ops in
   let expr = new expr_ops ops in
   object (self : ('a, 'a lexpr) #ops)
-    constraint 'a = [> 'a lexpr]
+    constraint 'a = [> 'a lexpr ]
 
     method free =
       function
@@ -4146,10 +4147,10 @@ class type ['a, 'b] ops =
 
 (* Variables are common to lambda and expr *)
 
-type var = [`Var of string]
+type var = [ `Var of string ]
 
 let var =
-  object (self : ([> var], var) #ops)
+  object (self : ([> var ], var) #ops)
     method subst ~sub (`Var s as x) =
       try Subst.find s sub with
       | Not_found -> x
@@ -4179,7 +4180,7 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
   let free = lazy !!ops#free
   and subst = lazy !!ops#subst
   and eval = lazy !!ops#eval in
-  object (self : ([> 'a lambda], 'a lambda) #ops)
+  object (self : ([> 'a lambda ], 'a lambda) #ops)
     method free =
       function
       | #var as x -> var#free x
@@ -4239,7 +4240,7 @@ let expr_ops (ops : ('a, 'a) #ops Lazy.t) =
   let free = lazy !!ops#free
   and subst = lazy !!ops#subst
   and eval = lazy !!ops#eval in
-  object (self : ([> 'a expr], 'a expr) #ops)
+  object (self : ([> 'a expr ], 'a expr) #ops)
     method free =
       function
       | #var as x -> var#free x
@@ -4292,7 +4293,7 @@ type 'a lexpr =
 let lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
   let lambda = lambda_ops ops in
   let expr = expr_ops ops in
-  object (self : ([> 'a lexpr], 'a lexpr) #ops)
+  object (self : ([> 'a lexpr ], 'a lexpr) #ops)
     method free =
       function
       | #lambda as x -> lambda#free x
@@ -4461,19 +4462,19 @@ external foo : int = "%ignore"
 
 let _ = foo ()
 
-type 'a t = [`A of 'a t t] as 'a
+type 'a t = [ `A of 'a t t ] as 'a
 
 (* fails *)
 
-type 'a t = [`A of 'a t t]
+type 'a t = [ `A of 'a t t ]
 
 (* fails *)
 
-type 'a t = [`A of 'a t t] constraint 'a = 'a t
-type 'a t = [`A of 'a t] constraint 'a = 'a t
-type 'a t = [`A of 'a] as 'a
+type 'a t = [ `A of 'a t t ] constraint 'a = 'a t
+type 'a t = [ `A of 'a t ] constraint 'a = 'a t
+type 'a t = [ `A of 'a ] as 'a
 
-type 'a v = [`A of u v] constraint 'a = t
+type 'a v = [ `A of u v ] constraint 'a = t
 
 and t = u
 
@@ -4532,7 +4533,7 @@ type ab =
   | `B
   ]
 
-let f (x : [`A]) =
+let f (x : [ `A ]) =
   match x with
   | #ab -> 1
 ;;
@@ -4541,23 +4542,23 @@ let f x =
   ignore
     (match x with
     | #ab -> 1);
-  ignore (x : [`A])
+  ignore (x : [ `A ])
 ;;
 
 let f x =
   ignore
     (match x with
     | `A | `B -> 1);
-  ignore (x : [`A])
+  ignore (x : [ `A ])
 ;;
 
-let f (x : [< `A | `B]) =
+let f (x : [< `A | `B ]) =
   match x with
   | `A | `B | `C -> 0
 ;;
 
 (* warn *)
-let f (x : [`A | `B]) =
+let f (x : [ `A | `B ]) =
   match x with
   | `A | `B | `C -> 0
 ;;
@@ -4567,7 +4568,7 @@ let f (x : [`A | `B]) =
 (* PR#6787 *)
 let revapply x f = f x
 
-let f x (g : [< `Foo]) =
+let f x (g : [< `Foo ]) =
   let y = `Bar x, g in
   revapply y (fun (`Bar i, _) -> i)
 ;;
@@ -4589,8 +4590,8 @@ type 'a t
 type a
 
 let f : < .. > t -> unit = fun _ -> ()
-let g : [< `b] t -> unit = fun _ -> ()
-let h : [> `b] t -> unit = fun _ -> ()
+let g : [< `b ] t -> unit = fun _ -> ()
+let h : [> `b ] t -> unit = fun _ -> ()
 let _ = fun (x : a t) -> f x
 let _ = fun (x : a t) -> g x
 let _ = fun (x : a t) -> h x
@@ -4804,8 +4805,8 @@ struct
   let t = M.f ()
 end
 
-type 't a = [`A]
-type 't wrap = 't constraint 't = [> 't wrap a]
+type 't a = [ `A ]
+type 't wrap = 't constraint 't = [> 't wrap a ]
 type t = t a wrap
 
 module T = struct
@@ -5062,7 +5063,7 @@ module type S = sig
 end
 
 module Foo
-    (Bar : S with type a = private [> `A])
+    (Bar : S with type a = private [> `A ])
     (Baz : S with type b = private < b : Bar.b ; .. >) =
 struct end
 
@@ -5100,14 +5101,14 @@ let _ = f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
 let _ = f (module A_alias) (* doesn't type either *)
 
 module Foo (Bar : sig
-  type a = private [> `A]
+  type a = private [> `A ]
 end) (Baz : module type of struct
   include Bar
 end) =
 struct end
 
 module Bazoinks = struct
-  type a = [`A]
+  type a = [ `A ]
 end
 
 module Bug = Foo (Bazoinks) (Bazoinks)
@@ -5365,7 +5366,7 @@ type -'a t
 
 class type c =
   object
-    method m : [`A] t
+    method m : [ `A ] t
   end
 
 module M : sig
@@ -6708,11 +6709,11 @@ end
 module A = Make ()
 
 module type Priv' = sig
-  type t = private [> `A]
+  type t = private [> `A ]
 end
 
 module Make' (Unit : sig end) : Priv' = struct
-  type t = [`A]
+  type t = [ `A ]
 end
 
 module A' = Make' ()
@@ -6770,15 +6771,15 @@ let f flag =
 module type S = sig
   type +'a t
 
-  val foo : [`A] t -> unit
-  val bar : [< `A | `B] t -> unit
+  val foo : [ `A ] t -> unit
+  val bar : [< `A | `B ] t -> unit
 end
 
 module Make (T : S) = struct
   let f x =
     T.foo x;
     T.bar x;
-    (x :> [`A | `C] T.t)
+    (x :> [ `A | `C ] T.t)
   ;;
 end
 
@@ -6803,7 +6804,7 @@ module type T = sig
   val nnf_not : term -> term
 end
 
-module Fpc (X : T with type term = private [> 'a termpc] as 'a) = struct
+module Fpc (X : T with type term = private [> 'a termpc ] as 'a) = struct
   type term = X.term termpc
 
   let nnf = function
@@ -6827,7 +6828,7 @@ module Fpc (X : T with type term = private [> 'a termpc] as 'a) = struct
   ;;
 end
 
-module Fk (X : T with type term = private [> 'a termk] as 'a) = struct
+module Fk (X : T with type term = private [> 'a termk ] as 'a) = struct
   type term = X.term termk
 
   module Pc = Fpc (X)
@@ -8191,8 +8192,8 @@ end
 
 (* PR#6716 *)
 
-type _ c = C : [`A] c
-type t = T : { x : [< `A] c } -> t
+type _ c = C : [ `A ] c
+type t = T : { x : [< `A ] c } -> t
 
 let f (T { x = C }) = ()
 
@@ -8259,11 +8260,11 @@ type t =
 
 type 'a u = t
 
-let a : [< int u] = `A
+let a : [< int u ] = `A
 
 type 'a s = 'a
 
-let b : [< t s] = `B
+let b : [< t s ] = `B
 
 module Core = struct
   module Int = struct
@@ -9421,7 +9422,7 @@ module P6235 = struct
     ; x : int
     }
 
-  type u = [`Key of t]
+  type u = [ `Key of t ]
 
   let f (u : u) =
     match u with
@@ -9439,7 +9440,7 @@ module P6235' = struct
     ; x : int
     }
 
-  type u = [`Key of t]
+  type u = [ `Key of t ]
 
   let f = function
     | (_ : u) when false -> ""
