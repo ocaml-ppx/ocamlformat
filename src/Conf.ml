@@ -1421,7 +1421,7 @@ let (_profile : t option C.t) =
       , "$(b,sparse) sets options for a generally sparse code style." )
     ; ( "janestreet"
       , Some janestreet_profile
-      , "$(b,janestreet) is the profile used at JaneStreet." ) ]
+      , "$(b,janestreet) is the profile used at Jane Street." ) ]
   in
   C.choice ~names ~all ~doc ~section ~has_default:false
     (fun conf p ->
