@@ -144,3 +144,9 @@ let cr0_pe = 1 lsl 0
 let cr0_mp = 1 lsl 1
 
 let cr0_em = 1 lsl 2
+
+(* with double semicolons *)
+
+let foo = fooooooooooooooooooooooooooooo
+
+let foo = fooooooooooooooooooooooooooooo
