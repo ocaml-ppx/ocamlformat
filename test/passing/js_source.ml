@@ -7356,3 +7356,14 @@ module Indexop = struct
 end
 
 type t = |
+
+include struct
+  let%test_module "as" =
+    (module struct
+       let%expect_test "xx xx xxxxxx xxxxxxx xxxxxx xxxxxx xxxxxxxx xx xxxxx xxx xx xxxxx"
+         =
+         ()
+       ;;
+    end)
+  ;;
+end
