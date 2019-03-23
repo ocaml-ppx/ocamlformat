@@ -1197,7 +1197,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     in
     let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
       list_fl args
-        (fun ~first ~last (fmt_before_cmts, fmt_afer_cmts, op_args) ->
+        (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
           let very_first = first_grp && first in
           let very_last = last_grp && last in
           fmt_if_k very_first
@@ -1208,7 +1208,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           $ fmt_before_cmts
           $ fmt_if_k first
               (open_hovbox (if first_grp && parens then -2 else 0))
-          $ fmt_afer_cmts
+          $ fmt_after_cmts
           $ fmt_op_args ~first:very_first op_args ~last:very_last
           $ fmt_if_k last close_box
           $ fmt_or_k very_last
@@ -1221,15 +1221,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     in
     let op_args_grouped =
       match c.conf.break_infix with
-      | `Wrap when c.conf.wrap_comments ->
+      | `Wrap ->
           List.group op_args
-            ~break:(fun (_, _, (_, args1)) (_, _, (_, args2)) ->
+            ~break:(fun (has_cmts, _, _, (_, args1))
+                   (_, _, _, (_, args2))
+                   ->
               let exists_not_simple args =
                 List.exists args ~f:(fun (_, arg) ->
                     not (is_simple c.conf width arg) )
               in
-              exists_not_simple args1 || exists_not_simple args2 )
-      | _ -> List.map ~f:(fun x -> [x]) op_args
+              has_cmts || exists_not_simple args1 || exists_not_simple args2
+          )
+      | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
     in
     hvbox indent_wrap (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
   in
@@ -1455,11 +1458,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
              | Some ({ast= {pexp_loc}} as op) ->
                  (* side effects of Cmts.fmt_before before fmt_expression is
                     important *)
+                 let has_cmts = Cmts.has_before c.cmts pexp_loc in
                  let fmt_before_cmts = Cmts.fmt_before c pexp_loc in
                  let fmt_after_cmts = Cmts.fmt_after c pexp_loc in
                  let fmt_op = fmt_expression c op in
-                 (fmt_before_cmts, fmt_after_cmts, (fmt_op, args))
-             | None -> (fmt "", fmt "", (fmt "", args)) ))
+                 (has_cmts, fmt_before_cmts, fmt_after_cmts, (fmt_op, args))
+             | None -> (false, fmt "", fmt "", (fmt "", args)) ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_loc}
       , (Nolabel, s) :: (Nolabel, i) :: _ )
@@ -1664,11 +1668,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         let loc_args = Sugar.infix_cons xexp in
         fmt_op_args
           (List.mapi loc_args ~f:(fun i (locs, arg) ->
+               let f l = Cmts.has_before c.cmts l in
+               let has_cmts = List.exists ~f locs in
                let fmt_before_cmts = list locs "" (Cmts.fmt_before c) in
                let fmt_op = fmt_if (i > 0) "::" in
                let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
-               (fmt_before_cmts, fmt_after_cmts, (fmt_op, [(Nolabel, arg)]))
-           )) )
+               ( has_cmts
+               , fmt_before_cmts
+               , fmt_after_cmts
+               , (fmt_op, [(Nolabel, arg)]) ) )) )
   | Pexp_construct (({txt= Lident "::"} as lid), Some arg) ->
       wrap_if parens "(" ")"
         ( hvbox 2
