@@ -41,6 +41,12 @@ let string_between t (l1 : Location.t) (l2 : Location.t) =
   then None
   else Some (String.sub t ~pos ~len)
 
+let empty_line_between t l1 l2 =
+  let non_whitespace _ c = not (Char.is_whitespace c) in
+  let is_empty s = String.lfindi s ~f:non_whitespace |> Option.is_none in
+  Location.(l2.loc_end.pos_lnum - l1.loc_start.pos_lnum) > 1
+  && Option.for_all (string_between t l1 l2) ~f:is_empty
+
 let string_at t (l : Location.t) =
   let pos = l.loc_start.pos_cnum in
   let len = Location.width l in

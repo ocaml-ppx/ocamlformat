@@ -201,7 +201,8 @@ module type Module_item = sig
   type t
 
   val break_between :
-       cmts:'a
+       Source.t
+    -> cmts:'a
     -> has_cmts_before:('a -> Location.t -> bool)
     -> has_cmts_after:('a -> Location.t -> bool)
     -> t * Conf.t
@@ -242,7 +243,8 @@ module Structure_item : Module_item with type t = structure_item = struct
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
-    | `Compact -> Location.is_single_line itm.pstr_loc c.Conf.margin
+    | `Compact | `Preserve ->
+        Location.is_single_line itm.pstr_loc c.Conf.margin
     | `Sparse -> (
       match itm.pstr_desc with
       | Pstr_include {pincl_mod= me} | Pstr_module {pmb_expr= me} ->
@@ -280,14 +282,19 @@ module Structure_item : Module_item with type t = structure_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
-      =
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
     has_cmts_after cmts i1.pstr_loc
     || has_cmts_before cmts i2.pstr_loc
     || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || (not (is_simple (i2, c2)))
-    || not (allow_adjacent (i1, c1) (i2, c2))
+    ||
+    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    | `Preserve, `Preserve ->
+        Source.empty_line_between s i1.pstr_loc i2.pstr_loc
+    | _ ->
+        (not (is_simple (i1, c1)))
+        || (not (is_simple (i2, c2)))
+        || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
 module Signature_item : Module_item with type t = signature_item = struct
@@ -321,7 +328,8 @@ module Signature_item : Module_item with type t = signature_item = struct
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
-    | `Compact -> Location.is_single_line itm.psig_loc c.Conf.margin
+    | `Compact | `Preserve ->
+        Location.is_single_line itm.psig_loc c.Conf.margin
     | `Sparse -> (
       match itm.psig_desc with
       | Psig_open _ | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} ->
@@ -347,14 +355,19 @@ module Signature_item : Module_item with type t = signature_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
-      =
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
     has_cmts_after cmts i1.psig_loc
     || has_cmts_before cmts i2.psig_loc
     || has_doc i1 || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || (not (is_simple (i2, c2)))
-    || not (allow_adjacent (i1, c1) (i2, c2))
+    ||
+    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    | `Preserve, `Preserve ->
+        Source.empty_line_between s i1.psig_loc i2.psig_loc
+    | _ ->
+        (not (is_simple (i1, c1)))
+        || (not (is_simple (i2, c2)))
+        || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
 module Expression : Module_item with type t = expression = struct
@@ -364,8 +377,8 @@ module Expression : Module_item with type t = expression = struct
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pexp_loc c.Conf.margin
 
-  let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
-      =
+  let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
     has_cmts_after cmts i1.pexp_loc
     || has_cmts_before cmts i2.pexp_loc
     || (not (is_simple (i1, c1)))
@@ -535,16 +548,17 @@ let break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
   || (not (is_simple (i1, c1)))
   || not (is_simple (i2, c2))
 
-let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2) =
+let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+    =
   match (i1, i2) with
   | Str i1, Str i2 ->
-      Structure_item.break_between ~cmts ~has_cmts_before ~has_cmts_after
+      Structure_item.break_between s ~cmts ~has_cmts_before ~has_cmts_after
         (i1, c1) (i2, c2)
   | Sig i1, Sig i2 ->
-      Signature_item.break_between ~cmts ~has_cmts_before ~has_cmts_after
+      Signature_item.break_between s ~cmts ~has_cmts_before ~has_cmts_after
         (i1, c1) (i2, c2)
   | Exp i1, Exp i2 ->
-      Expression.break_between ~cmts ~has_cmts_before ~has_cmts_after
+      Expression.break_between s ~cmts ~has_cmts_before ~has_cmts_after
         (i1, c1) (i2, c2)
   | Mty _, Mty _ ->
       break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)

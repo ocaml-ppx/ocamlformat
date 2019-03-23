@@ -41,7 +41,7 @@ type t =
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
-  ; module_item_spacing: [`Compact | `Sparse]
+  ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
@@ -895,6 +895,10 @@ module Formatting = struct
       [ ( "sparse"
         , `Sparse
         , "$(b,sparse) will always break a line between two items." )
+      ; ( "preserve"
+        , `Preserve
+        , "$(b,preserve) will not leave open lines between one-liners of \
+           similar sorts unless there is an open line in the input." )
       ; ( "compact"
         , `Compact
         , "$(b,compact) will not leave open lines between one-liners of \

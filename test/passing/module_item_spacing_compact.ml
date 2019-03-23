@@ -1,8 +1,5 @@
-[@@@ocamlformat "module-item-spacing=compact"]
-
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
-
 let f x = x + 1
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
@@ -18,7 +15,6 @@ let f = function
 
 let x = 1
 and y = 2
-
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 
@@ -36,35 +32,36 @@ module M =
 
 let x = 1
 let y = 2
-
 let x = 1
 and y = 2
-and c = {a: int; b: toto; c: char * char * char; d: [`Foo | `Bar]}
+and c = {a : int; b : toto; c : char * char * char; d : [`Foo | `Bar]}
 and z = this one is pretty looooooooooooooooooooooooooooooooooong
 and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 
 type k = A | B | K of int * char * string | E
 
 let x = 1
-let z = this one (is short)
+let z =
+  this
+    one
+    (is short)
 let y = 2
-
-let w =
-  this one is toooooooooooooooooooooooooo
-    (looooooooooooooooooooooooog but is (originally a one - liner))
-
+let w = this one is toooooooooooooooooooooooooo (looooooooooooooooooooooooog but is (originally a one-liner))
 let k = z
+
 
 module N = struct
   let x = 1
-  let z = soooooooooo is this oooooooooooooooooooooooooooooooooooooooooooone
-  let y = 2
 
   let z =
-    soooooooooo iis this oooooooooooooooooooooooooooooooooooooooooooone
+    soooooooooo
+      is
+      this
+      oooooooooooooooooooooooooooooooooooooooooooone
 
   let y = 2
-
+  let z = soooooooooo iis this oooooooooooooooooooooooooooooooooooooooooooone
+  let y = 2
   module A = AA
   include A
   module B = BB
@@ -83,27 +80,14 @@ let x = x
 and y = y
 
 let x = x
+and y = something veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery veeeeeeeeeeeeeeeeeeeeeeeeeeeery long
 
-and y =
-  something veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery
-    veeeeeeeeeeeeeeeeeeeeeeeeeeeery long
-
-let y =
-  something veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery
-    veeeeeeeeeeeeeeeeeeeeeeeeeeeery long
-
+let y = something veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery veeeeeeeeeeeeeeeeeeeeeeeeeeeery long
 and x = x
 
 let a = a
 and a = a
-
-and a = a [@@ocamlformat "module-item-spacing=sparse"]
-
 and a = a
-
-and a = a
-
-and a = a [@@ocamlformat "module-item-spacing=compact"]
 
 and a = a
 and a = a
@@ -114,3 +98,23 @@ let x = 1
 (* floating *)
 
 let y = 2
+
+let cmos_rtc_seconds = 0x00
+let cmos_rtc_seconds_alarm = 0x01
+let cmos_rtc_minutes = 0x02
+
+let x = o
+
+let log_other = 0x000001
+let log_cpu = 0x000002
+let log_fpu = 0x000004
+
+let cr0_pe = 1 lsl 0
+let cr0_mp = 1 lsl 1
+let cr0_em = 1 lsl 2
+
+(* with double semicolons *)
+
+let foo = fooooooooooooooooooooooooooooo;;
+
+let foo = fooooooooooooooooooooooooooooo;;
