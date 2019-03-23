@@ -1319,7 +1319,7 @@ let ty_abc =
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj : type c.
       (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
-      = function
+    = function
     | Thd, v -> `A v
     | Ttl Thd, v -> `B v
     | Ttl (Ttl Thd), Noarg -> `C
