@@ -3974,8 +3974,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             $ fmt_attributes c ~key:"@" atrs
             $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
             $ fmt " " $ fmt_pattern c xpat
-            $ fmt_if (not (List.is_empty xargs)) "@ "
-            $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
+            $ fmt_if_k
+                (not (List.is_empty xargs))
+                ( fmt "@ "
+                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs) )
             $ Option.call ~f:fmt_cstr )
         $ fmt_or_k c.conf.ocp_indent_compat
             ( if Option.is_some fmt_cstr then fmt "@ ="
