@@ -9752,3 +9752,8 @@ end
 if fffffffffffffff aaaaa bb
 then (if b then aaaaaaaaaaaaaaaa ffff)
 else aaaaaaaaaaaa qqqqqqqqqqq
+
+let _ =
+  List.map rows ~f:(fun row ->
+      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+;;
