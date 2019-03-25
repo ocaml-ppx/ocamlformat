@@ -1714,13 +1714,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             (fits_breaks_if parens ")" "@ )")
             (fits_breaks_if parens ")" "@,)") )
   | Pexp_function cs ->
-      wrap_if parens "(" ")"
-        ( hvbox 2
+      fmt_if parens "("
+      $ ( hvbox 2
             ( fmt "function"
             $ fmt_extension_suffix c ext
             $ fmt_attributes c ~key:"@" pexp_attributes )
         $ fmt "@ "
         $ hvbox 0 (fmt_cases c ctx cs) )
+      $ fmt_or_k c.conf.indicate_multiline_delimiters
+          (fits_breaks_if parens ")" "@ )")
+          (fits_breaks_if parens ")" "@,)")
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then

@@ -1368,7 +1368,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        { sum_proj=
            (function
            | `Nil -> ("Nil", None)
-           | `Cons p -> ("Cons", Some (Tdyn (tcons, p))))
+           | `Cons p -> ("Cons", Some (Tdyn (tcons, p))) )
        ; sum_cases= [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
        ; sum_inj=
            (fun (type c) ->
@@ -1403,7 +1403,7 @@ let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
     ( (function
       | `A n -> ("A", Some (Tdyn (Int, n)))
       | `B s -> ("B", Some (Tdyn (String, s)))
-      | `C -> ("C", None))
+      | `C -> ("C", None) )
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
@@ -1417,7 +1417,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p))))
+         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p)))
+         )
        , function
          | "Nil", None -> `Nil
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p
