@@ -360,7 +360,7 @@ let wrap_tuple ~parens ~no_parens_if_break c =
 
 let doc_atrs = Ast.doc_atrs
 
-let _parse_docstring str_cmt =
+let parse_docstring str_cmt =
   match Octavius.parse (Lexing.from_string str_cmt) with
   | Error _ -> Error ()
   | Ok parsed as ok ->
@@ -369,7 +369,7 @@ let _parse_docstring str_cmt =
         Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
       ok
 
-let _fmt_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
+let fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
   let space_i i =
     let is_space = function
       | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> true
@@ -399,8 +399,8 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
         | (None | Some (_, false)), true -> not standalone
         | _ -> false
       in
-      _fmt_docstring c ~need_break ~loc ?next ?pro ?epi txt
-        (_parse_docstring txt) )
+      fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi txt
+        (parse_docstring txt) )
 
 (** Handle the doc-comments-tag-only option: Fits tag-only comments on the
     same line *)
@@ -409,11 +409,11 @@ let fmt_docstring_around ~loc c doc k =
   let doc = Option.value ~default:[] doc in
   let doc =
     List.map doc ~f:(fun ({txt; loc}, _) ->
-        let parsed = _parse_docstring txt in
+        let parsed = parse_docstring txt in
         ( contains_text parsed
         , fun ?epi ?pro () ->
-            _fmt_docstring c ~need_break:false ~loc ?epi ?pro txt parsed )
-    )
+            fmt_parsed_docstring c ~need_break:false ~loc ?epi ?pro txt
+              parsed ) )
   in
   let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
   if
