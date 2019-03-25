@@ -412,6 +412,8 @@ let fmt_docstring_around ~loc c doc k =
   let doc = Option.value ~default:[] doc in
   let doc =
     List.map doc ~f:(fun ({txt; loc}, _) ->
+        let conf = {c.conf with parse_docstrings= true} in
+        let c = {c with conf} in
         let parsed = _parse_docstring c txt in
         ( contains_text parsed
         , fun ?epi ?pro () ->
