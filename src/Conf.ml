@@ -9,6 +9,8 @@
  *                                                                    *
  **********************************************************************)
 
+let version = "%%VERSION%%"
+
 (** Configuration options *)
 
 type t =
@@ -476,7 +478,7 @@ let info =
          $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
          ignored and can be used as comments." ]
   in
-  Term.info "ocamlformat" ~version:Version.version ~doc ~man
+  Term.info "ocamlformat" ~version ~doc ~man
 
 (** Options affecting formatting *)
 module Formatting = struct
@@ -1514,14 +1516,11 @@ let parse_line config ~from s =
     let value = String.strip value in
     match (name, from) with
     | "version", `File _ ->
-        if String.equal Version.version value || !no_version_check then
-          Ok config
+        if String.equal version value || !no_version_check then Ok config
         else
           Error
             (`Bad_value
-              ( value
-              , Format.sprintf "expecting %s but got %s" Version.version
-                  value ))
+              (value, Format.sprintf "expecting %s but got %s" version value))
     | name, `File x ->
         C.update ~config
           ~from:(`Parsed (`File x))

@@ -18,7 +18,7 @@ dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
 url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/%%VERSION%%.tar.gz" }
 license: "MIT"
 build: [
-  ["tools/gen_version.sh" "src/Version.ml" version] {pinned}
+  ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [

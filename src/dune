@@ -9,12 +9,6 @@ let preprocess =
 Jbuild_plugin.V1.send
 @@ Format.sprintf
      {|
-(rule
- (targets Version.ml)
- (deps (universe))
- (action (run bash %%{dep:../tools/gen_version.sh} Version.ml))
- (mode fallback))
-
 (ocamllex Literal_lexer)
 
 (executables
