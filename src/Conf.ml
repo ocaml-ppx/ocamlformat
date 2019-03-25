@@ -691,7 +691,7 @@ module Formatting = struct
     let names = ["doc-comments-tag-only"] in
     let all =
       [ ("default", `Default, "$(b,default) means no special treatment.")
-      ; ("fit", `Fit, "$(b,after) puts doc comments on the same line.") ]
+      ; ("fit", `Fit, "$(b,fit) puts doc comments on the same line.") ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with doc_comments_tag_only= x})
