@@ -101,7 +101,7 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --doc-comments-tag-only={default|fit}
            Position of doc comments with only tags. default means no special
-           treatment. after puts doc comments on the same line. The default
+           treatment. fit puts doc comments on the same line. The default
            value is default.
 
        --escape-chars={preserve|decimal|hexadecimal}
