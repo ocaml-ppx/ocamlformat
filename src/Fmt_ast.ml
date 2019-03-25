@@ -1522,8 +1522,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           (Location.is_single_line pexp_loc c.conf.margin)
                           (fmt ")") (fits_breaks ")" "@ )"))
                        (fmt_or_k
-                          (Location.is_single_line xbody.ast.pexp_loc
-                             c.conf.margin)
+                          (Location.is_single_line pexp_loc c.conf.margin)
                           (fmt ")") (fits_breaks ")" "@,)")) )
                $ fmt_atrs ))
       | ( lbl
