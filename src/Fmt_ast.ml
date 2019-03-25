@@ -408,14 +408,16 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
 (** Handle the doc-comments-tag-only option: Fits tag-only comments on the
     same line *)
 let fmt_docstring_around ~loc c doc k =
-  let contains_text = function Ok ([], _) -> false | _ -> true in
+  let docstring_contains_text str_cmt =
+    match Octavius.parse (Lexing.from_string str_cmt) with
+    | Ok ([], _) -> false
+    | _ -> true
+  in
   let doc = Option.value ~default:[] doc in
   let doc =
     List.map doc ~f:(fun ({txt; loc}, _) ->
-        let conf = {c.conf with parse_docstrings= true} in
-        let c = {c with conf} in
         let parsed = _parse_docstring c txt in
-        ( contains_text parsed
+        ( docstring_contains_text txt
         , fun ?epi ?pro () ->
             _fmt_docstring c ~need_break:false ~loc ?epi ?pro txt parsed )
     )
