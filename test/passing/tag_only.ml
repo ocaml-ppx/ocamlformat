@@ -3,6 +3,7 @@ open Module
 
 open Module
 (** abc
+
     @deprecated  *)
 
 open Module
@@ -106,6 +107,7 @@ open Module  (** @deprecated  *)
 
 open Module
 (** abc
+
     @deprecated  *)
 
 open Module  (** @author A *)

@@ -3,6 +3,7 @@ open Module
 
 open Module
 (** abc
+
     @deprecated  *)
 
 (** @inline *)
@@ -56,6 +57,7 @@ open Module  (** @deprecated  *)
 
 open Module
 (** abc
+
     @deprecated  *)
 
 (** @inline *)

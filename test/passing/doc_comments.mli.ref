@@ -13,11 +13,13 @@ val escape : string -> string
 
 type title = string * int * string * string * string
 
-(** {1 Standard section names} *)
+(** {1:standard-section-names Standard section names} *)
 
 val s_name : string
 
-(** {1 Section maps} Used for handling the merging of metadata doc strings. *)
+(** {1:section-maps Section maps}
+
+    Used for handling the merging of metadata doc strings. *)
 
 type smap
 
@@ -25,11 +27,11 @@ val smap_append_block : smap -> sec:string -> block -> smap
 (** [smap_append_block smap sec b] appends [b] at the end of section [sec]
     creating it at the right place if needed. *)
 
-(** {1 Content boilerplate} *)
+(** {1:content-boilerplate Content boilerplate} *)
 
 val s_environment_intro : block
 
-(** {1 Output} *)
+(** {1:output Output} *)
 
 type format = [`Auto | `Pager | `Plain | `Groff]
 
@@ -41,7 +43,8 @@ val print :
   -> t
   -> unit
 
-(** {1 Printers and escapes used by Cmdliner module} *)
+(** {1:printers-and-escapes-used-by-cmdliner-module Printers and escapes
+    used by Cmdliner module} *)
 
 val subst_vars :
      errs:Format.formatter
@@ -52,6 +55,7 @@ val subst_vars :
 (** [subst b ~subst s], using [b], substitutes in [s] variables of the form
     "$(doc)" by their [subst] definition. This leaves escapes and markup
     directives $(markup,...) intact.
+
     @raise Invalid_argument in case of illegal syntax. *)
 
 val doc_to_plain :
@@ -62,24 +66,37 @@ val doc_to_plain :
   -> string
 (** [doc_to_plain b ~subst s] using [b], subsitutes in [s] variables by
     their [subst] definition and renders cmdliner directives to plain text.
+
     @raise Invalid_argument in case of illegal syntax. *)
 
 val k : k
 (** this is a comment
+
     @author foo
+
     @version foo
+
     @see <foo> foo
+
     @since foo
+
     @before foo [foo]
+
     @deprecated [foo]
+
     @param foo [foo]
+
     @raise foo [foo]
+
     @return [foo]
+
     @inline
+
     @canonical foo *)
 
 val x : x
 (** a comment
+
     @version foo *)
 
 (** Managing Chunks.
@@ -123,9 +140,9 @@ val x : x
     This is preformated code:
 
     {[
-      let verbatim s =
-        s |> String.split_lines |> List.map ~f:String.strip
-        |> fun s -> list s "@," Fmt.str
+let verbatim s =
+  s |> String.split_lines |> List.map ~f:String.strip
+  |> fun s -> list s "@," Fmt.str
     ]} *)
 
 (** Lists:
@@ -158,13 +175,17 @@ val x : x
 
     {ul
      {- xxx
+
         - a
         - b
-        - c}
+        - c
+     }
      {- yyy
+
         + a
         + b
-        + c}} *)
+        + c
+     }} *)
 
 (** {{:https://github.com/} Github} *)
 
@@ -180,7 +201,7 @@ val x : x
 
 (** [a]'c [b]'s [c]'c *)
 
-(** return true if {%\gamma(lhs) \subseteq \gamma(rhs)%} *)
+(** return true if [\gamma(lhs) \subseteq \gamma(rhs)] *)
 
 (** Composition of functions: [(f >> g) x] is exactly equivalent to
     [g (f (x))]. Left associative. *)
@@ -189,7 +210,7 @@ val x : x
 
 (** for [Global]s *)
 
-(** generic command: ∀xs.{foot}-{post} *)
+(** generic command: ∀xs.[foot]-[post] *)
 
 (** A *)
 val foo : int -> unit
@@ -236,20 +257,25 @@ b
 (** {ul
      {- Abc
 
-     Def}
-     {- Hij}
+        Def
+     }
+     {- Hij
+     }
      {- Klm
 
-     {ul
-      {- Nop
+        {ul
+         {- Nop
 
-      Qrs}
-      {- Tuv}}}} *)
+            Qrs
+         }
+         {- Tuv
+         }}
+     }} *)
 
 (** - {v
     Abc
     def
-      v} 
+      v}
     - {[
 A
   B
