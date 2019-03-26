@@ -9,7 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-val fmt : Octavius.Types.t -> Fmt.t
+val fmt : Odoc__model.Comment.docs -> Fmt.t
 
 val diff :
      Conf.t

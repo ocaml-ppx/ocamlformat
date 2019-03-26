@@ -9,120 +9,183 @@
  *                                                                    *
  **********************************************************************)
 
-open Octavius.Types
 open Fmt
+open Odoc__model
+open Comment
+open Names
 
-let escape_brackets =
-  String.Escaping.escape ~escapeworthy:['['; ']'] ~escape_char:'\\'
+(** Escape characters if they are not already escaped. [escapeworthy] should
+    return [true] if the character should be escaped, [false] otherwise. *)
+let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
+  let module E = String.Escaping in
+  let dst = Buffer.create (String.length s + 8) in
+  let prev_off = ref 0 in
+  let stash until =
+    Buffer.add_substring dst s ~pos:!prev_off ~len:(until - !prev_off)
+  in
+  let len = String.length s in
+  for i = 0 to len - 1 do
+    if escapeworthy s.[i] && not (E.is_char_escaped s ~escape_char i) then (
+      stash i ;
+      prev_off := i ;
+      Buffer.add_char dst escape_char )
+  done ;
+  stash len ;
+  Buffer.contents dst
 
-let escape_all =
-  String.Escaping.escape ~escapeworthy:['@'; '{'; '}'; '['; ']']
-    ~escape_char:'\\'
+let escape_brackets s =
+  let escapeworthy = function '[' | ']' -> true | _ -> false in
+  ensure_escape ~escapeworthy s
+
+let escape_all s =
+  let escapeworthy = function
+    | '@' | '{' | '}' | '[' | ']' -> true
+    | _ -> false
+  in
+  ensure_escape ~escapeworthy s
 
 let str ?(escape = true) s =
-  let escape = if escape then Staged.unstage escape_all else Fn.id in
+  let escape = if escape then escape_all else Fn.id in
   s
   |> String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
   |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
 
-let verbatim s = Fmt.str s
+let str_verbatim = Fmt.str
 
-let fmt_ref_kind = function
-  | RK_element -> str "!"
-  | RK_module -> str "!module:"
-  | RK_module_type -> str "!modtype:"
-  | RK_class -> str "!class:"
-  | RK_class_type -> str "!classtype:"
-  | RK_value -> str "!val:"
-  | RK_type -> str "!type:"
-  | RK_exception -> str "!exception:"
-  | RK_attribute -> str "!attribute:"
-  | RK_method -> str "!method:"
-  | RK_section -> str "!section:"
-  | RK_recfield -> str "!recfield:"
-  | RK_const -> str "!const:"
-  | RK_link -> str ":"
-  | RK_custom s -> str "!" $ str s $ str ":"
+let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
-let rec fmt_style style txt =
+let ign_loc f with_loc = f with_loc.Location_.value
+
+(* Decide between using light and heavy syntax for lists *)
+let list_should_use_heavy_syntax items =
+  let heavy_nestable_block_elements = function
+    (* More than one element or contains a list *)
+    | [{Location_.value= `List _}] | _ :: _ :: _ -> true
+    | [] | [_] -> false
+  in
+  List.exists items ~f:heavy_nestable_block_elements
+
+(* Format each element with [fmt_elem] *)
+let fmt_styled style fmt_elem elems =
   let s =
     match style with
-    | SK_bold -> "b"
-    | SK_italic -> "i"
-    | SK_emphasize -> "e"
-    | SK_center -> "C"
-    | SK_left -> "L"
-    | SK_right -> "R"
-    | SK_superscript -> "^"
-    | SK_subscript -> "_"
-    | SK_custom s -> s
+    | `Bold -> "b"
+    | `Italic -> "i"
+    | `Emphasis -> "e"
+    | `Superscript -> "^"
+    | `Subscript -> "_"
   in
   hovbox 0
     (wrap "{" "}"
-       (Fmt.str s $ fmt_if (not (List.is_empty txt)) "@ " $ fmt_text txt))
+       (str s $ fmt_if_not_empty elems "@ " $ list elems "" fmt_elem))
 
-and fmt_text_elt = function
-  | Raw s -> str s
-  | Code s ->
-      hovbox 0
-        (wrap "[" "]"
-           (str ~escape:false ((Staged.unstage escape_brackets) s)))
-  | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
-  | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
-  | Style (st, txt) -> fmt_style st txt
-  | List l -> fmt_list `List l
-  | Enum l -> fmt_list `Enum l
-  | Newline -> fmt "\n@\n"
-  | Title (i, None, txt) ->
-      hovbox 0
-        (wrap "{" "}" (str (Int.to_string i) $ fmt "@ " $ fmt_text txt))
-  | Title (i, Some s, txt) ->
-      hovbox 0
-        (wrap "{" "}"
-           ( str (Int.to_string i)
-           $ str ":" $ str s $ fmt "@ " $ fmt_text txt ))
-  | Ref (rk, s, None) -> hovbox 0 (wrap "{" "}" (fmt_ref_kind rk $ str s))
-  | Ref (rk, s, Some txt) ->
-      hovbox 0
-        (wrap "{" "}"
-           ( hovbox 0 (wrap "{" "}" (fmt_ref_kind rk $ str s))
-           $ fmt "@ " $ fmt_text txt ))
-  | Special_ref (SRK_module_list l) ->
-      hvbox 0 (wrap "{!modules:" "}" (list l "@," str))
-  | Special_ref SRK_index_list -> str "{!indexlist}"
-  | Target (s, l) ->
-      let target = Option.value_map s ~default:"" ~f:(fun s -> s ^ ":") in
-      hovbox 0
-        (wrap "{" "}"
-           (char '%' $ str target $ str ~escape:false l $ char '%'))
+(* Format references From odoc's `html/comment.ml` *)
+let rec fmt_reference_resolved : Reference.Resolved.t -> Fmt.t =
+  let open Names in
+  let open Reference.Resolved in
+  let dot r s = fmt_reference_resolved r $ str "." $ str s in
+  function
+  | `Identifier id -> str (Identifier.name id)
+  | `SubstAlias (_, r) -> fmt_reference_resolved (r :> t)
+  | `Module (r, s) -> dot (r :> t) (ModuleName.to_string s)
+  | `Canonical (_, `Resolved r) -> fmt_reference_resolved (r :> t)
+  | `Canonical (p, _) -> fmt_reference_resolved (p :> t)
+  | `ModuleType (r, s) -> dot (r :> t) (ModuleTypeName.to_string s)
+  | `Type (r, s) -> dot (r :> t) (TypeName.to_string s)
+  | `Constructor (r, s) -> dot (r :> t) (ConstructorName.to_string s)
+  | `Field (r, s) -> dot (r :> t) (FieldName.to_string s)
+  | `Extension (r, s) -> dot (r :> t) (ExtensionName.to_string s)
+  | `Exception (r, s) -> dot (r :> t) (ExceptionName.to_string s)
+  | `Value (r, s) -> dot (r :> t) (ValueName.to_string s)
+  | `Class (r, s) -> dot (r :> t) (ClassName.to_string s)
+  | `ClassType (r, s) -> dot (r :> t) (ClassTypeName.to_string s)
+  | `Method (r, s) -> dot (r :> t) (MethodName.to_string s)
+  | `InstanceVariable (r, s) ->
+      dot (r :> t) (InstanceVariableName.to_string s)
+  | `Label (r, s) ->
+      fmt_reference_resolved (r :> t)
+      $ str ":"
+      $ str (LabelName.to_string s)
 
-and fmt_list kind l =
-  let light_syntax =
-    let line_start =
-      fmt (match kind with `List -> "- " | `Enum -> "+ ")
-    in
-    let fmt_item txt = hovbox 2 (line_start $ fmt_text txt) in
-    vbox 0 (list l "@," fmt_item)
-  in
-  let heavy_syntax =
-    let fmt_item txt = hovbox 0 (wrap "{- " "}" (fmt_text txt)) in
-    let start : _ format =
-      match kind with `List -> "{ul@," | `Enum -> "{ol@,"
-    in
-    vbox 1 (wrap start "}" (list l "@," fmt_item))
-  in
-  let print_and_parse fmt =
-    let str = Format.asprintf "\n%t" fmt in
-    Octavius.parse (Lexing.from_string str)
-  in
-  match (print_and_parse light_syntax, print_and_parse heavy_syntax) with
-  | Ok x, Ok y when Poly.(x = y) -> light_syntax
-  | Ok _, Ok _ -> heavy_syntax
-  | Error _, _ | _, Error _ -> heavy_syntax
+let rec fmt_reference : Reference.t -> Fmt.t =
+  let open Names in
+  let open Reference in
+  let dot p rhs = fmt_reference p $ str "." $ str rhs in
+  function
+  | `Root (s, _) -> str (UnitName.to_string s)
+  | `Dot (p, s) -> dot (p :> t) s
+  | `Module (p, s) -> dot (p :> t) (ModuleName.to_string s)
+  | `ModuleType (p, s) -> dot (p :> t) (ModuleTypeName.to_string s)
+  | `Type (p, s) -> dot (p :> t) (TypeName.to_string s)
+  | `Constructor (p, s) -> dot (p :> t) (ConstructorName.to_string s)
+  | `Field (p, s) -> dot (p :> t) (FieldName.to_string s)
+  | `Extension (p, s) -> dot (p :> t) (ExtensionName.to_string s)
+  | `Exception (p, s) -> dot (p :> t) (ExceptionName.to_string s)
+  | `Value (p, s) -> dot (p :> t) (ValueName.to_string s)
+  | `Class (p, s) -> dot (p :> t) (ClassName.to_string s)
+  | `ClassType (p, s) -> dot (p :> t) (ClassTypeName.to_string s)
+  | `Method (p, s) -> dot (p :> t) (MethodName.to_string s)
+  | `InstanceVariable (p, s) ->
+      dot (p :> t) (InstanceVariableName.to_string s)
+  | `Label (p, s) -> dot (p :> t) (LabelName.to_string s)
+  | `Resolved r -> fmt_reference_resolved r
 
-and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
+let fmt_reference_kind : Reference.t -> Fmt.t = function
+  | `Module _ -> str "!module:"
+  | `ModuleType _ -> str "!modtype:"
+  | `Class _ -> str "!class:"
+  | `ClassType _ -> str "!classtype:"
+  | `Value _ -> str "!val:"
+  | `Type _ -> str "!type:"
+  | `Exception _ -> str "!exception:"
+  | `Method _ -> str "!method:"
+  | `Field _ -> str "!field:"
+  | `Label _ -> str "!label:"
+  | `Constructor _ -> str "!constructor:"
+  | `Extension _ -> str "!extension:"
+  | `InstanceVariable _ -> str "!instance-variable:"
+  | `Resolved _ | `Root _ | `Dot _ -> str "!"
 
+let fmt_leaf_inline_element = function
+  | `Space -> fmt "@ "
+  | `Word w ->
+      (* Escape lines starting with '+' or '-' *)
+      let escape =
+        if String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-') then
+          if_newline "\\"
+        else fmt ""
+      in
+      escape $ str w
+  | `Code_span s ->
+      let s = escape_brackets s in
+      hovbox 0 (wrap "[" "]" (str_verbatim s))
+  | `Raw_markup (`Html, s) -> str s
+
+let rec fmt_inline_element = function
+  | `Styled (style, elems) ->
+      fmt_styled style (ign_loc fmt_inline_element) elems
+  | `Reference (ref, txt) ->
+      let ref = wrap "{" "}" (fmt_reference_kind ref $ fmt_reference ref) in
+      if List.is_empty txt then ref
+      else hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_link_content txt))
+  | `Link (url, txt) -> (
+      let url = wrap "{:" "}" (str url) in
+      match txt with
+      | [] -> url
+      | txt -> wrap "{" "}" (url $ fmt "@ " $ fmt_link_content txt) )
+  | #leaf_inline_element as elem -> fmt_leaf_inline_element elem
+
+and fmt_link_content txt = list txt "" (ign_loc fmt_non_link_inline_element)
+
+and fmt_non_link_inline_element = function
+  | `Styled (style, elems) ->
+      fmt_styled style (ign_loc fmt_non_link_inline_element) elems
+  | #leaf_inline_element as elem -> fmt_leaf_inline_element elem
+
+(** TODO:
+
+    {[
 and fmt_text txt =
   let no_space_before = ['.'; ':'; ';'; ','; '-'; ')'; '\''] in
   let no_space_before c = List.mem no_space_before c ~equal:Char.equal in
@@ -152,39 +215,92 @@ and fmt_text txt =
     | None -> fmt_text_elt curr
   in
   hovbox 0 (list_pn txt f)
+    ]} *)
 
-let at () = char '@'
+and fmt_nestable_block_element : nestable_block_element -> t = function
+  | `Paragraph elems ->
+      hovbox 0 (list elems "" (ign_loc fmt_inline_element))
+  | `Code_block s ->
+      vbox 0 (fmt "{[@;<1 -999>" $ str_verbatim s $ fmt "@ ]}")
+  | `Verbatim s -> vbox 0 (fmt "{v@;<1 -999>" $ str_verbatim s $ fmt "@ v}")
+  | `Modules mods ->
+      let mods = (mods :> Reference.t list) in
+      hovbox 0 (wrap "{!modules:@," "@,}" (list mods "@ " fmt_reference))
+  | `List (k, items) when list_should_use_heavy_syntax items ->
+      fmt_list_heavy k items
+  | `List (k, items) -> fmt_list_light k items
 
-let fmt_see_ref = function
-  | See_url s | See_file s | See_doc s -> char '<' $ Fmt.str s $ char '>'
+and fmt_list_heavy kind items =
+  let fmt_item elems =
+    wrap "{- " "@,}" @@ vbox 0 (fmt_nestable_block_elements elems)
+  and start : s =
+    match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"
+  in
+  vbox 1 (wrap start "}" (list items "@," fmt_item))
 
-let fmt_tag t =
-  hovbox 0
-    ( match t with
-    | Author s -> at () $ fmt "author@ " $ str s
-    | Version s -> at () $ fmt "version@ " $ str s
-    | See (sr, txt) ->
-        at () $ fmt "see@ " $ fmt_see_ref sr $ fmt "@ " $ fmt_text txt
-    | Since s -> at () $ fmt "since@ " $ str s
-    | Before (s, txt) ->
-        at () $ fmt "before@ " $ str s $ fmt "@ " $ fmt_text txt
-    | Deprecated txt -> at () $ fmt "deprecated@ " $ fmt_text txt
-    | Param (s, txt) ->
-        at () $ fmt "param@ " $ str s $ fmt "@ " $ fmt_text txt
-    | Raised_exception (s, txt) ->
-        at () $ fmt "raise@ " $ str s $ fmt "@ " $ fmt_text txt
-    | Return_value txt -> at () $ fmt "return@ " $ fmt_text txt
-    | Inline -> at () $ str "inline"
-    | Custom (s, []) -> at () $ str s
-    | Custom (s, txt) -> at () $ str s $ fmt "@ " $ fmt_text txt
-    | Canonical s -> at () $ fmt "canonical@ " $ str s )
+and fmt_list_light kind items =
+  let line_start =
+    match kind with `Unordered -> fmt "- " | `Ordered -> fmt "+ "
+  in
+  let fmt_item elems =
+    line_start $ vbox 0 (fmt_nestable_block_elements elems)
+  in
+  vbox 0 (list items "@," fmt_item)
 
-let fmt (txt, tags) =
-  if List.is_empty tags then hovbox 0 (fmt_text txt)
-  else if List.is_empty txt then vbox 0 (list tags "@;" fmt_tag)
-  else
-    vbox 0
-      (hovbox 0 (fmt_text txt) $ fmt "@;" $ vbox 0 (list tags "@;" fmt_tag))
+and fmt_nestable_block_elements elems =
+  list elems "\n@\n" (ign_loc fmt_nestable_block_element)
+
+let at = char '@'
+
+let fmt_tag : tag -> Fmt.t = function
+  | `Author s -> at $ fmt "author@ " $ str s
+  | `Version s -> at $ fmt "version@ " $ str s
+  | `See (_, sr, txt) ->
+      at $ fmt "see@ <" $ str sr $ fmt ">@ "
+      $ fmt_nestable_block_elements txt
+  | `Since s -> at $ fmt "since@ " $ str s
+  | `Before (s, txt) ->
+      at $ fmt "before@ " $ str s $ fmt "@ "
+      $ fmt_nestable_block_elements txt
+  | `Deprecated txt ->
+      at $ fmt "deprecated@ " $ fmt_nestable_block_elements txt
+  | `Param (s, txt) ->
+      at $ fmt "param@ " $ str s $ fmt "@ "
+      $ fmt_nestable_block_elements txt
+  | `Raise (s, txt) ->
+      at $ fmt "raise@ " $ str s $ fmt "@ "
+      $ fmt_nestable_block_elements txt
+  | `Return txt -> at $ fmt "return@ " $ fmt_nestable_block_elements txt
+  | `Inline -> at $ str "inline"
+  | `Open -> at $ str "open"
+  | `Closed -> at $ str "closed"
+  | `Canonical (_, ref) ->
+      (* TODO: print the path ? *)
+      let ref = fmt_reference (ref :> Reference.t) in
+      at $ fmt "canonical@ " $ ref
+
+let heading_level_to_int = function
+  | `Title -> 0
+  | `Section -> 1
+  | `Subsection -> 2
+  | `Subsubsection -> 3
+  | `Paragraph -> 4
+  | `Subparagraph -> 5
+
+let fmt_block_element = function
+  | `Tag tag -> hovbox 0 (fmt_tag tag)
+  | `Heading (lvl, lbl, elems) ->
+      let lvl = Int.to_string (heading_level_to_int lvl) in
+      let (`Label (_, lbl) : Identifier.Label.t) = lbl in
+      let lbl = LabelName.to_string lbl in
+      hovbox 0
+        (wrap "{" "}"
+           (str lvl $ str ":" $ str lbl $ fmt "@ " $ fmt_link_content elems))
+  | #nestable_block_element as elm ->
+      hovbox 0 (fmt_nestable_block_element elm)
+
+let fmt (docs : docs) =
+  vbox 0 (list docs "\n@\n" (ign_loc fmt_block_element))
 
 let diff c x y =
   let norm z =

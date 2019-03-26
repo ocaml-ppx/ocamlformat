@@ -432,14 +432,26 @@ let fmt_label lbl sep =
 
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
-let parse_docstring str_cmt =
-  match Octavius.parse (Lexing.from_string str_cmt) with
-  | Error _ -> Error ()
-  | Ok parsed as ok ->
-      if Conf.debug then (
-        Octavius.print Caml.Format.str_formatter parsed ;
-        Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
-      ok
+let parse_docstring ~loc str_cmt =
+  let module Model = Odoc__model in
+  let module Parser_ = Odoc__parser in
+  let dummy_definition =
+    let dummy = "dummy" in
+    let root =
+      Model.Root.
+        { package= dummy
+        ; file= Compilation_unit {name= dummy; hidden= true}
+        ; digest= String.make 16 '\000' }
+    in
+    `Root (root, Model.Names.UnitName.of_string dummy)
+  in
+  let location = loc.Location.loc_start in
+  let parsed =
+    Parser_.parse_comment ~sections_allowed:`All
+      ~containing_definition:dummy_definition ~location ~text:str_cmt
+  in
+  (* Print warnings *)
+  Ok (Model.Error.shed_warnings parsed)
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   let space_i i =
@@ -472,7 +484,7 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
       let epi = docstring_epi ?standalone ?next ~floating ?epi in
-      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring txt))
+      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
 
 let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
     doc2 =
@@ -493,7 +505,8 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
       in
       let floating_doc, doc =
         doc
-        |> List.map ~f:(fun ((s, _) as doc) -> (parse_docstring s.txt, doc))
+        |> List.map ~f:(fun ((s, _) as doc) ->
+               (parse_docstring ~loc s.txt, doc))
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in
