@@ -221,3 +221,26 @@ end
 (** A *)
 exception A of int
 (** C *)
+
+(** {1:lbl Heading} *)
+
+(** {2 heading without label} *)
+
+module A = struct
+  module B = struct
+    (** It does not try to saturate
+        (2) A = B + C  /\  B = D + E  =>  A = C + D + E
+        Nor combine more than 2 equations
+        (3) A = B + C  /\  B = D + E  /\  F = C + D + E  =>  A = F
+
+        xxxxxxxxxxxxxxxxxxxxxxxxxxx
+        (2) A = B + C  /\  B = D + E  =>  A = C + D - E
+    *)
+    let a b = ()
+  end
+end
+
+(* Same with get_pure, except that when we have both "x = t" and "y = t" where t is a primed ident,
+* we add "x = y" to the result. This is crucial for the normalizer, as it tend to drop "x = t" before
+* processing "y = t". If we don't explicitly preserve "x = y", the normalizer cannot pick it up *)
+let _ = ()
