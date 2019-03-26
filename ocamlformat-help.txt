@@ -133,7 +133,7 @@ OPTIONS (CODE FORMATTING STYLE)
            formats if-then-else expressions such that the if-then-else
            keywords are the first on the line. The default value is compact.
 
-       --indicate_nested_or_patterns={space|unsafe-no}
+       --indicate-nested-or-patterns={space|unsafe-no}
            Control whether or not to indicate nested or-pattern using
            indentation. space starts lines of nested or-patterns with " |"
            rather than "| ". unsafe-no does not indicate nested or-patterns.

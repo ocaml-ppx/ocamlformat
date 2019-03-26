@@ -796,7 +796,7 @@ module Formatting = struct
       "Control whether or not to indicate nested or-pattern using \
        indentation."
     in
-    let names = ["indicate_nested_or_patterns"] in
+    let names = ["indicate-nested-or-patterns"] in
     let all =
       [ ( "space"
         , `Space
