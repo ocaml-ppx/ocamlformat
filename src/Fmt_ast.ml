@@ -916,16 +916,20 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let proI =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
-          when Poly.(c.conf.break_cases <> `Nested) ->
-            if c.conf.indicate_nested_or_patterns then or_newline "| " " |"
-            else or_newline "| " "| "
+          when Poly.(c.conf.break_cases <> `Nested) -> (
+          match c.conf.indicate_nested_or_patterns with
+          | `Space -> or_newline "| " " |"
+          | `Unsafe_no -> or_newline "| " "| " )
         | _ -> break_unless_newline 1 0 $ fmt "| "
       in
       let pro2 =
         fmt_or_k
           Poly.(c.conf.break_cases = `All)
           ( break_unless_newline 1000 0
-          $ fmt_or c.conf.indicate_nested_or_patterns " |" "| " )
+          $
+          match c.conf.indicate_nested_or_patterns with
+          | `Space -> fmt " |"
+          | `Unsafe_no -> fmt "| " )
           proI
       in
       let is_simple {ppat_desc} =
