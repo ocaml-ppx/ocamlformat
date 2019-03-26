@@ -1,4 +1,5 @@
-profile = structure-left-margin
+profile = ocamlformat
+break-cases = fit
 margin = 77
-wrap-comments = true
 parse-docstrings = true
+wrap-comments = true

@@ -33,7 +33,7 @@ type t =
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first]
   ; indicate_multiline_delimiters: bool
-  ; indicate_nested_or_patterns: bool
+  ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
@@ -486,14 +486,16 @@ module Formatting = struct
     let doc = "Break pattern match cases." in
     let names = ["break-cases"] in
     let all =
-      [ ( "fit"
+      [ ( "nested"
+        , `Nested
+        , "$(b,nested) forces a break after nested or-patterns to \
+           highlight the case body. Note that with $(b,nested), the \
+           $(b,indicate-nested-or-patterns) option is not needed, and so \
+           ignored." )
+      ; ( "fit"
         , `Fit
         , "Specifying $(b,fit) lets pattern matches break at the margin \
            naturally." )
-      ; ( "nested"
-        , `Nested
-        , "$(b,nested) forces a break after nested or-patterns to \
-           highlight the case body." )
       ; ( "toplevel"
         , `Toplevel
         , "$(b,toplevel) forces top-level cases (i.e. not nested \
@@ -526,6 +528,24 @@ module Formatting = struct
       (fun conf x -> {conf with break_collection_expressions= x})
       (fun conf -> conf.break_collection_expressions)
 
+  let break_fun_decl =
+    let doc = "Style for function declarations and types." in
+    let names = ["break-fun-decl"] in
+    let all =
+      [ ("wrap", `Wrap, "$(b,wrap) breaks only if necessary.")
+      ; ( "fit-or-vertical"
+        , `Fit_or_vertical
+        , "$(b,fit-or-vertical) vertically breaks arguments if they do not \
+           fit on a single line." )
+      ; ( "smart"
+        , `Smart
+        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
+           arguments on their line if they fit." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_fun_decl= x})
+      (fun conf -> conf.break_fun_decl)
+
   let break_infix =
     let doc = "Break sequence of infix operators." in
     let names = ["break-infix"] in
@@ -554,24 +574,6 @@ module Formatting = struct
     C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with break_infix_before_func= x})
       (fun conf -> conf.break_infix_before_func)
-
-  let break_fun_decl =
-    let doc = "Style for function declarations and types." in
-    let names = ["break-fun-decl"] in
-    let all =
-      [ ("wrap", `Wrap, "$(b,wrap) breaks only if necessary.")
-      ; ( "fit-or-vertical"
-        , `Fit_or_vertical
-        , "$(b,fit-or-vertical) vertically breaks arguments if they do not \
-           fit on a single line." )
-      ; ( "smart"
-        , `Smart
-        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
-           arguments on their line if they fit." ) ]
-    in
-    C.choice ~names ~all ~doc ~section
-      (fun conf x -> {conf with break_fun_decl= x})
-      (fun conf -> conf.break_fun_decl)
 
   let break_separators =
     let doc =
@@ -624,17 +626,6 @@ module Formatting = struct
       (fun conf x -> {conf with break_string_literals= x})
       (fun conf -> conf.break_string_literals)
 
-  let cases_exp_indent =
-    let docv = "COLS" in
-    let doc =
-      "Indentation of cases expressions ($(docv) columns), except for \
-       nested `match` or `try` expressions."
-    in
-    let names = ["cases-exp-indent"] in
-    C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
-      (fun conf x -> {conf with cases_exp_indent= x})
-      (fun conf -> conf.cases_exp_indent)
-
   let break_struct =
     let doc = "Break struct-end module items." in
     let names = ["break-struct"] in
@@ -650,6 +641,17 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_struct= Poly.(x = `Force)})
       (fun conf -> if conf.break_struct then `Force else `Natural)
+
+  let cases_exp_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of cases expressions ($(docv) columns), except for \
+       nested `match` or `try` expressions."
+    in
+    let names = ["cases-exp-indent"] in
+    C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with cases_exp_indent= x})
+      (fun conf -> conf.cases_exp_indent)
 
   let disable =
     let doc =
@@ -790,13 +792,24 @@ module Formatting = struct
       (fun conf -> conf.indicate_multiline_delimiters)
 
   let indicate_nested_or_patterns =
-    let default = true in
     let doc =
       "Control whether or not to indicate nested or-pattern using \
        indentation."
     in
-    let names = ["indicate-nested-or-patterns"] in
-    C.flag ~names ~default ~doc ~section
+    let names = ["indicate_nested_or_patterns"] in
+    let all =
+      [ ( "space"
+        , `Space
+        , "$(b,space) starts lines of nested or-patterns with \" |\" \
+           rather than \"| \"." )
+      ; ( "unsafe-no"
+        , `Unsafe_no
+        , "$(b,unsafe-no) does not indicate nested or-patterns. Warning: \
+           this can produce confusing code where a short body of a match \
+           case is visually hidden by surrounding long patterns, leading \
+           to misassociation between patterns and body expressions." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with indicate_nested_or_patterns= x})
       (fun conf -> conf.indicate_nested_or_patterns)
 
@@ -827,6 +840,21 @@ module Formatting = struct
       (fun conf x -> {conf with leading_nested_match_parens= x})
       (fun conf -> conf.leading_nested_match_parens)
 
+  let let_and =
+    let doc = "Style of let_and." in
+    let names = ["let-and"] in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) will try to format `let p = e and p = e` in a \
+           single line." )
+      ; ("sparse", `Sparse, "$(b,sparse) will always break between them.")
+      ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with let_and= x})
+      (fun conf -> conf.let_and)
+
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
     let names = ["let-binding-spacing"] in
@@ -847,21 +875,6 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with let_binding_spacing= x})
       (fun conf -> conf.let_binding_spacing)
-
-  let let_and =
-    let doc = "Style of let_and." in
-    let names = ["let-and"] in
-    let all =
-      [ ( "compact"
-        , `Compact
-        , "$(b,compact) will try to format `let p = e and p = e` in a \
-           single line." )
-      ; ("sparse", `Sparse, "$(b,sparse) will always break between them.")
-      ]
-    in
-    C.choice ~names ~all ~doc ~section
-      (fun conf x -> {conf with let_and= x})
-      (fun conf -> conf.let_and)
 
   let let_open =
     let doc = "Module open formatting." in
@@ -1117,6 +1130,27 @@ let quiet =
 
 (* Other Flags *)
 
+let check =
+  let doc =
+    "Check whether the input files already are formatted. Mutually \
+     exclusive with --inplace and --output."
+  in
+  mk ~default:false Arg.(value & flag & info ["check"] ~doc ~docs)
+
+let config =
+  let doc =
+    "Aggregate options. Options are specified as a comma-separated list of \
+     pairs: \
+     $(i,option)$(b,=)$(i,VAL)$(b,,)...$(b,,)$(i,option)$(b,=)$(i,VAL)."
+  in
+  let env = Arg.env_var "OCAMLFORMAT" in
+  let default = [] in
+  let assoc = Arg.(pair ~sep:'=' string string) in
+  let list_assoc = Arg.(list ~sep:',' assoc) in
+  mk ~default
+    Arg.(
+      value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
+
 let debug =
   let doc = "Generate debugging output." in
   let default = false in
@@ -1126,13 +1160,6 @@ let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
   mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
-
-let check =
-  let doc =
-    "Check whether the input files already are formatted. Mutually \
-     exclusive with --inplace and --output."
-  in
-  mk ~default:false Arg.(value & flag & info ["check"] ~doc ~docs)
 
 let inputs =
   let docv = "SRC" in
@@ -1174,19 +1201,6 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
-let output =
-  let docv = "DST" in
-  let doc =
-    "Output file. Mutually exclusive with --inplace. Write to stdout if \
-     omitted."
-  in
-  let default = None in
-  mk ~default
-    Arg.(
-      value
-      & opt (some string) default
-      & info ["o"; "output"] ~doc ~docs ~docv)
-
 let ocp_indent_options =
   [ ("base", None)
   ; ("type", None)
@@ -1226,6 +1240,19 @@ let ocp_indent_config =
   let default = false in
   mk ~default Arg.(value & flag & info ["ocp-indent-config"] ~doc ~docs)
 
+let output =
+  let docv = "DST" in
+  let doc =
+    "Output file. Mutually exclusive with --inplace. Write to stdout if \
+     omitted."
+  in
+  let default = None in
+  mk ~default
+    Arg.(
+      value
+      & opt (some string) default
+      & info ["o"; "output"] ~doc ~docs ~docv)
+
 let print_config =
   let doc =
     "Print the configuration determined by the environment variable, the \
@@ -1256,21 +1283,7 @@ let no_version_check =
   let default = false in
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
-let config =
-  let doc =
-    "Aggregate options. Options are specified as a comma-separated list of \
-     pairs: \
-     $(i,option)$(b,=)$(i,VAL)$(b,,)...$(b,,)$(i,option)$(b,=)$(i,VAL)."
-  in
-  let env = Arg.env_var "OCAMLFORMAT" in
-  let default = [] in
-  let assoc = Arg.(pair ~sep:'=' string string) in
-  let list_assoc = Arg.(list ~sep:',' assoc) in
-  mk ~default
-    Arg.(
-      value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
-
-let default_profile =
+let ocamlformat_profile =
   { break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
@@ -1319,20 +1332,21 @@ let default_profile =
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
+let default_profile = {ocamlformat_profile with break_cases= `Fit}
+
 let conventional_profile =
-  { default_profile with
-    break_infix_before_func= false
+  { ocamlformat_profile with
+    break_cases= `Fit
+  ; break_infix_before_func= false
   ; break_separators= `After_and_docked
   ; break_sequences= true
   ; field_space= `Loose
-  ; indicate_nested_or_patterns= false
+  ; indicate_nested_or_patterns= `Unsafe_no
   ; sequence_style= `Terminator
   ; space_around_collection_expressions= true }
 
-let structure_left_margin_profile = default_profile
-
 let compact_profile =
-  { default_profile with
+  { ocamlformat_profile with
     break_cases= `Fit
   ; break_collection_expressions= `Wrap
   ; break_infix= `Wrap
@@ -1342,7 +1356,7 @@ let compact_profile =
   ; doc_comments_tag_only= `Fit
   ; field_space= `Tight
   ; if_then_else= `Compact
-  ; indicate_nested_or_patterns= true
+  ; indicate_nested_or_patterns= `Space
   ; leading_nested_match_parens= false
   ; let_and= `Compact
   ; let_binding_spacing= `Compact
@@ -1353,7 +1367,7 @@ let compact_profile =
   ; wrap_fun_args= true }
 
 let sparse_profile =
-  { default_profile with
+  { ocamlformat_profile with
     break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Fit_or_vertical
@@ -1362,7 +1376,7 @@ let sparse_profile =
   ; break_struct= true
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
-  ; indicate_nested_or_patterns= true
+  ; indicate_nested_or_patterns= `Space
   ; leading_nested_match_parens= true
   ; let_and= `Sparse
   ; let_binding_spacing= `Sparse
@@ -1375,14 +1389,14 @@ let sparse_profile =
 let janestreet_profile =
   { break_cases= `Toplevel
   ; break_collection_expressions=
-      default_profile.break_collection_expressions
+      ocamlformat_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
   ; break_infix_before_func= true
   ; break_fun_decl= `Fit_or_vertical
   ; break_separators= `Before
   ; break_sequences= true
   ; break_string_literals= `Wrap
-  ; break_struct= default_profile.break_struct
+  ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
   ; comment_check= true
   ; disable= false
@@ -1395,21 +1409,21 @@ let janestreet_profile =
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
   ; indicate_multiline_delimiters= false
-  ; indicate_nested_or_patterns= false
+  ; indicate_nested_or_patterns= `Unsafe_no
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true
   ; let_and= `Sparse
   ; let_binding_spacing= `Double_semicolon
   ; let_open= `Preserve
   ; margin= 90
-  ; max_iters= default_profile.max_iters
+  ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
   ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false
-  ; quiet= default_profile.quiet
+  ; quiet= ocamlformat_profile.quiet
   ; sequence_style= `Terminator
   ; single_case= `Sparse
   ; space_around_collection_expressions= true
@@ -1417,36 +1431,54 @@ let janestreet_profile =
   ; wrap_comments= false
   ; wrap_fun_args= false }
 
-let selected_profile_ref = ref (Some default_profile)
+let selected_profile_ref = ref (Some ocamlformat_profile)
 
 let (_profile : t option C.t) =
   let doc =
-    "Preset profiles which set $(i,all) options, overriding lower priority \
-     configuration."
+    "Select a preset profile which sets $(i,all) options, overriding lower \
+     priority configuration."
   in
   let names = profile_option_names in
   let all =
-    [ ( "default"
-      , Some default_profile
-      , "$(b,default) sets each option to its default value." )
-    ; ( "conventional"
-      , Some conventional_profile
-      , "$(b,conventional) sets options for a closer to imperative code \
-         style." )
-    ; ( "structure-left-margin"
-      , Some structure_left_margin_profile
-      , "$(b,structure-left-margin) sets options so that the structure of \
-         the code is obvious by looking only at the left margin of the \
-         code." )
+    [ ( "ocamlformat"
+      , Some ocamlformat_profile
+      , "The $(b,ocamlformat) profile aims to take advantage of the \
+         strengths of a parsetree-based auto-formatter, and to limit the \
+         consequences of the weaknesses imposed by the current \
+         implementation. This is a style which optimizes for what the \
+         formatter can do best, rather than to match the style of any \
+         existing code. General guidelines that have directed the design \
+         include: Legibility, in the sense of making it as hard as \
+         possible for quick visual parsing to give the wrong \
+         interpretation, is of highest priority; Whenever possible the \
+         high-level structure of the code should be obvious by looking \
+         only at the left margin, in particular, it should not be \
+         necessary to visually jump from left to right hunting for \
+         critical keywords, tokens, etc; All else equal compact code is \
+         preferred as reading without scrolling is easier, so indentation \
+         or white space is avoided unless it helps legibility; Attention \
+         has been given to making some syntactic gotchas visually obvious."
+      )
     ; ( "compact"
       , Some compact_profile
-      , "$(b,compact) sets options for a generally compact code style." )
+      , "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more compact code style." )
     ; ( "sparse"
       , Some sparse_profile
-      , "$(b,sparse) sets options for a generally sparse code style." )
+      , "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more sparse code style." )
+    ; ( "conventional"
+      , Some conventional_profile
+      , "The $(b,conventional) profile aims to be as familiar and \
+         \"conventional\" appearing as the available options allow." )
     ; ( "janestreet"
       , Some janestreet_profile
-      , "$(b,janestreet) is the profile used at Jane Street." ) ]
+      , "The $(b,janestreet) profile is used at Jane Street." )
+    ; ( "default"
+      , Some default_profile
+      , "The \"$(b,default)\" profile is $(b,ocamlformat) with \
+         $(b,break-cases=fit). $(b,default) is deprecated and will be \
+         removed in version 0.10." ) ]
   in
   C.choice ~names ~all ~doc ~section ~has_default:false
     (fun conf p ->
@@ -1783,7 +1815,7 @@ let build_config ~file =
   in
   let files = if !disable_conf_files then [] else files in
   let conf =
-    List.fold files ~init:default_profile ~f:read_config_file
+    List.fold files ~init:ocamlformat_profile ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
   let no_ocamlformat_files =

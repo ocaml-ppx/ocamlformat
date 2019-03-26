@@ -30,13 +30,15 @@ OPTIONS (CODE FORMATTING STYLE)
        relative to the directory containing the .ocamlformat-ignore file.
        Lines starting with # are ignored and can be used as comments.
 
-       --break-cases={fit|nested|toplevel|all}
-           Break pattern match cases. Specifying fit lets pattern matches
-           break at the margin naturally. nested forces a break after nested
-           or-patterns to highlight the case body. toplevel forces top-level
-           cases (i.e. not nested or-patterns) to break across lines,
-           otherwise break naturally at the margin. all forces all pattern
-           matches to break across lines. The default value is fit.
+       --break-cases={nested|fit|toplevel|all}
+           Break pattern match cases. nested forces a break after nested
+           or-patterns to highlight the case body. Note that with nested, the
+           indicate-nested-or-patterns option is not needed, and so ignored.
+           Specifying fit lets pattern matches break at the margin naturally.
+           toplevel forces top-level cases (i.e. not nested or-patterns) to
+           break across lines, otherwise break naturally at the margin. all
+           forces all pattern matches to break across lines. The default
+           value is nested.
 
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by
@@ -131,6 +133,15 @@ OPTIONS (CODE FORMATTING STYLE)
            formats if-then-else expressions such that the if-then-else
            keywords are the first on the line. The default value is compact.
 
+       --indicate_nested_or_patterns={space|unsafe-no}
+           Control whether or not to indicate nested or-pattern using
+           indentation. space starts lines of nested or-patterns with " |"
+           rather than "| ". unsafe-no does not indicate nested or-patterns.
+           Warning: this can produce confusing code where a short body of a
+           match case is visually hidden by surrounding long patterns,
+           leading to misassociation between patterns and body expressions.
+           The default value is space.
+
        --infix-precedence={indent|parens}
            Use indentation or also discretionary parentheses to explicitly
            disambiguate precedences of infix operators. indent uses
@@ -180,10 +191,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-indicate-multiline-delimiters
            Print a space inside a delimiter to indicate that it's matching
            delimiter is on a different line.
-
-       --no-indicate-nested-or-patterns
-           Control whether or not to indicate nested or-pattern using
-           indentation.
 
        --no-wrap-fun-args
            Style for function call.
@@ -304,17 +311,32 @@ OPTIONS
            Read .ocp-indent configuration files. match-clause sets
            cases-exp-indent to the same value.
 
-       -p
-       {default|conventional|structure-left-margin|compact|sparse|janestreet},
-       --profile={default|conventional|structure-left-margin|compact|sparse|janestreet}
-           Preset profiles which set all options, overriding lower priority
-           configuration. default sets each option to its default value.
-           conventional sets options for a closer to imperative code style.
-           structure-left-margin sets options so that the structure of the
-           code is obvious by looking only at the left margin of the code.
-           compact sets options for a generally compact code style. sparse
-           sets options for a generally sparse code style. janestreet is the
-           profile used at Jane Street. 
+       -p {ocamlformat|compact|sparse|conventional|janestreet|default},
+       --profile={ocamlformat|compact|sparse|conventional|janestreet|default}
+           Select a preset profile which sets all options, overriding lower
+           priority configuration. The ocamlformat profile aims to take
+           advantage of the strengths of a parsetree-based auto-formatter,
+           and to limit the consequences of the weaknesses imposed by the
+           current implementation. This is a style which optimizes for what
+           the formatter can do best, rather than to match the style of any
+           existing code. General guidelines that have directed the design
+           include: Legibility, in the sense of making it as hard as possible
+           for quick visual parsing to give the wrong interpretation, is of
+           highest priority; Whenever possible the high-level structure of
+           the code should be obvious by looking only at the left margin, in
+           particular, it should not be necessary to visually jump from left
+           to right hunting for critical keywords, tokens, etc; All else
+           equal compact code is preferred as reading without scrolling is
+           easier, so indentation or white space is avoided unless it helps
+           legibility; Attention has been given to making some syntactic
+           gotchas visually obvious. The compact profile is similar to
+           ocamlformat but opts for a generally more compact code style. The
+           sparse profile is similar to ocamlformat but opts for a generally
+           more sparse code style. The conventional profile aims to be as
+           familiar and "conventional" appearing as the available options
+           allow. The janestreet profile is used at Jane Street. The
+           "default" profile is ocamlformat with break-cases=fit. default is
+           deprecated and will be removed in version 0.10. 
 
        --print-config
            Print the configuration determined by the environment variable,
