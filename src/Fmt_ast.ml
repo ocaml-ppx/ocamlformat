@@ -360,18 +360,16 @@ let wrap_tuple ~parens ~no_parens_if_break c =
 
 let doc_atrs = Ast.doc_atrs
 
-let _parse_docstring c str_cmt =
-  if not c.conf.parse_docstrings then Error ()
-  else
-    match Octavius.parse (Lexing.from_string str_cmt) with
-    | Error _ -> Error ()
-    | Ok parsed as ok ->
-        if Conf.debug then (
-          Octavius.print Caml.Format.str_formatter parsed ;
-          Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
-        ok
+let parse_docstring str_cmt =
+  match Octavius.parse (Lexing.from_string str_cmt) with
+  | Error _ -> Error ()
+  | Ok parsed as ok ->
+      if Conf.debug then (
+        Octavius.print Caml.Format.str_formatter parsed ;
+        Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
+      ok
 
-let _fmt_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
+let fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
   let space_i i =
     let is_space = function
       | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> true
@@ -381,12 +379,11 @@ let _fmt_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
   in
   let doc =
     match parsed with
-    | Error () ->
-        if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
-    | Ok parsed ->
+    | Ok parsed when c.conf.parse_docstrings ->
         fmt_if (space_i 0) " "
         $ Fmt_odoc.fmt parsed
         $ fmt_if (space_i (String.length str_cmt - 1)) " "
+    | _ -> if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
   in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0
@@ -402,25 +399,21 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
         | (None | Some (_, false)), true -> not standalone
         | _ -> false
       in
-      _fmt_docstring c ~need_break ~loc ?next ?pro ?epi txt
-        (_parse_docstring c txt) )
+      fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi txt
+        (parse_docstring txt) )
 
 (** Handle the doc-comments-tag-only option: Fits tag-only comments on the
     same line *)
 let fmt_docstring_around ~loc c doc k =
-  let docstring_contains_text str_cmt =
-    match Octavius.parse (Lexing.from_string str_cmt) with
-    | Ok ([], _) -> false
-    | _ -> true
-  in
+  let contains_text = function Ok ([], _) -> false | _ -> true in
   let doc = Option.value ~default:[] doc in
   let doc =
     List.map doc ~f:(fun ({txt; loc}, _) ->
-        let parsed = _parse_docstring c txt in
-        ( docstring_contains_text txt
+        let parsed = parse_docstring txt in
+        ( contains_text parsed
         , fun ?epi ?pro () ->
-            _fmt_docstring c ~need_break:false ~loc ?epi ?pro txt parsed )
-    )
+            fmt_parsed_docstring c ~need_break:false ~loc ?epi ?pro txt
+              parsed ) )
   in
   let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
   if
