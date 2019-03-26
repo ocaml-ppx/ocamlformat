@@ -115,7 +115,7 @@ let foo =
     when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
       analyze_id_assignment (Var.of_id ret_id) target_exp cast_typ loc
 
-[@@@ocamlformat "indicate-nested-or-patterns=false"]
+[@@@ocamlformat "indicate-nested-or-patterns=unsafe-no"]
 
 let is_sequence exp =
   match exp.pexp_desc with
