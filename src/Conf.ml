@@ -1627,16 +1627,6 @@ let parse_line config ~from s =
       , from )
     with
     | ([] | [""]), _ -> impossible "previous match"
-    | [name; value], `File (filename, lnum) ->
-        (* tolerate space separated [var value] to compatibility with older
-           config file format *)
-        if not config.quiet then
-          Format.eprintf
-            "File %a, line %d:\n\
-             Warning: Using deprecated ocamlformat config syntax.\n\
-             Please use `%s = %s`\n"
-            (Fpath.pp ~pretty:true) filename lnum name value ;
-        update ~config ~from ~name ~value
     (* special case for disable/enable *)
     | ["enable"], _ -> update ~config ~from ~name:"disable" ~value:"false"
     | ["normal"], _ -> update_many ~config ~from ocp_indent_normal_profile
