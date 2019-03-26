@@ -4023,8 +4023,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
                 $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs) )
             $ Option.call ~f:fmt_cstr )
         $ fmt_or_k c.conf.ocp_indent_compat
-            ( if Option.is_some fmt_cstr then fmt "@ ="
-            else fits_breaks " =" "@;<1000 0>=" )
+            (fits_breaks " =" "@;<1000 0>=")
             (fmt "@;<1 2>=") )
       $ fmt_body c ?ext xbody $ Cmts.fmt_after c pvb_loc
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" at_at_attrs

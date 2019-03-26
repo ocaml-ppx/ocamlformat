@@ -1210,7 +1210,8 @@ let rec eq_sel : type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option 
 
 (* Auxiliary function to get the type of a case from its selector *)
 let rec get_case : type a b e.
-    (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option =
+    (b, a) ty_sel -> (string * (e, b) ty_case) list -> string * (a, e) ty option
+  =
  fun sel cases ->
   match cases with
   | (name, TCnoarg sel') :: rem ->
@@ -1669,7 +1670,8 @@ let rec plus_assoc : type a b c ab bc m n.
     -> (ab, c, m) plus
     -> (b, c, bc) plus
     -> (a, bc, n) plus
-    -> (m, n) equal =
+    -> (m, n) equal
+  =
  fun p1 p2 p3 p4 ->
   match p1, p4 with
   | PlusZ b, PlusZ bc ->
@@ -1771,7 +1773,8 @@ let rec elem : type h. int -> h avl -> bool =
 ;;
 
 let rec rotr : type n.
-    n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum =
+    n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum
+  =
  fun tL y tR ->
   match tL with
   | Node (Same, a, x, b) -> Inr (Node (Less, a, x, Node (More, b, y, tR)))
@@ -1785,7 +1788,8 @@ let rec rotr : type n.
 ;;
 
 let rec rotl : type n.
-    n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum =
+    n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum
+  =
  fun tL u tR ->
   match tR with
   | Node (Same, a, x, b) -> Inr (Node (More, Node (Less, tL, u, a), x, b))
@@ -2283,7 +2287,8 @@ type closed = rnil
 type 'a rlam = ((pexp, closed, 'a) lam, (pval, closed, 'a) lam) sum
 
 let rec rule : type a b.
-    (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam =
+    (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam
+  =
  fun v1 v2 ->
   match v1, v2 with
   | Lam (x, body), v ->
@@ -2454,7 +2459,8 @@ let eval (type a b c)
          (bop : (a, b, c) binop)
          (x : a constant)
          (y : b constant)
-    : c constant =
+    : c constant
+  =
   match bop, x, y with
   | Eq, Bool x, Bool y -> Bool (if x then y else not y)
   | Leq, Int x, Int y -> Bool (x <= y)
@@ -2688,8 +2694,8 @@ type ('a, 'result, 'visit_action) context =
   | Local : ('a, ('a * insert as 'result), 'a local_visit_action) context
   | Global : ('a, 'a, 'a visit_action) context
 
-let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_action =
-  function
+let vexpr (type visit_action) : (_, _, visit_action) context -> _ -> visit_action
+  = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
@@ -2701,7 +2707,8 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
 ;;
 
 let vexpr (type result visit_action)
-    : (unit, result, visit_action) context -> unit -> visit_action = function
+    : (unit, result, visit_action) context -> unit -> visit_action
+  = function
   | Local -> fun _ -> raise Exit
   | Global -> fun _ -> raise Exit
 ;;
@@ -3634,7 +3641,8 @@ let ssmap =
 let ssmap
     : (module MapT with type key = string
                     and type data = string
-                    and type map = SSMap.map) =
+                    and type map = SSMap.map)
+  =
   let module S = struct
     include SSMap
   end
@@ -9754,3 +9762,16 @@ then (if b then aaaaaaaaaaaaaaaa ffff)
 else aaaaaaaaaaaa qqqqqqqqqqq
 
 include Base.Fn (** @open *)
+
+let ssmap
+    : (module MapT with type key = string and type data = string and type map = SSMap.map)
+  =
+  ()
+;;
+
+let ssmap
+    :  (module MapT with type key = string and type data = string and type map = SSMap.map)
+    -> unit
+  =
+  ()
+;;
