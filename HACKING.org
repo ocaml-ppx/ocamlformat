@@ -9,5 +9,4 @@
 - git commit -a -m vM.N.O
 - topkg tag M.N.O -f
 - git push origin refs/heads/vM.N.O refs/tags/M.N.O
-- opam pin add -n -k git ocamlformat .
 - opam publish ocamlformat.opam
