@@ -1496,7 +1496,7 @@ end = struct
           | '#', _ -> Some (HashOp, child)
           | _ -> Some (Apply, if is_infix_id i then child else Non) )
       | Pexp_apply _ -> Some (Apply, Non)
-      | Pexp_setfield (e0, _, _) when e0 == exp -> Some (Dot, Non)
+      | Pexp_setfield (e0, _, _) when e0 == exp -> Some (Dot, Left)
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
       | Pexp_setinstvar _ -> Some (LessMinus, Non)
       | Pexp_field _ -> Some (Dot, Left)
