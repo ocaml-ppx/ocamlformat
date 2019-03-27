@@ -7374,3 +7374,16 @@ then (if b then aaaaaaaaaaaaaaaa ffff)
 else aaaaaaaaaaaa qqqqqqqqqqq
 
 include Base.Fn  (** @open *)
+
+let ssmap
+    : (module MapT with type key = string and type data = string and type map = SSMap.map)
+  =
+  ()
+;;
+
+let ssmap
+    :  (module MapT with type key = string and type data = string and type map = SSMap.map)
+    -> unit
+  =
+  ()
+;;

@@ -35,6 +35,23 @@ module type M = sig
     -> 'a t
 end
 
+let ssmap
+    : (module MapT
+         with type key = string
+          and type data = string
+          and type map = SSMap.map)
+  =
+  ()
+
+let ssmap
+    :  (module MapT
+          with type key = string
+           and type data = string
+           and type map = SSMap.map)
+    -> unit
+  =
+  ()
+
 [@@@ocamlformat "ocp-indent-compat=false"]
 
 module type M = sig
