@@ -2233,7 +2233,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           ( fmt_str_loc c name $ fmt " <-@;<1 2>"
+           ( fmt_str_loc c name $ fmt "@ <- "
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) ))
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
