@@ -13,7 +13,7 @@
 #load "unix.cma"
 
 let fake_watermark = "%%" ^ "VERSION" ^ "%%"
-let real_watermark = "%%VERSION%%"
+let real_watermark = "0.9"
 
 let file, version =
   match Sys.argv with
