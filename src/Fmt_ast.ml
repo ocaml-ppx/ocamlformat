@@ -1617,9 +1617,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let {opn; pro; psp; bdy; cls; esp; epi} =
         fmt_module_expr c (sub_mod ~ctx me)
       in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
+      hovbox 0 @@
+      wrap_fits_breaks ~space:false c.conf "(" ")"
+        ( opn $ fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
           $ Option.call ~f:epi $ fmt "@ : "
           $ fmt_package_type c ctx pty pexp_loc
           $ fmt_atrs )

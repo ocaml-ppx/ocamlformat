@@ -69,3 +69,26 @@ end
 let _ =
   let module M = (val m : M) in
   ()
+
+let _ =
+  ( module Ephemeron
+             (HHHHHHHHHHHHHHHHHHHHHHHHHH)
+             (HHHHHHHHHHHHHHHHHHHHHHHHHH) : Ephemeron.S )
+
+let _ =
+  ( module Ephemeron (HHHHHHHHHHHHHHHHHHHHHHHHHH) (HHHHHHHHHHHHHHHHHH)
+  : Ephemeron.S )
+
+let _ = (module Ephemeron (HHHHHHHHHHHHHHH) (HHHHHHHHHHHHH) : Ephemeron.S)
+
+let _ = (module Ephemeron (HHH) : Ephemeron.S)
+
+let _ =
+  ( module Ephemeron (struct
+      type t = t
+  end) : Ephemeron.S )
+
+let _ =
+  ( module struct
+    let a = b
+  end )
