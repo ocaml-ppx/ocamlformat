@@ -2092,9 +2092,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       (fmt_expression c) ))
            $ fmt_atrs ))
   | Pexp_setfield (e1, lid, e2) ->
+      let ctx_lhs = Exp (Ast_helper.Exp.field e1 lid) in
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           ( fmt_expression c (sub_exp ~ctx e1)
+           ( fmt_expression c (sub_exp ~ctx:ctx_lhs e1)
            $ fmt "." $ fmt_longident_loc c lid $ fmt "@ <- "
            $ fmt_expression c (sub_exp ~ctx e2)
            $ fmt_atrs ))
