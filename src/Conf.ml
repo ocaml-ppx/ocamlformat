@@ -1621,34 +1621,19 @@ let parse_line config ~from s =
         update_ocp_indent_option ~config ~from ~name ~value
       else update ~config ~from ~name ~value
   | [s] -> (
-    match
-      ( List.filter (String.split ~on:' ' s) ~f:(fun s ->
-            not (String.is_empty s) )
-      , from )
-    with
-    | ([] | [""]), _ -> impossible "previous match"
-    | [name; value], `File (filename, lnum) ->
-        (* tolerate space separated [var value] to compatibility with older
-           config file format *)
-        if not config.quiet then
-          Format.eprintf
-            "File %a, line %d:\n\
-             Warning: Using deprecated ocamlformat config syntax.\n\
-             Please use `%s = %s`\n"
-            (Fpath.pp ~pretty:true) filename lnum name value ;
-        update ~config ~from ~name ~value
+    match String.strip s with
+    | "" -> impossible "previous match"
     (* special case for disable/enable *)
-    | ["enable"], _ -> update ~config ~from ~name:"disable" ~value:"false"
-    | ["normal"], _ -> update_many ~config ~from ocp_indent_normal_profile
-    | ["apprentice"], _ ->
+    | "enable" -> update ~config ~from ~name:"disable" ~value:"false"
+    | "normal" -> update_many ~config ~from ocp_indent_normal_profile
+    | "apprentice" ->
         update_many ~config ~from ocp_indent_apprentice_profile
-    | ["JaneStreet"], _ ->
+    | "JaneStreet" ->
         Result.( >>= )
           (update ~config ~from ~name:"profile" ~value:"janestreet")
           (fun config ->
             update_many ~config ~from ocp_indent_janestreet_profile )
-    | [name], _ -> update ~config ~from ~name ~value:"true"
-    | _ -> Error (`Malformed s) )
+    | name -> update ~config ~from ~name ~value:"true" )
   | _ -> Error (`Malformed s)
 
 let is_project_root dir =
