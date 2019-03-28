@@ -7387,3 +7387,7 @@ let ssmap
   =
   ()
 ;;
+
+let _ = match x with | A -> [%expr match y with | e -> e]
+
+let _ = match x with | A -> [%expr match y with | e -> match e with x -> x]

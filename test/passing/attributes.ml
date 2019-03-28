@@ -161,3 +161,8 @@ let _ = fun [@inlined always] x y -> z
 let () = assert ((assert false [@imp Show]) 1.0 = "1.")
 
 let () = f (assert false)
+
+let _ = match x with A -> [%expr match y with e -> e]
+
+let _ =
+  match x with A -> [%expr match y with e -> ( match e with x -> x )]
