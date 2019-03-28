@@ -2,7 +2,7 @@
 - git checkout -t -b vM.N.O
 - topkg tag M.N.O
 - dune subst
-- tools/gen_version.sh src/Version.ml M.N.O
+- ocaml tools/gen_version.ml src/Version.ml M.N.O
 - git add src/Version.ml
 - update CHANGES.md by editing output of tools/gen_changes.sh vCURR vM.N.O
 - git commit -m "Update changes" -- CHANGES.md

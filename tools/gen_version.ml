@@ -1,0 +1,42 @@
+(**********************************************************************
+ *                                                                    *
+ *                            OCamlFormat                             *
+ *                                                                    *
+ *  Copyright (c) 2019-present, Facebook, Inc.  All rights reserved.  *
+ *                                                                    *
+ *  This source code is licensed under the MIT license found in the   *
+ *  LICENSE file in the root directory of this source tree.           *
+ *                                                                    *
+ **********************************************************************)
+
+#directory "+unix"
+#load "unix.cma"
+
+let fake_watermark = "%%" ^ "VERSION" ^ "%%"
+let real_watermark = "%%VERSION%%"
+
+let file, version =
+  match Sys.argv with
+  | [|_exec; file; version|] -> (file, version)
+  | [|_exec; file|] ->
+      (* second arg omitted when called from src/dune *)
+      let version =
+        if real_watermark <> fake_watermark then
+          (* file has been watermarked when building distrib archive *)
+          real_watermark
+        else
+          (* file has not been watermarked when building in dev git tree *)
+          let ic =
+            Unix.open_process_in "git describe --tags --dirty --always"
+          in
+          let version = input_line ic in
+          close_in ic ; version
+      in
+      (file, version)
+  | _ ->
+      Printf.eprintf "usage: ocaml gen_version.ml <file> [<version>]\n%!" ;
+      exit 1
+
+let oc = open_out file
+let () = output_string oc (Printf.sprintf "let version = %S\n" version)
+let () = close_out oc
