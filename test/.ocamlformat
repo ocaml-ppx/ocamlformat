@@ -1,1 +1,2 @@
-profile = default
+profile = ocamlformat
+break-cases = fit
