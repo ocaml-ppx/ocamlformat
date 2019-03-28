@@ -61,7 +61,7 @@ let empty =
   ; esp= Fn.const ()
   ; epi= None }
 
-let integrate_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
+let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
   opn $ f (Option.call ~f:pro $ psp $ bdy $ cls $ esp $ Option.call ~f:epi)
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
@@ -1617,7 +1617,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
-      integrate_module
+      compose_module
         (fmt_module_expr c (sub_mod ~ctx me))
         ~f:(fun m ->
           wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2004,7 +2004,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    ( if c.conf.indicate_multiline_delimiters then " )"
                    else ")" ) )) )
   | Pexp_pack me ->
-      integrate_module
+      compose_module
         (fmt_module_expr c (sub_mod ~ctx me))
         ~f:(fun m ->
           wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -3111,7 +3111,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
         wrap "(" ")"
           (hovbox 0
              ( fmt_str_loc c name
-             $ opt mt1 (integrate_module ~f:(fun m -> fmt " :@ " $ m)) ))
+             $ opt mt1 (compose_module ~f:(fun m -> fmt " :@ " $ m)) ))
       in
       let blk = fmt_module_type c mt2 in
       { blk with
@@ -3129,7 +3129,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
         bdy=
           hvbox 0
             (wrap_if parens "(" ")"
-               ( integrate_module (fmt_module_type c mt) ~f:(hvbox 0)
+               ( compose_module (fmt_module_type c mt) ~f:(hvbox 0)
                $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
                      Cmts.fmt c loc
                      @@ list_fl wcs_and (fun ~first ~last:_ wc ->
