@@ -172,11 +172,11 @@ module type S = functor [@foo] (M : S) -> functor (_ : (module type of M) [@foo]
 [@foo]
 
 module type S = functor (_ : S) (_ : S) -> S
-module type S = functor (_ :functor (_ : S) ->  S) -> S
+module type S = functor (_ : functor (_ : S) -> S) -> S
 module type S = functor (M : S) (_ : S) -> S
-module type S = functor (_ :functor (M : S) ->  S) -> S
-module type S = functor (_ :functor [@foo] (_ : S) ->  S) -> S
-module type S = functor (_ :functor [@foo] (M : S) ->  S) -> S
+module type S = functor (_ : functor (M : S) -> S) -> S
+module type S = functor (_ : functor [@foo] (_ : S) -> S) -> S
+module type S = functor (_ : functor [@foo] (M : S) -> S) -> S
 
 module type S = sig
   module rec A : (S with type t = t)
@@ -5550,7 +5550,7 @@ module F (X : sig end) = struct
   module N' = N
 end
 
-module G : functor (X :sig  end) -> sig
+module G : functor (X : sig end) -> sig
   module N' : sig
     val x : int
   end
@@ -6131,7 +6131,7 @@ module F2 : functor () -> sig end = F1
 
 (* fail *)
 module F3 () = struct end
-module F4 : functor (X :sig  end) -> sig end = F3
+module F4 : functor (X : sig end) -> sig end = F3
 
 (* fail *)
 
@@ -6140,7 +6140,7 @@ module X (X : sig end) (Y : sig end) (Z : sig end) = struct end
 module Y (X : sig end) (Y : sig end) (Z : sig end) = struct end
 module Z = functor (_ :sig  end) (_ :sig  end) (_ :sig  end) -> struct end
 
-module GZ : functor (X :sig  end) () (Z :sig  end) -> sig end =
+module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
 functor (X :sig  end) () (Z :sig  end) -> struct end
 
 module F (X : sig end) = struct

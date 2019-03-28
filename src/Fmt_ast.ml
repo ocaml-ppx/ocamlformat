@@ -61,6 +61,9 @@ let empty =
   ; esp= Fn.const ()
   ; epi= None }
 
+let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
+  opn $ f (Option.call ~f:pro $ psp $ bdy $ cls $ esp $ Option.call ~f:epi)
+
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
 let protect =
@@ -1614,15 +1617,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
-      let {opn; pro; psp; bdy; cls; esp; epi} =
-        fmt_module_expr c (sub_mod ~ctx me)
-      in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt "@ : "
-          $ fmt_package_type c ctx pty pexp_loc
-          $ fmt_atrs )
+      compose_module
+        (fmt_module_expr c (sub_mod ~ctx me))
+        ~f:(fun m ->
+          wrap_fits_breaks ~space:false c.conf "(" ")"
+            ( fmt "module " $ m $ fmt "@ : "
+            $ fmt_package_type c ctx pty pexp_loc
+            $ fmt_atrs ) )
   | Pexp_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2003,13 +2004,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    ( if c.conf.indicate_multiline_delimiters then " )"
                    else ")" ) )) )
   | Pexp_pack me ->
-      let {opn; pro; psp; bdy; cls; esp; epi} =
-        fmt_module_expr c (sub_mod ~ctx me)
-      in
-      opn
-      $ wrap_fits_breaks ~space:false c.conf "(" ")"
-          ( fmt "module " $ Option.call ~f:pro $ psp $ bdy $ cls $ esp
-          $ Option.call ~f:epi $ fmt_atrs )
+      compose_module
+        (fmt_module_expr c (sub_mod ~ctx me))
+        ~f:(fun m ->
+          wrap_fits_breaks ~space:false c.conf "(" ")"
+            (fmt "module " $ m $ fmt_atrs) )
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         hvbox 0
@@ -3112,12 +3111,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
         wrap "(" ")"
           (hovbox 0
              ( fmt_str_loc c name
-             $ opt mt1 (fun mt1 ->
-                   let {opn; pro; psp; bdy; cls; esp; epi} = mt1 in
-                   let box k = opn $ k $ cls in
-                   box
-                     ( fmt " :" $ Option.call ~f:pro $ psp $ fmt "@;<1 2>"
-                     $ bdy $ esp $ Option.call ~f:epi ) ) ))
+             $ opt mt1 (compose_module ~f:(fun m -> fmt " :@ " $ m)) ))
       in
       let blk = fmt_module_type c mt2 in
       { blk with
@@ -3131,15 +3125,11 @@ and fmt_module_type c ({ast= mty} as xmty) =
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc) }
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
-      let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_type c mt in
-      let box k = opn $ k $ cls in
       { empty with
         bdy=
           hvbox 0
             (wrap_if parens "(" ")"
-               ( box
-                   ( Option.call ~f:pro $ psp $ bdy $ esp
-                   $ Option.call ~f:epi )
+               ( compose_module (fmt_module_type c mt) ~f:(hvbox 0)
                $ list_fl wcs (fun ~first:_ ~last:_ (wcs_and, loc) ->
                      Cmts.fmt c loc
                      @@ list_fl wcs_and (fun ~first ~last:_ wc ->
