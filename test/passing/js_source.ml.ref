@@ -3089,9 +3089,8 @@ let magic : 'a 'b. 'a -> 'b =
   fun (type a b) (x : a) ->
    let module M =
      (functor
-       (T
-        :sig
-          
+       (T :
+        sig
           type 'a t
         end)
        ->
@@ -5189,7 +5188,7 @@ end
 
 module F =
 functor
-  (_ :sig  end)
+  (_ : sig end)
   ->
   struct
     module type S
@@ -5203,7 +5202,7 @@ module G (X : F(N).S) : A.S = X
 
 module F =
 functor
-  (_ :sig  end)
+  (_ : sig end)
   ->
   struct
     module type S
@@ -6138,10 +6137,10 @@ module F4 : functor (X : sig end) -> sig end = F3
 (* tests for shortened functor notation () *)
 module X (X : sig end) (Y : sig end) (Z : sig end) = struct end
 module Y (X : sig end) (Y : sig end) (Z : sig end) = struct end
-module Z = functor (_ :sig  end) (_ :sig  end) (_ :sig  end) -> struct end
+module Z = functor (_ : sig end) (_ : sig end) (_ : sig end) -> struct end
 
 module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
-functor (X :sig  end) () (Z :sig  end) -> struct end
+functor (X : sig end) () (Z : sig end) -> struct end
 
 module F (X : sig end) = struct
   type t = int
@@ -9533,7 +9532,7 @@ type foo += private A of int
 let f : 'a 'b 'c. < .. > = assert false
 
 let () =
-  let module M = (functor (T :sig  end) -> struct end) () in
+  let module M = (functor (T : sig end) -> struct end) () in
   ()
 ;;
 

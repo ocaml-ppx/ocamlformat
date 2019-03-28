@@ -3632,17 +3632,12 @@ and fmt_module_expr c ({ast= m} as xmod) =
   | Pmod_functor _ ->
       let xargs, me = Sugar.functor_ c.cmts ~for_functor_kw:true xmod in
       let fmt_arg (name, mt) =
-        let {opn; pro; psp; bdy; cls; esp; epi} =
-          Option.value_map mt ~default:empty ~f:(fmt_module_type c)
-        in
-        let box_t k = opn $ k $ cls in
-        let fmt_module_type _ =
-          box_t
-            ( fmt "@ :" $ Option.call ~f:pro $ psp $ fmt "@;<1 2>" $ bdy
-            $ esp $ Option.call ~f:epi )
+        let fmt_mty mt =
+          let mty = fmt_module_type c mt in
+          compose_module mty ~f:(fun k -> fmt "@ :@ " $ k)
         in
         wrap "(" ")"
-          (hovbox 0 (fmt_str_loc c name $ opt mt fmt_module_type))
+          (hovbox 0 (fmt_str_loc c name $ opt mt fmt_mty))
       in
       let doc, atrs = doc_atrs pmod_attributes in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_expr c me in
