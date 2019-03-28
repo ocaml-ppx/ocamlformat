@@ -3090,10 +3090,10 @@ let magic : 'a 'b. 'a -> 'b =
    let module M =
      (functor
        (T
-         :sig
-           
-           type 'a t
-         end)
+        :sig
+          
+          type 'a t
+        end)
        ->
        struct
          let f (Refl : (a T.t, b T.t) eq) = (x :> b)

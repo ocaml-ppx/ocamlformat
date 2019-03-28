@@ -62,7 +62,7 @@ let empty =
   ; epi= None }
 
 let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
-  opn $ f (Option.call ~f:pro $ psp $ bdy $ cls $ esp $ Option.call ~f:epi)
+  f (Option.call ~f:pro $ opn $ psp $ bdy $ cls $ esp $ Option.call ~f:epi)
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
@@ -3094,7 +3094,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
       let before = Cmts.fmt_before c pmty_loc in
       let within = Cmts.fmt_within c ~pro:(fmt "") pmty_loc in
       let after = Cmts.fmt_after c pmty_loc in
-      { opn= open_hvbox 0
+      { opn= fmt ""
       ; pro=
           Some
             ( before
@@ -3102,7 +3102,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
             $ fmt "sig" $ fmt_if empty " " )
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= within $ fmt_signature c ctx s
-      ; cls= close_box
+      ; cls= fmt ""
       ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
           Some
@@ -3691,7 +3691,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let before = Cmts.fmt_before c pmod_loc in
       let within = Cmts.fmt_within c ~pro:(fmt "") pmod_loc in
       let after = Cmts.fmt_after c pmod_loc in
-      { opn= open_hvbox 0
+      { opn= fmt ""
       ; pro=
           Some
             ( before
@@ -3701,7 +3701,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 2>" "@;<1 2>")
       ; bdy= within $ fmt_structure c ctx sis
-      ; cls= close_box
+      ; cls= fmt ""
       ; esp=
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 0>" "@;<1 0>")
