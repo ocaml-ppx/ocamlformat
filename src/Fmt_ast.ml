@@ -431,6 +431,18 @@ let fmt_docstring_around ~single_line c doc k =
   then fmted ~epi:(fmt "@,") () $ k
   else hvbox 0 (k $ fmted ~pro:(fmt "@ ") ())
 
+let fmt_docstring_around_item c attrs =
+  let doc1, attrs = doc_atrs attrs in
+  let doc2, attrs = doc_atrs attrs in
+  let doc_before, doc_after =
+    match c.conf.doc_comments with
+    | `After when Option.is_none doc2 -> (None, doc1)
+    | _ -> (doc1, doc2)
+  in
+  ( fmt_docstring c ~epi:(fmt "@\n") doc_before
+  , fmt_docstring c ~pro:(fmt "@\n") doc_after
+  , attrs )
+
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
 
@@ -2526,28 +2538,22 @@ and fmt_value_description c ctx vd =
   update_config_maybe_disabled c pval_loc pval_attributes
   @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
-  let doc1, atrs = doc_atrs pval_attributes in
-  let doc2, atrs = doc_atrs atrs in
-  let both_docs = Option.(is_some doc1 && is_some doc2) in
-  let doc_before = Poly.(c.conf.doc_comments = `Before) in
-  let box = not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type) in
-  fmt_if_k both_docs (fmt_docstring c ~epi:(fmt "@\n") doc1)
-  $ hvbox 0
-      ( fmt_if_k
-          (doc_before && not both_docs)
-          (fmt_docstring c ~epi:(fmt "@\n") doc1)
-      $ hvbox 2
-          ( str pre $ str " "
-          $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
-          $ fmt_core_type c ~pro:":" ~box ~pro_space:true
-              (sub_typ ~ctx pval_type)
-          $ list_fl pval_prim (fun ~first ~last:_ s ->
-                fmt_if first "@ =" $ wrap " \"" "\"" (str s)) )
-      $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
-      $ fmt_if_k
-          ((not doc_before) && not both_docs)
-          (fmt_docstring c ~pro:(fmt "@\n") doc1) )
-  $ fmt_if_k both_docs (fmt_docstring c ~pro:(fmt "@\n") doc2)
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c pval_attributes
+  in
+  hvbox 0
+    ( doc_before
+    $ hvbox 2
+        ( str pre $ fmt " "
+        $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+        $ fmt_core_type c ~pro:":"
+            ~box:
+              (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
+            ~pro_space:true (sub_typ ~ctx pval_type)
+        $ list_fl pval_prim (fun ~first ~last:_ s ->
+              fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
+    $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
+    $ doc_after )
 
 and fmt_tydcl_params c ctx params =
   fmt_if_k
