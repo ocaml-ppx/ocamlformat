@@ -22,9 +22,6 @@ type t =
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t }
 
-(** A tree of non-overlapping intervals. Intervals are non-overlapping if
-    whenever 2 intervals share more than an end-point, then one contains the
-    other. *)
 module Non_overlapping_interval_tree (Itv : sig
   include Hashtbl.Key [@@ocaml.warning "-3"]
 
@@ -97,6 +94,9 @@ end = struct
     if Conf.debug then set_margin 100000000 $ dump_ tree tree.roots
     else Fn.const ()
 end
+(** A tree of non-overlapping intervals. Intervals are non-overlapping if
+    whenever 2 intervals share more than an end-point, then one contains the
+    other. *)
 
 module Loc_tree = struct
   include Non_overlapping_interval_tree (Location)
@@ -154,7 +154,6 @@ module Cmt = struct
   include Comparator.Make (T)
 end
 
-(** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig
   type t
 
@@ -237,6 +236,7 @@ end = struct
     in
     (before, within, after)
 end
+(** Sets of comments supporting splitting by locations. *)
 
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is

@@ -16,21 +16,21 @@ include Type
 (** @inline *)
 include module type of Module
 
-(** @deprecated  *)
 module A : B
-
 (** @deprecated  *)
+
 module A : sig
   type t
 end
+(** @deprecated  *)
 
-(** @open *)
 module type A = B
-
 (** @open *)
+
 module type A = sig
   type t
 end
+(** @open *)
 
 (** @deprecated  *)
 type t = T
@@ -58,19 +58,21 @@ include Type (** @inline *)
 
 include module type of Module (** @inline *)
 
-module A : B (** @deprecated  *)
-
+module A : B
 (** @deprecated  *)
+
 module A : sig
   type t
 end
+(** @deprecated  *)
 
-module type A = B (** @open *)
-
+module type A = B
 (** @open *)
+
 module type A = sig
   type t
 end
+(** @open *)
 
 (** @deprecated  *)
 type t = T

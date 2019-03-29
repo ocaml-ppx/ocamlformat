@@ -2551,7 +2551,7 @@ and fmt_value_description c ctx vd =
               (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
             ~pro_space:true (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
-              fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
+              fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"") )
     $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
     $ doc_after )
 
@@ -3077,7 +3077,6 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
 
 and fmt_module c ?epi ?(can_sparse = false) keyword name xargs xbody colon
     xmty attributes =
-  let doc, atrs = doc_atrs attributes in
   let f (name, xarg) = (name, Option.map ~f:(fmt_module_type c) xarg) in
   let arg_blks = List.map xargs ~f in
   let blk_t =
@@ -3120,41 +3119,45 @@ and fmt_module c ?epi ?(can_sparse = false) keyword name xargs xbody colon
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
-  (fmt_docstring_around ~single_line c doc)
-    (hvbox
-       (if compact then 0 else 2)
-       ( box_b
-           ( (if Option.is_some blk_t.epi then hovbox else hvbox)
-               0
-               ( box_t
-                   ( hvbox_if
-                       (Option.is_some blk_t.pro)
-                       0
-                       ( ( match arg_blks with
-                         | (_, Some {opn; pro= Some _}) :: _ ->
-                             opn $ open_hvbox 0
-                         | _ -> noop )
-                       $ hvbox 4
-                           ( keyword $ str " " $ fmt_str_loc c name
-                           $ list_pn arg_blks fmt_arg )
-                       $ Option.call ~f:blk_t.pro )
-                   $ blk_t.psp $ blk_t.bdy )
-               $ blk_t.esp $ Option.call ~f:blk_t.epi
-               $ fmt_if (Option.is_some xbody) " ="
-               $ fmt_if_k compact fmt_pro )
-           $ fmt_if_k (not compact) fmt_pro
-           $ blk_b.psp
-           $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
-           $ blk_b.bdy )
-       $ blk_b.esp $ Option.call ~f:blk_b.epi
-       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
-       $ opt epi (fun epi ->
-             fmt_or_k compact
-               (fmt_or
-                  (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
-                  " " "@ ")
-               (fmt "@;<1 -2>")
-             $ epi) ))
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c attributes
+  in
+  hvbox
+    (if compact then 0 else 2)
+    ( doc_before
+    $ box_b
+        ( (if Option.is_some blk_t.epi then hovbox else hvbox)
+            0
+            ( box_t
+                ( hvbox_if
+                    (Option.is_some blk_t.pro)
+                    0
+                    ( ( match arg_blks with
+                      | (_, Some {opn; pro= Some _}) :: _ ->
+                          opn $ open_hvbox 0
+                      | _ -> noop )
+                    $ hvbox 4
+                        ( keyword $ str " " $ fmt_str_loc c name
+                        $ list_pn arg_blks fmt_arg )
+                    $ Option.call ~f:blk_t.pro )
+                $ blk_t.psp $ blk_t.bdy )
+            $ blk_t.esp $ Option.call ~f:blk_t.epi
+            $ fmt_if (Option.is_some xbody) " ="
+            $ fmt_if_k compact fmt_pro )
+        $ fmt_if_k (not compact) fmt_pro
+        $ blk_b.psp
+        $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
+        $ blk_b.bdy )
+    $ blk_b.esp $ Option.call ~f:blk_b.epi
+    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+    $ doc_after
+    $ opt epi (fun epi ->
+          fmt_or_k compact
+            (fmt_or
+               (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
+               " " "@ ")
+            (fmt "@;<1 -2>")
+          $ epi) )
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in

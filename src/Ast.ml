@@ -462,7 +462,6 @@ let has_trailing_attributes_mty {pmty_attributes} =
 let has_trailing_attributes_mod {pmod_attributes} =
   List.exists pmod_attributes ~f:is_doc
 
-(** Ast terms of various forms. *)
 module T = struct
   type t =
     | Pld of payload
@@ -536,6 +535,7 @@ module T = struct
           Printast.implementation [s]
     | Top -> Format.pp_print_string fs "Top"
 end
+(** Ast terms of various forms. *)
 
 include T
 
@@ -675,9 +675,6 @@ let assoc_of_prec = function
   | High -> Non
   | Atomic -> Non
 
-(** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be)
-    an immediate sub-term of [ctx] as assumed by the operations in
-    [Requires_sub_terms]. *)
 module rec In_ctx : sig
   type 'a xt = private {ctx: T.t; ast: 'a}
 
@@ -725,9 +722,10 @@ end = struct
 
   let sub_str ~ctx str = {ctx; ast= str}
 end
+(** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be)
+    an immediate sub-term of [ctx] as assumed by the operations in
+    [Requires_sub_terms]. *)
 
-(** Operations determining precedence and necessary parenthesization of
-    terms based on their super-terms. *)
 and Requires_sub_terms : sig
   val is_simple :
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
@@ -2215,6 +2213,8 @@ end = struct
     | Ptyp_object _ -> true
     | _ -> false
 end
+(** Operations determining precedence and necessary parenthesization of
+    terms based on their super-terms. *)
 
 include In_ctx
 include Requires_sub_terms

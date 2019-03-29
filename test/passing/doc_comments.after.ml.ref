@@ -1,5 +1,5 @@
-(** test *)
 module A = B
+(** test *)
 
 (** @open *)
 include A
@@ -41,8 +41,8 @@ module Comment_placement : sig
   (** Type extension *)
   type t += T
 
-  (** Module *)
   module A : B
+  (** Module *)
 
   val a : b
   (** Val *)
@@ -59,11 +59,11 @@ module Comment_placement : sig
   external a : b = "c"
   (** External *)
 
-  (** Rec module *)
   module rec A : B
+  (** Rec module *)
 
-  (** Module type *)
   module type A
+  (** Module type *)
 
   (** Class *)
   class a : b
@@ -89,8 +89,8 @@ end = struct
   (** Type extension *)
   type t += T
 
-  (** Module *)
   module A = B
+  (** Module *)
 
   (** Let *)
   let a = b
@@ -107,11 +107,11 @@ end = struct
   external a : b = "c"
   (** External *)
 
-  (** Rec module *)
   module rec A : B = C
+  (** Rec module *)
 
-  (** Module type *)
   module type A = B
+  (** Module type *)
 
   (** Class *)
   class a = b

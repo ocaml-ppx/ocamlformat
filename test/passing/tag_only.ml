@@ -22,43 +22,43 @@ end
 (** @inline *)
 include (Module : Type)
 
-(** @inline *)
 module A = B
-
 (** @inline *)
+
 module A : sig
   type t
 end = struct
   type t
 end
-
 (** @inline *)
+
 module rec A : sig
   type t
 end = struct
   type t
 end
+(** @inline *)
 
-(** @author B *)
 and B : sig
   type t
 end = struct
   type t
 end
+(** @author B *)
 
-(** @deprecated abc *)
 module type A = B
-
 (** @deprecated abc *)
+
 module type A = sig
   type t
 end
+(** @deprecated abc *)
 
-(** @open *)
 module A : sig
   type t
 end =
   B
+(** @open *)
 
 (** @deprecated  *)
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
@@ -66,8 +66,8 @@ open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 
-(** @deprecated  *)
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+(** @deprecated  *)
 
 (** @deprecated  *)
 type t = T
@@ -99,41 +99,43 @@ end
 
 include (Module : Type) (** @inline *)
 
-module A = B (** @inline *)
-
+module A = B
 (** @inline *)
+
 module A : sig
   type t
 end = struct
   type t
 end
-
 (** @inline *)
+
 module rec A : sig
   type t
 end = struct
   type t
 end
+(** @inline *)
 
-(** @author B *)
 and B : sig
   type t
 end = struct
   type t
 end
+(** @author B *)
 
-module type A = B (** @deprecated abc *)
-
+module type A = B
 (** @deprecated abc *)
+
 module type A = sig
   type t
 end
+(** @deprecated abc *)
 
-(** @open *)
 module A : sig
   type t
 end =
   B
+(** @open *)
 
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
