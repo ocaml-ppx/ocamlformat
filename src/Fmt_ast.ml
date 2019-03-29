@@ -688,8 +688,10 @@ and fmt_package_type c ctx (lid, cnstrs) parent_loc =
     $ fmt_core_type c (sub_typ ~ctx typ)
   in
   fmt_longident_loc c lid
-  $ fmt_if (not (List.is_empty cnstrs)) "@;<1 2>"
-  $ (if fits then hvbox else vbox) 0 (list_fl cnstrs fmt_cstr)
+  $ fmt_if_k
+      (not (List.is_empty cnstrs))
+      ( fits_breaks " " "@;<1000 2>"
+      $ (if fits then hvbox else vbox) 0 (list_fl cnstrs fmt_cstr) )
 
 and fmt_row_field c ctx = function
   | Rtag (name, atrs, const, typs) ->
@@ -937,9 +939,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       ( {ppat_desc= Ppat_unpack name; ppat_attributes= []}
       , ({ptyp_desc= Ptyp_package pty; ptyp_attributes= []} as typ) ) ->
       let ctx = Typ typ in
-      wrap_if parens "(" ")"
-        ( fmt "module " $ fmt_str_loc c name $ fmt "@ : "
-        $ fmt_package_type c ctx pty ppat_loc )
+      hovbox 0
+      @@ wrap_if parens "(" ")"
+           ( fmt "module " $ fmt_str_loc c name $ fmt "@ : "
+           $ fmt_package_type c ctx pty ppat_loc )
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
@@ -1566,13 +1569,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
-      compose_module
-        (fmt_module_expr c (sub_mod ~ctx me))
-        ~f:(fun m ->
-          wrap_fits_breaks ~space:false c.conf "(" ")"
-            ( fmt "module " $ m $ fmt "@ : "
-            $ fmt_package_type c ctx pty pexp_loc
-            $ fmt_atrs ) )
+      hovbox 0
+      @@ compose_module
+           (fmt_module_expr c (sub_mod ~ctx me))
+           ~f:(fun m ->
+             wrap_fits_breaks ~space:false c.conf "(" ")"
+               ( fmt "module " $ m $ fmt "@ : "
+               $ fmt_package_type c ctx pty pexp_loc
+               $ fmt_atrs ) )
   | Pexp_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -1952,7 +1956,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         wrap_fits_breaks ~space:false c.conf "(" ")"
           (fmt "module " $ m $ fmt_atrs)
       in
-      compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod
+      hovbox 0
+      @@ compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         let leading_cmt = Cmts.fmt_before c lid1.loc in
@@ -3418,7 +3423,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
-      { opn= blk_t.opn $ blk_e.opn $ open_hvbox 2
+      { opn= blk_t.opn $ blk_e.opn $ open_hovbox 2
       ; pro=
           Some
             ( Cmts.fmt_before c pmod_loc

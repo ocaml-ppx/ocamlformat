@@ -3025,8 +3025,7 @@ end
 
 module Z : sig
   type t [@@immediate]
-end = (
-  Y : X with type t = int )
+end = (Y : X with type t = int )
 
 [%%expect
 {|
@@ -3220,8 +3219,7 @@ let make_set (type s) cmp =
     type t = s
 
     let compare = cmp
-  end)
-  : Set.S
+  end) : Set.S
     with type elt = s )
 
 (* No type annotation here *)
@@ -3290,8 +3288,7 @@ let m =
 let m =
   ( module struct
     let x = 3
-  end
-  : S )
+  end : S )
 
 ;;
 f m 1 m
@@ -3326,8 +3323,7 @@ end
 let rec (module M : S') =
   ( module struct
     let f n = if n <= 0 then 1 else n * M.f (n - 1)
-  end
-  : S' )
+  end : S' )
 in
 M.f 3
 
@@ -3454,8 +3450,7 @@ module SSMap = struct
 end
 
 let ssmap =
-  ( module SSMap
-  : MapT
+  ( module SSMap : MapT
     with type key = string
      and type data = string
      and type map = SSMap.map )
@@ -3463,8 +3458,7 @@ let ssmap =
 let ssmap =
   ( module struct
     include SSMap
-  end
-  : MapT
+  end : MapT
     with type key = string
      and type data = string
      and type map = SSMap.map )
@@ -5798,8 +5792,7 @@ end
 let v =
   ( module struct
     let x = 3
-  end
-  : S )
+  end : S )
 
 module F () = (val v)
 
@@ -5823,8 +5816,7 @@ let v =
     type t = int
 
     let x = 3
-  end
-  : S )
+  end : S )
 
 module F () = (val v)
 
