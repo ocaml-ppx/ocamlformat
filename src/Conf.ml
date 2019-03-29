@@ -1489,8 +1489,6 @@ let validate () =
     `Error (false, "Cannot specify stdin together with other inputs")
   else if has_stdin && Option.is_none !name then
     `Error (false, "Must specify name when reading from stdin")
-  else if !inplace && Option.is_some !name then
-    `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
   else if !check && !inplace then
@@ -1842,8 +1840,8 @@ let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
-           {kind= kind_of file; name= file; file; conf= build_config ~file}
-       ))
+           let name = Option.value !name ~default:file in
+           {kind= kind_of file; name; file; conf= build_config ~file} ))
   else if !check then
     Check
       (List.map !inputs ~f:(fun file ->
