@@ -311,8 +311,8 @@ OPTIONS
            Read .ocp-indent configuration files. match-clause sets
            cases-exp-indent to the same value.
 
-       -p {ocamlformat|compact|sparse|conventional|janestreet|default},
-       --profile={ocamlformat|compact|sparse|conventional|janestreet|default}
+       -p {ocamlformat|compact|sparse|conventional|janestreet},
+       --profile={ocamlformat|compact|sparse|conventional|janestreet}
            Select a preset profile which sets all options, overriding lower
            priority configuration. The ocamlformat profile aims to take
            advantage of the strengths of a parsetree-based auto-formatter,
@@ -334,9 +334,7 @@ OPTIONS
            sparse profile is similar to ocamlformat but opts for a generally
            more sparse code style. The conventional profile aims to be as
            familiar and "conventional" appearing as the available options
-           allow. The janestreet profile is used at Jane Street. The
-           "default" profile is ocamlformat with break-cases=fit. default is
-           deprecated and will be removed in version 0.10. 
+           allow. The janestreet profile is used at Jane Street. 
 
        --print-config
            Print the configuration determined by the environment variable,

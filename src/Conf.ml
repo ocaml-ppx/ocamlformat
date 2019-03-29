@@ -1332,8 +1332,6 @@ let ocamlformat_profile =
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
-let default_profile = {ocamlformat_profile with break_cases= `Fit}
-
 let conventional_profile =
   { ocamlformat_profile with
     break_cases= `Fit
@@ -1473,12 +1471,7 @@ let (_profile : t option C.t) =
          \"conventional\" appearing as the available options allow." )
     ; ( "janestreet"
       , Some janestreet_profile
-      , "The $(b,janestreet) profile is used at Jane Street." )
-    ; ( "default"
-      , Some default_profile
-      , "The \"$(b,default)\" profile is $(b,ocamlformat) with \
-         $(b,break-cases=fit). $(b,default) is deprecated and will be \
-         removed in version 0.10." ) ]
+      , "The $(b,janestreet) profile is used at Jane Street." ) ]
   in
   C.choice ~names ~all ~doc ~section ~has_default:false
     (fun conf p ->
