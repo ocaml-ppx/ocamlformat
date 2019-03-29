@@ -46,23 +46,21 @@ Under those conditions, ocamlformat is expected to produce output equivalent to 
 
 ### Code style
 
-There is currently no single dominant style for OCaml code, and the code produced by OCamlFormat does not attempt to closely mimic any of the common styles. Instead of familiarity, the focus is on legibility, keeping the common cases reasonably compact while attempting to avoid confusing formatting in corner cases. Improvement is inevitably possible.
+There are a number of preset code style profiles, selected using the `--profile` option by passing `--profile=<name>` on the command line or adding `profile = <name>` to an .ocamlformat configuration file. Each profile is a collection of settings for all options, overriding lower priority configuration of individual options. So a profile can be selected and then individual options can be overridden if desired.
 
-There are many ways to format code that are correct in the sense that they parse to equivalent abstract syntax. Which choices OCamlFormat makes are not precisely specified, but some general guidelines that have directed the design are:
+The `ocamlformat` profile aims to take advantage of the strengths of a parsetree-based auto-formatter, and to limit the consequences of the weaknesses imposed by the current implementation. This is a style which optimizes for what the formatter can do best, rather than to match the style of any existing code. Instead of familiarity, the focus is on legibility, keeping the common cases reasonably compact while attempting to avoid confusing formatting in corner cases. General guidelines that have directed the design include:
 
-- Legibility, in the sense of making it as hard as possible for quick visual parsing to give the wrong interpretation, is of highest priority.
+- Legibility, in the sense of making it as hard as possible for quick visual parsing to give the wrong interpretation, is of highest priority;
 
-- Whenever possible, the high-level structure of the code should be obvious by looking only at the left margin, in particular, it should not be necessary to visually jump from left to right hunting for critical keywords/tokens/etc.
+- Whenever possible the high-level structure of the code should be obvious by looking only at the left margin, in particular, it should not be necessary to visually jump from left to right hunting for critical keywords, tokens, etc;
 
-- All else equal, compact code is preferable, so indentation/white space is not added unless it helps legibility.
+- All else equal compact code is preferred as reading without scrolling is easier, so indentation or white space is avoided unless it helps legibility;
 
-- Special attention has been given to making some standard syntactic gotchas visually obvious.
+- Attention has been given to making some syntactic gotchas visually obvious.
 
-- When reformatting code, comments should not move around too much, but some movement seems to be unavoidable.
+The `conventional` profile aims to be as familiar and "conventional" appearing as the available options allow.
 
-There is a huge space for subjective and personal preferences here, and it would be valuable to explore alternatives by adding configuration options to see which styles projects gravitate to over time. It would be even more interesting to see proposals for changes to the output which are objectively better, as opposed to subjectively different.
-
-A limitation originates from the treatment of comments by the OCaml parser: they are not included in the parse tree itself, but are only available as a separate list. This means that OCamlFormat must decide where to place the comments within the parse tree. It does this based on source locations of code and comments, as well as using a few heuristics such as whether only white space separates a comment and some code.
+If no profile is selected, the `ocamlformat` one is used.
 
 ### Options
 
@@ -79,16 +77,6 @@ Options can be modified by the means of:
 When the option `--disable-outside-detected-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
 
 An `.ocamlformat-ignore` file specifies files that OCamlFormat should ignore.  Each line in an `.ocamlformat-ignore` file specifies a filename relative to the directory containing the `.ocamlformat-ignore` file. Lines starting with `#` are ignored and can be used as comments.
-
-### Preset profiles
-
-Preset profiles set all options, overriding lower priority configuration. A preset profile can be set using the `--profile` (or `-p`) option. You can pass the option `--profile=<name>` on the command line or add `profile = <name>` in an .ocamlformat configuration file.
-
-The available profiles are:
-- `default` sets each option to its default value
-- `compact` sets options for a generally compact code style
-- `sparse` sets options for a generally sparse code style
-- `janestreet` is the profile used at JaneStreet
 
 ### Diff
 
