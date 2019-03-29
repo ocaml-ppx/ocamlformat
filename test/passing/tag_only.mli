@@ -43,8 +43,7 @@ val a : b
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module
-(** @deprecated  *)
+open Module  (** @deprecated  *)
 
 open Module
 (** abc
@@ -55,22 +54,18 @@ include sig
 end
 (** @inline *)
 
-include Type
-(** @inline *)
+include Type  (** @inline *)
 
-include module type of Module
-(** @inline *)
+include module type of Module  (** @inline *)
 
-module A : B
-(** @deprecated  *)
+module A : B  (** @deprecated  *)
 
 module A : sig
   type t
 end
 (** @deprecated  *)
 
-module type A = B
-(** @open *)
+module type A = B  (** @open *)
 
 module type A = sig
   type t
@@ -80,8 +75,6 @@ end
 (** @deprecated  *)
 type t = T
 
-type t = t
-(** @deprecated  *)
+type t = t  (** @deprecated  *)
 
-val a : b
-(** @deprecated  *)
+val a : b  (** @deprecated  *)

@@ -78,34 +78,31 @@ type t = t
 (** @deprecated  *)
 let a = b
 
+(** @deprecated  *)
+type t = t
+(** @deprecated  *)
+
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module
-(** @deprecated  *)
+open Module  (** @deprecated  *)
 
 open Module
 (** abc
     @deprecated  *)
 
-open Module
-(** @author A *)
+open Module  (** @author A *)
 
-open Module
-(** @inline *)
+open Module  (** @inline *)
 
-include Abc
-(** @inline *)
+include Abc  (** @inline *)
 
 include struct
   type t
-end
-(** @inline *)
+end  (** @inline *)
 
-include (Module : Type)
-(** @inline *)
+include (Module : Type)  (** @inline *)
 
-module A = B
-(** @inline *)
+module A = B  (** @inline *)
 
 module A : sig
   type t
@@ -128,8 +125,7 @@ end = struct
 end
 (** @author B *)
 
-module type A = B
-(** @deprecated abc *)
+module type A = B  (** @deprecated abc *)
 
 module type A = sig
   type t
@@ -154,8 +150,11 @@ module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
 type t = T
 
-type t = t
-(** @deprecated  *)
+type t = t  (** @deprecated  *)
 
 (** @deprecated  *)
 let a = b
+
+(** @deprecated  *)
+type t = t
+(** @deprecated  *)

@@ -410,38 +410,42 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
       fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi txt
         (parse_docstring txt))
 
-(** Handle the doc-comments-tag-only option: Fits tag-only comments on the
-    same line *)
-let fmt_docstring_around ~single_line c doc k =
-  let contains_text = function Ok ([], _) -> false | _ -> true in
-  let doc = Option.value ~default:[] doc in
-  let doc =
-    List.map doc ~f:(fun ({txt; loc}, _) ->
-        let parsed = parse_docstring txt in
-        ( contains_text parsed
-        , fun ?epi ?pro () ->
-            fmt_parsed_docstring c ~need_break:false ~loc ?epi ?pro txt
-              parsed ))
-  in
-  let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
-  if
-    Poly.(c.conf.doc_comments_tag_only = `Default)
-    || (not single_line)
-    || List.exists ~f:(fun (ct, _) -> ct) doc
-  then fmted ~epi:(fmt "@,") () $ k
-  else hvbox 0 (k $ fmted ~pro:(fmt "@ ") ())
-
+(** Formats docstrings and decides where to place them Handles the
+    [doc-comments] and [doc-comment-tag-only] options Returns the tuple
+    [doc_before, doc_after, attrs] *)
 let fmt_docstring_around_item ?(force_before = false) c attrs =
-  let doc1, attrs = doc_atrs attrs in
-  let doc2, attrs = doc_atrs attrs in
-  let doc_before, doc_after =
-    match c.conf.doc_comments with
-    | `After when Option.is_none doc2 && not force_before -> (None, doc1)
-    | _ -> (doc1, doc2)
-  in
-  ( fmt_docstring c ~epi:(fmt "@\n") doc_before
-  , fmt_docstring c ~pro:(fmt "@\n") doc_after
-  , attrs )
+  let doc, attrs = doc_atrs attrs in
+  match doc_atrs attrs with
+  | (Some _ as doc2), attrs ->
+      ( fmt_docstring c ~epi:(fmt "@\n") doc
+      , fmt_docstring c ~pro:(fmt "@\n") doc2
+      , attrs )
+  | None, attrs -> (
+      let doc = Option.value ~default:[] doc in
+      let doc =
+        List.map doc ~f:(fun (({txt; _} as doc), _) ->
+            (parse_docstring txt, doc) )
+      in
+      let fmted ?epi ?pro () =
+        list doc "" (fun (parsed, {txt; loc}) ->
+            fmt_parsed_docstring c ~need_break:false ~loc ?epi ?pro txt
+              parsed )
+      in
+      let is_tag_only doc =
+        not
+          (List.exists doc ~f:(function
+            | Ok ([], _), _ -> false
+            | _ -> true ))
+      in
+      let before () = (fmted ~epi:(fmt "@\n") (), fmt "", attrs) in
+      let after ?(pro = fmt "@\n") () = (fmt "", fmted ~pro (), attrs) in
+      match c.conf with
+      | _ when force_before -> before ()
+      | {doc_comments_tag_only= `Fit} when is_tag_only doc ->
+          let pro = break c.conf.doc_comments_padding 0 in
+          after ~pro ()
+      | {doc_comments= `Before} -> before ()
+      | {doc_comments= `After} -> after () )
 
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
@@ -3198,12 +3202,13 @@ and fmt_open_description c
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item c popen_attributes
   in
-  doc_before $ str "open"
-  $ fmt_if Poly.(popen_override = Override) "!"
-  $ str " "
-  $ fmt_longident_loc c popen_lid
-  $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
-  $ doc_after
+  hovbox 0
+    ( doc_before $ fmt "open"
+    $ fmt_if Poly.(popen_override = Override) "!"
+    $ fmt " "
+    $ fmt_longident_loc c popen_lid
+    $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
+    $ doc_after )
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
