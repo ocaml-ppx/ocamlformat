@@ -3636,8 +3636,7 @@ and fmt_module_expr c ({ast= m} as xmod) =
           let mty = fmt_module_type c mt in
           compose_module mty ~f:(fun k -> fmt "@ :@ " $ k)
         in
-        wrap "(" ")"
-          (hovbox 0 (fmt_str_loc c name $ opt mt fmt_mty))
+        wrap "(" ")" (hovbox 0 (fmt_str_loc c name $ opt mt fmt_mty))
       in
       let doc, atrs = doc_atrs pmod_attributes in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_expr c me in
