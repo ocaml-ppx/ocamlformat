@@ -32,6 +32,15 @@ module type A = sig
   type t
 end
 
+(** @deprecated  *)
+type t = T
+
+(** @deprecated  *)
+type t = t
+
+val a : b
+(** @deprecated  *)
+
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
 open Module (** @deprecated  *)
@@ -62,3 +71,12 @@ module type A = B (** @open *)
 module type A = sig
   type t
 end
+
+(** @deprecated  *)
+type t = T
+
+(** @deprecated  *)
+type t = t
+
+val a : b
+(** @deprecated  *)

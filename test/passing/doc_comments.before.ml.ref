@@ -38,8 +38,8 @@ module Comment_placement : sig
   (** Module *)
   module A : B
 
-  val a : b
   (** Val *)
+  val a : b
 
   (** Exception *)
   exception E
@@ -50,8 +50,8 @@ module Comment_placement : sig
   (** Open *)
   open M
 
-  external a : b = "c"
   (** External *)
+  external a : b = "c"
 
   (** Rec module *)
   module rec A : B
@@ -98,8 +98,8 @@ end = struct
   (** Open *)
   open M
 
-  external a : b = "c"
   (** External *)
+  external a : b = "c"
 
   (** Rec module *)
   module rec A : B = C

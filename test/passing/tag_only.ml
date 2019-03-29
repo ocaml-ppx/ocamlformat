@@ -69,6 +69,15 @@ include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 
+(** @deprecated  *)
+type t = T
+
+(** @deprecated  *)
+type t = t
+
+(** @deprecated  *)
+let a = b
+
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
 open Module (** @deprecated  *)
@@ -134,3 +143,12 @@ include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
+
+(** @deprecated  *)
+type t = T
+
+(** @deprecated  *)
+type t = t
+
+(** @deprecated  *)
+let a = b
