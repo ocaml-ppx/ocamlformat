@@ -103,7 +103,7 @@ test_pull:
 	@rm -f $*.pp.mli $*.old.ast $*.new.ast
 	$(REFMT) --print=binary_reason $< | $(OCAMLFORMAT_EXE) $< --reason-intf -o $@
 
-TEST_ML:=$(shell find $(DIRS) -name _build -not -prune -or -path code/ocamlformat/test -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
+TEST_ML:=$(shell find $(DIRS) -name _build -not -prune -or -path code/ocamlformat/test -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml -and -not -name gen_version.ml 2>/dev/null)
 TEST_MLI:=$(shell find $(DIRS) -name _build -not -prune -or -path code/ocamlformat/test -not -prune -or -name '*'.mli -and -not -name '*'.pp.mli 2>/dev/null)
 
 XTEST_ML:=$(shell find $(XDIRS) -path code/ocaml/experimental -not -prune -or -path code/ocaml/testsuite/tests/parse-errors -not -prune -or -name '*'.ml -and -not -name '*'.pp.ml 2>/dev/null)
