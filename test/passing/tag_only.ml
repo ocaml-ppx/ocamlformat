@@ -72,8 +72,8 @@ module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
 type t = T
 
-(** @deprecated  *)
 type t = t
+(** @deprecated  *)
 
 (** @deprecated  *)
 let a = b
@@ -147,8 +147,8 @@ module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
 type t = T
 
-(** @deprecated  *)
 type t = t
+(** @deprecated  *)
 
 (** @deprecated  *)
 let a = b

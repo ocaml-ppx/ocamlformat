@@ -32,8 +32,14 @@ let a = 0
 (** A' *)
 
 module Comment_placement : sig
-  (** Type *)
   type t
+  (** Type *)
+
+  (** Variant declaration *)
+  type t = T
+
+  (** Type extension *)
+  type t += T
 
   (** Module *)
   module A : B
@@ -74,8 +80,8 @@ module Comment_placement : sig
   external a : b = "double_comment"
   (** B *)
 end = struct
-  (** Type *)
   type t = {a: int}
+  (** Type *)
 
   (** Variant declaration *)
   type t = T

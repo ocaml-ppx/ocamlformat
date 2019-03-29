@@ -35,8 +35,8 @@ end
 (** @deprecated  *)
 type t = T
 
-(** @deprecated  *)
 type t = t
+(** @deprecated  *)
 
 val a : b
 (** @deprecated  *)
@@ -75,8 +75,8 @@ end
 (** @deprecated  *)
 type t = T
 
-(** @deprecated  *)
 type t = t
+(** @deprecated  *)
 
 val a : b
 (** @deprecated  *)

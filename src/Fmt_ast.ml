@@ -431,12 +431,12 @@ let fmt_docstring_around ~single_line c doc k =
   then fmted ~epi:(fmt "@,") () $ k
   else hvbox 0 (k $ fmted ~pro:(fmt "@ ") ())
 
-let fmt_docstring_around_item c attrs =
+let fmt_docstring_around_item ?(force_before = false) c attrs =
   let doc1, attrs = doc_atrs attrs in
   let doc2, attrs = doc_atrs attrs in
   let doc_before, doc_after =
     match c.conf.doc_comments with
-    | `After when Option.is_none doc2 -> (None, doc1)
+    | `After when Option.is_none doc2 && not force_before -> (None, doc1)
     | _ -> (doc1, doc2)
   in
   ( fmt_docstring c ~epi:(fmt "@\n") doc_before
@@ -2661,15 +2661,22 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
       (not (List.is_empty cstrs))
       (fmt "@ " $ hvbox 0 (list cstrs "@ " fmt_cstr))
   in
-  let doc, atrs = doc_atrs ptype_attributes in
+  (* Docstring cannot be placed after variant declarations *)
+  let force_before =
+    match ptype_kind with Ptype_variant _ -> true | _ -> false
+  in
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item ~force_before c ptype_attributes
+  in
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
-       ( fmt_docstring c ~epi:(fmt "@\n") doc
+       ( doc_before
        $ hvbox 0
            ( hvbox 2
                ( fmt_manifest_kind ptype_manifest ptype_private ptype_kind
                $ fmt_cstrs ptype_cstrs )
-           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ) )
+           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+       $ doc_after )
   $ brk
 
 and fmt_label_declaration c ctx decl ?(last = false) =

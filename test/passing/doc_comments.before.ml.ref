@@ -35,6 +35,12 @@ module Comment_placement : sig
   (** Type *)
   type t
 
+  (** Variant declaration *)
+  type t = T
+
+  (** Type extension *)
+  type t += T
+
   (** Module *)
   module A : B
 

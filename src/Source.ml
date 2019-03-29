@@ -10,8 +10,8 @@
  **********************************************************************)
 open Migrate_ast
 
-(** Concrete syntax. *)
 type t = string
+(** Concrete syntax. *)
 
 let create s = s
 

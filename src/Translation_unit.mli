@@ -12,7 +12,6 @@
 type 'a with_comments =
   {ast: 'a; comments: (string * Location.t) list; prefix: string}
 
-(** Operations on translation units. *)
 type 'a t =
   { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
@@ -30,6 +29,7 @@ type 'a t =
       -> Normalize.docstring_error list
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
+(** Operations on translation units. *)
 
 type error =
   | Invalid_source of {exn: exn}

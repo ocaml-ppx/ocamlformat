@@ -21,10 +21,10 @@ module Binary_reason = struct
     type t = {location: Location.t; category: category; text: string}
   end
 
-  (** Type of Reason binary serialized data, which must agree with the type
-      used by the implementation of `refmt`. *)
   type 'a reason_data =
     string * string * 'a * Reason_comment.t list * bool * bool
+  (** Type of Reason binary serialized data, which must agree with the type
+      used by the implementation of `refmt`. *)
 
   (* copied and adapted from ocaml-migrate_parsetree
      (src/migrate_parsetree_ast_io.ml) *)
