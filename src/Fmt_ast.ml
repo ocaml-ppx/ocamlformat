@@ -2990,7 +2990,9 @@ and fmt_signature_item c ?ext {ast= si} =
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
-      let doc, atrs = doc_atrs pincl_attributes in
+      let doc_before, doc_after, atrs =
+        fmt_docstring_around_item c pincl_attributes
+      in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me} ->
@@ -3001,13 +3003,14 @@ and fmt_signature_item c ?ext {ast= si} =
       let single_line = module_type_is_simple pincl_mod in
       let box = wrap_k opn cls in
       hvbox 0
-        (fmt_docstring_around ~single_line c doc
-           ( box
-               ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
-               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
-               $ bdy )
-           $ esp $ Option.call ~f:epi
-           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ))
+        ( doc_before
+        $ ( box
+              ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
+              $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
+              $ bdy )
+          $ esp $ Option.call ~f:epi
+          $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+        $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
@@ -3192,13 +3195,15 @@ and fmt_open_description c
     {popen_lid; popen_override; popen_attributes; popen_loc} =
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
-  let doc, atrs = doc_atrs popen_attributes in
-  fmt_docstring_around ~single_line:true c doc
-    ( str "open"
-    $ fmt_if Poly.(popen_override = Override) "!"
-    $ str " "
-    $ fmt_longident_loc c popen_lid
-    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs )
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c popen_attributes
+  in
+  doc_before $ str "open"
+  $ fmt_if Poly.(popen_override = Override) "!"
+  $ str " "
+  $ fmt_longident_loc c popen_lid
+  $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+  $ doc_after
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
@@ -3514,16 +3519,19 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
-      let doc, atrs = doc_atrs pincl_attributes in
+      let doc_before, doc_after, atrs =
+        fmt_docstring_around_item c pincl_attributes
+      in
       let blk = fmt_module_expr c (sub_mod ~ctx pincl_mod) in
       let box = wrap_k blk.opn blk.cls in
       let single_line = module_expr_is_simple pincl_mod in
-      fmt_docstring_around ~single_line c doc
-        ( box
-            ( hvbox 2 (str "include " $ Option.call ~f:blk.pro)
-            $ blk.psp $ blk.bdy )
+      hovbox 0
+        ( doc_before
+        $ ( hvbox 2 (str "include " $ Option.call ~f:blk.pro)
+          $ blk.psp $ blk.bdy )
         $ blk.esp $ Option.call ~f:blk.epi
-        $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs )
+        $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+        $ doc_after )
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open open_descr -> fmt_open_description c open_descr

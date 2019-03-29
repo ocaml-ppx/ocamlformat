@@ -1,20 +1,20 @@
-(** @deprecated  *)
 open Module
+(** @deprecated  *)
 
+open Module
 (** abc
     @deprecated  *)
-open Module
 
-(** @inline *)
 include sig
   type t
 end
-
 (** @inline *)
+
 include Type
-
 (** @inline *)
+
 include module type of Module
+(** @inline *)
 
 module A : B
 (** @deprecated  *)
@@ -43,20 +43,23 @@ val a : b
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module (** @deprecated  *)
+open Module
+(** @deprecated  *)
 
+open Module
 (** abc
     @deprecated  *)
-open Module
 
-(** @inline *)
 include sig
   type t
 end
+(** @inline *)
 
-include Type (** @inline *)
+include Type
+(** @inline *)
 
-include module type of Module (** @inline *)
+include module type of Module
+(** @inline *)
 
 module A : B
 (** @deprecated  *)

@@ -1,26 +1,26 @@
-(** @deprecated  *)
 open Module
+(** @deprecated  *)
 
+open Module
 (** abc
     @deprecated  *)
-open Module
 
+open Module
 (** @author A *)
-open Module
 
-(** @inline *)
 open Module
-
 (** @inline *)
+
 include Abc
-
 (** @inline *)
+
 include struct
   type t
 end
-
 (** @inline *)
+
 include (Module : Type)
+(** @inline *)
 
 module A = B
 (** @inline *)
@@ -60,11 +60,11 @@ end =
   B
 (** @open *)
 
-(** @deprecated  *)
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-
 (** @deprecated  *)
+
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+(** @deprecated  *)
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
@@ -80,24 +80,29 @@ let a = b
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module (** @deprecated  *)
+open Module
+(** @deprecated  *)
 
+open Module
 (** abc
     @deprecated  *)
+
 open Module
+(** @author A *)
 
-open Module (** @author A *)
-
-open Module (** @inline *)
-
-include Abc (** @inline *)
-
+open Module
 (** @inline *)
+
+include Abc
+(** @inline *)
+
 include struct
   type t
 end
+(** @inline *)
 
-include (Module : Type) (** @inline *)
+include (Module : Type)
+(** @inline *)
 
 module A = B
 (** @inline *)

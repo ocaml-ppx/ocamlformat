@@ -138,7 +138,7 @@ module Loc_tree = struct
       (map_ast Ast_mapper.{default_mapper with attribute} ast)
     |> ignore ;
     of_list !locs
-end
+  end
 
 module Cmt = struct
   module T = struct
@@ -152,7 +152,7 @@ module Cmt = struct
 
   include T
   include Comparator.Make (T)
-end
+  end
 
 module CmtSet : sig
   type t

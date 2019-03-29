@@ -14,11 +14,11 @@ let selected_version = Migrate_parsetree.Versions.ocaml_407
 module Selected_version = Ast_407
 
 include (
-  Selected_version :
-    module type of struct
-      include Selected_version
-    end
-    with module Location := Selected_version.Location )
+Selected_version :
+  module type of struct
+    include Selected_version
+  end
+  with module Location := Selected_version.Location )
 
 module Parse = struct
   open Migrate_parsetree

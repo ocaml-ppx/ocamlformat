@@ -1,11 +1,11 @@
 module A = B
 (** test *)
 
-(** @open *)
 include A
-
 (** @open *)
+
 include B
+(** @open *)
 
 include A
 
@@ -13,8 +13,8 @@ type t = C of int  (** docstring comment *)
 
 type t = C of int [@ocaml.doc " docstring attribute "]
 
-(** comment *)
 include Mod
+(** comment *)
 
 (** before *)
 let x = 2
@@ -50,11 +50,11 @@ module Comment_placement : sig
   (** Exception *)
   exception E
 
-  (** Include *)
   include M
+  (** Include *)
 
-  (** Open *)
   open M
+  (** Open *)
 
   external a : b = "c"
   (** External *)
@@ -98,11 +98,11 @@ end = struct
   (** Exception *)
   exception E
 
-  (** Include *)
   include M
+  (** Include *)
 
-  (** Open *)
   open M
+  (** Open *)
 
   external a : b = "c"
   (** External *)
