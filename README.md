@@ -58,6 +58,10 @@ The `ocamlformat` profile aims to take advantage of the strengths of a parsetree
 
 - Attention has been given to making some syntactic gotchas visually obvious.
 
+The `compact` profile is similar to `ocamlformat` but opts for a generally more compact code style.
+
+The `sparse` profile is similar to `ocamlformat` but opts for a generally more sparse code style.
+
 The `conventional` profile aims to be as familiar and "conventional" appearing as the available options allow.
 
 If no profile is selected, the `ocamlformat` one is used.
