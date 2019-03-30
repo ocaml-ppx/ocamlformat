@@ -1828,11 +1828,11 @@ let build_config ~file =
 ;;
 if !print_config then
   let file =
-    match !inputs with
-    | [] ->
+    match (!name, !inputs) with
+    | Some file, _ | None, file :: _ -> file
+    | None, [] ->
         let root = Option.value root ~default:(Fpath.cwd ()) in
         Fpath.(root / dot_ocamlformat |> to_string)
-    | file :: _ -> file
   in
   C.print_config (build_config ~file)
 
@@ -1841,13 +1841,15 @@ let action =
     Inplace
       (List.map !inputs ~f:(fun file ->
            let name = Option.value !name ~default:file in
-           {kind= kind_of file; name; file; conf= build_config ~file} ))
+           {kind= kind_of file; name; file; conf= build_config ~file:name}
+       ))
   else if !check then
     Check
       (List.map !inputs ~f:(fun file ->
-           let conf = build_config ~file in
+           let name = Option.value !name ~default:file in
+           let conf = build_config ~file:name in
            let conf = {conf with max_iters= 1} in
-           {kind= kind_of file; name= file; file; conf} ))
+           {kind= kind_of file; name; file; conf} ))
   else
     match !inputs with
     | [input_file] ->
