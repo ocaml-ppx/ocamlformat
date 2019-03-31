@@ -2012,9 +2012,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         hvbox 0
-          (let leading_cmt =
-             Cmts.fmt_before c f.pexp_loc $ Cmts.fmt_before c lid1.loc
-           in
+          (let leading_cmt = Cmts.fmt_before c lid1.loc in
            leading_cmt
            $
            let general_case () =
@@ -2042,7 +2040,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                general_case ()
            | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
                cbox 2
-                 ( fmt_longident_loc c lid1
+                 ( Cmts.fmt_before c f.pexp_loc
+                 $ fmt_longident_loc c lid1
                  $ fmt_if Poly.(c.conf.field_space = `Loose) " "
                  $ fmt ": "
                  $ fmt_core_type c (sub_typ ~ctx t)
