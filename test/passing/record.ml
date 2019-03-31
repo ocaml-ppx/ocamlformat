@@ -52,3 +52,41 @@ let Mmmmmm.
 let _ = {a; b: c = (match b with `A -> A | `B -> B | `C -> C); c}
 
 let a () = A {A.a: t}
+
+let x = {(*test*) aaa: aa; bbb: bb}
+
+let x = {aaa: aa (* A *); bbb: bb}
+
+let x = {aaa: aa; (* A *) bbb: bb}
+
+let x = {(*test*) aaa: aa = aa; bbb: bb}
+
+let x = {aaa: aa (* A *) = aa; bbb: bb}
+
+let x = {aaa: aa = (* A *) aa; bbb: bb}
+
+let x = {aaa: aa; (* A *) bbb: bb}
+
+let {(*a*) a: a} = e
+
+let {a (*a*): a} = e
+
+let {a: (*a*) a} = e
+
+let {a: a (*a*)} = e
+
+let _ =
+  (* comment here *)
+  { (* comment here *)
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
+  ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb }
+
+let { (* comment here *)
+        aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
+    ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb } =
+  e
+
+type t =
+  { (* comment here *)
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaaaaaaaaaa
+  ; bbbbbbbbbbbb: bbbbbbbbbbb }
