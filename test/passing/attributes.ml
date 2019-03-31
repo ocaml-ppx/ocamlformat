@@ -166,3 +166,8 @@ let _ = match x with A -> [%expr match y with e -> e]
 
 let _ =
   match x with A -> [%expr match y with e -> ( match e with x -> x )]
+
+type t = {a: int}
+[@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
+(* comment *)
+[@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
