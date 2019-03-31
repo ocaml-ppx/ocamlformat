@@ -485,7 +485,10 @@ let rec fmt_attribute c pre = function
       let protect_token =
         match pld with PTyp t -> exposed_right_typ t | _ -> false
       in
-      Cmts.fmt_before c loc
+      let cmts_before =
+        Cmts.fmt_before c loc $ Cmts.fmt_before c name.loc
+      in
+      cmts_before
       $ hvbox 2
           (wrap "[" "]"
              ( str pre $ fmt_str_loc c name
