@@ -1194,8 +1194,7 @@ let name =
     "Name of input file for use in error reporting. Defaults to the input \
      file name. Some options can be specified in configuration files named \
      '.ocamlformat' in the same or a parent directory of $(docv), see \
-     documentation of other options for details. Mutually exclusive with \
-     --inplace."
+     documentation of other options for details."
   in
   let default = None in
   mk ~default
