@@ -1194,8 +1194,7 @@ let name =
     "Name of input file for use in error reporting. Defaults to the input \
      file name. Some options can be specified in configuration files named \
      '.ocamlformat' in the same or a parent directory of $(docv), see \
-     documentation of other options for details. Mutually exclusive with \
-     --inplace."
+     documentation of other options for details."
   in
   let default = None in
   mk ~default
@@ -1489,8 +1488,6 @@ let validate () =
     `Error (false, "Cannot specify stdin together with other inputs")
   else if has_stdin && Option.is_none !name then
     `Error (false, "Must specify name when reading from stdin")
-  else if !inplace && Option.is_some !name then
-    `Error (false, "Cannot specify --name with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
   else if !check && !inplace then
@@ -1830,11 +1827,11 @@ let build_config ~file =
 ;;
 if !print_config then
   let file =
-    match !inputs with
-    | [] ->
+    match (!name, !inputs) with
+    | Some file, _ | None, file :: _ -> file
+    | None, [] ->
         let root = Option.value root ~default:(Fpath.cwd ()) in
         Fpath.(root / dot_ocamlformat |> to_string)
-    | file :: _ -> file
   in
   C.print_config (build_config ~file)
 
@@ -1842,14 +1839,16 @@ let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
-           {kind= kind_of file; name= file; file; conf= build_config ~file}
+           let name = Option.value !name ~default:file in
+           {kind= kind_of file; name; file; conf= build_config ~file:name}
        ))
   else if !check then
     Check
       (List.map !inputs ~f:(fun file ->
-           let conf = build_config ~file in
+           let name = Option.value !name ~default:file in
+           let conf = build_config ~file:name in
            let conf = {conf with max_iters= 1} in
-           {kind= kind_of file; name= file; file; conf} ))
+           {kind= kind_of file; name; file; conf} ))
   else
     match !inputs with
     | [input_file] ->
