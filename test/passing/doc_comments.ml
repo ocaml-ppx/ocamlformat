@@ -47,8 +47,8 @@ module Comment_placement : sig
   val a : b
   (** Val *)
 
-  (** Exception *)
   exception E
+  (** Exception *)
 
   include M
   (** Include *)
@@ -95,8 +95,8 @@ end = struct
   (** Let *)
   let a = b
 
-  (** Exception *)
   exception E
+  (** Exception *)
 
   include M
   (** Include *)

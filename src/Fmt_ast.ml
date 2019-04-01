@@ -2805,11 +2805,12 @@ and fmt_exception ~pre c sep ctx te =
     in
     (atat, {te with pext_attributes= at})
   in
-  let doc, atrs = doc_atrs atrs in
-  hvbox 2
-    ( fmt_docstring c ~epi:(fmt "@,") doc
+  let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
+  hvbox 0
+    ( doc_before
     $ hvbox 2 (pre $ fmt_extension_constructor c sep ctx te)
-    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+    $ doc_after )
 
 and fmt_extension_constructor c sep ctx ec =
   let {pext_name; pext_kind; pext_attributes; pext_loc} = ec in
