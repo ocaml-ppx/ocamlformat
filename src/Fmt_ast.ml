@@ -511,19 +511,16 @@ and fmt_extension c ctx key (({loc} as ext), pld) =
           $ fmt_if protect_token " " )
       $ cmts_last
 
-and fmt_attributes c ?(pre = fmt "") ?(suf = fmt "") ?(box = true) ~key
-    attrs =
+and fmt_attributes c ?(pre = fmt "") ?(suf = fmt "") ~key attrs =
   let num = List.length attrs in
   if num = 0 then fmt ""
   else
-    let split = num > 1 in
-    let box = split && box in
     let fmt_attr ~first ~last atr =
       fmt_or_k first (open_hvbox 0) (fmt "@ ")
       $ fmt_attribute c key atr
       $ fmt_if_k last (close_box $ suf)
     in
-    pre $ hvbox_if box 0 (list_fl attrs fmt_attr)
+    pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr)
 
 and fmt_payload c ctx pld =
   protect (Pld pld)
@@ -2729,7 +2726,7 @@ and fmt_value_description c ctx vd =
               (sub_typ ~ctx pval_type)
           $ list_fl pval_prim (fun ~first ~last:_ s ->
                 fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"" ) )
-      $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~box:false ~key:"@@" atrs
+      $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
       $ fmt_if_k
           ((not doc_before) && not both_docs)
           (fmt_docstring c ~pro:(fmt "@\n") doc1) )
@@ -2903,8 +2900,7 @@ and fmt_label_declaration c ctx lbl_decl ?(last = false) =
                       (not Poly.(c.conf.break_separators = `Before))
                       (fmt_or last "" ";") )
               $ cmt_after_type )
-          $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~box:false ~key:"@" atrs
-          )
+          $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
       $ Cmts.fmt_after c pld_loc
       $ fmt_docstring_padded c doc )
 
