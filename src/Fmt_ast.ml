@@ -378,7 +378,8 @@ let parse_docstring str_cmt =
         Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
       ok
 
-let fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
+let fmt_parsed_docstring c ?(standalone = false) ~loc ?next ?pro ?epi
+    ~floating str_cmt parsed =
   let space_i i =
     let is_space = function
       | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> true
@@ -394,21 +395,21 @@ let fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
         $ fmt_if (space_i (String.length str_cmt - 1)) " "
     | _ -> if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
   in
+  let need_break =
+    match (next, floating) with
+    | (None | Some (_, false)), true -> not standalone
+    | _ -> false
+  in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0
        ( Option.call ~f:pro $ wrap "(**" "*)" doc $ fmt_if need_break "\n"
        $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi) )
 
-let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
+let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
-      let need_break =
-        match (next, floating) with
-        | (None | Some (_, false)), true -> not standalone
-        | _ -> false
-      in
-      fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi txt
-        (parse_docstring txt))
+      fmt_parsed_docstring c ?standalone ~loc ?next ?pro ?epi ~floating txt
+        (parse_docstring txt) )
 
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
@@ -423,13 +424,14 @@ let fmt_docstring_around_item ?(force_before = false) c attrs =
   | None, attrs -> (
       let doc = Option.value ~default:[] doc in
       let doc =
-        List.map doc ~f:(fun (({txt; _} as doc), _) ->
+        List.map doc ~f:(fun (({txt; _}, _) as doc) ->
             (parse_docstring txt, doc) )
       in
-      let fmted ?epi ?pro () =
-        list doc "" (fun (parsed, {txt; loc}) ->
-            fmt_parsed_docstring c ~need_break:false ~loc ?epi ?pro txt
-              parsed )
+      let fmted ?epi ?pro doc =
+        list_pn doc (fun ?prev:_ (parsed, ({txt; loc}, floating)) ?next ->
+            let next = Option.map next ~f:snd in
+            fmt_parsed_docstring c ~loc ?next ?epi ?pro ~floating txt parsed
+        )
       in
       let is_tag_only doc =
         not
@@ -437,8 +439,13 @@ let fmt_docstring_around_item ?(force_before = false) c attrs =
             | Ok ([], _), _ -> false
             | _ -> true ))
       in
-      let before () = (fmted ~epi:(fmt "@\n") (), fmt "", attrs) in
-      let after ?(pro = fmt "@\n") () = (fmt "", fmted ~pro (), attrs) in
+      let before () = (fmted ~epi:(fmt "@\n") doc, fmt "", attrs) in
+      let after ?(pro = fmt "@\n") () =
+        let floating_doc, doc =
+          List.partition_tf doc ~f:(fun (_, (_, floating)) -> floating)
+        in
+        (fmted ~epi:(fmt "@\n") floating_doc, fmted ~pro doc, attrs)
+      in
       match c.conf with
       | _ when force_before -> before ()
       | {doc_comments_tag_only= `Fit} when is_tag_only doc ->
