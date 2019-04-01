@@ -65,11 +65,11 @@ module Comment_placement : sig
   module type A
   (** Module type *)
 
-  (** Class *)
   class a : b
+  (** Class *)
 
-  (** Class type *)
   class type a = b
+  (** Class type *)
 
   (* [@@@some attribute] *)
   (* (** Attribute *) *)
@@ -113,11 +113,11 @@ end = struct
   module type A = B
   (** Module type *)
 
-  (** Class *)
   class a = b
+  (** Class *)
 
-  (** Class type *)
   class type a = b
+  (** Class type *)
 
   (* [@@@some attribute] *)
   (* (** Attribute *) *)

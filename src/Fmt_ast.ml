@@ -409,7 +409,7 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
       fmt_parsed_docstring c ?standalone ~loc ?next ?pro ?epi ~floating txt
-        (parse_docstring txt) )
+        (parse_docstring txt))
 
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
@@ -425,13 +425,12 @@ let fmt_docstring_around_item ?(force_before = false) c attrs =
       let doc = Option.value ~default:[] doc in
       let doc =
         List.map doc ~f:(fun (({txt; _}, _) as doc) ->
-            (parse_docstring txt, doc) )
+            (parse_docstring txt, doc))
       in
       let fmted ?epi ?pro doc =
         list_pn doc (fun ?prev:_ (parsed, ({txt; loc}, floating)) ?next ->
             let next = Option.map next ~f:snd in
-            fmt_parsed_docstring c ~loc ?next ?epi ?pro ~floating txt parsed
-        )
+            fmt_parsed_docstring c ~loc ?next ?epi ?pro ~floating txt parsed)
       in
       let is_tag_only doc =
         not
@@ -3041,10 +3040,11 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
-      let doc, atrs = doc_atrs cl.pci_attributes in
-      fmt_if (not first) "\n@\n"
-      $ Cmts.fmt c cl.pci_loc @@ fmt_docstring c ~epi:(fmt "@\n") doc
-      $ hovbox 2
+      let doc_before, doc_after, atrs =
+        fmt_docstring_around_item c cl.pci_attributes
+      in
+      let class_types =
+        hovbox 2
           ( hvbox 2
               ( str (if first then pre else "and")
               $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
@@ -3053,7 +3053,11 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
               $ fmt_str_loc c cl.pci_name $ fmt "@ " $ str sep )
           $ fmt "@;"
           $ fmt_class_type c (sub_cty ~ctx cl.pci_expr)
-          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs ))
+          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
+      in
+      fmt_if (not first) "\n@\n"
+      $ hovbox 0
+        @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after))
 
 and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
@@ -3072,10 +3076,11 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
         | {pcl_desc= Pcl_constraint (e, t)} -> (Some t, sub_cl ~ctx e)
         | _ -> (None, xbody)
       in
-      let doc, atrs = doc_atrs cl.pci_attributes in
-      fmt_if (not first) "\n@\n"
-      $ Cmts.fmt c cl.pci_loc @@ fmt_docstring c ~epi:(fmt "@\n") doc
-      $ hovbox 2
+      let doc_before, doc_after, atrs =
+        fmt_docstring_around_item c cl.pci_attributes
+      in
+      let class_exprs =
+        hovbox 2
           ( hovbox 2
               ( str (if first then "class" else "and")
               $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
@@ -3088,7 +3093,11 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
                     fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t))
               $ fmt "@ =" )
           $ fmt "@;" $ fmt_class_expr c e )
-      $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs)
+        $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs
+      in
+      fmt_if (not first) "\n@\n"
+      $ hovbox 0
+        @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after))
 
 and fmt_module c ?epi ?(can_sparse = false) keyword name xargs xbody colon
     xmty attributes =

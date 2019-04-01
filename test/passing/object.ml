@@ -170,13 +170,13 @@ class c =
     method a : 'a. d -> e -> f = g
   end
 
-(** about a *)
 class a = object end
+(** about a *)
 
 (** floatting *)
 
-(** about b *)
 and b = object end
+(** about b *)
 
 class type x =
   object
