@@ -82,6 +82,24 @@ let a = b
 type t = t
 (** @deprecated  *)
 
+class b =
+  object
+    method f = 0
+    (** @deprecated  *)
+
+    inherit a
+    (** @deprecated  *)
+
+    val x = 1
+    (** @deprecated  *)
+
+    constraint 'a = [> ]
+    (** @deprecated  *)
+
+    initializer do_init ()
+    (** @deprecated  *)
+  end
+
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
 open Module  (** @deprecated  *)
@@ -158,3 +176,16 @@ let a = b
 (** @deprecated  *)
 type t = t
 (** @deprecated  *)
+
+class b =
+  object
+    method f = 0  (** @deprecated  *)
+
+    inherit a  (** @deprecated  *)
+
+    val x = 1  (** @deprecated  *)
+
+    constraint 'a = [> ]  (** @deprecated  *)
+
+    initializer do_init ()  (** @deprecated  *)
+  end

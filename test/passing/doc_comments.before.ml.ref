@@ -116,6 +116,24 @@ end = struct
   (** Class *)
   class a = b
 
+  class b =
+    object
+      (** Method *)
+      method f = 0
+
+      (** Inherit *)
+      inherit a
+
+      (** Val *)
+      val x = 1
+
+      (** Constraint *)
+      constraint 'a = [> ]
+
+      (** Initialiser *)
+      initializer do_init ()
+    end
+
   (** Class type *)
   class type a = b
 

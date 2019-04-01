@@ -2329,7 +2329,9 @@ and fmt_class_field c ctx (cf : class_field) =
   update_config_maybe_disabled c pcf_loc pcf_attributes
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol:None pcf_loc in
-  let doc, atrs = doc_atrs pcf_attributes in
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c pcf_attributes
+  in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
   let fmt_kind = function
     | Cfk_virtual typ ->
@@ -2407,50 +2409,49 @@ and fmt_class_field c ctx (cf : class_field) =
     | Cfk_concrete (Override, _) -> str "!"
     | Cfk_concrete (Fresh, _) -> noop
   in
-  fmt_cmts
-    ( fmt_docstring c ~epi:(fmt "@\n") doc
-    $ hvbox 0
-        ( match pcf_desc with
-        | Pcf_inherit (override, cl, parent) ->
-            hovbox 2
-              ( str "inherit"
-              $ fmt_if Poly.(override = Override) "!"
-              $ fmt "@ "
-              $ fmt_class_expr c (sub_cl ~ctx cl)
-              $ opt parent (fun p -> str " as " $ fmt_str_loc c p) )
-        | Pcf_method (name, priv, kind) ->
-            let l, eq, expr = fmt_kind kind in
-            hvbox 2
-              ( hovbox 2
-                  ( hovbox 4
-                      ( str "method" $ virtual_or_override kind
-                      $ fmt_if Poly.(priv = Private) "@ private"
-                      $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                  $ eq )
-              $ expr )
-        | Pcf_val (name, mut, kind) ->
-            let l, eq, expr = fmt_kind kind in
-            hvbox 2
-              ( hovbox 2
-                  ( hvbox 4
-                      ( str "val" $ virtual_or_override kind
-                      $ fmt_if Poly.(mut = Mutable) "@ mutable"
-                      $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                  $ eq )
-              $ expr )
-        | Pcf_constraint (t1, t2) ->
-            fmt "constraint@ "
-            $ fmt_core_type c (sub_typ ~ctx t1)
-            $ str " = "
-            $ fmt_core_type c (sub_typ ~ctx t2)
-        | Pcf_initializer e ->
-            fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
-        | Pcf_attribute atr ->
-            let doc, atrs = doc_atrs [atr] in
-            fmt_docstring c ~standalone:true ~epi:noop doc
-            $ fmt_attributes c ~key:"@@@" atrs
-        | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
-    $ fmt_atrs )
+  let pcf =
+    match pcf_desc with
+    | Pcf_inherit (override, cl, parent) ->
+        hovbox 2
+          ( str "inherit"
+          $ fmt_if Poly.(override = Override) "!"
+          $ fmt "@ "
+          $ ( fmt_class_expr c (sub_cl ~ctx cl)
+            $ opt parent (fun p -> str " as " $ fmt_str_loc c p) ) )
+    | Pcf_method (name, priv, kind) ->
+        let l, eq, expr = fmt_kind kind in
+        hvbox 2
+          ( hovbox 2
+              ( hovbox 4
+                  ( str "method" $ virtual_or_override kind
+                  $ fmt_if Poly.(priv = Private) "@ private"
+                  $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+              $ eq )
+          $ expr )
+    | Pcf_val (name, mut, kind) ->
+        let l, eq, expr = fmt_kind kind in
+        hvbox 2
+          ( hovbox 2
+              ( hvbox 4
+                  ( str "val" $ virtual_or_override kind
+                  $ fmt_if Poly.(mut = Mutable) "@ mutable"
+                  $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+              $ eq )
+          $ expr )
+    | Pcf_constraint (t1, t2) ->
+        fmt "constraint@ "
+        $ fmt_core_type c (sub_typ ~ctx t1)
+        $ str " = "
+        $ fmt_core_type c (sub_typ ~ctx t2)
+    | Pcf_initializer e ->
+        fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
+    | Pcf_attribute atr ->
+        let doc, atrs = doc_atrs [atr] in
+        fmt_docstring c ~standalone:true ~epi:noop doc
+        $ fmt_attributes c ~key:"@@@" atrs
+    | Pcf_extension ext -> fmt_extension c ctx "%%" ext
+  in
+  fmt_cmts (hvbox 0 (doc_before $ pcf $ fmt_atrs $ doc_after))
 
 and fmt_class_type_field c ctx (cf : class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
