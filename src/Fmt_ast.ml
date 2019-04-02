@@ -1456,6 +1456,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | Pexp_fun _ | Pexp_function _ -> Some false
             | _ -> None
           in
+          let fit = Location.is_single_line pexp_loc c.conf.margin in
           hvbox 0
             (wrap_if parens "(" ")"
                ( hovbox 0
@@ -1475,10 +1476,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            | _ -> "@;<1 2>" )
                        $ fmt_expression c ?box xbody )
                    $ fmt_or_k c.conf.indicate_multiline_delimiters
-                       (fmt_or_k
-                          (Location.is_single_line pexp_loc c.conf.margin)
-                          (fmt ")") (fits_breaks ")" "@ )"))
-                       (fits_breaks ")" "@,)") )
+                       (fmt_or_k fit (fmt ")")
+                          (fits_breaks ~force_fit_if:fit ")" "@ )"))
+                       (fits_breaks ~force_fit_if:fit ")" "@,)") )
                $ fmt_atrs ))
       | ( lbl
         , ( { pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]

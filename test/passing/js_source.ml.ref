@@ -9787,3 +9787,8 @@ let _ =
         (match e with
         | x -> x)]
 ;;
+
+let _ =
+  List.map rows ~f:(fun row ->
+      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+;;
