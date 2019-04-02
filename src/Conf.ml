@@ -782,7 +782,7 @@ module Formatting = struct
 
   let indicate_multiline_delimiters =
     let doc =
-      "Print a space inside a delimiter to indicate that it's matching \
+      "Print a space inside a delimiter to indicate that its matching \
        delimiter is on a different line."
     in
     let names = ["indicate-multiline-delimiters"] in
