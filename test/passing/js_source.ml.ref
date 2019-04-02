@@ -1458,8 +1458,8 @@ let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
          ]
 
        method inj
-           : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-                   -> [ `A of int | `B of string | `C ] =
+             : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
+                     -> [ `A of int | `B of string | `C ] =
          function
          | Thd, v -> `A v
          | Ttl Thd, v -> `B v
@@ -2455,10 +2455,7 @@ type (_, _, _) binop =
   | Leq : ('a, 'a, bool) binop
   | Add : (int, int, int) binop
 
-let eval (type a b c)
-         (bop : (a, b, c) binop)
-         (x : a constant)
-         (y : b constant)
+let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant)
     : c constant
   =
   match bop, x, y with
@@ -9793,3 +9790,28 @@ let _ =
         (match e with
         | x -> x)]
 ;;
+
+let f
+    ~first_arg
+    ~x
+    ~(* this is a comment about x *) last_arg
+    ~(* last argument *) last_arg
+    ~(* last argument *) last_arg (* last argument *)
+  =
+  assert false
+;;
+
+let f
+    ~first_arg
+    ~x
+    ~(* this is a comment about x *) last_arg
+    ~(* last argument *) last_arg (* last argument *)
+  =
+  assert false
+;;
+
+let f ~first_arg ~x ~(* this is a comment about x *) last_arg (* last argument *) =
+  assert false
+;;
+
+let f ~first_arg ~x ~(* this is a comment about x *) last_arg = assert false

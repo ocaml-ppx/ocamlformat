@@ -7391,3 +7391,28 @@ let ssmap
 let _ = match x with | A -> [%expr match y with | e -> e]
 
 let _ = match x with | A -> [%expr match y with | e -> match e with x -> x]
+
+let f
+    ~first_arg
+    ~x
+    ~(* this is a comment about x *) last_arg
+    ~(* last argument *) last_arg
+    ~(* last argument *) last_arg (* last argument *)
+  =
+  assert false
+;;
+
+let f
+    ~first_arg
+    ~x
+    ~(* this is a comment about x *) last_arg
+    ~(* last argument *) last_arg (* last argument *)
+  =
+  assert false
+;;
+
+let f ~first_arg ~x ~(* this is a comment about x *) last_arg (* last argument *) =
+  assert false
+;;
+
+let f ~first_arg ~x ~(* this is a comment about x *) last_arg = assert false

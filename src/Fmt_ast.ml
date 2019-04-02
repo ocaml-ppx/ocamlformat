@@ -136,13 +136,16 @@ let fmt_expressions c width sub_exp exprs fmt fmt_expr =
       list grps fmt fmt_grp
 
 (** Handle the `break-fun-decl` option *)
-let wrap_fun_decl_args ~stmt_loc c k =
+let wrap_fun_decl_args c k =
   match c.conf.break_fun_decl with
   | `Wrap -> k
-  | `Fit_or_vertical when Location.is_single_line stmt_loc c.conf.margin ->
-      hvbox 0 k
-  | `Fit_or_vertical -> vbox 0 k
+  | `Fit_or_vertical -> k
   | `Smart -> hvbox 0 k
+
+let box_args c =
+  match c.conf.break_fun_decl with
+  | `Fit_or_vertical -> hvbox
+  | `Wrap | `Smart -> hovbox
 
 let drop_while ~f s =
   let i = ref 0 in
@@ -2463,7 +2466,6 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
            $ fmt_atrs ))
   | Pcl_fun _ ->
       let xargs, xbody = Sugar.cl_fun c.cmts xexp in
-      let stmt_loc = Sugar.args_location xargs in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
         ( fmt_if parens "("
@@ -2471,7 +2473,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
           $ ( hovbox 4
                 ( fmt "fun "
                 $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(fmt " ")
-                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
+                $ wrap_fun_decl_args c (fmt_fun_args c xargs)
                 $ fmt "@ " )
             $ fmt "->" )
           $ close_box $ fmt "@ "
@@ -2558,7 +2560,6 @@ and fmt_class_field c ctx (cf : class_field) =
                 (sub_exp ~ctx e)
           | Some _ -> ([], sub_exp ~ctx e)
         in
-        let stmt_loc = Sugar.args_location xargs in
         let ty, e =
           match (xbody.ast, poly) with
           | {pexp_desc= Pexp_constraint (e, t); pexp_loc}, None ->
@@ -2570,8 +2571,8 @@ and fmt_class_field c ctx (cf : class_field) =
         in
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
           ~after:e.ast.pexp_loc ;
-        ( [ fmt_if (not (List.is_empty xargs)) "@;<1 2>"
-            $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
+        ( [ fmt_if (not (List.is_empty xargs)) "@ "
+            $ wrap_fun_decl_args c (fmt_fun_args c xargs)
           ; opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
           ]
         , fmt "@;<1 2>="
@@ -2607,10 +2608,11 @@ and fmt_class_field c ctx (cf : class_field) =
            let l, eq, expr = fmt_kind kind in
            hvbox 2
              ( hovbox 2
-                 ( hovbox 4
+                 ( box_args c
+                     (if Poly.(c.conf.break_fun_decl = `Wrap) then 4 else 6)
                      ( fmt "method" $ virtual_or_override kind
-                     $ fmt_if Poly.(priv = Private) "@ private"
-                     $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+                     $ fmt_if Poly.(priv = Private) " private"
+                     $ fmt " " $ fmt_str_loc c name $ list l "" Fn.id )
                  $ eq )
              $ expr )
        | Pcf_val (name, mut, kind) ->
@@ -3315,7 +3317,6 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               (sub_cl ~ctx pci_expr)
         | _ -> ([], sub_cl ~ctx pci_expr)
       in
-      let stmt_loc = Sugar.args_location xargs in
       let ty, e =
         match xbody.ast with
         | {pcl_desc= Pcl_constraint (e, t)} -> (Some t, sub_cl ~ctx e)
@@ -3326,16 +3327,17 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
       $ Cmts.fmt c pci_loc @@ fmt_docstring c ~epi:(fmt "@\n") doc
       $ hovbox 2
           ( hovbox 2
-              ( str (if first then "class" else "and")
-              $ fmt_if Poly.(pci_virt = Virtual) "@ virtual"
-              $ fmt "@ "
-              $ fmt_class_params c ctx ~epi:(fmt "@ ") pci_params
-              $ fmt_str_loc c pci_name
-              $ ( fmt_if (not (List.is_empty xargs)) "@ "
-                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
-                $ opt ty (fun t ->
-                      fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t) )
-                $ fmt "@ =" ) )
+              ( box_args c 2
+                  ( str (if first then "class" else "and")
+                  $ fmt_if Poly.(pci_virt = Virtual) "@ virtual"
+                  $ fmt_or (List.is_empty pci_params) " " "@ "
+                  $ fmt_class_params c ctx ~epi:(fmt "@ ") pci_params
+                  $ fmt_str_loc c pci_name
+                  $ fmt_if (not (List.is_empty xargs)) "@ "
+                  $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
+              $ opt ty (fun t ->
+                    fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t) )
+              $ fmt "@ =" )
           $ fmt "@;" $ fmt_class_expr c e )
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
 
@@ -3999,21 +4001,21 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     List.partition_tf atrs ~f:(fun ({loc}, _) ->
         Location.compare_start loc pvb_expr.pexp_loc < 1 )
   in
-  let stmt_loc = Sugar.args_location xargs in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c pvb_loc
   $ hvbox indent
       ( open_hovbox 2
       $ ( hovbox 4
-            ( fmt_or first "let" "and"
-            $ fmt_extension_suffix c ext
-            $ fmt_attributes c ~key:"@" at_attrs
-            $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
-            $ fmt " " $ fmt_pattern c xpat
-            $ fmt_if_k
-                (not (List.is_empty xargs))
-                ( fmt "@ "
-                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs) )
+            ( box_args c 4
+                ( fmt_or first "let" "and"
+                $ fmt_extension_suffix c ext
+                $ fmt_attributes c ~key:"@" at_attrs
+                $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
+                $ fmt " " $ fmt_pattern c xpat
+                $ fmt_if_k
+                    (not (List.is_empty xargs))
+                    (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
+                )
             $ Option.call ~f:fmt_cstr )
         $ fmt_or_k c.conf.ocp_indent_compat
             (fits_breaks " =" "@;<1000 0>=")
