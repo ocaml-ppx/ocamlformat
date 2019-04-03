@@ -189,7 +189,7 @@ OPTIONS (CODE FORMATTING STYLE)
            the operator.
 
        --no-indicate-multiline-delimiters
-           Print a space inside a delimiter to indicate that it's matching
+           Print a space inside a delimiter to indicate that its matching
            delimiter is on a different line.
 
        --no-wrap-fun-args
