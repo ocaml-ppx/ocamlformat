@@ -432,7 +432,7 @@ let fmt_label lbl sep =
 
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
-let parse_docstring ~loc str_cmt =
+let parse_docstring c ~loc str_cmt =
   let module Model = Odoc__model in
   let module Parser_ = Odoc__parser in
   let dummy_definition =
@@ -450,8 +450,16 @@ let parse_docstring ~loc str_cmt =
     Parser_.parse_comment ~sections_allowed:`All
       ~containing_definition:dummy_definition ~location ~text:str_cmt
   in
-  (* Print warnings *)
-  Ok (Model.Error.shed_warnings parsed)
+  match parsed with
+  | {value; warnings= []} -> Ok value
+  | {warnings} ->
+      if not c.conf.quiet then
+        List.iter warnings ~f:(fun w ->
+            let msg = Model.Error.to_string w in
+            Caml.Format.eprintf
+              "%a:@,Warning: Invalid documentation comment:@,%s\n%!"
+              Location.print_loc loc msg ) ;
+      Error ()
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   let space_i i =
@@ -484,7 +492,7 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
       let epi = docstring_epi ?standalone ?next ~floating ?epi in
-      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
+      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring c ~loc txt))
 
 let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
     doc2 =
@@ -506,7 +514,7 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
       let floating_doc, doc =
         doc
         |> List.map ~f:(fun ((s, _) as doc) ->
-               (parse_docstring ~loc s.txt, doc))
+               (parse_docstring c ~loc s.txt, doc))
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in
