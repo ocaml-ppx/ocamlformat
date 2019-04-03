@@ -73,25 +73,15 @@ val k : k
 (** this is a comment
 
     @author foo
-
     @version foo
-
     @see <foo> foo
-
     @since foo
-
     @before foo [foo]
-
     @deprecated [foo]
-
     @param foo [foo]
-
     @raise foo [foo]
-
     @return [foo]
-
     @inline
-
     @canonical foo *)
 
 val x : x

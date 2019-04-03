@@ -66,6 +66,32 @@ let list_should_use_heavy_syntax items =
   in
   List.exists items ~f:heavy_nestable_block_elements
 
+(* Decide if should break between two elements *)
+let block_element_should_break elem next =
+  match (elem, next) with
+  (* Mandatory breaks *)
+  | `List (_, _), _ | `Paragraph _, `Paragraph _ -> true
+  (* Arbitrary breaks *)
+  | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) -> true
+  | _, _ -> false
+
+(* Format a list of block_elements separated by newlines Inserts blank line
+   depending on [block_element_should_break] *)
+let list_block_elem elems f =
+  list_pn elems (fun ?prev:_ elem ?next ->
+      let elem = elem.Location_.value in
+      let break =
+        match next with
+        | Some {Location_.value= n}
+          when block_element_should_break
+                 (elem :> block_element)
+                 (n :> block_element) ->
+            fmt "\n@\n"
+        | Some _ -> fmt "@\n"
+        | None -> fmt ""
+      in
+      f elem $ break )
+
 (* Format each element with [fmt_elem] *)
 let fmt_styled style fmt_elem elems =
   let s =
@@ -248,7 +274,7 @@ and fmt_list_light kind items =
   vbox 0 (list items "@," fmt_item)
 
 and fmt_nestable_block_elements elems =
-  list elems "\n@\n" (ign_loc fmt_nestable_block_element)
+  list_block_elem elems fmt_nestable_block_element
 
 let at = char '@'
 
@@ -299,8 +325,7 @@ let fmt_block_element = function
   | #nestable_block_element as elm ->
       hovbox 0 (fmt_nestable_block_element elm)
 
-let fmt (docs : docs) =
-  vbox 0 (list docs "\n@\n" (ign_loc fmt_block_element))
+let fmt (docs : docs) = vbox 0 (list_block_elem docs fmt_block_element)
 
 let diff c x y =
   let norm z =
