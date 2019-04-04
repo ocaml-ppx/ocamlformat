@@ -78,7 +78,7 @@ Options can be modified by the means of:
 
 .ocamlformat files in the containing and all ancestor directories for each input file are used, as well as the global .ocamlformat file defined in `$XDG_CONFIG_HOME/ocamlformat`. The global .ocamlformat file has the lowest priority, then the closer the directory is to the processed file, the higher the priority.
 
-When the option `--disable-outside-detected-project` is set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
+When the option `--enable-outside-detected-project` is not set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
 
 An `.ocamlformat-ignore` file specifies files that OCamlFormat should ignore.  Each line in an `.ocamlformat-ignore` file specifies a filename relative to the directory containing the `.ocamlformat-ignore` file. Lines starting with `#` are ignored and can be used as comments.
 

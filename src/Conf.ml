@@ -1092,7 +1092,7 @@ let disable_conf_files =
   mk ~default:false
     Arg.(value & flag & info ["disable-conf-files"] ~doc ~docs)
 
-let disable_outside_detected_project =
+let enable_outside_detected_project =
   let witness =
     String.concat ~sep:" or "
       (List.map project_root_witness ~f:(fun name ->
@@ -1100,17 +1100,15 @@ let disable_outside_detected_project =
   in
   let doc =
     Format.sprintf
-      "Do not read $(b,.ocamlformat) config files outside the current \
-       project. The project root of an input file is taken to be the \
-       nearest ancestor directory that contains a %s file. If no \
-       $(b,.ocamlformat) configuration file is found, formatting is \
-       disabled."
+      "Read $(b,.ocamlformat) config files outside the current project. \
+       The project root of an input file is taken to be the nearest \
+       ancestor directory that contains a %s file. Formatting is enabled \
+       even if no $(b,.ocamlformat) configuration file is found."
       witness
   in
   let default = false in
   mk ~default
-    Arg.(
-      value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
+    Arg.(value & flag & info ["enable-outside-detected-project"] ~doc ~docs)
 
 let max_iters =
   let docv = "N" in
@@ -1549,7 +1547,7 @@ let root =
   Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
 
 let disable_outside_detected_project =
-  !disable_outside_detected_project || Option.is_some root
+  (not !enable_outside_detected_project) || Option.is_some root
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
@@ -1810,7 +1808,7 @@ let build_config ~file =
       Format.eprintf
         "File %S:@\n\
          Warning: Ocamlformat disabled because \
-         [--disable-outside-detected-project] was given and %s@\n\
+         [--enable-outside-detected-project] is not set and %s@\n\
          %!"
         file reason ) ;
     {conf with disable= true} )
