@@ -50,3 +50,9 @@ let rex =
      (* xxxxxxxxxx                *)
      ^ "(.{27})$")
 ;;
+
+type foo =
+  { some_field : int
+    (* long long long long long long long long long long long long long long
+     * long long long long *)
+  ; another_field : string }

@@ -484,20 +484,27 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
 
 let fmt_cmt (conf : Conf.t) cmt =
   let open Fmt in
-  if not conf.wrap_comments then wrap "(*" "*)" (str (fst cmt))
+  let fmt_asterisk_prefixed_lines lines =
+    vbox 1
+      ( fmt "(*"
+      $ list_pn lines (fun ?prev:_ line ?next ->
+            match (line, next) with
+            | "", None -> fmt ")"
+            | _, None -> str line $ fmt "*)"
+            | _, Some _ -> str line $ fmt "@,*" ) )
+  in
+  if not conf.wrap_comments then
+    match split_asterisk_prefixed cmt with
+    | [""] | [_] | [_; ""] -> wrap "(*" "*)" (str (fst cmt))
+    | asterisk_prefixed_lines ->
+        fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   else
     match split_asterisk_prefixed cmt with
     | [""] -> str "(* *)"
     | [text] -> wrap "(*" "*)" (fill_text text)
     | [text; ""] -> wrap "(*" " *)" (fill_text text)
     | asterisk_prefixed_lines ->
-        vbox 1
-          ( fmt "(*"
-          $ list_pn asterisk_prefixed_lines (fun ?prev:_ line ?next ->
-                match (line, next) with
-                | "", None -> fmt ")"
-                | _, None -> str line $ fmt "*)"
-                | _, Some _ -> str line $ fmt "@,*" ) )
+        fmt_asterisk_prefixed_lines asterisk_prefixed_lines
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
