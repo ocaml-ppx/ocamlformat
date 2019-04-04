@@ -3128,8 +3128,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
             $ fmt "@;<1 2>"
             $ list xargs "@;<1 2>" fmt_arg
             $ fmt "@;<1 2>->"
-            $ fmt_if (Option.is_some blk.pro) " "
-            $ Option.call ~f:blk.pro )
+            $ opt blk.pro (fun pro -> fmt " " $ pro) )
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc)
       ; psp=
           fmt_or_k (Option.is_none blk.pro)
