@@ -20,10 +20,11 @@ OPTIONS (CODE FORMATTING STYLE)
        "option=VAL"] attribute on expression in the processed file.
 
        (*) .ocamlformat files in current and all ancestor directories for
-       each input file are used, as well as the global .ocamlformat file
-       defined in $XDG_CONFIG_HOME/ocamlformat. The global .ocamlformat file
-       has the lowest priority, then the closer the directory is to the
-       processed file, the higher the priority.
+       each input file are used, as well as the global ocamlformat file
+       defined in $XDG_CONFIG_HOME or in $HOME/.config if $XDG_CONFIG_HOME is
+       undefined. The global ocamlformat file has the lowest priority, then
+       the closer the directory is to the processed file, the higher the
+       priority.
 
        An .ocamlformat-ignore file specifies files that OCamlFormat should
        ignore. Each line in an .ocamlformat-ignore file specifies a filename
