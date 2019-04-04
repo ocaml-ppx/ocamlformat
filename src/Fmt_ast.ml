@@ -3132,7 +3132,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc)
       ; psp=
           fmt_or_k (Option.is_none blk.pro)
-            (break_unless_newline 1 2)
+            (fits_breaks " " "@;<1 2>")
             blk.psp }
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
