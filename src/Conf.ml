@@ -1384,7 +1384,7 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { break_cases= `Toplevel
+  { break_cases= `All
   ; break_collection_expressions=
       ocamlformat_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical

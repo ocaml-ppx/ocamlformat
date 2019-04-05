@@ -84,6 +84,19 @@ let foo =
     when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
       analyze_id_assignment (Var.of_id ret_id) target_exp cast_typ loc
 
+let mod_int c1 c2 is_safe dbg =
+  match (c1, c2) with
+  | c1, Cconst_int (0, _) ->
+      Csequence (c1, raise_symbol dbg "caml_exn_Division_by_zero")
+  | c1, Cconst_int ((1 | -1), _) ->
+      Csequence (c1, Cconst_int (0, dbg))
+  | x | -1 ->
+      ()
+
+let merge_columns l old_table =
+  let rec aux = function [] | [None] -> ([], []) in
+  foooooooooooooooooooooooooo fooooooooooooooooooooo
+
 [@@@ocamlformat "indicate-nested-or-patterns=unsafe-no"]
 
 let is_sequence exp =
