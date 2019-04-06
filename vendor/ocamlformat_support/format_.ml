@@ -1126,8 +1126,8 @@ let stdbuf = pp_make_buffer ()
 
 (* Predefined formatters standard formatter to print
    to [Pervasives.stdout], [Pervasives.stderr], and {!stdbuf}. *)
-let std_formatter = formatter_of_out_channel Pervasives.stdout
-and err_formatter = formatter_of_out_channel Pervasives.stderr
+let std_formatter = formatter_of_out_channel stdout
+and err_formatter = formatter_of_out_channel stderr
 and str_formatter = formatter_of_buffer stdbuf
 
 
