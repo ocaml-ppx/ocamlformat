@@ -15,6 +15,15 @@ Jbuild_plugin.V1.send
  (action (run ocaml %%{dep:../tools/gen_version.ml} Version.ml))
  (mode fallback))
 
+(rule
+ (copy#
+  compat/%%{read:compat-file}
+  compat.ml))
+
+(rule
+ (targets compat-file)
+ (action  (run %%{ocaml} %%{dep:config/gen.ml} %%{ocaml_version})))
+
 (ocamllex Literal_lexer)
 
 (executables

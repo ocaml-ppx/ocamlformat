@@ -84,26 +84,25 @@ let parse parse_ast (conf : Conf.t) ~source =
     String.sub source ~pos:0 ~len
   in
   Location.init lexbuf !Location.input_name ;
-  let warning_printer = !Location.warning_printer in
   let w50 = ref [] in
-  (Location.warning_printer :=
-     fun loc fmt warn ->
-       match warn with
-       | Warnings.Bad_docstring _ when conf.comment_check ->
-           w50 := (loc, warn) :: !w50
-       | _ -> if not conf.quiet then warning_printer loc fmt warn) ;
+  let (`Reset reset) =
+    Compat.setup_warning_filter (fun loc warn ->
+        match warn with
+        | Warnings.Bad_docstring _ when conf.comment_check ->
+            w50 := (loc, warn) :: !w50 ;
+            false
+        | _ -> not conf.quiet )
+  in
   try
     let ast = parse_ast lexbuf in
     Warnings.check_fatal () ;
-    Location.warning_printer := warning_printer ;
+    reset () ;
     match List.rev !w50 with
     | [] ->
         let comments = Lexer.comments () in
         {ast; comments; prefix= hash_bang}
     | w50 -> raise (Warning50 w50)
-  with e ->
-    Location.warning_printer := warning_printer ;
-    raise e
+  with e -> reset () ; raise e
 
 type error =
   | Invalid_source of {exn: exn}
@@ -181,7 +180,7 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
       | Syntaxerr.Error _ | Lexer.Error _ ->
           Location.report_exception fmt exn
       | Warning50 l ->
-          List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
+          List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
       | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
   | Unstable _ when quiet_unstable -> ()
   | Unstable {iteration; prev; next} ->
@@ -229,7 +228,7 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
       | Warning50 l ->
           Format.fprintf fmt "  BUG: misplaced documentation comments.\n%!" ;
           if Conf.debug then
-            List.iter l ~f:(fun (l, w) -> !Location.warning_printer l fmt w)
+            List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
       | Internal_error (m, l) ->
           let s =
             match m with
