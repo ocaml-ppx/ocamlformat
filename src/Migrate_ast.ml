@@ -58,22 +58,9 @@ module Printast = struct
             ( to_current.copy_pattern x
             , Option.map ~f:to_current.copy_expression y ) )
 
-  let copy_directive_argument (x : Parsetree.directive_argument) =
-    let open Migrate_parsetree.Versions.OCaml_current.Ast.Parsetree in
-    match x with
-    | Pdir_none -> Pdir_none
-    | Pdir_string s -> Pdir_string s
-    | Pdir_int (s, c) -> Pdir_int (s, c)
-    | Pdir_ident i -> Pdir_ident i
-    | Pdir_bool b -> Pdir_bool b
-
   let use_file f (x : Parsetree.toplevel_phrase list) =
     List.iter x ~f:(fun (p : Parsetree.toplevel_phrase) ->
-        match p with
-        | Ptop_def s ->
-            top_phrase f (Ptop_def (to_current.copy_structure s))
-        | Ptop_dir (d, a) ->
-            top_phrase f (Ptop_dir (d, copy_directive_argument a)) )
+        top_phrase f (to_current.copy_toplevel_phrase p) )
 end
 
 module Pprintast = struct

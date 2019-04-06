@@ -733,7 +733,7 @@ end = struct
 
   (* This module uses physical equality extensively to detect sub-terms. *)
 
-  let ( == ) = Caml.Pervasives.( == )
+  let ( == ) = Base.phys_equal
 
   let dump fs ctx ast =
     Format.fprintf fs "ast: %a@\nctx: %a@\n" T.dump ast T.dump ctx
