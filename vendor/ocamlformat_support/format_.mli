@@ -367,7 +367,7 @@ val get_mark_tags : unit -> bool
 
 (** {6 Redirecting the standard formatter output} *)
 
-val set_formatter_out_channel : Pervasives.out_channel -> unit
+val set_formatter_out_channel : out_channel -> unit
 (** Redirect the pretty-printer output to the given channel.
   (All the output functions of the standard formatter are set to the
    default output functions printing to the given channel.) *)
@@ -563,7 +563,7 @@ val pp_over_max_boxes : formatter -> unit -> bool
 val pp_set_ellipsis_text : formatter -> string -> unit
 val pp_get_ellipsis_text : formatter -> unit -> string
 val pp_set_formatter_out_channel :
-  formatter -> Pervasives.out_channel -> unit
+  formatter -> out_channel -> unit
 
 val pp_set_formatter_output_functions :
   formatter -> (string -> int -> int -> unit) -> (unit -> unit) -> unit
