@@ -30,12 +30,12 @@ module Binary_reason = struct
      (src/migrate_parsetree_ast_io.ml) *)
   type ast =
     | Impl :
-        (module Migrate_parsetree_versions.OCaml_version
+        (module Migrate_parsetree.Versions.OCaml_version
            with type Ast.Parsetree.structure = 'concrete)
         * 'concrete
         -> ast
     | Intf :
-        (module Migrate_parsetree_versions.OCaml_version
+        (module Migrate_parsetree.Versions.OCaml_version
            with type Ast.Parsetree.signature = 'concrete)
         * 'concrete
         -> ast
@@ -56,7 +56,7 @@ module Binary_reason = struct
           else
             user_error "Not a binary reason file"
               [("prefix", Sexp.Atom magic)]
-      | (module Frontend : Migrate_parsetree_versions.OCaml_version) :: tail
+      | (module Frontend : Migrate_parsetree.Versions.OCaml_version) :: tail
         ->
           if String.equal Frontend.Ast.Config.ast_impl_magic_number magic
           then Impl ((module Frontend), Caml.Obj.obj x)
@@ -65,7 +65,7 @@ module Binary_reason = struct
           then Intf ((module Frontend), Caml.Obj.obj x)
           else loop tail
     in
-    loop Migrate_parsetree_versions.all_versions
+    loop Migrate_parsetree.Versions.all_versions
 
   (** [input magic_number input_channel] reads a serialized ast from
       [input_channel]. It is expected to have the given [magic_number] and
