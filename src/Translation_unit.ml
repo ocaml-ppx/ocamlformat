@@ -85,24 +85,21 @@ let parse parse_ast (conf : Conf.t) ~source =
   in
   Location.init lexbuf !Location.input_name ;
   let w50 = ref [] in
-  let (`Reset reset) =
-    Compat.setup_warning_filter (fun loc warn ->
+  let t =
+    Compat.with_warning_filter
+      ~filter:(fun loc warn ->
         match warn with
         | Warnings.Bad_docstring _ when conf.comment_check ->
             w50 := (loc, warn) :: !w50 ;
             false
         | _ -> not conf.quiet )
-  in
-  try
-    let ast = parse_ast lexbuf in
-    Warnings.check_fatal () ;
-    reset () ;
-    match List.rev !w50 with
-    | [] ->
+      ~f:(fun () ->
+        let ast = parse_ast lexbuf in
+        Warnings.check_fatal () ;
         let comments = Lexer.comments () in
-        {ast; comments; prefix= hash_bang}
-    | w50 -> raise (Warning50 w50)
-  with e -> reset () ; raise e
+        {ast; comments; prefix= hash_bang} )
+  in
+  match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
 
 type error =
   | Invalid_source of {exn: exn}
