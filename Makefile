@@ -55,7 +55,7 @@ cleanbisect:
 	rm -Rf _coverage
 	find ./ -name 'bisect*.out' -delete
 
-SRCS=$(shell \ls {src/{,import/},tools/ocamlformat-diff/}*.ml{,i})
+SRCS=$(shell \ls {src/{,import/,config/,compat/},tools/ocamlformat-diff/}*.ml{,i})
 
 .PHONY: fmt
 fmt:
