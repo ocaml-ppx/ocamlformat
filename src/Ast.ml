@@ -197,6 +197,15 @@ let doc_atrs atrs =
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
 
+let longident_is_simple x (c : Conf.t) =
+  let rec length (x : Longident.t) =
+    match x with
+    | Lident x -> String.length x
+    | Ldot (x, y) -> length x + 1 + String.length y
+    | Lapply (x, y) -> length x + length y
+  in
+  length x * 3 < c.margin
+
 module type Module_item = sig
   type t
 
@@ -253,12 +262,11 @@ module Structure_item : Module_item with type t = structure_item = struct
             | Pmod_apply (me1, me2) ->
                 is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, _, me) -> is_simple_mod me
-            | Pmod_ident _ ->
-                Location.is_single_line me.pmod_loc c.Conf.margin
+            | Pmod_ident i -> longident_is_simple i.txt c
             | _ -> false
           in
           is_simple_mod me
-      | Pstr_open _ -> Location.is_single_line itm.pstr_loc c.Conf.margin
+      | Pstr_open i -> longident_is_simple i.popen_lid.txt c
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -332,8 +340,9 @@ module Signature_item : Module_item with type t = signature_item = struct
         Location.is_single_line itm.psig_loc c.Conf.margin
     | `Sparse -> (
       match itm.psig_desc with
-      | Psig_open _ | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} ->
-          Location.is_single_line itm.psig_loc c.Conf.margin
+      | Psig_open {popen_lid= i}
+       |Psig_module {pmd_type= {pmty_desc= Pmty_alias i}} ->
+          longident_is_simple i.txt c
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
