@@ -12,6 +12,7 @@
 (** Normalize abstract syntax trees *)
 
 open Migrate_ast
+
 open Parsetree
 
 val comment : string -> string

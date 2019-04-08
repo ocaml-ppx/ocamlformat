@@ -14,9 +14,13 @@ module Format = Format_
 (** Format OCaml Ast *)
 
 open Migrate_ast
+
 open Asttypes
+
 open Parsetree
+
 open Ast
+
 open Fmt
 
 type c = {conf: Conf.t; source: Source.t; cmts: Cmts.t}

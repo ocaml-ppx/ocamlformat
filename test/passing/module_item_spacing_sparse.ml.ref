@@ -27,8 +27,11 @@ let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 
 module A = AA
+
 module B = BB
+
 open AA
+
 module C = CC
 
 module M =
@@ -79,8 +82,11 @@ module N = struct
   let y = 2
 
   module A = AA
+
   include A
+
   module B = BB
+
   open B
 end
 

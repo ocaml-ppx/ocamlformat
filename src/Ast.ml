@@ -12,6 +12,7 @@
 (** Abstract syntax tree term *)
 
 open Migrate_ast
+
 open Parsetree
 
 let init, register_reset, leading_nested_match_parens, parens_ite =
@@ -197,6 +198,11 @@ let doc_atrs atrs =
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
 
+let compact (conf_1 : Conf.t) (conf_2 : Conf.t) =
+  Poly.(
+    conf_1.module_item_spacing = `Compact
+    && conf_2.module_item_spacing = `Compact)
+
 module type Module_item = sig
   type t
 
@@ -261,26 +267,22 @@ module Structure_item : Module_item with type t = structure_item = struct
       | Pstr_open _ -> Location.is_single_line itm.pstr_loc c.Conf.margin
       | _ -> false )
 
-  let allow_adjacent (itmI, cI) (itmJ, cJ) =
-    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
-    | `Compact, `Compact -> (
-      match (itmI.pstr_desc, itmJ.pstr_desc) with
-      | Pstr_eval _, Pstr_eval _
-       |Pstr_value _, Pstr_value _
-       |Pstr_primitive _, Pstr_primitive _
-       |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
-       |Pstr_exception _, Pstr_exception _
-       |( (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
-        , (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
-        )
-       |Pstr_modtype _, Pstr_modtype _
-       |Pstr_class _, Pstr_class _
-       |Pstr_class_type _, Pstr_class_type _
-       |Pstr_attribute _, Pstr_attribute _
-       |Pstr_extension _, Pstr_extension _ ->
-          true
-      | _ -> false )
-    | _ -> true
+  let allow_adjacent itmI itmJ =
+    match (itmI.pstr_desc, itmJ.pstr_desc) with
+    | Pstr_eval _, Pstr_eval _
+     |Pstr_value _, Pstr_value _
+     |Pstr_primitive _, Pstr_primitive _
+     |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
+     |Pstr_exception _, Pstr_exception _
+     |( (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
+      , (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _) )
+     |Pstr_modtype _, Pstr_modtype _
+     |Pstr_class _, Pstr_class _
+     |Pstr_class_type _, Pstr_class_type _
+     |Pstr_attribute _, Pstr_attribute _
+     |Pstr_extension _, Pstr_extension _ ->
+        true
+    | _ -> false
 
   let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
       (i2, c2) =
@@ -294,7 +296,8 @@ module Structure_item : Module_item with type t = structure_item = struct
     | _ ->
         (not (is_simple (i1, c1)))
         || (not (is_simple (i2, c2)))
-        || not (allow_adjacent (i1, c1) (i2, c2))
+        || (not (compact c1 c2))
+        || not (allow_adjacent i1 i2)
 end
 
 module Signature_item : Module_item with type t = signature_item = struct
@@ -336,24 +339,20 @@ module Signature_item : Module_item with type t = signature_item = struct
           Location.is_single_line itm.psig_loc c.Conf.margin
       | _ -> false )
 
-  let allow_adjacent (itmI, cI) (itmJ, cJ) =
-    match Conf.(cI.module_item_spacing, cJ.module_item_spacing) with
-    | `Compact, `Compact -> (
-      match (itmI.psig_desc, itmJ.psig_desc) with
-      | Psig_value _, Psig_value _
-       |(Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
-       |Psig_exception _, Psig_exception _
-       |( (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
-        , (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
-        )
-       |Psig_modtype _, Psig_modtype _
-       |Psig_class _, Psig_class _
-       |Psig_class_type _, Psig_class_type _
-       |Psig_attribute _, Psig_attribute _
-       |Psig_extension _, Psig_extension _ ->
-          true
-      | _ -> false )
-    | _ -> true
+  let allow_adjacent itmI itmJ =
+    match (itmI.psig_desc, itmJ.psig_desc) with
+    | Psig_value _, Psig_value _
+     |(Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
+     |Psig_exception _, Psig_exception _
+     |( (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
+      , (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _) )
+     |Psig_modtype _, Psig_modtype _
+     |Psig_class _, Psig_class _
+     |Psig_class_type _, Psig_class_type _
+     |Psig_attribute _, Psig_attribute _
+     |Psig_extension _, Psig_extension _ ->
+        true
+    | _ -> false
 
   let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
       (i2, c2) =
@@ -367,20 +366,20 @@ module Signature_item : Module_item with type t = signature_item = struct
     | _ ->
         (not (is_simple (i1, c1)))
         || (not (is_simple (i2, c2)))
-        || not (allow_adjacent (i1, c1) (i2, c2))
+        || (not (compact c1 c2))
+        || not (allow_adjacent i1 i2)
 end
 
 module Expression : Module_item with type t = expression = struct
   type t = expression
 
-  let is_simple (i, c) =
-    Poly.(c.Conf.module_item_spacing = `Compact)
-    && Location.is_single_line i.pexp_loc c.Conf.margin
+  let is_simple (i, c) = Location.is_single_line i.pexp_loc c.Conf.margin
 
   let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
       (i2, c2) =
     has_cmts_after cmts i1.pexp_loc
     || has_cmts_before cmts i2.pexp_loc
+    || (not (compact c1 c2))
     || (not (is_simple (i1, c1)))
     || not (is_simple (i2, c2))
 end
@@ -2175,4 +2174,5 @@ end = struct
 end
 
 include In_ctx
+
 include Requires_sub_terms

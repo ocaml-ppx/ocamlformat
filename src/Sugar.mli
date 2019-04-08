@@ -10,7 +10,9 @@
  **********************************************************************)
 
 open Migrate_ast
+
 open Asttypes
+
 open Parsetree
 
 val arrow_typ :

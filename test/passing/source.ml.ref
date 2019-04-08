@@ -3488,6 +3488,7 @@ let ssmap : (_, _, _) map = (module SSMap)
 add ssmap
 
 open StdLabels
+
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -3665,6 +3666,7 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
+
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -3883,6 +3885,7 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
+
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -4470,6 +4473,7 @@ end
 
 module Including_typed : INCLUDING = struct
   include List
+
   include ListLabels
 end
 
@@ -4663,6 +4667,7 @@ end
 
 and B : S = struct
   module C = Make (A)
+
   include C
 end
 
@@ -4877,6 +4882,7 @@ module B = struct
 end
 
 module M' = M
+
 module B' = B
 
 class b : B.a =
@@ -5322,6 +5328,7 @@ N'.x
 
 module M = struct
   module C = Char
+
   module C' = C
 end
 
@@ -5390,7 +5397,9 @@ end
 
 (* Applicative functors *)
 module S = String
+
 module StringSet = Set.Make (String)
+
 module SSet = Set.Make (S)
 
 let f (x : StringSet.t) : SSet.t = x
@@ -5606,6 +5615,7 @@ end
 
 module K = struct
   module E = B
+
   module N = E.O
 end
 
@@ -5654,6 +5664,7 @@ module type S = sig
 
   module Q : sig
     module N = M.N
+
     module P = M.P
   end
 end
@@ -7129,6 +7140,7 @@ module PR_4557 = struct
       val compare : t -> t -> int
     end = struct
       module XSet = Set.Make (X)
+
       module XMap = Map.Make (X)
 
       type elt = X.t
@@ -7163,6 +7175,7 @@ module F (X : Set.OrderedType) = struct
     val compare : t -> t -> int
   end = struct
     module XSet = Set.Make (X)
+
     module XMap = Map.Make (X)
 
     type elt = X.t
@@ -7820,6 +7833,7 @@ end
 
 module M = struct
   include M1
+
   include M1
 end
 
@@ -7932,6 +7946,7 @@ module Core = struct
     end
 
     include T
+
     module Map = Map.Make (T)
   end
 
@@ -7959,6 +7974,7 @@ module N = struct
 end
 
 open M
+
 open N
 
 ;;
@@ -7971,6 +7987,7 @@ B
 C
 
 include M
+
 open M
 
 ;;
@@ -8780,6 +8797,7 @@ end
 
 module OK = struct
   open M
+
   open N
 
   let f (r : M.t) = r.x
@@ -8859,11 +8877,13 @@ let r = {M.x= 3; N.y= 4}
 
 module MN = struct
   include M
+
   include N
 end
 
 module NM = struct
   include N
+
   include M
 end
 

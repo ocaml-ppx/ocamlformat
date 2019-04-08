@@ -12,7 +12,9 @@
 (** Support for reading Reason code *)
 
 open Migrate_ast
+
 open Parsetree
+
 open Translation_unit
 
 type 'a t =

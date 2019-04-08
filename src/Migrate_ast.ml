@@ -88,6 +88,7 @@ let map_use_file mapper use_file =
 
 module Position = struct
   open Lexing
+
   module Format = Format_
 
   let column {pos_bol; pos_cnum} = pos_cnum - pos_bol
@@ -106,6 +107,7 @@ end
 
 module Location = struct
   include Location
+
   module Format = Format_
 
   let fmt fs {loc_start; loc_end; loc_ghost} =

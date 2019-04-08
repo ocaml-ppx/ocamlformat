@@ -10,6 +10,7 @@ end
 
 module Hash = struct
   include Hash
+
   include Hash
 
   module type S = S.HASH
@@ -19,7 +20,9 @@ end
 
 module Hash = struct
   include Hash
+
   include Hash
+
   include Hash
 
   module type S = S.HASH
@@ -51,6 +54,7 @@ end
 
 module Hash = struct
   include Hash
+
   include Hash
 
   module type S = S.HASH
@@ -60,16 +64,37 @@ end
 
 module M = struct include A end
 
-module M = struct include A include B end
+module M = struct
+  include A
 
-module M = struct include A include B include C end
-
-module M = struct include A include B include C include D end
+  include B
+end
 
 module M = struct
   include A
+
   include B
+
   include C
+end
+
+module M = struct
+  include A
+
+  include B
+
+  include C
+
+  include D
+end
+
+module M = struct
+  include A
+
+  include B
+
+  include C
+
   include D
 
   let x = xxxxxxxxxxx xxxxxxxxxxxxx

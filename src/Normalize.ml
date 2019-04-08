@@ -12,8 +12,11 @@
 (** Normalize abstract syntax trees *)
 
 open Migrate_ast
+
 open Asttypes
+
 open Parsetree
+
 open Ast_helper
 
 let comment s =

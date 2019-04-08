@@ -10,6 +10,7 @@
  **********************************************************************)
 
 open Octavius.Types
+
 open Fmt
 
 let escape_brackets =

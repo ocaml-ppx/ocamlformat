@@ -85,8 +85,11 @@ end
 
 module Mappers = struct
   open Migrate_ast
+
   open Asttypes
+
   open Parsetree
+
   open Ast_helper
 
   (* sanitize the ast obtained from reason *)

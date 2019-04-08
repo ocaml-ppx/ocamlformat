@@ -12,8 +12,11 @@
 (** Placing and formatting comments in a parsetree. *)
 
 module Format = Format_
+
 open Migrate_ast
+
 open Asttypes
+
 open Parsetree
 
 type t =
@@ -151,6 +154,7 @@ module Cmt = struct
   end
 
   include T
+
   include Comparator.Make (T)
 end
 

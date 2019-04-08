@@ -24,6 +24,7 @@
     there are multiple Ast terms with the same location. *)
 
 module Format = Format_
+
 open Migrate_ast
 
 type t
