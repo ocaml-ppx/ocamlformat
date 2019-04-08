@@ -3488,7 +3488,6 @@ let ssmap : (_, _, _) map = (module SSMap)
 add ssmap
 
 open StdLabels
-
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -3666,7 +3665,6 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
-
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -3885,7 +3883,6 @@ let () =
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
-
 open MoreLabels
 
 (* Use maps for substitutions and sets for free variables *)
@@ -7974,7 +7971,6 @@ module N = struct
 end
 
 open M
-
 open N
 
 ;;
@@ -8797,7 +8793,6 @@ end
 
 module OK = struct
   open M
-
   open N
 
   let f (r : M.t) = r.x

@@ -13,7 +13,6 @@ module Format = Format_
 (** Format OCaml Ast *)
 
 open Migrate_ast
-
 open Parsetree
 
 val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t

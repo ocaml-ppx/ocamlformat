@@ -10,11 +10,8 @@
  **********************************************************************)
 
 open Migrate_ast
-
 open Asttypes
-
 open Parsetree
-
 open Ast
 
 let rec arrow_typ cmts ({ast= typ} as xtyp) =

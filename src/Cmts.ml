@@ -14,9 +14,7 @@
 module Format = Format_
 
 open Migrate_ast
-
 open Asttypes
-
 open Parsetree
 
 type t =

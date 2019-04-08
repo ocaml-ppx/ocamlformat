@@ -12,7 +12,6 @@
 (** Abstract syntax tree terms *)
 
 open Migrate_ast
-
 open Parsetree
 
 val init : Conf.t -> unit
