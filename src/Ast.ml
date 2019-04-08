@@ -197,7 +197,7 @@ let doc_atrs atrs =
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
 
-let longident_is_simple x (c : Conf.t) =
+let longident_is_simple (c : Conf.t) x =
   let rec length (x : Longident.t) =
     match x with
     | Lident x -> String.length x
@@ -205,6 +205,19 @@ let longident_is_simple x (c : Conf.t) =
     | Lapply (x, y) -> length x + length y
   in
   length x * 3 < c.margin
+
+let module_type_is_simple (c : Conf.t) x =
+  match x.pmty_desc with
+  | Pmty_ident i | Pmty_alias i | Pmty_typeof {pmod_desc= Pmod_ident i} ->
+      longident_is_simple c i.txt
+  | _ -> false
+
+let rec module_expr_is_simple (c : Conf.t) x =
+  match x.pmod_desc with
+  | Pmod_ident i -> longident_is_simple c i.txt
+  | Pmod_constraint (e, t) ->
+      module_expr_is_simple c e && module_type_is_simple c t
+  | _ -> false
 
 module type Module_item = sig
   type t
@@ -262,11 +275,11 @@ module Structure_item : Module_item with type t = structure_item = struct
             | Pmod_apply (me1, me2) ->
                 is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, _, me) -> is_simple_mod me
-            | Pmod_ident i -> longident_is_simple i.txt c
+            | Pmod_ident i -> longident_is_simple c i.txt
             | _ -> false
           in
           is_simple_mod me
-      | Pstr_open i -> longident_is_simple i.popen_lid.txt c
+      | Pstr_open i -> longident_is_simple c i.popen_lid.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -342,7 +355,7 @@ module Signature_item : Module_item with type t = signature_item = struct
       match itm.psig_desc with
       | Psig_open {popen_lid= i}
        |Psig_module {pmd_type= {pmty_desc= Pmty_alias i}} ->
-          longident_is_simple i.txt c
+          longident_is_simple c i.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =

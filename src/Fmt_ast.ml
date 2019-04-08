@@ -399,7 +399,7 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
 
 (** Handle the doc-comments-tag-only option: Fits tag-only comments on the
     same line *)
-let fmt_docstring_around ~loc c doc k =
+let fmt_docstring_around ~single_line c doc k =
   let contains_text = function Ok ([], _) -> false | _ -> true in
   let doc = Option.value ~default:[] doc in
   let doc =
@@ -413,7 +413,7 @@ let fmt_docstring_around ~loc c doc k =
   let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
   if
     Poly.(c.conf.doc_comments_tag_only = `Default)
-    || (not (Location.is_single_line loc c.conf.margin))
+    || (not single_line)
     || List.exists ~f:(fun (ct, _) -> ct) doc
   then fmted ~epi:(fmt "@,") () $ k
   else hvbox 0 (k $ fmted ~pro:(fmt "@ ") ())
@@ -3152,9 +3152,10 @@ and fmt_signature_item c {ast= si} =
             , blk )
         | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
+      let single_line = module_type_is_simple c.conf pincl_mod in
       let box = wrap_k opn cls in
       hvbox 0
-        (fmt_docstring_around ~loc:pincl_loc c doc
+        (fmt_docstring_around ~single_line c doc
            ( box (hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy))
            $ esp $ Option.call ~f:epi
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ))
@@ -3251,20 +3252,6 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
   let blk_b =
     Option.value_map xbody ~default:empty ~f:(fmt_module_expr c)
   in
-  let loc =
-    match
-      ( Option.map ~f:(fun t -> t.ast.pmty_loc) xmty
-      , Option.map ~f:(fun b -> b.ast.pmod_loc) xbody )
-    with
-    | Some l, None | None, Some l -> l
-    | Some a, Some b ->
-        let open Location in
-        let {loc_start; _}, {loc_end; _} =
-          if compare_start a b > 0 then (b, a) else (a, b)
-        in
-        {loc_start; loc_end; loc_ghost= true}
-    | None, None -> Location.none
-  in
   let box_t = wrap_k blk_t.opn blk_t.cls in
   let box_b = wrap_k blk_b.opn blk_b.cls in
   let fmt_arg ?prev:_ (name, arg_mtyp) ?next =
@@ -3286,7 +3273,14 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                    | _ -> fmt "" )
                  $ Option.call ~f:epi ) ))
   in
-  (fmt_docstring_around ~loc c doc)
+  let single_line =
+    String.length name.txt * 3 < c.conf.margin
+    && Option.value_map xbody ~default:true ~f:(fun x ->
+           module_expr_is_simple c.conf x.ast )
+    && Option.value_map xmty ~default:true ~f:(fun x ->
+           module_type_is_simple c.conf x.ast )
+  in
+  (fmt_docstring_around ~single_line c doc)
     (hvbox 0
        ( box_b
            ( (if Option.is_some blk_t.epi then hovbox else hvbox)
@@ -3352,7 +3346,8 @@ and fmt_open_description c
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs popen_attributes in
-  fmt_docstring_around ~loc:popen_loc c doc
+  let single_line = longident_is_simple c.conf popen_lid.txt in
+  fmt_docstring_around ~single_line c doc
     ( fmt "open"
     $ fmt_if Poly.(popen_override = Override) "!"
     $ fmt " "
@@ -3656,7 +3651,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let doc, atrs = doc_atrs pincl_attributes in
       let blk = fmt_module_expr c (sub_mod ~ctx pincl_mod) in
       let box = wrap_k blk.opn blk.cls in
-      fmt_docstring_around ~loc:pincl_loc c doc
+      let single_line = module_expr_is_simple c.conf pincl_mod in
+      fmt_docstring_around ~single_line c doc
         ( box
             ( hvbox 2 (fmt "include " $ Option.call ~f:blk.pro)
             $ blk.psp $ blk.bdy )
