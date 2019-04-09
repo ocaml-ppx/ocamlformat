@@ -468,49 +468,33 @@ let rec fmt_attribute c pre = function
                 , [] ) } ] ) ->
       fmt_or (String.equal txt "ocaml.text") "@ " " "
       $ wrap "(**" "*)" (str doc)
-  | ({loc} as name), pld ->
-      let cmts_last =
-        match pld with
-        | PStr [] -> Cmts.fmt_after c loc
-        | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
-            Cmts.fmt_after c pexp_loc $ Cmts.fmt_after c pstr_loc
-        | _ -> fmt ""
-      in
-      let protect_token =
-        match pld with PTyp t -> exposed_right_typ t | _ -> false
-      in
-      let cmts_before =
-        Cmts.fmt_before c loc $ Cmts.fmt_before c name.loc
-      in
-      cmts_before
-      $ hvbox 2
-          (wrap "[" "]"
-             ( str pre $ fmt_str_loc c name
-             $ fmt_payload c (Pld pld) pld
-             $ fmt_if protect_token " " ))
-      $ cmts_last
+  | name, pld -> fmt_attribute_or_extension c pre (hvbox 2) (name, pld)
 
-and fmt_extension c ctx key (({loc} as ext), pld) =
+and fmt_extension c ctx key (ext, pld) =
   match (pld, ctx) with
   | PStr [({pstr_desc= Pstr_value _; _} as si)], (Pld _ | Str _ | Top) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
-  | _ ->
-      let cmts_last =
-        match pld with
-        | PStr [] -> Cmts.fmt_after c loc
-        | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
-            Cmts.fmt_after c pexp_loc $ Cmts.fmt_after c pstr_loc
-        | _ -> fmt ""
-      in
-      let protect_token =
-        match pld with PTyp t -> exposed_right_typ t | _ -> false
-      in
-      Cmts.fmt_before c loc
-      $ wrap "[" "]"
-          ( str key $ fmt_str_loc c ext
-          $ fmt_payload c (Pld pld) pld
-          $ fmt_if protect_token " " )
-      $ cmts_last
+  | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
+
+and fmt_attribute_or_extension c key maybe_box (pre, pld) =
+  let cmts_last =
+    match pld with
+    | PStr [] -> Cmts.fmt_after c pre.loc
+    | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
+        Cmts.fmt_after c pexp_loc $ Cmts.fmt_after c pstr_loc
+    | _ -> fmt ""
+  in
+  let protect_token =
+    match pld with PTyp t -> exposed_right_typ t | _ -> false
+  in
+  let cmts_before = Cmts.fmt_before c pre.loc in
+  cmts_before
+  $ maybe_box
+      (wrap "[" "]"
+         ( str key $ fmt_str_loc c pre
+         $ fmt_payload c (Pld pld) pld
+         $ fmt_if protect_token " " ))
+  $ cmts_last
 
 and fmt_attributes c ?(pre = fmt "") ?(suf = fmt "") ~key attrs =
   let num = List.length attrs in
@@ -3703,7 +3687,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
           if first then
             if Poly.(rec_flag = Recursive) then "type " else "type nonrec "
           else "and "
-        and brk = fmt_or last "" "\n" in
+        and brk = fmt_if (not last) "\n" in
         fmt_type_declaration c ~pre ~brk ctx decl $ fmt_if (not last) "@ "
       in
       vbox 0 (list_fl decls fmt_decl)
