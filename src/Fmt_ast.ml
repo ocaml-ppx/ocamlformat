@@ -2558,48 +2558,47 @@ and fmt_class_field c ctx (cf : class_field) =
   in
   fmt_cmts
   @@ ( fmt_docstring c ~epi:(fmt "@\n") doc
-     $ ( hvbox 0
-       @@
-       match pcf_desc with
-       | Pcf_inherit (override, cl, parent) ->
-           hovbox 2
-             ( fmt "inherit"
-             $ fmt_if Poly.(override = Override) "!"
-             $ fmt "@ "
-             $ fmt_class_expr c (sub_cl ~ctx cl)
-             $ opt parent (fun p -> fmt " as " $ fmt_str_loc c p) )
-       | Pcf_method (name, priv, kind) ->
-           let l, eq, expr = fmt_kind kind in
-           hvbox 2
-             ( hovbox 2
-                 ( hovbox 4
-                     ( fmt "method" $ virtual_or_override kind
-                     $ fmt_if Poly.(priv = Private) "@ private"
-                     $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                 $ eq )
-             $ expr )
-       | Pcf_val (name, mut, kind) ->
-           let l, eq, expr = fmt_kind kind in
-           hvbox 2
-             ( hovbox 2
-                 ( hvbox 4
-                     ( fmt "val" $ virtual_or_override kind
-                     $ fmt_if Poly.(mut = Mutable) "@ mutable"
-                     $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                 $ eq )
-             $ expr )
-       | Pcf_constraint (t1, t2) ->
-           fmt "constraint@ "
-           $ fmt_core_type c (sub_typ ~ctx t1)
-           $ fmt " = "
-           $ fmt_core_type c (sub_typ ~ctx t2)
-       | Pcf_initializer e ->
-           fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
-       | Pcf_attribute atr ->
-           let doc, atrs = doc_atrs [atr] in
-           fmt_docstring c ~standalone:true ~epi:(fmt "") doc
-           $ fmt_attributes c ~key:"@@@" atrs
-       | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
+     $ hvbox 0
+         ( match pcf_desc with
+         | Pcf_inherit (override, cl, parent) ->
+             hovbox 2
+               ( fmt "inherit"
+               $ fmt_if Poly.(override = Override) "!"
+               $ fmt "@ "
+               $ fmt_class_expr c (sub_cl ~ctx cl)
+               $ opt parent (fun p -> fmt " as " $ fmt_str_loc c p) )
+         | Pcf_method (name, priv, kind) ->
+             let l, eq, expr = fmt_kind kind in
+             hvbox 2
+               ( hovbox 2
+                   ( hovbox 4
+                       ( fmt "method" $ virtual_or_override kind
+                       $ fmt_if Poly.(priv = Private) "@ private"
+                       $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+                   $ eq )
+               $ expr )
+         | Pcf_val (name, mut, kind) ->
+             let l, eq, expr = fmt_kind kind in
+             hvbox 2
+               ( hovbox 2
+                   ( hvbox 4
+                       ( fmt "val" $ virtual_or_override kind
+                       $ fmt_if Poly.(mut = Mutable) "@ mutable"
+                       $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+                   $ eq )
+               $ expr )
+         | Pcf_constraint (t1, t2) ->
+             fmt "constraint@ "
+             $ fmt_core_type c (sub_typ ~ctx t1)
+             $ fmt " = "
+             $ fmt_core_type c (sub_typ ~ctx t2)
+         | Pcf_initializer e ->
+             fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
+         | Pcf_attribute atr ->
+             let doc, atrs = doc_atrs [atr] in
+             fmt_docstring c ~standalone:true ~epi:(fmt "") doc
+             $ fmt_attributes c ~key:"@@@" atrs
+         | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
      $ fmt_atrs )
 
 and fmt_class_type_field c ctx (cf : class_type_field) =
@@ -2611,35 +2610,34 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs in
   fmt_cmts
     ( fmt_docstring c ~epi:(fmt "@\n") doc
-    $ ( hvbox 0
-      @@
-      match pctf_desc with
-      | Pctf_inherit ct ->
-          hovbox 2 (fmt "inherit@ " $ fmt_class_type c (sub_cty ~ctx ct))
-      | Pctf_method (name, priv, virt, ty) ->
-          hovbox 2
-            ( fmt "method"
-            $ fmt_if Poly.(virt = Virtual) "@ virtual"
-            $ fmt_if Poly.(priv = Private) "@ private"
-            $ fmt "@ " $ fmt_str_loc c name $ fmt " :@ "
-            $ fmt_core_type c (sub_typ ~ctx ty) )
-      | Pctf_val (name, mut, virt, ty) ->
-          hovbox 2
-            ( fmt "val"
-            $ fmt_if Poly.(virt = Virtual) "@ virtual"
-            $ fmt_if Poly.(mut = Mutable) "@ mutable"
-            $ fmt "@ " $ fmt_str_loc c name $ fmt " :@ "
-            $ fmt_core_type c (sub_typ ~ctx ty) )
-      | Pctf_constraint (t1, t2) ->
-          fmt "constraint@ "
-          $ fmt_core_type c (sub_typ ~ctx t1)
-          $ fmt " = "
-          $ fmt_core_type c (sub_typ ~ctx t2)
-      | Pctf_attribute atr ->
-          let doc, atrs = doc_atrs [atr] in
-          fmt_docstring c ~standalone:true ~epi:(fmt "") doc
-          $ fmt_attributes c ~key:"@@@" atrs
-      | Pctf_extension ext -> fmt_extension c ctx "%%" ext )
+    $ hvbox 0
+        ( match pctf_desc with
+        | Pctf_inherit ct ->
+            hovbox 2 (fmt "inherit@ " $ fmt_class_type c (sub_cty ~ctx ct))
+        | Pctf_method (name, priv, virt, ty) ->
+            hovbox 2
+              ( fmt "method"
+              $ fmt_if Poly.(virt = Virtual) "@ virtual"
+              $ fmt_if Poly.(priv = Private) "@ private"
+              $ fmt "@ " $ fmt_str_loc c name $ fmt " :@ "
+              $ fmt_core_type c (sub_typ ~ctx ty) )
+        | Pctf_val (name, mut, virt, ty) ->
+            hovbox 2
+              ( fmt "val"
+              $ fmt_if Poly.(virt = Virtual) "@ virtual"
+              $ fmt_if Poly.(mut = Mutable) "@ mutable"
+              $ fmt "@ " $ fmt_str_loc c name $ fmt " :@ "
+              $ fmt_core_type c (sub_typ ~ctx ty) )
+        | Pctf_constraint (t1, t2) ->
+            fmt "constraint@ "
+            $ fmt_core_type c (sub_typ ~ctx t1)
+            $ fmt " = "
+            $ fmt_core_type c (sub_typ ~ctx t2)
+        | Pctf_attribute atr ->
+            let doc, atrs = doc_atrs [atr] in
+            fmt_docstring c ~standalone:true ~epi:(fmt "") doc
+            $ fmt_attributes c ~key:"@@@" atrs
+        | Pctf_extension ext -> fmt_extension c ctx "%%" ext )
     $ fmt_atrs )
 
 and fmt_cases c ctx cs =
