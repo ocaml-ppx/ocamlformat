@@ -3127,8 +3127,13 @@ and fmt_module_type c ({ast= mty} as xmty) =
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
             $ fmt "@;<1 2>"
             $ list xargs "@;<1 2>" fmt_arg
-            $ fmt "@;<1 2>-> " $ Option.call ~f:blk.pro )
-      ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc) }
+            $ fmt "@;<1 2>->"
+            $ opt blk.pro (fun pro -> fmt " " $ pro) )
+      ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc)
+      ; psp=
+          fmt_or_k (Option.is_none blk.pro)
+            (fits_breaks " " "@;<1 2>")
+            blk.psp }
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       { empty with

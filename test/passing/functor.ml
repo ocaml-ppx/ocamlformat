@@ -59,3 +59,11 @@ module type Module_type_fail = sig
 
   include S
 end
+
+module type KV_MAKER = functor (G : Irmin_git.G) (C : Irmin.Contents.S) ->
+  S
+  with type key = string list
+   and type step = string
+   and type contents = C.t
+   and type branch = string
+   and module Git = G
