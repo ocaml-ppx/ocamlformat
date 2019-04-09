@@ -174,16 +174,20 @@ let update_config_maybe_disabled_block c loc l f =
   let fmt bdy = {empty with opn= open_vbox 2; bdy; cls= close_box} in
   maybe_disabled_k (update_config c l) loc l f fmt
 
-let fmt_recmodule c ctx items f ast =
+let make_groups c items ast update_config =
   let with_config c i =
-    let c = update_config c (Ast.attributes (ast i)) in
+    let c = update_config c i in
     (c, (i, c))
   in
   let _, items = List.fold_map items ~init:c ~f:with_config in
   let break (i1, c1) (i2, c2) =
     Ast.break_between c.source c.cmts (ast i1, c1.conf) (ast i2, c2.conf)
   in
-  let grps = List.group items ~break in
+  List.group items ~break
+
+let fmt_recmodule c ctx items f ast =
+  let update_config c i = update_config c (Ast.attributes (ast i)) in
+  let grps = make_groups c items ast update_config in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~first:first_grp itms =
     list_fl itms (fun ~first ~last:_ (itm, c) ->
@@ -3125,19 +3129,12 @@ and fmt_module_type c ({ast= mty} as xmty) =
       }
 
 and fmt_signature c ctx itms =
-  let with_conf c i =
-    let c =
-      match i.psig_desc with
-      | Psig_attribute atr -> update_config c [atr]
-      | _ -> c
-    in
-    (c, (i, c))
+  let update_config c i =
+    match i.psig_desc with
+    | Psig_attribute atr -> update_config c [atr]
+    | _ -> c
   in
-  let _, itms = List.fold_map itms ~init:c ~f:with_conf in
-  let break (itmI, cI) (itmJ, cJ) =
-    Ast.break_between c.source c.cmts (Sig itmI, cI.conf) (Sig itmJ, cJ.conf)
-  in
-  let grps = List.group itms ~break in
+  let grps = make_groups c itms (fun x -> Sig x) update_config in
   let fmt_grp (i, c) =
     maybe_disabled c i.psig_loc []
     @@ fun c -> fmt_signature_item c (sub_sig ~ctx i)
@@ -3637,19 +3634,12 @@ and fmt_module_expr c ({ast= m} as xmod) =
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
 
 and fmt_structure c ctx itms =
-  let with_conf c i =
-    let c =
-      match i.pstr_desc with
-      | Pstr_attribute atr -> update_config c [atr]
-      | _ -> c
-    in
-    (c, (i, c))
+  let update_config c i =
+    match i.pstr_desc with
+    | Pstr_attribute atr -> update_config c [atr]
+    | _ -> c
   in
-  let _, itms = List.fold_map itms ~init:c ~f:with_conf in
-  let break (itmI, cI) (itmJ, cJ) =
-    Ast.break_between c.source c.cmts (Str itmI, cI.conf) (Str itmJ, cJ.conf)
-  in
-  let grps = List.group itms ~break in
+  let grps = make_groups c itms (fun x -> Str x) update_config in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
