@@ -350,9 +350,9 @@ let wrap_array c =
   if c.conf.space_around_collection_expressions then wrap "[| " "@ |]"
   else wrap_fits_breaks c.conf "[|" "|]"
 
-let wrap_record c =
-  if c.conf.space_around_collection_expressions then wrap "{ " "@ }"
-  else wrap_fits_breaks c.conf "{" "}"
+let wrap_record (c : Conf.t) =
+  if c.space_around_collection_expressions then wrap "{ " "@ }"
+  else wrap_fits_breaks c "{" "}"
 
 let wrap_tuple ~parens ~no_parens_if_break c =
   if parens then wrap_fits_breaks c.conf "(" ")"
@@ -591,7 +591,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
       hovbox_if box 0
-        ( list a1N "@ " (fun ty -> fmt_str_loc c ~pre:(fmt "'") ty)
+        ( list a1N "@ " (fmt_str_loc c ~pre:(fmt "'"))
         $ fmt ".@ "
         $ fmt_core_type c ~box:false (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
@@ -860,7 +860,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (wrap_record c
+           (wrap_record c.conf
               ( list flds (semic_sep c) fmt_field
               $ fmt_if Poly.(closed_flag = Open) "@,; _" )))
   | Ppat_array [] ->
@@ -969,19 +969,17 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            (fmt "exception@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
   | Ppat_open (lid, pat) ->
-      let opn, cls =
-        let can_skip_parens =
-          match pat.ppat_desc with
-          | Ppat_array _ | Ppat_record _ -> true
-          | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
-          | _ -> Option.is_some (Sugar.list_pat c.cmts pat)
-        in
-        if can_skip_parens then (".", "") else (".(", ")")
+      let can_skip_parens =
+        match pat.ppat_desc with
+        | Ppat_array _ | Ppat_record _ -> true
+        | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
+        | _ -> Option.is_some (Sugar.list_pat c.cmts pat)
       in
+      let opn, cls = if can_skip_parens then (".", "") else (".(", ")") in
       cbox 0
-        ( fmt_longident_loc c lid $ str opn $ fmt "@;<0 2>"
-        $ fmt_pattern c (sub_pat ~ctx pat)
-        $ str cls )
+        ( fmt_longident_loc c lid
+        $ wrap_k (str opn) (str cls)
+            (fmt "@;<0 2>" $ fmt_pattern c (sub_pat ~ctx pat)) )
 
 and fmt_fun_args c ?(pro = fmt "") args =
   let fmt_fun_arg (a : Sugar.arg_kind) =
@@ -1872,15 +1870,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let fits_breaks = fits_breaks ~force_fit_if ~force_break_if
       and fits_breaks_if = fits_breaks_if ~force_fit_if ~force_break_if in
-      let opn, cls =
-        let can_skip_parens =
-          match e0.pexp_desc with
-          | Pexp_array _ | Pexp_record _ -> true
-          | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
-          | _ -> Option.is_some (Sugar.list_exp c.cmts e0)
-        in
-        if can_skip_parens then (".", "") else (".(", ")")
+      let can_skip_parens =
+        match e0.pexp_desc with
+        | Pexp_array _ | Pexp_record _ -> true
+        | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
+        | _ -> Option.is_some (Sugar.list_exp c.cmts e0)
       in
+      let opn, cls = if can_skip_parens then (".", "") else (".(", ")") in
       hvbox 0
         ( fits_breaks_if parens "" "("
         $ fits_breaks "" (if override then "let open! " else "let open ")
@@ -1962,11 +1958,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    ( if c.conf.indicate_multiline_delimiters then " )"
                    else ")" ) )) )
   | Pexp_pack me ->
-      compose_module
-        (fmt_module_expr c (sub_mod ~ctx me))
-        ~f:(fun m ->
-          wrap_fits_breaks ~space:false c.conf "(" ")"
-            (fmt "module " $ m $ fmt_atrs) )
+      let fmt_mod m =
+        wrap_fits_breaks ~space:false c.conf "(" ")"
+          (fmt "module " $ m $ fmt_atrs)
+      in
+      compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         let leading_cmt = Cmts.fmt_before c lid1.loc in
@@ -2006,11 +2002,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           | _ -> general_case () )
       in
       hvbox 0
-        ( wrap_record c
+        ( wrap_record c.conf
             ( opt default (fun d ->
                   hvbox 2
-                    (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>") )
-            $ fmt_if (Option.is_some default) "with@;<1 2>"
+                    (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
+                  $ fmt "with@;<1 2>" )
             $ list flds (semic_sep c) fmt_field )
         $ fmt_atrs )
   | Pexp_sequence (e1, e2) when Option.is_some ext ->
@@ -2161,7 +2157,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ( fmt_class_structure c ~ctx ?ext pcstr_self pcstr_fields
            $ fmt_atrs ))
   | Pexp_override l -> (
-      let field ({txt; loc}, f) =
+      let fmt_field ({txt; loc}, f) =
         let txt = Longident.parse txt in
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc} when field_alias ~field:txt txt' ->
@@ -2184,7 +2180,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           hvbox 0
             (wrap_if parens "(" ")"
                (wrap_fits_breaks ~space:false c.conf "{<" ">}"
-                  (list l "@;<0 1>; " field))) )
+                  (list l "@;<0 1>; " fmt_field))) )
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
@@ -2358,39 +2354,41 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   let is_simple x = is_simple c.conf width (sub_exp ~ctx x) in
   let break (_, a1) (_, a2) = not (is_simple a1 && is_simple a2) in
+  let fmt_args ~first:first_grp ~last:last_grp args =
+    let fmt_arg ?prev (lbl, arg) ?next =
+      let ({ast} as xarg) = sub_exp ~ctx arg in
+      let openbox = open_hovbox (if first_grp then 2 else 0) in
+      let consecutive_prefix_ops =
+        match next with
+        | Some (_, e) -> is_prefix ast && exposed_left_exp e
+        | _ -> false
+      in
+      let spc =
+        consecutive_prefix_ops || (not last_grp) || Option.is_some next
+      in
+      let box =
+        match ast.pexp_desc with
+        | Pexp_fun _ | Pexp_function _ -> Some false
+        | _ -> None
+      in
+      let epi =
+        match (lbl, next) with
+        | _, None -> None
+        | Nolabel, _ -> Some (fits_breaks "" "@;<1000 -1>")
+        | _ -> Some (fits_breaks "" "@;<1000 -3>")
+      in
+      fmt_if_k (Option.is_none prev) openbox
+      $ hovbox 2 (fmt_label_arg ?box ?epi (lbl, xarg))
+      $ fmt_if_k (Option.is_none next) close_box
+      $ fmt_if_k spc (break_unless_newline 1 0)
+    in
+    list_pn args fmt_arg
+  in
   let fmt_args_grouped e0 a1N =
     (* TODO: consider [e0] when grouping *)
     fmt_class_expr c (sub_cl ~ctx e0)
     $ fmt "@ "
-    $ list_fl (List.group a1N ~break)
-        (fun ~first:first_grp ~last:last_grp args ->
-          list_pn args (fun ?prev (lbl, arg) ?next ->
-              let ({ast} as xarg) = sub_exp ~ctx arg in
-              let openbox = open_hovbox (if first_grp then 2 else 0) in
-              let consecutive_prefix_ops =
-                match next with
-                | Some (_, e) -> is_prefix ast && exposed_left_exp e
-                | _ -> false
-              in
-              let spc =
-                consecutive_prefix_ops || (not last_grp)
-                || Option.is_some next
-              in
-              let box =
-                match ast.pexp_desc with
-                | Pexp_fun _ | Pexp_function _ -> Some false
-                | _ -> None
-              in
-              let epi =
-                match (lbl, next) with
-                | _, None -> None
-                | Nolabel, _ -> Some (fits_breaks "" "@;<1000 -1>")
-                | _ -> Some (fits_breaks "" "@;<1000 -3>")
-              in
-              fmt_if_k (Option.is_none prev) openbox
-              $ hovbox 2 (fmt_label_arg ?box ?epi (lbl, xarg))
-              $ fmt_if_k (Option.is_none next) close_box
-              $ fmt_if_k spc (break_unless_newline 1 0) ) )
+    $ list_fl (List.group a1N ~break) fmt_args
   in
   let fmt_cmts = Cmts.fmt c ?eol pcl_loc in
   let fmt_atrs = fmt_attributes c ~pre:(fmt " ") ~key:"@" pcl_attributes in
@@ -2679,7 +2677,7 @@ and fmt_value_description c ctx vd =
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc1, atrs = doc_atrs pval_attributes in
   let doc2, atrs = doc_atrs atrs in
-  let both_docs = Option.is_some doc1 && Option.is_some doc2 in
+  let both_docs = Option.(is_some doc1 && is_some doc2) in
   let doc_before = Poly.(c.conf.doc_comments = `Before) in
   let box = not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type) in
   fmt_if_k both_docs (fmt_docstring c ~epi:(fmt "@\n") doc1)
@@ -2770,47 +2768,21 @@ and fmt_type_declaration c ?(pre = "") ?(brk = fmt "") ctx ?fmt_name
           (fmt_manifest ~priv:Public mfst $ fmt " =" $ fmt_private_flag priv)
         $ fmt "@ "
         $ list_fl ctor_decls (fmt_constructor_declaration c ctx)
-    | Ptype_record lbl_decls -> (
-        let fmt_decl_break_after ~first:_ ~last x =
-          fmt_label_declaration c ctx x ~last
+    | Ptype_record lbl_decls ->
+        Params.get_record_type c.conf ~wrap_record
+        |> fun (p : Params.record_type) ->
+        let fmt_decl ~first ~last x =
+          fmt_if_k (not first) p.sep_before
+          $ fmt_label_declaration c ctx x ~last
           $ fmt_if (last && exposed_right_typ x.pld_type) " "
-          $ fmt_if_k (not last)
-              ( match c.conf.type_decl with
-              | `Sparse -> fmt "@;<1000 0>"
-              | `Compact -> fmt "@ " )
+          $ fmt_if_k (not last) p.sep_after
         in
-        match c.conf.break_separators with
-        | `Before ->
-            let fmt_decl ~first ~last x =
-              fmt_if (not first)
-                ( match c.conf.type_decl with
-                | `Sparse -> "@;<1000 0>; "
-                | `Compact -> "@,; " )
-              $ fmt_label_declaration c ctx x ~last
-              $ fmt_if (last && exposed_right_typ x.pld_type) " "
-            in
-            box_manifest
-              ( fmt_manifest ~priv:Public mfst
-              $ fmt " =" $ fmt_private_flag priv )
-            $ fmt "@ "
-            $ hvbox 0 (wrap_record c (list_fl lbl_decls fmt_decl))
-        | `After ->
-            box_manifest
-              ( fmt_manifest ~priv:Public mfst
-              $ fmt " =" $ fmt_private_flag priv )
-            $ fmt "@ "
-            $ hvbox 2
-                (wrap_record c (list_fl lbl_decls fmt_decl_break_after))
-        | `After_and_docked ->
-            let space =
-              if c.conf.space_around_collection_expressions then 1 else 0
-            in
-            box_manifest
-              ( fmt_manifest ~priv:Public mfst
-              $ fmt " =" $ fmt_private_flag priv $ fmt " {" )
-            $ break space 0
-            $ list_fl lbl_decls fmt_decl_break_after
-            $ break space (-2) $ fmt "}" )
+        box_manifest
+          ( fmt_manifest ~priv:Public mfst
+          $ fmt " =" $ fmt_private_flag priv $ p.docked_before )
+        $ p.break_before
+        $ p.box_record (list_fl lbl_decls fmt_decl)
+        $ p.break_after $ p.docked_after
     | Ptype_open ->
         box_manifest
           ( fmt_manifest ~priv:Public mfst
@@ -2905,7 +2877,7 @@ and fmt_constructor_arguments c ctx ~pre = function
             $ fmt_if (last && exposed_right_typ x.pld_type) " "
             $ fmt_if (not last) "@;<1 2>"
       in
-      pre $ wrap_record c (list_fl lds fmt_ld)
+      pre $ wrap_record c.conf (list_fl lds fmt_ld)
 
 and fmt_constructor_arguments_result c ctx args res =
   let pre = fmt_or (Option.is_none res) " of@ " " :@ " in

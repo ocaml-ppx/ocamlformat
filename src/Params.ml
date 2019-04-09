@@ -68,9 +68,61 @@ let all ~first ~indent ~parens_here =
   ; break_after_opening_paren= fmt "@ "
   ; box_rhs= hovbox 0 }
 
-let get_cases c =
-  match c.Conf.break_cases with
+let get_cases (c : Conf.t) =
+  match c.break_cases with
   | `Fit -> fit
   | `Nested -> nested
   | `Toplevel -> toplevel
   | `All -> all
+
+type record_type =
+  { docked_before: Fmt.t
+  ; break_before: Fmt.t
+  ; box_record: Fmt.t -> Fmt.t
+  ; sep_before: Fmt.t
+  ; sep_after: Fmt.t
+  ; break_after: Fmt.t
+  ; docked_after: Fmt.t }
+
+let before (c : Conf.t) ~wrap_record =
+  { docked_before= fmt ""
+  ; break_before= fmt "@ "
+  ; box_record= (fun k -> hvbox 0 (wrap_record c k))
+  ; sep_before=
+      ( match c.type_decl with
+      | `Sparse -> fmt "@;<1000 0>; "
+      | `Compact -> fmt "@,; " )
+  ; sep_after= fmt ""
+  ; break_after= fmt ""
+  ; docked_after= fmt "" }
+
+let after (c : Conf.t) ~wrap_record =
+  { docked_before= fmt ""
+  ; break_before= fmt "@ "
+  ; box_record= (fun k -> hvbox 2 (wrap_record c k))
+  ; sep_before= fmt ""
+  ; sep_after=
+      ( match c.type_decl with
+      | `Sparse -> fmt "@;<1000 0>"
+      | `Compact -> fmt "@ " )
+  ; break_after= fmt ""
+  ; docked_after= fmt "" }
+
+let after_and_docked (c : Conf.t) ~wrap_record:_ =
+  let space = if c.space_around_collection_expressions then 1 else 0 in
+  { docked_before= fmt " {"
+  ; break_before= break space 0
+  ; box_record= Fn.id
+  ; sep_before= fmt ""
+  ; sep_after=
+      ( match c.type_decl with
+      | `Sparse -> fmt "@;<1000 0>"
+      | `Compact -> fmt "@ " )
+  ; break_after= break space (-2)
+  ; docked_after= fmt "}" }
+
+let get_record_type (c : Conf.t) =
+  match c.break_separators with
+  | `Before -> before c
+  | `After -> after c
+  | `After_and_docked -> after_and_docked c

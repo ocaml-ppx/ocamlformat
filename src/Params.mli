@@ -22,3 +22,15 @@ type cases =
 
 val get_cases :
   Conf.t -> first:bool -> indent:int -> parens_here:bool -> cases
+
+type record_type =
+  { docked_before: Fmt.t
+  ; break_before: Fmt.t
+  ; box_record: Fmt.t -> Fmt.t
+  ; sep_before: Fmt.t
+  ; sep_after: Fmt.t
+  ; break_after: Fmt.t
+  ; docked_after: Fmt.t }
+
+val get_record_type :
+  Conf.t -> wrap_record:(Conf.t -> Fmt.t -> Fmt.t) -> record_type
