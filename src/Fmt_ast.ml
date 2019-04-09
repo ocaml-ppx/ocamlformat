@@ -185,23 +185,26 @@ let make_groups c items ast update_config =
   in
   List.group items ~break
 
+let fmt_groups c ctx grps fmt_grp =
+  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  list_fl grps (fun ~first ~last grp ->
+      fmt_if (break_struct && not first) "\n@\n"
+      $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
+      $ fmt_grp ~first ~last grp
+      $ fits_breaks_if ((not break_struct) && not last) "" "\n" )
+
 let fmt_recmodule c ctx items f ast =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
   let grps = make_groups c items ast update_config in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
-  let fmt_grp ~first:first_grp itms =
+  let fmt_grp ~first:first_grp ~last:_ itms =
     list_fl itms (fun ~first ~last:_ (itm, c) ->
         fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
         $ maybe_disabled c (Ast.location (ast itm)) []
           @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm
     )
   in
-  hvbox 0
-    (list_fl grps (fun ~first ~last grp ->
-         fmt_if (break_struct && not first) "\n@\n"
-         $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
-         $ fmt_grp ~first grp
-         $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
+  hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
@@ -3641,7 +3644,7 @@ and fmt_structure c ctx itms =
   in
   let grps = make_groups c itms (fun x -> Str x) update_config in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
-  let fmt_grp ~last:last_grp itms =
+  let fmt_grp ~first:_ ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
         fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
         $ maybe_disabled c itm.pstr_loc []
@@ -3649,12 +3652,7 @@ and fmt_structure c ctx itms =
           fmt_structure_item c ~last:(last && last_grp) (sub_str ~ctx itm)
     )
   in
-  hvbox 0
-    (list_fl grps (fun ~first ~last grp ->
-         fmt_if (break_struct && not first) "\n@\n"
-         $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
-         $ fmt_grp ~last grp
-         $ fits_breaks_if ((not break_struct) && not last) "" "\n" ))
+  hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
 and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
