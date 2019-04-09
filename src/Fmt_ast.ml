@@ -1453,21 +1453,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_loc}
       , (Nolabel, s) :: (Nolabel, i) :: _ )
-    when Option.is_some (index_op_get id) -> (
-    match index_op_get id with
-    | Some index_op ->
-        Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
-        fmt_index_op c ctx ~parens {txt= index_op; loc} s [i]
-    | None -> impossible "previous match" )
+    when Option.is_some (index_op_get id) ->
+      let index_op = Option.value_exn (index_op_get id) in
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      fmt_index_op c ctx ~parens {txt= index_op; loc} s [i]
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_loc}
       , (Nolabel, s) :: (Nolabel, i) :: (Nolabel, e) :: _ )
-    when Option.is_some (index_op_set id) -> (
-    match index_op_set id with
-    | Some index_op ->
-        Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
-        fmt_index_op c ctx ~parens {txt= index_op; loc} s [i] ~set:e
-    | None -> impossible "previous match" )
+    when Option.is_some (index_op_set id) ->
+      let index_op = Option.value_exn (index_op_set id) in
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      fmt_index_op c ctx ~parens {txt= index_op; loc} s [i] ~set:e
   | Pexp_apply (e0, [(Nolabel, e1)]) when is_prefix e0 ->
       hvbox 2
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
@@ -2860,10 +2856,8 @@ and fmt_type_declaration c ?(pre = "") ?(brk = fmt "") ctx ?fmt_name
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ) )
   $ brk
 
-and fmt_label_declaration c ctx lbl_decl ?(last = false) =
-  let {pld_mutable; pld_name; pld_type; pld_loc; pld_attributes} =
-    lbl_decl
-  in
+and fmt_label_declaration c ctx decl ?(last = false) =
+  let {pld_mutable; pld_name; pld_type; pld_loc; pld_attributes} = decl in
   update_config_maybe_disabled c pld_loc pld_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs pld_attributes in
@@ -2879,9 +2873,9 @@ and fmt_label_declaration c ctx lbl_decl ?(last = false) =
                   $ fmt_if Poly.(c.conf.field_space = `Loose) " "
                   $ fmt ":@ "
                   $ fmt_core_type c (sub_typ ~ctx pld_type)
-                  $ fmt_if_k
-                      (not Poly.(c.conf.break_separators = `Before))
-                      (fmt_or last "" ";") )
+                  $ fmt_if
+                      (Poly.(c.conf.break_separators <> `Before) && not last)
+                      ";" )
               $ cmt_after_type )
           $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
       $ Cmts.fmt_after c pld_loc
@@ -3275,8 +3269,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
           pro=
             Some
               ( fmt_or colon " :" " ="
-              $ fmt_if (Option.is_some blk.pro) " "
-              $ Option.call ~f:blk.pro )
+              $ opt blk.pro (fun pro -> fmt " " $ pro) )
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
   let blk_b =
@@ -3307,8 +3300,8 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
         (wrap "(" ")"
            ( fmt_str_loc c name
            $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi} ->
-                 fmt " : " $ Option.call ~f:pro
-                 $ fmt_if_k (Option.is_some pro) close_box
+                 fmt " : "
+                 $ opt pro (fun pro -> pro $ close_box)
                  $ psp $ bdy
                  $ fmt_if_k (Option.is_some pro) cls
                  $ esp
@@ -3337,18 +3330,17 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                    $ blk_t.psp $ blk_t.bdy )
                $ blk_t.esp $ Option.call ~f:blk_t.epi
                $ fmt_if (Option.is_some xbody) " ="
-               $ fmt_if (Option.is_some blk_b.pro) "@ "
-               $ Option.call ~f:blk_b.pro )
+               $ opt blk_b.pro (fun pro -> fmt "@ " $ pro) )
            $ blk_b.psp
            $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
            $ blk_b.bdy )
        $ blk_b.esp $ Option.call ~f:blk_b.epi
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
-       $ fmt_if_k (Option.is_some epi)
-           (fmt_or
-              (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
-              " " "@ ")
-       $ Option.call ~f:epi ))
+       $ opt epi (fun epi ->
+             fmt_or
+               (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
+               " " "@ "
+             $ epi ) ))
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
