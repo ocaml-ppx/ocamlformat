@@ -2693,12 +2693,8 @@ and fmt_class_params c ctx ~epi params =
     (not (List.is_empty params))
     (hvbox 0
        ( wrap_fits_breaks c.conf "[" "]"
-           (list_fl params (fun ~first ~last (ty, vc) ->
-                fmt_if (first && exposed_left_typ ty) " "
-                $ fmt_if_k (not first) (fmt (comma_sep c))
-                $ fmt_variance vc
-                $ fmt_core_type c (sub_typ ~ctx ty)
-                $ fmt_if (last && exposed_right_typ ty) " " ))
+           (list params (comma_sep c) (fun (ty, vc) ->
+                fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty) ))
        $ epi ))
 
 and fmt_type_declaration c ?(pre = "") ?(brk = fmt "") ctx ?fmt_name
@@ -2733,7 +2729,7 @@ and fmt_type_declaration c ?(pre = "") ?(brk = fmt "") ctx ?fmt_name
           (not (List.is_empty ptype_params))
           0
           ( fmt_tydcl_params c ctx ptype_params
-          $ match fmt_name with Some pp -> pp | None -> str txt )
+          $ Option.value fmt_name ~default:(str txt) )
       $ k )
   in
   let fmt_manifest_kind mfst priv kind =
