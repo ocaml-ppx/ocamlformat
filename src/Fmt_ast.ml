@@ -2693,8 +2693,12 @@ and fmt_class_params c ctx ~epi params =
     (not (List.is_empty params))
     (hvbox 0
        ( wrap_fits_breaks c.conf "[" "]"
-           (list params (comma_sep c) (fun (ty, vc) ->
-                fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty) ))
+           (list_fl params (fun ~first ~last (ty, vc) ->
+                fmt_if (first && exposed_left_typ ty) " "
+                $ fmt_if_k (not first) (fmt (comma_sep c))
+                $ fmt_variance vc
+                $ fmt_core_type c (sub_typ ~ctx ty)
+                $ fmt_if (last && exposed_right_typ ty) " " ))
        $ epi ))
 
 and fmt_type_declaration c ?(pre = "") ?(brk = fmt "") ctx ?fmt_name
