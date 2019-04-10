@@ -1696,6 +1696,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            (list_fl cnd_exps
               (fun ~first ~last (xcnd, xbch, pexp_attributes) ->
                 let parens_bch = parenze_exp xbch in
+                let imd = c.conf.indicate_multiline_delimiters in
                 match c.conf.if_then_else with
                 | `Compact ->
                     hovbox 0
@@ -1717,15 +1718,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                                   $ fmt "@ then" )
                             | None -> fmt "else" )
                           $ fmt_or parens_bch
-                              ( if c.conf.indicate_multiline_delimiters then
-                                " (@ "
-                              else " (@," )
+                              (if imd then " (@ " else " (@,")
                               "@ "
                           $ fmt_expression c ~box:false ~parens:false xbch
                           )
-                      $ fmt_if parens_bch
-                          ( if c.conf.indicate_multiline_delimiters then " )"
-                          else ")" ) )
+                      $ fmt_if parens_bch (if imd then " )" else ")") )
                     $ fmt_if (not last) "@ "
                 | `Fit_or_vertical ->
                     let pro =
@@ -1733,6 +1730,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         (not
                            (Location.is_single_line pexp_loc c.conf.margin))
                         (break_unless_newline 1000 2)
+                    in
+                    let wrap_parens =
+                      wrap_k
+                        (fmt_or parens_bch
+                           (if imd then " (@;<1 2>" else " (@;<0 2>")
+                           "@;<1 2>")
+                        (fmt_if parens_bch (if imd then " )" else ")"))
                     in
                     hovbox 0
                       ( ( match xcnd with
@@ -1750,18 +1754,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                                   $ fmt "@ " $ fmt_expression c xcnd )
                               $ fmt "@ then" )
                         | None -> fmt "else" )
-                      $ fmt_or parens_bch
-                          ( if c.conf.indicate_multiline_delimiters then
-                            " (@;<1 2>"
-                          else " (@;<0 2>" )
-                          "@;<1 2>"
-                      $ fmt_expression c ~pro ~eol:(fmt "@;<1 2>")
-                          ~box:false ~parens:false xbch
-                      $ fmt_if parens_bch
-                          ( if c.conf.indicate_multiline_delimiters then " )"
-                          else ")" ) )
+                      $ wrap_parens
+                          (fmt_expression c ~pro ~eol:(fmt "@;<1 2>")
+                             ~box:false ~parens:false xbch) )
                     $ fmt_if (not last) "@ "
                 | `Keyword_first ->
+                    let wrap_parens =
+                      wrap_k
+                        (fmt_or parens_bch
+                           (if imd then " (@ " else " (@,")
+                           "@ ")
+                        (fmt_if parens_bch (if imd then " )" else ")"))
+                    in
                     opt xcnd (fun xcnd ->
                         hvbox 2
                           ( fmt_or_k first
@@ -1773,16 +1777,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         $ fmt "@ " )
                     $ hvbox 2
                         ( fmt_or (Option.is_some xcnd) "then" "else"
-                        $ fmt_or parens_bch
-                            ( if c.conf.indicate_multiline_delimiters then
-                              " (@ "
-                            else " (@," )
-                            "@ "
-                        $ fmt_expression c ~box:false ~parens:false xbch
-                        $ fmt_if parens_bch
-                            ( if c.conf.indicate_multiline_delimiters then
-                              " )"
-                            else ")" ) )
+                        $ wrap_parens
+                            (fmt_expression c ~box:false ~parens:false xbch)
+                        )
                     $ fmt_if (not last) "@ " )))
   | Pexp_let (rec_flag, bindings, body) ->
       let fmt_expr ?box ?pro ?epi ?eol ?parens ?indent_wrap ?ext =
