@@ -22,7 +22,7 @@ Jbuild_plugin.V1.send
 
 (rule
  (targets compat-file)
- (action  (run %%{ocaml} %%{dep:config/gen.ml} %%{ocaml_version})))
+ (action  (run %%{ocaml} %%{dep:../tools/gen_compat.ml} %%{ocaml_version})))
 
 (ocamllex Literal_lexer)
 
