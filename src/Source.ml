@@ -140,7 +140,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
     let count = ref 0 in
     let l =
       find_after t
-        (function
+        ( function
           | RBRACKET ->
               if !count = 0 then true else ( Int.decr count ; false )
           (* It is not clear that an LBRACKET* will ever happen in practice,
@@ -180,7 +180,7 @@ let string_literal t mode (l : Location.t) =
      attributes payloads. {[ f ((* comments *) "c" [@attributes]) ]} *)
   let toks =
     tokens_at t
-      ~filter:(function
+      ~filter:( function
         | Parser.STRING (_, None) -> true
         | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
             true
@@ -203,7 +203,7 @@ let char_literal t (l : Location.t) =
      attributes payloads. {[ f ((* comments *) 'c' [@attributes]) ]} *)
   let toks =
     tokens_at t
-      ~filter:(function
+      ~filter:( function
         | Parser.CHAR _ -> true
         | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
             true

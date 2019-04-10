@@ -151,7 +151,7 @@ class tttttttttttttttttttttttttt x y =
 class tttttttttttttttttttttttttt x y =
   let open Mod in
   let x = 2 in
-  (fun x ->
+  ( fun x ->
     object
       inherit f a
 

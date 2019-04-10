@@ -1019,7 +1019,7 @@ let g (type t) (x : t) (tag : t ty) =
 let id x = x
 
 let idb1 =
-  (fun id ->
+  ( fun id ->
     let _ = id true in
     id )
     id
@@ -1116,7 +1116,7 @@ let rec variantize : type t. t ty -> t -> variant =
   | Record {fields} ->
       VRecord
         (List.map
-           (fun (Field {field_type; label; get}) ->
+           ( fun (Field {field_type; label; get}) ->
              (label, variantize field_type (get x)) )
            fields)
 
@@ -1156,7 +1156,7 @@ let rec devariantize : type t. t ty -> variant -> t =
       if List.length fields <> List.length fl then raise VariantMismatch ;
       let builder = create_builder () in
       List.iter2
-        (fun (Field {label; field_type; set}) (lab, v) ->
+        ( fun (Field {label; field_type; set}) (lab, v) ->
           if label <> lab then raise VariantMismatch ;
           set builder (devariantize field_type v) )
         fields fl ;
@@ -1366,12 +1366,12 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        { sum_proj=
-           (function
+           ( function
            | `Nil -> ("Nil", None)
            | `Cons p -> ("Cons", Some (Tdyn (tcons, p))) )
        ; sum_cases= [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
        ; sum_inj=
-           (fun (type c) ->
+           ( fun (type c) ->
              ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
                : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist )
              )
@@ -1400,7 +1400,7 @@ and 'e ty_dyn = Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
   (* Could also use [get_case] for proj, but direct definition is shorter *)
   Sum
-    ( (function
+    ( ( function
       | `A n -> ("A", Some (Tdyn (Int, n)))
       | `B s -> ("B", Some (Tdyn (String, s)))
       | `C -> ("C", None) )
@@ -1416,7 +1416,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   let targ = Pair (Pop t, Var) in
   Rec
     (Sum
-       ( (function
+       ( ( function
          | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p)))
          )
        , function
@@ -5954,7 +5954,7 @@ class c (v : int) =
     method v0 = v
 
     inherit
-      (fun v ->
+      ( fun v ->
         object
           method v : string = v
         end )
