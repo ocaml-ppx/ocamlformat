@@ -17,6 +17,7 @@ type t =
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
+  ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After | `After_and_docked]
   ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap]
@@ -548,6 +549,24 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_fun_decl= x})
       (fun conf -> conf.break_fun_decl)
+
+  let break_fun_sig =
+    let doc = "Style for function signatures." in
+    let names = ["break-fun-sig"] in
+    let all =
+      [ ("wrap", `Wrap, "$(b,wrap) breaks only if necessary.")
+      ; ( "fit-or-vertical"
+        , `Fit_or_vertical
+        , "$(b,fit-or-vertical) vertically breaks arguments if they do not \
+           fit on a single line." )
+      ; ( "smart"
+        , `Smart
+        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
+           arguments on their line if they fit." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_fun_sig= x})
+      (fun conf -> conf.break_fun_sig)
 
   let break_infix =
     let doc = "Break sequence of infix operators." in
@@ -1319,6 +1338,7 @@ let ocamlformat_profile =
   ; break_infix= C.default Formatting.break_infix
   ; break_infix_before_func= C.default Formatting.break_infix_before_func
   ; break_fun_decl= C.default Formatting.break_fun_decl
+  ; break_fun_sig= C.default Formatting.break_fun_sig
   ; break_separators= C.default Formatting.break_separators
   ; break_sequences= C.default Formatting.break_sequences
   ; break_string_literals= C.default Formatting.break_string_literals
@@ -1379,6 +1399,7 @@ let compact_profile =
   ; break_collection_expressions= `Wrap
   ; break_infix= `Wrap
   ; break_fun_decl= `Wrap
+  ; break_fun_sig= `Wrap
   ; break_sequences= false
   ; break_struct= false
   ; doc_comments_tag_only= `Fit
@@ -1401,6 +1422,7 @@ let sparse_profile =
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Fit_or_vertical
   ; break_fun_decl= `Smart
+  ; break_fun_sig= `Smart
   ; break_sequences= true
   ; break_struct= true
   ; field_space= `Loose
@@ -1423,6 +1445,7 @@ let janestreet_profile =
   ; break_infix= `Fit_or_vertical
   ; break_infix_before_func= true
   ; break_fun_decl= `Fit_or_vertical
+  ; break_fun_sig= `Fit_or_vertical
   ; break_separators= `Before
   ; break_sequences= true
   ; break_string_literals= `Wrap

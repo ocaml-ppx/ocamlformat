@@ -55,6 +55,12 @@ OPTIONS (CODE FORMATTING STYLE)
            fit arguments on their line if they fit. The default value is
            wrap.
 
+       --break-fun-sig={wrap|fit-or-vertical|smart}
+           Style for function signatures. wrap breaks only if necessary.
+           fit-or-vertical vertically breaks arguments if they do not fit on
+           a single line. smart is like fit-or-vertical but try to fit
+           arguments on their line if they fit. The default value is wrap.
+
        --break-infix={wrap|fit-or-vertical}
            Break sequence of infix operators. wrap will group simple
            expressions and try to format them in a single line.

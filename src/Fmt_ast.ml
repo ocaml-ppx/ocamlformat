@@ -133,6 +133,15 @@ let wrap_fun_decl_args ~stmt_loc c k =
   | `Fit_or_vertical -> vbox 0 k
   | `Smart -> hvbox 0 k
 
+(** Handle the `break-fun-sig` option *)
+let wrap_fun_sig_args ~stmt_loc c indent k =
+  match c.conf.break_fun_sig with
+  | `Wrap -> k
+  | `Fit_or_vertical when Location.is_single_line stmt_loc c.conf.margin ->
+      hvbox indent k
+  | `Fit_or_vertical -> vbox indent k
+  | `Smart -> hvbox indent k
+
 let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
@@ -559,8 +568,14 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let indent =
         if Poly.(c.conf.break_separators = `Before) then 2 else 0
       in
-      hvbox_if box
-        (if Option.is_some pro && c.conf.ocp_indent_compat then -2 else 0)
+      let maybe_box =
+        if box then
+          wrap_fun_sig_args ~stmt_loc:ptyp_loc c
+            ( if Option.is_some pro && c.conf.ocp_indent_compat then -2
+            else 0 )
+        else Fn.id
+      in
+      maybe_box
         ( ( match pro with
           | Some pro when c.conf.ocp_indent_compat ->
               fits_breaks ""
