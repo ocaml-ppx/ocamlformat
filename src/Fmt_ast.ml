@@ -1825,6 +1825,29 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
+  | Pexp_letmodule (name, pmod, exp) when Poly.(c.conf.let_module = `Sparse)
+    ->
+      hvbox 0
+        ( wrap_if
+            (parens || not (List.is_empty pexp_attributes))
+            "(" ")"
+            ( hvbox 2
+                ( hovbox 2
+                    ( hovbox 4
+                        ( fmt "let module"
+                        $ fmt_extension_suffix c ext
+                        $ fmt " " $ str name.txt )
+                    $ fmt_or_k c.conf.ocp_indent_compat
+                        (fits_breaks " =" "@;<1000 0>=")
+                        (fmt "@;<1 2>=") )
+                $ fmt "@ "
+                $ compose_module
+                    (fmt_module_expr c (sub_mod ~ctx pmod))
+                    ~f:(hvbox 0)
+                $ fmt "@;<1 -2>in" )
+            $ fmt "@;<1000 0>"
+            $ fmt_expression c (sub_exp ~ctx exp) )
+        $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
       let keyword = fmt "let module" $ fmt_extension_suffix c ext in
       let xargs, xbody =

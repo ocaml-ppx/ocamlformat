@@ -729,11 +729,12 @@ let sort (type s) set l =
 ;;
 
 let make_set (type s) cmp =
-  let module S = Set.Make (struct
-    type t = s
+  let module S =
+    Set.Make (struct
+      type t = s
 
-    let compare = cmp
-  end)
+      let compare = cmp
+    end)
   in
   (module S : Set.S with type elt = s)
 ;;
@@ -758,13 +759,14 @@ module type S = sig
 end
 
 let create (type s) to_string apply x =
-  let module M = struct
-    type t = s
+  let module M =
+    struct
+      type t = s
 
-    let to_string = to_string
-    let apply = apply
-    let x = x
-  end
+      let to_string = to_string
+      let apply = apply
+      let x = x
+    end
   in
   (module M : S with type t = s)
 ;;
@@ -781,11 +783,12 @@ let print x =
 
 let apply x =
   let module M = (val x : S) in
-  let module N = struct
-    include M
+  let module N =
+    struct
+      include M
 
-    let x = apply x
-  end
+      let x = apply x
+    end
   in
   (module N : S)
 ;;
@@ -850,15 +853,16 @@ let int = Int TypEq.refl
 let str = String TypEq.refl
 
 let pair (type s1 s2) t1 t2 =
-  let module P = struct
-    type t = s1 * s2
-    type t1 = s1
-    type t2 = s2
+  let module P =
+    struct
+      type t = s1 * s2
+      type t1 = s1
+      type t2 = s2
 
-    let eq = TypEq.refl
-    let t1 = t1
-    let t2 = t2
-  end
+      let eq = TypEq.refl
+      let t1 = t1
+      let t2 = t2
+    end
   in
   let pair = (module P : PAIR with type t = s1 * s2) in
   Pair pair
@@ -2809,11 +2813,12 @@ type 'a tt = 'a t =
 type _ t = I : int t
 
 let f (type a) (x : a t) =
-  let module M = struct
-    let (I : a t) = x (* fail because of toplevel let *)
+  let module M =
+    struct
+      let (I : a t) = x (* fail because of toplevel let *)
 
-    let x : a t = I
-  end
+      let x : a t = I
+    end
   in
   ()
 ;;
@@ -2823,15 +2828,16 @@ let f (type a) (x : a t) =
 type (_, _) eq = Refl : ('a, 'a) eq
 
 let bad (type a) =
-  let module N = struct
-    module rec M : sig
-      val e : (int, a) eq
-    end = struct
-      let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
+  let module N =
+    struct
+      module rec M : sig
+        val e : (int, a) eq
+      end = struct
+        let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
 
-      let e : (int, a) eq = Refl
+        let e : (int, a) eq = Refl
+      end
     end
-  end
   in
   N.M.e
 ;;
@@ -3561,15 +3567,16 @@ let int = Typ.Int TypEq.refl
 let str = Typ.String TypEq.refl
 
 let pair (type s1 s2) t1 t2 =
-  let module P = struct
-    type t = s1 * s2
-    type t1 = s1
-    type t2 = s2
+  let module P =
+    struct
+      type t = s1 * s2
+      type t1 = s1
+      type t2 = s2
 
-    let eq = TypEq.refl
-    let t1 = t1
-    let t2 = t2
-  end
+      let eq = TypEq.refl
+      let t1 = t1
+      let t2 = t2
+    end
   in
   Typ.Pair (module P)
 ;;
@@ -3636,9 +3643,10 @@ let ssmap
                     and type data = string
                     and type map = SSMap.map)
   =
-  let module S = struct
-    include SSMap
-  end
+  let module S =
+    struct
+      include SSMap
+    end
   in
   (module S)
 ;;
@@ -4698,9 +4706,10 @@ type _ prod = Prod : ('a * 'y) prod
 
 let f : type t. t prod -> _ = function
   | Prod ->
-    let module M = struct
-      type d = d * d
-    end
+    let module M =
+      struct
+        type d = d * d
+      end
     in
     ()
 ;;
@@ -5459,9 +5468,10 @@ end
 C3.chr 66
 
 let f x =
-  let module M = struct
-    module L = List
-  end
+  let module M =
+    struct
+      module L = List
+    end
   in
   M.L.length x
 ;;
@@ -6758,11 +6768,12 @@ let () =
 (* This one should fail *)
 
 let f flag =
-  let module T = Set.Make (struct
-    type t = int
+  let module T =
+    Set.Make (struct
+      type t = int
 
-    let compare = compare
-  end)
+      let compare = compare
+    end)
   in
   let _ =
     match flag with
@@ -7552,16 +7563,17 @@ let _ = test 21 (Fib2.f 10) 89
 let _ =
   let res =
     try
-      let module A = struct
-        module rec Bad : sig
-          val f : int -> int
-        end = struct
-          let f =
-            let y = Bad.f 5 in
-            fun x -> x + y
-          ;;
+      let module A =
+        struct
+          module rec Bad : sig
+            val f : int -> int
+          end = struct
+            let f =
+              let y = Bad.f 5 in
+              fun x -> x + y
+            ;;
+          end
         end
-      end
       in
       false
     with
@@ -7952,25 +7964,26 @@ let _ = test 70 ((new Class1.c)#m 7) 0
 
 let _ =
   try
-    let module A = struct
-      module rec BadClass1 : sig
-        class c :
-          object
-            method m : int
-          end
-      end = struct
-        class c =
-          object
-            method m = 123
-          end
-      end
+    let module A =
+      struct
+        module rec BadClass1 : sig
+          class c :
+            object
+              method m : int
+            end
+        end = struct
+          class c =
+            object
+              method m = 123
+            end
+        end
 
-      and BadClass2 : sig
-        val x : int
-      end = struct
-        let x = (new BadClass1.c)#m
+        and BadClass2 : sig
+          val x : int
+        end = struct
+          let x = (new BadClass1.c)#m
+        end
       end
-    end
     in
     test 71 true false
   with
@@ -8592,9 +8605,10 @@ with type 'a t := unit
 
 (* Fails *)
 let property (type t) () =
-  let module M = struct
-    exception E of t
-  end
+  let module M =
+    struct
+      exception E of t
+    end
   in
   ( (fun x -> M.E x)
   , function
@@ -8614,11 +8628,12 @@ let () =
 ;;
 
 let sort_uniq (type s) cmp l =
-  let module S = Set.Make (struct
-    type t = s
+  let module S =
+    Set.Make (struct
+      type t = s
 
-    let compare = cmp
-  end)
+      let compare = cmp
+    end)
   in
   S.elements (List.fold_right S.add l S.empty)
 ;;
@@ -9617,9 +9632,10 @@ and ['a] d () =
 
 (* PR#7329 Pattern open *)
 let _ =
-  let module M = struct
-    type t = { x : int }
-  end
+  let module M =
+    struct
+      type t = { x : int }
+    end
   in
   let f M.(x) = () in
   let g M.{ x } = () in
