@@ -114,8 +114,7 @@ let update_config ?(quiet = false) c l =
               Format.sprintf "Invalid value for %s: %S" name value
         in
         let w = Warnings.Attribute_payload (txt, reason error) in
-        if (not c.conf.quiet) && not quiet then
-          !Location.warning_printer loc Caml.Format.err_formatter w ;
+        if (not c.conf.quiet) && not quiet then Compat.print_warning loc w ;
         c
   in
   List.fold ~init:c l ~f:update_one
