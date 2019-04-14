@@ -1851,9 +1851,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   ( fmt "let module"
                   $ fmt_extension_suffix c ext
                   $ fmt " " $ str name.txt )
-              $ fmt_or_k c.conf.ocp_indent_compat
-                  (fits_breaks " =" "@;<1000 0>=")
-                  (fmt "@;<1 2>=") )
+              $ fmt "@;<1 2>=" )
             $ fmt "@ "
             $ compose_module
                 (fmt_module_expr c (sub_mod ~ctx pmod))
