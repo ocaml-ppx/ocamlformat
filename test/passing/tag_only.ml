@@ -132,5 +132,5 @@ open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
 
-(** @deprecated  *)
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+(** @deprecated  *)

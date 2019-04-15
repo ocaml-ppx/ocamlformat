@@ -3278,11 +3278,11 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                  $ Option.call ~f:epi ) ))
   in
   let single_line =
-    String.length name.txt * 3 < c.conf.margin
-    && Option.value_map xbody ~default:true ~f:(fun x ->
-           module_expr_is_simple c.conf x.ast )
-    && Option.value_map xmty ~default:true ~f:(fun x ->
-           module_type_is_simple c.conf x.ast )
+    match (xbody, xmty) with
+    | Some {ast= {pmod_desc= Pmod_structure _}}, _
+     |_, Some {ast= {pmty_desc= Pmty_signature _}} ->
+        false
+    | _ -> true
   in
   (fmt_docstring_around ~single_line c doc)
     (hvbox 0
