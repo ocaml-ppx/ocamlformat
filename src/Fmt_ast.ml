@@ -1566,7 +1566,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
       compose_module
         (fmt_module_expr c (sub_mod ~ctx me))
-        ~f:( fun m ->
+        ~f:(fun m ->
           wrap_fits_breaks ~space:false c.conf "(" ")"
             ( fmt "module " $ m $ fmt "@ : "
             $ fmt_package_type c ctx pty pexp_loc
@@ -1657,26 +1657,31 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let pre_body, body = fmt_body c ?ext xbody in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
-        (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           ( hovbox 2
-               ( hovbox 4
-                   ( fmt "fun "
-                   $ fmt_attributes c ~key:"@" pexp_attributes
-                       ~suf:(fmt " ")
-                   $ hvbox_if
-                       (not c.conf.wrap_fun_args)
-                       0 (fmt_fun_args c xargs)
-                   $ fmt "@ " )
-               $ fmt "->" $ pre_body )
-           $ body ))
+        ( fmt_if parens "("
+        $ hovbox 2
+            ( hovbox 4
+                ( fmt "fun "
+                $ fmt_attributes c ~key:"@" pexp_attributes ~suf:(fmt " ")
+                $ hvbox_if
+                    (not c.conf.wrap_fun_args)
+                    0 (fmt_fun_args c xargs)
+                $ fmt "@ " )
+            $ fmt "->" $ pre_body )
+        $ body
+        $ fmt_or_k c.conf.indicate_multiline_delimiters
+            (fits_breaks_if parens ")" "@ )")
+            (fits_breaks_if parens ")" "@,)") )
   | Pexp_function cs ->
-      wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-        ( hvbox 2
-            ( fmt "function"
-            $ fmt_extension_suffix c ext
-            $ fmt_attributes c ~key:"@" pexp_attributes )
-        $ fmt "@ "
-        $ hvbox 0 (fmt_cases c ctx cs) )
+      fmt_if parens "("
+      $ hvbox 2
+          ( fmt "function"
+          $ fmt_extension_suffix c ext
+          $ fmt_attributes c ~key:"@" pexp_attributes )
+      $ fmt "@ "
+      $ hvbox 0 (fmt_cases c ctx cs)
+      $ fmt_or_k c.conf.indicate_multiline_delimiters
+          (fits_breaks_if parens ")" "@ )")
+          (fits_breaks_if parens ")" "@,)")
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then
@@ -2391,16 +2396,19 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
       let stmt_loc = Sugar.args_location xargs in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
-        (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           ( hovbox 2
-               ( hovbox 4
-                   ( fmt "fun "
-                   $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(fmt " ")
-                   $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
-                   $ fmt "@ " )
-               $ fmt "->" )
-           $ fmt "@ "
-           $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody ))
+        ( fmt_if parens "("
+        $ hovbox 2
+            ( hovbox 4
+                ( fmt "fun "
+                $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(fmt " ")
+                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
+                $ fmt "@ " )
+            $ fmt "->" )
+        $ fmt "@ "
+        $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody
+        $ fmt_or_k c.conf.indicate_multiline_delimiters
+            (fits_breaks_if parens ")" "@ )")
+            (fits_breaks_if parens ")" "@,)") )
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
@@ -2899,7 +2907,7 @@ and fmt_exception ~pre c sep ctx te =
        the constructor, and the one belonging to the exception construct. *)
     let at, atat =
       List.partition_tf
-        ~f:( fun (s, _) ->
+        ~f:(fun (s, _) ->
           match s.txt with
           | "deprecated" | "ocaml.deprecated" -> true
           | _ -> false )
@@ -3622,7 +3630,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
       fmt_recmodule c ctx bindings
-        ( fun c ctx ~rec_flag ~first b ->
+        (fun c ctx ~rec_flag ~first b ->
           (* To ignore the ?epi parameter *)
           fmt_module_binding c ctx ~rec_flag ~first b )
         (fun x -> Mod x.pmb_expr)

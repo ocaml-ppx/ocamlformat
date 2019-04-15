@@ -73,7 +73,7 @@ let args_location xargs =
   let first_loc = first_loc xargs in
   let last_loc =
     List.fold_left
-      ~f:( fun p -> function Val (_, {ast= {ppat_loc}}, _) -> ppat_loc
+      ~f:(fun p -> function Val (_, {ast= {ppat_loc}}, _) -> ppat_loc
         | Newtypes ts -> List.fold_left ~f:(fun _ {loc} -> loc) ~init:p ts
         )
       ~init:first_loc xargs

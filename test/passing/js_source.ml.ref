@@ -3022,9 +3022,7 @@ let rec weaken_alist : type m n. (m, n) alist -> (m succ, n succ) alist = functi
 let rec sub' : type m. m ealist -> m fin -> m term = function
   | EAlist Anil -> var
   | EAlist (Asnoc (s, t, x)) ->
-    comp_subst
-      (sub' (EAlist (weaken_alist s)))
-      (fun t' -> weaken_term (subst_var x t t'))
+    comp_subst (sub' (EAlist (weaken_alist s))) (fun t' -> weaken_term (subst_var x t t'))
 ;;
 
 let subst' d = pre_subst (sub' d)
