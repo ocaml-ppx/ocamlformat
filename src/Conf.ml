@@ -1092,6 +1092,17 @@ let disable_conf_files =
   mk ~default:false
     Arg.(value & flag & info ["disable-conf-files"] ~doc ~docs)
 
+let disable_outside_detected_project =
+  let doc =
+    Format.sprintf
+      "$(b,Warning:) this option is $(b,deprecated) and will be removed in \
+       OCamlFormat v1.0."
+  in
+  let default = false in
+  mk ~default
+    Arg.(
+      value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
+
 let enable_outside_detected_project =
   let witness =
     String.concat ~sep:" or "
@@ -1479,6 +1490,10 @@ let (_profile : t option C.t) =
 let validate () =
   let inputs_len = List.length !inputs in
   let has_stdin = List.exists ~f:(String.equal "-") !inputs in
+  if !disable_outside_detected_project then
+    Format.eprintf
+      "Warning: option `--disable-outside-detected-project` is deprecated \
+       and will be removed in OCamlFormat v1.0." ;
   if !print_config then `Ok ()
   else if inputs_len = 0 then
     `Error (false, "Must specify at least one input file, or `-` for stdin")
