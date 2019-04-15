@@ -204,7 +204,7 @@ let longident_is_simple (c : Conf.t) x =
     | Ldot (x, y) -> length x + 1 + String.length y
     | Lapply (x, y) -> length x + length y
   in
-  length x * 3 < c.margin
+  length x * 3 < c.margin * 2
 
 let module_type_is_simple (c : Conf.t) x =
   match x.pmty_desc with
