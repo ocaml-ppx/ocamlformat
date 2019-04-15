@@ -1442,6 +1442,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_function cs} as r))] )
     when is_infix_id id && not c.conf.break_infix_before_func ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      let xr = sub_exp ~ctx r in
+      let parens_r = parenze_exp xr in
       wrap_if parens "(" ")"
         (hvbox 0
            ( hvbox 0
@@ -1449,10 +1451,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt "@;"
                $ hovbox 2
                    ( fmt_expression c (sub_exp ~ctx op)
-                   $ fmt "@ " $ fmt "function"
+                   $ fmt "@ " $ fmt_if parens_r "( " $ fmt "function"
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes ) )
-           $ fmt "@ " $ fmt_cases c (Exp r) cs ))
+           $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )" ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id}; pexp_attributes= []}
       , [(Nolabel, _); (Nolabel, _)] )
