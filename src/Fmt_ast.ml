@@ -2639,7 +2639,7 @@ and fmt_cases c ctx cs =
       p.leading_space $ leading_cmt
       $ p.box_all
           ( p.box_pattern_arrow
-              ( p.box_pattern_guard
+              ( hvbox 0
                   ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
                   $ opt pc_guard (fun g ->
                         fmt "@;<1 2>when "
@@ -2647,7 +2647,7 @@ and fmt_cases c ctx cs =
               $ p.break_before_arrow $ fmt "->" $ p.break_after_arrow
               $ fmt_if parens_here " (" )
           $ p.break_after_opening_paren
-          $ p.box_rhs
+          $ hovbox 0
               ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
               $ fmt_if_k parens_here
                   (fmt_or c.conf.indicate_multiline_delimiters "@ )" "@,)")

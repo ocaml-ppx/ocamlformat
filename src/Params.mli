@@ -14,11 +14,9 @@ type cases =
   ; bar: Fmt.t
   ; box_all: Fmt.t -> Fmt.t
   ; box_pattern_arrow: Fmt.t -> Fmt.t
-  ; box_pattern_guard: Fmt.t -> Fmt.t
   ; break_before_arrow: Fmt.t
   ; break_after_arrow: Fmt.t
-  ; break_after_opening_paren: Fmt.t
-  ; box_rhs: Fmt.t -> Fmt.t }
+  ; break_after_opening_paren: Fmt.t }
 
 val get_cases :
   Conf.t -> first:bool -> indent:int -> parens_here:bool -> cases
