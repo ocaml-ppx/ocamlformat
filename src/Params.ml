@@ -84,45 +84,31 @@ type record_type =
   ; break_after: Fmt.t
   ; docked_after: Fmt.t }
 
-let before (c : Conf.t) ~wrap_record =
-  { docked_before= fmt ""
-  ; break_before= fmt "@ "
-  ; box_record= (fun k -> hvbox 0 (wrap_record c k))
-  ; sep_before=
-      ( match c.type_decl with
-      | `Sparse -> fmt "@;<1000 0>; "
-      | `Compact -> fmt "@,; " )
-  ; sep_after= fmt ""
-  ; break_after= fmt ""
-  ; docked_after= fmt "" }
-
-let after (c : Conf.t) ~wrap_record =
-  { docked_before= fmt ""
-  ; break_before= fmt "@ "
-  ; box_record= (fun k -> hvbox 2 (wrap_record c k))
-  ; sep_before= fmt ""
-  ; sep_after=
-      ( match c.type_decl with
-      | `Sparse -> fmt "@;<1000 0>"
-      | `Compact -> fmt "@ " )
-  ; break_after= fmt ""
-  ; docked_after= fmt "" }
-
-let after_and_docked (c : Conf.t) ~wrap_record:_ =
-  let space = if c.space_around_collection_expressions then 1 else 0 in
-  { docked_before= fmt " {"
-  ; break_before= break space 0
-  ; box_record= Fn.id
-  ; sep_before= fmt ""
-  ; sep_after=
-      ( match c.type_decl with
-      | `Sparse -> fmt "@;<1000 0>"
-      | `Compact -> fmt "@ " )
-  ; break_after= break space (-2)
-  ; docked_after= fmt "}" }
-
-let get_record_type (c : Conf.t) =
+let get_record_type (c : Conf.t) ~wrap_record =
+  let sparse_type_decl = Poly.(c.type_decl = `Sparse) in
   match c.break_separators with
-  | `Before -> before c
-  | `After -> after c
-  | `After_and_docked -> after_and_docked c
+  | `Before ->
+      { docked_before= fmt ""
+      ; break_before= fmt "@ "
+      ; box_record= (fun k -> hvbox 0 (wrap_record c k))
+      ; sep_before= fmt_or sparse_type_decl "@;<1000 0>; " "@,; "
+      ; sep_after= fmt ""
+      ; break_after= fmt ""
+      ; docked_after= fmt "" }
+  | `After ->
+      { docked_before= fmt ""
+      ; break_before= fmt "@ "
+      ; box_record= (fun k -> hvbox 2 (wrap_record c k))
+      ; sep_before= fmt ""
+      ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
+      ; break_after= fmt ""
+      ; docked_after= fmt "" }
+  | `After_and_docked ->
+      let space = if c.space_around_collection_expressions then 1 else 0 in
+      { docked_before= fmt " {"
+      ; break_before= break space 0
+      ; box_record= Fn.id
+      ; sep_before= fmt ""
+      ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
+      ; break_after= break space (-2)
+      ; docked_after= fmt "}" }
