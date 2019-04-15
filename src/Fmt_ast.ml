@@ -160,11 +160,13 @@ let maybe_disabled_k c (loc : Location.t) l f k =
 let maybe_disabled c loc l f = maybe_disabled_k c loc l f Fn.id
 
 let update_config_maybe_disabled c loc l f =
-  maybe_disabled (update_config c l) loc l f
+  let c = update_config c l in
+  maybe_disabled c loc l f
 
 let update_config_maybe_disabled_block c loc l f =
   let fmt bdy = {empty with opn= open_vbox 2; bdy; cls= close_box} in
-  maybe_disabled_k (update_config c l) loc l f fmt
+  let c = update_config c l in
+  maybe_disabled_k c loc l f fmt
 
 let make_groups c items ast update_config =
   let with_config c i =
