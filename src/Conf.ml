@@ -1546,8 +1546,8 @@ let ocp_indent_janestreet_profile =
 let root =
   Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
 
-let disable_outside_detected_project =
-  (not !enable_outside_detected_project) || Option.is_some root
+let enable_outside_detected_project =
+  !enable_outside_detected_project && Option.is_none root
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
@@ -1659,7 +1659,7 @@ let rec collect_files ~segs ~ignores ~files =
         if Fpath.exists filename then `Ocp_indent filename :: files
         else files
       in
-      if is_project_root dir && disable_outside_detected_project then
+      if is_project_root dir && not enable_outside_detected_project then
         (ignores, files, Some dir)
       else collect_files ~segs:upper_segs ~ignores ~files
 
@@ -1782,9 +1782,9 @@ let build_config ~file =
     collect_files ~segs ~ignores:[] ~files:[]
   in
   let files =
-    match (xdg_config, disable_outside_detected_project) with
-    | None, _ | Some _, true -> files
-    | Some f, false -> `Ocamlformat f :: files
+    match (xdg_config, enable_outside_detected_project) with
+    | None, _ | Some _, false -> files
+    | Some f, true -> `Ocamlformat f :: files
   in
   let files = if !disable_conf_files then [] else files in
   let conf =
@@ -1795,7 +1795,7 @@ let build_config ~file =
     let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
     List.for_all files ~f
   in
-  if disable_outside_detected_project && no_ocamlformat_files then (
+  if no_ocamlformat_files && not enable_outside_detected_project then (
     ( if not conf.quiet then
       let reason =
         match project_root with
