@@ -3346,8 +3346,7 @@ and fmt_open_description c
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs popen_attributes in
-  let single_line = longident_is_simple c.conf popen_lid.txt in
-  fmt_docstring_around ~single_line c doc
+  fmt_docstring_around ~single_line:true c doc
     ( fmt "open"
     $ fmt_if Poly.(popen_override = Override) "!"
     $ fmt " "
