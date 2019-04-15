@@ -3152,11 +3152,7 @@ and fmt_signature_item c {ast= si} =
             , blk )
         | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
-      let single_line =
-        match pincl_mod.pmty_desc with
-        | Pmty_signature _ -> false
-        | _ -> true
-      in
+      let single_line = module_type_is_simple pincl_mod in
       let box = wrap_k opn cls in
       hvbox 0
         (fmt_docstring_around ~single_line c doc
@@ -3278,11 +3274,8 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                  $ Option.call ~f:epi ) ))
   in
   let single_line =
-    match (xbody, xmty) with
-    | Some {ast= {pmod_desc= Pmod_structure _}}, _
-     |_, Some {ast= {pmty_desc= Pmty_signature _}} ->
-        false
-    | _ -> true
+    Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
+    && Option.for_all xmty ~f:(fun x -> module_type_is_simple x.ast)
   in
   (fmt_docstring_around ~single_line c doc)
     (hvbox 0
@@ -3654,11 +3647,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let doc, atrs = doc_atrs pincl_attributes in
       let blk = fmt_module_expr c (sub_mod ~ctx pincl_mod) in
       let box = wrap_k blk.opn blk.cls in
-      let single_line =
-        match pincl_mod.pmod_desc with
-        | Pmod_structure _ -> false
-        | _ -> true
-      in
+      let single_line = module_expr_is_simple pincl_mod in
       fmt_docstring_around ~single_line c doc
         ( box
             ( hvbox 2 (fmt "include " $ Option.call ~f:blk.pro)

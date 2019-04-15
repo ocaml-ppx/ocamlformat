@@ -206,18 +206,11 @@ let longident_is_simple (c : Conf.t) x =
   in
   length x * 3 < c.margin * 2
 
-let module_type_is_simple (c : Conf.t) x =
-  match x.pmty_desc with
-  | Pmty_ident i | Pmty_alias i | Pmty_typeof {pmod_desc= Pmod_ident i} ->
-      longident_is_simple c i.txt
-  | _ -> false
+let module_type_is_simple x =
+  match x.pmty_desc with Pmty_signature _ -> false | _ -> true
 
-let rec module_expr_is_simple (c : Conf.t) x =
-  match x.pmod_desc with
-  | Pmod_ident i -> longident_is_simple c i.txt
-  | Pmod_constraint (e, t) ->
-      module_expr_is_simple c e && module_type_is_simple c t
-  | _ -> false
+let module_expr_is_simple x =
+  match x.pmod_desc with Pmod_structure _ -> false | _ -> true
 
 module type Module_item = sig
   type t

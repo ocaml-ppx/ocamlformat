@@ -57,9 +57,9 @@ val doc_atrs :
 
 val longident_is_simple : Conf.t -> Longident.t -> bool
 
-val module_expr_is_simple : Conf.t -> module_expr -> bool
+val module_expr_is_simple : module_expr -> bool
 
-val module_type_is_simple : Conf.t -> module_type -> bool
+val module_type_is_simple : module_type -> bool
 
 (** Ast terms of various forms. *)
 type t =
