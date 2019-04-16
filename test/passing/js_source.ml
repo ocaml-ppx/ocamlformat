@@ -7391,3 +7391,8 @@ let ssmap
 let _ = match x with | A -> [%expr match y with | e -> e]
 
 let _ = match x with | A -> [%expr match y with | e -> match e with x -> x]
+
+let _ =
+  List.map rows ~f:(fun row ->
+      Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
+;;
