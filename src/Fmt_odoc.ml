@@ -10,9 +10,9 @@
  **********************************************************************)
 
 open Fmt
-open Odoc__model
-open Comment
-open Names
+open Odoc__parser.Ast
+module Names = Odoc__model.Names
+module Location_ = Odoc__model.Location_
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     return [true] if the character should be escaped, [false] otherwise. *)
@@ -173,7 +173,7 @@ let fmt_reference_kind : Reference.t -> Fmt.t = function
   | `InstanceVariable _ -> str "!instance-variable:"
   | `Resolved _ | `Root _ | `Dot _ -> str "!"
 
-let fmt_leaf_inline_element = function
+let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Space -> fmt "@ "
   | `Word w ->
       (* Escape lines starting with '+' or '-' *)
@@ -187,27 +187,19 @@ let fmt_leaf_inline_element = function
       let s = escape_brackets s in
       hovbox 0 (wrap "[" "]" (str_verbatim s))
   | `Raw_markup (`Html, s) -> str s
-
-let rec fmt_inline_element = function
   | `Styled (style, elems) ->
       fmt_styled style (ign_loc fmt_inline_element) elems
-  | `Reference (ref, txt) ->
+  | `Reference (_kind, ref, txt) ->
       let ref = wrap "{" "}" (fmt_reference_kind ref $ fmt_reference ref) in
       if List.is_empty txt then ref
-      else hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_link_content txt))
+      else hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
   | `Link (url, txt) -> (
       let url = wrap "{:" "}" (str url) in
       match txt with
       | [] -> url
-      | txt -> wrap "{" "}" (url $ fmt "@ " $ fmt_link_content txt) )
-  | #leaf_inline_element as elem -> fmt_leaf_inline_element elem
+      | txt -> wrap "{" "}" (url $ fmt "@ " $ fmt_inline_elements txt) )
 
-and fmt_link_content txt = list txt "" (ign_loc fmt_non_link_inline_element)
-
-and fmt_non_link_inline_element = function
-  | `Styled (style, elems) ->
-      fmt_styled style (ign_loc fmt_non_link_inline_element) elems
-  | #leaf_inline_element as elem -> fmt_leaf_inline_element elem
+and fmt_inline_elements txt = list txt "" (ign_loc fmt_inline_element)
 
 (** TODO:
 
@@ -245,7 +237,7 @@ and fmt_text txt =
 
 and fmt_nestable_block_element : nestable_block_element -> t = function
   | `Paragraph elems ->
-      hovbox 0 (list elems "" (ign_loc fmt_inline_element))
+      hovbox 0 (fmt_inline_elements elems)
   | `Code_block s ->
       vbox 0 (fmt "{[@;<1 -999>" $ str_verbatim s $ fmt "@ ]}")
   | `Verbatim s -> vbox 0 (fmt "{v@;<1 -999>" $ str_verbatim s $ fmt "@ v}")
@@ -305,23 +297,14 @@ let fmt_tag : tag -> Fmt.t = function
       let ref = fmt_reference (ref :> Reference.t) in
       at $ fmt "canonical@ " $ ref
 
-let heading_level_to_int = function
-  | `Title -> 0
-  | `Section -> 1
-  | `Subsection -> 2
-  | `Subsubsection -> 3
-  | `Paragraph -> 4
-  | `Subparagraph -> 5
-
 let fmt_block_element = function
   | `Tag tag -> hovbox 0 (fmt_tag tag)
   | `Heading (lvl, lbl, elems) ->
-      let lvl = Int.to_string (heading_level_to_int lvl) in
-      let (`Label (_, lbl) : Identifier.Label.t) = lbl in
-      let lbl = LabelName.to_string lbl in
+      let lvl = Int.to_string lvl in
+      let lbl = match lbl with Some lbl -> str ":" $ str lbl | None -> fmt "" in
       hovbox 0
         (wrap "{" "}"
-           (str lvl $ str ":" $ str lbl $ fmt "@ " $ fmt_link_content elems))
+           (str lvl $ lbl $ fmt "@ " $ fmt_inline_elements elems))
   | #nestable_block_element as elm ->
       hovbox 0 (fmt_nestable_block_element elm)
 

@@ -32,8 +32,8 @@ let ign_loc f fmt with_loc = f fmt with_loc.Odoc__model.Location_.value
 
 let fpf = Format.fprintf
 
-open Odoc__model
-open Comment
+open Odoc__parser.Ast
+module Names = Odoc__model.Names
 
 let odoc_style fmt = function
   | `Bold -> fpf fmt "Bold"
@@ -92,7 +92,7 @@ let rec odoc_reference fmt : Reference.t -> unit =
   | `Label (p, s) -> dot (p :> t) (LabelName.to_string s)
   | `Resolved r -> odoc_reference_resolved fmt r
 
-let odoc_leaf_inline_element fmt = function
+let rec odoc_inline_element fmt = function
   | `Space -> ()
   | `Word txt ->
       (* Ignore backspace changes *)
@@ -102,23 +102,12 @@ let odoc_leaf_inline_element fmt = function
       fpf fmt "Word,%a" str txt
   | `Code_span txt -> fpf fmt "Code_span,%a" str txt
   | `Raw_markup (`Html, txt) -> fpf fmt "Raw_html,%a" str txt
-
-let rec odoc_non_link_inline_element fmt = function
-  | `Styled (style, elems) ->
-      fpf fmt "Styled,%a,%a" odoc_style style odoc_link_content elems
-  | #leaf_inline_element as elem -> odoc_leaf_inline_element fmt elem
-
-and odoc_link_content fmt content =
-  list (ign_loc odoc_non_link_inline_element) fmt content
-
-let rec odoc_inline_element fmt = function
   | `Styled (style, elems) ->
       fpf fmt "Styled,%a,%a" odoc_style style odoc_inline_elements elems
-  | `Reference (ref, content) ->
-      fpf fmt "Reference,%a,%a" odoc_reference ref odoc_link_content content
+  | `Reference (_kind, ref, content) ->
+      fpf fmt "Reference,%a,%a" odoc_reference ref odoc_inline_elements content
   | `Link (txt, content) ->
-      fpf fmt "Link,%a,%a" str txt odoc_link_content content
-  | #leaf_inline_element as elm -> odoc_leaf_inline_element fmt elm
+      fpf fmt "Link,%a,%a" str txt odoc_inline_elements content
 
 and odoc_inline_elements fmt elems =
   list (ign_loc odoc_inline_element) fmt elems
@@ -164,48 +153,22 @@ let odoc_tag fmt : tag -> unit = function
   | `Open -> fpf fmt "Open"
   | `Closed -> fpf fmt "Closed"
 
-let odoc_id_label (`Label (_, lbl) : Identifier.Label.t) =
-  Names.LabelName.to_string lbl
-
-let odoc_heading_level = function
-  | `Title -> "Title"
-  | `Section -> "Section"
-  | `Subsection -> "Subsection"
-  | `Subsubsection -> "Subsubsection"
-  | `Paragraph -> "Paragraph"
-  | `Subparagraph -> "Subparagraph"
-
 let odoc_block_element fmt : block_element -> unit = function
-  | `Heading (lvl, id, content) ->
-      let lvl = odoc_heading_level lvl in
-      let lbl = odoc_id_label id in
-      fpf fmt "Heading,%s,%a,%a" lvl str lbl odoc_link_content content
+  | `Heading (lvl, lbl, content) ->
+      let lvl = Int.to_string lvl in
+      let lbl = match lbl with Some lbl -> lbl | None -> "" in
+      fpf fmt "Heading,%s,%a,%a" lvl str lbl odoc_inline_elements content
   | `Tag tag -> fpf fmt "Tag,%a" odoc_tag tag
   | #nestable_block_element as elm -> odoc_nestable_block_element fmt elm
 
 let odoc_docs fmt elems = list (ign_loc odoc_block_element) fmt elems
 
-let docstring c s =
-  if not c.Conf.parse_docstrings then comment s
+let docstring c text =
+  if not c.Conf.parse_docstrings then comment text
   else
-    let module Model = Odoc__model in
-    let module Parser_ = Odoc__parser in
-    let dummy_definition =
-      let dummy = "dummy" in
-      let root =
-        Model.Root.
-          { package= dummy
-          ; file= Compilation_unit {name= dummy; hidden= true}
-          ; digest= String.make 16 '\000' }
-      in
-      `Root (root, Model.Names.UnitName.of_string dummy)
-    in
-    let parsed =
-      Parser_.parse_comment ~sections_allowed:`All
-        ~containing_definition:dummy_definition ~location:Lexing.dummy_pos
-        ~text:s
-    in
-    Format.asprintf "Docstring(%a)%!" odoc_docs parsed.Model.Error.value
+    let location = Lexing.dummy_pos in
+    let parsed = Odoc__parser.Parser.parse_comment_raw ~location ~text in
+    Format.asprintf "Docstring(%a)%!" odoc_docs parsed.Odoc__model.Error.value
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare

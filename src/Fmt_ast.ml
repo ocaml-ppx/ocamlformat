@@ -432,30 +432,15 @@ let fmt_label lbl sep =
 
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
-let parse_docstring c ~loc str_cmt =
-  let module Model = Odoc__model in
-  let module Parser_ = Odoc__parser in
-  let dummy_definition =
-    let dummy = "dummy" in
-    let root =
-      Model.Root.
-        { package= dummy
-        ; file= Compilation_unit {name= dummy; hidden= true}
-        ; digest= String.make 16 '\000' }
-    in
-    `Root (root, Model.Names.UnitName.of_string dummy)
-  in
+let parse_docstring c ~loc text =
   let location = loc.Location.loc_start in
-  let parsed =
-    Parser_.parse_comment ~sections_allowed:`All
-      ~containing_definition:dummy_definition ~location ~text:str_cmt
-  in
+  let parsed = Odoc__parser.Parser.parse_comment_raw ~location ~text in
   match parsed with
   | {value; warnings= []} -> Ok value
   | {warnings} ->
       if not c.conf.quiet then
         List.iter warnings ~f:(fun w ->
-            let msg = Model.Error.to_string w in
+            let msg = Odoc__model.Error.to_string w in
             Caml.Format.eprintf
               "%a:@,Warning: Invalid documentation comment:@,%s\n%!"
               Location.print_loc loc msg ) ;

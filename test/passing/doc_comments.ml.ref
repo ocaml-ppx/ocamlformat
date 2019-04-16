@@ -33,7 +33,7 @@ let a = 0
 
 (** {1:lbl Heading} *)
 
-(** {2:heading-without-label heading without label} *)
+(** {2 heading without label} *)
 
 module A = struct
   module B = struct
