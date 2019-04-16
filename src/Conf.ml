@@ -1176,16 +1176,16 @@ let inputs =
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
-let kind : [`Impl | `Intf | `Use_file] ref =
+let kind : [`Impl | `Intf | `Use_file] option ref =
   let doc =
     "Parse file with unrecognized extension as an implementation."
   in
-  let impl = (`Impl, Arg.info ["impl"] ~doc ~docs) in
+  let impl = (Some `Impl, Arg.info ["impl"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as an interface." in
-  let intf = (`Intf, Arg.info ["intf"] ~doc ~docs) in
+  let intf = (Some `Intf, Arg.info ["intf"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as a use_file." in
-  let use_file = (`Use_file, Arg.info ["use-file"] ~doc ~docs) in
-  let default = `Impl in
+  let use_file = (Some `Use_file, Arg.info ["use-file"] ~doc ~docs) in
+  let default = None in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
 let name =
@@ -1730,11 +1730,14 @@ type action =
   | Check of [`Impl | `Intf | `Use_file] input list
 
 let kind_of fname =
-  match Filename.extension fname with
-  | ".ml" -> `Impl
-  | ".mli" -> `Intf
-  | ".mlt" -> `Use_file
-  | _ -> !kind
+  match !kind with
+  | Some kind -> kind
+  | None -> (
+    match Filename.extension fname with
+    | ".ml" -> `Impl
+    | ".mli" -> `Intf
+    | ".mlt" -> `Use_file
+    | _ -> `Impl )
 
 let xdg_config =
   match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
