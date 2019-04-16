@@ -39,15 +39,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
       ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>"
       }
-  | `Toplevel ->
-      { leading_space= break_unless_newline 1000 0
-      ; bar= fmt "| "
-      ; box_all= hvbox indent
-      ; box_pattern_arrow= hovbox 0
-      ; break_before_arrow= fmt "@;<1 2>"
-      ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
-      ; break_after_opening_paren= fmt "@ " }
-  | `All ->
+  | `Toplevel | `All ->
       { leading_space= break_unless_newline 1000 0
       ; bar= fmt "| "
       ; box_all= hvbox indent
