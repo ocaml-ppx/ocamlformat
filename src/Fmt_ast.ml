@@ -3233,7 +3233,7 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
   let box_b = wrap_k blk_b.opn blk_b.cls in
   let fmt_arg ?prev:_ (name, arg_mtyp) ?next =
     let maybe_box k =
-      match arg_mtyp with Some {pro= None} -> hvbox 2 k | _ -> k
+      match arg_mtyp with Some {pro= None} -> hvbox 0 k | _ -> k
     in
     fmt "@ "
     $ maybe_box
