@@ -1827,22 +1827,23 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
       let keyword = fmt "let module" $ fmt_extension_suffix c ext in
-      let xargs, xbody =
-        Sugar.functor_ c.cmts ~for_functor_kw:false (sub_mod ~ctx pmod)
-      in
-      let xbody, xmty =
-        match xbody.ast with
-        | { pmod_desc= Pmod_constraint (body_me, body_mt)
-          ; pmod_loc
-          ; pmod_attributes= [] } ->
-            Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
-              ~after:body_mt.pmty_loc ;
-            (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
-        | _ -> (xbody, None)
-      in
       let let_module =
         match c.conf.let_module with
         | `Compact ->
+            let xargs, xbody =
+              Sugar.functor_ c.cmts ~for_functor_kw:false
+                (sub_mod ~ctx pmod)
+            in
+            let xbody, xmty =
+              match xbody.ast with
+              | { pmod_desc= Pmod_constraint (body_me, body_mt)
+                ; pmod_loc
+                ; pmod_attributes= [] } ->
+                  Cmts.relocate c.cmts ~src:pmod_loc
+                    ~before:body_me.pmod_loc ~after:body_mt.pmty_loc ;
+                  (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
+              | _ -> (xbody, None)
+            in
             fmt_module c keyword name xargs (Some xbody) true xmty []
               ~epi:(fmt "in")
         | `Sparse ->
