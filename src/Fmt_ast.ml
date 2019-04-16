@@ -868,14 +868,21 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_array c
            (list pats "@;<0 1>; " (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_or _ ->
+      let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
         match ctx0 with
-        | Pat {ppat_desc= Ppat_or _} -> true
+        | Pat {ppat_desc= Ppat_or _} -> not has_doc
         | Exp {pexp_desc= Pexp_match _ | Pexp_try _ | Pexp_function _} ->
-            true
+            not has_doc
         | _ -> false
       in
       let xpats = Sugar.or_pat c.cmts xpat in
+      let pat_needs_space_before p =
+        match p.ppat_desc with
+        | Ppat_constant (Pconst_integer (i, _) | Pconst_float (i, _)) -> (
+          match i.[0] with '-' | '+' -> true | _ -> false )
+        | _ -> false
+      in
       let pro0 =
         Option.call ~f:pro
         $ fits_breaks
@@ -886,16 +893,21 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _}
           when Poly.(c.conf.break_cases <> `Nested) -> (
-          match c.conf.indicate_nested_or_patterns with
-          | `Space -> or_newline "| " " |"
-          | `Unsafe_no -> or_newline "| " "| " )
+            fmt_if Poly.(c.conf.break_cases = `All) "@;<1000 0>"
+            $
+            match c.conf.indicate_nested_or_patterns with
+            | `Space -> or_newline "| " " |"
+            | `Unsafe_no -> or_newline "| " "| " )
         | _ -> break_unless_newline 1 0 $ fmt "| "
       in
-      let pro2 =
+      let pro2 pat_needs_space_before =
         fmt_or_k
           Poly.(c.conf.break_cases = `All)
           ( match c.conf.indicate_nested_or_patterns with
-          | `Space -> break_unless_newline 1000 0 $ fmt " |"
+          | `Space ->
+              break_unless_newline 1000 0
+              $ fmt " |"
+              $ fmt_if pat_needs_space_before " "
           | `Unsafe_no -> break_unless_newline 1000 0 $ fmt "| " )
           proI
       in
@@ -919,7 +931,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   let pro =
                     if first_grp && first then pro0 $ open_hovbox (-2)
                     else if first then proI $ open_hovbox (-2)
-                    else pro2
+                    else pro2 (pat_needs_space_before xpat.ast)
                   in
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
