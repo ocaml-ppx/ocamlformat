@@ -1847,11 +1847,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               ~epi:(fmt "in")
         | `Sparse ->
             hovbox 2
-              ( hovbox 4
-                  ( fmt "let module"
-                  $ fmt_extension_suffix c ext
-                  $ fmt " " $ str name.txt )
-              $ fmt "@;<1 2>=" )
+              (hovbox 4 (keyword $ fmt " " $ str name.txt) $ fmt "@;<1 2>=")
             $ fmt "@ "
             $ compose_module
                 (fmt_module_expr c (sub_mod ~ctx pmod))
