@@ -175,7 +175,8 @@ let verbatim s =
         + a
         + b
         + c
-     }} *)
+     }
+    } *)
 
 (** {{:https://github.com/} Github} *)
 
@@ -249,8 +250,7 @@ b
 
         Def
      }
-     {- Hij
-     }
+     {- Hij }
      {- Klm
 
         {ul
@@ -258,9 +258,10 @@ b
 
             Qrs
          }
-         {- Tuv
-         }}
-     }} *)
+         {- Tuv }
+        }
+     }
+    } *)
 
 (** - {v
     Abc

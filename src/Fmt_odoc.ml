@@ -250,11 +250,16 @@ and fmt_nestable_block_element : nestable_block_element -> t = function
 
 and fmt_list_heavy kind items =
   let fmt_item elems =
-    wrap "{- " "@,}" @@ vbox 0 (fmt_nestable_block_elements elems)
+    let box =
+      match elems with
+      | [ _ ] -> hvbox 3
+      | _ -> vbox 3
+    in
+    box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements elems))
   and start : s =
     match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"
   in
-  vbox 1 (wrap start "}" (list items "@," fmt_item))
+  vbox 1 (wrap start "@;<1 -1>}" (list items "@," fmt_item))
 
 and fmt_list_light kind items =
   let line_start =
