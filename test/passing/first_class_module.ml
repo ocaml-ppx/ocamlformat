@@ -73,8 +73,7 @@ let _ =
 let _ =
   ( module Ephemeron
              (HHHHHHHHHHHHHHHHHHHHHHHHHH)
-             (HHHHHHHHHHHHHHHHHHHHHHHHHH)
-  : Ephemeron.S )
+             (HHHHHHHHHHHHHHHHHHHHHHHHHH) : Ephemeron.S )
 
 let _ =
   ( module Ephemeron (HHHHHHHHHHHHHHHHHHHHHHHHHH) (HHHHHHHHHHHHHHHHHH)
@@ -87,8 +86,7 @@ let _ = (module Ephemeron (HHH) : Ephemeron.S)
 let _ =
   ( module Ephemeron (struct
     type t = t
-  end)
-  : Ephemeron.S )
+  end) : Ephemeron.S )
 
 let _ =
   ( module struct
