@@ -8506,13 +8506,12 @@ module M = struct
   type t = int * (< m : 'a > as 'a)
 end
 
-module type S =
-  sig
-    module M : sig
-      type t
-    end
+module type S = sig
+  module M : sig
+    type t
   end
-  with module M = M
+end
+with module M = M
 
 module type Printable = sig
   type t
@@ -8584,11 +8583,10 @@ end
 
 module type S' = S with module T := M
 
-module type S =
-  sig
-    type 'a t
-  end
-  with type 'a t := unit
+module type S = sig
+  type 'a t
+end
+with type 'a t := unit
 
 (* Fails *)
 let property (type t) () =

@@ -3018,12 +3018,19 @@ and fmt_module_type c ({ast= mty} as xmty) =
       let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc) =
         Cmts.fmt c loc @@ list_fl wcs_and fmt_cstr
       in
+      let {pro; psp; bdy; esp; epi} = fmt_module_type c mt in
       { empty with
-        bdy=
-          hvbox 0
-            (wrap_if parens "(" ")"
-               ( compose_module (fmt_module_type c mt) ~f:(hvbox 0)
-               $ list_fl wcs fmt_cstrs ))
+        pro=
+          Option.map pro ~f:(fun pro ->
+              open_hvbox 0 $ pro $ fmt_if parens "(" )
+      ; psp
+      ; bdy=
+          fmt_if_k (Option.is_none pro) (open_hvbox 0 $ fmt_if parens "(")
+          $ hvbox 0 bdy
+          $ fmt_if_k (Option.is_some epi) esp
+          $ Option.call ~f:epi $ list_fl wcs fmt_cstrs $ fmt_if parens ")"
+          $ close_box
+      ; esp= fmt_if_k (Option.is_none epi) esp
       ; epi=
           Some
             ( fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ")

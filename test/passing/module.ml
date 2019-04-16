@@ -28,3 +28,18 @@ module C = struct
 
   and B : sig end = B
 end
+
+module O : sig
+  type t
+end
+with type t := t = struct
+  let () = ()
+end
+
+module O : sig
+  type t
+end
+with type t := t
+ and type s := s = struct
+  let () = ()
+end
