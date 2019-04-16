@@ -3145,7 +3145,7 @@ and fmt_signature_item c {ast= si} =
         (fmt_docstring_around ~loc:pincl_loc c doc
            ( box (hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy))
            $ esp $ Option.call ~f:epi
-           $ fmt_attributes c ~key:"@@" atrs ))
+           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ))
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)

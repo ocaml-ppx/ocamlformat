@@ -26,7 +26,7 @@ type t =
     whenever 2 intervals share more than an end-point, then one contains the
     other. *)
 module Non_overlapping_interval_tree (Itv : sig
-  include Hashtbl.Key[@@ocaml.warning "-3"]
+  include Hashtbl.Key [@@ocaml.warning "-3"]
 
   val contains : t -> t -> bool
 
