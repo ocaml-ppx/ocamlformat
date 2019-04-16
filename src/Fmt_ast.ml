@@ -1852,7 +1852,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt "@ "
             $ compose_module
                 (fmt_module_expr c (sub_mod ~ctx pmod))
-                ~f:(hvbox 0)
+                ~f:Fn.id
             $ fmt "@;<1 -2>in"
       in
       hvbox 0
