@@ -1095,6 +1095,17 @@ let disable_conf_files =
     Arg.(value & flag & info ["disable-conf-files"] ~doc ~docs)
 
 let disable_outside_detected_project =
+  let doc =
+    Format.sprintf
+      "$(b,Warning:) this option is $(b,deprecated) and will be removed in \
+       OCamlFormat v1.0."
+  in
+  let default = false in
+  mk ~default
+    Arg.(
+      value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
+
+let enable_outside_detected_project =
   let witness =
     String.concat ~sep:" or "
       (List.map project_root_witness ~f:(fun name ->
@@ -1102,17 +1113,15 @@ let disable_outside_detected_project =
   in
   let doc =
     Format.sprintf
-      "Do not read $(b,.ocamlformat) config files outside the current \
-       project. The project root of an input file is taken to be the \
-       nearest ancestor directory that contains a %s file. If no \
-       $(b,.ocamlformat) configuration file is found, formatting is \
-       disabled."
+      "Read $(b,.ocamlformat) config files outside the current project. \
+       The project root of an input file is taken to be the nearest \
+       ancestor directory that contains a %s file. Formatting is enabled \
+       even if no $(b,.ocamlformat) configuration file is found."
       witness
   in
   let default = false in
   mk ~default
-    Arg.(
-      value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
+    Arg.(value & flag & info ["enable-outside-detected-project"] ~doc ~docs)
 
 let max_iters =
   let docv = "N" in
@@ -1483,6 +1492,10 @@ let (_profile : t option C.t) =
 let validate () =
   let inputs_len = List.length !inputs in
   let has_stdin = List.exists ~f:(String.equal "-") !inputs in
+  if !disable_outside_detected_project then
+    Format.eprintf
+      "Warning: option `--disable-outside-detected-project` is deprecated \
+       and will be removed in OCamlFormat v1.0." ;
   if !print_config then `Ok ()
   else if inputs_len = 0 then
     `Error (false, "Must specify at least one input file, or `-` for stdin")
@@ -1550,8 +1563,8 @@ let ocp_indent_janestreet_profile =
 let root =
   Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
 
-let disable_outside_detected_project =
-  !disable_outside_detected_project || Option.is_some root
+let enable_outside_detected_project =
+  !enable_outside_detected_project && Option.is_none root
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
@@ -1663,7 +1676,7 @@ let rec collect_files ~segs ~ignores ~files =
         if Fpath.exists filename then `Ocp_indent filename :: files
         else files
       in
-      if is_project_root dir && disable_outside_detected_project then
+      if is_project_root dir && not enable_outside_detected_project then
         (ignores, files, Some dir)
       else collect_files ~segs:upper_segs ~ignores ~files
 
@@ -1794,9 +1807,9 @@ let build_config ~file =
     collect_files ~segs ~ignores:[] ~files:[]
   in
   let files =
-    match (xdg_config, disable_outside_detected_project) with
-    | None, _ | Some _, true -> files
-    | Some f, false -> `Ocamlformat f :: files
+    match (xdg_config, enable_outside_detected_project) with
+    | None, _ | Some _, false -> files
+    | Some f, true -> `Ocamlformat f :: files
   in
   let files = if !disable_conf_files then [] else files in
   let conf =
@@ -1807,7 +1820,7 @@ let build_config ~file =
     let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
     List.for_all files ~f
   in
-  if disable_outside_detected_project && no_ocamlformat_files then (
+  if no_ocamlformat_files && not enable_outside_detected_project then (
     ( if not conf.quiet then
       let reason =
         match project_root with
@@ -1820,7 +1833,7 @@ let build_config ~file =
       Format.eprintf
         "File %S:@\n\
          Warning: Ocamlformat disabled because \
-         [--disable-outside-detected-project] was given and %s@\n\
+         [--enable-outside-detected-project] is not set and %s@\n\
          %!"
         file reason ) ;
     {conf with disable= true} )

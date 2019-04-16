@@ -43,8 +43,8 @@
   "Enable or disable ocamlformat."
   :type '(choice
           (const :tag "Enable" enable)
-          (const :tag "Disable outside detected project"
-                 disable-outside-detected-project)
+          (const :tag "Enable outside detected project"
+                 enable-outside-detected-project)
           (const :tag "Disable" disable))
   :group 'ocamlformat)
 
@@ -227,8 +227,8 @@ function."
            (cond
             ((equal ocamlformat-enable 'disable)
              (list "--disable"))
-            ((equal ocamlformat-enable 'disable-outside-detected-project)
-             (list "--disable-outside-detected-project"))
+            ((equal ocamlformat-enable 'enable-outside-detected-project)
+             (list "--enable-outside-detected-project"))
             (t
              '()))))
      (unwind-protect

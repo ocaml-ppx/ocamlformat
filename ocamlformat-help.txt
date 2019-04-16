@@ -263,11 +263,15 @@ OPTIONS
            Disable .ocamlformat configuration files.
 
        --disable-outside-detected-project
-           Do not read .ocamlformat config files outside the current project.
-           The project root of an input file is taken to be the nearest
-           ancestor directory that contains a .git or .hg or dune-project
-           file. If no .ocamlformat configuration file is found, formatting
-           is disabled.
+           Warning: this option is deprecated and will be removed in
+           OCamlFormat v1.0.
+
+       --enable-outside-detected-project
+           Read .ocamlformat config files outside the current project. The
+           project root of an input file is taken to be the nearest ancestor
+           directory that contains a .git or .hg or dune-project file.
+           Formatting is enabled even if no .ocamlformat configuration file
+           is found.
 
        -g, --debug
            Generate debugging output.
