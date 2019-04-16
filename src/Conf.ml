@@ -1744,13 +1744,17 @@ let kind_of fname =
 let xdg_config =
   let xdg_config_home =
     match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
-    | None | Some "" ->
-        let home = Option.value ~default:"" (Caml.Sys.getenv_opt "HOME") in
-        Fpath.(v home / ".config")
-    | Some xdg_config_home -> Fpath.v xdg_config_home
+    | None | Some "" -> (
+      match Caml.Sys.getenv_opt "HOME" with
+      | None | Some "" -> None
+      | Some home -> Some Fpath.(v home / ".config") )
+    | Some xdg_config_home -> Some (Fpath.v xdg_config_home)
   in
-  let filename = Fpath.(xdg_config_home / "ocamlformat") in
-  if Fpath.exists filename then Some filename else None
+  match xdg_config_home with
+  | Some xdg_config_home ->
+      let filename = Fpath.(xdg_config_home / "ocamlformat") in
+      if Fpath.exists filename then Some filename else None
+  | None -> None
 
 let is_ignored ~quiet ~ignores ~filename =
   let drop_line l = String.is_empty l || String.is_prefix l ~prefix:"#" in
