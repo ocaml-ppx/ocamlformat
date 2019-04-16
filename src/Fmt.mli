@@ -30,6 +30,9 @@ val set_margin : int -> t
 val break : int -> int -> t
 (** Format a break hint. *)
 
+val noop : t
+(** Format nothing. *)
+
 val fmt : s -> t
 (** Format a format string. *)
 
