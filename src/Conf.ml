@@ -464,14 +464,16 @@ let info =
          \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) attribute on expression in \
          the processed file."
     ; `P
-        "(*) .ocamlformat files in current and all ancestor directories \
-         for each input file are used, as well as the global .ocamlformat \
-         file defined in $(b,\\$XDG_CONFIG_HOME/ocamlformat). The global \
-         .ocamlformat file has the lowest priority, then the closer the \
-         directory is to the processed file, the higher the priority."
+        "(*) $(b,.ocamlformat) files in current and all ancestor \
+         directories for each input file are used, as well as the global \
+         $(b,ocamlformat) file defined in $(b,\\$XDG_CONFIG_HOME) or in \
+         $(b,\\$HOME/.config) if $(b,\\$XDG_CONFIG_HOME) is undefined. The \
+         global $(b,ocamlformat) file has the lowest priority, then the \
+         closer the directory is to the processed file, the higher the \
+         priority."
     ; `P
         "An $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
-         should ignore.  Each line in an $(b,.ocamlformat-ignore) file \
+         should ignore. Each line in an $(b,.ocamlformat-ignore) file \
          specifies a filename relative to the directory containing the \
          $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
          ignored and can be used as comments." ]
@@ -1740,12 +1742,17 @@ let kind_of fname =
     | _ -> `Impl )
 
 let xdg_config =
-  match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
+  let xdg_config_home =
+    match Caml.Sys.getenv_opt "XDG_CONFIG_HOME" with
+    | None | Some "" -> (
+      match Caml.Sys.getenv_opt "HOME" with
+      | None | Some "" -> None
+      | Some home -> Some Fpath.(v home / ".config") )
+    | Some xdg_config_home -> Some (Fpath.v xdg_config_home)
+  in
+  match xdg_config_home with
   | Some xdg_config_home ->
-      let filename =
-        Fpath.(
-          append (v xdg_config_home) (v "ocamlformat" / dot_ocamlformat))
-      in
+      let filename = Fpath.(xdg_config_home / "ocamlformat") in
       if Fpath.exists filename then Some filename else None
   | None -> None
 
