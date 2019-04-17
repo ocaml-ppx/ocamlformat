@@ -119,3 +119,6 @@ let _ =
     let a = 3 in
     Lwt.return a
   with _ -> assert false
+
+let%lwt f = function
+  | _ -> ()
