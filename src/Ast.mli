@@ -55,6 +55,12 @@ val doc_atrs :
   -> (string Location.loc * bool) list option
      * (string Location.loc * payload) list
 
+val longident_is_simple : Conf.t -> Longident.t -> bool
+
+val module_expr_is_simple : module_expr -> bool
+
+val module_type_is_simple : module_type -> bool
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload

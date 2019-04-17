@@ -197,6 +197,29 @@ let doc_atrs atrs =
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
 
+(** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3
+    of the margin. *)
+let fit_margin (c : Conf.t) x = x * 3 < c.margin
+
+(** [longident_fit_margin c x] returns [true] if and only if [x] does not
+    exceed 2/3 of the margin. *)
+let longident_fit_margin (c : Conf.t) x = x * 3 < c.margin * 2
+
+let longident_is_simple c x =
+  let rec length (x : Longident.t) =
+    match x with
+    | Lident x -> String.length x
+    | Ldot (x, y) -> length x + 1 + String.length y
+    | Lapply (x, y) -> length x + length y + 3
+  in
+  longident_fit_margin c (length x)
+
+let module_type_is_simple x =
+  match x.pmty_desc with Pmty_signature _ -> false | _ -> true
+
+let module_expr_is_simple x =
+  match x.pmod_desc with Pmod_structure _ -> false | _ -> true
+
 module type Module_item = sig
   type t
 
@@ -253,12 +276,11 @@ module Structure_item : Module_item with type t = structure_item = struct
             | Pmod_apply (me1, me2) ->
                 is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, _, me) -> is_simple_mod me
-            | Pmod_ident _ ->
-                Location.is_single_line me.pmod_loc c.Conf.margin
+            | Pmod_ident i -> longident_is_simple c i.txt
             | _ -> false
           in
           is_simple_mod me
-      | Pstr_open _ -> Location.is_single_line itm.pstr_loc c.Conf.margin
+      | Pstr_open i -> longident_is_simple c i.popen_lid.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -332,8 +354,9 @@ module Signature_item : Module_item with type t = signature_item = struct
         Location.is_single_line itm.psig_loc c.Conf.margin
     | `Sparse -> (
       match itm.psig_desc with
-      | Psig_open _ | Psig_module {pmd_type= {pmty_desc= Pmty_alias _}} ->
-          Location.is_single_line itm.psig_loc c.Conf.margin
+      | Psig_open {popen_lid= i}
+       |Psig_module {pmd_type= {pmty_desc= Pmty_alias i}} ->
+          longident_is_simple c i.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -1355,20 +1378,20 @@ end = struct
         ({txt= Lident "::"}, Some {pexp_desc= Pexp_tuple [e1; e2]}) ->
         is_simple c width (sub_exp ~ctx e1)
         && is_simple c width (sub_exp ~ctx e2)
-        && width xexp * 3 < c.margin
+        && fit_margin c (width xexp)
     | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
         is_trivial c e0
     | Pexp_array e1N | Pexp_tuple e1N ->
-        List.for_all e1N ~f:(is_trivial c) && width xexp * 3 < c.margin
+        List.for_all e1N ~f:(is_trivial c) && fit_margin c (width xexp)
     | Pexp_record (e1N, e0) ->
         Option.for_all e0 ~f:(is_trivial c)
         && List.for_all e1N ~f:(snd >> is_trivial c)
-        && width xexp * 3 < c.margin
+        && fit_margin c (width xexp)
     | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="}}, _) -> false
     | Pexp_apply (e0, e1N) ->
         is_trivial c e0
         && List.for_all e1N ~f:(snd >> is_trivial c)
-        && width xexp * 3 < c.margin
+        && fit_margin c (width xexp)
     | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
         is_simple c width (sub_exp ~ctx e0)
     | Pexp_extension (_, (PStr [] | PTyp _)) -> true
