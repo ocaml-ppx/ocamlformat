@@ -1421,7 +1421,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ fmt "@ " $ fmt_if parens_r "( " $ fmt "function"
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes ) )
-           $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )" ))
+           $ fmt "@;<1000 0>" $ fmt_cases c (Exp r) cs
+           $ fmt_if parens_r " )" ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident {txt= Lident id}; pexp_attributes= []}
       , [(Nolabel, _); (Nolabel, _)] )

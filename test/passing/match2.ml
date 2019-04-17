@@ -57,11 +57,20 @@ let _ = match x with _ -> b >>= fun () -> c
 
 [@@@ocamlformat "break-infix-before-func=false"]
 
-let foo = match foo with 1 -> bar >>= ( function _ -> () ) | other -> ()
+let foo =
+  match foo with
+  | 1 ->
+      bar >>= ( function
+      | _ -> () )
+  | other -> ()
 
 let foo =
   match foo with
-  | 1 -> bar >>= ( function a -> fooooo | b -> fooooo | _ -> () )
+  | 1 ->
+      bar >>= ( function
+      | a -> fooooo
+      | b -> fooooo
+      | _ -> () )
   | other -> ()
 
 let foo =
