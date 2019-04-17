@@ -41,6 +41,7 @@ type t =
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
+  ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; max_iters: int

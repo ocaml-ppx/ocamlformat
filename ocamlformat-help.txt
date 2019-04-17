@@ -166,6 +166,13 @@ OPTIONS (CODE FORMATTING STYLE)
            and an open line between a multi-line module-level let binding and
            the next. The default value is compact.
 
+       --let-module={compact|sparse}
+           Module binding formatting. compact does not break a line after the
+           let module ... = and before the in if the module declaration does
+           not fit on a single line. sparse breaks a line after let module
+           ... = and before the in if the module declaration does not fit on
+           a single line. The default value is compact.
+
        --let-open={preserve|short|long|auto}
            Module open formatting. preserve keeps the original style. short
            means the Module.(...) style is used. long means the let open

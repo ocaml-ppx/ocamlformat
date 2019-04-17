@@ -1827,27 +1827,39 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
       let keyword = fmt "let module" $ fmt_extension_suffix c ext in
-      let xargs, xbody =
-        Sugar.functor_ c.cmts ~for_functor_kw:false (sub_mod ~ctx pmod)
-      in
-      let xbody, xmty =
-        match xbody.ast with
-        | { pmod_desc= Pmod_constraint (body_me, body_mt)
-          ; pmod_loc
-          ; pmod_attributes= [] } ->
-            Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
-              ~after:body_mt.pmty_loc ;
-            (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
-        | _ -> (xbody, None)
+      let let_module =
+        match c.conf.let_module with
+        | `Compact ->
+            let xargs, xbody =
+              Sugar.functor_ c.cmts ~for_functor_kw:false
+                (sub_mod ~ctx pmod)
+            in
+            let xbody, xmty =
+              match xbody.ast with
+              | { pmod_desc= Pmod_constraint (body_me, body_mt)
+                ; pmod_loc
+                ; pmod_attributes= [] } ->
+                  Cmts.relocate c.cmts ~src:pmod_loc
+                    ~before:body_me.pmod_loc ~after:body_mt.pmty_loc ;
+                  (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
+              | _ -> (xbody, None)
+            in
+            fmt_module c keyword name xargs (Some xbody) true xmty []
+              ~epi:(fmt "in")
+        | `Sparse ->
+            hovbox 2
+              (hovbox 4 (keyword $ fmt " " $ str name.txt) $ fmt "@;<1 2>=")
+            $ fmt "@ "
+            $ compose_module
+                (fmt_module_expr c (sub_mod ~ctx pmod))
+                ~f:Fn.id
+            $ fmt "@;<1 -2>in"
       in
       hvbox 0
         ( wrap_if
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
-            ( hvbox 2
-                (fmt_module c keyword name xargs (Some xbody) true xmty []
-                   ~epi:(fmt "in"))
-            $ fmt "@;<1000 0>"
+            ( hvbox 2 let_module $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_open (flag, name, e0) ->

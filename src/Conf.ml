@@ -38,6 +38,7 @@ type t =
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
+  ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; max_iters: int
@@ -878,6 +879,24 @@ module Formatting = struct
       (fun conf x -> {conf with let_binding_spacing= x})
       (fun conf -> conf.let_binding_spacing)
 
+  let let_module =
+    let doc = "Module binding formatting." in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) does not break a line after the $(i,let module ... \
+           =) and before the $(i,in) if the module declaration does not \
+           fit on a single line." )
+      ; ( "sparse"
+        , `Sparse
+        , "$(b,sparse) breaks a line after $(i,let module ... =) and \
+           before the $(i,in) if the module declaration does not fit on a \
+           single line." ) ]
+    in
+    C.choice ~names:["let-module"] ~all ~doc ~section
+      (fun conf x -> {conf with let_module= x})
+      (fun conf -> conf.let_module)
+
   let let_open =
     let doc = "Module open formatting." in
     let all =
@@ -1324,6 +1343,7 @@ let ocamlformat_profile =
       C.default Formatting.leading_nested_match_parens
   ; let_and= C.default Formatting.let_and
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
+  ; let_module= C.default Formatting.let_module
   ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
   ; max_iters= C.default max_iters
@@ -1368,6 +1388,7 @@ let compact_profile =
   ; leading_nested_match_parens= false
   ; let_and= `Compact
   ; let_binding_spacing= `Compact
+  ; let_module= `Compact
   ; module_item_spacing= `Compact
   ; single_case= `Compact
   ; space_around_collection_expressions= false
@@ -1388,6 +1409,7 @@ let sparse_profile =
   ; leading_nested_match_parens= true
   ; let_and= `Sparse
   ; let_binding_spacing= `Sparse
+  ; let_module= `Sparse
   ; module_item_spacing= `Sparse
   ; single_case= `Sparse
   ; space_around_collection_expressions= true
@@ -1422,6 +1444,7 @@ let janestreet_profile =
   ; leading_nested_match_parens= true
   ; let_and= `Sparse
   ; let_binding_spacing= `Double_semicolon
+  ; let_module= `Sparse
   ; let_open= `Preserve
   ; margin= 90
   ; max_iters= ocamlformat_profile.max_iters
