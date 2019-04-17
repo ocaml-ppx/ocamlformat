@@ -1077,9 +1077,9 @@ and fmt_body c ?ext ({ast= body} as xbody) =
         $ fmt_attributes c ~key:"@" pexp_attributes )
       , update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
-        fmt "@ " $ fmt_cases c ctx cs $ fmt_if parens ")"
-        $ Cmts.fmt_after c pexp_loc )
-  | _ -> (noop, fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
+        fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc
+      )
+  | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
 and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
@@ -1402,7 +1402,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            4 (fmt_fun_args c xargs)
                        $ fmt "@ ->" ) )
                $ pre_body )
-           $ body ))
+           $ fmt "@;<1000 0>" $ body ))
   | Pexp_apply
       ( ( {pexp_desc= Pexp_ident {txt= Lident id; loc}; pexp_attributes= []}
         as op )
@@ -1687,7 +1687,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     0 (fmt_fun_args c xargs)
                 $ fmt "@ " )
             $ fmt "->" $ pre_body )
-        $ body
+        $ fmt "@ " $ body
         $ fmt_or_k c.conf.indicate_multiline_delimiters
             (fits_breaks_if parens ")" "@ )")
             (fits_breaks_if parens ")" "@,)") )
@@ -3821,7 +3821,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
               (fits_breaks " =" "@;<1000 0>=")
               (fmt "@;<1 2>=")
           $ pre_body )
-      $ body $ Cmts.fmt_after c pvb_loc
+      $ fmt "@ " $ body $ Cmts.fmt_after c pvb_loc
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" at_at_attrs
       $ (match in_ with Some in_ -> in_ indent | None -> noop)
       $ Option.call ~f:epi )
