@@ -3797,7 +3797,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let f ({loc}, _) = Location.compare_start loc pvb_expr.pexp_loc < 1 in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let stmt_loc = Sugar.args_location xargs in
-  let pre_body, body = fmt_body c ?ext xbody in
+  let pre_body, body = fmt_body c xbody in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c pvb_loc
   $ hvbox indent
