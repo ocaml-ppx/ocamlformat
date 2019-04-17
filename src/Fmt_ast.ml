@@ -1090,8 +1090,8 @@ and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
        $ Cmts.fmt_after c loc
        $ list is (comma_sep c) (fun i -> fmt_expression c (sub_exp ~ctx i))
        $ str (Printf.sprintf "%c" cls)
-       $ opt set (fun e -> fmt "@ <- " $ fmt_expression c (sub_exp ~ctx e))
-       ))
+       $ opt set (fun e ->
+             fmt "@;<1 2><- " $ fmt_expression c (sub_exp ~ctx e) ) ))
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp} as xexp) =
@@ -2069,7 +2069,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            ( fmt_expression c (sub_exp ~ctx e1)
-           $ fmt "." $ fmt_longident_loc c lid $ fmt "@ <- "
+           $ fmt "." $ fmt_longident_loc c lid $ fmt "@;<1 2><- "
            $ fmt_expression c (sub_exp ~ctx e2)
            $ fmt_atrs ))
   | Pexp_tuple es ->
@@ -2205,7 +2205,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           ( fmt_str_loc c name $ fmt "@ <- "
+           ( fmt_str_loc c name $ fmt "@;<1 2><- "
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) ))
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"

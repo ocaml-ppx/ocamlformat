@@ -51,8 +51,8 @@ let _ =
                  loooooooooooooooooooooooooooooooooooooooooooooooong >}
       in
       x
-      <- something very
-           looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+        <- something very
+             looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
   end
 
 let _ = f a#b (a#c x y)
