@@ -144,7 +144,7 @@ module type S = sig
 
   [%%foo: module type S = S [@@foo]]
 
-  [%%foo: include M[@@foo]]
+  [%%foo: include M [@@foo]]
 
   [%%foo: open M [@@foo]]
 

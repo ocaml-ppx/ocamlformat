@@ -15,7 +15,8 @@ end [@foo]
 
 module type S = sig
   include ((module type of M [@foo]) [@foo] with type t := M.t)
-  [@foo][@@foo]
+  [@foo]
+  [@@foo]
 
   [@@@foo]
 end [@foo]
@@ -265,7 +266,7 @@ module type S = sig
 
   [%%foo: module type S = S [@@foo]]
 
-  [%%foo: include M[@@foo]]
+  [%%foo: include M [@@foo]]
 
   [%%foo: open M [@@foo]]
 
