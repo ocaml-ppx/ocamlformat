@@ -210,7 +210,7 @@ let longident_is_simple c x =
     match x with
     | Lident x -> String.length x
     | Ldot (x, y) -> length x + 1 + String.length y
-    | Lapply (x, y) -> length x + length y
+    | Lapply (x, y) -> length x + length y + 3
   in
   longident_fit_margin c (length x)
 
