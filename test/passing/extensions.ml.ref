@@ -141,3 +141,5 @@ let _ =
   with _ -> assert false
 
 let%lwt f = function _ -> ()
+
+type%any_extension t = < a: 'a >
