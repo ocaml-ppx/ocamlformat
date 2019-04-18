@@ -514,9 +514,7 @@ type 'a foo2 += D = A | E = B | F = C
 
 type +'a foo = ..
 type 'a foo += A of (int -> 'a)
-type 'a foo += B of ('a -> int)
-
-(* ERROR: Parameter variances are not satisfied *)
+type 'a foo += B of ('a -> int) (* ERROR: Parameter variances are not satisfied *)
 
 type _ foo += C : ('a -> int) -> 'a foo
 
@@ -8794,9 +8792,7 @@ external s : int -> int = "s" [@@untagged]
 external t : float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
-let _ = raise Exit 3
-
-(* comment 9644 of PR#6000 *)
+let _ = raise Exit 3 (* comment 9644 of PR#6000 *)
 
 ;;
 fun b -> if b then format_of_string "x" else "y"
@@ -9149,7 +9145,9 @@ end
 module OK = struct
   open M1
 
-  let f1 (r : t) = r.x (* ok *)
+  let f1 (r : t) = r.x
+
+  (* ok *)
 
   let f2 r =
     ignore (r : t);

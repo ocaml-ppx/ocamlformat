@@ -217,8 +217,12 @@ let longident_is_simple c x =
 let module_type_is_simple x =
   match x.pmty_desc with Pmty_signature l -> List.is_empty l | _ -> true
 
-let module_expr_is_simple x =
-  match x.pmod_desc with Pmod_structure l -> List.is_empty l | _ -> true
+let rec module_expr_is_simple x =
+  match x.pmod_desc with
+  | Pmod_structure l -> List.is_empty l
+  | Pmod_constraint (e, t) ->
+      module_expr_is_simple e && module_type_is_simple t
+  | _ -> true
 
 let signature_item_is_simple x =
   match x.psig_desc with
@@ -235,6 +239,45 @@ let signature_item_is_simple x =
   | Psig_class_type _ -> false
   | Psig_attribute _ -> true
   | Psig_extension _ -> false
+
+let value_binding_is_simple c x =
+  match x.pvb_expr.pexp_desc with
+  | Pexp_ident l -> longident_is_simple c l.txt
+  | Pexp_constant _ -> true
+  | Pexp_let _ -> false
+  | Pexp_function [_] -> true
+  | Pexp_function _ -> false
+  | Pexp_fun _ -> false
+  | Pexp_match _ -> false
+  | Pexp_try _ -> false
+  | Pexp_field _ -> true
+  | Pexp_setfield _ -> true
+  | Pexp_ifthenelse _ -> false
+  | Pexp_sequence _ -> false
+  | Pexp_while _ -> false
+  | Pexp_for _ -> false
+  | Pexp_letmodule _ -> false
+  | Pexp_letexception _ -> false
+  | _ -> true
+
+let structure_item_is_simple c x =
+  match x.pstr_desc with
+  | Pstr_eval _ -> false
+  | Pstr_value (_, [x]) -> value_binding_is_simple c x
+  | Pstr_value (_, _) -> false
+  | Pstr_primitive _ -> true
+  | Pstr_type (_, _) -> false
+  | Pstr_typext _ -> true
+  | Pstr_exception _ -> true
+  | Pstr_module {pmb_expr= m} -> module_expr_is_simple m
+  | Pstr_recmodule _ -> false
+  | Pstr_modtype {pmtd_type= m} -> Option.is_none m
+  | Pstr_open _ -> true
+  | Pstr_class _ -> false
+  | Pstr_class_type _ -> false
+  | Pstr_include _ -> true
+  | Pstr_attribute _ -> true
+  | Pstr_extension _ -> false
 
 module type Module_item = sig
   type t

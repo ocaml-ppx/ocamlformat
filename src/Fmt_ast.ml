@@ -3659,13 +3659,10 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   let ctx = Str si in
   let epi = fmt "\n@\n" and eol = fmt "\n@\n" and adj = fmt "@\n" in
   let fmt_cmts_before = Cmts.fmt_before c ~epi ~eol ~adj si.pstr_loc in
-  let maybe_box =
-    Location.is_single_line si.pstr_loc c.conf.margin
-    && Source.has_cmt_same_line_after c.source si.pstr_loc
-  in
-  let pro = fmt_or maybe_box "@ " "\n@\n" in
+  let simple = structure_item_is_simple c.conf si in
+  let pro = fmt_or simple "@ " "\n@\n" in
   let fmt_cmts_after = Cmts.fmt_after ~pro c si.pstr_loc in
-  (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
+  (fun k -> fmt_cmts_before $ hvbox_if simple 0 (k $ fmt_cmts_after))
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->

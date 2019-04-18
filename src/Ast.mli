@@ -63,6 +63,8 @@ val module_type_is_simple : module_type -> bool
 
 val signature_item_is_simple : signature_item -> bool
 
+val structure_item_is_simple : Conf.t -> structure_item -> bool
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload
