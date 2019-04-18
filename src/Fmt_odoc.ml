@@ -138,7 +138,7 @@ and fmt_text txt =
       | List _ | Enum _ -> fmt_text_elt curr $ fmt_newline
       | Raw x when not (is_space x.[String.length x - 1]) -> (
           fmt_text_elt curr
-          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "" )
+          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> noop )
       | Code _ -> (
           fmt_text_elt curr
           $

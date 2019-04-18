@@ -512,7 +512,7 @@ let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
   let open Fmt in
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
-  | None | Some [] -> fmt ""
+  | None | Some [] -> noop
   | Some cmts ->
       let line_dist a b =
         b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
@@ -537,7 +537,7 @@ let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
         match next with
         | Some ((_, next_loc) :: _) ->
             fmt_if (line_dist cur_last_loc next_loc > 1) "\n"
-        | _ -> fmt ""
+        | _ -> noop
       in
       list_pn groups (fun ?prev group ?next ->
           fmt_or_k (Option.is_none prev)
@@ -561,12 +561,12 @@ let fmt_before t conf ?pro ?(epi = Fmt.break_unless_newline 1 0) ?eol ?adj =
 
 let fmt_after t conf ?(pro = Fmt.break_unless_newline 1 0) ?epi =
   let within = fmt_cmts t conf t.cmts_within ~pro ?epi in
-  let after = fmt_cmts t conf t.cmts_after ~pro ?epi ~eol:(Fmt.fmt "") in
+  let after = fmt_cmts t conf t.cmts_after ~pro ?epi ~eol:Fmt.noop in
   fun loc -> within loc $ after loc
 
 let fmt_within t conf ?(pro = Fmt.break_unless_newline 1 0)
     ?(epi = Fmt.break_unless_newline 1 0) =
-  fmt_cmts t conf t.cmts_within ~pro ~epi ~eol:(Fmt.fmt "")
+  fmt_cmts t conf t.cmts_within ~pro ~epi ~eol:Fmt.noop
 
 let fmt t conf ?pro ?epi ?eol ?adj loc =
   (* remove the before comments from the map first *)

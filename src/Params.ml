@@ -28,7 +28,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; box_all= hvbox indent
       ; box_pattern_arrow= hovbox 2
       ; break_before_arrow= fmt "@;<1 0>"
-      ; break_after_arrow= fmt ""
+      ; break_after_arrow= noop
       ; break_after_opening_paren= fmt "@ " }
   | `Nested ->
       { leading_space= fmt_if (not first) "@ "
@@ -61,27 +61,27 @@ let get_record_type (c : Conf.t) ~wrap_record =
   let sparse_type_decl = Poly.(c.type_decl = `Sparse) in
   match c.break_separators with
   | `Before ->
-      { docked_before= fmt ""
+      { docked_before= noop
       ; break_before= fmt "@ "
       ; box_record= (fun k -> hvbox 0 (wrap_record c k))
       ; sep_before= fmt_or sparse_type_decl "@;<1000 0>; " "@,; "
-      ; sep_after= fmt ""
-      ; break_after= fmt ""
-      ; docked_after= fmt "" }
+      ; sep_after= noop
+      ; break_after= noop
+      ; docked_after= noop }
   | `After ->
-      { docked_before= fmt ""
+      { docked_before= noop
       ; break_before= fmt "@ "
       ; box_record= (fun k -> hvbox 2 (wrap_record c k))
-      ; sep_before= fmt ""
+      ; sep_before= noop
       ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
-      ; break_after= fmt ""
-      ; docked_after= fmt "" }
+      ; break_after= noop
+      ; docked_after= noop }
   | `After_and_docked ->
       let space = if c.space_around_collection_expressions then 1 else 0 in
       { docked_before= fmt " {"
       ; break_before= break space 0
       ; box_record= Fn.id
-      ; sep_before= fmt ""
+      ; sep_before= noop
       ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
       ; break_after= break space (-2)
       ; docked_after= fmt "}" }

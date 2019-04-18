@@ -33,13 +33,15 @@ let pp_color_k color_code k fs =
 
 let break n o fs = Format.pp_print_break fs n o
 
+let noop (_ : Format.formatter) = ()
+
 let fmt f fs = Format.fprintf fs f
 
 (** Primitive types -----------------------------------------------------*)
 
 let char c fs = Format.pp_print_char fs c
 
-let str s fs = Format.pp_print_string fs s
+let str s fs = if not (String.is_empty s) then Format.pp_print_string fs s
 
 (** Primitive containers ------------------------------------------------*)
 
@@ -124,10 +126,7 @@ let fits_breaks_if ?force_fit_if ?force_break_if cnd fits breaks fs =
 
 (** Wrapping ------------------------------------------------------------*)
 
-let wrap_if_k cnd pre suf k fs =
-  if cnd then pre fs ;
-  k fs ;
-  if cnd then suf fs
+let wrap_if_k cnd pre suf k = fmt_if_k cnd pre $ k $ fmt_if_k cnd suf
 
 let wrap_k x = wrap_if_k true x
 
@@ -135,21 +134,18 @@ let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
-let wrap_if_breaks pre suf k fs =
-  fits_breaks "" pre fs ; k fs ; fits_breaks "" suf fs
+let wrap_if_breaks pre suf k = fits_breaks "" pre $ k $ fits_breaks "" suf
 
-let wrap_if_fits_and cnd pre suf k fs =
-  fits_breaks_if cnd pre "" fs ;
-  k fs ;
-  fits_breaks_if cnd suf "" fs
+let wrap_if_fits_and cnd pre suf k =
+  fits_breaks_if cnd pre "" $ k $ fits_breaks_if cnd suf ""
 
-let wrap_fits_breaks_if ?(space = true) c cnd pre suf k fs =
+let wrap_fits_breaks_if ?(space = true) c cnd pre suf k =
   if (not c.Conf.indicate_multiline_delimiters) && not space then
-    wrap_if_k cnd (str pre) (str suf) k fs
-  else (
-    fits_breaks_if cnd pre (pre ^ " ") fs ;
-    k fs ;
-    fits_breaks_if cnd suf ("@ " ^ suf) fs )
+    wrap_if_k cnd (str pre) (str suf) k
+  else
+    fits_breaks_if cnd pre (pre ^ " ")
+    $ k
+    $ fits_breaks_if cnd suf ("@ " ^ suf)
 
 let wrap_fits_breaks ?(space = true) conf x =
   wrap_fits_breaks_if ~space conf true x
@@ -251,5 +247,5 @@ let fill_text text =
               | Some str when String.for_all str ~f:Char.is_whitespace ->
                   close_box $ fmt "\n@," $ open_hovbox 0
               | Some _ when not (String.is_empty curr) -> fmt "@ "
-              | _ -> fmt "" )))
+              | _ -> noop )))
   $ fmt_if (Char.is_whitespace text.[String.length text - 1]) " "
