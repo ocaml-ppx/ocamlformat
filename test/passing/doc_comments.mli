@@ -280,3 +280,24 @@ b
 A
   B
       ]} *)
+
+(** {!module:A} {!module:A.B}
+
+    {!module-type:A} {!module-type:A.b}
+
+    {!class:c} {!class:M.c}
+
+    {!class-type:c} {!class-type:M.c}
+
+    {!val:x} {!val:M.x}
+
+    {!type:t} {!type:M.t}
+
+    {!exception:E} {!exception:M.E}
+
+    {!method:m} {!method:c.m}
+
+    {!constructor:C} {!constructor:M.C}
+
+    {!field:f} {!field:t.f} {!field:M.t.f}
+ *)
