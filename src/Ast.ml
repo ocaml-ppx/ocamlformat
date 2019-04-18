@@ -266,7 +266,7 @@ let structure_item_is_simple c x =
   | Pstr_value (_, [x]) -> value_binding_is_simple c x
   | Pstr_value (_, _) -> false
   | Pstr_primitive _ -> true
-  | Pstr_type (_, _) -> false
+  | Pstr_type (_, l) -> List.length l <= 1
   | Pstr_typext _ -> true
   | Pstr_exception _ -> true
   | Pstr_module {pmb_expr= m} -> module_expr_is_simple m
