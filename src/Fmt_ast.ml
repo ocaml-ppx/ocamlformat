@@ -3145,13 +3145,10 @@ and fmt_signature_item c ?ext {ast= si} =
   @@
   let epi = fmt "\n@\n" and eol = fmt "\n@\n" and adj = fmt "@\n" in
   let fmt_cmts_before = Cmts.fmt_before c ~epi ~eol ~adj si.psig_loc in
-  let maybe_box =
-    Location.is_single_line si.psig_loc c.conf.margin
-    && Source.has_cmt_same_line_after c.source si.psig_loc
-  in
-  let pro = fmt_or maybe_box "@ " "\n@\n" in
+  let simple = signature_item_is_simple si in
+  let pro = fmt_or simple "@ " "\n@\n" in
   let fmt_cmts_after = Cmts.fmt_after ~pro c si.psig_loc in
-  (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
+  (fun k -> fmt_cmts_before $ hvbox_if simple 0 (k $ fmt_cmts_after))
   @@
   let ctx = Sig si in
   match si.psig_desc with

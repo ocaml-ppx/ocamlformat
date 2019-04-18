@@ -220,6 +220,22 @@ let module_type_is_simple x =
 let module_expr_is_simple x =
   match x.pmod_desc with Pmod_structure l -> List.is_empty l | _ -> true
 
+let signature_item_is_simple x =
+  match x.psig_desc with
+  | Psig_value _ -> false
+  | Psig_type (_, l) -> List.length l <= 1
+  | Psig_typext _ -> true
+  | Psig_exception _ -> true
+  | Psig_module {pmd_type= m} -> module_type_is_simple m
+  | Psig_recmodule _ -> false
+  | Psig_modtype {pmtd_type= m} -> Option.for_all m ~f:module_type_is_simple
+  | Psig_open _ -> true
+  | Psig_include _ -> true
+  | Psig_class _ -> false
+  | Psig_class_type _ -> false
+  | Psig_attribute _ -> true
+  | Psig_extension _ -> false
+
 module type Module_item = sig
   type t
 
