@@ -122,3 +122,6 @@ let _ =
 
 let%lwt f = function
   | _ -> ()
+
+type%any_extension t =
+  < a: 'a >

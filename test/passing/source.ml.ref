@@ -208,10 +208,9 @@ let%foo[@foo] x = 4
 
 and[@foo] y = x
 
-[%%foo
-type t = int [@@foo]
+type%foo t = int [@@foo]
 
-and t = int [@@foo]]
+and t = int [@@foo]
 
 [%%foo
 type t += T [@@foo]]
@@ -250,8 +249,9 @@ module type S = sig
 
   [%%foo: external x : t = "" [@@foo]]
 
-  [%%foo: type t = int [@@foo]
- and t' = int [@@foo]]
+  type%foo t = int [@@foo]
+
+  and t' = int [@@foo]
 
   [%%foo: type t += T [@@foo]]
 
@@ -3365,8 +3365,10 @@ end
 module rec Typ : sig
   module type PAIR = sig
     type t
- and t1
- and t2
+
+    and t1
+
+    and t2
 
     val eq : (t, t1 * t2) TypEq.t
 
@@ -5057,7 +5059,8 @@ end
 
 module type S = sig
   type t
- and s = t
+
+  and s = t
 end
 
 module type S' = S with type t := int
@@ -7855,7 +7858,8 @@ module M : sig
   type 'a t
 
   type u = u t
- and v = v t
+
+  and v = v t
 
   val f : int -> u
 
