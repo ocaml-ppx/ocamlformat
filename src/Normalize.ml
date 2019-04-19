@@ -105,7 +105,8 @@ let rec odoc_inline_element fmt = function
   | `Styled (style, elems) ->
       fpf fmt "Styled,%a,%a" odoc_style style odoc_inline_elements elems
   | `Reference (_kind, ref, content) ->
-      fpf fmt "Reference,%a,%a" odoc_reference ref odoc_inline_elements content
+      fpf fmt "Reference,%a,%a" odoc_reference ref odoc_inline_elements
+        content
   | `Link (txt, content) ->
       fpf fmt "Link,%a,%a" str txt odoc_inline_elements content
 
@@ -168,7 +169,8 @@ let docstring c text =
   else
     let location = Lexing.dummy_pos in
     let parsed = Odoc__parser.Parser.parse_comment_raw ~location ~text in
-    Format.asprintf "Docstring(%a)%!" odoc_docs parsed.Odoc__model.Error.value
+    Format.asprintf "Docstring(%a)%!" odoc_docs
+      parsed.Odoc__model.Error.value
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare

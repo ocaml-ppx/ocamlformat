@@ -114,29 +114,33 @@ let rec fmt_reference_resolved =
     k $ str "." $ str s
   in
   function
-  | `Identifier id -> "", str (Identifier.name id)
+  | `Identifier id -> ("", str (Identifier.name id))
   | `SubstAlias (_, r) -> fmt_reference_resolved (r :> t)
-  | `Module (r, s) -> "module:", dot (r :> t) (ModuleName.to_string s)
+  | `Module (r, s) -> ("module:", dot (r :> t) (ModuleName.to_string s))
   | `Canonical (_, `Resolved r) -> fmt_reference_resolved (r :> t)
   | `Canonical (p, _) -> fmt_reference_resolved (p :> t)
-  | `ModuleType (r, s) -> "module-type:", dot (r :> t) (ModuleTypeName.to_string s)
-  | `Type (r, s) -> "type:", dot (r :> t) (TypeName.to_string s)
-  | `Constructor (r, s) -> "constructor:", dot (r :> t) (ConstructorName.to_string s)
-  | `Field (r, s) -> "field:", dot (r :> t) (FieldName.to_string s)
-  | `Extension (r, s) -> "extension:", dot (r :> t) (ExtensionName.to_string s)
-  | `Exception (r, s) -> "exception:", dot (r :> t) (ExceptionName.to_string s)
-  | `Value (r, s) -> "val:", dot (r :> t) (ValueName.to_string s)
-  | `Class (r, s) -> "class:", dot (r :> t) (ClassName.to_string s)
-  | `ClassType (r, s) -> "class-type:", dot (r :> t) (ClassTypeName.to_string s)
-  | `Method (r, s) -> "method:", dot (r :> t) (MethodName.to_string s)
+  | `ModuleType (r, s) ->
+      ("module-type:", dot (r :> t) (ModuleTypeName.to_string s))
+  | `Type (r, s) -> ("type:", dot (r :> t) (TypeName.to_string s))
+  | `Constructor (r, s) ->
+      ("constructor:", dot (r :> t) (ConstructorName.to_string s))
+  | `Field (r, s) -> ("field:", dot (r :> t) (FieldName.to_string s))
+  | `Extension (r, s) ->
+      ("extension:", dot (r :> t) (ExtensionName.to_string s))
+  | `Exception (r, s) ->
+      ("exception:", dot (r :> t) (ExceptionName.to_string s))
+  | `Value (r, s) -> ("val:", dot (r :> t) (ValueName.to_string s))
+  | `Class (r, s) -> ("class:", dot (r :> t) (ClassName.to_string s))
+  | `ClassType (r, s) ->
+      ("class-type:", dot (r :> t) (ClassTypeName.to_string s))
+  | `Method (r, s) -> ("method:", dot (r :> t) (MethodName.to_string s))
   | `InstanceVariable (r, s) ->
-      "instance-variable:", dot (r :> t) (InstanceVariableName.to_string s)
+      ("instance-variable:", dot (r :> t) (InstanceVariableName.to_string s))
   | `Label (r, s) ->
       let kind, k = fmt_reference_resolved (r :> t) in
-      kind, k $ str ":" $ str (LabelName.to_string s)
+      (kind, k $ str ":" $ str (LabelName.to_string s))
 
-let fmt_reference_kind =
-  function
+let fmt_reference_kind = function
   | `TModule -> "module:"
   | `TModuleType -> "module-type:"
   | `TType -> "type:"
@@ -156,27 +160,32 @@ let fmt_reference_kind =
 let rec fmt_reference : Reference.t -> _ =
   let open Names in
   let open Reference in
-  let dot p rhs = 
+  let dot p rhs =
     let _, k = fmt_reference p in
     k $ str "." $ str rhs
   in
   function
-  | `Root (s, kind) -> fmt_reference_kind kind, str (UnitName.to_string s)
-  | `Dot (p, s) -> "", dot (p :> t) s
-  | `Module (p, s) -> "module:", dot (p :> t) (ModuleName.to_string s)
-  | `ModuleType (p, s) -> "module-type:", dot (p :> t) (ModuleTypeName.to_string s)
-  | `Type (p, s) -> "type:", dot (p :> t) (TypeName.to_string s)
-  | `Constructor (p, s) -> "constructor:", dot (p :> t) (ConstructorName.to_string s)
-  | `Field (p, s) -> "field:", dot (p :> t) (FieldName.to_string s)
-  | `Extension (p, s) -> "extension:", dot (p :> t) (ExtensionName.to_string s)
-  | `Exception (p, s) -> "exception:", dot (p :> t) (ExceptionName.to_string s)
-  | `Value (p, s) -> "val:", dot (p :> t) (ValueName.to_string s)
-  | `Class (p, s) -> "class:", dot (p :> t) (ClassName.to_string s)
-  | `ClassType (p, s) -> "class-type:", dot (p :> t) (ClassTypeName.to_string s)
-  | `Method (p, s) -> "method:", dot (p :> t) (MethodName.to_string s)
+  | `Root (s, kind) -> (fmt_reference_kind kind, str (UnitName.to_string s))
+  | `Dot (p, s) -> ("", dot (p :> t) s)
+  | `Module (p, s) -> ("module:", dot (p :> t) (ModuleName.to_string s))
+  | `ModuleType (p, s) ->
+      ("module-type:", dot (p :> t) (ModuleTypeName.to_string s))
+  | `Type (p, s) -> ("type:", dot (p :> t) (TypeName.to_string s))
+  | `Constructor (p, s) ->
+      ("constructor:", dot (p :> t) (ConstructorName.to_string s))
+  | `Field (p, s) -> ("field:", dot (p :> t) (FieldName.to_string s))
+  | `Extension (p, s) ->
+      ("extension:", dot (p :> t) (ExtensionName.to_string s))
+  | `Exception (p, s) ->
+      ("exception:", dot (p :> t) (ExceptionName.to_string s))
+  | `Value (p, s) -> ("val:", dot (p :> t) (ValueName.to_string s))
+  | `Class (p, s) -> ("class:", dot (p :> t) (ClassName.to_string s))
+  | `ClassType (p, s) ->
+      ("class-type:", dot (p :> t) (ClassTypeName.to_string s))
+  | `Method (p, s) -> ("method:", dot (p :> t) (MethodName.to_string s))
   | `InstanceVariable (p, s) ->
-      "instance-variable:", dot (p :> t) (InstanceVariableName.to_string s)
-  | `Label (p, s) -> "label:", dot (p :> t) (LabelName.to_string s)
+      ("instance-variable:", dot (p :> t) (InstanceVariableName.to_string s))
+  | `Label (p, s) -> ("label:", dot (p :> t) (LabelName.to_string s))
   | `Resolved r -> fmt_reference_resolved r
 
 let rec fmt_inline_element : inline_element -> Fmt.t = function
@@ -199,7 +208,8 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       let ref_kind, ref = fmt_reference (ref :> Reference.t) in
       let ref = fmt "{!" $ str ref_kind $ ref $ fmt "}" in
       if List.is_empty txt then ref
-      else hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
+      else
+        hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
   | `Link (url, txt) -> (
       let url = wrap "{:" "}" (str url) in
       match txt with
@@ -243,25 +253,22 @@ and fmt_text txt =
     ]} *)
 
 and fmt_nestable_block_element : nestable_block_element -> t = function
-  | `Paragraph elems ->
-      hovbox 0 (fmt_inline_elements elems)
+  | `Paragraph elems -> hovbox 0 (fmt_inline_elements elems)
   | `Code_block s ->
       vbox 0 (fmt "{[@;<1 -999>" $ str_verbatim s $ fmt "@ ]}")
   | `Verbatim s -> vbox 0 (fmt "{v@;<1 -999>" $ str_verbatim s $ fmt "@ v}")
   | `Modules mods ->
       let mods = (mods :> Reference.t list) in
-      hovbox 0 (wrap "{!modules:@," "@,}" (list mods "@ " (fun ref -> snd (fmt_reference ref))))
+      hovbox 0
+        (wrap "{!modules:@," "@,}"
+           (list mods "@ " (fun ref -> snd (fmt_reference ref))))
   | `List (k, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy k items
   | `List (k, items) -> fmt_list_light k items
 
 and fmt_list_heavy kind items =
   let fmt_item elems =
-    let box =
-      match elems with
-      | [ _ ] -> hvbox 3
-      | _ -> vbox 3
-    in
+    let box = match elems with [_] -> hvbox 3 | _ -> vbox 3 in
     box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements elems))
   and start : s =
     match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"
@@ -313,10 +320,11 @@ let fmt_block_element = function
   | `Tag tag -> hovbox 0 (fmt_tag tag)
   | `Heading (lvl, lbl, elems) ->
       let lvl = Int.to_string lvl in
-      let lbl = match lbl with Some lbl -> str ":" $ str lbl | None -> fmt "" in
+      let lbl =
+        match lbl with Some lbl -> str ":" $ str lbl | None -> fmt ""
+      in
       hovbox 0
-        (wrap "{" "}"
-           (str lvl $ lbl $ fmt "@ " $ fmt_inline_elements elems))
+        (wrap "{" "}" (str lvl $ lbl $ fmt "@ " $ fmt_inline_elements elems))
   | #nestable_block_element as elm ->
       hovbox 0 (fmt_nestable_block_element elm)
 

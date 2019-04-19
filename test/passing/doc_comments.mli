@@ -301,3 +301,12 @@ A
 
     {!field:f} {!field:t.f} {!field:M.t.f}
  *)
+
+(** {!modules:Foo}
+
+    {!modules:Foo Bar.Baz}
+
+    @canonical Foo
+
+    @canonical Foo.Bar
+*)
