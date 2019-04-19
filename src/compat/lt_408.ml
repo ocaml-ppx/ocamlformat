@@ -11,9 +11,9 @@
 
 let with_warning_filter ~filter ~f =
   let warning_printer = !Location.warning_printer in
-  (Location.warning_printer :=
-     fun loc fmt warn ->
-       if filter loc warn then warning_printer loc fmt warn else ()) ;
+  (Location.warning_printer
+     := fun loc fmt warn ->
+          if filter loc warn then warning_printer loc fmt warn else ()) ;
   let reset () = Location.warning_printer := warning_printer in
   try
     let x = f () in

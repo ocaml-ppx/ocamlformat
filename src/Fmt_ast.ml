@@ -1349,7 +1349,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       wrap_if parens "(" ")"
         (hovbox 0
            ( fmt_expression c (sub_exp ~ctx r)
-           $ Cmts.fmt c loc (fmt " :=@;<1 2>")
+           $ Cmts.fmt c loc (fmt "@;<1 2>:= ")
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ))
   | Pexp_apply
       ( { pexp_desc=
