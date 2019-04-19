@@ -228,8 +228,8 @@ module type S = sig
   [%%foo: val x : t [@@foo]]
   [%%foo: external x : t = "" [@@foo]]
 
-  [%%foo: type t = int [@@foo]
- and t' = int [@@foo]]
+  type%foo t = int [@@foo]
+ and t' = int [@@foo]
 
   [%%foo: type t += T [@@foo]]
   [%%foo: exception X [@@foo]]

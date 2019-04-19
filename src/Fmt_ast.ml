@@ -470,6 +470,8 @@ and fmt_extension c ctx key (ext, pld) =
   | ( PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
+  | PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top) ->
+      fmt_signature_item c ~ext (sub_sig ~ctx si)
   | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
 
 and fmt_attribute_or_extension c key maybe_box (pre, pld) =
@@ -3115,7 +3117,7 @@ and fmt_signature c ctx itms =
   let fmt_grp itms = list itms "@\n" fmt_grp in
   hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
 
-and fmt_signature_item c {ast= si} =
+and fmt_signature_item c ?ext {ast= si} =
   protect (Sig si)
   @@
   let epi = fmt "\n@\n" and eol = fmt "\n@\n" and adj = fmt "@\n" in
@@ -3172,10 +3174,16 @@ and fmt_signature_item c {ast= si} =
       let fmt_decl ~first ~last decl =
         let pre =
           if first then
-            if Poly.(rec_flag = Recursive) then "type " else "type nonrec "
+            let pre =
+              if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
+            in
+            if Option.is_some ext then pre else pre ^ " "
           else "and "
         and brk = fmt_if (not last) "\n" in
-        fmt_type_declaration c ~pre ~brk ctx decl $ fmt_if (not last) "@ "
+        fmt_type_declaration c ~pre
+          ?ext:(if first then ext else None)
+          ~brk ctx decl
+        $ fmt_if (not last) "@ "
       in
       hvbox 0 (list_fl decls fmt_decl)
   | Psig_typext te -> fmt_type_extension c ctx te
