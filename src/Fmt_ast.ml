@@ -3185,7 +3185,7 @@ and fmt_signature_item c ?ext {ast= si} =
           ~brk ctx decl
         $ fmt_if (not last) "@ "
       in
-      hvbox 0 (list_fl decls fmt_decl)
+      vbox 0 (list_fl decls fmt_decl)
   | Psig_typext te -> fmt_type_extension c ctx te
   | Psig_value vd -> fmt_value_description c ctx vd
   | Psig_class cl -> fmt_class_types c ctx ~pre:"class" ~sep:":" cl

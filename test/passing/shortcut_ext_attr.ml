@@ -128,7 +128,8 @@ module type S = sig
   [%%foo: external x : t = "" [@@foo]]
 
   type%foo t = int [@@foo]
- and t' = int [@@foo]
+
+  and t' = int [@@foo]
 
   [%%foo: type t += T [@@foo]]
 

@@ -229,7 +229,8 @@ module type S = sig
   [%%foo: external x : t = "" [@@foo]]
 
   type%foo t = int [@@foo]
- and t' = int [@@foo]
+
+  and t' = int [@@foo]
 
   [%%foo: type t += T [@@foo]]
   [%%foo: exception X [@@foo]]
@@ -3547,8 +3548,10 @@ end
 module rec Typ : sig
   module type PAIR = sig
     type t
- and t1
- and t2
+
+    and t1
+
+    and t2
 
     val eq : (t, t1 * t2) TypEq.t
     val t1 : t1 Typ.typ
@@ -4501,7 +4504,8 @@ let f (x : 'a t) (y : 'a) = x = y
 (* PR#6505 *)
 module type PR6505 = sig
   type 'o is_an_object = < .. > as 'o
- and 'o abs constraint 'o = 'o is_an_object
+
+  and 'o abs constraint 'o = 'o is_an_object
 
   val abs : 'o is_an_object -> 'o abs
   val unabs : 'o abs -> 'o
@@ -5349,7 +5353,8 @@ end
 
 module type S = sig
   type t
- and s = t
+
+  and s = t
 end
 
 module type S' = S with type t := int
@@ -7318,7 +7323,8 @@ module PR_4450_2 = struct
 
   module rec MyList : sig
     type 'a wrap = My of 'a t
- and 'a t = < map : 'b. ('a -> 'b) -> 'b wrap >
+
+    and 'a t = < map : 'b. ('a -> 'b) -> 'b wrap >
 
     val create : 'a list -> 'a t
   end = struct
@@ -8221,7 +8227,8 @@ module M : sig
   type 'a t
 
   type u = u t
- and v = v t
+
+  and v = v t
 
   val f : int -> u
   val g : v -> bool
