@@ -2770,7 +2770,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
     hvbox 2
       ( str pre
       $ fmt_extension_suffix c ext
-      $ fmt_if (Option.is_some ext) " "
+      $ fmt " "
       $ hvbox_if
           (not (List.is_empty ptype_params))
           0
@@ -3347,15 +3347,15 @@ and fmt_open_description c
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
-      fmt " type "
-      $ fmt_type_declaration c ctx ~fmt_name:(fmt_longident_loc c ident) td
+      fmt_type_declaration ~pre:" type" c ctx
+        ~fmt_name:(fmt_longident_loc c ident)
+        td
   | Pwith_module (m1, m2) ->
       fmt " module " $ fmt_longident_loc c m1 $ fmt " = "
       $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
-      fmt " type "
-      $ fmt_type_declaration c ~eq:":=" ctx
-          ~fmt_name:(fmt_longident_loc c lid) td
+      fmt_type_declaration ~pre:" type" c ~eq:":=" ctx
+        ~fmt_name:(fmt_longident_loc c lid) td
   | Pwith_modsubst (m1, m2) ->
       fmt " module " $ fmt_longident_loc c m1 $ fmt " := "
       $ fmt_longident_loc c m2
@@ -3609,11 +3609,8 @@ and fmt_type c ?ext rec_flag decls ctx =
   let fmt_decl ~first ~last decl =
     let pre =
       if first then
-        let pre =
-          if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
-        in
-        if Option.is_some ext then pre else pre ^ " "
-      else "and "
+        if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
+      else "and"
     and brk = fmt_if (not last) "\n" in
     fmt_type_declaration c ~pre
       ?ext:(if first then ext else None)
