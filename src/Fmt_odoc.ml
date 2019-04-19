@@ -15,9 +15,8 @@ module Names = Odoc__model.Names
 module Location_ = Odoc__model.Location_
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
-    return [true] if the character should be escaped, [false] otherwise. *)
+    be [true] if the character should be escaped, [false] otherwise. *)
 let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
-  let module E = String.Escaping in
   let dst = Buffer.create (String.length s + 8) in
   let prev_off = ref 0 in
   let stash until =
@@ -25,7 +24,10 @@ let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
   in
   let len = String.length s in
   for i = 0 to len - 1 do
-    if escapeworthy s.[i] && not (E.is_char_escaped s ~escape_char i) then (
+    if
+      escapeworthy s.[i]
+      && not (String.Escaping.is_char_escaped s ~escape_char i)
+    then (
       stash i ;
       prev_off := i ;
       Buffer.add_char dst escape_char )
@@ -55,7 +57,7 @@ let str_verbatim = Fmt.str
 
 let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
-let ign_loc f with_loc = f with_loc.Location_.value
+let ign_loc ~f with_loc = f with_loc.Location_.value
 
 (* Decide between using light and heavy syntax for lists *)
 let list_should_use_heavy_syntax items =
@@ -193,9 +195,9 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Word w ->
       (* Escape lines starting with '+' or '-' *)
       let escape =
-        if String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-') then
-          if_newline "\\"
-        else fmt ""
+        fmt_if_k
+          (String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-'))
+          (if_newline "\\")
       in
       escape $ str w
   | `Code_span s ->
@@ -203,7 +205,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       hovbox 0 (wrap "[" "]" (str_verbatim s))
   | `Raw_markup (`Html, s) -> str s
   | `Styled (style, elems) ->
-      fmt_styled style (ign_loc fmt_inline_element) elems
+      fmt_styled style (ign_loc ~f:fmt_inline_element) elems
   | `Reference (_kind, ref, txt) ->
       let ref_kind, ref = fmt_reference (ref :> Reference.t) in
       let ref = fmt "{!" $ str ref_kind $ ref $ fmt "}" in
@@ -216,7 +218,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       | [] -> url
       | txt -> wrap "{" "}" (url $ fmt "@ " $ fmt_inline_elements txt) )
 
-and fmt_inline_elements txt = list txt "" (ign_loc fmt_inline_element)
+and fmt_inline_elements txt = list txt "" (ign_loc ~f:fmt_inline_element)
 
 (** TODO:
 
