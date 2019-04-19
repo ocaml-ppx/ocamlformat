@@ -3170,22 +3170,7 @@ and fmt_signature_item c ?ext {ast= si} =
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds fmt_module_declaration (fun x ->
           Mty x.pmd_type )
-  | Psig_type (rec_flag, decls) ->
-      let fmt_decl ~first ~last decl =
-        let pre =
-          if first then
-            let pre =
-              if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
-            in
-            if Option.is_some ext then pre else pre ^ " "
-          else "and "
-        and brk = fmt_if (not last) "\n" in
-        fmt_type_declaration c ~pre
-          ?ext:(if first then ext else None)
-          ~brk ctx decl
-        $ fmt_if (not last) "@ "
-      in
-      vbox 0 (list_fl decls fmt_decl)
+  | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension c ctx te
   | Psig_value vd -> fmt_value_description c ctx vd
   | Psig_class cl -> fmt_class_types c ctx ~pre:"class" ~sep:":" cl
@@ -3620,6 +3605,23 @@ and fmt_structure c ctx itms =
   in
   hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
+and fmt_type c ?ext rec_flag decls ctx =
+  let fmt_decl ~first ~last decl =
+    let pre =
+      if first then
+        let pre =
+          if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
+        in
+        if Option.is_some ext then pre else pre ^ " "
+      else "and "
+    and brk = fmt_if (not last) "\n" in
+    fmt_type_declaration c ~pre
+      ?ext:(if first then ext else None)
+      ~brk ctx decl
+    $ fmt_if (not last) "@ "
+  in
+  vbox 0 (list_fl decls fmt_decl)
+
 and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   protect (Str si)
   @@
@@ -3674,22 +3676,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
           (* To ignore the ?epi parameter *)
           fmt_module_binding c ctx ~rec_flag ~first b )
         (fun x -> Mod x.pmb_expr)
-  | Pstr_type (rec_flag, decls) ->
-      let fmt_decl ~first ~last decl =
-        let pre =
-          if first then
-            let pre =
-              if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
-            in
-            if Option.is_some ext then pre else pre ^ " "
-          else "and "
-        and brk = fmt_if (not last) "\n" in
-        fmt_type_declaration c ~pre
-          ?ext:(if first then ext else None)
-          ~brk ctx decl
-        $ fmt_if (not last) "@ "
-      in
-      vbox 0 (list_fl decls fmt_decl)
+  | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx te
   | Pstr_value (rec_flag, bindings) ->
       let with_conf c b =
