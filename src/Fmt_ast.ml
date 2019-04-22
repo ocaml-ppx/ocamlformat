@@ -1081,6 +1081,16 @@ and fmt_body c ?ext ({ast= body} as xbody) =
       )
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
+and fmt_assign_colon c =
+  match c.conf.assignment_operator with
+  | `Begin_line -> fmt "@;<1 2>:= "
+  | `End_line -> fmt " :=@;<1 2>"
+
+and fmt_assign_arrow c =
+  match c.conf.assignment_operator with
+  | `Begin_line -> fmt "@;<1 2><- "
+  | `End_line -> fmt " <-@;<1 2>"
+
 and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
     (hovbox 0
@@ -1091,7 +1101,7 @@ and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
        $ list is (comma_sep c) (fun i -> fmt_expression c (sub_exp ~ctx i))
        $ str (Printf.sprintf "%c" cls)
        $ opt set (fun e ->
-             fmt "@;<1 2><- " $ fmt_expression c (sub_exp ~ctx e) ) ))
+             fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) ))
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp} as xexp) =
@@ -1349,7 +1359,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       wrap_if parens "(" ")"
         (hovbox 0
            ( fmt_expression c (sub_exp ~ctx r)
-           $ Cmts.fmt c loc (fmt "@;<1 2>:= ")
+           $ Cmts.fmt c loc (fmt_assign_colon c)
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ))
   | Pexp_apply
       ( { pexp_desc=
@@ -2069,7 +2079,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            ( fmt_expression c (sub_exp ~ctx e1)
-           $ fmt "." $ fmt_longident_loc c lid $ fmt "@;<1 2><- "
+           $ fmt "." $ fmt_longident_loc c lid $ fmt_assign_arrow c
            $ fmt_expression c (sub_exp ~ctx e2)
            $ fmt_atrs ))
   | Pexp_tuple es ->
@@ -2205,7 +2215,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           ( fmt_str_loc c name $ fmt "@;<1 2><- "
+           ( fmt_str_loc c name $ fmt_assign_arrow c
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) ))
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"

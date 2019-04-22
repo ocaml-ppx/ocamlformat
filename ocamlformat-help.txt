@@ -31,6 +31,15 @@ OPTIONS (CODE FORMATTING STYLE)
        relative to the directory containing the .ocamlformat-ignore file.
        Lines starting with # are ignored and can be used as comments.
 
+       --assignment-operator={end-line|begin-line}
+           Position of the assignment operator. end-line positions assignment
+           operators (`:=` and `<-`) at the end of the line and breaks after
+           it if the whole assignment expressions does not fit on a single
+           line. begin-line positions assignment operators (`:=` and `<-`) at
+           the beginning of the line and breaks before it if the whole
+           assignment expressions does not fit on a single line. The default
+           value is end-line.
+
        --break-cases={nested|fit|toplevel|all}
            Break pattern match cases. nested forces a break after nested
            or-patterns to highlight the case body. Note that with nested, the

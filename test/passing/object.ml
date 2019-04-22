@@ -50,9 +50,9 @@ let _ =
          ; b = something very
                  loooooooooooooooooooooooooooooooooooooooooooooooong >}
       in
-      x
-        <- something very
-             looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+      x <-
+        something very
+          looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
   end
 
 let _ = f a#b (a#c x y)
