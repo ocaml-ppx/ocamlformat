@@ -37,8 +37,7 @@ f x >>= function
     g y >>= function
     | x -> (
         f x >>= fun y ->
-        g y >>= function
-        | _ -> y () ) )
+        g y >>= function _ -> y () ) )
 
 ;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x ->
@@ -89,8 +88,7 @@ eeeeeeeeeeeee eeeeeeeeee
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 
 ;;
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
-| x -> x
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x
 
 ;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
@@ -110,16 +108,14 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 
 ;;
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
-| x -> x
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x
 
 ;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
 | xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
 
 ;;
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function
-| xxxxxxxxx, xxxxxxxxxxxxx -> x
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function xxxxxxxxx, xxxxxxxxxxxxx -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee |> function
