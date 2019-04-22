@@ -6402,7 +6402,8 @@ module Combine (A : Poly) (B : Poly) = struct
 end
 
 module C =
-  Combine (struct
+  Combine
+    (struct
       type 'a t = 'a constraint 'a = [> ]
     end)
     (struct
