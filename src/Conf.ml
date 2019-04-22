@@ -494,12 +494,12 @@ module Formatting = struct
         , `End_line
         , "$(b,end-line) positions assignment operators (`:=` and `<-`) at \
            the end of the line and breaks after it if the whole assignment \
-           expressions does not fit on a single line." )
+           expression does not fit on a single line." )
       ; ( "begin-line"
         , `Begin_line
         , "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
            at the beginning of the line and breaks before it if the whole \
-           assignment expressions does not fit on a single line." ) ]
+           assignment expression does not fit on a single line." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with assignment_operator= x})

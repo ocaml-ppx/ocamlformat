@@ -34,10 +34,10 @@ OPTIONS (CODE FORMATTING STYLE)
        --assignment-operator={end-line|begin-line}
            Position of the assignment operator. end-line positions assignment
            operators (`:=` and `<-`) at the end of the line and breaks after
-           it if the whole assignment expressions does not fit on a single
+           it if the whole assignment expression does not fit on a single
            line. begin-line positions assignment operators (`:=` and `<-`) at
            the beginning of the line and breaks before it if the whole
-           assignment expressions does not fit on a single line. The default
+           assignment expression does not fit on a single line. The default
            value is end-line.
 
        --break-cases={nested|fit|toplevel|all}
