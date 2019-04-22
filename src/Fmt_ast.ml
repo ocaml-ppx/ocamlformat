@@ -1772,6 +1772,25 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           )
                       $ fmt_if parens_bch (if imd then " )" else ")") )
                     $ fmt_if (not last) "@ "
+                | `K_R ->
+                    ( match xcnd with
+                    | Some xcnd ->
+                        hvbox
+                          (if parens then -2 else 0)
+                          ( hvbox
+                              (if parens then 0 else 2)
+                              ( fmt_if (not first) "else "
+                              $ fmt "if"
+                              $ fmt_if_k first (fmt_extension_suffix c ext)
+                              $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
+                                  pexp_attributes
+                              $ fmt "@ " $ fmt_expression c xcnd )
+                          $ fmt "@ then" )
+                    | None -> fmt "else" )
+                    $ fmt " (@;<1 2>"
+                    $ vbox 0
+                        (fmt_expression c ~box:false ~parens:false xbch)
+                    $ break 1000 0 $ fmt ")" $ fmt_if (not last) " "
                 | `Fit_or_vertical ->
                     let pro =
                       fmt_if_k
