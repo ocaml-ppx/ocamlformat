@@ -215,10 +215,10 @@ let longident_is_simple c x =
   longident_fit_margin c (length x)
 
 let module_type_is_simple x =
-  match x.pmty_desc with Pmty_signature _ -> false | _ -> true
+  match x.pmty_desc with Pmty_signature l -> List.is_empty l | _ -> true
 
 let module_expr_is_simple x =
-  match x.pmod_desc with Pmod_structure _ -> false | _ -> true
+  match x.pmod_desc with Pmod_structure l -> List.is_empty l | _ -> true
 
 module type Module_item = sig
   type t

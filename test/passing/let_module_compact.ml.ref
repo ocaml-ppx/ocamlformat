@@ -23,7 +23,8 @@ let () =
 
 let () =
   let module X =
-    Map.Make (struct
+    Map.Make
+      (struct
         type t = t
       end)
       (* foooooooooooooo *)

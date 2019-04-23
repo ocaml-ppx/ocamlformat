@@ -3364,7 +3364,8 @@ and maybe_generative c ~ctx = function
   | {pmod_desc= Pmod_structure []; pmod_attributes= []} -> empty
   | m -> fmt_module_expr c (sub_mod ~ctx m)
 
-and fmt_module_expr c ({ast= m} as xmod) =
+and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
+    =
   let ctx = Mod m in
   let {pmod_desc; pmod_loc; pmod_attributes} = m in
   update_config_maybe_disabled_block c pmod_loc pmod_attributes
@@ -3379,7 +3380,12 @@ and fmt_module_expr c ({ast= m} as xmod) =
       let fmt_rator =
         fmt_docstring c ~epi:(fmt "@,") doc
         $ box_f (blk_f.psp $ Option.call ~f:blk_f.pro $ blk_f.bdy)
-        $ blk_f.esp $ Option.call ~f:blk_f.epi $ fmt "@ ("
+        $ blk_f.esp $ Option.call ~f:blk_f.epi
+        $ fmt_or_k
+            ( c.conf.break_struct && can_break_before_struct
+            && not (module_expr_is_simple me_a) )
+            (break_unless_newline 1000 0 $ fmt "(")
+            (fmt "@ (")
       in
       let epi =
         Option.call ~f:blk_a.epi $ fmt ")"
@@ -3402,8 +3408,13 @@ and fmt_module_expr c ({ast= m} as xmod) =
         ; cls= close_box $ blk_a.cls $ close_box
         ; epi= Some epi }
   | Pmod_apply (me_f, me_a) ->
+      let can_break_before_struct =
+        match me_f.pmod_desc with Pmod_apply _ -> true | _ -> false
+      in
       let doc, atrs = doc_atrs pmod_attributes in
-      let blk_f = fmt_module_expr c (sub_mod ~ctx me_f) in
+      let blk_f =
+        fmt_module_expr ~can_break_before_struct c (sub_mod ~ctx me_f)
+      in
       let blk_a = maybe_generative c ~ctx me_a in
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
