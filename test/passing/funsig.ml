@@ -26,16 +26,16 @@ val f :
 type t =
   | Cstr of
       (   xxxxxxxxxxxxxxxxxxxxxxxxx
-      -> yyyyyyyyyyyyyyyyyyyyyyyyy
-      -> aaaaaaaaaaaaaaaaaaaa)
+       -> yyyyyyyyyyyyyyyyyyyyyyyyy
+       -> aaaaaaaaaaaaaaaaaaaa)
       * bbbbbbbbbbbbbbbbbbbb
 
 type t =
   | Cstr of
       aaaaaaaaaaaaaaaaaaaa
       * (   xxxxxxxxxxxxxxxxxxxxxxxxx
-        -> yyyyyyyyyyyyyyyyyyyyyyyyy
-        -> bbbbbbbbbbbbbbbbbbbb)
+         -> yyyyyyyyyyyyyyyyyyyyyyyyy
+         -> bbbbbbbbbbbbbbbbbbbb)
       * cccccccccccccccccccc
 
 type ('aaaa, 'bbbb, 'cccc) t =

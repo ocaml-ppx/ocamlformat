@@ -583,7 +583,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
                 (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
                    (fits_breaks "" "   ")) )
         $ list xt1N
-            ( if Poly.(c.conf.break_separators = `Before) then "@ -> "
+            ( if Poly.(c.conf.break_separators = `Before) then
+              if parens then "@;<1 1>-> " else "@ -> "
             else " ->@;<1 0>" )
             (fun (lI, xtI) -> hvbox 0 (arg_label lI $ fmt_core_type c xtI))
         )
