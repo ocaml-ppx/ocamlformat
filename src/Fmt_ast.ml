@@ -450,6 +450,16 @@ let fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens ~attributes
        $ hvbox 0 (fmt_expr c (sub ~ctx body)) ))
   $ fmt_atrs
 
+let fmt_assign_colon c =
+  match c.conf.assignment_operator with
+  | `Begin_line -> fmt "@;<1 2>:= "
+  | `End_line -> fmt " :=@;<1 2>"
+
+let fmt_assign_arrow c =
+  match c.conf.assignment_operator with
+  | `Begin_line -> fmt "@;<1 2><- "
+  | `End_line -> fmt " <-@;<1 2>"
+
 let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
 
@@ -1080,16 +1090,6 @@ and fmt_body c ?ext ({ast= body} as xbody) =
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc
       )
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
-
-and fmt_assign_colon c =
-  match c.conf.assignment_operator with
-  | `Begin_line -> fmt "@;<1 2>:= "
-  | `End_line -> fmt " :=@;<1 2>"
-
-and fmt_assign_arrow c =
-  match c.conf.assignment_operator with
-  | `Begin_line -> fmt "@;<1 2><- "
-  | `End_line -> fmt " <-@;<1 2>"
 
 and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
