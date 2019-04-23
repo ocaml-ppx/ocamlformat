@@ -568,14 +568,11 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let indent =
         if Poly.(c.conf.break_separators = `Before) then 2 else 0
       in
-      let maybe_box =
-        if box then
-          wrap_fun_sig_args ~stmt_loc:ptyp_loc c
-            ( if Option.is_some pro && c.conf.ocp_indent_compat then -2
-            else 0 )
-        else Fn.id
+      let box_if cnd i =
+        if cnd then wrap_fun_sig_args ~stmt_loc:ptyp_loc c i else Fn.id
       in
-      maybe_box
+      box_if box
+        (if Option.is_some pro && c.conf.ocp_indent_compat then -2 else 0)
         ( ( match pro with
           | Some pro when c.conf.ocp_indent_compat ->
               fits_breaks ""
