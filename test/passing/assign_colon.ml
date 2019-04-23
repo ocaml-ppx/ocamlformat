@@ -1,26 +1,26 @@
 let foo =
-  entry.logdata.value_end <-
+  entry.logdata.value_end :=
     entry.logdata.value_end - !remove_size + testtesttest ;
-  entry.logdata.value_end <-
+  entry.logdata.value_end :=
     (entry.logdata.value_end - !remove_size + testtesttest) [@foo] ;
   (* foooooooooo *)
-  entry.logdata.value_end <-
+  entry.logdata.value_end :=
     (entry.logdata.value_end - !remove_size + testtesttest) [@foo]
   (* foooooooooooo *) ;
-  entry.logdata.value_end <-
+  entry.logdata.value_end :=
     entry.logdata.value_end - !remove_size + testtesttest
   (* fooooooooooooooooooooooooo *) ;
-  value_end <-
+  value_end :=
     entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest ;
-  value_end <-
+  value_end :=
     ( entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
     ) [@foo] ;
-  value_end <-
+  value_end :=
     ( entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
     ) [@foo]
   (* fooooooooooooo *) ;
   (* foooooooooooooooooooo *)
-  value_end <-
+  value_end :=
     entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
   (* foooooooo *) ;
   foo

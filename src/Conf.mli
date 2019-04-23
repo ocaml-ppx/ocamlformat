@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: [`Fit | `Nested | `Toplevel | `All]
+  { assignment_operator: [`Begin_line | `End_line]
+  ; break_cases: [`Fit | `Nested | `Toplevel | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool

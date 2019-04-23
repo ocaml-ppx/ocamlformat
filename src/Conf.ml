@@ -12,7 +12,8 @@
 (** Configuration options *)
 
 type t =
-  { break_cases: [`Fit | `Nested | `Toplevel | `All]
+  { assignment_operator: [`Begin_line | `End_line]
+  ; break_cases: [`Fit | `Nested | `Toplevel | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool
@@ -484,6 +485,25 @@ let info =
 (** Options affecting formatting *)
 module Formatting = struct
   let section = `Formatting
+
+  let assignment_operator =
+    let doc = "Position of the assignment operator." in
+    let names = ["assignment-operator"] in
+    let all =
+      [ ( "end-line"
+        , `End_line
+        , "$(b,end-line) positions assignment operators (`:=` and `<-`) at \
+           the end of the line and breaks after it if the whole assignment \
+           expression does not fit on a single line." )
+      ; ( "begin-line"
+        , `Begin_line
+        , "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
+           at the beginning of the line and breaks before it if the whole \
+           assignment expression does not fit on a single line." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with assignment_operator= x})
+      (fun conf -> conf.assignment_operator)
 
   let break_cases =
     let doc = "Break pattern match cases." in
@@ -1313,7 +1333,8 @@ let no_version_check =
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
 let ocamlformat_profile =
-  { break_cases= C.default Formatting.break_cases
+  { assignment_operator= C.default Formatting.assignment_operator
+  ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
   ; break_infix= C.default Formatting.break_infix
@@ -1417,7 +1438,8 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { break_cases= `All
+  { assignment_operator= `Begin_line
+  ; break_cases= `All
   ; break_collection_expressions=
       ocamlformat_profile.break_collection_expressions
   ; break_infix= `Fit_or_vertical
