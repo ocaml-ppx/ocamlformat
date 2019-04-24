@@ -1787,10 +1787,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                               $ fmt "@ " $ fmt_expression c xcnd )
                           $ fmt "@ then" )
                     | None -> fmt "else" )
-                    $ fmt " (@;<1 2>"
+                    $ fmt_if parens_bch " (" $ fmt "@;<1 2>"
                     $ vbox 0
                         (fmt_expression c ~box:false ~parens:false xbch)
-                    $ break 1000 0 $ fmt ")" $ fmt_if (not last) " "
+                    $ fmt_if_k (parens_bch || not last) (break 1000 0)
+                    $ fmt_if parens_bch ")"
+                    $ fmt_if (parens_bch && not last) " "
                 | `Fit_or_vertical ->
                     let pro =
                       fmt_if_k
