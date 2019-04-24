@@ -1763,15 +1763,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 in
                 match c.conf.if_then_else with
                 | `Compact ->
-                    hovbox 0
-                      ( hovbox
-                          (if first && parens then 0 else 2)
-                          ( fmt_cnd
-                          $ fmt_or parens_bch
-                              (if imd then " (@ " else " (@,")
-                              "@ "
-                          $ fmt_expression c ~box:false ~parens:false xbch
-                          )
+                    hovbox
+                      (if first && parens then 0 else 2)
+                      ( fmt_cnd
+                      $ fmt_or parens_bch
+                          (if imd then " (@ " else " (@,")
+                          "@ "
+                      $ fmt_expression c ~box:false ~parens:false xbch
                       $ fmt_if parens_bch (if imd then " )" else ")") )
                     $ fmt_if (not last) "@ "
                 | `K_R ->
