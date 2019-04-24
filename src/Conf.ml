@@ -33,7 +33,7 @@ type t =
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
-  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first]
+  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
@@ -816,7 +816,11 @@ module Formatting = struct
       ; ( "keyword-first"
         , `Keyword_first
         , "$(b,keyword-first) formats if-then-else expressions such that \
-           the if-then-else keywords are the first on the line." ) ]
+           the if-then-else keywords are the first on the line." )
+      ; ( "k-r"
+        , `K_R
+        , "$(b,k-r) formats if-then-else expressions with parentheses that \
+           match the K&R style." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with if_then_else= x})

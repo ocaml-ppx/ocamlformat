@@ -142,12 +142,14 @@ OPTIONS (CODE FORMATTING STYLE)
            space between a field name and the punctuation symbol (`:`or `=`).
            loose does. The default value is tight.
 
-       --if-then-else={compact|fit-or-vertical|keyword-first}
+       --if-then-else={compact|fit-or-vertical|keyword-first|k-r}
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. fit-or-vertical vertically breaks
            branches if they do not fit on a single line. keyword-first
            formats if-then-else expressions such that the if-then-else
-           keywords are the first on the line. The default value is compact.
+           keywords are the first on the line. k-r formats if-then-else
+           expressions with parentheses that match the K&R style. The default
+           value is compact.
 
        --indicate-nested-or-patterns={space|unsafe-no}
            Control whether or not to indicate nested or-pattern using

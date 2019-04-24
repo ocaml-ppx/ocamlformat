@@ -9,6 +9,8 @@
  *                                                                    *
  **********************************************************************)
 
+module Format = Format_
+
 type cases =
   { leading_space: Fmt.t
   ; bar: Fmt.t
@@ -32,3 +34,26 @@ type record_type =
 
 val get_record_type :
   Conf.t -> wrap_record:(Conf.t -> Fmt.t -> Fmt.t) -> record_type
+
+type if_then_else =
+  { box_branch: Fmt.t -> Fmt.t
+  ; cond: Fmt.t
+  ; box_keyword_and_expr: Fmt.t -> Fmt.t
+  ; wrap_parens: Fmt.t -> Fmt.t
+  ; expr_pro: Fmt.t option
+  ; expr_eol: Fmt.t option
+  ; break_end_branch: Fmt.t
+  ; space_between_branches: Fmt.t }
+
+val get_if_then_else :
+     Conf.t
+  -> first:bool
+  -> last:bool
+  -> parens:bool
+  -> parens_bch:bool
+  -> xcond:Migrate_ast.Parsetree.expression Ast.xt option
+  -> expr_loc:Warnings.loc
+  -> fmt_extension_suffix:Fmt.t
+  -> fmt_attributes:Fmt.t
+  -> fmt_cond:(Migrate_ast.Parsetree.expression Ast.xt -> Fmt.t)
+  -> if_then_else

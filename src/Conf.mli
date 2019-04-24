@@ -36,7 +36,7 @@ type t =
         (** Escape encoding for string literals. *)
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
-  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first]
+  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
