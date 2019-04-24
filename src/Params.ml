@@ -9,6 +9,8 @@
  *                                                                    *
  **********************************************************************)
 
+module Format = Format_
+open Migrate_ast
 open Fmt
 
 type cases =
@@ -85,3 +87,97 @@ let get_record_type (c : Conf.t) ~wrap_record =
       ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
       ; break_after= break space (-2)
       ; docked_after= fmt "}" }
+
+type if_then_else =
+  { box_branch: Fmt.t -> Fmt.t
+  ; cond: Fmt.t
+  ; box_keyword_and_expr: Fmt.t -> Fmt.t
+  ; wrap_parens: Fmt.t -> Fmt.t
+  ; expr_pro: Fmt.t option
+  ; expr_eol: Fmt.t option
+  ; break_end_branch: Fmt.t
+  ; space_between_branches: Fmt.t }
+
+let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
+    ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond =
+  let imd = c.indicate_multiline_delimiters in
+  let cond =
+    match xcond with
+    | Some xcnd ->
+        hvbox
+          (if parens then -2 else 0)
+          ( hvbox
+              (if parens then 0 else 2)
+              ( fmt_if (not first) "else "
+              $ fmt "if"
+              $ fmt_if_k first fmt_extension_suffix
+              $ fmt_attributes $ fmt "@ " $ fmt_cond xcnd )
+          $ fmt "@ then" )
+    | None -> fmt "else"
+  in
+  match c.if_then_else with
+  | `Compact ->
+      { box_branch= hovbox (if first && parens then 0 else 2)
+      ; cond
+      ; box_keyword_and_expr= Fn.id
+      ; wrap_parens=
+          wrap_k
+            (fmt_or parens_bch (if imd then " (@ " else " (@,") "@ ")
+            (fmt_if parens_bch (if imd then " )" else ")"))
+      ; expr_pro= None
+      ; expr_eol= None
+      ; break_end_branch= noop
+      ; space_between_branches= fmt "@ " }
+  | `K_R ->
+      { box_branch= Fn.id
+      ; cond
+      ; box_keyword_and_expr= Fn.id
+      ; wrap_parens=
+          wrap_k
+            (fmt_or parens_bch
+               (if imd then " (@;<1 2>" else " (@;<0 2>")
+               "@;<1 2>")
+            (fmt_if parens_bch (if imd then ")" else ")"))
+      ; expr_pro= None
+      ; expr_eol= Some (fmt "@;<1 2>")
+      ; break_end_branch= fmt_if_k (parens_bch || not last) (break 1000 0)
+      ; space_between_branches= fmt_if parens_bch " " }
+  | `Fit_or_vertical ->
+      { box_branch= hovbox 0
+      ; cond
+      ; box_keyword_and_expr= Fn.id
+      ; wrap_parens=
+          wrap_k
+            (fmt_or parens_bch
+               (if imd then " (@;<1 2>" else " (@;<0 2>")
+               "@;<1 2>")
+            (fmt_if parens_bch (if imd then " )" else ")"))
+      ; expr_pro=
+          Some
+            (fmt_if_k
+               (not (Location.is_single_line expr_loc c.margin))
+               (break_unless_newline 1000 2))
+      ; expr_eol= Some (fmt "@;<1 2>")
+      ; break_end_branch= noop
+      ; space_between_branches= fmt "@ " }
+  | `Keyword_first ->
+      { box_branch= Fn.id
+      ; cond=
+          opt xcond (fun xcnd ->
+              hvbox 2
+                ( fmt_or_k first
+                    (fmt "if" $ fmt_extension_suffix)
+                    (fmt "else if")
+                $ fmt_attributes $ str " " $ fmt_cond xcnd )
+              $ fmt "@ " )
+      ; box_keyword_and_expr=
+          (fun k ->
+            hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k) )
+      ; wrap_parens=
+          wrap_k
+            (fmt_or parens_bch (if imd then " (@ " else " (@,") "@ ")
+            (fmt_if parens_bch (if imd then " )" else ")"))
+      ; expr_pro= None
+      ; expr_eol= None
+      ; break_end_branch= noop
+      ; space_between_branches= fmt "@ " }
