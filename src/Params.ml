@@ -109,11 +109,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
           ( hvbox
               (if parens then 0 else 2)
               ( fmt_if (not first) "else "
-              $ fmt "if"
+              $ str "if"
               $ fmt_if_k first fmt_extension_suffix
               $ fmt_attributes $ fmt "@ " $ fmt_cond xcnd )
           $ fmt "@ then" )
-    | None -> fmt "else"
+    | None -> str "else"
   in
   match c.if_then_else with
   | `Compact ->
@@ -137,7 +137,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
             (fmt_or parens_bch
                (if imd then " (@;<1 2>" else " (@;<0 2>")
                "@;<1 2>")
-            (fmt_if parens_bch (if imd then ")" else ")"))
+            (fmt_if parens_bch ")")
       ; expr_pro= None
       ; expr_eol= Some (fmt "@;<1 2>")
       ; break_end_branch= fmt_if_k (parens_bch || not last) (break 1000 0)
@@ -166,8 +166,8 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
           opt xcond (fun xcnd ->
               hvbox 2
                 ( fmt_or_k first
-                    (fmt "if" $ fmt_extension_suffix)
-                    (fmt "else if")
+                    (str "if" $ fmt_extension_suffix)
+                    (str "else if")
                 $ fmt_attributes $ str " " $ fmt_cond xcnd )
               $ fmt "@ " )
       ; box_keyword_and_expr=
