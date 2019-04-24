@@ -101,7 +101,7 @@ type if_then_else =
 let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
     ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond =
   let imd = c.indicate_multiline_delimiters in
-  let cond =
+  let cond () =
     match xcond with
     | Some xcnd ->
         hvbox
@@ -118,7 +118,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
   match c.if_then_else with
   | `Compact ->
       { box_branch= hovbox (if first && parens then 0 else 2)
-      ; cond
+      ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; wrap_parens=
           wrap_k
@@ -130,7 +130,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
       ; space_between_branches= fmt "@ " }
   | `K_R ->
       { box_branch= Fn.id
-      ; cond
+      ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; wrap_parens=
           wrap_k
@@ -144,7 +144,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
       ; space_between_branches= fmt_if parens_bch " " }
   | `Fit_or_vertical ->
       { box_branch= hovbox 0
-      ; cond
+      ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; wrap_parens=
           wrap_k
