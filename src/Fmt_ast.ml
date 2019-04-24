@@ -1742,16 +1742,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            (list_fl cnd_exps
-              (fun ~first ~last (xcnd, xbch, pexp_attributes) ->
+              (fun ~first ~last (xcond, xbch, pexp_attributes) ->
                 let parens_bch = parenze_exp xbch in
-                Params.get_if_then_else c.conf ~first ~last ~parens
-                  ~parens_bch ~xcond:xcnd ~expr_loc:pexp_loc
-                  ~fmt_extension_suffix:(fmt_extension_suffix c ext)
-                  ~fmt_attributes:
-                    (fmt_attributes c ~pre:(fmt " ") ~key:"@"
-                       pexp_attributes)
-                  ~fmt_cond:(fmt_expression c)
-                |> fun (p : Params.if_then_else) ->
+                let p =
+                  Params.get_if_then_else c.conf ~first ~last ~parens
+                    ~parens_bch ~xcond ~expr_loc:pexp_loc
+                    ~fmt_extension_suffix:(fmt_extension_suffix c ext)
+                    ~fmt_attributes:
+                      (fmt_attributes c ~pre:(fmt " ") ~key:"@"
+                         pexp_attributes)
+                    ~fmt_cond:(fmt_expression c)
+                in
                 p.box_branch
                   ( p.cond
                   $ p.box_keyword_and_expr
