@@ -1745,26 +1745,28 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               (fun ~first ~last (xcnd, xbch, pexp_attributes) ->
                 let parens_bch = parenze_exp xbch in
                 let imd = c.conf.indicate_multiline_delimiters in
+                let fmt_cnd =
+                  match xcnd with
+                  | Some xcnd ->
+                      hvbox
+                        (if parens then -2 else 0)
+                        ( hvbox
+                            (if parens then 0 else 2)
+                            ( fmt_if (not first) "else "
+                            $ fmt "if"
+                            $ fmt_if_k first (fmt_extension_suffix c ext)
+                            $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
+                                pexp_attributes
+                            $ fmt "@ " $ fmt_expression c xcnd )
+                        $ fmt "@ then" )
+                  | None -> fmt "else"
+                in
                 match c.conf.if_then_else with
                 | `Compact ->
                     hovbox 0
                       ( hovbox
                           (if first && parens then 0 else 2)
-                          ( ( match xcnd with
-                            | Some xcnd ->
-                                hvbox
-                                  (if parens then -2 else 0)
-                                  ( hvbox
-                                      (if parens then 0 else 2)
-                                      ( fmt_if (not first) "else "
-                                      $ fmt "if"
-                                      $ fmt_if_k first
-                                          (fmt_extension_suffix c ext)
-                                      $ fmt_attributes c ~pre:(fmt " ")
-                                          ~key:"@" pexp_attributes
-                                      $ fmt "@ " $ fmt_expression c xcnd )
-                                  $ fmt "@ then" )
-                            | None -> fmt "else" )
+                          ( fmt_cnd
                           $ fmt_or parens_bch
                               (if imd then " (@ " else " (@,")
                               "@ "
@@ -1773,21 +1775,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_if parens_bch (if imd then " )" else ")") )
                     $ fmt_if (not last) "@ "
                 | `K_R ->
-                    ( match xcnd with
-                    | Some xcnd ->
-                        hvbox
-                          (if parens then -2 else 0)
-                          ( hvbox
-                              (if parens then 0 else 2)
-                              ( fmt_if (not first) "else "
-                              $ fmt "if"
-                              $ fmt_if_k first (fmt_extension_suffix c ext)
-                              $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
-                                  pexp_attributes
-                              $ fmt "@ " $ fmt_expression c xcnd )
-                          $ fmt "@ then" )
-                    | None -> fmt "else" )
-                    $ fmt_if parens_bch " (" $ fmt "@;<1 2>"
+                    fmt_cnd $ fmt_if parens_bch " (" $ fmt "@;<1 2>"
                     $ vbox 0
                         (fmt_expression c ~box:false ~parens:false xbch)
                     $ fmt_if_k (parens_bch || not last) (break 1000 0)
@@ -1808,21 +1796,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         (fmt_if parens_bch (if imd then " )" else ")"))
                     in
                     hovbox 0
-                      ( ( match xcnd with
-                        | Some xcnd ->
-                            hvbox
-                              (if parens then -2 else 0)
-                              ( hvbox
-                                  (if parens then 0 else 2)
-                                  ( fmt_if (not first) "else "
-                                  $ fmt "if"
-                                  $ fmt_if_k first
-                                      (fmt_extension_suffix c ext)
-                                  $ fmt_attributes c ~pre:(fmt " ") ~key:"@"
-                                      pexp_attributes
-                                  $ fmt "@ " $ fmt_expression c xcnd )
-                              $ fmt "@ then" )
-                        | None -> fmt "else" )
+                      ( fmt_cnd
                       $ wrap_parens
                           (fmt_expression c ~pro ~eol:(fmt "@;<1 2>")
                              ~box:false ~parens:false xbch) )
