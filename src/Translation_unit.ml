@@ -131,7 +131,7 @@ let dump_ast ~input_name ?output_file ~suffix fmt =
     let ext = ".ast" in
     let file =
       with_file input_name output_file suffix ext (fun oc ->
-          fmt (Format.formatter_of_out_channel oc) )
+          fmt (Format.formatter_of_out_channel oc))
     in
     Some file
   else None
@@ -141,7 +141,7 @@ let dump_formatted ~input_name ?output_file ~suffix fmted =
   if Conf.debug then
     let file =
       with_file input_name output_file suffix ext (fun oc ->
-          Out_channel.output_string oc fmted )
+          Out_channel.output_string oc fmted)
     in
     Some file
   else None
@@ -275,14 +275,13 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                     "%!@{<loc>%a@}:@,@{<error>Error@}: Comment (* %s *) \
                      dropped.\n\
                      %!"
-                    Location.print_loc loc (ellipsis_cmt msg) )
+                    Location.print_loc loc (ellipsis_cmt msg))
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
               if Conf.debug then Location.report_exception fmt exn
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp)
-            )
+                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp))
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
@@ -293,7 +292,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
     =
   let dump_ast ~suffix ast =
     dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-        xunit.printast fmt ast )
+        xunit.printast fmt ast)
   in
   let dump_formatted = dump_formatted ~input_name ?output_file in
   Location.input_name := input_name ;
@@ -328,7 +327,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
           let args =
             [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
             |> List.filter_map ~f:(fun (s, f_opt) ->
-                   Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
+                   Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
           in
           internal_error (`Cannot_parse exn) args
       | t_new ->
@@ -352,8 +351,8 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                 ; ("old ast", old_ast)
                 ; ("new ast", new_ast) ]
                 |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f))
-                   )
+                       Option.map f_opt ~f:(fun f ->
+                           (s, String.sexp_of_t f)))
               in
               internal_error (`Doc_comment docstrings) args
             else
@@ -363,8 +362,8 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                 ; ("old ast", old_ast)
                 ; ("new ast", new_ast) ]
                 |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f))
-                   )
+                       Option.map f_opt ~f:(fun f ->
+                           (s, String.sexp_of_t f)))
               in
               internal_error `Ast_changed args ) ;
           (* Comments not preserved ? *)
@@ -384,7 +383,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             in
             let t_newdocstrings, t_newcomments =
               List.partition_tf t_new.comments ~f:(fun (s, _) ->
-                  is_docstring s )
+                  is_docstring s)
             in
             let f = ellipsis_cmt in
             let f x = Either.First.map ~f x |> Either.Second.map ~f in
@@ -406,7 +405,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                 ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
                 ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
                 |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f -> (s, f)) )
+                       Option.map f_opt ~f:(fun f -> (s, f)))
               in
               internal_error `Comment args ) ;
           (* Too many iteration ? *)

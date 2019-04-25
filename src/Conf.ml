@@ -260,7 +260,7 @@ end = struct
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let to_string v' =
       List.find_map_exn all ~f:(fun (str, v, _) ->
-          if Poly.equal v v' then Some str else None )
+          if Poly.equal v v' then Some str else None)
     in
     let docs = section_name section in
     let term =
@@ -272,7 +272,7 @@ end = struct
     let parse s =
       match
         List.find_map all ~f:(fun (n, v, _) ->
-            Option.some_if (String.equal n s) v )
+            Option.some_if (String.equal n s) v)
       with
       | Some v -> Ok v
       | None ->
@@ -304,7 +304,7 @@ end = struct
     let names_for_cmdline =
       if invert_flag then
         List.filter_map names ~f:(fun n ->
-            if String.length n = 1 then None else Some ("no-" ^ n) )
+            if String.length n = 1 then None else Some ("no-" ^ n))
       else names
     in
     let doc = generated_flag_doc ~allow_inline ~doc ~section in
@@ -402,7 +402,7 @@ end = struct
                 update_from config name from ;
                 Some (Ok config)
             | Error error -> Some (Error (`Bad_value (name, error)))
-        else None )
+        else None)
     |> Option.value ~default:(Error (`Unknown (name, value)))
 
   let default {default} = default
@@ -1171,7 +1171,7 @@ let enable_outside_detected_project =
   let witness =
     String.concat ~sep:" or "
       (List.map project_root_witness ~f:(fun name ->
-           Format.sprintf "$(b,%s)" name ))
+           Format.sprintf "$(b,%s)" name))
   in
   let doc =
     Format.sprintf
@@ -1297,7 +1297,7 @@ let ocp_indent_config =
     let supported =
       let l =
         List.filter_map ocp_indent_options ~f:(fun (_, o) ->
-            Option.map o ~f:(fun (_, doc, _) -> doc) )
+            Option.map o ~f:(fun (_, doc, _) -> doc))
       in
       if List.is_empty l then ""
       else
@@ -1709,7 +1709,7 @@ let parse_line config ~from s =
         Result.( >>= )
           (update ~config ~from ~name:"profile" ~value:"janestreet")
           (fun config ->
-            update_many ~config ~from ocp_indent_janestreet_profile )
+            update_many ~config ~from ocp_indent_janestreet_profile)
     | name -> update ~config ~from ~name ~value:"true" )
   | _ -> Error (`Malformed s)
 
@@ -1718,7 +1718,7 @@ let is_project_root dir =
   | Some root -> Fpath.equal dir root
   | None ->
       List.exists project_root_witness ~f:(fun name ->
-          Fpath.(exists (dir / name)) )
+          Fpath.(exists (dir / name)))
 
 let dot_ocp_indent = ".ocp-indent"
 
@@ -1765,7 +1765,7 @@ let read_config_file conf filename_kind =
                   parse_line conf ~from:(`File (filename, num)) line
                 with
                 | Ok conf -> (conf, errors, Int.succ num)
-                | Error e -> (conf, e :: errors, Int.succ num) )
+                | Error e -> (conf, e :: errors, Int.succ num))
           in
           match List.rev errors with
           | [] -> c
@@ -1785,7 +1785,7 @@ let read_config_file conf filename_kind =
                       ("unknown option", Sexp.Atom name)
                   | `Bad_value (name, reason) ->
                       ( "bad value for"
-                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )) )
+                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )))
     with Sys_error _ -> conf )
 
 let update_using_env conf =
@@ -1864,12 +1864,12 @@ let is_ignored ~quiet ~ignores ~filename =
                     if not quiet then
                       Format.eprintf "File %a, line %d:\nWarning: %s\n"
                         (Fpath.pp ~pretty:true) ignore_file lno msg ;
-                    None ) )
+                    None))
       with Sys_error err ->
         if not quiet then
           Format.eprintf "Warning: ignoring %a, %s\n"
             (Fpath.pp ~pretty:true) ignore_file err ;
-        None )
+        None)
 
 let build_config ~file =
   let file_abs = Fpath.(v file |> to_absolute |> normalize) in
@@ -1935,15 +1935,14 @@ let action =
     Inplace
       (List.map !inputs ~f:(fun file ->
            let name = Option.value !name ~default:file in
-           {kind= kind_of file; name; file; conf= build_config ~file:name}
-       ))
+           {kind= kind_of file; name; file; conf= build_config ~file:name}))
   else if !check then
     Check
       (List.map !inputs ~f:(fun file ->
            let name = Option.value !name ~default:file in
            let conf = build_config ~file:name in
            let conf = {conf with max_iters= 1} in
-           {kind= kind_of file; name; file; conf} ))
+           {kind= kind_of file; name; file; conf}))
   else
     match !inputs with
     | [input_file] ->

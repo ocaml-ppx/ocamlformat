@@ -32,7 +32,7 @@ module Parse = struct
       ~f:(fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
-        | Ptop_def (_ :: _) | Ptop_dir _ -> true )
+        | Ptop_def (_ :: _) | Ptop_dir _ -> true)
 end
 
 let to_current =
@@ -60,7 +60,7 @@ module Printast = struct
 
   let use_file f (x : Parsetree.toplevel_phrase list) =
     List.iter x ~f:(fun (p : Parsetree.toplevel_phrase) ->
-        top_phrase f (to_current.copy_toplevel_phrase p) )
+        top_phrase f (to_current.copy_toplevel_phrase p))
 end
 
 module Pprintast = struct
@@ -84,7 +84,7 @@ let map_use_file mapper use_file =
       match (toplevel_phrase : toplevel_phrase) with
       | Ptop_def structure ->
           Ptop_def (mapper.Ast_mapper.structure mapper structure)
-      | Ptop_dir _ as d -> d )
+      | Ptop_dir _ as d -> d)
 
 module Position = struct
   open Lexing

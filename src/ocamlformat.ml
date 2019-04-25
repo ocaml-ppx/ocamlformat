@@ -84,7 +84,7 @@ match Conf.action with
           | Ok formatted ->
               if String.equal formatted source then ()
               else Out_channel.write_all input_file ~data:formatted ;
-              None )
+              None)
     in
     if List.is_empty errors then Caml.exit 0 else Caml.exit 1
 | In_out

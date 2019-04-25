@@ -93,7 +93,7 @@ let foo =
       ~resolve:(fun _ctx x -> x.description |> Util.option_of_string)
   ; field "type" ~doc:"Toy type. Possible values are: car, animal, train."
       ~args:[] ~typ:(non_null toy_type_enum) ~resolve:(fun _ctx x ->
-        x.toy_type )
+        x.toy_type)
   ; field "createdAt" ~doc:"Date created." ~args:[]
       ~typ:(non_null Scalar.date_time) ~resolve:(fun _ctx x -> x.created_at)
   ]

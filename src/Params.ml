@@ -169,7 +169,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
                     (str "if" $ fmt_extension_suffix)
                     (str "else if")
                 $ fmt_attributes $ str " " $ fmt_cond xcnd )
-              $ fmt "@ " )
+              $ fmt "@ ")
       ; box_keyword_and_expr=
           (fun k ->
             hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k) )

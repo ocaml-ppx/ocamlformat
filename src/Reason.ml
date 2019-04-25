@@ -78,7 +78,7 @@ module Binary_reason = struct
     in
     let comments =
       List.map comments ~f:(fun (c : Reason_comment.t) ->
-          (c.text, c.location) )
+          (c.text, c.location))
     in
     (origin_filename, comments, find_magic magic ast)
 end
@@ -137,7 +137,7 @@ module Mappers = struct
             | {txt= "implicit_arity"; _}, PStr [] -> false
             | {txt= "reason.raw_literal"; _}, _ -> false
             | {txt= "reason.preserve_braces"; _}, _ -> false
-            | _ -> true )
+            | _ -> true)
       in
       Ast_mapper.default_mapper.attributes mapper l
     in

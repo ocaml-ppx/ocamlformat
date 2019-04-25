@@ -59,7 +59,7 @@ end = struct
                ~if_found:(fun children ->
                  parent tbl children ~ancestor:root elt )
                ~if_not_found:Option.some
-           else None ))
+           else None))
       ancestor
 
   (* Add elements in decreasing width order to construct tree from roots to
@@ -76,7 +76,7 @@ end = struct
     List.iter elts_decreasing_width ~f:(fun elt ->
         match parent tree.tbl tree.roots elt with
         | Some parent -> Hashtbl.add_multi tree.tbl ~key:parent ~data:elt
-        | None -> tree.roots <- elt :: tree.roots ) ;
+        | None -> tree.roots <- elt :: tree.roots) ;
     { tree with
       tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare) }
 
@@ -92,7 +92,7 @@ end = struct
                ( str (Sexp.to_string_hum (Itv.sexp_of_t root))
                $ wrap_if
                    (not (List.is_empty children))
-                   "@,{" " }" (dump_ tree children) ) ))
+                   "@,{" " }" (dump_ tree children) )))
     in
     if Conf.debug then set_margin 100000000 $ dump_ tree tree.roots
     else Fn.const ()
@@ -215,7 +215,7 @@ end = struct
     List.fold cmts ~init:empty ~f:(fun (smap, emap) cmt ->
         let _, loc = cmt in
         ( Map.add_multi smap ~key:loc ~data:cmt
-        , Map.add_multi emap ~key:loc ~data:cmt ) )
+        , Map.add_multi emap ~key:loc ~data:cmt ))
 
   let to_list (smap, _) = List.concat (Map.data smap)
 
@@ -251,7 +251,7 @@ let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
       | "|" ->
           Source.begins_line t.source l1
           && Position.column l1.loc_start <= Position.column l2.loc_start
-      | _ -> false )
+      | _ -> false)
 
 (** Whether the symbol preceding location [loc] is an infix symbol or a
     semicolon. If it is the case, comments attached to the following item
@@ -275,7 +275,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
   | (_, loc) :: _ as cmtl when is_adjacent t prev loc -> (
     match
       List.group cmtl ~break:(fun (_, l1) (_, l2) ->
-          not (is_adjacent t l1 l2) )
+          not (is_adjacent t l1 l2))
     with
     | [cmtl] when is_adjacent t (snd (List.last_exn cmtl)) next ->
         let open Location in
@@ -291,7 +291,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
               List.partition_tf cmtl ~f:(fun (_, l1) ->
                   same_line_as_next l1
                   || (same_line_as_prev l1 && infix_symbol_before t prev)
-                  || not (same_line_as_prev l1) )
+                  || not (same_line_as_prev l1))
             in
             (prev, next)
           else ([], cmtl)
@@ -325,7 +325,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
             else if phys_equal tbl t.cmts_after then "after"
             else "within" )
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
-            cmt_txt (String.escaped btw_next) ) ;
+            cmt_txt (String.escaped btw_next)) ;
     Hashtbl.add_exn tbl ~key:loc ~data:cmtl )
 
 (** Traverse the location tree from locs, find the deepest location that
@@ -361,7 +361,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
     | None ->
         if Conf.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
-              Format.eprintf "lost: %s@\n%!" txt ) )
+              Format.eprintf "lost: %s@\n%!" txt) )
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts map_ast ast comments =
@@ -397,7 +397,7 @@ let init map_ast loc_of_ast source asts comments_n_docstrings =
   if Conf.debug then
     List.iter comments ~f:(fun (txt, loc) ->
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
-          (if Source.ends_line source loc then "eol" else "") ) ;
+          (if Source.ends_line source loc then "eol" else "")) ;
   if not (List.is_empty comments) then (
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
@@ -422,7 +422,7 @@ let init_use_file =
          match (toplevel_phrase : toplevel_phrase) with
          | Ptop_def items ->
              List.map items ~f:(fun {Parsetree.pstr_loc} -> pstr_loc)
-         | Ptop_dir _ -> [] ))
+         | Ptop_dir _ -> []))
 
 let remove = ref true
 
@@ -443,17 +443,17 @@ let relocate t ~src ~before ~after =
       Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
           Hashtbl.update tbl dst ~f:(fun dst_data ->
               Option.fold dst_data ~init:src_data
-                ~f:(fun src_data dst_data -> f src_data dst_data) ) )
+                ~f:(fun src_data dst_data -> f src_data dst_data)))
     in
     if Conf.debug then
       Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
         Location.fmt before Location.fmt after ;
     update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
-        List.append src_cmts dst_cmts ) ;
+        List.append src_cmts dst_cmts) ;
     update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
-        List.append dst_cmts src_cmts ) ;
+        List.append dst_cmts src_cmts) ;
     update_multi t.cmts_within src after ~f:(fun src_cmts dst_cmts ->
-        List.append dst_cmts src_cmts ) )
+        List.append dst_cmts src_cmts) )
 
 let split_asterisk_prefixed (txt, {Location.loc_start}) =
   let len = Position.column loc_start + 3 in
@@ -491,7 +491,7 @@ let fmt_cmt (conf : Conf.t) cmt =
             match (line, next) with
             | "", None -> fmt ")"
             | _, None -> str line $ fmt "*)"
-            | _, Some _ -> str line $ fmt "@,*" ) )
+            | _, Some _ -> str line $ fmt "@,*") )
   in
   if not conf.wrap_comments then
     match split_asterisk_prefixed cmt with
@@ -524,7 +524,7 @@ let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
               && Location.is_single_line b conf.margin
               && line_dist a b = 1
               && Location.compare_start_col a b = 0
-              && Location.compare_end_col a b = 0 ) )
+              && Location.compare_end_col a b = 0 ))
       in
       let last_loc = snd (List.last_exn cmts) in
       let eol_cmt = Source.ends_line t.source last_loc in
@@ -548,13 +548,13 @@ let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
             | [cmt] -> fmt_cmt conf cmt $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
-                    wrap "(*" "*)" (str (fst cmt)) )
+                    wrap "(*" "*)" (str (fst cmt)))
                 $ maybe_newline ~next (List.last_exn group) )
           $ fmt_if_k (Option.is_none next)
               ( close_box
               $ fmt_or_k eol_cmt
                   (fmt_or_k adj_cmt adj eol)
-                  (Option.call ~f:epi) ) )
+                  (Option.call ~f:epi) ))
 
 let fmt_before t conf ?pro ?(epi = Fmt.break_unless_newline 1 0) ?eol ?adj =
   fmt_cmts t conf t.cmts_before ?pro ~epi ?eol ?adj
@@ -585,7 +585,7 @@ let drop_inside t loc =
   let clear tbl =
     Hashtbl.map_inplace tbl ~f:(fun l ->
         List.filter l ~f:(fun (_, cmt_loc) ->
-            not (Location.contains loc cmt_loc) ) )
+            not (Location.contains loc cmt_loc)))
   in
   clear t.cmts_before ; clear t.cmts_within ; clear t.cmts_after
 
@@ -609,7 +609,7 @@ let remaining_comments t =
                  List
                    [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
                    ; List [Atom "cmt_loc"; Location.sexp_of_t cmt_loc]
-                   ; List [Atom "cmt_txt"; Atom cmt_txt] ] ) ) )
+                   ; List [Atom "cmt_txt"; Atom cmt_txt] ] )))
   in
   List.concat
     [ get t.cmts_before "before"

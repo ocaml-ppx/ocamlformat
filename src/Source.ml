@@ -97,7 +97,7 @@ let find_after t f (loc : Location.t) =
         Bytes.From_string.blit ~src:t ~src_pos:!pos ~dst:bytes ~dst_pos:0
           ~len:to_write ;
         pos := !pos + to_write ;
-        to_write )
+        to_write)
   in
   let rec loop () =
     match Lexer.token lexbuf with
@@ -115,8 +115,8 @@ let extend_loc_to_include_attributes t (loc : Location.t)
   let last_loc =
     List.fold l ~init:loc
       ~f:(fun (acc : Location.t)
-         (({loc; _}, payload) : Parsetree.attribute)
-         ->
+              (({loc; _}, payload) : Parsetree.attribute)
+              ->
         if loc.loc_ghost then acc
         else
           let loc =
@@ -129,7 +129,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
             | PPat (p, None) -> p.ppat_loc
             | PPat (_, Some e) -> e.pexp_loc
           in
-          if Location.compare_end loc acc <= 0 then acc else loc )
+          if Location.compare_end loc acc <= 0 then acc else loc)
   in
   if phys_equal last_loc loc then loc
   else
