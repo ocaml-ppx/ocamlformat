@@ -2938,6 +2938,15 @@ and fmt_extension_constructor c sep ctx ec =
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@" atrs ~suf
        $ fmt_docstring_padded c doc )
 
+and fmt_functor_arg c (name, mt) =
+  wrap "(" ")"
+    ( match mt with
+    | None -> fmt_str_loc c name
+    | Some mt ->
+        hovbox 0
+          ( hovbox 0 (fmt_str_loc c name $ fmt "@ : ")
+          $ compose_module (fmt_module_type c mt) ~f:Fn.id ) )
+
 and fmt_module_type c ({ast= mty} as xmty) =
   let ctx = Mty mty in
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
@@ -2976,13 +2985,6 @@ and fmt_module_type c ({ast= mty} as xmty) =
   | Pmty_functor _ ->
       let for_functor_kw = true in
       let xargs, mt2 = Sugar.functor_type c.cmts ~for_functor_kw xmty in
-      let fmt_arg (name, mt1) =
-        let mt1 = Option.map ~f:(fmt_module_type c) mt1 in
-        wrap "(" ")"
-          (hovbox 0
-             ( fmt_str_loc c name
-             $ opt mt1 (compose_module ~f:(fun m -> fmt " :@ " $ m)) ))
-      in
       let blk = fmt_module_type c mt2 in
       { blk with
         pro=
@@ -2990,7 +2992,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
             ( fmt "functor"
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" pmty_attributes
             $ fmt "@;<1 2>"
-            $ list xargs "@;<1 2>" fmt_arg
+            $ list xargs "@;<1 2>" (fmt_functor_arg c)
             $ fmt "@;<1 2>->"
             $ opt blk.pro (fun pro -> fmt " " $ pro) )
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc)
@@ -3422,13 +3424,6 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
             $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs ) }
   | Pmod_functor _ ->
       let xargs, me = Sugar.functor_ c.cmts ~for_functor_kw:true xmod in
-      let fmt_arg (name, mt) =
-        let fmt_mty mt =
-          let mty = fmt_module_type c mt in
-          compose_module mty ~f:(fun k -> fmt "@ :@ " $ k)
-        in
-        wrap "(" ")" (hovbox 0 (fmt_str_loc c name $ opt mt fmt_mty))
-      in
       let doc, atrs = doc_atrs pmod_attributes in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_expr c me in
       { empty with
@@ -3441,7 +3436,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
                     ( fmt "functor"
                     $ fmt_attributes c ~pre:(fmt " ") ~key:"@" atrs
                     $ fmt "@;<1 2>"
-                    $ list xargs "@;<1 2>" fmt_arg
+                    $ list xargs "@;<1 2>" (fmt_functor_arg c)
                     $ fmt "@;<1 2>->@;<1 2>"
                     $ hvbox 0
                         ( Option.call ~f:pro $ psp $ bdy $ esp
