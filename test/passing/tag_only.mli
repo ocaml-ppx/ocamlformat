@@ -6,9 +6,8 @@ open Module
 open Module
 
 (** @inline *)
-include
-  sig
-    type t
+include sig
+  type t
 end
 
 (** @inline *)
@@ -42,9 +41,8 @@ open Module (** @deprecated  *)
 open Module
 
 (** @inline *)
-include
-  sig
-    type t
+include sig
+  type t
 end
 
 include Type (** @inline *)

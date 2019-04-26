@@ -14,7 +14,8 @@ end [@foo]
 [@@foo]
 
 module type S = sig
-  include ((module type of M [@foo]) [@foo] with type t := M.t)
+  include
+    ((module type of M [@foo]) [@foo] with type t := M.t)
   [@foo]
   [@@foo]
 
@@ -4140,23 +4141,21 @@ end
 module Permissioned : sig
   type ('a, -'perms) t
 
-  include
-    sig
-      val t_of_sexp :
-        (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
+  include sig
+    val t_of_sexp :
+      (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
 
-      val sexp_of_t :
-        ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
+    val sexp_of_t :
+      ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
   end
 
   module Int : sig
     type nonrec -'perms t = (int, 'perms) t
 
-    include
-      sig
-        val t_of_sexp : (sexp -> 'perms) -> sexp -> 'perms t
+    include sig
+      val t_of_sexp : (sexp -> 'perms) -> sexp -> 'perms t
 
-        val sexp_of_t : ('perms -> sexp) -> 'perms t -> sexp
+      val sexp_of_t : ('perms -> sexp) -> 'perms t -> sexp
     end
   end
 end = struct
