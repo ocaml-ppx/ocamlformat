@@ -1606,9 +1606,15 @@ end = struct
                     Pstr_eval
                       ( { pexp_desc=
                             ( Pexp_new _ | Pexp_object _ | Pexp_while _
-                            | Pexp_for _ ) }
+                            | Pexp_for _ | Pexp_function _ | Pexp_fun _
+                            | Pexp_try _ | Pexp_match _ | Pexp_let _ ) }
                       , _ ) } ] ) ->
           Some Apply
+      | Pexp_extension
+          ( _
+          , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, _)}]
+          ) ->
+          Some Semi
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
