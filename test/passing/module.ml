@@ -43,3 +43,11 @@ with type t := t
  and type s := s = struct
   let () = ()
 end
+
+include struct
+  (* a *)
+end
+
+include A (struct
+  (* a *)
+end)
