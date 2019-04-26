@@ -2939,11 +2939,13 @@ and fmt_extension_constructor c sep ctx ec =
        $ fmt_docstring_padded c doc )
 
 and fmt_functor_arg c (name, mt) =
-  let fmt_mty mt =
-    let mty = fmt_module_type c mt in
-    compose_module mty ~f:(fun k -> fmt " : " $ k)
-  in
-  wrap "(" ")" (hovbox 0 (fmt_str_loc c name $ opt mt fmt_mty))
+  wrap "(" ")"
+    ( match mt with
+    | None -> fmt_str_loc c name
+    | Some mt ->
+        hovbox 0
+          ( hovbox 0 (fmt_str_loc c name $ fmt "@ : ")
+          $ compose_module (fmt_module_type c mt) ~f:Fn.id ) )
 
 and fmt_module_type c ({ast= mty} as xmty) =
   let ctx = Mty mty in
