@@ -13,7 +13,6 @@ See the source code of OCamlFormat itself and [Infer](https://github.com/faceboo
   - [Overview](#overview)
   - [Code style](#code-style)
   - [Options](#options)
-  - [Preset profiles](#preset-profiles)
   - [Diff](#diff)
 - [Installation](#installation)
 - [Editor setup](#editor-setup)
