@@ -606,10 +606,10 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
-  | Ptyp_package pty ->
+  | Ptyp_package (id, cnstrs) ->
       hvbox 2
-        ( hovbox 0 (fmt "module@ " $ fmt_longident_loc c (fst pty))
-        $ fmt_package_type c ctx pty )
+        ( hovbox 0 (fmt "module@ " $ fmt_longident_loc c id)
+        $ fmt_package_type c ctx cnstrs )
   | Ptyp_poly ([], _) ->
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
@@ -708,7 +708,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       $ fmt_longident_loc c ~pre:(fmt "#") lid )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
-and fmt_package_type c ctx (_, cnstrs) =
+and fmt_package_type c ctx cnstrs =
   let fmt_cstr ~first ~last:_ (lid, typ) =
     fmt_or first "@;<1 0>with type " "@;<1 1>and type "
     $ fmt_longident_loc c lid $ fmt " = "
@@ -972,15 +972,16 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             (if nested then "" else "@;<1 2>)") )
   | Ppat_constraint
       ( {ppat_desc= Ppat_unpack name; ppat_attributes= []}
-      , ({ptyp_desc= Ptyp_package pty; ptyp_attributes= []} as typ) ) ->
+      , ({ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []} as typ)
+      ) ->
       let ctx = Typ typ in
       hovbox 0
         (wrap_if parens "(" ")"
            (hvbox 1
               ( hovbox 0
                   ( fmt "module " $ fmt_str_loc c name $ fmt "@ : "
-                  $ fmt_longident_loc c (fst pty) )
-              $ fmt_package_type c ctx pty )))
+                  $ fmt_longident_loc c id )
+              $ fmt_package_type c ctx cnstrs )))
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
@@ -1606,7 +1607,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (fmt_constant c ~loc:pexp_loc ?epi const $ fmt_atrs)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []}
-      , {ptyp_desc= Ptyp_package pty; ptyp_attributes= []} ) ->
+      , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []} ) ->
       let imd = c.conf.indicate_multiline_delimiters in
       let opn_paren = fmt_or_k imd (fits_breaks "(" "( ") (fmt "(") in
       let cls_paren = fmt_or_k imd (fits_breaks ")" "@ )") (fmt ")") in
@@ -1617,8 +1618,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
              hvbox 2
                ( hovbox 0
                    ( opn_paren $ fmt "module " $ m $ fmt "@ : "
-                   $ fmt_longident_loc c (fst pty) )
-               $ fmt_package_type c ctx pty
+                   $ fmt_longident_loc c id )
+               $ fmt_package_type c ctx cnstrs
                $ fmt_atrs $ cls_paren ) ))
   | Pexp_constraint (e, t) ->
       hvbox 2
@@ -3494,7 +3495,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
   | Pmod_unpack
       { pexp_desc=
           Pexp_constraint
-            (e1, {ptyp_desc= Ptyp_package pty; ptyp_attributes= []})
+            (e1, {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []})
       ; pexp_attributes= [] } ->
       let doc, atrs = doc_atrs pmod_attributes in
       let has_epi =
@@ -3513,9 +3514,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
                      ( hovbox 0
                          ( fmt "val "
                          $ fmt_expression c (sub_exp ~ctx e1)
-                         $ fmt "@;<1 2>: "
-                         $ fmt_longident_loc c (fst pty) )
-                     $ fmt_package_type c ctx pty )))
+                         $ fmt "@;<1 2>: " $ fmt_longident_loc c id )
+                     $ fmt_package_type c ctx cnstrs )))
       ; epi=
           Option.some_if has_epi
             ( Cmts.fmt_after c pmod_loc
