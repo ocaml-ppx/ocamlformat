@@ -3431,8 +3431,7 @@ type ('k, 'd, 'm) map =
   (module MapT with type key = 'k and type data = 'd and type map = 'm)
 
 let add (type k d m) (m : (k, d, m) map) x y s =
-  let module M = ( val m
-                     : MapT
+  let module M = ( val m : MapT
                      with type key = k
                       and type data = d
                       and type map = m )
@@ -3452,7 +3451,7 @@ module SSMap = struct
 end
 
 let ssmap =
-  ( module SSMap : MapT
+  (module SSMap : MapT
     with type key = string
      and type data = string
      and type map = SSMap.map )
