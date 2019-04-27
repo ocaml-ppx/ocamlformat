@@ -32,14 +32,14 @@ let invariant t =
   , xxxxxxxxxxxxxx
   , xxxxxxxxxxx
   , xxxxxxxxxxxxxxxxxxxx ) when a < b]
-  ( [%ext
-      let f = () and g () = () in
-      e] )
+  [%ext
+    let f = () and g () = () in
+    e]
   (let%ext f = () and g () = () in
    e)
-  ( [%ext
-      let rec f = () and g () = () in
-      e] )
+  [%ext
+    let rec f = () and g () = () in
+    e]
   (let%ext rec f = () and g () = () in
    e)
 
@@ -73,9 +73,9 @@ let _ = [%stri let [%p xxx] = fun (t : [%t tt]) (ut : [%t tt]) -> [%e xxx]]
 let _ =
   [ x
   ; x
-    ---> ( [%expr
-             [%e x ~loc [%expr x] x] ;
-             iter tail] )
+    ---> [%expr
+           [%e x ~loc [%expr x] x] ;
+           iter tail]
   ; x ]
 
 let _ =
@@ -109,9 +109,9 @@ let _ = f (function%ext x -> x) x
 
 let _ = [%ext function x -> x]
 
-let _ = f ([%ext function x -> x])
+let _ = f [%ext function x -> x]
 
-let _ = f ([%ext function x -> x]) x
+let _ = f [%ext function x -> x] x
 
 let _ = f ([%ext e] [@attr]) x
 
@@ -144,10 +144,10 @@ let%lwt f = function _ -> ()
 
 type%any_extension t = < a: 'a >
 
-let value = f ([%any_extension function 0 -> false | _ -> true])
+let value = f [%any_extension function 0 -> false | _ -> true]
 
-let value = ([%any_extension fun x -> y]) x
+let value = [%any_extension fun x -> y] x
 
-let value = f ([%any_extension try x with x -> false | _ -> true])
+let value = f [%any_extension try x with x -> false | _ -> true]
 
-let value = f ([%any_extension match x with x -> false | _ -> true])
+let value = f [%any_extension match x with x -> false | _ -> true]
