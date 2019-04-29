@@ -103,12 +103,7 @@ let mod_int c1 c2 is_safe dbg =
   match (c1, c2) with
   | c1, Cconst_int (0, _) ->
       Csequence (c1, raise_symbol dbg "caml_exn_Division_by_zero")
-  | ( c1
-    , Cconst_int
-        ( ( 1
-           | -1 )
-        , _ ) ) ->
-      Csequence (c1, Cconst_int (0, dbg))
+  | c1, Cconst_int ((1 | -1), _) -> Csequence (c1, Cconst_int (0, dbg))
   | x
    | -1 ->
       ()
