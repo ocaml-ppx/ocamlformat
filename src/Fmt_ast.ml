@@ -1809,7 +1809,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             "(" ")"
             ( hvbox 2
                 (fmt_module c keyword name xargs (Some xbody) true xmty []
-                   ~epi:(fmt "in") ~can_sparse)
+                   ~epi:(str "in") ~can_sparse)
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
