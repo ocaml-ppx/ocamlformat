@@ -1631,15 +1631,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_construct (lid, None) -> (
     match lid.txt with
     | Lident (("()" | "[]") as txt) ->
-        let opn = txt.[0] and cls = txt.[1] in
+        let opn = char txt.[0] and cls = char txt.[1] in
         let pro = str " " and epi = str " " in
         Cmts.fmt c lid.loc
         @@ hvbox 0
-             (wrap_if
-                (not (List.is_empty pexp_attributes))
-                "(" ")"
-                ( wrap_k (char opn) (char cls)
-                    (Cmts.fmt_within c ~pro ~epi pexp_loc)
+             (wrap_if parens "(" ")"
+                ( wrap_k opn cls (Cmts.fmt_within c ~pro ~epi pexp_loc)
                 $ fmt_atrs ))
     | Lident "::" ->
         wrap_if parens "(" ")"
