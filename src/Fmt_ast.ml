@@ -345,6 +345,12 @@ let fmt_variance = function
   | Contravariant -> str "-"
   | Invariant -> noop
 
+let fmt_label lbl sep =
+  match lbl with
+  | Nolabel -> noop
+  | Labelled l -> str "~" $ str l $ fmt sep
+  | Optional l -> str "?" $ str l $ fmt sep
+
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
 let wrap_list c =
@@ -1117,6 +1123,16 @@ and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
        $ opt set (fun e ->
              fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) ))
 
+and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
+    (lbl, ({ast= arg} as xarg)) =
+  match (lbl, arg.pexp_desc) with
+  | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
+    when String.equal l i && List.is_empty arg.pexp_attributes ->
+      Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
+  | _ ->
+      hvbox_if box 2
+        (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
+
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp} as xexp) =
   protect (Exp exp)
@@ -1128,21 +1144,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" pexp_attributes in
   let parens = Option.value parens ~default:(parenze_exp xexp) in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
-  let fmt_label lbl sep =
-    match lbl with
-    | Nolabel -> noop
-    | Labelled l -> str "~" $ str l $ fmt sep
-    | Optional l -> str "?" $ str l $ fmt sep
-  in
-  let fmt_label_arg ?(box = box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
-    match (lbl, arg.pexp_desc) with
-    | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
-      when String.equal l i && List.is_empty arg.pexp_attributes ->
-        Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
-    | _ ->
-        hvbox_if box 2
-          (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
-  in
   let fmt_op_args op_args =
     let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
       let _, ({ast= arg} as xarg) = lbl_xarg in
@@ -1155,7 +1156,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | Pexp_fun _ | Pexp_function _ -> Some (not last)
         | _ -> None
       in
-      fmt_label_arg ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
+      fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
     in
     let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
     let fmt_op_args ~first ~last (fmt_op, xargs) =
@@ -1281,7 +1282,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               | _ -> Some (fits_breaks "" "@;<1000 -3>")
             in
             fmt_if_k (Option.is_none prev) openbox
-            $ hovbox 2 (fmt_label_arg ?box ?epi (lbl, xarg))
+            $ hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
             $ fmt_if_k (Option.is_none next) close_box
             $ fmt_if_k spc (break_unless_newline 1 0) ) )
   in
@@ -2316,21 +2317,6 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   update_config_maybe_disabled c pcl_loc pcl_attributes
   @@ fun c ->
   let parens = parenze_cl xexp in
-  let fmt_label lbl sep =
-    match lbl with
-    | Nolabel -> noop
-    | Labelled l -> str "~" $ str l $ fmt sep
-    | Optional l -> str "?" $ str l $ fmt sep
-  in
-  let fmt_label_arg ?(box = box) ?epi ?parens (lbl, ({ast= arg} as xarg)) =
-    match (lbl, arg.pexp_desc) with
-    | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
-      when String.equal l i ->
-        Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
-    | _ ->
-        hvbox_if box 2
-          (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
-  in
   let ctx = Cl exp in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   let is_simple x = is_simple c.conf width (sub_exp ~ctx x) in
@@ -2359,7 +2345,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
         | _ -> Some (fits_breaks "" "@;<1000 -3>")
       in
       fmt_if_k (Option.is_none prev) openbox
-      $ hovbox 2 (fmt_label_arg ?box ?epi (lbl, xarg))
+      $ hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
       $ fmt_if_k (Option.is_none next) close_box
       $ fmt_if_k spc (break_unless_newline 1 0)
     in
