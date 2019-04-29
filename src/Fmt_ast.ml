@@ -3665,9 +3665,11 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       match Sugar.polynewtype c.cmts pat body with
       | Some (xpat, pvars, xtyp, xbody) ->
           let fmt_cstr =
-            fmt "@ : type "
-            $ list pvars " " (fmt_str_loc c)
-            $ fmt ".@ " $ fmt_core_type c xtyp
+            fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
+            $ hvbox 0
+                ( fmt "type "
+                $ list pvars " " (fmt_str_loc c)
+                $ fmt ".@ " $ fmt_core_type c xtyp )
           in
           (xpat, [], Some fmt_cstr, xbody)
       | None ->

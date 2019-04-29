@@ -52,6 +52,11 @@ let ssmap
   =
   ()
 
+let long_function_name
+    : type a. a long_long_type -> a -> a -> a -> wrap_wrap_wrap -> unit
+  =
+ fun () -> ()
+
 [@@@ocamlformat "ocp-indent-compat=false"]
 
 module type M = sig
@@ -79,3 +84,7 @@ let to_clambda_function (id, (function_decl : Flambda.function_declaration))
      closed set of closures, is the substitutions for variables bound to the
      various closures in the set. Such closures will always be ... *)
   x
+
+let long_function_name :
+    type a. a long_long_type -> a -> a -> a -> wrap_wrap_wrap -> unit =
+ fun () -> ()
