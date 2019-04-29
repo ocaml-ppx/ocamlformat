@@ -228,10 +228,9 @@ let rec fmt_longident (li : Longident.t) =
       hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
 let fmt_longident_loc c ?(pre = noop) {txt; loc} =
-  Cmts.fmt c loc @@ (pre $ fmt_longident txt)
+  Cmts.fmt c loc (pre $ fmt_longident txt)
 
-let fmt_str_loc c ?(pre = noop) {txt; loc} =
-  Cmts.fmt c loc @@ (pre $ str txt)
+let fmt_str_loc c ?(pre = noop) {txt; loc} = Cmts.fmt c loc (pre $ str txt)
 
 let fmt_char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
@@ -751,10 +750,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
     ->
       fun k ->
         Cmts.fmt c ~pro:spc ppat_loc
-        @@ Cmts.fmt c ~pro:spc loc
-        @@ (Option.call ~f:pro $ k)
-  | _ -> fun k -> Cmts.fmt c ~pro:spc ppat_loc @@ (Option.call ~f:pro $ k)
-  )
+        @@ Cmts.fmt c ~pro:spc loc (Option.call ~f:pro $ k)
+  | _ -> fun k -> Cmts.fmt c ~pro:spc ppat_loc (Option.call ~f:pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
      else
        let maybe_wrap =
@@ -1947,7 +1944,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           (str "module " $ m $ fmt_atrs)
       in
       hovbox 0
-      @@ compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod
+        (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         let leading_cmt = Cmts.fmt_before c lid1.loc in
@@ -1977,13 +1974,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           | Pexp_constraint ({pexp_desc= Pexp_pack _}, _) -> general_case ()
           | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
               cbox 2
-                ( Cmts.fmt c f.pexp_loc
-                @@ ( fmt_longident_loc c lid1
+                (Cmts.fmt c f.pexp_loc
+                   ( fmt_longident_loc c lid1
                    $ fmt_if Poly.(c.conf.field_space = `Loose) " "
                    $ str ": "
                    $ fmt_core_type c (sub_typ ~ctx t)
                    $ fmt " =@ "
-                   $ cbox 0 (fmt_expression c (sub_exp ~ctx e)) ) )
+                   $ cbox 0 (fmt_expression c (sub_exp ~ctx e)) ))
           | _ -> general_case () )
       in
       hvbox 0
@@ -2143,19 +2140,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_atrs ))
   | Pexp_override l -> (
       let fmt_field ({txt; loc}, f) =
+        let eol = fmt "@;<1 3>" in
         let txt = Longident.parse txt in
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc} when field_alias ~field:txt txt' ->
-            Cmts.fmt c ~eol:(fmt "@;<1 3>") loc @@ fmt_longident txt'
+            Cmts.fmt c ~eol loc @@ fmt_longident txt'
         | Pexp_constraint
             (({pexp_desc= Pexp_ident {txt= txt'; loc}} as e), t)
           when field_alias ~field:txt txt' ->
-            Cmts.fmt c ~eol:(fmt "@;<1 3>") loc
-            @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
+            Cmts.fmt c ~eol loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
             $ str " : "
             $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
-            Cmts.fmt c ~eol:(fmt "@;<1 3>") loc @@ fmt_longident txt
+            Cmts.fmt c ~eol loc @@ fmt_longident txt
             $ str " = "
             $ fmt_expression c (sub_exp ~ctx f)
       in
@@ -2474,49 +2471,49 @@ and fmt_class_field c ctx (cf : class_field) =
     | Cfk_concrete (Fresh, _) -> noop
   in
   fmt_cmts
-  @@ ( fmt_docstring c ~epi:(fmt "@\n") doc
-     $ hvbox 0
-         ( match pcf_desc with
-         | Pcf_inherit (override, cl, parent) ->
-             hovbox 2
-               ( str "inherit"
-               $ fmt_if Poly.(override = Override) "!"
-               $ fmt "@ "
-               $ fmt_class_expr c (sub_cl ~ctx cl)
-               $ opt parent (fun p -> str " as " $ fmt_str_loc c p) )
-         | Pcf_method (name, priv, kind) ->
-             let l, eq, expr = fmt_kind kind in
-             hvbox 2
-               ( hovbox 2
-                   ( hovbox 4
-                       ( str "method" $ virtual_or_override kind
-                       $ fmt_if Poly.(priv = Private) "@ private"
-                       $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                   $ eq )
-               $ expr )
-         | Pcf_val (name, mut, kind) ->
-             let l, eq, expr = fmt_kind kind in
-             hvbox 2
-               ( hovbox 2
-                   ( hvbox 4
-                       ( str "val" $ virtual_or_override kind
-                       $ fmt_if Poly.(mut = Mutable) "@ mutable"
-                       $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                   $ eq )
-               $ expr )
-         | Pcf_constraint (t1, t2) ->
-             fmt "constraint@ "
-             $ fmt_core_type c (sub_typ ~ctx t1)
-             $ str " = "
-             $ fmt_core_type c (sub_typ ~ctx t2)
-         | Pcf_initializer e ->
-             fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
-         | Pcf_attribute atr ->
-             let doc, atrs = doc_atrs [atr] in
-             fmt_docstring c ~standalone:true ~epi:noop doc
-             $ fmt_attributes c ~key:"@@@" atrs
-         | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
-     $ fmt_atrs )
+    ( fmt_docstring c ~epi:(fmt "@\n") doc
+    $ hvbox 0
+        ( match pcf_desc with
+        | Pcf_inherit (override, cl, parent) ->
+            hovbox 2
+              ( str "inherit"
+              $ fmt_if Poly.(override = Override) "!"
+              $ fmt "@ "
+              $ fmt_class_expr c (sub_cl ~ctx cl)
+              $ opt parent (fun p -> str " as " $ fmt_str_loc c p) )
+        | Pcf_method (name, priv, kind) ->
+            let l, eq, expr = fmt_kind kind in
+            hvbox 2
+              ( hovbox 2
+                  ( hovbox 4
+                      ( str "method" $ virtual_or_override kind
+                      $ fmt_if Poly.(priv = Private) "@ private"
+                      $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+                  $ eq )
+              $ expr )
+        | Pcf_val (name, mut, kind) ->
+            let l, eq, expr = fmt_kind kind in
+            hvbox 2
+              ( hovbox 2
+                  ( hvbox 4
+                      ( str "val" $ virtual_or_override kind
+                      $ fmt_if Poly.(mut = Mutable) "@ mutable"
+                      $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+                  $ eq )
+              $ expr )
+        | Pcf_constraint (t1, t2) ->
+            fmt "constraint@ "
+            $ fmt_core_type c (sub_typ ~ctx t1)
+            $ str " = "
+            $ fmt_core_type c (sub_typ ~ctx t2)
+        | Pcf_initializer e ->
+            fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
+        | Pcf_attribute atr ->
+            let doc, atrs = doc_atrs [atr] in
+            fmt_docstring c ~standalone:true ~epi:noop doc
+            $ fmt_attributes c ~key:"@@@" atrs
+        | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
+    $ fmt_atrs )
 
 and fmt_class_type_field c ctx (cf : class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
@@ -2882,10 +2879,8 @@ and fmt_extension_constructor c sep ctx ec =
   let doc, atrs = doc_atrs pext_attributes in
   let suf =
     match pext_kind with
-    | Pext_decl ((Pcstr_tuple [] | Pcstr_record [] | _), None)
-     |Pext_rebind _ ->
-        noop
-    | Pext_decl ((Pcstr_tuple [] | Pcstr_record [] | _), Some _) -> str " "
+    | Pext_decl (_, None) | Pext_rebind _ -> noop
+    | Pext_decl (_, Some _) -> str " "
   in
   Cmts.fmt c pext_loc
   @@ hvbox 4
@@ -3396,17 +3391,17 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
         opn
       ; bdy=
           Cmts.fmt c pmod_loc
-          @@ ( fmt_docstring c ~epi:(fmt "@,") doc
-             $ hvbox 0
-                 (wrap_if parens "(" ")"
-                    ( str "functor"
-                    $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs
-                    $ fmt "@;<1 2>"
-                    $ list xargs "@;<1 2>" (fmt_functor_arg c)
-                    $ fmt "@;<1 2>->@;<1 2>"
-                    $ hvbox 0
-                        ( Option.call ~f:pro $ psp $ bdy $ esp
-                        $ Option.call ~f:epi ) )) )
+            ( fmt_docstring c ~epi:(fmt "@,") doc
+            $ hvbox 0
+                (wrap_if parens "(" ")"
+                   ( str "functor"
+                   $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs
+                   $ fmt "@;<1 2>"
+                   $ list xargs "@;<1 2>" (fmt_functor_arg c)
+                   $ fmt "@;<1 2>->@;<1 2>"
+                   $ hvbox 0
+                       ( Option.call ~f:pro $ psp $ bdy $ esp
+                       $ Option.call ~f:epi ) )) )
       ; cls }
   | Pmod_ident lid ->
       let doc, atrs = doc_atrs pmod_attributes in
