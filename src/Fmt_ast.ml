@@ -3324,7 +3324,9 @@ and fmt_with_constraint c ctx = function
       $ fmt_longident_loc c m2
 
 and maybe_generative c ~ctx = function
-  | {pmod_desc= Pmod_structure []; pmod_attributes= []} -> empty
+  | {pmod_desc= Pmod_structure []; pmod_attributes= []; pmod_loc}
+    when not (Cmts.has_within c.cmts pmod_loc) ->
+      empty
   | m -> fmt_module_expr c (sub_mod ~ctx m)
 
 and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
