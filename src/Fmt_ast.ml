@@ -1787,39 +1787,30 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
       let keyword = str "let module" $ fmt_extension_suffix c ext in
-      let let_module =
-        match c.conf.let_module with
-        | `Compact ->
-            let xargs, xbody =
-              Sugar.functor_ c.cmts ~for_functor_kw:false
-                (sub_mod ~ctx pmod)
-            in
-            let xbody, xmty =
-              match xbody.ast with
-              | { pmod_desc= Pmod_constraint (body_me, body_mt)
-                ; pmod_loc
-                ; pmod_attributes= [] } ->
-                  Cmts.relocate c.cmts ~src:pmod_loc
-                    ~before:body_me.pmod_loc ~after:body_mt.pmty_loc ;
-                  (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
-              | _ -> (xbody, None)
-            in
-            fmt_module c keyword name xargs (Some xbody) true xmty []
-              ~epi:(str "in")
-        | `Sparse ->
-            hovbox 2
-              (hovbox 4 (keyword $ str " " $ str name.txt) $ fmt "@;<1 2>=")
-            $ fmt "@ "
-            $ compose_module
-                (fmt_module_expr c (sub_mod ~ctx pmod))
-                ~f:Fn.id
-            $ fmt "@;<1 -2>in"
+      let xargs, xbody =
+        Sugar.functor_ c.cmts ~for_functor_kw:false (sub_mod ~ctx pmod)
+      in
+      let xbody, xmty =
+        match xbody.ast with
+        | { pmod_desc= Pmod_constraint (body_me, body_mt)
+          ; pmod_loc
+          ; pmod_attributes= [] } ->
+            Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
+              ~after:body_mt.pmty_loc ;
+            (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
+        | _ -> (xbody, None)
+      in
+      let can_sparse =
+        match xbody.ast.pmod_desc with Pmod_apply _ -> true | _ -> false
       in
       hvbox 0
         ( wrap_if
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
-            ( hvbox 2 let_module $ fmt "@;<1000 0>"
+            ( hvbox 2
+                (fmt_module c keyword name xargs (Some xbody) true xmty []
+                   ~epi:(fmt "in") ~can_sparse)
+            $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_open (flag, name, e0) ->
@@ -3143,7 +3134,8 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
           $ fmt "@;" $ fmt_class_expr c e )
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
 
-and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
+and fmt_module c ?epi ?(can_sparse = false) keyword name xargs xbody colon
+    xmty attributes =
   let doc, atrs = doc_atrs attributes in
   let f (name, xarg) = (name, Option.map ~f:(fmt_module_type c) xarg) in
   let arg_blks = List.map xargs ~f in
@@ -3185,8 +3177,11 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
     Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
     && Option.for_all xmty ~f:(fun x -> module_type_is_simple x.ast)
   in
+  let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
+  let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
   (fmt_docstring_around ~single_line c doc)
-    (hvbox 0
+    (hvbox
+       (if compact then 0 else 2)
        ( box_b
            ( (if Option.is_some blk_t.epi then hovbox else hvbox)
                0
@@ -3205,16 +3200,19 @@ and fmt_module c ?epi keyword name xargs xbody colon xmty attributes =
                    $ blk_t.psp $ blk_t.bdy )
                $ blk_t.esp $ Option.call ~f:blk_t.epi
                $ fmt_if (Option.is_some xbody) " ="
-               $ opt blk_b.pro (fun pro -> fmt "@ " $ pro) )
+               $ fmt_if_k compact fmt_pro )
+           $ fmt_if_k (not compact) fmt_pro
            $ blk_b.psp
            $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
            $ blk_b.bdy )
        $ blk_b.esp $ Option.call ~f:blk_b.epi
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
        $ opt epi (fun epi ->
-             fmt_or
-               (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
-               " " "@ "
+             fmt_or_k compact
+               (fmt_or
+                  (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
+                  " " "@ ")
+               (fmt "@;<1 -2>")
              $ epi ) ))
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
