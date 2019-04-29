@@ -1133,6 +1133,36 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
       hvbox_if box 2
         (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
 
+and fmt_args ~first:first_grp ~last:last_grp c ctx args =
+  let fmt_arg ?prev (lbl, arg) ?next =
+    let ({ast} as xarg) = sub_exp ~ctx arg in
+    let openbox = open_hovbox (if first_grp then 2 else 0) in
+    let consecutive_prefix_ops =
+      match next with
+      | Some (_, e) -> is_prefix ast && exposed_left_exp e
+      | _ -> false
+    in
+    let spc =
+      consecutive_prefix_ops || Option.is_some next || not last_grp
+    in
+    let box =
+      match ast.pexp_desc with
+      | Pexp_fun _ | Pexp_function _ -> Some false
+      | _ -> None
+    in
+    let epi =
+      match (lbl, next) with
+      | _, None -> None
+      | Nolabel, _ -> Some (fits_breaks "" "@;<1000 -1>")
+      | _ -> Some (fits_breaks "" "@;<1000 -3>")
+    in
+    fmt_if_k (Option.is_none prev) openbox
+    $ hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
+    $ fmt_if_k (Option.is_none next) close_box
+    $ fmt_if_k spc (break_unless_newline 1 0)
+  in
+  list_pn args fmt_arg
+
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp} as xexp) =
   protect (Exp exp)
@@ -1256,35 +1286,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       if c.conf.wrap_fun_args then List.group all ~break
       else List.map all ~f:(fun x -> [x])
     in
-    list_fl groups (fun ~first:first_grp ~last:last_grp args ->
-        list_pn args (fun ?prev (lbl, arg) ?next ->
-            let ({ast} as xarg) = sub_exp ~ctx arg in
-            let openbox = open_hovbox (if first_grp then 2 else 0) in
-            let consecutive_prefix_ops =
-              match next with
-              | Some (_, {pexp_desc= Pexp_apply (op, _)}) ->
-                  is_prefix ast && is_prefix op
-              | _ -> false
-            in
-            let spc =
-              consecutive_prefix_ops || (not last_grp)
-              || Option.is_some next
-            in
-            let box =
-              match ast.pexp_desc with
-              | Pexp_fun _ | Pexp_function _ -> Some false
-              | _ -> None
-            in
-            let epi =
-              match (lbl, next) with
-              | _, None -> None
-              | Nolabel, _ -> Some (fits_breaks "" "@;<1000 -1>")
-              | _ -> Some (fits_breaks "" "@;<1000 -3>")
-            in
-            fmt_if_k (Option.is_none prev) openbox
-            $ hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
-            $ fmt_if_k (Option.is_none next) close_box
-            $ fmt_if_k spc (break_unless_newline 1 0) ) )
+    list_fl groups (fmt_args c ctx)
   in
   hvbox_if box 0 @@ fmt_cmts
   @@ (fun fmt -> Option.call ~f:pro $ fmt)
@@ -2318,44 +2320,14 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   @@ fun c ->
   let parens = parenze_cl xexp in
   let ctx = Cl exp in
-  let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
-  let is_simple x = is_simple c.conf width (sub_exp ~ctx x) in
-  let break (_, a1) (_, a2) = not (is_simple a1 && is_simple a2) in
-  let fmt_args ~first:first_grp ~last:last_grp args =
-    let fmt_arg ?prev (lbl, arg) ?next =
-      let ({ast} as xarg) = sub_exp ~ctx arg in
-      let openbox = open_hovbox (if first_grp then 2 else 0) in
-      let consecutive_prefix_ops =
-        match next with
-        | Some (_, e) -> is_prefix ast && exposed_left_exp e
-        | _ -> false
-      in
-      let spc =
-        consecutive_prefix_ops || (not last_grp) || Option.is_some next
-      in
-      let box =
-        match ast.pexp_desc with
-        | Pexp_fun _ | Pexp_function _ -> Some false
-        | _ -> None
-      in
-      let epi =
-        match (lbl, next) with
-        | _, None -> None
-        | Nolabel, _ -> Some (fits_breaks "" "@;<1000 -1>")
-        | _ -> Some (fits_breaks "" "@;<1000 -3>")
-      in
-      fmt_if_k (Option.is_none prev) openbox
-      $ hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
-      $ fmt_if_k (Option.is_none next) close_box
-      $ fmt_if_k spc (break_unless_newline 1 0)
-    in
-    list_pn args fmt_arg
-  in
   let fmt_args_grouped e0 a1N =
+    let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
+    let is_simple x = is_simple c.conf width (sub_exp ~ctx x) in
+    let break (_, a1) (_, a2) = not (is_simple a1 && is_simple a2) in
     (* TODO: consider [e0] when grouping *)
     fmt_class_expr c (sub_cl ~ctx e0)
     $ fmt "@ "
-    $ list_fl (List.group a1N ~break) fmt_args
+    $ list_fl (List.group a1N ~break) (fmt_args c ctx)
   in
   let fmt_cmts = Cmts.fmt c ?eol pcl_loc in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" pcl_attributes in
