@@ -3674,9 +3674,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     else
       match Sugar.polynewtype c.cmts pat body with
       | Some (xpat, pvars, xtyp, xbody) ->
-          let comma = fmt_or c.conf.ocp_indent_compat "@ : " " :@ " in
           let fmt_cstr =
-            comma
+            fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
             $ hvbox 0
                 ( fmt "type "
                 $ list pvars " " (fmt_str_loc c)
