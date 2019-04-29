@@ -14,17 +14,23 @@
 open Migrate_ast
 open Parsetree
 
-let init, register_reset, leading_nested_match_parens, parens_ite =
+let ( init
+    , extension_sugar
+    , register_reset
+    , leading_nested_match_parens
+    , parens_ite ) =
   let l = ref [] in
+  let extension_sugar = ref `Preserve in
   let leading_nested_match_parens = ref false in
   let parens_ite = ref false in
   let register f = l := f :: !l in
-  let init conf =
-    leading_nested_match_parens := conf.Conf.leading_nested_match_parens ;
-    parens_ite := conf.Conf.parens_ite ;
+  let init (conf : Conf.t) =
+    extension_sugar := conf.extension_sugar ;
+    leading_nested_match_parens := conf.leading_nested_match_parens ;
+    parens_ite := conf.parens_ite ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, register, leading_nested_match_parens, parens_ite)
+  (init, extension_sugar, register, leading_nested_match_parens, parens_ite)
 
 (** Predicates recognizing special symbol identifiers. *)
 
@@ -1598,17 +1604,31 @@ end = struct
       | Pexp_apply _ -> Some Apply
       | Pexp_assert _ | Pexp_lazy _ | Pexp_for _
        |Pexp_variant (_, Some _)
-       |Pexp_while _ | Pexp_new _ | Pexp_object _
-       |Pexp_extension
-          ( _
+       |Pexp_while _ | Pexp_new _ | Pexp_object _ ->
+          Some Apply
+      | Pexp_extension
+          ( ext
           , PStr
               [ { pstr_desc=
                     Pstr_eval
-                      ( { pexp_desc=
-                            ( Pexp_new _ | Pexp_object _ | Pexp_while _
-                            | Pexp_for _ ) }
-                      , _ ) } ] ) ->
+                      ( ( { pexp_desc=
+                              ( Pexp_new _ | Pexp_object _ | Pexp_while _
+                              | Pexp_for _ | Pexp_function _ | Pexp_fun _
+                              | Pexp_try _ | Pexp_match _ | Pexp_let _ ) }
+                        as e )
+                      , _ ) } ] )
+        when Poly.(!extension_sugar = `Always)
+             || Source.extension_using_sugar ~name:ext ~payload:e ->
           Some Apply
+      | Pexp_extension
+          ( ext
+          , PStr
+              [ { pstr_desc=
+                    Pstr_eval (({pexp_desc= Pexp_sequence _} as e), _) } ]
+          )
+        when Poly.(!extension_sugar = `Always)
+             || Source.extension_using_sugar ~name:ext ~payload:e ->
+          Some Semi
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot

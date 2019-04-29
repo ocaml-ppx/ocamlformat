@@ -125,3 +125,33 @@ let%lwt f = function
 
 type%any_extension t =
   < a: 'a >
+
+let value =
+  f
+    [%any_extension
+      function
+      | 0 -> false
+      | _ -> true
+    ]
+
+let value =
+    [%any_extension
+      fun x -> y
+    ]
+      x
+
+let value =
+  f
+    [%any_extension
+      try x with
+      | x -> false
+      | _ -> true
+    ]
+
+let value =
+  f
+    [%any_extension
+      match x with
+      | x -> false
+      | _ -> true
+    ]
