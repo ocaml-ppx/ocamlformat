@@ -1233,8 +1233,8 @@ type _ ty_env =
 (* Comparing selectors *)
 type (_, _) eq = Eq : ('a, 'a) eq
 
-let rec eq_sel : type a b c.
-    (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option =
+let rec eq_sel :
+    type a b c. (a, b) ty_sel -> (a, c) ty_sel -> (b, c) eq option =
  fun s1 s2 ->
   match (s1, s2) with
   | Thd, Thd -> Some Eq
@@ -1243,7 +1243,8 @@ let rec eq_sel : type a b c.
   | _ -> None
 
 (* Auxiliary function to get the type of a case from its selector *)
-let rec get_case : type a b e.
+let rec get_case :
+    type a b e.
        (b, a) ty_sel
     -> (string * (e, b) ty_case) list
     -> string * (a, e) ty option =
@@ -1338,7 +1339,8 @@ let ty_abc =
     | `B s -> ("B", Some (Tdyn (String, s)))
     | `C -> ("C", None)
   (* Define inj in advance to be able to write the type annotation easily *)
-  and inj : type c.
+  and inj :
+      type c.
          (int -> string -> noarg -> unit, c) ty_sel * c
       -> [`A of int | `B of string | `C] = function
     | Thd, v -> `A v
@@ -1584,8 +1586,9 @@ type (_, _) tree =
 
 let tree1 = Tfork (Tfork (Ttip, Tnode 4), Tfork (Tnode 4, Tnode 3))
 
-let rec find : type sh.
-    ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) path list =
+let rec find :
+    type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) path list
+    =
  fun eq n t ->
   match t with
   | Ttip -> []
@@ -1646,8 +1649,8 @@ let rec sameNat : type a b. a nat -> b nat -> (a, b) equal option =
 
 (* Extra: associativity of addition *)
 
-let rec plus_func : type a b m n.
-    (a, b, m) plus -> (a, b, n) plus -> (m, n) equal =
+let rec plus_func :
+    type a b m n. (a, b, m) plus -> (a, b, n) plus -> (m, n) equal =
  fun p1 p2 ->
   match (p1, p2) with
   | PlusZ _, PlusZ _ -> Eq
@@ -1655,7 +1658,8 @@ let rec plus_func : type a b m n.
       let Eq = plus_func p1' p2' in
       Eq
 
-let rec plus_assoc : type a b c ab bc m n.
+let rec plus_assoc :
+    type a b c ab bc m n.
        (a, b, ab) plus
     -> (ab, c, m) plus
     -> (b, c, bc) plus
@@ -1748,7 +1752,8 @@ let rec elem : type h. int -> h avl -> bool =
   | Leaf -> false
   | Node (_, l, y, r) -> x = y || if x < y then elem x l else elem x r
 
-let rec rotr : type n.
+let rec rotr :
+    type n.
        n succ succ avl
     -> int
     -> n avl
@@ -1764,7 +1769,8 @@ let rec rotr : type n.
   | Node (Less, a, x, Node (More, b, z, c)) ->
       Inl (Node (Same, Node (Same, a, x, b), z, Node (Less, c, y, tR)))
 
-let rec rotl : type n.
+let rec rotl :
+    type n.
        n avl
     -> int
     -> n succ succ avl
@@ -2248,7 +2254,8 @@ type closed = rnil
 
 type 'a rlam = ((pexp, closed, 'a) lam, (pval, closed, 'a) lam) sum
 
-let rec rule : type a b.
+let rec rule :
+    type a b.
     (pval, closed, (a, b) tarr) lam -> (pval, closed, a) lam -> b rlam =
  fun v1 v2 ->
   match (v1, v2) with
@@ -8496,7 +8503,8 @@ type (_, _, _, _) u = U : (int, int, int, int) u
 
 type v = E | F | G
 
-let f : type a b c d e f g.
+let f :
+    type a b c d e f g.
        a t
        * b t
        * c t
