@@ -90,3 +90,11 @@ type t =
   { (* comment here *)
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaaaaaaaaaa
   ; bbbbbbbbbbbb: bbbbbbbbbbb }
+
+let _ = x {a= (a': string); b= (b': string)}
+
+let _ = x {a: string= a'; b: string= b'}
+
+let _ = x {a= (a': string); b: string= b'}
+
+let _ = x {a: string= a'; b= (b': string)}
