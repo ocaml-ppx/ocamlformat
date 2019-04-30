@@ -4410,19 +4410,17 @@ end
 module Permissioned : sig
   type ('a, -'perms) t
 
-  include
-    sig
-      val t_of_sexp : (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
-      val sexp_of_t : ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
+  include sig
+    val t_of_sexp : (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
+    val sexp_of_t : ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
   end
 
   module Int : sig
     type nonrec -'perms t = (int, 'perms) t
 
-    include
-      sig
-        val t_of_sexp : (sexp -> 'perms) -> sexp -> 'perms t
-        val sexp_of_t : ('perms -> sexp) -> 'perms t -> sexp
+    include sig
+      val t_of_sexp : (sexp -> 'perms) -> sexp -> 'perms t
+      val sexp_of_t : ('perms -> sexp) -> 'perms t -> sexp
     end
   end
 end = struct

@@ -3045,16 +3045,17 @@ and fmt_signature_item c ?ext {ast= si} =
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me} ->
             let blk = fmt_module_expr c (sub_mod ~ctx me) in
-            ( str "include module type of"
-              $ fmt_or (Option.is_some blk.pro) " " "@ "
-            , blk )
-        | _ -> (fmt "include@ ", fmt_module_type c (sub_mty ~ctx pincl_mod))
+            (str "include module type of", blk)
+        | _ -> (str "include", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       let single_line = module_type_is_simple pincl_mod in
       let box = wrap_k opn cls in
       hvbox 0
         (fmt_docstring_around ~single_line c doc
-           ( box (hvbox 2 (keyword $ Option.call ~f:pro $ psp $ bdy))
+           ( box
+               ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
+               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
+               $ bdy )
            $ esp $ Option.call ~f:epi
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ))
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
