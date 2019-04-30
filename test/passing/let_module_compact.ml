@@ -47,3 +47,8 @@ let () =
       end)
   in
   foo
+
+let f () =
+  let module (* comment *)
+      M = struct end in
+  ()
