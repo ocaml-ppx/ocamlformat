@@ -18,13 +18,14 @@ type t =
 [@@ocamlformat "type-decl=sparse"]
 
 let { (* cmts *)
-        pat
+      pat
     ; loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
     ; a
     ; (* b *) b
     ; (* c *) c
     ; (* d *)
-      d: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int = D
+      d=
+      (D: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
     ; (* e *)
       e: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
   exp

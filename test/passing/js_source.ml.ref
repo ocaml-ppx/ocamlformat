@@ -3154,8 +3154,8 @@ type ('a, 'b) pair =
   }
 
 let check : type s. (s t, s) pair -> bool = function
-  | { fst = BoolLit; snd = false } -> false
-  | { fst = IntLit; snd = 6 } -> false
+  | { fst= BoolLit; snd= false } -> false
+  | { fst= IntLit; snd= 6 } -> false
 ;;
 
 module type S = sig
@@ -3455,15 +3455,15 @@ type 'a s = { s : (module S with type t = 'a) }
     end)
 }
 
-let f { s = (module M) } = M.x
+let f { s= (module M) } = M.x
 
 (* Error *)
-let f (type a) ({ s = (module M) } : a s) = M.x
+let f (type a) ({ s= (module M) } : a s) = M.x
 
 type s = { s : (module S with type t = int) }
 
-let f { s = (module M) } = M.x
-let f { s = (module M) } { s = (module N) } = M.x + N.x
+let f { s= (module M) } = M.x
+let f { s= (module M) } { s= (module N) } = M.x + N.x
 
 module type S = sig
   val x : int
@@ -4637,7 +4637,7 @@ type t =
 ;;
 { x= 3; z= 2 }
 ;;
-fun { x = 3; z = 2 } -> ()
+fun { x= 3; z= 2 } -> ()
 
 (* mixed labels *)
 
@@ -8220,7 +8220,7 @@ end
 type _ c = C : [ `A ] c
 type t = T : { x : [< `A ] c } -> t
 
-let f (T { x = C }) = ()
+let f (T { x= C }) = ()
 
 module M : sig
   type 'a t
@@ -9578,9 +9578,9 @@ let f = function
 ;;
 
 let g = function
-  | { l = x } -> ()
-  | ({ l1 = x; l2 = y }[@foo]) -> ()
-  | { l1 = x; l2 = y; _ } -> ()
+  | { l= x } -> ()
+  | ({ l1= x; l2= y }[@foo]) -> ()
+  | { l1= x; l2= y; _ } -> ()
 ;;
 
 let h ?l:(p = 1) ?y:u ?(x = 3) = 2
@@ -9710,7 +9710,7 @@ let f = function
 
 ;;
 function
-| { contents = (contents[@foo]) } -> ()
+| { contents= (contents[@foo]) } -> ()
 
 ;;
 fun contents -> { contents= (contents [@foo]) }

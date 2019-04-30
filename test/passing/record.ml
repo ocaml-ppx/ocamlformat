@@ -82,8 +82,8 @@ let _ =
   ; bbbbbbbbbbbb: bbbbbbbbbbb= bbbbbbbbbbbbbbbbb }
 
 let { (* comment here *)
-        aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
-    ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb } =
+      aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
+    ; bbbbbbbbbbbb: bbbbbbbbbbb= bbbbbbbbbbbbbbbbb } =
   e
 
 type t =

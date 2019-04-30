@@ -845,41 +845,52 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_record (flds, closed_flag) ->
       let fmt_field (lid1, pat) =
         let {ppat_desc; ppat_loc; ppat_attributes} = pat in
+        let maybe_cmts = Option.value_map ~default:Fn.id ~f:(Cmts.fmt c) in
+        let fmt_field ?field_loc ?cnstr_loc ?ident_loc ?typ ?pat ~ctx c =
+          let fmt_type ?(parens = false) t =
+            fmt_if Poly.(c.conf.field_space = `Loose) " "
+            $ str ": "
+            $ fmt_core_type c (sub_typ ~ctx t)
+            $ fmt_if parens ")"
+          in
+          let fmt_pat ?(parens = false) ~ctx p =
+            fmt "=@ " $ fmt_if parens "("
+            $ cbox 0 (fmt_pattern c (sub_pat ~ctx p))
+          in
+          maybe_cmts field_loc @@ maybe_cmts cnstr_loc
+          @@ cbox 0
+               ( maybe_cmts ident_loc @@ fmt_longident_loc c lid1
+               $
+               match (typ, pat) with
+               | Some t, Some p -> (
+                 match Source.typed_pattern t p with
+                 | `Type_first -> fmt_type t $ fmt_pat ~ctx p
+                 | `Pat_first ->
+                     fmt_pat ~ctx ~parens:true p $ fmt_type ~parens:true t )
+               | _ -> opt typ fmt_type $ opt pat (fmt_pat ~ctx) )
+        in
         hvbox 0
           ( Cmts.fmt c lid1.loc @@ Cmts.fmt c ppat_loc
           @@
-          let general_case () =
-            cbox 2
-              ( fmt_longident_loc c lid1
-              $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-              $ fmt "=@ "
-              $ cbox 0 (fmt_pattern c (sub_pat ~ctx pat)) )
-          in
-          let ctx = Pat pat in
           match ppat_desc with
           | Ppat_var {txt= txt'}
             when field_alias ~field:lid1.txt (Longident.parse txt')
                  && List.is_empty ppat_attributes ->
-              cbox 2 (fmt_longident_loc c lid1)
-          | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}}, t)
+              fmt_field c ~ctx ~field_loc:pat.ppat_loc
+          | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}; ppat_loc}, t)
             when field_alias ~field:lid1.txt (Longident.parse txt)
                  && List.is_empty ppat_attributes ->
-              cbox 2
-                ( fmt_longident_loc c lid1
-                $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-                $ str ": "
-                $ fmt_core_type c (sub_typ ~ctx t) )
-          | Ppat_constraint ({ppat_desc= Ppat_unpack _}, _) ->
-              general_case ()
+              fmt_field c ~ctx:(Pat pat) ~field_loc:pat.ppat_loc
+                ~cnstr_loc:ppat_loc ~typ:t
+          | Ppat_constraint ({ppat_desc= Ppat_unpack _; ppat_loc}, _) ->
+              fmt_field c ~ctx ~field_loc:pat.ppat_loc ~cnstr_loc:ppat_loc
+                ~pat
           | Ppat_constraint (p, t) when List.is_empty ppat_attributes ->
-              cbox 2
-                ( fmt_longident_loc c lid1
-                $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-                $ str ": "
-                $ fmt_core_type c (sub_typ ~ctx t)
-                $ fmt " =@ "
-                $ cbox 0 (fmt_pattern c (sub_pat ~ctx p)) )
-          | _ -> general_case () )
+              fmt_field c ~ctx:(Pat pat) ~field_loc:pat.ppat_loc
+                ~cnstr_loc:p.ppat_loc ~typ:t ~pat:p
+          | _ ->
+              fmt_field c ~ctx ~field_loc:pat.ppat_loc ~cnstr_loc:ppat_loc
+                ~pat )
       in
       hvbox 0
         (wrap_if parens "(" ")"

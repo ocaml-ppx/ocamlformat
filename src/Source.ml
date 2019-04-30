@@ -255,3 +255,7 @@ let typed_expression (typ : Parsetree.core_type)
     (expr : Parsetree.expression) =
   if Location.compare_start typ.ptyp_loc expr.pexp_loc < 0 then `Type_first
   else `Expr_first
+
+let typed_pattern (typ : Parsetree.core_type) (pat : Parsetree.pattern) =
+  if Location.compare_start typ.ptyp_loc pat.ppat_loc < 0 then `Type_first
+  else `Pat_first

@@ -68,3 +68,6 @@ val extend_loc_to_include_attributes :
 
 val typed_expression :
   Parsetree.core_type -> Parsetree.expression -> [`Type_first | `Expr_first]
+
+val typed_pattern :
+  Parsetree.core_type -> Parsetree.pattern -> [`Type_first | `Pat_first]
