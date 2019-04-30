@@ -3054,9 +3054,7 @@ and fmt_signature_item c ?ext {ast= si} =
         (fmt_docstring_around ~single_line c doc
            ( box
                ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
-               $ Option.value_map pro
-                   ~f:(fun _ -> psp)
-                   ~default:(fmt "@;<1 2>")
+               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
                $ bdy )
            $ esp $ Option.call ~f:epi
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ))
