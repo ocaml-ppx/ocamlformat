@@ -1926,12 +1926,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         let leading_cmt = Cmts.fmt_before c lid1.loc in
-        let general_case () =
-          cbox 2
-            ( fmt_longident_loc c lid1
-            $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-            $ fmt "=@ "
-            $ cbox 0 (fmt_expression c (sub_exp ~ctx f)) )
+        let maybe_cmts = Option.value_map ~default:Fn.id ~f:(Cmts.fmt c) in
+        let fmt_field ?field_loc ?cnstr_loc ?ident_loc ?typ ?expr c =
+          maybe_cmts field_loc @@ maybe_cmts cnstr_loc
+          @@ cbox 2
+               ( maybe_cmts ident_loc @@ fmt_longident_loc c lid1
+               $ opt typ (fun t ->
+                     fmt_if Poly.(c.conf.field_space = `Loose) " "
+                     $ str ": "
+                     $ fmt_core_type c (sub_typ ~ctx t) )
+               $ opt expr (fun e ->
+                     fmt "=@ " $ cbox 0 (fmt_expression c (sub_exp ~ctx e))
+                 ) )
         in
         hvbox 0
           ( leading_cmt
@@ -1940,26 +1946,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           | Pexp_ident {txt; loc}
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
-              Cmts.fmt c loc @@ cbox 2 (fmt_longident_loc c lid1)
+              fmt_field c ~ident_loc:loc
           | Pexp_constraint ({pexp_desc= Pexp_ident {txt; loc}; pexp_loc}, t)
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
-              Cmts.fmt c f.pexp_loc @@ Cmts.fmt c pexp_loc
-              @@ ( Cmts.fmt c loc @@ fmt_longident_loc c lid1
-                 $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-                 $ str ": "
-                 $ fmt_core_type c (sub_typ ~ctx t) )
-          | Pexp_constraint ({pexp_desc= Pexp_pack _}, _) -> general_case ()
+              fmt_field c ~field_loc:f.pexp_loc ~cnstr_loc:pexp_loc
+                ~ident_loc:loc ~typ:t
+          | Pexp_constraint ({pexp_desc= Pexp_pack _}, _) ->
+              fmt_field c ~expr:f
           | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
-              cbox 2
-                (Cmts.fmt c f.pexp_loc
-                   ( fmt_longident_loc c lid1
-                   $ fmt_if Poly.(c.conf.field_space = `Loose) " "
-                   $ str ": "
-                   $ fmt_core_type c (sub_typ ~ctx t)
-                   $ fmt " =@ "
-                   $ cbox 0 (fmt_expression c (sub_exp ~ctx e)) ))
-          | _ -> general_case () )
+              fmt_field c ~field_loc:f.pexp_loc ~typ:t ~expr:e
+          | _ -> fmt_field c ~expr:f )
       in
       hvbox 0
         ( wrap_record c.conf
