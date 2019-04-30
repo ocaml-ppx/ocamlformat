@@ -854,7 +854,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             $ fmt_if parens ")"
           in
           let fmt_pat ?(parens = false) ~ctx p =
-            fmt "=@ " $ fmt_if parens "("
+            fmt "=@;<1 2>" $ fmt_if parens "("
             $ cbox 0 (fmt_pattern c (sub_pat ~ctx p))
           in
           maybe_cmts field_loc @@ maybe_cmts cnstr_loc
