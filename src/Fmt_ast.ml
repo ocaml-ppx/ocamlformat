@@ -1928,16 +1928,27 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         let leading_cmt = Cmts.fmt_before c lid1.loc in
         let maybe_cmts = Option.value_map ~default:Fn.id ~f:(Cmts.fmt c) in
         let fmt_field ?field_loc ?cnstr_loc ?ident_loc ?typ ?expr c =
+          let fmt_type ?(parens = false) t =
+            fmt_if Poly.(c.conf.field_space = `Loose) " "
+            $ str ": "
+            $ fmt_core_type c (sub_typ ~ctx t)
+            $ fmt_if parens ")"
+          in
+          let fmt_expr ?(parens = false) e =
+            fmt "=@ " $ fmt_if parens "("
+            $ cbox 0 (fmt_expression c (sub_exp ~ctx e))
+          in
           maybe_cmts field_loc @@ maybe_cmts cnstr_loc
           @@ cbox 2
                ( maybe_cmts ident_loc @@ fmt_longident_loc c lid1
-               $ opt typ (fun t ->
-                     fmt_if Poly.(c.conf.field_space = `Loose) " "
-                     $ str ": "
-                     $ fmt_core_type c (sub_typ ~ctx t) )
-               $ opt expr (fun e ->
-                     fmt "=@ " $ cbox 0 (fmt_expression c (sub_exp ~ctx e))
-                 ) )
+               $
+               match (typ, expr) with
+               | Some t, Some e -> (
+                 match Source.typed_expression t e with
+                 | `Type_first -> fmt_type t $ fmt_expr e
+                 | `Expr_first ->
+                     fmt_expr ~parens:true e $ fmt_type ~parens:true t )
+               | _ -> opt typ fmt_type $ opt expr fmt_expr )
         in
         hvbox 0
           ( leading_cmt
