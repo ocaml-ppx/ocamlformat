@@ -18,13 +18,14 @@ type t =
 [@@ocamlformat "type-decl=sparse"]
 
 let { (* cmts *)
-        pat
+      pat
     ; loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
     ; a
     ; (* b *) b
     ; (* c *) c
     ; (* d *)
-      d: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int = D
+      d=
+        (D: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
     ; (* e *)
       e: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
   exp
@@ -55,3 +56,21 @@ type t =
       ; packed: bool }
   | Opaque of {name: string}
 [@@deriving compare, equal, hash, sexp]
+
+type t = {(* c *) c (* c' *): (* d *) d (* d' *)}
+
+let _ =
+  { (* a *) a (* a' *)= (* b *) b (* b' *)
+  ; (* c *) c (* c' *): (* d *) d (* d' *) = (* e *) e (* e' *)
+  ; (* f *) f (* f' *)
+  ; (* j *)
+    (* g *) g (* g' *)= ((* h *) h (* h' *): (* i *) i (* i' *))
+    (* j' *) }
+
+let { (* a *) a (* a' *)= (* b *) b (* b' *)
+    ; (* c *) c (* c' *): (* d *) d (* d' *) = (* e *) e (* e' *)
+    ; (* f *) f (* f' *)
+    ; (* j *)
+      (* g *) g (* g' *)= ((* h *) h (* h' *): (* i *) i (* i' *))
+      (* j' *) } =
+  x
