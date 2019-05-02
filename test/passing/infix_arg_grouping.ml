@@ -28,7 +28,7 @@ hvbox 1
               fmt "\\n"
               $ fmt_if_k
                   (not (String.is_empty next))
-                  (str spc $ pre_break 0 "\\" 0) ) )
+                  (str spc $ pre_break 0 "\\" 0)))
   $ str "\"" $ Option.call ~f:epi )
 
 ;;
@@ -59,7 +59,7 @@ hvbox 0
       ( str txt
       $ opt mt (fun _ ->
             fmt "@ : " $ Option.call ~f:pro_t $ psp_t $ fmt "@;<1 2>"
-            $ bdy_t $ esp_t $ Option.call ~f:epi_t ) )
+            $ bdy_t $ esp_t $ Option.call ~f:epi_t) )
   $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
   $ Option.call ~f:epi_e )
 

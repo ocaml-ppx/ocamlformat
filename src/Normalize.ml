@@ -245,7 +245,7 @@ let make_mapper c ~ignore_doc_comment =
         List.filter si ~f:(fun si ->
             match si.pstr_desc with
             | Pstr_attribute a -> not (doc_attribute a)
-            | _ -> true )
+            | _ -> true)
       else si
     in
     Ast_mapper.default_mapper.structure m si
@@ -256,7 +256,7 @@ let make_mapper c ~ignore_doc_comment =
         List.filter si ~f:(fun si ->
             match si.psig_desc with
             | Psig_attribute a -> not (doc_attribute a)
-            | _ -> true )
+            | _ -> true)
       else si
     in
     Ast_mapper.default_mapper.signature m si
@@ -268,7 +268,7 @@ let make_mapper c ~ignore_doc_comment =
           List.filter si.pcsig_fields ~f:(fun si ->
               match si.pctf_desc with
               | Pctf_attribute a -> not (doc_attribute a)
-              | _ -> true )
+              | _ -> true)
         in
         {si with pcsig_fields}
       else si
@@ -282,7 +282,7 @@ let make_mapper c ~ignore_doc_comment =
           List.filter si.pcstr_fields ~f:(fun si ->
               match si.pcf_desc with
               | Pcf_attribute a -> not (doc_attribute a)
-              | _ -> true )
+              | _ -> true)
         in
         {si with pcstr_fields}
       else si
@@ -419,7 +419,7 @@ let moved_docstrings c get_docstrings s1 s2 =
         List.partition_map l1 ~f:(fun x ->
             match List.find l2 ~f:(equal x) with
             | Some (l, s) -> `Fst (Moved (fst x, l, s))
-            | None -> `Snd x )
+            | None -> `Snd x)
       in
       let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
       let l1 = List.map ~f:unstable l1 in
