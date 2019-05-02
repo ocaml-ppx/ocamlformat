@@ -1942,11 +1942,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         let fmt_rhs e = fmt_expression c (sub_exp ~ctx e) in
         hvbox 0
           ( match f.pexp_desc with
-          | Pexp_ident {txt; loc}
+          | Pexp_ident {txt}
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
               fmt_record_field c lid1
-          | Pexp_constraint ({pexp_desc= Pexp_ident {txt; loc}; pexp_loc}, t)
+          | Pexp_constraint ({pexp_desc= Pexp_ident {txt}; pexp_loc}, t)
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
               Cmts.fmt c f.pexp_loc @@ Cmts.fmt c pexp_loc
