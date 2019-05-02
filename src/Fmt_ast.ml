@@ -541,6 +541,29 @@ and fmt_payload c ctx pld =
       in
       fmt "?@ " $ fmt_pattern c (sub_pat ~ctx pat) $ opt exp fmt_when
 
+and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
+  let fmt_type ?(parens = false) t =
+    str ": " $ fmt_core_type c t $ fmt_if parens ")"
+  in
+  let fmt_rhs ?(parens = false) r =
+    fmt "=@;<1 2>" $ fmt_if parens "(" $ cbox 0 r
+  in
+  let field_space =
+    match c.conf.field_space with `Loose -> str " " | `Tight -> noop
+  in
+  let fmt_type_rhs =
+    match (typ, rhs) with
+    | Some t, Some r ->
+        if type_first then field_space $ fmt_type t $ fmt "@ " $ fmt_rhs r
+        else field_space $ fmt_rhs ~parens:true r $ fmt_type ~parens:true t
+    | Some t, None -> field_space $ fmt_type t
+    | None, Some r -> field_space $ fmt_rhs r
+    | None, None -> noop
+  in
+  Cmts.fmt_before c lid1.loc
+  $ cbox 0
+      (fmt_longident_loc c lid1 $ Cmts.fmt_after c lid1.loc $ fmt_type_rhs)
+
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(pro_space = true) ({ast= typ} as xtyp) =
   protect (Typ typ)
@@ -845,52 +868,32 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_record (flds, closed_flag) ->
       let fmt_field (lid1, pat) =
         let {ppat_desc; ppat_loc; ppat_attributes} = pat in
-        let maybe_cmts = Option.value_map ~default:Fn.id ~f:(Cmts.fmt c) in
-        let fmt_field ?field_loc ?cnstr_loc ?ident_loc ?typ ?pat ~ctx c =
-          let fmt_type ?(parens = false) t =
-            fmt_if Poly.(c.conf.field_space = `Loose) " "
-            $ str ": "
-            $ fmt_core_type c (sub_typ ~ctx t)
-            $ fmt_if parens ")"
-          in
-          let fmt_pat ?(parens = false) ~ctx p =
-            fmt "=@;<1 2>" $ fmt_if parens "("
-            $ cbox 0 (fmt_pattern c (sub_pat ~ctx p))
-          in
-          maybe_cmts field_loc @@ maybe_cmts cnstr_loc
-          @@ cbox 0
-               ( maybe_cmts ident_loc @@ fmt_longident_loc c lid1
-               $
-               match (typ, pat) with
-               | Some t, Some p -> (
-                 match Source.typed_pattern t p with
-                 | `Type_first -> fmt_type t $ fmt_pat ~ctx p
-                 | `Pat_first ->
-                     fmt_pat ~ctx ~parens:true p $ fmt_type ~parens:true t )
-               | _ -> opt typ fmt_type $ opt pat (fmt_pat ~ctx) )
-        in
+        let fmt_rhs ~ctx p = fmt_pattern c (sub_pat ~ctx p) in
         hvbox 0
-          ( Cmts.fmt c lid1.loc @@ Cmts.fmt c ppat_loc
+          ( Cmts.fmt c ppat_loc
           @@
           match ppat_desc with
           | Ppat_var {txt= txt'}
             when field_alias ~field:lid1.txt (Longident.parse txt')
                  && List.is_empty ppat_attributes ->
-              fmt_field c ~ctx ~field_loc:pat.ppat_loc
+              fmt_record_field c lid1
           | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}; ppat_loc}, t)
             when field_alias ~field:lid1.txt (Longident.parse txt)
                  && List.is_empty ppat_attributes ->
-              fmt_field c ~ctx:(Pat pat) ~field_loc:pat.ppat_loc
-                ~cnstr_loc:ppat_loc ~typ:t
+              let typ = sub_typ ~ctx:(Pat pat) t in
+              Cmts.fmt c ppat_loc @@ fmt_record_field c ~typ lid1
           | Ppat_constraint ({ppat_desc= Ppat_unpack _; ppat_loc}, _) ->
-              fmt_field c ~ctx ~field_loc:pat.ppat_loc ~cnstr_loc:ppat_loc
-                ~pat
+              Cmts.fmt c ppat_loc
+              @@ fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1
           | Ppat_constraint (p, t) when List.is_empty ppat_attributes ->
-              fmt_field c ~ctx:(Pat pat) ~field_loc:pat.ppat_loc
-                ~cnstr_loc:p.ppat_loc ~typ:t ~pat:p
-          | _ ->
-              fmt_field c ~ctx ~field_loc:pat.ppat_loc ~cnstr_loc:ppat_loc
-                ~pat )
+              let typ = sub_typ ~ctx:(Pat pat) t
+              and rhs = fmt_rhs ~ctx:(Pat pat) p in
+              let type_first =
+                Poly.equal `Type_first (Source.typed_pattern t p)
+              in
+              Cmts.fmt c p.ppat_loc
+              @@ fmt_record_field c ~typ ~rhs ~type_first lid1
+          | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
       in
       hvbox 0
         (wrap_if parens "(" ")"
@@ -1936,49 +1939,28 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
-        let leading_cmt = Cmts.fmt_before c lid1.loc in
-        let maybe_cmts = Option.value_map ~default:Fn.id ~f:(Cmts.fmt c) in
-        let fmt_field ?field_loc ?cnstr_loc ?ident_loc ?typ ?expr c =
-          let fmt_type ?(parens = false) t =
-            fmt_if Poly.(c.conf.field_space = `Loose) " "
-            $ str ": "
-            $ fmt_core_type c (sub_typ ~ctx t)
-            $ fmt_if parens ")"
-          in
-          let fmt_expr ?(parens = false) e =
-            fmt "=@ " $ fmt_if parens "("
-            $ cbox 0 (fmt_expression c (sub_exp ~ctx e))
-          in
-          maybe_cmts field_loc @@ maybe_cmts cnstr_loc
-          @@ cbox 2
-               ( maybe_cmts ident_loc @@ fmt_longident_loc c lid1
-               $
-               match (typ, expr) with
-               | Some t, Some e -> (
-                 match Source.typed_expression t e with
-                 | `Type_first -> fmt_type t $ fmt_expr e
-                 | `Expr_first ->
-                     fmt_expr ~parens:true e $ fmt_type ~parens:true t )
-               | _ -> opt typ fmt_type $ opt expr fmt_expr )
-        in
+        let fmt_rhs e = fmt_expression c (sub_exp ~ctx e) in
         hvbox 0
-          ( leading_cmt
-          $
-          match f.pexp_desc with
+          ( match f.pexp_desc with
           | Pexp_ident {txt; loc}
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
-              fmt_field c ~ident_loc:loc
+              fmt_record_field c lid1
           | Pexp_constraint ({pexp_desc= Pexp_ident {txt; loc}; pexp_loc}, t)
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
-              fmt_field c ~field_loc:f.pexp_loc ~cnstr_loc:pexp_loc
-                ~ident_loc:loc ~typ:t
+              Cmts.fmt c f.pexp_loc @@ Cmts.fmt c pexp_loc
+              @@ fmt_record_field c lid1 ~typ:(sub_typ ~ctx t)
           | Pexp_constraint ({pexp_desc= Pexp_pack _}, _) ->
-              fmt_field c ~expr:f
+              fmt_record_field c ~rhs:(fmt_rhs f) lid1
           | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
-              fmt_field c ~field_loc:f.pexp_loc ~typ:t ~expr:e
-          | _ -> fmt_field c ~expr:f )
+              let type_first =
+                Poly.equal `Type_first (Source.typed_expression t e)
+              in
+              Cmts.fmt c f.pexp_loc
+              @@ fmt_record_field c ~typ:(sub_typ ~ctx t) ~rhs:(fmt_rhs e)
+                   ~type_first lid1
+          | _ -> fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
       hvbox 0
         ( wrap_record c.conf

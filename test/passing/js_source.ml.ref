@@ -662,7 +662,7 @@ end = struct
 
   type 'a tag += Int : int tag
 
-  let ik = { tag= Int; label= "int"; write= string_of_int; read= int_of_string }
+  let ik = { tag = Int; label = "int"; write = string_of_int; read = int_of_string }
   let () = Hashtbl.add readTbl "int" (K ik)
 
   let () =
@@ -687,7 +687,7 @@ end = struct
   module Define (D : Desc) = struct
     type 'a tag += C : D.t tag
 
-    let k = { tag= C; label= D.label; write= D.write; read= D.read }
+    let k = { tag = C; label = D.label; write = D.write; read = D.read }
     let () = Hashtbl.add readTbl D.label (K k)
 
     let () =
@@ -1131,16 +1131,16 @@ type my_record =
 let my_record =
   let fields =
     [ Field
-        { label= "a"
-        ; field_type= Int
-        ; get= (fun { a } -> a)
-        ; set= (fun (r, _) x -> r := Some x)
+        { label = "a"
+        ; field_type = Int
+        ; get = (fun { a } -> a)
+        ; set = (fun (r, _) x -> r := Some x)
         }
     ; Field
-        { label= "b"
-        ; field_type= List String
-        ; get= (fun { b } -> b)
-        ; set= (fun (_, r) x -> r := Some x)
+        { label = "b"
+        ; field_type = List String
+        ; get = (fun { b } -> b)
+        ; set = (fun (_, r) x -> r := Some x)
         }
     ]
   in
@@ -1150,7 +1150,7 @@ let my_record =
     | Some a, Some b -> { a; b }
     | _ -> failwith "Some fields are missing in record of type my_record"
   in
-  Record { path= "My_module.my_record"; fields; create_builder; of_builder }
+  Record { path = "My_module.my_record"; fields; create_builder; of_builder }
 ;;
 
 (* Extension to recursive types and polymorphic variants *)
@@ -1333,9 +1333,9 @@ let ty_abc =
   in
   (* Coherence of sum_inj and sum_cases is checked by the typing *)
   Sum
-    { sum_proj= proj
-    ; sum_inj= inj
-    ; sum_cases=
+    { sum_proj = proj
+    ; sum_inj = inj
+    ; sum_cases =
         [ "A", TCarg (Thd, Int)
         ; "B", TCarg (Ttl Thd, String)
         ; "C", TCnoarg (Ttl (Ttl Thd))
@@ -1357,12 +1357,12 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   let tcons = Pair (Pop t, Var) in
   Rec
     (Sum
-       { sum_proj=
+       { sum_proj =
            (function
            | `Nil -> "Nil", None
            | `Cons p -> "Cons", Some (Tdyn (tcons, p)))
-       ; sum_cases= [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
-       ; sum_inj=
+       ; sum_cases = [ "Nil", TCnoarg Thd; "Cons", TCarg (Ttl Thd, tcons) ]
+       ; sum_inj =
            (fun (type c) ->
              (function
               | Thd, Noarg -> `Nil
@@ -3154,8 +3154,8 @@ type ('a, 'b) pair =
   }
 
 let check : type s. (s t, s) pair -> bool = function
-  | { fst= BoolLit; snd= false } -> false
-  | { fst= IntLit; snd= 6 } -> false
+  | { fst = BoolLit; snd = false } -> false
+  | { fst = IntLit; snd = 6 } -> false
 ;;
 
 module type S = sig
@@ -3447,7 +3447,7 @@ f
 type 'a s = { s : (module S with type t = 'a) }
 
 ;;
-{ s=
+{ s =
     (module struct
       type t = int
 
@@ -3455,15 +3455,15 @@ type 'a s = { s : (module S with type t = 'a) }
     end)
 }
 
-let f { s= (module M) } = M.x
+let f { s = (module M) } = M.x
 
 (* Error *)
-let f (type a) ({ s= (module M) } : a s) = M.x
+let f (type a) ({ s = (module M) } : a s) = M.x
 
 type s = { s : (module S with type t = int) }
 
-let f { s= (module M) } = M.x
-let f { s= (module M) } { s= (module N) } = M.x + N.x
+let f { s = (module M) } = M.x
+let f { s = (module M) } { s = (module N) } = M.x + N.x
 
 module type S = sig
   val x : int
@@ -4468,7 +4468,7 @@ type 'a foo =
   ; y : int
   }
 
-let r = { { x= 0; y= 0 } with x= 0 }
+let r = { { x = 0; y = 0 } with x = 0 }
 let r' : string foo = r
 
 external foo : int = "%ignore"
@@ -4635,20 +4635,20 @@ type t =
   }
 
 ;;
-{ x= 3; z= 2 }
+{ x = 3; z = 2 }
 ;;
-fun { x= 3; z= 2 } -> ()
+fun { x = 3; z = 2 } -> ()
 
 (* mixed labels *)
 
 ;;
-{ x= 3; contents= 2 }
+{ x = 3; contents = 2 }
 
 (* private types *)
 type u = private { mutable u : int }
 
 ;;
-{ u= 3 }
+{ u = 3 }
 ;;
 fun x -> x.u <- 3
 
@@ -4661,7 +4661,7 @@ module M = struct
 end
 
 let f { M.x; y } = x + y
-let r = { M.x= 1; y= 2 }
+let r = { M.x = 1; y = 2 }
 let z = f r
 
 (* messages *)
@@ -4677,11 +4677,11 @@ type foo =
 
 type bar = { x : int }
 
-let f (r : bar) : foo = { r with z= 3 }
+let f (r : bar) : foo = { r with z = 3 }
 
 type foo = { x : int }
 
-let r : foo = { ZZZ.x= 2 }
+let r : foo = { ZZZ.x = 2 }
 
 ;;
 (ZZZ.X : int option)
@@ -4871,7 +4871,7 @@ module type S = sig
     }
 end
 
-let f (module M : S with type t = int) = { M.a= 0 }
+let f (module M : S with type t = int) = { M.a = 0 }
 let flag = ref false
 
 module F (S : sig
@@ -8113,25 +8113,25 @@ let f (A r) = r
 let f (A r) = r.x
 
 (* ok *)
-let f x = A { x; y= x }
+let f x = A { x; y = x }
 
 (* ok *)
-let f (A r) = A { r with y= r.x + 1 }
+let f (A r) = A { r with y = r.x + 1 }
 
 (* ok *)
-let f () = A { a= 1 }
+let f () = A { a = 1 }
 
 (* customized error message *)
-let f () = A { x= 1; y= 3 }
+let f () = A { x = 1; y = 3 }
 
 (* ok *)
 
 type _ t = A : { x : 'a; y : 'b } -> 'a t
 
-let f (A { x; y }) = A { x; y= () }
+let f (A { x; y }) = A { x; y = () }
 
 (* ok *)
-let f (A ({ x; y } as r)) = A { x= r.x; y= r.y }
+let f (A ({ x; y } as r)) = A { x = r.x; y = r.y }
 
 (* ok *)
 
@@ -8220,7 +8220,7 @@ end
 type _ c = C : [ `A ] c
 type t = T : { x : [< `A ] c } -> t
 
-let f (T { x= C }) = ()
+let f (T { x = C }) = ()
 
 module M : sig
   type 'a t
@@ -8276,7 +8276,7 @@ end = struct
     ; b : unit
     }
 
-  let _ = { a= () }
+  let _ = { a = () }
 end
 
 type t =
@@ -9255,7 +9255,7 @@ end
 module F3 = struct
   open M
 
-  let r = { x= true; z= 'z' }
+  let r = { x = true; z = 'z' }
 end
 
 (* fail for missing label *)
@@ -9272,7 +9272,7 @@ module OK = struct
     ; z : char
     }
 
-  let r = { x= 3; y= true }
+  let r = { x = 3; y = true }
 end
 
 (* ok *)
@@ -9287,7 +9287,7 @@ module F4 = struct
 
   type bar = { x : int }
 
-  let b : bar = { x= 3; y= 4 }
+  let b : bar = { x = 3; y = 4 }
 end
 
 (* fail but don't warn *)
@@ -9306,7 +9306,7 @@ module N = struct
     }
 end
 
-let r = { M.x= 3; N.y= 4 }
+let r = { M.x = 3; N.y = 4 }
 
 (* error: different definitions *)
 
@@ -9320,7 +9320,7 @@ module NM = struct
   include M
 end
 
-let r = { MN.x= 3; NM.y= 4 }
+let r = { MN.x = 3; NM.y = 4 }
 
 (* error: type would change with order *)
 
@@ -9344,7 +9344,7 @@ module F5 = struct
 
   let f r =
     ignore (r : foo);
-    { r with x= 2; z= 3 }
+    { r with x = 2; z = 3 }
   ;;
 end
 
@@ -9362,15 +9362,15 @@ module F6 = struct
 
   let f r =
     ignore (r : foo);
-    { r with x= 3; a= 4 }
+    { r with x = 3; a = 4 }
   ;;
 end
 
 module F7 = struct
   open M
 
-  let r = { x= 1; y= 2 }
-  let r : other = { x= 1; y= 2 }
+  let r = { x = 1; y = 2 }
+  let r : other = { x = 1; y = 2 }
 end
 
 module A = struct
@@ -9393,7 +9393,7 @@ module F8 = struct
     ; yyy : int
     }
 
-  let a : t = { x= 1; yyz= 2 }
+  let a : t = { x = 1; yyz = 2 }
 end
 
 (* PR#6004 *)
@@ -9422,7 +9422,7 @@ module Shadow1 = struct
 
   open M (* this open is unused, it isn't reported as shadowing 'x' *)
 
-  let y : t = { x= 0 }
+  let y : t = { x = 0 }
 end
 
 module Shadow2 = struct
@@ -9434,7 +9434,7 @@ module Shadow2 = struct
 
   open M (* this open shadows label 'x' *)
 
-  let y = { x= "" }
+  let y = { x = "" }
 end
 
 (* PR#6235 *)
@@ -9578,9 +9578,9 @@ let f = function
 ;;
 
 let g = function
-  | { l= x } -> ()
-  | ({ l1= x; l2= y }[@foo]) -> ()
-  | { l1= x; l2= y; _ } -> ()
+  | { l = x } -> ()
+  | ({ l1 = x; l2 = y }[@foo]) -> ()
+  | { l1 = x; l2 = y; _ } -> ()
 ;;
 
 let h ?l:(p = 1) ?y:u ?(x = 3) = 2
@@ -9691,7 +9691,7 @@ let tail3 = 0 :: ([] [@hello])
 let f ~l:(l[@foo]) = l
 let test x y = ( (+) [@foo] ) x y
 let test x = ( (~-) [@foo] )x
-let test contents = { contents= (contents [@foo]) }
+let test contents = { contents = (contents [@foo]) }
 
 class type t = object ((_[@foo])) end
 
@@ -9710,10 +9710,10 @@ let f = function
 
 ;;
 function
-| { contents= (contents[@foo]) } -> ()
+| { contents = (contents[@foo]) } -> ()
 
 ;;
-fun contents -> { contents= (contents [@foo]) }
+fun contents -> { contents = (contents [@foo]) }
 
 ;;
 ();
