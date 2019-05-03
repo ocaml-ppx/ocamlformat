@@ -5,10 +5,10 @@ open Module
 (** abc
     @deprecated  *)
 
+(** @inline *)
 include sig
   type t
 end
-(** @inline *)
 
 include Type
 (** @inline *)
@@ -19,18 +19,18 @@ include module type of Module
 module A : B
 (** @deprecated  *)
 
+(** @deprecated  *)
 module A : sig
   type t
 end
-(** @deprecated  *)
 
 module type A = B
 (** @open *)
 
+(** @open *)
 module type A = sig
   type t
 end
-(** @open *)
 
 (** @deprecated  *)
 type t = T
@@ -49,10 +49,10 @@ open Module
 (** abc
     @deprecated  *)
 
+(** @inline *)
 include sig
   type t
 end
-(** @inline *)
 
 include Type  (** @inline *)
 
@@ -60,17 +60,17 @@ include module type of Module  (** @inline *)
 
 module A : B  (** @deprecated  *)
 
+(** @deprecated  *)
 module A : sig
   type t
 end
-(** @deprecated  *)
 
 module type A = B  (** @open *)
 
+(** @open *)
 module type A = sig
   type t
 end
-(** @open *)
 
 (** @deprecated  *)
 type t = T

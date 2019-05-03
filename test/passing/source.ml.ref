@@ -9242,6 +9242,7 @@ module Exotic_list = struct
   let (Inner.( :: ) (x, y, Inner.[])) = Inner.( :: ) (1, "one", Inner.[])
 end
 
+(** Extended index operators *)
 module Indexop = struct
   module Def = struct
     let ( .%[] ) = Hashtbl.find
@@ -9265,6 +9266,5 @@ module Indexop = struct
 
   let x, y, z = Def.(h.%["one"], h.%("two"), h.%{"three"})
 end
-(** Extended index operators *)
 
 type t = |

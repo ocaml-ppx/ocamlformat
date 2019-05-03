@@ -127,6 +127,14 @@ end = struct
     type b = B
   end
 
+  (** Module *)
+  module A : sig
+    type a
+
+    type b
+  end =
+    B
+
   (** Let *)
   let a = b
 

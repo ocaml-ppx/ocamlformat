@@ -44,12 +44,12 @@ module Comment_placement : sig
   module A : B
   (** Module *)
 
+  (** Module *)
   module A : sig
     type a
 
     type b
   end
-  (** Module *)
 
   val a : b
   (** Val *)
@@ -60,12 +60,12 @@ module Comment_placement : sig
   include M
   (** Include *)
 
+  (** Include *)
   include sig
     type a
 
     type b
   end
-  (** Include *)
 
   open M
   (** Open *)
@@ -76,22 +76,22 @@ module Comment_placement : sig
   module rec A : B
   (** Rec module *)
 
+  (** Rec module *)
   module rec A : sig
     type a
 
     type b
   end
-  (** Rec module *)
 
   module type A
   (** Module type *)
 
+  (** Module type *)
   module type A = sig
     type a
 
     type b
   end
-  (** Module type *)
 
   class a : b
   (** Class *)
@@ -120,12 +120,20 @@ end = struct
   module A = B
   (** Module *)
 
+  (** Module *)
   module A = struct
     type a = A
 
     type b = B
   end
+
   (** Module *)
+  module A : sig
+    type a
+
+    type b
+  end =
+    B
 
   (** Let *)
   let a = b
@@ -136,12 +144,12 @@ end = struct
   include M
   (** Include *)
 
+  (** Include *)
   include struct
     type a = A
 
     type b = B
   end
-  (** Include *)
 
   open M
   (** Open *)
@@ -152,22 +160,22 @@ end = struct
   module rec A : B = C
   (** Rec module *)
 
+  (** Rec module *)
   module rec A : B = struct
     type a = A
 
     type b = B
   end
-  (** Rec module *)
 
   module type A = B
   (** Module type *)
 
+  (** Module type *)
   module type A = sig
     type a
 
     type b
   end
-  (** Module type *)
 
   class a = b
   (** Class *)
