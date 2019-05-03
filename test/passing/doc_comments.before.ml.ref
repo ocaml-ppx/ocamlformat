@@ -44,6 +44,13 @@ module Comment_placement : sig
   (** Module *)
   module A : B
 
+  (** Module *)
+  module A : sig
+    type a
+
+    type b
+  end
+
   (** Val *)
   val a : b
 
@@ -52,6 +59,13 @@ module Comment_placement : sig
 
   (** Include *)
   include M
+
+  (** Include *)
+  include sig
+    type a
+
+    type b
+  end
 
   (** Open *)
   open M
@@ -62,8 +76,22 @@ module Comment_placement : sig
   (** Rec module *)
   module rec A : B
 
+  (** Rec module *)
+  module rec A : sig
+    type a
+
+    type b
+  end
+
   (** Module type *)
   module type A
+
+  (** Module type *)
+  module type A = sig
+    type a
+
+    type b
+  end
 
   (** Class *)
   class a : b
@@ -92,6 +120,13 @@ end = struct
   (** Module *)
   module A = B
 
+  (** Module *)
+  module A = struct
+    type a = A
+
+    type b = B
+  end
+
   (** Let *)
   let a = b
 
@@ -100,6 +135,13 @@ end = struct
 
   (** Include *)
   include M
+
+  (** Include *)
+  include struct
+    type a = A
+
+    type b = B
+  end
 
   (** Open *)
   open M
@@ -110,12 +152,27 @@ end = struct
   (** Rec module *)
   module rec A : B = C
 
+  (** Rec module *)
+  module rec A : B = struct
+    type a = A
+
+    type b = B
+  end
+
   (** Module type *)
   module type A = B
+
+  (** Module type *)
+  module type A = sig
+    type a
+
+    type b
+  end
 
   (** Class *)
   class a = b
 
+  (** Class *)
   class b =
     object
       (** Method *)
