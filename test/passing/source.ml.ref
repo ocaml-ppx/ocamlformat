@@ -3222,13 +3222,12 @@ let sort (type s) (module Set : Set.S with type elt = s) l =
   Set.elements (List.fold_right Set.add l Set.empty)
 
 (* No real improvement here? *)
-let make_set (type s) cmp =
+let make_set (type s) cmp : (module Set.S with type elt = s) =
   ( module Set.Make (struct
     type t = s
 
     let compare = cmp
-  end) : Set.S
-    with type elt = s )
+  end) )
 
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
