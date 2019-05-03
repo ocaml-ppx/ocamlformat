@@ -31,7 +31,7 @@ depends: [
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "octavius" {>= "1.2.0"}
   "stdio"
-  "uutf"
+  "uuseg"
 ]
 synopsis: "Auto-formatter for OCaml code"
 description: "OCamlFormat is a tool to automatically format OCaml code in a uniform style."
