@@ -3684,6 +3684,24 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             let ctx = Exp body in
             match (body.pexp_desc, pat.ppat_desc) with
             | ( Pexp_constraint
+                  ( ({pexp_desc= Pexp_pack _; pexp_attributes= []} as exp)
+                  , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []} as typ)
+                  )
+              , _ )
+              when Poly.(Source.typed_expression typ exp = `Type_first) ->
+                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+                  ~after:exp.pexp_loc ;
+                ( Some
+                    ( fmt_or_k c.conf.ocp_indent_compat
+                        (fits_breaks " " "@;<1000 0>")
+                        (fmt "@;<0 -1>")
+                    $ cbox_if c.conf.ocp_indent_compat 0
+                        (fmt_core_type c ~pro:":"
+                           ~pro_space:(not c.conf.ocp_indent_compat)
+                           ~box:(not c.conf.ocp_indent_compat)
+                           (sub_typ ~ctx typ)) )
+                , sub_exp ~ctx exp )
+            | ( Pexp_constraint
                   ({pexp_desc= Pexp_pack _}, {ptyp_desc= Ptyp_package _})
               , _ )
              |Pexp_constraint _, Ppat_constraint _ ->
