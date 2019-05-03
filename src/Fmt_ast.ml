@@ -3709,7 +3709,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
               , _ )
              |Pexp_constraint _, Ppat_constraint _ ->
                 (None, xbody)
-            | Pexp_constraint (exp, typ), _ ->
+            | Pexp_constraint (exp, typ), _
+              when Poly.(Source.typed_expression typ exp = `Type_first) ->
                 Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                   ~after:exp.pexp_loc ;
                 fmt_cstr_and_xbody typ exp
