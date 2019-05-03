@@ -51,3 +51,7 @@ end
 include A (struct
   (* a *)
 end)
+
+let x : (module S) = (module struct end)
+
+let x = (module struct end : S)

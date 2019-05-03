@@ -2697,7 +2697,7 @@ let f (type a) (x : a t) =
   let module M = struct
     let (I : a t) = x (* fail because of toplevel let *)
 
-    let x : a t = I
+    let x = (I : a t)
   end in
   ()
 
@@ -3222,13 +3222,12 @@ let sort (type s) (module Set : Set.S with type elt = s) l =
   Set.elements (List.fold_right Set.add l Set.empty)
 
 (* No real improvement here? *)
-let make_set (type s) cmp =
+let make_set (type s) cmp : (module Set.S with type elt = s) =
   ( module Set.Make (struct
     type t = s
 
     let compare = cmp
-  end) : Set.S
-    with type elt = s )
+  end) )
 
 (* No type annotation here *)
 let sort_cmp (type s) cmp =
@@ -3472,15 +3471,15 @@ let ssmap =
      and type data = string
      and type map = SSMap.map )
 
-let ssmap :
-    (module MapT
-       with type key = string
-        and type data = string
-        and type map = SSMap.map) =
-  let module S = struct
-    include SSMap
-  end in
-  (module S)
+let ssmap =
+  ( let module S = struct
+      include SSMap
+    end in
+    (module S)
+    : (module MapT
+         with type key = string
+          and type data = string
+          and type map = SSMap.map) )
 
 let ssmap =
   (module SSMap : MapT with type key = _ and type data = _ and type map = _)
@@ -4382,7 +4381,7 @@ type foo = {y: int; z: int}
 
 type bar = {x: int}
 
-let f (r : bar) : foo = {r with z= 3}
+let f (r : bar) = ({r with z= 3} : foo)
 
 type foo = {x: int}
 
@@ -4434,9 +4433,9 @@ module Hash2 : sig
 end =
   Hash
 
-let f1 (x : (_, _) Hash1.t) : (_, _) Hashtbl.t = x
+let f1 (x : (_, _) Hash1.t) = (x : (_, _) Hashtbl.t)
 
-let f2 (x : (_, _) Hash2.t) : (_, _) Hashtbl.t = x
+let f2 (x : (_, _) Hash2.t) = (x : (_, _) Hashtbl.t)
 
 (* Another case, not using include *)
 
@@ -4450,7 +4449,7 @@ module Std' = Std2
 
 module M' : module type of Std'.M = Std2.M
 
-let f3 (x : M'.t) : Std2.M.t = x
+let f3 (x : M'.t) = (x : Std2.M.t)
 
 (* original report required Core_kernel: module type S = sig open
    Core_kernel.Std
@@ -4494,7 +4493,7 @@ module DUMMY = struct
   let x = 2
 end
 
-let x : X.F(DUMMY).t = 3
+let x = (3 : X.F(DUMMY).t)
 
 module X2 = struct
   module type SIG = sig
@@ -4514,9 +4513,9 @@ module X2 = struct
   end
 end
 
-let x : X2.F(DUMMY)(DUMMY).t = 3
+let x = (3 : X2.F(DUMMY)(DUMMY).t)
 
-let x : X2.F(DUMMY)(DUMMY).t' = 3
+let x = (3 : X2.F(DUMMY)(DUMMY).t')
 
 module F (M : sig
   type 'a t
@@ -5395,7 +5394,7 @@ module S = String
 module StringSet = Set.Make (String)
 module SSet = Set.Make (S)
 
-let f (x : StringSet.t) : SSet.t = x
+let f (x : StringSet.t) = (x : SSet.t)
 
 (* Also using include (cf. Leo's mail 2013-11-16) *)
 module F (M : sig end) : sig
@@ -5754,7 +5753,7 @@ end
 
 (* ok to convert between structurally equal signatures, and parameters are
    inferred *)
-let f (x : (module S with type t = 'a and type u = 'b)) : (module S') = x
+let f (x : (module S with type t = 'a and type u = 'b)) = (x : (module S'))
 
 let g x = (x : (module S with type t = 'a and type u = 'b) :> (module S'))
 
@@ -5771,10 +5770,10 @@ let g2 x = (x : (module S2 with type t = 'a and type u = 'b) :> (module S'))
 
 let h x = (x : (module S2 with type t = 'a) :> (module S with type t = 'a))
 
-let f2 (x : (module S2 with type t = 'a and type u = 'b)) : (module S') = x
+let f2 (x : (module S2 with type t = 'a and type u = 'b)) = (x : (module S'))
 
 (* fail *)
-let k (x : (module S2 with type t = 'a)) : (module S with type t = 'a) = x
+let k (x : (module S2 with type t = 'a)) = (x : (module S with type t = 'a))
 
 (* fail *)
 
@@ -6362,7 +6361,7 @@ type refer1 = < poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 type refer2 = < poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 
 (* Actually this should succeed ... *)
-let f (x : refer1) : refer2 = x
+let f (x : refer1) = (x : refer2)
 
 module Classdef = struct
   class virtual ['a, 'b, 'c] cl0 =
@@ -6395,7 +6394,7 @@ open Pr3918b
 
 let f x = (x : 'a vlist :> 'b vlist)
 
-let f (x : 'a vlist) : 'b vlist = x
+let f (x : 'a vlist) = (x : 'b vlist)
 
 module type Poly = sig
   type 'a t = 'a constraint 'a = [> ]
@@ -6580,13 +6579,13 @@ module F0 : sig
 end =
   Foobar
 
-let f (x : F0.t) : Foobar.t = x
+let f (x : F0.t) = (x : Foobar.t)
 
 (* fails *)
 
 module F = Foobar
 
-let f (x : F.t) : Foobar.t = x
+let f (x : F.t) = (x : Foobar.t)
 
 module M = struct
   type t = < m: int >
@@ -6655,7 +6654,7 @@ module Bar : sig
 end = struct
   type t = int
 
-  let f (x : int) : t = x
+  let f (x : int) = (x : t)
 end
 
 (* must fail *)
@@ -6758,7 +6757,7 @@ end
 
 module Test2 : module type of Test with type t = Test.t = Test
 
-let f (x : Test.t) : Test2.t = x
+let f (x : Test.t) = (x : Test2.t)
 
 let f Test2.A = ()
 
@@ -7103,7 +7102,7 @@ module PR_4758 = struct
     type t
   end
 
-  let f (x : F(C).t) : F(C').t = x
+  let f (x : F(C).t) = (x : F(C').t)
 end
 
 (* PR 4557 *)
@@ -7281,7 +7280,7 @@ module rec Strengthen : sig
 end = struct
   type t = A | B
 
-  let (_ : Strengthen.t) = A
+  let _ = (A : Strengthen.t)
 
   let f x = if true then A else Strengthen.f B
 end
@@ -7301,14 +7300,14 @@ module rec Strengthen2 : sig
 end = struct
   type t = A | B
 
-  let (_ : Strengthen2.t) = A
+  let _ = (A : Strengthen2.t)
 
   let f x = if true then A else Strengthen2.f B
 
   module M = struct
     type u = C
 
-    let (_ : Strengthen2.M.u) = C
+    let _ = (C : Strengthen2.M.u)
   end
 
   module rec R : sig
@@ -7316,9 +7315,9 @@ end = struct
   end = struct
     type v = D
 
-    let (_ : R.v) = D
+    let _ = (D : R.v)
 
-    let (_ : Strengthen2.R.v) = D
+    let _ = (D : Strengthen2.R.v)
   end
 end
 
@@ -7331,7 +7330,7 @@ module rec PolyRec : sig
 end = struct
   type 'a t = Leaf of 'a | Node of 'a list t * 'a list t
 
-  let x : int t = PolyRec.Leaf 1
+  let x = (PolyRec.Leaf 1 : int t)
 
   let depth = function
     | Leaf x -> 0
