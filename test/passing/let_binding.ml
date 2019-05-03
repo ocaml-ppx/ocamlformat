@@ -137,3 +137,7 @@ and [@foo] fooo = fooooooooooo;;
 
 let [@foo] foooo = fooooooooo in
 fooooooooooooooooooooo
+
+let a : int = 0
+
+let b = (0 : int)
