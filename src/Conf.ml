@@ -1558,7 +1558,7 @@ let (_profile : t option C.t) =
   C.choice ~names ~all ~doc ~section ~has_default:false
     (fun conf p ->
       selected_profile_ref := p ;
-      Option.value p ~default:conf )
+      Option.value p ~default:conf)
     (fun _ -> !selected_profile_ref)
 
 let validate () =

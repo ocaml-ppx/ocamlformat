@@ -1023,7 +1023,7 @@ let id x = x
 let idb1 =
   (fun id ->
     let _ = id true in
-    id )
+    id)
     id
 
 let idb2 : bool -> bool = id
@@ -1119,7 +1119,7 @@ let rec variantize : type t. t ty -> t -> variant =
       VRecord
         (List.map
            (fun (Field {field_type; label; get}) ->
-             (label, variantize field_type (get x)) )
+             (label, variantize field_type (get x)))
            fields)
 
 (* Extraction *)
@@ -1160,7 +1160,7 @@ let rec devariantize : type t. t ty -> variant -> t =
       List.iter2
         (fun (Field {label; field_type; set}) (lab, v) ->
           if label <> lab then raise VariantMismatch ;
-          set builder (devariantize field_type v) )
+          set builder (devariantize field_type v))
         fields fl ;
       of_builder builder
   | _ -> raise VariantMismatch
@@ -1377,8 +1377,7 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        ; sum_inj=
            (fun (type c) ->
              ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
-               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist )
-             )
+               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ))
            (* One can also write the type annotation directly *) })
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
@@ -5956,7 +5955,7 @@ class c (v : int) =
       (fun v ->
         object
           method v : string = v
-        end )
+        end)
         "42"
   end
 

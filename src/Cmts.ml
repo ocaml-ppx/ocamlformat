@@ -57,7 +57,7 @@ end = struct
            if Itv.contains root elt then
              Hashtbl.find_and_call tbl root
                ~if_found:(fun children ->
-                 parent tbl children ~ancestor:root elt )
+                 parent tbl children ~ancestor:root elt)
                ~if_not_found:Option.some
            else None))
       ancestor
