@@ -97,7 +97,7 @@ module Mappers = struct
       let explicit_arity, attrs =
         List.partition_tf ppat_attributes ~f:(function
           | {txt= "explicit_arity"}, _ -> true
-          | _ -> false )
+          | _ -> false)
       in
       match ppat_desc with
       | Ppat_construct (id, Some {ppat_desc= Ppat_tuple [p0]})
@@ -116,7 +116,7 @@ module Mappers = struct
       let explicit_arity, attrs =
         List.partition_tf pexp_attributes ~f:(function
           | {txt= "explicit_arity"}, _ -> true
-          | _ -> false )
+          | _ -> false)
       in
       match pexp_desc with
       | Pexp_construct (id, Some {pexp_desc= Pexp_tuple [e0]})
@@ -163,7 +163,7 @@ module Mappers = struct
         if ignore_doc_comments then
           List.filter atrs ~f:(function
             | {txt= "ocaml.doc" | "ocaml.text"}, _ -> false
-            | _ -> true )
+            | _ -> true)
         else atrs
       in
       (* remove docstrings that duplicate comments *)
@@ -176,7 +176,7 @@ module Mappers = struct
       Normalize.(mapper c).structure m
         (List.filter pstr ~f:(function
           | {pstr_desc= Pstr_attribute atr} -> not (atr_is_dup atr)
-          | _ -> true ))
+          | _ -> true))
     in
     let signature (m : Ast_mapper.mapper) psig =
       (* remove signature items that are attributes that duplicate comments,
@@ -184,7 +184,7 @@ module Mappers = struct
       Normalize.(mapper c).signature m
         (List.filter psig ~f:(function
           | {psig_desc= Psig_attribute atr} -> not (atr_is_dup atr)
-          | _ -> true ))
+          | _ -> true))
     in
     {(Normalize.mapper c) with attributes; structure; signature}
 end

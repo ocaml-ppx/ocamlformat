@@ -268,7 +268,7 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                        comment in the source or disable the formatting \
                        using the option --no-parse-docstrings.\n\
                        %!"
-                      Location.print_loc loc (ellipsis_cmt s) )
+                      Location.print_loc loc (ellipsis_cmt s))
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
                   Format.fprintf fmt

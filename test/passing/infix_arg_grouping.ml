@@ -47,7 +47,7 @@ hvbox 0
                       $ fmt_core_type c (sub_typ ~ctx typ) )
                   $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
                   $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
-         | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
+         | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ))
      $ fmt_if
          Poly.(closedness = Open)
          (match fields with [] -> "@ .. " | _ -> "@ ; .. ") ))

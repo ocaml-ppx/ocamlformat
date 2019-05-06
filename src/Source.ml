@@ -149,7 +149,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
            |LBRACKETPERCENT | LBRACKETPERCENTPERCENT | LBRACKETAT
            |LBRACKETATAT | LBRACKETATATAT ->
               Int.incr count ; false
-          | _ -> false )
+          | _ -> false)
         loc
     in
     match l with
@@ -184,7 +184,7 @@ let string_literal t mode (l : Location.t) =
         | Parser.STRING (_, None) -> true
         | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
             true
-        | _ -> false )
+        | _ -> false)
       l
   in
   match toks with
@@ -207,7 +207,7 @@ let char_literal t (l : Location.t) =
         | Parser.CHAR _ -> true
         | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
             true
-        | _ -> false )
+        | _ -> false)
       l
   in
   match toks with

@@ -859,13 +859,13 @@ end = struct
           assert (
             List.exists r1N ~f:(function
               | Rtag (_, _, _, t1N) -> List.exists t1N ~f
-              | Rinherit t1 -> typ == t1 ) )
+              | Rinherit t1 -> typ == t1) )
       | Ptyp_package (_, it1N) -> assert (List.exists it1N ~f:snd_f)
       | Ptyp_object (fields, _) ->
           assert (
             List.exists fields ~f:(function
               | Otag (_, _, t1) -> typ == t1
-              | Oinherit t1 -> typ == t1 ) )
+              | Oinherit t1 -> typ == t1) )
       | Ptyp_class (_, l) -> assert (List.exists l ~f) )
     | Cty {pcty_desc} ->
         assert (
@@ -930,7 +930,7 @@ end = struct
               List.exists c1N ~f:(function
                 | Pwith_type (_, d1) | Pwith_typesubst (_, d1) ->
                     check_type d1
-                | _ -> false )
+                | _ -> false)
               || loop m.pmty_desc
           | _ -> false
         in
@@ -1181,7 +1181,7 @@ end = struct
           assert (
             List.exists cases ~f:(function
               | {pc_lhs} when pc_lhs == pat -> true
-              | _ -> false ) )
+              | _ -> false) )
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
     | Cl ctx ->
@@ -1274,7 +1274,7 @@ end = struct
               List.exists cases ~f:(function
                 | {pc_guard= Some g} when g == exp -> true
                 | {pc_rhs} when pc_rhs == exp -> true
-                | _ -> false ) )
+                | _ -> false) )
         | Pexp_fun (_, default, _, body) ->
             assert (
               Option.value_map default ~default:false ~f || body == exp )
@@ -1413,7 +1413,7 @@ end = struct
           List.exists cd1N ~f:(function
             | {pcd_args= Pcstr_tuple t1N} ->
                 List.exists t1N ~f:(phys_equal ty)
-            | _ -> false )
+            | _ -> false)
       | _ -> false
     in
     let is_tuple_lvl1_in_ext_constructor ty = function
@@ -1823,7 +1823,7 @@ end = struct
         List.exists bindings ~f:(function
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _}} ->
               pvb_pat == pat
-          | _ -> false )
+          | _ -> false)
     | Pld _, Ppat_constraint _ -> true
     | _ -> false
 

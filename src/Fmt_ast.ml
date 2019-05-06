@@ -806,7 +806,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           | Parser.CHAR _ | Parser.DOTDOT
            |Parser.(INT _ | STRING _ | FLOAT _) ->
               true
-          | _ -> false )
+          | _ -> false)
       in
       match toks with
       | [ (Parser.(CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
@@ -1548,9 +1548,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@ ->" )
                    $ fmt "@ "
                    $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                   $ fmt_or_k c.conf.indicate_multiline_delimiters
-                       (fits_breaks ")" " )") (str ")")
-                   $ Cmts.fmt_after c pexp_loc )
+                   $ fmt ")" $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | (lbl, ({pexp_desc= Pexp_function cs; pexp_loc} as eN)) :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
@@ -1567,9 +1565,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_label lbl ":" $ str "(function"
                       $ fmt_attributes c ~pre:(str " ") ~key:"@"
                           eN.pexp_attributes ))
-               $ fmt "@ " $ fmt_cases c ctx'' cs
-               $ fmt_or_k c.conf.indicate_multiline_delimiters
-                   (fits_breaks ")" " )") (str ")")
+               $ fmt "@ " $ fmt_cases c ctx'' cs $ fmt ")"
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
           wrap_if parens "(" ")"
@@ -1721,9 +1717,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           $ fmt_attributes c ~key:"@" pexp_attributes )
       $ fmt "@ "
       $ hvbox 0 (fmt_cases c ctx cs)
-      $ fmt_or_k c.conf.indicate_multiline_delimiters
-          (fits_breaks_if parens ")" "@ )")
-          (fits_breaks_if parens ")" "@,)")
+      $ fmt_if parens ")"
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then

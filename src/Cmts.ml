@@ -462,7 +462,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start}) =
       (String.init len ~f:(function
         | 0 -> '\n'
         | n when n < len - 1 -> ' '
-        | _ -> '*' ))
+        | _ -> '*'))
   in
   let rec split_asterisk_prefixed_ pos =
     match String.Search_pattern.index pat ~pos ~in_:txt with
