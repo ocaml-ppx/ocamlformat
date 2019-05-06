@@ -57,6 +57,7 @@ type t =
   ; single_case: [`Compact | `Sparse]
   ; space_around_collection_expressions: bool
   ; type_decl: [`Compact | `Sparse]
+  ; type_decl_indent: int
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
@@ -910,8 +911,8 @@ module Formatting = struct
   let let_binding_indent =
     let docv = "COLS" in
     let doc =
-      "Indent let binding expressions of ($(docv) columns) if they do not \
-       fit on a single line."
+      "Indentation of let binding expressions ($(docv) columns) if they do \
+       not fit on a single line."
     in
     let names = ["let-binding-indent"] in
     C.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
@@ -1139,6 +1140,17 @@ module Formatting = struct
       (fun conf x -> {conf with type_decl= x})
       (fun conf -> conf.type_decl)
 
+  let type_decl_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of type declarations ($(docv) columns) if they do not \
+       fit on a single line."
+    in
+    let names = ["type-decl-indent"] in
+    C.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with type_decl_indent= x})
+      (fun conf -> conf.type_decl_indent)
+
   let wrap_comments =
     let doc =
       "Wrap comments and docstrings. Comments and docstrings are divided \
@@ -1313,7 +1325,11 @@ let ocp_indent_options =
         ( "let-binding-indent"
         , "$(b,base) is an alias for $(b,let-binding-indent)."
         , Fn.id ) )
-  ; ("type", None)
+  ; ( "type"
+    , Some
+        ( "type-decl-indent"
+        , "$(b,type) is an alias for $(b,type-decl-indent)."
+        , Fn.id ) )
   ; ("in", None)
   ; ("with", None)
   ; ( "match_clause"
@@ -1341,7 +1357,7 @@ let ocp_indent_config =
       else
         asprintf " %a"
           (pp_print_list
-             ~pp_sep:(fun fs () -> fprintf fs ",@ ")
+             ~pp_sep:(fun fs () -> fprintf fs "@ ")
              (fun fs s -> fprintf fs "%s" s))
           l
     in
@@ -1444,6 +1460,7 @@ let ocamlformat_profile =
   ; space_around_collection_expressions=
       C.default Formatting.space_around_collection_expressions
   ; type_decl= C.default Formatting.type_decl
+  ; type_decl_indent= C.default Formatting.type_decl_indent
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
@@ -1550,6 +1567,7 @@ let janestreet_profile =
   ; single_case= `Sparse
   ; space_around_collection_expressions= true
   ; type_decl= `Sparse
+  ; type_decl_indent= 2
   ; wrap_comments= false
   ; wrap_fun_args= false }
 

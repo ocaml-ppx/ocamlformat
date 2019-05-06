@@ -2615,7 +2615,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
         $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ))
   in
   let box_manifest k =
-    hvbox 2
+    hvbox c.conf.type_decl_indent
       ( str pre
       $ fmt_extension_suffix c ext
       $ str " "
@@ -2766,7 +2766,7 @@ and fmt_type_extension c ctx te =
   in
   hvbox 2
     ( fmt_docstring c ~epi:(fmt "@,") doc
-    $ hvbox 2
+    $ hvbox c.conf.type_decl_indent
         ( str "type "
         $ hvbox_if
             (not (List.is_empty te.ptyext_params))

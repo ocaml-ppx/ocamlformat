@@ -177,8 +177,8 @@ OPTIONS (CODE FORMATTING STYLE)
            default value is compact.
 
        --let-binding-indent=COLS
-           Indent let binding expressions of (COLS columns) if they do not
-           fit on a single line. The default value is 2. Cannot be set in
+           Indentation of let binding expressions (COLS columns) if they do
+           not fit on a single line. The default value is 2. Cannot be set in
            attributes.
 
        --let-binding-spacing={compact|sparse|double-semicolon}
@@ -275,6 +275,11 @@ OPTIONS (CODE FORMATTING STYLE)
            between constructors and record fields. The default value is
            compact.
 
+       --type-decl-indent=COLS
+           Indentation of type declarations (COLS columns) if they do not fit
+           on a single line. The default value is 2. Cannot be set in
+           attributes.
+
        --wrap-comments
            Wrap comments and docstrings. Comments and docstrings are divided
            into paragraphs by open lines (two or more consecutive newlines),
@@ -349,8 +354,8 @@ OPTIONS
 
        --ocp-indent-config
            Read .ocp-indent configuration files. base is an alias for
-           let-binding-indent., match_clause is an alias for
-           cases-exp-indent.
+           let-binding-indent. type is an alias for type-decl-indent.
+           match_clause is an alias for cases-exp-indent.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}

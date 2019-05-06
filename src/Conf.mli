@@ -62,6 +62,7 @@ type t =
   ; single_case: [`Compact | `Sparse]
   ; space_around_collection_expressions: bool
   ; type_decl: [`Compact | `Sparse]
+  ; type_decl_indent: int
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
