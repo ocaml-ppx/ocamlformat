@@ -3689,7 +3689,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
           in
           (xpat, xargs, fmt_cstr, xbody)
   in
-  let indent = match xbody.ast.pexp_desc with Pexp_fun _ -> 1 | _ -> 2 in
+  let indent = c.conf.let_binding_indent in
+  let indent =
+    match xbody.ast.pexp_desc with Pexp_fun _ -> indent - 1 | _ -> indent
+  in
   let f ({loc}, _) = Location.compare_start loc pvb_expr.pexp_loc < 1 in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let stmt_loc = Sugar.args_location xargs in

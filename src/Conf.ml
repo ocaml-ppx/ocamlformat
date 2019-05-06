@@ -39,6 +39,7 @@ type t =
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
+  ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
@@ -906,6 +907,17 @@ module Formatting = struct
       (fun conf x -> {conf with let_and= x})
       (fun conf -> conf.let_and)
 
+  let let_binding_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indent let binding expressions of ($(docv) columns) if they do not \
+       fit on a single line."
+    in
+    let names = ["let-binding-indent"] in
+    C.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with let_binding_indent= x})
+      (fun conf -> conf.let_binding_indent)
+
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
     let names = ["let-binding-spacing"] in
@@ -1296,14 +1308,18 @@ let name =
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
 let ocp_indent_options =
-  [ ("base", None)
+  [ ( "base"
+    , Some
+        ( "let-binding-indent"
+        , "$(b,base) is an alias for $(b,let-binding-indent)."
+        , Fn.id ) )
   ; ("type", None)
   ; ("in", None)
   ; ("with", None)
   ; ( "match_clause"
     , Some
         ( "cases-exp-indent"
-        , "$(b,match-clause) sets $(b,cases-exp-indent) to the same value."
+        , "$(b,match_clause) is an alias for $(b,cases-exp-indent)."
         , Fn.id ) )
   ; ("ppx_stritem_ext", None)
   ; ("max_indent", None)
@@ -1409,6 +1425,7 @@ let ocamlformat_profile =
   ; leading_nested_match_parens=
       C.default Formatting.leading_nested_match_parens
   ; let_and= C.default Formatting.let_and
+  ; let_binding_indent= C.default Formatting.let_binding_indent
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_module= C.default Formatting.let_module
   ; let_open= C.default Formatting.let_open
@@ -1515,6 +1532,7 @@ let janestreet_profile =
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true
   ; let_and= `Sparse
+  ; let_binding_indent= 2
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
   ; let_open= `Preserve

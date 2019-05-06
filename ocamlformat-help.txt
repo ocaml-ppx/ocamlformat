@@ -176,6 +176,11 @@ OPTIONS (CODE FORMATTING STYLE)
            in a single line. sparse will always break between them. The
            default value is compact.
 
+       --let-binding-indent=COLS
+           Indent let binding expressions of (COLS columns) if they do not
+           fit on a single line. The default value is 2. Cannot be set in
+           attributes.
+
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
            let bindings in a module according to module-item-spacing. sparse
@@ -343,8 +348,9 @@ OPTIONS
            omitted.
 
        --ocp-indent-config
-           Read .ocp-indent configuration files. match-clause sets
-           cases-exp-indent to the same value.
+           Read .ocp-indent configuration files. base is an alias for
+           let-binding-indent., match_clause is an alias for
+           cases-exp-indent.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}
