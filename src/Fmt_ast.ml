@@ -554,7 +554,9 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
     match (typ, rhs) with
     | Some t, Some r ->
         if type_first then field_space $ fmt_type t $ fmt "@ " $ fmt_rhs r
-        else field_space $ fmt_rhs ~parens:true r $ fmt_type ~parens:true t
+        else
+          field_space $ fmt_rhs ~parens:true r $ field_space
+          $ fmt_type ~parens:true t
     | Some t, None -> field_space $ fmt_type t
     | None, Some r -> field_space $ fmt_rhs r
     | None, None -> noop
