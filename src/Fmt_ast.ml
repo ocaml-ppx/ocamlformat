@@ -1723,9 +1723,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                          $ p.break_end_branch )) )
                 $ fmt_if_k (not last) p.space_between_branches)))
   | Pexp_let (rec_flag, bindings, body) ->
+      let indent_after_in =
+        match body.pexp_desc with
+        | Pexp_let _ | Pexp_letmodule _ -> 0
+        | _ -> c.conf.indent_after_in
+      in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let c ctx ~ext ~rec_flag ~bindings ~parens
-        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
+        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
   | Pexp_letexception (ext_cstr, exp) ->
       let pre = fmt "let exception@ " in
       hvbox 0
@@ -2299,9 +2304,14 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
+      let indent_after_in =
+        match body.pcl_desc with
+        | Pcl_let _ -> 0
+        | _ -> c.conf.indent_after_in
+      in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens
-        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr
+        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -3579,7 +3589,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~attributes ~fmt_atrs
-    ~fmt_expr =
+    ~fmt_expr ~indent_after_in =
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
@@ -3594,7 +3604,8 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~attributes ~fmt_atrs
     "(" ")"
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ fmt "@;<1000 0>" $ hvbox 0 fmt_expr ))
+       $ break 1000 indent_after_in
+       $ hvbox 0 fmt_expr ))
   $ fmt_atrs
 
 and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =

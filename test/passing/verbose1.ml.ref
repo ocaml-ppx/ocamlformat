@@ -26,6 +26,7 @@ leading-nested-match-parens=false (profile ocamlformat (file passing/.ocamlforma
 infix-precedence=indent (profile ocamlformat (file passing/.ocamlformat:1))
 indicate-nested-or-patterns=space (profile ocamlformat (file passing/.ocamlformat:1))
 indicate-multiline-delimiters=true (profile ocamlformat (file passing/.ocamlformat:1))
+indent-after-in=0 (profile ocamlformat (file passing/.ocamlformat:1))
 if-then-else=compact (profile ocamlformat (file passing/.ocamlformat:1))
 field-space=tight (profile ocamlformat (file passing/.ocamlformat:1))
 extension-sugar=preserve (profile ocamlformat (file passing/.ocamlformat:1))

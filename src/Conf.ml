@@ -34,6 +34,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
+  ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
@@ -833,6 +834,17 @@ module Formatting = struct
       (fun conf x -> {conf with if_then_else= x})
       (fun conf -> conf.if_then_else)
 
+  let indent_after_in =
+    let docv = "COLS" in
+    let doc =
+      "Indentation ($(docv) columns) after `let ... in`, unless followed \
+       by another `let`."
+    in
+    let names = ["indent-after-in"] in
+    C.int ~names ~default:0 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with indent_after_in= x})
+      (fun conf -> conf.indent_after_in)
+
   let indicate_multiline_delimiters =
     let doc =
       "Print a space inside a delimiter to indicate that its matching \
@@ -1330,7 +1342,11 @@ let ocp_indent_options =
         ( "type-decl-indent"
         , "$(b,type) is an alias for $(b,type-decl-indent)."
         , Fn.id ) )
-  ; ("in", None)
+  ; ( "in"
+    , Some
+        ( "indent-after-in"
+        , "$(b,in) is an alias for $(b,indent-after-in)."
+        , Fn.id ) )
   ; ("with", None)
   ; ( "match_clause"
     , Some
@@ -1433,6 +1449,7 @@ let ocamlformat_profile =
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; if_then_else= C.default Formatting.if_then_else
+  ; indent_after_in= C.default Formatting.indent_after_in
   ; indicate_multiline_delimiters=
       C.default Formatting.indicate_multiline_delimiters
   ; indicate_nested_or_patterns=
@@ -1544,6 +1561,7 @@ let janestreet_profile =
   ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
+  ; indent_after_in= 0
   ; indicate_multiline_delimiters= false
   ; indicate_nested_or_patterns= `Unsafe_no
   ; infix_precedence= `Parens

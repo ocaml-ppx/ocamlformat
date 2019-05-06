@@ -37,6 +37,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
+  ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
