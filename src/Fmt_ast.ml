@@ -826,15 +826,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       hvbox 0
         (wrap_tuple ~parens ~no_parens_if_break:false c
            (list pats (comma_sep c) (sub_pat ~ctx >> fmt_pattern c)))
-  | Ppat_construct (lid, None) -> (
-    match lid.txt with
-    | Lident (("()" | "[]") as txt) ->
-        let opn = txt.[0] and cls = txt.[1] in
-        Cmts.fmt c lid.loc
-          (hvbox 0
-             (wrap_k (char opn) (char cls)
-                (Cmts.fmt_within c ~pro:(str " ") ~epi:(str " ") ppat_loc)))
-    | _ -> fmt_longident_loc c lid )
+  | Ppat_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
+      let opn = txt.[0] and cls = txt.[1] in
+      Cmts.fmt c loc
+        (hvbox 0
+           (wrap_k (char opn) (char cls)
+              (Cmts.fmt_within c ~pro:(str " ") ~epi:(str " ") ppat_loc)))
+  | Ppat_construct (lid, None) -> fmt_longident_loc c lid
   | Ppat_construct
       ( {txt= Lident "::"; loc}
       , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []} ) -> (
