@@ -1548,7 +1548,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@ ->" )
                    $ fmt "@ "
                    $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                   $ fmt ")" $ Cmts.fmt_after c pexp_loc )
+                   $ str ")" $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | (lbl, ({pexp_desc= Pexp_function cs; pexp_loc} as eN)) :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
@@ -1565,7 +1565,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_label lbl ":" $ str "(function"
                       $ fmt_attributes c ~pre:(str " ") ~key:"@"
                           eN.pexp_attributes ))
-               $ fmt "@ " $ fmt_cases c ctx'' cs $ fmt ")"
+               $ fmt "@ " $ fmt_cases c ctx'' cs $ str ")"
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
           wrap_if parens "(" ")"
