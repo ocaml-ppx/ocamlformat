@@ -1023,7 +1023,6 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
 and fmt_fun_args c ?(pro = noop) args =
   let fmt_fun_arg (a : Sugar.arg_kind) =
     match a with
-    | Val (Nolabel, xpat, None) -> fmt_pattern c xpat
     | Val
         ( Labelled l
         , ( { ast=
@@ -1036,8 +1035,6 @@ and fmt_fun_args c ?(pro = noop) args =
         , None )
       when String.equal l txt ->
         cbox 0 (str "~" $ fmt_pattern c xpat)
-    | Val (Labelled l, xpat, None) ->
-        cbox 0 (str "~" $ str l $ str ":" $ fmt_pattern c xpat)
     | Val
         ( Optional l
         , ( { ast=
@@ -1050,8 +1047,8 @@ and fmt_fun_args c ?(pro = noop) args =
         , None )
       when String.equal l txt ->
         cbox 0 (str "?" $ fmt_pattern c xpat)
-    | Val (Optional l, xpat, None) ->
-        cbox 0 (str "?" $ str l $ str ":" $ fmt_pattern c xpat)
+    | Val (lbl, xpat, None) ->
+        cbox 0 (fmt_label lbl ":" $ fmt_pattern c xpat)
     | Val
         ( Optional l
         , ({ast= {ppat_desc= Ppat_var {txt}; ppat_attributes= []}} as xpat)
