@@ -414,7 +414,8 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
     [doc_before, doc_after, attrs] *)
-let fmt_docstring_around_item ?(force_before = false) ?(is_simple = true) c attrs =
+let fmt_docstring_around_item ?(force_before = false) ?(is_simple = true) c
+    attrs =
   let doc, attrs = doc_atrs attrs in
   match doc_atrs attrs with
   | (Some _ as doc2), attrs ->

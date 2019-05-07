@@ -220,11 +220,26 @@ let longident_is_simple c x =
   in
   longident_fit_margin c (length x)
 
-let module_type_is_simple x =
-  match x.pmty_desc with Pmty_signature l -> List.is_empty l | _ -> true
+let rec module_type_is_simple x =
+  match x.pmty_desc with
+  | Pmty_ident _ | Pmty_alias _ | Pmty_signature [] -> true
+  | Pmty_signature (_ :: _) | Pmty_with (_, _ :: _ :: _) | Pmty_extension _
+    ->
+      false
+  | Pmty_typeof e -> module_expr_is_simple e
+  | Pmty_functor (_, Some t1, t2) ->
+      module_type_is_simple t1 && module_type_is_simple t2
+  | Pmty_functor (_, None, t) | Pmty_with (t, ([] | [_])) ->
+      module_type_is_simple t
 
-let module_expr_is_simple x =
-  match x.pmod_desc with Pmod_structure l -> List.is_empty l | _ -> true
+and module_expr_is_simple x =
+  match x.pmod_desc with
+  | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] -> true
+  | Pmod_structure (_ :: _) | Pmod_extension _ -> false
+  | Pmod_functor (_, Some t, e) | Pmod_constraint (e, t) ->
+      module_expr_is_simple e && module_type_is_simple t
+  | Pmod_functor (_, None, e) -> module_expr_is_simple e
+  | Pmod_apply (a, b) -> module_expr_is_simple a && module_expr_is_simple b
 
 module type Module_item = sig
   type t
@@ -462,6 +477,7 @@ let has_trailing_attributes_mty {pmty_attributes} =
 let has_trailing_attributes_mod {pmod_attributes} =
   List.exists pmod_attributes ~f:is_doc
 
+(** Ast terms of various forms. *)
 module T = struct
   type t =
     | Pld of payload
@@ -535,7 +551,6 @@ module T = struct
           Printast.implementation [s]
     | Top -> Format.pp_print_string fs "Top"
 end
-(** Ast terms of various forms. *)
 
 include T
 
@@ -675,6 +690,9 @@ let assoc_of_prec = function
   | High -> Non
   | Atomic -> Non
 
+(** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be)
+    an immediate sub-term of [ctx] as assumed by the operations in
+    [Requires_sub_terms]. *)
 module rec In_ctx : sig
   type 'a xt = private {ctx: T.t; ast: 'a}
 
@@ -722,10 +740,9 @@ end = struct
 
   let sub_str ~ctx str = {ctx; ast= str}
 end
-(** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be)
-    an immediate sub-term of [ctx] as assumed by the operations in
-    [Requires_sub_terms]. *)
 
+(** Operations determining precedence and necessary parenthesization of
+    terms based on their super-terms. *)
 and Requires_sub_terms : sig
   val is_simple :
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
@@ -2213,8 +2230,6 @@ end = struct
     | Ptyp_object _ -> true
     | _ -> false
 end
-(** Operations determining precedence and necessary parenthesization of
-    terms based on their super-terms. *)
 
 include In_ctx
 include Requires_sub_terms

@@ -78,6 +78,7 @@ module Fpath = struct
     Format.fprintf fmt "%s" (to_string ~pretty p)
 end
 
+(** Extension of Cmdliner supporting lighter-weight option definition *)
 module Cmdliner : sig
   include module type of Cmdliner
 
@@ -123,7 +124,6 @@ end = struct
     | `Error _ -> Caml.exit 1
     | `Help | `Version -> Caml.exit 0
 end
-(** Extension of Cmdliner supporting lighter-weight option definition *)
 
 let profile_option_names = ["p"; "profile"]
 
@@ -483,6 +483,7 @@ let info =
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
+(** Options affecting formatting *)
 module Formatting = struct
   let section = `Formatting
 
@@ -1129,7 +1130,6 @@ module Formatting = struct
       (fun conf wrap_fun_args -> {conf with wrap_fun_args})
       (fun conf -> conf.wrap_fun_args)
 end
-(** Options affecting formatting *)
 
 (* Flags that can be modified in the config file that don't affect
    formatting *)
