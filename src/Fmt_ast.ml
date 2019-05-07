@@ -1024,7 +1024,7 @@ and fmt_fun_args c ?(pro = noop) args =
   let fmt_fun_arg (a : Sugar.arg_kind) =
     match a with
     | Val
-        ( Labelled l
+        ( ((Labelled l | Optional l) as lbl)
         , ( { ast=
                 { ppat_desc=
                     ( Ppat_var {txt}
@@ -1034,19 +1034,8 @@ and fmt_fun_args c ?(pro = noop) args =
                 ; ppat_attributes= [] } } as xpat )
         , None )
       when String.equal l txt ->
-        cbox 0 (str "~" $ fmt_pattern c xpat)
-    | Val
-        ( Optional l
-        , ( { ast=
-                { ppat_desc=
-                    ( Ppat_var {txt}
-                    | Ppat_constraint
-                        ({ppat_desc= Ppat_var {txt}; ppat_attributes= []}, _)
-                      )
-                ; ppat_attributes= [] } } as xpat )
-        , None )
-      when String.equal l txt ->
-        cbox 0 (str "?" $ fmt_pattern c xpat)
+        let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
+        cbox 0 (str symbol $ fmt_pattern c xpat)
     | Val (lbl, xpat, None) ->
         cbox 0 (fmt_label lbl ":" $ fmt_pattern c xpat)
     | Val
