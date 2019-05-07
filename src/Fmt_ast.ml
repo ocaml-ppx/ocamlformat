@@ -3014,7 +3014,6 @@ and fmt_signature_item c ?ext {ast= si} =
             (str "include module type of", blk)
         | _ -> (str "include", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
-      let single_line = module_type_is_simple pincl_mod in
       let box = wrap_k opn cls in
       hvbox 0
         ( doc_before
@@ -3223,11 +3222,11 @@ and fmt_open_description c
     fmt_docstring_around_item c popen_attributes
   in
   hovbox 0
-    ( doc_before $ fmt "open"
+    ( doc_before $ str "open"
     $ fmt_if Poly.(popen_override = Override) "!"
-    $ fmt " "
+    $ str " "
     $ fmt_longident_loc c popen_lid
-    $ fmt_attributes c ~pre:(fmt " ") ~key:"@@" atrs
+    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
     $ doc_after )
 
 and fmt_with_constraint c ctx = function
@@ -3550,14 +3549,12 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       in
       let blk = fmt_module_expr c (sub_mod ~ctx pincl_mod) in
       let box = wrap_k blk.opn blk.cls in
-      let single_line = module_expr_is_simple pincl_mod in
-      hovbox 0
-        ( doc_before
-        $ ( hvbox 2 (str "include " $ Option.call ~f:blk.pro)
-          $ blk.psp $ blk.bdy )
-        $ blk.esp $ Option.call ~f:blk.epi
-        $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
-        $ doc_after )
+      doc_before
+      $ box
+          ( hvbox 2 (str "include " $ Option.call ~f:blk.pro)
+          $ blk.psp $ blk.bdy $ blk.esp $ Option.call ~f:blk.epi
+          $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs )
+      $ doc_after
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open open_descr -> fmt_open_description c open_descr
