@@ -1698,26 +1698,26 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let pre_body, body = fmt_body c ?ext xbody in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
-        ( fmt_if parens "("
-        $ hovbox 2
-            ( hovbox 4
-                ( str "fun "
-                $ fmt_attributes c ~key:"@" pexp_attributes ~suf:(str " ")
-                $ hvbox_if
-                    (not c.conf.wrap_fun_args)
-                    0 (fmt_fun_args c xargs)
-                $ fmt "@ " )
-            $ str "->" $ pre_body )
-        $ fmt "@ " $ body $ fmt_if parens ")" )
+        (wrap_if parens "(" ")"
+           ( hovbox 2
+               ( hovbox 4
+                   ( str "fun "
+                   $ fmt_attributes c ~key:"@" pexp_attributes
+                       ~suf:(str " ")
+                   $ hvbox_if
+                       (not c.conf.wrap_fun_args)
+                       0 (fmt_fun_args c xargs)
+                   $ fmt "@ " )
+               $ str "->" $ pre_body )
+           $ fmt "@ " $ body ))
   | Pexp_function cs ->
-      fmt_if parens "("
-      $ hvbox 2
-          ( str "function"
-          $ fmt_extension_suffix c ext
-          $ fmt_attributes c ~key:"@" pexp_attributes )
-      $ fmt "@ "
-      $ hvbox 0 (fmt_cases c ctx cs)
-      $ fmt_if parens ")"
+      wrap_if parens "(" ")"
+        ( hvbox 2
+            ( str "function"
+            $ fmt_extension_suffix c ext
+            $ fmt_attributes c ~key:"@" pexp_attributes )
+        $ fmt "@ "
+        $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then
@@ -2310,17 +2310,16 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
       let stmt_loc = Sugar.args_location xargs in
       hvbox_if box
         (if Option.is_none eol then 2 else 1)
-        ( fmt_if parens "("
-        $ hovbox 2
-            ( hovbox 4
-                ( str "fun "
-                $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(str " ")
-                $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
-                $ fmt "@ " )
-            $ str "->" )
-        $ fmt "@ "
-        $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody
-        $ fmt_if parens ")" )
+        (wrap_if parens "(" ")"
+           ( hovbox 2
+               ( hovbox 4
+                   ( str "fun "
+                   $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(str " ")
+                   $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
+                   $ fmt "@ " )
+               $ str "->" )
+           $ fmt "@ "
+           $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody ))
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
