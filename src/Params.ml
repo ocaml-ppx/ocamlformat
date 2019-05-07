@@ -172,7 +172,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
               $ fmt "@ ")
       ; box_keyword_and_expr=
           (fun k ->
-            hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k) )
+            hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k))
       ; wrap_parens=
           wrap_k
             (fmt_or parens_bch (if imd then " (@ " else " (@,") "@ ")

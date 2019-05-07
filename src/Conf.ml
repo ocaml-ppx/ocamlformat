@@ -1558,7 +1558,7 @@ let (_profile : t option C.t) =
   C.choice ~names ~all ~doc ~section ~has_default:false
     (fun conf p ->
       selected_profile_ref := p ;
-      Option.value p ~default:conf )
+      Option.value p ~default:conf)
     (fun _ -> !selected_profile_ref)
 
 let validate () =
@@ -1785,7 +1785,7 @@ let read_config_file conf filename_kind =
                       ("unknown option", Sexp.Atom name)
                   | `Bad_value (name, reason) ->
                       ( "bad value for"
-                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) )))
+                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ))))
     with Sys_error _ -> conf )
 
 let update_using_env conf =
@@ -1806,7 +1806,7 @@ let update_using_env conf =
             | `Unknown (name, _value) -> ("unknown option", Sexp.Atom name)
             | `Bad_value (name, reason) ->
                 ( "bad value for"
-                , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ) ))
+                , Sexp.List [Sexp.Atom name; Sexp.Atom reason] )))
   with Sys_error _ -> conf
 
 type 'a input = {kind: 'a; name: string; file: string; conf: t}

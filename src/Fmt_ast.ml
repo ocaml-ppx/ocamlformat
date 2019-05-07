@@ -806,7 +806,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           | Parser.CHAR _ | Parser.DOTDOT
            |Parser.(INT _ | STRING _ | FLOAT _) ->
               true
-          | _ -> false )
+          | _ -> false)
       in
       match toks with
       | [ (Parser.(CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
@@ -1548,9 +1548,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@ ->" )
                    $ fmt "@ "
                    $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                   $ fmt_or_k c.conf.indicate_multiline_delimiters
-                       (fits_breaks ")" " )") (str ")")
-                   $ Cmts.fmt_after c pexp_loc )
+                   $ str ")" $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | (lbl, ({pexp_desc= Pexp_function cs; pexp_loc} as eN)) :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
@@ -1567,9 +1565,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_label lbl ":" $ str "(function"
                       $ fmt_attributes c ~pre:(str " ") ~key:"@"
                           eN.pexp_attributes ))
-               $ fmt "@ " $ fmt_cases c ctx'' cs
-               $ fmt_or_k c.conf.indicate_multiline_delimiters
-                   (fits_breaks ")" " )") (str ")")
+               $ fmt "@ " $ fmt_cases c ctx'' cs $ str ")"
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
           wrap_if parens "(" ")"
@@ -1619,7 +1615,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    ( opn_paren $ str "module " $ m $ fmt "@ : "
                    $ fmt_longident_loc c id )
                $ fmt_package_type c ctx cnstrs
-               $ fmt_atrs $ cls_paren ) ))
+               $ fmt_atrs $ cls_paren )))
   | Pexp_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -1712,10 +1708,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     0 (fmt_fun_args c xargs)
                 $ fmt "@ " )
             $ str "->" $ pre_body )
-        $ fmt "@ " $ body
-        $ fmt_or_k c.conf.indicate_multiline_delimiters
-            (fits_breaks_if parens ")" "@ )")
-            (fits_breaks_if parens ")" "@,)") )
+        $ fmt "@ " $ body $ fmt_if parens ")" )
   | Pexp_function cs ->
       fmt_if parens "("
       $ hvbox 2
@@ -1724,9 +1717,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           $ fmt_attributes c ~key:"@" pexp_attributes )
       $ fmt "@ "
       $ hvbox 0 (fmt_cases c ctx cs)
-      $ fmt_or_k c.conf.indicate_multiline_delimiters
-          (fits_breaks_if parens ")" "@ )")
-          (fits_breaks_if parens ")" "@,)")
+      $ fmt_if parens ")"
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then
@@ -2329,9 +2320,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
             $ str "->" )
         $ fmt "@ "
         $ fmt_class_expr c ~eol:(fmt "@;<1000 0>") xbody
-        $ fmt_or_k c.conf.indicate_multiline_delimiters
-            (fits_breaks_if parens ")" "@ )")
-            (fits_breaks_if parens ")" "@,)") )
+        $ fmt_if parens ")" )
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
@@ -2835,7 +2824,7 @@ and fmt_exception ~pre c sep ctx te =
         ~f:(fun (s, _) ->
           match s.txt with
           | "deprecated" | "ocaml.deprecated" -> true
-          | _ -> false )
+          | _ -> false)
         te.pext_attributes
     in
     (atat, {te with pext_attributes= at})
@@ -3577,7 +3566,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       fmt_recmodule c ctx bindings
         (fun c ctx ~rec_flag ~first b ->
           (* To ignore the ?epi parameter *)
-          fmt_module_binding c ctx ~rec_flag ~first b )
+          fmt_module_binding c ctx ~rec_flag ~first b)
         (fun x -> Mod x.pmb_expr)
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx te
