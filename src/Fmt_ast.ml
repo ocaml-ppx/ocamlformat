@@ -957,9 +957,14 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         ( list_fl (List.group xpats ~break)
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last xpat ->
+                  let open_box =
+                    if Poly.(c.conf.break_cases = `Fit_or_vertical) then
+                      open_hvbox
+                    else open_hovbox
+                  in
                   let pro =
-                    if first_grp && first then pro0 $ open_hovbox (-2)
-                    else if first then proI $ open_hovbox (-2)
+                    if first_grp && first then pro0 $ open_box (-2)
+                    else if first then proI $ open_box (-2)
                     else proI ~space:(space xpat.ast)
                   in
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
