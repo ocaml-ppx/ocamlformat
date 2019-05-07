@@ -25,9 +25,10 @@ let { (* cmts *)
     ; (* c *) c
     ; (* d *)
       d=
-        (D: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
+        (D : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
     ; (* e *)
-      e: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
+      e : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int }
+    =
   exp
 
 let x =
@@ -61,16 +62,16 @@ type t = {(* c *) c (* c' *): (* d *) d (* d' *)}
 
 let _ =
   { (* a *) a (* a' *)= (* b *) b (* b' *)
-  ; (* c *) c (* c' *): (* d *) d (* d' *) = (* e *) e (* e' *)
+  ; (* c *) c (* c' *) : (* d *) d (* d' *) = (* e *) e (* e' *)
   ; (* f *) f (* f' *)
   ; (* j *)
-    (* g *) g (* g' *)= ((* h *) h (* h' *): (* i *) i (* i' *))
+    (* g *) g (* g' *)= ((* h *) h (* h' *) : (* i *) i (* i' *))
     (* j' *) }
 
 let { (* a *) a (* a' *)= (* b *) b (* b' *)
-    ; (* c *) c (* c' *): (* d *) d (* d' *) = (* e *) e (* e' *)
+    ; (* c *) c (* c' *) : (* d *) d (* d' *) = (* e *) e (* e' *)
     ; (* f *) f (* f' *)
     ; (* j *)
-      (* g *) g (* g' *)= ((* h *) h (* h' *): (* i *) i (* i' *))
+      (* g *) g (* g' *)= ((* h *) h (* h' *) : (* i *) i (* i' *))
       (* j' *) } =
   x

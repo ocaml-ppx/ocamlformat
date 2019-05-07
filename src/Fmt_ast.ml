@@ -542,7 +542,7 @@ and fmt_payload c ctx pld =
 
 and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
   let fmt_type ?(parens = false) t =
-    str ": " $ fmt_core_type c t $ fmt_if parens ")"
+    str " : " $ fmt_core_type c t $ fmt_if parens ")"
   in
   let fmt_rhs ?(parens = false) r =
     fmt "=@;<1 2>" $ fmt_if parens "(" $ cbox 0 r
@@ -553,11 +553,9 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
   let fmt_type_rhs =
     match (typ, rhs) with
     | Some t, Some r ->
-        if type_first then field_space $ fmt_type t $ fmt "@ " $ fmt_rhs r
-        else
-          field_space $ fmt_rhs ~parens:true r $ field_space
-          $ fmt_type ~parens:true t
-    | Some t, None -> field_space $ fmt_type t
+        if type_first then fmt_type t $ fmt "@ " $ fmt_rhs r
+        else field_space $ fmt_rhs ~parens:true r $ fmt_type ~parens:true t
+    | Some t, None -> fmt_type t
     | None, Some r -> field_space $ fmt_rhs r
     | None, None -> noop
   in

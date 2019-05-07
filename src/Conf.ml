@@ -794,7 +794,7 @@ module Formatting = struct
       [ ( "tight"
         , `Tight
         , "$(b,tight) does not use a space between a field name and the \
-           punctuation symbol (`:`or `=`)." )
+           punctuation symbol (`=`)." )
       ; ("loose", `Loose, "$(b,loose) does.") ]
     in
     C.choice ~names ~all ~doc ~section
