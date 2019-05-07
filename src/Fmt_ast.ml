@@ -1071,9 +1071,7 @@ and fmt_fun_args c ?(pro = noop) args =
         cbox 0
           (wrap "(" ")" (str "type " $ list names "@ " (fmt_str_loc c)))
   in
-  fmt_if_k
-    (not (List.is_empty args))
-    (pro $ list args "@;" (fun x -> hovbox 0 (fmt_fun_arg x)))
+  fmt_if_k (not (List.is_empty args)) (pro $ list args "@;" fmt_fun_arg)
 
 (** The second returned value of [fmt_body] belongs to a box of level N-1 if
     the first returned value belongs to a box of level N. *)
