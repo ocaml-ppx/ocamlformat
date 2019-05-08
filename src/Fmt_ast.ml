@@ -1585,20 +1585,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@ : "
            $ fmt_core_type c (sub_typ ~ctx t)
            $ fmt_atrs ))
-  | Pexp_construct (lid, None) -> (
-    match lid.txt with
-    | Lident (("()" | "[]") as txt) ->
-        let opn = char txt.[0] and cls = char txt.[1] in
-        let pro = str " " and epi = str " " in
-        Cmts.fmt c lid.loc
-        @@ hvbox 0
-             (wrap_if parens "(" ")"
-                ( wrap_k opn cls (Cmts.fmt_within c ~pro ~epi pexp_loc)
-                $ fmt_atrs ))
-    | Lident "::" ->
-        wrap_if parens "(" ")"
-          (wrap "(" ")" (fmt_longident_loc c lid $ fmt_atrs))
-    | _ -> wrap_if parens "(" ")" (fmt_longident_loc c lid $ fmt_atrs) )
+  | Pexp_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
+      let opn = char txt.[0] and cls = char txt.[1] in
+      let pro = str " " and epi = str " " in
+      Cmts.fmt c loc
+      @@ hvbox 0
+           (wrap_if parens "(" ")"
+              ( wrap_k opn cls (Cmts.fmt_within c ~pro ~epi pexp_loc)
+              $ fmt_atrs ))
+  | Pexp_construct (({txt= Lident "::"} as lid), None) ->
+      wrap_if parens "(" ")"
+        (wrap "(" ")" (fmt_longident_loc c lid $ fmt_atrs))
+  | Pexp_construct (lid, None) ->
+      wrap_if parens "(" ")" (fmt_longident_loc c lid $ fmt_atrs)
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []} ) -> (
