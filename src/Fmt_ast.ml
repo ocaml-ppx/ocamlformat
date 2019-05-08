@@ -2734,13 +2734,12 @@ and fmt_type_extension c ctx te =
   let c = update_config c te.ptyext_attributes in
   let doc, atrs = doc_atrs te.ptyext_attributes in
   let fmt_ctor ctor =
-    let has_res =
+    let sep =
       match ctor.pext_kind with
-      | Pext_decl (_, r) -> Option.is_some r
-      | Pext_rebind _ -> false
+      | Pext_decl (_, Some _) -> fmt " :@ "
+      | Pext_decl (_, None) | Pext_rebind _ -> fmt " of@ "
     in
-    hvbox 0
-      (fmt_extension_constructor c (fmt_or has_res " :@ " " of@ ") ctx ctor)
+    hvbox 0 (fmt_extension_constructor c sep ctx ctor)
   in
   hvbox 2
     ( fmt_docstring c ~epi:(fmt "@,") doc
