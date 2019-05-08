@@ -49,41 +49,41 @@ let Mmmmmm.
     (* fooooooooo *) =
   ()
 
-let _ = {a; b : c = (match b with `A -> A | `B -> B | `C -> C); c}
+let _ = {a; b: c = (match b with `A -> A | `B -> B | `C -> C); c}
 
-let a () = A {A.a : t}
+let a () = A {A.a: t}
 
-let x = {(*test*) aaa : aa; bbb : bb}
+let x = {(*test*) aaa: aa; bbb: bb}
 
-let x = {aaa : aa (* A *); bbb : bb}
+let x = {aaa: aa (* A *); bbb: bb}
 
-let x = {aaa : aa; (* A *) bbb : bb}
+let x = {aaa: aa; (* A *) bbb: bb}
 
-let x = {(*test*) aaa : aa = aa; bbb : bb}
+let x = {(*test*) aaa: aa = aa; bbb: bb}
 
-let x = {aaa : aa (* A *) = aa; bbb : bb}
+let x = {aaa: aa (* A *) = aa; bbb: bb}
 
-let x = {aaa : aa = (* A *) aa; bbb : bb}
+let x = {aaa: aa = (* A *) aa; bbb: bb}
 
-let x = {aaa : aa; (* A *) bbb : bb}
+let x = {aaa: aa; (* A *) bbb: bb}
 
-let {(*a*) a : a} = e
+let {(*a*) a: a} = e
 
-let {a (*a*) : a} = e
+let {a (*a*): a} = e
 
-let {a : (*a*) a} = e
+let {a: (*a*) a} = e
 
-let {a : a (*a*)} = e
+let {a: a (*a*)} = e
 
 let _ =
   (* comment here *)
   { (* comment here *)
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
-  ; bbbbbbbbbbbb : bbbbbbbbbbb = bbbbbbbbbbbbbbbbb }
+  ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb }
 
 let { (* comment here *)
       aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
-    ; bbbbbbbbbbbb : bbbbbbbbbbb = bbbbbbbbbbbbbbbbb } =
+    ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb } =
   e
 
 type t =
@@ -93,12 +93,12 @@ type t =
 
 let _ = x {a= (a' : string); b= (b' : string)}
 
-let _ = x {a : string = a'; b : string = b'}
+let _ = x {a: string = a'; b: string = b'}
 
-let _ = x {a= (a' : string); b : string = b'}
+let _ = x {a= (a' : string); b: string = b'}
 
-let _ = x {a : string = a'; b= (b' : string)}
+let _ = x {a: string = a'; b= (b' : string)}
 
 let x = function {a= (_ : string); _} -> ()
 
-let x = function {a : string = _; _} -> ()
+let x = function {a: string = _; _} -> ()
