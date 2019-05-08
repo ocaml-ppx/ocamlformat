@@ -443,26 +443,6 @@ let is_arrow_or_poly = function
   | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _} -> true
   | _ -> false
 
-let fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens ~attributes
-    ~fmt_atrs ~sub ~fmt_expr ~fmt_value_binding =
-  let fmt_binding ~first ~last binding =
-    let ext = if first then ext else None in
-    let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
-    fmt_value_binding c ~rec_flag ~first ?ext ctx binding ~in_
-    $ fmt_if (not last)
-        ( match c.conf.let_and with
-        | `Sparse -> "@;<1000 0>"
-        | `Compact -> "@ " )
-  in
-  wrap_if
-    (parens || not (List.is_empty attributes))
-    "(" ")"
-    (vbox 0
-       ( hvbox 0 (list_fl bindings fmt_binding)
-       $ fmt "@;<1000 0>"
-       $ hvbox 0 (fmt_expr c (sub ~ctx body)) ))
-  $ fmt_atrs
-
 let fmt_assign_colon c =
   match c.conf.assignment_operator with
   | `Begin_line -> fmt "@;<1 2>:= "
@@ -1737,15 +1717,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                          $ p.break_end_branch )) )
                 $ fmt_if_k (not last) p.space_between_branches)))
   | Pexp_let (rec_flag, bindings, body) ->
-      let fmt_expr ?box ?pro ?epi ?eol ?parens ?indent_wrap ?ext =
-        fmt_expression ?box ?pro ?epi ?eol ?parens ?indent_wrap ?ext
-      in
-      let fmt_value_binding c ~rec_flag ~first ?ext ast b ~in_ =
-        fmt_value_binding ~rec_flag ~first ?ext c ast b ~in_
-      in
-      fmt_let c ctx ~ext ~rec_flag ~bindings ~body ~parens
-        ~attributes:pexp_attributes ~fmt_atrs ~sub:sub_exp ~fmt_expr
-        ~fmt_value_binding
+      let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
+      fmt_let c ctx ~ext ~rec_flag ~bindings ~parens
+        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
   | Pexp_letexception (ext_cstr, exp) ->
       let pre = fmt "let exception@ " in
       hvbox 0
@@ -2305,13 +2279,9 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
-      let fmt_expr ?eol ?box = fmt_class_expr ?eol ?box in
-      let fmt_value_binding c ~rec_flag ~first ?ext ast b ~in_ =
-        fmt_value_binding ~rec_flag ~first ?ext c ast b ~in_
-      in
-      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~body ~parens
-        ~attributes:pcl_attributes ~fmt_atrs ~sub:sub_cl ~fmt_expr
-        ~fmt_value_binding
+      let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
+      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens
+        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -3595,6 +3565,25 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_class_type cl ->
       fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs c ctx cls
+
+and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~attributes ~fmt_atrs
+    ~fmt_expr =
+  let fmt_binding ~first ~last binding =
+    let ext = if first then ext else None in
+    let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
+    fmt_value_binding c ~rec_flag ~first ?ext ctx binding ~in_
+    $ fmt_if (not last)
+        ( match c.conf.let_and with
+        | `Sparse -> "@;<1000 0>"
+        | `Compact -> "@ " )
+  in
+  wrap_if
+    (parens || not (List.is_empty attributes))
+    "(" ")"
+    (vbox 0
+       ( hvbox 0 (list_fl bindings fmt_binding)
+       $ fmt "@;<1000 0>" $ hvbox 0 fmt_expr ))
+  $ fmt_atrs
 
 and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} = binding in
