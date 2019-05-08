@@ -3513,11 +3513,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_open open_descr -> fmt_open_description c open_descr
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
-      fmt_recmodule c ctx bindings
-        (fun c ctx ~rec_flag ~first b ->
-          (* To ignore the ?epi parameter *)
-          fmt_module_binding c ctx ~rec_flag ~first b)
-        (fun x -> Mod x.pmb_expr)
+      fmt_recmodule c ctx bindings fmt_module_binding (fun x ->
+          Mod x.pmb_expr)
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx te
   | Pstr_value (rec_flag, bindings) ->
@@ -3706,7 +3703,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
       $ Option.call ~f:epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
-and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
+and fmt_module_binding c ctx ~rec_flag ~first pmb =
   update_config_maybe_disabled c pmb.pmb_loc pmb.pmb_attributes
   @@ fun c ->
   let keyword =
@@ -3727,7 +3724,7 @@ and fmt_module_binding c ?epi ~rec_flag ~first ctx pmb =
     | _ -> (xbody, None)
   in
   Cmts.fmt c pmb.pmb_loc
-    (fmt_module c ?epi keyword pmb.pmb_name xargs (Some xbody) true xmty
+    (fmt_module c keyword pmb.pmb_name xargs (Some xbody) true xmty
        pmb.pmb_attributes)
 
 let fmt_toplevel_phrase c ctx = function
