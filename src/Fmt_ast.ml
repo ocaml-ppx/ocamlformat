@@ -2323,13 +2323,10 @@ and fmt_class_field c ctx (cf : class_field) =
         in
         match cleanup [] e poly_args with
         | Some (args, t, e) ->
-            ( match args with
-            | [] ->
-                Cmts.relocate c.cmts ~src:pexp_loc ~before:e.pexp_loc
-                  ~after:e.pexp_loc
-            | x :: _ ->
-                Cmts.relocate c.cmts ~src:pexp_loc ~before:x.loc
-                  ~after:e.pexp_loc ) ;
+            let before =
+              match args with x :: _ -> x.loc | [] -> e.pexp_loc
+            in
+            Cmts.relocate c.cmts ~src:pexp_loc ~before ~after:e.pexp_loc ;
             ( [ fmt "@ : type "
                 $ list args "@ " (fun name -> fmt_str_loc c name)
               ; fmt_core_type c ~pro:"." ~pro_space:false (sub_typ ~ctx t)
