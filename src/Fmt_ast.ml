@@ -2202,8 +2202,7 @@ and fmt_class_type c ?(box = true) ({ast= typ} as xtyp) =
   match pcty_desc with
   | Pcty_constr (name, params) ->
       let params = List.map params ~f:(fun x -> (x, Invariant)) in
-      fmt_class_params c ctx ~epi:(fmt "@ ") params
-      $ fmt_longident_loc c name
+      fmt_class_params c ctx params $ fmt_longident_loc c name
   | Pcty_signature {pcsig_self; pcsig_fields} ->
       fmt_class_signature c ~ctx ~parens pcsig_self pcsig_fields
   | Pcty_arrow (_, _, _) ->
@@ -2254,8 +2253,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   match pcl_desc with
   | Pcl_constr (name, params) ->
       let params = List.map params ~f:(fun x -> (x, Invariant)) in
-      fmt_class_params c ctx ~epi:(fmt "@ ") params
-      $ fmt_longident_loc c name $ fmt_atrs
+      fmt_class_params c ctx params $ fmt_longident_loc c name $ fmt_atrs
   | Pcl_structure {pcstr_fields; pcstr_self} ->
       hvbox 0
         (wrap_if parens "(" ")"
@@ -2558,18 +2556,19 @@ and fmt_tydcl_params c ctx params =
              fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty)))
     $ fmt "@ " )
 
-and fmt_class_params c ctx ~epi params =
+and fmt_class_params c ctx params =
+  let fmt_param ~first ~last (ty, vc) =
+    fmt_if (first && exposed_left_typ ty) " "
+    $ fmt_if_k (not first) (fmt (comma_sep c))
+    $ fmt_variance vc
+    $ fmt_core_type c (sub_typ ~ctx ty)
+    $ fmt_if (last && exposed_right_typ ty) " "
+  in
   fmt_if_k
     (not (List.is_empty params))
     (hvbox 0
-       ( wrap_fits_breaks c.conf "[" "]"
-           (list_fl params (fun ~first ~last (ty, vc) ->
-                fmt_if (first && exposed_left_typ ty) " "
-                $ fmt_if_k (not first) (fmt (comma_sep c))
-                $ fmt_variance vc
-                $ fmt_core_type c (sub_typ ~ctx ty)
-                $ fmt_if (last && exposed_right_typ ty) " "))
-       $ epi ))
+       ( wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param)
+       $ fmt "@ " ))
 
 and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
     ?(eq = "=") decl =
@@ -3020,7 +3019,7 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
               ( str (if first then pre else "and")
               $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
               $ fmt "@ "
-              $ fmt_class_params c ctx ~epi:(fmt "@ ") cl.pci_params
+              $ fmt_class_params c ctx cl.pci_params
               $ fmt_str_loc c cl.pci_name $ fmt "@ " $ str sep )
           $ fmt "@;"
           $ fmt_class_type c (sub_cty ~ctx cl.pci_expr)
@@ -3051,7 +3050,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               ( str (if first then "class" else "and")
               $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
               $ fmt "@ "
-              $ fmt_class_params c ctx ~epi:(fmt "@ ") cl.pci_params
+              $ fmt_class_params c ctx cl.pci_params
               $ fmt_str_loc c cl.pci_name
               $ fmt_if (not (List.is_empty xargs)) "@ "
               $ wrap_fun_decl_args ~stmt_loc c (fmt_fun_args c xargs)
