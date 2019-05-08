@@ -437,7 +437,7 @@ let fmt_docstring_around_item ?(force_before = false) ?(is_simple = true) c
         not
           (List.exists doc ~f:(function
             | Ok ([], _), _ -> false
-            | _ -> true ))
+            | _ -> true))
       in
       let before () = (fmted ~epi:(fmt "@\n") doc, fmt "", attrs) in
       let after ?(pro = fmt "@\n") () =
