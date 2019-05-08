@@ -3452,10 +3452,8 @@ and fmt_type c ?ext rec_flag decls ctx =
         if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
       else "and"
     and brk = fmt_if (not last) "\n" in
-    fmt_type_declaration c ~pre
-      ?ext:(if first then ext else None)
-      ~brk ctx decl
-    $ fmt_if (not last) "@ "
+    let ext = if first then ext else None in
+    fmt_type_declaration c ~pre ?ext ~brk ctx decl $ fmt_if (not last) "@ "
   in
   vbox 0 (list_fl decls fmt_decl)
 
