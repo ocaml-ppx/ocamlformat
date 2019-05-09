@@ -49,6 +49,7 @@ class c =
 
 type 'a u = [< `A | `B of < > > `B ] as 'a
 
+(** about a *)
 class type a =
   object
     (** about a *)
@@ -59,7 +60,6 @@ class type a =
     (** about b *)
     method b : int
   end
-(** about a *)
 
 (** floatting *)
 

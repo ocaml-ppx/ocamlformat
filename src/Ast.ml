@@ -241,6 +241,24 @@ and module_expr_is_simple x =
   | Pmod_functor (_, None, e) -> module_expr_is_simple e
   | Pmod_apply (a, b) -> module_expr_is_simple a && module_expr_is_simple b
 
+let rec class_decl_is_simple x =
+  match x.pcl_desc with
+  | Pcl_constr _ | Pcl_structure {pcstr_fields= []} -> true
+  | Pcl_structure {pcstr_fields= _ :: _}
+   |Pcl_let _ | Pcl_open _ | Pcl_extension _ ->
+      false
+  | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) -> class_decl_is_simple e
+  | Pcl_constraint (e, t) ->
+      class_decl_is_simple e && class_type_is_simple t
+
+and class_type_is_simple x =
+  match x.pcty_desc with
+  | Pcty_constr _ | Pcty_signature {pcsig_fields= []} -> true
+  | Pcty_signature {pcsig_fields= _ :: _} | Pcty_open _ | Pcty_extension _
+    ->
+      false
+  | Pcty_arrow (_, _, t) -> class_type_is_simple t
+
 module type Module_item = sig
   type t
 

@@ -180,6 +180,7 @@ end = struct
   class a = b
   (** Class *)
 
+  (** Class *)
   class b =
     object
       method f = 0
@@ -197,7 +198,6 @@ end = struct
       initializer do_init ()
       (** Initialiser *)
     end
-  (** Class *)
 
   class type a = b
   (** Class type *)

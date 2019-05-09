@@ -61,6 +61,10 @@ val module_expr_is_simple : module_expr -> bool
 
 val module_type_is_simple : module_type -> bool
 
+val class_decl_is_simple : class_expr -> bool
+
+val class_type_is_simple : class_type -> bool
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload

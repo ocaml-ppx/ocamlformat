@@ -3043,7 +3043,8 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
       let doc_before, doc_after, atrs =
-        fmt_docstring_around_item c cl.pci_attributes
+        let is_simple = Ast.class_type_is_simple cl.pci_expr in
+        fmt_docstring_around_item ~is_simple c cl.pci_attributes
       in
       let class_types =
         hovbox 2
@@ -3079,7 +3080,8 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
         | _ -> (None, xbody)
       in
       let doc_before, doc_after, atrs =
-        fmt_docstring_around_item c cl.pci_attributes
+        let is_simple = Ast.class_decl_is_simple cl.pci_expr in
+        fmt_docstring_around_item ~is_simple c cl.pci_attributes
       in
       let class_exprs =
         hovbox 2
