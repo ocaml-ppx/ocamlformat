@@ -1050,7 +1050,7 @@ module Formatting = struct
       (fun conf -> conf.parse_docstrings)
 
   let sequence_blank_line =
-    let doc = "." in
+    let doc = "Blank line between expressions of a sequence." in
     let names = ["sequence-blank-line"] in
     let all =
       [ ( "compact"
