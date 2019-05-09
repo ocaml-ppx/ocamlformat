@@ -9,6 +9,11 @@ let foo x y =
 let foo x y = do_some_setup y ; important_function x
 
 let foo x y =
+  do_some_setup y ;
+
+  important_function x
+
+let foo x y =
   do_some_setup x ;
   do_some_setup y ;
 

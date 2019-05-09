@@ -1948,10 +1948,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ( match prev with
             | Some prev -> (
               match c.conf.sequence_style with
-              | `Separator when blank_line prev x -> fmt " ;\n@\n"
+              | `Separator when blank_line prev x -> fmt " ;\n@;<1000 0>"
               | `Separator when c.conf.break_sequences -> fmt " ;@;<1000 0>"
               | `Separator -> fmt " ;@ "
-              | `Terminator when blank_line prev x -> fmt ";\n@\n"
+              | `Terminator when blank_line prev x -> fmt ";\n@;<1000 0>"
               | `Terminator when c.conf.break_sequences -> fmt ";@;<1000 0>"
               | `Terminator -> fmt ";@ " )
             | None -> noop )
@@ -1966,9 +1966,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         let prev = List.last_exn prev in
                         let x = List.hd_exn x in
                         match c.conf.sequence_style with
-                        | `Separator when blank_line prev x -> fmt " ;\n@\n"
+                        | `Separator when blank_line prev x ->
+                            fmt " ;\n@;<1000 0>"
                         | `Separator -> fmt " ;@;<1000 0>"
-                        | `Terminator when blank_line prev x -> fmt ";\n@\n"
+                        | `Terminator when blank_line prev x ->
+                            fmt ";\n@;<1000 0>"
                         | `Terminator -> fmt ";@;<1000 0>" )
                     | None -> noop )
                     $ fmt_grp x))
