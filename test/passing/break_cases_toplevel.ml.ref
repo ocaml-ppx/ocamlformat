@@ -129,3 +129,10 @@ let rec loop items =
   | _ ->
       let a = 3 in
       a
+
+let ffffff ~foo =
+  match (foo : Fooooooooooooo.t) with
+  | Aaaaaaaaaaaaaaaaa | Bbbbbbbbbbbbbbbbb | Ccccccccccccccccc
+  | Ddddddddddddddddd | Eeeeeeeeeeeeeeeee ->
+      foooooooooooooooooooo
+  | Fffffffffffffffff -> fooooooooooooooooo
