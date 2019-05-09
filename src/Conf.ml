@@ -51,6 +51,7 @@ type t =
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; quiet: bool
+  ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
   ; space_around_collection_expressions: bool
@@ -1048,6 +1049,23 @@ module Formatting = struct
       (fun conf x -> {conf with parse_docstrings= x})
       (fun conf -> conf.parse_docstrings)
 
+  let sequence_blank_line =
+    let doc = "." in
+    let names = ["sequence-blank-line"] in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) will not keep any blank line between expressions \
+           of a sequence." )
+      ; ( "preserve-one"
+        , `Preserve_one
+        , "$(b,preserve) will keep a blank line between two expressions of \
+           a sequence if the input contains at least one." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with sequence_blank_line= x})
+      (fun conf -> conf.sequence_blank_line)
+
   let sequence_style =
     let doc = "Style of sequence." in
     let names = ["sequence-style"] in
@@ -1403,6 +1421,7 @@ let ocamlformat_profile =
   ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
+  ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
   ; space_around_collection_expressions=
@@ -1508,6 +1527,7 @@ let janestreet_profile =
   ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false
   ; quiet= ocamlformat_profile.quiet
+  ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
   ; space_around_collection_expressions= true
