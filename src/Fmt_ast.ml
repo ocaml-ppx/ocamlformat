@@ -1932,48 +1932,42 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt_expression c (sub_exp ~ctx e2) )
            $ fmt_atrs ))
   | Pexp_sequence _ ->
-      let blank_line xexp1 xexp2 =
-        match c.conf.sequence_blank_line with
-        | `Preserve_one ->
-            let l1 = xexp1.ast.pexp_loc.loc_end.pos_lnum in
-            let l2 = xexp2.ast.pexp_loc.loc_start.pos_lnum in
-            l2 - l1 > 1
-        | `Compact -> false
+      let fmt_sep ?(force_break = false) xe1 xe2 =
+        let blank_line =
+          match c.conf.sequence_blank_line with
+          | `Preserve_one ->
+              let l1 = xe1.ast.pexp_loc.loc_end.pos_lnum in
+              let l2 = xe2.ast.pexp_loc.loc_start.pos_lnum in
+              l2 - l1 > 1
+          | `Compact -> false
+        in
+        let break =
+          if blank_line then fmt "\n@;<1000 0>"
+          else if c.conf.break_sequences || force_break then
+            fmt "@;<1000 0>"
+          else fmt "@ "
+        in
+        match c.conf.sequence_style with
+        | `Separator -> str " ;" $ break
+        | `Terminator -> str ";" $ break
       in
       let is_simple x = is_simple c.conf width x in
       let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
       let grps = List.group (Sugar.sequence c.cmts xexp) ~break in
-      let fmt_grp grp =
-        list_pn grp (fun ?prev x ?next:_ ->
-            ( match prev with
-            | Some prev -> (
-              match c.conf.sequence_style with
-              | `Separator when blank_line prev x -> fmt " ;\n@;<1000 0>"
-              | `Separator when c.conf.break_sequences -> fmt " ;@;<1000 0>"
-              | `Separator -> fmt " ;@ "
-              | `Terminator when blank_line prev x -> fmt ";\n@;<1000 0>"
-              | `Terminator when c.conf.break_sequences -> fmt ";@;<1000 0>"
-              | `Terminator -> fmt ";@ " )
-            | None -> noop )
-            $ fmt_expression c x)
+      let fmt_seq ?prev x ?next:_ =
+        let f prev = fmt_sep prev x in
+        Option.value_map prev ~default:noop ~f $ fmt_expression c x
+      in
+      let fmt_seq_list ?prev x ?next:_ =
+        let f prev =
+          fmt_sep ~force_break:true (List.last_exn prev) (List.hd_exn x)
+        in
+        Option.value_map prev ~default:noop ~f $ list_pn x fmt_seq
       in
       hvbox 0
         (hvbox_if parens 2
            ( wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-               (list_pn grps (fun ?prev x ?next:_ ->
-                    ( match prev with
-                    | Some prev -> (
-                        let prev = List.last_exn prev in
-                        let x = List.hd_exn x in
-                        match c.conf.sequence_style with
-                        | `Separator when blank_line prev x ->
-                            fmt " ;\n@;<1000 0>"
-                        | `Separator -> fmt " ;@;<1000 0>"
-                        | `Terminator when blank_line prev x ->
-                            fmt ";\n@;<1000 0>"
-                        | `Terminator -> fmt ";@;<1000 0>" )
-                    | None -> noop )
-                    $ fmt_grp x))
+               (list_pn grps fmt_seq_list)
            $ fmt_atrs ))
   | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
