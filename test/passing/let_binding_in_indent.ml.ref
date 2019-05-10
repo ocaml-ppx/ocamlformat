@@ -26,10 +26,10 @@ let%ext x : int = x4
 
 let%ext _ =
   let%ext (x : int) = x in
-      let%ext x : int = x in
-          let%ext (_ : int) = x in
-              let%ext (_ : int) = x in
-                  ()
+  let%ext x : int = x in
+  let%ext (_ : int) = x in
+  let%ext (_ : int) = x in
+      ()
 
 let [%ext let x = 3] = 2
 
@@ -116,11 +116,11 @@ let _ =
   let x : int = x in
   let (_ : int) = x in
   let (_ : int) = x in
-      let%ext (x : int) = x in
-          let%ext x : int = x in
-              let%ext (_ : int) = x in
-                  let%ext (_ : int) = x in
-                      ()
+  let%ext (x : int) = x in
+  let%ext x : int = x in
+  let%ext (_ : int) = x in
+  let%ext (_ : int) = x in
+      ()
 
 let fooo = fooooooooooo [@@foo]
 

@@ -1725,7 +1725,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_let (rec_flag, bindings, body) ->
       let indent_after_in =
         match body.pexp_desc with
-        | Pexp_let _ | Pexp_letmodule _ -> 0
+        | Pexp_let _ | Pexp_letmodule _
+         |Pexp_extension
+            ( _
+            , PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( { pexp_desc= Pexp_let _ | Pexp_letmodule _
+                          ; pexp_attributes= [] }
+                        , _ ) } ] ) ->
+            0
         | _ -> c.conf.indent_after_in
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
