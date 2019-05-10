@@ -198,27 +198,23 @@ let rec list_pat cmts pat =
   | _ -> None
 
 let list_exp cmts exp =
-  let rec list_exp_ exp =
+  let rec list_exp_ exp acc =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc= src} = exp in
     match pexp_desc with
     | Pexp_construct ({txt= Lident "[]"; loc}, None) ->
         Cmts.relocate cmts ~src ~before:loc ~after:loc ;
-        Some ([], loc)
+        Some (List.rev acc, loc)
     | Pexp_construct
         ( {txt= Lident "::"; loc}
         , Some
-            {pexp_desc= Pexp_tuple [hd; tl]; pexp_loc; pexp_attributes= []}
-        ) -> (
-      match list_exp_ tl with
-      | Some (xtl, nil_loc) when List.is_empty tl.pexp_attributes ->
-          Some (([src; loc; pexp_loc], sub_exp ~ctx hd) :: xtl, nil_loc)
-      | _ -> None )
+            { pexp_desc= Pexp_tuple [hd; ({pexp_attributes= []} as tl)]
+            ; pexp_loc
+            ; pexp_attributes= [] } ) ->
+        list_exp_ tl (([src; loc; pexp_loc], sub_exp ~ctx hd) :: acc)
     | _ -> None
   in
-  let r = list_exp_ exp in
-  assert (Bool.equal (Option.is_some r) (is_sugared_list exp)) ;
-  r
+  list_exp_ exp []
 
 let infix_cons xexp =
   let rec infix_cons_ ({ast= exp} as xexp) =
