@@ -180,22 +180,24 @@ let infix cmts prec xexp =
   in
   infix_ None ~relocate:false (Nolabel, xexp)
 
-let rec list_pat cmts pat =
-  let ctx = Pat pat in
-  let {ppat_desc; ppat_loc= src} = pat in
-  match ppat_desc with
-  | Ppat_construct ({txt= Lident "[]"; loc}, None) ->
-      Cmts.relocate cmts ~src ~before:loc ~after:loc ;
-      Some ([], loc)
-  | Ppat_construct
-      ( {txt= Lident "::"; loc}
-      , Some {ppat_desc= Ppat_tuple [hd; tl]; ppat_loc; ppat_attributes= []}
-      ) -> (
-    match list_pat cmts tl with
-    | Some (xtl, nil_loc) when List.is_empty tl.ppat_attributes ->
-        Some (([src; loc; ppat_loc], sub_pat ~ctx hd) :: xtl, nil_loc)
-    | _ -> None )
-  | _ -> None
+let list_pat cmts pat =
+  let rec list_pat_ pat acc =
+    let ctx = Pat pat in
+    let {ppat_desc; ppat_loc= src} = pat in
+    match ppat_desc with
+    | Ppat_construct ({txt= Lident "[]"; loc}, None) ->
+        Cmts.relocate cmts ~src ~before:loc ~after:loc ;
+        Some (List.rev acc, loc)
+    | Ppat_construct
+        ( {txt= Lident "::"; loc}
+        , Some
+            { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []} as tl)]
+            ; ppat_loc
+            ; ppat_attributes= [] } ) ->
+        list_pat_ tl (([src; loc; ppat_loc], sub_pat ~ctx hd) :: acc)
+    | _ -> None
+  in
+  list_pat_ pat []
 
 let list_exp cmts exp =
   let rec list_exp_ exp acc =
