@@ -243,6 +243,12 @@ OPTIONS (CODE FORMATTING STYLE)
        --parse-docstrings
            Parse and format docstrings.
 
+       --sequence-blank-line={compact|preserve-one}
+           Blank line between expressions of a sequence. compact will not
+           keep any blank line between expressions of a sequence. preserve
+           will keep a blank line between two expressions of a sequence if
+           the input contains at least one. The default value is compact.
+
        --sequence-style={separator|terminator}
            Style of sequence. separator puts spaces before and after
            semicolons. terminator only puts spaces after semicolons. The
