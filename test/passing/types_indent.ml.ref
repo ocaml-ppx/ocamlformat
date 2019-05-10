@@ -17,7 +17,7 @@ type t = {a: int; b: int}
 type t = [`A | `B]
 
 type loooooooooong_type =
-  {looooooooooooong_field: looooooooooooong_type; field2: type2}
+      {looooooooooooong_field: looooooooooooong_type; field2: type2}
 
 type t = A of (int * int) * int
 
@@ -70,10 +70,10 @@ type loooooooooooooong_type =
 let (`A | `B)[@bar] = ()
 
 type t =
-  | Internal_error of
-      [ `Doc_comment of
-        [ `Moved of Location.t * Location.t * string
-        | `Unstable of Location.t * string ] ]
+      | Internal_error of
+          [ `Doc_comment of
+            [ `Moved of Location.t * Location.t * string
+            | `Unstable of Location.t * string ] ]
 
 val x :
   [ `X of int
@@ -108,8 +108,8 @@ val x :
 
 type voting_period =
           Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind =
-  | Proposal
-  | Testing_vote
+      | Proposal
+      | Testing_vote
 
 (** foooooooo *)
 type voting_period =
@@ -118,9 +118,9 @@ type voting_period =
           Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind
           (* fooooooooooooooo oooooooooooooooooooo ooooooooooooooooooooo *)
           (* fooooo *) =
-  (* foooooooooo *)
-  | Proposal
-  | Testing_vote  (** fooooooooooo *)
+      (* foooooooooo *)
+      | Proposal
+      | Testing_vote  (** fooooooooooo *)
 
 type ( 'context
      , 'f_in
@@ -130,10 +130,10 @@ type ( 'context
      , 'markers_out
      , 'list_constraint )
      templ_matcher =
-  { on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in }
+      { on_objc_cpp: 'context -> 'f_in
+      ; on_objc_cpp: 'context -> 'f_in
+      ; on_objc_cpp: 'context -> 'f_in
+      ; on_objc_cpp: 'context -> 'f_in }
 
 type ( 'context
      , 'f_in
@@ -151,10 +151,10 @@ type ( 'context
           , 'markers_out
           , 'list_constraint )
           templ_matcher =
-  { on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in }
+      { on_objc_cpp: 'context -> 'f_in
+      ; on_objc_cpp: 'context -> 'f_in
+      ; on_objc_cpp: 'context -> 'f_in
+      ; on_objc_cpp: 'context -> 'f_in }
 
 type ( 'context
      , 'f_in

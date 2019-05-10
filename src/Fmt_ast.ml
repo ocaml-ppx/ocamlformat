@@ -2695,7 +2695,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
   @@ hvbox 0
        ( fmt_docstring c ~epi:(fmt "@\n") doc
        $ hvbox 0
-           ( hvbox 2
+           ( hvbox c.conf.type_decl_indent
                ( fmt_manifest_kind ptype_manifest ptype_private ptype_kind
                $ fmt_cstrs ptype_cstrs )
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ) )
