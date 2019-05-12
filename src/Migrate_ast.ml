@@ -134,9 +134,9 @@ module Location = struct
   let width x = Position.distance x.loc_start x.loc_end
 
   let compare_width_decreasing l1 l2 =
-    match Int.compare (width l2) (width l1) with
+    match Position.compare l1.loc_start l2.loc_start with
     | 0 -> (
-      match Int.compare l1.loc_start.pos_cnum l2.loc_start.pos_cnum with
+      match Position.compare l2.loc_end l1.loc_end with
       | 0 -> Poly.compare l1 l2
       | n -> n )
     | n -> n
