@@ -69,8 +69,8 @@ end = struct
 
   let of_list elts =
     let elts_decreasing_width =
-      List.sort ~compare:Itv.compare_width_decreasing
-        (List.dedup_and_sort ~compare:Poly.compare elts)
+      List.sort ~compare:Itv.compare_width_decreasing elts
+      |> List.remove_consecutive_duplicates ~equal:Poly.equal
     in
     let tree = create () in
     let rec find_in_previous elt = function
