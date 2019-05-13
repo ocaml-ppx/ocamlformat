@@ -45,6 +45,7 @@ type t =
   ; margin: int
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
+  ; nested_match: [`Wrap | `Align]
   ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
@@ -990,6 +991,23 @@ module Formatting = struct
       (fun conf x -> {conf with module_item_spacing= x})
       (fun conf -> conf.module_item_spacing)
 
+  let nested_match =
+    let doc = "Style of let_and." in
+    let names = ["nested-match"] in
+    let all =
+      [ ( "wrap"
+        , `Wrap
+        , "$(b,wrap) classically wraps a match nested in another match \
+           case with parentheses and adds indentation." )
+      ; ( "align"
+        , `Align
+        , "$(b,align) does not indent and wrap a match if it is nested in \
+           the last case of another match." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with nested_match= x})
+      (fun conf -> conf.nested_match)
+
   let ocp_indent_compat =
     let doc =
       "Attempt to generate output which does not change (much) when \
@@ -1415,6 +1433,7 @@ let ocamlformat_profile =
   ; margin= C.default Formatting.margin
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
+  ; nested_match= C.default Formatting.nested_match
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
@@ -1521,6 +1540,7 @@ let janestreet_profile =
   ; margin= 90
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
+  ; nested_match= `Wrap
   ; ocp_indent_compat= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only

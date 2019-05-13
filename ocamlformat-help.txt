@@ -208,6 +208,12 @@ OPTIONS (CODE FORMATTING STYLE)
            open line in the input. compact will not leave open lines between
            one-liners of similar sorts. The default value is sparse.
 
+       --nested-match={wrap|align}
+           Style of let_and. wrap classically wraps a match nested in another
+           match case with parentheses and adds indentation. align does not
+           indent and wrap a match if it is nested in the last case of
+           another match. The default value is wrap.
+
        --no-break-infix-before-func
            Break infix operators whose right arguments are anonymous
            functions specially: do not break after the operator so that the
