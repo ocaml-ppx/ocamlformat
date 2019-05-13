@@ -51,16 +51,16 @@ end = struct
 
   (* Descend tree from roots, find deepest node that contains elt. *)
 
-  let rec parent tbl roots ?ancestor elt =
-    Option.first_some
+  let rec parents tbl roots ~ancestors elt =
+    Option.value ~default:ancestors
       (List.find_map roots ~f:(fun root ->
            if Itv.contains root elt then
              Hashtbl.find_and_call tbl root
                ~if_found:(fun children ->
-                 parent tbl children ~ancestor:root elt)
-               ~if_not_found:Option.some
+                 parents tbl children ~ancestors:(root :: ancestors) elt)
+               ~if_not_found:(fun x -> x :: ancestors)
+             |> Option.some
            else None))
-      ancestor
 
   (* Add elements in decreasing width order to construct tree from roots to
      leaves. That is, when adding an interval to a partially constructed
@@ -69,14 +69,22 @@ end = struct
 
   let of_list elts =
     let elts_decreasing_width =
-      List.sort ~compare:Itv.compare_width_decreasing
-        (List.dedup_and_sort ~compare:Poly.compare elts)
+      List.dedup_and_sort ~compare:Itv.compare_width_decreasing elts
     in
     let tree = create () in
-    List.iter elts_decreasing_width ~f:(fun elt ->
-        match parent tree.tbl tree.roots elt with
-        | Some parent -> Hashtbl.add_multi tree.tbl ~key:parent ~data:elt
-        | None -> tree.roots <- elt :: tree.roots) ;
+    let rec find_in_previous elt = function
+      | [] -> parents tree.tbl tree.roots elt ~ancestors:[]
+      | p :: ancestors when Itv.contains p elt ->
+          parents tree.tbl [p] elt ~ancestors
+      | _ :: px -> find_in_previous elt px
+    in
+    List.fold elts_decreasing_width ~init:[] ~f:(fun prev_ancestor elt ->
+        let ancestors = find_in_previous elt prev_ancestor in
+        ( match ancestors with
+        | parent :: _ -> Hashtbl.add_multi tree.tbl ~key:parent ~data:elt
+        | [] -> tree.roots <- elt :: tree.roots ) ;
+        ancestors)
+    |> (ignore : Itv.t list -> unit) ;
     { tree with
       tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare) }
 
