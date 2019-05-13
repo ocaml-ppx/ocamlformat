@@ -178,9 +178,9 @@ let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
   match grouping_kind with
   | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
   | `Begin_end ->
-      fits_breaks_if parens "(" "begin"
-      $ break_unless_newline 1 2 $ k $ break_unless_newline 1 0
-      $ fits_breaks_if parens ")" "end"
+      fmt_if_k parens (fits_breaks "(" "begin" $ break_unless_newline 0 2)
+      $ k
+      $ fmt_if_k parens (break_unless_newline 0 0 $ fits_breaks ")" "end")
 
 let drop_while ~f s =
   let i = ref 0 in
