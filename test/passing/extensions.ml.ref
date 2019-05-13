@@ -35,13 +35,13 @@ let invariant t =
   [%ext
     let f = () and g () = () in
     e]
-  (let%ext f = () and g () = () in
-   e)
+  ( let%ext f = () and g () = () in
+    e )
   [%ext
     let rec f = () and g () = () in
     e]
-  (let%ext rec f = () and g () = () in
-   e)
+  ( let%ext rec f = () and g () = () in
+    e )
 
 let _ = ([%ext? (x : x)] : [%ext? (x : x)])
 
