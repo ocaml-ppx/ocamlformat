@@ -178,9 +178,9 @@ let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
   match grouping_kind with
   | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
   | `Begin_end ->
-      fits_breaks_if parens "(" "begin "
-      $ k
-      $ fits_breaks_if parens ")" " end"
+      fits_breaks_if parens "(" "begin"
+      $ break_unless_newline 1 2 $ k $ break_unless_newline 1 0
+      $ fits_breaks_if parens ")" "end"
 
 let drop_while ~f s =
   let i = ref 0 in
@@ -1946,8 +1946,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let parens = parens || not (List.is_empty pexp_attributes) in
-      fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
-        ~indent_after_in
+      fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
+        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
   | Pexp_letexception (ext_cstr, exp) ->
       let pre = fmt "let exception@ " in
       hvbox 0
@@ -2580,8 +2580,8 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let parens = parens || not (List.is_empty pcl_attributes) in
-      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~fmt_atrs
-        ~fmt_expr ~indent_after_in
+      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
+        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -3985,8 +3985,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 
-and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
-    ~indent_after_in =
+and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
+    ~attributes ~indent_after_in =
   let fmt_in indent =
     match c.conf.break_before_in with
     | `Fit_or_vertical -> break 1 (-indent) $ fmt "in"
@@ -4007,7 +4007,8 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
         | `Sparse -> "@;<1000 0>"
         | `Compact -> "@ " )
   in
-  wrap_if parens "(" ")"
+  wrap_fits_breaks_exp_if c ~loc
+    ~parens:(parens || not (List.is_empty attributes))
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
        $ break 1000 indent_after_in
