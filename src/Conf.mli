@@ -37,11 +37,13 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
+  ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
+  ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
@@ -61,6 +63,7 @@ type t =
   ; single_case: [`Compact | `Sparse]
   ; space_around_collection_expressions: bool
   ; type_decl: [`Compact | `Sparse]
+  ; type_decl_indent: int
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 

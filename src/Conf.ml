@@ -34,11 +34,13 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
+  ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
+  ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
@@ -56,6 +58,7 @@ type t =
   ; single_case: [`Compact | `Sparse]
   ; space_around_collection_expressions: bool
   ; type_decl: [`Compact | `Sparse]
+  ; type_decl_indent: int
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
@@ -831,6 +834,17 @@ module Formatting = struct
       (fun conf x -> {conf with if_then_else= x})
       (fun conf -> conf.if_then_else)
 
+  let indent_after_in =
+    let docv = "COLS" in
+    let doc =
+      "Indentation ($(docv) columns) after `let ... in`, unless followed \
+       by another `let`."
+    in
+    let names = ["indent-after-in"] in
+    C.int ~names ~default:0 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with indent_after_in= x})
+      (fun conf -> conf.indent_after_in)
+
   let indicate_multiline_delimiters =
     let doc =
       "Print a space inside a delimiter to indicate that its matching \
@@ -905,6 +919,17 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with let_and= x})
       (fun conf -> conf.let_and)
+
+  let let_binding_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of let binding expressions ($(docv) columns) if they do \
+       not fit on a single line."
+    in
+    let names = ["let-binding-indent"] in
+    C.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with let_binding_indent= x})
+      (fun conf -> conf.let_binding_indent)
 
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
@@ -1127,6 +1152,17 @@ module Formatting = struct
       (fun conf x -> {conf with type_decl= x})
       (fun conf -> conf.type_decl)
 
+  let type_decl_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of type declarations ($(docv) columns) if they do not \
+       fit on a single line."
+    in
+    let names = ["type-decl-indent"] in
+    C.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with type_decl_indent= x})
+      (fun conf -> conf.type_decl_indent)
+
   let wrap_comments =
     let doc =
       "Wrap comments and docstrings. Comments and docstrings are divided \
@@ -1296,14 +1332,26 @@ let name =
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
 let ocp_indent_options =
-  [ ("base", None)
-  ; ("type", None)
-  ; ("in", None)
+  [ ( "base"
+    , Some
+        ( "let-binding-indent"
+        , "$(b,base) is an alias for $(b,let-binding-indent)."
+        , Fn.id ) )
+  ; ( "type"
+    , Some
+        ( "type-decl-indent"
+        , "$(b,type) is an alias for $(b,type-decl-indent)."
+        , Fn.id ) )
+  ; ( "in"
+    , Some
+        ( "indent-after-in"
+        , "$(b,in) is an alias for $(b,indent-after-in)."
+        , Fn.id ) )
   ; ("with", None)
   ; ( "match_clause"
     , Some
         ( "cases-exp-indent"
-        , "$(b,match-clause) sets $(b,cases-exp-indent) to the same value."
+        , "$(b,match_clause) is an alias for $(b,cases-exp-indent)."
         , Fn.id ) )
   ; ("ppx_stritem_ext", None)
   ; ("max_indent", None)
@@ -1325,7 +1373,7 @@ let ocp_indent_config =
       else
         asprintf " %a"
           (pp_print_list
-             ~pp_sep:(fun fs () -> fprintf fs ",@ ")
+             ~pp_sep:(fun fs () -> fprintf fs "@ ")
              (fun fs s -> fprintf fs "%s" s))
           l
     in
@@ -1401,6 +1449,7 @@ let ocamlformat_profile =
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; if_then_else= C.default Formatting.if_then_else
+  ; indent_after_in= C.default Formatting.indent_after_in
   ; indicate_multiline_delimiters=
       C.default Formatting.indicate_multiline_delimiters
   ; indicate_nested_or_patterns=
@@ -1409,6 +1458,7 @@ let ocamlformat_profile =
   ; leading_nested_match_parens=
       C.default Formatting.leading_nested_match_parens
   ; let_and= C.default Formatting.let_and
+  ; let_binding_indent= C.default Formatting.let_binding_indent
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_module= C.default Formatting.let_module
   ; let_open= C.default Formatting.let_open
@@ -1427,6 +1477,7 @@ let ocamlformat_profile =
   ; space_around_collection_expressions=
       C.default Formatting.space_around_collection_expressions
   ; type_decl= C.default Formatting.type_decl
+  ; type_decl_indent= C.default Formatting.type_decl_indent
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
@@ -1510,11 +1561,13 @@ let janestreet_profile =
   ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
+  ; indent_after_in= 0
   ; indicate_multiline_delimiters= false
   ; indicate_nested_or_patterns= `Unsafe_no
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true
   ; let_and= `Sparse
+  ; let_binding_indent= 2
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
   ; let_open= `Preserve
@@ -1532,6 +1585,7 @@ let janestreet_profile =
   ; single_case= `Sparse
   ; space_around_collection_expressions= true
   ; type_decl= `Sparse
+  ; type_decl_indent= 2
   ; wrap_comments= false
   ; wrap_fun_args= false }
 

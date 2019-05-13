@@ -1723,9 +1723,23 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                          $ p.break_end_branch )) )
                 $ fmt_if_k (not last) p.space_between_branches)))
   | Pexp_let (rec_flag, bindings, body) ->
+      let indent_after_in =
+        match body.pexp_desc with
+        | Pexp_let _ | Pexp_letmodule _
+         |Pexp_extension
+            ( _
+            , PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( { pexp_desc= Pexp_let _ | Pexp_letmodule _
+                          ; pexp_attributes= [] }
+                        , _ ) } ] ) ->
+            0
+        | _ -> c.conf.indent_after_in
+      in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let c ctx ~ext ~rec_flag ~bindings ~parens
-        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
+        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
   | Pexp_letexception (ext_cstr, exp) ->
       let pre = fmt "let exception@ " in
       hvbox 0
@@ -2299,9 +2313,14 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       wrap_if parens "(" ")" (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bindings, body) ->
+      let indent_after_in =
+        match body.pcl_desc with
+        | Pcl_let _ -> 0
+        | _ -> c.conf.indent_after_in
+      in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens
-        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr
+        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2615,7 +2634,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
         $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ))
   in
   let box_manifest k =
-    hvbox 2
+    hvbox c.conf.type_decl_indent
       ( str pre
       $ fmt_extension_suffix c ext
       $ str " "
@@ -2676,7 +2695,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
   @@ hvbox 0
        ( fmt_docstring c ~epi:(fmt "@\n") doc
        $ hvbox 0
-           ( hvbox 2
+           ( hvbox c.conf.type_decl_indent
                ( fmt_manifest_kind ptype_manifest ptype_private ptype_kind
                $ fmt_cstrs ptype_cstrs )
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ) )
@@ -2766,7 +2785,7 @@ and fmt_type_extension c ctx te =
   in
   hvbox 2
     ( fmt_docstring c ~epi:(fmt "@,") doc
-    $ hvbox 2
+    $ hvbox c.conf.type_decl_indent
         ( str "type "
         $ hvbox_if
             (not (List.is_empty te.ptyext_params))
@@ -3579,7 +3598,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~attributes ~fmt_atrs
-    ~fmt_expr =
+    ~fmt_expr ~indent_after_in =
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
@@ -3594,7 +3613,8 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~attributes ~fmt_atrs
     "(" ")"
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ fmt "@;<1000 0>" $ hvbox 0 fmt_expr ))
+       $ break 1000 indent_after_in
+       $ hvbox 0 fmt_expr ))
   $ fmt_atrs
 
 and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
@@ -3689,7 +3709,10 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
           in
           (xpat, xargs, fmt_cstr, xbody)
   in
-  let indent = match xbody.ast.pexp_desc with Pexp_fun _ -> 1 | _ -> 2 in
+  let indent = c.conf.let_binding_indent in
+  let indent =
+    match xbody.ast.pexp_desc with Pexp_fun _ -> indent - 1 | _ -> indent
+  in
   let f ({loc}, _) = Location.compare_start loc pvb_expr.pexp_loc < 1 in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let stmt_loc = Sugar.args_location xargs in

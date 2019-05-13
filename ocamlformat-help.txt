@@ -152,6 +152,11 @@ OPTIONS (CODE FORMATTING STYLE)
            expressions with parentheses that match the K&R style. The default
            value is compact.
 
+       --indent-after-in=COLS
+           Indentation (COLS columns) after `let ... in`, unless followed by
+           another `let`. The default value is 0. Cannot be set in
+           attributes.
+
        --indicate-nested-or-patterns={space|unsafe-no}
            Control whether or not to indicate nested or-pattern using
            indentation. space starts lines of nested or-patterns with " |"
@@ -175,6 +180,11 @@ OPTIONS (CODE FORMATTING STYLE)
            Style of let_and. compact will try to format `let p = e and p = e`
            in a single line. sparse will always break between them. The
            default value is compact.
+
+       --let-binding-indent=COLS
+           Indentation of let binding expressions (COLS columns) if they do
+           not fit on a single line. The default value is 2. Cannot be set in
+           attributes.
 
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
@@ -270,6 +280,11 @@ OPTIONS (CODE FORMATTING STYLE)
            between constructors and record fields. The default value is
            compact.
 
+       --type-decl-indent=COLS
+           Indentation of type declarations (COLS columns) if they do not fit
+           on a single line. The default value is 2. Cannot be set in
+           attributes.
+
        --wrap-comments
            Wrap comments and docstrings. Comments and docstrings are divided
            into paragraphs by open lines (two or more consecutive newlines),
@@ -343,8 +358,10 @@ OPTIONS
            omitted.
 
        --ocp-indent-config
-           Read .ocp-indent configuration files. match-clause sets
-           cases-exp-indent to the same value.
+           Read .ocp-indent configuration files. base is an alias for
+           let-binding-indent. type is an alias for type-decl-indent. in is
+           an alias for indent-after-in. match_clause is an alias for
+           cases-exp-indent.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}
