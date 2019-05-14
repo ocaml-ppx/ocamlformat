@@ -16,7 +16,6 @@ open Migrate_ast
 type 'a with_comments =
   {ast: 'a; comments: (string * Location.t) list; prefix: string}
 
-(** Operations on translation units. *)
 type 'a t =
   { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
@@ -34,6 +33,7 @@ type 'a t =
       -> Normalize.docstring_error list
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Format.formatter -> 'a -> unit }
+(** Operations on translation units. *)
 
 exception Warning50 of (Location.t * Warnings.t) list
 

@@ -13,11 +13,11 @@
 
 module Format = Format_
 
-(** Format strings that accept no arguments. *)
 type s = (unit, Format.formatter, unit) format
+(** Format strings that accept no arguments. *)
 
-(** Format thunks, which accept a formatter buffer and write to it. *)
 type t = Format.formatter -> unit
+(** Format thunks, which accept a formatter buffer and write to it. *)
 
 val ( >$ ) : t -> ('b -> t) -> 'b -> t
 (** Pre-compose a format thunk onto a function returning a format thunk. *)

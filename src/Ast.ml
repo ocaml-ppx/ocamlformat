@@ -220,11 +220,44 @@ let longident_is_simple c x =
   in
   longident_fit_margin c (length x)
 
-let module_type_is_simple x =
-  match x.pmty_desc with Pmty_signature l -> List.is_empty l | _ -> true
+let rec module_type_is_simple x =
+  match x.pmty_desc with
+  | Pmty_ident _ | Pmty_alias _ | Pmty_signature [] -> true
+  | Pmty_signature (_ :: _) | Pmty_with (_, _ :: _ :: _) | Pmty_extension _
+    ->
+      false
+  | Pmty_typeof e -> module_expr_is_simple e
+  | Pmty_functor (_, Some t1, t2) ->
+      module_type_is_simple t1 && module_type_is_simple t2
+  | Pmty_functor (_, None, t) | Pmty_with (t, ([] | [_])) ->
+      module_type_is_simple t
 
-let module_expr_is_simple x =
-  match x.pmod_desc with Pmod_structure l -> List.is_empty l | _ -> true
+and module_expr_is_simple x =
+  match x.pmod_desc with
+  | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] -> true
+  | Pmod_structure (_ :: _) | Pmod_extension _ -> false
+  | Pmod_functor (_, Some t, e) | Pmod_constraint (e, t) ->
+      module_expr_is_simple e && module_type_is_simple t
+  | Pmod_functor (_, None, e) -> module_expr_is_simple e
+  | Pmod_apply (a, b) -> module_expr_is_simple a && module_expr_is_simple b
+
+let rec class_decl_is_simple x =
+  match x.pcl_desc with
+  | Pcl_constr _ | Pcl_structure {pcstr_fields= []} -> true
+  | Pcl_structure {pcstr_fields= _ :: _}
+   |Pcl_let _ | Pcl_open _ | Pcl_extension _ ->
+      false
+  | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) -> class_decl_is_simple e
+  | Pcl_constraint (e, t) ->
+      class_decl_is_simple e && class_type_is_simple t
+
+and class_type_is_simple x =
+  match x.pcty_desc with
+  | Pcty_constr _ | Pcty_signature {pcsig_fields= []} -> true
+  | Pcty_signature {pcsig_fields= _ :: _} | Pcty_open _ | Pcty_extension _
+    ->
+      false
+  | Pcty_arrow (_, _, t) -> class_type_is_simple t
 
 module type Module_item = sig
   type t

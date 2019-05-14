@@ -378,7 +378,7 @@ let parse_docstring str_cmt =
         Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
       ok
 
-let fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
+let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   let space_i i =
     let is_space = function
       | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> true
@@ -396,40 +396,61 @@ let fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi str_cmt parsed =
   in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0
-       ( Option.call ~f:pro $ wrap "(**" "*)" doc $ fmt_if need_break "\n"
-       $ fmt_or_k (Option.is_some next) (fmt "@\n") (Option.call ~f:epi) )
+       (Option.call ~f:pro $ wrap "(**" "*)" doc $ epi)
 
-let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
+let docstring_epi ?(standalone = false) ?next ~floating ?epi =
+  let epi = if Option.is_some next then fmt "@\n" else Option.call ~f:epi in
+  match next with
+  | (None | Some (_, false)) when floating && not standalone ->
+      fmt "\n" $ epi
+  | _ -> epi
+
+let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
-      let need_break =
-        match (next, floating) with
-        | (None | Some (_, false)), true -> not standalone
-        | _ -> false
-      in
-      fmt_parsed_docstring c ~need_break ~loc ?next ?pro ?epi txt
-        (parse_docstring txt))
+      let epi = docstring_epi ?standalone ?next ~floating ?epi in
+      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring txt))
 
-(** Handle the doc-comments-tag-only option: Fits tag-only comments on the
-    same line *)
-let fmt_docstring_around ~single_line c doc k =
-  let contains_text = function Ok ([], _) -> false | _ -> true in
-  let doc = Option.value ~default:[] doc in
-  let doc =
-    List.map doc ~f:(fun ({txt; loc}, _) ->
-        let parsed = parse_docstring txt in
-        ( contains_text parsed
-        , fun ?epi ?pro () ->
-            fmt_parsed_docstring c ~need_break:false ~loc ?epi ?pro txt
-              parsed ))
-  in
-  let fmted ?epi ?pro () = list doc "" (fun (_, k) -> k ?epi ?pro ()) in
-  if
-    Poly.(c.conf.doc_comments_tag_only = `Default)
-    || (not single_line)
-    || List.exists ~f:(fun (ct, _) -> ct) doc
-  then fmted ~epi:(fmt "@,") () $ k
-  else hvbox 0 (k $ fmted ~pro:(fmt "@ ") ())
+(** Formats docstrings and decides where to place them Handles the
+    [doc-comments] and [doc-comment-tag-only] options Returns the tuple
+    [doc_before, doc_after, attrs] *)
+let fmt_docstring_around_item ?(force_before = false) ?(is_simple = true) c
+    attrs =
+  let doc, attrs = doc_atrs attrs in
+  match doc_atrs attrs with
+  | (Some _ as doc2), attrs ->
+      ( fmt_docstring c ~epi:(fmt "@\n") doc
+      , fmt_docstring c ~pro:(fmt "@\n") doc2
+      , attrs )
+  | None, attrs -> (
+      let is_tag_only =
+        List.for_all ~f:(function Ok ([], _), _ -> true | _ -> false)
+      in
+      let fmt_doc ?epi ?pro doc =
+        list_pn doc (fun ?prev:_ (parsed, ({txt; loc}, floating)) ?next ->
+            let next = Option.map next ~f:snd in
+            let epi = docstring_epi ?next ~floating ?epi in
+            fmt_parsed_docstring c ~loc ~epi ?pro txt parsed)
+      in
+      let floating_doc, doc =
+        Option.value ~default:[] doc
+        |> List.map ~f:(fun ((s, _) as doc) -> (parse_docstring s.txt, doc))
+        |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
+      in
+      let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in
+      let before () =
+        (floating_doc $ fmt_doc ~epi:(fmt "@\n") doc, noop, attrs)
+      in
+      let after ?(pro = fmt "@\n") () =
+        (floating_doc, fmt_doc ~pro doc, attrs)
+      in
+      match c.conf with
+      | _ when force_before || not is_simple -> before ()
+      | {doc_comments_tag_only= `Fit} when is_tag_only doc ->
+          let pro = break c.conf.doc_comments_padding 0 in
+          after ~pro ()
+      | {doc_comments= `Before} -> before ()
+      | {doc_comments= `After} -> after () )
 
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
@@ -2348,7 +2369,9 @@ and fmt_class_field c ctx (cf : class_field) =
   update_config_maybe_disabled c pcf_loc pcf_attributes
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol:None pcf_loc in
-  let doc, atrs = doc_atrs pcf_attributes in
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c pcf_attributes
+  in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
   let fmt_kind = function
     | Cfk_virtual typ ->
@@ -2426,50 +2449,49 @@ and fmt_class_field c ctx (cf : class_field) =
     | Cfk_concrete (Override, _) -> str "!"
     | Cfk_concrete (Fresh, _) -> noop
   in
-  fmt_cmts
-    ( fmt_docstring c ~epi:(fmt "@\n") doc
-    $ hvbox 0
-        ( match pcf_desc with
-        | Pcf_inherit (override, cl, parent) ->
-            hovbox 2
-              ( str "inherit"
-              $ fmt_if Poly.(override = Override) "!"
-              $ fmt "@ "
-              $ fmt_class_expr c (sub_cl ~ctx cl)
-              $ opt parent (fun p -> str " as " $ fmt_str_loc c p) )
-        | Pcf_method (name, priv, kind) ->
-            let l, eq, expr = fmt_kind kind in
-            hvbox 2
-              ( hovbox 2
-                  ( hovbox 4
-                      ( str "method" $ virtual_or_override kind
-                      $ fmt_if Poly.(priv = Private) "@ private"
-                      $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                  $ eq )
-              $ expr )
-        | Pcf_val (name, mut, kind) ->
-            let l, eq, expr = fmt_kind kind in
-            hvbox 2
-              ( hovbox 2
-                  ( hvbox 4
-                      ( str "val" $ virtual_or_override kind
-                      $ fmt_if Poly.(mut = Mutable) "@ mutable"
-                      $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
-                  $ eq )
-              $ expr )
-        | Pcf_constraint (t1, t2) ->
-            fmt "constraint@ "
-            $ fmt_core_type c (sub_typ ~ctx t1)
-            $ str " = "
-            $ fmt_core_type c (sub_typ ~ctx t2)
-        | Pcf_initializer e ->
-            fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
-        | Pcf_attribute atr ->
-            let doc, atrs = doc_atrs [atr] in
-            fmt_docstring c ~standalone:true ~epi:noop doc
-            $ fmt_attributes c ~key:"@@@" atrs
-        | Pcf_extension ext -> fmt_extension c ctx "%%" ext )
-    $ fmt_atrs )
+  let pcf =
+    match pcf_desc with
+    | Pcf_inherit (override, cl, parent) ->
+        hovbox 2
+          ( str "inherit"
+          $ fmt_if Poly.(override = Override) "!"
+          $ fmt "@ "
+          $ ( fmt_class_expr c (sub_cl ~ctx cl)
+            $ opt parent (fun p -> str " as " $ fmt_str_loc c p) ) )
+    | Pcf_method (name, priv, kind) ->
+        let l, eq, expr = fmt_kind kind in
+        hvbox 2
+          ( hovbox 2
+              ( hovbox 4
+                  ( str "method" $ virtual_or_override kind
+                  $ fmt_if Poly.(priv = Private) "@ private"
+                  $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+              $ eq )
+          $ expr )
+    | Pcf_val (name, mut, kind) ->
+        let l, eq, expr = fmt_kind kind in
+        hvbox 2
+          ( hovbox 2
+              ( hvbox 4
+                  ( str "val" $ virtual_or_override kind
+                  $ fmt_if Poly.(mut = Mutable) "@ mutable"
+                  $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+              $ eq )
+          $ expr )
+    | Pcf_constraint (t1, t2) ->
+        fmt "constraint@ "
+        $ fmt_core_type c (sub_typ ~ctx t1)
+        $ str " = "
+        $ fmt_core_type c (sub_typ ~ctx t2)
+    | Pcf_initializer e ->
+        fmt "initializer@ " $ fmt_expression c (sub_exp ~ctx e)
+    | Pcf_attribute atr ->
+        let doc, atrs = doc_atrs [atr] in
+        fmt_docstring c ~standalone:true ~epi:noop doc
+        $ fmt_attributes c ~key:"@@@" atrs
+    | Pcf_extension ext -> fmt_extension c ctx "%%" ext
+  in
+  fmt_cmts (hvbox 0 (doc_before $ pcf $ fmt_atrs $ doc_after))
 
 and fmt_class_type_field c ctx (cf : class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
@@ -2567,28 +2589,22 @@ and fmt_value_description c ctx vd =
   update_config_maybe_disabled c pval_loc pval_attributes
   @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
-  let doc1, atrs = doc_atrs pval_attributes in
-  let doc2, atrs = doc_atrs atrs in
-  let both_docs = Option.(is_some doc1 && is_some doc2) in
-  let doc_before = Poly.(c.conf.doc_comments = `Before) in
-  let box = not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type) in
-  fmt_if_k both_docs (fmt_docstring c ~epi:(fmt "@\n") doc1)
-  $ hvbox 0
-      ( fmt_if_k
-          (doc_before && not both_docs)
-          (fmt_docstring c ~epi:(fmt "@\n") doc1)
-      $ hvbox 2
-          ( str pre $ str " "
-          $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
-          $ fmt_core_type c ~pro:":" ~box ~pro_space:true
-              (sub_typ ~ctx pval_type)
-          $ list_fl pval_prim (fun ~first ~last:_ s ->
-                fmt_if first "@ =" $ wrap " \"" "\"" (str s)) )
-      $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
-      $ fmt_if_k
-          ((not doc_before) && not both_docs)
-          (fmt_docstring c ~pro:(fmt "@\n") doc1) )
-  $ fmt_if_k both_docs (fmt_docstring c ~pro:(fmt "@\n") doc2)
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c pval_attributes
+  in
+  hvbox 0
+    ( doc_before
+    $ hvbox 2
+        ( str pre $ fmt " "
+        $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+        $ fmt_core_type c ~pro:":"
+            ~box:
+              (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
+            ~pro_space:true (sub_typ ~ctx pval_type)
+        $ list_fl pval_prim (fun ~first ~last:_ s ->
+              fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"") )
+    $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
+    $ doc_after )
 
 and fmt_tydcl_params c ctx params =
   fmt_if_k
@@ -2696,15 +2712,22 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
       (not (List.is_empty cstrs))
       (fmt "@ " $ hvbox 0 (list cstrs "@ " fmt_cstr))
   in
-  let doc, atrs = doc_atrs ptype_attributes in
+  (* Docstring cannot be placed after variant declarations *)
+  let force_before =
+    match ptype_kind with Ptype_variant _ -> true | _ -> false
+  in
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item ~force_before c ptype_attributes
+  in
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
-       ( fmt_docstring c ~epi:(fmt "@\n") doc
+       ( doc_before
        $ hvbox 0
            ( hvbox c.conf.type_decl_indent
                ( fmt_manifest_kind ptype_manifest ptype_private ptype_kind
                $ fmt_cstrs ptype_cstrs )
-           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ) )
+           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+       $ doc_after )
   $ brk
 
 and fmt_label_declaration c ctx decl ?(last = false) =
@@ -2826,11 +2849,12 @@ and fmt_exception ~pre c sep ctx te =
     in
     (atat, {te with pext_attributes= at})
   in
-  let doc, atrs = doc_atrs atrs in
-  hvbox 2
-    ( fmt_docstring c ~epi:(fmt "@,") doc
+  let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
+  hvbox 0
+    ( doc_before
     $ hvbox 2 (pre $ fmt_extension_constructor c sep ctx te)
-    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+    $ doc_after )
 
 and fmt_extension_constructor c sep ctx ec =
   let {pext_name; pext_kind; pext_attributes; pext_loc} = ec in
@@ -3022,7 +3046,10 @@ and fmt_signature_item c ?ext {ast= si} =
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
-      let doc, atrs = doc_atrs pincl_attributes in
+      let doc_before, doc_after, atrs =
+        let is_simple = Ast.module_type_is_simple pincl_mod in
+        fmt_docstring_around_item c ~is_simple pincl_attributes
+      in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me} ->
@@ -3030,16 +3057,16 @@ and fmt_signature_item c ?ext {ast= si} =
             (str "include module type of", blk)
         | _ -> (str "include", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
-      let single_line = module_type_is_simple pincl_mod in
       let box = wrap_k opn cls in
       hvbox 0
-        (fmt_docstring_around ~single_line c doc
-           ( box
-               ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
-               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
-               $ bdy )
-           $ esp $ Option.call ~f:epi
-           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs ))
+        ( doc_before
+        $ ( box
+              ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
+              $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
+              $ bdy )
+          $ esp $ Option.call ~f:epi
+          $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+        $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
@@ -3058,10 +3085,12 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
-      let doc, atrs = doc_atrs cl.pci_attributes in
-      fmt_if (not first) "\n@\n"
-      $ Cmts.fmt c cl.pci_loc @@ fmt_docstring c ~epi:(fmt "@\n") doc
-      $ hovbox 2
+      let doc_before, doc_after, atrs =
+        let is_simple = Ast.class_type_is_simple cl.pci_expr in
+        fmt_docstring_around_item ~is_simple c cl.pci_attributes
+      in
+      let class_types =
+        hovbox 2
           ( hvbox 2
               ( str (if first then pre else "and")
               $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
@@ -3070,7 +3099,11 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
               $ fmt_str_loc c cl.pci_name $ fmt "@ " $ str sep )
           $ fmt "@;"
           $ fmt_class_type c (sub_cty ~ctx cl.pci_expr)
-          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs ))
+          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
+      in
+      fmt_if (not first) "\n@\n"
+      $ hovbox 0
+        @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after))
 
 and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
@@ -3089,10 +3122,12 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
         | {pcl_desc= Pcl_constraint (e, t)} -> (Some t, sub_cl ~ctx e)
         | _ -> (None, xbody)
       in
-      let doc, atrs = doc_atrs cl.pci_attributes in
-      fmt_if (not first) "\n@\n"
-      $ Cmts.fmt c cl.pci_loc @@ fmt_docstring c ~epi:(fmt "@\n") doc
-      $ hovbox 2
+      let doc_before, doc_after, atrs =
+        let is_simple = Ast.class_decl_is_simple cl.pci_expr in
+        fmt_docstring_around_item ~is_simple c cl.pci_attributes
+      in
+      let class_exprs =
+        hovbox 2
           ( hovbox 2
               ( str (if first then "class" else "and")
               $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
@@ -3105,11 +3140,14 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
                     fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t))
               $ fmt "@ =" )
           $ fmt "@;" $ fmt_class_expr c e )
-      $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs)
+        $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs
+      in
+      fmt_if (not first) "\n@\n"
+      $ hovbox 0
+        @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after))
 
 and fmt_module c ?epi ?(can_sparse = false) keyword name xargs xbody colon
     xmty attributes =
-  let doc, atrs = doc_atrs attributes in
   let f (name, xarg) = (name, Option.map ~f:(fmt_module_type c) xarg) in
   let arg_blks = List.map xargs ~f in
   let blk_t =
@@ -3152,41 +3190,45 @@ and fmt_module c ?epi ?(can_sparse = false) keyword name xargs xbody colon
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
-  (fmt_docstring_around ~single_line c doc)
-    (hvbox
-       (if compact then 0 else 2)
-       ( box_b
-           ( (if Option.is_some blk_t.epi then hovbox else hvbox)
-               0
-               ( box_t
-                   ( hvbox_if
-                       (Option.is_some blk_t.pro)
-                       0
-                       ( ( match arg_blks with
-                         | (_, Some {opn; pro= Some _}) :: _ ->
-                             opn $ open_hvbox 0
-                         | _ -> noop )
-                       $ hvbox 4
-                           ( keyword $ str " " $ fmt_str_loc c name
-                           $ list_pn arg_blks fmt_arg )
-                       $ Option.call ~f:blk_t.pro )
-                   $ blk_t.psp $ blk_t.bdy )
-               $ blk_t.esp $ Option.call ~f:blk_t.epi
-               $ fmt_if (Option.is_some xbody) " ="
-               $ fmt_if_k compact fmt_pro )
-           $ fmt_if_k (not compact) fmt_pro
-           $ blk_b.psp
-           $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
-           $ blk_b.bdy )
-       $ blk_b.esp $ Option.call ~f:blk_b.epi
-       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
-       $ opt epi (fun epi ->
-             fmt_or_k compact
-               (fmt_or
-                  (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
-                  " " "@ ")
-               (fmt "@;<1 -2>")
-             $ epi) ))
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c ~is_simple:single_line attributes
+  in
+  hvbox
+    (if compact then 0 else 2)
+    ( doc_before
+    $ box_b
+        ( (if Option.is_some blk_t.epi then hovbox else hvbox)
+            0
+            ( box_t
+                ( hvbox_if
+                    (Option.is_some blk_t.pro)
+                    0
+                    ( ( match arg_blks with
+                      | (_, Some {opn; pro= Some _}) :: _ ->
+                          opn $ open_hvbox 0
+                      | _ -> noop )
+                    $ hvbox 4
+                        ( keyword $ str " " $ fmt_str_loc c name
+                        $ list_pn arg_blks fmt_arg )
+                    $ Option.call ~f:blk_t.pro )
+                $ blk_t.psp $ blk_t.bdy )
+            $ blk_t.esp $ Option.call ~f:blk_t.epi
+            $ fmt_if (Option.is_some xbody) " ="
+            $ fmt_if_k compact fmt_pro )
+        $ fmt_if_k (not compact) fmt_pro
+        $ blk_b.psp
+        $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
+        $ blk_b.bdy )
+    $ blk_b.esp $ Option.call ~f:blk_b.epi
+    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+    $ doc_after
+    $ opt epi (fun epi ->
+          fmt_or_k compact
+            (fmt_or
+               (Option.is_some blk_b.epi && not c.conf.ocp_indent_compat)
+               " " "@ ")
+            (fmt "@;<1 -2>")
+          $ epi) )
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
@@ -3221,13 +3263,16 @@ and fmt_open_description c
     {popen_lid; popen_override; popen_attributes; popen_loc} =
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
-  let doc, atrs = doc_atrs popen_attributes in
-  fmt_docstring_around ~single_line:true c doc
-    ( str "open"
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c popen_attributes
+  in
+  hovbox 0
+    ( doc_before $ str "open"
     $ fmt_if Poly.(popen_override = Override) "!"
     $ str " "
     $ fmt_longident_loc c popen_lid
-    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs )
+    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+    $ doc_after )
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
@@ -3543,16 +3588,18 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
-      let doc, atrs = doc_atrs pincl_attributes in
+      let doc_before, doc_after, atrs =
+        let is_simple = Ast.module_expr_is_simple pincl_mod in
+        fmt_docstring_around_item c ~is_simple pincl_attributes
+      in
       let blk = fmt_module_expr c (sub_mod ~ctx pincl_mod) in
       let box = wrap_k blk.opn blk.cls in
-      let single_line = module_expr_is_simple pincl_mod in
-      fmt_docstring_around ~single_line c doc
-        ( box
-            ( hvbox 2 (str "include " $ Option.call ~f:blk.pro)
-            $ blk.psp $ blk.bdy )
-        $ blk.esp $ Option.call ~f:blk.epi
-        $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs )
+      doc_before
+      $ box
+          ( hvbox 2 (str "include " $ Option.call ~f:blk.pro)
+          $ blk.psp $ blk.bdy $ blk.esp $ Option.call ~f:blk.epi
+          $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs )
+      $ doc_after
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open open_descr -> fmt_open_description c open_descr

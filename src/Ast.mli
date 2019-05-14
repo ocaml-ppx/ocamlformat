@@ -61,6 +61,10 @@ val module_expr_is_simple : module_expr -> bool
 
 val module_type_is_simple : module_type -> bool
 
+val class_decl_is_simple : class_expr -> bool
+
+val class_type_is_simple : class_type -> bool
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload
@@ -122,9 +126,9 @@ val assoc_of_prec : prec -> assoc
 (** [assoc_of_prec prec] is the associativity of Ast terms with precedence
     [prec]. (Associativity is uniform across precedence levels.) *)
 
+type 'a xt = private {ctx: t; ast: 'a}
 (** Term-in-context [{ctx; ast}] records that [ast] is (considered to be) an
     immediate sub-term of [ctx]. *)
-type 'a xt = private {ctx: t; ast: 'a}
 
 val sub_typ : ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)
