@@ -9,9 +9,9 @@
  *                                                                    *
  **********************************************************************)
 
-let selected_version = Migrate_parsetree.Versions.ocaml_407
+let selected_version = Migrate_parsetree.Versions.ocaml_408
 
-module Selected_version = Ast_407
+module Selected_version = Ast_408
 
 include (
   Selected_version :

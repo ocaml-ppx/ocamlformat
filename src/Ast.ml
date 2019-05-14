@@ -196,16 +196,19 @@ let doc_atrs atrs =
     List.fold atrs ~init:([], []) ~f:(fun (docs, rev_atrs) atr ->
         let open Asttypes in
         match atr with
-        | ( { txt= ("ocaml.doc" | "ocaml.text") as txt
-            ; loc= {loc_ghost= true} }
-          , PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( { pexp_desc=
-                            Pexp_constant (Pconst_string (doc, None))
-                        ; pexp_loc= loc
-                        ; pexp_attributes= [] }
-                      , [] ) } ] ) -> (
+        | { attr_name=
+              { txt= ("ocaml.doc" | "ocaml.text") as txt
+              ; loc= {loc_ghost= true} }
+          ; attr_payload=
+              PStr
+                [ { pstr_desc=
+                      Pstr_eval
+                        ( { pexp_desc=
+                              Pexp_constant (Pconst_string (doc, None))
+                          ; pexp_loc= loc
+                          ; pexp_attributes= [] }
+                        , [] ) } ]
+          ; _ } -> (
           match (txt, docs) with
           | "ocaml.doc", (_, false) :: _ ->
               (* cannot put two doc comment next to each other *)
@@ -303,7 +306,7 @@ module Structure_item : Module_item with type t = structure_item = struct
      |Pstr_primitive {pval_attributes= atrs}
      |Pstr_type (_, {ptype_attributes= atrs} :: _)
      |Pstr_typext {ptyext_attributes= atrs}
-     |Pstr_exception {pext_attributes= atrs}
+     |Pstr_exception {ptyexn_attributes= atrs}
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs}} :: _)
      |Pstr_modtype {pmtd_attributes= atrs}
      |Pstr_open {popen_attributes= atrs}
@@ -339,7 +342,8 @@ module Structure_item : Module_item with type t = structure_item = struct
             | _ -> false
           in
           is_simple_mod me
-      | Pstr_open i -> longident_is_simple c i.popen_lid.txt
+      | Pstr_open {popen_expr= {pmod_desc= Pmod_ident i; _}; _} ->
+          longident_is_simple c i.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -387,7 +391,7 @@ module Signature_item : Module_item with type t = signature_item = struct
     | Psig_value {pval_attributes= atrs}
      |Psig_type (_, {ptype_attributes= atrs} :: _)
      |Psig_typext {ptyext_attributes= atrs}
-     |Psig_exception {pext_attributes= atrs}
+     |Psig_exception {ptyexn_attributes= atrs}
      |Psig_modtype {pmtd_attributes= atrs}
      |Psig_open {popen_attributes= atrs}
      |Psig_extension (_, atrs)
@@ -406,6 +410,7 @@ module Signature_item : Module_item with type t = signature_item = struct
      |Psig_class_type []
      |Psig_class [] ->
         false
+    | _ -> not_implemented ()
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
@@ -413,7 +418,7 @@ module Signature_item : Module_item with type t = signature_item = struct
         Location.is_single_line itm.psig_loc c.Conf.margin
     | `Sparse -> (
       match itm.psig_desc with
-      | Psig_open {popen_lid= i}
+      | Psig_open {popen_expr= i; _}
        |Psig_module {pmd_type= {pmty_desc= Pmty_alias i}} ->
           longident_is_simple c i.txt
       | _ -> false )
@@ -489,7 +494,7 @@ let rec is_trivial c exp =
   | _ -> false
 
 let is_doc = function
-  | {Location.txt= "ocaml.doc" | "ocaml.text"}, _ -> false
+  | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"}; _} -> false
   | _ -> true
 
 let has_trailing_attributes_exp {pexp_desc; pexp_attributes} =
@@ -847,6 +852,7 @@ end = struct
       List.exists ptyext_params ~f:fst_f
       || List.exists ptyext_constructors ~f:check_ext
     in
+    let check_typexn {ptyexn_constructor} = check_ext ptyexn_constructor in
     let check_type {ptype_params; ptype_cstrs; ptype_kind; ptype_manifest} =
       List.exists ptype_params ~f:fst_f
       || List.exists ptype_cstrs ~f:(fun (t1, t2, _) ->
@@ -911,14 +917,14 @@ end = struct
       | Ptyp_variant (r1N, _, _) ->
           assert (
             List.exists r1N ~f:(function
-              | Rtag (_, _, _, t1N) -> List.exists t1N ~f
-              | Rinherit t1 -> typ == t1) )
+              | {prf_desc= Rtag (_, _, t1N); _} -> List.exists t1N ~f
+              | {prf_desc= Rinherit t1; _} -> typ == t1) )
       | Ptyp_package (_, it1N) -> assert (List.exists it1N ~f:snd_f)
       | Ptyp_object (fields, _) ->
           assert (
             List.exists fields ~f:(function
-              | Otag (_, _, t1) -> typ == t1
-              | Oinherit t1 -> typ == t1) )
+              | {pof_desc= Otag (_, t1); _} -> typ == t1
+              | {pof_desc= Oinherit t1; _} -> typ == t1) )
       | Ptyp_class (_, l) -> assert (List.exists l ~f) )
     | Cty {pcty_desc} ->
         assert (
@@ -1011,7 +1017,7 @@ end = struct
       | Psig_value {pval_type= t1} -> assert (typ == t1)
       | Psig_type (_, d1N) -> assert (List.exists d1N ~f:check_type)
       | Psig_typext typext -> assert (check_typext typext)
-      | Psig_exception ext -> assert (check_ext ext)
+      | Psig_exception ext -> assert (check_typexn ext)
       | Psig_class_type l -> assert (check_class_type l)
       | Psig_class l -> assert (check_class_type l)
       | _ -> assert false )
@@ -1020,7 +1026,7 @@ end = struct
       | Pstr_primitive {pval_type= t1} -> assert (typ == t1)
       | Pstr_type (_, d1N) -> assert (List.exists d1N ~f:check_type)
       | Pstr_typext typext -> assert (check_typext typext)
-      | Pstr_exception ext -> assert (check_ext ext)
+      | Pstr_exception ext -> assert (check_typexn ext)
       | Pstr_class l ->
           assert (
             List.exists l ~f:(fun {pci_expr= {pcl_desc}; pci_params} ->
@@ -1085,7 +1091,7 @@ end = struct
                 | Pctf_constraint _ -> false
                 | Pctf_attribute _ -> false
                 | Pctf_extension _ -> false) )
-      | Pcty_open (_, _, t) -> assert (t == cty)
+      | Pcty_open (_, t) -> assert (t == cty)
       | Pcty_constr _ -> assert false
       | Pcty_extension _ -> assert false )
     | Top -> assert false
@@ -1150,7 +1156,7 @@ end = struct
           | Pcl_apply (x, _) -> x == cl
           | Pcl_let (_, _, x) -> x == cl
           | Pcl_constraint (x, _) -> x == cl
-          | Pcl_open (_, _, x) -> x == cl
+          | Pcl_open (_, x) -> x == cl
           | Pcl_constr _ -> false
           | Pcl_extension _ -> false )
     | Mty _ -> assert false
@@ -1236,7 +1242,7 @@ end = struct
               | {pc_lhs} when pc_lhs == pat -> true
               | _ -> false) )
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
-      )
+      | _ -> not_implemented () )
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
@@ -1370,7 +1376,7 @@ end = struct
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, e)
          |Pexp_newtype (_, e)
-         |Pexp_open (_, _, e)
+         |Pexp_open (_, e)
          |Pexp_poly (e, _)
          |Pexp_send (e, _)
          |Pexp_setinstvar (_, e) ->
@@ -1382,7 +1388,8 @@ end = struct
             assert (e1 == exp || e2 == exp || Option.exists e3 ~f)
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
-        | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
+        | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f)
+        | _ -> not_implemented () )
     | Str str -> (
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
@@ -1493,8 +1500,8 @@ end = struct
       when List.exists l ~f:(is_tuple_lvl1_in_ext_constructor typ) ->
         constructor_cxt_prec_of_inner typ
     | { ctx=
-          ( Str {pstr_desc= Pstr_exception constr}
-          | Sig {psig_desc= Psig_exception constr}
+          ( Str {pstr_desc= Pstr_exception {ptyexn_constructor= constr; _}}
+          | Sig {psig_desc= Psig_exception {ptyexn_constructor= constr; _}}
           | Exp {pexp_desc= Pexp_letexception (constr, _)} )
       ; ast= Typ ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _} as typ) }
       when is_tuple_lvl1_in_ext_constructor typ constr ->
@@ -1742,12 +1749,15 @@ end = struct
       ; ctx=
           ( Str
               { pstr_desc=
-                  Pstr_exception {pext_kind= Pext_decl (Pcstr_tuple t, _)}
-              }
+                  Pstr_exception
+                    { ptyexn_constructor=
+                        {pext_kind= Pext_decl (Pcstr_tuple t, _); _} } }
           | Sig
               { psig_desc=
-                  Psig_exception {pext_kind= Pext_decl (Pcstr_tuple t, _)}
-              } ) }
+                  Psig_exception
+                    { ptyexn_constructor=
+                        {pext_kind= Pext_decl (Pcstr_tuple t, _)}
+                    ; _ } } ) }
       when List.exists t ~f:(phys_equal typ) ->
         true
     | _ -> (
@@ -1960,7 +1970,7 @@ end = struct
          |Pexp_ifthenelse (_, _, Some e)
          |Pexp_lazy e
          |Pexp_newtype (_, e)
-         |Pexp_open (_, _, e)
+         |Pexp_open (_, e)
          |Pexp_sequence (_, e)
          |Pexp_setfield (_, _, e)
          |Pexp_setinstvar (_, e)
@@ -2014,6 +2024,7 @@ end = struct
          |Pexp_variant (_, None)
          |Pexp_while _ ->
             false
+        | _ -> not_implemented ()
       in
       mem_cls_exp cls exp
       || Hashtbl.find_or_add memo (cls, exp) ~default:exposed_
@@ -2052,7 +2063,7 @@ end = struct
        |Pexp_ifthenelse (_, _, Some e)
        |Pexp_lazy e
        |Pexp_newtype (_, e)
-       |Pexp_open (_, _, e)
+       |Pexp_open (_, e)
        |Pexp_fun (_, _, _, e)
        |Pexp_sequence (_, e)
        |Pexp_setfield (_, _, e)
@@ -2096,6 +2107,7 @@ end = struct
        |Pexp_variant (_, None)
        |Pexp_while _ ->
           false
+      | _ -> not_implemented ()
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
       ~default:exposed_

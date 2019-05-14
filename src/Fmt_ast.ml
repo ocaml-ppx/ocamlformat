@@ -77,7 +77,7 @@ let comma_sep c : Fmt.s =
   if Poly.(c.conf.break_separators = `Before) then "@,, " else ",@;<1 2>"
 
 let update_config ?(quiet = false) c l =
-  let update_one c ({txt; loc}, payload) =
+  let update_one c {attr_name= {txt; loc}; attr_payload= payload} =
     let result =
       match txt with
       | "ocamlformat" -> (
@@ -159,7 +159,7 @@ let drop_while ~f s =
   done ;
   String.sub s ~pos:!i ~len:(String.length s - !i)
 
-let maybe_disabled_k c (loc : Location.t) l f k =
+let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
   if not c.conf.disable then f c
   else
     let loc = Source.extend_loc_to_include_attributes c.source loc l in
@@ -487,16 +487,19 @@ let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
 
 let rec fmt_attribute c pre = function
-  | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true}}
-    , PStr
-        [ { pstr_desc=
-              Pstr_eval
-                ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
-                  ; pexp_attributes= [] }
-                , [] ) } ] ) ->
+  | { attr_name=
+        {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true}}
+    ; attr_payload=
+        PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                    ; pexp_attributes= [] }
+                  , [] ) } ]
+    ; _ } ->
       fmt_or (String.equal txt "ocaml.text") "@ " " "
       $ wrap "(**" "*)" (str doc)
-  | name, pld ->
+  | {attr_name= name; attr_payload= pld; _} ->
       let indent =
         match pld with
         | (PStr _ | PSig _) when String.equal pre "@@@" ->
@@ -690,8 +693,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let protect_token =
         match List.last rfs with
         | None -> false
-        | Some (Rinherit _) -> false
-        | Some (Rtag (_, _, _, l)) -> (
+        | Some {prf_desc= Rinherit _} -> false
+        | Some {prf_desc= Rtag (_, _, l)} -> (
           match List.last l with
           | None -> false
           | Some x -> exposed_right_typ x )
@@ -708,7 +711,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       in
       hvbox 0
         ( match (flag, lbls, rfs) with
-        | Closed, None, [Rinherit _] ->
+        | Closed, None, [{prf_desc= Rinherit _}] ->
             str "[ | " $ row_fields rfs $ closing
         | Closed, None, _ ->
             let opening = if space_around then "[ " else "[" in
@@ -726,7 +729,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         $ Cmts.fmt_within c ~pro:noop ptyp_loc )
   | Ptyp_object (fields, closedness) ->
       let fmt_field = function
-        | Otag (lab_loc, attrs, typ) ->
+        | {pof_desc= Otag (lab_loc, typ); pof_attributes= attrs; _} ->
             (* label loc * attributes * core_type -> object_field *)
             let doc, atrs = doc_atrs attrs in
             let fmt_cmts = Cmts.fmt c lab_loc.loc in
@@ -743,7 +746,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
                      $ fmt_core_type c (sub_typ ~ctx typ) )
                  $ fmt_docstring_padded c doc
                  $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs )
-        | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
+        | {pof_desc= Oinherit typ; _} -> fmt_core_type c (sub_typ ~ctx typ)
       in
       hvbox 0
         (wrap "< " " >"
@@ -770,7 +773,7 @@ and fmt_package_type c ctx cnstrs =
   list_fl cnstrs fmt_cstr
 
 and fmt_row_field c ctx = function
-  | Rtag (name, atrs, const, typs) ->
+  | {prf_desc= Rtag (name, const, typs); prf_attributes= atrs; _} ->
       let c = update_config c atrs in
       let doc, atrs = doc_atrs atrs in
       hvbox 0
@@ -781,7 +784,7 @@ and fmt_row_field c ctx = function
             $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c) )
         $ fmt_attributes c ~key:"@" atrs
         $ fmt_docstring_padded c doc )
-  | Rinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
+  | {prf_desc= Rinherit typ; _} -> fmt_core_type c (sub_typ ~ctx typ)
 
 and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   protect (Pat pat)
@@ -1796,7 +1799,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
             ( hvbox 0
-                (fmt_exception ~pre c (str ": ") ctx ext_cstr $ fmt "@ in")
+                (* XXX check me *)
+                ( hvbox 2
+                    (hvbox 2
+                       ( pre
+                       $ fmt_extension_constructor c (str ": ") ctx ext_cstr
+                       ))
+                $ fmt "@ in" )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
@@ -1828,7 +1837,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
-  | Pexp_open (flag, name, e0) ->
+  | Pexp_open
+      ( { popen_override= flag
+        ; popen_expr= {pmod_desc= Pmod_ident name; _}
+        ; _ }
+      , e0 ) ->
       let override = Poly.(flag = Override) in
       let let_open =
         match c.conf.let_open with
@@ -2181,13 +2194,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) ))
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
+  | _ -> not_implemented ()
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
-  let fields =
-    List.sort fields
-      ~compare:
-        (Comparable.lift Location.compare_start ~f:(fun x -> x.pcf_loc))
-  in
   let _, fields =
     List.fold_map fields ~init:c ~f:(fun c i ->
         let c =
@@ -2227,11 +2236,6 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
   $ str "end"
 
 and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
-  let fields =
-    List.sort fields
-      ~compare:
-        (Comparable.lift Location.compare_start ~f:(fun x -> x.pctf_loc))
-  in
   let _, fields =
     List.fold_map fields ~init:c ~f:(fun c i ->
         let c =
@@ -2311,7 +2315,7 @@ and fmt_class_type c ?(box = true) ({ast= typ} as xtyp) =
       in
       hvbox_if box 0 (list xt1N "@;-> " fmt_arg)
   | Pcty_extension ext -> fmt_extension c ctx "%" ext
-  | Pcty_open (flag, lid, cl) ->
+  | Pcty_open ({popen_override= flag; popen_expr= lid; _}, cl) ->
       hvbox 0
         ( str "let open"
         $ fmt_if Poly.(flag = Override) "!"
@@ -2383,7 +2387,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp} as xexp) =
            $ fmt_class_type c (sub_cty ~ctx t) ))
       $ fmt_atrs
   | Pcl_extension ext -> fmt_extension c ctx "%" ext $ fmt_atrs
-  | Pcl_open (flag, lid, cl) ->
+  | Pcl_open ({popen_override= flag; popen_expr= lid; _}, cl) ->
       hvbox 0
         ( str "let open"
         $ fmt_if Poly.(flag = Override) "!"
@@ -2861,26 +2865,14 @@ and fmt_type_extension c ctx te =
         )
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
 
-and fmt_exception ~pre c sep ctx te =
-  let atrs, te =
-    (* This won't be needed once https://github.com/ocaml/ocaml/pull/1705 is
-       merged in the compiler and ocaml-migrate-parsetree. Until then, this
-       heuristic will try to discriminate between attributes belonging to
-       the constructor, and the one belonging to the exception construct. *)
-    let at, atat =
-      List.partition_tf
-        ~f:(fun (s, _) ->
-          match s.txt with
-          | "deprecated" | "ocaml.deprecated" -> true
-          | _ -> false)
-        te.pext_attributes
-    in
-    (atat, {te with pext_attributes= at})
+and fmt_type_exception ~pre c sep ctx te =
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item c te.ptyexn_attributes
   in
-  let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
   hvbox 0
     ( doc_before
-    $ hvbox 2 (pre $ fmt_extension_constructor c sep ctx te)
+    $ hvbox 2
+        (pre $ fmt_extension_constructor c sep ctx te.ptyexn_constructor)
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
     $ doc_after )
 
@@ -3066,7 +3058,7 @@ and fmt_signature_item c ?ext {ast= si} =
       $ fmt_attributes c ~key:"@@@" atrs
   | Psig_exception exc ->
       hvbox 2
-        (fmt_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
+        (fmt_type_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
   | Psig_extension (ext, atrs) ->
       hvbox c.conf.stritem_extension_indent
         ( fmt_extension c ctx "%%" ext
@@ -3108,6 +3100,7 @@ and fmt_signature_item c ?ext {ast= si} =
   | Psig_class cl -> fmt_class_types c ctx ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
       fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
+  | _ -> not_implemented ()
 
 and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
@@ -3289,7 +3282,7 @@ and fmt_module_type_declaration c ctx pmtd =
     pmtd_attributes
 
 and fmt_open_description c
-    {popen_lid; popen_override; popen_attributes; popen_loc} =
+    {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc_before, doc_after, atrs =
@@ -3302,6 +3295,23 @@ and fmt_open_description c
     $ fmt_longident_loc c popen_lid
     $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
     $ doc_after )
+
+and fmt_open_declaration c
+    {popen_expr; popen_override; popen_attributes; popen_loc} =
+  update_config_maybe_disabled c popen_loc popen_attributes
+  @@ fun c ->
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item ~fit:true c popen_attributes
+  in
+  match popen_expr with
+  | {pmod_desc= Pmod_ident lid; _} ->
+      hovbox 0
+        ( doc_before $ str "open"
+        $ fmt_if Poly.(popen_override = Override) "!"
+        $ str " " $ fmt_longident_loc c lid
+        $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+        $ doc_after )
+  | _ -> not_implemented ()
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
@@ -3613,7 +3623,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
       hvbox 2
-        (fmt_exception ~pre:(fmt "exception@ ") c (str ": ") ctx extn_constr)
+        (fmt_type_exception ~pre:(fmt "exception@ ") c (str ": ") ctx
+           extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
@@ -3631,7 +3642,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       $ doc_after
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
-  | Pstr_open open_descr -> fmt_open_description c open_descr
+  | Pstr_open open_descr -> fmt_open_declaration c open_descr
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
       fmt_recmodule c ctx bindings fmt_module_binding (fun x ->
@@ -3802,7 +3813,9 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
     | Pexp_fun _ -> c.conf.let_binding_indent - 1
     | _ -> c.conf.let_binding_indent
   in
-  let f ({loc}, _) = Location.compare_start loc pvb_expr.pexp_loc < 1 in
+  let f {attr_name= {loc}; _} =
+    Location.compare_start loc pvb_expr.pexp_loc < 1
+  in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let stmt_loc = Sugar.args_location xargs in
   let pre_body, body = fmt_body c xbody in
@@ -3855,19 +3868,23 @@ and fmt_module_binding c ctx ~rec_flag ~first pmb =
     (fmt_module c keyword pmb.pmb_name xargs (Some xbody) true xmty
        pmb.pmb_attributes)
 
+(* XXX use more locations *)
 let fmt_toplevel_phrase c ctx = function
   | Ptop_def structure -> fmt_structure c ctx structure
-  | Ptop_dir (dir, directive_argument) -> (
-      fmt ";;@\n" $ str "#" $ str dir
+  | Ptop_dir {pdir_name= dir; pdir_arg= directive_argument} -> (
+      fmt ";;@\n" $ str "#" $ str dir.txt
       $
       match directive_argument with
-      | Pdir_none -> noop
-      | Pdir_string s -> str " " $ str (Printf.sprintf "%S" s)
-      | Pdir_int (lit, Some m) ->
+      | None -> noop
+      | Some {pdira_desc= Pdir_string s; _} ->
+          str " " $ str (Printf.sprintf "%S" s)
+      | Some {pdira_desc= Pdir_int (lit, Some m)} ->
           str " " $ str (Printf.sprintf "%s%c" lit m)
-      | Pdir_int (lit, None) -> str " " $ str lit
-      | Pdir_ident longident -> str " " $ fmt_longident longident
-      | Pdir_bool bool -> str " " $ str (Bool.to_string bool) )
+      | Some {pdira_desc= Pdir_int (lit, None)} -> str " " $ str lit
+      | Some {pdira_desc= Pdir_ident longident} ->
+          str " " $ fmt_longident longident
+      | Some {pdira_desc= Pdir_bool bool} ->
+          str " " $ str (Bool.to_string bool) )
 
 let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
 
