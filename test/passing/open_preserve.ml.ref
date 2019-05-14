@@ -75,3 +75,34 @@ let x =
     Cstruct.{toto= foooo}
   in
   fooooooooo
+
+open A
+open A.B
+
+open A (B)
+
+open struct
+  type t
+end
+
+open (
+  struct
+      type t
+    end :
+    T )
+
+open (
+  struct
+      type t
+    end :
+    sig
+      type t
+    end )
+
+open (val x)
+
+open (val x)
+
+open [%extension]
+
+open functor (A : T) -> T'
