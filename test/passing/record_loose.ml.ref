@@ -1,3 +1,7 @@
+type t = {x : int; y : int}
+
+let _ = {x = 1; y = 2}
+
 let _ = {!e with a; b = c}
 
 let _ = {!(f e) with a; b = c}

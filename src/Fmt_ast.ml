@@ -528,7 +528,9 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
     fmt "=@;<1 2>" $ fmt_if parens "(" $ cbox 0 r
   in
   let field_space =
-    match c.conf.field_space with `Loose -> str " " | `Tight -> noop
+    match c.conf.field_space with
+    | `Loose | `Tight_decl -> str " "
+    | `Tight -> noop
   in
   let fmt_type_rhs =
     match (typ, rhs) with
@@ -690,11 +692,15 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
             (* label loc * attributes * core_type -> object_field *)
             let doc, atrs = doc_atrs attrs in
             let fmt_cmts = Cmts.fmt c lab_loc.loc in
+            let field_loose =
+              match c.conf.field_space with
+              | `Loose | `Tight_decl -> true
+              | `Tight -> false
+            in
             fmt_cmts
             @@ hvbox 4
                  ( hvbox 2
-                     ( fmt_str_loc c lab_loc
-                     $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+                     ( fmt_str_loc c lab_loc $ fmt_if field_loose " "
                      $ fmt ":@ "
                      $ fmt_core_type c (sub_typ ~ctx typ) )
                  $ fmt_docstring_padded c doc
@@ -2708,14 +2714,18 @@ and fmt_label_declaration c ctx decl ?(last = false) =
   let doc, atrs = doc_atrs pld_attributes in
   let indent = if Poly.(c.conf.break_separators = `Before) then 2 else 0 in
   let cmt_after_type = Cmts.fmt_after c pld_type.ptyp_loc in
+  let field_loose =
+    match c.conf.field_space with
+    | `Loose -> true
+    | `Tight_decl | `Tight -> false
+  in
   Cmts.fmt_before c ~eol:(break_unless_newline 1 indent) pld_loc
   $ hvbox 4
       ( hvbox 3
           ( hvbox 4
               ( hvbox 2
                   ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-                  $ fmt_str_loc c pld_name
-                  $ fmt_if Poly.(c.conf.field_space = `Loose) " "
+                  $ fmt_str_loc c pld_name $ fmt_if field_loose " "
                   $ fmt ":@ "
                   $ fmt_core_type c (sub_typ ~ctx pld_type)
                   $ fmt_if

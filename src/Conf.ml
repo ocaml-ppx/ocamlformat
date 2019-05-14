@@ -32,7 +32,7 @@ type t =
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; extension_sugar: [`Preserve | `Always]
-  ; field_space: [`Tight | `Loose]
+  ; field_space: [`Tight | `Loose | `Tight_decl]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
@@ -803,7 +803,11 @@ module Formatting = struct
         , `Tight
         , "$(b,tight) does not use a space between a field name and the \
            punctuation symbol (`:` or `=`)." )
-      ; ("loose", `Loose, "$(b,loose) does.") ]
+      ; ("loose", `Loose, "$(b,loose) does.")
+      ; ( "tight-decl"
+        , `Tight_decl
+        , "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
+           for instantiations." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with field_space= x})
