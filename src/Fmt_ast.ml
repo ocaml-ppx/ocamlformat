@@ -3311,6 +3311,21 @@ and fmt_open_declaration c
         $ doc_after )
   | _ -> not_implemented ()
 
+(** TODO: merge with `fmt_module_declaration` *)
+and fmt_module_statement c ~attributes keyword mod_expr =
+  let blk = fmt_module_expr c mod_expr in
+  let box = wrap_k blk.opn blk.cls in
+  let single_line = module_expr_is_simple mod_expr.ast in
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item ~fit:single_line c attributes
+  in
+  hovbox 0
+    ( doc_before $ box
+        ( hvbox 2 (keyword $ str " " $ Option.call ~f:blk.pro)
+        $ blk.psp $ blk.bdy )
+    $ blk.esp $ Option.call ~f:blk.epi
+    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs $ doc_after )
+
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
       fmt_type_declaration ~pre:" type" c ctx
@@ -3623,24 +3638,17 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       hvbox 2
         (fmt_type_exception ~pre:(fmt "exception@ ") c (str ": ") ctx
            extn_constr)
-  | Pstr_include {pincl_mod; pincl_attributes; pincl_loc} ->
-      update_config_maybe_disabled c pincl_loc pincl_attributes
+  | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
+      update_config_maybe_disabled c pincl_loc attributes
       @@ fun c ->
-      let doc_before, doc_after, atrs =
-        let force_before = not (Ast.module_expr_is_simple pincl_mod) in
-        fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
-      in
-      let blk = fmt_module_expr c (sub_mod ~ctx pincl_mod) in
-      let box = wrap_k blk.opn blk.cls in
-      doc_before
-      $ box
-          ( hvbox 2 (str "include " $ Option.call ~f:blk.pro)
-          $ blk.psp $ blk.bdy $ blk.esp $ Option.call ~f:blk.epi
-          $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs )
-      $ doc_after
+      fmt_module_statement c ~attributes (str "include") (sub_mod ~ctx pincl_mod)
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
-  | Pstr_open open_descr -> fmt_open_declaration c open_descr
+  | Pstr_open {popen_expr; popen_override; popen_attributes= attributes; popen_loc} ->
+      update_config_maybe_disabled c popen_loc attributes
+      @@ fun c ->
+      let keyword = str "open" $ fmt_if (Poly.equal popen_override Override) "!" in
+      fmt_module_statement c ~attributes keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
       fmt_recmodule c ctx bindings fmt_module_binding (fun x ->
