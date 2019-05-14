@@ -32,7 +32,7 @@ let string_between t (l1 : Location.t) (l2 : Location.t) =
   let pos = l1.loc_end.pos_cnum in
   let len = Position.distance l1.loc_end l2.loc_start in
   if
-    len < 0
+    len < 0 || pos < 0
     (* can happen e.g. if comment is within a parenthesized expression *)
   then None
   else if
