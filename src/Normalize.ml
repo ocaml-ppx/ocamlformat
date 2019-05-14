@@ -150,7 +150,8 @@ let make_mapper c ~ignore_doc_comment =
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
-                    ; pexp_attributes }
+                    ; pexp_attributes
+                    ; _ }
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
@@ -195,14 +196,15 @@ let make_mapper c ~ignore_doc_comment =
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
-    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1} = pat in
+    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
     (* normalize nested or patterns *)
     match ppat_desc with
     | Ppat_or
         ( pat1
         , { ppat_desc= Ppat_or (pat2, pat3)
           ; ppat_loc= loc2
-          ; ppat_attributes= attrs2 } ) ->
+          ; ppat_attributes= attrs2
+          ; _ } ) ->
         m.pat m
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
@@ -210,7 +212,7 @@ let make_mapper c ~ignore_doc_comment =
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let value_binding (m : Ast_mapper.mapper) vb =
-    let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes}
+    let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes; _}
         ; pvb_expr
         ; pvb_loc
         ; pvb_attributes } =
@@ -351,7 +353,8 @@ let make_docstring_mapper c docstrings =
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
-                    ; pexp_attributes }
+                    ; pexp_attributes
+                    ; _ }
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' = docstring c doc in

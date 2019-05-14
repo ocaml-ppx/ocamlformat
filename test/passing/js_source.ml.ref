@@ -207,7 +207,7 @@ class type x = x [@@foo]]
 external x : _ = "" [@@foo]]
 
 [%%foo
-exception X [@@foo]]
+exception X [@foo]]
 
 [%%foo
 module M = M [@@foo]]
@@ -235,7 +235,7 @@ module type S = sig
   and t' = int [@@foo]
 
   [%%foo: type t += T [@@foo]]
-  [%%foo: exception X [@@foo]]
+  [%%foo: exception X [@foo]]
   [%%foo: module M : S [@@foo]]
 
   [%%foo: module rec M : S [@@foo]

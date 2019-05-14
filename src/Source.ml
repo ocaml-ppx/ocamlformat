@@ -115,7 +115,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
   let last_loc =
     List.fold l ~init:loc
       ~f:(fun (acc : Location.t)
-              ({attr_name= {loc; _}; attr_payload= payload} :
+              ({attr_name= {loc; _}; attr_payload= payload; _} :
                 Parsetree.attribute)
               ->
         if loc.loc_ghost then acc
