@@ -50,3 +50,5 @@ val user_error : string -> (string * Sexp.t) list -> _
 val check : ('a -> _) -> 'a -> 'a
 (** Asserting identity: [check f x] asserts that [f x] does not raise and
     returns [x]. *)
+
+val not_implemented : unit -> _

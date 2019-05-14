@@ -139,11 +139,11 @@ let make_mapper c ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
   let doc_attribute = function
-    | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
+    | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
   in
-  let attribute (m : Ast_mapper.mapper) attr =
-    match attr with
+  let attribute (m : Ast_mapper.mapper) (attr : attribute) =
+    match (attr.attr_name, attr.attr_payload) with
     | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
       , PStr
           [ { pstr_desc=
@@ -156,22 +156,24 @@ let make_mapper c ~ignore_doc_comment =
         let doc' =
           if ignore_doc_comment then "IGNORED" else docstring c doc
         in
-        ( {txt; loc= m.location m loc}
-        , m.payload m
-            (PStr
-               [ { pstr_desc=
-                     Pstr_eval
-                       ( { pexp_desc=
-                             Pexp_constant (Pconst_string (doc', None))
-                         ; pexp_loc= m.location m pexp_loc
-                         ; pexp_attributes= m.attributes m pexp_attributes
-                         }
-                       , [] )
-                 ; pstr_loc= m.location m pstr_loc } ]) )
-    | attr -> Ast_mapper.default_mapper.attribute m attr
+        { attr_name= {txt; loc= m.location m loc}
+        ; attr_payload=
+            m.payload m
+              (PStr
+                 [ { pstr_desc=
+                       Pstr_eval
+                         ( { pexp_desc=
+                               Pexp_constant (Pconst_string (doc', None))
+                           ; pexp_loc= m.location m pexp_loc
+                           ; pexp_attributes= m.attributes m pexp_attributes
+                           ; pexp_loc_stack= [] }
+                         , [] )
+                   ; pstr_loc= m.location m pstr_loc } ])
+        ; attr_loc= attr.attr_loc }
+    | _ -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
-  let attributes (m : Ast_mapper.mapper) atrs =
+  let attributes (m : Ast_mapper.mapper) (atrs : attribute list) =
     let atrs =
       if ignore_doc_comment then
         List.filter atrs ~f:(fun a -> not (doc_attribute a))
@@ -338,11 +340,11 @@ let equal_use_file ~ignore_doc_comments c ast1 ast2 =
 
 let make_docstring_mapper c docstrings =
   let doc_attribute = function
-    | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
+    | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
   in
   let attribute (m : Ast_mapper.mapper) attr =
-    match attr with
+    match (attr.attr_name, attr.attr_payload) with
     | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
       , PStr
           [ { pstr_desc=
@@ -354,18 +356,21 @@ let make_docstring_mapper c docstrings =
             ; pstr_loc } ] ) ->
         let doc' = docstring c doc in
         docstrings := (loc, doc) :: !docstrings ;
-        ( {txt; loc}
-        , m.payload m
-            (PStr
-               [ { pstr_desc=
-                     Pstr_eval
-                       ( { pexp_desc=
-                             Pexp_constant (Pconst_string (doc', None))
-                         ; pexp_loc
-                         ; pexp_attributes }
-                       , [] )
-                 ; pstr_loc } ]) )
-    | attr -> Ast_mapper.default_mapper.attribute m attr
+        { attr_name= {txt; loc}
+        ; attr_payload=
+            m.payload m
+              (PStr
+                 [ { pstr_desc=
+                       Pstr_eval
+                         ( { pexp_desc=
+                               Pexp_constant (Pconst_string (doc', None))
+                           ; pexp_loc
+                           ; pexp_attributes
+                           ; pexp_loc_stack= [] }
+                         , [] )
+                   ; pstr_loc } ])
+        ; attr_loc= attr.attr_loc }
+    | _ -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) atrs =

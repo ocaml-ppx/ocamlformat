@@ -92,11 +92,11 @@ module Mappers = struct
   (* sanitize the ast obtained from reason *)
   let sanitize_input =
     let pat (m : Ast_mapper.mapper) pat =
-      let {ppat_desc; ppat_loc; ppat_attributes} = pat in
+      let {ppat_desc; ppat_loc; ppat_attributes; _} = pat in
       (* remove explicit_arity attributes *)
       let explicit_arity, attrs =
         List.partition_tf ppat_attributes ~f:(function
-          | {txt= "explicit_arity"; _}, _ -> true
+          | {attr_name= {txt= "explicit_arity"; _}; _} -> true
           | _ -> false)
       in
       match ppat_desc with
@@ -111,11 +111,11 @@ module Mappers = struct
           Ast_mapper.default_mapper.pat m pat
     in
     let expr (m : Ast_mapper.mapper) exp =
-      let {pexp_desc; pexp_loc; pexp_attributes} = exp in
+      let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
       (* remove explicit_arity attributes *)
       let explicit_arity, attrs =
         List.partition_tf pexp_attributes ~f:(function
-          | {txt= "explicit_arity"; _}, _ -> true
+          | {attr_name= {txt= "explicit_arity"; _}; _} -> true
           | _ -> false)
       in
       match pexp_desc with
@@ -133,10 +133,21 @@ module Mappers = struct
       let l =
         List.filter l ~f:(fun (a : Migrate_ast.Parsetree.attribute) ->
             match a with
-            | {txt= "explicit_arity"; _}, PStr [] -> false
-            | {txt= "implicit_arity"; _}, PStr [] -> false
-            | {txt= "reason.raw_literal"; _}, _ -> false
-            | {txt= "reason.preserve_braces"; _}, _ -> false
+            | { attr_name= {txt= "explicit_arity"; _}
+              ; attr_payload= PStr []
+              ; _ } ->
+                false
+            | { attr_name= {txt= "implicit_arity"; _}
+              ; attr_payload= PStr []
+              ; _ } ->
+                false
+            | {attr_name= {txt= "reason.raw_literal"; _}; attr_payload= _; _}
+              ->
+                false
+            | { attr_name= {txt= "reason.preserve_braces"; _}
+              ; attr_payload= _
+              ; _ } ->
+                false
             | _ -> true)
       in
       Ast_mapper.default_mapper.attributes mapper l
@@ -149,14 +160,17 @@ module Mappers = struct
     let atr_is_dup =
       let cmts = Set.of_list (module String) (List.map cmts ~f:fst) in
       function
-      | ( {txt= "ocaml.doc" | "ocaml.text"; _}
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( { pexp_desc= Pexp_constant (Pconst_string (txt, None))
-                      ; _ }
-                    , [] )
-              ; _ } ] ) ->
+      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
+        ; attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (txt, None))
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ } ->
           Set.mem cmts ("*" ^ txt)
       | _ -> false
     in
@@ -164,7 +178,7 @@ module Mappers = struct
       let atrs =
         if ignore_doc_comments then
           List.filter atrs ~f:(function
-            | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> false
+            | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> false
             | _ -> true)
         else atrs
       in

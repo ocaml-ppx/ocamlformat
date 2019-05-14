@@ -119,8 +119,8 @@ module Loc_tree = struct
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
   let of_ast map_ast ast =
-    let attribute (m : Ast_mapper.mapper) attr =
-      match attr with
+    let attribute (m : Ast_mapper.mapper) (attr : attribute) =
+      match (attr.attr_name, attr.attr_payload) with
       | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; _}
         , PStr
             [ { pstr_desc=
@@ -131,19 +131,22 @@ module Loc_tree = struct
                     , [] )
               ; _ } ] ) ->
           (* ignore location of docstrings *)
-          ( {txt; loc= Location.none}
-          , m.payload m
-              (PStr
-                 [ { pstr_desc=
-                       Pstr_eval
-                         ( { pexp_desc=
-                               Pexp_constant (Pconst_string (doc, None))
-                           ; pexp_loc= Location.none
-                           ; pexp_attributes= m.attributes m pexp_attributes
-                           }
-                         , [] )
-                   ; pstr_loc= Location.none } ]) )
-      | attr -> Ast_mapper.default_mapper.attribute m attr
+          { attr_name= {txt; loc= Location.none}
+          ; attr_loc= Location.none
+          ; attr_payload=
+              m.payload m
+                (PStr
+                   [ { pstr_desc=
+                         Pstr_eval
+                           ( { pexp_desc=
+                                 Pexp_constant (Pconst_string (doc, None))
+                             ; pexp_loc= Location.none
+                             ; pexp_attributes=
+                                 m.attributes m pexp_attributes
+                             ; pexp_loc_stack= [] }
+                           , [] )
+                     ; pstr_loc= Location.none } ]) }
+      | _ -> Ast_mapper.default_mapper.attribute m attr
     in
     let locs = ref [] in
     let location _ loc =
@@ -384,15 +387,18 @@ let dedup_cmts map_ast ast comments =
     let docs = ref (Set.empty (module Cmt)) in
     let attribute _ atr =
       match atr with
-      | ( {txt= "ocaml.doc" | "ocaml.text"; _}
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
-                      ; pexp_loc
-                      ; _ }
-                    , [] )
-              ; _ } ] ) ->
+      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
+        ; attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, None))
+                        ; pexp_loc
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ } ->
           docs := Set.add !docs ("*" ^ doc, pexp_loc) ;
           atr
       | _ -> atr
