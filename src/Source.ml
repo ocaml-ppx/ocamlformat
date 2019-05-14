@@ -29,7 +29,7 @@ let position_before t (pos : Lexing.position) =
   Option.map pos_cnum_opt ~f:(fun x -> {pos with pos_cnum= x + 1})
 
 let string_between t (l1 : Location.t) (l2 : Location.t) =
-  let pos = l1.loc_end.pos_cnum in
+  let pos = max 0 l1.loc_end.pos_cnum in
   let len = Position.distance l1.loc_end l2.loc_start in
   if
     len < 0
