@@ -144,3 +144,16 @@ let ffffff ~foo =
  | Aaaaaaaaaaaaaaaaa | Bbbbbbbbbbbbbbbbb | Ccccccccccccccccc
  | Ddddddddddddddddd | Eeeeeeeeeeeeeeeee -> foooooooooooooooooooo
  | Fffffffffffffffff -> fooooooooooooooooo
+
+let _ = function
+  | exception A | B -> 1
+  | C -> 2
+
+let _ = function
+  | A | exception B -> 1
+  | C -> 2
+
+let _ =
+  match x with
+  | exception A | exception B -> 1
+  | C -> 2
