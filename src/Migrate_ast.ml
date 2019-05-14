@@ -12,13 +12,13 @@
 let selected_version = Migrate_parsetree.Versions.ocaml_408
 
 module Selected_version = Ast_408
-
 module Parsetree = Selected_version.Parsetree
 module Ast_mapper = Selected_version.Ast_mapper
 module Ast_helper = Selected_version.Ast_helper
 module Asttypes = Selected_version.Asttypes
 
 let map_structure = Selected_version.map_structure
+
 let map_signature = Selected_version.map_signature
 
 module Parse = struct

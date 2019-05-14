@@ -486,29 +486,7 @@ let fmt_assign_arrow c =
 let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
 
-let rec fmt_attribute c pre = function
-  | { attr_name=
-        {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true}}
-    ; attr_payload=
-        PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
-                    ; pexp_attributes= [] }
-                  , [] ) } ]
-    ; _ } ->
-      fmt_or (String.equal txt "ocaml.text") "@ " " "
-      $ wrap "(**" "*)" (str doc)
-  | {attr_name= name; attr_payload= pld; _} ->
-      let indent =
-        match pld with
-        | (PStr _ | PSig _) when String.equal pre "@@@" ->
-            c.conf.stritem_extension_indent
-        | _ -> c.conf.extension_indent
-      in
-      fmt_attribute_or_extension c pre (hvbox indent) (name, pld)
-
-and fmt_extension c ctx key (ext, pld) =
+let rec fmt_extension c ctx key (ext, pld) =
   match (pld, ctx) with
   | ( PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
     , (Pld _ | Str _ | Top) ) ->
@@ -538,10 +516,29 @@ and fmt_attribute_or_extension c key maybe_box (pre, pld) =
   $ cmts_last
 
 and fmt_attributes c ?(pre = noop) ?(suf = noop) ~key attrs =
+  let fmt_attribute c pre = function
+    | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true}}
+      , PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                    ; pexp_attributes= [] }
+                  , [] ) } ] ) ->
+        fmt_or (String.equal txt "ocaml.text") "@ " " "
+        $ wrap "(**" "*)" (str doc)
+    | name, pld ->
+      let indent =
+        match pld with
+        | (PStr _ | PSig _) when String.equal pre "@@@" ->
+            c.conf.stritem_extension_indent
+        | _ -> c.conf.extension_indent
+      in
+      fmt_attribute_or_extension c pre (hvbox indent) (name, pld)
+  in
   let num = List.length attrs in
-  let fmt_attr ~first ~last atr =
+  let fmt_attr ~first ~last {attr_name; attr_payload; attr_loc} =
     fmt_or_k first (open_hvbox 0) (fmt "@ ")
-    $ fmt_attribute c key atr
+    $ Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload))
     $ fmt_if_k last (close_box $ suf)
   in
   fmt_if_k (num > 0) (pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
@@ -773,15 +770,16 @@ and fmt_package_type c ctx cnstrs =
   list_fl cnstrs fmt_cstr
 
 and fmt_row_field c ctx = function
-  | {prf_desc= Rtag (name, const, typs); prf_attributes= atrs; _} ->
+  | {prf_desc= Rtag (name, const, typs); prf_attributes= atrs; prf_loc} ->
       let c = update_config c atrs in
       let doc, atrs = doc_atrs atrs in
       hvbox 0
         ( hvbox 0
-            ( fmt_str_loc c ~pre:(str "`") name
-            $ fmt_if (not (const && List.is_empty typs)) " of@ "
-            $ fmt_if (const && not (List.is_empty typs)) " & "
-            $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c) )
+            ( Cmts.fmt c prf_loc
+            @@ ( fmt_str_loc c ~pre:(str "`") name
+               $ fmt_if (not (const && List.is_empty typs)) " of@ "
+               $ fmt_if (const && not (List.is_empty typs)) " & "
+               $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c) ) )
         $ fmt_attributes c ~key:"@" atrs
         $ fmt_docstring_padded c doc )
   | {prf_desc= Rinherit typ; _} -> fmt_core_type c (sub_typ ~ctx typ)
