@@ -106,3 +106,9 @@ open (val x)
 open [%extension]
 
 open functor (A : T) -> T'
+
+module type T = sig
+  open A
+  open A.B
+  open A(B)
+end
