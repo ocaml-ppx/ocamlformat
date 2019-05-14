@@ -13,12 +13,13 @@ let selected_version = Migrate_parsetree.Versions.ocaml_408
 
 module Selected_version = Ast_408
 
-include (
-  Selected_version :
-    module type of struct
-      include Selected_version
-    end
-    with module Location := Selected_version.Location )
+module Parsetree = Selected_version.Parsetree
+module Ast_mapper = Selected_version.Ast_mapper
+module Ast_helper = Selected_version.Ast_helper
+module Asttypes = Selected_version.Asttypes
+
+let map_structure = Selected_version.map_structure
+let map_signature = Selected_version.map_signature
 
 module Parse = struct
   open Migrate_parsetree
@@ -105,7 +106,7 @@ module Position = struct
 end
 
 module Location = struct
-  include Location
+  include Selected_version.Location
   module Format = Format_
 
   let fmt fs {loc_start; loc_end; loc_ghost} =
