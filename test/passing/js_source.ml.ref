@@ -9807,8 +9807,9 @@ let _ =
 ;;
 
 module type T = sig
-  val find : t -> key -> value option (** @raise if not found. *)
+  (** @raise if not found. *)
+  val find : t -> key -> value option
 
-  val f : a_few:params -> with_long_names:to_break -> the_line:before_the_comment -> unit
   (** @param blablabla *)
+  val f : a_few:params -> with_long_names:to_break -> the_line:before_the_comment -> unit
 end

@@ -75,6 +75,8 @@ end
 (** @deprecated  *)
 type t = T
 
-type t = t  (** @deprecated  *)
+type t = t
+(** @deprecated  *)
 
-val a : b  (** @deprecated  *)
+val a : b
+(** @deprecated  *)

@@ -414,8 +414,8 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
     [doc_before, doc_after, attrs] *)
-let fmt_docstring_around_item ?(force_before = false) ?(is_simple = true) c
-    attrs =
+let fmt_docstring_around_item ?(force_before = false) ?(fit = false) c attrs
+    =
   let doc, attrs = doc_atrs attrs in
   match doc_atrs attrs with
   | (Some _ as doc2), attrs ->
@@ -445,8 +445,8 @@ let fmt_docstring_around_item ?(force_before = false) ?(is_simple = true) c
         (floating_doc, fmt_doc ~pro doc, attrs)
       in
       match c.conf with
-      | _ when force_before || not is_simple -> before ()
-      | {doc_comments_tag_only= `Fit} when is_tag_only doc ->
+      | _ when force_before -> before ()
+      | {doc_comments_tag_only= `Fit} when fit && is_tag_only doc ->
           let pro = break c.conf.doc_comments_padding 0 in
           after ~pro ()
       | {doc_comments= `Before} -> before ()
@@ -2370,7 +2370,7 @@ and fmt_class_field c ctx (cf : class_field) =
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol:None pcf_loc in
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item c pcf_attributes
+    fmt_docstring_around_item ~fit:true c pcf_attributes
   in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
   let fmt_kind = function
@@ -3047,8 +3047,8 @@ and fmt_signature_item c ?ext {ast= si} =
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
       let doc_before, doc_after, atrs =
-        let is_simple = Ast.module_type_is_simple pincl_mod in
-        fmt_docstring_around_item c ~is_simple pincl_attributes
+        let force_before = not (Ast.module_type_is_simple pincl_mod) in
+        fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
         match pincl_mod with
@@ -3086,8 +3086,8 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
       let doc_before, doc_after, atrs =
-        let is_simple = Ast.class_type_is_simple cl.pci_expr in
-        fmt_docstring_around_item ~is_simple c cl.pci_attributes
+        let force_before = not (Ast.class_type_is_simple cl.pci_expr) in
+        fmt_docstring_around_item ~force_before c cl.pci_attributes
       in
       let class_types =
         hovbox 2
@@ -3123,8 +3123,8 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
         | _ -> (None, xbody)
       in
       let doc_before, doc_after, atrs =
-        let is_simple = Ast.class_decl_is_simple cl.pci_expr in
-        fmt_docstring_around_item ~is_simple c cl.pci_attributes
+        let force_before = not (Ast.class_decl_is_simple cl.pci_expr) in
+        fmt_docstring_around_item ~force_before c cl.pci_attributes
       in
       let class_exprs =
         hovbox 2
@@ -3191,7 +3191,8 @@ and fmt_module c ?epi ?(can_sparse = false) keyword name xargs xbody colon
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item c ~is_simple:single_line attributes
+    fmt_docstring_around_item c ~force_before:(not single_line) ~fit:true
+      attributes
   in
   hvbox
     (if compact then 0 else 2)
@@ -3264,7 +3265,7 @@ and fmt_open_description c
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item c popen_attributes
+    fmt_docstring_around_item ~fit:true c popen_attributes
   in
   hovbox 0
     ( doc_before $ str "open"
@@ -3589,8 +3590,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
       let doc_before, doc_after, atrs =
-        let is_simple = Ast.module_expr_is_simple pincl_mod in
-        fmt_docstring_around_item c ~is_simple pincl_attributes
+        let force_before = not (Ast.module_expr_is_simple pincl_mod) in
+        fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
       let blk = fmt_module_expr c (sub_mod ~ctx pincl_mod) in
       let box = wrap_k blk.opn blk.cls in
