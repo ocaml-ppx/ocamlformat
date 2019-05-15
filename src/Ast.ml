@@ -274,6 +274,11 @@ and class_type_is_simple x =
       false
   | Pcty_arrow (_, _, t) -> class_type_is_simple t
 
+let type_decl_is_simple x =
+  match x.ptype_kind with
+  | Ptype_abstract | Ptype_open -> true
+  | Ptype_variant _ | Ptype_record _ -> false
+
 module type Module_item = sig
   type t
 

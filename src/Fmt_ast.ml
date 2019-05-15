@@ -2717,7 +2717,8 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
     match ptype_kind with Ptype_variant _ -> true | _ -> false
   in
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item ~force_before c ptype_attributes
+    let fit = Ast.type_decl_is_simple decl in
+    fmt_docstring_around_item ~force_before ~fit c ptype_attributes
   in
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0

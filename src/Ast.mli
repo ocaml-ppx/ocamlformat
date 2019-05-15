@@ -65,6 +65,8 @@ val class_decl_is_simple : class_expr -> bool
 
 val class_type_is_simple : class_type -> bool
 
+val type_decl_is_simple : type_declaration -> bool
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload

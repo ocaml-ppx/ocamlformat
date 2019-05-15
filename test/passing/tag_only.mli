@@ -87,14 +87,11 @@ type t = T
 type t = {a: int}
 (** @deprecated  *)
 
-type t = ..
-(** @deprecated  *)
+type t = ..  (** @deprecated  *)
 
-type t
-(** @deprecated  *)
+type t  (** @deprecated  *)
 
-type t = t
-(** @deprecated  *)
+type t = t  (** @deprecated  *)
 
 val a : b
 (** @deprecated  *)
