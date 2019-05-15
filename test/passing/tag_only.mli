@@ -35,6 +35,15 @@ end
 (** @deprecated  *)
 type t = T
 
+type t = {a: int}
+(** @deprecated  *)
+
+type t = ..
+(** @deprecated  *)
+
+type t
+(** @deprecated  *)
+
 type t = t
 (** @deprecated  *)
 
@@ -74,6 +83,15 @@ end
 
 (** @deprecated  *)
 type t = T
+
+type t = {a: int}
+(** @deprecated  *)
+
+type t = ..
+(** @deprecated  *)
+
+type t
+(** @deprecated  *)
 
 type t = t
 (** @deprecated  *)
