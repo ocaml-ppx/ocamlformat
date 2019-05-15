@@ -165,16 +165,31 @@ let is_sequence exp =
       true
   | _ -> false
 
-let rec is_sugared_list exp =
+let rec is_sugared_list' acc exp =
   match exp.pexp_desc with
-  | Pexp_construct ({txt= Lident "[]"}, None) -> true
+  | Pexp_construct ({txt= Lident "[]"}, None) -> Ok (exp :: acc)
   | Pexp_construct
       ( {txt= Lident "::"}
       , Some
           { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []} as tl)]
           ; pexp_attributes= [] } ) ->
-      is_sugared_list tl
-  | _ -> false
+      is_sugared_list' (exp :: acc) tl
+  | _ -> Error acc
+
+let is_sugared_list =
+  let memo = Hashtbl.Poly.create () in
+  register_reset (fun () -> Hashtbl.clear memo) ;
+  fun exp ->
+    match Hashtbl.find memo exp with
+    | Some b -> b
+    | None -> (
+      match is_sugared_list' [] exp with
+      | Error l ->
+          List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:false) l ;
+          false
+      | Ok l ->
+          List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
+          true )
 
 let doc_atrs atrs =
   let docs, rev_atrs =
