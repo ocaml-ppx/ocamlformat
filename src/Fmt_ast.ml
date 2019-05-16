@@ -352,16 +352,15 @@ let fmt_label lbl sep =
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
 let wrap_list c =
-  if c.conf.space_around_collection_expressions then
-    wrap_k (str "[ ") (or_newline "]" "]")
+  if c.conf.space_around_lists then wrap_k (str "[ ") (or_newline "]" "]")
   else wrap_fits_breaks c.conf "[" "]"
 
 let wrap_array c =
-  if c.conf.space_around_collection_expressions then wrap "[| " "@ |]"
+  if c.conf.space_around_arrays then wrap "[| " "@ |]"
   else wrap_fits_breaks c.conf "[|" "|]"
 
 let wrap_record (c : Conf.t) =
-  if c.space_around_collection_expressions then wrap "{ " "@ }"
+  if c.space_around_records then wrap "{ " "@ }"
   else wrap_fits_breaks c "{" "}"
 
 let wrap_tuple ~parens ~no_parens_if_break c =
@@ -679,7 +678,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
           | None -> false
           | Some x -> exposed_right_typ x )
       in
-      let space_around = c.conf.space_around_collection_expressions in
+      let space_around = c.conf.space_around_variants in
       let closing =
         let empty = List.is_empty rfs in
         fits_breaks
