@@ -31,6 +31,7 @@ type t =
   ; doc_comments_tag_only: [`Fit | `Default]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
+  ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
@@ -60,6 +61,7 @@ type t =
   ; space_around_lists: bool
   ; space_around_records: bool
   ; space_around_variants: bool
+  ; stritem_extension_indent: int
   ; type_decl: [`Compact | `Sparse]
   ; type_decl_indent: int
   ; wrap_comments: bool
@@ -787,6 +789,16 @@ module Formatting = struct
       (fun conf x -> {conf with escape_strings= x})
       (fun conf -> conf.escape_strings)
 
+  let extension_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of items inside extension nodes ($(docv) columns)."
+    in
+    let names = ["extension-indent"] in
+    C.int ~names ~default:2 ~doc ~docv ~section
+      (fun conf x -> {conf with extension_indent= x})
+      (fun conf -> conf.extension_indent)
+
   let extension_sugar =
     let doc = "Extension formatting." in
     let names = ["extension-sugar"] in
@@ -1160,6 +1172,17 @@ module Formatting = struct
       (fun conf x -> {conf with space_around_variants= x})
       (fun conf -> conf.space_around_variants)
 
+  let stritem_extension_indent =
+    let docv = "COLS" in
+    let doc =
+      "Indentation of structure items inside extension nodes ($(docv) \
+       columns)."
+    in
+    let names = ["stritem-extension-indent"] in
+    C.int ~names ~default:0 ~doc ~docv ~section
+      (fun conf x -> {conf with stritem_extension_indent= x})
+      (fun conf -> conf.stritem_extension_indent)
+
   let type_decl =
     let doc = "Style of type declaration." in
     let names = ["type-decl"] in
@@ -1378,7 +1401,12 @@ let ocp_indent_options =
         ( "cases-exp-indent"
         , "$(b,match_clause) is an alias for $(b,cases-exp-indent)."
         , Fn.id ) )
-  ; ("ppx_stritem_ext", None)
+  ; ( "ppx_stritem_ext"
+    , Some
+        ( "stritem-extension-indent"
+        , "$(b,ppx_stritem_ext) is an alias for \
+           $(b,stritem-extension-indent)."
+        , Fn.id ) )
   ; ("max_indent", None)
   ; ("strict_with", None)
   ; ("strict_else", None)
@@ -1471,6 +1499,7 @@ let ocamlformat_profile =
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
   ; escape_chars= C.default Formatting.escape_chars
   ; escape_strings= C.default Formatting.escape_strings
+  ; extension_indent= C.default Formatting.extension_indent
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; if_then_else= C.default Formatting.if_then_else
@@ -1503,6 +1532,7 @@ let ocamlformat_profile =
   ; space_around_lists= C.default Formatting.space_around_lists
   ; space_around_records= C.default Formatting.space_around_records
   ; space_around_variants= C.default Formatting.space_around_variants
+  ; stritem_extension_indent= C.default Formatting.stritem_extension_indent
   ; type_decl= C.default Formatting.type_decl
   ; type_decl_indent= C.default Formatting.type_decl_indent
   ; wrap_comments= C.default Formatting.wrap_comments
@@ -1596,6 +1626,7 @@ let janestreet_profile =
   ; doc_comments_tag_only= `Fit
   ; escape_chars= `Preserve
   ; escape_strings= `Preserve
+  ; extension_indent= 2
   ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
@@ -1625,6 +1656,7 @@ let janestreet_profile =
   ; space_around_lists= true
   ; space_around_records= true
   ; space_around_variants= true
+  ; stritem_extension_indent= 0
   ; type_decl= `Sparse
   ; type_decl_indent= 2
   ; wrap_comments= false

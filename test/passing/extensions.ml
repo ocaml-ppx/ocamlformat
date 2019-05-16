@@ -155,3 +155,32 @@ let value =
       | x -> false
       | _ -> true
     ]
+
+let foo =
+  [%foooooooooo
+    fooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooo]
+  [@@foooooooooo
+    fooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooo
+      foooooooooooooooooooooooooooo]
+
+;;
+[%%foooooooooo:
+  fooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooo]
+
+[@@@foooooooooo
+  fooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooo
+    foooooooooooooooooooooooooooo]
