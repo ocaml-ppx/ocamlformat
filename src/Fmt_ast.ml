@@ -1947,7 +1947,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_open
       ( { popen_override= flag
-        ; popen_expr= {pmod_desc= Pmod_ident name; _}
+        ; popen_expr
+        ; popen_attributes= attributes
         ; _ }
       , e0 ) ->
       let override = Poly.(flag = Override) in
@@ -1985,7 +1986,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox 0
         ( fits_breaks_if parens "" "("
         $ fits_breaks "" (if override then "let open! " else "let open ")
-        $ fmt_longident_loc c name $ fits_breaks opn " in"
+        $ fmt_module_statement c ~attributes noop (sub_mod ~ctx popen_expr)
+        $ fits_breaks opn " in"
         $ fmt_or_k force_fit_if (fmt "@;<0 2>")
             (fits_breaks "" "@;<1000 0>")
         $ fmt_expression c (sub_exp ~ctx e0)
@@ -2317,7 +2319,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) ))
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
-  | _ -> not_implemented ()
+  | Pexp_letop _ ->
+      not_implemented ()
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let _, fields =
@@ -3472,7 +3475,7 @@ and fmt_module_statement c ~attributes keyword mod_expr =
   in
   hovbox 0
     ( doc_before $ box
-        ( hvbox 2 (keyword $ str " " $ Option.call ~f:blk.pro)
+        ( hvbox 2 (keyword $ Option.call ~f:blk.pro)
         $ blk.psp $ blk.bdy )
     $ blk.esp $ Option.call ~f:blk.epi
     $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs $ doc_after )
@@ -3799,13 +3802,13 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc attributes
       @@ fun c ->
-      fmt_module_statement c ~attributes (str "include") (sub_mod ~ctx pincl_mod)
+      fmt_module_statement c ~attributes (str "include ") (sub_mod ~ctx pincl_mod)
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open {popen_expr; popen_override; popen_attributes= attributes; popen_loc} ->
       update_config_maybe_disabled c popen_loc attributes
       @@ fun c ->
-      let keyword = str "open" $ fmt_if (Poly.equal popen_override Override) "!" in
+      let keyword = str "open" $ fmt_if (Poly.equal popen_override Override) "!" $ str " " in
       fmt_module_statement c ~attributes keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
