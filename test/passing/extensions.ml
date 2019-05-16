@@ -184,3 +184,5 @@ let foo =
     foooooooooooooooooooooooooooooooooo
     foooooooooooooooooooooooooooo
     foooooooooooooooooooooooooooo]
+
+let _ = [%ext let+ a = b in c]

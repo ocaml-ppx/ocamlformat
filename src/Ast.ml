@@ -1182,13 +1182,15 @@ end = struct
       | PPat (p, _) -> p == pat
       | _ -> false
     in
+    let check_subpat ppat =
+      ppat == pat
+      ||
+      match ppat.ppat_desc with
+      | Ppat_constraint (p, _) -> p == pat
+      | _ -> false
+    in
     let check_bindings l =
-      List.exists l ~f:(fun {pvb_pat} ->
-          pvb_pat == pat
-          ||
-          match pvb_pat.ppat_desc with
-          | Ppat_constraint (p, _) -> p == pat
-          | _ -> false)
+      List.exists l ~f:(fun {pvb_pat} -> check_subpat pvb_pat)
     in
     match ctx with
     | Pld (PPat (p1, _)) -> assert (p1 == pat)
@@ -1236,13 +1238,16 @@ end = struct
       | Pexp_object {pcstr_self; pcstr_fields} ->
           assert (pcstr_self == pat || check_pcstr_fields pcstr_fields)
       | Pexp_let (_, bindings, _) -> assert (check_bindings bindings)
+      | Pexp_letop {let_; ands; _} ->
+          let f {pbop_pat} = check_subpat pbop_pat in
+          assert (f let_ || List.exists ~f ands)
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           assert (
             List.exists cases ~f:(function
               | {pc_lhs} when pc_lhs == pat -> true
               | _ -> false) )
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
-      | _ -> not_implemented () )
+      )
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
@@ -1326,6 +1331,9 @@ end = struct
             assert (
               List.exists bindings ~f:(fun {pvb_expr} -> pvb_expr == exp)
               || e == exp )
+        | Pexp_letop {let_; ands; body} ->
+            let f {pbop_exp} = pbop_exp == exp in
+            assert (f let_ || List.exists ~f ands || body == exp)
         | (Pexp_match (e, _) | Pexp_try (e, _)) when e == exp -> ()
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
@@ -1388,8 +1396,7 @@ end = struct
             assert (e1 == exp || e2 == exp || Option.exists e3 ~f)
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
-        | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f)
-        | _ -> not_implemented () )
+        | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
     | Str str -> (
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
@@ -1992,6 +1999,7 @@ end = struct
           when Source.extension_using_sugar ~name:ext ~payload:e ->
             continue e
         | Pexp_let (_, _, e)
+         |Pexp_letop {body= e}
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, e) -> (
           match cls with
@@ -2024,7 +2032,6 @@ end = struct
          |Pexp_variant (_, None)
          |Pexp_while _ ->
             false
-        | _ -> not_implemented ()
       in
       mem_cls_exp cls exp
       || Hashtbl.find_or_add memo (cls, exp) ~default:exposed_
@@ -2071,6 +2078,7 @@ end = struct
        |Pexp_variant (_, Some e) ->
           continue e
       | Pexp_let (_, _, e)
+       |Pexp_letop {body= e}
        |Pexp_letexception (_, e)
        |Pexp_letmodule (_, _, e) ->
           continue e
@@ -2107,7 +2115,6 @@ end = struct
        |Pexp_variant (_, None)
        |Pexp_while _ ->
           false
-      | _ -> not_implemented ()
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
       ~default:exposed_
