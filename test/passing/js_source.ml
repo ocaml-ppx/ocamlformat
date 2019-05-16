@@ -7396,3 +7396,16 @@ let _ =
   List.map rows ~f:(fun row ->
       Or_error.try_with (fun () -> fffffffffffffffffffffffff row))
 ;;
+
+module type T = sig
+
+  val find : t -> key -> value option (** @raise if not found. *)
+
+  val f
+   :  a_few : params
+   -> with_long_names : to_break
+   -> the_line : before_the_comment
+   -> unit
+   (** @param blablabla *)
+
+end
