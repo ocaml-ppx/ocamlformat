@@ -1494,6 +1494,7 @@ let conventional_profile =
   ; field_space= `Loose
   ; indicate_nested_or_patterns= `Unsafe_no
   ; sequence_style= `Terminator
+  ; sequence_blank_line= `Preserve_one
   ; space_around_collection_expressions= true }
 
 let compact_profile =
@@ -1537,6 +1538,7 @@ let sparse_profile =
   ; let_module= `Sparse
   ; module_item_spacing= `Sparse
   ; single_case= `Sparse
+  ; sequence_blank_line= `Preserve_one
   ; space_around_collection_expressions= true
   ; type_decl= `Sparse
   ; wrap_fun_args= false }
