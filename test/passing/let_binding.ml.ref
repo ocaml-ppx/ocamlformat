@@ -182,3 +182,7 @@ let _ =
         let+ a = b in
         match a with a -> a )
     | b -> c )
+
+let _ =
+  let+ a b = c in
+  d

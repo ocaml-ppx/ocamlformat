@@ -394,6 +394,7 @@ module Signature_item : Module_item with type t = signature_item = struct
     | Psig_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
     | Psig_value {pval_attributes= atrs; _}
      |Psig_type (_, {ptype_attributes= atrs; _} :: _)
+     |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
      |Psig_typext {ptyext_attributes= atrs; _}
      |Psig_exception {ptyexn_attributes= atrs; _}
      |Psig_modtype {pmtd_attributes= atrs; _}
@@ -411,11 +412,12 @@ module Signature_item : Module_item with type t = signature_item = struct
         {pmd_attributes= atrs1; pmd_type= {pmty_attributes= atrs2; _}; _} ->
         Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
     | Psig_type (_, [])
+     |Psig_typesubst []
      |Psig_recmodule []
      |Psig_class_type []
      |Psig_class [] ->
         false
-    | _ -> not_implemented ()
+    | Psig_modsubst _ -> not_implemented ()
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
@@ -433,7 +435,8 @@ module Signature_item : Module_item with type t = signature_item = struct
     | `Compact, `Compact -> (
       match (itmI.psig_desc, itmJ.psig_desc) with
       | Psig_value _, Psig_value _
-       |(Psig_type _ | Psig_typext _), (Psig_type _ | Psig_typext _)
+       |( (Psig_type _ | Psig_typesubst _ | Psig_typext _)
+        , (Psig_type _ | Psig_typesubst _ | Psig_typext _) )
        |Psig_exception _, Psig_exception _
        |( (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
         , (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
@@ -1031,6 +1034,7 @@ end = struct
       match ctx.psig_desc with
       | Psig_value {pval_type= t1; _} -> assert (typ == t1)
       | Psig_type (_, d1N) -> assert (List.exists d1N ~f:check_type)
+      | Psig_typesubst d1N -> assert (List.exists d1N ~f:check_type)
       | Psig_typext typext -> assert (check_typext typext)
       | Psig_exception ext -> assert (check_typexn ext)
       | Psig_class_type l -> assert (check_class_type l)
@@ -1519,7 +1523,8 @@ end = struct
     match ctx with
     | { ctx=
           ( Str {pstr_desc= Pstr_type (_, t1N); _}
-          | Sig {psig_desc= Psig_type (_, t1N); _} )
+          | Sig {psig_desc= Psig_type (_, t1N); _}
+          | Sig {psig_desc= Psig_typesubst t1N; _} )
       ; ast= Typ ({ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _; _} as typ) }
       when List.exists t1N ~f:(is_tuple_lvl1_in_constructor typ) ->
         constructor_cxt_prec_of_inner typ
@@ -1774,7 +1779,8 @@ end = struct
     | { ast= {ptyp_desc= Ptyp_alias _; _}
       ; ctx=
           ( Str {pstr_desc= Pstr_type (_, t); _}
-          | Sig {psig_desc= Psig_type (_, t); _} ) }
+          | Sig {psig_desc= Psig_type (_, t); _}
+          | Sig {psig_desc= Psig_typesubst t; _} ) }
       when List.exists t ~f:(fun t ->
                match t.ptype_kind with
                | Ptype_variant l ->
