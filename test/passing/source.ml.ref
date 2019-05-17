@@ -4905,15 +4905,11 @@ module A = struct
   module S = struct end
 end
 
-module F =
-functor
-  (_ : sig end)
-  ->
-  struct
-    module type S
+module F (_ : sig end) = struct
+  module type S
 
-    module S = A.S
-  end
+  module S = A.S
+end
 
 module M = struct end
 
@@ -4921,13 +4917,9 @@ module N = M
 
 module G (X : F(N).S) : A.S = X
 
-module F =
-functor
-  (_ : sig end)
-  ->
-  struct
-    module type S
-  end
+module F (_ : sig end) = struct
+  module type S
+end
 
 module M = struct end
 
@@ -5860,7 +5852,7 @@ module X (X : sig end) (Y : sig end) (Z : sig end) = struct end
 
 module Y (X : sig end) (Y : sig end) (Z : sig end) = struct end
 
-module Z = functor (_ : sig end) (_ : sig end) (_ : sig end) -> struct end
+module Z (_ : sig end) (_ : sig end) (_ : sig end) = struct end
 
 module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
 functor (X : sig end) () (Z : sig end) -> struct end
