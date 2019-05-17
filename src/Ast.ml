@@ -394,6 +394,7 @@ module Signature_item : Module_item with type t = signature_item = struct
      |Psig_typext {ptyext_attributes= atrs}
      |Psig_exception {ptyexn_attributes= atrs}
      |Psig_modtype {pmtd_attributes= atrs}
+     |Psig_modsubst {pms_attributes= atrs}
      |Psig_open {popen_attributes= atrs}
      |Psig_extension (_, atrs)
      |Psig_class_type ({pci_attributes= atrs} :: _)
@@ -412,7 +413,6 @@ module Signature_item : Module_item with type t = signature_item = struct
      |Psig_class_type []
      |Psig_class [] ->
         false
-    | Psig_modsubst _ -> not_implemented ()
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
@@ -421,7 +421,8 @@ module Signature_item : Module_item with type t = signature_item = struct
     | `Sparse -> (
       match itm.psig_desc with
       | Psig_open {popen_expr= i; _}
-       |Psig_module {pmd_type= {pmty_desc= Pmty_alias i}} ->
+       |Psig_module {pmd_type= {pmty_desc= Pmty_alias i}}
+       |Psig_modsubst {pms_manifest= i} ->
           longident_is_simple c i.txt
       | _ -> false )
 
@@ -433,9 +434,10 @@ module Signature_item : Module_item with type t = signature_item = struct
        |( (Psig_type _ | Psig_typesubst _ | Psig_typext _)
         , (Psig_type _ | Psig_typesubst _ | Psig_typext _) )
        |Psig_exception _, Psig_exception _
-       |( (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
-        , (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
-        )
+       |( ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
+          | Psig_include _ )
+        , ( Psig_module _ | Psig_modsubst _ | Psig_recmodule _ | Psig_open _
+          | Psig_include _ ) )
        |Psig_modtype _, Psig_modtype _
        |Psig_class _, Psig_class _
        |Psig_class_type _, Psig_class_type _
