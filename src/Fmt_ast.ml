@@ -2699,12 +2699,11 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
       | Ptype_variant _ | Ptype_record _ | Ptype_open -> fmt "@;<1 4>"
     in
     let fmt_manifest typ =
-        fmt_private_flag priv
-        $ break_before_manifest_kind
-        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ)
+      fmt_private_flag priv $ break_before_manifest_kind
+      $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ)
     in
     let eq = str " " $ str eq in
-    match manifest, decl with
+    match (manifest, decl) with
     | Some m, Some d -> eq $ fmt_manifest m $ str " =" $ d
     | Some m, None -> eq $ fmt_manifest m
     | None, Some d -> eq $ d
@@ -2744,15 +2743,15 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
           $ fmt_if_k (not last) p.sep_after
         in
         box_manifest
-          ( fmt_manifest ~priv:Public mfst
-            (Some (fmt_private_flag priv $ p.docked_before)) )
+          (fmt_manifest ~priv:Public mfst
+             (Some (fmt_private_flag priv $ p.docked_before)))
         $ p.break_before
         $ p.box_record (list_fl lbl_decls fmt_decl)
         $ p.break_after $ p.docked_after
     | Ptype_open ->
         box_manifest
-          ( fmt_manifest ~priv:Public mfst
-            (Some (fmt_private_flag priv $ str " ..")) )
+          (fmt_manifest ~priv:Public mfst
+             (Some (fmt_private_flag priv $ str " ..")))
   in
   let fmt_cstr (t1, t2, loc) =
     Cmts.fmt c loc
@@ -3612,7 +3611,8 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
       else "and"
     and brk = fmt_if (not last) "\n" in
     let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?eq ?ext ~brk ctx decl $ fmt_if (not last) "@ "
+    fmt_type_declaration c ~pre ?eq ?ext ~brk ctx decl
+    $ fmt_if (not last) "@ "
   in
   vbox 0 (list_fl decls fmt_decl)
 

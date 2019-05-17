@@ -407,7 +407,7 @@ module Signature_item : Module_item with type t = signature_item = struct
       ->
         Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
     | Psig_type (_, [])
-    | Psig_typesubst []
+     |Psig_typesubst []
      |Psig_recmodule []
      |Psig_class_type []
      |Psig_class [] ->
@@ -430,7 +430,8 @@ module Signature_item : Module_item with type t = signature_item = struct
     | `Compact, `Compact -> (
       match (itmI.psig_desc, itmJ.psig_desc) with
       | Psig_value _, Psig_value _
-       |(Psig_type _ | Psig_typesubst _ | Psig_typext _), (Psig_type _ | Psig_typesubst _ | Psig_typext _)
+       |( (Psig_type _ | Psig_typesubst _ | Psig_typext _)
+        , (Psig_type _ | Psig_typesubst _ | Psig_typext _) )
        |Psig_exception _, Psig_exception _
        |( (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
         , (Psig_module _ | Psig_recmodule _ | Psig_open _ | Psig_include _)
