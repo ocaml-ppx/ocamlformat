@@ -170,3 +170,23 @@ type ( 'context
   | On_objc_cpp : 'context -> 'f_in
   | On_objc_cpp : 'context -> 'f_in
   | On_objc_cpp : 'context -> 'f_in
+
+module type A = sig
+  type t := A.t
+
+  type a := A.a
+
+  and b := A.b
+
+  type t := A.t = A | B
+
+  type t := A | B
+
+  type t := A.t = { a: int; b: int }
+
+  and t := { a: int; b: int }
+
+  type t := A.t = ..
+
+  type t := ..
+end

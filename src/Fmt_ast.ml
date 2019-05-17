@@ -2692,16 +2692,23 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
   in
   update_config_maybe_disabled c ptype_loc ptype_attributes
   @@ fun c ->
-  let fmt_manifest ~priv manifest =
+  let fmt_manifest ~priv manifest decl =
     let break_before_manifest_kind =
       match ptype_kind with
       | Ptype_abstract -> fmt "@ "
       | Ptype_variant _ | Ptype_record _ | Ptype_open -> fmt "@;<1 4>"
     in
-    opt manifest (fun typ ->
-        str " " $ str eq $ fmt_private_flag priv
+    let fmt_manifest typ =
+        fmt_private_flag priv
         $ break_before_manifest_kind
-        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ))
+        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ)
+    in
+    let eq = str " " $ str eq in
+    match manifest, decl with
+    | Some m, Some d -> eq $ fmt_manifest m $ str " =" $ d
+    | Some m, None -> eq $ fmt_manifest m
+    | None, Some d -> eq $ d
+    | None, None -> noop
   in
   let box_manifest k =
     hvbox c.conf.type_decl_indent
@@ -2717,14 +2724,14 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
   in
   let fmt_manifest_kind mfst priv kind =
     match kind with
-    | Ptype_abstract -> box_manifest (fmt_manifest ~priv mfst)
+    | Ptype_abstract -> box_manifest (fmt_manifest ~priv mfst None)
     | Ptype_variant [] ->
         box_manifest
-          (fmt_manifest ~priv:Public mfst $ str " =" $ fmt_private_flag priv)
+          (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
         $ fmt "@ |"
     | Ptype_variant ctor_decls ->
         box_manifest
-          (fmt_manifest ~priv:Public mfst $ str " =" $ fmt_private_flag priv)
+          (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
         $ fmt "@ "
         $ list_fl ctor_decls (fmt_constructor_declaration c ctx)
     | Ptype_record lbl_decls ->
@@ -2738,14 +2745,14 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
         in
         box_manifest
           ( fmt_manifest ~priv:Public mfst
-          $ str " =" $ fmt_private_flag priv $ p.docked_before )
+            (Some (fmt_private_flag priv $ p.docked_before)) )
         $ p.break_before
         $ p.box_record (list_fl lbl_decls fmt_decl)
         $ p.break_after $ p.docked_after
     | Ptype_open ->
         box_manifest
           ( fmt_manifest ~priv:Public mfst
-          $ str " =" $ fmt_private_flag priv $ str " .." )
+            (Some (fmt_private_flag priv $ str " ..")) )
   in
   let fmt_cstr (t1, t2, loc) =
     Cmts.fmt c loc
@@ -3117,7 +3124,8 @@ and fmt_signature_item c ?ext {ast= si} =
   | Psig_class cl -> fmt_class_types c ctx ~pre:"class" ~sep:":" cl
   | Psig_class_type cl ->
       fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
-  | _ -> not_implemented ()
+  | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
+  | Psig_modsubst _ -> not_implemented ()
 
 and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
@@ -3596,7 +3604,7 @@ and fmt_structure c ctx itms =
   in
   hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
-and fmt_type c ?ext rec_flag decls ctx =
+and fmt_type c ?ext ?eq rec_flag decls ctx =
   let fmt_decl ~first ~last decl =
     let pre =
       if first then
@@ -3604,7 +3612,7 @@ and fmt_type c ?ext rec_flag decls ctx =
       else "and"
     and brk = fmt_if (not last) "\n" in
     let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?ext ~brk ctx decl $ fmt_if (not last) "@ "
+    fmt_type_declaration c ~pre ?eq ?ext ~brk ctx decl $ fmt_if (not last) "@ "
   in
   vbox 0 (list_fl decls fmt_decl)
 
