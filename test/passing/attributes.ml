@@ -174,3 +174,7 @@ type t = {a: int}
 [@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
 (* comment *)
 [@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
+
+module type A = sig
+  module A := A.B [@@attr]
+end
