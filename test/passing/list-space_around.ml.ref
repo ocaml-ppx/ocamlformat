@@ -38,7 +38,7 @@ let x = function
     ] ->
       ()
 
-[@@@ocamlformat "space-around-collection-expressions=true"]
+[@@@ocamlformat "space-around-lists=true"]
 
 let x = function
   | [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit"

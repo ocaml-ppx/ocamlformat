@@ -87,7 +87,7 @@ let get_record_type (c : Conf.t) ~wrap_record =
       ; break_after= noop
       ; docked_after= noop }
   | `After_and_docked ->
-      let space = if c.space_around_collection_expressions then 1 else 0 in
+      let space = if c.space_around_records then 1 else 0 in
       { docked_before= fmt " {"
       ; break_before= break space 0
       ; box_record= Fn.id
