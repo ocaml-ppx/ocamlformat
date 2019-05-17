@@ -557,6 +557,7 @@ val pp_set_margin : formatter -> int -> unit
 val pp_get_margin : formatter -> unit -> int
 val pp_set_max_indent : formatter -> int -> unit
 val pp_get_max_indent : formatter -> unit -> int
+val pp_set_max_newline_offset : formatter -> int -> unit
 val pp_set_max_boxes : formatter -> int -> unit
 val pp_get_max_boxes : formatter -> unit -> int
 val pp_over_max_boxes : formatter -> unit -> bool

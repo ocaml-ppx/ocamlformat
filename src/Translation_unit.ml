@@ -316,6 +316,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
       let cmts_t = xunit.init_cmts source_t t.ast t.comments in
       let fs = Format_.formatter_of_buffer buffer in
       Fmt.set_margin conf.margin fs ;
+      Option.iter conf.max_indent ~f:(fun x -> Fmt.set_max_indent x fs) ;
       (* note that [fprintf fs "%s" ""] is not a not-opt. *)
       if not (String.is_empty t.prefix) then
         Format_.fprintf fs "%s" t.prefix ;

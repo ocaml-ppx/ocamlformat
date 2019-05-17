@@ -243,6 +243,10 @@ OPTIONS (CODE FORMATTING STYLE)
            starts a line. always always apply match-indent. auto applies
            match-indent when seen fit. The default value is never.
 
+       --max-indent=COLS
+           Maximum indentation (COLS columns). The default value is none.
+           Cannot be set in attributes.
+
        --module-item-spacing={sparse|preserve|compact}
            Spacing between items of structures and signatures. sparse will
            always break a line between two items. preserve will not leave
@@ -414,7 +418,8 @@ OPTIONS
            an alias for indent-after-in. with sets function-indent and
            match-indent. match_clause is an alias for cases-exp-indent.
            ppx_stritem_ext is an alias for stritem-extension-indent.
-           strict_with sets function-indent-nested and match-indent-nested.
+           max_indent is an alias for max-indent. strict_with sets
+           function-indent-nested and match-indent-nested.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}

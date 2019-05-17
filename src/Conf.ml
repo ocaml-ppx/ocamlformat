@@ -50,6 +50,7 @@ type t =
   ; margin: int
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
+  ; max_indent: int option
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
@@ -170,6 +171,8 @@ module C : sig
 
   val int : default:int -> docv:string -> int option_decl
 
+  val int_opt : docv:string -> int option option_decl
+
   val default : 'a t -> 'a
 
   val update_using_cmdline : config -> config
@@ -255,6 +258,11 @@ end = struct
 
   let generated_int_doc ~allow_inline ~doc ~section ~default =
     let default = Format.sprintf "The default value is $(b,%i)." default in
+    Format.sprintf "%s %s%s" doc default
+      (in_attributes ~section allow_inline)
+
+  let generated_opt_doc ~allow_inline ~doc ~section =
+    let default = "The default value is $(b,none)." in
     Format.sprintf "%s %s%s" doc default
       (in_attributes ~section allow_inline)
 
@@ -377,6 +385,45 @@ end = struct
     in
     store := Pack opt :: !store ;
     opt
+
+  let opt ~type_ ~type_name ~of_string ~to_string ~docv ~names ~doc ~section
+      ?(allow_inline = Poly.(section = `Formatting)) update get_value =
+    let open Cmdliner in
+    let default = None in
+    let doc = generated_opt_doc ~allow_inline ~doc ~section in
+    let docs = section_name section in
+    let term =
+      Arg.(
+        value & opt (some (some type_)) None & info names ~doc ~docs ~docv)
+    in
+    let parse s =
+      if String.equal s "none" then Ok None
+      else
+        try Ok (Some (of_string s))
+        with _ ->
+          Error
+            (Format.sprintf "invalid value '%s', expecting %s" s type_name)
+    in
+    let r = mk ~default term in
+    let to_string = Option.value_map ~default:"none" ~f:to_string in
+    let cmdline_get () = !r in
+    let opt =
+      { names
+      ; parse
+      ; update
+      ; cmdline_get
+      ; allow_inline
+      ; default
+      ; to_string
+      ; get_value
+      ; from }
+    in
+    store := Pack opt :: !store ;
+    opt
+
+  let int_opt =
+    opt ~type_:Arg.int ~type_name:"integer" ~of_string:Int.of_string
+      ~to_string:Int.to_string
 
   let update_from config name from =
     let is_profile_option_name x =
@@ -1082,6 +1129,13 @@ module Formatting = struct
       (fun conf x -> {conf with match_indent_nested= x})
       (fun conf -> conf.match_indent_nested)
 
+  let max_indent =
+    let docv = "COLS" in
+    let doc = "Maximum indentation ($(docv) columns)." in
+    C.int_opt ~names:["max-indent"] ~doc ~docv ~section ~allow_inline:false
+      (fun conf x -> {conf with max_indent= x})
+      (fun conf -> conf.max_indent)
+
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
     let names = ["module-item-spacing"] in
@@ -1490,7 +1544,7 @@ let ocp_indent_options =
   ; multi_alias "with" ["function-indent"; "match-indent"]
   ; alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
-  ; unsupported "max_indent"
+  ; alias "max_indent" "max-indent"
   ; multi_alias "strict_with"
       ["function-indent-nested"; "match-indent-nested"]
   ; unsupported "strict_else"
@@ -1605,6 +1659,7 @@ let ocamlformat_profile =
   ; margin= C.default Formatting.margin
   ; match_indent= C.default Formatting.match_indent
   ; match_indent_nested= C.default Formatting.match_indent_nested
+  ; max_indent= C.default Formatting.max_indent
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; nested_match= C.default Formatting.nested_match
@@ -1734,6 +1789,7 @@ let janestreet_profile =
   ; margin= 90
   ; match_indent= 0
   ; match_indent_nested= `Never
+  ; max_indent= None
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; nested_match= `Wrap

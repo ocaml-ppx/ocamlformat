@@ -23,6 +23,8 @@ let set_margin n fs =
   Format.pp_set_margin fs n ;
   Format.pp_set_max_indent fs (n - 1)
 
+let set_max_indent n fs = Format.pp_set_max_newline_offset fs n
+
 (** Debug of formatting -------------------------------------------------*)
 
 let pp_color_k color_code k fs =
