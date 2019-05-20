@@ -1963,12 +1963,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           , ( Pexp_let _ | Pexp_extension _ | Pexp_letexception _
             | Pexp_letmodule _ | Pexp_open _ ) ) ->
             true
-        | _ -> override
+        | _ -> (
+          match popen_expr.pmod_desc with
+          | Pmod_ident _ -> override
+          | _ -> true )
       in
       let force_fit_if =
-        match (let_open, xexp.ctx) with
-        | `Short, _ when not override -> true
-        | _, Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _} ->
+        match (let_open, xexp.ctx, popen_expr.pmod_desc) with
+        | `Short, _, Pmod_ident _ when not override -> true
+        | `Short, _, _ -> false
+        | _, Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}, _ ->
             not force_break_if
         | _ -> false
       in
