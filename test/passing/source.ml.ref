@@ -15,8 +15,7 @@ end [@foo]
 
 module type S = sig
   include
-    ((module type of M [@foo]) [@foo] with type t := M.t)
-  [@foo]
+    ((module type of M [@foo]) [@foo] with type t := M.t [@foo])
   [@@foo]
 
   [@@@foo]
