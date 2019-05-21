@@ -55,3 +55,10 @@ end)
 let x : (module S) = (module struct end)
 
 let x = (module struct end : S)
+
+module rec A : (sig
+  type t
+end
+with type t = int) = struct
+  type t = int
+end
