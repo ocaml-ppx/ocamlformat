@@ -325,12 +325,8 @@ let mod_with pmty =
     let ctx = Mty me in
     match me with
     | {pmty_desc= Pmty_with (mt, wcs); pmty_attributes; pmty_loc} ->
-        let args, rest =
-          match pmty_attributes with
-          | [] -> mod_with_ (sub_mty ~ctx mt)
-          | _ -> ([], sub_mty ~ctx mt)
-        in
-        ((wcs, pmty_loc) :: args, rest)
+        let args, rest = mod_with_ (sub_mty ~ctx mt) in
+        ((wcs, pmty_loc, pmty_attributes) :: args, rest)
     | _ -> ([], xme)
   in
   let l_rev, m = mod_with_ pmty in

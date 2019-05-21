@@ -16,3 +16,19 @@ include (val M) [@warning "item"] [@@warning "structure"]
 
 include ( val Aaaaaaaaaaaaaaaa.Bbbbbbbbbbbbbbbb.Cccccccccccccccc
               .Dddddddddddddddd ) [@warning "item"] [@@warning "structure"]
+
+include (
+  List :
+    module type of Foo with module A := A [@warning "-3"] with module B := B )
+
+include (
+  List :
+    (module type of Foo
+    with module A := A [@warning "-3"] [@warning "-3"]
+    with module B := B [@warning "-3"]) )
+
+include (
+  List :
+    (module type of Pervasives
+    with module A := A [@warning "-3"] [@warning "-3"]
+    with module B := B [@warning "-3"] [@warning "-3"]) ) [@warning "-3"]
