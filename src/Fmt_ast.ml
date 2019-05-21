@@ -2955,7 +2955,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
       { empty with
         pro=
           Option.map pro ~f:(fun pro ->
-              open_hvbox 0 $ pro $ fmt_if parens "(")
+              open_hvbox 0 $ fmt_if parens "(" $ pro)
       ; psp
       ; bdy=
           fmt_if_k (Option.is_none pro) (open_hvbox 0 $ fmt_if parens "(")
