@@ -107,11 +107,6 @@ let x = function {a= (_ : string); _} -> ()
 
 let x = function {a: string = _; _} -> ()
 
-let x =
-  { aaaaaaaaaa
-  (* b *); b}
+let x = {aaaaaaaaaa (* b *); b}
 
-let x =
-  { aaaaaaaaaa
-  (* b *)
-  ; b}
+let x = {aaaaaaaaaa (* b *); b}
