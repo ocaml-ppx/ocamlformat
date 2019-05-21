@@ -1933,14 +1933,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           | Pexp_ident {txt}
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
-              fmt_record_field c lid1
+              Cmts.fmt c f.pexp_loc @@ fmt_record_field c lid1
           | Pexp_constraint ({pexp_desc= Pexp_ident {txt}; pexp_loc}, t)
             when field_alias ~field:lid1.txt txt
                  && List.is_empty f.pexp_attributes ->
               Cmts.fmt c f.pexp_loc @@ Cmts.fmt c pexp_loc
               @@ fmt_record_field c lid1 ~typ:(sub_typ ~ctx t)
           | Pexp_constraint ({pexp_desc= Pexp_pack _}, _) ->
-              fmt_record_field c ~rhs:(fmt_rhs f) lid1
+              Cmts.fmt c f.pexp_loc
+              @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1
           | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
               let type_first =
                 Poly.equal `Type_first (Source.typed_expression t e)
@@ -1948,7 +1949,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~typ:(sub_typ ~ctx t) ~rhs:(fmt_rhs e)
                    ~type_first lid1
-          | _ -> fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
+          | _ ->
+              Cmts.fmt c f.pexp_loc
+              @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
       hvbox 0
         ( wrap_record c.conf
