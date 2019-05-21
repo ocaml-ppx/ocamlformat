@@ -134,6 +134,10 @@ OPTIONS (CODE FORMATTING STYLE)
            Escape encoding for string literals. See `--escape-chars` for the
            interpretation of the modes. The default value is preserve.
 
+       --extension-indent=COLS
+           Indentation of items inside extension nodes (COLS columns). The
+           default value is 2.
+
        --extension-sugar={preserve|always}
            Extension formatting. The default value is preserve.
 
@@ -283,6 +287,10 @@ OPTIONS (CODE FORMATTING STYLE)
        --space-around-variants
            Add a space inside the delimiters of variants.
 
+       --stritem-extension-indent=COLS
+           Indentation of structure items inside extension nodes (COLS
+           columns). The default value is 0.
+
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
            and records definition in a single line. sparse will always break
@@ -370,7 +378,8 @@ OPTIONS
            Read .ocp-indent configuration files. base is an alias for
            let-binding-indent. type is an alias for type-decl-indent. in is
            an alias for indent-after-in. match_clause is an alias for
-           cases-exp-indent.
+           cases-exp-indent. ppx_stritem_ext is an alias for
+           stritem-extension-indent.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}

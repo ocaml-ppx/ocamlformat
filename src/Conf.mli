@@ -34,6 +34,7 @@ type t =
         (** Escape encoding for chars literals. *)
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for string literals. *)
+  ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
@@ -65,6 +66,7 @@ type t =
   ; space_around_lists: bool
   ; space_around_records: bool
   ; space_around_variants: bool
+  ; stritem_extension_indent: int
   ; type_decl: [`Compact | `Sparse]
   ; type_decl_indent: int
   ; wrap_comments: bool  (** Wrap comments at margin. *)

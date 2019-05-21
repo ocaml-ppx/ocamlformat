@@ -486,7 +486,14 @@ let rec fmt_attribute c pre = function
                 , [] ) } ] ) ->
       fmt_or (String.equal txt "ocaml.text") "@ " " "
       $ wrap "(**" "*)" (str doc)
-  | name, pld -> fmt_attribute_or_extension c pre (hvbox 2) (name, pld)
+  | name, pld ->
+      let indent =
+        match pld with
+        | (PStr _ | PSig _) when String.equal pre "@@@" ->
+            c.conf.stritem_extension_indent
+        | _ -> c.conf.extension_indent
+      in
+      fmt_attribute_or_extension c pre (hvbox indent) (name, pld)
 
 and fmt_extension c ctx key (ext, pld) =
   match (pld, ctx) with
@@ -636,7 +643,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       wrap_fits_breaks c.conf "(" ")"
         (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
-  | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
+  | Ptyp_extension ext ->
+      hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
   | Ptyp_package (id, cnstrs) ->
       hvbox 2
         ( hovbox 0 (fmt "module@ " $ fmt_longident_loc c id)
@@ -1019,7 +1027,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       cbox 2
         (wrap_if parens "(" ")"
            (fmt "exception@ " $ fmt_pattern c (sub_pat ~ctx pat)))
-  | Ppat_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
+  | Ppat_extension ext ->
+      hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
   | Ppat_open (lid, pat) ->
       let can_skip_parens =
         match pat.ppat_desc with
@@ -1307,7 +1316,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_grp grp = list grp " ;@ " (fmt_expression c) in
       hvbox 0
         (wrap_if parens "(" ")"
-           ( hvbox 2
+           ( hvbox c.conf.extension_indent
                (wrap "[" "]"
                   ( str "%"
                   $ hovbox 2
@@ -1336,7 +1345,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ( fmt_expression c (sub_exp ~ctx e0)
            $ fmt "@\n"
            $ Cmts.fmt c loc (fmt "|>@\n")
-           $ hvbox 2
+           $ hvbox c.conf.extension_indent
                (wrap "[" "]"
                   ( str "%"
                   $ hovbox 2
@@ -2062,7 +2071,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_extension ext ->
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           (hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs))
+           ( hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
+           $ fmt_atrs ))
   | Pexp_for (p1, e1, e2, dir, e3) ->
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
@@ -3043,7 +3053,7 @@ and fmt_signature_item c ?ext {ast= si} =
       hvbox 2
         (fmt_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
   | Psig_extension (ext, atrs) ->
-      hvbox 0
+      hvbox c.conf.stritem_extension_indent
         ( fmt_extension c ctx "%%" ext
         $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
