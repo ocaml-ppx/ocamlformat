@@ -416,14 +416,16 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             (* All good, continue *)
             print_check ~i:(i + 1) ~conf t_new ~source:fmted
   in
+  let ignore_disabled_error err =
+    if conf.disable then Ok source else Error err
+  in
   let result =
     match (parsed : ('a with_comments, exn) Result.t) with
-    | Error exn ->
-        if conf.disable then Ok source else Error (Invalid_source {exn})
+    | Error exn -> Invalid_source {exn} |> ignore_disabled_error
     | Ok t -> (
       try print_check ~i:1 ~conf t ~source with
-      | Sys_error msg -> Error (User_error msg)
-      | exn -> Error (Ocamlformat_bug {exn}) )
+      | Sys_error msg -> User_error msg |> ignore_disabled_error
+      | exn -> Ocamlformat_bug {exn} |> ignore_disabled_error )
   in
   ( match result with
   | Ok _ -> ()
