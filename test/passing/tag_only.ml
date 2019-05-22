@@ -14,10 +14,10 @@ open Module
 include Abc
 (** @inline *)
 
-(** @inline *)
 include struct
   type t
 end
+(** @inline *)
 
 include (Module : Type)
 (** @inline *)
@@ -114,10 +114,10 @@ open Module  (** @inline *)
 
 include Abc  (** @inline *)
 
-(** @inline *)
 include struct
   type t
 end
+(** @inline *)
 
 include (Module : Type)  (** @inline *)
 
