@@ -1947,7 +1947,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_open
-      ( {popen_override= flag; popen_expr; popen_attributes= attributes; _}
+      ( { popen_override= flag
+        ; popen_expr
+        ; popen_attributes= attributes
+        ; popen_loc }
       , e0 ) ->
       let override = Poly.(flag = Override) in
       let let_open =
@@ -1987,8 +1990,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let opn, cls = if can_skip_parens then (".", "") else (".(", ")") in
       hvbox 0
         ( fits_breaks_if parens "" "("
-        $ fits_breaks "" (if override then "let open! " else "let open ")
-        $ fmt_module_statement c ~attributes noop (sub_mod ~ctx popen_expr)
+        $ fits_breaks "" "let "
+        $ Cmts.fmt c popen_loc
+            ( fits_breaks "" (if override then "open! " else "open ")
+            $ fmt_module_statement c ~attributes noop
+                (sub_mod ~ctx popen_expr) )
         $ fits_breaks opn " in"
         $ fmt_or_k force_fit_if (fmt "@;<0 2>")
             (fits_breaks "" "@;<1000 0>")
