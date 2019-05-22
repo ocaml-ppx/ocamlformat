@@ -3347,9 +3347,9 @@ and fmt_open_description c
 and fmt_module_statement c ~attributes keyword mod_expr =
   let blk = fmt_module_expr c mod_expr in
   let box = wrap_k blk.opn blk.cls in
-  let single_line = module_expr_is_simple mod_expr.ast in
+  let force_before = not (module_expr_is_simple mod_expr.ast) in
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item ~fit:single_line c attributes
+    fmt_docstring_around_item ~force_before ~fit:true c attributes
   in
   doc_before
   $ box (hvbox 2 (keyword $ Option.call ~f:blk.pro) $ blk.psp $ blk.bdy)
