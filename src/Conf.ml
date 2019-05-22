@@ -992,17 +992,20 @@ module Formatting = struct
       (fun conf -> conf.module_item_spacing)
 
   let nested_match =
-    let doc = "Style of let_and." in
+    let doc =
+      "Style of a pattern-matching nested in the last case of another \
+       pattern-matching."
+    in
     let names = ["nested-match"] in
     let all =
       [ ( "wrap"
         , `Wrap
-        , "$(b,wrap) classically wraps a match nested in another match \
-           case with parentheses and adds indentation." )
+        , "$(b,wrap) wraps the nested pattern-matching with parentheses \
+           and adds indentation." )
       ; ( "align"
         , `Align
-        , "$(b,align) does not indent and wrap a match if it is nested in \
-           the last case of another match." ) ]
+        , "$(b,align) vertically aligns the nested pattern-matching under \
+           the encompassing pattern-matching." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with nested_match= x})

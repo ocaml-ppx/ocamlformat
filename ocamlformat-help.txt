@@ -209,10 +209,11 @@ OPTIONS (CODE FORMATTING STYLE)
            one-liners of similar sorts. The default value is sparse.
 
        --nested-match={wrap|align}
-           Style of let_and. wrap classically wraps a match nested in another
-           match case with parentheses and adds indentation. align does not
-           indent and wrap a match if it is nested in the last case of
-           another match. The default value is wrap.
+           Style of a pattern-matching nested in the last case of another
+           pattern-matching. wrap wraps the nested pattern-matching with
+           parentheses and adds indentation. align vertically aligns the
+           nested pattern-matching under the encompassing pattern-matching.
+           The default value is wrap.
 
        --no-break-infix-before-func
            Break infix operators whose right arguments are anonymous
