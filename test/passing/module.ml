@@ -63,6 +63,6 @@ with type t = int) = struct
   type t = int
 end
 
-module A = functor (_ : S) -> struct end
+module A (_ : S) = struct end
 
 module A : functor (_ : S) -> S' = functor (_ : S) -> struct end
