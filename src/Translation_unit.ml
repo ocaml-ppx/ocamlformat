@@ -418,10 +418,8 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
   in
   let result =
     match (parsed : ('a with_comments, exn) Result.t) with
-    | Error exn -> 
-        if conf.disable
-        then Ok source 
-        else Error (Invalid_source {exn})
+    | Error exn ->
+        if conf.disable then Ok source else Error (Invalid_source {exn})
     | Ok t -> (
       try print_check ~i:1 ~conf t ~source with
       | Sys_error msg -> Error (User_error msg)
