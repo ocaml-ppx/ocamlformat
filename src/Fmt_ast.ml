@@ -3489,13 +3489,12 @@ and fmt_open_description c
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~fit:true c popen_attributes
   in
-  hovbox 0
-    ( doc_before $ str "open"
-    $ fmt_if Poly.(popen_override = Override) "!"
-    $ str " "
-    $ fmt_longident_loc c popen_lid
-    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
-    $ doc_after )
+  doc_before $ str "open"
+  $ fmt_if Poly.(popen_override = Override) "!"
+  $ str " "
+  $ fmt_longident_loc c popen_lid
+  $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+  $ doc_after
 
 (** TODO: merge with `fmt_module_declaration` *)
 and fmt_module_statement c ~attributes keyword mod_expr =
@@ -3505,12 +3504,11 @@ and fmt_module_statement c ~attributes keyword mod_expr =
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~fit:single_line c attributes
   in
-  hovbox 0
-    ( doc_before
-    $ box (hvbox 2 (keyword $ Option.call ~f:blk.pro) $ blk.psp $ blk.bdy)
-    $ blk.esp $ Option.call ~f:blk.epi
-    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
-    $ doc_after )
+  doc_before
+  $ box (hvbox 2 (keyword $ Option.call ~f:blk.pro) $ blk.psp $ blk.bdy)
+  $ blk.esp $ Option.call ~f:blk.epi
+  $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+  $ doc_after
 
 and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
