@@ -3619,11 +3619,12 @@ and fmt_module_expr ?(can_break_before_struct = false) c
             $ str "(" )
       ; psp= fmt "@,"
       ; bdy=
-          hvbox 2
+          hvbox 0
             ( Option.call ~f:blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
-            $ Option.call ~f:blk_e.epi $ fmt " :@ "
-            $ Option.call ~f:blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
-            $ Option.call ~f:blk_t.epi )
+            $ Option.call ~f:blk_e.epi $ fmt " :@;<1 2>"
+            $ hvbox 0
+                ( Option.call ~f:blk_t.pro $ blk_t.psp $ blk_t.bdy
+                $ blk_t.esp $ Option.call ~f:blk_t.epi ) )
           $ fmt_or_k c.conf.indicate_multiline_delimiters
               (fits_breaks ")" " )") (str ")")
       ; cls= close_box $ blk_e.cls $ blk_t.cls
