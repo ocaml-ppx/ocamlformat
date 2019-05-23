@@ -24,6 +24,7 @@ type t =
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; break_struct: bool
   ; cases_exp_indent: int
+  ; cases_indent: int
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
@@ -707,6 +708,14 @@ module Formatting = struct
     C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with cases_exp_indent= x})
       (fun conf -> conf.cases_exp_indent)
+
+  let cases_indent =
+    let docv = "COLS" in
+    let doc = "Indentation of cases ($(docv) columns)." in
+    let names = ["cases-indent"] in
+    C.int ~names ~default:0 ~doc ~docv ~section
+      (fun conf x -> {conf with cases_indent= x})
+      (fun conf -> conf.cases_indent)
 
   let disable =
     let doc =
@@ -1395,7 +1404,11 @@ let ocp_indent_options =
         ( "indent-after-in"
         , "$(b,in) is an alias for $(b,indent-after-in)."
         , Fn.id ) )
-  ; ("with", None)
+  ; ("with"
+    , Some
+        ( "cases-indent"
+        , "$(b,with) is an alias for $(b,cases-indent)."
+        , Fn.id ) )
   ; ( "match_clause"
     , Some
         ( "cases-exp-indent"
@@ -1492,6 +1505,7 @@ let ocamlformat_profile =
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
+  ; cases_indent= C.default Formatting.cases_indent
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; doc_comments= C.default Formatting.doc_comments
@@ -1619,6 +1633,7 @@ let janestreet_profile =
   ; break_string_literals= `Wrap
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
+  ; cases_indent= 0
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before

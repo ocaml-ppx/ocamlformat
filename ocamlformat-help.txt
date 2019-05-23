@@ -104,6 +104,9 @@ OPTIONS (CODE FORMATTING STYLE)
            `match` or `try` expressions. The default value is 4. Cannot be
            set in attributes.
 
+       --cases-indent=COLS
+           Indentation of cases (COLS columns). The default value is 0.
+
        --disable
            Disable ocamlformat. This is used in attributes to locally disable
            automatic code formatting. One can also use [@@@ocamlformat
@@ -377,9 +380,9 @@ OPTIONS
        --ocp-indent-config
            Read .ocp-indent configuration files. base is an alias for
            let-binding-indent. type is an alias for type-decl-indent. in is
-           an alias for indent-after-in. match_clause is an alias for
-           cases-exp-indent. ppx_stritem_ext is an alias for
-           stritem-extension-indent.
+           an alias for indent-after-in. with is an alias for cases-indent.
+           match_clause is an alias for cases-exp-indent. ppx_stritem_ext is
+           an alias for stritem-extension-indent.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}
