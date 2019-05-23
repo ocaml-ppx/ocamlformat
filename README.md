@@ -131,11 +131,13 @@ Other OCamlFormat options can be set in .ocamlformat configuration files.
 
 - install the [Neoformat](https://github.com/sbdchd/neoformat#install) plugin
 
-To change the options passed to OCamlFormat (to use the option `--disable-outside-detected-project` for example), you can [customize NeoFormat](https://github.com/sbdchd/neoformat#config-optional) with:
+Optional: You can change the options passed to OCamlFormat (to use the option `--disable-outside-detected-project` for example), you can [customize NeoFormat](https://github.com/sbdchd/neoformat#config-optional) with:
 ```
 let g:neoformat_ocaml_ocamlformat = {
             \ 'exe': 'ocamlformat',
-            \ 'args': ['--disable-outside-detected-project']
+            \ 'no_append': 1,
+            \ 'stdin': 1,
+            \ 'args': ['--disable-outside-detected-project', '--name', '"%:p"', '-']
             \ }
 
 let g:neoformat_enabled_ocaml = ['ocamlformat']
