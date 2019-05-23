@@ -2005,13 +2005,13 @@ type assoc = Assoc : string * 'a rep * 'a -> assoc
 
 let rec assoc : type a. string -> a rep -> assoc list -> a =
  fun x r -> function
-  | [] -> raise Not_found
-  | Assoc (x', r', v) :: env ->
-      if x = x' then
-        match rep_equal r r' with
-        | None -> failwith ("Wrong type for " ^ x)
-        | Some Eq -> v
-      else assoc x r env
+   | [] -> raise Not_found
+   | Assoc (x', r', v) :: env ->
+       if x = x' then
+         match rep_equal r r' with
+         | None -> failwith ("Wrong type for " ^ x)
+         | Some Eq -> v
+       else assoc x r env
 
 type _ term =
   | Var : string * 'a rep -> 'a term
@@ -2024,13 +2024,13 @@ type _ term =
 
 let rec eval_term : type a. assoc list -> a term -> a =
  fun env -> function
-  | Var (x, r) -> assoc x r env
-  | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
-  | Const x -> x
-  | Add -> fun (x, y) -> x + y
-  | LT -> fun (x, y) -> x < y
-  | Ap (f, x) -> eval_term env f (eval_term env x)
-  | Pair (x, y) -> (eval_term env x, eval_term env y)
+   | Var (x, r) -> assoc x r env
+   | Abs (x, r, e) -> fun v -> eval_term (Assoc (x, r, v) :: env) e
+   | Const x -> x
+   | Add -> fun (x, y) -> x + y
+   | LT -> fun (x, y) -> x < y
+   | Ap (f, x) -> eval_term env f (eval_term env x)
+   | Pair (x, y) -> (eval_term env x, eval_term env y)
 
 let ex3 = Abs ("x", Rint, Ap (Add, Pair (Var ("x", Rint), Var ("x", Rint))))
 
