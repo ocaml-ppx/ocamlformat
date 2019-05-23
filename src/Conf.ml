@@ -24,7 +24,6 @@ type t =
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; break_struct: bool
   ; cases_exp_indent: int
-  ; cases_indent: int
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
@@ -35,6 +34,7 @@ type t =
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
+  ; function_indent: int
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
@@ -47,6 +47,7 @@ type t =
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
+  ; match_indent: int
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; ocp_indent_compat: bool
@@ -709,14 +710,6 @@ module Formatting = struct
       (fun conf x -> {conf with cases_exp_indent= x})
       (fun conf -> conf.cases_exp_indent)
 
-  let cases_indent =
-    let docv = "COLS" in
-    let doc = "Indentation of cases ($(docv) columns)." in
-    let names = ["cases-indent"] in
-    C.int ~names ~default:0 ~doc ~docv ~section
-      (fun conf x -> {conf with cases_indent= x})
-      (fun conf -> conf.cases_indent)
-
   let disable =
     let doc =
       "Disable ocamlformat. This is used in attributes to locally disable \
@@ -836,6 +829,14 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with field_space= x})
       (fun conf -> conf.field_space)
+
+  let function_indent =
+    let docv = "COLS" in
+    let doc = "Indentation of function cases ($(docv) columns)." in
+    let names = ["function-indent"] in
+    C.int ~names ~default:2 ~doc ~docv ~section
+      (fun conf x -> {conf with function_indent= x})
+      (fun conf -> conf.function_indent)
 
   let if_then_else =
     let doc = "If-then-else formatting." in
@@ -1022,6 +1023,14 @@ module Formatting = struct
       ~allow_inline:false
       (fun conf x -> {conf with margin= x})
       (fun conf -> conf.margin)
+
+  let match_indent =
+    let docv = "COLS" in
+    let doc = "Indentation of match/try cases ($(docv) columns)." in
+    let names = ["match-indent"] in
+    C.int ~names ~default:0 ~doc ~docv ~section
+      (fun conf x -> {conf with match_indent= x})
+      (fun conf -> conf.match_indent)
 
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
@@ -1404,11 +1413,7 @@ let ocp_indent_options =
         ( "indent-after-in"
         , "$(b,in) is an alias for $(b,indent-after-in)."
         , Fn.id ) )
-  ; ("with"
-    , Some
-        ( "cases-indent"
-        , "$(b,with) is an alias for $(b,cases-indent)."
-        , Fn.id ) )
+  ; ("with", None)
   ; ( "match_clause"
     , Some
         ( "cases-exp-indent"
@@ -1505,7 +1510,6 @@ let ocamlformat_profile =
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
-  ; cases_indent= C.default Formatting.cases_indent
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; doc_comments= C.default Formatting.doc_comments
@@ -1516,6 +1520,7 @@ let ocamlformat_profile =
   ; extension_indent= C.default Formatting.extension_indent
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
+  ; function_indent= C.default Formatting.function_indent
   ; if_then_else= C.default Formatting.if_then_else
   ; indent_after_in= C.default Formatting.indent_after_in
   ; indicate_multiline_delimiters=
@@ -1531,6 +1536,7 @@ let ocamlformat_profile =
   ; let_module= C.default Formatting.let_module
   ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
+  ; match_indent= C.default Formatting.match_indent
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
@@ -1633,7 +1639,6 @@ let janestreet_profile =
   ; break_string_literals= `Wrap
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
-  ; cases_indent= 0
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before
@@ -1644,6 +1649,7 @@ let janestreet_profile =
   ; extension_indent= 2
   ; extension_sugar= `Preserve
   ; field_space= `Loose
+  ; function_indent= 2
   ; if_then_else= `Keyword_first
   ; indent_after_in= 0
   ; indicate_multiline_delimiters= false
@@ -1656,6 +1662,7 @@ let janestreet_profile =
   ; let_module= `Sparse
   ; let_open= `Preserve
   ; margin= 90
+  ; match_indent= 0
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= true

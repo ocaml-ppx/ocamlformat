@@ -1443,7 +1443,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
       wrap_if parens "(" ")"
-        (hvbox c.conf.cases_indent
+        (hvbox c.conf.function_indent
            ( hvbox 0
                ( fmt_expression c (sub_exp ~ctx l)
                $ fmt "@;"
@@ -1559,7 +1559,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI)) ->
           let e1N = List.rev rev_e1N in
           let ctx'' = Exp eN in
-          hvbox c.conf.cases_indent
+          hvbox c.conf.function_indent
             (wrap_if parens "(" ")"
                ( hovbox 2
                    (wrap
@@ -1700,7 +1700,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let pre_body, body = fmt_body c ?ext xbody in
       let indent =
         match xbody.ast.pexp_desc with
-        | Pexp_function _ -> c.conf.cases_indent
+        | Pexp_function _ -> c.conf.function_indent
         | _ -> if Option.is_none eol then 2 else 1
       in
       hvbox_if box indent
@@ -1884,7 +1884,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       match compact with
       | None ->
           let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
-          hvbox c.conf.cases_indent
+          hvbox c.conf.match_indent
             (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
                ( leading_cmt
                $ hvbox 0
@@ -3785,7 +3785,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   in
   let indent =
     match xbody.ast.pexp_desc with
-    | Pexp_function _ -> c.conf.cases_indent
+    | Pexp_function _ -> c.conf.function_indent
     | Pexp_fun _ -> c.conf.let_binding_indent - 1
     | _ -> c.conf.let_binding_indent
   in

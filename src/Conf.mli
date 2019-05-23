@@ -25,7 +25,6 @@ type t =
         (** How to potentially break string literals into new lines. *)
   ; break_struct: bool
   ; cases_exp_indent: int
-  ; cases_indent: int
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
@@ -38,6 +37,7 @@ type t =
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
+  ; function_indent: int
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
@@ -50,6 +50,7 @@ type t =
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int  (** Format code to fit within [margin] columns. *)
+  ; match_indent: int
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within
             [max_iters] iterations. *)
