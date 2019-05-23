@@ -87,14 +87,14 @@ end
 
 open (
   struct
-      type t
-    end :
+    type t
+  end :
     T )
 
 open (
   struct
-      type t
-    end :
+    type t
+  end :
     sig
       type t
     end )
