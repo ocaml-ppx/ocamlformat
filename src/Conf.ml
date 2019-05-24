@@ -1409,7 +1409,9 @@ let ocp_indent_options =
   [ alias ~ocpi_opt:"base" ~ocft_opt:"let-binding-indent"
   ; alias ~ocpi_opt:"type" ~ocft_opt:"type-decl-indent"
   ; alias ~ocpi_opt:"in" ~ocft_opt:"indent-after-in"
-  ; unsupported ~ocpi_opt:"with"
+  ; ( "with"
+    , ( [("function-indent", Fn.id); ("match-indent", Fn.id)]
+      , "$(b,with) sets $(b,function-indent) and $(b,match-indent)." ) )
   ; alias ~ocpi_opt:"match_clause" ~ocft_opt:"cases-exp-indent"
   ; alias ~ocpi_opt:"ppx_stritem_ext" ~ocft_opt:"stritem-extension-indent"
   ; unsupported ~ocpi_opt:"max_indent"

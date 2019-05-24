@@ -385,9 +385,9 @@ OPTIONS
        --ocp-indent-config
            Read .ocp-indent configuration files. base is an alias for
            let-binding-indent. type is an alias for type-decl-indent. in is
-           an alias for indent-after-in. match_clause is an alias for
-           cases-exp-indent. ppx_stritem_ext is an alias for
-           stritem-extension-indent.
+           an alias for indent-after-in. with sets function-indent and
+           match-indent. match_clause is an alias for cases-exp-indent.
+           ppx_stritem_ext is an alias for stritem-extension-indent.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}
