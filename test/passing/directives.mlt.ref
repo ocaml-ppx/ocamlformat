@@ -1,0 +1,10 @@
+(* comment before *)
+;;
+#directory "+unix"
+
+;;
+#load "file"
+(* b *)
+
+(* comment after *)
+(* a *)
