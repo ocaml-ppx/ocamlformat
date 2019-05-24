@@ -1397,49 +1397,36 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
+let alias ~ocpi_opt ~ocft_opt =
+  ( ocpi_opt
+  , ( [(ocft_opt, Fn.id)]
+    , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocpi_opt ocft_opt )
+  )
+
+let unsupported ~ocpi_opt = (ocpi_opt, ([], ""))
+
 let ocp_indent_options =
-  [ ( "base"
-    , Some
-        ( "let-binding-indent"
-        , "$(b,base) is an alias for $(b,let-binding-indent)."
-        , Fn.id ) )
-  ; ( "type"
-    , Some
-        ( "type-decl-indent"
-        , "$(b,type) is an alias for $(b,type-decl-indent)."
-        , Fn.id ) )
-  ; ( "in"
-    , Some
-        ( "indent-after-in"
-        , "$(b,in) is an alias for $(b,indent-after-in)."
-        , Fn.id ) )
-  ; ("with", None)
-  ; ( "match_clause"
-    , Some
-        ( "cases-exp-indent"
-        , "$(b,match_clause) is an alias for $(b,cases-exp-indent)."
-        , Fn.id ) )
-  ; ( "ppx_stritem_ext"
-    , Some
-        ( "stritem-extension-indent"
-        , "$(b,ppx_stritem_ext) is an alias for \
-           $(b,stritem-extension-indent)."
-        , Fn.id ) )
-  ; ("max_indent", None)
-  ; ("strict_with", None)
-  ; ("strict_else", None)
-  ; ("strict_comments", None)
-  ; ("align_ops", None)
-  ; ("align_params", None) ]
+  [ alias ~ocpi_opt:"base" ~ocft_opt:"let-binding-indent"
+  ; alias ~ocpi_opt:"type" ~ocft_opt:"type-decl-indent"
+  ; alias ~ocpi_opt:"in" ~ocft_opt:"indent-after-in"
+  ; unsupported ~ocpi_opt:"with"
+  ; alias ~ocpi_opt:"match_clause" ~ocft_opt:"cases-exp-indent"
+  ; alias ~ocpi_opt:"ppx_stritem_ext" ~ocft_opt:"stritem-extension-indent"
+  ; unsupported ~ocpi_opt:"max_indent"
+  ; unsupported ~ocpi_opt:"strict_with"
+  ; unsupported ~ocpi_opt:"strict_else"
+  ; unsupported ~ocpi_opt:"strict_comments"
+  ; unsupported ~ocpi_opt:"align_ops"
+  ; unsupported ~ocpi_opt:"align_params" ]
 
 let ocp_indent_config =
   let doc =
     let open Format in
     let supported =
-      let l =
-        List.filter_map ocp_indent_options ~f:(fun (_, o) ->
-            Option.map o ~f:(fun (_, doc, _) -> doc))
+      let only_doc (_, (_, doc)) =
+        Option.some_if (not (String.is_empty doc)) doc
       in
+      let l = List.filter_map ocp_indent_options ~f:only_doc in
       if List.is_empty l then ""
       else
         asprintf " %a"
@@ -1841,13 +1828,16 @@ let parse_line config ~from s =
             ~name ~value ~inline:true
   in
   let update_ocp_indent_option ~config ~from ~name ~value =
-    let opt =
-      List.Assoc.find_exn ocp_indent_options ~equal:String.equal name
-    in
-    match opt with
+    let equal = String.equal in
+    match List.Assoc.find ocp_indent_options ~equal name with
     | None -> Ok config
-    | Some (ocamlformat_opt, _doc, f) ->
-        update ~config ~from ~name:ocamlformat_opt ~value:(f value)
+    | Some (l, _doc) ->
+        let update_one acc (name, f) =
+          match acc with
+          | Ok config -> update ~config ~from ~name ~value:(f value)
+          | Error e -> Error e
+        in
+        List.fold_left l ~init:(Ok config) ~f:update_one
   in
   let rec update_many ~config ~from = function
     | [] -> Ok config
