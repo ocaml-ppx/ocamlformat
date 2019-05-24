@@ -4112,24 +4112,27 @@ and fmt_module_binding c ctx ~rec_flag ~first pmb =
     (fmt_module c keyword ~eqty:":" pmb.pmb_name xargs (Some xbody) xmty
        pmb.pmb_attributes)
 
-(* XXX use more locations *)
 let fmt_toplevel_phrase c ctx = function
   | Ptop_def structure -> fmt_structure c ctx structure
-  | Ptop_dir {pdir_name= dir; pdir_arg= directive_argument; _} -> (
-      fmt ";;@\n"
-      $ Cmts.fmt c dir.loc (str "#" $ str dir.txt)
-      $
-      match directive_argument with
-      | None -> noop
-      | Some {pdira_desc; pdira_loc; _} ->
-          str " "
-          $ Cmts.fmt c pdira_loc
-              ( match pdira_desc with
+  | Ptop_dir {pdir_name= name; pdir_arg= directive_argument; pdir_loc} ->
+      let args =
+        match directive_argument with
+        | None -> noop
+        | Some {pdira_desc; pdira_loc; _} ->
+            str " "
+            $ Cmts.fmt_before c pdira_loc
+            $ ( match pdira_desc with
               | Pdir_string s -> str (Printf.sprintf "%S" s)
               | Pdir_int (lit, Some m) -> str (Printf.sprintf "%s%c" lit m)
               | Pdir_int (lit, None) -> str lit
               | Pdir_ident longident -> fmt_longident longident
-              | Pdir_bool bool -> str (Bool.to_string bool) ) )
+              | Pdir_bool bool -> str (Bool.to_string bool) )
+            $ Cmts.fmt_after c pdira_loc
+      in
+      Cmts.fmt_before c pdir_loc
+      $ fmt ";;@\n"
+      $ Cmts.fmt c name.loc (str "#" $ str name.txt)
+      $ args $ Cmts.fmt_after c pdir_loc
 
 let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
 
