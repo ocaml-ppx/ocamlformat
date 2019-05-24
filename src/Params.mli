@@ -35,6 +35,11 @@ type record_type =
 val get_record_type :
   Conf.t -> wrap_record:(Conf.t -> Fmt.t -> Fmt.t) -> record_type
 
+type record_expr = {box: Fmt.t -> Fmt.t; sep_before: Fmt.t; sep_after: Fmt.t}
+
+val get_record_expr :
+  Conf.t -> wrap_record:(Conf.t -> Fmt.t -> Fmt.t) -> record_expr
+
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
   ; cond: Fmt.t

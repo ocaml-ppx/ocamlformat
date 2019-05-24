@@ -298,6 +298,8 @@ let x
       aaaaaaaaaaaaaaaaaa;
       aaaaaaaaaa }
   =
-  { aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
+  {
+    aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     bbbbbbbbbbbbb= bbb bb bbbbbb;
-    cccccc= cccc ccccccccccccccccccccccc }
+    cccccc= cccc ccccccccccccccccccccccc
+  }

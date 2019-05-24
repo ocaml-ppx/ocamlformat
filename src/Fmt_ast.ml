@@ -2197,13 +2197,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
+      let p = Params.get_record_expr c.conf ~wrap_record in
+      let fmt_field ~first ~last x =
+        fmt_if_k (not first) p.sep_before
+        $ fmt_field x
+        $ fmt_if_k (not last) p.sep_after
+      in
       hvbox 0
-        ( wrap_record c.conf
+        ( p.box
             ( opt default (fun d ->
                   hvbox 2
                     (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
                   $ fmt "with@;<1 2>")
-            $ list flds (semic_sep c) fmt_field )
+            $ list_fl flds fmt_field )
         $ fmt_atrs )
   | Pexp_sequence (e1, e2) when Option.is_some ext ->
       let parens1 =

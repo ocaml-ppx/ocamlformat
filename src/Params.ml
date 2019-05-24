@@ -96,6 +96,26 @@ let get_record_type (c : Conf.t) ~wrap_record =
       ; break_after= break space (-2)
       ; docked_after= fmt "}" }
 
+type record_expr = {box: Fmt.t -> Fmt.t; sep_before: Fmt.t; sep_after: Fmt.t}
+
+let get_record_expr (c : Conf.t) ~wrap_record =
+  match c.break_separators with
+  | `Before ->
+      { box= (fun k -> hvbox 0 (wrap_record c k))
+      ; sep_before= fmt "@,; "
+      ; sep_after= noop }
+  | `After ->
+      { box= (fun k -> hvbox 2 (wrap_record c k))
+      ; sep_before= noop
+      ; sep_after= fmt ";@ " }
+  | `After_and_docked ->
+      let space = if c.space_around_records then 1 else 0 in
+      { box=
+          (fun k ->
+            hvbox 2 (wrap "{" "}" (break space 0 $ k $ break space (-2))))
+      ; sep_before= noop
+      ; sep_after= fmt ";@ " }
+
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
   ; cond: Fmt.t
