@@ -75,6 +75,14 @@ type t =
     wrap_comments: bool;  (** Wrap comments at margin. *)
     wrap_fun_args: bool }
 
+let _ =
+  match something with
+  | { very_very_long_field_name_running_out_of_space= 1;
+      another_very_very_long_field_name_running_out_of_space= 2;
+      _ } ->
+      0
+  | _ -> 1
+
 [@@@ocamlformat "type-decl=compact"]
 
 type t = {aaaaaaaaa: aaaa; bbbbbbbbb: bbbb}

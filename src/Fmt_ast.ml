@@ -912,7 +912,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_if parens "(" ")"
            (wrap_record c.conf
               ( list flds (semic_sep c) fmt_field
-              $ fmt_if Poly.(closed_flag = Open) "@,; _" )))
+              $ fmt_if_k
+                  Poly.(closed_flag = Open)
+                  (fmt (semic_sep c) $ str "_") )))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
