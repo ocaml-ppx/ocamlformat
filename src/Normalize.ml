@@ -314,22 +314,7 @@ let impl c = map_structure (mapper c)
 
 let intf c = map_signature (mapper c)
 
-let map_use_file mapper ast =
-  let ast = map_use_file mapper ast in
-  List.map ast ~f:(function
-    | Ptop_def _ as x -> x
-    | Ptop_dir {pdir_name; pdir_arg; _} ->
-        let pdir_arg =
-          match pdir_arg with
-          | None -> None
-          | Some a -> Some {a with pdira_loc= Location.none}
-        in
-        Ptop_dir
-          { pdir_name= {pdir_name with loc= Location.none}
-          ; pdir_arg
-          ; pdir_loc= Location.none })
-
-let use_file c ast = map_use_file (mapper c) ast
+let use_file c = map_use_file (mapper c)
 
 let equal_impl ~ignore_doc_comments c ast1 ast2 =
   let map =
