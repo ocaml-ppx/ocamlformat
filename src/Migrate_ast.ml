@@ -79,13 +79,24 @@ module Pprintast = struct
 end
 
 (* Missing from ocaml_migrate_parsetree *)
-let map_use_file mapper use_file =
+let map_use_file (mapper : Ast_mapper.mapper) use_file =
   let open Parsetree in
   List.map use_file ~f:(fun toplevel_phrase ->
       match (toplevel_phrase : toplevel_phrase) with
       | Ptop_def structure ->
           Ptop_def (mapper.Ast_mapper.structure mapper structure)
-      | Ptop_dir _ as d -> d)
+      | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
+          let pdir_arg =
+            match pdir_arg with
+            | None -> None
+            | Some a ->
+                Some {a with pdira_loc= mapper.location mapper a.pdira_loc}
+          in
+          Ptop_dir
+            { pdir_name=
+                {pdir_name with loc= mapper.location mapper pdir_name.loc}
+            ; pdir_arg
+            ; pdir_loc= mapper.location mapper pdir_loc })
 
 module Position = struct
   open Lexing
