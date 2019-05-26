@@ -3017,9 +3017,15 @@ and fmt_constructor_arguments_result c ctx args res =
   in
   fmt_constructor_arguments c ctx ~pre args $ opt res fmt_type
 
-and fmt_type_extension c ctx te =
-  let c = update_config c te.ptyext_attributes in
-  let doc, atrs = doc_atrs te.ptyext_attributes in
+and fmt_type_extension c ctx
+    { ptyext_attributes
+    ; ptyext_params
+    ; ptyext_path
+    ; ptyext_constructors
+    ; ptyext_private
+    ; ptyext_loc } =
+  let c = update_config c ptyext_attributes in
+  let doc, atrs = doc_atrs ptyext_attributes in
   let fmt_ctor ctor =
     let sep =
       match ctor.pext_kind with
@@ -3028,22 +3034,23 @@ and fmt_type_extension c ctx te =
     in
     hvbox 0 (fmt_extension_constructor c sep ctx ctor)
   in
-  hvbox 2
-    ( fmt_docstring c ~epi:(fmt "@,") doc
-    $ hvbox c.conf.type_decl_indent
-        ( str "type "
-        $ hvbox_if
-            (not (List.is_empty te.ptyext_params))
-            0
-            (fmt_tydcl_params c ctx te.ptyext_params)
-        $ fmt_longident_loc c te.ptyext_path
-        $ str " +="
-        $ fmt_private_flag te.ptyext_private
-        $ fmt "@ "
-        $ hvbox 0
-            (if_newline "| " $ list te.ptyext_constructors "@ | " fmt_ctor)
-        )
-    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+  Cmts.fmt c ptyext_loc
+  @@ hvbox 2
+       ( fmt_docstring c ~epi:(fmt "@,") doc
+       $ hvbox c.conf.type_decl_indent
+           ( str "type "
+           $ hvbox_if
+               (not (List.is_empty ptyext_params))
+               0
+               (fmt_tydcl_params c ctx ptyext_params)
+           $ fmt_longident_loc c ptyext_path
+           $ str " +="
+           $ fmt_private_flag ptyext_private
+           $ fmt "@ "
+           $ hvbox 0
+               (if_newline "| " $ list ptyext_constructors "@ | " fmt_ctor)
+           )
+       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
 
 and fmt_type_exception ~pre c sep ctx te =
   let doc_before, doc_after, atrs =
