@@ -726,10 +726,10 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         $ Cmts.fmt_within c ~pro:noop ptyp_loc )
   | Ptyp_object (fields, closedness) ->
       let fmt_field = function
-        | {pof_desc= Otag (lab_loc, typ); pof_attributes= attrs; _} ->
+        | {pof_desc= Otag (lab_loc, typ); pof_attributes= attrs; pof_loc} ->
             (* label loc * attributes * core_type -> object_field *)
             let doc, atrs = doc_atrs attrs in
-            let fmt_cmts = Cmts.fmt c lab_loc.loc in
+            let fmt_cmts = Cmts.fmt c pof_loc in
             let field_loose =
               match c.conf.field_space with
               | `Loose | `Tight_decl -> true
