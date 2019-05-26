@@ -184,8 +184,6 @@ module CmtSet : sig
   (** [split s {loc_start; loc_end}] splits [s] into the subset of comments
       that end before [loc_start], those that start after [loc_end], and
       those within the loc. *)
-
-  include Invariant.S with type t := t
 end = struct
   module Order_by_start = struct
     type t = Location.t
@@ -218,9 +216,6 @@ end = struct
   let empty_end = Map.empty (module Order_by_end)
 
   let empty : t = (empty_start, empty_end)
-
-  let invariant (smap, emap) =
-    assert (Poly.equal (Map.to_alist smap) (Map.to_alist emap))
 
   let is_empty (smap, _) = Map.is_empty smap
 

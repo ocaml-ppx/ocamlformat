@@ -117,7 +117,7 @@ and fmt_list kind l =
     Octavius.parse (Lexing.from_string str)
   in
   match (print_and_parse light_syntax, print_and_parse heavy_syntax) with
-  | Ok x, Ok y when Poly.equal x y -> light_syntax
+  | Ok x, Ok y when Poly.(x = y) -> light_syntax
   | Ok _, Ok _ -> heavy_syntax
   | Error _, _ | _, Error _ -> heavy_syntax
 

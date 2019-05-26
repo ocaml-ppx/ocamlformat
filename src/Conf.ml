@@ -269,7 +269,7 @@ end = struct
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let to_string v' =
       List.find_map_exn all ~f:(fun (str, v, _) ->
-          if Poly.equal v v' then Some str else None)
+          if Poly.(v = v') then Some str else None)
     in
     let docs = section_name section in
     let term =

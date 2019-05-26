@@ -902,7 +902,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
               let typ = sub_typ ~ctx:(Pat pat) t
               and rhs = fmt_rhs ~ctx:(Pat pat) p in
               let type_first =
-                Poly.equal `Type_first (Source.typed_pattern t p)
+                Poly.(`Type_first = Source.typed_pattern t p)
               in
               Cmts.fmt c p.ppat_loc
               @@ fmt_record_field c ~typ ~rhs ~type_first lid1
@@ -1242,7 +1242,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     in
     let parens_or_nested = parens || is_nested_diff_prec_infix_ops in
     let parens_or_forced =
-      parens || Poly.equal c.conf.infix_precedence `Parens
+      parens || Poly.(c.conf.infix_precedence = `Parens)
     in
     let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
       list_fl args
@@ -1953,7 +1953,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1
           | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
               let type_first =
-                Poly.equal `Type_first (Source.typed_expression t e)
+                Poly.(`Type_first = Source.typed_expression t e)
               in
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~typ:(sub_typ ~ctx t) ~rhs:(fmt_rhs e)
@@ -3704,7 +3704,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
             ( ({ppat_desc= Ppat_var _} as pat)
             , {ptyp_desc= Ptyp_poly ([], typ1)} )
         , Pexp_constraint (_, typ2) )
-        when Poly.equal typ1 typ2 ->
+        when Poly.(typ1 = typ2) ->
           Cmts.relocate c.cmts ~src:pvb_pat.ppat_loc ~before:pat.ppat_loc
             ~after:pat.ppat_loc ;
           sub_pat ~ctx:(Pat pvb_pat) pat
