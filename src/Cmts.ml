@@ -415,9 +415,8 @@ let init map_ast source asts comments_n_docstrings =
       Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
-    match (locs, comments) with
-    | [], _ :: _ ->
-        add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
+    match locs with
+    | [] -> add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
   t
 
