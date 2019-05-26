@@ -117,7 +117,7 @@ module Location = struct
 
   let sexp_of_t x = Sexp.Atom (to_string x)
 
-  let compare = Poly.compare
+  let compare : t -> t -> int = Poly.compare
 
   let hash = Hashtbl.hash
 
@@ -137,7 +137,7 @@ module Location = struct
     match Position.compare l1.loc_start l2.loc_start with
     | 0 -> (
       match Position.compare l2.loc_end l1.loc_end with
-      | 0 -> Poly.compare l1 l2
+      | 0 -> compare l1 l2
       | n -> n )
     | n -> n
 

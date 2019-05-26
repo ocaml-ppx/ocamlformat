@@ -132,6 +132,9 @@ let docstring c s =
           tags
     | Error _ -> comment s
 
+let sort_attributes : attributes -> attributes =
+  List.sort ~compare:Poly.compare
+
 let make_mapper c ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
@@ -174,8 +177,7 @@ let make_mapper c ~ignore_doc_comment =
         List.filter atrs ~f:(fun a -> not (doc_attribute a))
       else atrs
     in
-    Ast_mapper.default_mapper.attributes m
-      (List.sort ~compare:Poly.compare atrs)
+    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   let expr (m : Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_attributes} = exp in
@@ -219,7 +221,7 @@ let make_mapper c ~ignore_doc_comment =
     | ( Ppat_constraint
           (({ppat_desc= Ppat_var _} as p0), {ptyp_desc= Ptyp_poly ([], t0)})
       , Pexp_constraint (e0, t1) )
-      when Poly.equal t0 t1 ->
+      when Poly.(t0 = t1) ->
         m.value_binding m
           (Vb.mk ~loc:pvb_loc ~attrs:pvb_attributes p0
              (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes e0 t0))
@@ -317,21 +319,21 @@ let equal_impl ~ignore_doc_comments c ast1 ast2 =
     if ignore_doc_comments then map_structure (mapper_ignore_doc_comment c)
     else map_structure (mapper c)
   in
-  Poly.equal (map ast1) (map ast2)
+  Poly.(map ast1 = map ast2)
 
 let equal_intf ~ignore_doc_comments c ast1 ast2 =
   let map =
     if ignore_doc_comments then map_signature (mapper_ignore_doc_comment c)
     else map_signature (mapper c)
   in
-  Poly.equal (map ast1) (map ast2)
+  Poly.(map ast1 = map ast2)
 
 let equal_use_file ~ignore_doc_comments c ast1 ast2 =
   let map =
     if ignore_doc_comments then map_use_file (mapper_ignore_doc_comment c)
     else map_use_file (mapper c)
   in
-  Poly.equal (map ast1) (map ast2)
+  Poly.(map ast1 = map ast2)
 
 let make_docstring_mapper c docstrings =
   let doc_attribute = function
@@ -367,8 +369,7 @@ let make_docstring_mapper c docstrings =
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) atrs =
     let atrs = List.filter atrs ~f:doc_attribute in
-    Ast_mapper.default_mapper.attributes m
-      (List.sort ~compare:Poly.compare atrs)
+    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   {Ast_mapper.default_mapper with attribute; attributes}
 

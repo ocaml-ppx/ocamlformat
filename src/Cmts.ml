@@ -86,7 +86,9 @@ end = struct
         ancestors)
     |> (ignore : Itv.t list -> unit) ;
     { tree with
-      tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare) }
+      tbl=
+        Hashtbl.map tree.tbl
+          ~f:(List.sort ~compare:Itv.compare_width_decreasing) }
 
   let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
 
@@ -152,7 +154,10 @@ module Cmt = struct
   module T = struct
     type t = string * Location.t
 
-    let compare = Poly.compare
+    let compare =
+      Comparable.lexicographic
+        [ Comparable.lift String.compare ~f:fst
+        ; Comparable.lift Location.compare ~f:snd ]
 
     let sexp_of_t (txt, loc) =
       Sexp.Atom (Format.asprintf "%s %a" txt Location.fmt loc)
@@ -179,8 +184,6 @@ module CmtSet : sig
   (** [split s {loc_start; loc_end}] splits [s] into the subset of comments
       that end before [loc_start], those that start after [loc_end], and
       those within the loc. *)
-
-  include Invariant.S with type t := t
 end = struct
   module Order_by_start = struct
     type t = Location.t
@@ -213,9 +216,6 @@ end = struct
   let empty_end = Map.empty (module Order_by_end)
 
   let empty : t = (empty_start, empty_end)
-
-  let invariant (smap, emap) =
-    assert (Poly.equal (Map.to_alist smap) (Map.to_alist emap))
 
   let is_empty (smap, _) = Map.is_empty smap
 
