@@ -4115,6 +4115,9 @@ and fmt_module_binding c ctx ~rec_flag ~first pmb =
 let fmt_toplevel_phrase c ctx = function
   | Ptop_def structure -> fmt_structure c ctx structure
   | Ptop_dir {pdir_name= name; pdir_arg= directive_argument; pdir_loc} ->
+      let cmts_before = Cmts.fmt_before c pdir_loc in
+      let cmts_after = Cmts.fmt_after c pdir_loc in
+      let name = Cmts.fmt c name.loc (str "#" $ str name.txt) in
       let args =
         match directive_argument with
         | None -> noop
@@ -4129,10 +4132,7 @@ let fmt_toplevel_phrase c ctx = function
               | Pdir_bool bool -> str (Bool.to_string bool) )
             $ Cmts.fmt_after c pdira_loc
       in
-      Cmts.fmt_before c pdir_loc
-      $ fmt ";;@\n"
-      $ Cmts.fmt c name.loc (str "#" $ str name.txt)
-      $ args $ Cmts.fmt_after c pdir_loc
+      cmts_before $ fmt ";;@\n" $ name $ args $ cmts_after
 
 let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
 
