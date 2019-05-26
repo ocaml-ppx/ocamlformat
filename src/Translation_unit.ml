@@ -288,6 +288,17 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
           if Conf.debug then Format.fprintf fmt "%s\n%!" (Exn.to_string exn)
       )
 
+let check_all_locations fmt cmts_t =
+  if Conf.debug then
+    match Cmts.remaining_locs cmts_t with
+    | [] -> ()
+    | l ->
+        let l = List.sort l ~compare:Location.compare in
+        Format.fprintf fmt
+          "Warning: Some locations have not been considered\n%!" ;
+        List.iter l ~f:(fun l ->
+            Format.fprintf fmt "%a\n%!" Location.print_loc l)
+
 let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
     =
   let dump_ast ~suffix ast =
@@ -319,7 +330,9 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
-    if String.equal source fmted then Ok fmted
+    if String.equal source fmted then (
+      check_all_locations Format.err_formatter cmts_t ;
+      Ok fmted )
     else
       match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
