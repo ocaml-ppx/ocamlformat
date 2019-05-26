@@ -86,7 +86,9 @@ end = struct
         ancestors)
     |> (ignore : Itv.t list -> unit) ;
     { tree with
-      tbl= Hashtbl.map tree.tbl ~f:(List.sort ~compare:Poly.compare) }
+      tbl=
+        Hashtbl.map tree.tbl
+          ~f:(List.sort ~compare:Itv.compare_width_decreasing) }
 
   let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
 
@@ -152,7 +154,10 @@ module Cmt = struct
   module T = struct
     type t = string * Location.t
 
-    let compare = Poly.compare
+    let compare =
+      Comparable.lexicographic
+        [ Comparable.lift String.compare ~f:fst
+        ; Comparable.lift Location.compare ~f:snd ]
 
     let sexp_of_t (txt, loc) =
       Sexp.Atom (Format.asprintf "%s %a" txt Location.fmt loc)

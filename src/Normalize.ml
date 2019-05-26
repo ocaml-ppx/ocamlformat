@@ -132,6 +132,9 @@ let docstring c s =
           tags
     | Error _ -> comment s
 
+let sort_attributes : attributes -> attributes =
+  List.sort ~compare:Poly.compare
+
 let make_mapper c ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
@@ -174,8 +177,7 @@ let make_mapper c ~ignore_doc_comment =
         List.filter atrs ~f:(fun a -> not (doc_attribute a))
       else atrs
     in
-    Ast_mapper.default_mapper.attributes m
-      (List.sort ~compare:Poly.compare atrs)
+    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   let expr (m : Ast_mapper.mapper) exp =
     let {pexp_desc; pexp_attributes} = exp in
@@ -367,8 +369,7 @@ let make_docstring_mapper c docstrings =
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) atrs =
     let atrs = List.filter atrs ~f:doc_attribute in
-    Ast_mapper.default_mapper.attributes m
-      (List.sort ~compare:Poly.compare atrs)
+    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   {Ast_mapper.default_mapper with attribute; attributes}
 
