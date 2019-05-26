@@ -3052,16 +3052,18 @@ and fmt_type_extension c ctx
            )
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
 
-and fmt_type_exception ~pre c sep ctx te =
+and fmt_type_exception ~pre c sep ctx
+    {ptyexn_attributes; ptyexn_constructor; ptyexn_loc} =
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item c te.ptyexn_attributes
+    fmt_docstring_around_item c ptyexn_attributes
   in
-  hvbox 0
-    ( doc_before
-    $ hvbox 2
-        (pre $ fmt_extension_constructor c sep ctx te.ptyexn_constructor)
-    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
-    $ doc_after )
+  Cmts.fmt c ptyexn_loc
+    (hvbox 0
+       ( doc_before
+       $ hvbox 2
+           (pre $ fmt_extension_constructor c sep ctx ptyexn_constructor)
+       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+       $ doc_after ))
 
 and fmt_extension_constructor c sep ctx ec =
   let {pext_name; pext_kind; pext_attributes; pext_loc} = ec in
