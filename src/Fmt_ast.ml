@@ -4117,7 +4117,7 @@ let fmt_toplevel_phrase c ctx = function
   | Ptop_dir {pdir_name= name; pdir_arg= directive_argument; pdir_loc} ->
       let cmts_before = Cmts.fmt_before c pdir_loc in
       let cmts_after = Cmts.fmt_after c pdir_loc in
-      let name = Cmts.fmt c name.loc (str "#" $ str name.txt) in
+      let name = fmt_str_loc c name ~pre:(str "#") in
       let args =
         match directive_argument with
         | None -> noop
