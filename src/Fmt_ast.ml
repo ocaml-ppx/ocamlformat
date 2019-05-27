@@ -168,19 +168,17 @@ let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
     | `Parens -> `Parens
     | `Begin_end -> `Begin_end
     | `Preserve ->
-        let use_begin_end =
-          Source.string_at c.source loc
-          |> String.lstrip
-          |> String.is_prefix ~prefix:"begin"
-        in
-        if use_begin_end then `Begin_end else `Parens
+        let str = String.lstrip (Source.string_at c.source loc) in
+        if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
   in
   match grouping_kind with
   | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
   | `Begin_end ->
-      fmt_if_k parens (fits_breaks "(" "begin" $ break_unless_newline 0 2)
-      $ k
-      $ fmt_if_k parens (break_unless_newline 0 0 $ fits_breaks ")" "end")
+      vbox 2
+        (wrap_if_k parens
+           (fits_breaks "(" "begin" $ break_unless_newline 0 0)
+           (break_unless_newline 0 (-2) $ fits_breaks ")" "end")
+           k)
 
 let drop_while ~f s =
   let i = ref 0 in
