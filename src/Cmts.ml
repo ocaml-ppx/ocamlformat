@@ -38,6 +38,8 @@ end) : sig
   (** If there are duplicates in the input list, earlier elements will be
       ancestors of later elements. *)
 
+  val roots : t -> Itv.t list
+
   val children : t -> Itv.t -> Itv.t list
 
   val dump : t -> Fmt.t
@@ -46,6 +48,8 @@ end = struct
   (* simple but (asymptotically) suboptimal implementation *)
 
   type t = {mutable roots: Itv.t list; tbl: (Itv.t, Itv.t list) Hashtbl.t}
+
+  let roots t = t.roots
 
   let create () = {roots= []; tbl= Hashtbl.create (module Itv)}
 
@@ -85,10 +89,9 @@ end = struct
         | [] -> tree.roots <- elt :: tree.roots ) ;
         ancestors)
     |> (ignore : Itv.t list -> unit) ;
-    { tree with
-      tbl=
-        Hashtbl.map tree.tbl
-          ~f:(List.sort ~compare:Itv.compare_width_decreasing) }
+    let sort_itv_list = List.sort ~compare:Itv.compare_width_decreasing in
+    { roots= sort_itv_list tree.roots
+    ; tbl= Hashtbl.map tree.tbl ~f:sort_itv_list }
 
   let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
 
@@ -394,7 +397,7 @@ let dedup_cmts map_ast ast comments =
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
 (** Initialize global state and place comments. *)
-let init map_ast loc_of_ast source asts comments_n_docstrings =
+let init map_ast source asts comments_n_docstrings =
   let t =
     { cmts_before= Hashtbl.Poly.create ()
     ; cmts_after= Hashtbl.Poly.create ()
@@ -410,27 +413,18 @@ let init map_ast loc_of_ast source asts comments_n_docstrings =
     let loc_tree = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
-    let locs = loc_of_ast asts in
+    let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
-    match (locs, comments) with
-    | [], _ :: _ ->
-        add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
+    match locs with
+    | [] -> add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
   t
 
-let init_impl =
-  init map_structure (List.map ~f:(fun {Parsetree.pstr_loc} -> pstr_loc))
+let init_impl = init map_structure
 
-let init_intf =
-  init map_signature (List.map ~f:(fun {Parsetree.psig_loc} -> psig_loc))
+let init_intf = init map_signature
 
-let init_use_file =
-  init Migrate_ast.map_use_file
-    (List.concat_map ~f:(fun toplevel_phrase ->
-         match (toplevel_phrase : toplevel_phrase) with
-         | Ptop_def items ->
-             List.map items ~f:(fun {Parsetree.pstr_loc} -> pstr_loc)
-         | Ptop_dir _ -> []))
+let init_use_file = init Migrate_ast.map_use_file
 
 let remove = ref true
 
