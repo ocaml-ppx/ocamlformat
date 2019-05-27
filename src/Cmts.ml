@@ -605,15 +605,15 @@ let drop_inside t loc =
   clear t.cmts_before ; clear t.cmts_within ; clear t.cmts_after
 
 let has_before t loc =
-  Hashtbl.remove t.remaining loc ;
+  if !remove then Hashtbl.remove t.remaining loc ;
   Hashtbl.mem t.cmts_before loc
 
 let has_within t loc =
-  Hashtbl.remove t.remaining loc ;
+  if !remove then Hashtbl.remove t.remaining loc ;
   Hashtbl.mem t.cmts_within loc
 
 let has_after t loc =
-  Hashtbl.remove t.remaining loc ;
+  if !remove then Hashtbl.remove t.remaining loc ;
   Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
 
 (** returns comments that have not been formatted *)
