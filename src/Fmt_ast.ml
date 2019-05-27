@@ -4005,7 +4005,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
         | `Sparse -> "@;<1000 0>"
         | `Compact -> "@ " )
   in
-  wrap_fits_breaks_exp_if c ~loc
+  wrap_fits_breaks_exp_if c ~loc ~space:false
     ~parens:(parens || not (List.is_empty attributes))
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
