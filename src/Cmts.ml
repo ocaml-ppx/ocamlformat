@@ -399,9 +399,9 @@ let dedup_cmts map_ast ast comments =
 (** Initialize global state and place comments. *)
 let init map_ast source asts comments_n_docstrings =
   let t =
-    { cmts_before= Hashtbl.Poly.create ()
-    ; cmts_after= Hashtbl.Poly.create ()
-    ; cmts_within= Hashtbl.Poly.create ()
+    { cmts_before= Hashtbl.create (module Location)
+    ; cmts_after= Hashtbl.create (module Location)
+    ; cmts_within= Hashtbl.create (module Location)
     ; source }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in

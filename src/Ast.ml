@@ -2016,7 +2016,7 @@ end = struct
             false
       in
       mem_cls_exp cls exp
-      || Hashtbl.Poly.find_or_add memo (cls, exp) ~default:exposed_
+      || Hashtbl.find_or_add memo (cls, exp) ~default:exposed_
 
   and exposed_right_cl =
     let memo = Hashtbl.Poly.create () in
@@ -2034,7 +2034,7 @@ end = struct
         | _ -> false
       in
       mem_cls_cl cls cl
-      || Hashtbl.Poly.find_or_add memo (cls, cl) ~default:exposed_
+      || Hashtbl.find_or_add memo (cls, cl) ~default:exposed_
 
   and mark_parenzed_inner_nested_match exp =
     let exposed_ () =
@@ -2097,7 +2097,7 @@ end = struct
        |Pexp_while _ ->
           false
     in
-    Hashtbl.Poly.find_or_add marked_parenzed_inner_nested_match exp
+    Hashtbl.find_or_add marked_parenzed_inner_nested_match exp
       ~default:exposed_
     |> (ignore : bool -> _)
 
