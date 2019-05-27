@@ -1,0 +1,47 @@
+let () =
+  Lwt_main.run
+    ( let a = "a" in
+      let b = "b" in
+      let c = "c" in
+      Lwt.return "test" )
+
+let () =
+  Lwt_main.run
+    ( let a = "a" in
+      let b = "b" in
+      let c = "c" in
+      Lwt.return "test" )
+
+let () =
+  List.iter
+    (fun v ->
+      (* do a lot of things *)
+      let a = "a" in
+      let b = "b" in
+      let c = "c" in
+      ())
+    values
+
+let () =
+  List.iter
+    (fun v ->
+      (* do a lot of things *)
+      let a = "a" in
+      let b = "b" in
+      let c = "c" in
+      ())
+    values
+
+let () =
+  foooooooo
+    ( fooooooooooooo ;
+      foooooooo foooooooooooo ;
+      fooooooooooo foooooooooo ;
+      foooooooooooooooo )
+
+let () =
+  foooooooo
+    ( fooooooooooooo ;
+      foooooooo foooooooooooo ;
+      fooooooooooo foooooooooo ;
+      foooooooooooooooo )
