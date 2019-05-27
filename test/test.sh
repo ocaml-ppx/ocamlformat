@@ -167,11 +167,11 @@ for f in ${FAILING[@]}; do
             |wc -l)
         progress=$((refcount - curcount))
         printf "\e[33m[FAILED]\e[m \e[%dm\e[30m[CHANGE: %+d]\e[m %s\n" \
-            $name \
             $(if [ $progress -gt 0 ]; then echo 42; \
               elif [ $progress -eq 0 ]; then echo 43; \
               else echo 41; fi) \
-            $progress
+            $progress \
+            $name
         if [ -n "$ACCEPT" ]; then
 	    cp $TMP/$base failing-output/$base
         elif [ -n "$UPDATE" ]; then
