@@ -484,18 +484,19 @@ let info =
          closer the directory is to the processed file, the higher the \
          priority."
     ; `P
-        "An $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
+        "If the $(b,disable) option is not set, an \
+         $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
          should ignore. Each line in an $(b,.ocamlformat-ignore) file \
          specifies a filename relative to the directory containing the \
          $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
          ignored and can be used as comments."
     ; `P
-        "An $(b,.ocamlformat-enable) file specifies files that OCamlFormat \
-         should format even when the $(b,disable) option is set. Each line \
-         in an $(b,.ocamlformat-enable) file specifies a filename relative \
-         to the directory containing the $(b,.ocamlformat-enable) file. \
-         Lines starting with $(b,#) are ignored and can be used as \
-         comments." ]
+        "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) \
+         file specifies files that OCamlFormat should format even when the \
+         $(b,disable) option is set. Each line in an \
+         $(b,.ocamlformat-enable) file specifies a filename relative to \
+         the directory containing the $(b,.ocamlformat-enable) file. Lines \
+         starting with $(b,#) are ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
