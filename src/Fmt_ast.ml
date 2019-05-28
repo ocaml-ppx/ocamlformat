@@ -1727,12 +1727,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ str "->" $ pre_body )
            $ fmt "@ " $ body ))
   | Pexp_function cs ->
+      let indent =
+        match (c.conf.function_indent_nested, xexp.ctx) with
+        | `Always, _ -> c.conf.function_indent
+        | _, (Top | Sig _ | Str _) -> c.conf.function_indent
+        | _ -> 0
+      in
       wrap_if parens "(" ")"
         ( hvbox 2
             ( str "function"
             $ fmt_extension_suffix c ext
             $ fmt_attributes c ~key:"@" pexp_attributes )
-        $ fmt "@ "
+        $ break 1 indent
         $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =

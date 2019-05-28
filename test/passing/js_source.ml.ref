@@ -94,7 +94,7 @@ let () =
   [%foo fun [@foo] x -> ()];
   [%foo
     function[@foo]
-    | x -> ()];
+      | x -> ()];
   [%foo
     try[@foo] () with
     | _ -> ()];
@@ -9039,9 +9039,9 @@ fun (A : a) -> ()
 
 ;;
 function
-| Not_found -> 1
-| A -> 2
-| _ -> 3
+  | Not_found -> 1
+  | A -> 2
+  | _ -> 3
 
 ;;
 try raise A with
@@ -9691,7 +9691,7 @@ let f = function
 
 ;;
 function
-| { contents = (contents[@foo]) } -> ()
+  | { contents = (contents[@foo]) } -> ()
 
 ;;
 fun contents -> { contents = (contents [@foo]) }
