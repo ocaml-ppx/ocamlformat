@@ -413,9 +413,10 @@ let init map_ast source asts comments_n_docstrings =
           (if Source.ends_line source loc then "eol" else "")) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts in
-    List.iter locs ~f:(fun loc ->
-        if Conf.debug && not (Location.compare loc Location.none = 0) then
-          Hashtbl.set t.remaining ~key:loc ~data:()) ;
+    if Conf.debug then
+      List.iter locs ~f:(fun loc ->
+          if not (Location.compare loc Location.none = 0) then
+            Hashtbl.set t.remaining ~key:loc ~data:()) ;
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = Loc_tree.roots loc_tree in
