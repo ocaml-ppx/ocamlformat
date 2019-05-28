@@ -1895,7 +1895,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       | None ->
           let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
           let indent =
-            match (c.conf.match_indent_nested, ctx) with
+            match (c.conf.match_indent_nested, xexp.ctx) with
             | `Always, _ -> c.conf.match_indent
             | _, (Top | Sig _ | Str _) -> c.conf.match_indent
             | _ -> 0
