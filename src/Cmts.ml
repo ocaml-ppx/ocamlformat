@@ -414,7 +414,7 @@ let init map_ast source asts comments_n_docstrings =
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts in
     List.iter locs ~f:(fun loc ->
-        if not (Location.compare loc Location.none = 0) then
+        if Conf.debug && not (Location.compare loc Location.none = 0) then
           Hashtbl.set t.remaining ~key:loc ~data:()) ;
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
@@ -461,9 +461,10 @@ let relocate t ~src ~before ~after =
         List.append dst_cmts src_cmts) ;
     update_multi t.cmts_within src after ~f:(fun src_cmts dst_cmts ->
         List.append dst_cmts src_cmts) ;
-    Hashtbl.remove t.remaining src ;
-    Hashtbl.set t.remaining ~key:after ~data:() ;
-    Hashtbl.set t.remaining ~key:before ~data:() )
+    if Conf.debug then (
+      Hashtbl.remove t.remaining src ;
+      Hashtbl.set t.remaining ~key:after ~data:() ;
+      Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 let split_asterisk_prefixed (txt, {Location.loc_start}) =
   let len = Position.column loc_start + 3 in
@@ -520,12 +521,8 @@ let fmt_cmt (conf : Conf.t) cmt =
 let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
     tbl loc =
   let open Fmt in
-  let find =
-    if !remove then (
-      Hashtbl.remove t.remaining loc ;
-      Hashtbl.find_and_remove )
-    else Hashtbl.find
-  in
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
+  let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
   | None | Some [] -> noop
   | Some cmts ->
@@ -605,15 +602,15 @@ let drop_inside t loc =
   clear t.cmts_before ; clear t.cmts_within ; clear t.cmts_after
 
 let has_before t loc =
-  if !remove then Hashtbl.remove t.remaining loc ;
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
   Hashtbl.mem t.cmts_before loc
 
 let has_within t loc =
-  if !remove then Hashtbl.remove t.remaining loc ;
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
   Hashtbl.mem t.cmts_within loc
 
 let has_after t loc =
-  if !remove then Hashtbl.remove t.remaining loc ;
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
   Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
 
 (** returns comments that have not been formatted *)
