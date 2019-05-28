@@ -35,6 +35,7 @@ type t =
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; function_indent: int
+  ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
@@ -48,6 +49,7 @@ type t =
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; match_indent: int
+  ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; ocp_indent_compat: bool
@@ -838,6 +840,26 @@ module Formatting = struct
       (fun conf x -> {conf with function_indent= x})
       (fun conf -> conf.function_indent)
 
+  let function_indent_nested =
+    let doc =
+      "Whether the $(b,function-indent) parameter should be applied even \
+       when in a sub-block."
+    in
+    let names = ["function-indent-nested"] in
+    let all =
+      [ ( "never"
+        , `Never
+        , "$(b,never) only applies $(b,function-indent) if the function \
+           block starts a line." )
+      ; ("always", `Always, "$(b,always) always apply $(b,function-indent).")
+      ; ( "auto"
+        , `Auto
+        , "$(b,auto) applies $(b,function-indent) when seen fit." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with function_indent_nested= x})
+      (fun conf -> conf.function_indent_nested)
+
   let if_then_else =
     let doc = "If-then-else formatting." in
     let names = ["if-then-else"] in
@@ -1031,6 +1053,25 @@ module Formatting = struct
     C.int ~names ~default:0 ~doc ~docv ~section
       (fun conf x -> {conf with match_indent= x})
       (fun conf -> conf.match_indent)
+
+  let match_indent_nested =
+    let doc =
+      "Whether the $(b,match-indent) parameter should be applied even when \
+       in a sub-block."
+    in
+    let names = ["match-indent-nested"] in
+    let all =
+      [ ( "never"
+        , `Never
+        , "$(b,never) only applies $(b,match-indent) if the match block \
+           starts a line." )
+      ; ("always", `Always, "$(b,always) always apply $(b,match-indent).")
+      ; ("auto", `Auto, "$(b,auto) applies $(b,match-indent) when seen fit.")
+      ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with match_indent_nested= x})
+      (fun conf -> conf.match_indent_nested)
 
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
@@ -1415,7 +1456,10 @@ let ocp_indent_options =
   ; alias ~ocpi_opt:"match_clause" ~ocft_opt:"cases-exp-indent"
   ; alias ~ocpi_opt:"ppx_stritem_ext" ~ocft_opt:"stritem-extension-indent"
   ; unsupported ~ocpi_opt:"max_indent"
-  ; unsupported ~ocpi_opt:"strict_with"
+  ; ( "strict_with"
+    , ( [("function-indent-nested", Fn.id); ("match-indent-nested", Fn.id)]
+      , "$(b,strict_with) sets $(b,function-indent-nested) and \
+         $(b,match-indent-nested)." ) )
   ; unsupported ~ocpi_opt:"strict_else"
   ; unsupported ~ocpi_opt:"strict_comments"
   ; unsupported ~ocpi_opt:"align_ops"
@@ -1510,6 +1554,7 @@ let ocamlformat_profile =
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; function_indent= C.default Formatting.function_indent
+  ; function_indent_nested= C.default Formatting.function_indent_nested
   ; if_then_else= C.default Formatting.if_then_else
   ; indent_after_in= C.default Formatting.indent_after_in
   ; indicate_multiline_delimiters=
@@ -1526,6 +1571,7 @@ let ocamlformat_profile =
   ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
   ; match_indent= C.default Formatting.match_indent
+  ; match_indent_nested= C.default Formatting.match_indent_nested
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
@@ -1639,6 +1685,7 @@ let janestreet_profile =
   ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; function_indent= 2
+  ; function_indent_nested= `Never
   ; if_then_else= `Keyword_first
   ; indent_after_in= 0
   ; indicate_multiline_delimiters= false
@@ -1652,6 +1699,7 @@ let janestreet_profile =
   ; let_open= `Preserve
   ; margin= 90
   ; match_indent= 0
+  ; match_indent_nested= `Never
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= true
