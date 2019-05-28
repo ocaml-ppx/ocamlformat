@@ -1,5 +1,3 @@
-[@@@ocamlformat "function-indent=4"]
-
 let foooooooo = function
     | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
 
@@ -9,5 +7,5 @@ let foooooooo = function
 
 let foo =
   fooooooooo foooooooo ~foooooooo:(function
-      | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
-      | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo)
+    | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
+    | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo)

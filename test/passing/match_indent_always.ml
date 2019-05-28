@@ -1,5 +1,3 @@
-[@@@ocamlformat "match-indent=4"]
-
 let foooooooo =
   match fooooooooooooooooooooooo with
       | fooooooooooooooooooooooo -> foooooooooooooooooooooooooo
