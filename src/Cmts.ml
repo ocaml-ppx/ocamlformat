@@ -20,7 +20,8 @@ type t =
   { cmts_before: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
-  ; source: Source.t }
+  ; source: Source.t
+  ; remaining: (Location.t, unit) Hashtbl.t }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -150,7 +151,7 @@ module Loc_tree = struct
       Ast_mapper.{default_mapper with location}
       (map_ast Ast_mapper.{default_mapper with attribute} ast)
     |> ignore ;
-    of_list !locs
+    (of_list !locs, !locs)
 end
 
 module Cmt = struct
@@ -402,7 +403,8 @@ let init map_ast source asts comments_n_docstrings =
     { cmts_before= Hashtbl.create (module Location)
     ; cmts_after= Hashtbl.create (module Location)
     ; cmts_within= Hashtbl.create (module Location)
-    ; source }
+    ; source
+    ; remaining= Hashtbl.create (module Location) }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then
@@ -410,7 +412,11 @@ let init map_ast source asts comments_n_docstrings =
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ;
   if not (List.is_empty comments) then (
-    let loc_tree = Loc_tree.of_ast map_ast asts in
+    let loc_tree, locs = Loc_tree.of_ast map_ast asts in
+    if Conf.debug then
+      List.iter locs ~f:(fun loc ->
+          if not (Location.compare loc Location.none = 0) then
+            Hashtbl.set t.remaining ~key:loc ~data:()) ;
     if Conf.debug then
       Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
     let locs = Loc_tree.roots loc_tree in
@@ -455,7 +461,11 @@ let relocate t ~src ~before ~after =
     update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
         List.append dst_cmts src_cmts) ;
     update_multi t.cmts_within src after ~f:(fun src_cmts dst_cmts ->
-        List.append dst_cmts src_cmts) )
+        List.append dst_cmts src_cmts) ;
+    if Conf.debug then (
+      Hashtbl.remove t.remaining src ;
+      Hashtbl.set t.remaining ~key:after ~data:() ;
+      Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 let split_asterisk_prefixed (txt, {Location.loc_start}) =
   let len = Position.column loc_start + 3 in
@@ -512,6 +522,7 @@ let fmt_cmt (conf : Conf.t) cmt =
 let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
     tbl loc =
   let open Fmt in
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
   let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
   | None | Some [] -> noop
@@ -591,11 +602,16 @@ let drop_inside t loc =
   in
   clear t.cmts_before ; clear t.cmts_within ; clear t.cmts_after
 
-let has_before t loc = Hashtbl.mem t.cmts_before loc
+let has_before t loc =
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
+  Hashtbl.mem t.cmts_before loc
 
-let has_within t loc = Hashtbl.mem t.cmts_within loc
+let has_within t loc =
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
+  Hashtbl.mem t.cmts_within loc
 
 let has_after t loc =
+  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
   Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
 
 (** returns comments that have not been formatted *)
@@ -617,6 +633,8 @@ let remaining_comments t =
     [ get t.cmts_before "before"
     ; get t.cmts_within "within"
     ; get t.cmts_after "after" ]
+
+let remaining_locs t = Hashtbl.to_alist t.remaining |> List.map ~f:fst
 
 let diff x y =
   let norm z =

@@ -118,6 +118,8 @@ val has_after : t -> Location.t -> bool
 val remaining_comments : t -> (Location.t * string * string * Sexp.t) list
 (** Returns comments that have not been formatted yet. *)
 
+val remaining_locs : t -> Location.t list
+
 val diff :
      (string * Location.t) list
   -> (string * Location.t) list
