@@ -66,3 +66,7 @@ module type S' = functor
      type t
    end)
   -> S with type t = B.t
+
+module M : sig
+  include (* foo *) module type of K
+end = struct end
