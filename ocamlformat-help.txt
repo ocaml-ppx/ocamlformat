@@ -26,9 +26,16 @@ OPTIONS (CODE FORMATTING STYLE)
        the closer the directory is to the processed file, the higher the
        priority.
 
-       An .ocamlformat-ignore file specifies files that OCamlFormat should
-       ignore. Each line in an .ocamlformat-ignore file specifies a filename
-       relative to the directory containing the .ocamlformat-ignore file.
+       If the disable option is not set, an .ocamlformat-ignore file
+       specifies files that OCamlFormat should ignore. Each line in an
+       .ocamlformat-ignore file specifies a filename relative to the
+       directory containing the .ocamlformat-ignore file. Lines starting with
+       # are ignored and can be used as comments.
+
+       If the disable option is set, an .ocamlformat-enable file specifies
+       files that OCamlFormat should format even when the disable option is
+       set. Each line in an .ocamlformat-enable file specifies a filename
+       relative to the directory containing the .ocamlformat-enable file.
        Lines starting with # are ignored and can be used as comments.
 
        --assignment-operator={end-line|begin-line}

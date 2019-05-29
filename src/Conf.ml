@@ -484,11 +484,19 @@ let info =
          closer the directory is to the processed file, the higher the \
          priority."
     ; `P
-        "An $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
+        "If the $(b,disable) option is not set, an \
+         $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
          should ignore. Each line in an $(b,.ocamlformat-ignore) file \
          specifies a filename relative to the directory containing the \
          $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
-         ignored and can be used as comments." ]
+         ignored and can be used as comments."
+    ; `P
+        "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) \
+         file specifies files that OCamlFormat should format even when the \
+         $(b,disable) option is set. Each line in an \
+         $(b,.ocamlformat-enable) file specifies a filename relative to \
+         the directory containing the $(b,.ocamlformat-enable) file. Lines \
+         starting with $(b,#) are ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -1877,10 +1885,13 @@ let dot_ocamlformat = ".ocamlformat"
 
 let dot_ocamlformat_ignore = ".ocamlformat-ignore"
 
-let rec collect_files ~segs ~ignores ~files =
+let dot_ocamlformat_enable = ".ocamlformat-enable"
+
+let rec collect_files ~segs ~ignores ~enables ~files =
   match segs with
-  | [] | [""] -> (ignores, files, None)
-  | "" :: upper_segs -> collect_files ~segs:upper_segs ~ignores ~files
+  | [] | [""] -> (ignores, enables, files, None)
+  | "" :: upper_segs ->
+      collect_files ~segs:upper_segs ~ignores ~enables ~files
   | _ :: upper_segs ->
       let dir =
         String.concat ~sep:Fpath.dir_sep (List.rev segs) |> Fpath.v
@@ -1894,14 +1905,18 @@ let rec collect_files ~segs ~ignores ~files =
         let filename = Fpath.(dir / dot_ocamlformat_ignore) in
         if Fpath.exists filename then filename :: ignores else ignores
       in
+      let enables =
+        let filename = Fpath.(dir / dot_ocamlformat_enable) in
+        if Fpath.exists filename then filename :: enables else enables
+      in
       let files =
         let filename = Fpath.(dir / dot_ocp_indent) in
         if Fpath.exists filename then `Ocp_indent filename :: files
         else files
       in
       if is_project_root dir && not enable_outside_detected_project then
-        (ignores, files, Some dir)
-      else collect_files ~segs:upper_segs ~ignores ~files
+        (ignores, enables, files, Some dir)
+      else collect_files ~segs:upper_segs ~ignores ~enables ~files
 
 let read_config_file conf filename_kind =
   match filename_kind with
@@ -1992,14 +2007,14 @@ let xdg_config =
       if Fpath.exists filename then Some filename else None
   | None -> None
 
-let is_ignored ~quiet ~ignores ~filename =
+let is_in_listing_file ~quiet ~listings ~filename =
   let drop_line l = String.is_empty l || String.is_prefix l ~prefix:"#" in
   (* process deeper files first *)
-  let ignores = List.rev ignores in
-  List.find_map ignores ~f:(fun ignore_file ->
-      let dir, _ = Fpath.split_base ignore_file in
+  let listings = List.rev listings in
+  List.find_map listings ~f:(fun listing_file ->
+      let dir, _ = Fpath.split_base listing_file in
       try
-        In_channel.with_file (Fpath.to_string ignore_file) ~f:(fun ch ->
+        In_channel.with_file (Fpath.to_string listing_file) ~f:(fun ch ->
             let lines =
               In_channel.input_lines ch
               |> List.mapi ~f:(fun i s -> (i + 1, String.strip s))
@@ -2009,25 +2024,29 @@ let is_ignored ~quiet ~ignores ~filename =
                 match Fpath.of_string line with
                 | Ok file_on_current_line ->
                     let f = Fpath.(dir // file_on_current_line) in
-                    if Fpath.equal filename f then Some (ignore_file, lno)
+                    if Fpath.equal filename f then Some (listing_file, lno)
                     else None
                 | Error (`Msg msg) ->
                     if not quiet then
                       Format.eprintf "File %a, line %d:\nWarning: %s\n"
-                        (Fpath.pp ~pretty:true) ignore_file lno msg ;
+                        (Fpath.pp ~pretty:true) listing_file lno msg ;
                     None))
       with Sys_error err ->
         if not quiet then
           Format.eprintf "Warning: ignoring %a, %s\n"
-            (Fpath.pp ~pretty:true) ignore_file err ;
+            (Fpath.pp ~pretty:true) listing_file err ;
         None)
+
+let is_ignored ~ignores = is_in_listing_file ~listings:ignores
+
+let is_enabled ~enables = is_in_listing_file ~listings:enables
 
 let build_config ~file =
   let file_abs = Fpath.(v file |> to_absolute |> normalize) in
   let dir = Fpath.(file_abs |> split_base |> fst) in
   let segs = Fpath.segs dir |> List.rev in
-  let ignores, files, project_root =
-    collect_files ~segs ~ignores:[] ~files:[]
+  let ignores, enables, files, project_root =
+    collect_files ~segs ~ignores:[] ~enables:[] ~files:[]
   in
   let files =
     match (xdg_config, enable_outside_detected_project) with
@@ -2060,6 +2079,15 @@ let build_config ~file =
          %!"
         file reason ) ;
     {conf with disable= true} )
+  else if conf.disable then
+    match is_enabled ~quiet:conf.quiet ~enables ~filename:file_abs with
+    | Some (enabled_in_file, lno) ->
+        if !debug then
+          Format.eprintf "File %a: enabled in %a:%d@\n"
+            (Fpath.pp ~pretty:true) file_abs (Fpath.pp ~pretty:true)
+            enabled_in_file lno ;
+        {conf with disable= false}
+    | None -> conf
   else
     match is_ignored ~quiet:conf.quiet ~ignores ~filename:file_abs with
     | None -> conf
