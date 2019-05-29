@@ -861,23 +861,26 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_construct (lid, None) -> fmt_longident_loc c lid
   | Ppat_construct
       ( {txt= Lident "::"; loc}
-      , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []} ) -> (
+      , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []; ppat_loc}
+      ) -> (
     match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
         let fmt_pat (locs, xpat) =
           Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs @@ fmt_pattern c xpat
         in
         hvbox 0
-          (wrap_list c
-             ( list loc_xpats (semic_sep c) fmt_pat
-             $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
-             $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc ))
+          (Cmts.fmt c ppat_loc
+             (wrap_list c
+                ( list loc_xpats (semic_sep c) fmt_pat
+                $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
+                $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
         hvbox 0
           (wrap_if parens "(" ")"
-             ( fmt_pattern c (sub_pat ~ctx x)
-             $ Cmts.fmt c ~pro:(str " ") ~epi:noop loc (fmt "@ :: ")
-             $ fmt_pattern c (sub_pat ~ctx y) )) )
+             (Cmts.fmt c ppat_loc
+                ( fmt_pattern c (sub_pat ~ctx x)
+                $ Cmts.fmt c ~pro:(str " ") ~epi:noop loc (fmt "@ :: ")
+                $ fmt_pattern c (sub_pat ~ctx y) ))) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2
         (wrap_if parens "(" ")"
