@@ -1886,12 +1886,8 @@ let parse_line config ~from s =
     match List.Assoc.find ocp_indent_options ~equal name with
     | None -> Ok config
     | Some (l, _doc) ->
-        let update_one acc (name, f) =
-          match acc with
-          | Ok config -> update ~config ~from ~name ~value:(f value)
-          | Error e -> Error e
-        in
-        List.fold_left l ~init:(Ok config) ~f:update_one
+        List.fold_result l ~init:config ~f:(fun config (name, f) ->
+            update ~config ~from ~name ~value:(f value))
   in
   let rec update_many ~config ~from = function
     | [] -> Ok config
