@@ -155,6 +155,16 @@ OPTIONS (CODE FORMATTING STYLE)
            `=`). loose does. tight-decl is tight for declarations and loose
            for instantiations. The default value is tight.
 
+       --function-indent=COLS
+           Indentation of function cases (COLS columns). The default value is
+           2.
+
+       --function-indent-nested={never|always|auto}
+           Whether the function-indent parameter should be applied even when
+           in a sub-block. never only applies function-indent if the function
+           block starts a line. always always apply function-indent. auto
+           applies function-indent when seen fit. The default value is never.
+
        --if-then-else={compact|fit-or-vertical|keyword-first|k-r}
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. fit-or-vertical vertically breaks
@@ -222,6 +232,16 @@ OPTIONS (CODE FORMATTING STYLE)
        -m COLS, --margin=COLS
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.
+
+       --match-indent=COLS
+           Indentation of match/try cases (COLS columns). The default value
+           is 0.
+
+       --match-indent-nested={never|always|auto}
+           Whether the match-indent parameter should be applied even when in
+           a sub-block. never only applies match-indent if the match block
+           starts a line. always always apply match-indent. auto applies
+           match-indent when seen fit. The default value is never.
 
        --module-item-spacing={sparse|preserve|compact}
            Spacing between items of structures and signatures. sparse will
@@ -384,9 +404,10 @@ OPTIONS
        --ocp-indent-config
            Read .ocp-indent configuration files. base is an alias for
            let-binding-indent. type is an alias for type-decl-indent. in is
-           an alias for indent-after-in. match_clause is an alias for
-           cases-exp-indent. ppx_stritem_ext is an alias for
-           stritem-extension-indent.
+           an alias for indent-after-in. with sets function-indent and
+           match-indent. match_clause is an alias for cases-exp-indent.
+           ppx_stritem_ext is an alias for stritem-extension-indent.
+           strict_with sets function-indent-nested and match-indent-nested.
 
        -p {ocamlformat|compact|sparse|conventional|janestreet},
        --profile={ocamlformat|compact|sparse|conventional|janestreet}

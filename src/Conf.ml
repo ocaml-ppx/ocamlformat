@@ -34,6 +34,8 @@ type t =
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
+  ; function_indent: int
+  ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indent_after_in: int
   ; indicate_multiline_delimiters: bool
@@ -46,6 +48,8 @@ type t =
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
+  ; match_indent: int
+  ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; ocp_indent_compat: bool
@@ -836,6 +840,34 @@ module Formatting = struct
       (fun conf x -> {conf with field_space= x})
       (fun conf -> conf.field_space)
 
+  let function_indent =
+    let docv = "COLS" in
+    let doc = "Indentation of function cases ($(docv) columns)." in
+    let names = ["function-indent"] in
+    C.int ~names ~default:2 ~doc ~docv ~section
+      (fun conf x -> {conf with function_indent= x})
+      (fun conf -> conf.function_indent)
+
+  let function_indent_nested =
+    let doc =
+      "Whether the $(b,function-indent) parameter should be applied even \
+       when in a sub-block."
+    in
+    let names = ["function-indent-nested"] in
+    let all =
+      [ ( "never"
+        , `Never
+        , "$(b,never) only applies $(b,function-indent) if the function \
+           block starts a line." )
+      ; ("always", `Always, "$(b,always) always apply $(b,function-indent).")
+      ; ( "auto"
+        , `Auto
+        , "$(b,auto) applies $(b,function-indent) when seen fit." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with function_indent_nested= x})
+      (fun conf -> conf.function_indent_nested)
+
   let if_then_else =
     let doc = "If-then-else formatting." in
     let names = ["if-then-else"] in
@@ -1021,6 +1053,33 @@ module Formatting = struct
       ~allow_inline:false
       (fun conf x -> {conf with margin= x})
       (fun conf -> conf.margin)
+
+  let match_indent =
+    let docv = "COLS" in
+    let doc = "Indentation of match/try cases ($(docv) columns)." in
+    let names = ["match-indent"] in
+    C.int ~names ~default:0 ~doc ~docv ~section
+      (fun conf x -> {conf with match_indent= x})
+      (fun conf -> conf.match_indent)
+
+  let match_indent_nested =
+    let doc =
+      "Whether the $(b,match-indent) parameter should be applied even when \
+       in a sub-block."
+    in
+    let names = ["match-indent-nested"] in
+    let all =
+      [ ( "never"
+        , `Never
+        , "$(b,never) only applies $(b,match-indent) if the match block \
+           starts a line." )
+      ; ("always", `Always, "$(b,always) always apply $(b,match-indent).")
+      ; ("auto", `Auto, "$(b,auto) applies $(b,match-indent) when seen fit.")
+      ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with match_indent_nested= x})
+      (fun conf -> conf.match_indent_nested)
 
   let module_item_spacing =
     let doc = "Spacing between items of structures and signatures." in
@@ -1388,48 +1447,44 @@ let name =
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
 let ocp_indent_options =
-  [ ( "base"
-    , Some
-        ( "let-binding-indent"
-        , "$(b,base) is an alias for $(b,let-binding-indent)."
-        , Fn.id ) )
-  ; ( "type"
-    , Some
-        ( "type-decl-indent"
-        , "$(b,type) is an alias for $(b,type-decl-indent)."
-        , Fn.id ) )
-  ; ( "in"
-    , Some
-        ( "indent-after-in"
-        , "$(b,in) is an alias for $(b,indent-after-in)."
-        , Fn.id ) )
-  ; ("with", None)
-  ; ( "match_clause"
-    , Some
-        ( "cases-exp-indent"
-        , "$(b,match_clause) is an alias for $(b,cases-exp-indent)."
-        , Fn.id ) )
-  ; ( "ppx_stritem_ext"
-    , Some
-        ( "stritem-extension-indent"
-        , "$(b,ppx_stritem_ext) is an alias for \
-           $(b,stritem-extension-indent)."
-        , Fn.id ) )
-  ; ("max_indent", None)
-  ; ("strict_with", None)
-  ; ("strict_else", None)
-  ; ("strict_comments", None)
-  ; ("align_ops", None)
-  ; ("align_params", None) ]
+  let unsupported ocp_indent = (ocp_indent, ([], "")) in
+  let alias ocp_indent ocamlformat =
+    ( ocp_indent
+    , ( [ocamlformat]
+      , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
+          ocamlformat ) )
+  in
+  let multi_alias ocp_indent l_ocamlformat =
+    ( ocp_indent
+    , ( l_ocamlformat
+      , Format.asprintf "$(b,%s) sets %a." ocp_indent
+          (Format.pp_print_list
+             ~pp_sep:(fun fs () -> Format.fprintf fs " and ")
+             (fun fs x -> Format.fprintf fs "$(b,%s)" x))
+          l_ocamlformat ) )
+  in
+  [ alias "base" "let-binding-indent"
+  ; alias "type" "type-decl-indent"
+  ; alias "in" "indent-after-in"
+  ; multi_alias "with" ["function-indent"; "match-indent"]
+  ; alias "match_clause" "cases-exp-indent"
+  ; alias "ppx_stritem_ext" "stritem-extension-indent"
+  ; unsupported "max_indent"
+  ; multi_alias "strict_with"
+      ["function-indent-nested"; "match-indent-nested"]
+  ; unsupported "strict_else"
+  ; unsupported "strict_comments"
+  ; unsupported "align_ops"
+  ; unsupported "align_params" ]
 
 let ocp_indent_config =
   let doc =
     let open Format in
     let supported =
-      let l =
-        List.filter_map ocp_indent_options ~f:(fun (_, o) ->
-            Option.map o ~f:(fun (_, doc, _) -> doc))
+      let only_doc (_, (_, doc)) =
+        Option.some_if (not (String.is_empty doc)) doc
       in
+      let l = List.filter_map ocp_indent_options ~f:only_doc in
       if List.is_empty l then ""
       else
         asprintf " %a"
@@ -1510,6 +1565,8 @@ let ocamlformat_profile =
   ; extension_indent= C.default Formatting.extension_indent
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
+  ; function_indent= C.default Formatting.function_indent
+  ; function_indent_nested= C.default Formatting.function_indent_nested
   ; if_then_else= C.default Formatting.if_then_else
   ; indent_after_in= C.default Formatting.indent_after_in
   ; indicate_multiline_delimiters=
@@ -1525,6 +1582,8 @@ let ocamlformat_profile =
   ; let_module= C.default Formatting.let_module
   ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
+  ; match_indent= C.default Formatting.match_indent
+  ; match_indent_nested= C.default Formatting.match_indent_nested
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
@@ -1637,6 +1696,8 @@ let janestreet_profile =
   ; extension_indent= 2
   ; extension_sugar= `Preserve
   ; field_space= `Loose
+  ; function_indent= 2
+  ; function_indent_nested= `Never
   ; if_then_else= `Keyword_first
   ; indent_after_in= 0
   ; indicate_multiline_delimiters= false
@@ -1649,6 +1710,8 @@ let janestreet_profile =
   ; let_module= `Sparse
   ; let_open= `Preserve
   ; margin= 90
+  ; match_indent= 0
+  ; match_indent_nested= `Never
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; ocp_indent_compat= true
@@ -1827,13 +1890,12 @@ let parse_line config ~from s =
             ~name ~value ~inline:true
   in
   let update_ocp_indent_option ~config ~from ~name ~value =
-    let opt =
-      List.Assoc.find_exn ocp_indent_options ~equal:String.equal name
-    in
-    match opt with
+    let equal = String.equal in
+    match List.Assoc.find ocp_indent_options ~equal name with
     | None -> Ok config
-    | Some (ocamlformat_opt, _doc, f) ->
-        update ~config ~from ~name:ocamlformat_opt ~value:(f value)
+    | Some (l, _doc) ->
+        let update_one config name = update ~config ~from ~name ~value in
+        List.fold_result l ~init:config ~f:update_one
   in
   let rec update_many ~config ~from = function
     | [] -> Ok config
