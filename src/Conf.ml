@@ -1438,32 +1438,36 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
-let alias ~ocpi_opt ~ocft_opt =
-  ( ocpi_opt
-  , ( [(ocft_opt, Fn.id)]
-    , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocpi_opt ocft_opt )
-  )
-
-let unsupported ~ocpi_opt = (ocpi_opt, ([], ""))
-
 let ocp_indent_options =
-  [ alias ~ocpi_opt:"base" ~ocft_opt:"let-binding-indent"
-  ; alias ~ocpi_opt:"type" ~ocft_opt:"type-decl-indent"
-  ; alias ~ocpi_opt:"in" ~ocft_opt:"indent-after-in"
-  ; ( "with"
-    , ( [("function-indent", Fn.id); ("match-indent", Fn.id)]
-      , "$(b,with) sets $(b,function-indent) and $(b,match-indent)." ) )
-  ; alias ~ocpi_opt:"match_clause" ~ocft_opt:"cases-exp-indent"
-  ; alias ~ocpi_opt:"ppx_stritem_ext" ~ocft_opt:"stritem-extension-indent"
-  ; unsupported ~ocpi_opt:"max_indent"
-  ; ( "strict_with"
-    , ( [("function-indent-nested", Fn.id); ("match-indent-nested", Fn.id)]
-      , "$(b,strict_with) sets $(b,function-indent-nested) and \
-         $(b,match-indent-nested)." ) )
-  ; unsupported ~ocpi_opt:"strict_else"
-  ; unsupported ~ocpi_opt:"strict_comments"
-  ; unsupported ~ocpi_opt:"align_ops"
-  ; unsupported ~ocpi_opt:"align_params" ]
+  let unsupported ocp_indent = (ocp_indent, ([], "")) in
+  let alias ocp_indent ocamlformat =
+    ( ocp_indent
+    , ( [(ocamlformat, Fn.id)]
+      , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
+          ocamlformat ) )
+  in
+  let multi_alias ocp_indent l_ocamlformat =
+    ( ocp_indent
+    , ( List.map l_ocamlformat ~f:(fun x -> (x, Fn.id))
+      , Format.asprintf "$(b,%s) sets %a." ocp_indent
+          (Format.pp_print_list
+             ~pp_sep:(fun fs () -> Format.fprintf fs " and ")
+             (fun fs x -> Format.fprintf fs "$(b,%s)" x))
+          l_ocamlformat ) )
+  in
+  [ alias "base" "let-binding-indent"
+  ; alias "type" "type-decl-indent"
+  ; alias "in" "indent-after-in"
+  ; multi_alias "with" ["function-indent"; "match-indent"]
+  ; alias "match_clause" "cases-exp-indent"
+  ; alias "ppx_stritem_ext" "stritem-extension-indent"
+  ; unsupported "max_indent"
+  ; multi_alias "strict_with"
+      ["function-indent-nested"; "match-indent-nested"]
+  ; unsupported "strict_else"
+  ; unsupported "strict_comments"
+  ; unsupported "align_ops"
+  ; unsupported "align_params" ]
 
 let ocp_indent_config =
   let doc =
