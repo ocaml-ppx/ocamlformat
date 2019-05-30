@@ -1442,13 +1442,13 @@ let ocp_indent_options =
   let unsupported ocp_indent = (ocp_indent, ([], "")) in
   let alias ocp_indent ocamlformat =
     ( ocp_indent
-    , ( [(ocamlformat, Fn.id)]
+    , ( [ocamlformat]
       , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
           ocamlformat ) )
   in
   let multi_alias ocp_indent l_ocamlformat =
     ( ocp_indent
-    , ( List.map l_ocamlformat ~f:(fun x -> (x, Fn.id))
+    , ( l_ocamlformat
       , Format.asprintf "$(b,%s) sets %a." ocp_indent
           (Format.pp_print_list
              ~pp_sep:(fun fs () -> Format.fprintf fs " and ")
@@ -1886,8 +1886,8 @@ let parse_line config ~from s =
     match List.Assoc.find ocp_indent_options ~equal name with
     | None -> Ok config
     | Some (l, _doc) ->
-        List.fold_result l ~init:config ~f:(fun config (name, f) ->
-            update ~config ~from ~name ~value:(f value))
+        let update_one config name = update ~config ~from ~name ~value in
+        List.fold_result l ~init:config ~f:update_one
   in
   let rec update_many ~config ~from = function
     | [] -> Ok config
