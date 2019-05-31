@@ -2203,9 +2203,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
         in
         (c, (i, c)))
   in
-  let cmts_after_self =
-    fmt_if_k (List.is_empty fields) (Cmts.fmt_after c self_.ppat_loc)
-  in
+  let cmts_after_self = Cmts.fmt_after c self_.ppat_loc in
   let self_ =
     match self_ with
     | {ppat_desc= Ppat_any; ppat_attributes= []} -> None
@@ -2247,9 +2245,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
         in
         (c, (i, c)))
   in
-  let cmts_after_self =
-    fmt_if_k (List.is_empty fields) (Cmts.fmt_after c self_.ptyp_loc)
-  in
+  let cmts_after_self = Cmts.fmt_after c self_.ptyp_loc in
   let self_ =
     match self_ with
     | {ptyp_desc= Ptyp_any; ptyp_attributes= []} -> None
