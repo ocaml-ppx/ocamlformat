@@ -799,11 +799,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       fun k ->
         Cmts.fmt c ~pro:spc ppat_loc
         @@ Cmts.fmt c ~pro:spc loc (Option.call ~f:pro $ k)
-  | _ ->
-      fun k ->
-        Cmts.fmt_before c ppat_loc
-        $ Option.call ~f:pro $ k
-        $ Cmts.fmt_after c ~pro:spc ppat_loc )
+  | _ -> fun k -> Cmts.fmt c ppat_loc (Option.call ~f:pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
      else
        let maybe_wrap =
