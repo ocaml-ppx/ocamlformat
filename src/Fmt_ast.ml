@@ -1016,17 +1016,19 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             (if parens then ")" else "")
             (if nested then "" else "@;<1 2>)") )
   | Ppat_constraint
-      ( {ppat_desc= Ppat_unpack name; ppat_attributes= []}
+      ( {ppat_desc= Ppat_unpack name; ppat_attributes= []; ppat_loc}
       , ({ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []} as typ)
       ) ->
       let ctx = Typ typ in
       hovbox 0
         (wrap_if parens "(" ")"
            (hvbox 1
-              ( hovbox 0
-                  ( str "module " $ fmt_str_loc c name $ fmt "@ : "
-                  $ fmt_longident_loc c id )
-              $ fmt_package_type c ctx cnstrs )))
+              (Cmts.fmt c typ.ptyp_loc
+                 ( hovbox 0
+                     ( Cmts.fmt c ppat_loc
+                         (str "module " $ fmt_str_loc c name)
+                     $ fmt "@ : " $ fmt_longident_loc c id )
+                 $ fmt_package_type c ctx cnstrs ))))
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
