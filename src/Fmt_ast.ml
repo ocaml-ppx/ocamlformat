@@ -2960,7 +2960,7 @@ and fmt_module_type c ({ast= mty} as xmty) =
               open_hvbox 0 $ pro $ fmt_if parens "(")
       ; psp
       ; bdy=
-          fmt_if_k (Option.is_none pro) (open_hvbox 0 $ fmt_if parens "(")
+          fmt_if_k (Option.is_none pro) (open_hvbox 2 $ fmt_if parens "(")
           $ hvbox 0 bdy
           $ fmt_if_k (Option.is_some epi) esp
           $ Option.call ~f:epi $ list_fl wcs fmt_cstrs $ fmt_if parens ")"
