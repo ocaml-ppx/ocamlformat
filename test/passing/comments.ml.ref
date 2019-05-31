@@ -16,7 +16,7 @@ let foo = function Blah ((* old *) x, y) -> ()
 
 let foo = function Blah (x (* old *), y) -> ()
 
-let foo = function Blah,  (* old *) (x, y) -> ()
+let foo = function Blah, (* old *) (x, y) -> ()
 
 let foo = function Blah (x, y) (* old *) -> ()
 

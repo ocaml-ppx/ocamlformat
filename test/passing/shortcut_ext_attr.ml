@@ -26,7 +26,7 @@ let () =
   [%foo (new x [@foo])] ;
   [%foo
     match[@foo] () with
-    | [%foo?  (* Pattern expressions *)
+    | [%foo? (* Pattern expressions *)
         ((lazy x)[@foo])] -> ()
     | [%foo? ((exception x)[@foo])] -> ()]
 
