@@ -799,7 +799,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       fun k ->
         Cmts.fmt c ~pro:spc ppat_loc
         @@ Cmts.fmt c ~pro:spc loc (Option.call ~f:pro $ k)
-  | _ -> fun k -> Cmts.fmt c ~pro:spc ppat_loc (Option.call ~f:pro $ k) )
+  | _ -> fun k -> Cmts.fmt c ppat_loc (Option.call ~f:pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
      else
        let maybe_wrap =
@@ -861,23 +861,27 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_construct (lid, None) -> fmt_longident_loc c lid
   | Ppat_construct
       ( {txt= Lident "::"; loc}
-      , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []} ) -> (
+      , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []; ppat_loc}
+      ) -> (
     match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
         let fmt_pat (locs, xpat) =
           Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs @@ fmt_pattern c xpat
         in
         hvbox 0
-          (wrap_list c
-             ( list loc_xpats (semic_sep c) fmt_pat
-             $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
-             $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc ))
+          (Cmts.fmt c ppat_loc
+             (wrap_list c
+                ( list loc_xpats (semic_sep c) fmt_pat
+                $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
+                $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
         hvbox 0
           (wrap_if parens "(" ")"
-             ( fmt_pattern c (sub_pat ~ctx x)
-             $ Cmts.fmt c ~pro:(str " ") ~epi:noop loc (fmt "@ :: ")
-             $ fmt_pattern c (sub_pat ~ctx y) )) )
+             (Cmts.fmt c ppat_loc
+                ( fmt_pattern c (sub_pat ~ctx x)
+                $ Cmts.fmt c ~pro:(fmt "@ ") ~epi:noop loc
+                    (break_unless_newline 1 0 $ str ":: ")
+                $ fmt_pattern c (sub_pat ~ctx y) ))) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2
         (wrap_if parens "(" ")"
@@ -1012,17 +1016,19 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             (if parens then ")" else "")
             (if nested then "" else "@;<1 2>)") )
   | Ppat_constraint
-      ( {ppat_desc= Ppat_unpack name; ppat_attributes= []}
+      ( {ppat_desc= Ppat_unpack name; ppat_attributes= []; ppat_loc}
       , ({ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []} as typ)
       ) ->
       let ctx = Typ typ in
       hovbox 0
         (wrap_if parens "(" ")"
            (hvbox 1
-              ( hovbox 0
-                  ( str "module " $ fmt_str_loc c name $ fmt "@ : "
-                  $ fmt_longident_loc c id )
-              $ fmt_package_type c ctx cnstrs )))
+              (Cmts.fmt c typ.ptyp_loc
+                 ( hovbox 0
+                     ( Cmts.fmt c ppat_loc
+                         (str "module " $ fmt_str_loc c name)
+                     $ fmt "@ : " $ fmt_longident_loc c id )
+                 $ fmt_package_type c ctx cnstrs ))))
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
@@ -3082,9 +3088,11 @@ and fmt_signature_item c ?ext {ast= si} =
       in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
         match pincl_mod with
-        | {pmty_desc= Pmty_typeof me} ->
-            let blk = fmt_module_expr c (sub_mod ~ctx me) in
-            (str "include module type of", blk)
+        | {pmty_desc= Pmty_typeof me; pmty_loc} ->
+            ( str "include"
+              $ Cmts.fmt c ~pro:(str " ") ~epi:noop pmty_loc
+                  (fmt "@ module type of")
+            , fmt_module_expr c (sub_mod ~ctx me) )
         | _ -> (str "include", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       let box = wrap_k opn cls in
