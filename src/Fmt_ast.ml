@@ -3094,26 +3094,25 @@ and fmt_signature_item c ?ext {ast= si} =
         let force_before = not (Ast.module_type_is_simple pincl_mod) in
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
-      let {opn; pro; psp; bdy; cls; esp; epi} =
+      let ( keyword
+          , cmts_before
+          , cmts_after
+          , {opn; pro; psp; bdy; cls; esp; epi} ) =
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me; pmty_loc} ->
-            let blk = fmt_module_expr c (sub_mod ~ctx me) in
-            { blk with
-              pro=
-                Some
-                  ( Cmts.fmt_before c pmty_loc
-                  $ str "module type of " $ opt blk.pro Fn.id )
-            ; epi=
-                Option.some_if
-                  (Option.is_some blk.epi || Cmts.has_after c.cmts pmty_loc)
-                  (opt blk.epi Fn.id $ Cmts.fmt_after c pmty_loc) }
-        | _ -> fmt_module_type c (sub_mty ~ctx pincl_mod)
+            ( fmt "@ module type of"
+            , Cmts.fmt_before c ~pro:(str " ") ~epi:noop pmty_loc
+            , Cmts.fmt_after c ~pro:(str " ") ~epi:noop pmty_loc
+            , fmt_module_expr c (sub_mod ~ctx me) )
+        | _ -> (noop, noop, noop, fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       let box = wrap_k opn cls in
       hvbox 0
         ( doc_before
         $ ( box
-              ( hvbox 2 (str "include" $ opt pro (fun pro -> str " " $ pro))
+              ( hvbox 2
+                  ( fmt "include" $ cmts_before $ keyword $ cmts_after
+                  $ opt pro (fun pro -> str " " $ pro) )
               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
               $ bdy )
           $ esp $ Option.call ~f:epi
