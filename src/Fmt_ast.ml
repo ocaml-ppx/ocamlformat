@@ -186,10 +186,11 @@ let wrap_exp_if c ~parens ~loc k =
   | `Parens -> wrap_if parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
-let wrap_disambiguate_exp_if c ~disambiguate ~parens ~loc k =
+let wrap_disambiguate_exp_if c ~parens ~loc k =
   match parens_or_begin_end c ~loc with
   | `Parens ->
-      if disambiguate then wrap_if_fits_or parens "(" ")" k
+      if c.conf.disambiguate_non_breaking_match then
+        wrap_if_fits_or parens "(" ")" k
       else wrap_if parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
@@ -1909,7 +1910,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let indent = function_indent c ~ctx ~default:default_indent in
       hvbox_if box indent
         (wrap_disambiguate_exp_if c ~parens ~loc:pexp_loc
-           ~disambiguate:c.conf.disambiguate_non_breaking_functions
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "

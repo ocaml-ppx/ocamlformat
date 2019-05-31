@@ -31,7 +31,7 @@ type t =
   ; cases_matching_exp_indent: [`Normal | `Compact]
   ; comment_check: bool
   ; disable: bool
-  ; disambiguate_non_breaking_functions: bool
+  ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `After]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
@@ -428,15 +428,15 @@ module Formatting = struct
       (fun conf x -> {conf with disable= x})
       (fun conf -> conf.disable)
 
-  let disambiguate_non_breaking_functions =
+  let disambiguate_non_breaking_match =
     let doc =
-      "Add parentheses around functions fitting on a single line."
+      "Add parentheses around matching constructs that fit on a single line."
     in
     C.flag
-      ~names:["disambiguate-non-breaking-functions"]
+      ~names:["disambiguate-non-breaking-match"]
       ~default:false ~doc ~section
-      (fun conf x -> {conf with disambiguate_non_breaking_functions= x})
-      (fun conf -> conf.disambiguate_non_breaking_functions)
+      (fun conf x -> {conf with disambiguate_non_breaking_match= x})
+      (fun conf -> conf.disambiguate_non_breaking_match)
 
   let doc_comments =
     let doc = "Doc comments position." in
@@ -1329,8 +1329,8 @@ let ocamlformat_profile =
       C.default Formatting.cases_matching_exp_indent
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
-  ; disambiguate_non_breaking_functions=
-      C.default Formatting.disambiguate_non_breaking_functions
+  ; disambiguate_non_breaking_match=
+      C.default Formatting.disambiguate_non_breaking_match
   ; doc_comments= C.default Formatting.doc_comments
   ; doc_comments_padding= C.default Formatting.doc_comments_padding
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
@@ -1474,7 +1474,7 @@ let janestreet_profile =
   ; cases_matching_exp_indent= `Normal
   ; comment_check= true
   ; disable= false
-  ; disambiguate_non_breaking_functions= false
+  ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before
   ; doc_comments_padding= 1
   ; doc_comments_tag_only= `Fit
