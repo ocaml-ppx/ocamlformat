@@ -869,7 +869,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         in
         hvbox 0
           (wrap_list c
-             ( list loc_xpats "@,; " fmt_pat
+             ( list loc_xpats (semic_sep c) fmt_pat
              $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
              $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc ))
     | None ->
@@ -922,14 +922,20 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_if parens "(" ")"
            (wrap_record c.conf
               ( list flds (semic_sep c) fmt_field
-              $ fmt_if Poly.(closed_flag = Open) "@,; _" )))
+              $ fmt_if_k
+                  Poly.(closed_flag = Open)
+                  (fmt (semic_sep c) $ str "_") )))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
       hvbox 0
         (wrap_array c
-           (list pats "@;<0 1>; " (sub_pat ~ctx >> fmt_pattern c)))
+           (list pats
+              (* Using semic_sep here would break the alignment *)
+              ( if Poly.(c.conf.break_separators = `Before) then "@;<0 1>; "
+              else ";@;<1 3>" )
+              (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_or _ ->
       let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
