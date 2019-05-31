@@ -157,3 +157,5 @@ let rec fooooooooooo = function
   | ((*XX*) (x :: t) (*YY*)) -> k
   | (* AA*) ((*BB*) [(* CC *)x(* DD *) ; (* EE *)y(* FF *)] (* GG *)) (* HH *) -> k
   | (* AA*) ((*BB*) ((* CC *)x(* DD *) :: (* EE *)t(* FF *)) (* GG *)) (* HH *) -> k
+  | (* AA*) ((*BB*) (((* CC *)x(* DD *)) (* XX *) :: (* YY *) ((* EE *)t(* FF *))) (* GG *)) (* HH *) -> k
+  | (* AA *) ( (* BB *) ( (* CC *) module (* DD *) F (* EE *) : (* FF *) M (* GG *) ) (* HH *) :: (* II *) t (* JJ *) ) (* KK *) -> foo

@@ -879,7 +879,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           (wrap_if parens "(" ")"
              (Cmts.fmt c ppat_loc
                 ( fmt_pattern c (sub_pat ~ctx x)
-                $ Cmts.fmt c ~pro:(str " ") ~epi:noop loc (fmt "@ :: ")
+                $ Cmts.fmt c ~pro:(fmt "@ ") ~epi:noop loc
+                    (break_unless_newline 1 0 $ str ":: ")
                 $ fmt_pattern c (sub_pat ~ctx y) ))) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2

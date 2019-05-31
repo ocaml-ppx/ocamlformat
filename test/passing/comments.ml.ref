@@ -211,3 +211,26 @@ let rec fooooooooooo = function
   (* GG *)
   (* HH *) ->
       k
+  (* AA*)
+  (*BB*)
+  (* CC *)
+  | x
+    (* DD *)
+    (* XX *)
+    :: (* YY *)
+       (* EE *)
+    t
+  (* FF *)
+  (* GG *)
+  (* HH *) ->
+      k
+  (* AA *)
+  (* BB *)
+  | (module (* CC *)
+            (* DD *) F (* EE *) : (* FF *) M (* GG *))
+    (* HH *)
+    :: (* II *)
+    t
+  (* JJ *)
+  (* KK *) ->
+      foo
