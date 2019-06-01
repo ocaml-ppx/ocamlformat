@@ -44,6 +44,10 @@ type block =
   ; esp: Fmt.t
   ; epi: Fmt.t option }
 
+let smallest_loc loc stack =
+  List.reduce_exn (loc :: stack) ~f:(fun a b ->
+      if Location.width a < Location.width b then a else b)
+
 let empty =
   { opn= noop
   ; pro= None
@@ -801,7 +805,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   protect (Pat pat)
   @@
   let ctx = Pat pat in
-  let {ppat_desc; ppat_attributes; ppat_loc; _} = pat in
+  let {ppat_desc; ppat_attributes; ppat_loc; ppat_loc_stack} = pat in
   update_config_maybe_disabled c ppat_loc ppat_attributes
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
@@ -838,7 +842,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            $ fmt "@ as@ "
            $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
            ))
-  | Ppat_constant const -> fmt_constant c ~loc:ppat_loc const
+  | Ppat_constant const ->
+      fmt_constant c ~loc:(smallest_loc ppat_loc ppat_loc_stack) const
   | Ppat_interval (l, u) -> (
       (* we need to reconstruct locations for both side of the interval *)
       let toks =
@@ -1229,7 +1234,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
   protect (Exp exp)
   @@
-  let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
+  let {pexp_desc; pexp_loc; pexp_loc_stack; pexp_attributes} = exp in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
@@ -1724,7 +1729,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       wrap_if
         (parens || not (List.is_empty pexp_attributes))
         "(" ")"
-        (fmt_constant c ~loc:pexp_loc ?epi const $ fmt_atrs)
+        ( fmt_constant c
+            ~loc:(smallest_loc pexp_loc pexp_loc_stack)
+            ?epi const
+        $ fmt_atrs )
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc= _; _}
       , { ptyp_desc= Ptyp_package (id, cnstrs)
