@@ -271,3 +271,10 @@ let x
   { aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa
   ; bbbbbbbbbbbbb= bbb bb bbbbbb
   ; cccccc= cccc ccccccccccccccccccccccc }
+
+let foooooooooooooooooooooooooooooooooo =
+  { (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
+    aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa
+  ; (* fooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
+    bbbbbbbbbbbbb= bbb bb bbbbbb
+  ; cccccc= cccc ccccccccccccccccccccccc }
