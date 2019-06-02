@@ -432,11 +432,11 @@ let init map_ast source asts comments_n_docstrings =
     | _ -> place t loc_tree locs cmts ) ;
   t
 
-let init_impl = init map_structure
+let init_impl = init Mapper.structure
 
-let init_intf = init map_signature
+let init_intf = init Mapper.signature
 
-let init_use_file = init Migrate_ast.map_use_file
+let init_use_file = init Mapper.use_file
 
 let remove = ref true
 
