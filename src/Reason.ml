@@ -216,7 +216,7 @@ let input_bin_impl ic : Migrate_ast.Parsetree.structure t =
           migrate (module Bin_version) Migrate_ast.selected_version)
       in
       let ast = to_current.copy_structure ast in
-      let ast = Migrate_ast.map_structure Mappers.sanitize_input ast in
+      let ast = Migrate_ast.Mapper.structure Mappers.sanitize_input ast in
       { origin_filename
       ; ast_and_comment= {Translation_unit.ast; comments; prefix= ""} }
   | Binary_reason.Intf _ ->
@@ -232,19 +232,19 @@ let input_bin_intf ic : Migrate_ast.Parsetree.signature t =
           migrate (module Bin_version) Migrate_ast.selected_version)
       in
       let ast = to_current.copy_signature ast in
-      let ast = Migrate_ast.map_signature Mappers.sanitize_input ast in
+      let ast = Migrate_ast.Mapper.signature Mappers.sanitize_input ast in
       { origin_filename
       ; ast_and_comment= {Translation_unit.ast; comments; prefix= ""} }
   | Binary_reason.Impl _ ->
       user_error "expected serialized interface, found implementation" []
 
 let norm_impl c {Translation_unit.ast; comments} =
-  Migrate_ast.map_structure
+  Migrate_ast.Mapper.structure
     (Mappers.norm ~ignore_doc_comments:false c comments)
     ast
 
 let norm_intf c {Translation_unit.ast; comments} =
-  Migrate_ast.map_signature
+  Migrate_ast.Mapper.signature
     (Mappers.norm ~ignore_doc_comments:false c comments)
     ast
 
