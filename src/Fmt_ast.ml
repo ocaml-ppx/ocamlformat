@@ -496,7 +496,6 @@ let fmt_docstring_padded c doc =
 
 let relocate_loc_stack c loc stack =
   stack
-  |> List.sort ~compare:(Fn.flip Location.compare_start)
   |> List.iter ~f:(fun src ->
          Cmts.relocate c.cmts ~src ~before:loc ~after:loc)
 
