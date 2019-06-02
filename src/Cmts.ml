@@ -162,10 +162,10 @@ module Loc_tree = struct
       let ptyp_loc_stack = List.map x.ptyp_loc_stack ~f:(m.location m) in
       Ast_mapper.default_mapper.typ m {x with ptyp_loc_stack}
     in
-    map_ast
-      Ast_mapper.{default_mapper with location; expr; pat; typ}
-      (map_ast Ast_mapper.{default_mapper with attribute} ast)
-    |> ignore ;
+    let mapper =
+      Ast_mapper.{default_mapper with location; expr; pat; typ; attribute}
+    in
+    map_ast mapper ast |> ignore ;
     (of_list !locs, !locs)
 end
 
@@ -425,18 +425,20 @@ let init map_ast source asts comments_n_docstrings =
     ; remaining= Hashtbl.create (module Location) }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
-  if Conf.debug then
+  if Conf.debug then (
+    Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun (txt, loc) ->
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
-          (if Source.ends_line source loc then "eol" else "")) ;
+          (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
             Hashtbl.set t.remaining ~key:loc ~data:()) ;
-    if Conf.debug then
-      Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
+    if Conf.debug then (
+      Format.eprintf "\nLoc_tree:\n%!" ;
+      Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ) ;
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
     match locs with
