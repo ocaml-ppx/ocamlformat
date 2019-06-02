@@ -153,8 +153,20 @@ module Loc_tree = struct
       locs := loc :: !locs ;
       loc
     in
+    let expr (m : Ast_mapper.mapper) x =
+      let pexp_loc_stack = List.map x.pexp_loc_stack ~f:(m.location m) in
+      Ast_mapper.default_mapper.expr m {x with pexp_loc_stack}
+    in
+    let pat (m : Ast_mapper.mapper) x =
+      let ppat_loc_stack = List.map x.ppat_loc_stack ~f:(m.location m) in
+      Ast_mapper.default_mapper.pat m {x with ppat_loc_stack}
+    in
+    let typ (m : Ast_mapper.mapper) x =
+      let ptyp_loc_stack = List.map x.ptyp_loc_stack ~f:(m.location m) in
+      Ast_mapper.default_mapper.typ m {x with ptyp_loc_stack}
+    in
     map_ast
-      Ast_mapper.{default_mapper with location}
+      Ast_mapper.{default_mapper with location; expr; pat; typ}
       (map_ast Ast_mapper.{default_mapper with attribute} ast)
     |> ignore ;
     (of_list !locs, !locs)
