@@ -1937,12 +1937,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       match compact with
       | None ->
-          let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
           let indent = match_indent c ~ctx:xexp.ctx ~default:0 in
           hvbox indent
             (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-               ( leading_cmt
-               $ hvbox 0
+               ( hvbox 0
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
