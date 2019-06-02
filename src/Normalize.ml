@@ -182,6 +182,7 @@ let make_mapper c ~ignore_doc_comment =
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   let expr (m : Ast_mapper.mapper) exp =
+    let exp = {exp with pexp_loc_stack= []} in
     let {pexp_desc; pexp_attributes} = exp in
     match pexp_desc with
     (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
@@ -195,6 +196,7 @@ let make_mapper c ~ignore_doc_comment =
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
+    let pat = {pat with ppat_loc_stack= []} in
     let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1} = pat in
     (* normalize nested or patterns *)
     match ppat_desc with
@@ -208,6 +210,10 @@ let make_mapper c ~ignore_doc_comment =
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
              pat3)
     | _ -> Ast_mapper.default_mapper.pat m pat
+  in
+  let typ (m : Ast_mapper.mapper) typ =
+    let typ = {typ with ptyp_loc_stack= []} in
+    Ast_mapper.default_mapper.typ m typ
   in
   let value_binding (m : Ast_mapper.mapper) vb =
     let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes}
@@ -299,6 +305,7 @@ let make_mapper c ~ignore_doc_comment =
   ; attributes
   ; expr
   ; pat
+  ; typ
   ; value_binding
   ; structure_item
   ; signature
