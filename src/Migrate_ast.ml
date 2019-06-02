@@ -17,9 +17,31 @@ module Ast_mapper = Selected_version.Ast_mapper
 module Ast_helper = Selected_version.Ast_helper
 module Asttypes = Selected_version.Asttypes
 
-let map_structure = Selected_version.map_structure
+module Mapper = struct
+  let structure = Selected_version.map_structure
 
-let map_signature = Selected_version.map_signature
+  let signature = Selected_version.map_signature
+
+  (* Missing from ocaml_migrate_parsetree *)
+  let use_file (mapper : Ast_mapper.mapper) use_file =
+    let open Parsetree in
+    List.map use_file ~f:(fun toplevel_phrase ->
+        match (toplevel_phrase : toplevel_phrase) with
+        | Ptop_def structure ->
+            Ptop_def (mapper.Ast_mapper.structure mapper structure)
+        | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
+            let pdir_arg =
+              match pdir_arg with
+              | None -> None
+              | Some a ->
+                  Some {a with pdira_loc= mapper.location mapper a.pdira_loc}
+            in
+            Ptop_dir
+              { pdir_name=
+                  {pdir_name with loc= mapper.location mapper pdir_name.loc}
+              ; pdir_arg
+              ; pdir_loc= mapper.location mapper pdir_loc })
+end
 
 module Parse = struct
   open Migrate_parsetree
@@ -77,26 +99,6 @@ module Pprintast = struct
 
   let pattern f x = pattern f (to_current.copy_pattern x)
 end
-
-(* Missing from ocaml_migrate_parsetree *)
-let map_use_file (mapper : Ast_mapper.mapper) use_file =
-  let open Parsetree in
-  List.map use_file ~f:(fun toplevel_phrase ->
-      match (toplevel_phrase : toplevel_phrase) with
-      | Ptop_def structure ->
-          Ptop_def (mapper.Ast_mapper.structure mapper structure)
-      | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
-          let pdir_arg =
-            match pdir_arg with
-            | None -> None
-            | Some a ->
-                Some {a with pdira_loc= mapper.location mapper a.pdira_loc}
-          in
-          Ptop_dir
-            { pdir_name=
-                {pdir_name with loc= mapper.location mapper pdir_name.loc}
-            ; pdir_arg
-            ; pdir_loc= mapper.location mapper pdir_loc })
 
 module Position = struct
   open Lexing

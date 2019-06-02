@@ -313,30 +313,33 @@ let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
 
 let mapper = make_mapper ~ignore_doc_comment:false
 
-let impl c = map_structure (mapper c)
+let impl c = Mapper.structure (mapper c)
 
-let intf c = map_signature (mapper c)
+let intf c = Mapper.signature (mapper c)
 
-let use_file c = map_use_file (mapper c)
+let use_file c = Mapper.use_file (mapper c)
 
 let equal_impl ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_structure (mapper_ignore_doc_comment c)
-    else map_structure (mapper c)
+    if ignore_doc_comments then
+      Mapper.structure (mapper_ignore_doc_comment c)
+    else Mapper.structure (mapper c)
   in
   Poly.(map ast1 = map ast2)
 
 let equal_intf ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_signature (mapper_ignore_doc_comment c)
-    else map_signature (mapper c)
+    if ignore_doc_comments then
+      Mapper.signature (mapper_ignore_doc_comment c)
+    else Mapper.signature (mapper c)
   in
   Poly.(map ast1 = map ast2)
 
 let equal_use_file ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_use_file (mapper_ignore_doc_comment c)
-    else map_use_file (mapper c)
+    if ignore_doc_comments then
+      Mapper.use_file (mapper_ignore_doc_comment c)
+    else Mapper.use_file (mapper c)
   in
   Poly.(map ast1 = map ast2)
 
@@ -385,21 +388,21 @@ let make_docstring_mapper c docstrings =
 let docstrings_impl c s =
   let docstrings = ref [] in
   let (_ : structure) =
-    map_structure (make_docstring_mapper c docstrings) s
+    Mapper.structure (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
 let docstrings_intf c s =
   let docstrings = ref [] in
   let (_ : signature) =
-    map_signature (make_docstring_mapper c docstrings) s
+    Mapper.signature (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
 let docstrings_use_file c s =
   let docstrings = ref [] in
   let (_ : toplevel_phrase list) =
-    map_use_file (make_docstring_mapper c docstrings) s
+    Mapper.use_file (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
