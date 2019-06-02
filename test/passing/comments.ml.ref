@@ -10,9 +10,9 @@ let _ =
   in
   ()
 
-let _ = ((*comment*) a (*comment*), b)
+let _ = (*comment*) (a (*comment*), b)
 
-let foo = function Blah ((* old *) x, y) -> ()
+let foo = function Blah  (* old *) (x, y) -> ()
 
 let foo = function Blah (x (* old *), y) -> ()
 
@@ -20,7 +20,7 @@ let foo = function Blah, (* old *) (x, y) -> ()
 
 let foo = function Blah (x, y) (* old *) -> ()
 
-let foo = function Blah, (x, y (* old *)) -> ()
+let foo = function Blah, (x, y) (* old *) -> ()
 
 let foo = function Blah, (x, (* old *) y) -> ()
 
@@ -84,9 +84,9 @@ let _ = f (fun x -> g h) (* comment *) ~f:(fun a b -> c)
 
 let _ = f (g h) (* comment *) ~f:(fun a b -> c)
 
-let _ = f (0 + 0 (* test *) + (1 * 1) (* test *))
+let _ = f (0 + 0 (* test *) + (1 * 1)) (* test *)
 
-let _ = f ((1 * 1) (* test *) + (0 + 0) (* test *))
+let _ = f ((1 * 1) (* test *) + (0 + 0)) (* test *)
 
 let _ = match e with 3 (* test *) -> e | 3 (* test *) :: tail -> e
 
