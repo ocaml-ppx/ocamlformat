@@ -112,50 +112,66 @@ let find_after t f (loc : Location.t) =
 
 let extend_loc_to_include_attributes t (loc : Location.t)
     (l : Parsetree.attributes) =
-  let last_loc =
-    List.fold l ~init:loc
-      ~f:(fun (acc : Location.t)
-              ({attr_name= {loc; _}; attr_payload= payload} :
-                Parsetree.attribute)
-              ->
-        if loc.loc_ghost then acc
-        else
-          let loc =
-            match payload with
-            | PStr [] -> loc
-            | PStr l -> (List.last_exn l).Parsetree.pstr_loc
-            | PSig [] -> loc
-            | PSig l -> (List.last_exn l).Parsetree.psig_loc
-            | PTyp c -> c.ptyp_loc
-            | PPat (p, None) -> p.ppat_loc
-            | PPat (_, Some e) -> e.pexp_loc
-          in
-          if Location.compare_end loc acc <= 0 then acc else loc)
-  in
-  if phys_equal last_loc loc then loc
-  else
-    let loc =
+  if
+    List.for_all l ~f:(fun ({attr_loc} : Parsetree.attribute) ->
+        Location.compare Location.none attr_loc <> 0)
+  then
+    (* Starting with OCaml 4.08, attributes have locations *)
+    let loc_end =
+      List.fold l ~init:loc
+        ~f:(fun acc ({attr_loc} : Parsetree.attribute) ->
+          if Location.compare_end attr_loc acc <= 0 then acc else attr_loc)
+    in
+    if phys_equal loc_end loc then loc
+    else
       { loc with
-        loc_end= {loc.loc_end with pos_cnum= last_loc.loc_end.pos_cnum} }
+        Location.loc_end=
+          {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum} }
+  else
+    let last_loc =
+      List.fold l ~init:loc
+        ~f:(fun (acc : Location.t)
+                ({attr_name= {loc; _}; attr_payload= payload; _} :
+                  Parsetree.attribute)
+                ->
+          if loc.loc_ghost then acc
+          else
+            let loc =
+              match payload with
+              | PStr [] -> loc
+              | PStr l -> (List.last_exn l).Parsetree.pstr_loc
+              | PSig [] -> loc
+              | PSig l -> (List.last_exn l).Parsetree.psig_loc
+              | PTyp c -> c.ptyp_loc
+              | PPat (p, None) -> p.ppat_loc
+              | PPat (_, Some e) -> e.pexp_loc
+            in
+            if Location.compare_end loc acc <= 0 then acc else loc)
     in
-    let count = ref 0 in
-    let l =
-      find_after t
-        (function
-          | RBRACKET ->
-              if !count = 0 then true else ( Int.decr count ; false )
-          (* It is not clear that an LBRACKET* will ever happen in practice,
-             we're just being defensive here. *)
-          | LBRACKET | LBRACKETBAR | LBRACKETLESS | LBRACKETGREATER
-           |LBRACKETPERCENT | LBRACKETPERCENTPERCENT | LBRACKETAT
-           |LBRACKETATAT | LBRACKETATATAT ->
-              Int.incr count ; false
-          | _ -> false)
-        loc
-    in
-    match l with
-    | None -> impossible "Invariant of the token stream"
-    | Some e -> {loc with loc_end= e.loc_end}
+    if phys_equal last_loc loc then loc
+    else
+      let loc =
+        { loc with
+          loc_end= {loc.loc_end with pos_cnum= last_loc.loc_end.pos_cnum} }
+      in
+      let count = ref 0 in
+      let l =
+        find_after t
+          (function
+            | RBRACKET ->
+                if !count = 0 then true else ( Int.decr count ; false )
+            (* It is not clear that an LBRACKET* will ever happen in
+               practice, we're just being defensive here. *)
+            | LBRACKET | LBRACKETBAR | LBRACKETLESS | LBRACKETGREATER
+             |LBRACKETPERCENT | LBRACKETPERCENTPERCENT | LBRACKETAT
+             |LBRACKETATAT | LBRACKETATATAT ->
+                Int.incr count ; false
+            | _ -> false)
+          loc
+      in
+      match l with
+      | None -> impossible "Invariant of the token stream"
+      | Some e -> {loc with loc_end= e.loc_end}
 
 let loc_between ~(from : Location.t) ~(upto : Location.t) : Location.t =
   {from with loc_start= from.loc_start; loc_end= upto.loc_start}
