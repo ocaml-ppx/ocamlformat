@@ -2467,11 +2467,10 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
       in
       hvbox_if box 0 (list xt1N "@;-> " fmt_arg)
   | Pcty_extension ext -> fmt_extension c ctx "%" ext
-  | Pcty_open ({popen_override= flag; popen_expr= lid; _}, cl) ->
+  | Pcty_open (popen, cl) ->
       hvbox 0
-        ( str "let open"
-        $ fmt_if Poly.(flag = Override) "!"
-        $ str " " $ fmt_longident_loc c lid $ fmt " in@;<1000 0>"
+        ( fmt_open_description c ~keyword:"let open" popen
+        $ fmt " in@;<1000 0>"
         $ fmt_class_type c (sub_cty ~ctx cl) ) )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
@@ -2539,11 +2538,10 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
            $ fmt_class_type c (sub_cty ~ctx t) ))
       $ fmt_atrs
   | Pcl_extension ext -> fmt_extension c ctx "%" ext $ fmt_atrs
-  | Pcl_open ({popen_override= flag; popen_expr= lid; _}, cl) ->
+  | Pcl_open (popen, cl) ->
       hvbox 0
-        ( str "let open"
-        $ fmt_if Poly.(flag = Override) "!"
-        $ str " " $ fmt_longident_loc c lid $ fmt " in@;<1000 0>"
+        ( fmt_open_description c ~keyword:"let open" popen
+        $ fmt " in@;<1000 0>"
         $ fmt_class_expr c (sub_cl ~ctx cl)
         $ fmt_atrs )
 
@@ -3494,19 +3492,22 @@ and fmt_module_type_declaration c ctx pmtd =
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
-and fmt_open_description c
+and fmt_open_description c ?(keyword = "open")
     {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~fit:true c popen_attributes
   in
-  doc_before $ str "open"
-  $ fmt_if Poly.(popen_override = Override) "!"
-  $ str " "
-  $ fmt_longident_loc c popen_lid
-  $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
-  $ doc_after
+  hovbox 0
+    ( doc_before $ str keyword
+    $ fmt_if Poly.(popen_override = Override) "!"
+    $ Cmts.fmt_before c popen_loc
+    $ str " "
+    $ fmt_longident_loc c popen_lid
+    $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+    $ Cmts.fmt_after c popen_loc
+    $ doc_after )
 
 (** TODO: merge with `fmt_module_declaration` *)
 and fmt_module_statement c ~attributes keyword mod_expr =

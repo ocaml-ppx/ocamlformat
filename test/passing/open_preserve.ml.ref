@@ -164,3 +164,15 @@ let x =
     end
   end in
   foo
+
+class type a =
+  (* A'' *)
+  let open (* A' *) A (* A *) in
+  (* B *)
+  b
+
+class a =
+  (* A'' *)
+  let open (* A' *) A (* A *) in
+  (* B *)
+  b
