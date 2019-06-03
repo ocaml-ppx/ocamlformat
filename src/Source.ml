@@ -158,21 +158,27 @@ let extend_loc_to_include_attributes t (loc : Location.t)
     | Some e -> {loc with loc_end= e.loc_end}
 
 let loc_between ~(from : Location.t) ~(upto : Location.t) : Location.t =
-  {from with loc_start= from.loc_end; loc_end= upto.loc_start}
+  {from with loc_start= from.loc_start; loc_end= upto.loc_start}
 
 let tokens_between t ?(filter = fun _ -> true) ~(from : Location.t)
     ~(upto : Location.t) : (Parser.token * Location.t) list =
   tokens_at t ~filter (loc_between ~from ~upto)
 
-let contains_IN_token_between t ~(from : Location.t) ~(upto : Location.t) =
-  let filter = function Parser.IN -> true | _ -> false in
+let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
+  let filter = Poly.( = ) tok in
   Source_code_position.ascending from.loc_start upto.loc_start < 0
   && not (List.is_empty (tokens_between t ~from ~upto ~filter))
 
 let is_long_pexp_open source {Parsetree.pexp_desc; _} =
   match pexp_desc with
-  | Pexp_open ({popen_loc= loc; _}, {pexp_loc; _}) ->
-      contains_IN_token_between source ~from:loc ~upto:pexp_loc
+  | Pexp_open ({popen_loc= from; _}, {pexp_loc= upto; _}) ->
+      contains_token_between source ~from ~upto Parser.IN
+  | _ -> false
+
+let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
+  match pmod_desc with
+  | Pmod_functor ({loc= upto; _}, _, _) ->
+      contains_token_between source ~from ~upto Parser.FUNCTOR
   | _ -> false
 
 let string_literal t mode (l : Location.t) =

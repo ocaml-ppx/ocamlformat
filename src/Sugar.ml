@@ -283,10 +283,10 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
 
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
-let rec functor_ cmts ~for_functor_kw ({ast= me; _} as xme) =
+let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme)
+    =
   let valid_sugared_name arg =
-    Migrate_parsetree.Versions.OCaml_current.version >= 408
-    || not (String.equal arg.txt "_")
+    not (String.equal arg.txt "_" && source_is_long me)
   in
   let ctx = Mod me in
   match me with
@@ -302,7 +302,7 @@ let rec functor_ cmts ~for_functor_kw ({ast= me; _} as xme) =
       let body = sub_mod ~ctx body in
       let xargs, xbody_me =
         match pmod_attributes with
-        | [] -> functor_ cmts ~for_functor_kw body
+        | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
       ((arg, xarg_mt) :: xargs, xbody_me)
