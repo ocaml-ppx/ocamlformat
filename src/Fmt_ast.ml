@@ -725,25 +725,26 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         ( fmt_if Poly.(o_c = Open) "..@ "
         $ Cmts.fmt_within c ~pro:noop ptyp_loc )
   | Ptyp_object (fields, closedness) ->
-      let fmt_field = function
-        | {pof_desc= Otag (lab_loc, typ); pof_attributes= attrs; pof_loc} ->
-            (* label loc * attributes * core_type -> object_field *)
-            let doc, atrs = doc_atrs attrs in
-            let fmt_cmts = Cmts.fmt c pof_loc in
-            let field_loose =
-              match c.conf.field_space with
-              | `Loose | `Tight_decl -> true
-              | `Tight -> false
-            in
-            fmt_cmts
-            @@ hvbox 4
-                 ( hvbox 2
-                     ( fmt_str_loc c lab_loc $ fmt_if field_loose " "
-                     $ fmt ":@ "
-                     $ fmt_core_type c (sub_typ ~ctx typ) )
-                 $ fmt_docstring_padded c doc
-                 $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs )
-        | {pof_desc= Oinherit typ; _} -> fmt_core_type c (sub_typ ~ctx typ)
+      let fmt_field {pof_desc; pof_attributes= atrs; pof_loc} =
+        let doc, atrs = doc_atrs atrs in
+        let fmt_field =
+          match pof_desc with
+          | Otag (lab_loc, typ) ->
+              (* label loc * attributes * core_type -> object_field *)
+              let field_loose =
+                match c.conf.field_space with
+                | `Loose | `Tight_decl -> true
+                | `Tight -> false
+              in
+              fmt_str_loc c lab_loc $ fmt_if field_loose " " $ fmt ":@ "
+              $ fmt_core_type c (sub_typ ~ctx typ)
+          | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
+        in
+        Cmts.fmt c pof_loc
+        @@ hvbox 4
+             ( hvbox 2 fmt_field
+             $ fmt_docstring_padded c doc
+             $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs )
       in
       hvbox 0
         (wrap "< " " >"
