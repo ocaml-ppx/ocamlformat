@@ -152,6 +152,10 @@ let wrap_fun_sig_args ~stmt_loc c indent k =
   | `Fit_or_vertical -> vbox indent k
   | `Smart -> hvbox indent k
 
+let sugar_pmod_functor c ~for_functor_kw pmod =
+  let source_is_long = Source.is_long_pmod_functor c.source in
+  Sugar.functor_ c.cmts ~for_functor_kw ~source_is_long pmod
+
 let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
@@ -1814,7 +1818,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_letmodule (name, pmod, exp) ->
       let keyword = str "let module" $ fmt_extension_suffix c ext in
       let xargs, xbody =
-        Sugar.functor_ c.cmts ~for_functor_kw:false (sub_mod ~ctx pmod)
+        sugar_pmod_functor c ~for_functor_kw:false (sub_mod ~ctx pmod)
       in
       let xbody, xmty =
         match xbody.ast with
@@ -3494,7 +3498,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m} as xmod)
             ( Cmts.fmt_after c pmod_loc
             $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs ) }
   | Pmod_functor _ ->
-      let xargs, me = Sugar.functor_ c.cmts ~for_functor_kw:true xmod in
+      let xargs, me = sugar_pmod_functor c ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
       let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_expr c me in
       { empty with
@@ -3942,7 +3946,7 @@ and fmt_module_binding c ctx ~rec_flag ~first pmb =
     else str "and"
   in
   let xargs, xbody =
-    Sugar.functor_ c.cmts ~for_functor_kw:false (sub_mod ~ctx pmb.pmb_expr)
+    sugar_pmod_functor c ~for_functor_kw:false (sub_mod ~ctx pmb.pmb_expr)
   in
   let xbody, xmty =
     match xbody.ast with

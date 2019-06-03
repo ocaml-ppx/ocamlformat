@@ -81,3 +81,10 @@ module Make
 struct
   type t = t
 end
+
+(* Long syntax should be preserved *)
+module M = functor (_ : S) -> struct end
+
+module M (_ : S) = struct end
+
+module M : functor (_ : S) -> S' = functor (_ : S) -> struct end
