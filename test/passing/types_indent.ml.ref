@@ -188,3 +188,5 @@ module type A = sig
 
   type t := ..
 end
+
+type t = [`A  (** A *) | `B[@b]  (** B *) | (p[@p]) (* P *)]

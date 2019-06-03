@@ -770,20 +770,22 @@ and fmt_package_type c ctx cnstrs =
   in
   list_fl cnstrs fmt_cstr
 
-and fmt_row_field c ctx = function
-  | {prf_desc= Rtag (name, const, typs); prf_attributes= atrs; prf_loc} ->
-      let c = update_config c atrs in
-      let doc, atrs = doc_atrs atrs in
-      hvbox 0
-        ( hvbox 0
-            ( Cmts.fmt c prf_loc
-            @@ ( fmt_str_loc c ~pre:(str "`") name
-               $ fmt_if (not (const && List.is_empty typs)) " of@ "
-               $ fmt_if (const && not (List.is_empty typs)) " & "
-               $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c) ) )
-        $ fmt_attributes c ~key:"@" atrs
-        $ fmt_docstring_padded c doc )
-  | {prf_desc= Rinherit typ; _} -> fmt_core_type c (sub_typ ~ctx typ)
+and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc} =
+  let c = update_config c atrs in
+  let doc, atrs = doc_atrs atrs in
+  let row =
+    match prf_desc with
+    | Rtag (name, const, typs) ->
+        fmt_str_loc c ~pre:(str "`") name
+        $ fmt_if (not (const && List.is_empty typs)) " of@ "
+        $ fmt_if (const && not (List.is_empty typs)) " & "
+        $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
+    | Rinherit typ -> fmt_core_type c (sub_typ ~ctx typ)
+  in
+  hvbox 0
+    ( hvbox 0 (Cmts.fmt c prf_loc row)
+    $ fmt_attributes c ~key:"@" atrs
+    $ fmt_docstring_padded c doc )
 
 and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   protect (Pat pat)
