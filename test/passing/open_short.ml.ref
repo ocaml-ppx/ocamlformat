@@ -190,3 +190,85 @@ open (* m *) struct
 end
 
 (* n *)
+
+open A
+open B
+
+open struct
+  type t
+end
+
+open functor
+       (A : S)
+       ->
+       struct
+         type t
+       end
+
+open functor
+       (_ : S)
+       ->
+       struct
+         type t
+       end
+
+open A (B)
+
+open (A : S)
+
+open (val x)
+
+open [%ext]
+
+let _ =
+  A.(
+    B.(
+      let open struct
+        type t
+      end in
+      let open functor
+                 (A : S)
+                 ->
+                 struct
+                   type t
+                 end in
+      let open functor
+                 (_ : S)
+                 ->
+                 struct
+                   type t
+                 end in
+      let open A (B) in
+      let open (A : S) in
+      let open (val x) in
+      let open [%ext] in
+      ()))
+
+open A [@@attr]
+open B [@@attr]
+
+open struct
+  type t
+end [@@attr]
+
+open functor
+       (A : S)
+       ->
+       struct
+         type t
+       end [@@attr]
+
+open functor
+       (_ : S)
+       ->
+       struct
+         type t
+       end [@@attr]
+
+open A (B) [@@attr]
+
+open (A : S) [@@attr]
+
+open (val x) [@@attr]
+
+open [%ext] [@@attr]
