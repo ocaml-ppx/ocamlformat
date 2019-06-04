@@ -102,9 +102,9 @@ module Position = struct
   open Lexing
   module Format = Format_
 
-  let column {pos_bol; pos_cnum} = pos_cnum - pos_bol
+  let column {pos_bol; pos_cnum; _} = pos_cnum - pos_bol
 
-  let fmt fs {pos_lnum; pos_bol; pos_cnum} =
+  let fmt fs {pos_lnum; pos_bol; pos_cnum; _} =
     if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
     else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 

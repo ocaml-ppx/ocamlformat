@@ -150,7 +150,8 @@ let make_mapper c ~ignore_doc_comment =
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
-                    ; pexp_attributes }
+                    ; pexp_attributes
+                    ; _ }
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
@@ -182,27 +183,28 @@ let make_mapper c ~ignore_doc_comment =
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   let expr (m : Ast_mapper.mapper) exp =
-    let {pexp_desc; pexp_attributes} = exp in
+    let {pexp_desc; pexp_attributes; _} = exp in
     match pexp_desc with
     (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
     | Pexp_sequence
-        ({pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= []}, e3) ->
+        ({pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= []; _}, e3) ->
         m.expr m
           (Exp.sequence e1 (Exp.sequence ~attrs:pexp_attributes e2 e3))
-    | Pexp_poly ({pexp_desc= Pexp_constraint (e, t)}, None) ->
+    | Pexp_poly ({pexp_desc= Pexp_constraint (e, t); _}, None) ->
         m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
-    | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t)}) -> m.expr m e
+    | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t); _}) -> m.expr m e
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
-    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1} = pat in
+    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
     (* normalize nested or patterns *)
     match ppat_desc with
     | Ppat_or
         ( pat1
         , { ppat_desc= Ppat_or (pat2, pat3)
           ; ppat_loc= loc2
-          ; ppat_attributes= attrs2 } ) ->
+          ; ppat_attributes= attrs2
+          ; _ } ) ->
         m.pat m
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
@@ -210,7 +212,7 @@ let make_mapper c ~ignore_doc_comment =
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let value_binding (m : Ast_mapper.mapper) vb =
-    let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes}
+    let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes; _}
         ; pvb_expr
         ; pvb_loc
         ; pvb_attributes } =
@@ -221,7 +223,8 @@ let make_mapper c ~ignore_doc_comment =
        ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
        https://caml.inria.fr/mantis/view.php?id=7344 *)
     | ( Ppat_constraint
-          (({ppat_desc= Ppat_var _} as p0), {ptyp_desc= Ptyp_poly ([], t0)})
+          ( ({ppat_desc= Ppat_var _; _} as p0)
+          , {ptyp_desc= Ptyp_poly ([], t0); _} )
       , Pexp_constraint (e0, t1) )
       when Poly.(t0 = t1) ->
         m.value_binding m
@@ -237,7 +240,7 @@ let make_mapper c ~ignore_doc_comment =
   in
   let structure_item (m : Ast_mapper.mapper) (si : structure_item) =
     match si.pstr_desc with
-    | Pstr_eval ({pexp_desc= Pexp_extension e}, []) ->
+    | Pstr_eval ({pexp_desc= Pexp_extension e; _}, []) ->
         let e = m.extension m e in
         let pstr_loc = m.location m si.pstr_loc in
         {pstr_desc= Pstr_extension (e, []); pstr_loc}
@@ -350,7 +353,8 @@ let make_docstring_mapper c docstrings =
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
-                    ; pexp_attributes }
+                    ; pexp_attributes
+                    ; _ }
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' = docstring c doc in

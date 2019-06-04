@@ -9,6 +9,8 @@
  *                                                                    *
  **********************************************************************)
 
+[@@@ocaml.warning "-9"]
+
 (** Abstract syntax tree term *)
 
 open Migrate_ast

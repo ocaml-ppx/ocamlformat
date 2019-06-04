@@ -115,7 +115,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
   let last_loc =
     List.fold l ~init:loc
       ~f:(fun (acc : Location.t)
-              ({attr_name= {loc; _}; attr_payload= payload} :
+              ({attr_name= {loc; _}; attr_payload= payload; _} :
                 Parsetree.attribute)
               ->
         if loc.loc_ghost then acc
@@ -169,15 +169,15 @@ let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   Source_code_position.ascending from.loc_start upto.loc_start < 0
   && not (List.is_empty (tokens_between t ~from ~upto ~filter))
 
-let is_long_pexp_open source {Parsetree.pexp_desc} =
+let is_long_pexp_open source {Parsetree.pexp_desc; _} =
   match pexp_desc with
-  | Pexp_open ({popen_loc= from; _}, {pexp_loc= upto}) ->
+  | Pexp_open ({popen_loc= from; _}, {pexp_loc= upto; _}) ->
       contains_token_between source ~from ~upto Parser.IN
   | _ -> false
 
-let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from} =
+let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
   match pmod_desc with
-  | Pmod_functor ({loc= upto}, _, _) ->
+  | Pmod_functor ({loc= upto; _}, _, _) ->
       contains_token_between source ~from ~upto Parser.FUNCTOR
   | _ -> false
 

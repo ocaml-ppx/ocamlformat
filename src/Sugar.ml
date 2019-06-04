@@ -8,6 +8,7 @@
  *  LICENSE file in the root directory of this source tree.           *
  *                                                                    *
  **********************************************************************)
+[@@@ocaml.warning "-9"]
 
 open Migrate_ast
 open Asttypes
