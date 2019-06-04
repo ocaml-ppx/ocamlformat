@@ -1915,7 +1915,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
             ( hvbox 0
-                (* XXX check me *)
                 ( hvbox 2
                     (hvbox 2
                        ( pre
