@@ -94,7 +94,8 @@ end = struct
     { roots= sort_itv_list tree.roots
     ; tbl= Hashtbl.map tree.tbl ~f:sort_itv_list }
 
-  let children {tbl} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
+  let children {tbl; _} elt =
+    Option.value ~default:[] (Hashtbl.find tbl elt)
 
   let dump tree =
     let open Fmt in
@@ -120,13 +121,15 @@ module Loc_tree = struct
   let of_ast map_ast ast =
     let attribute (m : Ast_mapper.mapper) attr =
       match attr with
-      | ( {txt= ("ocaml.doc" | "ocaml.text") as txt}
+      | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; _}
         , PStr
             [ { pstr_desc=
                   Pstr_eval
                     ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
-                      ; pexp_attributes }
-                    , [] ) } ] ) ->
+                      ; pexp_attributes
+                      ; _ }
+                    , [] )
+              ; _ } ] ) ->
           (* ignore location of docstrings *)
           ( {txt; loc= Location.none}
           , m.payload m
@@ -381,13 +384,15 @@ let dedup_cmts map_ast ast comments =
     let docs = ref (Set.empty (module Cmt)) in
     let attribute _ atr =
       match atr with
-      | ( {txt= "ocaml.doc" | "ocaml.text"}
+      | ( {txt= "ocaml.doc" | "ocaml.text"; _}
         , PStr
             [ { pstr_desc=
                   Pstr_eval
                     ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
-                      ; pexp_loc }
-                    , [] ) } ] ) ->
+                      ; pexp_loc
+                      ; _ }
+                    , [] )
+              ; _ } ] ) ->
           docs := Set.add !docs ("*" ^ doc, pexp_loc) ;
           atr
       | _ -> atr
@@ -467,7 +472,7 @@ let relocate t ~src ~before ~after =
       Hashtbl.set t.remaining ~key:after ~data:() ;
       Hashtbl.set t.remaining ~key:before ~data:() ) )
 
-let split_asterisk_prefixed (txt, {Location.loc_start}) =
+let split_asterisk_prefixed (txt, {Location.loc_start; _}) =
   let len = Position.column loc_start + 3 in
   let pat =
     String.Search_pattern.create

@@ -168,9 +168,9 @@ let contains_IN_token_between t ~(from : Location.t) ~(upto : Location.t) =
   Source_code_position.ascending from.loc_start upto.loc_start < 0
   && not (List.is_empty (tokens_between t ~from ~upto ~filter))
 
-let is_long_pexp_open source {Parsetree.pexp_desc} =
+let is_long_pexp_open source {Parsetree.pexp_desc; _} =
   match pexp_desc with
-  | Pexp_open (_, {loc}, {pexp_loc}) ->
+  | Pexp_open (_, {loc; _}, {pexp_loc; _}) ->
       contains_IN_token_between source ~from:loc ~upto:pexp_loc
   | _ -> false
 
