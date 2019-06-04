@@ -2442,8 +2442,6 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
   @@ fun c ->
   let doc, atrs = doc_atrs pcty_attributes in
   Cmts.fmt c pcty_loc
-  @@ ( if List.is_empty atrs then Fn.id
-     else fun k -> k $ fmt_attributes c ~key:"@" atrs )
   @@
   let parens = parenze_cty xtyp in
   ( hvbox_if box 0 @@ wrap_if parens "(" ")"
@@ -2452,9 +2450,12 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
   match pcty_desc with
   | Pcty_constr (name, params) ->
       let params = List.map params ~f:(fun x -> (x, Invariant)) in
-      fmt_class_params c ctx params $ fmt_longident_loc c name
+      fmt_class_params c ctx params
+      $ fmt_longident_loc c name
+      $ fmt_attributes c ~key:"@" atrs
   | Pcty_signature {pcsig_self; pcsig_fields} ->
       fmt_class_signature c ~ctx ~parens pcsig_self pcsig_fields
+      $ fmt_attributes c ~key:"@" atrs
   | Pcty_arrow (_, _, _) ->
       let arg_label lbl =
         match lbl with
@@ -2470,10 +2471,13 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
           | `class_type ct -> arg_label lI $ fmt_class_type c ct )
       in
       hvbox_if box 0 (list xt1N "@;-> " fmt_arg)
-  | Pcty_extension ext -> fmt_extension c ctx "%" ext
+      $ fmt_attributes c ~key:"@" atrs
+  | Pcty_extension ext ->
+      fmt_extension c ctx "%" ext $ fmt_attributes c ~key:"@" atrs
   | Pcty_open (popen, cl) ->
       hvbox 0
-        ( fmt_open_description c ~keyword:"let open" popen
+        ( fmt_open_description c ~keyword:"let open" ~kw_attributes:atrs
+            popen
         $ fmt " in@;<1000 0>"
         $ fmt_class_type c (sub_cty ~ctx cl) ) )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
@@ -2544,10 +2548,10 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
   | Pcl_extension ext -> fmt_extension c ctx "%" ext $ fmt_atrs
   | Pcl_open (popen, cl) ->
       hvbox 0
-        ( fmt_open_description c ~keyword:"let open" popen
+        ( fmt_open_description c ~keyword:"let open"
+            ~kw_attributes:pcl_attributes popen
         $ fmt " in@;<1000 0>"
-        $ fmt_class_expr c (sub_cl ~ctx cl)
-        $ fmt_atrs )
+        $ fmt_class_expr c (sub_cl ~ctx cl) )
 
 and fmt_class_field c ctx (cf : class_field) =
   let {pcf_desc; pcf_loc; pcf_attributes} = cf in
@@ -3288,7 +3292,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_module md ->
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
   | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution c ctx ms)
-  | Psig_open od -> fmt_open_description c od
+  | Psig_open od -> fmt_open_description c ~kw_attributes:[] od
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds fmt_module_declaration (fun x ->
           Mty x.pmd_type)
@@ -3496,7 +3500,7 @@ and fmt_module_type_declaration c ctx pmtd =
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
-and fmt_open_description c ?(keyword = "open")
+and fmt_open_description c ?(keyword = "open") ~kw_attributes
     {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
@@ -3507,6 +3511,7 @@ and fmt_open_description c ?(keyword = "open")
     ( doc_before $ str keyword
     $ fmt_if Poly.(popen_override = Override) "!"
     $ Cmts.fmt_before c popen_loc
+    $ fmt_attributes c ~key:"@" kw_attributes
     $ str " "
     $ fmt_longident_loc c popen_lid
     $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
