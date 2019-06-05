@@ -1714,6 +1714,7 @@ let conventional_profile =
   ; break_infix_before_func= false
   ; break_separators= `After_and_docked
   ; break_sequences= true
+  ; cases_matching_exp_indent= `Normal
   ; field_space= `Loose
   ; indicate_nested_or_patterns= `Unsafe_no
   ; sequence_style= `Terminator
