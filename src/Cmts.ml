@@ -476,16 +476,13 @@ let relocate t ~src ~before ~after =
     if Conf.debug then
       Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
         Location.fmt before Location.fmt after ;
-    let append_and_sort x acc =
-      List.rev_append x acc
+    let merge_and_sort x y =
+      List.rev_append x y
       |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:snd)
     in
-    update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
-        append_and_sort src_cmts dst_cmts) ;
-    update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
-        append_and_sort dst_cmts src_cmts) ;
-    update_multi t.cmts_within src after ~f:(fun src_cmts dst_cmts ->
-        append_and_sort dst_cmts src_cmts) ;
+    update_multi t.cmts_before src before ~f:merge_and_sort ;
+    update_multi t.cmts_after src after ~f:merge_and_sort ;
+    update_multi t.cmts_within src after ~f:merge_and_sort ;
     if Conf.debug then (
       Hashtbl.remove t.remaining src ;
       Hashtbl.set t.remaining ~key:after ~data:() ;
