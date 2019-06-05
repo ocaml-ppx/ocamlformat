@@ -250,6 +250,13 @@ OPTIONS (CODE FORMATTING STYLE)
            open line in the input. compact will not leave open lines between
            one-liners of similar sorts. The default value is sparse.
 
+       --nested-match={wrap|align}
+           Style of a pattern-matching nested in the last case of another
+           pattern-matching. wrap wraps the nested pattern-matching with
+           parentheses and adds indentation. align vertically aligns the
+           nested pattern-matching under the encompassing pattern-matching.
+           The default value is wrap.
+
        --no-break-infix-before-func
            Break infix operators whose right arguments are anonymous
            functions specially: do not break after the operator so that the

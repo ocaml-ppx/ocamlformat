@@ -144,3 +144,14 @@ let ffffff ~foo =
  | Aaaaaaaaaaaaaaaaa | Bbbbbbbbbbbbbbbbb | Ccccccccccccccccc
  | Ddddddddddddddddd | Eeeeeeeeeeeeeeeee -> foooooooooooooooooooo
  | Fffffffffffffffff -> fooooooooooooooooo
+
+let () =
+  match v with
+  | None -> None
+  | Some x ->
+  match x with
+  | None -> None
+  | Some x ->
+  match x with
+  | None -> None
+  | Some x -> x

@@ -2568,7 +2568,7 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs )
 
 and fmt_cases c ctx cs =
-  list_fl cs (fun ~first ~last:_ {pc_lhs; pc_guard; pc_rhs} ->
+  list_fl cs (fun ~first ~last {pc_lhs; pc_guard; pc_rhs} ->
       let xrhs = sub_exp ~ctx pc_rhs in
       let indent =
         match (ctx, pc_rhs.pexp_desc) with
@@ -2577,8 +2577,14 @@ and fmt_cases c ctx cs =
             2
         | _ -> c.conf.cases_exp_indent
       in
+      let align_nested_match =
+        match (pc_rhs.pexp_desc, c.conf.nested_match) with
+        | (Pexp_match _ | Pexp_try _), `Align -> last
+        | _ -> false
+      in
       let parens_here, parens_for_exp =
-        if c.conf.leading_nested_match_parens then (false, None)
+        if align_nested_match then (false, Some false)
+        else if c.conf.leading_nested_match_parens then (false, None)
         else (parenze_exp xrhs, Some false)
       in
       (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
@@ -2594,6 +2600,7 @@ and fmt_cases c ctx cs =
           (Cmts.has_before c.cmts pc_rhs.pexp_loc)
           (fmt "@;<1000 0>")
       in
+      let indent = if align_nested_match then 0 else indent in
       Params.get_cases c.conf ~first ~indent ~parens_here
       |> fun (p : Params.cases) ->
       p.leading_space $ leading_cmt

@@ -19,6 +19,7 @@ parens-tuple-patterns=multi-line-only (profile ocamlformat (file passing/.ocamlf
 parens-tuple=always (profile ocamlformat (file passing/.ocamlformat:1))
 parens-ite=false (profile ocamlformat (file passing/.ocamlformat:1))
 ocp-indent-compat=false (profile ocamlformat (file passing/.ocamlformat:1))
+nested-match=wrap (profile ocamlformat (file passing/.ocamlformat:1))
 module-item-spacing=sparse (profile ocamlformat (file passing/.ocamlformat:1))
 match-indent-nested=never (profile ocamlformat (file passing/.ocamlformat:1))
 match-indent=0 (profile ocamlformat (file passing/.ocamlformat:1))
