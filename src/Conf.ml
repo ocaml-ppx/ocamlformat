@@ -24,6 +24,7 @@ type t =
   ; break_string_literals: [`Newlines | `Never | `Wrap]
   ; break_struct: bool
   ; cases_exp_indent: int
+  ; cases_matching_exp_indent: [`Normal | `Compact]
   ; comment_check: bool
   ; disable: bool
   ; doc_comments: [`Before | `After]
@@ -760,13 +761,33 @@ module Formatting = struct
   let cases_exp_indent =
     let docv = "COLS" in
     let doc =
-      "Indentation of cases expressions ($(docv) columns), except for \
-       nested `match` or `try` expressions."
+      "Indentation of cases expressions ($(docv) columns). See also the \
+       $(b,cases-matching-exp-indent) and $(b,nested-match) options."
     in
     let names = ["cases-exp-indent"] in
     C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with cases_exp_indent= x})
       (fun conf -> conf.cases_exp_indent)
+
+  let cases_matching_exp_indent =
+    let doc =
+      "Indentation of cases right-hand sides which are `match` or `try` \
+       expressions."
+    in
+    let names = ["cases-matching-exp-indent"] in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) forces an indentation of 2, unless \
+           $(b,nested-match) is set to $(b,align) and we're on the last \
+           case." )
+      ; ( "normal"
+        , `Normal
+        , "$(b,normal) indents as it would any other expression." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with cases_matching_exp_indent= x})
+      (fun conf -> conf.cases_matching_exp_indent)
 
   let disable =
     let doc =
@@ -1633,6 +1654,8 @@ let ocamlformat_profile =
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
+  ; cases_matching_exp_indent=
+      C.default Formatting.cases_matching_exp_indent
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; doc_comments= C.default Formatting.doc_comments
@@ -1766,6 +1789,7 @@ let janestreet_profile =
   ; break_string_literals= `Wrap
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
+  ; cases_matching_exp_indent= `Normal
   ; comment_check= true
   ; disable= false
   ; doc_comments= `Before
