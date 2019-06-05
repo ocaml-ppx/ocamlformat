@@ -244,8 +244,9 @@ OPTIONS (CODE FORMATTING STYLE)
            match-indent when seen fit. The default value is never.
 
        --max-indent=COLS
-           Maximum indentation (COLS columns). The default value is none.
-           Cannot be set in attributes.
+           Maximum offset (COLS columns) added to a new line in addition to
+           the offset of the previous line. The default value is none. Cannot
+           be set in attributes.
 
        --module-item-spacing={sparse|preserve|compact}
            Spacing between items of structures and signatures. sparse will

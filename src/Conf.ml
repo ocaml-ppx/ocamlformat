@@ -1131,7 +1131,10 @@ module Formatting = struct
 
   let max_indent =
     let docv = "COLS" in
-    let doc = "Maximum indentation ($(docv) columns)." in
+    let doc =
+      "Maximum offset ($(docv) columns) added to a new line in addition to \
+       the offset of the previous line."
+    in
     C.int_opt ~names:["max-indent"] ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with max_indent= x})
       (fun conf -> conf.max_indent)
