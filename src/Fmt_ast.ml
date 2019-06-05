@@ -2984,8 +2984,10 @@ and fmt_module_type c ({ast= mty} as xmty) =
       let fmt_cstr ~first ~last:_ wc =
         fmt_or first "@ with" "@;<1 1>and" $ fmt_with_constraint c ctx wc
       in
-      let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc) =
-        Cmts.fmt c loc @@ list_fl wcs_and fmt_cstr
+      let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc, attr) =
+        Cmts.fmt c loc
+          ( list_fl wcs_and fmt_cstr
+          $ fmt_attributes c ~pre:(str " ") ~key:"@" attr )
       in
       let {pro; psp; bdy; esp; epi} = fmt_module_type c mt in
       { empty with
@@ -2994,16 +2996,13 @@ and fmt_module_type c ({ast= mty} as xmty) =
               open_hvbox 0 $ fmt_if parens "(" $ pro)
       ; psp
       ; bdy=
-          fmt_if_k (Option.is_none pro) (open_hvbox 0 $ fmt_if parens "(")
+          fmt_if_k (Option.is_none pro) (open_hvbox 2 $ fmt_if parens "(")
           $ hvbox 0 bdy
           $ fmt_if_k (Option.is_some epi) esp
           $ Option.call ~f:epi $ list_fl wcs fmt_cstrs $ fmt_if parens ")"
           $ close_box
       ; esp= fmt_if_k (Option.is_none epi) esp
-      ; epi=
-          Some
-            ( fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ")
-            $ Cmts.fmt_after c pmty_loc ) }
+      ; epi= Some (Cmts.fmt_after c pmty_loc) }
   | Pmty_typeof me -> (
       let blk = fmt_module_expr c (sub_mod ~ctx me) in
       let epi =

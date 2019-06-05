@@ -129,7 +129,8 @@ val functor_ :
 
 val mod_with :
      module_type Ast.xt
-  -> (with_constraint list * Warnings.loc) list * module_type Ast.xt
+  -> (with_constraint list * Warnings.loc * attributes) list
+     * module_type Ast.xt
 (** [mod_with m] returns the list of [with type] constraints of module type
     [m]. *)
 
