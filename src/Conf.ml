@@ -44,7 +44,7 @@ type t =
   ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indent_after_in: int
-  ; indicate_multiline_delimiters: bool
+  ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
@@ -1042,12 +1042,21 @@ module Formatting = struct
 
   let indicate_multiline_delimiters =
     let doc =
-      "Print a space inside a delimiter to indicate that its matching \
-       delimiter is on a different line."
+      "How to indicate that two matching delimiters live on different lines."
     in
     let names = ["indicate-multiline-delimiters"] in
-    let default = true in
-    C.flag ~names ~default ~doc ~section
+    let all =
+      [ ( "space"
+        , `Space
+        , "$(b,space) prints a space inside the delimiter to indicate the \
+           matching one is on a different line" )
+      ; ("no", `No, "$(b, no) don't do anything special")
+      ; ( "closing-on-separate-line"
+        , `Closing_on_separate_line
+        , "$(b, closing-on-separate-line) make sure that the closing \
+           delimiter is on its own line" ) ]
+    in
+    C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with indicate_multiline_delimiters= x})
       (fun conf -> conf.indicate_multiline_delimiters)
 
@@ -1885,7 +1894,7 @@ let janestreet_profile =
   ; function_indent_nested= `Never
   ; if_then_else= `Keyword_first
   ; indent_after_in= 0
-  ; indicate_multiline_delimiters= false
+  ; indicate_multiline_delimiters= `No
   ; indicate_nested_or_patterns= `Unsafe_no
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true

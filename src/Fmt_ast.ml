@@ -1382,11 +1382,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
           let very_first = first_grp && first in
           let very_last = last_grp && last in
-          let imd = c.conf.indicate_multiline_delimiters in
-          let nspaces = if imd then 1 else 0 in
+          let hint =
+            match c.conf.indicate_multiline_delimiters with
+            | `Space -> (1, 0)
+            | `No -> (0, 0)
+            | `Closing_on_separate_line -> (1000, 0)
+          in
           fmt_if_k very_first
             (fits_breaks_if parens_or_nested "("
-               (if parens_or_forced then if imd then "( " else "(" else ""))
+               ( if parens_or_forced then
+                 match c.conf.indicate_multiline_delimiters with
+                 | `Space -> "( "
+                 | `No | `Closing_on_separate_line -> "("
+               else "" ))
           $ fmt_before_cmts
           $ fmt_if_k first
               (open_hovbox (if first_grp && parens then -2 else 0))
@@ -1395,7 +1403,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           $ fmt_if_k last close_box
           $ fmt_or_k very_last
               (fmt_or_k parens_or_forced
-                 (fits_breaks_if parens_or_nested ")" ~hint:(nspaces, 0) ")")
+                 (fits_breaks_if parens_or_nested ")" ~hint ")")
                  (fits_breaks_if parens_or_nested ")" ""))
               (break_unless_newline 1 0))
     in
@@ -1775,14 +1783,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_assert e0 ->
       let paren_body = parenze_exp (sub_exp ~ctx e0) in
-      let nspaces = if c.conf.indicate_multiline_delimiters then 1 else 0 in
+      let hint =
+        match c.conf.indicate_multiline_delimiters with
+        | `Space -> (1, 0)
+        | `No -> (0, 0)
+        | `Closing_on_separate_line -> (1000, -2)
+      in
       hovbox 0
         (wrap_if parens "(" ")"
            (hvbox 0
               ( hvbox 2
                   ( fmt_or paren_body "assert (@," "assert@ "
                   $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
-              $ fits_breaks_if paren_body ")" ~hint:(nspaces, 0) ")"
+              $ fits_breaks_if paren_body ")" ~hint ")"
               $ fmt_atrs )))
   | Pexp_constant const ->
       wrap_if
@@ -1798,10 +1811,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; ptyp_attributes= []
         ; ptyp_loc= _
         ; _ } ) ->
-      let imd = c.conf.indicate_multiline_delimiters in
-      let opn_paren = fmt_or_k imd (fits_breaks "(" "( ") (str "(") in
-      let cls_paren =
-        fmt_or_k imd (fits_breaks ")" ~hint:(1, 0) ")") (str ")")
+      let opn_paren, cls_paren =
+        match c.conf.indicate_multiline_delimiters with
+        | `No -> (str "(", str ")")
+        | `Space -> (fits_breaks "(" "( ", fits_breaks ")" ~hint:(1, 0) ")")
+        | `Closing_on_separate_line ->
+            (str "(", fits_breaks ")" ~hint:(1000, -2) ")")
       in
       hovbox 0
         (compose_module
@@ -1866,11 +1881,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                , fmt_after_cmts
                , (fmt_op, [(Nolabel, arg)]) ))) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
+      let opn, cls =
+        let ( ! ) = Caml.format_of_string in
+        match c.conf.indicate_multiline_delimiters with
+        | `No -> (!"(", !")")
+        | `Space -> (!"( ", !" )") (* Why is a space used instead a hint? *)
+        | `Closing_on_separate_line -> (!"(", !"@;<1000 -2>)")
+      in
       wrap_if parens "(" ")"
         ( hvbox 2
-            ( fmt_or_k c.conf.indicate_multiline_delimiters
-                (wrap "( " " )" (fmt_longident_loc c lid))
-                (wrap "(" ")" (fmt_longident_loc c lid))
+            ( wrap opn cls (fmt_longident_loc c lid)
             $ fmt "@ "
             $ fmt_expression c (sub_exp ~ctx arg) )
         $ fmt_atrs )
@@ -2153,8 +2173,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ cbox 0
                        (fmt_expression c ?parens:parens_for_exp xpc_rhs) )
                $ fmt_if parens_here
-                   ( if c.conf.indicate_multiline_delimiters then " )"
-                   else ")" ) )) )
+                   ( match c.conf.indicate_multiline_delimiters with
+                   | `No -> ")"
+                   | `Space -> " )"
+                   | `Closing_on_separate_line -> "@;<1000 -2>)" ) )) )
   | Pexp_pack me ->
       let fmt_mod m =
         wrap_fits_breaks_exp_if ~space:false c ~parens:true ~loc:pexp_loc
@@ -2923,9 +2945,11 @@ and fmt_cases c ctx cs =
           $ p.break_after_opening_paren
           $ hovbox 0
               ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
-              $ fmt_if_k parens_here
-                  (fmt_or c.conf.indicate_multiline_delimiters "@ )" "@,)")
-              ) ))
+              $ fmt_if parens_here
+                  ( match c.conf.indicate_multiline_delimiters with
+                  | `Space -> "@ )"
+                  | `No -> "@,)"
+                  | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) ))
 
 and fmt_value_description c ctx vd =
   let { pval_name= {txt; loc}
@@ -3807,14 +3831,18 @@ and fmt_module_expr ?(can_break_before_struct = false) c
             $ str "(" )
       ; psp= fmt "@,"
       ; bdy=
-          hvbox 0
-            ( Option.call ~f:blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
-            $ Option.call ~f:blk_e.epi $ fmt " :@;<1 2>"
-            $ hvbox 0
-                ( Option.call ~f:blk_t.pro $ blk_t.psp $ blk_t.bdy
-                $ blk_t.esp $ Option.call ~f:blk_t.epi ) )
-          $ fmt_or_k c.conf.indicate_multiline_delimiters
-              (fits_breaks ")" " )") (str ")")
+          ( hvbox 0
+              ( Option.call ~f:blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
+              $ Option.call ~f:blk_e.epi $ fmt " :@;<1 2>"
+              $ hvbox 0
+                  ( Option.call ~f:blk_t.pro $ blk_t.psp $ blk_t.bdy
+                  $ blk_t.esp $ Option.call ~f:blk_t.epi ) )
+          $
+          match c.conf.indicate_multiline_delimiters with
+          | `Space -> fits_breaks ")" " )"
+          | `No -> str ")"
+          | `Closing_on_separate_line ->
+              fits_breaks ")" ~hint:(1000, -2) ")" )
       ; cls= close_box $ blk_e.cls $ blk_t.cls
       ; esp= noop
       ; epi=

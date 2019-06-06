@@ -208,6 +208,13 @@ OPTIONS (CODE FORMATTING STYLE)
            another `let`. The default value is 0. Cannot be set in
            attributes.
 
+       --indicate-multiline-delimiters={space|no|closing-on-separate-line}
+           How to indicate that two matching delimiters live on different
+           lines. space prints a space inside the delimiter to indicate the
+           matching one is on a different line no don't do anything special
+           closing-on-separate-line make sure that the closing delimiter is
+           on its own line The default value is space.
+
        --indicate-nested-or-patterns={space|unsafe-no}
            Control whether or not to indicate nested or-pattern using
            indentation. space starts lines of nested or-patterns with " |"
@@ -296,10 +303,6 @@ OPTIONS (CODE FORMATTING STYLE)
            functions specially: do not break after the operator so that the
            first line of the function appears docked at the end of line after
            the operator.
-
-       --no-indicate-multiline-delimiters
-           Print a space inside a delimiter to indicate that its matching
-           delimiter is on a different line.
 
        --no-wrap-fun-args
            Style for function call.

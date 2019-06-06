@@ -131,12 +131,16 @@ let wrap_if_fits_and cnd pre suf k =
   fits_breaks_if cnd pre "" $ k $ fits_breaks_if cnd suf ""
 
 let wrap_fits_breaks_if ?(space = true) c cnd pre suf k =
-  if (not c.Conf.indicate_multiline_delimiters) && not space then
-    wrap_if_k cnd (str pre) (str suf) k
-  else
-    fits_breaks_if cnd pre (pre ^ " ")
-    $ k
-    $ fits_breaks_if cnd suf ~hint:(1, 0) suf
+  match (c.Conf.indicate_multiline_delimiters, space) with
+  | `No, false -> wrap_if_k cnd (str pre) (str suf) k
+  | `Space, _ | _, true ->
+      fits_breaks_if cnd pre (pre ^ " ")
+      $ k
+      $ fits_breaks_if cnd suf ~hint:(1, 0) suf
+  | `Closing_on_separate_line, false ->
+      fits_breaks_if cnd pre (pre ^ " ")
+      $ k
+      $ fits_breaks_if cnd suf ~hint:(1000, 0) suf
 
 let wrap_fits_breaks ?(space = true) conf x =
   wrap_fits_breaks_if ~space conf true x
