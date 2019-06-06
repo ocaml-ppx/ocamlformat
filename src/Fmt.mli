@@ -25,6 +25,9 @@ val ( >$ ) : t -> ('b -> t) -> 'b -> t
 val set_margin : int -> t
 (** Set the margin. *)
 
+val set_max_indent : int -> t
+(** Set the maximum indentation. *)
+
 (** Break hints and format strings --------------------------------------*)
 
 val break : int -> int -> t

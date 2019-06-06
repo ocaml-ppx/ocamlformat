@@ -165,6 +165,9 @@ type formatter = {
   (* Maximum value of indentation:
      no box can be opened further. *)
   mutable pp_max_indent : int;
+  (* Maximum offset added to a new line in addition to the offset of
+     the previous line. *)
+  mutable pp_max_newline_offset : int;
   (* Space remaining on the current line. *)
   mutable pp_space_left : int;
   (* Current value of indentation. *)
@@ -307,6 +310,8 @@ let break_new_line state ?pre offset width =
   let indent = state.pp_margin - width + offset in
   (* Don't indent more than pp_max_indent. *)
   let real_indent = min state.pp_max_indent indent in
+  let real_indent =
+    min real_indent (state.pp_current_indent + state.pp_max_newline_offset) in
   state.pp_current_indent <- real_indent;
   state.pp_space_left <- state.pp_margin - state.pp_current_indent;
   pp_output_spaces state state.pp_current_indent
@@ -968,6 +973,9 @@ let pp_set_max_indent state n =
 
 let pp_get_max_indent state () = state.pp_max_indent
 
+let pp_set_max_newline_offset state n =
+  state.pp_max_newline_offset <- n
+
 let pp_set_margin state n =
   if n >= 1 then
     let n = pp_limit n in
@@ -1075,6 +1083,7 @@ let pp_make_formatter f g h i =
     pp_margin = pp_margin;
     pp_min_space_left = pp_min_space_left;
     pp_max_indent = pp_margin - pp_min_space_left;
+    pp_max_newline_offset = pp_margin - pp_min_space_left;
     pp_space_left = pp_margin;
     pp_current_indent = 0;
     pp_is_new_line = true;
