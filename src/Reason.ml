@@ -92,15 +92,15 @@ module Mappers = struct
   (* sanitize the ast obtained from reason *)
   let sanitize_input =
     let pat (m : Ast_mapper.mapper) pat =
-      let {ppat_desc; ppat_loc; ppat_attributes} = pat in
+      let {ppat_desc; ppat_loc; ppat_attributes; ppat_loc_stack= _} = pat in
       (* remove explicit_arity attributes *)
       let explicit_arity, attrs =
         List.partition_tf ppat_attributes ~f:(function
-          | {attr_name= {txt= "explicit_arity"}; _} -> true
+          | {attr_name= {txt= "explicit_arity"; _}; _} -> true
           | _ -> false)
       in
       match ppat_desc with
-      | Ppat_construct (id, Some {ppat_desc= Ppat_tuple [p0]})
+      | Ppat_construct (id, Some {ppat_desc= Ppat_tuple [p0]; _})
         when not (List.is_empty explicit_arity) ->
           m.pat m (Pat.construct ~loc:ppat_loc ~attrs id (Some p0))
       | _ ->
@@ -111,15 +111,15 @@ module Mappers = struct
           Ast_mapper.default_mapper.pat m pat
     in
     let expr (m : Ast_mapper.mapper) exp =
-      let {pexp_desc; pexp_loc; pexp_attributes} = exp in
+      let {pexp_desc; pexp_loc; pexp_attributes; pexp_loc_stack= _} = exp in
       (* remove explicit_arity attributes *)
       let explicit_arity, attrs =
         List.partition_tf pexp_attributes ~f:(function
-          | {attr_name= {txt= "explicit_arity"}; _} -> true
+          | {attr_name= {txt= "explicit_arity"; _}; _} -> true
           | _ -> false)
       in
       match pexp_desc with
-      | Pexp_construct (id, Some {pexp_desc= Pexp_tuple [e0]})
+      | Pexp_construct (id, Some {pexp_desc= Pexp_tuple [e0]; _})
         when not (List.is_empty explicit_arity) ->
           m.expr m (Exp.construct ~loc:pexp_loc ~attrs id (Some e0))
       | _ ->
@@ -160,14 +160,17 @@ module Mappers = struct
     let atr_is_dup =
       let cmts = Set.of_list (module String) (List.map cmts ~f:fst) in
       function
-      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"}
+      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
         ; attr_payload=
             PStr
               [ { pstr_desc=
                     Pstr_eval
                       ( { pexp_desc=
-                            Pexp_constant (Pconst_string (txt, None)) }
-                      , [] ) } ] } ->
+                            Pexp_constant (Pconst_string (txt, None))
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ } ->
           Set.mem cmts ("*" ^ txt)
       | _ -> false
     in
@@ -175,7 +178,7 @@ module Mappers = struct
       let atrs =
         if ignore_doc_comments then
           List.filter atrs ~f:(function
-            | {attr_name= {txt= "ocaml.doc" | "ocaml.text"}; _} -> false
+            | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> false
             | _ -> true)
         else atrs
       in
@@ -188,7 +191,7 @@ module Mappers = struct
          when converting Reason *)
       Normalize.(mapper c).structure m
         (List.filter pstr ~f:(function
-          | {pstr_desc= Pstr_attribute atr} -> not (atr_is_dup atr)
+          | {pstr_desc= Pstr_attribute atr; _} -> not (atr_is_dup atr)
           | _ -> true))
     in
     let signature (m : Ast_mapper.mapper) psig =
@@ -196,7 +199,7 @@ module Mappers = struct
          when converting Reason *)
       Normalize.(mapper c).signature m
         (List.filter psig ~f:(function
-          | {psig_desc= Psig_attribute atr} -> not (atr_is_dup atr)
+          | {psig_desc= Psig_attribute atr; _} -> not (atr_is_dup atr)
           | _ -> true))
     in
     {(Normalize.mapper c) with attributes; structure; signature}
@@ -238,12 +241,12 @@ let input_bin_intf ic : Migrate_ast.Parsetree.signature t =
   | Binary_reason.Impl _ ->
       user_error "expected serialized interface, found implementation" []
 
-let norm_impl c {Translation_unit.ast; comments} =
+let norm_impl c {Translation_unit.ast; comments; prefix= _} =
   Migrate_ast.map_structure
     (Mappers.norm ~ignore_doc_comments:false c comments)
     ast
 
-let norm_intf c {Translation_unit.ast; comments} =
+let norm_intf c {Translation_unit.ast; comments; prefix= _} =
   Migrate_ast.map_signature
     (Mappers.norm ~ignore_doc_comments:false c comments)
     ast
@@ -256,10 +259,10 @@ let equal_intf ~ignore_doc_comments c x y =
   Normalize.equal_intf ~ignore_doc_comments c (norm_intf c x)
     (norm_intf c y)
 
-let moved_docstrings_impl c {Translation_unit.ast= x}
-    {Translation_unit.ast= y} =
+let moved_docstrings_impl c {Translation_unit.ast= x; _}
+    {Translation_unit.ast= y; _} =
   Normalize.moved_docstrings_impl c x y
 
-let moved_docstrings_intf c {Translation_unit.ast= x}
-    {Translation_unit.ast= y} =
+let moved_docstrings_intf c {Translation_unit.ast= x; _}
+    {Translation_unit.ast= y; _} =
   Normalize.moved_docstrings_intf c x y
