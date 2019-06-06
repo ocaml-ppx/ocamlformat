@@ -1,4 +1,4 @@
-let _ = if b then e else ( e1 ; e2 )
+let _ = if b then e else (e1 ; e2)
 
 let _ =
   if b then

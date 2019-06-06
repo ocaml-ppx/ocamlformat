@@ -39,6 +39,7 @@ type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
   ; cond: Fmt.t
   ; box_keyword_and_expr: Fmt.t -> Fmt.t
+  ; branch_pro: Fmt.t
   ; wrap_parens: Fmt.t -> Fmt.t
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option
