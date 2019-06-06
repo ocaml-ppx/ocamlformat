@@ -743,7 +743,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   | Ptyp_object ([], o_c) ->
       wrap "<@ " ">"
         ( fmt_if Poly.(o_c = Open) "..@ "
-        $ Cmts.fmt_within c ~pro:noop ptyp_loc )
+        $ Cmts.fmt_within c ~pro:noop ~epi:(str " ") ptyp_loc )
   | Ptyp_object (fields, closedness) ->
       let fmt_field {pof_desc; pof_attributes= atrs; pof_loc} =
         let doc, atrs = doc_atrs atrs in
@@ -2721,7 +2721,7 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
   update_config_maybe_disabled c pctf_loc pctf_attributes
   @@ fun c ->
-  let fmt_cmts = Cmts.fmt c ?eol:None pctf_loc in
+  let fmt_cmts = Cmts.fmt c pctf_loc in
   let doc, atrs = doc_atrs pctf_attributes in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
   fmt_cmts

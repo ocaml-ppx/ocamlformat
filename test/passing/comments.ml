@@ -161,3 +161,21 @@ let rec fooooooooooo = function
   | (* AA *) ( (* BB *) ( (* CC *) module (* DD *) F (* EE *) : (* FF *) M (* GG *) ) (* HH *) :: (* II *) t (* JJ *) ) (* KK *) -> foo
 
 let%map (* __________________________________________________________________________________________ *) _ = ()
+
+type t = < (* a *)
+  a : int[@atr]; (* b *)
+  b : int; (* c *)
+>
+
+type t = <
+  a : int; (* a *)
+  (* b *) .. (* c *)
+>
+
+type t = < (* a *) .. (* b *) >
+
+class type i = object (* test *)
+inherit oo end
+
+class i = object (* test *)
+inherit oo end

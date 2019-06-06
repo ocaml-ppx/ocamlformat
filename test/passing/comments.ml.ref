@@ -12,7 +12,7 @@ let _ =
 
 let _ = (*comment*) (a (*comment*), b)
 
-let foo = function Blah  (* old *) (x, y) -> ()
+let foo = function Blah (* old *) (x, y) -> ()
 
 let foo = function Blah (x (* old *), y) -> ()
 
@@ -239,3 +239,33 @@ let%map
     (* __________________________________________________________________________________________ *)
     _ =
   ()
+
+type t = < (* a *)
+         a: int [@atr] ; (* b *)
+         b: int (* c *) >
+
+type t =
+  < a:
+      int
+      (* a *)
+      (* b *)
+      (* c *)
+  ; .. >
+
+type t =
+  <
+  ..
+  (* a *)
+  (* b *) >
+
+class type i =
+  object
+    (* test *)
+    inherit oo
+  end
+
+class i =
+  object
+    (* test *)
+    inherit oo
+  end
