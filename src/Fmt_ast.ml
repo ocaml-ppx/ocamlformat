@@ -2048,10 +2048,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       match compact with
       | None ->
+          (* TODO: remove leading_cmt once we figure out how to not
+             introduce regression with 4.07 Without the line below {[ let ()
+             = ( (* before *) match (* after *) x with _ -> x) ]} Gets
+             reformatted into {[ let () = match (* before *) (* after *) x
+             with _ -> x ]} *)
+          let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
           let indent = match_indent c ~ctx:xexp.ctx ~default:0 in
           hvbox indent
             (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-               ( hvbox 0
+               ( leading_cmt
+               $ hvbox 0
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
