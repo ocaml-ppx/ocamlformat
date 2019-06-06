@@ -429,12 +429,12 @@ end = struct
     let is_profile_option_name x =
       List.exists profile_option_names ~f:(String.equal x)
     in
-    let on_pack (Pack {names; get_value; to_string}) =
+    let on_pack (Pack {names; get_value; to_string; _}) =
       if is_profile_option_name (List.hd_exn names) then
         Some (to_string (get_value config))
       else None
     in
-    let on_pack (Pack ({names} as p)) =
+    let on_pack (Pack ({names; _} as p)) =
       if is_profile_option_name name then
         if is_profile_option_name (List.hd_exn names) then
           (* updating --profile option *)
@@ -452,7 +452,7 @@ end = struct
 
   let update ~config ~from ~name ~value ~inline =
     List.find_map !store
-      ~f:(fun (Pack {names; parse; update; allow_inline}) ->
+      ~f:(fun (Pack {names; parse; update; allow_inline; _}) ->
         if List.exists names ~f:(String.equal name) then
           if inline && not allow_inline then
             Some (Error (`Misplaced (name, value)))
@@ -466,10 +466,10 @@ end = struct
         else None)
     |> Option.value ~default:(Error (`Unknown (name, value)))
 
-  let default {default} = default
+  let default {default; _} = default
 
   let update_using_cmdline config =
-    let on_pack config (Pack {cmdline_get; update; names}) =
+    let on_pack config (Pack {cmdline_get; update; names; _}) =
       match cmdline_get () with
       | None -> config
       | Some x ->
@@ -484,7 +484,7 @@ end = struct
       let compare x y = compare (String.length x) (String.length y) in
       List.max_elt ~compare
     in
-    let on_pack (Pack {names; to_string; get_value; from}) =
+    let on_pack (Pack {names; to_string; get_value; from; _}) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
       let aux_from = function
