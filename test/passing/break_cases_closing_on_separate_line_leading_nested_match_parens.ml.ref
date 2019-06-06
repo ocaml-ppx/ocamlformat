@@ -27,14 +27,16 @@ let f =
       | O -> 5
       | P when h x ->
           (function
-          | A -> 6) )
+          | A -> 6)
+      )
 
 ;;
 match x with
 | true ->
   ( match y with
   | true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" )
+  | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  )
 | false -> "cccccccccccccccccccccccccccccc"
 
 ;;
@@ -62,7 +64,8 @@ let _ =
       ->
       ( match y with
       | Some _ -> true
-      | None -> false )
+      | None -> false
+      )
   in
   ()
 
@@ -172,4 +175,6 @@ let () =
     | Some x ->
       ( match x with
       | None -> None
-      | Some x -> x ) )
+      | Some x -> x
+      )
+    )
