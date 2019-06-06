@@ -7,6 +7,12 @@ let _ =
     this is more )
 
 let _ =
+  if b then ( e1 ; e2 )
+  else (
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    this is more )
+
+let _ =
   if b then (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more )
