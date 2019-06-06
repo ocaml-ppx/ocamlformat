@@ -3822,6 +3822,7 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let stmt_loc = Sugar.args_location xargs in
   let pre_body, body = fmt_body c xbody in
+  let pat_has_cmt = Cmts.has_before c.cmts xpat.ast.ppat_loc in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c pvb_loc
   $ hvbox indent
@@ -3831,7 +3832,8 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
               $ fmt_extension_suffix c ext
               $ fmt_attributes c ~key:"@" at_attrs
               $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
-              $ str " " $ fmt_pattern c xpat
+              $ fmt_or pat_has_cmt "@ " " "
+              $ fmt_pattern c xpat
               $ fmt_if_k
                   (not (List.is_empty xargs))
                   ( fmt "@ "
