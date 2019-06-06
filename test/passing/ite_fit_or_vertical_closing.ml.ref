@@ -5,22 +5,27 @@ let _ =
     e
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )
+    this is more
+  )
 
 let _ =
   if b then (
-    e1 ; e2 )
+    e1 ; e2
+  )
   else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )
+    this is more
+  )
 
 let _ =
   if b then (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )
+    this is more
+  )
   else if b1 then (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
-    this is more )
+    this is more
+  )
   else
     e
 
@@ -29,14 +34,16 @@ f
   ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
       ()
   else
-    () )
+    ()
+  )
 
 ;;
 f
   ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
       ()
   else
-    () )
+    ()
+  )
 
 ;;
 f
@@ -44,7 +51,8 @@ f
   then
       ()
   else
-    () )
+    ()
+  )
 
 ;;
 f
@@ -54,7 +62,8 @@ f
   then
       ()
   else
-    () )
+    ()
+  )
 
 let () = if [@test] true then () else if [@other] true then ()
 
@@ -103,19 +112,22 @@ let foo =
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo) )
+        fooooooooooooo)
+  )
   else if cond2 then (
     arm2 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo) )
+        fooooooooooooo)
+  )
   else (
     arm3 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo) )
+        fooooooooooooo)
+  )
 
 let foo =
   if some condition then

@@ -36,14 +36,16 @@ f
   ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong then
     ()
   else
-    () )
+    ()
+  )
 
 ;;
 f
   ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
     ()
   else
-    () )
+    ()
+  )
 
 ;;
 f
@@ -51,7 +53,8 @@ f
   then
     ()
   else
-    () )
+    ()
+  )
 
 ;;
 f
@@ -61,7 +64,8 @@ f
   then
     ()
   else
-    () )
+    ()
+  )
 
 let () =
   if [@test] true then
