@@ -150,8 +150,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
-      ; wrap_parens=
-          wrap_if parens_bch (if imd then "(@;<1 2>" else "(@;<0 2>") ")"
+      ; wrap_parens= wrap_if parens_bch "(@;<0 2>" ")"
       ; expr_pro= None
       ; expr_eol= Some (fmt "@;<1 2>")
       ; break_end_branch= fmt_if_k (parens_bch || not last) (break 1000 0)
