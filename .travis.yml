@@ -11,7 +11,7 @@ before_install:
   - export OPAMYES=1
   - export OPAMJOBS=2
   - opam init --bare --disable-sandboxing
-  - opam repo add beta https://github.com/ocaml/ocaml-beta-repository.git
+  - opam repo add --dont-select beta https://github.com/ocaml/ocaml-beta-repository.git
   - opam switch create ${OCAML_VERSION} --repositories=default,beta
   - eval `opam config env`
   - export OPAMVERBOSE=1
