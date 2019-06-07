@@ -498,11 +498,6 @@ let fmt_assign_arrow c =
 let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
 
-let relocate_loc_stack c loc stack =
-  stack
-  |> List.iter ~f:(fun src ->
-         Cmts.relocate c.cmts ~src ~before:loc ~after:loc)
-
 let rec fmt_extension c ctx key (ext, pld) =
   match (pld, ctx) with
   | ( PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
@@ -607,10 +602,9 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(pro_space = true) ({ast= typ; _} as xtyp) =
   protect (Typ typ)
   @@
-  let {ptyp_desc; ptyp_attributes; ptyp_loc; ptyp_loc_stack} = typ in
+  let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
   update_config_maybe_disabled c ptyp_loc ptyp_attributes
   @@ fun c ->
-  relocate_loc_stack c ptyp_loc ptyp_loc_stack ;
   ( match (ptyp_desc, pro) with
   | (Ptyp_arrow _ | Ptyp_poly _), Some pro when c.conf.ocp_indent_compat ->
       fmt_if pro_space "@;" $ str pro $ str " "
@@ -814,7 +808,6 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   let {ppat_desc; ppat_attributes; ppat_loc; ppat_loc_stack} = pat in
   update_config_maybe_disabled c ppat_loc ppat_attributes
   @@ fun c ->
-  relocate_loc_stack c ppat_loc ppat_loc_stack ;
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
@@ -1241,10 +1234,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
   protect (Exp exp)
   @@
-  let {pexp_desc; pexp_loc; pexp_loc_stack; pexp_attributes} = exp in
+  let {pexp_desc; pexp_loc; pexp_attributes; pexp_loc_stack} = exp in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
-  relocate_loc_stack c pexp_loc pexp_loc_stack ;
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" pexp_attributes in
   let parens = Option.value parens ~default:(parenze_exp xexp) in

@@ -420,6 +420,32 @@ let dedup_cmts map_ast ast comments =
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
+let remove = ref true
+
+(** Relocate comments, for Ast transformations such as sugaring. *)
+let relocate (t : t) ~src ~before ~after =
+  if !remove then (
+    let update_multi tbl src dst ~f =
+      Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
+          Hashtbl.update tbl dst ~f:(fun dst_data ->
+              Option.fold dst_data ~init:src_data
+                ~f:(fun src_data dst_data -> f src_data dst_data)))
+    in
+    if Conf.debug then
+      Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+        Location.fmt before Location.fmt after ;
+    let merge_and_sort x y =
+      List.rev_append x y
+      |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:snd)
+    in
+    update_multi t.cmts_before src before ~f:merge_and_sort ;
+    update_multi t.cmts_after src after ~f:merge_and_sort ;
+    update_multi t.cmts_within src after ~f:merge_and_sort ;
+    if Conf.debug then (
+      Hashtbl.remove t.remaining src ;
+      Hashtbl.set t.remaining ~key:after ~data:() ;
+      Hashtbl.set t.remaining ~key:before ~data:() ) )
+
 (** Initialize global state and place comments. *)
 let init map_ast source asts comments_n_docstrings =
   let t =
@@ -449,6 +475,25 @@ let init map_ast source asts comments_n_docstrings =
     match locs with
     | [] -> add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
+  let () =
+    let relocate_loc_stack loc stack =
+      List.iter stack ~f:(fun src -> relocate t ~src ~before:loc ~after:loc)
+    in
+    let expr (m : Ast_mapper.mapper) x =
+      relocate_loc_stack x.pexp_loc x.pexp_loc_stack ;
+      Ast_mapper.default_mapper.expr m x
+    in
+    let typ (m : Ast_mapper.mapper) x =
+      relocate_loc_stack x.ptyp_loc x.ptyp_loc_stack ;
+      Ast_mapper.default_mapper.typ m x
+    in
+    let pat (m : Ast_mapper.mapper) x =
+      relocate_loc_stack x.ppat_loc x.ppat_loc_stack ;
+      Ast_mapper.default_mapper.pat m x
+    in
+    let _ = map_ast Ast_mapper.{default_mapper with pat; typ; expr} asts in
+    ()
+  in
   t
 
 let init_impl = init Mapper.structure
@@ -456,8 +501,6 @@ let init_impl = init Mapper.structure
 let init_intf = init Mapper.signature
 
 let init_use_file = init Mapper.use_file
-
-let remove = ref true
 
 let preserve fmt_x x =
   let buf = Buffer.create 128 in
@@ -468,30 +511,6 @@ let preserve fmt_x x =
   Format.pp_print_flush fs () ;
   remove := save ;
   Buffer.contents buf
-
-(** Relocate comments, for Ast transformations such as sugaring. *)
-let relocate t ~src ~before ~after =
-  if !remove then (
-    let update_multi tbl src dst ~f =
-      Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
-          Hashtbl.update tbl dst ~f:(fun dst_data ->
-              Option.fold dst_data ~init:src_data
-                ~f:(fun src_data dst_data -> f src_data dst_data)))
-    in
-    if Conf.debug then
-      Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
-        Location.fmt before Location.fmt after ;
-    let merge_and_sort x y =
-      List.rev_append x y
-      |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:snd)
-    in
-    update_multi t.cmts_before src before ~f:merge_and_sort ;
-    update_multi t.cmts_after src after ~f:merge_and_sort ;
-    update_multi t.cmts_within src after ~f:merge_and_sort ;
-    if Conf.debug then (
-      Hashtbl.remove t.remaining src ;
-      Hashtbl.set t.remaining ~key:after ~data:() ;
-      Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 let split_asterisk_prefixed (txt, {Location.loc_start; _}) =
   let len = Position.column loc_start + 3 in
