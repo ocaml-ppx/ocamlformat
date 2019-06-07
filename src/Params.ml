@@ -107,9 +107,9 @@ type if_then_else =
   ; break_end_branch: Fmt.t
   ; space_between_branches: Fmt.t }
 
-let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
-    ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond ~exp_grouping
-    =
+let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
+    ~parens_prev_bch ~xcond ~expr_loc ~fmt_extension_suffix ~fmt_attributes
+    ~fmt_cond ~exp_grouping =
   let imd = c.indicate_multiline_delimiters in
   let cond () =
     match xcond with
@@ -171,7 +171,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
       ; break_end_branch= fmt_if_k (parens_bch || not last) (break 1000 0)
       ; space_between_branches= fmt_if parens_bch " " }
   | `Fit_or_vertical ->
-      { box_branch= hovbox 0
+      { box_branch=
+          hovbox
+            ( match imd with
+            | `Closing_on_separate_line when parens_prev_bch -> -2
+            | _ -> 0 )
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
@@ -186,7 +190,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
                (break_unless_newline 1000 2))
       ; expr_eol= Some (fmt "@;<1 2>")
       ; break_end_branch= noop
-      ; space_between_branches= fmt "@ " }
+      ; space_between_branches=
+          fmt
+            ( match imd with
+            | `Closing_on_separate_line when parens_bch -> " "
+            | _ -> "@ " ) }
   | `Keyword_first ->
       { box_branch= Fn.id
       ; cond=

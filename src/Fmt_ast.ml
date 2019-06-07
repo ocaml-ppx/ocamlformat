@@ -1952,6 +1952,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_atrs )
   | Pexp_ifthenelse _ ->
       let cnd_exps = Sugar.ite c.cmts xexp in
+      let parens_prev_bch = ref false in
       hvbox 0
         (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
            (list_fl cnd_exps
@@ -1959,7 +1960,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 let parens_bch = parenze_exp xbch in
                 let p =
                   Params.get_if_then_else c.conf ~first ~last ~parens
-                    ~parens_bch ~xcond ~expr_loc:pexp_loc
+                    ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
+                    ~expr_loc:pexp_loc
                     ~fmt_extension_suffix:(fmt_extension_suffix c ext)
                     ~fmt_attributes:
                       (fmt_attributes c ~pre:(str " ") ~key:"@"
@@ -1967,6 +1969,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     ~fmt_cond:(fmt_expression c)
                     ~exp_grouping:(parens_or_begin_end c ~loc:pexp_loc)
                 in
+                parens_prev_bch := parens_bch ;
                 p.box_branch
                   ( p.cond
                   $ p.box_keyword_and_expr

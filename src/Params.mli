@@ -52,6 +52,7 @@ val get_if_then_else :
   -> last:bool
   -> parens:bool
   -> parens_bch:bool
+  -> parens_prev_bch:bool
   -> xcond:Migrate_ast.Parsetree.expression Ast.xt option
   -> expr_loc:Warnings.loc
   -> fmt_extension_suffix:Fmt.t

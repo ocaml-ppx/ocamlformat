@@ -11,8 +11,7 @@ let _ =
 let _ =
   if b then (
     e1 ; e2
-  )
-  else (
+  ) else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more
   )
@@ -21,12 +20,10 @@ let _ =
   if b then (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more
-  )
-  else if b1 then (
+  ) else if b1 then (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more
-  )
-  else
+  ) else
     e
 
 ;;
@@ -113,15 +110,13 @@ let foo =
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo)
-  )
-  else if cond2 then (
+  ) else if cond2 then (
     arm2 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo)
-  )
-  else (
+  ) else (
     arm3 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
