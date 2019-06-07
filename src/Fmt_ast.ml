@@ -331,14 +331,23 @@ let fmt_constant c ~loc ?epi const =
             hovbox_if (List.length words > 1) 0 (list_pn words fmt_word)
         | _ -> str (escape_string mode s)
       in
-      let fmt_lines mode lines =
-        let fmt_next next =
-          if String.is_empty next then str "\\n"
-          else if Char.equal next.[0] ' ' then
-            str "\\n" $ pre_break 0 "\\" (-1) $ if_newline "\\"
-          else str "\\n" $ pre_break 0 "\\" 0
-        in
+      let fmt_lines ?(break_on_newlines = false) mode lines =
+        let delim = ["@,"; "@;"; "@\\n"] in
         let fmt_line ?prev:_ curr ?next =
+          let fmt_next next =
+            let not_suffix suffix = not (String.is_suffix curr ~suffix) in
+            let print_ln =
+              List.for_all delim ~f:not_suffix || not break_on_newlines
+            in
+            if String.is_empty next then
+              if break_on_newlines then
+                fmt_if_k (String.is_empty curr) (str "\\n")
+              else str "\\n"
+            else if Char.equal next.[0] ' ' then
+              fmt_if_k print_ln (str "\\n")
+              $ pre_break 0 "\\" (-1) $ if_newline "\\"
+            else fmt_if_k print_ln (str "\\n") $ pre_break 0 "\\" 0
+          in
           fmt_line mode curr $ opt next fmt_next
         in
         hvbox 1
@@ -357,7 +366,16 @@ let fmt_constant c ~loc ?epi const =
         | _ -> (s, c.conf.escape_strings)
       in
       match c.conf.break_string_literals with
-      | `Newlines | `Wrap -> fmt_lines mode (String.split ~on:'\n' s)
+      | `Newlines ->
+          let break_on_pp_commands in_ delim =
+            let pat = String.Search_pattern.create delim in
+            let with_ = delim ^ "\n" in
+            String.Search_pattern.replace_all pat ~in_ ~with_
+          in
+          List.fold_left ["@,"; "@;"; "@\n"] ~init:s ~f:break_on_pp_commands
+          |> String.split ~on:'\n'
+          |> fmt_lines mode ~break_on_newlines:true
+      | `Wrap -> fmt_lines mode (String.split ~on:'\n' s)
       | `Never -> wrap "\"" "\"" (fmt_line mode s) )
 
 let fmt_variance = function
