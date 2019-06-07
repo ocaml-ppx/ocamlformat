@@ -223,7 +223,8 @@ and hovbox_if cnd n = wrap_if_k cnd (open_hovbox n) close_box
 
 (** Text filling --------------------------------------------------------*)
 
-let utf8_length s = Uutf.String.fold_utf_8 (fun n _ _ -> n + 1) 0 s
+let utf8_length s =
+  Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
 
 let fill_text text =
   let fmt_line line =
