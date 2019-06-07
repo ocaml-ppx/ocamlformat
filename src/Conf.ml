@@ -13,7 +13,13 @@
 
 type t =
   { assignment_operator: [`Begin_line | `End_line]
-  ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
+  ; break_cases:
+      [ `Fit
+      | `Nested
+      | `Toplevel
+      | `Toplevel_separate_or
+      | `Fit_or_vertical
+      | `All ]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
   ; break_infix_before_func: bool
@@ -594,6 +600,10 @@ module Formatting = struct
         , "$(b,toplevel) forces top-level cases (i.e. not nested \
            or-patterns) to break across lines, otherwise break naturally \
            at the margin." )
+      ; ( "toplevel-separate-or"
+        , `Toplevel_separate_or
+        , "$(b,toplevel_separate_or) forces top-level cases and or \
+           patterns to break across lines, otherwise break naturally." )
       ; ( "fit-or-vertical"
         , `Fit_or_vertical
         , "$(b,fit-or-vertical) tries to fit all or-patterns on the same \

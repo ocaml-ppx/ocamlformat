@@ -970,7 +970,11 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
           when Poly.(c.conf.break_cases <> `Nested) -> (
-            fmt_if Poly.(c.conf.break_cases = `All) "@;<1000 0>"
+            fmt_if
+              Poly.(
+                c.conf.break_cases = `All
+                || c.conf.break_cases = `Toplevel_separate_or)
+              "@;<1000 0>"
             $
             match c.conf.indicate_nested_or_patterns with
             | `Space when space -> or_newline "| " " | "
