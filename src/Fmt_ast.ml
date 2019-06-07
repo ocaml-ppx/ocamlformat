@@ -2657,11 +2657,14 @@ and fmt_cases c ctx cs =
   list_fl cs (fun ~first ~last {pc_lhs; pc_guard; pc_rhs} ->
       let xrhs = sub_exp ~ctx pc_rhs in
       let indent =
-        match (ctx, pc_rhs.pexp_desc) with
-        | ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
-          , (Pexp_match _ | Pexp_try _) ) ->
+        match
+          (c.conf.cases_matching_exp_indent, (ctx, pc_rhs.pexp_desc))
+        with
+        | ( `Compact
+          , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
+            , (Pexp_match _ | Pexp_try _) ) ) ->
             2
-        | _ -> c.conf.cases_exp_indent
+        | _, _ -> c.conf.cases_exp_indent
       in
       let align_nested_match =
         match (pc_rhs.pexp_desc, c.conf.nested_match) with
