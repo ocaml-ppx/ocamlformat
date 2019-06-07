@@ -1842,10 +1842,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 p.box_branch
                   ( p.cond
                   $ p.box_keyword_and_expr
-                      (p.wrap_parens
-                         ( fmt_expression c ~box:false ~parens:false
-                             ?pro:p.expr_pro ?eol:p.expr_eol xbch
-                         $ p.break_end_branch )) )
+                      ( p.branch_pro
+                      $ p.wrap_parens
+                          ( fmt_expression c ~box:false ~parens:false
+                              ?pro:p.expr_pro ?eol:p.expr_eol xbch
+                          $ p.break_end_branch ) ) )
                 $ fmt_if_k (not last) p.space_between_branches)))
   | Pexp_let (rec_flag, bindings, body) ->
       let indent_after_in =

@@ -142,7 +142,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
       find_after t
         (function
           | RBRACKET ->
-              if !count = 0 then true else ( Int.decr count ; false )
+              if !count = 0 then true else (Int.decr count ; false)
           (* It is not clear that an LBRACKET* will ever happen in practice,
              we're just being defensive here. *)
           | LBRACKET | LBRACKETBAR | LBRACKETLESS | LBRACKETGREATER
