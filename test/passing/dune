@@ -1,0 +1,67 @@
+(* -*- tuareg -*- *)
+
+type setup = {
+  mutable has_ref: bool;
+  mutable has_opts: bool;
+}
+
+let register_file tests fname =
+  match String.split_on_char '.' fname with
+  | test_name :: ("ml" | "mli" as ext) :: rest ->
+      let test_name = test_name ^ "." ^ ext in
+      let setup =
+        match Hashtbl.find tests test_name with
+        | setup -> setup
+        | exception Not_found ->
+            let s = { has_ref = false; has_opts = false } in
+            Hashtbl.add tests test_name s;
+            s
+      in
+      begin match rest with
+      | [] -> ()
+      | [ "opts" ] -> setup.has_opts <- true
+      | [ "ref" ] -> setup.has_ref <- true
+      | _ -> invalid_arg fname
+      end
+  | _ -> () (* ignore dune file, .foo.whatever.swp, etc *)
+
+let emit_test buffer test_name setup =
+  let open Printf in
+  let opts =
+    if setup.has_opts then
+      sprintf " %%{read-lines:%s.opts}" test_name
+    else
+      ""
+  in
+  let ref_name =
+    if setup.has_ref then
+      test_name ^ ".ref"
+    else
+      test_name
+  in
+  Printf.ksprintf (Buffer.add_string buffer) {|
+(rule
+ (targets %s.output)
+ (deps (:input %s) .ocamlformat)
+ (action
+   (setenv OCAMLFORMAT "max-iters=2"
+     (with-outputs-to %%{targets}
+       (chdir ".."
+         (run %%{bin:ocamlformat}%s %%{input}))))))
+
+(alias
+ (name runtest)
+ (enabled_if (= %%{context_name} "dev"))
+ (deps %s %s.output)
+ (action (diff %s %s.output)))
+|} test_name test_name opts ref_name test_name ref_name test_name
+
+let tests = Hashtbl.create 64
+
+let () =
+  Array.iter (register_file tests) (Sys.readdir ".");
+  let buffer = Buffer.create 1024 in
+  Hashtbl.iter (emit_test buffer) tests;
+  Buffer.to_bytes buffer
+  |> Bytes.unsafe_to_string
+  |> Jbuild_plugin.V1.send
