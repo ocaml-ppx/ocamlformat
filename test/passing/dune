@@ -3,7 +3,18 @@
 type setup = {
   mutable has_ref: bool;
   mutable has_opts: bool;
+  mutable extra_deps: string list;
 }
+
+let read_lines fn =
+  let rec aux acc ic =
+    try aux (input_line ic :: acc) ic
+    with End_of_file -> acc
+  in
+  let ic = open_in fn in
+  let lines = aux [] ic in
+  close_in ic;
+  lines
 
 let register_file tests fname =
   match String.split_on_char '.' fname with
@@ -13,7 +24,7 @@ let register_file tests fname =
         match Hashtbl.find tests test_name with
         | setup -> setup
         | exception Not_found ->
-            let s = { has_ref = false; has_opts = false } in
+            let s = { has_ref = false; has_opts = false; extra_deps = [] } in
             Hashtbl.add tests test_name s;
             s
       in
@@ -21,6 +32,7 @@ let register_file tests fname =
       | [] -> ()
       | [ "opts" ] -> setup.has_opts <- true
       | [ "ref" ] -> setup.has_ref <- true
+      | [ "deps" ] -> setup.extra_deps <- read_lines fname
       | _ -> invalid_arg fname
       end
   | _ -> () (* ignore dune file, .foo.whatever.swp, etc *)
@@ -39,10 +51,11 @@ let emit_test buffer test_name setup =
     else
       test_name
   in
+  let extra_deps = String.concat " " setup.extra_deps in
   Printf.ksprintf (Buffer.add_string buffer) {|
 (rule
  (targets %s.output)
- (deps (:input %s) .ocamlformat)
+ (deps (:input %s) .ocamlformat %s)
  (action
    (setenv OCAMLFORMAT "max-iters=2"
      (with-outputs-to %%{targets}
@@ -54,7 +67,7 @@ let emit_test buffer test_name setup =
  (enabled_if (= %%{context_name} "dev"))
  (deps %s %s.output)
  (action (diff %s %s.output)))
-|} test_name test_name opts ref_name test_name ref_name test_name
+|} test_name test_name extra_deps opts ref_name test_name ref_name test_name
 
 let tests = Hashtbl.create 64
 
