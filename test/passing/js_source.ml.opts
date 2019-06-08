@@ -1,2 +1,2 @@
 --max-iters=3
---profile janestreet
+--profile=janestreet

@@ -1,1 +1,1 @@
---infix-precedence parens
+--infix-precedence=parens
