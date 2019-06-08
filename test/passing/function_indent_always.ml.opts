@@ -1,1 +1,2 @@
---function-indent=4 --function-indent-nested=always
+--function-indent=4
+--function-indent-nested=always

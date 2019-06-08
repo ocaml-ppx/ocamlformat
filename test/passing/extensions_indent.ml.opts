@@ -1,1 +1,3 @@
---max-iters=3 --extension-indent=5 --stritem-extension-indent=3
+--max-iters=3
+--extension-indent=5
+--stritem-extension-indent=3

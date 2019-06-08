@@ -1,1 +1,2 @@
---module-item-spacing=sparse --config=module-item-spacing=compact
+--module-item-spacing=sparse
+--config=module-item-spacing=compact

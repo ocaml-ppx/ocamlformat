@@ -91,7 +91,7 @@ CWD=$(dirname $(pwd))
 
 ocamlformat() {
     [ $# -eq 1 ]
-    opts=$(cat $1.opts 2>/dev/null || true)
+    opts=$(cat $1.opts 2>/dev/null | tr '\n' ' ' || true)
     tmpfile=$TMP/$(basename $1)
     OCAMLFORMAT=max-iters=2 bash -c "(\"$OCAMLFORMAT\" $opts \"$1\" || true) 2>&1" | sed "s#${CWD}#{CWD}#" > $tmpfile
 }

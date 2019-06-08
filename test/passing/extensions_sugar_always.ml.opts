@@ -1,1 +1,2 @@
---max-iters=3 --extension-sugar=always
+--max-iters=3
+--extension-sugar=always
