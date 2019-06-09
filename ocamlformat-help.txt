@@ -38,6 +38,15 @@ OPTIONS (CODE FORMATTING STYLE)
        relative to the directory containing the .ocamlformat-enable file.
        Lines starting with # are ignored and can be used as comments.
 
+       --align-cases
+           Align match/try cases horizontally.
+
+       --align-constructors-decl
+           Align type declarations horizontally.
+
+       --align-variants-decl
+           Align type variants declarations horizontally.
+
        --assignment-operator={end-line|begin-line}
            Position of the assignment operator. end-line positions assignment
            operators (`:=` and `<-`) at the end of the line and breaks after
