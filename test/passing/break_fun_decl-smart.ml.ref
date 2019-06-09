@@ -1,11 +1,11 @@
 class t =
   object
     method meth
-          aaaaaaaaaaa
-          bbbbbbbbbbbbbb
-          ccccccccccccccccccc
-          ddddddddddddddddddddd
-          eeeeeeeeeeeeeee =
+        aaaaaaaaaaa
+        bbbbbbbbbbbbbb
+        ccccccccccccccccccc
+        ddddddddddddddddddddd
+        eeeeeeeeeeeeeee =
       body
   end
 
