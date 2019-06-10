@@ -1,58 +1,51 @@
 (* -*- tuareg -*- *)
 
-type setup = {
-  mutable has_ref: bool;
-  mutable has_opts: bool;
-  mutable extra_deps: string list;
-}
+type setup =
+  { mutable has_ref: bool
+  ; mutable has_opts: bool
+  ; mutable extra_deps: string list }
 
 let read_lines fn =
   let rec aux acc ic =
-    try aux (input_line ic :: acc) ic
-    with End_of_file -> acc
+    try aux (input_line ic :: acc) ic with End_of_file -> acc
   in
   let ic = open_in fn in
   let lines = aux [] ic in
-  close_in ic;
-  lines
+  close_in ic ; lines
 
 let register_file tests fname =
   match String.split_on_char '.' fname with
-  | test_name :: ("ml" | "mli" as ext) :: rest ->
+  | test_name :: (("ml" | "mli") as ext) :: rest -> (
       let test_name = test_name ^ "." ^ ext in
       let setup =
         match Hashtbl.find tests test_name with
         | setup -> setup
         | exception Not_found ->
-            let s = { has_ref = false; has_opts = false; extra_deps = [] } in
-            Hashtbl.add tests test_name s;
+            let s = {has_ref= false; has_opts= false; extra_deps= []} in
+            Hashtbl.add tests test_name s ;
             s
       in
-      begin match rest with
+      match rest with
       | [] -> ()
-      | [ "opts" ] -> setup.has_opts <- true
-      | [ "ref" ] -> setup.has_ref <- true
-      | [ "deps" ] -> setup.extra_deps <- read_lines fname
-      | _ -> invalid_arg fname
-      end
-  | _ -> () (* ignore dune file, .foo.whatever.swp, etc *)
+      | ["opts"] -> setup.has_opts <- true
+      | ["ref"] -> setup.has_ref <- true
+      | ["deps"] -> setup.extra_deps <- read_lines fname
+      | _ -> invalid_arg fname )
+  | _ -> ()
+
+(* ignore dune file, .foo.whatever.swp, etc *)
 
 let emit_test buffer test_name setup =
   let open Printf in
   let opts =
-    if setup.has_opts then
-      sprintf " %%{read-lines:%s.opts}" test_name
-    else
-      ""
+    if setup.has_opts then sprintf " %%{read-lines:%s.opts}" test_name
+    else ""
   in
-  let ref_name =
-    if setup.has_ref then
-      test_name ^ ".ref"
-    else
-      test_name
-  in
+  let ref_name = if setup.has_ref then test_name ^ ".ref" else test_name in
   let extra_deps = String.concat " " setup.extra_deps in
-  Printf.ksprintf (Buffer.add_string buffer) {|
+  Printf.ksprintf
+    (Buffer.add_string buffer)
+    {|
 (rule
  (targets %s.output)
  (deps (:input %s) .ocamlformat %s)
@@ -66,14 +59,14 @@ let emit_test buffer test_name setup =
  (enabled_if (= %%{context_name} "dev"))
  (deps %s %s.output)
  (action (diff %s %s.output)))
-|} test_name test_name extra_deps opts ref_name test_name ref_name test_name
+|}
+    test_name test_name extra_deps opts ref_name test_name ref_name
+    test_name
 
 let tests = Hashtbl.create 64
 
 let () =
-  Array.iter (register_file tests) (Sys.readdir ".");
+  Array.iter (register_file tests) (Sys.readdir ".") ;
   let buffer = Buffer.create 1024 in
-  Hashtbl.iter (emit_test buffer) tests;
-  Buffer.to_bytes buffer
-  |> Bytes.unsafe_to_string
-  |> Jbuild_plugin.V1.send
+  Hashtbl.iter (emit_test buffer) tests ;
+  Buffer.to_bytes buffer |> Bytes.unsafe_to_string |> Jbuild_plugin.V1.send
