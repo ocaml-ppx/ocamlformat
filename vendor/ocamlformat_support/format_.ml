@@ -440,12 +440,7 @@ let format_pp_token state size = function
   | Pp_or_newline (n, off, fits, breaks) ->
     if state.pp_is_new_line
     then format_string state breaks
-    else begin
-      format_pp_break state size ("", n, "") ("", off, "");
-      if state.pp_is_new_line
-      then format_string state breaks
-      else format_string state fits
-    end
+    else format_pp_break state size ("", n, fits) ("", off, breaks)
 
   | Pp_fits_or_breaks (fits, n, off, breaks) ->
     begin match Stack.top_opt state.pp_format_stack with
