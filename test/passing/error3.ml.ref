@@ -1,4 +1,4 @@
-ocamlformat.exe: ignoring "error3.ml" (misplaced documentation comments - warning 50)
+ocamlformat: ignoring "error3.ml" (misplaced documentation comments - warning 50)
 File "error3.ml", line 2, characters 0-13:
 Warning 50: ambiguous documentation comment
 File "error3.ml", line 3, characters 8-16:
