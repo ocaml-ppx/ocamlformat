@@ -59,8 +59,7 @@ let emit_test buffer test_name setup =
  (action
    (setenv OCAMLFORMAT "max-iters=2"
      (with-outputs-to %%{targets}
-       (chdir ".."
-         (system "%%{exe:../../src/ocamlformat.exe}%s %%{input} || true"))))))
+       (system "%%{exe:../../src/ocamlformat.exe}%s %%{input} || true")))))
 
 (alias
  (name runtest)
