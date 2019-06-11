@@ -39,10 +39,6 @@ type arg_kind =
   | Val of arg_label * pattern Ast.xt * expression Ast.xt option
   | Newtypes of string loc list
 
-val args_location : arg_kind list -> Location.t
-(** [args_location xargs] returns the location containing the arguments
-    [xargs] *)
-
 val fun_ :
      Cmts.t
   -> ?will_keep_first_ast_node:bool
