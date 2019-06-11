@@ -148,13 +148,16 @@ let box_fun_decl_args c =
   | `Wrap | `Smart -> hovbox
 
 (** Handle the `break-fun-sig` option *)
-let wrap_fun_sig_args ~stmt_loc c indent k =
+let wrap_fun_sig_args c indent k =
   match c.conf.break_fun_sig with
-  | `Wrap -> k
-  | `Fit_or_vertical when Location.is_single_line stmt_loc c.conf.margin ->
-      hvbox indent k
-  | `Fit_or_vertical -> vbox indent k
+  | `Wrap | `Fit_or_vertical -> k
   | `Smart -> hvbox indent k
+
+let box_fun_sig_args c =
+  match c.conf.break_fun_sig with
+  | _ when c.conf.ocp_indent_compat -> hvbox
+  | `Fit_or_vertical -> hvbox
+  | `Wrap | `Smart -> hovbox
 
 let drop_while ~f s =
   let i = ref 0 in
@@ -632,9 +635,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let indent =
         if Poly.(c.conf.break_separators = `Before) then 2 else 0
       in
-      let box_if cnd i =
-        if cnd then wrap_fun_sig_args ~stmt_loc:ptyp_loc c i else Fn.id
-      in
+      let box_if cnd i = if cnd then wrap_fun_sig_args c i else Fn.id in
       box_if box
         (if Option.is_some pro && c.conf.ocp_indent_compat then -2 else 0)
         ( ( match pro with
@@ -2490,7 +2491,7 @@ and fmt_class_field c ctx (cf : class_field) =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
   let fmt_kind = function
     | Cfk_virtual typ ->
-        ([fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ)], noop, noop)
+        (fmt "@ : " $ fmt_core_type c (sub_typ ~ctx typ), noop, noop, noop)
     | Cfk_concrete
         ( _
         , { pexp_desc=
@@ -2518,14 +2519,15 @@ and fmt_class_field c ctx (cf : class_field) =
               match args with x :: _ -> x.loc | [] -> e.pexp_loc
             in
             Cmts.relocate c.cmts ~src:pexp_loc ~before ~after:e.pexp_loc ;
-            ( [ fmt "@ : type "
-                $ list args "@ " (fun name -> fmt_str_loc c name)
-              ; fmt_core_type c ~pro:"." ~pro_space:false (sub_typ ~ctx t)
-              ]
+            ( fmt "@ : type "
+              $ list args "@ " (fun name -> fmt_str_loc c name)
+              $ fmt_core_type ~pro:"." ~pro_space:false c (sub_typ ~ctx t)
+            , noop
             , fmt "@;<1 2>="
             , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) )
         | None ->
-            ( [fmt "@ : " $ fmt_core_type c (sub_typ ~ctx poly)]
+            ( fmt "@ : " $ fmt_core_type c (sub_typ ~ctx poly)
+            , noop
             , fmt "@;<1 2>="
             , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) ) )
     | Cfk_concrete
@@ -2549,10 +2551,10 @@ and fmt_class_field c ctx (cf : class_field) =
         in
         Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
           ~after:e.ast.pexp_loc ;
-        ( [ fmt_if (not (List.is_empty xargs)) "@ "
-            $ wrap_fun_decl_args c (fmt_fun_args c xargs)
-          ; opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
-          ]
+        ( noop
+        , fmt_if (not (List.is_empty xargs)) "@ "
+          $ wrap_fun_decl_args c (fmt_fun_args c xargs)
+          $ opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
         , fmt "@;<1 2>="
         , fmt "@ " $ fmt_expression c e )
     | Cfk_concrete (_, e) ->
@@ -2561,7 +2563,8 @@ and fmt_class_field c ctx (cf : class_field) =
           | {pexp_desc= Pexp_constraint (e, t); _} -> (Some t, e)
           | _ -> (None, e)
         in
-        ( [opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))]
+        ( opt ty (fun t -> fmt "@ : " $ fmt_core_type c (sub_typ ~ctx t))
+        , noop
         , fmt "@;<1 2>="
         , fmt "@ " $ fmt_expression c (sub_exp ~ctx e) )
   in
@@ -2580,29 +2583,29 @@ and fmt_class_field c ctx (cf : class_field) =
           $ ( fmt_class_expr c (sub_cl ~ctx cl)
             $ opt parent (fun p -> str " as " $ fmt_str_loc c p) ) )
     | Pcf_method (name, priv, kind) ->
-        let l, eq, expr = fmt_kind kind in
+        let typ, args, eq, expr = fmt_kind kind in
         hvbox 2
           ( hovbox 2
               ( hovbox 4
                   (box_fun_decl_args c 4
-                     ( hovbox 4
+                     ( box_fun_sig_args c 4
                          ( str "method" $ virtual_or_override kind
-                         $ fmt_if Poly.(priv = Private) "@ private"
-                         $ fmt "@ " $ fmt_str_loc c name )
-                     $ list l "" Fn.id ))
+                         $ fmt_if Poly.(priv = Private) " private"
+                         $ fmt " " $ fmt_str_loc c name $ typ )
+                     $ args ))
               $ eq )
           $ expr )
     | Pcf_val (name, mut, kind) ->
-        let l, eq, expr = fmt_kind kind in
+        let typ, args, eq, expr = fmt_kind kind in
         hvbox 2
           ( hovbox 2
               ( hovbox 4
                   (box_fun_decl_args c 4
-                     ( hovbox 4
+                     ( box_fun_sig_args c 4
                          ( str "val" $ virtual_or_override kind
-                         $ fmt_if Poly.(mut = Mutable) "@ mutable"
-                         $ fmt "@ " $ fmt_str_loc c name )
-                     $ list l "" Fn.id ))
+                         $ fmt_if Poly.(mut = Mutable) " mutable"
+                         $ fmt " " $ fmt_str_loc c name $ typ )
+                     $ args ))
               $ eq )
           $ expr )
     | Pcf_constraint (t1, t2) ->
@@ -2634,14 +2637,14 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
         | Pctf_inherit ct ->
             hovbox 2 (fmt "inherit@ " $ fmt_class_type c (sub_cty ~ctx ct))
         | Pctf_method (name, priv, virt, ty) ->
-            hovbox 2
+            box_fun_sig_args c 2
               ( str "method"
               $ fmt_if Poly.(virt = Virtual) "@ virtual"
               $ fmt_if Poly.(priv = Private) "@ private"
               $ fmt "@ " $ fmt_str_loc c name $ fmt " :@ "
               $ fmt_core_type c (sub_typ ~ctx ty) )
         | Pctf_val (name, mut, virt, ty) ->
-            hovbox 2
+            box_fun_sig_args c 2
               ( str "val"
               $ fmt_if Poly.(virt = Virtual) "@ virtual"
               $ fmt_if Poly.(mut = Mutable) "@ mutable"
@@ -2731,8 +2734,8 @@ and fmt_value_description c ctx vd =
   in
   hvbox 0
     ( doc_before
-    $ hvbox 2
-        ( str pre $ fmt " "
+    $ box_fun_sig_args c 2
+        ( str pre $ str " "
         $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
         $ fmt_core_type c ~pro:":"
             ~box:

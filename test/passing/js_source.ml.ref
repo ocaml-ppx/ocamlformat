@@ -23,9 +23,7 @@ end [@foo]
 [@@@foo]
 
 type 'a with_default =
-  ?size:int (** default [42] *)
-  -> ?resizable:bool (** default [true] *)
-  -> 'a
+  ?size:int (** default [42] *) -> ?resizable:bool (** default [true] *) -> 'a
 
 type obj = < meth1 : int -> int (** method 1 *) ; meth2 : unit -> float (** method 2 *) >
 
@@ -1465,7 +1463,7 @@ let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
 
        method inj
            : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
-                   -> [ `A of int | `B of string | `C ] =
+                     -> [ `A of int | `B of string | `C ] =
          function
          | Thd, v -> `A v
          | Ttl Thd, v -> `B v
@@ -1781,10 +1779,7 @@ let rec elem : type h. int -> h avl -> bool =
 
 let rec rotr
     : type n.
-      n succ succ avl
-      -> int
-      -> n avl
-      -> (n succ succ avl, n succ succ succ avl) sum
+      n succ succ avl -> int -> n avl -> (n succ succ avl, n succ succ succ avl) sum
   =
  fun tL y tR ->
   match tL with
@@ -1800,10 +1795,7 @@ let rec rotr
 
 let rec rotl
     : type n.
-      n avl
-      -> int
-      -> n succ succ avl
-      -> (n succ succ avl, n succ succ succ avl) sum
+      n avl -> int -> n succ succ avl -> (n succ succ avl, n succ succ succ avl) sum
   =
  fun tL u tR ->
   match tR with

@@ -60,8 +60,7 @@ let long_function_name
 [@@@ocamlformat "ocp-indent-compat=false"]
 
 module type M = sig
-  val transl_modtype_longident
-    (* from Typemod *) :
+  val transl_modtype_longident (* from Typemod *) :
     (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val transl_modtype_longident
