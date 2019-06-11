@@ -1,7 +1,6 @@
 class t =
   object
-    method
-        meth
+    method meth
         aaaaaaaaaaa
         bbbbbbbbbbbbbb
         ccccccccccccccccccc
@@ -43,34 +42,28 @@ let ffffffffffffffffffff
 
 class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb = g
 
-class
-  ffffffffffffffffffff
+class ffffffffffffffffffff
   aaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbbb
-  cccccccccccccccccccccc
-  = g
+  cccccccccccccccccccccc = g
 
-class
-  ffffffffffffffffffff
+class ffffffffffffffffffff
   aaaaaaaaaaaaaaaaaaaaaa
   bbbbbbbbbbbbbbbbbbbbbb
   cccccccccccccccccccccc
-  dddddddddddddddddddddd
-  = g
+  dddddddddddddddddddddd = g
 
 let ffffffffffffffffffff : aaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbb
     =
   g
 
-let ffffffffffffffffffff
-    :
+let ffffffffffffffffffff :
        aaaaaaaaaaaaaaaaaaaaaa
     -> bbbbbbbbbbbbbbbbbbbbbb
     -> cccccccccccccccccccccc =
   g
 
-let ffffffffffffffffffff
-    :
+let ffffffffffffffffffff :
        aaaaaaaaaaaaaaaaaaaaaa
     -> bbbbbbbbbbbbbbbbbbbbbb
     -> cccccccccccccccccccccc

@@ -2444,7 +2444,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
         (if Option.is_none eol then 2 else 1)
         (wrap_if parens "(" ")"
            ( hovbox 2
-               ( box_fun_decl_args c 4
+               ( box_fun_decl_args c 0
                    ( str "fun "
                    $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(str " ")
                    $ wrap_fun_decl_args c (fmt_fun_args c xargs)
@@ -2583,20 +2583,26 @@ and fmt_class_field c ctx (cf : class_field) =
         let l, eq, expr = fmt_kind kind in
         hvbox 2
           ( hovbox 2
-              ( box_fun_decl_args c 4
-                  ( str "method" $ virtual_or_override kind
-                  $ fmt_if Poly.(priv = Private) "@ private"
-                  $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+              ( hovbox 4
+                  (box_fun_decl_args c 4
+                     ( hovbox 4
+                         ( str "method" $ virtual_or_override kind
+                         $ fmt_if Poly.(priv = Private) "@ private"
+                         $ fmt "@ " $ fmt_str_loc c name )
+                     $ list l "" Fn.id ))
               $ eq )
           $ expr )
     | Pcf_val (name, mut, kind) ->
         let l, eq, expr = fmt_kind kind in
         hvbox 2
           ( hovbox 2
-              ( box_fun_decl_args c 4
-                  ( str "val" $ virtual_or_override kind
-                  $ fmt_if Poly.(mut = Mutable) "@ mutable"
-                  $ fmt "@ " $ fmt_str_loc c name $ list l "" Fn.id )
+              ( hovbox 4
+                  (box_fun_decl_args c 4
+                     ( hovbox 4
+                         ( str "val" $ virtual_or_override kind
+                         $ fmt_if Poly.(mut = Mutable) "@ mutable"
+                         $ fmt "@ " $ fmt_str_loc c name )
+                     $ list l "" Fn.id ))
               $ eq )
           $ expr )
     | Pcf_constraint (t1, t2) ->
@@ -3262,14 +3268,16 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
       in
       let class_exprs =
         hovbox 2
-          ( box_fun_decl_args c 2
-              ( str (if first then "class" else "and")
-              $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
-              $ fmt "@ "
-              $ fmt_class_params c ctx cl.pci_params
-              $ fmt_str_loc c cl.pci_name
-              $ fmt_if (not (List.is_empty xargs)) "@ "
-              $ wrap_fun_decl_args c (fmt_fun_args c xargs)
+          ( hovbox 2
+              ( box_fun_decl_args c 2
+                  ( hovbox 2
+                      ( str (if first then "class" else "and")
+                      $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
+                      $ fmt "@ "
+                      $ fmt_class_params c ctx cl.pci_params
+                      $ fmt_str_loc c cl.pci_name )
+                  $ fmt_if (not (List.is_empty xargs)) "@ "
+                  $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
               $ opt ty (fun t ->
                     fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t))
               $ fmt "@ =" )
@@ -3924,16 +3932,19 @@ and fmt_value_binding c ~rec_flag ~first ?ext ?in_ ?epi ctx binding =
   $ Cmts.fmt_before c pvb_loc
   $ hvbox indent
       ( hovbox 2
-          ( box_fun_decl_args c 4
-              ( fmt_or first "let" "and"
-              $ fmt_extension_suffix c ext
-              $ fmt_attributes c ~key:"@" at_attrs
-              $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
-              $ fmt_or pat_has_cmt "@ " " "
-              $ fmt_pattern c xpat
-              $ fmt_if_k
-                  (not (List.is_empty xargs))
-                  (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
+          ( hovbox 4
+              ( box_fun_decl_args c 4
+                  ( hovbox 4
+                      ( fmt_or first "let" "and"
+                      $ fmt_extension_suffix c ext
+                      $ fmt_attributes c ~key:"@" at_attrs
+                      $ fmt_if (first && Poly.(rec_flag = Recursive)) " rec"
+                      $ fmt_or pat_has_cmt "@ " " "
+                      $ fmt_pattern c xpat )
+                  $ fmt_if_k
+                      (not (List.is_empty xargs))
+                      ( fmt "@ "
+                      $ wrap_fun_decl_args c (fmt_fun_args c xargs) ) )
               $ Option.call ~f:fmt_cstr )
           $ fmt_or_k c.conf.ocp_indent_compat
               (fits_breaks " =" "@;<1000 0>=")

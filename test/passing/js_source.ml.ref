@@ -1463,8 +1463,7 @@ let ty_abc : (([ `A of int | `B of string | `C ] as 'a), 'e) ty =
          ; "C", TCnoarg (Ttl (Ttl Thd))
          ]
 
-       method
-           inj
+       method inj
            : type c.  (int -> string -> noarg -> unit, c) ty_sel * c
                    -> [ `A of int | `B of string | `C ] =
          function
@@ -2471,11 +2470,7 @@ type (_, _, _) binop =
   | Leq : ('a, 'a, bool) binop
   | Add : (int, int, int) binop
 
-let eval
-    (type a b c)
-    (bop : (a, b, c) binop)
-    (x : a constant)
-    (y : b constant)
+let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant)
     : c constant
   =
   match bop, x, y with
@@ -2723,8 +2718,7 @@ let vexpr (type visit_action) : ('a, 'result, visit_action) context -> 'a -> vis
   | Global -> fun _ -> raise Exit
 ;;
 
-let vexpr
-    (type result visit_action)
+let vexpr (type result visit_action)
     : (unit, result, visit_action) context -> unit -> visit_action
   = function
   | Local -> fun _ -> raise Exit
