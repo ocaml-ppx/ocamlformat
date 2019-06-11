@@ -47,3 +47,9 @@ let ffffffffffffffffffff :
     -> cccccccccccccccccccccc
     -> dddddddddddddddddddddd =
   g
+
+let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy = ()
+
+let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy
+    yyyyyyyyyyyyyyyyyyyyyyyyyyy =
+  ()

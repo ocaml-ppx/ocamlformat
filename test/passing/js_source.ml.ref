@@ -2470,10 +2470,7 @@ type (_, _, _) binop =
   | Leq : ('a, 'a, bool) binop
   | Add : (int, int, int) binop
 
-let eval (type a b c)
-         (bop : (a, b, c) binop)
-         (x : a constant)
-         (y : b constant)
+let eval (type a b c) (bop : (a, b, c) binop) (x : a constant) (y : b constant)
     : c constant
   =
   match bop, x, y with

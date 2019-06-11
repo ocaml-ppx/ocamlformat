@@ -1,11 +1,11 @@
 class t =
   object
     method meth
-          aaaaaaaaaaa
-          bbbbbbbbbbbbbb
-          ccccccccccccccccccc
-          ddddddddddddddddddddd
-          eeeeeeeeeeeeeee =
+        aaaaaaaaaaa
+        bbbbbbbbbbbbbb
+        ccccccccccccccccccc
+        ddddddddddddddddddddd
+        eeeeeeeeeeeeeee =
       body
   end
 
@@ -69,3 +69,11 @@ let ffffffffffffffffffff :
     -> cccccccccccccccccccccc
     -> dddddddddddddddddddddd =
   g
+
+let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy = ()
+
+let fffffffffffffffffffffffffffffffffff
+    x
+    yyyyyyyyyyyyyyyyyyyyyyyyyyy
+    yyyyyyyyyyyyyyyyyyyyyyyyyyy =
+  ()
