@@ -17,9 +17,9 @@ before_install:
   - eval `opam config env`
   - export OPAMVERBOSE=1
 install:
-  - opam config exec --switch=${OCAML_VERSION} -- update --upgrade
-  - opam config exec --switch=${OCAML_VERSION} -- pin add --no-action ocamlformat .
-  - opam config exec --switch=${OCAML_VERSION} -- install --deps-only ocamlformat
+  - opam config exec --switch=${OCAML_VERSION} -- opam update --upgrade
+  - opam config exec --switch=${OCAML_VERSION} -- opam pin add --no-action ocamlformat .
+  - opam config exec --switch=${OCAML_VERSION} -- opam install --deps-only ocamlformat
 script:
   - make test
-  - opam config exec --switch=${OCAML_VERSION} -- install ocamlformat
+  - opam config exec --switch=${OCAML_VERSION} -- opam install ocamlformat
