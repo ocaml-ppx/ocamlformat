@@ -763,10 +763,6 @@ let pp_print_string_if_newline state s =
    A break hint indicates where a box may be broken.
    If line is broken then offset is added to the indentation of the current
    box else (the value of) width blanks are printed. *)
-let pp_print_pre_break state width pre offset =
-  pp_print_custom_break state
-    ~fits:("", width, "") ~breaks:(pre, offset, "")
-
 let pp_print_break state width offset =
   pp_print_custom_break state
     ~fits:("", width, "") ~breaks:("", offset, "")

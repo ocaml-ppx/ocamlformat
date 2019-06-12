@@ -288,12 +288,6 @@ val print_break : int -> int -> unit
   the current indentation.
 *)
 
-val pp_print_pre_break : formatter -> int -> string -> int -> unit
-(** [pp_print_pre_break ppf nspaces pre offset] behaves as
-  [pp_print_break ppf nspaces offset] but [pre] is printed before the break
-  hint in case the line breaks.
-*)
-
 val pp_print_custom_break :
   formatter ->
   fits:(string * int * string) ->
