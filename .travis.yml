@@ -20,5 +20,5 @@ install:
   - opam config exec --switch=${OCAML_VERSION} -- opam install --deps-only ocamlformat
 script:
   - opam switch ${OCAML_VERSION}
-  - make test
+  - opam config exec --switch=${OCAML_VERSION} -- make test
   - opam config exec --switch=${OCAML_VERSION} -- opam install ocamlformat
