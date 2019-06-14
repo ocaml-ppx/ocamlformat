@@ -432,18 +432,14 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
       let epi = docstring_epi ?standalone ?next ~floating ?epi in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring txt))
 
-(** Formats docstrings and decides where to place them Handles the
-    [doc-comments] and [doc-comment-tag-only] options Returns the tuple
-    [doc_before, doc_after, attrs] *)
-let fmt_docstring_around_item ?(force_before = false) ?(fit = false) c attrs
-    =
-  let doc, attrs = doc_atrs attrs in
-  match doc_atrs attrs with
-  | (Some _ as doc2), attrs ->
-      ( fmt_docstring c ~epi:(fmt "@\n") doc
-      , fmt_docstring c ~pro:(fmt "@\n") doc2
-      , attrs )
-  | None, attrs -> (
+let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
+    doc2 =
+  match (doc1, doc2) with
+  | Some _, Some _ ->
+      ( fmt_docstring c ~epi:(fmt "@\n") doc1
+      , fmt_docstring c ~pro:(fmt "@\n") doc2 )
+  | None, None -> (noop, noop)
+  | None, Some doc | Some doc, None -> (
       let is_tag_only =
         List.for_all ~f:(function Ok ([], _), _ -> true | _ -> false)
       in
@@ -454,17 +450,13 @@ let fmt_docstring_around_item ?(force_before = false) ?(fit = false) c attrs
             fmt_parsed_docstring c ~loc ~epi ?pro txt parsed)
       in
       let floating_doc, doc =
-        Option.value ~default:[] doc
+        doc
         |> List.map ~f:(fun ((s, _) as doc) -> (parse_docstring s.txt, doc))
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in
-      let before () =
-        (floating_doc $ fmt_doc ~epi:(fmt "@\n") doc, noop, attrs)
-      in
-      let after ?(pro = fmt "@\n") () =
-        (floating_doc, fmt_doc ~pro doc, attrs)
-      in
+      let before () = (floating_doc $ fmt_doc ~epi:(fmt "@\n") doc, noop) in
+      let after ?(pro = fmt "@\n") () = (floating_doc, fmt_doc ~pro doc) in
       match c.conf with
       | _ when force_before -> before ()
       | {doc_comments_tag_only= `Fit; _} when fit && is_tag_only doc ->
@@ -472,6 +464,17 @@ let fmt_docstring_around_item ?(force_before = false) ?(fit = false) c attrs
           after ~pro ()
       | {doc_comments= `Before; _} -> before ()
       | {doc_comments= `After; _} -> after () )
+
+(** Formats docstrings and decides where to place them Handles the
+    [doc-comments] and [doc-comment-tag-only] options Returns the tuple
+    [doc_before, doc_after, attrs] *)
+let fmt_docstring_around_item ?force_before ?fit c attrs =
+  let doc1, attrs = doc_atrs attrs in
+  let doc2, attrs = doc_atrs attrs in
+  let doc_before, doc_after =
+    fmt_docstring_around_item' ?force_before ?fit c doc1 doc2
+  in
+  (doc_before, doc_after, attrs)
 
 let fmt_extension_suffix c ext =
   opt ext (fun name -> str "%" $ fmt_str_loc c name)
@@ -3075,9 +3078,14 @@ and fmt_type_extension c ctx
 
 and fmt_type_exception ~pre c sep ctx
     {ptyexn_attributes; ptyexn_constructor; ptyexn_loc} =
-  let doc_before, doc_after, atrs =
-    fmt_docstring_around_item c ptyexn_attributes
-  in
+  let doc1, atrs = doc_atrs ptyexn_attributes in
+  let doc1 = Option.value ~default:[] doc1 in
+  let {pext_attributes; _} = ptyexn_constructor in
+  (* On 4.08 the doc is attached to the constructor *)
+  let doc1, pext_attributes = doc_atrs ~acc:doc1 pext_attributes in
+  let doc2, pext_attributes = doc_atrs pext_attributes in
+  let doc_before, doc_after = fmt_docstring_around_item' c doc1 doc2 in
+  let ptyexn_constructor = {ptyexn_constructor with pext_attributes} in
   Cmts.fmt c ptyexn_loc
     (hvbox 0
        ( doc_before
