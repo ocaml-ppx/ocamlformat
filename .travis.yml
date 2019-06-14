@@ -1,6 +1,6 @@
 language: c
 env:
-  - OCAML_VERSION=4.08.0+rc2
+  - OCAML_VERSION=4.08.0
 cache:
   directories:
     - ${HOME}/.opam
@@ -11,14 +11,13 @@ before_install:
   - export OPAMYES=1
   - export OPAMJOBS=2
   - opam init --bare --disable-sandboxing
-  - opam repo add --dont-select beta https://github.com/ocaml/ocaml-beta-repository.git
-  - opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION} --repositories=default,beta
+  - opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION}
 install:
   - opam switch ${OCAML_VERSION}
-  - opam config exec --switch=${OCAML_VERSION} -- opam update --upgrade
-  - opam config exec --switch=${OCAML_VERSION} -- opam pin add --no-action ocamlformat .
-  - opam config exec --switch=${OCAML_VERSION} -- opam install --deps-only ocamlformat
+  - opam update --upgrade
+  - opam pin add --no-action ocamlformat .
+  - opam install --deps-only ocamlformat
 script:
   - opam switch ${OCAML_VERSION}
-  - opam config exec --switch=${OCAML_VERSION} -- make test
-  - opam config exec --switch=${OCAML_VERSION} -- opam install ocamlformat
+  - make test
+  - opam install ocamlformat
