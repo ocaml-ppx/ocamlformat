@@ -367,7 +367,7 @@ let fmt_constant c ~loc ?epi const =
       in
       let contains_pp_commands =
         let is_substring substring = String.is_substring s ~substring in
-        List.exists ["@,"; "@;"; "@\n"] ~f:is_substring
+        List.exists ["@,"; "@;"; "@\\n"] ~f:is_substring
       in
       match c.conf.break_string_literals with
       | `Newlines when contains_pp_commands ->

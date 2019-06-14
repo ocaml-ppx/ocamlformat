@@ -42,3 +42,5 @@ let fooooooooo = Fooooo "[%a]@\n"
 let fooooooooo = Fooooo "[%a]\n@\n"
 
 let fooooooooo = Fooooo "[%a]@\n\n"
+
+let fooo = Fooo "@\nFooooo: `%s`\n"
