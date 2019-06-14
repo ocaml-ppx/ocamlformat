@@ -81,3 +81,123 @@ let () =
       fooooooooooooooooooooooooooooooooooo
     else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
     else fooooooooooooooooooooo )
+
+let _ =
+  a
+  |>
+  let a = b in
+  c
+
+let _ =
+  ( let a = b in
+    c )
+  |> d
+
+let _ =
+  a :=
+    let a = b in
+    c
+
+let _ =
+  ( let a = b in
+    c )
+  := d
+
+let _ =
+  a
+  +
+  let a = b in
+  c
+
+let _ =
+  ( let a = b in
+    c )
+  + d
+
+let _ =
+  f
+    ( let a = b in
+      c )
+
+let _ =
+  ( let a = b in
+    c )
+    d
+
+let _ =
+  a#f
+    ( let a = b in
+      c )
+
+let _ =
+  ( let a = b in
+    c )
+    #f
+
+let _ =
+  A
+    ( let a = b in
+      c )
+
+let _ =
+  `A
+    ( let a = b in
+      c )
+
+let _ =
+  { x=
+      ( let a = b in
+        c ) }
+
+let _ =
+  { ( let a = b in
+      c )
+    with
+    a= b }
+
+let _ =
+  {< x = let a = b in
+         c >}
+
+let _ =
+  x <-
+    ( let a = b in
+      c )
+
+let _ =
+  ( let a = b in
+    c )
+    .x
+
+let _ =
+  ( let a = b in
+    c ).x <-
+    d
+
+let _ =
+  ( ( let a = b in
+      c )
+  , d )
+
+let _ =
+  ( let a = b in
+    c
+    :> t )
+
+let _ =
+  let a = b in
+  c :: d
+
+let _ =
+  a
+  ::
+  ( let a = b in
+    c )
+
+let _ =
+  [ ( let a = b in
+      c ) ]
+
+let _ =
+  [| ( let a = b in
+       c ) |]

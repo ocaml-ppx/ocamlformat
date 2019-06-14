@@ -99,3 +99,159 @@ let () =
       else if foooooooooooooooooo then foooooooooooooooooooooooooooooooooo
       else fooooooooooooooooooooo
     end
+
+let _ =
+  a
+  |>
+  let a = b in
+  c
+
+let _ =
+  begin
+    let a = b in
+    c
+  end
+  |> d
+
+let _ =
+  a :=
+    let a = b in
+    c
+
+let _ =
+  begin
+    let a = b in
+    c
+  end
+  := d
+
+let _ =
+  a
+  +
+  let a = b in
+  c
+
+let _ =
+  begin
+    let a = b in
+    c
+  end
+  + d
+
+let _ =
+  f
+    begin
+      let a = b in
+      c
+    end
+
+let _ =
+  begin
+    let a = b in
+    c
+  end
+    d
+
+let _ =
+  a#f
+    begin
+      let a = b in
+      c
+    end
+
+let _ =
+  begin
+    let a = b in
+    c
+  end
+    #f
+
+let _ =
+  A
+    begin
+      let a = b in
+      c
+    end
+
+let _ =
+  `A
+    begin
+      let a = b in
+      c
+    end
+
+let _ =
+  { x=
+      begin
+        let a = b in
+        c
+      end }
+
+let _ =
+  { begin
+      let a = b in
+      c
+    end
+    with
+    a= b }
+
+let _ =
+  {< x = let a = b in
+         c >}
+
+let _ =
+  x <-
+      begin
+        let a = b in
+        c
+      end
+
+let _ =
+  begin
+    let a = b in
+    c
+  end
+    .x
+
+let _ =
+  begin
+    let a = b in
+    c
+  end.x <-
+      d
+
+let _ =
+  ( begin
+      let a = b in
+      c
+    end
+  , d )
+
+let _ =
+  ( let a = b in
+    c
+    :> t )
+
+let _ =
+  let a = b in
+  c :: d
+
+let _ =
+  a
+  ::
+  begin
+    let a = b in
+    c
+  end
+
+let _ =
+  [ begin
+      let a = b in
+      c
+    end ]
+
+let _ =
+  [| begin
+       let a = b in
+       c
+     end |]
