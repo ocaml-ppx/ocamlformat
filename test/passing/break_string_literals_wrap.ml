@@ -50,3 +50,11 @@ let pp_sep fmt () = F.fprintf fmt ", @,\n@\n@;@\n"
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n\n@,@\n"
 
 let pp_sep fmt () = F.fprintf fmt ", @,\n@\n\n@\n\n"
+
+let fooooooooo = Fooooo "[%a]\n"
+
+let fooooooooo = Fooooo "[%a]@\n"
+
+let fooooooooo = Fooooo "[%a]\n@\n"
+
+let fooooooooo = Fooooo "[%a]@\n\n"

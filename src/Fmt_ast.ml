@@ -365,8 +365,12 @@ let fmt_constant c ~loc ?epi const =
           | Some s -> (s, `Preserve) )
         | _ -> (s, c.conf.escape_strings)
       in
+      let contains_pp_commands =
+        let is_substring substring = String.is_substring s ~substring in
+        List.exists ["@,"; "@;"; "@\n"] ~f:is_substring
+      in
       match c.conf.break_string_literals with
-      | `Newlines ->
+      | `Newlines when contains_pp_commands ->
           let break_on_pp_commands in_ delim =
             let pat = String.Search_pattern.create delim in
             let with_ = delim ^ "\n" in
@@ -375,7 +379,7 @@ let fmt_constant c ~loc ?epi const =
           List.fold_left ["@,"; "@;"; "@\n"] ~init:s ~f:break_on_pp_commands
           |> String.split ~on:'\n'
           |> fmt_lines mode ~break_on_newlines:true
-      | `Wrap -> fmt_lines mode (String.split ~on:'\n' s)
+      | `Newlines | `Wrap -> fmt_lines mode (String.split ~on:'\n' s)
       | `Never -> wrap "\"" "\"" (fmt_line mode s) )
 
 let fmt_variance = function
