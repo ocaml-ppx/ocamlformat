@@ -2301,7 +2301,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_atrs ))
   | Pexp_coerce (e1, t1, t2) ->
       hvbox 2
-        (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens:true
+        (wrap_fits_breaks ~space:false c.conf "(" ")"
            ( fmt_expression c (sub_exp ~ctx e1)
            $ opt t1 (fmt "@ : " >$ (sub_typ ~ctx >> fmt_core_type c))
            $ fmt "@ :> "
