@@ -193,9 +193,9 @@ let is_sugared_list =
           List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
           true )
 
-let doc_atrs atrs =
+let doc_atrs ?(acc = []) atrs =
   let docs, rev_atrs =
-    List.fold atrs ~init:([], []) ~f:(fun (docs, rev_atrs) atr ->
+    List.fold atrs ~init:(acc, []) ~f:(fun (docs, rev_atrs) atr ->
         let open Asttypes in
         match atr with
         | { attr_name=
