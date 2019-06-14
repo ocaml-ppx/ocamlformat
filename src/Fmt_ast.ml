@@ -162,23 +162,25 @@ let sugar_pmod_functor c ~for_functor_kw pmod =
   let source_is_long = Source.is_long_pmod_functor c.source in
   Sugar.functor_ c.cmts ~for_functor_kw ~source_is_long pmod
 
+let wrap_fits_breaks_exp_parens ?(space = true) c ~parens k =
+  wrap_fits_breaks_if ~space c.conf parens "(" ")" k
+
+let wrap_fits_breaks_exp_begin_end ~parens k =
+  vbox 2
+    (wrap_if_k parens
+       (fits_breaks "(" "begin" $ break_unless_newline 0 0)
+       (break_unless_newline 0 (-2) $ fits_breaks ")" "end")
+       k)
+
 let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
-  let grouping_kind =
-    match c.conf.exp_grouping with
-    | `Parens -> `Parens
-    | `Begin_end -> `Begin_end
-    | `Preserve ->
-        let str = String.lstrip (Source.string_at c.source loc) in
-        if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
-  in
-  match grouping_kind with
-  | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
-  | `Begin_end ->
-      vbox 2
-        (wrap_if_k parens
-           (fits_breaks "(" "begin" $ break_unless_newline 0 0)
-           (break_unless_newline 0 (-2) $ fits_breaks ")" "end")
-           k)
+  match c.conf.exp_grouping with
+  | `Parens -> wrap_fits_breaks_exp_parens ~space c ~parens k
+  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
+  | `Preserve ->
+      let str = String.lstrip (Source.string_at c.source loc) in
+      if String.is_prefix ~prefix:"begin" str then
+        wrap_fits_breaks_exp_begin_end ~parens k
+      else wrap_fits_breaks_exp_parens ~space c ~parens k
 
 let drop_while ~f s =
   let i = ref 0 in
