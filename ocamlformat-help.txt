@@ -47,6 +47,12 @@ OPTIONS (CODE FORMATTING STYLE)
            assignment expression does not fit on a single line. The default
            value is end-line.
 
+       --break-before-in={always|auto}
+           Whether the line should break before the in keyword of a let
+           binding. always will always break the line before the in keyword.
+           auto will only break the line if the in keyword does not fit on
+           the previous line. The default value is always.
+
        --break-cases={nested|fit|toplevel|fit-or-vertical|all}
            Break pattern match cases. nested forces a break after nested
            or-patterns to highlight the case body. Note that with nested, the

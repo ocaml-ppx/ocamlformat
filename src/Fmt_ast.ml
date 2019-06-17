@@ -3952,9 +3952,14 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
     ~indent_after_in =
+  let fmt_in indent =
+    match c.conf.break_before_in with
+    | `Always -> break 1 (-indent) $ fmt "in"
+    | `Auto -> fits_breaks " in" ("@;<1 " ^ Int.to_string (-indent) ^ ">in")
+  in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
-    let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
+    let in_ indent = fmt_if_k last (fmt_in indent) in
     let {pvb_pat; pvb_expr; pvb_attributes= attributes; pvb_loc= loc} =
       binding
     in
