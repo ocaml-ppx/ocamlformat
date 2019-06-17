@@ -162,9 +162,6 @@ let sugar_pmod_functor c ~for_functor_kw pmod =
   let source_is_long = Source.is_long_pmod_functor c.source in
   Sugar.functor_ c.cmts ~for_functor_kw ~source_is_long pmod
 
-let wrap_fits_breaks_exp_parens ?(space = true) c ~parens k =
-  wrap_fits_breaks_if ~space c.conf parens "(" ")" k
-
 let wrap_fits_breaks_exp_begin_end ~parens k =
   vbox 2
     (wrap_if_k parens
@@ -174,13 +171,13 @@ let wrap_fits_breaks_exp_begin_end ~parens k =
 
 let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
   match c.conf.exp_grouping with
-  | `Parens -> wrap_fits_breaks_exp_parens ~space c ~parens k
+  | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
   | `Preserve ->
       let str = String.lstrip (Source.string_at c.source loc) in
       if String.is_prefix ~prefix:"begin" str then
         wrap_fits_breaks_exp_begin_end ~parens k
-      else wrap_fits_breaks_exp_parens ~space c ~parens k
+      else wrap_fits_breaks_if ~space c.conf parens "(" ")" k
 
 let drop_while ~f s =
   let i = ref 0 in
