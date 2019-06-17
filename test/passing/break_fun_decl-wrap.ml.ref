@@ -84,4 +84,13 @@ class type ffffffffffffffffffff =
       -> bbbbbbbbbbbbbbbbbbbbbb
       -> cccccccccccccccccccccc
       -> dddddddddddddddddddddd
+
+    val ffffffffffffffffffff :
+         (   aaaaaaaaaaaaaaaaaaaaaa
+          -> bbbbbbbbbbbbbbbbbbbbbb
+          -> cccccccccccccccccccccc
+          -> dddddddddddddddddddddd)
+      -> bbbbbbbbbbbbbbbbbbbbbb
+      -> cccccccccccccccccccccc
+      -> dddddddddddddddddddddd
   end

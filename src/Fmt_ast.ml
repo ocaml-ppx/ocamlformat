@@ -148,11 +148,6 @@ let box_fun_decl_args c =
   | `Wrap | `Smart -> hovbox
 
 (** Handle the `break-fun-sig` option *)
-let wrap_fun_sig_args c indent k =
-  match c.conf.break_fun_sig with
-  | `Wrap | `Fit_or_vertical -> k
-  | `Smart -> hvbox indent k
-
 let box_fun_sig_args c =
   match c.conf.break_fun_sig with
   | _ when c.conf.ocp_indent_compat -> hvbox
@@ -635,24 +630,20 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let indent =
         if Poly.(c.conf.break_separators = `Before) then 2 else 0
       in
-      let box_if cnd i = if cnd then wrap_fun_sig_args c i else Fn.id in
-      box_if box
-        (if Option.is_some pro && c.conf.ocp_indent_compat then -2 else 0)
-        ( ( match pro with
-          | Some pro when c.conf.ocp_indent_compat ->
-              fits_breaks ""
-                (String.make (Int.max 1 (indent - String.length pro)) ' ')
-          | _ ->
-              fmt_if_k
-                Poly.(c.conf.break_separators = `Before)
-                (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
-                   (fits_breaks "" "   ")) )
-        $ list xt1N
-            ( if Poly.(c.conf.break_separators = `Before) then
-              if parens then "@;<1 1>-> " else "@ -> "
-            else " ->@;<1 0>" )
-            (fun (lI, xtI) -> hvbox 0 (arg_label lI $ fmt_core_type c xtI))
-        )
+      ( match pro with
+      | Some pro when c.conf.ocp_indent_compat ->
+          fits_breaks ""
+            (String.make (Int.max 1 (indent - String.length pro)) ' ')
+      | _ ->
+          fmt_if_k
+            Poly.(c.conf.break_separators = `Before)
+            (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
+               (fits_breaks "" "   ")) )
+      $ list xt1N
+          ( if Poly.(c.conf.break_separators = `Before) then
+            if parens then "@;<1 1>-> " else "@ -> "
+          else " ->@;<1 0>" )
+          (fun (lI, xtI) -> hvbox 0 (arg_label lI $ fmt_core_type c xtI))
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
