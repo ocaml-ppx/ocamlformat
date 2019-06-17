@@ -10,9 +10,9 @@
  **********************************************************************)
 
 open Fmt
-open Odoc__parser.Ast
-module Names = Odoc__model.Names
-module Location_ = Odoc__model.Location_
+open Odoc_parser.Ast
+module Names = Odoc_model.Names
+module Location_ = Odoc_model.Location_
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)

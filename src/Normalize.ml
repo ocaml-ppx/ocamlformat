@@ -28,12 +28,12 @@ let list f fmt l =
 
 let str fmt s = Format.fprintf fmt "%s" (comment s)
 
-let ign_loc f fmt with_loc = f fmt with_loc.Odoc__model.Location_.value
+let ign_loc f fmt with_loc = f fmt with_loc.Odoc_model.Location_.value
 
 let fpf = Format.fprintf
 
-open Odoc__parser.Ast
-module Names = Odoc__model.Names
+open Odoc_parser.Ast
+module Names = Odoc_model.Names
 
 let odoc_style fmt = function
   | `Bold -> fpf fmt "Bold"
@@ -168,9 +168,9 @@ let docstring c text =
   if not c.Conf.parse_docstrings then comment text
   else
     let location = Lexing.dummy_pos in
-    let parsed = Odoc__parser.Parser.parse_comment_raw ~location ~text in
+    let parsed = Odoc_parser.parse_comment_raw ~location ~text in
     Format.asprintf "Docstring(%a)%!" odoc_docs
-      parsed.Odoc__model.Error.value
+      parsed.Odoc_model.Error.value
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare

@@ -9,7 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-val fmt : Odoc__parser.Ast.docs -> Fmt.t
+val fmt : Odoc_parser.Ast.docs -> Fmt.t
 
 val diff :
      Conf.t
