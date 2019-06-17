@@ -8,11 +8,14 @@
  *  LICENSE file in the root directory of this source tree.           *
  *                                                                    *
  **********************************************************************)
-
+;;
 #directory "+unix"
+
+;;
 #load "unix.cma"
 
 let fake_watermark = "%%" ^ "VERSION" ^ "%%"
+
 let real_watermark = "%%VERSION%%"
 
 let file, version =
@@ -34,9 +37,11 @@ let file, version =
       in
       (file, version)
   | _ ->
-      Printf.eprintf "usage: ocaml gen_version.ml <file> [<version>]\n%!" ;
+      Printf.eprintf "usage: ocaml gen_version.mlt <file> [<version>]\n%!" ;
       exit 1
 
 let oc = open_out file
+
 let () = output_string oc (Printf.sprintf "let version = %S\n" version)
+
 let () = close_out oc

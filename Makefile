@@ -55,7 +55,7 @@ cleanbisect:
 	rm -Rf _coverage
 	find ./ -name 'bisect*.out' -delete
 
-SRCS=$(shell \find src tools/ocamlformat-diff -name '[^.]*.ml' -or -name '[^.]*.mli')
+SRCS=$(shell \find src tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[^.]*.mlt')
 
 .PHONY: fmt
 fmt:

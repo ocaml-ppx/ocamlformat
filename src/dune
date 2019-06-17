@@ -12,7 +12,7 @@ Jbuild_plugin.V1.send
 (rule
  (targets Version.ml)
  (deps (universe))
- (action (run ocaml %%{dep:../tools/gen_version.ml} Version.ml))
+ (action (run ocaml %%{dep:../tools/gen_version.mlt} Version.ml))
  (mode fallback))
 
 (rule
