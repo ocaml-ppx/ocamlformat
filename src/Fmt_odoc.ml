@@ -122,7 +122,13 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Code_span s ->
       let s = escape_brackets s in
       hovbox 0 (wrap "[" "]" (str_verbatim s))
-  | `Raw_markup (_lang, s) -> str s
+  | `Raw_markup (lang, s) ->
+      let lang =
+        match lang with
+        | Some l -> str l $ str ":"
+        | None -> noop
+      in
+      wrap "{%%" "%%}" (lang $ str_verbatim s)
   | `Styled (style, elems) ->
       fmt_styled style (ign_loc ~f:fmt_inline_element) elems
   | `Reference (_kind, ref, txt) ->

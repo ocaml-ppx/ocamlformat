@@ -310,3 +310,5 @@ A
 
     @canonical Foo.Bar
 *)
+
+(** {%html:<p>Raw markup</p>%} {%Without language%} {%other:Other language%} *)
