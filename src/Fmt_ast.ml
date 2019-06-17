@@ -2638,17 +2638,21 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
             hovbox 2 (fmt "inherit@ " $ fmt_class_type c (sub_cty ~ctx ct))
         | Pctf_method (name, priv, virt, ty) ->
             box_fun_sig_args c 2
-              ( str "method"
-              $ fmt_if Poly.(virt = Virtual) "@ virtual"
-              $ fmt_if Poly.(priv = Private) "@ private"
-              $ fmt "@ " $ fmt_str_loc c name $ fmt " :@ "
+              ( hovbox 4
+                  ( str "method"
+                  $ fmt_if Poly.(virt = Virtual) "@ virtual"
+                  $ fmt_if Poly.(priv = Private) "@ private"
+                  $ fmt "@ " $ fmt_str_loc c name )
+              $ fmt " :@ "
               $ fmt_core_type c (sub_typ ~ctx ty) )
         | Pctf_val (name, mut, virt, ty) ->
             box_fun_sig_args c 2
-              ( str "val"
-              $ fmt_if Poly.(virt = Virtual) "@ virtual"
-              $ fmt_if Poly.(mut = Mutable) "@ mutable"
-              $ fmt "@ " $ fmt_str_loc c name $ fmt " :@ "
+              ( hovbox 4
+                  ( str "val"
+                  $ fmt_if Poly.(virt = Virtual) "@ virtual"
+                  $ fmt_if Poly.(mut = Mutable) "@ mutable"
+                  $ fmt "@ " $ fmt_str_loc c name )
+              $ fmt " :@ "
               $ fmt_core_type c (sub_typ ~ctx ty) )
         | Pctf_constraint (t1, t2) ->
             fmt "constraint@ "

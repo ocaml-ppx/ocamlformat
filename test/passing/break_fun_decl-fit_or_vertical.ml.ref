@@ -97,15 +97,13 @@ class ffffffffffffffffffff =
 
 class type ffffffffffffffffffff =
   object
-    method
-      ffffffffffffffffffff :
+    method ffffffffffffffffffff :
          aaaaaaaaaaaaaaaaaaaaaa
       -> bbbbbbbbbbbbbbbbbbbbbb
       -> cccccccccccccccccccccc
       -> dddddddddddddddddddddd
 
-    val
-      ffffffffffffffffffff :
+    val ffffffffffffffffffff :
          aaaaaaaaaaaaaaaaaaaaaa
       -> bbbbbbbbbbbbbbbbbbbbbb
       -> cccccccccccccccccccccc
