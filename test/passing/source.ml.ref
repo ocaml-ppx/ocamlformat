@@ -225,7 +225,7 @@ class type x = x [@@foo]]
 external x : _ = "" [@@foo]]
 
 [%%foo
-exception X [@@foo]]
+exception X [@foo]]
 
 [%%foo
 module M = M [@@foo]]
@@ -255,7 +255,7 @@ module type S = sig
 
   [%%foo: type t += T [@@foo]]
 
-  [%%foo: exception X [@@foo]]
+  [%%foo: exception X [@foo]]
 
   [%%foo: module M : S [@@foo]]
 
@@ -4904,15 +4904,11 @@ module A = struct
   module S = struct end
 end
 
-module F =
-functor
-  (_ : sig end)
-  ->
-  struct
-    module type S
+module F (_ : sig end) = struct
+  module type S
 
-    module S = A.S
-  end
+  module S = A.S
+end
 
 module M = struct end
 
@@ -4920,13 +4916,9 @@ module N = M
 
 module G (X : F(N).S) : A.S = X
 
-module F =
-functor
-  (_ : sig end)
-  ->
-  struct
-    module type S
-  end
+module F (_ : sig end) = struct
+  module type S
+end
 
 module M = struct end
 

@@ -145,3 +145,44 @@ fooooooooooooooooooooo
 let a : int = 0
 
 let b = (0 : int)
+
+let _ =
+      let+ a = b in
+      c
+
+let _ =
+      let+ a = b and+ c = d in
+      e
+
+let _ =
+      if true then a
+      else
+        let+ a = b in
+        c
+
+let _ =
+      if true then
+        let+ a = b in
+        c
+      else d
+
+let _ =
+      match a with
+      | a -> (
+        match a with
+        | a -> (
+            let+ a = b in
+            match a with a -> a ) )
+
+let _ =
+      match a with
+      | a -> (
+        match a with
+        | a -> (
+            let+ a = b in
+            match a with a -> a )
+        | b -> c )
+
+let _ =
+      let+ a b = c in
+      d

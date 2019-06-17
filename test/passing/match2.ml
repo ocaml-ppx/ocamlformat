@@ -73,3 +73,20 @@ let foo =
       | c -> foooooooo foooooooooo fooooooooooooooooooo ()
       | _ -> () )
   | other -> ()
+
+let _ =
+  match a with
+  | a ->
+    ( match a with
+    | a ->
+        let+ a = b in
+        (match a with a -> a) )
+
+let _ =
+  match a with
+  | a ->
+    ( match a with
+    | a ->
+        let+ a = b in
+        (match a with a -> a)
+    | b -> c )

@@ -139,39 +139,42 @@ let make_mapper c ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
   let doc_attribute = function
-    | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
+    | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
   in
-  let attribute (m : Ast_mapper.mapper) attr =
-    match attr with
+  let attribute (m : Ast_mapper.mapper) (attr : attribute) =
+    match (attr.attr_name, attr.attr_payload) with
     | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
       , PStr
           [ { pstr_desc=
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
-                    ; pexp_attributes }
+                    ; pexp_attributes
+                    ; _ }
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
           if ignore_doc_comment then "IGNORED" else docstring c doc
         in
-        ( {txt; loc= m.location m loc}
-        , m.payload m
-            (PStr
-               [ { pstr_desc=
-                     Pstr_eval
-                       ( { pexp_desc=
-                             Pexp_constant (Pconst_string (doc', None))
-                         ; pexp_loc= m.location m pexp_loc
-                         ; pexp_attributes= m.attributes m pexp_attributes
-                         }
-                       , [] )
-                 ; pstr_loc= m.location m pstr_loc } ]) )
-    | attr -> Ast_mapper.default_mapper.attribute m attr
+        { attr_name= {txt; loc= m.location m loc}
+        ; attr_payload=
+            m.payload m
+              (PStr
+                 [ { pstr_desc=
+                       Pstr_eval
+                         ( { pexp_desc=
+                               Pexp_constant (Pconst_string (doc', None))
+                           ; pexp_loc= m.location m pexp_loc
+                           ; pexp_attributes= m.attributes m pexp_attributes
+                           ; pexp_loc_stack= [] }
+                         , [] )
+                   ; pstr_loc= m.location m pstr_loc } ])
+        ; attr_loc= attr.attr_loc }
+    | _ -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
-  let attributes (m : Ast_mapper.mapper) atrs =
+  let attributes (m : Ast_mapper.mapper) (atrs : attribute list) =
     let atrs =
       if ignore_doc_comment then
         List.filter atrs ~f:(fun a -> not (doc_attribute a))
@@ -180,6 +183,7 @@ let make_mapper c ~ignore_doc_comment =
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   let expr (m : Ast_mapper.mapper) exp =
+    let exp = {exp with pexp_loc_stack= []} in
     let {pexp_desc; pexp_attributes; _} = exp in
     match pexp_desc with
     (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
@@ -193,22 +197,28 @@ let make_mapper c ~ignore_doc_comment =
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
-    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1} = pat in
+    let pat = {pat with ppat_loc_stack= []} in
+    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
     (* normalize nested or patterns *)
     match ppat_desc with
     | Ppat_or
         ( pat1
         , { ppat_desc= Ppat_or (pat2, pat3)
           ; ppat_loc= loc2
-          ; ppat_attributes= attrs2 } ) ->
+          ; ppat_attributes= attrs2
+          ; _ } ) ->
         m.pat m
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
              pat3)
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
+  let typ (m : Ast_mapper.mapper) typ =
+    let typ = {typ with ptyp_loc_stack= []} in
+    Ast_mapper.default_mapper.typ m typ
+  in
   let value_binding (m : Ast_mapper.mapper) vb =
-    let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes}
+    let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes; _}
         ; pvb_expr
         ; pvb_loc
         ; pvb_attributes } =
@@ -298,6 +308,7 @@ let make_mapper c ~ignore_doc_comment =
   ; attributes
   ; expr
   ; pat
+  ; typ
   ; value_binding
   ; structure_item
   ; signature
@@ -309,63 +320,70 @@ let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
 
 let mapper = make_mapper ~ignore_doc_comment:false
 
-let impl c = map_structure (mapper c)
+let impl c = Mapper.structure (mapper c)
 
-let intf c = map_signature (mapper c)
+let intf c = Mapper.signature (mapper c)
 
-let use_file c = map_use_file (mapper c)
+let use_file c = Mapper.use_file (mapper c)
 
 let equal_impl ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_structure (mapper_ignore_doc_comment c)
-    else map_structure (mapper c)
+    if ignore_doc_comments then
+      Mapper.structure (mapper_ignore_doc_comment c)
+    else Mapper.structure (mapper c)
   in
   Poly.(map ast1 = map ast2)
 
 let equal_intf ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_signature (mapper_ignore_doc_comment c)
-    else map_signature (mapper c)
+    if ignore_doc_comments then
+      Mapper.signature (mapper_ignore_doc_comment c)
+    else Mapper.signature (mapper c)
   in
   Poly.(map ast1 = map ast2)
 
 let equal_use_file ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then map_use_file (mapper_ignore_doc_comment c)
-    else map_use_file (mapper c)
+    if ignore_doc_comments then
+      Mapper.use_file (mapper_ignore_doc_comment c)
+    else Mapper.use_file (mapper c)
   in
   Poly.(map ast1 = map ast2)
 
 let make_docstring_mapper c docstrings =
   let doc_attribute = function
-    | {txt= "ocaml.doc" | "ocaml.text"; _}, _ -> true
+    | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
   in
   let attribute (m : Ast_mapper.mapper) attr =
-    match attr with
+    match (attr.attr_name, attr.attr_payload) with
     | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
       , PStr
           [ { pstr_desc=
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                     ; pexp_loc
-                    ; pexp_attributes }
+                    ; pexp_attributes
+                    ; _ }
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' = docstring c doc in
         docstrings := (loc, doc) :: !docstrings ;
-        ( {txt; loc}
-        , m.payload m
-            (PStr
-               [ { pstr_desc=
-                     Pstr_eval
-                       ( { pexp_desc=
-                             Pexp_constant (Pconst_string (doc', None))
-                         ; pexp_loc
-                         ; pexp_attributes }
-                       , [] )
-                 ; pstr_loc } ]) )
-    | attr -> Ast_mapper.default_mapper.attribute m attr
+        { attr_name= {txt; loc}
+        ; attr_payload=
+            m.payload m
+              (PStr
+                 [ { pstr_desc=
+                       Pstr_eval
+                         ( { pexp_desc=
+                               Pexp_constant (Pconst_string (doc', None))
+                           ; pexp_loc
+                           ; pexp_attributes
+                           ; pexp_loc_stack= [] }
+                         , [] )
+                   ; pstr_loc } ])
+        ; attr_loc= attr.attr_loc }
+    | _ -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) atrs =
@@ -377,21 +395,21 @@ let make_docstring_mapper c docstrings =
 let docstrings_impl c s =
   let docstrings = ref [] in
   let (_ : structure) =
-    map_structure (make_docstring_mapper c docstrings) s
+    Mapper.structure (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
 let docstrings_intf c s =
   let docstrings = ref [] in
   let (_ : signature) =
-    map_signature (make_docstring_mapper c docstrings) s
+    Mapper.signature (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
 let docstrings_use_file c s =
   let docstrings = ref [] in
   let (_ : toplevel_phrase list) =
-    map_use_file (make_docstring_mapper c docstrings) s
+    Mapper.use_file (make_docstring_mapper c docstrings) s
   in
   !docstrings
 

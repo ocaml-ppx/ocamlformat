@@ -119,8 +119,8 @@ module Loc_tree = struct
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
   let of_ast map_ast ast =
-    let attribute (m : Ast_mapper.mapper) attr =
-      match attr with
+    let attribute (m : Ast_mapper.mapper) (attr : attribute) =
+      match (attr.attr_name, attr.attr_payload) with
       | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; _}
         , PStr
             [ { pstr_desc=
@@ -131,29 +131,44 @@ module Loc_tree = struct
                     , [] )
               ; _ } ] ) ->
           (* ignore location of docstrings *)
-          ( {txt; loc= Location.none}
-          , m.payload m
-              (PStr
-                 [ { pstr_desc=
-                       Pstr_eval
-                         ( { pexp_desc=
-                               Pexp_constant (Pconst_string (doc, None))
-                           ; pexp_loc= Location.none
-                           ; pexp_attributes= m.attributes m pexp_attributes
-                           }
-                         , [] )
-                   ; pstr_loc= Location.none } ]) )
-      | attr -> Ast_mapper.default_mapper.attribute m attr
+          { attr_name= {txt; loc= Location.none}
+          ; attr_loc= Location.none
+          ; attr_payload=
+              m.payload m
+                (PStr
+                   [ { pstr_desc=
+                         Pstr_eval
+                           ( { pexp_desc=
+                                 Pexp_constant (Pconst_string (doc, None))
+                             ; pexp_loc= Location.none
+                             ; pexp_attributes=
+                                 m.attributes m pexp_attributes
+                             ; pexp_loc_stack= [] }
+                           , [] )
+                     ; pstr_loc= Location.none } ]) }
+      | _ -> Ast_mapper.default_mapper.attribute m attr
     in
     let locs = ref [] in
     let location _ loc =
       locs := loc :: !locs ;
       loc
     in
-    map_ast
-      Ast_mapper.{default_mapper with location}
-      (map_ast Ast_mapper.{default_mapper with attribute} ast)
-    |> ignore ;
+    let expr (m : Ast_mapper.mapper) x =
+      let pexp_loc_stack = List.map x.pexp_loc_stack ~f:(m.location m) in
+      Ast_mapper.default_mapper.expr m {x with pexp_loc_stack}
+    in
+    let pat (m : Ast_mapper.mapper) x =
+      let ppat_loc_stack = List.map x.ppat_loc_stack ~f:(m.location m) in
+      Ast_mapper.default_mapper.pat m {x with ppat_loc_stack}
+    in
+    let typ (m : Ast_mapper.mapper) x =
+      let ptyp_loc_stack = List.map x.ptyp_loc_stack ~f:(m.location m) in
+      Ast_mapper.default_mapper.typ m {x with ptyp_loc_stack}
+    in
+    let mapper =
+      Ast_mapper.{default_mapper with location; expr; pat; typ; attribute}
+    in
+    map_ast mapper ast |> ignore ;
     (of_list !locs, !locs)
 end
 
@@ -384,15 +399,18 @@ let dedup_cmts map_ast ast comments =
     let docs = ref (Set.empty (module Cmt)) in
     let attribute _ atr =
       match atr with
-      | ( {txt= "ocaml.doc" | "ocaml.text"; _}
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
-                      ; pexp_loc
-                      ; _ }
-                    , [] )
-              ; _ } ] ) ->
+      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
+        ; attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, None))
+                        ; pexp_loc
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ } ->
           docs := Set.add !docs ("*" ^ doc, pexp_loc) ;
           atr
       | _ -> atr
@@ -401,6 +419,32 @@ let dedup_cmts map_ast ast comments =
     !docs
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
+
+let remove = ref true
+
+(** Relocate comments, for Ast transformations such as sugaring. *)
+let relocate (t : t) ~src ~before ~after =
+  if !remove then (
+    let update_multi tbl src dst ~f =
+      Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
+          Hashtbl.update tbl dst ~f:(fun dst_data ->
+              Option.fold dst_data ~init:src_data
+                ~f:(fun src_data dst_data -> f src_data dst_data)))
+    in
+    if Conf.debug then
+      Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+        Location.fmt before Location.fmt after ;
+    let merge_and_sort x y =
+      List.rev_append x y
+      |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:snd)
+    in
+    update_multi t.cmts_before src before ~f:merge_and_sort ;
+    update_multi t.cmts_after src after ~f:merge_and_sort ;
+    update_multi t.cmts_within src after ~f:merge_and_sort ;
+    if Conf.debug then (
+      Hashtbl.remove t.remaining src ;
+      Hashtbl.set t.remaining ~key:after ~data:() ;
+      Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 (** Initialize global state and place comments. *)
 let init map_ast source asts comments_n_docstrings =
@@ -412,32 +456,51 @@ let init map_ast source asts comments_n_docstrings =
     ; remaining= Hashtbl.create (module Location) }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
-  if Conf.debug then
+  if Conf.debug then (
+    Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun (txt, loc) ->
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
-          (if Source.ends_line source loc then "eol" else "")) ;
+          (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts in
     if Conf.debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
             Hashtbl.set t.remaining ~key:loc ~data:()) ;
-    if Conf.debug then
-      Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ;
+    if Conf.debug then (
+      Format.eprintf "\nLoc_tree:\n%!" ;
+      Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ) ;
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
     match locs with
     | [] -> add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
+  let () =
+    let relocate_loc_stack loc stack =
+      List.iter stack ~f:(fun src -> relocate t ~src ~before:loc ~after:loc)
+    in
+    let expr (m : Ast_mapper.mapper) x =
+      relocate_loc_stack x.pexp_loc x.pexp_loc_stack ;
+      Ast_mapper.default_mapper.expr m x
+    in
+    let typ (m : Ast_mapper.mapper) x =
+      relocate_loc_stack x.ptyp_loc x.ptyp_loc_stack ;
+      Ast_mapper.default_mapper.typ m x
+    in
+    let pat (m : Ast_mapper.mapper) x =
+      relocate_loc_stack x.ppat_loc x.ppat_loc_stack ;
+      Ast_mapper.default_mapper.pat m x
+    in
+    let _ = map_ast Ast_mapper.{default_mapper with pat; typ; expr} asts in
+    ()
+  in
   t
 
-let init_impl = init map_structure
+let init_impl = init Mapper.structure
 
-let init_intf = init map_signature
+let init_intf = init Mapper.signature
 
-let init_use_file = init Migrate_ast.map_use_file
-
-let remove = ref true
+let init_use_file = init Mapper.use_file
 
 let preserve fmt_x x =
   let buf = Buffer.create 128 in
@@ -448,29 +511,6 @@ let preserve fmt_x x =
   Format.pp_print_flush fs () ;
   remove := save ;
   Buffer.contents buf
-
-(** Relocate comments, for Ast transformations such as sugaring. *)
-let relocate t ~src ~before ~after =
-  if !remove then (
-    let update_multi tbl src dst ~f =
-      Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
-          Hashtbl.update tbl dst ~f:(fun dst_data ->
-              Option.fold dst_data ~init:src_data
-                ~f:(fun src_data dst_data -> f src_data dst_data)))
-    in
-    if Conf.debug then
-      Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
-        Location.fmt before Location.fmt after ;
-    update_multi t.cmts_before src before ~f:(fun src_cmts dst_cmts ->
-        List.append src_cmts dst_cmts) ;
-    update_multi t.cmts_after src after ~f:(fun src_cmts dst_cmts ->
-        List.append dst_cmts src_cmts) ;
-    update_multi t.cmts_within src after ~f:(fun src_cmts dst_cmts ->
-        List.append dst_cmts src_cmts) ;
-    if Conf.debug then (
-      Hashtbl.remove t.remaining src ;
-      Hashtbl.set t.remaining ~key:after ~data:() ;
-      Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 let split_asterisk_prefixed (txt, {Location.loc_start; _}) =
   let len = Position.column loc_start + 3 in

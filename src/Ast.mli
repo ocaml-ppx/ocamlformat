@@ -51,9 +51,9 @@ val is_sugared_list : expression -> bool
 (** Holds of expressions that can be sugared into [\[e1; ...; eN\]] form. *)
 
 val doc_atrs :
-     (string Location.loc * payload) list
-  -> (string Location.loc * bool) list option
-     * (string Location.loc * payload) list
+     ?acc:(string Location.loc * bool) list
+  -> attributes
+  -> (string Location.loc * bool) list option * attributes
 
 val longident_is_simple : Conf.t -> Longident.t -> bool
 

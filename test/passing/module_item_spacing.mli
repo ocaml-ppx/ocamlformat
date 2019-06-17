@@ -93,3 +93,6 @@ module C : sig
 
    type parsed_from = [`File of Fpath.t * int | `Attribute]
 end
+
+module A := A
+module A := A.B

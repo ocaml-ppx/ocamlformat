@@ -217,3 +217,7 @@ end = struct
   external a : b = "double_comment"
   (** B *)
 end
+
+(** A *)
+exception A of int
+(** C *)

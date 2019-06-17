@@ -262,3 +262,20 @@ class type ['a] tsv =
 {< (* check: e is effectively the index associated with e, and check that
       already in *)
    x = y >}
+
+class type a = b[@attr]
+
+class type a = object end[@attr]
+
+(* Syntax error: class type a = b -> c[@attr] *)
+(* Cannot attach attribute: class a : b -> c = d *)
+
+class type a = [%ext][@attr]
+
+class type a =
+  let open[@attr] A in
+  b
+
+class a =
+  let open[@attr] A in
+  b

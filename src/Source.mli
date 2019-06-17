@@ -56,6 +56,11 @@ val is_long_pexp_open : t -> Parsetree.expression -> bool
 (** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open]
     expression that is expressed in long ('let open') form in source. *)
 
+val is_long_pmod_functor : t -> Parsetree.module_expr -> bool
+(** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a
+    [Pmod_functor] expression that is expressed in long ('functor (M) ->')
+    form in source. *)
+
 val begins_line : t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool
