@@ -39,18 +39,14 @@ let () =
 let () =
   foooooooo
     begin
-      fooooooooooooo ;
-      foooooooo foooooooooooo ;
-      fooooooooooo foooooooooo ;
+      fooooooooooooo ; foooooooo foooooooooooo ; fooooooooooo foooooooooo ;
       foooooooooooooooo
     end
 
 let () =
   foooooooo
     begin
-      fooooooooooooo ;
-      foooooooo foooooooooooo ;
-      fooooooooooo foooooooooo ;
+      fooooooooooooo ; foooooooo foooooooooooo ; fooooooooooo foooooooooo ;
       foooooooooooooooo
     end
 
@@ -58,13 +54,14 @@ let () =
   foooooooo
     begin
       if foooooooooooooooooooooooooooo then
-      if foooooooooooooooooooooooooooo then foooooooooooooooooo
+        if foooooooooooooooooooooooooooo then foooooooooooooooooo
         else foooooooooooooooooooooooooo
       else if foooooooooooooooooooooooooooooooo then
         foooooooooooooooooo
           begin
             if foooooooooooooooooooooooooooo then
-            if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+              if foooooooooooooooooooooooooooo then
+                foooooooooooooooooooooooo
               else foooooooooooooooooooooooooo
             else if foooooooooooooooooooooooooooooooo then
               fooooooooooooooooooooooooooooooooooo
@@ -80,13 +77,13 @@ let () =
   foooooooo
     begin
       if foooooooooooooooooooooooooooo then
-      if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+        if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
         else
           foooooooooooooooooooooooooooo
             begin
               if foooooooooooooooooooooooooooo then
-              if foooooooooooooooooooooooooooo then
-                foooooooooooooooooooooooo
+                if foooooooooooooooooooooooooooo then
+                  foooooooooooooooooooooooo
                 else foooooooooooooooooooooooooo
               else if foooooooooooooooooooooooooooooooo then
                 fooooooooooooooooooooooooooooooooooo
@@ -201,10 +198,10 @@ let _ =
 
 let _ =
   x <-
-      begin
-        let a = b in
-        c
-      end
+    begin
+      let a = b in
+      c
+    end
 
 let _ =
   begin
@@ -217,8 +214,7 @@ let _ =
   begin
     let a = b in
     c
-  end.x <-
-      d
+  end.x <- d
 
 let _ =
   ( begin

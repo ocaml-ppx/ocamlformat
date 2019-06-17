@@ -37,9 +37,7 @@ let () =
 let () =
   foooooooo
     begin
-      fooooooooooooo ;
-      foooooooo foooooooooooo ;
-      fooooooooooo foooooooooo ;
+      fooooooooooooo ; foooooooo foooooooooooo ; fooooooooooo foooooooooo ;
       foooooooooooooooo
     end
 
@@ -54,14 +52,15 @@ let () =
   foooooooo
     begin
       if foooooooooooooooooooooooooooo then
-      if foooooooooooooooooooooooooooo then foooooooooooooooooo
-      else foooooooooooooooooooooooooo
+        if foooooooooooooooooooooooooooo then foooooooooooooooooo
+        else foooooooooooooooooooooooooo
       else if foooooooooooooooooooooooooooooooo then
         foooooooooooooooooo
           begin
             if foooooooooooooooooooooooooooo then
-            if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
-            else foooooooooooooooooooooooooo
+              if foooooooooooooooooooooooooooo then
+                foooooooooooooooooooooooo
+              else foooooooooooooooooooooooooo
             else if foooooooooooooooooooooooooooooooo then
               fooooooooooooooooooooooooooooooooooo
             else if foooooooooooooooooo then

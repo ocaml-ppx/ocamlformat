@@ -165,19 +165,22 @@ let sugar_pmod_functor c ~for_functor_kw pmod =
 let wrap_fits_breaks_exp_begin_end ~parens k =
   vbox 2
     (wrap_if_k parens
-       (fits_breaks "(" "begin" $ break_unless_newline 0 0)
-       (break_unless_newline 0 (-2) $ fits_breaks ")" "end")
-       k)
+       (fits_breaks "begin " "begin" $ break_unless_newline 0 0)
+       (break_unless_newline 0 (-2) $ fits_breaks " end" "end")
+       (cbox 0 k))
 
-let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
+let parens_or_begin_end c ~loc =
   match c.conf.exp_grouping with
-  | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
-  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
+  | `Parens -> `Parens
+  | `Begin_end -> `Begin_end
   | `Preserve ->
       let str = String.lstrip (Source.string_at c.source loc) in
-      if String.is_prefix ~prefix:"begin" str then
-        wrap_fits_breaks_exp_begin_end ~parens k
-      else wrap_fits_breaks_if ~space c.conf parens "(" ")" k
+      if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
+
+let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
+  match parens_or_begin_end c ~loc with
+  | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
+  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
 let drop_while ~f s =
   let i = ref 0 in
@@ -1913,6 +1916,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       (fmt_attributes c ~pre:(str " ") ~key:"@"
                          pexp_attributes)
                     ~fmt_cond:(fmt_expression c)
+                    ~exp_grouping:(parens_or_begin_end c ~loc:pexp_loc)
                 in
                 p.box_branch
                   ( p.cond
