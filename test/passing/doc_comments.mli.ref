@@ -280,7 +280,7 @@ A
 
     {!class-type:c} {!class-type:M.c}
 
-    {!value:x} {!val:M.x}
+    {!val:x} {!val:M.x}
 
     {!type:t} {!type:M.t}
 

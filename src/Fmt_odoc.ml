@@ -11,7 +11,6 @@
 
 open Fmt
 open Odoc_parser.Ast
-module Names = Odoc_model.Names
 module Location_ = Odoc_model.Location_
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
@@ -59,6 +58,8 @@ let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
 let ign_loc ~f with_loc = f with_loc.Location_.value
 
+let fmt_reference = ign_loc ~f:str
+
 (* Decide between using light and heavy syntax for lists *)
 let list_should_use_heavy_syntax items =
   let heavy_nestable_block_elements = function
@@ -72,7 +73,7 @@ let list_should_use_heavy_syntax items =
 let block_element_should_break elem next =
   match (elem, next) with
   (* Mandatory breaks *)
-  | `List (_, _), _ | `Paragraph _, `Paragraph _ -> true
+  | `List (_, _, _), _ | `Paragraph _, `Paragraph _ -> true
   (* Arbitrary breaks *)
   | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) -> true
   | _, _ -> false
@@ -108,90 +109,8 @@ let fmt_styled style fmt_elem elems =
     (wrap "{" "}"
        (str s $ fmt_if_not_empty elems "@ " $ list elems "" fmt_elem))
 
-let rec fmt_reference_resolved =
-  let open Names in
-  let open Reference.Resolved in
-  let dot r s =
-    let _, k = fmt_reference_resolved r in
-    k $ str "." $ str s
-  in
-  function
-  | `Identifier id -> ("", str (Identifier.name id))
-  | `SubstAlias (_, r) -> fmt_reference_resolved (r :> t)
-  | `Module (r, s) -> ("module:", dot (r :> t) (ModuleName.to_string s))
-  | `Canonical (_, `Resolved r) -> fmt_reference_resolved (r :> t)
-  | `Canonical (p, _) -> fmt_reference_resolved (p :> t)
-  | `ModuleType (r, s) ->
-      ("module-type:", dot (r :> t) (ModuleTypeName.to_string s))
-  | `Type (r, s) -> ("type:", dot (r :> t) (TypeName.to_string s))
-  | `Constructor (r, s) ->
-      ("constructor:", dot (r :> t) (ConstructorName.to_string s))
-  | `Field (r, s) -> ("field:", dot (r :> t) (FieldName.to_string s))
-  | `Extension (r, s) ->
-      ("extension:", dot (r :> t) (ExtensionName.to_string s))
-  | `Exception (r, s) ->
-      ("exception:", dot (r :> t) (ExceptionName.to_string s))
-  | `Value (r, s) -> ("val:", dot (r :> t) (ValueName.to_string s))
-  | `Class (r, s) -> ("class:", dot (r :> t) (ClassName.to_string s))
-  | `ClassType (r, s) ->
-      ("class-type:", dot (r :> t) (ClassTypeName.to_string s))
-  | `Method (r, s) -> ("method:", dot (r :> t) (MethodName.to_string s))
-  | `InstanceVariable (r, s) ->
-      ("instance-variable:", dot (r :> t) (InstanceVariableName.to_string s))
-  | `Label (r, s) ->
-      let kind, k = fmt_reference_resolved (r :> t) in
-      (kind, k $ str ":" $ str (LabelName.to_string s))
-
-let fmt_reference_kind = function
-  | `TModule -> "module:"
-  | `TModuleType -> "module-type:"
-  | `TType -> "type:"
-  | `TConstructor -> "constructor:"
-  | `TField -> "field:"
-  | `TExtension -> "extension:"
-  | `TException -> "exception:"
-  | `TValue -> "value:"
-  | `TClass -> "class:"
-  | `TClassType -> "class-type:"
-  | `TMethod -> "method:"
-  | `TInstanceVariable -> "instance-variable:"
-  | `TLabel -> "label:"
-  | `TPage -> "page:"
-  | `TUnknown -> ""
-
-let rec fmt_reference : Reference.t -> _ =
-  let open Names in
-  let open Reference in
-  let dot p rhs =
-    let _, k = fmt_reference p in
-    k $ str "." $ str rhs
-  in
-  function
-  | `Root (s, kind) -> (fmt_reference_kind kind, str (UnitName.to_string s))
-  | `Dot (p, s) -> ("", dot (p :> t) s)
-  | `Module (p, s) -> ("module:", dot (p :> t) (ModuleName.to_string s))
-  | `ModuleType (p, s) ->
-      ("module-type:", dot (p :> t) (ModuleTypeName.to_string s))
-  | `Type (p, s) -> ("type:", dot (p :> t) (TypeName.to_string s))
-  | `Constructor (p, s) ->
-      ("constructor:", dot (p :> t) (ConstructorName.to_string s))
-  | `Field (p, s) -> ("field:", dot (p :> t) (FieldName.to_string s))
-  | `Extension (p, s) ->
-      ("extension:", dot (p :> t) (ExtensionName.to_string s))
-  | `Exception (p, s) ->
-      ("exception:", dot (p :> t) (ExceptionName.to_string s))
-  | `Value (p, s) -> ("val:", dot (p :> t) (ValueName.to_string s))
-  | `Class (p, s) -> ("class:", dot (p :> t) (ClassName.to_string s))
-  | `ClassType (p, s) ->
-      ("class-type:", dot (p :> t) (ClassTypeName.to_string s))
-  | `Method (p, s) -> ("method:", dot (p :> t) (MethodName.to_string s))
-  | `InstanceVariable (p, s) ->
-      ("instance-variable:", dot (p :> t) (InstanceVariableName.to_string s))
-  | `Label (p, s) -> ("label:", dot (p :> t) (LabelName.to_string s))
-  | `Resolved r -> fmt_reference_resolved r
-
 let rec fmt_inline_element : inline_element -> Fmt.t = function
-  | `Space -> fmt "@ "
+  | `Space _ -> fmt "@ "
   | `Word w ->
       (* Escape lines starting with '+' or '-' *)
       let escape =
@@ -203,12 +122,11 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Code_span s ->
       let s = escape_brackets s in
       hovbox 0 (wrap "[" "]" (str_verbatim s))
-  | `Raw_markup (`Html, s) -> str s
+  | `Raw_markup (_lang, s) -> str s
   | `Styled (style, elems) ->
       fmt_styled style (ign_loc ~f:fmt_inline_element) elems
   | `Reference (_kind, ref, txt) ->
-      let ref_kind, ref = fmt_reference (ref :> Reference.t) in
-      let ref = fmt "{!" $ str ref_kind $ ref $ fmt "}" in
+      let ref = fmt "{!" $ fmt_reference ref $ fmt "}" in
       if List.is_empty txt then ref
       else
         hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
@@ -260,13 +178,12 @@ and fmt_nestable_block_element : nestable_block_element -> t = function
       vbox 0 (fmt "{[@;<1 -999>" $ str_verbatim s $ fmt "@ ]}")
   | `Verbatim s -> vbox 0 (fmt "{v@;<1 -999>" $ str_verbatim s $ fmt "@ v}")
   | `Modules mods ->
-      let mods = (mods :> Reference.t list) in
       hovbox 0
         (wrap "{!modules:@," "@,}"
-           (list mods "@ " (fun ref -> snd (fmt_reference ref))))
-  | `List (k, items) when list_should_use_heavy_syntax items ->
+           (list mods "@ " (fun ref -> fmt_reference ref)))
+  | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy k items
-  | `List (k, items) -> fmt_list_light k items
+  | `List (k, _syntax, items) -> fmt_list_light k items
 
 and fmt_list_heavy kind items =
   let fmt_item elems =
@@ -313,10 +230,7 @@ let fmt_tag : tag -> Fmt.t = function
   | `Inline -> at $ str "inline"
   | `Open -> at $ str "open"
   | `Closed -> at $ str "closed"
-  | `Canonical (_, ref) ->
-      (* TODO: print the path ? *)
-      let _, ref = fmt_reference (ref :> Reference.t) in
-      at $ fmt "canonical@ " $ ref
+  | `Canonical ref -> at $ fmt "canonical@ " $ fmt_reference ref
 
 let fmt_block_element = function
   | `Tag tag -> hovbox 0 (fmt_tag tag)

@@ -33,7 +33,8 @@ let ign_loc f fmt with_loc = f fmt with_loc.Odoc_model.Location_.value
 let fpf = Format.fprintf
 
 open Odoc_parser.Ast
-module Names = Odoc_model.Names
+
+let odoc_reference = ign_loc str
 
 let odoc_style fmt = function
   | `Bold -> fpf fmt "Bold"
@@ -42,58 +43,8 @@ let odoc_style fmt = function
   | `Superscript -> fpf fmt "Superscript"
   | `Subscript -> fpf fmt "Subscript"
 
-let rec odoc_reference_resolved fmt : Reference.Resolved.t -> unit =
-  let open Names in
-  let open Reference.Resolved in
-  let dot r s = fpf fmt "%a.%s" odoc_reference_resolved r s in
-  function
-  | `Identifier id -> fpf fmt "%s" (Identifier.name id)
-  | `SubstAlias (_, r) -> odoc_reference_resolved fmt (r :> t)
-  | `Module (r, s) -> dot (r :> t) (ModuleName.to_string s)
-  | `Canonical (_, `Resolved r) -> odoc_reference_resolved fmt (r :> t)
-  | `Canonical (p, _) -> odoc_reference_resolved fmt (p :> t)
-  | `ModuleType (r, s) -> dot (r :> t) (ModuleTypeName.to_string s)
-  | `Type (r, s) -> dot (r :> t) (TypeName.to_string s)
-  | `Constructor (r, s) -> dot (r :> t) (ConstructorName.to_string s)
-  | `Field (r, s) -> dot (r :> t) (FieldName.to_string s)
-  | `Extension (r, s) -> dot (r :> t) (ExtensionName.to_string s)
-  | `Exception (r, s) -> dot (r :> t) (ExceptionName.to_string s)
-  | `Value (r, s) -> dot (r :> t) (ValueName.to_string s)
-  | `Class (r, s) -> dot (r :> t) (ClassName.to_string s)
-  | `ClassType (r, s) -> dot (r :> t) (ClassTypeName.to_string s)
-  | `Method (r, s) -> dot (r :> t) (MethodName.to_string s)
-  | `InstanceVariable (r, s) ->
-      dot (r :> t) (InstanceVariableName.to_string s)
-  | `Label (r, s) ->
-      fpf fmt "%a:%s" odoc_reference_resolved
-        (r :> t)
-        (LabelName.to_string s)
-
-let rec odoc_reference fmt : Reference.t -> unit =
-  let open Names in
-  let open Reference in
-  let dot p rhs = fpf fmt "%a.%s" odoc_reference p rhs in
-  function
-  | `Root (s, _) -> fpf fmt "%s" (UnitName.to_string s)
-  | `Dot (p, s) -> dot (p :> t) s
-  | `Module (p, s) -> dot (p :> t) (ModuleName.to_string s)
-  | `ModuleType (p, s) -> dot (p :> t) (ModuleTypeName.to_string s)
-  | `Type (p, s) -> dot (p :> t) (TypeName.to_string s)
-  | `Constructor (p, s) -> dot (p :> t) (ConstructorName.to_string s)
-  | `Field (p, s) -> dot (p :> t) (FieldName.to_string s)
-  | `Extension (p, s) -> dot (p :> t) (ExtensionName.to_string s)
-  | `Exception (p, s) -> dot (p :> t) (ExceptionName.to_string s)
-  | `Value (p, s) -> dot (p :> t) (ValueName.to_string s)
-  | `Class (p, s) -> dot (p :> t) (ClassName.to_string s)
-  | `ClassType (p, s) -> dot (p :> t) (ClassTypeName.to_string s)
-  | `Method (p, s) -> dot (p :> t) (MethodName.to_string s)
-  | `InstanceVariable (p, s) ->
-      dot (p :> t) (InstanceVariableName.to_string s)
-  | `Label (p, s) -> dot (p :> t) (LabelName.to_string s)
-  | `Resolved r -> odoc_reference_resolved fmt r
-
 let rec odoc_inline_element fmt = function
-  | `Space -> ()
+  | `Space _ -> ()
   | `Word txt ->
       (* Ignore backspace changes *)
       let txt =
@@ -101,7 +52,8 @@ let rec odoc_inline_element fmt = function
       in
       fpf fmt "Word,%a" str txt
   | `Code_span txt -> fpf fmt "Code_span,%a" str txt
-  | `Raw_markup (`Html, txt) -> fpf fmt "Raw_html,%a" str txt
+  | `Raw_markup (Some lang, txt) -> fpf fmt "Raw_html:%s,%a" lang str txt
+  | `Raw_markup (None, txt) -> fpf fmt "Raw_html,%a" str txt
   | `Styled (style, elems) ->
       fpf fmt "Styled,%a,%a" odoc_style style odoc_inline_elements elems
   | `Reference (_kind, ref, content) ->
@@ -118,9 +70,8 @@ let rec odoc_nestable_block_element fmt : nestable_block_element -> unit =
   | `Paragraph elms -> fpf fmt "Paragraph,%a" odoc_inline_elements elms
   | `Code_block txt -> fpf fmt "Code_block,%a" str txt
   | `Verbatim txt -> fpf fmt "Verbatim,%a" str txt
-  | `Modules mods ->
-      fpf fmt "Modules,%a" (list odoc_reference) (mods :> Reference.t list)
-  | `List (ord, items) ->
+  | `Modules mods -> fpf fmt "Modules,%a" (list odoc_reference) mods
+  | `List (ord, _syntax, items) ->
       let ord = match ord with `Unordered -> "U" | `Ordered -> "O" in
       let list_item fmt elems =
         fpf fmt "Item(%a)" odoc_nestable_block_elements elems
@@ -148,8 +99,7 @@ let odoc_tag fmt : tag -> unit = function
   | `Before (p, elems) ->
       fpf fmt "Before,%a,%a" str p odoc_nestable_block_elements elems
   | `Version txt -> fpf fmt "Version,%a" str txt
-  | `Canonical (_, ref) ->
-      fpf fmt "Canonical,%a" odoc_reference (ref :> Reference.t)
+  | `Canonical ref -> fpf fmt "Canonical,%a" odoc_reference ref
   | `Inline -> fpf fmt "Inline"
   | `Open -> fpf fmt "Open"
   | `Closed -> fpf fmt "Closed"
