@@ -1,1 +1,1 @@
---break-fun-decl=smart
+--break-fun-decl=smart --break-fun-sig=smart
