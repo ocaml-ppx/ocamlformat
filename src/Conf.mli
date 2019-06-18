@@ -36,7 +36,7 @@ type t =
         (** Escape encoding for chars literals. *)
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
         (** Escape encoding for string literals. *)
-  ; exp_grouping: [`Parens | `Preserve | `Begin_end]
+  ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]

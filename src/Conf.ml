@@ -33,7 +33,7 @@ type t =
   ; doc_comments_tag_only: [`Fit | `Default]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
-  ; exp_grouping: [`Parens | `Preserve | `Begin_end]
+  ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
@@ -902,10 +902,8 @@ module Formatting = struct
         , "$(b,parens) groups expressions using parentheses." )
       ; ( "preserve"
         , `Preserve
-        , "$(b,preserve) preserves the original grouping syntax." )
-      ; ( "begin-end"
-        , `Begin_end
-        , "$(b,begin-end) groups expressions using `begin` and `end`." ) ]
+        , "$(b,preserve) preserves the original grouping syntax \
+           (parentheses or $(i,begin)/$(i,end))." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with exp_grouping= x})
