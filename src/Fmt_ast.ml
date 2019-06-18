@@ -406,7 +406,7 @@ let wrap_record (c : Conf.t) =
 let wrap_tuple ~parens ~no_parens_if_break c =
   if parens then wrap_fits_breaks c.conf "(" ")"
   else if no_parens_if_break then Fn.id
-  else wrap_if_breaks "( " "@ )"
+  else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
 
 let parse_docstring str_cmt =
   match Octavius.parse (Lexing.from_string str_cmt) with
@@ -728,12 +728,10 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let space_around = c.conf.space_around_variants in
       let closing =
         let empty = List.is_empty rfs in
-        fits_breaks
-          ( if (protect_token || space_around) && not empty then " ]"
-          else "]" )
-          ( if Poly.(c.conf.type_decl = `Sparse) && space_around then
-            "@;<1000 0>]"
-          else "@ ]" )
+        let breaks = Poly.(c.conf.type_decl = `Sparse) && space_around in
+        let nspaces = if breaks then 1000 else 1 in
+        let space = (protect_token || space_around) && not empty in
+        fits_breaks (if space then " ]" else "]") ~hint:(nspaces, 0) "]"
       in
       hvbox 0
         ( match (flag, lbls, rfs) with
@@ -1046,9 +1044,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   in
                   leading_cmt $ fmt_pattern c ~pro xpat
                   $ fmt_if_k last close_box))
-        $ fits_breaks
-            (if parens then ")" else "")
-            (if nested then "" else "@;<1 2>)") )
+        $ fmt_or_k nested
+            (fits_breaks (if parens then ")" else "") "")
+            (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")") )
   | Ppat_constraint
       ( {ppat_desc= Ppat_unpack name; ppat_attributes= []; ppat_loc; _}
       , ( { ptyp_desc= Ptyp_package (id, cnstrs)
@@ -1235,8 +1233,8 @@ and fmt_args ~first:first_grp ~last:last_grp c ctx args =
     let epi =
       match (lbl, next) with
       | _, None -> None
-      | Nolabel, _ -> Some (fits_breaks "" "@;<1000 -1>")
-      | _ -> Some (fits_breaks "" "@;<1000 -3>")
+      | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
+      | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
     in
     fmt_if_k (Option.is_none prev) openbox
     $ hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
@@ -1335,11 +1333,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
           let very_first = first_grp && first in
           let very_last = last_grp && last in
+          let imd = c.conf.indicate_multiline_delimiters in
+          let nspaces = if imd then 1 else 0 in
           fmt_if_k very_first
             (fits_breaks_if parens_or_nested "("
-               ( if parens_or_forced then
-                 if c.conf.indicate_multiline_delimiters then "( " else "("
-               else "" ))
+               (if parens_or_forced then if imd then "( " else "(" else ""))
           $ fmt_before_cmts
           $ fmt_if_k first
               (open_hovbox (if first_grp && parens then -2 else 0))
@@ -1347,11 +1345,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           $ fmt_op_args ~first:very_first op_args ~last:very_last
           $ fmt_if_k last close_box
           $ fmt_or_k very_last
-              (fits_breaks_if parens_or_nested ")"
-                 ( if parens_or_forced then
-                   if c.conf.indicate_multiline_delimiters then "@ )"
-                   else "@,)"
-                 else "" ))
+              (fmt_or_k parens_or_forced
+                 (fits_breaks_if parens_or_nested ")" ~hint:(nspaces, 0) ")")
+                 (fits_breaks_if parens_or_nested ")" ""))
               (break_unless_newline 1 0))
     in
     let op_args_grouped =
@@ -1730,15 +1726,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_assert e0 ->
       let paren_body = parenze_exp (sub_exp ~ctx e0) in
+      let nspaces = if c.conf.indicate_multiline_delimiters then 1 else 0 in
       hovbox 0
         (wrap_if parens "(" ")"
            (hvbox 0
               ( hvbox 2
                   ( fmt_or paren_body "assert (@," "assert@ "
                   $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
-              $ fmt_or_k c.conf.indicate_multiline_delimiters
-                  (fits_breaks_if paren_body ")" "@ )")
-                  (fits_breaks_if paren_body ")" "@,)")
+              $ fits_breaks_if paren_body ")" ~hint:(nspaces, 0) ")"
               $ fmt_atrs )))
   | Pexp_constant const ->
       wrap_if
@@ -1756,7 +1751,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; _ } ) ->
       let imd = c.conf.indicate_multiline_delimiters in
       let opn_paren = fmt_or_k imd (fits_breaks "(" "( ") (str "(") in
-      let cls_paren = fmt_or_k imd (fits_breaks ")" "@ )") (str ")") in
+      let cls_paren =
+        fmt_or_k imd (fits_breaks ")" ~hint:(1, 0) ")") (str ")")
+      in
       hovbox 0
         (compose_module
            (fmt_module_expr c (sub_mod ~ctx me))
@@ -2026,7 +2023,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 (sub_mod ~ctx popen_expr) )
         $ fits_breaks opn " in"
         $ fmt_or_k force_fit_if (fmt "@;<0 2>")
-            (fits_breaks "" "@;<1000 0>")
+            (fits_breaks "" ~hint:(1000, 0) "")
         $ fmt_expression c (sub_exp ~ctx e0)
         $ fits_breaks cls ""
         $ fits_breaks_if parens "" ")"
@@ -3197,7 +3194,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
       ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc)
       ; psp=
           fmt_or_k (Option.is_none blk.pro)
-            (fits_breaks " " "@;<1 2>")
+            (fits_breaks " " ~hint:(1, 2) "")
             blk.psp }
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
@@ -3940,7 +3937,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                   Some (fits_breaks ~force_fit_if "" "\n")
               | `Double_semicolon ->
                   Option.some_if (last && last_grp)
-                    (fits_breaks "" "@;<1000 -2>;;")
+                    (fits_breaks "" ~hint:(1000, -2) ";;")
             in
             let {pvb_pat; pvb_expr; pvb_attributes= attributes; pvb_loc= loc}
                 =
@@ -3973,7 +3970,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
   let fmt_in indent =
     match c.conf.break_before_in with
     | `Fit_or_vertical -> break 1 (-indent) $ fmt "in"
-    | `Auto -> fits_breaks " in" ("@;<1 " ^ Int.to_string (-indent) ^ ">in")
+    | `Auto -> fits_breaks " in" ~hint:(1, -indent) "in"
   in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
@@ -4078,7 +4075,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
             let fmt_cstr_and_xbody typ exp =
               ( Some
                   ( fmt_or_k c.conf.ocp_indent_compat
-                      (fits_breaks " " "@;<1000 0>")
+                      (fits_breaks " " ~hint:(1000, 0) "")
                       (fmt "@;<0 -1>")
                   $ cbox_if c.conf.ocp_indent_compat 0
                       (fmt_core_type c ~pro:":"
@@ -4144,7 +4141,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
                       $ wrap_fun_decl_args c (fmt_fun_args c xargs) ) )
               $ Option.call ~f:fmt_cstr )
           $ fmt_or_k c.conf.ocp_indent_compat
-              (fits_breaks " =" "@;<1000 0>=")
+              (fits_breaks " =" ~hint:(1000, 0) "=")
               (fmt "@;<1 2>=")
           $ pre_body )
       $ fmt "@ " $ body $ Cmts.fmt_after c loc

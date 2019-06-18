@@ -102,15 +102,22 @@ val pre_break : int -> string -> int -> t
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 val fits_breaks :
-  ?force_fit_if:bool -> ?force_break_if:bool -> string -> string -> t
-(** [fits_breaks fits breaks] prints [fits] if the enclosing box fits on one
-    line, and otherwise prints [breaks], which is a string that optionally
-    starts with a break hint specification such as ["@ "], ["@,"], or
-    ["@;<nspaces offset>"]. *)
+     ?force_fit_if:bool
+  -> ?force_break_if:bool
+  -> ?hint:int * int
+  -> string
+  -> string
+  -> t
+(** [fits_breaks fits nspaces offset breaks] prints [fits] if the enclosing
+    box fits on one line, and otherwise prints [breaks], which is a string
+    that optionally follows a break [hint] (that is a pair
+    [(nspaces, offset)] equivalent to the break hint
+    ["@;<nspaces offset>"]). *)
 
 val fits_breaks_if :
      ?force_fit_if:bool
   -> ?force_break_if:bool
+  -> ?hint:int * int
   -> bool
   -> string
   -> string
@@ -131,10 +138,6 @@ val wrap_if : bool -> s -> s -> t -> t
 
 val wrap_if_k : bool -> t -> t -> t -> t
 (** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)
-
-val wrap_if_breaks : string -> string -> t -> t
-(** As [wrap], but prologue and epilogue are only formatted if the enclosing
-    box breaks. *)
 
 val wrap_if_fits_and : bool -> string -> string -> t -> t
 (** As [wrap_if_fits], but prologue and epilogue are formatted subject to

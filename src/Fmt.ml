@@ -102,29 +102,17 @@ let pre_break n s o fs = Format.pp_print_pre_break fs n s o
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
-let fits_breaks ?(force_fit_if = false) ?(force_break_if = false) fits
-    breaks fs =
-  let n, o, b =
-    let len = String.length breaks in
-    if len >= 2 && Char.equal breaks.[0] '@' then
-      let b = String.sub breaks ~pos:2 ~len:(len - 2) in
-      match breaks.[1] with
-      | ';' -> (
-        try Scanf.sscanf breaks "@;<%d %d>%s" (fun x y z -> (x, y, z))
-        with Scanf.Scan_failure _ | End_of_file -> (1, 0, b) )
-      | ',' -> (0, 0, b)
-      | ' ' -> (1, 0, b)
-      | _ -> (0, Int.min_value, breaks)
-    else (0, Int.min_value, breaks)
-  in
+let fits_breaks ?(force_fit_if = false) ?(force_break_if = false)
+    ?(hint = (0, Int.min_value)) fits breaks fs =
+  let nspaces, offset = hint in
   if force_fit_if then Format.pp_print_string fs fits
   else if force_break_if then (
-    if o >= 0 then Format.pp_print_break fs n o ;
-    Format.pp_print_string fs b )
-  else Format.pp_print_fits_or_breaks fs fits n o b
+    if offset >= 0 then Format.pp_print_break fs nspaces offset ;
+    Format.pp_print_string fs breaks )
+  else Format.pp_print_fits_or_breaks fs fits nspaces offset breaks
 
-let fits_breaks_if ?force_fit_if ?force_break_if cnd fits breaks fs =
-  if cnd then fits_breaks ?force_fit_if ?force_break_if fits breaks fs
+let fits_breaks_if ?force_fit_if ?force_break_if ?hint cnd fits breaks fs =
+  if cnd then fits_breaks ?force_fit_if ?force_break_if ?hint fits breaks fs
 
 (** Wrapping ------------------------------------------------------------*)
 
@@ -136,8 +124,6 @@ let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
-let wrap_if_breaks pre suf k = fits_breaks "" pre $ k $ fits_breaks "" suf
-
 let wrap_if_fits_and cnd pre suf k =
   fits_breaks_if cnd pre "" $ k $ fits_breaks_if cnd suf ""
 
@@ -147,7 +133,7 @@ let wrap_fits_breaks_if ?(space = true) c cnd pre suf k =
   else
     fits_breaks_if cnd pre (pre ^ " ")
     $ k
-    $ fits_breaks_if cnd suf ("@ " ^ suf)
+    $ fits_breaks_if cnd suf ~hint:(1, 0) suf
 
 let wrap_fits_breaks ?(space = true) conf x =
   wrap_fits_breaks_if ~space conf true x

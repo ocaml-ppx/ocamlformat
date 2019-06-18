@@ -124,11 +124,12 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
           $ fmt "@ then" )
     | None -> str "else"
   in
-  let wrap_parens ~opn_hint:(ohimd, ohno) ~cls_hint k =
+  let wrap_parens ~opn_hint:(ohimd, ohno) k =
     fmt_if_k parens_bch
-      (str "(" $ fmt_or_k imd (fits_breaks "" ohimd) (fits_breaks "" ohno))
+      (str "(" $ fits_breaks "" ~hint:(if imd then ohimd else ohno) "")
     $ k
-    $ fmt_if_k parens_bch (fmt_if_k imd (fits_breaks "" cls_hint) $ str ")")
+    $ fmt_if_k parens_bch
+        (fmt_if_k imd (fits_breaks "" ~hint:(1, 0) "") $ str ")")
   in
   let branch_pro = fmt_or parens_bch " " "@;<1 2>" in
   match c.if_then_else with
@@ -137,7 +138,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= fmt_or parens_bch " " "@ "
-      ; wrap_parens= wrap_parens ~opn_hint:("@ ", "@,") ~cls_hint:"@ "
+      ; wrap_parens= wrap_parens ~opn_hint:((1, 0), (0, 0))
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
@@ -157,8 +158,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
-      ; wrap_parens=
-          wrap_parens ~opn_hint:("@;<1 2>", "@;<0 2>") ~cls_hint:"@ "
+      ; wrap_parens= wrap_parens ~opn_hint:((1, 2), (0, 2))
       ; expr_pro=
           Some
             (fmt_if_k
@@ -181,7 +181,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
           (fun k ->
             hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k))
       ; branch_pro= fmt_or parens_bch " " "@ "
-      ; wrap_parens= wrap_parens ~opn_hint:("@ ", "@,") ~cls_hint:"@ "
+      ; wrap_parens= wrap_parens ~opn_hint:((1, 0), (0, 0))
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
