@@ -2809,31 +2809,46 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs )
 
 and fmt_cases c ctx cs =
-  let case_len case =
-    match case.ppat_desc with
+  let rec pattern_len ?(parens = 0) pat =
+    match pat.ppat_desc with
     | Ppat_any -> Some 1
     | Ppat_var {txt= s; _}
      |Ppat_constant (Pconst_integer (s, _))
      |Ppat_constant (Pconst_float (s, _))
      |Ppat_construct ({txt= Lident s; _}, None) ->
         Some (String.length s)
+    | Ppat_construct ({txt= Lident s; _}, Some arg) -> (
+      match pattern_len ~parens:2 arg with
+      | Some arg -> Some (parens + String.length s + 1 + arg)
+      | None -> None )
     | Ppat_constant (Pconst_char chr) ->
-        Some (String.length (char_escaped c ~loc:case.ppat_loc chr))
+        Some (String.length (char_escaped c ~loc:pat.ppat_loc chr))
     | Ppat_variant (s, None) -> Some (String.length s + 1)
-    | Ppat_alias _ | Ppat_interval _ | Ppat_tuple _ | Ppat_construct _
-     |Ppat_variant (_, Some _)
+    | Ppat_variant (s, Some arg) -> (
+      match pattern_len ~parens:2 arg with
+      | Some arg -> Some (parens + 1 + String.length s + 1 + arg)
+      | None -> None )
+    | Ppat_tuple ps ->
+        (* commas and parenthesis *)
+        let init = ((List.length ps - 1) * 2) + parens in
+        fold_pattern_len ~parens:2 ~init ~f:( + ) ps
+    | Ppat_alias _ | Ppat_interval _ | Ppat_construct _
      |Ppat_constant (Pconst_string _)
      |Ppat_record _ | Ppat_array _ | Ppat_constraint _ | Ppat_type _
      |Ppat_or _ | Ppat_unpack _ | Ppat_lazy _ | Ppat_exception _
      |Ppat_extension _ | Ppat_open _ ->
         None
+  and fold_pattern_len ?parens ?(init = 0) ~f ps =
+    List.fold_until ~init ps
+      ~f:(fun acc pat ->
+        match pattern_len ?parens pat with
+        | Some l -> Continue (f acc l)
+        | None -> Stop None)
+      ~finish:(fun acc -> Some acc)
   in
-  let max acc case =
-    match (acc, case_len case.pc_lhs) with
-    | Some x, Some y -> Some (max x y)
-    | _ -> None
+  let max_len_name =
+    fold_pattern_len ~f:max (List.map ~f:(fun case -> case.pc_lhs) cs)
   in
-  let max_len_name = List.fold_left cs ~init:(Some 0) ~f:max in
   list_fl cs (fun ~first ~last {pc_lhs; pc_guard; pc_rhs} ->
       let xrhs = sub_exp ~ctx pc_rhs in
       let indent =
@@ -2874,7 +2889,7 @@ and fmt_cases c ctx cs =
         fmt_if_k
           ( c.conf.align_cases
           && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
-          ( match (max_len_name, case_len xlhs.ast) with
+          ( match (max_len_name, pattern_len xlhs.ast) with
           | Some max_len, Some len -> str (String.make (max_len - len) ' ')
           | _ -> noop )
       in
