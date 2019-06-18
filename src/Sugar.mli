@@ -146,6 +146,4 @@ let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
 
     Can be rewritten as:
 
-    {[
-let f: type r s. r s t = e
-    ]} *)
+    {[ let f: type r s. r s t = e ]} *)

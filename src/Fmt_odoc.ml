@@ -58,6 +58,18 @@ let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
 let ign_loc ~f with_loc = f with_loc.Location_.value
 
+let fmt_verbatim_block opn cls s =
+  let force_break = String.contains s '\n' in
+  let content =
+    (* Literal newline to avoid indentation *)
+    if force_break then wrap "\n" "@\n" (str_verbatim s)
+    else
+      fits_breaks " " "\n"
+      $ str_verbatim (String.strip s)
+      $ fits_breaks " " "@,"
+  in
+  hvbox 0 (wrap opn cls content)
+
 let fmt_reference = ign_loc ~f:str
 
 (* Decide between using light and heavy syntax for lists *)
@@ -180,9 +192,8 @@ and fmt_text txt =
 
 and fmt_nestable_block_element : nestable_block_element -> t = function
   | `Paragraph elems -> hovbox 0 (fmt_inline_elements elems)
-  | `Code_block s ->
-      vbox 0 (fmt "{[@;<1 -999>" $ str_verbatim s $ fmt "@ ]}")
-  | `Verbatim s -> vbox 0 (fmt "{v@;<1 -999>" $ str_verbatim s $ fmt "@ v}")
+  | `Code_block s -> fmt_verbatim_block "{[" "]}" s
+  | `Verbatim s -> fmt_verbatim_block "{v" "v}" s
   | `Modules mods ->
       hovbox 0
         (wrap "{!modules:@," "@,}"
