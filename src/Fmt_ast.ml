@@ -728,15 +728,10 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let space_around = c.conf.space_around_variants in
       let closing =
         let empty = List.is_empty rfs in
-        fits_breaks
-          ( if (protect_token || space_around) && not empty then " ]"
-          else "]" )
-          "]"
-          ~hint:
-            ( ( if Poly.(c.conf.type_decl = `Sparse) && space_around then
-                1000
-              else 1 )
-            , 0 )
+        let breaks = Poly.(c.conf.type_decl = `Sparse) && space_around in
+        let nspaces = if breaks then 1000 else 1 in
+        let space = (protect_token || space_around) && not empty in
+        fits_breaks (if space then " ]" else "]") ~hint:(nspaces, 0) "]"
       in
       hvbox 0
         ( match (flag, lbls, rfs) with
@@ -1338,11 +1333,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
           let very_first = first_grp && first in
           let very_last = last_grp && last in
+          let imd = c.conf.indicate_multiline_delimiters in
+          let nspaces = if imd then 1 else 0 in
           fmt_if_k very_first
             (fits_breaks_if parens_or_nested "("
-               ( if parens_or_forced then
-                 if c.conf.indicate_multiline_delimiters then "( " else "("
-               else "" ))
+               (if parens_or_forced then if imd then "( " else "(" else ""))
           $ fmt_before_cmts
           $ fmt_if_k first
               (open_hovbox (if first_grp && parens then -2 else 0))
@@ -1351,11 +1346,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           $ fmt_if_k last close_box
           $ fmt_or_k very_last
               (fmt_or_k parens_or_forced
-                 (fits_breaks_if parens_or_nested ")" ")"
-                    ~hint:
-                      ( ( if c.conf.indicate_multiline_delimiters then 1
-                        else 0 )
-                      , 0 ))
+                 (fits_breaks_if parens_or_nested ")" ~hint:(nspaces, 0) ")")
                  (fits_breaks_if parens_or_nested ")" ""))
               (break_unless_newline 1 0))
     in
@@ -1735,16 +1726,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_assert e0 ->
       let paren_body = parenze_exp (sub_exp ~ctx e0) in
+      let nspaces = if c.conf.indicate_multiline_delimiters then 1 else 0 in
       hovbox 0
         (wrap_if parens "(" ")"
            (hvbox 0
               ( hvbox 2
                   ( fmt_or paren_body "assert (@," "assert@ "
                   $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
-              $ fits_breaks_if paren_body ")" ")"
-                  ~hint:
-                    ( (if c.conf.indicate_multiline_delimiters then 1 else 0)
-                    , 0 )
+              $ fits_breaks_if paren_body ")" ~hint:(nspaces, 0) ")"
               $ fmt_atrs )))
   | Pexp_constant const ->
       wrap_if
