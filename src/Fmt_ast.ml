@@ -332,7 +332,7 @@ let fmt_constant c ~loc ?epi const =
         | _ -> str (escape_string mode s)
       in
       let fmt_lines ?(break_on_newlines = false) mode lines =
-        let delim = ["@,"; "@;"; "@\\n"] in
+        let delim = ["@,"; "@;"] in
         let fmt_line ?prev:_ curr ?next =
           let fmt_next next =
             let not_suffix suffix = not (String.is_suffix curr ~suffix) in
@@ -367,14 +367,12 @@ let fmt_constant c ~loc ?epi const =
       in
       let contains_pp_commands =
         let is_substring substring = String.is_substring s ~substring in
-        List.exists ["@,"; "@;"; "@\\n"] ~f:is_substring
+        List.exists ["@,"; "@;"] ~f:is_substring
       in
       match c.conf.break_string_literals with
       | `Newlines when contains_pp_commands ->
-          let break_on_pp_commands in_ delim =
-            let pat = String.Search_pattern.create delim in
-            let with_ = delim ^ "\n" in
-            String.Search_pattern.replace_all pat ~in_ ~with_
+          let break_on_pp_commands in_ pattern =
+            String.substr_replace_all in_ ~pattern ~with_:(pattern ^ "\n")
           in
           List.fold_left ["@,"; "@;"; "@\n"] ~init:s ~f:break_on_pp_commands
           |> String.split ~on:'\n'
