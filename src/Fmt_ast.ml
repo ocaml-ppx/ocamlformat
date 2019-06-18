@@ -3954,7 +3954,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr
     ~indent_after_in =
   let fmt_in indent =
     match c.conf.break_before_in with
-    | `Always -> break 1 (-indent) $ fmt "in"
+    | `Fit_or_vertical -> break 1 (-indent) $ fmt "in"
     | `Auto -> fits_breaks " in" ("@;<1 " ^ Int.to_string (-indent) ^ ">in")
   in
   let fmt_binding ~first ~last binding =

@@ -13,7 +13,7 @@
 
 type t =
   { assignment_operator: [`Begin_line | `End_line]
-  ; break_before_in: [`Always | `Auto]
+  ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
@@ -565,10 +565,11 @@ module Formatting = struct
     in
     let names = ["break-before-in"] in
     let all =
-      [ ( "always"
-        , `Always
-        , "$(b,always) will always break the line before the $(i,in) \
-           keyword." )
+      [ ( "fit-or-vertical"
+        , `Fit_or_vertical
+        , "$(b,fit-or-vertical) will always break the line before the \
+           $(i,in) keyword if the whole $(i,let) binding does not fit on a \
+           single line." )
       ; ( "auto"
         , `Auto
         , "$(b,auto) will only break the line if the $(i,in) keyword does \
@@ -1775,7 +1776,7 @@ let compact_profile =
 
 let sparse_profile =
   { ocamlformat_profile with
-    break_before_in= `Always
+    break_before_in= `Fit_or_vertical
   ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Fit_or_vertical
@@ -1802,7 +1803,7 @@ let sparse_profile =
 
 let janestreet_profile =
   { assignment_operator= `Begin_line
-  ; break_before_in= `Always
+  ; break_before_in= `Fit_or_vertical
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=
       ocamlformat_profile.break_collection_expressions
