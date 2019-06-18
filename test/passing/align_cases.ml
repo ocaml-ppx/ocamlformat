@@ -68,3 +68,7 @@ let _ =
   | '\t'      -> 2
   | '\x12'    -> 2
   | pattern -> 3
+
+type t =
+  | ( :: ) of a * b
+  | []     of looooooooooooooooooooooooooooooooooooooong_break

@@ -3001,7 +3001,10 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
           (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
         $ fmt "@ |"
     | Ptype_variant ctor_decls ->
-        let max acc d = max acc (String.length d.pcd_name.txt) in
+        let max acc d =
+          let len_around = if is_symbol_id d.pcd_name.txt then 4 else 0 in
+          max acc (String.length d.pcd_name.txt + len_around)
+        in
         let max_len_name = List.fold_left ctor_decls ~init:0 ~f:max in
         box_manifest
           (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
@@ -3103,10 +3106,11 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
       | Pcstr_tuple x -> List.is_empty x
       | Pcstr_record x -> List.is_empty x
     in
+    let len_around = if is_symbol_id txt then 4 else 0 in
     fmt_if_k
       ( c.conf.align_constructors_decl && (not is_empty)
       && not (Cmts.has_after c.cmts loc) )
-      (str (String.make (max_len_name - String.length txt) ' '))
+      (str (String.make (max_len_name - String.length txt - len_around) ' '))
   in
   fmt_if (not first)
     ( match c.conf.type_decl with
@@ -3118,8 +3122,8 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
       ( hovbox 2
           ( hvbox 2
               ( Cmts.fmt c loc
-                  (wrap_if (is_symbol_id txt) "( " " )"
-                     (str txt $ fmt_padding))
+                  (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+              $ fmt_padding
               $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
           $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
           $ fmt_docstring_padded c doc )
