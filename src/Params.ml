@@ -124,15 +124,12 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
           $ fmt "@ then" )
     | None -> str "else"
   in
-  let wrap_parens ~opn_hint:((n_ohimd, o_ohmid), (n_ohno, o_ohno)) k =
+  let wrap_parens ~opn_hint:(ohimd, ohno) k =
     fmt_if_k parens_bch
-      ( str "("
-      $ fmt_or_k imd
-          (fits_breaks "" ~nspaces:n_ohimd ~offset:o_ohmid "")
-          (fits_breaks "" ~nspaces:n_ohno ~offset:o_ohno "") )
+      (str "(" $ fits_breaks "" ~hint:(if imd then ohimd else ohno) "")
     $ k
     $ fmt_if_k parens_bch
-        (fmt_if_k imd (fits_breaks "" ~nspaces:1 ~offset:0 "") $ str ")")
+        (fmt_if_k imd (fits_breaks "" ~hint:(1, 0) "") $ str ")")
   in
   let branch_pro = fmt_or parens_bch " " "@;<1 2>" in
   match c.if_then_else with

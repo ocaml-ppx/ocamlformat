@@ -104,21 +104,20 @@ val pre_break : int -> string -> int -> t
 val fits_breaks :
      ?force_fit_if:bool
   -> ?force_break_if:bool
-  -> ?nspaces:int
-  -> ?offset:int
+  -> ?hint:int * int
   -> string
   -> string
   -> t
 (** [fits_breaks fits nspaces offset breaks] prints [fits] if the enclosing
     box fits on one line, and otherwise prints [breaks], which is a string
-    that optionally follows a break hint equivalent to
-    ["@;<nspaces offset>"]. *)
+    that optionally follows a break [hint] (that is a pair
+    [(nspaces, offset)] equivalent to the break hint
+    ["@;<nspaces offset>"]). *)
 
 val fits_breaks_if :
      ?force_fit_if:bool
   -> ?force_break_if:bool
-  -> ?nspaces:int
-  -> ?offset:int
+  -> ?hint:int * int
   -> bool
   -> string
   -> string

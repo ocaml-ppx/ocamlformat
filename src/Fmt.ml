@@ -103,18 +103,16 @@ let pre_break n s o fs = Format.pp_print_pre_break fs n s o
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 let fits_breaks ?(force_fit_if = false) ?(force_break_if = false)
-    ?(nspaces = 0) ?(offset = Int.min_value) fits breaks fs =
+    ?(hint = (0, Int.to_int Int.min_value)) fits breaks fs =
+  let nspaces, offset = hint in
   if force_fit_if then Format.pp_print_string fs fits
   else if force_break_if then (
     if offset >= 0 then Format.pp_print_break fs nspaces offset ;
     Format.pp_print_string fs breaks )
   else Format.pp_print_fits_or_breaks fs fits nspaces offset breaks
 
-let fits_breaks_if ?force_fit_if ?force_break_if ?nspaces ?offset cnd fits
-    breaks fs =
-  if cnd then
-    fits_breaks ?force_fit_if ?force_break_if ?nspaces ?offset fits breaks
-      fs
+let fits_breaks_if ?force_fit_if ?force_break_if ?hint cnd fits breaks fs =
+  if cnd then fits_breaks ?force_fit_if ?force_break_if ?hint fits breaks fs
 
 (** Wrapping ------------------------------------------------------------*)
 
@@ -135,7 +133,7 @@ let wrap_fits_breaks_if ?(space = true) c cnd pre suf k =
   else
     fits_breaks_if cnd pre (pre ^ " ")
     $ k
-    $ fits_breaks_if cnd suf ~nspaces:1 ~offset:0 suf
+    $ fits_breaks_if cnd suf ~hint:(1, 0) suf
 
 let wrap_fits_breaks ?(space = true) conf x =
   wrap_fits_breaks_if ~space conf true x
