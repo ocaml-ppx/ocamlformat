@@ -53,3 +53,44 @@ let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy = ()
 let fffffffffffffffffffffffffffffffffff x yyyyyyyyyyyyyyyyyyyyyyyyyyy
     yyyyyyyyyyyyyyyyyyyyyyyyyyy =
   ()
+
+class ffffffffffffffffffff =
+  object
+    method ffffffffffffffffffff
+        :    aaaaaaaaaaaaaaaaaaaaaa
+          -> bbbbbbbbbbbbbbbbbbbbbb
+          -> cccccccccccccccccccccc
+          -> dddddddddddddddddddddd =
+      g
+
+    val ffffffffffffffffffff
+        :    aaaaaaaaaaaaaaaaaaaaaa
+          -> bbbbbbbbbbbbbbbbbbbbbb
+          -> cccccccccccccccccccccc
+          -> dddddddddddddddddddddd =
+      g
+  end
+
+class type ffffffffffffffffffff =
+  object
+    method ffffffffffffffffffff :
+         aaaaaaaaaaaaaaaaaaaaaa
+      -> bbbbbbbbbbbbbbbbbbbbbb
+      -> cccccccccccccccccccccc
+      -> dddddddddddddddddddddd
+
+    val ffffffffffffffffffff :
+         aaaaaaaaaaaaaaaaaaaaaa
+      -> bbbbbbbbbbbbbbbbbbbbbb
+      -> cccccccccccccccccccccc
+      -> dddddddddddddddddddddd
+
+    val ffffffffffffffffffff :
+         (   aaaaaaaaaaaaaaaaaaaaaa
+          -> bbbbbbbbbbbbbbbbbbbbbb
+          -> cccccccccccccccccccccc
+          -> dddddddddddddddddddddd)
+      -> bbbbbbbbbbbbbbbbbbbbbb
+      -> cccccccccccccccccccccc
+      -> dddddddddddddddddddddd
+  end
