@@ -2820,9 +2820,9 @@ and fmt_cases c ctx cs =
     | Ppat_constant (Pconst_char chr) ->
         Some (String.length (char_escaped c ~loc:case.ppat_loc chr))
     | Ppat_variant (s, None) -> Some (String.length s + 1)
-    | Ppat_constant (Pconst_string (s, _)) -> Some (String.length s + 2)
     | Ppat_alias _ | Ppat_interval _ | Ppat_tuple _ | Ppat_construct _
      |Ppat_variant (_, Some _)
+     |Ppat_constant (Pconst_string _)
      |Ppat_record _ | Ppat_array _ | Ppat_constraint _ | Ppat_type _
      |Ppat_or _ | Ppat_unpack _ | Ppat_lazy _ | Ppat_exception _
      |Ppat_extension _ | Ppat_open _ ->

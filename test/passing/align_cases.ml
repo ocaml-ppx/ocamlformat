@@ -40,26 +40,26 @@ let fooooooooooo =
   match foooooooooooooooooooooooo with
   | Bfooooooooooooooooo -> foooooooooooo
   | Xxxxxxxxxxxxxx (* not aligned because of cmt *) -> foooooooooooooooooo
-  | `Foooooooo          -> fooo
+  | `Foooooooo -> fooo
   (* comments before are not an issue *)
-  | "foooooooooooooo"   -> foo
-  | 3453535353533       -> foooooooooooooooooo
-  | _                   -> fooooooooooooooooooo
+  | "foooooooooooooo" -> foo
+  | 3453535353533 -> foooooooooooooooooo
+  | _ -> fooooooooooooooooooo
 
 let fooooooooooo =
   match foooooooooooooooooooooooo with
   | Bfooooooooooooooooo -> foooooooooooo
   | Xxxxxxxxxxxxxx (* foooo *) -> fooooooooooooooooooo
-  | `Foooooooo          -> fooo
+  | `Foooooooo -> fooo
   | "foooooooooooooo"
   (* foooooooooooooooooooooo foooooooooooooooo foooooooooooooo fooooooooo*)
     ->
       foo
-  | 3453535353533       ->
+  | 3453535353533 ->
       foooooooooooooooooo
       (* foooooooooooooooooooooo foooooooooooooooo foooooooooooooo
          fooooooooo*)
-  | _                   -> fooooooooooooooooooo
+  | _ -> fooooooooooooooooooo
 
 let _ =
   match f with
