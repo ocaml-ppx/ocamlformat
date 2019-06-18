@@ -9759,7 +9759,8 @@ if fffffffffffffff aaaaa bb
 then (if b then aaaaaaaaaaaaaaaa ffff)
 else aaaaaaaaaaaa qqqqqqqqqqq
 
-include Base.Fn (** @open *)
+(** @open *)
+include Base.Fn
 
 let ssmap
     : (module MapT with type key = string and type data = string and type map = SSMap.map)

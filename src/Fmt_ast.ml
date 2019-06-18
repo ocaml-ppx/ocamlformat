@@ -443,7 +443,7 @@ let parse_docstring c ~loc text =
             let msg = Odoc_model.Error.to_string w in
             Caml.Format.eprintf
               "%a:@,Warning: Invalid documentation comment:@,%s\n%!"
-              Location.print_loc loc msg ) ;
+              Location.print_loc loc msg) ;
       Error ()
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
@@ -488,7 +488,7 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
   | None, None -> (noop, noop)
   | None, Some doc | Some doc, None -> (
       let is_tag_only =
-        List.for_all ~f:(function Ok ([], _), _ -> true | _ -> false)
+        List.for_all ~f:(function Ok [], _ -> true | _ -> false)
       in
       let fmt_doc ?epi ?pro doc =
         list_pn doc (fun ?prev:_ (parsed, ({txt; loc}, floating)) ?next ->
@@ -498,7 +498,7 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
       in
       let floating_doc, doc =
         doc
-        |> List.map ~f:(fun (({txt;loc}, _) as doc) ->
+        |> List.map ~f:(fun (({txt; loc}, _) as doc) ->
                (parse_docstring c ~loc txt, doc))
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in

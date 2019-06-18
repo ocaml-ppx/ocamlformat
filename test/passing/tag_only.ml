@@ -103,27 +103,33 @@ class b =
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module  (** @deprecated  *)
+open Module
+(** @deprecated  *)
 
 open Module
 (** abc
 
     @deprecated  *)
 
-open Module  (** @author A *)
+open Module
+(** @author A *)
 
-open Module  (** @inline *)
+open Module
+(** @inline *)
 
-include Abc  (** @inline *)
+include Abc
+(** @inline *)
 
 (** @inline *)
 include struct
   type t
 end
 
-include (Module : Type)  (** @inline *)
+include (Module : Type)
+(** @inline *)
 
-module A = B  (** @inline *)
+module A = B
+(** @inline *)
 
 (** @inline *)
 module A : sig
@@ -146,7 +152,8 @@ end = struct
   type t
 end
 
-module type A = B  (** @deprecated abc *)
+module type A = B
+(** @deprecated abc *)
 
 (** @deprecated abc *)
 module type A = sig
@@ -171,7 +178,8 @@ module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
 (** @deprecated  *)
 type t = T
 
-type t = t  (** @deprecated  *)
+type t = t
+(** @deprecated  *)
 
 (** @deprecated  *)
 let a = b
@@ -182,13 +190,18 @@ type t = t
 
 class b =
   object
-    method f = 0  (** @deprecated  *)
+    method f = 0
+    (** @deprecated  *)
 
-    inherit a  (** @deprecated  *)
+    inherit a
+    (** @deprecated  *)
 
-    val x = 1  (** @deprecated  *)
+    val x = 1
+    (** @deprecated  *)
 
-    constraint 'a = [> ]  (** @deprecated  *)
+    constraint 'a = [> ]
+    (** @deprecated  *)
 
-    initializer do_init ()  (** @deprecated  *)
+    initializer do_init ()
+    (** @deprecated  *)
   end

@@ -105,7 +105,7 @@ let list_block_elem elems f =
         | Some _ -> fmt "@\n"
         | None -> fmt ""
       in
-      f elem $ break )
+      f elem $ break)
 
 (* Format each element with [fmt_elem] *)
 let fmt_styled style fmt_elem elems =
@@ -136,9 +136,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       hovbox 0 (wrap "[" "]" (str_verbatim s))
   | `Raw_markup (lang, s) ->
       let lang =
-        match lang with
-        | Some l -> str l $ str ":"
-        | None -> noop
+        match lang with Some l -> str l $ str ":" | None -> noop
       in
       wrap "{%%" "%%}" (lang $ str_verbatim s)
   | `Styled (style, elems) ->
