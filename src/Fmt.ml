@@ -103,7 +103,7 @@ let pre_break n s o fs = Format.pp_print_pre_break fs n s o
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 let fits_breaks ?(force_fit_if = false) ?(force_break_if = false)
-    ?(hint = (0, Int.to_int Int.min_value)) fits breaks fs =
+    ?(hint = (0, Int.min_value)) fits breaks fs =
   let nspaces, offset = hint in
   if force_fit_if then Format.pp_print_string fs fits
   else if force_break_if then (
