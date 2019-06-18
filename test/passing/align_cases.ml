@@ -60,3 +60,11 @@ let fooooooooooo =
       (* foooooooooooooooooooooo foooooooooooooooo foooooooooooooo
          fooooooooo*)
   | _                   -> fooooooooooooooooooo
+
+let _ =
+  match f with
+  | 'a'       -> 1
+  | '\n'      -> 2
+  | '\t'      -> 2
+  | '\x12'    -> 2
+  | pattern -> 3

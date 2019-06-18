@@ -275,16 +275,15 @@ let fmt_longident_loc c ?(pre = noop) {txt; loc} =
 
 let fmt_str_loc c ?(pre = noop) {txt; loc} = Cmts.fmt c loc (pre $ str txt)
 
-let fmt_char_escaped c ~loc chr =
+let char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
-  | `Hexadecimal, _ ->
-      fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
+  | `Hexadecimal, _ -> Format.sprintf "\\x%02x" (Char.to_int chr)
   | `Preserve, _ -> (
     match Source.char_literal c.source loc with
-    | None -> str (Char.escaped chr)
-    | Some c -> str c )
-  | _, '\000' .. '\128' -> str (Char.escaped chr)
-  | `Decimal, _ -> str (Char.escaped chr)
+    | None -> Char.escaped chr
+    | Some c -> c )
+  | _, '\000' .. '\128' -> Char.escaped chr
+  | `Decimal, _ -> Char.escaped chr
 
 let escape_string mode str =
   match mode with
@@ -336,7 +335,7 @@ let fmt_constant c ~loc ?epi const =
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
-  | Pconst_char x -> wrap "'" "'" @@ fmt_char_escaped ~loc c x
+  | Pconst_char x -> wrap "'" "'" @@ str (char_escaped ~loc c x)
   | Pconst_string (s, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
   | Pconst_string (s, None) -> (
@@ -2810,14 +2809,16 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs )
 
 and fmt_cases c ctx cs =
-  let case_len = function
+  let case_len case =
+    match case.ppat_desc with
     | Ppat_any -> Some 1
     | Ppat_var {txt= s; _}
      |Ppat_constant (Pconst_integer (s, _))
      |Ppat_constant (Pconst_float (s, _))
      |Ppat_construct ({txt= Lident s; _}, None) ->
         Some (String.length s)
-    | Ppat_constant (Pconst_char _) -> Some 4 (* when the char is escaped *)
+    | Ppat_constant (Pconst_char chr) ->
+        Some (String.length (char_escaped c ~loc:case.ppat_loc chr))
     | Ppat_variant (s, None) -> Some (String.length s + 1)
     | Ppat_constant (Pconst_string (s, _)) -> Some (String.length s + 2)
     | Ppat_alias _ | Ppat_interval _ | Ppat_tuple _ | Ppat_construct _
@@ -2828,7 +2829,7 @@ and fmt_cases c ctx cs =
         None
   in
   let max acc case =
-    match (acc, case_len case.pc_lhs.ppat_desc) with
+    match (acc, case_len case.pc_lhs) with
     | Some x, Some y -> Some (max x y)
     | _ -> None
   in
@@ -2873,7 +2874,7 @@ and fmt_cases c ctx cs =
         fmt_if_k
           ( c.conf.align_cases
           && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
-          ( match (max_len_name, case_len xlhs.ast.ppat_desc) with
+          ( match (max_len_name, case_len xlhs.ast) with
           | Some max_len, Some len -> str (String.make (max_len - len) ' ')
           | _ -> noop )
       in
