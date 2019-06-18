@@ -13,6 +13,7 @@
 
 type t =
   { assignment_operator: [`Begin_line | `End_line]
+  ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
@@ -556,6 +557,27 @@ let info =
 (** Options affecting formatting *)
 module Formatting = struct
   let section = `Formatting
+
+  let break_before_in =
+    let doc =
+      "Whether the line should break before the $(i,in) keyword of a \
+       $(i,let) binding."
+    in
+    let names = ["break-before-in"] in
+    let all =
+      [ ( "fit-or-vertical"
+        , `Fit_or_vertical
+        , "$(b,fit-or-vertical) will always break the line before the \
+           $(i,in) keyword if the whole $(i,let) binding does not fit on a \
+           single line." )
+      ; ( "auto"
+        , `Auto
+        , "$(b,auto) will only break the line if the $(i,in) keyword does \
+           not fit on the previous line." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_before_in= x})
+      (fun conf -> conf.break_before_in)
 
   let assignment_operator =
     let doc = "Position of the assignment operator." in
@@ -1642,6 +1664,7 @@ let no_version_check =
 
 let ocamlformat_profile =
   { assignment_operator= C.default Formatting.assignment_operator
+  ; break_before_in= C.default Formatting.break_before_in
   ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
@@ -1726,7 +1749,8 @@ let conventional_profile =
 
 let compact_profile =
   { ocamlformat_profile with
-    break_cases= `Fit
+    break_before_in= `Auto
+  ; break_cases= `Fit
   ; break_collection_expressions= `Wrap
   ; break_infix= `Wrap
   ; break_fun_decl= `Wrap
@@ -1752,7 +1776,8 @@ let compact_profile =
 
 let sparse_profile =
   { ocamlformat_profile with
-    break_cases= `Nested
+    break_before_in= `Fit_or_vertical
+  ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Fit_or_vertical
   ; break_fun_decl= `Smart
@@ -1778,6 +1803,7 @@ let sparse_profile =
 
 let janestreet_profile =
   { assignment_operator= `Begin_line
+  ; break_before_in= `Fit_or_vertical
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=
       ocamlformat_profile.break_collection_expressions
