@@ -690,7 +690,7 @@ let pp_print_string state s =
 
 
 (* To format an integer. *)
-let pp_print_int state i = pp_print_string state (string_of_int i)
+let pp_print_int state i = pp_print_string state (Int.to_string i)
 
 (* To format a float. *)
 let pp_print_float state f = pp_print_string state (string_of_float f)
@@ -1395,28 +1395,33 @@ let rec strput_acc ppf acc = match acc with
 
 let kfprintf k ppf (Format (fmt, _)) =
   make_printf
-    (fun ppf acc -> output_acc ppf acc; k ppf)
-    ppf End_of_acc fmt
+    (fun acc -> output_acc ppf acc; k ppf)
+    End_of_acc fmt
 
 and ikfprintf k ppf (Format (fmt, _)) =
   make_iprintf k ppf fmt
 
-(*
 let ifprintf _ppf (Format (fmt, _)) =
   make_iprintf ignore () fmt
-*)
 
 let fprintf ppf = kfprintf ignore ppf
 let printf fmt = fprintf std_formatter fmt
 let eprintf fmt = fprintf err_formatter fmt
 
+let kdprintf k (Format (fmt, _)) =
+  make_printf
+    (fun acc -> k (fun ppf -> output_acc ppf acc))
+    End_of_acc fmt
+
+let dprintf fmt = kdprintf (fun i -> i) fmt
+
 let ksprintf k (Format (fmt, _)) =
   let b = pp_make_buffer () in
   let ppf = formatter_of_buffer b in
-  let k () acc =
+  let k acc =
     strput_acc ppf acc;
     k (flush_buffer_formatter b ppf) in
-  make_printf k () End_of_acc fmt
+  make_printf k End_of_acc fmt
 
 
 let sprintf fmt = ksprintf id fmt
@@ -1424,10 +1429,10 @@ let sprintf fmt = ksprintf id fmt
 let kasprintf k (Format (fmt, _)) =
   let b = pp_make_buffer () in
   let ppf = formatter_of_buffer b in
-  let k ppf acc =
+  let k acc =
     output_acc ppf acc;
     k (flush_buffer_formatter b ppf) in
-  make_printf k ppf End_of_acc fmt
+  make_printf k End_of_acc fmt
 
 
 let asprintf fmt = kasprintf id fmt
@@ -1477,8 +1482,9 @@ let get_all_formatter_output_functions =
    let ppf = formatter_of_buffer b
    then use {!fprintf ppf} as usual. *)
 let bprintf b (Format (fmt, _) : ('a, formatter, unit) format) =
-  let k ppf acc = output_acc ppf acc; pp_flush_queue ppf false in
-  make_printf k (formatter_of_buffer b) End_of_acc fmt
+  let ppf = formatter_of_buffer b in
+  let k acc = output_acc ppf acc; pp_flush_queue ppf false in
+  make_printf k End_of_acc fmt
 
 
 (* Deprecated : alias for ksprintf. *)
