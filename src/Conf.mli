@@ -22,7 +22,7 @@ type t =
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After | `After_and_docked]
   ; break_sequences: bool
-  ; break_string_literals: [`Newlines | `Never | `Wrap]
+  ; break_string_literals: [`Newlines | `Never | `Wrap | `Newlines_and_wrap]
         (** How to potentially break string literals into new lines. *)
   ; break_struct: bool
   ; cases_exp_indent: int
