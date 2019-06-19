@@ -181,6 +181,11 @@ let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
   | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
+let wrap_exp_if c ~parens ~loc k =
+  match parens_or_begin_end c ~loc with
+  | `Parens -> wrap_if parens "(" ")" k
+  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
+
 let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
@@ -1867,7 +1872,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent = function_indent c ~ctx ~default:default_indent in
       hvbox_if box indent
-        (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+        (wrap_exp_if c ~loc:pexp_loc ~parens
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "
@@ -4007,7 +4012,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
         | `Sparse -> "@;<1000 0>"
         | `Compact -> "@ " )
   in
-  wrap_fits_breaks_exp_if c ~loc ~space:false
+  wrap_exp_if c ~loc
     ~parens:(parens || not (List.is_empty attributes))
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)

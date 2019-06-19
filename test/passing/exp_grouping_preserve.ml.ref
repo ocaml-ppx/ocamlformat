@@ -9,10 +9,10 @@ let () =
 
 let () =
   Lwt_main.run
-    ( let a = "a" in
-      let b = "b" in
-      let c = "c" in
-      Lwt.return "test" )
+    (let a = "a" in
+     let b = "b" in
+     let c = "c" in
+     Lwt.return "test")
 
 let () =
   List.iter
@@ -28,12 +28,12 @@ let () =
 
 let () =
   List.iter
-    ( fun v ->
+    (fun v ->
       (* do a lot of things *)
       let a = "a" in
       let b = "b" in
       let c = "c" in
-      () )
+      ())
     values
 
 let () =
@@ -99,8 +99,8 @@ let _ =
   c
 
 let _ =
-  ( let a = b in
-    c )
+  (let a = b in
+   c)
   |> d
 
 let _ =
@@ -109,8 +109,8 @@ let _ =
     c
 
 let _ =
-  ( let a = b in
-    c )
+  (let a = b in
+   c)
   := d
 
 let _ =
@@ -120,48 +120,48 @@ let _ =
   c
 
 let _ =
-  ( let a = b in
-    c )
+  (let a = b in
+   c)
   + d
 
 let _ =
   f
-    ( let a = b in
-      c )
+    (let a = b in
+     c)
 
 let _ =
-  ( let a = b in
-    c )
+  (let a = b in
+   c)
     d
 
 let _ =
   a#f
-    ( let a = b in
-      c )
+    (let a = b in
+     c)
 
 let _ =
-  ( let a = b in
-    c )
+  (let a = b in
+   c)
     #f
 
 let _ =
   A
-    ( let a = b in
-      c )
+    (let a = b in
+     c)
 
 let _ =
   `A
-    ( let a = b in
-      c )
+    (let a = b in
+     c)
 
 let _ =
   { x=
-      ( let a = b in
-        c ) }
+      (let a = b in
+       c) }
 
 let _ =
-  { ( let a = b in
-      c )
+  { (let a = b in
+     c)
     with
     a= b }
 
@@ -171,22 +171,22 @@ let _ =
 
 let _ =
   x <-
-    ( let a = b in
-      c )
+    (let a = b in
+     c)
 
 let _ =
-  ( let a = b in
-    c )
+  (let a = b in
+   c)
     .x
 
 let _ =
-  ( let a = b in
-    c ).x <-
+  (let a = b in
+   c).x <-
     d
 
 let _ =
-  ( ( let a = b in
-      c )
+  ( (let a = b in
+     c)
   , d )
 
 let _ =
@@ -201,13 +201,13 @@ let _ =
 let _ =
   a
   ::
-  ( let a = b in
-    c )
+  (let a = b in
+   c)
 
 let _ =
-  [ ( let a = b in
-      c ) ]
+  [ (let a = b in
+     c) ]
 
 let _ =
-  [| ( let a = b in
-       c ) |]
+  [| (let a = b in
+      c) |]
