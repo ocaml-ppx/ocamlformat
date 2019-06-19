@@ -22,7 +22,7 @@ type t =
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After | `After_and_docked]
   ; break_sequences: bool
-  ; break_string_literals: [`Newlines | `Never | `Wrap]
+  ; break_string_literals: [`Newlines | `Never | `Wrap | `Newlines_and_wrap]
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
@@ -758,7 +758,11 @@ module Formatting = struct
       ; ( "never"
         , `Never
         , "$(b,never) mode formats string literals as they are parsed, in \
-           particular, with escape sequences expanded." ) ]
+           particular, with escape sequences expanded." )
+      ; ( "newlines-and-wrap"
+        , `Newlines_and_wrap
+        , "$(b,newlines-and-wrap) mode breaks lines at newlines and wraps \
+           string literals at the margin." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_string_literals= x})

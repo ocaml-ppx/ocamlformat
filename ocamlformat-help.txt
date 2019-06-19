@@ -101,12 +101,13 @@ OPTIONS (CODE FORMATTING STYLE)
        --break-sequences
            Force sequence expressions to break irrespective of margin.
 
-       --break-string-literals={wrap|newlines|never}
+       --break-string-literals={wrap|newlines|never|newlines-and-wrap}
            Break string literals. wrap mode wraps string literals at the
            margin. Quoted strings such as {id|...|id} are preserved. newlines
            mode breaks lines at newlines. never mode formats string literals
            as they are parsed, in particular, with escape sequences expanded.
-           The default value is wrap.
+           newlines-and-wrap mode breaks lines at newlines and wraps string
+           literals at the margin. The default value is wrap.
 
        --break-struct={force|natural}
            Break struct-end module items. force will break struct-end phrases
