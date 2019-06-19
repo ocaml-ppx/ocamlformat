@@ -98,7 +98,8 @@ let or_newline fits breaks fs =
 
 (** Conditional on immediately preceding a line break -------------------*)
 
-let pre_break n s o fs = Format.pp_print_pre_break fs n s o
+let pre_break n s o fs =
+  Format.pp_print_custom_break fs ~fits:("", n, "") ~breaks:(s, o, "")
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
