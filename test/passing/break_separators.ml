@@ -67,25 +67,25 @@ type t =
 
 let _ =
   match something with
-  | { very_very_long_field_name_running_out_of_space= 1;
-      another_very_very_long_field_name_running_out_of_space= 2;
-      _ } ->
+  | { very_very_long_field_name_running_out_of_space= 1
+    ; another_very_very_long_field_name_running_out_of_space= 2
+    ; _ } ->
       0
   | _ -> 1
 
 let _ =
   match something with
-  | [ very_very_long_field_name_running_out_of_space;
-      another_very_very_long_field_name_running_out_of_space;
-      _ ] ->
+  | [ very_very_long_field_name_running_out_of_space
+    ; another_very_very_long_field_name_running_out_of_space
+    ; _ ] ->
       0
   | _ -> 1
 
 let _ =
   match something with
-  | [| very_very_long_field_name_running_out_of_space;
-       another_very_very_long_field_name_running_out_of_space;
-       _ |] ->
+  | [| very_very_long_field_name_running_out_of_space
+     ; another_very_very_long_field_name_running_out_of_space
+     ; _ |] ->
       0
   | _ -> 1
 
