@@ -63,10 +63,10 @@ let fooooooooooo =
 
 let _ =
   match f with
-  | 'a'       -> 1
-  | '\n'      -> 2
-  | '\t'      -> 2
-  | '\x12'    -> 2
+  | 'a'     -> 1
+  | '\n'    -> 2
+  | '\t'    -> 2
+  | '\x12'  -> 2
   | pattern -> 3
 
 type t =

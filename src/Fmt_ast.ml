@@ -2822,7 +2822,7 @@ and fmt_cases c ctx cs =
       | Some arg -> Some (parens + String.length s + 1 + arg)
       | None -> None )
     | Ppat_constant (Pconst_char chr) ->
-        Some (String.length (char_escaped c ~loc:pat.ppat_loc chr))
+        Some (String.length (char_escaped c ~loc:pat.ppat_loc chr) + 2)
     | Ppat_variant (s, None) -> Some (String.length s + 1)
     | Ppat_variant (s, Some arg) -> (
       match pattern_len ~parens:2 arg with
