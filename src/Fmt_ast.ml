@@ -1867,7 +1867,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent = function_indent c ~ctx ~default:default_indent in
       hvbox_if box indent
-        (wrap_if parens "(" ")"
+        (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "

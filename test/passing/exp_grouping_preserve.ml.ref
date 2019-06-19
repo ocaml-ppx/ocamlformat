@@ -16,22 +16,24 @@ let () =
 
 let () =
   List.iter
-    (fun v ->
+    begin
+      fun v ->
       (* do a lot of things *)
       let a = "a" in
       let b = "b" in
       let c = "c" in
-      ())
+      ()
+    end
     values
 
 let () =
   List.iter
-    (fun v ->
+    ( fun v ->
       (* do a lot of things *)
       let a = "a" in
       let b = "b" in
       let c = "c" in
-      ())
+      () )
     values
 
 let () =
