@@ -57,4 +57,5 @@ val get_if_then_else :
   -> fmt_extension_suffix:Fmt.t
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(Migrate_ast.Parsetree.expression Ast.xt -> Fmt.t)
+  -> exp_grouping:[`Parens | `Begin_end]
   -> if_then_else

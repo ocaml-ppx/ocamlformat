@@ -156,6 +156,11 @@ OPTIONS (CODE FORMATTING STYLE)
            Escape encoding for string literals. See `--escape-chars` for the
            interpretation of the modes. The default value is preserve.
 
+       --exp-grouping={parens|preserve}
+           Style of expression grouping. parens groups expressions using
+           parentheses. preserve preserves the original grouping syntax
+           (parentheses or begin/end). The default value is parens.
+
        --extension-indent=COLS
            Indentation of items inside extension nodes (COLS columns). The
            default value is 2.

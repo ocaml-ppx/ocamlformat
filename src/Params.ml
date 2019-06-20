@@ -108,7 +108,8 @@ type if_then_else =
   ; space_between_branches: Fmt.t }
 
 let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
-    ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond =
+    ~expr_loc ~fmt_extension_suffix ~fmt_attributes ~fmt_cond ~exp_grouping
+    =
   let imd = c.indicate_multiline_delimiters in
   let cond () =
     match xcond with
@@ -134,7 +135,10 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch ~xcond
   let branch_pro = fmt_or parens_bch " " "@;<1 2>" in
   match c.if_then_else with
   | `Compact ->
-      { box_branch= hovbox (if first && parens then 0 else 2)
+      { box_branch=
+          hovbox
+            ( if first && parens && Poly.(exp_grouping = `Parens) then 0
+            else 2 )
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= fmt_or parens_bch " " "@ "

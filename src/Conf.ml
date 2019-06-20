@@ -33,6 +33,7 @@ type t =
   ; doc_comments_tag_only: [`Fit | `Default]
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
+  ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
@@ -896,6 +897,22 @@ module Formatting = struct
       (fun conf x -> {conf with escape_strings= x})
       (fun conf -> conf.escape_strings)
 
+  let exp_grouping =
+    let doc = "Style of expression grouping." in
+    let names = ["exp-grouping"] in
+    let all =
+      [ ( "parens"
+        , `Parens
+        , "$(b,parens) groups expressions using parentheses." )
+      ; ( "preserve"
+        , `Preserve
+        , "$(b,preserve) preserves the original grouping syntax \
+           (parentheses or $(i,begin)/$(i,end))." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with exp_grouping= x})
+      (fun conf -> conf.exp_grouping)
+
   let extension_indent =
     let docv = "COLS" in
     let doc =
@@ -1690,6 +1707,7 @@ let ocamlformat_profile =
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
   ; escape_chars= C.default Formatting.escape_chars
   ; escape_strings= C.default Formatting.escape_strings
+  ; exp_grouping= C.default Formatting.exp_grouping
   ; extension_indent= C.default Formatting.extension_indent
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
@@ -1762,6 +1780,7 @@ let compact_profile =
   ; break_sequences= false
   ; break_struct= false
   ; doc_comments_tag_only= `Fit
+  ; exp_grouping= `Parens
   ; field_space= `Tight
   ; if_then_else= `Compact
   ; indicate_nested_or_patterns= `Space
@@ -1828,6 +1847,7 @@ let janestreet_profile =
   ; doc_comments_tag_only= `Fit
   ; escape_chars= `Preserve
   ; escape_strings= `Preserve
+  ; exp_grouping= `Parens
   ; extension_indent= 2
   ; extension_sugar= `Preserve
   ; field_space= `Loose
