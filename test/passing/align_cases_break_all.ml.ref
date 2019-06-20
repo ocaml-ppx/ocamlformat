@@ -103,8 +103,14 @@ let _ =
 
 type x = Foooooooo of int | Fooooooooooooo of int
 
+type x = [`Foooooooo of int | `Fooooooooooooo of int]
+
 [@@@ocamlformat "type-decl=sparse"]
 
 type x =
   | Foooooooo      of int
   | Fooooooooooooo of int
+
+type x =
+  [ `Foooooooo      of int
+  | `Fooooooooooooo of int ]

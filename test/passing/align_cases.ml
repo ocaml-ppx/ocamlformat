@@ -93,8 +93,14 @@ let _ = match f with `Foo -> toto | `Bar ijx -> bar ijx
 
 type x = Foooooooo of int | Fooooooooooooo of int
 
+type x = [`Foooooooo of int | `Fooooooooooooo of int]
+
 [@@@ocamlformat "type-decl=sparse"]
 
 type x =
   | Foooooooo      of int
   | Fooooooooooooo of int
+
+type x =
+  [ `Foooooooo      of int
+  | `Fooooooooooooo of int ]

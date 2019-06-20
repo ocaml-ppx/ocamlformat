@@ -745,7 +745,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
               ( if in_type_declaration && Poly.(c.conf.type_decl = `Sparse)
               then "@;<1000 0>| "
               else "@ | " )
-              (fmt_row_field c ~max_len_name ctx)
+              (fmt_row_field c ~max_len_name ~fields_nb:(List.length rfs)
+                 ctx)
       in
       let protect_token =
         match List.last rfs with
@@ -829,19 +830,26 @@ and fmt_package_type c ctx cnstrs =
   list_fl cnstrs fmt_cstr
 
 and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
-    ~max_len_name =
+    ~max_len_name ~fields_nb =
   let c = update_config c atrs in
   let doc, atrs = doc_atrs atrs in
   let row =
     match prf_desc with
     | Rtag (name, const, typs) ->
         let fmt_padding =
-          fmt_if_k
-            ( c.conf.align_variants_decl
-            && (not (List.is_empty typs))
-            && not (Cmts.has_after c.cmts name.loc) )
-            (opt max_len_name (fun len ->
-                 str (String.make (len - String.length name.txt) ' ')))
+          match max_len_name with
+          | Some max_len ->
+              let leading_len = String.length "type _ = " in
+              let case_len = String.length " | `" + max_len in
+              let cases_len = case_len * fields_nb in
+              fmt_if_k
+                ( c.conf.align_variants_decl
+                && (not (List.is_empty typs))
+                && (not (Cmts.has_after c.cmts name.loc))
+                && ( Poly.(c.conf.type_decl = `Sparse)
+                   || leading_len + cases_len >= c.conf.margin ) )
+                (str (String.make (max_len - String.length name.txt) ' '))
+          | None -> noop
         in
         fmt_str_loc c ~pre:(str "`") name
         $ fmt_padding
