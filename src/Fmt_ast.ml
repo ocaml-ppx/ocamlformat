@@ -3032,7 +3032,8 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
           (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
         $ fmt "@ "
         $ list_fl ctor_decls
-            (fmt_constructor_declaration c ~max_len_name ctx)
+            (fmt_constructor_declaration c ~max_len_name
+               ~constructors_nb:(List.length ctor_decls) ctx)
     | Ptype_record lbl_decls ->
         Params.get_record_type c.conf ~wrap_record
         |> fun (p : Params.record_type) ->
@@ -3114,8 +3115,8 @@ and fmt_label_declaration c ctx decl ?(last = false) =
       $ Cmts.fmt_after c pld_loc
       $ fmt_docstring_padded c doc )
 
-and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
-    =
+and fmt_constructor_declaration c ctx ~max_len_name ~constructors_nb ~first
+    ~last:_ cstr_decl =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
     cstr_decl
   in
@@ -3129,9 +3130,14 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
       | Pcstr_record x -> List.is_empty x
     in
     let len_around = if is_symbol_id txt then 4 else 0 in
+    let leading_len = String.length "type _ = " in
+    let case_len = max_len_name + String.length " | " in
+    let cases_len = case_len * constructors_nb in
     fmt_if_k
       ( c.conf.align_constructors_decl && (not is_empty)
-      && not (Cmts.has_after c.cmts loc) )
+      && (not (Cmts.has_after c.cmts loc))
+      && ( Poly.(c.conf.type_decl = `Sparse)
+         || leading_len + cases_len >= c.conf.margin ) )
       (str (String.make (max_len_name - String.length txt - len_around) ' '))
   in
   fmt_if (not first)

@@ -71,7 +71,7 @@ let _ =
 
 type t =
   | ( :: ) of a * b
-  | []     of looooooooooooooooooooooooooooooooooooooong_break
+  | [] of looooooooooooooooooooooooooooooooooooooong_break
 
 let _ = match (a, b) with A, B -> a | AA, BB -> b | p -> c
 
@@ -90,3 +90,11 @@ let _ =
 let _ = match f with Foo -> toto | Bar ijx -> bar ijx
 
 let _ = match f with `Foo -> toto | `Bar ijx -> bar ijx
+
+type x = Foooooooo of int | Fooooooooooooo of int
+
+[@@@ocamlformat "type-decl=sparse"]
+
+type x =
+  | Foooooooo      of int
+  | Fooooooooooooo of int
