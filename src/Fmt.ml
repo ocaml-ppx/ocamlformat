@@ -104,16 +104,18 @@ let pre_break n s o fs =
 (** Conditional on breaking of enclosing box ----------------------------*)
 
 let fits_breaks ?(force_fit_if = false) ?(force_break_if = false)
-    ?(hint = (0, Int.min_value)) fits breaks fs =
+    ?(hint = (0, Int.min_value)) ?(level = 0) fits breaks fs =
   let nspaces, offset = hint in
   if force_fit_if then Format.pp_print_string fs fits
   else if force_break_if then (
     if offset >= 0 then Format.pp_print_break fs nspaces offset ;
     Format.pp_print_string fs breaks )
-  else Format.pp_print_fits_or_breaks fs fits nspaces offset breaks
+  else Format.pp_print_fits_or_breaks fs level fits nspaces offset breaks
 
-let fits_breaks_if ?force_fit_if ?force_break_if ?hint cnd fits breaks fs =
-  if cnd then fits_breaks ?force_fit_if ?force_break_if ?hint fits breaks fs
+let fits_breaks_if ?force_fit_if ?force_break_if ?hint ?level cnd fits
+    breaks fs =
+  if cnd then
+    fits_breaks ?force_fit_if ?force_break_if ?hint ?level fits breaks fs
 
 (** Wrapping ------------------------------------------------------------*)
 

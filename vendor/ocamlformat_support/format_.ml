@@ -90,7 +90,7 @@ type pp_token =
                                (* print a break and the first string if this
                                   very line has not been broken, otherwise
                                   print the second string *)
-  | Pp_fits_or_breaks of string * int * int * string
+  | Pp_fits_or_breaks of int * string * int * int * string
                                (* print a string if the enclosing box fits,
                                   otherwise print a break and a string *)
   | Pp_open_tag of stag         (* opening a tag name *)
@@ -442,23 +442,28 @@ let format_pp_token state size = function
     then format_string state breaks
     else format_pp_break state size ("", n, fits) ("", off, breaks)
 
-  | Pp_fits_or_breaks (fits, n, off, breaks) ->
-    begin match Stack.top_opt state.pp_format_stack with
-    | None -> () (* No open box. *)
-    | Some { box_type= ty; width } ->
-        let text =
-          if ty = Pp_fits then
-            fits
-          else begin
-            if off > min_int then begin
-              if size + n + String.length breaks >= state.pp_space_left
-              then break_new_line state ("", off, "") width
-              else break_same_line state ("", n, "")
-            end;
-            breaks
-          end in
-        format_string state text
-    end
+  | Pp_fits_or_breaks (level, fits, n, off, breaks) ->
+
+     ignore (
+     Stack.fold (fun level { box_type= ty; width } ->
+       if level < 0 then level
+       else if ty = Pp_fits then
+         begin
+           if level = 0 then format_string state fits ;
+           level - 1
+         end
+       else
+         begin
+           if off > min_int then
+             begin
+               if size + n + String.length breaks >= state.pp_space_left
+               then break_new_line state ("", off, "") width
+               else break_same_line state ("", n, "")
+             end;
+           format_string state breaks;
+           - 1
+         end
+       ) level state.pp_format_stack )
 
    | Pp_open_tag tag_name ->
      let marker = state.pp_mark_open_tag tag_name in
@@ -780,10 +785,10 @@ let pp_print_or_newline state width offset fits breaks =
 
 (* To format a string if the enclosing box fits, and otherwise to format a
    break and a string. *)
-let pp_print_fits_or_breaks state fits nspaces offset breaks =
+let pp_print_fits_or_breaks state level fits nspaces offset breaks =
   if state.pp_curr_depth < state.pp_max_boxes then
     let size = Size.of_int (- state.pp_right_total) in
-    let token = Pp_fits_or_breaks (fits, nspaces, offset, breaks) in
+    let token = Pp_fits_or_breaks (level, fits, nspaces, offset, breaks) in
     let length = String.length fits in
     scan_push state true { size; token; length }
 

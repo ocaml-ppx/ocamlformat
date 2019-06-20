@@ -745,8 +745,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
               ( if in_type_declaration && Poly.(c.conf.type_decl = `Sparse)
               then "@;<1000 0>| "
               else "@ | " )
-              (fmt_row_field c ~max_len_name ~fields_nb:(List.length rfs)
-                 ctx)
+              (fmt_row_field c ~max_len_name ctx)
       in
       let protect_token =
         match List.last rfs with
@@ -830,7 +829,7 @@ and fmt_package_type c ctx cnstrs =
   list_fl cnstrs fmt_cstr
 
 and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
-    ~max_len_name ~fields_nb =
+    ~max_len_name =
   let c = update_config c atrs in
   let doc, atrs = doc_atrs atrs in
   let row =
@@ -839,16 +838,17 @@ and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
         let fmt_padding =
           match max_len_name with
           | Some max_len ->
-              let leading_len = String.length "type _ = " in
-              let case_len = String.length " | `" + max_len in
-              let cases_len = case_len * fields_nb in
+              let pad =
+                String.make (max_len - String.length name.txt) ' '
+              in
               fmt_if_k
                 ( c.conf.align_variants_decl
                 && (not (List.is_empty typs))
-                && (not (Cmts.has_after c.cmts name.loc))
-                && ( Poly.(c.conf.type_decl = `Sparse)
-                   || leading_len + cases_len >= c.conf.margin ) )
-                (str (String.make (max_len - String.length name.txt) ' '))
+                && not (Cmts.has_after c.cmts name.loc) )
+                (fmt_or_k
+                   Poly.(c.conf.type_decl = `Sparse)
+                   (str pad)
+                   (fits_breaks ~level:2 "" pad))
           | None -> noop
         in
         fmt_str_loc c ~pre:(str "`") name
@@ -2894,18 +2894,17 @@ and fmt_cases c ctx cs =
       in
       let indent = if align_nested_match then 0 else indent in
       let fmt_padding =
+        let level = match c.conf.break_cases with `Nested -> 2 | _ -> 3 in
         fmt_if_k
           ( c.conf.align_cases
           && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
           ( match (max_len_name, pattern_len xlhs.ast) with
           | Some max_len, Some len ->
-              let leading_len = String.length "let _ = match _ with" in
-              let case_len = max_len + String.length "|  -> " in
-              let cases_len = case_len * List.length cs in
-              fmt_if_k
-                ( Poly.(c.conf.break_cases = `All)
-                || leading_len + cases_len >= c.conf.margin )
-                (str (String.make (max_len - len) ' '))
+              let pad = String.make (max_len - len) ' ' in
+              fmt_or_k
+                Poly.(c.conf.break_cases = `All)
+                (str pad)
+                (fits_breaks ~level "" pad)
           | _ -> noop )
       in
       Params.get_cases c.conf ~first ~indent ~parens_here
@@ -3040,8 +3039,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
           (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
         $ fmt "@ "
         $ list_fl ctor_decls
-            (fmt_constructor_declaration c ~max_len_name
-               ~constructors_nb:(List.length ctor_decls) ctx)
+            (fmt_constructor_declaration c ~max_len_name ctx)
     | Ptype_record lbl_decls ->
         Params.get_record_type c.conf ~wrap_record
         |> fun (p : Params.record_type) ->
@@ -3123,8 +3121,8 @@ and fmt_label_declaration c ctx decl ?(last = false) =
       $ Cmts.fmt_after c pld_loc
       $ fmt_docstring_padded c doc )
 
-and fmt_constructor_declaration c ctx ~max_len_name ~constructors_nb ~first
-    ~last:_ cstr_decl =
+and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
+    =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
     cstr_decl
   in
@@ -3138,15 +3136,16 @@ and fmt_constructor_declaration c ctx ~max_len_name ~constructors_nb ~first
       | Pcstr_record x -> List.is_empty x
     in
     let len_around = if is_symbol_id txt then 4 else 0 in
-    let leading_len = String.length "type _ = " in
-    let case_len = max_len_name + String.length " | " in
-    let cases_len = case_len * constructors_nb in
+    let pad =
+      String.make (max_len_name - String.length txt - len_around) ' '
+    in
     fmt_if_k
       ( c.conf.align_constructors_decl && (not is_empty)
-      && (not (Cmts.has_after c.cmts loc))
-      && ( Poly.(c.conf.type_decl = `Sparse)
-         || leading_len + cases_len >= c.conf.margin ) )
-      (str (String.make (max_len_name - String.length txt - len_around) ' '))
+      && not (Cmts.has_after c.cmts loc) )
+      (fmt_or_k
+         Poly.(c.conf.type_decl = `Sparse)
+         (str pad)
+         (fits_breaks ~level:3 "" pad))
   in
   fmt_if (not first)
     ( match c.conf.type_decl with

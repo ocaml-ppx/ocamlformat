@@ -359,8 +359,8 @@ val pp_print_or_newline : formatter -> int -> int -> string -> string -> unit
   not just been split. Otherwise, print the second string. *)
 
 val pp_print_fits_or_breaks :
-  formatter -> string -> int -> int -> string -> unit
-(** [pp_print_fits_or_breaks fmt fits nspaces offset breaks] prints [fits] if
+  formatter -> int -> string -> int -> int -> string -> unit
+(** [pp_print_fits_or_breaks fmt level fits nspaces offset breaks] prints [fits] if
   the enclosing box fits on one line. Otherwise, prints a break as per
   [print_break nspaces offset] followed by [breaks]. *)
 
