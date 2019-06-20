@@ -2890,7 +2890,14 @@ and fmt_cases c ctx cs =
           ( c.conf.align_cases
           && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
           ( match (max_len_name, pattern_len xlhs.ast) with
-          | Some max_len, Some len -> str (String.make (max_len - len) ' ')
+          | Some max_len, Some len ->
+              let leading_len = String.length "let _ = match _ with" in
+              let case_len = max_len + String.length "|  -> " in
+              let cases_len = case_len * List.length cs in
+              fmt_if_k
+                ( Poly.(c.conf.break_cases = `All)
+                || leading_len + cases_len >= c.conf.margin )
+                (str (String.make (max_len - len) ' '))
           | _ -> noop )
       in
       Params.get_cases c.conf ~first ~indent ~parens_here
