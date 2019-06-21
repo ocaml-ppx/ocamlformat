@@ -110,7 +110,7 @@ let fits_breaks ?(force_fit_if = false) ?(force_break_if = false)
   else if force_break_if then (
     if offset >= 0 then Format.pp_print_break fs nspaces offset ;
     Format.pp_print_string fs breaks )
-  else Format.pp_print_fits_or_breaks fs level fits nspaces offset breaks
+  else Format.pp_print_fits_or_breaks fs ~level fits nspaces offset breaks
 
 let fits_breaks_if ?force_fit_if ?force_break_if ?hint ?level cnd fits
     breaks fs =

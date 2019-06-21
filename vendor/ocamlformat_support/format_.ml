@@ -443,9 +443,7 @@ let format_pp_token state size = function
     else format_pp_break state size ("", n, fits) ("", off, breaks)
 
   | Pp_fits_or_breaks (level, fits, n, off, breaks) ->
-
-     ignore (
-     Stack.fold (fun level { box_type= ty; width } ->
+     let check_level level { box_type= ty; width } =
        if level < 0 then level
        else if ty = Pp_fits then
          begin
@@ -463,7 +461,8 @@ let format_pp_token state size = function
            format_string state breaks;
            - 1
          end
-       ) level state.pp_format_stack )
+     in
+     ignore (Stack.fold check_level level state.pp_format_stack)
 
    | Pp_open_tag tag_name ->
      let marker = state.pp_mark_open_tag tag_name in
@@ -785,7 +784,7 @@ let pp_print_or_newline state width offset fits breaks =
 
 (* To format a string if the enclosing box fits, and otherwise to format a
    break and a string. *)
-let pp_print_fits_or_breaks state level fits nspaces offset breaks =
+let pp_print_fits_or_breaks state ?(level = 0) fits nspaces offset breaks =
   if state.pp_curr_depth < state.pp_max_boxes then
     let size = Size.of_int (- state.pp_right_total) in
     let token = Pp_fits_or_breaks (level, fits, nspaces, offset, breaks) in
