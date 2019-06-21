@@ -278,3 +278,14 @@ let foooooooooooooooooooooooooooooooooo =
     (* fooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
     bbbbbbbbbbbbb= bbb bb bbbbbb;
     cccccc= cccc ccccccccccccccccccccccc }
+
+let foooooooooooo =
+  { foooooooooooooo with
+    fooooooooooooooooooooooooooooo= fooooooooooooo;
+    fooooooooooooo= foooooooooooooo }
+
+let foooooooooooo =
+  { foooooooooooooo with
+    (* foooooooooooooooo fooooooooooooooooooooooooo foooooooooooooooooooooo *)
+    fooooooooooooooooooooooooooooo= fooooooooooooo;
+    fooooooooooooo= foooooooooooooo }

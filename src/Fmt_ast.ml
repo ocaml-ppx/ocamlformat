@@ -2208,7 +2208,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ( opt default (fun d ->
                   hvbox 2
                     (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
-                  $ fmt "with@;<1 2>")
+                  $ fmt "with" $ p.break_after_with)
             $ list_fl flds fmt_field )
         $ fmt_atrs )
   | Pexp_sequence (e1, e2) when Option.is_some ext ->
@@ -3047,8 +3047,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
         $ list_fl ctor_decls
             (fmt_constructor_declaration c ~max_len_name ctx)
     | Ptype_record lbl_decls ->
-        Params.get_record_type c.conf ~wrap_record
-        |> fun (p : Params.record_type) ->
+        let p = Params.get_record_type c.conf ~wrap_record in
         let fmt_decl ~first ~last x =
           fmt_if_k (not first) p.sep_before
           $ fmt_label_declaration c ctx x ~last
