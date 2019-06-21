@@ -275,16 +275,15 @@ let fmt_longident_loc c ?(pre = noop) {txt; loc} =
 
 let fmt_str_loc c ?(pre = noop) {txt; loc} = Cmts.fmt c loc (pre $ str txt)
 
-let fmt_char_escaped c ~loc chr =
+let char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
-  | `Hexadecimal, _ ->
-      fun fs -> Format.fprintf fs "\\x%02x" (Char.to_int chr)
+  | `Hexadecimal, _ -> Format.sprintf "\\x%02x" (Char.to_int chr)
   | `Preserve, _ -> (
     match Source.char_literal c.source loc with
-    | None -> str (Char.escaped chr)
-    | Some c -> str c )
-  | _, '\000' .. '\128' -> str (Char.escaped chr)
-  | `Decimal, _ -> str (Char.escaped chr)
+    | None -> Char.escaped chr
+    | Some c -> c )
+  | _, '\000' .. '\128' -> Char.escaped chr
+  | `Decimal, _ -> Char.escaped chr
 
 let escape_string mode str =
   match mode with
@@ -336,7 +335,7 @@ let fmt_constant c ~loc ?epi const =
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
-  | Pconst_char x -> wrap "'" "'" @@ fmt_char_escaped ~loc c x
+  | Pconst_char x -> wrap "'" "'" @@ str (char_escaped ~loc c x)
   | Pconst_string (s, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
   | Pconst_string (s, None) -> (
@@ -735,11 +734,18 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         match rfs with
         | [] -> Cmts.fmt_within c ~pro:noop ptyp_loc
         | _ ->
+            let max acc r =
+              match r.prf_desc with
+              | Rtag (name, _, _) ->
+                  Option.map acc ~f:(max (String.length name.txt))
+              | Rinherit _ -> None
+            in
+            let max_len_name = List.fold_left rfs ~init:(Some 0) ~f:max in
             list rfs
               ( if in_type_declaration && Poly.(c.conf.type_decl = `Sparse)
               then "@;<1000 0>| "
               else "@ | " )
-              (fmt_row_field c ctx)
+              (fmt_row_field c ~max_len_name ctx)
       in
       let protect_token =
         match List.last rfs with
@@ -822,13 +828,31 @@ and fmt_package_type c ctx cnstrs =
   in
   list_fl cnstrs fmt_cstr
 
-and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc} =
+and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
+    ~max_len_name =
   let c = update_config c atrs in
   let doc, atrs = doc_atrs atrs in
   let row =
     match prf_desc with
     | Rtag (name, const, typs) ->
+        let fmt_padding =
+          match max_len_name with
+          | Some max_len ->
+              let pad =
+                String.make (max_len - String.length name.txt) ' '
+              in
+              fmt_if_k
+                ( c.conf.align_variants_decl
+                && (not (List.is_empty typs))
+                && not (Cmts.has_after c.cmts name.loc) )
+                (fmt_or_k
+                   Poly.(c.conf.type_decl = `Sparse)
+                   (str pad)
+                   (fits_breaks ~level:2 "" pad))
+          | None -> noop
+        in
         fmt_str_loc c ~pre:(str "`") name
+        $ fmt_padding
         $ fmt_if (not (const && List.is_empty typs)) " of@ "
         $ fmt_if (const && not (List.is_empty typs)) " & "
         $ list typs "@ & " (sub_typ ~ctx >> fmt_core_type c)
@@ -2793,6 +2817,46 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs )
 
 and fmt_cases c ctx cs =
+  let rec pattern_len ?(parens = 0) pat =
+    match pat.ppat_desc with
+    | Ppat_any -> Some 1
+    | Ppat_var {txt= s; _}
+     |Ppat_constant (Pconst_integer (s, _))
+     |Ppat_constant (Pconst_float (s, _))
+     |Ppat_construct ({txt= Lident s; _}, None) ->
+        Some (String.length s)
+    | Ppat_construct ({txt= Lident s; _}, Some arg) -> (
+      match pattern_len ~parens:2 arg with
+      | Some arg -> Some (parens + String.length s + 1 + arg)
+      | None -> None )
+    | Ppat_constant (Pconst_char chr) ->
+        Some (String.length (char_escaped c ~loc:pat.ppat_loc chr) + 2)
+    | Ppat_variant (s, None) -> Some (String.length s + 1)
+    | Ppat_variant (s, Some arg) -> (
+      match pattern_len ~parens:2 arg with
+      | Some arg -> Some (parens + 1 + String.length s + 1 + arg)
+      | None -> None )
+    | Ppat_tuple ps ->
+        (* commas and parenthesis *)
+        let init = ((List.length ps - 1) * 2) + parens in
+        fold_pattern_len ~parens:2 ~init ~f:( + ) ps
+    | Ppat_alias _ | Ppat_interval _ | Ppat_construct _
+     |Ppat_constant (Pconst_string _)
+     |Ppat_record _ | Ppat_array _ | Ppat_constraint _ | Ppat_type _
+     |Ppat_or _ | Ppat_unpack _ | Ppat_lazy _ | Ppat_exception _
+     |Ppat_extension _ | Ppat_open _ ->
+        None
+  and fold_pattern_len ?parens ?(init = 0) ~f ps =
+    List.fold_until ~init ps
+      ~f:(fun acc pat ->
+        match pattern_len ?parens pat with
+        | Some l -> Continue (f acc l)
+        | None -> Stop None)
+      ~finish:(fun acc -> Some acc)
+  in
+  let max_len_name =
+    fold_pattern_len ~f:max (List.map ~f:(fun case -> case.pc_lhs) cs)
+  in
   list_fl cs (fun ~first ~last {pc_lhs; pc_guard; pc_rhs} ->
       let xrhs = sub_exp ~ctx pc_rhs in
       let indent =
@@ -2829,6 +2893,20 @@ and fmt_cases c ctx cs =
           (fmt "@;<1000 0>")
       in
       let indent = if align_nested_match then 0 else indent in
+      let fmt_padding =
+        let level = match c.conf.break_cases with `Nested -> 2 | _ -> 3 in
+        fmt_if_k
+          ( c.conf.align_cases
+          && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
+          ( match (max_len_name, pattern_len xlhs.ast) with
+          | Some max_len, Some len ->
+              let pad = String.make (max_len - len) ' ' in
+              fmt_or_k
+                Poly.(c.conf.break_cases = `All)
+                (str pad)
+                (fits_breaks ~level "" pad)
+          | _ -> noop )
+      in
       Params.get_cases c.conf ~first ~indent ~parens_here
       |> fun (p : Params.cases) ->
       p.leading_space $ leading_cmt
@@ -2836,6 +2914,7 @@ and fmt_cases c ctx cs =
           ( p.box_pattern_arrow
               ( hvbox 0
                   ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
+                  $ fmt_padding
                   $ opt pc_guard (fun g ->
                         fmt "@;<1 2>when "
                         $ fmt_expression c (sub_exp ~ctx g)) )
@@ -2951,10 +3030,16 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
           (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
         $ fmt "@ |"
     | Ptype_variant ctor_decls ->
+        let max acc d =
+          let len_around = if is_symbol_id d.pcd_name.txt then 4 else 0 in
+          max acc (String.length d.pcd_name.txt + len_around)
+        in
+        let max_len_name = List.fold_left ctor_decls ~init:0 ~f:max in
         box_manifest
           (fmt_manifest ~priv:Public mfst (Some (fmt_private_flag priv)))
         $ fmt "@ "
-        $ list_fl ctor_decls (fmt_constructor_declaration c ctx)
+        $ list_fl ctor_decls
+            (fmt_constructor_declaration c ~max_len_name ctx)
     | Ptype_record lbl_decls ->
         Params.get_record_type c.conf ~wrap_record
         |> fun (p : Params.record_type) ->
@@ -3036,13 +3121,32 @@ and fmt_label_declaration c ctx decl ?(last = false) =
       $ Cmts.fmt_after c pld_loc
       $ fmt_docstring_padded c doc )
 
-and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
+and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
+    =
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
     cstr_decl
   in
   update_config_maybe_disabled c pcd_loc pcd_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs pcd_attributes in
+  let fmt_padding =
+    let is_empty =
+      match pcd_args with
+      | Pcstr_tuple x -> List.is_empty x
+      | Pcstr_record x -> List.is_empty x
+    in
+    let len_around = if is_symbol_id txt then 4 else 0 in
+    let pad =
+      String.make (max_len_name - String.length txt - len_around) ' '
+    in
+    fmt_if_k
+      ( c.conf.align_constructors_decl && (not is_empty)
+      && not (Cmts.has_after c.cmts loc) )
+      (fmt_or_k
+         Poly.(c.conf.type_decl = `Sparse)
+         (str pad)
+         (fits_breaks ~level:3 "" pad))
+  in
   fmt_if (not first)
     ( match c.conf.type_decl with
     | `Sparse -> "@;<1000 0>"
@@ -3054,6 +3158,7 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
           ( hvbox 2
               ( Cmts.fmt c loc
                   (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+              $ fmt_padding
               $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
           $ fmt_attributes c ~pre:(fmt "@;") ~key:"@" atrs
           $ fmt_docstring_padded c doc )

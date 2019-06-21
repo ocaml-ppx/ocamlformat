@@ -12,7 +12,10 @@
 (** Configuration options *)
 
 type t =
-  { assignment_operator: [`Begin_line | `End_line]
+  { align_cases: bool
+  ; align_constructors_decl: bool
+  ; align_variants_decl: bool
+  ; assignment_operator: [`Begin_line | `End_line]
   ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
@@ -559,6 +562,46 @@ let info =
 module Formatting = struct
   let section = `Formatting
 
+  let align_cases =
+    let doc = "Align match/try cases horizontally." in
+    let names = ["align-cases"] in
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with align_cases= x})
+      (fun conf -> conf.align_cases)
+
+  let align_constructors_decl =
+    let doc = "Align type declarations horizontally." in
+    let names = ["align-constructors-decl"] in
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with align_constructors_decl= x})
+      (fun conf -> conf.align_constructors_decl)
+
+  let align_variants_decl =
+    let doc = "Align type variants declarations horizontally." in
+    let names = ["align-variants-decl"] in
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with align_variants_decl= x})
+      (fun conf -> conf.align_variants_decl)
+
+  let assignment_operator =
+    let doc = "Position of the assignment operator." in
+    let names = ["assignment-operator"] in
+    let all =
+      [ ( "end-line"
+        , `End_line
+        , "$(b,end-line) positions assignment operators (`:=` and `<-`) at \
+           the end of the line and breaks after it if the whole assignment \
+           expression does not fit on a single line." )
+      ; ( "begin-line"
+        , `Begin_line
+        , "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
+           at the beginning of the line and breaks before it if the whole \
+           assignment expression does not fit on a single line." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with assignment_operator= x})
+      (fun conf -> conf.assignment_operator)
+
   let break_before_in =
     let doc =
       "Whether the line should break before the $(i,in) keyword of a \
@@ -579,25 +622,6 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_before_in= x})
       (fun conf -> conf.break_before_in)
-
-  let assignment_operator =
-    let doc = "Position of the assignment operator." in
-    let names = ["assignment-operator"] in
-    let all =
-      [ ( "end-line"
-        , `End_line
-        , "$(b,end-line) positions assignment operators (`:=` and `<-`) at \
-           the end of the line and breaks after it if the whole assignment \
-           expression does not fit on a single line." )
-      ; ( "begin-line"
-        , `Begin_line
-        , "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
-           at the beginning of the line and breaks before it if the whole \
-           assignment expression does not fit on a single line." ) ]
-    in
-    C.choice ~names ~all ~doc ~section
-      (fun conf x -> {conf with assignment_operator= x})
-      (fun conf -> conf.assignment_operator)
 
   let break_cases =
     let doc = "Break pattern match cases." in
@@ -1684,7 +1708,10 @@ let no_version_check =
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
 let ocamlformat_profile =
-  { assignment_operator= C.default Formatting.assignment_operator
+  { align_cases= C.default Formatting.align_cases
+  ; align_constructors_decl= C.default Formatting.align_constructors_decl
+  ; align_variants_decl= C.default Formatting.align_variants_decl
+  ; assignment_operator= C.default Formatting.assignment_operator
   ; break_before_in= C.default Formatting.break_before_in
   ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
@@ -1825,7 +1852,10 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { assignment_operator= `Begin_line
+  { align_constructors_decl= false
+  ; align_cases= false
+  ; align_variants_decl= false
+  ; assignment_operator= `Begin_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=

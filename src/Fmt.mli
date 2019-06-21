@@ -105,6 +105,7 @@ val fits_breaks :
      ?force_fit_if:bool
   -> ?force_break_if:bool
   -> ?hint:int * int
+  -> ?level:int
   -> string
   -> string
   -> t
@@ -118,6 +119,7 @@ val fits_breaks_if :
      ?force_fit_if:bool
   -> ?force_break_if:bool
   -> ?hint:int * int
+  -> ?level:int
   -> bool
   -> string
   -> string
