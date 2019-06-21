@@ -110,10 +110,10 @@ let get_record_expr (c : Conf.t) ~wrap_record =
       ; sep_before= fmt "@,; "
       ; sep_after= noop }
   | `After ->
-      { box= (fun k -> hvbox 2 (wrap_record c k))
-      ; break_after_with= break 1 0
+      { box= (fun k -> hvbox 0 (wrap_record c k))
+      ; break_after_with= break 1 2
       ; sep_before= noop
-      ; sep_after= fmt ";@ " }
+      ; sep_after= fmt ";@;<1 2>" }
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
       { box=
