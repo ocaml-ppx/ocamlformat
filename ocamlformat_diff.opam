@@ -1,3 +1,4 @@
+version: "0.10"
 ######################################################################
 #                                                                    #
 #                            OCamlFormat                             #
@@ -15,7 +16,7 @@ authors: "Guillaume Petiot <guillaume@tarides.com>"
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
-url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/%%VERSION%%.tar.gz" }
+url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/0.10.tar.gz" }
 license: "MIT"
 build: [
   ["dune" "build" "-p" "tools/ocamlformat-diff/ocamlformat_diff.exe" "-j" jobs]
