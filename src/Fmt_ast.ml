@@ -3103,29 +3103,30 @@ and fmt_label_declaration c ctx decl ?(last = false) =
   update_config_maybe_disabled c pld_loc pld_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs pld_attributes in
-  let indent = if Poly.(c.conf.break_separators = `Before) then 2 else 0 in
   let cmt_after_type = Cmts.fmt_after c pld_type.ptyp_loc in
   let field_loose =
     match c.conf.field_space with
     | `Loose -> true
     | `Tight_decl | `Tight -> false
   in
-  Cmts.fmt_before c ~eol:(break_unless_newline 1 indent) pld_loc
-  $ hvbox 4
-      ( hvbox 3
-          ( hvbox 4
-              ( hvbox 2
-                  ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-                  $ fmt_str_loc c pld_name $ fmt_if field_loose " "
-                  $ fmt ":@ "
-                  $ fmt_core_type c (sub_typ ~ctx pld_type)
-                  $ fmt_if
-                      (Poly.(c.conf.break_separators <> `Before) && not last)
-                      ";" )
-              $ cmt_after_type )
-          $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
-      $ Cmts.fmt_after c pld_loc
-      $ fmt_docstring_padded c doc )
+  hovbox 0
+    ( Cmts.fmt_before c pld_loc
+    $ hvbox 4
+        ( hvbox 3
+            ( hvbox 4
+                ( hvbox 2
+                    ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
+                    $ fmt_str_loc c pld_name $ fmt_if field_loose " "
+                    $ fmt ":@ "
+                    $ fmt_core_type c (sub_typ ~ctx pld_type)
+                    $ fmt_if
+                        ( Poly.(c.conf.break_separators <> `Before)
+                        && not last )
+                        ";" )
+                $ cmt_after_type )
+            $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
+        $ Cmts.fmt_after c pld_loc
+        $ fmt_docstring_padded c doc ) )
 
 and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
     =

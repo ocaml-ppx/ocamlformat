@@ -8,9 +8,9 @@ type t = {
 type x =
   | B of
       { (* fooooooooooooooooooooooooooooooooooooooooo *)
-      aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
+        aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
         (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
-      bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
+        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
 
 type t = {
   aaaaaaaaaaaaaaaaaaaaaaaaa: aaaa aaaaaaaaaaaaaaaaaaa;
