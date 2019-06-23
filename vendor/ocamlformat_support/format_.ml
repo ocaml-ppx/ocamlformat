@@ -1310,6 +1310,7 @@ let compute_tag output tag_acc =
 
 open CamlinternalFormatBasics
 open CamlinternalFormat
+open Compat
 
 (* Interpret a formatting entity on a formatter. *)
 let output_formatting_lit ppf fmting_lit = match fmting_lit with
