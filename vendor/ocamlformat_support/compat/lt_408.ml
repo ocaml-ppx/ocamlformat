@@ -11,7 +11,7 @@
 
 open CamlinternalFormat
 
-let make_printf f x acc fmt = make_printf (fun acc -> f acc) x acc fmt
+let make_printf = make_printf
 
 module Stack = struct
   include Stack

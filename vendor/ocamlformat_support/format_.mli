@@ -1223,36 +1223,6 @@ val asprintf : ('a, formatter, unit, string) format4 -> 'a
   @since 4.01.0
 *)
 
-val dprintf :
-  ('a, formatter, unit, formatter -> unit) format4 -> 'a
-(** Same as {!fprintf}, except the formatter is the last argument.
-  [dprintf "..." a b c] is a function of type
-  [formatter -> unit] which can be given to a format specifier [%t].
-
-  This can be used as a replacement for {!asprintf} to delay
-  formatting decisions. Using the string returned by {!asprintf} in a
-  formatting context forces formatting decisions to be taken in
-  isolation, and the final string may be created
-  prematurely. {!dprintf} allows delay of formatting decisions until
-  the final formatting context is known.
-  For example:
-{[
-  let t = Format.dprintf "%i@ %i@ %i" 1 2 3 in
-  ...
-  Format.printf "@[<v>%t@]" t
-]}
-
-  @since 4.08.0
-*)
-
-
-val ifprintf : formatter -> ('a, formatter, unit) format -> 'a
-(** Same as [fprintf] above, but does not print anything.
-  Useful to ignore some material when conditionally printing.
-
-  @since 3.10.0
-*)
-
 (** Formatted Pretty-Printing with continuations. *)
 
 val kfprintf :
@@ -1260,15 +1230,6 @@ val kfprintf :
   ('b, formatter, unit, 'a) format4 -> 'b
 (** Same as [fprintf] above, but instead of returning immediately,
   passes the formatter to its first argument at the end of printing. *)
-
-val kdprintf :
-  ((formatter -> unit) -> 'a) ->
-  ('b, formatter, unit, 'a) format4 -> 'b
-(** Same as {!dprintf} above, but instead of returning immediately,
-  passes the suspended printer to its first argument at the end of printing.
-
-  @since 4.08.0
-*)
 
 val ikfprintf :
   (formatter -> 'a) -> formatter ->
