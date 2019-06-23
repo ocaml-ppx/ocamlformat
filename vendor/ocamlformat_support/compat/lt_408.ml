@@ -10,4 +10,33 @@
  **********************************************************************)
 
 open CamlinternalFormat
-let make_printf = make_printf
+
+let make_printf f x acc fmt = make_printf (fun acc -> f acc) x acc fmt
+
+module Stack = struct
+  include Stack
+
+  let top_opt st = try Some (top st) with Stack.Empty -> None
+  let pop_opt st = try Some (pop st) with Stack.Empty -> None
+end
+
+module Queue = struct
+  include Queue
+
+  let take_opt q = try Some (take q) with Queue.Empty -> None
+  let peek_opt q = try Some (peek q) with Queue.Empty -> None
+end
+
+module Int = struct
+  let to_string = string_of_int
+end
+
+module Stdlib = struct
+  type out_channel = Pervasives.out_channel
+
+  external open_descriptor_out : int -> out_channel
+    = "caml_ml_open_descriptor_out"
+
+  let stdout = open_descriptor_out 1
+  let stderr = open_descriptor_out 2
+end

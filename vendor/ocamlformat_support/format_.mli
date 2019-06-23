@@ -107,6 +107,8 @@
 
 *)
 
+open Compat
+
 type formatter
 (** Abstract data corresponding to a pretty-printer (also called a
     formatter) and all its machinery. See also {!section:formatter}. *)
