@@ -1882,15 +1882,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                , (fmt_op, [(Nolabel, arg)]) ))) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =
-        let ( ! ) = Caml.format_of_string in
         match c.conf.indicate_multiline_delimiters with
-        | `No -> (!"(", !")")
-        | `Space -> (!"( ", !" )") (* Why is a space used instead a hint? *)
-        | `Closing_on_separate_line -> (!"(", !"@;<1000 -2>)")
+        | `No -> (str "(", str ")")
+        | `Space | `Closing_on_separate_line -> (str "( ", str " )")
       in
       wrap_if parens "(" ")"
         ( hvbox 2
-            ( wrap opn cls (fmt_longident_loc c lid)
+            ( wrap_k opn cls (fmt_longident_loc c lid)
             $ fmt "@ "
             $ fmt_expression c (sub_exp ~ctx arg) )
         $ fmt_atrs )
