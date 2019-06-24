@@ -415,19 +415,6 @@ let fmt_label lbl sep =
 
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
-let wrap_list c =
-  if c.conf.space_around_lists then wrap_k (str "[ ") (or_newline "]" "]")
-  else wrap_fits_breaks c.conf "[" "]"
-
-let wrap_array c =
-  if c.conf.space_around_arrays then wrap "[| " "@ |]"
-  else wrap_fits_breaks c.conf "[|" "|]"
-
-let wrap_tuple ~parens ~no_parens_if_break c =
-  if parens then wrap_fits_breaks c.conf "(" ")"
-  else if no_parens_if_break then Fn.id
-  else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
-
 let parse_docstring str_cmt =
   match Octavius.parse (Lexing.from_string str_cmt) with
   | Error _ -> Error ()
@@ -927,7 +914,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         parens || Poly.(c.conf.parens_tuple_patterns = `Always)
       in
       hvbox 0
-        (wrap_tuple ~parens ~no_parens_if_break:false c
+        (Params.wrap_tuple ~parens ~no_parens_if_break:false c.conf
            (list pats (comma_sep c) (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = txt.[0] and cls = txt.[1] in
@@ -947,7 +934,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         in
         hvbox 0
           (Cmts.fmt c ppat_loc
-             (wrap_list c
+             (Params.wrap_list c.conf
                 ( list loc_xpats (semic_sep c) fmt_pat
                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
@@ -1011,7 +998,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
       hvbox 0
-        (wrap_array c
+        (Params.wrap_array c.conf
            (list pats
               (* Using semic_sep here would break the alignment *)
               ( if Poly.(c.conf.break_separators = `Before) then "@;<0 1>; "
@@ -1762,7 +1749,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_array e1N ->
       hvbox 0
-        ( wrap_array c
+        ( Params.wrap_array c.conf
             (fmt_expressions c width (sub_exp ~ctx) e1N
                (* Using semic_sep here would break the alignment *)
                ( if Poly.(c.conf.break_separators = `Before) then "@;<0 1>; "
@@ -1840,7 +1827,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           (wrap_if
              (not (List.is_empty pexp_attributes))
              "(" ")"
-             ( wrap_list c
+             ( Params.wrap_list c.conf
                  ( fmt_expressions c width snd loc_xes (semic_sep c)
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
@@ -2279,7 +2266,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | _ -> false
       in
       hvbox 0
-        ( wrap_tuple ~parens ~no_parens_if_break c
+        ( Params.wrap_tuple ~parens ~no_parens_if_break c.conf
             (list es (comma_sep c) (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
   | Pexp_lazy e ->

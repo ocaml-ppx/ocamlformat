@@ -25,6 +25,13 @@ val get_cases :
 
 val wrap_record : Conf.t -> Fmt.t -> Fmt.t
 
+val wrap_list : Conf.t -> Fmt.t -> Fmt.t
+
+val wrap_array : Conf.t -> Fmt.t -> Fmt.t
+
+val wrap_tuple :
+  Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t
+
 type record_type =
   { docked_before: Fmt.t
   ; break_before: Fmt.t

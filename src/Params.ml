@@ -62,6 +62,19 @@ let wrap_record (c : Conf.t) =
   if c.space_around_records then wrap "{ " "@ }"
   else wrap_fits_breaks c "{" "}"
 
+let wrap_list (c : Conf.t) =
+  if c.space_around_lists then wrap_k (str "[ ") (or_newline "]" "]")
+  else wrap_fits_breaks c "[" "]"
+
+let wrap_array (c : Conf.t) =
+  if c.space_around_arrays then wrap "[| " "@ |]"
+  else wrap_fits_breaks c "[|" "|]"
+
+let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break =
+  if parens then wrap_fits_breaks c "(" ")"
+  else if no_parens_if_break then Fn.id
+  else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
+
 type record_type =
   { docked_before: Fmt.t
   ; break_before: Fmt.t
