@@ -1,6 +1,8 @@
 let f x = function
-  | C | P (this, test, [is; wide; enough; _to; break], [the; line]) | A | K
-    ->
+  | C
+   |P (this, test, [is; wide; enough; _to; break], [the; line])
+   |A
+   |K ->
       1
   | D ->
       let a = "this" in
@@ -10,24 +12,31 @@ let f x = function
 let f =
   let g = function
     | H when x y <> k -> 2
-    | T | P | U -> 3
+    | T
+     |P
+     |U ->
+        3
   in
   fun x g t h y u ->
     match x with
     | E -> 4
-    | Z | P | M -> (
-      match y with
+    | Z
+     |P
+     |M ->
+      ( match y with
       | O -> 5
-      | P when h x -> (
-          function
-          | A -> 6 ) )
+      | P when h x ->
+          (function
+          | A -> 6)
+      )
 
 ;;
 match x with
-| true -> (
-  match y with
+| true ->
+  ( match y with
   | true -> "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" )
+  | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  )
 | false -> "cccccccccccccccccccccccccccccc"
 
 ;;
@@ -52,10 +61,11 @@ let _ =
     match x with
     | None -> false
     | Some looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
-      -> (
-      match y with
+      ->
+      ( match y with
       | Some _ -> true
-      | None -> false )
+      | None -> false
+      )
   in
   ()
 
@@ -65,8 +75,14 @@ let () =
 
 let () =
   match foooo with
-  | x | x | x -> x
-  | y | foooooooooo | fooooooooo -> y
+  | x
+   |x
+   |x ->
+      x
+  | y
+   |foooooooooo
+   |fooooooooo ->
+      y
   | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
 
@@ -91,11 +107,15 @@ let mod_int c1 c2 is_safe dbg =
   | c1, Cconst_int (0, _) ->
       Csequence (c1, raise_symbol dbg "caml_exn_Division_by_zero")
   | c1, Cconst_int ((1 | -1), _) -> Csequence (c1, Cconst_int (0, dbg))
-  | x | -1 -> ()
+  | x
+   | -1 ->
+      ()
 
 let merge_columns l old_table =
   let rec aux = function
-    | [] | [None] -> ([], [])
+    | []
+     |[None] ->
+        ([], [])
   in
   foooooooooooooooooooooooooo fooooooooooooooooooooo
 
@@ -113,8 +133,14 @@ let is_sequence exp =
 
 let () =
   match foooo with
-  | x | x | x -> x
-  | y | foooooooooo | fooooooooo -> y
+  | x
+  | x
+  | x ->
+      x
+  | y
+  | foooooooooo
+  | fooooooooo ->
+      y
   | foooooo when ff fff fooooooooooooooooooo ->
       foooooooooooooooooooooo foooooooooooooooooo
 
@@ -132,33 +158,44 @@ let rec loop items =
 
 let ffffff ~foo =
   match (foo : Fooooooooooooo.t) with
-  | Aaaaaaaaaaaaaaaaa | Bbbbbbbbbbbbbbbbb | Ccccccccccccccccc
-  | Ddddddddddddddddd | Eeeeeeeeeeeeeeeee ->
+  | Aaaaaaaaaaaaaaaaa
+  | Bbbbbbbbbbbbbbbbb
+  | Ccccccccccccccccc
+  | Ddddddddddddddddd
+  | Eeeeeeeeeeeeeeeee ->
       foooooooooooooooooooo
   | Fffffffffffffffff -> fooooooooooooooooo
 
 let () =
   match v with
   | None -> None
-  | Some x -> (
-    match x with
+  | Some x ->
+    ( match x with
     | None -> None
-    | Some x -> (
-      match x with
+    | Some x ->
+      ( match x with
       | None -> None
-      | Some x -> x ) )
+      | Some x -> x
+      )
+    )
 
 let _ = function
-  | (exception A) | B -> 1
+  | (exception A)
+  | B ->
+      1
   | C -> 2
 
 let _ = function
-  | A | (exception B) -> 1
+  | A
+  | (exception B) ->
+      1
   | C -> 2
 
 let _ =
   match x with
-  | (exception A) | (exception B) -> 1
+  | (exception A)
+  | (exception B) ->
+      1
   | C -> 2
 
 let _ =
@@ -168,4 +205,5 @@ let _ =
         match fooooooooo with
         | foooooooooo -> fooooooooooo
         | foooooooooo -> fooooooooooo
-        | foooooooooo -> fooooooooooo )
+        | foooooooooo -> fooooooooooo
+      )

@@ -158,3 +158,12 @@ let _ =
   match x with
   | (exception A) | (exception B) -> 1
   | C -> 2
+
+let _ =
+  match x with
+  | fooooooooooooooooo ->
+      assert (
+        match fooooooooo with
+        | foooooooooo -> fooooooooooo
+        | foooooooooo -> fooooooooooo
+        | foooooooooo -> fooooooooooo )
