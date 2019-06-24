@@ -18,7 +18,7 @@ type t = [ `A | `B ]
 
 type loooooooooong_type = {
   looooooooooooong_field: looooooooooooong_type;
-  field2: type2
+  field2: type2;
 }
 
 type t = A of (int * int) * int
@@ -135,7 +135,7 @@ type ( 'context,
   on_objc_cpp: 'context -> 'f_in;
   on_objc_cpp: 'context -> 'f_in;
   on_objc_cpp: 'context -> 'f_in;
-  on_objc_cpp: 'context -> 'f_in
+  on_objc_cpp: 'context -> 'f_in;
 }
 
 type ( 'context,
@@ -157,7 +157,7 @@ type ( 'context,
   on_objc_cpp: 'context -> 'f_in;
   on_objc_cpp: 'context -> 'f_in;
   on_objc_cpp: 'context -> 'f_in;
-  on_objc_cpp: 'context -> 'f_in
+  on_objc_cpp: 'context -> 'f_in;
 }
 
 type ( 'context,

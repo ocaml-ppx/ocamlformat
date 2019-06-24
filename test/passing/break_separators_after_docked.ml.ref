@@ -2,7 +2,7 @@ type t = {
   (* fooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
   foooooooooooooooooooooooo: foooooooooooooooooooooooooooooooooooooooo;
   (* foooooooooooooooooooooooooooooooooooooooooooo *)
-  fooooooooooooooooooooooooooooo: fooooooooooooooooooooooooooo
+  fooooooooooooooooooooooooooooo: fooooooooooooooooooooooooooo;
 }
 
 type x =
@@ -10,18 +10,18 @@ type x =
       { (* fooooooooooooooooooooooooooooooooooooooooo *)
         aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
         (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
-        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
+        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb; }
 
 type t = {
   aaaaaaaaaaaaaaaaaaaaaaaaa: aaaa aaaaaaaaaaaaaaaaaaa;
   bbbbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbb bbbb;
-  cccccccccccccccccccccc: ccccccc ccccccccccc cccccccc
+  cccccccccccccccccccccc: ccccccc ccccccccccc cccccccc;
 }
 
 type x =
   | B of
       { aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
-        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
+        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb; }
 
 type t = {
   break_cases: [`Fit | `Nested | `All];
@@ -65,7 +65,7 @@ type t = {
   single_case: [`Compact | `Sparse];
   type_decl: [`Compact | `Sparse];
   wrap_comments: bool;  (** Wrap comments at margin. *)
-  wrap_fun_args: bool
+  wrap_fun_args: bool;
 }
 
 let _ =
@@ -98,19 +98,19 @@ type t = {aaaaaaaaa: aaaa; bbbbbbbbb: bbbb}
 
 type trace_mod_funs = {
   trace_mod: bool option;
-  trace_funs: bool Map.M(String).t
+  trace_funs: bool Map.M(String).t;
 }
 
 [@@@ocamlformat "type-decl=sparse"]
 
 type t = {
   aaaaaaaaa: aaaa;
-  bbbbbbbbb: bbbb
+  bbbbbbbbb: bbbb;
 }
 
 type trace_mod_funs = {
   trace_mod: bool option;
-  trace_funs: bool Map.M(String).t
+  trace_funs: bool Map.M(String).t;
 }
 
 let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
@@ -249,7 +249,7 @@ type t = {
     foooooooooooooo ->
     foooooooooo ->
     fooooooooooooooo;
-  foo: foo
+  foo: foo;
 }
 
 [@@@ocamlformat "ocp-indent-compat"]

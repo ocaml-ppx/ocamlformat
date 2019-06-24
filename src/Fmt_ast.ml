@@ -3116,6 +3116,13 @@ and fmt_label_declaration c ctx decl ?(last = false) =
     | `Loose -> true
     | `Tight_decl | `Tight -> false
   in
+  let fmt_semicolon =
+    match c.conf.break_separators with
+    | `Before -> noop
+    | `After -> fmt_if (not last) ";"
+    | `After_and_docked ->
+        fmt_or_k last (fits_breaks ~level:7 "" ";") (str ";")
+  in
   hovbox 0
     ( Cmts.fmt_before c pld_loc
     $ hvbox 4
@@ -3126,10 +3133,7 @@ and fmt_label_declaration c ctx decl ?(last = false) =
                     $ fmt_str_loc c pld_name $ fmt_if field_loose " "
                     $ fmt ":@ "
                     $ fmt_core_type c (sub_typ ~ctx pld_type)
-                    $ fmt_if
-                        ( Poly.(c.conf.break_separators <> `Before)
-                        && not last )
-                        ";" )
+                    $ fmt_semicolon )
                 $ cmt_after_type )
             $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
         $ Cmts.fmt_after c pld_loc
