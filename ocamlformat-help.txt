@@ -211,9 +211,10 @@ OPTIONS (CODE FORMATTING STYLE)
        --indicate-multiline-delimiters={space|no|closing-on-separate-line}
            How to indicate that two matching delimiters live on different
            lines. space prints a space inside the delimiter to indicate the
-           matching one is on a different line no don't do anything special
-           closing-on-separate-line make sure that the closing delimiter is
-           on its own line The default value is space.
+           matching one is on a different line. no doesn't do anything
+           special to indicate the closing delimiter.
+           closing-on-separate-line makes sure that the closing delimiter is
+           on its own line. The default value is space.
 
        --indicate-nested-or-patterns={space|unsafe-no}
            Control whether or not to indicate nested or-pattern using

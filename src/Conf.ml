@@ -1049,12 +1049,15 @@ module Formatting = struct
       [ ( "space"
         , `Space
         , "$(b,space) prints a space inside the delimiter to indicate the \
-           matching one is on a different line" )
-      ; ("no", `No, "$(b, no) don't do anything special")
+           matching one is on a different line." )
+      ; ( "no"
+        , `No
+        , "$(b, no) doesn't do anything special to indicate the closing \
+           delimiter." )
       ; ( "closing-on-separate-line"
         , `Closing_on_separate_line
-        , "$(b, closing-on-separate-line) make sure that the closing \
-           delimiter is on its own line" ) ]
+        , "$(b, closing-on-separate-line) makes sure that the closing \
+           delimiter is on its own line." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with indicate_multiline_delimiters= x})
