@@ -1787,7 +1787,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         match c.conf.indicate_multiline_delimiters with
         | `Space -> (1, 0)
         | `No -> (0, 0)
-        | `Closing_on_separate_line -> (1000, -2)
+        | `Closing_on_separate_line -> (1000, 0)
       in
       hovbox 0
         (wrap_if parens "(" ")"
