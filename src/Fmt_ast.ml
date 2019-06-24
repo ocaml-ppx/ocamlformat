@@ -415,23 +415,6 @@ let fmt_label lbl sep =
 
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
-let wrap_list c =
-  if c.conf.space_around_lists then wrap_k (str "[ ") (or_newline "]" "]")
-  else wrap_fits_breaks c.conf "[" "]"
-
-let wrap_array c =
-  if c.conf.space_around_arrays then wrap "[| " "@ |]"
-  else wrap_fits_breaks c.conf "[|" "|]"
-
-let wrap_record (c : Conf.t) =
-  if c.space_around_records then wrap "{ " "@ }"
-  else wrap_fits_breaks c "{" "}"
-
-let wrap_tuple ~parens ~no_parens_if_break c =
-  if parens then wrap_fits_breaks c.conf "(" ")"
-  else if no_parens_if_break then Fn.id
-  else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
-
 let parse_docstring str_cmt =
   match Octavius.parse (Lexing.from_string str_cmt) with
   | Error _ -> Error ()
@@ -931,7 +914,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         parens || Poly.(c.conf.parens_tuple_patterns = `Always)
       in
       hvbox 0
-        (wrap_tuple ~parens ~no_parens_if_break:false c
+        (Params.wrap_tuple ~parens ~no_parens_if_break:false c.conf
            (list pats (comma_sep c) (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = txt.[0] and cls = txt.[1] in
@@ -951,7 +934,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         in
         hvbox 0
           (Cmts.fmt c ppat_loc
-             (wrap_list c
+             (Params.wrap_list c.conf
                 ( list loc_xpats (semic_sep c) fmt_pat
                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
@@ -1005,7 +988,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (wrap_record c.conf
+           (Params.wrap_record c.conf
               ( list flds (semic_sep c) fmt_field
               $ fmt_if_k
                   Poly.(closed_flag = Open)
@@ -1015,7 +998,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
       hvbox 0
-        (wrap_array c
+        (Params.wrap_array c.conf
            (list pats
               (* Using semic_sep here would break the alignment *)
               ( if Poly.(c.conf.break_separators = `Before) then "@;<0 1>; "
@@ -1766,7 +1749,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_array e1N ->
       hvbox 0
-        ( wrap_array c
+        ( Params.wrap_array c.conf
             (fmt_expressions c width (sub_exp ~ctx) e1N
                (* Using semic_sep here would break the alignment *)
                ( if Poly.(c.conf.break_separators = `Before) then "@;<0 1>; "
@@ -1844,7 +1827,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           (wrap_if
              (not (List.is_empty pexp_attributes))
              "(" ")"
-             ( wrap_list c
+             ( Params.wrap_list c.conf
                  ( fmt_expressions c width snd loc_xes (semic_sep c)
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
@@ -2197,13 +2180,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
+      let p = Params.get_record_expr c.conf in
+      let fmt_field ~first ~last x =
+        fmt_if_k (not first) p.sep_before
+        $ fmt_field x
+        $ fmt_if_k (not last) p.sep_after
+      in
       hvbox 0
-        ( wrap_record c.conf
+        ( p.box
             ( opt default (fun d ->
                   hvbox 2
                     (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
-                  $ fmt "with@;<1 2>")
-            $ list flds (semic_sep c) fmt_field )
+                  $ fmt "with" $ p.break_after_with)
+            $ list_fl flds fmt_field )
         $ fmt_atrs )
   | Pexp_sequence (e1, e2) when Option.is_some ext ->
       let parens1 =
@@ -2277,7 +2266,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | _ -> false
       in
       hvbox 0
-        ( wrap_tuple ~parens ~no_parens_if_break c
+        ( Params.wrap_tuple ~parens ~no_parens_if_break c.conf
             (list es (comma_sep c) (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
   | Pexp_lazy e ->
@@ -3041,8 +3030,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
         $ list_fl ctor_decls
             (fmt_constructor_declaration c ~max_len_name ctx)
     | Ptype_record lbl_decls ->
-        Params.get_record_type c.conf ~wrap_record
-        |> fun (p : Params.record_type) ->
+        let p = Params.get_record_type c.conf in
         let fmt_decl ~first ~last x =
           fmt_if_k (not first) p.sep_before
           $ fmt_label_declaration c ctx x ~last
@@ -3097,29 +3085,30 @@ and fmt_label_declaration c ctx decl ?(last = false) =
   update_config_maybe_disabled c pld_loc pld_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs pld_attributes in
-  let indent = if Poly.(c.conf.break_separators = `Before) then 2 else 0 in
   let cmt_after_type = Cmts.fmt_after c pld_type.ptyp_loc in
   let field_loose =
     match c.conf.field_space with
     | `Loose -> true
     | `Tight_decl | `Tight -> false
   in
-  Cmts.fmt_before c ~eol:(break_unless_newline 1 indent) pld_loc
-  $ hvbox 4
-      ( hvbox 3
-          ( hvbox 4
-              ( hvbox 2
-                  ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
-                  $ fmt_str_loc c pld_name $ fmt_if field_loose " "
-                  $ fmt ":@ "
-                  $ fmt_core_type c (sub_typ ~ctx pld_type)
-                  $ fmt_if
-                      (Poly.(c.conf.break_separators <> `Before) && not last)
-                      ";" )
-              $ cmt_after_type )
-          $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
-      $ Cmts.fmt_after c pld_loc
-      $ fmt_docstring_padded c doc )
+  hovbox 0
+    ( Cmts.fmt_before c pld_loc
+    $ hvbox 4
+        ( hvbox 3
+            ( hvbox 4
+                ( hvbox 2
+                    ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
+                    $ fmt_str_loc c pld_name $ fmt_if field_loose " "
+                    $ fmt ":@ "
+                    $ fmt_core_type c (sub_typ ~ctx pld_type)
+                    $ fmt_if
+                        ( Poly.(c.conf.break_separators <> `Before)
+                        && not last )
+                        ";" )
+                $ cmt_after_type )
+            $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
+        $ Cmts.fmt_after c pld_loc
+        $ fmt_docstring_padded c doc ) )
 
 and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
     =
@@ -3177,7 +3166,7 @@ and fmt_constructor_arguments c ctx ~pre = function
         $ fmt_if (last && exposed_right_typ x.pld_type) " "
         $ fmt_if ((not last) && not break_before) "@;<1 2>"
       in
-      pre $ wrap_record c.conf (list_fl lds fmt_ld)
+      pre $ Params.wrap_record c.conf (list_fl lds fmt_ld)
 
 and fmt_constructor_arguments_result c ctx args res =
   let pre = fmt_or (Option.is_none res) " of@ " " :@ " in

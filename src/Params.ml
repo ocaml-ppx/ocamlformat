@@ -58,6 +58,23 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
       ; break_after_opening_paren= fmt "@ " }
 
+let wrap_record (c : Conf.t) =
+  if c.space_around_records then wrap "{ " "@ }"
+  else wrap_fits_breaks c "{" "}"
+
+let wrap_list (c : Conf.t) =
+  if c.space_around_lists then wrap_k (str "[ ") (or_newline "]" "]")
+  else wrap_fits_breaks c "[" "]"
+
+let wrap_array (c : Conf.t) =
+  if c.space_around_arrays then wrap "[| " "@ |]"
+  else wrap_fits_breaks c "[|" "|]"
+
+let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break =
+  if parens then wrap_fits_breaks c "(" ")"
+  else if no_parens_if_break then Fn.id
+  else wrap_k (fits_breaks "" "( ") (fits_breaks "" ~hint:(1, 0) ")")
+
 type record_type =
   { docked_before: Fmt.t
   ; break_before: Fmt.t
@@ -67,7 +84,7 @@ type record_type =
   ; break_after: Fmt.t
   ; docked_after: Fmt.t }
 
-let get_record_type (c : Conf.t) ~wrap_record =
+let get_record_type (c : Conf.t) =
   let sparse_type_decl = Poly.(c.type_decl = `Sparse) in
   match c.break_separators with
   | `Before ->
@@ -95,6 +112,33 @@ let get_record_type (c : Conf.t) ~wrap_record =
       ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
       ; break_after= break space (-2)
       ; docked_after= fmt "}" }
+
+type record_expr =
+  { box: Fmt.t -> Fmt.t
+  ; break_after_with: Fmt.t
+  ; sep_before: Fmt.t
+  ; sep_after: Fmt.t }
+
+let get_record_expr (c : Conf.t) =
+  match c.break_separators with
+  | `Before ->
+      { box= (fun k -> hvbox 0 (wrap_record c k))
+      ; break_after_with= break 1 2
+      ; sep_before= fmt "@,; "
+      ; sep_after= noop }
+  | `After ->
+      { box= (fun k -> hvbox 0 (wrap_record c k))
+      ; break_after_with= break 1 2
+      ; sep_before= noop
+      ; sep_after= fmt ";@;<1 2>" }
+  | `After_and_docked ->
+      let space = if c.space_around_records then 1 else 0 in
+      { box=
+          (fun k ->
+            hvbox 2 (wrap "{" "}" (break space 0 $ k $ break space (-2))))
+      ; break_after_with= break 1 0
+      ; sep_before= noop
+      ; sep_after= fmt ";@ " }
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
