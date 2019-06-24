@@ -423,10 +423,6 @@ let wrap_array c =
   if c.conf.space_around_arrays then wrap "[| " "@ |]"
   else wrap_fits_breaks c.conf "[|" "|]"
 
-let wrap_record (c : Conf.t) =
-  if c.space_around_records then wrap "{ " "@ }"
-  else wrap_fits_breaks c "{" "}"
-
 let wrap_tuple ~parens ~no_parens_if_break c =
   if parens then wrap_fits_breaks c.conf "(" ")"
   else if no_parens_if_break then Fn.id
@@ -1005,7 +1001,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (wrap_record c.conf
+           (Params.wrap_record c.conf
               ( list flds (semic_sep c) fmt_field
               $ fmt_if_k
                   Poly.(closed_flag = Open)
@@ -2197,7 +2193,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
-      let p = Params.get_record_expr c.conf ~wrap_record in
+      let p = Params.get_record_expr c.conf in
       let fmt_field ~first ~last x =
         fmt_if_k (not first) p.sep_before
         $ fmt_field x
@@ -3047,7 +3043,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
         $ list_fl ctor_decls
             (fmt_constructor_declaration c ~max_len_name ctx)
     | Ptype_record lbl_decls ->
-        let p = Params.get_record_type c.conf ~wrap_record in
+        let p = Params.get_record_type c.conf in
         let fmt_decl ~first ~last x =
           fmt_if_k (not first) p.sep_before
           $ fmt_label_declaration c ctx x ~last
@@ -3183,7 +3179,7 @@ and fmt_constructor_arguments c ctx ~pre = function
         $ fmt_if (last && exposed_right_typ x.pld_type) " "
         $ fmt_if ((not last) && not break_before) "@;<1 2>"
       in
-      pre $ wrap_record c.conf (list_fl lds fmt_ld)
+      pre $ Params.wrap_record c.conf (list_fl lds fmt_ld)
 
 and fmt_constructor_arguments_result c ctx args res =
   let pre = fmt_or (Option.is_none res) " of@ " " :@ " in

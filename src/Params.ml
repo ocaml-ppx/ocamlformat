@@ -58,6 +58,10 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
       ; break_after_opening_paren= fmt "@ " }
 
+let wrap_record (c : Conf.t) =
+  if c.space_around_records then wrap "{ " "@ }"
+  else wrap_fits_breaks c "{" "}"
+
 type record_type =
   { docked_before: Fmt.t
   ; break_before: Fmt.t
@@ -67,7 +71,7 @@ type record_type =
   ; break_after: Fmt.t
   ; docked_after: Fmt.t }
 
-let get_record_type (c : Conf.t) ~wrap_record =
+let get_record_type (c : Conf.t) =
   let sparse_type_decl = Poly.(c.type_decl = `Sparse) in
   match c.break_separators with
   | `Before ->
@@ -102,7 +106,7 @@ type record_expr =
   ; sep_before: Fmt.t
   ; sep_after: Fmt.t }
 
-let get_record_expr (c : Conf.t) ~wrap_record =
+let get_record_expr (c : Conf.t) =
   match c.break_separators with
   | `Before ->
       { box= (fun k -> hvbox 0 (wrap_record c k))

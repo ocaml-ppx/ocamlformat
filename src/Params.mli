@@ -23,6 +23,8 @@ type cases =
 val get_cases :
   Conf.t -> first:bool -> indent:int -> parens_here:bool -> cases
 
+val wrap_record : Conf.t -> Fmt.t -> Fmt.t
+
 type record_type =
   { docked_before: Fmt.t
   ; break_before: Fmt.t
@@ -32,8 +34,7 @@ type record_type =
   ; break_after: Fmt.t
   ; docked_after: Fmt.t }
 
-val get_record_type :
-  Conf.t -> wrap_record:(Conf.t -> Fmt.t -> Fmt.t) -> record_type
+val get_record_type : Conf.t -> record_type
 
 type record_expr =
   { box: Fmt.t -> Fmt.t
@@ -41,8 +42,7 @@ type record_expr =
   ; sep_before: Fmt.t
   ; sep_after: Fmt.t }
 
-val get_record_expr :
-  Conf.t -> wrap_record:(Conf.t -> Fmt.t -> Fmt.t) -> record_expr
+val get_record_expr : Conf.t -> record_expr
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
