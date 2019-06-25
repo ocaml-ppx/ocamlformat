@@ -2207,8 +2207,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_field ~first ~last x =
         fmt_if_k (not first) p.sep_before
         $ fmt_field x
-        $ fmt_if_k (not last) p.sep_after_non_final
-        $ fmt_if_k last p.sep_after_final
+        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
       in
       hvbox 0
         ( p.box
