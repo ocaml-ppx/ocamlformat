@@ -76,7 +76,7 @@ let fmt_reference = ign_loc ~f:str
 let list_should_use_heavy_syntax items =
   let heavy_nestable_block_elements = function
     (* More than one element or contains a list *)
-    | [{Location_.value= `List _}] | _ :: _ :: _ -> true
+    | [{Location_.value= `List _; _}] | _ :: _ :: _ -> true
     | [] | [_] -> false
   in
   List.exists items ~f:heavy_nestable_block_elements
@@ -97,7 +97,7 @@ let list_block_elem elems f =
       let elem = elem.Location_.value in
       let break =
         match next with
-        | Some {Location_.value= n}
+        | Some {Location_.value= n; _}
           when block_element_should_break
                  (elem :> block_element)
                  (n :> block_element) ->

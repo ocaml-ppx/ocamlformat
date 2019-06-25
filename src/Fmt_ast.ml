@@ -437,7 +437,7 @@ let parse_docstring c ~loc text =
   let parsed = Odoc_parser.parse_comment_raw ~location ~text in
   match parsed with
   | {value; warnings= []} -> Ok value
-  | {warnings} ->
+  | {warnings; _} ->
       if not c.conf.quiet then
         List.iter warnings ~f:(fun w ->
             let msg = Odoc_model.Error.to_string w in
