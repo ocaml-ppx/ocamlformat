@@ -66,7 +66,7 @@ let fmt_verbatim_block opn cls s =
     else
       fits_breaks " " "\n"
       $ str_verbatim (String.strip s)
-      $ fits_breaks " " "@,"
+      $ fits_breaks " " ~hint:(0, 0) ""
   in
   hvbox 0 (wrap opn cls content)
 
