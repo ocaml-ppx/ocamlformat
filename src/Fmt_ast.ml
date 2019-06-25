@@ -3122,7 +3122,7 @@ and fmt_label_declaration c ctx decl ?(last = false) =
     | `Before -> noop
     | `After -> fmt_if (not last) ";"
     | `After_and_docked ->
-        fmt_or_k last (fits_breaks ~level:7 "" ";") (str ";")
+        fmt_or_k last (fits_breaks ~level:5 "" ";") (str ";")
   in
   hovbox 0
     ( Cmts.fmt_before c pld_loc
