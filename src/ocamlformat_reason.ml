@@ -38,8 +38,7 @@ let try_read_original_source filename =
 
 type xunit =
   | Pack :
-      { parse: In_channel.t -> 'a Reason.t
-      ; xunit: 'a Translation_unit.t }
+      {parse: In_channel.t -> 'a Reason.t; xunit: 'a Translation_unit.t}
       -> xunit
 
 let pack_of_kind = function

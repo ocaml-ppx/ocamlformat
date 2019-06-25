@@ -96,6 +96,12 @@ type t = {aaaaaaaaa: aaaa; bbbbbbbbb: bbbb}
 type trace_mod_funs =
   {trace_mod: bool option; trace_funs: bool Map.M(String).t}
 
+module Fooooo = struct
+  type t = {fooooo: fooo; fooooo: fooooooo}
+  (** This is a long docstring so that it cannot be on the same line as the
+      record type. *)
+end
+
 [@@@ocamlformat "type-decl=sparse"]
 
 type t =

@@ -2,26 +2,28 @@ type t = {
   (* fooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
   foooooooooooooooooooooooo: foooooooooooooooooooooooooooooooooooooooo;
   (* foooooooooooooooooooooooooooooooooooooooooooo *)
-  fooooooooooooooooooooooooooooo: fooooooooooooooooooooooooooo
+  fooooooooooooooooooooooooooooo: fooooooooooooooooooooooooooo;
 }
 
 type x =
-  | B of
-      { (* fooooooooooooooooooooooooooooooooooooooooo *)
-        aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
-        (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
-        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
+  | B of {
+      (* fooooooooooooooooooooooooooooooooooooooooo *)
+      aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
+      (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
+      bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb;
+    }
 
 type t = {
   aaaaaaaaaaaaaaaaaaaaaaaaa: aaaa aaaaaaaaaaaaaaaaaaa;
   bbbbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbb bbbb;
-  cccccccccccccccccccccc: ccccccc ccccccccccc cccccccc
+  cccccccccccccccccccccc: ccccccc ccccccccccc cccccccc;
 }
 
 type x =
-  | B of
-      { aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
-        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
+  | B of {
+      aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
+      bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb;
+    }
 
 type t = {
   break_cases: [`Fit | `Nested | `All];
@@ -65,7 +67,7 @@ type t = {
   single_case: [`Compact | `Sparse];
   type_decl: [`Compact | `Sparse];
   wrap_comments: bool;  (** Wrap comments at margin. *)
-  wrap_fun_args: bool
+  wrap_fun_args: bool;
 }
 
 let _ =
@@ -98,19 +100,25 @@ type t = {aaaaaaaaa: aaaa; bbbbbbbbb: bbbb}
 
 type trace_mod_funs = {
   trace_mod: bool option;
-  trace_funs: bool Map.M(String).t
+  trace_funs: bool Map.M(String).t;
 }
+
+module Fooooo = struct
+  type t = {fooooo: fooo; fooooo: fooooooo}
+  (** This is a long docstring so that it cannot be on the same line as the
+      record type. *)
+end
 
 [@@@ocamlformat "type-decl=sparse"]
 
 type t = {
   aaaaaaaaa: aaaa;
-  bbbbbbbbb: bbbb
+  bbbbbbbbb: bbbb;
 }
 
 type trace_mod_funs = {
   trace_mod: bool option;
-  trace_funs: bool Map.M(String).t
+  trace_funs: bool Map.M(String).t;
 }
 
 let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
@@ -125,7 +133,7 @@ let x
   {
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     bbbbbbbbbbbbb= bbb bb bbbbbb;
-    cccccc= cccc ccccccccccccccccccccccc
+    cccccc= cccc ccccccccccccccccccccccc;
   }
 
 (* this is an array *)
@@ -249,7 +257,7 @@ type t = {
     foooooooooooooo ->
     foooooooooo ->
     fooooooooooooooo;
-  foo: foo
+  foo: foo;
 }
 
 [@@@ocamlformat "ocp-indent-compat"]
@@ -281,7 +289,7 @@ let x
   {
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     bbbbbbbbbbbbb= bbb bb bbbbbb;
-    cccccc= cccc ccccccccccccccccccccccc
+    cccccc= cccc ccccccccccccccccccccccc;
   }
 
 let foooooooooooooooooooooooooooooooooo =
@@ -290,14 +298,14 @@ let foooooooooooooooooooooooooooooooooo =
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     (* fooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
     bbbbbbbbbbbbb= bbb bb bbbbbb;
-    cccccc= cccc ccccccccccccccccccccccc
+    cccccc= cccc ccccccccccccccccccccccc;
   }
 
 let foooooooooooo =
   {
     foooooooooooooo with
     fooooooooooooooooooooooooooooo= fooooooooooooo;
-    fooooooooooooo= foooooooooooooo
+    fooooooooooooo= foooooooooooooo;
   }
 
 let foooooooooooo =
@@ -305,7 +313,7 @@ let foooooooooooo =
     foooooooooooooo with
     (* foooooooooooooooo fooooooooooooooooooooooooo foooooooooooooooooooooo *)
     fooooooooooooooooooooooooooooo= fooooooooooooo;
-    fooooooooooooo= foooooooooooooo
+    fooooooooooooo= foooooooooooooo;
   }
 
 let fooooooooooo = function
@@ -314,5 +322,5 @@ let fooooooooooo = function
         empty with
         bdy= fmt_longident_loc c lid;
         epi=
-          Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
+          Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "));
       }
