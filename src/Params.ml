@@ -98,9 +98,9 @@ let get_record_type (c : Conf.t) =
   | `After ->
       { docked_before= noop
       ; break_before= fmt "@ "
-      ; box_record= (fun k -> hvbox 2 (wrap_record c k))
+      ; box_record= (fun k -> hvbox 0 (wrap_record c k))
       ; sep_before= noop
-      ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
+      ; sep_after= fmt_or sparse_type_decl "@;<1000 2>" "@;<1 2>"
       ; break_after= noop
       ; docked_after= noop }
   | `After_and_docked ->
@@ -117,7 +117,8 @@ type record_expr =
   { box: Fmt.t -> Fmt.t
   ; break_after_with: Fmt.t
   ; sep_before: Fmt.t
-  ; sep_after: Fmt.t }
+  ; sep_after_non_final: Fmt.t
+  ; sep_after_final: Fmt.t }
 
 let get_record_expr (c : Conf.t) =
   match c.break_separators with
@@ -125,12 +126,14 @@ let get_record_expr (c : Conf.t) =
       { box= (fun k -> hvbox 0 (wrap_record c k))
       ; break_after_with= break 1 2
       ; sep_before= fmt "@,; "
-      ; sep_after= noop }
+      ; sep_after_non_final= noop
+      ; sep_after_final= noop }
   | `After ->
       { box= (fun k -> hvbox 0 (wrap_record c k))
       ; break_after_with= break 1 2
       ; sep_before= noop
-      ; sep_after= fmt ";@;<1 2>" }
+      ; sep_after_non_final= fmt ";@;<1 2>"
+      ; sep_after_final= noop }
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
       { box=
@@ -138,7 +141,8 @@ let get_record_expr (c : Conf.t) =
             hvbox 2 (wrap "{" "}" (break space 0 $ k $ break space (-2))))
       ; break_after_with= break 1 0
       ; sep_before= noop
-      ; sep_after= fmt ";@ " }
+      ; sep_after_non_final= fmt ";@;<1 0>"
+      ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t

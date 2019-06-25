@@ -8076,7 +8076,11 @@ end =
 let _ = test 103 (Lazy.force M3.x) 3
 
 (** Pure type-checking tests: see recmod/*.ml  *)
-type t = A of { x : int; mutable y : int }
+type t =
+  | A of
+      { x : int
+      ; mutable y : int
+      }
 
 let f (A r) = r
 
@@ -8097,7 +8101,12 @@ let f () = A { x = 1; y = 3 }
 
 (* ok *)
 
-type _ t = A : { x : 'a; y : 'b } -> 'a t
+type _ t =
+  | A :
+      { x : 'a
+      ; y : 'b
+      }
+      -> 'a t
 
 let f (A { x; y }) = A { x; y = () }
 

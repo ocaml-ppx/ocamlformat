@@ -47,7 +47,8 @@ type record_expr =
   { box: Fmt.t -> Fmt.t
   ; break_after_with: Fmt.t
   ; sep_before: Fmt.t
-  ; sep_after: Fmt.t }
+  ; sep_after_non_final: Fmt.t
+  ; sep_after_final: Fmt.t }
 
 val get_record_expr : Conf.t -> record_expr
 

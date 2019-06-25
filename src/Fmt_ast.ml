@@ -2207,7 +2207,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_field ~first ~last x =
         fmt_if_k (not first) p.sep_before
         $ fmt_field x
-        $ fmt_if_k (not last) p.sep_after
+        $ fmt_if_k (not last) p.sep_after_non_final
+        $ fmt_if_k last p.sep_after_final
       in
       hvbox 0
         ( p.box
@@ -3186,19 +3187,22 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
 and fmt_constructor_arguments c ctx ~pre = function
   | Pcstr_tuple [] -> noop
   | Pcstr_tuple typs ->
-      pre $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
+      pre $ fmt "@ "
+      $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
+      let p = Params.get_record_type c.conf in
       let fmt_ld ~first ~last x =
-        let break_before = Poly.(c.conf.break_separators = `Before) in
-        fmt_if ((not first) && break_before) "@,; "
+        fmt_if_k (not first) p.sep_before
         $ fmt_label_declaration c ctx x ~last
         $ fmt_if (last && exposed_right_typ x.pld_type) " "
-        $ fmt_if ((not last) && not break_before) "@;<1 2>"
+        $ fmt_if_k (not last) p.sep_after
       in
-      pre $ Params.wrap_record c.conf (list_fl lds fmt_ld)
+      pre $ p.docked_before $ p.break_before
+      $ p.box_record (list_fl lds fmt_ld)
+      $ p.break_after $ p.docked_after
 
 and fmt_constructor_arguments_result c ctx args res =
-  let pre = fmt_or (Option.is_none res) " of@ " " :@ " in
+  let pre = fmt_or (Option.is_none res) " of" " :" in
   let before_type = match args with Pcstr_tuple [] -> ": " | _ -> "-> " in
   let fmt_type typ =
     fmt "@ " $ str before_type $ fmt_core_type c (sub_typ ~ctx typ)

@@ -6,11 +6,12 @@ type t = {
 }
 
 type x =
-  | B of
-      { (* fooooooooooooooooooooooooooooooooooooooooo *)
-        aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
-        (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
-        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb; }
+  | B of {
+      (* fooooooooooooooooooooooooooooooooooooooooo *)
+      aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
+      (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
+      bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb;
+    }
 
 type t = {
   aaaaaaaaaaaaaaaaaaaaaaaaa: aaaa aaaaaaaaaaaaaaaaaaa;
@@ -19,9 +20,10 @@ type t = {
 }
 
 type x =
-  | B of
-      { aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
-        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb; }
+  | B of {
+      aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa;
+      bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb;
+    }
 
 type t = {
   break_cases: [`Fit | `Nested | `All];
@@ -125,7 +127,7 @@ let x
   {
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     bbbbbbbbbbbbb= bbb bb bbbbbb;
-    cccccc= cccc ccccccccccccccccccccccc
+    cccccc= cccc ccccccccccccccccccccccc;
   }
 
 (* this is an array *)
@@ -281,7 +283,7 @@ let x
   {
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     bbbbbbbbbbbbb= bbb bb bbbbbb;
-    cccccc= cccc ccccccccccccccccccccccc
+    cccccc= cccc ccccccccccccccccccccccc;
   }
 
 let foooooooooooooooooooooooooooooooooo =
@@ -290,14 +292,14 @@ let foooooooooooooooooooooooooooooooooo =
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     (* fooooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
     bbbbbbbbbbbbb= bbb bb bbbbbb;
-    cccccc= cccc ccccccccccccccccccccccc
+    cccccc= cccc ccccccccccccccccccccccc;
   }
 
 let foooooooooooo =
   {
     foooooooooooooo with
     fooooooooooooooooooooooooooooo= fooooooooooooo;
-    fooooooooooooo= foooooooooooooo
+    fooooooooooooo= foooooooooooooo;
   }
 
 let foooooooooooo =
@@ -305,7 +307,7 @@ let foooooooooooo =
     foooooooooooooo with
     (* foooooooooooooooo fooooooooooooooooooooooooo foooooooooooooooooooooo *)
     fooooooooooooooooooooooooooooo= fooooooooooooo;
-    fooooooooooooo= foooooooooooooo
+    fooooooooooooo= foooooooooooooo;
   }
 
 let fooooooooooo = function
@@ -314,5 +316,5 @@ let fooooooooooo = function
         empty with
         bdy= fmt_longident_loc c lid;
         epi=
-          Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
+          Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "));
       }
