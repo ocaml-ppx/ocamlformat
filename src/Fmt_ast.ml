@@ -197,9 +197,9 @@ let wrap_disambiguate_exp_if c ~parens ~loc k =
 let wrap_disambiguate_fits_breaks_exp_if c ~parens ~loc k =
   match parens_or_begin_end c ~loc with
   | `Parens ->
-     if c.conf.disambiguate_non_breaking_match then
-       wrap_if_fits_or parens "(" ")" k
-     else wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
+      if c.conf.disambiguate_non_breaking_match then
+        wrap_if_fits_or parens "(" ")" k
+      else wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
 let drop_while ~f s =
