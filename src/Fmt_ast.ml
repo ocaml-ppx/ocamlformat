@@ -194,12 +194,12 @@ let wrap_disambiguate_exp_if c ~parens ~loc k =
       else wrap_if parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
-let wrap_disambiguate_fits_breaks_exp_if c ~parens ~loc k =
+let wrap_disambiguate_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
   match parens_or_begin_end c ~loc with
   | `Parens ->
       if c.conf.disambiguate_non_breaking_match then
         wrap_if_fits_or parens "(" ")" k
-      else wrap_fits_breaks_if ~space:false c.conf parens "(" ")" k
+      else wrap_fits_breaks_if ~space c.conf parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
 let drop_while ~f s =
@@ -2134,7 +2134,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
           let indent = match_indent c ~ctx:xexp.ctx ~default:0 in
           hvbox indent
-            (wrap_disambiguate_fits_breaks_exp_if c ~parens ~loc:pexp_loc
+            (wrap_disambiguate_fits_breaks_exp_if c ~space:false ~parens
+               ~loc:pexp_loc
                ( leading_cmt
                $ hvbox 0
                    ( str keyword
@@ -2153,7 +2154,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             if c.conf.leading_nested_match_parens then (false, None)
             else (parenze_exp xpc_rhs, Some false)
           in
-          wrap_disambiguate_fits_breaks_exp_if c ~parens ~loc:pexp_loc
+          wrap_disambiguate_fits_breaks_exp_if c ~space:false ~parens
+            ~loc:pexp_loc
             (hovbox 2
                ( hvbox 0
                    ( str keyword
