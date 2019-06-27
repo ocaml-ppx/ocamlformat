@@ -281,6 +281,21 @@ A
   B
       ]} *)
 
+(** Code block
+    {[ Single line ]}
+    {[
+      Multi
+      line
+    ]}
+    {[
+      Multi
+      line
+        with
+          indentation
+    ]}
+    {[ Single long line HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ]}
+    *)
+
 (** {!module:A} {!module:A.B}
 
     {!module-type:A} {!module-type:A.b}
