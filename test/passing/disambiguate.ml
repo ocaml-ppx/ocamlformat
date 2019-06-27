@@ -19,21 +19,19 @@ let () = r := (match () with () -> f () ; g ())
 
 let () =
   r :=
-    ( match () with
+    match () with
     | () ->
         f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
-    )
 
 let () = r := (try () with () -> f () ; g ())
 
 let () =
   r :=
-    ( try ()
-      with () ->
-        f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
-    )
+    try ()
+    with () ->
+      f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
 
-[@@@ocamlformat "indicate-multiline-delimiters=false"]
+[@@@ocamlformat "indicate-multiline-delimiters=no"]
 
 let () =
   r :=
