@@ -160,40 +160,6 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
 
 and fmt_inline_elements txt = list txt "" (ign_loc ~f:fmt_inline_element)
 
-(** TODO:
-
-    {[
-and fmt_text txt =
-  let no_space_before = ['.'; ':'; ';'; ','; '-'; ')'; '\''] in
-  let no_space_before c = List.mem no_space_before c ~equal:Char.equal in
-  let is_space c = List.mem [' '; '\r'; '\t'; '\n'] c ~equal:Char.equal in
-  let f ?prev:_ curr ?next =
-    match next with
-    | Some (Raw " ") -> fmt_text_elt curr
-    | Some (Raw x) when no_space_before x.[0] -> fmt_text_elt curr
-    | Some Newline -> fmt_text_elt curr
-    | Some next -> (
-      match curr with
-      | Newline -> fmt_newline
-      | List _ | Enum _ -> fmt_text_elt curr $ fmt_newline
-      | Raw x when not (is_space x.[String.length x - 1]) -> (
-          fmt_text_elt curr
-          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> noop )
-      | Code _ -> (
-          fmt_text_elt curr
-          $
-          match next with
-          | List _ | Enum _ -> fmt "@\n"
-          | Raw x -> fmt_if (is_space x.[0]) "@ "
-          | _ -> fmt "@ " )
-      | _ -> (
-          fmt_text_elt curr
-          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "@ " ) )
-    | None -> fmt_text_elt curr
-  in
-  hovbox 0 (list_pn txt f)
-    ]} *)
-
 and fmt_nestable_block_element : nestable_block_element -> t = function
   | `Paragraph elems -> hovbox 0 (fmt_inline_elements elems)
   | `Code_block s -> fmt_code_block s
