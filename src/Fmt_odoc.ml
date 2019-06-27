@@ -45,14 +45,13 @@ let escape_all s =
   in
   ensure_escape ~escapeworthy s
 
-let str ?(escape = true) s =
+(** Escape special characters and normalize whitespaces *)
+let str_normalized ?(escape = true) s =
   let escape = if escape then escape_all else Fn.id in
   s
   |> String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
   |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
-
-let str_verbatim = Fmt.str
 
 let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
@@ -62,21 +61,21 @@ let fmt_verbatim_block s =
   let force_break = String.contains s '\n' in
   let content =
     (* Literal newline to avoid indentation *)
-    if force_break then wrap "\n" "@\n" (str_verbatim s)
+    if force_break then wrap "\n" "@\n" (str s)
     else
       fits_breaks " " "\n"
-      $ str_verbatim (String.strip s)
+      $ str (String.strip s)
       $ fits_breaks " " ~hint:(0, 0) ""
   in
   hvbox 0 (wrap "{v" "v}" content)
 
 let fmt_code_block s =
-  let fmt_line l = str_verbatim (String.rstrip l) in
+  let fmt_line l = str (String.rstrip l) in
   let lines = String.split_lines s in
   let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
   box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list lines "@\n" fmt_line)))
 
-let fmt_reference = ign_loc ~f:str
+let fmt_reference = ign_loc ~f:str_normalized
 
 (* Decide between using light and heavy syntax for lists *)
 let list_should_use_heavy_syntax items =
@@ -125,7 +124,9 @@ let fmt_styled style fmt_elem elems =
   in
   hovbox 0
     (wrap "{" "}"
-       (str s $ fmt_if_not_empty elems "@ " $ list elems "" fmt_elem))
+       ( str_normalized s
+       $ fmt_if_not_empty elems "@ "
+       $ list elems "" fmt_elem ))
 
 let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Space _ -> fmt "@ "
@@ -136,15 +137,17 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
           (String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-'))
           (if_newline "\\")
       in
-      escape $ str w
+      escape $ str_normalized w
   | `Code_span s ->
       let s = escape_brackets s in
-      hovbox 0 (wrap "[" "]" (str_verbatim s))
+      hovbox 0 (wrap "[" "]" (str s))
   | `Raw_markup (lang, s) ->
       let lang =
-        match lang with Some l -> str l $ str ":" | None -> noop
+        match lang with
+        | Some l -> str_normalized l $ str ":"
+        | None -> noop
       in
-      wrap "{%%" "%%}" (lang $ str_verbatim s)
+      wrap "{%%" "%%}" (lang $ str s)
   | `Styled (style, elems) ->
       fmt_styled style (ign_loc ~f:fmt_inline_element) elems
   | `Reference (_kind, ref, txt) ->
@@ -153,7 +156,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       else
         hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
   | `Link (url, txt) -> (
-      let url = wrap "{:" "}" (str url) in
+      let url = wrap "{:" "}" (str_normalized url) in
       match txt with
       | [] -> url
       | txt -> wrap "{" "}" (url $ fmt "@ " $ fmt_inline_elements txt) )
@@ -196,22 +199,22 @@ and fmt_nestable_block_elements elems =
 let at = char '@'
 
 let fmt_tag : tag -> Fmt.t = function
-  | `Author s -> at $ fmt "author@ " $ str s
-  | `Version s -> at $ fmt "version@ " $ str s
+  | `Author s -> at $ fmt "author@ " $ str_normalized s
+  | `Version s -> at $ fmt "version@ " $ str_normalized s
   | `See (_, sr, txt) ->
-      at $ fmt "see@ <" $ str sr $ fmt ">@ "
+      at $ fmt "see@ <" $ str_normalized sr $ fmt ">@ "
       $ fmt_nestable_block_elements txt
-  | `Since s -> at $ fmt "since@ " $ str s
+  | `Since s -> at $ fmt "since@ " $ str_normalized s
   | `Before (s, txt) ->
-      at $ fmt "before@ " $ str s $ fmt "@ "
+      at $ fmt "before@ " $ str_normalized s $ fmt "@ "
       $ fmt_nestable_block_elements txt
   | `Deprecated txt ->
       at $ fmt "deprecated@ " $ fmt_nestable_block_elements txt
   | `Param (s, txt) ->
-      at $ fmt "param@ " $ str s $ fmt "@ "
+      at $ fmt "param@ " $ str_normalized s $ fmt "@ "
       $ fmt_nestable_block_elements txt
   | `Raise (s, txt) ->
-      at $ fmt "raise@ " $ str s $ fmt "@ "
+      at $ fmt "raise@ " $ str_normalized s $ fmt "@ "
       $ fmt_nestable_block_elements txt
   | `Return txt -> at $ fmt "return@ " $ fmt_nestable_block_elements txt
   | `Inline -> at $ str "inline"
@@ -224,7 +227,9 @@ let fmt_block_element = function
   | `Heading (lvl, lbl, elems) ->
       let lvl = Int.to_string lvl in
       let lbl =
-        match lbl with Some lbl -> str ":" $ str lbl | None -> fmt ""
+        match lbl with
+        | Some lbl -> str ":" $ str_normalized lbl
+        | None -> fmt ""
       in
       hovbox 0
         (wrap "{" "}" (str lvl $ lbl $ fmt "@ " $ fmt_inline_elements elems))
