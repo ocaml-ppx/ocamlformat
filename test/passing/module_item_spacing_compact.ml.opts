@@ -1,1 +1,2 @@
---max-iter=3 --module-item-spacing=compact
+--max-iter=3
+--module-item-spacing=compact

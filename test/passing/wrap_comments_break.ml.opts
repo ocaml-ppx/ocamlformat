@@ -1,1 +1,2 @@
---no-wrap-fun-args -m 67
+--no-wrap-fun-args
+--margin=67

@@ -1,1 +1,2 @@
---if-then-else fit-or-vertical --indicate-multiline-delimiters=no
+--if-then-else=fit-or-vertical
+--indicate-multiline-delimiters=no

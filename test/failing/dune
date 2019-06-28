@@ -1,0 +1,11 @@
+(rule
+ (targets list_and_comments.ml.output)
+ (action
+   (with-outputs-to %{targets}
+     (run %{bin:ocamlformat} %{dep:list_and_comments.ml}))))
+
+(alias
+  (name runtest)
+  (enabled_if (= %{context_name} "dev"))
+  (deps list_and_comments.ml.broken-ref list_and_comments.ml.output)
+  (action (diff list_and_comments.ml.broken-ref list_and_comments.ml.output)))

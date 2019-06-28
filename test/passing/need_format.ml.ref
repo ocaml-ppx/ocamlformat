@@ -1,1 +1,1 @@
-ocamlformat.exe: "passing/need_format.ml" was not already formatted. ([max-iters = 1])
+ocamlformat: "need_format.ml" was not already formatted. ([max-iters = 1])

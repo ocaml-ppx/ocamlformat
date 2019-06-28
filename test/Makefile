@@ -144,4 +144,4 @@ print-%:
 .PHONY: regtests
 regtests:
 	@echo running regtests with $(OCAMLFORMAT_EXE)
-	@./test.sh --ocamlformat $(OCAMLFORMAT_EXE)
+	@dune runtest

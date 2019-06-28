@@ -1,1 +1,4 @@
-passing/dir1/dir2/print_config.ml --print-config --let-open=short --config=max-iters=2
+dir1/dir2/print_config.ml
+--print-config
+--let-open=short
+--config=max-iters=2

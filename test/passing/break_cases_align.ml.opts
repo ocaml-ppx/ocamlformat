@@ -1,1 +1,2 @@
---nested-match=align --break-cases=all
+--nested-match=align
+--break-cases=all
