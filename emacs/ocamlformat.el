@@ -68,6 +68,15 @@ a `before-save-hook'."
           (const :tag "None" nil))
   :group 'ocamlformat)
 
+(defcustom ocamlformat-unrecognized-extension nil
+  "Add a parse argument to ocamlformat if using an unrecognize extension. It
+    can either be set to 'implementation, 'interface or nil (default)."
+    :type '(choice
+            (const :tag "implementation" 'implementation)
+            (const :tag "interface" 'interface)
+            (const :tag "none" nil))
+    :group 'ocamlformat)
+
 ;;;###autoload
 (defun ocamlformat-before-save ()
   "Add this to .emacs to run ocamlformat on the current buffer when saving:
@@ -230,7 +239,13 @@ function."
             ((equal ocamlformat-enable 'enable-outside-detected-project)
              (list "--enable-outside-detected-project"))
             (t
-             '()))))
+             '())))
+          (extension-args
+           (cond
+            ((eq ocamlformat-unrecognized-extension 'implementation)
+             (list "--impl"))
+            ((eq ocamlformat-unrecognized-extension 'interface)
+             (list "--intf")))))
      (unwind-protect
          (save-restriction
            (widen)
@@ -238,11 +253,10 @@ function."
            (if (zerop
                  (apply 'call-process
                    ocamlformat-command nil (list :file errorfile) nil
-                   (append margin-args
-                     (append enable-args
-                       (list
-                         "--name" buffer-file-name
-                         "--output" outputfile bufferfile)))))
+                      (append margin-args enable-args extension-args
+                              (list
+                               "--name" buffer-file-name
+                               "--output" outputfile bufferfile))))
              (progn
                (if ocamlformat--support-replace-buffer-contents
                    (ocamlformat--replace-buffer-contents outputfile)
