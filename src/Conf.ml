@@ -95,8 +95,7 @@ module Fpath = struct
         ~default:(to_string p) ~f:to_string
     else to_string p
 
-  let pp ?(pretty = false) fmt p =
-    Format.fprintf fmt "%s" (to_string ~pretty p)
+  let pp fmt p = Format.fprintf fmt "%s" (to_string ~pretty:true p)
 end
 
 (** Extension of Cmdliner supporting lighter-weight option definition *)
@@ -2290,12 +2289,12 @@ let is_in_listing_file ~quiet ~listings ~filename =
                 | Error (`Msg msg) ->
                     if not quiet then
                       Format.eprintf "File %a, line %d:\nWarning: %s\n"
-                        (Fpath.pp ~pretty:true) listing_file lno msg ;
+                        Fpath.pp listing_file lno msg ;
                     None))
       with Sys_error err ->
         if not quiet then
-          Format.eprintf "Warning: ignoring %a, %s\n"
-            (Fpath.pp ~pretty:true) listing_file err ;
+          Format.eprintf "Warning: ignoring %a, %s\n" Fpath.pp listing_file
+            err ;
         None)
 
 let is_ignored ~ignores = is_in_listing_file ~listings:ignores
@@ -2344,9 +2343,8 @@ let build_config ~file =
     match is_enabled ~quiet:conf.quiet ~enables ~filename:file_abs with
     | Some (enabled_in_file, lno) ->
         if !debug then
-          Format.eprintf "File %a: enabled in %a:%d@\n"
-            (Fpath.pp ~pretty:true) file_abs (Fpath.pp ~pretty:true)
-            enabled_in_file lno ;
+          Format.eprintf "File %a: enabled in %a:%d@\n" Fpath.pp file_abs
+            Fpath.pp enabled_in_file lno ;
         {conf with disable= false}
     | None -> conf
   else
@@ -2354,9 +2352,8 @@ let build_config ~file =
     | None -> conf
     | Some (ignored_in_file, lno) ->
         if !debug then
-          Format.eprintf "File %a: ignored in %a:%d@\n"
-            (Fpath.pp ~pretty:true) file_abs (Fpath.pp ~pretty:true)
-            ignored_in_file lno ;
+          Format.eprintf "File %a: ignored in %a:%d@\n" Fpath.pp file_abs
+            Fpath.pp ignored_in_file lno ;
         {conf with disable= true}
 
 ;;
