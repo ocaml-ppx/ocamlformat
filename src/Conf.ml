@@ -1746,17 +1746,10 @@ let dot_ocamlformat_enable = ".ocamlformat-enable"
 let rec collect_files ~segs ~ignores ~enables ~files =
   match segs with
   | [] | [""] -> (ignores, enables, files, None)
-  | "" :: upper_segs ->
-      collect_files ~segs:upper_segs ~ignores ~enables ~files
-  | _ :: upper_segs ->
-      let dir =
-        String.concat ~sep:Fpath.dir_sep (List.rev segs) |> Fpath.v
-      in
-      let files =
-        let filename = Fpath.(dir / dot_ocamlformat) in
-        if Fpath.exists filename then `Ocamlformat filename :: files
-        else files
-      in
+  | "" :: segs -> collect_files ~segs ~ignores ~enables ~files
+  | _ :: segs ->
+      let sep = Fpath.dir_sep in
+      let dir = String.concat ~sep (List.rev segs) |> Fpath.v in
       let ignores =
         let filename = Fpath.(dir / dot_ocamlformat_ignore) in
         if Fpath.exists filename then filename :: ignores else ignores
@@ -1766,13 +1759,15 @@ let rec collect_files ~segs ~ignores ~enables ~files =
         if Fpath.exists filename then filename :: enables else enables
       in
       let files =
-        let filename = Fpath.(dir / dot_ocp_indent) in
-        if Fpath.exists filename then `Ocp_indent filename :: files
-        else files
+        let f_1 = Fpath.(dir / dot_ocamlformat) in
+        let f_2 = Fpath.(dir / dot_ocp_indent) in
+        files
+        |> (fun k -> if Fpath.exists f_1 then `Ocamlformat f_1 :: k else k)
+        |> fun k -> if Fpath.exists f_2 then `Ocp_indent f_2 :: k else k
       in
       if is_project_root dir && not enable_outside_detected_project then
         (ignores, enables, files, Some dir)
-      else collect_files ~segs:upper_segs ~ignores ~enables ~files
+      else collect_files ~segs ~ignores ~enables ~files
 
 let read_config_file conf filename_kind =
   match filename_kind with
@@ -1783,9 +1778,8 @@ let read_config_file conf filename_kind =
           let c, errors, _ =
             In_channel.fold_lines ic ~init:(conf, [], 1)
               ~f:(fun (conf, errors, num) line ->
-                match
-                  parse_line conf ~from:(`File (filename, num)) line
-                with
+                let from = `File (filename, num) in
+                match parse_line conf ~from line with
                 | Ok conf -> (conf, errors, Int.succ num)
                 | Error e -> (conf, e :: errors, Int.succ num))
           in
@@ -1839,14 +1833,13 @@ type action =
   | Check of [`Impl | `Intf | `Use_file] input list
 
 let kind_of fname =
-  match !kind with
-  | Some kind -> kind
-  | None -> (
-    match Filename.extension fname with
-    | ".ml" -> `Impl
-    | ".mli" -> `Intf
-    | ".mlt" -> `Use_file
-    | _ -> `Impl )
+  Option.value !kind
+    ~default:
+      ( match Filename.extension fname with
+      | ".ml" -> `Impl
+      | ".mli" -> `Intf
+      | ".mlt" -> `Use_file
+      | _ -> `Impl )
 
 let xdg_config =
   let xdg_config_home =
@@ -1872,9 +1865,9 @@ let is_in_listing_file ~quiet ~listings ~filename =
       try
         In_channel.with_file (Fpath.to_string listing_file) ~f:(fun ch ->
             let lines =
-              In_channel.input_lines ch
-              |> List.mapi ~f:(fun i s -> (i + 1, String.strip s))
-              |> List.filter ~f:(fun (_, l) -> not (drop_line l))
+              List.filter_mapi (In_channel.input_lines ch) ~f:(fun i s ->
+                  let l = String.strip s in
+                  Option.some_if (not (drop_line l)) (i + 1, l))
             in
             List.find_map lines ~f:(fun (lno, line) ->
                 match Fpath.of_string line with
@@ -1908,10 +1901,6 @@ let is_in_listing_file ~quiet ~listings ~filename =
             err ;
         None)
 
-let is_ignored ~ignores = is_in_listing_file ~listings:ignores
-
-let is_enabled ~enables = is_in_listing_file ~listings:enables
-
 let build_config ~file =
   let file_abs = Fpath.(v file |> to_absolute |> normalize) in
   let dir = Fpath.(file_abs |> split_base |> fst) in
@@ -1933,39 +1922,33 @@ let build_config ~file =
     let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
     List.for_all files ~f
   in
+  let quiet = conf.quiet in
   if no_ocamlformat_files && not enable_outside_detected_project then (
     ( if not conf.quiet then
-      let reason =
-        match project_root with
-        | Some root ->
+      let why =
+        Option.value_map project_root ~default:"no project root was found"
+          ~f:(fun root ->
             Format.sprintf
               "no [.ocamlformat] was found within the project (root: %s)"
-              (Fpath.to_string ~relativize:true root)
-        | None -> "no project root was found"
+              (Fpath.to_string ~relativize:true root))
       in
       Format.eprintf
         "File %S:@\n\
          Warning: Ocamlformat disabled because \
          [--enable-outside-detected-project] is not set and %s@\n\
          %!"
-        file reason ) ;
+        file why ) ;
     {conf with disable= true} )
-  else if conf.disable then
-    match is_enabled ~quiet:conf.quiet ~enables ~filename:file_abs with
-    | Some (enabled_in_file, lno) ->
-        if !debug then
-          Format.eprintf "File %a: enabled in %a:%d@\n" Fpath.pp file_abs
-            Fpath.pp enabled_in_file lno ;
-        {conf with disable= false}
-    | None -> conf
   else
-    match is_ignored ~quiet:conf.quiet ~ignores ~filename:file_abs with
-    | None -> conf
-    | Some (ignored_in_file, lno) ->
+    let listings = if conf.disable then enables else ignores in
+    match is_in_listing_file ~quiet ~listings ~filename:file_abs with
+    | Some (file, lno) ->
+        let status = if conf.disable then "enabled" else "ignored" in
         if !debug then
-          Format.eprintf "File %a: ignored in %a:%d@\n" Fpath.pp file_abs
-            Fpath.pp ignored_in_file lno ;
-        {conf with disable= true}
+          Format.eprintf "File %a: %s in %a:%d@\n" Fpath.pp file_abs status
+            Fpath.pp file lno ;
+        {conf with disable= not conf.disable}
+    | None -> conf
 
 ;;
 if !print_config then
