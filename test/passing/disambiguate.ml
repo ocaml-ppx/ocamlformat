@@ -30,28 +30,3 @@ let () =
     try ()
     with () ->
       f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
-
-[@@@ocamlformat "indicate-multiline-delimiters=no"]
-
-let () =
-  r :=
-    fun () ->
-      f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
-
-let () =
-  r :=
-    function
-    | () ->
-        f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
-
-let () =
-  r :=
-    match () with
-    | () ->
-        f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
-
-let () =
-  r :=
-    try ()
-    with () ->
-      f () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g () ; g ()
