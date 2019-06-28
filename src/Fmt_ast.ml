@@ -1907,7 +1907,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent = function_indent c ~ctx ~default:default_indent in
       hvbox_if box indent
-        (wrap_exp_if c ~disambiguate:true ~parens ~loc:pexp_loc
+        (wrap_exp_if c ~loc:pexp_loc ~parens ~disambiguate:true
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "
@@ -1921,7 +1921,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@ " $ body ))
   | Pexp_function cs ->
       let indent = function_indent c ~ctx ~default:0 in
-      wrap_exp_if c ~disambiguate:true ~parens ~loc:pexp_loc
+      wrap_exp_if c ~loc:pexp_loc ~parens ~disambiguate:true
         ( hvbox 2
             ( str "function"
             $ fmt_extension_suffix c ext
@@ -2124,8 +2124,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
           let indent = match_indent c ~ctx:xexp.ctx ~default:0 in
           hvbox indent
-            (wrap_fits_breaks_exp_if c ~disambiguate:true ~space:false
-               ~parens ~loc:pexp_loc
+            (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+               ~disambiguate:true
                ( leading_cmt
                $ hvbox 0
                    ( str keyword
@@ -2144,8 +2144,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             if c.conf.leading_nested_match_parens then (false, None)
             else (parenze_exp xpc_rhs, Some false)
           in
-          wrap_fits_breaks_exp_if c ~disambiguate:true ~space:false ~parens
-            ~loc:pexp_loc
+          wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+            ~disambiguate:true
             (hovbox 2
                ( hvbox 0
                    ( str keyword
