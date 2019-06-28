@@ -176,31 +176,21 @@ let parens_or_begin_end c ~loc =
       let str = String.lstrip (Source.string_at c.source loc) in
       if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
 
-let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
-  match parens_or_begin_end c ~loc with
-  | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
-  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
+let wrap_fits_breaks_exp_if ?(space = true) ?(preserve_kw = true)
+    ?(disambiguate = false) c ~parens ~loc k =
+  if preserve_kw && Poly.(parens_or_begin_end c ~loc = `Begin_end) then
+    wrap_fits_breaks_exp_begin_end ~parens k
+  else if disambiguate && c.conf.disambiguate_non_breaking_match then
+    wrap_if_fits_or parens "(" ")" k
+  else wrap_fits_breaks_if ~space c.conf parens "(" ")" k
 
-let wrap_exp_if c ~parens ~loc k =
-  match parens_or_begin_end c ~loc with
-  | `Parens -> wrap_if parens "(" ")" k
-  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
-
-let wrap_disambiguate_exp_if c ~parens ~loc k =
-  match parens_or_begin_end c ~loc with
-  | `Parens ->
-      if c.conf.disambiguate_non_breaking_match then
-        wrap_if_fits_or parens "(" ")" k
-      else wrap_if parens "(" ")" k
-  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
-
-let wrap_disambiguate_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
-  match parens_or_begin_end c ~loc with
-  | `Parens ->
-      if c.conf.disambiguate_non_breaking_match then
-        wrap_if_fits_or parens "(" ")" k
-      else wrap_fits_breaks_if ~space c.conf parens "(" ")" k
-  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
+let wrap_exp_if ?(preserve_kw = true) ?(disambiguate = false) c ~parens ~loc
+    k =
+  if preserve_kw && Poly.(parens_or_begin_end c ~loc = `Begin_end) then
+    wrap_fits_breaks_exp_begin_end ~parens k
+  else if disambiguate && c.conf.disambiguate_non_breaking_match then
+    wrap_if_fits_or parens "(" ")" k
+  else wrap_if parens "(" ")" k
 
 let drop_while ~f s =
   let i = ref 0 in
@@ -1917,7 +1907,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent = function_indent c ~ctx ~default:default_indent in
       hvbox_if box indent
-        (wrap_disambiguate_exp_if c ~parens ~loc:pexp_loc
+        (wrap_exp_if c ~disambiguate:true ~parens ~loc:pexp_loc
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "
@@ -1931,7 +1921,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@ " $ body ))
   | Pexp_function cs ->
       let indent = function_indent c ~ctx ~default:0 in
-      wrap_disambiguate_exp_if c ~parens ~loc:pexp_loc
+      wrap_exp_if c ~disambiguate:true ~parens ~loc:pexp_loc
         ( hvbox 2
             ( str "function"
             $ fmt_extension_suffix c ext
@@ -2134,8 +2124,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
           let indent = match_indent c ~ctx:xexp.ctx ~default:0 in
           hvbox indent
-            (wrap_disambiguate_fits_breaks_exp_if c ~space:false ~parens
-               ~loc:pexp_loc
+            (wrap_fits_breaks_exp_if c ~disambiguate:true ~space:false
+               ~parens ~loc:pexp_loc
                ( leading_cmt
                $ hvbox 0
                    ( str keyword
@@ -2154,7 +2144,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             if c.conf.leading_nested_match_parens then (false, None)
             else (parenze_exp xpc_rhs, Some false)
           in
-          wrap_disambiguate_fits_breaks_exp_if c ~space:false ~parens
+          wrap_fits_breaks_exp_if c ~disambiguate:true ~space:false ~parens
             ~loc:pexp_loc
             (hovbox 2
                ( hvbox 0
