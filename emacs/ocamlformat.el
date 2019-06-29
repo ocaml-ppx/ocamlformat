@@ -69,7 +69,7 @@ a `before-save-hook'."
   :group 'ocamlformat)
 
 (defcustom ocamlformat-unrecognized-extension nil
-  "Add a parse argument to ocamlformat if using an unrecognize extension. It
+  "Add a parse argument to ocamlformat if using an unrecognized extension. It
     can either be set to 'implementation, 'interface or nil (default)."
     :type '(choice
             (const :tag "implementation" 'implementation)
