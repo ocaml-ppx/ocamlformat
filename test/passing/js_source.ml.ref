@@ -9803,3 +9803,11 @@ module type T = sig
   (** @param blablabla *)
   val f : a_few:params -> with_long_names:to_break -> the_line:before_the_comment -> unit
 end
+
+open! Core
+
+(** First documentation comment. *)
+exception First_exception
+
+(** Second documentation comment. *)
+exception Second_exception
