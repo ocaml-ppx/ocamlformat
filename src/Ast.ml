@@ -60,8 +60,8 @@ let is_infix_id i =
       true
   | _ ->
       String.length i > 3
-      && ( String.is_substring i ~substring:"let"
-         || String.is_substring i ~substring:"and" )
+      && ( String.is_prefix i ~prefix:"let"
+         || String.is_prefix i ~prefix:"and" )
       && String.for_all
            (String.sub i ~pos:3 ~len:(String.length i - 3))
            ~f:is_infix_symbol
