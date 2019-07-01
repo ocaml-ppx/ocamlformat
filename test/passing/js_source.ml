@@ -7409,3 +7409,11 @@ module type T = sig
    (** @param blablabla *)
 
 end
+
+open! Core
+
+(** First documentation comment. *)
+exception First_exception
+
+(** Second documentation comment. *)
+exception Second_exception

@@ -310,7 +310,6 @@ module Structure_item : Module_item with type t = structure_item = struct
      |Pstr_primitive {pval_attributes= atrs; _}
      |Pstr_type (_, {ptype_attributes= atrs; _} :: _)
      |Pstr_typext {ptyext_attributes= atrs; _}
-     |Pstr_exception {ptyexn_attributes= atrs; _}
      |Pstr_recmodule ({pmb_expr= {pmod_attributes= atrs; _}; _} :: _)
      |Pstr_modtype {pmtd_attributes= atrs; _}
      |Pstr_open {popen_attributes= atrs; _}
@@ -320,6 +319,10 @@ module Structure_item : Module_item with type t = structure_item = struct
         Option.is_some (fst (doc_atrs atrs))
     | Pstr_include
         {pincl_mod= {pmod_attributes= atrs1; _}; pincl_attributes= atrs2; _}
+     |Pstr_exception
+        { ptyexn_attributes= atrs1
+        ; ptyexn_constructor= {pext_attributes= atrs2; _}
+        ; _ }
      |Pstr_module
         {pmb_attributes= atrs1; pmb_expr= {pmod_attributes= atrs2; _}; _} ->
         Option.is_some (fst (doc_atrs (List.append atrs1 atrs2)))
