@@ -3909,7 +3909,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c
       ; epi=
           Some
             ( str "end" $ after
-            $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs ) }
+            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@" atrs ) }
   | Pmod_unpack
       { pexp_desc=
           Pexp_constraint

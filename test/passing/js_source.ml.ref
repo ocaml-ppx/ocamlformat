@@ -10,7 +10,8 @@ module M = struct
   type t = { l : (t[@foo]) [@foo] } [@@foo] [@@foo]
 
   [@@@foo]
-end [@foo]
+end
+[@foo]
 [@@foo]
 
 module type S = sig
