@@ -170,7 +170,7 @@ let make_mapper c ~ignore_doc_comment =
                            ; pexp_loc_stack= [] }
                          , [] )
                    ; pstr_loc= m.location m pstr_loc } ])
-        ; attr_loc= attr.attr_loc }
+        ; attr_loc= m.location m attr.attr_loc }
     | _ -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
