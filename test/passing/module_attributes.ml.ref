@@ -2,7 +2,8 @@ include (functor [@warning "item"] (M : S) -> N) [@@warning "structure"]
 
 include struct
   type t
-end [@warning "item"] [@@warning "structure"]
+end
+[@warning "item"] [@@warning "structure"]
 
 include M [@warning "item"] [@@warning "structure"]
 
@@ -33,8 +34,6 @@ include (
       with module A := A [@warning "-3"] [@warning "-3"]
       with module B := B [@warning "-3"] [@warning "-3"]) ) [@warning "-3"]
 
-module My_module_name : sig
-end = struct
-end
-      (* some arbitrary comment *)
-      [@ocaml.warning "-60"]
+module My_module_name : sig end = struct end
+(* some arbitrary comment *)
+[@ocaml.warning "-60"]
