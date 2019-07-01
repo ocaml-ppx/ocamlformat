@@ -68,7 +68,7 @@ a `before-save-hook'."
           (const :tag "None" nil))
   :group 'ocamlformat)
 
-(defcustom ocamlformat-unrecognized-extension nil
+(defcustom ocamlformat-file-kind nil
   "Add a parse argument to ocamlformat if using an unrecognized extension. It
     can either be set to 'implementation, 'interface or nil (default)."
     :type '(choice
@@ -242,9 +242,9 @@ function."
              '())))
           (extension-args
            (cond
-            ((eq ocamlformat-unrecognized-extension 'implementation)
+            ((eq ocamlformat-file-kind 'implementation)
              (list "--impl"))
-            ((eq ocamlformat-unrecognized-extension 'interface)
+            ((eq ocamlformat-file-kind 'interface)
              (list "--intf")))))
      (unwind-protect
          (save-restriction
