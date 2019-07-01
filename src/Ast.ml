@@ -44,6 +44,11 @@ let is_prefix exp =
   | Pexp_ident {txt= Lident i; _} -> is_prefix_id i
   | _ -> false
 
+let is_infix_symbol = function
+  | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|' ->
+      true
+  | _ -> false
+
 let is_infix_id i =
   match (i.[0], i) with
   | ( ( '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&'
@@ -53,7 +58,13 @@ let is_infix_id i =
     , ( "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
       | "lsr" | "or" | "||" ) ) ->
       true
-  | _ -> false
+  | _ ->
+      String.length i > 3
+      && ( String.is_substring i ~substring:"let"
+         || String.is_substring i ~substring:"and" )
+      && String.for_all
+           (String.sub i ~pos:3 ~len:(String.length i - 3))
+           ~f:is_infix_symbol
 
 let is_infix e =
   match e.pexp_desc with
