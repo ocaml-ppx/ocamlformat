@@ -1618,7 +1618,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; pexp_loc= _
         ; _ }
       , [(Nolabel, _); (Nolabel, _)] )
-    when is_infix_id id ->
+    when is_infix_id id && not (is_monadic_binding_id id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
       fmt_op_args
         (List.map op_args ~f:(fun (op, args) ->
@@ -1923,6 +1923,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then
           (wrap "( " " )", true)
+        else if is_monadic_binding exp then (wrap "( " " )", false)
         else if is_symbol exp then (wrap_if parens "( " " )", false)
         else (wrap_if parens "(" ")", false)
       in
