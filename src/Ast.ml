@@ -49,6 +49,18 @@ let is_infix_symbol = function
       true
   | _ -> false
 
+let is_monadic_binding_id s =
+  String.length s > 3
+  && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
+  && String.for_all
+       (String.sub s ~pos:3 ~len:(String.length s - 3))
+       ~f:is_infix_symbol
+
+let is_monadic_binding e =
+  match e.pexp_desc with
+  | Pexp_ident {txt= Lident i; _} -> is_monadic_binding_id i
+  | _ -> false
+
 let is_infix_id i =
   match (i.[0], i) with
   | ( ( '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&'
@@ -58,13 +70,7 @@ let is_infix_id i =
     , ( "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
       | "lsr" | "or" | "||" ) ) ->
       true
-  | _ ->
-      String.length i > 3
-      && ( String.is_prefix i ~prefix:"let"
-         || String.is_prefix i ~prefix:"and" )
-      && String.for_all
-           (String.sub i ~pos:3 ~len:(String.length i - 3))
-           ~f:is_infix_symbol
+  | _ -> is_monadic_binding_id i
 
 let is_infix e =
   match e.pexp_desc with
