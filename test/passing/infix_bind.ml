@@ -197,3 +197,12 @@ let _ =
   foo >>= fun [@warning "-4"] x y ->
   fooooooooooooooooooooooo fooooooooooooooooooooooo fooooooooooooooooooooooo
     fooooooooooooooooooooooo
+
+let _ =
+  foo >>= function(* foo before *) [@warning "-4"] (* foo after *)
+  | Afoooooooooooooooooo fooooooooo -> false
+  | Bfoooooooooooooooooooooo fooooooooo -> true
+
+let _ =
+  foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
+  fooooooooooooooooooooooo
