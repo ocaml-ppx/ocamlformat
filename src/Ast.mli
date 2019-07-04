@@ -41,6 +41,10 @@ val index_op_set_sugar :
   -> ((string * Char.t * Char.t) Location.loc * expression list * expression)
      option
 
+val is_monadic_binding_id : string -> bool
+
+val is_monadic_binding : expression -> bool
+
 val is_symbol_id : string -> bool
 (** Holds of prefix or infix symbols. *)
 

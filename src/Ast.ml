@@ -44,6 +44,23 @@ let is_prefix exp =
   | Pexp_ident {txt= Lident i; _} -> is_prefix_id i
   | _ -> false
 
+let is_kwdopchar = function
+  | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|'
+   |'!' | '%' | ':' | '?' ->
+      true
+  | _ -> false
+
+let is_monadic_binding_id s =
+  String.length s > 3
+  && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
+  && Option.is_none
+       (String.lfindi s ~pos:3 ~f:(fun _ c -> not (is_kwdopchar c)))
+
+let is_monadic_binding e =
+  match e.pexp_desc with
+  | Pexp_ident {txt= Lident i; _} -> is_monadic_binding_id i
+  | _ -> false
+
 let is_infix_id i =
   match (i.[0], i) with
   | ( ( '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&'
@@ -53,7 +70,7 @@ let is_infix_id i =
     , ( "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
       | "lsr" | "or" | "||" ) ) ->
       true
-  | _ -> false
+  | _ -> is_monadic_binding_id i
 
 let is_infix e =
   match e.pexp_desc with
