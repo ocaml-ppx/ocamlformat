@@ -53,9 +53,8 @@ let is_kwdopchar = function
 let is_monadic_binding_id s =
   String.length s > 3
   && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
-  && String.for_all
-       (String.sub s ~pos:3 ~len:(String.length s - 3))
-       ~f:is_kwdopchar
+  && Option.is_none
+       (String.lfindi s ~pos:3 ~f:(fun _ c -> not (is_kwdopchar c)))
 
 let is_monadic_binding e =
   match e.pexp_desc with
