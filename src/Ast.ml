@@ -44,8 +44,9 @@ let is_prefix exp =
   | Pexp_ident {txt= Lident i; _} -> is_prefix_id i
   | _ -> false
 
-let is_infix_symbol = function
-  | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|' ->
+let is_kwdopchar = function
+  | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|'
+   |'!' | '%' | ':' | '?' ->
       true
   | _ -> false
 
@@ -54,7 +55,7 @@ let is_monadic_binding_id s =
   && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
   && String.for_all
        (String.sub s ~pos:3 ~len:(String.length s - 3))
-       ~f:is_infix_symbol
+       ~f:is_kwdopchar
 
 let is_monadic_binding e =
   match e.pexp_desc with
