@@ -181,3 +181,28 @@ let foo =
       let batch = {repo; tree= old_tree; origin} in
       let b = Batch batch in
       foo
+
+let _ = foo >>= function[@warning "-4"] A -> false | B -> true
+
+let _ =
+  foo >>= function[@warning "-4"]
+  | Afoooooooooooooooooo fooooooooo -> false
+  | Bfoooooooooooooooooooooo fooooooooo -> true
+
+let _ =
+  foo >>= fun [@warning "-4"] x ->
+  fooooooooooooooooooooooo
+
+let _ =
+  foo >>= fun [@warning "-4"] x y ->
+  fooooooooooooooooooooooo fooooooooooooooooooooooo fooooooooooooooooooooooo
+    fooooooooooooooooooooooo
+
+let _ =
+  foo >>= function(* foo before *) [@warning "-4"] (* foo after *)
+  | Afoooooooooooooooooo fooooooooo -> false
+  | Bfoooooooooooooooooooooo fooooooooo -> true
+
+let _ =
+  foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
+  fooooooooooooooooooooooo

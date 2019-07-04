@@ -1562,8 +1562,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           ; _ } as op )
       , [ (Nolabel, l)
         ; ( Nolabel
-          , ( {pexp_desc= Pexp_fun _; pexp_loc= _; pexp_attributes= _; _} as
-            r ) ) ] )
+          , ({pexp_desc= Pexp_fun _; pexp_loc= _; pexp_attributes; _} as r)
+          ) ] )
     when is_infix_id id && not c.conf.break_infix_before_func ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
       let indent_wrap = if parens then -2 else 0 in
@@ -1592,10 +1592,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           ; _ } as op )
       , [ (Nolabel, l)
         ; ( Nolabel
-          , ( { pexp_desc= Pexp_function cs
-              ; pexp_loc= _
-              ; pexp_attributes= _
-              ; _ } as r ) ) ] )
+          , ( {pexp_desc= Pexp_function cs; pexp_loc= _; pexp_attributes; _}
+            as r ) ) ] )
     when is_infix_id id && not c.conf.break_infix_before_func ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       let xr = sub_exp ~ctx r in
