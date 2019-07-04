@@ -208,7 +208,7 @@ let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
             drop_while s ~f:(fun i c ->
                 Char.is_whitespace c && i < indent_of_first_line))
     in
-    k (list l "@\n" str)
+    k (Cmts.fmt c loc (list l "@\n" str))
 
 let maybe_disabled c loc l f = maybe_disabled_k c loc l f Fn.id
 
