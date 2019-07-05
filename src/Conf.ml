@@ -79,25 +79,6 @@ type t =
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
-module Fpath = struct
-  include Fpath
-
-  let cwd () = Unix.getcwd () |> v
-
-  let exists p = to_string p |> Caml.Sys.file_exists
-
-  let to_absolute file = if is_rel file then append (cwd ()) file else file
-
-  let to_string ?(pretty = false) p =
-    if pretty then
-      Option.value_map
-        (relativize ~root:(cwd ()) p)
-        ~default:(to_string p) ~f:to_string
-    else to_string p
-
-  let pp fmt p = Format.fprintf fmt "%s" (to_string ~pretty:true p)
-end
-
 (** Extension of Cmdliner supporting lighter-weight option definition *)
 module Cmdliner : sig
   include module type of Cmdliner

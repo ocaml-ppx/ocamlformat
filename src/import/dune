@@ -11,4 +11,4 @@
 
 (library
  (name import)
- (libraries base stdio))
+ (libraries base fpath stdio unix))

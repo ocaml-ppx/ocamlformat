@@ -50,3 +50,23 @@ val user_error : string -> (string * Sexp.t) list -> _
 val check : ('a -> _) -> 'a -> 'a
 (** Asserting identity: [check f x] asserts that [f x] does not raise and
     returns [x]. *)
+
+module Fpath : sig
+  include module type of Fpath
+
+  val cwd : unit -> t
+  (** Current working directory, relying on [Unix]. *)
+
+  val exists : t -> bool
+  (** [exists p] returns whether the given path [p] exists. *)
+
+  val to_absolute : t -> t
+  (** [to_absolute p] returns [cwd]/[p] if the [p] is relative, otherwise
+      returns [p]. *)
+
+  val to_string : ?pretty:bool -> t -> string
+  (** If [pretty] is set to [true], the path is relativized according to the
+      [cwd]. *)
+
+  val pp : Format.formatter -> t -> unit
+end
