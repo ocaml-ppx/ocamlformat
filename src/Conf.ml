@@ -1907,7 +1907,7 @@ let build_config ~file =
         | Some root ->
             Format.sprintf
               "no [.ocamlformat] was found within the project (root: %s)"
-              (Fpath.to_string ~pretty:true root)
+              (Fpath.to_string ~relativize:true root)
         | None -> "no project root was found"
       in
       Format.eprintf

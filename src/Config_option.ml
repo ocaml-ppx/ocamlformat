@@ -363,7 +363,7 @@ end = struct
       let aux_from = function
         | `Parsed (`File (p, i)) ->
             Format.sprintf " (file %s:%i)"
-              (Fpath.to_string ~pretty:true p)
+              (Fpath.to_string ~relativize:true p)
               i
         | `Parsed `Attribute -> " (attribute)"
         | `Env -> " (environment variable)"

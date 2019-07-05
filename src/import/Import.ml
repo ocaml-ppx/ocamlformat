@@ -52,14 +52,14 @@ module Fpath = struct
 
   let to_absolute file = if is_rel file then append (cwd ()) file else file
 
-  let to_string ?(pretty = false) p =
-    if pretty then
+  let to_string ?(relativize = false) p =
+    if relativize then
       Option.value_map
-        (relativize ~root:(cwd ()) p)
+        (Fpath.relativize ~root:(cwd ()) p)
         ~default:(to_string p) ~f:to_string
     else to_string p
 
-  let pp fmt p = Format.fprintf fmt "%s" (to_string ~pretty:true p)
+  let pp fmt p = Format.fprintf fmt "%s" (to_string ~relativize:true p)
 end
 
 (** Extension of Cmdliner supporting lighter-weight option definition *)

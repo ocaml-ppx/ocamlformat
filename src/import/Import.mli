@@ -64,9 +64,9 @@ module Fpath : sig
   (** [to_absolute p] returns [cwd]/[p] if the [p] is relative, otherwise
       returns [p]. *)
 
-  val to_string : ?pretty:bool -> t -> string
-  (** If [pretty] is set to [true], the path is relativized according to the
-      [cwd]. *)
+  val to_string : ?relativize:bool -> t -> string
+  (** If [relativize] is set to [true], the path is relativized according to
+      the [cwd]. *)
 
   val pp : Format.formatter -> t -> unit
 end
