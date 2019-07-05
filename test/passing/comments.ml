@@ -179,3 +179,25 @@ inherit oo end
 
 class i = object (* test *)
 inherit oo end
+
+let _ =
+  try_with (fun () -> (* comment before *)
+    match get () with
+    | None -> do_something ()
+    | Some _ -> () (* do nothing *))
+;;
+
+let _ =
+  try_with (fun () -> (* comment before *)
+    a;
+    b (* after a *))
+;;
+
+let _ =
+  match x with
+  | Some y ->
+    (match y with
+     | None -> ()
+     | Some z -> incr z (* double some *))
+  | None -> ()
+;;

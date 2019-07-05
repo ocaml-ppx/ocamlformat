@@ -1667,7 +1667,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI)) ->
           let e1N = List.rev rev_e1N in
           (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
-          let fmt_cmts = Cmts.fmt c pexp_loc in
+          let cmts_before = Cmts.fmt_before c pexp_loc in
           let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx eN1) in
           let box =
             match xbody.ast.pexp_desc with
@@ -1679,20 +1679,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                ( hovbox 2
                    ( wrap
                        ( fmt_args_grouped e0 e1N $ fmt "@ "
-                       $ fmt_label lbl ":"
-                       $ fmt_cmts
-                         @@ hvbox 0
-                              ( str "(fun "
-                              $ fmt_attributes c ~key:"@"
-                                  eN1.pexp_attributes ~suf:(str " ")
-                              $ hvbox 0 (fmt_fun_args c xargs $ fmt "@ ->")
-                              ) )
+                       $ fmt_label lbl ":" $ cmts_before
+                       $ hvbox 0
+                           ( str "(fun "
+                           $ fmt_attributes c ~key:"@" eN1.pexp_attributes
+                               ~suf:(str " ")
+                           $ hvbox 0 (fmt_fun_args c xargs $ fmt "@ ->") )
+                       )
                    $ fmt
                        ( match xbody.ast.pexp_desc with
                        | Pexp_function _ -> "@ "
                        | _ -> "@;<1 2>" )
                    $ cbox 0 (fmt_expression c ?box xbody)
-                   $ str ")" )
+                   $ str ")" $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | ( lbl
         , ( { pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]
