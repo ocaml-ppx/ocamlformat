@@ -15,54 +15,7 @@ module type CONFIG = sig
   val profile_option_names : string list
 end
 
-module Make (C : CONFIG) : sig
-  type config = C.config
-
-  type 'a t
-
-  type parsed_from = [`File of Fpath.t * int | `Attribute]
-
-  type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
-
-  type 'a option_decl =
-       names:string list
-    -> doc:string
-    -> section:[`Formatting | `Operational]
-    -> ?allow_inline:bool
-    -> (config -> 'a -> config)
-    -> (config -> 'a)
-    -> 'a t
-
-  val section_name : [`Formatting | `Operational] -> string
-
-  val choice :
-    ?has_default:bool -> all:(string * 'a * string) list -> 'a option_decl
-
-  val flag : default:bool -> bool option_decl
-
-  val int : default:int -> docv:string -> int option_decl
-
-  val int_opt : docv:string -> int option option_decl
-
-  val default : 'a t -> 'a
-
-  val update_using_cmdline : config -> config
-
-  val update :
-       config:config
-    -> from:updated_from
-    -> name:string
-    -> value:string
-    -> inline:bool
-    -> ( config
-       , [ `Unknown of string * string
-         | `Bad_value of string * string
-         | `Malformed of string
-         | `Misplaced of string * string ] )
-       Result.t
-
-  val print_config : config -> unit
-end = struct
+module Make (C : CONFIG) = struct
   open Cmdliner
 
   type config = C.config
