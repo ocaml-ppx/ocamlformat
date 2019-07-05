@@ -65,8 +65,8 @@ module Fpath : sig
       returns [p]. *)
 
   val to_string : ?relativize:bool -> t -> string
-  (** If [relativize] is set to [true], the path is relativized according to
-      the [cwd]. *)
+  (** If [relativize] is set to [true] (it is set to [false] by default),
+      the path is relativized according to the [cwd]. *)
 
   val pp : Format.formatter -> t -> unit
 end
