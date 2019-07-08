@@ -280,7 +280,7 @@ let _ =
 let _ = try_with (fun () -> (* comment before *)
                             a ; b)
 
-(* after a *)
+(* after b *)
 
 let _ =
   match x with
