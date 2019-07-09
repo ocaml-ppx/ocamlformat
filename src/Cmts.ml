@@ -335,13 +335,14 @@ let rec place t loc_tree ?prev_loc locs cmts =
       let within', after =
         let a, b =
           List.partition_tf (CmtSet.to_list after) ~f:(fun (_, l) ->
-            let is_adjacent t l1 l2 =
-              Option.value_map (Source.string_between t.source l1 l2) ~default:false
-                ~f:(fun btw ->
-                match String.strip ~drop:(Char.equal ' ') btw with
-                  | "" -> true
-                  | _ -> false)
-            in is_adjacent t curr_loc l)
+              let is_adjacent t l1 l2 =
+                Option.value_map (Source.string_between t.source l1 l2)
+                  ~default:false ~f:(fun btw ->
+                    match String.strip ~drop:(Char.equal ' ') btw with
+                    | "" -> true
+                    | _ -> false)
+              in
+              is_adjacent t curr_loc l)
         in
         (CmtSet.of_list a, CmtSet.of_list b)
       in
