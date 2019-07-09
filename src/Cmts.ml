@@ -332,6 +332,22 @@ let rec place t loc_tree ?prev_loc locs cmts =
   match locs with
   | curr_loc :: next_locs ->
       let before, within, after = CmtSet.split cmts curr_loc in
+      let within', after =
+        let a, b =
+          List.partition_tf (CmtSet.to_list after) ~f:(fun (_, l) ->
+            let is_adjacent t l1 l2 =
+              Option.value_map (Source.string_between t.source l1 l2) ~default:false
+                ~f:(fun btw ->
+                match String.strip ~is_whitespace:(Char.equal ' ') btw with
+                  | "" -> true
+                  | _ -> false)
+            in is_adjacent t curr_loc l)
+        in
+        (CmtSet.of_list a, CmtSet.of_list b)
+      in
+      let within =
+        CmtSet.of_list (CmtSet.to_list within @ CmtSet.to_list within')
+      in
       let before_curr =
         match prev_loc with
         | None -> before
