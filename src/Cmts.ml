@@ -338,7 +338,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
             let is_adjacent t l1 l2 =
               Option.value_map (Source.string_between t.source l1 l2) ~default:false
                 ~f:(fun btw ->
-                match String.strip ~is_whitespace:(Char.equal ' ') btw with
+                match String.strip ~drop:(Char.equal ' ') btw with
                   | "" -> true
                   | _ -> false)
             in is_adjacent t curr_loc l)
