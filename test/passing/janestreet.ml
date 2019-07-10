@@ -6,3 +6,10 @@ let _ =
      | Some zzzzzzzzzzzzzzzzzzzzzzzzz -> incr zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz (* double some *))
   | None -> ()
 ;;
+
+let _ =
+  try_with (fun () -> (* comment before *)
+    match get () with
+    | None -> do_something ()
+    | Some _ -> () (* do nothing *))
+;;
