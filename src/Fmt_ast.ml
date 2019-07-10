@@ -1835,13 +1835,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt "@ : "
             $ fmt_core_type c (sub_typ ~ctx t) )
         $ fmt_atrs )
-  | Pexp_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
-      let opn = char txt.[0] and cls = char txt.[1] in
+  | Pexp_construct ({txt= Lident "()"; loc}, None) ->
+      Cmts.fmt c loc
+      @@ hvbox 0 (wrap_if parens "(" ")" (str "()" $ fmt_atrs))
+  | Pexp_construct ({txt= Lident "[]"; loc}, None) ->
       let pro = str " " and epi = str " " in
       Cmts.fmt c loc
       @@ hvbox 0
            (wrap_if parens "(" ")"
-              ( wrap_k opn cls (Cmts.fmt_within c ~pro ~epi pexp_loc)
+              ( wrap "[" "]" (Cmts.fmt_within c ~pro ~epi pexp_loc)
               $ fmt_atrs ))
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), None) ->
       wrap_if parens "(" ")"
