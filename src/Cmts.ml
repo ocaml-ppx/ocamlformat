@@ -334,7 +334,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
       let before, within, after = CmtSet.split cmts curr_loc in
       let within', after =
         let a, b =
-          List.partition_tf (CmtSet.to_list after) ~f:(fun (_, l) ->
+          List.partition_tf (CmtSet.to_list after) ~f:(fun cmt ->
               let is_adjacent t l1 l2 =
                 Option.value_map (Source.string_between t.source l1 l2)
                   ~default:false ~f:(fun btw ->
@@ -342,7 +342,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
                     | "" -> true
                     | _ -> false)
               in
-              is_adjacent t curr_loc l)
+              is_adjacent t curr_loc (Cmt.loc cmt))
         in
         (CmtSet.of_list a, CmtSet.of_list b)
       in
@@ -593,7 +593,9 @@ let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break_unless_newline 1 0)
   fmt_cmts t conf t.cmts_before ~fmt_code ?pro ~epi ?eol ?adj
 
 let fmt_after t conf ~fmt_code ?(pro = Fmt.break_unless_newline 1 0) ?epi =
-  let within = fmt_cmts t conf t.cmts_within ~fmt_code ~pro ?epi in
+  let within =
+    fmt_cmts t conf t.cmts_within ~fmt_code ~pro ?epi ~eol:Fmt.noop
+  in
   let after =
     fmt_cmts t conf t.cmts_after ~fmt_code ~pro ?epi ~eol:Fmt.noop
   in

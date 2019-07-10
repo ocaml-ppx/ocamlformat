@@ -2209,9 +2209,7 @@ end = struct
       in
       match ambig_prec (sub_ast ~ctx (Exp exp)) with
       | None -> false (* ctx not apply *)
-                
       | Some (Some true) -> true (* exp is apply and ambig *)
-                            
       | _ -> (
         match ctx with
         | Exp {pexp_desc; _} ->
