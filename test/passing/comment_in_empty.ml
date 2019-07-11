@@ -18,7 +18,7 @@ let _ = (* this list is empty2 *) []
 
 let _ = [| (* this array is empty *) |]
 
-let _ = f ( (* comment in unit *) )
+let _ = f () (* comment in unit *)
 
 let _ = f "asd" (* te""st *) 3
 
@@ -39,10 +39,11 @@ type t = < (* this object type is empty *) >
 
 type t = < .. (* this object type is empty *) >
 
-let x =
-  ( (* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non
-       risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec,
-       ultricies sed, dolor. *) )
+let x = ()
+
+(* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.
+   Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies
+   sed, dolor. *)
 
 let x =
   [ (* Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non

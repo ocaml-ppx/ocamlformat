@@ -236,7 +236,7 @@ end
 type t =
   [ `A  (** A *)
   | `B[@b]  (** B *)
-  | (p[@p]) (* P *)
+  | (p[@p] (* P *))
   ]
 
 type foooooooooooooooo =

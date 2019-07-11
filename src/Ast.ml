@@ -2472,7 +2472,7 @@ end = struct
             ; pexp_loc= _
             ; pexp_attributes= _
             ; _ } as exp )
-        when not (is_sugared_list exp) ->
+        when not (is_sugared_exp_list exp) ->
           prec_ast ast
       | _ -> None
     in

@@ -1,15 +1,15 @@
 type t =
   { (* fooooooooooooooooooooooooooooooooooooooooooooooooooooooo *)
     foooooooooooooooooooooooo: foooooooooooooooooooooooooooooooooooooooo
-  ; (* foooooooooooooooooooooooooooooooooooooooooooo *)
-    fooooooooooooooooooooooooooooo: fooooooooooooooooooooooooooo }
+        (* foooooooooooooooooooooooooooooooooooooooooooo *)
+  ; fooooooooooooooooooooooooooooo: fooooooooooooooooooooooooooo }
 
 type x =
   | B of
       { (* fooooooooooooooooooooooooooooooooooooooooo *)
         aaaaaaaaaaaaaaa: aaaaaaaaaaaaaaaa
-      ; (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
-        bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
+            (* foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*)
+      ; bbbbbbbbbbbbbbbbbbbbbbb: bbbbbbbbbbbbbbb }
 
 type t =
   { aaaaaaaaaaaaaaaaaaaaaaaaa: aaaa aaaaaaaaaaaaaaaaaaa
@@ -461,9 +461,9 @@ type t =
 type t =
   { (* fooooooooooooooooo *)
     foo: foo
-  ; (* foooooooooooooooooooooo fooooooooooooooooooo fooooooooooooooo
-       foooooooooooooooooo foooooooooooooooo *)
-    foo:
+        (* foooooooooooooooooooooo fooooooooooooooooooo fooooooooooooooo
+           foooooooooooooooooo foooooooooooooooo *)
+  ; foo:
          (* fooooooooooooooooooo *)
          foooooooooooo
       -> (* foooooooooooooo *)

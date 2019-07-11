@@ -495,9 +495,8 @@ module M_S : S = M
 
 let is_s x = match x with M_S.A _ -> true | _ -> false
 
-let a2 = M_S.A 20
-
-(* ERROR: Cannot create a value using a private constructor *)
+let a2 =
+  M_S.A 20 (* ERROR: Cannot create a value using a private constructor *)
 
 (* Extensions can be rebound *)
 
@@ -565,7 +564,7 @@ type _ foo += C : ('a -> int) -> 'a foo
 
 type 'a bar = ..
 
-type +'a bar += D of (int -> 'a) (* ERROR: type variances do not match *)
+type +'a bar += D of (int -> 'a (* ERROR: type variances do not match *))
 
 (* Exceptions are compatible with extensions *)
 
@@ -603,7 +602,7 @@ type foo = ..
 
 type foo += Foo of int * int option | Bar of int option
 
-let x = (Foo (3, Some 4), Bar (Some 5)) (* Prints Foo and Bar successfully *)
+let x = (Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully *))
 
 type foo += Foo of string
 
@@ -613,7 +612,7 @@ exception Foo of int * int option
 
 exception Bar of int option
 
-let x = (Foo (3, Some 4), Bar (Some 5)) (* Prints Foo and Bar successfully *)
+let x = (Foo (3, Some 4), Bar (Some 5) (* Prints Foo and Bar successfully *))
 
 type foo += Foo of string
 
@@ -2283,9 +2282,7 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | Tint, Tint -> 0
   | Tbool, Tbool -> 1
   | Tvar var, tb -> 2
-  | _ -> .
-
-(* error *)
+  | _ -> . (* error *)
 
 (* let x = f Tint (Tvar Zero) ;; *)
 type inkind = [`Link | `Nonlink]
@@ -2417,9 +2414,10 @@ type _ wrapPoly =
   | WrapPoly : 'a poly -> ([< `TagA of int | `TagB] as 'a) wrapPoly
 
 let example6 : type a. a wrapPoly -> a -> int =
- fun w -> match w with WrapPoly ATag -> intA | WrapPoly _ -> intA
-
-(* This should not be allowed *)
+ fun w ->
+  match w with
+  | WrapPoly ATag -> intA
+  | WrapPoly _ -> intA (* This should not be allowed *)
 
 let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
@@ -2542,9 +2540,7 @@ let f (Aux x) =
   | Succ (Succ Zero) -> "2"
   | Succ (Succ (Succ Zero)) -> "3"
   | Succ (Succ (Succ (Succ Zero))) -> "4"
-  | _ -> .
-
-(* error *)
+  | _ -> . (* error *)
 
 type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
 
@@ -4784,15 +4780,14 @@ end
 
 let f (type a) (module X : S with type t = a) = ()
 
-let _ = f (module A) (* ok *)
+let _ = f (module A (* ok *))
 
 module A_annotated_alias : S with type t = (module A.A_S) = A
 
-let _ = f (module A_annotated_alias) (* ok *)
+let _ = f (module A_annotated_alias (* ok *))
 
-let _ = f (module A_annotated_alias : S with type t = (module A.A_S))
-
-(* ok *)
+let _ =
+  f (module A_annotated_alias : S with type t = (module A.A_S)) (* ok *)
 
 module A_alias = A
 
@@ -4800,15 +4795,15 @@ module A_alias_expanded = struct
   include A_alias
 end
 
-let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
+let _ =
+  f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
 
-let _ = f (module A_alias_expanded) (* ok *)
+let _ = f (module A_alias_expanded (* ok *))
 
-let _ = f (module A_alias : S with type t = (module A.A_S))
+let _ =
+  f (module A_alias : S with type t = (module A.A_S)) (* doesn't type *)
 
-(* doesn't type *)
-
-let _ = f (module A_alias) (* doesn't type either *)
+let _ = f (module A_alias (* doesn't type either *))
 
 module Foo (Bar : sig
   type a = private [> `A]
@@ -5415,7 +5410,7 @@ end
 module M = struct
   module X = struct end
 
-  module Y = FF (X) (* XXX *)
+  module Y = FF (X (* XXX *))
 
   type t = Y.t
 end
@@ -6229,7 +6224,7 @@ module UText = struct
       dst#set (dstoff + i) u
     done
 
-  let concat s1 s2 = s1#concat (s2 (* : #ustorage *) :> uchar storage)
+  let concat s1 s2 = s1#concat (s2 (* : #ustorage *)  :> uchar storage)
 
   let iter proc s = s#iter proc
 end
@@ -8017,11 +8012,17 @@ end
    Kathleen Fisher and Paul Govereau *)
 
 module type VALUE = sig
-  type value (* a Lua value *)
+  type value
 
-  type state (* the state of a Lua interpreter *)
+  (* a Lua value *)
 
-  type usert (* a user-defined value *)
+  type state
+
+  (* the state of a Lua interpreter *)
+
+  type usert
+
+  (* a user-defined value *)
 end
 
 module type CORE0 = sig
@@ -8691,13 +8692,9 @@ module OK = struct
 
   let f2 r =
     ignore (r : t) ;
-    r.x
+    r.x (* non principal *)
 
-  (* non principal *)
-
-  let f3 (r : t) = match r with {x; y} -> y + y
-
-  (* ok *)
+  let f3 (r : t) = match r with {x; y} -> y + y (* ok *)
 end
 
 module F1 = struct

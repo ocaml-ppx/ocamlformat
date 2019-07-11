@@ -158,13 +158,15 @@ let x =
 
 class type a =
   (* A'' *)
-  let open (* A' *) A (* A *) in
+  let open A (* A *) in
+  (* A' *)
   (* B *)
   b
 
 class a =
   (* A'' *)
-  let open (* A' *) A (* A *) in
+  let open A (* A *) in
+  (* A' *)
   (* B *)
   b
 
@@ -173,13 +175,14 @@ let _ =
   let (* b *)
   open (* c *) struct
     type t
-  end
-  (* d *) in
+
+    (* d *)
+  end in
   (* e *)
   (* f *)
   let (* g *)
-  open (* h *) A (* i *) (B)
-  (* j *) in
+  open (* h *) A (* i *) (B
+  (* j *)) in
   (* k *)
   ()
 
@@ -187,9 +190,9 @@ let _ =
 
 open (* m *) struct
   type t
-end
 
-(* n *)
+  (* n *)
+end
 
 open A
 open B

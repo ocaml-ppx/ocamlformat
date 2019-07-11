@@ -1,4 +1,4 @@
-let _ = f (*f*) a (*a*) ~b (*comment*) ~c:(*comment*) c' ?d ?e ()
+let _ = f (*f*)  a (*a*)  ~b (*comment*) ~c:(*comment*) c' ?d ?e ()
 
 let _ =
   let _ =
@@ -10,7 +10,7 @@ let _ =
   in
   ()
 
-let _ = ((*comment*) a (*comment*), b)
+let _ = (*comment*) (a (*comment*) , b)
 
 let foo = function Blah ((* old *) x, y) -> ()
 
@@ -26,21 +26,17 @@ let foo = function Blah, (x, (* old *) y) -> ()
 
 let foo = function (x, y) (* old *), z -> ()
 
-let _ = if (* a0 *) b (* c0 *) then (* d0 *) e (* f0 *) else (* g0 *) h
+let _ =
+  if (* a0 *) b (* c0 *)  then (* d0 *) e (* f0 *)  else (* g0 *) h (* i0 *)
 
-(* i0 *)
+let _ =
+  if (* a1 *) b (* c1 *)  then (* d1 *) e (* f1 *)  else (* g1 *) h (* i1 *)
 
-let _ = if (* a1 *) b (* c1 *) then (* d1 *) e (* f1 *) else (* g1 *) h
+let _ =
+  if (* a2 *) B (* c2 *) then (* d2 *) E (* f2 *) else (* g2 *) H (* i2 *)
 
-(* i1 *)
-
-let _ = if (* a2 *) B (* c2 *) then (* d2 *) E (* f2 *) else (* g2 *) H
-
-(* i2 *)
-
-let _ = if (* a3 *) B (* c3 *) then (* d3 *) E (* f3 *) else (* g3 *) H
-
-(* i3 *)
+let _ =
+  if (* a3 *) B (* c3 *) then (* d3 *) E (* f3 *) else (* g3 *) H (* i3 *)
 
 ;;
 match x with
@@ -106,60 +102,60 @@ let foo x = (* comment *) (y : z)
 
 let _ =
   (*a*)
-  s (*b*).((*c*)
-           (*d*)
-           i
-           (*e*))
+  s (*b*) .((*c*)
+            (*d*)
+            i
+            (*e*))
 
 let _ =
   (*a*)
-  s (*b*).((*c*)
-           (*d*)
-           i
-           (*e*)) <-
+  s (*b*) .((*c*)
+            (*d*)
+            i
+            (*e*)) <-
     (*f*)
     (*g*)
     x
 
 let _ =
   (*a*)
-  s (*b*).[(*c*)
-           (*d*)
-           i
-           (*e*)]
+  s (*b*) .[(*c*)
+            (*d*)
+            i
+            (*e*)]
 
 let _ =
   (*a*)
-  s (*b*).[(*c*)
-           (*d*)
-           i
-           (*e*)] <-
+  s (*b*) .[(*c*)
+            (*d*)
+            i
+            (*e*)] <-
     (*f*)
     (*g*)
     x
 
 let _ =
   (*a*)
-  s (*b*).{(*c*)
-           (*d*)
-           i
-           (*e*)}
+  s (*b*) .{(*c*)
+            (*d*)
+            i
+            (*e*)}
 
 let _ =
   (*a*)
-  s (*b*).{(*c*)
-           (*d*)
-           i
-           (*e*)} <-
+  s (*b*) .{(*c*)
+            (*d*)
+            i
+            (*e*)} <-
     (*f*)
     (*g*)
     x
 
-let _ = (*a*) s (*b*).%{(*c*) i (*d*)}
+let _ = (*a*) s (*b*) .%{(*c*) i (*d*) }
 
 let _ =
   (*a*)
-  s (*b*).%{(*c*) i (*d*)} <-
+  s (*b*) .%{(*c*) i (*d*) } <-
     (*e*)
     (*f*)
     x
@@ -179,9 +175,7 @@ type t =
   (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
      tempor incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb (* foo *)
-  | Bbbbbbbbbb
-
-(* foo *)
+  | Bbbbbbbbbb (* foo *)
 
 let () =
   xxxxxxxxxx
@@ -198,42 +192,41 @@ let rec fooooooooooo = function
   | x :: t (*YY*) -> k
   (* AA*)
   (*BB*)
-  (* CC *)
-  | [x (* DD *); (* EE *) y (* FF *)]
-  (* GG *)
-  (* HH *) ->
-      k
-  (* AA*)
-  (*BB*)
-  (* CC *)
-  | x (* DD *) :: (* EE *) t
-  (* FF *)
-  (* GG *)
-  (* HH *) ->
-      k
-  (* AA*)
-  (*BB*)
-  (* CC *)
-  | x
+  | [ (* CC *)
+      x
     (* DD *)
-    (* XX *)
-    :: (* YY *)
-       (* EE *)
-    t
-  (* FF *)
-  (* GG *)
-  (* HH *) ->
+    ; (* EE *)
+      y
+      (* FF *)
+      (* GG *)
+      (* HH *) ] ->
+      k
+  (* AA*)
+  (*BB*)
+  (* CC *)
+  (* EE *)
+  | x (* DD *) :: t (* FF *) ->
+      (* GG *)
+      (* HH *)
+      k
+  (* AA*)
+  (*BB*)
+  (* YY *)
+  (* CC *)
+  (* XX *)
+  (* EE *)
+  | x (* DD *) :: t (* FF *) ->
+      (* GG *)
+      (* HH *)
       k
   (* AA *)
   (* BB *)
+
+  (* II *)
   | (module (* CC *)
-            (* DD *) F (* EE *) : (* FF *) M (* GG *))
-    (* HH *)
-    :: (* II *)
-    t
-  (* JJ *)
-  (* KK *) ->
-      foo
+            (* DD *) F (* EE *) : (* FF *) M (* GG *) (* HH *))
+    :: t (* JJ *) ->
+      (* KK *) foo
 
 let%map
     (* __________________________________________________________________________________________ *)
@@ -241,8 +234,7 @@ let%map
   ()
 
 type t = < (* a *)
-         a: int [@atr] ; (* b *)
-         b: int (* c *) >
+         a: int [@atr] (* b *) ; b: int (* c *) >
 
 type t =
   < a:
@@ -273,16 +265,17 @@ class i =
 let _ =
   try_with (fun () ->
       (* comment before *)
-      match get () with None -> do_something () | Some _ -> ()
-      (* do nothing *))
+      match get () with
+      | None -> do_something ()
+      | Some _ -> () (* do nothing *))
 
 let _ = try_with (fun () -> (* comment before *)
-                            a ; b (* after b *))
+                            a ; b (* after b *) )
 
 let _ =
   match x with
   | Some y -> (
-    match y with None -> () | Some z -> incr z (* double some *) )
+    match y with None -> () | Some z -> incr z (* double some *)  )
   | None -> ()
 
 type prefix =

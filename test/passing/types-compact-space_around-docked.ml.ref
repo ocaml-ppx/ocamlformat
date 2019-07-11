@@ -193,7 +193,7 @@ module type A = sig
   type t := ..
 end
 
-type t = [ `A  (** A *) | `B[@b]  (** B *) | (p[@p]) (* P *) ]
+type t = [ `A  (** A *) | `B[@b]  (** B *) | (p[@p] (* P *)) ]
 
 type foooooooooooooooo =
   ?fooooooooo:(string -> unit) ->
