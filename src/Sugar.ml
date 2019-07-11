@@ -225,6 +225,28 @@ let infix_cons xexp =
   in
   infix_cons_ xexp
 
+let infix_cons_pat xpat =
+  let rec infix_cons_ ({ast= pat; _} as xpat) =
+    let ctx = Pat pat in
+    let {ppat_desc; ppat_loc= l1; _} = pat in
+    match ppat_desc with
+    | Ppat_construct
+        ( {txt= Lident "::"; loc= l2}
+        , Some
+            { ppat_desc= Ppat_tuple [hd; tl]
+            ; ppat_loc= l3
+            ; ppat_attributes= []
+            ; _ } ) ->
+        let xtl =
+          match tl.ppat_attributes with
+          | [] -> infix_cons_ (sub_pat ~ctx tl)
+          | _ -> [([], sub_pat ~ctx tl)]
+        in
+        ([l1; l2; l3], sub_pat ~ctx hd) :: xtl
+    | _ -> [([], xpat)]
+  in
+  infix_cons_ xpat
+
 let rec ite cmts ({ast= exp; _} as xexp) =
   let ctx = Exp exp in
   let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in

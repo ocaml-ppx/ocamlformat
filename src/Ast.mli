@@ -51,8 +51,11 @@ val is_symbol_id : string -> bool
 val is_symbol : expression -> bool
 (** Holds of prefix or infix symbols. *)
 
-val is_sugared_list : expression -> bool
+val is_sugared_exp_list : expression -> bool
 (** Holds of expressions that can be sugared into [\[e1; ...; eN\]] form. *)
+
+val is_sugared_pat_list : pattern -> bool
+(** Holds of patterns that can be sugared into [\[e1; ...; eN\]] form. *)
 
 val doc_atrs :
      ?acc:(string Location.loc * bool) list
@@ -167,6 +170,10 @@ val is_simple : Conf.t -> (expression xt -> int) -> expression xt -> bool
 (** Holds of "simple" expressions: constants and constructor and function
     applications of other simple expressions. *)
 
+val pat_is_simple : Conf.t -> (pattern xt -> int) -> pattern xt -> bool
+(** Holds of "simple" patterns: constants and constructor of other simple
+    patterns. *)
+
 val exposed_left_typ : core_type -> bool
 
 val exposed_right_typ : core_type -> bool
@@ -177,6 +184,10 @@ type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 val exposed_right_exp : cls -> expression -> bool
 (** [exposed_right_exp cls exp] holds if there is a right-most subexpression
     of [exp] which is of class [cls] and is not parenthesized. *)
+
+val exposed_right_pat : cls -> pattern -> bool
+(** [exposed_right_pat cls pat] holds if there is a right-most subpattern of
+    [pat] which is of class [cls] and is not parenthesized. *)
 
 val exposed_left_exp : expression -> bool
 (** [exposed_left_exp exp] holds if the left-most subexpression of [exp] is a

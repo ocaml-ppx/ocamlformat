@@ -86,6 +86,11 @@ val infix_cons :
 (** [infix_cons exp] returns a list of expressions if [exp] is an expression
     corresponding to a list ((::) application). *)
 
+val infix_cons_pat :
+  pattern Ast.xt -> (Warnings.loc list * pattern Ast.xt) list
+(** [infix_cons exp] returns a list of expressions if [exp] is an expression
+    corresponding to a list ((::) application). *)
+
 val ite :
      Cmts.t
   -> expression Ast.xt
