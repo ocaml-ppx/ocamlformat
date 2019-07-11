@@ -195,7 +195,7 @@ let is_sequence exp =
       true
   | _ -> false
 
-let rec is_sugared_list' acc exp =
+let rec is_sugared_exp_list' acc exp =
   match exp.pexp_desc with
   | Pexp_construct ({txt= Lident "[]"; _}, None) -> Ok (exp :: acc)
   | Pexp_construct
@@ -204,23 +204,39 @@ let rec is_sugared_list' acc exp =
           { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []; _} as tl)]
           ; pexp_attributes= []
           ; _ } ) ->
-      is_sugared_list' (exp :: acc) tl
+      is_sugared_exp_list' (exp :: acc) tl
   | _ -> Error acc
 
-let is_sugared_list =
+let rec is_sugared_pat_list' acc pat =
+  match pat.ppat_desc with
+  | Ppat_construct ({txt= Lident "[]"; _}, None) -> Ok (pat :: acc)
+  | Ppat_construct
+      ( {txt= Lident "::"; _}
+      , Some
+          { ppat_desc= Ppat_tuple [_; ({ppat_attributes= []; _} as tl)]
+          ; ppat_attributes= []
+          ; _ } ) ->
+      is_sugared_pat_list' (pat :: acc) tl
+  | _ -> Error acc
+
+let is_sugared_list' f =
   let memo = Hashtbl.Poly.create () in
   register_reset (fun () -> Hashtbl.clear memo) ;
-  fun exp ->
-    match Hashtbl.find memo exp with
+  fun x ->
+    match Hashtbl.find memo x with
     | Some b -> b
     | None -> (
-      match is_sugared_list' [] exp with
+      match f [] x with
       | Error l ->
           List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:false) l ;
           false
       | Ok l ->
           List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
           true )
+
+let is_sugared_exp_list = is_sugared_list' is_sugared_exp_list'
+
+let is_sugared_pat_list = is_sugared_list' is_sugared_pat_list'
 
 let doc_atrs ?(acc = []) atrs =
   let docs, rev_atrs =
@@ -433,8 +449,8 @@ module Signature_item : Module_item with type t = signature_item = struct
      |Psig_class ({pci_attributes= atrs; _} :: _) ->
         Option.is_some (fst (doc_atrs atrs))
     | Psig_recmodule
-        ({pmd_type= {pmty_attributes= atrs1; _}; pmd_attributes= atrs2; _}
-        :: _)
+        ( {pmd_type= {pmty_attributes= atrs1; _}; pmd_attributes= atrs2; _}
+        :: _ )
      |Psig_include
         {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
      |Psig_exception
@@ -534,6 +550,13 @@ let rec is_trivial c exp =
   | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)])
     ->
       is_trivial c e1
+  | _ -> false
+
+let rec is_trivial_pat c pat =
+  match pat.ppat_desc with
+  | Ppat_constant (Pconst_string (s, None)) -> not (may_force_break c s)
+  | Ppat_constant _ -> true
+  | Ppat_construct (_, pat) -> Option.for_all pat ~f:(is_trivial_pat c)
   | _ -> false
 
 let is_doc = function
@@ -833,9 +856,14 @@ and Requires_sub_terms : sig
   val is_simple :
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
 
+  val pat_is_simple :
+    Conf.t -> (pattern In_ctx.xt -> int) -> pattern In_ctx.xt -> bool
+
   type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
   val exposed_right_exp : cls -> expression -> bool
+
+  val exposed_right_pat : cls -> pattern -> bool
 
   val exposed_left_exp : expression -> bool
 
@@ -1523,6 +1551,26 @@ end = struct
     | Pexp_extension (_, (PStr [] | PTyp _)) -> true
     | _ -> false
 
+  let rec pat_is_simple (c : Conf.t) width ({ast= pat; _} as xpat) =
+    let ctx = Pat pat in
+    match pat.ppat_desc with
+    | Ppat_constant _ -> is_trivial_pat c pat
+    | Ppat_construct (_, None) | Ppat_variant (_, None) -> true
+    | Ppat_construct
+        ({txt= Lident "::"; _}, Some {ppat_desc= Ppat_tuple [e1; e2]; _}) ->
+        pat_is_simple c width (sub_pat ~ctx e1)
+        && pat_is_simple c width (sub_pat ~ctx e2)
+        && fit_margin c (width xpat)
+    | Ppat_construct (_, Some e0) | Ppat_variant (_, Some e0) ->
+        is_trivial_pat c e0
+    | Ppat_array e1N | Ppat_tuple e1N ->
+        List.for_all e1N ~f:(is_trivial_pat c) && fit_margin c (width xpat)
+    | Ppat_record (e1N, _) ->
+        List.for_all e1N ~f:(snd >> is_trivial_pat c)
+        && fit_margin c (width xpat)
+    | Ppat_extension (_, (PStr [] | PTyp _)) -> true
+    | _ -> false
+
   (** [prec_ctx {ctx; ast}] is the precedence of the context of [ast] within
       [ctx], where [ast] is an immediate sub-term (modulo syntactic sugar) of
       [ctx]. Also returns whether [ast] is the left, right, or neither child
@@ -1599,7 +1647,7 @@ end = struct
           Some (Comma, if exp == e0 then Left else Right)
       | Pexp_construct
           ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
-          if is_sugared_list e2 then Some (Semi, Non)
+          if is_sugared_exp_list e2 then Some (Semi, Non)
           else Some (ColonColon, if exp == e2 then Right else Left)
       | Pexp_array _ -> Some (Semi, Non)
       | Pexp_construct (_, Some _)
@@ -2011,6 +2059,13 @@ end = struct
         true
     | _ -> false
 
+  (** [mem_cls_pat cls pat] holds if [pat] is in the named class of patterns
+      [cls]. *)
+  let mem_cls_pat cls ast =
+    match (ast, cls) with
+    | {ppat_desc= Ppat_open _; _}, Non_apply -> true
+    | _ -> false
+
   (** [mem_cls_cl cls cl] holds if [cl] is in the named class of expressions
       [cls]. *)
   let mem_cls_cl cls ast =
@@ -2028,6 +2083,40 @@ end = struct
     | Pexp_apply (op, _) -> is_prefix op || exposed_left_exp op
     | Pexp_field (e, _) -> exposed_left_exp e
     | _ -> false
+
+  (** [exposed cls pat] holds if there is a right-most subpattern of [pat]
+      which satisfies [mem_cls_pat cls] and is not parenthesized. *)
+  let rec exposed_right_pat =
+    (* exponential without memoization *)
+    let memo = Hashtbl.Poly.create () in
+    register_reset (fun () -> Hashtbl.clear memo) ;
+    fun cls pat ->
+      let exposed_ () =
+        let continue subpat =
+          (not (parenze_pat (sub_pat ~ctx:(Pat pat) subpat)))
+          && exposed_right_pat cls subpat
+        in
+        match pat.ppat_desc with
+        | Ppat_construct
+            ({txt= Lident "::"; _}, Some {ppat_desc= Ppat_tuple [_; e]; _})
+         |Ppat_construct (_, Some e)
+         |Ppat_lazy e
+         |Ppat_or (_, e)
+         |Ppat_open (_, e)
+         |Ppat_alias (e, _)
+         |Ppat_variant (_, Some e)
+         |Ppat_exception e ->
+            continue e
+        | Ppat_tuple es -> continue (List.last_exn es)
+        | Ppat_type _ | Ppat_unpack _ | Ppat_array _ | Ppat_constant _
+         |Ppat_constraint _ | Ppat_any
+         |Ppat_construct (_, None)
+         |Ppat_var _ | Ppat_interval _ | Ppat_extension _ | Ppat_record _
+         |Ppat_variant (_, None) ->
+            false
+      in
+      mem_cls_pat cls pat
+      || Hashtbl.find_or_add memo (cls, pat) ~default:exposed_
 
   (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
       which satisfies [mem_cls_exp cls] and is not parenthesized. *)

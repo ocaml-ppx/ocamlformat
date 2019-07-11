@@ -191,6 +191,12 @@ let is_long_pexp_open source {Parsetree.pexp_desc; _} =
       contains_token_between source ~from ~upto Parser.IN
   | _ -> false
 
+let is_long_ppat_open source {Parsetree.ppat_desc; _} =
+  match ppat_desc with
+  | Ppat_open ({loc= from; _}, {ppat_loc= upto; _}) ->
+      contains_token_between source ~from ~upto Parser.IN
+  | _ -> false
+
 let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
   match pmod_desc with
   | Pmod_functor ({loc= upto; _}, _, _) ->
@@ -216,7 +222,7 @@ let string_literal t mode (l : Location.t) =
     :: ( Parser.LBRACKETATATAT, _
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
-       :: _ ->
+    :: _ ->
       Some (Literal_lexer.string mode (lexbuf_from_loc t loc))
   | _ -> None
 
@@ -239,7 +245,7 @@ let char_literal t (l : Location.t) =
     :: ( Parser.LBRACKETATATAT, _
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
-       :: _ ->
+    :: _ ->
       Some (Literal_lexer.char (lexbuf_from_loc t loc))
   | _ -> None
 
