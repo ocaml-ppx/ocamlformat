@@ -187,8 +187,8 @@ let _ =
   (* e *)
   (* f *)
   let (* g *)
-  open (* h *) A (* i *) (B
-  (* j *)) in
+  open (* h *) A (* i *) (B)
+  (* j *) in
   (* k *)
   ()
 

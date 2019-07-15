@@ -3840,6 +3840,12 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
   | Pmod_apply (({pmod_desc= Pmod_ident _; _} as me_f), me_a) ->
       let doc, atrs = doc_atrs pmod_attributes in
       let blk_f = fmt_module_expr c (sub_mod ~ctx me_f) in
+      let cmts_after =
+        (* the ending comments are only kept inside if the module is empty *)
+        match me_a.pmod_desc with
+        | Pmod_structure [] -> noop
+        | _ -> Cmts.fmt_after c me_a.pmod_loc
+      in
       let blk_a = maybe_generative c ~ctx me_a in
       let box_f = wrap_k blk_f.opn blk_f.cls in
       let fmt_rator =
@@ -3855,7 +3861,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let epi =
         Option.call ~f:blk_a.epi $ str ")"
         $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs
-        $ Cmts.fmt_after c pmod_loc
+        $ cmts_after $ Cmts.fmt_after c pmod_loc
       in
       if Option.is_some blk_a.pro then
         { blk_a with

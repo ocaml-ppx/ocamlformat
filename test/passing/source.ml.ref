@@ -5410,7 +5410,7 @@ end
 module M = struct
   module X = struct end
 
-  module Y = FF (X (* XXX *))
+  module Y = FF (X) (* XXX *)
 
   type t = Y.t
 end
