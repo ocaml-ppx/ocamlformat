@@ -1,10 +1,10 @@
 open Module
-(** @deprecated  *)
+(** @deprecated *)
 
 open Module
 (** abc
 
-    @deprecated  *)
+    @deprecated *)
 
 open Module
 (** @author A *)
@@ -62,54 +62,54 @@ end =
   B
 
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = T
 
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 let a = b
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
 class b =
   object
     method f = 0
-    (** @deprecated  *)
+    (** @deprecated *)
 
     inherit a
-    (** @deprecated  *)
+    (** @deprecated *)
 
     val x = 1
-    (** @deprecated  *)
+    (** @deprecated *)
 
     constraint 'a = [> ]
-    (** @deprecated  *)
+    (** @deprecated *)
 
     initializer do_init ()
-    (** @deprecated  *)
+    (** @deprecated *)
   end
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
 open Module
-(** @deprecated  *)
+(** @deprecated *)
 
 open Module
 (** abc
 
-    @deprecated  *)
+    @deprecated *)
 
 open Module
 (** @author A *)
@@ -167,41 +167,41 @@ end =
   B
 
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = T
 
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 let a = b
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
 class b =
   object
     method f = 0
-    (** @deprecated  *)
+    (** @deprecated *)
 
     inherit a
-    (** @deprecated  *)
+    (** @deprecated *)
 
     val x = 1
-    (** @deprecated  *)
+    (** @deprecated *)
 
     constraint 'a = [> ]
-    (** @deprecated  *)
+    (** @deprecated *)
 
     initializer do_init ()
-    (** @deprecated  *)
+    (** @deprecated *)
   end

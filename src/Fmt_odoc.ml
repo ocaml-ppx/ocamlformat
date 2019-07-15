@@ -193,30 +193,34 @@ and fmt_list_light kind items =
   in
   vbox 0 (list items "@," fmt_item)
 
-and fmt_nestable_block_elements elems =
-  list_block_elem elems fmt_nestable_block_element
+and fmt_nestable_block_elements ?(prefix = noop) = function
+  | [] -> noop
+  | elems -> prefix $ list_block_elem elems fmt_nestable_block_element
 
 let at = char '@'
+
+let space = fmt "@ "
 
 let fmt_tag : tag -> Fmt.t = function
   | `Author s -> at $ fmt "author@ " $ str_normalized s
   | `Version s -> at $ fmt "version@ " $ str_normalized s
   | `See (_, sr, txt) ->
-      at $ fmt "see@ <" $ str_normalized sr $ fmt ">@ "
-      $ fmt_nestable_block_elements txt
+      at $ fmt "see@ <" $ str_normalized sr $ fmt ">"
+      $ fmt_nestable_block_elements ~prefix:space txt
   | `Since s -> at $ fmt "since@ " $ str_normalized s
   | `Before (s, txt) ->
-      at $ fmt "before@ " $ str_normalized s $ fmt "@ "
-      $ fmt_nestable_block_elements txt
+      at $ fmt "before@ " $ str_normalized s
+      $ fmt_nestable_block_elements ~prefix:space txt
   | `Deprecated txt ->
-      at $ fmt "deprecated@ " $ fmt_nestable_block_elements txt
+      at $ fmt "deprecated" $ fmt_nestable_block_elements ~prefix:space txt
   | `Param (s, txt) ->
-      at $ fmt "param@ " $ str_normalized s $ fmt "@ "
-      $ fmt_nestable_block_elements txt
+      at $ fmt "param@ " $ str_normalized s
+      $ fmt_nestable_block_elements ~prefix:space txt
   | `Raise (s, txt) ->
-      at $ fmt "raise@ " $ str_normalized s $ fmt "@ "
-      $ fmt_nestable_block_elements txt
-  | `Return txt -> at $ fmt "return@ " $ fmt_nestable_block_elements txt
+      at $ fmt "raise@ " $ str_normalized s
+      $ fmt_nestable_block_elements ~prefix:space txt
+  | `Return txt ->
+      at $ fmt "return" $ fmt_nestable_block_elements ~prefix:space txt
   | `Inline -> at $ str "inline"
   | `Open -> at $ str "open"
   | `Closed -> at $ str "closed"

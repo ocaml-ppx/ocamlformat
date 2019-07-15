@@ -247,14 +247,14 @@ let _ = ()
 
 (** Tags without text *)
 
-(** @see <Abc>  *)
+(** @see <Abc> *)
 
-(** @before a  *)
+(** @before a *)
 
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @param b  *)
+(** @param b *)
 
-(** @raise c  *)
+(** @raise c *)
 
-(** @return  *)
+(** @return *)
