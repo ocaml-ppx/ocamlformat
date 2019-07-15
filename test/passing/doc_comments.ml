@@ -252,3 +252,6 @@ let _ = ()
 (** @param b *)
 (** @raise c *)
 (** @return *)
+
+(** @see 'file' *)
+(** @see "title" *)

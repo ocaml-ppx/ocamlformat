@@ -201,12 +201,17 @@ let at = char '@'
 
 let space = fmt "@ "
 
+let fmt_tag_see wrap sr txt =
+  at $ fmt "see@ "
+  $ wrap (str_normalized sr)
+  $ fmt_nestable_block_elements ~prefix:space txt
+
 let fmt_tag : tag -> Fmt.t = function
   | `Author s -> at $ fmt "author@ " $ str_normalized s
   | `Version s -> at $ fmt "version@ " $ str_normalized s
-  | `See (_, sr, txt) ->
-      at $ fmt "see@ <" $ str_normalized sr $ fmt ">"
-      $ fmt_nestable_block_elements ~prefix:space txt
+  | `See (`Url, sr, txt) -> fmt_tag_see (wrap "<" ">") sr txt
+  | `See (`File, sr, txt) -> fmt_tag_see (wrap "'" "'") sr txt
+  | `See (`Document, sr, txt) -> fmt_tag_see (wrap "\"" "\"") sr txt
   | `Since s -> at $ fmt "since@ " $ str_normalized s
   | `Before (s, txt) ->
       at $ fmt "before@ " $ str_normalized s

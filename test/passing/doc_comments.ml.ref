@@ -258,3 +258,7 @@ let _ = ()
 (** @raise c *)
 
 (** @return *)
+
+(** @see 'file' *)
+
+(** @see "title" *)
