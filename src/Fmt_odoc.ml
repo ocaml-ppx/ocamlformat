@@ -253,3 +253,8 @@ let diff c x y =
     Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)
+
+let is_tag_only =
+  List.for_all ~f:(function
+    | {Location_.value= `Tag _; _} -> true
+    | _ -> false)

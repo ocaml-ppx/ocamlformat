@@ -493,7 +493,9 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
   | None, None -> (noop, noop)
   | None, Some doc | Some doc, None -> (
       let is_tag_only =
-        List.for_all ~f:(function Ok [], _ -> true | _ -> false)
+        List.for_all ~f:(function
+          | Ok es, _ -> Fmt_odoc.is_tag_only es
+          | _ -> false)
       in
       let fmt_doc ?epi ?pro doc =
         list_pn doc (fun ?prev:_ (parsed, ({txt; loc}, floating)) ?next ->
