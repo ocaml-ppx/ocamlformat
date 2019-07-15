@@ -244,3 +244,17 @@ end
    processing "y = t". If we don't explicitly preserve "x = y", the
    normalizer cannot pick it up *)
 let _ = ()
+
+(** Tags without text *)
+
+(** @see <Abc>  *)
+
+(** @before a  *)
+
+(** @deprecated  *)
+
+(** @param b  *)
+
+(** @raise c  *)
+
+(** @return  *)

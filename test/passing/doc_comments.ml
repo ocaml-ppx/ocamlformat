@@ -244,3 +244,11 @@ end
 * we add "x = y" to the result. This is crucial for the normalizer, as it tend to drop "x = t" before
 * processing "y = t". If we don't explicitly preserve "x = y", the normalizer cannot pick it up *)
 let _ = ()
+
+(** Tags without text *)
+(** @see <Abc> *)
+(** @before a *)
+(** @deprecated *)
+(** @param b *)
+(** @raise c *)
+(** @return *)
