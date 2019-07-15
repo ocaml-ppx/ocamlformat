@@ -6511,7 +6511,7 @@ module UText = struct
     done
   ;;
 
-  let concat s1 s2 = s1#concat (s2 (* : #ustorage *)  :> uchar storage)
+  let concat s1 s2 = s1#concat (s2 (* : #ustorage *) :> uchar storage)
   let iter proc s = s#iter proc
 end
 

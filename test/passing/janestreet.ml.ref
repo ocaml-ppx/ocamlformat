@@ -4,7 +4,7 @@ let _ =
     (match y with
     | None -> ()
     | Some zzzzzzzzzzzzzzzzzzzzzzzzz ->
-      incr zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz (* double some *) )
+      incr zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz (* double some *))
   | None -> ()
 ;;
 

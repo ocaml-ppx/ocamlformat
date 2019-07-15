@@ -2069,10 +2069,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         else (wrap_if parens "(" ")", false)
       in
       Cmts.fmt c loc
-      @@ wrap
-           ( wrap_if wrap_ident "(" ")"
-               (fmt_longident txt $ Cmts.fmt_within c loc)
-           $ fmt_atrs )
+      @@ wrap (wrap_if wrap_ident "(" ")" (fmt_longident txt) $ fmt_atrs)
   | Pexp_ifthenelse _ ->
       let cnd_exps = Sugar.ite c.cmts xexp in
       let parens_prev_bch = ref false in

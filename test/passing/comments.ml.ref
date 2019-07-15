@@ -1,4 +1,4 @@
-let _ = f (*f*)  a (*a*)  ~b (*comment*) ~c:(*comment*) c' ?d ?e ()
+let _ = f (*f*) a (*a*) ~b (*comment*) ~c:(*comment*) c' ?d ?e ()
 
 let _ =
   let _ =
@@ -10,7 +10,7 @@ let _ =
   in
   ()
 
-let _ = (*comment*) (a (*comment*) , b)
+let _ = (*comment*) (a (*comment*), b)
 
 let foo = function Blah ((* old *) x, y) -> ()
 
@@ -27,10 +27,10 @@ let foo = function Blah, (x, (* old *) y) -> ()
 let foo = function (x, y) (* old *), z -> ()
 
 let _ =
-  if (* a0 *) b (* c0 *)  then (* d0 *) e (* f0 *)  else (* g0 *) h (* i0 *)
+  if (* a0 *) b (* c0 *) then (* d0 *) e (* f0 *) else (* g0 *) h (* i0 *)
 
 let _ =
-  if (* a1 *) b (* c1 *)  then (* d1 *) e (* f1 *)  else (* g1 *) h (* i1 *)
+  if (* a1 *) b (* c1 *) then (* d1 *) e (* f1 *) else (* g1 *) h (* i1 *)
 
 let _ =
   if (* a2 *) B (* c2 *) then (* d2 *) E (* f2 *) else (* g2 *) H (* i2 *)
@@ -102,60 +102,60 @@ let foo x = (* comment *) (y : z)
 
 let _ =
   (*a*)
-  s (*b*) .((*c*)
-            (*d*)
-            i
-            (*e*))
+  s (*b*).((*c*)
+           (*d*)
+           i
+           (*e*))
 
 let _ =
   (*a*)
-  s (*b*) .((*c*)
-            (*d*)
-            i
-            (*e*)) <-
+  s (*b*).((*c*)
+           (*d*)
+           i
+           (*e*)) <-
     (*f*)
     (*g*)
     x
 
 let _ =
   (*a*)
-  s (*b*) .[(*c*)
-            (*d*)
-            i
-            (*e*)]
+  s (*b*).[(*c*)
+           (*d*)
+           i
+           (*e*)]
 
 let _ =
   (*a*)
-  s (*b*) .[(*c*)
-            (*d*)
-            i
-            (*e*)] <-
+  s (*b*).[(*c*)
+           (*d*)
+           i
+           (*e*)] <-
     (*f*)
     (*g*)
     x
 
 let _ =
   (*a*)
-  s (*b*) .{(*c*)
-            (*d*)
-            i
-            (*e*)}
+  s (*b*).{(*c*)
+           (*d*)
+           i
+           (*e*)}
 
 let _ =
   (*a*)
-  s (*b*) .{(*c*)
-            (*d*)
-            i
-            (*e*)} <-
+  s (*b*).{(*c*)
+           (*d*)
+           i
+           (*e*)} <-
     (*f*)
     (*g*)
     x
 
-let _ = (*a*) s (*b*) .%{(*c*) i (*d*) }
+let _ = (*a*) s (*b*).%{(*c*) i (*d*)}
 
 let _ =
   (*a*)
-  s (*b*) .%{(*c*) i (*d*) } <-
+  s (*b*).%{(*c*) i (*d*)} <-
     (*e*)
     (*f*)
     x
@@ -270,12 +270,12 @@ let _ =
       | Some _ -> () (* do nothing *))
 
 let _ = try_with (fun () -> (* comment before *)
-                            a ; b (* after b *) )
+                            a ; b (* after b *))
 
 let _ =
   match x with
   | Some y -> (
-    match y with None -> () | Some z -> incr z (* double some *)  )
+    match y with None -> () | Some z -> incr z (* double some *) )
   | None -> ()
 
 type prefix =
