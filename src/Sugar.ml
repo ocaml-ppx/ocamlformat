@@ -20,7 +20,7 @@ let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
   match ptyp_desc with
   | Ptyp_arrow (l, t1, t2) ->
       let before = if i > 0 then ptyp_loc else t1.ptyp_loc in
-      Cmts.relocate cmts ~src:ptyp_loc ~before ~after:t2.ptyp_loc ;
+      Cmts.relocate cmts ~src:ptyp_loc ~before ~after:ptyp_loc ;
       let rest =
         match t2.ptyp_attributes with
         | [] -> arrow_typ cmts (i + 1) (sub_typ ~ctx t2)
@@ -36,7 +36,7 @@ let rec class_arrow_typ cmts ({ast= typ; _} as xtyp) =
   let {pcty_desc; pcty_loc; _} = typ in
   match pcty_desc with
   | Pcty_arrow (l, t1, t2) ->
-      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:t2.pcty_loc ;
+      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:pcty_loc ;
       let rest =
         match t2.pcty_attributes with
         | [] -> class_arrow_typ cmts (sub_cty ~ctx t2)

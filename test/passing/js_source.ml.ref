@@ -521,7 +521,7 @@ type _ foo += C : ('a -> int) -> 'a foo
 (* ERROR: Parameter variances are not satisfied *)
 
 type 'a bar = ..
-type +'a bar += D of (int -> 'a (* ERROR: type variances do not match *))
+type +'a bar += D of (int -> 'a) (* ERROR: type variances do not match *)
 
 (* Exceptions are compatible with extensions *)
 
