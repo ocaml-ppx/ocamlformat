@@ -294,7 +294,12 @@ A
           indentation
     ]}
     {[ Single long line HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ]}
-    *)
+    {[
+      With empty
+
+      line
+    ]}
+ *)
 
 (** {!module:A} {!module:A.B}
 
