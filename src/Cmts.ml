@@ -170,6 +170,8 @@ module CmtSet : sig
 
   val is_empty : t -> bool
 
+  val insert : t -> Cmt.t -> t
+
   val split : t -> Location.t -> t * t * t
   (** [split s {loc_start; loc_end}] splits [s] into the subset of comments
       that end before [loc_start], those that start after [loc_end], and
@@ -209,11 +211,12 @@ end = struct
 
   let is_empty (smap, _) = Map.is_empty smap
 
-  let of_list cmts =
-    List.fold cmts ~init:empty ~f:(fun (smap, emap) cmt ->
-        let {Cmt.loc; _} = cmt in
-        ( Map.add_multi smap ~key:loc ~data:cmt
-        , Map.add_multi emap ~key:loc ~data:cmt ))
+  let insert (smap, emap) cmt =
+    let {Cmt.loc; _} = cmt in
+    ( Map.add_multi smap ~key:loc ~data:cmt
+    , Map.add_multi emap ~key:loc ~data:cmt )
+
+  let of_list cmts = List.fold cmts ~init:empty ~f:insert
 
   let to_list (smap, _) = List.concat (Map.data smap)
 
@@ -342,9 +345,9 @@ let rec place t loc_tree ?prev_loc locs cmts =
               in
               is_adjacent t curr_loc (Cmt.loc cmt))
         in
-        (CmtSet.of_list a, CmtSet.of_list b)
+        (a, CmtSet.of_list b)
       in
-      let within = CmtSet.(of_list (to_list within @ to_list within')) in
+      let within = List.fold_left within' ~init:within ~f:CmtSet.insert in
       let before_curr =
         match prev_loc with
         | None -> before
