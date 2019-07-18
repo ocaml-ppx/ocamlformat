@@ -22,3 +22,13 @@ let foo x y =
   another_important_function x y ;
 
   cleanup x y
+
+[@@@ocamlformat "indicate-multiline-delimiters=closing-on-separate-line"]
+
+let foo x y =
+  lazy
+    ( fooooooooooooooooooooooo ;
+      fooooooooooooooooooooooo ;
+      foooooooooooooooooooooooooo ;
+      fooooooooooooooooooooooooo
+    )
