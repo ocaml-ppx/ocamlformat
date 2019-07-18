@@ -2220,14 +2220,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         match e1.pexp_desc with Pexp_sequence _ -> Some true | _ -> None
       in
       hvbox 0
-        (hvbox_if parens 2
-           ( wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+        ( wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+            (hvbox_if parens 0
                ( fmt_expression c ?parens:parens1 (sub_exp ~ctx e1)
                $ str " ;"
                $ fmt_extension_suffix c ext
                $ fmt "@ "
-               $ fmt_expression c (sub_exp ~ctx e2) )
-           $ fmt_atrs ))
+               $ fmt_expression c (sub_exp ~ctx e2) ))
+        $ fmt_atrs )
   | Pexp_sequence _ ->
       let fmt_sep ?(force_break = false) xe1 xe2 =
         let blank_line =
@@ -2262,10 +2262,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         Option.value_map prev ~default:noop ~f $ list_pn x fmt_seq
       in
       hvbox 0
-        (hvbox_if parens 2
-           ( wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
-               (list_pn grps fmt_seq_list)
-           $ fmt_atrs ))
+        ( wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+            (hvbox_if parens 0 @@ list_pn grps fmt_seq_list)
+        $ fmt_atrs )
   | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
         (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
