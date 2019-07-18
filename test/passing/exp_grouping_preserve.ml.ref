@@ -39,7 +39,9 @@ let () =
 let () =
   foooooooo
     begin
-      fooooooooooooo ; foooooooo foooooooooooo ; fooooooooooo foooooooooo ;
+      fooooooooooooo ;
+      foooooooo foooooooooooo ;
+      fooooooooooo foooooooooo ;
       foooooooooooooooo
     end
 

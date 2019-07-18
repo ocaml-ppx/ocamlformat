@@ -4517,7 +4517,7 @@ let g ?x () = ()
 ;;
 foo
   (();
-    g)
+   g)
 
 (* PR#5748 *)
 
@@ -9649,7 +9649,7 @@ let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 let f x =
   x.contents
     <- (print_string "coucou";
-         x.contents)
+        x.contents)
 ;;
 
 let ( ~$ ) x = Some x
@@ -9690,7 +9690,7 @@ fun contents -> { contents = (contents [@foo]) }
 ;;
 ();
 (();
-  ()) [@foo]
+ ()) [@foo]
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
