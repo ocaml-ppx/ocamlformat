@@ -434,6 +434,10 @@ let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
 let parse_docstring ~loc text =
   let location = loc.Location.loc_start in
+  let location =
+    { location with
+      pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
+  in
   let parsed = Odoc_parser.parse_comment_raw ~location ~text in
   match parsed with
   | {value; warnings= []} -> Ok value
