@@ -299,7 +299,19 @@ A
 
       line
     ]}
+    {[ First line
+       on the same line
+       as opening ]}
  *)
+
+module X :
+sig
+
+  (** {[ First line
+         on the same line
+         as opening ]} *)
+
+end
 
 (** {!module:A} {!module:A.B}
 
