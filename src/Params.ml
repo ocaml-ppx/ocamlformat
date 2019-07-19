@@ -144,6 +144,39 @@ let get_record_expr (c : Conf.t) =
       ; sep_after_non_final= fmt ";@;<1 0>"
       ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
+type record_pat =
+  { box: Fmt.t -> Fmt.t
+  ; sep_before: Fmt.t
+  ; sep_after_non_final: Fmt.t
+  ; sep_after_final: Fmt.t
+  ; wildcard: Fmt.t }
+
+let get_record_pat (c : Conf.t) ~ctx =
+  let r = get_record_expr c in
+  let r =
+    { box= r.box
+    ; sep_before= r.sep_before
+    ; sep_after_non_final= r.sep_after_non_final
+    ; sep_after_final= r.sep_after_final
+    ; wildcard= r.sep_before $ str "_" $ r.sep_after_final }
+  in
+  match c.break_separators with
+  | `Before | `After -> r
+  | `After_and_docked ->
+      let space = if c.space_around_records then 1 else 0 in
+      let indent_opn, indent_cls =
+        match ctx with
+        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-1, -1)
+        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-2, -2)
+        | _ -> (2, -2)
+      in
+      { r with
+        box=
+          (fun k ->
+            hvbox indent_opn
+              (wrap "{" "}" (break space 0 $ k $ break space indent_cls)))
+      }
+
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
   ; cond: Fmt.t

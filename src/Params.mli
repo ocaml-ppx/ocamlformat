@@ -52,6 +52,15 @@ type record_expr =
 
 val get_record_expr : Conf.t -> record_expr
 
+type record_pat =
+  { box: Fmt.t -> Fmt.t
+  ; sep_before: Fmt.t
+  ; sep_after_non_final: Fmt.t
+  ; sep_after_final: Fmt.t
+  ; wildcard: Fmt.t }
+
+val get_record_pat : Conf.t -> ctx:Ast.t -> record_pat
+
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
   ; cond: Fmt.t
