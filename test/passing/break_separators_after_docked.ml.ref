@@ -330,3 +330,33 @@ let fooooooooooo = function
         epi=
           Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "));
       }
+
+let f () =
+  let {
+    aaaaaaaa;
+    bbbbbbbbbb;
+    ccccccccc;
+    dddddddddd;
+    eeeeeeeee;
+    ffffffffff;
+    gggggggggg;
+    hhhhhhhhhh;
+  }
+    =
+    some_value
+  in
+  foooooooooooo
+
+let g () =
+  match some_value with
+  | {
+   aaaaaaaa;
+   bbbbbbbbbb;
+   ccccccccc;
+   dddddddddd;
+   eeeeeeeee;
+   ffffffffff;
+   gggggggggg;
+   hhhhhhhhhh;
+  } ->
+      foooooooo
