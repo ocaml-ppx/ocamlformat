@@ -986,13 +986,19 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
               @@ fmt_record_field c ~typ ~rhs ~type_first lid1
           | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
       in
+      let p = Params.get_record_pat c.conf ~ctx:ctx0 in
+      let fmt_field ~first ~last x =
+        fmt_if_k (not first) p.sep_before
+        $ fmt_field x
+        $ fmt_or_k
+            (last && Poly.(closed_flag = Closed))
+            p.sep_after_final p.sep_after_non_final
+      in
       hvbox 0
         (wrap_if parens "(" ")"
-           (Params.wrap_record c.conf
-              ( list flds (semic_sep c) fmt_field
-              $ fmt_if_k
-                  Poly.(closed_flag = Open)
-                  (fmt (semic_sep c) $ str "_") )))
+           (p.box
+              ( list_fl flds fmt_field
+              $ fmt_if_k Poly.(closed_flag = Open) p.wildcard )))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))

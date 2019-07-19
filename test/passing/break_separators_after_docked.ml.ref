@@ -72,9 +72,11 @@ type t = {
 
 let _ =
   match something with
-  | { very_very_long_field_name_running_out_of_space= 1;
-      another_very_very_long_field_name_running_out_of_space= 2;
-      _ } ->
+  | {
+   very_very_long_field_name_running_out_of_space= 1;
+   another_very_very_long_field_name_running_out_of_space= 2;
+   _;
+  } ->
       0
   | _ -> 1
 
@@ -125,11 +127,13 @@ let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
   {aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb}
 
 let x
-    { aaaaaaaaaaaaaaaaaaaaaa;
+    {
+      aaaaaaaaaaaaaaaaaaaaaa;
       aaaaaaaaaaaaaaaaaaa;
       aaaaaaaaaaaaaa;
       aaaaaaaaaaaaaaaaaa;
-      aaaaaaaaaa } =
+      aaaaaaaaaa;
+    } =
   {
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
     bbbbbbbbbbbbb= bbb bb bbbbbb;
@@ -280,11 +284,13 @@ let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
   {aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb}
 
 let x
-    { aaaaaaaaaaaaaaaaaaaaaa;
+    {
+      aaaaaaaaaaaaaaaaaaaaaa;
       aaaaaaaaaaaaaaaaaaa;
       aaaaaaaaaaaaaa;
       aaaaaaaaaaaaaaaaaa;
-      aaaaaaaaaa }
+      aaaaaaaaaa;
+    }
   =
   {
     aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
@@ -324,3 +330,33 @@ let fooooooooooo = function
         epi=
           Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "));
       }
+
+let f () =
+  let {
+    aaaaaaaa;
+    bbbbbbbbbb;
+    ccccccccc;
+    dddddddddd;
+    eeeeeeeee;
+    ffffffffff;
+    gggggggggg;
+    hhhhhhhhhh;
+  }
+    =
+    some_value
+  in
+  foooooooooooo
+
+let g () =
+  match some_value with
+  | {
+   aaaaaaaa;
+   bbbbbbbbbb;
+   ccccccccc;
+   dddddddddd;
+   eeeeeeeee;
+   ffffffffff;
+   gggggggggg;
+   hhhhhhhhhh;
+  } ->
+      foooooooo
