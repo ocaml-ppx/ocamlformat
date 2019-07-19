@@ -43,7 +43,8 @@ exception
     | `Ast_changed
     | `Doc_comment of Normalize.docstring_error list
     | `Comment
-    | `Comment_dropped of (Location.t * string) list ]
+    | `Comment_dropped of (Location.t * string) list
+    | `Warning50 of (Location.t * Warnings.t) list ]
     * (string * Sexp.t) list
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
@@ -153,7 +154,8 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
     match exn with
     | Internal_error ((`Comment | `Comment_dropped _), _) -> quiet_comments
     | Warning50 _ -> quiet_doc_comments
-    | Internal_error (`Doc_comment _, _) -> quiet_doc_comments
+    | Internal_error ((`Doc_comment _ | `Warning50 _), _) ->
+        quiet_doc_comments
     | Internal_error (`Ast_changed, _) -> false
     | Internal_error (`Cannot_parse _, _) -> false
     | Internal_error (_, _) -> .
@@ -222,10 +224,6 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
          %!"
         exe input_name ;
       match[@ocaml.warning "-28"] exn with
-      | Warning50 l ->
-          Format.fprintf fmt "  BUG: misplaced documentation comments.\n%!" ;
-          if Conf.debug then
-            List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
       | Internal_error (m, l) ->
           let s =
             match m with
@@ -234,6 +232,7 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
             | `Doc_comment _ -> "doc comments changed"
             | `Comment -> "comments changed"
             | `Comment_dropped _ -> "comments dropped"
+            | `Warning50 _ -> "misplaced documentation comments"
           in
           Format.fprintf fmt "  BUG: %s.\n%!" s ;
           ( match m with
@@ -278,6 +277,9 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                     Location.print_loc loc (ellipsis_cmt msg))
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
               if Conf.debug then Location.report_exception fmt exn
+          | `Warning50 l ->
+              if Conf.debug then
+                List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->
@@ -337,13 +339,15 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
     else
       match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
-      | exception exn ->
+      | exception exn -> (
           let args =
             [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
             |> List.filter_map ~f:(fun (s, f_opt) ->
                    Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
           in
-          internal_error (`Cannot_parse exn) args
+          match exn with
+          | Warning50 l -> internal_error (`Warning50 l) args
+          | exn -> internal_error (`Cannot_parse exn) args )
       | t_new ->
           (* Ast not preserved ? *)
           ( if
