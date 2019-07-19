@@ -137,13 +137,13 @@ let length =
 (* this is a list *)
 let length =
   ([ 0;
-    14;
-    (* foo *)
-    14;
-    17 (* foo *);
-    17;
-    2777777777777777777777777777777777;
-    27 ] [@foo])
+     14;
+     (* foo *)
+     14;
+     17 (* foo *);
+     17;
+     2777777777777777777777777777777777;
+     27 ] [@foo])
 
 [@@@ocamlformat "break-collection-expressions=wrap"]
 
@@ -155,8 +155,7 @@ let length =
      269999999999999999999999999999999999999999999999999; 26; 26; 26; 26;
      26; 26; 26; 26; 26; 26; 26; 26; 26; 26; 26; 26; 27; 27; 27; 27; 27; 27;
      27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27;
-     (* foo *) 27 (* foo *); 27; 27; 27; 27; 27; 27; 27; 27; 27; 28
-  |] [@foo]
+     (* foo *) 27 (* foo *); 27; 27; 27; 27; 27; 27; 27; 27; 27; 28 |] [@foo]
 
 (* this is a list *)
 let length =
@@ -167,7 +166,7 @@ let length =
      20; 20; 20; 20; 20; 20; 26; 26; 26; 26; 26; 27; 27; 27; 27;
      2777777777777777777777777777777777; 27; 27; 27; 27; 27; 27; 27; 27; 27;
      27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 28
-  ] [@foo])
+   ] [@foo])
 
 class
   [ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
@@ -318,6 +317,34 @@ let f () =
   in
   foooooooooooo
 
+let f () =
+  let [ aaaaaaaa;
+        bbbbbbbbbb;
+        ccccccccc;
+        dddddddddd;
+        eeeeeeeee;
+        ffffffffff;
+        gggggggggg;
+        hhhhhhhhhh ]
+    =
+    some_value
+  in
+  foooooooooooo
+
+let f () =
+  let [| aaaaaaaa;
+         bbbbbbbbbb;
+         ccccccccc;
+         dddddddddd;
+         eeeeeeeee;
+         ffffffffff;
+         gggggggggg;
+         hhhhhhhhhh |]
+    =
+    some_value
+  in
+  foooooooooooo
+
 let g () =
   match some_value with
   | { aaaaaaaa;
@@ -329,3 +356,21 @@ let g () =
       gggggggggg;
       hhhhhhhhhh } ->
       foooooooo
+  | [ aaaaaaaa;
+      bbbbbbbbbb;
+      ccccccccc;
+      dddddddddd;
+      eeeeeeeee;
+      ffffffffff;
+      gggggggggg;
+      hhhhhhhhhh ] ->
+      fooooooooo
+  | [| aaaaaaaa;
+       bbbbbbbbbb;
+       ccccccccc;
+       dddddddddd;
+       eeeeeeeee;
+       ffffffffff;
+       gggggggggg;
+       hhhhhhhhhh |] ->
+      fooooooooo

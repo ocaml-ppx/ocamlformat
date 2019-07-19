@@ -23,12 +23,6 @@ type cases =
 val get_cases :
   Conf.t -> first:bool -> indent:int -> parens_here:bool -> cases
 
-val wrap_record : Conf.t -> Fmt.t -> Fmt.t
-
-val wrap_list : Conf.t -> Fmt.t -> Fmt.t
-
-val wrap_array : Conf.t -> Fmt.t -> Fmt.t
-
 val wrap_tuple :
   Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t
 
@@ -52,6 +46,16 @@ type record_expr =
 
 val get_record_expr : Conf.t -> record_expr
 
+type list_expr =
+  { box: Fmt.t -> Fmt.t
+  ; sep_before: Fmt.t
+  ; sep_after_non_final: Fmt.t
+  ; sep_after_final: Fmt.t }
+
+val get_list_expr : Conf.t -> list_expr
+
+val get_array_expr : Conf.t -> list_expr
+
 type record_pat =
   { box: Fmt.t -> Fmt.t
   ; sep_before: Fmt.t
@@ -60,6 +64,10 @@ type record_pat =
   ; wildcard: Fmt.t }
 
 val get_record_pat : Conf.t -> ctx:Ast.t -> record_pat
+
+val get_list_pat : Conf.t -> ctx:Ast.t -> list_expr
+
+val get_array_pat : Conf.t -> ctx:Ast.t -> list_expr
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
