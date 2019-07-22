@@ -337,17 +337,15 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
       check_all_locations Format.err_formatter cmts_t ;
       Ok fmted )
     else
+      let exn_args () =
+        [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
+        |> List.filter_map ~f:(fun (s, f_opt) ->
+               Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
+      in
       match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
-      | exception exn -> (
-          let args =
-            [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
-            |> List.filter_map ~f:(fun (s, f_opt) ->
-                   Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
-          in
-          match exn with
-          | Warning50 l -> internal_error (`Warning50 l) args
-          | exn -> internal_error (`Cannot_parse exn) args )
+      | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
+      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
       | t_new ->
           (* Ast not preserved ? *)
           ( if
