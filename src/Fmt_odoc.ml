@@ -145,7 +145,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       escape $ str_normalized w
   | `Code_span s ->
       let s = escape_brackets s in
-      hovbox 0 (wrap "[" "]" (str s))
+      hovbox 0 (wrap "[" "]" (str_normalized s))
   | `Raw_markup (lang, s) ->
       let lang =
         match lang with
