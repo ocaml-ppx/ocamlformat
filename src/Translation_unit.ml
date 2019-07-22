@@ -359,28 +359,19 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             let new_ast =
               dump_ast ~suffix:".new" (xunit.normalize conf t_new)
             in
+            let args ~suffix =
+              [ ("output file", dump_formatted ~suffix fmted)
+              ; ("old ast", old_ast)
+              ; ("new ast", new_ast) ]
+              |> List.filter_map ~f:(fun (s, f_opt) ->
+                     Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
+            in
             if xunit.equal ~ignore_doc_comments:true conf t t_new then
               let docstrings = xunit.moved_docstrings conf t t_new in
-              let args =
-                [ ( "output file"
-                  , dump_formatted ~suffix:".unequal-docs" fmted )
-                ; ("old ast", old_ast)
-                ; ("new ast", new_ast) ]
-                |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f ->
-                           (s, String.sexp_of_t f)))
-              in
+              let args = args ~suffix:".unequal-docs" in
               internal_error (`Doc_comment docstrings) args
             else
-              let args =
-                [ ( "output file"
-                  , dump_formatted ~suffix:".unequal-ast" fmted )
-                ; ("old ast", old_ast)
-                ; ("new ast", new_ast) ]
-                |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f ->
-                           (s, String.sexp_of_t f)))
-              in
+              let args = args ~suffix:".unequal-ast" in
               internal_error `Ast_changed args ) ;
           (* Comments not preserved ? *)
           if conf.comment_check then (
