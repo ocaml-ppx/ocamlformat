@@ -344,3 +344,10 @@ end
 *)
 
 (** {%html:<p>Raw markup</p>%} {%Without language%} {%other:Other language%} *)
+
+(** [Multi
+     Line]
+
+    [ A lot of    spaces ]
+
+    [Very looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong] *)
