@@ -178,18 +178,18 @@ let parens_or_begin_end c ~loc =
 
 let wrap_fits_breaks_exp_if ?(space = true) ?(disambiguate = false) c
     ~parens ~loc k =
-  if Poly.(parens_or_begin_end c ~loc = `Begin_end) then
-    wrap_fits_breaks_exp_begin_end ~parens k
-  else if disambiguate && c.conf.disambiguate_non_breaking_match then
-    wrap_if_fits_or parens "(" ")" k
-  else wrap_fits_breaks_if ~space c.conf parens "(" ")" k
+  match parens_or_begin_end c ~loc with
+  | `Parens when disambiguate && c.conf.disambiguate_non_breaking_match ->
+      wrap_if_fits_or parens "(" ")" k
+  | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
+  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
 let wrap_exp_if ?(disambiguate = false) c ~parens ~loc k =
-  if Poly.(parens_or_begin_end c ~loc = `Begin_end) then
-    wrap_fits_breaks_exp_begin_end ~parens k
-  else if disambiguate && c.conf.disambiguate_non_breaking_match then
-    wrap_if_fits_or parens "(" ")" k
-  else wrap_if parens "(" ")" k
+  match parens_or_begin_end c ~loc with
+  | `Parens when disambiguate && c.conf.disambiguate_non_breaking_match ->
+      wrap_if_fits_or parens "(" ")" k
+  | `Parens -> wrap_if parens "(" ")" k
+  | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
 let drop_while ~f s =
   let i = ref 0 in
