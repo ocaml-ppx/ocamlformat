@@ -1005,15 +1005,15 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       let p = Params.get_record_pat c.conf ~ctx:ctx0 in
       let fmt_field ~first ~last x =
-        fmt_if_k (not first) p.sep_before
+        fmt_if_k (not first) p.common.sep_before
         $ fmt_field x
         $ fmt_or_k
             (last && Poly.(closed_flag = Closed))
-            p.sep_after_final p.sep_after_non_final
+            p.common.sep_after_final p.common.sep_after_non_final
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (p.box
+           (p.common.box
               ( list_fl flds fmt_field
               $ fmt_if_k Poly.(closed_flag = Open) p.wildcard )))
   | Ppat_array [] ->
@@ -2229,12 +2229,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let p = Params.get_record_expr c.conf in
       let fmt_field ~first ~last x =
-        fmt_if_k (not first) p.sep_before
+        fmt_if_k (not first) p.common.sep_before
         $ fmt_field x
-        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
+        $ fmt_or_k last p.common.sep_after_final
+            p.common.sep_after_non_final
       in
       hvbox 0
-        ( p.box
+        ( p.common.box
             ( opt default (fun d ->
                   hvbox 2
                     (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
