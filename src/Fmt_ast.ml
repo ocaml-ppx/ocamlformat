@@ -129,18 +129,24 @@ let function_indent c ~ctx ~default =
 
 let fmt_expressions c width sub_exp exprs fmt_expr sep_before
     sep_after_non_final sep_after_final =
-  let fmt_expr ~first ~last e =
-    fmt_if_k (not first) sep_before
-    $ fmt_expr e
-    $ fmt_or_k last sep_after_final sep_after_non_final
-  in
   match c.conf.break_collection_expressions with
-  | `Fit_or_vertical -> list_fl exprs fmt_expr
+  | `Fit_or_vertical ->
+      let fmt_expr ~first ~last e =
+        fmt_if_k (not first) sep_before
+        $ fmt_expr e
+        $ fmt_or_k last sep_after_final sep_after_non_final
+      in
+      list_fl exprs fmt_expr
   | `Wrap ->
       let is_simple x = is_simple c.conf width (sub_exp x) in
       let break x1 x2 = not (is_simple x1 && is_simple x2) in
       let grps = List.group exprs ~break in
-      let fmt_grp ~first:_ ~last:_ exprs =
+      let fmt_grp ~first:first_grp ~last:last_grp exprs =
+        let fmt_expr ~first ~last e =
+          fmt_if_k (not (first && first_grp)) sep_before
+          $ fmt_expr e
+          $ fmt_or_k (last && last_grp) sep_after_final sep_after_non_final
+        in
         hovbox (-2) (list_fl exprs fmt_expr)
       in
       list_fl grps fmt_grp
