@@ -147,9 +147,9 @@ let fmt_expressions c width sub_exp exprs fmt_expr sep_before
           $ fmt_expr e
           $ fmt_or_k (last && last_grp) sep_after_final sep_after_non_final
         in
-        hovbox (-2) (list_fl exprs fmt_expr)
+        list_fl exprs fmt_expr
       in
-      list_fl grps fmt_grp
+      hovbox (-2) (list_fl grps fmt_grp)
 
 (** Handle the `break-fun-decl` option *)
 let wrap_fun_decl_args c k =

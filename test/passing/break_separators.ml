@@ -147,6 +147,13 @@ let length =
 
 [@@@ocamlformat "break-collection-expressions=wrap"]
 
+;;
+Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
+  (Foo.foo ~foo ~foo ~foooo:()
+     [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo))
+     ; ("foooo", fooooooo); ("foooooo", foooooooo); ("fooooooooo", foooooooo)
+     ])
+
 (* this is an array *)
 let length =
   [| 0; 1; 2; 3; 4; 5; 6; 7; 8; 8; 9; 9; 10; 10; 11; 11; 12; 12; 12; 12; 13
