@@ -176,13 +176,18 @@ let parens_or_begin_end c ~loc =
       let str = String.lstrip (Source.string_at c.source loc) in
       if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
 
-let wrap_fits_breaks_exp_if ?(space = true) c ~parens ~loc k =
+let wrap_fits_breaks_exp_if ?(space = true) ?(disambiguate = false) c
+    ~parens ~loc k =
   match parens_or_begin_end c ~loc with
+  | `Parens when disambiguate && c.conf.disambiguate_non_breaking_match ->
+      wrap_if_fits_or parens "(" ")" k
   | `Parens -> wrap_fits_breaks_if ~space c.conf parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
-let wrap_exp_if c ~parens ~loc k =
+let wrap_exp_if ?(disambiguate = false) c ~parens ~loc k =
   match parens_or_begin_end c ~loc with
+  | `Parens when disambiguate && c.conf.disambiguate_non_breaking_match ->
+      wrap_if_fits_or parens "(" ")" k
   | `Parens -> wrap_if parens "(" ")" k
   | `Begin_end -> wrap_fits_breaks_exp_begin_end ~parens k
 
@@ -1901,7 +1906,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent = function_indent c ~ctx ~default:default_indent in
       hvbox_if box indent
-        (wrap_exp_if c ~loc:pexp_loc ~parens
+        (wrap_exp_if c ~loc:pexp_loc ~parens ~disambiguate:true
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "
@@ -1915,7 +1920,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@ " $ body ))
   | Pexp_function cs ->
       let indent = function_indent c ~ctx ~default:0 in
-      wrap_if parens "(" ")"
+      wrap_exp_if c ~loc:pexp_loc ~parens ~disambiguate:true
         ( hvbox 2
             ( str "function"
             $ fmt_extension_suffix c ext
@@ -2119,6 +2124,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let indent = match_indent c ~ctx:xexp.ctx ~default:0 in
           hvbox indent
             (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+               ~disambiguate:true
                ( leading_cmt
                $ hvbox 0
                    ( str keyword
@@ -2138,6 +2144,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             else (parenze_exp xpc_rhs, Some false)
           in
           wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+            ~disambiguate:true
             (hovbox 2
                ( hvbox 0
                    ( str keyword

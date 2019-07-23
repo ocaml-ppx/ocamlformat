@@ -140,6 +140,10 @@ OPTIONS (CODE FORMATTING STYLE)
            automatic code formatting. One can also use [@@@ocamlformat
            "enable"] instead of [@@@ocamlformat "disable=false"]
 
+       --disambiguate-non-breaking-match
+           Add parentheses around matching constructs that fit on a single
+           line.
+
        --doc-comments={after|before}
            Doc comments position. after puts doc comments after the
            corresponding code. before puts comments before the corresponding
