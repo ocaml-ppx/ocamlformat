@@ -21,7 +21,11 @@ type t =
   ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
-  ; remaining: (Location.t, unit) Hashtbl.t }
+  ; remaining: (Location.t, unit) Hashtbl.t
+  ; parse: Lexing.lexbuf -> expression option
+        (* only for structures, returns [None] otherwise *)
+  ; format: Source.t -> t -> Conf.t -> expression -> Fmt.t option
+        (* only for structures, returns [None] otherwise *) }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -447,13 +451,15 @@ let relocate (t : t) ~src ~before ~after =
       Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 (** Initialize global state and place comments. *)
-let init map_ast source asts comments_n_docstrings =
+let init map_ast ~parse ~format source asts comments_n_docstrings =
   let t =
     { cmts_before= Hashtbl.create (module Location)
     ; cmts_after= Hashtbl.create (module Location)
     ; cmts_within= Hashtbl.create (module Location)
     ; source
-    ; remaining= Hashtbl.create (module Location) }
+    ; remaining= Hashtbl.create (module Location)
+    ; parse
+    ; format }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then (
@@ -496,11 +502,18 @@ let init map_ast source asts comments_n_docstrings =
   in
   t
 
-let init_impl = init Mapper.structure
+let init_impl ~parse ~format =
+  let parse x = Some (parse x) in
+  let format w x y z = Some (format w x y z) in
+  init Mapper.structure ~parse ~format
 
-let init_intf = init Mapper.signature
+let no_parse _ = None
 
-let init_use_file = init Mapper.use_file
+let no_format _ _ _ _ = None
+
+let init_intf = init Mapper.signature ~parse:no_parse ~format:no_format
+
+let init_use_file = init Mapper.use_file ~parse:no_parse ~format:no_format
 
 let preserve fmt_x x =
   let buf = Buffer.create 128 in
@@ -539,7 +552,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start; _}) =
   in
   split_asterisk_prefixed_ 0
 
-let fmt_cmt (conf : Conf.t) cmt =
+let fmt_cmt t (conf : Conf.t) cmt =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
@@ -550,18 +563,43 @@ let fmt_cmt (conf : Conf.t) cmt =
             | _, None -> str line $ fmt "*)"
             | _, Some _ -> str line $ fmt "@,*") )
   in
-  if not conf.wrap_comments then
-    match split_asterisk_prefixed cmt with
-    | [""] | [_] | [_; ""] -> wrap "(*" "*)" (str (fst cmt))
-    | asterisk_prefixed_lines ->
-        fmt_asterisk_prefixed_lines asterisk_prefixed_lines
-  else
-    match split_asterisk_prefixed cmt with
-    | [""] -> str "(* *)"
-    | [text] -> wrap "(*" "*)" (fill_text text)
-    | [text; ""] -> wrap "(*" " *)" (fill_text text)
-    | asterisk_prefixed_lines ->
-        fmt_asterisk_prefixed_lines asterisk_prefixed_lines
+  let fmt_non_code cmt =
+    if not conf.wrap_comments then
+      match split_asterisk_prefixed cmt with
+      | [""] | [_] | [_; ""] -> wrap "(*" "*)" (str (fst cmt))
+      | asterisk_prefixed_lines ->
+          fmt_asterisk_prefixed_lines asterisk_prefixed_lines
+    else
+      match split_asterisk_prefixed cmt with
+      | [""] -> str "(* *)"
+      | [text] -> wrap "(*" "*)" (fill_text text)
+      | [text; ""] -> wrap "(*" " *)" (fill_text text)
+      | asterisk_prefixed_lines ->
+          fmt_asterisk_prefixed_lines asterisk_prefixed_lines
+  in
+  let fmt_code cmt =
+    let str = fst cmt in
+    match t.parse (Lexing.from_string str) with
+    | Some parsed -> (
+      match t.format (Source.create str) t conf parsed with
+      | Some formatted ->
+          hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+      | None -> fmt_non_code cmt )
+    | None -> fmt_non_code cmt
+  in
+  if conf.parse_code_comments then
+    match fst cmt with
+    | "" | "$" -> fmt_non_code cmt
+    | str ->
+        if Char.equal str.[0] '$' then
+          let chars_removed =
+            if Char.equal str.[String.length str - 1] '$' then 2 else 1
+          in
+          let len = String.length str - chars_removed in
+          let str = String.sub ~pos:1 ~len str in
+          fmt_code (str, snd cmt)
+        else fmt_non_code cmt
+  else fmt_non_code cmt
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
@@ -603,7 +641,7 @@ let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
             (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
-            | [cmt] -> fmt_cmt conf cmt $ maybe_newline ~next cmt
+            | [cmt] -> fmt_cmt t conf cmt $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
                     wrap "(*" "*)" (str (fst cmt)))
@@ -681,9 +719,31 @@ let remaining_comments t =
 
 let remaining_locs t = Hashtbl.to_alist t.remaining |> List.map ~f:fst
 
-let diff x y =
+let diff t (conf : Conf.t) x y =
   let norm z =
-    let f (txt, _) = Normalize.comment txt in
+    let norm_non_code (txt, _) = Normalize.comment txt in
+    let norm_code cmt =
+      match t.parse (Lexing.from_string (fst cmt)) with
+      | Some parsed ->
+          Caml.Format.asprintf "%a" (Printast.expression 0)
+            (Normalize.expr conf parsed)
+      | None -> norm_non_code cmt
+    in
+    let f z =
+      if conf.parse_code_comments then
+        match fst z with
+        | "" | "$" -> norm_non_code z
+        | str ->
+            if Char.equal str.[0] '$' then
+              let chars_removed =
+                if Char.equal str.[String.length str - 1] '$' then 2 else 1
+              in
+              let len = String.length str - chars_removed in
+              let str = String.sub ~pos:1 ~len str in
+              norm_code (str, snd z)
+            else norm_non_code z
+      else norm_non_code z
+    in
     Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)

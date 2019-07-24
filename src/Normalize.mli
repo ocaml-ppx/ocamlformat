@@ -20,6 +20,9 @@ val comment : string -> string
 val docstring : Conf.t -> string -> string
 (** Normalize a docstring. *)
 
+val expr : Conf.t -> expression -> expression
+(** Normalize an expression. *)
+
 val impl : Conf.t -> structure -> structure
 (** Normalize a structure. *)
 

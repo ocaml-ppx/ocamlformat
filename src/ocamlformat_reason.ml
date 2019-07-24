@@ -14,7 +14,9 @@
 (** Operations on binary serialized Reason implementations. *)
 let impl : _ Translation_unit.t =
   let parse = Migrate_ast.Parse.implementation in
-  { init_cmts= Cmts.init_impl
+  { init_cmts=
+      Cmts.init_impl ~parse:Migrate_ast.Parse.expression
+        ~format:Fmt_ast.fmt_expression
   ; fmt= Fmt_ast.fmt_structure
   ; parse
   ; equal= Reason.equal_impl

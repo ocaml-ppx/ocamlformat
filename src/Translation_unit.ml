@@ -398,7 +398,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             let f x = Either.First.map ~f x |> Either.Second.map ~f in
             let diff_cmts =
               Sequence.append
-                (Cmts.diff old_comments t_newcomments)
+                (Cmts.diff cmts_t conf old_comments t_newcomments)
                 (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
               |> Sequence.map ~f
             in

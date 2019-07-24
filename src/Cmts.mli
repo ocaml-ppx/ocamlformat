@@ -29,7 +29,12 @@ open Migrate_ast
 type t
 
 val init_impl :
-  Source.t -> Parsetree.structure -> (string * Location.t) list -> t
+     parse:(Lexing.lexbuf -> Parsetree.expression)
+  -> format:(Source.t -> t -> Conf.t -> Parsetree.expression -> Fmt.t)
+  -> Source.t
+  -> Parsetree.structure
+  -> (string * Location.t) list
+  -> t
 (** [init_impl source structure comments] associates each comment in
     [comments] with a source location appearing in [structure]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
@@ -121,7 +126,9 @@ val remaining_comments : t -> (Location.t * string * string * Sexp.t) list
 val remaining_locs : t -> Location.t list
 
 val diff :
-     (string * Location.t) list
+     t
+  -> Conf.t
+  -> (string * Location.t) list
   -> (string * Location.t) list
   -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)
