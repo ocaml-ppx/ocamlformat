@@ -70,6 +70,7 @@ type t =
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
+  ; parse_code_comments: bool
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]

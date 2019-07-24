@@ -65,6 +65,7 @@ type t =
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
+  ; parse_code_comments: bool
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
@@ -919,6 +920,13 @@ module Formatting = struct
       (fun conf x -> {conf with parens_tuple_patterns= x})
       (fun conf -> conf.parens_tuple_patterns)
 
+  let parse_code_comments =
+    let doc = "Parse and format code in comments." in
+    let names = ["parse-code-comments"] in
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with parse_code_comments= x})
+      (fun conf -> conf.parse_code_comments)
+
   let parse_docstrings =
     let doc = "Parse and format docstrings." in
     let names = ["parse-docstrings"] in
@@ -1367,6 +1375,7 @@ let ocamlformat_profile =
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
   ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
+  ; parse_code_comments= C.default Formatting.parse_code_comments
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
@@ -1508,6 +1517,7 @@ let janestreet_profile =
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
   ; parens_tuple_patterns= `Multi_line_only
+  ; parse_code_comments= false
   ; parse_docstrings= false
   ; quiet= ocamlformat_profile.quiet
   ; sequence_blank_line= `Compact
