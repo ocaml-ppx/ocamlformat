@@ -367,7 +367,7 @@ module Formatting = struct
         , "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ) ]
     in
-    C.choice ~names ~all ~doc ~section
+    C.choice ~names ~all ~doc ~section ~deprecated:true
       (fun conf x -> {conf with break_string_literals= x})
       (fun conf -> conf.break_string_literals)
 

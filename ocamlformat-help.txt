@@ -117,6 +117,7 @@ OPTIONS (CODE FORMATTING STYLE)
            are preserved. newlines mode breaks lines at newlines. never mode
            formats string literals as they are parsed, in particular, with
            escape sequences expanded. The default value is newlines-and-wrap.
+           Warning: This option is deprecated.
 
        --break-struct={force|natural}
            Break struct-end module items. force will break struct-end phrases
