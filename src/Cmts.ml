@@ -574,19 +574,17 @@ let fmt_cmt t (conf : Conf.t) cmt =
       hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
     with _ -> fmt_non_code cmt
   in
-  if conf.parse_code_comments then
-    match fst cmt with
-    | "" | "$" -> fmt_non_code cmt
-    | str ->
-        if Char.equal str.[0] '$' then
-          let chars_removed =
-            if Char.equal str.[String.length str - 1] '$' then 2 else 1
-          in
-          let len = String.length str - chars_removed in
-          let str = String.sub ~pos:1 ~len str in
-          fmt_code (str, snd cmt)
-        else fmt_non_code cmt
-  else fmt_non_code cmt
+  match fst cmt with
+  | "" | "$" -> fmt_non_code cmt
+  | str ->
+      if Char.equal str.[0] '$' then
+        let chars_removed =
+          if Char.equal str.[String.length str - 1] '$' then 2 else 1
+        in
+        let len = String.length str - chars_removed in
+        let str = String.sub ~pos:1 ~len str in
+        fmt_code (str, snd cmt)
+      else fmt_non_code cmt
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
@@ -717,19 +715,17 @@ let diff (conf : Conf.t) x y =
       with _ -> norm_non_code cmt
     in
     let f z =
-      if conf.parse_code_comments then
-        match fst z with
-        | "" | "$" -> norm_non_code z
-        | str ->
-            if Char.equal str.[0] '$' then
-              let chars_removed =
-                if Char.equal str.[String.length str - 1] '$' then 2 else 1
-              in
-              let len = String.length str - chars_removed in
-              let str = String.sub ~pos:1 ~len str in
-              norm_code (str, snd z)
-            else norm_non_code z
-      else norm_non_code z
+      match fst z with
+      | "" | "$" -> norm_non_code z
+      | str ->
+          if Char.equal str.[0] '$' then
+            let chars_removed =
+              if Char.equal str.[String.length str - 1] '$' then 2 else 1
+            in
+            let len = String.length str - chars_removed in
+            let str = String.sub ~pos:1 ~len str in
+            norm_code (str, snd z)
+          else norm_non_code z
     in
     Set.of_list (module String) (List.map ~f z)
   in

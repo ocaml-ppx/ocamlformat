@@ -332,9 +332,6 @@ OPTIONS (CODE FORMATTING STYLE)
            parentheses around tuples patterns. The default value is
            multi-line-only.
 
-       --parse-code-comments
-           Parse and format code in comments.
-
        --parse-docstrings
            Parse and format docstrings.
 
