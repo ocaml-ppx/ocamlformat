@@ -567,10 +567,15 @@ let fmt_cmt t (conf : Conf.t) cmt =
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   in
   let fmt_code cmt =
-    let str = fst cmt in
+    let source = fst cmt in
     try
-      let parsed = Migrate_ast.Parse.use_file (Lexing.from_string str) in
-      let formatted = t.format (Source.create str) t conf parsed in
+      let format = t.format in
+      let parsed =
+        Parse_with_comments.parse Migrate_ast.Parse.use_file conf ~source
+      in
+      let source = Source.create source in
+      let cmts = init_use_file ~format source parsed.ast parsed.comments in
+      let formatted = format source cmts conf parsed.ast in
       hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
     with _ -> fmt_non_code cmt
   in

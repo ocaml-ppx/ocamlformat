@@ -13,11 +13,9 @@
 
 open Migrate_ast
 open Parsetree
-open Translation_unit
+open Parse_with_comments
 
-type 'a t =
-  { origin_filename: string
-  ; ast_and_comment: 'a Translation_unit.with_comments }
+type 'a t = {origin_filename: string; ast_and_comment: 'a with_comments}
 
 val input_bin_impl : In_channel.t -> structure t
 (** Reads a serialized structure from an input channel. It is assumed to be

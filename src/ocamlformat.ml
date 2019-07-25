@@ -11,13 +11,14 @@
 
 (** OCamlFormat *)
 
-let normalize norm c {Translation_unit.ast; _} = norm c ast
+let normalize norm c {Parse_with_comments.ast; _} = norm c ast
 
 let equal eq ~ignore_doc_comments c a b =
-  eq ~ignore_doc_comments c a.Translation_unit.ast b.Translation_unit.ast
+  eq ~ignore_doc_comments c a.Parse_with_comments.ast
+    b.Parse_with_comments.ast
 
 let moved_docstrings f c a b =
-  f c a.Translation_unit.ast b.Translation_unit.ast
+  f c a.Parse_with_comments.ast b.Parse_with_comments.ast
 
 let format = Fmt_ast.fmt_use_file
 

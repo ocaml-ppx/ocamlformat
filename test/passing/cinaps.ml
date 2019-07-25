@@ -31,3 +31,15 @@ let y = 2
 external get_name : unit -> string = "get_name"
 
 (*$*)
+
+let x = 1
+
+(*$
+  ;;
+  let x = 1 in
+  (* fooooooo *)
+  let y = 2 in
+  (* foooooooo *)
+  z
+*)
+(*$*)
