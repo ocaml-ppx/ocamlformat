@@ -219,3 +219,16 @@ type t =
   [ `A  (** A *)
   | `B[@b]  (** B *)
   | (p[@p]) (* P *) ]
+
+type foooooooooooooooo =
+     ?fooooooooo:(string -> unit)
+  -> ?fooooooooooooo:
+       (   string
+        -> string
+        -> int
+        -> string
+        -> string option foooooooooooooooooooooooo)
+  -> fooooo:string
+  -> ?fooooooooo:(unit -> unit Fooo.t)
+  -> ?fooooooo:bool
+  -> string option Foooooooo.t
