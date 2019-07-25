@@ -22,7 +22,6 @@ type t =
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
   ; remaining: (Location.t, unit) Hashtbl.t
-  ; parse: Lexing.lexbuf -> toplevel_phrase list
   ; format: Source.t -> t -> Conf.t -> toplevel_phrase list -> Fmt.t }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
@@ -449,14 +448,13 @@ let relocate (t : t) ~src ~before ~after =
       Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 (** Initialize global state and place comments. *)
-let init map_ast ~parse ~format source asts comments_n_docstrings =
+let init map_ast ~format source asts comments_n_docstrings =
   let t =
     { cmts_before= Hashtbl.create (module Location)
     ; cmts_after= Hashtbl.create (module Location)
     ; cmts_within= Hashtbl.create (module Location)
     ; source
     ; remaining= Hashtbl.create (module Location)
-    ; parse
     ; format }
   in
   let comments = dedup_cmts map_ast asts comments_n_docstrings in
@@ -571,7 +569,7 @@ let fmt_cmt t (conf : Conf.t) cmt =
   let fmt_code cmt =
     let str = fst cmt in
     try
-      let parsed = t.parse (Lexing.from_string str) in
+      let parsed = Migrate_ast.Parse.use_file (Lexing.from_string str) in
       let formatted = t.format (Source.create str) t conf parsed in
       hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
     with _ -> fmt_non_code cmt
@@ -708,14 +706,14 @@ let remaining_comments t =
 
 let remaining_locs t = Hashtbl.to_alist t.remaining |> List.map ~f:fst
 
-let diff t (conf : Conf.t) x y =
+let diff (conf : Conf.t) x y =
   let norm z =
     let norm_non_code (txt, _) = Normalize.comment txt in
     let norm_code cmt =
       try
-        let parsed = t.parse (Lexing.from_string (fst cmt)) in
-        Caml.Format.asprintf "%a" Printast.use_file
-          (Normalize.use_file conf parsed)
+        Migrate_ast.Parse.use_file (Lexing.from_string (fst cmt))
+        |> Normalize.use_file conf
+        |> Caml.Format.asprintf "%a" Printast.use_file
       with _ -> norm_non_code cmt
     in
     let f z =

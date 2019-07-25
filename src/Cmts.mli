@@ -29,8 +29,7 @@ open Migrate_ast
 type t
 
 val init_impl :
-     parse:(Lexing.lexbuf -> Parsetree.toplevel_phrase list)
-  -> format:
+     format:
        (Source.t -> t -> Conf.t -> Parsetree.toplevel_phrase list -> Fmt.t)
   -> Source.t
   -> Parsetree.structure
@@ -42,8 +41,7 @@ val init_impl :
     [fmt] functions. *)
 
 val init_intf :
-     parse:(Lexing.lexbuf -> Parsetree.toplevel_phrase list)
-  -> format:
+     format:
        (Source.t -> t -> Conf.t -> Parsetree.toplevel_phrase list -> Fmt.t)
   -> Source.t
   -> Parsetree.signature
@@ -55,8 +53,7 @@ val init_intf :
     [fmt] functions. *)
 
 val init_use_file :
-     parse:(Lexing.lexbuf -> Parsetree.toplevel_phrase list)
-  -> format:
+     format:
        (Source.t -> t -> Conf.t -> Parsetree.toplevel_phrase list -> Fmt.t)
   -> Source.t
   -> Parsetree.toplevel_phrase list
@@ -136,8 +133,7 @@ val remaining_comments : t -> (Location.t * string * string * Sexp.t) list
 val remaining_locs : t -> Location.t list
 
 val diff :
-     t
-  -> Conf.t
+     Conf.t
   -> (string * Location.t) list
   -> (string * Location.t) list
   -> (string, string) Either.t Sequence.t
