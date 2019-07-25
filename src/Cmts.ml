@@ -22,9 +22,8 @@ type t =
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
   ; remaining: (Location.t, unit) Hashtbl.t
-  ; parse: Lexing.lexbuf -> toplevel_phrase list option
-  ; format: Source.t -> t -> Conf.t -> toplevel_phrase list -> Fmt.t option
-  }
+  ; parse: Lexing.lexbuf -> toplevel_phrase list
+  ; format: Source.t -> t -> Conf.t -> toplevel_phrase list -> Fmt.t }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -501,11 +500,6 @@ let init map_ast ~parse ~format source asts comments_n_docstrings =
   in
   t
 
-let init map ~parse ~format =
-  let parse x = Some (parse x) in
-  let format w x y z = Some (format w x y z) in
-  init map ~parse ~format
-
 let init_impl = init Mapper.structure
 
 let init_intf = init Mapper.signature
@@ -576,13 +570,11 @@ let fmt_cmt t (conf : Conf.t) cmt =
   in
   let fmt_code cmt =
     let str = fst cmt in
-    match t.parse (Lexing.from_string str) with
-    | Some parsed -> (
-      match t.format (Source.create str) t conf parsed with
-      | Some formatted ->
-          hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
-      | None -> fmt_non_code cmt )
-    | None -> fmt_non_code cmt
+    try
+      let parsed = t.parse (Lexing.from_string str) in
+      let formatted = t.format (Source.create str) t conf parsed in
+      hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+    with _ -> fmt_non_code cmt
   in
   if conf.parse_code_comments then
     match fst cmt with
@@ -720,11 +712,11 @@ let diff t (conf : Conf.t) x y =
   let norm z =
     let norm_non_code (txt, _) = Normalize.comment txt in
     let norm_code cmt =
-      match t.parse (Lexing.from_string (fst cmt)) with
-      | Some parsed ->
-          Caml.Format.asprintf "%a" Printast.use_file
-            (Normalize.use_file conf parsed)
-      | None -> norm_non_code cmt
+      try
+        let parsed = t.parse (Lexing.from_string (fst cmt)) in
+        Caml.Format.asprintf "%a" Printast.use_file
+          (Normalize.use_file conf parsed)
+      with _ -> norm_non_code cmt
     in
     let f z =
       if conf.parse_code_comments then
