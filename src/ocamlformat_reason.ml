@@ -11,15 +11,15 @@
 
 (** OCamlFormat to convert Reason code to OCaml *)
 
-let parse = Migrate_ast.Parse.implementation
+let parse = Migrate_ast.Parse.use_file
 
-let format = Fmt_ast.fmt_structure
+let format = Fmt_ast.fmt_use_file
 
 (** Operations on binary serialized Reason implementations. *)
 let impl : _ Translation_unit.t =
   { init_cmts= Cmts.init_impl ~parse ~format
   ; fmt= Fmt_ast.fmt_structure
-  ; parse
+  ; parse= Migrate_ast.Parse.implementation
   ; equal= Reason.equal_impl
   ; moved_docstrings= Reason.moved_docstrings_impl
   ; normalize= Reason.norm_impl

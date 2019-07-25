@@ -22,8 +22,9 @@ type t =
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
   ; remaining: (Location.t, unit) Hashtbl.t
-  ; parse: Lexing.lexbuf -> structure option
-  ; format: Source.t -> t -> Conf.t -> structure -> Fmt.t option }
+  ; parse: Lexing.lexbuf -> toplevel_phrase list option
+  ; format: Source.t -> t -> Conf.t -> toplevel_phrase list -> Fmt.t option
+  }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -721,8 +722,8 @@ let diff t (conf : Conf.t) x y =
     let norm_code cmt =
       match t.parse (Lexing.from_string (fst cmt)) with
       | Some parsed ->
-          Caml.Format.asprintf "%a" Printast.implementation
-            (Normalize.impl conf parsed)
+          Caml.Format.asprintf "%a" Printast.use_file
+            (Normalize.use_file conf parsed)
       | None -> norm_non_code cmt
     in
     let f z =

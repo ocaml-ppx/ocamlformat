@@ -19,9 +19,9 @@ let equal eq ~ignore_doc_comments c a b =
 let moved_docstrings f c a b =
   f c a.Translation_unit.ast b.Translation_unit.ast
 
-let parse = Migrate_ast.Parse.implementation
+let parse = Migrate_ast.Parse.use_file
 
-let format = Fmt_ast.fmt_structure
+let format = Fmt_ast.fmt_use_file
 
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
