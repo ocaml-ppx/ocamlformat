@@ -351,7 +351,11 @@ module Formatting = struct
     let doc = "Break string literals." in
     let names = ["break-string-literals"] in
     let all =
-      [ ( "wrap"
+      [ ( "newlines-and-wrap"
+        , `Newlines_and_wrap
+        , "$(b,newlines-and-wrap) mode breaks lines at newlines and wraps \
+           string literals at the margin." )
+      ; ( "wrap"
         , `Wrap
         , "$(b,wrap) mode wraps string literals at the margin. Quoted \
            strings such as $(i,{id|...|id}) are preserved." )
@@ -361,11 +365,7 @@ module Formatting = struct
       ; ( "never"
         , `Never
         , "$(b,never) mode formats string literals as they are parsed, in \
-           particular, with escape sequences expanded." )
-      ; ( "newlines-and-wrap"
-        , `Newlines_and_wrap
-        , "$(b,newlines-and-wrap) mode breaks lines at newlines and wraps \
-           string literals at the margin." ) ]
+           particular, with escape sequences expanded." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_string_literals= x})
