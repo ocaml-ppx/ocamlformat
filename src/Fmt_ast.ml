@@ -4397,9 +4397,3 @@ let fmt_signature = fmt_file ~f:fmt_signature
 let fmt_structure = fmt_file ~f:fmt_structure
 
 let fmt_use_file = fmt_file ~f:fmt_use_file
-
-let fmt_expression source cmts conf e =
-  let c = {source; cmts; conf} in
-  Ast.init c.conf ;
-  let ctx = Str (Ast_helper.Str.eval e) in
-  fmt_expression c (sub_exp ~ctx e)

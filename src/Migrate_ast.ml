@@ -41,14 +41,10 @@ module Mapper = struct
                   {pdir_name with loc= mapper.location mapper pdir_name.loc}
               ; pdir_arg
               ; pdir_loc= mapper.location mapper pdir_loc })
-
-  let expression (mapper : Ast_mapper.mapper) e = mapper.expr mapper e
 end
 
 module Parse = struct
   open Migrate_parsetree
-
-  let expression = Parse.expression selected_version
 
   let implementation = Parse.implementation selected_version
 

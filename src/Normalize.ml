@@ -320,8 +320,6 @@ let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
 
 let mapper = make_mapper ~ignore_doc_comment:false
 
-let expr c = Mapper.expression (mapper c)
-
 let impl c = Mapper.structure (mapper c)
 
 let intf c = Mapper.signature (mapper c)

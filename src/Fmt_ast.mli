@@ -15,9 +15,6 @@ module Format = Format_
 open Migrate_ast
 open Parsetree
 
-val fmt_expression : Source.t -> Cmts.t -> Conf.t -> expression -> Fmt.t
-(** Format an expression. *)
-
 val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
 (** Format a signature. *)
 

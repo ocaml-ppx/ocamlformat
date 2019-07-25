@@ -22,10 +22,8 @@ type t =
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
   ; remaining: (Location.t, unit) Hashtbl.t
-  ; parse: Lexing.lexbuf -> expression option
-        (* only for structures, returns [None] otherwise *)
-  ; format: Source.t -> t -> Conf.t -> expression -> Fmt.t option
-        (* only for structures, returns [None] otherwise *) }
+  ; parse: Lexing.lexbuf -> structure option
+  ; format: Source.t -> t -> Conf.t -> structure -> Fmt.t option }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -502,18 +500,16 @@ let init map_ast ~parse ~format source asts comments_n_docstrings =
   in
   t
 
-let init_impl ~parse ~format =
+let init map ~parse ~format =
   let parse x = Some (parse x) in
   let format w x y z = Some (format w x y z) in
-  init Mapper.structure ~parse ~format
+  init map ~parse ~format
 
-let no_parse _ = None
+let init_impl = init Mapper.structure
 
-let no_format _ _ _ _ = None
+let init_intf = init Mapper.signature
 
-let init_intf = init Mapper.signature ~parse:no_parse ~format:no_format
-
-let init_use_file = init Mapper.use_file ~parse:no_parse ~format:no_format
+let init_use_file = init Mapper.use_file
 
 let preserve fmt_x x =
   let buf = Buffer.create 128 in
@@ -725,8 +721,8 @@ let diff t (conf : Conf.t) x y =
     let norm_code cmt =
       match t.parse (Lexing.from_string (fst cmt)) with
       | Some parsed ->
-          Caml.Format.asprintf "%a" (Printast.expression 0)
-            (Normalize.expr conf parsed)
+          Caml.Format.asprintf "%a" Printast.implementation
+            (Normalize.impl conf parsed)
       | None -> norm_non_code cmt
     in
     let f z =
