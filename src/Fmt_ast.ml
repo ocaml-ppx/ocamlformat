@@ -1614,7 +1614,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            4 (fmt_fun_args c xargs)
                        $ fmt "@ ->" ) )
                $ pre_body )
-           $ fmt "@;<1000 0>" $ body ))
+           $ fmt "@ " $ body ))
   | Pexp_apply
       ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc}
           ; pexp_attributes= []

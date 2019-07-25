@@ -23,11 +23,7 @@ f x
 ;;
 f x >>= fun y ->
 g y >>= fun () ->
-f x >>= fun y ->
-g y >>= fun () ->
-f x >>= fun y ->
-g y >>= fun () ->
-y ()
+f x >>= fun y -> g y >>= fun () -> f x >>= fun y -> g y >>= fun () -> y ()
 
 ;;
 f x >>= function
@@ -35,24 +31,19 @@ f x >>= function
     g y >>= fun () ->
     f x >>= fun y ->
     g y >>= function
-    | x -> (
-        f x >>= fun y ->
-        g y >>= function _ -> y () ) )
+    | x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
 
 ;;
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x ->
-x
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x
 
 ;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx ->
-x
+|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
-|> fun x ->
-x
+|> fun x -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
@@ -61,22 +52,18 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 
 ;;
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x ->
-x
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x
 
 ;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx ->
-x
+|> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
 
 ;;
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx ->
-x
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
-|> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx ->
-x
+|> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxxxxxx ->
@@ -166,17 +153,13 @@ let end_gen_implementation ?toplevel ~ppf_dump
   ( clambda
   ++ Profile.record "cmm" (Cmmgen.compunit ~ppf_dump)
   ++ Profile.record "compile_phrases" (List.iter (compile_phrase ~ppf_dump))
-  ++ fun () ->
-    () ) ;
+  ++ fun () -> () ) ;
   fooooooooooooooo
 
 let foo =
   (* get the tree origin *)
   get_store_tree s >>= function
-  | None ->
-      f t >|= fun x ->
-      Ok x
-      (* no transaction is needed *)
+  | None -> f t >|= fun x -> Ok x (* no transaction is needed *)
   | Some (origin, old_tree) ->
       let batch = {repo; tree= old_tree; origin} in
       let b = Batch batch in
@@ -189,9 +172,7 @@ let _ =
   | Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
-let _ =
-  foo >>= fun [@warning "-4"] x ->
-  fooooooooooooooooooooooo
+let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
 
 let _ =
   foo >>= fun [@warning "-4"] x y ->
