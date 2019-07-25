@@ -43,3 +43,9 @@ let x = 1
   z
 *)
 (*$*)
+
+let foo = foo
+
+(*$QR foo Q.small_int (fun i-> foo i (+) [1;2;3] = List.fold_left (+) i
+  [1;2;3] ) *)
+let foo = foo

@@ -566,19 +566,6 @@ let fmt_cmt t (conf : Conf.t) cmt =
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   in
-  let fmt_code cmt =
-    let source = fst cmt in
-    try
-      let format = t.format in
-      let parsed =
-        Parse_with_comments.parse Migrate_ast.Parse.use_file conf ~source
-      in
-      let source = Source.create source in
-      let cmts = init_use_file ~format source parsed.ast parsed.comments in
-      let formatted = format source cmts conf parsed.ast in
-      hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
-    with _ -> fmt_non_code cmt
-  in
   match fst cmt with
   | "" | "$" -> fmt_non_code cmt
   | str ->
@@ -587,8 +574,20 @@ let fmt_cmt t (conf : Conf.t) cmt =
           if Char.equal str.[String.length str - 1] '$' then 2 else 1
         in
         let len = String.length str - chars_removed in
-        let str = String.sub ~pos:1 ~len str in
-        fmt_code (str, snd cmt)
+        let source = String.sub ~pos:1 ~len str in
+        let format = t.format in
+        try
+          let parsed =
+            Parse_with_comments.parse Migrate_ast.Parse.use_file conf
+              ~source
+          in
+          let source = Source.create source in
+          let cmts =
+            init_use_file ~format source parsed.ast parsed.comments
+          in
+          let formatted = format source cmts conf parsed.ast in
+          hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+        with _ -> fmt_non_code cmt
       else fmt_non_code cmt
 
 (** Find, remove, and format comments for loc. *)
@@ -712,13 +711,6 @@ let remaining_locs t = Hashtbl.to_alist t.remaining |> List.map ~f:fst
 let diff (conf : Conf.t) x y =
   let norm z =
     let norm_non_code (txt, _) = Normalize.comment txt in
-    let norm_code cmt =
-      try
-        Migrate_ast.Parse.use_file (Lexing.from_string (fst cmt))
-        |> Normalize.use_file conf
-        |> Caml.Format.asprintf "%a" Printast.use_file
-      with _ -> norm_non_code cmt
-    in
     let f z =
       match fst z with
       | "" | "$" -> norm_non_code z
@@ -729,7 +721,11 @@ let diff (conf : Conf.t) x y =
             in
             let len = String.length str - chars_removed in
             let str = String.sub ~pos:1 ~len str in
-            norm_code (str, snd z)
+            try
+              Migrate_ast.Parse.use_file (Lexing.from_string str)
+              |> Normalize.use_file conf
+              |> Caml.Format.asprintf "%a" Printast.use_file
+            with _ -> norm_non_code z
           else norm_non_code z
     in
     Set.of_list (module String) (List.map ~f z)
