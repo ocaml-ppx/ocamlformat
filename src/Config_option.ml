@@ -36,7 +36,8 @@ module Make (C : CONFIG) = struct
     ; to_string: 'a -> string
     ; default: 'a
     ; get_value: config -> 'a
-    ; from: from }
+    ; from: from
+    ; deprecated: bool }
 
   type 'a option_decl =
        names:string list
@@ -152,7 +153,8 @@ module Make (C : CONFIG) = struct
       ; default
       ; to_string
       ; get_value
-      ; from }
+      ; from
+      ; deprecated }
     in
     store := Pack opt :: !store ;
     opt
@@ -190,7 +192,8 @@ module Make (C : CONFIG) = struct
       ; default
       ; to_string
       ; get_value
-      ; from }
+      ; from
+      ; deprecated }
     in
     store := Pack opt :: !store ;
     opt
@@ -223,7 +226,8 @@ module Make (C : CONFIG) = struct
       ; default
       ; to_string
       ; get_value
-      ; from }
+      ; from
+      ; deprecated }
     in
     store := Pack opt :: !store ;
     opt
@@ -259,7 +263,8 @@ module Make (C : CONFIG) = struct
       ; default
       ; to_string
       ; get_value
-      ; from }
+      ; from
+      ; deprecated }
     in
     store := Pack opt :: !store ;
     opt
@@ -277,7 +282,7 @@ module Make (C : CONFIG) = struct
         Some (to_string (get_value config))
       else None
     in
-    let on_pack (Pack ({names; _} as p)) =
+    let on_pack (Pack ({names; deprecated; _} as p)) =
       if is_profile_option_name name then
         if is_profile_option_name (List.hd_exn names) then
           (* updating --profile option *)
@@ -286,9 +291,12 @@ module Make (C : CONFIG) = struct
           let profile_name = List.find_map_exn !store ~f:on_pack in
           (* updating other options when --profile is set *)
           Pack {p with from= `Profile (profile_name, from)}
-      else if List.exists names ~f:(String.equal name) then
+      else if List.exists names ~f:(String.equal name) then (
         (* updating a single option (without setting a profile) *)
-        Pack {p with from= `Updated from}
+        if deprecated then
+          Format.fprintf Format.err_formatter
+            "Warning: option %s is deprecated\n%!" name ;
+        Pack {p with from= `Updated from} )
       else Pack p
     in
     store := List.map !store ~f:on_pack
