@@ -127,14 +127,14 @@ let function_indent c ~ctx ~default =
   | `Always, _ | _, (Top | Sig _ | Str _) -> c.conf.function_indent
   | _ -> default
 
-let fmt_expressions c width sub_exp exprs fmt_expr sep_before
-    sep_after_non_final sep_after_final =
+let fmt_expressions c width sub_exp exprs fmt_expr
+    (p : Params.elements_collection) =
   match c.conf.break_collection_expressions with
   | `Fit_or_vertical ->
       let fmt_expr ~first ~last e =
-        fmt_if_k (not first) sep_before
+        fmt_if_k (not first) p.sep_before
         $ fmt_expr e
-        $ fmt_or_k last sep_after_final sep_after_non_final
+        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
       in
       list_fl exprs fmt_expr
   | `Wrap ->
@@ -143,9 +143,10 @@ let fmt_expressions c width sub_exp exprs fmt_expr sep_before
       let grps = List.group exprs ~break in
       let fmt_grp ~first:first_grp ~last:last_grp exprs =
         let fmt_expr ~first ~last e =
-          fmt_if_k (not (first && first_grp)) sep_before
+          fmt_if_k (not (first && first_grp)) p.sep_before
           $ fmt_expr e
-          $ fmt_or_k (last && last_grp) sep_after_final sep_after_non_final
+          $ fmt_or_k (last && last_grp) p.sep_after_final
+              p.sep_after_non_final
         in
         list_fl exprs fmt_expr
       in
@@ -1787,7 +1788,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( p.box
             (fmt_expressions c width (sub_exp ~ctx) e1N
                (sub_exp ~ctx >> fmt_expression c)
-               p.sep_before p.sep_after_non_final p.sep_after_final)
+               p)
         $ fmt_atrs )
   | Pexp_assert e0 ->
       let paren_body = parenze_exp (sub_exp ~ctx e0) in
@@ -1873,7 +1874,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
                        @@ fmt_expression c xexp)
-                     p.sep_before p.sep_after_non_final p.sep_after_final
+                     p
                  $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
              $ fmt_atrs ))
