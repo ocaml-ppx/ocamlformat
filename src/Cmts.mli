@@ -29,8 +29,7 @@ open Migrate_ast
 type t
 
 val init_impl :
-     format:
-       (Source.t -> t -> Conf.t -> Parsetree.toplevel_phrase list -> Fmt.t)
+     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
   -> Source.t
   -> Parsetree.structure
   -> (string * Location.t) list
@@ -41,8 +40,7 @@ val init_impl :
     [fmt] functions. *)
 
 val init_intf :
-     format:
-       (Source.t -> t -> Conf.t -> Parsetree.toplevel_phrase list -> Fmt.t)
+     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
   -> Source.t
   -> Parsetree.signature
   -> (string * Location.t) list
@@ -53,8 +51,7 @@ val init_intf :
     [fmt] functions. *)
 
 val init_use_file :
-     format:
-       (Source.t -> t -> Conf.t -> Parsetree.toplevel_phrase list -> Fmt.t)
+     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
   -> Source.t
   -> Parsetree.toplevel_phrase list
   -> (string * Location.t) list

@@ -4387,13 +4387,16 @@ let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
 
 (** Entry points *)
 
-let fmt_file ~f source cmts conf itms =
+let fmt_file ~ctx ~f source cmts conf itms =
   let c = {source; cmts; conf} in
   Ast.init c.conf ;
-  match itms with [] -> Cmts.fmt_after c Location.none | l -> f c Top l
+  match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
 
-let fmt_signature = fmt_file ~f:fmt_signature
+let fmt_signature = fmt_file ~f:fmt_signature ~ctx:Top
 
-let fmt_structure = fmt_file ~f:fmt_structure
+let fmt_structure_in_cmt src cmts c s =
+  fmt_file ~f:fmt_structure ~ctx:(Pld (PStr s)) src cmts c s
 
-let fmt_use_file = fmt_file ~f:fmt_use_file
+let fmt_structure = fmt_file ~f:fmt_structure ~ctx:Top
+
+let fmt_use_file = fmt_file ~f:fmt_use_file ~ctx:Top

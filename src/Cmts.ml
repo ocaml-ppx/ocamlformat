@@ -22,7 +22,7 @@ type t =
   ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
   ; source: Source.t
   ; remaining: (Location.t, unit) Hashtbl.t
-  ; format: Source.t -> t -> Conf.t -> toplevel_phrase list -> Fmt.t }
+  ; format: Source.t -> t -> Conf.t -> structure -> Fmt.t }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -578,13 +578,11 @@ let fmt_cmt t (conf : Conf.t) cmt =
         let format = t.format in
         try
           let parsed =
-            Parse_with_comments.parse Migrate_ast.Parse.use_file conf
+            Parse_with_comments.parse Migrate_ast.Parse.implementation conf
               ~source
           in
           let source = Source.create source in
-          let cmts =
-            init_use_file ~format source parsed.ast parsed.comments
-          in
+          let cmts = init_impl ~format source parsed.ast parsed.comments in
           let formatted = format source cmts conf parsed.ast in
           hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
         with _ -> fmt_non_code cmt
@@ -722,9 +720,9 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let str = String.sub ~pos:1 ~len str in
             try
-              Migrate_ast.Parse.use_file (Lexing.from_string str)
-              |> Normalize.use_file conf
-              |> Caml.Format.asprintf "%a" Printast.use_file
+              Migrate_ast.Parse.implementation (Lexing.from_string str)
+              |> Normalize.impl conf
+              |> Caml.Format.asprintf "%a" Printast.implementation
             with _ -> norm_non_code z
           else norm_non_code z
     in

@@ -11,7 +11,7 @@
 
 (** OCamlFormat to convert Reason code to OCaml *)
 
-let format = Fmt_ast.fmt_use_file
+let format = Fmt_ast.fmt_structure_in_cmt
 
 (** Operations on binary serialized Reason implementations. *)
 let impl : _ Translation_unit.t =

@@ -20,7 +20,7 @@ let equal eq ~ignore_doc_comments c a b =
 let moved_docstrings f c a b =
   f c a.Parse_with_comments.ast b.Parse_with_comments.ast
 
-let format = Fmt_ast.fmt_use_file
+let format = Fmt_ast.fmt_structure_in_cmt
 
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
