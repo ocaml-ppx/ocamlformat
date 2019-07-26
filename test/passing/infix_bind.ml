@@ -23,7 +23,10 @@ f x
 ;;
 f x >>= fun y ->
 g y >>= fun () ->
-f x >>= fun y -> g y >>= fun () -> f x >>= fun y -> g y >>= fun () -> y ()
+f x >>= fun y ->
+g y >>= fun () ->
+f x >>= fun y ->
+g y >>= fun () -> y ()
 
 ;;
 f x >>= function

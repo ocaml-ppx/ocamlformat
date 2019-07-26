@@ -1598,6 +1598,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
+      let followed_by_infix_op =
+        match xbody.ast.pexp_desc with
+        | Pexp_apply
+            ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
+              ; pexp_attributes= []
+              ; _ }
+            , [(Nolabel, _); (Nolabel, {pexp_desc= Pexp_fun _; _})] )
+          when is_infix_id id ->
+            true
+        | _ -> false
+      in
       wrap_fits_breaks_if c.conf parens "(" ")"
         (hovbox 0
            ( hvbox 2
@@ -1614,7 +1625,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            4 (fmt_fun_args c xargs)
                        $ fmt "@ ->" ) )
                $ pre_body )
-           $ fmt "@ " $ body ))
+           $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
+           $ body ))
   | Pexp_apply
       ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc}
           ; pexp_attributes= []
