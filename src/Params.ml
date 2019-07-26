@@ -119,39 +119,33 @@ type elements_collection =
   ; sep_after_non_final: Fmt.t
   ; sep_after_final: Fmt.t }
 
-type elements_collection_record_expr =
-  {common: elements_collection; break_after_with: Fmt.t}
+type elements_collection_record_expr = {break_after_with: Fmt.t}
 
-type elements_collection_record_pat =
-  {common: elements_collection; wildcard: Fmt.t}
+type elements_collection_record_pat = {wildcard: Fmt.t}
 
 let get_record_expr (c : Conf.t) =
   match c.break_separators with
   | `Before ->
-      { common=
-          { box= (fun k -> hvbox 0 (wrap_record c k))
-          ; sep_before= fmt "@,; "
-          ; sep_after_non_final= noop
-          ; sep_after_final= noop }
-      ; break_after_with= break 1 2 }
+      ( { box= (fun k -> hvbox 0 (wrap_record c k))
+        ; sep_before= fmt "@,; "
+        ; sep_after_non_final= noop
+        ; sep_after_final= noop }
+      , {break_after_with= break 1 2} )
   | `After ->
-      { common=
-          { box= (fun k -> hvbox 0 (wrap_record c k))
-          ; sep_before= noop
-          ; sep_after_non_final= fmt ";@;<1 2>"
-          ; sep_after_final= noop }
-      ; break_after_with= break 1 2 }
+      ( { box= (fun k -> hvbox 0 (wrap_record c k))
+        ; sep_before= noop
+        ; sep_after_non_final= fmt ";@;<1 2>"
+        ; sep_after_final= noop }
+      , {break_after_with= break 1 2} )
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
-      { common=
-          { box=
-              (fun k ->
-                hvbox 2
-                  (wrap "{" "}" (break space 0 $ k $ break space (-2))))
-          ; sep_before= noop
-          ; sep_after_non_final= fmt ";@;<1 0>"
-          ; sep_after_final= fits_breaks ~level:1 "" ";" }
-      ; break_after_with= break 1 0 }
+      ( { box=
+            (fun k ->
+              hvbox 2 (wrap "{" "}" (break space 0 $ k $ break space (-2))))
+        ; sep_before= noop
+        ; sep_after_non_final= fmt ";@;<1 0>"
+        ; sep_after_final= fits_breaks ~level:1 "" ";" }
+      , {break_after_with= break 1 0} )
 
 let get_list_expr (c : Conf.t) =
   match c.break_separators with
@@ -216,12 +210,12 @@ let get_array_expr (c : Conf.t) =
       ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
 let get_record_pat (c : Conf.t) ~ctx =
-  let common = (get_record_expr c).common in
-  let r =
-    {common; wildcard= common.sep_before $ str "_" $ common.sep_after_final}
+  let common, _ = get_record_expr c in
+  let wildcard =
+    {wildcard= common.sep_before $ str "_" $ common.sep_after_final}
   in
   match c.break_separators with
-  | `Before | `After -> r
+  | `Before | `After -> (common, wildcard)
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
       let indent_opn, indent_cls =
@@ -234,7 +228,7 @@ let get_record_pat (c : Conf.t) ~ctx =
         hvbox indent_opn
           (wrap "{" "}" (break space 0 $ k $ break space indent_cls))
       in
-      {r with common= {common with box}}
+      ({common with box}, wildcard)
 
 let get_list_pat (c : Conf.t) ~ctx =
   let r = get_list_expr c in

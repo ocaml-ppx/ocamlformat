@@ -1009,19 +1009,19 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
               @@ fmt_record_field c ~typ ~rhs ~type_first lid1
           | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
       in
-      let p = Params.get_record_pat c.conf ~ctx:ctx0 in
+      let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
       let fmt_field ~first ~last x =
-        fmt_if_k (not first) p.common.sep_before
+        fmt_if_k (not first) p1.sep_before
         $ fmt_field x
         $ fmt_or_k
             (last && Poly.(closed_flag = Closed))
-            p.common.sep_after_final p.common.sep_after_non_final
+            p1.sep_after_final p1.sep_after_non_final
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (p.common.box
+           (p1.box
               ( list_fl flds fmt_field
-              $ fmt_if_k Poly.(closed_flag = Open) p.wildcard )))
+              $ fmt_if_k Poly.(closed_flag = Open) p2.wildcard )))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
@@ -2233,19 +2233,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
-      let p = Params.get_record_expr c.conf in
+      let p1, p2 = Params.get_record_expr c.conf in
       let fmt_field ~first ~last x =
-        fmt_if_k (not first) p.common.sep_before
+        fmt_if_k (not first) p1.sep_before
         $ fmt_field x
-        $ fmt_or_k last p.common.sep_after_final
-            p.common.sep_after_non_final
+        $ fmt_or_k last p1.sep_after_final p1.sep_after_non_final
       in
       hvbox 0
-        ( p.common.box
+        ( p1.box
             ( opt default (fun d ->
                   hvbox 2
                     (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
-                  $ fmt "with" $ p.break_after_with)
+                  $ fmt "with" $ p2.break_after_with)
             $ list_fl flds fmt_field )
         $ fmt_atrs )
   | Pexp_sequence (e1, e2) when Option.is_some ext ->
