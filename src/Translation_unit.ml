@@ -241,38 +241,40 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                 | Normalize.Moved (loc_before, loc_after, msg) ->
                     if Location.compare loc_before Location.none = 0 then
                       Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
-                         %s *) added.\n\
+                        "%!@{<loc>%a@}:@,\
+                         @{<error>Error@}: Docstring (** %s *) added.\n\
                          %!"
                         Location.print_loc loc_after (ellipsis_cmt msg)
                     else if Location.compare loc_after Location.none = 0
                     then
                       Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
-                         %s *) dropped.\n\
+                        "%!@{<loc>%a@}:@,\
+                         @{<error>Error@}: Docstring (** %s *) dropped.\n\
                          %!"
                         Location.print_loc loc_before (ellipsis_cmt msg)
                     else
                       Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
-                         %s *) moved to @{<loc>%a@}.\n\
+                        "%!@{<loc>%a@}:@,\
+                         @{<error>Error@}: Docstring (** %s *) moved to \
+                         @{<loc>%a@}.\n\
                          %!"
                         Location.print_loc loc_before (ellipsis_cmt msg)
                         Location.print_loc loc_after
                 | Normalize.Unstable (loc, s) ->
                     Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,@{<error>Error@}: Formatting of (** \
-                       %s *) is unstable (e.g. parses as a list or not \
-                       depending on the margin), please tighten up this \
-                       comment in the source or disable the formatting \
-                       using the option --no-parse-docstrings.\n\
+                      "%!@{<loc>%a@}:@,\
+                       @{<error>Error@}: Formatting of (** %s *) is \
+                       unstable (e.g. parses as a list or not depending on \
+                       the margin), please tighten up this comment in the \
+                       source or disable the formatting using the option \
+                       --no-parse-docstrings.\n\
                        %!"
                       Location.print_loc loc (ellipsis_cmt s))
           | `Comment_dropped l when not conf.Conf.quiet ->
               List.iter l ~f:(fun (loc, msg) ->
                   Format.fprintf fmt
-                    "%!@{<loc>%a@}:@,@{<error>Error@}: Comment (* %s *) \
-                     dropped.\n\
+                    "%!@{<loc>%a@}:@,\
+                     @{<error>Error@}: Comment (* %s *) dropped.\n\
                      %!"
                     Location.print_loc loc (ellipsis_cmt msg))
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->

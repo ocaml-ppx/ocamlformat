@@ -1,3 +1,4 @@
+Warning: option break-string-literals is deprecated
 let () =
   if true then
     (* Shrinking the margin a bit *)

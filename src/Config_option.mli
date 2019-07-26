@@ -29,6 +29,7 @@ module Make (C : CONFIG) : sig
     -> doc:string
     -> section:[`Formatting | `Operational]
     -> ?allow_inline:bool
+    -> ?deprecated:bool
     -> (config -> 'a -> config)
     -> (config -> 'a)
     -> 'a t
