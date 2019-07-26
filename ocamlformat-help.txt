@@ -29,14 +29,16 @@ OPTIONS (CODE FORMATTING STYLE)
        If the disable option is not set, an .ocamlformat-ignore file
        specifies files that OCamlFormat should ignore. Each line in an
        .ocamlformat-ignore file specifies a filename relative to the
-       directory containing the .ocamlformat-ignore file. Lines starting with
-       # are ignored and can be used as comments.
+       directory containing the .ocamlformat-ignore file. The wildcard symbol
+       * selects all files. Lines starting with # are ignored and can be used
+       as comments.
 
        If the disable option is set, an .ocamlformat-enable file specifies
        files that OCamlFormat should format even when the disable option is
        set. Each line in an .ocamlformat-enable file specifies a filename
-       relative to the directory containing the .ocamlformat-enable file.
-       Lines starting with # are ignored and can be used as comments.
+       relative to the directory containing the .ocamlformat-enable file. The
+       wildcard symbol * selects all files. Lines starting with # are ignored
+       and can be used as comments.
 
        --align-cases
            Align match/try cases horizontally.

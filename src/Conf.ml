@@ -124,15 +124,17 @@ let info =
          $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
          should ignore. Each line in an $(b,.ocamlformat-ignore) file \
          specifies a filename relative to the directory containing the \
-         $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
-         ignored and can be used as comments."
+         $(b,.ocamlformat-ignore) file. The wildcard symbol $(b,*) selects \
+         all files. Lines starting with $(b,#) are ignored and can be used \
+         as comments."
     ; `P
         "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) \
          file specifies files that OCamlFormat should format even when the \
          $(b,disable) option is set. Each line in an \
          $(b,.ocamlformat-enable) file specifies a filename relative to \
-         the directory containing the $(b,.ocamlformat-enable) file. Lines \
-         starting with $(b,#) are ignored and can be used as comments." ]
+         the directory containing the $(b,.ocamlformat-enable) file. The \
+         wildcard symbol $(b,*) selects all files. Lines starting with \
+         $(b,#) are ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -1873,16 +1875,18 @@ let is_in_listing_file ~quiet ~listings ~filename =
               |> List.filter ~f:(fun (_, l) -> not (drop_line l))
             in
             List.find_map lines ~f:(fun (lno, line) ->
-                match Fpath.of_string line with
-                | Ok file_on_current_line ->
-                    let f = Fpath.(dir // file_on_current_line) in
-                    if Fpath.equal filename f then Some (listing_file, lno)
-                    else None
-                | Error (`Msg msg) ->
-                    if not quiet then
-                      Format.eprintf "File %a, line %d:\nWarning: %s\n"
-                        Fpath.pp listing_file lno msg ;
-                    None))
+                if String.equal line "*" then Some (listing_file, lno)
+                else
+                  match Fpath.of_string line with
+                  | Ok file_on_current_line ->
+                      let f = Fpath.(dir // file_on_current_line) in
+                      if Fpath.equal filename f then Some (listing_file, lno)
+                      else None
+                  | Error (`Msg msg) ->
+                      if not quiet then
+                        Format.eprintf "File %a, line %d:\nWarning: %s\n"
+                          Fpath.pp listing_file lno msg ;
+                      None))
       with Sys_error err ->
         if not quiet then
           Format.eprintf "Warning: ignoring %a, %s\n" Fpath.pp listing_file
