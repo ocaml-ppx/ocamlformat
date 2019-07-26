@@ -74,9 +74,6 @@ let protect =
         first := false ) ;
       raise exc
 
-let semic_sep c : Fmt.s =
-  if Poly.(c.conf.break_separators = `Before) then "@,; " else ";@;<1 2>"
-
 let comma_sep c : Fmt.s =
   if Poly.(c.conf.break_separators = `Before) then "@,, " else ",@;<1 2>"
 
@@ -130,15 +127,30 @@ let function_indent c ~ctx ~default =
   | `Always, _ | _, (Top | Sig _ | Str _) -> c.conf.function_indent
   | _ -> default
 
-let fmt_expressions c width sub_exp exprs fmt fmt_expr =
+let fmt_expressions c width sub_exp exprs fmt_expr
+    (p : Params.elements_collection) =
   match c.conf.break_collection_expressions with
-  | `Fit_or_vertical -> list exprs fmt fmt_expr
+  | `Fit_or_vertical ->
+      let fmt_expr ~first ~last e =
+        fmt_if_k (not first) p.sep_before
+        $ fmt_expr e
+        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
+      in
+      list_fl exprs fmt_expr
   | `Wrap ->
       let is_simple x = is_simple c.conf width (sub_exp x) in
       let break x1 x2 = not (is_simple x1 && is_simple x2) in
       let grps = List.group exprs ~break in
-      let fmt_grp exprs = hovbox (-2) (list exprs (semic_sep c) fmt_expr) in
-      list grps fmt fmt_grp
+      let fmt_grp ~first:first_grp ~last:last_grp exprs =
+        let fmt_expr ~first ~last e =
+          fmt_if_k (not (first && first_grp)) p.sep_before
+          $ fmt_expr e
+          $ fmt_or_k (last && last_grp) p.sep_after_final
+              p.sep_after_non_final
+        in
+        list_fl exprs fmt_expr
+      in
+      hovbox (-2) (list_fl grps fmt_grp)
 
 (** Handle the `break-fun-decl` option *)
 let wrap_fun_decl_args c k =
@@ -938,13 +950,16 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       ) -> (
     match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
-        let fmt_pat (locs, xpat) =
-          Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs @@ fmt_pattern c xpat
+        let p = Params.get_list_pat c.conf ~ctx:ctx0 in
+        let fmt_pat ~first ~last (locs, xpat) =
+          fmt_if_k (not first) p.sep_before
+          $ Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs (fmt_pattern c xpat)
+          $ fmt_or_k last p.sep_after_final p.sep_after_non_final
         in
         hvbox 0
           (Cmts.fmt c ppat_loc
-             (Params.wrap_list c.conf
-                ( list loc_xpats (semic_sep c) fmt_pat
+             (p.box
+                ( list_fl loc_xpats fmt_pat
                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
@@ -995,30 +1010,30 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
               @@ fmt_record_field c ~typ ~rhs ~type_first lid1
           | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
       in
-      let p = Params.get_record_pat c.conf ~ctx:ctx0 in
+      let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
       let fmt_field ~first ~last x =
-        fmt_if_k (not first) p.sep_before
+        fmt_if_k (not first) p1.sep_before
         $ fmt_field x
         $ fmt_or_k
             (last && Poly.(closed_flag = Closed))
-            p.sep_after_final p.sep_after_non_final
+            p1.sep_after_final p1.sep_after_non_final
       in
       hvbox 0
         (wrap_if parens "(" ")"
-           (p.box
+           (p1.box
               ( list_fl flds fmt_field
-              $ fmt_if_k Poly.(closed_flag = Open) p.wildcard )))
+              $ fmt_if_k Poly.(closed_flag = Open) p2.wildcard )))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
-      hvbox 0
-        (Params.wrap_array c.conf
-           (list pats
-              (* Using semic_sep here would break the alignment *)
-              ( if Poly.(c.conf.break_separators = `Before) then "@;<0 1>; "
-              else ";@;<1 3>" )
-              (sub_pat ~ctx >> fmt_pattern c)))
+      let p = Params.get_array_pat c.conf ~ctx:ctx0 in
+      let fmt_pat ~first ~last pat =
+        fmt_if_k (not first) p.sep_before
+        $ fmt_pattern c (sub_pat ~ctx pat)
+        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
+      in
+      hvbox 0 (p.box (list_fl pats fmt_pat))
   | Ppat_or _ ->
       let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
@@ -1768,13 +1783,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
         $ fmt_atrs )
   | Pexp_array e1N ->
+      let p = Params.get_array_expr c.conf in
       hvbox 0
-        ( Params.wrap_array c.conf
+        ( p.box
             (fmt_expressions c width (sub_exp ~ctx) e1N
-               (* Using semic_sep here would break the alignment *)
-               ( if Poly.(c.conf.break_separators = `Before) then "@;<0 1>; "
-               else ";@;<1 3>" )
-               (sub_exp ~ctx >> fmt_expression c))
+               (sub_exp ~ctx >> fmt_expression c)
+               p)
         $ fmt_atrs )
   | Pexp_assert e0 ->
       let paren_body = parenze_exp (sub_exp ~ctx e0) in
@@ -1850,15 +1864,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       ) -> (
     match Sugar.list_exp c.cmts exp with
     | Some (loc_xes, nil_loc) ->
+        let p = Params.get_list_expr c.conf in
         hvbox 0
           (wrap_if
              (not (List.is_empty pexp_attributes))
              "(" ")"
-             ( Params.wrap_list c.conf
-                 ( fmt_expressions c width snd loc_xes (semic_sep c)
+             ( p.box
+                 ( fmt_expressions c width snd loc_xes
                      (fun (locs, xexp) ->
                        Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
                        @@ fmt_expression c xexp)
+                     p
                  $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
              $ fmt_atrs ))
@@ -2218,18 +2234,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
-      let p = Params.get_record_expr c.conf in
+      let p1, p2 = Params.get_record_expr c.conf in
       let fmt_field ~first ~last x =
-        fmt_if_k (not first) p.sep_before
+        fmt_if_k (not first) p1.sep_before
         $ fmt_field x
-        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
+        $ fmt_or_k last p1.sep_after_final p1.sep_after_non_final
       in
       hvbox 0
-        ( p.box
+        ( p1.box
             ( opt default (fun d ->
                   hvbox 2
                     (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
-                  $ fmt "with" $ p.break_after_with)
+                  $ fmt "with" $ p2.break_after_with)
             $ list_fl flds fmt_field )
         $ fmt_atrs )
   | Pexp_sequence (e1, e2) when Option.is_some ext ->

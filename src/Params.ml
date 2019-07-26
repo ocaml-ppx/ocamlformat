@@ -113,55 +113,109 @@ let get_record_type (c : Conf.t) =
       ; break_after= break space (-2)
       ; docked_after= fmt "}" }
 
-type record_expr =
+type elements_collection =
   { box: Fmt.t -> Fmt.t
-  ; break_after_with: Fmt.t
   ; sep_before: Fmt.t
   ; sep_after_non_final: Fmt.t
   ; sep_after_final: Fmt.t }
 
+type elements_collection_record_expr = {break_after_with: Fmt.t}
+
+type elements_collection_record_pat = {wildcard: Fmt.t}
+
 let get_record_expr (c : Conf.t) =
   match c.break_separators with
   | `Before ->
-      { box= (fun k -> hvbox 0 (wrap_record c k))
-      ; break_after_with= break 1 2
+      ( { box= (fun k -> hvbox 0 (wrap_record c k))
+        ; sep_before= fmt "@,; "
+        ; sep_after_non_final= noop
+        ; sep_after_final= noop }
+      , {break_after_with= break 1 2} )
+  | `After ->
+      ( { box= (fun k -> hvbox 0 (wrap_record c k))
+        ; sep_before= noop
+        ; sep_after_non_final= fmt ";@;<1 2>"
+        ; sep_after_final= noop }
+      , {break_after_with= break 1 2} )
+  | `After_and_docked ->
+      let space = if c.space_around_records then 1 else 0 in
+      ( { box=
+            (fun k ->
+              hvbox 2 (wrap "{" "}" (break space 0 $ k $ break space (-2))))
+        ; sep_before= noop
+        ; sep_after_non_final= fmt ";@;<1 0>"
+        ; sep_after_final= fits_breaks ~level:1 "" ";" }
+      , {break_after_with= break 1 0} )
+
+let get_list_expr (c : Conf.t) =
+  match c.break_separators with
+  | `Before ->
+      { box= (fun k -> hvbox 0 (wrap_list c k))
       ; sep_before= fmt "@,; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop }
   | `After ->
-      { box= (fun k -> hvbox 0 (wrap_record c k))
-      ; break_after_with= break 1 2
+      { box= (fun k -> hvbox 0 (wrap_list c k))
       ; sep_before= noop
       ; sep_after_non_final= fmt ";@;<1 2>"
       ; sep_after_final= noop }
   | `After_and_docked ->
-      let space = if c.space_around_records then 1 else 0 in
+      let space = if c.space_around_lists then 1 else 0 in
+      let sep_after_non_final =
+        match c.break_collection_expressions with
+        | `Wrap -> fmt ";@;<1 2>"
+        | `Fit_or_vertical -> fmt ";@;<1 0>"
+      in
       { box=
           (fun k ->
-            hvbox 2 (wrap "{" "}" (break space 0 $ k $ break space (-2))))
-      ; break_after_with= break 1 0
+            hvbox 2 (wrap "[" "]" (break space 0 $ k $ break space (-2))))
       ; sep_before= noop
-      ; sep_after_non_final= fmt ";@;<1 0>"
+      ; sep_after_non_final
       ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
-type record_pat =
-  { box: Fmt.t -> Fmt.t
-  ; sep_before: Fmt.t
-  ; sep_after_non_final: Fmt.t
-  ; sep_after_final: Fmt.t
-  ; wildcard: Fmt.t }
+let get_array_expr (c : Conf.t) =
+  match c.break_separators with
+  | `Before ->
+      let sep_before =
+        match c.break_collection_expressions with
+        | `Wrap -> fmt "@;<0 0>; "
+        | `Fit_or_vertical -> fmt "@;<0 1>; "
+      in
+      { box= (fun k -> hvbox 0 (wrap_array c k))
+      ; sep_before
+      ; sep_after_non_final= noop
+      ; sep_after_final= noop }
+  | `After ->
+      let sep_after_non_final =
+        match c.break_collection_expressions with
+        | `Wrap -> fmt ";@;<1 2>"
+        | `Fit_or_vertical -> fmt ";@;<1 3>"
+      in
+      { box= (fun k -> hvbox 0 (wrap_array c k))
+      ; sep_before= noop
+      ; sep_after_non_final
+      ; sep_after_final= noop }
+  | `After_and_docked ->
+      let space = if c.space_around_arrays then 1 else 0 in
+      let sep_after_non_final =
+        match c.break_collection_expressions with
+        | `Wrap -> fmt ";@;<1 2>"
+        | `Fit_or_vertical -> fmt ";@;<1 0>"
+      in
+      { box=
+          (fun k ->
+            hvbox 2 (wrap "[|" "|]" (break space 0 $ k $ break space (-2))))
+      ; sep_before= noop
+      ; sep_after_non_final
+      ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
 let get_record_pat (c : Conf.t) ~ctx =
-  let r = get_record_expr c in
-  let r =
-    { box= r.box
-    ; sep_before= r.sep_before
-    ; sep_after_non_final= r.sep_after_non_final
-    ; sep_after_final= r.sep_after_final
-    ; wildcard= r.sep_before $ str "_" $ r.sep_after_final }
+  let common, _ = get_record_expr c in
+  let wildcard =
+    {wildcard= common.sep_before $ str "_" $ common.sep_after_final}
   in
   match c.break_separators with
-  | `Before | `After -> r
+  | `Before | `After -> (common, wildcard)
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
       let indent_opn, indent_cls =
@@ -170,12 +224,48 @@ let get_record_pat (c : Conf.t) ~ctx =
         | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-2, -2)
         | _ -> (2, -2)
       in
-      { r with
-        box=
-          (fun k ->
-            hvbox indent_opn
-              (wrap "{" "}" (break space 0 $ k $ break space indent_cls)))
-      }
+      let box k =
+        hvbox indent_opn
+          (wrap "{" "}" (break space 0 $ k $ break space indent_cls))
+      in
+      ({common with box}, wildcard)
+
+let get_list_pat (c : Conf.t) ~ctx =
+  let r = get_list_expr c in
+  match c.break_separators with
+  | `Before | `After -> r
+  | `After_and_docked ->
+      let space = if c.space_around_lists then 1 else 0 in
+      let indent_opn, indent_cls =
+        match ctx with
+        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-1, -1)
+        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-2, -2)
+        | _ -> (2, -2)
+      in
+      let box k =
+        hvbox indent_opn
+          (wrap "[" "]" (break space 0 $ k $ break space indent_cls))
+      in
+      {r with box; sep_after_non_final= fmt ";@;<1 0>"}
+
+let get_array_pat (c : Conf.t) ~ctx =
+  let r = get_array_expr c in
+  match c.break_separators with
+  | `Before -> {r with sep_before= fmt "@;<0 1>; "}
+  | `After -> {r with sep_after_non_final= fmt ";@;<1 3>"}
+  | `After_and_docked ->
+      let space = if c.space_around_arrays then 1 else 0 in
+      let indent_opn, indent_cls =
+        match ctx with
+        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-1, -1)
+        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-2, -2)
+        | _ -> (2, -2)
+      in
+      let box k =
+        hvbox indent_opn
+          (wrap "[|" "|]" (break space 0 $ k $ break space indent_cls))
+      in
+      {r with box; sep_after_non_final= fmt ";@;<1 0>"}
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
