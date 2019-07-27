@@ -1604,7 +1604,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
               ; pexp_attributes= []
               ; _ }
-            , [(Nolabel, _); (Nolabel, {pexp_desc= Pexp_fun _; _})] )
+            , [ (Nolabel, _)
+              ; (Nolabel, {pexp_desc= Pexp_fun _ | Pexp_function _; _}) ] )
           when is_infix_id id ->
             true
         | _ -> false
