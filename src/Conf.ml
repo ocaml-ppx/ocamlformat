@@ -124,17 +124,17 @@ let info =
          $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
          should ignore. Each line in an $(b,.ocamlformat-ignore) file \
          specifies a filename relative to the directory containing the \
-         $(b,.ocamlformat-ignore) file. The wildcard symbol $(b,*) selects \
-         all files. Lines starting with $(b,#) are ignored and can be used \
-         as comments."
+         $(b,.ocamlformat-ignore) file. Shell-style regular expressions \
+         are supported. Lines starting with $(b,#) are ignored and can be \
+         used as comments."
     ; `P
         "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) \
          file specifies files that OCamlFormat should format even when the \
          $(b,disable) option is set. Each line in an \
          $(b,.ocamlformat-enable) file specifies a filename relative to \
-         the directory containing the $(b,.ocamlformat-enable) file. The \
-         wildcard symbol $(b,*) selects all files. Lines starting with \
-         $(b,#) are ignored and can be used as comments." ]
+         the directory containing the $(b,.ocamlformat-enable) file. \
+         Shell-style regular expressions are supported. Lines starting \
+         with $(b,#) are ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -1875,18 +1875,30 @@ let is_in_listing_file ~quiet ~listings ~filename =
               |> List.filter ~f:(fun (_, l) -> not (drop_line l))
             in
             List.find_map lines ~f:(fun (lno, line) ->
-                if String.equal line "*" then Some (listing_file, lno)
-                else
-                  match Fpath.of_string line with
-                  | Ok file_on_current_line ->
-                      let f = Fpath.(dir // file_on_current_line) in
-                      if Fpath.equal filename f then Some (listing_file, lno)
-                      else None
-                  | Error (`Msg msg) ->
-                      if not quiet then
-                        Format.eprintf "File %a, line %d:\nWarning: %s\n"
-                          Fpath.pp listing_file lno msg ;
-                      None))
+                match Fpath.of_string line with
+                | Ok file_on_current_line -> (
+                    let f = Fpath.(dir // file_on_current_line) in
+                    if Fpath.equal filename f then Some (listing_file, lno)
+                    else
+                      try
+                        let re = Re.Glob.glob ~pathname:true line in
+                        let re = Re.compile re in
+                        let s = Fpath.to_string f in
+                        let (_ : Re.Group.t) = Re.exec re s in
+                        Some (listing_file, lno)
+                      with
+                      | Re.Glob.Parse_error ->
+                          Format.eprintf
+                            "File %a, line %d:\n\
+                             Warning: pattern %s cannot be parsed\n"
+                            Fpath.pp listing_file lno line ;
+                          None
+                      | Caml.Not_found -> None )
+                | Error (`Msg msg) ->
+                    if not quiet then
+                      Format.eprintf "File %a, line %d:\nWarning: %s\n"
+                        Fpath.pp listing_file lno msg ;
+                    None))
       with Sys_error err ->
         if not quiet then
           Format.eprintf "Warning: ignoring %a, %s\n" Fpath.pp listing_file
