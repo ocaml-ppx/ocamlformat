@@ -68,7 +68,14 @@ and odoc_inline_elements fmt elems =
 let rec odoc_nestable_block_element fmt : nestable_block_element -> unit =
   function
   | `Paragraph elms -> fpf fmt "Paragraph,%a" odoc_inline_elements elms
-  | `Code_block txt -> fpf fmt "Code_block,%a" str txt
+  | `Code_block txt ->
+      let txt =
+        try
+          Migrate_ast.Parse.implementation (Lexing.from_string txt)
+          |> Caml.Format.asprintf "%a" Printast.implementation
+        with _ -> txt
+      in
+      fpf fmt "Code_block,%a" str txt
   | `Verbatim txt -> fpf fmt "Verbatim,%a" str txt
   | `Modules mods -> fpf fmt "Modules,%a" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->

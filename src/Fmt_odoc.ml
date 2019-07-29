@@ -54,6 +54,11 @@ let str_normalized ?(escape = escape_all) s =
   |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
 
+let init, format =
+  let format = ref (fun _ _ _ _ -> assert false) in
+  let init fmt = format := fmt in
+  (init, format)
+
 let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
 let ign_loc ~f with_loc = f with_loc.Location_.value
@@ -70,16 +75,27 @@ let fmt_verbatim_block s =
   in
   hvbox 0 (wrap "{v" "v}" content)
 
-let fmt_code_block s =
-  let fmt_line ~first ~last:_ l =
-    let l = String.rstrip l in
-    if first then str l
-    else if String.length l = 0 then str "\n"
-    else fmt "@," $ str l
-  in
-  let lines = String.split_lines s in
-  let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
-  box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
+let fmt_code_block conf s =
+  try
+    let parsed =
+      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
+        ~source:s
+    in
+    let source = Source.create s in
+    let cmts =
+      Cmts.init_impl ~format:!format source parsed.ast parsed.comments
+    in
+    hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (!format source cmts conf parsed.ast))
+  with _ ->
+    let fmt_line ~first ~last:_ l =
+      let l = String.rstrip l in
+      if first then str l
+      else if String.length l = 0 then str "\n"
+      else fmt "@," $ str l
+    in
+    let lines = String.split_lines s in
+    let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
+    box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
 
 let fmt_reference = ign_loc ~f:str_normalized
 
@@ -169,76 +185,77 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
 
 and fmt_inline_elements txt = list txt "" (ign_loc ~f:fmt_inline_element)
 
-and fmt_nestable_block_element : nestable_block_element -> t = function
+and fmt_nestable_block_element c = function
   | `Paragraph elems -> hovbox 0 (fmt_inline_elements elems)
-  | `Code_block s -> fmt_code_block s
+  | `Code_block s -> fmt_code_block c s
   | `Verbatim s -> fmt_verbatim_block s
   | `Modules mods ->
       hovbox 0
         (wrap "{!modules:@," "@,}"
            (list mods "@ " (fun ref -> fmt_reference ref)))
   | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
-      fmt_list_heavy k items
-  | `List (k, _syntax, items) -> fmt_list_light k items
+      fmt_list_heavy c k items
+  | `List (k, _syntax, items) -> fmt_list_light c k items
 
-and fmt_list_heavy kind items =
+and fmt_list_heavy c kind items =
   let fmt_item elems =
     let box = match elems with [_] -> hvbox 3 | _ -> vbox 3 in
-    box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements elems))
+    box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements c elems))
   and start : s =
     match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"
   in
   vbox 1 (wrap start "@;<1 -1>}" (list items "@," fmt_item))
 
-and fmt_list_light kind items =
+and fmt_list_light c kind items =
   let line_start =
     match kind with `Unordered -> fmt "- " | `Ordered -> fmt "+ "
   in
   let fmt_item elems =
-    line_start $ vbox 0 (fmt_nestable_block_elements elems)
+    line_start $ vbox 0 (fmt_nestable_block_elements c elems)
   in
   vbox 0 (list items "@," fmt_item)
 
-and fmt_nestable_block_elements ?(prefix = noop) = function
+and fmt_nestable_block_elements c ?(prefix = noop) = function
   | [] -> noop
-  | elems -> prefix $ list_block_elem elems fmt_nestable_block_element
+  | elems -> prefix $ list_block_elem elems (fmt_nestable_block_element c)
 
 let at = char '@'
 
 let space = fmt "@ "
 
-let fmt_tag_see wrap sr txt =
+let fmt_tag_see c wrap sr txt =
   at $ fmt "see@ "
   $ wrap (str_normalized sr)
-  $ fmt_nestable_block_elements ~prefix:space txt
+  $ fmt_nestable_block_elements c ~prefix:space txt
 
-let fmt_tag : tag -> Fmt.t = function
+let fmt_tag c = function
   | `Author s -> at $ fmt "author@ " $ str_normalized s
   | `Version s -> at $ fmt "version@ " $ str_normalized s
-  | `See (`Url, sr, txt) -> fmt_tag_see (wrap "<" ">") sr txt
-  | `See (`File, sr, txt) -> fmt_tag_see (wrap "'" "'") sr txt
-  | `See (`Document, sr, txt) -> fmt_tag_see (wrap "\"" "\"") sr txt
+  | `See (`Url, sr, txt) -> fmt_tag_see c (wrap "<" ">") sr txt
+  | `See (`File, sr, txt) -> fmt_tag_see c (wrap "'" "'") sr txt
+  | `See (`Document, sr, txt) -> fmt_tag_see c (wrap "\"" "\"") sr txt
   | `Since s -> at $ fmt "since@ " $ str_normalized s
   | `Before (s, txt) ->
       at $ fmt "before@ " $ str_normalized s
-      $ fmt_nestable_block_elements ~prefix:space txt
+      $ fmt_nestable_block_elements c ~prefix:space txt
   | `Deprecated txt ->
-      at $ fmt "deprecated" $ fmt_nestable_block_elements ~prefix:space txt
+      at $ fmt "deprecated"
+      $ fmt_nestable_block_elements c ~prefix:space txt
   | `Param (s, txt) ->
       at $ fmt "param@ " $ str_normalized s
-      $ fmt_nestable_block_elements ~prefix:space txt
+      $ fmt_nestable_block_elements c ~prefix:space txt
   | `Raise (s, txt) ->
       at $ fmt "raise@ " $ str_normalized s
-      $ fmt_nestable_block_elements ~prefix:space txt
+      $ fmt_nestable_block_elements c ~prefix:space txt
   | `Return txt ->
-      at $ fmt "return" $ fmt_nestable_block_elements ~prefix:space txt
+      at $ fmt "return" $ fmt_nestable_block_elements c ~prefix:space txt
   | `Inline -> at $ str "inline"
   | `Open -> at $ str "open"
   | `Closed -> at $ str "closed"
   | `Canonical ref -> at $ fmt "canonical@ " $ fmt_reference ref
 
-let fmt_block_element = function
-  | `Tag tag -> hovbox 0 (fmt_tag tag)
+let fmt_block_element c = function
+  | `Tag tag -> hovbox 0 (fmt_tag c tag)
   | `Heading (lvl, lbl, elems) ->
       let lvl = Int.to_string lvl in
       let lbl =
@@ -249,9 +266,10 @@ let fmt_block_element = function
       hovbox 0
         (wrap "{" "}" (str lvl $ lbl $ fmt "@ " $ fmt_inline_elements elems))
   | #nestable_block_element as elm ->
-      hovbox 0 (fmt_nestable_block_element elm)
+      hovbox 0 (fmt_nestable_block_element c elm)
 
-let fmt (docs : docs) = vbox 0 (list_block_elem docs fmt_block_element)
+let fmt c (docs : docs) =
+  vbox 0 (list_block_elem docs (fmt_block_element c))
 
 let diff c x y =
   let norm z =

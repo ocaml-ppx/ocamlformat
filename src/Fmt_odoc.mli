@@ -9,7 +9,11 @@
  *                                                                    *
  **********************************************************************)
 
-val fmt : Odoc_parser.Ast.docs -> Fmt.t
+val init :
+  (Source.t -> Cmts.t -> Conf.t -> Parsetree.structure -> Fmt.t) -> unit
+(** Initialize internal state *)
+
+val fmt : Conf.t -> Odoc_parser.Ast.docs -> Fmt.t
 
 val diff :
      Conf.t

@@ -453,7 +453,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   in
   let fmt_parsed parsed =
     fmt_if (space_i 0) " "
-    $ Fmt_odoc.fmt parsed
+    $ Fmt_odoc.fmt c.conf parsed
     $ fmt_if (space_i (String.length str_cmt - 1)) " "
   in
   let fmt_raw str_cmt =

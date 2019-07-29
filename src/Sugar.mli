@@ -92,11 +92,7 @@ val ite :
 (** [ite cmts exp] returns a list of conditional expressions from cascading
     if-then-else expressions, e.g.:
 
-    {[
-      if c1 then e1
-      else if c2 then e2
-      else e3
-    ]}
+    {[ if c1 then e1 else if c2 then e2 else e3 ]}
 
     will return the following list:
     [(Some c1, e1); (Some c2, e2); (None, e3)]. *)
@@ -144,10 +140,10 @@ val polynewtype :
 (** [polynewtype cmts pat exp] returns expression of a type-constrained
     pattern [pat] with body [exp]. e.g.:
 
-    {[
-      let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
-    ]}
+    {v
+let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
+    v}
 
     Can be rewritten as:
 
-    {[ let f: type r s. r s t = e ]} *)
+    {[ let f : type r s. r s t = e ]} *)
