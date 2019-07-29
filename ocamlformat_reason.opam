@@ -25,6 +25,7 @@ depends: [
   "fpath"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "octavius" {>= "1.2.0"}
+  "re"
   "stdio"
   "uutf"
   "reason" {>= "3.2.0"}

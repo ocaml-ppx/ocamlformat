@@ -30,7 +30,7 @@ Jbuild_plugin.V1.send
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
  %s
- (libraries format_ import ocaml-migrate-parsetree octavius uuseg uuseg.string))
+ (libraries format_ import ocaml-migrate-parsetree octavius re uuseg uuseg.string))
 
 (rule
  (targets ocamlformat.1)

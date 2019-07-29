@@ -124,15 +124,17 @@ let info =
          $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
          should ignore. Each line in an $(b,.ocamlformat-ignore) file \
          specifies a filename relative to the directory containing the \
-         $(b,.ocamlformat-ignore) file. Lines starting with $(b,#) are \
-         ignored and can be used as comments."
+         $(b,.ocamlformat-ignore) file. Shell-style regular expressions \
+         are supported. Lines starting with $(b,#) are ignored and can be \
+         used as comments."
     ; `P
         "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) \
          file specifies files that OCamlFormat should format even when the \
          $(b,disable) option is set. Each line in an \
          $(b,.ocamlformat-enable) file specifies a filename relative to \
-         the directory containing the $(b,.ocamlformat-enable) file. Lines \
-         starting with $(b,#) are ignored and can be used as comments." ]
+         the directory containing the $(b,.ocamlformat-enable) file. \
+         Shell-style regular expressions are supported. Lines starting \
+         with $(b,#) are ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -1874,10 +1876,25 @@ let is_in_listing_file ~quiet ~listings ~filename =
             in
             List.find_map lines ~f:(fun (lno, line) ->
                 match Fpath.of_string line with
-                | Ok file_on_current_line ->
+                | Ok file_on_current_line -> (
                     let f = Fpath.(dir // file_on_current_line) in
                     if Fpath.equal filename f then Some (listing_file, lno)
-                    else None
+                    else
+                      try
+                        let filename = Fpath.to_string filename in
+                        let re =
+                          let pathname = true and anchored = true in
+                          let f = Fpath.to_string f in
+                          Re.(Glob.glob ~pathname ~anchored f |> compile)
+                        in
+                        Option.some_if (Re.execp re filename)
+                          (listing_file, lno)
+                      with Re.Glob.Parse_error ->
+                        Format.eprintf
+                          "File %a, line %d:\n\
+                           Warning: pattern %s cannot be parsed\n"
+                          Fpath.pp listing_file lno line ;
+                        None )
                 | Error (`Msg msg) ->
                     if not quiet then
                       Format.eprintf "File %a, line %d:\nWarning: %s\n"
