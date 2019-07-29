@@ -1881,19 +1881,20 @@ let is_in_listing_file ~quiet ~listings ~filename =
                     if Fpath.equal filename f then Some (listing_file, lno)
                     else
                       try
-                        let re = Re.Glob.glob ~pathname:true line in
-                        let re = Re.compile re in
-                        let s = Fpath.to_string f in
-                        let (_ : Re.Group.t) = Re.exec re s in
-                        Some (listing_file, lno)
-                      with
-                      | Re.Glob.Parse_error ->
-                          Format.eprintf
-                            "File %a, line %d:\n\
-                             Warning: pattern %s cannot be parsed\n"
-                            Fpath.pp listing_file lno line ;
-                          None
-                      | Caml.Not_found -> None )
+                        let filename = Fpath.to_string filename in
+                        let re =
+                          let pathname = true and anchored = true in
+                          let f = Fpath.to_string f in
+                          Re.(Glob.glob ~pathname ~anchored f |> compile)
+                        in
+                        Option.some_if (Re.execp re filename)
+                          (listing_file, lno)
+                      with Re.Glob.Parse_error ->
+                        Format.eprintf
+                          "File %a, line %d:\n\
+                           Warning: pattern %s cannot be parsed\n"
+                          Fpath.pp listing_file lno line ;
+                        None )
                 | Error (`Msg msg) ->
                     if not quiet then
                       Format.eprintf "File %a, line %d:\nWarning: %s\n"
