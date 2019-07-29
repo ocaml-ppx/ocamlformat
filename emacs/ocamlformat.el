@@ -39,6 +39,11 @@
   :type 'string
   :group 'ocamlformat)
 
+(defcustom ocamlformat-args nil
+  "List of command line arguments to pass to ocamlformat."
+  :type '(repeat string)
+  :group 'ocamlformat)
+
 (defcustom ocamlformat-enable 'enable
   "Enable or disable ocamlformat."
   :type '(choice
@@ -253,10 +258,10 @@ function."
            (if (zerop
                  (apply 'call-process
                    ocamlformat-command nil (list :file errorfile) nil
-                      (append margin-args enable-args extension-args
-                              (list
-                               "--name" buffer-file-name
-                               "--output" outputfile bufferfile))))
+                   (append ocamlformat-args margin-args enable-args
+                           extension-args
+                           (list "--name" buffer-file-name
+                                 "--output" outputfile bufferfile))))
              (progn
                (if ocamlformat--support-replace-buffer-contents
                    (ocamlformat--replace-buffer-contents outputfile)
