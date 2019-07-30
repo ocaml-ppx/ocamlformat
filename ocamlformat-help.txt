@@ -24,7 +24,8 @@ OPTIONS (CODE FORMATTING STYLE)
        defined in $XDG_CONFIG_HOME or in $HOME/.config if $XDG_CONFIG_HOME is
        undefined. The global ocamlformat file has the lowest priority, then
        the closer the directory is to the processed file, the higher the
-       priority.
+       priority. The global ocamlformat file is only used when the option
+       enable-outside-detected-project is set.
 
        If the disable option is not set, an .ocamlformat-ignore file
        specifies files that OCamlFormat should ignore. Each line in an

@@ -118,7 +118,8 @@ let info =
          $(b,\\$HOME/.config) if $(b,\\$XDG_CONFIG_HOME) is undefined. The \
          global $(b,ocamlformat) file has the lowest priority, then the \
          closer the directory is to the processed file, the higher the \
-         priority."
+         priority. The global $(b,ocamlformat) file is only used when the \
+         option $(b,enable-outside-detected-project) is set."
     ; `P
         "If the $(b,disable) option is not set, an \
          $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
