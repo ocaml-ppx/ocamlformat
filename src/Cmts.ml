@@ -570,10 +570,8 @@ let fmt_cmt t (conf : Conf.t) cmt =
   | "" | "$" -> fmt_non_code cmt
   | str ->
       if Char.equal str.[0] '$' then
-        let chars_removed =
-          if Char.equal str.[String.length str - 1] '$' then 2 else 1
-        in
-        let len = String.length str - chars_removed in
+        let dollar_last = Char.equal str.[String.length str - 1] '$' in
+        let len = String.length str - if dollar_last then 2 else 1 in
         let source = String.sub ~pos:1 ~len str in
         let format = t.format in
         try
@@ -584,7 +582,8 @@ let fmt_cmt t (conf : Conf.t) cmt =
           let source = Source.create source in
           let cmts = init_impl ~format source parsed.ast parsed.comments in
           let formatted = format source cmts conf parsed.ast in
-          hvbox 2 (wrap "(*$" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+          let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
+          hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
         with _ -> fmt_non_code cmt
       else fmt_non_code cmt
 

@@ -2,7 +2,7 @@
   for i = 1 to 3 do
     Printf.printf "let x%d = %d\n" i i
   done
-*)
+$*)
 let x1 = 1
 
 (*$*)
@@ -34,7 +34,7 @@ let x = 1
   let y = 2 in
   (* foooooooo *)
   z
-*)
+$*)
 (*$*)
 
 let foo = foo
