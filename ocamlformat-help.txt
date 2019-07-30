@@ -11,13 +11,15 @@ OPTIONS (CODE FORMATTING STYLE)
        Unless otherwise noted, any option --option=VAL detailed in this
        section can be set in many ways, its value is determined in the
        following order (of increasing priority): the default value is used if
-       no other value is specified, the value can be modified in an
-       .ocamlformat configuration file with an 'option = VAL' line (*), or
-       using the OCAMLFORMAT environment variable:
-       OCAMLFORMAT=option=VAL,...,option=VAL, or as an optional parameter on
-       the command line, or with a global [@@@ocamlformat "option=VAL"]
-       attribute in the processed file, or with an [@@ocamlformat
-       "option=VAL"] attribute on expression in the processed file.
+       no other value is specified. The value of a boolean option --foo or
+       --no-foo can be modified in an .ocamlformat configuration file with
+       'foo = {true,false}', it can be done for any other option with an
+       'option = VAL' line (*), or using the OCAMLFORMAT environment
+       variable: OCAMLFORMAT=option=VAL,...,option=VAL, or as an optional
+       parameter on the command line, or with a global [@@@ocamlformat
+       "option=VAL"] attribute in the processed file, or with an
+       [@@ocamlformat "option=VAL"] attribute on expression in the processed
+       file.
 
        (*) .ocamlformat files in current and all ancestor directories for
        each input file are used, as well as the global ocamlformat file

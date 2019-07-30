@@ -101,10 +101,11 @@ let info =
          $(b,--)$(i,option)$(b,=)$(i,VAL) detailed in this section can be \
          set in many ways, its value is determined in the following order \
          (of increasing priority): the default value is used if no other \
-         value is specified, the value can be modified in an \
-         $(b,.ocamlformat) configuration file with an '$(b,option = \
-         )$(i,VAL)' line (*), or using the OCAMLFORMAT environment \
-         variable: \
+         value is specified. The value of a boolean option $(b,--foo) or \
+         $(b,--no-foo) can be modified in an $(b,.ocamlformat) \
+         configuration file with '$(b,foo = ){$(b,true),$(b,false)}', it \
+         can be done for any other option with an '$(b,option = )$(i,VAL)' \
+         line (*), or using the OCAMLFORMAT environment variable: \
          $(b,OCAMLFORMAT=)$(i,option)$(b,=)$(i,VAL)$(b,,)...$(b,,)$(i,option)$(b,=)$(i,VAL), \
          or as an optional parameter on the command line, or with a global \
          $(b,[@@@ocamlformat \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) \
