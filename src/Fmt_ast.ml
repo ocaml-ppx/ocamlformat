@@ -3144,7 +3144,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
            ( hvbox c.conf.type_decl_indent
                ( fmt_manifest_kind ptype_manifest ptype_private ptype_kind
                $ fmt_cstrs ptype_cstrs )
-           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+           $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs )
        $ doc_after )
   $ brk
 
@@ -3284,7 +3284,7 @@ and fmt_type_extension c ctx
            $ hvbox 0
                (if_newline "| " $ list ptyext_constructors "@ | " fmt_ctor)
            )
-       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+       $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs )
 
 and fmt_type_exception ~pre c sep ctx
     {ptyexn_attributes; ptyexn_constructor; ptyexn_loc} =
@@ -3301,7 +3301,7 @@ and fmt_type_exception ~pre c sep ctx
        ( doc_before
        $ hvbox 2
            (pre $ fmt_extension_constructor c sep ctx ptyexn_constructor)
-       $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+       $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
        $ doc_after ))
 
 and fmt_extension_constructor c sep ctx ec =
@@ -3491,7 +3491,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_extension (ext, atrs) ->
       hvbox c.conf.stritem_extension_indent
         ( fmt_extension c ctx "%%" ext
-        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+        $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs )
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
@@ -3516,7 +3516,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
               $ bdy )
           $ esp $ Option.call ~f:epi
-          $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+          $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs )
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
@@ -3552,7 +3552,7 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
               $ fmt_str_loc c cl.pci_name $ fmt "@ " $ str sep )
           $ fmt "@;"
           $ fmt_class_type c (sub_cty ~ctx cl.pci_expr)
-          $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs )
+          $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs )
       in
       fmt_if (not first) "\n@\n"
       $ hovbox 0
@@ -3594,7 +3594,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
                     fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t))
               $ fmt "@ =" )
           $ fmt "@;" $ fmt_class_expr c e )
-        $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" atrs
+        $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
       in
       fmt_if (not first) "\n@\n"
       $ hovbox 0
@@ -3676,7 +3676,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
         $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
         $ blk_b.bdy )
     $ blk_b.esp $ Option.call ~f:blk_b.epi
-    $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+    $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
     $ doc_after
     $ opt epi (fun epi ->
           fmt_or_k compact
@@ -4345,7 +4345,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
               (fmt "@;<1 2>=")
           $ pre_body )
       $ fmt "@ " $ body $ Cmts.fmt_after c loc
-      $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" at_at_attrs
+      $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" at_at_attrs
       $ (match in_ with Some in_ -> in_ indent | None -> noop)
       $ Option.call ~f:epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2

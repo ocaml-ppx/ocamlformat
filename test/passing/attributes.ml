@@ -101,8 +101,8 @@ type u =
       [@doc
         [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
         ; "Etiam vel mauris fermentum, condimentum quam a, porta nisi" ]]
-[@@deriving something]
-[@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
+  [@@deriving something]
+  [@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
 
 let ((A, B)[@test]) = ()
 
@@ -171,9 +171,9 @@ let _ =
   match x with A -> [%expr match y with e -> ( match e with x -> x )]
 
 type t = {a: int}
-[@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
-(* comment *)
-[@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
+  [@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
+  (* comment *)
+  [@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
 
 module type A = sig
   module A := A.B [@@attr]

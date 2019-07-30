@@ -20,10 +20,10 @@ let _ =
 type t = int [@@deriving 1, 2, 3]
 
 type t = int
-[@@deriving
-  sexp
-  , compare
-  , loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
+  [@@deriving
+    sexp
+    , compare
+    , loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong]
 
 let _ =
   ( 1

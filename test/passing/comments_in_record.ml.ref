@@ -15,7 +15,7 @@ type t = {a: int (* Comment *); b: int (* Comment *)}
 type t =
   { a: int (* Comment *)
   ; b: int (* Comment *) }
-[@@ocamlformat "type-decl=sparse"]
+  [@@ocamlformat "type-decl=sparse"]
 
 let { (* cmts *)
       pat
@@ -57,7 +57,7 @@ type t =
             [@sexp_drop_if fun _ -> true]
       ; packed: bool }
   | Opaque of {name: string}
-[@@deriving compare, equal, hash, sexp]
+  [@@deriving compare, equal, hash, sexp]
 
 type t = {(* c *) c (* c' *): (* d *) d (* d' *)}
 

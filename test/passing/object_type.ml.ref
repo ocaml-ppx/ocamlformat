@@ -5,7 +5,7 @@ type t =
   ; make: int
   ; it: string
   ; long: float [@default 42.] >
-[@@deriving make]
+  [@@deriving make]
 
 type 'a u = < hello: string  (** more doc *) ; world: int ; .. > as 'a
 
