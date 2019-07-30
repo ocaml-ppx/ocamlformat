@@ -1305,6 +1305,57 @@ and fmt_args ~first:first_grp ~last:last_grp c ctx args =
   in
   list_pn args fmt_arg
 
+and fmt_sequence c parens width xexp pexp_loc fmt_atrs =
+  let fmt_sep ?(force_break = false) xe1 ext xe2 =
+    let blank_line =
+      match c.conf.sequence_blank_line with
+      | `Preserve_one ->
+          let l1 = xe1.ast.pexp_loc.loc_end.pos_lnum in
+          let l2 = xe2.ast.pexp_loc.loc_start.pos_lnum in
+          l2 - l1 > 1
+      | `Compact -> false
+    in
+    let break =
+      if blank_line then fmt "\n@;<1000 0>"
+      else if c.conf.break_sequences || force_break then fmt "@;<1000 0>"
+      else if parens && Poly.(c.conf.break_sequence_separators = `Before)
+      then fmt "@;<1 -2>"
+      else fmt "@;<1 0>"
+    in
+    match c.conf.break_sequence_separators with
+    | `Before ->
+        break $ str ";"
+        $ fmt_extension_suffix c ext
+        $ fmt_or_k (Option.is_some ext)
+            (fmt_or parens "@ " "@;<1 2>")
+            (str " ")
+    | `After -> (
+      match c.conf.sequence_style with
+      | `Separator -> str " ;" $ fmt_extension_suffix c ext $ break
+      | `Terminator -> str ";" $ fmt_extension_suffix c ext $ break )
+  in
+  let is_simple x = is_simple c.conf width x in
+  let break (_, xexp1) (_, xexp2) =
+    not (is_simple xexp1 && is_simple xexp2)
+  in
+  let grps = List.group (Sugar.sequence c.conf c.cmts xexp) ~break in
+  let fmt_seq ?prev (ext, curr) ?next:_ =
+    let f (_, prev) = fmt_sep prev ext curr in
+    Option.value_map prev ~default:noop ~f $ fmt_expression c curr
+  in
+  let fmt_seq_list ?prev x ?next:_ =
+    let f prev =
+      let prev = snd (List.last_exn prev) in
+      let ext, curr = List.hd_exn x in
+      fmt_sep ~force_break:true prev ext curr
+    in
+    Option.value_map prev ~default:noop ~f $ list_pn x fmt_seq
+  in
+  hvbox 0
+    ( wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
+        (hvbox_if parens 0 @@ list_pn grps fmt_seq_list)
+    $ fmt_atrs )
+
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
   protect (Exp exp)
@@ -1468,11 +1519,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , e2 ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call) in
       let is_simple x = is_simple c.conf width x in
-      let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
-      let grps =
-        List.group (Sugar.sequence c.cmts (sub_exp ~ctx e2)) ~break
+      let break (_, xexp1) (_, xexp2) =
+        not (is_simple xexp1 && is_simple xexp2)
       in
-      let fmt_grp grp = list grp " ;@ " (fmt_expression c) in
+      let grps =
+        List.group (Sugar.sequence c.conf c.cmts (sub_exp ~ctx e2)) ~break
+      in
+      let fmt_grp grp = list grp " ;@ " (snd >> fmt_expression c) in
       hvbox 0
         (wrap_if parens "(" ")"
            ( hvbox c.conf.extension_indent
@@ -2261,56 +2314,20 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   $ fmt "with" $ p2.break_after_with)
             $ list_fl flds fmt_field )
         $ fmt_atrs )
-  | Pexp_sequence (e1, e2) when Option.is_some ext ->
-      let parens1 =
-        match e1.pexp_desc with Pexp_sequence _ -> Some true | _ -> None
-      in
-      hvbox 0
-        ( wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
-            (hvbox_if parens 0
-               ( fmt_expression c ?parens:parens1 (sub_exp ~ctx e1)
-               $ str " ;"
-               $ fmt_extension_suffix c ext
-               $ fmt "@ "
-               $ fmt_expression c (sub_exp ~ctx e2) ))
-        $ fmt_atrs )
-  | Pexp_sequence _ ->
-      let fmt_sep ?(force_break = false) xe1 xe2 =
-        let blank_line =
-          match c.conf.sequence_blank_line with
-          | `Preserve_one ->
-              let l1 = xe1.ast.pexp_loc.loc_end.pos_lnum in
-              let l2 = xe2.ast.pexp_loc.loc_start.pos_lnum in
-              l2 - l1 > 1
-          | `Compact -> false
-        in
-        let break =
-          if blank_line then fmt "\n@;<1000 0>"
-          else if c.conf.break_sequences || force_break then
-            fmt "@;<1000 0>"
-          else fmt "@ "
-        in
-        match c.conf.sequence_style with
-        | `Separator -> str " ;" $ break
-        | `Terminator -> str ";" $ break
-      in
-      let is_simple x = is_simple c.conf width x in
-      let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
-      let grps = List.group (Sugar.sequence c.cmts xexp) ~break in
-      let fmt_seq ?prev x ?next:_ =
-        let f prev = fmt_sep prev x in
-        Option.value_map prev ~default:noop ~f $ fmt_expression c x
-      in
-      let fmt_seq_list ?prev x ?next:_ =
-        let f prev =
-          fmt_sep ~force_break:true (List.last_exn prev) (List.hd_exn x)
-        in
-        Option.value_map prev ~default:noop ~f $ list_pn x fmt_seq
-      in
-      hvbox 0
-        ( wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
-            (hvbox_if parens 0 @@ list_pn grps fmt_seq_list)
-        $ fmt_atrs )
+  | Pexp_extension
+      ( ext
+      , PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( ( {pexp_desc= Pexp_sequence _; pexp_attributes= []; _}
+                    as e1 )
+                  , _ )
+            ; pstr_loc= _ } ] )
+    when List.is_empty pexp_attributes
+         && ( Poly.(c.conf.extension_sugar = `Always)
+            || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
+      fmt_sequence c parens width xexp pexp_loc fmt_atrs
+  | Pexp_sequence _ -> fmt_sequence c parens width xexp pexp_loc fmt_atrs
   | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
         (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
@@ -2347,8 +2364,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     ( ( { pexp_desc=
                             ( Pexp_while _ | Pexp_for _ | Pexp_match _
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
-                            | Pexp_sequence _ | Pexp_new _
-                            | Pexp_letmodule _ | Pexp_object _
+                            | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
                             | Pexp_function _ )
                         ; pexp_attributes= []
                         ; pexp_loc= _

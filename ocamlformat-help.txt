@@ -110,6 +110,11 @@ OPTIONS (CODE FORMATTING STYLE)
            breaks the expressions after the separator and docks the brackets
            for records. The default value is before.
 
+       --break-sequence-separators={after|before}
+           Break before or after `;` in sequence expressions. after breaks
+           the expressions after the separator. before breaks the expressions
+           before the separator. The default value is after.
+
        --break-sequences
            Force sequence expressions to break irrespective of margin.
 

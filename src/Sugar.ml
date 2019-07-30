@@ -239,23 +239,51 @@ let rec ite cmts ({ast= exp; _} as xexp) =
       [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
   | _ -> [(None, xexp, pexp_attributes)]
 
-let sequence cmts xexp =
+let sequence (conf : Conf.t) cmts xexp =
   let rec sequence_ ?(allow_attribute = true) ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc; _} = exp in
     match pexp_desc with
+    | Pexp_extension
+        ( ext
+        , PStr
+            [ { pstr_desc=
+                  Pstr_eval
+                    ( ( { pexp_desc= Pexp_sequence (e1, e2)
+                        ; pexp_attributes
+                        ; _ } as exp )
+                    , _ )
+              ; pstr_loc= _ } ] )
+      when List.is_empty pexp_attributes
+           && ( Poly.(conf.extension_sugar = `Always)
+              || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
+        let ctx = Exp exp in
+        Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
+          ~after:e2.pexp_loc ;
+        if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
+        then [(None, xexp)]
+        else if Ast.exposed_right_exp Ast.Let_match e1 then
+          [(None, sub_exp ~ctx e1); (Some ext, sub_exp ~ctx e2)]
+        else
+          let l1 = sequence_ ~allow_attribute:false (sub_exp ~ctx e1) in
+          let l2 =
+            match sequence_ ~allow_attribute:false (sub_exp ~ctx e2) with
+            | [] -> []
+            | (_, e2) :: l2 -> (Some ext, e2) :: l2
+          in
+          List.append l1 l2
     | Pexp_sequence (e1, e2) ->
         Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
-        then [xexp]
+        then [(None, xexp)]
         else if Ast.exposed_right_exp Ast.Let_match e1 then
-          [sub_exp ~ctx e1; sub_exp ~ctx e2]
+          [(None, sub_exp ~ctx e1); (None, sub_exp ~ctx e2)]
         else
           List.append
             (sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
             (sequence_ ~allow_attribute:false (sub_exp ~ctx e2))
-    | _ -> [xexp]
+    | _ -> [(None, xexp)]
   in
   sequence_ xexp
 

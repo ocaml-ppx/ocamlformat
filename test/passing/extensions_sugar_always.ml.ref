@@ -68,7 +68,12 @@ let _ = ([%ext? (x : x)] : [%ext? (x : x)])
 
 let _ = [%stri let [%p xxx] = fun (t : [%t tt]) (ut : [%t tt]) -> [%e xxx]]
 
-let _ = [x; x ---> ([%e x ~loc [%expr x] x] ;%expr iter tail); x]
+let _ =
+  [ x
+  ; x
+    ---> ( [%e x ~loc [%expr x] x] ;%expr
+           iter tail )
+  ; x ]
 
 let _ =
   ( [%expr
@@ -107,10 +112,7 @@ let _ = f (function%ext x -> x) x
 
 let _ = f ([%ext e] [@attr]) x
 
-let _ =
-  a ;%ext
-  b ;
-  a ;%ext b
+let _ = a ;%ext b ; a ;%ext b
 
 let _ = try%lwt Lwt.return 2 with _ -> assert false
 

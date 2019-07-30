@@ -24,6 +24,7 @@ type t =
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After | `After_and_docked]
+  ; break_sequence_separators: [`Before | `After]
   ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap | `Newlines_and_wrap]
   ; break_struct: bool
@@ -340,6 +341,21 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_separators= x})
       (fun conf -> conf.break_separators)
+
+  let break_sequence_separators =
+    let doc = "Break before or after `;` in sequence expressions." in
+    let names = ["break-sequence-separators"] in
+    let all =
+      [ ( "after"
+        , `After
+        , "$(b,after) breaks the expressions after the separator." )
+      ; ( "before"
+        , `Before
+        , "$(b,before) breaks the expressions before the separator." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with break_sequence_separators= x})
+      (fun conf -> conf.break_sequence_separators)
 
   let break_sequences =
     let doc =
@@ -1324,6 +1340,8 @@ let ocamlformat_profile =
   ; break_fun_decl= C.default Formatting.break_fun_decl
   ; break_fun_sig= C.default Formatting.break_fun_sig
   ; break_separators= C.default Formatting.break_separators
+  ; break_sequence_separators=
+      C.default Formatting.break_sequence_separators
   ; break_sequences= C.default Formatting.break_sequences
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
@@ -1470,6 +1488,7 @@ let janestreet_profile =
   ; break_fun_decl= `Fit_or_vertical
   ; break_fun_sig= `Fit_or_vertical
   ; break_separators= `Before
+  ; break_sequence_separators= `After
   ; break_sequences= true
   ; break_string_literals= `Wrap
   ; break_struct= ocamlformat_profile.break_struct
