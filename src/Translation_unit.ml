@@ -319,7 +319,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
       Option.iter conf.max_indent ~f:(fun x -> Fmt.set_max_indent x fs) ;
       (* note that [fprintf fs "%s" ""] is not a not-opt. *)
       if not (String.is_empty t.prefix) then
-        Format_.fprintf fs "%s" t.prefix ;
+        Format_.fprintf fs "%s@." t.prefix ;
       let do_fmt = xunit.fmt source_t cmts_t conf t.ast in
       if box_debug then Fmt.with_box_debug do_fmt fs else do_fmt fs ;
       Format_.pp_print_newline fs () ;
