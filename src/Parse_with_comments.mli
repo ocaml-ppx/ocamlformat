@@ -2,29 +2,29 @@
  *                                                                    *
  *                            OCamlFormat                             *
  *                                                                    *
- *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
+ *  Copyright (c) 2019-present, Facebook, Inc.  All rights reserved.  *
  *                                                                    *
  *  This source code is licensed under the MIT license found in the   *
  *  LICENSE file in the root directory of this source tree.           *
  *                                                                    *
  **********************************************************************)
-module Format = Format_
 
-(** Format OCaml Ast *)
+type 'a with_comments =
+  {ast: 'a; comments: (string * Location.t) list; prefix: string}
 
-open Migrate_ast
-open Parsetree
+module W : sig
+  type t
 
-val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
-(** Format a signature. *)
+  val in_lexer : int list
 
-val fmt_structure : Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
-(** Format a structure. *)
+  val disable : int -> t
 
-val fmt_structure_in_cmt :
-  Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
-(** Format a structure in comment. *)
+  val enable : int -> t
 
-val fmt_use_file :
-  Source.t -> Cmts.t -> Conf.t -> toplevel_phrase list -> Fmt.t
-(** Format a use_file. *)
+  val to_string : t list -> string
+end
+
+exception Warning50 of (Location.t * Warnings.t) list
+
+val parse :
+  (Lexing.lexbuf -> 'a) -> Conf.t -> source:string -> 'a with_comments

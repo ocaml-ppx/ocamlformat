@@ -9,8 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-type 'a with_comments =
-  {ast: 'a; comments: (string * Location.t) list; prefix: string}
+open Parse_with_comments
 
 type 'a t =
   { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
@@ -36,9 +35,6 @@ type error =
   | Unstable of {iteration: int; prev: string; next: string}
   | Ocamlformat_bug of {exn: exn}
   | User_error of string
-
-val parse :
-  (Lexing.lexbuf -> 'a) -> Conf.t -> source:string -> 'a with_comments
 
 val format :
      'a t

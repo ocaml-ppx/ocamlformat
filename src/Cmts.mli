@@ -29,21 +29,30 @@ open Migrate_ast
 type t
 
 val init_impl :
-  Source.t -> Parsetree.structure -> (string * Location.t) list -> t
+     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
+  -> Source.t
+  -> Parsetree.structure
+  -> (string * Location.t) list
+  -> t
 (** [init_impl source structure comments] associates each comment in
     [comments] with a source location appearing in [structure]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
 val init_intf :
-  Source.t -> Parsetree.signature -> (string * Location.t) list -> t
+     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
+  -> Source.t
+  -> Parsetree.signature
+  -> (string * Location.t) list
+  -> t
 (** [init_inft source signature comments] associates each comment in
     [comments] with a source location appearing in [signature]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
 val init_use_file :
-     Source.t
+     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
+  -> Source.t
   -> Parsetree.toplevel_phrase list
   -> (string * Location.t) list
   -> t
@@ -121,7 +130,8 @@ val remaining_comments : t -> (Location.t * string * string * Sexp.t) list
 val remaining_locs : t -> Location.t list
 
 val diff :
-     (string * Location.t) list
+     Conf.t
+  -> (string * Location.t) list
   -> (string * Location.t) list
   -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)

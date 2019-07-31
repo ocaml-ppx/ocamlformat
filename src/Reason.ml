@@ -207,7 +207,7 @@ end
 
 type 'a t =
   { origin_filename: string
-  ; ast_and_comment: 'a Translation_unit.with_comments }
+  ; ast_and_comment: 'a Parse_with_comments.with_comments }
 
 let input_bin_impl ic : Migrate_ast.Parsetree.structure t =
   let origin_filename, comments, x = Binary_reason.input ic in
@@ -221,7 +221,7 @@ let input_bin_impl ic : Migrate_ast.Parsetree.structure t =
       let ast = to_current.copy_structure ast in
       let ast = Migrate_ast.Mapper.structure Mappers.sanitize_input ast in
       { origin_filename
-      ; ast_and_comment= {Translation_unit.ast; comments; prefix= ""} }
+      ; ast_and_comment= {Parse_with_comments.ast; comments; prefix= ""} }
   | Binary_reason.Intf _ ->
       user_error "expected serialized implementation, found interface" []
 
@@ -237,16 +237,16 @@ let input_bin_intf ic : Migrate_ast.Parsetree.signature t =
       let ast = to_current.copy_signature ast in
       let ast = Migrate_ast.Mapper.signature Mappers.sanitize_input ast in
       { origin_filename
-      ; ast_and_comment= {Translation_unit.ast; comments; prefix= ""} }
+      ; ast_and_comment= {Parse_with_comments.ast; comments; prefix= ""} }
   | Binary_reason.Impl _ ->
       user_error "expected serialized interface, found implementation" []
 
-let norm_impl c {Translation_unit.ast; comments; prefix= _} =
+let norm_impl c {Parse_with_comments.ast; comments; prefix= _} =
   Migrate_ast.Mapper.structure
     (Mappers.norm ~ignore_doc_comments:false c comments)
     ast
 
-let norm_intf c {Translation_unit.ast; comments; prefix= _} =
+let norm_intf c {Parse_with_comments.ast; comments; prefix= _} =
   Migrate_ast.Mapper.signature
     (Mappers.norm ~ignore_doc_comments:false c comments)
     ast
@@ -259,10 +259,10 @@ let equal_intf ~ignore_doc_comments c x y =
   Normalize.equal_intf ~ignore_doc_comments c (norm_intf c x)
     (norm_intf c y)
 
-let moved_docstrings_impl c {Translation_unit.ast= x; _}
-    {Translation_unit.ast= y; _} =
+let moved_docstrings_impl c {Parse_with_comments.ast= x; _}
+    {Parse_with_comments.ast= y; _} =
   Normalize.moved_docstrings_impl c x y
 
-let moved_docstrings_intf c {Translation_unit.ast= x; _}
-    {Translation_unit.ast= y; _} =
+let moved_docstrings_intf c {Parse_with_comments.ast= x; _}
+    {Parse_with_comments.ast= y; _} =
   Normalize.moved_docstrings_intf c x y
