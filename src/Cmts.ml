@@ -566,26 +566,25 @@ let fmt_cmt t (conf : Conf.t) cmt =
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   in
+  let fmt_code ((str, _) as cmt) =
+    let dollar_last = Char.equal str.[String.length str - 1] '$' in
+    let len = String.length str - if dollar_last then 2 else 1 in
+    let source = String.sub ~pos:1 ~len str in
+    let format = t.format in
+    try
+      let parse = Migrate_ast.Parse.implementation in
+      let parsed = Parse_with_comments.parse parse conf ~source in
+      let source = Source.create source in
+      let cmts = init_impl ~format source parsed.ast parsed.comments in
+      let formatted = format source cmts conf parsed.ast in
+      let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
+      hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+    with _ -> fmt_non_code cmt
+  in
   match fst cmt with
   | "" | "$" -> fmt_non_code cmt
-  | str ->
-      if Char.equal str.[0] '$' then
-        let dollar_last = Char.equal str.[String.length str - 1] '$' in
-        let len = String.length str - if dollar_last then 2 else 1 in
-        let source = String.sub ~pos:1 ~len str in
-        let format = t.format in
-        try
-          let parsed =
-            Parse_with_comments.parse Migrate_ast.Parse.implementation conf
-              ~source
-          in
-          let source = Source.create source in
-          let cmts = init_impl ~format source parsed.ast parsed.comments in
-          let formatted = format source cmts conf parsed.ast in
-          let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
-          hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
-        with _ -> fmt_non_code cmt
-      else fmt_non_code cmt
+  | str when Char.equal str.[0] '$' -> fmt_code cmt
+  | _ -> fmt_non_code cmt
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
