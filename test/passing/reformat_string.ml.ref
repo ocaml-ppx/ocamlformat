@@ -2,7 +2,7 @@ let _ = 'a'
 
 let _ = 'a'
 
-let _ = (* test *) "asd"
+let _ = "asd" (* test *)
 
 let _ = "asd"
 
