@@ -1,4 +1,4 @@
-[@@@ocamlformat "break-sequence-separators=before"]
+[@@@ocamlformat "sequence-style=before"]
 
 let foo x y =
   lazy

@@ -24,7 +24,6 @@ type t =
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After | `After_and_docked]
-  ; break_sequence_separators: [`Before | `After]
   ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap | `Newlines_and_wrap]
         (** How to potentially break string literals into new lines. *)
@@ -74,7 +73,7 @@ type t =
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
-  ; sequence_style: [`Separator | `Terminator]
+  ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
   ; space_around_arrays: bool
   ; space_around_lists: bool

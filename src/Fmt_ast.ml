@@ -1318,21 +1318,19 @@ and fmt_sequence c parens width xexp pexp_loc fmt_atrs =
     let break =
       if blank_line then fmt "\n@;<1000 0>"
       else if c.conf.break_sequences || force_break then fmt "@;<1000 0>"
-      else if parens && Poly.(c.conf.break_sequence_separators = `Before)
-      then fmt "@;<1 -2>"
+      else if parens && Poly.(c.conf.sequence_style = `Before) then
+        fmt "@;<1 -2>"
       else fmt "@;<1 0>"
     in
-    match c.conf.break_sequence_separators with
+    match c.conf.sequence_style with
     | `Before ->
         break $ str ";"
         $ fmt_extension_suffix c ext
         $ fmt_or_k (Option.is_some ext)
             (fmt_or parens "@ " "@;<1 2>")
             (str " ")
-    | `After -> (
-      match c.conf.sequence_style with
-      | `Separator -> str " ;" $ fmt_extension_suffix c ext $ break
-      | `Terminator -> str ";" $ fmt_extension_suffix c ext $ break )
+    | `Separator -> str " ;" $ fmt_extension_suffix c ext $ break
+    | `Terminator -> str ";" $ fmt_extension_suffix c ext $ break
   in
   let is_simple x = is_simple c.conf width x in
   let break (_, xexp1) (_, xexp2) =
