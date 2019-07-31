@@ -1305,7 +1305,7 @@ and fmt_args ~first:first_grp ~last:last_grp c ctx args =
   in
   list_pn args fmt_arg
 
-and fmt_sequence c parens width xexp pexp_loc fmt_atrs =
+and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
   let fmt_sep ?(force_break = false) xe1 ext xe2 =
     let blank_line =
       match c.conf.sequence_blank_line with
@@ -1336,7 +1336,15 @@ and fmt_sequence c parens width xexp pexp_loc fmt_atrs =
   let break (_, xexp1) (_, xexp2) =
     not (is_simple xexp1 && is_simple xexp2)
   in
-  let grps = List.group (Sugar.sequence c.conf c.cmts xexp) ~break in
+  let elts = Sugar.sequence c.conf c.cmts xexp in
+  let first_ext =
+    match elts with
+    | (None, _) :: (first_ext, _) :: _ -> first_ext
+    | _ -> impossible "at least two elements"
+  in
+  let compare {txt= x; _} {txt= y; _} = String.compare x y in
+  assert (Option.compare compare first_ext ext = 0) ;
+  let grps = List.group elts ~break in
   let fmt_seq ?prev (ext, curr) ?next:_ =
     let f (_, prev) = fmt_sep prev ext curr in
     Option.value_map prev ~default:noop ~f $ fmt_expression c curr
@@ -2324,8 +2332,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     when List.is_empty pexp_attributes
          && ( Poly.(c.conf.extension_sugar = `Always)
             || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
-      fmt_sequence c parens width xexp pexp_loc fmt_atrs
-  | Pexp_sequence _ -> fmt_sequence c parens width xexp pexp_loc fmt_atrs
+      fmt_sequence c parens width xexp pexp_loc fmt_atrs ~ext
+  | Pexp_sequence _ ->
+      fmt_sequence c parens width xexp pexp_loc fmt_atrs ?ext
   | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
         (wrap_fits_breaks_exp_if ~space:false c ~loc:pexp_loc ~parens
