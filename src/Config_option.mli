@@ -43,7 +43,7 @@ module Make (C : CONFIG) : sig
 
   val int : default:int -> docv:string -> int option_decl
 
-  val int_opt : docv:string -> int option option_decl
+  val opt : 'a Cmdliner.Arg.conv -> docv:string -> 'a option option_decl
 
   val default : 'a t -> 'a
 

@@ -827,7 +827,8 @@ module Formatting = struct
       "Maximum offset ($(docv) columns) added to a new line in addition to \
        the offset of the previous line."
     in
-    C.int_opt ~names:["max-indent"] ~doc ~docv ~section ~allow_inline:false
+    C.opt Arg.int ~names:["max-indent"] ~doc ~docv ~section
+      ~allow_inline:false
       (fun conf x -> {conf with max_indent= x})
       (fun conf -> conf.max_indent)
 
