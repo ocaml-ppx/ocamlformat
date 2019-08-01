@@ -125,19 +125,7 @@ module Make (C : CONFIG) = struct
         & opt (some (enum opt_names)) None
         & info names ~doc ~docv ~docs)
     in
-    let parse s =
-      match
-        List.find_map all ~f:(fun (n, v, _) ->
-            Option.some_if (String.equal n s) v)
-      with
-      | Some v -> Ok v
-      | None ->
-          Error
-            (`Msg
-              (Printf.sprintf "Invalid value '%s', expecting %s" s
-                 ( List.map all ~f:(fun (s, _, _) -> Format.sprintf "'%s'" s)
-                 |> String.concat ~sep:" or " )))
-    in
+    let parse = Arg.(conv_parser (enum opt_names)) in
     let r = mk ~default:None term in
     let cmdline_get () = !r in
     let opt =
@@ -169,14 +157,7 @@ module Make (C : CONFIG) = struct
     let doc = generated_flag_doc ~allow_inline ~doc ~section ~deprecated in
     let docs = section_name section in
     let term = Arg.(value & flag & info names_for_cmdline ~doc ~docs) in
-    let parse s =
-      try Ok (Bool.of_string s)
-      with _ ->
-        Error
-          (`Msg
-            (Format.sprintf
-               "invalid value '%s', expecting 'true' or 'false'" s))
-    in
+    let parse = Arg.(conv_parser bool) in
     let r = mk ~default term in
     let to_string = Bool.to_string in
     let cmdline_get () = if !r then Some (not invert_flag) else None in
