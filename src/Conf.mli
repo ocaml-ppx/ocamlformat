@@ -73,7 +73,7 @@ type t =
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
-  ; sequence_style: [`Separator | `Terminator]
+  ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
   ; space_around_arrays: bool
   ; space_around_lists: bool

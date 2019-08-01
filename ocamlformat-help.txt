@@ -346,10 +346,11 @@ OPTIONS (CODE FORMATTING STYLE)
            will keep a blank line between two expressions of a sequence if
            the input contains at least one. The default value is compact.
 
-       --sequence-style={separator|terminator}
+       --sequence-style={separator|terminator|before}
            Style of sequence. separator puts spaces before and after
-           semicolons. terminator only puts spaces after semicolons. The
-           default value is separator.
+           semicolons. terminator only puts spaces after semicolons. before
+           breaks the sequence before semicolons. The default value is
+           separator.
 
        --single-case={compact|sparse}
            Style of pattern matching expressions with only a single case.

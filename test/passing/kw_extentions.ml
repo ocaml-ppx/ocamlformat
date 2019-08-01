@@ -33,21 +33,20 @@ let () =
   (match%ext x with _ -> ()) ;
   match%ext x with _ -> ()
 
-let () =
-  () ;
-  () ;%ext
-  () ;
-  () ;%ext ()
+let () = () ; () ;%ext () ; () ;%ext ()
 
 let _ =
   let%ext () = () and () = () in
   ()
 
-let () = f (fun () -> ()) ;%ext f ()
+let () =
+  f (fun () -> ()) ;%ext
+  f ()
 
 let () =
   f (fun () -> ()) ;%ext
   g (fun () -> ()) ;
   h (fun () -> ()) ;%ext
   i () ;
-  j () ;%ext f ()
+  j () ;%ext
+  f ()

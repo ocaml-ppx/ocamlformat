@@ -68,7 +68,7 @@ type t =
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
-  ; sequence_style: [`Separator | `Terminator]
+  ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
   ; space_around_arrays: bool
   ; space_around_lists: bool
@@ -956,7 +956,10 @@ module Formatting = struct
         , "$(b,separator) puts spaces before and after semicolons." )
       ; ( "terminator"
         , `Terminator
-        , "$(b,terminator) only puts spaces after semicolons." ) ]
+        , "$(b,terminator) only puts spaces after semicolons." )
+      ; ( "before"
+        , `Before
+        , "$(b,before) breaks the sequence before semicolons." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with sequence_style= x})
