@@ -1574,7 +1574,7 @@ let (_profile : t option C.t) =
       , Some janestreet_profile
       , "The $(b,janestreet) profile is used at Jane Street." ) ]
   in
-  C.choice ~names ~all ~doc ~section ~has_default:false
+  C.choice ~names ~all ~doc ~section
     (fun conf p ->
       selected_profile_ref := p ;
       Option.value p ~default:conf)

@@ -60,24 +60,6 @@ module Make (C : CONFIG) = struct
   let deprecated_doc ~deprecated =
     if deprecated then " Warning: This option is deprecated." else ""
 
-  let generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default
-      ~deprecated =
-    let open Format in
-    let default =
-      if has_default then
-        asprintf "The default value is $(b,%a)."
-          (fun fs (v, _, _) -> fprintf fs "%s" v)
-          (List.hd_exn all)
-      else ""
-    in
-    asprintf "%s %a %s%s%s" doc
-      (pp_print_list
-         ~pp_sep:(fun fs () -> fprintf fs "@,")
-         (fun fs (_, _, d) -> fprintf fs "%s" d))
-      all default
-      (in_attributes ~section allow_inline)
-      (deprecated_doc ~deprecated)
-
   let generated_choice_docv ~all =
     let open Format in
     asprintf "@[<1>{%a}@]"
@@ -97,6 +79,18 @@ module Make (C : CONFIG) = struct
     Format.sprintf "%s The default value is $(b,%s).%s%s" doc default
       (in_attributes ~section allow_inline)
       (deprecated_doc ~deprecated)
+
+  let generated_choice_doc conv ~allow_inline ~all ~doc ~section ~default
+      ~deprecated =
+    let open Format in
+    let doc =
+      asprintf "%s %a" doc
+        (pp_print_list
+           ~pp_sep:(fun fs () -> fprintf fs "@,")
+           (fun fs (_, _, d) -> fprintf fs "%s" d))
+        all
+    in
+    generated_doc conv ~allow_inline ~doc ~section ~default ~deprecated
 
   let section_name = function
     | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
@@ -167,17 +161,17 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  let choice ?(has_default = true) ~all ~names ~doc ~section
+  let choice ~all ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false) =
     let _, default, _ = List.hd_exn all in
+    let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
+    let conv = Arg.enum opt_names in
     let doc =
-      generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default
+      generated_choice_doc conv ~allow_inline ~all ~doc ~section ~default
         ~deprecated
     in
     let docv = generated_choice_docv ~all in
-    let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
-    any (Arg.enum opt_names) ~default ~docv ~names ~doc ~section
-      ~allow_inline ~deprecated
+    any conv ~default ~docv ~names ~doc ~section ~allow_inline ~deprecated
 
   let any converter ~default ~docv ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false) =

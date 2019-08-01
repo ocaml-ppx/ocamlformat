@@ -36,8 +36,7 @@ module Make (C : CONFIG) : sig
 
   val section_name : [`Formatting | `Operational] -> string
 
-  val choice :
-    ?has_default:bool -> all:(string * 'a * string) list -> 'a option_decl
+  val choice : all:(string * 'a * string) list -> 'a option_decl
 
   val flag : default:bool -> bool option_decl
 
