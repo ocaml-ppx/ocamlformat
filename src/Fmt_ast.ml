@@ -1337,13 +1337,11 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
     not (is_simple xexp1 && is_simple xexp2)
   in
   let elts = Sugar.sequence c.conf c.cmts xexp in
-  let first_ext =
-    match elts with
-    | (None, _) :: (first_ext, _) :: _ -> first_ext
-    | _ -> impossible "at least two elements"
-  in
-  let compare {txt= x; _} {txt= y; _} = String.compare x y in
-  assert (Option.compare compare first_ext ext = 0) ;
+  ( match elts with
+  | (None, _) :: (first_ext, _) :: _ ->
+      let compare {txt= x; _} {txt= y; _} = String.compare x y in
+      assert (Option.compare compare first_ext ext = 0)
+  | _ -> impossible "at least two elements" ) ;
   let grps = List.group elts ~break in
   let fmt_seq ?prev (ext, curr) ?next:_ =
     let f (_, prev) = fmt_sep prev ext curr in
