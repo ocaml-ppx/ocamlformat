@@ -114,9 +114,8 @@ module Make (C : CONFIG) = struct
     in
     let docv = generated_choice_docv ~all in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
-    let to_string v' =
-      List.find_map_exn all ~f:(fun (str, v, _) ->
-          if Poly.(v = v') then Some str else None)
+    let to_string x =
+      Format.asprintf "%a%!" Arg.(conv_printer (enum opt_names)) x
     in
     let docs = section_name section in
     let term =
