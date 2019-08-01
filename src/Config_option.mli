@@ -44,8 +44,6 @@ module Make (C : CONFIG) : sig
   val any :
     'a Cmdliner.Arg.conv -> default:'a -> docv:string -> 'a option_decl
 
-  val opt : 'a Cmdliner.Arg.conv -> docv:string -> 'a option option_decl
-
   val default : 'a t -> 'a
 
   val update_using_cmdline : config -> config

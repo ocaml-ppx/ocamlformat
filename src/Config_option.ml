@@ -92,17 +92,9 @@ module Make (C : CONFIG) = struct
       (deprecated_doc ~deprecated)
 
   let generated_doc conv ~allow_inline ~doc ~section ~default ~deprecated =
-    let default =
-      Format.asprintf "The default value is $(b,%a)."
-        (Arg.conv_printer conv) default
-    in
-    Format.sprintf "%s %s%s%s" doc default
-      (in_attributes ~section allow_inline)
-      (deprecated_doc ~deprecated)
-
-  let generated_opt_doc ~allow_inline ~doc ~section ~deprecated =
-    let default = "The default value is $(b,none)." in
-    Format.sprintf "%s %s%s%s" doc default
+    let default = Format.asprintf "%a" (Arg.conv_printer conv) default in
+    let default = if String.is_empty default then "none" else default in
+    Format.sprintf "%s The default value is $(b,%s).%s%s" doc default
       (in_attributes ~section allow_inline)
       (deprecated_doc ~deprecated)
 
@@ -218,45 +210,8 @@ module Make (C : CONFIG) = struct
     let parse s = Arg.conv_parser converter s in
     let r = mk ~default:None term in
     let to_string x =
-      Format.asprintf "%a%!" (Arg.conv_printer converter) x
-    in
-    let cmdline_get () = !r in
-    let opt =
-      { names
-      ; parse
-      ; update
-      ; cmdline_get
-      ; allow_inline
-      ; default
-      ; to_string
-      ; get_value
-      ; from
-      ; deprecated }
-    in
-    store := Pack opt :: !store ;
-    opt
-
-  let opt converter ~docv ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
-      update get_value =
-    let open Cmdliner in
-    let default = None in
-    let doc = generated_opt_doc ~allow_inline ~doc ~section ~deprecated in
-    let docs = section_name section in
-    let term =
-      Arg.(
-        value
-        & opt (some (some converter)) None
-        & info names ~doc ~docs ~docv)
-    in
-    let parse s =
-      if String.equal s "none" then Ok None
-      else Result.map (Arg.conv_parser converter s) ~f:Option.some
-    in
-    let r = mk ~default term in
-    let to_string =
-      Option.value_map ~default:"none" ~f:(fun x ->
-          Format.asprintf "%a%!" (Arg.conv_printer converter) x)
+      let s = Format.asprintf "%a%!" (Arg.conv_printer converter) x in
+      if String.is_empty s then "none" else s
     in
     let cmdline_get () = !r in
     let opt =
