@@ -41,7 +41,8 @@ module Make (C : CONFIG) : sig
 
   val flag : default:bool -> bool option_decl
 
-  val int : default:int -> docv:string -> int option_decl
+  val any :
+    'a Cmdliner.Arg.conv -> default:'a -> docv:string -> 'a option_decl
 
   val opt : 'a Cmdliner.Arg.conv -> docv:string -> 'a option option_decl
 
