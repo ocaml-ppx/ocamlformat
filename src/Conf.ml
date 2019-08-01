@@ -1761,10 +1761,11 @@ let rec collect_files ~segs ~ignores ~enables ~files =
       in
       let files =
         let f_1 = Fpath.(dir / dot_ocamlformat) in
+        let files =
+          if Fpath.exists f_1 then `Ocamlformat f_1 :: files else files
+        in
         let f_2 = Fpath.(dir / dot_ocp_indent) in
-        files
-        |> (fun k -> if Fpath.exists f_1 then `Ocamlformat f_1 :: k else k)
-        |> fun k -> if Fpath.exists f_2 then `Ocp_indent f_2 :: k else k
+        if Fpath.exists f_2 then `Ocp_indent f_2 :: files else files
       in
       if is_project_root dir && not enable_outside_detected_project then
         (ignores, enables, files, Some dir)
@@ -1834,13 +1835,14 @@ type action =
   | Check of [`Impl | `Intf | `Use_file] input list
 
 let kind_of fname =
-  Option.value !kind
-    ~default:
-      ( match Filename.extension fname with
-      | ".ml" -> `Impl
-      | ".mli" -> `Intf
-      | ".mlt" -> `Use_file
-      | _ -> `Impl )
+  match !kind with
+  | Some kind -> kind
+  | None -> (
+    match Filename.extension fname with
+    | ".ml" -> `Impl
+    | ".mli" -> `Intf
+    | ".mlt" -> `Use_file
+    | _ -> `Impl )
 
 let xdg_config =
   let xdg_config_home =
@@ -1866,9 +1868,9 @@ let is_in_listing_file ~quiet ~listings ~filename =
       try
         In_channel.with_file (Fpath.to_string listing_file) ~f:(fun ch ->
             let lines =
-              List.filter_mapi (In_channel.input_lines ch) ~f:(fun i s ->
-                  let l = String.strip s in
-                  Option.some_if (not (drop_line l)) (i + 1, l))
+              In_channel.input_lines ch
+              |> List.mapi ~f:(fun i s -> (i + 1, String.strip s))
+              |> List.filter ~f:(fun (_, l) -> not (drop_line l))
             in
             List.find_map lines ~f:(fun (lno, line) ->
                 match Fpath.of_string line with
@@ -1927,11 +1929,12 @@ let build_config ~file =
   if no_ocamlformat_files && not enable_outside_detected_project then (
     ( if not conf.quiet then
       let why =
-        Option.value_map project_root ~default:"no project root was found"
-          ~f:(fun root ->
+        match project_root with
+        | Some root ->
             Format.sprintf
               "no [.ocamlformat] was found within the project (root: %s)"
-              (Fpath.to_string ~relativize:true root))
+              (Fpath.to_string ~relativize:true root)
+        | None -> "no project root was found"
       in
       Format.eprintf
         "File %S:@\n\
