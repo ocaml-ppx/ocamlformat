@@ -1746,8 +1746,9 @@ let dot_ocamlformat_enable = ".ocamlformat-enable"
 let rec collect_files ~segs ~ignores ~enables ~files =
   match segs with
   | [] | [""] -> (ignores, enables, files, None)
-  | "" :: segs -> collect_files ~segs ~ignores ~enables ~files
-  | _ :: segs ->
+  | "" :: upper_segs ->
+      collect_files ~segs:upper_segs ~ignores ~enables ~files
+  | _ :: upper_segs ->
       let sep = Fpath.dir_sep in
       let dir = String.concat ~sep (List.rev segs) |> Fpath.v in
       let ignores =
@@ -1767,7 +1768,7 @@ let rec collect_files ~segs ~ignores ~enables ~files =
       in
       if is_project_root dir && not enable_outside_detected_project then
         (ignores, enables, files, Some dir)
-      else collect_files ~segs ~ignores ~enables ~files
+      else collect_files ~segs:upper_segs ~ignores ~enables ~files
 
 let read_config_file conf filename_kind =
   match filename_kind with
