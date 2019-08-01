@@ -60,14 +60,6 @@ module Make (C : CONFIG) = struct
   let deprecated_doc ~deprecated =
     if deprecated then " Warning: This option is deprecated." else ""
 
-  let generated_choice_docv ~all =
-    let open Format in
-    asprintf "@[<1>{%a}@]"
-      (pp_print_list
-         ~pp_sep:(fun fs () -> fprintf fs "@,|")
-         (fun fs (v, _, _) -> fprintf fs "%s" v))
-      all
-
   let generated_flag_doc ~allow_inline ~doc ~section ~deprecated =
     Format.sprintf "%s%s%s" doc
       (in_attributes ~section allow_inline)
@@ -79,18 +71,6 @@ module Make (C : CONFIG) = struct
     Format.sprintf "%s The default value is $(b,%s).%s%s" doc default
       (in_attributes ~section allow_inline)
       (deprecated_doc ~deprecated)
-
-  let generated_choice_doc conv ~allow_inline ~all ~doc ~section ~default
-      ~deprecated =
-    let open Format in
-    let doc =
-      asprintf "%s %a" doc
-        (pp_print_list
-           ~pp_sep:(fun fs () -> fprintf fs "@,")
-           (fun fs (_, _, d) -> fprintf fs "%s" d))
-        all
-    in
-    generated_doc conv ~allow_inline ~doc ~section ~default ~deprecated
 
   let section_name = function
     | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
@@ -135,6 +115,10 @@ module Make (C : CONFIG) = struct
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
       update get_value =
     let open Cmdliner in
+    let doc =
+      generated_doc converter ~allow_inline ~doc ~section ~default
+        ~deprecated
+    in
     let docs = section_name section in
     let term =
       Arg.(value & opt (some converter) None & info names ~doc ~docs ~docv)
@@ -167,20 +151,22 @@ module Make (C : CONFIG) = struct
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let conv = Arg.enum opt_names in
     let doc =
-      generated_choice_doc conv ~allow_inline ~all ~doc ~section ~default
-        ~deprecated
+      let open Format in
+      asprintf "%s %a" doc
+        (pp_print_list
+           ~pp_sep:(fun fs () -> fprintf fs "@,")
+           (fun fs (_, _, d) -> fprintf fs "%s" d))
+        all
     in
-    let docv = generated_choice_docv ~all in
+    let docv =
+      let open Format in
+      asprintf "@[<1>{%a}@]"
+        (pp_print_list
+           ~pp_sep:(fun fs () -> fprintf fs "@,|")
+           (fun fs (v, _, _) -> fprintf fs "%s" v))
+        all
+    in
     any conv ~default ~docv ~names ~doc ~section ~allow_inline ~deprecated
-
-  let any converter ~default ~docv ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false) =
-    let doc =
-      generated_doc converter ~allow_inline ~doc ~section ~default
-        ~deprecated
-    in
-    any converter ~default ~docv ~names ~doc ~section ~allow_inline
-      ~deprecated
 
   let update_from config name from =
     let is_profile_option_name x =
