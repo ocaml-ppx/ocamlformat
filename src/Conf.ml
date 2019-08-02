@@ -398,7 +398,7 @@ module Formatting = struct
        $(b,cases-matching-exp-indent) and $(b,nested-match) options."
     in
     let names = ["cases-exp-indent"] in
-    C.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
+    C.any Arg.int ~names ~default:4 ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with cases_exp_indent= x})
       (fun conf -> conf.cases_exp_indent)
 
@@ -463,7 +463,7 @@ module Formatting = struct
       "Add $(docv) spaces before doc comments in type declarations."
     in
     let names = ["doc-comments-padding"] in
-    C.int ~names ~default:2 ~doc ~docv ~section
+    C.any Arg.int ~names ~default:2 ~doc ~docv ~section
       (fun conf x -> {conf with doc_comments_padding= x})
       (fun conf -> conf.doc_comments_padding)
 
@@ -535,7 +535,7 @@ module Formatting = struct
       "Indentation of items inside extension nodes ($(docv) columns)."
     in
     let names = ["extension-indent"] in
-    C.int ~names ~default:2 ~doc ~docv ~section
+    C.any Arg.int ~names ~default:2 ~doc ~docv ~section
       (fun conf x -> {conf with extension_indent= x})
       (fun conf -> conf.extension_indent)
 
@@ -572,7 +572,7 @@ module Formatting = struct
     let docv = "COLS" in
     let doc = "Indentation of function cases ($(docv) columns)." in
     let names = ["function-indent"] in
-    C.int ~names ~default:2 ~doc ~docv ~section
+    C.any Arg.int ~names ~default:2 ~doc ~docv ~section
       (fun conf x -> {conf with function_indent= x})
       (fun conf -> conf.function_indent)
 
@@ -628,7 +628,7 @@ module Formatting = struct
        by another `let`."
     in
     let names = ["indent-after-in"] in
-    C.int ~names ~default:0 ~doc ~docv ~section ~allow_inline:false
+    C.any Arg.int ~names ~default:0 ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with indent_after_in= x})
       (fun conf -> conf.indent_after_in)
 
@@ -726,7 +726,7 @@ module Formatting = struct
        not fit on a single line."
     in
     let names = ["let-binding-indent"] in
-    C.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
+    C.any Arg.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with let_binding_indent= x})
       (fun conf -> conf.let_binding_indent)
 
@@ -789,7 +789,7 @@ module Formatting = struct
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
-    C.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~section
+    C.any Arg.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~section
       ~allow_inline:false
       (fun conf x -> {conf with margin= x})
       (fun conf -> conf.margin)
@@ -798,7 +798,7 @@ module Formatting = struct
     let docv = "COLS" in
     let doc = "Indentation of match/try cases ($(docv) columns)." in
     let names = ["match-indent"] in
-    C.int ~names ~default:0 ~doc ~docv ~section
+    C.any Arg.int ~names ~default:0 ~doc ~docv ~section
       (fun conf x -> {conf with match_indent= x})
       (fun conf -> conf.match_indent)
 
@@ -827,7 +827,10 @@ module Formatting = struct
       "Maximum offset ($(docv) columns) added to a new line in addition to \
        the offset of the previous line."
     in
-    C.int_opt ~names:["max-indent"] ~doc ~docv ~section ~allow_inline:false
+    C.any
+      Arg.(some int)
+      ~names:["max-indent"] ~doc ~docv ~section ~default:None
+      ~allow_inline:false
       (fun conf x -> {conf with max_indent= x})
       (fun conf -> conf.max_indent)
 
@@ -1019,7 +1022,7 @@ module Formatting = struct
        columns)."
     in
     let names = ["stritem-extension-indent"] in
-    C.int ~names ~default:0 ~doc ~docv ~section
+    C.any Arg.int ~names ~default:0 ~doc ~docv ~section
       (fun conf x -> {conf with stritem_extension_indent= x})
       (fun conf -> conf.stritem_extension_indent)
 
@@ -1047,7 +1050,7 @@ module Formatting = struct
        fit on a single line."
     in
     let names = ["type-decl-indent"] in
-    C.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
+    C.any Arg.int ~names ~default:2 ~doc ~docv ~section ~allow_inline:false
       (fun conf x -> {conf with type_decl_indent= x})
       (fun conf -> conf.type_decl_indent)
 
@@ -1137,7 +1140,7 @@ let max_iters =
     "Fail if output of formatting does not stabilize within $(docv) \
      iterations. May be set in $(b,.ocamlformat)."
   in
-  C.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~section
+  C.any Arg.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~section
     (fun conf x -> {conf with max_iters= x})
     (fun conf -> conf.max_iters)
 
@@ -1574,7 +1577,7 @@ let (_profile : t option C.t) =
       , Some janestreet_profile
       , "The $(b,janestreet) profile is used at Jane Street." ) ]
   in
-  C.choice ~names ~all ~doc ~section ~has_default:false
+  C.choice ~names ~all ~doc ~section
     (fun conf p ->
       selected_profile_ref := p ;
       Option.value p ~default:conf)

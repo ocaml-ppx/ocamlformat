@@ -9,10 +9,10 @@ Warning 47: illegal payload for attribute 'ocamlformat'.
 Invalid format "string expected"
 File "option.ml", line 28, characters 3-14:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-Invalid value for if-then-else: "Invalid value 'bad', expecting 'compact' or 'fit-or-vertical' or 'keyword-first' or 'k-r'"
+Invalid value for if-then-else: "invalid value `bad', expected one of `compact', `fit-or-vertical', `keyword-first' or `k-r'"
 File "option.ml", line 39, characters 14-25:
 Warning 47: illegal payload for attribute 'ocamlformat'.
-Invalid value for if-then-else: "Invalid value 'bad', expecting 'compact' or 'fit-or-vertical' or 'keyword-first' or 'k-r'"
+Invalid value for if-then-else: "invalid value `bad', expected one of `compact', `fit-or-vertical', `keyword-first' or `k-r'"
 let _ =
   if b
   then e

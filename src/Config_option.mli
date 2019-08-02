@@ -36,14 +36,12 @@ module Make (C : CONFIG) : sig
 
   val section_name : [`Formatting | `Operational] -> string
 
-  val choice :
-    ?has_default:bool -> all:(string * 'a * string) list -> 'a option_decl
+  val choice : all:(string * 'a * string) list -> 'a option_decl
 
   val flag : default:bool -> bool option_decl
 
-  val int : default:int -> docv:string -> int option_decl
-
-  val int_opt : docv:string -> int option option_decl
+  val any :
+    'a Cmdliner.Arg.conv -> default:'a -> docv:string -> 'a option_decl
 
   val default : 'a t -> 'a
 

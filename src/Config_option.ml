@@ -29,7 +29,7 @@ module Make (C : CONFIG) = struct
 
   type 'a t =
     { names: string list
-    ; parse: string -> ('a, string) Result.t
+    ; parse: string -> ('a, [`Msg of string]) Result.t
     ; update: config -> 'a -> config
     ; allow_inline: bool
     ; cmdline_get: unit -> 'a option
@@ -60,46 +60,15 @@ module Make (C : CONFIG) = struct
   let deprecated_doc ~deprecated =
     if deprecated then " Warning: This option is deprecated." else ""
 
-  let generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default
-      ~deprecated =
-    let open Format in
-    let default =
-      if has_default then
-        asprintf "The default value is $(b,%a)."
-          (fun fs (v, _, _) -> fprintf fs "%s" v)
-          (List.hd_exn all)
-      else ""
-    in
-    asprintf "%s %a %s%s%s" doc
-      (pp_print_list
-         ~pp_sep:(fun fs () -> fprintf fs "@,")
-         (fun fs (_, _, d) -> fprintf fs "%s" d))
-      all default
-      (in_attributes ~section allow_inline)
-      (deprecated_doc ~deprecated)
-
-  let generated_choice_docv ~all =
-    let open Format in
-    asprintf "@[<1>{%a}@]"
-      (pp_print_list
-         ~pp_sep:(fun fs () -> fprintf fs "@,|")
-         (fun fs (v, _, _) -> fprintf fs "%s" v))
-      all
-
   let generated_flag_doc ~allow_inline ~doc ~section ~deprecated =
     Format.sprintf "%s%s%s" doc
       (in_attributes ~section allow_inline)
       (deprecated_doc ~deprecated)
 
-  let generated_int_doc ~allow_inline ~doc ~section ~default ~deprecated =
-    let default = Format.sprintf "The default value is $(b,%i)." default in
-    Format.sprintf "%s %s%s%s" doc default
-      (in_attributes ~section allow_inline)
-      (deprecated_doc ~deprecated)
-
-  let generated_opt_doc ~allow_inline ~doc ~section ~deprecated =
-    let default = "The default value is $(b,none)." in
-    Format.sprintf "%s %s%s%s" doc default
+  let generated_doc conv ~allow_inline ~doc ~section ~default ~deprecated =
+    let default = Format.asprintf "%a" (Arg.conv_printer conv) default in
+    let default = if String.is_empty default then "none" else default in
+    Format.sprintf "%s The default value is $(b,%s).%s%s" doc default
       (in_attributes ~section allow_inline)
       (deprecated_doc ~deprecated)
 
@@ -108,56 +77,6 @@ module Make (C : CONFIG) = struct
     | `Operational -> Cmdliner.Manpage.s_options
 
   let from = `Default
-
-  let choice ?(has_default = true) ~all ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
-      update get_value =
-    let _, default, _ = List.hd_exn all in
-    let doc =
-      generated_choice_doc ~allow_inline ~all ~doc ~section ~has_default
-        ~deprecated
-    in
-    let docv = generated_choice_docv ~all in
-    let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
-    let to_string v' =
-      List.find_map_exn all ~f:(fun (str, v, _) ->
-          if Poly.(v = v') then Some str else None)
-    in
-    let docs = section_name section in
-    let term =
-      Arg.(
-        value
-        & opt (some (enum opt_names)) None
-        & info names ~doc ~docv ~docs)
-    in
-    let parse s =
-      match
-        List.find_map all ~f:(fun (n, v, _) ->
-            Option.some_if (String.equal n s) v)
-      with
-      | Some v -> Ok v
-      | None ->
-          Error
-            (Printf.sprintf "Invalid value '%s', expecting %s" s
-               ( List.map all ~f:(fun (s, _, _) -> Format.sprintf "'%s'" s)
-               |> String.concat ~sep:" or " ))
-    in
-    let r = mk ~default:None term in
-    let cmdline_get () = !r in
-    let opt =
-      { names
-      ; parse
-      ; update
-      ; cmdline_get
-      ; allow_inline
-      ; default
-      ; to_string
-      ; get_value
-      ; from
-      ; deprecated }
-    in
-    store := Pack opt :: !store ;
-    opt
 
   let flag ~default ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
@@ -173,13 +92,7 @@ module Make (C : CONFIG) = struct
     let doc = generated_flag_doc ~allow_inline ~doc ~section ~deprecated in
     let docs = section_name section in
     let term = Arg.(value & flag & info names_for_cmdline ~doc ~docs) in
-    let parse s =
-      try Ok (Bool.of_string s)
-      with _ ->
-        Error
-          (Format.sprintf "invalid value '%s', expecting 'true' or 'false'"
-             s)
-    in
+    let parse = Arg.(conv_parser bool) in
     let r = mk ~default term in
     let to_string = Bool.to_string in
     let cmdline_get () = if !r then Some (not invert_flag) else None in
@@ -198,24 +111,24 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  let int ~default ~docv ~names ~doc ~section
+  let any converter ~default ~docv ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
       update get_value =
     let open Cmdliner in
     let doc =
-      generated_int_doc ~allow_inline ~doc ~section ~default ~deprecated
+      generated_doc converter ~allow_inline ~doc ~section ~default
+        ~deprecated
     in
     let docs = section_name section in
     let term =
-      Arg.(value & opt (some int) None & info names ~doc ~docs ~docv)
+      Arg.(value & opt (some converter) None & info names ~doc ~docs ~docv)
     in
-    let parse s =
-      try Ok (Int.of_string s)
-      with _ ->
-        Error (Format.sprintf "invalid value '%s', expecting an integer" s)
-    in
+    let parse s = Arg.conv_parser converter s in
     let r = mk ~default:None term in
-    let to_string = Int.to_string in
+    let to_string x =
+      let s = Format.asprintf "%a%!" (Arg.conv_printer converter) x in
+      if String.is_empty s then "none" else s
+    in
     let cmdline_get () = !r in
     let opt =
       { names
@@ -232,46 +145,28 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  let opt ~type_ ~type_name ~of_string ~to_string ~docv ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
-      update get_value =
-    let open Cmdliner in
-    let default = None in
-    let doc = generated_opt_doc ~allow_inline ~doc ~section ~deprecated in
-    let docs = section_name section in
-    let term =
-      Arg.(
-        value & opt (some (some type_)) None & info names ~doc ~docs ~docv)
+  let choice ~all ~names ~doc ~section
+      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false) =
+    let _, default, _ = List.hd_exn all in
+    let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
+    let conv = Arg.enum opt_names in
+    let doc =
+      let open Format in
+      asprintf "%s %a" doc
+        (pp_print_list
+           ~pp_sep:(fun fs () -> fprintf fs "@,")
+           (fun fs (_, _, d) -> fprintf fs "%s" d))
+        all
     in
-    let parse s =
-      if String.equal s "none" then Ok None
-      else
-        try Ok (Some (of_string s))
-        with _ ->
-          Error
-            (Format.sprintf "invalid value '%s', expecting %s" s type_name)
+    let docv =
+      let open Format in
+      asprintf "@[<1>{%a}@]"
+        (pp_print_list
+           ~pp_sep:(fun fs () -> fprintf fs "@,|")
+           (fun fs (v, _, _) -> fprintf fs "%s" v))
+        all
     in
-    let r = mk ~default term in
-    let to_string = Option.value_map ~default:"none" ~f:to_string in
-    let cmdline_get () = !r in
-    let opt =
-      { names
-      ; parse
-      ; update
-      ; cmdline_get
-      ; allow_inline
-      ; default
-      ; to_string
-      ; get_value
-      ; from
-      ; deprecated }
-    in
-    store := Pack opt :: !store ;
-    opt
-
-  let int_opt =
-    opt ~type_:Arg.int ~type_name:"integer" ~of_string:Int.of_string
-      ~to_string:Int.to_string
+    any conv ~default ~docv ~names ~doc ~section ~allow_inline ~deprecated
 
   let update_from config name from =
     let is_profile_option_name x =
@@ -313,7 +208,7 @@ module Make (C : CONFIG) = struct
                 let config = update config packed_value in
                 update_from config name from ;
                 Some (Ok config)
-            | Error error -> Some (Error (`Bad_value (name, error)))
+            | Error (`Msg error) -> Some (Error (`Bad_value (name, error)))
         else None)
     |> Option.value ~default:(Error (`Unknown (name, value)))
 

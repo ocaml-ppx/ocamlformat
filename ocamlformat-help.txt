@@ -489,7 +489,8 @@ OPTIONS
            sparse profile is similar to ocamlformat but opts for a generally
            more sparse code style. The conventional profile aims to be as
            familiar and "conventional" appearing as the available options
-           allow. The janestreet profile is used at Jane Street. 
+           allow. The janestreet profile is used at Jane Street. The default
+           value is ocamlformat.
 
        --print-config
            Print the configuration determined by the environment variable,
