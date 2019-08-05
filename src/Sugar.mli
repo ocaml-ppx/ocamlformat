@@ -93,9 +93,9 @@ val ite :
     if-then-else expressions, e.g.:
 
     {[
-        if c1 then e1
-        else if c2 then e2
-        else e3
+      if c1 then e1
+      else if c2 then e2
+      else e3
     ]}
 
     will return the following list:
@@ -145,11 +145,9 @@ val polynewtype :
     pattern [pat] with body [exp]. e.g.:
 
     {[
-        let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
+      let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
     ]}
 
     Can be rewritten as:
 
-    {[
-        let f: type r s. r s t = e
-    ]} *)
+    {[ let f: type r s. r s t = e ]} *)

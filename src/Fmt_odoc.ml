@@ -9,182 +9,249 @@
  *                                                                    *
  **********************************************************************)
 
-open Octavius.Types
 open Fmt
+open Odoc_parser.Ast
+module Location_ = Odoc_model.Location_
 
-let escape_brackets =
-  String.Escaping.escape ~escapeworthy:['['; ']'] ~escape_char:'\\'
+(** Escape characters if they are not already escaped. [escapeworthy] should
+    be [true] if the character should be escaped, [false] otherwise. *)
+let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
+  let dst = Buffer.create (String.length s + 8) in
+  let prev_off = ref 0 in
+  let stash until =
+    Buffer.add_substring dst s ~pos:!prev_off ~len:(until - !prev_off)
+  in
+  let len = String.length s in
+  for i = 0 to len - 1 do
+    if
+      escapeworthy s.[i]
+      && not (String.Escaping.is_char_escaped s ~escape_char i)
+    then (
+      stash i ;
+      prev_off := i ;
+      Buffer.add_char dst escape_char )
+  done ;
+  stash len ;
+  Buffer.contents dst
 
-let escape_all =
-  String.Escaping.escape ~escapeworthy:['@'; '{'; '}'; '['; ']']
-    ~escape_char:'\\'
+let escape_brackets s =
+  let escapeworthy = function '[' | ']' -> true | _ -> false in
+  ensure_escape ~escapeworthy s
 
-let str ?(escape = true) s =
-  let escape = if escape then Staged.unstage escape_all else Fn.id in
-  s
-  |> String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
+let escape_all s =
+  let escapeworthy = function
+    | '@' | '{' | '}' | '[' | ']' -> true
+    | _ -> false
+  in
+  ensure_escape ~escapeworthy s
+
+let split_on_whitespaces =
+  String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
+
+(** Escape special characters and normalize whitespaces *)
+let str_normalized ?(escape = escape_all) s =
+  split_on_whitespaces s
   |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
 
-let verbatim s = Fmt.str s
+let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
-let fmt_ref_kind = function
-  | RK_element -> str "!"
-  | RK_module -> str "!module:"
-  | RK_module_type -> str "!modtype:"
-  | RK_class -> str "!class:"
-  | RK_class_type -> str "!classtype:"
-  | RK_value -> str "!val:"
-  | RK_type -> str "!type:"
-  | RK_exception -> str "!exception:"
-  | RK_attribute -> str "!attribute:"
-  | RK_method -> str "!method:"
-  | RK_section -> str "!section:"
-  | RK_recfield -> str "!recfield:"
-  | RK_const -> str "!const:"
-  | RK_link -> str ":"
-  | RK_custom s -> str "!" $ str s $ str ":"
+let ign_loc ~f with_loc = f with_loc.Location_.value
 
-let rec fmt_style style txt =
+let fmt_verbatim_block s =
+  let force_break = String.contains s '\n' in
+  let content =
+    (* Literal newline to avoid indentation *)
+    if force_break then wrap "\n" "@\n" (str s)
+    else
+      fits_breaks " " "\n"
+      $ str (String.strip s)
+      $ fits_breaks " " ~hint:(0, 0) ""
+  in
+  hvbox 0 (wrap "{v" "v}" content)
+
+let fmt_code_block s =
+  let fmt_line ~first ~last:_ l =
+    let l = String.rstrip l in
+    if first then str l
+    else if String.length l = 0 then str "\n"
+    else fmt "@," $ str l
+  in
+  let lines = String.split_lines s in
+  let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
+  box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
+
+let fmt_reference = ign_loc ~f:str_normalized
+
+(* Decide between using light and heavy syntax for lists *)
+let list_should_use_heavy_syntax items =
+  let heavy_nestable_block_elements = function
+    (* More than one element or contains a list *)
+    | [{Location_.value= `List _; _}] | _ :: _ :: _ -> true
+    | [] | [_] -> false
+  in
+  List.exists items ~f:heavy_nestable_block_elements
+
+(* Decide if should break between two elements *)
+let block_element_should_break elem next =
+  match (elem, next) with
+  (* Mandatory breaks *)
+  | `List (_, _, _), _ | `Paragraph _, `Paragraph _ -> true
+  (* Arbitrary breaks *)
+  | (`Paragraph _ | `Heading _), _ | _, (`Paragraph _ | `Heading _) -> true
+  | _, _ -> false
+
+(* Format a list of block_elements separated by newlines Inserts blank line
+   depending on [block_element_should_break] *)
+let list_block_elem elems f =
+  list_pn elems (fun ?prev:_ elem ?next ->
+      let elem = elem.Location_.value in
+      let break =
+        match next with
+        | Some {Location_.value= n; _}
+          when block_element_should_break
+                 (elem :> block_element)
+                 (n :> block_element) ->
+            fmt "\n@\n"
+        | Some _ -> fmt "@\n"
+        | None -> fmt ""
+      in
+      f elem $ break)
+
+(* Format each element with [fmt_elem] *)
+let fmt_styled style fmt_elem elems =
   let s =
     match style with
-    | SK_bold -> "b"
-    | SK_italic -> "i"
-    | SK_emphasize -> "e"
-    | SK_center -> "C"
-    | SK_left -> "L"
-    | SK_right -> "R"
-    | SK_superscript -> "^"
-    | SK_subscript -> "_"
-    | SK_custom s -> s
+    | `Bold -> "b"
+    | `Italic -> "i"
+    | `Emphasis -> "e"
+    | `Superscript -> "^"
+    | `Subscript -> "_"
   in
   hovbox 0
     (wrap "{" "}"
-       (Fmt.str s $ fmt_if (not (List.is_empty txt)) "@ " $ fmt_text txt))
+       ( str_normalized s
+       $ fmt_if_not_empty elems "@ "
+       $ list elems "" fmt_elem ))
 
-and fmt_text_elt = function
-  | Raw s -> str s
-  | Code s ->
-      hovbox 0
-        (wrap "[" "]"
-           (str ~escape:false ((Staged.unstage escape_brackets) s)))
-  | PreCode s -> hovbox 0 (wrap "{[\n" "@\n]}" (hovbox 0 (verbatim s)))
-  | Verbatim s -> hovbox 0 (wrap "{v\n" "@\nv}" (hovbox 0 (verbatim s)))
-  | Style (st, txt) -> fmt_style st txt
-  | List l -> fmt_list `List l
-  | Enum l -> fmt_list `Enum l
-  | Newline -> fmt "\n@\n"
-  | Title (i, None, txt) ->
-      hovbox 0
-        (wrap "{" "}" (str (Int.to_string i) $ fmt "@ " $ fmt_text txt))
-  | Title (i, Some s, txt) ->
-      hovbox 0
-        (wrap "{" "}"
-           ( str (Int.to_string i)
-           $ str ":" $ str s $ fmt "@ " $ fmt_text txt ))
-  | Ref (rk, s, None) -> hovbox 0 (wrap "{" "}" (fmt_ref_kind rk $ str s))
-  | Ref (rk, s, Some txt) ->
-      hovbox 0
-        (wrap "{" "}"
-           ( hovbox 0 (wrap "{" "}" (fmt_ref_kind rk $ str s))
-           $ fmt "@ " $ fmt_text txt ))
-  | Special_ref (SRK_module_list l) ->
-      hvbox 0 (wrap "{!modules:" "}" (list l "@," str))
-  | Special_ref SRK_index_list -> str "{!indexlist}"
-  | Target (s, l) ->
-      let target = Option.value_map s ~default:"" ~f:(fun s -> s ^ ":") in
-      hovbox 0
-        (wrap "{" "}"
-           (char '%' $ str target $ str ~escape:false l $ char '%'))
+let rec fmt_inline_element : inline_element -> Fmt.t = function
+  | `Space _ -> fmt "@ "
+  | `Word w ->
+      (* Escape lines starting with '+' or '-' *)
+      let escape =
+        fmt_if_k
+          (String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-'))
+          (if_newline "\\")
+      in
+      escape $ str_normalized w
+  | `Code_span s ->
+      let s = escape_brackets s in
+      hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
+  | `Raw_markup (lang, s) ->
+      let lang =
+        match lang with
+        | Some l -> str_normalized l $ str ":"
+        | None -> noop
+      in
+      wrap "{%%" "%%}" (lang $ str s)
+  | `Styled (style, elems) ->
+      fmt_styled style (ign_loc ~f:fmt_inline_element) elems
+  | `Reference (_kind, ref, txt) ->
+      let ref = fmt "{!" $ fmt_reference ref $ fmt "}" in
+      if List.is_empty txt then ref
+      else
+        hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
+  | `Link (url, txt) -> (
+      let url = wrap "{:" "}" (str_normalized url) in
+      match txt with
+      | [] -> url
+      | txt -> wrap "{" "}" (url $ fmt "@ " $ fmt_inline_elements txt) )
 
-and fmt_list kind l =
-  let light_syntax =
-    let line_start =
-      fmt (match kind with `List -> "- " | `Enum -> "+ ")
-    in
-    let fmt_item txt = hovbox 2 (line_start $ fmt_text txt) in
-    vbox 0 (list l "@," fmt_item)
+and fmt_inline_elements txt = list txt "" (ign_loc ~f:fmt_inline_element)
+
+and fmt_nestable_block_element : nestable_block_element -> t = function
+  | `Paragraph elems -> hovbox 0 (fmt_inline_elements elems)
+  | `Code_block s -> fmt_code_block s
+  | `Verbatim s -> fmt_verbatim_block s
+  | `Modules mods ->
+      hovbox 0
+        (wrap "{!modules:@," "@,}"
+           (list mods "@ " (fun ref -> fmt_reference ref)))
+  | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
+      fmt_list_heavy k items
+  | `List (k, _syntax, items) -> fmt_list_light k items
+
+and fmt_list_heavy kind items =
+  let fmt_item elems =
+    let box = match elems with [_] -> hvbox 3 | _ -> vbox 3 in
+    box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements elems))
+  and start : s =
+    match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"
   in
-  let heavy_syntax =
-    let fmt_item txt = hovbox 0 (wrap "{- " "}" (fmt_text txt)) in
-    let start : _ format =
-      match kind with `List -> "{ul@," | `Enum -> "{ol@,"
-    in
-    vbox 1 (wrap start "}" (list l "@," fmt_item))
+  vbox 1 (wrap start "@;<1 -1>}" (list items "@," fmt_item))
+
+and fmt_list_light kind items =
+  let line_start =
+    match kind with `Unordered -> fmt "- " | `Ordered -> fmt "+ "
   in
-  let print_and_parse fmt =
-    let str = Format.asprintf "\n%t" fmt in
-    Octavius.parse (Lexing.from_string str)
+  let fmt_item elems =
+    line_start $ vbox 0 (fmt_nestable_block_elements elems)
   in
-  match (print_and_parse light_syntax, print_and_parse heavy_syntax) with
-  | Ok x, Ok y when Poly.(x = y) -> light_syntax
-  | Ok _, Ok _ -> heavy_syntax
-  | Error _, _ | _, Error _ -> heavy_syntax
+  vbox 0 (list items "@," fmt_item)
 
-and fmt_newline = close_box $ fmt "\n@\n" $ open_hovbox 0
+and fmt_nestable_block_elements ?(prefix = noop) = function
+  | [] -> noop
+  | elems -> prefix $ list_block_elem elems fmt_nestable_block_element
 
-and fmt_text txt =
-  let no_space_before = ['.'; ':'; ';'; ','; '-'; ')'; '\''] in
-  let no_space_before c = List.mem no_space_before c ~equal:Char.equal in
-  let is_space c = List.mem [' '; '\r'; '\t'; '\n'] c ~equal:Char.equal in
-  let f ?prev:_ curr ?next =
-    match next with
-    | Some (Raw " ") -> fmt_text_elt curr
-    | Some (Raw x) when no_space_before x.[0] -> fmt_text_elt curr
-    | Some Newline -> fmt_text_elt curr
-    | Some next -> (
-      match curr with
-      | Newline -> fmt_newline
-      | List _ | Enum _ -> fmt_text_elt curr $ fmt_newline
-      | Raw x when not (is_space x.[String.length x - 1]) -> (
-          fmt_text_elt curr
-          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> noop )
-      | Code _ -> (
-          fmt_text_elt curr
-          $
-          match next with
-          | List _ | Enum _ -> fmt "@\n"
-          | Raw x -> fmt_if (is_space x.[0]) "@ "
-          | _ -> fmt "@ " )
-      | _ -> (
-          fmt_text_elt curr
-          $ match next with List _ | Enum _ -> fmt "@\n" | _ -> fmt "@ " ) )
-    | None -> fmt_text_elt curr
-  in
-  hovbox 0 (list_pn txt f)
+let at = char '@'
 
-let at () = char '@'
+let space = fmt "@ "
 
-let fmt_see_ref = function
-  | See_url s | See_file s | See_doc s -> char '<' $ Fmt.str s $ char '>'
+let fmt_tag_see wrap sr txt =
+  at $ fmt "see@ "
+  $ wrap (str_normalized sr)
+  $ fmt_nestable_block_elements ~prefix:space txt
 
-let fmt_tag t =
-  hovbox 0
-    ( match t with
-    | Author s -> at () $ fmt "author@ " $ str s
-    | Version s -> at () $ fmt "version@ " $ str s
-    | See (sr, txt) ->
-        at () $ fmt "see@ " $ fmt_see_ref sr $ fmt "@ " $ fmt_text txt
-    | Since s -> at () $ fmt "since@ " $ str s
-    | Before (s, txt) ->
-        at () $ fmt "before@ " $ str s $ fmt "@ " $ fmt_text txt
-    | Deprecated txt -> at () $ fmt "deprecated@ " $ fmt_text txt
-    | Param (s, txt) ->
-        at () $ fmt "param@ " $ str s $ fmt "@ " $ fmt_text txt
-    | Raised_exception (s, txt) ->
-        at () $ fmt "raise@ " $ str s $ fmt "@ " $ fmt_text txt
-    | Return_value txt -> at () $ fmt "return@ " $ fmt_text txt
-    | Inline -> at () $ str "inline"
-    | Custom (s, []) -> at () $ str s
-    | Custom (s, txt) -> at () $ str s $ fmt "@ " $ fmt_text txt
-    | Canonical s -> at () $ fmt "canonical@ " $ str s )
+let fmt_tag : tag -> Fmt.t = function
+  | `Author s -> at $ fmt "author@ " $ str_normalized s
+  | `Version s -> at $ fmt "version@ " $ str_normalized s
+  | `See (`Url, sr, txt) -> fmt_tag_see (wrap "<" ">") sr txt
+  | `See (`File, sr, txt) -> fmt_tag_see (wrap "'" "'") sr txt
+  | `See (`Document, sr, txt) -> fmt_tag_see (wrap "\"" "\"") sr txt
+  | `Since s -> at $ fmt "since@ " $ str_normalized s
+  | `Before (s, txt) ->
+      at $ fmt "before@ " $ str_normalized s
+      $ fmt_nestable_block_elements ~prefix:space txt
+  | `Deprecated txt ->
+      at $ fmt "deprecated" $ fmt_nestable_block_elements ~prefix:space txt
+  | `Param (s, txt) ->
+      at $ fmt "param@ " $ str_normalized s
+      $ fmt_nestable_block_elements ~prefix:space txt
+  | `Raise (s, txt) ->
+      at $ fmt "raise@ " $ str_normalized s
+      $ fmt_nestable_block_elements ~prefix:space txt
+  | `Return txt ->
+      at $ fmt "return" $ fmt_nestable_block_elements ~prefix:space txt
+  | `Inline -> at $ str "inline"
+  | `Open -> at $ str "open"
+  | `Closed -> at $ str "closed"
+  | `Canonical ref -> at $ fmt "canonical@ " $ fmt_reference ref
 
-let fmt (txt, tags) =
-  if List.is_empty tags then hovbox 0 (fmt_text txt)
-  else if List.is_empty txt then vbox 0 (list tags "@;" fmt_tag)
-  else
-    vbox 0
-      (hovbox 0 (fmt_text txt) $ fmt "@;" $ vbox 0 (list tags "@;" fmt_tag))
+let fmt_block_element = function
+  | `Tag tag -> hovbox 0 (fmt_tag tag)
+  | `Heading (lvl, lbl, elems) ->
+      let lvl = Int.to_string lvl in
+      let lbl =
+        match lbl with
+        | Some lbl -> str ":" $ str_normalized lbl
+        | None -> fmt ""
+      in
+      hovbox 0
+        (wrap "{" "}" (str lvl $ lbl $ fmt "@ " $ fmt_inline_elements elems))
+  | #nestable_block_element as elm ->
+      hovbox 0 (fmt_nestable_block_element elm)
+
+let fmt (docs : docs) = vbox 0 (list_block_elem docs fmt_block_element)
 
 let diff c x y =
   let norm z =
@@ -192,3 +259,8 @@ let diff c x y =
     Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)
+
+let is_tag_only =
+  List.for_all ~f:(function
+    | {Location_.value= `Tag _; _} -> true
+    | _ -> false)

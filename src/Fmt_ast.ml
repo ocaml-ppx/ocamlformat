@@ -432,14 +432,16 @@ let fmt_label lbl sep =
 
 let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
 
-let parse_docstring str_cmt =
-  match Octavius.parse (Lexing.from_string str_cmt) with
-  | Error _ -> Error ()
-  | Ok parsed as ok ->
-      if Conf.debug then (
-        Octavius.print Caml.Format.str_formatter parsed ;
-        Caml.Format.eprintf "%s%!" (Caml.Format.flush_str_formatter ()) ) ;
-      ok
+let parse_docstring ~loc text =
+  let location = loc.Location.loc_start in
+  let location =
+    { location with
+      pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
+  in
+  let parsed = Odoc_parser.parse_comment_raw ~location ~text in
+  match parsed with
+  | {value; warnings= []} -> Ok value
+  | {warnings; _} -> Error (List.map warnings ~f:Odoc_model.Error.to_string)
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   let space_i i =
@@ -449,13 +451,25 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     in
     0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
   in
+  let fmt_parsed parsed =
+    fmt_if (space_i 0) " "
+    $ Fmt_odoc.fmt parsed
+    $ fmt_if (space_i (String.length str_cmt - 1)) " "
+  in
+  let fmt_raw str_cmt =
+    if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
+  in
   let doc =
     match parsed with
-    | Ok parsed when c.conf.parse_docstrings ->
-        fmt_if (space_i 0) " "
-        $ Fmt_odoc.fmt parsed
-        $ fmt_if (space_i (String.length str_cmt - 1)) " "
-    | _ -> if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
+    | _ when not c.conf.parse_docstrings -> fmt_raw str_cmt
+    | Ok parsed -> fmt_parsed parsed
+    | Error msgs ->
+        if not c.conf.quiet then
+          List.iter msgs
+            ~f:
+              (Caml.Format.eprintf
+                 "Warning: Invalid documentation comment:@,%s\n%!") ;
+        fmt_raw str_cmt
   in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0
@@ -472,7 +486,7 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ?prev:_ ({txt; loc}, floating) ?next ->
       let epi = docstring_epi ?standalone ?next ~floating ?epi in
-      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring txt))
+      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
 
 let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
     doc2 =
@@ -483,7 +497,9 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
   | None, None -> (noop, noop)
   | None, Some doc | Some doc, None -> (
       let is_tag_only =
-        List.for_all ~f:(function Ok ([], _), _ -> true | _ -> false)
+        List.for_all ~f:(function
+          | Ok es, _ -> Fmt_odoc.is_tag_only es
+          | _ -> false)
       in
       let fmt_doc ?epi ?pro doc =
         list_pn doc (fun ?prev:_ (parsed, ({txt; loc}, floating)) ?next ->
@@ -493,7 +509,8 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
       in
       let floating_doc, doc =
         doc
-        |> List.map ~f:(fun ((s, _) as doc) -> (parse_docstring s.txt, doc))
+        |> List.map ~f:(fun (({txt; loc}, _) as doc) ->
+               (parse_docstring ~loc txt, doc))
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in

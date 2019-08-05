@@ -326,9 +326,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
                 let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
                 internal_error (`Comment_dropped l) [] ) ;
             let is_docstring s =
-              conf.Conf.parse_docstrings
-              && Char.equal s.[0] '*'
-              && Lexing.from_string s |> Octavius.parse |> Result.is_ok
+              conf.Conf.parse_docstrings && Char.equal s.[0] '*'
             in
             let old_docstrings, old_comments =
               List.partition_tf t.comments ~f:(fun (s, _) -> is_docstring s)

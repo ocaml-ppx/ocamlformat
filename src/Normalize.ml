@@ -28,109 +28,99 @@ let list f fmt l =
 
 let str fmt s = Format.fprintf fmt "%s" (comment s)
 
-let opt f fmt = function
-  | Some x -> Format.fprintf fmt "Some(%a)" f x
-  | None -> Format.fprintf fmt "None"
+let ign_loc f fmt with_loc = f fmt with_loc.Odoc_model.Location_.value
 
-open Octavius.Types
+let fpf = Format.fprintf
 
-let ref_kind fmt rk =
-  let ref_kind fmt = function
-    | RK_element -> Format.fprintf fmt "RK_element"
-    | RK_module -> Format.fprintf fmt "RK_module"
-    | RK_module_type -> Format.fprintf fmt "RK_module_type"
-    | RK_class -> Format.fprintf fmt "RK_class"
-    | RK_class_type -> Format.fprintf fmt "RK_class_type"
-    | RK_value -> Format.fprintf fmt "RK_value"
-    | RK_type -> Format.fprintf fmt "RK_type"
-    | RK_exception -> Format.fprintf fmt "RK_exception"
-    | RK_attribute -> Format.fprintf fmt "RK_attribute"
-    | RK_method -> Format.fprintf fmt "RK_method"
-    | RK_section -> Format.fprintf fmt "RK_section"
-    | RK_recfield -> Format.fprintf fmt "RK_recfield"
-    | RK_const -> Format.fprintf fmt "RK_const"
-    | RK_link -> Format.fprintf fmt "RK_link"
-    | RK_custom s -> Format.fprintf fmt "RK_custom,%a" str s
-  in
-  Format.fprintf fmt "RK(%a)" ref_kind rk
+open Odoc_parser.Ast
 
-let style fmt s =
-  let style fmt = function
-    | SK_bold -> Format.fprintf fmt "b"
-    | SK_italic -> Format.fprintf fmt "i"
-    | SK_emphasize -> Format.fprintf fmt "e"
-    | SK_center -> Format.fprintf fmt "C"
-    | SK_left -> Format.fprintf fmt "L"
-    | SK_right -> Format.fprintf fmt "R"
-    | SK_superscript -> Format.fprintf fmt "^"
-    | SK_subscript -> Format.fprintf fmt "_"
-    | SK_custom s -> Format.fprintf fmt "Custom,%a" str s
-  in
-  Format.fprintf fmt "Style(%a)" style s
+let odoc_reference = ign_loc str
 
-let rec odoc_text_elt fmt = function
-  | Raw s ->
-      let s = Format.asprintf "%a" str s in
-      if String.equal s "" then Format.fprintf fmt ""
-      else Format.fprintf fmt "Raw,%s" s
-  | Code s -> Format.fprintf fmt "Code,%a" str s
-  | PreCode s -> Format.fprintf fmt "PreCode,%a" str s
-  | Verbatim s -> Format.fprintf fmt "Verbatim,%a" str s
-  | Style (st, txt) ->
-      Format.fprintf fmt "Style,%a,%a" style st odoc_text txt
-  | List l -> Format.fprintf fmt "List,%a" (list odoc_text) l
-  | Enum l -> Format.fprintf fmt "Enum,%a" (list odoc_text) l
-  | Newline -> Format.fprintf fmt ""
-  | Title (i, s, txt) ->
-      Format.fprintf fmt "Title,%i,%a,%a" i (opt str) s odoc_text txt
-  | Ref (rk, s, txt) ->
-      Format.fprintf fmt "Ref,%a,%a,%a" ref_kind rk str s (opt odoc_text)
-        txt
-  | Special_ref (SRK_module_list l) ->
-      Format.fprintf fmt "Special_ref,SRK_module_list(%a)" (list str) l
-  | Special_ref SRK_index_list ->
-      Format.fprintf fmt "Special_ref,SRK_index_list"
-  | Target (s, l) -> Format.fprintf fmt "Target,%a,%a" (opt str) s str l
+let odoc_style fmt = function
+  | `Bold -> fpf fmt "Bold"
+  | `Italic -> fpf fmt "Italic"
+  | `Emphasis -> fpf fmt "Emphasis"
+  | `Superscript -> fpf fmt "Superscript"
+  | `Subscript -> fpf fmt "Subscript"
 
-and odoc_text fmt t = Format.fprintf fmt "%a" (list odoc_text_elt) t
+let rec odoc_inline_element fmt = function
+  | `Space _ -> ()
+  | `Word txt ->
+      (* Ignore backspace changes *)
+      let txt =
+        String.filter txt ~f:(function '\\' -> false | _ -> true)
+      in
+      fpf fmt "Word,%a" str txt
+  | `Code_span txt -> fpf fmt "Code_span,%a" str txt
+  | `Raw_markup (Some lang, txt) -> fpf fmt "Raw_html:%s,%a" lang str txt
+  | `Raw_markup (None, txt) -> fpf fmt "Raw_html,%a" str txt
+  | `Styled (style, elems) ->
+      fpf fmt "Styled,%a,%a" odoc_style style odoc_inline_elements elems
+  | `Reference (_kind, ref, content) ->
+      fpf fmt "Reference,%a,%a" odoc_reference ref odoc_inline_elements
+        content
+  | `Link (txt, content) ->
+      fpf fmt "Link,%a,%a" str txt odoc_inline_elements content
 
-let see_ref fmt sr =
-  let see_ref fmt = function
-    | See_url s -> Format.fprintf fmt "See_url,%a" str s
-    | See_file s -> Format.fprintf fmt "See_file,%a" str s
-    | See_doc s -> Format.fprintf fmt "See_doc,%a" str s
-  in
-  Format.fprintf fmt "See_ref(%a)" see_ref sr
+and odoc_inline_elements fmt elems =
+  list (ign_loc odoc_inline_element) fmt elems
 
-let odoc_tag fmt t =
-  let tag fmt = function
-    | Author s -> Format.fprintf fmt "Author,%a" str s
-    | Version s -> Format.fprintf fmt "Version,%a" str s
-    | See (sr, txt) ->
-        Format.fprintf fmt "See,%a,%a" see_ref sr odoc_text txt
-    | Since s -> Format.fprintf fmt "Since,%a" str s
-    | Before (s, txt) ->
-        Format.fprintf fmt "Before,%a,%a" str s odoc_text txt
-    | Deprecated txt -> Format.fprintf fmt "Deprecated,%a" odoc_text txt
-    | Param (s, txt) -> Format.fprintf fmt "Param,%a,%a" str s odoc_text txt
-    | Raised_exception (s, txt) ->
-        Format.fprintf fmt "Raised_exception,%a,%a" str s odoc_text txt
-    | Return_value txt -> Format.fprintf fmt "Return_value,%a" odoc_text txt
-    | Inline -> Format.fprintf fmt "Inline"
-    | Custom (s, txt) ->
-        Format.fprintf fmt "Custom,%a,%a" str s odoc_text txt
-    | Canonical s -> Format.fprintf fmt "Canonical,%a" str s
-  in
-  Format.fprintf fmt "Tag(%a)" tag t
+let rec odoc_nestable_block_element fmt : nestable_block_element -> unit =
+  function
+  | `Paragraph elms -> fpf fmt "Paragraph,%a" odoc_inline_elements elms
+  | `Code_block txt -> fpf fmt "Code_block,%a" str txt
+  | `Verbatim txt -> fpf fmt "Verbatim,%a" str txt
+  | `Modules mods -> fpf fmt "Modules,%a" (list odoc_reference) mods
+  | `List (ord, _syntax, items) ->
+      let ord = match ord with `Unordered -> "U" | `Ordered -> "O" in
+      let list_item fmt elems =
+        fpf fmt "Item(%a)" odoc_nestable_block_elements elems
+      in
+      fpf fmt "List,%s,%a" ord (list list_item) items
 
-let docstring c s =
-  if not c.Conf.parse_docstrings then comment s
+and odoc_nestable_block_elements fmt elems =
+  list (ign_loc odoc_nestable_block_element) fmt elems
+
+let odoc_tag fmt : tag -> unit = function
+  | `Author txt -> fpf fmt "Author,%a" str txt
+  | `Deprecated elems ->
+      fpf fmt "Deprecated,%a" odoc_nestable_block_elements elems
+  | `Param (p, elems) ->
+      fpf fmt "Param,%a,%a" str p odoc_nestable_block_elements elems
+  | `Raise (p, elems) ->
+      fpf fmt "Raise,%a,%a" str p odoc_nestable_block_elements elems
+  | `Return elems -> fpf fmt "Return,%a" odoc_nestable_block_elements elems
+  | `See (kind, txt, elems) ->
+      let kind =
+        match kind with `Url -> "U" | `File -> "F" | `Document -> "D"
+      in
+      fpf fmt "See,%s,%a,%a" kind str txt odoc_nestable_block_elements elems
+  | `Since txt -> fpf fmt "Since,%a" str txt
+  | `Before (p, elems) ->
+      fpf fmt "Before,%a,%a" str p odoc_nestable_block_elements elems
+  | `Version txt -> fpf fmt "Version,%a" str txt
+  | `Canonical ref -> fpf fmt "Canonical,%a" odoc_reference ref
+  | `Inline -> fpf fmt "Inline"
+  | `Open -> fpf fmt "Open"
+  | `Closed -> fpf fmt "Closed"
+
+let odoc_block_element fmt : block_element -> unit = function
+  | `Heading (lvl, lbl, content) ->
+      let lvl = Int.to_string lvl in
+      let lbl = match lbl with Some lbl -> lbl | None -> "" in
+      fpf fmt "Heading,%s,%a,%a" lvl str lbl odoc_inline_elements content
+  | `Tag tag -> fpf fmt "Tag,%a" odoc_tag tag
+  | #nestable_block_element as elm -> odoc_nestable_block_element fmt elm
+
+let odoc_docs fmt elems = list (ign_loc odoc_block_element) fmt elems
+
+let docstring c text =
+  if not c.Conf.parse_docstrings then comment text
   else
-    match Octavius.parse (Lexing.from_string s) with
-    | Ok (text, tags) ->
-        Format.asprintf "Docstring(%a,%a)%!" odoc_text text (list odoc_tag)
-          tags
-    | Error _ -> comment s
+    let location = Lexing.dummy_pos in
+    let parsed = Odoc_parser.parse_comment_raw ~location ~text in
+    Format.asprintf "Docstring(%a)%!" odoc_docs
+      parsed.Odoc_model.Error.value
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
@@ -420,7 +410,12 @@ type docstring_error =
 let moved_docstrings c get_docstrings s1 s2 =
   let d1 = get_docstrings c s1 in
   let d2 = get_docstrings c s2 in
-  let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  let equal (_, x) (_, y) =
+    let b = String.equal (docstring c x) (docstring c y) in
+    Caml.Printf.printf "Docstring equal? %b,\n%s\n%s\n" b (docstring c x)
+      (docstring c y) ;
+    b
+  in
   let unstable (x, y) = Unstable (x, y) in
   match List.zip_exn d1 d2 with
   | exception _ ->

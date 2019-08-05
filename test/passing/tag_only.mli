@@ -1,9 +1,10 @@
 open Module
-(** @deprecated  *)
+(** @deprecated *)
 
 open Module
 (** abc
-    @deprecated  *)
+
+    @deprecated *)
 
 (** @inline *)
 include sig
@@ -17,9 +18,9 @@ include module type of Module
 (** @inline *)
 
 module A : B
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 module A : sig
   type t
 end
@@ -32,31 +33,32 @@ module type A = sig
   type t
 end
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = T
 
 type t = {a: int}
-(** @deprecated  *)
+(** @deprecated *)
 
 type t = ..
-(** @deprecated  *)
+(** @deprecated *)
 
 type t
-(** @deprecated  *)
+(** @deprecated *)
 
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
 val a : b
-(** @deprecated  *)
+(** @deprecated *)
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module  (** @deprecated  *)
+open Module  (** @deprecated *)
 
 open Module
 (** abc
-    @deprecated  *)
+
+    @deprecated *)
 
 (** @inline *)
 include sig
@@ -67,9 +69,9 @@ include Type  (** @inline *)
 
 include module type of Module  (** @inline *)
 
-module A : B  (** @deprecated  *)
+module A : B  (** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 module A : sig
   type t
 end
@@ -81,17 +83,17 @@ module type A = sig
   type t
 end
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = T
 
 type t = {a: int}
-(** @deprecated  *)
+(** @deprecated *)
 
-type t = ..  (** @deprecated  *)
+type t = ..  (** @deprecated *)
 
-type t  (** @deprecated  *)
+type t  (** @deprecated *)
 
-type t = t  (** @deprecated  *)
+type t = t  (** @deprecated *)
 
 val a : b
-(** @deprecated  *)
+(** @deprecated *)

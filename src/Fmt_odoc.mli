@@ -9,7 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-val fmt : Octavius.Types.t -> Fmt.t
+val fmt : Odoc_parser.Ast.docs -> Fmt.t
 
 val diff :
      Conf.t
@@ -17,3 +17,6 @@ val diff :
   -> (string * Location.t) list
   -> (string, string) Either.t Sequence.t
 (** Difference between two lists of doc comments. *)
+
+val is_tag_only : Odoc_parser.Ast.docs -> bool
+(** [true] if the documentation only contains tags *)

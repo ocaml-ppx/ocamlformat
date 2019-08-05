@@ -1,9 +1,10 @@
 open Module
-(** @deprecated  *)
+(** @deprecated *)
 
 open Module
 (** abc
-    @deprecated  *)
+
+    @deprecated *)
 
 open Module
 (** @author A *)
@@ -61,65 +62,71 @@ end =
   B
 
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = T
 
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 let a = b
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
 class b =
   object
     method f = 0
-    (** @deprecated  *)
+    (** @deprecated *)
 
     inherit a
-    (** @deprecated  *)
+    (** @deprecated *)
 
     val x = 1
-    (** @deprecated  *)
+    (** @deprecated *)
 
     constraint 'a = [> ]
-    (** @deprecated  *)
+    (** @deprecated *)
 
     initializer do_init ()
-    (** @deprecated  *)
+    (** @deprecated *)
   end
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module  (** @deprecated  *)
+open Module
+(** @deprecated *)
 
 open Module
 (** abc
-    @deprecated  *)
 
-open Module  (** @author A *)
+    @deprecated *)
 
-open Module  (** @inline *)
+open Module
+(** @author A *)
 
-include Abc  (** @inline *)
+open Module
+(** @inline *)
+
+include Abc
+(** @inline *)
 
 (** @inline *)
 include struct
   type t
 end
 
-include (Module : Type)  (** @inline *)
+include (Module : Type)
+(** @inline *)
 
 module A = B  (** @inline *)
 
@@ -158,35 +165,35 @@ end =
   B
 
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-(** @deprecated  *)
+(** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = T
 
-type t = t  (** @deprecated  *)
+type t = t  (** @deprecated *)
 
-(** @deprecated  *)
+(** @deprecated *)
 let a = b
 
-(** @deprecated  *)
+(** @deprecated *)
 type t = t
-(** @deprecated  *)
+(** @deprecated *)
 
 class b =
   object
-    method f = 0  (** @deprecated  *)
+    method f = 0  (** @deprecated *)
 
-    inherit a  (** @deprecated  *)
+    inherit a  (** @deprecated *)
 
-    val x = 1  (** @deprecated  *)
+    val x = 1  (** @deprecated *)
 
-    constraint 'a = [> ]  (** @deprecated  *)
+    constraint 'a = [> ]  (** @deprecated *)
 
-    initializer do_init ()  (** @deprecated  *)
+    initializer do_init ()  (** @deprecated *)
   end
