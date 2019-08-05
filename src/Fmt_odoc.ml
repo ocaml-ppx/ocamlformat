@@ -49,8 +49,7 @@ let split_on_whitespaces =
   String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
 
 (** Escape special characters and normalize whitespaces *)
-let str_normalized ?(escape = true) s =
-  let escape = if escape then escape_all else Fn.id in
+let str_normalized ?(escape = escape_all) s =
   split_on_whitespaces s
   |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
@@ -146,13 +145,8 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       in
       escape $ str_normalized w
   | `Code_span s ->
-      (* Normalize whitespaces but allow consecutive *)
-      let break_on_whitespaces s =
-        list (String.split_lines s) "@;" (fun l ->
-            list (split_on_whitespaces (String.strip l)) "@ " str)
-      in
       let s = escape_brackets s in
-      hovbox 0 (wrap "[" "]" (break_on_whitespaces s))
+      hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
   | `Raw_markup (lang, s) ->
       let lang =
         match lang with

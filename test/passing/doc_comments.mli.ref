@@ -332,7 +332,7 @@ end
 
 (** [Multi Line]
 
-    [A lot of    spaces]
+    [A lot of spaces]
 
     [Very
     looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong] *)
