@@ -1,3 +1,4 @@
+version: "0.11.0"
 ######################################################################
 #                                                                    #
 #                            OCamlFormat                             #
@@ -15,7 +16,7 @@ authors: "Josh Berdine <jjb@fb.com>"
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
-url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/%%VERSION%%.tar.gz" }
+url { archive: "https://github.com/ocaml-ppx/ocamlformat/archive/0.11.0.tar.gz" }
 license: "MIT"
 build: [
   ["ocaml" "tools/gen_version.mlt" "src/Version.ml" version] {pinned}
