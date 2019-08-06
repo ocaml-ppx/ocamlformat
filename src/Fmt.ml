@@ -20,8 +20,7 @@ type t = Format.formatter -> unit
 let ( >$ ) f g x = f $ g x
 
 let set_margin n fs =
-  Format.pp_set_margin fs n ;
-  Format.pp_set_max_indent fs (n - 1)
+  Format.pp_set_geometry fs ~max_indent:(n - 1) ~margin:n
 
 let set_max_indent n fs = Format.pp_set_max_newline_offset fs n
 
@@ -223,7 +222,7 @@ and hovbox_if cnd n = wrap_if_k cnd (open_hovbox n) close_box
 let utf8_length s =
   Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
 
-let fill_text text =
+let fill_text ?epi text =
   let fmt_line line =
     let words =
       List.filter ~f:(Fn.non String.is_empty)
@@ -238,14 +237,14 @@ let fill_text text =
       (String.split (String.rstrip text) ~on:'\n')
   in
   fmt_if (Char.is_whitespace text.[0]) " "
-  $ vbox 0
-      (hovbox 0
-         (list_pn lines (fun ?prev:_ curr ?next ->
-              fmt_line curr
-              $
-              match next with
-              | Some str when String.for_all str ~f:Char.is_whitespace ->
-                  close_box $ fmt "\n@," $ open_hovbox 0
-              | Some _ when not (String.is_empty curr) -> fmt "@ "
-              | _ -> noop)))
-  $ fmt_if (Char.is_whitespace text.[String.length text - 1]) " "
+  $ hovbox 0
+      ( list_pn lines (fun ?prev:_ curr ?next ->
+            fmt_line curr
+            $
+            match next with
+            | Some str when String.for_all str ~f:Char.is_whitespace ->
+                close_box $ fmt "\n@," $ open_hovbox 0
+            | Some _ when not (String.is_empty curr) -> fmt "@ "
+            | _ -> noop)
+      $ fmt_if (Char.is_whitespace text.[String.length text - 1]) " "
+      $ opt epi Fn.id )

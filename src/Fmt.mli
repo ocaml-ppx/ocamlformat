@@ -209,5 +209,5 @@ val hovbox_if : bool -> int -> t -> t
 
 (** Text filling --------------------------------------------------------*)
 
-val fill_text : string -> t
+val fill_text : ?epi:t -> string -> t
 (** Format a string as filled text wrapped at the margin. *)

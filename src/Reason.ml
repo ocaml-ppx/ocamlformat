@@ -154,9 +154,11 @@ module Mappers = struct
     in
     {Ast_mapper.default_mapper with attributes; expr; pat}
 
-  (* extend Normalize.mapper with additional transformations for Reason code *)
+  (* extend Normalize.mapper with additional transformations for Reason
+     code *)
   let norm c cmts ~ignore_doc_comments =
-    (* holds if an attribute is a docstring that also appears as a comment *)
+    (* holds if an attribute is a docstring that also appears as a
+       comment *)
     let atr_is_dup =
       let cmts = Set.of_list (module String) (List.map cmts ~f:Cmt.txt) in
       function

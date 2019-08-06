@@ -502,8 +502,8 @@ let fmt_cmt (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
     else
       match split_asterisk_prefixed cmt with
       | [""] -> str "(* *)"
-      | [text] -> wrap "(*" "*)" (fill_text text)
-      | [text; ""] -> wrap "(*" " *)" (fill_text text)
+      | [text] -> str "(*" $ fill_text text ~epi:(str "*)")
+      | [text; ""] -> str "(*" $ fill_text text ~epi:(str " *)")
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   in
@@ -591,9 +591,11 @@ let fmt_within t conf ~fmt_code ?(pro = Fmt.break_unless_newline 1 0)
 let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =
   (* remove the before comments from the map first *)
   let before = fmt_before t conf ~fmt_code ?pro ?epi ?eol ?adj loc in
-  (* remove the within comments from the map by accepting the continuation *)
+  (* remove the within comments from the map by accepting the
+     continuation *)
   fun k ->
-    (* delay the after comments until the within comments have been removed *)
+    (* delay the after comments until the within comments have been
+       removed *)
     let after = fmt_after t conf ~fmt_code ?pro ?epi loc in
     let inner = k in
     before $ inner $ after
