@@ -21,7 +21,7 @@ depends: [
   "base-unix"
   "bisect_ppx"
   "cmdliner"
-  "dune" {build & >= "1.1.1"}
+  "dune" {>= "1.1.1"}
   "fpath"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "odoc" {>= "1.4.1"}
