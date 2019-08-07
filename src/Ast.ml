@@ -1897,21 +1897,26 @@ end = struct
         true
     | Exp {pexp_desc= Pexp_fun (Optional _, _, _, _); _}, Ppat_record _ ->
         true
-    | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
+    | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
+        | Str {pstr_desc= Pstr_value _; _} )
       , ( Ppat_construct (_, Some _)
         | Ppat_variant (_, Some _)
         | Ppat_or _ | Ppat_alias _ ) ) ->
         true
-    | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
+    | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
+        | Str {pstr_desc= Pstr_value _; _} )
       , Ppat_constraint (_, {ptyp_desc= Ptyp_poly _; _}) ) ->
         false
-    | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
+    | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
+        | Str {pstr_desc= Pstr_value _; _} )
       , Ppat_constraint ({ppat_desc= Ppat_any; _}, _) ) ->
         true
-    | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
+    | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
+        | Str {pstr_desc= Pstr_value _; _} )
       , Ppat_constraint ({ppat_desc= Ppat_tuple _; _}, _) ) ->
         false
-    | ( (Exp {pexp_desc= Pexp_let _; _} | Str {pstr_desc= Pstr_value _; _})
+    | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
+        | Str {pstr_desc= Pstr_value _; _} )
       , Ppat_constraint _ ) ->
         true
     | Pat _, Ppat_constraint _
@@ -1952,7 +1957,7 @@ end = struct
               Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _
           ; _ }
       , Ppat_constraint _ )
-     |Exp {pexp_desc= Pexp_let _; _}, Ppat_exception _
+     |Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _; _}
       , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) )
       ->
@@ -2006,7 +2011,7 @@ end = struct
      |( {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
       , (Match | Let_match | Non_apply) )
      |( { pexp_desc=
-            ( Pexp_fun _ | Pexp_let _ | Pexp_letexception _
+            ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
             | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ )
         ; _ }
       , (Let_match | Non_apply) ) ->
@@ -2066,7 +2071,7 @@ end = struct
                       Pstr_eval
                         ( ( { pexp_desc=
                                 ( Pexp_while _ | Pexp_for _ | Pexp_match _
-                                | Pexp_try _ | Pexp_let _
+                                | Pexp_try _ | Pexp_let _ | Pexp_letop _
                                 | Pexp_ifthenelse _ | Pexp_sequence _
                                 | Pexp_new _ | Pexp_letmodule _
                                 | Pexp_object _ | Pexp_function _ )
