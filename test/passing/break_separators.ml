@@ -517,7 +517,8 @@ let foooooooooooo =
 
 let foooooooooooo =
   { foooooooooooooo with
-    (* foooooooooooooooo fooooooooooooooooooooooooo foooooooooooooooooooooo *)
+    (* foooooooooooooooo fooooooooooooooooooooooooo
+       foooooooooooooooooooooo *)
     fooooooooooooooooooooooooooooo= fooooooooooooo
   ; fooooooooooooo= foooooooooooooo }
 
@@ -525,8 +526,7 @@ let fooooooooooo = function
   | Pmty_alias lid ->
       { empty with
         bdy= fmt_longident_loc c lid
-      ; epi=
-          Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
+      ; epi= Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
 
 let f () =

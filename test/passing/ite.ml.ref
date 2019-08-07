@@ -28,8 +28,7 @@ f
 
 ;;
 f
-  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
-    ()
+  ( if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then ()
   else () )
 
 ;;
@@ -41,8 +40,7 @@ f
 ;;
 f
   ( if
-    and_ even
-      loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
+    and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
   then ()
   else () )
 

@@ -2303,9 +2303,7 @@ end = struct
       | Pexp_record (flds, _)
         when List.exists flds ~f:(fun (_, e0) ->
                  match e0 with
-                 | { pexp_desc= Pexp_constraint (e, _)
-                   ; pexp_attributes= []
-                   ; _ }
+                 | {pexp_desc= Pexp_constraint (e, _); pexp_attributes= []; _}
                    when e == exp ->
                      true
                  | _ -> e0 == exp) ->

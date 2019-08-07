@@ -219,8 +219,7 @@ let fmt_tag c = function
       at $ fmt "before@ " $ str_normalized s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Deprecated txt ->
-      at $ fmt "deprecated"
-      $ fmt_nestable_block_elements c ~prefix:space txt
+      at $ fmt "deprecated" $ fmt_nestable_block_elements c ~prefix:space txt
   | `Param (s, txt) ->
       at $ fmt "param@ " $ str_normalized s
       $ fmt_nestable_block_elements c ~prefix:space txt

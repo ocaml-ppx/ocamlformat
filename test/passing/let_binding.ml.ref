@@ -102,8 +102,8 @@ module Let_and_sparse = struct
     3
 end
 
-let f aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb
-    cccccccccccccccccccccccc dddddddddddddddddd eeeeeeeeeeeeee =
+let f aaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccc
+    dddddddddddddddddd eeeeeeeeeeeeee =
   ()
 
 let _ =

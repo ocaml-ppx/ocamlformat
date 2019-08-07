@@ -15,8 +15,7 @@ f x
     >>= fun () ->
     f x
     >>= fun y ->
-    g y
-    >>= function x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
+    g y >>= function x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
 
 [@@@ocamlformat "break-infix-before-func=false"]
 

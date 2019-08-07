@@ -49,8 +49,7 @@ module M = struct
     if b
     then e
     else (
-      something loooooooooooooooooooooooooooooooong enough to_trigger a
-        break ;
+      something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
       this is more )
     [@@ocamlformat "if-then-else=bad"]
 
@@ -58,16 +57,14 @@ module M = struct
     if b
     then e
     else (
-      something loooooooooooooooooooooooooooooooong enough to_trigger a
-        break ;
+      something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
       this is more )
 
   let _ =
     if b
     then e
     else (
-      something loooooooooooooooooooooooooooooooong enough to_trigger a
-        break ;
+      something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
       this is more )
 
   [@@@ocamlformat "if-then-else=compact"]
@@ -75,8 +72,7 @@ module M = struct
   let _ =
     if b then e
     else (
-      something loooooooooooooooooooooooooooooooong enough to_trigger a
-        break ;
+      something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
       this is more )
 end
 
