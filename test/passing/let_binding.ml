@@ -175,3 +175,6 @@ let _ =
 let _ =
   let+ a b = c in
   d
+
+
+let _ = f (let+ a b = c in d)
