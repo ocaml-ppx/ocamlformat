@@ -55,9 +55,7 @@ val get_list_expr : Conf.t -> elements_collection
 val get_array_expr : Conf.t -> elements_collection
 
 val get_record_pat :
-     Conf.t
-  -> ctx:Ast.t
-  -> elements_collection * elements_collection_record_pat
+  Conf.t -> ctx:Ast.t -> elements_collection * elements_collection_record_pat
 
 val get_list_pat : Conf.t -> ctx:Ast.t -> elements_collection
 

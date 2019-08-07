@@ -148,9 +148,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
       hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
   | `Raw_markup (lang, s) ->
       let lang =
-        match lang with
-        | Some l -> str_normalized l $ str ":"
-        | None -> noop
+        match lang with Some l -> str_normalized l $ str ":" | None -> noop
       in
       wrap "{%%" "%%}" (lang $ str s)
   | `Styled (style, elems) ->

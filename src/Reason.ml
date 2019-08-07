@@ -68,10 +68,9 @@ module Binary_reason = struct
     loop Migrate_parsetree.Versions.all_versions
 
   (** [input magic_number input_channel] reads a serialized ast from
-      [input_channel]. It is expected to have the given [magic_number] and
-      is assumed to be the output of `refmt --print=binary_reason` where
-      `refmt` has been compiled with the same version of `ocaml` as
-      `ocamlformat`. *)
+      [input_channel]. It is expected to have the given [magic_number] and is
+      assumed to be the output of `refmt --print=binary_reason` where `refmt`
+      has been compiled with the same version of `ocaml` as `ocamlformat`. *)
   let input ic =
     let (magic, origin_filename, ast, comments, _, _) : 'a reason_data =
       Caml.Marshal.from_channel ic
@@ -157,8 +156,7 @@ module Mappers = struct
   (* extend Normalize.mapper with additional transformations for Reason
      code *)
   let norm c cmts ~ignore_doc_comments =
-    (* holds if an attribute is a docstring that also appears as a
-       comment *)
+    (* holds if an attribute is a docstring that also appears as a comment *)
     let atr_is_dup =
       let cmts = Set.of_list (module String) (List.map cmts ~f:Cmt.txt) in
       function
@@ -167,8 +165,7 @@ module Mappers = struct
             PStr
               [ { pstr_desc=
                     Pstr_eval
-                      ( { pexp_desc=
-                            Pexp_constant (Pconst_string (txt, None))
+                      ( { pexp_desc= Pexp_constant (Pconst_string (txt, None))
                         ; _ }
                       , [] )
                 ; _ } ]
@@ -260,12 +257,10 @@ let norm_intf c {Parse_with_comments.ast; comments; prefix= _} =
     ast
 
 let equal_impl ~ignore_doc_comments c x y =
-  Normalize.equal_impl ~ignore_doc_comments c (norm_impl c x)
-    (norm_impl c y)
+  Normalize.equal_impl ~ignore_doc_comments c (norm_impl c x) (norm_impl c y)
 
 let equal_intf ~ignore_doc_comments c x y =
-  Normalize.equal_intf ~ignore_doc_comments c (norm_intf c x)
-    (norm_intf c y)
+  Normalize.equal_intf ~ignore_doc_comments c (norm_intf c x) (norm_intf c y)
 
 let moved_docstrings_impl c {Parse_with_comments.ast= x; _}
     {Parse_with_comments.ast= y; _} =

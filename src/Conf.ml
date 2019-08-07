@@ -108,8 +108,8 @@ let info =
          line (*), or using the OCAMLFORMAT environment variable: \
          $(b,OCAMLFORMAT=)$(i,option)$(b,=)$(i,VAL)$(b,,)...$(b,,)$(i,option)$(b,=)$(i,VAL), \
          or as an optional parameter on the command line, or with a global \
-         $(b,[@@@ocamlformat \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) \
-         attribute in the processed file, or with an $(b,[@@ocamlformat \
+         $(b,[@@@ocamlformat \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) attribute \
+         in the processed file, or with an $(b,[@@ocamlformat \
          \")$(i,option)$(b,=)$(i,VAL)$(b,\"]) attribute on expression in \
          the processed file."
     ; `P
@@ -122,21 +122,20 @@ let info =
          priority. The global $(b,ocamlformat) file is only used when the \
          option $(b,enable-outside-detected-project) is set."
     ; `P
-        "If the $(b,disable) option is not set, an \
-         $(b,.ocamlformat-ignore) file specifies files that OCamlFormat \
-         should ignore. Each line in an $(b,.ocamlformat-ignore) file \
-         specifies a filename relative to the directory containing the \
-         $(b,.ocamlformat-ignore) file. Shell-style regular expressions \
-         are supported. Lines starting with $(b,#) are ignored and can be \
-         used as comments."
+        "If the $(b,disable) option is not set, an $(b,.ocamlformat-ignore) \
+         file specifies files that OCamlFormat should ignore. Each line in \
+         an $(b,.ocamlformat-ignore) file specifies a filename relative to \
+         the directory containing the $(b,.ocamlformat-ignore) file. \
+         Shell-style regular expressions are supported. Lines starting with \
+         $(b,#) are ignored and can be used as comments."
     ; `P
         "If the $(b,disable) option is set, an $(b,.ocamlformat-enable) \
          file specifies files that OCamlFormat should format even when the \
          $(b,disable) option is set. Each line in an \
-         $(b,.ocamlformat-enable) file specifies a filename relative to \
-         the directory containing the $(b,.ocamlformat-enable) file. \
-         Shell-style regular expressions are supported. Lines starting \
-         with $(b,#) are ignored and can be used as comments." ]
+         $(b,.ocamlformat-enable) file specifies a filename relative to the \
+         directory containing the $(b,.ocamlformat-enable) file. \
+         Shell-style regular expressions are supported. Lines starting with \
+         $(b,#) are ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -211,8 +210,8 @@ module Formatting = struct
     let all =
       [ ( "nested"
         , `Nested
-        , "$(b,nested) forces a break after nested or-patterns to \
-           highlight the case body. Note that with $(b,nested), the \
+        , "$(b,nested) forces a break after nested or-patterns to highlight \
+           the case body. Note that with $(b,nested), the \
            $(b,indicate-nested-or-patterns) option is not needed, and so \
            ignored." )
       ; ( "fit"
@@ -222,8 +221,8 @@ module Formatting = struct
       ; ( "toplevel"
         , `Toplevel
         , "$(b,toplevel) forces top-level cases (i.e. not nested \
-           or-patterns) to break across lines, otherwise break naturally \
-           at the margin." )
+           or-patterns) to break across lines, otherwise break naturally at \
+           the margin." )
       ; ( "fit-or-vertical"
         , `Fit_or_vertical
         , "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
@@ -266,8 +265,8 @@ module Formatting = struct
            fit on a single line." )
       ; ( "smart"
         , `Smart
-        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
-           arguments on their line if they fit." ) ]
+        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
+           on their line if they fit." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_fun_decl= x})
@@ -284,8 +283,8 @@ module Formatting = struct
            fit on a single line." )
       ; ( "smart"
         , `Smart
-        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
-           arguments on their line if they fit." ) ]
+        , "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
+           on their line if they fit." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_fun_sig= x})
@@ -311,9 +310,8 @@ module Formatting = struct
   let break_infix_before_func =
     let doc =
       "Break infix operators whose right arguments are anonymous functions \
-       specially: do not break after the operator so that the first line \
-       of the function appears docked at the end of line after the \
-       operator."
+       specially: do not break after the operator so that the first line of \
+       the function appears docked at the end of line after the operator."
     in
     let names = ["break-infix-before-func"] in
     C.flag ~default:true ~names ~doc ~section
@@ -335,8 +333,8 @@ module Formatting = struct
         , "$(b,after) breaks the expressions after the separator." )
       ; ( "after-and-docked"
         , `After_and_docked
-        , "$(b,after-and-docked) breaks the expressions after the \
-           separator and docks the brackets for records." ) ]
+        , "$(b,after-and-docked) breaks the expressions after the separator \
+           and docks the brackets for records." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_separators= x})
@@ -552,8 +550,8 @@ module Formatting = struct
 
   let field_space =
     let doc =
-      "Whether or not to use a space between a field name and the rhs. \
-       This option affects records and objects."
+      "Whether or not to use a space between a field name and the rhs. This \
+       option affects records and objects."
     in
     let names = ["field-space"] in
     let all =
@@ -627,8 +625,8 @@ module Formatting = struct
   let indent_after_in =
     let docv = "COLS" in
     let doc =
-      "Indentation ($(docv) columns) after `let ... in`, unless followed \
-       by another `let`."
+      "Indentation ($(docv) columns) after `let ... in`, unless followed by \
+       another `let`."
     in
     let names = ["indent-after-in"] in
     C.any Arg.int ~names ~default:0 ~doc ~docv ~section ~allow_inline:false
@@ -667,14 +665,14 @@ module Formatting = struct
     let all =
       [ ( "space"
         , `Space
-        , "$(b,space) starts lines of nested or-patterns with \" |\" \
-           rather than \"| \"." )
+        , "$(b,space) starts lines of nested or-patterns with \" |\" rather \
+           than \"| \"." )
       ; ( "unsafe-no"
         , `Unsafe_no
         , "$(b,unsafe-no) does not indicate nested or-patterns. Warning: \
            this can produce confusing code where a short body of a match \
-           case is visually hidden by surrounding long patterns, leading \
-           to misassociation between patterns and body expressions." ) ]
+           case is visually hidden by surrounding long patterns, leading to \
+           misassociation between patterns and body expressions." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with indicate_nested_or_patterns= x})
@@ -715,8 +713,7 @@ module Formatting = struct
         , `Compact
         , "$(b,compact) will try to format `let p = e and p = e` in a \
            single line." )
-      ; ("sparse", `Sparse, "$(b,sparse) will always break between them.")
-      ]
+      ; ("sparse", `Sparse, "$(b,sparse) will always break between them.") ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with let_and= x})
@@ -739,8 +736,8 @@ module Formatting = struct
     let all =
       [ ( "compact"
         , `Compact
-        , "$(b,compact) spacing separates adjacent let bindings in a \
-           module according to module-item-spacing." )
+        , "$(b,compact) spacing separates adjacent let bindings in a module \
+           according to module-item-spacing." )
       ; ( "sparse"
         , `Sparse
         , "$(b,sparse) places two open lines between a multi-line \
@@ -760,13 +757,13 @@ module Formatting = struct
       [ ( "compact"
         , `Compact
         , "$(b,compact) does not break a line after the $(i,let module ... \
-           =) and before the $(i,in) if the module declaration does not \
-           fit on a single line." )
+           =) and before the $(i,in) if the module declaration does not fit \
+           on a single line." )
       ; ( "sparse"
         , `Sparse
-        , "$(b,sparse) breaks a line after $(i,let module ... =) and \
-           before the $(i,in) if the module declaration does not fit on a \
-           single line." ) ]
+        , "$(b,sparse) breaks a line after $(i,let module ... =) and before \
+           the $(i,in) if the module declaration does not fit on a single \
+           line." ) ]
     in
     C.choice ~names:["let-module"] ~all ~doc ~section
       (fun conf x -> {conf with let_module= x})
@@ -866,8 +863,8 @@ module Formatting = struct
     let all =
       [ ( "wrap"
         , `Wrap
-        , "$(b,wrap) wraps the nested pattern-matching with parentheses \
-           and adds indentation." )
+        , "$(b,wrap) wraps the nested pattern-matching with parentheses and \
+           adds indentation." )
       ; ( "align"
         , `Align
         , "$(b,align) vertically aligns the nested pattern-matching under \
@@ -942,8 +939,8 @@ module Formatting = struct
     let all =
       [ ( "compact"
         , `Compact
-        , "$(b,compact) will not keep any blank line between expressions \
-           of a sequence." )
+        , "$(b,compact) will not keep any blank line between expressions of \
+           a sequence." )
       ; ( "preserve-one"
         , `Preserve_one
         , "$(b,preserve) will keep a blank line between two expressions of \
@@ -983,8 +980,7 @@ module Formatting = struct
         )
       ; ( "sparse"
         , `Sparse
-        , "$(b,sparse) will always break the line before a single case." )
-      ]
+        , "$(b,sparse) will always break the line before a single case." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with single_case= x})
@@ -1116,8 +1112,7 @@ let disable_outside_detected_project =
   in
   let default = false in
   mk ~default
-    Arg.(
-      value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
+    Arg.(value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
 
 let enable_outside_detected_project =
   let witness =
@@ -1127,10 +1122,10 @@ let enable_outside_detected_project =
   in
   let doc =
     Format.sprintf
-      "Read $(b,.ocamlformat) config files outside the current project. \
-       The project root of an input file is taken to be the nearest \
-       ancestor directory that contains a %s file. Formatting is enabled \
-       even if no $(b,.ocamlformat) configuration file is found."
+      "Read $(b,.ocamlformat) config files outside the current project. The \
+       project root of an input file is taken to be the nearest ancestor \
+       directory that contains a %s file. Formatting is enabled even if no \
+       $(b,.ocamlformat) configuration file is found."
       witness
   in
   let default = false in
@@ -1202,9 +1197,7 @@ let inputs =
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
 let kind : [`Impl | `Intf | `Use_file] option ref =
-  let doc =
-    "Parse file with unrecognized extension as an implementation."
-  in
+  let doc = "Parse file with unrecognized extension as an implementation." in
   let impl = (Some `Impl, Arg.info ["impl"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as an interface." in
   let intf = (Some `Intf, Arg.info ["intf"] ~doc ~docs) in
@@ -1295,9 +1288,9 @@ let print_config =
     "Print the configuration determined by the environment variable, the \
      configuration files, preset profiles and command line. Attributes are \
      not considered. If many input files are specified, only print the \
-     configuration for the first file. If no input file is specified, \
-     print the configuration for the root directory if specified, or for \
-     the current working directory otherwise."
+     configuration for the first file. If no input file is specified, print \
+     the configuration for the root directory if specified, or for the \
+     current working directory otherwise."
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
@@ -1305,9 +1298,8 @@ let print_config =
 let root =
   let docv = "DIR" in
   let doc =
-    "Root of the project. If specified, only take into account \
-     .ocamlformat configuration files inside $(docv) and its \
-     subdirectories."
+    "Root of the project. If specified, only take into account .ocamlformat \
+     configuration files inside $(docv) and its subdirectories."
   in
   let default = None in
   mk ~default
@@ -1338,8 +1330,7 @@ let ocamlformat_profile =
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
-  ; cases_matching_exp_indent=
-      C.default Formatting.cases_matching_exp_indent
+  ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
   ; comment_check= C.default comment_check
   ; disable= C.default Formatting.disable
   ; disambiguate_non_breaking_match=
@@ -1553,17 +1544,16 @@ let (_profile : t option C.t) =
          implementation. This is a style which optimizes for what the \
          formatter can do best, rather than to match the style of any \
          existing code. General guidelines that have directed the design \
-         include: Legibility, in the sense of making it as hard as \
-         possible for quick visual parsing to give the wrong \
-         interpretation, is of highest priority; Whenever possible the \
-         high-level structure of the code should be obvious by looking \
-         only at the left margin, in particular, it should not be \
-         necessary to visually jump from left to right hunting for \
-         critical keywords, tokens, etc; All else equal compact code is \
-         preferred as reading without scrolling is easier, so indentation \
-         or white space is avoided unless it helps legibility; Attention \
-         has been given to making some syntactic gotchas visually obvious."
-      )
+         include: Legibility, in the sense of making it as hard as possible \
+         for quick visual parsing to give the wrong interpretation, is of \
+         highest priority; Whenever possible the high-level structure of \
+         the code should be obvious by looking only at the left margin, in \
+         particular, it should not be necessary to visually jump from left \
+         to right hunting for critical keywords, tokens, etc; All else \
+         equal compact code is preferred as reading without scrolling is \
+         easier, so indentation or white space is avoided unless it helps \
+         legibility; Attention has been given to making some syntactic \
+         gotchas visually obvious." )
     ; ( "compact"
       , Some compact_profile
       , "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
@@ -1609,8 +1599,7 @@ let validate () =
   else if (not (!inplace || !check)) && inputs_len > 1 then
     `Error
       ( false
-      , "Must specify exactly one input file without --inplace or --check"
-      )
+      , "Must specify exactly one input file without --inplace or --check" )
   else `Ok ()
 
 ;;
@@ -1678,9 +1667,7 @@ let parse_line config ~from s =
               , Format.sprintf "expecting %s but got %s" Version.version
                   value ))
     | name, `File x ->
-        C.update ~config
-          ~from:(`Parsed (`File x))
-          ~name ~value ~inline:false
+        C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
         if !disable_conf_attrs then (
           if not config.quiet then
@@ -1727,8 +1714,7 @@ let parse_line config ~from s =
     (* special case for disable/enable *)
     | "enable" -> update ~config ~from ~name:"disable" ~value:"false"
     | "normal" -> update_many ~config ~from ocp_indent_normal_profile
-    | "apprentice" ->
-        update_many ~config ~from ocp_indent_apprentice_profile
+    | "apprentice" -> update_many ~config ~from ocp_indent_apprentice_profile
     | "JaneStreet" ->
         Result.( >>= )
           (update ~config ~from ~name:"profile" ~value:"janestreet")

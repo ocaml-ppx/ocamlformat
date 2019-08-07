@@ -49,12 +49,12 @@ val tokens_between :
   -> upto:Location.t
   -> (Parser.token * Location.t) list
 (** [tokens_between s ~filter ~from ~upto] returns the list of tokens
-    starting from [from] and ending before [upto] and respecting the
-    [filter] property. [from] must start before [upto]. *)
+    starting from [from] and ending before [upto] and respecting the [filter]
+    property. [from] must start before [upto]. *)
 
 val is_long_pexp_open : t -> Parsetree.expression -> bool
-(** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open]
-    expression that is expressed in long ('let open') form in source. *)
+(** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open] expression
+    that is expressed in long ('let open') form in source. *)
 
 val is_long_pmod_functor : t -> Parsetree.module_expr -> bool
 (** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a

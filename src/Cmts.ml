@@ -69,8 +69,8 @@ end = struct
 
   (* Add elements in decreasing width order to construct tree from roots to
      leaves. That is, when adding an interval to a partially constructed
-     tree, it will already contain all wider intervals, so the new
-     interval's parent will already be in the tree. *)
+     tree, it will already contain all wider intervals, so the new interval's
+     parent will already be in the tree. *)
 
   let of_list elts =
     let elts_decreasing_width =
@@ -94,8 +94,7 @@ end = struct
     { roots= sort_itv_list tree.roots
     ; tbl= Hashtbl.map tree.tbl ~f:sort_itv_list }
 
-  let children {tbl; _} elt =
-    Option.value ~default:[] (Hashtbl.find tbl elt)
+  let children {tbl; _} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
 
   let dump tree =
     let open Fmt in
@@ -238,10 +237,9 @@ end = struct
 end
 
 (** Heuristic to determine if two locations should be considered "adjacent".
-    Holds if there is only whitespace between the locations, or if there is
-    a [|] character and the first location begins a line and the start
-    column of the first location is not greater than that of the second
-    location. *)
+    Holds if there is only whitespace between the locations, or if there is a
+    [|] character and the first location begins a line and the start column
+    of the first location is not greater than that of the second location. *)
 let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
   Option.value_map (Source.string_between t.source l1 l2) ~default:false
     ~f:(fun btw ->
@@ -267,8 +265,8 @@ let infix_symbol_before t (loc : Location.t) =
       else false
   | None -> false
 
-(** Heuristic to choose between placing a comment after the previous
-    location or before the next one. *)
+(** Heuristic to choose between placing a comment after the previous location
+    or before the next one. *)
 let partition_after_prev_or_before_next t ~prev cmts ~next =
   match CmtSet.to_list cmts with
   | {loc; _} :: _ as cmtl when is_adjacent t prev loc -> (

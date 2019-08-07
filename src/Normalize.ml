@@ -390,8 +390,7 @@ let equal_intf ~ignore_doc_comments c ast1 ast2 =
 
 let equal_use_file ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then
-      Mapper.use_file (mapper_ignore_doc_comment c)
+    if ignore_doc_comments then Mapper.use_file (mapper_ignore_doc_comment c)
     else Mapper.use_file (mapper c)
   in
   Poly.(map ast1 = map ast2)

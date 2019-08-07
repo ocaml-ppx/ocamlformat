@@ -19,8 +19,7 @@ type t = Format.formatter -> unit
 
 let ( >$ ) f g x = f $ g x
 
-let set_margin n fs =
-  Format.pp_set_geometry fs ~max_indent:(n - 1) ~margin:n
+let set_margin n fs = Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1)
 
 let set_max_indent n fs = Format.pp_set_max_newline_offset fs n
 
@@ -92,8 +91,7 @@ let if_newline s fs = Format.pp_print_string_if_newline fs s
 
 let break_unless_newline n o fs = Format.pp_print_or_newline fs n o "" ""
 
-let or_newline fits breaks fs =
-  Format.pp_print_or_newline fs 1 0 fits breaks
+let or_newline fits breaks fs = Format.pp_print_or_newline fs 1 0 fits breaks
 
 (** Conditional on immediately preceding a line break -------------------*)
 
@@ -111,8 +109,8 @@ let fits_breaks ?(force_fit_if = false) ?(force_break_if = false)
     Format.pp_print_string fs breaks )
   else Format.pp_print_fits_or_breaks fs ~level fits nspaces offset breaks
 
-let fits_breaks_if ?force_fit_if ?force_break_if ?hint ?level cnd fits
-    breaks fs =
+let fits_breaks_if ?force_fit_if ?force_break_if ?hint ?level cnd fits breaks
+    fs =
   if cnd then
     fits_breaks ?force_fit_if ?force_break_if ?hint ?level fits breaks fs
 
