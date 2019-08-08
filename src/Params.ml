@@ -152,51 +152,36 @@ let box_collec (c : Conf.t) =
   | `Wrap -> hovbox
   | `Fit_or_vertical -> hvbox
 
-let get_list_expr (c : Conf.t) =
+let collection_expr (c : Conf.t) ~wrap_collec ~space_around opn cls =
   match c.break_separators with
   | `Before ->
-      { box= (fun k -> box_collec c 0 (wrap_list c k))
-      ; sep_before= fmt "@,; "
+      { box= (fun k -> box_collec c 0 (wrap_collec c k))
+      ; sep_before= break 0 (String.length opn - 1) $ str "; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop }
   | `After ->
-      { box= (fun k -> box_collec c 0 (wrap_list c k))
+      { box= (fun k -> box_collec c 0 (wrap_collec c k))
       ; sep_before= noop
-      ; sep_after_non_final= fmt ";@;<1 2>"
+      ; sep_after_non_final= char ';' $ break 1 (String.length opn + 1)
       ; sep_after_final= noop }
   | `After_and_docked ->
-      let space = if c.space_around_lists then 1 else 0 in
+      let space = if space_around then 1 else 0 in
       { box=
           (fun k ->
             hvbox 2
-              (wrap "[" "]"
+              (wrap_k (str opn) (str cls)
                  (break space 0 $ box_collec c 0 k $ break space (-2))))
       ; sep_before= noop
       ; sep_after_non_final= fmt ";@;<1 0>"
       ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
+let get_list_expr (c : Conf.t) =
+  collection_expr c ~wrap_collec:wrap_list
+    ~space_around:c.space_around_lists "[" "]"
+
 let get_array_expr (c : Conf.t) =
-  match c.break_separators with
-  | `Before ->
-      { box= (fun k -> box_collec c 0 (wrap_array c k))
-      ; sep_before= fmt "@;<0 1>; "
-      ; sep_after_non_final= noop
-      ; sep_after_final= noop }
-  | `After ->
-      { box= (fun k -> box_collec c 0 (wrap_array c k))
-      ; sep_before= noop
-      ; sep_after_non_final= fmt ";@;<1 3>"
-      ; sep_after_final= noop }
-  | `After_and_docked ->
-      let space = if c.space_around_arrays then 1 else 0 in
-      { box=
-          (fun k ->
-            hvbox 2
-              (wrap "[|" "|]"
-                 (break space 0 $ box_collec c 0 k $ break space (-2))))
-      ; sep_before= noop
-      ; sep_after_non_final= fmt ";@;<1 0>"
-      ; sep_after_final= fits_breaks ~level:1 "" ";" }
+  collection_expr c ~wrap_collec:wrap_array
+    ~space_around:c.space_around_arrays "[|" "|]"
 
 let get_record_pat (c : Conf.t) ~ctx =
   let common, _ = get_record_expr c in
