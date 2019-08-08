@@ -204,8 +204,8 @@ let get_record_pat (c : Conf.t) ~ctx =
       in
       ({common with box}, wildcard)
 
-let collection_pat (c : Conf.t) ~ctx ~get_expr ~space_around ~box =
-  let r = get_expr c in
+let collection_pat (c : Conf.t) ~ctx ~wrap_collec ~space_around opn cls =
+  let r = collection_expr c ~wrap_collec ~space_around opn cls in
   match c.break_separators with
   | `Before | `After -> r
   | `After_and_docked ->
@@ -218,17 +218,18 @@ let collection_pat (c : Conf.t) ~ctx ~get_expr ~space_around ~box =
       in
       let box k =
         hvbox indent_opn
-          (box (break space 0 $ box_collec c 0 k $ break space indent_cls))
+          (wrap_k (str opn) (str cls)
+             (break space 0 $ box_collec c 0 k $ break space indent_cls))
       in
       {r with box}
 
 let get_list_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~get_expr:get_list_expr
-    ~space_around:c.space_around_lists ~box:(wrap "[" "]")
+  collection_pat c ~ctx ~wrap_collec:wrap_list
+    ~space_around:c.space_around_lists "[" "]"
 
 let get_array_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~get_expr:get_array_expr
-    ~space_around:c.space_around_arrays ~box:(wrap "[|" "|]")
+  collection_pat c ~ctx ~wrap_collec:wrap_array
+    ~space_around:c.space_around_arrays "[|" "|]"
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
