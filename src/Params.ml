@@ -219,12 +219,12 @@ let get_record_pat (c : Conf.t) ~ctx =
       in
       ({common with box}, wildcard)
 
-let get_list_pat (c : Conf.t) ~ctx =
-  let r = get_list_expr c in
+let collection_pat (c : Conf.t) ~ctx ~get_expr ~space_around ~box =
+  let r = get_expr c in
   match c.break_separators with
   | `Before | `After -> r
   | `After_and_docked ->
-      let space = if c.space_around_lists then 1 else 0 in
+      let space = if space_around then 1 else 0 in
       let indent_opn, indent_cls =
         match ctx with
         | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-1, -1)
@@ -233,29 +233,17 @@ let get_list_pat (c : Conf.t) ~ctx =
       in
       let box k =
         hvbox indent_opn
-          (wrap "[" "]"
-             (break space 0 $ box_collec c 0 k $ break space indent_cls))
+          (box (break space 0 $ box_collec c 0 k $ break space indent_cls))
       in
       {r with box}
 
+let get_list_pat (c : Conf.t) ~ctx =
+  collection_pat c ~ctx ~get_expr:get_list_expr
+    ~space_around:c.space_around_lists ~box:(wrap "[" "]")
+
 let get_array_pat (c : Conf.t) ~ctx =
-  let r = get_array_expr c in
-  match c.break_separators with
-  | `Before | `After -> r
-  | `After_and_docked ->
-      let space = if c.space_around_arrays then 1 else 0 in
-      let indent_opn, indent_cls =
-        match ctx with
-        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-1, -1)
-        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-2, -2)
-        | _ -> (2, -2)
-      in
-      let box k =
-        hvbox indent_opn
-          (wrap "[|" "|]"
-             (break space 0 $ box_collec c 0 k $ break space indent_cls))
-      in
-      {r with box}
+  collection_pat c ~ctx ~get_expr:get_array_expr
+    ~space_around:c.space_around_arrays ~box:(wrap "[|" "|]")
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
