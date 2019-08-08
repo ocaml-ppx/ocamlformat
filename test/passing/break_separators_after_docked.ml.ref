@@ -367,14 +367,8 @@ let f () =
 
 let f () =
   let [
-    aaaaaaaa;
-    bbbbbbbbbb;
-    ccccccccc;
-    dddddddddd;
-    eeeeeeeee;
-    ffffffffff;
-    gggggggggg;
-    hhhhhhhhhh;
+    aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+    gggggggggg; hhhhhhhhhh;
   ]
     =
     some_value
@@ -383,14 +377,8 @@ let f () =
 
 let f () =
   let [|
-    aaaaaaaa;
-    bbbbbbbbbb;
-    ccccccccc;
-    dddddddddd;
-    eeeeeeeee;
-    ffffffffff;
-    gggggggggg;
-    hhhhhhhhhh;
+    aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+    gggggggggg; hhhhhhhhhh;
   |]
     =
     some_value
@@ -411,24 +399,12 @@ let g () =
   } ->
       foooooooo
   | [
-   aaaaaaaa;
-   bbbbbbbbbb;
-   ccccccccc;
-   dddddddddd;
-   eeeeeeeee;
-   ffffffffff;
-   gggggggggg;
-   hhhhhhhhhh;
+   aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+   gggggggggg; hhhhhhhhhh;
   ] ->
       fooooooooo
   | [|
-   aaaaaaaa;
-   bbbbbbbbbb;
-   ccccccccc;
-   dddddddddd;
-   eeeeeeeee;
-   ffffffffff;
-   gggggggggg;
-   hhhhhhhhhh;
+   aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+   gggggggggg; hhhhhhhhhh;
   |] ->
       fooooooooo

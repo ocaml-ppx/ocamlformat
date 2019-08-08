@@ -147,66 +147,55 @@ let get_record_expr (c : Conf.t) =
         ; sep_after_final= fits_breaks ~level:1 "" ";" }
       , {break_after_with= break 1 0} )
 
+let box_collec (c : Conf.t) =
+  match c.break_collection_expressions with
+  | `Wrap -> hovbox
+  | `Fit_or_vertical -> hvbox
+
 let get_list_expr (c : Conf.t) =
   match c.break_separators with
   | `Before ->
-      { box= (fun k -> hvbox 0 (wrap_list c k))
+      { box= (fun k -> box_collec c 0 (wrap_list c k))
       ; sep_before= fmt "@,; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop }
   | `After ->
-      { box= (fun k -> hvbox 0 (wrap_list c k))
+      { box= (fun k -> box_collec c 0 (wrap_list c k))
       ; sep_before= noop
       ; sep_after_non_final= fmt ";@;<1 2>"
       ; sep_after_final= noop }
   | `After_and_docked ->
       let space = if c.space_around_lists then 1 else 0 in
-      let sep_after_non_final =
-        match c.break_collection_expressions with
-        | `Wrap -> fmt ";@;<1 2>"
-        | `Fit_or_vertical -> fmt ";@;<1 0>"
-      in
       { box=
           (fun k ->
-            hvbox 2 (wrap "[" "]" (break space 0 $ k $ break space (-2))))
+            hvbox 2
+              (wrap "[" "]"
+                 (break space 0 $ box_collec c 0 k $ break space (-2))))
       ; sep_before= noop
-      ; sep_after_non_final
+      ; sep_after_non_final= fmt ";@;<1 0>"
       ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
 let get_array_expr (c : Conf.t) =
   match c.break_separators with
   | `Before ->
-      let sep_before =
-        match c.break_collection_expressions with
-        | `Wrap -> fmt "@;<0 0>; "
-        | `Fit_or_vertical -> fmt "@;<0 1>; "
-      in
-      { box= (fun k -> hvbox 0 (wrap_array c k))
-      ; sep_before
+      { box= (fun k -> box_collec c 0 (wrap_array c k))
+      ; sep_before= fmt "@;<0 1>; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop }
   | `After ->
-      let sep_after_non_final =
-        match c.break_collection_expressions with
-        | `Wrap -> fmt ";@;<1 2>"
-        | `Fit_or_vertical -> fmt ";@;<1 3>"
-      in
-      { box= (fun k -> hvbox 0 (wrap_array c k))
+      { box= (fun k -> box_collec c 0 (wrap_array c k))
       ; sep_before= noop
-      ; sep_after_non_final
+      ; sep_after_non_final= fmt ";@;<1 3>"
       ; sep_after_final= noop }
   | `After_and_docked ->
       let space = if c.space_around_arrays then 1 else 0 in
-      let sep_after_non_final =
-        match c.break_collection_expressions with
-        | `Wrap -> fmt ";@;<1 2>"
-        | `Fit_or_vertical -> fmt ";@;<1 0>"
-      in
       { box=
           (fun k ->
-            hvbox 2 (wrap "[|" "|]" (break space 0 $ k $ break space (-2))))
+            hvbox 2
+              (wrap "[|" "|]"
+                 (break space 0 $ box_collec c 0 k $ break space (-2))))
       ; sep_before= noop
-      ; sep_after_non_final
+      ; sep_after_non_final= fmt ";@;<1 0>"
       ; sep_after_final= fits_breaks ~level:1 "" ";" }
 
 let get_record_pat (c : Conf.t) ~ctx =
@@ -244,15 +233,15 @@ let get_list_pat (c : Conf.t) ~ctx =
       in
       let box k =
         hvbox indent_opn
-          (wrap "[" "]" (break space 0 $ k $ break space indent_cls))
+          (wrap "[" "]"
+             (break space 0 $ box_collec c 0 k $ break space indent_cls))
       in
-      {r with box; sep_after_non_final= fmt ";@;<1 0>"}
+      {r with box}
 
 let get_array_pat (c : Conf.t) ~ctx =
   let r = get_array_expr c in
   match c.break_separators with
-  | `Before -> {r with sep_before= fmt "@;<0 1>; "}
-  | `After -> {r with sep_after_non_final= fmt ";@;<1 3>"}
+  | `Before | `After -> r
   | `After_and_docked ->
       let space = if c.space_around_arrays then 1 else 0 in
       let indent_opn, indent_cls =
@@ -263,9 +252,10 @@ let get_array_pat (c : Conf.t) ~ctx =
       in
       let box k =
         hvbox indent_opn
-          (wrap "[|" "|]" (break space 0 $ k $ break space indent_cls))
+          (wrap "[|" "|]"
+             (break space 0 $ box_collec c 0 k $ break space indent_cls))
       in
-      {r with box; sep_after_non_final= fmt ";@;<1 0>"}
+      {r with box}
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t

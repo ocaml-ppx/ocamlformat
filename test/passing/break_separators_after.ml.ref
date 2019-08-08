@@ -151,8 +151,8 @@ let length =
 Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
   (Foo.foo ~foo ~foo ~foooo:()
      [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo));
-       ("foooo", fooooooo); ("foooooo", foooooooo); ("fooooooooo", foooooooo)
-     ])
+       ("foooo", fooooooo); ("foooooo", foooooooo);
+       ("fooooooooo", foooooooo) ])
 
 (* this is an array *)
 let length =
@@ -325,28 +325,16 @@ let f () =
   foooooooooooo
 
 let f () =
-  let [ aaaaaaaa;
-        bbbbbbbbbb;
-        ccccccccc;
-        dddddddddd;
-        eeeeeeeee;
-        ffffffffff;
-        gggggggggg;
-        hhhhhhhhhh ]
+  let [ aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+        gggggggggg; hhhhhhhhhh ]
     =
     some_value
   in
   foooooooooooo
 
 let f () =
-  let [| aaaaaaaa;
-         bbbbbbbbbb;
-         ccccccccc;
-         dddddddddd;
-         eeeeeeeee;
-         ffffffffff;
-         gggggggggg;
-         hhhhhhhhhh |]
+  let [| aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+         gggggggggg; hhhhhhhhhh |]
     =
     some_value
   in
@@ -363,21 +351,9 @@ let g () =
       gggggggggg;
       hhhhhhhhhh } ->
       foooooooo
-  | [ aaaaaaaa;
-      bbbbbbbbbb;
-      ccccccccc;
-      dddddddddd;
-      eeeeeeeee;
-      ffffffffff;
-      gggggggggg;
-      hhhhhhhhhh ] ->
+  | [ aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+      gggggggggg; hhhhhhhhhh ] ->
       fooooooooo
-  | [| aaaaaaaa;
-       bbbbbbbbbb;
-       ccccccccc;
-       dddddddddd;
-       eeeeeeeee;
-       ffffffffff;
-       gggggggggg;
-       hhhhhhhhhh |] ->
+  | [| aaaaaaaa; bbbbbbbbbb; ccccccccc; dddddddddd; eeeeeeeee; ffffffffff;
+       gggggggggg; hhhhhhhhhh |] ->
       fooooooooo

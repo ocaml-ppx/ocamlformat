@@ -150,7 +150,7 @@ let fmt_expressions c width sub_exp exprs fmt_expr
         in
         list_fl exprs fmt_expr
       in
-      hovbox (-2) (list_fl grps fmt_grp)
+      list_fl grps fmt_grp
 
 (** Handle the `break-fun-decl` option *)
 let wrap_fun_decl_args c k =
@@ -1050,7 +1050,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         $ fmt_pattern c (sub_pat ~ctx pat)
         $ fmt_or_k last p.sep_after_final p.sep_after_non_final
       in
-      hvbox 0 (p.box (list_fl pats fmt_pat))
+      p.box (list_fl pats fmt_pat)
   | Ppat_or _ ->
       let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
@@ -1386,6 +1386,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" pexp_attributes in
+  let has_attr = not (List.is_empty pexp_attributes) in
   let parens = Option.value parens ~default:(parenze_exp xexp) in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   let fmt_op_args op_args =
@@ -1832,7 +1833,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_array e1N ->
       let p = Params.get_array_expr c.conf in
-      hvbox 0
+      hvbox_if has_attr 0
         ( p.box
             (fmt_expressions c width (sub_exp ~ctx) e1N
                (sub_exp ~ctx >> fmt_expression c)
@@ -1913,10 +1914,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     match Sugar.list_exp c.cmts exp with
     | Some (loc_xes, nil_loc) ->
         let p = Params.get_list_expr c.conf in
-        hvbox 0
-          (wrap_if
-             (not (List.is_empty pexp_attributes))
-             "(" ")"
+        hvbox_if has_attr 0
+          (wrap_if has_attr "(" ")"
              ( p.box
                  ( fmt_expressions c width snd loc_xes
                      (fun (locs, xexp) ->
@@ -2288,7 +2287,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_field x
         $ fmt_or_k last p1.sep_after_final p1.sep_after_non_final
       in
-      hvbox 0
+      hvbox_if has_attr 0
         ( p1.box
             ( opt default (fun d ->
                   hvbox 2
