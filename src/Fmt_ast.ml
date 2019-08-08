@@ -1035,7 +1035,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             (last && Poly.(closed_flag = Closed))
             p1.sep_after_final p1.sep_after_non_final
       in
-      hvbox 0
+      hvbox_if parens 0
         (wrap_if parens "(" ")"
            (p1.box
               ( list_fl flds fmt_field
