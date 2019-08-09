@@ -58,13 +58,12 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
       ; break_after_opening_paren= fmt "@ " }
 
-let wrap_record (c : Conf.t) =
-  if c.space_around_records then wrap "{ " "@ }"
-  else wrap_fits_breaks c "{" "}"
-
-let wrap_collec (c : Conf.t) ~space_around opn cls =
+let wrap_collec c ~space_around opn cls =
   if space_around then wrap_k (str opn $ char ' ') (or_newline cls cls)
   else wrap_fits_breaks c opn cls
+
+let wrap_record (c : Conf.t) =
+  wrap_collec c ~space_around:c.space_around_records "{" "}"
 
 let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break =
   if parens then wrap_fits_breaks c "(" ")"
