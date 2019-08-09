@@ -198,9 +198,9 @@ let get_record_pat (c : Conf.t) ~ctx =
       ({common with box}, wildcard)
 
 let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
-  let r = collection_expr c ~space_around opn cls in
+  let params = collection_expr c ~space_around opn cls in
   match c.break_separators with
-  | `Before | `After -> r
+  | `Before | `After -> params
   | `After_and_docked ->
       let space = if space_around then 1 else 0 in
       let indent_opn, indent_cls =
@@ -214,7 +214,7 @@ let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
           (wrap_k (str opn) (str cls)
              (break space 0 $ box_collec c 0 k $ break space indent_cls))
       in
-      {r with box}
+      {params with box}
 
 let get_list_pat (c : Conf.t) ~ctx =
   collection_pat c ~ctx ~space_around:c.space_around_lists "[" "]"
