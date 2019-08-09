@@ -1421,8 +1421,9 @@ end = struct
                      match e with
                      | { pexp_desc= Pexp_constraint (e, _)
                        ; pexp_attributes= []
-                       ; _ } ->
-                         e == exp
+                       ; _ }
+                       when e == exp ->
+                         true
                      | _ -> e == e) )
         | Pexp_assert e
          |Pexp_constraint (e, _)
@@ -2319,8 +2320,9 @@ end = struct
                  match e0 with
                  | { pexp_desc= Pexp_constraint (e, _)
                    ; pexp_attributes= []
-                   ; _ } ->
-                     e == exp
+                   ; _ }
+                   when e == exp ->
+                     true
                  | _ -> e0 == exp) ->
           exposed_right_exp Non_apply exp
           (* Non_apply is perhaps pessimistic *)

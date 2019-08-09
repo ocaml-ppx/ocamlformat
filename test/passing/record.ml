@@ -115,3 +115,7 @@ let x =
   { aaaaaaaaaa
   (* b *)
   ; b}
+
+type t = { a : (module S); b : (module S) }
+
+let _ = { a = (module M : S); b = (module M : S) }
