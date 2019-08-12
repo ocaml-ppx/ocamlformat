@@ -9,11 +9,17 @@
  *                                                                    *
  **********************************************************************)
 
-val init :
-  (Source.t -> Cmts.t -> Conf.t -> Parsetree.structure -> Fmt.t) -> unit
-(** Initialize internal state *)
+type conf =
+  { conf: Conf.t
+  ; fmt_code:
+         Source.t
+      -> Cmts.t
+      -> Conf.t
+      -> Migrate_ast.Parsetree.structure
+      -> Fmt.t }
+(** Internal state *)
 
-val fmt : Conf.t -> Odoc_parser.Ast.docs -> Fmt.t
+val fmt : conf -> Odoc_parser.Ast.docs -> Fmt.t
 
 val diff :
      Conf.t

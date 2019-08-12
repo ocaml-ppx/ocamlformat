@@ -19,7 +19,16 @@ open Parsetree
 open Ast
 open Fmt
 
-type c = {conf: Conf.t; source: Source.t; cmts: Cmts.t}
+type c =
+  { conf: Conf.t
+  ; source: Source.t
+  ; cmts: Cmts.t
+  ; fmt_code:
+         Source.t
+      -> Cmts.t
+      -> Conf.t
+      -> Migrate_ast.Parsetree.structure
+      -> Fmt.t }
 
 module Cmts = struct
   include Cmts
@@ -453,7 +462,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   in
   let fmt_parsed parsed =
     fmt_if (space_i 0) " "
-    $ Fmt_odoc.fmt c.conf parsed
+    $ Fmt_odoc.fmt {conf= c.conf; fmt_code= c.fmt_code} parsed
     $ fmt_if (space_i (String.length str_cmt - 1)) " "
   in
   let fmt_raw str_cmt =
@@ -4399,16 +4408,17 @@ let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
 
 (** Entry points *)
 
-let fmt_file ~ctx ~f source cmts conf itms =
-  let c = {source; cmts; conf} in
+let fmt_file ~ctx ~f fmt_code source cmts conf itms =
+  let c = {source; cmts; conf; fmt_code} in
   Ast.init c.conf ;
   match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
 
-let fmt_signature = fmt_file ~f:fmt_signature ~ctx:Top
+let rec fmt_structure_in_cmt src cmts c s =
+  fmt_file ~f:fmt_structure ~ctx:(Pld (PStr s)) fmt_structure_in_cmt src
+    cmts c s
 
-let fmt_structure_in_cmt src cmts c s =
-  fmt_file ~f:fmt_structure ~ctx:(Pld (PStr s)) src cmts c s
+let fmt_signature = fmt_file ~f:fmt_signature ~ctx:Top fmt_structure_in_cmt
 
-let fmt_structure = fmt_file ~f:fmt_structure ~ctx:Top
+let fmt_structure = fmt_file ~f:fmt_structure ~ctx:Top fmt_structure_in_cmt
 
-let fmt_use_file = fmt_file ~f:fmt_use_file ~ctx:Top
+let fmt_use_file = fmt_file ~f:fmt_use_file ~ctx:Top fmt_structure_in_cmt

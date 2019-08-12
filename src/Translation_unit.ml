@@ -261,7 +261,6 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
       let buffer = Buffer.create (String.length source) in
       let source_t = Source.create source in
       let cmts_t = xunit.init_cmts source_t t.ast t.comments in
-      Fmt_odoc.init Fmt_ast.fmt_structure_in_cmt ;
       Normalize.init Normalize.impl ;
       let fs = Format_.formatter_of_buffer buffer in
       Fmt.set_margin conf.margin fs ;

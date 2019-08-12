@@ -13,6 +13,15 @@ open Fmt
 open Odoc_parser.Ast
 module Location_ = Odoc_model.Location_
 
+type conf =
+  { conf: Conf.t
+  ; fmt_code:
+         Source.t
+      -> Cmts.t
+      -> Conf.t
+      -> Migrate_ast.Parsetree.structure
+      -> Fmt.t }
+
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
 let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
@@ -54,11 +63,6 @@ let str_normalized ?(escape = escape_all) s =
   |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
 
-let init, format =
-  let format = ref (fun _ _ _ _ -> assert false) in
-  let init fmt = format := fmt in
-  (init, format)
-
 let fmt_if_not_empty lst fmt = fmt_if (not (List.is_empty lst)) fmt
 
 let ign_loc ~f with_loc = f with_loc.Location_.value
@@ -78,13 +82,14 @@ let fmt_verbatim_block s =
 let fmt_code_block conf s =
   try
     let parsed =
-      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
+      Parse_with_comments.parse Migrate_ast.Parse.implementation conf.conf
         ~source:s
     in
     let source = Source.create s in
-    let format = !format in
+    let format = conf.fmt_code in
     let cmts = Cmts.init_impl ~format source parsed.ast parsed.comments in
-    hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (format source cmts conf parsed.ast))
+    hvbox 0
+      (wrap "{[@;<1 2>" "@ ]}" (format source cmts conf.conf parsed.ast))
   with _ ->
     let fmt_line ~first ~last:_ l =
       let l = String.rstrip l in
