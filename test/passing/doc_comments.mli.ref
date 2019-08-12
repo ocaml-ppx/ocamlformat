@@ -263,18 +263,12 @@ end
     Abc
     def
       v}
-    - {[
-        A
-          B
-      ]} *)
+    - {[ A B ]} *)
 
 (** Code block
 
     {[ Single line ]}
-    {[
-      Multi
-      line
-    ]}
+    {[ Multi line ]}
     {[
       Multi
       line

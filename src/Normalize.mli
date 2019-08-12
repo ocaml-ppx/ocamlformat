@@ -14,6 +14,9 @@
 open Migrate_ast
 open Parsetree
 
+val init : (Conf.t -> Parsetree.structure -> Parsetree.structure) -> unit
+(** Initialize internal state *)
+
 val comment : string -> string
 (** Normalize a comment. *)
 

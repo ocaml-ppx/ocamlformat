@@ -16,6 +16,11 @@ open Asttypes
 open Parsetree
 open Ast_helper
 
+let init, normalize_struct =
+  let normalize_struct = ref (fun _ _ -> assert false) in
+  let init norm_struct = normalize_struct := norm_struct in
+  (init, normalize_struct)
+
 let comment s =
   (* normalize consecutive whitespace chars to a single space *)
   String.concat ~sep:" "
@@ -65,13 +70,13 @@ let rec odoc_inline_element fmt = function
 and odoc_inline_elements fmt elems =
   list (ign_loc odoc_inline_element) fmt elems
 
-let rec odoc_nestable_block_element fmt : nestable_block_element -> unit =
-  function
+let rec odoc_nestable_block_element c fmt = function
   | `Paragraph elms -> fpf fmt "Paragraph,%a" odoc_inline_elements elms
   | `Code_block txt ->
       let txt =
         try
           Migrate_ast.Parse.implementation (Lexing.from_string txt)
+          |> !normalize_struct c
           |> Caml.Format.asprintf "%a" Printast.implementation
         with _ -> txt
       in
@@ -81,52 +86,55 @@ let rec odoc_nestable_block_element fmt : nestable_block_element -> unit =
   | `List (ord, _syntax, items) ->
       let ord = match ord with `Unordered -> "U" | `Ordered -> "O" in
       let list_item fmt elems =
-        fpf fmt "Item(%a)" odoc_nestable_block_elements elems
+        fpf fmt "Item(%a)" (odoc_nestable_block_elements c) elems
       in
       fpf fmt "List,%s,%a" ord (list list_item) items
 
-and odoc_nestable_block_elements fmt elems =
-  list (ign_loc odoc_nestable_block_element) fmt elems
+and odoc_nestable_block_elements c fmt elems =
+  list (ign_loc (odoc_nestable_block_element c)) fmt elems
 
-let odoc_tag fmt : tag -> unit = function
+let odoc_tag c fmt = function
   | `Author txt -> fpf fmt "Author,%a" str txt
   | `Deprecated elems ->
-      fpf fmt "Deprecated,%a" odoc_nestable_block_elements elems
+      fpf fmt "Deprecated,%a" (odoc_nestable_block_elements c) elems
   | `Param (p, elems) ->
-      fpf fmt "Param,%a,%a" str p odoc_nestable_block_elements elems
+      fpf fmt "Param,%a,%a" str p (odoc_nestable_block_elements c) elems
   | `Raise (p, elems) ->
-      fpf fmt "Raise,%a,%a" str p odoc_nestable_block_elements elems
-  | `Return elems -> fpf fmt "Return,%a" odoc_nestable_block_elements elems
+      fpf fmt "Raise,%a,%a" str p (odoc_nestable_block_elements c) elems
+  | `Return elems ->
+      fpf fmt "Return,%a" (odoc_nestable_block_elements c) elems
   | `See (kind, txt, elems) ->
       let kind =
         match kind with `Url -> "U" | `File -> "F" | `Document -> "D"
       in
-      fpf fmt "See,%s,%a,%a" kind str txt odoc_nestable_block_elements elems
+      fpf fmt "See,%s,%a,%a" kind str txt
+        (odoc_nestable_block_elements c)
+        elems
   | `Since txt -> fpf fmt "Since,%a" str txt
   | `Before (p, elems) ->
-      fpf fmt "Before,%a,%a" str p odoc_nestable_block_elements elems
+      fpf fmt "Before,%a,%a" str p (odoc_nestable_block_elements c) elems
   | `Version txt -> fpf fmt "Version,%a" str txt
   | `Canonical ref -> fpf fmt "Canonical,%a" odoc_reference ref
   | `Inline -> fpf fmt "Inline"
   | `Open -> fpf fmt "Open"
   | `Closed -> fpf fmt "Closed"
 
-let odoc_block_element fmt : block_element -> unit = function
+let odoc_block_element c fmt = function
   | `Heading (lvl, lbl, content) ->
       let lvl = Int.to_string lvl in
       let lbl = match lbl with Some lbl -> lbl | None -> "" in
       fpf fmt "Heading,%s,%a,%a" lvl str lbl odoc_inline_elements content
-  | `Tag tag -> fpf fmt "Tag,%a" odoc_tag tag
-  | #nestable_block_element as elm -> odoc_nestable_block_element fmt elm
+  | `Tag tag -> fpf fmt "Tag,%a" (odoc_tag c) tag
+  | #nestable_block_element as elm -> odoc_nestable_block_element c fmt elm
 
-let odoc_docs fmt elems = list (ign_loc odoc_block_element) fmt elems
+let odoc_docs c fmt elems = list (ign_loc (odoc_block_element c)) fmt elems
 
 let docstring c text =
   if not c.Conf.parse_docstrings then comment text
   else
     let location = Lexing.dummy_pos in
     let parsed = Odoc_parser.parse_comment_raw ~location ~text in
-    Format.asprintf "Docstring(%a)%!" odoc_docs
+    Format.asprintf "Docstring(%a)%!" (odoc_docs c)
       parsed.Odoc_model.Error.value
 
 let sort_attributes : attributes -> attributes =

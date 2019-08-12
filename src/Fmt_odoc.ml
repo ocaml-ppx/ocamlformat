@@ -82,10 +82,9 @@ let fmt_code_block conf s =
         ~source:s
     in
     let source = Source.create s in
-    let cmts =
-      Cmts.init_impl ~format:!format source parsed.ast parsed.comments
-    in
-    hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (!format source cmts conf parsed.ast))
+    let format = !format in
+    let cmts = Cmts.init_impl ~format source parsed.ast parsed.comments in
+    hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (format source cmts conf parsed.ast))
   with _ ->
     let fmt_line ~first ~last:_ l =
       let l = String.rstrip l in
