@@ -9,14 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-type conf =
-  { conf: Conf.t
-  ; fmt_code:
-         Source.t
-      -> Cmts.t
-      -> Conf.t
-      -> Migrate_ast.Parsetree.structure
-      -> Fmt.t }
+type conf = {conf: Conf.t; fmt_code: string -> Fmt.t}
 (** Internal state *)
 
 val fmt : conf -> Odoc_parser.Ast.docs -> Fmt.t

@@ -13,14 +13,7 @@ open Fmt
 open Odoc_parser.Ast
 module Location_ = Odoc_model.Location_
 
-type conf =
-  { conf: Conf.t
-  ; fmt_code:
-         Source.t
-      -> Cmts.t
-      -> Conf.t
-      -> Migrate_ast.Parsetree.structure
-      -> Fmt.t }
+type conf = {conf: Conf.t; fmt_code: string -> Fmt.t}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -80,16 +73,7 @@ let fmt_verbatim_block s =
   hvbox 0 (wrap "{v" "v}" content)
 
 let fmt_code_block conf s =
-  try
-    let parsed =
-      Parse_with_comments.parse Migrate_ast.Parse.implementation conf.conf
-        ~source:s
-    in
-    let source = Source.create s in
-    let format = conf.fmt_code in
-    let cmts = Cmts.init_impl ~format source parsed.ast parsed.comments in
-    hvbox 0
-      (wrap "{[@;<1 2>" "@ ]}" (format source cmts conf.conf parsed.ast))
+  try hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (conf.fmt_code s))
   with _ ->
     let fmt_line ~first ~last:_ l =
       let l = String.rstrip l in

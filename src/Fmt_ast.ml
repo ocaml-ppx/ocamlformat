@@ -20,15 +20,7 @@ open Ast
 open Fmt
 
 type c =
-  { conf: Conf.t
-  ; source: Source.t
-  ; cmts: Cmts.t
-  ; fmt_code:
-         Source.t
-      -> Cmts.t
-      -> Conf.t
-      -> Migrate_ast.Parsetree.structure
-      -> Fmt.t }
+  {conf: Conf.t; source: Source.t; cmts: Cmts.t; fmt_code: string -> Fmt.t}
 
 module Cmts = struct
   include Cmts
@@ -4409,6 +4401,16 @@ let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
 (** Entry points *)
 
 let fmt_file ~ctx ~f fmt_code source cmts conf itms =
+  let fmt_code s =
+    let parsed =
+      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
+        ~source:s
+    in
+    let source = Source.create s in
+    let format = fmt_code in
+    let cmts = Cmts.init_impl ~format source parsed.ast parsed.comments in
+    format source cmts conf parsed.ast
+  in
   let c = {source; cmts; conf; fmt_code} in
   Ast.init c.conf ;
   match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
