@@ -121,13 +121,13 @@ type elements_collection_record_pat = {wildcard: Fmt.t}
 let get_record_expr (c : Conf.t) =
   match c.break_separators with
   | `Before ->
-      ( { box= (fun k -> hvbox 0 (wrap_record c k))
+      ( { box= wrap_record c >> hvbox 0
         ; sep_before= fmt "@,; "
         ; sep_after_non_final= noop
         ; sep_after_final= noop }
       , {break_after_with= break 1 2} )
   | `After ->
-      ( { box= (fun k -> hvbox 0 (wrap_record c k))
+      ( { box= wrap_record c >> hvbox 0
         ; sep_before= noop
         ; sep_after_non_final= fmt ";@;<1 2>"
         ; sep_after_final= noop }
@@ -136,11 +136,11 @@ let get_record_expr (c : Conf.t) =
       let space = if c.space_around_records then 1 else 0 in
       ( { box=
             (fun k ->
-              hvbox 2 (wrap "{" "}" (break space 0 $ k $ break space (-2))))
+              hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0)))
         ; sep_before= noop
-        ; sep_after_non_final= fmt ";@;<1 0>"
-        ; sep_after_final= fits_breaks ~level:1 "" ";" }
-      , {break_after_with= break 1 0} )
+        ; sep_after_non_final= fmt ";@;<1 2>"
+        ; sep_after_final= fits_breaks ~level:0 "" ";" }
+      , {break_after_with= break 1 2} )
 
 let box_collec (c : Conf.t) =
   match c.break_collection_expressions with
@@ -163,9 +163,9 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
       let space = if space_around then 1 else 0 in
       { box=
           (fun k ->
-            hvbox 2
+            hvbox 0
               (wrap_k (str opn) (str cls)
-                 (break space 0 $ box_collec c 0 k $ break space (-2))))
+                 (break space 2 $ box_collec c 0 k $ break space 0)))
       ; sep_before= noop
       ; sep_after_non_final= fmt ";@;<1 0>"
       ; sep_after_final= fits_breaks ~level:1 "" ";" }
@@ -187,13 +187,13 @@ let get_record_pat (c : Conf.t) ~ctx =
       let space = if c.space_around_records then 1 else 0 in
       let indent_opn, indent_cls =
         match ctx with
-        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-1, -1)
-        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-2, -2)
-        | _ -> (2, -2)
+        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-3, 1)
+        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-4, 0)
+        | _ -> (0, 0)
       in
       let box k =
         hvbox indent_opn
-          (wrap "{" "}" (break space 0 $ k $ break space indent_cls))
+          (wrap "{" "}" (break space 2 $ k $ break space indent_cls))
       in
       ({common with box}, wildcard)
 
@@ -205,14 +205,14 @@ let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
       let space = if space_around then 1 else 0 in
       let indent_opn, indent_cls =
         match ctx with
-        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-1, -1)
-        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-2, -2)
-        | _ -> (2, -2)
+        | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> (-3, 1)
+        | Ast.Exp {pexp_desc= Pexp_let _; _} -> (-4, 0)
+        | _ -> (0, 0)
       in
       let box k =
         hvbox indent_opn
           (wrap_k (str opn) (str cls)
-             (break space 0 $ box_collec c 0 k $ break space indent_cls))
+             (break space 2 $ box_collec c 0 k $ break space indent_cls))
       in
       {params with box}
 

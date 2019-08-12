@@ -968,16 +968,21 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
     match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
         let p = Params.get_list_pat c.conf ~ctx:ctx0 in
+        let cmt_break =
+          match c.conf.break_separators with
+          | `Before | `After -> break 1 2
+          | `After_and_docked -> break 1 0
+        in
         let fmt_pat ~first ~last (locs, xpat) =
           fmt_if_k (not first) p.sep_before
-          $ Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs (fmt_pattern c xpat)
+          $ Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat)
           $ fmt_or_k last p.sep_after_final p.sep_after_non_final
         in
         hvbox 0
           (Cmts.fmt c ppat_loc
              (p.box
                 ( list_fl loc_xpats fmt_pat
-                $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
+                $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
         hvbox 0
@@ -1914,15 +1919,20 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     match Sugar.list_exp c.cmts exp with
     | Some (loc_xes, nil_loc) ->
         let p = Params.get_list_expr c.conf in
+        let cmt_break =
+          match c.conf.break_separators with
+          | `Before | `After -> break 1 2
+          | `After_and_docked -> break 1 0
+        in
         hvbox_if has_attr 0
           (wrap_if has_attr "(" ")"
              ( p.box
                  ( fmt_expressions c width snd loc_xes
                      (fun (locs, xexp) ->
-                       Cmts.fmt_list c ~eol:(fmt "@;<1 2>") locs
+                       Cmts.fmt_list c ~eol:cmt_break locs
                        @@ fmt_expression c xexp)
                      p
-                 $ Cmts.fmt_before c ~pro:(fmt "@;<1 2>") ~epi:noop nil_loc
+                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
              $ fmt_atrs ))
     | None ->
