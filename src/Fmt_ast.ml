@@ -1362,19 +1362,6 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
 
 and fmt_op_args c ~parens xexp op_args =
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
-  let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
-    let _, ({ast= arg; _} as xarg) = lbl_xarg in
-    let parens =
-      ((not last_op) && exposed_right_exp Ast.Non_apply arg)
-      || parenze_exp xarg
-    in
-    let box =
-      match (snd lbl_xarg).ast.pexp_desc with
-      | Pexp_fun _ | Pexp_function _ -> Some (not last)
-      | _ -> None
-    in
-    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
-  in
   let is_not_indented exp =
     match exp.pexp_desc with
     | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
@@ -1388,6 +1375,29 @@ and fmt_op_args c ~parens xexp op_args =
       | `Preserve -> Source.is_long_pexp_open c.source exp )
     | _ -> false
   in
+  let parens_or_nested = parens || Ast.parenze_nested_exp xexp in
+  let parens_or_forced =
+    parens || Poly.(c.conf.infix_precedence = `Parens)
+  in
+  let hint =
+    match c.conf.indicate_multiline_delimiters with
+    | `Space -> (1, 0)
+    | `No -> (0, 0)
+    | `Closing_on_separate_line -> (1000, 0)
+  in
+  let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
+    let _, ({ast= arg; _} as xarg) = lbl_xarg in
+    let parens =
+      ((not last_op) && exposed_right_exp Ast.Non_apply arg)
+      || parenze_exp xarg
+    in
+    let box =
+      match (snd lbl_xarg).ast.pexp_desc with
+      | Pexp_fun _ | Pexp_function _ -> Some (not last)
+      | _ -> None
+    in
+    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
+  in
   let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
   let fmt_op_args_ ~first ~last (fmt_op, xargs) =
     let final_break =
@@ -1400,16 +1410,6 @@ and fmt_op_args c ~parens xexp op_args =
       $ (if final_break then fmt "@ " else fmt_if (not first) " ")
       $ hovbox_if (not last) 2 (fmt_args ~last_op:last xargs) )
     $ fmt_if_k (not last) (break 0 0)
-  in
-  let parens_or_nested = parens || Ast.parenze_nested_exp xexp in
-  let parens_or_forced =
-    parens || Poly.(c.conf.infix_precedence = `Parens)
-  in
-  let hint =
-    match c.conf.indicate_multiline_delimiters with
-    | `Space -> (1, 0)
-    | `No -> (0, 0)
-    | `Closing_on_separate_line -> (1000, 0)
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     list_fl args
