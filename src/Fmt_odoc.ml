@@ -129,11 +129,8 @@ let fmt_styled style fmt_elem elems =
     | `Superscript -> "^"
     | `Subscript -> "_"
   in
-  hovbox 0
-    (wrap "{" "}"
-       ( str_normalized s
-       $ fmt_if_not_empty elems "@ "
-       $ list elems "" fmt_elem ))
+  wrap "{" "}"
+    (str_normalized s $ fmt_if_not_empty elems "@ " $ list elems "" fmt_elem)
 
 let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Space _ -> fmt "@ "
@@ -171,7 +168,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
 and fmt_inline_elements txt = list txt "" (ign_loc ~f:fmt_inline_element)
 
 and fmt_nestable_block_element c = function
-  | `Paragraph elems -> hovbox 0 (fmt_inline_elements elems)
+  | `Paragraph elems -> fmt_inline_elements elems
   | `Code_block s -> fmt_code_block c s
   | `Verbatim s -> fmt_verbatim_block s
   | `Modules mods ->

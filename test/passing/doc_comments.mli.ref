@@ -145,21 +145,153 @@ val x : x
 
     list with long lines:
 
-    - xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx
-      xxx xxx xxx xxx xxx xxx xxx
-    - yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy
-      yyy yyy yyy yyy yyy yyy yyy
-    - zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz
-      zzz zzz zzz zzz zzz zzz zzz
+    - xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+    - yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+    - zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
 
     enumerated list with long lines:
 
-    + xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx
-      xxx xxx xxx xxx xxx xxx xxx
-    + yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy yyy
-      yyy yyy yyy yyy yyy yyy yyy
-    + zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz zzz
-      zzz zzz zzz zzz zzz zzz zzz
+    + xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+      xxx
+    + yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+      yyy
+    + zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
+      zzz
 
     list with sub lists:
 
@@ -237,7 +369,9 @@ end
 
 (** {[ b ]} *)
 
-(** - Odoc don't parse
+(** - Odoc
+      don't
+      parse
 
     multiple paragraph in a list *)
 
@@ -394,3 +528,6 @@ end
       (** This is a comment with code inside [let code inside = f inside] *)
       let code inside (* comment *) = f inside
     ]} *)
+
+(** {e foooooooo oooooooooo ooooooooo ooooooooo} {i fooooooooooooo oooooooo
+    oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)

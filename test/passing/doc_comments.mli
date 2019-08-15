@@ -430,3 +430,5 @@ let fooooooooooooooooo =
     let code inside (* comment   *) = f inside
   ]}
 *)
+
+(** {e foooooooo oooooooooo ooooooooo ooooooooo} {i fooooooooooooo oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)
