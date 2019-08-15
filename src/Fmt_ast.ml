@@ -1413,19 +1413,17 @@ and fmt_op_args c ~parens xexp op_args =
     | `No -> (0, 0)
     | `Closing_on_separate_line -> (1000, 0)
   in
-  let fmt_args ~last_op xargs =
-    list_fl xargs (fun ~first:_ ~last lbl_xarg ->
-        let _, ({ast= arg; _} as xarg) = lbl_xarg in
-        let parens =
-          ((not last_op) && exposed_right_exp Ast.Non_apply arg)
-          || parenze_exp xarg
-        in
-        let box =
-          match arg.pexp_desc with
-          | Pexp_fun _ | Pexp_function _ -> Some (not last)
-          | _ -> None
-        in
-        fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ ")
+  let fmt_arg very_last ~first:_ ~last ((_, xarg) as lbl_xarg) =
+    let parens =
+      ((not very_last) && exposed_right_exp Ast.Non_apply xarg.ast)
+      || parenze_exp xarg
+    in
+    let box =
+      match xarg.ast.pexp_desc with
+      | Pexp_fun _ | Pexp_function _ -> Some (not last)
+      | _ -> None
+    in
+    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in
@@ -1442,7 +1440,7 @@ and fmt_op_args c ~parens xexp op_args =
                      fmt "@ "
                  | _ -> fmt_if (not very_first) " " )
                $ hovbox_if (not very_last) 2
-                   (fmt_args ~last_op:very_last xargs) )
+                   (list_fl xargs (fmt_arg very_last)) )
            $ fmt_if_k (not last) (break_unless_newline 1 0)))
     $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
