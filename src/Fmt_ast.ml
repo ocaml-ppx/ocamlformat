@@ -1403,21 +1403,21 @@ and fmt_op_args c ~parens xexp op_args =
     in
     fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
   in
+  let is_not_indented exp =
+    match exp.pexp_desc with
+    | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
+     |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
+     |Pexp_try _ ->
+        true
+    | Pexp_open _ -> (
+      match c.conf.let_open with
+      | `Auto | `Long -> true
+      | `Short -> false
+      | `Preserve -> Source.is_long_pexp_open c.source exp )
+    | _ -> false
+  in
   let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
   let fmt_op_args_ ~first ~last (fmt_op, xargs) =
-    let is_not_indented exp =
-      match exp.pexp_desc with
-      | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
-       |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
-       |Pexp_try _ ->
-          true
-      | Pexp_open _ -> (
-        match c.conf.let_open with
-        | `Auto | `Long -> true
-        | `Short -> false
-        | `Preserve -> Source.is_long_pexp_open c.source exp )
-      | _ -> false
-    in
     let final_break =
       match xargs with
       | (_, {ast= a0; _}) :: _ -> last && is_not_indented a0
@@ -1433,17 +1433,17 @@ and fmt_op_args c ~parens xexp op_args =
   let parens_or_forced =
     parens || Poly.(c.conf.infix_precedence = `Parens)
   in
+  let hint =
+    match c.conf.indicate_multiline_delimiters with
+    | `Space -> (1, 0)
+    | `No -> (0, 0)
+    | `Closing_on_separate_line -> (1000, 0)
+  in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     list_fl args
       (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
         let very_first = first_grp && first in
         let very_last = last_grp && last in
-        let hint =
-          match c.conf.indicate_multiline_delimiters with
-          | `Space -> (1, 0)
-          | `No -> (0, 0)
-          | `Closing_on_separate_line -> (1000, 0)
-        in
         fmt_if_k very_first
           (fits_breaks_if parens_or_nested "("
              ( if parens_or_forced then
