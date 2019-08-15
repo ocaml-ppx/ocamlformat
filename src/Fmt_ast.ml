@@ -1444,24 +1444,13 @@ and fmt_op_args c ~parens xexp op_args =
       (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
         let very_first = first_grp && first in
         let very_last = last_grp && last in
-        fmt_if_k very_first
-          (fits_breaks_if parens_or_nested "("
-             ( if parens_or_forced then
-               match c.conf.indicate_multiline_delimiters with
-               | `Space -> "( "
-               | `No | `Closing_on_separate_line -> "("
-             else "" ))
-        $ fmt_before_cmts
+        fmt_before_cmts
         $ fmt_if_k first
             (open_hovbox (if first_grp && parens then -2 else 0))
         $ fmt_after_cmts
         $ fmt_op_args_ ~first:very_first op_args ~last:very_last
         $ fmt_if_k last close_box
-        $ fmt_or_k very_last
-            (fmt_or_k parens_or_forced
-               (fits_breaks_if parens_or_nested ")" ~hint ")")
-               (fits_breaks_if parens_or_nested ")" ""))
-            (break_unless_newline 1 0))
+        $ fmt_if_k (not very_last) (break_unless_newline 1 0))
   in
   let op_args_grouped =
     match c.conf.break_infix with
@@ -1474,7 +1463,16 @@ and fmt_op_args c ~parens xexp op_args =
         List.group op_args ~break
     | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
   in
-  list_fl op_args_grouped fmt_op_arg_group
+  fits_breaks_if parens_or_nested "("
+    ( if parens_or_forced then
+      match c.conf.indicate_multiline_delimiters with
+      | `Space -> "( "
+      | `No | `Closing_on_separate_line -> "("
+    else "" )
+  $ list_fl op_args_grouped fmt_op_arg_group
+  $ fmt_or_k parens_or_forced
+      (fits_breaks_if parens_or_nested ")" ~hint ")")
+      (fits_breaks_if parens_or_nested ")" "")
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
