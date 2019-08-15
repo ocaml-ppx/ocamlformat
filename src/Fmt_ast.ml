@@ -1362,7 +1362,7 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
 
 and fmt_op_args c ~parens xexp op_args =
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
-  let is_not_indented exp =
+  let is_not_indented {ast= exp; _} =
     match exp.pexp_desc with
     | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
      |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
@@ -1389,27 +1389,22 @@ and fmt_op_args c ~parens xexp op_args =
         in
         fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ ")
   in
-  let fmt_op_args_ ~first ~last (fmt_op, xargs) =
-    let final_break =
-      match xargs with
-      | (_, {ast= a0; _}) :: _ -> last && is_not_indented a0
-      | _ -> false
-    in
-    hvbox 0
-      ( fmt_op
-      $ (if final_break then fmt "@ " else fmt_if (not first) " ")
-      $ hovbox_if (not last) 2 (fmt_args ~last_op:last xargs) )
-    $ fmt_if_k (not last) (break 0 0)
-  in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
-    hovbox
-      (if first_grp && parens then -2 else 0)
+    let indent = if first_grp && parens then -2 else 0 in
+    hovbox indent
       (list_fl args
-         (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
+         (fun ~first ~last (_, cmts_before, cmts_after, (op, xargs)) ->
            let very_first = first_grp && first in
            let very_last = last_grp && last in
-           fmt_before_cmts $ fmt_after_cmts
-           $ fmt_op_args_ ~first:very_first op_args ~last:very_last
+           cmts_before $ cmts_after
+           $ hvbox 0
+               ( op
+               $ ( match xargs with
+                 | (_, e) :: _ when very_last && is_not_indented e ->
+                     fmt "@ "
+                 | _ -> fmt_if (not very_first) " " )
+               $ hovbox_if (not very_last) 2
+                   (fmt_args ~last_op:very_last xargs) )
            $ fmt_if_k (not last) (break_unless_newline 1 0)))
     $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
