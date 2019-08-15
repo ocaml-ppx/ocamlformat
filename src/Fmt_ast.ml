@@ -1385,20 +1385,20 @@ and fmt_op_args c ~parens xexp op_args =
     | `No -> (0, 0)
     | `Closing_on_separate_line -> (1000, 0)
   in
-  let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
-    let _, ({ast= arg; _} as xarg) = lbl_xarg in
-    let parens =
-      ((not last_op) && exposed_right_exp Ast.Non_apply arg)
-      || parenze_exp xarg
-    in
-    let box =
-      match (snd lbl_xarg).ast.pexp_desc with
-      | Pexp_fun _ | Pexp_function _ -> Some (not last)
-      | _ -> None
-    in
-    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
+  let fmt_args ~last_op xargs =
+    list_fl xargs (fun ~first:_ ~last lbl_xarg ->
+        let _, ({ast= arg; _} as xarg) = lbl_xarg in
+        let parens =
+          ((not last_op) && exposed_right_exp Ast.Non_apply arg)
+          || parenze_exp xarg
+        in
+        let box =
+          match arg.pexp_desc with
+          | Pexp_fun _ | Pexp_function _ -> Some (not last)
+          | _ -> None
+        in
+        fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ ")
   in
-  let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
   let fmt_op_args_ ~first ~last (fmt_op, xargs) =
     let final_break =
       match xargs with
