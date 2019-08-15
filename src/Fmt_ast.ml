@@ -1360,6 +1360,94 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
         (hvbox_if parens 0 @@ list_pn grps fmt_seq_list)
     $ fmt_atrs )
 
+and fmt_op_args c ~parens xexp op_args =
+  let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
+  let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
+    let _, ({ast= arg; _} as xarg) = lbl_xarg in
+    let parens =
+      ((not last_op) && exposed_right_exp Ast.Non_apply arg)
+      || parenze_exp xarg
+    in
+    let box =
+      match (snd lbl_xarg).ast.pexp_desc with
+      | Pexp_fun _ | Pexp_function _ -> Some (not last)
+      | _ -> None
+    in
+    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
+  in
+  let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
+  let fmt_op_args_ ~first ~last (fmt_op, xargs) =
+    let is_not_indented exp =
+      match exp.pexp_desc with
+      | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
+       |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
+       |Pexp_try _ ->
+          true
+      | Pexp_open _ -> (
+        match c.conf.let_open with
+        | `Auto | `Long -> true
+        | `Short -> false
+        | `Preserve -> Source.is_long_pexp_open c.source exp )
+      | _ -> false
+    in
+    let final_break =
+      match xargs with
+      | (_, {ast= a0; _}) :: _ -> last && is_not_indented a0
+      | _ -> false
+    in
+    hvbox 0
+      ( fmt_op
+      $ (if final_break then fmt "@ " else fmt_if (not first) " ")
+      $ hovbox_if (not last) 2 (fmt_args ~last_op:last xargs) )
+    $ fmt_if_k (not last) (break 0 0)
+  in
+  let parens_or_nested = parens || Ast.parenze_nested_exp xexp in
+  let parens_or_forced =
+    parens || Poly.(c.conf.infix_precedence = `Parens)
+  in
+  let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
+    list_fl args
+      (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
+        let very_first = first_grp && first in
+        let very_last = last_grp && last in
+        let hint =
+          match c.conf.indicate_multiline_delimiters with
+          | `Space -> (1, 0)
+          | `No -> (0, 0)
+          | `Closing_on_separate_line -> (1000, 0)
+        in
+        fmt_if_k very_first
+          (fits_breaks_if parens_or_nested "("
+             ( if parens_or_forced then
+               match c.conf.indicate_multiline_delimiters with
+               | `Space -> "( "
+               | `No | `Closing_on_separate_line -> "("
+             else "" ))
+        $ fmt_before_cmts
+        $ fmt_if_k first
+            (open_hovbox (if first_grp && parens then -2 else 0))
+        $ fmt_after_cmts
+        $ fmt_op_args_ ~first:very_first op_args ~last:very_last
+        $ fmt_if_k last close_box
+        $ fmt_or_k very_last
+            (fmt_or_k parens_or_forced
+               (fits_breaks_if parens_or_nested ")" ~hint ")")
+               (fits_breaks_if parens_or_nested ")" ""))
+            (break_unless_newline 1 0))
+  in
+  let op_args_grouped =
+    match c.conf.break_infix with
+    | `Wrap ->
+        let not_simple (_, arg) = not (is_simple c.conf width arg) in
+        let exists_not_simple args = List.exists args ~f:not_simple in
+        let break (has_cmts, _, _, (_, args1)) (_, _, _, (_, args2)) =
+          has_cmts || exists_not_simple args1 || exists_not_simple args2
+        in
+        List.group op_args ~break
+    | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
+  in
+  list_fl op_args_grouped fmt_op_arg_group
+
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
   protect (Exp exp)
@@ -1372,93 +1460,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   let has_attr = not (List.is_empty pexp_attributes) in
   let parens = Option.value parens ~default:(parenze_exp xexp) in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
-  let fmt_op_args op_args =
-    let fmt_arg ~last_op ~first:_ ~last lbl_xarg =
-      let _, ({ast= arg; _} as xarg) = lbl_xarg in
-      let parens =
-        ((not last_op) && exposed_right_exp Ast.Non_apply arg)
-        || parenze_exp xarg
-      in
-      let box =
-        match (snd lbl_xarg).ast.pexp_desc with
-        | Pexp_fun _ | Pexp_function _ -> Some (not last)
-        | _ -> None
-      in
-      fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
-    in
-    let fmt_args ~last_op xargs = list_fl xargs (fmt_arg ~last_op) in
-    let fmt_op_args ~first ~last (fmt_op, xargs) =
-      let is_not_indented exp =
-        match exp.pexp_desc with
-        | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
-         |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _
-         |Pexp_sequence _ | Pexp_try _ ->
-            true
-        | Pexp_open _ -> (
-          match c.conf.let_open with
-          | `Auto | `Long -> true
-          | `Short -> false
-          | `Preserve -> Source.is_long_pexp_open c.source exp )
-        | _ -> false
-      in
-      let final_break =
-        match xargs with
-        | (_, {ast= a0; _}) :: _ -> last && is_not_indented a0
-        | _ -> false
-      in
-      hvbox 0
-        ( fmt_op
-        $ (if final_break then fmt "@ " else fmt_if (not first) " ")
-        $ hovbox_if (not last) 2 (fmt_args ~last_op:last xargs) )
-      $ fmt_if_k (not last) (break 0 0)
-    in
-    let parens_or_nested = parens || Ast.parenze_nested_exp xexp in
-    let parens_or_forced =
-      parens || Poly.(c.conf.infix_precedence = `Parens)
-    in
-    let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
-      list_fl args
-        (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
-          let very_first = first_grp && first in
-          let very_last = last_grp && last in
-          let hint =
-            match c.conf.indicate_multiline_delimiters with
-            | `Space -> (1, 0)
-            | `No -> (0, 0)
-            | `Closing_on_separate_line -> (1000, 0)
-          in
-          fmt_if_k very_first
-            (fits_breaks_if parens_or_nested "("
-               ( if parens_or_forced then
-                 match c.conf.indicate_multiline_delimiters with
-                 | `Space -> "( "
-                 | `No | `Closing_on_separate_line -> "("
-               else "" ))
-          $ fmt_before_cmts
-          $ fmt_if_k first
-              (open_hovbox (if first_grp && parens then -2 else 0))
-          $ fmt_after_cmts
-          $ fmt_op_args ~first:very_first op_args ~last:very_last
-          $ fmt_if_k last close_box
-          $ fmt_or_k very_last
-              (fmt_or_k parens_or_forced
-                 (fits_breaks_if parens_or_nested ")" ~hint ")")
-                 (fits_breaks_if parens_or_nested ")" ""))
-              (break_unless_newline 1 0))
-    in
-    let op_args_grouped =
-      match c.conf.break_infix with
-      | `Wrap ->
-          let not_simple (_, arg) = not (is_simple c.conf width arg) in
-          let exists_not_simple args = List.exists args ~f:not_simple in
-          let break (has_cmts, _, _, (_, args1)) (_, _, _, (_, args2)) =
-            has_cmts || exists_not_simple args1 || exists_not_simple args2
-          in
-          List.group op_args ~break
-      | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
-    in
-    hvbox indent_wrap (list_fl op_args_grouped fmt_op_arg_group $ fmt_atrs)
-  in
   let ctx = Exp exp in
   let fmt_args_grouped e0 a1N =
     let all = (Nolabel, e0) :: a1N in
@@ -1650,18 +1651,23 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, _); (Nolabel, _)] )
     when is_infix_id id && not (is_monadic_binding_id id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
-      fmt_op_args
-        (List.map op_args ~f:(fun (op, args) ->
-             match op with
-             | Some ({ast= {pexp_loc; _}; _} as op) ->
-                 (* side effects of Cmts.fmt_before before fmt_expression is
-                    important *)
-                 let has_cmts = Cmts.has_before c.cmts pexp_loc in
-                 let fmt_before_cmts = Cmts.fmt_before c pexp_loc in
-                 let fmt_after_cmts = Cmts.fmt_after c pexp_loc in
-                 let fmt_op = fmt_expression c op in
-                 (has_cmts, fmt_before_cmts, fmt_after_cmts, (fmt_op, args))
-             | None -> (false, noop, noop, (noop, args))))
+      hvbox indent_wrap
+        ( fmt_op_args c ~parens xexp
+            (List.map op_args ~f:(fun (op, args) ->
+                 match op with
+                 | Some ({ast= {pexp_loc; _}; _} as op) ->
+                     (* side effects of Cmts.fmt_before before
+                        fmt_expression is important *)
+                     let has_cmts = Cmts.has_before c.cmts pexp_loc in
+                     let fmt_before_cmts = Cmts.fmt_before c pexp_loc in
+                     let fmt_after_cmts = Cmts.fmt_after c pexp_loc in
+                     let fmt_op = fmt_expression c op in
+                     ( has_cmts
+                     , fmt_before_cmts
+                     , fmt_after_cmts
+                     , (fmt_op, args) )
+                 | None -> (false, noop, noop, (noop, args))))
+        $ fmt_atrs )
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= id; loc}
         ; pexp_loc
@@ -1884,17 +1890,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
              $ fmt_atrs ))
     | None ->
         let loc_args = Sugar.infix_cons xexp in
-        fmt_op_args
-          (List.mapi loc_args ~f:(fun i (locs, arg) ->
-               let f l = Cmts.has_before c.cmts l in
-               let has_cmts = List.exists ~f locs in
-               let fmt_before_cmts = list locs "" (Cmts.fmt_before c) in
-               let fmt_op = fmt_if (i > 0) "::" in
-               let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
-               ( has_cmts
-               , fmt_before_cmts
-               , fmt_after_cmts
-               , (fmt_op, [(Nolabel, arg)]) ))) )
+        hvbox indent_wrap
+          ( fmt_op_args c ~parens xexp
+              (List.mapi loc_args ~f:(fun i (locs, arg) ->
+                   let f l = Cmts.has_before c.cmts l in
+                   let has_cmts = List.exists ~f locs in
+                   let fmt_before_cmts = list locs "" (Cmts.fmt_before c) in
+                   let fmt_op = fmt_if (i > 0) "::" in
+                   let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
+                   ( has_cmts
+                   , fmt_before_cmts
+                   , fmt_after_cmts
+                   , (fmt_op, [(Nolabel, arg)]) )))
+          $ fmt_atrs ) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =
         match c.conf.indicate_multiline_delimiters with
