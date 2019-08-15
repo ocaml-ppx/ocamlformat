@@ -1430,19 +1430,18 @@ and fmt_op_args c ~parens xexp op_args =
     $ fmt_if_k (not last) (break 0 0)
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
-    list_fl args
-      (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
-        let very_first = first_grp && first in
-        let very_last = last_grp && last in
-        fmt_before_cmts
-        $ fmt_if_k first
-            (open_hovbox (if first_grp && parens then -2 else 0))
-        $ fmt_after_cmts
-        $ fmt_op_args_ ~first:very_first op_args ~last:very_last
-        $ fmt_if_k last close_box
-        $ fmt_if_k (not very_last) (break_unless_newline 1 0))
+    hovbox
+      (if first_grp && parens then -2 else 0)
+      (list_fl args
+         (fun ~first ~last (_, fmt_before_cmts, fmt_after_cmts, op_args) ->
+           let very_first = first_grp && first in
+           let very_last = last_grp && last in
+           fmt_before_cmts $ fmt_after_cmts
+           $ fmt_op_args_ ~first:very_first op_args ~last:very_last
+           $ fmt_if_k (not last) (break_unless_newline 1 0)))
+    $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
-  let op_args_grouped =
+  let groups =
     match c.conf.break_infix with
     | `Wrap ->
         let not_simple (_, arg) = not (is_simple c.conf width arg) in
@@ -1460,7 +1459,7 @@ and fmt_op_args c ~parens xexp op_args =
     else if forced then wrap_fits_breaks_if ~space:false c.conf nested
     else wrap_if_fits_and nested
   in
-  wrap "(" ")" (list_fl op_args_grouped fmt_op_arg_group)
+  wrap "(" ")" (list_fl groups fmt_op_arg_group)
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
