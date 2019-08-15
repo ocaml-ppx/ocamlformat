@@ -1307,14 +1307,7 @@ and fmt_args ~first:first_grp ~last:last_grp c ctx args =
   let fmt_arg ?prev (lbl, arg) ?next =
     let ({ast; _} as xarg) = sub_exp ~ctx arg in
     let openbox = open_hovbox (if first_grp then 2 else 0) in
-    let consecutive_prefix_ops =
-      match next with
-      | Some (_, e) -> is_prefix ast && exposed_left_exp e
-      | _ -> false
-    in
-    let spc =
-      consecutive_prefix_ops || Option.is_some next || not last_grp
-    in
+    let spc = Option.is_some next || not last_grp in
     let box =
       match ast.pexp_desc with
       | Pexp_fun _ | Pexp_function _ -> Some false
