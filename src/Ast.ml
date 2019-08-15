@@ -858,6 +858,8 @@ and Requires_sub_terms : sig
   val parenze_pat : pattern In_ctx.xt -> bool
 
   val parenze_exp : expression In_ctx.xt -> bool
+
+  val parenze_nested_exp : expression In_ctx.xt -> bool
 end = struct
   open In_ctx
 
@@ -2364,6 +2366,36 @@ end = struct
     | Ptyp_tuple l -> exposed_right_typ (List.last_exn l)
     | Ptyp_object _ -> true
     | _ -> false
+
+  let parenze_nested_exp {ctx; ast= exp} =
+    let infix_prec ast =
+      match ast with
+      | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e ->
+          prec_ast ast
+      | Exp
+          ( { pexp_desc=
+                Pexp_construct
+                  ( {txt= Lident "::"; loc= _}
+                  , Some
+                      { pexp_desc= Pexp_tuple [_; _]
+                      ; pexp_loc= _
+                      ; pexp_attributes= _
+                      ; _ } )
+            ; pexp_loc= _
+            ; pexp_attributes= _
+            ; _ } as exp )
+        when not (is_sugared_list exp) ->
+          prec_ast ast
+      | _ -> None
+    in
+    (* Make the precedence explicit for infix operators *)
+    match (infix_prec ctx, infix_prec (Exp exp)) with
+    | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
+        (* special case for refs update and all InfixOp0 to reduce parens
+           noise *)
+        false
+    | None, _ | _, None -> false
+    | Some p1, Some p2 -> Poly.(p1 <> p2)
 end
 
 include In_ctx
