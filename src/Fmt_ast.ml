@@ -1440,37 +1440,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ hovbox_if (not last) 2 (fmt_args ~last_op:last xargs) )
       $ fmt_if_k (not last) (break 0 0)
     in
-    let is_nested_diff_prec_infix_ops =
-      let infix_prec ast =
-        match ast with
-        | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e ->
-            prec_ast ast
-        | Exp
-            ( { pexp_desc=
-                  Pexp_construct
-                    ( {txt= Lident "::"; loc= _}
-                    , Some
-                        { pexp_desc= Pexp_tuple [_; _]
-                        ; pexp_loc= _
-                        ; pexp_attributes= _
-                        ; _ } )
-              ; pexp_loc= _
-              ; pexp_attributes= _
-              ; _ } as exp )
-          when not (is_sugared_list exp) ->
-            prec_ast ast
-        | _ -> None
-      in
-      (* Make the precedence explicit for infix operators *)
-      match (infix_prec xexp.ctx, infix_prec (Exp xexp.ast)) with
-      | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
-          (* special case for refs update and all InfixOp0 to reduce parens
-             noise *)
-          false
-      | None, _ | _, None -> false
-      | Some p1, Some p2 -> Poly.(p1 <> p2)
-    in
-    let parens_or_nested = parens || is_nested_diff_prec_infix_ops in
+    let parens_or_nested = parens || Ast.parenze_nested_exp xexp in
     let parens_or_forced =
       parens || Poly.(c.conf.infix_precedence = `Parens)
     in
