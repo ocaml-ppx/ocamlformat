@@ -193,7 +193,7 @@ and fmt_list_light c kind items =
     match kind with `Unordered -> fmt "- " | `Ordered -> fmt "+ "
   in
   let fmt_item elems =
-    line_start $ vbox 0 (fmt_nestable_block_elements c elems)
+    line_start $ hovbox 0 (fmt_nestable_block_elements c elems)
   in
   vbox 0 (list items "@," fmt_item)
 
