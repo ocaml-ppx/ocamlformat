@@ -379,3 +379,33 @@ end
   (* foooooooo *)
   z
 ]} *)
+
+(** {[
+   let this = is_short
+]}
+
+{[
+  does not parse: verbatim
++/+/+ /+/+/ +/+//+/+/+/+/+/+/+/
++/+/+ /+/+/ +/+//+/+/+/+/+/+/+/
++/+/+ /+/+/ +/+//+/+/+/+/+/+/+/
++/+/+ /+/+/ +/+//+/+
+]}
+
+{[
+[@@@ocamlformat "break-separators = after"]
+
+let fooooooooooooooooo =
+[ foooooooooooooooooooooooooooooooo
+; foooooooooooooooooooooooooooooooo
+; foooooooooooooooooooooooooooooooo ]
+
+]}
+
+{[
+let fooooooooooooooooo =
+[ foooooooooooooooooooooooooooooooo
+; foooooooooooooooooooooooooooooooo
+; foooooooooooooooooooooooooooooooo ]
+
+]} *)
