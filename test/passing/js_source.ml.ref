@@ -9734,9 +9734,9 @@ module Indexop = struct
 
   ;;
   let h = Hashtbl.create 17 in
-  Def.( .%[]<- ) h "one" 1;
-  Def.( .%()<- ) h "two" 2;
-  Def.( .%{}<- ) h "three" 3
+  h.Def.%["one"] <- 1;
+  h.Def.%("two") <- 2;
+  h.Def.%{"three"} <- 3
 
   let x, y, z = Def.(h.%["one"], h.%("two"), h.%{"three"})
 end
