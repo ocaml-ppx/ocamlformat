@@ -1381,7 +1381,7 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
         (hvbox_if parens 0 @@ list_pn grps fmt_seq_list)
     $ fmt_atrs )
 
-and fmt_op_args c ~parens xexp op_args =
+and fmt_infix_op_args c ~parens xexp op_args =
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   let is_not_indented {ast= exp; _} =
     match exp.pexp_desc with
@@ -1663,7 +1663,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     when is_infix_id id && not (is_monadic_binding_id id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
       hvbox indent_wrap
-        ( fmt_op_args c ~parens xexp
+        ( fmt_infix_op_args c ~parens xexp
             (List.map op_args ~f:(fun (op, args) ->
                  match op with
                  | Some ({ast= {pexp_loc; _}; _} as op) ->
@@ -1903,7 +1903,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     | None ->
         let loc_args = Sugar.infix_cons xexp in
         hvbox indent_wrap
-          ( fmt_op_args c ~parens xexp
+          ( fmt_infix_op_args c ~parens xexp
               (List.mapi loc_args ~f:(fun i (locs, arg) ->
                    let f l = Cmts.has_before c.cmts l in
                    let has_cmts = List.exists ~f locs in
