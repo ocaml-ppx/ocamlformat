@@ -1354,7 +1354,17 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
     $ fmt_atrs )
 
 and fmt_infix_op_args c ~parens xexp op_args =
-  let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
+  let groups =
+    let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
+    let not_simple (_, arg) = not (is_simple c.conf width arg) in
+    let exists_not_simple args = List.exists args ~f:not_simple in
+    let break (has_cmts, _, _, (_, args1)) (_, _, _, (_, args2)) =
+      has_cmts || exists_not_simple args1 || exists_not_simple args2
+    in
+    match c.conf.break_infix with
+    | `Wrap -> List.group op_args ~break
+    | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
+  in
   let is_not_indented {ast= exp; _} =
     match exp.pexp_desc with
     | Pexp_ifthenelse _ | Pexp_let _ | Pexp_letexception _
@@ -1408,17 +1418,6 @@ and fmt_infix_op_args c ~parens xexp op_args =
                    (list_fl xargs (fmt_arg very_last)) )
            $ fmt_if_k (not last) (break_unless_newline 1 0)))
     $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
-  in
-  let groups =
-    match c.conf.break_infix with
-    | `Wrap ->
-        let not_simple (_, arg) = not (is_simple c.conf width arg) in
-        let exists_not_simple args = List.exists args ~f:not_simple in
-        let break (has_cmts, _, _, (_, args1)) (_, _, _, (_, args2)) =
-          has_cmts || exists_not_simple args1 || exists_not_simple args2
-        in
-        List.group op_args ~break
-    | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
   in
   fits_breaks_if parens_or_nested "("
     ( if parens_or_forced then
