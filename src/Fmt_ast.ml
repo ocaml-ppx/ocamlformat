@@ -20,20 +20,23 @@ open Ast
 open Fmt
 
 type c =
-  {conf: Conf.t; source: Source.t; cmts: Cmts.t; fmt_code: string -> Fmt.t}
+  { conf: Conf.t
+  ; source: Source.t
+  ; cmts: Cmts.t
+  ; fmt_code: Conf.t -> string -> Fmt.t }
 
 module Cmts = struct
   include Cmts
 
-  let fmt c = fmt c.cmts c.conf
+  let fmt c = fmt c.cmts c.conf ~fmt_code:c.fmt_code
 
-  let fmt_before c = fmt_before c.cmts c.conf
+  let fmt_before c = fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
 
-  let fmt_within c = fmt_within c.cmts c.conf
+  let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:c.fmt_code
 
-  let fmt_after c = fmt_after c.cmts c.conf
+  let fmt_after c = fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
 
-  let fmt_list c = fmt_list c.cmts c.conf
+  let fmt_list c = fmt_list c.cmts c.conf ~fmt_code:c.fmt_code
 end
 
 type block =
@@ -454,7 +457,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   in
   let fmt_parsed parsed =
     fmt_if (space_i 0) " "
-    $ Fmt_odoc.fmt {conf= c.conf; fmt_code= c.fmt_code} parsed
+    $ Fmt_odoc.fmt c.conf ~fmt_code:c.fmt_code parsed
     $ fmt_if (space_i (String.length str_cmt - 1)) " "
   in
   let fmt_raw str_cmt =
@@ -4400,27 +4403,28 @@ let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
 
 (** Entry points *)
 
-let fmt_file ~ctx ~f fmt_code source cmts conf itms =
-  let fmt_code s =
-    let parsed =
-      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
-        ~source:s
-    in
-    let source = Source.create s in
-    let format = fmt_code in
-    let cmts = Cmts.init_impl ~format source parsed.ast parsed.comments in
-    format source cmts conf parsed.ast
-  in
+let fmt_file ~ctx ~f ~fmt_code source cmts conf itms =
   let c = {source; cmts; conf; fmt_code} in
-  Ast.init c.conf ;
   match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
 
-let rec fmt_structure_in_cmt src cmts c s =
-  fmt_file ~f:fmt_structure ~ctx:(Pld (PStr s)) fmt_structure_in_cmt src
-    cmts c s
+let rec fmt_code conf s =
+  let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
+    Parse_with_comments.parse Migrate_ast.Parse.implementation conf
+      ~source:s
+  in
+  let source = Source.create s in
+  let cmts = Cmts.init_impl source ast comments in
+  fmt_file ~f:fmt_structure ~ctx:(Pld (PStr ast)) source cmts conf ast
+    ~fmt_code
 
-let fmt_signature = fmt_file ~f:fmt_signature ~ctx:Top fmt_structure_in_cmt
+let entry_point ~f ~ctx source cmts conf l =
+  (* [Ast.init] should be called only once per file. In particular, we don't
+     want to call it when formatting comments *)
+  Ast.init conf ;
+  fmt_file ~f ~ctx ~fmt_code source cmts conf l
 
-let fmt_structure = fmt_file ~f:fmt_structure ~ctx:Top fmt_structure_in_cmt
+let fmt_signature = entry_point ~f:fmt_signature ~ctx:Top
 
-let fmt_use_file = fmt_file ~f:fmt_use_file ~ctx:Top fmt_structure_in_cmt
+let fmt_structure = entry_point ~f:fmt_structure ~ctx:Top
+
+let fmt_use_file = entry_point ~f:fmt_use_file ~ctx:Top

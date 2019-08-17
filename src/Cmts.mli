@@ -29,30 +29,21 @@ open Migrate_ast
 type t
 
 val init_impl :
-     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
-  -> Source.t
-  -> Parsetree.structure
-  -> (string * Location.t) list
-  -> t
+  Source.t -> Parsetree.structure -> (string * Location.t) list -> t
 (** [init_impl source structure comments] associates each comment in
     [comments] with a source location appearing in [structure]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
 val init_intf :
-     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
-  -> Source.t
-  -> Parsetree.signature
-  -> (string * Location.t) list
-  -> t
+  Source.t -> Parsetree.signature -> (string * Location.t) list -> t
 (** [init_inft source signature comments] associates each comment in
     [comments] with a source location appearing in [signature]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
 val init_use_file :
-     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
-  -> Source.t
+     Source.t
   -> Parsetree.toplevel_phrase list
   -> (string * Location.t) list
   -> t
@@ -70,6 +61,7 @@ val relocate :
 val fmt_before :
      t
   -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -80,18 +72,31 @@ val fmt_before :
     before [loc]. *)
 
 val fmt_after :
-  t -> Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+     t
+  -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
+  -> ?pro:Fmt.t
+  -> ?epi:Fmt.t
+  -> Location.t
+  -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
 val fmt_within :
-  t -> Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+     t
+  -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
+  -> ?pro:Fmt.t
+  -> ?epi:Fmt.t
+  -> Location.t
+  -> Fmt.t
 (** [fmt_within loc] formats the comments associated with [loc] that appear
     within [loc]. *)
 
 val fmt :
      t
   -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -105,6 +110,7 @@ val fmt :
 val fmt_list :
      t
   -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t

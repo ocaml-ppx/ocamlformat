@@ -13,7 +13,7 @@ open Fmt
 open Odoc_parser.Ast
 module Location_ = Odoc_model.Location_
 
-type conf = {conf: Conf.t; fmt_code: string -> Fmt.t}
+type conf = {conf: Conf.t; fmt_code: Conf.t -> string -> Fmt.t}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -73,7 +73,7 @@ let fmt_verbatim_block s =
   hvbox 0 (wrap "{v" "v}" content)
 
 let fmt_code_block conf s =
-  try hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (conf.fmt_code s))
+  try hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (conf.fmt_code conf.conf s))
   with _ ->
     let fmt_line ~first ~last:_ l =
       let l = String.rstrip l in
@@ -256,7 +256,8 @@ let fmt_block_element c = function
   | #nestable_block_element as elm ->
       hovbox 0 (fmt_nestable_block_element c elm)
 
-let fmt c (docs : docs) =
+let fmt conf ~fmt_code (docs : docs) =
+  let c = {conf; fmt_code} in
   vbox 0 (list_block_elem docs (fmt_block_element c))
 
 let diff c x y =

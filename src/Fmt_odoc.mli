@@ -9,10 +9,11 @@
  *                                                                    *
  **********************************************************************)
 
-type conf = {conf: Conf.t; fmt_code: string -> Fmt.t}
-(** Internal state *)
-
-val fmt : conf -> Odoc_parser.Ast.docs -> Fmt.t
+val fmt :
+     Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
+  -> Odoc_parser.Ast.docs
+  -> Fmt.t
 
 val diff :
      Conf.t
