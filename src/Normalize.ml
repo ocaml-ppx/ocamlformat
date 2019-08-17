@@ -16,6 +16,38 @@ open Asttypes
 open Parsetree
 open Ast_helper
 
+type conf =
+  { conf: Conf.t
+  ; normalize_code:
+      Migrate_ast.Parsetree.structure -> Migrate_ast.Parsetree.structure }
+
+(** Remove comments that duplicate docstrings (or other comments). *)
+let dedup_cmts map_ast ast comments =
+  let of_ast map_ast ast =
+    let docs = ref (Set.empty (module Cmt)) in
+    let attribute _ atr =
+      match atr with
+      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
+        ; attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, None))
+                        ; pexp_loc
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ } ->
+          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          atr
+      | _ -> atr
+    in
+    map_ast {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+    !docs
+  in
+  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
+
 let comment s =
   (* normalize consecutive whitespace chars to a single space *)
   String.concat ~sep:" "
@@ -65,67 +97,88 @@ let rec odoc_inline_element fmt = function
 and odoc_inline_elements fmt elems =
   list (ign_loc odoc_inline_element) fmt elems
 
-let rec odoc_nestable_block_element fmt : nestable_block_element -> unit =
-  function
+let rec odoc_nestable_block_element c fmt = function
   | `Paragraph elms -> fpf fmt "Paragraph,%a" odoc_inline_elements elms
-  | `Code_block txt -> fpf fmt "Code_block,%a" str txt
+  | `Code_block txt ->
+      let txt =
+        try
+          let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
+            Parse_with_comments.parse Migrate_ast.Parse.implementation
+              c.conf ~source:txt
+          in
+          let comments = dedup_cmts Mapper.structure ast comments in
+          let print_comments fmt (l : Cmt.t list) =
+            List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
+                Location.compare a b)
+            |> List.iter ~f:(fun {Cmt.txt; _} ->
+                   Caml.Format.fprintf fmt "%s," txt)
+          in
+          let ast = c.normalize_code ast in
+          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
+            Printast.implementation ast print_comments comments
+        with _ -> txt
+      in
+      fpf fmt "Code_block,%a" str txt
   | `Verbatim txt -> fpf fmt "Verbatim,%a" str txt
   | `Modules mods -> fpf fmt "Modules,%a" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->
       let ord = match ord with `Unordered -> "U" | `Ordered -> "O" in
       let list_item fmt elems =
-        fpf fmt "Item(%a)" odoc_nestable_block_elements elems
+        fpf fmt "Item(%a)" (odoc_nestable_block_elements c) elems
       in
       fpf fmt "List,%s,%a" ord (list list_item) items
 
-and odoc_nestable_block_elements fmt elems =
-  list (ign_loc odoc_nestable_block_element) fmt elems
+and odoc_nestable_block_elements c fmt elems =
+  list (ign_loc (odoc_nestable_block_element c)) fmt elems
 
-let odoc_tag fmt : tag -> unit = function
+let odoc_tag c fmt = function
   | `Author txt -> fpf fmt "Author,%a" str txt
   | `Deprecated elems ->
-      fpf fmt "Deprecated,%a" odoc_nestable_block_elements elems
+      fpf fmt "Deprecated,%a" (odoc_nestable_block_elements c) elems
   | `Param (p, elems) ->
-      fpf fmt "Param,%a,%a" str p odoc_nestable_block_elements elems
+      fpf fmt "Param,%a,%a" str p (odoc_nestable_block_elements c) elems
   | `Raise (p, elems) ->
-      fpf fmt "Raise,%a,%a" str p odoc_nestable_block_elements elems
-  | `Return elems -> fpf fmt "Return,%a" odoc_nestable_block_elements elems
+      fpf fmt "Raise,%a,%a" str p (odoc_nestable_block_elements c) elems
+  | `Return elems ->
+      fpf fmt "Return,%a" (odoc_nestable_block_elements c) elems
   | `See (kind, txt, elems) ->
       let kind =
         match kind with `Url -> "U" | `File -> "F" | `Document -> "D"
       in
-      fpf fmt "See,%s,%a,%a" kind str txt odoc_nestable_block_elements elems
+      fpf fmt "See,%s,%a,%a" kind str txt
+        (odoc_nestable_block_elements c)
+        elems
   | `Since txt -> fpf fmt "Since,%a" str txt
   | `Before (p, elems) ->
-      fpf fmt "Before,%a,%a" str p odoc_nestable_block_elements elems
+      fpf fmt "Before,%a,%a" str p (odoc_nestable_block_elements c) elems
   | `Version txt -> fpf fmt "Version,%a" str txt
   | `Canonical ref -> fpf fmt "Canonical,%a" odoc_reference ref
   | `Inline -> fpf fmt "Inline"
   | `Open -> fpf fmt "Open"
   | `Closed -> fpf fmt "Closed"
 
-let odoc_block_element fmt : block_element -> unit = function
+let odoc_block_element c fmt = function
   | `Heading (lvl, lbl, content) ->
       let lvl = Int.to_string lvl in
       let lbl = match lbl with Some lbl -> lbl | None -> "" in
       fpf fmt "Heading,%s,%a,%a" lvl str lbl odoc_inline_elements content
-  | `Tag tag -> fpf fmt "Tag,%a" odoc_tag tag
-  | #nestable_block_element as elm -> odoc_nestable_block_element fmt elm
+  | `Tag tag -> fpf fmt "Tag,%a" (odoc_tag c) tag
+  | #nestable_block_element as elm -> odoc_nestable_block_element c fmt elm
 
-let odoc_docs fmt elems = list (ign_loc odoc_block_element) fmt elems
+let odoc_docs c fmt elems = list (ign_loc (odoc_block_element c)) fmt elems
 
 let docstring c text =
-  if not c.Conf.parse_docstrings then comment text
+  if not c.conf.parse_docstrings then comment text
   else
     let location = Lexing.dummy_pos in
     let parsed = Odoc_parser.parse_comment_raw ~location ~text in
-    Format.asprintf "Docstring(%a)%!" odoc_docs
+    Format.asprintf "Docstring(%a)%!" (odoc_docs c)
       parsed.Odoc_model.Error.value
 
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
 
-let make_mapper c ~ignore_doc_comment =
+let make_mapper conf ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
   let doc_attribute = function
@@ -145,7 +198,10 @@ let make_mapper c ~ignore_doc_comment =
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
-          if ignore_doc_comment then "IGNORED" else docstring c doc
+          if ignore_doc_comment then "IGNORED"
+          else
+            let c = {conf; normalize_code= m.structure m} in
+            docstring c doc
         in
         { attr_name= {txt; loc= m.location m loc}
         ; attr_payload=
@@ -306,15 +362,15 @@ let make_mapper c ~ignore_doc_comment =
   ; class_signature
   ; class_structure }
 
-let mapper_ignore_doc_comment = make_mapper ~ignore_doc_comment:true
-
-let mapper = make_mapper ~ignore_doc_comment:false
+let mapper c = make_mapper c ~ignore_doc_comment:false
 
 let impl c = Mapper.structure (mapper c)
 
 let intf c = Mapper.signature (mapper c)
 
 let use_file c = Mapper.use_file (mapper c)
+
+let mapper_ignore_doc_comment c = make_mapper c ~ignore_doc_comment:true
 
 let equal_impl ~ignore_doc_comments c ast1 ast2 =
   let map =
@@ -408,6 +464,7 @@ type docstring_error =
   | Unstable of Location.t * string
 
 let moved_docstrings c get_docstrings s1 s2 =
+  let c = {conf= c; normalize_code= impl c} in
   let d1 = get_docstrings c s1 in
   let d2 = get_docstrings c s2 in
   let equal (_, x) (_, y) =
@@ -447,3 +504,7 @@ let moved_docstrings_intf c s1 s2 = moved_docstrings c docstrings_intf s1 s2
 
 let moved_docstrings_use_file c s1 s2 =
   moved_docstrings c docstrings_use_file s1 s2
+
+let docstring conf =
+  let c = {conf; normalize_code= impl conf} in
+  docstring c

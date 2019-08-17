@@ -20,12 +20,10 @@ let equal eq ~ignore_doc_comments c a b =
 let moved_docstrings f c a b =
   f c a.Parse_with_comments.ast b.Parse_with_comments.ast
 
-let format = Fmt_ast.fmt_structure_in_cmt
-
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
   { parse= Migrate_ast.Parse.implementation
-  ; init_cmts= Cmts.init_impl ~format
+  ; init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; equal= equal Normalize.equal_impl
   ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_impl
@@ -35,7 +33,7 @@ let impl : _ Translation_unit.t =
 (** Operations on interface files. *)
 let intf : _ Translation_unit.t =
   { parse= Migrate_ast.Parse.interface
-  ; init_cmts= Cmts.init_intf ~format
+  ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; equal= equal Normalize.equal_intf
   ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_intf
@@ -45,7 +43,7 @@ let intf : _ Translation_unit.t =
 (** Operations on use_file files. *)
 let use_file : _ Translation_unit.t =
   { parse= Migrate_ast.Parse.use_file
-  ; init_cmts= Cmts.init_use_file ~format
+  ; init_cmts= Cmts.init_use_file
   ; fmt= Fmt_ast.fmt_use_file
   ; equal= equal Normalize.equal_use_file
   ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_use_file

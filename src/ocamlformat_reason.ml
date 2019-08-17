@@ -11,11 +11,9 @@
 
 (** OCamlFormat to convert Reason code to OCaml *)
 
-let format = Fmt_ast.fmt_structure_in_cmt
-
 (** Operations on binary serialized Reason implementations. *)
 let impl : _ Translation_unit.t =
-  { init_cmts= Cmts.init_impl ~format
+  { init_cmts= Cmts.init_impl
   ; fmt= Fmt_ast.fmt_structure
   ; parse= Migrate_ast.Parse.implementation
   ; equal= Reason.equal_impl
@@ -25,7 +23,7 @@ let impl : _ Translation_unit.t =
 
 (** Operations on binary serialized Reason interfaces. *)
 let intf : _ Translation_unit.t =
-  { init_cmts= Cmts.init_intf ~format
+  { init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; parse= Migrate_ast.Parse.interface
   ; equal= Reason.equal_intf

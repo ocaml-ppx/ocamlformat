@@ -28,34 +28,20 @@ open Migrate_ast
 
 type t
 
-val init_impl :
-     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
-  -> Source.t
-  -> Parsetree.structure
-  -> (string * Location.t) list
-  -> t
+val init_impl : Source.t -> Parsetree.structure -> Cmt.t list -> t
 (** [init_impl source structure comments] associates each comment in
     [comments] with a source location appearing in [structure]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
-val init_intf :
-     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
-  -> Source.t
-  -> Parsetree.signature
-  -> (string * Location.t) list
-  -> t
+val init_intf : Source.t -> Parsetree.signature -> Cmt.t list -> t
 (** [init_inft source signature comments] associates each comment in
     [comments] with a source location appearing in [signature]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
 val init_use_file :
-     format:(Source.t -> t -> Conf.t -> Parsetree.structure -> Fmt.t)
-  -> Source.t
-  -> Parsetree.toplevel_phrase list
-  -> (string * Location.t) list
-  -> t
+  Source.t -> Parsetree.toplevel_phrase list -> Cmt.t list -> t
 (** [init_use_file source use_file comments] associates each comment in
     [comments] with a source location appearing in [use_file]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
@@ -70,6 +56,7 @@ val relocate :
 val fmt_before :
      t
   -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -80,18 +67,31 @@ val fmt_before :
     before [loc]. *)
 
 val fmt_after :
-  t -> Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+     t
+  -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
+  -> ?pro:Fmt.t
+  -> ?epi:Fmt.t
+  -> Location.t
+  -> Fmt.t
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
 val fmt_within :
-  t -> Conf.t -> ?pro:Fmt.t -> ?epi:Fmt.t -> Location.t -> Fmt.t
+     t
+  -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
+  -> ?pro:Fmt.t
+  -> ?epi:Fmt.t
+  -> Location.t
+  -> Fmt.t
 (** [fmt_within loc] formats the comments associated with [loc] that appear
     within [loc]. *)
 
 val fmt :
      t
   -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -105,6 +105,7 @@ val fmt :
 val fmt_list :
      t
   -> Conf.t
+  -> fmt_code:(Conf.t -> string -> Fmt.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -124,16 +125,13 @@ val has_within : t -> Location.t -> bool
 val has_after : t -> Location.t -> bool
 (** [has_after t loc] holds if [t] contains some comment after [loc]. *)
 
-val remaining_comments : t -> (Location.t * string * string * Sexp.t) list
+val remaining_comments : t -> (Cmt.t * string * Sexp.t) list
 (** Returns comments that have not been formatted yet. *)
 
 val remaining_locs : t -> Location.t list
 
 val diff :
-     Conf.t
-  -> (string * Location.t) list
-  -> (string * Location.t) list
-  -> (string, string) Either.t Sequence.t
+  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)
 
 val preserve : ('a -> Fmt.t) -> 'a -> string

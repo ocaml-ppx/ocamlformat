@@ -12,7 +12,7 @@
 open Parse_with_comments
 
 type 'a t =
-  { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
+  { init_cmts: Source.t -> 'a -> Cmt.t list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:

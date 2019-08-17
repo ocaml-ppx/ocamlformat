@@ -15,7 +15,7 @@ open Migrate_ast
 open Parse_with_comments
 
 type 'a t =
-  { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
+  { init_cmts: Source.t -> 'a -> Cmt.t list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
@@ -39,7 +39,7 @@ exception
     | `Ast_changed
     | `Doc_comment of Normalize.docstring_error list
     | `Comment
-    | `Comment_dropped of (Location.t * string) list
+    | `Comment_dropped of Cmt.t list
     | `Warning50 of (Location.t * Warnings.t) list ]
     * (string * Sexp.t) list
 
@@ -214,7 +214,7 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                        %!"
                       Location.print_loc loc (ellipsis_cmt s))
           | `Comment_dropped l when not conf.Conf.quiet ->
-              List.iter l ~f:(fun (loc, msg) ->
+              List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                   Format.fprintf fmt
                     "%!@{<loc>%a@}:@,\
                      @{<error>Error@}: Comment (* %s *) dropped.\n\
@@ -323,17 +323,18 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
             | l ->
-                let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
+                let l = List.map l ~f:(fun (cmt, _t, _s) -> cmt) in
                 internal_error (`Comment_dropped l) [] ) ;
             let is_docstring s =
               conf.Conf.parse_docstrings && Char.equal s.[0] '*'
             in
             let old_docstrings, old_comments =
-              List.partition_tf t.comments ~f:(fun (s, _) -> is_docstring s)
+              List.partition_tf t.comments ~f:(fun Cmt.{txt; _} ->
+                  is_docstring txt)
             in
             let t_newdocstrings, t_newcomments =
-              List.partition_tf t_new.comments ~f:(fun (s, _) ->
-                  is_docstring s)
+              List.partition_tf t_new.comments ~f:(fun Cmt.{txt; _} ->
+                  is_docstring txt)
             in
             let f = ellipsis_cmt in
             let f x = Either.First.map ~f x |> Either.Second.map ~f in

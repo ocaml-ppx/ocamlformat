@@ -158,7 +158,7 @@ module Mappers = struct
   let norm c cmts ~ignore_doc_comments =
     (* holds if an attribute is a docstring that also appears as a comment *)
     let atr_is_dup =
-      let cmts = Set.of_list (module String) (List.map cmts ~f:fst) in
+      let cmts = Set.of_list (module String) (List.map cmts ~f:Cmt.txt) in
       function
       | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
         ; attr_payload=
@@ -211,6 +211,9 @@ type 'a t =
 
 let input_bin_impl ic : Migrate_ast.Parsetree.structure t =
   let origin_filename, comments, x = Binary_reason.input ic in
+  let comments =
+    List.map comments ~f:(fun (txt, loc) -> Cmt.create txt loc)
+  in
   match x with
   | Binary_reason.Impl (bin_version, ast) ->
       let module Bin_version = (val bin_version) in
@@ -227,6 +230,9 @@ let input_bin_impl ic : Migrate_ast.Parsetree.structure t =
 
 let input_bin_intf ic : Migrate_ast.Parsetree.signature t =
   let origin_filename, comments, x = Binary_reason.input ic in
+  let comments =
+    List.map comments ~f:(fun (txt, loc) -> Cmt.create txt loc)
+  in
   match x with
   | Binary_reason.Intf (bin_version, ast) ->
       let module Bin_version = (val bin_version) in
