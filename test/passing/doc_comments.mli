@@ -247,7 +247,7 @@ a
     v} *)
 
 (** {[
-b 
+b
     ]} *)
 
 (** - Odoc don't parse
@@ -353,27 +353,29 @@ end
     [Very looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong] *)
 
 (** {[
-  for i = 1 to 3 do
+  for i = 1 to 3
+  do
     Printf.printf "let x%d = %d\n" i i
   done
 ]} *)
 
 (** {[
-  print_newline () ;
+  print_newline ();
   List.iter
     (fun s -> Printf.printf "let ( %s ) = Pervasives.( %s )\n" s s)
     ["+"; "-"; "*"; "/"]
 ]}  *)
 
 (** {[
-  ;; #use "import.cinaps"
+  #use "import.cinaps";;
 
-  ;; List.iter all_fields ~f:(fun (name, type_) -> printf "\nexternal get_%s
+  List.iter all_fields ~f:(fun (name, type_) -> printf "\nexternal get_%s
   : unit -> %s = \"get_%s\"" name type_ name)
 ]} *)
 
 (** {[
   let x = 1 in
+
   (* fooooooo *)
   let y = 2 in
   (* foooooooo *)
@@ -381,7 +383,7 @@ end
 ]} *)
 
 (** {[
-   let this = is_short
+   let this  = is_short
 ]}
 
 {[
