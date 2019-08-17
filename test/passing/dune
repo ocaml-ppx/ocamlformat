@@ -56,7 +56,6 @@ let emit_test buffer test_name setup =
 
 (alias
  (name runtest)
- (enabled_if (= %%{context_name} "dev"))
  (deps %s %s.output)
  (action (diff %s %s.output)))
 |}

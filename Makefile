@@ -65,5 +65,5 @@ test-reason: setup
 coverage: setup cleanbisect
 	dune build @_build/coverage/test/runtest
 	dune exec --context coverage -- ocamlformat -i $(SRCS)
-	bisect-ppx-report -I _build/coverage/ -html _coverage/ `find test -name 'bisect*.out'`
+	bisect-ppx-report -I _build/coverage/ -html _coverage/ `find ./ _build/coverage/ -name 'bisect*.out'`
 	@echo "open _coverage/index.html"
