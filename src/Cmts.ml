@@ -17,9 +17,9 @@ open Asttypes
 open Parsetree
 
 type t =
-  { cmts_before: (Location.t, (string * Location.t) list) Hashtbl.t
-  ; cmts_after: (Location.t, (string * Location.t) list) Hashtbl.t
-  ; cmts_within: (Location.t, (string * Location.t) list) Hashtbl.t
+  { cmts_before: (Location.t, Cmt.t list) Hashtbl.t
+  ; cmts_after: (Location.t, Cmt.t list) Hashtbl.t
+  ; cmts_within: (Location.t, Cmt.t list) Hashtbl.t
   ; source: Source.t
   ; remaining: (Location.t, unit) Hashtbl.t }
 
@@ -158,30 +158,13 @@ module Loc_tree = struct
     (of_list !locs, !locs)
 end
 
-module Cmt = struct
-  module T = struct
-    type t = string * Location.t
-
-    let compare =
-      Comparable.lexicographic
-        [ Comparable.lift String.compare ~f:fst
-        ; Comparable.lift Location.compare ~f:snd ]
-
-    let sexp_of_t (txt, loc) =
-      Sexp.Atom (Format.asprintf "%s %a" txt Location.fmt loc)
-  end
-
-  include T
-  include Comparator.Make (T)
-end
-
 (** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig
   type t
 
-  val of_list : (string * Location.t) list -> t
+  val of_list : Cmt.t list -> t
 
-  val to_list : t -> (string * Location.t) list
+  val to_list : t -> Cmt.t list
   (** ordered by start location *)
 
   val empty : t
@@ -213,9 +196,9 @@ end = struct
     end)
   end
 
-  type smap = (string * Location.t) list Map.M(Order_by_start).t
+  type smap = Cmt.t list Map.M(Order_by_start).t
 
-  type emap = (string * Location.t) list Map.M(Order_by_end).t
+  type emap = Cmt.t list Map.M(Order_by_end).t
 
   type t = smap * emap
 
@@ -379,33 +362,6 @@ let rec place t loc_tree ?prev_loc locs cmts =
           List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
               Format.eprintf "lost: %s@\n%!" txt) )
 
-(** Remove comments that duplicate docstrings (or other comments). *)
-let dedup_cmts map_ast ast comments =
-  let of_ast map_ast ast =
-    let docs = ref (Set.empty (module Cmt)) in
-    let attribute _ atr =
-      match atr with
-      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
-        ; attr_payload=
-            PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( { pexp_desc=
-                            Pexp_constant (Pconst_string (doc, None))
-                        ; pexp_loc
-                        ; _ }
-                      , [] )
-                ; _ } ]
-        ; _ } ->
-          docs := Set.add !docs ("*" ^ doc, pexp_loc) ;
-          atr
-      | _ -> atr
-    in
-    map_ast {Ast_mapper.default_mapper with attribute} ast |> ignore ;
-    !docs
-  in
-  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
-
 let remove = ref true
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
@@ -441,7 +397,7 @@ let init map_ast source asts comments_n_docstrings =
     ; source
     ; remaining= Hashtbl.create (module Location) }
   in
-  let comments = dedup_cmts map_ast asts comments_n_docstrings in
+  let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then (
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun (txt, loc) ->
@@ -670,9 +626,8 @@ let remaining_comments t =
   let get t before_after =
     Hashtbl.to_alist t
     |> List.concat_map ~f:(fun (ast_loc, cmts) ->
-           List.map cmts ~f:(fun (cmt_txt, cmt_loc) ->
-               ( cmt_loc
-               , cmt_txt
+           List.map cmts ~f:(fun ((cmt_txt, cmt_loc) as cmt) ->
+               ( cmt
                , before_after
                , let open Sexp in
                  List

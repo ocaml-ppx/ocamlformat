@@ -14,6 +14,9 @@
 open Migrate_ast
 open Parsetree
 
+val dedup_cmts :
+  (Ast_mapper.mapper -> 'a -> 'a) -> 'a -> Cmt.t list -> Cmt.t list
+
 val comment : string -> string
 (** Normalize a comment. *)
 

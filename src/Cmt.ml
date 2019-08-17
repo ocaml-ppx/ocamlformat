@@ -2,22 +2,29 @@
  *                                                                    *
  *                            OCamlFormat                             *
  *                                                                    *
- *  Copyright (c) 2018-present, Facebook, Inc.  All rights reserved.  *
+ *  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  *
  *                                                                    *
  *  This source code is licensed under the MIT license found in the   *
  *  LICENSE file in the root directory of this source tree.           *
  *                                                                    *
  **********************************************************************)
 
-val fmt :
-     Conf.t
-  -> fmt_code:(Conf.t -> string -> Fmt.t)
-  -> Odoc_parser.Ast.docs
-  -> Fmt.t
+module Format = Format_
+open Migrate_ast
 
-val diff :
-  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
-(** Difference between two lists of doc comments. *)
+module T = struct
+  type t = string * Location.t
 
-val is_tag_only : Odoc_parser.Ast.docs -> bool
-(** [true] if the documentation only contains tags *)
+  let compare =
+    Comparable.lexicographic
+      [ Comparable.lift String.compare ~f:fst
+      ; Comparable.lift Location.compare ~f:snd ]
+
+  let sexp_of_t (txt, loc) =
+    Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
+end
+
+include T
+include Comparator.Make (T)
+
+let map ~f (txt, loc) = (f txt, loc)

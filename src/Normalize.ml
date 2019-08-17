@@ -21,6 +21,33 @@ type conf =
   ; normalize_code:
       Migrate_ast.Parsetree.structure -> Migrate_ast.Parsetree.structure }
 
+(** Remove comments that duplicate docstrings (or other comments). *)
+let dedup_cmts map_ast ast comments =
+  let of_ast map_ast ast =
+    let docs = ref (Set.empty (module Cmt)) in
+    let attribute _ atr =
+      match atr with
+      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
+        ; attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, None))
+                        ; pexp_loc
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ } ->
+          docs := Set.add !docs ("*" ^ doc, pexp_loc) ;
+          atr
+      | _ -> atr
+    in
+    map_ast {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+    !docs
+  in
+  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
+
 let comment s =
   (* normalize consecutive whitespace chars to a single space *)
   String.concat ~sep:" "
@@ -75,9 +102,18 @@ let rec odoc_nestable_block_element c fmt = function
   | `Code_block txt ->
       let txt =
         try
-          Migrate_ast.Parse.implementation (Lexing.from_string txt)
-          |> c.normalize_code
-          |> Caml.Format.asprintf "%a" Printast.implementation
+          let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
+            Parse_with_comments.parse Migrate_ast.Parse.implementation
+              c.conf ~source:txt
+          in
+          let comments = dedup_cmts Mapper.structure ast comments in
+          let print_comments fmt l =
+            List.sort l ~compare:(fun (_, a) (_, b) -> Location.compare a b)
+            |> List.iter ~f:(fun (c, _) -> Caml.Format.fprintf fmt "%s," c)
+          in
+          let ast = c.normalize_code ast in
+          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
+            Printast.implementation ast print_comments comments
         with _ -> txt
       in
       fpf fmt "Code_block,%a" str txt

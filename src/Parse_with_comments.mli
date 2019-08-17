@@ -9,8 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-type 'a with_comments =
-  {ast: 'a; comments: (string * Location.t) list; prefix: string}
+type 'a with_comments = {ast: 'a; comments: Cmt.t list; prefix: string}
 
 module W : sig
   type t

@@ -15,7 +15,7 @@ open Migrate_ast
 open Parse_with_comments
 
 type 'a t =
-  { init_cmts: Source.t -> 'a -> (string * Location.t) list -> Cmts.t
+  { init_cmts: Source.t -> 'a -> Cmt.t list -> Cmts.t
   ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
@@ -39,7 +39,7 @@ exception
     | `Ast_changed
     | `Doc_comment of Normalize.docstring_error list
     | `Comment
-    | `Comment_dropped of (Location.t * string) list
+    | `Comment_dropped of Cmt.t list
     | `Warning50 of (Location.t * Warnings.t) list ]
     * (string * Sexp.t) list
 
@@ -184,40 +184,38 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                 | Normalize.Moved (loc_before, loc_after, msg) ->
                     if Location.compare loc_before Location.none = 0 then
                       Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,\
-                         @{<error>Error@}: Docstring (** %s *) added.\n\
+                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
+                         %s *) added.\n\
                          %!"
                         Location.print_loc loc_after (ellipsis_cmt msg)
                     else if Location.compare loc_after Location.none = 0
                     then
                       Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,\
-                         @{<error>Error@}: Docstring (** %s *) dropped.\n\
+                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
+                         %s *) dropped.\n\
                          %!"
                         Location.print_loc loc_before (ellipsis_cmt msg)
                     else
                       Format.fprintf fmt
-                        "%!@{<loc>%a@}:@,\
-                         @{<error>Error@}: Docstring (** %s *) moved to \
-                         @{<loc>%a@}.\n\
+                        "%!@{<loc>%a@}:@,@{<error>Error@}: Docstring (** \
+                         %s *) moved to @{<loc>%a@}.\n\
                          %!"
                         Location.print_loc loc_before (ellipsis_cmt msg)
                         Location.print_loc loc_after
                 | Normalize.Unstable (loc, s) ->
                     Format.fprintf fmt
-                      "%!@{<loc>%a@}:@,\
-                       @{<error>Error@}: Formatting of (** %s *) is \
-                       unstable (e.g. parses as a list or not depending on \
-                       the margin), please tighten up this comment in the \
-                       source or disable the formatting using the option \
-                       --no-parse-docstrings.\n\
+                      "%!@{<loc>%a@}:@,@{<error>Error@}: Formatting of (** \
+                       %s *) is unstable (e.g. parses as a list or not \
+                       depending on the margin), please tighten up this \
+                       comment in the source or disable the formatting \
+                       using the option --no-parse-docstrings.\n\
                        %!"
                       Location.print_loc loc (ellipsis_cmt s))
           | `Comment_dropped l when not conf.Conf.quiet ->
-              List.iter l ~f:(fun (loc, msg) ->
+              List.iter l ~f:(fun (msg, loc) ->
                   Format.fprintf fmt
-                    "%!@{<loc>%a@}:@,\
-                     @{<error>Error@}: Comment (* %s *) dropped.\n\
+                    "%!@{<loc>%a@}:@,@{<error>Error@}: Comment (* %s *) \
+                     dropped.\n\
                      %!"
                     Location.print_loc loc (ellipsis_cmt msg))
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
@@ -323,7 +321,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
             | l ->
-                let l = List.map l ~f:(fun (l, n, _t, _s) -> (l, n)) in
+                let l = List.map l ~f:(fun (cmt, _t, _s) -> cmt) in
                 internal_error (`Comment_dropped l) [] ) ;
             let is_docstring s =
               conf.Conf.parse_docstrings && Char.equal s.[0] '*'
