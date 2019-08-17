@@ -1,5 +1,4 @@
 (* test *)
-
 let x = 3
 
 type schoolPerson = Teacher | Director | Student of string
