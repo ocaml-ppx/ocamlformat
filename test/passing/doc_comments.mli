@@ -425,7 +425,7 @@ let fooooooooooooooooo =
   This is a comment with code inside
   {[
     (** This is a comment with code inside
-        {[ let code inside = f inside ]}
+        [ let code inside = f inside ]
     *)
     let code inside = f inside
   ]}
