@@ -62,27 +62,23 @@ fmt:
 	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
 
 .PHONY: test
-test: exe reason
-	$(MAKE) fixpoint
-	$(MAKE) regtests
+test: fixpoint regtests
 
 .PHONY: test-reason
-test-reason: reason
-	dune build _build/dev/test/reason/test-gen.ml --auto-promote
+test-reason: setup
+	dune build @_build/dev/test/reason/runtest-reason --auto-promote
 
 .PHONY: regtests fixpoint
-fixpoint: exe reason
-	_build/release/src/ocamlformat.exe -n 1 -i $(SRCS)
+fixpoint: setup
+	dune exec --context dev -- ocamlformat -n 1 -i $(SRCS)
 
-regtests: exe
-	dune build @_build/dev/test/disabled/runtest
-	$(MAKE) -C test regtests
+regtests: setup
+	dune build @_build/dev/test/runtest
 
 .PHONY: coverage
 coverage: setup
-	dune build _build/coverage/src/ocamlformat.exe
 	$(MAKE) cleanbisect
-	$(MAKE) MODE=coverage -C test regtests
-	_build/coverage/src/ocamlformat.exe -i $(SRCS)
+	dune build @_build/coverage/test/runtest
+	dune exec --context coverage -- ocamlformat -i $(SRCS)
 	bisect-ppx-report -I _build/coverage/ -html _coverage/ `find test -name 'bisect*.out'`
 	@echo "open _coverage/index.html"

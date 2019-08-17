@@ -7,3 +7,7 @@
   (targets test-gen.ml)
   (mode promote)
   (action (run %{bin:ocamlformat_reason} %{dep:test-bin.re} -o %{targets})))
+
+(alias
+  (name runtest-reason)
+  (deps test-gen.ml))

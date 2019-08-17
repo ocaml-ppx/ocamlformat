@@ -4,7 +4,8 @@
 /ocamlformat.install
 /ocamlformat_reason.install
 /src/mod_dep.dot
-/test/code
+/test-extra/code
+/test-extra/bisect*out
 /test/bisect*out
 /bisect*out
 /_coverage
