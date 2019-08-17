@@ -58,6 +58,9 @@ fixpoint: setup
 regtests: setup
 	dune build @_build/dev/test/runtest
 
+regtests-promote: setup
+	dune build @_build/dev/test/runtest --auto-promote
+
 test-reason: setup
 	dune build @_build/dev/test/reason/runtest-reason --auto-promote
 
