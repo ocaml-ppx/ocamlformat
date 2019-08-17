@@ -14,18 +14,10 @@
 open Migrate_ast
 open Parsetree
 
-type conf =
-  { conf: Conf.t
-  ; normalize_code:
-         Conf.t
-      -> Migrate_ast.Parsetree.structure
-      -> Migrate_ast.Parsetree.structure }
-(** Internal state *)
-
 val comment : string -> string
 (** Normalize a comment. *)
 
-val docstring : conf -> string -> string
+val docstring : Conf.t -> string -> string
 (** Normalize a docstring. *)
 
 val impl : Conf.t -> structure -> structure

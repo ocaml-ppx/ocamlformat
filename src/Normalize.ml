@@ -19,9 +19,7 @@ open Ast_helper
 type conf =
   { conf: Conf.t
   ; normalize_code:
-         Conf.t
-      -> Migrate_ast.Parsetree.structure
-      -> Migrate_ast.Parsetree.structure }
+      Migrate_ast.Parsetree.structure -> Migrate_ast.Parsetree.structure }
 
 let comment s =
   (* normalize consecutive whitespace chars to a single space *)
@@ -78,7 +76,7 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           Migrate_ast.Parse.implementation (Lexing.from_string txt)
-          |> c.normalize_code c.conf
+          |> c.normalize_code
           |> Caml.Format.asprintf "%a" Printast.implementation
         with _ -> txt
       in
@@ -142,8 +140,7 @@ let docstring c text =
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
 
-let make_mapper c ~ignore_doc_comment normalize_code =
-  let c = {conf= c; normalize_code} in
+let make_mapper conf ~ignore_doc_comment =
   (* remove locations *)
   let location _ _ = Location.none in
   let doc_attribute = function
@@ -163,7 +160,10 @@ let make_mapper c ~ignore_doc_comment normalize_code =
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
-          if ignore_doc_comment then "IGNORED" else docstring c doc
+          if ignore_doc_comment then "IGNORED"
+          else
+            let c = {conf; normalize_code= m.structure m} in
+            docstring c doc
         in
         { attr_name= {txt; loc= m.location m loc}
         ; attr_payload=
@@ -324,16 +324,15 @@ let make_mapper c ~ignore_doc_comment normalize_code =
   ; class_signature
   ; class_structure }
 
-let rec mapper c = make_mapper c ~ignore_doc_comment:false impl
+let mapper c = make_mapper c ~ignore_doc_comment:false
 
-and impl c = Mapper.structure (mapper c)
+let impl c = Mapper.structure (mapper c)
 
 let intf c = Mapper.signature (mapper c)
 
 let use_file c = Mapper.use_file (mapper c)
 
-let mapper_ignore_doc_comment c =
-  make_mapper c ~ignore_doc_comment:true impl
+let mapper_ignore_doc_comment c = make_mapper c ~ignore_doc_comment:true
 
 let equal_impl ~ignore_doc_comments c ast1 ast2 =
   let map =
@@ -427,7 +426,7 @@ type docstring_error =
   | Unstable of Location.t * string
 
 let moved_docstrings c get_docstrings s1 s2 =
-  let c = {conf= c; normalize_code= impl} in
+  let c = {conf= c; normalize_code= impl c} in
   let d1 = get_docstrings c s1 in
   let d2 = get_docstrings c s2 in
   let equal (_, x) (_, y) =
@@ -467,3 +466,7 @@ let moved_docstrings_intf c s1 s2 = moved_docstrings c docstrings_intf s1 s2
 
 let moved_docstrings_use_file c s1 s2 =
   moved_docstrings c docstrings_use_file s1 s2
+
+let docstring conf =
+  let c = {conf; normalize_code= impl conf} in
+  docstring c
