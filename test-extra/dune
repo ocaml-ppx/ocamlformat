@@ -1,1 +1,1 @@
-(ignored_subdirs (code))
+(dirs ) ;; empty list of directories

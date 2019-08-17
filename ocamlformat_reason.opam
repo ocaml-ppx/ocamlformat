@@ -21,7 +21,7 @@ depends: [
   "base-unix"
   "bisect_ppx"
   "cmdliner"
-  "dune" {>= "1.1.1"}
+  "dune" {>= "1.11.1"}
   "fpath"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
   "odoc" {>= "1.4.1"}
@@ -37,4 +37,3 @@ build: [
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
 synopsis: "Auto-formatter for ReasonML code"
 description: "ocamlformat_reason is a tool to automatically format ReasonML code in a uniform style."
-

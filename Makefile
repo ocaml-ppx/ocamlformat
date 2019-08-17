@@ -22,23 +22,11 @@ setup: dune-workspace
 
 .PHONY: exe
 exe: setup
-	dune build _build/dev/src/ocamlformat.exe _build/release/src/ocamlformat.exe _build/dev/ocamlformat.install _build/release/ocamlformat.install
+	dune build _build/dev/src/ocamlformat.exe _build/release/src/ocamlformat.exe
 
 .PHONY: gen-help
 gen-help:
 	dune build _build/release/ocamlformat-help.txt
-
-.PHONY: bc
-bc: setup
-	dune build _build/dev/src/ocamlformat.bc
-
-.PHONY: dev
-dev: setup
-	dune build _build/dev/src/ocamlformat.exe _build/dev/ocamlformat.install
-
-.PHONY: opt
-opt: setup
-	dune build _build/release/src/ocamlformat.exe _build/release/ocamlformat.install
 
 .PHONY: reason
 reason: setup
@@ -59,25 +47,22 @@ SRCS=$(shell \find src tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[
 
 .PHONY: fmt
 fmt:
-	$(shell \ls -t _build/*/src/ocamlformat.{exe,bc} | head -1) -i $(SRCS)
+	dune exec --context dev -- ocamlformat -i $(SRCS)
 
-.PHONY: test
+.PHONY: test regtests fixpoint test-reason
 test: fixpoint regtests
 
-.PHONY: test-reason
-test-reason: setup
-	dune build @_build/dev/test/reason/runtest-reason --auto-promote
-
-.PHONY: regtests fixpoint
 fixpoint: setup
 	dune exec --context dev -- ocamlformat -n 1 -i $(SRCS)
 
 regtests: setup
 	dune build @_build/dev/test/runtest
 
+test-reason: setup
+	dune build @_build/dev/test/reason/runtest-reason --auto-promote
+
 .PHONY: coverage
-coverage: setup
-	$(MAKE) cleanbisect
+coverage: setup cleanbisect
 	dune build @_build/coverage/test/runtest
 	dune exec --context coverage -- ocamlformat -i $(SRCS)
 	bisect-ppx-report -I _build/coverage/ -html _coverage/ `find test -name 'bisect*.out'`
