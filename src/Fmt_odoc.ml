@@ -65,10 +65,7 @@ let fmt_verbatim_block s =
   let content =
     (* Literal newline to avoid indentation *)
     if force_break then wrap "\n" "@\n" (str s)
-    else
-      fits_breaks " " "\n"
-      $ str (String.strip s)
-      $ fits_breaks " " ~hint:(0, 0) ""
+    else fits_breaks " " "\n" $ str s $ fits_breaks " " ~hint:(0, 0) ""
   in
   hvbox 0 (wrap "{v" "v}" content)
 

@@ -141,7 +141,7 @@ val polynewtype :
     pattern [pat] with body [exp]. e.g.:
 
     {v
-let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
+      let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
     v}
 
     Can be rewritten as:
