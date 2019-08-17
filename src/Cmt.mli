@@ -11,8 +11,12 @@
 
 open Migrate_ast
 
-type t = string * Location.t
+type t = private {txt: string; loc: Location.t}
 
-val map : f:(string -> string) -> t -> t
+val create : string -> Location.t -> t
+
+val loc : t -> Location.t
+
+val txt : t -> string
 
 include Comparator.S with type t := t

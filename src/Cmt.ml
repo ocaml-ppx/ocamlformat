@@ -13,18 +13,22 @@ module Format = Format_
 open Migrate_ast
 
 module T = struct
-  type t = string * Location.t
+  type t = {txt: string; loc: Location.t}
+
+  let loc t = t.loc
+
+  let txt t = t.txt
 
   let compare =
     Comparable.lexicographic
-      [ Comparable.lift String.compare ~f:fst
-      ; Comparable.lift Location.compare ~f:snd ]
+      [ Comparable.lift String.compare ~f:txt
+      ; Comparable.lift Location.compare ~f:loc ]
 
-  let sexp_of_t (txt, loc) =
+  let sexp_of_t {txt; loc} =
     Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
 end
 
 include T
 include Comparator.Make (T)
 
-let map ~f (txt, loc) = (f txt, loc)
+let create txt loc = {txt; loc}

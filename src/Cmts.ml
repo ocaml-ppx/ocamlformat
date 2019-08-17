@@ -212,7 +212,7 @@ end = struct
 
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun (smap, emap) cmt ->
-        let _, loc = cmt in
+        let {Cmt.loc; _} = cmt in
         ( Map.add_multi smap ~key:loc ~data:cmt
         , Map.add_multi emap ~key:loc ~data:cmt ))
 
@@ -271,12 +271,12 @@ let infix_symbol_before t (loc : Location.t) =
     location or before the next one. *)
 let partition_after_prev_or_before_next t ~prev cmts ~next =
   match CmtSet.to_list cmts with
-  | (_, loc) :: _ as cmtl when is_adjacent t prev loc -> (
+  | {loc; _} :: _ as cmtl when is_adjacent t prev loc -> (
     match
-      List.group cmtl ~break:(fun (_, l1) (_, l2) ->
-          not (is_adjacent t l1 l2))
+      List.group cmtl ~break:(fun l1 l2 ->
+          not (is_adjacent t (Cmt.loc l1) (Cmt.loc l2)))
     with
-    | [cmtl] when is_adjacent t (snd (List.last_exn cmtl)) next ->
+    | [cmtl] when is_adjacent t (List.last_exn cmtl).loc next ->
         let open Location in
         let same_line_as_prev l =
           prev.loc_end.pos_lnum = l.loc_start.pos_lnum
@@ -287,7 +287,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
         let prev, next =
           if not (same_line_as_prev next) then
             let next, prev =
-              List.partition_tf cmtl ~f:(fun (_, l1) ->
+              List.partition_tf cmtl ~f:(fun {Cmt.loc= l1; _} ->
                   same_line_as_next l1
                   || (same_line_as_prev l1 && infix_symbol_before t prev)
                   || not (same_line_as_prev l1))
@@ -305,7 +305,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
   if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug then
-      List.iter cmtl ~f:(fun (cmt_txt, cmt_loc) ->
+      List.iter cmtl ~f:(fun {Cmt.txt= cmt_txt; loc= cmt_loc} ->
           let string_between (l1 : Location.t) (l2 : Location.t) =
             match Source.string_between t.source l1 l2 with
             | None -> "swapped"
@@ -359,7 +359,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
     | Some prev_loc -> add_cmts t ~prev:prev_loc t.cmts_after prev_loc cmts
     | None ->
         if Conf.debug then
-          List.iter (CmtSet.to_list cmts) ~f:(fun (txt, _) ->
+          List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
               Format.eprintf "lost: %s@\n%!" txt) )
 
 let remove = ref true
@@ -378,7 +378,8 @@ let relocate (t : t) ~src ~before ~after =
         Location.fmt before Location.fmt after ;
     let merge_and_sort x y =
       List.rev_append x y
-      |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:snd)
+      |> List.sort
+           ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
     in
     update_multi t.cmts_before src before ~f:merge_and_sort ;
     update_multi t.cmts_after src after ~f:merge_and_sort ;
@@ -400,7 +401,7 @@ let init map_ast source asts comments_n_docstrings =
   let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then (
     Format.eprintf "\nComments:\n%!" ;
-    List.iter comments ~f:(fun (txt, loc) ->
+    List.iter comments ~f:(fun {Cmt.txt; loc} ->
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
@@ -454,7 +455,7 @@ let preserve fmt_x x =
   remove := save ;
   Buffer.contents buf
 
-let split_asterisk_prefixed (txt, {Location.loc_start; _}) =
+let split_asterisk_prefixed {Cmt.txt; loc= {Location.loc_start; _}} =
   let len = Position.column loc_start + 3 in
   let pat =
     String.Search_pattern.create
@@ -481,7 +482,7 @@ let split_asterisk_prefixed (txt, {Location.loc_start; _}) =
   in
   split_asterisk_prefixed_ 0
 
-let fmt_cmt (conf : Conf.t) ~fmt_code cmt =
+let fmt_cmt (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
@@ -492,10 +493,10 @@ let fmt_cmt (conf : Conf.t) ~fmt_code cmt =
             | _, None -> str line $ fmt "*)"
             | _, Some _ -> str line $ fmt "@,*") )
   in
-  let fmt_non_code cmt =
+  let fmt_non_code (cmt : Cmt.t) =
     if not conf.wrap_comments then
       match split_asterisk_prefixed cmt with
-      | [""] | [_] | [_; ""] -> wrap "(*" "*)" (str (fst cmt))
+      | [""] | [_] | [_; ""] -> wrap "(*" "*)" (str cmt.txt)
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
     else
@@ -506,7 +507,7 @@ let fmt_cmt (conf : Conf.t) ~fmt_code cmt =
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   in
-  let fmt_code ((str, _) as cmt) =
+  let fmt_code ({Cmt.txt= str; _} as cmt) =
     let dollar_last = Char.equal str.[String.length str - 1] '$' in
     let len = String.length str - if dollar_last then 2 else 1 in
     let source = String.sub ~pos:1 ~len str in
@@ -516,7 +517,7 @@ let fmt_cmt (conf : Conf.t) ~fmt_code cmt =
       hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
     with _ -> fmt_non_code cmt
   in
-  match fst cmt with
+  match Cmt.txt cmt with
   | "" | "$" -> fmt_non_code cmt
   | str when Char.equal str.[0] '$' -> fmt_code cmt
   | _ -> fmt_non_code cmt
@@ -534,7 +535,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
         b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
       in
       let groups =
-        List.group cmts ~break:(fun (_, a) (_, b) ->
+        List.group cmts ~break:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
             not
               ( Location.is_single_line a conf.margin
               && Location.is_single_line b conf.margin
@@ -542,16 +543,16 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
               && Location.compare_start_col a b = 0
               && Location.compare_end_col a b = 0 ))
       in
-      let last_loc = snd (List.last_exn cmts) in
+      let last_loc = Cmt.loc (List.last_exn cmts) in
       let eol_cmt = Source.ends_line t.source last_loc in
       let adj_cmt =
         eol_cmt
         && last_loc.Location.loc_end.pos_lnum + 1
            = loc.Location.loc_start.pos_lnum
       in
-      let maybe_newline ~next (_, cur_last_loc) =
+      let maybe_newline ~next {Cmt.loc= cur_last_loc; _} =
         match next with
-        | Some ((_, next_loc) :: _) ->
+        | Some ({Cmt.loc= next_loc; _} :: _) ->
             fmt_if (line_dist cur_last_loc next_loc > 1) "\n"
         | _ -> noop
       in
@@ -564,7 +565,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
             | [cmt] -> fmt_cmt conf cmt ~fmt_code $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
-                    wrap "(*" "*)" (str (fst cmt)))
+                    wrap "(*" "*)" (str (Cmt.txt cmt)))
                 $ maybe_newline ~next (List.last_exn group) )
           $ fmt_if_k (Option.is_none next)
               ( close_box
@@ -604,7 +605,7 @@ let fmt_list t conf ~fmt_code ?pro ?epi ?eol locs init =
 let drop_inside t loc =
   let clear tbl =
     Hashtbl.map_inplace tbl ~f:(fun l ->
-        List.filter l ~f:(fun (_, cmt_loc) ->
+        List.filter l ~f:(fun {Cmt.loc= cmt_loc; _} ->
             not (Location.contains loc cmt_loc)))
   in
   clear t.cmts_before ; clear t.cmts_within ; clear t.cmts_after
@@ -626,14 +627,14 @@ let remaining_comments t =
   let get t before_after =
     Hashtbl.to_alist t
     |> List.concat_map ~f:(fun (ast_loc, cmts) ->
-           List.map cmts ~f:(fun ((cmt_txt, cmt_loc) as cmt) ->
+           List.map cmts ~f:(fun (cmt : Cmt.t) ->
                ( cmt
                , before_after
                , let open Sexp in
                  List
                    [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
-                   ; List [Atom "cmt_loc"; Location.sexp_of_t cmt_loc]
-                   ; List [Atom "cmt_txt"; Atom cmt_txt] ] )))
+                   ; List [Atom "cmt_loc"; Location.sexp_of_t cmt.loc]
+                   ; List [Atom "cmt_txt"; Atom cmt.txt] ] )))
   in
   List.concat
     [ get t.cmts_before "before"
@@ -644,9 +645,9 @@ let remaining_locs t = Hashtbl.to_alist t.remaining |> List.map ~f:fst
 
 let diff (conf : Conf.t) x y =
   let norm z =
-    let norm_non_code (txt, _) = Normalize.comment txt in
+    let norm_non_code {Cmt.txt; _} = Normalize.comment txt in
     let f z =
-      match fst z with
+      match Cmt.txt z with
       | "" | "$" -> norm_non_code z
       | str ->
           if Char.equal str.[0] '$' then

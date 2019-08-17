@@ -262,7 +262,7 @@ let fmt conf ~fmt_code (docs : docs) =
 
 let diff c x y =
   let norm z =
-    let f (txt, _) = Normalize.docstring c txt in
+    let f Cmt.{txt; _} = Normalize.docstring c txt in
     Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)

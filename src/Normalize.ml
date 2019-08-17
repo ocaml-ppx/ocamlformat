@@ -39,7 +39,7 @@ let dedup_cmts map_ast ast comments =
                       , [] )
                 ; _ } ]
         ; _ } ->
-          docs := Set.add !docs ("*" ^ doc, pexp_loc) ;
+          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
           atr
       | _ -> atr
     in
@@ -107,9 +107,11 @@ let rec odoc_nestable_block_element c fmt = function
               c.conf ~source:txt
           in
           let comments = dedup_cmts Mapper.structure ast comments in
-          let print_comments fmt l =
-            List.sort l ~compare:(fun (_, a) (_, b) -> Location.compare a b)
-            |> List.iter ~f:(fun (c, _) -> Caml.Format.fprintf fmt "%s," c)
+          let print_comments fmt (l : Cmt.t list) =
+            List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
+                Location.compare a b)
+            |> List.iter ~f:(fun {Cmt.txt; _} ->
+                   Caml.Format.fprintf fmt "%s," txt)
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"

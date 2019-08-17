@@ -51,7 +51,11 @@ let parse parse_ast (conf : Conf.t) ~source =
       ~f:(fun () ->
         let ast = parse_ast lexbuf in
         Warnings.check_fatal () ;
-        let comments = Lexer.comments () in
+        let comments =
+          List.map
+            ~f:(fun (txt, loc) -> Cmt.create txt loc)
+            (Lexer.comments ())
+        in
         {ast; comments; prefix= hash_bang})
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)
