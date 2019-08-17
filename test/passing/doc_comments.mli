@@ -374,6 +374,13 @@ end
 ]} *)
 
 (** {[
+
+
+  List.iter all_fields ~f:(fun (name, type_) -> printf "\nexternal get_%s
+  : unit -> %s = \"get_%s\"" name type_ name)
+]} *)
+
+(** {[
   let x = 1 in
 
   (* fooooooo *)
