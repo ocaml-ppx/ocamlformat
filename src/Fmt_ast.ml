@@ -1276,27 +1276,24 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
         (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
 
 and fmt_args ~first:first_grp ~last:last_grp c ctx args =
-  let fmt_arg ?prev (lbl, arg) ?next =
+  let fmt_arg ~first:_ ~last (lbl, arg) =
     let ({ast; _} as xarg) = sub_exp ~ctx arg in
-    let openbox = open_hovbox (if first_grp then 2 else 0) in
-    let spc = Option.is_some next || not last_grp in
     let box =
       match ast.pexp_desc with
       | Pexp_fun _ | Pexp_function _ -> Some false
       | _ -> None
     in
     let epi =
-      match (lbl, next) with
-      | _, None -> None
+      match (lbl, last) with
+      | _, true -> None
       | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
       | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
     in
-    fmt_if_k (Option.is_none prev) openbox
-    $ hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
-    $ fmt_if_k (Option.is_none next) close_box
-    $ fmt_if_k spc (break_unless_newline 1 0)
+    hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
+    $ fmt_if_k (not last) (break_unless_newline 1 0)
   in
-  list_pn args fmt_arg
+  hovbox (if first_grp then 2 else 0) (list_fl args fmt_arg)
+  $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
 
 and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
   let fmt_sep ?(force_break = false) xe1 ext xe2 =
