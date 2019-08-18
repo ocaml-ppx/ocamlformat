@@ -1493,9 +1493,9 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
 (* type (_,_) ty_assoc = | Anil : (unit,'e) ty_assoc | Acons : string *
    ('a,'e) ty * ('b,'e) ty_assoc -> ('a -> 'b, 'e) ty_assoc
 
-and (_,_) ty_pvar = | Pnil : ('a,'e) ty_pvar | Pconst : 't * ('b,'e) ty_pvar
--> ('t -> 'b, 'e) ty_pvar | Parg : 't * ('a,'e) ty * ('b,'e) ty_pvar -> ('t *
-'a -> 'b, 'e) ty_pvar *)
+   and (_,_) ty_pvar = | Pnil : ('a,'e) ty_pvar | Pconst : 't * ('b,'e)
+   ty_pvar -> ('t -> 'b, 'e) ty_pvar | Parg : 't * ('a,'e) ty * ('b,'e)
+   ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar *)
 (* An attempt at encoding omega examples from the 2nd Central European
    Functional Programming School: Generic Programming in Omega, by Tim Sheard
    and Nathan Linger http://web.cecs.pdx.edu/~sheard/ *)
@@ -3195,12 +3195,12 @@ Error: Types marked with the immediate attribute must be
 
 (* Implicit unpack allows to omit the signature in (val ...) expressions.
 
-It also adds (module M : S) and (module M) patterns, relying on implicit (val
-...) for the implementation. Such patterns can only be used in function
-definition, match clauses, and let ... in.
+   It also adds (module M : S) and (module M) patterns, relying on implicit
+   (val ...) for the implementation. Such patterns can only be used in
+   function definition, match clauses, and let ... in.
 
-New: implicit pack is also supported, and you only need to be able to infer
-the the module type path from the context. *)
+   New: implicit pack is also supported, and you only need to be able to
+   infer the the module type path from the context. *)
 (* ocaml -principal *)
 
 (* Use a module pattern *)
@@ -4438,14 +4438,14 @@ let f3 (x : M'.t) = (x : Std2.M.t)
 (* original report required Core_kernel: module type S = sig open
    Core_kernel.Std
 
-module Hashtbl1 : module type of Hashtbl module Hashtbl2 : sig include
-(module type of Hashtbl) end
+   module Hashtbl1 : module type of Hashtbl module Hashtbl2 : sig include
+   (module type of Hashtbl) end
 
-module Coverage : Core_kernel.Std.Hashable
+   module Coverage : Core_kernel.Std.Hashable
 
-type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a)
-Hashtbl1.t type doesnt_type = unit constraint 'a Coverage.Table.t =
-(Coverage.t, 'a) Hashtbl2.t end *)
+   type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a)
+   Hashtbl1.t type doesnt_type = unit constraint 'a Coverage.Table.t =
+   (Coverage.t, 'a) Hashtbl2.t end *)
 module type INCLUDING = sig
   include module type of List
 
@@ -4620,9 +4620,9 @@ end
 (* Requires -package tyxml module type PR6513_orig = sig module type S = sig
    type t type u end
 
-module Make: functor (Html5: Html5_sigs.T with type 'a Xml.wrap = 'a and type
-'a wrap = 'a and type 'a list_wrap = 'a list) -> S with type t =
-Html5_types.div Html5.elt and type u = < foo: Html5.uri > end *)
+   module Make: functor (Html5: Html5_sigs.T with type 'a Xml.wrap = 'a and
+   type 'a wrap = 'a and type 'a list_wrap = 'a list) -> S with type t =
+   Html5_types.div Html5.elt and type u = < foo: Html5.uri > end *)
 module type S = sig
   include Set.S
 
@@ -5494,12 +5494,12 @@ end
 (* (* if the above succeeded, one could break invariants *) module rec M2 :
    S' = M2;; (* should succeed! (but this is bad) *)
 
-let M2.W eq = W Eq;;
+   let M2.W eq = W Eq;;
 
-let s = List.fold_right SInt.add [1;2;3] SInt.empty;; module SInt2 =
-Set.Make(Int2);; let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
-let s' : SInt2.t = conv eq s;; SInt2.elements s';; SInt2.mem 2 s';; (*
-invariants are broken *) *)
+   let s = List.fold_right SInt.add [1;2;3] SInt.empty;; module SInt2 =
+   Set.Make(Int2);; let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
+   let s' : SInt2.t = conv eq s;; SInt2.elements s';; SInt2.mem 2 s';; (*
+   invariants are broken *) *)
 
 (* Check behavior with submodules *)
 module M = struct
@@ -5906,9 +5906,9 @@ let f (x : entity entity_container) = ()
 (* class world = object val entity_container : entity entity_container = new
    entity_container
 
-method add_entity (s : entity) = entity_container#add_entity (s :> entity)
+   method add_entity (s : entity) = entity_container#add_entity (s :> entity)
 
-end *)
+   end *)
 (* Two v's in the same class *)
 class c v =
   object
@@ -6361,8 +6361,7 @@ end = struct
   type refer = {poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a)}
 end
 
-(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c
-   pr3918c.ml *)
+(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c pr3918c.ml *)
 
 open Pr3918b
 
@@ -7316,14 +7315,14 @@ end
 (* module type ASig = sig type a val a:a val print:a -> unit end module type
    BSig = sig type b val b:b val print:b -> unit end
 
-module A = struct type a = int let a = 0 let print = print_int end module B =
-struct type b = float let b = 0.0 let print = print_float end
+   module A = struct type a = int let a = 0 let print = print_int end module
+   B = struct type b = float let b = 0.0 let print = print_float end
 
-module MakeA (Empty:sig end) : ASig = A module MakeB (Empty:sig end) : BSig =
-B
+   module MakeA (Empty:sig end) : ASig = A module MakeB (Empty:sig end) :
+   BSig = B
 
-module rec NewA : ASig = MakeA (struct end) and NewB : BSig with type b =
-NewA.a = MakeB (struct end);; *)
+   module rec NewA : ASig = MakeA (struct end) and NewB : BSig with type b =
+   NewA.a = MakeB (struct end);; *)
 
 (* Expressions and bindings *)
 

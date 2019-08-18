@@ -1075,8 +1075,7 @@ module Formatting = struct
       (fun conf -> conf.wrap_fun_args)
 end
 
-(* Flags that can be modified in the config file that don't affect
-   formatting *)
+(* Flags that can be modified in the config file that don't affect formatting *)
 
 let project_root_witness = [".git"; ".hg"; "dune-project"]
 

@@ -236,13 +236,15 @@ let fill_text ?epi text =
   in
   fmt_if (Char.is_whitespace text.[0]) " "
   $ hovbox 0
-      ( list_pn lines (fun ?prev:_ curr ?next ->
-            fmt_line curr
-            $
-            match next with
-            | Some str when String.for_all str ~f:Char.is_whitespace ->
-                close_box $ fmt "\n@," $ open_hovbox 0
-            | Some _ when not (String.is_empty curr) -> fmt "@ "
-            | _ -> noop)
+      ( hvbox 0
+          (hovbox 0
+             (list_pn lines (fun ?prev:_ curr ?next ->
+                  fmt_line curr
+                  $
+                  match next with
+                  | Some str when String.for_all str ~f:Char.is_whitespace ->
+                      close_box $ fmt "\n@," $ open_hovbox 0
+                  | Some _ when not (String.is_empty curr) -> fmt "@ "
+                  | _ -> noop)))
       $ fmt_if (Char.is_whitespace text.[String.length text - 1]) " "
       $ opt epi Fn.id )

@@ -1746,8 +1746,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI)) ->
           let e1N = List.rev rev_e1N in
-          (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is
-             important *)
+          (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
           let cmts_before = Cmts.fmt_before c pexp_loc in
           let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx eN1) in
           let box =
@@ -2190,8 +2189,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           (* TODO: remove leading_cmt once we figure out how to not introduce
              regression with 4.07 Without the line below {[ let () = ( (*
              before *) match (* after *) x with _ -> x) ]} Gets reformatted
-             into {[ let () = match (* before *) (* after *) x with _ -> x
-             ]} *)
+             into {[ let () = match (* before *) (* after *) x with _ -> x ]} *)
           let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
           let indent = match_indent c ~ctx:xexp.ctx ~default:0 in
           hvbox indent

@@ -591,8 +591,7 @@ let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =
   let before = fmt_before t conf ~fmt_code ?pro ?epi ?eol ?adj loc in
   (* remove the within comments from the map by accepting the continuation *)
   fun k ->
-    (* delay the after comments until the within comments have been
-       removed *)
+    (* delay the after comments until the within comments have been removed *)
     let after = fmt_after t conf ~fmt_code ?pro ?epi loc in
     let inner = k in
     before $ inner $ after

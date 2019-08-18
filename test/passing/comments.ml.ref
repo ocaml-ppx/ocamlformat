@@ -172,8 +172,7 @@ let () =
   (*  *)
   ()
 
-(* break when unicode sequence length measured in bytes but ¬ in code
-   points *)
+(* break when unicode sequence length measured in bytes but ¬ in code points *)
 
 type t =
   | Aaaaaaaaaa

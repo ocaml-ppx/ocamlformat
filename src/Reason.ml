@@ -153,8 +153,7 @@ module Mappers = struct
     in
     {Ast_mapper.default_mapper with attributes; expr; pat}
 
-  (* extend Normalize.mapper with additional transformations for Reason
-     code *)
+  (* extend Normalize.mapper with additional transformations for Reason code *)
   let norm c cmts ~ignore_doc_comments =
     (* holds if an attribute is a docstring that also appears as a comment *)
     let atr_is_dup =
