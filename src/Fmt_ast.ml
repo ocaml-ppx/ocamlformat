@@ -1299,9 +1299,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l i && List.is_empty arg.pexp_attributes ->
       Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
-  | _ ->
-      hvbox_if box 2
-        (fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg)
+  | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
 
 and fmt_args ~first:first_grp ~last:last_grp c ctx args =
   let fmt_arg ~first:_ ~last (lbl, arg) =
