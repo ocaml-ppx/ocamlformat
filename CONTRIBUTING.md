@@ -33,7 +33,7 @@ Once OCamlFormat has been built, run `make test` to check for regressions.
 
 The first step of `make test` is to ensure that invoking OCamlFormat on its own source code produces the same source code (you can run `make fixpoint` to only check this). If OCamlFormat is not integrated with the editor you use, you should run `make fmt` to reformat all OCamlFormat source files.
 
-The second part of `make test` is to ensure the test suite passes, the test report is displayed in the terminal and you should only get `[FAILED] [BASELINE]` (in orange) results. You should not get any result in red nor any `[REGRESSION]`.
+The second part of `make test` is to ensure the test suite passes. You should not see any unexpected diff. One can accept all diffs at once with `make regtests-promote`.
 
 Once `make test` passes, pull requests should be tested on the code in a set of external repositories. This can be done by executing `tools/test_branch.sh <rev>` where `<rev>` is the git revision/branch containing the pull request's changes. If a pull request affects an option, `OCAMLFORMAT=<option>=<value> tools/test_branch.sh <rev>` should also be run to test with the option enabled.
 

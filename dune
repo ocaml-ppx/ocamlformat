@@ -14,3 +14,5 @@
  (deps ./src/ocamlformat.exe)
  (mode promote)
  (action (with-stdout-to %{targets} (run ./src/ocamlformat.exe --help=plain))))
+
+(data_only_dirs test-extra)

@@ -33,7 +33,7 @@ base=$(git merge-base master $branch)
 
 git checkout $base
 make
-OCAMLFORMAT="$2" make -C test test_setup test_unstage test_clean test_pull test test_stage
+OCAMLFORMAT="$2" make -C test-extra test_setup test_unstage test_clean test_pull test test_stage
 git checkout $branch
 make
-OCAMLFORMAT="$3" make -C test test test_diff
+OCAMLFORMAT="$3" make -C test-extra test test_diff

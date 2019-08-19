@@ -140,8 +140,3 @@ clean_pp:
 
 print-%:
 	@echo '$*=$($*)'
-
-.PHONY: regtests
-regtests:
-	@echo running regtests with $(OCAMLFORMAT_EXE)
-	@dune runtest
