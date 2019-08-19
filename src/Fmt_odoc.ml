@@ -157,8 +157,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Reference (_kind, ref, txt) ->
       let ref = fmt "{!" $ fmt_reference ref $ fmt "}" in
       if List.is_empty txt then ref
-      else
-        hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
+      else wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt)
   | `Link (url, txt) -> (
       let url = wrap "{:" "}" (str_normalized url) in
       match txt with

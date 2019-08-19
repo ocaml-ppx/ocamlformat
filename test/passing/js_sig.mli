@@ -10,3 +10,6 @@ exception Second_exception
 [@@@ocamlformat "wrap-comments=true"]
 
 (** {e foooooooo oooooo oooo oooo ooooo oooo ooooo} {i fooooo ooooo ooo oooooo oo oooooo oooo} {b fooooooo oooooo oooooo oooooo oooooo ooooooo} *)
+
+(** {e foooooooo oooooooooo ooooooooo ooooooooo} {{!some ref} fooooooooooooo
+    oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)

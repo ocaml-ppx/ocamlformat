@@ -432,3 +432,6 @@ let fooooooooooooooooo =
 *)
 
 (** {e foooooooo oooooooooo ooooooooo ooooooooo} {i fooooooooooooo oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)
+
+(** {e foooooooo oooooooooo ooooooooo ooooooooo} {{!some ref} fooooooooooooo
+    oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)
