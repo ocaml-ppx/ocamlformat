@@ -1373,16 +1373,6 @@ and fmt_infix_op_args c ~parens xexp op_args =
       | `Preserve -> Source.is_long_pexp_open c.source exp )
     | _ -> false
   in
-  let parens_or_nested = parens || Ast.parenze_nested_exp xexp in
-  let parens_or_forced =
-    parens || Poly.(c.conf.infix_precedence = `Parens)
-  in
-  let hint =
-    match c.conf.indicate_multiline_delimiters with
-    | `Space -> (1, 0)
-    | `No -> (0, 0)
-    | `Closing_on_separate_line -> (1000, 0)
-  in
   let fmt_arg very_last ~first:_ ~last ((_, xarg) as lbl_xarg) =
     let parens =
       ((not very_last) && exposed_right_exp Ast.Non_apply xarg.ast)
@@ -1414,16 +1404,19 @@ and fmt_infix_op_args c ~parens xexp op_args =
            $ fmt_if_k (not last) (break_unless_newline 1 0)))
     $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
-  fits_breaks_if parens_or_nested "("
-    ( if parens_or_forced then
+  let opn, hint, cls =
+    if parens || Poly.(c.conf.infix_precedence = `Parens) then
       match c.conf.indicate_multiline_delimiters with
-      | `Space -> "( "
-      | `No | `Closing_on_separate_line -> "("
-    else "" )
-  $ list_fl groups fmt_op_arg_group
-  $ fmt_or_k parens_or_forced
-      (fits_breaks_if parens_or_nested ")" ~hint ")")
-      (fits_breaks_if parens_or_nested ")" "")
+      | `Space -> ("( ", Some (1, 0), ")")
+      | `No -> ("(", Some (0, 0), ")")
+      | `Closing_on_separate_line -> ("(", Some (1000, 0), ")")
+    else ("", None, "")
+  in
+  wrap_if_k
+    (parens || Ast.parenze_nested_exp xexp)
+    (fits_breaks "(" opn)
+    (fits_breaks ")" ?hint cls)
+    (list_fl groups fmt_op_arg_group)
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
