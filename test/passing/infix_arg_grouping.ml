@@ -85,3 +85,27 @@ let _ =
       ; ddddddddddddddd
       ; eeeeeeeeeeeeeee ]
     @ l )
+
+let sigma_seed =
+  create_seed_vars
+    ( (* formals already there plus new ones *)
+      prop.Prop.sigma @ sigma_new_formals )
+
+;;
+match
+  "\"" ^ line ^ " \""
+  |> (* split by whitespace *)
+     Str.split (Str.regexp_string "\" \"")
+with
+| prog :: args -> fooooooooooooooooooooo
+
+let () =
+  (* Open the repo *)
+  initialise
+  >>= (* Perform a subsequent action *)
+      subsequent_action
+  >|= (* Keep going... *)
+      another_action
+  |> fun t ->
+  (* And finally do this *)
+  final_action t
