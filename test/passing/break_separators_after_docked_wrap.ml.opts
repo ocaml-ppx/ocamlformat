@@ -1,2 +1,2 @@
 --break-separators=after-and-docked
---max-iter=3
+--break-collection-expressions=wrap
