@@ -129,11 +129,8 @@ let fmt_styled style fmt_elem elems =
     | `Superscript -> "^"
     | `Subscript -> "_"
   in
-  hovbox 0
-    (wrap "{" "}"
-       ( str_normalized s
-       $ fmt_if_not_empty elems "@ "
-       $ list elems "" fmt_elem ))
+  wrap "{" "}"
+    (str_normalized s $ fmt_if_not_empty elems "@ " $ list elems "" fmt_elem)
 
 let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Space _ -> fmt "@ "
@@ -160,8 +157,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
   | `Reference (_kind, ref, txt) ->
       let ref = fmt "{!" $ fmt_reference ref $ fmt "}" in
       if List.is_empty txt then ref
-      else
-        hovbox 0 (wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt))
+      else wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt)
   | `Link (url, txt) -> (
       let url = wrap "{:" "}" (str_normalized url) in
       match txt with
@@ -171,7 +167,7 @@ let rec fmt_inline_element : inline_element -> Fmt.t = function
 and fmt_inline_elements txt = list txt "" (ign_loc ~f:fmt_inline_element)
 
 and fmt_nestable_block_element c = function
-  | `Paragraph elems -> hovbox 0 (fmt_inline_elements elems)
+  | `Paragraph elems -> fmt_inline_elements elems
   | `Code_block s -> fmt_code_block c s
   | `Verbatim s -> fmt_verbatim_block s
   | `Modules mods ->
@@ -196,7 +192,7 @@ and fmt_list_light c kind items =
     match kind with `Unordered -> fmt "- " | `Ordered -> fmt "+ "
   in
   let fmt_item elems =
-    line_start $ vbox 0 (fmt_nestable_block_elements c elems)
+    line_start $ hovbox 0 (fmt_nestable_block_elements c elems)
   in
   vbox 0 (list items "@," fmt_item)
 
