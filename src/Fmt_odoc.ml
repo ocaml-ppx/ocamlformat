@@ -13,7 +13,7 @@ open Fmt
 open Odoc_parser.Ast
 module Location_ = Odoc_model.Location_
 
-type conf = {fmt_code: string -> Fmt.t}
+type conf = {fmt_code: string -> (Fmt.t, unit) Result.t}
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -70,17 +70,18 @@ let fmt_verbatim_block s =
   hvbox 0 (wrap "{v" "v}" content)
 
 let fmt_code_block conf s =
-  try hvbox 0 (wrap "{[@;<1 2>" "@ ]}" (conf.fmt_code s))
-  with _ ->
-    let fmt_line ~first ~last:_ l =
-      let l = String.rstrip l in
-      if first then str l
-      else if String.length l = 0 then str "\n"
-      else fmt "@," $ str l
-    in
-    let lines = String.split_lines s in
-    let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
-    box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
+  match conf.fmt_code s with
+  | Ok formatted -> hvbox 0 (wrap "{[@;<1 2>" "@ ]}" formatted)
+  | Error () ->
+      let fmt_line ~first ~last:_ l =
+        let l = String.rstrip l in
+        if first then str l
+        else if String.length l = 0 then str "\n"
+        else fmt "@," $ str l
+      in
+      let lines = String.split_lines s in
+      let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
+      box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
 
 let fmt_reference = ign_loc ~f:str_normalized
 

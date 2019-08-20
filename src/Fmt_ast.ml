@@ -23,7 +23,7 @@ type c =
   { conf: Conf.t
   ; source: Source.t
   ; cmts: Cmts.t
-  ; fmt_code: Conf.t -> string -> Fmt.t }
+  ; fmt_code: Conf.t -> string -> (Fmt.t, unit) Result.t }
 
 module Cmts = struct
   include Cmts
@@ -4417,14 +4417,16 @@ let fmt_file ~ctx ~f ~fmt_code source cmts conf itms =
   match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
 
 let rec fmt_code conf s =
-  let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-    Parse_with_comments.parse Migrate_ast.Parse.implementation conf
-      ~source:s
-  in
-  let source = Source.create s in
-  let cmts = Cmts.init_impl source ast comments in
-  fmt_file ~f:fmt_structure ~ctx:(Pld (PStr ast)) source cmts conf ast
-    ~fmt_code
+  try
+    let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
+      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
+        ~source:s
+    in
+    let source = Source.create s in
+    let cmts = Cmts.init_impl source ast comments in
+    let ctx = Pld (PStr ast) in
+    Ok (fmt_file ~f:fmt_structure ~ctx source cmts conf ast ~fmt_code)
+  with _ -> Error ()
 
 let entry_point ~f ~ctx source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't

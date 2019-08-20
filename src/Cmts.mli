@@ -56,7 +56,7 @@ val relocate :
 val fmt_before :
      t
   -> Conf.t
-  -> fmt_code:(string -> Fmt.t)
+  -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -69,7 +69,7 @@ val fmt_before :
 val fmt_after :
      t
   -> Conf.t
-  -> fmt_code:(string -> Fmt.t)
+  -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> Location.t
@@ -80,7 +80,7 @@ val fmt_after :
 val fmt_within :
      t
   -> Conf.t
-  -> fmt_code:(string -> Fmt.t)
+  -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> Location.t
@@ -91,7 +91,7 @@ val fmt_within :
 val fmt :
      t
   -> Conf.t
-  -> fmt_code:(string -> Fmt.t)
+  -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
@@ -105,7 +105,7 @@ val fmt :
 val fmt_list :
      t
   -> Conf.t
-  -> fmt_code:(string -> Fmt.t)
+  -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> ?pro:Fmt.t
   -> ?epi:Fmt.t
   -> ?eol:Fmt.t
