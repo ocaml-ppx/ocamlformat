@@ -121,3 +121,55 @@ let _ = let a = b in c :: d
 let _ = a :: ( let a = b in c )
 let _ = [ ( let a = b in c ) ]
 let _ = [| ( let a = b in c ) |]
+
+[@@@ocamlformat "if-then-else=compact"]
+
+let _ =
+  if x
+  then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
+  else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
+
+[@@@ocamlformat "if-then-else=fit-or-vertical"]
+
+let _ =
+  if x
+  then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
+  else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
+
+[@@@ocamlformat "if-then-else=keyword-first"]
+
+let _ =
+  if x
+  then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
+  else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
+
+[@@@ocamlformat "if-then-else=k-r"]
+
+let _ =
+  if x
+  then begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
+  else begin
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
+    Fooo fooo
+  end
