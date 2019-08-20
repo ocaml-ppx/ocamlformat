@@ -512,7 +512,7 @@ let fmt_cmt (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
     let len = String.length str - if dollar_last then 2 else 1 in
     let source = String.sub ~pos:1 ~len str in
     try
-      let formatted = fmt_code conf source in
+      let formatted = fmt_code source in
       let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
       hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
     with _ -> fmt_non_code cmt

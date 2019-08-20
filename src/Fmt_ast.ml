@@ -28,15 +28,15 @@ type c =
 module Cmts = struct
   include Cmts
 
-  let fmt c = fmt c.cmts c.conf ~fmt_code:c.fmt_code
+  let fmt c = fmt c.cmts c.conf ~fmt_code:(c.fmt_code c.conf)
 
-  let fmt_before c = fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
+  let fmt_before c = fmt_before c.cmts c.conf ~fmt_code:(c.fmt_code c.conf)
 
-  let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:c.fmt_code
+  let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:(c.fmt_code c.conf)
 
-  let fmt_after c = fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
+  let fmt_after c = fmt_after c.cmts c.conf ~fmt_code:(c.fmt_code c.conf)
 
-  let fmt_list c = fmt_list c.cmts c.conf ~fmt_code:c.fmt_code
+  let fmt_list c = fmt_list c.cmts c.conf ~fmt_code:(c.fmt_code c.conf)
 end
 
 type block =
