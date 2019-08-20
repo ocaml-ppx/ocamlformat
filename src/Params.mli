@@ -11,6 +11,16 @@
 
 module Format = Format_
 
+type exp_wrap = Fmt.t -> Fmt.t
+
+val get_exp_wrap :
+     Conf.t
+  -> ?disambiguate:bool
+  -> ?fits_breaks:bool
+  -> parens:bool
+  -> exp_grouping:[`Parens | `Begin_end]
+  -> exp_wrap
+
 type cases =
   { leading_space: Fmt.t
   ; bar: Fmt.t
@@ -85,4 +95,5 @@ val get_if_then_else :
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(Migrate_ast.Parsetree.expression Ast.xt -> Fmt.t)
   -> exp_grouping:[`Parens | `Begin_end]
+  -> exp_grouping_bch:[`Parens | `Begin_end]
   -> if_then_else
