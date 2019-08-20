@@ -9,11 +9,7 @@
  *                                                                    *
  **********************************************************************)
 
-val fmt :
-     Conf.t
-  -> fmt_code:(Conf.t -> string -> Fmt.t)
-  -> Odoc_parser.Ast.docs
-  -> Fmt.t
+val fmt : fmt_code:(string -> Fmt.t) -> Odoc_parser.Ast.docs -> Fmt.t
 
 val diff :
   Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
