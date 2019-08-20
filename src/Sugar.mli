@@ -14,7 +14,9 @@ open Asttypes
 open Parsetree
 
 val arrow_typ :
-  Cmts.t -> core_type Ast.xt -> (arg_label * core_type Ast.xt) list
+     Cmts.t
+  -> core_type Ast.xt
+  -> (Location.t * arg_label * core_type Ast.xt) list
 (** [arrow_typ cmts ty] returns the list of labeled sub-arrow types of the
     type [ty]. *)
 

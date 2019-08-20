@@ -33,6 +33,19 @@ module type M = sig
     -> (config -> 'a -> config)
     -> (config -> 'a)
     -> 'a t
+
+  val select
+    :  (* The fsevents context *)
+       env
+    -> (* Additional file descriptor to select for reading *)
+       ?read_fdl:fd_select list
+    -> (* Additional file descriptor to select for writing *)
+       ?write_fdl:fd_select list
+    -> (* Timeout...like Unix.select *)
+       timeout:float
+    -> (* The callback for file system events *)
+       (event list -> unit)
+    -> unit
 end
 
 let ssmap
@@ -71,6 +84,19 @@ module type M = sig
   val imported_sets_of_closures_table :
     Simple_value_approx.function_declarations option
     Set_of_closures_id.Tbl.t
+
+  val select :
+       (* The fsevents context *)
+       env
+    -> (* Additional file descriptor to select for reading *)
+       ?read_fdl:fd_select list
+    -> (* Additional file descriptor to select for writing *)
+       ?write_fdl:fd_select list
+    -> (* Timeout...like Unix.select *)
+       timeout:float
+    -> (* The callback for file system events *)
+       (event list -> unit)
+    -> unit
 end
 
 let array_fold_transf (f : numbering -> 'a -> numbering * 'b) n
