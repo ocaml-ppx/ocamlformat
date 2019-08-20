@@ -88,28 +88,26 @@ let parens_kind i =
         Some (txt, opn, cls)
     | _ -> None
 
-let split_index_op s =
-  match String.rindex s '.' with
-  | Some i when String.length s > i + 2 ->
-      let before = String.sub s ~pos:0 ~len:i in
-      let after = String.sub s ~pos:i ~len:(String.length s - i) in
-      Some ((if String.is_empty before then "" else "." ^ before), after)
-  | _ -> None
-
 let index_op_get i =
-  match split_index_op i with
-  | None -> None
-  | Some (before, after) -> (
-    match parens_kind after with
-    | Some (s, o, c) -> Some (before ^ s, o, c)
-    | None -> None )
+  match (i.[0], parens_kind i) with
+  | '.', Some (s, o, c) -> Some (s, o, c)
+  | _ -> None
 
 let index_op_set i =
   match String.chop_suffix i ~suffix:"<-" with
   | None -> None
   | Some i -> index_op_get i
 
-let index_op_lid i ~f = f (String.concat ~sep:"" (Longident.flatten i))
+let index_op_lid i ~f =
+  match List.rev (Longident.flatten i) with
+  | [] -> impossible "not produced by parser"
+  | last :: rev_firsts -> (
+    match f last with
+    | None -> None
+    | Some (s, o, c) -> (
+      match List.rev rev_firsts with
+      | [] -> Some (s, o, c)
+      | firsts -> Some (String.concat ("." :: firsts) ^ s, o, c) ) )
 
 let index_op_get_lid = index_op_lid ~f:index_op_get
 
