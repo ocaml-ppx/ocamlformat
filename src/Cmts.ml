@@ -511,11 +511,11 @@ let fmt_cmt (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
     let dollar_last = Char.equal str.[String.length str - 1] '$' in
     let len = String.length str - if dollar_last then 2 else 1 in
     let source = String.sub ~pos:1 ~len str in
-    try
-      let formatted = fmt_code conf source in
-      let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
-      hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
-    with _ -> fmt_non_code cmt
+    match fmt_code conf source with
+    | Ok formatted ->
+        let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
+        hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+    | Error () -> fmt_non_code cmt
   in
   match Cmt.txt cmt with
   | "" | "$" -> fmt_non_code cmt
