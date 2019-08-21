@@ -75,3 +75,9 @@ let _ = Bigarray.Genarray.set s [|1; 2|] 1
 let _ = Bigarray.Genarray.set s [|1; 2; 3|] 1
 
 let _ = s.{1, 2, 3, 4} <- 1
+
+let () =
+  let m = Mat.zeros 5 5 in
+  m.Mat.${[[2]; [5]]} |> ignore ;
+  let open Mat in
+  m.${[[2]; [5]]} |> ignore

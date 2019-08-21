@@ -26,9 +26,9 @@ val is_infix_id : string -> bool
 val is_infix : expression -> bool
 (** Holds of infix symbol expressions. *)
 
-val index_op_get : string -> (string * Char.t * Char.t) option
+val index_op_get_lid : Longident.t -> (string * Char.t * Char.t) option
 
-val index_op_set : string -> (string * Char.t * Char.t) option
+val index_op_set_lid : Longident.t -> (string * Char.t * Char.t) option
 
 val index_op_get_sugar :
      Longident.t Location.loc

@@ -96,10 +96,22 @@ let index_op_get i =
 let index_op_set i =
   match String.chop_suffix i ~suffix:"<-" with
   | None -> None
-  | Some i -> (
-    match (i.[0], parens_kind i) with
-    | '.', Some (s, o, c) -> Some (s, o, c)
-    | _ -> None )
+  | Some i -> index_op_get i
+
+let index_op_lid i ~f =
+  match List.rev (Longident.flatten i) with
+  | [] -> impossible "not produced by parser"
+  | last :: rev_firsts -> (
+    match f last with
+    | None -> None
+    | Some (s, o, c) -> (
+      match List.rev rev_firsts with
+      | [] -> Some (s, o, c)
+      | firsts -> Some (String.concat ("." :: firsts) ^ s, o, c) ) )
+
+let index_op_get_lid = index_op_lid ~f:index_op_get
+
+let index_op_set_lid = index_op_lid ~f:index_op_set
 
 let index_op_string = (".", '[', ']')
 
