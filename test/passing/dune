@@ -6,9 +6,6 @@ type setup =
   ; mutable base_file: string option
   ; mutable extra_deps: string list }
 
-let default_setup () =
-  {has_ref= false; has_opts= false; base_file= None; extra_deps= []}
-
 let read_lines fn =
   let rec aux acc ic =
     try aux (input_line ic :: acc) ic with End_of_file -> acc
@@ -36,21 +33,18 @@ let register_file tests fname =
               in
               Hashtbl.add tests src_test_name s ;
               s
-          | Some i -> (
+          | Some i ->
               let base_src_test_name =
                 String.sub test_name 0 i ^ "." ^ ext
               in
-              match Hashtbl.find tests base_src_test_name with
-              | setup -> setup
-              | exception Not_found ->
-                  let s =
-                    { has_ref= false
-                    ; has_opts= false
-                    ; base_file= Some base_src_test_name
-                    ; extra_deps= [] }
-                  in
-                  Hashtbl.add tests src_test_name s ;
-                  s ) )
+              let s =
+                { has_ref= false
+                ; has_opts= false
+                ; base_file= Some base_src_test_name
+                ; extra_deps= [] }
+              in
+              Hashtbl.add tests src_test_name s ;
+              s )
       in
       match rest with
       | [] -> ()
