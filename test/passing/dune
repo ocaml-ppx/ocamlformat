@@ -1,9 +1,8 @@
 (* -*- tuareg -*- *)
 
-type setup =
-  { mutable has_ref: bool
-  ; mutable has_opts: bool
-  ; mutable extra_deps: string list }
+type out = {ref: string option; opts: string option}
+
+type setup = {mutable outputs: out list; mutable extra_deps: string list}
 
 let read_lines fn =
   let rec aux acc ic =
@@ -16,19 +15,54 @@ let read_lines fn =
 let register_file tests fname =
   match String.split_on_char '.' fname with
   | test_name :: (("ml" | "mli") as ext) :: rest -> (
-      let test_name = test_name ^ "." ^ ext in
+      let src_test_name = test_name ^ "." ^ ext in
       let setup =
-        match Hashtbl.find tests test_name with
+        match Hashtbl.find tests src_test_name with
         | setup -> setup
-        | exception Not_found ->
-            let s = {has_ref= false; has_opts= false; extra_deps= []} in
-            Hashtbl.add tests test_name s ;
-            s
+        | exception Not_found -> (
+          (* foo_file-some_variant.ml should derive from foo_file.ml *)
+          match String.index_opt test_name '-' with
+          | None ->
+              let s = {outputs= []; extra_deps= []} in
+              Hashtbl.add tests src_test_name s ;
+              s
+          | Some i -> (
+              let src_test_name = String.sub test_name 0 i ^ "." ^ ext in
+              match Hashtbl.find tests src_test_name with
+              | setup -> setup
+              | exception Not_found ->
+                  let s = {outputs= []; extra_deps= []} in
+                  Hashtbl.add tests src_test_name s ;
+                  s ) )
       in
       match rest with
       | [] -> ()
-      | ["opts"] -> setup.has_opts <- true
-      | ["ref"] -> setup.has_ref <- true
+      | ["opts"] ->
+          let ref_name = test_name ^ "." ^ ext ^ ".ref" in
+          let ref_exists {ref; _} =
+            Option.equal String.equal ref (Some ref_name)
+          in
+          let outputs =
+            if List.exists ref_exists setup.outputs then
+              let opts = Some fname in
+              let update o = if ref_exists o then {o with opts} else o in
+              List.map update setup.outputs
+            else {ref= None; opts= Some fname} :: setup.outputs
+          in
+          setup.outputs <- outputs
+      | ["ref"] ->
+          let opts_name = test_name ^ "." ^ ext ^ ".opts" in
+          let opts_exists {opts; _} =
+            Option.equal String.equal opts (Some opts_name)
+          in
+          let outputs =
+            if List.exists opts_exists setup.outputs then
+              let ref = Some fname in
+              let update o = if opts_exists o then {o with ref} else o in
+              List.map update setup.outputs
+            else {ref= Some fname; opts= None} :: setup.outputs
+          in
+          setup.outputs <- outputs
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | _ -> invalid_arg fname )
   | _ -> ()
@@ -37,17 +71,20 @@ let register_file tests fname =
 
 let emit_test buffer test_name setup =
   let open Printf in
-  let opts =
-    if setup.has_opts then sprintf " %%{read-lines:%s.opts}" test_name
-    else ""
-  in
-  let ref_name = if setup.has_ref then test_name ^ ".ref" else test_name in
   let extra_deps = String.concat " " setup.extra_deps in
-  Printf.ksprintf
-    (Buffer.add_string buffer)
-    {|
+  List.iteri
+    (fun i output ->
+      let opts =
+        match output.opts with
+        | Some o -> sprintf " %%{read-lines:%s}" o
+        | None -> ""
+      in
+      let ref_name = Option.value output.ref ~default:test_name in
+      Printf.ksprintf
+        (Buffer.add_string buffer)
+        {|
 (rule
- (targets %s.output)
+ (targets %s.%i.output)
  (deps (:input %s) .ocamlformat %s)
  (action
    (setenv OCAMLFORMAT "max-iters=2"
@@ -56,11 +93,12 @@ let emit_test buffer test_name setup =
 
 (alias
  (name runtest)
- (deps %s %s.output)
- (action (diff %s %s.output)))
+ (deps %s %s.%i.output)
+ (action (diff %s %s.%i.output)))
 |}
-    test_name test_name extra_deps opts ref_name test_name ref_name
-    test_name
+        test_name i test_name extra_deps opts ref_name test_name i ref_name
+        test_name i)
+    setup.outputs
 
 let tests = Hashtbl.create 64
 
