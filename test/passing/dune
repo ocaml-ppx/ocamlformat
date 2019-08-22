@@ -3,6 +3,7 @@
 type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
+  ; mutable base_file: string option
   ; mutable extra_deps: string list }
 
 let read_lines fn =
@@ -13,17 +14,25 @@ let read_lines fn =
   let lines = aux [] ic in
   close_in ic ; lines
 
+let add_test ?base_file tests src_test_name =
+  let s = {has_ref= false; has_opts= false; base_file; extra_deps= []} in
+  Hashtbl.add tests src_test_name s ;
+  s
+
 let register_file tests fname =
   match String.split_on_char '.' fname with
-  | test_name :: (("ml" | "mli") as ext) :: rest -> (
-      let test_name = test_name ^ "." ^ ext in
+  | test_name :: (("ml" | "mli" | "mlt") as ext) :: rest -> (
+      let src_test_name = test_name ^ "." ^ ext in
       let setup =
-        match Hashtbl.find tests test_name with
+        match Hashtbl.find tests src_test_name with
         | setup -> setup
-        | exception Not_found ->
-            let s = {has_ref= false; has_opts= false; extra_deps= []} in
-            Hashtbl.add tests test_name s ;
-            s
+        | exception Not_found -> (
+          (* foo_file-some_variant.ml should derive from foo_file.ml *)
+          match String.index_opt test_name '-' with
+          | None -> add_test tests src_test_name
+          | Some i ->
+              let base_file = String.sub test_name 0 i ^ "." ^ ext in
+              add_test ~base_file tests src_test_name )
       in
       match rest with
       | [] -> ()
@@ -42,6 +51,7 @@ let emit_test buffer test_name setup =
     else ""
   in
   let ref_name = if setup.has_ref then test_name ^ ".ref" else test_name in
+  let base_test_name = Option.value setup.base_file ~default:test_name in
   let extra_deps = String.concat " " setup.extra_deps in
   Printf.ksprintf
     (Buffer.add_string buffer)
@@ -59,7 +69,7 @@ let emit_test buffer test_name setup =
  (deps %s %s.output)
  (action (diff %s %s.output)))
 |}
-    test_name test_name extra_deps opts ref_name test_name ref_name
+    test_name base_test_name extra_deps opts ref_name test_name ref_name
     test_name
 
 let tests = Hashtbl.create 64

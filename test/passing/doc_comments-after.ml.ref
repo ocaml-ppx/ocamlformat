@@ -1,11 +1,11 @@
-(** test *)
 module A = B
+(** test *)
 
-(** @open *)
 include A
-
 (** @open *)
+
 include B
+(** @open *)
 
 include A
 
@@ -13,8 +13,8 @@ type t = C of int  (** docstring comment *)
 
 type t = C of int [@ocaml.doc " docstring attribute "]
 
-(** comment *)
 include Mod
+(** comment *)
 
 (** before *)
 let x = 2
@@ -32,8 +32,8 @@ let a = 0
 (** A' *)
 
 module Comment_placement : sig
-  (** Type *)
   type t
+  (** Type *)
 
   (** Variant declaration *)
   type t = T
@@ -41,8 +41,8 @@ module Comment_placement : sig
   (** Type extension *)
   type t += T
 
-  (** Module *)
   module A : B
+  (** Module *)
 
   (** Module *)
   module A : sig
@@ -51,14 +51,14 @@ module Comment_placement : sig
     type b
   end
 
-  (** Val *)
   val a : b
+  (** Val *)
 
-  (** Exception *)
   exception E
+  (** Exception *)
 
-  (** Include *)
   include M
+  (** Include *)
 
   (** Include *)
   include sig
@@ -67,14 +67,14 @@ module Comment_placement : sig
     type b
   end
 
-  (** Open *)
   open M
+  (** Open *)
 
-  (** External *)
   external a : b = "c"
+  (** External *)
 
-  (** Rec module *)
   module rec A : B
+  (** Rec module *)
 
   (** Rec module *)
   module rec A : sig
@@ -83,8 +83,8 @@ module Comment_placement : sig
     type b
   end
 
-  (** Module type *)
   module type A
+  (** Module type *)
 
   (** Module type *)
   module type A = sig
@@ -93,11 +93,11 @@ module Comment_placement : sig
     type b
   end
 
-  (** Class *)
   class a : b
+  (** Class *)
 
-  (** Class type *)
   class type a = b
+  (** Class type *)
 
   (* [@@@some attribute] *)
   (* (** Attribute *) *)
@@ -108,8 +108,8 @@ module Comment_placement : sig
   external a : b = "double_comment"
   (** B *)
 end = struct
-  (** Type *)
   type t = {a: int}
+  (** Type *)
 
   (** Variant declaration *)
   type t = T
@@ -117,8 +117,8 @@ end = struct
   (** Type extension *)
   type t += T
 
-  (** Module *)
   module A = B
+  (** Module *)
 
   (** Module *)
   module A = struct
@@ -138,11 +138,11 @@ end = struct
   (** Let *)
   let a = b
 
-  (** Exception *)
   exception E
+  (** Exception *)
 
-  (** Include *)
   include M
+  (** Include *)
 
   (** Include *)
   include struct
@@ -151,14 +151,14 @@ end = struct
     type b = B
   end
 
-  (** Open *)
   open M
+  (** Open *)
 
-  (** External *)
   external a : b = "c"
+  (** External *)
 
-  (** Rec module *)
   module rec A : B = C
+  (** Rec module *)
 
   (** Rec module *)
   module rec A : B = struct
@@ -167,8 +167,8 @@ end = struct
     type b = B
   end
 
-  (** Module type *)
   module type A = B
+  (** Module type *)
 
   (** Module type *)
   module type A = sig
@@ -177,30 +177,30 @@ end = struct
     type b
   end
 
-  (** Class *)
   class a = b
+  (** Class *)
 
   (** Class *)
   class b =
     object
-      (** Method *)
       method f = 0
+      (** Method *)
 
-      (** Inherit *)
       inherit a
+      (** Inherit *)
 
-      (** Val *)
       val x = 1
+      (** Val *)
 
-      (** Constraint *)
       constraint 'a = [> ]
+      (** Constraint *)
 
-      (** Initialiser *)
       initializer do_init ()
+      (** Initialiser *)
     end
 
-  (** Class type *)
   class type a = b
+  (** Class type *)
 
   (* [@@@some attribute] *)
   (* (** Attribute *) *)
@@ -244,3 +244,21 @@ end
    processing "y = t". If we don't explicitly preserve "x = y", the
    normalizer cannot pick it up *)
 let _ = ()
+
+(** Tags without text *)
+
+(** @see <Abc> *)
+
+(** @before a *)
+
+(** @deprecated *)
+
+(** @param b *)
+
+(** @raise c *)
+
+(** @return *)
+
+(** @see 'file' *)
+
+(** @see "title" *)
