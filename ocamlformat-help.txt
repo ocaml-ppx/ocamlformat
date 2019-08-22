@@ -152,8 +152,11 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --doc-comments={after|before}
            Doc comments position. after puts doc comments after the
-           corresponding code. before puts comments before the corresponding
-           code. The default value is after.
+           corresponding code. This option has no effect on variant
+           declarations because that would change their meaning and on
+           structure, signature and object for readability. before puts
+           comments before the corresponding code. The default value is
+           after.
 
        --doc-comments-padding=PADDING
            Add PADDING spaces before doc comments in type declarations. The
