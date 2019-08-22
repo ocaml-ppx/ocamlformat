@@ -14,6 +14,11 @@ let read_lines fn =
   let lines = aux [] ic in
   close_in ic ; lines
 
+let add_test ?base_file tests src_test_name =
+  let s = {has_ref= false; has_opts= false; base_file; extra_deps= []} in
+  Hashtbl.add tests src_test_name s ;
+  s
+
 let register_file tests fname =
   match String.split_on_char '.' fname with
   | test_name :: (("ml" | "mli" | "mlt") as ext) :: rest -> (
@@ -24,27 +29,10 @@ let register_file tests fname =
         | exception Not_found -> (
           (* foo_file-some_variant.ml should derive from foo_file.ml *)
           match String.index_opt test_name '-' with
-          | None ->
-              let s =
-                { has_ref= false
-                ; has_opts= false
-                ; base_file= None
-                ; extra_deps= [] }
-              in
-              Hashtbl.add tests src_test_name s ;
-              s
+          | None -> add_test tests src_test_name
           | Some i ->
-              let base_src_test_name =
-                String.sub test_name 0 i ^ "." ^ ext
-              in
-              let s =
-                { has_ref= false
-                ; has_opts= false
-                ; base_file= Some base_src_test_name
-                ; extra_deps= [] }
-              in
-              Hashtbl.add tests src_test_name s ;
-              s )
+              let base_file = String.sub test_name 0 i ^ "." ^ ext in
+              add_test ~base_file tests src_test_name )
       in
       match rest with
       | [] -> ()
