@@ -184,13 +184,9 @@ let parens_or_begin_end c ~loc =
       let str = String.lstrip (Source.string_at c.source loc) in
       if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
 
-let wrap_exp c ?disambiguate ?fits_breaks ~parens ~loc k =
+let wrap_exp c ?disambiguate ?fits_breaks ~parens ~loc =
   let exp_grouping = parens_or_begin_end c ~loc in
-  let exp_wrap =
-    Params.get_exp_wrap c.conf ?disambiguate ?fits_breaks ~parens
-      ~exp_grouping
-  in
-  exp_wrap k
+  Params.get_exp_wrap c.conf ?disambiguate ?fits_breaks ~parens ~exp_grouping
 
 let drop_while ~f s =
   let i = ref 0 in
