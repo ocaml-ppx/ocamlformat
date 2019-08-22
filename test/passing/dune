@@ -16,7 +16,7 @@ let read_lines fn =
 
 let register_file tests fname =
   match String.split_on_char '.' fname with
-  | test_name :: (("ml" | "mli") as ext) :: rest -> (
+  | test_name :: (("ml" | "mli" | "mlt") as ext) :: rest -> (
       let src_test_name = test_name ^ "." ^ ext in
       let setup =
         match Hashtbl.find tests src_test_name with
