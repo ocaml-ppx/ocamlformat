@@ -1381,7 +1381,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
     let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
     let not_simple (_, arg) = not (is_simple c.conf width arg) in
     let exists_not_simple args = List.exists args ~f:not_simple in
-    let break (has_cmts, _, _, (_, args1)) (_, _, _, (_, args2)) =
+    let break (has_cmts, _, _, (_, _, args1)) (_, _, _, (_, _, args2)) =
       has_cmts || exists_not_simple args1 || exists_not_simple args2
     in
     match c.conf.break_infix with
@@ -1417,19 +1417,29 @@ and fmt_infix_op_args c ~parens xexp op_args =
     let indent = if first_grp && parens then -2 else 0 in
     hovbox indent
       (list_fl args
-         (fun ~first ~last (_, cmts_before, cmts_after, (op, xargs)) ->
+         (fun ~first
+              ~last
+              (_, cmts_before, cmts_after, (is_monadic, op, xargs))
+              ->
            let very_first = first_grp && first in
            let very_last = last_grp && last in
-           cmts_before $ cmts_after
-           $ hvbox 0
-               ( op
-               $ ( match xargs with
-                 | (_, e) :: _ when very_last && is_not_indented e ->
-                     fmt "@ "
-                 | _ -> fmt_if (not very_first) " " )
-               $ hovbox_if (not very_last) 2
-                   (list_fl xargs (fmt_arg very_last)) )
-           $ fmt_if_k (not last) (break_unless_newline 1 0)))
+           let break_after_op =
+             match xargs with
+             | (_, e) :: _ when very_last && is_not_indented e -> fmt "@ "
+             | _ ->
+                 fmt_if_k (not very_first)
+                   (fmt_or_k is_monadic
+                      (break_unless_newline 1 0)
+                      (char ' '))
+           in
+           let break_before_op =
+             fmt_if_k
+               ((not last) && not is_monadic)
+               (break_unless_newline 1 0)
+           in
+           cmts_before $ cmts_after $ op $ break_after_op
+           $ hovbox_if (not very_last) 2 (list_fl xargs (fmt_arg very_last))
+           $ break_before_op))
     $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
   let opn, hint, cls =
@@ -1653,18 +1663,23 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( fmt_infix_op_args c ~parens xexp
             (List.map op_args ~f:(fun (op, args) ->
                  match op with
-                 | Some ({ast= {pexp_loc; _}; _} as op) ->
+                 | Some ({ast= {pexp_desc; pexp_loc; _}; _} as op) ->
                      (* side effects of Cmts.fmt_before before
                         fmt_expression is important *)
                      let has_cmts = Cmts.has_before c.cmts pexp_loc in
                      let fmt_before_cmts = Cmts.fmt_before c pexp_loc in
                      let fmt_after_cmts = Cmts.fmt_after c pexp_loc in
+                     let is_monadic =
+                       match pexp_desc with
+                       | Pexp_ident {txt= Lident id; _} -> is_monadic_id id
+                       | _ -> false
+                     in
                      let fmt_op = fmt_expression c op in
                      ( has_cmts
                      , fmt_before_cmts
                      , fmt_after_cmts
-                     , (fmt_op, args) )
-                 | None -> (false, noop, noop, (noop, args))))
+                     , (is_monadic, fmt_op, args) )
+                 | None -> (false, noop, noop, (false, noop, args))))
         $ fmt_atrs )
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= id; loc}
@@ -1900,7 +1915,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    ( has_cmts
                    , fmt_before_cmts
                    , fmt_after_cmts
-                   , (fmt_op, [(Nolabel, arg)]) )))
+                   , (false, fmt_op, [(Nolabel, arg)]) )))
           $ fmt_atrs ) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =

@@ -50,6 +50,13 @@ let is_kwdopchar = function
       true
   | _ -> false
 
+let is_monadic_last_char = function '=' | '|' -> true | _ -> false
+
+let is_monadic_id s =
+  String.length s > 2
+  && String.for_all s ~f:is_kwdopchar
+  && is_monadic_last_char s.[String.length s - 1]
+
 let is_monadic_binding_id s =
   String.length s > 3
   && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
