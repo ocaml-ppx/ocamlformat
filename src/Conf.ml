@@ -448,7 +448,10 @@ module Formatting = struct
     let all =
       [ ( "after"
         , `After
-        , "$(b,after) puts doc comments after the corresponding code." )
+        , "$(b,after) puts doc comments after the corresponding code. This \
+           option has no effect on variant declarations because that would \
+           change their meaning and on structure, signature and object for \
+           readability." )
       ; ( "before"
         , `Before
         , "$(b,before) puts comments before the corresponding code." ) ]
