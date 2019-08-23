@@ -101,11 +101,11 @@ with
 
 let () =
   (* Open the repo *)
-  initialise
-  >>= (* Perform a subsequent action *)
-      subsequent_action
-  >|= (* Keep going... *)
-      another_action
+  initialise >>=
+  (* Perform a subsequent action *)
+  subsequent_action >|=
+  (* Keep going... *)
+  another_action
   |> fun t ->
   (* And finally do this *)
   final_action t
