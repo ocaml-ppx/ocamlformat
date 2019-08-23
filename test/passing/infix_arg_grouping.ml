@@ -109,3 +109,10 @@ let () =
   |> fun t ->
   (* And finally do this *)
   final_action t
+
+let () =
+  match foooooo with
+  (* foooooo foooooooo *)
+  | foooooooooooooooooooooo ->
+      Foooooooo.foooo_fooooooooooo foooooo_foo k [xxxxxx] yyyyyyyyyy >>|
+      fooooooooooo k
