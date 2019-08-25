@@ -3,7 +3,5 @@
 #directory "+unix"
 
 ;;
-#load (* a *) "file"
-(* b *)
-
+#load (* a *) "file" (* b *)
 (* comment after *)

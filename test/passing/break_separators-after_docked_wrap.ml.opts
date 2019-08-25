@@ -1,2 +1,3 @@
 --break-separators=after-and-docked
 --break-collection-expressions=wrap
+-n 3
