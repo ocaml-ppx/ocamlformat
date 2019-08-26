@@ -1415,36 +1415,32 @@ and fmt_infix_op_args c ~parens xexp op_args =
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in
-    fmt_if_k (not first_grp) (break_unless_newline 1 0)
-    $ hovbox indent
-        (list_fl args
-           (fun ~first
-                ~last
-                (_, cmts_before, cmts_after, (is_monadic, op, xargs))
-                ->
-             let very_first = first_grp && first in
-             let very_last = last_grp && last in
-             let break_after_op =
-               match xargs with
-               | (_, {ast= {pexp_desc= Pexp_fun _ | Pexp_function _; _}; _})
-                 :: _
-                 when not very_first ->
-                   char ' '
-               | (_, e) :: _ when very_last && is_not_indented e -> fmt "@ "
-               | _ ->
-                   fmt_if_k (not very_first)
-                     (fmt_or_k is_monadic
-                        (break_unless_newline 1000 0)
-                        (char ' '))
-             in
-             let break_before_op =
-               fmt_if_k (not first)
-                 (fmt_or_k is_monadic (char ' ') (break_unless_newline 1 0))
-             in
-             break_before_op $ cmts_before $ cmts_after $ op
-             $ break_after_op
-             $ hovbox_if (not very_last) 2
-                 (list_fl xargs (fmt_arg very_last))))
+    hovbox indent
+      (list_fl args
+         (fun ~first
+              ~last
+              (_, cmts_before, cmts_after, (is_monadic, op, xargs))
+              ->
+           let very_first = first_grp && first in
+           let very_last = last_grp && last in
+           let break_after_op =
+             match xargs with
+             | (_, e) :: _ when very_last && is_not_indented e -> fmt "@ "
+             | _ ->
+                 fmt_if_k (not very_first)
+                   (fmt_or_k is_monadic
+                      (break_unless_newline 1 0)
+                      (char ' '))
+           in
+           let break_before_op =
+             fmt_if_k
+               ((not last) && not is_monadic)
+               (break_unless_newline 1 0)
+           in
+           cmts_before $ cmts_after $ op $ break_after_op
+           $ hovbox_if (not very_last) 2 (list_fl xargs (fmt_arg very_last))
+           $ break_before_op))
+    $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
   let opn, hint, cls =
     if parens || Poly.(c.conf.infix_precedence = `Parens) then
