@@ -4377,8 +4377,7 @@ let fmt_file ~ctx ~f ~fmt_code source cmts conf itms =
 
 let rec fmt_code conf s =
   match
-    Parse_with_comments.parse Migrate_ast.Parse.implementation conf
-      ~source:s
+    Parse_with_comments.parse Migrate_ast.Parse.implementation conf ~source:s
   with
   | {ast; comments; _} ->
       let source = Source.create s in
