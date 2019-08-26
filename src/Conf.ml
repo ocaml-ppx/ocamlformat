@@ -1311,6 +1311,11 @@ let no_version_check =
   let default = false in
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
 
+let ignore_invalid_options =
+  let doc = "Ignore invalid options (e.g. in .ocamlformat)." in
+  let default = false in
+  mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
+
 let ocamlformat_profile =
   { align_cases= C.default Formatting.align_cases
   ; align_constructors_decl= C.default Formatting.align_constructors_decl
@@ -1777,6 +1782,8 @@ let read_config_file conf filename_kind =
                 let from = `File (filename, num) in
                 match parse_line conf ~from line with
                 | Ok conf -> (conf, errors, Int.succ num)
+                | Error _ when !ignore_invalid_options ->
+                    (conf, errors, Int.succ num)
                 | Error e -> (conf, e :: errors, Int.succ num))
           in
           match List.rev errors with

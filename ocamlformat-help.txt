@@ -433,6 +433,9 @@ OPTIONS
        -i, --inplace
            Format in-place, overwriting input file(s).
 
+       --ignore-invalid-option
+           Ignore invalid options (e.g. in .ocamlformat).
+
        --impl
            Parse file with unrecognized extension as an implementation.
 

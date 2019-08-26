@@ -14,7 +14,7 @@ type 'a with_comments = {ast: 'a; comments: Cmt.t list; prefix: string}
 module W = struct
   type t = int
 
-  let in_lexer = [1; 2; 14; 29]
+  let in_lexer = [1; 2; 3; 14; 29]
 
   let disable x = -abs x
 
