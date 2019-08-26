@@ -63,8 +63,8 @@ let is_monadic_binding e =
 
 let is_infix_id i =
   match (i.[0], i) with
-  | ( ( '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&'
-      | '@' | '^' | '#' )
+  | ( ( '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
+      | '^' | '#' )
     , _ )
    |( _
     , ( "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
@@ -254,8 +254,8 @@ let doc_atrs ?(acc = []) atrs =
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
 
-(** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3
-    of the margin. *)
+(** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
+    the margin. *)
 let fit_margin (c : Conf.t) x = x * 3 < c.margin
 
 (** [longident_fit_margin c x] returns [true] if and only if [x] does not
@@ -299,14 +299,13 @@ let rec class_decl_is_simple x =
    |Pcl_let _ | Pcl_open _ | Pcl_extension _ ->
       false
   | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) -> class_decl_is_simple e
-  | Pcl_constraint (e, t) ->
-      class_decl_is_simple e && class_type_is_simple t
+  | Pcl_constraint (e, t) -> class_decl_is_simple e && class_type_is_simple t
 
 and class_type_is_simple x =
   match x.pcty_desc with
   | Pcty_constr _ | Pcty_signature {pcsig_fields= []; _} -> true
-  | Pcty_signature {pcsig_fields= _ :: _; _}
-   |Pcty_open _ | Pcty_extension _ ->
+  | Pcty_signature {pcsig_fields= _ :: _; _} | Pcty_open _ | Pcty_extension _
+    ->
       false
   | Pcty_arrow (_, _, t) -> class_type_is_simple t
 
@@ -371,8 +370,7 @@ module Structure_item : Module_item with type t = structure_item = struct
       | Pstr_include {pincl_mod= me; _} | Pstr_module {pmb_expr= me; _} ->
           let rec is_simple_mod me =
             match me.pmod_desc with
-            | Pmod_apply (me1, me2) ->
-                is_simple_mod me1 && is_simple_mod me2
+            | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, _, me) -> is_simple_mod me
             | Pmod_ident i -> longident_is_simple c i.txt
             | _ -> false
@@ -392,8 +390,7 @@ module Structure_item : Module_item with type t = structure_item = struct
        |(Pstr_type _ | Pstr_typext _), (Pstr_type _ | Pstr_typext _)
        |Pstr_exception _, Pstr_exception _
        |( (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
-        , (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _)
-        )
+        , (Pstr_module _ | Pstr_recmodule _ | Pstr_open _ | Pstr_include _) )
        |Pstr_modtype _, Pstr_modtype _
        |Pstr_class _, Pstr_class _
        |Pstr_class_type _, Pstr_class_type _
@@ -403,8 +400,8 @@ module Structure_item : Module_item with type t = structure_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
-      (i2, c2) =
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+      =
     has_cmts_after cmts i1.pstr_loc
     || has_cmts_before cmts i2.pstr_loc
     || has_doc i1 || has_doc i2
@@ -487,8 +484,8 @@ module Signature_item : Module_item with type t = signature_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
-      (i2, c2) =
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+      =
     has_cmts_after cmts i1.psig_loc
     || has_cmts_before cmts i2.psig_loc
     || has_doc i1 || has_doc i2
@@ -779,8 +776,8 @@ let assoc_of_prec = function
   | High -> Non
   | Atomic -> Non
 
-(** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be)
-    an immediate sub-term of [ctx] as assumed by the operations in
+(** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be) an
+    immediate sub-term of [ctx] as assumed by the operations in
     [Requires_sub_terms]. *)
 module rec In_ctx : sig
   type 'a xt = private {ctx: T.t; ast: 'a}
@@ -830,8 +827,8 @@ end = struct
   let sub_str ~ctx str = {ctx; ast= str}
 end
 
-(** Operations determining precedence and necessary parenthesization of
-    terms based on their super-terms. *)
+(** Operations determining precedence and necessary parenthesization of terms
+    based on their super-terms. *)
 and Requires_sub_terms : sig
   val is_simple :
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
@@ -921,17 +918,13 @@ end = struct
           | Pcf_inherit (_, _, _) -> false
           | Pcf_val (_, _, Cfk_virtual t) -> typ == t
           | Pcf_val
-              ( _
-              , _
-              , Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}) )
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
             ->
               typ == t
           | Pcf_val (_, _, Cfk_concrete _) -> false
           | Pcf_method (_, _, Cfk_virtual t) -> typ == t
           | Pcf_method
-              ( _
-              , _
-              , Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}) )
+              (_, _, Cfk_concrete (_, {pexp_desc= Pexp_constraint (_, t); _}))
             ->
               typ == t
           | Pcf_method
@@ -1085,8 +1078,7 @@ end = struct
       | Pstr_exception ext -> assert (check_typexn ext)
       | Pstr_class l ->
           assert (
-            List.exists l
-              ~f:(fun {pci_expr= {pcl_desc; _}; pci_params; _} ->
+            List.exists l ~f:(fun {pci_expr= {pcl_desc; _}; pci_params; _} ->
                 List.exists pci_params ~f:(fun (t, _) -> t == typ)
                 ||
                 match pcl_desc with
@@ -1236,10 +1228,7 @@ end = struct
           | Pcf_constraint _ -> false
           | Pcf_attribute _ -> false)
     in
-    let check_extensions = function
-      | PPat (p, _) -> p == pat
-      | _ -> false
-    in
+    let check_extensions = function PPat (p, _) -> p == pat | _ -> false in
     let check_subpat ppat =
       ppat == pat
       ||
@@ -1402,8 +1391,7 @@ end = struct
                 | {pc_rhs; _} when pc_rhs == exp -> true
                 | _ -> false) )
         | Pexp_fun (_, default, _, body) ->
-            assert (
-              Option.value_map default ~default:false ~f || body == exp )
+            assert (Option.value_map default ~default:false ~f || body == exp)
         | Pexp_apply
             ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
             , e1 :: indices )
@@ -1463,8 +1451,7 @@ end = struct
       | Pstr_eval (e0, _) -> assert (e0 == exp)
       | Pstr_value (_, bindings) ->
           assert (
-            List.exists bindings ~f:(fun {pvb_expr; _} -> pvb_expr == exp)
-          )
+            List.exists bindings ~f:(fun {pvb_expr; _} -> pvb_expr == exp) )
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | Pstr_primitive _ | Pstr_type _ | Pstr_typext _ | Pstr_exception _
        |Pstr_module _ | Pstr_recmodule _ | Pstr_modtype _ | Pstr_open _
@@ -1535,10 +1522,9 @@ end = struct
     | _ -> false
 
   (** [prec_ctx {ctx; ast}] is the precedence of the context of [ast] within
-      [ctx], where [ast] is an immediate sub-term (modulo syntactic sugar)
-      of [ctx]. Also returns whether [ast] is the left, right, or neither
-      child of [ctx]. Meaningful for binary operators, otherwise returns
-      [None]. *)
+      [ctx], where [ast] is an immediate sub-term (modulo syntactic sugar) of
+      [ctx]. Also returns whether [ast] is the left, right, or neither child
+      of [ctx]. Meaningful for binary operators, otherwise returns [None]. *)
   let prec_ctx ctx =
     let is_tuple_lvl1_in_constructor ty = function
       | {ptype_kind= Ptype_variant cd1N; _} ->
@@ -1574,10 +1560,8 @@ end = struct
       when List.exists l ~f:(is_tuple_lvl1_in_ext_constructor typ) ->
         constructor_cxt_prec_of_inner typ
     | { ctx=
-          ( Str
-              {pstr_desc= Pstr_exception {ptyexn_constructor= constr; _}; _}
-          | Sig
-              {psig_desc= Psig_exception {ptyexn_constructor= constr; _}; _}
+          ( Str {pstr_desc= Pstr_exception {ptyexn_constructor= constr; _}; _}
+          | Sig {psig_desc= Psig_exception {ptyexn_constructor= constr; _}; _}
           | Exp {pexp_desc= Pexp_letexception (constr, _); _} )
       ; ast= Typ ({ptyp_desc= Ptyp_tuple _ | Ptyp_arrow _; _} as typ) }
       when is_tuple_lvl1_in_ext_constructor typ constr ->
@@ -1612,8 +1596,7 @@ end = struct
       | Pexp_tuple (e0 :: _) ->
           Some (Comma, if exp == e0 then Left else Right)
       | Pexp_construct
-          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _})
-        ->
+          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
           if is_sugared_list e2 then Some (Semi, Non)
           else Some (ColonColon, if exp == e2 then Right else Left)
       | Pexp_array _ -> Some (Semi, Non)
@@ -1674,8 +1657,7 @@ end = struct
       ; ast= Pld _ | Top | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _ }
      |{ctx= Cl _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _}
      |{ ctx=
-          ( Pld _ | Top | Typ _ | Cty _ | Pat _ | Mty _ | Mod _ | Sig _
-          | Str _ )
+          Pld _ | Top | Typ _ | Cty _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
       ; ast=
           Pld _ | Top | Pat _ | Exp _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
       } ->
@@ -1716,8 +1698,7 @@ end = struct
             else Some High
         | "!=" -> Some Apply
         | _ -> (
-          match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply )
-        )
+          match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
         when Option.is_some (index_op_get_sugar ident args) ->
           Some Dot
@@ -1795,8 +1776,7 @@ end = struct
       false
     else if cmp > 0 then (* context higher prec than ast: add parens *)
       true
-    else if
-      Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
+    else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
     then (* which child and associativity match: no parens *)
       false
     else (* which child and assoc conflict: add parens *)
@@ -1972,8 +1952,7 @@ end = struct
       , Ppat_constraint _ )
      |Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _; _}
-      , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) )
-      ->
+      , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
         true
     | (Str _ | Exp _), Ppat_lazy _ -> true
     | ( Pat {ppat_desc= Ppat_construct _ | Ppat_variant _; _}
@@ -2004,8 +1983,7 @@ end = struct
     match (ctx, exp.pexp_desc) with
     | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _); (Nolabel, _)]); _}
       , Pexp_ident {txt= Lident i; _} )
-      when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes
-      ->
+      when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes ->
         false
     | _, Pexp_ident {txt= Lident i; _} when is_infix_id i -> true
     | _ -> false
@@ -2049,8 +2027,8 @@ end = struct
     | Pexp_field (e, _) -> exposed_left_exp e
     | _ -> false
 
-  (** [exposed cls exp] holds if there is a right-most subexpression of
-      [exp] which satisfies [mem_cls_exp cls] and is not parenthesized. *)
+  (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
+      which satisfies [mem_cls_exp cls] and is not parenthesized. *)
   let rec exposed_right_exp =
     (* exponential without memoization *)
     let memo = Hashtbl.Poly.create () in
@@ -2098,9 +2076,7 @@ end = struct
          |Pexp_letop {body= e; _}
          |Pexp_letexception (_, e)
          |Pexp_letmodule (_, _, e) -> (
-          match cls with
-          | Match | Then | ThenElse -> continue e
-          | _ -> false )
+          match cls with Match | Then | ThenElse -> continue e | _ -> false )
         | Pexp_match _ when match cls with Then -> true | _ -> false ->
             false
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
@@ -2108,9 +2084,7 @@ end = struct
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
           when Option.is_some (index_op_set_sugar ident args) ->
-            let _, _, e =
-              Option.value_exn (index_op_set_sugar ident args)
-            in
+            let _, _, e = Option.value_exn (index_op_set_sugar ident args) in
             continue e
         | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
           when Option.is_some (index_op_get_sugar ident args) ->
@@ -2223,11 +2197,10 @@ end = struct
       let is_right_infix_arg ctx_desc exp =
         match ctx_desc with
         | Pexp_apply
-            ( {pexp_desc= Pexp_ident {txt= Lident i; _}; _}
-            , _ :: (_, e2) :: _ )
+            ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _ :: (_, e2) :: _)
           when e2 == exp && is_infix_id i
-               && Option.value_map ~default:false (prec_ast ctx)
-                    ~f:(fun p -> Poly.(p < Apply)) ->
+               && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
+                      Poly.(p < Apply)) ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
@@ -2312,8 +2285,8 @@ end = struct
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
           exposed_right_exp ThenElse exp
       | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
-      | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _)
-        when exp2 == exp ->
+      | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _) when exp2 == exp
+        ->
           false
       | Pexp_apply
           ( ( { pexp_desc=
@@ -2330,9 +2303,7 @@ end = struct
       | Pexp_record (flds, _)
         when List.exists flds ~f:(fun (_, e0) ->
                  match e0 with
-                 | { pexp_desc= Pexp_constraint (e, _)
-                   ; pexp_attributes= []
-                   ; _ }
+                 | {pexp_desc= Pexp_constraint (e, _); pexp_attributes= []; _}
                    when e == exp ->
                      true
                  | _ -> e0 == exp) ->

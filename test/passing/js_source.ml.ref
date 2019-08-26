@@ -1323,8 +1323,7 @@ let ty_abc =
   (* Define inj in advance to be able to write the type annotation easily *)
   and inj
       : type c.
-        (int -> string -> noarg -> unit, c) ty_sel * c
-        -> [ `A of int | `B of string | `C ]
+        (int -> string -> noarg -> unit, c) ty_sel * c -> [ `A of int | `B of string | `C ]
     = function
     | Thd, v -> `A v
     | Ttl Thd, v -> `B v
@@ -1602,8 +1601,7 @@ let rec find : type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) pa
   | Ttip -> []
   | Tnode m -> if eq n m then [ Phere ] else []
   | Tfork (x, y) ->
-    List.map (fun x -> Pleft x) (find eq n x)
-    @ List.map (fun x -> Pright x) (find eq n y)
+    List.map (fun x -> Pleft x) (find eq n x) @ List.map (fun x -> Pright x) (find eq n y)
 ;;
 
 let rec extract : type sh. (sh, 'a) path -> (sh, 'a) tree -> 'a =
@@ -3027,9 +3025,7 @@ let rec weaken_alist : type m n. (m, n) alist -> (m succ, n succ) alist = functi
 let rec sub' : type m. m ealist -> m fin -> m term = function
   | EAlist Anil -> var
   | EAlist (Asnoc (s, t, x)) ->
-    comp_subst
-      (sub' (EAlist (weaken_alist s)))
-      (fun t' -> weaken_term (subst_var x t t'))
+    comp_subst (sub' (EAlist (weaken_alist s))) (fun t' -> weaken_term (subst_var x t t'))
 ;;
 
 let subst' d = pre_subst (sub' d)
@@ -8821,8 +8817,7 @@ type v =
 
 let f
     : type a b c d e f g.
-      a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u
-      -> int
+      a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
   = function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
@@ -9746,8 +9741,7 @@ type t = |
 include struct
   let%test_module "as" =
     (module struct
-      let%expect_test "xx xx xxxxxx xxxxxxx xxxxxx xxxxxx xxxxxxxx xx xxxxx xxx xx xxxxx"
-        =
+      let%expect_test "xx xx xxxxxx xxxxxxx xxxxxx xxxxxx xxxxxxxx xx xxxxx xxx xx xxxxx" =
         ()
       ;;
     end)

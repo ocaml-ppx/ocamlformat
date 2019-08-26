@@ -39,8 +39,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
       ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
-      ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>"
-      }
+      ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>" }
   | `Fit_or_vertical ->
       { leading_space= break_unless_newline 1000 0
       ; bar= fmt "| "
@@ -251,8 +250,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
           $ fmt "@ then" )
     | None -> str "else"
   in
-  let wrap_parens ~opn_hint:(oh_space, oh_other) ~cls_hint:(ch_sp, ch_sl) k
-      =
+  let wrap_parens ~opn_hint:(oh_space, oh_other) ~cls_hint:(ch_sp, ch_sl) k =
     fmt_if_k parens_bch
       ( str "("
       $
@@ -279,9 +277,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= fmt_or parens_bch " " "@ "
       ; wrap_parens=
-          wrap_parens
-            ~opn_hint:((1, 0), (0, 0))
-            ~cls_hint:((1, 0), (1000, 0))
+          wrap_parens ~opn_hint:((1, 0), (0, 0)) ~cls_hint:((1, 0), (1000, 0))
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
@@ -306,9 +302,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
       ; wrap_parens=
-          wrap_parens
-            ~opn_hint:((1, 2), (0, 2))
-            ~cls_hint:((1, 0), (1000, 0))
+          wrap_parens ~opn_hint:((1, 2), (0, 2)) ~cls_hint:((1, 0), (1000, 0))
       ; expr_pro=
           Some
             (fmt_if_k

@@ -57,8 +57,7 @@ let fooooooooooo =
       foo
   | 3453535353533 ->
       foooooooooooooooooo
-      (* foooooooooooooooooooooo foooooooooooooooo foooooooooooooo
-         fooooooooo*)
+      (* foooooooooooooooooooooo foooooooooooooooo foooooooooooooo fooooooooo*)
   | _ -> fooooooooooooooooooo
 
 let _ =

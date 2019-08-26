@@ -58,8 +58,8 @@ hvbox 0
   $ wrap "(" ")"
       ( str txt
       $ opt mt (fun _ ->
-            fmt "@ : " $ Option.call ~f:pro_t $ psp_t $ fmt "@;<1 2>"
-            $ bdy_t $ esp_t $ Option.call ~f:epi_t) )
+            fmt "@ : " $ Option.call ~f:pro_t $ psp_t $ fmt "@;<1 2>" $ bdy_t
+            $ esp_t $ Option.call ~f:epi_t) )
   $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
   $ Option.call ~f:epi_e )
 

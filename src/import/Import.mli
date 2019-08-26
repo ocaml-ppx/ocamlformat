@@ -30,16 +30,16 @@ include module type of Option.Monad_infix
 include module type of Stdio
 
 external ( @@ ) : ('a -> 'b) -> 'a -> 'b = "%apply"
-(** Function application: [g @@ f @@ x] is exactly equivalent to
-    [g (f (x))]. Right associative. *)
+(** Function application: [g @@ f @@ x] is exactly equivalent to [g (f (x))].
+    Right associative. *)
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to
     [g (f (x))]. Left associative. *)
 
 val ( $ ) : ('a -> unit) -> ('a -> 'b) -> 'a -> 'b
-(** Sequential composition of functions: [(f $ g) x] is exactly equivalent
-    to [(f x) ; (g x)]. Left associative. *)
+(** Sequential composition of functions: [(f $ g) x] is exactly equivalent to
+    [(f x) ; (g x)]. Left associative. *)
 
 val impossible : string -> _
 (** Indicate why the call is expected to be impossible. *)
@@ -65,8 +65,8 @@ module Fpath : sig
       returns [p]. *)
 
   val to_string : ?relativize:bool -> t -> string
-  (** If [relativize] is set to [true] (it is set to [false] by default),
-      the path is relativized according to the [cwd]. *)
+  (** If [relativize] is set to [true] (it is set to [false] by default), the
+      path is relativized according to the [cwd]. *)
 
   val pp : Format.formatter -> t -> unit
 end
@@ -81,7 +81,7 @@ module Cmdliner : sig
 
   val parse : Term.info -> (unit -> unit Term.ret) -> unit
   (** [parse info validate] parses the command line according to the options
-      declared by calls to [mk], using manual and version [info], and
-      calling [validate] to check usage constraints not expressible in the
-      [Term] language. *)
+      declared by calls to [mk], using manual and version [info], and calling
+      [validate] to check usage constraints not expressible in the [Term]
+      language. *)
 end

@@ -28,8 +28,7 @@ f
 
 ;;
 f
-  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then
-   ()
+  (if loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger then ()
   else ())
 
 ;;

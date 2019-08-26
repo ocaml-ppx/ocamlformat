@@ -56,9 +56,7 @@ let x =
   ()
 
 let x =
-  let g =
-    match x with `A -> fun (A | B) -> () | `B -> fun (A | _) -> ()
-  in
+  let g = match x with `A -> fun (A | B) -> () | `B -> fun (A | _) -> () in
   ()
 
 let _ = match x with _ -> b >>= fun () -> c

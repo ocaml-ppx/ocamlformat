@@ -32,8 +32,7 @@ let dedup_cmts map_ast ast comments =
             PStr
               [ { pstr_desc=
                     Pstr_eval
-                      ( { pexp_desc=
-                            Pexp_constant (Pconst_string (doc, None))
+                      ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
                         ; pexp_loc
                         ; _ }
                       , [] )
@@ -103,8 +102,8 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-            Parse_with_comments.parse Migrate_ast.Parse.implementation
-              c.conf ~source:txt
+            Parse_with_comments.parse Migrate_ast.Parse.implementation c.conf
+              ~source:txt
           in
           let comments = dedup_cmts Mapper.structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
@@ -114,8 +113,8 @@ let rec odoc_nestable_block_element c fmt = function
                    Caml.Format.fprintf fmt "%s," txt)
           in
           let ast = c.normalize_code ast in
-          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
-            Printast.implementation ast print_comments comments
+          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.implementation
+            ast print_comments comments
         with _ -> txt
       in
       fpf fmt "Code_block,%a" str txt
@@ -390,8 +389,7 @@ let equal_intf ~ignore_doc_comments c ast1 ast2 =
 
 let equal_use_file ~ignore_doc_comments c ast1 ast2 =
   let map =
-    if ignore_doc_comments then
-      Mapper.use_file (mapper_ignore_doc_comment c)
+    if ignore_doc_comments then Mapper.use_file (mapper_ignore_doc_comment c)
     else Mapper.use_file (mapper c)
   in
   Poly.(map ast1 = map ast2)

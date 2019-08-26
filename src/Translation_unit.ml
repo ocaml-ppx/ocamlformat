@@ -188,8 +188,7 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
                          @{<error>Error@}: Docstring (** %s *) added.\n\
                          %!"
                         Location.print_loc loc_after (ellipsis_cmt msg)
-                    else if Location.compare loc_after Location.none = 0
-                    then
+                    else if Location.compare loc_after Location.none = 0 then
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) dropped.\n\
@@ -295,12 +294,10 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
           (* Ast not preserved ? *)
           ( if
             not
-              (xunit.equal ~ignore_doc_comments:(not conf.comment_check)
-                 conf t t_new)
+              (xunit.equal ~ignore_doc_comments:(not conf.comment_check) conf
+                 t t_new)
           then
-            let old_ast =
-              dump_ast ~suffix:".old" (xunit.normalize conf t)
-            in
+            let old_ast = dump_ast ~suffix:".old" (xunit.normalize conf t) in
             let new_ast =
               dump_ast ~suffix:".new" (xunit.normalize conf t_new)
             in
@@ -385,7 +382,5 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
 let parse_and_format xunit (conf : Conf.t) ?output_file ~input_name ~source
     () =
   Location.input_name := input_name ;
-  let parsed =
-    try Ok (parse xunit.parse conf ~source) with e -> Error e
-  in
+  let parsed = try Ok (parse xunit.parse conf ~source) with e -> Error e in
   format xunit conf ?output_file ~input_name ~source ~parsed ()
