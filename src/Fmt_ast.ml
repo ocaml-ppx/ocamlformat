@@ -1299,7 +1299,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l i && List.is_empty arg.pexp_attributes ->
       Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
-  | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
+  | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?eol ?parens xarg
 
 and fmt_args ~first:first_grp ~last:last_grp c ctx args =
   let fmt_arg ~first:_ ~last (lbl, arg) =
@@ -1411,7 +1411,8 @@ and fmt_infix_op_args c ~parens xexp op_args =
       | Pexp_fun _ | Pexp_function _ -> Some (not last)
       | _ -> None
     in
-    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
+    fmt_label_arg c ?box ~eol:(fmt "@;<1000 0>") ~parens lbl_xarg
+    $ fmt_if (not last) "@ "
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in
@@ -1432,14 +1433,9 @@ and fmt_infix_op_args c ~parens xexp op_args =
                       (break_unless_newline 1 0)
                       (char ' '))
            in
-           let break_before_op =
-             fmt_if_k
-               ((not last) && not is_monadic)
-               (break_unless_newline 1 0)
-           in
            cmts_before $ cmts_after $ op $ break_after_op
            $ hovbox_if (not very_last) 2 (list_fl xargs (fmt_arg very_last))
-           $ break_before_op))
+           $ fmt_if_k (not last) (break_unless_newline 1 0)))
     $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
   let opn, hint, cls =

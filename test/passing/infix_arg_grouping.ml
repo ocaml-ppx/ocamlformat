@@ -101,11 +101,11 @@ with
 
 let () =
   (* Open the repo *)
-  initialise
-  >>= (* Perform a subsequent action *)
-      subsequent_action
-  >|= (* Keep going... *)
-      another_action
+  initialise >>=
+  (* Perform a subsequent action *)
+  subsequent_action >|=
+  (* Keep going... *)
+  another_action
   |> fun t ->
   (* And finally do this *)
   final_action t
@@ -114,5 +114,5 @@ let () =
   match foooooo with
   (* foooooo foooooooo *)
   | foooooooooooooooooooooo ->
-      Foooooooo.foooo_fooooooooooo foooooo_foo k [xxxxxx] yyyyyyyyyy >>|
-      fooooooooooo k
+      Foooooooo.foooo_fooooooooooo foooooo_foo k [xxxxxx] yyyyyyyyyy
+      >>| fooooooooooo k
