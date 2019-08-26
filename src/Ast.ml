@@ -50,14 +50,6 @@ let is_kwdopchar = function
       true
   | _ -> false
 
-let is_monadic_last_char = function '=' | '|' | '>' -> true | _ -> false
-
-let is_monadic_id s =
-  String.length s >= 2
-  && String.for_all s ~f:is_kwdopchar
-  && is_monadic_last_char s.[String.length s - 1]
-  && not (List.mem ~equal:String.equal [":="; "||"] s)
-
 let is_monadic_binding_id s =
   String.length s > 3
   && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
@@ -2437,3 +2429,6 @@ end
 
 include In_ctx
 include Requires_sub_terms
+
+let is_monadic_expr e =
+  match prec_ast (Exp e) with Some InfixOp0 -> true | _ -> false

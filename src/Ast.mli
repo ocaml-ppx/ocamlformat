@@ -41,13 +41,7 @@ val index_op_set_sugar :
   -> ((string * Char.t * Char.t) Location.loc * expression list * expression)
      option
 
-val is_monadic_id : string -> bool
-(** [is_monadic_id i] holds iff [id]:
-
-    - only consists of symbols
-    - is at least 2 characters long
-    - the last character is either [|], [>] or [=]
-    - [:=] and [||] are excluded. *)
+val is_monadic_expr : expression -> bool
 
 val is_monadic_binding_id : string -> bool
 
