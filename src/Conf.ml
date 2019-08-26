@@ -88,6 +88,8 @@ module C = Config_option.Make (struct
   type config = t
 
   let profile_option_names = profile_option_names
+
+  let warn config s = if not config.quiet then Format.eprintf "Warning: %s" s
 end)
 
 let info =

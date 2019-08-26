@@ -13,6 +13,8 @@ module type CONFIG = sig
   type config
 
   val profile_option_names : string list
+
+  val warn : config -> string -> unit
 end
 
 module Make (C : CONFIG) = struct
@@ -189,8 +191,7 @@ module Make (C : CONFIG) = struct
       else if List.exists names ~f:(String.equal name) then (
         (* updating a single option (without setting a profile) *)
         if deprecated then
-          Format.fprintf Format.err_formatter
-            "Warning: option %s is deprecated\n%!" name ;
+          C.warn config (Printf.sprintf "option %s is deprecated\n%!" name) ;
         Pack {p with from= `Updated from} )
       else Pack p
     in

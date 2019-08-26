@@ -13,6 +13,8 @@ module type CONFIG = sig
   type config
 
   val profile_option_names : string list
+
+  val warn : config -> string -> unit
 end
 
 module Make (C : CONFIG) : sig
