@@ -378,8 +378,8 @@ let relocate (t : t) ~src ~before ~after =
         Location.fmt before Location.fmt after ;
     let merge_and_sort x y =
       List.rev_append x y
-      |> List.sort
-           ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
+      |>
+      List.sort ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
     in
     update_multi t.cmts_before src before ~f:merge_and_sort ;
     update_multi t.cmts_after src after ~f:merge_and_sort ;
@@ -626,15 +626,16 @@ let has_after t loc =
 let remaining_comments t =
   let get t before_after =
     Hashtbl.to_alist t
-    |> List.concat_map ~f:(fun (ast_loc, cmts) ->
-           List.map cmts ~f:(fun (cmt : Cmt.t) ->
-               ( cmt
-               , before_after
-               , let open Sexp in
-                 List
-                   [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
-                   ; List [Atom "cmt_loc"; Location.sexp_of_t cmt.loc]
-                   ; List [Atom "cmt_txt"; Atom cmt.txt] ] )))
+    |>
+    List.concat_map ~f:(fun (ast_loc, cmts) ->
+        List.map cmts ~f:(fun (cmt : Cmt.t) ->
+            ( cmt
+            , before_after
+            , let open Sexp in
+              List
+                [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
+                ; List [Atom "cmt_loc"; Location.sexp_of_t cmt.loc]
+                ; List [Atom "cmt_txt"; Atom cmt.txt] ] )))
   in
   List.concat
     [ get t.cmts_before "before"

@@ -94,8 +94,9 @@ let sigma_seed =
 ;;
 match
   "\"" ^ line ^ " \""
-  |> (* split by whitespace *)
-     Str.split (Str.regexp_string "\" \"")
+  |>
+  (* split by whitespace *)
+  Str.split (Str.regexp_string "\" \"")
 with
 | prog :: args -> fooooooooooooooooooooo
 

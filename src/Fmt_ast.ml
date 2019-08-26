@@ -513,8 +513,9 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
       in
       let floating_doc, doc =
         doc
-        |> List.map ~f:(fun (({txt; loc}, _) as doc) ->
-               (parse_docstring ~loc txt, doc))
+        |>
+        List.map ~f:(fun (({txt; loc}, _) as doc) ->
+            (parse_docstring ~loc txt, doc))
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in

@@ -110,8 +110,9 @@ let rec odoc_nestable_block_element c fmt = function
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
                 Location.compare a b)
-            |> List.iter ~f:(fun {Cmt.txt; _} ->
-                   Caml.Format.fprintf fmt "%s," txt)
+            |>
+            List.iter ~f:(fun {Cmt.txt; _} ->
+                Caml.Format.fprintf fmt "%s," txt)
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"

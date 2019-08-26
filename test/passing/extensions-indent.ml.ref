@@ -73,9 +73,10 @@ let _ = [%stri let [%p xxx] = fun (t : [%t tt]) (ut : [%t tt]) -> [%e xxx]]
 let _ =
   [ x
   ; x
-    ---> [%expr
-              [%e x ~loc [%expr x] x] ;
-              iter tail]
+    --->
+    [%expr
+         [%e x ~loc [%expr x] x] ;
+         iter tail]
   ; x ]
 
 let _ =
