@@ -3002,7 +3002,9 @@ and fmt_value_description c ctx vd =
               (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
             ~pro_space:true (sub_typ ~ctx pval_type)
         $ list_fl pval_prim (fun ~first ~last:_ s ->
-              fmt_if first "@ =" $ fmt " \"" $ str s $ fmt "\"") )
+              fmt_if first "@ =" $ fmt " \""
+              $ str (String.escaped s)
+              $ fmt "\"") )
     $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
     $ doc_after )
 

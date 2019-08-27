@@ -30,3 +30,7 @@ let f ("test"[@test "test"]) = 2
 "@\n\
 \ xxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxx \
  xxxxxxxx xxxxxxxxxxx"
+
+[%%c
+external print : str:string -> d:int -> void
+  = "\n  printf(\"%s (%d)\\n\",$str,$d);\n  fflush(stdout);\n"]
