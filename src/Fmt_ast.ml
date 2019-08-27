@@ -1888,11 +1888,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt_atrs $ cls_paren )))
   | Pexp_constraint (e, t) ->
       hvbox 2
-        (wrap_fits_breaks ~space:false c.conf "(" ")"
-           ( fmt_expression c (sub_exp ~ctx e)
-           $ fmt "@ : "
-           $ fmt_core_type c (sub_typ ~ctx t)
-           $ fmt_atrs ))
+        ( wrap_fits_breaks ~space:false c.conf "(" ")"
+            ( fmt_expression c (sub_exp ~ctx e)
+            $ fmt "@ : "
+            $ fmt_core_type c (sub_typ ~ctx t) )
+        $ fmt_atrs )
   | Pexp_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = char txt.[0] and cls = char txt.[1] in
       let pro = str " " and epi = str " " in
