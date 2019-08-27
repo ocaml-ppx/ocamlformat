@@ -255,7 +255,8 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
     | `Parens -> wrap "(" ")" (wrap_breaks k)
     | `Begin_end -> wrap "begin" "end" (wrap_breaks k)
   in
-  let get_parens_breaks ~opn_hint:(oh_space, oh_other) ~cls_hint:(ch_sp, ch_sl) =
+  let get_parens_breaks ~opn_hint:(oh_space, oh_other)
+      ~cls_hint:(ch_sp, ch_sl) =
     let brk hint = fits_breaks "" ~hint "" in
     match (exp_grouping_bch, imd) with
     | `Parens, `Space -> wrap_k (brk oh_space) (brk ch_sp)
@@ -289,7 +290,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= fmt_or parens_bch " " "@ "
       ; wrap_parens=
-          wrap_parens ~wrap_breaks:(get_parens_breaks ~opn_hint:((1, 0), (0, 0)) ~cls_hint:((1, 0), (1000, -2)))
+          wrap_parens
+            ~wrap_breaks:
+              (get_parens_breaks
+                 ~opn_hint:((1, 0), (0, 0))
+                 ~cls_hint:((1, 0), (1000, -2)))
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
@@ -299,8 +304,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
-      ; wrap_parens=
-          wrap_parens ~wrap_breaks:(wrap_k (break 1000 2) noop)
+      ; wrap_parens= wrap_parens ~wrap_breaks:(wrap_k (break 1000 2) noop)
       ; expr_pro= None
       ; expr_eol= Some (fmt "@;<1 2>")
       ; break_end_branch= fmt_if_k (parens_bch || not last) (break 1000 0)
@@ -315,9 +319,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
       ; wrap_parens=
-          wrap_parens ~wrap_breaks:(get_parens_breaks
-            ~opn_hint:((1, 2), (0, 2))
-            ~cls_hint:((1, 0), (1000, 0)))
+          wrap_parens
+            ~wrap_breaks:
+              (get_parens_breaks
+                 ~opn_hint:((1, 2), (0, 2))
+                 ~cls_hint:((1, 0), (1000, 0)))
       ; expr_pro=
           Some
             (fmt_if_k
@@ -345,9 +351,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
             hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k))
       ; branch_pro= fmt_or parens_bch " " "@ "
       ; wrap_parens=
-          wrap_parens ~wrap_breaks:(get_parens_breaks
-            ~opn_hint:((1, 0), (0, 0))
-            ~cls_hint:((1, 0), (1000, -2)))
+          wrap_parens
+            ~wrap_breaks:
+              (get_parens_breaks
+                 ~opn_hint:((1, 0), (0, 0))
+                 ~cls_hint:((1, 0), (1000, -2)))
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
