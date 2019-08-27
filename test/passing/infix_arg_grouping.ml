@@ -95,7 +95,7 @@ let sigma_seed =
 match
   "\"" ^ line ^ " \""
   |> (* split by whitespace *)
-     Str.split (Str.regexp_string "\" \"")
+  Str.split (Str.regexp_string "\" \"")
 with
 | prog :: args -> fooooooooooooooooooooo
 
@@ -103,9 +103,9 @@ let () =
   (* Open the repo *)
   initialise
   >>= (* Perform a subsequent action *)
-      subsequent_action
+  subsequent_action
   >|= (* Keep going... *)
-      another_action
+  another_action
   |> fun t ->
   (* And finally do this *)
   final_action t

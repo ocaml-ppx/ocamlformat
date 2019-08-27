@@ -1271,7 +1271,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l i && List.is_empty arg.pexp_attributes ->
       Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
-  | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?eol ?parens xarg
+  | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
 
 and fmt_args ~first:first_grp ~last:last_grp c ctx args =
   let fmt_arg ~first:_ ~last (lbl, arg) =
@@ -1383,8 +1383,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
       | Pexp_fun _ | Pexp_function _ -> Some (not last)
       | _ -> None
     in
-    fmt_label_arg c ?box ~parens ~eol:(fmt "@;<1000 0>") lbl_xarg
-    $ fmt_if (not last) "@ "
+    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in
@@ -1393,13 +1392,14 @@ and fmt_infix_op_args c ~parens xexp op_args =
          (fun ~first ~last (_, cmts_before, cmts_after, (op, xargs)) ->
            let very_first = first_grp && first in
            let very_last = last_grp && last in
-           cmts_before $ cmts_after
+           cmts_before
            $ hvbox 0
                ( op
                $ ( match xargs with
                  | (_, e) :: _ when very_last && is_not_indented e ->
                      fmt "@ "
                  | _ -> fmt_if (not very_first) " " )
+               $ cmts_after
                $ hovbox_if (not very_last) 2
                    (list_fl xargs (fmt_arg very_last)) )
            $ fmt_if_k (not last) (break_unless_newline 1 0)))
@@ -1631,7 +1631,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         fmt_expression is important *)
                      let has_cmts = Cmts.has_before c.cmts pexp_loc in
                      let fmt_before_cmts = Cmts.fmt_before c pexp_loc in
-                     let fmt_after_cmts = Cmts.fmt_after c pexp_loc in
+                     let fmt_after_cmts =
+                       Cmts.fmt_after c pexp_loc
+                       $ opt (List.hd args) (fun (_, {ast= e; _}) ->
+                             Cmts.fmt_before
+                               ~adj:(break_unless_newline 1000 0)
+                               c e.pexp_loc)
+                     in
                      let fmt_op = fmt_expression c op in
                      ( has_cmts
                      , fmt_before_cmts
