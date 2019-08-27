@@ -47,6 +47,8 @@ module Make (C : CONFIG) : sig
 
   val default : 'a t -> 'a
 
+  val get_from_cmdline : 'a t -> 'a option
+
   val update_using_cmdline : config -> config
 
   val update :

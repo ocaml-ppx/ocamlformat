@@ -1579,7 +1579,9 @@ let (_profile : t option C.t) =
   C.choice ~names ~all ~doc ~section
     (fun conf p ->
       selected_profile_ref := p ;
-      Option.value p ~default:conf)
+      let new_conf = Option.value p ~default:conf in
+      (* The quiet option is cummulative *)
+      {new_conf with quiet= new_conf.quiet || conf.quiet})
     (fun _ -> !selected_profile_ref)
 
 let validate () =
@@ -1785,6 +1787,11 @@ let read_config_file conf filename_kind =
                 match parse_line conf ~from line with
                 | Ok conf -> (conf, errors, Int.succ num)
                 | Error _ when !ignore_invalid_options ->
+                    if not conf.quiet then
+                      Format.eprintf
+                        "File %a, line %d:\n\
+                         Warning: ignoring invalid options %S\n"
+                        Fpath.pp filename num line ;
                     (conf, errors, Int.succ num)
                 | Error e -> (conf, e :: errors, Int.succ num))
           in
@@ -1921,7 +1928,12 @@ let build_config ~file =
   in
   let files = if !disable_conf_files then [] else files in
   let conf =
-    List.fold files ~init:ocamlformat_profile ~f:read_config_file
+    let init =
+      match C.get_from_cmdline quiet with
+      | None | Some false -> ocamlformat_profile
+      | Some true -> {ocamlformat_profile with quiet= true}
+    in
+    List.fold files ~init ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
   let no_ocamlformat_files =
