@@ -1627,8 +1627,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             (List.map op_args ~f:(fun (op, args) ->
                  match op with
                  | Some ({ast= {pexp_loc; _}; _} as op) ->
-                     (* side effects of Cmts.fmt_before before
-                        fmt_expression is important *)
+                     (* side effects of Cmts.fmt_before before fmt_expression
+                        is important *)
                      let has_cmts = Cmts.has_before c.cmts pexp_loc in
                      let fmt_before_cmts = Cmts.fmt_before c pexp_loc in
                      let fmt_after_cmts =
@@ -3768,8 +3768,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
                 (Option.call ~f:blk_f.pro $ blk_f.psp $ blk_f.bdy $ blk_f.esp)
             $ Option.call ~f:blk_f.epi
             $ wrap "@ (" ")"
-                ( Option.call ~f:blk_a.pro $ blk_a.psp $ blk_a.bdy $ blk_a.esp
-                $ Option.call ~f:blk_a.epi ) )
+                ( Option.call ~f:blk_a.pro $ blk_a.psp $ blk_a.bdy
+                $ blk_a.esp $ Option.call ~f:blk_a.epi ) )
       ; cls= close_box $ blk_f.cls $ blk_a.cls
       ; epi=
           Option.some_if has_epi

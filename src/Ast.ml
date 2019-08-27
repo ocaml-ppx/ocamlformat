@@ -2370,8 +2370,7 @@ end = struct
   let parenze_nested_exp {ctx; ast= exp} =
     let infix_prec ast =
       match ast with
-      | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e ->
-          prec_ast ast
+      | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e -> prec_ast ast
       | Exp
           ( { pexp_desc=
                 Pexp_construct
