@@ -35,4 +35,7 @@ let f ("test" [@test "test"]) = 2
 external%c print: str:string -> d:int -> void = {|
   printf("%s (%d)\n",$str,$d);
   fflush(stdout);
+|} {|
+  printf("%s (%d)\n",$str,$d);
+  fflush(stdout);
 |}

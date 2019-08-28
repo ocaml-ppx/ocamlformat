@@ -2992,6 +2992,11 @@ and fmt_value_description c ctx vd =
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item c pval_attributes
   in
+  let fmt_val_prim s =
+    if List.length (String.split_on_chars s ~on:[' '; '\n']) > 1 then
+      wrap "{|" "|}" (str s)
+    else wrap "\"" "\"" (str (String.escaped s))
+  in
   hvbox 0
     ( doc_before
     $ box_fun_sig_args c 2
@@ -3001,10 +3006,8 @@ and fmt_value_description c ctx vd =
             ~box:
               (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
             ~pro_space:true (sub_typ ~ctx pval_type)
-        $ list_fl pval_prim (fun ~first ~last:_ s ->
-              fmt_if first "@ =" $ fmt " \""
-              $ str (String.escaped s)
-              $ fmt "\"") )
+        $ fmt_if (not (List.is_empty pval_prim)) "@ = "
+        $ list pval_prim " " fmt_val_prim )
     $ fmt_attributes c ~pre:(fmt "@;<1 2>") ~key:"@@" atrs
     $ doc_after )
 
