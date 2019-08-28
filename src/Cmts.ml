@@ -353,8 +353,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
         let a, b =
           List.partition_tf (CmtSet.to_list after) ~f:(fun cmt ->
               let is_adjacent t l1 l2 =
-                l1.Location.loc_end.pos_lnum
-                = l2.Location.loc_start.pos_lnum
+                l1.Location.loc_end.pos_lnum = l2.Location.loc_start.pos_lnum
                 && Option.value_map (Source.string_between t.source l1 l2)
                      ~default:false ~f:(fun btw ->
                        String.(is_empty (strip ~drop:(Char.equal ' ') btw)))
