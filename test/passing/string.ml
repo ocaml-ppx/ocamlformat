@@ -31,3 +31,11 @@ let f ("test" [@test "test"]) = 2
 ;;
 "@\n \
  xxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxx xxxxxxxx xxxxxxxxxxx"
+
+external%c print: str:string -> d:int -> void = {|
+  printf("%s (%d)\n",$str,$d);
+  fflush(stdout);
+|} {|
+  printf("%s (%d)\n",$str,$d);
+  fflush(stdout);
+|}
