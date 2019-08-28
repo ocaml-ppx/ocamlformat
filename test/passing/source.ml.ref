@@ -4795,8 +4795,7 @@ module A_alias_expanded = struct
   include A_alias
 end
 
-let _ =
-  f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
+let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
 
 let _ = f (module A_alias_expanded) (* ok *)
 
