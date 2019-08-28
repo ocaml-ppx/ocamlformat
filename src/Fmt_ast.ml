@@ -1631,6 +1631,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         is important *)
                      let has_cmts = Cmts.has_before c.cmts pexp_loc in
                      let fmt_before_cmts = Cmts.fmt_before c pexp_loc in
+                     (* The comments before the first arg are put there, so
+                        that they are printed after the operator and the box
+                        is correctly broken before the following arguments.
+                        Keeping the comments in the arg box would not break
+                        properly the current box. OTOH, relocating the
+                        comments would put them before the operator in some
+                        cases and make the formatting unstable. *)
                      let fmt_after_cmts =
                        Cmts.fmt_after c pexp_loc
                        $ opt (List.hd args) (fun (_, {ast= e; _}) ->
