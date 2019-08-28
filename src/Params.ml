@@ -13,6 +13,19 @@ module Format = Format_
 open Migrate_ast
 open Fmt
 
+type exp_wrap = Fmt.t -> Fmt.t
+
+let get_exp_wrap c ?(disambiguate = false) ?(fits_breaks = true) ~parens
+    ~exp_grouping k =
+  match exp_grouping with
+  | `Parens when disambiguate && c.Conf.disambiguate_non_breaking_match ->
+      wrap_if_fits_or parens "(" ")" k
+  | (`Parens | `Begin_end) when not parens -> k
+  | `Parens when fits_breaks -> wrap_fits_breaks ~space:false c "(" ")" k
+  | `Parens -> wrap "(" ")" k
+  | `Begin_end ->
+      vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
+
 type cases =
   { leading_space: Fmt.t
   ; bar: Fmt.t
@@ -234,8 +247,23 @@ type if_then_else =
 
 let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
     ~parens_prev_bch ~xcond ~expr_loc ~fmt_extension_suffix ~fmt_attributes
-    ~fmt_cond ~exp_grouping =
+    ~fmt_cond ~exp_grouping ~exp_grouping_bch =
   let imd = c.indicate_multiline_delimiters in
+  let wrap_parens ~wrap_breaks k =
+    match exp_grouping_bch with
+    | (`Parens | `Begin_end) when not parens_bch -> k
+    | `Parens -> wrap "(" ")" (wrap_breaks k)
+    | `Begin_end -> wrap "begin" "end" (wrap_breaks k)
+  in
+  let get_parens_breaks ~opn_hint:(oh_space, oh_other)
+      ~cls_hint:(ch_sp, ch_sl) =
+    let brk hint = fits_breaks "" ~hint "" in
+    match (exp_grouping_bch, imd) with
+    | `Parens, `Space -> wrap_k (brk oh_space) (brk ch_sp)
+    | `Parens, `No -> wrap_k (brk oh_other) noop
+    | `Parens, `Closing_on_separate_line | `Begin_end, _ ->
+        wrap_k (brk oh_other) (brk ch_sl)
+  in
   let cond () =
     match xcond with
     | Some xcnd ->
@@ -250,34 +278,23 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
           $ fmt "@ then" )
     | None -> str "else"
   in
-  let wrap_parens ~opn_hint:(oh_space, oh_other) ~cls_hint:(ch_sp, ch_sl) k =
-    fmt_if_k parens_bch
-      ( str "("
-      $
-      match imd with
-      | `Space -> fits_breaks "" ~hint:oh_space ""
-      | `No | `Closing_on_separate_line -> fits_breaks "" ~hint:oh_other ""
-      )
-    $ k
-    $ fmt_if_k parens_bch
-        ( ( match imd with
-          | `Space -> fits_breaks "" ~hint:ch_sp ""
-          | `No -> noop
-          | `Closing_on_separate_line -> fits_breaks "" ~hint:ch_sl "" )
-        $ str ")" )
-  in
   let branch_pro = fmt_or parens_bch " " "@;<1 2>" in
   match c.if_then_else with
   | `Compact ->
-      { box_branch=
-          hovbox
-            ( if first && parens && Poly.(exp_grouping = `Parens) then 0
-            else 2 )
+      let box_branch =
+        if first && parens && Poly.(exp_grouping = `Parens) then hovbox 0
+        else hovbox 2
+      in
+      { box_branch
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro= fmt_or parens_bch " " "@ "
       ; wrap_parens=
-          wrap_parens ~opn_hint:((1, 0), (0, 0)) ~cls_hint:((1, 0), (1000, 0))
+          wrap_parens
+            ~wrap_breaks:
+              (get_parens_breaks
+                 ~opn_hint:((1, 0), (0, 0))
+                 ~cls_hint:((1, 0), (1000, -2)))
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
@@ -287,7 +304,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; cond= cond ()
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
-      ; wrap_parens= wrap_if parens_bch "(@;<0 2>" ")"
+      ; wrap_parens= wrap_parens ~wrap_breaks:(wrap_k (break 1000 2) noop)
       ; expr_pro= None
       ; expr_eol= Some (fmt "@;<1 2>")
       ; break_end_branch= fmt_if_k (parens_bch || not last) (break 1000 0)
@@ -302,7 +319,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; box_keyword_and_expr= Fn.id
       ; branch_pro
       ; wrap_parens=
-          wrap_parens ~opn_hint:((1, 2), (0, 2)) ~cls_hint:((1, 0), (1000, 0))
+          wrap_parens
+            ~wrap_breaks:
+              (get_parens_breaks
+                 ~opn_hint:((1, 2), (0, 2))
+                 ~cls_hint:((1, 0), (1000, 0)))
       ; expr_pro=
           Some
             (fmt_if_k
@@ -331,8 +352,10 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; branch_pro= fmt_or parens_bch " " "@ "
       ; wrap_parens=
           wrap_parens
-            ~opn_hint:((1, 0), (0, 0))
-            ~cls_hint:((1, 0), (1000, -2))
+            ~wrap_breaks:
+              (get_parens_breaks
+                 ~opn_hint:((1, 0), (0, 0))
+                 ~cls_hint:((1, 0), (1000, -2)))
       ; expr_pro= None
       ; expr_eol= None
       ; break_end_branch= noop
