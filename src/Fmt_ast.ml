@@ -2993,7 +2993,7 @@ and fmt_value_description c ctx vd =
     fmt_docstring_around_item c pval_attributes
   in
   let fmt_val_prim s =
-    if List.length (String.split_on_chars s ~on:[' '; '\n']) > 1 then
+    if String.exists s ~f:(function ' ' | '\n' -> true | _ -> false) then
       wrap "{|" "|}" (str s)
     else wrap "\"" "\"" (str (String.escaped s))
   in
