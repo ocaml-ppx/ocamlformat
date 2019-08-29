@@ -2251,7 +2251,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ; pstr_loc= _ } ] )
     when List.is_empty pexp_attributes
          && ( Poly.(c.conf.extension_sugar = `Always)
-            || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
+            || Source.extension_using_sugar ~name:ext ~payload:e1
+               && List.length (Sugar.sequence c.conf c.cmts xexp) > 1 ) ->
       fmt_sequence c parens width xexp pexp_loc fmt_atrs ~ext
   | Pexp_sequence _ ->
       fmt_sequence c parens width xexp pexp_loc fmt_atrs ?ext

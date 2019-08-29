@@ -177,3 +177,5 @@ let _ =
   [%ext
     let+ a = b in
     c]
+
+let _ = [%ext "foo" ; "bar"]

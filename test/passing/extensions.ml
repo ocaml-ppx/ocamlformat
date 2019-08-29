@@ -186,3 +186,5 @@ let foo =
     foooooooooooooooooooooooooooo]
 
 let _ = [%ext let+ a = b in c]
+
+let _ = (begin%ext "foo"; "bar" end)
