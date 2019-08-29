@@ -112,19 +112,23 @@ let get_record_type (c : Conf.t) =
       ; docked_after= noop }
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
-      { docked_before= fmt " {"
+      { docked_before= str " {"
       ; break_before= break space 0
       ; box_record= Fn.id
       ; sep_before= noop
       ; sep_after= fmt_or sparse_type_decl "@;<1000 0>" "@ "
       ; break_after= break space (-2)
-      ; docked_after= fmt "}" }
+      ; docked_after= str "}" }
 
 type elements_collection =
-  { box: Fmt.t -> Fmt.t
+  { docked_before: Fmt.t
+  ; break_before: Fmt.t
+  ; box: Fmt.t -> Fmt.t
   ; sep_before: Fmt.t
   ; sep_after_non_final: Fmt.t
-  ; sep_after_final: Fmt.t }
+  ; sep_after_final: Fmt.t
+  ; break_after: Fmt.t
+  ; docked_after: Fmt.t }
 
 type elements_collection_record_expr = {break_after_with: Fmt.t}
 
@@ -133,25 +137,35 @@ type elements_collection_record_pat = {wildcard: Fmt.t}
 let get_record_expr (c : Conf.t) =
   match c.break_separators with
   | `Before ->
-      ( { box= wrap_record c >> hvbox 0
+      ( { docked_before= noop
+        ; break_before= noop
+        ; box= wrap_record c >> hvbox 0
         ; sep_before= fmt "@,; "
         ; sep_after_non_final= noop
-        ; sep_after_final= noop }
+        ; sep_after_final= noop
+        ; break_after= noop
+        ; docked_after= noop }
       , {break_after_with= break 1 2} )
   | `After ->
-      ( { box= wrap_record c >> hvbox 0
+      ( { docked_before= noop
+        ; break_before= noop
+        ; box= wrap_record c >> hvbox 0
         ; sep_before= noop
         ; sep_after_non_final= fmt ";@;<1 2>"
-        ; sep_after_final= noop }
+        ; sep_after_final= noop
+        ; break_after= noop
+        ; docked_after= noop }
       , {break_after_with= break 1 2} )
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
-      ( { box=
-            (fun k ->
-              hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0)))
+      ( { docked_before= str " {"
+        ; break_before= break space 0
+        ; box= Fn.id
         ; sep_before= noop
-        ; sep_after_non_final= fmt ";@;<1 2>"
-        ; sep_after_final= fits_breaks ~level:0 "" ";" }
+        ; sep_after_non_final= fmt ";@;"
+        ; sep_after_final= fits_breaks ~level:0 "" ";"
+        ; break_after= break space (-2)
+        ; docked_after= str "}" }
       , {break_after_with= break 1 2} )
 
 let box_collec (c : Conf.t) =
@@ -162,25 +176,33 @@ let box_collec (c : Conf.t) =
 let collection_expr (c : Conf.t) ~space_around opn cls =
   match c.break_separators with
   | `Before ->
-      { box= wrap_collec c ~space_around opn cls >> box_collec c 0
+      { docked_before= noop
+      ; break_before= noop
+      ; box= wrap_collec c ~space_around opn cls >> box_collec c 0
       ; sep_before= break 0 (String.length opn - 1) $ str "; "
       ; sep_after_non_final= noop
-      ; sep_after_final= noop }
+      ; sep_after_final= noop
+      ; break_after= noop
+      ; docked_after= noop }
   | `After ->
-      { box= wrap_collec c ~space_around opn cls >> box_collec c 0
+      { docked_before= noop
+      ; break_before= noop
+      ; box= wrap_collec c ~space_around opn cls >> box_collec c 0
       ; sep_before= noop
       ; sep_after_non_final= char ';' $ break 1 (String.length opn + 1)
-      ; sep_after_final= noop }
+      ; sep_after_final= noop
+      ; break_after= noop
+      ; docked_after= noop }
   | `After_and_docked ->
       let space = if space_around then 1 else 0 in
-      { box=
-          (fun k ->
-            hvbox 0
-              (wrap_k (str opn) (str cls)
-                 (break space 2 $ box_collec c 0 k $ break space 0)))
+      { docked_before= char ' ' $ str opn
+      ; break_before= break space 0
+      ; box= Fn.id
       ; sep_before= noop
       ; sep_after_non_final= fmt ";@;<1 0>"
-      ; sep_after_final= fits_breaks ~level:1 "" ";" }
+      ; sep_after_final= fits_breaks ~level:1 "" ";"
+      ; break_after= break space (-2)
+      ; docked_after= str cls }
 
 let get_list_expr (c : Conf.t) =
   collection_expr c ~space_around:c.space_around_lists "[" "]"
