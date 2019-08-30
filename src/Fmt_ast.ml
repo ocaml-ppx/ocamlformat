@@ -644,6 +644,13 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
   $ cbox 0
       (fmt_longident_loc c lid1 $ Cmts.fmt_after c lid1.loc $ fmt_type_rhs)
 
+and fmt_type_var s =
+  str "'"
+  (* [' a'] is a valid type variable, the space is required to not lex as
+     a char. https://github.com/ocaml/ocaml/pull/2034 *)
+  $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
+  $ str s
+
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(pro_space = true) ({ast= typ; _} as xtyp) =
   protect (Typ typ)
@@ -673,7 +680,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   let ctx = Typ typ in
   match ptyp_desc with
   | Ptyp_alias (typ, txt) ->
-      hvbox 0 (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ '" $ str txt)
+      hvbox 0 (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ " $ fmt_type_var txt)
   | Ptyp_any -> str "_"
   | Ptyp_arrow _ ->
       let arg_label lbl =
@@ -730,12 +737,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       hvbox 0
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)))
-  | Ptyp_var s ->
-      str "'"
-      (* [' a'] is a valid type variable, the space is required to not lex as
-         a char. https://github.com/ocaml/ocaml/pull/2034 *)
-      $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
-      $ str s
+  | Ptyp_var s -> fmt_type_var s
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs =
         match rfs with
