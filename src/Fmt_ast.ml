@@ -362,8 +362,7 @@ let fmt_constant c ~loc ?epi const =
             let print_ln =
               List.for_all delim ~f:not_suffix || not break_on_newlines
             in
-            if String.is_empty next then
-              fmt_if_k print_ln (str "\\n")
+            if String.is_empty next then fmt_if_k print_ln (str "\\n")
             else if Char.equal next.[0] ' ' then
               fmt_if_k print_ln (str "\\n")
               $ pre_break 0 "\\" (-1) $ if_newline "\\"
