@@ -281,6 +281,59 @@ let format_pp_text state size text =
 let format_string state s =
   if s <> "" then format_pp_text state (String.length s) s
 
+(* Don't indent more than pp_max_newline_offset wrt to the last indent. *)
+let rec find_real_indent state indent =
+  let debug s =
+    let debug = false in
+    if debug then
+      print_endline s
+  in
+  debug ("find " ^ Int.to_string indent);
+  match Stack.top_opt state.pp_indent_stack with
+  | Some (s, r) ->
+      (* we only know the real indent for the suggested indent. *)
+      if indent = s then (
+        debug ("found --> " ^ Int.to_string r);
+        r
+      )
+      (* we need to indent further. *)
+      else if s < indent then (
+        let new_indent = min indent (r + state.pp_max_newline_offset) in
+        Stack.push (indent, new_indent) state.pp_indent_stack;
+        debug ("new: " ^ Int.to_string indent ^ " --> "
+               ^ Int.to_string new_indent);
+        new_indent
+      )
+      (* the last indentation is too big, we may need a previous indentation
+         or to create a newer but smaller one. *)
+      else if indent <= r then (
+        ignore (Stack.pop state.pp_indent_stack);
+        debug "too big: POP";
+        find_real_indent state indent
+      )
+      else (* r < indent < s *) (
+        let already_suggested acc (s, _) = acc || Int.equal indent s in
+        (* this indentation already exists in the stack. *)
+        if Stack.fold already_suggested false state.pp_indent_stack then (
+          ignore (Stack.pop state.pp_indent_stack);
+          debug "already suggested";
+          find_real_indent state indent
+        )
+        (* this is a new indentation and we need to indent further. *)
+        else (
+          let new_indent = min indent (r + state.pp_max_newline_offset) in
+          Stack.push (indent, new_indent) state.pp_indent_stack;
+          debug "not suggested yet";
+          debug ("new: " ^ Int.to_string indent ^ " --> "
+                 ^ Int.to_string new_indent);
+          new_indent
+        )
+      )
+  | None ->
+      let new_indent = min indent state.pp_max_newline_offset in
+      Stack.push (indent, new_indent) state.pp_indent_stack;
+      new_indent
+
 (* To format a break, indenting a new line. *)
 let break_new_line state (before, offset, after) width =
   format_string state before;
@@ -289,50 +342,20 @@ let break_new_line state (before, offset, after) width =
   let indent = state.pp_margin - width + offset in
   (* Don't indent more than pp_max_indent. *)
   let real_indent = min state.pp_max_indent indent in
-  let rec find_real_indent indent =
-    match Stack.top_opt state.pp_indent_stack with
-    | Some (s, r) ->
-        (* we only know the real indent for the suggested indent. *)
-        if indent = s then r
-        (* we need to indent further. *)
-        else if s < indent then (
-          let new_indent = min indent (r + state.pp_max_newline_offset) in
-          Stack.push (indent, new_indent) state.pp_indent_stack;
-          new_indent
-        )
-        (* the last indentation is too big, we may need a previous indentation
-           or to create a newer but smaller one. *)
-        else if indent <= r then (
-          ignore (Stack.pop state.pp_indent_stack);
-          find_real_indent indent
-        )
-        else (* r < indent < s *) (
-          let already_suggested acc (s, _) = acc || Int.equal indent s in
-          (* this indentation already exists in the stack. *)
-          if Stack.fold already_suggested false state.pp_indent_stack then (
-            ignore (Stack.pop state.pp_indent_stack);
-            find_real_indent indent
-          )
-          (* this is a new indentation and we need to indent further. *)
-          else (
-            let new_indent = min indent (r + state.pp_max_newline_offset) in
-            Stack.push (indent, new_indent) state.pp_indent_stack;
-            new_indent
-          )
-        )
-    | None ->
-        let new_indent = min indent state.pp_max_newline_offset in
-        Stack.push (indent, new_indent) state.pp_indent_stack;
-        new_indent
+  let artificial_indent =
+    (* Don't do anything special if pp_min_space_left has its default value *)
+    if state.pp_max_newline_offset
+       = state.pp_margin - state.pp_min_space_left then
+      real_indent
+    else
+      find_real_indent state real_indent
   in
-  (* Don't indent more than pp_max_newline_offset wrt. to the last indent. *)
-  let artificial_indent = find_real_indent real_indent in
-  state.pp_current_indent <- artificial_indent;
+  state.pp_current_indent <- real_indent;
   (* we use the indent without taking pp_max_newline_offset into account,
      otherwise too much space is available and Format starts reducing the
      indentation and it messes with what is already computed. *)
-  state.pp_space_left <- state.pp_margin - real_indent;
-  pp_output_indent state state.pp_current_indent;
+  state.pp_space_left <- state.pp_margin - state.pp_current_indent;
+  pp_output_indent state artificial_indent;
   format_string state after
 
 
