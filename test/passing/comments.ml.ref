@@ -286,4 +286,4 @@ let _ =
   | None -> ()
 
 type prefix =
-  {sib_extend: int (* extended sib index bit *)  (** add more as needed *)}
+  {sib_extend: int  (** add more as needed *) (* extended sib index bit *)}
