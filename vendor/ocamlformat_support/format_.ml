@@ -326,9 +326,12 @@ let break_new_line state (before, offset, after) width =
         new_indent
   in
   (* Don't indent more than pp_max_newline_offset wrt. to the last indent. *)
-  let real_indent = find_real_indent real_indent in
-  state.pp_current_indent <- real_indent;
-  state.pp_space_left <- state.pp_margin - state.pp_current_indent;
+  let artificial_indent = find_real_indent real_indent in
+  state.pp_current_indent <- artificial_indent;
+  (* we use the indent without taking pp_max_newline_offset into account,
+     otherwise too much space is available and Format starts reducing the
+     indentation and it messes with what is already computed. *)
+  state.pp_space_left <- state.pp_margin - real_indent;
   pp_output_indent state state.pp_current_indent;
   format_string state after
 
