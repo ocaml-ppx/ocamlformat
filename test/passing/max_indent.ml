@@ -33,3 +33,10 @@ let fooooooooooooo =
         lbl_all
     in
     fooooooo
+
+let foooooooooo =
+  match fooooooooooooo with
+  | Pexp_construct
+    ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
+    if is_sugared_list e2 then Some (Semi, Non)
+    else Some (ColonColon, if exp == e2 then Right else Left)
