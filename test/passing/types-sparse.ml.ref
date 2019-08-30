@@ -238,3 +238,5 @@ type ' a' t = ' a'
 type ' a' t = ' a' option
 
 type ' a' t = int as ' a'
+
+type t = {a: ' a'. ' a' t'}

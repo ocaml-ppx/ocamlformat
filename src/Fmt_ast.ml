@@ -730,7 +730,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
       hovbox_if box 0
-        ( list a1N "@ " (fmt_str_loc c ~pre:(str "'"))
+        ( list a1N "@ " (fun {txt;_} -> fmt_type_var txt)
         $ fmt ".@ "
         $ fmt_core_type c ~box:false (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
