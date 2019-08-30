@@ -646,8 +646,8 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
 
 and fmt_type_var s =
   str "'"
-  (* [' a'] is a valid type variable, the space is required to not lex as
-     a char. https://github.com/ocaml/ocaml/pull/2034 *)
+  (* [' a'] is a valid type variable, the space is required to not lex as a
+     char. https://github.com/ocaml/ocaml/pull/2034 *)
   $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
   $ str s
 
@@ -680,7 +680,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   let ctx = Typ typ in
   match ptyp_desc with
   | Ptyp_alias (typ, txt) ->
-      hvbox 0 (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ " $ fmt_type_var txt)
+      hvbox 0
+        (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ " $ fmt_type_var txt)
   | Ptyp_any -> str "_"
   | Ptyp_arrow _ ->
       let arg_label lbl =
@@ -730,7 +731,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       impossible "produced by the parser, handled elsewhere"
   | Ptyp_poly (a1N, t) ->
       hovbox_if box 0
-        ( list a1N "@ " (fun {txt;_} -> fmt_type_var txt)
+        ( list a1N "@ " (fun {txt; _} -> fmt_type_var txt)
         $ fmt ".@ "
         $ fmt_core_type c ~box:false (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
