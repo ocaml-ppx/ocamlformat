@@ -363,9 +363,7 @@ let fmt_constant c ~loc ?epi const =
               List.for_all delim ~f:not_suffix || not break_on_newlines
             in
             if String.is_empty next then
-              if break_on_newlines then
-                fmt_if_k (String.is_empty curr) (str "\\n")
-              else str "\\n"
+              fmt_if_k print_ln (str "\\n")
             else if Char.equal next.[0] ' ' then
               fmt_if_k print_ln (str "\\n")
               $ pre_break 0 "\\" (-1) $ if_newline "\\"
@@ -396,7 +394,7 @@ let fmt_constant c ~loc ?epi const =
           let break_on_pp_commands in_ pattern =
             String.substr_replace_all in_ ~pattern ~with_:(pattern ^ "\n")
           in
-          List.fold_left ["@,"; "@;"; "@\n"] ~init:s ~f:break_on_pp_commands
+          List.fold_left ["@,"; "@;"] ~init:s ~f:break_on_pp_commands
           |> String.split ~on:'\n'
           |> fmt_lines mode ~break_on_newlines:true
       | `Newlines | `Wrap | `Newlines_and_wrap ->
