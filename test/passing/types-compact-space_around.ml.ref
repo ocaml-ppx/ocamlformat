@@ -205,3 +205,11 @@ type foooooooooooooooo =
   -> ?fooooooooo:(unit -> unit Fooo.t)
   -> ?fooooooo:bool
   -> string option Foooooooo.t
+
+type ' a' t = ' a'
+
+type ' a' t = ' a' option
+
+type ' a' t = int as ' a'
+
+type t = { a: ' a'. ' a' t' }
