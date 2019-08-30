@@ -201,3 +201,8 @@ let _ =
      | Some z -> incr z (* double some *))
   | None -> ()
 ;;
+
+type prefix = {
+  sib_extend : int; (* extended sib index bit *)
+  (** add more as needed *)
+}
