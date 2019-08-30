@@ -155,6 +155,8 @@ type formatter = {
   (* The pretty-printer semantics tag stack. *)
   pp_tag_stack : stag Stack.t;
   pp_mark_stack : stag Stack.t;
+  (* The indentation stack (suggested indent * read indent). *)
+  pp_indent_stack : (int * int) Stack.t;
   (* Value of right margin. *)
   mutable pp_margin : int;
   (* Minimal space left before margin, when opening a box. *)
@@ -287,8 +289,44 @@ let break_new_line state (before, offset, after) width =
   let indent = state.pp_margin - width + offset in
   (* Don't indent more than pp_max_indent. *)
   let real_indent = min state.pp_max_indent indent in
-  let real_indent =
-    min real_indent (state.pp_current_indent + state.pp_max_newline_offset) in
+  let rec find_real_indent indent =
+    match Stack.top_opt state.pp_indent_stack with
+    | Some (s, r) ->
+        (* we only know the real indent for the suggested indent. *)
+        if indent = s then r
+        (* we need to indent further. *)
+        else if s < indent then (
+          let new_indent = min indent (r + state.pp_max_newline_offset) in
+          Stack.push (indent, new_indent) state.pp_indent_stack;
+          new_indent
+        )
+        (* the last indentation is too big, we may need a previous indentation
+           or to create a newer but smaller one. *)
+        else if indent <= r then (
+          ignore (Stack.pop state.pp_indent_stack);
+          find_real_indent indent
+        )
+        else (* r < indent < s *) (
+          let already_suggested acc (s, _) = acc || Int.equal indent s in
+          (* this indentation already exists in the stack. *)
+          if Stack.fold already_suggested false state.pp_indent_stack then (
+            ignore (Stack.pop state.pp_indent_stack);
+            find_real_indent indent
+          )
+          (* this is a new indentation and we need to indent further. *)
+          else (
+            let new_indent = min indent (r + state.pp_max_newline_offset) in
+            Stack.push (indent, new_indent) state.pp_indent_stack;
+            new_indent
+          )
+        )
+    | None ->
+        let new_indent = min indent state.pp_max_newline_offset in
+        Stack.push (indent, new_indent) state.pp_indent_stack;
+        new_indent
+  in
+  (* Don't indent more than pp_max_newline_offset wrt. to the last indent. *)
+  let real_indent = find_real_indent real_indent in
   state.pp_current_indent <- real_indent;
   state.pp_space_left <- state.pp_margin - state.pp_current_indent;
   pp_output_indent state state.pp_current_indent;
@@ -653,6 +691,7 @@ let pp_rinit state =
   Stack.clear state.pp_tbox_stack;
   Stack.clear state.pp_tag_stack;
   Stack.clear state.pp_mark_stack;
+  Stack.clear state.pp_indent_stack;
   state.pp_current_indent <- 0;
   state.pp_curr_depth <- 0;
   state.pp_space_left <- state.pp_margin;
@@ -1018,6 +1057,7 @@ let pp_make_formatter f g h i j =
     pp_tbox_stack = Stack.create ();
     pp_tag_stack = Stack.create ();
     pp_mark_stack = Stack.create ();
+    pp_indent_stack = Stack.create ();
     pp_margin = pp_margin;
     pp_min_space_left = pp_min_space_left;
     pp_max_indent = pp_margin - pp_min_space_left;
