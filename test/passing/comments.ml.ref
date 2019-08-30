@@ -284,3 +284,6 @@ let _ =
   | Some y -> (
     match y with None -> () | Some z -> incr z (* double some *) )
   | None -> ()
+
+type prefix =
+  {sib_extend: int  (** add more as needed *) (* extended sib index bit *)}

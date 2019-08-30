@@ -3121,8 +3121,8 @@ and fmt_label_declaration c ctx decl ?(last = false) =
                     $ fmt_semicolon )
                 $ cmt_after_type )
             $ fmt_attributes c ~pre:(fmt "@;<1 1>") ~key:"@" atrs )
-        $ Cmts.fmt_after c pld_loc
-        $ fmt_docstring_padded c doc ) )
+        $ fmt_docstring_padded c doc
+        $ Cmts.fmt_after c pld_loc ) )
 
 and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
     =
