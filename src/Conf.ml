@@ -1950,13 +1950,11 @@ let build_config ~file =
     | Some f, true -> `Ocamlformat f :: files
   in
   let files = if !disable_conf_files then [] else files in
-  let conf, warn_now =
-    collect_warnings (fun () ->
-        let init = ocamlformat_profile in
-        List.fold files ~init ~f:read_config_file
-        |> update_using_env |> C.update_using_cmdline)
+  let conf =
+    let init = ocamlformat_profile in
+    List.fold files ~init ~f:read_config_file
+    |> update_using_env |> C.update_using_cmdline
   in
-  if not conf.quiet then warn_now () ;
   let no_ocamlformat_files =
     let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
     List.for_all files ~f
@@ -1986,6 +1984,11 @@ let build_config ~file =
             Fpath.pp file lno ;
         {conf with disable= not conf.disable}
     | None -> conf
+
+let build_config ~file =
+  let conf, warn_now = collect_warnings (fun () -> build_config ~file) in
+  if not conf.quiet then warn_now () ;
+  conf
 
 ;;
 if !print_config then
