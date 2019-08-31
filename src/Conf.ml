@@ -1960,19 +1960,18 @@ let build_config ~file =
     List.for_all files ~f
   in
   if no_ocamlformat_files && not enable_outside_detected_project then (
-    ( if not conf.quiet then
-      let why =
-        match project_root with
-        | Some root ->
-            Format.sprintf
-              "no [.ocamlformat] was found within the project (root: %s)"
-              (Fpath.to_string ~relativize:true root)
-        | None -> "no project root was found"
-      in
-      warn ~filename:vfile
-        "Ocamlformat disabled because [--enable-outside-detected-project] \
-         is not set and %s"
-        why ) ;
+    (let why =
+       match project_root with
+       | Some root ->
+           Format.sprintf
+             "no [.ocamlformat] was found within the project (root: %s)"
+             (Fpath.to_string ~relativize:true root)
+       | None -> "no project root was found"
+     in
+     warn ~filename:vfile
+       "Ocamlformat disabled because [--enable-outside-detected-project] is \
+        not set and %s"
+       why) ;
     {conf with disable= true} )
   else
     let listings = if conf.disable then enables else ignores in
