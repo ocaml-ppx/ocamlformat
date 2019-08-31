@@ -14,7 +14,7 @@ module type CONFIG = sig
 
   val profile_option_names : string list
 
-  val warn : config -> string -> unit
+  val warn : config -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
 module Make (C : CONFIG) : sig

@@ -84,10 +84,10 @@ let profile_option_names = ["p"; "profile"]
 
 open Cmdliner
 
-let warning, collect_warnings =
+let warn_raw, collect_warnings =
   let delay_warning = ref false in
   let delayed_warning_list = ref [] in
-  let warning s =
+  let warn_ s =
     if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
     else Format.eprintf "%s" s
   in
@@ -99,18 +99,30 @@ let warning, collect_warnings =
     let collected = List.rev !delayed_warning_list in
     delay_warning := old_flag ;
     delayed_warning_list := old_list ;
-    (res, collected)
+    (res, fun () -> List.iter ~f:warn_ collected)
   in
-  (warning, collect_warnings)
+  (warn_, collect_warnings)
 
-let warning fmt = Format.kasprintf (fun s -> warning s) fmt
+let warn ?filename ?lnum fmt =
+  Format.kasprintf
+    (fun s ->
+      let loc : string =
+        match (filename, lnum) with
+        | Some file, Some lnum ->
+            Format.asprintf "File %a, line %d:@\n" Fpath.pp file lnum
+        | Some file, None -> Format.asprintf "File %a@\n" Fpath.pp file
+        | None, _ -> ""
+      in
+      warn_raw (Format.asprintf "%sWarning: %s@\n" loc s))
+    fmt
 
 module C = Config_option.Make (struct
   type config = t
 
   let profile_option_names = profile_option_names
 
-  let warn config s = if not config.quiet then Format.eprintf "Warning: %s" s
+  let warn (config : config) fmt =
+    Format.kasprintf (fun s -> if not config.quiet then warn "%s" s) fmt
 end)
 
 let info =
@@ -1609,9 +1621,9 @@ let validate () =
   let inputs_len = List.length !inputs in
   let has_stdin = List.exists ~f:(String.equal "-") !inputs in
   if !disable_outside_detected_project then
-    Format.eprintf
-      "Warning: option `--disable-outside-detected-project` is deprecated \
-       and will be removed in OCamlFormat v1.0." ;
+    warn
+      "option `--disable-outside-detected-project` is deprecated and will \
+       be removed in OCamlFormat v1.0." ;
   if !print_config then `Ok ()
   else if inputs_len = 0 then
     `Error (false, "Must specify at least one input file, or `-` for stdin")
@@ -1699,7 +1711,7 @@ let parse_line config ~from s =
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
         if !disable_conf_attrs then (
-          warning "Warning: Configuration in attribute %S ignored.\n" s ;
+          warn "Configuration in attribute %S ignored." s ;
           Ok config )
         else
           C.update ~config
@@ -1806,10 +1818,8 @@ let read_config_file conf filename_kind =
                 match parse_line conf ~from line with
                 | Ok conf -> (conf, errors, Int.succ num)
                 | Error _ when !ignore_invalid_options ->
-                    warning
-                      "File %a, line %d:\n\
-                       Warning: ignoring invalid options %S\n"
-                      Fpath.pp filename num line ;
+                    warn ~filename ~lnum:num "ignoring invalid options %S"
+                      line ;
                     (conf, errors, Int.succ num)
                 | Error e -> (conf, e :: errors, Int.succ num))
           in
@@ -1916,21 +1926,19 @@ let is_in_listing_file ~listings ~filename =
                         Option.some_if (Re.execp re filename)
                           (listing_file, lno)
                       with Re.Glob.Parse_error ->
-                        Format.eprintf
-                          "File %a, line %d:\n\
-                           Warning: pattern %s cannot be parsed\n"
-                          Fpath.pp listing_file lno line ;
+                        warn ~filename:listing_file ~lnum:lno
+                          "pattern %s cannot be parsed" line ;
                         None )
                 | Error (`Msg msg) ->
-                    warning "File %a, line %d:\nWarning: %s\n" Fpath.pp
-                      listing_file lno msg ;
+                    warn ~filename:listing_file ~lnum:lno "%s" msg ;
                     None))
       with Sys_error err ->
-        warning "Warning: ignoring %a, %s\n" Fpath.pp listing_file err ;
+        warn "ignoring %a, %s" Fpath.pp listing_file err ;
         None)
 
 let build_config ~file =
-  let file_abs = Fpath.(v file |> to_absolute |> normalize) in
+  let vfile = Fpath.v file in
+  let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let dir = Fpath.(file_abs |> split_base |> fst) in
   let segs = Fpath.segs dir |> List.rev in
   let ignores, enables, files, project_root =
@@ -1942,32 +1950,31 @@ let build_config ~file =
     | Some f, true -> `Ocamlformat f :: files
   in
   let files = if !disable_conf_files then [] else files in
-  let conf, warnings =
+  let conf, warn_now =
     collect_warnings (fun () ->
         let init = ocamlformat_profile in
         List.fold files ~init ~f:read_config_file
         |> update_using_env |> C.update_using_cmdline)
   in
-  if not conf.quiet then List.iter warnings ~f:(warning "%s") ;
+  if not conf.quiet then warn_now () ;
   let no_ocamlformat_files =
     let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
     List.for_all files ~f
   in
   if no_ocamlformat_files && not enable_outside_detected_project then (
-    (let why =
-       match project_root with
-       | Some root ->
-           Format.sprintf
-             "no [.ocamlformat] was found within the project (root: %s)"
-             (Fpath.to_string ~relativize:true root)
-       | None -> "no project root was found"
-     in
-     warning
-       "File %S:@\n\
-        Warning: Ocamlformat disabled because \
-        [--enable-outside-detected-project] is not set and %s@\n\
-        %!"
-       file why) ;
+    ( if not conf.quiet then
+      let why =
+        match project_root with
+        | Some root ->
+            Format.sprintf
+              "no [.ocamlformat] was found within the project (root: %s)"
+              (Fpath.to_string ~relativize:true root)
+        | None -> "no project root was found"
+      in
+      warn ~filename:vfile
+        "Ocamlformat disabled because [--enable-outside-detected-project] \
+         is not set and %s"
+        why ) ;
     {conf with disable= true} )
   else
     let listings = if conf.disable then enables else ignores in
