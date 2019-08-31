@@ -84,6 +84,27 @@ let profile_option_names = ["p"; "profile"]
 
 open Cmdliner
 
+let warning, collect_warnings =
+  let delay_warning = ref false in
+  let delayed_warning_list = ref [] in
+  let warning s =
+    if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
+    else Format.eprintf "%s" s
+  in
+  let collect_warnings f =
+    let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
+    delay_warning := true ;
+    delayed_warning_list := [] ;
+    let res = f () in
+    let collected = List.rev !delayed_warning_list in
+    delay_warning := old_flag ;
+    delayed_warning_list := old_list ;
+    (res, collected)
+  in
+  (warning, collect_warnings)
+
+let warning fmt = Format.kasprintf (fun s -> warning s) fmt
+
 module C = Config_option.Make (struct
   type config = t
 
@@ -1678,9 +1699,7 @@ let parse_line config ~from s =
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
         if !disable_conf_attrs then (
-          if not config.quiet then
-            Format.eprintf
-              "Warning: Configuration in attribute %S ignored.\n" s ;
+          warning "Warning: Configuration in attribute %S ignored.\n" s ;
           Ok config )
         else
           C.update ~config
@@ -1787,11 +1806,10 @@ let read_config_file conf filename_kind =
                 match parse_line conf ~from line with
                 | Ok conf -> (conf, errors, Int.succ num)
                 | Error _ when !ignore_invalid_options ->
-                    if not conf.quiet then
-                      Format.eprintf
-                        "File %a, line %d:\n\
-                         Warning: ignoring invalid options %S\n"
-                        Fpath.pp filename num line ;
+                    warning
+                      "File %a, line %d:\n\
+                       Warning: ignoring invalid options %S\n"
+                      Fpath.pp filename num line ;
                     (conf, errors, Int.succ num)
                 | Error e -> (conf, e :: errors, Int.succ num))
           in
@@ -1869,7 +1887,7 @@ let xdg_config =
       if Fpath.exists filename then Some filename else None
   | None -> None
 
-let is_in_listing_file ~quiet ~listings ~filename =
+let is_in_listing_file ~listings ~filename =
   let drop_line l = String.is_empty l || String.is_prefix l ~prefix:"#" in
   (* process deeper files first *)
   let listings = List.rev listings in
@@ -1904,14 +1922,11 @@ let is_in_listing_file ~quiet ~listings ~filename =
                           Fpath.pp listing_file lno line ;
                         None )
                 | Error (`Msg msg) ->
-                    if not quiet then
-                      Format.eprintf "File %a, line %d:\nWarning: %s\n"
-                        Fpath.pp listing_file lno msg ;
+                    warning "File %a, line %d:\nWarning: %s\n" Fpath.pp
+                      listing_file lno msg ;
                     None))
       with Sys_error err ->
-        if not quiet then
-          Format.eprintf "Warning: ignoring %a, %s\n" Fpath.pp listing_file
-            err ;
+        warning "Warning: ignoring %a, %s\n" Fpath.pp listing_file err ;
         None)
 
 let build_config ~file =
@@ -1927,40 +1942,36 @@ let build_config ~file =
     | Some f, true -> `Ocamlformat f :: files
   in
   let files = if !disable_conf_files then [] else files in
-  let conf =
-    let init =
-      match C.get_from_cmdline quiet with
-      | None | Some false -> ocamlformat_profile
-      | Some true -> {ocamlformat_profile with quiet= true}
-    in
-    List.fold files ~init ~f:read_config_file
-    |> update_using_env |> C.update_using_cmdline
+  let conf, warnings =
+    collect_warnings (fun () ->
+        let init = ocamlformat_profile in
+        List.fold files ~init ~f:read_config_file
+        |> update_using_env |> C.update_using_cmdline)
   in
+  if not conf.quiet then List.iter warnings ~f:(warning "%s") ;
   let no_ocamlformat_files =
     let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
     List.for_all files ~f
   in
-  let quiet = conf.quiet in
   if no_ocamlformat_files && not enable_outside_detected_project then (
-    ( if not conf.quiet then
-      let why =
-        match project_root with
-        | Some root ->
-            Format.sprintf
-              "no [.ocamlformat] was found within the project (root: %s)"
-              (Fpath.to_string ~relativize:true root)
-        | None -> "no project root was found"
-      in
-      Format.eprintf
-        "File %S:@\n\
-         Warning: Ocamlformat disabled because \
-         [--enable-outside-detected-project] is not set and %s@\n\
-         %!"
-        file why ) ;
+    (let why =
+       match project_root with
+       | Some root ->
+           Format.sprintf
+             "no [.ocamlformat] was found within the project (root: %s)"
+             (Fpath.to_string ~relativize:true root)
+       | None -> "no project root was found"
+     in
+     warning
+       "File %S:@\n\
+        Warning: Ocamlformat disabled because \
+        [--enable-outside-detected-project] is not set and %s@\n\
+        %!"
+       file why) ;
     {conf with disable= true} )
   else
     let listings = if conf.disable then enables else ignores in
-    match is_in_listing_file ~quiet ~listings ~filename:file_abs with
+    match is_in_listing_file ~listings ~filename:file_abs with
     | Some (file, lno) ->
         let status = if conf.disable then "enabled" else "ignored" in
         if !debug then
