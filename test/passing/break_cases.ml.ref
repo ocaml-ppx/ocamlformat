@@ -144,3 +144,14 @@ let _ =
         | foooooooooo -> fooooooooooo
         | foooooooooo -> fooooooooooo
         | foooooooooo -> fooooooooooo )
+
+let handler =
+  object
+    method at_expr x =
+      match x with
+      | Call Thing
+      (* isset($var::thing) but not isset($foo::$bar) *)
+      | Call OtherThing ->
+          Errors.isset_in_strict p
+      | _ -> ()
+  end
