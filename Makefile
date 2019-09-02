@@ -9,64 +9,46 @@
 #                                                                    #
 ######################################################################
 
-SHELL=bash
-
 .PHONY: default
 default: exe gen-help
 
-dune-workspace: dune-workspace.in
-	sed -e "s|@OPAM_SWITCH[@]|$$(opam switch show)|g" $< > $@
-
-.PHONY: setup
-setup: dune-workspace
-
 .PHONY: exe
-exe: setup
-	dune build _build/dev/src/ocamlformat.exe _build/release/src/ocamlformat.exe
+exe:
+	dune build -p ocamlformat
 
 .PHONY: gen-help
 gen-help:
-	dune build _build/release/ocamlformat-help.txt
+	dune build ocamlformat-help.txt
 
 .PHONY: reason
-reason: setup
-	dune build _build/dev/src/ocamlformat_reason.exe _build/release/src/ocamlformat_reason.exe
+reason:
+	dune build -p ocamlformat_reason
 
 .PHONY: ocamlformat-diff
 ocamlformat-diff:
-	dune build _build/dev/tools/ocamlformat-diff/ocamlformat_diff.exe _build/release/tools/ocamlformat-diff/ocamlformat_diff.exe
+	dune build -p ocamlformat_diff
 
-.PHONY: clean cleanbisect
-clean: cleanbisect
-	rm -rf _build dune-workspace
-cleanbisect:
-	rm -Rf _coverage
-	find ./ -name 'bisect*.out' -delete
+.PHONY: clean
+clean:
+	dune clean
 
 SRCS=$(shell \find src tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[^.]*.mlt')
 
 .PHONY: fmt
 fmt:
-	dune exec --context dev -- ocamlformat -i $(SRCS)
+	dune exec -- ocamlformat -i $(SRCS)
 
-.PHONY: test regtests fixpoint test-reason
+.PHONY: test fixpoint regtests regtests-promote test-reason
 test: fixpoint regtests
 
-fixpoint: setup
-	dune exec --context dev -- ocamlformat -n 1 -i $(SRCS)
+fixpoint:
+	dune exec -- ocamlformat -n 1 -i $(SRCS)
 
-regtests: setup
-	dune build @_build/dev/test/runtest
+regtests:
+	dune runtest
 
-regtests-promote: setup
-	dune build @_build/dev/test/runtest --auto-promote
+regtests-promote:
+	dune runtest --auto-promote
 
-test-reason: setup
-	dune build @_build/dev/test/reason/runtest-reason --auto-promote
-
-.PHONY: coverage
-coverage: setup cleanbisect
-	dune build @_build/coverage/test/runtest
-	dune exec --context coverage -- ocamlformat -i $(SRCS)
-	bisect-ppx-report -I _build/coverage/ -html _coverage/ `find ./ _build/coverage/ -name 'bisect*.out'`
-	@echo "open _coverage/index.html"
+test-reason:
+	dune build @runtest-reason --auto-promote
