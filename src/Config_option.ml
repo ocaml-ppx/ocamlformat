@@ -214,8 +214,6 @@ module Make (C : CONFIG) = struct
 
   let default {default; _} = default
 
-  let get_from_cmdline {cmdline_get; _} = cmdline_get ()
-
   let update_using_cmdline config =
     let on_pack config (Pack {cmdline_get; update; names; _}) =
       match cmdline_get () with
