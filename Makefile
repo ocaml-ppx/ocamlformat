@@ -14,7 +14,7 @@ default: exe gen-help
 
 .PHONY: exe
 exe:
-	dune build -p ocamlformat
+	dune build src/ocamlformat.exe
 
 .PHONY: gen-help
 gen-help:
@@ -22,11 +22,11 @@ gen-help:
 
 .PHONY: reason
 reason:
-	dune build -p ocamlformat_reason
+	dune build src/ocamlformat_reason.exe
 
 .PHONY: ocamlformat-diff
 ocamlformat-diff:
-	dune build -p ocamlformat_diff
+	dune build tools/ocamlformat-diff/ocamlformat_diff.exe
 
 .PHONY: clean
 clean:
