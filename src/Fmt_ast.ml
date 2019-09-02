@@ -581,9 +581,7 @@ let fmt_infix_op_args' c ~parens ~fmt_arg ~is_not_indented ~is_simple op_args
       | `Closing_on_separate_line -> ("(", Some (1000, 0), ")")
     else ("", None, "")
   in
-  wrap_if_k
-    parens
-    (fits_breaks "(" opn)
+  wrap_if_k parens (fits_breaks "(" opn)
     (fits_breaks ")" ?hint cls)
     (list_fl groups fmt_op_arg_group)
 
@@ -1443,10 +1441,10 @@ and fmt_infix_op_args_pat c ~parens xpat op_args =
   let is_not_indented {ast= pat; _} =
     match pat.ppat_desc with
     | Ppat_open _ -> (
-        match c.conf.let_open with
-        | `Auto | `Long -> true
-        | `Short -> false
-        | `Preserve -> Source.is_long_ppat_open c.source pat )
+      match c.conf.let_open with
+      | `Auto | `Long -> true
+      | `Short -> false
+      | `Preserve -> Source.is_long_ppat_open c.source pat )
     | _ -> false
   in
   let fmt_arg very_last ~first:_ ~last ((_, xarg) as lbl_xarg) =
@@ -1559,14 +1557,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   $ fmt "@ " $ fmt_expression c xbody )) ))
   | Pexp_apply
       ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}
-      , (Nolabel, s) :: idx )
+      , (Nolabel, s)
+      :: idx )
     when Option.is_some (index_op_get_sugar ident idx) ->
       let op, idx = Option.value_exn (index_op_get_sugar ident idx) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
       fmt_index_op c ctx ~parens op s idx
   | Pexp_apply
       ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}
-      , (Nolabel, s) :: idx_and_e )
+      , (Nolabel, s)
+      :: idx_and_e )
     when Option.is_some (index_op_set_sugar ident idx_and_e) ->
       let op, idx, e =
         Option.value_exn (index_op_set_sugar ident idx_and_e)
@@ -1729,7 +1729,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; pexp_loc
         ; pexp_attributes= _
         ; _ }
-      , (Nolabel, s) :: (Nolabel, i) :: _ )
+      , (Nolabel, s)
+      :: (Nolabel, i)
+      :: _ )
     when Option.is_some (index_op_get_lid id) ->
       let index_op = Option.value_exn (index_op_get_lid id) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
@@ -1739,7 +1741,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; pexp_loc
         ; pexp_attributes= _
         ; _ }
-      , (Nolabel, s) :: (Nolabel, i) :: (Nolabel, e) :: _ )
+      , (Nolabel, s)
+      :: (Nolabel, i)
+      :: (Nolabel, e)
+      :: _ )
     when Option.is_some (index_op_set_lid id) ->
       let index_op = Option.value_exn (index_op_set_lid id) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
@@ -1756,7 +1761,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       | ( lbl
         , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes= _; _} as eN1)
         )
-        :: rev_e1N
+      :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI)) ->
           let e1N = List.rev rev_e1N in
@@ -1791,7 +1796,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ; pexp_loc
             ; pexp_attributes= _
             ; _ } as eN ) )
-        :: rev_e1N
+      :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI)) ->
           let e1N = List.rev rev_e1N in
@@ -1820,7 +1825,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       | ( lbl
         , ( {pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes= _; _} as
           eN ) )
-        :: rev_e1N
+      :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI)) ->
           let e1N = List.rev rev_e1N in
@@ -2324,8 +2329,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ; pstr_loc= _ } ] )
     when List.is_empty pexp_attributes
          && ( Poly.(c.conf.extension_sugar = `Always)
-            || Source.extension_using_sugar ~name:ext ~payload:e1
-               && List.length (Sugar.sequence c.conf c.cmts xexp) > 1 ) ->
+            || ( Source.extension_using_sugar ~name:ext ~payload:e1
+               && List.length (Sugar.sequence c.conf c.cmts xexp) > 1 ) ) ->
       fmt_sequence c parens width xexp pexp_loc fmt_atrs ~ext
   | Pexp_sequence _ ->
       fmt_sequence c parens width xexp pexp_loc fmt_atrs ?ext
@@ -2530,7 +2535,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
         )
     $ cmts_after_self
     $ ( match fields with
-      | ({pcf_desc= Pcf_attribute a; _}, _) :: _
+      | ({pcf_desc= Pcf_attribute a; _}, _)
+      :: _
         when Option.is_some (fst (doc_atrs [a])) ->
           str "\n"
       | _ -> noop )
@@ -2570,7 +2576,8 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                )
            $ cmts_after_self
            $ ( match fields with
-             | ({pctf_desc= Pctf_attribute a; _}, _) :: _
+             | ({pctf_desc= Pctf_attribute a; _}, _)
+             :: _
                when Option.is_some (fst (doc_atrs [a])) ->
                  str "\n"
              | _ -> noop )
@@ -2727,7 +2734,8 @@ and fmt_class_field c ctx (cf : class_field) =
           | {pexp_desc= Pexp_constraint (e, t); _}, [] ->
               Some (List.rev names, t, e)
           | ( {pexp_desc= Pexp_newtype (({txt; _} as newtyp), body); _}
-            , {txt= txt'; _} :: args )
+            , {txt= txt'; _}
+            :: args )
             when String.equal txt txt' ->
               cleanup (newtyp :: names) body args
           | _ -> None

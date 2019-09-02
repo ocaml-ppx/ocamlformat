@@ -219,10 +219,9 @@ let string_literal t mode (l : Location.t) =
   match toks with
   | [(Parser.STRING (_, None), loc)]
    |(Parser.STRING (_, None), loc)
-    :: ( Parser.LBRACKETATATAT, _
-       | Parser.LBRACKETATAT, _
-       | Parser.LBRACKETAT, _ )
-    :: _ ->
+  :: ( Parser.LBRACKETATATAT, _
+     | Parser.LBRACKETATAT, _
+     | Parser.LBRACKETAT, _ ) :: _ ->
       Some (Literal_lexer.string mode (lexbuf_from_loc t loc))
   | _ -> None
 
@@ -242,10 +241,9 @@ let char_literal t (l : Location.t) =
   match toks with
   | [(Parser.CHAR _, loc)]
    |(Parser.CHAR _, loc)
-    :: ( Parser.LBRACKETATATAT, _
-       | Parser.LBRACKETATAT, _
-       | Parser.LBRACKETAT, _ )
-    :: _ ->
+  :: ( Parser.LBRACKETATATAT, _
+     | Parser.LBRACKETATAT, _
+     | Parser.LBRACKETAT, _ ) :: _ ->
       Some (Literal_lexer.char (lexbuf_from_loc t loc))
   | _ -> None
 

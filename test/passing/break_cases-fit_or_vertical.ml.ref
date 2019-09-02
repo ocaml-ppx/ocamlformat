@@ -76,7 +76,9 @@ let foo =
   | Call
       ( (ret_id, _)
       , Const (Cfun callee_pname)
-      , (target_exp, _) :: (Sizeof {typ= cast_typ}, _) :: _
+      , (target_exp, _)
+      :: (Sizeof {typ= cast_typ}, _)
+      :: _
       , loc
       , _ )
     when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
