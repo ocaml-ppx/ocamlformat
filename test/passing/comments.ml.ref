@@ -88,7 +88,7 @@ let _ = f (0 + 0 (* test *) + (1 * 1) (* test *))
 
 let _ = f ((1 * 1) (* test *) + (0 + 0) (* test *))
 
-let _ = match e with 3 (* test *) -> e | 3 (* test *) :: tail -> e
+let _ = match e with 3 (* test *) -> e (* test *) | 3 :: tail -> e
 
 module rec A = struct end
 (*test*)
@@ -195,43 +195,45 @@ let () =
 
 let rec fooooooooooo = function
   (*XX*)
-  | x :: t (*YY*) -> k
+  (*YY*)
+  | x :: t -> k
   (* AA*)
-  (*BB*)
-  (* CC *)
-  | [x (* DD *); (* EE *) y (* FF *)]
-  (* GG *)
-  (* HH *) ->
+  | [ (*BB*)
+      (* CC *)
+      x
+    (* DD *)
+    (* GG *)
+    ; (* EE *)
+      y
+      (* FF *) ]
+    (* HH *) ->
       k
   (* AA*)
+  (* DD *)
   (*BB*)
   (* CC *)
-  | x (* DD *) :: (* EE *) t
   (* FF *)
   (* GG *)
-  (* HH *) ->
-      k
+  | x :: (* EE *) t (* HH *) -> k
   (* AA*)
+  (* XX *)
   (*BB*)
+  (* GG *)
   (* CC *)
-  | x
-    (* DD *)
-    (* XX *)
+  | x (* DD *)
     :: (* YY *)
        (* EE *)
-    t
+         t
   (* FF *)
-  (* GG *)
   (* HH *) ->
       k
   (* AA *)
+  (* HH *)
   (* BB *)
+  (* JJ *)
   | (module (* CC *)
             (* DD *) F (* EE *) : (* FF *) M (* GG *))
-    (* HH *)
-    :: (* II *)
-    t
-  (* JJ *)
+    :: (* II *) t
   (* KK *) ->
       foo
 
