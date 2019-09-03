@@ -2458,28 +2458,42 @@ end = struct
     | Ptyp_object _ -> true
     | _ -> false
 
-  let parenze_nested_exp {ctx; ast= exp} =
-    let infix_prec ast =
-      match ast with
-      | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e -> prec_ast ast
-      | Exp
-          ( { pexp_desc=
-                Pexp_construct
-                  ( {txt= Lident "::"; loc= _}
-                  , Some
-                      { pexp_desc= Pexp_tuple [_; _]
-                      ; pexp_loc= _
-                      ; pexp_attributes= _
-                      ; _ } )
-            ; pexp_loc= _
-            ; pexp_attributes= _
-            ; _ } as exp )
-        when not (is_sugared_exp_list exp) ->
-          prec_ast ast
-      | _ -> None
-    in
+  let infix_prec ast =
+    match ast with
+    | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e -> prec_ast ast
+    | Exp
+        ( { pexp_desc=
+              Pexp_construct
+                ( {txt= Lident "::"; loc= _}
+                , Some
+                    { pexp_desc= Pexp_tuple [_; _]
+                    ; pexp_loc= _
+                    ; pexp_attributes= _
+                    ; _ } )
+          ; pexp_loc= _
+          ; pexp_attributes= _
+          ; _ } as exp )
+      when not (is_sugared_exp_list exp) ->
+        prec_ast ast
+    | Pat
+        ( { ppat_desc=
+              Ppat_construct
+                ( {txt= Lident "::"; loc= _}
+                , Some
+                    { ppat_desc= Ppat_tuple [_; _]
+                    ; ppat_loc= _
+                    ; ppat_attributes= _
+                    ; _ } )
+          ; ppat_loc= _
+          ; ppat_attributes= _
+          ; _ } as pat )
+      when not (is_sugared_pat_list pat) ->
+        prec_ast ast
+    | _ -> None
+
+  let parenze_nested' ctx t =
     (* Make the precedence explicit for infix operators *)
-    match (infix_prec ctx, infix_prec (Exp exp)) with
+    match (infix_prec ctx, infix_prec t) with
     | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
         (* special case for refs update and all InfixOp0 to reduce parens
            noise *)
@@ -2487,33 +2501,9 @@ end = struct
     | None, _ | _, None -> false
     | Some p1, Some p2 -> Poly.(p1 <> p2)
 
-  let parenze_nested_pat {ctx; ast= pat} =
-    let infix_prec ast =
-      match ast with
-      | Pat
-          ( { ppat_desc=
-                Ppat_construct
-                  ( {txt= Lident "::"; loc= _}
-                  , Some
-                      { ppat_desc= Ppat_tuple [_; _]
-                      ; ppat_loc= _
-                      ; ppat_attributes= _
-                      ; _ } )
-            ; ppat_loc= _
-            ; ppat_attributes= _
-            ; _ } as pat )
-        when not (is_sugared_pat_list pat) ->
-          prec_ast ast
-      | _ -> None
-    in
-    (* Make the precedence explicit for infix operators *)
-    match (infix_prec ctx, infix_prec (Pat pat)) with
-    | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
-        (* special case for refs update and all InfixOp0 to reduce parens
-           noise *)
-        false
-    | None, _ | _, None -> false
-    | Some p1, Some p2 -> Poly.(p1 <> p2)
+  let parenze_nested_exp {ctx; ast= exp} = parenze_nested' ctx (Exp exp)
+
+  let parenze_nested_pat {ctx; ast= pat} = parenze_nested' ctx (Pat pat)
 end
 
 include In_ctx
