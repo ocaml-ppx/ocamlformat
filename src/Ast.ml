@@ -448,9 +448,8 @@ module Signature_item : Module_item with type t = signature_item = struct
      |Psig_class_type ({pci_attributes= atrs; _} :: _)
      |Psig_class ({pci_attributes= atrs; _} :: _) ->
         Option.is_some (fst (doc_atrs atrs))
-    | Psig_recmodule ( { pmd_type= {pmty_attributes= atrs1; _}
-                       ; pmd_attributes= atrs2
-                       ; _ }
+    | Psig_recmodule
+        ( {pmd_type= {pmty_attributes= atrs1; _}; pmd_attributes= atrs2; _}
         :: _ )
      |Psig_include
         {pincl_mod= {pmty_attributes= atrs1; _}; pincl_attributes= atrs2; _}
@@ -1427,8 +1426,7 @@ end = struct
             assert (Option.value_map default ~default:false ~f || body == exp)
         | Pexp_apply
             ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
-            , e1
-            :: indices )
+            , e1 :: indices )
           when Option.is_some (index_op_get_sugar ident indices) ->
             let _, indices =
               Option.value_exn (index_op_get_sugar ident indices)
@@ -1436,8 +1434,7 @@ end = struct
             assert (e0 == exp || snd_f e1 || List.exists indices ~f)
         | Pexp_apply
             ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
-            , e1
-            :: indices )
+            , e1 :: indices )
           when Option.is_some (index_op_set_sugar ident indices) ->
             let _, indices, e =
               Option.value_exn (index_op_set_sugar ident indices)

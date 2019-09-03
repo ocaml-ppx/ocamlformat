@@ -2,7 +2,9 @@ let f x = match x with P ({xxxxxx} :: {yyyyyyyy} :: zzzzzzz) -> true
 
 let f x =
   match x with
-  | P ( {xxxxxxxxxxxxxxxxxxxxxx} :: {yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy}
+  | P
+      ( {xxxxxxxxxxxxxxxxxxxxxx}
+      :: {yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy}
       :: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ) ->
       true
 

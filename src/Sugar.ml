@@ -381,8 +381,7 @@ let polynewtype cmts pat body =
         match (pvars, body.pexp_desc) with
         | [], Pexp_constraint (exp, typ) ->
             Some (xpat, pvars0, sub_typ ~ctx typ, sub_exp ~ctx exp)
-        | ( {txt= pvar; loc= loc1}
-          :: pvars
+        | ( {txt= pvar; loc= loc1} :: pvars
           , Pexp_newtype ({txt= nvar; loc= loc2}, exp) )
           when String.equal pvar nvar ->
             Cmts.relocate cmts ~src:loc2 ~before:loc1 ~after:loc1 ;
