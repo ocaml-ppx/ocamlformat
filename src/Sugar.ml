@@ -203,7 +203,7 @@ let list_exp cmts exp =
   in
   list_exp_ exp []
 
-let infix_cons xexp =
+let infix_cons_exp xexp =
   let rec infix_cons_ ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc= l1; _} = exp in

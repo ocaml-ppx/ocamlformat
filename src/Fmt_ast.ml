@@ -1922,7 +1922,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
              $ fmt_atrs ))
     | None ->
-        let loc_args = Sugar.infix_cons xexp in
+        let loc_args = Sugar.infix_cons_exp xexp in
         hvbox indent_wrap
           ( fmt_infix_op_args_exp c ~parens xexp
               (List.mapi loc_args ~f:(fun i (locs, arg) ->
