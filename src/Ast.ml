@@ -219,7 +219,7 @@ let rec is_sugared_pat_list' acc pat =
       is_sugared_pat_list' (pat :: acc) tl
   | _ -> Error acc
 
-let is_sugared_list' f =
+let is_sugared_list f =
   let memo = Hashtbl.Poly.create () in
   register_reset (fun () -> Hashtbl.clear memo) ;
   fun x ->
@@ -234,9 +234,9 @@ let is_sugared_list' f =
           List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
           true )
 
-let is_sugared_exp_list = is_sugared_list' is_sugared_exp_list'
+let is_sugared_exp_list = is_sugared_list is_sugared_exp_list'
 
-let is_sugared_pat_list = is_sugared_list' is_sugared_pat_list'
+let is_sugared_pat_list = is_sugared_list is_sugared_pat_list'
 
 let doc_atrs ?(acc = []) atrs =
   let docs, rev_atrs =
