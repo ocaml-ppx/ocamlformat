@@ -889,6 +889,8 @@ and Requires_sub_terms : sig
   val parenze_exp : expression In_ctx.xt -> bool
 
   val parenze_nested_exp : expression In_ctx.xt -> bool
+
+  val parenze_nested_pat : pattern In_ctx.xt -> bool
 end = struct
   open In_ctx
 
@@ -2481,6 +2483,34 @@ end = struct
     in
     (* Make the precedence explicit for infix operators *)
     match (infix_prec ctx, infix_prec (Exp exp)) with
+    | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
+        (* special case for refs update and all InfixOp0 to reduce parens
+           noise *)
+        false
+    | None, _ | _, None -> false
+    | Some p1, Some p2 -> Poly.(p1 <> p2)
+
+  let parenze_nested_pat {ctx; ast= pat} =
+    let infix_prec ast =
+      match ast with
+      | Pat
+          ( { ppat_desc=
+                Ppat_construct
+                  ( {txt= Lident "::"; loc= _}
+                  , Some
+                      { ppat_desc= Ppat_tuple [_; _]
+                      ; ppat_loc= _
+                      ; ppat_attributes= _
+                      ; _ } )
+            ; ppat_loc= _
+            ; ppat_attributes= _
+            ; _ } as pat )
+        when not (is_sugared_pat_list pat) ->
+          prec_ast ast
+      | _ -> None
+    in
+    (* Make the precedence explicit for infix operators *)
+    match (infix_prec ctx, infix_prec (Pat pat)) with
     | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
         (* special case for refs update and all InfixOp0 to reduce parens
            noise *)

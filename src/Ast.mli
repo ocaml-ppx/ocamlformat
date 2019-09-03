@@ -213,6 +213,10 @@ val parenze_pat : pattern xt -> bool
 (** [parenze_pat xpat] holds when pattern-in-context [xpat] should be
     parenthesized. *)
 
+val parenze_nested_pat : pattern xt -> bool
+(** [parenze_nested_pat xpat] holds when nested pattern-in-context [xpat]
+    should be parenthesized. *)
+
 val parenze_exp : expression xt -> bool
 (** [parenze_exp xexp] holds when expression-in-context [xexp] should be
     parenthesized. *)

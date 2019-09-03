@@ -1454,40 +1454,12 @@ and fmt_infix_op_args_pat c ~parens xpat op_args =
     in
     fmt_label_arg_pat c ~parens lbl_xarg $ fmt_if (not last) "@ "
   in
-  let is_nested_diff_prec_infix_ops =
-    let infix_prec ast =
-      match ast with
-      | Pat
-          ( { ppat_desc=
-                Ppat_construct
-                  ( {txt= Lident "::"; loc= _}
-                  , Some
-                      { ppat_desc= Ppat_tuple [_; _]
-                      ; ppat_loc= _
-                      ; ppat_attributes= _
-                      ; _ } )
-            ; ppat_loc= _
-            ; ppat_attributes= _
-            ; _ } as pat )
-        when not (is_sugared_pat_list pat) ->
-          prec_ast ast
-      | _ -> None
-    in
-    (* Make the precedence explicit for infix operators *)
-    match (infix_prec xpat.ctx, infix_prec (Pat xpat.ast)) with
-    | Some (InfixOp0 | ColonEqual), _ | _, Some (InfixOp0 | ColonEqual) ->
-        (* special case for refs update and all InfixOp0 to reduce parens
-           noise *)
-        false
-    | None, _ | _, None -> false
-    | Some p1, Some p2 -> Poly.(p1 <> p2)
-  in
   let is_simple c arg =
     let width xp = String.length (Cmts.preserve (fmt_pattern c) xp) in
     pat_is_simple c.conf width arg
   in
   fmt_infix_op_args' c
-    ~parens:(parens || is_nested_diff_prec_infix_ops)
+    ~parens:(parens || Ast.parenze_nested_pat xpat)
     ~fmt_arg ~is_not_indented ~is_simple op_args
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
