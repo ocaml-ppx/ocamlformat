@@ -81,13 +81,25 @@ val list_exp :
 (** [list_exp cmts exp] returns a list of expressions if [exp] is an
     expression corresponding to a list (empty list or (::) application). *)
 
+type sugared_list_locs =
+  {cons_loc: Location.t; op_loc: Location.t; tuple_loc: Location.t}
+(** {v
+    (::) operand1 operand2
+    \--/
+    op_loc
+         \---------------/
+            tuple_loc
+    \--------------------/
+          cons_loc
+    v} *)
+
 val infix_cons_exp :
-  expression Ast.xt -> (Warnings.loc list * expression Ast.xt) list
+  expression Ast.xt -> (sugared_list_locs option * expression Ast.xt) list
 (** [infix_cons_exp exp] returns a list of expressions if [exp] is an
     expression corresponding to a list ((::) application). *)
 
 val infix_cons_pat :
-  pattern Ast.xt -> (Warnings.loc list * pattern Ast.xt) list
+  pattern Ast.xt -> (sugared_list_locs option * pattern Ast.xt) list
 (** [infix_cons_pat pat] returns a list of patterns if [pat] is a pattern
     corresponding to a list ((::) application). *)
 

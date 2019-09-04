@@ -1015,15 +1015,18 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         hvbox 0
           (fmt_infix_op_args_pat c ~parens xpat
              (List.mapi loc_args ~f:(fun i (locs, arg) ->
-                  let f l = Cmts.has_before c.cmts l in
-                  let has_cmts = List.exists ~f locs in
-                  let fmt_before_cmts = list locs "" (Cmts.fmt_before c) in
-                  let fmt_op = fmt_if (i > 0) "::" in
-                  let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
-                  ( has_cmts
-                  , fmt_before_cmts
-                  , fmt_after_cmts
-                  , (fmt_op, [(Nolabel, arg)]) )))) )
+                  let op_arg = (fmt_if (i > 0) "::", [(Nolabel, arg)]) in
+                  match (locs : Sugar.sugared_list_locs option) with
+                  | Some {op_loc; tuple_loc; _} ->
+                      let locs = [op_loc; tuple_loc] in
+                      let f l = Cmts.has_before c.cmts l in
+                      let has_cmts = List.exists ~f locs in
+                      let fmt_before_cmts =
+                        list locs "" (Cmts.fmt_before c)
+                      in
+                      let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
+                      (has_cmts, fmt_before_cmts, fmt_after_cmts, op_arg)
+                  | None -> (false, noop, noop, op_arg)))) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2
         (wrap_if parens "(" ")"
@@ -1920,15 +1923,20 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         hvbox indent_wrap
           ( fmt_infix_op_args_exp c ~parens xexp
               (List.mapi loc_args ~f:(fun i (locs, arg) ->
-                   let f l = Cmts.has_before c.cmts l in
-                   let has_cmts = List.exists ~f locs in
-                   let fmt_before_cmts = list locs "" (Cmts.fmt_before c) in
-                   let fmt_op = fmt_if (i > 0) "::" in
-                   let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
-                   ( has_cmts
-                   , fmt_before_cmts
-                   , fmt_after_cmts
-                   , (fmt_op, [(Nolabel, arg)]) )))
+                   let op_arg = (fmt_if (i > 0) "::", [(Nolabel, arg)]) in
+                   match (locs : Sugar.sugared_list_locs option) with
+                   | Some {op_loc; tuple_loc; _} ->
+                       let locs = [op_loc; tuple_loc] in
+                       let f l = Cmts.has_before c.cmts l in
+                       let has_cmts = List.exists ~f locs in
+                       let fmt_before_cmts =
+                         list locs "" (Cmts.fmt_before c)
+                       in
+                       let fmt_after_cmts =
+                         list locs "" (Cmts.fmt_after c)
+                       in
+                       (has_cmts, fmt_before_cmts, fmt_after_cmts, op_arg)
+                   | None -> (false, noop, noop, op_arg)))
           $ fmt_atrs ) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =

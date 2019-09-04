@@ -203,47 +203,50 @@ let list_exp cmts exp =
   in
   list_exp_ exp []
 
+type sugared_list_locs =
+  {cons_loc: Location.t; op_loc: Location.t; tuple_loc: Location.t}
+
 let infix_cons_exp xexp =
   let rec infix_cons_ ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
-    let {pexp_desc; pexp_loc= l1; _} = exp in
+    let {pexp_desc; pexp_loc= cons_loc; _} = exp in
     match pexp_desc with
     | Pexp_construct
-        ( {txt= Lident "::"; loc= l2}
+        ( {txt= Lident "::"; loc= op_loc}
         , Some
             { pexp_desc= Pexp_tuple [hd; tl]
-            ; pexp_loc= l3
+            ; pexp_loc= tuple_loc
             ; pexp_attributes= []
             ; _ } ) ->
         let xtl =
           match tl.pexp_attributes with
           | [] -> infix_cons_ (sub_exp ~ctx tl)
-          | _ -> [([], sub_exp ~ctx tl)]
+          | _ -> [(None, sub_exp ~ctx tl)]
         in
-        ([l1; l2; l3], sub_exp ~ctx hd) :: xtl
-    | _ -> [([], xexp)]
+        (Some {cons_loc; op_loc; tuple_loc}, sub_exp ~ctx hd) :: xtl
+    | _ -> [(None, xexp)]
   in
   infix_cons_ xexp
 
 let infix_cons_pat xpat =
   let rec infix_cons_ ({ast= pat; _} as xpat) =
     let ctx = Pat pat in
-    let {ppat_desc; ppat_loc= l1; _} = pat in
+    let {ppat_desc; ppat_loc= cons_loc; _} = pat in
     match ppat_desc with
     | Ppat_construct
-        ( {txt= Lident "::"; loc= l2}
+        ( {txt= Lident "::"; loc= op_loc}
         , Some
             { ppat_desc= Ppat_tuple [hd; tl]
-            ; ppat_loc= l3
+            ; ppat_loc= tuple_loc
             ; ppat_attributes= []
             ; _ } ) ->
         let xtl =
           match tl.ppat_attributes with
           | [] -> infix_cons_ (sub_pat ~ctx tl)
-          | _ -> [([], sub_pat ~ctx tl)]
+          | _ -> [(None, sub_pat ~ctx tl)]
         in
-        ([l1; l2; l3], sub_pat ~ctx hd) :: xtl
-    | _ -> [([], xpat)]
+        (Some {cons_loc; op_loc; tuple_loc}, sub_pat ~ctx hd) :: xtl
+    | _ -> [(None, xpat)]
   in
   infix_cons_ xpat
 
