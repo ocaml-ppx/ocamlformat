@@ -989,8 +989,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_construct
       ( {txt= Lident "::"; loc= _}
       , Some
-          {ppat_desc= Ppat_tuple [_; _]; ppat_attributes= []; ppat_loc= _; _}
-      ) -> (
+          { ppat_desc= Ppat_tuple [_; _]
+          ; ppat_attributes= []
+          ; ppat_loc= first_tuple_loc
+          ; _ } ) -> (
     match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
         let p = Params.get_list_pat c.conf ~ctx:ctx0 in
@@ -1012,8 +1014,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
         let loc_args = Sugar.infix_cons_pat xpat in
-        hvbox 0
-          (fmt_infix_op_args_pat c ~parens xpat
+        hvbox 0 @@ Cmts.fmt c ppat_loc
+        @@ Cmts.fmt c first_tuple_loc
+        @@ fmt_infix_op_args_pat c ~parens xpat
              (List.mapi loc_args ~f:(fun i (locs, arg) ->
                   let op_arg = (fmt_if (i > 0) "::", [(Nolabel, arg)]) in
                   match (locs : Sugar.sugared_list_locs option) with
@@ -1026,7 +1029,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                       in
                       let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
                       (has_cmts, fmt_before_cmts, fmt_after_cmts, op_arg)
-                  | None -> (false, noop, noop, op_arg)))) )
+                  | None -> (false, noop, noop, op_arg))) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2
         (wrap_if parens "(" ")"

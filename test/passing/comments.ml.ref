@@ -195,8 +195,7 @@ let () =
 
 let rec fooooooooooo = function
   (*XX*)
-  (*YY*)
-  | x :: t -> k
+  | x :: t (*YY*) -> k
   (* AA*)
   | [ (*BB*)
       (* CC *)
@@ -209,32 +208,35 @@ let rec fooooooooooo = function
     (* HH *) ->
       k
   (* AA*)
-  (* DD *)
   (*BB*)
   (* CC *)
-  (* FF *)
-  (* GG *)
-  | x :: (* EE *) t (* HH *) -> k
+  (* DD *)
+  | x
+    :: (* EE *) t
+    (* FF *)
+    (* GG *)
+    (* HH *) ->
+      k
   (* AA*)
-  (* XX *)
   (*BB*)
-  (* GG *)
+  (* XX *)
   (* CC *)
   | x (* DD *)
     :: (* YY *)
        (* EE *)
          t
-  (* FF *)
-  (* HH *) ->
+    (* FF *)
+    (* GG *)
+    (* HH *) ->
       k
   (* AA *)
-  (* HH *)
   (* BB *)
-  (* JJ *)
+  (* HH *)
   | (module (* CC *)
             (* DD *) F (* EE *) : (* FF *) M (* GG *))
     :: (* II *) t
-  (* KK *) ->
+    (* JJ *)
+    (* KK *) ->
       foo
 
 let%map
