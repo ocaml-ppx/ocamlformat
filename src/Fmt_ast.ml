@@ -684,8 +684,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let arg_label lbl =
         match lbl with
         | Nolabel -> noop
-        | Labelled l -> str l $ str ":" $ fmt "@,"
-        | Optional l -> str "?" $ str l $ str ":" $ fmt "@,"
+        | Labelled l -> str l $ fmt ":@,"
+        | Optional l -> str "?" $ str l $ fmt ":@,"
       in
       let xt1N = Sugar.arrow_typ c.cmts xtyp in
       let indent =
@@ -2535,8 +2535,8 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
       let arg_label lbl =
         match lbl with
         | Nolabel -> noop
-        | Labelled l -> str l $ str ":" $ fmt "@,"
-        | Optional l -> str "?" $ str l $ str ":" $ fmt "@,"
+        | Labelled l -> str l $ fmt ":@,"
+        | Optional l -> str "?" $ str l $ fmt ":@,"
       in
       let xt1N = Sugar.class_arrow_typ c.cmts (sub_cty ~ctx typ) in
       let fmt_arg (lI, xtI) =
