@@ -684,8 +684,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let arg_label lbl =
         match lbl with
         | Nolabel -> noop
-        | Labelled l -> str l $ str ":" $ fmt "@,"
-        | Optional l -> str "?" $ str l $ str ":" $ fmt "@,"
+        | Labelled l -> str l $ fmt ":@,"
+        | Optional l -> str "?" $ str l $ fmt ":@,"
       in
       let xt1N = Sugar.arrow_typ c.cmts xtyp in
       let indent =
@@ -1187,7 +1187,8 @@ and fmt_fun_args c ?(pro = noop) args =
       when String.equal l txt ->
         let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
         cbox 0 (str symbol $ fmt_pattern c xpat)
-    | Val (lbl, xpat, None) -> cbox 0 (fmt_label lbl ":" $ fmt_pattern c xpat)
+    | Val (lbl, xpat, None) ->
+        cbox 2 (fmt_label lbl ":@," $ fmt_pattern c xpat)
     | Val
         ( Optional l
         , ( { ast=
@@ -1223,9 +1224,9 @@ and fmt_fun_args c ?(pro = noop) args =
              ( fmt_pattern c ~parens:false xpat
              $ fmt " =@;<1 2>" $ fmt_expression c xexp ))
     | Val (Optional l, xpat, Some xexp) ->
-        cbox 0
+        cbox 2
           ( str "?" $ str l
-          $ wrap ":(" ")"
+          $ wrap_k (fmt ":@,(") (str ")")
               ( fmt_pattern c ~parens:false xpat
               $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
     | Val ((Labelled _ | Nolabel), _, Some _) ->
@@ -2534,12 +2535,12 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
       let arg_label lbl =
         match lbl with
         | Nolabel -> noop
-        | Labelled l -> str l $ str ":"
-        | Optional l -> str "?" $ str l $ str ":"
+        | Labelled l -> str l $ fmt ":@,"
+        | Optional l -> str "?" $ str l $ fmt ":@,"
       in
       let xt1N = Sugar.class_arrow_typ c.cmts (sub_cty ~ctx typ) in
       let fmt_arg (lI, xtI) =
-        hvbox 0
+        hvbox 2
           ( match xtI with
           | `core_type ct -> arg_label lI $ fmt_core_type c ct
           | `class_type ct -> arg_label lI $ fmt_class_type c ct )
