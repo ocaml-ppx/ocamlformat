@@ -67,11 +67,11 @@ By contributing to OCamlFormat, you agree that your contributions will be licens
 
 ### Issue specific
 
-- [Good-first-issue](https://github.com/ocaml-ppx/ocamlformat/labels/Good-first-issue %3A%2B1%3A): This issue is a good entry point in the project for new contributors
+- [Good-first-issue](https://github.com/ocaml-ppx/ocamlformat/labels/Good-first-issue%20%3A%2B1%3A): This issue is a good entry point in the project for new contributors
 
 ### Kind
 
-- [Kind/Bug](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FBug %3Ax%3A): This issue describes a problem or this contribution addresses a problem (erroneous/unintended behavior)
+- [Kind/Bug](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FBug%20%3Ax%3A): This issue describes a problem or this contribution addresses a problem (erroneous/unintended behavior)
 - [Kind/Docs](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FDocs): This is related to a documentation change (user documentation or source code documentation)
 - [Kind/Feature-request](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FFeature-request): This issue or contribution proposes a new feature
 - [Kind/Style-suggestion](https://github.com/ocaml-ppx/ocamlformat/labels/Kind%2FStyle%20suggestion): This issue or contribution proposes a style modification for the formatted output
