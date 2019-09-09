@@ -1290,7 +1290,7 @@ and fmt_record_body c ctx flds default attributes loc =
           $ list_fl flds fmt_field )
       $ p1.break_after $ p1.docked_after $ fmt_atrs ) )
 
-and fmt_array_body c ctx array attributes loc =
+and fmt_array_body c ?(space = false) ctx array attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let has_attr = not (List.is_empty attributes) in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
@@ -1304,7 +1304,10 @@ and fmt_array_body c ctx array attributes loc =
           $ fmt_atrs ) )
   | e1N ->
       let p = Params.get_array_expr c.conf in
-      ( p.docked_before $ p.break_before
+      ( fmt_if
+          (space && Poly.(c.conf.break_separators = `After_and_docked))
+          "@ "
+        $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
         hvbox_if has_attr 0
@@ -1382,7 +1385,7 @@ and fmt_body c ?ext ?(indent_wrap = 0) ({ast= body; _} as xbody) =
   | {pexp_desc= Pexp_record (flds, default); pexp_attributes; pexp_loc; _} ->
       fmt_record_body c ctx flds default pexp_attributes pexp_loc
   | {pexp_desc= Pexp_array a; pexp_attributes; pexp_loc; _} ->
-      fmt_array_body c ctx a pexp_attributes pexp_loc
+      fmt_array_body ~space:true c ctx a pexp_attributes pexp_loc
   | { pexp_desc=
         Pexp_construct
           ( {txt= Lident "::"; loc= _}
