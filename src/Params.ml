@@ -199,7 +199,7 @@ let collection_expr (c : Conf.t) ~space_around ?(parens = false) opn cls =
       let space = if space_around then 1 else 0 in
       { docked_before= str opn
       ; break_before= break space 0
-      ; box= Fn.id
+      ; box= box_collec c 0
       ; sep_before= noop
       ; sep_after_non_final= fmt ";@;<1 0>"
       ; sep_after_final= fits_breaks ~level:1 "" ";"

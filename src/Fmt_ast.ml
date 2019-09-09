@@ -1292,7 +1292,6 @@ and fmt_record_body c ctx flds default attributes loc =
 
 and fmt_array_body c ?(space = false) ctx array attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
-  let has_attr = not (List.is_empty attributes) in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   match array with
   | [] ->
@@ -1310,12 +1309,11 @@ and fmt_array_body c ?(space = false) ctx array attributes loc =
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
-        hvbox_if has_attr 0
-          ( p.box
-              (fmt_expressions c width (sub_exp ~ctx) e1N
-                 (sub_exp ~ctx >> fmt_expression c)
-                 p)
-          $ p.break_after $ p.docked_after $ fmt_atrs ) )
+        p.box
+          (fmt_expressions c width (sub_exp ~ctx) e1N
+             (sub_exp ~ctx >> fmt_expression c)
+             p)
+        $ p.break_after $ p.docked_after $ fmt_atrs )
 
 and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
     parens =
@@ -1333,7 +1331,6 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
       ( fmt_if
           (space && Poly.(c.conf.break_separators = `After_and_docked))
           "@ "
-        $ fmt_if_k has_attr (open_hvbox 0)
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
@@ -1345,7 +1342,7 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
           $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
           $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
         $ p.break_after $ p.docked_after $ fmt_atrs
-        $ fmt_if_k has_attr (char ')' $ close_box) )
+        $ fmt_if_k has_attr (char ')') )
   | None ->
       let loc_args = Sugar.infix_cons xexp in
       ( noop
