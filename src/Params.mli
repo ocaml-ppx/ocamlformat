@@ -64,7 +64,7 @@ type elements_collection_record_pat = {wildcard: Fmt.t}
 val get_record_expr :
   Conf.t -> elements_collection * elements_collection_record_expr
 
-val get_list_expr : Conf.t -> elements_collection
+val get_list_expr : ?parens:bool -> Conf.t -> elements_collection
 
 val get_array_expr : Conf.t -> elements_collection
 

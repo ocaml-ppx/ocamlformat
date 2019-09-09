@@ -166,20 +166,22 @@ let get_record_expr (c : Conf.t) =
         ; sep_after_final= fits_breaks ~level:0 "" ";"
         ; break_after= break space (-2)
         ; docked_after= str "}" }
-      , {break_after_with= break 1 2} )
+      , {break_after_with= break 1 0} )
 
 let box_collec (c : Conf.t) =
   match c.break_collection_expressions with
   | `Wrap -> hovbox
   | `Fit_or_vertical -> hvbox
 
-let collection_expr (c : Conf.t) ~space_around opn cls =
+let collection_expr (c : Conf.t) ~space_around ?(parens = false) opn cls =
+  let opn = if parens then "(" ^ opn else opn in
+  let indent = if parens then 1 else 0 in
   match c.break_separators with
   | `Before ->
       { docked_before= noop
       ; break_before= noop
-      ; box= wrap_collec c ~space_around opn cls >> box_collec c 0
-      ; sep_before= break 0 (String.length opn - 1) $ str "; "
+      ; box= wrap_collec c ~space_around opn cls >> box_collec c indent
+      ; sep_before= break 0 (String.length cls - 1) $ str "; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop
       ; break_after= noop
@@ -187,15 +189,15 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
   | `After ->
       { docked_before= noop
       ; break_before= noop
-      ; box= wrap_collec c ~space_around opn cls >> box_collec c 0
+      ; box= wrap_collec c ~space_around opn cls >> box_collec c indent
       ; sep_before= noop
-      ; sep_after_non_final= char ';' $ break 1 (String.length opn + 1)
+      ; sep_after_non_final= char ';' $ break 1 (String.length cls + 1)
       ; sep_after_final= noop
       ; break_after= noop
       ; docked_after= noop }
   | `After_and_docked ->
       let space = if space_around then 1 else 0 in
-      { docked_before= char ' ' $ str opn
+      { docked_before= str opn
       ; break_before= break space 0
       ; box= Fn.id
       ; sep_before= noop
@@ -204,8 +206,8 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
       ; break_after= break space (-2)
       ; docked_after= str cls }
 
-let get_list_expr (c : Conf.t) =
-  collection_expr c ~space_around:c.space_around_lists "[" "]"
+let get_list_expr ?parens (c : Conf.t) =
+  collection_expr ?parens c ~space_around:c.space_around_lists "[" "]"
 
 let get_array_expr (c : Conf.t) =
   collection_expr c ~space_around:c.space_around_arrays "[|" "|]"
@@ -229,7 +231,8 @@ let get_record_pat (c : Conf.t) ~ctx =
         hvbox indent_opn
           (wrap "{" "}" (break space 2 $ k $ break space indent_cls))
       in
-      ({common with box}, wildcard)
+      let sep_after_non_final = fmt ";@;<1 2>" in
+      ({common with box; sep_after_non_final}, wildcard)
 
 let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
   let params = collection_expr c ~space_around opn cls in

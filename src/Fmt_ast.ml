@@ -1314,19 +1314,23 @@ and fmt_array_body c ctx array attributes loc =
                  p)
           $ p.break_after $ p.docked_after $ fmt_atrs ) )
 
-and fmt_list_body c ?(indent_wrap = 0) xexp attributes loc parens =
+and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
+    parens =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let has_attr = not (List.is_empty attributes) in
   match Sugar.list_exp c.cmts xexp.ast with
   | Some (loc_xes, nil_loc) ->
       let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
-      let p = Params.get_list_expr c.conf in
+      let p = Params.get_list_expr c.conf ~parens:has_attr in
       let cmt_break =
         match c.conf.break_separators with
         | `Before | `After -> break 1 2
         | `After_and_docked -> break 1 0
       in
-      ( fmt_if_k has_attr (open_hvbox 0 $ str "(")
+      ( fmt_if
+          (space && Poly.(c.conf.break_separators = `After_and_docked))
+          "@ "
+        $ fmt_if_k has_attr (open_hvbox 0)
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
@@ -1338,7 +1342,7 @@ and fmt_list_body c ?(indent_wrap = 0) xexp attributes loc parens =
           $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
           $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
         $ p.break_after $ p.docked_after $ fmt_atrs
-        $ fmt_if_k has_attr (str ")" $ close_box) )
+        $ fmt_if_k has_attr (char ')' $ close_box) )
   | None ->
       let loc_args = Sugar.infix_cons xexp in
       ( noop
@@ -1391,6 +1395,7 @@ and fmt_body c ?ext ?(indent_wrap = 0) ({ast= body; _} as xbody) =
     ; pexp_loc
     ; _ } ->
       fmt_list_body c xbody pexp_attributes pexp_loc parens ~indent_wrap
+        ~space:true
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
 and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
