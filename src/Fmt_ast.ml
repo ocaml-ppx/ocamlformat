@@ -1320,11 +1320,13 @@ and fmt_array_body c ?(space = false) ctx array attributes loc =
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
-        p.box
-          (fmt_expressions c width (sub_exp ~ctx) e1N
-             (sub_exp ~ctx >> fmt_expression c)
-             p)
-        $ p.break_after $ p.docked_after $ fmt_atrs $ Cmts.fmt_after c loc )
+        hvbox 0
+          ( p.box
+              (fmt_expressions c width (sub_exp ~ctx) e1N
+                 (sub_exp ~ctx >> fmt_expression c)
+                 p)
+          $ p.break_after $ p.docked_after $ fmt_atrs )
+        $ Cmts.fmt_after c loc )
 
 and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
     parens =
@@ -1349,15 +1351,17 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
-        p.box
-          ( fmt_expressions c width snd loc_xes
-              (fun (locs, xexp) ->
-                Cmts.fmt_list c ~eol:cmt_break locs @@ fmt_expression c xexp)
-              p
-          $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
-          $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
-        $ p.break_after $ p.docked_after $ fmt_atrs
-        $ fmt_if_k has_attr (char ')')
+        hvbox 0
+          ( p.box
+              ( fmt_expressions c width snd loc_xes
+                  (fun (locs, xexp) ->
+                    Cmts.fmt_list c ~eol:cmt_break locs
+                    @@ fmt_expression c xexp)
+                  p
+              $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
+              $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
+          $ p.break_after $ p.docked_after $ fmt_atrs
+          $ fmt_if_k has_attr (char ')') )
         $ Cmts.fmt_after c loc )
   | None ->
       let loc_args = Sugar.infix_cons xexp in
