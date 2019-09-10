@@ -1239,7 +1239,6 @@ and fmt_fun_args c ?(pro = noop) args =
 
 and fmt_record_body c ?(space = false) ctx flds default attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
-  let has_attr = not (List.is_empty attributes) in
   let fmt_field (lid1, f) =
     let fmt_rhs e = fmt_expression c (sub_exp ~ctx e) in
     hvbox 0
@@ -1289,7 +1288,7 @@ and fmt_record_body c ?(space = false) ctx flds default attributes loc =
     $ p1.docked_before $ p1.break_before
   , update_config_maybe_disabled c loc attributes
     @@ fun c ->
-    hvbox_if has_attr 0
+    vbox 0
       ( p1.box
           ( opt default (fun d ->
                 hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
@@ -2996,8 +2995,8 @@ and fmt_cases c ctx cs =
                         fmt "@;<1 2>when "
                         $ fmt_expression c (sub_exp ~ctx g)) )
               $ p.break_before_arrow $ str "->" $ p.break_after_arrow
-              $ fmt_if parens_here " (" )
-          $ pre_body $ p.break_after_opening_paren
+              $ fmt_if parens_here " (" $ pre_body )
+          $ p.break_after_opening_paren
           $ hovbox 0
               ( body
               $ fmt_if parens_here

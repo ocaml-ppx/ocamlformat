@@ -128,8 +128,7 @@ module Loc_tree = struct
                       ; pexp_attributes
                       ; _ }
                     , [] )
-              ; _ } ] ) ->
-          (* ignore location of docstrings *)
+              ; _ } ] ) -> (* ignore location of docstrings *)
           { attr_name= {txt; loc= Location.none}
           ; attr_loc= Location.none
           ; attr_payload=
