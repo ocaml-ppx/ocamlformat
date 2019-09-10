@@ -882,8 +882,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::")
     ->
       fun k ->
-        Cmts.fmt c ~pro:spc ppat_loc
-        @@ Cmts.fmt c ~pro:spc loc (Option.call ~f:pro $ k)
+       Cmts.fmt c ~pro:spc ppat_loc
+       @@ Cmts.fmt c ~pro:spc loc (Option.call ~f:pro $ k)
   | _ -> fun k -> Cmts.fmt c ppat_loc (Option.call ~f:pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
      else
@@ -1237,7 +1237,7 @@ and fmt_fun_args c ?(pro = noop) args =
   in
   fmt_if_k (not (List.is_empty args)) (pro $ list args "@;" fmt_fun_arg)
 
-and fmt_record_body c ctx flds default attributes loc =
+and fmt_record_body c ?(space = false) ctx flds default attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let has_attr = not (List.is_empty attributes) in
   let fmt_field (lid1, f) =
@@ -1279,7 +1279,14 @@ and fmt_record_body c ctx flds default attributes loc =
     $ fmt_field x
     $ fmt_or_k last p1.sep_after_final p1.sep_after_non_final
   in
-  ( p1.docked_before $ p1.break_before
+  let space =
+    space
+    && Poly.(c.conf.break_separators = `After_and_docked)
+    && not (Cmts.has_before c.cmts loc)
+  in
+  ( fmt_if space "@ "
+    $ Cmts.fmt_before c loc ~pro:(fmt "@ ") ~eol:noop ~adj:noop
+    $ p1.docked_before $ p1.break_before
   , update_config_maybe_disabled c loc attributes
     @@ fun c ->
     hvbox_if has_attr 0
@@ -1288,7 +1295,8 @@ and fmt_record_body c ctx flds default attributes loc =
                 hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
                 $ fmt "with" $ p2.break_after_with)
           $ list_fl flds fmt_field )
-      $ p1.break_after $ p1.docked_after $ fmt_atrs ) )
+      $ p1.break_after $ p1.docked_after $ fmt_atrs )
+    $ Cmts.fmt_after c loc )
 
 and fmt_array_body c ?(space = false) ctx array attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
@@ -1303,9 +1311,13 @@ and fmt_array_body c ?(space = false) ctx array attributes loc =
           $ fmt_atrs ) )
   | e1N ->
       let p = Params.get_array_expr c.conf in
-      ( fmt_if
-          (space && Poly.(c.conf.break_separators = `After_and_docked))
-          "@ "
+      let space =
+        space
+        && Poly.(c.conf.break_separators = `After_and_docked)
+        && not (Cmts.has_before c.cmts loc)
+      in
+      ( fmt_if space "@ "
+        $ Cmts.fmt_before c loc ~pro:(fmt "@ ") ~eol:noop ~adj:noop
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
@@ -1313,7 +1325,7 @@ and fmt_array_body c ?(space = false) ctx array attributes loc =
           (fmt_expressions c width (sub_exp ~ctx) e1N
              (sub_exp ~ctx >> fmt_expression c)
              p)
-        $ p.break_after $ p.docked_after $ fmt_atrs )
+        $ p.break_after $ p.docked_after $ fmt_atrs $ Cmts.fmt_after c loc )
 
 and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
     parens =
@@ -1328,9 +1340,13 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
         | `Before | `After -> break 1 2
         | `After_and_docked -> break 1 0
       in
-      ( fmt_if
-          (space && Poly.(c.conf.break_separators = `After_and_docked))
-          "@ "
+      let space =
+        space
+        && Poly.(c.conf.break_separators = `After_and_docked)
+        && not (Cmts.has_before c.cmts loc)
+      in
+      ( fmt_if space "@ "
+        $ Cmts.fmt_before c loc ~pro:(fmt "@ ") ~eol:noop ~adj:noop
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
@@ -1342,7 +1358,8 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
           $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
           $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
         $ p.break_after $ p.docked_after $ fmt_atrs
-        $ fmt_if_k has_attr (char ')') )
+        $ fmt_if_k has_attr (char ')')
+        $ Cmts.fmt_after c loc )
   | None ->
       let loc_args = Sugar.infix_cons xexp in
       ( noop
@@ -1364,11 +1381,12 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
 
 (** The second returned value of [fmt_body] belongs to a box of level N-1 if
     the first returned value belongs to a box of level N. *)
-and fmt_body c ?ext ?(indent_wrap = 0) ({ast= body; _} as xbody) =
+and fmt_body c ?parens ?(eol = fmt "@;<1000 0>") ?ext ?(indent_wrap = 0)
+    ({ast= body; _} as xbody) =
   let ctx = Exp body in
-  let parens = parenze_exp xbody in
   match body with
   | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc; _} ->
+      let parens = Option.value parens ~default:(parenze_exp xbody) in
       ( ( update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
         fmt "@ "
@@ -1380,9 +1398,9 @@ and fmt_body c ?ext ?(indent_wrap = 0) ({ast= body; _} as xbody) =
         @@ fun c ->
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
   | {pexp_desc= Pexp_record (flds, default); pexp_attributes; pexp_loc; _} ->
-      fmt_record_body c ctx flds default pexp_attributes pexp_loc
+      fmt_record_body c ctx flds default pexp_attributes pexp_loc ~space:true
   | {pexp_desc= Pexp_array a; pexp_attributes; pexp_loc; _} ->
-      fmt_array_body ~space:true c ctx a pexp_attributes pexp_loc
+      fmt_array_body c ctx a pexp_attributes pexp_loc ~space:true
   | { pexp_desc=
         Pexp_construct
           ( {txt= Lident "::"; loc= _}
@@ -1394,9 +1412,10 @@ and fmt_body c ?ext ?(indent_wrap = 0) ({ast= body; _} as xbody) =
     ; pexp_attributes
     ; pexp_loc
     ; _ } ->
+      let parens = parenze_exp xbody in
       fmt_list_body c xbody pexp_attributes pexp_loc parens ~indent_wrap
         ~space:true
-  | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
+  | _ -> (noop, fmt_expression c ?parens ~eol xbody)
 
 and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
@@ -2965,8 +2984,8 @@ and fmt_cases c ctx cs =
                 (fits_breaks ~level "" pad)
           | _ -> noop )
       in
-      Params.get_cases c.conf ~first ~indent ~parens_here
-      |> fun (p : Params.cases) ->
+      let p = Params.get_cases c.conf ~first ~indent ~parens_here in
+      let pre_body, body = fmt_body c ?eol ?parens:parens_for_exp xrhs in
       p.leading_space $ leading_cmt
       $ p.box_all
           ( p.box_pattern_arrow
@@ -2978,9 +2997,9 @@ and fmt_cases c ctx cs =
                         $ fmt_expression c (sub_exp ~ctx g)) )
               $ p.break_before_arrow $ str "->" $ p.break_after_arrow
               $ fmt_if parens_here " (" )
-          $ p.break_after_opening_paren
+          $ pre_body $ p.break_after_opening_paren
           $ hovbox 0
-              ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
+              ( body
               $ fmt_if parens_here
                   ( match c.conf.indicate_multiline_delimiters with
                   | `Space -> "@ )"

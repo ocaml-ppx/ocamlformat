@@ -158,7 +158,7 @@ let get_record_expr (c : Conf.t) =
       , {break_after_with= break 1 2} )
   | `After_and_docked ->
       let space = if c.space_around_records then 1 else 0 in
-      ( { docked_before= str " {"
+      ( { docked_before= str "{"
         ; break_before= break space 0
         ; box= Fn.id
         ; sep_before= noop

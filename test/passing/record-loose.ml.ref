@@ -79,8 +79,7 @@ let {a : (*a*) a} = e
 
 let {a : a (*a*)} = e
 
-let _ =
-  (* comment here *)
+let _ = (* comment here *)
   { (* comment here *)
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaa = aaaaaaaaaaaaaaaaaaaaaaaa
   ; bbbbbbbbbbbb : bbbbbbbbbbb = bbbbbbbbbbbbbbbbb }
