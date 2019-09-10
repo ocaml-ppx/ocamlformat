@@ -33,6 +33,7 @@ type t =
   ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `After]
+  ; doc_comments_val: [`Before | `After]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
@@ -487,8 +488,8 @@ module Formatting = struct
         , `After
         , "$(b,after) puts doc comments after the corresponding code. This \
            option has no effect on variant declarations because that would \
-           change their meaning and on structure, signature and object for \
-           readability." )
+           change their meaning and on structures, signatures and objects \
+           for readability." )
       ; ( "before"
         , `Before
         , "$(b,before) puts comments before the corresponding code." ) ]
@@ -496,6 +497,23 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with doc_comments= x})
       (fun conf -> conf.doc_comments)
+
+  let doc_comments_val =
+    let doc = "Doc comments position on val and external declarations." in
+    let names = ["doc-comments-val"] in
+    let all =
+      [ ( "after"
+        , `After
+        , "$(b,after) puts doc comments after the corresponding val or \
+           external declaration." )
+      ; ( "before"
+        , `Before
+        , "$(b,before) puts doc comments after the corresponding val or \
+           external declaration." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with doc_comments_val= x})
+      (fun conf -> conf.doc_comments_val)
 
   let doc_comments_padding =
     let docv = "PADDING" in
@@ -1410,6 +1428,7 @@ let ocamlformat_profile =
   ; disable= false
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `After
+  ; doc_comments_val= `After
   ; doc_comments_padding= 2
   ; doc_comments_tag_only= `Default
   ; dock_collection_brackets= false
@@ -1482,6 +1501,7 @@ let conventional_profile =
   ; disambiguate_non_breaking_match=
       C.default Formatting.disambiguate_non_breaking_match
   ; doc_comments= C.default Formatting.doc_comments
+  ; doc_comments_val= C.default Formatting.doc_comments_val
   ; doc_comments_padding= C.default Formatting.doc_comments_padding
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
   ; dock_collection_brackets= C.default Formatting.dock_collection_brackets
@@ -1611,6 +1631,7 @@ let janestreet_profile =
   ; disable= false
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before
+  ; doc_comments_val= `Before
   ; doc_comments_padding= 1
   ; doc_comments_tag_only= `Fit
   ; dock_collection_brackets= false

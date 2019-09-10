@@ -159,7 +159,7 @@ OPTIONS (CODE FORMATTING STYLE)
            Doc comments position. after puts doc comments after the
            corresponding code. This option has no effect on variant
            declarations because that would change their meaning and on
-           structure, signature and object for readability. before puts
+           structures, signatures and objects for readability. before puts
            comments before the corresponding code. The default value is
            after.
 
@@ -171,6 +171,12 @@ OPTIONS (CODE FORMATTING STYLE)
            Position of doc comments with only tags. default means no special
            treatment. fit puts doc comments on the same line. The default
            value is default.
+
+       --doc-comments-val={after|before}
+           Doc comments position on val and external declarations. after puts
+           doc comments after the corresponding val or external declaration.
+           before puts doc comments after the corresponding val or external
+           declaration. The default value is after.
 
        --dock-collection-brackets
            Dock the brackets of lists, arrays and records, so that when the
