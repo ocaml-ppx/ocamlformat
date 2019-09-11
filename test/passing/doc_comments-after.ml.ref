@@ -116,6 +116,7 @@ module Comment_placement : sig
   module Index : Index.S
   (** This one goes after *)
 
+  (** This one _still_ goes after *)
   module Index2
       (Paramater_module : BAR_LONG_MODULE_TYPE_NAME)
       (Foo : BAR)
@@ -123,7 +124,6 @@ module Comment_placement : sig
       (Foo : BAR)
       (Foo : BAR)
       (Foo : BAR) : sig end
-  (** This one _still_ goes after *)
 
   (** Doc comment still goes after *)
   module Make (Config : sig
