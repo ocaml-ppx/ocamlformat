@@ -1451,7 +1451,15 @@ and fmt_args ~first:first_grp ~last:last_grp c ctx args =
     let ({ast; _} as xarg) = sub_exp ~ctx arg in
     let box =
       match ast.pexp_desc with
-      | Pexp_fun _ | Pexp_function _ -> Some false
+      | Pexp_fun _ | Pexp_function _ | Pexp_record _ | Pexp_array _
+       |Pexp_construct
+          ( {txt= Lident "::"; loc= _}
+          , Some
+              { pexp_desc= Pexp_tuple [_; _]
+              ; pexp_attributes= []
+              ; pexp_loc= _
+              ; _ } ) ->
+          Some false
       | _ -> None
     in
     let epi =
