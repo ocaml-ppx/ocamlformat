@@ -1384,11 +1384,17 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
 
 (** The second returned value of [fmt_body] belongs to a box of level N-1 if
     the first returned value belongs to a box of level N. *)
-and fmt_body c ?parens ?(eol = fmt "@;<1000 0>") ?ext ?(indent_wrap = 0)
+and fmt_body c ctx ?parens ?(eol = fmt "@;<1000 0>") ?ext ?(indent_wrap = 0)
     ({ast= body; _} as xbody) =
+  let in_pattern_matching =
+    match ctx with
+    | Exp {pexp_desc= Pexp_match _ | Pexp_try _; _} -> true
+    | _ -> false
+  in
   let ctx = Exp body in
   match body with
-  | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc; _} ->
+  | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc; _}
+    when not in_pattern_matching ->
       let parens = Option.value parens ~default:(parenze_exp xbody) in
       ( ( update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
@@ -1724,7 +1730,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     when is_infix_id id && not c.conf.break_infix_before_func ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
       let indent_wrap = if parens then -2 else 0 in
-      let pre_body, body = fmt_body c ?ext xbody in
+      let pre_body, body = fmt_body c ctx ?ext xbody in
       let followed_by_infix_op =
         match xbody.ast.pexp_desc with
         | Pexp_apply
@@ -2044,7 +2050,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@,." $ fmt_longident_loc c lid $ fmt_atrs ))
   | Pexp_newtype _ | Pexp_fun _ ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
-      let pre_body, body = fmt_body c ?ext xbody ~indent_wrap in
+      let pre_body, body = fmt_body c ctx ?ext xbody ~indent_wrap in
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent = function_indent c ~ctx ~default:default_indent in
       hvbox_if box indent
@@ -2988,7 +2994,7 @@ and fmt_cases c ctx cs =
           | _ -> noop )
       in
       let p = Params.get_cases c.conf ~first ~indent ~parens_here in
-      let pre_body, body = fmt_body c ?eol ?parens:parens_for_exp xrhs in
+      let pre_body, body = fmt_body c ctx ?eol ?parens:parens_for_exp xrhs in
       p.leading_space $ leading_cmt
       $ p.box_all
           ( p.box_pattern_arrow
@@ -4325,7 +4331,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
     Location.compare_start loc pvb_expr.pexp_loc < 1
   in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
-  let pre_body, body = fmt_body c xbody in
+  let pre_body, body = fmt_body c ctx xbody in
   let pat_has_cmt = Cmts.has_before c.cmts xpat.ast.ppat_loc in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c loc

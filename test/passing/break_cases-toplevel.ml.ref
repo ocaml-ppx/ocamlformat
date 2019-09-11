@@ -18,7 +18,8 @@ let f =
     | Z | P | M -> (
       match y with
       | O -> 5
-      | P when h x -> ( function
+      | P when h x -> (
+          function
           | A -> 6 ) )
 
 ;;
