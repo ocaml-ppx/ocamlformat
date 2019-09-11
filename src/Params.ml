@@ -129,27 +129,22 @@ type elements_collection_record_pat = {wildcard: Fmt.t}
 let get_record_expr (c : Conf.t) =
   let space = if c.space_around_records then 1 else 0 in
   let dock = c.dock_collection_brackets in
-  match c.break_separators with
-  | `Before ->
-      ( { box=
-            (fun k ->
-              if dock then
-                hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0))
-              else hvbox 0 (wrap_record c k))
+  let box k =
+    if dock then hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0))
+    else hvbox 0 (wrap_record c k)
+  in
+  ( ( match c.break_separators with
+    | `Before ->
+        { box
         ; sep_before= fmt "@,; "
         ; sep_after_non_final= noop
         ; sep_after_final= noop }
-      , {break_after_with= break 1 2} )
-  | `After ->
-      ( { box=
-            (fun k ->
-              if dock then
-                hvbox 0 (wrap "{" "}" (break space 2 $ k $ break space 0))
-              else hvbox 0 (wrap_record c k))
+    | `After ->
+        { box
         ; sep_before= noop
         ; sep_after_non_final= fmt ";@;<1 2>"
-        ; sep_after_final= fmt_if_k dock (fits_breaks ~level:0 "" ";") }
-      , {break_after_with= break 1 2} )
+        ; sep_after_final= fmt_if_k dock (fits_breaks ~level:0 "" ";") } )
+  , {break_after_with= break 1 2} )
 
 let box_collec (c : Conf.t) =
   match c.break_collection_expressions with
