@@ -125,12 +125,12 @@ module Comment_placement : sig
       (Foo : BAR) : sig end
   (** This one _still_ goes after *)
 
+  (** Doc comment still goes after *)
   module Make (Config : sig
     val blah : string
 
     (* this could be a really long signature *)
   end) : S
-  (** Doc comment still goes after *)
 end = struct
   type t = {a: int}
   (** Type *)
