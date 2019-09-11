@@ -105,12 +105,11 @@ OPTIONS (CODE FORMATTING STYLE)
            fit-or-vertical vertically breaks expressions if they do not fit
            on a single line. The default value is wrap.
 
-       --break-separators={before|after|after-and-docked}
+       --break-separators={before|after}
            Break before or after separators such as `;` in list or record
            expressions. before breaks the expressions before the separator.
-           after breaks the expressions after the separator. after-and-docked
-           breaks the expressions after the separator and docks the brackets
-           for records. The default value is before.
+           after breaks the expressions after the separator. The default
+           value is before.
 
        --break-sequences
            Force sequence expressions to break irrespective of margin.
@@ -166,6 +165,11 @@ OPTIONS (CODE FORMATTING STYLE)
            Position of doc comments with only tags. default means no special
            treatment. fit puts doc comments on the same line. The default
            value is default.
+
+       --dock-collection-brackets
+           Dock the brackets of lists, arrays and records, so that when the
+           collection does not fit on a single line the brackets are opened
+           on the preceding line and closed on the following line.
 
        --escape-chars={preserve|decimal|hexadecimal}
            Escape encoding for character literals. preserve escapes ASCII

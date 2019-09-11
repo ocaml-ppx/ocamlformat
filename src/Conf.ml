@@ -23,7 +23,7 @@ type t =
   ; break_infix_before_func: bool
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
-  ; break_separators: [`Before | `After | `After_and_docked]
+  ; break_separators: [`Before | `After]
   ; break_sequences: bool
   ; break_string_literals: [`Newlines | `Never | `Wrap | `Newlines_and_wrap]
   ; break_struct: bool
@@ -35,6 +35,7 @@ type t =
   ; doc_comments: [`Before | `After]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
+  ; dock_collection_brackets: bool
   ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; exp_grouping: [`Parens | `Preserve]
@@ -365,11 +366,7 @@ module Formatting = struct
         , "$(b,before) breaks the expressions before the separator." )
       ; ( "after"
         , `After
-        , "$(b,after) breaks the expressions after the separator." )
-      ; ( "after-and-docked"
-        , `After_and_docked
-        , "$(b,after-and-docked) breaks the expressions after the separator \
-           and docks the brackets for records." ) ]
+        , "$(b,after) breaks the expressions after the separator." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_separators= x})
@@ -513,6 +510,17 @@ module Formatting = struct
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with doc_comments_tag_only= x})
       (fun conf -> conf.doc_comments_tag_only)
+
+  let dock_collection_brackets =
+    let doc =
+      "Dock the brackets of lists, arrays and records, so that when the \
+       collection does not fit on a single line the brackets are opened on \
+       the preceding line and closed on the following line."
+    in
+    let names = ["dock-collection-brackets"] in
+    C.flag ~default:false ~names ~doc ~section
+      (fun conf x -> {conf with dock_collection_brackets= x})
+      (fun conf -> conf.dock_collection_brackets)
 
   let escape_chars =
     let doc = "Escape encoding for character literals." in
@@ -1377,6 +1385,7 @@ let ocamlformat_profile =
   ; doc_comments= C.default Formatting.doc_comments
   ; doc_comments_padding= C.default Formatting.doc_comments_padding
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
+  ; dock_collection_brackets= C.default Formatting.dock_collection_brackets
   ; escape_chars= C.default Formatting.escape_chars
   ; escape_strings= C.default Formatting.escape_strings
   ; exp_grouping= C.default Formatting.exp_grouping
@@ -1429,9 +1438,10 @@ let conventional_profile =
   { ocamlformat_profile with
     break_cases= `Fit
   ; break_infix_before_func= false
-  ; break_separators= `After_and_docked
+  ; break_separators= `After
   ; break_sequences= true
   ; cases_matching_exp_indent= `Normal
+  ; dock_collection_brackets= true
   ; field_space= `Loose
   ; indicate_nested_or_patterns= `Unsafe_no
   ; sequence_style= `Terminator
@@ -1521,6 +1531,7 @@ let janestreet_profile =
   ; doc_comments= `Before
   ; doc_comments_padding= 1
   ; doc_comments_tag_only= `Fit
+  ; dock_collection_brackets= false
   ; escape_chars= `Preserve
   ; escape_strings= `Preserve
   ; exp_grouping= `Parens
