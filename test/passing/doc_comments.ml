@@ -132,6 +132,9 @@ module Comment_placement : sig
   end) : S
   (** Doc comment still goes after *)
 
+  module Gen () : S
+  (** Generative functor *)
+
 end = struct
   type t = {a: int}
   (** Type *)

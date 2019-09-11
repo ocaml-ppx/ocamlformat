@@ -131,6 +131,9 @@ module Comment_placement : sig
 
     (* this could be a really long signature *)
   end) : S
+
+  (** Generative functor *)
+  module Gen () : S
 end = struct
   (** Type *)
   type t = {a: int}
