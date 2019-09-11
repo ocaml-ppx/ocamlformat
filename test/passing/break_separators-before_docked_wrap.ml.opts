@@ -1,0 +1,3 @@
+--break-separators=before
+--break-collection-expressions=wrap
+--dock-collection-brackets
