@@ -274,22 +274,21 @@ let longident_is_simple c x =
 let rec module_type_is_simple x =
   match x.pmty_desc with
   | Pmty_ident _ | Pmty_alias _ | Pmty_signature [] -> true
-  | Pmty_signature (_ :: _) | Pmty_with (_, _ :: _ :: _) | Pmty_extension _
-    ->
+  | Pmty_signature (_ :: _)
+   |Pmty_with (_, _ :: _ :: _)
+   |Pmty_extension _
+   |Pmty_functor (_, _, _) ->
       false
   | Pmty_typeof e -> module_expr_is_simple e
-  | Pmty_functor (_, Some t1, t2) ->
-      module_type_is_simple t1 && module_type_is_simple t2
-  | Pmty_functor (_, None, t) | Pmty_with (t, ([] | [_])) ->
-      module_type_is_simple t
+  | Pmty_with (t, ([] | [_])) -> module_type_is_simple t
 
 and module_expr_is_simple x =
   match x.pmod_desc with
   | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] -> true
-  | Pmod_structure (_ :: _) | Pmod_extension _ -> false
-  | Pmod_functor (_, Some t, e) | Pmod_constraint (e, t) ->
+  | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _, _) ->
+      false
+  | Pmod_constraint (e, t) ->
       module_expr_is_simple e && module_type_is_simple t
-  | Pmod_functor (_, None, e) -> module_expr_is_simple e
   | Pmod_apply (a, b) -> module_expr_is_simple a && module_expr_is_simple b
 
 let rec class_decl_is_simple x =
