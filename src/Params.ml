@@ -188,29 +188,7 @@ let get_list_expr (c : Conf.t) =
 let get_array_expr (c : Conf.t) =
   collection_expr c ~space_around:c.space_around_arrays "[|" "|]"
 
-let get_record_pat (c : Conf.t) ~ctx =
-  let common, _ = get_record_expr c in
-  let wildcard =
-    {wildcard= common.sep_before $ str "_" $ common.sep_after_final}
-  in
-  let space = if c.space_around_records then 1 else 0 in
-  let indent_opn, indent_cls =
-    match (ctx, c.break_separators) with
-    | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _}, `Before -> (-2, 0)
-    | Ast.Exp {pexp_desc= Pexp_match _ | Pexp_try _; _}, `After -> (-3, 1)
-    | Ast.Exp {pexp_desc= Pexp_let _; _}, _ -> (-4, 0)
-    | _ -> (0, 0)
-  in
-  let box k =
-    if c.dock_collection_brackets then
-      hvbox indent_opn
-        (wrap "{" "}" (break space 2 $ k $ break space indent_cls))
-    else common.box k
-  in
-  ({common with box}, wildcard)
-
-let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
-  let params = collection_expr c ~space_around opn cls in
+let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
   let space = if space_around then 1 else 0 in
   let indent_opn, indent_cls =
     match (ctx, c.break_separators) with
@@ -220,12 +198,25 @@ let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
     | Ast.Exp {pexp_desc= Pexp_let _; _}, _ -> (-4, 0)
     | _ -> (0, 0)
   in
-  let box k =
+  hvbox indent_opn
+    (wrap_k (str opn) (str cls) (break space 2 $ k $ break space indent_cls))
+
+let get_record_pat (c : Conf.t) ~ctx =
+  let params, _ = get_record_expr c in
+  let box =
     if c.dock_collection_brackets then
-      hvbox indent_opn
-        (wrap_k (str opn) (str cls)
-           (break space 2 $ box_collec c 0 k $ break space indent_cls))
-    else params.box k
+      box_pattern_docked c ~ctx ~space_around:c.space_around_records "{" "}"
+    else params.box
+  in
+  ( {params with box}
+  , {wildcard= params.sep_before $ str "_" $ params.sep_after_final} )
+
+let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
+  let params = collection_expr c ~space_around opn cls in
+  let box =
+    if c.dock_collection_brackets then
+      box_collec c 0 >> box_pattern_docked c ~ctx ~space_around opn cls
+    else params.box
   in
   {params with box}
 
