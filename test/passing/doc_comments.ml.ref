@@ -107,6 +107,30 @@ module Comment_placement : sig
   (** A *)
   external a : b = "double_comment"
   (** B *)
+
+  (** This comment goes before *)
+  module S_ext : sig
+    type t
+  end
+
+  module Index : Index.S
+  (** This one goes after *)
+
+  module Index2
+      (Paramater_module : BAR_LONG_MODULE_TYPE_NAME)
+      (Foo : BAR)
+      (Foo : BAR)
+      (Foo : BAR)
+      (Foo : BAR)
+      (Foo : BAR) : sig end
+  (** This one _still_ goes after *)
+
+  module Make (Config : sig
+    val blah : string
+
+    (* this could be a really long signature *)
+  end) : S
+  (** Doc comment still goes after *)
 end = struct
   type t = {a: int}
   (** Type *)
