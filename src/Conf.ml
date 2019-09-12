@@ -1938,8 +1938,8 @@ let is_in_listing_file ~listings ~filename =
         warn "ignoring %a, %s" Fpath.pp listing_file err ;
         None)
 
-let build_config ~file =
-  let vfile = Fpath.v file in
+let build_config ~file ~name =
+  let vfile = Fpath.v name in
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let dir = Fpath.(file_abs |> split_base |> fst) in
   let segs = Fpath.segs dir |> List.rev in
@@ -1961,7 +1961,11 @@ let build_config ~file =
     let f = function `Ocamlformat _ -> false | `Ocp_indent _ -> true in
     List.for_all files ~f
   in
-  if no_ocamlformat_files && not enable_outside_detected_project then (
+  if
+    (not (is_stdin file))
+    && no_ocamlformat_files
+    && not enable_outside_detected_project
+  then (
     (let why =
        match project_root with
        | Some root ->
@@ -1986,8 +1990,10 @@ let build_config ~file =
         {conf with disable= not conf.disable}
     | None -> conf
 
-let build_config ~file =
-  let conf, warn_now = collect_warnings (fun () -> build_config ~file) in
+let build_config ~file ~name =
+  let conf, warn_now =
+    collect_warnings (fun () -> build_config ~file ~name)
+  in
   if not conf.quiet then warn_now () ;
   conf
 
@@ -2000,30 +2006,28 @@ if !print_config then
         let root = Option.value root ~default:(Fpath.cwd ()) in
         Fpath.(root / dot_ocamlformat |> to_string)
   in
-  C.print_config (build_config ~file)
+  let name = Option.value !name ~default:file in
+  C.print_config (build_config ~file ~name)
 
 let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
            let name = Option.value !name ~default:file in
-           {kind= kind_of file; name; file; conf= build_config ~file:name}))
+           {kind= kind_of file; name; file; conf= build_config ~file ~name}))
   else if !check then
     Check
       (List.map !inputs ~f:(fun file ->
            let name = Option.value !name ~default:file in
-           let conf = build_config ~file:name in
+           let conf = build_config ~file ~name in
            let conf = {conf with max_iters= 1} in
            {kind= kind_of file; name; file; conf}))
   else
     match !inputs with
-    | [input_file] ->
-        let name = Option.value !name ~default:input_file in
+    | [file] ->
+        let name = Option.value !name ~default:file in
         In_out
-          ( { kind= kind_of name
-            ; name
-            ; file= input_file
-            ; conf= build_config ~file:name }
+          ( {kind= kind_of name; name; file; conf= build_config ~file ~name}
           , !output )
     | _ ->
         if !print_config then Caml.exit 0
