@@ -90,10 +90,11 @@ match Conf.action with
     if List.is_empty errors then Caml.exit 0 else Caml.exit 1
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
-      ; file= "-"
+      ; file
       ; name= input_name
       ; conf }
-    , output_file ) -> (
+    , output_file )
+  when Conf.is_stdin file -> (
     let source = In_channel.input_all In_channel.stdin in
     let result = format conf ?output_file ~kind ~input_name ~source () in
     match result with
@@ -116,9 +117,10 @@ match Conf.action with
     | Error _ -> Caml.exit 1 )
 | Check
     [ { kind= (`Impl | `Intf | `Use_file) as kind
-      ; file= "-"
+      ; file
       ; name= input_name
-      ; conf } ] ->
+      ; conf } ]
+  when Conf.is_stdin file ->
     let source = In_channel.input_all In_channel.stdin in
     let checked =
       match format conf ~kind ~input_name ~source () with

@@ -96,6 +96,10 @@ type action =
   | Check of [`Impl | `Intf | `Use_file] input list
       (** Check whether the input files already are formatted. *)
 
+val is_stdin : string -> bool
+(** Whether the string is equal to the symbolic name given to standard input
+    in warnings and error messages. *)
+
 val action : action
 (** Formatting action: input type and source, and output destination. *)
 

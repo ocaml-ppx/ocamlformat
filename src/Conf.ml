@@ -1219,7 +1219,7 @@ let inputs =
   let docv = "SRC" in
   let file_or_dash =
     let parse, print = Arg.non_dir_file in
-    let parse = function "-" -> `Ok "-" | s -> parse s in
+    let parse = function "-" -> `Ok "<standard input>" | s -> parse s in
     (parse, print)
   in
   let doc =
@@ -1617,9 +1617,11 @@ let (_profile : t option C.t) =
       {new_conf with quiet= new_conf.quiet || conf.quiet})
     (fun _ -> !selected_profile_ref)
 
+let is_stdin = String.equal "<standard input>"
+
 let validate () =
   let inputs_len = List.length !inputs in
-  let has_stdin = List.exists ~f:(String.equal "-") !inputs in
+  let has_stdin = List.exists ~f:is_stdin !inputs in
   if !disable_outside_detected_project then
     warn
       "option `--disable-outside-detected-project` is deprecated and will \
