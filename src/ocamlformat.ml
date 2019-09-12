@@ -74,6 +74,11 @@ match Conf.action with
     let errors =
       List.filter_map inputs
         ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
+          let input_file =
+            match input_file with
+            | File f -> f
+            | _ -> impossible "checked by validate"
+          in
           let source =
             In_channel.with_file input_file ~f:In_channel.input_all
           in
@@ -90,11 +95,10 @@ match Conf.action with
     if List.is_empty errors then Caml.exit 0 else Caml.exit 1
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
-      ; file
+      ; file= Stdin
       ; name= input_name
       ; conf }
-    , output_file )
-  when Conf.is_stdin file -> (
+    , output_file ) -> (
     let source = In_channel.input_all In_channel.stdin in
     let result = format conf ?output_file ~kind ~input_name ~source () in
     match result with
@@ -104,7 +108,7 @@ match Conf.action with
     | Error _ -> Caml.exit 1 )
 | In_out
     ( { kind= (`Impl | `Intf | `Use_file) as kind
-      ; file= input_file
+      ; file= File input_file
       ; name= input_name
       ; conf }
     , output_file ) -> (
@@ -115,22 +119,13 @@ match Conf.action with
         to_output_file output_file s ;
         Caml.exit 0
     | Error _ -> Caml.exit 1 )
-| Check
-    [ { kind= (`Impl | `Intf | `Use_file) as kind
-      ; file
-      ; name= input_name
-      ; conf } ]
-  when Conf.is_stdin file ->
-    let source = In_channel.input_all In_channel.stdin in
-    let checked =
-      match format conf ~kind ~input_name ~source () with
-      | Ok res -> String.equal res source
-      | Error _ -> false
-    in
-    Caml.exit (if checked then 0 else 1)
 | Check inputs ->
     let f {Conf.kind; name= input_name; file; conf} =
-      let source = In_channel.with_file file ~f:In_channel.input_all in
+      let source =
+        match file with
+        | Stdin -> In_channel.input_all In_channel.stdin
+        | File file -> In_channel.with_file file ~f:In_channel.input_all
+      in
       match format conf ~kind ~input_name ~source () with
       | Ok res -> String.equal res source
       | Error _ -> false

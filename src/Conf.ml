@@ -1215,11 +1215,21 @@ let inplace =
   let default = false in
   mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
 
+type file = Stdin | File of string
+
 let inputs =
   let docv = "SRC" in
   let file_or_dash =
     let parse, print = Arg.non_dir_file in
-    let parse = function "-" -> `Ok "<standard input>" | s -> parse s in
+    let print fmt = function
+      | Stdin -> print fmt "<standard input>"
+      | File x -> print fmt x
+    in
+    let parse = function
+      | "-" -> `Ok Stdin
+      | s -> (
+        match parse s with `Ok x -> `Ok (File x) | `Error x -> `Error x )
+    in
     (parse, print)
   in
   let doc =
@@ -1617,7 +1627,7 @@ let (_profile : t option C.t) =
       {new_conf with quiet= new_conf.quiet || conf.quiet})
     (fun _ -> !selected_profile_ref)
 
-let is_stdin = String.equal "<standard input>"
+let is_stdin = function Stdin -> true | File _ -> false
 
 let validate () =
   let inputs_len = List.length !inputs in
@@ -1867,22 +1877,31 @@ let update_using_env conf =
                 , Sexp.List [Sexp.Atom name; Sexp.Atom reason] )))
   with Sys_error _ -> conf
 
-type 'a input = {kind: 'a; name: string; file: string; conf: t}
+type 'a input = {kind: 'a; name: string; file: file; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
   | Inplace of [`Impl | `Intf | `Use_file] input list
   | Check of [`Impl | `Intf | `Use_file] input list
 
-let kind_of fname =
+let kind_of file =
   match !kind with
   | Some kind -> kind
   | None -> (
-    match Filename.extension fname with
-    | ".ml" -> `Impl
-    | ".mli" -> `Intf
-    | ".mlt" -> `Use_file
-    | _ -> `Impl )
+    match file with
+    | Stdin -> `Impl
+    | File fname -> (
+      match Filename.extension fname with
+      | ".ml" -> `Impl
+      | ".mli" -> `Intf
+      | ".mlt" -> `Use_file
+      | _ -> `Impl ) )
+
+let name_of file =
+  match !name with
+  | Some name -> name
+  | None -> (
+    match file with Stdin -> "<standard input>" | File fname -> fname )
 
 let xdg_config =
   let xdg_config_home =
@@ -1938,8 +1957,8 @@ let is_in_listing_file ~listings ~filename =
         warn "ignoring %a, %s" Fpath.pp listing_file err ;
         None)
 
-let build_config ~file ~name =
-  let vfile = Fpath.v name in
+let build_config ~file ~is_stdin =
+  let vfile = Fpath.v file in
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let dir = Fpath.(file_abs |> split_base |> fst) in
   let segs = Fpath.segs dir |> List.rev in
@@ -1962,8 +1981,7 @@ let build_config ~file ~name =
     List.for_all files ~f
   in
   if
-    (not (is_stdin file))
-    && no_ocamlformat_files
+    (not is_stdin) && no_ocamlformat_files
     && not enable_outside_detected_project
   then (
     (let why =
@@ -1990,44 +2008,52 @@ let build_config ~file ~name =
         {conf with disable= not conf.disable}
     | None -> conf
 
-let build_config ~file ~name =
+let build_config ~file ~is_stdin =
   let conf, warn_now =
-    collect_warnings (fun () -> build_config ~file ~name)
+    collect_warnings (fun () -> build_config ~file ~is_stdin)
   in
   if not conf.quiet then warn_now () ;
   conf
 
 ;;
 if !print_config then
-  let file =
+  let file, is_stdin =
     match (!name, !inputs) with
-    | Some file, _ | None, file :: _ -> file
+    | Some file, input :: _ -> (file, is_stdin input)
+    | Some file, [] -> (file, true)
+    | None, File file :: _ -> (file, false)
+    | None, Stdin :: _ -> ("-" (* the name does not matter here *), true)
     | None, [] ->
         let root = Option.value root ~default:(Fpath.cwd ()) in
-        Fpath.(root / dot_ocamlformat |> to_string)
+        (Fpath.(root / dot_ocamlformat |> to_string), true)
   in
-  let name = Option.value !name ~default:file in
-  C.print_config (build_config ~file ~name)
+  C.print_config (build_config ~file ~is_stdin)
 
 let action =
   if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
-           let name = Option.value !name ~default:file in
-           {kind= kind_of file; name; file; conf= build_config ~file ~name}))
+           let name = name_of file in
+           { kind= kind_of file
+           ; name
+           ; file
+           ; conf= build_config ~file:name ~is_stdin:(is_stdin file) }))
   else if !check then
     Check
       (List.map !inputs ~f:(fun file ->
-           let name = Option.value !name ~default:file in
-           let conf = build_config ~file ~name in
+           let name = name_of file in
+           let conf = build_config ~file:name ~is_stdin:(is_stdin file) in
            let conf = {conf with max_iters= 1} in
            {kind= kind_of file; name; file; conf}))
   else
     match !inputs with
     | [file] ->
-        let name = Option.value !name ~default:file in
+        let name = name_of file in
         In_out
-          ( {kind= kind_of name; name; file; conf= build_config ~file ~name}
+          ( { kind= kind_of file
+            ; name
+            ; file
+            ; conf= build_config ~file:name ~is_stdin:(is_stdin file) }
           , !output )
     | _ ->
         if !print_config then Caml.exit 0

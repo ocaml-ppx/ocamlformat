@@ -85,7 +85,9 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-type 'a input = {kind: 'a; name: string; file: string; conf: t}
+type file = Stdin | File of string
+
+type 'a input = {kind: 'a; name: string; file: file; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option
@@ -95,10 +97,6 @@ type action =
       (** Format in-place, overwriting input file(s). *)
   | Check of [`Impl | `Intf | `Use_file] input list
       (** Check whether the input files already are formatted. *)
-
-val is_stdin : string -> bool
-(** Whether the string is equal to the symbolic name given to standard input
-    in warnings and error messages. *)
 
 val action : action
 (** Formatting action: input type and source, and output destination. *)
