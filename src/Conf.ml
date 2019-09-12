@@ -1632,7 +1632,7 @@ let validate () =
   else if has_stdin && inputs_len > 1 then
     `Error (false, "Cannot specify stdin together with other inputs")
   else if has_stdin && !inplace then
-    `Error (false, "Cannot specific stdin together with --inplace")
+    `Error (false, "Cannot specify stdin together with --inplace")
   else if !inplace && Option.is_some !output then
     `Error (false, "Cannot specify --output with --inplace")
   else if !check && !inplace then
