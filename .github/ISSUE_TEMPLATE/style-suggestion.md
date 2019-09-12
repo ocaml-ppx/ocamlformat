@@ -1,7 +1,7 @@
 ---
 name: Style suggestion
 about: Suggest a new style
-title: 'Style suggestion: '
+title: 'Style suggestion: ...'
 labels: Kind/Style suggestion
 assignees: ''
 
