@@ -114,6 +114,18 @@ match Conf.action with
         to_output_file output_file s ;
         Caml.exit 0
     | Error _ -> Caml.exit 1 )
+| Check
+    [ { kind= (`Impl | `Intf | `Use_file) as kind
+      ; file= "-"
+      ; name= input_name
+      ; conf } ] ->
+    let source = In_channel.input_all In_channel.stdin in
+    let checked =
+      match format conf ~kind ~input_name ~source () with
+      | Ok res -> String.equal res source
+      | Error _ -> false
+    in
+    Caml.exit (if checked then 0 else 1)
 | Check inputs ->
     let f {Conf.kind; name= input_name; file; conf} =
       let source = In_channel.with_file file ~f:In_channel.input_all in
