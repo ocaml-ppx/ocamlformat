@@ -91,12 +91,12 @@ type file = Stdin | File of string
 type 'a input = {kind: 'a; name: string; file: file; conf: t}
 
 type action =
-  | In_out of [`Impl | `Intf | `Use_file] input * string option
+  | In_out of [`Impl | `Intf] input * string option
       (** Format input file (or [-] for stdin) of given kind to output file,
           or stdout if None. *)
-  | Inplace of [`Impl | `Intf | `Use_file] input list
+  | Inplace of [`Impl | `Intf] input list
       (** Format in-place, overwriting input file(s). *)
-  | Check of [`Impl | `Intf | `Use_file] input list
+  | Check of [`Impl | `Intf] input list
       (** Check whether the input files already are formatted. *)
 
 val action : action

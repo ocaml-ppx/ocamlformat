@@ -371,14 +371,6 @@ let use_file c = Mapper.use_file (mapper c)
 
 let mapper_ignore_doc_comment c = make_mapper c ~ignore_doc_comment:true
 
-let equal_impl ~ignore_doc_comments c ast1 ast2 =
-  let map =
-    if ignore_doc_comments then
-      Mapper.structure (mapper_ignore_doc_comment c)
-    else Mapper.structure (mapper c)
-  in
-  Poly.(map ast1 = map ast2)
-
 let equal_intf ~ignore_doc_comments c ast1 ast2 =
   let map =
     if ignore_doc_comments then
@@ -436,13 +428,6 @@ let make_docstring_mapper c docstrings =
   in
   {Ast_mapper.default_mapper with attribute; attributes}
 
-let docstrings_impl c s =
-  let docstrings = ref [] in
-  let (_ : structure) =
-    Mapper.structure (make_docstring_mapper c docstrings) s
-  in
-  !docstrings
-
 let docstrings_intf c s =
   let docstrings = ref [] in
   let (_ : signature) =
@@ -495,8 +480,6 @@ let moved_docstrings c get_docstrings s1 s2 =
       let l1 = List.map ~f:unstable l1 in
       let l2 = List.map ~f:unstable l2 in
       List.rev_append both (List.rev_append l1 l2)
-
-let moved_docstrings_impl c s1 s2 = moved_docstrings c docstrings_impl s1 s2
 
 let moved_docstrings_intf c s1 s2 = moved_docstrings c docstrings_intf s1 s2
 

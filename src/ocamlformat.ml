@@ -22,13 +22,13 @@ let moved_docstrings f c a b =
 
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
-  { parse= Migrate_ast.Parse.implementation
-  ; init_cmts= Cmts.init_impl
-  ; fmt= Fmt_ast.fmt_structure
-  ; equal= equal Normalize.equal_impl
-  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_impl
-  ; normalize= normalize Normalize.impl
-  ; printast= Migrate_ast.Printast.implementation }
+  { parse= Migrate_ast.Parse.use_file
+  ; init_cmts= Cmts.init_use_file
+  ; fmt= Fmt_ast.fmt_use_file
+  ; equal= equal Normalize.equal_use_file
+  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_use_file
+  ; normalize= normalize Normalize.use_file
+  ; printast= Migrate_ast.Printast.use_file }
 
 (** Operations on interface files. *)
 let intf : _ Translation_unit.t =
@@ -40,16 +40,6 @@ let intf : _ Translation_unit.t =
   ; normalize= normalize Normalize.intf
   ; printast= Migrate_ast.Printast.interface }
 
-(** Operations on use_file files. *)
-let use_file : _ Translation_unit.t =
-  { parse= Migrate_ast.Parse.use_file
-  ; init_cmts= Cmts.init_use_file
-  ; fmt= Fmt_ast.fmt_use_file
-  ; equal= equal Normalize.equal_use_file
-  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_use_file
-  ; normalize= normalize Normalize.use_file
-  ; printast= Migrate_ast.Printast.use_file }
-
 ;;
 Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 
@@ -60,7 +50,6 @@ let format ~kind =
   match kind with
   | `Impl -> Translation_unit.parse_and_format impl
   | `Intf -> Translation_unit.parse_and_format intf
-  | `Use_file -> Translation_unit.parse_and_format use_file
 
 let to_output_file output_file data =
   match output_file with
@@ -94,10 +83,7 @@ match Conf.action with
     in
     if List.is_empty errors then Caml.exit 0 else Caml.exit 1
 | In_out
-    ( { kind= (`Impl | `Intf | `Use_file) as kind
-      ; file= Stdin
-      ; name= input_name
-      ; conf }
+    ( {kind= (`Impl | `Intf) as kind; file= Stdin; name= input_name; conf}
     , output_file ) -> (
     let source = In_channel.input_all In_channel.stdin in
     let result = format conf ?output_file ~kind ~input_name ~source () in
@@ -107,7 +93,7 @@ match Conf.action with
         Caml.exit 0
     | Error _ -> Caml.exit 1 )
 | In_out
-    ( { kind= (`Impl | `Intf | `Use_file) as kind
+    ( { kind= (`Impl | `Intf) as kind
       ; file= File input_file
       ; name= input_name
       ; conf }
