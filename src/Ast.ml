@@ -696,6 +696,7 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
   | Mod _, Mod _ ->
       break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
         (i2, c2)
+  | Top, _ | _, Top -> true
   | _ -> assert false
 
 (** Precedence levels of Ast terms. *)

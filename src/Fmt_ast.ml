@@ -4294,29 +4294,54 @@ and fmt_module_binding c ctx ~rec_flag ~first pmb =
     (fmt_module c keyword ~eqty:":" pmb.pmb_name xargs (Some xbody) xmty
        pmb.pmb_attributes)
 
-let fmt_toplevel_phrase c ctx = function
-  | Ptop_def structure -> fmt_structure c ctx structure
-  | Ptop_dir {pdir_name= name; pdir_arg= directive_argument; pdir_loc} ->
-      let cmts_before = Cmts.fmt_before c pdir_loc in
-      let cmts_after = Cmts.fmt_after c pdir_loc in
-      let name = fmt_str_loc c name ~pre:(str "#") in
-      let args =
-        match directive_argument with
-        | None -> noop
-        | Some {pdira_desc; pdira_loc; _} ->
-            str " "
-            $ Cmts.fmt_before c pdira_loc
-            $ ( match pdira_desc with
-              | Pdir_string s -> str (Printf.sprintf "%S" s)
-              | Pdir_int (lit, Some m) -> str (Printf.sprintf "%s%c" lit m)
-              | Pdir_int (lit, None) -> str lit
-              | Pdir_ident longident -> fmt_longident longident
-              | Pdir_bool bool -> str (Bool.to_string bool) )
-            $ Cmts.fmt_after c pdira_loc
-      in
-      cmts_before $ fmt ";;@\n" $ name $ args $ cmts_after
+let fmt_toplevel_directive c dir =
+  let fmt_dir_arg = function
+    | Pdir_string s -> str (Printf.sprintf "%S" s)
+    | Pdir_int (lit, Some m) -> str (Printf.sprintf "%s%c" lit m)
+    | Pdir_int (lit, None) -> str lit
+    | Pdir_ident longident -> fmt_longident longident
+    | Pdir_bool bool -> str (Bool.to_string bool)
+  in
+  let {pdir_name= name; pdir_arg; pdir_loc} = dir in
+  let name = fmt_str_loc c name ~pre:(str "#") in
+  let args =
+    match pdir_arg with
+    | None -> noop
+    | Some {pdira_desc; pdira_loc; _} ->
+        str " "
+        $ Cmts.fmt_before ~epi:(str " ") c pdira_loc
+        $ fmt_dir_arg pdira_desc
+        $ Cmts.fmt_after c pdira_loc
+  in
+  Cmts.fmt c pdir_loc (fmt ";;@\n" $ name $ args)
 
-let fmt_use_file c ctx itms = list itms "\n@\n" (fmt_toplevel_phrase c ctx)
+let flatten_ptop =
+  List.concat_map ~f:(function
+    | Ptop_def items -> List.map items ~f:(fun i -> `Item i)
+    | Ptop_dir d -> [`Directive d])
+
+let fmt_use_file c ctx itms =
+  let itms = flatten_ptop itms in
+  let update_config c = function
+    | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
+    | _ -> c
+  in
+  let ptop_ctx = function `Item x -> Str x | `Directive _ -> Top in
+  let grps = make_groups c itms ptop_ctx update_config in
+  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  let fmt_item c ~last = function
+    | `Item i ->
+        maybe_disabled c i.pstr_loc []
+        @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx i)
+    | `Directive d -> fmt_toplevel_directive c d
+  in
+  let fmt_grp ~first:_ ~last:last_grp itms =
+    list_fl itms (fun ~first ~last (itm, c) ->
+        let last = last && last_grp in
+        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+        $ fmt_item c ~last itm)
+  in
+  hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
 (** Entry points *)
 
