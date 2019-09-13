@@ -86,7 +86,9 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-type 'a input = {kind: 'a; name: string; file: string; conf: t}
+type file = Stdin | File of string
+
+type 'a input = {kind: 'a; name: string; file: file; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf | `Use_file] input * string option

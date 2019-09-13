@@ -61,7 +61,7 @@ match Conf.action with
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | Check _ -> user_error "Cannot check Reason code with --check" []
 | In_out
-    ( {kind= (`Impl | `Intf) as kind; file= "-"; name= input_name; conf}
+    ( {kind= (`Impl | `Intf) as kind; file= Stdin; name= input_name; conf}
     , output_file ) -> (
     let result =
       let (Pack {parse; xunit}) = pack_of_kind kind in
@@ -78,7 +78,7 @@ match Conf.action with
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; name= input_name
-      ; file= input_file
+      ; file= File input_file
       ; conf }
     , output_file ) -> (
     let result =
