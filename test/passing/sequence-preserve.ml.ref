@@ -26,7 +26,6 @@ let foo x y =
 let foo x y =
   do_some_setup x ;
   do_some_setup y ;
-
   (* This is the important bit *)
   important_function x ;
   another_important_function x y ;
