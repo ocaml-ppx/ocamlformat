@@ -71,6 +71,9 @@ val class_type_is_simple : class_type -> bool
 
 val type_decl_is_simple : type_declaration -> bool
 
+type toplevel_item =
+  [`Item of structure_item | `Directive of toplevel_directive]
+
 (** Ast terms of various forms. *)
 type t =
   | Pld of payload
@@ -83,6 +86,7 @@ type t =
   | Mod of module_expr
   | Sig of signature_item
   | Str of structure_item
+  | Tli of toplevel_item
   | Top
 
 val break_between :

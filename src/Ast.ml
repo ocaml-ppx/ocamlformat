@@ -563,6 +563,9 @@ let has_trailing_attributes_mty {pmty_attributes; _} =
 let has_trailing_attributes_mod {pmod_attributes; _} =
   List.exists pmod_attributes ~f:is_doc
 
+type toplevel_item =
+  [`Item of structure_item | `Directive of toplevel_directive]
+
 (** Ast terms of various forms. *)
 module T = struct
   type t =
@@ -576,6 +579,7 @@ module T = struct
     | Mod of module_expr
     | Sig of signature_item
     | Str of structure_item
+    | Tli of toplevel_item
     | Top
 
   let dump fs = function
@@ -632,9 +636,11 @@ module T = struct
     | Sig s ->
         Format.fprintf fs "Sig:@\n%a@\n%a" Pprintast.signature [s]
           Printast.interface [s]
-    | Str s ->
+    | Str s | Tli (`Item s) ->
         Format.fprintf fs "Str:@\n%a@\n%a" Pprintast.structure [s]
           Printast.implementation [s]
+    | Tli (`Directive d) ->
+        Format.fprintf fs "Dir:@\n%a" Pprintast.toplevel_phrase (Ptop_dir d)
     | Top -> Format.pp_print_string fs "Top"
 end
 
@@ -652,6 +658,7 @@ let attributes = function
   | Sig _ -> []
   | Str _ -> []
   | Top -> []
+  | Tli _ -> []
 
 let location = function
   | Pld _ -> Location.none
@@ -664,7 +671,7 @@ let location = function
   | Mod x -> x.pmod_loc
   | Sig x -> x.psig_loc
   | Str x -> x.pstr_loc
-  | Top -> Location.none
+  | Top | Tli _ -> Location.none
 
 let break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
     (i2, c2) =
@@ -696,7 +703,11 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
   | Mod _, Mod _ ->
       break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
         (i2, c2)
-  | Top, _ | _, Top -> true
+  | Tli (`Item i1), Tli (`Item i2) ->
+      Structure_item.break_between s ~cmts ~has_cmts_before ~has_cmts_after
+        (i1, c1) (i2, c2)
+  | Tli (`Directive _), Tli (`Directive _) | Tli _, Tli _ ->
+      true (* always break between an item and a directive *)
   | _ -> assert false
 
 (** Precedence levels of Ast terms. *)
@@ -1091,7 +1102,7 @@ end = struct
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
       | _ -> assert false )
-    | Top -> assert false
+    | Top | Tli _ -> assert false
 
   let check_typ ({ctx; ast= typ} as xtyp) =
     try check_typ xtyp with exc -> fail ctx (Typ typ) exc
@@ -1147,6 +1158,7 @@ end = struct
       | Pcty_constr _ -> assert false
       | Pcty_extension _ -> assert false )
     | Top -> assert false
+    | Tli _ -> assert false
     | Typ _ -> assert false
     | Pat _ -> assert false
     | Cl ctx ->
@@ -1198,6 +1210,7 @@ end = struct
     | Sig _ -> assert false
     | Cty _ -> assert false
     | Top -> assert false
+    | Tli _ -> assert false
     | Typ _ -> assert false
     | Pat _ -> assert false
     | Cl {pcl_desc; _} ->
@@ -1317,7 +1330,7 @@ end = struct
       | Pstr_value (_, bindings) -> assert (check_bindings bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | _ -> assert false )
-    | Top -> assert false
+    | Top | Tli _ -> assert false
 
   let check_pat ({ctx; ast= pat} as xpat) =
     try check_pat xpat with exc -> fail ctx (Pat pat) exc
@@ -1487,7 +1500,7 @@ end = struct
         in
         assert (loop ctx)
     | Cty _ -> assert false
-    | Mod _ | Top | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
+    | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
 
   let check_exp ({ctx; ast= exp} as xexp) =
     try check_exp xexp with exc -> fail ctx (Exp exp) exc
@@ -1657,13 +1670,17 @@ end = struct
     | {ctx= Cl {pcl_desc; _}; ast= Cl _ | Exp _} -> (
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
     | { ctx= Exp _
-      ; ast= Pld _ | Top | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _ }
-     |{ctx= Cl _; ast= Pld _ | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _}
-     |{ ctx=
-          Pld _ | Top | Typ _ | Cty _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
       ; ast=
-          Pld _ | Top | Pat _ | Exp _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
-      } ->
+          Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
+      }
+     |{ ctx= Cl _
+      ; ast= Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _ }
+     |{ ctx=
+          ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
+          | Sig _ | Str _ )
+      ; ast=
+          ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
+          | Sig _ | Str _ ) } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -1763,7 +1780,7 @@ end = struct
       | Pcl_apply _ -> Some Apply
       | Pcl_structure _ -> Some Apply
       | _ -> None )
-    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ -> None
+    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ -> None
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context
       [ctx], indicating that [ast] should be parenthesized. Meaningful for

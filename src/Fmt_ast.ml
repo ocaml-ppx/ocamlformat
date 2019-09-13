@@ -4326,8 +4326,7 @@ let fmt_use_file c ctx itms =
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
     | _ -> c
   in
-  let ptop_ctx = function `Item x -> Str x | `Directive _ -> Top in
-  let grps = make_groups c itms ptop_ctx update_config in
+  let grps = make_groups c itms (fun x -> Tli x) update_config in
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_item c ~last = function
     | `Item i ->

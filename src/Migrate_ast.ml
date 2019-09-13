@@ -98,6 +98,9 @@ module Pprintast = struct
   let expression f x = expression f (to_current.copy_expression x)
 
   let pattern f x = pattern f (to_current.copy_pattern x)
+
+  let toplevel_phrase f x =
+    toplevel_phrase f (to_current.copy_toplevel_phrase x)
 end
 
 module Position = struct
