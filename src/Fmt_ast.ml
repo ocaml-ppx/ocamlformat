@@ -949,11 +949,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
     match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
         let p = Params.get_list_pat c.conf ~ctx:ctx0 in
-        let cmt_break =
-          match c.conf.break_separators with
-          | `Before | `After -> break 1 2
-          | `After_and_docked -> break 1 0
-        in
+        let offset = if c.conf.dock_collection_brackets then 0 else 2 in
+        let cmt_break = break 1 offset in
         let fmt_pat ~first ~last (locs, xpat) =
           fmt_if_k (not first) p.sep_before
           $ Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat)
@@ -1858,11 +1855,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     match Sugar.list_exp c.cmts exp with
     | Some (loc_xes, nil_loc) ->
         let p = Params.get_list_expr c.conf in
-        let cmt_break =
-          match c.conf.break_separators with
-          | `Before | `After -> break 1 2
-          | `After_and_docked -> break 1 0
-        in
+        let offset = if c.conf.dock_collection_brackets then 0 else 2 in
+        let cmt_break = break 1 offset in
         hvbox_if has_attr 0
           (wrap_if has_attr "(" ")"
              ( p.box
@@ -3107,9 +3101,11 @@ and fmt_label_declaration c ctx decl ?(last = false) =
   let fmt_semicolon =
     match c.conf.break_separators with
     | `Before -> noop
-    | `After -> fmt_if (not last) ";"
-    | `After_and_docked ->
-        fmt_or_k last (fits_breaks ~level:5 "" ";") (str ";")
+    | `After ->
+        fmt_or_k last
+          (fmt_if_k c.conf.dock_collection_brackets
+             (fits_breaks ~level:5 "" ";"))
+          (str ";")
   in
   hovbox 0
     ( Cmts.fmt_before c pld_loc
