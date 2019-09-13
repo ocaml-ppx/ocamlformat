@@ -1641,6 +1641,11 @@ let validate () =
     `Error (false, "Must specify at least one input file, or `-` for stdin")
   else if has_stdin && inputs_len > 1 then
     `Error (false, "Cannot specify stdin together with other inputs")
+  else if has_stdin && Option.is_none !kind then
+    `Error
+      ( false
+      , "Must specify at least one of --impl, --intf or --use-file when \
+         reading from stdin" )
   else if has_stdin && !inplace then
     `Error (false, "Cannot specify stdin together with --inplace")
   else if !inplace && Option.is_some !output then
@@ -1889,7 +1894,7 @@ let kind_of file =
   | Some kind -> kind
   | None -> (
     match file with
-    | Stdin -> `Impl
+    | Stdin -> impossible "checked by validate"
     | File fname -> (
       match Filename.extension fname with
       | ".ml" -> `Impl
