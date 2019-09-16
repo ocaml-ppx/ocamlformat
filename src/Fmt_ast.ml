@@ -4367,4 +4367,6 @@ let entry_point ~f ~ctx source cmts conf l =
 
 let fmt_signature = entry_point ~f:fmt_signature ~ctx:Top
 
+let fmt_structure = entry_point ~f:fmt_structure ~ctx:Top
+
 let fmt_toplevel = entry_point ~f:fmt_toplevel ~ctx:Top

@@ -32,6 +32,10 @@ val intf : Conf.t -> signature -> signature
 val toplevel : Conf.t -> toplevel_phrase list -> toplevel_phrase list
 (** Normalize a toplevel structure. *)
 
+val equal_impl :
+  ignore_doc_comments:bool -> Conf.t -> structure -> structure -> bool
+(** Compare structures for equality up to normalization. *)
+
 val equal_intf :
   ignore_doc_comments:bool -> Conf.t -> signature -> signature -> bool
 (** Compare signatures for equality up to normalization. *)
@@ -50,6 +54,9 @@ val mapper : Conf.t -> Ast_mapper.mapper
 type docstring_error =
   | Moved of Location.t * Location.t * string
   | Unstable of Location.t * string
+
+val moved_docstrings_impl :
+  Conf.t -> structure -> structure -> docstring_error list
 
 val moved_docstrings_intf :
   Conf.t -> signature -> signature -> docstring_error list
