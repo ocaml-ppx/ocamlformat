@@ -29,20 +29,20 @@ val impl : Conf.t -> structure -> structure
 val intf : Conf.t -> signature -> signature
 (** Normalize a signature. *)
 
-val use_file : Conf.t -> toplevel_phrase list -> toplevel_phrase list
-(** Normalize a use_file. *)
+val toplevel : Conf.t -> toplevel_phrase list -> toplevel_phrase list
+(** Normalize a toplevel structure. *)
 
 val equal_intf :
   ignore_doc_comments:bool -> Conf.t -> signature -> signature -> bool
 (** Compare signatures for equality up to normalization. *)
 
-val equal_use_file :
+val equal_toplevel :
      ignore_doc_comments:bool
   -> Conf.t
   -> toplevel_phrase list
   -> toplevel_phrase list
   -> bool
-(** Compare use_file for equality up to normalization. *)
+(** Compare toplevel for equality up to normalization. *)
 
 val mapper : Conf.t -> Ast_mapper.mapper
 (** Ast_mapper for normalization transformations. *)
@@ -54,7 +54,7 @@ type docstring_error =
 val moved_docstrings_intf :
   Conf.t -> signature -> signature -> docstring_error list
 
-val moved_docstrings_use_file :
+val moved_docstrings_toplevel :
      Conf.t
   -> toplevel_phrase list
   -> toplevel_phrase list

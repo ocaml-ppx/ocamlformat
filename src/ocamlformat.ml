@@ -23,11 +23,11 @@ let moved_docstrings f c a b =
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
   { parse= Migrate_ast.Parse.use_file
-  ; init_cmts= Cmts.init_use_file
-  ; fmt= Fmt_ast.fmt_use_file
-  ; equal= equal Normalize.equal_use_file
-  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_use_file
-  ; normalize= normalize Normalize.use_file
+  ; init_cmts= Cmts.init_toplevel
+  ; fmt= Fmt_ast.fmt_toplevel
+  ; equal= equal Normalize.equal_toplevel
+  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_toplevel
+  ; normalize= normalize Normalize.toplevel
   ; printast= Migrate_ast.Printast.use_file }
 
 (** Operations on interface files. *)

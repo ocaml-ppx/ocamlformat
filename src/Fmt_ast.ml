@@ -4320,7 +4320,7 @@ let flatten_ptop =
     | Ptop_def items -> List.map items ~f:(fun i -> `Item i)
     | Ptop_dir d -> [`Directive d])
 
-let fmt_use_file c ctx itms =
+let fmt_toplevel c ctx itms =
   let itms = flatten_ptop itms in
   let update_config c = function
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
@@ -4367,4 +4367,4 @@ let entry_point ~f ~ctx source cmts conf l =
 
 let fmt_signature = entry_point ~f:fmt_signature ~ctx:Top
 
-let fmt_use_file = entry_point ~f:fmt_use_file ~ctx:Top
+let fmt_toplevel = entry_point ~f:fmt_toplevel ~ctx:Top

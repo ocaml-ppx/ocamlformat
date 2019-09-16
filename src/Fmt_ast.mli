@@ -18,6 +18,6 @@ open Parsetree
 val fmt_signature : Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
 (** Format a signature. *)
 
-val fmt_use_file :
+val fmt_toplevel :
   Source.t -> Cmts.t -> Conf.t -> toplevel_phrase list -> Fmt.t
-(** Format a use_file. *)
+(** Format a toplevel structure. *)

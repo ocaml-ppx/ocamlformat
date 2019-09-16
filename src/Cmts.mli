@@ -40,10 +40,10 @@ val init_intf : Source.t -> Parsetree.signature -> Cmt.t list -> t
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
-val init_use_file :
+val init_toplevel :
   Source.t -> Parsetree.toplevel_phrase list -> Cmt.t list -> t
-(** [init_use_file source use_file comments] associates each comment in
-    [comments] with a source location appearing in [use_file]. It uses
+(** [init_toplevel source toplevel comments] associates each comment in
+    [comments] with a source location appearing in [toplevel]. It uses
     [Source] to help resolve ambiguities. Initializes the state used by the
     [fmt] functions. *)
 
