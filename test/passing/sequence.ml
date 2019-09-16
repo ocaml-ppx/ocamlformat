@@ -17,7 +17,7 @@ let foo x y =
   do_some_setup x ;
   do_some_setup y ;
 
-  (* This is the important bit *)
+  (* Empty line before *)
   important_function x ;
   another_important_function x y ;
 
@@ -26,7 +26,7 @@ let foo x y =
 let foo x y =
   do_some_setup x ;
   do_some_setup y ;
-  (* This is the important bit *)
+  (* No empty line *)
   important_function x ;
   another_important_function x y ;
   cleanup x y
@@ -34,9 +34,25 @@ let foo x y =
 let foo x y =
   do_some_setup x ;
   do_some_setup y ;
-  (* This is the important bit *)
+  (* Empty line after *)
 
   important_function x ;
+  another_important_function x y ;
+  cleanup x y
+
+let foo x y =
+  do_some_setup x ;
+  do_some_setup y ; (* Empty line after, this above *)
+
+  important_function x ;
+  another_important_function x y ;
+  cleanup x y
+
+let foo x y =
+  do_some_setup x ;
+  do_some_setup y ;
+
+  (* Empty line before, this under *) important_function x ;
   another_important_function x y ;
   cleanup x y
 
