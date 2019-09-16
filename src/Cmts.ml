@@ -639,6 +639,8 @@ let remaining_comments t =
     ; get t.cmts_within "within"
     ; get t.cmts_after "after" ]
 
+let remaining_before t loc = Hashtbl.find_multi t.cmts_before loc
+
 let remaining_locs t = Hashtbl.to_alist t.remaining |> List.map ~f:fst
 
 let diff (conf : Conf.t) x y =

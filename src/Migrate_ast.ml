@@ -147,6 +147,8 @@ module Location = struct
 
   let width x = Position.distance x.loc_start x.loc_end
 
+  let height x = x.loc_end.pos_lnum - x.loc_start.pos_lnum + 1
+
   let compare_width_decreasing l1 l2 =
     match Position.compare l1.loc_start l2.loc_start with
     | 0 -> (

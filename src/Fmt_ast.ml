@@ -544,18 +544,12 @@ let fmt_docstring_padded c doc =
 let sequence_blank_line c xe1 xe2 =
   match c.conf.sequence_blank_line with
   | `Preserve_one ->
-      let l1 = xe1.ast.pexp_loc.loc_end.pos_lnum in
-      let rec blank_lines l2 =
-        let open Location in
-        let n = l2.loc_start.pos_lnum - l1 in
-        if n <= 0 then 0
-        else if Cmts.has_before c.cmts l2 then
-          let s = l2.loc_start in
-          let loc_start = {s with pos_lnum= s.pos_lnum - 1} in
-          blank_lines {l2 with loc_start}
-        else n
+      let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
+      let commented_lines =
+        List.fold ~init:0 (Cmts.remaining_before c.cmts l2)
+          ~f:(fun acc cmt -> acc + Location.height cmt.Cmt.loc)
       in
-      blank_lines xe2.ast.pexp_loc > 1
+      l2.loc_start.pos_lnum - l1.loc_end.pos_lnum - commented_lines > 1
   | `Compact -> false
 
 let rec fmt_extension c ctx key (ext, pld) =
