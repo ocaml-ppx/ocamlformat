@@ -527,6 +527,13 @@ let fooooooooooo = function
         bdy= fmt_longident_loc c lid
       ; epi= Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
+  | Pmty_alias lid ->
+      [ bdy fmt_longident_loc c lid
+      ; epi Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
+      ]
+  | Pmty_alias lid ->
+      [| bdy fmt_longident_loc c lid
+       ; epi Some (fmt_attributes c ~pre:(fmt "@ ")) |]
 
 let f () =
   let { aaaaaaaa
@@ -599,3 +606,21 @@ let g () =
      ; gggggggggg
      ; hhhhhhhhhh |] ->
       fooooooooo
+
+let _ =
+  (* comment here *)
+  { (* comment here *)
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaa= aaaaaaaaaaaaaaaaaaaaaaaa
+  ; bbbbbbbbbbbb: bbbbbbbbbbb = bbbbbbbbbbbbbbbbb }
+
+let _ =
+  (* comment here *)
+  [ (* comment here *)
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaa
+  ; bbbbbbbbbbbb bbbbbbbbbbb bbbbbbbbbbbbbbbbb ]
+
+let _ =
+  (* comment here *)
+  [| (* comment here *)
+     aaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaa
+   ; bbbbbbbbbbbb bbbbbbbbbbb bbbbbbbbbbbbbbbbb |]

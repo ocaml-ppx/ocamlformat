@@ -48,10 +48,14 @@ type record_type =
 val get_record_type : Conf.t -> record_type
 
 type elements_collection =
-  { box: Fmt.t -> Fmt.t
+  { docked_before: Fmt.t
+  ; break_before: Fmt.t
+  ; box: Fmt.t -> Fmt.t
   ; sep_before: Fmt.t
   ; sep_after_non_final: Fmt.t
-  ; sep_after_final: Fmt.t }
+  ; sep_after_final: Fmt.t
+  ; break_after: Fmt.t
+  ; docked_after: Fmt.t }
 
 type elements_collection_record_expr = {break_after_with: Fmt.t}
 
@@ -60,7 +64,7 @@ type elements_collection_record_pat = {wildcard: Fmt.t}
 val get_record_expr :
   Conf.t -> elements_collection * elements_collection_record_expr
 
-val get_list_expr : Conf.t -> elements_collection
+val get_list_expr : ?parens:bool -> Conf.t -> elements_collection
 
 val get_array_expr : Conf.t -> elements_collection
 
