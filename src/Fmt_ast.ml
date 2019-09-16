@@ -544,12 +544,22 @@ let fmt_docstring_padded c doc =
 let sequence_blank_line c xe1 xe2 =
   match c.conf.sequence_blank_line with
   | `Preserve_one ->
+      let open Location in
+      (* Count empty lines between [xe1] and [xe2], some may be comments *)
       let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
+      let a = l1.loc_end.pos_lnum and b = l2.loc_start.pos_lnum in
       let commented_lines =
+        (* Number of lines in [l] that are between [a] and [b], exclusive. *)
+        let height_constrained l =
+          max 0
+            ( min (b - 1) l.loc_end.pos_lnum
+            - max (a + 1) l.loc_start.pos_lnum
+            + 1 )
+        in
         List.fold ~init:0 (Cmts.remaining_before c.cmts l2)
-          ~f:(fun acc cmt -> acc + Location.height cmt.Cmt.loc)
+          ~f:(fun acc cmt -> acc + height_constrained cmt.Cmt.loc)
       in
-      l2.loc_start.pos_lnum - l1.loc_end.pos_lnum - commented_lines > 1
+      b - a - commented_lines > 1
   | `Compact -> false
 
 let rec fmt_extension c ctx key (ext, pld) =
