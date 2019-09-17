@@ -1,3 +1,4 @@
 --break-separators=after
 --break-collection-expressions=wrap
 --dock-collection-brackets
+--max-iter=3

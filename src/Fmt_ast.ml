@@ -1314,8 +1314,8 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
                    , (fmt_op, [(Nolabel, arg)]) )))
           $ fmt_atrs ) )
 
-and fmt_collection_body c ?(eol = fmt "@;<1000 0>") ?indent_wrap ?parens
-    ({ast= body; _} as xbody) =
+and fmt_collection_body c ?eol ?indent_wrap ?parens ({ast= body; _} as xbody)
+    =
   let ctx = Exp body in
   let space = true in
   match body with
@@ -1340,7 +1340,7 @@ and fmt_collection_body c ?(eol = fmt "@;<1000 0>") ?indent_wrap ?parens
       let parens = parenze_exp xbody in
       fmt_list_body c xbody pexp_attributes pexp_loc parens ?indent_wrap
         ~space
-  | _ -> (noop, fmt_expression c ?parens ~eol xbody)
+  | _ -> (noop, fmt_expression c ?parens ?eol xbody)
 
 (** The second returned value of [fmt_function_body] belongs to a box of
     level N-1 if the first returned value belongs to a box of level N. *)
@@ -1376,7 +1376,7 @@ and fmt_body c ?ext ?indent_wrap ({ast= body; _} as xbody) =
       , update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
-  | _ -> fmt_collection_body c ?indent_wrap xbody
+  | _ -> fmt_collection_body c ~eol:(fmt "@;<1000 0>") ?indent_wrap xbody
 
 and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
