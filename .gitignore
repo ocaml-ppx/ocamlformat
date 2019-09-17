@@ -5,3 +5,4 @@
 /ocamlformat_reason.install
 /test-extra/code
 /_opam
+/coverage
