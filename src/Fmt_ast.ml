@@ -1249,8 +1249,8 @@ and fmt_record_body c ?same_box ?(space = false) ctx flds default attributes
                 hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
                 $ str "with" $ p2.break_after_with)
           $ list_fl flds fmt_field )
-      $ p1.break_after $ p1.docked_after $ fmt_atrs $ Cmts.fmt_after c loc )
-  )
+      $ p1.break_after $ p1.docked_after $ fmt_atrs )
+    $ Cmts.fmt_after c loc )
 
 and fmt_array_body c ?same_box ?(space = false) ctx array attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
@@ -1277,8 +1277,8 @@ and fmt_array_body c ?same_box ?(space = false) ctx array attributes loc =
               (fmt_expressions c width (sub_exp ~ctx) e1N
                  (sub_exp ~ctx >> fmt_expression c)
                  p)
-          $ p.break_after $ p.docked_after $ fmt_atrs $ Cmts.fmt_after c loc
-          ) )
+          $ p.break_after $ p.docked_after $ fmt_atrs )
+        $ Cmts.fmt_after c loc )
 
 and fmt_list_body c ?(indent_wrap = 0) ?same_box ?(space = false) xexp
     attributes loc parens =
