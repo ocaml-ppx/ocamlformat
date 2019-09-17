@@ -131,7 +131,7 @@ val remaining_comments : t -> (Cmt.t * string * Sexp.t) list
 val remaining_locs : t -> Location.t list
 
 val remaining_before : t -> Location.t -> Cmt.t list
-(** Returns comments before [loc] *)
+(** [remaining_before c loc] returns the comments before [loc] *)
 
 val diff :
   Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
