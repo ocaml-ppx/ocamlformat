@@ -3570,6 +3570,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
   let single_line =
     Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
     && Option.for_all xmty ~f:(fun x -> module_type_is_simple x.ast)
+    && List.for_all xargs ~f:(fun (_, arg) -> Option.is_none arg)
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
