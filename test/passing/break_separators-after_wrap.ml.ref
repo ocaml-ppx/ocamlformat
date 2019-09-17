@@ -395,3 +395,24 @@ let _ =
   [| (* comment here *)
      aaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaa;
      bbbbbbbbbbbb bbbbbbbbbbb bbbbbbbbbbbbbbbbb |]
+
+[@@@ocamlformat "space-around-records=true"]
+
+let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }
+
+let foooooo fooo fooo fooo =
+  { fooo; foooo= fooooo_foooo foo.fooo; foooo= Foooo.foooo fooooo fooo.foo }
+
+[@@@ocamlformat "space-around-lists=true"]
+
+let foooooo fooo fooo fooo = [ fooo; foooo fooooo_foooo foo.fooo ]
+
+let foooooo fooo fooo fooo =
+  [ fooo; foooo fooooo_foooo foo.fooo; foooo Foooo.foooo fooooo fooo.foo ]
+
+[@@@ocamlformat "space-around-arrays=true"]
+
+let foooooo fooo fooo fooo = [| fooo; foooo fooooo_foooo foo.fooo |]
+
+let foooooo fooo fooo fooo =
+  [| fooo; foooo fooooo_foooo foo.fooo; foooo Foooo.foooo fooooo fooo.foo |]

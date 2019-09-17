@@ -72,6 +72,18 @@ let protect =
           first := false ) ;
         raise exc)
 
+let is_collection_body {ast= body; _} =
+  match body with
+  | {pexp_desc= Pexp_record _; _}
+   |{pexp_desc= Pexp_array (_ :: _); _}
+   |{ pexp_desc=
+        Pexp_construct
+          ( {txt= Lident "::"; _}
+          , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []; _} )
+    ; _ } ->
+      true
+  | _ -> false
+
 let update_config ?quiet c l =
   {c with conf= List.fold ~init:c.conf l ~f:(Conf.update ?quiet)}
 
@@ -1183,7 +1195,8 @@ and fmt_fun_args c ?(pro = noop) args =
   in
   fmt_if_k (not (List.is_empty args)) (pro $ list args "@;" fmt_fun_arg)
 
-and fmt_record_body c ?(space = false) ctx flds default attributes loc =
+and fmt_record_body c ?same_box ?(space = false) ctx flds default attributes
+    loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let fmt_field (lid1, f) =
     let fmt_rhs e = fmt_expression c (sub_exp ~ctx e) in
@@ -1218,7 +1231,7 @@ and fmt_record_body c ?(space = false) ctx flds default attributes loc =
           Cmts.fmt c f.pexp_loc @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1
       )
   in
-  let p1, p2 = Params.get_record_expr c.conf in
+  let p1, p2 = Params.get_record_expr c.conf ?same_box in
   let fmt_field ~first ~last x =
     fmt_if_k (not first) p1.sep_before
     $ fmt_field x
@@ -1239,7 +1252,7 @@ and fmt_record_body c ?(space = false) ctx flds default attributes loc =
       $ p1.break_after $ p1.docked_after $ fmt_atrs $ Cmts.fmt_after c loc )
   )
 
-and fmt_array_body c ?(space = false) ctx array attributes loc =
+and fmt_array_body c ?same_box ?(space = false) ctx array attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   match array with
@@ -1252,7 +1265,7 @@ and fmt_array_body c ?(space = false) ctx array attributes loc =
              ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c loc)
              $ fmt_atrs )) )
   | e1N ->
-      let p = Params.get_array_expr c.conf in
+      let p = Params.get_array_expr c.conf ?same_box in
       let space = space && c.conf.dock_collection_brackets in
       ( fmt_if space "@ "
         $ Cmts.fmt_before c loc ~adj:noop
@@ -1267,14 +1280,14 @@ and fmt_array_body c ?(space = false) ctx array attributes loc =
           $ p.break_after $ p.docked_after $ fmt_atrs $ Cmts.fmt_after c loc
           ) )
 
-and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
-    parens =
+and fmt_list_body c ?(indent_wrap = 0) ?same_box ?(space = false) xexp
+    attributes loc parens =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let has_attr = not (List.is_empty attributes) in
   match Sugar.list_exp c.cmts xexp.ast with
   | Some (loc_xes, nil_loc) ->
       let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
-      let p = Params.get_list_expr c.conf ~parens:has_attr in
+      let p = Params.get_list_expr c.conf ~parens:has_attr ?same_box in
       let offset = if c.conf.dock_collection_brackets then 0 else 2 in
       let cmt_break = break 1 offset in
       let space = space && c.conf.dock_collection_brackets in
@@ -1314,17 +1327,20 @@ and fmt_list_body c ?(indent_wrap = 0) ?(space = false) xexp attributes loc
                    , (fmt_op, [(Nolabel, arg)]) )))
           $ fmt_atrs ) )
 
-and fmt_collection_body c ?eol ?indent_wrap ?parens ({ast= body; _} as xbody)
-    =
+and fmt_collection_body c ?eol ?indent_wrap ?parens ?same_box
+    ({ast= body; _} as xbody) =
   let ctx = Exp body in
   let space = true in
   match body with
   | {pexp_desc= Pexp_record (flds, default); pexp_attributes; pexp_loc; _}
-    when c.conf.dock_collection_brackets ->
+    when c.conf.dock_collection_brackets
+         && not (Location.is_single_line pexp_loc c.conf.margin) ->
       fmt_record_body c ctx flds default pexp_attributes pexp_loc ~space
+        ?same_box
   | {pexp_desc= Pexp_array a; pexp_attributes; pexp_loc; _}
-    when c.conf.dock_collection_brackets ->
-      fmt_array_body c ctx a pexp_attributes pexp_loc ~space
+    when c.conf.dock_collection_brackets
+         && not (Location.is_single_line pexp_loc c.conf.margin) ->
+      fmt_array_body c ctx a pexp_attributes pexp_loc ~space ?same_box
   | { pexp_desc=
         Pexp_construct
           ( {txt= Lident "::"; loc= _}
@@ -1336,10 +1352,11 @@ and fmt_collection_body c ?eol ?indent_wrap ?parens ({ast= body; _} as xbody)
     ; pexp_attributes
     ; pexp_loc
     ; _ }
-    when c.conf.dock_collection_brackets ->
+    when c.conf.dock_collection_brackets
+         && not (Location.is_single_line pexp_loc c.conf.margin) ->
       let parens = parenze_exp xbody in
       fmt_list_body c xbody pexp_attributes pexp_loc parens ?indent_wrap
-        ~space
+        ~space ?same_box
   | _ -> (noop, fmt_expression c ?parens ?eol xbody)
 
 (** The second returned value of [fmt_function_body] belongs to a box of
@@ -1376,7 +1393,9 @@ and fmt_body c ?ext ?indent_wrap ({ast= body; _} as xbody) =
       , update_config_maybe_disabled c pexp_loc pexp_attributes
         @@ fun c ->
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
-  | _ -> fmt_collection_body c ~eol:(fmt "@;<1000 0>") ?indent_wrap xbody
+  | _ ->
+      fmt_collection_body c ~eol:(fmt "@;<1000 0>") ?indent_wrap xbody
+        ~same_box:false
 
 and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
@@ -4336,7 +4355,12 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
               (fits_breaks " =" ~hint:(1000, 0) "=")
               (fmt "@;<1 2>=")
           $ pre_body )
-      $ fmt "@ " $ body $ Cmts.fmt_after c loc
+      $ fmt_or
+          ( is_collection_body xbody && c.conf.dock_collection_brackets
+          && not (Location.is_single_line xbody.ast.pexp_loc c.conf.margin)
+          )
+          "@;<1000 0>" "@ "
+      $ body $ Cmts.fmt_after c loc
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" at_at_attrs
       $ (match in_ with Some in_ -> in_ indent | None -> noop)
       $ fmt_opt epi )
