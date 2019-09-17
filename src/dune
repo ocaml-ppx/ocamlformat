@@ -18,6 +18,7 @@
 (executables
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
+ ;;INSERT_BISECT_HERE;;
  (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser re uuseg uuseg.string))
 
 (rule
