@@ -541,6 +541,27 @@ let fmt_assign_arrow c =
 let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
 
+let sequence_blank_line c xe1 xe2 =
+  match c.conf.sequence_blank_line with
+  | `Preserve_one ->
+      let open Location in
+      (* Count empty lines between [xe1] and [xe2], some may be comments *)
+      let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
+      let a = l1.loc_end.pos_lnum and b = l2.loc_start.pos_lnum in
+      let commented_lines =
+        (* Number of lines in [l] that are between [a] and [b], exclusive. *)
+        let height_constrained l =
+          max 0
+            ( min (b - 1) l.loc_end.pos_lnum
+            - max (a + 1) l.loc_start.pos_lnum
+            + 1 )
+        in
+        List.fold ~init:0 (Cmts.remaining_before c.cmts l2)
+          ~f:(fun acc cmt -> acc + height_constrained cmt.Cmt.loc)
+      in
+      b - a - commented_lines > 1
+  | `Compact -> false
+
 let rec fmt_extension c ctx key (ext, pld) =
   match (pld, ctx) with
   | ( PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
@@ -1294,17 +1315,9 @@ and fmt_args ~first:first_grp ~last:last_grp c ctx args =
   $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
 
 and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
-  let fmt_sep ?(force_break = false) xe1 ext xe2 =
-    let blank_line =
-      match c.conf.sequence_blank_line with
-      | `Preserve_one ->
-          let l1 = xe1.ast.pexp_loc.loc_end.pos_lnum in
-          let l2 = xe2.ast.pexp_loc.loc_start.pos_lnum in
-          l2 - l1 > 1
-      | `Compact -> false
-    in
+  let fmt_sep c ?(force_break = false) xe1 ext xe2 =
     let break =
-      if blank_line then fmt "\n@;<1000 0>"
+      if sequence_blank_line c xe1 xe2 then fmt "\n@;<1000 0>"
       else if c.conf.break_sequences || force_break then fmt "@;<1000 0>"
       else if parens && Poly.(c.conf.sequence_style = `Before) then
         fmt "@;<1 -2>"
@@ -1332,14 +1345,14 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
   | _ -> impossible "at least two elements" ) ;
   let grps = List.group elts ~break in
   let fmt_seq ?prev (ext, curr) ?next:_ =
-    let f (_, prev) = fmt_sep prev ext curr in
+    let f (_, prev) = fmt_sep c prev ext curr in
     Option.value_map prev ~default:noop ~f $ fmt_expression c curr
   in
   let fmt_seq_list ?prev x ?next:_ =
     let f prev =
       let prev = snd (List.last_exn prev) in
       let ext, curr = List.hd_exn x in
-      fmt_sep ~force_break:true prev ext curr
+      fmt_sep c ~force_break:true prev ext curr
     in
     Option.value_map prev ~default:noop ~f $ list_pn x fmt_seq
   in
