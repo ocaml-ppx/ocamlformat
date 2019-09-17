@@ -1239,7 +1239,7 @@ and fmt_record_body c ?same_box ?(space = false) ctx flds default attributes
   in
   let space = space && c.conf.dock_collection_brackets in
   ( fmt_if space "@ "
-    $ Cmts.fmt_before c loc ~adj:noop
+    $ Cmts.fmt_before c loc ~adj:(fmt "@ ")
     $ p1.docked_before $ p1.break_before
   , update_config_maybe_disabled c loc attributes
     @@ fun c ->
@@ -1268,7 +1268,7 @@ and fmt_array_body c ?same_box ?(space = false) ctx array attributes loc =
       let p = Params.get_array_expr c.conf ?same_box in
       let space = space && c.conf.dock_collection_brackets in
       ( fmt_if space "@ "
-        $ Cmts.fmt_before c loc ~adj:noop
+        $ Cmts.fmt_before c loc ~adj:(fmt "@ ")
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
@@ -1292,7 +1292,7 @@ and fmt_list_body c ?(indent_wrap = 0) ?same_box ?(space = false) xexp
       let cmt_break = break 1 offset in
       let space = space && c.conf.dock_collection_brackets in
       ( fmt_if space "@ "
-        $ Cmts.fmt_before c loc ~adj:noop
+        $ Cmts.fmt_before c loc ~adj:(fmt "@ ")
         $ p.docked_before $ p.break_before
       , update_config_maybe_disabled c loc attributes
         @@ fun c ->
