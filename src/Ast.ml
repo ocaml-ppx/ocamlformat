@@ -671,7 +671,9 @@ let location = function
   | Mod x -> x.pmod_loc
   | Sig x -> x.psig_loc
   | Str x -> x.pstr_loc
-  | Top | Tli _ -> Location.none
+  | Tli (`Item x) -> x.pstr_loc
+  | Tli (`Directive x) -> x.pdir_loc
+  | Top -> Location.none
 
 let break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
     (i2, c2) =
