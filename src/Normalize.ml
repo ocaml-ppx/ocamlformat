@@ -367,7 +367,7 @@ let impl c = Mapper.structure (mapper c)
 
 let intf c = Mapper.signature (mapper c)
 
-let use_file c = Mapper.use_file (mapper c)
+let toplevel c = Mapper.use_file (mapper c)
 
 let mapper_ignore_doc_comment c = make_mapper c ~ignore_doc_comment:true
 
@@ -387,7 +387,7 @@ let equal_intf ~ignore_doc_comments c ast1 ast2 =
   in
   Poly.(map ast1 = map ast2)
 
-let equal_use_file ~ignore_doc_comments c ast1 ast2 =
+let equal_toplevel ~ignore_doc_comments c ast1 ast2 =
   let map =
     if ignore_doc_comments then Mapper.use_file (mapper_ignore_doc_comment c)
     else Mapper.use_file (mapper c)
@@ -450,7 +450,7 @@ let docstrings_intf c s =
   in
   !docstrings
 
-let docstrings_use_file c s =
+let docstrings_toplevel c s =
   let docstrings = ref [] in
   let (_ : toplevel_phrase list) =
     Mapper.use_file (make_docstring_mapper c docstrings) s
@@ -500,8 +500,8 @@ let moved_docstrings_impl c s1 s2 = moved_docstrings c docstrings_impl s1 s2
 
 let moved_docstrings_intf c s1 s2 = moved_docstrings c docstrings_intf s1 s2
 
-let moved_docstrings_use_file c s1 s2 =
-  moved_docstrings c docstrings_use_file s1 s2
+let moved_docstrings_toplevel c s1 s2 =
+  moved_docstrings c docstrings_toplevel s1 s2
 
 let docstring conf =
   let c = {conf; normalize_code= impl conf} in

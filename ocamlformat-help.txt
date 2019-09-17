@@ -519,7 +519,7 @@ OPTIONS
            subdirectories.
 
        --use-file
-           Parse file with unrecognized extension as a use_file.
+           Deprecated. Same as impl.
 
        --version
            Show version information.

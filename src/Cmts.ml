@@ -441,7 +441,7 @@ let init_impl = init Mapper.structure
 
 let init_intf = init Mapper.signature
 
-let init_use_file = init Mapper.use_file
+let init_toplevel = init Mapper.use_file
 
 let preserve fmt_x x =
   let buf = Buffer.create 128 in
