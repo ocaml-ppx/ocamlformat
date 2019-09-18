@@ -2108,6 +2108,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           $ p.break_end_branch ) ) )
                 $ fmt_if_k (not last) p.space_between_branches)))
   | Pexp_let (rec_flag, bindings, body) ->
+      let xbody = sub_exp ~ctx body in
       let indent_after_in =
         match body.pexp_desc with
         | Pexp_let _ | Pexp_letmodule _
@@ -2123,12 +2124,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                         , _ )
                   ; pstr_loc= _ } ] ) ->
             0
-        | _ -> c.conf.indent_after_in
+        | _ ->
+            if
+              c.conf.dock_collection_brackets && is_collection_body xbody
+              && not (Location.is_single_line body.pexp_loc c.conf.margin)
+            then 2
+            else c.conf.indent_after_in
       in
-      let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
+      let fmt_pre_body, fmt_body =
+        fmt_collection_body c xbody ~same_box:false ~indent_wrap
+      in
       let parens = parens || not (List.is_empty pexp_attributes) in
       fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
-        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
+        ~attributes:pexp_attributes ~fmt_atrs ~fmt_pre_body ~fmt_body
         ~body_loc:body.pexp_loc ~indent_after_in
   | Pexp_letexception (ext_cstr, exp) ->
       let pre = fmt "let exception@ " in
@@ -2683,10 +2691,10 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
         | Pcl_let _ -> 0
         | _ -> c.conf.indent_after_in
       in
-      let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
+      let fmt_body = fmt_class_expr c (sub_cl ~ctx body) in
       let parens = parens || not (List.is_empty pcl_attributes) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
-        ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
+        ~attributes:pcl_attributes ~fmt_atrs ~fmt_body ~body_loc:body.pcl_loc
         ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
@@ -4162,8 +4170,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 
-and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
-    ~body_loc ~attributes ~indent_after_in =
+and fmt_let ?(fmt_pre_body = noop) c ctx ~ext ~rec_flag ~bindings ~parens
+    ~fmt_atrs ~fmt_body ~loc ~body_loc ~attributes ~indent_after_in =
   let fmt_in indent =
     match c.conf.break_before_in with
     | `Fit_or_vertical -> break 1 (-indent) $ str "in"
@@ -4192,10 +4200,10 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     ~parens:(parens || not (List.is_empty attributes))
     ~fits_breaks:false
     (vbox 0
-       ( hvbox 0 (list_fl bindings fmt_binding)
+       ( hvbox 0 (list_fl bindings fmt_binding $ fmt_pre_body)
        $ ( if blank_line_after_in then fmt "\n@,"
          else break 1000 indent_after_in )
-       $ hvbox 0 fmt_expr ))
+       $ hvbox 0 fmt_body ))
   $ fmt_atrs
 
 and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings ~body_loc
