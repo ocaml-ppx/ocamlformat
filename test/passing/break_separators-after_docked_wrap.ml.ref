@@ -153,10 +153,8 @@ type trace_mod_funs = {
   trace_funs: bool Map.M(String).t;
 }
 
-let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} = {
-  aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
-  bbbbbbbbbbbbb= bbb bb bbbbbb;
-}
+let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
+  {aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb}
 
 let x
     {
@@ -308,10 +306,8 @@ type t =
   (string Location.loc * bool) list option
   * (string Location.loc * payload) list
 
-let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} = {
-  aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa;
-  bbbbbbbbbbbbb= bbb bb bbbbbb;
-}
+let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
+  {aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb}
 
 let x
     {
@@ -442,16 +438,10 @@ let _ = (* comment here *) [|
 
 [@@@ocamlformat "space-around-records=true"]
 
-let foooooo fooo fooo fooo = {
-  fooo;
-  foooo= fooooo_foooo foo.fooo;
-}
+let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }
 
-let foooooo fooo fooo fooo = {
-  fooo;
-  foooo= fooooo_foooo foo.fooo;
-  foooo= Foooo.foooo fooooo fooo.foo;
-}
+let foooooo fooo fooo fooo =
+  { fooo; foooo= fooooo_foooo foo.fooo; foooo= Foooo.foooo fooooo fooo.foo }
 
 [@@@ocamlformat "space-around-lists=true"]
 

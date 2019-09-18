@@ -1243,7 +1243,7 @@ and fmt_record_body c ?same_box ?(space = false) ctx flds default attributes
     $ p1.docked_before $ p1.break_before
   , update_config_maybe_disabled c loc attributes
     @@ fun c ->
-    vbox 0
+    hvbox 0
       ( p1.box
           ( opt default (fun d ->
                 hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
