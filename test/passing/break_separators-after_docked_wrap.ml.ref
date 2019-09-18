@@ -436,6 +436,20 @@ let _ = (* comment here *) [|
   bbbbbbbbbbbb bbbbbbbbbbb bbbbbbbbbbbbbbbbb;
 |]
 
+let fooooo =
+  match fooooooooooooooooo with
+  | Some args -> (
+    match (ident, args) with
+    | Ldot (Lident "String", "get"), [_] ->
+        Some ({Location.txt= index_op_string; loc}, args) )
+
+module M = struct
+  let lshift {left; right} =
+    match right with
+    | x :: xs -> {left= x :: left; right= xs}
+    | _ -> assert false
+end
+
 [@@@ocamlformat "space-around-records=true"]
 
 let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }
