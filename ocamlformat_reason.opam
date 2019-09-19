@@ -24,7 +24,7 @@ depends: [
   "dune" {>= "1.11.1"}
   "fpath"
   "ocaml-migrate-parsetree" {>= "1.0.10"}
-  "odoc" {>= "1.4.1"}
+  "odoc" {>= "1.4.2"}
   "re"
   "stdio"
   "uutf"
