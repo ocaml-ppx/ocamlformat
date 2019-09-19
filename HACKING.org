@@ -4,6 +4,8 @@
 - dune subst
 - ocaml tools/gen_version.mlt src/Version.ml M.N.O
 - git add src/Version.ml
+- update CHANGES.md by editing output of tools/gen_changes.sh vCURR vM.N.O
+- git commit -m "Update changes" -- CHANGES.md
 - git commit -a -m vM.N.O
 - topkg tag M.N.O -f
 - git push origin refs/heads/vM.N.O refs/tags/M.N.O
