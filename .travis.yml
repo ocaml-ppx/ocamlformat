@@ -1,6 +1,6 @@
 language: c
 env:
-  - OCAML_VERSION=4.08.0
+  - OCAML_VERSION=4.09.0
 cache:
   directories:
     - ${HOME}/.opam

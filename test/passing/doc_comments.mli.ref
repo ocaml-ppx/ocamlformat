@@ -285,15 +285,15 @@ end
     ]}
     {[
       First line
-            on the same line
-            as opening
+      on the same line
+      as opening
     ]} *)
 
 module X : sig
   (** {[
         First line
-                on the same line
-                as opening
+        on the same line
+        as opening
       ]} *)
 end
 
