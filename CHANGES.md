@@ -1,5 +1,6 @@
 ### (master)
 
+  + Project: use a CHANGES.md log file again (#1023) (Guillaume Petiot)
   + Parse toplevel directives (#1020) (Jules Aguillon)
   + Fix extra blank line in sequence (#1021) (Jules Aguillon)
   + Check functor arguments when computing placement of doc comments (#1013) (Jules Aguillon)
