@@ -18,7 +18,7 @@ install:
   - opam pin add --no-action ocamlformat .
   - opam install --deps-only ocamlformat
 script:
-  - ! git diff --exit-code $TRAVIS_COMMIT_RANGE -- CHANGES.md >/dev/null
+  - ! git diff --exit-code "$TRAVIS_MERGE_BASE..$TRAVIS_PR_HEAD" -- CHANGES.md >/dev/null
   - opam switch ${OCAML_VERSION}
   - opam exec -- make test
   - opam install ocamlformat
