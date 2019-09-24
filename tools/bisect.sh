@@ -38,4 +38,4 @@ bisect-ppx-report -I "$tmp/_build/default" -html "$dst" `find "$tmp" -name 'bise
 echo "Coverage report generated in $dst/"
 echo " => open $dst/index.html"
 
-git worktree remove -f "$tmp"
+git worktree remove --force "$tmp"
