@@ -1,13 +1,8 @@
 .merlin
 /_build
-/dune-workspace
 /ocamlformat.install
+/ocamlformat_diff.install
 /ocamlformat_reason.install
-/src/mod_dep.dot
 /test-extra/code
-/test-extra/bisect*out
-/test/bisect*out
-/bisect*out
-/_coverage
-_opam
-/vendor/ocamlformat_support/ocamlformat_support.install
+/_opam
+/coverage

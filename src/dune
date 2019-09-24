@@ -1,41 +1,30 @@
-(* -*- tuareg -*- *)
-
-let preprocess =
-  match Jbuild_plugin.V1.context with
-  | "coverage" -> "(preprocess (pps bisect_ppx))"
-  | _ -> ""
-
-;;
-Jbuild_plugin.V1.send
-@@ Format.sprintf
-     {|
 (rule
  (targets Version.ml)
  (deps (universe))
- (action (run ocaml %%{dep:../tools/gen_version.mlt} Version.ml))
+ (action (run ocaml %{dep:../tools/gen_version.mlt} Version.ml))
  (mode fallback))
 
 (rule
  (copy#
-  compat/%%{read:compat-file}
+  compat/%{read:compat-file}
   compat.ml))
 
 (rule
  (targets compat-file)
- (action  (run %%{ocaml} %%{dep:../tools/gen_compat.ml} %%{ocaml_version})))
+ (action  (run %{ocaml} %{dep:../tools/gen_compat.ml} %{ocaml_version})))
 
 (ocamllex Literal_lexer)
 
 (executables
  (names ocamlformat ocamlformat_reason)
  (flags (:standard -open Import))
- %s
+ ;;INSERT_BISECT_HERE;;
  (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser re uuseg uuseg.string))
 
 (rule
  (targets ocamlformat.1)
  (deps ocamlformat.exe)
- (action (with-stdout-to %%{targets} (run ./ocamlformat.exe --help=groff))))
+ (action (with-stdout-to %{targets} (run ./ocamlformat.exe --help=groff))))
 
 (install
  (section bin)
@@ -51,5 +40,3 @@ Jbuild_plugin.V1.send
  (section man)
  (files ocamlformat.1)
  (package ocamlformat))
-|}
-     preprocess

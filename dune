@@ -9,6 +9,10 @@
 ;                                                                    ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(env
+ (release
+  (flags (:standard -noassert))))
+
 (rule
  (targets ocamlformat-help.txt)
  (deps ./src/ocamlformat.exe)
