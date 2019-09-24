@@ -1,5 +1,7 @@
 ### (master)
 
+  + Fix test_branch.sh (#1027) (Guillaume Petiot)
+  + Improve: remove the bisect_ppx dependency and clean Makefile (#1005) (Jules Aguillon)
   + Project: use a CHANGES.md log file again (#1023) (Guillaume Petiot)
   + Support OCaml 4.09.0 (add the odoc.1.4.2 dependency) (#1024) (Guillaume Petiot)
   + Parse toplevel directives (#1020) (Jules Aguillon)
