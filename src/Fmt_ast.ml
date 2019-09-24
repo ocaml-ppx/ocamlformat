@@ -2988,8 +2988,7 @@ and fmt_class_params c ctx params =
     (hvbox 0
        (wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param) $ fmt "@ "))
 
-and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
-    ?(eq = "=") decl =
+and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
   let { ptype_name= {txt; loc}
       ; ptype_params
       ; ptype_cstrs
@@ -3098,7 +3097,6 @@ and fmt_type_declaration c ?ext ?(pre = "") ?(brk = noop) ctx ?fmt_name
                $ fmt_cstrs ptype_cstrs )
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
        $ doc_after )
-  $ brk
 
 and fmt_label_declaration c ctx decl ?(last = false) =
   let {pld_mutable; pld_name; pld_type; pld_loc; pld_attributes} = decl in
@@ -3983,10 +3981,9 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
       if first then
         if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
       else "and"
-    and brk = fmt_if (not last) "\n" in
+    in
     let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?eq ?ext ~brk ctx decl
-    $ fmt_if (not last) "@ "
+    fmt_type_declaration c ~pre ?eq ?ext ctx decl $ fmt_if (not last) "\n@ "
   in
   vbox 0 (list_fl decls fmt_decl)
 
