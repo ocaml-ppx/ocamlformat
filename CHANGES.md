@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix dropped comment after infix op (#1030) (Guillaume Petiot)
   + Fix: no newline if the input is empty (#1031) (Guillaume Petiot)
   + Fix unstable comments around attributes (#1029) (Guillaume Petiot)
   + Improve: use the same sets of options for both branches by default in test_branch.sh (#1033) (Guillaume Petiot)
