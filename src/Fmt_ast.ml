@@ -1606,16 +1606,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
            $ body ))
   | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc}
+      ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
           ; pexp_attributes= []
           ; pexp_loc= _
           ; _ } as op )
       , [ (Nolabel, l)
         ; ( Nolabel
-          , ( {pexp_desc= Pexp_function cs; pexp_loc= _; pexp_attributes; _}
-            as r ) ) ] )
+          , ({pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes; _} as r)
+          ) ] )
     when is_infix_id id && not c.conf.break_infix_before_func ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
+      let cmts_before = Cmts.fmt_before ~adj:noop c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
       let indent = function_indent c ~ctx ~default:0 in
@@ -1626,7 +1627,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt "@;"
                $ hovbox 2
                    ( fmt_expression c (sub_exp ~ctx op)
-                   $ fmt "@ " $ fmt_if parens_r "( " $ str "function"
+                   $ fmt "@ " $ cmts_before $ fmt_if parens_r "( "
+                   $ str "function"
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes ) )
            $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )" ))
