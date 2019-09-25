@@ -1567,9 +1567,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           ; _ } as op )
       , [ (Nolabel, l)
         ; ( Nolabel
-          , ({pexp_desc= Pexp_fun _; pexp_loc= _; pexp_attributes; _} as r)
-          ) ] )
+          , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) ) ]
+      )
     when is_infix_id id && not c.conf.break_infix_before_func ->
+      (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
+      let cmts_before = Cmts.fmt_before ~adj:noop c pexp_loc in
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
@@ -1593,7 +1595,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ fmt "@;"
                    $ hovbox 2
                        ( fmt_expression c (sub_exp ~ctx op)
-                       $ fmt "@ fun "
+                       $ fmt "@ " $ cmts_before $ str "fun "
                        $ fmt_attributes c ~key:"@" pexp_attributes
                            ~suf:(str " ")
                        $ hvbox_if
