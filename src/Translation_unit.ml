@@ -268,7 +268,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
         Format_.fprintf fs "%s@." t.prefix ;
       let do_fmt = xunit.fmt source_t cmts_t conf t.ast in
       if box_debug then Fmt.with_box_debug do_fmt fs else do_fmt fs ;
-      Format_.pp_print_newline fs () ;
+      if not (String.is_empty source) then Format_.pp_print_newline fs () ;
       (Buffer.contents buffer, cmts_t)
     in
     if Conf.debug then

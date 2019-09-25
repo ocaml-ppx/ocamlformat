@@ -67,4 +67,3 @@ assignment-operator=end-line (profile ocamlformat (file .ocamlformat:1))
 align-variants-decl=false (profile ocamlformat (file .ocamlformat:1))
 align-constructors-decl=false (profile ocamlformat (file .ocamlformat:1))
 align-cases=false (profile ocamlformat (file .ocamlformat:1))
-
