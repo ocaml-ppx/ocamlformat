@@ -178,3 +178,10 @@ type t = {a: int}
 module type A = sig
   module A := A.B [@@attr]
 end
+
+module M = struct
+  type t
+  [@@immediate]
+  (* ______________________________________ *)
+  [@@deriving variants, sexp_of]
+end

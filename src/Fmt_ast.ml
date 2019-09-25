@@ -616,7 +616,8 @@ and fmt_attributes c ?(pre = noop) ?(suf = noop) ~key attrs =
   let num = List.length attrs in
   let fmt_attr ~first ~last {attr_name; attr_payload; attr_loc} =
     fmt_or_k first (open_hvbox 0) (fmt "@ ")
-    $ Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload))
+    $ hvbox 0
+        (Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload)))
     $ fmt_if_k last (close_box $ suf)
   in
   fmt_if_k (num > 0) (pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
