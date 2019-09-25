@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix docked collection expressions in let-bindings (#1022) (Guillaume Petiot)
   + Fix unstabilizing comments on assignments (#1093) (Guillaume Petiot)
   + Internal: Make Fmt.t abstract (#1109) (Jules Aguillon)
   + Improve: give a hint when warning 50 is raised (#1111) (Guillaume Petiot)
