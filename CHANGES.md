@@ -1,6 +1,6 @@
 ### (master)
 
-  + Fix unsable comments around attributes (#1029) (Guillaume Petiot)
+  + Fix unstable comments around attributes (#1029) (Guillaume Petiot)
   + Fix test_branch.sh and CI checking of CHANGES.md (#1032) (Jules Aguillon)
   + Fix flag of git-worktree in test_branch.sh and bisect.sh (#1027) (Guillaume Petiot)
   + Improve: remove the bisect_ppx dependency and clean Makefile (#1005) (Jules Aguillon)
