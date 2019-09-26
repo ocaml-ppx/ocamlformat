@@ -4174,19 +4174,18 @@ and fmt_let ?(fmt_pre_body = noop) c ctx ~ext ~rec_flag ~bindings ~parens
     ~fmt_atrs ~fmt_body ~loc ~body_loc ~attributes ~indent_after_in =
   let fmt_in indent =
     match c.conf.break_before_in with
-    | `Fit_or_vertical -> break 1 (-indent) $ str "in"
-    | `Auto -> fits_breaks " in" ~hint:(1, -indent) "in"
+    | `Fit_or_vertical -> break 1 (-indent)
+    | `Auto -> fits_breaks " " ~hint:(1, -indent) ""
   in
-  let fmt_binding ~first ~last binding =
+  let fmt_binding ~first ~last {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} =
     let ext = if first then ext else None in
-    let in_ indent = fmt_if_k last (fmt_in indent) in
-    let {pvb_pat; pvb_expr; pvb_attributes= attributes; pvb_loc= loc} =
-      binding
+    let in_ indent =
+      fmt_if_k last (fmt_in indent $ hovbox 0 (str "in" $ fmt_pre_body))
     in
     let op = if first then "let" else "and" in
     let rec_flag = first && Poly.(rec_flag = Recursive) in
-    fmt_value_binding c op ~rec_flag ?ext ctx ~in_ ~attributes ~loc pvb_pat
-      pvb_expr
+    fmt_value_binding c op ~rec_flag ?ext ctx ~in_ ~attributes:pvb_attributes
+      ~loc:pvb_loc pvb_pat pvb_expr
     $ fmt_if (not last)
         ( match c.conf.let_and with
         | `Sparse -> "@;<1000 0>"
@@ -4200,9 +4199,9 @@ and fmt_let ?(fmt_pre_body = noop) c ctx ~ext ~rec_flag ~bindings ~parens
     ~parens:(parens || not (List.is_empty attributes))
     ~fits_breaks:false
     (vbox 0
-       ( hvbox 0 (list_fl bindings fmt_binding $ fmt_pre_body)
+       ( hvbox 0 (list_fl bindings fmt_binding)
        $ ( if blank_line_after_in then fmt "\n@,"
-         else break 1000 indent_after_in )
+         else break_unless_newline 1000 indent_after_in )
        $ hvbox 0 fmt_body ))
   $ fmt_atrs
 

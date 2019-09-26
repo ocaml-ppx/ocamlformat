@@ -662,6 +662,14 @@ let fooooooooooooooooo =
   let sort_itv_list = List.sort ~compare:Itv.compare_width_decreasing in
   [roots; sort_itv_list tree.roots]
 
+let fooooooooooooooooooooooo foooooooooooooooooooooo =
+  let foooooooooooooooo foooooooooooooooooooo =
+    ( fooooooooooooooooooooooooooooooooooooooooo
+    , fooooooooooooooooooooooooooooooooooooooooooooooo )
+  in
+  [ fooooooooooooooooooooooooooo "fooooooooooooooooooooooooooo"
+  ; foooooooooooooooooooo "fooooooooooooooooooooooooooooo" ]
+
 [@@@ocamlformat "space-around-records=true"]
 
 let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }
