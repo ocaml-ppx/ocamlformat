@@ -19,7 +19,9 @@
 # the merge base of the test branch.
 #
 # The third arg is the value of OCAMLFORMAT to be used when formatting
-# the test branch.
+# the test branch. When this arg is not provided, we use the same value
+# than for the base branch. This arg should be the empty string '' to
+# set OCAMLFORMAT to an empty value.
 
 set -e
 
@@ -27,6 +29,14 @@ if [[ ! -z "$1" ]]; then
     branch="$1"
 else
     branch=$(git rev-parse HEAD)
+fi
+
+opts_base="$2"
+
+if [[ $# -lt 3 ]]; then
+    opts_branch="$opts_base"
+else
+    opts_branch="$3"
 fi
 
 base=$(git merge-base master $branch)
@@ -43,5 +53,5 @@ run_in_worktree ()
   git worktree remove --force "$tmp"
 }
 
-OCAMLFORMAT="$2" run_in_worktree "$base" test_setup test_unstage test_clean test_pull test test_stage
-OCAMLFORMAT="$3" run_in_worktree "$branch" test test_diff
+OCAMLFORMAT="$opts_base" run_in_worktree "$base" test_setup test_unstage test_clean test_pull test test_stage
+OCAMLFORMAT="$opts_branch" run_in_worktree "$branch" test test_diff

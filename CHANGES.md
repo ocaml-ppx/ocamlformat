@@ -1,6 +1,7 @@
 ### (master)
 
   + Fix unstable comments around attributes (#1029) (Guillaume Petiot)
+  + Improve: use the same sets of options for both branches by default in test_branch.sh (#1033) (Guillaume Petiot)
   + Fix test_branch.sh and CI checking of CHANGES.md (#1032, #1034) (Jules Aguillon)
   + Fix flag of git-worktree in test_branch.sh and bisect.sh (#1027) (Guillaume Petiot)
   + Improve: remove the bisect_ppx dependency and clean Makefile (#1005) (Jules Aguillon)
