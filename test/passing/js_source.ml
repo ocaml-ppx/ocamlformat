@@ -7417,3 +7417,10 @@ exception First_exception
 
 (** Second documentation comment. *)
 exception Second_exception
+
+module M = struct
+  type t
+  [@@immediate]
+  (* ______________________________________ *)
+  [@@deriving variants, sexp_of]
+end
