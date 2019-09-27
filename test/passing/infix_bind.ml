@@ -205,3 +205,17 @@ let f =
   (* fooooooooooooooo foooooooooooooooo *)
   Ok () >>= (*  *) function
   | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+
+let f =
+  Ok ()
+  >>=
+    (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+    fun foooooo fooooo foooo foooooo ->
+  Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+
+let f =
+  Ok ()
+  >>=
+    (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+    function
+  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo

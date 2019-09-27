@@ -1571,7 +1571,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       )
     when is_infix_id id && not c.conf.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
-      let cmts_before = Cmts.fmt_before ~adj:noop c pexp_loc in
+      let cmts_before = Cmts.fmt_before c pexp_loc in
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
@@ -1616,7 +1616,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           ) ] )
     when is_infix_id id && not c.conf.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
-      let cmts_before = Cmts.fmt_before ~adj:noop c pexp_loc in
+      let cmts_before = Cmts.fmt_before c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
       let indent = function_indent c ~ctx ~default:0 in
