@@ -1198,6 +1198,11 @@ and fmt_fun_args c ?(pro = noop) args =
 and fmt_record_body c ?same_box ?(space = false) ctx flds default attributes
     loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
+  let dock =
+    c.conf.dock_collection_brackets
+    && not (Location.is_single_line loc c.conf.margin)
+  in
+  let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
   let fmt_field (lid1, f) =
     let fmt_rhs e = fmt_expression c (sub_exp ~ctx e) in
     hvbox 0
@@ -1255,6 +1260,11 @@ and fmt_record_body c ?same_box ?(space = false) ctx flds default attributes
 and fmt_array_body c ?same_box ?(space = false) ctx array attributes loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
+  let dock =
+    c.conf.dock_collection_brackets
+    && not (Location.is_single_line loc c.conf.margin)
+  in
+  let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
   match array with
   | [] ->
       ( noop
@@ -1284,6 +1294,11 @@ and fmt_list_body c ?(indent_wrap = 0) ?same_box ?(space = false) xexp
     attributes loc parens =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let has_attr = not (List.is_empty attributes) in
+  let dock =
+    c.conf.dock_collection_brackets
+    && not (Location.is_single_line loc c.conf.margin)
+  in
+  let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
   match Sugar.list_exp c.cmts xexp.ast with
   | Some (loc_xes, nil_loc) ->
       let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
