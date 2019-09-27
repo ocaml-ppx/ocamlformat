@@ -191,3 +191,31 @@ let _ =
 let _ =
   foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
   fooooooooooooooooooooooo
+
+let f = Ok () >>= (*  *) fun _ -> Ok ()
+
+let f =
+  (* fooooooooooooooo foooooooooooooooo *)
+  Ok () >>= (*  *) fun _ ->
+  Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+
+let f = Ok () >>= (*  *) function Foo -> Ok ()
+
+let f =
+  (* fooooooooooooooo foooooooooooooooo *)
+  Ok () >>= (*  *) function
+  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+
+let f =
+  Ok ()
+  >>=
+  (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+  fun foooooo fooooo foooo foooooo ->
+  Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+
+let f =
+  Ok ()
+  >>=
+  (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+  function
+  | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
