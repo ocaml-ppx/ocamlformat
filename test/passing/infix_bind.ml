@@ -209,13 +209,13 @@ let f =
 let f =
   Ok ()
   >>=
-    (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
-    fun foooooo fooooo foooo foooooo ->
+  (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+  fun foooooo fooooo foooo foooooo ->
   Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f =
   Ok ()
   >>=
-    (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
-    function
+  (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+  function
   | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo

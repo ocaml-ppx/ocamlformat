@@ -1594,8 +1594,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    ( fmt_expression ~indent_wrap c (sub_exp ~ctx l)
                    $ fmt "@;"
                    $ hovbox 2
-                       ( fmt_expression c (sub_exp ~ctx op)
-                       $ fmt "@ " $ cmts_before $ str "fun "
+                       ( hvbox 0
+                           ( fmt_expression c (sub_exp ~ctx op)
+                           $ fmt "@ " $ cmts_before $ str "fun " )
                        $ fmt_attributes c ~key:"@" pexp_attributes
                            ~suf:(str " ")
                        $ hvbox_if
@@ -1625,10 +1626,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                ( fmt_expression c (sub_exp ~ctx l)
                $ fmt "@;"
                $ hovbox 2
-                   ( fmt_expression c (sub_exp ~ctx op)
-                   $ fmt "@ " $ cmts_before $ fmt_if parens_r "( "
-                   $ str "function"
-                   $ fmt_extension_suffix c ext
+                   ( hvbox 0
+                       ( fmt_expression c (sub_exp ~ctx op)
+                       $ fmt "@ " $ cmts_before $ fmt_if parens_r "( "
+                       $ str "function"
+                       $ fmt_extension_suffix c ext )
                    $ fmt_attributes c ~key:"@" pexp_attributes ) )
            $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )" ))
   | Pexp_apply
