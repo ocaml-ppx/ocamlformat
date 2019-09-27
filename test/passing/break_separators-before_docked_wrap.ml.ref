@@ -184,8 +184,7 @@ let length = ([
 ;;
 Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
   (Foo.foo ~foo ~foo ~foooo:()
-     [
-       ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo))
+     [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo))
      ; ("foooo", fooooooo); ("foooooo", foooooooo); ("fooooooooo", foooooooo)
      ])
 
