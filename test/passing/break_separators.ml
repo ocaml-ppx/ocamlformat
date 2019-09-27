@@ -670,6 +670,15 @@ let fooooooooooooooooooooooo foooooooooooooooooooooo =
   [ fooooooooooooooooooooooooooo "fooooooooooooooooooooooooooo"
   ; foooooooooooooooooooo "fooooooooooooooooooooooooooooo" ]
 
+let fooo_fooooo_fooooooo ?fooooooo ~foooooooooo fooooooooooooo =
+  let fooooooooo =
+    Some
+      { foooooooooooooooooooooo= foooooooo
+      ; foooooooooooooooooo= fooooo
+      ; foooooooooooooooo= fooooooo }
+  in
+  foooooooooo
+
 [@@@ocamlformat "space-around-records=true"]
 
 let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }

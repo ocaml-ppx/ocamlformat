@@ -2039,10 +2039,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt_expression c (sub_exp ~ctx arg) )
         $ fmt_atrs )
   | Pexp_construct (lid, Some arg) ->
+      let fmt_pre_body, fmt_body =
+        fmt_collection_body c (sub_exp ~ctx arg) ~indent_wrap
+      in
       wrap_if parens "(" ")"
         ( hvbox 2
-            ( fmt_longident_loc c lid $ fmt "@ "
-            $ fmt_expression c (sub_exp ~ctx arg) )
+            ( hvbox 0 (fmt_longident_loc c lid $ fmt_pre_body)
+            $ fmt "@ " $ fmt_body )
         $ fmt_atrs )
   | Pexp_variant (s, arg) ->
       hvbox 2
