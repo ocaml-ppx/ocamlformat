@@ -490,7 +490,18 @@ let fooo_fooooo_fooooooo ?fooooooo ~foooooooooo fooooooooooooo =
       foooooooooooooooo= fooooooo;
     }
   in
-  foooooooooo
+  let fooooooooo =
+    `Foo {
+      foooooooooooooooooooooo= foooooooo;
+      foooooooooooooooooo= fooooo;
+      foooooooooooooooo= fooooooo;
+    }
+  in
+  `Foo {
+    foooooooooooooooooooooo= foooooooo;
+    foooooooooooooooooo= fooooo;
+    foooooooooooooooo= fooooooo;
+  }
 
 [@@@ocamlformat "space-around-records=true"]
 

@@ -2047,12 +2047,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ( hvbox 0 (fmt_longident_loc c lid $ fmt_pre_body)
             $ fmt "@ " $ fmt_body )
         $ fmt_atrs )
-  | Pexp_variant (s, arg) ->
+  | Pexp_variant (s, None) ->
+      hvbox 2 (wrap_if parens "(" ")" (str "`" $ str s $ fmt_atrs))
+  | Pexp_variant (s, Some arg) ->
+      let fmt_pre_body, fmt_body =
+        fmt_collection_body c (sub_exp ~ctx arg) ~indent_wrap
+      in
       hvbox 2
         (wrap_if parens "(" ")"
-           ( str "`" $ str s
-           $ opt arg (fmt "@ " >$ (sub_exp ~ctx >> fmt_expression c))
-           $ fmt_atrs ))
+           ( hvbox 0 (str "`" $ str s $ fmt_pre_body)
+           $ fmt "@ " $ fmt_body $ fmt_atrs ))
   | Pexp_field (exp, lid) ->
       hvbox 2
         (wrap_if parens "(" ")"
