@@ -4196,13 +4196,13 @@ and fmt_let ?(fmt_pre_body = noop) c ctx ~ext ~rec_flag ~bindings ~parens
     ~fmt_atrs ~fmt_body ~loc ~body_loc ~attributes ~indent_after_in =
   let fmt_in indent =
     match c.conf.break_before_in with
-    | `Fit_or_vertical -> break 1 (-indent)
-    | `Auto -> fits_breaks " " ~hint:(1, -indent) ""
+    | `Fit_or_vertical -> break 1 (-indent) $ fmt "in"
+    | `Auto -> fits_breaks " in" ~hint:(1, -indent) "in"
   in
   let fmt_binding ~first ~last {pvb_pat; pvb_expr; pvb_attributes; pvb_loc} =
     let ext = if first then ext else None in
     let in_ indent =
-      fmt_if_k last (fmt_in indent $ hovbox 0 (str "in" $ fmt_pre_body))
+      fmt_if_k last (fmt_in indent $ hvbox (-2) fmt_pre_body)
     in
     let op = if first then "let" else "and" in
     let rec_flag = first && Poly.(rec_flag = Recursive) in
