@@ -1348,7 +1348,7 @@ and fmt_list_body c ?(indent_wrap = 0) ?same_box ?(space = false) xexp
                    , (fmt_op, [(Nolabel, arg)]) )))
           $ fmt_atrs ) )
 
-and fmt_tuple_body c ?(parens = false) ?(space = false) xbody elts attributes
+and fmt_tuple_body c ?(parens = true) ?(space = false) xbody elts attributes
     loc =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let dock =
