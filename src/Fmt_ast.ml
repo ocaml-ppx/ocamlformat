@@ -75,6 +75,7 @@ let protect =
 let is_collection_body {ast= body; _} =
   match body with
   | {pexp_desc= Pexp_record _; _}
+   |{pexp_desc= Pexp_tuple (_ :: _); _}
    |{pexp_desc= Pexp_array (_ :: _); _}
    |{ pexp_desc=
         Pexp_construct
@@ -1200,6 +1201,8 @@ and fmt_record_body c ?same_box ?(space = false) ctx flds default attributes
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let dock =
     c.conf.dock_collection_brackets
+    && List.for_all flds ~f:(fun (_, e) ->
+           not (is_collection_body (sub_exp ~ctx e)))
     && not (Location.is_single_line loc c.conf.margin)
   in
   let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
@@ -1262,6 +1265,8 @@ and fmt_array_body c ?same_box ?(space = false) ctx array attributes loc =
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   let dock =
     c.conf.dock_collection_brackets
+    && List.for_all array ~f:(fun e ->
+           not (is_collection_body (sub_exp ~ctx e)))
     && not (Location.is_single_line loc c.conf.margin)
   in
   let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
@@ -1294,13 +1299,14 @@ and fmt_list_body c ?(indent_wrap = 0) ?same_box ?(space = false) xexp
     attributes loc parens =
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
   let has_attr = not (List.is_empty attributes) in
-  let dock =
-    c.conf.dock_collection_brackets
-    && not (Location.is_single_line loc c.conf.margin)
-  in
-  let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
   match Sugar.list_exp c.cmts xexp.ast with
   | Some (loc_xes, nil_loc) ->
+      let dock =
+        c.conf.dock_collection_brackets
+        && List.for_all loc_xes ~f:(fun (_, e) -> not (is_collection_body e))
+        && not (Location.is_single_line loc c.conf.margin)
+      in
+      let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
       let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
       let p = Params.get_list_expr c.conf ~parens:has_attr ?same_box in
       let offset = if c.conf.dock_collection_brackets then 0 else 2 in
@@ -1342,6 +1348,46 @@ and fmt_list_body c ?(indent_wrap = 0) ?same_box ?(space = false) xexp
                    , (fmt_op, [(Nolabel, arg)]) )))
           $ fmt_atrs ) )
 
+and fmt_tuple_body c ?(parens = false) ?(space = false) xbody elts attributes
+    loc =
+  let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" attributes in
+  let dock =
+    c.conf.dock_collection_brackets
+    && List.for_all elts ~f:(fun e ->
+           not (is_collection_body (sub_exp ~ctx:(Exp xbody.ast) e)))
+    && not (Location.is_single_line loc c.conf.margin)
+  in
+  let c = {c with conf= {c.conf with dock_collection_brackets= dock}} in
+  let parens =
+    match xbody.ctx with
+    | Str {pstr_desc= Pstr_eval _; pstr_loc= _} -> false
+    | _ -> parens || Poly.(c.conf.parens_tuple = `Always)
+  in
+  let no_parens_if_break =
+    match xbody.ctx with
+    | Exp {pexp_desc= Pexp_extension _; _} -> true
+    | Pld _ -> true
+    | Str {pstr_desc= Pstr_eval _; _} -> true
+    | _ -> false
+  in
+  let p = Params.wrap_tuple c.conf ~parens ~no_parens_if_break in
+  let space = space && c.conf.dock_collection_brackets in
+  let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
+  ( fmt_if space "@ "
+    $ Cmts.fmt_before c loc ~adj:(fmt "@ ")
+    $ p.docked_before $ p.break_before
+  , update_config_maybe_disabled c loc attributes
+    @@ fun c ->
+    hvbox 0
+      ( p.box
+          (fmt_expressions c width
+             (sub_exp ~ctx:(Exp xbody.ast))
+             elts
+             (sub_exp ~ctx:(Exp xbody.ast) >> fmt_expression c)
+             p)
+      $ p.break_after $ p.docked_after $ fmt_atrs )
+    $ Cmts.fmt_after c loc )
+
 and fmt_collection_body c ?eol ?indent_wrap ?parens ?same_box
     ({ast= body; _} as xbody) =
   let ctx = Exp body in
@@ -1356,6 +1402,10 @@ and fmt_collection_body c ?eol ?indent_wrap ?parens ?same_box
     when c.conf.dock_collection_brackets
          && not (Location.is_single_line pexp_loc c.conf.margin) ->
       fmt_array_body c ctx a pexp_attributes pexp_loc ~space ?same_box
+  | {pexp_desc= Pexp_tuple elts; pexp_attributes; pexp_loc; _}
+    when c.conf.dock_collection_brackets
+         && not (Location.is_single_line pexp_loc c.conf.margin) ->
+      fmt_tuple_body c xbody elts pexp_attributes pexp_loc ~space ?parens
   | { pexp_desc=
         Pexp_construct
           ( {txt= Lident "::"; loc= _}
@@ -1448,7 +1498,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
         match ast.pexp_desc with
         | Pexp_fun _ | Pexp_function _ -> Some false
         (* do not box the "docked" collection expressions *)
-        | Pexp_record _ | Pexp_array _
+        | Pexp_record _ | Pexp_array _ | Pexp_tuple _
           |Pexp_construct
              ( {txt= Lident "::"; loc= _}
              , Some
@@ -2380,23 +2430,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_expression c (sub_exp ~ctx e2)
            $ fmt_atrs ))
   | Pexp_tuple es ->
-      let parens =
-        match xexp.ctx with
-        | Str {pstr_desc= Pstr_eval _; pstr_loc= _} -> false
-        | _ -> parens || Poly.(c.conf.parens_tuple = `Always)
+      let pre_body, body =
+        fmt_tuple_body c xexp es pexp_attributes pexp_loc ~parens
       in
-      let no_parens_if_break =
-        match xexp.ctx with
-        | Exp {pexp_desc= Pexp_extension _; _} -> true
-        | Pld _ -> true
-        | Str {pstr_desc= Pstr_eval _; _} -> true
-        | _ -> false
-      in
-      hvbox 0
-        ( Params.wrap_tuple ~parens ~no_parens_if_break c.conf
-            (list es (Params.comma_sep c.conf)
-               (sub_exp ~ctx >> fmt_expression c))
-        $ fmt_atrs )
+      pre_body $ body
   | Pexp_lazy e ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens

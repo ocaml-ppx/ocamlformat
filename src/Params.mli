@@ -71,6 +71,9 @@ val get_list_expr :
 
 val get_array_expr : ?same_box:bool -> Conf.t -> elements_collection
 
+val get_tuple_expr :
+  ?no_parens_if_break:bool -> Conf.t -> parens:bool -> elements_collection
+
 val get_record_pat :
      ?same_box:bool
   -> Conf.t
@@ -82,6 +85,8 @@ val get_list_pat :
 
 val get_array_pat :
   ?same_box:bool -> Conf.t -> ctx:Ast.t -> elements_collection
+
+val get_tuple_pat : Conf.t -> ctx:Ast.t -> parens:bool -> elements_collection
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t

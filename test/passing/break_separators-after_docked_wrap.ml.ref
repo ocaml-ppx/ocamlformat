@@ -474,9 +474,10 @@ let fooooooooooooooooo =
   [roots; sort_itv_list tree.roots]
 
 let fooooooooooooooooooooooo foooooooooooooooooooooo =
-  let foooooooooooooooo foooooooooooooooooooo =
-    ( fooooooooooooooooooooooooooooooooooooooooo,
-      fooooooooooooooooooooooooooooooooooooooooooooooo )
+  let foooooooooooooooo foooooooooooooooooooo = (
+    fooooooooooooooooooooooooooooooooooooooooo,
+    fooooooooooooooooooooooooooooooooooooooooooooooo
+  )
   in [
     fooooooooooooooooooooooooooo "fooooooooooooooooooooooooooo";
     foooooooooooooooooooo "fooooooooooooooooooooooooooooo";
