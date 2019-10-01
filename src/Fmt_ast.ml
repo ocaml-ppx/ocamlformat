@@ -1670,26 +1670,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                      , (fmt_op, args) )
                  | None -> (false, noop, noop, (noop, args))))
         $ fmt_atrs )
-  | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= id; loc}
-        ; pexp_loc
-        ; pexp_attributes= _
-        ; _ }
-      , (Nolabel, s) :: (Nolabel, i) :: _ )
-    when Option.is_some (index_op_get_lid id) ->
-      let index_op = Option.value_exn (index_op_get_lid id) in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
-      fmt_index_op c ctx ~parens {txt= index_op; loc} s [i]
-  | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= id; loc}
-        ; pexp_loc
-        ; pexp_attributes= _
-        ; _ }
-      , (Nolabel, s) :: (Nolabel, i) :: (Nolabel, e) :: _ )
-    when Option.is_some (index_op_set_lid id) ->
-      let index_op = Option.value_exn (index_op_set_lid id) in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
-      fmt_index_op c ctx ~parens {txt= index_op; loc} s [i] ~set:e
   | Pexp_apply (e0, [(Nolabel, e1)]) when is_prefix e0 ->
       hvbox 2
         (wrap_exp c ~loc:pexp_loc ~parens
