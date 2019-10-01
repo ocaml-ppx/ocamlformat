@@ -1485,7 +1485,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
       (* docking the brackets looks weird in arguments of an application so
          it is better to disable it for now. *)
       let c = {c with conf= {c.conf with dock_collection_brackets= false}} in
-      fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
+      fmt_label lbl ":@," $ fmt_expression c ?eol ~box ?epi ?parens xarg
 
 and expression_width c xe =
   String.length (Cmts.preserve (fmt_expression c) xe)
@@ -1515,7 +1515,12 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
         | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
         | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
       in
-      hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
+      let eol =
+        match box with
+        | Some false -> Some (break_unless_newline 1000 (-2))
+        | _ -> None
+      in
+      hovbox 2 (fmt_label_arg c ?box ?epi ?eol (lbl, xarg))
       $ fmt_if_k (not last) (break_unless_newline 1 0)
     in
     hovbox

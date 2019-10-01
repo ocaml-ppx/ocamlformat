@@ -12,6 +12,10 @@ let emit_wrapper_function =
     (* is_memoize_impl *)
     Rx.NonRx false
 
+test 5 eq_int64
+  (* PR#4804 *)
+  [int64_of_big_int (big_int_of_string "2147483648"); 2147483648L]
+
 [@@@ocamlformat "wrap-fun-args=false"]
 
 let emit_wrapper_function =
@@ -25,3 +29,7 @@ let emit_wrapper_function =
     is_interceptable false
     (* is_memoize_impl *)
     Rx.NonRx false
+
+test 5 eq_int64
+  (* PR#4804 *)
+  [int64_of_big_int (big_int_of_string "2147483648"); 2147483648L]
