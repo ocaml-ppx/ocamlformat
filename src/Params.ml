@@ -219,8 +219,8 @@ let get_tuple_expr ?(no_parens_if_break = false) (c : Conf.t) ~parens =
   let dock = c.dock_collection_brackets in
   let offset = if dock then -2 else 0 in
   let box k =
-    if dock then box_collec c 0 k
-    else box_collec c 0 (wrap_tuple c ~parens ~no_parens_if_break k)
+    if dock then hvbox 0 k
+    else hvbox 0 (wrap_tuple c ~parens ~no_parens_if_break k)
   in
   match c.break_separators with
   | `Before ->
