@@ -1,8 +1,8 @@
 language: c
 env:
   - TO_TEST=changes
-  - TO_TEST=install OCAML_VERSION=4.07.1
-  - TO_TEST=install OCAML_VERSION=4.08.0
+  - TO_TEST=build OCAML_VERSION=4.07.1
+  - TO_TEST=build OCAML_VERSION=4.08.0
   - TO_TEST=tests OCAML_VERSION=4.09.0
 cache:
   directories:
@@ -10,7 +10,7 @@ cache:
 before_install:
   - |
     case "$TO_TEST" in
-      install|tests)
+      build|tests)
         wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.2/opam-2.0.2-x86_64-linux
         chmod +x ${HOME}/opam
         export PATH=${HOME}:${PATH}
@@ -29,7 +29,7 @@ before_install:
 install:
   - |
     case "$TO_TEST" in
-      install|tests)
+      build|tests)
         opam switch ${OCAML_VERSION}
         opam update --upgrade
         opam pin add --no-action ocamlformat .
@@ -50,11 +50,16 @@ script:
           ! git diff --exit-code "$TRAVIS_BRANCH...$TRAVIS_COMMIT" -- CHANGES.md >/dev/null;
         fi
         ;;
-      install)
+      build)
+        opam pin add --no-action ocamlformat .
+        opam install --deps-only ocamlformat
         opam switch ${OCAML_VERSION}
+        opam exec -- make
         opam install ocamlformat
         ;;
       tests)
+        opam pin add --no-action ocamlformat .
+        opam install --deps-only ocamlformat
         opam switch ${OCAML_VERSION}
         opam exec -- make test
         opam install ocamlformat
