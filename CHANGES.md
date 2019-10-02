@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix parens around index_ops (#1038) (Guillaume Petiot)
   + Fix dropped comment after infix op (#1030) (Guillaume Petiot)
   + Fix: no newline if the input is empty (#1031) (Guillaume Petiot)
   + Fix unstable comments around attributes (#1029) (Guillaume Petiot)
