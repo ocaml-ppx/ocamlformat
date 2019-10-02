@@ -1635,7 +1635,8 @@ end = struct
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, a1) :: args)
-        when Option.is_some (index_op_get_sugar ident args) ->
+        when Option.is_some (index_op_get_sugar ident args)
+             || Option.is_some (index_op_get_lid ident.txt) ->
           if a1 == exp then Some (Dot, Left) else Some (Comma, Left)
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, a1) :: args)
         when Option.is_some (index_op_set_sugar ident args) ->
@@ -1643,6 +1644,9 @@ end = struct
           if a1 == exp then Some (Dot, Left)
           else if e == exp then Some (Comma, Right)
           else Some (Comma, Left)
+      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: _)
+        when Option.is_some (index_op_set_lid ident.txt) ->
+          Some (Comma, Right)
       | Pexp_apply
           ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
           let child = if e1 == exp then Left else Right in
@@ -1721,10 +1725,12 @@ end = struct
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-        when Option.is_some (index_op_get_sugar ident args) ->
+        when Option.is_some (index_op_get_sugar ident args)
+             || Option.is_some (index_op_get_lid ident.txt) ->
           Some Dot
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-        when Option.is_some (index_op_set_sugar ident args) ->
+        when Option.is_some (index_op_set_sugar ident args)
+             || Option.is_some (index_op_set_lid ident.txt) ->
           Some Comma
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [_; _])
         -> (
