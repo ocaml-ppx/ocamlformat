@@ -1,5 +1,6 @@
 language: c
 env:
+  - TO_TEST=changes
   - TO_TEST=install OCAML_VERSION=4.07.1
   - TO_TEST=install OCAML_VERSION=4.08.0
   - TO_TEST=tests OCAML_VERSION=4.09.0
@@ -7,24 +8,43 @@ cache:
   directories:
     - ${HOME}/.opam
 before_install:
-  - wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.2/opam-2.0.2-x86_64-linux
-  - chmod +x ${HOME}/opam
-  - export PATH=${HOME}:${PATH}
-  - export OPAMYES=1
-  - export OPAMJOBS=2
-  - opam init --bare --disable-sandboxing
-  - opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION}
-install:
-  - opam switch ${OCAML_VERSION}
-  - opam update --upgrade
-  - opam pin add --no-action ocamlformat .
-  - opam install --deps-only ocamlformat
-script:
-  - opam switch ${OCAML_VERSION}
-  - if [ "$TO_TEST" = "tests" ]; then opam exec -- make test; fi
-  - opam install ocamlformat
-after_script:
   - |
-    if [ "$TRAVIS_PULL_REQUEST" != false ] && [ "$TRAVIS_BRANCH" = master ]; then
-      ! git diff --exit-code "$TRAVIS_BRANCH...$TRAVIS_COMMIT" -- CHANGES.md >/dev/null;
-    fi
+    case "$TO_TEST" in
+      install|tests)
+        wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.2/opam-2.0.2-x86_64-linux
+        chmod +x ${HOME}/opam
+        export PATH=${HOME}:${PATH}
+        export OPAMYES=1
+        export OPAMJOBS=2
+        opam init --bare --disable-sandboxing
+        opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION}
+        ;;
+    esac
+install:
+  - |
+    case "$TO_TEST" in
+      install|tests)
+        opam switch ${OCAML_VERSION}
+        opam update --upgrade
+        opam pin add --no-action ocamlformat .
+        opam install --deps-only ocamlformat
+        ;;
+    esac
+script:
+  - |
+    case "$TO_TEST" in
+      changes)
+        if [ "$TRAVIS_PULL_REQUEST" != false ] && [ "$TRAVIS_BRANCH" = master ]; then
+          ! git diff --exit-code "$TRAVIS_BRANCH...$TRAVIS_COMMIT" -- CHANGES.md >/dev/null;
+        fi
+        ;;
+      install)
+        opam switch ${OCAML_VERSION}
+        opam install ocamlformat
+        ;;
+      tests)
+        opam switch ${OCAML_VERSION}
+        opam exec -- make test; fi
+        opam install ocamlformat
+        ;;
+    esac
