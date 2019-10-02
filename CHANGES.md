@@ -1,6 +1,6 @@
 ### (master)
 
-  + Build with 4.07 (#1036) (Jules Aguillon)
+  + CI: check the build with OCaml 4.07.1 and 4.08.0 (#1036) (Jules Aguillon)
   + Fix indexing operators precedence (#1039) (Jules Aguillon)
   + Fix dropped comment after infix op (#1030) (Guillaume Petiot)
   + Fix: no newline if the input is empty (#1031) (Guillaume Petiot)
