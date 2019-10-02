@@ -19,6 +19,12 @@ before_install:
         opam init --bare --disable-sandboxing
         opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION}
         ;;
+      changes)
+        ;;
+      *)
+        echo "unknown CI kind"
+        exit 1
+        ;;
     esac
 install:
   - |
@@ -28,6 +34,12 @@ install:
         opam update --upgrade
         opam pin add --no-action ocamlformat .
         opam install --deps-only ocamlformat
+        ;;
+      changes)
+        ;;
+      *)
+        echo "unknown CI kind"
+        exit 1
         ;;
     esac
 script:
@@ -46,5 +58,9 @@ script:
         opam switch ${OCAML_VERSION}
         opam exec -- make test
         opam install ocamlformat
+        ;;
+      *)
+        echo "unknown CI kind"
+        exit 1
         ;;
     esac
