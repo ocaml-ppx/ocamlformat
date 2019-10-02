@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix indexing operators precedence (#1039) (Jules Aguillon)
   + Fix dropped comment after infix op (#1030) (Guillaume Petiot)
   + Fix: no newline if the input is empty (#1031) (Guillaume Petiot)
   + Fix unstable comments around attributes (#1029) (Guillaume Petiot)

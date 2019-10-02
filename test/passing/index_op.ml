@@ -17,7 +17,7 @@ let h = Hashtbl.create 17
 ;;
 h.@("One") <- 1 ;
 assert (h.@{"One"} = 1) ;
-print_int (h.@{"One"}) ;
+print_int h.@{"One"} ;
 assert (h.?["Two"] = None)
 
 (* from GPR#1392 *)
@@ -81,3 +81,35 @@ let () =
   m.Mat.${[[2]; [5]]} |> ignore ;
   let open Mat in
   m.${[[2]; [5]]} |> ignore
+
+let _ = (x.*{(y, z)} <- w) @ []
+
+let _ = (x.{y, z} <- w) @ []
+
+let _ = (x.*(y) <- z) @ []
+
+let _ = (x.*(y) <- z) := []
+
+let _ = ((x.*(y) <- z), [])
+
+let _ = x.*(y) <- z ; []
+
+let _ = (x.(y) <- z) @ []
+
+let _ = (x.(y) <- z) := []
+
+let _ = ((x.(y) <- z), [])
+
+let _ = x.(y) <- z ; []
+
+let _ = (x.y <- z) @ []
+
+let _ = (x.y <- z) := []
+
+let _ = ((x.y <- z), [])
+
+let _ =
+  x.y <- z ;
+  []
+
+let _ = x.(y) <- (z.(w) <- u)

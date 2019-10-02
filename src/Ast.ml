@@ -144,7 +144,10 @@ let index_op_get_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
       , [{pexp_desc= Pexp_array l; _}] )
       when List.length l > 3 ->
         Some ({Location.txt= index_op_bigarray; loc}, l)
-    | _ -> None )
+    | lid, args -> (
+      match index_op_get_lid lid with
+      | None -> None
+      | Some index_op -> Some ({Location.txt= index_op; loc}, args) ) )
 
 let index_op_set_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
   match all_args_unlabeled args with
@@ -165,6 +168,10 @@ let index_op_set_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
       , [{pexp_desc= Pexp_array l; _}; e] )
       when List.length l > 3 ->
         Some ({Location.txt= index_op_bigarray; loc}, l, e)
+    | lid, [argi; arge] -> (
+      match index_op_set_lid lid with
+      | None -> None
+      | Some index_op -> Some ({Location.txt= index_op; loc}, [argi], arge) )
     | _ -> None )
 
 let is_index_op exp =
@@ -1636,13 +1643,13 @@ end = struct
           | _ -> Some (Apply, Non) ) )
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, a1) :: args)
         when Option.is_some (index_op_get_sugar ident args) ->
-          if a1 == exp then Some (Dot, Left) else Some (Comma, Left)
+          if a1 == exp then Some (Dot, Left) else Some (LessMinus, Left)
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, a1) :: args)
         when Option.is_some (index_op_set_sugar ident args) ->
           let _, _, e = Option.value_exn (index_op_set_sugar ident args) in
           if a1 == exp then Some (Dot, Left)
-          else if e == exp then Some (Comma, Right)
-          else Some (Comma, Left)
+          else if e == exp then Some (LessMinus, Right)
+          else Some (LessMinus, Left)
       | Pexp_apply
           ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
           let child = if e1 == exp then Left else Right in
@@ -1725,7 +1732,7 @@ end = struct
           Some Dot
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
         when Option.is_some (index_op_set_sugar ident args) ->
-          Some Comma
+          Some LessMinus
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [_; _])
         -> (
         match (i.[0], i) with
