@@ -44,7 +44,7 @@ script:
         ;;
       tests)
         opam switch ${OCAML_VERSION}
-        opam exec -- make test; fi
+        opam exec -- make test
         opam install ocamlformat
         ;;
     esac
