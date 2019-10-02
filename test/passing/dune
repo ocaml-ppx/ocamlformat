@@ -51,7 +51,11 @@ let emit_test buffer test_name setup =
     else ""
   in
   let ref_name = if setup.has_ref then test_name ^ ".ref" else test_name in
-  let base_test_name = Option.value setup.base_file ~default:test_name in
+  let base_test_name =
+    match setup.base_file with
+    | Some n -> n
+    | None -> test_name
+  in
   let extra_deps = String.concat " " setup.extra_deps in
   Printf.ksprintf
     (Buffer.add_string buffer)
