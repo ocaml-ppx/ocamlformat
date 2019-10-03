@@ -518,6 +518,12 @@ let foooooo fooo fooo fooo = [ fooo; foooo fooooo_foooo foo.fooo ]
 let foooooo fooo fooo fooo =
   [ fooo; foooo fooooo_foooo foo.fooo; foooo Foooo.foooo fooooo fooo.foo ]
 
+let x = [
+  1
+  (* foooooooooooooooooooooo *)
+  (* foooooooooooooooooooooo *)
+]
+
 [@@@ocamlformat "space-around-arrays=true"]
 
 let foooooo fooo fooo fooo = [| fooo; foooo fooooo_foooo foo.fooo |]
