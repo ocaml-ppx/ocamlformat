@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix alignment of cases (#1046) (Guillaume Petiot)
   + Fix blank line after comments at the end of lists (#1045) (Guillaume Petiot)
   + CI: check the build with OCaml 4.07.1 and 4.08.0 (#1036) (Jules Aguillon)
   + Fix indexing operators precedence (#1039) (Jules Aguillon)
