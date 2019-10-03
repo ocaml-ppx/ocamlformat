@@ -1,5 +1,6 @@
 ### (master)
 
+  + CI: use opam-2.0.5 in Travis (#1044) (Anton Kochkov)
   + CI: check the build with OCaml 4.07.1 and 4.08.0 (#1036) (Jules Aguillon)
   + Fix indexing operators precedence (#1039) (Jules Aguillon)
   + Fix dropped comment after infix op (#1030) (Guillaume Petiot)
