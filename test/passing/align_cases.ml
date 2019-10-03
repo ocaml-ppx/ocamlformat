@@ -83,6 +83,18 @@ let _ = match f with Foo -> toto | Bar ijx -> bar ijx
 
 let _ = match f with `Foo -> toto | `Bar ijx -> bar ijx
 
+let _ =
+  match (foooooooooooooo, foooooooooooooo) with
+  | Some a, Some b -> a + b
+  | None, _        -> 1
+  | Some _, None   -> 2
+
+let _ =
+  match (foooooooooooooo, foooooooooooooo) with
+  | [x]    -> x
+  | [_; x] -> x
+  | _      -> 0
+
 type x = Foooooooo of int | Fooooooooooooo of int
 
 type x = [`Foooooooo of int | `Fooooooooooooo of int]
