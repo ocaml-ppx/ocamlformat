@@ -2809,25 +2809,25 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs )
 
 and fmt_cases c ctx cs =
-  let pattern_len pat =
-    let xpat = sub_pat ~ctx pat in
-    let fmted = Cmts.preserve (fmt_pattern c) xpat in
-    let len = String.length fmted in
-    if len * 3 >= c.conf.margin || String.contains fmted '\n' then None
-    else Some len
+  let pattern_len {pc_lhs; pc_guard; _} =
+    if Option.is_some pc_guard then None
+    else
+      let xpat = sub_pat ~ctx pc_lhs in
+      let fmted = Cmts.preserve (fmt_pattern c) xpat in
+      let len = String.length fmted in
+      if len * 3 >= c.conf.margin || String.contains fmted '\n' then None
+      else Some len
   in
-  let fold_pattern_len ~f ps =
-    List.fold_until ~init:0 ps
-      ~f:(fun acc pat ->
-        match pattern_len pat with
+  let fold_pattern_len ~f cs =
+    List.fold_until ~init:0 cs
+      ~f:(fun acc case ->
+        match pattern_len case with
         | Some l -> Continue (f acc l)
         | None -> Stop None)
       ~finish:(fun acc -> Some acc)
   in
-  let max_len_name =
-    fold_pattern_len ~f:max (List.map ~f:(fun case -> case.pc_lhs) cs)
-  in
-  list_fl cs (fun ~first ~last {pc_lhs; pc_guard; pc_rhs} ->
+  let max_len_name = fold_pattern_len ~f:max cs in
+  list_fl cs (fun ~first ~last ({pc_lhs; pc_guard; pc_rhs} as case) ->
       let xrhs = sub_exp ~ctx pc_rhs in
       let indent =
         match
@@ -2868,7 +2868,7 @@ and fmt_cases c ctx cs =
         fmt_if_k
           ( c.conf.align_cases
           && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
-          ( match (max_len_name, pattern_len xlhs.ast) with
+          ( match (max_len_name, pattern_len case) with
           | Some max_len, Some len ->
               let pad = String.make (max_len - len) ' ' in
               fmt_or_k
