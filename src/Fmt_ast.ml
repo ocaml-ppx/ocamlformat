@@ -1864,7 +1864,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        Cmts.fmt_list c ~eol:cmt_break locs
                        @@ fmt_expression c xexp)
                      p
-                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
+                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop ~eol:noop
+                     nil_loc
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
              $ fmt_atrs ))
     | None ->
@@ -2809,47 +2810,25 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs )
 
 and fmt_cases c ctx cs =
-  let rec pattern_len ?(parens = 0) pat =
-    match pat.ppat_desc with
-    | Ppat_any -> Some 1
-    | Ppat_var {txt= s; _}
-     |Ppat_constant (Pconst_integer (s, _))
-     |Ppat_constant (Pconst_float (s, _))
-     |Ppat_construct ({txt= Lident s; _}, None) ->
-        Some (String.length s)
-    | Ppat_construct ({txt= Lident s; _}, Some arg) -> (
-      match pattern_len ~parens:2 arg with
-      | Some arg -> Some (parens + String.length s + 1 + arg)
-      | None -> None )
-    | Ppat_constant (Pconst_char chr) ->
-        Some (String.length (char_escaped c ~loc:pat.ppat_loc chr) + 2)
-    | Ppat_variant (s, None) -> Some (String.length s + 1)
-    | Ppat_variant (s, Some arg) -> (
-      match pattern_len ~parens:2 arg with
-      | Some arg -> Some (parens + 1 + String.length s + 1 + arg)
-      | None -> None )
-    | Ppat_tuple ps ->
-        (* commas and parenthesis *)
-        let init = ((List.length ps - 1) * 2) + parens in
-        fold_pattern_len ~parens:2 ~init ~f:( + ) ps
-    | Ppat_alias _ | Ppat_interval _ | Ppat_construct _
-     |Ppat_constant (Pconst_string _)
-     |Ppat_record _ | Ppat_array _ | Ppat_constraint _ | Ppat_type _
-     |Ppat_or _ | Ppat_unpack _ | Ppat_lazy _ | Ppat_exception _
-     |Ppat_extension _ | Ppat_open _ ->
-        None
-  and fold_pattern_len ?parens ?(init = 0) ~f ps =
-    List.fold_until ~init ps
-      ~f:(fun acc pat ->
-        match pattern_len ?parens pat with
+  let pattern_len {pc_lhs; pc_guard; _} =
+    if Option.is_some pc_guard then None
+    else
+      let xpat = sub_pat ~ctx pc_lhs in
+      let fmted = Cmts.preserve (fmt_pattern c) xpat in
+      let len = String.length fmted in
+      if len * 3 >= c.conf.margin || String.contains fmted '\n' then None
+      else Some len
+  in
+  let fold_pattern_len ~f cs =
+    List.fold_until ~init:0 cs
+      ~f:(fun acc case ->
+        match pattern_len case with
         | Some l -> Continue (f acc l)
         | None -> Stop None)
       ~finish:(fun acc -> Some acc)
   in
-  let max_len_name =
-    fold_pattern_len ~f:max (List.map ~f:(fun case -> case.pc_lhs) cs)
-  in
-  list_fl cs (fun ~first ~last {pc_lhs; pc_guard; pc_rhs} ->
+  let max_len_name = fold_pattern_len ~f:max cs in
+  list_fl cs (fun ~first ~last ({pc_lhs; pc_guard; pc_rhs} as case) ->
       let xrhs = sub_exp ~ctx pc_rhs in
       let indent =
         match
@@ -2890,7 +2869,7 @@ and fmt_cases c ctx cs =
         fmt_if_k
           ( c.conf.align_cases
           && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
-          ( match (max_len_name, pattern_len xlhs.ast) with
+          ( match (max_len_name, pattern_len case) with
           | Some max_len, Some len ->
               let pad = String.make (max_len - len) ' ' in
               fmt_or_k
