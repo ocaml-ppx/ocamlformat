@@ -2,7 +2,7 @@ language: c
 env:
   - TO_TEST=changes
   - TO_TEST=build OCAML_VERSION=4.07.1
-  - TO_TEST=build OCAML_VERSION=4.08.0
+  - TO_TEST=build OCAML_VERSION=4.08.1
   - TO_TEST=tests OCAML_VERSION=4.09.0
 cache:
   directories:
@@ -11,7 +11,7 @@ before_install:
   - |
     case "$TO_TEST" in
       build|tests)
-        wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.2/opam-2.0.2-x86_64-linux
+        wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.5/opam-2.0.5-x86_64-linux
         chmod +x ${HOME}/opam
         export PATH=${HOME}:${PATH}
         export OPAMYES=1
