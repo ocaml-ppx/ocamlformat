@@ -1864,7 +1864,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        Cmts.fmt_list c ~eol:cmt_break locs
                        @@ fmt_expression c xexp)
                      p
-                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
+                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop ~eol:noop
+                     nil_loc
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
              $ fmt_atrs ))
     | None ->
