@@ -2812,7 +2812,9 @@ and fmt_cases c ctx cs =
   let pattern_len pat =
     let xpat = sub_pat ~ctx pat in
     let fmted = Cmts.preserve (fmt_pattern c) xpat in
-    if String.contains fmted '\n' then None else Some (String.length fmted)
+    let len = String.length fmted in
+    if len * 3 >= c.conf.margin || String.contains fmted '\n' then None
+    else Some len
   in
   let fold_pattern_len ~f ps =
     List.fold_until ~init:0 ps
