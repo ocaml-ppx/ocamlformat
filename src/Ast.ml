@@ -726,8 +726,8 @@ type prec =
   | InfixOp4
   | UMinus
   | Apply
-  | Dot
   | HashOp
+  | Dot
   | High
   | Atomic
 
