@@ -113,3 +113,8 @@ let _ =
   []
 
 let _ = x.(y) <- (z.(w) <- u)
+
+class free =
+  object (m : 'test)
+    method get_def = (m#state).def
+  end
