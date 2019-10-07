@@ -1,5 +1,6 @@
 ### (master)
 
+  + Improve: inline extensions that do not break (#1050) (Guillaume Petiot)
   + Fix: add missing cut before attributes in type declarations (#1051) (Guillaume Petiot)
   + CI: use opam-2.0.5 in Travis (#1044) (Anton Kochkov)
   + Fix alignment of cases (#1046) (Guillaume Petiot)
