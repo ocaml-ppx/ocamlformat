@@ -232,8 +232,7 @@ end = struct
   (* [@@@some attribute] *)
   (* (** Attribute *) *)
 
-  (** Extension *)[%%some
-  extension]
+  (** Extension *)[%%some extension]
 
   (* ;; *)
   (* (** Eval *) *)
