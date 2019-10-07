@@ -3409,9 +3409,12 @@ and fmt_signature_item c ?ext {ast= si; _} =
       hvbox 2
         (fmt_type_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
   | Psig_extension (ext, atrs) ->
+      let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
       hvbox c.conf.stritem_extension_indent
-        ( fmt_extension c ctx "%%" ext
-        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+        ( doc_before
+        $ fmt_extension c ctx "%%" ext
+        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
+        $ doc_after )
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
@@ -4065,10 +4068,11 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
              fmt_grp ~first ~last grp $ fmt_if (not last) "\n@\n"))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Pstr_extension (ext, atrs) ->
-      let doc, atrs = doc_atrs atrs in
-      fmt_docstring c doc
+      let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
+      doc_before
       $ fmt_extension c ctx "%%" ext
       $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+      $ doc_after
   | Pstr_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 
