@@ -90,23 +90,18 @@ type%foo t = int [@@foo]
 
 and t = int [@@foo]
 
-[%%foo
-type t += T [@@foo]]
+[%%foo type t += T [@@foo]]
 
-[%%foo
-class x = x [@@foo]]
+[%%foo class x = x [@@foo]]
 
-[%%foo
-class type x = x [@@foo]]
+[%%foo class type x = x [@@foo]]
 
 [%%foo
 external x : _ = "" [@@foo]]
 
-[%%foo
-exception X [@@foo]]
+[%%foo exception X [@@foo]]
 
-[%%foo
-module M = M [@@foo]]
+[%%foo module M = M [@@foo]]
 
 [%%foo
 module rec M : S = M [@@foo]
@@ -115,11 +110,9 @@ and M : S = M [@@foo]]
 [%%foo
 module type S = S [@@foo]]
 
-[%%foo
-include M [@@foo]]
+[%%foo include M [@@foo]]
 
-[%%foo
-open M [@@foo]]
+[%%foo open M [@@foo]]
 
 (* Signature items *)
 module type S = sig

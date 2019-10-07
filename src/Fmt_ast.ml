@@ -562,6 +562,14 @@ let sequence_blank_line c xe1 xe2 =
       b - a - commented_lines > 1
   | `Compact -> false
 
+let fits c x ~f =
+  let fmted = Cmts.preserve f x in
+  3 * String.length fmted < c.conf.margin
+  &&
+  match String.rindex fmted '\n' with
+  | Some i -> i = 0 (* if the first character is '\n' we ignore it *)
+  | None -> true
+
 let rec fmt_extension c ctx key (ext, pld) =
   match (pld, ctx) with
   | ( PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
@@ -569,7 +577,9 @@ let rec fmt_extension c ctx key (ext, pld) =
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top) ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
-  | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
+  | _ ->
+      let fits = fits c pld ~f:(fmt_payload c (Pld pld)) in
+      fmt_attribute_or_extension c key (hvbox_if fits 0) (ext, pld)
 
 and fmt_attribute_or_extension c key maybe_box (pre, pld) =
   let cmts_last =
@@ -628,7 +638,8 @@ and fmt_payload c ctx pld =
   match pld with
   | PStr mex ->
       fmt_if (not (List.is_empty mex)) "@ " $ fmt_structure c ctx mex
-  | PSig mty -> fmt ":@ " $ fmt_signature c ctx mty
+  | PSig mty ->
+      fmt_if (not (List.is_empty mty)) ":@ " $ fmt_signature c ctx mty
   | PTyp typ -> fmt ":@ " $ fmt_core_type c (sub_typ ~ctx typ)
   | PPat (pat, exp) ->
       let fmt_when exp =

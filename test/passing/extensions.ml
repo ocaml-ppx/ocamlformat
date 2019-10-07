@@ -188,3 +188,8 @@ let foo =
 let _ = [%ext let+ a = b in c]
 
 let _ = (begin%ext "foo"; "bar" end)
+
+let this_function_has_a_long_name plus very many arguments = "and a kind of long body"
+
+[%%expect
+  {||}]
