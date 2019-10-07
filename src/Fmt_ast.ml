@@ -476,12 +476,11 @@ let fmt_assign_arrow c =
 let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
 
-let sequence_blank_line c xe1 xe2 =
-  match c.conf.sequence_blank_line with
+let blank_line_between c ~fst:l1 ~snd:l2 =
+  match c.conf.function_blank_line with
   | `Preserve_one ->
       let open Location in
-      (* Count empty lines between [xe1] and [xe2], some may be comments *)
-      let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
+      (* Count empty lines between [l1] and [l2], some may be comments *)
       let a = l1.loc_end.pos_lnum and b = l2.loc_start.pos_lnum in
       let commented_lines =
         (* Number of lines in [l] that are between [a] and [b], exclusive. *)
@@ -1257,7 +1256,8 @@ and fmt_args ~first:first_grp ~last:last_grp c ctx args =
 and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
   let fmt_sep c ?(force_break = false) xe1 ext xe2 =
     let break =
-      if sequence_blank_line c xe1 xe2 then fmt "\n@;<1000 0>"
+      if blank_line_between c ~fst:xe1.ast.pexp_loc ~snd:xe2.ast.pexp_loc
+      then fmt "\n@;<1000 0>"
       else if c.conf.break_sequences || force_break then fmt "@;<1000 0>"
       else if parens && Poly.(c.conf.sequence_style = `Before) then
         fmt "@;<1 -2>"
@@ -1944,8 +1944,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let parens = parens || not (List.is_empty pexp_attributes) in
+      let blank_line_after =
+        let fst = (List.last_exn bindings).pvb_loc in
+        blank_line_between c ~fst ~snd:body.pexp_loc
+      in
       fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
         ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
+        ~blank_line_after
   | Pexp_letexception (ext_cstr, exp) ->
       let pre = fmt "let exception@ " in
       hvbox 0
@@ -2368,8 +2373,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let parens = parens || not (List.is_empty pexp_attributes) in
+      let blank_line_after =
+        let fst = (List.last_exn (let_ :: ands)).pbop_loc in
+        blank_line_between c ~fst ~snd:body.pexp_loc
+      in
       fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr (let_ :: ands)
-        ~indent_after_in
+        ~indent_after_in ~blank_line_after
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let _, fields =
@@ -2549,8 +2558,13 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
       in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let parens = parens || not (List.is_empty pcl_attributes) in
+      let blank_line_after =
+        let fst = (List.last_exn bindings).pvb_loc in
+        blank_line_between c ~fst ~snd:body.pcl_loc
+      in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~indent_after_in
+        ~blank_line_after
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4025,7 +4039,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
-    ~attributes ~indent_after_in =
+    ~attributes ~indent_after_in ~blank_line_after =
   let fmt_in indent =
     match c.conf.break_before_in with
     | `Fit_or_vertical -> break 1 (-indent) $ str "in"
@@ -4051,12 +4065,13 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ break 1000 indent_after_in
+       $ fmt_or_k blank_line_after (fmt "\n@;<1000 0>")
+           (break 1000 indent_after_in)
        $ hvbox 0 fmt_expr ))
   $ fmt_atrs
 
 and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings
-    ~indent_after_in =
+    ~indent_after_in ~blank_line_after =
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
@@ -4073,7 +4088,8 @@ and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings
   wrap_if parens "(" ")"
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ break 1000 indent_after_in
+       $ fmt_or_k blank_line_after (fmt "\n@;<1000 0>")
+           (break 1000 indent_after_in)
        $ hvbox 0 fmt_expr ))
   $ fmt_atrs
 

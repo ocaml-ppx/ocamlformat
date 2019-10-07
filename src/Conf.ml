@@ -42,6 +42,7 @@ type t =
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
+  ; function_blank_line: [`Compact | `Preserve_one]
   ; function_indent: int
   ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
@@ -68,7 +69,6 @@ type t =
   ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; quiet: bool
-  ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
   ; space_around_arrays: bool
@@ -605,6 +605,23 @@ module Formatting = struct
       (fun conf x -> {conf with field_space= x})
       (fun conf -> conf.field_space)
 
+  let function_blank_line =
+    let doc = "Blank line between expressions of a function." in
+    let names = ["function-blank-line"] in
+    let all =
+      [ ( "compact"
+        , `Compact
+        , "$(b,compact) will not keep any blank line between expressions of \
+           a function." )
+      ; ( "preserve-one"
+        , `Preserve_one
+        , "$(b,preserve) will keep a blank line between two expressions of \
+           a function if the input contains at least one." ) ]
+    in
+    C.choice ~names ~all ~doc ~section
+      (fun conf x -> {conf with function_blank_line= x})
+      (fun conf -> conf.function_blank_line)
+
   let function_indent =
     let docv = "COLS" in
     let doc = "Indentation of function cases ($(docv) columns)." in
@@ -968,23 +985,6 @@ module Formatting = struct
     C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with parse_docstrings= x})
       (fun conf -> conf.parse_docstrings)
-
-  let sequence_blank_line =
-    let doc = "Blank line between expressions of a sequence." in
-    let names = ["sequence-blank-line"] in
-    let all =
-      [ ( "compact"
-        , `Compact
-        , "$(b,compact) will not keep any blank line between expressions of \
-           a sequence." )
-      ; ( "preserve-one"
-        , `Preserve_one
-        , "$(b,preserve) will keep a blank line between two expressions of \
-           a sequence if the input contains at least one." ) ]
-    in
-    C.choice ~names ~all ~doc ~section
-      (fun conf x -> {conf with sequence_blank_line= x})
-      (fun conf -> conf.sequence_blank_line)
 
   let sequence_style =
     let doc = "Style of sequence." in
@@ -1395,6 +1395,7 @@ let ocamlformat_profile =
   ; extension_indent= C.default Formatting.extension_indent
   ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
+  ; function_blank_line= C.default Formatting.function_blank_line
   ; function_indent= C.default Formatting.function_indent
   ; function_indent_nested= C.default Formatting.function_indent_nested
   ; if_then_else= C.default Formatting.if_then_else
@@ -1424,7 +1425,6 @@ let ocamlformat_profile =
   ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
-  ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
   ; space_around_arrays= C.default Formatting.space_around_arrays
@@ -1446,9 +1446,9 @@ let conventional_profile =
   ; cases_matching_exp_indent= `Normal
   ; dock_collection_brackets= true
   ; field_space= `Loose
+  ; function_blank_line= `Preserve_one
   ; indicate_nested_or_patterns= `Unsafe_no
   ; sequence_style= `Terminator
-  ; sequence_blank_line= `Preserve_one
   ; space_around_arrays= true
   ; space_around_lists= true
   ; space_around_records= true
@@ -1493,6 +1493,7 @@ let sparse_profile =
   ; break_sequences= true
   ; break_struct= true
   ; field_space= `Loose
+  ; function_blank_line= `Preserve_one
   ; if_then_else= `Keyword_first
   ; indicate_nested_or_patterns= `Space
   ; leading_nested_match_parens= true
@@ -1501,7 +1502,6 @@ let sparse_profile =
   ; let_module= `Sparse
   ; module_item_spacing= `Sparse
   ; single_case= `Sparse
-  ; sequence_blank_line= `Preserve_one
   ; space_around_arrays= true
   ; space_around_lists= true
   ; space_around_records= true
@@ -1541,6 +1541,7 @@ let janestreet_profile =
   ; extension_indent= 2
   ; extension_sugar= `Preserve
   ; field_space= `Loose
+  ; function_blank_line= `Compact
   ; function_indent= 2
   ; function_indent_nested= `Never
   ; if_then_else= `Keyword_first
@@ -1567,7 +1568,6 @@ let janestreet_profile =
   ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false
   ; quiet= ocamlformat_profile.quiet
-  ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
   ; space_around_arrays= true
