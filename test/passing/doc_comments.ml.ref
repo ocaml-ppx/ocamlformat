@@ -102,7 +102,8 @@ module Comment_placement : sig
   (* [@@@some attribute] *)
   (* (** Attribute *) *)
 
-  [%%some extension]  (** Extension *)
+  [%%some extension]
+  (** Extension *)
 
   (** A *)
   external a : b = "double_comment"
@@ -232,7 +233,8 @@ end = struct
   (* [@@@some attribute] *)
   (* (** Attribute *) *)
 
-  (** Extension *)[%%some extension]
+  [%%some extension]
+  (** Extension *)
 
   (* ;; *)
   (* (** Eval *) *)
