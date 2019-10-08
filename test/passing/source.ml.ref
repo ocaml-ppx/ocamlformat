@@ -46,21 +46,17 @@ let ([%foo 2 + 1] : [%foo bar.baz]) = [%foo "foo"]
 
 let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
 
-[%%foo:
-'a list]
+[%%foo: 'a list]
 
 let ([%foo: [`Foo]] : [%foo: t -> t]) = [%foo: < foo: t > ]
 
-[%%foo?
-_]
+[%%foo? _]
 
-[%%foo?
-Some y when y > 0]
+[%%foo? Some y when y > 0]
 
 let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? {x}]
 
-[%%foo:
-module M : [%baz]]
+[%%foo: module M : [%baz]]
 
 let ([%foo: include S with type t = t] :
       [%foo:
@@ -218,8 +214,7 @@ and t = int [@@foo]
 
 [%%foo class type x = x [@@foo]]
 
-[%%foo
-external x : _ = "" [@@foo]]
+[%%foo external x : _ = "" [@@foo]]
 
 [%%foo exception X [@foo]]
 
@@ -229,8 +224,7 @@ external x : _ = "" [@@foo]]
 module rec M : S = M [@@foo]
 and M : S = M [@@foo]]
 
-[%%foo
-module type S = S [@@foo]]
+[%%foo module type S = S [@@foo]]
 
 [%%foo include M [@@foo]]
 
@@ -252,8 +246,9 @@ module type S = sig
 
   [%%foo: module M : S [@@foo]]
 
-  [%%foo: module rec M : S [@@foo]
-          and M : S [@@foo]]
+  [%%foo:
+  module rec M : S [@@foo]
+  and M : S [@@foo]]
 
   [%%foo: module M = M [@@foo]]
 
@@ -3029,8 +3024,7 @@ module FM_valid = F (struct
   type t = int
 end)
 
-[%%expect
-{|
+[%%expect {|
 module M_valid : S
 module FM_valid : S
 |}]
@@ -3046,8 +3040,7 @@ end = struct
   let x = ref 0
 end
 
-[%%expect
-{|
+[%%expect {|
 module Foo : sig type t val x : t ref end
 |}]
 
@@ -3061,8 +3054,7 @@ end = struct
   let x = ref 0
 end
 
-[%%expect
-{|
+[%%expect {|
 module Bar : sig type t [@@immediate] val x : t ref end
 |}]
 
@@ -3071,8 +3063,7 @@ let test f =
   f () ;
   Sys.time () -. start
 
-[%%expect
-{|
+[%%expect {|
 val test : (unit -> 'a) -> float = <fun>
 |}]
 
@@ -3081,8 +3072,7 @@ let test_foo () =
     Foo.x := !Foo.x
   done
 
-[%%expect
-{|
+[%%expect {|
 val test_foo : unit -> unit = <fun>
 |}]
 
@@ -3091,8 +3081,7 @@ let test_bar () =
     Bar.x := !Bar.x
   done
 
-[%%expect
-{|
+[%%expect {|
 val test_bar : unit -> unit = <fun>
 |}]
 

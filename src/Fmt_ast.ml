@@ -240,7 +240,7 @@ let make_groups c items ast update_config =
 let fmt_groups c ctx grps fmt_grp =
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   list_fl grps (fun ~first ~last grp ->
-      fmt_if (break_struct && not first) "\n@\n"
+      fmt_if (break_struct && not first) "\n@;<1000 0>"
       $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
       $ fmt_grp ~first ~last grp
       $ fits_breaks_if ((not break_struct) && not last) "" "\n")
@@ -251,7 +251,7 @@ let fmt_recmodule c ctx items f ast =
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_grp ~first:first_grp ~last:_ itms =
     list_fl itms (fun ~first ~last:_ (itm, c) ->
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+        fmt_if_k (not first) (fmt_or break_struct "@;<1000 0>" "@ ")
         $ maybe_disabled c (Ast.location (ast itm)) []
           @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm)
   in
@@ -562,14 +562,6 @@ let sequence_blank_line c xe1 xe2 =
       b - a - commented_lines > 1
   | `Compact -> false
 
-let fits c x ~f =
-  let fmted = Cmts.preserve f x in
-  3 * String.length fmted < c.conf.margin
-  &&
-  match String.rindex fmted '\n' with
-  | Some i -> i = 0 (* if the first character is '\n' we ignore it *)
-  | None -> true
-
 let rec fmt_extension c ctx key (ext, pld) =
   match (pld, ctx) with
   | ( PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
@@ -577,9 +569,7 @@ let rec fmt_extension c ctx key (ext, pld) =
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top) ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
-  | _ ->
-      let fits = fits c pld ~f:(fmt_payload c (Pld pld)) in
-      fmt_attribute_or_extension c key (hvbox_if fits 0) (ext, pld)
+  | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
 
 and fmt_attribute_or_extension c key maybe_box (pre, pld) =
   let cmts_last =
@@ -3389,13 +3379,15 @@ and fmt_signature c ctx itms =
 and fmt_signature_item c ?ext {ast= si; _} =
   protect (Sig si)
   @@
-  let epi = fmt "\n@\n" and eol = fmt "\n@\n" and adj = fmt "@\n" in
+  let eol = fmt "\n@;<1000 0>" in
+  let epi = eol in
+  let adj = fmt "@\n" in
   let fmt_cmts_before = Cmts.fmt_before c ~epi ~eol ~adj si.psig_loc in
   let maybe_box =
     Location.is_single_line si.psig_loc c.conf.margin
     && Source.has_cmt_same_line_after c.source si.psig_loc
   in
-  let pro = fmt_or maybe_box "@ " "\n@\n" in
+  let pro = fmt_or maybe_box "@ " "\n@;<1000 0>" in
   let fmt_cmts_after = Cmts.fmt_after ~pro c si.psig_loc in
   (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
   @@
@@ -3410,9 +3402,14 @@ and fmt_signature_item c ?ext {ast= si; _} =
         (fmt_type_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
   | Psig_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
-      hvbox c.conf.stritem_extension_indent
+      let box =
+        match snd ext with
+        | PTyp _ | PPat _ | PStr [_] | PSig [_] -> true
+        | PStr _ | PSig _ -> false
+      in
+      hvbox_if box c.conf.stritem_extension_indent
         ( doc_before
-        $ fmt_extension c ctx "%%" ext
+        $ hvbox_if (not box) 0 (fmt_extension c ctx "%%" ext)
         $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
         $ doc_after )
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
@@ -3974,13 +3971,15 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
     match ctx with Pld (PStr [_]) -> true | _ -> false
   in
   let ctx = Str si in
-  let epi = fmt "\n@\n" and eol = fmt "\n@\n" and adj = fmt "@\n" in
+  let eol = fmt "\n@;<1000 0>" in
+  let epi = eol in
+  let adj = fmt "@;<1000 0>" in
   let fmt_cmts_before = Cmts.fmt_before c ~epi ~eol ~adj si.pstr_loc in
   let maybe_box =
     Location.is_single_line si.pstr_loc c.conf.margin
     && Source.has_cmt_same_line_after c.source si.pstr_loc
   in
-  let pro = fmt_or maybe_box "@ " "\n@\n" in
+  let pro = fmt_or maybe_box "@ " "\n@;<1000 0>" in
   let fmt_cmts_after = Cmts.fmt_after ~pro c si.pstr_loc in
   (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
   @@
@@ -3991,7 +3990,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
-      fmt_if (not skip_double_semi) ";;@\n"
+      fmt_if (not skip_double_semi) ";;@;<1000 0>"
       $ fmt_docstring c doc
       $ cbox 0 (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
@@ -4058,21 +4057,27 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
             let rec_flag =
               first && first_grp && Poly.(rec_flag = Recursive)
             in
-            fmt_if (not first) "@\n"
+            fmt_if (not first) "@;<1000 0>"
             $ fmt_value_binding c op ~rec_flag
                 ?ext:(if first && first_grp then ext else None)
                 ctx ?epi ~attributes ~loc pvb_pat pvb_expr)
       in
       hvbox 0
         (list_fl grps (fun ~first ~last grp ->
-             fmt_grp ~first ~last grp $ fmt_if (not last) "\n@\n"))
+             fmt_grp ~first ~last grp $ fmt_if (not last) "\n@;<1000 0>"))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
-      doc_before
-      $ fmt_extension c ctx "%%" ext
-      $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
-      $ doc_after
+      let box =
+        match snd ext with
+        | PTyp _ | PPat _ | PStr [_] | PSig [_] -> true
+        | PStr _ | PSig _ -> false
+      in
+      hvbox_if box c.conf.stritem_extension_indent
+        ( doc_before
+        $ hvbox_if (not box) 0 (fmt_extension c ctx "%%" ext)
+        $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
+        $ doc_after )
   | Pstr_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 

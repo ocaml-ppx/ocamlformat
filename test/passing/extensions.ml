@@ -59,6 +59,10 @@ let _ = ([%ext? (x:x)] : [%ext? (x:x)]);;
 
 ;; 33333333333333333333]
 
+[%%ext
+let foooooooooooooooo = foooo
+
+let fooooooooooooooo = foo]
 
 let _ = [%stri
   let [%p xxx] =
@@ -193,3 +197,13 @@ let this_function_has_a_long_name plus very many arguments = "and a kind of long
 
 [%%expect
   {||}]
+
+;;
+[%expect {|
+___________________________________________________________
+|}]
+
+[%%expect
+  {|
+___________________________________________________________
+|}]
