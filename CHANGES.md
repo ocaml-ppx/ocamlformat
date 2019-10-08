@@ -1,5 +1,6 @@
 ### (master)
 
+  + Improve: rename option sequence-blank-line to function-bank-line and extends it to let-bindings (#1056) (Guillaume Petiot)
   + CI: use a script travis-ci.sh to simplify .travis.yml (#1063) (Guillaume Petiot)
   + Improve: allow both values of boolean options (#1062) (Jules Aguillon)
   + Improve: auto mode for break-string-literals instead of {wrap,newlines,newlines-and-wrap} (#1057) (Guillaume Petiot)
