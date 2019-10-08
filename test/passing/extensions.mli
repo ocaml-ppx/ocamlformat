@@ -20,3 +20,8 @@ foooooooooooooooooooooooooooo]
 fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
   foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
   foooooooooooooooooooooooooooo]
+
+[%%ext
+val foooooooooooooooooooooo : fooooooooooo
+
+val fooooooooooooooooooooooooooo : fooooo]

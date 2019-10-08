@@ -96,8 +96,7 @@ and t = int [@@foo]
 
 [%%foo class type x = x [@@foo]]
 
-[%%foo
-external x : _ = "" [@@foo]]
+[%%foo external x : _ = "" [@@foo]]
 
 [%%foo exception X [@@foo]]
 
@@ -107,8 +106,7 @@ external x : _ = "" [@@foo]]
 module rec M : S = M [@@foo]
 and M : S = M [@@foo]]
 
-[%%foo
-module type S = S [@@foo]]
+[%%foo module type S = S [@@foo]]
 
 [%%foo include M [@@foo]]
 
@@ -130,8 +128,9 @@ module type S = sig
 
   [%%foo: module M : S [@@foo]]
 
-  [%%foo: module rec M : S [@@foo]
-          and M : S [@@foo]]
+  [%%foo:
+  module rec M : S [@@foo]
+  and M : S [@@foo]]
 
   [%%foo: module M = M [@@foo]]
 
