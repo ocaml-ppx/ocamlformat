@@ -352,3 +352,13 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; expr_eol= None
       ; break_end_branch= noop
       ; space_between_branches= fmt "@ " }
+
+let match_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
+  match (c.match_indent_nested, ctx) with
+  | `Always, _ | _, (Top | Sig _ | Str _) -> c.match_indent
+  | _ -> default
+
+let function_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
+  match (c.function_indent_nested, ctx) with
+  | `Always, _ | _, (Top | Sig _ | Str _) -> c.function_indent
+  | _ -> default

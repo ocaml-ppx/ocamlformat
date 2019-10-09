@@ -116,16 +116,6 @@ let update_config ?(quiet = false) c l =
   in
   List.fold ~init:c l ~f:update_one
 
-let match_indent ?(default = 0) c ~ctx =
-  match (c.conf.match_indent_nested, ctx) with
-  | `Always, _ | _, (Top | Sig _ | Str _) -> c.conf.match_indent
-  | _ -> default
-
-let function_indent ?(default = 0) c ~ctx =
-  match (c.conf.function_indent_nested, ctx) with
-  | `Always, _ | _, (Top | Sig _ | Str _) -> c.conf.function_indent
-  | _ -> default
-
 let fmt_expressions c width sub_exp exprs fmt_expr
     (p : Params.elements_collection) =
   match c.conf.break_collection_expressions with
@@ -1617,7 +1607,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
-      let indent = function_indent c ~ctx in
+      let indent = Params.function_indent c.conf ~ctx in
       wrap_if parens "(" ")"
         (hvbox indent
            ( hvbox 0
@@ -1750,7 +1740,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let e1N = List.rev rev_e1N in
           let ctx'' = Exp eN in
           let default_indent = if c.conf.wrap_fun_args then 2 else 4 in
-          let indent = function_indent c ~ctx ~default:default_indent in
+          let indent =
+            Params.function_indent c.conf ~ctx ~default:default_indent
+          in
           hvbox indent
             (wrap_if parens "(" ")"
                ( hovbox 2
@@ -1914,7 +1906,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
       let pre_body, body = fmt_body c ?ext xbody in
       let default_indent = if Option.is_none eol then 2 else 1 in
-      let indent = function_indent c ~ctx ~default:default_indent in
+      let indent =
+        Params.function_indent c.conf ~ctx ~default:default_indent
+      in
       hvbox_if box indent
         (wrap_exp c ~loc:pexp_loc ~parens ~disambiguate:true
            ~fits_breaks:false
@@ -1929,7 +1923,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ str "->" $ pre_body )
            $ fmt "@ " $ body ))
   | Pexp_function cs ->
-      let indent = function_indent c ~ctx in
+      let indent = Params.function_indent c.conf ~ctx in
       wrap_exp c ~loc:pexp_loc ~parens ~disambiguate:true ~fits_breaks:false
         ( hvbox 2
             ( str "function"
@@ -2132,7 +2126,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
              before *) match (* after *) x with _ -> x) ]} Gets reformatted
              into {[ let () = match (* before *) (* after *) x with _ -> x ]} *)
           let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
-          let indent = match_indent c ~ctx:xexp.ctx in
+          let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
           hvbox indent
             (wrap_exp c ~loc:pexp_loc ~parens ~disambiguate:true
                ( leading_cmt
@@ -4225,7 +4219,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
   let indent =
     match xbody.ast.pexp_desc with
     | Pexp_function _ ->
-        function_indent c ~ctx ~default:c.conf.let_binding_indent
+        Params.function_indent c.conf ~ctx ~default:c.conf.let_binding_indent
     | Pexp_fun _ -> c.conf.let_binding_indent - 1
     | _ -> c.conf.let_binding_indent
   in
