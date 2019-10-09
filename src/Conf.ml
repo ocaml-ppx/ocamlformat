@@ -449,7 +449,7 @@ module Formatting = struct
     let doc =
       "Disable ocamlformat. This is used in attributes to locally disable \
        automatic code formatting. One can also use $(b,[@@@ocamlformat \
-       \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])"
+       \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])."
     in
     C.flag ~names:["disable"] ~default:false ~doc ~section
       (fun conf x -> {conf with disable= x})
@@ -1122,8 +1122,8 @@ let docs = C.section_name section
 let comment_check =
   let default = true in
   let doc =
-    "UNSAFE: Control whether to check comments and documentation comments. \
-     May be set in $(b,.ocamlformat)."
+    "Control whether to check comments and documentation comments. Unsafe \
+     to turn off. May be set in $(b,.ocamlformat)."
   in
   C.flag ~default ~names:["comment-check"] ~doc ~section
     (fun conf x -> {conf with comment_check= x})

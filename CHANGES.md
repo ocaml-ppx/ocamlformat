@@ -1,5 +1,6 @@
 ### (master)
 
+  + Improve: allow both values of boolean options (#1062) (Jules Aguillon)
   + Improve: auto mode for break-string-literals instead of {wrap,newlines,newlines-and-wrap} (#1057) (Guillaume Petiot)
   + Improve: remove utility functions from Fmt_ast (#1059) (Guillaume Petiot)
   + Fix newlines and indentation in toplevel extension points (#1054) (Guillaume Petiot)
