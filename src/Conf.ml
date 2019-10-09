@@ -1433,21 +1433,79 @@ let ocamlformat_profile =
   ; wrap_fun_args= true }
 
 let conventional_profile =
-  { ocamlformat_profile with
-    break_cases= `Fit
-  ; break_infix_before_func= false
-  ; break_separators= `After
-  ; break_sequences= true
-  ; cases_matching_exp_indent= `Normal
-  ; dock_collection_brackets= true
-  ; field_space= `Loose
-  ; indicate_nested_or_patterns= `Unsafe_no
-  ; sequence_style= `Terminator
-  ; sequence_blank_line= `Preserve_one
-  ; space_around_arrays= true
-  ; space_around_lists= true
-  ; space_around_records= true
-  ; space_around_variants= true }
+  { align_cases= C.default Formatting.align_cases
+  ; align_constructors_decl= C.default Formatting.align_constructors_decl
+  ; align_variants_decl= C.default Formatting.align_variants_decl
+  ; assignment_operator= C.default Formatting.assignment_operator
+  ; break_before_in= C.default Formatting.break_before_in
+  ; break_cases= C.default Formatting.break_cases
+  ; break_collection_expressions=
+      C.default Formatting.break_collection_expressions
+  ; break_infix= C.default Formatting.break_infix
+  ; break_infix_before_func= C.default Formatting.break_infix_before_func
+  ; break_fun_decl= C.default Formatting.break_fun_decl
+  ; break_fun_sig= C.default Formatting.break_fun_sig
+  ; break_separators= C.default Formatting.break_separators
+  ; break_sequences= C.default Formatting.break_sequences
+  ; break_string_literals= C.default Formatting.break_string_literals
+  ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
+  ; cases_exp_indent= C.default Formatting.cases_exp_indent
+  ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
+  ; comment_check= C.default comment_check
+  ; disable= C.default Formatting.disable
+  ; disambiguate_non_breaking_match=
+      C.default Formatting.disambiguate_non_breaking_match
+  ; doc_comments= C.default Formatting.doc_comments
+  ; doc_comments_padding= C.default Formatting.doc_comments_padding
+  ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
+  ; dock_collection_brackets= C.default Formatting.dock_collection_brackets
+  ; escape_chars= C.default Formatting.escape_chars
+  ; escape_strings= C.default Formatting.escape_strings
+  ; exp_grouping= C.default Formatting.exp_grouping
+  ; extension_indent= C.default Formatting.extension_indent
+  ; extension_sugar= C.default Formatting.extension_sugar
+  ; field_space= C.default Formatting.field_space
+  ; function_indent= C.default Formatting.function_indent
+  ; function_indent_nested= C.default Formatting.function_indent_nested
+  ; if_then_else= C.default Formatting.if_then_else
+  ; indent_after_in= C.default Formatting.indent_after_in
+  ; indicate_multiline_delimiters=
+      C.default Formatting.indicate_multiline_delimiters
+  ; indicate_nested_or_patterns=
+      C.default Formatting.indicate_nested_or_patterns
+  ; infix_precedence= C.default Formatting.infix_precedence
+  ; leading_nested_match_parens=
+      C.default Formatting.leading_nested_match_parens
+  ; let_and= C.default Formatting.let_and
+  ; let_binding_indent= C.default Formatting.let_binding_indent
+  ; let_binding_spacing= C.default Formatting.let_binding_spacing
+  ; let_module= C.default Formatting.let_module
+  ; let_open= C.default Formatting.let_open
+  ; margin= C.default Formatting.margin
+  ; match_indent= C.default Formatting.match_indent
+  ; match_indent_nested= C.default Formatting.match_indent_nested
+  ; max_indent= C.default Formatting.max_indent
+  ; max_iters= C.default max_iters
+  ; module_item_spacing= C.default Formatting.module_item_spacing
+  ; nested_match= C.default Formatting.nested_match
+  ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
+  ; parens_ite= C.default Formatting.parens_ite
+  ; parens_tuple= C.default Formatting.parens_tuple
+  ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
+  ; parse_docstrings= C.default Formatting.parse_docstrings
+  ; quiet= C.default quiet
+  ; sequence_blank_line= C.default Formatting.sequence_blank_line
+  ; sequence_style= C.default Formatting.sequence_style
+  ; single_case= C.default Formatting.single_case
+  ; space_around_arrays= C.default Formatting.space_around_arrays
+  ; space_around_lists= C.default Formatting.space_around_lists
+  ; space_around_records= C.default Formatting.space_around_records
+  ; space_around_variants= C.default Formatting.space_around_variants
+  ; stritem_extension_indent= C.default Formatting.stritem_extension_indent
+  ; type_decl= C.default Formatting.type_decl
+  ; type_decl_indent= C.default Formatting.type_decl_indent
+  ; wrap_comments= C.default Formatting.wrap_comments
+  ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
 let compact_profile =
   { ocamlformat_profile with
