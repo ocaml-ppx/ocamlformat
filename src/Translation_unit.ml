@@ -145,8 +145,8 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
       if not Conf.check then
         if iteration <= 1 then
           Format.fprintf fmt
-            "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
-            input_name
+            "%s: %S was not already formatted. ([max-iters = 1])\n%!"
+            exe input_name
         else (
           Format.fprintf fmt
             "%s: Cannot process %S.\n\

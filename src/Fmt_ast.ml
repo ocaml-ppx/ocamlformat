@@ -343,7 +343,7 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_string (s, None) -> (
       let fmt_line mode s =
         match c.conf.break_string_literals with
-        | `Wrap | `Newlines_and_wrap ->
+        | `Auto ->
             let words = String.split (escape_string mode s) ~on:' ' in
             let fmt_word ?prev:_ curr ?next =
               match next with
@@ -352,7 +352,7 @@ let fmt_constant c ~loc ?epi const =
               | _ -> str curr
             in
             hovbox_if (List.length words > 1) 0 (list_pn words fmt_word)
-        | _ -> str (escape_string mode s)
+        | `Never -> str (escape_string mode s)
       in
       let fmt_lines ?(break_on_newlines = false) mode lines =
         let delim = ["@,"; "@;"] in
@@ -378,7 +378,7 @@ let fmt_constant c ~loc ?epi const =
           match Source.string_literal c.source `Preserve loc with
           | None -> (s, `Decimal)
           | Some s -> (s, `Preserve) )
-        | (`Newlines | `Wrap | `Newlines_and_wrap), `Preserve -> (
+        | `Auto, `Preserve -> (
           match Source.string_literal c.source `Normalize loc with
           | None -> (s, `Decimal)
           | Some s -> (s, `Preserve) )
@@ -389,15 +389,14 @@ let fmt_constant c ~loc ?epi const =
         List.exists ["@,"; "@;"] ~f:is_substring
       in
       match c.conf.break_string_literals with
-      | (`Newlines | `Newlines_and_wrap) when contains_pp_commands ->
+      | `Auto when contains_pp_commands ->
           let break_on_pp_commands in_ pattern =
             String.substr_replace_all in_ ~pattern ~with_:(pattern ^ "\n")
           in
           List.fold_left ["@,"; "@;"] ~init:s ~f:break_on_pp_commands
           |> String.split ~on:'\n'
           |> fmt_lines mode ~break_on_newlines:true
-      | `Newlines | `Wrap | `Newlines_and_wrap ->
-          fmt_lines mode (String.split ~on:'\n' s)
+      | `Auto -> fmt_lines mode (String.split ~on:'\n' s)
       | `Never -> wrap "\"" "\"" (fmt_line mode s) )
 
 let fmt_variance = function

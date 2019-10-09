@@ -467,8 +467,9 @@ let moved_docstrings c get_docstrings s1 s2 =
   let d2 = get_docstrings c s2 in
   let equal (_, x) (_, y) =
     let b = String.equal (docstring c x) (docstring c y) in
-    Caml.Printf.printf "Docstring equal? %b,\n%s\n%s\n" b (docstring c x)
-      (docstring c y) ;
+    Caml.Printf.printf
+      "Docstring equal? %b,\n%s\n%s\n"
+      b (docstring c x) (docstring c y) ;
     b
   in
   let unstable (x, y) = Unstable (x, y) in

@@ -528,8 +528,8 @@ let may_force_break (c : Conf.t) s =
     | _ -> true
   in
   match c.break_string_literals with
-  | `Newlines -> contains_internal_newline s
-  | _ -> false
+  | `Auto -> contains_internal_newline s
+  | `Never -> false
 
 let rec is_trivial c exp =
   match exp.pexp_desc with
@@ -593,8 +593,9 @@ module T = struct
     | Typ t -> Format.fprintf fs "Typ:@\n%a" Pprintast.core_type t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Pprintast.pattern p
     | Exp e ->
-        Format.fprintf fs "Exp:@\n%a@\n@\n%a" Pprintast.expression e
-          (Printast.expression 0) e
+        Format.fprintf fs
+          "Exp:@\n%a@\n@\n%a"
+          Pprintast.expression e (Printast.expression 0) e
     | Cl cl ->
         let str =
           let open Ast_helper in
@@ -606,15 +607,17 @@ module T = struct
               ; pci_loc= Location.none
               ; pci_attributes= [] } ]
         in
-        Format.fprintf fs "Cl:@\n%a@\n%a" Pprintast.structure [str]
-          Printast.implementation [str]
+        Format.fprintf fs
+          "Cl:@\n%a@\n%a"
+          Pprintast.structure [str] Printast.implementation [str]
     | Mty mt ->
         let si =
           let open Ast_helper in
           Sig.modtype (Mtd.mk {txt= ""; loc= Location.none} ~typ:mt)
         in
-        Format.fprintf fs "Mty:@\n%a@\n%a" Pprintast.signature [si]
-          Printast.interface [si]
+        Format.fprintf fs
+          "Mty:@\n%a@\n%a"
+          Pprintast.signature [si] Printast.interface [si]
     | Cty cty ->
         let si =
           let open Ast_helper in
@@ -626,8 +629,9 @@ module T = struct
               ; pci_loc= Location.none
               ; pci_attributes= [] } ]
         in
-        Format.fprintf fs "Cty:@\n%a@\n%a" Pprintast.signature [si]
-          Printast.interface [si]
+        Format.fprintf fs
+          "Cty:@\n%a@\n%a"
+          Pprintast.signature [si] Printast.interface [si]
     | Mod m ->
         let m =
           let open Ast_helper in
@@ -637,14 +641,17 @@ module T = struct
             ; pmb_attributes= []
             ; pmb_loc= Location.none }
         in
-        Format.fprintf fs "Mod:@\n%a@\n%a" Pprintast.structure [m]
-          Printast.implementation [m]
+        Format.fprintf fs
+          "Mod:@\n%a@\n%a"
+          Pprintast.structure [m] Printast.implementation [m]
     | Sig s ->
-        Format.fprintf fs "Sig:@\n%a@\n%a" Pprintast.signature [s]
-          Printast.interface [s]
+        Format.fprintf fs
+          "Sig:@\n%a@\n%a"
+          Pprintast.signature [s] Printast.interface [s]
     | Str s | Tli (`Item s) ->
-        Format.fprintf fs "Str:@\n%a@\n%a" Pprintast.structure [s]
-          Printast.implementation [s]
+        Format.fprintf fs
+          "Str:@\n%a@\n%a"
+          Pprintast.structure [s] Printast.implementation [s]
     | Tli (`Directive d) ->
         Format.fprintf fs "Dir:@\n%a" Pprintast.toplevel_phrase (Ptop_dir d)
     | Top -> Format.pp_print_string fs "Top"
