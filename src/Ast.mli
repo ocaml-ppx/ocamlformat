@@ -125,7 +125,7 @@ type prec =
   | UMinus
   | Apply
   | HashOp
-  | Dot
+  | Dot  (** [x.y] and [x#y] *)
   | High
   | Atomic
 
