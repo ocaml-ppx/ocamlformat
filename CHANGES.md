@@ -1,5 +1,6 @@
 ### (master)
 
+  + Improve: remove utility functions from Fmt_ast (#1059) (Guillaume Petiot)
   + Fix newlines and indentation in toplevel extension points (#1054) (Guillaume Petiot)
   + Fix placement of doc comments around extensions (#1052) (Jules Aguillon)
   + Improve: inline extensions that do not break (#1050) (Guillaume Petiot)
