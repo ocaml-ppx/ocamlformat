@@ -11,15 +11,15 @@
 
 module Format = Format_
 
-type exp_wrap = Fmt.t -> Fmt.t
-
-val get_exp_wrap :
+val wrap_exp :
      Conf.t
   -> ?disambiguate:bool
   -> ?fits_breaks:bool
   -> parens:bool
-  -> exp_grouping:[`Parens | `Begin_end]
-  -> exp_wrap
+  -> loc:Location.t
+  -> Source.t
+  -> Fmt.t
+  -> Fmt.t
 
 type cases =
   { leading_space: Fmt.t
@@ -90,12 +90,12 @@ val get_if_then_else :
   -> parens_bch:bool
   -> parens_prev_bch:bool
   -> xcond:Migrate_ast.Parsetree.expression Ast.xt option
-  -> expr_loc:Warnings.loc
+  -> expr_loc:Location.t
+  -> bch_loc:Location.t
   -> fmt_extension_suffix:Fmt.t
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(Migrate_ast.Parsetree.expression Ast.xt -> Fmt.t)
-  -> exp_grouping:[`Parens | `Begin_end]
-  -> exp_grouping_bch:[`Parens | `Begin_end]
+  -> Source.t
   -> if_then_else
 
 val match_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int

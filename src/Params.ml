@@ -13,11 +13,16 @@ module Format = Format_
 open Migrate_ast
 open Fmt
 
-type exp_wrap = Fmt.t -> Fmt.t
+let parens_or_begin_end (c : Conf.t) source ~loc =
+  match c.exp_grouping with
+  | `Parens -> `Parens
+  | `Preserve ->
+      let str = String.lstrip (Source.string_at source loc) in
+      if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
 
-let get_exp_wrap c ?(disambiguate = false) ?(fits_breaks = true) ~parens
-    ~exp_grouping k =
-  match exp_grouping with
+let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
+    ~parens ~loc source k =
+  match parens_or_begin_end c source ~loc with
   | `Parens when disambiguate && c.Conf.disambiguate_non_breaking_match ->
       wrap_if_fits_or parens "(" ")" k
   | (`Parens | `Begin_end) when not parens -> k
@@ -238,9 +243,11 @@ type if_then_else =
   ; space_between_branches: Fmt.t }
 
 let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
-    ~parens_prev_bch ~xcond ~expr_loc ~fmt_extension_suffix ~fmt_attributes
-    ~fmt_cond ~exp_grouping ~exp_grouping_bch =
+    ~parens_prev_bch ~xcond ~expr_loc ~bch_loc ~fmt_extension_suffix
+    ~fmt_attributes ~fmt_cond source =
   let imd = c.indicate_multiline_delimiters in
+  let exp_grouping = parens_or_begin_end c source ~loc:expr_loc in
+  let exp_grouping_bch = parens_or_begin_end c source ~loc:bch_loc in
   let wrap_parens ~wrap_breaks k =
     match exp_grouping_bch with
     | (`Parens | `Begin_end) when not parens_bch -> k
