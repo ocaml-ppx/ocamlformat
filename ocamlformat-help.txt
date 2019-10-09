@@ -209,12 +209,6 @@ OPTIONS (CODE FORMATTING STYLE)
            `=`). loose does. tight-decl is tight for declarations and loose
            for instantiations. The default value is tight.
 
-       --function-blank-line={compact|preserve-one}
-           Blank line between expressions of a function. compact will not
-           keep any blank line between expressions of a function. preserve
-           will keep a blank line between two expressions of a function if
-           the input contains at least one. The default value is compact.
-
        --function-indent=COLS
            Indentation of function cases (COLS columns). The default value is
            2.
@@ -406,6 +400,12 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --parse-docstrings
            Parse and format docstrings. The flag is unset by default.
+
+       --sequence-blank-line={compact|preserve-one}
+           Blank line between expressions of a sequence. compact will not
+           keep any blank line between expressions of a sequence. preserve
+           will keep a blank line between two expressions of a sequence if
+           the input contains at least one. The default value is compact.
 
        --sequence-style={separator|terminator|before}
            Style of sequence. separator puts spaces before and after

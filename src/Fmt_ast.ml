@@ -477,7 +477,7 @@ let fmt_docstring_padded c doc =
   fmt_docstring c ~pro:(break c.conf.doc_comments_padding 0) doc
 
 let blank_line_between c ~fst:l1 ~snd:l2 =
-  match c.conf.function_blank_line with
+  match c.conf.sequence_blank_line with
   | `Preserve_one ->
       let open Location in
       (* Count empty lines between [l1] and [l2], some may be comments *)
