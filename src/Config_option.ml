@@ -62,8 +62,9 @@ module Make (C : CONFIG) = struct
   let deprecated_doc ~deprecated =
     if deprecated then " Warning: This option is deprecated." else ""
 
-  let generated_flag_doc ~allow_inline ~doc ~section ~deprecated =
-    Format.sprintf "%s%s%s" doc
+  let generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated =
+    let default = if default then "on" else "off" in
+    Format.sprintf "%s The default value is $(b,%s).%s%s" doc default
       (in_attributes ~section allow_inline)
       (deprecated_doc ~deprecated)
 
@@ -84,20 +85,23 @@ module Make (C : CONFIG) = struct
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
       update get_value =
     let open Cmdliner in
-    let invert_flag = default in
-    let names_for_cmdline =
-      if invert_flag then
-        List.filter_map names ~f:(fun n ->
-            if String.length n = 1 then None else Some ("no-" ^ n))
-      else names
+    let invert_names = List.map names ~f:(fun n -> "no-" ^ n) in
+    let doc =
+      generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated
     in
-    let doc = generated_flag_doc ~allow_inline ~doc ~section ~deprecated in
+    let invert_doc = "Disable $(b," ^ List.last_exn names ^ ")." in
     let docs = section_name section in
-    let term = Arg.(value & flag & info names_for_cmdline ~doc ~docs) in
+    let term =
+      Arg.(
+        value
+        & vflag None
+            [ (Some true, info names ~doc ~docs)
+            ; (Some false, info invert_names ~doc:invert_doc ~docs) ])
+    in
     let parse = Arg.(conv_parser bool) in
-    let r = mk ~default term in
+    let r = mk ~default:None term in
     let to_string = Bool.to_string in
-    let cmdline_get () = if !r then Some (not invert_flag) else None in
+    let cmdline_get () = !r in
     let opt =
       { names
       ; parse
