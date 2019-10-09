@@ -72,9 +72,6 @@ let protect =
           first := false ) ;
         raise exc)
 
-let comma_sep c : Fmt.s =
-  if Poly.(c.conf.break_separators = `Before) then "@,, " else ",@;<1 2>"
-
 let rec is_collection_docked c exp =
   let self e = not (is_collection_docked c e) in
   c.conf.dock_collection_brackets
@@ -1368,7 +1365,7 @@ and fmt_tuple_body c ?(parens = true) ?(space = false) xbody elts attributes
     | Str {pstr_desc= Pstr_eval _; _} -> true
     | _ -> false
   in
-  let p = Params.wrap_tuple c.conf ~parens ~no_parens_if_break in
+  let p = Params.get_tuple_expr c.conf ~parens ~no_parens_if_break in
   let space = space && c.conf.dock_collection_brackets in
   let width xe = String.length (Cmts.preserve (fmt_expression c) xe) in
   ( fmt_if space "@ "
