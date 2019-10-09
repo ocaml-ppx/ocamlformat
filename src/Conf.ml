@@ -25,7 +25,7 @@ type t =
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After]
   ; break_sequences: bool
-  ; break_string_literals: [`Newlines | `Never | `Wrap | `Newlines_and_wrap]
+  ; break_string_literals: [`Auto | `Never]
   ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
@@ -385,23 +385,16 @@ module Formatting = struct
     let doc = "Break string literals." in
     let names = ["break-string-literals"] in
     let all =
-      [ ( "newlines-and-wrap"
-        , `Newlines_and_wrap
-        , "$(b,newlines-and-wrap) mode breaks lines at newlines and wraps \
-           string literals at the margin." )
-      ; ( "wrap"
-        , `Wrap
-        , "$(b,wrap) mode wraps string literals at the margin. Quoted \
-           strings such as $(i,{id|...|id}) are preserved." )
-      ; ( "newlines"
-        , `Newlines
-        , "$(b,newlines) mode breaks lines at newlines." )
+      [ ( "auto"
+        , `Auto
+        , "$(b,auto) mode breaks lines at newlines and wraps string \
+           literals at the margin." )
       ; ( "never"
         , `Never
         , "$(b,never) mode formats string literals as they are parsed, in \
            particular, with escape sequences expanded." ) ]
     in
-    C.choice ~names ~all ~doc ~section ~deprecated:true
+    C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_string_literals= x})
       (fun conf -> conf.break_string_literals)
 
@@ -1531,7 +1524,7 @@ let janestreet_profile =
   ; break_fun_sig= `Fit_or_vertical
   ; break_separators= `Before
   ; break_sequences= true
-  ; break_string_literals= `Wrap
+  ; break_string_literals= `Auto
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
   ; cases_matching_exp_indent= `Normal

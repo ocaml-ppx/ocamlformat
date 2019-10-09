@@ -520,20 +520,9 @@ module Expression : Module_item with type t = expression = struct
     || not (is_simple (i2, c2))
 end
 
-let may_force_break (c : Conf.t) s =
-  let contains_internal_newline s =
-    match String.index s '\n' with
-    | None -> false
-    | Some i when i = String.length s - 1 -> false
-    | _ -> true
-  in
-  match c.break_string_literals with
-  | `Newlines -> contains_internal_newline s
-  | _ -> false
-
 let rec is_trivial c exp =
   match exp.pexp_desc with
-  | Pexp_constant (Pconst_string (s, None)) -> not (may_force_break c s)
+  | Pexp_constant (Pconst_string (_, None)) -> true
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial c e1
