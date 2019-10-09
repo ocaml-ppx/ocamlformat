@@ -160,4 +160,8 @@ module Location = struct
 
   let is_single_line x margin =
     width x <= margin && x.loc_start.pos_lnum = x.loc_end.pos_lnum
+
+  let smallest loc stack =
+    let min a b = if width a < width b then a else b in
+    List.reduce_exn (loc :: stack) ~f:min
 end

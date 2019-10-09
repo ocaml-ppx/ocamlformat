@@ -48,10 +48,6 @@ type block =
   ; esp: Fmt.t
   ; epi: Fmt.t option }
 
-let smallest_loc loc stack =
-  List.reduce_exn (loc :: stack) ~f:(fun a b ->
-      if Location.width a < Location.width b then a else b)
-
 let empty =
   { opn= noop
   ; pro= None
@@ -933,7 +929,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
            ))
   | Ppat_constant const ->
-      fmt_constant c ~loc:(smallest_loc ppat_loc ppat_loc_stack) const
+      fmt_constant c ~loc:(Location.smallest ppat_loc ppat_loc_stack) const
   | Ppat_interval (l, u) -> (
       (* we need to reconstruct locations for both side of the interval *)
       let toks =
@@ -1802,7 +1798,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (parens || not (List.is_empty pexp_attributes))
         "(" ")"
         ( fmt_constant c
-            ~loc:(smallest_loc pexp_loc pexp_loc_stack)
+            ~loc:(Location.smallest pexp_loc pexp_loc_stack)
             ?epi const
         $ fmt_atrs )
   | Pexp_constraint
