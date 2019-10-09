@@ -70,16 +70,16 @@ OPTIONS (CODE FORMATTING STYLE)
            auto will only break the line if the in keyword does not fit on
            the previous line. The default value is fit-or-vertical.
 
-       --break-cases={nested|fit|toplevel|fit-or-vertical|all}
-           Break pattern match cases. nested forces a break after nested
+       --break-cases={fit|nested|toplevel|fit-or-vertical|all}
+           Break pattern match cases. Specifying fit lets pattern matches
+           break at the margin naturally. nested forces a break after nested
            or-patterns to highlight the case body. Note that with nested, the
            indicate-nested-or-patterns option is not needed, and so ignored.
-           Specifying fit lets pattern matches break at the margin naturally.
            toplevel forces top-level cases (i.e. not nested or-patterns) to
            break across lines, otherwise break naturally at the margin.
            fit-or-vertical tries to fit all or-patterns on the same line,
            otherwise breaks. all forces all pattern matches to break across
-           lines. The default value is nested.
+           lines. The default value is fit.
 
        --break-collection-expressions={fit-or-vertical|wrap}
            Break collection expressions (lists and arrays) elements by
@@ -113,11 +113,11 @@ OPTIONS (CODE FORMATTING STYLE)
            first line of the function appears docked at the end of line after
            the operator. The flag is set by default.
 
-       --break-separators={before|after}
+       --break-separators={after|before}
            Break before or after separators such as `;` in list or record
-           expressions. before breaks the expressions before the separator.
-           after breaks the expressions after the separator. The default
-           value is before.
+           expressions. after breaks the expressions after the separator.
+           before breaks the expressions before the separator. The default
+           value is after.
 
        --break-sequences
            Force sequence expressions to break irrespective of margin. The
@@ -139,12 +139,11 @@ OPTIONS (CODE FORMATTING STYLE)
            cases-matching-exp-indent and nested-match options. The default
            value is 4. Cannot be set in attributes.
 
-       --cases-matching-exp-indent={compact|normal}
+       --cases-matching-exp-indent={normal|compact}
            Indentation of cases right-hand sides which are `match` or `try`
-           expressions. compact forces an indentation of 2, unless
-           nested-match is set to align and we're on the last case. normal
-           indents as it would any other expression. The default value is
-           compact.
+           expressions. normal indents as it would any other expression.
+           compact forces an indentation of 2, unless nested-match is set to
+           align and we're on the last case. The default value is normal.
 
        --disable
            Disable ocamlformat. This is used in attributes to locally disable
@@ -202,12 +201,12 @@ OPTIONS (CODE FORMATTING STYLE)
        --extension-sugar={preserve|always}
            Extension formatting. The default value is preserve.
 
-       --field-space={tight|loose|tight-decl}
+       --field-space={loose|tight|tight-decl}
            Whether or not to use a space between a field name and the rhs.
-           This option affects records and objects. tight does not use a
-           space between a field name and the punctuation symbol (`:` or
-           `=`). loose does. tight-decl is tight for declarations and loose
-           for instantiations. The default value is tight.
+           This option affects records and objects. loose does. tight does
+           not use a space between a field name and the punctuation symbol
+           (`:` or `=`). tight-decl is tight for declarations and loose for
+           instantiations. The default value is loose.
 
        --function-indent=COLS
            Indentation of function cases (COLS columns). The default value is
@@ -241,14 +240,14 @@ OPTIONS (CODE FORMATTING STYLE)
            closing-on-separate-line makes sure that the closing delimiter is
            on its own line. The default value is space.
 
-       --indicate-nested-or-patterns={space|unsafe-no}
+       --indicate-nested-or-patterns={unsafe-no|space}
            Control whether or not to indicate nested or-pattern using
-           indentation. space starts lines of nested or-patterns with " |"
-           rather than "| ". unsafe-no does not indicate nested or-patterns.
+           indentation. unsafe-no does not indicate nested or-patterns.
            Warning: this can produce confusing code where a short body of a
            match case is visually hidden by surrounding long patterns,
            leading to misassociation between patterns and body expressions.
-           The default value is space.
+           space starts lines of nested or-patterns with " |" rather than "|
+           ". The default value is unsafe-no.
 
        --infix-precedence={indent|parens}
            Use indentation or also discretionary parentheses to explicitly
@@ -361,20 +360,25 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-parse-docstrings
            Unset parse-docstrings.
 
+       --no-break-sequences
+           Force sequence expressions to break irrespective of margin.
+
+       --no-dock-collection-brackets
+           Dock the brackets of lists, arrays and records, so that when the
+           collection does not fit on a single line the brackets are opened
+           on the preceding line and closed on the following line.
+
        --no-space-around-arrays
-           Unset space-around-arrays.
+           Add a space inside the delimiters of arrays.
 
        --no-space-around-lists
-           Unset space-around-lists.
+           Add a space inside the delimiters of lists.
 
        --no-space-around-records
-           Unset space-around-records.
+           Add a space inside the delimiters of records.
 
        --no-space-around-variants
-           Unset space-around-variants.
-
-       --no-wrap-comments
-           Unset wrap-comments.
+           Add a space inside the delimiters of variants.
 
        --no-wrap-fun-args
            Unset wrap-fun-args.
@@ -401,17 +405,17 @@ OPTIONS (CODE FORMATTING STYLE)
        --parse-docstrings
            Parse and format docstrings. The flag is unset by default.
 
-       --sequence-blank-line={compact|preserve-one}
-           Blank line between expressions of a sequence. compact will not
-           keep any blank line between expressions of a sequence. preserve
-           will keep a blank line between two expressions of a sequence if
-           the input contains at least one. The default value is compact.
+       --sequence-blank-line={preserve-one|compact}
+           Blank line between expressions of a sequence. preserve will keep a
+           blank line between two expressions of a sequence if the input
+           contains at least one. compact will not keep any blank line
+           between expressions of a sequence. The default value is
+           preserve-one.
 
-       --sequence-style={separator|terminator|before}
-           Style of sequence. separator puts spaces before and after
-           semicolons. terminator only puts spaces after semicolons. before
-           breaks the sequence before semicolons. The default value is
-           separator.
+       --sequence-style={terminator|separator|before}
+           Style of sequence. terminator only puts spaces after semicolons.
+           separator puts spaces before and after semicolons. before breaks
+           the sequence before semicolons. The default value is terminator.
 
        --single-case={compact|sparse}
            Style of pattern matching expressions with only a single case.
