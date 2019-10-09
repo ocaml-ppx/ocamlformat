@@ -1633,7 +1633,7 @@ let janestreet_profile =
   ; wrap_comments= false
   ; wrap_fun_args= false }
 
-let selected_profile_ref = ref (Some ocamlformat_profile)
+let selected_profile_ref = ref (Some conventional_profile)
 
 let (_profile : t option C.t) =
   let doc =
@@ -1642,7 +1642,19 @@ let (_profile : t option C.t) =
   in
   let names = profile_option_names in
   let all =
-    [ ( "ocamlformat"
+    [ ( "conventional"
+      , Some conventional_profile
+      , "The $(b,conventional) profile aims to be as familiar and \
+         \"conventional\" appearing as the available options allow." )
+    ; ( "compact"
+      , Some compact_profile
+      , "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more compact code style." )
+    ; ( "sparse"
+      , Some sparse_profile
+      , "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more sparse code style." )
+    ; ( "ocamlformat"
       , Some ocamlformat_profile
       , "The $(b,ocamlformat) profile aims to take advantage of the \
          strengths of a parsetree-based auto-formatter, and to limit the \
@@ -1660,18 +1672,6 @@ let (_profile : t option C.t) =
          easier, so indentation or white space is avoided unless it helps \
          legibility; Attention has been given to making some syntactic \
          gotchas visually obvious." )
-    ; ( "compact"
-      , Some compact_profile
-      , "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
-         for a generally more compact code style." )
-    ; ( "sparse"
-      , Some sparse_profile
-      , "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
-         for a generally more sparse code style." )
-    ; ( "conventional"
-      , Some conventional_profile
-      , "The $(b,conventional) profile aims to be as familiar and \
-         \"conventional\" appearing as the available options allow." )
     ; ( "janestreet"
       , Some janestreet_profile
       , "The $(b,janestreet) profile is used at Jane Street." ) ]
@@ -2033,7 +2033,7 @@ let build_config ~file ~is_stdin =
   in
   let files = if !disable_conf_files then [] else files in
   let conf =
-    let init = ocamlformat_profile in
+    let init = conventional_profile in
     List.fold files ~init ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in

@@ -548,31 +548,30 @@ OPTIONS
            max_indent is an alias for max-indent. strict_with sets
            function-indent-nested and match-indent-nested.
 
-       -p {ocamlformat|compact|sparse|conventional|janestreet},
-       --profile={ocamlformat|compact|sparse|conventional|janestreet}
+       -p {conventional|compact|sparse|ocamlformat|janestreet},
+       --profile={conventional|compact|sparse|ocamlformat|janestreet}
            Select a preset profile which sets all options, overriding lower
-           priority configuration. The ocamlformat profile aims to take
-           advantage of the strengths of a parsetree-based auto-formatter,
-           and to limit the consequences of the weaknesses imposed by the
-           current implementation. This is a style which optimizes for what
-           the formatter can do best, rather than to match the style of any
-           existing code. General guidelines that have directed the design
-           include: Legibility, in the sense of making it as hard as possible
-           for quick visual parsing to give the wrong interpretation, is of
-           highest priority; Whenever possible the high-level structure of
-           the code should be obvious by looking only at the left margin, in
-           particular, it should not be necessary to visually jump from left
-           to right hunting for critical keywords, tokens, etc; All else
-           equal compact code is preferred as reading without scrolling is
-           easier, so indentation or white space is avoided unless it helps
-           legibility; Attention has been given to making some syntactic
-           gotchas visually obvious. The compact profile is similar to
-           ocamlformat but opts for a generally more compact code style. The
-           sparse profile is similar to ocamlformat but opts for a generally
-           more sparse code style. The conventional profile aims to be as
+           priority configuration. The conventional profile aims to be as
            familiar and "conventional" appearing as the available options
-           allow. The janestreet profile is used at Jane Street. The default
-           value is ocamlformat.
+           allow. The compact profile is similar to ocamlformat but opts for
+           a generally more compact code style. The sparse profile is similar
+           to ocamlformat but opts for a generally more sparse code style.
+           The ocamlformat profile aims to take advantage of the strengths of
+           a parsetree-based auto-formatter, and to limit the consequences of
+           the weaknesses imposed by the current implementation. This is a
+           style which optimizes for what the formatter can do best, rather
+           than to match the style of any existing code. General guidelines
+           that have directed the design include: Legibility, in the sense of
+           making it as hard as possible for quick visual parsing to give the
+           wrong interpretation, is of highest priority; Whenever possible
+           the high-level structure of the code should be obvious by looking
+           only at the left margin, in particular, it should not be necessary
+           to visually jump from left to right hunting for critical keywords,
+           tokens, etc; All else equal compact code is preferred as reading
+           without scrolling is easier, so indentation or white space is
+           avoided unless it helps legibility; Attention has been given to
+           making some syntactic gotchas visually obvious. The janestreet
+           profile is used at Jane Street. The default value is conventional.
 
        --print-config
            Print the configuration determined by the environment variable,
