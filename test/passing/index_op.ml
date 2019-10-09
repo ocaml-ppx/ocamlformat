@@ -114,6 +114,8 @@ let _ =
 
 let _ = x.(y) <- (z.(w) <- u)
 
+let _ = x.foo#m
+
 class free =
   object (m : 'test)
     method get_def = m#state.def
