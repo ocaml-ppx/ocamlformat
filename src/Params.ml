@@ -39,7 +39,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
   match c.break_cases with
   | `Fit ->
       { leading_space= fmt_if (not first) "@ "
-      ; bar= fmt_or_k first (if_newline "| ") (fmt "| ")
+      ; bar= fmt_or_k first (if_newline "| ") (str "| ")
       ; box_all= hvbox indent
       ; box_pattern_arrow= hovbox 2
       ; break_before_arrow= fmt "@;<1 0>"
@@ -47,7 +47,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_opening_paren= fmt "@ " }
   | `Nested ->
       { leading_space= fmt_if (not first) "@ "
-      ; bar= fmt_or_k first (if_newline "| ") (fmt "| ")
+      ; bar= fmt_or_k first (if_newline "| ") (str "| ")
       ; box_all= Fn.id
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
@@ -55,7 +55,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>" }
   | `Fit_or_vertical ->
       { leading_space= break_unless_newline 1000 0
-      ; bar= fmt "| "
+      ; bar= str "| "
       ; box_all= hovbox indent
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
@@ -63,7 +63,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_opening_paren= fmt "@ " }
   | `Toplevel | `All ->
       { leading_space= break_unless_newline 1000 0
-      ; bar= fmt "| "
+      ; bar= str "| "
       ; box_all= hvbox indent
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"

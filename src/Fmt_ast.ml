@@ -443,7 +443,7 @@ let docstring_epi ?(standalone = false) ?next ~floating ?epi =
   let epi = if Option.is_some next then fmt "@\n" else Option.call ~f:epi in
   match next with
   | (None | Some (_, false)) when floating && not standalone ->
-      fmt "\n" $ epi
+      str "\n" $ epi
   | _ -> epi
 
 let fmt_docstring c ?standalone ?pro ?epi doc =
@@ -637,7 +637,7 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
     | Some t, Some r ->
         if type_first then field_space $ fmt_type t $ fmt "@ " $ fmt_rhs r
         else
-          field_space $ fmt_rhs ~parens:true r $ fmt " "
+          field_space $ fmt_rhs ~parens:true r $ str " "
           $ fmt_type ~parens:true t
     | Some t, None -> field_space $ fmt_type t
     | None, Some r -> field_space $ fmt_rhs r
@@ -2225,7 +2225,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( p1.box
             ( opt default (fun d ->
                   hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
-                  $ fmt "with" $ p2.break_after_with)
+                  $ str "with" $ p2.break_after_with)
             $ list_fl flds fmt_field )
         $ fmt_atrs )
   | Pexp_extension
@@ -2726,7 +2726,7 @@ and fmt_class_field c ctx (cf : class_field) =
                      ( box_fun_sig_args c 4
                          ( str "method" $ virtual_or_override kind
                          $ fmt_if Poly.(priv = Private) " private"
-                         $ fmt " " $ fmt_str_loc c name $ typ )
+                         $ str " " $ fmt_str_loc c name $ typ )
                      $ args ))
               $ eq )
           $ expr )
@@ -2739,7 +2739,7 @@ and fmt_class_field c ctx (cf : class_field) =
                      ( box_fun_sig_args c 4
                          ( str "val" $ virtual_or_override kind
                          $ fmt_if Poly.(mut = Mutable) " mutable"
-                         $ fmt " " $ fmt_str_loc c name $ typ )
+                         $ str " " $ fmt_str_loc c name $ typ )
                      $ args ))
               $ eq )
           $ expr )
@@ -4075,7 +4075,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     ~attributes ~indent_after_in =
   let fmt_in indent =
     match c.conf.break_before_in with
-    | `Fit_or_vertical -> break 1 (-indent) $ fmt "in"
+    | `Fit_or_vertical -> break 1 (-indent) $ str "in"
     | `Auto -> fits_breaks " in" ~hint:(1, -indent) "in"
   in
   let fmt_binding ~first ~last binding =
@@ -4159,7 +4159,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
           let fmt_cstr =
             fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
             $ hvbox 0
-                ( fmt "type "
+                ( str "type "
                 $ list pvars " " (fmt_str_loc c)
                 $ fmt ".@ " $ fmt_core_type c xtyp )
           in
