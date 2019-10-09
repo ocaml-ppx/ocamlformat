@@ -11,15 +11,15 @@
 
 module Format = Format_
 
-type exp_wrap = Fmt.t -> Fmt.t
-
-val get_exp_wrap :
+val wrap_exp :
      Conf.t
   -> ?disambiguate:bool
   -> ?fits_breaks:bool
   -> parens:bool
-  -> exp_grouping:[`Parens | `Begin_end]
-  -> exp_wrap
+  -> loc:Location.t
+  -> Source.t
+  -> Fmt.t
+  -> Fmt.t
 
 type cases =
   { leading_space: Fmt.t
@@ -90,10 +90,26 @@ val get_if_then_else :
   -> parens_bch:bool
   -> parens_prev_bch:bool
   -> xcond:Migrate_ast.Parsetree.expression Ast.xt option
-  -> expr_loc:Warnings.loc
+  -> expr_loc:Location.t
+  -> bch_loc:Location.t
   -> fmt_extension_suffix:Fmt.t
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(Migrate_ast.Parsetree.expression Ast.xt -> Fmt.t)
-  -> exp_grouping:[`Parens | `Begin_end]
-  -> exp_grouping_bch:[`Parens | `Begin_end]
+  -> Source.t
   -> if_then_else
+
+val match_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
+(** [match_indent c ~ctx ~default] returns the indentation used for the
+    pattern-matching in context [ctx], depending on the `match-indent-nested`
+    option, or using the [default] indentation (0 if not provided) if the
+    option does not apply. *)
+
+val function_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
+(** [function_indent c ~ctx ~default] returns the indentation used for the
+    function in context [ctx], depending on the `function-indent-nested`
+    option, or using the [default] indentation (0 if not provided) if the
+    option does not apply. *)
+
+val comma_sep : Conf.t -> Fmt.s
+(** [comma_sep c] returns the format string used to separate two elements
+    with a comma, depending on the `break-separators` option. *)

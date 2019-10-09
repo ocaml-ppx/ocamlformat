@@ -2071,4 +2071,40 @@ and debug = !debug
 
 and check = !check
 
-let parse_line_in_attribute = parse_line ~from:`Attribute
+open Migrate_ast.Parsetree
+
+let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
+  let result =
+    match txt with
+    | "ocamlformat" -> (
+      match attr_payload with
+      | PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
+                    ; pexp_attributes= []
+                    ; _ }
+                  , [] )
+            ; _ } ] ->
+          parse_line ~from:`Attribute c str
+      | _ -> Error (`Malformed "string expected") )
+    | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
+        Error
+          (`Malformed
+            (Format.sprintf "unknown suffix %S"
+               (String.chop_prefix_exn ~prefix:"ocamlformat." txt)))
+    | _ -> Ok c
+  in
+  match result with
+  | Ok conf -> conf
+  | Error error ->
+      let reason = function
+        | `Malformed line -> Format.sprintf "Invalid format %S" line
+        | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
+        | `Unknown (name, _) -> Format.sprintf "Unknown option %s" name
+        | `Bad_value (name, value) ->
+            Format.sprintf "Invalid value for %s: %S" name value
+      in
+      let w = Warnings.Attribute_payload (txt, reason error) in
+      if (not c.quiet) && not quiet then Compat.print_warning loc w ;
+      c

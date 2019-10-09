@@ -13,11 +13,16 @@ module Format = Format_
 open Migrate_ast
 open Fmt
 
-type exp_wrap = Fmt.t -> Fmt.t
+let parens_or_begin_end (c : Conf.t) source ~loc =
+  match c.exp_grouping with
+  | `Parens -> `Parens
+  | `Preserve ->
+      let str = String.lstrip (Source.string_at source loc) in
+      if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
 
-let get_exp_wrap c ?(disambiguate = false) ?(fits_breaks = true) ~parens
-    ~exp_grouping k =
-  match exp_grouping with
+let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
+    ~parens ~loc source k =
+  match parens_or_begin_end c source ~loc with
   | `Parens when disambiguate && c.Conf.disambiguate_non_breaking_match ->
       wrap_if_fits_or parens "(" ")" k
   | (`Parens | `Begin_end) when not parens -> k
@@ -39,7 +44,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
   match c.break_cases with
   | `Fit ->
       { leading_space= fmt_if (not first) "@ "
-      ; bar= fmt_or_k first (if_newline "| ") (fmt "| ")
+      ; bar= fmt_or_k first (if_newline "| ") (str "| ")
       ; box_all= hvbox indent
       ; box_pattern_arrow= hovbox 2
       ; break_before_arrow= fmt "@;<1 0>"
@@ -47,7 +52,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_opening_paren= fmt "@ " }
   | `Nested ->
       { leading_space= fmt_if (not first) "@ "
-      ; bar= fmt_or_k first (if_newline "| ") (fmt "| ")
+      ; bar= fmt_or_k first (if_newline "| ") (str "| ")
       ; box_all= Fn.id
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
@@ -55,7 +60,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>" }
   | `Fit_or_vertical ->
       { leading_space= break_unless_newline 1000 0
-      ; bar= fmt "| "
+      ; bar= str "| "
       ; box_all= hovbox indent
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
@@ -63,7 +68,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_opening_paren= fmt "@ " }
   | `Toplevel | `All ->
       { leading_space= break_unless_newline 1000 0
-      ; bar= fmt "| "
+      ; bar= str "| "
       ; box_all= hvbox indent
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
@@ -238,9 +243,11 @@ type if_then_else =
   ; space_between_branches: Fmt.t }
 
 let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
-    ~parens_prev_bch ~xcond ~expr_loc ~fmt_extension_suffix ~fmt_attributes
-    ~fmt_cond ~exp_grouping ~exp_grouping_bch =
+    ~parens_prev_bch ~xcond ~expr_loc ~bch_loc ~fmt_extension_suffix
+    ~fmt_attributes ~fmt_cond source =
   let imd = c.indicate_multiline_delimiters in
+  let exp_grouping = parens_or_begin_end c source ~loc:expr_loc in
+  let exp_grouping_bch = parens_or_begin_end c source ~loc:bch_loc in
   let wrap_parens ~wrap_breaks k =
     match exp_grouping_bch with
     | (`Parens | `Begin_end) when not parens_bch -> k
@@ -352,3 +359,16 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; expr_eol= None
       ; break_end_branch= noop
       ; space_between_branches= fmt "@ " }
+
+let match_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
+  match (c.match_indent_nested, ctx) with
+  | `Always, _ | _, (Top | Sig _ | Str _) -> c.match_indent
+  | _ -> default
+
+let function_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
+  match (c.function_indent_nested, ctx) with
+  | `Always, _ | _, (Top | Sig _ | Str _) -> c.function_indent
+  | _ -> default
+
+let comma_sep (c : Conf.t) : Fmt.s =
+  match c.break_separators with `Before -> "@,, " | `After -> ",@;<1 2>"
