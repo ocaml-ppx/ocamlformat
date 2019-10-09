@@ -109,3 +109,7 @@ val function_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
     function in context [ctx], depending on the `function-indent-nested`
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
+
+val comma_sep : Conf.t -> Fmt.s
+(** [comma_sep c] returns the format string used to separate two elements
+    with a comma, depending on the `break-separators` option. *)

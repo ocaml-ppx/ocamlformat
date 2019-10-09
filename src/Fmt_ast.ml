@@ -74,9 +74,6 @@ let protect =
         first := false ) ;
       raise exc
 
-let comma_sep c : Fmt.s =
-  if Poly.(c.conf.break_separators = `Before) then "@,, " else ",@;<1 2>"
-
 let update_config ?(quiet = false) c l =
   let update_one c {attr_name= {txt; loc}; attr_payload= payload; _} =
     let result =
@@ -726,7 +723,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_constr (lid, t1N) ->
       wrap_fits_breaks c.conf "(" ")"
-        (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
+        (list t1N (Params.comma_sep c.conf) (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext ->
       hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
@@ -832,7 +829,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       $ fmt_longident_loc c ~pre:(str "#") lid
   | Ptyp_class (lid, t1N) ->
       wrap_fits_breaks c.conf "(" ")"
-        (list t1N (comma_sep c) (sub_typ ~ctx >> fmt_core_type c))
+        (list t1N (Params.comma_sep c.conf) (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ "
       $ fmt_longident_loc c ~pre:(str "#") lid )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
@@ -944,7 +941,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let parens = parens || Poly.(c.conf.parens_tuple_patterns = `Always) in
       hvbox 0
         (Params.wrap_tuple ~parens ~no_parens_if_break:false c.conf
-           (list pats (comma_sep c) (sub_pat ~ctx >> fmt_pattern c)))
+           (list pats (Params.comma_sep c.conf)
+              (sub_pat ~ctx >> fmt_pattern c)))
   | Ppat_construct ({txt= Lident (("()" | "[]") as txt); loc}, None) ->
       let opn = txt.[0] and cls = txt.[1] in
       Cmts.fmt c loc
@@ -1270,7 +1268,8 @@ and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
        $ Cmts.fmt_before c loc
        $ str (Printf.sprintf "%s%c" s opn)
        $ Cmts.fmt_after c loc
-       $ list is (comma_sep c) (fun i -> fmt_expression c (sub_exp ~ctx i))
+       $ list is (Params.comma_sep c.conf) (fun i ->
+             fmt_expression c (sub_exp ~ctx i))
        $ str (Printf.sprintf "%c" cls)
        $ opt set (fun e ->
              fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e)) ))
@@ -2267,7 +2266,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       hvbox 0
         ( Params.wrap_tuple ~parens ~no_parens_if_break c.conf
-            (list es (comma_sep c) (sub_exp ~ctx >> fmt_expression c))
+            (list es (Params.comma_sep c.conf)
+               (sub_exp ~ctx >> fmt_expression c))
         $ fmt_atrs )
   | Pexp_lazy e ->
       hvbox 2
@@ -2928,14 +2928,14 @@ and fmt_tydcl_params c ctx params =
     ( wrap_fits_breaks_if ~space:false c.conf
         (List.length params > 1)
         "(" ")"
-        (list params (comma_sep c) (fun (ty, vc) ->
+        (list params (Params.comma_sep c.conf) (fun (ty, vc) ->
              fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty)))
     $ fmt "@ " )
 
 and fmt_class_params c ctx params =
   let fmt_param ~first ~last (ty, vc) =
     fmt_if (first && exposed_left_typ ty) " "
-    $ fmt_if_k (not first) (fmt (comma_sep c))
+    $ fmt_if_k (not first) (fmt (Params.comma_sep c.conf))
     $ fmt_variance vc
     $ fmt_core_type c (sub_typ ~ctx ty)
     $ fmt_if (last && exposed_right_typ ty) " "
