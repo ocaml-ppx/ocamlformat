@@ -74,44 +74,8 @@ let protect =
         first := false ) ;
       raise exc
 
-let update_config ?(quiet = false) c l =
-  let update_one c {attr_name= {txt; loc}; attr_payload= payload; _} =
-    let result =
-      match txt with
-      | "ocamlformat" -> (
-        match payload with
-        | PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
-                      ; pexp_attributes= []
-                      ; _ }
-                    , [] )
-              ; _ } ] ->
-            Conf.parse_line_in_attribute c.conf str
-        | _ -> Error (`Malformed "string expected") )
-      | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
-          Error
-            (`Malformed
-              (Format.sprintf "unknown suffix %S"
-                 (String.chop_prefix_exn ~prefix:"ocamlformat." txt)))
-      | _ -> Ok c.conf
-    in
-    match result with
-    | Ok conf -> {c with conf}
-    | Error error ->
-        let reason = function
-          | `Malformed line -> Format.sprintf "Invalid format %S" line
-          | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
-          | `Unknown (name, _) -> Format.sprintf "Unknown option %s" name
-          | `Bad_value (name, value) ->
-              Format.sprintf "Invalid value for %s: %S" name value
-        in
-        let w = Warnings.Attribute_payload (txt, reason error) in
-        if (not c.conf.quiet) && not quiet then Compat.print_warning loc w ;
-        c
-  in
-  List.fold ~init:c l ~f:update_one
+let update_config ?quiet c l =
+  {c with conf= List.fold ~init:c.conf l ~f:(Conf.update ?quiet)}
 
 let fmt_expressions c width sub_exp exprs fmt_expr
     (p : Params.elements_collection) =

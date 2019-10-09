@@ -108,12 +108,6 @@ val debug : bool
 val check : bool
 (** Check whether the input files already are formatted. *)
 
-val parse_line_in_attribute :
-     t
-  -> string
-  -> ( t
-     , [ `Unknown of string * string
-       | `Bad_value of string * string
-       | `Malformed of string
-       | `Misplaced of string * string ] )
-     Result.t
+val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t
+(** [update ?quiet c a] updates configuration [c] after reading attribute
+    [a]. [quiet] is false by default. *)
