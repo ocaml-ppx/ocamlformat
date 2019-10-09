@@ -449,7 +449,7 @@ module Formatting = struct
     let doc =
       "Disable ocamlformat. This is used in attributes to locally disable \
        automatic code formatting. One can also use $(b,[@@@ocamlformat \
-       \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])"
+       \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])."
     in
     C.flag ~names:["disable"] ~default:false ~doc ~section
       (fun conf x -> {conf with disable= x})

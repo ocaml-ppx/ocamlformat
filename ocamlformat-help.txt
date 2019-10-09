@@ -149,7 +149,7 @@ OPTIONS (CODE FORMATTING STYLE)
        --disable
            Disable ocamlformat. This is used in attributes to locally disable
            automatic code formatting. One can also use [@@@ocamlformat
-           "enable"] instead of [@@@ocamlformat "disable=false"] The flag is
+           "enable"] instead of [@@@ocamlformat "disable=false"]. The flag is
            unset by default.
 
        --disambiguate-non-breaking-match
