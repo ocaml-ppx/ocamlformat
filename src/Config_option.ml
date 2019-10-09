@@ -63,8 +63,8 @@ module Make (C : CONFIG) = struct
     if deprecated then " Warning: This option is deprecated." else ""
 
   let generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated =
-    let default = if default then "on" else "off" in
-    Format.sprintf "%s The default value is $(b,%s).%s%s" doc default
+    let default = if default then "set" else "unset" in
+    Format.sprintf "%s The flag is $(b,%s) by default.%s%s" doc default
       (in_attributes ~section allow_inline)
       (deprecated_doc ~deprecated)
 
@@ -89,7 +89,7 @@ module Make (C : CONFIG) = struct
     let doc =
       generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated
     in
-    let invert_doc = "Disable $(b," ^ List.last_exn names ^ ")." in
+    let invert_doc = "Unset $(b," ^ List.last_exn names ^ ")." in
     let docs = section_name section in
     let term =
       Arg.(

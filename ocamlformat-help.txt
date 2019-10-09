@@ -44,14 +44,15 @@ OPTIONS (CODE FORMATTING STYLE)
        are ignored and can be used as comments.
 
        --align-cases
-           Align match/try cases horizontally. The default value is off.
+           Align match/try cases horizontally. The flag is unset by default.
 
        --align-constructors-decl
-           Align type declarations horizontally. The default value is off.
+           Align type declarations horizontally. The flag is unset by
+           default.
 
        --align-variants-decl
-           Align type variants declarations horizontally. The default value
-           is off.
+           Align type variants declarations horizontally. The flag is unset
+           by default.
 
        --assignment-operator={end-line|begin-line}
            Position of the assignment operator. end-line positions assignment
@@ -110,7 +111,7 @@ OPTIONS (CODE FORMATTING STYLE)
            Break infix operators whose right arguments are anonymous
            functions specially: do not break after the operator so that the
            first line of the function appears docked at the end of line after
-           the operator. The default value is on.
+           the operator. The flag is set by default.
 
        --break-separators={before|after}
            Break before or after separators such as `;` in list or record
@@ -120,7 +121,7 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --break-sequences
            Force sequence expressions to break irrespective of margin. The
-           default value is off.
+           flag is unset by default.
 
        --break-string-literals={auto|never}
            Break string literals. auto mode breaks lines at newlines and
@@ -148,12 +149,12 @@ OPTIONS (CODE FORMATTING STYLE)
        --disable
            Disable ocamlformat. This is used in attributes to locally disable
            automatic code formatting. One can also use [@@@ocamlformat
-           "enable"] instead of [@@@ocamlformat "disable=false"] The default
-           value is off.
+           "enable"] instead of [@@@ocamlformat "disable=false"] The flag is
+           unset by default.
 
        --disambiguate-non-breaking-match
            Add parentheses around matching constructs that fit on a single
-           line. The default value is off.
+           line. The flag is unset by default.
 
        --doc-comments={after|before}
            Doc comments position. after puts doc comments after the
@@ -175,8 +176,8 @@ OPTIONS (CODE FORMATTING STYLE)
        --dock-collection-brackets
            Dock the brackets of lists, arrays and records, so that when the
            collection does not fit on a single line the brackets are opened
-           on the preceding line and closed on the following line. The
-           default value is off.
+           on the preceding line and closed on the following line. The flag
+           is unset by default.
 
        --escape-chars={preserve|decimal|hexadecimal}
            Escape encoding for character literals. preserve escapes ASCII
@@ -257,8 +258,8 @@ OPTIONS (CODE FORMATTING STYLE)
            precedences of infix operators. The default value is indent.
 
        --leading-nested-match-parens
-           Nested match parens formatting. The default value is off. Cannot
-           be set in attributes.
+           Nested match parens formatting. The flag is unset by default.
+           Cannot be set in attributes.
 
        --let-and={compact|sparse}
            Style of let_and. compact will try to format `let p = e and p = e`
@@ -325,66 +326,66 @@ OPTIONS (CODE FORMATTING STYLE)
            The default value is wrap.
 
        --no-align-cases
-           Disable align-cases.
+           Unset align-cases.
 
        --no-align-constructors-decl
-           Disable align-constructors-decl.
+           Unset align-constructors-decl.
 
        --no-align-variants-decl
-           Disable align-variants-decl.
+           Unset align-variants-decl.
 
        --no-break-infix-before-func
-           Disable break-infix-before-func.
+           Unset break-infix-before-func.
 
        --no-break-sequences
-           Disable break-sequences.
+           Unset break-sequences.
 
        --no-disable
-           Disable disable.
+           Unset disable.
 
        --no-disambiguate-non-breaking-match
-           Disable disambiguate-non-breaking-match.
+           Unset disambiguate-non-breaking-match.
 
        --no-dock-collection-brackets
-           Disable dock-collection-brackets.
+           Unset dock-collection-brackets.
 
        --no-leading-nested-match-parens
-           Disable leading-nested-match-parens.
+           Unset leading-nested-match-parens.
 
        --no-ocp-indent-compat
-           Disable ocp-indent-compat.
+           Unset ocp-indent-compat.
 
        --no-parens-ite
-           Disable parens-ite.
+           Unset parens-ite.
 
        --no-parse-docstrings
-           Disable parse-docstrings.
+           Unset parse-docstrings.
 
        --no-space-around-arrays
-           Disable space-around-arrays.
+           Unset space-around-arrays.
 
        --no-space-around-lists
-           Disable space-around-lists.
+           Unset space-around-lists.
 
        --no-space-around-records
-           Disable space-around-records.
+           Unset space-around-records.
 
        --no-space-around-variants
-           Disable space-around-variants.
+           Unset space-around-variants.
 
        --no-wrap-comments
-           Disable wrap-comments.
+           Unset wrap-comments.
 
        --no-wrap-fun-args
-           Disable wrap-fun-args.
+           Unset wrap-fun-args.
 
        --ocp-indent-compat
            Attempt to generate output which does not change (much) when
-           post-processing with ocp-indent. The default value is off.
+           post-processing with ocp-indent. The flag is unset by default.
 
        --parens-ite
            Uses parentheses around if-then-else branches that spread across
-           multiple lines. The default value is off.
+           multiple lines. The flag is unset by default.
 
        --parens-tuple={always|multi-line-only}
            Parens tuple expressions. always always uses parentheses around
@@ -398,7 +399,7 @@ OPTIONS (CODE FORMATTING STYLE)
            multi-line-only.
 
        --parse-docstrings
-           Parse and format docstrings. The default value is off.
+           Parse and format docstrings. The flag is unset by default.
 
        --sequence-blank-line={compact|preserve-one}
            Blank line between expressions of a sequence. compact will not
@@ -419,20 +420,20 @@ OPTIONS (CODE FORMATTING STYLE)
            is compact.
 
        --space-around-arrays
-           Add a space inside the delimiters of arrays. The default value is
-           off.
+           Add a space inside the delimiters of arrays. The flag is unset by
+           default.
 
        --space-around-lists
-           Add a space inside the delimiters of lists. The default value is
-           off.
+           Add a space inside the delimiters of lists. The flag is unset by
+           default.
 
        --space-around-records
-           Add a space inside the delimiters of records. The default value is
-           off.
+           Add a space inside the delimiters of records. The flag is unset by
+           default.
 
        --space-around-variants
-           Add a space inside the delimiters of variants. The default value
-           is off.
+           Add a space inside the delimiters of variants. The flag is unset
+           by default.
 
        --stritem-extension-indent=COLS
            Indentation of structure items inside extension nodes (COLS
@@ -455,10 +456,10 @@ OPTIONS (CODE FORMATTING STYLE)
            and each paragraph is wrapped at the margin. Multi-line comments
            with vertically-aligned asterisks on the left margin are not
            wrapped. Consecutive comments with both left and right margin
-           aligned are not wrapped either. The default value is off.
+           aligned are not wrapped either. The flag is unset by default.
 
        --wrap-fun-args
-           Style for function call. The default value is on.
+           Style for function call. The flag is set by default.
 
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)
@@ -471,8 +472,8 @@ OPTIONS
 
        --comment-check
            Control whether to check comments and documentation comments.
-           Unsafe to turn off. May be set in .ocamlformat. The default value
-           is on.
+           Unsafe to turn off. May be set in .ocamlformat. The flag is set by
+           default.
 
        --disable-conf-attrs
            Disable configuration in attributes.
@@ -522,10 +523,10 @@ OPTIONS
            NAME, see documentation of other options for details.
 
        --no-comment-check
-           Disable comment-check.
+           Unset comment-check.
 
        --no-quiet, --no-q
-           Disable quiet.
+           Unset quiet.
 
        --no-version-check
            Do no check version matches the one specified in .ocamlformat.
@@ -578,7 +579,7 @@ OPTIONS
            specified, or for the current working directory otherwise.
 
        -q, --quiet
-           Quiet. May be set in .ocamlformat. The default value is off.
+           Quiet. May be set in .ocamlformat. The flag is unset by default.
 
        --root=DIR
            Root of the project. If specified, only take into account
