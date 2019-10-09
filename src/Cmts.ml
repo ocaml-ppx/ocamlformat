@@ -317,8 +317,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
             Option.value_map next ~default:"no next"
               ~f:(string_between cmt_loc)
           in
-          Format.eprintf
-            "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
+          Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
             ( if phys_equal tbl t.cmts_before then "before"
             else if phys_equal tbl t.cmts_after then "after"
             else "within" )
@@ -373,9 +372,8 @@ let relocate (t : t) ~src ~before ~after =
                 ~f:(fun src_data dst_data -> f src_data dst_data)))
     in
     if Conf.debug then
-      Format.eprintf
-        "relocate %a to %a and %a@\n%!"
-        Location.fmt src Location.fmt before Location.fmt after ;
+      Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+        Location.fmt before Location.fmt after ;
     let merge_and_sort x y =
       List.rev_append x y
       |> List.sort
@@ -402,9 +400,7 @@ let init map_ast source asts comments_n_docstrings =
   if Conf.debug then (
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun {Cmt.txt; loc} ->
-        Format.eprintf
-          "%a %s %s@\n%!"
-          Location.fmt loc txt
+        Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts in
