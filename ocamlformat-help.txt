@@ -525,7 +525,7 @@ OPTIONS
        --no-comment-check
            Unset comment-check.
 
-       --no-quiet, --no-q
+       --no-quiet
            Unset quiet.
 
        --no-version-check

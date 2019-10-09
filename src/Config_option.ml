@@ -85,7 +85,10 @@ module Make (C : CONFIG) = struct
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
       update get_value =
     let open Cmdliner in
-    let invert_names = List.map names ~f:(fun n -> "no-" ^ n) in
+    let invert_names =
+      List.filter_map names ~f:(fun n ->
+          if String.length n = 1 then None else Some ("no-" ^ n))
+    in
     let doc =
       generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated
     in
