@@ -244,16 +244,16 @@ module Formatting = struct
     let doc = "Break pattern match cases." in
     let names = ["break-cases"] in
     let all =
-      [ ( "nested"
+      [ ( "fit"
+        , `Fit
+        , "Specifying $(b,fit) lets pattern matches break at the margin \
+           naturally." )
+      ; ( "nested"
         , `Nested
         , "$(b,nested) forces a break after nested or-patterns to highlight \
            the case body. Note that with $(b,nested), the \
            $(b,indicate-nested-or-patterns) option is not needed, and so \
            ignored." )
-      ; ( "fit"
-        , `Fit
-        , "Specifying $(b,fit) lets pattern matches break at the margin \
-           naturally." )
       ; ( "toplevel"
         , `Toplevel
         , "$(b,toplevel) forces top-level cases (i.e. not nested \
@@ -350,7 +350,7 @@ module Formatting = struct
        the function appears docked at the end of line after the operator."
     in
     let names = ["break-infix-before-func"] in
-    C.flag ~default:true ~names ~doc ~section
+    C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with break_infix_before_func= x})
       (fun conf -> conf.break_infix_before_func)
 
@@ -361,12 +361,12 @@ module Formatting = struct
     in
     let names = ["break-separators"] in
     let all =
-      [ ( "before"
-        , `Before
-        , "$(b,before) breaks the expressions before the separator." )
-      ; ( "after"
+      [ ( "after"
         , `After
-        , "$(b,after) breaks the expressions after the separator." ) ]
+        , "$(b,after) breaks the expressions after the separator." )
+      ; ( "before"
+        , `Before
+        , "$(b,before) breaks the expressions before the separator." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_separators= x})
@@ -377,7 +377,7 @@ module Formatting = struct
       "Force sequence expressions to break irrespective of margin."
     in
     let names = ["break-sequences"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with break_sequences= x})
       (fun conf -> conf.break_sequences)
 
@@ -432,14 +432,14 @@ module Formatting = struct
     in
     let names = ["cases-matching-exp-indent"] in
     let all =
-      [ ( "compact"
+      [ ( "normal"
+        , `Normal
+        , "$(b,normal) indents as it would any other expression." )
+      ; ( "compact"
         , `Compact
         , "$(b,compact) forces an indentation of 2, unless \
            $(b,nested-match) is set to $(b,align) and we're on the last \
-           case." )
-      ; ( "normal"
-        , `Normal
-        , "$(b,normal) indents as it would any other expression." ) ]
+           case." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with cases_matching_exp_indent= x})
@@ -511,7 +511,7 @@ module Formatting = struct
        the preceding line and closed on the following line."
     in
     let names = ["dock-collection-brackets"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with dock_collection_brackets= x})
       (fun conf -> conf.dock_collection_brackets)
 
@@ -591,11 +591,11 @@ module Formatting = struct
     in
     let names = ["field-space"] in
     let all =
-      [ ( "tight"
+      [ ("loose", `Loose, "$(b,loose) does.")
+      ; ( "tight"
         , `Tight
         , "$(b,tight) does not use a space between a field name and the \
            punctuation symbol (`:` or `=`)." )
-      ; ("loose", `Loose, "$(b,loose) does.")
       ; ( "tight-decl"
         , `Tight_decl
         , "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
@@ -699,16 +699,16 @@ module Formatting = struct
     in
     let names = ["indicate-nested-or-patterns"] in
     let all =
-      [ ( "space"
-        , `Space
-        , "$(b,space) starts lines of nested or-patterns with \" |\" rather \
-           than \"| \"." )
-      ; ( "unsafe-no"
+      [ ( "unsafe-no"
         , `Unsafe_no
         , "$(b,unsafe-no) does not indicate nested or-patterns. Warning: \
            this can produce confusing code where a short body of a match \
            case is visually hidden by surrounding long patterns, leading to \
-           misassociation between patterns and body expressions." ) ]
+           misassociation between patterns and body expressions." )
+      ; ( "space"
+        , `Space
+        , "$(b,space) starts lines of nested or-patterns with \" |\" rather \
+           than \"| \"." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with indicate_nested_or_patterns= x})
@@ -973,14 +973,14 @@ module Formatting = struct
     let doc = "Blank line between expressions of a sequence." in
     let names = ["sequence-blank-line"] in
     let all =
-      [ ( "compact"
-        , `Compact
-        , "$(b,compact) will not keep any blank line between expressions of \
-           a sequence." )
-      ; ( "preserve-one"
+      [ ( "preserve-one"
         , `Preserve_one
         , "$(b,preserve) will keep a blank line between two expressions of \
-           a sequence if the input contains at least one." ) ]
+           a sequence if the input contains at least one." )
+      ; ( "compact"
+        , `Compact
+        , "$(b,compact) will not keep any blank line between expressions of \
+           a sequence." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with sequence_blank_line= x})
@@ -990,12 +990,12 @@ module Formatting = struct
     let doc = "Style of sequence." in
     let names = ["sequence-style"] in
     let all =
-      [ ( "separator"
-        , `Separator
-        , "$(b,separator) puts spaces before and after semicolons." )
-      ; ( "terminator"
+      [ ( "terminator"
         , `Terminator
         , "$(b,terminator) only puts spaces after semicolons." )
+      ; ( "separator"
+        , `Separator
+        , "$(b,separator) puts spaces before and after semicolons." )
       ; ( "before"
         , `Before
         , "$(b,before) breaks the sequence before semicolons." ) ]
@@ -1025,28 +1025,28 @@ module Formatting = struct
   let space_around_arrays =
     let doc = "Add a space inside the delimiters of arrays." in
     let names = ["space-around-arrays"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_arrays= x})
       (fun conf -> conf.space_around_arrays)
 
   let space_around_lists =
     let doc = "Add a space inside the delimiters of lists." in
     let names = ["space-around-lists"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_lists= x})
       (fun conf -> conf.space_around_lists)
 
   let space_around_records =
     let doc = "Add a space inside the delimiters of records." in
     let names = ["space-around-records"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_records= x})
       (fun conf -> conf.space_around_records)
 
   let space_around_variants =
     let doc = "Add a space inside the delimiters of variants." in
     let names = ["space-around-variants"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_variants= x})
       (fun conf -> conf.space_around_variants)
 
