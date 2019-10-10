@@ -7424,3 +7424,15 @@ module M = struct
   (* ______________________________________ *)
   [@@deriving variants, sexp_of]
 end
+
+module type Basic3 = sig
+  type ('a, 'd, 'e) t
+
+  val return : 'a -> ('a, _, _) t
+  val apply : ('a -> 'b, 'd, 'e) t -> ('a, 'd, 'e) t -> ('b, 'd, 'e) t
+
+  val map
+    : [ `Define_using_apply
+      | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t
+      ]
+end

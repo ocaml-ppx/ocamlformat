@@ -726,9 +726,11 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let closing =
         let empty = List.is_empty rfs in
         let breaks = Poly.(c.conf.type_decl = `Sparse) && space_around in
-        let nspaces = if breaks then 1000 else 1 in
+        let nspaces = if empty then 0 else 1 in
         let space = (protect_token || space_around) && not empty in
-        fits_breaks (if space then " ]" else "]") ~hint:(nspaces, 0) "]"
+        fits_breaks
+          (if space && not empty then " ]" else "]")
+          ~hint:(nspaces, 0) "]" ~force_break_if:breaks
       in
       hvbox 0
         ( match (flag, lbls, rfs) with
