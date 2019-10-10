@@ -300,7 +300,7 @@ let rec find_real_indent state indent =
         find_real_indent state indent
       )
       else (* r < indent < s *) (
-        let already_suggested acc (s, _) = acc || Int.equal indent s in
+        let already_suggested acc (s, _) = acc || indent = s in
         (* this indentation already exists in the stack. *)
         if Stack.fold already_suggested false state.pp_indent_stack then (
           ignore (Stack.pop state.pp_indent_stack);
