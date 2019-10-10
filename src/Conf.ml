@@ -1646,7 +1646,7 @@ let (_profile : t option C.t) =
       , Some conventional_profile
       , "The $(b,conventional) profile aims to be as familiar and \
          \"conventional\" appearing as the available options allow." )
-    ;  ( "default"
+    ; ( "default"
       , Some conventional_profile
       , "$(b,default) is an alias for the $(b,conventional) profile." )
     ; ( "compact"
@@ -1675,7 +1675,7 @@ let (_profile : t option C.t) =
          easier, so indentation or white space is avoided unless it helps \
          legibility; Attention has been given to making some syntactic \
          gotchas visually obvious." )
-    ;  ( "legible"
+    ; ( "legible"
       , Some ocamlformat_profile
       , "$(b,legible) is an alias for the $(b,ocamlformat) profile." )
     ; ( "janestreet"
