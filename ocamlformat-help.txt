@@ -111,7 +111,7 @@ OPTIONS (CODE FORMATTING STYLE)
            Break infix operators whose right arguments are anonymous
            functions specially: do not break after the operator so that the
            first line of the function appears docked at the end of line after
-           the operator. The flag is set by default.
+           the operator. The flag is unset by default.
 
        --break-separators={after|before}
            Break before or after separators such as `;` in list or record
@@ -121,7 +121,7 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --break-sequences
            Force sequence expressions to break irrespective of margin. The
-           flag is unset by default.
+           flag is set by default.
 
        --break-string-literals={auto|never}
            Break string literals. auto mode breaks lines at newlines and
@@ -176,7 +176,7 @@ OPTIONS (CODE FORMATTING STYLE)
            Dock the brackets of lists, arrays and records, so that when the
            collection does not fit on a single line the brackets are opened
            on the preceding line and closed on the following line. The flag
-           is unset by default.
+           is set by default.
 
        --escape-chars={preserve|decimal|hexadecimal}
            Escape encoding for character literals. preserve escapes ASCII
@@ -360,25 +360,20 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-parse-docstrings
            Unset parse-docstrings.
 
-       --no-break-sequences
-           Force sequence expressions to break irrespective of margin.
-
-       --no-dock-collection-brackets
-           Dock the brackets of lists, arrays and records, so that when the
-           collection does not fit on a single line the brackets are opened
-           on the preceding line and closed on the following line.
-
        --no-space-around-arrays
-           Add a space inside the delimiters of arrays.
+           Unset space-around-arrays.
 
        --no-space-around-lists
-           Add a space inside the delimiters of lists.
+           Unset space-around-lists.
 
        --no-space-around-records
-           Add a space inside the delimiters of records.
+           Unset space-around-records.
 
        --no-space-around-variants
-           Add a space inside the delimiters of variants.
+           Unset space-around-variants.
+
+       --no-wrap-comments
+           Unset wrap-comments.
 
        --no-wrap-fun-args
            Unset wrap-fun-args.
@@ -424,20 +419,20 @@ OPTIONS (CODE FORMATTING STYLE)
            is compact.
 
        --space-around-arrays
-           Add a space inside the delimiters of arrays. The flag is unset by
+           Add a space inside the delimiters of arrays. The flag is set by
            default.
 
        --space-around-lists
-           Add a space inside the delimiters of lists. The flag is unset by
+           Add a space inside the delimiters of lists. The flag is set by
            default.
 
        --space-around-records
-           Add a space inside the delimiters of records. The flag is unset by
+           Add a space inside the delimiters of records. The flag is set by
            default.
 
        --space-around-variants
-           Add a space inside the delimiters of variants. The flag is unset
-           by default.
+           Add a space inside the delimiters of variants. The flag is set by
+           default.
 
        --stritem-extension-indent=COLS
            Indentation of structure items inside extension nodes (COLS
