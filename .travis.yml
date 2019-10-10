@@ -1,71 +1,10 @@
 language: c
 env:
-  - TO_TEST=changes
-  - TO_TEST=build OCAML_VERSION=4.07.1
-  - TO_TEST=build OCAML_VERSION=4.08.1
-  - TO_TEST=tests OCAML_VERSION=4.09.0
+  - CI_KIND=changes
+  - CI_KIND=build OCAML_VERSION=4.07.1
+  - CI_KIND=build OCAML_VERSION=4.08.1
+  - CI_KIND=build-and-tests OCAML_VERSION=4.09.0
 cache:
   directories:
     - ${HOME}/.opam
-before_install:
-  - |
-    case "$TO_TEST" in
-      build|tests)
-        wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.5/opam-2.0.5-x86_64-linux
-        chmod +x ${HOME}/opam
-        export PATH=${HOME}:${PATH}
-        export OPAMYES=1
-        export OPAMJOBS=2
-        opam init --bare --disable-sandboxing
-        opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION}
-        ;;
-      changes)
-        ;;
-      *)
-        echo "unknown CI kind"
-        exit 1
-        ;;
-    esac
-install:
-  - |
-    case "$TO_TEST" in
-      build|tests)
-        opam switch ${OCAML_VERSION}
-        opam update --upgrade
-        opam pin add --no-action ocamlformat .
-        opam install --deps-only ocamlformat
-        ;;
-      changes)
-        ;;
-      *)
-        echo "unknown CI kind"
-        exit 1
-        ;;
-    esac
-script:
-  - |
-    case "$TO_TEST" in
-      changes)
-        if [ "$TRAVIS_PULL_REQUEST" != false ] && [ "$TRAVIS_BRANCH" = master ]; then
-          ! git diff --exit-code "$TRAVIS_BRANCH...$TRAVIS_COMMIT" -- CHANGES.md >/dev/null;
-        fi
-        ;;
-      build)
-        opam pin add --no-action ocamlformat .
-        opam install --deps-only ocamlformat
-        opam switch ${OCAML_VERSION}
-        opam exec -- make
-        opam install ocamlformat
-        ;;
-      tests)
-        opam pin add --no-action ocamlformat .
-        opam install --deps-only ocamlformat
-        opam switch ${OCAML_VERSION}
-        opam exec -- make test
-        opam install ocamlformat
-        ;;
-      *)
-        echo "unknown CI kind"
-        exit 1
-        ;;
-    esac
+script: tools/travis-ci.sh
