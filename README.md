@@ -47,6 +47,8 @@ Under those conditions, ocamlformat is expected to produce output equivalent to 
 
 There are a number of preset code style profiles, selected using the `--profile` option by passing `--profile=<name>` on the command line or adding `profile = <name>` to an .ocamlformat configuration file. Each profile is a collection of settings for all options, overriding lower priority configuration of individual options. So a profile can be selected and then individual options can be overridden if desired.
 
+The `conventional` or `default` profile aims to be as familiar and "conventional" appearing as the available options allow.
+
 The `ocamlformat` profile aims to take advantage of the strengths of a parsetree-based auto-formatter, and to limit the consequences of the weaknesses imposed by the current implementation. This is a style which optimizes for what the formatter can do best, rather than to match the style of any existing code. Instead of familiarity, the focus is on legibility, keeping the common cases reasonably compact while attempting to avoid confusing formatting in corner cases. General guidelines that have directed the design include:
 
 - Legibility, in the sense of making it as hard as possible for quick visual parsing to give the wrong interpretation, is of highest priority;
@@ -61,9 +63,7 @@ The `compact` profile is similar to `ocamlformat` but opts for a generally more 
 
 The `sparse` profile is similar to `ocamlformat` but opts for a generally more sparse code style.
 
-The `conventional` profile aims to be as familiar and "conventional" appearing as the available options allow.
-
-If no profile is selected, the `ocamlformat` one is used.
+If no profile is selected, the `conventional` one is used.
 
 ### Options
 
