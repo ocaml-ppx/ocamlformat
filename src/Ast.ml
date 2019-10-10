@@ -1662,6 +1662,8 @@ end = struct
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
       | Pexp_setinstvar _ -> Some (LessMinus, Non)
       | Pexp_field _ -> Some (Dot, Left)
+      (* We use [Dot] so [x#y] has the same precedence as [x.y], it is
+         different to what is done in the parser, but it is intended. *)
       | Pexp_send _ -> Some (Dot, Left)
       | _ -> None )
     | {ctx= Cl {pcl_desc; _}; ast= Cl _ | Exp _} -> (
