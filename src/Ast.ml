@@ -1662,7 +1662,7 @@ end = struct
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
       | Pexp_setinstvar _ -> Some (LessMinus, Non)
       | Pexp_field _ -> Some (Dot, Left)
-      | Pexp_send _ -> Some (Dot, Left)
+      | Pexp_send _ -> Some (HashOp, Left)
       | _ -> None )
     | {ctx= Cl {pcl_desc; _}; ast= Cl _ | Exp _} -> (
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
@@ -1770,7 +1770,7 @@ end = struct
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
-      | Pexp_send _ -> Some Dot
+      | Pexp_send _ -> Some HashOp
       | _ -> None )
     | Cl c -> (
       match c.pcl_desc with
