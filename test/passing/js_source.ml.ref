@@ -6159,7 +6159,7 @@ class ['entity] entity_container =
   object (self)
     inherit ['entity, id] observer as observer
 
-    method add_entity (e : 'entity) = (e#destroy_subject)#add_observer self
+    method add_entity (e : 'entity) = e#destroy_subject#add_observer self
 
     method notify _ id = ()
   end

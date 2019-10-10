@@ -27,9 +27,9 @@ let ( .%() ) x y = x.(y)
 
 let x = [|0|]
 
-let _ = 1 #? (x.(0))
+let _ = 1 #? x.(0)
 
-let _ = 1 #? (x.%(0))
+let _ = 1 #? x.%(0)
 
 ;;
 a.[b].[c]
@@ -113,3 +113,10 @@ let _ =
   []
 
 let _ = x.(y) <- (z.(w) <- u)
+
+let _ = x.foo#m
+
+class free =
+  object (m : 'test)
+    method get_def = m#state.def
+  end

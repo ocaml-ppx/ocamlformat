@@ -124,8 +124,8 @@ type prec =
   | InfixOp4
   | UMinus
   | Apply
-  | Dot
   | HashOp
+  | Dot  (** [x.y] and [x#y] *)
   | High
   | Atomic
 

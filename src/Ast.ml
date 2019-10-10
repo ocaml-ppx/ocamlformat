@@ -726,8 +726,8 @@ type prec =
   | InfixOp4
   | UMinus
   | Apply
-  | Dot
   | HashOp
+  | Dot
   | High
   | Atomic
 
@@ -1662,7 +1662,9 @@ end = struct
       | Pexp_setfield (_, _, e0) when e0 == exp -> Some (LessMinus, Non)
       | Pexp_setinstvar _ -> Some (LessMinus, Non)
       | Pexp_field _ -> Some (Dot, Left)
-      | Pexp_send _ -> Some (HashOp, Non)
+      (* We use [Dot] so [x#y] has the same precedence as [x.y], it is
+         different to what is done in the parser, but it is intended. *)
+      | Pexp_send _ -> Some (Dot, Left)
       | _ -> None )
     | {ctx= Cl {pcl_desc; _}; ast= Cl _ | Exp _} -> (
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
@@ -1770,7 +1772,7 @@ end = struct
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
-      | Pexp_send _ -> Some HashOp
+      | Pexp_send _ -> Some Dot
       | _ -> None )
     | Cl c -> (
       match c.pcl_desc with
