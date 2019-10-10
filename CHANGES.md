@@ -1,5 +1,6 @@
 ### (master)
 
+  + CI: use a script travis-ci.sh to simplify .travis.yml (#1063) (Guillaume Petiot)
   + Improve: allow both values of boolean options (#1062) (Jules Aguillon)
   + Improve: auto mode for break-string-literals instead of {wrap,newlines,newlines-and-wrap} (#1057) (Guillaume Petiot)
   + Improve: remove utility functions from Fmt_ast (#1059) (Guillaume Petiot)
