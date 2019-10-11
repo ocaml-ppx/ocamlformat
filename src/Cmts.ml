@@ -259,8 +259,7 @@ let infix_symbol_before t (loc : Location.t) =
   match Source.position_before t.source loc_end with
   | Some loc_start ->
       if loc_start.pos_cnum < loc.loc_end.pos_cnum then
-        let op_loc = {loc with loc_start} in
-        let str = Source.string_at t.source op_loc in
+        let str = Source.string_at t.source loc_start loc.loc_end in
         String.equal str ";" || Ast.is_infix_id str
       else false
   | None -> false

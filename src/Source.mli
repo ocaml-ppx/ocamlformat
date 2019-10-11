@@ -21,7 +21,7 @@ val string_between : t -> Location.t -> Location.t -> string option
 
 val has_cmt_same_line_after : t -> Location.t -> bool
 
-val string_at : t -> Location.t -> string
+val string_at : t -> Lexing.position -> Lexing.position -> string
 
 val string_literal :
   t -> [`Normalize | `Preserve] -> Location.t -> string option
@@ -38,18 +38,14 @@ val position_before : t -> Lexing.position -> Lexing.position option
 (** [position_before s pos] returns the starting position of the token
     preceding the position [pos]. *)
 
-val loc_between : from:Location.t -> upto:Location.t -> Location.t
-(** [loc_between ~from ~upto] returns a location starting from [from] and
-    ending before [upto]. *)
-
 val tokens_between :
      t
   -> ?filter:(Parser.token -> bool)
-  -> from:Location.t
-  -> upto:Location.t
+  -> Lexing.position
+  -> Lexing.position
   -> (Parser.token * Location.t) list
-(** [tokens_between s ~filter ~from ~upto] returns the list of tokens
-    starting from [from] and ending before [upto] and respecting the [filter]
+(** [tokens_between s ~filter from upto] returns the list of tokens starting
+    from [from] and ending before [upto] and respecting the [filter]
     property. [from] must start before [upto]. *)
 
 val is_long_pexp_open : t -> Parsetree.expression -> bool

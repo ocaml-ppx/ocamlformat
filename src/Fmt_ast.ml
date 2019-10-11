@@ -136,7 +136,7 @@ let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
   else
     let loc = Source.extend_loc_to_include_attributes c.source loc l in
     Cmts.drop_inside c.cmts loc ;
-    let s = Source.string_at c.source loc in
+    let s = Source.string_at c.source loc.loc_start loc.loc_end in
     let indent_of_first_line = Position.column loc.loc_start in
     let l = String.split ~on:'\n' s in
     let l =

@@ -17,7 +17,10 @@ let parens_or_begin_end (c : Conf.t) source ~loc =
   match c.exp_grouping with
   | `Parens -> `Parens
   | `Preserve ->
-      let str = String.lstrip (Source.string_at source loc) in
+      let str =
+        String.lstrip
+          (Source.string_at source loc.Location.loc_start loc.loc_end)
+      in
       if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
 
 let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
