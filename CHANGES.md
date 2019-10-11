@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix break before the closing bracket of collections (exceeding the margin) (#1073) (Guillaume Petiot)
   + Internal: Cleanup sequence_blank_line (#1075) (Jules Aguillon)
   + Improve: set conventional as the default profile (#1060) (Guillaume Petiot)
   + Fix precedence of Dot wrt Hash (#1058) (Guillaume Petiot)
