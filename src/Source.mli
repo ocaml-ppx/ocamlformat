@@ -15,9 +15,9 @@ type t
 
 val create : string -> t
 
-val empty_line_between : t -> Location.t -> Location.t -> bool
+val empty_line_between : t -> Lexing.position -> Lexing.position -> bool
 
-val string_between : t -> Location.t -> Location.t -> string option
+val string_between : t -> Lexing.position -> Lexing.position -> string option
 
 val has_cmt_same_line_after : t -> Location.t -> bool
 

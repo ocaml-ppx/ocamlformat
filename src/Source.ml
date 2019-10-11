@@ -28,9 +28,9 @@ let position_before t (pos : Lexing.position) =
   let pos_cnum_opt = String.rfindi t ~pos:pos.pos_cnum ~f in
   Option.map pos_cnum_opt ~f:(fun x -> {pos with pos_cnum= x + 1})
 
-let string_between t (l1 : Location.t) (l2 : Location.t) =
-  let pos = l1.loc_end.pos_cnum in
-  let len = Position.distance l1.loc_end l2.loc_start in
+let string_between t (p1 : Lexing.position) (p2 : Lexing.position) =
+  let pos = p1.pos_cnum in
+  let len = Position.distance p1 p2 in
   if
     len < 0 || pos < 0
     (* can happen e.g. if comment is within a parenthesized expression *)
@@ -41,11 +41,11 @@ let string_between t (l1 : Location.t) (l2 : Location.t) =
   then None
   else Some (String.sub t ~pos ~len)
 
-let empty_line_between t l1 l2 =
+let empty_line_between t p1 p2 =
   let non_whitespace _ c = not (Char.is_whitespace c) in
   let is_empty s = String.lfindi s ~f:non_whitespace |> Option.is_none in
-  Location.(l2.loc_end.pos_lnum - l1.loc_start.pos_lnum) > 1
-  && Option.for_all (string_between t l1 l2) ~f:is_empty
+  Lexing.(p2.pos_lnum - p1.pos_lnum) > 1
+  && Option.for_all (string_between t p1 p2) ~f:is_empty
 
 let string_at t loc_start loc_end =
   let pos = loc_start.Lexing.pos_cnum
