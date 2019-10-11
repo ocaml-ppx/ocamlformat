@@ -41,11 +41,38 @@ let string_between t (p1 : Lexing.position) (p2 : Lexing.position) =
   then None
   else Some (String.sub t ~pos ~len)
 
+(** Lines between [p1] and [p2]. Lines are represented their (offset, length)
+    in the source. The first and last line (containing [p1] and [p2]) are
+    ignored. *)
+let lines_between t (p1 : Lexing.position) (p2 : Lexing.position) =
+  let rec loop acc off lnum =
+    if lnum >= p2.pos_lnum then acc (* ignore last line *)
+    else
+      match String.index_from t off '\n' with
+      | None -> acc (* ignore last line *)
+      | Some endl -> loop ((off, endl - off) :: acc) (endl + 1) (lnum + 1)
+  in
+  (* ignore first line *)
+  match String.index_from t p1.pos_cnum '\n' with
+  | None -> []
+  | Some endl -> loop [] (endl + 1) (p1.pos_lnum + 1)
+
+(** Returns the index of the first char that [f] match. Only consider [len]
+    characters starting at [pos]. *)
+let string_lcontains ~pos ~len s ~f =
+  let end_ = pos + len in
+  let rec loop i =
+    if i >= end_ then None else if f s.[i] then Some i else loop (i + 1)
+  in
+  loop pos
+
 let empty_line_between t p1 p2 =
-  let non_whitespace _ c = not (Char.is_whitespace c) in
-  let is_empty s = String.lfindi s ~f:non_whitespace |> Option.is_none in
+  let non_whitespace c = not (Char.is_whitespace c) in
+  let is_line_empty (off, len) =
+    Option.is_none (string_lcontains ~pos:off ~len t ~f:non_whitespace)
+  in
   Lexing.(p2.pos_lnum - p1.pos_lnum) > 1
-  && Option.for_all (string_between t p1 p2) ~f:is_empty
+  && List.exists (lines_between t p1 p2) ~f:is_line_empty
 
 let string_at t loc_start loc_end =
   let pos = loc_start.Lexing.pos_cnum

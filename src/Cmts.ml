@@ -241,8 +241,8 @@ end
     [|] character and the first location begins a line and the start column
     of the first location is not greater than that of the second location. *)
 let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
-  Option.value_map (Source.string_between t.source l1.loc_end l2.loc_start) ~default:false
-    ~f:(fun btw ->
+  Option.value_map (Source.string_between t.source l1.loc_end l2.loc_start)
+    ~default:false ~f:(fun btw ->
       match String.strip btw with
       | "" -> true
       | "|" ->

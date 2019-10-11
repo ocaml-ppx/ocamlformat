@@ -126,4 +126,5 @@ let cr0_em = 1 lsl 2
 (* with double semicolons *)
 
 let foo = fooooooooooooooooooooooooooooo
+
 let foo = fooooooooooooooooooooooooooooo
