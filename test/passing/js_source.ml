@@ -7436,3 +7436,31 @@ module type Basic3 = sig
       | `Custom of ('a, 'd, 'e) t -> f:('a -> 'b) -> ('b, 'd, 'e) t
       ]
 end
+
+let _ =
+  aa
+    (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)
+;;
+
+let _ =
+  "_______________________________________________________ _______________________________"
+;;
+
+let _ = [ very_long_function_name____________________ very_long_argument_name____________ ]
+
+
+let _ =
+  [%str
+    let () = very_long_function_name__________________ very_long_argument_name____________]
+;;
+
+let _ =
+  { long_field_name = 9999999999999999999999999999999999999999999999999999999999999999999 }
+;;
+
+let _ =
+  match () with
+  | _ ->
+    (match () with
+    | _ -> long_function_name long_argument_name__________________________________________)
+;;
