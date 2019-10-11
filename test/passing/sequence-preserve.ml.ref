@@ -60,7 +60,6 @@ let foo x y =
 let foo x y =
   (* Break should not cause an empty line *)
   do_some_setup x ;
-
   do_some_setup y ;
 
   important_function x ;
