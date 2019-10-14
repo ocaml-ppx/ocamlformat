@@ -2367,7 +2367,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let parens = parens || not (List.is_empty pexp_attributes) in
       fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr (let_ :: ands)
-        ~indent_after_in
+        ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let _, fields =
@@ -4059,7 +4059,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
        $ hvbox 0 fmt_expr ))
   $ fmt_atrs
 
-and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings
+and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings ~body_loc
     ~indent_after_in =
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
@@ -4074,10 +4074,18 @@ and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings
         | `Sparse -> "@;<1000 0>"
         | `Compact -> "@ " )
   in
+  let blank_line_after_in =
+    let last_bind = List.last_exn bindings in
+    (* The location of the first binding (just after `let`) is wrong, it
+       contains the whole letop expression *)
+    let last_bind_expr_loc = last_bind.pbop_exp.pexp_loc in
+    sequence_blank_line c last_bind_expr_loc body_loc
+  in
   wrap_if parens "(" ")"
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ break 1000 indent_after_in
+       $ ( if blank_line_after_in then fmt "\n@,"
+         else break 1000 indent_after_in )
        $ hvbox 0 fmt_expr ))
   $ fmt_atrs
 
