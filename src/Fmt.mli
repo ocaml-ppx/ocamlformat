@@ -190,6 +190,60 @@ val close_box : t
 
 (** Wrapping boxes ------------------------------------------------------*)
 
+module Safe : sig
+  type sep
+
+  val cut : sep
+  (** Format a cut. *)
+
+  val space : sep
+  (** Format a space. *)
+
+  val break : int -> int -> sep
+  (** Format a break hint. *)
+
+  val linebreak : int -> sep
+  (** Format a linebreak. *)
+
+  type boxed
+
+  type box = boxed -> t
+
+  val one : t -> boxed
+
+  val add : boxed -> sep -> t -> boxed
+  (** [add b s t] adds the format [t] preceded by separator [s] after the
+      other formats of the box [b]. *)
+
+  val cbox : ?name:string -> int -> box
+  (** Wrap a format thunk with a compacting box with specified indentation. *)
+
+  val vbox : ?name:string -> int -> box
+  (** Wrap a format thunk with a vbox with specified indentation. *)
+
+  val hvbox : ?name:string -> int -> box
+  (** Wrap a format thunk with an hvbox with specified indentation. *)
+
+  val hovbox : ?name:string -> int -> box
+  (** Wrap a format thunk with an hovbox with specified indentation. *)
+
+  val cbox_if : ?name:string -> bool -> int -> box
+  (** Conditionally wrap a format thunk with a compacting sbox with specified
+      indentation. *)
+
+  val vbox_if : ?name:string -> bool -> int -> box
+  (** Conditionally wrap a format thunk with a vbox with specified
+      indentation. *)
+
+  val hvbox_if : ?name:string -> bool -> int -> box
+  (** Conditionally wrap a format thunk with an hvbox with specified
+      indentation. *)
+
+  val hovbox_if : ?name:string -> bool -> int -> box
+  (** Conditionally wrap a format thunk with an hovbox with specified
+      indentation. *)
+end
+
 val cbox : ?name:string -> int -> t -> t
 (** Wrap a format thunk with a compacting box with specified indentation. *)
 

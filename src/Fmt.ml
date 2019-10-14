@@ -229,6 +229,57 @@ and close_box fs = debug_box_close fs ; Format.pp_close_box fs ()
 
 (** Wrapping boxes ------------------------------------------------------*)
 
+module Safe = struct
+  type sep = Cut | Space | Break of int * int | Linebreak of int
+
+  let cut = Cut
+
+  let space = Space
+
+  let break n o = Break (n, o)
+
+  let linebreak o = Linebreak o
+
+  let sep s fs =
+    match s with
+    | Cut -> Format.pp_print_cut fs ()
+    | Space -> Format.pp_print_space fs ()
+    | Break (n, o) -> Format.pp_print_break fs n o
+    | Linebreak o -> Format.pp_print_break fs 1000 o
+
+  type boxed = One of t | Cons of boxed * sep * t
+
+  type box = boxed -> t
+
+  let one t = One t
+
+  let add b s t = Cons (b, s, t)
+
+  let box ?(cnd = true) opn cls boxed =
+    let can_box = match boxed with One _ -> false | Cons _ -> true in
+    let rec aux = function
+      | One t -> t
+      | Cons (b, s, t) -> aux b $ sep s $ t
+    in
+    wrap_if_k (cnd && can_box) opn cls (aux boxed)
+
+  let cbox ?name n = box (open_box ?name n) close_box
+
+  and vbox ?name n = box (open_vbox ?name n) close_box
+
+  and hvbox ?name n = box (open_hvbox ?name n) close_box
+
+  and hovbox ?name n = box (open_hovbox ?name n) close_box
+
+  and cbox_if ?name cnd n = box ~cnd (open_box ?name n) close_box
+
+  and vbox_if ?name cnd n = box ~cnd (open_vbox ?name n) close_box
+
+  and hvbox_if ?name cnd n = box ~cnd (open_hvbox ?name n) close_box
+
+  and hovbox_if ?name cnd n = box ~cnd (open_hovbox ?name n) close_box
+end
+
 let cbox ?name n = wrap_k (open_box ?name n) close_box
 
 and vbox ?name n = wrap_k (open_vbox ?name n) close_box
