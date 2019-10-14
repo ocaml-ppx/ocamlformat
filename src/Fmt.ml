@@ -230,7 +230,12 @@ and close_box fs = debug_box_close fs ; Format.pp_close_box fs ()
 (** Wrapping boxes ------------------------------------------------------*)
 
 module Safe = struct
-  type sep = Cut | Space | Break of int * int | Linebreak of int
+  type sep =
+    | Cut
+    | Space
+    | Break of int * int
+    | Linebreak of int
+    | Double_linebreak
 
   let cut = Cut
 
@@ -240,12 +245,15 @@ module Safe = struct
 
   let linebreak o = Linebreak o
 
+  let double_linebreak = Double_linebreak
+
   let sep s fs =
     match s with
     | Cut -> Format.pp_print_cut fs ()
     | Space -> Format.pp_print_space fs ()
     | Break (n, o) -> Format.pp_print_break fs n o
     | Linebreak o -> Format.pp_print_break fs 1000 o
+    | Double_linebreak -> Format.fprintf fs "\n@;<1000 0>"
 
   type boxed = One of t | Cons of boxed * sep * t
 

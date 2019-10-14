@@ -205,6 +205,9 @@ module Safe : sig
   val linebreak : int -> sep
   (** Format a linebreak. *)
 
+  val double_linebreak : sep
+  (** Format a double linebreak. *)
+
   type boxed
 
   type box = boxed -> t
