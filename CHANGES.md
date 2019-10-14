@@ -1,5 +1,6 @@
 ### (master)
 
+  + Improve: set conventional as the default profile (#1060) (Guillaume Petiot)
   + Fix precedence of Dot wrt Hash (#1058) (Guillaume Petiot)
   + Fix break in variant type definition to not exceed the margin (#1064) (Guillaume Petiot)
   + CI: use a script travis-ci.sh to simplify .travis.yml (#1063) (Guillaume Petiot)

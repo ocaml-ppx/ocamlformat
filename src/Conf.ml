@@ -244,16 +244,16 @@ module Formatting = struct
     let doc = "Break pattern match cases." in
     let names = ["break-cases"] in
     let all =
-      [ ( "nested"
+      [ ( "fit"
+        , `Fit
+        , "Specifying $(b,fit) lets pattern matches break at the margin \
+           naturally." )
+      ; ( "nested"
         , `Nested
         , "$(b,nested) forces a break after nested or-patterns to highlight \
            the case body. Note that with $(b,nested), the \
            $(b,indicate-nested-or-patterns) option is not needed, and so \
            ignored." )
-      ; ( "fit"
-        , `Fit
-        , "Specifying $(b,fit) lets pattern matches break at the margin \
-           naturally." )
       ; ( "toplevel"
         , `Toplevel
         , "$(b,toplevel) forces top-level cases (i.e. not nested \
@@ -350,7 +350,7 @@ module Formatting = struct
        the function appears docked at the end of line after the operator."
     in
     let names = ["break-infix-before-func"] in
-    C.flag ~default:true ~names ~doc ~section
+    C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with break_infix_before_func= x})
       (fun conf -> conf.break_infix_before_func)
 
@@ -361,12 +361,12 @@ module Formatting = struct
     in
     let names = ["break-separators"] in
     let all =
-      [ ( "before"
-        , `Before
-        , "$(b,before) breaks the expressions before the separator." )
-      ; ( "after"
+      [ ( "after"
         , `After
-        , "$(b,after) breaks the expressions after the separator." ) ]
+        , "$(b,after) breaks the expressions after the separator." )
+      ; ( "before"
+        , `Before
+        , "$(b,before) breaks the expressions before the separator." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with break_separators= x})
@@ -377,7 +377,7 @@ module Formatting = struct
       "Force sequence expressions to break irrespective of margin."
     in
     let names = ["break-sequences"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with break_sequences= x})
       (fun conf -> conf.break_sequences)
 
@@ -432,14 +432,14 @@ module Formatting = struct
     in
     let names = ["cases-matching-exp-indent"] in
     let all =
-      [ ( "compact"
+      [ ( "normal"
+        , `Normal
+        , "$(b,normal) indents as it would any other expression." )
+      ; ( "compact"
         , `Compact
         , "$(b,compact) forces an indentation of 2, unless \
            $(b,nested-match) is set to $(b,align) and we're on the last \
-           case." )
-      ; ( "normal"
-        , `Normal
-        , "$(b,normal) indents as it would any other expression." ) ]
+           case." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with cases_matching_exp_indent= x})
@@ -511,7 +511,7 @@ module Formatting = struct
        the preceding line and closed on the following line."
     in
     let names = ["dock-collection-brackets"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with dock_collection_brackets= x})
       (fun conf -> conf.dock_collection_brackets)
 
@@ -591,11 +591,11 @@ module Formatting = struct
     in
     let names = ["field-space"] in
     let all =
-      [ ( "tight"
+      [ ("loose", `Loose, "$(b,loose) does.")
+      ; ( "tight"
         , `Tight
         , "$(b,tight) does not use a space between a field name and the \
            punctuation symbol (`:` or `=`)." )
-      ; ("loose", `Loose, "$(b,loose) does.")
       ; ( "tight-decl"
         , `Tight_decl
         , "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
@@ -699,16 +699,16 @@ module Formatting = struct
     in
     let names = ["indicate-nested-or-patterns"] in
     let all =
-      [ ( "space"
-        , `Space
-        , "$(b,space) starts lines of nested or-patterns with \" |\" rather \
-           than \"| \"." )
-      ; ( "unsafe-no"
+      [ ( "unsafe-no"
         , `Unsafe_no
         , "$(b,unsafe-no) does not indicate nested or-patterns. Warning: \
            this can produce confusing code where a short body of a match \
            case is visually hidden by surrounding long patterns, leading to \
-           misassociation between patterns and body expressions." ) ]
+           misassociation between patterns and body expressions." )
+      ; ( "space"
+        , `Space
+        , "$(b,space) starts lines of nested or-patterns with \" |\" rather \
+           than \"| \"." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with indicate_nested_or_patterns= x})
@@ -973,14 +973,14 @@ module Formatting = struct
     let doc = "Blank line between expressions of a sequence." in
     let names = ["sequence-blank-line"] in
     let all =
-      [ ( "compact"
-        , `Compact
-        , "$(b,compact) will not keep any blank line between expressions of \
-           a sequence." )
-      ; ( "preserve-one"
+      [ ( "preserve-one"
         , `Preserve_one
         , "$(b,preserve) will keep a blank line between two expressions of \
-           a sequence if the input contains at least one." ) ]
+           a sequence if the input contains at least one." )
+      ; ( "compact"
+        , `Compact
+        , "$(b,compact) will not keep any blank line between expressions of \
+           a sequence." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with sequence_blank_line= x})
@@ -990,12 +990,12 @@ module Formatting = struct
     let doc = "Style of sequence." in
     let names = ["sequence-style"] in
     let all =
-      [ ( "separator"
-        , `Separator
-        , "$(b,separator) puts spaces before and after semicolons." )
-      ; ( "terminator"
+      [ ( "terminator"
         , `Terminator
         , "$(b,terminator) only puts spaces after semicolons." )
+      ; ( "separator"
+        , `Separator
+        , "$(b,separator) puts spaces before and after semicolons." )
       ; ( "before"
         , `Before
         , "$(b,before) breaks the sequence before semicolons." ) ]
@@ -1025,28 +1025,28 @@ module Formatting = struct
   let space_around_arrays =
     let doc = "Add a space inside the delimiters of arrays." in
     let names = ["space-around-arrays"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_arrays= x})
       (fun conf -> conf.space_around_arrays)
 
   let space_around_lists =
     let doc = "Add a space inside the delimiters of lists." in
     let names = ["space-around-lists"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_lists= x})
       (fun conf -> conf.space_around_lists)
 
   let space_around_records =
     let doc = "Add a space inside the delimiters of records." in
     let names = ["space-around-records"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_records= x})
       (fun conf -> conf.space_around_records)
 
   let space_around_variants =
     let doc = "Add a space inside the delimiters of variants." in
     let names = ["space-around-variants"] in
-    C.flag ~default:false ~names ~doc ~section
+    C.flag ~default:true ~names ~doc ~section
       (fun conf x -> {conf with space_around_variants= x})
       (fun conf -> conf.space_around_variants)
 
@@ -1363,6 +1363,76 @@ let ignore_invalid_options =
   mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
 
 let ocamlformat_profile =
+  { align_cases= false
+  ; align_constructors_decl= false
+  ; align_variants_decl= false
+  ; assignment_operator= `End_line
+  ; break_before_in= `Fit_or_vertical
+  ; break_cases= `Nested
+  ; break_collection_expressions= `Fit_or_vertical
+  ; break_infix= `Wrap
+  ; break_infix_before_func= true
+  ; break_fun_decl= `Wrap
+  ; break_fun_sig= `Wrap
+  ; break_separators= `Before
+  ; break_sequences= false
+  ; break_string_literals= `Auto
+  ; break_struct= true
+  ; cases_exp_indent= 4
+  ; cases_matching_exp_indent= `Compact
+  ; comment_check= true
+  ; disable= false
+  ; disambiguate_non_breaking_match= false
+  ; doc_comments= `After
+  ; doc_comments_padding= 2
+  ; doc_comments_tag_only= `Default
+  ; dock_collection_brackets= false
+  ; escape_chars= `Preserve
+  ; escape_strings= `Preserve
+  ; exp_grouping= `Parens
+  ; extension_indent= 2
+  ; extension_sugar= `Preserve
+  ; field_space= `Tight
+  ; function_indent= 2
+  ; function_indent_nested= `Never
+  ; if_then_else= `Compact
+  ; indent_after_in= 0
+  ; indicate_multiline_delimiters= `Space
+  ; indicate_nested_or_patterns= `Space
+  ; infix_precedence= `Indent
+  ; leading_nested_match_parens= false
+  ; let_and= `Compact
+  ; let_binding_indent= 2
+  ; let_binding_spacing= `Compact
+  ; let_module= `Compact
+  ; let_open= `Preserve
+  ; margin= 80
+  ; match_indent= 0
+  ; match_indent_nested= `Never
+  ; max_indent= None
+  ; max_iters= 10
+  ; module_item_spacing= `Sparse
+  ; nested_match= `Wrap
+  ; ocp_indent_compat= false
+  ; parens_ite= false
+  ; parens_tuple= `Always
+  ; parens_tuple_patterns= `Multi_line_only
+  ; parse_docstrings= false
+  ; quiet= false
+  ; sequence_blank_line= `Compact
+  ; sequence_style= `Separator
+  ; single_case= `Compact
+  ; space_around_arrays= false
+  ; space_around_lists= false
+  ; space_around_records= false
+  ; space_around_variants= false
+  ; stritem_extension_indent= 0
+  ; type_decl= `Compact
+  ; type_decl_indent= 2
+  ; wrap_comments= false
+  ; wrap_fun_args= true }
+
+let conventional_profile =
   { align_cases= C.default Formatting.align_cases
   ; align_constructors_decl= C.default Formatting.align_constructors_decl
   ; align_variants_decl= C.default Formatting.align_variants_decl
@@ -1436,23 +1506,6 @@ let ocamlformat_profile =
   ; type_decl_indent= C.default Formatting.type_decl_indent
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
-
-let conventional_profile =
-  { ocamlformat_profile with
-    break_cases= `Fit
-  ; break_infix_before_func= false
-  ; break_separators= `After
-  ; break_sequences= true
-  ; cases_matching_exp_indent= `Normal
-  ; dock_collection_brackets= true
-  ; field_space= `Loose
-  ; indicate_nested_or_patterns= `Unsafe_no
-  ; sequence_style= `Terminator
-  ; sequence_blank_line= `Preserve_one
-  ; space_around_arrays= true
-  ; space_around_lists= true
-  ; space_around_records= true
-  ; space_around_variants= true }
 
 let compact_profile =
   { ocamlformat_profile with
@@ -1580,7 +1633,7 @@ let janestreet_profile =
   ; wrap_comments= false
   ; wrap_fun_args= false }
 
-let selected_profile_ref = ref (Some ocamlformat_profile)
+let selected_profile_ref = ref (Some conventional_profile)
 
 let (_profile : t option C.t) =
   let doc =
@@ -1589,7 +1642,22 @@ let (_profile : t option C.t) =
   in
   let names = profile_option_names in
   let all =
-    [ ( "ocamlformat"
+    [ ( "conventional"
+      , Some conventional_profile
+      , "The $(b,conventional) profile aims to be as familiar and \
+         \"conventional\" appearing as the available options allow." )
+    ; ( "default"
+      , Some conventional_profile
+      , "$(b,default) is an alias for the $(b,conventional) profile." )
+    ; ( "compact"
+      , Some compact_profile
+      , "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more compact code style." )
+    ; ( "sparse"
+      , Some sparse_profile
+      , "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more sparse code style." )
+    ; ( "ocamlformat"
       , Some ocamlformat_profile
       , "The $(b,ocamlformat) profile aims to take advantage of the \
          strengths of a parsetree-based auto-formatter, and to limit the \
@@ -1607,18 +1675,6 @@ let (_profile : t option C.t) =
          easier, so indentation or white space is avoided unless it helps \
          legibility; Attention has been given to making some syntactic \
          gotchas visually obvious." )
-    ; ( "compact"
-      , Some compact_profile
-      , "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
-         for a generally more compact code style." )
-    ; ( "sparse"
-      , Some sparse_profile
-      , "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
-         for a generally more sparse code style." )
-    ; ( "conventional"
-      , Some conventional_profile
-      , "The $(b,conventional) profile aims to be as familiar and \
-         \"conventional\" appearing as the available options allow." )
     ; ( "janestreet"
       , Some janestreet_profile
       , "The $(b,janestreet) profile is used at Jane Street." ) ]
@@ -1980,7 +2036,7 @@ let build_config ~file ~is_stdin =
   in
   let files = if !disable_conf_files then [] else files in
   let conf =
-    let init = ocamlformat_profile in
+    let init = conventional_profile in
     List.fold files ~init ~f:read_config_file
     |> update_using_env |> C.update_using_cmdline
   in
