@@ -1,5 +1,6 @@
 ### (master)
 
+  + Internal: Cleanup sequence_blank_line (#1075) (Jules Aguillon)
   + Improve: set conventional as the default profile (#1060) (Guillaume Petiot)
   + Fix precedence of Dot wrt Hash (#1058) (Guillaume Petiot)
   + Fix break in variant type definition to not exceed the margin (#1064) (Guillaume Petiot)
