@@ -230,10 +230,22 @@ module Safe : sig
   (** [add b s t] adds the format [t] preceded by separator [s] after the
       other formats of the box [b]. *)
 
-  val box : ?name:string -> box_kind -> int -> boxed -> t
+  val of_list : 'a list -> sep -> f:('a -> t) -> boxed
+  (** [of_list xs s] generates a boxed value containing the elements of the
+      list [xs] each separated with separator [s]. *)
+
+  val box :
+    ?name:string -> ?box_singleton:bool -> box_kind -> int -> boxed -> t
   (** Wrap a format thunk with a box with specified indentation. *)
 
-  val box_if : ?name:string -> bool -> box_kind -> int -> boxed -> t
+  val box_if :
+       ?name:string
+    -> ?box_singleton:bool
+    -> bool
+    -> box_kind
+    -> int
+    -> boxed
+    -> t
   (** Conditionally wrap a format thunk with a box with specified
       indentation. *)
 end

@@ -3335,7 +3335,9 @@ and fmt_signature c ctx itms =
     @@ fun c -> fmt_signature_item c (sub_sig ~ctx i)
   in
   let fmt_grp itms = list itms "@\n" fmt_grp in
-  hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
+  Safe.(
+    box ~box_singleton:true hvbox 0
+      (of_list grps double_linebreak ~f:fmt_grp))
 
 and fmt_signature_item c ?ext {ast= si; _} =
   protect (Sig si)
