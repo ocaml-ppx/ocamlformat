@@ -7437,11 +7437,13 @@ module type Basic3 = sig
       ]
 end
 
+(* FIX: exceed 90 columns *)
 let _ =
   aa
     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)
 ;;
 
+(* FIX: exceed 90 columns *)
 let _ =
   "_______________________________________________________ _______________________________"
 ;;
@@ -7449,6 +7451,7 @@ let _ =
 let _ = [ very_long_function_name____________________ very_long_argument_name____________ ]
 
 
+(* FIX: exceed 90 columns *)
 let _ =
   [%str
     let () = very_long_function_name__________________ very_long_argument_name____________]
@@ -7458,6 +7461,7 @@ let _ =
   { long_field_name = 9999999999999999999999999999999999999999999999999999999999999999999 }
 ;;
 
+(* FIX: exceed 90 columns *)
 let _ =
   match () with
   | _ ->
