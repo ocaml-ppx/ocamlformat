@@ -1,5 +1,6 @@
 ### (master)
 
+  + Build: use short form for action in src/dune (#1076) (Etienne Millon)
   + Improve: Implement sequence-blank-line=preserve-one for let bindings (#1077) (Jules Aguillon)
   + Internal: Cleanup sequence_blank_line (#1075) (Jules Aguillon)
   + Improve: set conventional as the default profile (#1060) (Guillaume Petiot)
