@@ -479,7 +479,16 @@ let fmt_docstring_padded c doc =
 let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
   match c.conf.sequence_blank_line with
   | `Preserve_one ->
-      Source.empty_line_between c.source l1.loc_end l2.loc_start
+      let rec loop prev_pos = function
+        | cmt :: tl ->
+            (* Check empty line before each comment *)
+            Source.empty_line_between c.source prev_pos cmt.Cmt.loc.loc_start
+            || loop cmt.Cmt.loc.loc_end tl
+        | [] ->
+            (* Check empty line after all comments *)
+            Source.empty_line_between c.source prev_pos l2.loc_start
+      in
+      loop l1.loc_end (Cmts.remaining_before c.cmts l2)
   | `Compact -> false
 
 let rec fmt_extension c ctx key (ext, pld) =
