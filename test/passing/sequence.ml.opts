@@ -1,1 +1,1 @@
---sequence-blank-line=compact
+--sequence-blank-line=compact --max-iter=3

@@ -241,8 +241,8 @@ end
     [|] character and the first location begins a line and the start column
     of the first location is not greater than that of the second location. *)
 let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
-  Option.value_map (Source.string_between t.source l1 l2) ~default:false
-    ~f:(fun btw ->
+  Option.value_map (Source.string_between t.source l1.loc_end l2.loc_start)
+    ~default:false ~f:(fun btw ->
       match String.strip btw with
       | "" -> true
       | "|" ->
@@ -259,8 +259,7 @@ let infix_symbol_before t (loc : Location.t) =
   match Source.position_before t.source loc_end with
   | Some loc_start ->
       if loc_start.pos_cnum < loc.loc_end.pos_cnum then
-        let op_loc = {loc with loc_start} in
-        let str = Source.string_at t.source op_loc in
+        let str = Source.string_at t.source loc_start loc.loc_end in
         String.equal str ";" || Ast.is_infix_id str
       else false
   | None -> false
@@ -305,7 +304,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
     if Conf.debug then
       List.iter cmtl ~f:(fun {Cmt.txt= cmt_txt; loc= cmt_loc} ->
           let string_between (l1 : Location.t) (l2 : Location.t) =
-            match Source.string_between t.source l1 l2 with
+            match Source.string_between t.source l1.loc_end l2.loc_start with
             | None -> "swapped"
             | Some s -> s
           in

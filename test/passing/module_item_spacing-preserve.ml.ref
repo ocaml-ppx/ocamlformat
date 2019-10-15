@@ -1,7 +1,6 @@
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 
 and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
-
 let f x = x + 1
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
@@ -18,7 +17,6 @@ let f = function
 let x = 1
 
 and y = 2
-
 let z = this one is pretty looooooooooooooooooooooooooooooooooong
 let z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 
@@ -36,7 +34,6 @@ module M =
 
 let x = 1
 let y = 2
-
 let x = 1
 
 and y = 2
@@ -50,15 +47,11 @@ and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 type k = A | B | K of int * char * string | E
 
 let x = 1
-
 let z = this one (is short)
-
 let y = 2
-
 let w =
   this one is toooooooooooooooooooooooooo
     (looooooooooooooooooooooooog but is (originally a one - liner))
-
 let k = z
 
 module N = struct
@@ -133,4 +126,5 @@ let cr0_em = 1 lsl 2
 (* with double semicolons *)
 
 let foo = fooooooooooooooooooooooooooooo
+
 let foo = fooooooooooooooooooooooooooooo

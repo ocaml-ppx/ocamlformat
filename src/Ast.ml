@@ -414,7 +414,7 @@ module Structure_item : Module_item with type t = structure_item = struct
     ||
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.pstr_loc i2.pstr_loc
+        Source.empty_line_between s i1.pstr_loc.loc_end i2.pstr_loc.loc_start
     | _ ->
         (not (is_simple (i1, c1)))
         || (not (is_simple (i2, c2)))
@@ -498,7 +498,7 @@ module Signature_item : Module_item with type t = signature_item = struct
     ||
     match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
     | `Preserve, `Preserve ->
-        Source.empty_line_between s i1.psig_loc i2.psig_loc
+        Source.empty_line_between s i1.psig_loc.loc_end i2.psig_loc.loc_start
     | _ ->
         (not (is_simple (i1, c1)))
         || (not (is_simple (i2, c2)))
