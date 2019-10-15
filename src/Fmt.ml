@@ -230,30 +230,17 @@ and close_box fs = debug_box_close fs ; Format.pp_close_box fs ()
 (** Wrapping boxes ------------------------------------------------------*)
 
 module Safe = struct
-  type sep =
-    | Cut
-    | Space
-    | Break of int * int
-    | Linebreak of int
-    | Double_linebreak
+  type sep = t
 
-  let cut = Cut
+  let cut fs = Format.pp_print_cut fs ()
 
-  let space = Space
+  let space fs = Format.pp_print_space fs ()
 
-  let break n o = Break (n, o)
+  let break n o fs = Format.pp_print_break fs n o
 
-  let linebreak o = Linebreak o
+  let linebreak o fs = Format.pp_print_break fs 1000 o
 
-  let double_linebreak = Double_linebreak
-
-  let sep s fs =
-    match s with
-    | Cut -> Format.pp_print_cut fs ()
-    | Space -> Format.pp_print_space fs ()
-    | Break (n, o) -> Format.pp_print_break fs n o
-    | Linebreak o -> Format.pp_print_break fs 1000 o
-    | Double_linebreak -> Format.fprintf fs "\n@;<1000 0>"
+  let double_linebreak fs = Format.fprintf fs "\n@;<1000 0>"
 
   type boxed = One of t | Cons of boxed * sep * t
 
@@ -267,7 +254,7 @@ module Safe = struct
     let can_box = match boxed with One _ -> false | Cons _ -> true in
     let rec aux = function
       | One t -> t
-      | Cons (b, s, t) -> aux b $ sep s $ t
+      | Cons (b, s, t) -> aux b $ s $ t
     in
     wrap_if_k (cnd && can_box) opn cls (aux boxed)
 
