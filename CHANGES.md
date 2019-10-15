@@ -13,7 +13,7 @@
 
 #### Internal
 
-  + Improve: API for safe boxes (#1074) (Guillaume Petiot)
+  + API for safe boxes (#1074) (Guillaume Petiot)
   + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
 

@@ -3336,8 +3336,7 @@ and fmt_signature c ctx itms =
   in
   let fmt_grp itms = list itms "@\n" fmt_grp in
   let open Safe in
-  box ~box_singleton:true hvbox 0
-    (of_list grps double_linebreak ~f:fmt_grp)
+  box ~box_singleton:true hvbox 0 (of_list grps double_linebreak ~f:fmt_grp)
 
 and fmt_signature_item c ?ext {ast= si; _} =
   protect (Sig si)
