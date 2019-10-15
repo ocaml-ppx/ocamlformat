@@ -94,6 +94,12 @@ let foo x y =
   another_important_function x y ;
   cleanup x y
 
+let _ =
+  (* This let will wrap *)
+  let x = 1 in
+  (* some comment *)
+  next statement
+
 [@@@ocamlformat "indicate-multiline-delimiters=closing-on-separate-line"]
 
 let foo x y =
