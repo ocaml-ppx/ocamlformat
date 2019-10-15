@@ -84,6 +84,14 @@ let foo x y =
   another_important_function x y ;
   cleanup x y
 
+(* This test require --max-iter=3 *)
+let _ =
+  some statement;
+  (* comment with an empty line in it
+
+     tricky *)
+  an other statement
+
 [@@@ocamlformat "indicate-multiline-delimiters=closing-on-separate-line"]
 
 let foo x y =

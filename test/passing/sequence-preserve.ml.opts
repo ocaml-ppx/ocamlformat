@@ -1,1 +1,1 @@
---sequence-blank-line=preserve-one
+--sequence-blank-line=preserve-one --max-iter=3
