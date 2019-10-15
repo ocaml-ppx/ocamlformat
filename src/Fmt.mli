@@ -210,7 +210,19 @@ module Safe : sig
 
   type boxed
 
-  type box = boxed -> t
+  type box_kind
+
+  val cbox : box_kind
+  (** Compacting box. *)
+
+  val vbox : box_kind
+  (** Vertical box. *)
+
+  val hvbox : box_kind
+  (** Horizontal/vertical box. *)
+
+  val hovbox : box_kind
+  (** Horizontal or vertical box. *)
 
   val one : t -> boxed
 
@@ -218,32 +230,11 @@ module Safe : sig
   (** [add b s t] adds the format [t] preceded by separator [s] after the
       other formats of the box [b]. *)
 
-  val cbox : ?name:string -> int -> box
-  (** Wrap a format thunk with a compacting box with specified indentation. *)
+  val box : ?name:string -> box_kind -> int -> boxed -> t
+  (** Wrap a format thunk with a box with specified indentation. *)
 
-  val vbox : ?name:string -> int -> box
-  (** Wrap a format thunk with a vbox with specified indentation. *)
-
-  val hvbox : ?name:string -> int -> box
-  (** Wrap a format thunk with an hvbox with specified indentation. *)
-
-  val hovbox : ?name:string -> int -> box
-  (** Wrap a format thunk with an hovbox with specified indentation. *)
-
-  val cbox_if : ?name:string -> bool -> int -> box
-  (** Conditionally wrap a format thunk with a compacting sbox with specified
-      indentation. *)
-
-  val vbox_if : ?name:string -> bool -> int -> box
-  (** Conditionally wrap a format thunk with a vbox with specified
-      indentation. *)
-
-  val hvbox_if : ?name:string -> bool -> int -> box
-  (** Conditionally wrap a format thunk with an hvbox with specified
-      indentation. *)
-
-  val hovbox_if : ?name:string -> bool -> int -> box
-  (** Conditionally wrap a format thunk with an hovbox with specified
+  val box_if : ?name:string -> bool -> box_kind -> int -> boxed -> t
+  (** Conditionally wrap a format thunk with a box with specified
       indentation. *)
 end
 

@@ -244,35 +244,26 @@ module Safe = struct
 
   type boxed = One of t | Cons of boxed * sep * t
 
-  type box = boxed -> t
-
   let one t = One t
 
   let add b s t = Cons (b, s, t)
 
-  let box ?(cnd = true) opn cls boxed =
+  type box_kind = ?name:string -> int -> t
+
+  let cbox ?name = open_box ?name
+
+  let vbox ?name = open_vbox ?name
+
+  let hvbox ?name = open_hvbox ?name
+
+  let hovbox ?name = open_hovbox ?name
+
+  let box_if ?name cnd kind n boxed =
     let can_box = match boxed with One _ -> false | Cons _ -> true in
-    let rec aux = function
-      | One t -> t
-      | Cons (b, s, t) -> aux b $ s $ t
-    in
-    wrap_if_k (cnd && can_box) opn cls (aux boxed)
+    let rec aux = function One t -> t | Cons (b, s, t) -> aux b $ s $ t in
+    wrap_if_k (cnd && can_box) (kind ?name n) close_box (aux boxed)
 
-  let cbox ?name n = box (open_box ?name n) close_box
-
-  and vbox ?name n = box (open_vbox ?name n) close_box
-
-  and hvbox ?name n = box (open_hvbox ?name n) close_box
-
-  and hovbox ?name n = box (open_hovbox ?name n) close_box
-
-  and cbox_if ?name cnd n = box ~cnd (open_box ?name n) close_box
-
-  and vbox_if ?name cnd n = box ~cnd (open_vbox ?name n) close_box
-
-  and hvbox_if ?name cnd n = box ~cnd (open_hvbox ?name n) close_box
-
-  and hovbox_if ?name cnd n = box ~cnd (open_hovbox ?name n) close_box
+  let box ?name = box_if ?name true
 end
 
 let cbox ?name n = wrap_k (open_box ?name n) close_box
