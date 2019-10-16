@@ -51,6 +51,7 @@ CheckChangesModified () {
 case $CI_KIND in
 build)
     CheckBuild
+    opam install ocamlformat
     ;;
 build-and-tests)
     CheckBuild
