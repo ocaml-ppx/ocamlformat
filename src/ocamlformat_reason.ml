@@ -43,10 +43,12 @@ let pack_of_kind = function
   | `Impl -> Pack {parse= Reason.input_bin_impl; xunit= impl}
   | `Intf -> Pack {parse= Reason.input_bin_intf; xunit= intf}
 
-let format xunit conf ?output_file ~input_name ~source ~parsed =
+let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed =
   Location.input_name := input_name ;
-  let parsed = Ok parsed in
-  Translation_unit.format xunit conf ?output_file ~input_name ~source ~parsed
+  if conf.disable then Ok source
+  else
+    Translation_unit.format xunit conf ?output_file ~input_name ~source
+      ~parsed:(Ok parsed)
 
 let to_output_file output_file data =
   match output_file with

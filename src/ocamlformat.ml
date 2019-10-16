@@ -46,10 +46,15 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
-let format ~kind =
-  match kind with
-  | `Impl -> Translation_unit.parse_and_format impl
-  | `Intf -> Translation_unit.parse_and_format intf
+let format ?output_file ~kind ~input_name ~source (c : Conf.t) =
+  if c.disable then Ok source
+  else
+    let f =
+      match kind with
+      | `Impl -> Translation_unit.parse_and_format impl
+      | `Intf -> Translation_unit.parse_and_format intf
+    in
+    f ?output_file ~input_name ~source c
 
 let to_output_file output_file data =
   match output_file with
