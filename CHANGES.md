@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix break before the closing bracket of collections (exceeding the margin) (#1073) (Guillaume Petiot)
   + Build: use short form for action in src/dune (#1076) (Etienne Millon)
   + Improve: Implement sequence-blank-line=preserve-one for let bindings (#1077) (Jules Aguillon)
   + Internal: Cleanup sequence_blank_line (#1075) (Jules Aguillon)
