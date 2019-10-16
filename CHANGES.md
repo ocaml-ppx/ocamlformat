@@ -1,5 +1,6 @@
 ### (master)
 
+  + Improve: Implement sequence-blank-line=preserve-one for let bindings (#1077) (Jules Aguillon)
   + Internal: Cleanup sequence_blank_line (#1075) (Jules Aguillon)
   + Improve: set conventional as the default profile (#1060) (Guillaume Petiot)
   + Fix precedence of Dot wrt Hash (#1058) (Guillaume Petiot)
