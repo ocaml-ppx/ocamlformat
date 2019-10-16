@@ -59,10 +59,9 @@ let to_output_file output_file data =
 ;;
 match Conf.action with
 | Inplace inputs ->
-    let output_file = None in
     let errors =
       List.filter_map inputs
-        ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
+        ~f:(fun {kind; name= input_name; file= input_file; conf} ->
           let input_file =
             match input_file with
             | File f -> f
@@ -71,7 +70,7 @@ match Conf.action with
           let source =
             In_channel.with_file input_file ~f:In_channel.input_all
           in
-          let result = format conf ?output_file ~kind ~input_name ~source in
+          let result = format conf ~kind ~input_name ~source in
           match result with
           | Error e ->
               Translation_unit.print_error conf ~input_name e ;
@@ -82,9 +81,7 @@ match Conf.action with
               None)
     in
     if List.is_empty errors then Caml.exit 0 else Caml.exit 1
-| In_out
-    ( {kind= (`Impl | `Intf) as kind; file= Stdin; name= input_name; conf}
-    , output_file ) -> (
+| In_out ({kind; file= Stdin; name= input_name; conf}, output_file) -> (
     let source = In_channel.input_all In_channel.stdin in
     let result = format conf ?output_file ~kind ~input_name ~source in
     match result with
@@ -94,12 +91,8 @@ match Conf.action with
     | Error e ->
         Translation_unit.print_error conf ~input_name e ;
         Caml.exit 1 )
-| In_out
-    ( { kind= (`Impl | `Intf) as kind
-      ; file= File input_file
-      ; name= input_name
-      ; conf }
-    , output_file ) -> (
+| In_out ({kind; file= File input_file; name= input_name; conf}, output_file)
+  -> (
     let source = In_channel.with_file input_file ~f:In_channel.input_all in
     let result = format conf ?output_file ~kind ~input_name ~source in
     match result with

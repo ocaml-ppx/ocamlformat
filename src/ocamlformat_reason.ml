@@ -57,9 +57,7 @@ let to_output_file output_file data =
 match Conf.action with
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | Check _ -> user_error "Cannot check Reason code with --check" []
-| In_out
-    ( {kind= (`Impl | `Intf) as kind; file= Stdin; name= input_name; conf}
-    , output_file ) -> (
+| In_out ({kind; file= Stdin; name= input_name; conf}, output_file) -> (
     let result =
       let (Pack {parse; xunit}) = pack_of_kind kind in
       let t = parse In_channel.stdin in
@@ -74,12 +72,8 @@ match Conf.action with
     | Error e ->
         Translation_unit.print_error conf ~input_name e ;
         Caml.exit 1 )
-| In_out
-    ( { kind= (`Impl | `Intf) as kind
-      ; name= input_name
-      ; file= File input_file
-      ; conf }
-    , output_file ) -> (
+| In_out ({kind; name= input_name; file= File input_file; conf}, output_file)
+  -> (
     let result =
       let (Pack {parse; xunit}) = pack_of_kind kind in
       let t = In_channel.with_file input_file ~f:parse in
