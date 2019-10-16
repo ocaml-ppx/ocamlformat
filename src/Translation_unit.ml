@@ -245,8 +245,7 @@ let check_all_locations fmt cmts_t =
           "Warning: Some locations have not been considered\n%!" ;
         List.iter ~f:print (List.sort l ~compare:Location.compare)
 
-let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
-    =
+let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
   let dump_ast ~suffix ast =
     dump_ast ~input_name ?output_file ~suffix (fun fmt ->
         xunit.printast fmt ast)
@@ -371,8 +370,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
       | Sys_error msg -> Error (User_error msg)
       | exn -> Error (Ocamlformat_bug {exn}) )
 
-let parse_and_format xunit (conf : Conf.t) ?output_file ~input_name ~source
-    () =
+let parse_and_format xunit ?output_file ~input_name ~source (conf : Conf.t) =
   Location.input_name := input_name ;
   let parsed = try Ok (parse xunit.parse conf ~source) with e -> Error e in
-  format xunit conf ?output_file ~input_name ~source ~parsed ()
+  format xunit conf ?output_file ~input_name ~source ~parsed

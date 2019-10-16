@@ -43,11 +43,10 @@ let pack_of_kind = function
   | `Impl -> Pack {parse= Reason.input_bin_impl; xunit= impl}
   | `Intf -> Pack {parse= Reason.input_bin_intf; xunit= intf}
 
-let format xunit conf ?output_file ~input_name ~source ~parsed () =
+let format xunit conf ?output_file ~input_name ~source ~parsed =
   Location.input_name := input_name ;
   let parsed = Ok parsed in
   Translation_unit.format xunit conf ?output_file ~input_name ~source ~parsed
-    ()
 
 let to_output_file output_file data =
   match output_file with
@@ -66,7 +65,7 @@ match Conf.action with
       let t = parse In_channel.stdin in
       let source = try_read_original_source t.origin_filename in
       format xunit conf ?output_file ~input_name ~source
-        ~parsed:t.ast_and_comment ()
+        ~parsed:t.ast_and_comment
     in
     match result with
     | Ok s ->
@@ -86,7 +85,7 @@ match Conf.action with
       let t = In_channel.with_file input_file ~f:parse in
       let source = try_read_original_source t.origin_filename in
       format xunit conf ?output_file ~input_name ~source
-        ~parsed:t.ast_and_comment ()
+        ~parsed:t.ast_and_comment
     in
     match result with
     | Ok s ->

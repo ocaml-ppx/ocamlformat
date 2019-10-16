@@ -34,27 +34,25 @@ type error
 
 val format :
      'a t
-  -> Conf.t
   -> ?output_file:string
   -> input_name:string
   -> source:string
   -> parsed:('a with_comments, exn) Result.t
-  -> unit
+  -> Conf.t
   -> (string, error) Result.t
-(** [format xunit conf ?output_file ~input_name ~source ~parsed ()] format
+(** [format xunit conf ?output_file ~input_name ~source ~parsed] formats
     [parsed], using [input_name] for error messages, and referring to
     [source] to improve comment placement. It returns the formatted string or
     an error that prevented formatting. *)
 
 val parse_and_format :
      'a t
-  -> Conf.t
   -> ?output_file:string
   -> input_name:string
   -> source:string
-  -> unit
+  -> Conf.t
   -> (string, error) Result.t
-(** [parse_and_format xunit conf ?output_file ~input_name ~source ()] Similar
+(** [parse_and_format xunit conf ?output_file ~input_name ~source] is similar
     to [format] but parses the source according to [xunit]. *)
 
 val print_error :

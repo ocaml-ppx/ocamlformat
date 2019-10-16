@@ -71,9 +71,7 @@ match Conf.action with
           let source =
             In_channel.with_file input_file ~f:In_channel.input_all
           in
-          let result =
-            format conf ?output_file ~kind ~input_name ~source ()
-          in
+          let result = format conf ?output_file ~kind ~input_name ~source in
           match result with
           | Error e ->
               Translation_unit.print_error conf ~input_name e ;
@@ -88,7 +86,7 @@ match Conf.action with
     ( {kind= (`Impl | `Intf) as kind; file= Stdin; name= input_name; conf}
     , output_file ) -> (
     let source = In_channel.input_all In_channel.stdin in
-    let result = format conf ?output_file ~kind ~input_name ~source () in
+    let result = format conf ?output_file ~kind ~input_name ~source in
     match result with
     | Ok s ->
         to_output_file output_file s ;
@@ -103,7 +101,7 @@ match Conf.action with
       ; conf }
     , output_file ) -> (
     let source = In_channel.with_file input_file ~f:In_channel.input_all in
-    let result = format conf ?output_file ~kind ~input_name ~source () in
+    let result = format conf ?output_file ~kind ~input_name ~source in
     match result with
     | Ok s ->
         to_output_file output_file s ;
@@ -118,7 +116,7 @@ match Conf.action with
         | Stdin -> In_channel.input_all In_channel.stdin
         | File file -> In_channel.with_file file ~f:In_channel.input_all
       in
-      match format conf ~kind ~input_name ~source () with
+      match format conf ~kind ~input_name ~source with
       | Ok res -> String.equal res source
       | Error e ->
           Translation_unit.print_error conf ~input_name e ;
