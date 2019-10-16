@@ -30,11 +30,7 @@ type 'a t =
   ; printast: Caml.Format.formatter -> 'a -> unit }
 (** Operations on translation units. *)
 
-type error =
-  | Invalid_source of {exn: exn}
-  | Unstable of {iteration: int; prev: string; next: string}
-  | Ocamlformat_bug of {exn: exn}
-  | User_error of string
+type error
 
 val format :
      'a t
@@ -60,3 +56,17 @@ val parse_and_format :
   -> (string, error) Result.t
 (** [parse_and_format xunit conf ?output_file ~input_name ~source ()] Similar
     to [format] but parses the source according to [xunit]. *)
+
+val print_error :
+     ?quiet_unstable:bool
+  -> ?quiet_comments:bool
+  -> ?quiet_doc_comments:bool
+  -> ?fmt:Format.formatter
+  -> Conf.t
+  -> input_name:string
+  -> error
+  -> unit
+(** [print_error conf ?fmt ~input_name e] prints the error message
+    corresponding to error [e] on the [fmt] formatter (stderr by default).
+    [quiet_unstable], [quiet_comments] and [quiet_doc_comments] are false by
+    default. *)

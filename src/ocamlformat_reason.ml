@@ -72,7 +72,9 @@ match Conf.action with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
-    | Error _ -> Caml.exit 1 )
+    | Error e ->
+        Translation_unit.print_error conf ~input_name e ;
+        Caml.exit 1 )
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; name= input_name
@@ -90,4 +92,6 @@ match Conf.action with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
-    | Error _ -> Caml.exit 1 )
+    | Error e ->
+        Translation_unit.print_error conf ~input_name e ;
+        Caml.exit 1 )

@@ -75,7 +75,9 @@ match Conf.action with
             format conf ?output_file ~kind ~input_name ~source ()
           in
           match result with
-          | Error _ -> Some ()
+          | Error e ->
+              Translation_unit.print_error conf ~input_name e ;
+              Some ()
           | Ok formatted ->
               if String.equal formatted source then ()
               else Out_channel.write_all input_file ~data:formatted ;
@@ -91,7 +93,9 @@ match Conf.action with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
-    | Error _ -> Caml.exit 1 )
+    | Error e ->
+        Translation_unit.print_error conf ~input_name e ;
+        Caml.exit 1 )
 | In_out
     ( { kind= (`Impl | `Intf) as kind
       ; file= File input_file
@@ -104,7 +108,9 @@ match Conf.action with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
-    | Error _ -> Caml.exit 1 )
+    | Error e ->
+        Translation_unit.print_error conf ~input_name e ;
+        Caml.exit 1 )
 | Check inputs ->
     let f {Conf.kind; name= input_name; file; conf} =
       let source =
@@ -114,7 +120,9 @@ match Conf.action with
       in
       match format conf ~kind ~input_name ~source () with
       | Ok res -> String.equal res source
-      | Error _ -> false
+      | Error e ->
+          Translation_unit.print_error conf ~input_name e ;
+          false
     in
     let checked = List.for_all inputs ~f in
     Caml.exit (if checked then 0 else 1)
