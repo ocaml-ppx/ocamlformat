@@ -590,7 +590,9 @@ type foo = ..
 
 type foo += Foo of int * int option | Bar of int option
 
-let x = (Foo (3, Some 4), Bar (Some 5)) (* Prints Foo and Bar successfully *)
+let x = (Foo (3, Some 4), Bar (Some 5))
+
+(* Prints Foo and Bar successfully *)
 
 type foo += Foo of string
 
@@ -600,7 +602,9 @@ exception Foo of int * int option
 
 exception Bar of int option
 
-let x = (Foo (3, Some 4), Bar (Some 5)) (* Prints Foo and Bar successfully *)
+let x = (Foo (3, Some 4), Bar (Some 5))
+
+(* Prints Foo and Bar successfully *)
 
 type foo += Foo of string
 
@@ -705,7 +709,8 @@ end = struct
 
   type 'a tag += Int : int tag
 
-  let ik = {tag= Int; label= "int"; write= string_of_int; read= int_of_string}
+  let ik =
+    {tag= Int; label= "int"; write= string_of_int; read= int_of_string}
 
   let () = Hashtbl.add readTbl "int" (K ik)
 
@@ -934,7 +939,8 @@ end
 
 let () =
   print_endline (Print.to_string int 10) ;
-  print_endline (Print.to_string (pair int (pair str int)) (123, ("A", 456)))
+  print_endline
+    (Print.to_string (pair int (pair str int)) (123, ("A", 456)))
 
 (* #6262: first-class modules and module type aliases *)
 
@@ -1484,8 +1490,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
    ty_pvar -> ('t -> 'b, 'e) ty_pvar | Parg : 't * ('a,'e) ty * ('b,'e)
    ty_pvar -> ('t * 'a -> 'b, 'e) ty_pvar *)
 (* An attempt at encoding omega examples from the 2nd Central European
-   Functional Programming School: Generic Programming in Omega, by Tim Sheard
-   and Nathan Linger http://web.cecs.pdx.edu/~sheard/ *)
+   Functional Programming School: Generic Programming in Omega, by Tim
+   Sheard and Nathan Linger http://web.cecs.pdx.edu/~sheard/ *)
 
 (* Basic types *)
 
@@ -1664,9 +1670,9 @@ let smaller : type a b. (a succ, b succ) le -> (a, b) le = function
 
 type (_, _) diff = Diff : 'c nat * ('a, 'c, 'b) plus -> ('a, 'b) diff
 
-(* let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff = fun le
-   a b -> match a, b, le with | NZ, m, _ -> Diff (m, PlusZ m) | NS x, NZ, _
-   -> assert false | NS x, NS y, q -> match diff (smaller q) x y with Diff
+(* let rec diff : type a b. (a,b) le -> a nat -> b nat -> (a,b) diff = fun
+   le a b -> match a, b, le with | NZ, m, _ -> Diff (m, PlusZ m) | NS x, NZ,
+   _ -> assert false | NS x, NS y, q -> match diff (smaller q) x y with Diff
    (m, p) -> Diff (m, PlusS p) ;; *)
 
 let rec diff : type a b. (a, b) le -> a nat -> b nat -> (a, b) diff =
@@ -1689,9 +1695,11 @@ let rec diff : type a b. (a, b) le -> b nat -> (a, b) diff =
  fun le b ->
   match (b, le) with
   | m, LeZ _ -> Diff (m, PlusZ m)
-  | NS y, LeS q -> ( match diff q y with Diff (m, p) -> Diff (m, PlusS p) )
+  | NS y, LeS q -> (
+    match diff q y with Diff (m, p) -> Diff (m, PlusS p) )
 
-type (_, _) filter = Filter : ('m, 'n) le * ('a, 'm) seq -> ('a, 'n) filter
+type (_, _) filter =
+  | Filter : ('m, 'n) le * ('a, 'm) seq -> ('a, 'n) filter
 
 let rec leS' : type m n. (m, n) le -> (m, n succ) le = function
   | LeZ n -> LeZ (NS n)
@@ -1822,8 +1830,9 @@ let rec del : type n. int -> n avl -> n avl_del =
           | Same, (z, Inl r) -> Dsame (Node (More, l, z, r))
           | Less, (z, Inl r) -> Ddecr (Eq, Node (Same, l, z, r))
           | More, (z, Inl r) -> (
-            match rotr l z r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t )
-          )
+            match rotr l z r with
+            | Inl t -> Ddecr (Eq, t)
+            | Inr t -> Dsame t ) )
       else if y < x then
         match del y l with
         | Dsame l -> Dsame (Node (bal, l, x, r))
@@ -1832,8 +1841,9 @@ let rec del : type n. int -> n avl -> n avl_del =
           | Same -> Dsame (Node (Less, l, x, r))
           | More -> Ddecr (Eq, Node (Same, l, x, r))
           | Less -> (
-            match rotl l x r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t )
-          )
+            match rotl l x r with
+            | Inl t -> Ddecr (Eq, t)
+            | Inr t -> Dsame t ) )
       else
         match del y r with
         | Dsame r -> Dsame (Node (bal, l, x, r))
@@ -1842,8 +1852,9 @@ let rec del : type n. int -> n avl -> n avl_del =
           | Same -> Dsame (Node (More, l, x, r))
           | Less -> Ddecr (Eq, Node (Same, l, x, r))
           | More -> (
-            match rotr l x r with Inl t -> Ddecr (Eq, t) | Inr t -> Dsame t )
-          ) )
+            match rotr l x r with
+            | Inl t -> Ddecr (Eq, t)
+            | Inr t -> Dsame t ) ) )
 
 let delete x (Avl t) =
   match del x t with Dsame t -> Avl t | Ddecr (_, t) -> Avl t
@@ -2324,7 +2335,8 @@ let inlineseq_from_astseq seq =
     | x, Ast_Bold xs -> Bold (List.map (process x) xs)
     | Maylink, Ast_Link lnk -> Link lnk
     | Nonlink, Ast_Link _ -> assert false
-    | Maylink, Ast_Mref (lnk, xs) -> Mref (lnk, List.map (process Nonlink) xs)
+    | Maylink, Ast_Mref (lnk, xs) ->
+        Mref (lnk, List.map (process Nonlink) xs)
     | Nonlink, Ast_Mref _ -> assert false
   in
   List.map (process Maylink) seq
@@ -3815,7 +3827,8 @@ class ['a] lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x
+      | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x
@@ -4022,7 +4035,8 @@ let lexpr_ops (ops : ('a, 'a) #ops Lazy.t) =
 
     method subst ~sub =
       function
-      | #lambda as x -> lambda#subst ~sub x | #expr as x -> expr#subst ~sub x
+      | #lambda as x -> lambda#subst ~sub x
+      | #expr as x -> expr#subst ~sub x
 
     method eval =
       function #lambda as x -> lambda#eval x | #expr as x -> expr#eval x
@@ -4128,16 +4142,16 @@ end = struct
   let _ = fun (_ : ('a, 'perms) t) -> ()
 
   let t_of_sexp :
-        'a 'perms. (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
-      =
+        'a 'perms.    (sexp -> 'a) -> (sexp -> 'perms) -> sexp
+        -> ('a, 'perms) t =
     let _tp_loc = "core_array.ml.Permissioned.t" in
     fun _of_a _of_perms t -> (array_of_sexp _of_a) t
 
   let _ = t_of_sexp
 
   let sexp_of_t :
-        'a 'perms. ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
-      =
+        'a 'perms.    ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t
+        -> sexp =
    fun _of_a _of_perms v -> (sexp_of_array _of_a) v
 
   let _ = sexp_of_t
@@ -4781,7 +4795,9 @@ module A_alias_expanded = struct
   include A_alias
 end
 
-let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
+let _ = f (module A_alias_expanded : S with type t = (module A.A_S))
+
+(* ok *)
 
 let _ = f (module A_alias_expanded) (* ok *)
 
@@ -4819,8 +4835,8 @@ struct
   let uniq (type a b) (Eq : a fix) (Eq : b fix) : (a, b) eq = Eq
 end
 
-(* This would allow: module FixId = Fix (struct type 'a f = 'a end) let bad :
-   (int, string) eq = FixId.uniq Eq Eq let _ = Printf.printf "Oh dear: %s"
+(* This would allow: module FixId = Fix (struct type 'a f = 'a end) let bad
+   : (int, string) eq = FixId.uniq Eq Eq let _ = Printf.printf "Oh dear: %s"
    (cast bad 42) *)
 module M = struct
   module type S = sig
@@ -5031,15 +5047,15 @@ end
 module type S' = S with module M := String
 
 (* with module type *)
-(* module type S = sig module type T module F(X:T) : T end;; module type T0 =
-   sig type t end;; module type S1 = S with module type T = T0;; module type
-   S2 = S with module type T := T0;; module type S3 = S with module type T :=
-   sig type t = int end;; module H = struct include (Hashtbl : module type of
-   Hashtbl with type statistics := Hashtbl.statistics and module type S :=
-   Hashtbl.S and module Make := Hashtbl.Make and module MakeSeeded :=
-   Hashtbl.MakeSeeded and module type SeededS := Hashtbl.SeededS and module
-   type HashedType := Hashtbl.HashedType and module type SeededHashedType :=
-   Hashtbl.SeededHashedType) end;; *)
+(* module type S = sig module type T module F(X:T) : T end;; module type T0
+   = sig type t end;; module type S1 = S with module type T = T0;; module
+   type S2 = S with module type T := T0;; module type S3 = S with module
+   type T := sig type t = int end;; module H = struct include (Hashtbl :
+   module type of Hashtbl with type statistics := Hashtbl.statistics and
+   module type S := Hashtbl.S and module Make := Hashtbl.Make and module
+   MakeSeeded := Hashtbl.MakeSeeded and module type SeededS :=
+   Hashtbl.SeededS and module type HashedType := Hashtbl.HashedType and
+   module type SeededHashedType := Hashtbl.SeededHashedType) end;; *)
 
 (* A subtle problem appearing with -principal *)
 type -'a t
@@ -5478,9 +5494,9 @@ end
    let M2.W eq = W Eq;;
 
    let s = List.fold_right SInt.add [1;2;3] SInt.empty;; module SInt2 =
-   Set.Make(Int2);; let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
-   let s' : SInt2.t = conv eq s;; SInt2.elements s';; SInt2.mem 2 s';; (*
-   invariants are broken *) *)
+   Set.Make(Int2);; let conv : type a b. (a,b) eq -> a -> b = fun Eq x ->
+   x;; let s' : SInt2.t = conv eq s;; SInt2.elements s';; SInt2.mem 2 s';;
+   (* invariants are broken *) *)
 
 (* Check behavior with submodules *)
 module M = struct
@@ -5887,7 +5903,8 @@ let f (x : entity entity_container) = ()
 (* class world = object val entity_container : entity entity_container = new
    entity_container
 
-   method add_entity (s : entity) = entity_container#add_entity (s :> entity)
+   method add_entity (s : entity) = entity_container#add_entity (s :>
+   entity)
 
    end *)
 (* Two v's in the same class *)
@@ -7335,7 +7352,8 @@ end = struct
     | Const n -> StringSet.empty
     | Add (t1, t2) -> StringSet.union (fv t1) (fv t2)
     | Binding (b, t) ->
-        StringSet.union (Binding.fv b) (StringSet.diff (fv t) (Binding.bv b))
+        StringSet.union (Binding.fv b)
+          (StringSet.diff (fv t) (Binding.bv b))
 
   let rec simpl = function
     | Var s -> Var s
@@ -8239,7 +8257,8 @@ let sort_uniq (type s) cmp l =
   S.elements (List.fold_right S.add l S.empty)
 
 let () =
-  print_endline (String.concat "," (sort_uniq compare ["abc"; "xyz"; "abc"]))
+  print_endline
+    (String.concat "," (sort_uniq compare ["abc"; "xyz"; "abc"]))
 
 let f x (type a) (y : a) = x = y
 
@@ -8542,10 +8561,12 @@ let trivial : (zero succ, zero, zero) plus option -> bool = function
 let easy : (zero, zero succ, zero) plus option -> bool = function
   | None -> false
 
-let harder : (zero succ, zero succ, zero succ) plus option -> bool = function
+let harder : (zero succ, zero succ, zero succ) plus option -> bool =
+  function
   | None -> false
 
-let harder : (zero succ, zero succ, zero succ) plus option -> bool = function
+let harder : (zero succ, zero succ, zero succ) plus option -> bool =
+  function
   | None -> false
   | Some (PlusS _) -> .
 

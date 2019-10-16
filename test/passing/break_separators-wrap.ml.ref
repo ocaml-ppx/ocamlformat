@@ -158,15 +158,15 @@ let length =
 
 (* this is a list *)
 let length =
-  ([ 0; 14; (* foo *) 14; 17 (* foo *); 17; 2777777777777777777777777777777777
-   ; 27 ] [@foo])
+  ([ 0; 14; (* foo *) 14; 17 (* foo *); 17
+   ; 2777777777777777777777777777777777; 27 ] [@foo])
 
 ;;
 Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
   (Foo.foo ~foo ~foo ~foooo:()
      [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo))
-     ; ("foooo", fooooooo); ("foooooo", foooooooo); ("fooooooooo", foooooooo)
-     ])
+     ; ("foooo", fooooooo); ("foooooo", foooooooo)
+     ; ("fooooooooo", foooooooo) ])
 
 (* this is an array *)
 let length =
@@ -181,10 +181,10 @@ let length =
 (* this is a list *)
 let length =
   ([ 0; 1; 2; 3; 4; 5; 6; 7; 8; 8; 9; 9; 10; 10; 11; 11; 12; 12; 12; 12; 13
-   ; 13; 13; 13; 14; 14; 14; (* foo *) 14; 15; 15; 15; 15; 16; 16; 16; 16; 16
-   ; 16; 16; 16; 17; 17; 17; 17 (* foo *); 17; 17; 17; 17; 18; 18; 18; 18; 18
-   ; 18; 18; 18; 19; 19; 19; 19; 19; 19; 19; 19; 20; 20; 20; 20; 20; 20; 20
-   ; 20; 20; 20; 20; 26; 26; 26; 26; 26; 27; 27; 27; 27
+   ; 13; 13; 13; 14; 14; 14; (* foo *) 14; 15; 15; 15; 15; 16; 16; 16; 16
+   ; 16; 16; 16; 16; 17; 17; 17; 17 (* foo *); 17; 17; 17; 17; 18; 18; 18
+   ; 18; 18; 18; 18; 18; 19; 19; 19; 19; 19; 19; 19; 19; 20; 20; 20; 20; 20
+   ; 20; 20; 20; 20; 20; 20; 26; 26; 26; 26; 26; 27; 27; 27; 27
    ; 2777777777777777777777777777777777; 27; 27; 27; 27; 27; 27; 27; 27; 27
    ; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 28
    ] [@foo])
@@ -320,7 +320,8 @@ let fooooooooooo = function
   | Pmty_alias lid ->
       { empty with
         bdy= fmt_longident_loc c lid
-      ; epi= Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
+      ; epi=
+          Some (fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ "))
       }
 
 let f () =

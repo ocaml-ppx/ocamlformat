@@ -26,12 +26,14 @@ let _ = !!!!a b d
 let _ = ( + ) a b c d
 
 let cartesian_product l1 l2 =
-  List.concat (l1 |> List.map (fun v1 -> l2 |> List.map (fun v2 -> (v1, v2))))
+  List.concat
+    (l1 |> List.map (fun v1 -> l2 |> List.map (fun v2 -> (v1, v2))))
 
 let cartesian_product' long_list_one long_list_two =
   List.concat
     ( long_list_one
-    |> List.map (fun v1 -> long_list_two |> List.map (fun v2 -> (v1, v2))) )
+    |> List.map (fun v1 -> long_list_two |> List.map (fun v2 -> (v1, v2)))
+    )
 
 let whatever a_function_name long_list_one some_other_thing =
   List.map

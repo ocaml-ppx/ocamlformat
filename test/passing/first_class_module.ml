@@ -71,8 +71,9 @@ let _ =
   ()
 
 let _ =
-  ( module Ephemeron (HHHHHHHHHHHHHHHHHHHHHHHHHH) (HHHHHHHHHHHHHHHHHHHHHHHHHH)
-  : Ephemeron.S )
+  ( module Ephemeron
+             (HHHHHHHHHHHHHHHHHHHHHHHHHH)
+             (HHHHHHHHHHHHHHHHHHHHHHHHHH) : Ephemeron.S )
 
 let _ =
   ( module Ephemeron (HHHHHHHHHHHHHHHHHHHHHHHHHH) (HHHHHHHHHHHHHHHHHH)

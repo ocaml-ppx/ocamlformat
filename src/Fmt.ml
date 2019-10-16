@@ -19,7 +19,7 @@ type t = Format.formatter -> unit
 
 let ( >$ ) f g x = f $ g x
 
-let set_margin n fs = Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1)
+let set_margin n fs = Format.pp_set_geometry fs ~max_indent:(n - 1) ~margin:n
 
 let set_max_indent n fs = Format.pp_set_max_newline_offset fs n
 

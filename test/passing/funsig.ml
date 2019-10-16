@@ -39,7 +39,10 @@ type t =
       * cccccccccccccccccccc
 
 type ('aaaa, 'bbbb, 'cccc) t =
-  llll:('aaaa, 'bbbb, 'cccc) s -> dddddd list -> 'aaaa * 'cccc -> 'bbbb uuuuu
+     llll:('aaaa, 'bbbb, 'cccc) s
+  -> dddddd list
+  -> 'aaaa * 'cccc
+  -> 'bbbb uuuuu
 
 external ident : a -> b -> c -> d = "something"
 
@@ -68,7 +71,8 @@ type t =
       -> c
       -> d
       -> e
-  ; field4: a_is_loooooooooooooooooooong -> b_is_loooooooooong -> c -> d -> e
+  ; field4:
+      a_is_loooooooooooooooooooong -> b_is_loooooooooong -> c -> d -> e
   ; field5:
-      a loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong typ
-  }
+      a loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong
+      typ }

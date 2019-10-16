@@ -62,7 +62,8 @@ let () =
         foooooooooooooooooo
           begin
             if foooooooooooooooooooooooooooo then
-              if foooooooooooooooooooooooooooo then foooooooooooooooooooooooo
+              if foooooooooooooooooooooooooooo then
+                foooooooooooooooooooooooo
               else foooooooooooooooooooooooooo
             else if foooooooooooooooooooooooooooooooo then
               fooooooooooooooooooooooooooooooooooo

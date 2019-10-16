@@ -2,8 +2,12 @@
 
 let foo =
   let open Gql in
-  [ field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid) ~resolve:(function
-        | _ctx -> x.id)
+  [ field
+      "id"
+      ~doc:"Toy ID."
+      ~args:[]
+      ~typ:(non_null guid)
+      ~resolve:(function _ctx -> x.id)
   ; field "id" ~doc:"Toy ID." ~args:[] ~typppp ~resolve:(function _ctx ->
         x.id)
   ; field

@@ -5,8 +5,8 @@ class t =
       body
   end
 
-let func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc ddddddddddddddddddddd
-    eeeeeeeeeeeeeee =
+let func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
+    ddddddddddddddddddddd eeeeeeeeeeeeeee =
   body
 
 let rec func aaaaaaaaaaa bbbbbbbbbbbbbb ccccccccccccccccccc
@@ -31,7 +31,8 @@ class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
 class ffffffffffffffffffff aaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbb
   cccccccccccccccccccccc dddddddddddddddddddddd = g
 
-let ffffffffffffffffffff : aaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbb =
+let ffffffffffffffffffff : aaaaaaaaaaaaaaaaaaaaaa -> bbbbbbbbbbbbbbbbbbbbbb
+    =
   g
 
 let ffffffffffffffffffff :

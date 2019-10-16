@@ -48,8 +48,9 @@ let is_sequence exp =
   match exp.pexp_desc with
   | Pexp_sequence _
    |Pexp_extension
-      (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}])
-    ->
+      ( _
+      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
+      ) ->
       true
   | _ -> false
 
@@ -121,8 +122,9 @@ let is_sequence exp =
   match exp.pexp_desc with
   | Pexp_sequence _
   | Pexp_extension
-      (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}])
-    ->
+      ( _
+      , PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}]
+      ) ->
       true
   | _ -> false
 

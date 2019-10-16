@@ -720,7 +720,9 @@ let make_set (type s) cmp =
 ;;
 
 let both l =
-  List.map (fun set -> sort set l) [ make_set compare; make_set (fun x y -> compare y x) ]
+  List.map
+    (fun set -> sort set l)
+    [ make_set compare; make_set (fun x y -> compare y x) ]
 ;;
 
 let () =
@@ -1581,7 +1583,8 @@ let rec find : type sh. ('a -> 'a -> bool) -> 'a -> (sh, 'a) tree -> (sh, 'a) pa
   | Ttip -> []
   | Tnode m -> if eq n m then [ Phere ] else []
   | Tfork (x, y) ->
-    List.map (fun x -> Pleft x) (find eq n x) @ List.map (fun x -> Pright x) (find eq n y)
+    List.map (fun x -> Pleft x) (find eq n x)
+    @ List.map (fun x -> Pright x) (find eq n y)
 ;;
 
 let rec extract : type sh. (sh, 'a) path -> (sh, 'a) tree -> 'a =
@@ -3005,7 +3008,9 @@ let rec weaken_alist : type m n. (m, n) alist -> (m succ, n succ) alist = functi
 let rec sub' : type m. m ealist -> m fin -> m term = function
   | EAlist Anil -> var
   | EAlist (Asnoc (s, t, x)) ->
-    comp_subst (sub' (EAlist (weaken_alist s))) (fun t' -> weaken_term (subst_var x t t'))
+    comp_subst
+      (sub' (EAlist (weaken_alist s)))
+      (fun t' -> weaken_term (subst_var x t t'))
 ;;
 
 let subst' d = pre_subst (sub' d)
@@ -8791,7 +8796,8 @@ type v =
 
 let f
     : type a b c d e f g.
-      a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u -> int
+      a t * b t * c t * d t * e t * f t * g t * v * (a, b, c, d) u * (e, f, g, g) u
+      -> int
   = function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
@@ -9715,7 +9721,8 @@ type t = |
 include struct
   let%test_module "as" =
     (module struct
-      let%expect_test "xx xx xxxxxx xxxxxxx xxxxxx xxxxxx xxxxxxxx xx xxxxx xxx xx xxxxx" =
+      let%expect_test "xx xx xxxxxx xxxxxxx xxxxxx xxxxxx xxxxxxxx xx xxxxx xxx xx xxxxx"
+        =
         ()
       ;;
     end)
@@ -9783,7 +9790,8 @@ exception Second_exception
 
 module M = struct
   type t
-  [@@immediate] (* ______________________________________ *)
+  [@@immediate]
+  (* ______________________________________ *)
   [@@deriving variants, sexp_of]
 end
 
@@ -9799,25 +9807,27 @@ module type Basic3 = sig
       ]
 end
 
-(* FIX: exceed 90 columns *)
 let _ =
   aa
-    (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)
+    (bbbbbbbbb
+       cccccccccccc
+       dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)
 ;;
 
-(* FIX: exceed 90 columns *)
 let _ =
-  "_______________________________________________________ _______________________________"
+  "_______________________________________________________ \
+   _______________________________"
 ;;
 
 let _ =
   [ very_long_function_name____________________ very_long_argument_name____________ ]
 ;;
 
-(* FIX: exceed 90 columns *)
 let _ =
   [%str
-    let () = very_long_function_name__________________ very_long_argument_name____________]
+    let () =
+      very_long_function_name__________________ very_long_argument_name____________
+    ;;]
 ;;
 
 let _ =
@@ -9825,10 +9835,10 @@ let _ =
   }
 ;;
 
-(* FIX: exceed 90 columns *)
 let _ =
   match () with
   | _ ->
     (match () with
-    | _ -> long_function_name long_argument_name__________________________________________)
+    | _ ->
+      long_function_name long_argument_name__________________________________________)
 ;;
