@@ -46,8 +46,8 @@ let pack_of_kind = function
 let format xunit conf ?output_file ~input_name ~source ~parsed () =
   Location.input_name := input_name ;
   let parsed = Ok parsed in
-  Translation_unit.format xunit conf ?output_file ~input_name ~source ~parsed
-    ()
+  Translation_unit.format xunit conf ?output_file ~input_name ~source
+    ~parsed ()
 
 let to_output_file output_file data =
   match output_file with

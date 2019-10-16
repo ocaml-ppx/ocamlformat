@@ -36,7 +36,8 @@ let rec class_arrow_typ cmts ({ast= typ; _} as xtyp) =
   let {pcty_desc; pcty_loc; _} = typ in
   match pcty_desc with
   | Pcty_arrow (l, t1, t2) ->
-      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:t2.pcty_loc ;
+      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc
+        ~after:t2.pcty_loc ;
       let rest =
         match t2.pcty_attributes with
         | [] -> class_arrow_typ cmts (sub_cty ~ctx t2)
@@ -312,7 +313,8 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
 
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
-let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
+let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme)
+    =
   let valid_sugared_name arg =
     not (String.equal arg.txt "_" && source_is_long me)
   in

@@ -11,9 +11,9 @@
 
 open Rresult
 
-(** [run_ocamlformat cmd ~ctx ~file_in] runs the ocamlformat command [cmd] on
-    the input file [file_in] with the configuration context of file [ctx] and
-    returns the path to the output in file. *)
+(** [run_ocamlformat cmd ~ctx ~file_in] runs the ocamlformat command [cmd]
+    on the input file [file_in] with the configuration context of file [ctx]
+    and returns the path to the output in file. *)
 let run_ocamlformat cmd ~ctx ~file_in =
   Bos.OS.File.tmp "%s"
   >>= fun path_out ->
@@ -77,7 +77,8 @@ let run path old_file old_hex old_mode new_file new_hex new_mode diff =
   | Ok (str, _) ->
       if String.equal str "" then `Ok ()
       else (
-        diff_prelude path old_file old_hex old_mode new_file new_hex new_mode ;
+        diff_prelude path old_file old_hex old_mode new_file new_hex
+          new_mode ;
         print_endline str ;
         `Ok () )
   | _ -> `Ok ()

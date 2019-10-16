@@ -24,7 +24,8 @@ val class_arrow_typ :
      Cmts.t
   -> class_type Ast.xt
   -> ( arg_label
-     * [`class_type of class_type Ast.xt | `core_type of core_type Ast.xt] )
+     * [`class_type of class_type Ast.xt | `core_type of core_type Ast.xt]
+     )
      list
 (** [class_arrow_typ cmts ty] returns the list of labeled sub_arrow types of
     the class type [ty]. *)
@@ -63,9 +64,9 @@ val infix :
   -> Ast.prec option
   -> expression Ast.xt
   -> (expression Ast.xt option * (arg_label * expression Ast.xt) list) list
-(** [infix cmts prec exp] returns the infix operator and the list of operands
-    applied to this operator from expression [exp]. [prec] is the precedence
-    of the infix operator. *)
+(** [infix cmts prec exp] returns the infix operator and the list of
+    operands applied to this operator from expression [exp]. [prec] is the
+    precedence of the infix operator. *)
 
 val list_pat :
      Cmts.t
@@ -121,9 +122,9 @@ val functor_ :
   -> source_is_long:(module_expr -> bool)
   -> module_expr Ast.xt
   -> (label loc * module_type Ast.xt option) list * module_expr Ast.xt
-(** [functor_ cmts for_functor_kw m] returns the list of module types applied
-    to the functor of module [m]. [for_functor_kw] indicates if the keyword
-    [functor] is used. *)
+(** [functor_ cmts for_functor_kw m] returns the list of module types
+    applied to the functor of module [m]. [for_functor_kw] indicates if the
+    keyword [functor] is used. *)
 
 val mod_with :
      module_type Ast.xt

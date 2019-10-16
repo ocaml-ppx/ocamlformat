@@ -41,9 +41,9 @@ let string_between t (p1 : Lexing.position) (p2 : Lexing.position) =
   then None
   else Some (String.sub t ~pos ~len)
 
-(** Lines between [p1] and [p2]. Lines are represented their (offset, length)
-    in the source. The first and last line (containing [p1] and [p2]) are
-    ignored. *)
+(** Lines between [p1] and [p2]. Lines are represented their (offset,
+    length) in the source. The first and last line (containing [p1] and
+    [p2]) are ignored. *)
 let lines_between t (p1 : Lexing.position) (p2 : Lexing.position) =
   let rec loop acc off lnum =
     if lnum >= p2.pos_lnum then acc (* ignore last line *)

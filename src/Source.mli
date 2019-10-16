@@ -20,7 +20,8 @@ val empty_line_between : t -> Lexing.position -> Lexing.position -> bool
     [p1] and [p2]. The lines containing [p1] and [p2] are not considered
     empty. *)
 
-val string_between : t -> Lexing.position -> Lexing.position -> string option
+val string_between :
+  t -> Lexing.position -> Lexing.position -> string option
 
 val has_cmt_same_line_after : t -> Location.t -> bool
 
@@ -52,8 +53,8 @@ val tokens_between :
     property. [from] must start before [upto]. *)
 
 val is_long_pexp_open : t -> Parsetree.expression -> bool
-(** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open] expression
-    that is expressed in long ('let open') form in source. *)
+(** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open]
+    expression that is expressed in long ('let open') form in source. *)
 
 val is_long_pmod_functor : t -> Parsetree.module_expr -> bool
 (** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a

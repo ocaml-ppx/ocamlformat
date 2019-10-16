@@ -65,7 +65,8 @@ val list_pn : 'a list -> (?prev:'a -> 'a -> ?next:'a -> t) -> t
     the previous and next elements, if any. *)
 
 val list_k : 'a list -> t -> ('a -> t) -> t
-(** Format a list using the format thunk for the separators between elements. *)
+(** Format a list using the format thunk for the separators between
+    elements. *)
 
 (** Conditional formatting ----------------------------------------------*)
 
@@ -111,7 +112,8 @@ val fits_breaks :
 (** [fits_breaks fits nspaces offset breaks] prints [fits] if the enclosing
     box fits on one line, and otherwise prints [breaks], which is a string
     that optionally follows a break [hint] (that is a pair
-    [(nspaces, offset)] equivalent to the break hint ["@;<nspaces offset>"]). *)
+    [(nspaces, offset)] equivalent to the break hint
+    ["@;<nspaces offset>"]). *)
 
 val fits_breaks_if :
      ?force_fit_if:bool
@@ -140,8 +142,8 @@ val wrap_if_k : bool -> t -> t -> t -> t
 (** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)
 
 val wrap_if_fits_and : bool -> string -> string -> t -> t
-(** As [wrap_if_fits], but prologue and epilogue are formatted subject to the
-    additional condition. *)
+(** As [wrap_if_fits], but prologue and epilogue are formatted subject to
+    the additional condition. *)
 
 val wrap_if_fits_or : bool -> string -> string -> t -> t
 (** As [wrap_if_fits], but prologue and epilogue can be forced by the
@@ -154,8 +156,8 @@ val wrap_fits_breaks : ?space:bool -> Conf.t -> string -> string -> t -> t
 
 val wrap_fits_breaks_if :
   ?space:bool -> Conf.t -> bool -> string -> string -> t -> t
-(** As [wrap_fits_breaks], but prologue and epilogue are formatted subject to
-    the additional condition. *)
+(** As [wrap_fits_breaks], but prologue and epilogue are formatted subject
+    to the additional condition. *)
 
 (** Boxes ---------------------------------------------------------------*)
 
@@ -194,7 +196,8 @@ val cbox_if : bool -> int -> t -> t
     indentation. *)
 
 val vbox_if : bool -> int -> t -> t
-(** Conditionally wrap a format thunk with a vbox with specified indentation. *)
+(** Conditionally wrap a format thunk with a vbox with specified
+    indentation. *)
 
 val hvbox_if : bool -> int -> t -> t
 (** Conditionally wrap a format thunk with an hvbox with specified

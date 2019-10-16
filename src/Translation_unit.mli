@@ -47,8 +47,8 @@ val format :
   -> (string, error) Result.t
 (** [format xunit conf ?output_file ~input_name ~source ~parsed ()] format
     [parsed], using [input_name] for error messages, and referring to
-    [source] to improve comment placement. It returns the formatted string or
-    an error that prevented formatting. *)
+    [source] to improve comment placement. It returns the formatted string
+    or an error that prevented formatting. *)
 
 val parse_and_format :
      'a t
@@ -58,5 +58,5 @@ val parse_and_format :
   -> source:string
   -> unit
   -> (string, error) Result.t
-(** [parse_and_format xunit conf ?output_file ~input_name ~source ()] Similar
-    to [format] but parses the source according to [xunit]. *)
+(** [parse_and_format xunit conf ?output_file ~input_name ~source ()]
+    Similar to [format] but parses the source according to [xunit]. *)
