@@ -90,21 +90,8 @@ let dump_formatted ~input_name ?output_file ~suffix fmted =
     Some file
   else None
 
-let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
-    ?(quiet_doc_comments = false) ?(fmt = Format.err_formatter) conf
-    ~input_name error =
+let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
   let exe = Filename.basename Sys.argv.(0) in
-  let quiet_exn exn =
-    match exn with
-    | Internal_error ((`Comment | `Comment_dropped _), _) -> quiet_comments
-    | Warning50 _ -> quiet_doc_comments
-    | Internal_error ((`Doc_comment _ | `Warning50 _), _) ->
-        quiet_doc_comments
-    | Internal_error (`Ast_changed, _) -> false
-    | Internal_error (`Cannot_parse _, _) -> false
-    | Internal_error (_, _) -> .
-    | _ -> false
-  in
   match error with
   | Invalid_source _ when conf.Conf.quiet -> ()
   | Invalid_source {exn} -> (
@@ -125,7 +112,6 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
       | Warning50 l ->
           List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
       | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
-  | Unstable _ when quiet_unstable -> ()
   | Unstable {iteration; prev; next} ->
       if Conf.debug then (
         let ext = Filename.extension input_name in
@@ -159,7 +145,6 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
             "  BUG: formatting did not stabilize after %i iterations.\n%!"
             iteration )
   | User_error msg -> Format.fprintf fmt "%s: %s.\n%!" exe msg
-  | Ocamlformat_bug {exn} when quiet_exn exn -> ()
   | Ocamlformat_bug {exn} -> (
       Format.fprintf fmt
         "%s: Cannot process %S.\n\

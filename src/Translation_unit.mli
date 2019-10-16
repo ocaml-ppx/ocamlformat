@@ -56,15 +56,6 @@ val parse_and_format :
     to [format] but parses the source according to [xunit]. *)
 
 val print_error :
-     ?quiet_unstable:bool
-  -> ?quiet_comments:bool
-  -> ?quiet_doc_comments:bool
-  -> ?fmt:Format.formatter
-  -> Conf.t
-  -> input_name:string
-  -> error
-  -> unit
+  ?fmt:Format.formatter -> Conf.t -> input_name:string -> error -> unit
 (** [print_error conf ?fmt ~input_name e] prints the error message
-    corresponding to error [e] on the [fmt] formatter (stderr by default).
-    [quiet_unstable], [quiet_comments] and [quiet_doc_comments] are false by
-    default. *)
+    corresponding to error [e] on the [fmt] formatter (stderr by default). *)
