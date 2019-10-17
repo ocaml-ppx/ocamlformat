@@ -66,11 +66,8 @@ match Conf.action with
       | File input_file -> In_channel.with_file input_file ~f:parse
     in
     let source = try_read_original_source t.origin_filename in
-    let result =
-      format xunit conf ?output_file ~input_name ~source
-        ~parsed:t.ast_and_comment
-    in
-    match result with
+    let parsed = t.ast_and_comment in
+    match format xunit conf ?output_file ~input_name ~source ~parsed with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
