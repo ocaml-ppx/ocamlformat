@@ -48,7 +48,7 @@ run_in_worktree ()
   git worktree add --detach "$tmp" "$1"
   shift
   make -C "$tmp"
-  local exe=`ls "$tmp"/_build/{default,dev}/src/ocamlformat.exe 2>/dev/null | head -n1`
+  local exe=`ls "$tmp"/_build/{default,dev}/bin/ocamlformat.exe 2>/dev/null | head -n1`
   make -C test-extra "OCAMLFORMAT_EXE=$exe" "$@"
   git worktree remove --force "$tmp"
 }

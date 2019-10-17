@@ -11,6 +11,8 @@
 
 (** OCamlFormat to convert Reason code to OCaml *)
 
+open Ocamlformat_lib
+
 (** Operations on binary serialized Reason implementations. *)
 let impl : _ Translation_unit.t =
   { init_cmts= Cmts.init_impl

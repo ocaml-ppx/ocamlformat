@@ -28,7 +28,7 @@ fi
 tmp=`mktemp -d`
 git worktree add --detach "$tmp" "$branch"
 
-sed -i 's/;;INSERT_BISECT_HERE;;/(preprocess (pps bisect_ppx))/' "$tmp/src/dune"
+sed -i 's/;;INSERT_BISECT_HERE;;/(preprocess (pps bisect_ppx))/' "$tmp/bin/dune" "$tmp/src/dune"
 
 # Run the tests
 make -C "$tmp" test

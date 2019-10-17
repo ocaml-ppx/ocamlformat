@@ -15,26 +15,8 @@
 
 (ocamllex Literal_lexer)
 
-(executables
- (names ocamlformat ocamlformat_reason)
+(library
+ (name ocamlformat_lib)
  (flags (:standard -open Import))
  ;;INSERT_BISECT_HERE;;
  (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser re uuseg uuseg.string))
-
-(rule
- (with-stdout-to ocamlformat.1 (run ./ocamlformat.exe --help=groff)))
-
-(install
- (section bin)
- (files (ocamlformat.exe as ocamlformat))
- (package ocamlformat))
-
-(install
- (section bin)
- (files (ocamlformat_reason.exe as ocamlformat_reason))
- (package ocamlformat_reason))
-
-(install
- (section man)
- (files ocamlformat.1)
- (package ocamlformat))
