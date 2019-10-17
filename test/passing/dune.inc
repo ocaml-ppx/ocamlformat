@@ -4,7 +4,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:align_cases-break_all.ml.opts} %{dep:align_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:align_cases-break_all.ml.opts} %{dep:align_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -15,7 +15,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:align_cases.ml.opts} %{dep:align_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:align_cases.ml.opts} %{dep:align_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -26,7 +26,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:align_infix.ml.opts} %{dep:align_infix.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:align_infix.ml.opts} %{dep:align_infix.ml}"))))
 
 (alias
  (name runtest)
@@ -37,7 +37,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:apply.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:apply.ml}"))))
 
 (alias
  (name runtest)
@@ -48,7 +48,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:array.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:array.ml}"))))
 
 (alias
  (name runtest)
@@ -59,7 +59,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:assign_colon-op_begin_line.ml.opts} %{dep:assign_colon.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:assign_colon-op_begin_line.ml.opts} %{dep:assign_colon.ml}"))))
 
 (alias
  (name runtest)
@@ -70,7 +70,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:assign_colon.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:assign_colon.ml}"))))
 
 (alias
  (name runtest)
@@ -81,7 +81,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:attribute_and_expression.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:attribute_and_expression.ml}"))))
 
 (alias
  (name runtest)
@@ -92,7 +92,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:attributes.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:attributes.ml}"))))
 
 (alias
  (name runtest)
@@ -103,7 +103,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:attributes.mli} || true"))))
+     (system "%{bin:ocamlformat} %{dep:attributes.mli}"))))
 
 (alias
  (name runtest)
@@ -114,7 +114,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_before_in-auto.ml.opts} %{dep:break_before_in.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_before_in-auto.ml.opts} %{dep:break_before_in.ml}"))))
 
 (alias
  (name runtest)
@@ -125,7 +125,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_before_in.ml.opts} %{dep:break_before_in.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_before_in.ml.opts} %{dep:break_before_in.ml}"))))
 
 (alias
  (name runtest)
@@ -136,7 +136,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-align.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-align.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -147,7 +147,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-all.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-all.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -158,7 +158,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-closing_on_separate_line.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-closing_on_separate_line.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -169,7 +169,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-closing_on_separate_line_leading_nested_match_parens.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-closing_on_separate_line_leading_nested_match_parens.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -180,7 +180,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-cosl_lnmp_cmei.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-cosl_lnmp_cmei.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -191,7 +191,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-fit_or_vertical.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-fit_or_vertical.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -202,7 +202,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-nested.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-nested.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -213,7 +213,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-normal_indent.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-normal_indent.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -224,7 +224,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases-toplevel.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases-toplevel.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -235,7 +235,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_cases.ml.opts} %{dep:break_cases.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_cases.ml.opts} %{dep:break_cases.ml}"))))
 
 (alias
  (name runtest)
@@ -246,7 +246,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_fun_decl-fit_or_vertical.ml.opts} %{dep:break_fun_decl.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_fun_decl-fit_or_vertical.ml.opts} %{dep:break_fun_decl.ml}"))))
 
 (alias
  (name runtest)
@@ -257,7 +257,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_fun_decl-smart.ml.opts} %{dep:break_fun_decl.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_fun_decl-smart.ml.opts} %{dep:break_fun_decl.ml}"))))
 
 (alias
  (name runtest)
@@ -268,7 +268,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_fun_decl-wrap.ml.opts} %{dep:break_fun_decl.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_fun_decl-wrap.ml.opts} %{dep:break_fun_decl.ml}"))))
 
 (alias
  (name runtest)
@@ -279,7 +279,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:break_fun_decl.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:break_fun_decl.ml}"))))
 
 (alias
  (name runtest)
@@ -290,7 +290,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_record.ml.opts} %{dep:break_record.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_record.ml.opts} %{dep:break_record.ml}"))))
 
 (alias
  (name runtest)
@@ -301,7 +301,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators-after.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators-after.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -312,7 +312,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators-after_docked.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators-after_docked.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -323,7 +323,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators-after_docked_wrap.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators-after_docked_wrap.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -334,7 +334,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators-after_wrap.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators-after_wrap.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -345,7 +345,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators-before_docked.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators-before_docked.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -356,7 +356,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators-before_docked_wrap.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators-before_docked_wrap.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -367,7 +367,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators-wrap.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators-wrap.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -378,7 +378,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_separators.ml.opts} %{dep:break_separators.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_separators.ml.opts} %{dep:break_separators.ml}"))))
 
 (alias
  (name runtest)
@@ -389,7 +389,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:break_sequence_before.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:break_sequence_before.ml}"))))
 
 (alias
  (name runtest)
@@ -400,7 +400,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_string_literals-never.ml.opts} %{dep:break_string_literals.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_string_literals-never.ml.opts} %{dep:break_string_literals.ml}"))))
 
 (alias
  (name runtest)
@@ -411,7 +411,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:break_string_literals.ml.opts} %{dep:break_string_literals.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:break_string_literals.ml.opts} %{dep:break_string_literals.ml}"))))
 
 (alias
  (name runtest)
@@ -422,7 +422,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:break_struct.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:break_struct.ml}"))))
 
 (alias
  (name runtest)
@@ -433,7 +433,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:cinaps.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:cinaps.ml}"))))
 
 (alias
  (name runtest)
@@ -444,7 +444,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:cmdline_override.ml.opts} %{dep:cmdline_override.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:cmdline_override.ml.opts} %{dep:cmdline_override.ml}"))))
 
 (alias
  (name runtest)
@@ -455,7 +455,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:cmdline_override2.ml.opts} %{dep:cmdline_override2.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:cmdline_override2.ml.opts} %{dep:cmdline_override2.ml}"))))
 
 (alias
  (name runtest)
@@ -466,7 +466,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comment_breaking.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comment_breaking.ml}"))))
 
 (alias
  (name runtest)
@@ -477,7 +477,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comment_header.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comment_header.ml}"))))
 
 (alias
  (name runtest)
@@ -488,7 +488,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comment_in_empty.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comment_in_empty.ml}"))))
 
 (alias
  (name runtest)
@@ -499,7 +499,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comment_in_modules.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comment_in_modules.ml}"))))
 
 (alias
  (name runtest)
@@ -510,7 +510,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comment_last.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comment_last.ml}"))))
 
 (alias
  (name runtest)
@@ -521,7 +521,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comment_sparse.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comment_sparse.ml}"))))
 
 (alias
  (name runtest)
@@ -532,7 +532,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:comments.ml.opts} %{dep:comments.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:comments.ml.opts} %{dep:comments.ml}"))))
 
 (alias
  (name runtest)
@@ -543,7 +543,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:comments_args.ml.opts} %{dep:comments_args.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:comments_args.ml.opts} %{dep:comments_args.ml}"))))
 
 (alias
  (name runtest)
@@ -554,7 +554,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comments_around_disabled.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comments_around_disabled.ml}"))))
 
 (alias
  (name runtest)
@@ -565,7 +565,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:comments_in_record.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:comments_in_record.ml}"))))
 
 (alias
  (name runtest)
@@ -576,7 +576,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:compact_lists_arrays.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:compact_lists_arrays.ml}"))))
 
 (alias
  (name runtest)
@@ -587,7 +587,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:custom_list.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:custom_list.ml}"))))
 
 (alias
  (name runtest)
@@ -598,7 +598,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:directives.mlt} || true"))))
+     (system "%{bin:ocamlformat} %{dep:directives.mlt}"))))
 
 (alias
  (name runtest)
@@ -609,7 +609,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:disabled.ml.opts} %{dep:disabled.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:disabled.ml.opts} %{dep:disabled.ml}"))))
 
 (alias
  (name runtest)
@@ -620,7 +620,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:disambiguate.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:disambiguate.ml}"))))
 
 (alias
  (name runtest)
@@ -631,7 +631,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:doc_comments-after.ml.opts} %{dep:doc_comments.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:doc_comments-after.ml.opts} %{dep:doc_comments.ml}"))))
 
 (alias
  (name runtest)
@@ -642,7 +642,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:doc_comments-before.ml.opts} %{dep:doc_comments.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:doc_comments-before.ml.opts} %{dep:doc_comments.ml}"))))
 
 (alias
  (name runtest)
@@ -653,7 +653,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:doc_comments.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:doc_comments.ml}"))))
 
 (alias
  (name runtest)
@@ -664,7 +664,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:doc_comments.mli} || true"))))
+     (system "%{bin:ocamlformat} %{dep:doc_comments.mli}"))))
 
 (alias
  (name runtest)
@@ -675,7 +675,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:doc_comments_padding.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:doc_comments_padding.ml}"))))
 
 (alias
  (name runtest)
@@ -686,7 +686,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:empty.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:empty.ml}"))))
 
 (alias
  (name runtest)
@@ -697,7 +697,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:empty_ml.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:empty_ml.ml}"))))
 
 (alias
  (name runtest)
@@ -708,7 +708,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:empty_mli.mli} || true"))))
+     (system "%{bin:ocamlformat} %{dep:empty_mli.mli}"))))
 
 (alias
  (name runtest)
@@ -719,7 +719,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:empty_mlt.mlt} || true"))))
+     (system "%{bin:ocamlformat} %{dep:empty_mlt.mlt}"))))
 
 (alias
  (name runtest)
@@ -730,7 +730,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:error1.ml} || true"))))
+     (system "! %{bin:ocamlformat} %{dep:error1.ml}"))))
 
 (alias
  (name runtest)
@@ -741,7 +741,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:error2.ml} || true"))))
+     (system "! %{bin:ocamlformat} %{dep:error2.ml}"))))
 
 (alias
  (name runtest)
@@ -752,7 +752,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:error3.ml} || true"))))
+     (system "! %{bin:ocamlformat} %{dep:error3.ml}"))))
 
 (alias
  (name runtest)
@@ -763,7 +763,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:error4.ml.opts} %{dep:error4.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:error4.ml.opts} %{dep:error4.ml}"))))
 
 (alias
  (name runtest)
@@ -774,7 +774,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:exceptions.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:exceptions.ml}"))))
 
 (alias
  (name runtest)
@@ -785,7 +785,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:exp_grouping-parens.ml.opts} %{dep:exp_grouping.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:exp_grouping-parens.ml.opts} %{dep:exp_grouping.ml}"))))
 
 (alias
  (name runtest)
@@ -796,7 +796,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:exp_grouping.ml.opts} %{dep:exp_grouping.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:exp_grouping.ml.opts} %{dep:exp_grouping.ml}"))))
 
 (alias
  (name runtest)
@@ -807,7 +807,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:exp_record.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:exp_record.ml}"))))
 
 (alias
  (name runtest)
@@ -818,7 +818,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:expect_test.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:expect_test.ml}"))))
 
 (alias
  (name runtest)
@@ -829,7 +829,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:extensions-indent.ml.opts} %{dep:extensions.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:extensions-indent.ml.opts} %{dep:extensions.ml}"))))
 
 (alias
  (name runtest)
@@ -840,7 +840,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:extensions-indent.mli.opts} %{dep:extensions.mli} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:extensions-indent.mli.opts} %{dep:extensions.mli}"))))
 
 (alias
  (name runtest)
@@ -851,7 +851,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:extensions-sugar_always.ml.opts} %{dep:extensions.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:extensions-sugar_always.ml.opts} %{dep:extensions.ml}"))))
 
 (alias
  (name runtest)
@@ -862,7 +862,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:extensions.ml.opts} %{dep:extensions.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:extensions.ml.opts} %{dep:extensions.ml}"))))
 
 (alias
  (name runtest)
@@ -873,7 +873,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:extensions.mli} || true"))))
+     (system "%{bin:ocamlformat} %{dep:extensions.mli}"))))
 
 (alias
  (name runtest)
@@ -884,7 +884,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:field-op_begin_line.ml.opts} %{dep:field.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:field-op_begin_line.ml.opts} %{dep:field.ml}"))))
 
 (alias
  (name runtest)
@@ -895,7 +895,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:field.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:field.ml}"))))
 
 (alias
  (name runtest)
@@ -906,7 +906,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:first_class_module.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:first_class_module.ml}"))))
 
 (alias
  (name runtest)
@@ -917,7 +917,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:floating_doc.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:floating_doc.ml}"))))
 
 (alias
  (name runtest)
@@ -928,7 +928,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:for_while.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:for_while.ml}"))))
 
 (alias
  (name runtest)
@@ -939,7 +939,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:fun_decl.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:fun_decl.ml}"))))
 
 (alias
  (name runtest)
@@ -950,7 +950,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:function_indent-never.ml.opts} %{dep:function_indent.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:function_indent-never.ml.opts} %{dep:function_indent.ml}"))))
 
 (alias
  (name runtest)
@@ -961,7 +961,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:function_indent.ml.opts} %{dep:function_indent.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:function_indent.ml.opts} %{dep:function_indent.ml}"))))
 
 (alias
  (name runtest)
@@ -972,7 +972,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:functor.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:functor.ml}"))))
 
 (alias
  (name runtest)
@@ -983,7 +983,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:funsig.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:funsig.ml}"))))
 
 (alias
  (name runtest)
@@ -994,7 +994,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:gadt.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:gadt.ml}"))))
 
 (alias
  (name runtest)
@@ -1005,7 +1005,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:generative.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:generative.ml}"))))
 
 (alias
  (name runtest)
@@ -1016,7 +1016,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:index_op.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:index_op.ml}"))))
 
 (alias
  (name runtest)
@@ -1027,7 +1027,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:infix_arg_grouping.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:infix_arg_grouping.ml}"))))
 
 (alias
  (name runtest)
@@ -1038,7 +1038,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:infix_bind.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:infix_bind.ml}"))))
 
 (alias
  (name runtest)
@@ -1049,7 +1049,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:infix_precedence.ml.opts} %{dep:infix_precedence.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:infix_precedence.ml.opts} %{dep:infix_precedence.ml}"))))
 
 (alias
  (name runtest)
@@ -1060,7 +1060,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:invalid.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:invalid.ml}"))))
 
 (alias
  (name runtest)
@@ -1071,7 +1071,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue114.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue114.ml}"))))
 
 (alias
  (name runtest)
@@ -1082,7 +1082,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue289.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue289.ml}"))))
 
 (alias
  (name runtest)
@@ -1093,7 +1093,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue48.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue48.ml}"))))
 
 (alias
  (name runtest)
@@ -1104,7 +1104,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue51.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue51.ml}"))))
 
 (alias
  (name runtest)
@@ -1115,7 +1115,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue57.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue57.ml}"))))
 
 (alias
  (name runtest)
@@ -1126,7 +1126,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue60.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue60.ml}"))))
 
 (alias
  (name runtest)
@@ -1137,7 +1137,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue77.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue77.ml}"))))
 
 (alias
  (name runtest)
@@ -1148,7 +1148,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue85.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue85.ml}"))))
 
 (alias
  (name runtest)
@@ -1159,7 +1159,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:issue89.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:issue89.ml}"))))
 
 (alias
  (name runtest)
@@ -1170,7 +1170,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-compact.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-compact.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1181,7 +1181,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-compact_closing.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-compact_closing.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1192,7 +1192,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-fit_or_vertical.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-fit_or_vertical.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1203,7 +1203,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-fit_or_vertical_closing.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-fit_or_vertical_closing.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1214,7 +1214,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-fit_or_vertical_no_indicate.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-fit_or_vertical_no_indicate.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1225,7 +1225,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-kr.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-kr.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1236,7 +1236,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-kr_closing.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-kr_closing.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1247,7 +1247,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-kw_first.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-kw_first.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1258,7 +1258,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-kw_first_closing.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-kw_first_closing.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1269,7 +1269,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-kw_first_no_indicate.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-kw_first_no_indicate.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1280,7 +1280,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite-no_indicate.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite-no_indicate.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1291,7 +1291,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ite.ml.opts} %{dep:ite.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ite.ml.opts} %{dep:ite.ml}"))))
 
 (alias
  (name runtest)
@@ -1302,7 +1302,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:js_sig.mli.opts} %{dep:js_sig.mli} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:js_sig.mli.opts} %{dep:js_sig.mli}"))))
 
 (alias
  (name runtest)
@@ -1313,7 +1313,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:js_source.ml.opts} %{dep:js_source.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:js_source.ml.opts} %{dep:js_source.ml}"))))
 
 (alias
  (name runtest)
@@ -1324,7 +1324,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:kw_extentions.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:kw_extentions.ml}"))))
 
 (alias
  (name runtest)
@@ -1335,7 +1335,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:label_option_default_args.ml.opts} %{dep:label_option_default_args.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:label_option_default_args.ml.opts} %{dep:label_option_default_args.ml}"))))
 
 (alias
  (name runtest)
@@ -1346,7 +1346,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:lazy.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:lazy.ml}"))))
 
 (alias
  (name runtest)
@@ -1357,7 +1357,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:let_binding-in_indent.ml.opts} %{dep:let_binding.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:let_binding-in_indent.ml.opts} %{dep:let_binding.ml}"))))
 
 (alias
  (name runtest)
@@ -1368,7 +1368,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:let_binding-indent.ml.opts} %{dep:let_binding.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:let_binding-indent.ml.opts} %{dep:let_binding.ml}"))))
 
 (alias
  (name runtest)
@@ -1379,7 +1379,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:let_binding.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:let_binding.ml}"))))
 
 (alias
  (name runtest)
@@ -1390,7 +1390,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:let_in_constr.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:let_in_constr.ml}"))))
 
 (alias
  (name runtest)
@@ -1401,7 +1401,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:let_module-sparse.ml.opts} %{dep:let_module.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:let_module-sparse.ml.opts} %{dep:let_module.ml}"))))
 
 (alias
  (name runtest)
@@ -1412,7 +1412,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:let_module.ml.opts} %{dep:let_module.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:let_module.ml.opts} %{dep:let_module.ml}"))))
 
 (alias
  (name runtest)
@@ -1423,7 +1423,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:list-space_around.ml.opts} %{dep:list.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:list-space_around.ml.opts} %{dep:list.ml}"))))
 
 (alias
  (name runtest)
@@ -1434,7 +1434,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:list.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:list.ml}"))))
 
 (alias
  (name runtest)
@@ -1445,7 +1445,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:loc_stack.ml.opts} %{dep:loc_stack.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:loc_stack.ml.opts} %{dep:loc_stack.ml}"))))
 
 (alias
  (name runtest)
@@ -1456,7 +1456,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:locally_abtract_types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:locally_abtract_types.ml}"))))
 
 (alias
  (name runtest)
@@ -1467,7 +1467,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:margin_80.ml.opts} %{dep:margin_80.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:margin_80.ml.opts} %{dep:margin_80.ml}"))))
 
 (alias
  (name runtest)
@@ -1478,7 +1478,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:match.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:match.ml}"))))
 
 (alias
  (name runtest)
@@ -1489,7 +1489,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:match2.ml.opts} %{dep:match2.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:match2.ml.opts} %{dep:match2.ml}"))))
 
 (alias
  (name runtest)
@@ -1500,7 +1500,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:match_indent-never.ml.opts} %{dep:match_indent.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:match_indent-never.ml.opts} %{dep:match_indent.ml}"))))
 
 (alias
  (name runtest)
@@ -1511,7 +1511,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:match_indent.ml.opts} %{dep:match_indent.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:match_indent.ml.opts} %{dep:match_indent.ml}"))))
 
 (alias
  (name runtest)
@@ -1522,7 +1522,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:max_indent.ml.opts} %{dep:max_indent.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:max_indent.ml.opts} %{dep:max_indent.ml}"))))
 
 (alias
  (name runtest)
@@ -1533,7 +1533,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:module.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:module.ml}"))))
 
 (alias
  (name runtest)
@@ -1544,7 +1544,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:module_attributes.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:module_attributes.ml}"))))
 
 (alias
  (name runtest)
@@ -1555,7 +1555,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing-preserve.ml.opts} %{dep:module_item_spacing.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing-preserve.ml.opts} %{dep:module_item_spacing.ml}"))))
 
 (alias
  (name runtest)
@@ -1566,7 +1566,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing-sparse.ml.opts} %{dep:module_item_spacing.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing-sparse.ml.opts} %{dep:module_item_spacing.ml}"))))
 
 (alias
  (name runtest)
@@ -1577,7 +1577,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing.ml.opts} %{dep:module_item_spacing.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing.ml.opts} %{dep:module_item_spacing.ml}"))))
 
 (alias
  (name runtest)
@@ -1588,7 +1588,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing.mli.opts} %{dep:module_item_spacing.mli} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:module_item_spacing.mli.opts} %{dep:module_item_spacing.mli}"))))
 
 (alias
  (name runtest)
@@ -1599,7 +1599,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:module_type.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:module_type.ml}"))))
 
 (alias
  (name runtest)
@@ -1610,7 +1610,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:monadic_binding.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:monadic_binding.ml}"))))
 
 (alias
  (name runtest)
@@ -1621,7 +1621,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:need_format.ml.opts} %{dep:need_format.ml} || true"))))
+     (system "! %{bin:ocamlformat} %{read-lines:need_format.ml.opts} %{dep:need_format.ml}"))))
 
 (alias
  (name runtest)
@@ -1632,7 +1632,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:new.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:new.ml}"))))
 
 (alias
  (name runtest)
@@ -1643,7 +1643,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:object.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:object.ml}"))))
 
 (alias
  (name runtest)
@@ -1654,7 +1654,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:object_type.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:object_type.ml}"))))
 
 (alias
  (name runtest)
@@ -1665,7 +1665,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:ocp_indent_compat.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:ocp_indent_compat.ml}"))))
 
 (alias
  (name runtest)
@@ -1676,7 +1676,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:ocp_indent_options.ml.opts} %{dep:ocp_indent_options.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:ocp_indent_options.ml.opts} %{dep:ocp_indent_options.ml}"))))
 
 (alias
  (name runtest)
@@ -1687,7 +1687,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:open-auto.ml.opts} %{dep:open.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:open-auto.ml.opts} %{dep:open.ml}"))))
 
 (alias
  (name runtest)
@@ -1698,7 +1698,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:open-long.ml.opts} %{dep:open.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:open-long.ml.opts} %{dep:open.ml}"))))
 
 (alias
  (name runtest)
@@ -1709,7 +1709,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:open-preserve.ml.opts} %{dep:open.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:open-preserve.ml.opts} %{dep:open.ml}"))))
 
 (alias
  (name runtest)
@@ -1720,7 +1720,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:open-short.ml.opts} %{dep:open.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:open-short.ml.opts} %{dep:open.ml}"))))
 
 (alias
  (name runtest)
@@ -1731,7 +1731,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:open.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:open.ml}"))))
 
 (alias
  (name runtest)
@@ -1742,7 +1742,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:open_types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:open_types.ml}"))))
 
 (alias
  (name runtest)
@@ -1753,7 +1753,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:option.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:option.ml}"))))
 
 (alias
  (name runtest)
@@ -1764,7 +1764,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:parens_tuple_patterns.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:parens_tuple_patterns.ml}"))))
 
 (alias
  (name runtest)
@@ -1775,7 +1775,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:precedence.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:precedence.ml}"))))
 
 (alias
  (name runtest)
@@ -1786,7 +1786,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:prefix_infix.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:prefix_infix.ml}"))))
 
 (alias
  (name runtest)
@@ -1797,7 +1797,7 @@
  (deps .ocamlformat dir1/dir2/.ocamlformat dir1/dir2/print_config.ml)
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:print_config.ml.opts} %{dep:print_config.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:print_config.ml.opts} %{dep:print_config.ml}"))))
 
 (alias
  (name runtest)
@@ -1808,7 +1808,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:profiles.ml.opts} %{dep:profiles.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:profiles.ml.opts} %{dep:profiles.ml}"))))
 
 (alias
  (name runtest)
@@ -1819,7 +1819,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:profiles2.ml.opts} %{dep:profiles2.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:profiles2.ml.opts} %{dep:profiles2.ml}"))))
 
 (alias
  (name runtest)
@@ -1830,7 +1830,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:recmod.mli} || true"))))
+     (system "%{bin:ocamlformat} %{dep:recmod.mli}"))))
 
 (alias
  (name runtest)
@@ -1841,7 +1841,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:record-loose.ml.opts} %{dep:record.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:record-loose.ml.opts} %{dep:record.ml}"))))
 
 (alias
  (name runtest)
@@ -1852,7 +1852,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:record-tight_decl.ml.opts} %{dep:record.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:record-tight_decl.ml.opts} %{dep:record.ml}"))))
 
 (alias
  (name runtest)
@@ -1863,7 +1863,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:record.ml.opts} %{dep:record.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:record.ml.opts} %{dep:record.ml}"))))
 
 (alias
  (name runtest)
@@ -1874,7 +1874,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:record_punning.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:record_punning.ml}"))))
 
 (alias
  (name runtest)
@@ -1885,7 +1885,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:reformat_string.ml.opts} %{dep:reformat_string.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:reformat_string.ml.opts} %{dep:reformat_string.ml}"))))
 
 (alias
  (name runtest)
@@ -1896,7 +1896,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:refs.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:refs.ml}"))))
 
 (alias
  (name runtest)
@@ -1907,7 +1907,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:remove_extra_parens.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:remove_extra_parens.ml}"))))
 
 (alias
  (name runtest)
@@ -1918,7 +1918,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:revapply_ext.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:revapply_ext.ml}"))))
 
 (alias
  (name runtest)
@@ -1929,7 +1929,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:send.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:send.ml}"))))
 
 (alias
  (name runtest)
@@ -1940,7 +1940,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:sequence-preserve.ml.opts} %{dep:sequence.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:sequence-preserve.ml.opts} %{dep:sequence.ml}"))))
 
 (alias
  (name runtest)
@@ -1951,7 +1951,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:sequence.ml.opts} %{dep:sequence.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:sequence.ml.opts} %{dep:sequence.ml}"))))
 
 (alias
  (name runtest)
@@ -1962,7 +1962,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:shebang.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:shebang.ml}"))))
 
 (alias
  (name runtest)
@@ -1973,7 +1973,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:shortcut_ext_attr.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:shortcut_ext_attr.ml}"))))
 
 (alias
  (name runtest)
@@ -1984,7 +1984,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:skip.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:skip.ml}"))))
 
 (alias
  (name runtest)
@@ -1995,7 +1995,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:source.ml.opts} %{dep:source.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:source.ml.opts} %{dep:source.ml}"))))
 
 (alias
  (name runtest)
@@ -2006,7 +2006,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:str_value.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:str_value.ml}"))))
 
 (alias
  (name runtest)
@@ -2017,7 +2017,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:string.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:string.ml}"))))
 
 (alias
  (name runtest)
@@ -2028,7 +2028,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:string_array.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:string_array.ml}"))))
 
 (alias
  (name runtest)
@@ -2039,7 +2039,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:string_wrapping.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:string_wrapping.ml}"))))
 
 (alias
  (name runtest)
@@ -2050,7 +2050,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:tag_only.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:tag_only.ml}"))))
 
 (alias
  (name runtest)
@@ -2061,7 +2061,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:tag_only.mli} || true"))))
+     (system "%{bin:ocamlformat} %{dep:tag_only.mli}"))))
 
 (alias
  (name runtest)
@@ -2072,7 +2072,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:try_with_or_pattern.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:try_with_or_pattern.ml}"))))
 
 (alias
  (name runtest)
@@ -2083,7 +2083,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:tuple.ml.opts} %{dep:tuple.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:tuple.ml.opts} %{dep:tuple.ml}"))))
 
 (alias
  (name runtest)
@@ -2094,7 +2094,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:tuple_less_parens.ml.opts} %{dep:tuple_less_parens.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:tuple_less_parens.ml.opts} %{dep:tuple_less_parens.ml}"))))
 
 (alias
  (name runtest)
@@ -2105,7 +2105,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:tuple_type_parens.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:tuple_type_parens.ml}"))))
 
 (alias
  (name runtest)
@@ -2116,7 +2116,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:type_and_constraint.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:type_and_constraint.ml}"))))
 
 (alias
  (name runtest)
@@ -2127,7 +2127,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:type_annotations.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:type_annotations.ml}"))))
 
 (alias
  (name runtest)
@@ -2138,7 +2138,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:types-compact-space_around-docked.ml.opts} %{dep:types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:types-compact-space_around-docked.ml.opts} %{dep:types.ml}"))))
 
 (alias
  (name runtest)
@@ -2149,7 +2149,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:types-compact-space_around.ml.opts} %{dep:types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:types-compact-space_around.ml.opts} %{dep:types.ml}"))))
 
 (alias
  (name runtest)
@@ -2160,7 +2160,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:types-compact.ml.opts} %{dep:types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:types-compact.ml.opts} %{dep:types.ml}"))))
 
 (alias
  (name runtest)
@@ -2171,7 +2171,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:types-indent.ml.opts} %{dep:types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:types-indent.ml.opts} %{dep:types.ml}"))))
 
 (alias
  (name runtest)
@@ -2182,7 +2182,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:types-sparse-space_around.ml.opts} %{dep:types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:types-sparse-space_around.ml.opts} %{dep:types.ml}"))))
 
 (alias
  (name runtest)
@@ -2193,7 +2193,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:types-sparse.ml.opts} %{dep:types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:types-sparse.ml.opts} %{dep:types.ml}"))))
 
 (alias
  (name runtest)
@@ -2204,7 +2204,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:types.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:types.ml}"))))
 
 (alias
  (name runtest)
@@ -2215,7 +2215,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:unary.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:unary.ml}"))))
 
 (alias
  (name runtest)
@@ -2226,7 +2226,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:unicode.ml.opts} %{dep:unicode.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:unicode.ml.opts} %{dep:unicode.ml}"))))
 
 (alias
  (name runtest)
@@ -2237,7 +2237,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:use_file.mlt} || true"))))
+     (system "%{bin:ocamlformat} %{dep:use_file.mlt}"))))
 
 (alias
  (name runtest)
@@ -2248,7 +2248,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:verbose1.ml.opts} %{dep:verbose1.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:verbose1.ml.opts} %{dep:verbose1.ml}"))))
 
 (alias
  (name runtest)
@@ -2259,7 +2259,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:verbose2.ml.opts} %{dep:verbose2.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:verbose2.ml.opts} %{dep:verbose2.ml}"))))
 
 (alias
  (name runtest)
@@ -2270,7 +2270,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:wrap_comments.ml.opts} %{dep:wrap_comments.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:wrap_comments.ml.opts} %{dep:wrap_comments.ml}"))))
 
 (alias
  (name runtest)
@@ -2281,7 +2281,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:wrap_comments_break.ml.opts} %{dep:wrap_comments_break.ml} || true"))))
+     (system "%{bin:ocamlformat} %{read-lines:wrap_comments_break.ml.opts} %{dep:wrap_comments_break.ml}"))))
 
 (alias
  (name runtest)
@@ -2292,7 +2292,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:wrapping_functor_args.ml} || true"))))
+     (system "%{bin:ocamlformat} %{dep:wrapping_functor_args.ml}"))))
 
 (alias
  (name runtest)
