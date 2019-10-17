@@ -695,6 +695,17 @@ let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }
 let foooooo fooo fooo fooo =
   { fooo; foooo= fooooo_foooo foo.fooo; foooo= Foooo.foooo fooooo fooo.foo }
 
+let foooooooooooooooooooooooo =
+  Foo_foooooooooooooo_foooooooo
+    { foooooooooooooooooooo= false; foooooo= Fooo.foooooooooooooooooooo }
+
+let foooooooooooooooooooooooo =
+  Foo_foooooooooooooo_foooooooo
+    { foooooooooooooooooooo= false;
+      foooooooooooo;
+      foooooo= Fooo.foooooooooooooooooooo
+    }
+
 [@@@ocamlformat "space-around-lists=true"]
 
 let foooooo fooo fooo fooo = [ fooo; foooo fooooo_foooo foo.fooo ]
@@ -707,6 +718,13 @@ let x =
     (* foooooooooooooooooooooo *)
     (* foooooooooooooooooooooo *)
   ]
+
+let foooooooooooooooooooooooo =
+  Foo_foooooooooooooo_foooooooo
+    [ foooooooooooooooooooofoooooooooo;
+      foooooooooooofooooooooooooo;
+      foooooofoooooooooooooooooooo
+    ]
 
 [@@@ocamlformat "space-around-arrays=true"]
 
