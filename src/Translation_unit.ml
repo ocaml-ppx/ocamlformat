@@ -346,14 +346,12 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
             (* All good, continue *)
             print_check ~i:(i + 1) ~conf t_new ~source:fmted
   in
-  match parsed with
-  | Error exn -> Error (Invalid_source {exn})
-  | Ok t -> (
-    try print_check ~i:1 ~conf t ~source with
-    | Sys_error msg -> Error (User_error msg)
-    | exn -> Error (Ocamlformat_bug {exn}) )
+  try print_check ~i:1 ~conf parsed ~source with
+  | Sys_error msg -> Error (User_error msg)
+  | exn -> Error (Ocamlformat_bug {exn})
 
 let parse_and_format xunit ?output_file ~input_name ~source conf =
   Location.input_name := input_name ;
-  let parsed = try Ok (parse xunit.parse conf ~source) with e -> Error e in
-  format xunit conf ?output_file ~input_name ~source ~parsed
+  match parse xunit.parse conf ~source with
+  | exception exn -> Error (Invalid_source {exn})
+  | parsed -> format xunit conf ?output_file ~input_name ~source ~parsed

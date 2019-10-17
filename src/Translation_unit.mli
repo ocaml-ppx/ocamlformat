@@ -37,7 +37,7 @@ val format :
   -> ?output_file:string
   -> input_name:string
   -> source:string
-  -> parsed:('a with_comments, exn) Result.t
+  -> parsed:'a with_comments
   -> Conf.t
   -> (string, error) Result.t
 (** [format xunit conf ?output_file ~input_name ~source ~parsed] formats
