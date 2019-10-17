@@ -1,6 +1,6 @@
 profile=ocamlformat (file .ocamlformat:1)
 quiet=false (profile ocamlformat (file .ocamlformat:1))
-max-iters=10 (profile ocamlformat (file .ocamlformat:1))
+max-iters=2 (file .ocamlformat:6)
 comment-check=true (profile ocamlformat (file .ocamlformat:1))
 wrap-fun-args=true (profile ocamlformat (file .ocamlformat:1))
 wrap-comments=true (file .ocamlformat:5)
