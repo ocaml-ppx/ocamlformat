@@ -1,85 +1,10 @@
-(* -*- tuareg -*- *)
+(include dune.inc)
 
-type setup =
-  { mutable has_ref: bool
-  ; mutable has_opts: bool
-  ; mutable base_file: string option
-  ; mutable extra_deps: string list }
-
-let read_lines fn =
-  let rec aux acc ic =
-    try aux (input_line ic :: acc) ic with End_of_file -> acc
-  in
-  let ic = open_in fn in
-  let lines = aux [] ic in
-  close_in ic ; lines
-
-let add_test ?base_file tests src_test_name =
-  let s = {has_ref= false; has_opts= false; base_file; extra_deps= []} in
-  Hashtbl.add tests src_test_name s ;
-  s
-
-let register_file tests fname =
-  match String.split_on_char '.' fname with
-  | test_name :: (("ml" | "mli" | "mlt") as ext) :: rest -> (
-      let src_test_name = test_name ^ "." ^ ext in
-      let setup =
-        match Hashtbl.find tests src_test_name with
-        | setup -> setup
-        | exception Not_found -> (
-          (* foo_file-some_variant.ml should derive from foo_file.ml *)
-          match String.index_opt test_name '-' with
-          | None -> add_test tests src_test_name
-          | Some i ->
-              let base_file = String.sub test_name 0 i ^ "." ^ ext in
-              add_test ~base_file tests src_test_name )
-      in
-      match rest with
-      | [] -> ()
-      | ["opts"] -> setup.has_opts <- true
-      | ["ref"] -> setup.has_ref <- true
-      | ["deps"] -> setup.extra_deps <- read_lines fname
-      | _ -> invalid_arg fname )
-  | _ -> ()
-
-(* ignore dune file, .foo.whatever.swp, etc *)
-
-let emit_test buffer test_name setup =
-  let open Printf in
-  let opts =
-    if setup.has_opts then sprintf " %%{read-lines:%s.opts}" test_name
-    else ""
-  in
-  let ref_name = if setup.has_ref then test_name ^ ".ref" else test_name in
-  let base_test_name =
-    match setup.base_file with
-    | Some n -> n
-    | None -> test_name
-  in
-  let extra_deps = String.concat " " setup.extra_deps in
-  Printf.ksprintf
-    (Buffer.add_string buffer)
-    {|
 (rule
- (targets %s.output)
- (deps (:input %s) .ocamlformat %s)
- (action
-   (setenv OCAMLFORMAT "max-iters=2"
-     (with-outputs-to %%{targets}
-       (system "%%{bin:ocamlformat}%s %%{input} || true")))))
+ (targets dune.inc.gen)
+ (deps (source_tree .))
+ (action (with-stdout-to %{targets} (run ./gen/gen.exe))))
 
 (alias
  (name runtest)
- (deps %s %s.output)
- (action (diff %s %s.output)))
-|}
-    test_name base_test_name extra_deps opts ref_name test_name ref_name
-    test_name
-
-let tests = Hashtbl.create 64
-
-let () =
-  Array.iter (register_file tests) (Sys.readdir ".") ;
-  let buffer = Buffer.create 1024 in
-  Hashtbl.iter (emit_test buffer) tests ;
-  Buffer.to_bytes buffer |> Bytes.unsafe_to_string |> Jbuild_plugin.V1.send
+ (action (diff dune.inc dune.inc.gen)))
