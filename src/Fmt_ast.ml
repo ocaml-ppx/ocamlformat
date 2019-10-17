@@ -1392,7 +1392,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     in
     list_fl groups (fmt_args c ctx)
   in
-  hvbox_if box 0 @@ fmt_cmts
+  hvbox_if box 0 ~name:"expr"
+  @@ fmt_cmts
   @@ (fun fmt -> Option.call ~f:pro $ fmt)
   @@
   match pexp_desc with
@@ -3923,7 +3924,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   in
   let pro = fmt_or maybe_box "@ " "\n@;<1000 0>" in
   let fmt_cmts_after = Cmts.fmt_after ~pro c si.pstr_loc in
-  (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
+  (fun k ->
+    fmt_cmts_before $ hvbox_if maybe_box 0 ~name:"stri" (k $ fmt_cmts_after))
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->
@@ -3934,10 +3936,10 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let doc, atrs = doc_atrs atrs in
       fmt_if (not skip_double_semi) ";;@;<1000 0>"
       $ fmt_docstring c doc
-      $ cbox 0 (fmt_expression c (sub_exp ~ctx exp))
+      $ cbox 0 ~name:"eval" (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
   | Pstr_exception extn_constr ->
-      hvbox 2
+      hvbox 2 ~name:"exn"
         (fmt_type_exception ~pre:(fmt "exception@ ") c (str ": ") ctx
            extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
@@ -4004,7 +4006,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                 ?ext:(if first && first_grp then ext else None)
                 ctx ?epi ~attributes ~loc pvb_pat pvb_expr)
       in
-      hvbox 0
+      hvbox 0 ~name:"value"
         (list_fl grps (fun ~first ~last grp ->
              fmt_grp ~first ~last grp $ fmt_if (not last) "\n@;<1000 0>"))
   | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
@@ -4015,9 +4017,9 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         | PTyp _ | PPat _ | PStr [_] | PSig [_] -> true
         | PStr _ | PSig _ -> false
       in
-      hvbox_if box c.conf.stritem_extension_indent
+      hvbox_if box c.conf.stritem_extension_indent ~name:"ext1"
         ( doc_before
-        $ hvbox_if (not box) 0 (fmt_extension c ctx "%%" ext)
+        $ hvbox_if (not box) 0 ~name:"ext2" (fmt_extension c ctx "%%" ext)
         $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
         $ doc_after )
   | Pstr_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
