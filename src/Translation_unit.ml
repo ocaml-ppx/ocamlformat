@@ -90,20 +90,8 @@ let dump_formatted ~input_name ?output_file ~suffix fmted =
     Some file
   else None
 
-let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
-    ?(quiet_doc_comments = false) conf fmt input_name error =
+let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
   let exe = Filename.basename Sys.argv.(0) in
-  let quiet_exn exn =
-    match exn with
-    | Internal_error ((`Comment | `Comment_dropped _), _) -> quiet_comments
-    | Warning50 _ -> quiet_doc_comments
-    | Internal_error ((`Doc_comment _ | `Warning50 _), _) ->
-        quiet_doc_comments
-    | Internal_error (`Ast_changed, _) -> false
-    | Internal_error (`Cannot_parse _, _) -> false
-    | Internal_error (_, _) -> .
-    | _ -> false
-  in
   match error with
   | Invalid_source _ when conf.Conf.quiet -> ()
   | Invalid_source {exn} -> (
@@ -124,7 +112,6 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
       | Warning50 l ->
           List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
       | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
-  | Unstable _ when quiet_unstable -> ()
   | Unstable {iteration; prev; next} ->
       if Conf.debug then (
         let ext = Filename.extension input_name in
@@ -158,7 +145,6 @@ let print_error ?(quiet_unstable = false) ?(quiet_comments = false)
             "  BUG: formatting did not stabilize after %i iterations.\n%!"
             iteration )
   | User_error msg -> Format.fprintf fmt "%s: %s.\n%!" exe msg
-  | Ocamlformat_bug {exn} when quiet_exn exn -> ()
   | Ocamlformat_bug {exn} -> (
       Format.fprintf fmt
         "%s: Cannot process %S.\n\
@@ -239,14 +225,12 @@ let check_all_locations fmt cmts_t =
     match Cmts.remaining_locs cmts_t with
     | [] -> ()
     | l ->
-        let l = List.sort l ~compare:Location.compare in
+        let print l = Format.fprintf fmt "%a\n%!" Location.print_loc l in
         Format.fprintf fmt
           "Warning: Some locations have not been considered\n%!" ;
-        List.iter l ~f:(fun l ->
-            Format.fprintf fmt "%a\n%!" Location.print_loc l)
+        List.iter ~f:print (List.sort l ~compare:Location.compare)
 
-let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
-    =
+let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
   let dump_ast ~suffix ast =
     dump_ast ~input_name ?output_file ~suffix (fun fmt ->
         xunit.printast fmt ast)
@@ -254,8 +238,7 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
   let dump_formatted = dump_formatted ~input_name ?output_file in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~(conf : Conf.t) (t : _ with_comments) ~source :
-      (string, error) Result.t =
+  let rec print_check ~i ~(conf : Conf.t) t ~source =
     let format ~box_debug =
       let buffer = Buffer.create (String.length source) in
       let source_t = Source.create source in
@@ -321,18 +304,16 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
             | l ->
-                let l = List.map l ~f:(fun (cmt, _t, _s) -> cmt) in
+                let l = List.map l ~f:(fun (cmt, _, _) -> cmt) in
                 internal_error (`Comment_dropped l) [] ) ;
-            let is_docstring s =
-              conf.Conf.parse_docstrings && Char.equal s.[0] '*'
+            let is_docstring Cmt.{txt; _} =
+              conf.Conf.parse_docstrings && Char.equal txt.[0] '*'
             in
             let old_docstrings, old_comments =
-              List.partition_tf t.comments ~f:(fun Cmt.{txt; _} ->
-                  is_docstring txt)
+              List.partition_tf t.comments ~f:is_docstring
             in
             let t_newdocstrings, t_newcomments =
-              List.partition_tf t_new.comments ~f:(fun Cmt.{txt; _} ->
-                  is_docstring txt)
+              List.partition_tf t_new.comments ~f:is_docstring
             in
             let f = ellipsis_cmt in
             let f x = Either.First.map ~f x |> Either.Second.map ~f in
@@ -365,23 +346,12 @@ let format xunit (conf : Conf.t) ?output_file ~input_name ~source ~parsed ()
             (* All good, continue *)
             print_check ~i:(i + 1) ~conf t_new ~source:fmted
   in
-  let result =
-    if conf.disable then Ok source
-    else
-      match (parsed : ('a with_comments, exn) Result.t) with
-      | Error exn -> Error (Invalid_source {exn})
-      | Ok t -> (
-        try print_check ~i:1 ~conf t ~source with
-        | Sys_error msg -> Error (User_error msg)
-        | exn -> Error (Ocamlformat_bug {exn}) )
-  in
-  ( match result with
-  | Ok _ -> ()
-  | Error e -> print_error conf Format.err_formatter input_name e ) ;
-  result
+  try print_check ~i:1 ~conf parsed ~source with
+  | Sys_error msg -> Error (User_error msg)
+  | exn -> Error (Ocamlformat_bug {exn})
 
-let parse_and_format xunit (conf : Conf.t) ?output_file ~input_name ~source
-    () =
+let parse_and_format xunit ?output_file ~input_name ~source conf =
   Location.input_name := input_name ;
-  let parsed = try Ok (parse xunit.parse conf ~source) with e -> Error e in
-  format xunit conf ?output_file ~input_name ~source ~parsed ()
+  match parse xunit.parse conf ~source with
+  | exception exn -> Error (Invalid_source {exn})
+  | parsed -> format xunit conf ?output_file ~input_name ~source ~parsed

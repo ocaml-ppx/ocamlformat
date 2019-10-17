@@ -1,5 +1,6 @@
 ### (master)
 
+  + Internal: clean Translation_unit (#1078) (Guillaume Petiot)
   + Build: use dune file generation in test/passing/dune (#1082) (Etienne Millon)
   + CI: factorize tests and check reason build (#1079) (Guillaume Petiot)
   + Fix break before the closing bracket of collections (exceeding the margin) (#1073) (Guillaume Petiot)

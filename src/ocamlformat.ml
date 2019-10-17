@@ -46,23 +46,31 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
-let format ~kind =
-  match kind with
-  | `Impl -> Translation_unit.parse_and_format impl
-  | `Intf -> Translation_unit.parse_and_format intf
+let format ?output_file ~kind ~input_name ~source (c : Conf.t) =
+  if c.disable then Ok source
+  else
+    let f =
+      match kind with
+      | `Impl -> Translation_unit.parse_and_format impl
+      | `Intf -> Translation_unit.parse_and_format intf
+    in
+    f ?output_file ~input_name ~source c
 
 let to_output_file output_file data =
   match output_file with
   | None -> Out_channel.output_string Out_channel.stdout data
   | Some output_file -> Out_channel.write_all output_file ~data
 
+let source_from_file = function
+  | Conf.Stdin -> In_channel.input_all In_channel.stdin
+  | File f -> In_channel.with_file f ~f:In_channel.input_all
+
 ;;
 match Conf.action with
 | Inplace inputs ->
-    let output_file = None in
     let errors =
       List.filter_map inputs
-        ~f:(fun {Conf.kind; name= input_name; file= input_file; conf} ->
+        ~f:(fun {kind; name= input_name; file= input_file; conf} ->
           let input_file =
             match input_file with
             | File f -> f
@@ -71,50 +79,35 @@ match Conf.action with
           let source =
             In_channel.with_file input_file ~f:In_channel.input_all
           in
-          let result =
-            format conf ?output_file ~kind ~input_name ~source ()
-          in
+          let result = format conf ~kind ~input_name ~source in
           match result with
-          | Error _ -> Some ()
+          | Error e ->
+              Translation_unit.print_error conf ~input_name e ;
+              Some ()
           | Ok formatted ->
-              if String.equal formatted source then ()
-              else Out_channel.write_all input_file ~data:formatted ;
+              if not (String.equal formatted source) then
+                Out_channel.write_all input_file ~data:formatted ;
               None)
     in
     if List.is_empty errors then Caml.exit 0 else Caml.exit 1
-| In_out
-    ( {kind= (`Impl | `Intf) as kind; file= Stdin; name= input_name; conf}
-    , output_file ) -> (
-    let source = In_channel.input_all In_channel.stdin in
-    let result = format conf ?output_file ~kind ~input_name ~source () in
+| In_out ({kind; file; name= input_name; conf}, output_file) -> (
+    let source = source_from_file file in
+    let result = format conf ?output_file ~kind ~input_name ~source in
     match result with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
-    | Error _ -> Caml.exit 1 )
-| In_out
-    ( { kind= (`Impl | `Intf) as kind
-      ; file= File input_file
-      ; name= input_name
-      ; conf }
-    , output_file ) -> (
-    let source = In_channel.with_file input_file ~f:In_channel.input_all in
-    let result = format conf ?output_file ~kind ~input_name ~source () in
-    match result with
-    | Ok s ->
-        to_output_file output_file s ;
-        Caml.exit 0
-    | Error _ -> Caml.exit 1 )
+    | Error e ->
+        Translation_unit.print_error conf ~input_name e ;
+        Caml.exit 1 )
 | Check inputs ->
     let f {Conf.kind; name= input_name; file; conf} =
-      let source =
-        match file with
-        | Stdin -> In_channel.input_all In_channel.stdin
-        | File file -> In_channel.with_file file ~f:In_channel.input_all
-      in
-      match format conf ~kind ~input_name ~source () with
+      let source = source_from_file file in
+      match format conf ~kind ~input_name ~source with
       | Ok res -> String.equal res source
-      | Error _ -> false
+      | Error e ->
+          Translation_unit.print_error conf ~input_name e ;
+          false
     in
     let checked = List.for_all inputs ~f in
     Caml.exit (if checked then 0 else 1)

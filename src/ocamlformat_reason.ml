@@ -43,11 +43,11 @@ let pack_of_kind = function
   | `Impl -> Pack {parse= Reason.input_bin_impl; xunit= impl}
   | `Intf -> Pack {parse= Reason.input_bin_intf; xunit= intf}
 
-let format xunit conf ?output_file ~input_name ~source ~parsed () =
+let format xunit (c : Conf.t) ?output_file ~input_name ~source ~parsed =
   Location.input_name := input_name ;
-  let parsed = Ok parsed in
-  Translation_unit.format xunit conf ?output_file ~input_name ~source ~parsed
-    ()
+  if c.disable then Ok source
+  else
+    Translation_unit.format xunit c ?output_file ~input_name ~source ~parsed
 
 let to_output_file output_file data =
   match output_file with
@@ -58,36 +58,19 @@ let to_output_file output_file data =
 match Conf.action with
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | Check _ -> user_error "Cannot check Reason code with --check" []
-| In_out
-    ( {kind= (`Impl | `Intf) as kind; file= Stdin; name= input_name; conf}
-    , output_file ) -> (
-    let result =
-      let (Pack {parse; xunit}) = pack_of_kind kind in
-      let t = parse In_channel.stdin in
-      let source = try_read_original_source t.origin_filename in
-      format xunit conf ?output_file ~input_name ~source
-        ~parsed:t.ast_and_comment ()
+| In_out ({kind; file; name= input_name; conf}, output_file) -> (
+    let (Pack {parse; xunit}) = pack_of_kind kind in
+    let t =
+      match file with
+      | Stdin -> parse In_channel.stdin
+      | File input_file -> In_channel.with_file input_file ~f:parse
     in
-    match result with
+    let source = try_read_original_source t.origin_filename in
+    let parsed = t.ast_and_comment in
+    match format xunit conf ?output_file ~input_name ~source ~parsed with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
-    | Error _ -> Caml.exit 1 )
-| In_out
-    ( { kind= (`Impl | `Intf) as kind
-      ; name= input_name
-      ; file= File input_file
-      ; conf }
-    , output_file ) -> (
-    let result =
-      let (Pack {parse; xunit}) = pack_of_kind kind in
-      let t = In_channel.with_file input_file ~f:parse in
-      let source = try_read_original_source t.origin_filename in
-      format xunit conf ?output_file ~input_name ~source
-        ~parsed:t.ast_and_comment ()
-    in
-    match result with
-    | Ok s ->
-        to_output_file output_file s ;
-        Caml.exit 0
-    | Error _ -> Caml.exit 1 )
+    | Error e ->
+        Translation_unit.print_error conf ~input_name e ;
+        Caml.exit 1 )
