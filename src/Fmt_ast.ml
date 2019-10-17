@@ -534,13 +534,12 @@ and fmt_attributes c ?(pre = noop) ?(suf = noop) ~key attrs =
         fmt_attribute_or_extension c pre (hvbox indent) (name, pld)
   in
   let num = List.length attrs in
-  let fmt_attr ~first ~last {attr_name; attr_payload; attr_loc} =
-    fmt_or_k first (open_hvbox 0) (fmt "@ ")
-    $ hvbox 0
-        (Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload)))
-    $ fmt_if_k last (close_box $ suf)
+  let fmt_attr {attr_name; attr_payload; attr_loc} =
+    hvbox 0
+      (Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload)))
   in
-  fmt_if_k (num > 0) (pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
+  let open Safe in
+  wrap_if_k (num > 0) pre suf (box hvbox 0 (of_list attrs space ~f:fmt_attr))
 
 and fmt_payload c ctx pld =
   protect (Pld pld)
