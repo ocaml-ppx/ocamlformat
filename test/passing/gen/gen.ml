@@ -4,13 +4,20 @@ type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
   ; mutable base_file: string option
-  ; mutable extra_deps: string list }
+  ; mutable extra_deps: string list
+  ; mutable should_fail: bool }
 
 let read_lines fn =
   Stdio.In_channel.with_file fn ~f:Stdio.In_channel.input_lines
 
 let add_test ?base_file map src_test_name =
-  let s = {has_ref= false; has_opts= false; base_file; extra_deps= []} in
+  let s =
+    { has_ref= false
+    ; has_opts= false
+    ; base_file
+    ; extra_deps= []
+    ; should_fail= false }
+  in
   map := StringMap.add src_test_name s !map ;
   s
 
@@ -35,6 +42,7 @@ let register_file tests fname =
       | ["opts"] -> setup.has_opts <- true
       | ["ref"] -> setup.has_ref <- true
       | ["deps"] -> setup.extra_deps <- read_lines fname
+      | ["should-fail"] -> setup.should_fail <- true
       | _ -> invalid_arg fname )
   | _ -> ()
 
@@ -51,6 +59,7 @@ let emit_test test_name setup =
     match setup.base_file with Some n -> n | None -> test_name
   in
   let extra_deps = String.concat " " setup.extra_deps in
+  let cmd_prefix = if setup.should_fail then "! " else "" in
   Printf.printf
     {|
 (rule
@@ -58,13 +67,13 @@ let emit_test test_name setup =
  (deps .ocamlformat %s)
  (action
    (with-outputs-to %%{targets}
-     (system "%%{bin:ocamlformat}%s %%{dep:%s} || true"))))
+     (system "%s%%{bin:ocamlformat}%s %%{dep:%s}"))))
 
 (alias
  (name runtest)
  (action (diff %s %s.output)))
 |}
-    test_name extra_deps opts base_test_name ref_name test_name
+    test_name extra_deps cmd_prefix opts base_test_name ref_name test_name
 
 let () =
   let map = ref StringMap.empty in
