@@ -208,7 +208,17 @@ module Safe : sig
   val double_linebreak : sep
   (** Format a double linebreak. *)
 
+  type 'a non_empty
+
   type boxed
+
+  val one : t -> t non_empty
+
+  val add : t non_empty -> sep -> t -> t non_empty
+  (** [add b s t] adds the format [t] preceded by separator [s] after the
+      other formats of the box [b]. *)
+
+  val boxing : t non_empty -> boxed
 
   type box_kind
 
@@ -223,12 +233,6 @@ module Safe : sig
 
   val hovbox : box_kind
   (** Horizontal or vertical box. *)
-
-  val one : t -> boxed
-
-  val add : boxed -> sep -> t -> boxed
-  (** [add b s t] adds the format [t] preceded by separator [s] after the
-      other formats of the box [b]. *)
 
   val of_list : 'a list -> sep -> f:('a -> t) -> boxed
   (** [of_list xs s] generates a boxed value containing the elements of the

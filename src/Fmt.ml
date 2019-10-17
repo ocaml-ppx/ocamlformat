@@ -242,23 +242,26 @@ module Safe = struct
 
   let double_linebreak fs = Format.fprintf fs "\n@;<1000 0>"
 
+  type 'a non_empty = One of 'a | Cons of 'a non_empty * sep * 'a
+
   type boxed =
     | Empty (* this value is not exposed to not allow empty boxes *)
-    | One of t
-    | Cons of boxed * sep * t
+    | Non_empty of t non_empty
 
   let one t = One t
 
   let add b s t = Cons (b, s, t)
 
+  let boxing b = Non_empty b
+
   let of_list xs sep ~f =
     match xs with
     | [] -> Empty
-    | [x] -> One (f x)
     | h :: t ->
-        List.fold_left t
-          ~init:(One (f h))
-          ~f:(fun acc x -> Cons (acc, sep, f x))
+        Non_empty
+          (List.fold_left t
+             ~init:(One (f h))
+             ~f:(fun acc x -> Cons (acc, sep, f x)))
 
   type box_kind = ?name:string -> int -> t
 
@@ -272,14 +275,14 @@ module Safe = struct
 
   let box_if ?name ?(box_singleton = false) cnd kind n = function
     | Empty -> noop
-    | One x -> wrap_if_k (box_singleton && cnd) (kind ?name n) close_box x
-    | Cons _ as boxed ->
+    | Non_empty (One x) ->
+        wrap_if_k (box_singleton && cnd) (kind ?name n) close_box x
+    | Non_empty ne ->
         let rec aux = function
           | One t -> t
           | Cons (b, s, t) -> aux b $ s $ t
-          | Empty -> impossible "cannot contain Empty by construction"
         in
-        wrap_if_k cnd (kind ?name n) close_box (aux boxed)
+        wrap_if_k cnd (kind ?name n) close_box (aux ne)
 
   let box ?name ?box_singleton = box_if ?name ?box_singleton true
 end
