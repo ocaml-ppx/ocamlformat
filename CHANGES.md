@@ -1,5 +1,6 @@
 ### (master)
 
+  + API: optional names for formatting boxes (#1083) (Guillaume Petiot)
   + Build: check ocamlformat error codes (#1084) (Etienne Millon)
   + Internal: clean Translation_unit (#1078) (Guillaume Petiot)
   + Build: use dune file generation in test/passing/dune (#1082) (Etienne Millon)
