@@ -2125,7 +2125,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@,." $ fmt_longident_loc c lid $ fmt_atrs ))
   | Pexp_newtype _ | Pexp_fun _ ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
-      let pre_body, body = fmt_function_body c ?ext xbody in
+      let docked = is_collection_docked c xbody.ast in
+      let pre_body, body =
+        if docked then
+          fmt_collection_body c xbody ~indent_wrap ~same_box:false
+        else fmt_function_body c ?ext xbody
+      in
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent =
         Params.function_indent c.conf ~ctx ~default:default_indent
@@ -2141,7 +2146,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        (not c.conf.wrap_fun_args)
                        0 (fmt_fun_args c xargs)
                    $ fmt "@ " )
-               $ str "->" $ pre_body )
+               $ hvbox_if docked 0 (str "->" $ pre_body) )
            $ fmt "@ " $ body ))
   | Pexp_function cs ->
       let indent = Params.function_indent c.conf ~ctx in

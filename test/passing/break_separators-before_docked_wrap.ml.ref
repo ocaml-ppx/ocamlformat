@@ -98,6 +98,13 @@ let _ =
       0
   | _ -> 1
 
+let transform_array_length : fooooooooo -> f:fooooooooooooooo -> fooooo =
+ fun foooooooooooo -> {
+  v with
+  foooooooooooooooooooooooooooooooooooooooooooooooo
+; fooooo= foooooooooooooooooooooooooooooooooooooooooooooooo
+}
+
 [@@@ocamlformat "type-decl=compact"]
 
 type t = {aaaaaaaaa: aaaa; bbbbbbbbb: bbbb}
