@@ -164,11 +164,14 @@ let box_depth_colors = [|32; 33; 94; 31; 35; 36|]
 let box_depth_color () =
   box_depth_colors.(!box_depth % Array.length box_depth_colors)
 
-let debug_box_open box_kind n fs =
+let debug_box_open ?name box_kind n fs =
   if !box_debug_enabled then (
-    let openning =
-      if n = 0 then box_kind else Format.sprintf "%s<%d" box_kind n
+    let name =
+      match name with
+      | Some s -> Format.sprintf "%s:%s" box_kind s
+      | None -> box_kind
     in
+    let openning = if n = 0 then name else Format.sprintf "%s<%d" name n in
     pp_color_k (box_depth_color ())
       (fun fs -> Format.fprintf fs "@<0>[@<0>%s@<0>>" openning)
       fs ;
@@ -185,35 +188,41 @@ let debug_box_close fs =
         (fun fs -> Format.fprintf fs "@<0>]")
         fs )
 
-let open_box n fs = debug_box_open "b" n fs ; Format.pp_open_box fs n
+let open_box ?name n fs =
+  debug_box_open ?name "b" n fs ;
+  Format.pp_open_box fs n
 
-and open_vbox n fs = debug_box_open "v" n fs ; Format.pp_open_vbox fs n
+and open_vbox ?name n fs =
+  debug_box_open ?name "v" n fs ;
+  Format.pp_open_vbox fs n
 
-and open_hvbox n fs = debug_box_open "hv" n fs ; Format.pp_open_hvbox fs n
+and open_hvbox ?name n fs =
+  debug_box_open ?name "hv" n fs ;
+  Format.pp_open_hvbox fs n
 
-and open_hovbox n fs =
-  debug_box_open "hov" n fs ;
+and open_hovbox ?name n fs =
+  debug_box_open ?name "hov" n fs ;
   Format.pp_open_hovbox fs n
 
 and close_box fs = debug_box_close fs ; Format.pp_close_box fs ()
 
 (** Wrapping boxes ------------------------------------------------------*)
 
-let cbox n = wrap_k (open_box n) close_box
+let cbox ?name n = wrap_k (open_box ?name n) close_box
 
-and vbox n = wrap_k (open_vbox n) close_box
+and vbox ?name n = wrap_k (open_vbox ?name n) close_box
 
-and hvbox n = wrap_k (open_hvbox n) close_box
+and hvbox ?name n = wrap_k (open_hvbox ?name n) close_box
 
-and hovbox n = wrap_k (open_hovbox n) close_box
+and hovbox ?name n = wrap_k (open_hovbox ?name n) close_box
 
-and cbox_if cnd n = wrap_if_k cnd (open_box n) close_box
+and cbox_if ?name cnd n = wrap_if_k cnd (open_box ?name n) close_box
 
-and vbox_if cnd n = wrap_if_k cnd (open_vbox n) close_box
+and vbox_if ?name cnd n = wrap_if_k cnd (open_vbox ?name n) close_box
 
-and hvbox_if cnd n = wrap_if_k cnd (open_hvbox n) close_box
+and hvbox_if ?name cnd n = wrap_if_k cnd (open_hvbox ?name n) close_box
 
-and hovbox_if cnd n = wrap_if_k cnd (open_hovbox n) close_box
+and hovbox_if ?name cnd n = wrap_if_k cnd (open_hovbox ?name n) close_box
 
 (** Text filling --------------------------------------------------------*)
 
