@@ -749,7 +749,7 @@ let foooooooooooooooooooooooo =
     { foooooooooooooooooooo= false; foooooo= Fooo.foooooooooooooooooooo }
 
 let foooooooooooooooooooooooo =
-  Foo_foooooooooooooo_foooooooo { 
+  Foo_foooooooooooooo_foooooooo {
     foooooooooooooooooooo= false;
     foooooooooooo;
     foooooo= Fooo.foooooooooooooooooooo;
@@ -769,7 +769,7 @@ let x = [
 ]
 
 let foooooooooooooooooooooooo =
-  Foo_foooooooooooooo_foooooooo [ 
+  Foo_foooooooooooooo_foooooooo [
     foooooooooooooooooooofoooooooooo;
     foooooooooooofooooooooooooo;
     foooooofoooooooooooooooooooo;

@@ -2092,7 +2092,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_construct (lid, Some arg) ->
       let fmt_pre_body, fmt_body =
-        fmt_collection_body c (sub_exp ~ctx arg) ~indent_wrap
+        fmt_collection_body c (sub_exp ~ctx arg) ~indent_wrap ~same_box:false
       in
       wrap_if parens "(" ")"
         ( hvbox 2
@@ -2103,7 +2103,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox 2 (wrap_if parens "(" ")" (str "`" $ str s $ fmt_atrs))
   | Pexp_variant (s, Some arg) ->
       let fmt_pre_body, fmt_body =
-        fmt_collection_body c (sub_exp ~ctx arg) ~indent_wrap
+        fmt_collection_body c (sub_exp ~ctx arg) ~indent_wrap ~same_box:false
       in
       hvbox 2
         (wrap_if parens "(" ")"
