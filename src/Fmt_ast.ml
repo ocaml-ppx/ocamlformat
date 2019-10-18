@@ -2283,6 +2283,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             if Source.is_long_pexp_open c.source exp then `Long else `Short
         | x -> x
       in
+      let dock = is_collection_docked c e0 in
+      let fmt_pre_body, fmt_body =
+        if dock then
+          fmt_collection_body c (sub_exp ~ctx e0) ~indent_wrap
+            ~same_box:false
+        else (noop, fmt_expression c (sub_exp ~ctx e0))
+      in
       let force_break_if =
         match (let_open, e0.pexp_desc) with
         | `Long, _
@@ -2292,7 +2299,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             true
         | _ -> (
           match popen_expr.pmod_desc with
-          | Pmod_ident _ -> override
+          | Pmod_ident _ -> override || dock
           | _ -> true )
       in
       let force_fit_if =
@@ -2319,11 +2326,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ( fits_breaks "" (if override then "open! " else "open ")
             $ fmt_module_statement c ~attributes noop
                 (sub_mod ~ctx popen_expr) )
-        $ fits_breaks opn " in"
+        $ hvbox_if dock 0 (fits_breaks opn " in" $ fmt_pre_body)
         $ fmt_or_k force_fit_if (fmt "@;<0 2>")
-            (fits_breaks "" ~hint:(1000, 0) "")
-        $ fmt_expression c (sub_exp ~ctx e0)
-        $ fits_breaks cls ""
+            (fits_breaks "" ~hint:(1000, if dock then 2 else 0) "")
+        $ fmt_body $ fits_breaks cls ""
         $ fits_breaks_if parens "" ")"
         $ fmt_atrs )
   | Pexp_match (e0, cs) | Pexp_try (e0, cs) -> (

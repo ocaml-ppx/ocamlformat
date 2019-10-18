@@ -699,6 +699,12 @@ let fooo_fooooo_fooooooo ?fooooooo ~foooooooooo fooooooooooooo =
     ; foooooooooooooooooo= fooooo
     ; foooooooooooooooo= fooooooo }
 
+let foooooo fooo fooo fooo =
+  let open Fooooooooooooooooooooooo in
+  [ fooofooooooooooooooooooo
+  ; foooofooooooooooooooooooooooooo
+  ; fooooooooooooooooooo ]
+
 [@@@ocamlformat "space-around-records=true"]
 
 let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }
