@@ -1562,17 +1562,26 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
       assert (Option.compare compare first_ext ext = 0)
   | _ -> impossible "at least two elements" ) ;
   let grps = List.group elts ~break in
-  let fmt_seq ~prev (ext, curr) ~next:_ =
+  let fmt_seq ~last_grp ?prev (ext, curr) ?next =
+    let very_last = Option.is_none next && last_grp in
     let f (_, prev) = fmt_sep c prev ext curr in
+    let c =
+      if very_last && is_collection_docked c curr.ast then
+        (* docking the brackets looks weird in a sequence so it is better to
+           disable it for now. *)
+        {c with conf= {c.conf with dock_collection_brackets= false}}
+      else c
+    in
     Option.value_map prev ~default:noop ~f $ fmt_expression c curr
   in
-  let fmt_seq_list ~prev x ~next:_ =
+  let fmt_seq_list ?prev x ?next =
     let f prev =
       let prev = snd (List.last_exn prev) in
       let ext, curr = List.hd_exn x in
       fmt_sep c ~force_break:true prev ext curr
     in
-    Option.value_map prev ~default:noop ~f $ list_pn x fmt_seq
+    let last_grp = Option.is_none next in
+    Option.value_map prev ~default:noop ~f $ list_pn x (fmt_seq ~last_grp)
   in
   hvbox 0
     ( Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
