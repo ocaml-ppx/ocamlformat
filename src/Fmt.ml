@@ -167,9 +167,9 @@ let box_depth_color () =
 let debug_box_open ?name box_kind n fs =
   if !box_debug_enabled then (
     let name =
-      Option.value_map name
-        ~f:(fun s -> Format.sprintf "%s:%s" box_kind s)
-        ~default:box_kind
+      match name with
+      | Some s -> Format.sprintf "%s:%s" box_kind s
+      | None -> box_kind
     in
     let openning = if n = 0 then name else Format.sprintf "%s<%d" name n in
     pp_color_k (box_depth_color ())
