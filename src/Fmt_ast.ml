@@ -40,25 +40,19 @@ module Cmts = struct
 end
 
 type block =
-  { opn: Fmt.t
+  { opn_cls: Box.t
   ; pro: Fmt.t option
   ; psp: Fmt.t
   ; bdy: Fmt.t
-  ; cls: Fmt.t
   ; esp: Fmt.t
   ; epi: Fmt.t option }
 
 let empty =
-  { opn= noop
-  ; pro= None
-  ; psp= noop
-  ; bdy= noop
-  ; cls= noop
-  ; esp= noop
-  ; epi= None }
+  {opn_cls= Box.noop; pro= None; psp= noop; bdy= noop; esp= noop; epi= None}
 
-let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
-  f (Option.call ~f:pro $ opn $ psp $ bdy $ cls $ esp $ Option.call ~f:epi)
+let compose_module {opn_cls; pro; psp; bdy; esp; epi} ~f =
+  let box = Box.wrap opn_cls in
+  f (Option.call ~f:pro $ box (psp $ bdy) $ esp $ Option.call ~f:epi)
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
@@ -155,7 +149,7 @@ let update_config_maybe_disabled c loc l f =
   maybe_disabled c loc l f
 
 let update_config_maybe_disabled_block c loc l f =
-  let fmt bdy = {empty with opn= open_vbox 2; bdy; cls= close_box} in
+  let fmt bdy = {empty with opn_cls= Box.vbox 2; bdy} in
   let c = update_config c l in
   maybe_disabled_k c loc l f fmt
 
@@ -3216,7 +3210,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
       let before = Cmts.fmt_before c pmty_loc in
       let within = Cmts.fmt_within c ~pro:noop pmty_loc in
       let after = Cmts.fmt_after c pmty_loc in
-      { opn= noop
+      { opn_cls= Box.noop
       ; pro=
           Some
             ( before
@@ -3224,7 +3218,6 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
             $ str "sig" $ fmt_if empty " " )
       ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= within $ fmt_signature c ctx s
-      ; cls= noop
       ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
           Some
@@ -3258,7 +3251,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
           ( list_fl wcs_and fmt_cstr
           $ fmt_attributes c ~pre:(str " ") ~key:"@" attr )
       in
-      let {pro; psp; bdy; esp; epi; opn= _; cls= _} = fmt_module_type c mt in
+      let {pro; psp; bdy; esp; epi; opn_cls= _} = fmt_module_type c mt in
       { empty with
         pro=
           Option.map pro ~f:(fun pro ->
@@ -3362,7 +3355,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
         let force_before = not (Ast.module_type_is_simple pincl_mod) in
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
-      let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
+      let keyword, {opn_cls; pro; psp; bdy; esp; epi} =
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me; pmty_loc; pmty_attributes= _} ->
             ( str "include"
@@ -3371,10 +3364,9 @@ and fmt_signature_item c ?ext {ast= si; _} =
             , fmt_module_expr c (sub_mod ~ctx me) )
         | _ -> (str "include", fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
-      let box = wrap_k opn cls in
       hvbox 0
         ( doc_before
-        $ ( box
+        $ ( Box.wrap opn_cls
               ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
               $ bdy )
@@ -3475,8 +3467,8 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp })
   in
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
-  let box_t = wrap_k blk_t.opn blk_t.cls in
-  let box_b = wrap_k blk_b.opn blk_b.cls in
+  let box_t = Box.wrap blk_t.opn_cls in
+  let box_b = Box.wrap blk_b.opn_cls in
   let fmt_arg ?prev:_ (name, arg_mtyp) ?next =
     let maybe_box k =
       match arg_mtyp with Some {pro= None; _} -> hvbox 0 k | _ -> k
@@ -3485,16 +3477,16 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
     $ maybe_box
         (wrap "(" ")"
            ( fmt_str_loc c name
-           $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi; opn= _} ->
+           $ opt arg_mtyp (fun {pro; psp; bdy; opn_cls; esp; epi} ->
                  (* TODO: handle opn *)
                  str " : "
                  $ opt pro (fun pro -> pro $ close_box)
                  $ psp $ bdy
-                 $ fmt_if_k (Option.is_some pro) cls
+                 $ fmt_if_k (Option.is_some pro) (Box.unsafe_cls opn_cls)
                  $ esp
                  $ ( match next with
-                   | Some (_, Some {opn; pro= Some _; _}) ->
-                       opn $ open_hvbox 0
+                   | Some (_, Some {opn_cls; pro= Some _; _}) ->
+                       Box.unsafe_opn opn_cls $ open_hvbox 0
                    | _ -> noop )
                  $ Option.call ~f:epi) ))
   in
@@ -3520,8 +3512,8 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                     (Option.is_some blk_t.pro)
                     0
                     ( ( match arg_blks with
-                      | (_, Some {opn; pro= Some _; _}) :: _ ->
-                          opn $ open_hvbox 0
+                      | (_, Some {opn_cls; pro= Some _; _}) :: _ ->
+                          Box.unsafe_opn opn_cls $ open_hvbox 0
                       | _ -> noop )
                     $ hvbox 4
                         ( keyword $ str " " $ fmt_str_loc c name
@@ -3610,7 +3602,7 @@ and fmt_open_description c ?(keyword = "open") ~kw_attributes
 (** TODO: merge with `fmt_module_declaration` *)
 and fmt_module_statement c ~attributes keyword mod_expr =
   let blk = fmt_module_expr c mod_expr in
-  let box = wrap_k blk.opn blk.cls in
+  let box = Box.wrap blk.opn_cls in
   let force_before = not (module_expr_is_simple mod_expr.ast) in
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~force_before ~fit:true c attributes
@@ -3654,7 +3646,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let doc, atrs = doc_atrs pmod_attributes in
       let blk_f = fmt_module_expr c (sub_mod ~ctx me_f) in
       let blk_a = maybe_generative c ~ctx me_a in
-      let box_f = wrap_k blk_f.opn blk_f.cls in
+      let box_f = Box.wrap blk_f.opn_cls in
       let fmt_rator =
         fmt_docstring c ~epi:(fmt "@,") doc
         $ box_f (blk_f.psp $ Option.call ~f:blk_f.pro $ blk_f.bdy)
@@ -3679,10 +3671,11 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
         ; epi= Some epi }
       else
         { blk_a with
-          opn= open_hvbox 2 $ blk_a.opn
+          opn_cls=
+            Box.unsafe_prepend_to_cls close_box
+              (Box.compose ~outside:(Box.hvbox 2) ~inside:blk_a.opn_cls)
         ; bdy=
             Cmts.fmt_before c pmod_loc $ open_hvbox 2 $ fmt_rator $ blk_a.bdy
-        ; cls= close_box $ blk_a.cls $ close_box
         ; epi= Some epi }
   | Pmod_apply (me_f, me_a) ->
       let can_break_before_struct =
@@ -3697,7 +3690,10 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
-        opn= blk_a.opn $ blk_f.opn $ open_hvbox 2
+        opn_cls=
+          Box.compose ~outside:blk_a.opn_cls
+            ~inside:
+              (Box.compose ~outside:blk_f.opn_cls ~inside:(Box.hvbox 2))
       ; bdy=
           hvbox 2
             ( Cmts.fmt_before c pmod_loc
@@ -3708,7 +3704,6 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             $ wrap "@ (" ")"
                 ( Option.call ~f:blk_a.pro $ blk_a.psp $ blk_a.bdy
                 $ blk_a.esp $ Option.call ~f:blk_a.epi ) )
-      ; cls= close_box $ blk_f.cls $ blk_a.cls
       ; epi=
           Option.some_if has_epi
             ( Cmts.fmt_after c pmod_loc
@@ -3720,7 +3715,10 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
-      { opn= blk_t.opn $ blk_e.opn $ open_hovbox 2
+      { opn_cls=
+          Box.compose ~outside:blk_t.opn_cls
+            ~inside:
+              (Box.compose ~outside:blk_e.opn_cls ~inside:(Box.hovbox 2))
       ; pro=
           Some
             ( Cmts.fmt_before c pmod_loc
@@ -3740,7 +3738,6 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
           | `No -> str ")"
           | `Closing_on_separate_line -> fits_breaks ")" ~hint:(1000, -2) ")"
           )
-      ; cls= close_box $ blk_e.cls $ blk_t.cls
       ; esp= noop
       ; epi=
           Option.some_if has_epi
@@ -3749,9 +3746,9 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
   | Pmod_functor _ ->
       let xargs, me = sugar_pmod_functor c ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
-      let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_expr c me in
+      let {opn_cls; pro; psp; bdy; esp; epi} = fmt_module_expr c me in
       { empty with
-        opn
+        opn_cls
       ; bdy=
           Cmts.fmt c pmod_loc
             ( fmt_docstring c ~epi:(fmt "@,") doc
@@ -3764,8 +3761,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
                    $ fmt "@;<1 2>->@;<1 2>"
                    $ hvbox 0
                        ( Option.call ~f:pro $ psp $ bdy $ esp
-                       $ Option.call ~f:epi ) )) )
-      ; cls }
+                       $ Option.call ~f:epi ) )) ) }
   | Pmod_ident lid ->
       let doc, atrs = doc_atrs pmod_attributes in
       let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
@@ -3773,12 +3769,11 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
       { empty with
-        opn= open_hvbox 2
+        opn_cls= Box.hvbox 2
       ; pro=
           Option.some_if has_pro
             (Cmts.fmt_before c pmod_loc $ fmt_docstring c ~epi:(fmt "@,") doc)
       ; bdy= fmt_longident_loc c lid
-      ; cls= close_box
       ; epi=
           Option.some_if has_epi
             ( Cmts.fmt_after c pmod_loc
@@ -3791,7 +3786,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let before = Cmts.fmt_before c pmod_loc in
       let within = Cmts.fmt_within c ~pro:noop pmod_loc in
       let after = Cmts.fmt_after c pmod_loc in
-      { opn= noop
+      { opn_cls= Box.noop
       ; pro=
           Some
             ( before
@@ -3801,7 +3796,6 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 2>" "@;<1 2>")
       ; bdy= within $ fmt_structure c ctx sis
-      ; cls= noop
       ; esp=
           fmt_if_k (not empty)
             (fmt_or c.conf.break_struct "@;<1000 0>" "@;<1 0>")
