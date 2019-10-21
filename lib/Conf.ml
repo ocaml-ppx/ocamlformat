@@ -484,15 +484,15 @@ module Formatting = struct
     let doc = "Doc comments position." in
     let names = ["doc-comments"] in
     let all =
-      [ ( "after"
+      [ ( "before"
+        , `Before
+        , "$(b,before) puts comments before the corresponding code." )
+      ; ( "after"
         , `After
         , "$(b,after) puts doc comments after the corresponding code. This \
            option has no effect on variant declarations because that would \
            change their meaning and on structures, signatures and objects \
-           for readability." )
-      ; ( "before"
-        , `Before
-        , "$(b,before) puts comments before the corresponding code." ) ]
+           for readability." ) ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with doc_comments= x})
