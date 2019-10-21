@@ -9,6 +9,16 @@
  *                                                                    *
  **********************************************************************)
 
+module Removed_value : sig
+  type t
+  (** Indicate that a configuration value has been removed in an ocamlformat
+      release. A message indicating how to migrate will be displayed. *)
+
+  val make : name:string -> version:string -> msg:string -> t
+  (** [name] is the configuration value that was removed in version
+      [version]. [msg] explains how to get the former behaviour. *)
+end
+
 module type CONFIG = sig
   type config
 
@@ -38,7 +48,10 @@ module Make (C : CONFIG) : sig
 
   val section_name : [`Formatting | `Operational] -> string
 
-  val choice : all:(string * 'a * string) list -> 'a option_decl
+  val choice :
+       all:(string * 'a * string) list
+    -> ?removed_values:Removed_value.t list
+    -> 'a option_decl
 
   val flag : default:bool -> bool option_decl
 

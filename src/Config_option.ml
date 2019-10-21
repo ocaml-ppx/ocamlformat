@@ -9,6 +9,26 @@
  *                                                                    *
  **********************************************************************)
 
+module Removed_value = struct
+  type t = {name: string; version: string; msg: string}
+
+  let make ~name ~version ~msg = {name; version; msg}
+
+  let error {name; version; msg} =
+    Format.kasprintf
+      (fun s -> Error (`Msg s))
+      "value `%s` has been removed in version %s. %s" name version msg
+
+  let add_to_converter values conv =
+    let open Cmdliner in
+    let parse s =
+      match List.find values ~f:(fun {name; _} -> String.equal name s) with
+      | Some t -> error t
+      | None -> Arg.conv_parser conv s
+    in
+    Arg.conv (parse, Arg.conv_printer conv)
+end
+
 module type CONFIG = sig
   type config
 
@@ -154,11 +174,13 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  let choice ~all ~names ~doc ~section
+  let choice ~all ?(removed_values = []) ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false) =
     let _, default, _ = List.hd_exn all in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
-    let conv = Arg.enum opt_names in
+    let conv =
+      Removed_value.add_to_converter removed_values (Arg.enum opt_names)
+    in
     let doc =
       let open Format in
       asprintf "%s %a" doc
