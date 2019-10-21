@@ -319,6 +319,17 @@
  (action (diff break_separators-after_docked.ml.ref break_separators-after_docked.ml.output)))
 
 (rule
+ (targets break_separators-after_docked_transition_message.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "! %{bin:ocamlformat} %{read-lines:break_separators-after_docked_transition_message.ml.opts} %{dep:break_separators.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff break_separators-after_docked_transition_message.ml.ref break_separators-after_docked_transition_message.ml.output)))
+
+(rule
  (targets break_separators-after_docked_wrap.ml.output)
  (deps .ocamlformat )
  (action

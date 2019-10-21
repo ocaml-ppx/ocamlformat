@@ -369,6 +369,13 @@ module Formatting = struct
         , "$(b,before) breaks the expressions before the separator." ) ]
     in
     C.choice ~names ~all ~doc ~section
+      ~removed_values:
+        [ Config_option.Removed_value.make ~name:"after-and-docked"
+            ~version:"0.12"
+            ~msg:
+              "One can get a similar behaviour by setting \
+               `break-separators=after`, `space-around-lists=false`, and \
+               `dock-dollection-brackets=false`." ]
       (fun conf x -> {conf with break_separators= x})
       (fun conf -> conf.break_separators)
 
