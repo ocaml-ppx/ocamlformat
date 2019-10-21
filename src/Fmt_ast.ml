@@ -2260,15 +2260,24 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let can_sparse =
         match xbody.ast.pmod_desc with Pmod_apply _ -> true | _ -> false
       in
+      let dock = is_collection_docked c exp in
+      let fmt_pre_body, fmt_body =
+        if dock then
+          fmt_collection_body c (sub_exp ~ctx exp) ~indent_wrap
+            ~same_box:false
+        else (noop, fmt_expression c (sub_exp ~ctx exp))
+      in
       hvbox 0
         ( wrap_if
             (parens || not (List.is_empty pexp_attributes))
             "(" ")"
             ( hvbox 2
                 (fmt_module c keyword ~eqty:":" name xargs (Some xbody) xmty
-                   [] ~epi:(str "in") ~can_sparse)
-            $ fmt "@;<1000 0>"
-            $ fmt_expression c (sub_exp ~ctx exp) )
+                   []
+                   ~epi:(hvbox_if dock 0 (str "in" $ fmt_pre_body))
+                   ~can_sparse)
+            $ break 1000 (if dock then 2 else 0)
+            $ fmt_body )
         $ fmt_atrs )
   | Pexp_open
       ( { popen_override= flag

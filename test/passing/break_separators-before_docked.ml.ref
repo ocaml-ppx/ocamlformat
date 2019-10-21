@@ -756,6 +756,23 @@ let foooooo fooo fooo fooo =
   ; fooooooooooooooooooo
   ]
 
+let foooooo foooooooooooooooo =
+  let module K = Foooooooooo in [|
+    fooofooooooooooooooooooo
+  ; foooofooooooooooooooooooooooooo
+  ; fooooooooooooooooooo
+  |]
+
+let foooooo foooooooooooooooo =
+  let module X = Map.Make (struct
+    type t = t
+  end) [@foo]
+  in [|
+    fooofooooooooooooooooooo
+  ; foooofooooooooooooooooooooooooo
+  ; fooooooooooooooooooo
+  |]
+
 [@@@ocamlformat "space-around-records=true"]
 
 let foooooo fooo fooo fooo = { fooo; foooo= fooooo_foooo foo.fooo }
