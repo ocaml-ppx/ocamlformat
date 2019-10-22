@@ -1,0 +1,6 @@
+ocamlformat: option `--break-string-literals': value `wrap` has been removed
+             in version 0.12. It has been replaced by the new default `auto`
+             value, which breaks lines at newlines and wraps string literals
+             at the margin.
+Usage: ocamlformat [OPTION]... [SRC]...
+Try `ocamlformat --help' for more information.

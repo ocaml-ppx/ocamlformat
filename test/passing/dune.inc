@@ -418,6 +418,17 @@
  (action (diff break_string_literals-never.ml.ref break_string_literals-never.ml.output)))
 
 (rule
+ (targets break_string_literals-wrap.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "! %{bin:ocamlformat} %{read-lines:break_string_literals-wrap.ml.opts} %{dep:break_string_literals.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff break_string_literals-wrap.ml.ref break_string_literals-wrap.ml.output)))
+
+(rule
  (targets break_string_literals.ml.output)
  (deps .ocamlformat )
  (action

@@ -17,6 +17,10 @@ module Removed_value : sig
   val make : name:string -> version:string -> msg:string -> t
   (** [name] is the configuration value that was removed in version
       [version]. [msg] explains how to get the former behaviour. *)
+
+  val make_list : names:string list -> version:string -> msg:string -> t list
+  (** Shorthand for [make] when [version] and [msg] are shared. This can be
+      used when multiple values are removed at the same time. *)
 end
 
 module type CONFIG = sig

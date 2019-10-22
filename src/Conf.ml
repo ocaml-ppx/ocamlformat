@@ -402,6 +402,14 @@ module Formatting = struct
            particular, with escape sequences expanded." ) ]
     in
     C.choice ~names ~all ~doc ~section
+      ~removed_values:
+        (Config_option.Removed_value.make_list
+           ~names:["newlines"; "newlines-and-wrap"; "wrap"]
+           ~version:"0.12"
+           ~msg:
+             "It has been replaced by the new default `auto` value, which \
+              breaks lines at newlines and wraps string literals at the \
+              margin.")
       (fun conf x -> {conf with break_string_literals= x})
       (fun conf -> conf.break_string_literals)
 

@@ -14,6 +14,9 @@ module Removed_value = struct
 
   let make ~name ~version ~msg = {name; version; msg}
 
+  let make_list ~names ~version ~msg =
+    List.map names ~f:(fun name -> make ~name ~version ~msg)
+
   let error {name; version; msg} =
     Format.kasprintf
       (fun s -> Error (`Msg s))
