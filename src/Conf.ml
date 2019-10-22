@@ -370,8 +370,7 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~section
       ~removed_values:
-        [ Config_option.Removed_value.make ~name:"after-and-docked"
-            ~version:"0.12"
+        [ C.removed_value ~name:"after-and-docked" ~version:"0.12"
             ~msg:
               "One can get a similar behaviour by setting \
                `break-separators=after`, `space-around-lists=false`, and \
@@ -403,7 +402,7 @@ module Formatting = struct
     in
     C.choice ~names ~all ~doc ~section
       ~removed_values:
-        (Config_option.Removed_value.make_list
+        (C.removed_values
            ~names:["newlines"; "newlines-and-wrap"; "wrap"]
            ~version:"0.12"
            ~msg:
