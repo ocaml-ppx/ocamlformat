@@ -1,0 +1,3 @@
+ocamlformat: Cannot process "assign_comment.ml".
+  Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
+  BUG: formatting did not stabilize after 2 iterations.

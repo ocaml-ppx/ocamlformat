@@ -77,6 +77,17 @@
  (action (diff assign_colon.ml assign_colon.ml.output)))
 
 (rule
+ (targets assign_comment.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "! %{bin:ocamlformat} %{dep:assign_comment.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff assign_comment.ml.ref assign_comment.ml.output)))
+
+(rule
  (targets attribute_and_expression.ml.output)
  (deps .ocamlformat )
  (action
