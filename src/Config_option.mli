@@ -38,7 +38,24 @@ module Make (C : CONFIG) : sig
 
   val section_name : [`Formatting | `Operational] -> string
 
-  val choice : all:(string * 'a * string) list -> 'a option_decl
+  type removed_value
+  (** Indicate that a configuration value has been removed in an ocamlformat
+      release. A message indicating how to migrate will be displayed. *)
+
+  val removed_value :
+    name:string -> version:string -> msg:string -> removed_value
+  (** [name] is the configuration value that was removed in version
+      [version]. [msg] explains how to get the former behaviour. *)
+
+  val removed_values :
+    names:string list -> version:string -> msg:string -> removed_value list
+  (** Shorthand for [removed_value] when [version] and [msg] are shared. This
+      can be used when multiple values are removed at the same time. *)
+
+  val choice :
+       all:(string * 'a * string) list
+    -> ?removed_values:removed_value list
+    -> 'a option_decl
 
   val flag : default:bool -> bool option_decl
 
