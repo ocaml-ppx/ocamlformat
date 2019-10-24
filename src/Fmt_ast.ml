@@ -277,7 +277,7 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_string (s, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
   | Pconst_string (s, None) -> (
-      let fmt_line mode s =
+      let fmt_line ~epi mode s =
         match c.conf.break_string_literals with
         | `Auto ->
             let words = String.split (escape_string mode s) ~on:' ' in
@@ -287,12 +287,12 @@ let fmt_constant c ~loc ?epi const =
               | Some _ -> str curr $ pre_break 1 " \\" 0
               | _ -> str curr
             in
-            hovbox_if (List.length words > 1) 0 (list_pn words fmt_word)
-        | `Never -> str (escape_string mode s)
+            hovbox_if (List.length words > 1) 0 (list_pn words fmt_word $ epi)
+        | `Never -> str (escape_string mode s) $ epi
       in
       let fmt_lines ?(break_on_newlines = false) mode lines =
         let delim = ["@,"; "@;"] in
-        let fmt_line ?prev:_ curr ?next =
+        let fmt_line ~epi ?prev:_ curr ?next =
           let fmt_next next =
             let not_suffix suffix = not (String.is_suffix curr ~suffix) in
             let print_ln =
@@ -304,9 +304,11 @@ let fmt_constant c ~loc ?epi const =
               $ pre_break 0 "\\" (-1) $ if_newline "\\"
             else fmt_if_k print_ln (str "\\n") $ pre_break 0 "\\" 0
           in
-          fmt_line mode curr $ opt next fmt_next
+          let epi = match next with Some _ -> noop | None -> epi in
+          fmt_line ~epi mode curr $ opt next fmt_next
         in
-        hvbox 1 (wrap "\"" "\"" (list_pn lines fmt_line) $ Option.call ~f:epi)
+        let epi = str "\"" $ Option.call ~f:epi in
+        hvbox 1 (str "\"" $ list_pn lines (fmt_line ~epi))
       in
       let s, mode =
         match (c.conf.break_string_literals, c.conf.escape_strings) with
@@ -333,7 +335,7 @@ let fmt_constant c ~loc ?epi const =
           |> String.split ~on:'\n'
           |> fmt_lines mode ~break_on_newlines:true
       | `Auto -> fmt_lines mode (String.split ~on:'\n' s)
-      | `Never -> wrap "\"" "\"" (fmt_line mode s) )
+      | `Never -> wrap "\"" "\"" (fmt_line ~epi:noop mode s) )
 
 let fmt_variance = function
   | Covariant -> str "+"
