@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix: Fix closing quote exceeding the margin (#1096) (Jules Aguillon)
   + API: optional names for formatting boxes (#1083) (Guillaume Petiot)
   + Build: check ocamlformat error codes (#1084) (Etienne Millon)
   + Internal: clean Translation_unit (#1078) (Guillaume Petiot)
