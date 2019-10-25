@@ -7443,7 +7443,6 @@ let _ =
     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)
 ;;
 
-(* FIX: exceed 90 columns *)
 let _ =
   "_______________________________________________________ _______________________________"
 ;;

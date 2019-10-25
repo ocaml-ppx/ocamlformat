@@ -277,22 +277,23 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_string (s, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
   | Pconst_string (s, None) -> (
-      let fmt_line mode s =
-        match c.conf.break_string_literals with
-        | `Auto ->
-            let words = String.split (escape_string mode s) ~on:' ' in
-            let fmt_word ?prev:_ curr ?next =
-              match next with
-              | Some "" -> str curr $ str " "
-              | Some _ -> str curr $ pre_break 1 " \\" 0
-              | _ -> str curr
-            in
-            hovbox_if (List.length words > 1) 0 (list_pn words fmt_word)
-        | `Never -> str (escape_string mode s)
+      let contains_pp_commands s =
+        let is_substring substring = String.is_substring s ~substring in
+        List.exists ["@,"; "@;"] ~f:is_substring
       in
-      let fmt_lines ?(break_on_newlines = false) mode lines =
+      let fmt_string_auto ?(break_on_newlines = false) mode s =
+        let fmt_words ~epi mode s =
+          let words = String.split (escape_string mode s) ~on:' ' in
+          let fmt_word ?prev:_ curr ?next =
+            match next with
+            | Some "" -> str curr $ str " "
+            | Some _ -> str curr $ pre_break 1 " \\" 0
+            | _ -> str curr
+          in
+          hovbox_if (List.length words > 1) 0 (list_pn words fmt_word $ epi)
+        in
         let delim = ["@,"; "@;"] in
-        let fmt_line ?prev:_ curr ?next =
+        let fmt_line ~epi ?prev:_ curr ?next =
           let fmt_next next =
             let not_suffix suffix = not (String.is_suffix curr ~suffix) in
             let print_ln =
@@ -304,9 +305,12 @@ let fmt_constant c ~loc ?epi const =
               $ pre_break 0 "\\" (-1) $ if_newline "\\"
             else fmt_if_k print_ln (str "\\n") $ pre_break 0 "\\" 0
           in
-          fmt_line mode curr $ opt next fmt_next
+          let epi = match next with Some _ -> noop | None -> epi in
+          fmt_words ~epi mode curr $ opt next fmt_next
         in
-        hvbox 1 (wrap "\"" "\"" (list_pn lines fmt_line) $ Option.call ~f:epi)
+        let lines = String.split ~on:'\n' s in
+        let epi = str "\"" $ Option.call ~f:epi in
+        hvbox 1 (str "\"" $ list_pn lines (fmt_line ~epi))
       in
       let s, mode =
         match (c.conf.break_string_literals, c.conf.escape_strings) with
@@ -320,20 +324,15 @@ let fmt_constant c ~loc ?epi const =
           | Some s -> (s, `Preserve) )
         | _ -> (s, c.conf.escape_strings)
       in
-      let contains_pp_commands =
-        let is_substring substring = String.is_substring s ~substring in
-        List.exists ["@,"; "@;"] ~f:is_substring
-      in
       match c.conf.break_string_literals with
-      | `Auto when contains_pp_commands ->
+      | `Auto when contains_pp_commands s ->
           let break_on_pp_commands in_ pattern =
             String.substr_replace_all in_ ~pattern ~with_:(pattern ^ "\n")
           in
           List.fold_left ["@,"; "@;"] ~init:s ~f:break_on_pp_commands
-          |> String.split ~on:'\n'
-          |> fmt_lines mode ~break_on_newlines:true
-      | `Auto -> fmt_lines mode (String.split ~on:'\n' s)
-      | `Never -> wrap "\"" "\"" (fmt_line mode s) )
+          |> fmt_string_auto mode ~break_on_newlines:true
+      | `Auto -> fmt_string_auto mode s
+      | `Never -> wrap "\"" "\"" (str (escape_string mode s)) )
 
 let fmt_variance = function
   | Covariant -> str "+"

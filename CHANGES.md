@@ -1,5 +1,6 @@
 ### (master)
 
+  + Fix: Fix closing quote exceeding the margin (#1096) (Jules Aguillon)
   + Improve: add a message when a config value is removed (#1089) (Etienne Millon)
   + API: optional names for formatting boxes (#1083) (Guillaume Petiot)
   + Build: check ocamlformat error codes (#1084) (Etienne Millon)
