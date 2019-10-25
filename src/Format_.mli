@@ -107,7 +107,7 @@
 
 *)
 
-open Compat
+open! Caml
 
 type formatter
 (** Abstract data corresponding to a pretty-printer (also called a

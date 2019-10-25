@@ -13,3 +13,10 @@ val with_warning_filter :
   filter:(Location.t -> Warnings.t -> bool) -> f:(unit -> 'a) -> 'a
 
 val print_warning : Location.t -> Warnings.t -> unit
+
+val make_printf :
+     ('b -> ('b, 'c) CamlinternalFormat.acc -> 'd)
+  -> 'b
+  -> ('b, 'c) CamlinternalFormat.acc
+  -> ('a, 'b, 'c, 'c, 'c, 'd) CamlinternalFormatBasics.fmt
+  -> 'a

@@ -26,3 +26,5 @@ let with_warning_filter ~filter ~f =
 let print_warning l w =
   Location.default_warning_reporter l w
   |> Option.iter ~f:(Location.print_report Caml.Format.err_formatter)
+
+let make_printf f x acc fmt = CamlinternalFormat.make_printf (f x) acc fmt

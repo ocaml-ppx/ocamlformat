@@ -42,7 +42,7 @@ end  = struct
   let is_known n = n >= 0
 end
 
-open Compat
+open! Caml
 
 (* The pretty-printing boxes definition:
    a pretty-printing box is either

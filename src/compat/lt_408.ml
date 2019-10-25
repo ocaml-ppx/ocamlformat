@@ -22,3 +22,5 @@ let with_warning_filter ~filter ~f =
 
 let print_warning l w =
   !Location.warning_printer l Caml.Format.err_formatter w
+
+let make_printf = CamlinternalFormat.make_printf
