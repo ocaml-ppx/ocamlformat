@@ -1706,9 +1706,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt "@ " $ fmt_cases c ctx'' cs $ str ")"
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
-          fmt_if parens "("
-          $ hvbox 2 (fmt_args_grouped e0 e1N1 $ fmt_atrs $ fmt_if parens ")")
-      )
+          wrap_if ~box:(hvbox 2) parens "(" ")"
+            (fmt_args_grouped e0 e1N1 $ fmt_atrs) )
   | Pexp_array [] ->
       hvbox 0
         ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
