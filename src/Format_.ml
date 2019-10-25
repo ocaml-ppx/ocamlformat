@@ -43,6 +43,7 @@ end  = struct
 end
 
 open! Caml
+open Compat
 
 (* The pretty-printing boxes definition:
    a pretty-printing box is either
