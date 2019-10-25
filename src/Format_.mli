@@ -16,12 +16,10 @@
 (** Pretty-printing.
 
    This module implements a pretty-printing facility to format values
-   within {{!boxes}'pretty-printing boxes'} and {{!tags}'semantic tags'}
+   within {{!boxes}'pretty-printing boxes'}
    combined with a set of {{!fpp}printf-like functions}.
    The pretty-printer splits lines at specified {{!breaks}break hints},
    and indents lines according to the box structure.
-   Similarly, {{!tags}semantic tags} can be used to decouple text
-   presentation from its contents.
 
    This pretty-printing facility is implemented as an overlay on top of
    abstract {{!section:formatter}formatters} which provide basic output
@@ -138,7 +136,6 @@ type formatter
 *)
 
 val pp_open_box : formatter -> int -> unit
-val open_box : int -> unit
 (** [pp_open_box ppf d] opens a new compacting pretty-printing box with
     offset [d] in the formatter [ppf].
 
@@ -161,11 +158,9 @@ val open_box : int -> unit
 
 
 val pp_close_box : formatter -> unit -> unit
-val close_box : unit -> unit
 (** Closes the most recently open pretty-printing box. *)
 
 val pp_open_hbox : formatter -> unit -> unit
-val open_hbox : unit -> unit
 (** [pp_open_hbox ppf ()] opens a new 'horizontal' pretty-printing box.
 
   This box prints material on a single line.
@@ -175,7 +170,6 @@ val open_hbox : unit -> unit
 *)
 
 val pp_open_vbox : formatter -> int -> unit
-val open_vbox : int -> unit
 (** [pp_open_vbox ppf d] opens a new 'vertical' pretty-printing box
   with offset [d].
 
@@ -188,7 +182,6 @@ val open_vbox : int -> unit
 *)
 
 val pp_open_hvbox : formatter -> int -> unit
-val open_hvbox : int -> unit
 (** [pp_open_hvbox ppf d] opens a new 'horizontal/vertical' pretty-printing box
   with offset [d].
 
@@ -200,7 +193,6 @@ val open_hvbox : int -> unit
 *)
 
 val pp_open_hovbox : formatter -> int -> unit
-val open_hovbox : int -> unit
 (** [pp_open_hovbox ppf d] opens a new 'horizontal-or-vertical'
   pretty-printing box with offset [d].
 
@@ -216,29 +208,23 @@ val open_hovbox : int -> unit
 (** {1 Formatting functions} *)
 
 val pp_print_string : formatter -> string -> unit
-val print_string : string -> unit
 (** [pp_print_string ppf s] prints [s] in the current pretty-printing box. *)
 
 val pp_print_as : formatter -> int -> string -> unit
-val print_as : int -> string -> unit
 (** [pp_print_as ppf len s] prints [s] in the current pretty-printing box.
   The pretty-printer formats [s] as if it were of length [len].
 *)
 
 val pp_print_int : formatter -> int -> unit
-val print_int : int -> unit
 (** Print an integer in the current pretty-printing box. *)
 
 val pp_print_float : formatter -> float -> unit
-val print_float : float -> unit
 (** Print a floating point number in the current pretty-printing box. *)
 
 val pp_print_char : formatter -> char -> unit
-val print_char : char -> unit
 (** Print a character in the current pretty-printing box. *)
 
 val pp_print_bool : formatter -> bool -> unit
-val print_bool : bool -> unit
 (** Print a boolean in the current pretty-printing box. *)
 
 (** {1:breaks Break hints} *)
@@ -263,7 +249,6 @@ val print_bool : bool -> unit
 *)
 
 val pp_print_space : formatter -> unit -> unit
-val print_space : unit -> unit
 (** [pp_print_space ppf ()] emits a 'space' break hint:
   the pretty-printer may split the line at this point,
   otherwise it prints one space.
@@ -272,7 +257,6 @@ val print_space : unit -> unit
 *)
 
 val pp_print_cut : formatter -> unit -> unit
-val print_cut : unit -> unit
 (** [pp_print_cut ppf ()] emits a 'cut' break hint:
   the pretty-printer may split the line at this point,
   otherwise it prints nothing.
@@ -281,7 +265,6 @@ val print_cut : unit -> unit
 *)
 
 val pp_print_break : formatter -> int -> int -> unit
-val print_break : int -> int -> unit
 (** [pp_print_break ppf nspaces offset] emits a 'full' break hint:
   the pretty-printer may split the line at this point,
   otherwise it prints [nspaces] spaces.
@@ -333,7 +316,6 @@ printf "@[<v 0>[@;<0 2>@[<v 0>a;@,b;@,c@]%t]@]@\n"
 *)
 
 val pp_force_newline : formatter -> unit -> unit
-val force_newline : unit -> unit
 (** Force a new line in the current pretty-printing box.
 
   The pretty-printer must split the line at this point,
@@ -345,7 +327,6 @@ val force_newline : unit -> unit
 *)
 
 val pp_print_if_newline : formatter -> unit -> unit
-val print_if_newline : unit -> unit
 (** Execute the next formatting command if the preceding line
   has just been split. Otherwise, ignore the next formatting
   command.
@@ -370,7 +351,6 @@ val pp_print_fits_or_breaks :
 (** {1 Pretty-printing termination} *)
 
 val pp_print_flush : formatter -> unit -> unit
-val print_flush : unit -> unit
 (** End of pretty-printing: resets the pretty-printer to initial state.
 
   All open pretty-printing boxes are closed, all pending text is printed.
@@ -396,7 +376,6 @@ val print_flush : unit -> unit
 *)
 
 val pp_print_newline : formatter -> unit -> unit
-val print_newline : unit -> unit
 (** End of pretty-printing: resets the pretty-printer to initial state.
 
   All open pretty-printing boxes are closed, all pending text is printed.
@@ -412,7 +391,6 @@ val print_newline : unit -> unit
 (** {1 Margin} *)
 
 val pp_set_margin : formatter -> int -> unit
-val set_margin : int -> unit
 (** [pp_set_margin ppf d] sets the right margin to [d] (in characters):
   the pretty-printer splits lines that overflow the right margin according to
   the break hints given.
@@ -428,13 +406,11 @@ val set_margin : int -> unit
 *)
 
 val pp_get_margin : formatter -> unit -> int
-val get_margin : unit -> int
 (** Returns the position of the right margin. *)
 
 (** {1 Maximum indentation limit} *)
 
 val pp_set_max_indent : formatter -> int -> unit
-val set_max_indent : int -> unit
 (** [pp_set_max_indent ppf d] sets the maximum indentation limit of lines
   to [d] (in characters):
   once this limit is reached, new pretty-printing boxes are rejected to the
@@ -470,7 +446,6 @@ val set_max_indent : int -> unit
 *)
 
 val pp_get_max_indent : formatter -> unit -> int
-val get_max_indent : unit -> int
 (** Return the maximum indentation limit (in characters). *)
 
 (** {1 Geometry }
@@ -486,9 +461,7 @@ val check_geometry: geometry -> bool
 (** Check if the formatter geometry is valid: [1 < max_indent < margin] *)
 
 val pp_set_geometry : formatter -> max_indent:int -> margin:int -> unit
-val set_geometry : max_indent:int -> margin:int -> unit
 val pp_safe_set_geometry : formatter -> max_indent:int -> margin:int -> unit
-val safe_set_geometry : max_indent:int -> margin:int -> unit
 (**
    [pp_set_geometry ppf ~max_indent ~margin] sets both the margin
    and maximum indentation limit for [ppf].
@@ -507,7 +480,6 @@ val safe_set_geometry : max_indent:int -> margin:int -> unit
 *)
 
 val pp_get_geometry: formatter -> unit -> geometry
-val get_geometry: unit -> geometry
 (** Return the current geometry of the formatter
 
     @since 4.08.0
@@ -525,7 +497,6 @@ val get_geometry: unit -> geometry
 *)
 
 val pp_set_max_boxes : formatter -> int -> unit
-val set_max_boxes : int -> unit
 (** [pp_set_max_boxes ppf max] sets the maximum number of pretty-printing
     boxes simultaneously open.
 
@@ -536,236 +507,25 @@ val set_max_boxes : int -> unit
 *)
 
 val pp_get_max_boxes : formatter -> unit -> int
-val get_max_boxes : unit -> int
 (** Returns the maximum number of pretty-printing boxes allowed before
   ellipsis.
 *)
 
 val pp_over_max_boxes : formatter -> unit -> bool
-val over_max_boxes : unit -> bool
 (** Tests if the maximum number of pretty-printing boxes allowed have already
   been opened.
 *)
 
-(** {1 Tabulation boxes} *)
-
-(**
-
-  A {e tabulation box} prints material on lines divided into cells of fixed
-  length. A tabulation box provides a simple way to display vertical columns
-  of left adjusted text.
-
-  This box features command [set_tab] to define cell boundaries, and command
-  [print_tab] to move from cell to cell and split the line when there is no
-  more cells to print on the line.
-
-  Note: printing within tabulation box is line directed, so arbitrary line
-  splitting inside a tabulation box leads to poor rendering. Yet, controlled
-  use of tabulation boxes allows simple printing of columns within
-  module {!Format}.
-*)
-
-val pp_open_tbox : formatter -> unit -> unit
-val open_tbox : unit -> unit
-(** [open_tbox ()] opens a new tabulation box.
-
-  This box prints lines separated into cells of fixed width.
-
-  Inside a tabulation box, special {e tabulation markers} defines points of
-  interest on the line (for instance to delimit cell boundaries).
-  Function {!Format.set_tab} sets a tabulation marker at insertion point.
-
-  A tabulation box features specific {e tabulation breaks} to move to next
-  tabulation marker or split the line. Function {!Format.print_tbreak} prints
-  a tabulation break.
-*)
-
-val pp_close_tbox : formatter -> unit -> unit
-val close_tbox : unit -> unit
-(** Closes the most recently opened tabulation box. *)
-
-val pp_set_tab : formatter -> unit -> unit
-val set_tab : unit -> unit
-(** Sets a tabulation marker at current insertion point. *)
-
-val pp_print_tab : formatter -> unit -> unit
-val print_tab : unit -> unit
-(** [print_tab ()] emits a 'next' tabulation break hint: if not already set on
-  a tabulation marker, the insertion point moves to the first tabulation
-  marker on the right, or the pretty-printer splits the line and insertion
-  point moves to the leftmost tabulation marker.
-
-  It is equivalent to [print_tbreak 0 0]. *)
-
-val pp_print_tbreak : formatter -> int -> int -> unit
-val print_tbreak : int -> int -> unit
-(** [print_tbreak nspaces offset] emits a 'full' tabulation break hint.
-
-  If not already set on a tabulation marker, the insertion point moves to the
-  first tabulation marker on the right and the pretty-printer prints
-  [nspaces] spaces.
-
-  If there is no next tabulation marker on the right, the pretty-printer
-  splits the line at this point, then insertion point moves to the leftmost
-  tabulation marker of the box.
-
-  If the pretty-printer splits the line, [offset] is added to
-  the current indentation.
-*)
-
-(** {1 Ellipsis} *)
-
-val pp_set_ellipsis_text : formatter -> string -> unit
-val set_ellipsis_text : string -> unit
-(** Set the text of the ellipsis printed when too many pretty-printing boxes
-  are open (a single dot, [.], by default).
-*)
-
-val pp_get_ellipsis_text : formatter -> unit -> string
-val get_ellipsis_text : unit -> string
-(** Return the text of the ellipsis. *)
-
-(** {1:tags Semantic tags} *)
-
-type stag = ..
-(** {i Semantic tags} (or simply {e tags}) are user's defined annotations
-  to associate user's specific operations to printed entities.
-
-  Common usage of semantic tags is text decoration to get specific font or
-  text size rendering for a display device, or marking delimitation of
-  entities (e.g. HTML or TeX elements or terminal escape sequences).
-  More sophisticated usage of semantic tags could handle dynamic
-  modification of the pretty-printer behavior to properly print the material
-  within some specific tags.
-  For instance, we can define an RGB tag like so:
-{[
-type stag += RGB of {r:int;g:int;b:int}
-]}
-
-  In order to properly delimit printed entities, a semantic tag must be
-  opened before and closed after the entity. Semantic tags must be properly
-  nested like parentheses using {!pp_open_stag} and {!pp_close_stag}.
-
-  Tag specific operations occur any time a tag is opened or closed, At each
-  occurrence, two kinds of operations are performed {e tag-marking} and
-  {e tag-printing}:
-- The tag-marking operation is the simpler tag specific operation: it simply
-  writes a tag specific string into the output device of the
-  formatter. Tag-marking does not interfere with line-splitting computation.
-- The tag-printing operation is the more involved tag specific operation: it
-  can print arbitrary material to the formatter. Tag-printing is tightly
-  linked to the current pretty-printer operations.
-
-  Roughly speaking, tag-marking is commonly used to get a better rendering of
-  texts in the rendering device, while tag-printing allows fine tuning of
-  printing routines to print the same entity differently according to the
-  semantic tags (i.e. print additional material or even omit parts of the
-  output).
-
-  More precisely: when a semantic tag is opened or closed then both and
-  successive 'tag-printing' and 'tag-marking' operations occur:
-  - Tag-printing a semantic tag means calling the formatter specific function
-  [print_open_stag] (resp. [print_close_stag]) with the name of the tag as
-  argument: that tag-printing function can then print any regular material
-  to the formatter (so that this material is enqueued as usual in the
-  formatter queue for further line splitting computation).
-  - Tag-marking a semantic tag means calling the formatter specific function
-  [mark_open_stag] (resp. [mark_close_stag]) with the name of the tag as
-  argument: that tag-marking function can then return the 'tag-opening
-  marker' (resp. `tag-closing marker') for direct output into the output
-  device of the formatter.
-
-  Being written directly into the output device of the formatter, semantic
-  tag marker strings are not considered as part of the printing material that
-  drives line splitting (in other words, the length of the strings
-  corresponding to tag markers is considered as zero for line splitting).
-
-  Thus, semantic tag handling is in some sense transparent to pretty-printing
-  and does not interfere with usual indentation. Hence, a single
-  pretty-printing routine can output both simple 'verbatim' material or
-  richer decorated output depending on the treatment of tags. By default,
-  tags are not active, hence the output is not decorated with tag
-  information. Once [set_tags] is set to [true], the pretty-printer engine
-  honors tags and decorates the output accordingly.
-
-  Default tag-marking functions behave the HTML way: {{!tag}string tags} are
-  enclosed in "<" and ">" while other tags are ignored;
-  hence, opening marker for tag string ["t"] is ["<t>"] and closing marker
-  is ["</t>"].
-
-  Default tag-printing functions just do nothing.
-
-  Tag-marking and tag-printing functions are user definable and can
-  be set by calling {!set_formatter_stag_functions}.
-
-  Semantic tag operations may be set on or off with {!set_tags}.
-  Tag-marking operations may be set on or off with {!set_mark_tags}.
-  Tag-printing operations may be set on or off with {!set_print_tags}.
-*)
-
-type tag = string
-type stag += String_tag of tag
-(** [String_tag s] is a string tag [s]. String tags can be inserted either
-    by explicitly using the constructor [String_tag] or by using the dedicated
-    format syntax ["@{<s> ... @}"].
-*)
-
-val pp_open_stag : formatter -> stag -> unit
-val open_stag : stag -> unit
-(** [pp_open_stag ppf t] opens the semantic tag named [t].
-
-  The [print_open_stag] tag-printing function of the formatter is called with
-  [t] as argument; then the opening tag marker for [t], as given by
-  [mark_open_stag t], is written into the output device of the formatter.
-*)
-
-val pp_close_stag : formatter -> unit -> unit
-val close_stag : unit -> unit
-(** [pp_close_stag ppf ()] closes the most recently opened semantic tag [t].
-
-  The closing tag marker, as given by [mark_close_stag t], is written into the
-  output device of the formatter; then the [print_close_stag] tag-printing
-  function of the formatter is called with [t] as argument.
-*)
-
-val pp_set_tags : formatter -> bool -> unit
-val set_tags : bool -> unit
-(** [pp_set_tags ppf b] turns on or off the treatment of semantic tags
-  (default is off).
-*)
-
-val pp_set_print_tags : formatter -> bool -> unit
-val set_print_tags : bool -> unit
-(** [pp_set_print_tags ppf b] turns on or off the tag-printing operations. *)
-
-val pp_set_mark_tags : formatter -> bool -> unit
-val set_mark_tags : bool -> unit
-(** [pp_set_mark_tags ppf b] turns on or off the tag-marking operations. *)
-
-val pp_get_print_tags : formatter -> unit -> bool
-val get_print_tags : unit -> bool
-(** Return the current status of tag-printing operations. *)
-
-val pp_get_mark_tags : formatter -> unit -> bool
-val get_mark_tags : unit -> bool
-(** Return the current status of tag-marking operations. *)
-
 (** {1 Redirecting the standard formatter output} *)
 val pp_set_formatter_out_channel :
   formatter -> Stdlib.out_channel -> unit
-val set_formatter_out_channel : Stdlib.out_channel -> unit
 (** Redirect the standard pretty-printer output to the given channel.
   (All the output functions of the standard formatter are set to the
    default output functions printing to the given channel.)
-
-  [set_formatter_out_channel] is equivalent to
-  {!pp_set_formatter_out_channel} [std_formatter].
 *)
 
 val pp_set_formatter_output_functions :
   formatter -> (string -> int -> int -> unit) -> (unit -> unit) -> unit
-val set_formatter_output_functions :
-  (string -> int -> int -> unit) -> (unit -> unit) -> unit
 (** [pp_set_formatter_output_functions ppf out flush] redirects the
   standard pretty-printer output functions to the functions [out] and
   [flush].
@@ -782,8 +542,6 @@ val set_formatter_output_functions :
 
 val pp_get_formatter_output_functions :
   formatter -> unit -> (string -> int -> int -> unit) * (unit -> unit)
-val get_formatter_output_functions :
-  unit -> (string -> int -> int -> unit) * (unit -> unit)
 (** Return the current output functions of the standard pretty-printer. *)
 
 (** {1:meaning Redefining formatter output} *)
@@ -830,7 +588,6 @@ type formatter_out_functions = {
 
 val pp_set_formatter_out_functions :
   formatter -> formatter_out_functions -> unit
-val set_formatter_out_functions : formatter_out_functions -> unit
 (** [pp_set_formatter_out_functions ppf out_funs]
   Set all the pretty-printer output functions of [ppf] to those of
   argument [out_funs],
@@ -848,54 +605,11 @@ val set_formatter_out_functions : formatter_out_functions -> unit
 
 val pp_get_formatter_out_functions :
   formatter -> unit -> formatter_out_functions
-val get_formatter_out_functions : unit -> formatter_out_functions
 (** Return the current output functions of the pretty-printer,
   including line splitting and indentation functions. Useful to record the
   current setting and restore it afterwards.
   @since 4.01.0
 *)
-
-(** {1:tagsmeaning Redefining semantic tag operations} *)
-
-type formatter_stag_functions = {
-  mark_open_stag : stag -> string;
-  mark_close_stag : stag -> string;
-  print_open_stag : stag -> unit;
-  print_close_stag : stag -> unit;
-}
-(** The semantic tag handling functions specific to a formatter:
-  [mark] versions are the 'tag-marking' functions that associate a string
-  marker to a tag in order for the pretty-printing engine to write
-  those markers as 0 length tokens in the output device of the formatter.
-  [print] versions are the 'tag-printing' functions that can perform
-  regular printing when a tag is closed or opened.
-*)
-
-val pp_set_formatter_stag_functions :
-  formatter -> formatter_stag_functions -> unit
-val set_formatter_stag_functions : formatter_stag_functions -> unit
-(** [pp_set_formatter_stag_functions ppf tag_funs] changes the meaning of
-  opening and closing semantic tag operations to use the functions in
-  [tag_funs] when printing on [ppf].
-
-  When opening a semantic tag with name [t], the string [t] is passed to the
-  opening tag-marking function (the [mark_open_stag] field of the
-  record [tag_funs]), that must return the opening tag marker for
-  that name. When the next call to [close_stag ()] happens, the semantic tag
-  name [t] is sent back to the closing tag-marking function (the
-  [mark_close_stag] field of record [tag_funs]), that must return a
-  closing tag marker for that name.
-
-  The [print_] field of the record contains the tag-printing functions that
-  are called at tag opening and tag closing time, to output regular material
-  in the pretty-printer queue.
-*)
-
-val pp_get_formatter_stag_functions :
-  formatter -> unit -> formatter_stag_functions
-val get_formatter_stag_functions : unit -> formatter_stag_functions
-(** Return the current semantic tag operation functions of the standard
-  pretty-printer. *)
 
 (** {1:formatter Defining formatters}
 
@@ -979,93 +693,6 @@ val formatter_of_out_functions :
 *)
 
 val pp_set_max_newline_offset : formatter -> int -> unit
-
-(** {2:symbolic Symbolic pretty-printing} *)
-
-(**
-  Symbolic pretty-printing is pretty-printing using a symbolic formatter,
-  i.e. a formatter that outputs symbolic pretty-printing items.
-
-  When using a symbolic formatter, all regular pretty-printing activities
-  occur but output material is symbolic and stored in a buffer of output items.
-  At the end of pretty-printing, flushing the output buffer allows
-  post-processing of symbolic output before performing low level output
-  operations.
-
-  In practice, first define a symbolic output buffer [b] using:
-  - [let sob = make_symbolic_output_buffer ()].
-  Then define a symbolic formatter with:
-  - [let ppf = formatter_of_symbolic_output_buffer sob]
-
-  Use symbolic formatter [ppf] as usual, and retrieve symbolic items at end
-  of pretty-printing by flushing symbolic output buffer [sob] with:
-  - [flush_symbolic_output_buffer sob].
-*)
-
-type symbolic_output_item =
-  | Output_flush (** symbolic flush command *)
-  | Output_newline (** symbolic newline command *)
-  | Output_string of string
-  (** [Output_string s]: symbolic output for string [s]*)
-  | Output_spaces of int
-  (** [Output_spaces n]: symbolic command to output [n] spaces *)
-  | Output_indent of int
-  (** [Output_indent i]: symbolic indentation of size [i] *)
-(** Items produced by symbolic pretty-printers
-    @since 4.06.0
-*)
-
-type symbolic_output_buffer
-(**
-  The output buffer of a symbolic pretty-printer.
-
-  @since 4.06.0
-*)
-
-val make_symbolic_output_buffer : unit -> symbolic_output_buffer
-(** [make_symbolic_output_buffer ()] returns a fresh buffer for
-  symbolic output.
-
-  @since 4.06.0
-*)
-
-val clear_symbolic_output_buffer : symbolic_output_buffer -> unit
-(** [clear_symbolic_output_buffer sob] resets buffer [sob].
-
-  @since 4.06.0
-*)
-
-val get_symbolic_output_buffer :
-  symbolic_output_buffer -> symbolic_output_item list
-(** [get_symbolic_output_buffer sob] returns the contents of buffer [sob].
-
-  @since 4.06.0
-*)
-
-val flush_symbolic_output_buffer :
-  symbolic_output_buffer -> symbolic_output_item list
-(** [flush_symbolic_output_buffer sob] returns the contents of buffer
-  [sob] and resets buffer [sob].
-  [flush_symbolic_output_buffer sob] is equivalent to
-  [let items = get_symbolic_output_buffer sob in
-   clear_symbolic_output_buffer sob; items]
-
-  @since 4.06.0
-*)
-
-val add_symbolic_output_item :
-  symbolic_output_buffer -> symbolic_output_item -> unit
-(** [add_symbolic_output_item sob itm] adds item [itm] to buffer [sob].
-
-  @since 4.06.0
-*)
-
-val formatter_of_symbolic_output_buffer : symbolic_output_buffer -> formatter
-(** [formatter_of_symbolic_output_buffer sob] returns a symbolic formatter
-  that outputs to [symbolic_output_buffer] [sob].
-
-  @since 4.06.0
-*)
 
 (** {1 Convenience formatting functions.} *)
 
@@ -1164,16 +791,6 @@ val fprintf : formatter -> ('a, formatter, unit) format -> 'a
     If [@<n>] is not followed by a conversion specification,
     then the following character of the format is printed as if
     it were of length [n].
-  - [@\{]: open a semantic tag. The name of the tag may be optionally
-    specified with the following syntax:
-    the [<] character, followed by an optional string
-    specification, and the closing [>] character. The string
-    specification is any character string that does not contain the
-    closing character ['>']. If omitted, the tag name defaults to the
-    empty string.
-    For more details about semantic tags, see the functions {!open_stag} and
-    {!close_stag}.
-  - [@\}]: close the most recently opened semantic tag.
   - [@?]: flush the pretty-printer as with [print_flush ()].
     This is equivalent to the conversion [%!].
   - [@\n]: force a newline, as with [force_newline ()], not the normal way
@@ -1250,103 +867,3 @@ val kasprintf : (string -> 'a) -> ('b, formatter, unit, 'a) format4 -> 'b
 
   @since 4.03
 *)
-
-(** {1 Deprecated} *)
-
-val bprintf : Buffer.t -> ('a, formatter, unit) format -> 'a
-  [@@ocaml.deprecated]
-(** @deprecated This function is error prone. Do not use it.
-  This function is neither compositional nor incremental, since it flushes
-  the pretty-printer queue at each call.
-
-  If you need to print to some buffer [b], you must first define a
-  formatter writing to [b], using [let to_b = formatter_of_buffer b]; then
-  use regular calls to [Format.fprintf] with formatter [to_b].
-*)
-
-val kprintf : (string -> 'a) -> ('b, unit, string, 'a) format4 -> 'b
-  [@@ocaml.deprecated "Use Format.ksprintf instead."]
-(** @deprecated An alias for [ksprintf]. *)
-
-val set_all_formatter_output_functions :
-  out:(string -> int -> int -> unit) ->
-  flush:(unit -> unit) ->
-  newline:(unit -> unit) ->
-  spaces:(int -> unit) ->
-  unit
-[@@ocaml.deprecated "Use Format.set_formatter_out_functions instead."]
-(** @deprecated Subsumed by [set_formatter_out_functions]. *)
-
-val get_all_formatter_output_functions :
-  unit ->
-  (string -> int -> int -> unit) *
-  (unit -> unit) *
-  (unit -> unit) *
-  (int -> unit)
-[@@ocaml.deprecated "Use Format.get_formatter_out_functions instead."]
-(** @deprecated Subsumed by [get_formatter_out_functions]. *)
-
-val pp_set_all_formatter_output_functions :
-  formatter -> out:(string -> int -> int -> unit) -> flush:(unit -> unit) ->
-  newline:(unit -> unit) -> spaces:(int -> unit) -> unit
-[@@ocaml.deprecated "Use Format.pp_set_formatter_out_functions instead."]
-(** @deprecated Subsumed by [pp_set_formatter_out_functions]. *)
-
-val pp_get_all_formatter_output_functions :
-  formatter -> unit ->
-  (string -> int -> int -> unit) * (unit -> unit) * (unit -> unit) *
-  (int -> unit)
-[@@ocaml.deprecated "Use Format.pp_get_formatter_out_functions instead."]
-(** @deprecated Subsumed by [pp_get_formatter_out_functions]. *)
-
-(** {2 String tags} *)
-
-val pp_open_tag : formatter -> tag -> unit
-[@@ocaml.deprecated "Use Format.pp_open_stag."]
-(** @deprecated Subsumed by {!pp_open_stag}. *)
-
-val open_tag : tag -> unit
-[@@ocaml.deprecated "Use Format.open_stag."]
-(** @deprecated Subsumed by {!open_stag}. *)
-
-val pp_close_tag : formatter -> unit -> unit
-[@@ocaml.deprecated "Use Format.pp_close_stag."]
-(** @deprecated Subsumed by {!pp_close_stag}. *)
-
-val close_tag : unit -> unit
-[@@ocaml.deprecated "Use Format.close_stag."]
-(** @deprecated Subsumed by {!close_stag}. *)
-
-type formatter_tag_functions = {
-  mark_open_tag : tag -> string;
-  mark_close_tag : tag -> string;
-  print_open_tag : tag -> unit;
-  print_close_tag : tag -> unit;
-}
-[@@ocaml.deprecated "Use formatter_stag_functions."]
-(** @deprecated Subsumed by {!formatter_stag_functions}. *)
-
-val pp_set_formatter_tag_functions :
-  formatter -> formatter_tag_functions -> unit
-[@@ocaml.deprecated
-  "This function will erase non-string tag formatting functions. \
-   Use Format.pp_set_formatter_stag_functions."]
-[@@warning "-3"]
-(** This function will erase non-string tag formatting functions.
-    @deprecated Subsumed by {!pp_set_formatter_stag_functions}. *)
-
-val set_formatter_tag_functions : formatter_tag_functions -> unit
-[@@ocaml.deprecated "Use Format.set_formatter_stag_functions."]
-[@@warning "-3"]
-(** @deprecated Subsumed by {!set_formatter_stag_functions}. *)
-
-val pp_get_formatter_tag_functions :
-  formatter -> unit -> formatter_tag_functions
-[@@ocaml.deprecated "Use Format.pp_get_formatter_stag_functions."]
-[@@warning "-3"]
-(** @deprecated Subsumed by {!pp_get_formatter_stag_functions}. *)
-
-val get_formatter_tag_functions : unit -> formatter_tag_functions
-[@@ocaml.deprecated "Use Format.get_formatter_stag_functions."]
-[@@warning "-3"]
-(** @deprecated Subsumed by {!get_formatter_stag_functions}. *)
