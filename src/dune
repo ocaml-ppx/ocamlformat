@@ -38,3 +38,6 @@
  (section man)
  (files ocamlformat.1)
  (package ocamlformat))
+
+(documentation
+ (package ocamlformat))

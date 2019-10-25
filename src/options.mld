@@ -1,0 +1,169 @@
+{1 Options}
+
+Here is a showcase of ocamlformat options.
+
+{2 [--align-cases]}
+
+{3 [--align-cases]}
+
+{[
+type t = A | BB
+
+let f = function
+  | A  -> ()
+  | BB -> ()
+]}
+
+{3 [--no-align-cases]}
+
+{[
+type t = A | BB
+
+let f = function
+  | A -> ()
+  | BB -> ()
+]}
+
+{2 [--align-constructors-decl]}
+
+{3 [--align-constructors-decl]}
+
+{[
+type t =
+  | A  of int
+  | BB of int
+]}
+
+{3 [--no-align-constructors-decl]}
+
+{[
+type t =
+  | A of int
+  | BB of int
+]}
+
+{2 [--align-variants-decl]}
+
+{3 [--align-variants-decl]}
+
+{[
+type t =           
+  [ `A  of int
+  | `BB of int
+  ]
+]}
+
+{3 [--no-align-variants-decl]}
+
+{[
+type t =           
+  [ `A of int
+  | `BB of int
+  ]
+]}
+
+{2 [--assignment-operator={begin-line|end-line}]}
+
+{3 [--assignment-operator=begin-line]}
+
+{[
+r
+  := Some
+       { x
+       ; y
+       ; z
+       }
+]}
+
+{3 [--assignment-operator=end-line]}
+
+{[
+r :=
+  Some
+    { x
+    ; y
+    ; z
+    }
+]}
+
+{2 TODO}
+
+{2 [--break-before-in={fit-or-vertical|auto}]}
+{2 [--break-cases={fit|nested|toplevel|fit-or-vertical|all}]}
+{2 [--break-collection-expressions={fit-or-vertical|wrap}]}
+{2 [--break-fun-decl={wrap|fit-or-vertical|smart}]}
+{2 [--break-fun-sig={wrap|fit-or-vertical|smart}]}
+{2 [--break-infix={wrap|fit-or-vertical}]}
+{2 [--break-infix-before-func]}
+{2 [--break-separators={after|before}]}
+{2 [--break-sequences]}
+{2 [--break-string-literals={auto|never}]}
+{2 [--break-struct={force|natural}]}
+{2 [--cases-exp-indent=COLS]}
+{2 [--cases-matching-exp-indent={normal|compact}]}
+{2 [--disable]}
+{2 [--disambiguate-non-breaking-match]}
+{2 [--doc-comments={after|before}]}
+{2 [--doc-comments-padding=PADDING]}
+{2 [--doc-comments-tag-only={default|fit}]}
+{2 [--dock-collection-brackets]}
+{2 [--escape-chars={preserve|decimal|hexadecimal}]}
+{2 [--escape-strings={preserve|decimal|hexadecimal}]}
+{2 [--exp-grouping={parens|preserve}]}
+{2 [--extension-indent=COLS]}
+{2 [--extension-sugar={preserve|always}]}
+{2 [--field-space={loose|tight|tight-decl}]}
+{2 [--function-indent=COLS]}
+{2 [--function-indent-nested={never|always|auto}]}
+{2 [--if-then-else={compact|fit-or-vertical|keyword-first|k-r}]}
+{2 [--indent-after-in=COLS]}
+{2 [--indicate-multiline-delimiters={space|no|closing-on-separate-line}]}
+{2 [--indicate-nested-or-patterns={unsafe-no|space}]}
+{2 [--infix-precedence={indent|parens}]}
+{2 [--leading-nested-match-parens]}
+{2 [--let-and={compact|sparse}]}
+{2 [--let-binding-indent=COLS]}
+{2 [--let-binding-spacing={compact|sparse|double-semicolon}]}
+{2 [--let-module={compact|sparse}]}
+{2 [--let-open={preserve|short|long|auto}]}
+{2 [-m COLS, --margin=COLS]}
+{2 [--match-indent=COLS]}
+{2 [--match-indent-nested={never|always|auto}]}
+{2 [--max-indent=COLS]}
+{2 [--module-item-spacing={sparse|preserve|compact}]}
+{2 [--nested-match={wrap|align}]}
+{2 [--no-align-cases]}
+{2 [--no-align-constructors-decl]}
+{2 [--no-align-variants-decl]}
+{2 [--no-break-infix-before-func]}
+{2 [--no-break-sequences]}
+{2 [--no-disable]}
+{2 [--no-disambiguate-non-breaking-match]}
+{2 [--no-dock-collection-brackets]}
+{2 [--no-leading-nested-match-parens]}
+{2 [--no-ocp-indent-compat]}
+{2 [--no-parens-ite]}
+{2 [--no-parse-docstrings]}
+{2 [--no-space-around-arrays]}
+{2 [--no-space-around-lists]}
+{2 [--no-space-around-records]}
+{2 [--no-space-around-variants]}
+{2 [--no-wrap-comments]}
+{2 [--no-wrap-fun-args]}
+{2 [--ocp-indent-compat]}
+{2 [--parens-ite]}
+{2 [--parens-tuple={always|multi-line-only}]}
+{2 [--parens-tuple-patterns={multi-line-only|always}]}
+{2 [--parse-docstrings]}
+{2 [--sequence-blank-line={preserve-one|compact}]}
+{2 [--sequence-style={terminator|separator|before}]}
+{2 [--single-case={compact|sparse}]}
+{2 [--space-around-arrays]}
+{2 [--space-around-lists]}
+{2 [--space-around-records]}
+{2 [--space-around-variants]}
+{2 [--stritem-extension-indent=COLS]}
+{2 [--type-decl={compact|sparse}]}
+{2 [--type-decl-indent=COLS]}
+{2 [--wrap-comments]}
+{2 [--wrap-fun-args]}
