@@ -669,7 +669,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_constr (lid, t1N) ->
       wrap_fits_breaks c.conf "(" ")"
-        (list t1N (Params.comma_sep c.conf) (sub_typ ~ctx >> fmt_core_type c))
+        (list t1N (Params.comma_sep c.conf)
+           (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ " $ fmt_longident_loc c lid
   | Ptyp_extension ext ->
       hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
@@ -777,7 +778,8 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       $ fmt_longident_loc c ~pre:(str "#") lid
   | Ptyp_class (lid, t1N) ->
       wrap_fits_breaks c.conf "(" ")"
-        (list t1N (Params.comma_sep c.conf) (sub_typ ~ctx >> fmt_core_type c))
+        (list t1N (Params.comma_sep c.conf)
+           (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ "
       $ fmt_longident_loc c ~pre:(str "#") lid )
   $ fmt_docstring c ~pro:(fmt "@ ") doc
@@ -1704,8 +1706,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt "@ " $ fmt_cases c ctx'' cs $ str ")"
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
-          wrap_if parens "(" ")"
-            (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs) )
+          fmt_if parens "("
+          $ hvbox 2 (fmt_args_grouped e0 e1N1 $ fmt_atrs $ fmt_if parens ")")
+      )
   | Pexp_array [] ->
       hvbox 0
         ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)

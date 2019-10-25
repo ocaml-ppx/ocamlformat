@@ -9802,7 +9802,9 @@ end
 (* FIX: exceed 90 columns *)
 let _ =
   aa
-    (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)
+    (bbbbbbbbb
+       cccccccccccc
+       dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)
 ;;
 
 (* FIX: exceed 90 columns *)
