@@ -30,7 +30,11 @@ let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
       wrap_if_fits_or parens "(" ")" k
   | (`Parens | `Begin_end) when not parens -> k
   | `Parens when fits_breaks -> wrap_fits_breaks ~space:false c "(" ")" k
-  | `Parens -> wrap "(" ")" k
+  | `Parens -> (
+    match c.Conf.indicate_multiline_delimiters with
+    | `Space ->
+        Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
+    | _ -> wrap "(" ")" k )
   | `Begin_end ->
       vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
 
