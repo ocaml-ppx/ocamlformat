@@ -1067,15 +1067,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           ; ptyp_loc= (* TODO: use ptyp_loc *) _
           ; _ } as typ ) ) ->
       let ctx = Typ typ in
-      hovbox 0
-        (wrap_if parens "(" ")"
-           (hvbox 1
-              (Cmts.fmt c typ.ptyp_loc
-                 ( hovbox 0
-                     ( Cmts.fmt c ppat_loc
-                         (str "module " $ fmt_str_loc c name)
-                     $ fmt "@ : " $ fmt_longident_loc c id )
-                 $ fmt_package_type c ctx cnstrs ))))
+      wrap_if parens "(" ")"
+        (hvbox 1
+           (Cmts.fmt c typ.ptyp_loc
+              ( hovbox 0
+                  ( Cmts.fmt c ppat_loc (str "module " $ fmt_str_loc c name)
+                  $ fmt "@ : " $ fmt_longident_loc c id )
+              $ fmt_package_type c ctx cnstrs )))
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (wrap_if parens "(" ")"
@@ -1779,16 +1777,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | `Closing_on_separate_line ->
             (str "(", fits_breaks ")" ~hint:(1000, -2) ")")
       in
-      hovbox 0
-        (compose_module
-           (fmt_module_expr c (sub_mod ~ctx me))
-           ~f:(fun m ->
-             hvbox 2
-               ( hovbox 0
-                   ( opn_paren $ str "module " $ m $ fmt "@ : "
-                   $ fmt_longident_loc c id )
-               $ fmt_package_type c ctx cnstrs
-               $ fmt_atrs $ cls_paren )))
+      compose_module
+        (fmt_module_expr c (sub_mod ~ctx me))
+        ~f:(fun m ->
+          hvbox 2
+            ( hovbox 0
+                ( opn_paren $ str "module " $ m $ fmt "@ : "
+                $ fmt_longident_loc c id )
+            $ fmt_package_type c ctx cnstrs
+            $ fmt_atrs $ cls_paren ))
   | Pexp_constraint (e, t) ->
       hvbox 2
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2154,8 +2151,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         Params.wrap_exp c.conf c.source ~parens:true ~loc:pexp_loc
           (str "module " $ m $ fmt_atrs)
       in
-      hovbox 0
-        (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
+      compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =
         let fmt_rhs e = fmt_expression c (sub_exp ~ctx e) in
@@ -3743,7 +3739,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let has_epi =
         Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
       in
-      { opn= blk_t.opn $ blk_e.opn $ open_hovbox 2
+      { opn= blk_t.opn $ blk_e.opn $ open_hvbox 2
       ; pro=
           Some
             ( Cmts.fmt_before c pmod_loc

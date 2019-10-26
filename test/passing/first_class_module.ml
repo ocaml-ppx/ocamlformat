@@ -85,7 +85,8 @@ let _ = (module Ephemeron (HHH) : Ephemeron.S)
 let _ =
   ( module Ephemeron (struct
     type t = t
-  end) : Ephemeron.S )
+  end)
+  : Ephemeron.S )
 
 let _ =
   ( module struct
