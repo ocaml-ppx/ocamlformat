@@ -1676,26 +1676,27 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           in
           hvbox 0
             (wrap_if parens "(" ")"
-               ( hovbox 2
-                   ( wrap
-                       ( fmt_args_grouped e0 e1N $ fmt "@ "
-                       $ fmt_label lbl ":" $ cmts_before
-                       $ hvbox 0
-                           ( str "(fun "
-                           $ fmt_attributes c ~key:"@" eN1.pexp_attributes
-                               ~suf:(str " ")
-                           $ hvbox 0 (fmt_fun_args c xargs $ fmt "@ ->") ) )
-                   $ fmt
-                       ( match xbody.ast.pexp_desc with
-                       | Pexp_function _ -> "@ "
-                       | _ -> (
-                         (* Avoid the "double indentation" of the application
-                            and the function matching when the [max-indent]
-                            option is set. *)
-                         match c.conf.max_indent with
-                         | Some i when i <= 2 -> "@ "
-                         | _ -> "@;<1 2>" ) )
-                   $ cbox 0 (fmt_expression c ?box xbody)
+               ( hovbox 0
+                   ( hovbox 2
+                       ( wrap
+                           ( fmt_args_grouped e0 e1N $ fmt "@ "
+                           $ fmt_label lbl ":" $ cmts_before
+                           $ hvbox 0
+                               ( str "(fun "
+                               $ fmt_attributes c ~key:"@" eN1.pexp_attributes
+                                   ~suf:(str " ")
+                               $ fmt_fun_args c xargs $ fmt "@ ->" ) )
+                       $ fmt
+                           ( match xbody.ast.pexp_desc with
+                           | Pexp_function _ -> "@ "
+                           | _ -> (
+                             (* Avoid the "double indentation" of the application
+                                and the function matching when the [max-indent]
+                                option is set. *)
+                             match c.conf.max_indent with
+                             | Some i when i <= 2 -> "@ "
+                             | _ -> "@;<1 2>" ) )
+                       $ fmt_expression c ?box xbody )
                    $ str ")" $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | ( lbl
