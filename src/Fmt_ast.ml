@@ -3006,13 +3006,9 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
       (not (List.is_empty cstrs))
       (fmt "@ " $ hvbox 0 (list cstrs "@ " fmt_cstr))
   in
-  (* Docstring cannot be placed after variant declarations *)
-  let force_before =
-    match ptype_kind with Ptype_variant _ -> true | _ -> false
-  in
   let doc_before, doc_after, atrs =
     let fit = Ast.type_decl_is_simple decl in
-    fmt_docstring_around_item ~force_before ~fit c ptype_attributes
+    fmt_docstring_around_item ~force_before:true ~fit c ptype_attributes
   in
   Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
