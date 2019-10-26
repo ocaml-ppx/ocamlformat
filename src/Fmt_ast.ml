@@ -3255,7 +3255,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
       let fmt_cstrs ~first:_ ~last:_ (wcs_and, loc, attr) =
         Cmts.fmt c loc
           ( list_fl wcs_and fmt_cstr
-          $ fmt_attributes c ~pre:(str " ") ~key:"@" attr )
+          $ fmt_attributes c ~pre:(fmt "@;<1 -1>") ~key:"@" attr )
       in
       let {pro; psp; bdy; esp; epi; opn= _; cls= _} = fmt_module_type c mt in
       { empty with
