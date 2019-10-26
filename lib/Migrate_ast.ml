@@ -189,7 +189,7 @@ module Location = struct
     Comparable.lexicographic [compare_start; descending compare_end; compare]
 
   let is_single_line x margin =
-    width x <= margin && x.loc_start.pos_lnum = x.loc_end.pos_lnum
+    width x <= margin + 1 && x.loc_start.pos_lnum = x.loc_end.pos_lnum
 
   let smallest loc stack =
     let min a b = if width a < width b then a else b in
