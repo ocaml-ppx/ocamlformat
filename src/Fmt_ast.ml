@@ -1395,6 +1395,38 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   @@
   match pexp_desc with
   | Pexp_apply (_, []) -> impossible "not produced by parser"
+  | Pexp_sequence
+      ( { pexp_desc=
+            Pexp_extension
+              ( name
+              , PStr
+                  [ ( { pstr_desc=
+                          Pstr_eval (({pexp_desc= Pexp_fun _; _} as call), [])
+                      ; pstr_loc= _ } as pld ) ] )
+        ; _ }
+      , e2 ) ->
+      let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call) in
+      let is_simple x = is_simple c.conf (expression_width c) x in
+      let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
+      let grps =
+        List.group
+          (List.map ~f:snd (Sugar.sequence c.conf c.cmts (sub_exp ~ctx e2)))
+          ~break
+      in
+      let fmt_grp grp = list grp " ;@ " (fmt_expression c) in
+      hvbox 0
+        (wrap_if parens "(" ")"
+           ( hvbox c.conf.extension_indent
+               (wrap "[" "]"
+                  ( str "%"
+                  $ hovbox 2
+                      ( fmt_str_loc c name $ str " fun "
+                      $ fmt_attributes c ~suf:(str " ") call.pexp_attributes
+                          ~key:"@"
+                      $ fmt_fun_args c xargs $ fmt "@ ->" )
+                  $ fmt "@ " $ fmt_expression c xbody ))
+           $ fmt "@ ;@ "
+           $ list grps " ;@;<1000 0>" fmt_grp ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident "|>"; loc}
         ; pexp_attributes= []
