@@ -1674,6 +1674,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | Pexp_fun _ | Pexp_function _ -> Some false
             | _ -> None
           in
+          let fit = Location.is_single_line pexp_loc c.conf.margin in
           hvbox 0
             (wrap_if parens "(" ")"
                ( hovbox 0
@@ -1697,7 +1698,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                              | Some i when i <= 2 -> "@ "
                              | _ -> "@;<1 2>" ) )
                        $ fmt_expression c ?box xbody )
-                   $ str ")" $ Cmts.fmt_after c pexp_loc )
+                   $ fmt_or_k
+                       Poly.(c.conf.indicate_multiline_delimiters = `Space)
+                       (fmt_or_k fit (str ")")
+                          (fits_breaks ~force_fit_if:fit ")" ~hint:(1, 0) ")"))
+                       (fits_breaks ~force_fit_if:fit ")" ~hint:(0, 0) ")")
+                   $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | ( lbl
         , ( { pexp_desc= Pexp_function [{pc_lhs; pc_guard= None; pc_rhs}]
@@ -1728,7 +1734,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@ ->" )
                    $ fmt "@ "
                    $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                   $ str ")" $ Cmts.fmt_after c pexp_loc )
+                   $ fmt_or_k
+                       Poly.(c.conf.indicate_multiline_delimiters = `Space)
+                       (fits_breaks ")" " )") (str ")")
+                   $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | ( lbl
         , ( {pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes= _; _} as
@@ -1751,7 +1760,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_label lbl ":" $ str "(function"
                       $ fmt_attributes c ~pre:(str " ") ~key:"@"
                           eN.pexp_attributes ))
-               $ fmt "@ " $ fmt_cases c ctx'' cs $ str ")"
+               $ fmt "@ " $ fmt_cases c ctx'' cs
+               $ fmt_or_k
+                   Poly.(c.conf.indicate_multiline_delimiters = `Space)
+                   (fits_breaks ")" " )") (str ")")
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
           let fmt_atrs =
