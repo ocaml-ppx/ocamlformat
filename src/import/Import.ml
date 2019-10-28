@@ -30,8 +30,6 @@ include Stdio
 
 let ( >> ) f g x = g (f x)
 
-let ( $ ) f g x = f x ; g x
-
 let impossible msg = failwith msg
 
 let user_error msg kvs =

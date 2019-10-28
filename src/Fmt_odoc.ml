@@ -106,7 +106,7 @@ let block_element_should_break elem next =
 (* Format a list of block_elements separated by newlines Inserts blank line
    depending on [block_element_should_break] *)
 let list_block_elem elems f =
-  list_pn elems (fun ?prev:_ elem ?next ->
+  list_pn elems (fun ~prev:_ elem ~next ->
       let elem = elem.Location_.value in
       let break =
         match next with

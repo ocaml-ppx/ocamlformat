@@ -484,7 +484,7 @@ let fmt_cmt (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
       ( fmt "(*"
-      $ list_pn lines (fun ?prev:_ line ?next ->
+      $ list_pn lines (fun ~prev:_ line ~next ->
             match (line, next) with
             | "", None -> fmt ")"
             | _, None -> str line $ fmt "*)"
@@ -553,7 +553,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
             fmt_if (line_dist cur_last_loc next_loc > 1) "\n"
         | _ -> noop
       in
-      list_pn groups (fun ?prev group ?next ->
+      list_pn groups (fun ~prev group ~next ->
           fmt_or_k (Option.is_none prev)
             (Option.call ~f:pro $ open_vbox 0)
             (fmt "@ ")
@@ -575,10 +575,9 @@ let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break_unless_newline 1 0)
   fmt_cmts t conf t.cmts_before ~fmt_code ?pro ~epi ?eol ?adj
 
 let fmt_after t conf ~fmt_code ?(pro = Fmt.break_unless_newline 1 0) ?epi =
+  let open Fmt in
   let within = fmt_cmts t conf t.cmts_within ~fmt_code ~pro ?epi in
-  let after =
-    fmt_cmts t conf t.cmts_after ~fmt_code ~pro ?epi ~eol:Fmt.noop
-  in
+  let after = fmt_cmts t conf t.cmts_after ~fmt_code ~pro ?epi ~eol:noop in
   fun loc -> within loc $ after loc
 
 let fmt_within t conf ~fmt_code ?(pro = Fmt.break_unless_newline 1 0)
@@ -586,6 +585,7 @@ let fmt_within t conf ~fmt_code ?(pro = Fmt.break_unless_newline 1 0)
   fmt_cmts t conf t.cmts_within ~fmt_code ~pro ~epi ~eol:Fmt.noop
 
 let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =
+  let open Fmt in
   (* remove the before comments from the map first *)
   let before = fmt_before t conf ~fmt_code ?pro ?epi ?eol ?adj loc in
   (* remove the within comments from the map by accepting the continuation *)

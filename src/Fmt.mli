@@ -19,6 +19,9 @@ type s = (unit, Format.formatter, unit) format
 type t = Format.formatter -> unit
 (** Format thunks, which accept a formatter buffer and write to it. *)
 
+val ( $ ) : t -> t -> t
+(** Format concatenation: [a $ b] formats [a], then [b]. *)
+
 val ( >$ ) : t -> ('b -> t) -> 'b -> t
 (** Pre-compose a format thunk onto a function returning a format thunk. *)
 
@@ -60,7 +63,7 @@ val list_fl : 'a list -> (first:bool -> last:bool -> 'a -> t) -> t
 (** Format a list using provided function for the elements, which is passed
     the flags indicating if the element is the first or last. *)
 
-val list_pn : 'a list -> (?prev:'a -> 'a -> ?next:'a -> t) -> t
+val list_pn : 'a list -> (prev:'a option -> 'a -> next:'a option -> t) -> t
 (** Format a list using provided function for the elements, which is passed
     the previous and next elements, if any. *)
 
