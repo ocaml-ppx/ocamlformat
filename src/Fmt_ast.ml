@@ -58,7 +58,7 @@ let empty =
   ; epi= None }
 
 let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
-  f (Option.call ~f:pro $ opn $ psp $ bdy $ cls $ esp $ Option.call ~f:epi)
+  f (fmt_opt pro $ opn $ psp $ bdy $ cls $ esp $ fmt_opt epi)
 
 (* Debug: catch and report failures at nearest enclosing Ast.t *)
 
@@ -307,7 +307,7 @@ let fmt_constant c ~loc ?epi const =
           fmt_words ~epi mode curr $ opt next fmt_next
         in
         let lines = String.split ~on:'\n' s in
-        let epi = str "\"" $ Option.call ~f:epi in
+        let epi = str "\"" $ fmt_opt epi in
         hvbox 1 (str "\"" $ list_pn lines (fmt_line ~epi))
       in
       let s, mode =
@@ -385,11 +385,10 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
         fmt_raw str_cmt
   in
   Cmts.fmt c loc
-  @@ vbox_if (Option.is_none pro) 0
-       (Option.call ~f:pro $ wrap "(**" "*)" doc $ epi)
+  @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
 
-let docstring_epi ?(standalone = false) ?next ~floating ?epi =
-  let epi = if Option.is_some next then fmt "@\n" else Option.call ~f:epi in
+let docstring_epi ?(standalone = false) ?next ?epi ~floating =
+  let epi = if Option.is_some next then fmt "@\n" else fmt_opt epi in
   match next with
   | (None | Some (_, false)) when floating && not standalone ->
       str "\n" $ epi
@@ -398,7 +397,7 @@ let docstring_epi ?(standalone = false) ?next ~floating ?epi =
 let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ~prev:_ ({txt; loc}, floating) ~next ->
-      let epi = docstring_epi ?standalone ?next ~floating ?epi in
+      let epi = docstring_epi ?standalone ?next ?epi ~floating in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
 
 let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
@@ -417,7 +416,7 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
       let fmt_doc ?epi ?pro doc =
         list_pn doc (fun ~prev:_ (parsed, ({txt; loc}, floating)) ~next ->
             let next = Option.map next ~f:snd in
-            let epi = docstring_epi ?next ~floating ?epi in
+            let epi = docstring_epi ?standalone:None ?next ?epi ~floating in
             fmt_parsed_docstring c ~loc ~epi ?pro txt parsed)
       in
       let floating_doc, doc =
@@ -837,8 +836,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
     ->
       fun k ->
         Cmts.fmt c ~pro:spc ppat_loc
-        @@ Cmts.fmt c ~pro:spc loc (Option.call ~f:pro $ k)
-  | _ -> fun k -> Cmts.fmt c ppat_loc (Option.call ~f:pro $ k) )
+        @@ Cmts.fmt c ~pro:spc loc (fmt_opt pro $ k)
+  | _ -> fun k -> Cmts.fmt c ppat_loc (fmt_opt pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
      else
        let maybe_wrap =
@@ -1006,12 +1005,12 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         | _ -> false
       in
       let pro0 =
-        Option.call ~f:pro
+        fmt_opt pro
         $ fits_breaks
             (if parens then "(" else "")
             (if nested then "" else "( ")
       in
-      let proI ?(space = false) =
+      let proI ?(space = false) () =
         match ctx0 with
         | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
           when Poly.(c.conf.break_cases <> `Nested) -> (
@@ -1049,8 +1048,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   in
                   let pro =
                     if first_grp && first then pro0 $ open_box (-2)
-                    else if first then proI $ open_box (-2)
-                    else proI ~space:(space xpat.ast)
+                    else if first then proI () $ open_box (-2)
+                    else proI ~space:(space xpat.ast) ()
                   in
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
@@ -1399,7 +1398,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   in
   hvbox_if box 0 ~name:"expr"
   @@ fmt_cmts
-  @@ (fun fmt -> Option.call ~f:pro $ fmt)
+  @@ (fun fmt -> fmt_opt pro $ fmt)
   @@
   match pexp_desc with
   | Pexp_apply (_, []) -> impossible "not produced by parser"
@@ -3013,7 +3012,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
        $ doc_after )
 
-and fmt_label_declaration c ctx decl ?(last = false) =
+and fmt_label_declaration c ctx ?(last = false) decl =
   let {pld_mutable; pld_name; pld_type; pld_loc; pld_attributes} = decl in
   update_config_maybe_disabled c pld_loc pld_attributes
   @@ fun c ->
@@ -3248,7 +3247,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
             $ list xargs "@;<1 2>" (fmt_functor_arg c)
             $ fmt "@;<1 2>->"
             $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc)
+      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
       ; psp=
           fmt_or_k (Option.is_none blk.pro)
             (fits_breaks " " ~hint:(1, 2) "")
@@ -3273,15 +3272,14 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
           fmt_if_k (Option.is_none pro) (open_hvbox 2 $ fmt_if parens "(")
           $ hvbox 0 bdy
           $ fmt_if_k (Option.is_some epi) esp
-          $ Option.call ~f:epi $ list_fl wcs fmt_cstrs $ fmt_if parens ")"
+          $ fmt_opt epi $ list_fl wcs fmt_cstrs $ fmt_if parens ")"
           $ close_box
       ; esp= fmt_if_k (Option.is_none epi) esp
       ; epi= Some (Cmts.fmt_after c pmty_loc) }
   | Pmty_typeof me -> (
       let blk = fmt_module_expr c (sub_mod ~ctx me) in
       let epi =
-        Option.call ~f:blk.epi $ Cmts.fmt_after c pmty_loc
-        $ fmt_if parens ")"
+        fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc $ fmt_if parens ")"
         $ fmt_attributes c ~key:"@" pmty_attributes ~pre:(fmt "@ ")
       in
       match blk.pro with
@@ -3383,7 +3381,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
               ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
               $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
               $ bdy )
-          $ esp $ Option.call ~f:epi
+          $ esp $ fmt_opt epi
           $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
@@ -3501,7 +3499,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                    | Some (_, Some {opn; pro= Some _; _}) ->
                        opn $ open_hvbox 0
                    | _ -> noop )
-                 $ Option.call ~f:epi) ))
+                 $ fmt_opt epi) ))
   in
   let single_line =
     Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
@@ -3531,16 +3529,16 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                     $ hvbox 4
                         ( keyword $ str " " $ fmt_str_loc c name
                         $ list_pn arg_blks fmt_arg )
-                    $ Option.call ~f:blk_t.pro )
+                    $ fmt_opt blk_t.pro )
                 $ blk_t.psp $ blk_t.bdy )
-            $ blk_t.esp $ Option.call ~f:blk_t.epi
+            $ blk_t.esp $ fmt_opt blk_t.epi
             $ fmt_if (Option.is_some xbody) " ="
             $ fmt_if_k compact fmt_pro )
         $ fmt_if_k (not compact) fmt_pro
         $ blk_b.psp
         $ fmt_if (Option.is_none blk_b.pro && Option.is_some xbody) "@ "
         $ blk_b.bdy )
-    $ blk_b.esp $ Option.call ~f:blk_b.epi
+    $ blk_b.esp $ fmt_opt blk_b.epi
     $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
     $ doc_after
     $ opt epi (fun epi ->
@@ -3621,8 +3619,8 @@ and fmt_module_statement c ~attributes keyword mod_expr =
     fmt_docstring_around_item ~force_before ~fit:true c attributes
   in
   doc_before
-  $ box (hvbox 2 (keyword $ Option.call ~f:blk.pro) $ blk.psp $ blk.bdy)
-  $ blk.esp $ Option.call ~f:blk.epi
+  $ box (hvbox 2 (keyword $ fmt_opt blk.pro) $ blk.psp $ blk.bdy)
+  $ blk.esp $ fmt_opt blk.epi
   $ fmt_attributes c ~pre:(str " ") ~key:"@@" atrs
   $ doc_after
 
@@ -3662,8 +3660,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let box_f = wrap_k blk_f.opn blk_f.cls in
       let fmt_rator =
         fmt_docstring c ~epi:(fmt "@,") doc
-        $ box_f (blk_f.psp $ Option.call ~f:blk_f.pro $ blk_f.bdy)
-        $ blk_f.esp $ Option.call ~f:blk_f.epi
+        $ box_f (blk_f.psp $ fmt_opt blk_f.pro $ blk_f.bdy)
+        $ blk_f.esp $ fmt_opt blk_f.epi
         $ fmt_or_k
             ( c.conf.break_struct && can_break_before_struct
             && not (module_expr_is_simple me_a) )
@@ -3671,7 +3669,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             (fmt "@ (")
       in
       let epi =
-        Option.call ~f:blk_a.epi $ str ")"
+        fmt_opt blk_a.epi $ str ")"
         $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs
         $ Cmts.fmt_after c pmod_loc
       in
@@ -3680,7 +3678,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
           pro=
             Some
               ( Cmts.fmt_before c pmod_loc
-              $ hvbox 2 fmt_rator $ Option.call ~f:blk_a.pro )
+              $ hvbox 2 fmt_rator $ fmt_opt blk_a.pro )
         ; epi= Some epi }
       else
         { blk_a with
@@ -3708,11 +3706,11 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             ( Cmts.fmt_before c pmod_loc
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ wrap_if parens "(" ")"
-                (Option.call ~f:blk_f.pro $ blk_f.psp $ blk_f.bdy $ blk_f.esp)
-            $ Option.call ~f:blk_f.epi
+                (fmt_opt blk_f.pro $ blk_f.psp $ blk_f.bdy $ blk_f.esp)
+            $ fmt_opt blk_f.epi
             $ wrap "@ (" ")"
-                ( Option.call ~f:blk_a.pro $ blk_a.psp $ blk_a.bdy
-                $ blk_a.esp $ Option.call ~f:blk_a.epi ) )
+                ( fmt_opt blk_a.pro $ blk_a.psp $ blk_a.bdy $ blk_a.esp
+                $ fmt_opt blk_a.epi ) )
       ; cls= close_box $ blk_f.cls $ blk_a.cls
       ; epi=
           Option.some_if has_epi
@@ -3734,11 +3732,11 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       ; psp= fmt "@,"
       ; bdy=
           ( hvbox 0
-              ( Option.call ~f:blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
-              $ Option.call ~f:blk_e.epi $ fmt " :@;<1 2>"
+              ( fmt_opt blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
+              $ fmt_opt blk_e.epi $ fmt " :@;<1 2>"
               $ hvbox 0
-                  ( Option.call ~f:blk_t.pro $ blk_t.psp $ blk_t.bdy
-                  $ blk_t.esp $ Option.call ~f:blk_t.epi ) )
+                  ( fmt_opt blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
+                  $ fmt_opt blk_t.epi ) )
           $
           match c.conf.indicate_multiline_delimiters with
           | `Space -> fits_breaks ")" " )"
@@ -3767,9 +3765,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
                    $ fmt "@;<1 2>"
                    $ list xargs "@;<1 2>" (fmt_functor_arg c)
                    $ fmt "@;<1 2>->@;<1 2>"
-                   $ hvbox 0
-                       ( Option.call ~f:pro $ psp $ bdy $ esp
-                       $ Option.call ~f:epi ) )) )
+                   $ hvbox 0 (fmt_opt pro $ psp $ bdy $ esp $ fmt_opt epi) ))
+            )
       ; cls }
   | Pmod_ident lid ->
       let doc, atrs = doc_atrs pmod_attributes in
@@ -4218,7 +4215,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
                       (not (List.is_empty xargs))
                       (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
                   )
-              $ Option.call ~f:fmt_cstr )
+              $ fmt_opt fmt_cstr )
           $ fmt_or_k c.conf.ocp_indent_compat
               (fits_breaks " =" ~hint:(1000, 0) "=")
               (fmt "@;<1 2>=")
@@ -4226,7 +4223,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
       $ fmt "@ " $ body $ Cmts.fmt_after c loc
       $ fmt_attributes c ~pre:(fmt "@;") ~key:"@@" at_at_attrs
       $ (match in_ with Some in_ -> in_ indent | None -> noop)
-      $ Option.call ~f:epi )
+      $ fmt_opt epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding c ctx ~rec_flag ~first pmb =

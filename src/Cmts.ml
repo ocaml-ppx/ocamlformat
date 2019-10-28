@@ -108,8 +108,7 @@ end = struct
                    (not (List.is_empty children))
                    "@,{" " }" (dump_ tree children) )))
     in
-    if Conf.debug then set_margin 100000000 $ dump_ tree tree.roots
-    else Fn.const ()
+    if Conf.debug then set_margin 100000000 $ dump_ tree tree.roots else noop
 end
 
 module Loc_tree = struct
@@ -556,7 +555,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
       in
       list_pn groups (fun ~prev group ~next ->
           fmt_or_k (Option.is_none prev)
-            (Option.call ~f:pro $ open_vbox 0)
+            (fmt_opt pro $ open_vbox 0)
             (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
@@ -567,9 +566,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
                 $ maybe_newline ~next (List.last_exn group) )
           $ fmt_if_k (Option.is_none next)
               ( close_box
-              $ fmt_or_k eol_cmt
-                  (fmt_or_k adj_cmt adj eol)
-                  (Option.call ~f:epi) ))
+              $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ))
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break_unless_newline 1 0)
     ?eol ?adj =
