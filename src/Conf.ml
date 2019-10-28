@@ -871,18 +871,20 @@ module Formatting = struct
       (fun conf x -> {conf with match_indent_nested= x})
       (fun conf -> conf.match_indent_nested)
 
+  let default_max_indent =
+    (* Creating a fresh formatter in case the value of max-indent has been
+       changed for stdout. *)
+    let fs = Format.formatter_of_buffer (Buffer.create 0) in
+    Int.to_string (Format.pp_get_max_indent fs ())
+
   let max_indent =
     let docv = "COLS" in
     let doc =
       "Maximum offset ($(docv) columns) added to a new line in addition to \
        the offset of the previous line."
     in
-    (* creating a fresh formatter in case the value of max-indent has been
-       changed for stdout. *)
-    let fs = Format.formatter_of_buffer (Buffer.create 4) in
-    let none = Int.to_string (Format.pp_get_max_indent fs ()) in
     C.any
-      Arg.(some ~none int)
+      Arg.(some ~none:default_max_indent int)
       ~names:["max-indent"] ~doc ~docv ~section ~default:None
       ~allow_inline:false
       (fun conf x -> {conf with max_indent= x})
