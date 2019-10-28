@@ -134,10 +134,7 @@ module Make (C : CONFIG) = struct
     in
     let parse s = Arg.conv_parser converter s in
     let r = mk ~default:None term in
-    let to_string x =
-      let s = Format.asprintf "%a%!" (Arg.conv_printer converter) x in
-      if String.is_empty s then "none" else s
-    in
+    let to_string = Format.asprintf "%a%!" (Arg.conv_printer converter) in
     let cmdline_get () = !r in
     let opt =
       { names
