@@ -1712,6 +1712,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt "@ " $ fmt_cases c ctx'' cs $ str ")"
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
+          let fmt_atrs =
+            fmt_attributes c ~pre:(fmt "@;<1 -2>") ~key:"@" pexp_attributes
+          in
           fmt_if parens "("
           $ hvbox 2
               (fmt_args_grouped ~epi:(fmt_atrs $ fmt_if parens ")") e0 e1N1)

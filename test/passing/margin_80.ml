@@ -12,4 +12,9 @@ let _ =
 
 let _ =
   aa
+    (bbbbbbbbb cccccccccccc ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+     [@dddddddddd])
+
+let _ =
+  aa
     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd) [@dddddddddd]

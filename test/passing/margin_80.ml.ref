@@ -10,10 +10,16 @@ let _ =
 
 let _ =
   aa
+    (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd
+     [@dddddddddd])
+
+let _ =
+  aa
     (bbbbbbbbb cccccccccccc
-       dddddddddddddddddddddddddddddddddddddd [@dddddddddd])
+       ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+     [@dddddddddd])
 
 let _ =
   (aa
-     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd) [@dddddddddd
-                                                                       ])
+     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd)
+   [@dddddddddd])
