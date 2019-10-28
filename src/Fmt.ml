@@ -88,6 +88,8 @@ let fmt_or_k cnd t_k f_k fs = if cnd then t_k fs else f_k fs
 
 let fmt_or cnd t f fs = fmt_or_k cnd (fmt t) (fmt f) fs
 
+let fmt_opt opt fs = match opt with Some k -> k fs | None -> ()
+
 (** Conditional on immediately following a line break -------------------*)
 
 let if_newline s fs = Format.pp_print_string_if_newline fs s

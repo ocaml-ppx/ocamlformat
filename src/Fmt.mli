@@ -84,6 +84,10 @@ val fmt_or : bool -> s -> s -> t
 val fmt_or_k : bool -> t -> t -> t
 (** Conditionally select between two format thunks. *)
 
+val fmt_opt : t option -> t
+(** Optionally format. [fmt_opt (Some t)] is [t] and [fmt_opt None] is
+    [noop]. *)
+
 (** Conditional on immediately following a line break -------------------*)
 
 val if_newline : string -> t
