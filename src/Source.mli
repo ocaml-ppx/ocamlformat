@@ -60,7 +60,7 @@ val is_long_pmod_functor : t -> Parsetree.module_expr -> bool
     [Pmod_functor] expression that is expressed in long ('functor (M) ->')
     form in source. *)
 
-val begins_line : t -> Location.t -> bool
+val begins_line : ?ignore_spaces:bool -> t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool
 
