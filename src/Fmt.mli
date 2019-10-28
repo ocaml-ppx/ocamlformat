@@ -16,8 +16,8 @@ module Format = Format_
 type s = (unit, Format.formatter, unit) format
 (** Format strings that accept no arguments. *)
 
-type t = Format.formatter -> unit
-(** Format thunks, which accept a formatter buffer and write to it. *)
+type t
+(** Format thunks. *)
 
 val ( $ ) : t -> t -> t
 (** Format concatenation: [a $ b] formats [a], then [b]. *)
