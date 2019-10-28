@@ -64,15 +64,13 @@ let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
 
 let protect =
   let first = ref true in
-  fun ast pp fs ->
-    try pp fs
-    with exc ->
-      if !first && Conf.debug then (
-        let bt = Caml.Printexc.get_backtrace () in
-        Format.pp_print_flush fs () ;
-        Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
-        first := false ) ;
-      raise exc
+  fun ast pp ->
+    Fmt.protect pp ~on_error:(fun exc ->
+        if !first && Conf.debug then (
+          let bt = Caml.Printexc.get_backtrace () in
+          Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
+          first := false ) ;
+        raise exc)
 
 let update_config ?quiet c l =
   {c with conf= List.fold ~init:c.conf l ~f:(Conf.update ?quiet)}

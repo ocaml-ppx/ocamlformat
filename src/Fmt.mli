@@ -31,6 +31,12 @@ val set_margin : int -> t
 val set_max_indent : int -> t
 (** Set the maximum indentation. *)
 
+val eval : Format.formatter -> t -> unit
+(** [eval fs t] runs format thunk [t] outputting to [fs] *)
+
+val protect : t -> on_error:(exn -> unit) -> t
+(** Catch exceptions raised while formatting. *)
+
 (** Break hints and format strings --------------------------------------*)
 
 val break : int -> int -> t

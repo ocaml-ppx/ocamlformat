@@ -246,7 +246,7 @@ let with_optional_box_debug ~box_debug k =
 let with_buffer_formatter ~buffer_size k =
   let buffer = Buffer.create buffer_size in
   let fs = Format_.formatter_of_buffer buffer in
-  k fs ;
+  Fmt.eval fs k ;
   Format_.pp_print_flush fs () ;
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer

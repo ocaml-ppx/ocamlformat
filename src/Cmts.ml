@@ -408,8 +408,9 @@ let init map_ast source asts comments_n_docstrings =
           if not (Location.compare loc Location.none = 0) then
             Hashtbl.set t.remaining ~key:loc ~data:()) ;
     if Conf.debug then (
+      let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
-      Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ) ;
+      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ;
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
     match locs with
@@ -447,7 +448,7 @@ let preserve fmt_x x =
   let fs = Format.formatter_of_buffer buf in
   let save = !remove in
   remove := false ;
-  fmt_x x fs ;
+  Fmt.eval fs (fmt_x x) ;
   Format.pp_print_flush fs () ;
   remove := save ;
   Buffer.contents buf

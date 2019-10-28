@@ -25,6 +25,14 @@ let set_margin n fs = Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1)
 
 let set_max_indent n fs = Format.pp_set_max_newline_offset fs n
 
+let eval fs t = t fs
+
+let protect t ~on_error fs =
+  try t fs
+  with exn ->
+    Format.pp_print_flush fs () ;
+    on_error exn
+
 (** Debug of formatting -------------------------------------------------*)
 
 let pp_color_k color_code k fs =
