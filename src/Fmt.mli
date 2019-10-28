@@ -126,17 +126,17 @@ val fits_breaks_if :
 
 (** Wrapping ------------------------------------------------------------*)
 
-val wrap : ?box:(t -> t) -> s -> s -> t -> t
+val wrap : s -> s -> t -> t
 (** [wrap prologue epilogue body] formats [prologue] then [body] then
     [epilogue]. *)
 
-val wrap_k : ?box:(t -> t) -> t -> t -> t -> t
+val wrap_k : t -> t -> t -> t
 (** As [wrap], but prologue and epilogue may be arbitrary format thunks. *)
 
-val wrap_if : ?box:(t -> t) -> bool -> s -> s -> t -> t
+val wrap_if : bool -> s -> s -> t -> t
 (** As [wrap], but prologue and epilogue are only formatted conditionally. *)
 
-val wrap_if_k : ?box:(t -> t) -> bool -> t -> t -> t -> t
+val wrap_if_k : bool -> t -> t -> t -> t
 (** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)
 
 val wrap_if_fits_and : bool -> string -> string -> t -> t

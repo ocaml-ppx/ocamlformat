@@ -116,14 +116,13 @@ let fits_breaks_if ?force_fit_if ?force_break_if ?hint ?level cnd fits breaks
 
 (** Wrapping ------------------------------------------------------------*)
 
-let wrap_if_k ?(box = fun k -> k) cnd pre suf k =
-  fmt_if_k cnd pre $ box (k $ fmt_if_k cnd suf)
+let wrap_if_k cnd pre suf k = fmt_if_k cnd pre $ k $ fmt_if_k cnd suf
 
-let wrap_k ?box x = wrap_if_k ?box true x
+let wrap_k x = wrap_if_k true x
 
-let wrap_if ?box cnd pre suf = wrap_if_k ?box cnd (fmt pre) (fmt suf)
+let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 
-and wrap ?box pre suf = wrap_k ?box (fmt pre) (fmt suf)
+and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
 let wrap_if_fits_and cnd pre suf k =
   fits_breaks_if cnd pre "" $ k $ fits_breaks_if cnd suf ""
