@@ -1235,7 +1235,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
 and expression_width c xe =
   String.length (Cmts.preserve (fmt_expression c) xe)
 
-and fmt_args_grouped c ctx args =
+and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   let fmt_args ~first:first_grp ~last:last_grp args =
     let fmt_arg ~first:_ ~last (lbl, arg) =
       let ({ast; _} as xarg) = sub_exp ~ctx arg in
@@ -1253,7 +1253,9 @@ and fmt_args_grouped c ctx args =
       hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
       $ fmt_if_k (not last) (break_unless_newline 1 0)
     in
-    hovbox (if first_grp then 2 else 0) (list_fl args fmt_arg)
+    hovbox
+      (if first_grp then 2 else 0)
+      (list_fl args fmt_arg $ fmt_if_k last_grp global_epi)
     $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
   in
   let is_simple x = is_simple c.conf (expression_width c) (sub_exp ~ctx x) in
@@ -1395,8 +1397,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   let has_attr = not (List.is_empty pexp_attributes) in
   let parens = Option.value parens ~default:(parenze_exp xexp) in
   let ctx = Exp exp in
-  let fmt_args_grouped e0 a1N =
-    fmt_args_grouped c ctx ((Nolabel, e0) :: a1N)
+  let fmt_args_grouped ?epi e0 a1N =
+    fmt_args_grouped c ctx ?epi ((Nolabel, e0) :: a1N)
   in
   hvbox_if box 0 ~name:"expr"
   @@ fmt_cmts
@@ -1711,7 +1713,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ))
       | _ ->
           fmt_if parens "("
-          $ hvbox 2 (fmt_args_grouped e0 e1N1 $ fmt_atrs $ fmt_if parens ")")
+          $ hvbox 2
+              (fmt_args_grouped ~epi:(fmt_atrs $ fmt_if parens ")") e0 e1N1)
       )
   | Pexp_array [] ->
       hvbox 0

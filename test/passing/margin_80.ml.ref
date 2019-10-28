@@ -5,12 +5,15 @@ type t =
 
 let _ =
   aa
-    (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddd)
+    (bbbbbbbbb cccccccccccc
+       dddddddddddddddddddddddddddddddddddddddddddddddddddd)
 
 let _ =
   aa
-    (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd [@dddddddddd])
+    (bbbbbbbbb cccccccccccc
+       dddddddddddddddddddddddddddddddddddddd [@dddddddddd])
 
 let _ =
-  (aa (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd) [@dddddddddd
-                                                                      ])
+  (aa
+     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd) [@dddddddddd
+                                                                       ])
