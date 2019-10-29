@@ -6,6 +6,7 @@
 
 #### Bug fixes
 
+  + Fix: Unstable comment in variant declarations (#1108) (Jules Aguillon)
   + Fix: types on named arguments were wrapped incorrectly when preceding comments (#1124) (Guillaume Petiot)
   + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
