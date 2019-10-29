@@ -208,8 +208,11 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
               if Conf.debug then Location.report_exception fmt exn
           | `Warning50 l ->
-              if Conf.debug then
-                List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
+              List.iter l ~f:(fun (l, w) -> Compat.print_warning l w) ;
+              Format.fprintf fmt
+                "@{<warning>Hint@}: (Warning 50) disable this check using \
+                 the `--no-comment-check` option\n\
+                 %!"
           | _ -> () ) ;
           if Conf.debug then
             List.iter l ~f:(fun (msg, sexp) ->

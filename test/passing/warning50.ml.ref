@@ -1,0 +1,6 @@
+ocamlformat: Cannot process "warning50.ml".
+  Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
+  BUG: misplaced documentation comments.
+File "warning50.ml", line 8, characters 8-56:
+Warning 50: unattached documentation comment (ignored)
+Hint: (Warning 50) disable this check using the `--no-comment-check` option
