@@ -1461,9 +1461,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, r); (Nolabel, v)] )
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
-      let adj = fmt "@," in
-      let epi = fmt_if_k Poly.(c.conf.assignment_operator = `End_line) adj in
-      let cmts_before = Cmts.fmt_before c loc ~pro:(break 1 2) ~epi ~adj in
+      let adj = fmt_if Poly.(c.conf.assignment_operator = `End_line) "@," in
+      let cmts_before =
+        Cmts.fmt_before c loc ~pro:(break 1 2) ~epi:adj ~adj
+      in
       let cmts_after = Cmts.fmt_after c loc ~pro:noop ~epi:noop in
       wrap_if parens "(" ")"
         (hovbox 0
