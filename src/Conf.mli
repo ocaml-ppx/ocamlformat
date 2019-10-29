@@ -59,6 +59,7 @@ type t =
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int  (** Format code to fit within [margin] columns. *)
+  ; margin_check: bool
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option

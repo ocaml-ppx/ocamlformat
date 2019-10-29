@@ -240,6 +240,13 @@ let check_all_locations fmt cmts_t =
           "Warning: Some locations have not been considered\n%!" ;
         List.iter ~f:print (List.sort l ~compare:Location.compare)
 
+let check_margin (conf : Conf.t) ~filename ~fmted =
+  if conf.margin_check then
+    List.iteri (String.split_lines fmted) ~f:(fun i line ->
+        if String.length line > conf.margin then
+          Format.fprintf Format.err_formatter
+            "Warning: %s:%i exceeds the margin\n%!" filename i)
+
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k
 
@@ -284,6 +291,9 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
     if String.equal source fmted then (
       check_all_locations Format.err_formatter cmts_t ;
+      check_margin conf
+        ~filename:(Option.value output_file ~default:input_name)
+        ~fmted ;
       Ok fmted )
     else
       let exn_args () =
