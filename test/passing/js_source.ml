@@ -7437,7 +7437,6 @@ module type Basic3 = sig
       ]
 end
 
-(* FIX: exceed 90 columns *)
 let _ =
   aa
     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd)

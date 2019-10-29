@@ -1,6 +1,7 @@
 ### (master)
 
   + Fix the default value documentation for max-indent (#1105) (Guillaume Petiot)
+  + Fix closing parenthesis exceeding the margin in function application (#1098) (Jules Aguillon)
   + Fix: missing break before attributes of Pmty_with (#1103) (Josh Berdine)
   + Fix: Fix closing quote exceeding the margin (#1096) (Jules Aguillon)
   + Improve: add a message when a config value is removed (#1089) (Etienne Millon)
