@@ -307,7 +307,7 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --max-indent=COLS
            Maximum offset (COLS columns) added to a new line in addition to
-           the offset of the previous line. The default value is none. Cannot
+           the offset of the previous line. The default value is 68. Cannot
            be set in attributes.
 
        --module-item-spacing={sparse|preserve|compact}
