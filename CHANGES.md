@@ -1,5 +1,9 @@
 ### 0.13.0 (unreleased)
 
+#### New features
+
+  + Add an option `--margin-check` to emit a warning if the formatted output exceeds the margin (#1110) (Guillaume Petiot)
+
 #### Bug fixes
 
   + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)
