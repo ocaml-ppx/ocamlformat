@@ -37,10 +37,6 @@ val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to
     [g (f (x))]. Left associative. *)
 
-val ( $ ) : ('a -> unit) -> ('a -> 'b) -> 'a -> 'b
-(** Sequential composition of functions: [(f $ g) x] is exactly equivalent to
-    [(f x) ; (g x)]. Left associative. *)
-
 val impossible : string -> _
 (** Indicate why the call is expected to be impossible. *)
 

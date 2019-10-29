@@ -284,7 +284,7 @@ let fmt_constant c ~loc ?epi const =
       let fmt_string_auto ?(break_on_newlines = false) mode s =
         let fmt_words ~epi mode s =
           let words = String.split (escape_string mode s) ~on:' ' in
-          let fmt_word ?prev:_ curr ?next =
+          let fmt_word ~prev:_ curr ~next =
             match next with
             | Some "" -> str curr $ str " "
             | Some _ -> str curr $ pre_break 1 " \\" 0
@@ -293,7 +293,7 @@ let fmt_constant c ~loc ?epi const =
           hovbox_if (List.length words > 1) 0 (list_pn words fmt_word $ epi)
         in
         let delim = ["@,"; "@;"] in
-        let fmt_line ~epi ?prev:_ curr ?next =
+        let fmt_line ~epi ~prev:_ curr ~next =
           let fmt_next next =
             let not_suffix suffix = not (String.is_suffix curr ~suffix) in
             let print_ln =
@@ -399,7 +399,7 @@ let docstring_epi ?(standalone = false) ?next ~floating ?epi =
 
 let fmt_docstring c ?standalone ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
-    (fun ?prev:_ ({txt; loc}, floating) ?next ->
+    (fun ~prev:_ ({txt; loc}, floating) ~next ->
       let epi = docstring_epi ?standalone ?next ~floating ?epi in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
 
@@ -417,7 +417,7 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
           | _ -> false)
       in
       let fmt_doc ?epi ?pro doc =
-        list_pn doc (fun ?prev:_ (parsed, ({txt; loc}, floating)) ?next ->
+        list_pn doc (fun ~prev:_ (parsed, ({txt; loc}, floating)) ~next ->
             let next = Option.map next ~f:snd in
             let epi = docstring_epi ?next ~floating ?epi in
             fmt_parsed_docstring c ~loc ~epi ?pro txt parsed)
@@ -1296,11 +1296,11 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
       assert (Option.compare compare first_ext ext = 0)
   | _ -> impossible "at least two elements" ) ;
   let grps = List.group elts ~break in
-  let fmt_seq ?prev (ext, curr) ?next:_ =
+  let fmt_seq ~prev (ext, curr) ~next:_ =
     let f (_, prev) = fmt_sep c prev ext curr in
     Option.value_map prev ~default:noop ~f $ fmt_expression c curr
   in
-  let fmt_seq_list ?prev x ?next:_ =
+  let fmt_seq_list ~prev x ~next:_ =
     let f prev =
       let prev = snd (List.last_exn prev) in
       let ext, curr = List.hd_exn x in
@@ -3484,7 +3484,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
   let box_t = wrap_k blk_t.opn blk_t.cls in
   let box_b = wrap_k blk_b.opn blk_b.cls in
-  let fmt_arg ?prev:_ (name, arg_mtyp) ?next =
+  let fmt_arg ~prev:_ (name, arg_mtyp) ~next =
     let maybe_box k =
       match arg_mtyp with Some {pro= None; _} -> hvbox 0 k | _ -> k
     in

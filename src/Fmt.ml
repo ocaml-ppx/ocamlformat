@@ -17,6 +17,8 @@ type s = (unit, Format.formatter, unit) format
 
 type t = Format.formatter -> unit
 
+let ( $ ) f g x = f x ; g x
+
 let ( >$ ) f g x = f $ g x
 
 let set_margin n fs = Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1)
@@ -47,23 +49,24 @@ let str s fs = if not (String.is_empty s) then Format.pp_print_string fs s
 
 let opt o pp fs = Option.iter o ~f:(Fn.flip pp fs)
 
-let list_pn x1N (pp : ?prev:_ -> _ -> ?next:_ -> _ -> unit) fs =
+let list_pn x1N pp fs =
   match x1N with
   | [] -> ()
-  | [x1] -> pp ?prev:None x1 ?next:None fs
+  | [x1] -> pp ~prev:None x1 ~next:None fs
   | x1 :: (x2 :: _ as x2N) ->
-      pp ?prev:None x1 ~next:x2 fs ;
+      pp ~prev:None x1 ~next:(Some x2) fs ;
       let rec list_pn_ fs prev = function
         | [] -> ()
-        | [xI] -> pp ~prev xI ?next:None fs
+        | [xI] -> pp ~prev:(Some prev) xI ~next:None fs
         | xI :: (xJ :: _ as xJN) ->
-            pp ~prev xI ~next:xJ fs ; list_pn_ fs xI xJN
+            pp ~prev:(Some prev) xI ~next:(Some xJ) fs ;
+            list_pn_ fs xI xJN
       in
       list_pn_ fs x1 x2N
 
 let list_fl xs pp fs =
   list_pn xs
-    (fun ?prev x ?next fs ->
+    (fun ~prev x ~next fs ->
       pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs)
     fs
 
@@ -247,7 +250,7 @@ let fill_text ?epi text =
   $ hovbox 0
       ( hvbox 0
           (hovbox 0
-             (list_pn lines (fun ?prev:_ curr ?next ->
+             (list_pn lines (fun ~prev:_ curr ~next ->
                   fmt_line curr
                   $
                   match next with

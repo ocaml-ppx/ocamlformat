@@ -230,6 +230,17 @@ let check_all_locations fmt cmts_t =
           "Warning: Some locations have not been considered\n%!" ;
         List.iter ~f:print (List.sort l ~compare:Location.compare)
 
+let with_optional_box_debug ~box_debug k =
+  if box_debug then Fmt.with_box_debug k else k
+
+let with_buffer_formatter ~buffer_size k =
+  let buffer = Buffer.create buffer_size in
+  let fs = Format_.formatter_of_buffer buffer in
+  k fs ;
+  Format_.pp_print_flush fs () ;
+  if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
+  Buffer.contents buffer
+
 let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
   let dump_ast ~suffix ast =
     dump_ast ~input_name ?output_file ~suffix (fun fmt ->
@@ -240,20 +251,20 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) t ~source =
     let format ~box_debug =
-      let buffer = Buffer.create (String.length source) in
+      let open Fmt in
       let source_t = Source.create source in
       let cmts_t = xunit.init_cmts source_t t.ast t.comments in
-      let fs = Format_.formatter_of_buffer buffer in
-      Fmt.set_margin conf.margin fs ;
-      Option.iter conf.max_indent ~f:(fun x -> Fmt.set_max_indent x fs) ;
-      (* note that [fprintf fs "%s" ""] is not a not-opt. *)
-      if not (String.is_empty t.prefix) then
-        Format_.fprintf fs "%s@." t.prefix ;
-      let do_fmt = xunit.fmt source_t cmts_t conf t.ast in
-      if box_debug then Fmt.with_box_debug do_fmt fs else do_fmt fs ;
-      Format_.pp_print_flush fs () ;
-      if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
-      (Buffer.contents buffer, cmts_t)
+      let contents =
+        with_buffer_formatter ~buffer_size:(String.length source)
+          ( set_margin conf.margin
+          $ opt conf.max_indent set_max_indent
+          $ fmt_if_k
+              (not (String.is_empty t.prefix))
+              (str t.prefix $ fmt "@.")
+          $ with_optional_box_debug ~box_debug
+              (xunit.fmt source_t cmts_t conf t.ast) )
+      in
+      (contents, cmts_t)
     in
     if Conf.debug then
       format ~box_debug:true |> fst
