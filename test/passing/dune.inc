@@ -2288,17 +2288,6 @@
  (action (diff verbose2.ml.ref verbose2.ml.output)))
 
 (rule
- (targets warning50.ml.output)
- (deps .ocamlformat )
- (action
-   (with-outputs-to %{targets}
-     (system "! %{bin:ocamlformat} %{dep:warning50.ml}"))))
-
-(alias
- (name runtest)
- (action (diff warning50.ml.ref warning50.ml.output)))
-
-(rule
  (targets wrap_comments.ml.output)
  (deps .ocamlformat )
  (action

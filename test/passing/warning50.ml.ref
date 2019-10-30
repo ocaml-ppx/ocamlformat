@@ -1,3 +1,0 @@
-ocamlformat: Cannot process "warning50.ml".
-  Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
-  BUG: misplaced documentation comments.
