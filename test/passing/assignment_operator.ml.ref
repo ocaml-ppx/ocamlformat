@@ -1,4 +1,29 @@
-(* see https://github.com/ocaml-ppx/ocamlformat/issues/1088 *)
+let foo =
+  entry.logdata.value_end :=
+    entry.logdata.value_end - !remove_size + testtesttest ;
+  entry.logdata.value_end :=
+    (entry.logdata.value_end - !remove_size + testtesttest) [@foo] ;
+  (* foooooooooo *)
+  entry.logdata.value_end :=
+    (entry.logdata.value_end - !remove_size + testtesttest) [@foo]
+  (* foooooooooooo *) ;
+  entry.logdata.value_end :=
+    entry.logdata.value_end - !remove_size + testtesttest
+  (* fooooooooooooooooooooooooo *) ;
+  value_end :=
+    entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest ;
+  value_end :=
+    ( entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
+    ) [@foo] ;
+  value_end :=
+    ( entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
+    ) [@foo]
+  (* fooooooooooooo *) ;
+  (* foooooooooooooooooooo *)
+  value_end :=
+    entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
+  (* foooooooo *) ;
+  foo
 
 let _ =
   r
