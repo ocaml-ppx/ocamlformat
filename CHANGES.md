@@ -18,6 +18,8 @@
 
 #### New features
 
+  + Add a message when a config value is removed (#1089) (Etienne Millon)
+    Explain what replaces removed options and avoid printing a parsing error.
   + Implement `sequence-blank-line=preserve-one` for let bindings (#1077) (Jules Aguillon)
     Preserve a blank line after `let .. in` when `sequence-blank-line` set to `preserve-one`.
     Previously, only blank lines after `;` could be preserved.
@@ -73,9 +75,8 @@
 #### Internal
 
   + Future-proof `Fmt` API in case `Fmt.t` goes abstract (#1106) (Etienne Millon)
-  + Add a message when a config value is removed (#1089) (Etienne Millon)
-  + Optional names for formatting boxes (#1083) (Guillaume Petiot)
-  + Check ocamlformat error codes (#1084) (Etienne Millon)
+  + Optional names for formatting boxes in debug output (#1083) (Guillaume Petiot)
+  + Check ocamlformat error codes in the testsuite (#1084) (Etienne Millon)
   + Clean `Translation_unit` (#1078) (Guillaume Petiot)
   + Use dune file generation in test/passing/dune (#1082) (Etienne Millon)
   + CI: factorize tests and check reason build (#1079) (Guillaume Petiot)
@@ -94,6 +95,7 @@
   + Update labels of issue templates (#1017) (Guillaume Petiot)
   + Update labels in `CONTRIBUTING.md` (#1007) (Guillaume Petiot)
   + Allow to ignore invalid options (#984) (hhugo)
+    The `--ignore-invalid-option` flag is added to ignore invalid options in `.ocamlformat` files.
   + Improve the documentation of `--doc-comments` (#982) (Jules Aguillon)
   + Remove symbolic links and change naming convention of tests (#980) (Guillaume Petiot)
   + Change the type of `fmt_code` (#974) (Guillaume Petiot)
