@@ -11,10 +11,18 @@
 #### New features
 
   + Implement `sequence-blank-line=preserve-one` for let bindings (#1077) (Jules Aguillon)
+    Preserve a blank line after `let .. in` when `sequence-blank-line` set to `preserve-one`.
+    Previously, only blank lines after `;` could be preserved.
   + Parse toplevel directives (#1020) (Jules Aguillon)
+    Allow `#directives` in `.ml` files.
+    Previously, files containing a directive needed to be parsed as "use file".
+    The "use file" mode is removed and `--use-file` is now the same as `--impl`.
   + Don't require `--name`, require kind, forbid `--inplace`, allow `--check`, make `--enable-outside-detected-project` implicit when reading from stdin (#1018) (Guillaume Petiot)
   + Parse code in docstrings (#941) (Guillaume Petiot)
-  + Parse doc comments with Odoc (#721) (Jules Aguillon)
+    Format OCaml code in cinaps-style comments `(*$ code *)` and code blocks in documentation comments `(** {[ code ]} *)`.
+  + Parse documentation comments with Odoc (#721) (Jules Aguillon)
+    Formatting of documentation comments is more robust and support newer Odoc syntaxes.
+    Internally, Odoc replaces Octavius as the documentation parser.
 
 #### Bug fixes
 
