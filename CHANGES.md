@@ -3,10 +3,18 @@
 #### Changes
 
   + Set "conventional" as the default profile (#1060) (Guillaume Petiot)
-  + Allow both values of boolean options (#1062) (Jules Aguillon)
-  + Auto mode for `break-string-literals` instead of wrap, newlines and newlines-and-wrap (#1057) (Guillaume Petiot)
+    This new profile is made to better match the most used style and is encouraged.
+    To continue using the previous default, use `profile = ocamlformat` in your `.ocamlformat`.
+  + CLI: Allow both values of boolean options (#1062) (Jules Aguillon)
+    Now, both `--opt` and --no-opt` are available on the CLI for any boolean option "opt".
+    Previously, only one of them were available depending on the default value.
+  + Auto mode for `break-string-literals` (#1057) (Guillaume Petiot)
+    `wrap`, `newlines` and `newlines-and-wrap` values of `break-string-literals` are removed.
+    `auto` replaces them, it is equivalent to `newlines-and-wrap`.
   + Dock collection brackets (#1014) (Guillaume Petiot)
+    `after-and-docked` value of `break-separators` is removed and is replaced by a new `dock-collection-brackets` option.
   + Preserve `begin` and `end` keywords in if-then-else (#978) (Jules Aguillon)
+    Previously, `begin`/`end` keywords around if-then-else branches were turned into parentheses.
 
 #### New features
 
