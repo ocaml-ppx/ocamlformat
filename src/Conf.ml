@@ -846,9 +846,7 @@ module Formatting = struct
       (fun conf -> conf.margin)
 
   let margin_check =
-    let doc =
-      "Check that the formatted output does not exceed the margin."
-    in
+    let doc = "Emit a warning if the formatted output exceeds the margin." in
     let names = ["margin-check"] in
     C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with margin_check= x})
