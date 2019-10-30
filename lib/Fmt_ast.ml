@@ -206,10 +206,10 @@ let rec fmt_longident (li : Longident.t) =
   | Lapply (li1, li2) ->
       hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
-let fmt_longident_loc c ?(pre = noop) {txt; loc} =
-  Cmts.fmt c loc (pre $ fmt_longident txt)
+let fmt_longident_loc c ?pre {txt; loc} =
+  Cmts.fmt c loc (opt pre Fn.id $ fmt_longident txt)
 
-let fmt_str_loc c ?(pre = noop) {txt; loc} = Cmts.fmt c loc (pre $ str txt)
+let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre Fn.id $ str txt)
 
 let char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
@@ -511,7 +511,7 @@ and fmt_attribute_or_extension c key maybe_box (pre, pld) =
          $ fmt_if protect_token " " ))
   $ cmts_last
 
-and fmt_attributes c ?(pre = noop) ?(suf = noop) ~key attrs =
+and fmt_attributes c ?pre ?suf ~key attrs =
   let fmt_attribute c pre = function
     | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true; _}}
       , PStr
@@ -538,9 +538,10 @@ and fmt_attributes c ?(pre = noop) ?(suf = noop) ~key attrs =
     fmt_or_k first (open_hvbox 0) (fmt "@ ")
     $ hvbox 0
         (Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload)))
-    $ fmt_if_k last (close_box $ suf)
+    $ fmt_if_k last (close_box $ opt suf Fn.id)
   in
-  fmt_if_k (num > 0) (pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
+  fmt_if_k (num > 0)
+    (opt pre Fn.id $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
 
 and fmt_payload c ctx pld =
   protect (Pld pld)
@@ -1111,7 +1112,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         $ wrap_k (str opn) (str cls)
             (fmt "@;<0 2>" $ fmt_pattern c (sub_pat ~ctx pat)) )
 
-and fmt_fun_args c ?(pro = noop) args =
+and fmt_fun_args c ?pro args =
   let fmt_fun_arg (a : Sugar.arg_kind) =
     match a with
     | Val
@@ -1181,7 +1182,9 @@ and fmt_fun_args c ?(pro = noop) args =
     | Newtypes names ->
         cbox 0 (wrap "(" ")" (str "type " $ list names "@ " (fmt_str_loc c)))
   in
-  fmt_if_k (not (List.is_empty args)) (pro $ list args "@;" fmt_fun_arg)
+  fmt_if_k
+    (not (List.is_empty args))
+    (opt pro Fn.id $ list args "@;" fmt_fun_arg)
 
 (** The second returned value of [fmt_body] belongs to a box of level N-1 if
     the first returned value belongs to a box of level N. *)
@@ -1291,7 +1294,7 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
   let grps = List.group elts ~break in
   let fmt_seq ~prev (ext, curr) ~next:_ =
     let f (_, prev) = fmt_sep c prev ext curr in
-    Option.value_map prev ~default:noop ~f $ fmt_expression c curr
+    opt prev f $ fmt_expression c curr
   in
   let fmt_seq_list ~prev x ~next:_ =
     let f prev =
@@ -1299,7 +1302,7 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
       let ext, curr = List.hd_exn x in
       fmt_sep c ~force_break:true prev ext curr
     in
-    Option.value_map prev ~default:noop ~f $ list_pn x fmt_seq
+    opt prev f $ list_pn x fmt_seq
   in
   hvbox 0
     ( Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
@@ -2123,15 +2126,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           in
           Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
             ~disambiguate:true
-            (hovbox 2
+            (hvbox 2
                ( hvbox 0
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes
                    $ fmt "@;<1 2>"
-                   $ fmt_expression c (sub_exp ~ctx e0)
-                   $ fmt "@," )
-               $ break_unless_newline 1 (-2)
+                   $ fmt_expression c (sub_exp ~ctx e0) )
+               $ break 1 (-2)
                $ hvbox 0
                    ( hvbox 0
                        ( fmt "with@ " $ leading_cmt
