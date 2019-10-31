@@ -108,7 +108,7 @@ end = struct
                    (not (List.is_empty children))
                    "@,{" " }" (dump_ tree children) )))
     in
-    fmt_if_k (Conf.debug) (set_margin 100000000 $ dump_ tree tree.roots)
+    fmt_if_k Conf.debug (set_margin 100000000 $ dump_ tree tree.roots)
 end
 
 module Loc_tree = struct
