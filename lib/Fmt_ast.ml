@@ -300,7 +300,7 @@ let fmt_constant c ~loc ?epi const =
             if String.is_empty next then fmt_if_k print_ln (str "\\n")
             else if Char.equal next.[0] ' ' then
               fmt_if_k print_ln (str "\\n")
-              $ pre_break 0 "\\" (-1) $ if_newline "\\"
+              $ cbreak ~fits:("", 0, "") ~breaks:("\\", -1, "\\")
             else fmt_if_k print_ln (str "\\n") $ pre_break 0 "\\" 0
           in
           let epi = match next with Some _ -> noop | None -> epi in
