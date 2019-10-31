@@ -1,6 +1,7 @@
 ### (master)
 
   + Fix unstabilizing comments on assignments (#1093) (Guillaume Petiot)
+  + Improve: give a hint when warning 50 is raised (#1111) (Guillaume Petiot)
   + Internal: Future-proof Fmt API in case Fmt.t goes abstract (#1106) (Etienne Millon)
   + Fix the default value documentation for max-indent (#1105) (Guillaume Petiot)
   + Fix closing parenthesis exceeding the margin in function application (#1098) (Jules Aguillon)
