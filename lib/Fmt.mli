@@ -42,6 +42,14 @@ val protect : t -> on_error:(exn -> unit) -> t
 val break : int -> int -> t
 (** Format a break hint. *)
 
+val cbreak : fits:string * int * string -> breaks:string * int * string -> t
+(** Format a custom break.
+
+    - [fits = (a, b, c)] formats a string [a], [b] spaces and a string [c] if
+      the line does not break.
+    - [breaks = (d, e, f)] formats a string [d], [e] spaces and a string [f]
+      if the line breaks. *)
+
 val noop : t
 (** Format nothing. *)
 
