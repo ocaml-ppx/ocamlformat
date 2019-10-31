@@ -301,7 +301,9 @@ let fmt_constant c ~loc ?epi const =
             else if Char.equal next.[0] ' ' then
               fmt_if_k print_ln (str "\\n")
               $ cbreak ~fits:("", 0, "") ~breaks:("\\", -1, "\\")
-            else fmt_if_k print_ln (str "\\n") $ pre_break 0 "\\" 0
+            else
+              fmt_if_k print_ln (str "\\n")
+              $ cbreak ~fits:("", 0, "") ~breaks:("\\", 0, "")
           in
           let epi = match next with Some _ -> noop | None -> epi in
           fmt_words ~epi mode curr $ opt next fmt_next
