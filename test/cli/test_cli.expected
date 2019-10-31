@@ -43,13 +43,13 @@ ocamlformat: Cannot specify stdin together with other inputs
 err_stdin_and_inplace
 =====================
 args: --inplace -
-ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+ocamlformat: Must specify at least one of --impl, --intf or --use-file when reading from stdin
 [1]
 
 err_stdin_no_kind
 =================
 args: -
-ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+ocamlformat: Must specify at least one of --impl, --intf or --use-file when reading from stdin
 [1]
 
 stdin_and_impl
@@ -70,8 +70,8 @@ module X : S
 stdin_and_name
 ==============
 args: --name a.ml -
-let () = print_endline A.x
-[0]
+ocamlformat: Must specify at least one of --impl, --intf or --use-file when reading from stdin
+[1]
 
 name_unknown_ext
 ================
@@ -82,7 +82,7 @@ let () = print_endline A.x
 err_stdin_name_unknown_ext
 ==========================
 args: --name b.cpp -
-ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+ocamlformat: Must specify at least one of --impl, --intf or --use-file when reading from stdin
 [1]
 
 err_several_files_and_kind
@@ -96,9 +96,6 @@ Error: Syntax error
 err_several_files_and_name
 ==========================
 args: --name foo.ml --check sample/a.mli sample/b.ml
-ocamlformat: ignoring "foo.ml" (syntax error)
-File "foo.ml", line 5, characters 0-0:
-Error: Syntax error
 [1]
 
 err_several_files_and_kind_inplace
@@ -112,25 +109,20 @@ Error: Syntax error
 err_several_files_and_name_inplace
 ==================================
 args: --name foo.ml --check sample/a.mli sample/b.ml
-ocamlformat: ignoring "foo.ml" (syntax error)
-File "foo.ml", line 5, characters 0-0:
-Error: Syntax error
 [1]
 
 fmterr_file_and_name
 ====================
 args: --name foo.ml sample/syntax_error.ml
-ocamlformat: ignoring "foo.ml" (syntax error)
-File "foo.ml", line 2, characters 0-0:
+ocamlformat: ignoring "sample/syntax_error.ml" (syntax error)
+File "sample/syntax_error.ml", line 2, characters 0-0:
 Error: Syntax error
 [1]
 
 fmterr_stdin_and_name
 =====================
 args: --name foo.ml -
-ocamlformat: ignoring "foo.ml" (syntax error)
-File "foo.ml", line 2, characters 0-0:
-Error: Syntax error
+ocamlformat: Must specify at least one of --impl, --intf or --use-file when reading from stdin
 [1]
 
 fmterr_file_bad_kind
@@ -152,16 +144,15 @@ Error: Syntax error
 fmterr_file_and_name_bad_kind
 =============================
 args: --name foo.ml sample/a.mli
-ocamlformat: ignoring "foo.ml" (syntax error)
-File "foo.ml", line 5, characters 0-0:
-Error: Syntax error
-[1]
+val x : string
+
+module X : S
+(** Make sure this file cannot be parsed as an impl file *)
+[0]
 
 fmterr_stdin_and_name_bad_kind
 ==============================
 args: --name foo.ml -
-ocamlformat: ignoring "foo.ml" (syntax error)
-File "foo.ml", line 5, characters 0-0:
-Error: Syntax error
+ocamlformat: Must specify at least one of --impl, --intf or --use-file when reading from stdin
 [1]
 

@@ -90,7 +90,7 @@ module Cmdliner = struct
 
   let parse info validate =
     match Term.eval (Term.(ret (const validate $ tuple !args)), info) with
-    | `Ok () -> ()
+    | `Ok x -> x
     | `Error _ -> Caml.exit 1
     | `Help | `Version -> Caml.exit 0
 end
