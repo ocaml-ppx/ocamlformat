@@ -133,37 +133,46 @@ let fmt_styled style fmt_elem elems =
   wrap "{" "}"
     (str_normalized s $ fmt_if_not_empty elems "@ " $ list elems "" fmt_elem)
 
-let rec fmt_inline_element : inline_element -> Fmt.t = function
+let rec fmt_inline_element ?(space = false) = function
   | `Space _ -> fmt "@ "
   | `Word w ->
       (* Escape lines starting with '+' or '-' *)
       let escape =
-        fmt_if_k
-          (String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-'))
-          (if_newline "\\")
+        if String.length w > 0 && Char.(w.[0] = '+' || w.[0] = '-') then "\\"
+        else ""
       in
-      escape $ str_normalized w
+      let break = cbreak ~fits:("", 1, "") ~breaks:("", 0, escape) in
+      fmt_if_k space break $ str_normalized w
   | `Code_span s ->
       let s = escape_brackets s in
-      hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
+      fmt_if space "@ "
+      $ hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
   | `Raw_markup (lang, s) ->
       let lang =
         match lang with Some l -> str_normalized l $ str ":" | None -> noop
       in
-      wrap "{%%" "%%}" (lang $ str s)
+      fmt_if space "@ " $ wrap "{%%" "%%}" (lang $ str s)
   | `Styled (style, elems) ->
-      fmt_styled style (ign_loc ~f:fmt_inline_element) elems
+      fmt_if space "@ "
+      $ fmt_styled style (ign_loc ~f:fmt_inline_element) elems
   | `Reference (_kind, ref, txt) ->
       let ref = fmt "{!" $ fmt_reference ref $ fmt "}" in
+      fmt_if space "@ "
+      $
       if List.is_empty txt then ref
-      else wrap "{" "}" (ref $ fmt "@ " $ fmt_inline_elements txt)
+      else wrap "{" "}" (ref $ fmt_inline_elements ~space:true txt)
   | `Link (url, txt) -> (
       let url = wrap "{:" "}" (str_normalized url) in
+      fmt_if space "@ "
+      $
       match txt with
       | [] -> url
-      | txt -> wrap "{" "}" (url $ fmt "@ " $ fmt_inline_elements txt) )
+      | txt -> wrap "{" "}" (url $ fmt_inline_elements ~space:true txt) )
 
-and fmt_inline_elements txt = list txt "" (ign_loc ~f:fmt_inline_element)
+and fmt_inline_elements ?space txt =
+  list_fl txt (fun ~first ~last:_ x ->
+      let space = if first then space else None in
+      ign_loc ~f:(fmt_inline_element ?space) x)
 
 and fmt_nestable_block_element c = function
   | `Paragraph elems -> fmt_inline_elements elems
@@ -243,7 +252,8 @@ let fmt_block_element c = function
         | None -> fmt ""
       in
       hovbox 0
-        (wrap "{" "}" (str lvl $ lbl $ fmt "@ " $ fmt_inline_elements elems))
+        (wrap "{" "}"
+           (str lvl $ lbl $ fmt_inline_elements ~space:true elems))
   | #nestable_block_element as elm ->
       hovbox 0 (fmt_nestable_block_element c elm)
 
