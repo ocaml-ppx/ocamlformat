@@ -285,7 +285,8 @@ let fmt_constant c ~loc ?epi const =
           let fmt_word ~prev:_ curr ~next =
             match next with
             | Some "" -> str curr $ str " "
-            | Some _ -> str curr $ pre_break 1 " \\" 0
+            | Some _ ->
+                str curr $ cbreak ~fits:("", 1, "") ~breaks:(" \\", 0, "")
             | _ -> str curr
           in
           hovbox_if (List.length words > 1) 0 (list_pn words fmt_word $ epi)
