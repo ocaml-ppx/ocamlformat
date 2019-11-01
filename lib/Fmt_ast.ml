@@ -207,9 +207,9 @@ let rec fmt_longident (li : Longident.t) =
       hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
 let fmt_longident_loc c ?pre {txt; loc} =
-  Cmts.fmt c loc (opt pre Fn.id $ fmt_longident txt)
+  Cmts.fmt c loc (fmt_opt pre $ fmt_longident txt)
 
-let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre Fn.id $ str txt)
+let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (fmt_opt pre $ str txt)
 
 let char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
@@ -538,10 +538,10 @@ and fmt_attributes c ?pre ?suf ~key attrs =
     fmt_or_k first (open_hvbox 0) (fmt "@ ")
     $ hvbox 0
         (Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload)))
-    $ fmt_if_k last (close_box $ opt suf Fn.id)
+    $ fmt_if_k last (close_box $ fmt_opt suf)
   in
   fmt_if_k (num > 0)
-    (opt pre Fn.id $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
+    (fmt_opt pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
 
 and fmt_payload c ctx pld =
   protect (Pld pld)
@@ -1184,7 +1184,7 @@ and fmt_fun_args c ?pro args =
   in
   fmt_if_k
     (not (List.is_empty args))
-    (opt pro Fn.id $ list args "@;" fmt_fun_arg)
+    (fmt_opt pro $ list args "@;" fmt_fun_arg)
 
 (** The second returned value of [fmt_body] belongs to a box of level N-1 if
     the first returned value belongs to a box of level N. *)
