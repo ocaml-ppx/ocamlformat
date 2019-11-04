@@ -1,5 +1,6 @@
 ### (master)
 
+  + Internal: Take file kind from --name when formatting stdin (#1119) (Jules Aguillon)
   + Fix unstabilizing comments on assignments (#1093) (Guillaume Petiot)
   + Internal: Make Fmt.t abstract (#1109) (Jules Aguillon)
   + Improve: give a hint when warning 50 is raised (#1111) (Guillaume Petiot)
