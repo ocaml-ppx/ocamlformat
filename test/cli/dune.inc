@@ -1,6 +1,7 @@
 
 (rule
  (targets err_default_several_file.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_default_several_file.opts}"))))
@@ -11,6 +12,7 @@
 
 (rule
  (targets err_inplace_and_check.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_inplace_and_check.opts}"))))
@@ -21,6 +23,7 @@
 
 (rule
  (targets err_inplace_and_output.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_inplace_and_output.opts}"))))
@@ -31,6 +34,7 @@
 
 (rule
  (targets err_no_arg.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_no_arg.opts}"))))
@@ -41,6 +45,7 @@
 
 (rule
  (targets err_output_and_check.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_output_and_check.opts}"))))
@@ -51,6 +56,7 @@
 
 (rule
  (targets err_output_several_files.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_output_several_files.opts}"))))
@@ -61,6 +67,7 @@
 
 (rule
  (targets err_stdin_and_file.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_stdin_and_file.opts}"))))
@@ -71,6 +78,7 @@
 
 (rule
  (targets err_stdin_and_inplace.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_stdin_and_inplace.opts}"))))
@@ -81,6 +89,7 @@
 
 (rule
  (targets err_stdin_name_unknown_ext.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_stdin_name_unknown_ext.opts} < err_stdin_name_unknown_ext.stdin"))))
@@ -91,6 +100,7 @@
 
 (rule
  (targets err_stdin_no_kind.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "! %{bin:ocamlformat} %{read-lines:err_stdin_no_kind.opts}"))))
@@ -101,6 +111,7 @@
 
 (rule
  (targets name_unknown_ext.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "%{bin:ocamlformat} %{read-lines:name_unknown_ext.opts}"))))
@@ -111,6 +122,7 @@
 
 (rule
  (targets stdin_and_impl.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "%{bin:ocamlformat} %{read-lines:stdin_and_impl.opts} < stdin_and_impl.stdin"))))
@@ -121,6 +133,7 @@
 
 (rule
  (targets stdin_and_intf.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "%{bin:ocamlformat} %{read-lines:stdin_and_intf.opts} < stdin_and_intf.stdin"))))
@@ -131,6 +144,7 @@
 
 (rule
  (targets stdin_and_name.output)
+ (deps .ocamlformat)
  (action
   (with-outputs-to %{targets}
    (system "%{bin:ocamlformat} %{read-lines:stdin_and_name.opts} < stdin_and_name.stdin"))))
