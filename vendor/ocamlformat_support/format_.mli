@@ -978,8 +978,6 @@ val formatter_of_out_functions :
   @since 4.06.0
 *)
 
-val pp_set_max_newline_offset : formatter -> int -> unit
-
 (** {2:symbolic Symbolic pretty-printing} *)
 
 (**

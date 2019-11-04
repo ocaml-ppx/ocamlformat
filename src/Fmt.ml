@@ -23,7 +23,11 @@ let ( >$ ) f g x = f $ g x
 
 let set_margin n fs = Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1)
 
-let set_max_indent n fs = Format.pp_set_max_newline_offset fs n
+let max_indent = ref None
+
+let set_max_indent n fs =
+  ignore fs ;
+  max_indent := Some n
 
 let eval fs t = t fs
 
@@ -201,19 +205,25 @@ let debug_box_close fs =
         (fun fs -> Format.fprintf fs "@<0>]")
         fs )
 
+let apply_max_indent n = Option.value_map !max_indent ~f:(min n) ~default:n
+
 let open_box ?name n fs =
+  let n = apply_max_indent n in
   debug_box_open ?name "b" n fs ;
   Format.pp_open_box fs n
 
 and open_vbox ?name n fs =
+  let n = apply_max_indent n in
   debug_box_open ?name "v" n fs ;
   Format.pp_open_vbox fs n
 
 and open_hvbox ?name n fs =
+  let n = apply_max_indent n in
   debug_box_open ?name "hv" n fs ;
   Format.pp_open_hvbox fs n
 
 and open_hovbox ?name n fs =
+  let n = apply_max_indent n in
   debug_box_open ?name "hov" n fs ;
   Format.pp_open_hovbox fs n
 
