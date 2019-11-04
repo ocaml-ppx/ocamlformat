@@ -80,6 +80,16 @@
  (action (diff err_stdin_and_inplace.ref err_stdin_and_inplace.output)))
 
 (rule
+ (targets err_stdin_name_unknown_ext.output)
+ (action
+  (with-outputs-to %{targets}
+   (system "! %{bin:ocamlformat} %{read-lines:err_stdin_name_unknown_ext.opts} < err_stdin_name_unknown_ext.stdin"))))
+
+(alias
+ (name runtest)
+ (action (diff err_stdin_name_unknown_ext.ref err_stdin_name_unknown_ext.output)))
+
+(rule
  (targets err_stdin_no_kind.output)
  (action
   (with-outputs-to %{targets}
@@ -88,6 +98,16 @@
 (alias
  (name runtest)
  (action (diff err_stdin_no_kind.ref err_stdin_no_kind.output)))
+
+(rule
+ (targets name_unknown_ext.output)
+ (action
+  (with-outputs-to %{targets}
+   (system "%{bin:ocamlformat} %{read-lines:name_unknown_ext.opts}"))))
+
+(alias
+ (name runtest)
+ (action (diff name_unknown_ext.ref name_unknown_ext.output)))
 
 (rule
  (targets stdin_and_impl.output)
@@ -108,3 +128,13 @@
 (alias
  (name runtest)
  (action (diff stdin_and_intf.ref stdin_and_intf.output)))
+
+(rule
+ (targets stdin_and_name.output)
+ (action
+  (with-outputs-to %{targets}
+   (system "%{bin:ocamlformat} %{read-lines:stdin_and_name.opts} < stdin_and_name.stdin"))))
+
+(alias
+ (name runtest)
+ (action (diff stdin_and_name.ref stdin_and_name.output)))
