@@ -51,6 +51,7 @@ let emit_test test_name entry =
   Format.printf {|
 (rule@
  (targets %s.output)@
+ (deps .ocamlformat)@
  (action@
   @[%a@]))@
 |} test_name run_action ();
