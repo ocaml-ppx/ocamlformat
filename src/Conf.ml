@@ -1709,6 +1709,12 @@ let (_profile : t option C.t) =
 
 let is_stdin = function Stdin -> true | File _ -> false
 
+let kind_of_ext fname =
+  match Filename.extension fname with
+  | ".ml" | ".mlt" -> Some `Impl
+  | ".mli" -> Some `Intf
+  | _ -> None
+
 let validate () =
   let inputs_len = List.length !inputs in
   let has_stdin = List.exists ~f:is_stdin !inputs in
@@ -1721,11 +1727,14 @@ let validate () =
     `Error (false, "Must specify at least one input file, or `-` for stdin")
   else if has_stdin && inputs_len > 1 then
     `Error (false, "Cannot specify stdin together with other inputs")
-  else if has_stdin && Option.is_none !kind then
+  else if
+    has_stdin && Option.is_none !kind
+    && Option.is_none (Option.bind ~f:kind_of_ext !name)
+  then
     `Error
       ( false
-      , "Must specify at least one of --impl, --intf or --use-file when \
-         reading from stdin" )
+      , "Must specify at least one of --name, --impl or --intf when reading \
+         from stdin" )
   else if has_stdin && !inplace then
     `Error (false, "Cannot specify stdin together with --inplace")
   else if !inplace && Option.is_some !output then
@@ -1973,13 +1982,13 @@ let kind_of file =
   match !kind with
   | Some kind -> kind
   | None -> (
-    match file with
-    | Stdin -> impossible "checked by validate"
-    | File fname -> (
-      match Filename.extension fname with
-      | ".ml" -> `Impl
-      | ".mli" -> `Intf
-      | _ -> `Impl ) )
+    match Option.bind ~f:kind_of_ext !name with
+    | Some kind -> kind
+    | None -> (
+      match file with
+      | Stdin -> impossible "checked by validate"
+      | File fname -> (
+        match kind_of_ext fname with Some kind -> kind | None -> `Impl ) ) )
 
 let name_of file =
   match !name with
