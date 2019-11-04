@@ -98,3 +98,13 @@
 (alias
  (name runtest)
  (action (diff stdin_and_impl.ref stdin_and_impl.output)))
+
+(rule
+ (targets stdin_and_intf.output)
+ (action
+  (with-outputs-to %{targets}
+   (system "%{bin:ocamlformat} %{read-lines:stdin_and_intf.opts} < stdin_and_intf.stdin"))))
+
+(alias
+ (name runtest)
+ (action (diff stdin_and_intf.ref stdin_and_intf.output)))
