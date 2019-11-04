@@ -2038,6 +2038,12 @@ let build_config ~file ~is_stdin =
   if not conf.quiet then warn_now () ;
   conf
 
+let kind_of_ext fname =
+  match Filename.extension fname with
+  | ".ml" | ".mlt" -> Some `Impl
+  | ".mli" -> Some `Intf
+  | _ -> None
+
 type 'a input = {kind: 'a; name: string; file: file; conf: t}
 
 type action =
@@ -2047,7 +2053,6 @@ type action =
   | Print_config of t
 
 let validate () =
-  ignore !name ;
   if !disable_outside_detected_project then
     warn
       "option `--disable-outside-detected-project` is deprecated and will \
@@ -2069,13 +2074,21 @@ let validate () =
   let inputs =
     match !inputs with
     | [Stdin] -> (
-      match !kind with
-      | None ->
+      match (!kind, !name) with
+      | Some kind, name -> Ok (`Stdin (name, kind))
+      | None, Some name -> (
+        match kind_of_ext name with
+        | Some kind -> Ok (`Stdin (Some name, kind))
+        | None ->
+            Error
+              ( false
+              , "Cannot deduce file kind from passed --name. Please specify \
+                 --impl or --intf" ) )
+      | None, None ->
           Error
             ( false
-            , "Must specify at least one of --impl, --intf or --use-file \
-               when reading from stdin" )
-      | Some kind -> Ok (`Stdin kind) )
+            , "Must specify at least one of --name, --impl or --intf when \
+               reading from stdin" ) )
     | inputs ->
         List.map inputs ~f:(function
           | Stdin ->
@@ -2095,8 +2108,7 @@ let validate () =
     and conf = with_conf (build_config ~file:name ~is_stdin:false) in
     {kind; name; file= File name; conf}
   in
-  let make_stdin kind =
-    let name = "<standard input>" in
+  let make_stdin ?(name = "<standard input>") kind =
     let conf = build_config ~file:name ~is_stdin:false in
     {kind; name; file= Stdin; conf}
   in
@@ -2123,11 +2135,12 @@ let validate () =
       let conf = build_config ~file ~is_stdin in
       `Ok (Print_config conf)
   | Ok `No_action, Ok (`Files [f]) -> `Ok (In_out (make_file f, None))
-  | Ok `No_action, Ok (`Stdin kind) -> `Ok (In_out (make_stdin kind, None))
+  | Ok `No_action, Ok (`Stdin (name, kind)) ->
+      `Ok (In_out (make_stdin ?name kind, None))
   | Ok (`Output output), Ok (`Files [f]) ->
       `Ok (In_out (make_file f, Some output))
-  | Ok (`Output output), Ok (`Stdin kind) ->
-      `Ok (In_out (make_stdin kind, Some output))
+  | Ok (`Output output), Ok (`Stdin (name, kind)) ->
+      `Ok (In_out (make_stdin ?name kind, Some output))
   | Ok `Inplace, Ok (`Files (_ :: _ as files)) ->
       `Ok (Inplace (List.map files ~f:make_file))
   | Ok `Check, Ok (`Files files) ->
@@ -2135,7 +2148,8 @@ let validate () =
         (Check
            (List.map files
               ~f:(make_file ~with_conf:(fun c -> {c with max_iters= 1}))))
-  | Ok `Check, Ok (`Stdin kind) -> `Ok (Check [make_stdin kind])
+  | Ok `Check, Ok (`Stdin (name, kind)) ->
+      `Ok (Check [make_stdin ?name kind])
 
 let action = parse info validate
 
