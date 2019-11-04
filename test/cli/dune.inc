@@ -1,100 +1,100 @@
 
 (rule
- (targets default_several_file.output)
+ (targets err_default_several_file.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:default_several_file.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_default_several_file.opts}"))))
 
 (alias
  (name runtest)
- (action (diff default_several_file.ref default_several_file.output)))
+ (action (diff err_default_several_file.ref err_default_several_file.output)))
 
 (rule
- (targets inplace_and_check.output)
+ (targets err_inplace_and_check.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:inplace_and_check.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_inplace_and_check.opts}"))))
 
 (alias
  (name runtest)
- (action (diff inplace_and_check.ref inplace_and_check.output)))
+ (action (diff err_inplace_and_check.ref err_inplace_and_check.output)))
 
 (rule
- (targets inplace_and_output.output)
+ (targets err_inplace_and_output.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:inplace_and_output.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_inplace_and_output.opts}"))))
 
 (alias
  (name runtest)
- (action (diff inplace_and_output.ref inplace_and_output.output)))
+ (action (diff err_inplace_and_output.ref err_inplace_and_output.output)))
 
 (rule
- (targets no_arg.output)
+ (targets err_no_arg.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:no_arg.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_no_arg.opts}"))))
 
 (alias
  (name runtest)
- (action (diff no_arg.ref no_arg.output)))
+ (action (diff err_no_arg.ref err_no_arg.output)))
 
 (rule
- (targets output_and_check.output)
+ (targets err_output_and_check.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:output_and_check.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_output_and_check.opts}"))))
 
 (alias
  (name runtest)
- (action (diff output_and_check.ref output_and_check.output)))
+ (action (diff err_output_and_check.ref err_output_and_check.output)))
 
 (rule
- (targets output_several_files.output)
+ (targets err_output_several_files.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:output_several_files.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_output_several_files.opts}"))))
 
 (alias
  (name runtest)
- (action (diff output_several_files.ref output_several_files.output)))
+ (action (diff err_output_several_files.ref err_output_several_files.output)))
 
 (rule
- (targets stdin.output)
+ (targets err_stdin_and_file.output)
  (action
   (with-outputs-to %{targets}
-   (system "%{bin:ocamlformat} %{read-lines:stdin.opts} < stdin.stdin"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_stdin_and_file.opts}"))))
 
 (alias
  (name runtest)
- (action (diff stdin.ref stdin.output)))
+ (action (diff err_stdin_and_file.ref err_stdin_and_file.output)))
 
 (rule
- (targets stdin_and_file.output)
+ (targets err_stdin_and_inplace.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:stdin_and_file.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_stdin_and_inplace.opts}"))))
 
 (alias
  (name runtest)
- (action (diff stdin_and_file.ref stdin_and_file.output)))
+ (action (diff err_stdin_and_inplace.ref err_stdin_and_inplace.output)))
 
 (rule
- (targets stdin_and_inplace.output)
+ (targets err_stdin_no_kind.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:stdin_and_inplace.opts}"))))
+   (system "! %{bin:ocamlformat} %{read-lines:err_stdin_no_kind.opts}"))))
 
 (alias
  (name runtest)
- (action (diff stdin_and_inplace.ref stdin_and_inplace.output)))
+ (action (diff err_stdin_no_kind.ref err_stdin_no_kind.output)))
 
 (rule
- (targets stdin_no_kind.output)
+ (targets stdin_and_impl.output)
  (action
   (with-outputs-to %{targets}
-   (system "! %{bin:ocamlformat} %{read-lines:stdin_no_kind.opts}"))))
+   (system "%{bin:ocamlformat} %{read-lines:stdin_and_impl.opts} < stdin_and_impl.stdin"))))
 
 (alias
  (name runtest)
- (action (diff stdin_no_kind.ref stdin_no_kind.output)))
+ (action (diff stdin_and_impl.ref stdin_and_impl.output)))
