@@ -3,12 +3,14 @@ module StringMap = Map.Make (String)
 type entry = {
   has_ref : bool;
   has_opts : bool;
+  has_stdin : bool;
   should_fail : bool
 }
 
 let empty_entry = {
   has_ref = false;
   has_opts = false;
+  has_stdin = false;
   should_fail = false;
 }
 
@@ -25,6 +27,8 @@ let register_file entries fname =
       update_or_add test_name ~f:(fun e -> { e with has_opts = true })
   | [ test_name; "should-fail" ] ->
       update_or_add test_name ~f:(fun e -> { e with should_fail = true })
+  | [ test_name; "stdin" ] ->
+      update_or_add test_name ~f:(fun e -> { e with has_stdin = true })
   | _ ->
       entries
 
@@ -39,19 +43,25 @@ let check_test test_name entry ok =
 
 let emit_test test_name entry =
   let cmd_prefix = if entry.should_fail then "! " else "" in
-  Printf.printf {|
-(rule
- (targets %s.output)
- (action
-  (with-outputs-to %%{targets}
-   (system "%s%%{bin:ocamlformat} %%{read-lines:%s.opts}"))))
-
-(alias
- (name runtest)
- (action (diff %s.ref %s.output)))
-|}
-    test_name cmd_prefix test_name
-    test_name test_name
+  let run_action pf () =
+    Format.fprintf pf "(with-outputs-to %%{targets}@\n (system \"%s%%{bin:ocamlformat} %%{read-lines:%s.opts}\"))"
+      cmd_prefix test_name
+  in
+  let wrap_stdin action pf () =
+    Format.fprintf pf "(with-stdin-from %s.stdin@\n @[%a@])" test_name action ()
+  in
+  let action = if entry.has_stdin then wrap_stdin run_action else run_action in
+  Format.printf {|
+(rule@
+ (targets %s.output)@
+ (action@
+  @[%a@]))@
+|} test_name action ();
+  Format.printf {|
+(alias@
+ (name runtest)@
+ (action (diff %s.ref %s.output)))@
+|} test_name test_name
 
 let () =
   let files = Sys.readdir "." in
