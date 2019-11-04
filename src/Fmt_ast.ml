@@ -1658,7 +1658,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ fmt
                        ( match xbody.ast.pexp_desc with
                        | Pexp_function _ -> "@ "
-                       | _ -> "@;<1 2>" )
+                       | _ -> (
+                         (* Avoid the "double indentation" of the application
+                            and the function matching when the
+                            max-indentation is constrained. *)
+                         match c.conf.max_indent with
+                         | Some i when i <= 2 -> "@ "
+                         | _ -> "@;<1 2>" ) )
                    $ cbox 0 (fmt_expression c ?box xbody)
                    $ str ")" $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
