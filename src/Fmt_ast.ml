@@ -1494,14 +1494,14 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
         | Pexp_fun _ | Pexp_function _ -> Some false
         (* do not box the "docked" collection expressions *)
         | Pexp_record _ | Pexp_array _ | Pexp_tuple _
-          |Pexp_construct
-             ( {txt= Lident "::"; loc= _}
-             , Some
-                 { pexp_desc= Pexp_tuple [_; _]
-                 ; pexp_attributes= []
-                 ; pexp_loc= _
-                 ; _ } ) ->
-           Some false
+         |Pexp_construct
+            ( {txt= Lident "::"; loc= _}
+            , Some
+                { pexp_desc= Pexp_tuple [_; _]
+                ; pexp_attributes= []
+                ; pexp_loc= _
+                ; _ } ) ->
+            Some false
         | _ -> None
       in
       let epi =
@@ -1562,7 +1562,7 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
       assert (Option.compare compare first_ext ext = 0)
   | _ -> impossible "at least two elements" ) ;
   let grps = List.group elts ~break in
-  let fmt_seq ~last_grp ?prev (ext, curr) ?next =
+  let fmt_seq ~last_grp ~prev (ext, curr) ~next =
     let very_last = Option.is_none next && last_grp in
     let f (_, prev) = fmt_sep c prev ext curr in
     let c =
@@ -1574,7 +1574,7 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
     in
     Option.value_map prev ~default:noop ~f $ fmt_expression c curr
   in
-  let fmt_seq_list ?prev x ?next =
+  let fmt_seq_list ~prev x ~next =
     let f prev =
       let prev = snd (List.last_exn prev) in
       let ext, curr = List.hd_exn x in
