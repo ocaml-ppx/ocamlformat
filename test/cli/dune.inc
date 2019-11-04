@@ -60,6 +60,16 @@
  (action (diff output_several_files.ref output_several_files.output)))
 
 (rule
+ (targets stdin.output)
+ (action
+  (with-outputs-to %{targets}
+   (system "%{bin:ocamlformat} %{read-lines:stdin.opts} < stdin.stdin"))))
+
+(alias
+ (name runtest)
+ (action (diff stdin.ref stdin.output)))
+
+(rule
  (targets stdin_and_file.output)
  (action
   (with-outputs-to %{targets}

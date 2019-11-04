@@ -42,21 +42,18 @@ let check_test test_name entry ok =
   ok
 
 let emit_test test_name entry =
-  let cmd_prefix = if entry.should_fail then "! " else "" in
+  let bang pf b = if b then Format.fprintf pf "! " else () in
+  let redir_in pf b = if b then Format.fprintf pf " < %s.stdin" test_name else () in
   let run_action pf () =
-    Format.fprintf pf "(with-outputs-to %%{targets}@\n (system \"%s%%{bin:ocamlformat} %%{read-lines:%s.opts}\"))"
-      cmd_prefix test_name
+    Format.fprintf pf "(with-outputs-to %%{targets}@\n (system \"%a%%{bin:ocamlformat} %%{read-lines:%s.opts}%a\"))"
+      bang entry.should_fail test_name redir_in entry.has_stdin
   in
-  let wrap_stdin action pf () =
-    Format.fprintf pf "(with-stdin-from %s.stdin@\n @[%a@])" test_name action ()
-  in
-  let action = if entry.has_stdin then wrap_stdin run_action else run_action in
   Format.printf {|
 (rule@
  (targets %s.output)@
  (action@
   @[%a@]))@
-|} test_name action ();
+|} test_name run_action ();
   Format.printf {|
 (alias@
  (name runtest)@
