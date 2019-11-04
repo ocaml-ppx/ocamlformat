@@ -459,11 +459,6 @@ let is_arrow_or_poly = function
   | {ptyp_desc= Ptyp_arrow _ | Ptyp_poly _; _} -> true
   | _ -> false
 
-let fmt_assign_colon c =
-  match c.conf.assignment_operator with
-  | `Begin_line -> fmt "@;<1 2>:= "
-  | `End_line -> fmt " :=@;<1 2>"
-
 let fmt_assign_arrow c =
   match c.conf.assignment_operator with
   | `Begin_line -> fmt "@;<1 2><- "
@@ -1463,11 +1458,25 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, r); (Nolabel, v)] )
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      let cmts_before =
+        let adj =
+          fmt_if Poly.(c.conf.assignment_operator = `End_line) "@,"
+        in
+        Cmts.fmt_before c loc ~pro:(break 1 2) ~epi:adj ~adj
+      in
+      let cmts_after = Cmts.fmt_after c loc ~pro:noop ~epi:noop in
       wrap_if parens "(" ")"
         (hovbox 0
-           ( fmt_expression c (sub_exp ~ctx r)
-           $ Cmts.fmt c loc (fmt_assign_colon c)
-           $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ))
+           ( match c.conf.assignment_operator with
+           | `Begin_line ->
+               hvbox 0 (fmt_expression c (sub_exp ~ctx r) $ cmts_before)
+               $ fmt "@;<1 2>:= " $ cmts_after
+               $ hvbox 2 (fmt_expression c (sub_exp ~ctx v))
+           | `End_line ->
+               hvbox 0
+                 (fmt_expression c (sub_exp ~ctx r) $ cmts_before $ str " :=")
+               $ fmt "@;<1 2>" $ cmts_after
+               $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ))
   | Pexp_apply
       ( { pexp_desc=
             Pexp_ident
