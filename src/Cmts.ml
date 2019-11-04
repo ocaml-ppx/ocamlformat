@@ -108,8 +108,7 @@ end = struct
                    (not (List.is_empty children))
                    "@,{" " }" (dump_ tree children) )))
     in
-    if Conf.debug then set_margin 100000000 $ dump_ tree tree.roots
-    else Fn.const ()
+    fmt_if_k Conf.debug (set_margin 100000000 $ dump_ tree tree.roots)
 end
 
 module Loc_tree = struct
@@ -408,8 +407,9 @@ let init map_ast source asts comments_n_docstrings =
           if not (Location.compare loc Location.none = 0) then
             Hashtbl.set t.remaining ~key:loc ~data:()) ;
     if Conf.debug then (
+      let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
-      Format.eprintf "@\n%a@\n@\n%!" (Fn.flip Loc_tree.dump) loc_tree ) ;
+      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ;
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
     match locs with
@@ -447,7 +447,7 @@ let preserve fmt_x x =
   let fs = Format.formatter_of_buffer buf in
   let save = !remove in
   remove := false ;
-  fmt_x x fs ;
+  Fmt.eval fs (fmt_x x) ;
   Format.pp_print_flush fs () ;
   remove := save ;
   Buffer.contents buf
@@ -555,7 +555,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
       in
       list_pn groups (fun ~prev group ~next ->
           fmt_or_k (Option.is_none prev)
-            (Option.call ~f:pro $ open_vbox 0)
+            (fmt_opt pro $ open_vbox 0)
             (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
@@ -566,9 +566,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
                 $ maybe_newline ~next (List.last_exn group) )
           $ fmt_if_k (Option.is_none next)
               ( close_box
-              $ fmt_or_k eol_cmt
-                  (fmt_or_k adj_cmt adj eol)
-                  (Option.call ~f:epi) ))
+              $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ))
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break_unless_newline 1 0)
     ?eol ?adj =

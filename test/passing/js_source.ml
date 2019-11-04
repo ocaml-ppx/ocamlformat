@@ -7466,3 +7466,9 @@ let _ =
     (match () with
     | _ -> long_function_name long_argument_name__________________________________________)
 ;;
+
+let _ =
+  aaaaaaa
+  (* __________________________________________________________________________________ *)
+  := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+;;

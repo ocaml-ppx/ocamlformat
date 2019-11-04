@@ -18,6 +18,7 @@
 
 #### New features
 
+  + Give a hint when warning 50 is raised (#1111) (Guillaume Petiot)
   + Add a message when a config value is removed (#1089) (Etienne Millon)
     Explain what replaces removed options and avoid printing a parsing error.
   + Implement `sequence-blank-line=preserve-one` for let bindings (#1077) (Jules Aguillon)
@@ -36,6 +37,7 @@
 
 #### Bug fixes
 
+  + Fix unstabilizing comments on assignments (#1093) (Guillaume Petiot)
   + Fix the default value documentation for `max-indent` (#1105) (Guillaume Petiot)
   + Fix closing parenthesis exceeding the margin in function application (#1098) (Jules Aguillon)
   + Missing break before attributes of `Pmty_with` (#1103) (Josh Berdine)
@@ -74,6 +76,9 @@
 
 #### Internal
 
+  + Take file kind from --name when formatting stdin (#1119) (Jules Aguillon)
+  + Make Fmt.t abstract (#1109) (Jules Aguillon)
+  + Future-proof Fmt API in case Fmt.t goes abstract (#1106) (Etienne Millon)
   + Future-proof `Fmt` API in case `Fmt.t` goes abstract (#1106) (Etienne Millon)
   + Optional names for formatting boxes in debug output (#1083) (Guillaume Petiot)
   + Check ocamlformat error codes in the testsuite (#1084) (Etienne Millon)

@@ -16,8 +16,8 @@ module Format = Format_
 type s = (unit, Format.formatter, unit) format
 (** Format strings that accept no arguments. *)
 
-type t = Format.formatter -> unit
-(** Format thunks, which accept a formatter buffer and write to it. *)
+type t
+(** Format thunks. *)
 
 val ( $ ) : t -> t -> t
 (** Format concatenation: [a $ b] formats [a], then [b]. *)
@@ -30,6 +30,12 @@ val set_margin : int -> t
 
 val set_max_indent : int -> t
 (** Set the maximum indentation. *)
+
+val eval : Format.formatter -> t -> unit
+(** [eval fs t] runs format thunk [t] outputting to [fs] *)
+
+val protect : t -> on_error:(exn -> unit) -> t
+(** Catch exceptions raised while formatting. *)
 
 (** Break hints and format strings --------------------------------------*)
 
@@ -83,6 +89,10 @@ val fmt_or : bool -> s -> s -> t
 
 val fmt_or_k : bool -> t -> t -> t
 (** Conditionally select between two format thunks. *)
+
+val fmt_opt : t option -> t
+(** Optionally format. [fmt_opt (Some t)] is [t] and [fmt_opt None] is
+    [noop]. *)
 
 (** Conditional on immediately following a line break -------------------*)
 

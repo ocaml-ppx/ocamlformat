@@ -110,7 +110,17 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
       | Syntaxerr.Error _ | Lexer.Error _ ->
           Location.report_exception fmt exn
       | Warning50 l ->
-          List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
+          List.iter l ~f:(fun (l, w) -> Compat.print_warning l w) ;
+          Format.fprintf fmt
+            "@{<warning>Hint@}: (Warning 50) This file contains a \
+             documentation comment (** ... *) that the OCaml compiler does \
+             not know how to attach to the AST. OCamlformat does not \
+             support these cases. You can find more information at: \
+             https://github.com/ocaml-ppx/ocamlformat#overview. If you'd \
+             like to disable this check and let ocamlformat make a choice \
+             (though it might not be consistent with the ocaml compilers \
+             and odoc), you can set the --no-comment-check option.\n\
+             %!"
       | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
   | Unstable {iteration; prev; next} ->
       if Conf.debug then (
@@ -236,7 +246,7 @@ let with_optional_box_debug ~box_debug k =
 let with_buffer_formatter ~buffer_size k =
   let buffer = Buffer.create buffer_size in
   let fs = Format_.formatter_of_buffer buffer in
-  k fs ;
+  Fmt.eval fs k ;
   Format_.pp_print_flush fs () ;
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer

@@ -1,0 +1,1 @@
+--output x.ml --check sample/a.ml

@@ -25,6 +25,14 @@ let set_margin n fs = Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1)
 
 let set_max_indent n fs = Format.pp_set_max_newline_offset fs n
 
+let eval fs t = t fs
+
+let protect t ~on_error fs =
+  try t fs
+  with exn ->
+    Format.pp_print_flush fs () ;
+    on_error exn
+
 (** Debug of formatting -------------------------------------------------*)
 
 let pp_color_k color_code k fs =
@@ -87,6 +95,8 @@ let fmt_if cnd f fs = fmt_if_k cnd (fmt f) fs
 let fmt_or_k cnd t_k f_k fs = if cnd then t_k fs else f_k fs
 
 let fmt_or cnd t f fs = fmt_or_k cnd (fmt t) (fmt f) fs
+
+let fmt_opt opt fs = match opt with Some k -> k fs | None -> ()
 
 (** Conditional on immediately following a line break -------------------*)
 
