@@ -1,81 +1,111 @@
 ### (master)
 
-  + Internal: Take file kind from --name when formatting stdin (#1119) (Jules Aguillon)
+#### Changes
+
+  + Set "conventional" as the default profile (#1060) (Guillaume Petiot)
+    This new profile is made to better match the most used style and is encouraged.
+    To continue using the previous default, use `profile = ocamlformat` in your `.ocamlformat`.
+  + CLI: Allow both values of boolean options (#1062) (Jules Aguillon)
+    Now, both `--opt` and --no-opt` are available on the CLI for any boolean option "opt".
+    Previously, only one of them were available depending on the default value.
+  + Auto mode for `break-string-literals` (#1057) (Guillaume Petiot)
+    `wrap`, `newlines` and `newlines-and-wrap` values of `break-string-literals` are removed.
+    `auto` replaces them, it is equivalent to `newlines-and-wrap`.
+  + Dock collection brackets (#1014) (Guillaume Petiot)
+    `after-and-docked` value of `break-separators` is removed and is replaced by a new `dock-collection-brackets` option.
+  + Preserve `begin` and `end` keywords in if-then-else (#978) (Jules Aguillon)
+    Previously, `begin`/`end` keywords around if-then-else branches were turned into parentheses.
+
+#### New features
+
+  + Give a hint when warning 50 is raised (#1111) (Guillaume Petiot)
+  + Add a message when a config value is removed (#1089) (Etienne Millon)
+    Explain what replaces removed options and avoid printing a parsing error.
+  + Implement `sequence-blank-line=preserve-one` for let bindings (#1077) (Jules Aguillon)
+    Preserve a blank line after `let .. in` when `sequence-blank-line` set to `preserve-one`.
+    Previously, only blank lines after `;` could be preserved.
+  + Parse toplevel directives (#1020) (Jules Aguillon)
+    Allow `#directives` in `.ml` files.
+    Previously, files containing a directive needed to be parsed as "use file".
+    The "use file" mode is removed and `--use-file` is now the same as `--impl`.
+  + Don't require `--name`, require kind, forbid `--inplace`, allow `--check`, make `--enable-outside-detected-project` implicit when reading from stdin (#1018) (Guillaume Petiot)
+  + Parse code in docstrings (#941) (Guillaume Petiot)
+    Format OCaml code in cinaps-style comments `(*$ code *)` and code blocks in documentation comments `(** {[ code ]} *)`.
+  + Parse documentation comments with Odoc (#721) (Jules Aguillon)
+    Formatting of documentation comments is more robust and support newer Odoc syntaxes.
+    Internally, Odoc replaces Octavius as the documentation parser.
+
+#### Bug fixes
+
   + Fix unstabilizing comments on assignments (#1093) (Guillaume Petiot)
-  + Internal: Make Fmt.t abstract (#1109) (Jules Aguillon)
-  + Improve: give a hint when warning 50 is raised (#1111) (Guillaume Petiot)
-  + Internal: Future-proof Fmt API in case Fmt.t goes abstract (#1106) (Etienne Millon)
-  + Fix the default value documentation for max-indent (#1105) (Guillaume Petiot)
+  + Fix the default value documentation for `max-indent` (#1105) (Guillaume Petiot)
   + Fix closing parenthesis exceeding the margin in function application (#1098) (Jules Aguillon)
-  + Fix: missing break before attributes of Pmty_with (#1103) (Josh Berdine)
-  + Fix: Fix closing quote exceeding the margin (#1096) (Jules Aguillon)
-  + Improve: add a message when a config value is removed (#1089) (Etienne Millon)
-  + API: optional names for formatting boxes (#1083) (Guillaume Petiot)
-  + Build: check ocamlformat error codes (#1084) (Etienne Millon)
-  + Internal: clean Translation_unit (#1078) (Guillaume Petiot)
-  + Build: use dune file generation in test/passing/dune (#1082) (Etienne Millon)
-  + CI: factorize tests and check reason build (#1079) (Guillaume Petiot)
+  + Missing break before attributes of `Pmty_with` (#1103) (Josh Berdine)
+  + Fix closing quote exceeding the margin (#1096) (Jules Aguillon)
   + Fix break before the closing bracket of collections (exceeding the margin) (#1073) (Guillaume Petiot)
-  + Build: use short form for action in src/dune (#1076) (Etienne Millon)
-  + Improve: Implement sequence-blank-line=preserve-one for let bindings (#1077) (Jules Aguillon)
-  + Internal: Cleanup sequence_blank_line (#1075) (Jules Aguillon)
-  + Improve: set conventional as the default profile (#1060) (Guillaume Petiot)
   + Fix precedence of Dot wrt Hash (#1058) (Guillaume Petiot)
   + Fix break in variant type definition to not exceed the margin (#1064) (Guillaume Petiot)
-  + CI: use a script travis-ci.sh to simplify .travis.yml (#1063) (Guillaume Petiot)
-  + Improve: allow both values of boolean options (#1062) (Jules Aguillon)
-  + Improve: auto mode for break-string-literals instead of {wrap,newlines,newlines-and-wrap} (#1057) (Guillaume Petiot)
-  + Improve: remove utility functions from Fmt_ast (#1059) (Guillaume Petiot)
   + Fix newlines and indentation in toplevel extension points (#1054) (Guillaume Petiot)
   + Fix placement of doc comments around extensions (#1052) (Jules Aguillon)
-  + Improve: inline extensions that do not break (#1050) (Guillaume Petiot)
-  + Fix: add missing cut before attributes in type declarations (#1051) (Guillaume Petiot)
-  + CI: use opam-2.0.5 in Travis (#1044) (Anton Kochkov)
+  + Inline extensions that do not break (#1050) (Guillaume Petiot)
+  + Add missing cut before attributes in type declarations (#1051) (Guillaume Petiot)
   + Fix alignment of cases (#1046) (Guillaume Petiot)
   + Fix blank line after comments at the end of lists (#1045) (Guillaume Petiot)
-  + CI: check the build with OCaml 4.07.1 and 4.08.0 (#1036) (Jules Aguillon)
   + Fix indexing operators precedence (#1039) (Jules Aguillon)
   + Fix dropped comment after infix op (#1030) (Guillaume Petiot)
-  + Fix: no newline if the input is empty (#1031) (Guillaume Petiot)
+  + No newline if the input is empty (#1031) (Guillaume Petiot)
   + Fix unstable comments around attributes (#1029) (Guillaume Petiot)
-  + Improve: use the same sets of options for both branches by default in test_branch.sh (#1033) (Guillaume Petiot)
-  + Fix test_branch.sh and CI checking of CHANGES.md (#1032, #1034) (Jules Aguillon)
-  + Fix flag of git-worktree in test_branch.sh and bisect.sh (#1027) (Guillaume Petiot)
-  + Improve: remove the bisect_ppx dependency and clean Makefile (#1005) (Jules Aguillon)
-  + Project: use a CHANGES.md log file again (#1023) (Guillaume Petiot)
-  + Support OCaml 4.09.0 (add the odoc.1.4.2 dependency) (#1024) (Guillaume Petiot)
-  + Parse toplevel directives (#1020) (Jules Aguillon)
   + Fix extra blank line in sequence (#1021) (Jules Aguillon)
   + Check functor arguments when computing placement of doc comments (#1013) (Jules Aguillon)
-  + Improve: don't require --name, require kind, forbid --inplace, allow --check, make --enable-outside-detected-project implicit when reading from stdin (#1018) (Guillaume Petiot)
-  + Improve: dock collection brackets (#1014) (Guillaume Petiot)
-  + Project: update labels of issue templates (#1017) (Guillaume Petiot)
   + Fix indentation of labelled args (#1006) (Guillaume Petiot)
-  + Doc: update labels in CONTRIBUTING.md (#1007) (Guillaume Petiot)
-  + Fix linebreak between or-cases with comments when break-cases=all (#1002) (Guillaume Petiot)
-  + Improve: allow to ignore invalid options (#984) (hhugo)
+  + Fix linebreak between or-cases with comments when `break-cases=all` (#1002) (Guillaume Petiot)
   + Fix unstable unattached doc comment in records (#998) (Jules Aguillon)
   + Fix string literal changed (#995) (Jules Aguillon)
   + Fix type variable (#996) (Jules Aguillon)
   + Fix crash on extension sequence (#992) (Guillaume Petiot)
   + Fix position of expressions regarding of comments in infix-op expressions (#986) (Guillaume Petiot)
-  + Improve: preserve begin-end keywords in if-then-else (#978) (Jules Aguillon)
-  + Fix: escape special characters in external declaration (#988) (Jules Aguillon)
+  + Escape special characters in external declaration (#988) (Jules Aguillon)
   + Fix parens around constrained expr with attrs (#987) (Guillaume Petiot)
   + Fix the margin, and correctly breaks comments (#957) (Guillaume Petiot)
-  + Improve the documentation of --doc-comments (#982) (Jules Aguillon)
-  + Tests: remove symbolic links and change naming convention of tests (#980) (Guillaume Petiot)
   + Fix formatting of custom indexing operators (#975) (Guillaume Petiot)
   + Fix position of comments of labelled arrow types (#976) (Guillaume Petiot)
-  + API: change the type of fmt-code (#974) (Guillaume Petiot)
-  + Improve: simplify makefile (#973) (hhugo)
-  + Fix: no box around inline odoc styles (#971) (Guillaume Petiot)
+  + No box around inline odoc styles (#971) (Guillaume Petiot)
   + Fix boxing of collection expressions/patterns (#960) (Guillaume Petiot)
-  + Improve: parse code in docstrings (#941) (Guillaume Petiot)
   + Fix crash on record expr with pack fields (#963) (Jules Aguillon)
-  + Fix: letop in subexpr (#956) (hhugo)
-  + Fix: dune should not be flagged as a build dep anymore (#954) (Guillaume Petiot)
-  + Improve: parse doc comments with Odoc (#721) (Jules Aguillon)
+  + Fix letop in subexpr (#956) (hhugo)
+
+#### Internal
+
+  + Take file kind from --name when formatting stdin (#1119) (Jules Aguillon)
+  + Make Fmt.t abstract (#1109) (Jules Aguillon)
+  + Future-proof Fmt API in case Fmt.t goes abstract (#1106) (Etienne Millon)
+  + Future-proof `Fmt` API in case `Fmt.t` goes abstract (#1106) (Etienne Millon)
+  + Optional names for formatting boxes in debug output (#1083) (Guillaume Petiot)
+  + Check ocamlformat error codes in the testsuite (#1084) (Etienne Millon)
+  + Clean `Translation_unit` (#1078) (Guillaume Petiot)
+  + Use dune file generation in test/passing/dune (#1082) (Etienne Millon)
+  + CI: factorize tests and check reason build (#1079) (Guillaume Petiot)
+  + Use short form for action in src/dune (#1076) (Etienne Millon)
+  + Cleanup `sequence_blank_line` (#1075) (Jules Aguillon)
+  + CI: use a script travis-ci.sh to simplify .travis.yml (#1063) (Guillaume Petiot)
+  + Remove utility functions from `Fmt_ast` (#1059) (Guillaume Petiot)
+  + CI: use opam-2.0.5 in Travis (#1044) (Anton Kochkov)
+  + CI: check the build with OCaml 4.07.1 and 4.08.0 (#1036) (Jules Aguillon)
+  + Use the same sets of options for both branches by default in `test_branch.sh` (#1033) (Guillaume Petiot)
+  + Fix `test_branch.sh` and CI checking of CHANGES.md (#1032, #1034) (Jules Aguillon)
+  + Fix flag of git-worktree in `test_branch.sh` and `bisect.sh` (#1027) (Guillaume Petiot)
+  + Remove the `bisect_ppx` dependency and clean the `Makefile` (#1005) (Jules Aguillon)
+  + Use a `CHANGES.md` log file again (#1023) (Guillaume Petiot)
+  + Support OCaml 4.09.0 (add the odoc.1.4.2 dependency) (#1024) (Guillaume Petiot)
+  + Update labels of issue templates (#1017) (Guillaume Petiot)
+  + Update labels in `CONTRIBUTING.md` (#1007) (Guillaume Petiot)
+  + Allow to ignore invalid options (#984) (hhugo)
+    The `--ignore-invalid-option` flag is added to ignore invalid options in `.ocamlformat` files.
+  + Improve the documentation of `--doc-comments` (#982) (Jules Aguillon)
+  + Remove symbolic links and change naming convention of tests (#980) (Guillaume Petiot)
+  + Change the type of `fmt_code` (#974) (Guillaume Petiot)
+  + Simplify `Makefile` (#973) (hhugo)
+  + Dune should not be flagged as a build dep anymore (#954) (Guillaume Petiot)
 
 ### 0.11 (2019-08-07)
 
