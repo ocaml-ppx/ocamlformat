@@ -111,3 +111,4 @@ match Conf.action with
     in
     let checked = List.for_all inputs ~f in
     Caml.exit (if checked then 0 else 1)
+| Print_config conf -> Conf.print_config conf ; Caml.exit 0

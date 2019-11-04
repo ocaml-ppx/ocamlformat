@@ -1977,6 +1977,7 @@ type action =
   | In_out of [`Impl | `Intf] input * string option
   | Inplace of [`Impl | `Intf] input list
   | Check of [`Impl | `Intf] input list
+  | Print_config of t
 
 let kind_of file =
   match !kind with
@@ -2108,22 +2109,21 @@ let build_config ~file ~is_stdin =
   if not conf.quiet then warn_now () ;
   conf
 
-;;
-if !print_config then
-  let file, is_stdin =
-    match (!name, !inputs) with
-    | Some file, input :: _ -> (file, is_stdin input)
-    | Some file, [] -> (file, true)
-    | None, File file :: _ -> (file, false)
-    | None, Stdin :: _ -> ("-" (* the name does not matter here *), true)
-    | None, [] ->
-        let root = Option.value root ~default:(Fpath.cwd ()) in
-        (Fpath.(root / dot_ocamlformat |> to_string), true)
-  in
-  C.print_config (build_config ~file ~is_stdin)
-
 let action =
-  if !inplace then
+  if !print_config then
+    let file, is_stdin =
+      match (!name, !inputs) with
+      | Some file, input :: _ -> (file, is_stdin input)
+      | Some file, [] -> (file, true)
+      | None, File file :: _ -> (file, false)
+      | None, Stdin :: _ -> ("-" (* the name does not matter here *), true)
+      | None, [] ->
+          let root = Option.value root ~default:(Fpath.cwd ()) in
+          (Fpath.(root / dot_ocamlformat |> to_string), true)
+    in
+    let conf = build_config ~file ~is_stdin in
+    Print_config conf
+  else if !inplace then
     Inplace
       (List.map !inputs ~f:(fun file ->
            let name = name_of file in
@@ -2148,9 +2148,7 @@ let action =
             ; file
             ; conf= build_config ~file:name ~is_stdin:(is_stdin file) }
           , !output )
-    | _ ->
-        if !print_config then Caml.exit 0
-        else impossible "checked by validate"
+    | _ -> impossible "checked by validate"
 
 and debug = !debug
 
@@ -2193,3 +2191,5 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
       let w = Warnings.Attribute_payload (txt, reason error) in
       if (not c.quiet) && not quiet then Compat.print_warning loc w ;
       c
+
+let print_config = C.print_config

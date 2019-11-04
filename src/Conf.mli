@@ -98,6 +98,7 @@ type action =
       (** Format in-place, overwriting input file(s). *)
   | Check of [`Impl | `Intf] input list
       (** Check whether the input files already are formatted. *)
+  | Print_config of t  (** Print the configuration and exit. *)
 
 val action : action
 (** Formatting action: input type and source, and output destination. *)
@@ -111,3 +112,5 @@ val check : bool
 val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
+
+val print_config : t -> unit
