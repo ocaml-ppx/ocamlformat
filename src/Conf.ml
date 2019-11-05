@@ -2069,7 +2069,7 @@ let validate () =
     | [] -> Ok `No_action
     | [(action, _)] -> Ok action
     | (_, a1) :: (_, a2) :: _ ->
-        Error (false, Printf.sprintf "Cannot specify %s with %s" a1 a2)
+        Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
   in
   let inputs =
     match !inputs with
@@ -2082,14 +2082,12 @@ let validate () =
         | Some kind -> Ok (`Stdin (Some name, kind))
         | None ->
             Error
-              ( false
-              , "Cannot deduce file kind from passed --name. Please specify \
-                 --impl or --intf" ) )
+              "Cannot deduce file kind from passed --name. Please specify \
+               --impl or --intf" )
       | None, None ->
           Error
-            ( false
-            , "Must specify at least one of --name, --impl or --intf when \
-               reading from stdin" ) )
+            "Must specify at least one of --name, --impl or --intf when \
+             reading from stdin" )
     | [File f] ->
         let kind =
           Option.value ~default:f !name
@@ -2099,14 +2097,13 @@ let validate () =
         Ok (`Single_file (kind, !name, f))
     | _ :: _ :: _ as inputs ->
         if Option.is_some !name then
-          Error (false, "Cannot specify --name with multiple inputs")
+          Error "Cannot specify --name with multiple inputs"
         else if Option.is_some !kind then
-          Error (false, "Cannot specify --kind with multiple inputs")
+          Error "Cannot specify --kind with multiple inputs"
         else
           List.map inputs ~f:(function
             | Stdin ->
-                Error
-                  (false, "Cannot specify stdin together with other inputs")
+                Error "Cannot specify stdin together with other inputs"
             | File f ->
                 let kind = Option.value ~default:`Impl (kind_of_ext f) in
                 Ok (kind, f))
@@ -2122,50 +2119,51 @@ let validate () =
     let conf = build_config ~file:name ~is_stdin:false in
     {kind; name; file= Stdin; conf}
   in
-  match (action, inputs) with
-  | Ok `Print_config, Ok inputs ->
-      let file, is_stdin =
-        match inputs with
-        | `Stdin _ -> ("-", true)
-        | `Single_file (_, _, f) -> (f, false)
-        | `Several_files ((_, f) :: _) -> (f, false)
-        | `Several_files [] | `No_input ->
-            let root = Option.value root ~default:(Fpath.cwd ()) in
-            (Fpath.(root / dot_ocamlformat |> to_string), true)
-      in
-      let conf = build_config ~file ~is_stdin in
-      `Ok (Print_config conf)
-  | Ok _, Ok `No_input ->
-      `Error (false, "Must specify at least one input file, or `-` for stdin")
-  | Ok (`No_action | `Output _), Ok (`Several_files _) ->
-      `Error
-        ( false
-        , "Must specify exactly one input file without --inplace or --check"
-        )
-  | Ok `Inplace, Ok (`Stdin _) ->
-      `Error (false, "Cannot specify stdin together with --inplace")
-  | Error e, _ | _, Error e -> `Error e
-  | Ok `No_action, Ok (`Single_file (kind, name, f)) ->
-      `Ok (In_out (make_file ?name kind f, None))
-  | Ok `No_action, Ok (`Stdin (name, kind)) ->
-      `Ok (In_out (make_stdin ?name kind, None))
-  | Ok (`Output output), Ok (`Single_file (kind, name, f)) ->
-      `Ok (In_out (make_file ?name kind f, Some output))
-  | Ok (`Output output), Ok (`Stdin (name, kind)) ->
-      `Ok (In_out (make_stdin ?name kind, Some output))
-  | Ok `Inplace, Ok (`Single_file (kind, name, f)) ->
-      `Ok (Inplace [make_file ?name kind f])
-  | Ok `Inplace, Ok (`Several_files files) ->
-      `Ok (Inplace (List.map files ~f:(fun (kind, f) -> make_file kind f)))
-  | Ok `Check, Ok (`Single_file (kind, name, f)) ->
-      `Ok (Inplace [make_file ?name kind f])
-  | Ok `Check, Ok (`Several_files files) ->
-      let f (kind, f) =
-        make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
-      in
-      `Ok (Check (List.map files ~f))
-  | Ok `Check, Ok (`Stdin (name, kind)) ->
-      `Ok (Check [make_stdin ?name kind])
+  let interpret action inputs =
+    match (action, inputs) with
+    | `Print_config, inputs ->
+        let file, is_stdin =
+          match inputs with
+          | `Stdin _ -> ("-", true)
+          | `Single_file (_, _, f) -> (f, false)
+          | `Several_files ((_, f) :: _) -> (f, false)
+          | `Several_files [] | `No_input ->
+              let root = Option.value root ~default:(Fpath.cwd ()) in
+              (Fpath.(root / dot_ocamlformat |> to_string), true)
+        in
+        let conf = build_config ~file ~is_stdin in
+        Ok (Print_config conf)
+    | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
+        Error "Must specify at least one input file, or `-` for stdin"
+    | (`No_action | `Output _), `Several_files _ ->
+        Error
+          "Must specify exactly one input file without --inplace or --check"
+    | `Inplace, `Stdin _ ->
+        Error "Cannot specify stdin together with --inplace"
+    | `No_action, `Single_file (kind, name, f) ->
+        Ok (In_out (make_file ?name kind f, None))
+    | `No_action, `Stdin (name, kind) ->
+        Ok (In_out (make_stdin ?name kind, None))
+    | `Output output, `Single_file (kind, name, f) ->
+        Ok (In_out (make_file ?name kind f, Some output))
+    | `Output output, `Stdin (name, kind) ->
+        Ok (In_out (make_stdin ?name kind, Some output))
+    | `Inplace, `Single_file (kind, name, f) ->
+        Ok (Inplace [make_file ?name kind f])
+    | `Inplace, `Several_files files ->
+        Ok (Inplace (List.map files ~f:(fun (kind, f) -> make_file kind f)))
+    | `Check, `Single_file (kind, name, f) ->
+        Ok (Inplace [make_file ?name kind f])
+    | `Check, `Several_files files ->
+        let f (kind, f) =
+          make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
+        in
+        Ok (Check (List.map files ~f))
+    | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
+  in
+  match Result.(action >>= fun action -> inputs >>= interpret action) with
+  | Error e -> `Error (false, e)
+  | Ok action -> `Ok action
 
 let action = parse info validate
 
