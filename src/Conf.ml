@@ -2044,6 +2044,58 @@ let kind_of_ext fname =
   | ".mli" -> Some `Intf
   | _ -> None
 
+let validate_inputs () =
+  match !inputs with
+  | [] -> Ok `No_input
+  | [Stdin] -> (
+    match (!kind, !name) with
+    | Some kind, name -> Ok (`Stdin (name, kind))
+    | None, Some name -> (
+      match kind_of_ext name with
+      | Some kind -> Ok (`Stdin (Some name, kind))
+      | None ->
+          Error
+            "Cannot deduce file kind from passed --name. Please specify \
+             --impl or --intf" )
+    | None, None ->
+        Error
+          "Must specify at least one of --name, --impl or --intf when \
+           reading from stdin" )
+  | [File f] ->
+      let kind =
+        Option.value ~default:f !name
+        |> kind_of_ext
+        |> Option.value ~default:`Impl
+      in
+      Ok (`Single_file (kind, !name, f))
+  | _ :: _ :: _ as inputs ->
+      if Option.is_some !name then
+        Error "Cannot specify --name with multiple inputs"
+      else if Option.is_some !kind then
+        Error "Cannot specify --kind with multiple inputs"
+      else
+        List.map inputs ~f:(function
+          | Stdin -> Error "Cannot specify stdin together with other inputs"
+          | File f ->
+              let kind = Option.value ~default:`Impl (kind_of_ext f) in
+              Ok (kind, f))
+        |> Result.all
+        |> Result.map ~f:(fun files -> `Several_files files)
+
+let validate_action () =
+  match
+    List.filter_map
+      ~f:(fun s -> s)
+      [ Option.map ~f:(fun o -> (`Output o, "--output")) !output
+      ; Option.some_if !inplace (`Inplace, "--inplace")
+      ; Option.some_if !check (`Check, "--check")
+      ; Option.some_if !print_config (`Print_config, "--print-config") ]
+  with
+  | [] -> Ok `No_action
+  | [(action, _)] -> Ok action
+  | (_, a1) :: (_, a2) :: _ ->
+      Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
+
 type 'a input = {kind: 'a; name: string; file: file; conf: t}
 
 type action =
@@ -2052,64 +2104,7 @@ type action =
   | Check of [`Impl | `Intf] input list
   | Print_config of t
 
-let validate () =
-  if !disable_outside_detected_project then
-    warn
-      "option `--disable-outside-detected-project` is deprecated and will \
-       be removed in OCamlFormat v1.0." ;
-  let action =
-    match
-      List.filter_map
-        ~f:(fun s -> s)
-        [ Option.map ~f:(fun o -> (`Output o, "--output")) !output
-        ; Option.some_if !inplace (`Inplace, "--inplace")
-        ; Option.some_if !check (`Check, "--check")
-        ; Option.some_if !print_config (`Print_config, "--print-config") ]
-    with
-    | [] -> Ok `No_action
-    | [(action, _)] -> Ok action
-    | (_, a1) :: (_, a2) :: _ ->
-        Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
-  in
-  let inputs =
-    match !inputs with
-    | [] -> Ok `No_input
-    | [Stdin] -> (
-      match (!kind, !name) with
-      | Some kind, name -> Ok (`Stdin (name, kind))
-      | None, Some name -> (
-        match kind_of_ext name with
-        | Some kind -> Ok (`Stdin (Some name, kind))
-        | None ->
-            Error
-              "Cannot deduce file kind from passed --name. Please specify \
-               --impl or --intf" )
-      | None, None ->
-          Error
-            "Must specify at least one of --name, --impl or --intf when \
-             reading from stdin" )
-    | [File f] ->
-        let kind =
-          Option.value ~default:f !name
-          |> kind_of_ext
-          |> Option.value ~default:`Impl
-        in
-        Ok (`Single_file (kind, !name, f))
-    | _ :: _ :: _ as inputs ->
-        if Option.is_some !name then
-          Error "Cannot specify --name with multiple inputs"
-        else if Option.is_some !kind then
-          Error "Cannot specify --kind with multiple inputs"
-        else
-          List.map inputs ~f:(function
-            | Stdin ->
-                Error "Cannot specify stdin together with other inputs"
-            | File f ->
-                let kind = Option.value ~default:`Impl (kind_of_ext f) in
-                Ok (kind, f))
-          |> Result.all
-          |> Result.map ~f:(fun files -> `Several_files files)
-  in
+let make_action action inputs =
   let make_file ?(with_conf = fun c -> c) ?name kind file =
     let conf = with_conf (build_config ~file ~is_stdin:false) in
     let name = Option.value ~default:file name in
@@ -2119,49 +2114,58 @@ let validate () =
     let conf = build_config ~file:name ~is_stdin:false in
     {kind; name; file= Stdin; conf}
   in
-  let interpret action inputs =
-    match (action, inputs) with
-    | `Print_config, inputs ->
-        let file, is_stdin =
-          match inputs with
-          | `Stdin _ -> ("-", true)
-          | `Single_file (_, _, f) -> (f, false)
-          | `Several_files ((_, f) :: _) -> (f, false)
-          | `Several_files [] | `No_input ->
-              let root = Option.value root ~default:(Fpath.cwd ()) in
-              (Fpath.(root / dot_ocamlformat |> to_string), true)
-        in
-        let conf = build_config ~file ~is_stdin in
-        Ok (Print_config conf)
-    | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
-        Error "Must specify at least one input file, or `-` for stdin"
-    | (`No_action | `Output _), `Several_files _ ->
-        Error
-          "Must specify exactly one input file without --inplace or --check"
-    | `Inplace, `Stdin _ ->
-        Error "Cannot specify stdin together with --inplace"
-    | `No_action, `Single_file (kind, name, f) ->
-        Ok (In_out (make_file ?name kind f, None))
-    | `No_action, `Stdin (name, kind) ->
-        Ok (In_out (make_stdin ?name kind, None))
-    | `Output output, `Single_file (kind, name, f) ->
-        Ok (In_out (make_file ?name kind f, Some output))
-    | `Output output, `Stdin (name, kind) ->
-        Ok (In_out (make_stdin ?name kind, Some output))
-    | `Inplace, `Single_file (kind, name, f) ->
-        Ok (Inplace [make_file ?name kind f])
-    | `Inplace, `Several_files files ->
-        Ok (Inplace (List.map files ~f:(fun (kind, f) -> make_file kind f)))
-    | `Check, `Single_file (kind, name, f) ->
-        Ok (Inplace [make_file ?name kind f])
-    | `Check, `Several_files files ->
-        let f (kind, f) =
-          make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
-        in
-        Ok (Check (List.map files ~f))
-    | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
-  in
-  match Result.(action >>= fun action -> inputs >>= interpret action) with
+  match (action, inputs) with
+  | `Print_config, inputs ->
+      let file, is_stdin =
+        match inputs with
+        | `Stdin _ -> ("-", true)
+        | `Single_file (_, _, f) -> (f, false)
+        | `Several_files ((_, f) :: _) -> (f, false)
+        | `Several_files [] | `No_input ->
+            let root = Option.value root ~default:(Fpath.cwd ()) in
+            (Fpath.(root / dot_ocamlformat |> to_string), true)
+      in
+      let conf = build_config ~file ~is_stdin in
+      Ok (Print_config conf)
+  | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
+      Error "Must specify at least one input file, or `-` for stdin"
+  | (`No_action | `Output _), `Several_files _ ->
+      Error
+        "Must specify exactly one input file without --inplace or --check"
+  | `Inplace, `Stdin _ ->
+      Error "Cannot specify stdin together with --inplace"
+  | `No_action, `Single_file (kind, name, f) ->
+      Ok (In_out (make_file ?name kind f, None))
+  | `No_action, `Stdin (name, kind) ->
+      Ok (In_out (make_stdin ?name kind, None))
+  | `Output output, `Single_file (kind, name, f) ->
+      Ok (In_out (make_file ?name kind f, Some output))
+  | `Output output, `Stdin (name, kind) ->
+      Ok (In_out (make_stdin ?name kind, Some output))
+  | `Inplace, `Single_file (kind, name, f) ->
+      Ok (Inplace [make_file ?name kind f])
+  | `Inplace, `Several_files files ->
+      Ok (Inplace (List.map files ~f:(fun (kind, f) -> make_file kind f)))
+  | `Check, `Single_file (kind, name, f) ->
+      Ok (Inplace [make_file ?name kind f])
+  | `Check, `Several_files files ->
+      let f (kind, f) =
+        make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
+      in
+      Ok (Check (List.map files ~f))
+  | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
+
+let validate () =
+  if !disable_outside_detected_project then
+    warn
+      "option `--disable-outside-detected-project` is deprecated and will \
+       be removed in OCamlFormat v1.0." ;
+  match
+    let open Result in
+    validate_action ()
+    >>= fun action ->
+    validate_inputs () >>= fun inputs -> make_action action inputs
+  with
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
 
