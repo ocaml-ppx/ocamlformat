@@ -1,3 +1,21 @@
+### (master)
+
+#### Changes
+
+  (none)
+
+#### New features
+
+  (none)
+
+#### Bug fixes
+
+  + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
+
+#### Internal
+
+  (none)
+
 ### 0.12 (2019-11-04)
 
 #### Changes
