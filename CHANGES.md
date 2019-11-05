@@ -2,6 +2,7 @@
 
 #### Bug fixes
 
+  + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
 
 #### Internal
