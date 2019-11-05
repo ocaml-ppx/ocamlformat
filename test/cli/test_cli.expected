@@ -88,34 +88,32 @@ ocamlformat: Cannot deduce file kind from passed --name. Please specify --impl o
 err_several_files_and_kind
 ==========================
 args: --impl --check sample/a.mli sample/b.ml
-ocamlformat: ignoring "sample/a.mli" (syntax error)
-File "sample/a.mli", line 5, characters 0-0:
-Error: Syntax error
+ocamlformat: Cannot specify --kind with multiple inputs
 [1]
 
 err_several_files_and_name
 ==========================
 args: --name foo.ml --check sample/a.mli sample/b.ml
+ocamlformat: Cannot specify --name with multiple inputs
 [1]
 
 err_several_files_and_kind_inplace
 ==================================
 args: --impl --check sample/a.mli sample/b.ml
-ocamlformat: ignoring "sample/a.mli" (syntax error)
-File "sample/a.mli", line 5, characters 0-0:
-Error: Syntax error
+ocamlformat: Cannot specify --kind with multiple inputs
 [1]
 
 err_several_files_and_name_inplace
 ==================================
 args: --name foo.ml --check sample/a.mli sample/b.ml
+ocamlformat: Cannot specify --name with multiple inputs
 [1]
 
 fmterr_file_and_name
 ====================
 args: --name foo.ml sample/syntax_error.ml
-ocamlformat: ignoring "sample/syntax_error.ml" (syntax error)
-File "sample/syntax_error.ml", line 2, characters 0-0:
+ocamlformat: ignoring "foo.ml" (syntax error)
+File "foo.ml", line 2, characters 0-0:
 Error: Syntax error
 [1]
 
@@ -130,10 +128,11 @@ Error: Syntax error
 fmterr_file_bad_kind
 ====================
 args: --impl sample/a.mli
-ocamlformat: ignoring "sample/a.mli" (syntax error)
-File "sample/a.mli", line 5, characters 0-0:
-Error: Syntax error
-[1]
+val x : string
+
+module X : S
+(** Make sure this file cannot be parsed as an impl file *)
+[0]
 
 fmterr_stdin_bad_kind
 =====================
@@ -146,11 +145,10 @@ Error: Syntax error
 fmterr_file_and_name_bad_kind
 =============================
 args: --name foo.ml sample/a.mli
-val x : string
-
-module X : S
-(** Make sure this file cannot be parsed as an impl file *)
-[0]
+ocamlformat: ignoring "foo.ml" (syntax error)
+File "foo.ml", line 5, characters 0-0:
+Error: Syntax error
+[1]
 
 fmterr_stdin_and_name_bad_kind
 ==============================
