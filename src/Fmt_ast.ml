@@ -3386,12 +3386,13 @@ and fmt_signature_item c ?ext {ast= si; _} =
       let box = wrap_k opn cls in
       hvbox 0
         ( doc_before
-        $ ( box
-              ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
-              $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
-              $ bdy )
-          $ esp $ fmt_opt epi
-          $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
+        $ hvbox 0
+            ( box
+                ( hvbox 2 (keyword $ opt pro (fun pro -> str " " $ pro))
+                $ fmt_or_k (Option.is_some pro) psp (fmt "@;<1 2>")
+                $ bdy )
+            $ esp $ fmt_opt epi
+            $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
   | Psig_module md ->
