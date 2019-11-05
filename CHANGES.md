@@ -1,3 +1,9 @@
+### 0.13.0 (unreleased)
+
+#### Internal
+
+  + Use an expect test for cli tests (#1126) (Etienne Millon)
+
 ### 0.12 (2019-11-04)
 
 #### Changes

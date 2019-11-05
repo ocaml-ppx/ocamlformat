@@ -1,0 +1,84 @@
+err_default_several_file
+========================
+args: sample/a.ml sample/b.ml
+ocamlformat: Must specify exactly one input file without --inplace or --check
+[1]
+
+err_inplace_and_check
+=====================
+args: --inplace --check sample/a.ml
+ocamlformat: Cannot specify --inplace with --check
+[1]
+
+err_inplace_and_output
+======================
+args: --inplace --output o.ml sample/a.ml
+ocamlformat: Cannot specify --output with --inplace
+[1]
+
+err_no_arg
+==========
+args: 
+ocamlformat: Must specify at least one input file, or `-` for stdin
+[1]
+
+err_output_and_check
+====================
+args: --output x.ml --check sample/a.ml
+ocamlformat: Cannot specify --output with --check
+[1]
+
+err_output_several_files
+========================
+args: --output x.ml sample/a.ml sample/b.ml
+ocamlformat: Must specify exactly one input file without --inplace or --check
+[1]
+
+err_stdin_and_file
+==================
+args: sample/a.ml -
+ocamlformat: Cannot specify stdin together with other inputs
+[1]
+
+err_stdin_and_inplace
+=====================
+args: --inplace -
+ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+[1]
+
+err_stdin_no_kind
+=================
+args: -
+ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+[1]
+
+stdin_and_impl
+==============
+args: --impl -
+let () = print_endline A.x
+[0]
+
+stdin_and_intf
+==============
+args: --intf -
+val x : string
+[0]
+
+stdin_and_name
+==============
+args: --name a.ml -
+let () = print_endline A.x
+[0]
+
+name_unknown_ext
+================
+args: --name b.cpp sample/b.ml
+let () = print_endline A.x
+[0]
+
+err_stdin_name_unknown_ext
+==========================
+args: --name b.cpp -
+ocamlformat: Must specify at least one of --name, --impl or --intf when reading from stdin
+[1]
+
