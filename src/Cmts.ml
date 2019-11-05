@@ -500,7 +500,7 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
     then
       let b_space = String.length s > 0 && Char.equal s.[0] ' ' in
       let e_space =
-        String.length s > 0 && Char.equal s.[String.length s - 1] ' '
+        String.length s > 1 && Char.equal s.[String.length s - 1] ' '
       in
       let fmt_line ~first ~last s =
         if String.(is_empty (strip s)) then
