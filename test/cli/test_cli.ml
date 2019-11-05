@@ -20,6 +20,7 @@ let main ocamlformat =
   in
   let impl_file = Stdio.In_channel.read_all "sample/b.ml" in
   let intf_file = Stdio.In_channel.read_all "sample/a.mli" in
+  let syntax_error_file = Stdio.In_channel.read_all "sample/syntax_error.ml" in
   test ~name:"err_default_several_file" ~args:"sample/a.ml sample/b.ml" () ;
   test ~name:"err_inplace_and_check" ~args:"--inplace --check sample/a.ml" () ;
   test ~name:"err_inplace_and_output"
@@ -36,7 +37,18 @@ let main ocamlformat =
   test ~name:"stdin_and_name" ~stdin:impl_file ~args:"--name a.ml -" () ;
   test ~name:"name_unknown_ext" ~args:"--name b.cpp sample/b.ml" () ;
   test ~name:"err_stdin_name_unknown_ext" ~stdin:impl_file
-    ~args:"--name b.cpp -" ()
+    ~args:"--name b.cpp -" () ;
+  test ~name:"err_several_files_and_kind" ~args:"--impl --check sample/a.mli sample/b.ml" () ;
+  test ~name:"err_several_files_and_name" ~args:"--name foo.ml --check sample/a.mli sample/b.ml" () ;
+  test ~name:"err_several_files_and_kind_inplace" ~args:"--impl --check sample/a.mli sample/b.ml" () ;
+  test ~name:"err_several_files_and_name_inplace" ~args:"--name foo.ml --check sample/a.mli sample/b.ml" () ;
+  test ~name:"fmterr_file_and_name" ~args:"--name foo.ml sample/syntax_error.ml" () ;
+  test ~name:"fmterr_stdin_and_name" ~stdin:syntax_error_file ~args:"--name foo.ml -" () ;
+  test ~name:"fmterr_file_bad_kind" ~args:"--impl sample/a.mli" () ;
+  test ~name:"fmterr_stdin_bad_kind" ~stdin:intf_file ~args:"--impl -" () ;
+  test ~name:"fmterr_file_and_name_bad_kind" ~args:"--name foo.ml sample/a.mli" () ;
+  test ~name:"fmterr_stdin_and_name_bad_kind" ~stdin:intf_file ~args:"--name foo.ml -" () ;
+  ()
 
 let () =
   match Sys.argv with
