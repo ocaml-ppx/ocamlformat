@@ -8,6 +8,9 @@ type block =
   | `Noblank
   | `Blocks of block list ]
 
+include M with type t := t
+(** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod *)
+
 val escape : string -> string
 (** [escape s] escapes [s] from the doc language. *)
 

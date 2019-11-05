@@ -1,5 +1,9 @@
 ### 0.13.0 (unreleased)
 
+#### Bug fixes
+
+  + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
+
 #### Internal
 
   + Use an expect test for cli tests (#1126) (Etienne Millon)
