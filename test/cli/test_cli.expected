@@ -88,7 +88,7 @@ ocamlformat: Cannot deduce file kind from passed --name. Please specify --impl o
 err_several_files_and_kind
 ==========================
 args: --impl --check sample/a.mli sample/b.ml
-ocamlformat: Cannot specify --kind with multiple inputs
+ocamlformat: Cannot specify --impl or --intf with multiple inputs
 [1]
 
 err_several_files_and_name
@@ -100,7 +100,7 @@ ocamlformat: Cannot specify --name with multiple inputs
 err_several_files_and_kind_inplace
 ==================================
 args: --impl --check sample/a.mli sample/b.ml
-ocamlformat: Cannot specify --kind with multiple inputs
+ocamlformat: Cannot specify --impl or --intf with multiple inputs
 [1]
 
 err_several_files_and_name_inplace

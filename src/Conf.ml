@@ -2072,7 +2072,7 @@ let validate_inputs () =
       if Option.is_some !name then
         Error "Cannot specify --name with multiple inputs"
       else if Option.is_some !kind then
-        Error "Cannot specify --kind with multiple inputs"
+        Error "Cannot specify --impl or --intf with multiple inputs"
       else
         List.map inputs ~f:(function
           | Stdin -> Error "Cannot specify stdin together with other inputs"
@@ -2147,7 +2147,7 @@ let make_action action inputs =
   | `Inplace, `Several_files files ->
       Ok (Inplace (List.map files ~f:(fun (kind, f) -> make_file kind f)))
   | `Check, `Single_file (kind, name, f) ->
-      Ok (Inplace [make_file ?name kind f])
+      Ok (Check [make_file ?name kind f])
   | `Check, `Several_files files ->
       let f (kind, f) =
         make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
