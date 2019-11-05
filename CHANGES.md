@@ -1,12 +1,4 @@
-### (master)
-
-#### Changes
-
-  (none)
-
-#### New features
-
-  (none)
+### 0.13.0 (unreleased)
 
 #### Bug fixes
 
@@ -14,7 +6,7 @@
 
 #### Internal
 
-  (none)
+  + Use an expect test for cli tests (#1126) (Etienne Millon)
 
 ### 0.12 (2019-11-04)
 
