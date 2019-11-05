@@ -128,11 +128,10 @@ Error: Syntax error
 fmterr_file_bad_kind
 ====================
 args: --impl sample/a.mli
-val x : string
-
-module X : S
-(** Make sure this file cannot be parsed as an impl file *)
-[0]
+ocamlformat: ignoring "sample/a.mli" (syntax error)
+File "sample/a.mli", line 5, characters 0-0:
+Error: Syntax error
+[1]
 
 fmterr_stdin_bad_kind
 =====================

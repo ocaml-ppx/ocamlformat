@@ -2045,42 +2045,40 @@ let kind_of_ext fname =
   | _ -> None
 
 let validate_inputs () =
-  match !inputs with
-  | [] -> Ok `No_input
-  | [Stdin] -> (
-    match (!kind, !name) with
-    | Some kind, name -> Ok (`Stdin (name, kind))
-    | None, Some name -> (
-      match kind_of_ext name with
-      | Some kind -> Ok (`Stdin (Some name, kind))
-      | None ->
-          Error
-            "Cannot deduce file kind from passed --name. Please specify \
-             --impl or --intf" )
-    | None, None ->
+  match (!inputs, !kind, !name) with
+  | [], _, _ -> Ok `No_input
+  | [Stdin], None, None ->
+      Error
+        "Must specify at least one of --name, --impl or --intf when reading \
+         from stdin"
+  | [Stdin], Some kind, name -> Ok (`Stdin (name, kind))
+  | [Stdin], None, Some name -> (
+    match kind_of_ext name with
+    | Some kind -> Ok (`Stdin (Some name, kind))
+    | None ->
         Error
-          "Must specify at least one of --name, --impl or --intf when \
-           reading from stdin" )
-  | [File f] ->
+          "Cannot deduce file kind from passed --name. Please specify \
+           --impl or --intf" )
+  | [File f], Some kind, name -> Ok (`Single_file (kind, name, f))
+  | [File f], None, name ->
       let kind =
-        Option.value ~default:f !name
+        Option.value ~default:f name
         |> kind_of_ext
         |> Option.value ~default:`Impl
       in
-      Ok (`Single_file (kind, !name, f))
-  | _ :: _ :: _ as inputs ->
-      if Option.is_some !name then
-        Error "Cannot specify --name with multiple inputs"
-      else if Option.is_some !kind then
-        Error "Cannot specify --impl or --intf with multiple inputs"
-      else
-        List.map inputs ~f:(function
-          | Stdin -> Error "Cannot specify stdin together with other inputs"
-          | File f ->
-              let kind = Option.value ~default:`Impl (kind_of_ext f) in
-              Ok (kind, f))
-        |> Result.all
-        |> Result.map ~f:(fun files -> `Several_files files)
+      Ok (`Single_file (kind, name, f))
+  | _ :: _ :: _, Some _, _ ->
+      Error "Cannot specify --impl or --intf with multiple inputs"
+  | _ :: _ :: _, _, Some _ ->
+      Error "Cannot specify --name with multiple inputs"
+  | (_ :: _ :: _ as inputs), None, None ->
+      List.map inputs ~f:(function
+        | Stdin -> Error "Cannot specify stdin together with other inputs"
+        | File f ->
+            let kind = Option.value ~default:`Impl (kind_of_ext f) in
+            Ok (kind, f))
+      |> Result.all
+      |> Result.map ~f:(fun files -> `Several_files files)
 
 let validate_action () =
   match
