@@ -2,6 +2,7 @@
 
 #### Bug fixes
 
+  + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
 
 #### Internal
@@ -47,7 +48,6 @@
 
 #### Bug fixes
 
-  + Fix the indentation produced by max-indent (#997) (Guillaume Petiot)
   + Fix unstabilizing comments on assignments (#1093) (Guillaume Petiot)
   + Fix the default value documentation for `max-indent` (#1105) (Guillaume Petiot)
   + Fix closing parenthesis exceeding the margin in function application (#1098) (Jules Aguillon)
