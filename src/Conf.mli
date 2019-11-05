@@ -59,7 +59,6 @@ type t =
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int  (** Format code to fit within [margin] columns. *)
-  ; margin_check: bool
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option
@@ -108,6 +107,9 @@ val debug : bool
 
 val check : bool
 (** Check whether the input files already are formatted. *)
+
+val margin_check : bool
+(** Check whether the formatted output exceeds the margin. *)
 
 val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute

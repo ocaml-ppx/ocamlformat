@@ -295,10 +295,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.
 
-       --margin-check
-           Emit a warning if the formatted output exceeds the margin. The
-           flag is unset by default.
-
        --match-indent=COLS
            Indentation of match/try cases (COLS columns). The default value
            is 0.
@@ -354,9 +350,6 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --no-leading-nested-match-parens
            Unset leading-nested-match-parens.
-
-       --no-margin-check
-           Unset margin-check.
 
        --no-ocp-indent-compat
            Unset ocp-indent-compat.
@@ -517,6 +510,9 @@ OPTIONS
 
        --intf
            Parse file with unrecognized extension as an interface.
+
+       --margin-check
+           Emit a warning if the formatted output exceeds the margin.
 
        -n N, --max-iters=N
            Fail if output of formatting does not stabilize within N

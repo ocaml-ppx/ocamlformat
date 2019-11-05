@@ -56,7 +56,6 @@ type t =
   ; let_module: [`Compact | `Sparse]
   ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
-  ; margin_check: bool
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option
@@ -845,13 +844,6 @@ module Formatting = struct
       (fun conf x -> {conf with margin= x})
       (fun conf -> conf.margin)
 
-  let margin_check =
-    let doc = "Emit a warning if the formatted output exceeds the margin." in
-    let names = ["margin-check"] in
-    C.flag ~default:false ~names ~doc ~section
-      (fun conf x -> {conf with margin_check= x})
-      (fun conf -> conf.margin_check)
-
   let match_indent =
     let docv = "COLS" in
     let doc = "Indentation of match/try cases ($(docv) columns)." in
@@ -1279,6 +1271,10 @@ let kind : [`Impl | `Intf] option ref =
   let default = None in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
+let margin_check =
+  let doc = "Emit a warning if the formatted output exceeds the margin." in
+  mk ~default:false Arg.(value & flag & info ["margin-check"] ~doc ~docs)
+
 let name =
   let docv = "NAME" in
   let doc =
@@ -1435,7 +1431,6 @@ let ocamlformat_profile =
   ; let_module= `Compact
   ; let_open= `Preserve
   ; margin= 80
-  ; margin_check= false
   ; match_indent= 0
   ; match_indent_nested= `Never
   ; max_indent= None
@@ -1511,7 +1506,6 @@ let conventional_profile =
   ; let_module= C.default Formatting.let_module
   ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
-  ; margin_check= C.default Formatting.margin_check
   ; match_indent= C.default Formatting.match_indent
   ; match_indent_nested= C.default Formatting.match_indent_nested
   ; max_indent= C.default Formatting.max_indent
@@ -1638,7 +1632,6 @@ let janestreet_profile =
   ; let_module= `Sparse
   ; let_open= `Preserve
   ; margin= 90
-  ; margin_check= false
   ; match_indent= 0
   ; match_indent_nested= `Never
   ; max_indent= None
@@ -2166,6 +2159,8 @@ let action =
 and debug = !debug
 
 and check = !check
+
+let margin_check = !margin_check
 
 open Migrate_ast.Parsetree
 

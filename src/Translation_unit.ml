@@ -241,7 +241,7 @@ let check_all_locations fmt cmts_t =
         List.iter ~f:print (List.sort l ~compare:Location.compare)
 
 let check_margin (conf : Conf.t) ~filename ~fmted =
-  if conf.margin_check then
+  if Conf.margin_check then
     List.iteri (String.split_lines fmted) ~f:(fun i line ->
         if String.length line > conf.margin then
           Format.fprintf Format.err_formatter
@@ -291,9 +291,8 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
     let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
     if String.equal source fmted then (
       check_all_locations Format.err_formatter cmts_t ;
-      check_margin conf
-        ~filename:(Option.value output_file ~default:input_name)
-        ~fmted ;
+      check_margin conf ~fmted
+        ~filename:(Option.value output_file ~default:input_name) ;
       Ok fmted )
     else
       let exn_args () =
