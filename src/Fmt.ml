@@ -25,9 +25,7 @@ let set_margin n fs = Format.pp_set_geometry fs ~max_indent:n ~margin:(n + 1)
 
 let max_indent = ref None
 
-let set_max_indent n fs =
-  ignore fs ;
-  max_indent := Some n
+let set_max_indent n (_ : Format.formatter) = max_indent := Some n
 
 let eval fs t = t fs
 
