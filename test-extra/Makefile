@@ -12,7 +12,7 @@
 # To test all source files below a directory
 #       make DIRS=<directory> test
 # By default, test projects used as regression tests
-DIRS=code/ocamlformat code/infer code/js_of_ocaml
+DIRS=code/ocamlformat code/infer code/js_of_ocaml code/dune
 
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml
@@ -22,6 +22,10 @@ FIND_ARGS= \
 	-path code/ocamlformat/test -not -prune -or \
 	-path code/ocaml/experimental -not -prune -or \
 	-path code/ocaml/testsuite/tests/parse-errors -not -prune -or \
+	-path code/dune/test -not -prune -or \
+	-path code/dune/vendor -not -prune -or \
+	-path code/dune/otherlibs -not -prune -or \
+	-path code/dune/example -not -prune -or \
 	-name '*.ml' -and -not -name '*.pp.ml' -or \
 	-name '*.mli' -and -not -name '*.pp.mli'
 
@@ -47,6 +51,8 @@ test_setup:
 	  || git -C code clone "https://github.com/ocsigen/js_of_ocaml.git"
 	@test -d code/ocaml \
 	  || git -C code clone "https://github.com/ocaml/ocaml.git"
+	@test -d code/dune \
+		|| git -C code clone "https://github.com/ocaml/dune.git"
 
 .PHONY: test
 test: test_setup
