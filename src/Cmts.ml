@@ -492,28 +492,26 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   in
   let fmt_unwrapped_cmt ({txt= s; loc} : Cmt.t) =
     let lines = String.split_lines s in
-    let first_line_empty =
-      List.length lines > 0 && String.is_empty (List.hd_exn lines)
-    in
     let begins_line = Source.begins_line t.source loc ~ignore_spaces:false in
-    if String.contains s '\n' && (not begins_line) && not first_line_empty
-    then
-      let b_space = String.length s > 0 && Char.equal s.[0] ' ' in
-      let e_space =
-        String.length s > 1 && Char.equal s.[String.length s - 1] ' '
-      in
-      let fmt_line ~first ~last s =
-        if String.(is_empty (strip s)) then
-          if last then if first then str s else fmt "@;<1000 -2>"
-          else str "\n"
-        else
-          fmt_if (not first) "@;<1000 0>"
-          $ fmt_if b_space " "
-          $ str (String.strip s)
-          $ fmt_if (last && e_space) " "
-      in
-      vbox 0 (list_fl lines fmt_line)
-    else str s
+    match lines with
+    | first_line :: _ :: _
+      when (not begins_line) && not (String.is_empty first_line) ->
+        let b_space = String.length s > 0 && Char.equal s.[0] ' ' in
+        let e_space =
+          String.length s > 1 && Char.equal s.[String.length s - 1] ' '
+        in
+        let fmt_line ~first ~last s =
+          if String.(is_empty (strip s)) then
+            if last then if first then str s else fmt "@;<1000 -2>"
+            else str "\n"
+          else
+            fmt_if (not first) "@;<1000 0>"
+            $ fmt_if b_space " "
+            $ str (String.strip s)
+            $ fmt_if (last && e_space) " "
+        in
+        vbox 0 (list_fl lines fmt_line)
+    | _ -> str s
   in
   let fmt_non_code cmt =
     if not conf.wrap_comments then
