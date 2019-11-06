@@ -501,13 +501,13 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
           String.length s > 1 && Char.equal s.[String.length s - 1] ' '
         in
         let fmt_line ~first ~last s =
-          if String.(is_empty (strip s)) then
+          let stripped = String.strip s in
+          if String.is_empty stripped then
             if last then if first then str s else fmt "@;<1000 -2>"
             else str "\n"
           else
             fmt_if (not first) "@;<1000 0>"
-            $ fmt_if b_space " "
-            $ str (String.strip s)
+            $ fmt_if b_space " " $ str stripped
             $ fmt_if (last && e_space) " "
         in
         vbox 0 (list_fl lines fmt_line)
