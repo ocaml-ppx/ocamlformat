@@ -7,6 +7,7 @@
 
 #### Internal
 
+  + Refactor code that interprets CLI options (#1127) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
 
 ### 0.12 (2019-11-04)
