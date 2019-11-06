@@ -12,6 +12,7 @@
 
 #### Internal
 
+  + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
 
 ### 0.12 (2019-11-04)
