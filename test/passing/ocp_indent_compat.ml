@@ -46,6 +46,23 @@ module type M = sig
     -> (* The callback for file system events *)
        (event list -> unit)
     -> unit
+
+  val f
+    :  x:t
+         (** an extremely long comment about [x] that does not fit on the
+             same line with [x] *)
+    -> unit
+
+  val f
+    :  fooooooooooooooooo:
+         (fooooooooooooooo
+          -> fooooooooooooooooooo
+          -> foooooooooooooo
+          -> foooooooooooooo * fooooooooooooooooo
+          -> foooooooooooooooo)
+         (** an extremely long comment about [x] that does not fit on the
+             same line with [x] *)
+    -> unit
 end
 
 let ssmap
@@ -95,6 +112,23 @@ module type M = sig
        timeout:float
     -> (* The callback for file system events *)
        (event list -> unit)
+    -> unit
+
+  val f :
+       x:t
+         (** an extremely long comment about [x] that does not fit on the
+             same line with [x] *)
+    -> unit
+
+  val f :
+       fooooooooooooooooo:
+         (   fooooooooooooooo
+          -> fooooooooooooooooooo
+          -> foooooooooooooo
+          -> foooooooooooooo * fooooooooooooooooo
+          -> foooooooooooooooo)
+         (** an extremely long comment about [x] that does not fit on the
+             same line with [x] *)
     -> unit
 end
 
