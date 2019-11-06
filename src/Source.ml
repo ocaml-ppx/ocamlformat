@@ -260,14 +260,14 @@ let char_literal t (l : Location.t) =
       Some (Literal_lexer.char (lexbuf_from_loc t loc))
   | _ -> None
 
-let begins_line t (l : Location.t) =
+let begins_line ?(ignore_spaces = true) t (l : Location.t) =
   let rec begins_line_ cnum =
     cnum = 0
     ||
     let cnum = cnum - 1 in
     match t.[cnum] with
     | '\n' | '\r' -> true
-    | c when Char.is_whitespace c -> begins_line_ cnum
+    | c when Char.is_whitespace c && ignore_spaces -> begins_line_ cnum
     | _ -> false
   in
   begins_line_ l.loc_start.pos_cnum
