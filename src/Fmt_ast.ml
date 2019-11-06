@@ -3091,6 +3091,8 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
   in
   let has_cmt_before = Cmts.has_before c.cmts pcd_loc in
   let sparse = Poly.( = ) c.conf.type_decl `Sparse in
+  (* Force break if comment before pcd_loc, it would interfere with an
+     eventual comment placed after the previous constructor *)
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
   $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
   $ Cmts.fmt_before c loc
