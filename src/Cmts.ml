@@ -496,8 +496,8 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
     match lines with
     | first_line :: _ :: _
       when (not begins_line) && not (String.is_empty first_line) ->
-        let b_space = String.length s > 0 && Char.equal s.[0] ' ' in
-        let e_space =
+        let begin_space = String.length s > 0 && Char.equal s.[0] ' ' in
+        let end_space =
           String.length s > 1 && Char.equal s.[String.length s - 1] ' '
         in
         let fmt_line ~first ~last s =
@@ -507,8 +507,8 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
             else str "\n"
           else
             fmt_if (not first) "@;<1000 0>"
-            $ fmt_if b_space " " $ str stripped
-            $ fmt_if (last && e_space) " "
+            $ fmt_if begin_space " " $ str stripped
+            $ fmt_if (last && end_space) " "
         in
         vbox 0 (list_fl lines fmt_line)
     | _ -> str s
