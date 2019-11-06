@@ -1271,6 +1271,10 @@ let kind : [`Impl | `Intf] option ref =
   let default = None in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
+let margin_check =
+  let doc = "Emit a warning if the formatted output exceeds the margin." in
+  mk ~default:false Arg.(value & flag & info ["margin-check"] ~doc ~docs)
+
 let name =
   let docv = "NAME" in
   let doc =
@@ -2155,6 +2159,8 @@ let action =
 and debug = !debug
 
 and check = !check
+
+let margin_check = !margin_check
 
 open Migrate_ast.Parsetree
 

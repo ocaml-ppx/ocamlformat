@@ -108,6 +108,9 @@ val debug : bool
 val check : bool
 (** Check whether the input files already are formatted. *)
 
+val margin_check : bool
+(** Check whether the formatted output exceeds the margin. *)
+
 val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
