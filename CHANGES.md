@@ -20,6 +20,7 @@
 #### Documentation
 
   + Fix documentation of option `version-check` (#1135) (Wilfred Hughes)
+  + Fix hint when using `break-separators=after-and-docked` (#1130, Greta Yorsh)
 
 ### 0.12 (2019-11-04)
 
