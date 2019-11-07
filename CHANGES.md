@@ -17,6 +17,10 @@
   + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
 
+#### Documentation
+
+  + Fix documentation of option `version-check` (#1135) (Wilfred Hughes)
+
 ### 0.12 (2019-11-04)
 
 #### Changes
