@@ -651,10 +651,10 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
           (fun (locI, lI, xtI) ->
             hvbox 0
               ( Cmts.fmt_before c locI
-              $ hvbox_if
+              $ hovbox_if
                   Poly.(lI <> Nolabel)
                   2
-                  (arg_label lI $ hvbox 0 (fmt_core_type c xtI)) ))
+                  (arg_label lI $ fmt_core_type c xtI) ))
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid

@@ -511,6 +511,9 @@ OPTIONS
        --intf
            Parse file with unrecognized extension as an interface.
 
+       --margin-check
+           Emit a warning if the formatted output exceeds the margin.
+
        -n N, --max-iters=N
            Fail if output of formatting does not stabilize within N
            iterations. May be set in .ocamlformat. The default value is 10.

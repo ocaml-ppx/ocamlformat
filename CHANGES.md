@@ -1,13 +1,20 @@
 ### 0.13.0 (unreleased)
 
+#### New features
+
+  + Add an option `--margin-check` to emit a warning if the formatted output exceeds the margin (#1110) (Guillaume Petiot)
+
 #### Bug fixes
 
+  + Fix: break multiline comments (#1122) (Guillaume Petiot)
+  + Fix: types on named arguments were wrapped incorrectly when preceding comments (#1124) (Guillaume Petiot)
   + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
 
 #### Internal
 
   + Refactor code that interprets CLI options (#1127) (Jules Aguillon)
+  + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
 
 ### 0.12 (2019-11-04)

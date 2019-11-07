@@ -479,7 +479,7 @@ let split_asterisk_prefixed {Cmt.txt; loc= {Location.loc_start; _}} =
   in
   split_asterisk_prefixed_ 0
 
-let fmt_cmt (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
+let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
@@ -490,10 +490,33 @@ let fmt_cmt (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
             | _, None -> str line $ fmt "*)"
             | _, Some _ -> str line $ fmt "@,*") )
   in
-  let fmt_non_code (cmt : Cmt.t) =
+  let fmt_unwrapped_cmt ({txt= s; loc} : Cmt.t) =
+    let lines = String.split_lines s in
+    let begins_line = Source.begins_line t.source loc ~ignore_spaces:false in
+    match lines with
+    | first_line :: _ :: _
+      when (not begins_line) && not (String.is_empty first_line) ->
+        let begin_space = String.length s > 0 && Char.equal s.[0] ' ' in
+        let end_space =
+          String.length s > 1 && Char.equal s.[String.length s - 1] ' '
+        in
+        let fmt_line ~first ~last s =
+          let stripped = String.strip s in
+          if String.is_empty stripped then
+            if last then if first then str s else fmt "@;<1000 -2>"
+            else str "\n"
+          else
+            fmt_if (not first) "@;<1000 0>"
+            $ fmt_if begin_space " " $ str stripped
+            $ fmt_if (last && end_space) " "
+        in
+        vbox 0 (list_fl lines fmt_line)
+    | _ -> str s
+  in
+  let fmt_non_code cmt =
     if not conf.wrap_comments then
       match split_asterisk_prefixed cmt with
-      | [""] | [_] | [_; ""] -> wrap "(*" "*)" (str cmt.txt)
+      | [""] | [_] | [_; ""] -> wrap "(*" "*)" (fmt_unwrapped_cmt cmt)
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
     else
@@ -559,7 +582,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
             (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
-            | [cmt] -> fmt_cmt conf cmt ~fmt_code $ maybe_newline ~next cmt
+            | [cmt] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
                     wrap "(*" "*)" (str (Cmt.txt cmt)))
