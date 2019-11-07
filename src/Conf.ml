@@ -374,7 +374,7 @@ module Formatting = struct
             ~msg:
               "One can get a similar behaviour by setting \
                `break-separators=after`, `space-around-lists=false`, and \
-               `dock-dollection-brackets=false`." ]
+               `dock-collection-brackets=false`." ]
       (fun conf x -> {conf with break_separators= x})
       (fun conf -> conf.break_separators)
 
