@@ -1,6 +1,6 @@
 ocamlformat: option `--break-separators': value `after-and-docked` has been
              removed in version 0.12. One can get a similar behaviour by
              setting `break-separators=after`, `space-around-lists=false`,
-             and `dock-dollection-brackets=false`.
+             and `dock-collection-brackets=false`.
 Usage: ocamlformat [OPTION]... [SRC]...
 Try `ocamlformat --help' for more information.
