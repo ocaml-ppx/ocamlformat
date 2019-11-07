@@ -531,7 +531,8 @@ OPTIONS
            Unset quiet.
 
        --no-version-check
-           Do no check version matches the one specified in .ocamlformat.
+           Do not check that the version matches the one specified in
+           .ocamlformat.
 
        -o DST, --output=DST
            Output file. Mutually exclusive with --inplace. Write to stdout if
