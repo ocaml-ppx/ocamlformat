@@ -47,6 +47,8 @@ let cbreak ~fits ~breaks fs = Format.pp_print_custom_break fs ~fits ~breaks
 
 let break n o fs = Format.pp_print_break fs n o
 
+let cbreak ~fits ~breaks fs = Format.pp_print_custom_break fs ~fits ~breaks
+
 let noop (_ : Format.formatter) = ()
 
 let fmt f fs = Format.fprintf fs f
