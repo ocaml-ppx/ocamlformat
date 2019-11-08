@@ -34,6 +34,23 @@ let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
   | `Begin_end ->
       vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
 
+type or_pattern_sep = Fmt.t
+
+let get_or_pattern_sep ?(space = false) (c : Conf.t) ~ctx =
+  let bar =
+    match c.indicate_nested_or_patterns with
+    | `Space when space -> or_newline "| " " | "
+    | `Space -> or_newline "| " " |"
+    | `Unsafe_no -> or_newline "| " "| "
+  in
+  match ctx with
+  | Ast.Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} -> (
+    match c.break_cases with
+    | `Nested -> break_unless_newline 1 0 $ str "| "
+    | `All -> break_unless_newline 1000 0 $ bar
+    | `Fit | `Fit_or_vertical | `Toplevel -> bar )
+  | _ -> break_unless_newline 1 0 $ str "| "
+
 type cases =
   { leading_space: Fmt.t
   ; bar: Fmt.t

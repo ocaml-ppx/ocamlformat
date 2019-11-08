@@ -829,6 +829,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   let spc = break_unless_newline 1 0 in
+  let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
   ( match ppat_desc with
   | Ppat_or _ -> Fn.id
   | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::")
@@ -988,7 +989,6 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       p.box (list_fl pats fmt_pat)
   | Ppat_or _ ->
-      let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
         match ctx0 with
         | Pat {ppat_desc= Ppat_or _; _} -> not has_doc
@@ -1008,20 +1008,6 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         $ fits_breaks
             (if parens then "(" else "")
             (if nested then "" else "( ")
-      in
-      let proI ?(space = false) () =
-        match ctx0 with
-        | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
-          when Poly.(c.conf.break_cases <> `Nested) -> (
-            fmt_if_k
-              Poly.(c.conf.break_cases = `All)
-              (break_unless_newline 1000 0)
-            $
-            match c.conf.indicate_nested_or_patterns with
-            | `Space when space -> or_newline "| " " | "
-            | `Space -> or_newline "| " " |"
-            | `Unsafe_no -> or_newline "| " "| " )
-        | _ -> break_unless_newline 1 0 $ str "| "
       in
       let is_simple {ppat_desc; _} =
         match ppat_desc with
@@ -1047,8 +1033,12 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   in
                   let pro =
                     if first_grp && first then pro0 $ open_box (-2)
-                    else if first then proI () $ open_box (-2)
-                    else proI ~space:(space xpat.ast) ()
+                    else if first then
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0
+                      $ open_box (-2)
+                    else
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0
+                        ~space:(space xpat.ast)
                   in
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
