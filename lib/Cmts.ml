@@ -476,6 +476,36 @@ let split_asterisk_prefixed {Cmt.txt; loc= {Location.loc_start; _}} =
   in
   split_asterisk_prefixed_ 0
 
+let unindent_lines ~opn_pos first_line tl_lines =
+  let indent_of_line s =
+    (* index of first non-whitespace is indentation, None means white line *)
+    String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))
+  in
+  (* The indentation of the first line must account for the location of the
+     comment opening *)
+  let fl_spaces = Option.value ~default:0 (indent_of_line first_line) in
+  let fl_offset = opn_pos.Lexing.pos_cnum - opn_pos.pos_bol + 2 in
+  let fl_indent = fl_spaces + fl_offset in
+  let min_indent =
+    List.fold_left ~init:fl_indent
+      ~f:(fun acc s ->
+        Option.value_map ~default:acc ~f:(min acc) (indent_of_line s))
+      tl_lines
+  in
+  (* Completely trim the first line *)
+  String.drop_prefix first_line fl_spaces
+  :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
+
+let fmt_multiline_cmt ?epi ~opn_pos first_line tl_lines =
+  let open Fmt in
+  let is_white_line s = String.for_all s ~f:Char.is_whitespace in
+  let unindented = unindent_lines ~opn_pos first_line tl_lines in
+  let fmt_line ~first ~last:_ s =
+    let sep = if is_white_line s then str "\n" else fmt "@;<1000 0>" in
+    fmt_if_k (not first) sep $ str (String.rstrip s)
+  in
+  vbox 0 (list_fl unindented fmt_line $ fmt_opt epi)
+
 let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
@@ -488,26 +518,27 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
             | _, Some _ -> str line $ fmt "@,*") )
   in
   let fmt_unwrapped_cmt ({txt= s; loc} : Cmt.t) =
-    let lines = String.split_lines s in
     let begins_line = Source.begins_line t.source loc ~ignore_spaces:false in
-    match lines with
-    | first_line :: _ :: _
+    let is_sp = function ' ' | '\t' -> true | _ -> false in
+    let starts_with_sp = String.length s > 0 && is_sp s.[0] in
+    let epi =
+      (* Preserve position of closing but strip empty lines at the end *)
+      match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
+      | Some i when Char.( = ) s.[i] '\n' ->
+          let off = if starts_with_sp then -3 else -2 in
+          break 1000 off
+          (* Break before closing *)
+      | Some i when i < String.length s - 1 ->
+          str " " (* Preserve a space at the end *)
+      | _ -> noop
+    in
+    let stripped = String.rstrip s in
+    match String.split_lines stripped with
+    | first_line :: (_ :: _ as tl)
       when (not begins_line) && not (String.is_empty first_line) ->
-        let begin_space = String.length s > 0 && Char.equal s.[0] ' ' in
-        let end_space =
-          String.length s > 1 && Char.equal s.[String.length s - 1] ' '
-        in
-        let fmt_line ~first ~last s =
-          let stripped = String.strip s in
-          if String.is_empty stripped then
-            if last then if first then str s else fmt "@;<1000 -2>"
-            else str "\n"
-          else
-            fmt_if (not first) "@;<1000 0>"
-            $ fmt_if begin_space " " $ str stripped
-            $ fmt_if (last && end_space) " "
-        in
-        vbox 0 (list_fl lines fmt_line)
+        (* Preserve the first level of indentation *)
+        fmt_if starts_with_sp " "
+        $ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi first_line tl
     | _ -> str s
   in
   let fmt_non_code cmt =

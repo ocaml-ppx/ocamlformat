@@ -82,7 +82,5 @@ let _ =
     (* first line
 
        second line
-
-
     *)
   ; "g" ]
