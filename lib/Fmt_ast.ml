@@ -1016,15 +1016,15 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         || (not (is_simple p1))
         || not (is_simple p2)
       in
+      let open_box =
+        match c.conf.break_cases with
+        | `Fit_or_vertical -> open_hvbox
+        | `Fit | `Nested | `Toplevel | `All -> open_hovbox
+      in
       hvbox 0
         ( list_fl (List.group xpats ~break)
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last xpat ->
-                  let open_box =
-                    if Poly.(c.conf.break_cases = `Fit_or_vertical) then
-                      open_hvbox
-                    else open_hovbox
-                  in
                   let pro =
                     if first_grp && first then
                       fmt_opt pro
