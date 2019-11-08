@@ -36,20 +36,24 @@ let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
 
 type or_pattern_sep = Fmt.t
 
-let get_or_pattern_sep ?(space = false) (c : Conf.t) ~ctx =
-  let bar =
+let get_or_pattern_sep ?(force_break = false) ?(space = false) (c : Conf.t)
+    ~ctx =
+  let nspaces = if force_break then 1000 else 1 in
+  let bar ~force_break =
+    let nspaces = if force_break then 1000 else 1 in
     match c.indicate_nested_or_patterns with
-    | `Space when space -> or_newline "| " " | "
-    | `Space -> or_newline "| " " |"
-    | `Unsafe_no -> or_newline "| " "| "
+    | `Space ->
+        let breaks = if space then " | " else " |" in
+        cbreak ~fits:("", nspaces, "| ") ~breaks:("", 0, breaks)
+    | `Unsafe_no -> cbreak ~fits:("", nspaces, "| ") ~breaks:("", 0, "| ")
   in
   match ctx with
   | Ast.Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _} -> (
     match c.break_cases with
-    | `Nested -> break_unless_newline 1 0 $ str "| "
-    | `All -> break_unless_newline 1000 0 $ bar
-    | `Fit | `Fit_or_vertical | `Toplevel -> bar )
-  | _ -> break_unless_newline 1 0 $ str "| "
+    | `Nested -> break nspaces 0 $ str "| "
+    | `All -> bar ~force_break:true
+    | `Fit | `Fit_or_vertical | `Toplevel -> bar ~force_break )
+  | _ -> break nspaces 0 $ str "| "
 
 type cases =
   { leading_space: Fmt.t

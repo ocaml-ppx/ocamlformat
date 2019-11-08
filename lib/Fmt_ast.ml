@@ -1025,6 +1025,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         ( list_fl (List.group xpats ~break)
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last xpat ->
+                  (* side effects of Cmts.fmt_before before [fmt_pattern] is
+                     important *)
+                  let loc = xpat.ast.ppat_loc in
+                  let force_break = Cmts.has_before c.cmts loc in
+                  let leading_cmt =
+                    Cmts.fmt_before ~pro:(Fmt.break 1000 0) ~adj:noop c loc
+                  in
                   let pro =
                     if first_grp && first then
                       fmt_opt pro
@@ -1033,20 +1040,11 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                           (if nested then "" else "( ")
                       $ open_box (-2)
                     else if first then
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~force_break
                       $ open_box (-2)
                     else
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~force_break
                         ~space:(space xpat.ast)
-                  in
-                  (* side effects of Cmts.fmt_before before [fmt_pattern] is
-                     important *)
-                  let leading_cmt =
-                    let loc = xpat.ast.ppat_loc in
-                    if Cmts.has_before c.cmts loc then
-                      let loc_before = Cmts.fmt_before c loc in
-                      fmt "@;<1000 0>" $ loc_before
-                    else noop
                   in
                   leading_cmt $ fmt_pattern c ~pro xpat
                   $ fmt_if_k last close_box))
