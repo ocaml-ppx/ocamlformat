@@ -1003,12 +1003,6 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           match i.[0] with '-' | '+' -> true | _ -> false )
         | _ -> false
       in
-      let pro0 =
-        fmt_opt pro
-        $ fits_breaks
-            (if parens then "(" else "")
-            (if nested then "" else "( ")
-      in
       let is_simple {ppat_desc; _} =
         match ppat_desc with
         | Ppat_any | Ppat_constant _ | Ppat_var _
@@ -1032,7 +1026,12 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                     else open_hovbox
                   in
                   let pro =
-                    if first_grp && first then pro0 $ open_box (-2)
+                    if first_grp && first then
+                      fmt_opt pro
+                      $ fits_breaks
+                          (if parens then "(" else "")
+                          (if nested then "" else "( ")
+                      $ open_box (-2)
                     else if first then
                       Params.get_or_pattern_sep c.conf ~ctx:ctx0
                       $ open_box (-2)
