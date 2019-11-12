@@ -7,13 +7,21 @@
 #### Bug fixes
 
   + Fix: Unstable comment in variant declarations (#1108) (Jules Aguillon)
+  + Fix: break multiline comments (#1122) (Guillaume Petiot)
   + Fix: types on named arguments were wrapped incorrectly when preceding comments (#1124) (Guillaume Petiot)
   + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
 
 #### Internal
 
+  + Testing interactions between break-infix and break-infix-before-func (#1136) (Guillaume Petiot)
+  + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
+
+#### Documentation
+
+  + Fix documentation of option `version-check` (#1135) (Wilfred Hughes)
+  + Fix hint when using `break-separators=after-and-docked` (#1130, Greta Yorsh)
 
 ### 0.12 (2019-11-04)
 

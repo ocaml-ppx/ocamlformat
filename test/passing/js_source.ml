@@ -7472,3 +7472,13 @@ let _ =
   (* __________________________________________________________________________________ *)
   := bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 ;;
+
+let g = f ~x (* this is a multiple-line-spanning
+                comment *) ~y
+
+let f =
+  very_long_function_name
+    ~x:very_long_variable_name (* this is a multiple-line-spanning
+       comment *)
+    ~y
+;;

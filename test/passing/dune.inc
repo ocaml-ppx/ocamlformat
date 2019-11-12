@@ -1056,11 +1056,44 @@
  (action (diff infix_arg_grouping.ml infix_arg_grouping.ml.output)))
 
 (rule
+ (targets infix_bind-break.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:infix_bind-break.ml.opts} %{dep:infix_bind.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff infix_bind-break.ml.ref infix_bind-break.ml.output)))
+
+(rule
+ (targets infix_bind-fit_or_vertical-break.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:infix_bind-fit_or_vertical-break.ml.opts} %{dep:infix_bind.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff infix_bind-fit_or_vertical-break.ml.ref infix_bind-fit_or_vertical-break.ml.output)))
+
+(rule
+ (targets infix_bind-fit_or_vertical.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:infix_bind-fit_or_vertical.ml.opts} %{dep:infix_bind.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff infix_bind-fit_or_vertical.ml.ref infix_bind-fit_or_vertical.ml.output)))
+
+(rule
  (targets infix_bind.ml.output)
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{dep:infix_bind.ml}"))))
+     (system "%{bin:ocamlformat} %{read-lines:infix_bind.ml.opts} %{dep:infix_bind.ml}"))))
 
 (alias
  (name runtest)

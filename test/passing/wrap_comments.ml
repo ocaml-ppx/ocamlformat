@@ -56,3 +56,33 @@ type foo =
     (* long long long long long long long long long long long long long long
      * long long long long *)
   ; another_field : string }
+
+let _ =
+  [ "a"
+  ; "b"
+  (* first line
+     second line *)
+  ; "c"
+  (* first line
+
+     second line
+  *)
+  ; "d"
+  (* first line
+
+
+     second line *)
+  ; "e"
+  (* first line
+
+     second line
+         *)
+  ; "f"
+  (* first line
+
+     second line
+
+
+         *)
+  ; "g"
+  ]
