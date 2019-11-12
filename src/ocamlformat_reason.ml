@@ -74,4 +74,3 @@ match Conf.action with
     | Error e ->
         Translation_unit.print_error conf ~input_name e ;
         Caml.exit 1 )
-| Print_config conf -> Conf.print_config conf ; Caml.exit 0
