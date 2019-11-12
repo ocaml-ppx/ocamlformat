@@ -14,8 +14,14 @@
 #### Internal
 
   + Refactor code that interprets CLI options (#1127) (Jules Aguillon)
+  + Testing interactions between break-infix and break-infix-before-func (#1136) (Guillaume Petiot)
   + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
+
+#### Documentation
+
+  + Fix documentation of option `version-check` (#1135) (Wilfred Hughes)
+  + Fix hint when using `break-separators=after-and-docked` (#1130, Greta Yorsh)
 
 ### 0.12 (2019-11-04)
 

@@ -374,7 +374,7 @@ module Formatting = struct
             ~msg:
               "One can get a similar behaviour by setting \
                `break-separators=after`, `space-around-lists=false`, and \
-               `dock-dollection-brackets=false`." ]
+               `dock-collection-brackets=false`." ]
       (fun conf x -> {conf with break_separators= x})
       (fun conf -> conf.break_separators)
 
@@ -1376,7 +1376,8 @@ let root =
 
 let no_version_check =
   let doc =
-    "Do no check version matches the one specified in .ocamlformat."
+    "Do not check that the version matches the one specified in \
+     .ocamlformat."
   in
   let default = false in
   mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)

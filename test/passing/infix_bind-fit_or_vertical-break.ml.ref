@@ -1,20 +1,19 @@
 ;;
-f x >>= fun y ->
-g y >>= fun () ->
-f x >>= fun y ->
-g y >>= fun () ->
-f x >>= fun y ->
-g y >>= fun () -> y ()
+f x
+>>= fun y ->
+g y
+>>= fun () ->
+f x >>= fun y -> g y >>= fun () -> f x >>= fun y -> g y >>= fun () -> y ()
 
 ;;
-f x >>= function
+f x
+>>= function
 | A -> (
-    g y >>= fun () ->
-    f x >>= fun y ->
-    g y >>= function
-    | x -> (
-        f x >>= fun y ->
-        g y >>= function _ -> y () ) )
+    g y
+    >>= fun () ->
+    f x
+    >>= fun y ->
+    g y >>= function x -> ( f x >>= fun y -> g y >>= function _ -> y () ) )
 
 ;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x
@@ -49,8 +48,8 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
 |> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx -> x
 
 ;;
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxxxxxx ->
-xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee
+|> fun xxxxxxxxxxxxx -> xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
 
 ;;
 eeeeeeeeeeeee eeeeeeeeee
@@ -61,14 +60,13 @@ xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x
 
 ;;
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
-| xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+|> function xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
-|> function
-| x -> x
+|> function x -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
@@ -81,43 +79,48 @@ eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x
 
 ;;
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
-| xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+|> function xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
 
 ;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function xxxxxxxxx, xxxxxxxxxxxxx -> x
 
 ;;
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee |> function
-| xxxxxxxx, xxxxxxxxx, xxxxxxxxxxxxx -> x
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
+|> function xxxxxxxx, xxxxxxxxx, xxxxxxxxxxxxx -> x
 
 ;;
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function
-| xxxxxxxxxxxxx -> xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee
+|> function xxxxxxxxxxxxx -> xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
 
 ;;
-eeeeeeeeeeeee eeeeeeeeee |> function
+eeeeeeeeeeeee eeeeeeeeee
+|> function
 | xxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxx ->
     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
 
 let parens =
   match body with
   | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc} ->
-      update_config_maybe_disabled c pexp_loc pexp_attributes @@ fun c ->
+      update_config_maybe_disabled c pexp_loc pexp_attributes
+      @@ fun c ->
       fmt "@ "
       $ Cmts.fmt c.cmts pexp_loc
           (wrap_if parens "(" ")"
              ( fmt "function"
              $ fmt_extension_suffix c ext
              $ fmt_attributes c ~key:"@" pexp_attributes
-             $ close_box $ fmt "@ " $ fmt_cases c ctx cs ))
+             $ close_box
+             $ fmt "@ "
+             $ fmt_cases c ctx cs ))
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
 let parens =
   match body with
   | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc} -> (
-      update_config_maybe_disabled c pexp_loc pexp_attributes @@ function
+      update_config_maybe_disabled c pexp_loc pexp_attributes
+      @@ function
       | _ ->
           fmt "@ "
           $ Cmts.fmt c.cmts pexp_loc
@@ -125,9 +128,12 @@ let parens =
                  ( fmt "function"
                  $ fmt_extension_suffix c ext
                  $ fmt_attributes c ~key:"@" pexp_attributes
-                 $ close_box $ fmt "@ " $ fmt_cases c ctx cs ))
+                 $ close_box
+                 $ fmt "@ "
+                 $ fmt_cases c ctx cs ))
       | _ ->
-          close_box $ fmt "@ "
+          close_box
+          $ fmt "@ "
           $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody )
 
 let end_gen_implementation ?toplevel ~ppf_dump
@@ -141,7 +147,8 @@ let end_gen_implementation ?toplevel ~ppf_dump
 
 let foo =
   (* get the tree origin *)
-  get_store_tree s >>= function
+  get_store_tree s
+  >>= function
   | None -> f t >|= fun x -> Ok x (* no transaction is needed *)
   | Some (origin, old_tree) ->
       let batch = {repo; tree= old_tree; origin} in
@@ -151,50 +158,54 @@ let foo =
 let _ = foo >>= function[@warning "-4"] A -> false | B -> true
 
 let _ =
-  foo >>= function[@warning "-4"]
+  foo
+  >>= function[@warning "-4"]
   | Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
 let _ = foo >>= fun [@warning "-4"] x -> fooooooooooooooooooooooo
 
 let _ =
-  foo >>= fun [@warning "-4"] x y ->
+  foo
+  >>= fun [@warning "-4"] x y ->
   fooooooooooooooooooooooo fooooooooooooooooooooooo fooooooooooooooooooooooo
     fooooooooooooooooooooooo
 
 let _ =
-  foo >>= function(* foo before *) [@warning "-4"] (* foo after *)
+  foo
+  >>= function(* foo before *) [@warning "-4"] (* foo after *)
   | Afoooooooooooooooooo fooooooooo -> false
   | Bfoooooooooooooooooooooo fooooooooo -> true
 
 let _ =
-  foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
+  foo
+  >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
   fooooooooooooooooooooooo
 
 let f = Ok () >>= (*  *) fun _ -> Ok ()
 
 let f =
   (* fooooooooooooooo foooooooooooooooo *)
-  Ok () >>= (*  *) fun _ ->
-  Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+  Ok ()
+  >>= (*  *) fun _ -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f = Ok () >>= (*  *) function Foo -> Ok ()
 
 let f =
   (* fooooooooooooooo foooooooooooooooo *)
-  Ok () >>= (*  *) function
+  Ok ()
+  >>= (*  *)
+  function
   | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f =
   Ok ()
-  >>=
-  (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+  >>= (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
   fun foooooo fooooo foooo foooooo ->
   Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f =
   Ok ()
-  >>=
-  (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
+  >>= (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
   function
   | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
