@@ -13,6 +13,7 @@
 
 #### Internal
 
+  + Refactor code that interprets CLI options (#1127) (Jules Aguillon)
   + Testing interactions between break-infix and break-infix-before-func (#1136) (Guillaume Petiot)
   + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Use an expect test for cli tests (#1126) (Etienne Millon)
