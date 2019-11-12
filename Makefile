@@ -32,7 +32,7 @@ ocamlformat-diff:
 clean:
 	dune clean
 
-SRCS=$(shell \find bin src tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[^.]*.mlt')
+SRCS=$(shell \find bin lib tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[^.]*.mlt')
 
 .PHONY: fmt
 fmt:
