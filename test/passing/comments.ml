@@ -206,3 +206,17 @@ type prefix = {
   sib_extend : int; (* extended sib index bit *)
   (** add more as needed *)
 }
+
+type t =
+  | A (* A *)
+  (* | B *)
+  | C
+
+type t =
+  (* | B *)
+  | A (* A *)
+  | C
+
+type t =
+  | A (* A *) (* | B *)
+  | C

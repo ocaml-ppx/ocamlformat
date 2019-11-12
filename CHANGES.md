@@ -6,6 +6,7 @@
 
 #### Bug fixes
 
+  + Fix unstable comment in variant declarations (#1108) (Jules Aguillon)
   + Fix: break multiline comments (#1122) (Guillaume Petiot)
   + Fix: types on named arguments were wrapped incorrectly when preceding comments (#1124) (Guillaume Petiot)
   + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)

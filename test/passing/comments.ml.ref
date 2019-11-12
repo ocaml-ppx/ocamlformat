@@ -287,3 +287,19 @@ let _ =
 
 type prefix =
   {sib_extend: int  (** add more as needed *) (* extended sib index bit *)}
+
+type t =
+  | A (* A *)
+  (* | B *)
+  | C
+
+type t =
+  (* | B *)
+  | A
+  (* A *)
+  | C
+
+type t =
+  | A (* A *)
+  (* | B *)
+  | C

@@ -3089,11 +3089,15 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
          (str pad)
          (fits_breaks ~level:3 "" pad))
   in
-  fmt_if (not first)
-    (match c.conf.type_decl with `Sparse -> "@;<1000 0>" | `Compact -> "@ ")
-  $ Cmts.fmt_before c pcd_loc $ Cmts.fmt_before c loc
+  let has_cmt_before = Cmts.has_before c.cmts pcd_loc in
+  let sparse = Poly.( = ) c.conf.type_decl `Sparse in
+  (* Force break if comment before pcd_loc, it would interfere with an
+     eventual comment placed after the previous constructor *)
+  fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
+  $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
+  $ Cmts.fmt_before c loc
   $ fmt_or_k first (if_newline "| ") (str "| ")
-  $ hvbox 0
+  $ hvbox ~name:"constructor_decl" 0
       ( hovbox 2
           ( hvbox 2
               ( Cmts.fmt c loc
