@@ -1031,6 +1031,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   let force_break = Cmts.has_before c.cmts loc in
                   let leading_cmt =
                     Cmts.fmt_before ~pro:(Fmt.break 1000 0) ~adj:noop c loc
+                      ~eol:noop
                   in
                   let pro =
                     if first_grp && first then
