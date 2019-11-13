@@ -30,7 +30,7 @@ depends: [
   "reason" {>= "3.2.0"}
 ]
 build: [
-  ["ocaml" "tools/gen_version.mlt" "src/Version.ml" version] {pinned}
+  ["ocaml" "tools/gen_version.mlt" "lib/Version.ml" version] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
 ]
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"

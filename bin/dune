@@ -1,0 +1,23 @@
+(executable
+ (public_name ocamlformat)
+ (package ocamlformat)
+ (modules ocamlformat)
+ (flags (:standard -open Import))
+ ;;INSERT_BISECT_HERE;;
+ (libraries ocamlformat_lib))
+
+(executable
+ (public_name ocamlformat_reason)
+ (package ocamlformat_reason)
+ (modules ocamlformat_reason)
+ (flags (:standard -open Import))
+ ;;INSERT_BISECT_HERE;;
+ (libraries ocamlformat_lib))
+
+(rule
+ (with-stdout-to ocamlformat.1 (run ./ocamlformat.exe --help=groff)))
+
+(install
+ (section man)
+ (files ocamlformat.1)
+ (package ocamlformat))

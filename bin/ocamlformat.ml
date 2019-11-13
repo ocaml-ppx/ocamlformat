@@ -11,6 +11,8 @@
 
 (** OCamlFormat *)
 
+open Ocamlformat_lib
+
 let normalize norm c {Parse_with_comments.ast; _} = norm c ast
 
 let equal eq ~ignore_doc_comments c a b =

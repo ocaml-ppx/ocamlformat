@@ -14,7 +14,7 @@ default: exe gen-help
 
 .PHONY: exe
 exe:
-	dune build src/ocamlformat.exe
+	dune build bin/ocamlformat.exe
 
 .PHONY: gen-help
 gen-help:
@@ -22,7 +22,7 @@ gen-help:
 
 .PHONY: reason
 reason:
-	dune build src/ocamlformat_reason.exe
+	dune build bin/ocamlformat_reason.exe
 
 .PHONY: ocamlformat-diff
 ocamlformat-diff:
@@ -32,7 +32,7 @@ ocamlformat-diff:
 clean:
 	dune clean
 
-SRCS=$(shell \find src tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[^.]*.mlt')
+SRCS=$(shell \find bin lib tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[^.]*.mlt')
 
 .PHONY: fmt
 fmt:
