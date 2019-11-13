@@ -137,6 +137,6 @@ val diff :
   Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)
 
-val preserve : ('a -> Fmt.t) -> 'a -> string
+val preserve : (t -> Fmt.t) -> t -> string
 (** [preserve fmt_x x] formats like [fmt_x x] but returns a string and does
     not consume comments from the internal state. *)
