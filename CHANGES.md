@@ -15,6 +15,7 @@
 
 #### Internal
 
+  + Sanitize formatting of or-patterns and remove or_newline (#1145) (Guillaume Petiot)
   + Replace pre_break and if_newline by cbreak (#1090) (Guillaume Petiot)
   + Use opt and fmt_opt to simplify formatting (#1150) (Guillaume Petiot)
   + Replace inplace formatting by dune staging for make fmt (#1151) (Guillaume Petiot)
@@ -29,7 +30,7 @@
 #### Documentation
 
   + Fix documentation of option `version-check` (#1135) (Wilfred Hughes)
-  + Fix hint when using `break-separators=after-and-docked` (#1130, Greta Yorsh)
+  + Fix hint when using `break-separators=after-and-docked` (#1130) (Greta Yorsh)
 
 ### 0.12 (2019-11-04)
 
