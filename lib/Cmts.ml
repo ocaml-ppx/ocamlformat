@@ -17,12 +17,29 @@ open Asttypes
 open Parsetree
 
 type t =
-  { cmts_before: (Location.t, Cmt.t list) Hashtbl.t
-  ; cmts_after: (Location.t, Cmt.t list) Hashtbl.t
-  ; cmts_within: (Location.t, Cmt.t list) Hashtbl.t
+  { mutable cmts_before: Cmt.t Location.Multimap.t
+  ; mutable cmts_after: Cmt.t Location.Multimap.t
+  ; mutable cmts_within: Cmt.t Location.Multimap.t
   ; source: Source.t
-  ; remaining: (Location.t, unit) Hashtbl.t
+  ; mutable remaining: Location.Set.t
   ; remove: bool }
+
+let update_remaining t ~f = t.remaining <- f t.remaining
+
+let update_cmts t pos ~f =
+  match pos with
+  | `After -> t.cmts_after <- f t.cmts_after
+  | `Before -> t.cmts_before <- f t.cmts_before
+  | `Within -> t.cmts_within <- f t.cmts_within
+
+let find_at_position t loc pos =
+  let map =
+    match pos with
+    | `After -> t.cmts_after
+    | `Before -> t.cmts_before
+    | `Within -> t.cmts_within
+  in
+  Location.Multimap.find map loc
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -303,7 +320,7 @@ let position_to_string = function
   | `After -> "after"
   | `Within -> "within"
 
-let add_cmts t ?prev ?next tbl position loc cmts =
+let add_cmts t ?prev ?next position loc cmts =
   if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug () then
@@ -325,7 +342,8 @@ let add_cmts t ?prev ?next tbl position loc cmts =
             (position_to_string position)
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next)) ;
-    Hashtbl.add_exn tbl ~key:loc ~data:cmtl )
+    update_cmts t position ~f:(fun v ->
+        Location.Multimap.add_list v loc cmtl) )
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
@@ -342,22 +360,19 @@ let rec place t loc_tree ?prev_loc locs cmts =
               partition_after_prev_or_before_next t ~prev:prev_loc before
                 ~next:curr_loc
             in
-            add_cmts t ~prev:prev_loc ~next:curr_loc t.cmts_after `After
-              prev_loc after_prev ;
+            add_cmts t `After ~prev:prev_loc ~next:curr_loc prev_loc
+              after_prev ;
             before_curr
       in
-      add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_before `Before curr_loc
-        before_curr ;
+      add_cmts t `Before ?prev:prev_loc ~next:curr_loc curr_loc before_curr ;
       ( match Loc_tree.children loc_tree curr_loc with
       | [] ->
-          add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_within `Within
-            curr_loc within
+          add_cmts t `Within ?prev:prev_loc ~next:curr_loc curr_loc within
       | children -> place t loc_tree children within ) ;
       place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] -> (
     match prev_loc with
-    | Some prev_loc ->
-        add_cmts t ~prev:prev_loc t.cmts_after `After prev_loc cmts
+    | Some prev_loc -> add_cmts t `After ~prev:prev_loc prev_loc cmts
     | None ->
         if Conf.debug () then
           List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
@@ -366,12 +381,6 @@ let rec place t loc_tree ?prev_loc locs cmts =
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
   if t.remove then (
-    let update_multi tbl src dst ~f =
-      Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
-          Hashtbl.update tbl dst ~f:(fun dst_data ->
-              Option.fold dst_data ~init:src_data
-                ~f:(fun src_data dst_data -> f src_data dst_data)))
-    in
     if Conf.debug () then
       Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
         Location.fmt before Location.fmt after ;
@@ -380,22 +389,25 @@ let relocate (t : t) ~src ~before ~after =
       |> List.sort
            ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
     in
-    update_multi t.cmts_before src before ~f:merge_and_sort ;
-    update_multi t.cmts_after src after ~f:merge_and_sort ;
-    update_multi t.cmts_within src after ~f:merge_and_sort ;
-    if Conf.debug () then (
-      Hashtbl.remove t.remaining src ;
-      Hashtbl.set t.remaining ~key:after ~data:() ;
-      Hashtbl.set t.remaining ~key:before ~data:() ) )
+    update_cmts t `Before
+      ~f:(Location.Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
+    update_cmts t `After
+      ~f:(Location.Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+    update_cmts t `Within
+      ~f:(Location.Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+    if Conf.debug () then
+      update_remaining t ~f:(fun r ->
+          r |> Location.Set.remove src |> Location.Set.add after
+          |> Location.Set.add before) )
 
 (** Initialize global state and place comments. *)
 let init map_ast source asts comments_n_docstrings =
   let t =
-    { cmts_before= Hashtbl.create (module Location)
-    ; cmts_after= Hashtbl.create (module Location)
-    ; cmts_within= Hashtbl.create (module Location)
+    { cmts_before= Location.Multimap.empty
+    ; cmts_after= Location.Multimap.empty
+    ; cmts_within= Location.Multimap.empty
     ; source
-    ; remaining= Hashtbl.create (module Location)
+    ; remaining= Location.Set.empty
     ; remove= true }
   in
   let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
@@ -409,7 +421,7 @@ let init map_ast source asts comments_n_docstrings =
     if Conf.debug () then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
-            Hashtbl.set t.remaining ~key:loc ~data:()) ;
+            update_remaining t ~f:(Location.Set.add loc)) ;
     if Conf.debug () then (
       let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
@@ -417,8 +429,7 @@ let init map_ast source asts comments_n_docstrings =
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
     match locs with
-    | [] ->
-        add_cmts t ~prev:Location.none t.cmts_after `After Location.none cmts
+    | [] -> add_cmts t `After ~prev:Location.none Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
   let () =
     let relocate_loc_stack loc stack =
@@ -577,15 +588,21 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   | _ -> fmt_non_code cmt
 
 let pop_if_debug t loc =
-  if Conf.debug () && t.remove then Hashtbl.remove t.remaining loc
+  if Conf.debug () && t.remove then
+    update_remaining t ~f:(Location.Set.remove loc)
+
+let find_cmts t pos loc =
+  let r = find_at_position t loc pos in
+  if t.remove then
+    update_cmts t pos ~f:(fun m -> Location.Multimap.remove m loc) ;
+  r
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
-    ?(adj = eol) tbl loc =
+    ?(adj = eol) find loc =
   let open Fmt in
   pop_if_debug t loc ;
-  let find = if t.remove then Hashtbl.find_and_remove else Hashtbl.find in
-  match find tbl loc with
+  match find loc with
   | None | Some [] -> noop
   | Some cmts ->
       let line_dist a b =
@@ -629,17 +646,19 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
               $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ))
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj =
-  fmt_cmts t conf t.cmts_before ~fmt_code ?pro ~epi ?eol ?adj
+  fmt_cmts t conf (find_cmts t `Before) ~fmt_code ?pro ~epi ?eol ?adj
 
 let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi =
   let open Fmt in
-  let within = fmt_cmts t conf t.cmts_within ~fmt_code ~pro ?epi in
-  let after = fmt_cmts t conf t.cmts_after ~fmt_code ~pro ?epi ~eol:noop in
+  let within = fmt_cmts t conf (find_cmts t `Within) ~fmt_code ~pro ?epi in
+  let after =
+    fmt_cmts t conf (find_cmts t `After) ~fmt_code ~pro ?epi ~eol:noop
+  in
   fun loc -> within loc $ after loc
 
 let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
     =
-  fmt_cmts t conf t.cmts_within ~fmt_code ~pro ~epi ~eol:Fmt.noop
+  fmt_cmts t conf (find_cmts t `Within) ~fmt_code ~pro ~epi ~eol:Fmt.noop
 
 let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =
   let open Fmt in
@@ -657,33 +676,37 @@ let fmt_list t conf ~fmt_code ?pro ?epi ?eol locs init =
       fmt t conf ~fmt_code ?pro ?epi ?eol loc @@ k)
 
 let drop_inside t loc =
-  let clear tbl =
-    Hashtbl.map_inplace tbl ~f:(fun l ->
-        List.filter l ~f:(fun {Cmt.loc= cmt_loc; _} ->
-            not (Location.contains loc cmt_loc)))
+  let clear pos =
+    update_cmts t pos
+      ~f:
+        (Location.Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
+             not (Location.contains loc cmt_loc)))
   in
-  clear t.cmts_before ; clear t.cmts_within ; clear t.cmts_after
+  clear `Before ;
+  clear `Within ;
+  clear `After
 
 let has_before t loc =
   pop_if_debug t loc ;
-  Hashtbl.mem t.cmts_before loc
+  Location.Multimap.mem t.cmts_before loc
 
 let has_within t loc =
   pop_if_debug t loc ;
-  Hashtbl.mem t.cmts_within loc
+  Location.Multimap.mem t.cmts_within loc
 
 let has_after t loc =
   pop_if_debug t loc ;
-  Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
+  Location.Multimap.mem t.cmts_within loc
+  || Location.Multimap.mem t.cmts_after loc
 
 (** returns comments that have not been formatted *)
 let remaining_comments t =
-  let get t = Hashtbl.to_alist t |> List.concat_map ~f:snd in
-  List.concat_map ~f:get [t.cmts_before; t.cmts_within; t.cmts_after]
+  List.concat_map ~f:Location.Multimap.to_list
+    [t.cmts_before; t.cmts_within; t.cmts_after]
 
-let remaining_before t loc = Hashtbl.find_multi t.cmts_before loc
+let remaining_before t loc = Location.Multimap.find_multi t.cmts_before loc
 
-let remaining_locs t = Hashtbl.to_alist t.remaining |> List.map ~f:fst
+let remaining_locs t = Location.Set.to_list t.remaining
 
 let diff (conf : Conf.t) x y =
   let norm z =
