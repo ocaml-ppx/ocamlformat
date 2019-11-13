@@ -21,7 +21,8 @@ type t =
   ; cmts_after: (Location.t, Cmt.t list) Hashtbl.t
   ; cmts_within: (Location.t, Cmt.t list) Hashtbl.t
   ; source: Source.t
-  ; remaining: (Location.t, unit) Hashtbl.t }
+  ; remaining: (Location.t, unit) Hashtbl.t
+  ; remove: bool }
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
@@ -358,11 +359,9 @@ let rec place t loc_tree ?prev_loc locs cmts =
           List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
               Format.eprintf "lost: %s@\n%!" txt) )
 
-let remove = ref true
-
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
-  if !remove then (
+  if t.remove then (
     let update_multi tbl src dst ~f =
       Option.iter (Hashtbl.find_and_remove tbl src) ~f:(fun src_data ->
           Hashtbl.update tbl dst ~f:(fun dst_data ->
@@ -392,7 +391,8 @@ let init map_ast source asts comments_n_docstrings =
     ; cmts_after= Hashtbl.create (module Location)
     ; cmts_within= Hashtbl.create (module Location)
     ; source
-    ; remaining= Hashtbl.create (module Location) }
+    ; remaining= Hashtbl.create (module Location)
+    ; remove= true }
   in
   let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
   if Conf.debug then (
@@ -442,14 +442,11 @@ let init_intf = init Mapper.signature
 
 let init_toplevel = init Mapper.use_file
 
-let preserve fmt_x x =
+let preserve fmt_x t =
   let buf = Buffer.create 128 in
   let fs = Format.formatter_of_buffer buf in
-  let save = !remove in
-  remove := false ;
-  Fmt.eval fs (fmt_x x) ;
+  Fmt.eval fs (fmt_x {t with remove= false}) ;
   Format.pp_print_flush fs () ;
-  remove := save ;
   Buffer.contents buf
 
 let split_asterisk_prefixed {Cmt.txt; loc= {Location.loc_start; _}} =
@@ -542,12 +539,15 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   | str when Char.equal str.[0] '$' -> fmt_code cmt
   | _ -> fmt_non_code cmt
 
+let pop_if_debug t loc =
+  if Conf.debug && t.remove then Hashtbl.remove t.remaining loc
+
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
     ?(adj = eol) tbl loc =
   let open Fmt in
-  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
-  let find = if !remove then Hashtbl.find_and_remove else Hashtbl.find in
+  pop_if_debug t loc ;
+  let find = if t.remove then Hashtbl.find_and_remove else Hashtbl.find in
   match find tbl loc with
   | None | Some [] -> noop
   | Some cmts ->
@@ -629,15 +629,15 @@ let drop_inside t loc =
   clear t.cmts_before ; clear t.cmts_within ; clear t.cmts_after
 
 let has_before t loc =
-  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
+  pop_if_debug t loc ;
   Hashtbl.mem t.cmts_before loc
 
 let has_within t loc =
-  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
+  pop_if_debug t loc ;
   Hashtbl.mem t.cmts_within loc
 
 let has_after t loc =
-  if Conf.debug && !remove then Hashtbl.remove t.remaining loc ;
+  pop_if_debug t loc ;
   Hashtbl.mem t.cmts_within loc || Hashtbl.mem t.cmts_after loc
 
 (** returns comments that have not been formatted *)
