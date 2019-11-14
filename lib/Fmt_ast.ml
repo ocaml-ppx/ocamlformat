@@ -829,7 +829,6 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   let spc = break_unless_newline 1 0 in
-  let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
   ( match ppat_desc with
   | Ppat_or _ -> Fn.id
   | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::")
@@ -989,6 +988,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       in
       p.box (list_fl pats fmt_pat)
   | Ppat_or _ ->
+      let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
         match ctx0 with
         | Pat {ppat_desc= Ppat_or _; _} -> not has_doc
