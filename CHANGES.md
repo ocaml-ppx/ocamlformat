@@ -15,6 +15,7 @@
 
 #### Internal
 
+  + Set break-infix-before-func=false on ocamlformat codebase (#1149) (Guillaume Petiot)
   + Sanitize formatting of or-patterns and remove or_newline (#1145) (Guillaume Petiot)
   + Replace pre_break and if_newline by cbreak (#1090) (Guillaume Petiot)
   + Use opt and fmt_opt to simplify formatting (#1150) (Guillaume Petiot)
