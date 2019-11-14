@@ -298,7 +298,12 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
     | [] -> impossible "by parent match" )
   | _ -> (CmtSet.empty, cmts)
 
-let add_cmts t ?prev ?next tbl loc cmts =
+let position_to_string = function
+  | `Before -> "before"
+  | `After -> "after"
+  | `Within -> "within"
+
+let add_cmts t ?prev ?next tbl position loc cmts =
   if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
     if Conf.debug then
@@ -317,9 +322,7 @@ let add_cmts t ?prev ?next tbl loc cmts =
               ~f:(string_between cmt_loc)
           in
           Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
-            ( if phys_equal tbl t.cmts_before then "before"
-            else if phys_equal tbl t.cmts_after then "after"
-            else "within" )
+            (position_to_string position)
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next)) ;
     Hashtbl.add_exn tbl ~key:loc ~data:cmtl )
@@ -339,21 +342,22 @@ let rec place t loc_tree ?prev_loc locs cmts =
               partition_after_prev_or_before_next t ~prev:prev_loc before
                 ~next:curr_loc
             in
-            add_cmts t ~prev:prev_loc ~next:curr_loc t.cmts_after prev_loc
-              after_prev ;
+            add_cmts t ~prev:prev_loc ~next:curr_loc t.cmts_after `After
+              prev_loc after_prev ;
             before_curr
       in
-      add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_before curr_loc
+      add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_before `Before curr_loc
         before_curr ;
       ( match Loc_tree.children loc_tree curr_loc with
       | [] ->
-          add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_within curr_loc
-            within
+          add_cmts t ?prev:prev_loc ~next:curr_loc t.cmts_within `Within
+            curr_loc within
       | children -> place t loc_tree children within ) ;
       place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] -> (
     match prev_loc with
-    | Some prev_loc -> add_cmts t ~prev:prev_loc t.cmts_after prev_loc cmts
+    | Some prev_loc ->
+        add_cmts t ~prev:prev_loc t.cmts_after `After prev_loc cmts
     | None ->
         if Conf.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
@@ -413,7 +417,8 @@ let init map_ast source asts comments_n_docstrings =
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
     match locs with
-    | [] -> add_cmts t ~prev:Location.none t.cmts_after Location.none cmts
+    | [] ->
+        add_cmts t ~prev:Location.none t.cmts_after `After Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
   let () =
     let relocate_loc_stack loc stack =
@@ -642,22 +647,8 @@ let has_after t loc =
 
 (** returns comments that have not been formatted *)
 let remaining_comments t =
-  let get t before_after =
-    Hashtbl.to_alist t
-    |> List.concat_map ~f:(fun (ast_loc, cmts) ->
-           List.map cmts ~f:(fun (cmt : Cmt.t) ->
-               ( cmt
-               , before_after
-               , let open Sexp in
-                 List
-                   [ List [Atom "ast_loc"; Location.sexp_of_t ast_loc]
-                   ; List [Atom "cmt_loc"; Location.sexp_of_t cmt.loc]
-                   ; List [Atom "cmt_txt"; Atom cmt.txt] ] )))
-  in
-  List.concat
-    [ get t.cmts_before "before"
-    ; get t.cmts_within "within"
-    ; get t.cmts_after "after" ]
+  let get t = Hashtbl.to_alist t |> List.concat_map ~f:snd in
+  List.concat_map ~f:get [t.cmts_before; t.cmts_within; t.cmts_after]
 
 let remaining_before t loc = Hashtbl.find_multi t.cmts_before loc
 

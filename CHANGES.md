@@ -20,6 +20,7 @@
   + Use an expect test for cli tests (#1126) (Etienne Millon)
   + Factor out a private library (#1134) (Etienne Millon)
   + Remove global reference `Cmts.remove` (#1142) (Etienne Millon)
+  + Remove symbol strings in `Cmts` (#1146) (Etienne Millon)
 
 #### Documentation
 
