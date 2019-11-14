@@ -57,7 +57,7 @@ let to_output_file output_file data =
   | Some output_file -> Out_channel.write_all output_file ~data
 
 ;;
-match Conf.action with
+match Conf.action () with
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | Check _ -> user_error "Cannot check Reason code with --check" []
 | In_out ({kind; file; name= input_name; conf}, output_file) -> (

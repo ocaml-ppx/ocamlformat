@@ -68,7 +68,7 @@ let source_from_file = function
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
 ;;
-match Conf.action with
+match Conf.action () with
 | Inplace inputs ->
     let errors =
       List.filter_map inputs
