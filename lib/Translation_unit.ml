@@ -333,9 +333,7 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
           if conf.comment_check then (
             ( match Cmts.remaining_comments cmts_t with
             | [] -> ()
-            | l ->
-                let l = List.map l ~f:(fun (cmt, _, _) -> cmt) in
-                internal_error (`Comment_dropped l) [] ) ;
+            | l -> internal_error (`Comment_dropped l) [] ) ;
             let is_docstring Cmt.{txt; _} =
               conf.Conf.parse_docstrings && Char.equal txt.[0] '*'
             in

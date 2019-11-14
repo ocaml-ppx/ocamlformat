@@ -125,7 +125,7 @@ val has_within : t -> Location.t -> bool
 val has_after : t -> Location.t -> bool
 (** [has_after t loc] holds if [t] contains some comment after [loc]. *)
 
-val remaining_comments : t -> (Cmt.t * string * Sexp.t) list
+val remaining_comments : t -> Cmt.t list
 (** Returns comments that have not been formatted yet. *)
 
 val remaining_locs : t -> Location.t list
