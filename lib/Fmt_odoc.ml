@@ -52,8 +52,7 @@ let split_on_whitespaces =
 
 (** Escape special characters and normalize whitespaces *)
 let str_normalized ?(escape = escape_all) s =
-  split_on_whitespaces s
-  |> List.filter ~f:(Fn.non String.is_empty)
+  split_on_whitespaces s |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
 
 let ign_loc ~f with_loc = f with_loc.Location_.value

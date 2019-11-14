@@ -186,8 +186,8 @@ let fmt_recmodule c ctx items f ast =
   let fmt_grp ~first:first_grp ~last:_ itms =
     list_fl itms (fun ~first ~last:_ (itm, c) ->
         fmt_if_k (not first) (fmt_or break_struct "@;<1000 0>" "@ ")
-        $ maybe_disabled c (Ast.location (ast itm)) []
-          @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm)
+        $ maybe_disabled c (Ast.location (ast itm)) [] @@ fun c ->
+          f c ctx ~rec_flag:true ~first:(first && first_grp) itm)
   in
   hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
@@ -600,8 +600,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   protect (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
-  update_config_maybe_disabled c ptyp_loc ptyp_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c ptyp_loc ptyp_attributes @@ fun c ->
   ( match (ptyp_desc, pro) with
   | (Ptyp_arrow _ | Ptyp_poly _), Some pro when c.conf.ocp_indent_compat ->
       fmt_if pro_space "@;" $ str pro $ str " "
@@ -825,8 +824,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   @@
   let ctx = Pat pat in
   let {ppat_desc; ppat_attributes; ppat_loc; ppat_loc_stack} = pat in
-  update_config_maybe_disabled c ppat_loc ppat_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c ppat_loc ppat_attributes @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
@@ -1184,15 +1182,13 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
   let parens = parenze_exp xbody in
   match body with
   | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc; _} ->
-      ( ( update_config_maybe_disabled c pexp_loc pexp_attributes
-        @@ fun c ->
-        fmt "@ "
-        $ Cmts.fmt_before c pexp_loc
-        $ fmt_if parens "(" $ str "function"
-        $ fmt_extension_suffix c ext
-        $ fmt_attributes c ~key:"@" pexp_attributes )
-      , update_config_maybe_disabled c pexp_loc pexp_attributes
-        @@ fun c ->
+      ( ( update_config_maybe_disabled c pexp_loc pexp_attributes @@ fun c ->
+          fmt "@ "
+          $ Cmts.fmt_before c pexp_loc
+          $ fmt_if parens "(" $ str "function"
+          $ fmt_extension_suffix c ext
+          $ fmt_attributes c ~key:"@" pexp_attributes )
+      , update_config_maybe_disabled c pexp_loc pexp_attributes @@ fun c ->
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
@@ -1376,8 +1372,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   protect (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes; pexp_loc_stack} = exp in
-  update_config_maybe_disabled c pexp_loc pexp_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pexp_loc pexp_attributes @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" pexp_attributes in
   let has_attr = not (List.is_empty pexp_attributes) in
@@ -2469,8 +2464,7 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
   protect (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
-  update_config_maybe_disabled c pcty_loc pcty_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pcty_loc pcty_attributes @@ fun c ->
   let doc, atrs = doc_atrs pcty_attributes in
   Cmts.fmt c pcty_loc
   @@
@@ -2516,8 +2510,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
   protect (Cl exp)
   @@
   let {pcl_desc; pcl_loc; pcl_attributes} = exp in
-  update_config_maybe_disabled c pcl_loc pcl_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pcl_loc pcl_attributes @@ fun c ->
   let parens = parenze_cl xexp in
   let ctx = Cl exp in
   let fmt_args_grouped e0 a1N =
@@ -2581,8 +2574,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
 
 and fmt_class_field c ctx (cf : class_field) =
   let {pcf_desc; pcf_loc; pcf_attributes} = cf in
-  update_config_maybe_disabled c pcf_loc pcf_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pcf_loc pcf_attributes @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol:None pcf_loc in
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~fit:true c pcf_attributes
@@ -2726,8 +2718,7 @@ and fmt_class_field c ctx (cf : class_field) =
 
 and fmt_class_type_field c ctx (cf : class_type_field) =
   let {pctf_desc; pctf_loc; pctf_attributes} = cf in
-  update_config_maybe_disabled c pctf_loc pctf_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pctf_loc pctf_attributes @@ fun c ->
   let fmt_cmts = Cmts.fmt c pctf_loc in
   let doc, atrs = doc_atrs pctf_attributes in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
@@ -2871,8 +2862,7 @@ and fmt_value_description c ctx vd =
       =
     vd
   in
-  update_config_maybe_disabled c pval_loc pval_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pval_loc pval_attributes @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item c pval_attributes
@@ -2930,8 +2920,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
       ; ptype_loc } =
     decl
   in
-  update_config_maybe_disabled c ptype_loc ptype_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c ptype_loc ptype_attributes @@ fun c ->
   let fmt_manifest ~priv decl =
     let break_before_manifest_kind =
       match ptype_kind with
@@ -3031,8 +3020,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
 
 and fmt_label_declaration c ctx ?(last = false) decl =
   let {pld_mutable; pld_name; pld_type; pld_loc; pld_attributes} = decl in
-  update_config_maybe_disabled c pld_loc pld_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pld_loc pld_attributes @@ fun c ->
   let doc, atrs = doc_atrs pld_attributes in
   let cmt_after_type = Cmts.fmt_after c pld_type.ptyp_loc in
   let field_loose =
@@ -3070,8 +3058,7 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
   let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
     cstr_decl
   in
-  update_config_maybe_disabled c pcd_loc pcd_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pcd_loc pcd_attributes @@ fun c ->
   let doc, atrs = doc_atrs pcd_attributes in
   let fmt_padding =
     let is_empty =
@@ -3191,8 +3178,7 @@ and fmt_type_exception ~pre c sep ctx
 
 and fmt_extension_constructor c sep ctx ec =
   let {pext_name; pext_kind; pext_attributes; pext_loc} = ec in
-  update_config_maybe_disabled c pext_loc pext_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pext_loc pext_attributes @@ fun c ->
   let doc, atrs = doc_atrs pext_attributes in
   let suf =
     match pext_kind with
@@ -3226,8 +3212,7 @@ and fmt_functor_arg c (name, mt) =
 and fmt_module_type c ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
   let {pmty_desc; pmty_loc; pmty_attributes} = mty in
-  update_config_maybe_disabled_block c pmty_loc pmty_attributes
-  @@ fun c ->
+  update_config_maybe_disabled_block c pmty_loc pmty_attributes @@ fun c ->
   let parens = parenze_mty xmty in
   match pmty_desc with
   | Pmty_ident lid ->
@@ -3337,8 +3322,8 @@ and fmt_signature c ctx itms =
   in
   let grps = make_groups c itms (fun x -> Sig x) update_config in
   let fmt_grp (i, c) =
-    maybe_disabled c i.psig_loc []
-    @@ fun c -> fmt_signature_item c (sub_sig ~ctx i)
+    maybe_disabled c i.psig_loc [] @@ fun c ->
+    fmt_signature_item c (sub_sig ~ctx i)
   in
   let fmt_grp itms = list itms "@\n" fmt_grp in
   hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
@@ -3380,8 +3365,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
         $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs
         $ doc_after )
   | Psig_include {pincl_mod; pincl_attributes; pincl_loc} ->
-      update_config_maybe_disabled c pincl_loc pincl_attributes
-      @@ fun c ->
+      update_config_maybe_disabled c pincl_loc pincl_attributes @@ fun c ->
       let doc_before, doc_after, atrs =
         let force_before = not (Ast.module_type_is_simple pincl_mod) in
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
@@ -3423,8 +3407,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
 
 and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
-      update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
-      @@ fun c ->
+      update_config_maybe_disabled c cl.pci_loc cl.pci_attributes @@ fun c ->
       let doc_before, doc_after, atrs =
         let force_before = not (Ast.class_type_is_simple cl.pci_expr) in
         fmt_docstring_around_item ~force_before c cl.pci_attributes
@@ -3447,8 +3430,7 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
 
 and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
   list_fl cls (fun ~first ~last:_ cl ->
-      update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
-      @@ fun c ->
+      update_config_maybe_disabled c cl.pci_loc cl.pci_attributes @@ fun c ->
       let xargs, xbody =
         match cl.pci_expr.pcl_attributes with
         | [] ->
@@ -3573,8 +3555,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
 
 and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
-  update_config_maybe_disabled c pmd_loc pmd_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pmd_loc pmd_attributes @@ fun c ->
   let keyword =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"
@@ -3593,8 +3574,7 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
 
 and fmt_module_substitution c ctx pms =
   let {pms_name; pms_manifest; pms_attributes; pms_loc} = pms in
-  update_config_maybe_disabled c pms_loc pms_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pms_loc pms_attributes @@ fun c ->
   let xmty =
     (* TODO: improve *)
     sub_mty ~ctx
@@ -3608,16 +3588,14 @@ and fmt_module_substitution c ctx pms =
 
 and fmt_module_type_declaration c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
-  update_config_maybe_disabled c pmtd_loc pmtd_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pmtd_loc pmtd_attributes @@ fun c ->
   fmt_module c (str "module type") pmtd_name [] None
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
 and fmt_open_description c ?(keyword = "open") ~kw_attributes
     {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
-  update_config_maybe_disabled c popen_loc popen_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c popen_loc popen_attributes @@ fun c ->
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~fit:true c popen_attributes
   in
@@ -3671,8 +3649,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
     =
   let ctx = Mod m in
   let {pmod_desc; pmod_loc; pmod_attributes} = m in
-  update_config_maybe_disabled_block c pmod_loc pmod_attributes
-  @@ fun c ->
+  update_config_maybe_disabled_block c pmod_loc pmod_attributes @@ fun c ->
   let parens = parenze_mod xmod in
   match pmod_desc with
   | Pmod_apply (({pmod_desc= Pmod_ident _; _} as me_f), me_a) ->
@@ -3914,8 +3891,8 @@ and fmt_structure c ctx itms =
     list_fl itms (fun ~first ~last (itm, c) ->
         let last = last && last_grp in
         fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c itm.pstr_loc []
-          @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx itm))
+        $ maybe_disabled c itm.pstr_loc [] @@ fun c ->
+          fmt_structure_item c ~last (sub_str ~ctx itm))
   in
   hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
@@ -3967,8 +3944,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         (fmt_type_exception ~pre:(fmt "exception@ ") c (str ": ") ctx
            extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
-      update_config_maybe_disabled c pincl_loc attributes
-      @@ fun c ->
+      update_config_maybe_disabled c pincl_loc attributes @@ fun c ->
       fmt_module_statement c ~attributes (str "include ")
         (sub_mod ~ctx pincl_mod)
   | Pstr_module binding ->
@@ -3976,8 +3952,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_open
       {popen_expr; popen_override; popen_attributes= attributes; popen_loc}
     ->
-      update_config_maybe_disabled c popen_loc attributes
-      @@ fun c ->
+      update_config_maybe_disabled c popen_loc attributes @@ fun c ->
       let keyword =
         str "open"
         $ fmt_if (Poly.equal popen_override Override) "!"
@@ -4117,8 +4092,7 @@ and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings ~body_loc
 
 and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
     pvb_pat pvb_expr =
-  update_config_maybe_disabled c loc attributes
-  @@ fun c ->
+  update_config_maybe_disabled c loc attributes @@ fun c ->
   let doc1, atrs = doc_atrs attributes in
   let doc2, atrs = doc_atrs atrs in
   let xpat, xargs, fmt_cstr, xbody =
@@ -4249,8 +4223,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding c ctx ~rec_flag ~first pmb =
-  update_config_maybe_disabled c pmb.pmb_loc pmb.pmb_attributes
-  @@ fun c ->
+  update_config_maybe_disabled c pmb.pmb_loc pmb.pmb_attributes @@ fun c ->
   let keyword =
     if first then if rec_flag then str "module rec" else str "module"
     else str "and"
@@ -4308,8 +4281,8 @@ let fmt_toplevel c ctx itms =
   let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
   let fmt_item c ~last = function
     | `Item i ->
-        maybe_disabled c i.pstr_loc []
-        @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx i)
+        maybe_disabled c i.pstr_loc [] @@ fun c ->
+        fmt_structure_item c ~last (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c d
   in
   let fmt_grp ~first:_ ~last:last_grp itms =

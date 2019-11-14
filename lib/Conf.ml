@@ -2165,8 +2165,7 @@ let validate () =
        be removed in OCamlFormat v1.0." ;
   match
     let open Result in
-    validate_action ()
-    >>= fun action ->
+    validate_action () >>= fun action ->
     validate_inputs () >>= fun inputs -> make_action action inputs
   with
   | Error e -> `Error (false, e)

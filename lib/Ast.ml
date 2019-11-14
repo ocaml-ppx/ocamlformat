@@ -1786,10 +1786,8 @@ end = struct
       binary operators, otherwise returns [None] if [ctx] has no precedence
       or [Some None] if [ctx] does but [ast] does not. *)
   let ambig_prec ({ast; _} as xast) =
-    prec_ctx xast
-    >>| fun (prec_ctx, which_child) ->
-    prec_ast ast
-    >>| fun prec_ast ->
+    prec_ctx xast >>| fun (prec_ctx, which_child) ->
+    prec_ast ast >>| fun prec_ast ->
     let cmp = Poly.compare prec_ctx prec_ast in
     if cmp < 0 then (* ast higher precedence than context: no parens *)
       false
