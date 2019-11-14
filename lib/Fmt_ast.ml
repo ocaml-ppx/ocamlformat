@@ -2788,11 +2788,29 @@ and fmt_cases c ctx cs =
       ~finish:(fun acc -> Some acc)
   in
   let max_len = fold_pattern_len ~f:max cs in
+  let level = match c.conf.break_cases with `Nested -> 2 | _ -> 3 in
   list_fl cs (fun ~first ~last case ->
       let pattern_len = pattern_len case in
-      fmt_case c ctx ~first ~last ~max_len ~pattern_len case)
+      let padding =
+        let xlhs = sub_pat ~ctx case.pc_lhs in
+        let add_padding =
+          c.conf.align_cases && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc)
+        in
+        let open Option in
+        max_len
+        >>= fun max_len ->
+        pattern_len
+        >>= fun pattern_len ->
+        let pad = String.make (max_len - pattern_len) ' ' in
+        some_if add_padding
+          (fmt_or_k
+             Poly.(c.conf.break_cases = `All)
+             (str pad)
+             (fits_breaks ~level "" pad))
+      in
+      fmt_case c ctx ~first ~last ~padding case)
 
-and fmt_case c ctx ~first ~last ~max_len ~pattern_len case =
+and fmt_case c ctx ~first ~last ~padding case =
   let {pc_lhs; pc_guard; pc_rhs} = case in
   let xrhs = sub_exp ~ctx pc_rhs in
   let indent =
@@ -2827,26 +2845,13 @@ and fmt_case c ctx ~first ~last ~max_len ~pattern_len case =
       (fmt "@;<1000 0>")
   in
   let indent = if align_nested_match then 0 else indent in
-  let fmt_padding =
-    let level = match c.conf.break_cases with `Nested -> 2 | _ -> 3 in
-    fmt_if_k
-      (c.conf.align_cases && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc))
-      ( match (max_len, pattern_len) with
-      | Some max_len, Some len ->
-          let pad = String.make (max_len - len) ' ' in
-          fmt_or_k
-            Poly.(c.conf.break_cases = `All)
-            (str pad)
-            (fits_breaks ~level "" pad)
-      | _ -> noop )
-  in
   let p = Params.get_cases c.conf ~first ~indent ~parens_here in
   p.leading_space $ leading_cmt
   $ p.box_all
       ( p.box_pattern_arrow
           ( hvbox 0
               ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
-              $ fmt_padding
+              $ fmt_opt padding
               $ opt pc_guard (fun g ->
                     fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g))
               )
