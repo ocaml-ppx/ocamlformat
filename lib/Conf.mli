@@ -100,7 +100,7 @@ type action =
       (** Check whether the input files already are formatted. *)
   | Print_config of t  (** Print the configuration and exit. *)
 
-val action : action
+val action : unit -> action
 (** Formatting action: input type and source, and output destination. *)
 
 val debug : bool

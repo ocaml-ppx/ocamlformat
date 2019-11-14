@@ -2172,7 +2172,7 @@ let validate () =
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
 
-let action = parse info validate
+let action () = parse info validate
 
 let debug = !debug
 
