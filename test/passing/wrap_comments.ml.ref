@@ -82,7 +82,40 @@ let _ =
     (* first line
 
        second line
-
-
     *)
   ; "g" ]
+
+let _ =
+  let _ =
+    (* This is indented 7
+       This 0 *)
+    0
+  in
+  0
+
+let _ =
+  (*no space before
+    no space after*)
+  0
+
+let _ =
+  (*no space before
+    just newline after
+  *)
+  0
+
+let _ =
+  (* Optimal 5-element sorting network:
+
+     {v
+        1--o-----o-----o--------------1
+           |     |     |
+        2--o-----|--o--|-----o--o-----2
+                 |  |  |     |  |
+        3--------o--o--|--o--|--o-----3
+                       |  |  |
+        4-----o--------o--o--|-----o--4
+              |              |     |
+        5-----o--------------o-----o--5
+      v} *)
+  ()
