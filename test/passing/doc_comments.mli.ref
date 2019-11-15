@@ -406,3 +406,6 @@ end
 
 (** foooooooooooooooooooooooooooooooooooooooooooooooooo foooooooooooo {b eee
     \+ eee eee} *)
+
+(** foooooooooooooooooooooooooooooooooooooooooooooooooo foooooooooooooooo {b
+    \+ eee + eee eee} *)
