@@ -1,22 +1,24 @@
 (rule
  (targets Version.ml)
  (deps (universe))
- (action (run ocaml %{dep:../tools/gen_version.mlt} Version.ml))
+ (action
+  (run ocaml %{dep:../tools/gen_version.mlt} Version.ml))
  (mode fallback))
 
 (rule
- (copy#
-  compat/%{read:compat-file}
-  compat.ml))
+ (copy# compat/%{read:compat-file} compat.ml))
 
 (rule
  (targets compat-file)
- (action  (run %{ocaml} %{dep:../tools/gen_compat.ml} %{ocaml_version})))
+ (action
+  (run %{ocaml} %{dep:../tools/gen_compat.ml} %{ocaml_version})))
 
 (ocamllex Literal_lexer)
 
 (library
  (name ocamlformat_lib)
- (flags (:standard -open Import))
+ (flags
+  (:standard -open Import))
  ;;INSERT_BISECT_HERE;;
- (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser re uuseg uuseg.string))
+ (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser re
+   uuseg uuseg.string))
