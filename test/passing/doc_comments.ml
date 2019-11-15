@@ -257,11 +257,11 @@ exception A of int
 module A = struct
   module B = struct
     (** It does not try to saturate
-        (2) A = B + C  /\  B = D + E  =>  A = C + D + E
+        (1a) A = B + C  /\  B = D + E  =>  A = C + D + E
         Nor combine more than 2 equations
-        (3) A = B + C  /\  B = D + E  /\  F = C + D + E  =>  A = F
+        (1b) A = B + C  /\  B = D + E  /\  F = C + D + E  =>  A = F
 
-        xxxxxxxxxxxxxxxxxxxxxxxxxxx
+        xxxxxxxxxxxxxxxxxxxxxxxxxxxx
         (2) A = B + C  /\  B = D + E  =>  A = C + D - E
     *)
     let a b = ()
