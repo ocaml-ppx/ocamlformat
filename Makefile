@@ -36,7 +36,7 @@ SRCS=$(shell \find bin lib tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -nam
 
 .PHONY: fmt
 fmt:
-	dune exec -- ocamlformat -i $(SRCS)
+	dune build @bin/fmt @lib/fmt @tools/fmt
 
 .PHONY: test fixpoint regtests regtests-promote test-reason
 test: fixpoint regtests
