@@ -127,8 +127,8 @@ let rec fmt_inline_elements elements =
     | tl -> wrap opn cls (hd $ fmt_inline_elements (space_elt :: tl))
   in
   let rec aux space = function
-    | [] -> space
-    | `Space _ :: t -> aux (fmt "@ ") t
+    | [] -> fmt_opt space
+    | `Space _ :: t -> aux (Some (fmt "@ ")) t
     | `Word w :: t ->
         (* Escape lines starting with '+' or '-' *)
         let escape =
@@ -136,20 +136,20 @@ let rec fmt_inline_elements elements =
             "\\"
           else ""
         in
-        cbreak ~fits:("", 1, "") ~breaks:("", 0, escape)
-        $ str_normalized w $ aux noop t
+        opt space (fun _ -> cbreak ~fits:("", 1, "") ~breaks:("", 0, escape))
+        $ str_normalized w $ aux None t
     | `Code_span s :: t ->
         let s = escape_brackets s in
-        space
+        fmt_opt space
         $ hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
-        $ aux noop t
+        $ aux None t
     | `Raw_markup (lang, s) :: t ->
         let lang =
           match lang with
           | Some l -> str_normalized l $ str ":"
           | None -> noop
         in
-        space $ wrap "{%%" "%%}" (lang $ str s) $ aux noop t
+        fmt_opt space $ wrap "{%%" "%%}" (lang $ str s) $ aux None t
     | `Styled (style, elems) :: t ->
         let s =
           match style with
@@ -159,17 +159,21 @@ let rec fmt_inline_elements elements =
           | `Superscript -> "^"
           | `Subscript -> "_"
         in
-        space
+        fmt_opt space
         $ wrap_elements "{" "}" ~always_wrap:true (str_normalized s) elems
-        $ aux noop t
+        $ aux None t
     | `Reference (_kind, rf, txt) :: t ->
         let rf = wrap "{!" "}" (fmt_reference rf) in
-        space $ wrap_elements "{" "}" ~always_wrap:false rf txt $ aux noop t
+        fmt_opt space
+        $ wrap_elements "{" "}" ~always_wrap:false rf txt
+        $ aux None t
     | `Link (url, txt) :: t ->
         let url = wrap "{:" "}" (str_normalized url) in
-        space $ wrap_elements "{" "}" ~always_wrap:false url txt $ aux noop t
+        fmt_opt space
+        $ wrap_elements "{" "}" ~always_wrap:false url txt
+        $ aux None t
   in
-  aux noop (List.map elements ~f:(ign_loc ~f:Fn.id))
+  aux None (List.map elements ~f:(ign_loc ~f:Fn.id))
 
 and fmt_nestable_block_element c = function
   | `Paragraph elems -> fmt_inline_elements elems
