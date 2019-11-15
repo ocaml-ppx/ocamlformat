@@ -32,17 +32,12 @@ ocamlformat-diff:
 clean:
 	dune clean
 
-SRCS=$(shell \find bin lib tools -name '[^.]*.ml' -or -name '[^.]*.mli' -or -name '[^.]*.mlt')
-
 .PHONY: fmt
 fmt:
 	dune build @bin/fmt @lib/fmt @tools/fmt
 
-.PHONY: test fixpoint regtests regtests-promote test-reason
-test: fixpoint regtests
-
-fixpoint:
-	dune exec -- ocamlformat -n 1 -i $(SRCS)
+.PHONY: test regtests regtests-promote test-reason
+test: fmt regtests
 
 regtests:
 	dune runtest
