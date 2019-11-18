@@ -21,6 +21,9 @@ val wrap_exp :
   -> Fmt.t
   -> Fmt.t
 
+val get_or_pattern_sep :
+  ?force_break:bool -> ?space:bool -> Conf.t -> ctx:Ast.t -> Fmt.t
+
 type cases =
   { leading_space: Fmt.t
   ; bar: Fmt.t

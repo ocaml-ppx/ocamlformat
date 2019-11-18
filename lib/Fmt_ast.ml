@@ -1003,26 +1003,6 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           match i.[0] with '-' | '+' -> true | _ -> false )
         | _ -> false
       in
-      let pro0 =
-        fmt_opt pro
-        $ fits_breaks
-            (if parens then "(" else "")
-            (if nested then "" else "( ")
-      in
-      let proI ?(space = false) () =
-        match ctx0 with
-        | Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
-          when Poly.(c.conf.break_cases <> `Nested) -> (
-            fmt_if_k
-              Poly.(c.conf.break_cases = `All)
-              (break_unless_newline 1000 0)
-            $
-            match c.conf.indicate_nested_or_patterns with
-            | `Space when space -> or_newline "| " " | "
-            | `Space -> or_newline "| " " |"
-            | `Unsafe_no -> or_newline "| " "| " )
-        | _ -> break_unless_newline 1 0 $ str "| "
-      in
       let is_simple {ppat_desc; _} =
         match ppat_desc with
         | Ppat_any | Ppat_constant _ | Ppat_var _
@@ -1036,28 +1016,36 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         || (not (is_simple p1))
         || not (is_simple p2)
       in
+      let open_box =
+        match c.conf.break_cases with
+        | `Fit_or_vertical -> open_hvbox
+        | `Fit | `Nested | `Toplevel | `All -> open_hovbox
+      in
       hvbox 0
         ( list_fl (List.group xpats ~break)
             (fun ~first:first_grp ~last:_ xpat_grp ->
               list_fl xpat_grp (fun ~first ~last xpat ->
-                  let open_box =
-                    if Poly.(c.conf.break_cases = `Fit_or_vertical) then
-                      open_hvbox
-                    else open_hovbox
-                  in
-                  let pro =
-                    if first_grp && first then pro0 $ open_box (-2)
-                    else if first then proI () $ open_box (-2)
-                    else proI ~space:(space xpat.ast) ()
-                  in
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
+                  let loc = xpat.ast.ppat_loc in
+                  let force_break = Cmts.has_before c.cmts loc in
                   let leading_cmt =
-                    let loc = xpat.ast.ppat_loc in
-                    if Cmts.has_before c.cmts loc then
-                      let loc_before = Cmts.fmt_before c loc in
-                      fmt "@;<1000 0>" $ loc_before
-                    else noop
+                    Cmts.fmt_before ~pro:(Fmt.break 1000 0) ~adj:noop c loc
+                      ~eol:noop
+                  in
+                  let pro =
+                    if first_grp && first then
+                      fmt_opt pro
+                      $ fits_breaks
+                          (if parens then "(" else "")
+                          (if nested then "" else "( ")
+                      $ open_box (-2)
+                    else if first then
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~force_break
+                      $ open_box (-2)
+                    else
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~force_break
+                        ~space:(space xpat.ast)
                   in
                   leading_cmt $ fmt_pattern c ~pro xpat
                   $ fmt_if_k last close_box))
@@ -2799,78 +2787,84 @@ and fmt_cases c ctx cs =
         | None -> Stop None)
       ~finish:(fun acc -> Some acc)
   in
-  let max_len_name = fold_pattern_len ~f:max cs in
-  list_fl cs (fun ~first ~last ({pc_lhs; pc_guard; pc_rhs} as case) ->
-      let xrhs = sub_exp ~ctx pc_rhs in
-      let indent =
-        match
-          (c.conf.cases_matching_exp_indent, (ctx, pc_rhs.pexp_desc))
-        with
-        | ( `Compact
-          , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
-            , (Pexp_match _ | Pexp_try _) ) ) ->
-            2
-        | _, _ -> c.conf.cases_exp_indent
+  let max_len = fold_pattern_len ~f:max cs in
+  let level = match c.conf.break_cases with `Nested -> 2 | _ -> 3 in
+  list_fl cs (fun ~first ~last case ->
+      let padding =
+        let xlhs = sub_pat ~ctx case.pc_lhs in
+        let add_padding =
+          c.conf.align_cases && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc)
+        in
+        match max_len with
+        | Some max_len when add_padding -> (
+          match pattern_len case with
+          | Some pattern_len ->
+              let pad = String.make (max_len - pattern_len) ' ' in
+              Some
+                (fmt_or_k
+                   Poly.(c.conf.break_cases = `All)
+                   (str pad)
+                   (fits_breaks ~level "" pad))
+          | _ -> None )
+        | _ -> None
       in
-      let align_nested_match =
-        match (pc_rhs.pexp_desc, c.conf.nested_match) with
-        | (Pexp_match _ | Pexp_try _), `Align -> last
-        | _ -> false
-      in
-      let parens_here, parens_for_exp =
-        if align_nested_match then (false, Some false)
-        else if c.conf.leading_nested_match_parens then (false, None)
-        else (parenze_exp xrhs, Some false)
-      in
-      (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
-      let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in
-      let xlhs = sub_pat ~ctx pc_lhs in
-      let paren_lhs =
-        match pc_lhs.ppat_desc with
-        | Ppat_or _ when Option.is_some pc_guard -> true
-        | _ -> parenze_pat xlhs
-      in
-      let eol =
-        Option.some_if
-          (Cmts.has_before c.cmts pc_rhs.pexp_loc)
-          (fmt "@;<1000 0>")
-      in
-      let indent = if align_nested_match then 0 else indent in
-      let fmt_padding =
-        let level = match c.conf.break_cases with `Nested -> 2 | _ -> 3 in
-        fmt_if_k
-          ( c.conf.align_cases
-          && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc) )
-          ( match (max_len_name, pattern_len case) with
-          | Some max_len, Some len ->
-              let pad = String.make (max_len - len) ' ' in
-              fmt_or_k
-                Poly.(c.conf.break_cases = `All)
-                (str pad)
-                (fits_breaks ~level "" pad)
-          | _ -> noop )
-      in
-      Params.get_cases c.conf ~first ~indent ~parens_here
-      |> fun (p : Params.cases) ->
-      p.leading_space $ leading_cmt
-      $ p.box_all
-          ( p.box_pattern_arrow
-              ( hvbox 0
-                  ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
-                  $ fmt_padding
-                  $ opt pc_guard (fun g ->
-                        fmt "@;<1 2>when "
-                        $ fmt_expression c (sub_exp ~ctx g)) )
-              $ p.break_before_arrow $ str "->" $ p.break_after_arrow
-              $ fmt_if parens_here " (" )
-          $ p.break_after_opening_paren
-          $ hovbox 0
-              ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
-              $ fmt_if parens_here
-                  ( match c.conf.indicate_multiline_delimiters with
-                  | `Space -> "@ )"
-                  | `No -> "@,)"
-                  | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) ))
+      fmt_case c ctx ~first ~last ~padding case)
+
+and fmt_case c ctx ~first ~last ~padding case =
+  let {pc_lhs; pc_guard; pc_rhs} = case in
+  let xrhs = sub_exp ~ctx pc_rhs in
+  let indent =
+    match (c.conf.cases_matching_exp_indent, (ctx, pc_rhs.pexp_desc)) with
+    | ( `Compact
+      , ( Exp {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
+        , (Pexp_match _ | Pexp_try _) ) ) ->
+        2
+    | _, _ -> c.conf.cases_exp_indent
+  in
+  let align_nested_match =
+    match (pc_rhs.pexp_desc, c.conf.nested_match) with
+    | (Pexp_match _ | Pexp_try _), `Align -> last
+    | _ -> false
+  in
+  let parens_here, parens_for_exp =
+    if align_nested_match then (false, Some false)
+    else if c.conf.leading_nested_match_parens then (false, None)
+    else (parenze_exp xrhs, Some false)
+  in
+  (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)
+  let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in
+  let xlhs = sub_pat ~ctx pc_lhs in
+  let paren_lhs =
+    match pc_lhs.ppat_desc with
+    | Ppat_or _ when Option.is_some pc_guard -> true
+    | _ -> parenze_pat xlhs
+  in
+  let eol =
+    Option.some_if
+      (Cmts.has_before c.cmts pc_rhs.pexp_loc)
+      (fmt "@;<1000 0>")
+  in
+  let indent = if align_nested_match then 0 else indent in
+  let p = Params.get_cases c.conf ~first ~indent ~parens_here in
+  p.leading_space $ leading_cmt
+  $ p.box_all
+      ( p.box_pattern_arrow
+          ( hvbox 0
+              ( fmt_pattern c ~pro:p.bar ~parens:paren_lhs xlhs
+              $ fmt_opt padding
+              $ opt pc_guard (fun g ->
+                    fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g))
+              )
+          $ p.break_before_arrow $ str "->" $ p.break_after_arrow
+          $ fmt_if parens_here " (" )
+      $ p.break_after_opening_paren
+      $ hovbox 0
+          ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
+          $ fmt_if parens_here
+              ( match c.conf.indicate_multiline_delimiters with
+              | `Space -> "@ )"
+              | `No -> "@,)"
+              | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
 
 and fmt_value_description c ctx vd =
   let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes; pval_loc}
