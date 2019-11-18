@@ -43,8 +43,6 @@ let pp_color_k color_code k fs =
 
 (** Break hints and format strings --------------------------------------*)
 
-let cbreak ~fits ~breaks fs = Format.pp_print_custom_break fs ~fits ~breaks
-
 let break n o fs = Format.pp_print_break fs n o
 
 let cbreak ~fits ~breaks fs = Format.pp_print_custom_break fs ~fits ~breaks
