@@ -285,7 +285,8 @@ let fmt_constant c ~loc ?epi const =
           let fmt_word ~prev:_ curr ~next =
             match next with
             | Some "" -> str curr $ str " "
-            | Some _ -> str curr $ pre_break 1 " \\" 0
+            | Some _ ->
+                str curr $ cbreak ~fits:("", 1, "") ~breaks:(" \\", 0, "")
             | _ -> str curr
           in
           hovbox_if (List.length words > 1) 0 (list_pn words fmt_word $ epi)
@@ -300,8 +301,10 @@ let fmt_constant c ~loc ?epi const =
             if String.is_empty next then fmt_if_k print_ln (str "\\n")
             else if Char.equal next.[0] ' ' then
               fmt_if_k print_ln (str "\\n")
-              $ pre_break 0 "\\" (-1) $ if_newline "\\"
-            else fmt_if_k print_ln (str "\\n") $ pre_break 0 "\\" 0
+              $ cbreak ~fits:("", 0, "") ~breaks:("\\", -1, "\\")
+            else
+              fmt_if_k print_ln (str "\\n")
+              $ cbreak ~fits:("", 0, "") ~breaks:("\\", 0, "")
           in
           let epi = match next with Some _ -> noop | None -> epi in
           fmt_words ~epi mode curr $ opt next fmt_next

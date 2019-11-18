@@ -15,6 +15,7 @@
 
 #### Internal
 
+  + Replace pre_break and if_newline by cbreak (#1090) (Guillaume Petiot)
   + Use opt and fmt_opt to simplify formatting (#1150) (Guillaume Petiot)
   + Replace inplace formatting by dune staging for make fmt (#1151) (Guillaume Petiot)
   + Refactor code that interprets CLI options (#1127) (Jules Aguillon)

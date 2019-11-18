@@ -43,6 +43,8 @@ let pp_color_k color_code k fs =
 
 (** Break hints and format strings --------------------------------------*)
 
+let cbreak ~fits ~breaks fs = Format.pp_print_custom_break fs ~fits ~breaks
+
 let break n o fs = Format.pp_print_break fs n o
 
 let noop (_ : Format.formatter) = ()
@@ -107,11 +109,6 @@ let if_newline s fs = Format.pp_print_string_if_newline fs s
 let break_unless_newline n o fs = Format.pp_print_or_newline fs n o "" ""
 
 let or_newline fits breaks fs = Format.pp_print_or_newline fs 1 0 fits breaks
-
-(** Conditional on immediately preceding a line break -------------------*)
-
-let pre_break n s o fs =
-  Format.pp_print_custom_break fs ~fits:("", n, "") ~breaks:(s, o, "")
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 

@@ -438,3 +438,7 @@ let fooooooooooooooooo =
 
 (** {e foooooooo oooooooooo ooooooooo ooooooooo} {{!some ref} fooooooooooooo
     oooooooo oooooooooo} {b fooooooooooooo oooooooooooo oooooo ooooooo} *)
+
+(** foooooooooooooooooooooooooooooooooooooooooooooooooo foooooooooooo {b eee + eee eee} *)
+
+(** foooooooooooooooooooooooooooooooooooooooooooooooooo foooooooooooooooo {b + eee + eee eee} *)
