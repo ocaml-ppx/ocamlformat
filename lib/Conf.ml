@@ -1753,12 +1753,6 @@ let ocp_indent_janestreet_profile =
   ; ("align_ops", "true")
   ; ("align_params", "always") ]
 
-let root =
-  Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
-
-let enable_outside_detected_project =
-  !enable_outside_detected_project && Option.is_none root
-
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
@@ -1828,7 +1822,7 @@ let parse_line config ~from s =
     | name -> update ~config ~from ~name ~value:"true" )
   | _ -> Error (`Malformed s)
 
-let is_project_root dir =
+let is_project_root ~root dir =
   match root with
   | Some root -> Fpath.equal dir root
   | None ->
@@ -1843,11 +1837,13 @@ let dot_ocamlformat_ignore = ".ocamlformat-ignore"
 
 let dot_ocamlformat_enable = ".ocamlformat-enable"
 
-let rec collect_files ~segs ~ignores ~enables ~files =
+let rec collect_files ~enable_outside_detected_project ~root ~segs ~ignores
+    ~enables ~files =
   match segs with
   | [] | [""] -> (ignores, enables, files, None)
   | "" :: upper_segs ->
-      collect_files ~segs:upper_segs ~ignores ~enables ~files
+      collect_files ~enable_outside_detected_project ~root ~segs:upper_segs
+        ~ignores ~enables ~files
   | _ :: upper_segs ->
       let sep = Fpath.dir_sep in
       let dir = String.concat ~sep (List.rev segs) |> Fpath.v in
@@ -1867,9 +1863,11 @@ let rec collect_files ~segs ~ignores ~enables ~files =
         let f_2 = Fpath.(dir / dot_ocp_indent) in
         if Fpath.exists f_2 then `Ocp_indent f_2 :: files else files
       in
-      if is_project_root dir && not enable_outside_detected_project then
-        (ignores, enables, files, Some dir)
-      else collect_files ~segs:upper_segs ~ignores ~enables ~files
+      if is_project_root ~root dir && not enable_outside_detected_project
+      then (ignores, enables, files, Some dir)
+      else
+        collect_files ~enable_outside_detected_project ~root ~segs:upper_segs
+          ~ignores ~enables ~files
 
 let read_config_file conf filename_kind =
   match filename_kind with
@@ -1985,13 +1983,14 @@ let is_in_listing_file ~listings ~filename =
         warn "ignoring %a, %s" Fpath.pp listing_file err ;
         None)
 
-let build_config ~file ~is_stdin =
+let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let dir = Fpath.(file_abs |> split_base |> fst) in
   let segs = Fpath.segs dir |> List.rev in
   let ignores, enables, files, project_root =
-    collect_files ~segs ~ignores:[] ~enables:[] ~files:[]
+    collect_files ~enable_outside_detected_project ~root ~segs ~ignores:[]
+      ~enables:[] ~files:[]
   in
   let files =
     match (xdg_config, enable_outside_detected_project) with
@@ -2036,9 +2035,10 @@ let build_config ~file ~is_stdin =
         {conf with disable= not conf.disable}
     | None -> conf
 
-let build_config ~file ~is_stdin =
+let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let conf, warn_now =
-    collect_warnings (fun () -> build_config ~file ~is_stdin)
+    collect_warnings (fun () ->
+        build_config ~enable_outside_detected_project ~root ~file ~is_stdin)
   in
   if not conf.quiet then warn_now () ;
   conf
@@ -2107,14 +2107,21 @@ type action =
   | Check of [`Impl | `Intf] input list
   | Print_config of t
 
-let make_action action inputs =
+let make_action ~enable_outside_detected_project ~root action inputs =
   let make_file ?(with_conf = fun c -> c) ?name kind file =
-    let conf = with_conf (build_config ~file ~is_stdin:false) in
+    let conf =
+      with_conf
+        (build_config ~enable_outside_detected_project ~root ~file
+           ~is_stdin:false)
+    in
     let name = Option.value ~default:file name in
     {kind; name; file= File file; conf}
   in
   let make_stdin ?(name = "<standard input>") kind =
-    let conf = build_config ~file:name ~is_stdin:false in
+    let conf =
+      build_config ~enable_outside_detected_project ~root ~file:name
+        ~is_stdin:false
+    in
     {kind; name; file= Stdin; conf}
   in
   match (action, inputs) with
@@ -2128,7 +2135,9 @@ let make_action action inputs =
             let root = Option.value root ~default:(Fpath.cwd ()) in
             (Fpath.(root / dot_ocamlformat |> to_string), true)
       in
-      let conf = build_config ~file ~is_stdin in
+      let conf =
+        build_config ~enable_outside_detected_project ~root ~file ~is_stdin
+      in
       Ok (Print_config conf)
   | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
       Error "Must specify at least one input file, or `-` for stdin"
@@ -2159,6 +2168,12 @@ let make_action action inputs =
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
 let validate () =
+  let root =
+    Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
+  in
+  let enable_outside_detected_project =
+    !enable_outside_detected_project && Option.is_none root
+  in
   if !disable_outside_detected_project then
     warn
       "option `--disable-outside-detected-project` is deprecated and will \
@@ -2167,7 +2182,9 @@ let validate () =
     let open Result in
     validate_action ()
     >>= fun action ->
-    validate_inputs () >>= fun inputs -> make_action action inputs
+    validate_inputs ()
+    >>= fun inputs ->
+    make_action ~enable_outside_detected_project ~root action inputs
   with
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
