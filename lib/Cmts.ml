@@ -501,13 +501,16 @@ let unindent_lines ~opn_pos first_line tl_lines =
   String.drop_prefix first_line fl_spaces
   :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
 
-let fmt_multiline_cmt ?epi ~opn_pos first_line tl_lines =
+let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
   let open Fmt in
   let is_white_line s = String.for_all s ~f:Char.is_whitespace in
   let unindented = unindent_lines ~opn_pos first_line tl_lines in
   let fmt_line ~first ~last:_ s =
-    let sep = if is_white_line s then str "\n" else fmt "@;<1000 0>" in
-    fmt_if_k (not first) sep $ str (String.rstrip s)
+    let sep, sp =
+      if is_white_line s then (str "\n", noop)
+      else (fmt "@;<1000 0>", fmt_if starts_with_sp " ")
+    in
+    fmt_if_k (not first) sep $ sp $ str (String.rstrip s)
   in
   vbox 0 (list_fl unindented fmt_line $ fmt_opt epi)
 
@@ -525,14 +528,11 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   let fmt_unwrapped_cmt ({txt= s; loc} : Cmt.t) =
     let begins_line = Source.begins_line t.source loc ~ignore_spaces:false in
     let is_sp = function ' ' | '\t' -> true | _ -> false in
-    let starts_with_sp = String.length s > 0 && is_sp s.[0] in
     let epi =
       (* Preserve position of closing but strip empty lines at the end *)
       match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
       | Some i when Char.( = ) s.[i] '\n' ->
-          let off = if starts_with_sp then -3 else -2 in
-          break 1000 off
-          (* Break before closing *)
+          break 1000 (-2) (* Break before closing *)
       | Some i when i < String.length s - 1 ->
           str " " (* Preserve a space at the end *)
       | _ -> noop
@@ -542,8 +542,9 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
     | first_line :: (_ :: _ as tl)
       when (not begins_line) && not (String.is_empty first_line) ->
         (* Preserve the first level of indentation *)
-        fmt_if starts_with_sp " "
-        $ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi first_line tl
+        let starts_with_sp = is_sp first_line.[0] in
+        fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
+          first_line tl
     | _ -> str s
   in
   let fmt_non_code cmt =
