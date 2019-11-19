@@ -49,8 +49,8 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   Location.input_name := input_name ;
   if conf.Conf.disable then Ok source
   else
-    Translation_unit.format xunit (conf, opts) ?output_file ~input_name
-      ~source ~parsed
+    Translation_unit.format xunit ?output_file ~input_name ~source ~parsed
+      conf opts
 
 let to_output_file output_file data =
   match output_file with

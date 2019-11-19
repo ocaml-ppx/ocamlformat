@@ -16,7 +16,7 @@ open Parse_with_comments
 
 type 'a t =
   { init_cmts: Source.t -> 'a -> Cmt.t list -> Cmts.t
-  ; fmt: Source.t -> Cmts.t -> Conf.t * Conf.opts -> 'a -> Fmt.t
+  ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
@@ -240,10 +240,10 @@ let check_all_locations ~debug fmt cmts_t =
           "Warning: Some locations have not been considered\n%!" ;
         List.iter ~f:print (List.sort l ~compare:Location.compare)
 
-let check_margin ((conf, opts) : Conf.t * Conf.opts) ~filename ~fmted =
-  if opts.margin_check then
+let check_margin conf opts ~filename ~fmted =
+  if opts.Conf.margin_check then
     List.iteri (String.split_lines fmted) ~f:(fun i line ->
-        if String.length line > conf.margin then
+        if String.length line > conf.Conf.margin then
           Format.fprintf Format.err_formatter
             "Warning: %s:%i exceeds the margin\n%!" filename i)
 
@@ -258,7 +258,7 @@ let with_buffer_formatter ~buffer_size k =
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
-let format xunit ?output_file ~input_name ~source ~parsed (conf, opts) =
+let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   let dump_ast ~suffix ast =
     dump_ast ~debug:opts.Conf.debug ~input_name ?output_file ~suffix
       (fun fmt -> xunit.printast fmt ast)
@@ -268,8 +268,7 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf, opts) =
   in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~conf:((conf, opts) : Conf.t * Conf.opts) t ~source
-      =
+  let rec print_check ~i ~(conf : Conf.t) t ~source =
     let format ~box_debug =
       let open Fmt in
       let source_t = Source.create source in
@@ -282,7 +281,7 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf, opts) =
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (xunit.fmt source_t cmts_t (conf, opts) t.ast) )
+              (xunit.fmt ~debug:opts.debug source_t cmts_t conf t.ast) )
       in
       (contents, cmts_t)
     in
@@ -294,7 +293,7 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf, opts) =
     let conf = if opts.debug then conf else {conf with Conf.quiet= true} in
     if String.equal source fmted then (
       check_all_locations ~debug:opts.debug Format.err_formatter cmts_t ;
-      check_margin (conf, opts) ~fmted
+      check_margin conf opts ~fmted
         ~filename:(Option.value output_file ~default:input_name) ;
       Ok fmted )
     else
@@ -375,15 +374,14 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf, opts) =
             Error (Unstable {iteration= i; prev= source; next= fmted}) )
           else
             (* All good, continue *)
-            print_check ~i:(i + 1) ~conf:(conf, opts) t_new ~source:fmted
+            print_check ~i:(i + 1) ~conf t_new ~source:fmted
   in
-  try print_check ~i:1 ~conf:(conf, opts) parsed ~source with
+  try print_check ~i:1 ~conf parsed ~source with
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
-let parse_and_format xunit ?output_file ~input_name ~source
-    ((fmt_conf, _) as conf) =
+let parse_and_format xunit ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
-  match parse xunit.parse fmt_conf ~source with
+  match parse xunit.parse conf ~source with
   | exception exn -> Error (Invalid_source {exn})
-  | parsed -> format xunit conf ?output_file ~input_name ~source ~parsed
+  | parsed -> format xunit ?output_file ~input_name ~source ~parsed conf opts

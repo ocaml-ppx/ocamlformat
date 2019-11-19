@@ -56,7 +56,7 @@ let format ?output_file ~kind ~input_name ~source conf opts =
       | `Impl -> Translation_unit.parse_and_format impl
       | `Intf -> Translation_unit.parse_and_format intf
     in
-    f ?output_file ~input_name ~source (conf, opts)
+    f ?output_file ~input_name ~source conf opts
 
 let to_output_file output_file data =
   match output_file with

@@ -16,13 +16,13 @@ open Migrate_ast
 open Parsetree
 
 val fmt_signature :
-  Source.t -> Cmts.t -> Conf.t * Conf.opts -> signature -> Fmt.t
+  debug:bool -> Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
 (** Format a signature. *)
 
 val fmt_structure :
-  Source.t -> Cmts.t -> Conf.t * Conf.opts -> structure -> Fmt.t
+  debug:bool -> Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
 (** Format a structure. *)
 
 val fmt_toplevel :
-  Source.t -> Cmts.t -> Conf.t * Conf.opts -> toplevel_phrase list -> Fmt.t
+  debug:bool -> Source.t -> Cmts.t -> Conf.t -> toplevel_phrase list -> Fmt.t
 (** Format a toplevel structure. *)

@@ -21,7 +21,7 @@ open Fmt
 
 type c =
   { conf: Conf.t
-  ; opts: Conf.opts
+  ; debug: bool
   ; source: Source.t
   ; cmts: Cmts.t
   ; fmt_code: Conf.t -> string -> (Fmt.t, unit) Result.t }
@@ -67,7 +67,7 @@ let protect =
   let first = ref true in
   fun c ast pp ->
     Fmt.protect pp ~on_error:(fun exc ->
-        if !first && c.opts.debug then (
+        if !first && c.debug then (
           let bt = Caml.Printexc.get_backtrace () in
           Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
           first := false ) ;
@@ -4323,29 +4323,33 @@ let fmt_toplevel c ctx itms =
 
 (** Entry points *)
 
-let fmt_file ~ctx ~f ~fmt_code source cmts (conf, opts) itms =
-  let fmt_code = fmt_code ~opts in
-  let c = {source; cmts; conf; opts; fmt_code} in
+let fmt_file ~ctx ~f ~fmt_code ~debug source cmts conf itms =
+  let c = {source; cmts; conf; debug; fmt_code} in
   match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
 
-let rec fmt_code ~opts conf s =
-  match
-    Parse_with_comments.parse Migrate_ast.Parse.implementation conf ~source:s
-  with
-  | {ast; comments; _} ->
-      let source = Source.create s in
-      let cmts = Cmts.init_impl source ast comments in
-      let ctx = Pld (PStr ast) in
-      Ok
-        (fmt_file ~f:fmt_structure ~ctx source cmts (conf, opts) ast
-           ~fmt_code)
-  | exception _ -> Error ()
+let fmt_code ~debug =
+  let rec fmt_code conf s =
+    match
+      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
+        ~source:s
+    with
+    | {ast; comments; _} ->
+        let source = Source.create s in
+        let cmts = Cmts.init_impl source ast comments in
+        let ctx = Pld (PStr ast) in
+        Ok
+          (fmt_file ~f:fmt_structure ~ctx ~debug source cmts conf ast
+             ~fmt_code)
+    | exception _ -> Error ()
+  in
+  fmt_code
 
-let entry_point ~f ~ctx source cmts ((fmt_conf', _) as conf) l =
+let entry_point ~f ~ctx ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
-  Ast.init fmt_conf' ;
-  fmt_file ~f ~ctx ~fmt_code source cmts conf l
+  Ast.init conf ;
+  let fmt_code = fmt_code ~debug in
+  fmt_file ~f ~ctx ~fmt_code ~debug source cmts conf l
 
 let fmt_signature = entry_point ~f:fmt_signature ~ctx:Top
 
