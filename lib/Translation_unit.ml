@@ -70,25 +70,15 @@ let with_file input_name output_file suf ext f =
   Out_channel.with_file tmp ~f ;
   tmp
 
-let dump_ast ~debug ~input_name ?output_file ~suffix fmt =
-  if debug then
-    let ext = ".ast" in
-    let file =
-      with_file input_name output_file suffix ext (fun oc ->
-          fmt (Format.formatter_of_out_channel oc))
-    in
-    Some file
-  else None
+let dump_ast ~input_name ?output_file ~suffix fmt =
+  let ext = ".ast" in
+  with_file input_name output_file suffix ext (fun oc ->
+      fmt (Format.formatter_of_out_channel oc))
 
-let dump_formatted ~debug ~input_name ?output_file ~suffix fmted =
+let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
-  if debug then
-    let file =
-      with_file input_name output_file suffix ext (fun oc ->
-          Out_channel.output_string oc fmted)
-    in
-    Some file
-  else None
+  with_file input_name output_file suffix ext (fun oc ->
+      Out_channel.output_string oc fmted)
 
 let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~check
     ~input_name error =
@@ -230,22 +220,20 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~check
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
           if debug then Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
 
-let check_all_locations ~debug fmt cmts_t =
-  if debug then
-    match Cmts.remaining_locs cmts_t with
-    | [] -> ()
-    | l ->
-        let print l = Format.fprintf fmt "%a\n%!" Location.print_loc l in
-        Format.fprintf fmt
-          "Warning: Some locations have not been considered\n%!" ;
-        List.iter ~f:print (List.sort l ~compare:Location.compare)
+let check_all_locations fmt cmts_t =
+  match Cmts.remaining_locs cmts_t with
+  | [] -> ()
+  | l ->
+      let print l = Format.fprintf fmt "%a\n%!" Location.print_loc l in
+      Format.fprintf fmt
+        "Warning: Some locations have not been considered\n%!" ;
+      List.iter ~f:print (List.sort l ~compare:Location.compare)
 
-let check_margin conf opts ~filename ~fmted =
-  if opts.Conf.margin_check then
-    List.iteri (String.split_lines fmted) ~f:(fun i line ->
-        if String.length line > conf.Conf.margin then
-          Format.fprintf Format.err_formatter
-            "Warning: %s:%i exceeds the margin\n%!" filename i)
+let check_margin conf ~filename ~fmted =
+  List.iteri (String.split_lines fmted) ~f:(fun i line ->
+      if String.length line > conf.Conf.margin then
+        Format.fprintf Format.err_formatter
+          "Warning: %s:%i exceeds the margin\n%!" filename i)
 
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k
@@ -260,11 +248,16 @@ let with_buffer_formatter ~buffer_size k =
 
 let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   let dump_ast ~suffix ast =
-    dump_ast ~debug:opts.Conf.debug ~input_name ?output_file ~suffix
-      (fun fmt -> xunit.printast fmt ast)
+    if opts.Conf.debug then
+      Some
+        (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
+             xunit.printast fmt ast))
+    else None
   in
-  let dump_formatted =
-    dump_formatted ~debug:opts.debug ~input_name ?output_file
+  let dump_formatted ~suffix fmted =
+    if opts.debug then
+      Some (dump_formatted ~input_name ?output_file ~suffix fmted)
+    else None
   in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
@@ -292,9 +285,10 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
     let fmted, cmts_t = format ~box_debug:false in
     let conf = if opts.debug then conf else {conf with Conf.quiet= true} in
     if String.equal source fmted then (
-      check_all_locations ~debug:opts.debug Format.err_formatter cmts_t ;
-      check_margin conf opts ~fmted
-        ~filename:(Option.value output_file ~default:input_name) ;
+      if opts.debug then check_all_locations Format.err_formatter cmts_t ;
+      if opts.Conf.margin_check then
+        check_margin conf ~fmted
+          ~filename:(Option.value output_file ~default:input_name) ;
       Ok fmted )
     else
       let exn_args () =
