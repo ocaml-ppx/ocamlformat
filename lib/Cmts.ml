@@ -17,7 +17,8 @@ open Asttypes
 open Parsetree
 
 type t =
-  { cmts_before: (Location.t, Cmt.t list) Hashtbl.t
+  { debug: bool
+  ; cmts_before: (Location.t, Cmt.t list) Hashtbl.t
   ; cmts_after: (Location.t, Cmt.t list) Hashtbl.t
   ; cmts_within: (Location.t, Cmt.t list) Hashtbl.t
   ; source: Source.t
@@ -109,7 +110,7 @@ end = struct
                    (not (List.is_empty children))
                    "@,{" " }" (dump_ tree children) )))
     in
-    fmt_if_k Conf.debug (set_margin 100000000 $ dump_ tree tree.roots)
+    set_margin 100000000 $ dump_ tree tree.roots
 end
 
 module Loc_tree = struct
@@ -306,7 +307,7 @@ let position_to_string = function
 let add_cmts t ?prev ?next tbl position loc cmts =
   if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
-    if Conf.debug then
+    if t.debug then
       List.iter cmtl ~f:(fun {Cmt.txt= cmt_txt; loc= cmt_loc} ->
           let string_between (l1 : Location.t) (l2 : Location.t) =
             match Source.string_between t.source l1.loc_end l2.loc_start with
@@ -359,7 +360,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
     | Some prev_loc ->
         add_cmts t ~prev:prev_loc t.cmts_after `After prev_loc cmts
     | None ->
-        if Conf.debug then
+        if t.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
               Format.eprintf "lost: %s@\n%!" txt) )
 
@@ -372,7 +373,7 @@ let relocate (t : t) ~src ~before ~after =
               Option.fold dst_data ~init:src_data
                 ~f:(fun src_data dst_data -> f src_data dst_data)))
     in
-    if Conf.debug then
+    if t.debug then
       Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
         Location.fmt before Location.fmt after ;
     let merge_and_sort x y =
@@ -383,15 +384,16 @@ let relocate (t : t) ~src ~before ~after =
     update_multi t.cmts_before src before ~f:merge_and_sort ;
     update_multi t.cmts_after src after ~f:merge_and_sort ;
     update_multi t.cmts_within src after ~f:merge_and_sort ;
-    if Conf.debug then (
+    if t.debug then (
       Hashtbl.remove t.remaining src ;
       Hashtbl.set t.remaining ~key:after ~data:() ;
       Hashtbl.set t.remaining ~key:before ~data:() ) )
 
 (** Initialize global state and place comments. *)
-let init map_ast source asts comments_n_docstrings =
+let init map_ast ?(debug = false) source asts comments_n_docstrings =
   let t =
-    { cmts_before= Hashtbl.create (module Location)
+    { debug
+    ; cmts_before= Hashtbl.create (module Location)
     ; cmts_after= Hashtbl.create (module Location)
     ; cmts_within= Hashtbl.create (module Location)
     ; source
@@ -399,18 +401,18 @@ let init map_ast source asts comments_n_docstrings =
     ; remove= true }
   in
   let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
-  if Conf.debug then (
+  if debug then (
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun {Cmt.txt; loc} ->
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts in
-    if Conf.debug then
+    if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
             Hashtbl.set t.remaining ~key:loc ~data:()) ;
-    if Conf.debug then (
+    if debug then (
       let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
       Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ;
@@ -576,7 +578,7 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   | _ -> fmt_non_code cmt
 
 let pop_if_debug t loc =
-  if Conf.debug && t.remove then Hashtbl.remove t.remaining loc
+  if t.debug && t.remove then Hashtbl.remove t.remaining loc
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
