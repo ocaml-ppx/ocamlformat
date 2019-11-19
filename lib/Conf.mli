@@ -103,7 +103,6 @@ type action =
 
 type opts =
   { debug: bool  (** Generate debugging output if true. *)
-  ; check: bool  (** Check whether the input files already are formatted. *)
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *) }
 (** Options changing the tool's behavior *)
