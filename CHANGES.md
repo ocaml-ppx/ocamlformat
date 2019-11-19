@@ -23,7 +23,7 @@
   + Refactor code that interprets CLI options (#1127, #1156) (Jules Aguillon)
   + Testing interactions between break-infix and break-infix-before-func (#1136) (Guillaume Petiot)
   + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
-  + Use an expect test for cli tests (#1126) (Etienne Millon)
+  + Remove the test generator for cli tests (#1126, #1157) (Etienne Millon)
   + Factor out a private library (#1134, #1148) (Etienne Millon)
   + Remove global reference `Cmts.remove` (#1142) (Etienne Millon)
   + Remove symbol strings in `Cmts` (#1146) (Etienne Millon)

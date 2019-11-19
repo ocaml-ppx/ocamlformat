@@ -1,0 +1,3 @@
+ocamlformat: ignoring "<standard input>" (syntax error)
+File "<standard input>", line 5, characters 0-0:
+Error: Syntax error
