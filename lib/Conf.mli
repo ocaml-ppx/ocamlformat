@@ -85,6 +85,7 @@ type t =
   ; type_decl_indent: int
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
+(** Formatting options *)
 
 type file = Stdin | File of string
 
@@ -100,17 +101,14 @@ type action =
       (** Check whether the input files already are formatted. *)
   | Print_config of t  (** Print the configuration and exit. *)
 
-val action : unit -> action
+type opts =
+  { debug: bool  (** Generate debugging output if true. *)
+  ; margin_check: bool
+        (** Check whether the formatted output exceeds the margin. *) }
+(** Options changing the tool's behavior *)
+
+val action : unit -> action * opts
 (** Formatting action: input type and source, and output destination. *)
-
-val debug : unit -> bool
-(** Generate debugging output if true. *)
-
-val check : unit -> bool
-(** Check whether the input files already are formatted. *)
-
-val margin_check : unit -> bool
-(** Check whether the formatted output exceeds the margin. *)
 
 val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute

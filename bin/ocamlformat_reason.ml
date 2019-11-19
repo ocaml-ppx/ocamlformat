@@ -45,19 +45,22 @@ let pack_of_kind = function
   | `Impl -> Pack {parse= Reason.input_bin_impl; xunit= impl}
   | `Intf -> Pack {parse= Reason.input_bin_intf; xunit= intf}
 
-let format xunit (c : Conf.t) ?output_file ~input_name ~source ~parsed =
+let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   Location.input_name := input_name ;
-  if c.disable then Ok source
+  if conf.Conf.disable then Ok source
   else
-    Translation_unit.format xunit c ?output_file ~input_name ~source ~parsed
+    Translation_unit.format xunit ?output_file ~input_name ~source ~parsed
+      conf opts
 
 let to_output_file output_file data =
   match output_file with
   | None -> Out_channel.output_string Out_channel.stdout data
   | Some output_file -> Out_channel.write_all output_file ~data
 
+let action, opts = Conf.action ()
+
 ;;
-match Conf.action () with
+match action with
 | Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
 | Check _ -> user_error "Cannot check Reason code with --check" []
 | In_out ({kind; file; name= input_name; conf}, output_file) -> (
@@ -69,11 +72,14 @@ match Conf.action () with
     in
     let source = try_read_original_source t.origin_filename in
     let parsed = t.ast_and_comment in
-    match format xunit conf ?output_file ~input_name ~source ~parsed with
+    match
+      format xunit ?output_file ~input_name ~source ~parsed conf opts
+    with
     | Ok s ->
         to_output_file output_file s ;
         Caml.exit 0
     | Error e ->
-        Translation_unit.print_error conf ~input_name e ;
+        Translation_unit.print_error ~debug:opts.debug ~check:false
+          ~quiet:conf.quiet ~input_name e ;
         Caml.exit 1 )
 | Print_config conf -> Conf.print_config conf ; Caml.exit 0
