@@ -61,7 +61,6 @@ val print_error :
      ?fmt:Format.formatter
   -> debug:bool
   -> quiet:bool
-  -> check:bool
   -> input_name:string
   -> error
   -> unit

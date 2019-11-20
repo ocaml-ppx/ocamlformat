@@ -67,9 +67,9 @@ let source_from_file = function
   | Conf.Stdin -> In_channel.input_all In_channel.stdin
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
-let print_error ?(check = false) conf opts ~input_name e =
+let print_error conf opts ~input_name e =
   Translation_unit.print_error ~debug:opts.Conf.debug ~quiet:conf.Conf.quiet
-    ~check ~input_name e
+    ~input_name e
 
 let action, opts = Conf.action ()
 
@@ -114,7 +114,7 @@ match action with
       match format ~kind ~input_name ~source conf opts with
       | Ok res -> String.equal res source
       | Error e ->
-          print_error ~check:true conf opts ~input_name e ;
+          print_error conf opts ~input_name e ;
           false
     in
     let checked = List.for_all inputs ~f in

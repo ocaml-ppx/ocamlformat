@@ -79,7 +79,7 @@ match action with
         to_output_file output_file s ;
         Caml.exit 0
     | Error e ->
-        Translation_unit.print_error ~debug:opts.debug ~check:false
-          ~quiet:conf.quiet ~input_name e ;
+        Translation_unit.print_error ~debug:opts.debug ~quiet:conf.quiet
+          ~input_name e ;
         Caml.exit 1 )
 | Print_config conf -> Conf.print_config conf ; Caml.exit 0

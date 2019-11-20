@@ -80,8 +80,8 @@ let dump_formatted ~input_name ?output_file ~suffix fmted =
   with_file input_name output_file suffix ext (fun oc ->
       Out_channel.output_string oc fmted)
 
-let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~check
-    ~input_name error =
+let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
+    =
   let exe = Filename.basename Caml.Sys.argv.(0) in
   match error with
   | Invalid_source _ when quiet -> ()
@@ -130,21 +130,20 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~check
         ignore (Unix.system (Printf.sprintf "diff %S %S 1>&2" p n)) ;
         Unix.unlink p ;
         Unix.unlink n ) ;
-      if not check then
-        if iteration <= 1 then
-          Format.fprintf fmt
-            "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
-            input_name
-        else (
-          Format.fprintf fmt
-            "%s: Cannot process %S.\n\
-            \  Please report this bug at \
-             https://github.com/ocaml-ppx/ocamlformat/issues.\n\
-             %!"
-            exe input_name ;
-          Format.fprintf fmt
-            "  BUG: formatting did not stabilize after %i iterations.\n%!"
-            iteration )
+      if iteration <= 1 then
+        Format.fprintf fmt
+          "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
+          input_name
+      else (
+        Format.fprintf fmt
+          "%s: Cannot process %S.\n\
+          \  Please report this bug at \
+           https://github.com/ocaml-ppx/ocamlformat/issues.\n\
+           %!"
+          exe input_name ;
+        Format.fprintf fmt
+          "  BUG: formatting did not stabilize after %i iterations.\n%!"
+          iteration )
   | User_error msg -> Format.fprintf fmt "%s: %s.\n%!" exe msg
   | Ocamlformat_bug {exn} -> (
       Format.fprintf fmt
