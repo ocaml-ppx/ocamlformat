@@ -277,3 +277,23 @@
  (name runtest)
  (action
   (diff debug.expected debug.output)))
+
+(rule
+ (with-outputs-to
+  max_iter_1_ok.output
+  (run ocamlformat --max-iters=1 %{dep:sample/a.ml})))
+
+(alias
+ (name runtest)
+ (action
+  (diff max_iter_1_ok.expected max_iter_1_ok.output)))
+
+(rule
+ (with-outputs-to
+  max_iter_1_failing.output
+  (system "! %{bin:ocamlformat} --max-iters=1 %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff max_iter_1_failing.expected max_iter_1_failing.output)))
