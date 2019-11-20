@@ -1,0 +1,7 @@
+File main.ml
+Warning: Ocamlformat disabled because [--enable-outside-detected-project] is not set and no [.ocamlformat] was found within the project (root: ../outside_detected_project)
+(* The following code should not be formatted *)
+type t = {
+  foooooo : string;
+  baaaaar : Baaaaar.t;
+}
