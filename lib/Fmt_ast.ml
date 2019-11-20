@@ -3165,10 +3165,10 @@ and fmt_type_extension c ctx
            $ fmt_longident_loc c ptyext_path
            $ str " +="
            $ fmt_private_flag ptyext_private
-           $ fmt "@ "
-           $ hvbox 0
-               (if_newline "| " $ list ptyext_constructors "@ | " fmt_ctor)
-           )
+           $ list_fl ptyext_constructors (fun ~first ~last:_ x ->
+                 let bar_fits = if first then "" else "| " in
+                 cbreak ~fits:("", 1, bar_fits) ~breaks:("", 0, "| ")
+                 $ fmt_ctor x) )
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
 
 and fmt_type_exception ~pre c sep ctx
