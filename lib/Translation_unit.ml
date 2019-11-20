@@ -91,7 +91,7 @@ let dump_formatted ~input_name ?output_file ~suffix fmted =
   else None
 
 let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
-  let exe = Filename.basename Sys.argv.(0) in
+  let exe = Filename.basename Import.Sys.argv.(0) in
   match error with
   | Invalid_source _ when conf.Conf.quiet -> ()
   | Invalid_source {exn} -> (
