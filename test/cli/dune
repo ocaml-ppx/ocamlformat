@@ -1,5 +1,249 @@
-(test
- (name test_cli)
- (libraries unix stdio)
- (deps .ocamlformat (glob_files sample/*))
- (action (run %{test} %{bin:ocamlformat})))
+(rule
+ (with-outputs-to
+  err_default_several_file.output
+  (system "! %{bin:ocamlformat} %{dep:sample/a.ml} %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_default_several_file.expected err_default_several_file.output)))
+
+(rule
+ (with-outputs-to
+  err_inplace_and_check.output
+  (system "! %{bin:ocamlformat} --inplace --check %{dep:sample/a.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_inplace_and_check.expected err_inplace_and_check.output)))
+
+(rule
+ (with-outputs-to
+  err_inplace_and_output.output
+  (system "! %{bin:ocamlformat} --inplace --output o.ml %{dep:sample/a.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_inplace_and_output.expected err_inplace_and_output.output)))
+
+(rule
+ (with-outputs-to
+  err_no_arg.output
+  (system "! %{bin:ocamlformat}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_no_arg.expected err_no_arg.output)))
+
+(rule
+ (with-outputs-to
+  err_output_and_check.output
+  (system "! %{bin:ocamlformat} --output x.ml --check %{dep:sample/a.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_output_and_check.expected err_output_and_check.output)))
+
+(rule
+ (with-outputs-to
+  err_output_several_files.output
+  (system
+    "! %{bin:ocamlformat} --output x.ml %{dep:sample/a.ml} %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_output_several_files.expected err_output_several_files.output)))
+
+(rule
+ (with-outputs-to
+  err_stdin_and_file.output
+  (system "! %{bin:ocamlformat} %{dep:sample/a.ml} -")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_stdin_and_file.expected err_stdin_and_file.output)))
+
+(rule
+ (with-outputs-to
+  err_stdin_and_inplace.output
+  (system "! %{bin:ocamlformat} --inplace -")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_stdin_and_inplace.expected err_stdin_and_inplace.output)))
+
+(rule
+ (with-outputs-to
+  err_stdin_no_kind.output
+  (system "! %{bin:ocamlformat} -")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_stdin_no_kind.expected err_stdin_no_kind.output)))
+
+(rule
+ (with-outputs-to
+  stdin_and_impl.output
+  (system "%{bin:ocamlformat} --impl - < %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff stdin_and_impl.expected stdin_and_impl.output)))
+
+(rule
+ (with-outputs-to
+  stdin_and_intf.output
+  (system "%{bin:ocamlformat} --intf - < %{dep:sample/a.mli}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff stdin_and_intf.expected stdin_and_intf.output)))
+
+(rule
+ (with-outputs-to
+  stdin_and_name.output
+  (system "%{bin:ocamlformat} --name a.ml - < %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff stdin_and_name.expected stdin_and_name.output)))
+
+(rule
+ (with-outputs-to
+  name_unknown_ext.output
+  (system "%{bin:ocamlformat} --name b.cpp %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff name_unknown_ext.expected name_unknown_ext.output)))
+
+(rule
+ (with-outputs-to
+  err_stdin_name_unknown_ext.output
+  (system "! %{bin:ocamlformat} --name b.cpp - < %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_stdin_name_unknown_ext.expected err_stdin_name_unknown_ext.output)))
+
+(rule
+ (with-outputs-to
+  err_several_files_and_kind.output
+  (system
+    "! %{bin:ocamlformat} --impl --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_several_files_and_kind.expected err_several_files_and_kind.output)))
+
+(rule
+ (with-outputs-to
+  err_several_files_and_name.output
+  (system
+    "! %{bin:ocamlformat} --name foo.ml --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_several_files_and_name.expected err_several_files_and_name.output)))
+
+(rule
+ (with-outputs-to
+  err_several_files_and_kind_inplace.output
+  (system
+    "! %{bin:ocamlformat} --impl --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_several_files_and_kind_inplace.expected
+    err_several_files_and_kind_inplace.output)))
+
+(rule
+ (with-outputs-to
+  err_several_files_and_name_inplace.output
+  (system
+    "! %{bin:ocamlformat} --name foo.ml --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff err_several_files_and_name_inplace.expected
+    err_several_files_and_name_inplace.output)))
+
+(rule
+ (with-outputs-to
+  fmterr_file_and_name.output
+  (system "! %{bin:ocamlformat} --name foo.ml %{dep:sample/syntax_error.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff fmterr_file_and_name.expected fmterr_file_and_name.output)))
+
+(rule
+ (with-outputs-to
+  fmterr_stdin_and_name.output
+  (system
+    "! %{bin:ocamlformat} --name foo.ml - < %{dep:sample/syntax_error.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff fmterr_stdin_and_name.expected fmterr_stdin_and_name.output)))
+
+(rule
+ (with-outputs-to
+  fmterr_file_bad_kind.output
+  (system "! %{bin:ocamlformat} --impl %{dep:sample/a.mli}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff fmterr_file_bad_kind.expected fmterr_file_bad_kind.output)))
+
+(rule
+ (with-outputs-to
+  fmterr_stdin_bad_kind.output
+  (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.mli}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff fmterr_stdin_bad_kind.expected fmterr_stdin_bad_kind.output)))
+
+(rule
+ (with-outputs-to
+  fmterr_file_and_name_bad_kind.output
+  (system "! %{bin:ocamlformat} --name foo.ml %{dep:sample/a.mli}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff fmterr_file_and_name_bad_kind.expected
+    fmterr_file_and_name_bad_kind.output)))
+
+(rule
+ (with-outputs-to
+  fmterr_stdin_and_name_bad_kind.output
+  (system "! %{bin:ocamlformat} --name foo.ml - < %{dep:sample/a.mli}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff fmterr_stdin_and_name_bad_kind.expected
+    fmterr_stdin_and_name_bad_kind.output)))

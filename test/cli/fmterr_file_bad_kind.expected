@@ -1,0 +1,3 @@
+ocamlformat: ignoring "sample/a.mli" (syntax error)
+File "sample/a.mli", line 5, characters 0-0:
+Error: Syntax error

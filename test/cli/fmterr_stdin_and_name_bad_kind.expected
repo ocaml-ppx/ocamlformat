@@ -1,0 +1,3 @@
+ocamlformat: ignoring "foo.ml" (syntax error)
+File "foo.ml", line 5, characters 0-0:
+Error: Syntax error
