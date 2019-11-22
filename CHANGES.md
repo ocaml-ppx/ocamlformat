@@ -15,6 +15,7 @@
 
 #### Internal
 
+  + Work with base v0.13.0 (#1163) (Jules Aguillon)
   + Sanitize formatting of or-patterns and remove or_newline (#1145) (Guillaume Petiot)
   + Replace pre_break and if_newline by cbreak (#1090) (Guillaume Petiot)
   + Use opt and fmt_opt to simplify formatting (#1150) (Guillaume Petiot)
