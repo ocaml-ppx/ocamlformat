@@ -35,8 +35,6 @@ ALL_DIRS=$(DIRS) $(XDIRS)
 #       make MODE=<mode>
 MODE?=default
 
-REFMT=refmt
-
 OCAMLFORMAT_EXE=../_build/$(MODE)/bin/ocamlformat.exe
 
 .PHONY: test_setup

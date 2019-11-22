@@ -32,13 +32,11 @@ CheckBuild () {
     opam install --deps-only --with-test ocamlformat
     # script
     opam exec -- make
-    opam exec -- make reason
 }
 
 CheckTests () {
     # script
     opam exec -- make test
-    # do not run 'make test-reason' because of heavy deps
 }
 
 HasNoChangelogNeededLabel () {

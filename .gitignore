@@ -2,7 +2,6 @@
 /_build
 /ocamlformat.install
 /ocamlformat_diff.install
-/ocamlformat_reason.install
 /test-extra/code
 /_opam
 /coverage

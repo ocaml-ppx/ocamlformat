@@ -19,7 +19,6 @@ See the source code of OCamlFormat itself and [Infer](https://github.com/faceboo
   - [Emacs setup](#emacs-setup)
   - [Vim setup](#vim-setup)
 - [Documentation](#documentation)
-- [Reason](#reason)
 - [Community](#community)
 - [License](#license)
 
@@ -156,10 +155,9 @@ You can also view it [online](ocamlformat-help.txt).
 
 OCamlFormat is influenced by and follows the same basic design as `refmt` for [Reason](https://github.com/facebook/reason), but outputs OCaml instead of Reason.
 
-Support for converting Reason to OCaml is included in the `ocamlformat_reason` package, which works by using `refmt` to parse Reason into an OCaml parse tree. The Reason converter can be installed using `opam`:
-```
-opam pin add ocamlformat_reason https://github.com/ocaml-ppx/ocamlformat.git
-```
+This tool is not able to deal directly with Reason code (`*.re`/`*.rei` files),
+but it is possible to first convert these files to ocaml syntax using `refmt -p
+ml` and then running `ocamlformat` on this output.
 
 ## Community
 
