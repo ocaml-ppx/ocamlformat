@@ -3,7 +3,7 @@
 #### New features
 
   + Add an option `--margin-check` to emit a warning if the formatted output exceeds the margin (#1110) (Guillaume Petiot)
-  + Preserve comment indentation when `wrap-comments` is unset (#1138) (Jules Aguillon)
+  + Preserve comment indentation when `wrap-comments` is unset (#1138, #1159) (Jules Aguillon)
 
 #### Bug fixes
 
