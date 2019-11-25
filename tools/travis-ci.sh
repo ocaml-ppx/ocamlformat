@@ -40,11 +40,20 @@ CheckTests () {
     # do not run 'make test-reason' because of heavy deps
 }
 
+HasNoChangelogNeededLabel () {
+    url="https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST"
+    curl "$url" | jq '.labels|any(.name == "no-changelog-needed")'
+}
+
 CheckChangesModified () {
     if [ "$TRAVIS_PULL_REQUEST" != false ] && [ "$TRAVIS_BRANCH" = master ]
     then
-        git diff --exit-code "$TRAVIS_BRANCH...$TRAVIS_COMMIT" -- CHANGES.md \
-            > /dev/null && exit 1 || echo pass
+        if [ "$(HasNoChangelogNeededLabel)" != false ] ; then
+            echo skipped
+        else
+            git diff --exit-code "$TRAVIS_BRANCH...$TRAVIS_COMMIT" -- CHANGES.md \
+                > /dev/null && exit 1 || echo pass
+        fi
     fi
 }
 
