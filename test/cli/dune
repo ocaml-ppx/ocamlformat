@@ -248,6 +248,7 @@
   (diff fmterr_stdin_and_name_bad_kind.expected
     fmterr_stdin_and_name_bad_kind.output)))
 
+;; This test's output is ignored because it's not stable
 (rule
  (with-outputs-to
   check_formatted.output
@@ -307,7 +308,7 @@
    %{targets}
    (chdir
     roots/bad_version
-    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml} 2>/dev/null")))))
 
 (alias
  (name runtest)
