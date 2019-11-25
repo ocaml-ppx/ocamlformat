@@ -1,0 +1,2 @@
+ocamlformat: Error while parsing OCAMLFORMAT environment variable:
+             For option "type-decl": invalid value `unknown', expected either `compact' or `sparse'

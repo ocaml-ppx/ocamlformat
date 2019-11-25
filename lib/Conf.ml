@@ -1754,6 +1754,12 @@ let ocp_indent_janestreet_profile =
   ; ("align_ops", "true")
   ; ("align_params", "always") ]
 
+let string_of_user_error = function
+  | `Malformed line -> Format.sprintf "Invalid format %S" line
+  | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
+  | `Unknown (name, _) -> Format.sprintf "Unknown option %S" name
+  | `Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
+
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
@@ -1766,7 +1772,7 @@ let parse_line config ~from s =
           Error
             (`Bad_value
               ( value
-              , Format.sprintf "expecting %s but got %s" Version.version
+              , Format.sprintf "expecting %S but got %S" Version.version
                   value ))
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
@@ -1870,6 +1876,15 @@ let rec collect_files ~enable_outside_detected_project ~root ~segs ~ignores
         collect_files ~enable_outside_detected_project ~root ~segs:upper_segs
           ~ignores ~enables ~files
 
+exception Conf_error of string
+
+let failwith_user_errors ~kind errors =
+  let open Format in
+  let pp_error pp e = pp_print_string pp (string_of_user_error e) in
+  let pp_errors = pp_print_list ~pp_sep:pp_print_newline pp_error in
+  let msg = asprintf "Error while parsing %s:@ %a" kind pp_errors errors in
+  raise (Conf_error msg)
+
 let read_config_file conf filename_kind =
   match filename_kind with
   | `Ocp_indent _ when not !ocp_indent_config -> conf
@@ -1896,17 +1911,7 @@ let read_config_file conf filename_kind =
                 | `Ocp_indent _ -> dot_ocp_indent
                 | `Ocamlformat _ -> dot_ocamlformat
               in
-              user_error
-                (Format.sprintf "malformed %s file" kind)
-                (List.map l ~f:(function
-                  | `Malformed line -> ("invalid format", Sexp.Atom line)
-                  | `Misplaced (name, _) ->
-                      ("not allowed here", Sexp.Atom name)
-                  | `Unknown (name, _value) ->
-                      ("unknown option", Sexp.Atom name)
-                  | `Bad_value (name, reason) ->
-                      ( "bad value for"
-                      , Sexp.List [Sexp.Atom name; Sexp.Atom reason] ))))
+              failwith_user_errors ~kind l)
     with Sys_error _ -> conf )
 
 let update_using_env conf =
@@ -1916,19 +1921,9 @@ let update_using_env conf =
     | Error e -> (config, e :: errors)
   in
   let conf, errors = List.fold_left !config ~init:(conf, []) ~f in
-  try
-    match List.rev errors with
-    | [] -> conf
-    | l ->
-        user_error "malformed OCAMLFORMAT environment variable"
-          (List.map l ~f:(function
-            | `Malformed line -> ("invalid format", Sexp.Atom line)
-            | `Misplaced (name, _) -> ("not allowed here", Sexp.Atom name)
-            | `Unknown (name, _value) -> ("unknown option", Sexp.Atom name)
-            | `Bad_value (name, reason) ->
-                ( "bad value for"
-                , Sexp.List [Sexp.Atom name; Sexp.Atom reason] )))
-  with Sys_error _ -> conf
+  match List.rev errors with
+  | [] -> conf
+  | l -> failwith_user_errors ~kind:"OCAMLFORMAT environment variable" l
 
 let xdg_config =
   let xdg_config_home =
@@ -2189,6 +2184,7 @@ let validate () =
     >>= fun inputs ->
     make_action ~enable_outside_detected_project ~root action inputs
   with
+  | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
   | Ok action ->
       let opts = {debug= !debug; margin_check= !margin_check} in
@@ -2212,25 +2208,18 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
                   , [] )
             ; _ } ] ->
           parse_line ~from:`Attribute c str
-      | _ -> Error (`Malformed "string expected") )
+          |> Result.map_error ~f:string_of_user_error
+      | _ -> Error "Invalid format: String expected" )
     | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
         Error
-          (`Malformed
-            (Format.sprintf "unknown suffix %S"
-               (String.chop_prefix_exn ~prefix:"ocamlformat." txt)))
+          (Format.sprintf "Invalid format: Unknown suffix %S"
+             (String.chop_prefix_exn ~prefix:"ocamlformat." txt))
     | _ -> Ok c
   in
   match result with
   | Ok conf -> conf
   | Error error ->
-      let reason = function
-        | `Malformed line -> Format.sprintf "Invalid format %S" line
-        | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
-        | `Unknown (name, _) -> Format.sprintf "Unknown option %s" name
-        | `Bad_value (name, value) ->
-            Format.sprintf "Invalid value for %s: %S" name value
-      in
-      let w = Warnings.Attribute_payload (txt, reason error) in
+      let w = Warnings.Attribute_payload (txt, error) in
       if (not c.quiet) && not quiet then Compat.print_warning loc w ;
       c
 

@@ -52,10 +52,10 @@ module Binary_reason = struct
     let rec loop = function
       | [] ->
           if is_intf_or_impl magic then
-            user_error "Unknown version" [("magic", Sexp.Atom magic)]
+            failwith (Format.sprintf "Unknown version (magic: %s)" magic)
           else
-            user_error "Not a binary reason file"
-              [("prefix", Sexp.Atom magic)]
+            failwith
+              (Format.sprintf "Not a binary reason file (prefix: %s)" magic)
       | (module Frontend : Migrate_parsetree.Versions.OCaml_version) :: tail
         ->
           if String.equal Frontend.Ast.Config.ast_impl_magic_number magic
@@ -224,7 +224,7 @@ let input_bin_impl ic : Migrate_ast.Parsetree.structure t =
       { origin_filename
       ; ast_and_comment= {Parse_with_comments.ast; comments; prefix= ""} }
   | Binary_reason.Intf _ ->
-      user_error "expected serialized implementation, found interface" []
+      failwith "expected serialized implementation, found interface"
 
 let input_bin_intf ic : Migrate_ast.Parsetree.signature t =
   let origin_filename, comments, x = Binary_reason.input ic in
@@ -243,7 +243,7 @@ let input_bin_intf ic : Migrate_ast.Parsetree.signature t =
       { origin_filename
       ; ast_and_comment= {Parse_with_comments.ast; comments; prefix= ""} }
   | Binary_reason.Impl _ ->
-      user_error "expected serialized interface, found implementation" []
+      failwith "expected serialized interface, found implementation"
 
 let norm_impl c {Parse_with_comments.ast; comments; prefix= _} =
   Migrate_ast.Mapper.structure

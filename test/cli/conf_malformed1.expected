@@ -1,0 +1,2 @@
+ocamlformat: Error while parsing .ocamlformat:
+             Invalid format "a = b = c"

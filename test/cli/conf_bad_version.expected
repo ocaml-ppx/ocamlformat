@@ -1,0 +1,2 @@
+ocamlformat: Error while parsing .ocamlformat:
+             For option "bad": expecting "0.12-32-g7c8c284" but got "bad"
