@@ -1771,7 +1771,7 @@ let parse_line config ~from s =
         else
           Error
             (`Bad_value
-              ( value
+              ( name
               , Format.sprintf "expecting %S but got %S" Version.version
                   value ))
     | name, `File x ->
