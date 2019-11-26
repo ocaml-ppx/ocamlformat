@@ -565,7 +565,9 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
   let fmt_type ?(parens = false) t =
     str ": " $ fmt_core_type c t $ fmt_if parens ")"
   in
-  let fmt_rhs ?(parens = false) r = fmt "=@;<1 2>" $ fmt_if parens "(" $ r in
+  let fmt_rhs ?(parens = false) r =
+    fmt "=@;<1 2>" $ fmt_if parens "(" $ cbox 0 r
+  in
   let field_space =
     match c.conf.field_space with
     | `Loose | `Tight_decl -> str " "
