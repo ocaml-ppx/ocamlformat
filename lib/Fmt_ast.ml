@@ -565,9 +565,7 @@ and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
   let fmt_type ?(parens = false) t =
     str ": " $ fmt_core_type c t $ fmt_if parens ")"
   in
-  let fmt_rhs ?(parens = false) r =
-    fmt "=@;<1 2>" $ fmt_if parens "(" $ cbox 0 r
-  in
+  let fmt_rhs ?(parens = false) r = fmt "=@;<1 2>" $ fmt_if parens "(" $ r in
   let field_space =
     match c.conf.field_space with
     | `Loose | `Tight_decl -> str " "
@@ -1031,8 +1029,11 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   let loc = xpat.ast.ppat_loc in
                   let force_break = Cmts.has_before c.cmts loc in
                   let leading_cmt =
-                    Cmts.fmt_before ~pro:(Fmt.break 1000 0) ~adj:noop c loc
-                      ~eol:noop
+                    let pro, adj =
+                      if first_grp && first then (noop, fmt "@ ")
+                      else (fmt "@ ", noop)
+                    in
+                    Cmts.fmt_before ~pro c loc ~adj ~eol:noop
                   in
                   let pro =
                     if first_grp && first then
