@@ -914,6 +914,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
              (p.box
                 ( list_fl loc_xpats fmt_pat
                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
+                    ~eol:noop
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
         hvbox 0
