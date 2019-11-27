@@ -4324,7 +4324,9 @@ let fmt_toplevel c ctx itms =
 
 let fmt_file ~ctx ~f ~fmt_code source cmts conf itms =
   let c = {source; cmts; conf; fmt_code} in
-  match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
+  match itms with
+  | [] -> Cmts.fmt_after ~pro:noop c Location.none
+  | l -> f c ctx l
 
 let rec fmt_code conf s =
   match
