@@ -66,7 +66,7 @@ let protect =
   let first = ref true in
   fun ast pp ->
     Fmt.protect pp ~on_error:(fun exc ->
-        if !first && Conf.debug then (
+        if !first && Conf.debug () then (
           let bt = Caml.Printexc.get_backtrace () in
           Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
           first := false ) ;

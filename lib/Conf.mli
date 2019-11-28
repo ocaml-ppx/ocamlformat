@@ -103,13 +103,13 @@ type action =
 val action : unit -> action
 (** Formatting action: input type and source, and output destination. *)
 
-val debug : bool
+val debug : unit -> bool
 (** Generate debugging output if true. *)
 
-val check : bool
+val check : unit -> bool
 (** Check whether the input files already are formatted. *)
 
-val margin_check : bool
+val margin_check : unit -> bool
 (** Check whether the formatted output exceeds the margin. *)
 
 val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t

@@ -71,7 +71,7 @@ let with_file input_name output_file suf ext f =
   tmp
 
 let dump_ast ~input_name ?output_file ~suffix fmt =
-  if Conf.debug then
+  if Conf.debug () then
     let ext = ".ast" in
     let file =
       with_file input_name output_file suffix ext (fun oc ->
@@ -82,7 +82,7 @@ let dump_ast ~input_name ?output_file ~suffix fmt =
 
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
-  if Conf.debug then
+  if Conf.debug () then
     let file =
       with_file input_name output_file suffix ext (fun oc ->
           Out_channel.output_string oc fmted)
@@ -123,7 +123,7 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
              %!"
       | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
   | Unstable {iteration; prev; next} ->
-      if Conf.debug then (
+      if Conf.debug () then (
         let ext = Filename.extension input_name in
         let input_name =
           Filename.chop_extension (Filename.basename input_name)
@@ -139,7 +139,7 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
         ignore (Unix.system (Printf.sprintf "diff %S %S 1>&2" p n)) ;
         Unix.unlink p ;
         Unix.unlink n ) ;
-      if not Conf.check then
+      if not (Conf.check ()) then
         if iteration <= 1 then
           Format.fprintf fmt
             "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
@@ -216,22 +216,22 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
                      %!"
                     Location.print_loc loc (ellipsis_cmt msg))
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
-              if Conf.debug then Location.report_exception fmt exn
+              if Conf.debug () then Location.report_exception fmt exn
           | `Warning50 l ->
-              if Conf.debug then
+              if Conf.debug () then
                 List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
           | _ -> () ) ;
-          if Conf.debug then
+          if Conf.debug () then
             List.iter l ~f:(fun (msg, sexp) ->
                 Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp))
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
-          if Conf.debug then Format.fprintf fmt "%s\n%!" (Exn.to_string exn)
-      )
+          if Conf.debug () then
+            Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
 
 let check_all_locations fmt cmts_t =
-  if Conf.debug then
+  if Conf.debug () then
     match Cmts.remaining_locs cmts_t with
     | [] -> ()
     | l ->
@@ -241,7 +241,7 @@ let check_all_locations fmt cmts_t =
         List.iter ~f:print (List.sort l ~compare:Location.compare)
 
 let check_margin (conf : Conf.t) ~filename ~fmted =
-  if Conf.margin_check then
+  if Conf.margin_check () then
     List.iteri (String.split_lines fmted) ~f:(fun i line ->
         if String.length line > conf.margin then
           Format.fprintf Format.err_formatter
@@ -283,12 +283,14 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
       in
       (contents, cmts_t)
     in
-    if Conf.debug then
+    if Conf.debug () then
       format ~box_debug:true |> fst
       |> dump_formatted ~suffix:".boxes"
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
-    let conf = if Conf.debug then conf else {conf with Conf.quiet= true} in
+    let conf =
+      if Conf.debug () then conf else {conf with Conf.quiet= true}
+    in
     if String.equal source fmted then (
       check_all_locations Format.err_formatter cmts_t ;
       check_margin conf ~fmted

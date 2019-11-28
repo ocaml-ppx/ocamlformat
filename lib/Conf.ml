@@ -2191,11 +2191,11 @@ let validate () =
 
 let action () = parse info validate
 
-let debug = !debug
+let debug () = !debug
 
-and check = !check
+and check () = !check
 
-let margin_check = !margin_check
+let margin_check () = !margin_check
 
 open Migrate_ast.Parsetree
 

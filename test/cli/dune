@@ -247,3 +247,33 @@
  (action
   (diff fmterr_stdin_and_name_bad_kind.expected
     fmterr_stdin_and_name_bad_kind.output)))
+
+(rule
+ (with-outputs-to
+  check_formatted.output
+  (run %{bin:ocamlformat} --check %{dep:sample/a.ml})))
+
+(alias
+ (name runtest)
+ (action
+  (diff check_formatted.expected check_formatted.output)))
+
+(rule
+ (with-outputs-to
+  check_not_formatted.output
+  (system "! %{bin:ocamlformat} --check %{dep:sample/b.ml}")))
+
+(alias
+ (name runtest)
+ (action
+  (diff check_not_formatted.expected check_not_formatted.output)))
+
+(rule
+ (with-outputs-to
+  debug.output
+  (run %{bin:ocamlformat} --debug %{dep:sample/b.ml})))
+
+(alias
+ (name runtest)
+ (action
+  (diff debug.expected debug.output)))
