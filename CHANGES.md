@@ -12,6 +12,7 @@
   + Fix: types on named arguments were wrapped incorrectly when preceding comments (#1124) (Guillaume Petiot)
   + Fix the indentation produced by max-indent (#1118) (Guillaume Petiot)
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
+  + Remove some calls to if_newline and break_unless_newline and fix break before closing brackets (#1168) (Guillaume Petiot)
 
 #### Internal
 

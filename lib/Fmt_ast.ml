@@ -914,6 +914,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
              (p.box
                 ( list_fl loc_xpats fmt_pat
                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
+                    ~eol:noop
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
         hvbox 0
@@ -3165,10 +3166,10 @@ and fmt_type_extension c ctx
            $ fmt_longident_loc c ptyext_path
            $ str " +="
            $ fmt_private_flag ptyext_private
-           $ fmt "@ "
-           $ hvbox 0
-               (if_newline "| " $ list ptyext_constructors "@ | " fmt_ctor)
-           )
+           $ list_fl ptyext_constructors (fun ~first ~last:_ x ->
+                 let bar_fits = if first then "" else "| " in
+                 cbreak ~fits:("", 1, bar_fits) ~breaks:("", 0, "| ")
+                 $ fmt_ctor x) )
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@@" atrs )
 
 and fmt_type_exception ~pre c sep ctx
@@ -4324,7 +4325,9 @@ let fmt_toplevel c ctx itms =
 
 let fmt_file ~ctx ~f ~fmt_code source cmts conf itms =
   let c = {source; cmts; conf; fmt_code} in
-  match itms with [] -> Cmts.fmt_after c Location.none | l -> f c ctx l
+  match itms with
+  | [] -> Cmts.fmt_after ~pro:noop c Location.none
+  | l -> f c ctx l
 
 let rec fmt_code conf s =
   match

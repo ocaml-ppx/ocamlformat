@@ -628,18 +628,17 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
               ( close_box
               $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ))
 
-let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break_unless_newline 1 0)
-    ?eol ?adj =
+let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj =
   fmt_cmts t conf t.cmts_before ~fmt_code ?pro ~epi ?eol ?adj
 
-let fmt_after t conf ~fmt_code ?(pro = Fmt.break_unless_newline 1 0) ?epi =
+let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi =
   let open Fmt in
   let within = fmt_cmts t conf t.cmts_within ~fmt_code ~pro ?epi in
   let after = fmt_cmts t conf t.cmts_after ~fmt_code ~pro ?epi ~eol:noop in
   fun loc -> within loc $ after loc
 
-let fmt_within t conf ~fmt_code ?(pro = Fmt.break_unless_newline 1 0)
-    ?(epi = Fmt.break_unless_newline 1 0) =
+let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
+    =
   fmt_cmts t conf t.cmts_within ~fmt_code ~pro ~epi ~eol:Fmt.noop
 
 let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =

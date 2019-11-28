@@ -29,12 +29,12 @@ let x = function
         "sed do eiusmod tempor incididunt ut labore et dolore"
         (* " magna aliqua. Ut enim ad minim veniam, quis nostrud "; *)
         (* "exercitation ullamco laboris nisi ut aliquip ex ea commodo " *)
-       ]
+      ]
     ; (* ", sed do eiusmod tempor incididunt ut labore et dolore"; *)
       "sed do eiusmod tempor incididunt ut labore et dolore"
       (* " magna aliqua. Ut enim ad minim veniam, quis nostrud "; *)
-      (* "exercitation ullamco laboris nisi ut aliquip ex ea commodo " *)
-     ] ->
+      (* "exercitation ullamco laboris nisi ut aliquip ex ea commodo " *) ]
+    ->
       ()
 
 [@@@ocamlformat "space-around-lists=true"]

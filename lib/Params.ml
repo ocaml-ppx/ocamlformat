@@ -98,8 +98,7 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; break_after_opening_paren= fmt "@ " }
 
 let wrap_collec c ~space_around opn cls =
-  if space_around then
-    wrap_k (str opn $ char ' ') (break_unless_newline 1 0 $ str cls)
+  if space_around then wrap_k (str opn $ char ' ') (break 1 0 $ str cls)
   else wrap_fits_breaks c opn cls
 
 let wrap_record (c : Conf.t) =
