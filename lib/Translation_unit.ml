@@ -227,8 +227,8 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
-          if Conf.debug () then Format.fprintf fmt "%s\n%!" (Exn.to_string exn)
-      )
+          if Conf.debug () then
+            Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
 
 let check_all_locations fmt cmts_t =
   if Conf.debug () then
@@ -288,7 +288,9 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
       |> dump_formatted ~suffix:".boxes"
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
-    let conf = if Conf.debug () then conf else {conf with Conf.quiet= true} in
+    let conf =
+      if Conf.debug () then conf else {conf with Conf.quiet= true}
+    in
     if String.equal source fmted then (
       check_all_locations Format.err_formatter cmts_t ;
       check_margin conf ~fmted
