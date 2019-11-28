@@ -180,3 +180,11 @@ let handler =
       | _ ->
           ()
   end
+
+let _ =
+  match abc with
+  | Fooooooooooooooooo (* comment *)
+  | Baaaaaaaaaaaaaaaar
+  (* comment *)
+  | Baaaaaaaaaaaaaaaaz (* comment *) ->
+      ()

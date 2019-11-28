@@ -188,3 +188,12 @@ let handler =
           Errors.isset_in_strict p
       | _ -> ()
   end
+
+let _ =
+  match abc with
+  | Fooooooooooooooooo (* comment *)
+  | Baaaaaaaaaaaaaaaar
+  (* comment *)
+  | Baaaaaaaaaaaaaaaaz
+  (* comment *)
+    -> ()
