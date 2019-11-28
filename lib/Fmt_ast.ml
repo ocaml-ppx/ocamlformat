@@ -1031,8 +1031,11 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   let loc = xpat.ast.ppat_loc in
                   let force_break = Cmts.has_before c.cmts loc in
                   let leading_cmt =
-                    Cmts.fmt_before ~pro:(Fmt.break 1000 0) ~adj:noop c loc
-                      ~eol:noop
+                    let pro, adj =
+                      if first_grp && first then (noop, fmt "@ ")
+                      else (fmt "@ ", noop)
+                    in
+                    Cmts.fmt_before ~pro c loc ~adj ~eol:noop
                   in
                   let pro =
                     if first_grp && first then
