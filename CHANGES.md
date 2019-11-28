@@ -7,7 +7,8 @@
 
 #### Bug fixes
 
-  + Fix an unstable comment bug in or-patterns (#1167) (Jules Aguillon)
+  + Fix wrapping of or-patterns in presence of comments with `break-cases=fit` (#1167) (Jules Aguillon)
+    This also fixes an unstable comment bug in or-patterns
   + Fix an unstable comment bug in variant declarations (#1108) (Jules Aguillon)
   + Fix: break multiline comments (#1122) (Guillaume Petiot)
   + Fix: types on named arguments were wrapped incorrectly when preceding comments (#1124) (Guillaume Petiot)
