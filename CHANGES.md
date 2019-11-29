@@ -163,6 +163,7 @@
   + Fix dropped comments around module pack expressions (#1214) (Jules Aguillon)
   + Fix regression of comment position in list patterns (#1141) (Josh Berdine)
   + Fix: adjust definition of Location.is_single_line to reflect margin (#1102) (Josh Berdine)
+  + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine)
 
 #### Documentation
 
