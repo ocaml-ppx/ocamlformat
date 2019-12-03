@@ -201,7 +201,7 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
                     "%!@{<loc>%a@}:@,\
                      @{<error>Error@}: Comment (* %s *) dropped.\n\
                      %!"
-                    Location.print_loc loc (ellipsis_cmt msg))
+                    Location.print_loc loc (ellipsis_cmt msg) )
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
               if debug then Location.report_exception fmt exn
           | `Warning50 l ->
@@ -210,7 +210,8 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
           | _ -> () ) ;
           if debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp))
+                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp)
+              )
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
@@ -293,7 +294,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
       let exn_args () =
         [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
         |> List.filter_map ~f:(fun (s, f_opt) ->
-               Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
+               Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
       ( match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)

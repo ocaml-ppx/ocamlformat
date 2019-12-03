@@ -14,7 +14,7 @@ val f : compare:[%compare: 'a] -> sexp_of:[%sexp_of: 'a] -> t
 
 let invariant t =
   Invariant.invariant [%here] t [%sexp_of: t] (fun () ->
-      assert (check_t_invariant t))
+      assert (check_t_invariant t) )
 
 ;;
 [%e?
@@ -34,13 +34,13 @@ let invariant t =
   , xxxxxxxxxxx
   , xxxxxxxxxxxxxxxxxxxx ) when a < b]
   (let%ext f = () and g () = () in
-   e)
+   e )
   (let%ext f = () and g () = () in
-   e)
+   e )
   (let%ext rec f = () and g () = () in
-   e)
+   e )
   (let%ext rec f = () and g () = () in
-   e)
+   e )
 
 let _ = ([%ext? (x : x)] : [%ext? (x : x)])
 

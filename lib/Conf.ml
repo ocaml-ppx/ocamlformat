@@ -115,7 +115,7 @@ let warn ?filename ?lnum fmt =
         | Some file, None -> Format.asprintf "File %a@\n" Fpath.pp file
         | None, _ -> ""
       in
-      warn_raw (Format.asprintf "%sWarning: %s@\n" loc s))
+      warn_raw (Format.asprintf "%sWarning: %s@\n" loc s) )
     fmt
 
 module C = Config_option.Make (struct
@@ -1206,7 +1206,7 @@ let enable_outside_detected_project =
   let witness =
     String.concat ~sep:" or "
       (List.map project_root_witness ~f:(fun name ->
-           Format.sprintf "$(b,%s)" name))
+           Format.sprintf "$(b,%s)" name ))
   in
   let doc =
     Format.sprintf
@@ -1763,7 +1763,7 @@ let (_profile : t option C.t) =
       selected_profile_ref := p ;
       let new_conf = Option.value p ~default:conf in
       (* The quiet option is cummulative *)
-      {new_conf with quiet= new_conf.quiet || conf.quiet})
+      {new_conf with quiet= new_conf.quiet || conf.quiet} )
     (fun _ -> !selected_profile_ref)
 
 let ocp_indent_normal_profile =
@@ -1878,7 +1878,7 @@ let parse_line config ~from s =
         Result.( >>= )
           (update ~config ~from ~name:"profile" ~value:"janestreet")
           (fun config ->
-            update_many ~config ~from ocp_indent_janestreet_profile)
+            update_many ~config ~from ocp_indent_janestreet_profile )
     | name -> update ~config ~from ~name ~value:"true" )
   | _ -> Error (`Malformed s)
 
@@ -1887,7 +1887,7 @@ let is_project_root ~root dir =
   | Some root -> Fpath.equal dir root
   | None ->
       List.exists project_root_witness ~f:(fun name ->
-          Fpath.(exists (dir / name)))
+          Fpath.(exists (dir / name)) )
 
 let dot_ocp_indent = ".ocp-indent"
 
@@ -1954,7 +1954,7 @@ let read_config_file conf filename_kind =
                     warn ~filename ~lnum:num "ignoring invalid options %S"
                       line ;
                     (conf, errors, Int.succ num)
-                | Error e -> (conf, e :: errors, Int.succ num))
+                | Error e -> (conf, e :: errors, Int.succ num) )
           in
           match List.rev errors with
           | [] -> c
@@ -2027,10 +2027,10 @@ let is_in_listing_file ~listings ~filename =
                         None )
                 | Error (`Msg msg) ->
                     warn ~filename:listing_file ~lnum:lno "%s" msg ;
-                    None))
+                    None ) )
       with Sys_error err ->
         warn "ignoring %a, %s" Fpath.pp listing_file err ;
-        None)
+        None )
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
@@ -2071,7 +2071,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
      warn ~filename:vfile
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
-       why) ;
+       why ) ;
     {conf with disable= true} )
   else
     let listings = if conf.disable then enables else ignores in
@@ -2087,7 +2087,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let conf, warn_now =
     collect_warnings (fun () ->
-        build_config ~enable_outside_detected_project ~root ~file ~is_stdin)
+        build_config ~enable_outside_detected_project ~root ~file ~is_stdin
+      )
   in
   if not conf.quiet then warn_now () ;
   conf
@@ -2130,7 +2131,7 @@ let validate_inputs () =
         | Stdin -> Error "Cannot specify stdin together with other inputs"
         | File f ->
             let kind = Option.value ~default:`Impl (kind_of_ext f) in
-            Ok (kind, f))
+            Ok (kind, f) )
       |> Result.all
       |> Result.map ~f:(fun files -> `Several_files files)
 

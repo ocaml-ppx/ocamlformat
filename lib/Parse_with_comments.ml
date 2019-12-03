@@ -47,7 +47,7 @@ let parse parse_ast (conf : Conf.t) ~source =
         | Warnings.Bad_docstring _ when conf.comment_check ->
             w50 := (loc, warn) :: !w50 ;
             false
-        | _ -> not conf.quiet)
+        | _ -> not conf.quiet )
       ~f:(fun () ->
         let ast = parse_ast lexbuf in
         Warnings.check_fatal () ;
@@ -56,6 +56,6 @@ let parse parse_ast (conf : Conf.t) ~source =
             ~f:(fun (txt, loc) -> Cmt.create txt loc)
             (Lexer.comments ())
         in
-        {ast; comments; prefix= hash_bang})
+        {ast; comments; prefix= hash_bang} )
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)

@@ -102,19 +102,19 @@ let foo =
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo) )
+        fooooooooooooo ) )
   else if cond2 then (
     arm2 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo) )
+        fooooooooooooo ) )
   else (
     arm3 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo) )
+        fooooooooooooo ) )
 
 let foo =
   if some condition then
