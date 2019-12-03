@@ -3,6 +3,7 @@ module StringMap = Map.Make (String)
 type setup =
   { mutable has_ref: bool
   ; mutable has_opts: bool
+  ; mutable has_ocp: bool
   ; mutable base_file: string option
   ; mutable extra_deps: string list
   ; mutable should_fail: bool }
@@ -14,6 +15,7 @@ let add_test ?base_file map src_test_name =
   let s =
     { has_ref= false
     ; has_opts= false
+    ; has_ocp= false
     ; base_file
     ; extra_deps= []
     ; should_fail= false }
@@ -38,9 +40,10 @@ let register_file tests fname =
       in
       match rest with
       | [] -> ()
-      | ["output"] -> ()
+      | ["output"] | ["ocp"; "output"] -> ()
       | ["opts"] -> setup.has_opts <- true
       | ["ref"] -> setup.has_ref <- true
+      | ["ocp"] -> setup.has_ocp <- true
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
       | _ -> invalid_arg fname )
@@ -60,6 +63,24 @@ let emit_test test_name setup =
   in
   let extra_deps = String.concat " " setup.extra_deps in
   let cmd_prefix = if setup.should_fail then "! " else "" in
+  let when_ocp =
+    if setup.has_ocp then
+      Printf.sprintf
+        {|
+(rule
+ (targets %s.ocp.output)
+ (deps .ocamlformat %s)
+ (action
+   (with-outputs-to %%{targets}
+     (system "%s%%{bin:ocp-indent} %%{dep:%s}"))))
+
+(alias
+ (name runtest)
+ (action (diff %s.ocp %s.ocp.output)))
+|}
+        test_name extra_deps cmd_prefix ref_name test_name test_name
+    else ""
+  in
   Printf.printf
     {|
 (rule
@@ -72,8 +93,9 @@ let emit_test test_name setup =
 (alias
  (name runtest)
  (action (diff %s %s.output)))
-|}
+%s|}
     test_name extra_deps cmd_prefix opts base_test_name ref_name test_name
+    when_ocp
 
 let () =
   let map = ref StringMap.empty in

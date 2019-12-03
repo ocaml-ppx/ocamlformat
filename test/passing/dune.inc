@@ -1375,6 +1375,17 @@
  (action (diff js_source.ml.ref js_source.ml.output)))
 
 (rule
+ (targets js_source.ml.ocp.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocp-indent} %{dep:js_source.ml.ref}"))))
+
+(alias
+ (name runtest)
+ (action (diff js_source.ml.ocp js_source.ml.ocp.output)))
+
+(rule
  (targets kw_extentions.ml.output)
  (deps .ocamlformat )
  (action
