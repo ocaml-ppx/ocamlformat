@@ -177,3 +177,20 @@ let _ =
         (* _____________________________________________________________________ *)
         | X _ | Y _ ) } ->
       ()
+
+let foooooooooooooo = function
+  | Fooo (* fooooo foo foo foooooo foooooooo foooooooooooo *) | Foo
+  (* foooooo foooo fooooo fooooooo fooooooo fooooo *)
+  | Foooooooooooooooo (* foooooo foooo fooooooooooo *) | Foooooooooooooo _
+  (* Foooooooooooooooooooooooooooo fooooooooooooooooooooooooooo fooooooooo.
+     Foooooooooooooooooooooooooooooooooooo foooooooooooooooooooooooo foooooo.
+     Foooooooooooooooooooooooooooooooooooooo foooooooooooooooooooo
+     foooooooooooooooooo foooooooo. Foooooooooooo fooooooooooo fooooooooooooo
+     foooooooooooooo foooooo. *)
+  | Foooo foooo
+  | FooooFoooooFoooooo (* fooooooo fooooo fooo foooooooooooooo *) | Foooo
+  (* Fooo foooo fooooo foooooooo fooooooooo foooooooooooo fooooooooo fooo *)
+    ->
+      Foooooooooo.Foooooo
+  | Foooo {foooo_fooo= {foooooooooo}} ->
+      Foooo_Foooo_fooooooo.get_foooooooooo fooooo_fooo
