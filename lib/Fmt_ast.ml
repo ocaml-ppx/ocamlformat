@@ -931,12 +931,14 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                     ~eol:noop
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
     | None ->
+        let cmts_before = Cmts.has_before c.cmts loc in
         hvbox 0
           (wrap_if parens "(" ")"
              (Cmts.fmt c ppat_loc
                 ( fmt_pattern c (sub_pat ~ctx x)
-                $ Cmts.fmt c ~pro:(fmt "@ ") ~epi:noop loc
-                    (break_unless_newline 1 0 $ str ":: ")
+                $ fmt_or_k cmts_before
+                    (Cmts.fmt c ~pro:(fmt "@ ") loc (str ":: "))
+                    (fmt "@ :: ")
                 $ fmt_pattern c (sub_pat ~ctx y) ))) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2
