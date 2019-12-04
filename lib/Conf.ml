@@ -2087,8 +2087,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let conf, warn_now =
     collect_warnings (fun () ->
-        build_config ~enable_outside_detected_project ~root ~file ~is_stdin
-      )
+        build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
   in
   if not conf.quiet then warn_now () ;
   conf

@@ -210,8 +210,7 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
           | _ -> () ) ;
           if debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp)
-              )
+                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp) )
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
