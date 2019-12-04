@@ -1731,7 +1731,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        Poly.(c.conf.indicate_multiline_delimiters = `Space)
                        (fmt_or_k fit (str ")")
                           (fits_breaks ~force_fit_if:fit ")" ~hint:(1, 0) ")"))
-                       (fits_breaks ~force_fit_if:fit ")" ~hint:(0, 0) ")")
+                       (str ")")
                    $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | ( lbl
