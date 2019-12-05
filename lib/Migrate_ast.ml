@@ -136,6 +136,18 @@ module Location = struct
 
   let compare : t -> t -> int = Poly.compare
 
+  type location = t
+
+  module Location_comparator = Comparator.Make (struct
+    type t = location
+
+    let sexp_of_t = sexp_of_t
+
+    let compare = compare
+  end)
+
+  include Location_comparator
+
   let hash = Hashtbl.hash
 
   let compare_start x y = Position.compare x.loc_start y.loc_start
@@ -164,4 +176,54 @@ module Location = struct
   let smallest loc stack =
     let min a b = if width a < width b then a else b in
     List.reduce_exn (loc :: stack) ~f:min
+
+  module Set = struct
+    type t = (location, comparator_witness) Set.t
+
+    let empty =
+      Set.empty
+        ( module struct
+          type t = location
+
+          include Location_comparator
+        end )
+
+    let add key t = Set.add t key
+
+    let remove key t = Set.remove t key
+
+    let to_list t = Set.to_list t
+  end
+
+  module Multimap = struct
+    type 'a t = (location, 'a list, comparator_witness) Map.t
+
+    let add_list map key data = Map.add_exn map ~key ~data
+
+    let remove map loc = Map.remove map loc
+
+    let update_multi map ~src ~dst ~f =
+      Option.fold (Map.find map src) ~init:(Map.remove map src)
+        ~f:(fun new_map src_data ->
+          Map.update new_map dst ~f:(fun dst_data ->
+              Option.fold dst_data ~init:src_data ~f))
+
+    let empty =
+      Map.empty
+        ( module struct
+          type t = location
+
+          include Location_comparator
+        end )
+
+    let find map loc = Map.find map loc
+
+    let filter map ~f = Map.map map ~f:(List.filter ~f)
+
+    let mem map loc = Map.mem map loc
+
+    let to_list map = Map.to_alist map |> List.concat_map ~f:snd
+
+    let find_multi map loc = Map.find_multi map loc
+  end
 end
