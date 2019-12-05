@@ -1271,7 +1271,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     hovbox
       (if first_grp then 2 else 0)
       (list_fl args fmt_arg $ fmt_if_k last_grp global_epi)
-    $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
+    $ fmt_if_k (not last_grp) (break 1 0)
   in
   let is_simple x = is_simple c.conf (expression_width c) (sub_exp ~ctx x) in
   let break (_, a1) (_, a2) = not (is_simple a1 && is_simple a2) in
