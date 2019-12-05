@@ -15,7 +15,7 @@
 
 set -e
 
-Prepare() {
+CheckBuild () {
     # before_install
     wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.5/opam-2.0.5-x86_64-linux
     chmod +x ${HOME}/opam
@@ -24,10 +24,6 @@ Prepare() {
     export OPAMJOBS=2
     opam init --bare --disable-sandboxing
     opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION}
-}
-
-CheckBuild () {
-    Prepare
     # install
     opam switch ${OCAML_VERSION}
     opam update --upgrade
@@ -38,16 +34,8 @@ CheckBuild () {
     opam exec -- make reason
 }
 
-CheckBuildTests () {
-    Prepare
-    # install
-    opam switch ${OCAML_VERSION}
-    opam update --upgrade
-    opam pin add --no-action ocamlformat .
-    opam install --with-test ocamlformat
+CheckTests () {
     # script
-    opam exec -- make
-    opam exec -- make reason
     opam exec -- make test
     # do not run 'make test-reason' because of heavy deps
 }
@@ -74,7 +62,8 @@ build)
     CheckBuild
     ;;
 build-and-tests)
-    CheckBuildTests
+    CheckBuild
+    CheckTests
     ;;
 changes)
     CheckChangesModified
