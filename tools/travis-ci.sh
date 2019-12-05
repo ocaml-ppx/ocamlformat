@@ -28,7 +28,7 @@ CheckBuild () {
     opam switch ${OCAML_VERSION}
     opam update --upgrade
     opam pin add --no-action ocamlformat .
-    opam install --deps-only ocamlformat
+    opam install --deps-only --with-test ocamlformat
     # script
     opam exec -- make
     opam exec -- make reason
