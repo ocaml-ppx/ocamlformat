@@ -26,6 +26,7 @@ CheckBuild () {
     opam switch --dry-run ${OCAML_VERSION} 2>/dev/null || opam switch create ${OCAML_VERSION}
     # install
     opam switch ${OCAML_VERSION}
+    opam pin remove --no-action ocamlformat || true # Otherwise opam will ignored new deps
     opam update --upgrade
     opam pin add --no-action ocamlformat .
     opam install --deps-only --with-test ocamlformat
