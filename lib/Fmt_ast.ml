@@ -1029,7 +1029,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
                   let loc = xpat.ast.ppat_loc in
-                  let force_break = Cmts.has_before c.cmts loc in
+                  let cmts_before = Cmts.has_before c.cmts loc in
                   let leading_cmt =
                     let pro, adj =
                       if first_grp && first then (noop, fmt "@ ")
@@ -1045,10 +1045,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                           (if nested then "" else "( ")
                       $ open_box (-2)
                     else if first then
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~force_break
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
                       $ open_box (-2)
                     else
-                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~force_break
+                      Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
                         ~space:(space xpat.ast)
                   in
                   leading_cmt $ fmt_pattern c ~pro xpat
