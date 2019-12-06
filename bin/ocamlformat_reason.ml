@@ -61,9 +61,10 @@ let action, opts = Conf.action ()
 
 ;;
 match action with
-| Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
-| Check _ -> user_error "Cannot check Reason code with --check" []
-| In_out ({kind; file; name= input_name; conf}, output_file) -> (
+| `Ok (Inplace _) ->
+    user_error "Cannot convert Reason code with --inplace" []
+| `Ok (Check _) -> user_error "Cannot check Reason code with --check" []
+| `Ok (In_out ({kind; file; name= input_name; conf}, output_file)) -> (
     let (Pack {parse; xunit}) = pack_of_kind kind in
     let t =
       match file with
@@ -82,4 +83,6 @@ match action with
         Translation_unit.print_error ~debug:opts.debug ~quiet:conf.quiet
           ~input_name e ;
         Caml.exit 1 )
-| Print_config conf -> Conf.print_config conf ; Caml.exit 0
+| `Ok (Print_config conf) -> Conf.print_config conf ; Caml.exit 0
+| `Version | `Help -> Caml.exit 0
+| `Error _ -> Caml.exit 1

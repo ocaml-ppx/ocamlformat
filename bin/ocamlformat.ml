@@ -75,7 +75,7 @@ let action, opts = Conf.action ()
 
 ;;
 match action with
-| Inplace inputs ->
+| `Ok (Inplace inputs) ->
     let errors =
       List.filter_map inputs
         ~f:(fun {kind; name= input_name; file= input_file; conf} ->
@@ -98,7 +98,7 @@ match action with
               None)
     in
     if List.is_empty errors then Caml.exit 0 else Caml.exit 1
-| In_out ({kind; file; name= input_name; conf}, output_file) -> (
+| `Ok (In_out ({kind; file; name= input_name; conf}, output_file)) -> (
     let source = source_from_file file in
     let result = format ?output_file ~kind ~input_name ~source conf opts in
     match result with
@@ -108,7 +108,7 @@ match action with
     | Error e ->
         print_error conf opts ~input_name e ;
         Caml.exit 1 )
-| Check inputs ->
+| `Ok (Check inputs) ->
     let f {Conf.kind; name= input_name; file; conf} =
       let source = source_from_file file in
       match format ~kind ~input_name ~source conf opts with
@@ -119,4 +119,6 @@ match action with
     in
     let checked = List.for_all inputs ~f in
     Caml.exit (if checked then 0 else 1)
-| Print_config conf -> Conf.print_config conf ; Caml.exit 0
+| `Ok (Print_config conf) -> Conf.print_config conf ; Caml.exit 0
+| `Version | `Help -> Caml.exit 0
+| `Error _ -> Caml.exit 1
