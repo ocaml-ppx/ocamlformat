@@ -16,6 +16,7 @@
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
   + Remove some calls to if_newline and break_unless_newline and fix break before closing brackets (#1168) (Guillaume Petiot)
   + Fix unstable cmt in or-pattern (#1173) (Guillaume Petiot)
+  + Fix error handling of cmdline parsing (fatal errors not showing in IDE) (#1178) (Guillaume Petiot)
 
 #### Internal
 
