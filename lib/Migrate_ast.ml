@@ -234,7 +234,7 @@ module Location = struct
       Option.fold (Map.find map src) ~init:(Map.remove map src)
         ~f:(fun new_map src_data ->
           Map.update new_map dst ~f:(fun dst_data ->
-              Option.fold dst_data ~init:src_data ~f))
+              Option.fold dst_data ~init:src_data ~f ) )
 
     let empty =
       Map.empty
