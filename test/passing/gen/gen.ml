@@ -63,24 +63,6 @@ let emit_test test_name setup =
   in
   let extra_deps = String.concat " " setup.extra_deps in
   let cmd_prefix = if setup.should_fail then "! " else "" in
-  let when_ocp =
-    if setup.has_ocp then
-      Printf.sprintf
-        {|
-(rule
- (targets %s.ocp.output)
- (deps .ocamlformat %s)
- (action
-   (with-outputs-to %%{targets}
-     (system "%s%%{bin:ocp-indent} %%{dep:%s}"))))
-
-(alias
- (name runtest)
- (action (diff %s.ocp %s.ocp.output)))
-|}
-        test_name extra_deps cmd_prefix ref_name test_name test_name
-    else ""
-  in
   Printf.printf
     {|
 (rule
@@ -93,9 +75,23 @@ let emit_test test_name setup =
 (alias
  (name runtest)
  (action (diff %s %s.output)))
-%s|}
-    test_name extra_deps cmd_prefix opts base_test_name ref_name test_name
-    when_ocp
+|}
+    test_name extra_deps cmd_prefix opts base_test_name ref_name test_name ;
+  if setup.has_ocp then
+    Printf.printf
+      {|
+(rule
+ (targets %s.ocp.output)
+ (deps .ocamlformat %s)
+ (action
+   (with-outputs-to %%{targets}
+     (system "%s%%{bin:ocp-indent} %%{dep:%s}"))))
+
+(alias
+ (name runtest)
+ (action (diff %s.ocp %s.ocp.output)))
+|}
+      test_name extra_deps cmd_prefix ref_name test_name test_name
 
 let () =
   let map = ref StringMap.empty in

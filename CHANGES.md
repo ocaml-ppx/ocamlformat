@@ -31,7 +31,7 @@
   + Factor out a private library (#1134, #1148, #1158) (Etienne Millon, Jules Aguillon)
   + Remove global reference `Cmts.remove` (#1142) (Etienne Millon)
   + Remove symbol strings in `Cmts` (#1146) (Etienne Millon)
-  + Allow tests to be postprocessed with ocp-indent (#1171) (Guillaume Petiot)
+  + Allow tests to be postprocessed with ocp-indent (#1171) (Guillaume Petiot, Jules Aguillon)
 
 #### Documentation
 
