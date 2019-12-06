@@ -89,6 +89,8 @@ type t =
   | Tli of toplevel_item
   | Top
 
+val is_top : t -> bool
+
 val break_between :
      Source.t
   -> cmts:'a
@@ -128,6 +130,8 @@ type prec =
   | Dot  (** [x.y] and [x#y] *)
   | High
   | Atomic
+
+val equal_prec : prec -> prec -> bool
 
 (** Associativities of Ast terms *)
 type assoc = Left | Non | Right

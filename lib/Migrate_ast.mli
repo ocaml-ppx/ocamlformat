@@ -3,10 +3,32 @@ val selected_version :
   Migrate_parsetree.Versions.ocaml_version
 
 module Selected_version = Ast_408
-module Parsetree = Selected_version.Parsetree
 module Ast_mapper = Selected_version.Ast_mapper
 module Ast_helper = Selected_version.Ast_helper
-module Asttypes = Selected_version.Asttypes
+
+module Parsetree : sig
+  include module type of Selected_version.Parsetree
+
+  val equal_core_type : core_type -> core_type -> bool
+
+  val equal_structure : structure -> structure -> bool
+
+  val equal_signature : signature -> signature -> bool
+
+  val equal_toplevel_phrase : toplevel_phrase -> toplevel_phrase -> bool
+end
+
+module Asttypes : sig
+  include module type of Selected_version.Asttypes
+
+  val is_private : private_flag -> bool
+
+  val is_open : closed_flag -> bool
+
+  val is_override : override_flag -> bool
+
+  val is_mutable : mutable_flag -> bool
+end
 
 module Position : sig
   val column : Lexing.position -> int

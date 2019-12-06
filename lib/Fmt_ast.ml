@@ -172,17 +172,23 @@ let make_groups c items ast update_config =
   List.group items ~break
 
 let fmt_groups c ctx grps fmt_grp =
-  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  let break_struct = c.conf.break_struct || is_top ctx in
   list_fl grps (fun ~first ~last grp ->
       fmt_if (break_struct && not first) "\n@;<1000 0>"
       $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
       $ fmt_grp ~first ~last grp
       $ fits_breaks_if ((not break_struct) && not last) "" "\n")
 
+let value_binding_op_rec first rec_flag =
+  match (first, rec_flag) with
+  | true, Recursive -> ("let", true)
+  | true, Nonrecursive -> ("let", false)
+  | false, _ -> ("and", false)
+
 let fmt_recmodule c ctx items f ast =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
   let grps = make_groups c items ast update_config in
-  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  let break_struct = c.conf.break_struct || is_top ctx in
   let fmt_grp ~first:first_grp ~last:_ itms =
     list_fl itms (fun ~first ~last:_ (itm, c) ->
         fmt_if_k (not first) (fmt_or break_struct "@;<1000 0>" "@ ")
@@ -346,7 +352,14 @@ let fmt_label lbl sep =
   | Labelled l -> str "~" $ str l $ fmt sep
   | Optional l -> str "?" $ str l $ fmt sep
 
-let fmt_private_flag flag = fmt_if Poly.(flag = Private) "@ private"
+let fmt_private_flag flag = fmt_if (is_private flag) "@ private"
+
+let fmt_direction_flag = function
+  | Upto -> fmt "@ to "
+  | Downto -> fmt "@ downto "
+
+let fmt_virtual_flag f =
+  match f with Virtual -> fmt "@ virtual" | Concrete -> noop
 
 let parse_docstring ~loc text =
   let location = loc.Location.loc_start in
@@ -629,12 +642,6 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ " $ fmt_type_var txt)
   | Ptyp_any -> str "_"
   | Ptyp_arrow _ ->
-      let arg_label lbl =
-        match lbl with
-        | Nolabel -> noop
-        | Labelled l -> str l $ fmt ":@,"
-        | Optional l -> str "?" $ str l $ fmt ":@,"
-      in
       let xt1N = Sugar.arrow_typ c.cmts xtyp in
       let indent =
         if Poly.(c.conf.break_separators = `Before) then 2 else 0
@@ -653,12 +660,18 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
             if parens then "@;<1 1>-> " else "@ -> "
           else " ->@;<1 0>" )
           (fun (locI, lI, xtI) ->
-            hvbox 0
-              ( Cmts.fmt_before c locI
-              $ hovbox_if
-                  Poly.(lI <> Nolabel)
-                  2
-                  (arg_label lI $ fmt_core_type c xtI) ))
+            let arg_label lbl =
+              match lbl with
+              | Nolabel -> None
+              | Labelled l -> Some (str l $ fmt ":@,")
+              | Optional l -> Some (str "?" $ str l $ fmt ":@,")
+            in
+            let arg =
+              match arg_label lI with
+              | None -> fmt_core_type c xtI
+              | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
+            in
+            hvbox 0 (Cmts.fmt_before c locI $ arg))
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
@@ -738,7 +751,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         | Open, Some _, _ -> impossible "not produced by parser" )
   | Ptyp_object ([], o_c) ->
       wrap "<@ " ">"
-        ( fmt_if Poly.(o_c = Open) "..@ "
+        ( fmt_if (is_open o_c) "..@ "
         $ Cmts.fmt_within c ~pro:noop ~epi:(str " ") ptyp_loc )
   | Ptyp_object (fields, closedness) ->
       let fmt_field {pof_desc; pof_attributes= atrs; pof_loc} =
@@ -765,7 +778,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       hvbox 0
         (wrap "< " " >"
            ( list fields "@ ; " fmt_field
-           $ fmt_if Poly.(closedness = Open) "@ ; .." ))
+           $ fmt_if (is_open closedness) "@ ; .." ))
   | Ptyp_class (lid, []) -> fmt_longident_loc c ~pre:(str "#") lid
   | Ptyp_class (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1)
@@ -969,14 +982,14 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         fmt_if_k (not first) p1.sep_before
         $ fmt_field x
         $ fmt_or_k
-            (last && Poly.(closed_flag = Closed))
+            (last && not (is_open closed_flag))
             p1.sep_after_final p1.sep_after_non_final
       in
       hvbox_if parens 0
         (wrap_if parens "(" ")"
            (p1.box
               ( list_fl flds fmt_field
-              $ fmt_if_k Poly.(closed_flag = Open) p2.wildcard )))
+              $ fmt_if_k (is_open closed_flag) p2.wildcard )))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
@@ -2018,7 +2031,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; popen_attributes= attributes
         ; popen_loc }
       , e0 ) ->
-      let override = Poly.(flag = Override) in
+      let override = is_override flag in
       let let_open =
         match c.conf.let_open with
         | `Preserve ->
@@ -2286,7 +2299,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            ( fmt_pattern c (sub_pat ~ctx p1)
                            $ fmt "@ =@;<1 2>"
                            $ fmt_expression c (sub_exp ~ctx e1)
-                           $ fmt_or Poly.(dir = Upto) "@ to " "@ downto "
+                           $ fmt_direction_flag dir
                            $ fmt_expression c (sub_exp ~ctx e2) )
                        $ fmt "@;do" )
                    $ fmt "@;<1000 0>"
@@ -2683,7 +2696,7 @@ and fmt_class_field c ctx (cf : class_field) =
     | Pcf_inherit (override, cl, parent) ->
         hovbox 2
           ( str "inherit"
-          $ fmt_if Poly.(override = Override) "!"
+          $ fmt_if (is_override override) "!"
           $ fmt "@ "
           $ ( fmt_class_expr c (sub_cl ~ctx cl)
             $ opt parent (fun p -> str " as " $ fmt_str_loc c p) ) )
@@ -2695,7 +2708,7 @@ and fmt_class_field c ctx (cf : class_field) =
                   (box_fun_decl_args c 4
                      ( box_fun_sig_args c 4
                          ( str "method" $ virtual_or_override kind
-                         $ fmt_if Poly.(priv = Private) " private"
+                         $ fmt_if (is_private priv) " private"
                          $ str " " $ fmt_str_loc c name $ typ )
                      $ args ))
               $ eq )
@@ -2708,7 +2721,7 @@ and fmt_class_field c ctx (cf : class_field) =
                   (box_fun_decl_args c 4
                      ( box_fun_sig_args c 4
                          ( str "val" $ virtual_or_override kind
-                         $ fmt_if Poly.(mut = Mutable) " mutable"
+                         $ fmt_if (is_mutable mut) " mutable"
                          $ str " " $ fmt_str_loc c name $ typ )
                      $ args ))
               $ eq )
@@ -2744,18 +2757,15 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
         | Pctf_method (name, priv, virt, ty) ->
             box_fun_sig_args c 2
               ( hovbox 4
-                  ( str "method"
-                  $ fmt_if Poly.(virt = Virtual) "@ virtual"
-                  $ fmt_if Poly.(priv = Private) "@ private"
-                  $ fmt "@ " $ fmt_str_loc c name )
+                  ( str "method" $ fmt_virtual_flag virt
+                  $ fmt_private_flag priv $ fmt "@ " $ fmt_str_loc c name )
               $ fmt " :@ "
               $ fmt_core_type c (sub_typ ~ctx ty) )
         | Pctf_val (name, mut, virt, ty) ->
             box_fun_sig_args c 2
               ( hovbox 4
-                  ( str "val"
-                  $ fmt_if Poly.(virt = Virtual) "@ virtual"
-                  $ fmt_if Poly.(mut = Mutable) "@ mutable"
+                  ( str "val" $ fmt_virtual_flag virt
+                  $ fmt_if (is_mutable mut) "@ mutable"
                   $ fmt "@ " $ fmt_str_loc c name )
               $ fmt " :@ "
               $ fmt_core_type c (sub_typ ~ctx ty) )
@@ -3059,7 +3069,7 @@ and fmt_label_declaration c ctx ?(last = false) decl =
         ( hvbox 3
             ( hvbox 4
                 ( hvbox 2
-                    ( fmt_if Poly.(pld_mutable = Mutable) "mutable "
+                    ( fmt_if (is_mutable pld_mutable) "mutable "
                     $ fmt_str_loc c pld_name $ fmt_if field_loose " "
                     $ fmt ":@ "
                     $ fmt_core_type c (sub_typ ~ctx pld_type)
@@ -3437,7 +3447,7 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
         hovbox 2
           ( hvbox 2
               ( str (if first then pre else "and")
-              $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
+              $ fmt_virtual_flag cl.pci_virt
               $ fmt "@ "
               $ fmt_class_params c ctx cl.pci_params
               $ fmt_str_loc c cl.pci_name $ fmt "@ " $ str sep )
@@ -3475,7 +3485,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
               ( box_fun_decl_args c 2
                   ( hovbox 2
                       ( str (if first then "class" else "and")
-                      $ fmt_if Poly.(cl.pci_virt = Virtual) "@ virtual"
+                      $ fmt_virtual_flag cl.pci_virt
                       $ fmt "@ "
                       $ fmt_class_params c ctx cl.pci_params
                       $ fmt_str_loc c cl.pci_name )
@@ -3627,7 +3637,7 @@ and fmt_open_description c ?(keyword = "open") ~kw_attributes
   in
   hovbox 0
     ( doc_before $ str keyword
-    $ fmt_if Poly.(popen_override = Override) "!"
+    $ fmt_if (is_override popen_override) "!"
     $ Cmts.fmt_before c popen_loc
     $ fmt_attributes c ~key:"@" kw_attributes
     $ str " "
@@ -3913,7 +3923,7 @@ and fmt_structure c ctx itms =
     | _ -> c
   in
   let grps = make_groups c itms (fun x -> Str x) update_config in
-  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  let break_struct = c.conf.break_struct || is_top ctx in
   let fmt_grp ~first:_ ~last:last_grp itms =
     list_fl itms (fun ~first ~last (itm, c) ->
         let last = last && last_grp in
@@ -3926,9 +3936,10 @@ and fmt_structure c ctx itms =
 and fmt_type c ?ext ?eq rec_flag decls ctx =
   let fmt_decl ~first ~last decl =
     let pre =
-      if first then
-        if Poly.(rec_flag = Recursive) then "type" else "type nonrec"
-      else "and"
+      match (first, rec_flag) with
+      | true, Recursive -> "type"
+      | true, Nonrecursive -> "type nonrec"
+      | false, _ -> "and"
     in
     let ext = if first then ext else None in
     fmt_type_declaration c ~pre ?eq ?ext ctx decl $ fmt_if (not last) "\n@ "
@@ -3983,9 +3994,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       update_config_maybe_disabled c popen_loc attributes
       @@ fun c ->
       let keyword =
-        str "open"
-        $ fmt_if (Poly.equal popen_override Override) "!"
-        $ str " "
+        str "open" $ fmt_if (is_override popen_override) "!" $ str " "
       in
       fmt_module_statement c ~attributes keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description c ctx vd
@@ -4025,9 +4034,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                 =
               binding
             in
-            let op = if first && first_grp then "let" else "and" in
-            let rec_flag =
-              first && first_grp && Poly.(rec_flag = Recursive)
+            let op, rec_flag =
+              value_binding_op_rec (first && first_grp) rec_flag
             in
             fmt_if (not first) "@;<1000 0>"
             $ fmt_value_binding c op ~rec_flag
@@ -4066,8 +4074,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     let {pvb_pat; pvb_expr; pvb_attributes= attributes; pvb_loc= loc} =
       binding
     in
-    let op = if first then "let" else "and" in
-    let rec_flag = first && Poly.(rec_flag = Recursive) in
+    let op, rec_flag = value_binding_op_rec first rec_flag in
     fmt_value_binding c op ~rec_flag ?ext ctx ~in_ ~attributes ~loc pvb_pat
       pvb_expr
     $ fmt_if (not last)
@@ -4135,7 +4142,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
             ( ({ppat_desc= Ppat_var _; _} as pat)
             , {ptyp_desc= Ptyp_poly ([], typ1); _} )
         , Pexp_constraint (_, typ2) )
-        when Poly.(typ1 = typ2) ->
+        when equal_core_type typ1 typ2 ->
           Cmts.relocate c.cmts ~src:pvb_pat.ppat_loc ~before:pat.ppat_loc
             ~after:pat.ppat_loc ;
           sub_pat ~ctx:(Pat pvb_pat) pat
@@ -4309,7 +4316,7 @@ let fmt_toplevel c ctx itms =
     | _ -> c
   in
   let grps = make_groups c itms (fun x -> Tli x) update_config in
-  let break_struct = c.conf.break_struct || Poly.(ctx = Top) in
+  let break_struct = c.conf.break_struct || is_top ctx in
   let fmt_item c ~last = function
     | `Item i ->
         maybe_disabled c i.pstr_loc []
