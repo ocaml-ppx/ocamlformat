@@ -30,6 +30,25 @@ module Asttypes : sig
   val is_mutable : mutable_flag -> bool
 end
 
+module Docstrings : sig
+  include module type of Selected_version.Docstrings
+
+  type let_binding = {
+    lb_pattern : Parsetree.pattern;
+    lb_expression : Parsetree.expression;
+    lb_attributes : Parsetree.attributes;
+    lb_docs : docs lazy_t;
+    lb_text : text lazy_t;
+    lb_loc : Location.t;
+  }
+  type let_bindings = {
+    lbs_bindings : let_binding list;
+    lbs_rec : Asttypes.rec_flag;
+    lbs_extension : string Location.loc option;
+    lbs_loc : Location.t;
+  }
+end
+
 module Position : sig
   val column : Lexing.position -> int
 

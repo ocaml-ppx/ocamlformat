@@ -15,6 +15,12 @@
 
 (ocamllex Literal_lexer)
 
+(ocamllex Lexer)
+
+(menhir
+ (flags --strict --inspection --unused-tokens --table --cmly)
+ (modules Parser))
+
 (library
  (name ocamlformat_lib)
  (flags
