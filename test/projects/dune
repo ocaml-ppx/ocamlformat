@@ -29,3 +29,20 @@
  (name runtest)
  (action
   (diff outside_detected_project.expected outside_detected_project.output)))
+
+(rule
+ (targets outside_detected_project_with_name.output)
+ (deps
+  (source_tree outside_detected_project_with_name))
+ (action
+  (with-outputs-to
+   %{targets}
+   (chdir
+    outside_detected_project_with_name/project_root
+    (run ocamlformat --name a.ml ../outside_root/a.ml)))))
+
+(alias
+ (name runtest)
+ (action
+  (diff outside_detected_project_with_name.expected
+    outside_detected_project_with_name.output)))
