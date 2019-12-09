@@ -2189,13 +2189,12 @@ let validate () =
   | Error e -> `Error (false, e)
   | Ok action -> `Ok action
 
-let action () = parse info validate
+type opts = {debug: bool; margin_check: bool}
 
-let debug () = !debug
-
-and check () = !check
-
-let margin_check () = !margin_check
+let action () =
+  let action = parse info validate in
+  let opts = {debug= !debug; margin_check= !margin_check} in
+  (action, opts)
 
 open Migrate_ast.Parsetree
 

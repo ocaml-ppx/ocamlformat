@@ -21,6 +21,7 @@ open Fmt
 
 type c =
   { conf: Conf.t
+  ; debug: bool
   ; source: Source.t
   ; cmts: Cmts.t
   ; fmt_code: Conf.t -> string -> (Fmt.t, unit) Result.t }
@@ -64,9 +65,9 @@ let compose_module {opn; pro; psp; bdy; cls; esp; epi} ~f =
 
 let protect =
   let first = ref true in
-  fun ast pp ->
+  fun c ast pp ->
     Fmt.protect pp ~on_error:(fun exc ->
-        if !first && Conf.debug () then (
+        if !first && c.debug then (
           let bt = Caml.Printexc.get_backtrace () in
           Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
           first := false ) ;
@@ -560,7 +561,7 @@ and fmt_attributes c ?pre ?suf ~key attrs =
     (fmt_opt pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
 
 and fmt_payload c ctx pld =
-  protect (Pld pld)
+  protect c (Pld pld)
   @@
   match pld with
   | PStr mex ->
@@ -610,7 +611,7 @@ and fmt_type_var s =
 
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(pro_space = true) ({ast= typ; _} as xtyp) =
-  protect (Typ typ)
+  protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
   update_config_maybe_disabled c ptyp_loc ptyp_attributes
@@ -834,7 +835,7 @@ and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
     $ fmt_docstring_padded c doc )
 
 and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
-  protect (Pat pat)
+  protect c (Pat pat)
   @@
   let ctx = Pat pat in
   let {ppat_desc; ppat_attributes; ppat_loc; ppat_loc_stack} = pat in
@@ -1390,7 +1391,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; _} as xexp) =
-  protect (Exp exp)
+  protect c (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes; pexp_loc_stack} = exp in
   update_config_maybe_disabled c pexp_loc pexp_attributes
@@ -2483,7 +2484,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
        $ str "end" ))
 
 and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
-  protect (Cty typ)
+  protect c (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
   update_config_maybe_disabled c pcty_loc pcty_attributes
@@ -2530,7 +2531,7 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
   $ fmt_docstring c ~pro:(fmt "@ ") doc
 
 and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
-  protect (Cl exp)
+  protect c (Cl exp)
   @@
   let {pcl_desc; pcl_loc; pcl_attributes} = exp in
   update_config_maybe_disabled c pcl_loc pcl_attributes
@@ -3358,7 +3359,7 @@ and fmt_signature c ctx itms =
   hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
 
 and fmt_signature_item c ?ext {ast= si; _} =
-  protect (Sig si)
+  protect c (Sig si)
   @@
   let eol = fmt "\n@;<1000 0>" in
   let epi = eol in
@@ -3947,7 +3948,7 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
   vbox 0 (list_fl decls fmt_decl)
 
 and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
-  protect (Str si)
+  protect c (Str si)
   @@
   let skip_double_semi =
     match ctx with Pld (PStr [_]) -> true | _ -> false
@@ -4333,28 +4334,35 @@ let fmt_toplevel c ctx itms =
 
 (** Entry points *)
 
-let fmt_file ~ctx ~f ~fmt_code source cmts conf itms =
-  let c = {source; cmts; conf; fmt_code} in
+let fmt_file ~ctx ~f ~fmt_code ~debug source cmts conf itms =
+  let c = {source; cmts; conf; debug; fmt_code} in
   match itms with
   | [] -> Cmts.fmt_after ~pro:noop c Location.none
   | l -> f c ctx l
 
-let rec fmt_code conf s =
-  match
-    Parse_with_comments.parse Migrate_ast.Parse.implementation conf ~source:s
-  with
-  | {ast; comments; _} ->
-      let source = Source.create s in
-      let cmts = Cmts.init_impl source ast comments in
-      let ctx = Pld (PStr ast) in
-      Ok (fmt_file ~f:fmt_structure ~ctx source cmts conf ast ~fmt_code)
-  | exception _ -> Error ()
+let fmt_code ~debug =
+  let rec fmt_code conf s =
+    match
+      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
+        ~source:s
+    with
+    | {ast; comments; _} ->
+        let source = Source.create s in
+        let cmts = Cmts.init_impl ~debug source ast comments in
+        let ctx = Pld (PStr ast) in
+        Ok
+          (fmt_file ~f:fmt_structure ~ctx ~debug source cmts conf ast
+             ~fmt_code)
+    | exception _ -> Error ()
+  in
+  fmt_code
 
-let entry_point ~f ~ctx source cmts conf l =
+let entry_point ~f ~ctx ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
   Ast.init conf ;
-  fmt_file ~f ~ctx ~fmt_code source cmts conf l
+  let fmt_code = fmt_code ~debug in
+  fmt_file ~f ~ctx ~fmt_code ~debug source cmts conf l
 
 let fmt_signature = entry_point ~f:fmt_signature ~ctx:Top
 

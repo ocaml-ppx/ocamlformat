@@ -17,7 +17,8 @@ open Asttypes
 open Parsetree
 
 type t =
-  { mutable cmts_before: Cmt.t Location.Multimap.t
+  { debug: bool
+  ; mutable cmts_before: Cmt.t Location.Multimap.t
   ; mutable cmts_after: Cmt.t Location.Multimap.t
   ; mutable cmts_within: Cmt.t Location.Multimap.t
   ; source: Source.t
@@ -126,7 +127,7 @@ end = struct
                    (not (List.is_empty children))
                    "@,{" " }" (dump_ tree children) )))
     in
-    fmt_if_k (Conf.debug ()) (set_margin 100000000 $ dump_ tree tree.roots)
+    set_margin 100000000 $ dump_ tree tree.roots
 end
 
 module Loc_tree = struct
@@ -323,7 +324,7 @@ let position_to_string = function
 let add_cmts t ?prev ?next position loc cmts =
   if not (CmtSet.is_empty cmts) then (
     let cmtl = CmtSet.to_list cmts in
-    if Conf.debug () then
+    if t.debug then
       List.iter cmtl ~f:(fun {Cmt.txt= cmt_txt; loc= cmt_loc} ->
           let string_between (l1 : Location.t) (l2 : Location.t) =
             match Source.string_between t.source l1.loc_end l2.loc_start with
@@ -374,14 +375,14 @@ let rec place t loc_tree ?prev_loc locs cmts =
     match prev_loc with
     | Some prev_loc -> add_cmts t `After ~prev:prev_loc prev_loc cmts
     | None ->
-        if Conf.debug () then
+        if t.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
               Format.eprintf "lost: %s@\n%!" txt) )
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
   if t.remove then (
-    if Conf.debug () then
+    if t.debug then
       Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
         Location.fmt before Location.fmt after ;
     let merge_and_sort x y =
@@ -395,15 +396,16 @@ let relocate (t : t) ~src ~before ~after =
       ~f:(Location.Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
     update_cmts t `Within
       ~f:(Location.Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
-    if Conf.debug () then
+    if t.debug then
       update_remaining t ~f:(fun r ->
           r |> Location.Set.remove src |> Location.Set.add after
           |> Location.Set.add before) )
 
 (** Initialize global state and place comments. *)
-let init map_ast source asts comments_n_docstrings =
+let init map_ast ~debug source asts comments_n_docstrings =
   let t =
-    { cmts_before= Location.Multimap.empty
+    { debug
+    ; cmts_before= Location.Multimap.empty
     ; cmts_after= Location.Multimap.empty
     ; cmts_within= Location.Multimap.empty
     ; source
@@ -411,18 +413,18 @@ let init map_ast source asts comments_n_docstrings =
     ; remove= true }
   in
   let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
-  if Conf.debug () then (
+  if debug then (
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun {Cmt.txt; loc} ->
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts in
-    if Conf.debug () then
+    if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
             update_remaining t ~f:(Location.Set.add loc)) ;
-    if Conf.debug () then (
+    if debug then (
       let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
       Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ;
@@ -588,8 +590,7 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   | _ -> fmt_non_code cmt
 
 let pop_if_debug t loc =
-  if Conf.debug () && t.remove then
-    update_remaining t ~f:(Location.Set.remove loc)
+  if t.debug && t.remove then update_remaining t ~f:(Location.Set.remove loc)
 
 let find_cmts t pos loc =
   let r = find_at_position t loc pos in

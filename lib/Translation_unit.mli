@@ -12,8 +12,8 @@
 open Parse_with_comments
 
 type 'a t =
-  { init_cmts: Source.t -> 'a -> Cmt.t list -> Cmts.t
-  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
+  { init_cmts: debug:bool -> Source.t -> 'a -> Cmt.t list -> Cmts.t
+  ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
@@ -39,6 +39,7 @@ val format :
   -> source:string
   -> parsed:'a with_comments
   -> Conf.t
+  -> Conf.opts
   -> (string, error) Result.t
 (** [format xunit conf ?output_file ~input_name ~source ~parsed] formats
     [parsed], using [input_name] for error messages, and referring to
@@ -51,11 +52,17 @@ val parse_and_format :
   -> input_name:string
   -> source:string
   -> Conf.t
+  -> Conf.opts
   -> (string, error) Result.t
 (** [parse_and_format xunit conf ?output_file ~input_name ~source] is similar
     to [format] but parses the source according to [xunit]. *)
 
 val print_error :
-  ?fmt:Format.formatter -> Conf.t -> input_name:string -> error -> unit
+     ?fmt:Format.formatter
+  -> debug:bool
+  -> quiet:bool
+  -> input_name:string
+  -> error
+  -> unit
 (** [print_error conf ?fmt ~input_name e] prints the error message
     corresponding to error [e] on the [fmt] formatter (stderr by default). *)

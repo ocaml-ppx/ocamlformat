@@ -15,8 +15,8 @@ open Migrate_ast
 open Parse_with_comments
 
 type 'a t =
-  { init_cmts: Source.t -> 'a -> Cmt.t list -> Cmts.t
-  ; fmt: Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
+  { init_cmts: debug:bool -> Source.t -> 'a -> Cmt.t list -> Cmts.t
+  ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
   ; equal:
          ignore_doc_comments:bool
@@ -71,29 +71,20 @@ let with_file input_name output_file suf ext f =
   tmp
 
 let dump_ast ~input_name ?output_file ~suffix fmt =
-  if Conf.debug () then
-    let ext = ".ast" in
-    let file =
-      with_file input_name output_file suffix ext (fun oc ->
-          fmt (Format.formatter_of_out_channel oc))
-    in
-    Some file
-  else None
+  let ext = ".ast" in
+  with_file input_name output_file suffix ext (fun oc ->
+      fmt (Format.formatter_of_out_channel oc))
 
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
-  if Conf.debug () then
-    let file =
-      with_file input_name output_file suffix ext (fun oc ->
-          Out_channel.output_string oc fmted)
-    in
-    Some file
-  else None
+  with_file input_name output_file suffix ext (fun oc ->
+      Out_channel.output_string oc fmted)
 
-let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
+let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
+    =
   let exe = Filename.basename Caml.Sys.argv.(0) in
   match error with
-  | Invalid_source _ when conf.Conf.quiet -> ()
+  | Invalid_source _ when quiet -> ()
   | Invalid_source {exn} -> (
       let reason =
         (* NOTE: Warning 28 is suppressed due to a difference in exception
@@ -123,7 +114,7 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
              %!"
       | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
   | Unstable {iteration; prev; next} ->
-      if Conf.debug () then (
+      if debug then (
         let ext = Filename.extension input_name in
         let input_name =
           Filename.chop_extension (Filename.basename input_name)
@@ -139,21 +130,20 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
         ignore (Unix.system (Printf.sprintf "diff %S %S 1>&2" p n)) ;
         Unix.unlink p ;
         Unix.unlink n ) ;
-      if not (Conf.check ()) then
-        if iteration <= 1 then
-          Format.fprintf fmt
-            "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
-            input_name
-        else (
-          Format.fprintf fmt
-            "%s: Cannot process %S.\n\
-            \  Please report this bug at \
-             https://github.com/ocaml-ppx/ocamlformat/issues.\n\
-             %!"
-            exe input_name ;
-          Format.fprintf fmt
-            "  BUG: formatting did not stabilize after %i iterations.\n%!"
-            iteration )
+      if iteration <= 1 then
+        Format.fprintf fmt
+          "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
+          input_name
+      else (
+        Format.fprintf fmt
+          "%s: Cannot process %S.\n\
+          \  Please report this bug at \
+           https://github.com/ocaml-ppx/ocamlformat/issues.\n\
+           %!"
+          exe input_name ;
+        Format.fprintf fmt
+          "  BUG: formatting did not stabilize after %i iterations.\n%!"
+          iteration )
   | User_error msg -> Format.fprintf fmt "%s: %s.\n%!" exe msg
   | Ocamlformat_bug {exn} -> (
       Format.fprintf fmt
@@ -175,7 +165,7 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
           in
           Format.fprintf fmt "  BUG: %s.\n%!" s ;
           ( match m with
-          | `Doc_comment l when not conf.Conf.quiet ->
+          | `Doc_comment l when not quiet ->
               List.iter l ~f:(function
                 | Normalize.Moved (loc_before, loc_after, msg) ->
                     if Location.compare loc_before Location.none = 0 then
@@ -208,7 +198,7 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
                        --no-parse-docstrings.\n\
                        %!"
                       Location.print_loc loc (ellipsis_cmt s))
-          | `Comment_dropped l when not conf.Conf.quiet ->
+          | `Comment_dropped l when not quiet ->
               List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                   Format.fprintf fmt
                     "%!@{<loc>%a@}:@,\
@@ -216,36 +206,33 @@ let print_error ?(fmt = Format.err_formatter) conf ~input_name error =
                      %!"
                     Location.print_loc loc (ellipsis_cmt msg))
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
-              if Conf.debug () then Location.report_exception fmt exn
+              if debug then Location.report_exception fmt exn
           | `Warning50 l ->
-              if Conf.debug () then
+              if debug then
                 List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
           | _ -> () ) ;
-          if Conf.debug () then
+          if debug then
             List.iter l ~f:(fun (msg, sexp) ->
                 Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp))
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
-          if Conf.debug () then
-            Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
+          if debug then Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
 
 let check_all_locations fmt cmts_t =
-  if Conf.debug () then
-    match Cmts.remaining_locs cmts_t with
-    | [] -> ()
-    | l ->
-        let print l = Format.fprintf fmt "%a\n%!" Location.print_loc l in
-        Format.fprintf fmt
-          "Warning: Some locations have not been considered\n%!" ;
-        List.iter ~f:print (List.sort l ~compare:Location.compare)
+  match Cmts.remaining_locs cmts_t with
+  | [] -> ()
+  | l ->
+      let print l = Format.fprintf fmt "%a\n%!" Location.print_loc l in
+      Format.fprintf fmt
+        "Warning: Some locations have not been considered\n%!" ;
+      List.iter ~f:print (List.sort l ~compare:Location.compare)
 
-let check_margin (conf : Conf.t) ~filename ~fmted =
-  if Conf.margin_check () then
-    List.iteri (String.split_lines fmted) ~f:(fun i line ->
-        if String.length line > conf.margin then
-          Format.fprintf Format.err_formatter
-            "Warning: %s:%i exceeds the margin\n%!" filename i)
+let check_margin conf ~filename ~fmted =
+  List.iteri (String.split_lines fmted) ~f:(fun i line ->
+      if String.length line > conf.Conf.margin then
+        Format.fprintf Format.err_formatter
+          "Warning: %s:%i exceeds the margin\n%!" filename i)
 
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k
@@ -258,19 +245,28 @@ let with_buffer_formatter ~buffer_size k =
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
-let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
+let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   let dump_ast ~suffix ast =
-    dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-        xunit.printast fmt ast)
+    if opts.Conf.debug then
+      Some
+        (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
+             xunit.printast fmt ast))
+    else None
   in
-  let dump_formatted = dump_formatted ~input_name ?output_file in
+  let dump_formatted ~suffix fmted =
+    if opts.debug then
+      Some (dump_formatted ~input_name ?output_file ~suffix fmted)
+    else None
+  in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) t ~source =
     let format ~box_debug =
       let open Fmt in
       let source_t = Source.create source in
-      let cmts_t = xunit.init_cmts source_t t.ast t.comments in
+      let cmts_t =
+        xunit.init_cmts ~debug:opts.debug source_t t.ast t.comments
+      in
       let contents =
         with_buffer_formatter ~buffer_size:(String.length source)
           ( set_margin conf.margin
@@ -279,22 +275,21 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (xunit.fmt source_t cmts_t conf t.ast) )
+              (xunit.fmt ~debug:opts.debug source_t cmts_t conf t.ast) )
       in
       (contents, cmts_t)
     in
-    if Conf.debug () then
+    if opts.debug then
       format ~box_debug:true |> fst
       |> dump_formatted ~suffix:".boxes"
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
-    let conf =
-      if Conf.debug () then conf else {conf with Conf.quiet= true}
-    in
+    let conf = if opts.debug then conf else {conf with Conf.quiet= true} in
     if String.equal source fmted then (
-      check_all_locations Format.err_formatter cmts_t ;
-      check_margin conf ~fmted
-        ~filename:(Option.value output_file ~default:input_name) ;
+      if opts.debug then check_all_locations Format.err_formatter cmts_t ;
+      if opts.Conf.margin_check then
+        check_margin conf ~fmted
+          ~filename:(Option.value output_file ~default:input_name) ;
       Ok fmted )
     else
       let exn_args () =
@@ -337,7 +332,7 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
             | [] -> ()
             | l -> internal_error (`Comment_dropped l) [] ) ;
             let is_docstring Cmt.{txt; _} =
-              conf.Conf.parse_docstrings && Char.equal txt.[0] '*'
+              conf.parse_docstrings && Char.equal txt.[0] '*'
             in
             let old_docstrings, old_comments =
               List.partition_tf t.comments ~f:is_docstring
@@ -380,8 +375,8 @@ let format xunit ?output_file ~input_name ~source ~parsed (conf : Conf.t) =
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
-let parse_and_format xunit ?output_file ~input_name ~source conf =
+let parse_and_format xunit ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
   match parse xunit.parse conf ~source with
   | exception exn -> Error (Invalid_source {exn})
-  | parsed -> format xunit conf ?output_file ~input_name ~source ~parsed
+  | parsed -> format xunit ?output_file ~input_name ~source ~parsed conf opts

@@ -884,15 +884,19 @@ end = struct
 
   let ( == ) = Base.phys_equal
 
-  let dump fs ctx ast =
+  let dump ctx ast fs =
     Format.fprintf fs "ast: %a@\nctx: %a@\n" T.dump ast T.dump ctx
 
-  let fail ctx ast exc =
-    if Conf.debug () then (
-      let bt = Caml.Printexc.get_backtrace () in
-      dump Format.err_formatter ctx ast ;
-      Format.eprintf "%s%!" bt ) ;
-    raise exc
+  let assert_no_raise ~f ~dump x =
+    assert (
+      try
+        ignore (f x) ;
+        true
+      with exc ->
+        let bt = Caml.Printexc.get_backtrace () in
+        dump x Format.err_formatter ;
+        Format.eprintf "%s%!" bt ;
+        raise exc )
 
   (** Predicates to check the claimed sub-term relation. *)
 
@@ -1109,8 +1113,9 @@ end = struct
       | _ -> assert false )
     | Top | Tli _ -> assert false
 
-  let check_typ ({ctx; ast= typ} as xtyp) =
-    try check_typ xtyp with exc -> fail ctx (Typ typ) exc
+  let assert_check_typ xtyp =
+    let dump {ctx; ast= typ} = dump ctx (Typ typ) in
+    assert_no_raise ~f:check_typ ~dump xtyp
 
   let check_cty {ctx; ast= cty} =
     let check_class_type l =
@@ -1180,8 +1185,9 @@ end = struct
     | Mty _ -> assert false
     | Mod _ -> assert false
 
-  let check_cty ({ctx; ast= cty} as xcty) =
-    try check_cty xcty with exc -> fail ctx (Cty cty) exc
+  let assert_check_cty xcty =
+    let dump {ctx; ast= cty} = dump ctx (Cty cty) in
+    assert_no_raise ~f:check_cty ~dump xcty
 
   let check_cl {ctx; ast= cl} =
     let check_pcstr_fields pcstr_fields =
@@ -1233,8 +1239,9 @@ end = struct
     | Mty _ -> assert false
     | Mod _ -> assert false
 
-  let check_cl ({ctx; ast= cl} as xcl) =
-    try check_cl xcl with exc -> fail ctx (Cl cl) exc
+  let assert_check_cl xcl =
+    let dump {ctx; ast= cl} = dump ctx (Cl cl) in
+    assert_no_raise ~f:check_cl ~dump xcl
 
   let check_pat {ctx; ast= pat} =
     let check_pcstr_fields pcstr_fields =
@@ -1337,8 +1344,9 @@ end = struct
       | _ -> assert false )
     | Top | Tli _ -> assert false
 
-  let check_pat ({ctx; ast= pat} as xpat) =
-    try check_pat xpat with exc -> fail ctx (Pat pat) exc
+  let assert_check_pat xpat =
+    let dump {ctx; ast= pat} = dump ctx (Pat pat) in
+    assert_no_raise ~f:check_pat ~dump xpat
 
   let check_exp {ctx; ast= exp} =
     let check_extensions = function
@@ -1507,8 +1515,9 @@ end = struct
     | Cty _ -> assert false
     | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
 
-  let check_exp ({ctx; ast= exp} as xexp) =
-    try check_exp xexp with exc -> fail ctx (Exp exp) exc
+  let assert_check_exp xexp =
+    let dump {ctx; ast= exp} = dump ctx (Exp exp) in
+    assert_no_raise ~f:check_exp ~dump xexp
 
   let rec is_simple (c : Conf.t) width ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
@@ -1814,7 +1823,7 @@ end = struct
   (** [parenze_typ {ctx; ast}] holds when type [ast] should be parenthesized
       in context [ctx]. *)
   let parenze_typ ({ctx; ast= typ} as xtyp) =
-    assert (check_typ xtyp ; true) ;
+    assert_check_typ xtyp ;
     match xtyp with
     | {ast= {ptyp_desc= Ptyp_package _; _}; _} -> true
     | {ast= {ptyp_desc= Ptyp_alias _; _}; ctx= Typ _} -> true
@@ -1863,7 +1872,7 @@ end = struct
   (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_cty ({ctx; ast= cty} as xcty) =
-    assert (check_cty xcty ; true) ;
+    assert_check_cty xcty ;
     match ambig_prec (sub_ast ~ctx (Cty cty)) with
     | Some (Some true) -> true
     | _ -> false
@@ -1890,7 +1899,7 @@ end = struct
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_pat ({ctx; ast= pat} as xpat) =
-    assert (check_pat xpat ; true) ;
+    assert_check_pat xpat ;
     has_trailing_attributes_pat pat
     ||
     match (ctx, pat.ppat_desc) with
@@ -2252,7 +2261,7 @@ end = struct
       | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
       | _ -> false
     in
-    assert (check_exp xexp ; true) ;
+    assert_check_exp xexp ;
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
     || has_trailing_attributes_exp exp
@@ -2373,7 +2382,7 @@ end = struct
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
       parenthesized in context [ctx]. *)
   and parenze_cl ({ctx; ast= cl} as xcl) =
-    assert (check_cl xcl ; true) ;
+    assert_check_cl xcl ;
     match ambig_prec (sub_ast ~ctx (Cl cl)) with
     | None -> false
     | Some (Some true) -> true
