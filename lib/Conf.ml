@@ -1278,8 +1278,9 @@ let margin_check =
 let name =
   let docv = "NAME" in
   let doc =
-    "Name of input file for use in error reporting. Defaults to the input \
-     file name. Some options can be specified in configuration files named \
+    "Name of input file for use in error reporting and starting point when \
+     searching for '.ocamlformat' files. Defaults to the input file name. \
+     Some options can be specified in configuration files named \
      '.ocamlformat' in the same or a parent directory of $(docv), see \
      documentation of other options for details."
   in
