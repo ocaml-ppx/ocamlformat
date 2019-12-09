@@ -641,6 +641,8 @@ end
 
 include T
 
+let is_top = function Top -> true | _ -> false
+
 let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
@@ -731,6 +733,10 @@ type prec =
   | High
   | Atomic
 
+let compare_prec : prec -> prec -> int = Poly.compare
+
+let equal_prec a b = compare_prec a b = 0
+
 let string_of_prec = function
   | Low -> "Low"
   | Semi -> "Semi"
@@ -765,6 +771,8 @@ let string_of_assoc = function
   | Right -> "Right"
 
 let _ = string_of_assoc
+
+let equal_assoc : assoc -> assoc -> bool = Poly.( = )
 
 (** Compute associativity from precedence, since associativity is uniform
     across precedence levels. *)
@@ -1790,16 +1798,18 @@ end = struct
     >>| fun (prec_ctx, which_child) ->
     prec_ast ast
     >>| fun prec_ast ->
-    let cmp = Poly.compare prec_ctx prec_ast in
-    if cmp < 0 then (* ast higher precedence than context: no parens *)
-      false
-    else if cmp > 0 then (* context higher prec than ast: add parens *)
-      true
-    else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
-    then (* which child and associativity match: no parens *)
-      false
-    else (* which child and assoc conflict: add parens *)
-      true
+    match compare_prec prec_ctx prec_ast with
+    | 0 ->
+        (* which child and associativity match: no parens *)
+        (* which child and assoc conflict: add parens *)
+        equal_assoc which_child Non
+        || not (equal_assoc (assoc_of_prec prec_ast) which_child)
+    | cmp when cmp < 0 ->
+        (* ast higher precedence than context: no parens *)
+        false
+    | _ (* > 0 *) ->
+        (* context higher prec than ast: add parens *)
+        true
 
   (** [parenze_typ {ctx; ast}] holds when type [ast] should be parenthesized
       in context [ctx]. *)
@@ -2219,7 +2229,7 @@ end = struct
             ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _ :: (_, e2) :: _)
           when e2 == exp && is_infix_id i
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
-                      Poly.(p < Apply)) ->
+                      compare_prec p Apply < 0) ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
@@ -2411,7 +2421,7 @@ end = struct
            noise *)
         false
     | None, _ | _, None -> false
-    | Some p1, Some p2 -> Poly.(p1 <> p2)
+    | Some p1, Some p2 -> not (equal_prec p1 p2)
 end
 
 include In_ctx

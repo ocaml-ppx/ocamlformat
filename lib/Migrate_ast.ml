@@ -12,10 +12,33 @@
 let selected_version = Migrate_parsetree.Versions.ocaml_408
 
 module Selected_version = Ast_408
-module Parsetree = Selected_version.Parsetree
 module Ast_mapper = Selected_version.Ast_mapper
 module Ast_helper = Selected_version.Ast_helper
-module Asttypes = Selected_version.Asttypes
+
+module Parsetree = struct
+  include Selected_version.Parsetree
+
+  let equal_core_type : core_type -> core_type -> bool = Poly.equal
+
+  let equal_structure : structure -> structure -> bool = Poly.equal
+
+  let equal_signature : signature -> signature -> bool = Poly.equal
+
+  let equal_toplevel_phrase : toplevel_phrase -> toplevel_phrase -> bool =
+    Poly.equal
+end
+
+module Asttypes = struct
+  include Selected_version.Asttypes
+
+  let is_private = function Private -> true | Public -> false
+
+  let is_open = function Open -> true | Closed -> false
+
+  let is_override = function Override -> true | Fresh -> false
+
+  let is_mutable = function Mutable -> true | Immutable -> false
+end
 
 module Mapper = struct
   let structure = Selected_version.map_structure
