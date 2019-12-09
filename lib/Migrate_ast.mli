@@ -45,13 +45,18 @@ module Location : sig
 
   val comparator : (t, comparator_witness) Comparator.t
 
-  val hash : t -> int
-
   val contains : t -> t -> bool
 
   val sexp_of_t : t -> Sexp.t
 
   val compare_width_decreasing : t -> t -> int
+  (** Compare, in order:
+
+      - start
+      - end (in reverse order)
+      - ghostness
+
+      Locs (start and end) are compared using [Position.compare]. *)
 
   val compare : t -> t -> int
 

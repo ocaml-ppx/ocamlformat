@@ -171,8 +171,6 @@ module Location = struct
 
   include Location_comparator
 
-  let hash = Hashtbl.hash
-
   let compare_start x y = Position.compare x.loc_start y.loc_start
 
   let compare_start_col x y = Position.compare_col x.loc_start y.loc_start
@@ -185,13 +183,10 @@ module Location = struct
 
   let width x = Position.distance x.loc_start x.loc_end
 
-  let compare_width_decreasing l1 l2 =
-    match Position.compare l1.loc_start l2.loc_start with
-    | 0 -> (
-      match Position.compare l2.loc_end l1.loc_end with
-      | 0 -> compare l1 l2
-      | n -> n )
-    | n -> n
+  let descending cmp a b = -cmp a b
+
+  let compare_width_decreasing =
+    Comparable.lexicographic [compare_start; descending compare_end; compare]
 
   let is_single_line x margin =
     width x <= margin && x.loc_start.pos_lnum = x.loc_end.pos_lnum
