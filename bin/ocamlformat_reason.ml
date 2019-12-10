@@ -57,14 +57,12 @@ let to_output_file output_file data =
   | None -> Out_channel.output_string Out_channel.stdout data
   | Some output_file -> Out_channel.write_all output_file ~data
 
-let action, opts = Conf.action ()
-
 ;;
-match action with
-| `Ok (Inplace _) ->
+match Conf.action () with
+| `Ok (Inplace _, _) ->
     user_error "Cannot convert Reason code with --inplace" []
-| `Ok (Check _) -> user_error "Cannot check Reason code with --check" []
-| `Ok (In_out ({kind; file; name= input_name; conf}, output_file)) -> (
+| `Ok (Check _, _) -> user_error "Cannot check Reason code with --check" []
+| `Ok (In_out ({kind; file; name= input_name; conf}, output_file), opts) -> (
     let (Pack {parse; xunit}) = pack_of_kind kind in
     let t =
       match file with
@@ -83,6 +81,6 @@ match action with
         Translation_unit.print_error ~debug:opts.debug ~quiet:conf.quiet
           ~input_name e ;
         Caml.exit 1 )
-| `Ok (Print_config conf) -> Conf.print_config conf ; Caml.exit 0
+| `Ok (Print_config conf, _) -> Conf.print_config conf ; Caml.exit 0
 | `Version | `Help -> Caml.exit 0
 | `Error _ -> Caml.exit 1
