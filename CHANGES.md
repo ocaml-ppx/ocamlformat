@@ -32,6 +32,7 @@
   + Remove global reference `Cmts.remove` (#1142) (Etienne Millon)
   + Remove symbol strings in `Cmts` (#1146) (Etienne Millon)
   + Allow tests to be postprocessed with ocp-indent (#1171) (Guillaume Petiot, Jules Aguillon)
+  + Copy the 4.08 lexer and parser in ocamlformat (#1182) (Guillaume Petiot)
 
 #### Documentation
 
