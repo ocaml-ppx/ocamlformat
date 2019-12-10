@@ -16,7 +16,6 @@
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
   + Remove some calls to if_newline and break_unless_newline and fix break before closing brackets (#1168) (Guillaume Petiot)
   + Fix unstable cmt in or-pattern (#1173) (Guillaume Petiot)
-  + Fix error handling of cmdline parsing (fatal errors not showing in IDE) (#1178) (Guillaume Petiot)
 
 #### Internal
 
@@ -25,7 +24,7 @@
   + Replace pre_break and if_newline by cbreak (#1090) (Guillaume Petiot)
   + Use opt and fmt_opt to simplify formatting (#1150) (Guillaume Petiot)
   + Replace inplace formatting by dune staging for make fmt (#1151) (Guillaume Petiot)
-  + Refactor code that interprets CLI options (#1127, #1156) (Jules Aguillon)
+  + Refactor code that interprets CLI options (#1127, #1156, #1178) (Jules Aguillon)
   + Testing interactions between break-infix and break-infix-before-func (#1136) (Guillaume Petiot)
   + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
   + Remove the test generator for cli tests (#1126, #1157) (Etienne Millon)
