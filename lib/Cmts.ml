@@ -42,96 +42,12 @@ let find_at_position t loc pos =
   in
   Location.Multimap.find map loc
 
-(** A tree of non-overlapping intervals. Intervals are non-overlapping if
-    whenever 2 intervals share more than an end-point, then one contains the
-    other. *)
-module Non_overlapping_interval_tree (Itv : sig
-  include Hashtbl.Key [@@ocaml.warning "-3"]
+module Loc_tree : sig
+  include Non_overlapping_interval_tree.S with type itv = Location.t
 
-  val contains : t -> t -> bool
-
-  val compare_width_decreasing : t -> t -> int
-end) : sig
-  type t
-
-  val of_list : Itv.t list -> t
-  (** If there are duplicates in the input list, earlier elements will be
-      ancestors of later elements. *)
-
-  val roots : t -> Itv.t list
-
-  val children : t -> Itv.t -> Itv.t list
-
-  val dump : t -> Fmt.t
-  (** Debug: dump debug representation of tree. *)
+  val of_ast : (Ast_mapper.mapper -> 'a -> _) -> 'a -> t * Location.t list
 end = struct
-  (* simple but (asymptotically) suboptimal implementation *)
-
-  type t = {mutable roots: Itv.t list; tbl: (Itv.t, Itv.t list) Hashtbl.t}
-
-  let roots t = t.roots
-
-  let create () = {roots= []; tbl= Hashtbl.create (module Itv)}
-
-  (* Descend tree from roots, find deepest node that contains elt. *)
-
-  let rec parents tbl roots ~ancestors elt =
-    Option.value ~default:ancestors
-      (List.find_map roots ~f:(fun root ->
-           if Itv.contains root elt then
-             Hashtbl.find_and_call tbl root
-               ~if_found:(fun children ->
-                 parents tbl children ~ancestors:(root :: ancestors) elt)
-               ~if_not_found:(fun x -> x :: ancestors)
-             |> Option.some
-           else None))
-
-  (* Add elements in decreasing width order to construct tree from roots to
-     leaves. That is, when adding an interval to a partially constructed
-     tree, it will already contain all wider intervals, so the new interval's
-     parent will already be in the tree. *)
-
-  let of_list elts =
-    let elts_decreasing_width =
-      List.dedup_and_sort ~compare:Itv.compare_width_decreasing elts
-    in
-    let tree = create () in
-    let rec find_in_previous elt = function
-      | [] -> parents tree.tbl tree.roots elt ~ancestors:[]
-      | p :: ancestors when Itv.contains p elt ->
-          parents tree.tbl [p] elt ~ancestors
-      | _ :: px -> find_in_previous elt px
-    in
-    List.fold elts_decreasing_width ~init:[] ~f:(fun prev_ancestor elt ->
-        let ancestors = find_in_previous elt prev_ancestor in
-        ( match ancestors with
-        | parent :: _ -> Hashtbl.add_multi tree.tbl ~key:parent ~data:elt
-        | [] -> tree.roots <- elt :: tree.roots ) ;
-        ancestors)
-    |> (ignore : Itv.t list -> unit) ;
-    let sort_itv_list = List.sort ~compare:Itv.compare_width_decreasing in
-    { roots= sort_itv_list tree.roots
-    ; tbl= Hashtbl.map tree.tbl ~f:sort_itv_list }
-
-  let children {tbl; _} elt = Option.value ~default:[] (Hashtbl.find tbl elt)
-
-  let dump tree =
-    let open Fmt in
-    let rec dump_ tree roots =
-      vbox 0
-        (list roots "@," (fun root ->
-             let children = children tree root in
-             vbox 1
-               ( str (Sexp.to_string_hum (Itv.sexp_of_t root))
-               $ wrap_if
-                   (not (List.is_empty children))
-                   "@,{" " }" (dump_ tree children) )))
-    in
-    set_margin 100000000 $ dump_ tree tree.roots
-end
-
-module Loc_tree = struct
-  include Non_overlapping_interval_tree (Location)
+  include Non_overlapping_interval_tree.Make (Location)
 
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
