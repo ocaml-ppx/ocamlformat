@@ -57,29 +57,38 @@ let to_output_file output_file data =
   | None -> Out_channel.output_string Out_channel.stdout data
   | Some output_file -> Out_channel.write_all output_file ~data
 
-let action, opts = Conf.action ()
+let run_action action opts =
+  match action with
+  | Conf.Inplace __ ->
+      user_error "Cannot convert Reason code with --inplace" []
+  | Check _ -> user_error "Cannot check Reason code with --check" []
+  | In_out ({kind; file; name= input_name; conf}, output_file) -> (
+      let (Pack {parse; xunit}) = pack_of_kind kind in
+      let t =
+        match file with
+        | Stdin -> parse In_channel.stdin
+        | File input_file -> In_channel.with_file input_file ~f:parse
+      in
+      let source = try_read_original_source t.origin_filename in
+      let parsed = t.ast_and_comment in
+      match
+        format xunit ?output_file ~input_name ~source ~parsed conf opts
+      with
+      | Ok s ->
+          to_output_file output_file s ;
+          Ok ()
+      | Error e ->
+          Error
+            (fun () ->
+              Translation_unit.print_error ~debug:opts.debug
+                ~quiet:conf.quiet ~input_name e) )
+  | Print_config conf -> Conf.print_config conf ; Ok ()
 
 ;;
-match action with
-| Inplace _ -> user_error "Cannot convert Reason code with --inplace" []
-| Check _ -> user_error "Cannot check Reason code with --check" []
-| In_out ({kind; file; name= input_name; conf}, output_file) -> (
-    let (Pack {parse; xunit}) = pack_of_kind kind in
-    let t =
-      match file with
-      | Stdin -> parse In_channel.stdin
-      | File input_file -> In_channel.with_file input_file ~f:parse
-    in
-    let source = try_read_original_source t.origin_filename in
-    let parsed = t.ast_and_comment in
-    match
-      format xunit ?output_file ~input_name ~source ~parsed conf opts
-    with
-    | Ok s ->
-        to_output_file output_file s ;
-        Caml.exit 0
-    | Error e ->
-        Translation_unit.print_error ~debug:opts.debug ~quiet:conf.quiet
-          ~input_name e ;
-        Caml.exit 1 )
-| Print_config conf -> Conf.print_config conf ; Caml.exit 0
+match Conf.action () with
+| `Ok (action, opts) -> (
+  match run_action action opts with
+  | Ok () -> Caml.exit 0
+  | Error error -> error () ; Caml.exit 1 )
+| `Version | `Help -> Caml.exit 0
+| `Error _ -> Caml.exit 1

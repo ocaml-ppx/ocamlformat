@@ -2167,6 +2167,8 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
+type opts = {debug: bool; margin_check: bool}
+
 let validate () =
   let root =
     Option.map !root ~f:Fpath.(fun x -> v x |> to_absolute |> normalize)
@@ -2187,14 +2189,11 @@ let validate () =
     make_action ~enable_outside_detected_project ~root action inputs
   with
   | Error e -> `Error (false, e)
-  | Ok action -> `Ok action
+  | Ok action ->
+      let opts = {debug= !debug; margin_check= !margin_check} in
+      `Ok (action, opts)
 
-type opts = {debug: bool; margin_check: bool}
-
-let action () =
-  let action = parse info validate in
-  let opts = {debug= !debug; margin_check= !margin_check} in
-  (action, opts)
+let action () = parse info validate
 
 open Migrate_ast.Parsetree
 

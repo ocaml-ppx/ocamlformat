@@ -71,52 +71,53 @@ let print_error conf opts ~input_name e =
   Translation_unit.print_error ~debug:opts.Conf.debug ~quiet:conf.Conf.quiet
     ~input_name e
 
-let action, opts = Conf.action ()
+let run_action action opts =
+  match action with
+  | Conf.Inplace inputs ->
+      let f {Conf.kind; name= input_name; file= input_file; conf} =
+        let input_file =
+          match input_file with
+          | File f -> f
+          | _ -> impossible "checked by validate"
+        in
+        let source =
+          In_channel.with_file input_file ~f:In_channel.input_all
+        in
+        let result = format ~kind ~input_name ~source conf opts in
+        match result with
+        | Ok formatted ->
+            if not (String.equal formatted source) then
+              Out_channel.write_all input_file ~data:formatted ;
+            Ok ()
+        | Error e -> Error (fun () -> print_error conf opts ~input_name e)
+      in
+      Result.combine_errors_unit (List.map inputs ~f)
+  | In_out ({kind; file; name= input_name; conf}, output_file) -> (
+      let source = source_from_file file in
+      match format ?output_file ~kind ~input_name ~source conf opts with
+      | Ok s ->
+          to_output_file output_file s ;
+          Ok ()
+      | Error e -> Error [(fun () -> print_error conf opts ~input_name e)] )
+  | Check inputs ->
+      let f {Conf.kind; name= input_name; file; conf} =
+        let source = source_from_file file in
+        let result = format ~kind ~input_name ~source conf opts in
+        match result with
+        | Ok res when String.equal res source -> Ok ()
+        | Ok _ -> Error (fun () -> ())
+        | Error e -> Error (fun () -> print_error conf opts ~input_name e)
+      in
+      Result.combine_errors_unit (List.map inputs ~f)
+  | Print_config conf -> Conf.print_config conf ; Ok ()
 
 ;;
-match action with
-| Inplace inputs ->
-    let errors =
-      List.filter_map inputs
-        ~f:(fun {kind; name= input_name; file= input_file; conf} ->
-          let input_file =
-            match input_file with
-            | File f -> f
-            | _ -> impossible "checked by validate"
-          in
-          let source =
-            In_channel.with_file input_file ~f:In_channel.input_all
-          in
-          let result = format ~kind ~input_name ~source conf opts in
-          match result with
-          | Error e ->
-              print_error conf opts ~input_name e ;
-              Some ()
-          | Ok formatted ->
-              if not (String.equal formatted source) then
-                Out_channel.write_all input_file ~data:formatted ;
-              None)
-    in
-    if List.is_empty errors then Caml.exit 0 else Caml.exit 1
-| In_out ({kind; file; name= input_name; conf}, output_file) -> (
-    let source = source_from_file file in
-    let result = format ?output_file ~kind ~input_name ~source conf opts in
-    match result with
-    | Ok s ->
-        to_output_file output_file s ;
-        Caml.exit 0
-    | Error e ->
-        print_error conf opts ~input_name e ;
-        Caml.exit 1 )
-| Check inputs ->
-    let f {Conf.kind; name= input_name; file; conf} =
-      let source = source_from_file file in
-      match format ~kind ~input_name ~source conf opts with
-      | Ok res -> String.equal res source
-      | Error e ->
-          print_error conf opts ~input_name e ;
-          false
-    in
-    let checked = List.for_all inputs ~f in
-    Caml.exit (if checked then 0 else 1)
-| Print_config conf -> Conf.print_config conf ; Caml.exit 0
+match Conf.action () with
+| `Ok (action, opts) -> (
+  match run_action action opts with
+  | Ok () -> Caml.exit 0
+  | Error errors ->
+      List.iter errors ~f:(fun error -> error ()) ;
+      Caml.exit 1 )
+| `Version | `Help -> Caml.exit 0
+| `Error _ -> Caml.exit 1
