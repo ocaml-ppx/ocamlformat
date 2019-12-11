@@ -5,6 +5,10 @@
   + Add an option `--margin-check` to emit a warning if the formatted output exceeds the margin (#1110) (Guillaume Petiot)
   + Preserve comment indentation when `wrap-comments` is unset (#1138, #1159) (Jules Aguillon)
 
+#### Packaging
+
+  + Work with base v0.13.0 (#1163) (Jules Aguillon)
+
 #### Bug fixes
 
   + Fix wrapping of or-patterns in presence of comments with `break-cases=fit` (#1167) (Jules Aguillon)
@@ -16,22 +20,6 @@
   + Fix break after Psig_include depending on presence of docstring (#1125) (Guillaume Petiot)
   + Remove some calls to if_newline and break_unless_newline and fix break before closing brackets (#1168) (Guillaume Petiot)
   + Fix unstable cmt in or-pattern (#1173) (Guillaume Petiot)
-
-#### Internal
-
-  + Work with base v0.13.0 (#1163) (Jules Aguillon)
-  + Sanitize formatting of or-patterns and remove or_newline (#1145) (Guillaume Petiot)
-  + Replace pre_break and if_newline by cbreak (#1090) (Guillaume Petiot)
-  + Use opt and fmt_opt to simplify formatting (#1150) (Guillaume Petiot)
-  + Replace inplace formatting by dune staging for make fmt (#1151) (Guillaume Petiot)
-  + Refactor code that interprets CLI options (#1127, #1156, #1178) (Jules Aguillon)
-  + Testing interactions between break-infix and break-infix-before-func (#1136) (Guillaume Petiot)
-  + Add dune to repositories checked for regressions (#1129) (Jules Aguillon)
-  + Remove the test generator for cli tests (#1126, #1157) (Etienne Millon)
-  + Factor out a private library (#1134, #1148, #1161, #1162) (Etienne Millon, Jules Aguillon)
-  + Remove global reference `Cmts.remove` (#1142) (Etienne Millon)
-  + Remove symbol strings in `Cmts` (#1146) (Etienne Millon)
-  + Allow tests to be postprocessed with ocp-indent (#1171) (Guillaume Petiot, Jules Aguillon)
 
 #### Documentation
 
