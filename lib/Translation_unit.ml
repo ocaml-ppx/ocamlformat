@@ -48,6 +48,7 @@ let internal_error msg kvs = raise (Internal_error (msg, kvs))
 
 type error =
   | Invalid_source of {exn: exn}
+  | Invalid_range of Line_range.t
   | Unstable of {iteration: int; prev: string; next: string}
   | Ocamlformat_bug of {exn: exn}
   | User_error of string
@@ -215,6 +216,9 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
           if debug then Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
+  | Invalid_range range ->
+      Format.fprintf fmt "%a is not a valid range in the input file\n%!"
+        Line_range.pp_hum range
 
 let check_all_locations fmt cmts_t =
   match Cmts.remaining_locs cmts_t with
@@ -394,12 +398,15 @@ let parse_result xunit conf (opts : Conf.opts) ~source ~input_name =
       else Error (Invalid_source {exn})
   | parsed -> Ok parsed
 
-let parse_and_format xunit ?output_file ~input_name ~source conf opts =
+let parse_and_format xunit ?output_file ~input_name ~source ~line_range conf
+    opts =
   Location.input_name := input_name ;
   let open Result.Monad_infix in
-  parse_result xunit conf opts ~source ~input_name
-  >>= fun parsed ->
-  format xunit ?output_file ~input_name ~source ~parsed conf opts
+  Line_range.apply line_range source ~on_invalid:(Invalid_range line_range)
+    ~f:(fun source ->
+      parse_result xunit conf opts ~source ~input_name
+      >>= fun parsed ->
+      format xunit ?output_file ~input_name ~source ~parsed conf opts)
 
 let normalize norm c {Parse_with_comments.ast; _} = norm c ast
 

@@ -90,7 +90,8 @@ type t =
 
 type file = Stdin | File of string
 
-type 'a input = {kind: 'a; name: string; file: file; conf: t}
+type 'a input =
+  {kind: 'a; name: string; file: file; conf: t; line_range: Line_range.t}
 
 type action =
   | In_out of [`Impl | `Intf] input * string option

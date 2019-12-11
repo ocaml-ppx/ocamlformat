@@ -1489,6 +1489,23 @@ let ignore_invalid_options =
   let default = false in
   mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
 
+let map_term f t =
+  let open Term in
+  app (const f) t
+
+let line_range =
+  let doc = "Format only around these lines." in
+  let default = Line_range.all in
+  let to_lines = function
+    | None -> default
+    | Some (low, high) -> Line_range.only_between ~low ~high
+  in
+  mk ~default
+    Arg.(
+      map_term to_lines & value
+      & opt (some (pair ~sep:'-' int int)) None
+      & info ["lines"] ~doc ~docs)
+
 let ocamlformat_profile =
   { align_cases= false
   ; align_constructors_decl= false
@@ -2199,7 +2216,8 @@ let validate_action () =
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
-type 'a input = {kind: 'a; name: string; file: file; conf: t}
+type 'a input =
+  {kind: 'a; name: string; file: file; conf: t; line_range: Line_range.t}
 
 type action =
   | In_out of [`Impl | `Intf] input * string option
@@ -2208,6 +2226,7 @@ type action =
   | Print_config of t
 
 let make_action ~enable_outside_detected_project ~root action inputs =
+  let line_range = !line_range in
   let make_file ?(with_conf = fun c -> c) ?name kind file =
     let name = Option.value ~default:file name in
     let conf =
@@ -2215,14 +2234,14 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         (build_config ~enable_outside_detected_project ~root ~file:name
            ~is_stdin:false)
     in
-    {kind; name; file= File file; conf}
+    {kind; name; file= File file; conf; line_range}
   in
   let make_stdin ?(name = "<standard input>") kind =
     let conf =
       build_config ~enable_outside_detected_project ~root ~file:name
         ~is_stdin:false
     in
-    {kind; name; file= Stdin; conf}
+    {kind; name; file= Stdin; conf; line_range}
   in
   match (action, inputs) with
   | `Print_config, inputs ->

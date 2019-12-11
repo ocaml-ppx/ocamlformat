@@ -547,6 +547,9 @@ OPTIONS
        --intf
            Parse file with unrecognized extension as an interface.
 
+       --lines=VAL
+           Format only around these lines.
+
        --margin-check
            Emit a warning if the formatted output exceeds the margin.
 

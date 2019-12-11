@@ -15,21 +15,25 @@ val parse_and_format_impl :
      ?output_file:string
   -> input_name:string
   -> source:string
+  -> line_range:Line_range.t
   -> Conf.t
   -> Conf.opts
   -> (string, error) Result.t
-(** [parse_and_format_impl conf ?output_file ~input_name ~source] parses and
-    formats [source] as a list of toplevel phrases. *)
+(** [parse_and_format_impl conf ?output_file ~input_name ~source ~line_range]
+    parses and formats the [line_range] part of [source] as a list of
+    toplevel phrases. *)
 
 val parse_and_format_intf :
      ?output_file:string
   -> input_name:string
   -> source:string
+  -> line_range:Line_range.t
   -> Conf.t
   -> Conf.opts
   -> (string, error) Result.t
-(** [parse_and_format_intf conf ?output_file ~input_name ~source] parses and
-    formats [source] as a list of signature items. *)
+(** [parse_and_format_intf conf ?output_file ~input_name ~source ~line_range]
+    parses and formats the [line_range] part of [source] as a list of
+    signature items. *)
 
 val print_error :
      ?fmt:Format.formatter
