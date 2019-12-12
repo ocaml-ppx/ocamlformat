@@ -261,6 +261,13 @@ function."
                (if ocamlformat--support-replace-buffer-contents
                    (ocamlformat--replace-buffer-contents outputfile)
 		 (ocamlformat--patch-buffer outputfile))
+               (if errbuf
+                 (progn
+                   (with-current-buffer errbuf
+                     (setq buffer-read-only nil)
+                     (erase-buffer))
+                   (ocamlformat--process-errors
+                    (buffer-file-name) bufferfile errorfile errbuf)))
                (message "Applied ocamlformat"))
              (if errbuf
                (progn
