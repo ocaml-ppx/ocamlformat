@@ -165,15 +165,18 @@ function."
       (with-current-buffer errbuf
         (if (eq ocamlformat-show-errors 'echo)
           (message "%s" (buffer-string))
-          (insert-file-contents errorfile nil nil nil)
-          ;; Convert the ocamlformat stderr to something understood by the
-          ;; compilation mode.
-          (goto-char (point-min))
-          (insert "ocamlformat errors:\n")
-          (while (search-forward-regexp (regexp-quote tmpfile) nil t)
-            (replace-match (file-name-nondirectory filename)))
-          (compilation-mode)
-          (display-buffer errbuf))))))
+          ;; Checks the size of errorfile
+          (if (> (nth 7 (file-attributes errorfile)) 0)
+            (progn
+              (insert-file-contents errorfile nil nil nil)
+              ;; Convert the ocamlformat stderr to something understood by the
+              ;; compilation mode.
+              (goto-char (point-min))
+              (insert "ocamlformat errors:\n")
+              (while (search-forward-regexp (regexp-quote tmpfile) nil t)
+                (replace-match (file-name-nondirectory filename)))
+              (compilation-mode)
+              (display-buffer errbuf))))))))
 
 (defun ocamlformat--kill-error-buffer (errbuf)
   (let ((win (get-buffer-window errbuf)))
