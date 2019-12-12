@@ -519,10 +519,11 @@ OPTIONS
            iterations. May be set in .ocamlformat. The default value is 10.
 
        --name=NAME
-           Name of input file for use in error reporting. Defaults to the
-           input file name. Some options can be specified in configuration
-           files named '.ocamlformat' in the same or a parent directory of
-           NAME, see documentation of other options for details.
+           Name of input file for use in error reporting and starting point
+           when searching for '.ocamlformat' files. Defaults to the input
+           file name. Some options can be specified in configuration files
+           named '.ocamlformat' in the same or a parent directory of NAME,
+           see documentation of other options for details.
 
        --no-comment-check
            Unset comment-check.
