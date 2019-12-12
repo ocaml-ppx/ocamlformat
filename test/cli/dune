@@ -248,9 +248,6 @@
   (diff fmterr_stdin_and_name_bad_kind.expected
     fmterr_stdin_and_name_bad_kind.output)))
 
-;; This test's stderr is ignored because it's not stable
-;; (it contains the current git rev)
-
 (rule
  (with-outputs-to
   check_formatted.output
@@ -301,6 +298,8 @@
  (action
   (diff max_iter_1_failing.expected max_iter_1_failing.output)))
 
+;; This test's stderr is ignored because it's not stable
+;; (it contains the current git rev)
 (rule
  (targets conf_bad_version.output)
  (deps
