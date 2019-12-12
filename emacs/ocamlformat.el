@@ -164,7 +164,7 @@ function."
         (erase-buffer))
       (with-current-buffer errbuf
         (if (eq ocamlformat-show-errors 'echo)
-            (message "%s" (buffer-string))
+          (message "%s" (buffer-string))
           (insert-file-contents errorfile nil nil nil)
           ;; Convert the ocamlformat stderr to something understood by the
           ;; compilation mode.
