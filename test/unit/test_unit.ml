@@ -110,9 +110,50 @@ module Test_noit = struct
   let tests = test_dump @ test_roots @ test_children
 end
 
+module Test_cmt = struct
+  let test_normalized_string =
+    let normalize_comment s = Printf.sprintf "C(%s)" s in
+    let normalize_impl str = str in
+    let test name s expected =
+      let test_name = "normalized_string: " ^ name in
+      ( test_name
+      , `Quick
+      , fun () ->
+          let cmt = Cmt.create s Location.none in
+          let got =
+            Cmt.normalized_string ~normalize_comment ~normalize_impl cmt
+          in
+          Alcotest.check Alcotest.string test_name expected got )
+    in
+    [ test "empty" "" "C()"
+    ; test "dollar" "$" "C($)"
+    ; test "text comment" "hello" "C(hello)"
+    ; test "code comment" "$x$"
+        {|[
+  structure_item ([1,0+0]..[1,0+1])
+    Pstr_eval
+    expression ([1,0+0]..[1,0+1])
+      Pexp_ident "x" ([1,0+0]..[1,0+1])
+]
+|}
+    ; test "code comment, with no end $" "$x"
+        {|[
+  structure_item ([1,0+0]..[1,0+1])
+    Pstr_eval
+    expression ([1,0+0]..[1,0+1])
+      Pexp_ident "x" ([1,0+0]..[1,0+1])
+]
+|}
+    ; test "code comment, invalid" "$let$" "C($let$)"
+    ; test "code comment, several $ at end" "$x$$" "C($x$$)" ]
+
+  let tests = test_normalized_string
+end
+
 let tests =
   [ ("Location", Test_location.tests)
   ; ("non overlapping interval tree", Test_noit.tests)
-  ; ("Ast", Test_ast.tests) ]
+  ; ("Ast", Test_ast.tests)
+  ; ("Cmt", Test_cmt.tests) ]
 
 let () = Alcotest.run "ocamlformat" tests

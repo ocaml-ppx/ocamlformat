@@ -492,25 +492,9 @@ let remaining_before t loc = Location.Multimap.find_multi t.cmts_before loc
 let remaining_locs t = Location.Set.to_list t.remaining
 
 let diff (conf : Conf.t) x y =
-  let norm z =
-    let norm_non_code {Cmt.txt; _} = Normalize.comment txt in
-    let f z =
-      match Cmt.txt z with
-      | "" | "$" -> norm_non_code z
-      | str ->
-          if Char.equal str.[0] '$' then
-            let chars_removed =
-              if Char.equal str.[String.length str - 1] '$' then 2 else 1
-            in
-            let len = String.length str - chars_removed in
-            let str = String.sub ~pos:1 ~len str in
-            try
-              Migrate_ast.Parse.implementation (Lexing.from_string str)
-              |> Normalize.impl conf
-              |> Caml.Format.asprintf "%a" Printast.implementation
-            with _ -> norm_non_code z
-          else norm_non_code z
-    in
-    Set.of_list (module String) (List.map ~f z)
+  let norm_cmt =
+    Cmt.normalized_string ~normalize_comment:Normalize.comment
+      ~normalize_impl:(Normalize.impl conf)
   in
+  let norm l = Set.of_list (module String) (List.map ~f:norm_cmt l) in
   Set.symmetric_diff (norm x) (norm y)

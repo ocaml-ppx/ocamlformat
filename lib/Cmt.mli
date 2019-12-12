@@ -31,3 +31,12 @@ val fmt :
   -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> pos
   -> Fmt.t
+
+val normalized_string :
+     normalize_comment:(string -> string)
+  -> normalize_impl:(Parsetree.structure -> Parsetree.structure)
+  -> t
+  -> string
+(** Parse the comment either as a normal text comment, or as a code directive
+    [(*$ ... $*)]. This builds a string that is used by [Cmts.diff] to
+    determine whether two comments are equal. *)

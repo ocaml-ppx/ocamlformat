@@ -176,3 +176,21 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
   | "" | "$" -> fmt_non_code cmt
   | str when Char.equal str.[0] '$' -> fmt_code cmt
   | _ -> fmt_non_code cmt
+
+let normalized_string ~normalize_comment ~normalize_impl z =
+  let norm_non_code {txt; _} = normalize_comment txt in
+  match txt z with
+  | "" | "$" -> norm_non_code z
+  | str ->
+      if Char.equal str.[0] '$' then
+        let chars_removed =
+          if Char.equal str.[String.length str - 1] '$' then 2 else 1
+        in
+        let len = String.length str - chars_removed in
+        let str = String.sub ~pos:1 ~len str in
+        try
+          Migrate_ast.Parse.implementation (Lexing.from_string str)
+          |> normalize_impl
+          |> Caml.Format.asprintf "%a" Printast.implementation
+        with _ -> norm_non_code z
+      else norm_non_code z
