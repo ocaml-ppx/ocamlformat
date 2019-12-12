@@ -32,7 +32,7 @@ rule string mode = parse
       { reset_string_buffer ();
         string_aux mode lexbuf;
         get_stored_string () }
-  | _ { user_error "not a string literal" [] }
+  | _ { failwith "not a string literal" }
 
 
 and string_aux mode = parse
@@ -82,7 +82,7 @@ and string_aux mode = parse
       { store_string (Lexing.lexeme lexbuf);
         string_aux mode lexbuf }
   | eof
-      { user_error "not a string literal" [] }
+      { failwith "not a string literal" }
   | _
       { store_string_char (Lexing.lexeme_char lexbuf 0);
         string_aux mode lexbuf }
@@ -101,4 +101,4 @@ and char = parse
   | "\'" ("\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] as x) "\'"
       { x }
   | _
-      { user_error "not a char literal" [] }
+      { failwith "not a char literal" }

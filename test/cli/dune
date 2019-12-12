@@ -297,3 +297,103 @@
  (name runtest)
  (action
   (diff max_iter_1_failing.expected max_iter_1_failing.output)))
+
+;; This test's stderr is ignored because it's not stable
+;; (it contains the current git rev)
+(rule
+ (targets conf_bad_version.output)
+ (deps
+  (source_tree roots/bad_version))
+ (action
+  (with-outputs-to
+   %{targets}
+   (chdir
+    roots/bad_version
+    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml} 2>/dev/null")))))
+
+(alias
+ (name runtest)
+ (action
+  (diff conf_bad_version.expected conf_bad_version.output)))
+
+(rule
+ (targets conf_malformed1.output)
+ (deps
+  (source_tree roots/malformed1))
+ (action
+  (with-outputs-to
+   %{targets}
+   (chdir
+    roots/malformed1
+    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+
+(alias
+ (name runtest)
+ (action
+  (diff conf_malformed1.expected conf_malformed1.output)))
+
+(rule
+ (targets conf_unknown_option.output)
+ (deps
+  (source_tree roots/unknown_option))
+ (action
+  (with-outputs-to
+   %{targets}
+   (chdir
+    roots/unknown_option
+    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+
+(alias
+ (name runtest)
+ (action
+  (diff conf_unknown_option.expected conf_unknown_option.output)))
+
+(rule
+ (targets conf_unknown_value.output)
+ (deps
+  (source_tree roots/unknown_value))
+ (action
+  (with-outputs-to
+   %{targets}
+   (chdir
+    roots/unknown_value
+    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+
+(alias
+ (name runtest)
+ (action
+  (diff conf_unknown_value.expected conf_unknown_value.output)))
+
+(rule
+ (targets env_unknown_option.output)
+ (deps
+  (source_tree roots/unknown_value))
+ (action
+  (with-outputs-to
+   %{targets}
+   (setenv
+    OCAMLFORMAT
+    "unknown=true"
+    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+
+(alias
+ (name runtest)
+ (action
+  (diff env_unknown_option.expected env_unknown_option.output)))
+
+(rule
+ (targets env_unknown_value.output)
+ (deps
+  (source_tree roots/unknown_value))
+ (action
+  (with-outputs-to
+   %{targets}
+   (setenv
+    OCAMLFORMAT
+    "type-decl=unknown"
+    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+
+(alias
+ (name runtest)
+ (action
+  (diff env_unknown_value.expected env_unknown_value.output)))

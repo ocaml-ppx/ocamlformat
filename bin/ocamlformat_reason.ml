@@ -60,8 +60,9 @@ let to_output_file output_file data =
 let run_action action opts =
   match action with
   | Conf.Inplace __ ->
-      user_error "Cannot convert Reason code with --inplace" []
-  | Check _ -> user_error "Cannot check Reason code with --check" []
+      Error (fun () -> failwith "Cannot convert Reason code with --inplace")
+  | Check _ ->
+      Error (fun () -> failwith "Cannot check Reason code with --check")
   | In_out ({kind; file; name= input_name; conf}, output_file) -> (
       let (Pack {parse; xunit}) = pack_of_kind kind in
       let t =
