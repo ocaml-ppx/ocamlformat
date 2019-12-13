@@ -166,6 +166,7 @@ function."
         (if (eq ocamlformat-show-errors 'echo)
           (message "%s" (buffer-string))
           ;; Checks the size of errorfile
+          ;; Accessor 'file-attribute-size' only exists in emacs-26 and later
           (if (> (nth 7 (file-attributes errorfile)) 0)
             (progn
               (insert-file-contents errorfile nil nil nil)
