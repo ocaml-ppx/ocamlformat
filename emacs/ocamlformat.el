@@ -271,12 +271,10 @@ function."
                (if ocamlformat--support-replace-buffer-contents
                    (ocamlformat--replace-buffer-contents outputfile)
 		 (ocamlformat--patch-buffer outputfile))
-               (ocamlformat--process-errors
-                 (buffer-file-name) bufferfile errorfile errbuf)
                (message "Applied ocamlformat"))
-             (ocamlformat--process-errors
-               (buffer-file-name) bufferfile errorfile errbuf)
-             (message "Could not apply ocamlformat"))))
+             (message "Could not apply ocamlformat"))
+           (ocamlformat--process-errors
+            (buffer-file-name) bufferfile errorfile errbuf)))
      (delete-file errorfile)
      (delete-file bufferfile)
      (delete-file outputfile)))
