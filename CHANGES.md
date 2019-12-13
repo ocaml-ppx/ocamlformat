@@ -6,6 +6,12 @@
   + Preserve comment indentation when `wrap-comments` is unset (#1138, #1159) (Jules Aguillon)
   + Improve error messages (#1147) (Jules Aguillon)
 
+#### Removed
+
+  + Remove `ocamlformat_reason` (#254, #1185) (Etienne Millon).
+    This tool has never been released to opam, has no known users, and overlaps
+    with what `refmt` can do.
+
 #### Packaging
 
   + Work with base v0.13.0 (#1163) (Jules Aguillon)

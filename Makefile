@@ -20,10 +20,6 @@ exe:
 gen-help:
 	dune build ocamlformat-help.txt
 
-.PHONY: reason
-reason:
-	dune build bin/ocamlformat_reason.exe
-
 .PHONY: ocamlformat-diff
 ocamlformat-diff:
 	dune build tools/ocamlformat-diff/ocamlformat_diff.exe
@@ -36,7 +32,7 @@ clean:
 fmt:
 	dune build @bin/fmt @lib/fmt @tools/fmt
 
-.PHONY: test regtests regtests-promote test-reason
+.PHONY: test regtests regtests-promote
 test: fmt regtests
 
 regtests:
@@ -44,6 +40,3 @@ regtests:
 
 regtests-promote:
 	dune runtest --auto-promote
-
-test-reason:
-	dune build @runtest-reason --auto-promote
