@@ -1,7 +1,9 @@
 module P = Parser
 module I = P.MenhirInterpreter
+
 module R =
-  Merlin_recovery.Make(I)
+  Merlin_recovery.Make
+    (I)
     (struct
       include Parser_recover
 
@@ -18,94 +20,72 @@ module type PARSE_INTF = sig
   type 'a parser
 
   val initial :
-    (Lexing.position -> 'a I.checkpoint) ->
-    Lexing.position -> 'a parser
+    (Lexing.position -> 'a I.checkpoint) -> Lexing.position -> 'a parser
 
-  type 'a step =
-    | Intermediate of 'a parser
-    | Success of 'a
-    | Error
+  type 'a step = Intermediate of 'a parser | Success of 'a | Error
 
   val step : 'a parser -> P.token positioned -> 'a step
 end
 
 module type RECOVER_INTF = sig
   include PARSE_INTF
+
   (* Interface for recovery *)
   val recover : 'a I.checkpoint -> 'a parser
+
   val recovery_env : 'a parser -> 'a I.env
 end
 
-module Without_recovery : RECOVER_INTF =
-struct
+module Without_recovery : RECOVER_INTF = struct
   type 'a parser = 'a I.checkpoint
 
   let initial entrypoint position = entrypoint position
 
-  type 'a step =
-    | Intermediate of 'a parser
-    | Success of 'a
-    | Error
+  type 'a step = Intermediate of 'a parser | Success of 'a | Error
 
   let rec normalize = function
     | I.InputNeeded _ as cp -> Intermediate cp
     | I.Accepted x -> Success x
     | I.HandlingError _ | I.Rejected -> Error
-    | I.Shifting (_, _, _) | I.AboutToReduce (_, _) as cp ->
-      normalize (I.resume cp)
+    | (I.Shifting (_, _, _) | I.AboutToReduce (_, _)) as cp ->
+        normalize (I.resume cp)
 
-  let step cp token =
-    normalize (I.offer cp token)
+  let step cp token = normalize (I.offer cp token)
 
-  let recover = function
-    | I.InputNeeded _ as cp -> cp
-    | _ -> assert false
+  let recover = function I.InputNeeded _ as cp -> cp | _ -> assert false
 
-  let recovery_env = function
-    | I.InputNeeded env -> env
-    | _ -> assert false
+  let recovery_env = function I.InputNeeded env -> env | _ -> assert false
 end
 
-module With_recovery : PARSE_INTF =
-struct
+module With_recovery : PARSE_INTF = struct
   module M = Without_recovery
 
-  type 'a parser =
-    | Correct of 'a M.parser
-    | Recovering of 'a R.candidates
+  type 'a parser = Correct of 'a M.parser | Recovering of 'a R.candidates
 
-  let initial entry_point position =
-    Correct (M.initial entry_point position)
+  let initial entry_point position = Correct (M.initial entry_point position)
 
-  type 'a step =
-    | Intermediate of 'a parser
-    | Success of 'a
-    | Error
+  type 'a step = Intermediate of 'a parser | Success of 'a | Error
 
   let step parser token =
     match parser with
-    | Correct parser ->
-      begin match M.step parser token with
+    | Correct parser -> (
+        match M.step parser token with
         | M.Intermediate parser -> Intermediate (Correct parser)
         | M.Success x -> Success x
         | M.Error ->
-          let env = M.recovery_env parser in
-          Intermediate (Recovering (R.generate env))
-      end
-    | Recovering candidates ->
-      begin match R.attempt candidates token with
+            let env = M.recovery_env parser in
+            Intermediate (Recovering (R.generate env)) )
+    | Recovering candidates -> (
+        match R.attempt candidates token with
         | `Ok (cp, _) -> Intermediate (Correct (M.recover cp))
         | `Accept x -> Success x
-        | `Fail ->
-          begin match token with
-            | Parser.EOF, _, _ ->
-              begin match candidates.final with
+        | `Fail -> (
+            match token with
+            | Parser.EOF, _, _ -> (
+                match candidates.final with
                 | None -> Error
-                | Some x -> Success x
-              end
-            | _ -> Intermediate parser
-          end
-      end
+                | Some x -> Success x )
+            | _ -> Intermediate parser ) )
 end
 
 let parse_with_recovery entrypoint tokens =
@@ -115,16 +95,17 @@ let parse_with_recovery entrypoint tokens =
     | P.Success x -> x
     | P.Intermediate p -> offer p tokens
   and offer p tokens =
-    let token, rest = match tokens with
-      | [] -> (Parser.EOF, Lexing.dummy_pos, Lexing.dummy_pos), []
-      | token :: rest -> token, rest
+    let token, rest =
+      match tokens with
+      | [] -> ((Parser.EOF, Lexing.dummy_pos, Lexing.dummy_pos), [])
+      | token :: rest -> (token, rest)
     in
     step rest (P.step p token)
   in
   offer (P.initial entrypoint Lexing.dummy_pos) tokens
 
 let lex_buf lexbuf =
-  Lexer.init () ;
+  Lexer.init ();
   let rec loop acc =
     match Lexer.token lexbuf with
     | exception Lexer.Error _ -> loop acc

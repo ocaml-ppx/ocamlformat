@@ -19,6 +19,7 @@ module Docstrings : sig
     lb_text : text lazy_t;
     lb_loc : Location.t;
   }
+
   type let_bindings = {
     lbs_bindings : let_binding list;
     lbs_rec : Asttypes.rec_flag;
