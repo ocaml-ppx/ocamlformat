@@ -16,4 +16,5 @@ depends: [
   "fix"
   "menhir"
   "ocaml" {>= "4.02.1" & < "4.10"}
+  "ocaml-migrate-parsetree" {>= "1.3.1"}
 ]
