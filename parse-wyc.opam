@@ -12,7 +12,8 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml" {>= "4.02.1" & < "4.10"}
   "dune" {build}
   "fix"
+  "menhir"
+  "ocaml" {>= "4.02.1" & < "4.10"}
 ]

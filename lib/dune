@@ -1,6 +1,5 @@
 (library
  (name parse_wyc)
- (wrapped false)
  (libraries menhirLib))
 
 (ocamllex lexer)
