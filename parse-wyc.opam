@@ -1,0 +1,18 @@
+opam-version: "2.0"
+name: "parse-wyc"
+maintainer:   "Guillaume Petiot <guillaume@tarides.com>"
+authors:      "Guillaume Petiot <guillaume@tarides.com>"
+homepage:     "https://github.com/gpetiot/parse-wyc"
+bug-reports:  "https://github.com/gpetiot/parse-wyc/issues"
+dev-repo: "git+https://github.com/gpetiot/parse-wyc.git"
+license: "LGPL 3"
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+depends: [
+  "ocaml" {>= "4.02.1" & < "4.10"}
+  "dune" {build}
+  "fix"
+]
