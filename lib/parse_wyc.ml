@@ -108,19 +108,6 @@ struct
       end
 end
 
-let parse_without_recovery entrypoint tokens =
-  let module P = Without_recovery in
-  let rec step tokens = function
-    | P.Error -> failwith "Parsing failed"
-    | P.Success x -> x
-    | P.Intermediate p -> offer p tokens
-  and offer p = function
-    | [] -> assert false
-    | token :: rest -> step rest (P.step p token)
-  in
-  offer (P.initial entrypoint Lexing.dummy_pos) tokens
-
-
 let parse_with_recovery entrypoint tokens =
   let module P = With_recovery in
   let rec step tokens = function
@@ -136,8 +123,21 @@ let parse_with_recovery entrypoint tokens =
   in
   offer (P.initial entrypoint Lexing.dummy_pos) tokens
 
-let implementation = parse_with_recovery P.Incremental.implementation
+let lex_buf lexbuf =
+  Lexer.init () ;
+  let rec loop acc =
+    match Lexer.token lexbuf with
+    | exception Lexer.Error _ -> loop acc
+    | token -> (
+        let acc = (token, lexbuf.lex_start_p, lexbuf.lex_curr_p) :: acc in
+        match token with Parser.EOF -> List.rev acc | _ -> loop acc )
+  in
+  loop []
 
-let interface = parse_with_recovery P.Incremental.interface
+let parse p lexbuf = parse_with_recovery p (lex_buf lexbuf)
 
-let use_file = parse_with_recovery P.Incremental.use_file
+let implementation = parse P.Incremental.implementation
+
+let interface = parse P.Incremental.interface
+
+let use_file = parse P.Incremental.use_file

@@ -35,11 +35,12 @@ module Parse = struct
   let interface = Parse.interface selected_version
 
   let use_file lexbuf =
-    List.filter (Parse.use_file selected_version lexbuf)
-      ~f:(fun (p : Parsetree.toplevel_phrase) ->
+    List.filter
+      (fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
         | Ptop_def (_ :: _) | Ptop_dir _ -> true)
+      (Parse.use_file selected_version lexbuf)
 end
 
 let to_current =
@@ -63,11 +64,11 @@ module Printast = struct
       | PPat (x, y) ->
           PPat
             ( to_current.copy_pattern x
-            , Option.map ~f:to_current.copy_expression y ) )
+            , Option.map to_current.copy_expression y ) )
 
   let use_file f (x : Parsetree.toplevel_phrase list) =
-    List.iter x ~f:(fun (p : Parsetree.toplevel_phrase) ->
-        top_phrase f (to_current.copy_toplevel_phrase p))
+    List.iter (fun (p : Parsetree.toplevel_phrase) ->
+        top_phrase f (to_current.copy_toplevel_phrase p)) x
 end
 
 module Pprintast = struct

@@ -16,8 +16,9 @@
 (* The lexer definition *)
 
 {
+open Migrate_ast
 open Lexing
-open Raw_parser
+open Parser
 
 type error =
   | Illegal_character of char

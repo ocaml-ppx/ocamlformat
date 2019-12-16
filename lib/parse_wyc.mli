@@ -1,5 +1,5 @@
-val implementation : 'a list -> Parsetree.structure
+val implementation : Lexing.lexbuf -> Migrate_parsetree.Ast_408.Parsetree.structure
 
-val interface : 'a list -> Parsetree.signature
+val interface : Lexing.lexbuf -> Migrate_parsetree.Ast_408.Parsetree.signature
 
-val use_file : 'a list -> Parsetree.toplevel_phrase list
+val use_file : Lexing.lexbuf -> Migrate_parsetree.Ast_408.Parsetree.toplevel_phrase list
