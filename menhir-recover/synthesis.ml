@@ -109,9 +109,9 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
         "Seq [" ^ String.concat "; " (List.map action_to_string actions) ^ "]"
 
   (** The synthesizer specify the cost as a system of equations of the form
-      $$
+      {%
       x_i = \min_{j} ({\kappa_{i,j} + \sum_{k}x_{i,j,k}})
-      $$
+      %}
       which can be read as follow:
 
       - $x_i$ are variables, the thing we would like to know the cost of (the
@@ -121,8 +121,8 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
         instance, to synthesize a _non-terminal_, each production that reduces
         to this _non-terminal_ is a valid candidate)
 
-      - each of these candidates is made of a constant and the sum of a
-        possibly empty list of other variables
+      - each of these candidates is made of a constant and the sum of a possibly
+        empty list of other variables
 
       Variables are valued in $\left[0,+\infin\right]$ (and the empty $\sum$
       defaults to $0$, the empty $min$ to $+\infin$).
@@ -130,7 +130,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
       The solution is the least fixed point of this system computed by
       [Fix](https://gitlab.inria.fr/fpottier/fix) library.
 
-      $$
+      {%
       \begin{align}
         \text{head}_{st,nt} = & \min \left\{ \begin{array}{ll}
         \text{cost}(\text{empty-reductions}(st,nt))\\
@@ -142,12 +142,11 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
       \\
       \text{tail}_{st,prod,i} = &
       \end{align}
-      $$
+      %}
 
       For a variable `Head (st, nt)` , the branches are the different
       productions that can reduce to `nt` and starts from state `st`. The
-      constant is the same for all branches, $\kappa_{i,j} = \kappa_i$,
-  *)
+      constant is the same for all branches, {%$\kappa_{i,j} = \kappa_i$%}. *)
 
   let cost_of_prod p = Cost.add (Cost.of_int 1) (A.cost_of_prod p)
 
