@@ -12,6 +12,7 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
+  "alcotest" {with-test}
   "dune" {build}
   "fix"
   "menhir"
