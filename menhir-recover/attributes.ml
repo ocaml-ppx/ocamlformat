@@ -46,39 +46,40 @@ module type ATTRIBUTES = sig
 
   (** Item cost
 
-      The cost can be applied to a specific item (an occurrence of a symbol in
-      a rule).
+      The cost can be applied to a specific item (an occurrence of a symbol in a
+      rule).
 
-      In this case, the more specific cost will replace the global cost for
-      this specific occurrence.
+      In this case, the more specific cost will replace the global cost for this
+      specific occurrence.
 
+      {v
       expr:
       | INT PLUS [@recover.cost 0.0] INT { ... }
       | INT TIMES [@recover.cost 10.0] INT { ... }
       ;
+      v}
 
       In this example, if an error happens just after an integer in an
       expression, the `PLUS` rule will be favored over the `TIMES` rule because
-      the first token is more expensive.
-  *)
+      the first token is more expensive. *)
 
   val penalty_of_item : G.production * int -> Cost.t
   (** Penalty (added cost) for shifting an item *)
 
   (** Reduction cost
 
-      The last place where a `recover.cost` is accepted is in a production.
-      This is convenient to prevent the recovery to trigger some semantic
-      actions.
+      The last place where a `recover.cost` is accepted is in a production. This
+      is convenient to prevent the recovery to trigger some semantic actions.
 
+      {v
       expr:
         LPAREN expr error { ... } [@recover.cost infinity]
       ;
+      v}
 
       It would not make much sense for the recovery to select an error rule.
       Associating an infinite cost to the production ensures that this never
-      happen.
-  *)
+      happen. *)
 
   val cost_of_prod : G.production -> Cost.t
   (** Cost of reducing a production *)
@@ -147,9 +148,8 @@ module type ATTRIBUTES = sig
       code of `recover.expr` expressions.
 
       It is useful for defining definitions shared by the recovery expressions,
-      in the same way as `%{ ... %}` is used to share definitions in semantic
-      actions of the grammar.
-  *)
+      in the same way as [%{ ... %}] is used to share definitions in semantic
+      actions of the grammar. *)
 
   val default_prelude : Format.formatter -> unit
   (** Output the grammar prelude in this formatter *)
