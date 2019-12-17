@@ -115,14 +115,40 @@ let lex_buf lexbuf =
   in
   loop []
 
-let extract_locs _ast = []
+let process p m lexbuf =
+  let ast = parse_with_recovery p (lex_buf lexbuf) in
+  let loc_stack = Stack.create () in
+  let loc_list = ref [] in
+  let make_mapper () =
+    let open Migrate_ast.Parsetree in
+    let structure_item m si =
+      Stack.push si.pstr_loc loc_stack;
+      let si = Ast_mapper.default_mapper.structure_item m si in
+      ignore (Stack.pop loc_stack);
+      si
+    in
+    let signature_item m si =
+      Stack.push si.psig_loc loc_stack;
+      let si = Ast_mapper.default_mapper.signature_item m si in
+      ignore (Stack.pop loc_stack);
+      si
+    in
+    let expr m e =
+      match e.pexp_desc with
+      | Pexp_extension ({ txt = "merlin.hole"; _ }, PStr []) ->
+          loc_list := Stack.top loc_stack :: !loc_list;
+          Ast_mapper.default_mapper.expr m e
+      | _ -> Ast_mapper.default_mapper.expr m e
+    in
+    { Ast_mapper.default_mapper with structure_item; signature_item; expr }
+  in
+  let mapper = make_mapper () in
+  let _ = (m mapper) ast in
+  !loc_list
 
-let process p lexbuf =
-  let recovered_ast = parse_with_recovery p (lex_buf lexbuf) in
-  extract_locs recovered_ast
+let implementation =
+  process P.Incremental.implementation Migrate_ast.Mapper.structure
 
-let implementation = process P.Incremental.implementation
+let interface = process P.Incremental.interface Migrate_ast.Mapper.signature
 
-let interface = process P.Incremental.interface
-
-let use_file = process P.Incremental.use_file
+let use_file = process P.Incremental.use_file Migrate_ast.Mapper.use_file
