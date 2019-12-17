@@ -12,7 +12,20 @@ module Locations = struct
           Alcotest.(check (list Alcotest_ext.location))
             test_name expected actual )
     in
-    [ test "empty" "" [] ]
+    let valid_test =
+      {|
+let fooooooooooooooo =
+  let fooooooooooooo =
+    let foooooooooooooo =
+      foooooooooooooo
+    in
+    fooooo, fooooooo
+  in
+  fooooooooooooooooo;
+  foooooooooooooo
+|}
+    in
+    [ test "empty" "" []; test "valid" valid_test [] ]
 
   let tests = test_impl
 end
