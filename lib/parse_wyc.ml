@@ -121,26 +121,62 @@ let process p m lexbuf =
   let loc_list = ref [] in
   let make_mapper () =
     let open Migrate_ast.Parsetree in
-    let structure_item m si =
-      Stack.push si.pstr_loc loc_stack;
-      let si = Ast_mapper.default_mapper.structure_item m si in
-      ignore (Stack.pop loc_stack);
-      si
-    in
-    let signature_item m si =
-      Stack.push si.psig_loc loc_stack;
-      let si = Ast_mapper.default_mapper.signature_item m si in
-      ignore (Stack.pop loc_stack);
-      si
-    in
+    let default = Ast_mapper.default_mapper in
     let expr m e =
       match e.pexp_desc with
       | Pexp_extension ({ txt = "merlin.hole"; _ }, PStr []) ->
           loc_list := Stack.top loc_stack :: !loc_list;
-          Ast_mapper.default_mapper.expr m e
-      | _ -> Ast_mapper.default_mapper.expr m e
+          default.expr m e
+      | _ -> default.expr m e
     in
-    { Ast_mapper.default_mapper with structure_item; signature_item; expr }
+    let wrap mapper loc f x =
+      Stack.push loc loc_stack;
+      let x = f mapper x in
+      ignore (Stack.pop loc_stack);
+      x
+    in
+    let class_declaration m x = wrap m x.pci_loc default.class_declaration x in
+    let class_description m x = wrap m x.pci_loc default.class_description x in
+    let class_expr m x = wrap m x.pcl_loc default.class_expr x in
+    let class_field m x = wrap m x.pcf_loc default.class_field x in
+    let class_type m x = wrap m x.pcty_loc default.class_type x in
+    let class_type_declaration m x =
+      wrap m x.pci_loc default.class_type_declaration x
+    in
+    let class_type_field m x = wrap m x.pctf_loc default.class_type_field x in
+    let module_binding m x = wrap m x.pmb_loc default.module_binding x in
+    let module_declaration m x =
+      wrap m x.pmd_loc default.module_declaration x
+    in
+    let module_substitution m x =
+      wrap m x.pms_loc default.module_substitution x
+    in
+    let module_expr m x = wrap m x.pmod_loc default.module_expr x in
+    let module_type m x = wrap m x.pmty_loc default.module_type x in
+    let module_type_declaration m x =
+      wrap m x.pmtd_loc default.module_type_declaration x
+    in
+    let structure_item m x = wrap m x.pstr_loc default.structure_item x in
+    let signature_item m x = wrap m x.psig_loc default.signature_item x in
+    {
+      Ast_mapper.default_mapper with
+      expr;
+      class_declaration;
+      class_description;
+      class_expr;
+      class_field;
+      class_type;
+      class_type_declaration;
+      class_type_field;
+      module_binding;
+      module_declaration;
+      module_substitution;
+      module_expr;
+      module_type;
+      module_type_declaration;
+      structure_item;
+      signature_item;
+    }
   in
   let mapper = make_mapper () in
   let _ = (m mapper) ast in
