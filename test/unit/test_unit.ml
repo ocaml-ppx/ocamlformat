@@ -42,11 +42,24 @@ let fooooooooooooooo =
 |}
     in
     let invalid_after_eq_test = {|let fooooooooooooooo =|} in
+    let invalid_after_in_test =
+      {| (* line 1 *)
+let fooooooooooooooooooooo = (* line 2 *)
+  let foooooooooooooooooooo =
+    let foooooooooooooooo =
+      foooooooo
+    in
+    foooooo
+  in (* line 8 *)
+|}
+    in
     [
       test "empty" "" [];
       test "valid" valid_test [];
       test "invalid after eq" invalid_after_eq_test
         [ "start: (line 1, column 0), end: (line 1, column 22)" ];
+      test "invalid after in" invalid_after_in_test
+        [ "start: (line 2, column 0), end: (line 8, column 4)" ];
     ]
 
   let tests = test_impl
