@@ -115,7 +115,7 @@ let lex_buf lexbuf =
   in
   loop []
 
-let process p m lexbuf =
+let process p m print lexbuf =
   let ast = parse_with_recovery p (lex_buf lexbuf) in
   let loc_stack = Stack.create () in
   let loc_list = ref [] in
@@ -179,12 +179,24 @@ let process p m lexbuf =
     }
   in
   let mapper = make_mapper () in
-  let _ = (m mapper) ast in
+  let ast' = (m mapper) ast in
+  let debug = false in
+  if debug then Format.printf "%a\n%!" print ast';
   !loc_list
 
 let implementation =
   process P.Incremental.implementation Migrate_ast.Mapper.structure
+    Migrate_ast.Pprintast.structure
 
-let interface = process P.Incremental.interface Migrate_ast.Mapper.signature
+let interface =
+  process P.Incremental.interface Migrate_ast.Mapper.signature
+    Migrate_ast.Pprintast.signature
 
-let use_file = process P.Incremental.use_file Migrate_ast.Mapper.use_file
+let pp_use_file fs x =
+  List.iter
+    (fun tph ->
+      Format.fprintf fs "%a\n" Migrate_ast.Pprintast.toplevel_phrase tph)
+    x
+
+let use_file =
+  process P.Incremental.use_file Migrate_ast.Mapper.use_file pp_use_file
