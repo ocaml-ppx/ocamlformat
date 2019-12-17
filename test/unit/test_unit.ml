@@ -1,5 +1,22 @@
 open Parse_wyc
 
+module Position = struct
+  open Lexing
+
+  let pp fs p =
+    Format.fprintf fs "line %i, column %i" p.pos_lnum (p.pos_cnum - p.pos_bol)
+end
+
+module Location = struct
+  open Location
+
+  let pp fs l =
+    Format.fprintf fs "start: (%a), end: (%a)" Position.pp l.loc_start
+      Position.pp l.loc_end
+
+  let to_string l = Format.asprintf "%a" pp l
+end
+
 module Locations = struct
   let test_impl =
     let test name input expected =
@@ -8,9 +25,8 @@ module Locations = struct
         `Quick,
         fun () ->
           let lexbuf = Lexing.from_string input in
-          let actual = implementation lexbuf in
-          Alcotest.(check (list Alcotest_ext.location))
-            test_name expected actual )
+          let actual = List.map Location.to_string (implementation lexbuf) in
+          Alcotest.(check (list string)) test_name expected actual )
     in
     let valid_test =
       {|
@@ -25,7 +41,13 @@ let fooooooooooooooo =
   foooooooooooooo
 |}
     in
-    [ test "empty" "" []; test "valid" valid_test [] ]
+    let invalid_after_eq_test = {|let fooooooooooooooo =|} in
+    [
+      test "empty" "" [];
+      test "valid" valid_test [];
+      test "invalid after eq" invalid_after_eq_test
+        [ "start: (line 1, column 0), end: (line 1, column 22)" ];
+    ]
 
   let tests = test_impl
 end
