@@ -115,18 +115,14 @@ let lex_buf lexbuf =
   in
   loop []
 
-let to_current =
-  Migrate_parsetree.Versions.(
-    migrate Migrate_ast.selected_version ocaml_current)
+let extract_locs _ast = []
 
-let parse p lexbuf = parse_with_recovery p (lex_buf lexbuf)
+let process p lexbuf =
+  let recovered_ast = parse_with_recovery p (lex_buf lexbuf) in
+  extract_locs recovered_ast
 
-let implementation lexbuf =
-  to_current.copy_structure (parse P.Incremental.implementation lexbuf)
+let implementation = process P.Incremental.implementation
 
-let interface lexbuf =
-  to_current.copy_signature (parse P.Incremental.interface lexbuf)
+let interface = process P.Incremental.interface
 
-let copy_usefile uf = List.map to_current.copy_toplevel_phrase uf
-
-let use_file lexbuf = copy_usefile (parse P.Incremental.use_file lexbuf)
+let use_file = process P.Incremental.use_file

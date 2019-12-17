@@ -1,9 +1,5 @@
-val implementation :
-  Lexing.lexbuf -> Migrate_parsetree.OCaml_current.Ast.Parsetree.structure
+val implementation : Lexing.lexbuf -> Location.t list
 
-val interface :
-  Lexing.lexbuf -> Migrate_parsetree.OCaml_current.Ast.Parsetree.signature
+val interface : Lexing.lexbuf -> Location.t list
 
-val use_file :
-  Lexing.lexbuf ->
-  Migrate_parsetree.OCaml_current.Ast.Parsetree.toplevel_phrase list
+val use_file : Lexing.lexbuf -> Location.t list

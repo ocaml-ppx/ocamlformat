@@ -566,7 +566,7 @@ let mk_directive ~loc name arg =
 
   (* Ast nodes to inject when parsing fails *)
 
-  let default_loc = ref Location.none
+  let default_loc = Ast_helper.default_loc
 
   let default_expr () =
     let id = Location.mkloc "merlin.hole" !default_loc in
