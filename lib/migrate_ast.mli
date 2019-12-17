@@ -30,6 +30,19 @@ end
 
 module Location = Selected_version.Location
 
+module Mapper : sig
+  val structure :
+    Ast_mapper.mapper -> Parsetree.structure -> Parsetree.structure
+
+  val signature :
+    Ast_mapper.mapper -> Parsetree.signature -> Parsetree.signature
+
+  val use_file :
+    Ast_mapper.mapper ->
+    Parsetree.toplevel_phrase list ->
+    Parsetree.toplevel_phrase list
+end
+
 module Parse : sig
   val implementation : Lexing.lexbuf -> Parsetree.structure
 
