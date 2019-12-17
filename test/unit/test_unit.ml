@@ -53,6 +53,25 @@ let fooooooooooooooooooooo = (* line 2 *)
   in (* line 8 *)
 |}
     in
+    let invalid_seq_modules_test =
+      {|
+module M = struct
+  let foooooo = foooo
+
+  let foooooooooooooo = (* line 5 *)
+
+  let foooooooooooo = fooooo
+
+  let foooooooo = (* line 9 *)
+
+  let foooooooooo = foooo
+end
+
+module K = struct
+  let foooo (* line 15 *)
+end
+|}
+    in
     [
       test "empty" "" [];
       test "valid" valid_test [];
@@ -60,6 +79,12 @@ let fooooooooooooooooooooo = (* line 2 *)
         [ "start: (line 1, column 0), end: (line 1, column 22)" ];
       test "invalid after in" invalid_after_in_test
         [ "start: (line 2, column 0), end: (line 8, column 4)" ];
+      test "invalid seq modules" invalid_seq_modules_test
+        [
+          "start: (line 15, column 2), end: (line 15, column 11)";
+          "start: (line 5, column 2), end: (line 5, column 23)";
+          "start: (line 9, column 2), end: (line 9, column 17)";
+        ];
     ]
 
   let tests = test_impl
