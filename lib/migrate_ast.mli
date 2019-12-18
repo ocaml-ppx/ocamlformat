@@ -28,7 +28,13 @@ module Docstrings : sig
   }
 end
 
-module Location = Selected_version.Location
+module Location : sig
+  include module type of Selected_version.Location
+
+  val compare : t -> t -> int
+
+  val contains : t -> t -> bool
+end
 
 module Mapper : sig
   val structure :

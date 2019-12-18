@@ -115,6 +115,8 @@ let lex_buf lexbuf =
   in
   loop []
 
+let normalize_locs locs = List.sort_uniq Migrate_ast.Location.compare locs
+
 let process p m print lexbuf =
   let ast = parse_with_recovery p (lex_buf lexbuf) in
   let loc_stack = Stack.create () in
@@ -182,7 +184,7 @@ let process p m print lexbuf =
   let ast' = (m mapper) ast in
   let debug = false in
   if debug then Format.printf "%a\n%!" print ast';
-  !loc_list
+  normalize_locs !loc_list
 
 let implementation =
   process P.Incremental.implementation Migrate_ast.Mapper.structure

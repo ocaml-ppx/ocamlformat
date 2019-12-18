@@ -121,4 +121,22 @@ module Pprintast = struct
     toplevel_phrase f (to_current.copy_toplevel_phrase x)
 end
 
-module Location = Selected_version.Location
+module Position = struct
+  open Lexing
+
+  let compare p1 p2 = Int.compare p1.pos_cnum p2.pos_cnum
+end
+
+module Location = struct
+  include Selected_version.Location
+
+  let compare_start x y = Position.compare x.loc_start y.loc_start
+
+  let compare_end x y = Position.compare x.loc_end y.loc_end
+
+  let compare x y =
+    let st = compare_start x y in
+    if st = 0 then compare_end x y else st
+
+  let contains l1 l2 = compare_start l1 l2 <= 0 && compare_end l1 l2 >= 0
+end
