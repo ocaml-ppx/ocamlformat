@@ -49,7 +49,9 @@
 (rule
  (with-outputs-to
   err_output_and_check.output
-  (system "! %{bin:ocamlformat} --output x.ml --check %{dep:sample/a.ml}")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} --output x.ml --check %{dep:sample/a.ml}))))
 
 (rule
  (alias runtest)
@@ -59,8 +61,10 @@
 (rule
  (with-outputs-to
   err_output_several_files.output
-  (system
-    "! %{bin:ocamlformat} --output x.ml %{dep:sample/a.ml} %{dep:sample/b.ml}")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} --output x.ml %{dep:sample/a.ml}
+     %{dep:sample/b.ml}))))
 
 (rule
  (alias runtest)
@@ -70,7 +74,9 @@
 (rule
  (with-outputs-to
   err_stdin_and_file.output
-  (system "! %{bin:ocamlformat} %{dep:sample/a.ml} -")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} %{dep:sample/a.ml} -))))
 
 (rule
  (alias runtest)
@@ -80,7 +86,9 @@
 (rule
  (with-outputs-to
   err_stdin_and_inplace.output
-  (system "! %{bin:ocamlformat} --inplace -")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} --inplace -))))
 
 (rule
  (alias runtest)
@@ -90,7 +98,9 @@
 (rule
  (with-outputs-to
   err_stdin_no_kind.output
-  (system "! %{bin:ocamlformat} -")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} -))))
 
 (rule
  (alias runtest)
@@ -142,7 +152,7 @@
  (action
   (with-outputs-to
    %{targets}
-   (system "%{bin:ocamlformat} --root=. --name b.cpp %{dep:sample/b.ml}"))))
+   (run %{bin:ocamlformat} --root=. --name b.cpp %{dep:sample/b.ml}))))
 
 (rule
  (alias runtest)
@@ -152,7 +162,9 @@
 (rule
  (with-outputs-to
   err_stdin_name_unknown_ext.output
-  (system "! %{bin:ocamlformat} --name b.cpp - < %{dep:sample/b.ml}")))
+  (with-accepted-exit-codes
+   1
+   (system " %{bin:ocamlformat} --name b.cpp - < %{dep:sample/b.ml}"))))
 
 (rule
  (alias runtest)
@@ -162,8 +174,10 @@
 (rule
  (with-outputs-to
   err_several_files_and_kind.output
-  (system
-    "! %{bin:ocamlformat} --impl --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} --impl --check %{dep:sample/a.mli}
+     %{dep:sample/b.ml}))))
 
 (rule
  (alias runtest)
@@ -173,8 +187,10 @@
 (rule
  (with-outputs-to
   err_several_files_and_name.output
-  (system
-    "! %{bin:ocamlformat} --name foo.ml --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} --name foo.ml --check %{dep:sample/a.mli}
+     %{dep:sample/b.ml}))))
 
 (rule
  (alias runtest)
@@ -184,8 +200,10 @@
 (rule
  (with-outputs-to
   err_several_files_and_kind_inplace.output
-  (system
-    "! %{bin:ocamlformat} --impl --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} --impl --check %{dep:sample/a.mli}
+     %{dep:sample/b.ml}))))
 
 (rule
  (alias runtest)
@@ -196,8 +214,10 @@
 (rule
  (with-outputs-to
   err_several_files_and_name_inplace.output
-  (system
-    "! %{bin:ocamlformat} --name foo.ml --check %{dep:sample/a.mli} %{dep:sample/b.ml}")))
+  (with-accepted-exit-codes
+   1
+   (run %{bin:ocamlformat} --name foo.ml --check %{dep:sample/a.mli}
+     %{dep:sample/b.ml}))))
 
 (rule
  (alias runtest)
@@ -211,8 +231,10 @@
  (action
   (with-outputs-to
    %{targets}
-   (system
-     "! %{bin:ocamlformat} --root=. --name foo.ml %{dep:sample/syntax_error.ml}"))))
+   (with-accepted-exit-codes
+    1
+    (run %{bin:ocamlformat} --root=. --name foo.ml
+      %{dep:sample/syntax_error.ml})))))
 
 (rule
  (alias runtest)
@@ -225,8 +247,10 @@
  (action
   (with-outputs-to
    %{targets}
-   (system
-     "! %{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/syntax_error.ml}"))))
+   (with-accepted-exit-codes
+    1
+    (system
+      "%{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/syntax_error.ml}")))))
 
 (rule
  (alias runtest)
@@ -239,7 +263,9 @@
  (action
   (with-outputs-to
    %{targets}
-   (system "! %{bin:ocamlformat} --root=. --impl %{dep:sample/a.mli}"))))
+   (with-accepted-exit-codes
+    1
+    (run %{bin:ocamlformat} --root=. --impl %{dep:sample/a.mli})))))
 
 (rule
  (alias runtest)
@@ -252,7 +278,9 @@
  (action
   (with-outputs-to
    %{targets}
-   (system "! %{bin:ocamlformat} --root=. --impl - < %{dep:sample/a.mli}"))))
+   (with-accepted-exit-codes
+    1
+    (system " %{bin:ocamlformat} --root=. --impl - < %{dep:sample/a.mli}")))))
 
 (rule
  (alias runtest)
@@ -265,7 +293,9 @@
  (action
   (with-outputs-to
    %{targets}
-   (system "! %{bin:ocamlformat} --root=. --name foo.ml %{dep:sample/a.mli}"))))
+   (with-accepted-exit-codes
+    1
+    (run %{bin:ocamlformat} --root=. --name foo.ml %{dep:sample/a.mli})))))
 
 (rule
  (alias runtest)
@@ -279,8 +309,10 @@
  (action
   (with-outputs-to
    %{targets}
-   (system
-     "! %{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/a.mli}"))))
+   (with-accepted-exit-codes
+    1
+    (system
+      "%{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/a.mli}")))))
 
 (rule
  (alias runtest)
@@ -307,7 +339,9 @@
  (action
   (with-outputs-to
    %{targets}
-   (system "! %{bin:ocamlformat} --root=. --check %{dep:sample/b.ml}"))))
+   (with-accepted-exit-codes
+    1
+    (run %{bin:ocamlformat} --root=. --check %{dep:sample/b.ml})))))
 
 (rule
  (alias runtest)
@@ -346,7 +380,9 @@
  (action
   (with-outputs-to
    %{targets}
-   (system "! %{bin:ocamlformat} --root=. --max-iters=1 %{dep:sample/b.ml}"))))
+   (with-accepted-exit-codes
+    1
+    (run %{bin:ocamlformat} --root=. --max-iters=1 %{dep:sample/b.ml})))))
 
 (rule
  (alias runtest)
@@ -365,7 +401,9 @@
    %{targets}
    (chdir
     roots/bad_version
-    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml} 2>/dev/null")))))
+    (with-accepted-exit-codes
+     1
+     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml} 2>/dev/null"))))))
 
 (rule
  (alias runtest)
@@ -381,7 +419,9 @@
    %{targets}
    (chdir
     roots/malformed1
-    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+    (with-accepted-exit-codes
+     1
+     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
 
 (rule
  (alias runtest)
@@ -397,7 +437,9 @@
    %{targets}
    (chdir
     roots/unknown_option
-    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+    (with-accepted-exit-codes
+     1
+     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
 
 (rule
  (alias runtest)
@@ -413,7 +455,9 @@
    %{targets}
    (chdir
     roots/unknown_value
-    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+    (with-accepted-exit-codes
+     1
+     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
 
 (rule
  (alias runtest)
@@ -430,7 +474,9 @@
    (setenv
     OCAMLFORMAT
     "unknown=true"
-    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+    (with-accepted-exit-codes
+     1
+     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
 
 (rule
  (alias runtest)
@@ -447,7 +493,9 @@
    (setenv
     OCAMLFORMAT
     "type-decl=unknown"
-    (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.ml}")))))
+    (with-accepted-exit-codes
+     1
+     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
 
 (rule
  (alias runtest)

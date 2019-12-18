@@ -324,7 +324,8 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "! %{bin:ocamlformat} %{read-lines:break_separators-after_docked_transition_message.ml.opts} %{dep:break_separators.ml}"))))
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{read-lines:break_separators-after_docked_transition_message.ml.opts} %{dep:break_separators.ml})))))
 
 (rule
  (alias runtest)
@@ -423,7 +424,8 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "! %{bin:ocamlformat} %{read-lines:break_string_literals-wrap.ml.opts} %{dep:break_string_literals.ml}"))))
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{read-lines:break_string_literals-wrap.ml.opts} %{dep:break_string_literals.ml})))))
 
 (rule
  (alias runtest)
@@ -772,7 +774,8 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "! %{bin:ocamlformat} %{dep:error1.ml}"))))
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{dep:error1.ml})))))
 
 (rule
  (alias runtest)
@@ -783,7 +786,8 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "! %{bin:ocamlformat} %{dep:error2.ml}"))))
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{dep:error2.ml})))))
 
 (rule
  (alias runtest)
@@ -794,7 +798,8 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "! %{bin:ocamlformat} %{dep:error3.ml}"))))
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{dep:error3.ml})))))
 
 (rule
  (alias runtest)
@@ -1768,7 +1773,8 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to %{targets}
-     (system "! %{bin:ocamlformat} %{read-lines:need_format.ml.opts} %{dep:need_format.ml}"))))
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{read-lines:need_format.ml.opts} %{dep:need_format.ml})))))
 
 (rule
  (alias runtest)
