@@ -138,5 +138,8 @@ module Location = struct
     let st = compare_start x y in
     if st = 0 then compare_end x y else st
 
-  let contains l1 l2 = compare_start l1 l2 <= 0 && compare_end l1 l2 >= 0
+  let merge x y =
+    if Position.compare x.loc_end y.loc_start >= 0 then
+      Some { x with loc_end = y.loc_end }
+    else None
 end

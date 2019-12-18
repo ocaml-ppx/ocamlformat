@@ -115,7 +115,19 @@ let lex_buf lexbuf =
   in
   loop []
 
-let normalize_locs locs = List.sort_uniq Migrate_ast.Location.compare locs
+let merge_adj merge l =
+  List.fold_left
+    (fun acc x ->
+      match acc with
+      | h :: t -> (
+          match merge h x with Some m -> m :: t | None -> x :: h :: t )
+      | [] -> x :: acc)
+    [] l
+  |> List.rev
+
+let normalize_locs locs =
+  List.sort_uniq Migrate_ast.Location.compare locs
+  |> merge_adj Migrate_ast.Location.merge
 
 let process p m print lexbuf =
   let ast = parse_with_recovery p (lex_buf lexbuf) in

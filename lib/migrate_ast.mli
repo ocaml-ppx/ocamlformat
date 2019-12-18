@@ -33,7 +33,7 @@ module Location : sig
 
   val compare : t -> t -> int
 
-  val contains : t -> t -> bool
+  val merge : t -> t -> t option
 end
 
 module Mapper : sig
