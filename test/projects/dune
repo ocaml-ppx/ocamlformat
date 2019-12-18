@@ -9,15 +9,16 @@
     enable_outside_detected_project
     (run ocamlformat --enable-outside-detected-project main.ml)))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action
   (diff enable_outside_detected_project.expected
     enable_outside_detected_project.output)))
 
 (rule
  (targets outside_detected_project.output)
- (deps outside_detected_project/dune-project outside_detected_project/main.ml .ocamlformat)
+ (deps outside_detected_project/dune-project outside_detected_project/main.ml
+   .ocamlformat)
  (action
   (with-outputs-to
    %{targets}
@@ -25,8 +26,8 @@
     outside_detected_project
     (run ocamlformat main.ml)))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action
   (diff outside_detected_project.expected outside_detected_project.output)))
 
@@ -41,8 +42,8 @@
     outside_detected_project_with_name/project_root
     (run ocamlformat --name a.ml ../outside_root/a.ml)))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action
   (diff outside_detected_project_with_name.expected
     outside_detected_project_with_name.output)))

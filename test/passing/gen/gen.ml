@@ -82,8 +82,8 @@ let emit_test test_name setup =
    (with-outputs-to %%{targets}
      (system "%s%%{bin:ocamlformat}%s %%{dep:%s}"))))
 
-(alias
- (name runtest)%s
+(rule
+ (alias runtest)%s
  (action (diff %s %s.output)))
 |}
     test_name extra_deps cmd_prefix opts base_test_name enabled_if_line
@@ -98,8 +98,8 @@ let emit_test test_name setup =
    (with-outputs-to %%{targets}
      (system "%s%%{bin:ocp-indent} %%{dep:%s}"))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action (diff %s.ocp %s.ocp.output)))
 |}
       test_name extra_deps cmd_prefix ref_name test_name test_name
