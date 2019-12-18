@@ -112,8 +112,10 @@
  (deps .ocamlformat)
  (action
   (with-outputs-to
-   %{targets}
-   (system "%{bin:ocamlformat} --root=. --impl - < %{dep:sample/b.ml}"))))
+   stdin_and_impl.output
+   (with-stdin-from
+    sample/b.ml
+    (run %{bin:ocamlformat} --root=. --impl -)))))
 
 (rule
  (alias runtest)
@@ -125,8 +127,10 @@
  (deps .ocamlformat)
  (action
   (with-outputs-to
-   %{targets}
-   (system "%{bin:ocamlformat} --root=. --intf - < %{dep:sample/a.mli}"))))
+   stdin_and_intf.output
+   (with-stdin-from
+    sample/a.mli
+    (run %{bin:ocamlformat} --root=. --intf -)))))
 
 (rule
  (alias runtest)
@@ -138,8 +142,10 @@
  (deps .ocamlformat)
  (action
   (with-outputs-to
-   %{targets}
-   (system "%{bin:ocamlformat} --root=. --name a.ml - < %{dep:sample/b.ml}"))))
+   stdin_and_name.output
+   (with-stdin-from
+    sample/b.ml
+    (run %{bin:ocamlformat} --root=. --name a.ml -)))))
 
 (rule
  (alias runtest)
@@ -162,9 +168,11 @@
 (rule
  (with-outputs-to
   err_stdin_name_unknown_ext.output
-  (with-accepted-exit-codes
-   1
-   (system " %{bin:ocamlformat} --name b.cpp - < %{dep:sample/b.ml}"))))
+  (with-stdin-from
+   sample/b.ml
+   (with-accepted-exit-codes
+    1
+    (run %{bin:ocamlformat} --name b.cpp -)))))
 
 (rule
  (alias runtest)
@@ -246,11 +254,12 @@
  (deps .ocamlformat)
  (action
   (with-outputs-to
-   %{targets}
-   (with-accepted-exit-codes
-    1
-    (system
-      "%{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/syntax_error.ml}")))))
+   fmterr_stdin_and_name.output
+   (with-stdin-from
+    sample/syntax_error.ml
+    (with-accepted-exit-codes
+     1
+     (run %{bin:ocamlformat} --root=. --name foo.ml -))))))
 
 (rule
  (alias runtest)
@@ -277,10 +286,12 @@
  (deps .ocamlformat)
  (action
   (with-outputs-to
-   %{targets}
-   (with-accepted-exit-codes
-    1
-    (system " %{bin:ocamlformat} --root=. --impl - < %{dep:sample/a.mli}")))))
+   fmterr_stdin_bad_kind.output
+   (with-stdin-from
+    sample/a.mli
+    (with-accepted-exit-codes
+     1
+     (run %{bin:ocamlformat} --root=. --impl -))))))
 
 (rule
  (alias runtest)
@@ -308,11 +319,12 @@
  (deps .ocamlformat)
  (action
   (with-outputs-to
-   %{targets}
-   (with-accepted-exit-codes
-    1
-    (system
-      "%{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/a.mli}")))))
+   fmterr_stdin_and_name_bad_kind.output
+   (with-stdin-from
+    %{dep:sample/a.mli}
+    (with-accepted-exit-codes
+     1
+     (run %{bin:ocamlformat} --root=. --name foo.ml -))))))
 
 (rule
  (alias runtest)
@@ -389,21 +401,24 @@
  (action
   (diff max_iter_1_failing.expected max_iter_1_failing.output)))
 
-;; This test's stderr is ignored because it's not stable
-;; (it contains the current git rev)
-
 (rule
  (targets conf_bad_version.output)
  (deps
   (source_tree roots/bad_version))
  (action
-  (with-outputs-to
-   %{targets}
-   (chdir
-    roots/bad_version
-    (with-accepted-exit-codes
-     1
-     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml} 2>/dev/null"))))))
+  (with-stderr-to
+   ;; This test's stderr is ignored because it's not stable
+   ;; (it contains the current git rev)
+   %{null}
+   (with-stdout-to
+    %{targets}
+    (with-stdin-from
+     sample/a.ml
+     (chdir
+      roots/bad_version
+      (with-accepted-exit-codes
+       1
+       (run %{bin:ocamlformat} --impl -))))))))
 
 (rule
  (alias runtest)
@@ -417,11 +432,13 @@
  (action
   (with-outputs-to
    %{targets}
-   (chdir
-    roots/malformed1
-    (with-accepted-exit-codes
-     1
-     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
+   (with-stdin-from
+    sample/a.ml
+    (chdir
+     roots/malformed1
+     (with-accepted-exit-codes
+      1
+      (run %{bin:ocamlformat} --impl -)))))))
 
 (rule
  (alias runtest)
@@ -435,11 +452,13 @@
  (action
   (with-outputs-to
    %{targets}
-   (chdir
-    roots/unknown_option
-    (with-accepted-exit-codes
-     1
-     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
+   (with-stdin-from
+    sample/a.ml
+    (chdir
+     roots/unknown_option
+     (with-accepted-exit-codes
+      1
+      (run %{bin:ocamlformat} --impl -)))))))
 
 (rule
  (alias runtest)
@@ -453,11 +472,13 @@
  (action
   (with-outputs-to
    %{targets}
-   (chdir
-    roots/unknown_value
-    (with-accepted-exit-codes
-     1
-     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
+   (with-stdin-from
+    sample/a.ml
+    (chdir
+     roots/unknown_value
+     (with-accepted-exit-codes
+      1
+      (run %{bin:ocamlformat} --impl -)))))))
 
 (rule
  (alias runtest)
@@ -471,12 +492,14 @@
  (action
   (with-outputs-to
    %{targets}
-   (setenv
-    OCAMLFORMAT
-    "unknown=true"
-    (with-accepted-exit-codes
-     1
-     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
+   (with-stdin-from
+    sample/a.ml
+    (setenv
+     OCAMLFORMAT
+     "unknown=true"
+     (with-accepted-exit-codes
+      1
+      (run %{bin:ocamlformat} --impl -)))))))
 
 (rule
  (alias runtest)
@@ -493,9 +516,11 @@
    (setenv
     OCAMLFORMAT
     "type-decl=unknown"
-    (with-accepted-exit-codes
-     1
-     (system "%{bin:ocamlformat} --impl - < %{dep:sample/a.ml}"))))))
+    (with-stdin-from
+     sample/a.ml
+     (with-accepted-exit-codes
+      1
+      (run %{bin:ocamlformat} --impl -)))))))
 
 (rule
  (alias runtest)
