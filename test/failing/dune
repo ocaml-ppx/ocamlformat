@@ -1,10 +1,8 @@
 (rule
- (targets list_and_comments.ml.output)
  (deps .ocamlformat)
  (action
-  (with-outputs-to
-   %{targets}
-   (run %{bin:ocamlformat} %{dep:list_and_comments.ml}))))
+   (with-outputs-to list_and_comments.ml.output
+     (run %{bin:ocamlformat} %{dep:list_and_comments.ml}))))
 
 (rule
  (alias runtest)

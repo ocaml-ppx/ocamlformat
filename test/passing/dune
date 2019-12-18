@@ -1,12 +1,11 @@
 (include dune.inc)
 
 (rule
- (targets dune.inc.gen)
  (deps
   (source_tree .))
  (action
   (with-stdout-to
-   %{targets}
+   dune.inc.gen
    (run ./gen/gen.exe))))
 
 (rule

@@ -83,17 +83,16 @@ let emit_test test_name setup =
   Printf.printf
     {|
 (rule
- (targets %s.output)
  (deps .ocamlformat %s)
  (action
-   (with-outputs-to %%{targets}
+   (with-outputs-to %s.output
      %s)))
 
 (rule
  (alias runtest)%s
  (action (diff %s %s.output)))
 |}
-    test_name extra_deps
+    extra_deps test_name
     (cmd setup.should_fail
        ( ["%{bin:ocamlformat}"] @ opts
        @ [Printf.sprintf "%%{dep:%s}" base_test_name] ))
@@ -102,17 +101,16 @@ let emit_test test_name setup =
     Printf.printf
       {|
 (rule
- (targets %s.ocp.output)
  (deps .ocp-indent %s)
  (action
-   (with-outputs-to %%{targets}
+   (with-outputs-to %s.ocp.output
      %s)))
 
 (rule
  (alias runtest)
  (action (diff %s.ocp %s.ocp.output)))
 |}
-      test_name extra_deps
+      extra_deps test_name
       (cmd setup.should_fail
          ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name])
       test_name test_name

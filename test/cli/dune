@@ -402,7 +402,6 @@
   (diff max_iter_1_failing.expected max_iter_1_failing.output)))
 
 (rule
- (targets conf_bad_version.output)
  (deps
   (source_tree roots/bad_version))
  (action
@@ -411,7 +410,7 @@
    ;; (it contains the current git rev)
    %{null}
    (with-stdout-to
-    %{targets}
+    conf_bad_version.output
     (with-stdin-from
      sample/a.ml
      (chdir
@@ -426,12 +425,11 @@
   (diff conf_bad_version.expected conf_bad_version.output)))
 
 (rule
- (targets conf_malformed1.output)
  (deps
   (source_tree roots/malformed1))
  (action
   (with-outputs-to
-   %{targets}
+   conf_malformed1.output
    (with-stdin-from
     sample/a.ml
     (chdir
@@ -446,12 +444,11 @@
   (diff conf_malformed1.expected conf_malformed1.output)))
 
 (rule
- (targets conf_unknown_option.output)
  (deps
   (source_tree roots/unknown_option))
  (action
   (with-outputs-to
-   %{targets}
+   conf_unknown_option.output
    (with-stdin-from
     sample/a.ml
     (chdir
@@ -466,12 +463,11 @@
   (diff conf_unknown_option.expected conf_unknown_option.output)))
 
 (rule
- (targets conf_unknown_value.output)
  (deps
   (source_tree roots/unknown_value))
  (action
   (with-outputs-to
-   %{targets}
+   conf_unknown_value.output
    (with-stdin-from
     sample/a.ml
     (chdir
@@ -486,12 +482,11 @@
   (diff conf_unknown_value.expected conf_unknown_value.output)))
 
 (rule
- (targets env_unknown_option.output)
  (deps
   (source_tree roots/unknown_value))
  (action
   (with-outputs-to
-   %{targets}
+   env_unknown_option.output
    (with-stdin-from
     sample/a.ml
     (setenv
@@ -507,12 +502,11 @@
   (diff env_unknown_option.expected env_unknown_option.output)))
 
 (rule
- (targets env_unknown_value.output)
  (deps
   (source_tree roots/unknown_value))
  (action
   (with-outputs-to
-   %{targets}
+   env_unknown_value.output
    (setenv
     OCAMLFORMAT
     "type-decl=unknown"
