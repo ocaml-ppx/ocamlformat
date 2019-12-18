@@ -49,7 +49,7 @@ let keyword_table =
     "done", DONE;
     "downto", DOWNTO;
     "else", ELSE;
-    "end", END;
+    "end", END false;
     "exception", EXCEPTION;
     "external", EXTERNAL;
     "false", FALSE;

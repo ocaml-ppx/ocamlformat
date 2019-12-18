@@ -28,6 +28,9 @@ open Docstrings.WithMenhir
 let mkloc = Location.mkloc
 let mknoloc = Location.mknoloc
 
+let mk_merlin_hole_attr () =
+  Attr.mk {txt= "merlin.hole.gen"; loc= Location.none} (PStr [])
+
 let make_loc (startpos, endpos) = {
   Location.loc_start = startpos;
   Location.loc_end = endpos;
@@ -606,7 +609,7 @@ let mk_directive ~loc name arg =
 %token DOTDOT
 %token DOWNTO
 %token ELSE
-%token END
+%token <bool> END [@recover.expr true]
 %token EOF
 %token EQUAL
 %token EXCEPTION
@@ -1170,8 +1173,12 @@ functor_arg_name:
    Perhaps in the future an explicit stratification could be used. *)
 
 module_expr:
-  | STRUCT attrs = attributes s = structure END
-      { mkmod ~loc:$sloc ~attrs (Pmod_structure s) }
+  | STRUCT attrs = attributes s = structure generated = END
+      { let attrs =
+          if generated then mk_merlin_hole_attr () :: attrs
+          else attrs
+        in
+        mkmod ~loc:$sloc ~attrs (Pmod_structure s) }
   (*| STRUCT attributes structure error
       { unclosed "struct" $loc($1) "end" $loc($4) }*)
   | FUNCTOR attrs = attributes args = functor_args MINUSGREATER me = module_expr

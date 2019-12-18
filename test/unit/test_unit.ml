@@ -79,9 +79,9 @@ module M = struct
       test "invalid after in" invalid_after_in_test
         [ "start: (line 2, column 0), end: (line 8, column 4)" ];
       test "invalid seq modules" invalid_seq_modules_test
-        [ "start: (line 5, column 2), end: (line 7, column 28)" ];
+        [ "start: (line 2, column 11), end: (line 7, column 28)" ];
       test "not closed module" not_closed_module_test
-        [ "start: (line 2, column 0), end: (line 4, column 11)" ];
+        [ "start: (line 2, column 11), end: (line 4, column 11)" ];
     ]
 
   let tests = test_impl

@@ -172,8 +172,16 @@ let process p m print lexbuf =
     in
     let structure_item m x = wrap m x.pstr_loc default.structure_item x in
     let signature_item m x = wrap m x.psig_loc default.signature_item x in
+    let attribute m x =
+      match (x.attr_name.txt, x.attr_payload) with
+      | "merlin.hole.gen", PStr [] ->
+          loc_list := Stack.top loc_stack :: !loc_list;
+          default.attribute m x
+      | _ -> default.attribute m x
+    in
     {
       Ast_mapper.default_mapper with
+      attribute;
       expr;
       class_declaration;
       class_description;
