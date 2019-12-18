@@ -61,14 +61,6 @@ module M = struct
   let foooooooooooooo = (* line 5 *)
 
   let foooooooooooo = fooooo
-
-  let foooooooo = (* line 9 *)
-
-  let foooooooooo = foooo
-end
-
-module K = struct
-  let foooo (* line 15 *)
 end
 |}
     in
@@ -80,11 +72,7 @@ end
       test "invalid after in" invalid_after_in_test
         [ "start: (line 2, column 0), end: (line 8, column 4)" ];
       test "invalid seq modules" invalid_seq_modules_test
-        [
-          "start: (line 15, column 2), end: (line 15, column 11)";
-          "start: (line 5, column 2), end: (line 5, column 23)";
-          "start: (line 9, column 2), end: (line 9, column 17)";
-        ];
+        [ "start: (line 5, column 2), end: (line 7, column 28)" ];
     ]
 
   let tests = test_impl
