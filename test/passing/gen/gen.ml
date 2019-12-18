@@ -62,12 +62,12 @@ let cmd should_fail args =
     Printf.sprintf {|(with-accepted-exit-codes 1
        (run %s))|}
       cmd_string
-  else Printf.sprintf {|(system "%s")|} cmd_string
+  else Printf.sprintf {|(run %s)|} cmd_string
 
 let emit_test test_name setup =
-  let open Printf in
   let opts =
-    if setup.has_opts then [sprintf "%%{read-lines:%s.opts}" test_name]
+    if setup.has_opts then
+      Stdio.In_channel.read_lines (Printf.sprintf "%s.opts" test_name)
     else []
   in
   let ref_name = if setup.has_ref then test_name ^ ".ref" else test_name in
