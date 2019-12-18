@@ -21,7 +21,8 @@ module Test_location = struct
     [ test "equal" (make_loc 0 0 false) (make_loc 0 0 false) 0
     ; test "different start" (make_loc 0 0 false) (make_loc 1 0 false) (-1)
     ; test "same start" (make_loc 0 0 false) (make_loc 0 1 false) 1
-    ; test "same start, same end" (make_loc 0 0 true) (make_loc 0 0 false) 1 ]
+    ; test "same start, same end" (make_loc 0 0 true) (make_loc 0 0 false) 1
+    ]
 
   let tests = test_compare_width_decreasing
 end
