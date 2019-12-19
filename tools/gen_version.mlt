@@ -28,12 +28,14 @@ let file, version =
           (* file has been watermarked when building distrib archive *)
           real_watermark
         else
-          (* file has not been watermarked when building in dev git tree *)
-          let ic =
-            Unix.open_process_in "git describe --tags --dirty --always"
-          in
-          let version = input_line ic in
-          close_in ic ; version
+          try
+            (* file has not been watermarked when building in dev git tree *)
+            let ic =
+              Unix.open_process_in "git describe --tags --dirty --always 2>/dev/null"
+            in
+            let version = input_line ic in
+            close_in ic ; version
+          with End_of_file -> "unknown"
       in
       (file, version)
   | _ ->
