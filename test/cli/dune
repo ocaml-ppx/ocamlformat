@@ -300,6 +300,7 @@
 
 ;; This test's stderr is ignored because it's not stable
 ;; (it contains the current git rev)
+
 (rule
  (targets conf_bad_version.output)
  (deps

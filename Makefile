@@ -30,7 +30,7 @@ clean:
 
 .PHONY: fmt
 fmt:
-	dune build @bin/fmt @lib/fmt @tools/fmt
+	dune build @fmt
 
 .PHONY: test regtests regtests-promote
 test: fmt regtests

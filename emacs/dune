@@ -10,6 +10,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (install
- (package ocamlformat)  
+ (package ocamlformat)
  (section share_root)
- (files (ocamlformat.el as emacs/site-lisp/ocamlformat.el)))
+ (files
+  (ocamlformat.el as emacs/site-lisp/ocamlformat.el)))
