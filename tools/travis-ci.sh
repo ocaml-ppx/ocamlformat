@@ -29,12 +29,14 @@ CheckBuild () {
     opam pin remove --no-action ocamlformat || true # Otherwise opam will ignored new deps
     opam update --upgrade
     opam pin add --no-action ocamlformat .
-    opam install --deps-only --with-test ocamlformat
+    opam install --deps-only ocamlformat
     # script
     opam exec -- make
 }
 
 CheckTests () {
+    # install
+    opam install --deps-only --with-test ocamlformat
     # script
     opam exec -- make test
 }
