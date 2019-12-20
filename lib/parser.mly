@@ -28,9 +28,6 @@ open Docstrings.WithMenhir
 let mkloc = Location.mkloc
 let mknoloc = Location.mknoloc
 
-let mk_merlin_hole_attr () =
-  Attr.mk {txt= "merlin.hole.gen"; loc= Location.none} (PStr [])
-
 let make_loc (startpos, endpos) = {
   Location.loc_start = startpos;
   Location.loc_end = endpos;
@@ -564,16 +561,11 @@ let mk_directive ~loc name arg =
 %[@recover.prelude
 
   open Migrate_ast
-  open Parsetree
   open Ast_helper
 
   (* Ast nodes to inject when parsing fails *)
 
   let default_loc = Ast_helper.default_loc
-
-  let default_expr () =
-    let id = Location.mkloc "merlin.hole" !default_loc in
-    Exp.mk ~loc:!default_loc (Pexp_extension (id, PStr []))
 
   let default_pattern () = Pat.any ~loc:!default_loc ()
 
@@ -1175,7 +1167,7 @@ functor_arg_name:
 module_expr:
   | STRUCT attrs = attributes s = structure generated = END
       { let attrs =
-          if generated then mk_merlin_hole_attr () :: attrs
+          if generated then Annot.Attr.mk () :: attrs
           else attrs
         in
         mkmod ~loc:$sloc ~attrs (Pmod_structure s) }
@@ -2101,7 +2093,7 @@ let_pattern:
       { $1 }
 ;
 
-expr [@recover.expr default_expr ()]:
+expr [@recover.expr Annot.Exp.mk ()]:
     simple_expr %prec below_HASH
       { $1 }
   | expr_attrs

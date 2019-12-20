@@ -137,11 +137,9 @@ let process p m print lexbuf =
     let open Migrate_ast.Parsetree in
     let default = Ast_mapper.default_mapper in
     let expr m e =
-      match e.pexp_desc with
-      | Pexp_extension ({ txt = "merlin.hole"; _ }, PStr []) ->
-          loc_list := Stack.top loc_stack :: !loc_list;
-          default.expr m e
-      | _ -> default.expr m e
+      if Annot.Exp.is_generated e then
+        loc_list := Stack.top loc_stack :: !loc_list;
+      default.expr m e
     in
     let wrap mapper loc f x =
       Stack.push loc loc_stack;
@@ -173,11 +171,9 @@ let process p m print lexbuf =
     let structure_item m x = wrap m x.pstr_loc default.structure_item x in
     let signature_item m x = wrap m x.psig_loc default.signature_item x in
     let attribute m x =
-      match (x.attr_name.txt, x.attr_payload) with
-      | "merlin.hole.gen", PStr [] ->
-          loc_list := Stack.top loc_stack :: !loc_list;
-          default.attribute m x
-      | _ -> default.attribute m x
+      if Annot.Attr.is_generated x then
+        loc_list := Stack.top loc_stack :: !loc_list;
+      default.attribute m x
     in
     {
       Ast_mapper.default_mapper with
