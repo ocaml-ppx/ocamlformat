@@ -2813,16 +2813,24 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs $ doc_after )
 
 and fmt_cases c ctx cs =
-  let pattern_len {pc_lhs; pc_guard; _} =
+  let pattern_len ({pc_lhs; pc_guard; _} as case) =
     if Option.is_some pc_guard then None
     else
       let xpat = sub_pat ~ctx pc_lhs in
-      let fmted =
+      let fmted_pat =
         Cmts.preserve (fun cmts -> fmt_pattern {c with cmts} xpat) c.cmts
       in
-      let len = String.length fmted in
-      if len * 3 >= c.conf.margin || String.contains fmted '\n' then None
-      else Some len
+      let len = String.length fmted_pat in
+      if String.contains fmted_pat '\n' then None
+      else
+        let fmted_case =
+          let first = false and last = false in
+          let fmt cmts = fmt_case {c with cmts} ctx ~first ~last case in
+          Cmts.preserve fmt c.cmts
+        in
+        (* The first character is ignored when looking for a linebreak, as it
+           could be a forcedline break in some configuration. *)
+        if String.contains fmted_case ~pos:1 '\n' then None else Some len
   in
   let fold_pattern_len ~f cs =
     List.fold_until ~init:0 cs
@@ -2853,9 +2861,9 @@ and fmt_cases c ctx cs =
           | _ -> None )
         | _ -> None
       in
-      fmt_case c ctx ~first ~last ~padding case)
+      fmt_case c ctx ~first ~last ?padding case)
 
-and fmt_case c ctx ~first ~last ~padding case =
+and fmt_case c ctx ~first ~last ?padding case =
   let {pc_lhs; pc_guard; pc_rhs} = case in
   let xrhs = sub_exp ~ctx pc_rhs in
   let indent =

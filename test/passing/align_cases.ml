@@ -85,9 +85,11 @@ let _ = match f with `Foo -> toto | `Bar ijx -> bar ijx
 
 let _ =
   match (foooooooooooooo, foooooooooooooo) with
-  | Some a, Some b -> a + b
-  | None, _        -> 1
-  | Some _, None   -> 2
+  | Some a, Some b                     -> a + b
+  | None, _                            -> 1
+  | Some _, None                       -> 2
+  | Foo_types.Foo_fooo_foooo_fooo_fooo -> Foo.BarFoo.int_as_foo 5 bar
+  | Foo_types.Foo_foooooo              -> Fooo_bar.int_as_bar 6 foooo
 
 let _ =
   match (foooooooooooooo, foooooooooooooo) with
