@@ -1964,7 +1964,7 @@ let read_config_file conf filename_kind =
                 | `Ocp_indent _ -> dot_ocp_indent
                 | `Ocamlformat _ -> dot_ocamlformat
               in
-              failwith_user_errors ~kind l)
+              failwith_user_errors ~kind l )
     with Sys_error _ -> conf )
 
 let update_using_env conf =

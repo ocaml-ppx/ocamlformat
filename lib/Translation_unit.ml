@@ -74,12 +74,12 @@ let with_file input_name output_file suf ext f =
 let dump_ast ~input_name ?output_file ~suffix fmt =
   let ext = ".ast" in
   with_file input_name output_file suffix ext (fun oc ->
-      fmt (Format.formatter_of_out_channel oc))
+      fmt (Format.formatter_of_out_channel oc) )
 
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
   with_file input_name output_file suffix ext (fun oc ->
-      Out_channel.output_string oc fmted)
+      Out_channel.output_string oc fmted )
 
 let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
     =
@@ -194,7 +194,7 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
                        source or disable the formatting using the option \
                        --no-parse-docstrings.\n\
                        %!"
-                      Location.print_loc loc (ellipsis_cmt s))
+                      Location.print_loc loc (ellipsis_cmt s) )
           | `Comment_dropped l when not quiet ->
               List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                   Format.fprintf fmt
@@ -229,7 +229,7 @@ let check_margin conf ~filename ~fmted =
   List.iteri (String.split_lines fmted) ~f:(fun i line ->
       if String.length line > conf.Conf.margin then
         Format.fprintf Format.err_formatter
-          "Warning: %s:%i exceeds the margin\n%!" filename i)
+          "Warning: %s:%i exceeds the margin\n%!" filename i )
 
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k
@@ -248,7 +248,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
     if opts.Conf.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             xunit.printast fmt ast))
+             xunit.printast fmt ast ))
     else None
   in
   let dump_formatted ~suffix fmted =

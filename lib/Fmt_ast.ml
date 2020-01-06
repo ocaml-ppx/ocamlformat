@@ -713,7 +713,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
               | None -> fmt_core_type c xtI
               | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
             in
-            hvbox 0 (Cmts.fmt_before c locI $ arg))
+            hvbox 0 (Cmts.fmt_before c locI $ arg) )
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid

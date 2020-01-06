@@ -2224,7 +2224,7 @@ end = struct
             ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _ :: (_, e2) :: _)
           when e2 == exp && is_infix_id i
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
-                      compare_prec p Apply < 0) ->
+                      compare_prec p Apply < 0 ) ->
             true
         | Pexp_apply
             ({pexp_desc= Pexp_ident lid; _}, (_ :: (_, e2) :: _ as args))

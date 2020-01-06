@@ -317,7 +317,7 @@ let init map_ast ~debug source asts comments_n_docstrings =
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
-            update_remaining t ~f:(Location.Set.add loc)) ;
+            update_remaining t ~f:(Location.Set.add loc) ) ;
     if debug then (
       let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
