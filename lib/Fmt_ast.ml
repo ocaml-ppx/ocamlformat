@@ -3705,14 +3705,15 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let blk_a = maybe_generative c ~ctx me_a in
       let box_f = wrap_k blk_f.opn blk_f.cls in
       let fmt_rator =
+        let break_struct =
+          c.conf.break_struct && can_break_before_struct
+          && not (module_expr_is_simple me_a)
+        in
         fmt_docstring c ~epi:(fmt "@,") doc
         $ box_f (blk_f.psp $ fmt_opt blk_f.pro $ blk_f.bdy)
         $ blk_f.esp $ fmt_opt blk_f.epi
-        $ fmt_or_k
-            ( c.conf.break_struct && can_break_before_struct
-            && not (module_expr_is_simple me_a) )
-            (break_unless_newline 1000 0 $ str "(")
-            (fmt "@ (")
+        $ break (if break_struct then 1000 else 1) 0
+        $ str "("
       in
       let epi =
         fmt_opt blk_a.epi $ str ")"
