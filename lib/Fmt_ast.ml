@@ -1621,7 +1621,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                      (* side effects of Cmts.fmt_before before fmt_expression
                         is important *)
                      let has_cmts = Cmts.has_before c.cmts pexp_loc in
-                     let adj = break_unless_newline 1000 0 in
+                     let adj = break 1000 0 in
                      let fmt_before_cmts = Cmts.fmt_before ~adj c pexp_loc in
                      (* The comments before the first arg are put there, so
                         that they are printed after the operator and the box
