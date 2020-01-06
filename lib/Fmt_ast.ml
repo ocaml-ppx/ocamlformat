@@ -842,14 +842,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   update_config_maybe_disabled c ppat_loc ppat_attributes
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
-  let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
   | Ppat_or _ -> Fn.id
   | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::")
     ->
       fun k ->
-        Cmts.fmt c ~pro:spc ppat_loc
-        @@ Cmts.fmt c ~pro:spc loc (fmt_opt pro $ k)
+        Cmts.fmt c ~pro:(break 1 0) ppat_loc
+        @@ Cmts.fmt c ~pro:(break 1 0) loc (fmt_opt pro $ k)
   | _ -> fun k -> Cmts.fmt c ppat_loc (fmt_opt pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
      else
