@@ -21,6 +21,8 @@
 
   + Fix formatting of empty signature payload `[%a:]` (#1236) (Etienne Millon)
 
+  + Fix align-cases for long patterns (#1204) (Guillaume Petiot)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
