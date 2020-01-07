@@ -1759,8 +1759,12 @@ class_simple_expr:
     (*| LPAREN class_expr COLON class_type error
         { unclosed "(" $loc($1) ")" $loc($5) }*)
     ) { $1 }
-  | OBJECT attributes class_structure END
-    { mkclass ~loc:$sloc ~attrs:$2 (Pcl_structure $3) }
+  | OBJECT attributes class_structure generated = END
+    { let attrs =
+        if generated then Annot.Attr.mk () :: $2
+        else $2
+      in
+      mkclass ~loc:$sloc ~attrs (Pcl_structure $3) }
 ;
 
 class_fun_def:
