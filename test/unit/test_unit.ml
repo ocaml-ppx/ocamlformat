@@ -83,6 +83,11 @@ module K : sig
   type t
 |}
     in
+    let not_closed_begin = {| let x = if x then begin a |} in
+    let not_closed_if = {| let x = if k |} in
+    let not_closed_if_2 = {| let x = if k then |} in
+    let invalid_if = {| let x = if k then else |} in
+    let invalid_if_2 = {| let x = if k then x else |} in
     [
       test "empty" "" [];
       test "valid" valid_test [];
@@ -98,6 +103,16 @@ module K : sig
         [ "start: (line 2, column 11), end: (line 3, column 18)" ];
       test "not closed sig" not_closed_sig
         [ "start: (line 2, column 11), end: (line 3, column 8)" ];
+      test "not closed begin" not_closed_begin
+        [ "start: (line 1, column 1), end: (line 1, column 26)" ];
+      test "not closed if" not_closed_if
+        [ "start: (line 1, column 1), end: (line 1, column 13)" ];
+      test "not closed if 2" not_closed_if_2
+        [ "start: (line 1, column 1), end: (line 1, column 18)" ];
+      test "invalid if" invalid_if
+        [ "start: (line 1, column 1), end: (line 1, column 18)" ];
+      test "invalid if 2" invalid_if_2
+        [ "start: (line 1, column 1), end: (line 1, column 25)" ];
     ]
 
   let tests = test_impl
