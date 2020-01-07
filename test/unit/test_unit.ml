@@ -3,18 +3,13 @@ open Parse_wyc
 module Position = struct
   open Lexing
 
-  let pp fs p =
-    Format.fprintf fs "line %i, column %i" p.pos_lnum (p.pos_cnum - p.pos_bol)
+  let repr p = (p.pos_lnum, p.pos_cnum - p.pos_bol)
 end
 
 module Location = struct
   open Location
 
-  let pp fs l =
-    Format.fprintf fs "start: (%a), end: (%a)" Position.pp l.loc_start
-      Position.pp l.loc_end
-
-  let to_string l = Format.asprintf "%a" pp l
+  let repr l = (Position.repr l.loc_start, Position.repr l.loc_end)
 end
 
 module Locations = struct
@@ -25,8 +20,9 @@ module Locations = struct
         `Quick,
         fun () ->
           let lexbuf = Lexing.from_string input in
-          let actual = List.map Location.to_string (implementation lexbuf) in
-          Alcotest.(check (list string)) test_name expected actual )
+          let actual = List.map Location.repr (implementation lexbuf) in
+          let ty = Alcotest.(list (pair (pair int int) (pair int int))) in
+          Alcotest.check ty test_name expected actual )
     in
     let valid_test =
       {|
@@ -92,38 +88,22 @@ module K : sig
     [
       test "empty" "" [];
       test "valid" valid_test [];
-      test "invalid after eq" invalid_after_eq_test
-        [ "start: (line 1, column 0), end: (line 1, column 22)" ];
-      test "invalid after in" invalid_after_in_test
-        [ "start: (line 2, column 0), end: (line 8, column 4)" ];
-      test "invalid seq modules" invalid_seq_modules_test
-        [ "start: (line 2, column 11), end: (line 7, column 28)" ];
-      test "not closed module" not_closed_module_test
-        [ "start: (line 2, column 11), end: (line 4, column 11)" ];
-      test "not closed module 2" not_closed_module_test_2
-        [ "start: (line 2, column 11), end: (line 3, column 18)" ];
-      test "not closed sig" not_closed_sig
-        [ "start: (line 2, column 11), end: (line 3, column 8)" ];
-      test "not closed begin" not_closed_begin
-        [ "start: (line 1, column 1), end: (line 1, column 26)" ];
-      test "not closed if" not_closed_if
-        [ "start: (line 1, column 1), end: (line 1, column 13)" ];
-      test "not closed if 2" not_closed_if_2
-        [ "start: (line 1, column 1), end: (line 1, column 18)" ];
-      test "invalid if" invalid_if
-        [ "start: (line 1, column 1), end: (line 1, column 18)" ];
-      test "invalid if 2" invalid_if_2
-        [ "start: (line 1, column 1), end: (line 1, column 25)" ];
-      test "not closed class" not_closed_class
-        [ "start: (line 1, column 11), end: (line 1, column 17)" ];
-      test "not closed class 2" not_closed_class_2
-        [ "start: (line 1, column 1), end: (line 1, column 8)" ];
-      test "not closed class 3" not_closed_class_3
-        [ "start: (line 1, column 1), end: (line 1, column 10)" ];
-      test "not closed class 4" not_closed_class_4
-        [ "start: (line 1, column 1), end: (line 1, column 6)" ];
-      test "binop" binop
-        [ "start: (line 1, column 1), end: (line 1, column 4)" ];
+      test "invalid after eq" invalid_after_eq_test [ ((1, 0), (1, 22)) ];
+      test "invalid after in" invalid_after_in_test [ ((2, 0), (8, 4)) ];
+      test "invalid seq modules" invalid_seq_modules_test [ ((2, 11), (7, 28)) ];
+      test "not closed module" not_closed_module_test [ ((2, 11), (4, 11)) ];
+      test "not closed module 2" not_closed_module_test_2 [ ((2, 11), (3, 18)) ];
+      test "not closed sig" not_closed_sig [ ((2, 11), (3, 8)) ];
+      test "not closed begin" not_closed_begin [ ((1, 1), (1, 26)) ];
+      test "not closed if" not_closed_if [ ((1, 1), (1, 13)) ];
+      test "not closed if 2" not_closed_if_2 [ ((1, 1), (1, 18)) ];
+      test "invalid if" invalid_if [ ((1, 1), (1, 18)) ];
+      test "invalid if 2" invalid_if_2 [ ((1, 1), (1, 25)) ];
+      test "not closed class" not_closed_class [ ((1, 11), (1, 17)) ];
+      test "not closed class 2" not_closed_class_2 [ ((1, 1), (1, 8)) ];
+      test "not closed class 3" not_closed_class_3 [ ((1, 1), (1, 10)) ];
+      test "not closed class 4" not_closed_class_4 [ ((1, 1), (1, 6)) ];
+      test "binop" binop [ ((1, 1), (1, 4)) ];
     ]
 
   let tests = test_impl
