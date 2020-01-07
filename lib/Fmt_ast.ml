@@ -1380,8 +1380,8 @@ and fmt_infix_op_args c ~parens xexp op_args =
                $ cmts_after
                $ hovbox_if (not very_last) 2
                    (list_fl xargs (fmt_arg very_last)) )
-           $ fmt_if_k (not last) (break_unless_newline 1 0)))
-    $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
+           $ fmt_if_k (not last) (break 1 0)))
+    $ fmt_if_k (not last_grp) (break 1 0)
   in
   let opn, hint, cls =
     if parens || Poly.(c.conf.infix_precedence = `Parens) then
