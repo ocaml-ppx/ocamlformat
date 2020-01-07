@@ -71,6 +71,18 @@ module M = struct
   let foo =
 |}
     in
+    let not_closed_module_test_2 =
+      {|
+module M = struct
+  let foo = foo in
+|}
+    in
+    let not_closed_sig =
+      {|
+module K : sig
+  type t
+|}
+    in
     [
       test "empty" "" [];
       test "valid" valid_test [];
@@ -82,6 +94,10 @@ module M = struct
         [ "start: (line 2, column 11), end: (line 7, column 28)" ];
       test "not closed module" not_closed_module_test
         [ "start: (line 2, column 11), end: (line 4, column 11)" ];
+      test "not closed module 2" not_closed_module_test_2
+        [ "start: (line 2, column 11), end: (line 3, column 18)" ];
+      test "not closed sig" not_closed_sig
+        [ "start: (line 2, column 11), end: (line 3, column 8)" ];
     ]
 
   let tests = test_impl

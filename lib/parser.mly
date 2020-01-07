@@ -1462,8 +1462,12 @@ open_description:
 /* Module types */
 
 module_type:
-  | SIG attrs = attributes s = signature END
-      { mkmty ~loc:$sloc ~attrs (Pmty_signature s) }
+  | SIG attrs = attributes s = signature generated = END
+      { let attrs =
+          if generated then Annot.Attr.mk () :: attrs
+          else attrs
+        in
+        mkmty ~loc:$sloc ~attrs (Pmty_signature s) }
   (*| SIG attributes signature error
       { unclosed "sig" $loc($1) "end" $loc($4) }*)
   | FUNCTOR attrs = attributes args = functor_args
