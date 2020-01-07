@@ -1724,7 +1724,7 @@ formal_class_parameters:
 
 (* Class expressions. *)
 
-class_expr:
+class_expr [@recover.expr Annot.Class_exp.mk ()]:
     class_simple_expr
       { $1 }
   | FUN attributes class_fun_def

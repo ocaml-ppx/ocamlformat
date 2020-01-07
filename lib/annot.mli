@@ -9,3 +9,9 @@ module Attr : sig
 
   val is_generated : Migrate_ast.Parsetree.attribute -> bool
 end
+
+module Class_exp : sig
+  val mk : unit -> Migrate_ast.Parsetree.class_expr
+
+  val is_generated : Migrate_ast.Parsetree.class_expr -> bool
+end

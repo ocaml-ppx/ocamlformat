@@ -21,3 +21,15 @@ module Attr = struct
     | "merlin.hole.gen", PStr [] -> true
     | _ -> false
 end
+
+module Class_exp = struct
+  let mk () =
+    let loc = !default_loc in
+    let id = Location.mkloc "merlin.hole" loc in
+    Cl.mk ~loc (Pcl_extension (id, PStr []))
+
+  let is_generated e =
+    match e.pcl_desc with
+    | Pcl_extension ({ txt = "merlin.hole"; _ }, PStr []) -> true
+    | _ -> false
+end

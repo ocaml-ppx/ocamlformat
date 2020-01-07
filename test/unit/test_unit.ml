@@ -85,6 +85,8 @@ module K : sig
     let invalid_if = {| let x = if k then else |} in
     let invalid_if_2 = {| let x = if k then x else |} in
     let not_closed_class = {| class c = object |} in
+    let not_closed_class_2 = {| class c |} in
+    let not_closed_class_3 = {| class c = |} in
     [
       test "empty" "" [];
       test "valid" valid_test [];
@@ -112,6 +114,10 @@ module K : sig
         [ "start: (line 1, column 1), end: (line 1, column 25)" ];
       test "not closed class" not_closed_class
         [ "start: (line 1, column 11), end: (line 1, column 17)" ];
+      test "not closed class 2" not_closed_class_2
+        [ "start: (line 1, column 1), end: (line 1, column 8)" ];
+      test "not closed class 3" not_closed_class_3
+        [ "start: (line 1, column 1), end: (line 1, column 10)" ];
     ]
 
   let tests = test_impl

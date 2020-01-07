@@ -149,7 +149,11 @@ let process p m print lexbuf =
     in
     let class_declaration m x = wrap m x.pci_loc default.class_declaration x in
     let class_description m x = wrap m x.pci_loc default.class_description x in
-    let class_expr m x = wrap m x.pcl_loc default.class_expr x in
+    let class_expr m x =
+      if Annot.Class_exp.is_generated x then
+        loc_list := Stack.top loc_stack :: !loc_list;
+      wrap m x.pcl_loc default.class_expr x
+    in
     let class_field m x = wrap m x.pcf_loc default.class_field x in
     let class_type m x = wrap m x.pcty_loc default.class_type x in
     let class_type_declaration m x =
