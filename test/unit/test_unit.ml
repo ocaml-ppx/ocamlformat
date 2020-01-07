@@ -87,6 +87,8 @@ module K : sig
     let not_closed_class = {| class c = object |} in
     let not_closed_class_2 = {| class c |} in
     let not_closed_class_3 = {| class c = |} in
+    let not_closed_class_4 = {| class |} in
+    let binop = {| x + |} in
     [
       test "empty" "" [];
       test "valid" valid_test [];
@@ -118,6 +120,10 @@ module K : sig
         [ "start: (line 1, column 1), end: (line 1, column 8)" ];
       test "not closed class 3" not_closed_class_3
         [ "start: (line 1, column 1), end: (line 1, column 10)" ];
+      test "not closed class 4" not_closed_class_4
+        [ "start: (line 1, column 1), end: (line 1, column 6)" ];
+      test "binop" binop
+        [ "start: (line 1, column 1), end: (line 1, column 4)" ];
     ]
 
   let tests = test_impl
