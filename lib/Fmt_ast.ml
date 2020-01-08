@@ -2821,7 +2821,10 @@ and fmt_cases c ctx cs =
         Cmts.preserve (fun cmts -> fmt_pattern {c with cmts} xpat) c.cmts
       in
       let len = String.length fmted_pat in
-      if String.contains fmted_pat '\n' then None
+      let indent = Source.indentation c.source pc_lhs.ppat_loc.loc_start in
+      (* we add the lenght of the 5 following characters '| ' ' ->' *)
+      if len + indent + 5 >= c.conf.margin || String.contains fmted_pat '\n'
+      then None
       else
         let fmted_case =
           let first = false and last = false in
