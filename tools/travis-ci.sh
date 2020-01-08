@@ -27,6 +27,10 @@ CheckBuild () {
     # install
     opam switch ${OCAML_VERSION}
     opam pin remove --no-action ocamlformat || true # Otherwise opam will ignored new deps
+    # <BEGIN> beta
+    git clone https://github.com/gpetiot/parse-wyc.git
+    opam pin add parse-wyc
+    # <END> beta
     opam update --upgrade
     opam pin add --no-action ocamlformat .
     opam install --deps-only ocamlformat

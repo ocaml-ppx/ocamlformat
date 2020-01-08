@@ -15,6 +15,7 @@ type 'a t =
   { init_cmts: debug:bool -> Source.t -> 'a -> Cmt.t list -> Cmts.t
   ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
+  ; make_parsable: string -> string
   ; equal:
          ignore_doc_comments:bool
       -> Conf.t

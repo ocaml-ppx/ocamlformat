@@ -509,11 +509,24 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
   | `Compact -> false
 
 let rec fmt_extension c ctx key (ext, pld) =
-  match (pld, ctx) with
-  | ( PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
+  match (key, ext.txt, pld, ctx) with
+  (* invalid nodes are printed as verbatim *)
+  | ( "%%"
+    , "invalid.ast.node"
+    , PStr
+        [ { pstr_desc=
+              Pstr_eval
+                ({pexp_desc= Pexp_constant (Pconst_string (s, _)); _}, [])
+          ; _ } ]
+    , _ ) ->
+      str s
+  | ( _
+    , _
+    , PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
-  | PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top) ->
+  | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
+    ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
   | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
 

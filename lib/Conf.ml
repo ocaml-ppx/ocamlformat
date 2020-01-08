@@ -1371,6 +1371,10 @@ let output =
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
 
+let partial =
+  let doc = "Ignore invalid (unparsable) parts of the input." in
+  mk ~default:false Arg.(value & flag & info ["partial"] ~doc ~docs)
+
 let print_config =
   let doc =
     "Print the configuration determined by the environment variable, the \
@@ -2184,7 +2188,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
-type opts = {debug: bool; margin_check: bool}
+type opts = {debug: bool; margin_check: bool; partial: bool}
 
 let validate () =
   let root =
@@ -2208,7 +2212,9 @@ let validate () =
   | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
   | Ok action ->
-      let opts = {debug= !debug; margin_check= !margin_check} in
+      let opts =
+        {debug= !debug; margin_check= !margin_check; partial= !partial}
+      in
       `Ok (action, opts)
 
 let action () = parse info validate

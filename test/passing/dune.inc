@@ -1848,6 +1848,17 @@
  (action (diff parens_tuple_patterns.ml parens_tuple_patterns.ml.output)))
 
 (rule
+ (targets partial.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:partial.ml.opts} %{dep:partial.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff partial.ml.ref partial.ml.output)))
+
+(rule
  (targets precedence.ml.output)
  (deps .ocamlformat )
  (action

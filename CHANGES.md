@@ -1,5 +1,9 @@
 ### (unreleased)
 
+#### New features
+
+  + Add an option `--partial` to ignore unparsable parts of the input (#1026) (Guillaume Petiot)
+
 #### Changes
 
   + Add the option `doc-comments-val=before|after` (#1012) (Jules Aguillon)

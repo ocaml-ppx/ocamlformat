@@ -105,7 +105,8 @@ type action =
 type opts =
   { debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
-        (** Check whether the formatted output exceeds the margin. *) }
+        (** Check whether the formatted output exceeds the margin. *)
+  ; partial: bool  (** Ignore invalid (unparsable) parts of the input. *) }
 (** Options changing the tool's behavior *)
 
 val action : unit -> (action * opts) Cmdliner.Term.result

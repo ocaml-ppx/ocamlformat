@@ -18,6 +18,7 @@ type 'a t =
   { init_cmts: debug:bool -> Source.t -> 'a -> Cmt.t list -> Cmts.t
   ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
   ; parse: Lexing.lexbuf -> 'a
+  ; make_parsable: string -> string
   ; equal:
          ignore_doc_comments:bool
       -> Conf.t
@@ -297,7 +298,10 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
       in
-      match parse xunit.parse conf ~source:fmted with
+      let fmted_parsable =
+        if opts.Conf.partial then xunit.make_parsable fmted else fmted
+      in
+      match parse xunit.parse conf ~source:fmted_parsable with
       | exception Sys_error msg -> Error (User_error msg)
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
@@ -375,8 +379,15 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
-let parse_and_format xunit ?output_file ~input_name ~source conf opts =
-  Location.input_name := input_name ;
+let parse_result xunit conf (opts : Conf.opts) ~source =
+  let source = if opts.partial then xunit.make_parsable source else source in
   match parse xunit.parse conf ~source with
   | exception exn -> Error (Invalid_source {exn})
-  | parsed -> format xunit ?output_file ~input_name ~source ~parsed conf opts
+  | parsed -> Ok parsed
+
+let parse_and_format xunit ?output_file ~input_name ~source conf opts =
+  Location.input_name := input_name ;
+  let open Result.Monad_infix in
+  parse_result xunit conf opts ~source
+  >>= fun parsed ->
+  format xunit ?output_file ~input_name ~source ~parsed conf opts
