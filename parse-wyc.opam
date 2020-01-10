@@ -19,3 +19,8 @@ depends: [
   "ocaml" {>= "4.02.1" & < "4.10"}
   "ocaml-migrate-parsetree" {>= "1.3.1"}
 ]
+synopsis: "Parse what you can"
+description: """
+`parse-wyc` is a customized parser for OCaml, adapted from the recovery-parser
+of `merlin`. It allows to cut the input into valid/invalid parts.
+"""
