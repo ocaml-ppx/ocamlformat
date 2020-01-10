@@ -92,10 +92,9 @@ module Printast = struct
       | PStr x -> PStr (to_current.copy_structure x)
       | PSig x -> PSig (to_current.copy_signature x)
       | PTyp x -> PTyp (to_current.copy_core_type x)
-      | PPat (x, y) ->
-          PPat
-            (to_current.copy_pattern x, Option.map to_current.copy_expression y)
-      )
+      | PPat (x, Some y) ->
+          PPat (to_current.copy_pattern x, Some (to_current.copy_expression y))
+      | PPat (x, None) -> PPat (to_current.copy_pattern x, None) )
 
   let use_file f (x : Parsetree.toplevel_phrase list) =
     List.iter
