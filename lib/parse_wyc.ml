@@ -129,7 +129,7 @@ let normalize_locs locs =
   List.sort_uniq Migrate_ast.Location.compare locs
   |> merge_adj Migrate_ast.Location.merge
 
-let process p m print lexbuf =
+let process p m pprint print lexbuf =
   let ast = parse_with_recovery p (lex_buf lexbuf) in
   let loc_stack = Stack.create () in
   let loc_list = ref [] in
@@ -141,36 +141,18 @@ let process p m print lexbuf =
         loc_list := Stack.top loc_stack :: !loc_list;
       default.expr m e
     in
-    let wrap mapper loc f x =
-      Stack.push loc loc_stack;
-      let x = f mapper x in
-      ignore (Stack.pop loc_stack);
-      x
-    in
-    let class_declaration m x = wrap m x.pci_loc default.class_declaration x in
-    let class_description m x = wrap m x.pci_loc default.class_description x in
     let class_expr m x =
       if Annot.Class_exp.is_generated x then
         loc_list := Stack.top loc_stack :: !loc_list;
-      wrap m x.pcl_loc default.class_expr x
+      default.class_expr m x
     in
-    let class_field m x = wrap m x.pcf_loc default.class_field x in
-    let class_type m x = wrap m x.pcty_loc default.class_type x in
-    let class_type_declaration m x =
-      wrap m x.pci_loc default.class_type_declaration x
-    in
-    let class_type_field m x = wrap m x.pctf_loc default.class_type_field x in
-    let module_binding m x = wrap m x.pmb_loc default.module_binding x in
-    let module_declaration m x =
-      wrap m x.pmd_loc default.module_declaration x
-    in
-    let module_substitution m x =
-      wrap m x.pms_loc default.module_substitution x
-    in
-    let module_expr m x = wrap m x.pmod_loc default.module_expr x in
-    let module_type m x = wrap m x.pmty_loc default.module_type x in
-    let module_type_declaration m x =
-      wrap m x.pmtd_loc default.module_type_declaration x
+    let wrap mapper loc f x =
+      if Stack.is_empty loc_stack then (
+        Stack.push loc loc_stack;
+        let x = f mapper x in
+        ignore (Stack.pop loc_stack);
+        x )
+      else f mapper x
     in
     let structure_item m x = wrap m x.pstr_loc default.structure_item x in
     let signature_item m x = wrap m x.psig_loc default.signature_item x in
@@ -183,19 +165,7 @@ let process p m print lexbuf =
       Ast_mapper.default_mapper with
       attribute;
       expr;
-      class_declaration;
-      class_description;
       class_expr;
-      class_field;
-      class_type;
-      class_type_declaration;
-      class_type_field;
-      module_binding;
-      module_declaration;
-      module_substitution;
-      module_expr;
-      module_type;
-      module_type_declaration;
       structure_item;
       signature_item;
     }
@@ -204,15 +174,16 @@ let process p m print lexbuf =
   let ast' = (m mapper) ast in
   let debug = false in
   if debug then Format.printf "%a\n%!" print ast';
+  if debug then Format.printf "%a\n%!" pprint ast';
   normalize_locs !loc_list
 
 let implementation =
   process P.Incremental.implementation Migrate_ast.Mapper.structure
-    Migrate_ast.Pprintast.structure
+    Migrate_ast.Pprintast.structure Migrate_ast.Printast.implementation
 
 let interface =
   process P.Incremental.interface Migrate_ast.Mapper.signature
-    Migrate_ast.Pprintast.signature
+    Migrate_ast.Pprintast.signature Migrate_ast.Printast.interface
 
 let pp_use_file fs x =
   List.iter
@@ -222,3 +193,4 @@ let pp_use_file fs x =
 
 let use_file =
   process P.Incremental.use_file Migrate_ast.Mapper.use_file pp_use_file
+    Migrate_ast.Printast.use_file
