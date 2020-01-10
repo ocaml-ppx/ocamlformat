@@ -1,5 +1,6 @@
 module P = Parser
 module I = P.MenhirInterpreter
+open Migrate_ast
 
 module R =
   Merlin_recovery.Make
@@ -126,15 +127,14 @@ let merge_adj merge l =
   |> List.rev
 
 let normalize_locs locs =
-  List.sort_uniq Migrate_ast.Location.compare locs
-  |> merge_adj Migrate_ast.Location.merge
+  List.sort_uniq Location.compare locs |> merge_adj Location.merge
 
 let process p m pprint print lexbuf =
   let ast = parse_with_recovery p (lex_buf lexbuf) in
   let loc_stack = Stack.create () in
   let loc_list = ref [] in
   let make_mapper () =
-    let open Migrate_ast.Parsetree in
+    let open Parsetree in
     let default = Ast_mapper.default_mapper in
     let expr m e =
       if Annot.Exp.is_generated e then
@@ -178,19 +178,17 @@ let process p m pprint print lexbuf =
   normalize_locs !loc_list
 
 let implementation =
-  process P.Incremental.implementation Migrate_ast.Mapper.structure
-    Migrate_ast.Pprintast.structure Migrate_ast.Printast.implementation
+  process P.Incremental.implementation Mapper.structure Pprintast.structure
+    Printast.implementation
 
 let interface =
-  process P.Incremental.interface Migrate_ast.Mapper.signature
-    Migrate_ast.Pprintast.signature Migrate_ast.Printast.interface
+  process P.Incremental.interface Mapper.signature Pprintast.signature
+    Printast.interface
 
 let pp_use_file fs x =
   List.iter
-    (fun tph ->
-      Format.fprintf fs "%a\n" Migrate_ast.Pprintast.toplevel_phrase tph)
+    (fun tph -> Format.fprintf fs "%a\n" Pprintast.toplevel_phrase tph)
     x
 
 let use_file =
-  process P.Incremental.use_file Migrate_ast.Mapper.use_file pp_use_file
-    Migrate_ast.Printast.use_file
+  process P.Incremental.use_file Mapper.use_file pp_use_file Printast.use_file
