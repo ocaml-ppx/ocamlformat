@@ -1,7 +1,6 @@
 .merlin
 /_build
 /ocamlformat.install
-/ocamlformat_diff.install
 /test-extra/code
 /_opam
 /coverage
