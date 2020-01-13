@@ -772,19 +772,19 @@ The precedences must be listed from low to high.
 /* Entry points */
 
 %start implementation                   /* for implementation files */
-%type <Parsetree.structure> implementation
+%type <Migrate_ast.Parsetree.structure> implementation
 %start interface                        /* for interface files */
-%type <Parsetree.signature> interface
+%type <Migrate_ast.Parsetree.signature> interface
 %start toplevel_phrase                  /* for interactive use */
-%type <Parsetree.toplevel_phrase> toplevel_phrase
+%type <Migrate_ast.Parsetree.toplevel_phrase> toplevel_phrase
 %start use_file                         /* for the #use directive */
-%type <Parsetree.toplevel_phrase list> use_file
+%type <Migrate_ast.Parsetree.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Parsetree.core_type> parse_core_type
+%type <Migrate_ast.Parsetree.core_type> parse_core_type
 %start parse_expression
-%type <Parsetree.expression> parse_expression
+%type <Migrate_ast.Parsetree.expression> parse_expression
 %start parse_pattern
-%type <Parsetree.pattern> parse_pattern
+%type <Migrate_ast.Parsetree.pattern> parse_pattern
 %%
 
 /* macros */
