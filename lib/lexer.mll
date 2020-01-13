@@ -107,7 +107,8 @@ let reset_string_buffer () = Buffer.reset string_buffer
 let get_stored_string () = Buffer.contents string_buffer
 
 let store_string_char c = Buffer.add_char string_buffer c
-let store_string_utf_8_uchar u = Buffer.add_utf_8_uchar string_buffer u
+(* [Buffer.add_utf_8_uchar] not available before 4.06. *)
+(*let store_string_utf_8_uchar u = Buffer.add_utf_8_uchar string_buffer u*)
 let store_string s = Buffer.add_string string_buffer s
 let store_lexeme lexbuf = store_string (Lexing.lexeme lexbuf)
 
@@ -123,8 +124,10 @@ let print_warnings = ref true
 let store_escaped_char lexbuf c =
   if in_comment () then store_lexeme lexbuf else store_string_char c
 
-let store_escaped_uchar lexbuf u =
-  if in_comment () then store_lexeme lexbuf else store_string_utf_8_uchar u
+(* [Buffer.add_utf_8_uchar] not available before 4.06. *)
+(*let store_escaped_uchar lexbuf u =
+  if in_comment () then store_lexeme lexbuf else store_string_utf_8_uchar u*)
+let store_escaped_uchar lexbuf _u = store_lexeme lexbuf
 
 let with_comment_buffer comment lexbuf =
   let start_loc = Location.curr lexbuf in
