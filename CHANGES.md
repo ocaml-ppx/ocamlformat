@@ -12,6 +12,9 @@
   + Remove `ocamlformat_reason` (#254, #1185) (Etienne Millon).
     This tool has never been released to opam, has no known users, and overlaps
     with what `refmt` can do.
+  + Remove `ocamlformat-diff` (#1205) (Guillaume Petiot)
+    This tool has never been released to opam, has no known users, and overlaps
+    with what `merge-fmt` can do.
 
 #### Packaging
 
