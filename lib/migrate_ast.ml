@@ -120,6 +120,10 @@ module Pprintast = struct
     toplevel_phrase f (to_current.copy_toplevel_phrase x)
 end
 
+module Int = struct
+  let compare x y = if x < y then -1 else if x > y then 1 else 0
+end
+
 module Position = struct
   open Lexing
 
