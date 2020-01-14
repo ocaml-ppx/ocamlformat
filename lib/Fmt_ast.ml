@@ -2906,7 +2906,7 @@ and fmt_case c ctx ~first ~last ?padding case =
           $ p.break_before_arrow $ str "->" $ p.break_after_arrow
           $ fmt_if parens_here " (" )
       $ p.break_after_opening_paren
-      $ hovbox 0
+      $ hovbox_if parens_here 0
           ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
           $ fmt_if parens_here
               ( match c.conf.indicate_multiline_delimiters with
