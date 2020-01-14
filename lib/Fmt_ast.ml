@@ -2813,32 +2813,18 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
     $ fmt_atrs $ doc_after )
 
 and fmt_cases c ctx cs =
-  let case_breaks case ~padding_len =
-    let fmted_case =
-      let first = false and last = false in
-      let fmt cmts = fmt_case {c with cmts} ctx ~first ~last case in
-      Cmts.preserve fmt c.cmts
-    in
-    let indent =
-      Source.indentation c.source case.pc_rhs.pexp_loc.loc_start
-    in
-    (* The first character is ignored when looking for a linebreak, as it
-       could be a forcedline break in some configuration. *)
-    String.contains fmted_case ~pos:1 '\n'
-    || String.length fmted_case + indent + padding_len >= c.conf.margin
-  in
   let pattern_len {pc_lhs; pc_guard; _} =
     if Option.is_some pc_guard then None
     else
       let xpat = sub_pat ~ctx pc_lhs in
-      let fmted_pat =
+      let fmted =
         Cmts.preserve (fun cmts -> fmt_pattern {c with cmts} xpat) c.cmts
       in
-      let len = String.length fmted_pat in
+      let len = String.length fmted in
       let indent = Source.indentation c.source pc_lhs.ppat_loc.loc_start in
       (* we add the lenght of the 5 following characters '| ' ' ->' *)
-      if len + indent + 5 >= c.conf.margin || String.contains fmted_pat '\n'
-      then None
+      if len + indent + 5 >= c.conf.margin || String.contains fmted '\n' then
+        None
       else Some len
   in
   let fold_pattern_len ~f cs =
@@ -2861,15 +2847,12 @@ and fmt_cases c ctx cs =
         | Some max_len when add_padding -> (
           match pattern_len case with
           | Some pattern_len ->
-              let padding_len = max_len - pattern_len in
-              if case_breaks case ~padding_len then None
-              else
-                let pad = String.make padding_len ' ' in
-                Some
-                  (fmt_or_k
-                     Poly.(c.conf.break_cases = `All)
-                     (str pad)
-                     (fits_breaks ~level "" pad))
+              let pad = String.make (max_len - pattern_len) ' ' in
+              Some
+                (fmt_or_k
+                   Poly.(c.conf.break_cases = `All)
+                   (str pad)
+                   (fits_breaks ~level "" pad))
           | _ -> None )
         | _ -> None
       in
