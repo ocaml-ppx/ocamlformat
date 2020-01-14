@@ -78,7 +78,7 @@ let dump_ast ~input_name ?output_file ~suffix fmt =
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
   with_file input_name output_file suffix ext (fun oc ->
-      Out_channel.output_string oc fmted)
+      Caml.output_string oc fmted)
 
 let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
     =

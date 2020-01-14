@@ -60,11 +60,11 @@ let format ?output_file ~kind ~input_name ~source conf opts =
 
 let to_output_file output_file data =
   match output_file with
-  | None -> Out_channel.output_string Out_channel.stdout data
+  | None -> Caml.output_string Caml.stdout data
   | Some output_file -> Out_channel.write_all output_file ~data
 
 let source_from_file = function
-  | Conf.Stdin -> In_channel.input_all In_channel.stdin
+  | Conf.Stdin -> In_channel.input_all Caml.stdin
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
 let print_error conf opts ~input_name e =
