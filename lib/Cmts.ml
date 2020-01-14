@@ -173,7 +173,7 @@ end
 (** Heuristic to determine if two locations should be considered "adjacent".
     Holds if there is only whitespace between the locations, or if there is a
     [|] character and the first location begins a line and the start column
-    of the first location is not greater than that of the second location. *)
+    of the first location is lower than that of the second location. *)
 let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
   Option.value_map (Source.string_between t.source l1.loc_end l2.loc_start)
     ~default:false ~f:(fun btw ->
@@ -181,7 +181,7 @@ let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
       | "" -> true
       | "|" ->
           Source.begins_line t.source l1
-          && Position.column l1.loc_start <= Position.column l2.loc_start
+          && Position.column l1.loc_start < Position.column l2.loc_start
       | _ -> false)
 
 (** Whether the symbol preceding location [loc] is an infix symbol or a

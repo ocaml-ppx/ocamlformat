@@ -19,6 +19,7 @@
 
 #### Bug fixes
 
+  + Fix placement of comments just before a '|' (#1203) (Jules Aguillon)
   + Fix build version detection when building in the absence of a git root (#1198) (Anil Madhavapeddy)
   + Fix wrapping of or-patterns in presence of comments with `break-cases=fit` (#1167) (Jules Aguillon)
     This also fixes an unstable comment bug in or-patterns
