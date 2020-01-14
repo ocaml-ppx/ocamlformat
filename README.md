@@ -1,5 +1,7 @@
 # parse-wyc (parse what you can)
 
+[![ocaml-ci](https://img.shields.io/badge/ocaml--ci-builds-informational?logo=ocaml&style=for-the-badge)](https://ci.ocamllabs.io/github/gpetiot/parse-wyc/)
+
 Disclaimer: this is highly experimental!
 
 Adapted from the recovery-parser of `merlin`.
