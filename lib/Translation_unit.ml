@@ -59,7 +59,7 @@ let ellipsis n msg =
 
 let ellipsis_cmt = ellipsis 50
 
-let with_file input_name output_file suf ext f =
+let with_file input_name output_file suf ext f x =
   let dir =
     match output_file with
     | Some filename -> Filename.dirname filename
@@ -67,18 +67,19 @@ let with_file input_name output_file suf ext f =
   in
   let base = Filename.remove_extension (Filename.basename input_name) in
   let tmp = Filename.concat dir (base ^ suf ^ ext) in
-  Out_channel.with_file tmp ~f ;
+  let res = Bos.OS.File.with_oc (Fpath.v tmp) f x in
+  ignore (Rresult.R.ignore_error res ~use:(fun _ -> Caml.Result.ok ())) ;
   tmp
 
 let dump_ast ~input_name ?output_file ~suffix fmt =
   let ext = ".ast" in
-  with_file input_name output_file suffix ext (fun oc ->
-      fmt (Format.formatter_of_out_channel oc))
+  let f oc x = Rresult.R.ok (x (Format.formatter_of_out_channel oc)) in
+  with_file input_name output_file suffix ext f fmt
 
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
-  with_file input_name output_file suffix ext (fun oc ->
-      Caml.output_string oc fmted)
+  let f oc x = Rresult.R.ok (Caml.output_string oc x) in
+  with_file input_name output_file suffix ext f fmted
 
 let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
     =
