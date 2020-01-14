@@ -45,7 +45,7 @@ val check : ('a -> _) -> 'a -> 'a
     returns [x]. *)
 
 module Fpath : sig
-  include module type of Fpath
+  include module type of Fpath with type t = Fpath.t
 
   val cwd : unit -> t
   (** Current working directory, relying on [Unix]. *)

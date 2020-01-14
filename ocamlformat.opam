@@ -28,6 +28,7 @@ depends: [
   "alcotest" {with-test}
   "base" {>= "v0.11.0"}
   "base-unix"
+  "bos"
   "cmdliner"
   "dune" {>= "1.11.1"}
   "fpath"

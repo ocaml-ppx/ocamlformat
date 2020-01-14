@@ -61,7 +61,10 @@ let format ?output_file ~kind ~input_name ~source conf opts =
 let to_output_file output_file data =
   match output_file with
   | None -> Caml.output_string Caml.stdout data
-  | Some output_file -> Out_channel.write_all output_file ~data
+  | Some output_file ->
+      Rresult.R.ignore_error
+        (Bos.OS.File.write (Fpath.v output_file) data)
+        ~use:(fun _ -> ())
 
 let source_from_file = function
   | Conf.Stdin -> In_channel.input_all Caml.stdin
@@ -87,7 +90,7 @@ let run_action action opts =
         match result with
         | Ok formatted ->
             if not (String.equal formatted source) then
-              Out_channel.write_all input_file ~data:formatted ;
+              to_output_file (Some input_file) formatted ;
             Ok ()
         | Error e -> Error (fun () -> print_error conf opts ~input_name e)
       in

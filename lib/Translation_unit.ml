@@ -122,11 +122,15 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
         let p =
           Filename.temp_file input_name (Printf.sprintf ".prev%s" ext)
         in
-        Out_channel.write_all p ~data:prev ;
+        Rresult.R.ignore_error
+          (Bos.OS.File.write (Fpath.v p) prev)
+          ~use:(fun _ -> ()) ;
         let n =
           Filename.temp_file input_name (Printf.sprintf ".next%s" ext)
         in
-        Out_channel.write_all n ~data:next ;
+        Rresult.R.ignore_error
+          (Bos.OS.File.write (Fpath.v n) next)
+          ~use:(fun _ -> ()) ;
         ignore (Unix.system (Printf.sprintf "diff %S %S 1>&2" p n)) ;
         Unix.unlink p ;
         Unix.unlink n ) ;
