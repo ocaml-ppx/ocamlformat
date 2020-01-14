@@ -20,10 +20,6 @@ exe:
 gen-help:
 	dune build ocamlformat-help.txt
 
-.PHONY: ocamlformat-diff
-ocamlformat-diff:
-	dune build tools/ocamlformat-diff/ocamlformat_diff.exe
-
 .PHONY: clean
 clean:
 	dune clean

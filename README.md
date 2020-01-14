@@ -13,7 +13,6 @@ See the source code of OCamlFormat itself and [Infer](https://github.com/faceboo
   - [Overview](#overview)
   - [Code style](#code-style)
   - [Options](#options)
-  - [Diff](#diff)
 - [Installation](#installation)
 - [Editor setup](#editor-setup)
   - [Emacs setup](#emacs-setup)
@@ -79,10 +78,6 @@ Options can be modified by the means of:
 When the option `--enable-outside-detected-project` is not set, .ocamlformat files outside of the project (including the one in `XDG_CONFIG_HOME`) are not read. The project root of an input file is taken to be the nearest ancestor directory that contains a .git or .hg or dune-project file. If no config file is found, formatting is disabled.
 
 An `.ocamlformat-ignore` file specifies files that OCamlFormat should ignore.  Each line in an `.ocamlformat-ignore` file specifies a filename relative to the directory containing the `.ocamlformat-ignore` file. Lines starting with `#` are ignored and can be used as comments.
-
-### Diff
-
-[`ocamlformat-diff`](./tools/ocamlformat-diff/README.md) uses OCamlFormat to apply the same formatting to compared OCaml files, so that the formatting differences between the two files are not displayed. It can easily be used with `git diff`.
 
 ## Installation
 
