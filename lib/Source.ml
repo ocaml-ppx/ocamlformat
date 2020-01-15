@@ -16,12 +16,11 @@ type t = string
 let create s = s
 
 let indentation t (pos : Lexing.position) =
-  let f _ c = Char.equal c '\n' in
-  let pos_linebreak = String.rfindi t ~pos:pos.pos_cnum ~f in
+  let is_linebreak _ c = Char.equal c '\n' in
+  let pos_linebreak = String.rfindi t ~pos:pos.pos_cnum ~f:is_linebreak in
   let begin_pos = Option.value_map pos_linebreak ~f:(( + ) 1) ~default:0 in
   let substring = Caml.String.sub t begin_pos (pos.pos_cnum - begin_pos) in
-  let stripped = String.lstrip substring in
-  String.(length substring - length stripped)
+  String.length substring - String.(length (lstrip substring))
 
 let position_before t (pos : Lexing.position) =
   let is_closing c =
