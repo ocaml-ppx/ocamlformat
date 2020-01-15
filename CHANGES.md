@@ -19,6 +19,7 @@
 #### Packaging
 
   + Work with base v0.13.0 (#1163) (Jules Aguillon)
+  + Remove dependency to the stdio package (#1206) (Guillaume Petiot)
 
 #### Bug fixes
 
