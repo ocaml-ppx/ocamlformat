@@ -67,8 +67,8 @@ let to_output_file output_file data =
         ~use:(fun _ -> ())
 
 let source_from_file = function
-  | Conf.Stdin -> In_channel.input_all Caml.stdin
-  | File f -> In_channel.with_file f ~f:In_channel.input_all
+  | Conf.Stdin -> Bos.OS.File.read Bos.OS.File.dash
+  | File f -> Bos.OS.File.read (Fpath.v f)
 
 let print_error conf opts ~input_name e =
   Translation_unit.print_error ~debug:opts.Conf.debug ~quiet:conf.Conf.quiet
@@ -95,20 +95,26 @@ let run_action action opts =
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | In_out ({kind; file; name= input_name; conf}, output_file) -> (
-      let source = source_from_file file in
+    match source_from_file file with
+    | Ok source -> (
       match format ?output_file ~kind ~input_name ~source conf opts with
       | Ok s ->
           to_output_file output_file s ;
           Ok ()
       | Error e -> Error [(fun () -> print_error conf opts ~input_name e)] )
+    | Error e -> Error [(fun () -> Rresult.R.pp_msg Format.err_formatter e)]
+    )
   | Check inputs ->
       let f {Conf.kind; name= input_name; file; conf} =
-        let source = source_from_file file in
-        let result = format ~kind ~input_name ~source conf opts in
-        match result with
-        | Ok res when String.equal res source -> Ok ()
-        | Ok _ -> Error (fun () -> ())
-        | Error e -> Error (fun () -> print_error conf opts ~input_name e)
+        match source_from_file file with
+        | Ok source -> (
+          match format ~kind ~input_name ~source conf opts with
+          | Ok res when String.equal res source -> Ok ()
+          | Ok _ -> Error (fun () -> ())
+          | Error e -> Error (fun () -> print_error conf opts ~input_name e)
+          )
+        | Error e ->
+            Error (fun () -> Rresult.R.pp_msg Format.err_formatter e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | Print_config conf -> Conf.print_config conf ; Ok ()
