@@ -1950,10 +1950,10 @@ let is_in_listing_file ~listings ~filename =
   List.find_map listings ~f:(fun listing_file ->
       let dir, _ = Fpath.split_base listing_file in
       try
-        In_channel.with_file (Fpath.to_string listing_file) ~f:(fun ch ->
+        match Bos.OS.File.read_lines listing_file with
+        | Ok lines ->
             let lines =
-              In_channel.input_lines ch
-              |> List.mapi ~f:(fun i s -> (i + 1, String.strip s))
+              List.mapi lines ~f:(fun i s -> (i + 1, String.strip s))
               |> List.filter ~f:(fun (_, l) -> not (drop_line l))
             in
             List.find_map lines ~f:(fun (lno, line) ->
@@ -1977,7 +1977,9 @@ let is_in_listing_file ~listings ~filename =
                         None )
                 | Error (`Msg msg) ->
                     warn ~filename:listing_file ~lnum:lno "%s" msg ;
-                    None))
+                    None)
+        | Error (`Msg _) ->
+            impossible "listing file presence already checked"
       with Sys_error err ->
         warn "ignoring %a, %s" Fpath.pp listing_file err ;
         None)
