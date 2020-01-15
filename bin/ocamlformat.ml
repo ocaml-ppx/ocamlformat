@@ -65,6 +65,18 @@ let run_action action opts =
         | Error e -> Error (fun () -> print_error conf opts ~input_name e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
+  | In_out ({kind= Conf.Kind k; file; name= input_name; conf}, None)
+    when Option.is_some opts.numeric -> (
+      let source = source_from_file file in
+      let range = Option.value_exn opts.numeric in
+      match
+        Translation_unit.indentation k ~input_name ~source ~range conf opts
+      with
+      | Ok indents ->
+          List.iter indents ~f:(fun i ->
+              Stdio.print_endline (Int.to_string i) ) ;
+          Ok ()
+      | Error e -> Error [(fun () -> print_error conf opts ~input_name e)] )
   | In_out ({kind; file; name= input_name; conf}, output_file) -> (
       let source = source_from_file file in
       match format ?output_file ~kind ~input_name ~source conf opts with

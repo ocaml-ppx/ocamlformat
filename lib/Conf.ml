@@ -1284,6 +1284,20 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
+let numeric =
+  let doc =
+    "Instead of re-indenting the file, output one integer per line \
+     representing the indentation value, printing as many values as lines \
+     in the range between lines X and Y (included)."
+  in
+  let default = None in
+  let docv = "X-Y" in
+  mk ~default
+    Arg.(
+      value
+      & opt (some (pair ~sep:'-' int int)) default
+      & info ["numeric"] ~doc ~docs ~docv)
+
 let ocp_indent_options =
   let unsupported ocp_indent = (ocp_indent, ([], "")) in
   let alias ocp_indent ocamlformat =
@@ -2166,7 +2180,17 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
-type opts = {debug: bool; margin_check: bool; format_invalid_files: bool}
+type opts =
+  { debug: bool
+  ; margin_check: bool
+  ; format_invalid_files: bool
+  ; numeric: (int * int) option }
+
+let default_opts =
+  { debug= false
+  ; margin_check= false
+  ; format_invalid_files= false
+  ; numeric= None }
 
 let validate () =
   let root =
@@ -2194,7 +2218,10 @@ let validate () =
         match !format_invalid_files with Some `Auto -> true | _ -> false
       in
       let opts =
-        {debug= !debug; margin_check= !margin_check; format_invalid_files}
+        { debug= !debug
+        ; margin_check= !margin_check
+        ; format_invalid_files
+        ; numeric= !numeric }
       in
       `Ok (action, opts)
 

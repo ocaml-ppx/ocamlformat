@@ -555,6 +555,11 @@ OPTIONS
            Do not check that the version matches the one specified in
            .ocamlformat.
 
+       --numeric=X-Y
+           Instead of re-indenting the file, output one integer per line
+           representing the indentation value, printing as many values as
+           lines in the range between lines X and Y (included).
+
        -o DST, --output=DST
            Output file. Mutually exclusive with --inplace. Write to stdout if
            omitted.

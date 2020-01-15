@@ -49,6 +49,8 @@ val find_token_before :
   -> Lexing.position
   -> (Parser.token * Location.t) option
 
+val find_first_token_on_line : t -> int -> (Parser.token * Location.t) option
+
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
 val char_literal : t -> Location.t -> string
@@ -98,3 +100,5 @@ val is_quoted_string : t -> Location.t -> bool
 
 val loc_of_first_token_at :
   t -> Location.t -> Parser.token -> Location.t option
+
+val indent_after_token : Parser.token -> int option

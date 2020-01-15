@@ -44,6 +44,16 @@ let find_token t k pos =
     ~compare:(fun (_, elt) pos -> Position.compare elt.Location.loc_start pos)
     k pos
 
+let find_first_token_on_line t line =
+  match
+    Array.binary_search t.tokens
+      ~compare:(fun (_, elt) -> Int.compare elt.Location.loc_start.pos_lnum)
+      `First_equal_to line
+  with
+  | None -> None
+  | Some i when i >= Array.length t.tokens -> None
+  | Some i -> Some t.tokens.(i)
+
 let tokens_between (t : t) ~filter loc_start loc_end =
   match find_token t `First_greater_than_or_equal_to loc_start with
   | None -> []
@@ -297,3 +307,30 @@ let loc_of_first_token_at t loc kwd =
   match tokens_at t loc ~filter:(Poly.( = ) kwd) with
   | [] -> None
   | (_, loc) :: _ -> Some loc
+
+let indent_after_token (tok : Parser.token) =
+  match tok with
+  (* indent further *)
+  | AMPERAMPER | AMPERSAND | AND | AS | BAR | BARBAR | BARRBRACKET | BEGIN
+   |CLASS | COLON | COLONCOLON | COLONEQUAL | COLONGREATER | CONSTRAINT
+   |DO | DOT | DOTDOT | DOWNTO | ELSE | EQUAL | EXCEPTION | EXTERNAL | FOR
+   |FUN | FUNCTION | FUNCTOR | GREATER | IF | INCLUDE | INFIXOP0 _
+   |INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _ | INFIXOP4 _ | DOTOP _ | LETOP _
+   |ANDOP _ | INHERIT | INITIALIZER | LAZY | LBRACE | LBRACELESS | LBRACKET
+   |LBRACKETBAR | LBRACKETLESS | LBRACKETGREATER | LBRACKETPERCENT
+   |LBRACKETPERCENTPERCENT | LESS | LESSMINUS | LET | LPAREN | LBRACKETAT
+   |LBRACKETATAT | LBRACKETATATAT | MATCH | METHOD | MINUS | MINUSDOT
+   |MINUSGREATER | MODULE | MUTABLE | NEW | NONREC | OBJECT | OF | OPEN
+   |OR | PERCENT | PLUS | PLUSDOT | PLUSEQ | PREFIXOP _ | PRIVATE
+   |QUESTION | REC | HASH | HASHOP _ | SIG | STAR | STRUCT | THEN | TILDE
+   |TO | TRY | TYPE | VAL | VIRTUAL | WHEN | WHILE | WITH ->
+      Some 2
+  (* same indent *)
+  | IN | DONE | END | SEMI | COMMA -> Some 0
+  (* cannot tell *)
+  | ASSERT | BACKQUOTE | BANG | CHAR _ | EOF | EOL | FALSE | FLOAT _
+   |GREATERRBRACE | GREATERRBRACKET | INT _ | LABEL _ | LIDENT _
+   |OPTLABEL _ | QUOTE | RBRACE | RBRACKET | RPAREN | SEMISEMI | STRING _
+   |TRUE | UIDENT _ | UNDERSCORE | COMMENT _ | DOCSTRING _
+   |QUOTED_STRING_ITEM _ | QUOTED_STRING_EXPR _ ->
+      None

@@ -13,6 +13,7 @@
 
 open Migrate_ast
 open Parse_with_comments
+open Result.Monad_infix
 
 exception
   Internal_error of
@@ -396,3 +397,45 @@ let parse_and_format fragment ?output_file ~input_name ~source conf opts =
   >>= fun parsed ->
   format fragment ?output_file ~input_name ~prev_source:source ~parsed conf
     opts
+
+let force_parse_quiet fragment ~source conf =
+  match parse fragment conf ~source with
+  | exception _ -> (
+    match parse fragment conf ~source:(recover fragment source) with
+    | exception exn -> Error (Invalid_source {exn})
+    | parsed -> Ok parsed )
+  | parsed -> Ok parsed
+
+let check_line nlines i =
+  (* the last line of the buffer (nlines + 1) should not raise an error *)
+  if 1 <= i && i <= nlines + 1 then Ok ()
+  else Error (User_error (Format.sprintf "Invalid line number %i." i))
+
+let check_range nlines (low, high) =
+  check_line nlines low
+  >>= fun () ->
+  check_line nlines high
+  >>= fun () ->
+  if low <= high then Ok ()
+  else Error (User_error (Format.sprintf "Invalid range %i-%i." low high))
+
+let indentation fragment ~input_name ~source ~range:(low, high) conf opts =
+  let lines = String.split_lines source in
+  let nlines = List.length lines in
+  check_range nlines (low, high)
+  >>= fun () ->
+  Ocaml_common.Location.input_name := input_name ;
+  ( match
+      force_parse_quiet fragment ~source conf
+      >>= fun parsed ->
+      format fragment ~input_name ~prev_source:source ~parsed conf opts
+      >>= fun formatted_source ->
+      force_parse_quiet fragment ~source:formatted_source conf
+      >>| fun formatted_ast ->
+      ((parsed.ast, parsed.source), (formatted_ast.ast, formatted_ast.source))
+    with
+  | Ok (unformatted, formatted) ->
+      Indent.indent_from_locs fragment ~unformatted ~formatted ~lines
+        ~range:(low, high)
+  | Error _ -> Indent.indent_from_lines ~lines ~range:(low, high) )
+  |> Result.map_error ~f:(fun (`Msg s) -> Ocamlformat_bug {exn= failwith s})

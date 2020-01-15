@@ -96,12 +96,21 @@ type action =
       (** Check whether the input files already are formatted. *)
   | Print_config of t  (** Print the configuration and exit. *)
 
+val conventional_profile : t
+
+val ocamlformat_profile : t
+
+val janestreet_profile : t
+
 (** Options changing the tool's behavior *)
 type opts =
   { debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *)
-  ; format_invalid_files: bool }
+  ; format_invalid_files: bool
+  ; numeric: (int * int) option }
+
+val default_opts : opts
 
 val action : unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
