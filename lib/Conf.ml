@@ -1890,28 +1890,31 @@ let read_config_file conf filename_kind =
   | `Ocp_indent _ when not !ocp_indent_config -> conf
   | `Ocp_indent filename | `Ocamlformat filename -> (
     try
-      In_channel.with_file (Fpath.to_string filename) ~f:(fun ic ->
-          let c, errors, _ =
-            In_channel.fold_lines ic ~init:(conf, [], 1)
-              ~f:(fun (conf, errors, num) line ->
-                let from = `File (filename, num) in
-                match parse_line conf ~from line with
-                | Ok conf -> (conf, errors, Int.succ num)
-                | Error _ when !ignore_invalid_options ->
-                    warn ~filename ~lnum:num "ignoring invalid options %S"
-                      line ;
-                    (conf, errors, Int.succ num)
-                | Error e -> (conf, e :: errors, Int.succ num))
+      let c, errors =
+        match
+          Bos.OS.File.fold_lines
+            (fun (conf, errors, num) line ->
+              let from = `File (filename, num) in
+              match parse_line conf ~from line with
+              | Ok conf -> (conf, errors, Int.succ num)
+              | Error _ when !ignore_invalid_options ->
+                  warn ~filename ~lnum:num "ignoring invalid options %S" line ;
+                  (conf, errors, Int.succ num)
+              | Error e -> (conf, e :: errors, Int.succ num))
+            (conf, [], 1) filename
+        with
+        | Ok (c, errors, _) -> (c, errors)
+        | Error (`Msg _) -> impossible "config file presence already checked"
+      in
+      match List.rev errors with
+      | [] -> c
+      | l ->
+          let kind =
+            match filename_kind with
+            | `Ocp_indent _ -> dot_ocp_indent
+            | `Ocamlformat _ -> dot_ocamlformat
           in
-          match List.rev errors with
-          | [] -> c
-          | l ->
-              let kind =
-                match filename_kind with
-                | `Ocp_indent _ -> dot_ocp_indent
-                | `Ocamlformat _ -> dot_ocamlformat
-              in
-              failwith_user_errors ~kind l)
+          failwith_user_errors ~kind l
     with Sys_error _ -> conf )
 
 let update_using_env conf =
