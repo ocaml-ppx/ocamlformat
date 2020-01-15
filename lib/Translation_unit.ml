@@ -68,7 +68,7 @@ let with_file input_name output_file suf ext f x =
   let base = Filename.remove_extension (Filename.basename input_name) in
   let tmp = Filename.concat dir (base ^ suf ^ ext) in
   let res = Bos.OS.File.with_oc (Fpath.v tmp) f x in
-  ignore (Rresult.R.ignore_error res ~use:(fun _ -> Caml.Result.ok ())) ;
+  ignore (Rresult.R.ignore_error res ~use:(fun _ -> Rresult.R.ok ())) ;
   tmp
 
 let dump_ast ~input_name ?output_file ~suffix fmt =
