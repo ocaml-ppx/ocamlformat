@@ -78,21 +78,20 @@ let run_action action opts =
   match action with
   | Conf.Inplace inputs ->
       let f {Conf.kind; name= input_name; file= input_file; conf} =
-        let input_file =
-          match input_file with
-          | File f -> f
-          | _ -> impossible "checked by validate"
-        in
-        let source =
-          In_channel.with_file input_file ~f:In_channel.input_all
-        in
-        let result = format ~kind ~input_name ~source conf opts in
-        match result with
-        | Ok formatted ->
-            if not (String.equal formatted source) then
-              to_output_file (Some input_file) formatted ;
-            Ok ()
-        | Error e -> Error (fun () -> print_error conf opts ~input_name e)
+        match input_file with
+        | File f -> (
+          match Bos.OS.File.read (Fpath.v f) with
+          | Ok source -> (
+            match format ~kind ~input_name ~source conf opts with
+            | Ok formatted ->
+                if not (String.equal formatted source) then
+                  to_output_file (Some f) formatted ;
+                Ok ()
+            | Error e ->
+                Error (fun () -> print_error conf opts ~input_name e) )
+          | Error e ->
+              Error (fun () -> Rresult.R.pp_msg Format.err_formatter e) )
+        | Stdin -> impossible "checked by validate"
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | In_out ({kind; file; name= input_name; conf}, output_file) -> (
