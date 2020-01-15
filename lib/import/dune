@@ -11,4 +11,4 @@
 
 (library
  (name import)
- (libraries base cmdliner fpath stdio unix))
+ (libraries base cmdliner fpath unix))

@@ -27,8 +27,6 @@ include module type of (
 
 include module type of Option.Monad_infix
 
-include module type of Stdio
-
 external ( @@ ) : ('a -> 'b) -> 'a -> 'b = "%apply"
 (** Function application: [g @@ f @@ x] is exactly equivalent to [g (f (x))].
     Right associative. *)
