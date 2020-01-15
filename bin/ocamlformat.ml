@@ -66,9 +66,9 @@ let to_output_file output_file data =
         (Bos.OS.File.write (Fpath.v output_file) data)
         ~use:(fun _ -> ())
 
-let source_from_file = function
-  | Conf.Stdin -> Bos.OS.File.read Bos.OS.File.dash
-  | File f -> Bos.OS.File.read (Fpath.v f)
+let fpath_from_file = function
+  | Conf.Stdin -> Bos.OS.File.dash
+  | File f -> Fpath.v f
 
 let print_error conf opts ~input_name e =
   Translation_unit.print_error ~debug:opts.Conf.debug ~quiet:conf.Conf.quiet
@@ -95,7 +95,7 @@ let run_action action opts =
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | In_out ({kind; file; name= input_name; conf}, output_file) -> (
-    match source_from_file file with
+    match Bos.OS.File.read (fpath_from_file file) with
     | Ok source -> (
       match format ?output_file ~kind ~input_name ~source conf opts with
       | Ok s ->
@@ -106,7 +106,7 @@ let run_action action opts =
     )
   | Check inputs ->
       let f {Conf.kind; name= input_name; file; conf} =
-        match source_from_file file with
+        match Bos.OS.File.read (fpath_from_file file) with
         | Ok source -> (
           match format ~kind ~input_name ~source conf opts with
           | Ok res when String.equal res source -> Ok ()
