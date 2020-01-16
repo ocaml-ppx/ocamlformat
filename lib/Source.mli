@@ -75,3 +75,9 @@ val typed_expression :
 
 val typed_pattern :
   Parsetree.core_type -> Parsetree.pattern -> [`Type_first | `Pat_first]
+
+val loc_of_underscore :
+  t -> ('a * Parsetree.pattern) list -> Location.t -> Location.t
+(** [loc_of_underscore source fields loc] returns the location of the
+    underscore at the end of the open record pattern of location [loc] with
+    fields [fields]. *)

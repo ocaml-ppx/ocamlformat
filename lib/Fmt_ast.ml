@@ -986,11 +986,15 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
             (last && not (is_open closed_flag))
             p1.sep_after_final p1.sep_after_non_final
       in
+      let fmt_underscore =
+        if is_open closed_flag then
+          let loc = Source.loc_of_underscore c.source flds ppat_loc in
+          Cmts.fmt c loc p2.wildcard
+        else noop
+      in
       hvbox_if parens 0
         (wrap_if parens "(" ")"
-           (p1.box
-              ( list_fl flds fmt_field
-              $ fmt_if_k (is_open closed_flag) p2.wildcard )))
+           (p1.box (list_fl flds fmt_field $ fmt_underscore)))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
