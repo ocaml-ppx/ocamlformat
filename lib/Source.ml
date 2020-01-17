@@ -299,3 +299,14 @@ let typed_expression (typ : Parsetree.core_type)
 let typed_pattern (typ : Parsetree.core_type) (pat : Parsetree.pattern) =
   if Location.compare_start typ.ptyp_loc pat.ppat_loc < 0 then `Type_first
   else `Pat_first
+
+let loc_of_underscore t flds (ppat_loc : Location.t) =
+  let end_last_field =
+    match List.last flds with
+    | Some (_, p) -> p.Parsetree.ppat_loc.loc_end
+    | None -> ppat_loc.loc_start
+  in
+  let loc_underscore = {ppat_loc with loc_start= end_last_field} in
+  let filter = function Parser.UNDERSCORE -> true | _ -> false in
+  let tokens = tokens_at t ~filter loc_underscore in
+  Option.map (List.hd tokens) ~f:snd

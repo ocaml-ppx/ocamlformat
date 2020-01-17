@@ -45,13 +45,14 @@ let find_at_position t loc pos =
 module Loc_tree : sig
   include Non_overlapping_interval_tree.S with type itv = Location.t
 
-  val of_ast : (Ast_mapper.mapper -> 'a -> _) -> 'a -> t * Location.t list
+  val of_ast :
+    (Ast_mapper.mapper -> 'a -> _) -> 'a -> Source.t -> t * Location.t list
 end = struct
   include Non_overlapping_interval_tree.Make (Location)
 
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
-  let of_ast map_ast ast =
+  let of_ast map_ast ast src =
     let attribute (m : Ast_mapper.mapper) (attr : attribute) =
       match (attr.attr_name, attr.attr_payload) with
       | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; _}
@@ -86,7 +87,15 @@ end = struct
       locs := loc :: !locs ;
       loc
     in
-    let mapper = Ast_mapper.{default_mapper with location; attribute} in
+    let pat m p =
+      ( match p.ppat_desc with
+      | Ppat_record (flds, Open) ->
+          Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
+            ~f:(fun loc -> locs := loc :: !locs)
+      | _ -> () ) ;
+      Ast_mapper.default_mapper.pat m p
+    in
+    let mapper = Ast_mapper.{default_mapper with location; pat; attribute} in
     map_ast mapper ast |> ignore ;
     (of_list !locs, !locs)
 end
@@ -335,7 +344,7 @@ let init map_ast ~debug source asts comments_n_docstrings =
         Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast map_ast asts in
+    let loc_tree, locs = Loc_tree.of_ast map_ast asts source in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
