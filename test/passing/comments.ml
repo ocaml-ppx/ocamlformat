@@ -220,3 +220,5 @@ type t =
 type t =
   | A (* A *) (* | B *)
   | C
+
+let y = f (* a *) (* b *) x
