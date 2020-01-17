@@ -2836,23 +2836,14 @@ and fmt_cases c ctx cs =
       ~finish:(fun acc -> Some acc)
   in
   let max_len = fold_pattern_len ~f:max cs in
-  let level = match c.conf.break_cases with `Nested -> 2 | _ -> 3 in
   list_fl cs (fun ~first ~last case ->
       let padding =
         let xlhs = sub_pat ~ctx case.pc_lhs in
-        let add_padding =
-          c.conf.align_cases && not (Cmts.has_after c.cmts xlhs.ast.ppat_loc)
-        in
+        let has_cmts = Cmts.has_after c.cmts xlhs.ast.ppat_loc in
         match max_len with
-        | Some max_len when add_padding -> (
+        | Some max_len when c.conf.align_cases && not has_cmts -> (
           match pattern_len case with
-          | Some pattern_len ->
-              let pad = String.make (max_len - pattern_len) ' ' in
-              Some
-                (fmt_or_k
-                   Poly.(c.conf.break_cases = `All)
-                   (str pad)
-                   (fits_breaks ~level "" pad))
+          | Some pattern_len -> Some (break (max_len - pattern_len) 0)
           | _ -> None )
         | _ -> None
       in
@@ -2894,7 +2885,10 @@ and fmt_case c ctx ~first ~last ?padding case =
   in
   let indent = if align_nested_match then 0 else indent in
   let p = Params.get_cases c.conf ~first ~indent ~parens_here in
-  p.leading_space $ leading_cmt
+  fmt_or_k (Option.is_some padding)
+    (break_unless_newline 1000 0)
+    p.leading_space
+  $ leading_cmt
   $ p.box_all
       ( p.box_pattern_arrow
           ( hvbox 0
