@@ -34,6 +34,7 @@
   + Remove some calls to if_newline and break_unless_newline and fix break before closing brackets (#1168) (Guillaume Petiot)
   + Fix unstable cmt in or-pattern (#1173) (Guillaume Petiot)
   + Fix location of comment attached to the underscore of an open record (#1208) (Guillaume Petiot)
+  + Fix grouping of horizontally aligned comments (#1209) (Guillaume Petiot)
 
 #### Documentation
 
