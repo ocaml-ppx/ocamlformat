@@ -88,12 +88,12 @@ end = struct
       loc
     in
     let pat m p =
-      match p.ppat_desc with
+      ( match p.ppat_desc with
       | Ppat_record (flds, Open) ->
-          let loc = Source.loc_of_underscore src flds p.ppat_loc in
-          locs := loc :: !locs ;
-          Ast_mapper.default_mapper.pat m p
-      | _ -> Ast_mapper.default_mapper.pat m p
+          Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
+            ~f:(fun loc -> locs := loc :: !locs)
+      | _ -> () ) ;
+      Ast_mapper.default_mapper.pat m p
     in
     let mapper = Ast_mapper.{default_mapper with location; pat; attribute} in
     map_ast mapper ast |> ignore ;

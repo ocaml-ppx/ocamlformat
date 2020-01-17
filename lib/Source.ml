@@ -309,5 +309,4 @@ let loc_of_underscore t flds (ppat_loc : Location.t) =
   let loc_underscore = {ppat_loc with loc_start= end_last_field} in
   let filter = function Parser.UNDERSCORE -> true | _ -> false in
   let tokens = tokens_at t ~filter loc_underscore in
-  let token = List.hd_exn tokens in
-  snd token
+  Option.map (List.hd tokens) ~f:snd
