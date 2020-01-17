@@ -536,12 +536,21 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
       in
       let groups =
         List.group cmts ~break:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-            not
-              ( Location.is_single_line a conf.margin
-              && Location.is_single_line b conf.margin
-              && line_dist a b = 1
+            let vertical_align =
+              line_dist a b = 1
               && Location.compare_start_col a b = 0
-              && Location.compare_end_col a b = 0 ))
+              && Location.compare_end_col a b = 0
+            in
+            let horizontal_align =
+              line_dist a b = 0
+              && Option.value_map
+                   (Source.string_between t.source a.loc_end b.loc_start)
+                   ~default:true ~f:(fun x -> String.(strip x |> is_empty))
+            in
+            not
+              ( ( Location.is_single_line a conf.margin
+                && Location.is_single_line b conf.margin )
+              && (vertical_align || horizontal_align) ))
       in
       let last_loc = Cmt.loc (List.last_exn cmts) in
       let eol_cmt = Source.ends_line t.source last_loc in
