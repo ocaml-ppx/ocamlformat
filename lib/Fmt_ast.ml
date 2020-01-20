@@ -1184,10 +1184,15 @@ and fmt_fun_args c ?pro args =
              ( fmt_pattern c ~parens:false xpat
              $ fmt " =@;<1 2>" $ fmt_expression c xexp ))
     | Val (Optional l, xpat, Some xexp) ->
+        let parens =
+          match xpat.ast.ppat_desc with
+          | Ppat_unpack _ -> None
+          | _ -> Some false
+        in
         cbox 2
           ( str "?" $ str l
           $ wrap_k (fmt ":@,(") (str ")")
-              ( fmt_pattern c ~parens:false xpat
+              ( fmt_pattern c ?parens xpat
               $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
     | Val ((Labelled _ | Nolabel), _, Some _) ->
         impossible "not accepted by parser"
