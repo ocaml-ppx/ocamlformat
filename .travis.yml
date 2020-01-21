@@ -2,8 +2,6 @@ language: c
 env:
   - CI_KIND=changes
   - CI_KIND=build OCAML_VERSION=4.07.1
-  - CI_KIND=build-and-tests OCAML_VERSION=4.08.1
-  - CI_KIND=build-and-tests OCAML_VERSION=4.09.0
 cache:
   directories:
     - ${HOME}/.opam
