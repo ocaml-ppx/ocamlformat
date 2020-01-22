@@ -842,14 +842,13 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   update_config_maybe_disabled c ppat_loc ppat_attributes
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
-  let spc = break_unless_newline 1 0 in
   ( match ppat_desc with
   | Ppat_or _ -> Fn.id
   | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::")
     ->
       fun k ->
-        Cmts.fmt c ~pro:spc ppat_loc
-        @@ Cmts.fmt c ~pro:spc loc (fmt_opt pro $ k)
+        Cmts.fmt c ~pro:(break 1 0) ppat_loc
+        @@ Cmts.fmt c ~pro:(break 1 0) loc (fmt_opt pro $ k)
   | _ -> fun k -> Cmts.fmt c ppat_loc (fmt_opt pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
      else
@@ -935,8 +934,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           (wrap_if parens "(" ")"
              (Cmts.fmt c ppat_loc
                 ( fmt_pattern c (sub_pat ~ctx x)
-                $ Cmts.fmt c ~pro:(fmt "@ ") ~epi:noop loc
-                    (break_unless_newline 1 0 $ str ":: ")
+                $ fmt "@ "
+                $ Cmts.fmt c ~pro:noop loc (str ":: ")
                 $ fmt_pattern c (sub_pat ~ctx y) ))) )
   | Ppat_construct (lid, Some pat) ->
       cbox 2
@@ -1269,7 +1268,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     hovbox
       (if first_grp then 2 else 0)
       (list_fl args fmt_arg $ fmt_if_k last_grp global_epi)
-    $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
+    $ fmt_if_k (not last_grp) (break 1 0)
   in
   let is_simple x = is_simple c.conf (expression_width c) (sub_exp ~ctx x) in
   let break (_, a1) (_, a2) = not (is_simple a1 && is_simple a2) in
@@ -1381,8 +1380,8 @@ and fmt_infix_op_args c ~parens xexp op_args =
                $ cmts_after
                $ hovbox_if (not very_last) 2
                    (list_fl xargs (fmt_arg very_last)) )
-           $ fmt_if_k (not last) (break_unless_newline 1 0)))
-    $ fmt_if_k (not last_grp) (break_unless_newline 1 0)
+           $ fmt_if_k (not last) (break 1 0)))
+    $ fmt_if_k (not last_grp) (break 1 0)
   in
   let opn, hint, cls =
     if parens || Poly.(c.conf.infix_precedence = `Parens) then
@@ -1621,7 +1620,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                      (* side effects of Cmts.fmt_before before fmt_expression
                         is important *)
                      let has_cmts = Cmts.has_before c.cmts pexp_loc in
-                     let adj = break_unless_newline 1000 0 in
+                     let adj = break 1000 0 in
                      let fmt_before_cmts = Cmts.fmt_before ~adj c pexp_loc in
                      (* The comments before the first arg are put there, so
                         that they are printed after the operator and the box
@@ -3705,14 +3704,15 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let blk_a = maybe_generative c ~ctx me_a in
       let box_f = wrap_k blk_f.opn blk_f.cls in
       let fmt_rator =
+        let break_struct =
+          c.conf.break_struct && can_break_before_struct
+          && not (module_expr_is_simple me_a)
+        in
         fmt_docstring c ~epi:(fmt "@,") doc
         $ box_f (blk_f.psp $ fmt_opt blk_f.pro $ blk_f.bdy)
         $ blk_f.esp $ fmt_opt blk_f.epi
-        $ fmt_or_k
-            ( c.conf.break_struct && can_break_before_struct
-            && not (module_expr_is_simple me_a) )
-            (break_unless_newline 1000 0 $ str "(")
-            (fmt "@ (")
+        $ break (if break_struct then 1000 else 1) 0
+        $ str "("
       in
       let epi =
         fmt_opt blk_a.epi $ str ")"
