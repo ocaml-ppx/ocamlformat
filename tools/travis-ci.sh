@@ -34,13 +34,6 @@ CheckBuild () {
     opam exec -- make
 }
 
-CheckTests () {
-    # install
-    opam install --deps-only --with-test ocamlformat
-    # script
-    opam exec -- make test
-}
-
 HasNoChangelogNeededLabel () {
     url="https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST"
     curl "$url" | jq '.labels|any(.name == "no-changelog-needed")'
@@ -61,10 +54,6 @@ CheckChangesModified () {
 case $CI_KIND in
 build)
     CheckBuild
-    ;;
-build-and-tests)
-    CheckBuild
-    CheckTests
     ;;
 changes)
     CheckChangesModified
