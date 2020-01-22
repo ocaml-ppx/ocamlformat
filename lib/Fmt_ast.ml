@@ -1800,17 +1800,21 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | `Closing_on_separate_line ->
             (str "(", fits_breaks ")" ~hint:(1000, -2) ")")
       in
+      let has_cmts =
+        Cmts.has_before c.cmts pexp_loc || Cmts.has_after c.cmts pexp_loc
+      in
       hovbox 0
         (compose_module
            (fmt_module_expr c (sub_mod ~ctx me))
            ~f:(fun m ->
              hvbox 2
-               (Cmts.fmt c pexp_loc
-                  ( hovbox 0
-                      ( opn_paren $ str "module " $ m $ fmt "@ : "
-                      $ fmt_longident_loc c id )
-                  $ fmt_package_type c ctx cnstrs
-                  $ fmt_atrs $ cls_paren ))))
+               (wrap_if has_cmts "(" ")"
+                  (Cmts.fmt c pexp_loc
+                     ( hovbox 0
+                         ( opn_paren $ str "module " $ m $ fmt "@ : "
+                         $ fmt_longident_loc c id )
+                     $ fmt_package_type c ctx cnstrs
+                     $ fmt_atrs $ cls_paren )))))
   | Pexp_constraint (e, t) ->
       hvbox 2
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
