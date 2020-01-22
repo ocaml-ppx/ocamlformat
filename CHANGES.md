@@ -36,6 +36,7 @@
   + Fix location of comment attached to the underscore of an open record (#1208) (Guillaume Petiot)
   + Fix parentheses around optional module parameter (#1212) (Christian Barcenas)
   + Fix grouping of horizontally aligned comments (#1209) (Guillaume Petiot)
+  + Fix dropped comments around module pack expressions (#1214) (Jules Aguillon)
 
 #### Documentation
 

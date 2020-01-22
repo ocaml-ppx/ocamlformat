@@ -222,3 +222,11 @@ type t =
   | C
 
 let y = f (* a *) (* b *) x
+
+let kk = (* foo *) (module A : T)
+
+let kk = ((* foo *) (module A : T))
+
+let kk = ((module A : T) (* foo *))
+
+let kk = ((* foo *) (module A : T) (* foo *))

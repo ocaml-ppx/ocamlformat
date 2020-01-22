@@ -1788,7 +1788,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ?epi const
         $ fmt_atrs )
   | Pexp_constraint
-      ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc= _; _}
+      ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc; _}
       , { ptyp_desc= Ptyp_package (id, cnstrs)
         ; ptyp_attributes= []
         ; ptyp_loc= _
@@ -1805,11 +1805,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            (fmt_module_expr c (sub_mod ~ctx me))
            ~f:(fun m ->
              hvbox 2
-               ( hovbox 0
-                   ( opn_paren $ str "module " $ m $ fmt "@ : "
-                   $ fmt_longident_loc c id )
-               $ fmt_package_type c ctx cnstrs
-               $ fmt_atrs $ cls_paren )))
+               (Cmts.fmt c pexp_loc
+                  ( hovbox 0
+                      ( opn_paren $ str "module " $ m $ fmt "@ : "
+                      $ fmt_longident_loc c id )
+                  $ fmt_package_type c ctx cnstrs
+                  $ fmt_atrs $ cls_paren ))))
   | Pexp_constraint (e, t) ->
       hvbox 2
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
