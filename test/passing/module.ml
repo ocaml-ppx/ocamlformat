@@ -71,11 +71,3 @@ let helper ?x =
   match x with Some (module X : X_typ) -> X.f | None -> X_add_one.f
 
 let helper ?x:((module X) = (module X_add_one : X_typ)) = X.f
-
-let kk = (* foo *) (module A : T)
-
-let kk = ((* foo *) (module A : T))
-
-let kk = ((module A : T) (* foo *))
-
-let kk = ((* foo *) (module A : T) (* foo *))
