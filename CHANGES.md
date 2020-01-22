@@ -35,6 +35,7 @@
   + Fix unstable cmt in or-pattern (#1173) (Guillaume Petiot)
   + Fix location of comment attached to the underscore of an open record (#1208) (Guillaume Petiot)
   + Fix parentheses around optional module parameter (#1212) (Christian Barcenas)
+  + Fix grouping of horizontally aligned comments (#1209) (Guillaume Petiot)
 
 #### Documentation
 

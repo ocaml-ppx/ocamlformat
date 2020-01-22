@@ -300,6 +300,13 @@ type t =
   | C
 
 type t =
-  | A (* A *)
+  | A
+  (* A *)
   (* | B *)
   | C
+
+let y =
+  f
+    (* a *)
+    (* b *)
+    x
