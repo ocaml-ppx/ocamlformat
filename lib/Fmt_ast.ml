@@ -1704,6 +1704,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | Pexp_fun _ | Pexp_function _ -> Some false
             | _ -> None
           in
+          let fit = Location.is_single_line pexp_loc c.conf.margin in
           hvbox 0
             (wrap_if parens "(" ")"
                ( hovbox 2
@@ -1728,7 +1729,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ cbox 0 (fmt_expression c ?box xbody)
                    $ fmt_or_k
                        Poly.(c.conf.indicate_multiline_delimiters = `Space)
-                       (fits_breaks ")" " )") (str ")")
+                       (fmt_or_k fit (str ")")
+                          (fits_breaks ~force_fit_if:fit
+                             ~force_break_if:(not fit) ")" " )"))
+                       (str ")")
                    $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ))
       | ( lbl
@@ -3487,7 +3491,8 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution c ctx ms)
   | Psig_open od -> fmt_open_description c ~kw_attributes:[] od
   | Psig_recmodule mds ->
-      fmt_recmodule c ctx mds fmt_module_declaration (fun x -> Mty x.pmd_type)
+      fmt_recmodule c ctx mds fmt_module_declaration (fun x ->
+          Mty x.pmd_type )
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension c ctx te
   | Psig_value vd -> fmt_value_description c ctx vd

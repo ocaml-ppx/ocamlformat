@@ -91,7 +91,7 @@ end = struct
       ( match p.ppat_desc with
       | Ppat_record (flds, Open) ->
           Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
-            ~f:(fun loc -> locs := loc :: !locs )
+            ~f:(fun loc -> locs := loc :: !locs)
       | _ -> () ) ;
       Ast_mapper.default_mapper.pat m p
     in
@@ -237,8 +237,8 @@ let add_cmts t ?prev ?next position loc cmts =
             (position_to_string position)
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next) ) ;
-    update_cmts t position ~f:(fun v -> Location.Multimap.add_list v loc cmtl)
-    )
+    update_cmts t position ~f:(fun v ->
+        Location.Multimap.add_list v loc cmtl ) )
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
