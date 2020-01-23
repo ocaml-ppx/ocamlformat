@@ -91,7 +91,7 @@ end = struct
       ( match p.ppat_desc with
       | Ppat_record (flds, Open) ->
           Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
-            ~f:(fun loc -> locs := loc :: !locs)
+            ~f:(fun loc -> locs := loc :: !locs )
       | _ -> () ) ;
       Ast_mapper.default_mapper.pat m p
     in

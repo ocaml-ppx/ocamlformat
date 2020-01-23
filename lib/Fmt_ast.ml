@@ -1014,7 +1014,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let fmt_underscore =
         if is_open closed_flag then
           opt (Source.loc_of_underscore c.source flds ppat_loc) (fun loc ->
-              Cmts.fmt c loc p2.wildcard)
+              Cmts.fmt c loc p2.wildcard )
         else noop
       in
       hvbox_if parens 0
