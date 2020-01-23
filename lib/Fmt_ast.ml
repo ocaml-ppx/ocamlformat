@@ -1704,16 +1704,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | Pexp_fun _ | Pexp_function _ -> Some false
             | _ -> None
           in
-          let break_after_arrow =
-            match xbody.ast.pexp_desc with
-            | Pexp_function _ -> break 1 0
-            | _ -> (
-              (* Avoid the "double indentation" of the application and the
-                 function matching when the [max-indent] option is set. *)
-              match c.conf.max_indent with
-              | Some i when i <= 2 -> break 1 0
-              | _ -> break 1 2 )
-          in
           hvbox 0
             (wrap_if parens "(" ")"
                ( hovbox 2
@@ -1725,7 +1715,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            $ fmt_attributes c ~key:"@" eN1.pexp_attributes
                                ~suf:(str " ")
                            $ hvbox 0 (fmt_fun_args c xargs $ fmt "@ ->") ) )
-                   $ break_after_arrow
+                   $ fmt
+                       ( match xbody.ast.pexp_desc with
+                       | Pexp_function _ -> "@ "
+                       | _ -> (
+                         (* Avoid the "double indentation" of the application
+                            and the function matching when the [max-indent]
+                            option is set. *)
+                         match c.conf.max_indent with
+                         | Some i when i <= 2 -> "@ "
+                         | _ -> "@;<1 2>" ) )
                    $ cbox 0 (fmt_expression c ?box xbody)
                    $ fmt_or_k
                        Poly.(c.conf.indicate_multiline_delimiters = `Space)
