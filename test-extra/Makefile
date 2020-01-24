@@ -17,18 +17,11 @@ DIRS=code/ocamlformat code/infer code/js_of_ocaml code/dune
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml
 
-FIND_ARGS= \
-	-name _build -not -prune -or \
-	-path code/ocamlformat/test -not -prune -or \
-	-path code/ocaml/experimental -not -prune -or \
-	-path code/ocaml/testsuite/tests/parse-errors -not -prune -or \
-	-path code/dune/test -not -prune -or \
-	-path code/dune/vendor -not -prune -or \
-	-path code/dune/otherlibs -not -prune -or \
-	-path code/dune/example -not -prune -or \
-	-path code/duniverse/duniverse -not -prune -or \
-	-name '*.ml' -and -not -name '*.pp.ml' -or \
-	-name '*.mli' -and -not -name '*.pp.mli'
+# Directories to ignore (given to find, compared literally)
+PRUNE_DIRS= \
+	code/ocamlformat/test \
+	code/ocaml/experimental code/ocaml/testsuite/tests/parse-errors \
+	code/dune/test code/dune/vendor code/dune/otherlibs code/dune/example
 
 ALL_DIRS=$(DIRS) $(XDIRS)
 
@@ -47,6 +40,7 @@ code/ocaml: URI = https://github.com/ocaml/ocaml.git
 code/dune: URI = https://github.com/ocaml/dune.git
 
 # DIRS += code/owl code/irmin code/index code/duniverse code/dune-release
+# PRUNE_DIRS += code/duniverse/duniverse code/duniverse/examples
 # code/owl: URI = https://github.com/owlbarn/owl
 # code/irmin: URI = https://github.com/mirage/irmin
 # code/index: URI = https://github.com/mirage/index
@@ -102,6 +96,12 @@ test_pull:
 	@for dir in $(ALL_DIRS); do \
 	  git -C $$dir pull; \
 	done
+
+FIND_ARGS= \
+	-name _build -not -prune -or \
+	$(patsubst %,-path % -not -prune -or,$(PRUNE_DIRS)) \
+	-name '*.ml' -and -not -name '*.pp.ml' -or \
+	-name '*.mli' -and -not -name '*.pp.mli'
 
 .PHONY: test_inplace
 test_inplace:
