@@ -37,6 +37,7 @@
   + Fix parentheses around optional module parameter (#1212) (Christian Barcenas)
   + Fix grouping of horizontally aligned comments (#1209) (Guillaume Petiot)
   + Fix dropped comments around module pack expressions (#1214) (Jules Aguillon)
+  + Fix regression of comment position in list patterns (#1141) (Josh Berdine)
 
 #### Documentation
 

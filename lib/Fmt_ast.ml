@@ -923,8 +923,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           $ fmt_or_k last p.sep_after_final p.sep_after_non_final
         in
         hvbox 0
-          (Cmts.fmt c ppat_loc
-             (p.box
+          (p.box
+             (Cmts.fmt c ppat_loc
                 ( list_fl loc_xpats fmt_pat
                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
                     ~eol:noop
