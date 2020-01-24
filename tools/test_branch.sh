@@ -11,47 +11,61 @@
 #                                                                    #
 ######################################################################
 
-# usage: test_branch.sh [<rev>] [<option>=<value>*] [<option>=<value>*]
+# usage: test_branch.sh [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
 #
-# The first arg is the revision/branch to test.
+# -a set the base branch and -b the test branch. The default value for
+# the base branch is the merge-base between the test branch and master.
+# The default value for the test branch is HEAD.
+#
+# The first arg is the value of OCAMLFORMAT to be used when formatting
+# using the base branch (a)
 #
 # The second arg is the value of OCAMLFORMAT to be used when formatting
-# the merge base of the test branch.
-#
-# The third arg is the value of OCAMLFORMAT to be used when formatting
-# the test branch. When this arg is not provided, we use the same value
-# than for the base branch. This arg should be the empty string '' to
-# set OCAMLFORMAT to an empty value.
+# the test branch (b). When this arg is not provided, we use the same
+# value than for the base branch. This arg should be the empty string ''
+# to set OCAMLFORMAT to an empty value.
 
 set -e
 
-if [[ ! -z "$1" ]]; then
-    branch="$1"
-else
-    branch=$(git rev-parse HEAD)
+opt_a=
+opt_b=
+while getopts "a:b:" opt; do
+  case "$opt" in
+    a) opt_a=$OPTARG ;;
+    b) opt_b=$OPTARG ;;
+  esac
+done
+shift $((OPTIND-1))
+
+opts_a=$1
+opts_b=${2-$opts_a}
+
+rev_b=$(git rev-parse "${opt_b:-HEAD}")
+rev_a=$(git rev-parse "${opt_a:-$(git merge-base master "$rev_b")}")
+
+if [[ "$rev_a" = "$rev_b" ]]; then
+  echo "The base branch is the same as the branch to test ($rev_a)"
+  exit 1
 fi
-
-opts_base="$2"
-
-if [[ $# -lt 3 ]]; then
-    opts_branch="$opts_base"
-else
-    opts_branch="$3"
-fi
-
-base=$(git merge-base master $branch)
 
 # First arg is git rev others are passed to make -C test-extra
+# Env: OCAMLFORMAT
 run_in_worktree ()
 {
   local tmp=`mktemp -d`
+  echo "Building $1 in $tmp"
   git worktree add --detach "$tmp" "$1"
   shift
-  make -C "$tmp"
-  local exe=`ls "$tmp"/_build/{default,dev}/bin/ocamlformat.exe 2>/dev/null | head -n1`
+  ( cd "$tmp"
+    dune build -p ocamlformat
+    dune install --prefix=dist ocamlformat &>/dev/null )
+  local exe="$tmp/dist/bin/ocamlformat"
+  echo "Built $exe"
   make -C test-extra "OCAMLFORMAT_EXE=$exe" "$@"
   git worktree remove --force "$tmp"
 }
 
-OCAMLFORMAT="$opts_base" run_in_worktree "$base" test_setup test_unstage test_clean test_pull test test_stage
-OCAMLFORMAT="$opts_branch" run_in_worktree "$branch" test test_diff
+make -C test-extra test_setup test_unstage test_clean test_pull
+
+OCAMLFORMAT="$opts_a" run_in_worktree "$rev_a" test test_stage
+OCAMLFORMAT="$opts_b" run_in_worktree "$rev_b" test test_diff

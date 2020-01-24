@@ -17,17 +17,11 @@ DIRS=code/ocamlformat code/infer code/js_of_ocaml code/dune
 # Extra test directories, for which looser checking is done
 XDIRS=code/ocaml
 
-FIND_ARGS= \
-	-name _build -not -prune -or \
-	-path code/ocamlformat/test -not -prune -or \
-	-path code/ocaml/experimental -not -prune -or \
-	-path code/ocaml/testsuite/tests/parse-errors -not -prune -or \
-	-path code/dune/test -not -prune -or \
-	-path code/dune/vendor -not -prune -or \
-	-path code/dune/otherlibs -not -prune -or \
-	-path code/dune/example -not -prune -or \
-	-name '*.ml' -and -not -name '*.pp.ml' -or \
-	-name '*.mli' -and -not -name '*.pp.mli'
+# Directories to ignore (given to find, compared literally)
+PRUNE_DIRS= \
+	code/ocamlformat/test \
+	code/ocaml/experimental code/ocaml/testsuite/tests/parse-errors \
+	code/dune/test code/dune/vendor code/dune/otherlibs code/dune/example
 
 ALL_DIRS=$(DIRS) $(XDIRS)
 
@@ -35,22 +29,26 @@ ALL_DIRS=$(DIRS) $(XDIRS)
 #       make MODE=<mode>
 MODE?=default
 
-OCAMLFORMAT_EXE=../_build/$(MODE)/bin/ocamlformat.exe
+code/%:
+	@test -d code || mkdir code
+	@test -d "$@" || git -C code clone "$(URI)"
+
+code/ocamlformat: URI = ../../../ocamlformat
+code/infer: URI = https://github.com/facebook/infer.git
+code/js_of_ocaml: URI = https://github.com/ocsigen/js_of_ocaml.git
+code/ocaml: URI = https://github.com/ocaml/ocaml.git
+code/dune: URI = https://github.com/ocaml/dune.git
+
+# DIRS += code/owl code/irmin code/index code/duniverse code/dune-release
+# PRUNE_DIRS += code/duniverse/duniverse code/duniverse/examples
+# code/owl: URI = https://github.com/owlbarn/owl
+# code/irmin: URI = https://github.com/mirage/irmin
+# code/index: URI = https://github.com/mirage/index
+# code/duniverse: URI = https://github.com/ocamllabs/duniverse
+# code/dune-release: URI = https://github.com/ocamllabs/dune-release
 
 .PHONY: test_setup
-test_setup:
-	@test -d code \
-	  || mkdir code
-	@test -d code/ocamlformat \
-	  || git -C code clone ../../../ocamlformat
-	@test -d code/infer \
-	  || git -C code clone "https://github.com/facebook/infer.git"
-	@test -d code/js_of_ocaml \
-	  || git -C code clone "https://github.com/ocsigen/js_of_ocaml.git"
-	@test -d code/ocaml \
-	  || git -C code clone "https://github.com/ocaml/ocaml.git"
-	@test -d code/dune \
-		|| git -C code clone "https://github.com/ocaml/dune.git"
+test_setup: $(ALL_DIRS)
 
 .PHONY: test
 test: test_setup
@@ -99,24 +97,20 @@ test_pull:
 	  git -C $$dir pull; \
 	done
 
-TEST_FILES:=$(shell find $(DIRS) $(FIND_ARGS) 2>/dev/null)
-
-XTEST_FILES:=$(shell find $(XDIRS) $(FIND_ARGS) 2>/dev/null)
+FIND_ARGS= \
+	-name _build -not -prune -or \
+	$(patsubst %,-path % -not -prune -or,$(PRUNE_DIRS)) \
+	-name '*.ml' -and -not -name '*.pp.ml' -or \
+	-name '*.mli' -and -not -name '*.pp.mli'
 
 .PHONY: test_inplace
-test_inplace: $(OCAMLFORMAT_EXE)
-	@parallel --bar $(OCAMLFORMAT_EXE) --no-version-check -i ::: $(TEST_FILES)
+test_inplace:
+	@find $(DIRS) $(FIND_ARGS) | parallel --bar "$(OCAMLFORMAT_EXE)" --no-version-check -i
 
 .PHONY: test_extra
-test_extra: $(OCAMLFORMAT_EXE)
-	@parallel --bar $(OCAMLFORMAT_EXE) --no-version-check --quiet -i ::: $(XTEST_FILES)
+test_extra:
+	@find $(XDIRS) $(FIND_ARGS) | parallel --bar "$(OCAMLFORMAT_EXE)" --no-version-check --quiet -i
 
 .PHONY: test_margins
 test_margins:
 	@for i in {100..40}; do echo $$i; OCAMLFORMAT_MARGIN=$$i $(MAKE) test || break; done
-
-$(OCAMLFORMAT_EXE):
-	dune build "$@"
-
-print-%:
-	@echo '$*=$($*)'
