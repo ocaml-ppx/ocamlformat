@@ -189,6 +189,8 @@ module Location = struct
     Comparable.lexicographic [compare_start; descending compare_end; compare]
 
   let is_single_line x margin =
+    (* The last character of a line can exceed the margin if it is not
+       preceded by a break. Adding 1 here is a workaround for this bug. *)
     width x <= margin + 1 && x.loc_start.pos_lnum = x.loc_end.pos_lnum
 
   let smallest loc stack =
