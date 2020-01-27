@@ -84,6 +84,151 @@ let foooooo =
 let k =
 |}
   in
+  let escape_error = {|
+try foo () with ;;
+
+(3 : );;
+
+(3 :> );;
+|} in
+  let expecting =
+    {|
+let f = function
+  | 3 as 3 -> ()
+;;
+
+let f = function
+  | 3 :: -> ()
+;;
+
+let f = function
+  | 3 | -> ()
+;;
+
+let f = function
+  | List.( -> ()
+;;
+
+let f = function
+  | (3 : 3) -> ()
+;;
+
+let f = function
+  | (3,) -> ()
+;;
+
+let f = function
+  | ( -> ()
+;;
+
+let f = function
+  | (module -> ()
+;;
+|}
+  in
+  let pr7847 = {| external x : unit -> (int,int)`A.t = "x" |} in
+  let unclosed_class_simpl_expr1 = {|
+class c = object
+  method x = 1
+|} in
+  let unclosed_class_simpl_expr2 = {| class c = (object end : object end |} in
+  let unclosed_class_simpl_expr3 = {| class c = (object end |} in
+  let unclosed_object = {| let o = object |} in
+  let unclosed_paren_module_expr1 = {| module M = (struct end : sig end |} in
+  let unclosed_paren_module_expr2 = {| module M = (struct end |} in
+  let unclosed_paren_module_expr3 = {| module M = (val 3 : |} in
+  let unclosed_paren_module_expr4 = {| module M = (val 3 :> |} in
+  let unclosed_paren_module_expr5 = {| module M = (val 3 |} in
+  let unclosed_simple_expr =
+    {|
+(3; 2;;
+
+begin 3; 2;;
+
+List.(3; 2;;
+
+simple_expr.(3; 2;;
+
+simple_expr.[3; 2;;
+
+simple_expr.%[3;;
+
+simple_expr.%(3;;
+
+simple_expr.%{3;;
+
+foo.Bar.%[3;;
+
+foo.Bar.%(3;;
+
+foo.Bar.%{3;;
+
+simple_expr.{3, 2;;
+
+{ x = 3; y;;
+
+List.{ x = 3; y ;;
+
+[| 3; 2;;
+
+List.[|3; 2;;
+
+[3; 2;;
+
+List.[3; 2;;
+
+{< x = 3; y; ;;
+
+List.{< x = 3; y ;;
+
+(module struct end :;;
+
+List.(module struct end :;;
+
+(=;
+|}
+  in
+  let unclosed_simple_pattern =
+    {|
+let f = function
+  | List.(_
+;;
+
+let f = function
+  | (_
+;;
+
+let f = function
+  | (_ : int
+;;
+
+(* Impossible to get the "unclosed (" message here. This case gets absorbed by
+   val_ident... *)
+
+let f = function
+  | (module Foo : sig end
+;;
+
+(* As with expressions, impossible to get the unclosed message for the following
+   cases. *)
+
+let f = function
+  | { foo; bar;
+;;
+
+let f = function
+  | [ 1; 2;
+;;
+
+let f = function
+  | [| 3; 4;
+;;
+|}
+  in
+  let unclosed_struct = {|
+module M = struct
+  type t = T
+|} in
   [
     ("empty", "", []);
     ("valid", valid_test, []);
@@ -106,9 +251,54 @@ let k =
     ( "many not closed",
       many_not_closed,
       [ ((8, 0), (14, 4)); ((21, 0), (21, 7)) ] );
+    ("escape_error", escape_error, [ (* TODO: fix *) ]);
+    ("expecting", expecting, [ (* TODO: fix *) ]);
+    ("pr7847", pr7847, [ (* TODO: fix *) ]);
+    ( "unclosed class simpl expr1",
+      unclosed_class_simpl_expr1,
+      [ ((2, 0), (3, 14)) ] );
+    ( "unclosed class simpl expr2",
+      unclosed_class_simpl_expr2,
+      [ (* TODO: fix *) ] );
+    ( "unclosed class simpl expr3",
+      unclosed_class_simpl_expr3,
+      [ (* TODO: fix *) ] );
+    ("unclosed object", unclosed_object, [ (* TODO: fix *) ]);
+    ( "unclosed paren module expr1",
+      unclosed_paren_module_expr1,
+      [ (* TODO: fix *) ] );
+    ( "unclosed paren module expr2",
+      unclosed_paren_module_expr2,
+      [ (* TODO: fix *) ] );
+    ( "unclosed paren module expr3",
+      unclosed_paren_module_expr3,
+      [ (* TODO: fix *) ] );
+    ( "unclosed paren module expr4",
+      unclosed_paren_module_expr4,
+      [ (* TODO: fix *) ] );
+    ( "unclosed paren module expr5",
+      unclosed_paren_module_expr5,
+      [ (* TODO: fix *) ] );
+    ("unclosed simple expr", unclosed_simple_expr, [ (* TODO: fix *) ]);
+    ("unclosed simple pattern", unclosed_simple_pattern, [ (* TODO: fix *) ]);
+    ("unclosed struct", unclosed_struct, [ ((2, 0), (3, 12)) ]);
   ]
 
-let intf_tests = [ ("empty", "", []) ]
+let intf_tests =
+  let unclosed_class_signature = {| class c : object |} in
+  let unclosed_paren_module_type = {| module M : (sig end |} in
+  let unclosed_sig = {|
+module M : sig
+  type t = T
+ |} in
+  [
+    ("empty", "", []);
+    ("unclosed class signature", unclosed_class_signature, [ ((1, 1), (1, 17)) ]);
+    ( "unclosed paren module type",
+      unclosed_paren_module_type,
+      [ (* TODO: fix *) ] );
+    ("unclosed sig", unclosed_sig, [ ((2, 0), (3, 12)) ]);
+  ]
 
 let test_impl =
   let test name input expected =
