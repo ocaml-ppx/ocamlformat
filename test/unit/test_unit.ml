@@ -1,10 +1,4 @@
-let test_use_file =
-  let test name input expected =
-    let test_name = "use_file " ^ name in
-    ( test_name,
-      `Quick,
-      fun () -> Utils.check_use_file ~name:test_name ~input ~expected )
-  in
+let impl_tests =
   let valid_test =
     {|
 let fooooooooooooooo =
@@ -91,28 +85,58 @@ let k =
 |}
   in
   [
-    test "empty" "" [];
-    test "valid" valid_test [];
-    test "invalid after eq" invalid_after_eq_test [ ((1, 0), (1, 22)) ];
-    test "invalid after in" invalid_after_in_test [ ((2, 0), (8, 4)) ];
-    test "invalid seq modules" invalid_seq_modules_test [ ((2, 0), (7, 28)) ];
-    test "not closed module" not_closed_module_test [ ((2, 0), (4, 11)) ];
-    test "not closed module 2" not_closed_module_test_2 [ ((2, 0), (3, 18)) ];
-    test "not closed sig" not_closed_sig [ ((2, 0), (3, 8)) ];
-    test "not closed begin" not_closed_begin [ ((1, 1), (1, 26)) ];
-    test "not closed if" not_closed_if [ ((1, 1), (1, 13)) ];
-    test "not closed if 2" not_closed_if_2 [ ((1, 1), (1, 18)) ];
-    test "invalid if" invalid_if [ ((1, 1), (1, 18)) ];
-    test "invalid if 2" invalid_if_2 [ ((1, 1), (1, 25)) ];
-    test "not closed class" not_closed_class [ ((1, 1), (1, 17)) ];
-    test "not closed class 2" not_closed_class_2 [ ((1, 1), (1, 8)) ];
-    test "not closed class 3" not_closed_class_3 [ ((1, 1), (1, 10)) ];
-    test "not closed class 4" not_closed_class_4 [ ((1, 1), (1, 6)) ];
-    test "binop" binop [ ((1, 1), (1, 4)) ];
-    test "many not closed" many_not_closed
-      [ ((8, 0), (14, 4)); ((21, 0), (21, 7)) ];
+    ("empty", "", []);
+    ("valid", valid_test, []);
+    ("invalid after eq", invalid_after_eq_test, [ ((1, 0), (1, 22)) ]);
+    ("invalid after in", invalid_after_in_test, [ ((2, 0), (8, 4)) ]);
+    ("invalid seq modules", invalid_seq_modules_test, [ ((2, 0), (7, 28)) ]);
+    ("not closed module", not_closed_module_test, [ ((2, 0), (4, 11)) ]);
+    ("not closed module 2", not_closed_module_test_2, [ ((2, 0), (3, 18)) ]);
+    ("not closed sig", not_closed_sig, [ ((2, 0), (3, 8)) ]);
+    ("not closed begin", not_closed_begin, [ ((1, 1), (1, 26)) ]);
+    ("not closed if", not_closed_if, [ ((1, 1), (1, 13)) ]);
+    ("not closed if 2", not_closed_if_2, [ ((1, 1), (1, 18)) ]);
+    ("invalid if", invalid_if, [ ((1, 1), (1, 18)) ]);
+    ("invalid if 2", invalid_if_2, [ ((1, 1), (1, 25)) ]);
+    ("not closed class", not_closed_class, [ ((1, 1), (1, 17)) ]);
+    ("not closed class 2", not_closed_class_2, [ ((1, 1), (1, 8)) ]);
+    ("not closed class 3", not_closed_class_3, [ ((1, 1), (1, 10)) ]);
+    ("not closed class 4", not_closed_class_4, [ ((1, 1), (1, 6)) ]);
+    ("binop", binop, [ ((1, 1), (1, 4)) ]);
+    ( "many not closed",
+      many_not_closed,
+      [ ((8, 0), (14, 4)); ((21, 0), (21, 7)) ] );
   ]
 
-let tests = [ ("use_file", test_use_file) ]
+let intf_tests = [ ("empty", "", []) ]
+
+let test_impl =
+  let test name input expected =
+    let test_name = "impl " ^ name in
+    let test_fun () = Utils.check_impl ~name:test_name ~input ~expected in
+    (test_name, `Quick, test_fun)
+  in
+  List.map (fun (name, input, expected) -> test name input expected) impl_tests
+
+let test_intf =
+  let test name input expected =
+    let test_name = "intf " ^ name in
+    let test_fun () = Utils.check_intf ~name:test_name ~input ~expected in
+    (test_name, `Quick, test_fun)
+  in
+  List.map (fun (name, input, expected) -> test name input expected) intf_tests
+
+let test_use_file =
+  let test name input expected =
+    let test_name = "use_file " ^ name in
+    let test_fun () = Utils.check_use_file ~name:test_name ~input ~expected in
+    (test_name, `Quick, test_fun)
+  in
+  List.map
+    (fun (name, input, expected) -> test name input expected)
+    (impl_tests @ intf_tests)
+
+let tests =
+  [ ("impl", test_impl); ("intf", test_intf); ("use_file", test_use_file) ]
 
 let () = Alcotest.run "Parse_wyc" tests
