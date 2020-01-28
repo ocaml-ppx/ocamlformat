@@ -1,7 +1,7 @@
 (rule
  (targets enable_outside_detected_project.output)
  (deps enable_outside_detected_project/dune-project
-   enable_outside_detected_project/main.ml)
+   enable_outside_detected_project/main.ml .ocamlformat)
  (action
   (with-stdout-to
    %{targets}
@@ -17,7 +17,7 @@
 
 (rule
  (targets outside_detected_project.output)
- (deps outside_detected_project/dune-project outside_detected_project/main.ml)
+ (deps outside_detected_project/dune-project outside_detected_project/main.ml .ocamlformat)
  (action
   (with-outputs-to
    %{targets}
