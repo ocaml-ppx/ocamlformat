@@ -90,9 +90,12 @@
   (diff err_stdin_no_kind.expected err_stdin_no_kind.output)))
 
 (rule
- (with-outputs-to
-  stdin_and_impl.output
-  (system "%{bin:ocamlformat} --impl - < %{dep:sample/b.ml}")))
+ (targets stdin_and_impl.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "%{bin:ocamlformat} --root=. --impl - < %{dep:sample/b.ml}"))))
 
 (alias
  (name runtest)
@@ -100,9 +103,12 @@
   (diff stdin_and_impl.expected stdin_and_impl.output)))
 
 (rule
- (with-outputs-to
-  stdin_and_intf.output
-  (system "%{bin:ocamlformat} --intf - < %{dep:sample/a.mli}")))
+ (targets stdin_and_intf.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "%{bin:ocamlformat} --root=. --intf - < %{dep:sample/a.mli}"))))
 
 (alias
  (name runtest)
@@ -110,9 +116,12 @@
   (diff stdin_and_intf.expected stdin_and_intf.output)))
 
 (rule
- (with-outputs-to
-  stdin_and_name.output
-  (system "%{bin:ocamlformat} --name a.ml - < %{dep:sample/b.ml}")))
+ (targets stdin_and_name.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "%{bin:ocamlformat} --root=. --name a.ml - < %{dep:sample/b.ml}"))))
 
 (alias
  (name runtest)
@@ -120,9 +129,12 @@
   (diff stdin_and_name.expected stdin_and_name.output)))
 
 (rule
- (with-outputs-to
-  name_unknown_ext.output
-  (system "%{bin:ocamlformat} --name b.cpp %{dep:sample/b.ml}")))
+ (targets name_unknown_ext.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "%{bin:ocamlformat} --root=. --name b.cpp %{dep:sample/b.ml}"))))
 
 (alias
  (name runtest)
@@ -186,9 +198,12 @@
     err_several_files_and_name_inplace.output)))
 
 (rule
- (with-outputs-to
-  fmterr_file_and_name.output
-  (system "! %{bin:ocamlformat} --name foo.ml %{dep:sample/syntax_error.ml}")))
+ (targets fmterr_file_and_name.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "! %{bin:ocamlformat} --root=. --name foo.ml %{dep:sample/syntax_error.ml}"))))
 
 (alias
  (name runtest)
@@ -196,10 +211,13 @@
   (diff fmterr_file_and_name.expected fmterr_file_and_name.output)))
 
 (rule
- (with-outputs-to
-  fmterr_stdin_and_name.output
-  (system
-    "! %{bin:ocamlformat} --name foo.ml - < %{dep:sample/syntax_error.ml}")))
+ (targets fmterr_stdin_and_name.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system
+     "! %{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/syntax_error.ml}"))))
 
 (alias
  (name runtest)
@@ -207,9 +225,12 @@
   (diff fmterr_stdin_and_name.expected fmterr_stdin_and_name.output)))
 
 (rule
- (with-outputs-to
-  fmterr_file_bad_kind.output
-  (system "! %{bin:ocamlformat} --impl %{dep:sample/a.mli}")))
+ (targets fmterr_file_bad_kind.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "! %{bin:ocamlformat} --root=. --impl %{dep:sample/a.mli}"))))
 
 (alias
  (name runtest)
@@ -217,9 +238,12 @@
   (diff fmterr_file_bad_kind.expected fmterr_file_bad_kind.output)))
 
 (rule
- (with-outputs-to
-  fmterr_stdin_bad_kind.output
-  (system "! %{bin:ocamlformat} --impl - < %{dep:sample/a.mli}")))
+ (targets fmterr_stdin_bad_kind.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "! %{bin:ocamlformat} --root=. --impl - < %{dep:sample/a.mli}"))))
 
 (alias
  (name runtest)
@@ -227,9 +251,12 @@
   (diff fmterr_stdin_bad_kind.expected fmterr_stdin_bad_kind.output)))
 
 (rule
- (with-outputs-to
-  fmterr_file_and_name_bad_kind.output
-  (system "! %{bin:ocamlformat} --name foo.ml %{dep:sample/a.mli}")))
+ (targets fmterr_file_and_name_bad_kind.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "! %{bin:ocamlformat} --root=. --name foo.ml %{dep:sample/a.mli}"))))
 
 (alias
  (name runtest)
@@ -238,9 +265,12 @@
     fmterr_file_and_name_bad_kind.output)))
 
 (rule
- (with-outputs-to
-  fmterr_stdin_and_name_bad_kind.output
-  (system "! %{bin:ocamlformat} --name foo.ml - < %{dep:sample/a.mli}")))
+ (targets fmterr_stdin_and_name_bad_kind.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "! %{bin:ocamlformat} --root=. --name foo.ml - < %{dep:sample/a.mli}"))))
 
 (alias
  (name runtest)
@@ -249,9 +279,12 @@
     fmterr_stdin_and_name_bad_kind.output)))
 
 (rule
- (with-outputs-to
-  check_formatted.output
-  (run %{bin:ocamlformat} --check %{dep:sample/a.ml})))
+ (targets check_formatted.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (run %{bin:ocamlformat} --root=. --check %{dep:sample/a.ml}))))
 
 (alias
  (name runtest)
@@ -259,9 +292,12 @@
   (diff check_formatted.expected check_formatted.output)))
 
 (rule
- (with-outputs-to
-  check_not_formatted.output
-  (system "! %{bin:ocamlformat} --check %{dep:sample/b.ml}")))
+ (targets check_not_formatted.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "! %{bin:ocamlformat} --root=. --check %{dep:sample/b.ml}"))))
 
 (alias
  (name runtest)
@@ -269,9 +305,12 @@
   (diff check_not_formatted.expected check_not_formatted.output)))
 
 (rule
- (with-outputs-to
-  debug.output
-  (run %{bin:ocamlformat} --debug %{dep:sample/b.ml})))
+ (targets debug.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (run %{bin:ocamlformat} --root=. --debug %{dep:sample/b.ml}))))
 
 (alias
  (name runtest)
@@ -279,9 +318,12 @@
   (diff debug.expected debug.output)))
 
 (rule
- (with-outputs-to
-  max_iter_1_ok.output
-  (run ocamlformat --max-iters=1 %{dep:sample/a.ml})))
+ (targets max_iter_1_ok.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (run ocamlformat --root=. --max-iters=1 %{dep:sample/a.ml}))))
 
 (alias
  (name runtest)
@@ -289,9 +331,12 @@
   (diff max_iter_1_ok.expected max_iter_1_ok.output)))
 
 (rule
- (with-outputs-to
-  max_iter_1_failing.output
-  (system "! %{bin:ocamlformat} --max-iters=1 %{dep:sample/b.ml}")))
+ (targets max_iter_1_failing.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   %{targets}
+   (system "! %{bin:ocamlformat} --root=. --max-iters=1 %{dep:sample/b.ml}"))))
 
 (alias
  (name runtest)
