@@ -82,7 +82,7 @@ let emit_test test_name setup =
       {|
 (rule
  (targets %s.ocp.output)
- (deps .ocamlformat %s)
+ (deps .ocp-indent %s)
  (action
    (with-outputs-to %%{targets}
      (system "%s%%{bin:ocp-indent} %%{dep:%s}"))))

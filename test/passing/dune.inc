@@ -1376,7 +1376,7 @@
 
 (rule
  (targets js_source.ml.ocp.output)
- (deps .ocamlformat )
+ (deps .ocp-indent )
  (action
    (with-outputs-to %{targets}
      (system "%{bin:ocp-indent} %{dep:js_source.ml.ref}"))))
