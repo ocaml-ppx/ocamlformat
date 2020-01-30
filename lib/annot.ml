@@ -9,17 +9,22 @@ module type Annotated = sig
   val is_generated : t -> bool
 end
 
+module Ext = struct
+  let mk () = (Location.mkloc "merlin.hole" !default_loc, PStr [])
+
+  let is_generated = function
+    | (({ txt = "merlin.hole"; _ }, PStr []) : extension) -> true
+    | _ -> false
+end
+
 module Exp = struct
   type t = expression
 
-  let mk () =
-    let loc = !default_loc in
-    let id = Location.mkloc "merlin.hole" loc in
-    Exp.mk ~loc (Pexp_extension (id, PStr []))
+  let mk () = Exp.extension (Ext.mk ())
 
   let is_generated e =
     match e.pexp_desc with
-    | Pexp_extension ({ txt = "merlin.hole"; _ }, PStr []) -> true
+    | Pexp_extension ext when Ext.is_generated ext -> true
     | _ -> false
 end
 
@@ -37,13 +42,10 @@ end
 module Class_exp = struct
   type t = class_expr
 
-  let mk () =
-    let loc = !default_loc in
-    let id = Location.mkloc "merlin.hole" loc in
-    Cl.mk ~loc (Pcl_extension (id, PStr []))
+  let mk () = Cl.extension (Ext.mk ())
 
   let is_generated e =
     match e.pcl_desc with
-    | Pcl_extension ({ txt = "merlin.hole"; _ }, PStr []) -> true
+    | Pcl_extension ext when Ext.is_generated ext -> true
     | _ -> false
 end
