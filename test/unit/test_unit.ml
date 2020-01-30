@@ -300,33 +300,17 @@ module M : sig
     ("unclosed sig", unclosed_sig, [ ((2, 0), (3, 12)) ]);
   ]
 
-let test_impl =
-  let test name input expected =
-    let test_name = "impl " ^ name in
-    let test_fun () = Utils.check_impl ~name:test_name ~input ~expected in
-    (test_name, `Quick, test_fun)
-  in
-  List.map (fun (name, input, expected) -> test name input expected) impl_tests
-
-let test_intf =
-  let test name input expected =
-    let test_name = "intf " ^ name in
-    let test_fun () = Utils.check_intf ~name:test_name ~input ~expected in
-    (test_name, `Quick, test_fun)
-  in
-  List.map (fun (name, input, expected) -> test name input expected) intf_tests
-
-let test_use_file =
-  let test name input expected =
-    let test_name = "use_file " ^ name in
-    let test_fun () = Utils.check_use_file ~name:test_name ~input ~expected in
-    (test_name, `Quick, test_fun)
-  in
+let check_tests checker tests =
   List.map
-    (fun (name, input, expected) -> test name input expected)
-    (impl_tests @ intf_tests)
+    (fun (name, input, expected) ->
+      (name, `Quick, fun () -> checker ~name ~input ~expected))
+    tests
 
 let tests =
-  [ ("impl", test_impl); ("intf", test_intf); ("use_file", test_use_file) ]
+  [
+    ("impl", check_tests Utils.check_impl impl_tests);
+    ("intf", check_tests Utils.check_intf intf_tests);
+    ("use_file", check_tests Utils.check_use_file (impl_tests @ intf_tests));
+  ]
 
 let () = Alcotest.run "Parse_wyc" tests
