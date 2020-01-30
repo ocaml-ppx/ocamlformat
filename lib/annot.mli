@@ -1,17 +1,15 @@
-module Exp : sig
-  val mk : unit -> Migrate_ast.Parsetree.expression
+module type Annotated = sig
+  type t
 
-  val is_generated : Migrate_ast.Parsetree.expression -> bool
+  val mk : unit -> t
+
+  val is_generated : t -> bool
 end
 
-module Attr : sig
-  val mk : unit -> Migrate_ast.Parsetree.attribute
+open Migrate_ast.Parsetree
 
-  val is_generated : Migrate_ast.Parsetree.attribute -> bool
-end
+module Exp : Annotated with type t = expression
 
-module Class_exp : sig
-  val mk : unit -> Migrate_ast.Parsetree.class_expr
+module Attr : Annotated with type t = attribute
 
-  val is_generated : Migrate_ast.Parsetree.class_expr -> bool
-end
+module Class_exp : Annotated with type t = class_expr

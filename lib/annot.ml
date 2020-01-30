@@ -1,7 +1,17 @@
 open Migrate_ast.Ast_helper
 open Migrate_ast.Parsetree
 
+module type Annotated = sig
+  type t
+
+  val mk : unit -> t
+
+  val is_generated : t -> bool
+end
+
 module Exp = struct
+  type t = expression
+
   let mk () =
     let loc = !default_loc in
     let id = Location.mkloc "merlin.hole" loc in
@@ -14,6 +24,8 @@ module Exp = struct
 end
 
 module Attr = struct
+  type t = attribute
+
   let mk () = Attr.mk { txt = "merlin.hole.gen"; loc = Location.none } (PStr [])
 
   let is_generated a =
@@ -23,6 +35,8 @@ module Attr = struct
 end
 
 module Class_exp = struct
+  type t = class_expr
+
   let mk () =
     let loc = !default_loc in
     let id = Location.mkloc "merlin.hole" loc in
