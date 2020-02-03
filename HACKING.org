@@ -4,7 +4,8 @@
   Commit
 
 - Tag and push
-  =git tag a.b.c=
+  =git tag -a a.b.c=
+  The =-a= is important, otherwise the tag will be ignored by =dune-release=
   =git push --tags=
 
 - Create the archive, the =-t a.b.c= option is to ensure that the tag is not guessed wrong
