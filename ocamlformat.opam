@@ -20,7 +20,7 @@ license: "MIT"
 build: [
   ["ocaml" "tools/gen_version.mlt" "lib/Version.ml" version] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" name] {with-test & ocaml:version >= "4.08"}
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
   "ocaml" {>= "4.06"}
