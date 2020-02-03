@@ -4,17 +4,16 @@
   Commit
 
 - Tag and push
-  =git tag -a a.b.c=
-  The =-a= is important, otherwise the tag will be ignored by =dune-release=
+  =dune-release tag a.b.c=
   =git push --tags=
 
-- Create the archive, the =-t a.b.c= option is to ensure that the tag is not guessed wrong
-  =dune-release distrib -t a.b.c=
+- Create the archive
+  =dune-release distrib=
 
 - Publish the release on Github
-  =dune-release publish -t a.b.c distrib=
+  =dune-release publish distrib=
   To the prompt =Push tag a.b.c to ...?=, answer =s=
 
 - Release on Opam-repository
-  =dune-release opam pkg -t a.b.c=
-  =dune-release opam submit -t a.b.c=
+  =dune-release opam pkg=
+  =dune-release opam submit=
