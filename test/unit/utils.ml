@@ -10,14 +10,14 @@ module Location = struct
   let repr l = (Position.repr l.loc_start, Position.repr l.loc_end)
 end
 
-let check_content parse ~name ~input ~expected =
+let check_locs f ~name ~input ~locs =
   let lexbuf = Lexing.from_string input in
-  let actual = List.map Location.repr (parse lexbuf) in
+  let actual = List.map Location.repr (f lexbuf) in
   let ty = Alcotest.(list (pair (pair int int) (pair int int))) in
-  Alcotest.check ty name expected actual
+  Alcotest.check ty name locs actual
 
-let check_use_file = check_content Parse_wyc.use_file
+let check_use_file = check_locs Parse_wyc.Invalid_locations.use_file
 
-let check_impl = check_content Parse_wyc.implementation
+let check_impl = check_locs Parse_wyc.Invalid_locations.structure
 
-let check_intf = check_content Parse_wyc.interface
+let check_intf = check_locs Parse_wyc.Invalid_locations.signature
