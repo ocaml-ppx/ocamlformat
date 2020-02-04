@@ -251,36 +251,47 @@ module M = struct
     ( "many not closed",
       many_not_closed,
       [ ((8, 0), (14, 4)); ((21, 0), (21, 7)) ] );
-    ("escape_error", escape_error, [ (* TODO: fix *) ]);
-    ("expecting", expecting, [ (* TODO: fix *) ]);
-    ("pr7847", pr7847, [ (* TODO: fix *) ]);
+    ( "escape_error",
+      escape_error,
+      [ ((2, 0), (2, 18)); ((4, 0), (4, 8)); ((6, 0), (6, 9)) ] );
+    ( "expecting",
+      expecting,
+      [
+        ((6, 0), (8, 2));
+        ((10, 0), (12, 2));
+        ((14, 0), (16, 2));
+        ((22, 0), (24, 2));
+        ((26, 0), (28, 2));
+        ((30, 0), (32, 2));
+      ] );
+    ("pr7847", pr7847, [ ((1, 1), (1, 41)) ]);
     ( "unclosed class simpl expr1",
       unclosed_class_simpl_expr1,
       [ ((2, 0), (3, 14)) ] );
     ( "unclosed class simpl expr2",
       unclosed_class_simpl_expr2,
-      [ (* TODO: fix *) ] );
+      [ ((1, 1), (1, 35)) ] );
     ( "unclosed class simpl expr3",
       unclosed_class_simpl_expr3,
-      [ (* TODO: fix *) ] );
-    ("unclosed object", unclosed_object, [ (* TODO: fix *) ]);
+      [ ((1, 1), (1, 22)) ] );
+    ("unclosed object", unclosed_object, [ ((1, 1), (1, 15)) ]);
     ( "unclosed paren module expr1",
       unclosed_paren_module_expr1,
-      [ (* TODO: fix *) ] );
+      [ ((1, 1), (1, 33)) ] );
     ( "unclosed paren module expr2",
       unclosed_paren_module_expr2,
-      [ (* TODO: fix *) ] );
+      [ ((1, 1), (1, 23)) ] );
     ( "unclosed paren module expr3",
       unclosed_paren_module_expr3,
-      [ (* TODO: fix *) ] );
+      [ ((1, 1), (1, 20)) ] );
     ( "unclosed paren module expr4",
       unclosed_paren_module_expr4,
-      [ (* TODO: fix *) ] );
+      [ ((1, 1), (1, 21)) ] );
     ( "unclosed paren module expr5",
       unclosed_paren_module_expr5,
-      [ (* TODO: fix *) ] );
-    ("unclosed simple expr", unclosed_simple_expr, [ (* TODO: fix *) ]);
-    ("unclosed simple pattern", unclosed_simple_pattern, [ (* TODO: fix *) ]);
+      [ ((1, 1), (1, 19)) ] );
+    ("unclosed simple expr", unclosed_simple_expr, [ ((2, 0), (46, 3)) ]);
+    ("unclosed simple pattern", unclosed_simple_pattern, [ ((2, 0), (34, 2)) ]);
     ("unclosed struct", unclosed_struct, [ ((2, 0), (3, 12)) ]);
   ]
 
@@ -296,7 +307,7 @@ module M : sig
     ("unclosed class signature", unclosed_class_signature, [ ((1, 1), (1, 17)) ]);
     ( "unclosed paren module type",
       unclosed_paren_module_type,
-      [ (* TODO: fix *) ] );
+      [ ((1, 1), (1, 20)) ] );
     ("unclosed sig", unclosed_sig, [ ((2, 0), (3, 12)) ]);
   ]
 
