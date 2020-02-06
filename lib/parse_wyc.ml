@@ -202,6 +202,10 @@ let mk_parsable p m source =
                   Buffer.add_string buffer wrapper_opn;
                   Buffer.add_char buffer c;
                   locs )
+                else if i = col_end - 1 && i = String.length source - 1 then (
+                  Buffer.add_char buffer c;
+                  Buffer.add_string buffer wrapper_cls;
+                  t )
                 else if i < col_end then (
                   Buffer.add_char buffer c;
                   locs )
