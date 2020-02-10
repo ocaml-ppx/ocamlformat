@@ -82,8 +82,8 @@ let () =
     (let module M = M in
     ()) [@foo]];
   [%foo
-    (let open M in
-    ()) [@foo]];
+    ((let open M in
+     ()) [@foo])];
   [%foo fun [@foo] x -> ()];
   [%foo
     function[@foo]

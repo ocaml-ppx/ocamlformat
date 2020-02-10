@@ -4,7 +4,7 @@ let () =
   [%foo
     (let module M = M in
     ()) [@foo]] ;
-  [%foo M.(()) [@foo]] ;
+  [%foo (M.(()) [@foo])] ;
   [%foo fun [@foo] x -> ()] ;
   [%foo function[@foo] x -> ()] ;
   [%foo try[@foo] () with _ -> ()] ;
