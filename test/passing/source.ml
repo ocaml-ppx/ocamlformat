@@ -7356,3 +7356,6 @@ module Indexop = struct
 end
 
 type t = |
+
+;;
+M.(Some x) [@foo]
