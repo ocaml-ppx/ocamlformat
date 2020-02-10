@@ -2264,11 +2264,13 @@ end = struct
     assert_check_exp xexp ;
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
-    || has_trailing_attributes_exp exp
     || Hashtbl.find marked_parenzed_inner_nested_match exp
        |> Option.value ~default:false
     ||
     match (ctx, exp) with
+    | Str {pstr_desc= Pstr_eval _; _}, _ -> false
+    | _, exp when has_trailing_attributes_exp exp ->
+        true
     | ( Exp {pexp_desc= Pexp_construct ({txt= Lident id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
       when is_infix_id id ->
@@ -2276,7 +2278,6 @@ end = struct
     | Exp {pexp_desc= Pexp_extension _; _}, {pexp_desc= Pexp_tuple _; _} ->
         false
     | Pld _, {pexp_desc= Pexp_tuple _; _} -> false
-    | Str {pstr_desc= Pstr_eval _; _}, {pexp_desc= Pexp_tuple _; _} -> false
     | Cl {pcl_desc= Pcl_apply _; _}, _ -> parenze ()
     | Exp {pexp_desc= Pexp_ifthenelse (_, e, _); _}, {pexp_desc; _}
       when !parens_ite && e == exp && ifthenelse pexp_desc ->
