@@ -1,3 +1,10 @@
+### (unreleased)
+
+#### Bug fixes
+
+  + Fix missing parentheses around `let open` (#1229) (Jules Aguillon)
+    eg. `M.f (M.(x) [@attr])` would be formatted to `M.f M.(x) [@attr]`, which would crash OCamlformat
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
