@@ -8,6 +8,9 @@
   + Remove unecessary parentheses with attributes in extensions and eval items (#1230) (Jules Aguillon)
     eg. the expression `[%ext (() [@attr])]` or the structure item `(() [@attr]) ;;`
 
+  + Fix dropped comment after a function after an infix (#1231) (Jules Aguillon)
+    eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

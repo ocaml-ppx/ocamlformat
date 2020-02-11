@@ -1543,6 +1543,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     when is_infix_id id && not c.conf.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
+      let cmts_after = Cmts.fmt_after c pexp_loc in
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
@@ -1576,7 +1577,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@ ->" ) )
                $ pre_body )
            $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
-           $ body ))
+           $ body $ cmts_after ))
   | Pexp_apply
       ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
           ; pexp_attributes= []
@@ -1588,6 +1589,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           ) ] )
     when is_infix_id id && not c.conf.break_infix_before_func ->
       let cmts_before = Cmts.fmt_before c pexp_loc in
+      let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
       let indent = Params.function_indent c.conf ~ctx in
@@ -1603,7 +1605,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ str "function"
                        $ fmt_extension_suffix c ext )
                    $ fmt_attributes c ~key:"@" pexp_attributes ) )
-           $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )" ))
+           $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )"
+           $ cmts_after ))
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
         ; pexp_attributes= []
