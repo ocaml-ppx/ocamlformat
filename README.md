@@ -9,6 +9,7 @@ OCamlFormat works by parsing source code using the OCaml compiler's standard par
 See the source code of OCamlFormat itself and [Infer](https://github.com/facebook/infer) for examples of the styles of code it produces.
 
 ## Table of Contents
+- [FAQ for new users](#faq-for-new-users)
 - [Features](#features)
   - [Overview](#overview)
   - [Code style](#code-style)
@@ -20,6 +21,63 @@ See the source code of OCamlFormat itself and [Infer](https://github.com/faceboo
 - [Documentation](#documentation)
 - [Community](#community)
 - [License](#license)
+
+## FAQ for new users
+
+Hello, new user! Welcome! :wave:
+
+If you are here, you are probably interested in using a formatting tool for your
+code base, so that you do not have to worry about formatting it by hand, and to
+speed up code review by focusing on the important parts.
+
+Ocamlformat is probably what you are after!
+But there are some things that you should know before formatting all the things.
+
+### Should I use ocamlformat?
+
+Ocamlformat is already being used by several projects, but it comes with some
+important caveats. This FAQ should help you decide if it can work for you.
+
+Ocamlformat is beta software.
+While we do not follow [SemVer](https://semver.org/), we expect the program to change considerably before we reach version 1.0.0.
+In particular, upgrading the ocamlformat package will cause your program to get reformatted.
+Sometimes it is relatively pain-free, but sometimes it will make a diff in almost every file.
+This can be a hard price to pay, since this means losing the corresponding git history.
+
+If you use a custom configuration, options you rely on might also get removed in
+a later release.
+
+### What configuration should I use?
+
+The recommended way is to use a versioned default profile, such as:
+
+```
+version=0.13.0
+```
+
+(or replace with the output of `ocamlformat --version`)
+
+This ensures two things:
+- you are using the default formatting configuration.
+- the version that you use to format is recorded somewhere.
+  If somebody else working on the project tries to use a different version,
+  they will see an error message instead of reformatting the whole project in a
+  different way.
+
+### Can ocamlformat support my style?
+
+No.
+It is better to see ocamlformat as a tool to apply *a* style, rather than a tweakable tool to enforce your existing style.
+There are some knobs that you can turn, such as overriding `margin` to determine the maximum line width.
+But it is better not to set individual options to override what the default profile is doing.
+
+To quote (and sed) [prettier's page on option philosophy](https://prettier.io/docs/en/option-philosophy.html):
+
+> Ocamlformat has a few options because of history. **But we don’t want more of them.**
+>
+> By far the biggest reason for adopting ocamlformat is to stop all the on-going debates over styles.
+>
+> The more options ocamlformat has, the further from the above goal it gets. The debates over styles just turn into debates over which ocamlformat options to use.
 
 ## Features
 
