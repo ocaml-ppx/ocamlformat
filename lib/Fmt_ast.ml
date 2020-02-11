@@ -2081,21 +2081,21 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         if has_attr then (parens, true) else (false, parens)
       in
       hovbox 0
-        ( fmt_if outer_parens "("
-        $ hvbox 0
-            ( fits_breaks_if inner_parens "" "("
-            $ fits_breaks "" "let "
-            $ Cmts.fmt c popen_loc
-                ( fits_breaks "" (if override then "open! " else "open ")
-                $ fmt_module_statement c ~attributes noop
-                    (sub_mod ~ctx popen_expr) )
-            $ fits_breaks opn " in"
-            $ fmt_or_k force_fit_if (fmt "@;<0 2>")
-                (fits_breaks "" ~hint:(1000, 0) "")
-            $ fmt_expression c (sub_exp ~ctx e0)
-            $ fits_breaks cls ""
-            $ fits_breaks_if inner_parens "" ")" )
-        $ fmt_atrs $ fmt_if outer_parens ")" )
+        (wrap_if outer_parens "(" ")"
+           ( hvbox 0
+               ( fits_breaks_if inner_parens "" "("
+               $ fits_breaks "" "let "
+               $ Cmts.fmt c popen_loc
+                   ( fits_breaks "" (if override then "open! " else "open ")
+                   $ fmt_module_statement c ~attributes noop
+                       (sub_mod ~ctx popen_expr) )
+               $ fits_breaks opn " in"
+               $ fmt_or_k force_fit_if (fmt "@;<0 2>")
+                   (fits_breaks "" ~hint:(1000, 0) "")
+               $ fmt_expression c (sub_exp ~ctx e0)
+               $ fits_breaks cls ""
+               $ fits_breaks_if inner_parens "" ")" )
+           $ fmt_atrs ))
   | Pexp_match (e0, cs) | Pexp_try (e0, cs) -> (
       let keyword =
         match exp.pexp_desc with
