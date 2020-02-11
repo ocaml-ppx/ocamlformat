@@ -217,3 +217,5 @@ open[@attr] A (B)
 open[@attr] (A : S)
 open[@attr] (val x)
 open[@attr] [%ext]
+
+let g = M.f ((let open M in x) [@attr])

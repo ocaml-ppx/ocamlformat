@@ -10,20 +10,20 @@ let () =
   [%foo try[@foo] () with _ -> ()] ;
   [%foo if [@foo] () then () else ()] ;
   [%foo
-    ( while () do
-        ()
-      done [@foo] )] ;
+    while () do
+      ()
+    done [@foo]] ;
   [%foo
-    ( for x = () to () do
-        ()
-      done [@foo] )] ;
+    for x = () to () do
+      ()
+    done [@foo]] ;
   () ;%foo
   () ;
-  [%foo (assert true [@foo])] ;
-  [%foo (lazy x [@foo])] ;
-  [%foo (object end [@foo])] ;
+  [%foo assert true [@foo]] ;
+  [%foo lazy x [@foo]] ;
+  [%foo object end [@foo]] ;
   [%foo (3 [@foo])] ;
-  [%foo (new x [@foo])] ;
+  [%foo new x [@foo]] ;
   [%foo
     match[@foo] () with
     | [%foo? (* Pattern expressions *)

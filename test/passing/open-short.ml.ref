@@ -272,3 +272,5 @@ open (A : S) [@@attr]
 open (val x) [@@attr]
 
 open [%ext] [@@attr]
+
+let g = M.f (M.(x) [@attr])
