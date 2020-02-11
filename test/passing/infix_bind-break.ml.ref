@@ -204,3 +204,16 @@ let f =
   >>= (* fooooooooooooooo fooooooooooooooo fooooooooooooooo foooooooooooooooo *)
   function
   | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
+
+(** The tests below are testing a dropped comment with
+    `--no-break-infix-before-func` *)
+
+let _ = x |> fun y -> y (*  *)
+
+let _ = x |> function y -> y (*  *)
+
+let _ = match () with A -> ( x |> function y -> y (*  *) ) | B -> ()
+
+let _ = x |> function y -> ( function _ -> y (* A *) ) (* B *)
+
+let _ = () (* This is needed here to avoid the comment above from moving *)
