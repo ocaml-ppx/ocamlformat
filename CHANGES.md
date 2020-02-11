@@ -5,6 +5,9 @@
   + Fix missing parentheses around `let open` (#1229) (Jules Aguillon)
     eg. `M.f (M.(x) [@attr])` would be formatted to `M.f M.(x) [@attr]`, which would crash OCamlformat
 
+  + Remove unecessary parentheses in extensions with attributes (#1230) (Jules Aguillon)
+    eg. `[%ext () [@attr]]`
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
