@@ -217,7 +217,6 @@ ml` and then running `ocamlformat` on this output.
 * forum: <https://discuss.ocaml.org/tags/ocamlformat>
 * github: <https://github.com/ocaml-ppx/ocamlformat>
 * issues: <https://github.com/ocaml-ppx/ocamlformat/issues>
-* developers mailing list: <http://lists.ocaml.org/listinfo/ocamlformat-dev>
 
 See [CONTRIBUTING](./CONTRIBUTING.md) for how to help out.
 
