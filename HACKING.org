@@ -1,10 +1,19 @@
-* release procedure
-- git checkout -t -b vM.N.O
-- topkg tag M.N.O
-- dune subst
-- ocaml tools/gen_version.mlt src/Version.ml M.N.O
-- git add src/Version.ml
-- git commit -a -m vM.N.O
-- topkg tag M.N.O -f
-- git push origin refs/heads/vM.N.O refs/tags/M.N.O
-- opam publish ocamlformat.opam
+* Release procedure
+
+- In =CHANGES.md=, change =(unreleased)= with the current date
+  Commit
+
+- Tag and push
+  =dune-release tag a.b.c=
+  =git push --tags=
+
+- Create the archive
+  =dune-release distrib=
+
+- Publish the release on Github
+  =dune-release publish distrib=
+  To the prompt =Push tag a.b.c to ...?=, answer =s=
+
+- Release on Opam-repository
+  =dune-release opam pkg=
+  =dune-release opam submit=
