@@ -131,18 +131,21 @@ end = struct
 
   let to_list map = List.concat (Map.data map)
 
-  let split t (loc : Location.t) =
-    let addo m kvo =
-      Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
+  (** Assuming loc_start <= loc_end, the locs are split in 5 sets:
+
+      - a: before start
+      - b: at start
+      - c: after start, before end
+      - d: at end
+      - e: after end *)
+  let split t {Location.loc_start; loc_end; _} =
+    let add_opt kvo init =
+      Option.fold kvo ~init ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
-    let partition map pos =
-      let before, equal, after = Map.split map pos in
-      let after_or_equal = addo after equal in
-      (before, after_or_equal)
-    in
-    let nafter, after = partition t loc.loc_end in
-    let before, within = partition nafter loc.loc_start in
-    (before, within, after)
+    let ( ++ ) = add_opt in
+    let a_b_c, d, e = Map.split t loc_end in
+    let a, b, c = Map.split a_b_c loc_start in
+    (a, b ++ c, d ++ e)
 end
 
 (** Heuristic to determine if two locations should be considered "adjacent".
