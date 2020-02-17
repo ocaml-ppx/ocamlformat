@@ -155,13 +155,13 @@ OPTIONS (CODE FORMATTING STYLE)
            Add parentheses around matching constructs that fit on a single
            line. The flag is unset by default.
 
-       --doc-comments={after|before}
-           Doc comments position. after puts doc comments after the
+       --doc-comments={before|after}
+           Doc comments position. before puts comments before the
+           corresponding code. after puts doc comments after the
            corresponding code. This option has no effect on variant
            declarations because that would change their meaning and on
-           structures, signatures and objects for readability. before puts
-           comments before the corresponding code. The default value is
-           after.
+           structures, signatures and objects for readability. The default
+           value is before.
 
        --doc-comments-padding=PADDING
            Add PADDING spaces before doc comments in type declarations. The
