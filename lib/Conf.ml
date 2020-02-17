@@ -499,17 +499,17 @@ module Formatting = struct
       (fun conf -> conf.doc_comments)
 
   let doc_comments_val =
-    let doc = "Doc comments position on val and external declarations." in
+    let doc =
+      "Documentation comments position on $(b,val) and $(b,external) \
+       declarations."
+    in
     let names = ["doc-comments-val"] in
     let all =
       [ ( "after"
         , `After
-        , "$(b,after) puts doc comments after the corresponding val or \
-           external declaration." )
-      ; ( "before"
-        , `Before
-        , "$(b,before) puts doc comments after the corresponding val or \
-           external declaration." ) ]
+        , "$(b,after) puts documentation comments after their corresponding \
+           declarations." )
+      ; ("before", `Before, "$(b,before) puts them before.") ]
     in
     C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with doc_comments_val= x})
