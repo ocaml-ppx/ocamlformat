@@ -28,7 +28,7 @@ end = struct
   (* Rewrite trivial indirections:
        Seq [x] => x
        ys @ [Seq xs] => ys @ xs
-   *)
+  *)
 
   let rec normalize_actions = function
     | [] -> []
@@ -50,7 +50,7 @@ end = struct
      The [bindings] array contains all action lists that are worth sharing.
      The [lookup] function returns the index of an action list if is
      is in the array.
-   *)
+  *)
 
   let share actions =
     let occurrence_table = Hashtbl.create 113 in

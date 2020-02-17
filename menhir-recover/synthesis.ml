@@ -210,7 +210,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
             | st' -> var (Tail (st', prod, pos + 1))
             | exception Not_found ->
                 (*report "no transition: #%d (%d,%d)\n"
-              st.lr1_index prod.p_index pos;*)
+                  st.lr1_index prod.p_index pos;*)
                 const bottom
           in
           fun v ->
@@ -219,17 +219,17 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
             (Cost.add costh costt, Seq actionh :: actiont)
 
   let solve =
-    (*  For > 4.02
-        let module Solver = Fix.Fix.ForType (struct
-          type t = variable
-        end) (struct
-          type property = Cost.t * action list
-          let bottom = (Cost.infinite, [Abort])
-          let equal (x, _ : property) (y, _ : property) : bool =
-            Cost.compare x y = 0
-          let is_maximal _ = false
-        end)
-        in
+    (* For > 4.02
+       let module Solver = Fix.Fix.ForType (struct
+         type t = variable
+       end) (struct
+         type property = Cost.t * action list
+         let bottom = (Cost.infinite, [Abort])
+         let equal (x, _ : property) (y, _ : property) : bool =
+           Cost.compare x y = 0
+         let is_maximal _ = false
+       end)
+       in
     *)
     let module Solver =
       Fix.Make
