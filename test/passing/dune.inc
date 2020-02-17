@@ -671,6 +671,17 @@
  (action (diff doc_comments-before.ml.ref doc_comments-before.ml.output)))
 
 (rule
+ (targets doc_comments-val-after.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:doc_comments-val-after.ml.opts} %{dep:doc_comments.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff doc_comments-val-after.ml.ref doc_comments-val-after.ml.output)))
+
+(rule
  (targets doc_comments.ml.output)
  (deps .ocamlformat )
  (action

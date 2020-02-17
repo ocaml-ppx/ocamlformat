@@ -417,8 +417,8 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
       let epi = docstring_epi ?standalone ?next ?epi ~floating in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
 
-let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
-    doc2 =
+let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
+    ?(fit = false) c doc1 doc2 =
   match (doc1, doc2) with
   | Some _, Some _ ->
       ( fmt_docstring c ~epi:(fmt "@\n") doc1
@@ -442,25 +442,34 @@ let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
                (parse_docstring ~loc txt, doc))
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
+      let placement =
+        if force_before then `Before
+        else if
+          Poly.( = ) c.conf.doc_comments_tag_only `Fit
+          && fit && is_tag_only doc
+        then `Fit
+        else
+          let ((`Before | `After) as conf) =
+            if is_val then c.conf.doc_comments_val else c.conf.doc_comments
+          in
+          conf
+      in
       let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in
-      let before () = (floating_doc $ fmt_doc ~epi:(fmt "@\n") doc, noop) in
-      let after ?(pro = fmt "@\n") () = (floating_doc, fmt_doc ~pro doc) in
-      match c.conf with
-      | _ when force_before -> before ()
-      | {doc_comments_tag_only= `Fit; _} when fit && is_tag_only doc ->
-          let pro = break c.conf.doc_comments_padding 0 in
-          after ~pro ()
-      | {doc_comments= `Before; _} -> before ()
-      | {doc_comments= `After; _} -> after () )
+      match placement with
+      | `Before -> (floating_doc $ fmt_doc ~epi:(fmt "@\n") doc, noop)
+      | `After -> (floating_doc, fmt_doc ~pro:(fmt "@\n") doc)
+      | `Fit ->
+          ( floating_doc
+          , fmt_doc ~pro:(break c.conf.doc_comments_padding 0) doc ) )
 
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
     [doc_before, doc_after, attrs] *)
-let fmt_docstring_around_item ?force_before ?fit c attrs =
+let fmt_docstring_around_item ?is_val ?force_before ?fit c attrs =
   let doc1, attrs = doc_atrs attrs in
   let doc2, attrs = doc_atrs attrs in
   let doc_before, doc_after =
-    fmt_docstring_around_item' ?force_before ?fit c doc1 doc2
+    fmt_docstring_around_item' ?is_val ?force_before ?fit c doc1 doc2
   in
   (doc_before, doc_after, attrs)
 
@@ -2766,10 +2775,12 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
   update_config_maybe_disabled c pctf_loc pctf_attributes
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c pctf_loc in
-  let doc, atrs = doc_atrs pctf_attributes in
+  let doc_before, doc_after, atrs =
+    fmt_docstring_around_item ~is_val:true ~fit:true c pctf_attributes
+  in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
   fmt_cmts
-    ( fmt_docstring c ~epi:(fmt "@\n") doc
+    ( doc_before
     $ hvbox 0
         ( match pctf_desc with
         | Pctf_inherit ct ->
@@ -2799,7 +2810,7 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
             fmt_docstring c ~standalone:true ~epi:noop doc
             $ fmt_attributes c ~key:"@@@" atrs
         | Pctf_extension ext -> fmt_extension c ctx "%%" ext )
-    $ fmt_atrs )
+    $ fmt_atrs $ doc_after )
 
 and fmt_cases c ctx cs =
   let pattern_len {pc_lhs; pc_guard; _} =
@@ -2909,7 +2920,7 @@ and fmt_value_description c ctx vd =
   @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item c pval_attributes
+    fmt_docstring_around_item ~is_val:true c pval_attributes
   in
   let fmt_val_prim s =
     if String.exists s ~f:(function ' ' | '\n' -> true | _ -> false) then

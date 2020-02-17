@@ -52,13 +52,13 @@ type 'a u = [< `A | `B of < > > `B ] as 'a
 (** about a *)
 class type a =
   object
-    (** about a *)
     method a : int
+    (** about a *)
 
     (** floatting *)
 
-    (** about b *)
     method b : int
+    (** about b *)
   end
 
 (** floatting *)
