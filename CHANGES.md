@@ -122,6 +122,8 @@
   + Fix parenthesizing of optional arguments rebound to non-variables, e.g. `let
     f ?a:(A) = ()` rather than the unparsable `let f ?a:A = ()` (#1305) (Craig Ferguson)
 
+  + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine, Guillaume Petiot)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
@@ -163,7 +165,6 @@
   + Fix dropped comments around module pack expressions (#1214) (Jules Aguillon)
   + Fix regression of comment position in list patterns (#1141) (Josh Berdine)
   + Fix: adjust definition of Location.is_single_line to reflect margin (#1102) (Josh Berdine)
-  + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine)
 
 #### Documentation
 
