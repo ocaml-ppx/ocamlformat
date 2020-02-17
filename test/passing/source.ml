@@ -7359,3 +7359,5 @@ type t = |
 
 ;;
 M.(Some x) [@foo]
+
+[@@@foo:]
