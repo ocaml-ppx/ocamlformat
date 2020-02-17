@@ -180,7 +180,7 @@ let mk_parsable p m source =
   match invalid_locs p m lexbuf with
   | [] -> source
   | invalid_locs -> (
-      let wrapper_opn, wrapper_cls = ("[%%invalid-ast-node \"", "\"]") in
+      let wrapper_opn, wrapper_cls = ("[%%invalid.ast.node \"", "\"]") in
       let wrapper_len = String.length wrapper_opn + String.length wrapper_cls in
       let len =
         String.length source + (List.length invalid_locs * wrapper_len)

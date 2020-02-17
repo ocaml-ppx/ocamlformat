@@ -21,7 +21,7 @@ module Make_parsable : sig
 end
 ```
 
-`Make_parsable.structure input` tries to parse the `input` string as a structure node of the AST, if there are invalid parts in the input, they are wrapped inside `[%%invalid-ast-node "..."]` attributes so the output string can successfully be parsed as a structure node by the standard OCaml parser.
+`Make_parsable.structure input` tries to parse the `input` string as a structure node of the AST, if there are invalid parts in the input, they are wrapped inside `[%%invalid.ast.node "..."]` attributes so the output string can successfully be parsed as a structure node by the standard OCaml parser.
 
 For a more fine-grained control on the invalid parts of the input, you can also use:
 
