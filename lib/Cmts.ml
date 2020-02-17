@@ -128,49 +128,27 @@ end = struct
     end)
   end
 
-  module Order_by_end = struct
-    type t = Location.t
+  type t = Cmt.t list Map.M(Order_by_start).t
 
-    include Comparator.Make (struct
-      include Location
+  let empty = Map.empty (module Order_by_start)
 
-      let compare = compare_end
-    end)
-  end
-
-  type smap = Cmt.t list Map.M(Order_by_start).t
-
-  type emap = Cmt.t list Map.M(Order_by_end).t
-
-  type t = smap * emap
-
-  let empty_start = Map.empty (module Order_by_start)
-
-  let empty_end = Map.empty (module Order_by_end)
-
-  let empty : t = (empty_start, empty_end)
-
-  let is_empty (smap, _) = Map.is_empty smap
+  let is_empty = Map.is_empty
 
   let of_list cmts =
-    List.fold cmts ~init:empty ~f:(fun (smap, emap) cmt ->
+    List.fold cmts ~init:empty ~f:(fun map cmt ->
         let {Cmt.loc; _} = cmt in
-        ( Map.add_multi smap ~key:loc ~data:cmt
-        , Map.add_multi emap ~key:loc ~data:cmt ))
+        Map.add_multi map ~key:loc ~data:cmt)
 
-  let to_list (smap, _) = List.concat (Map.data smap)
+  let to_list map = List.concat (Map.data map)
 
-  let split (t : t) (loc : Location.t) =
+  let split t (loc : Location.t) =
     let addo m kvo =
       Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
-    let partition ((smap, emap) : t) (loc : Location.t) =
-      let s_before, s_equal, s_after = Map.split smap loc in
-      let s_after = addo s_after s_equal in
-      let e_before, e_after =
-        Map.partitioni_tf emap ~f:(fun ~key ~data:_ -> Map.mem s_before key)
-      in
-      ((s_before, e_before), (s_after, e_after))
+    let partition map (loc : Location.t) =
+      let before, equal, after = Map.split map loc in
+      let after_or_equal = addo after equal in
+      (before, after_or_equal)
     in
     let nafter, after = partition t {loc with loc_start= loc.loc_end} in
     let before, within =
