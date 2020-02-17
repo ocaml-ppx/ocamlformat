@@ -186,3 +186,11 @@ module M = struct
   (* ______________________________________ *)
   [@@deriving variants, sexp_of]
 end
+
+let _ = {<>} [@a]
+
+let _ = f ({<>} [@a])
+
+let _ = {<x = 1>} [@a]
+
+let _ = f ({<x = 1>} [@a])
