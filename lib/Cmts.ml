@@ -118,26 +118,16 @@ module CmtSet : sig
       that end before [loc_start], those that start after [loc_end], and
       those within the loc. *)
 end = struct
-  module Order_by_start = struct
-    type t = Location.t
+  type t = Cmt.t list Map.M(Position).t
 
-    include Comparator.Make (struct
-      include Location
-
-      let compare = compare_start
-    end)
-  end
-
-  type t = Cmt.t list Map.M(Order_by_start).t
-
-  let empty = Map.empty (module Order_by_start)
+  let empty = Map.empty (module Position)
 
   let is_empty = Map.is_empty
 
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun map cmt ->
-        let {Cmt.loc; _} = cmt in
-        Map.add_multi map ~key:loc ~data:cmt)
+        let pos = cmt.Cmt.loc.loc_start in
+        Map.add_multi map ~key:pos ~data:cmt)
 
   let to_list map = List.concat (Map.data map)
 
@@ -145,15 +135,13 @@ end = struct
     let addo m kvo =
       Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
-    let partition map (loc : Location.t) =
-      let before, equal, after = Map.split map loc in
+    let partition map pos =
+      let before, equal, after = Map.split map pos in
       let after_or_equal = addo after equal in
       (before, after_or_equal)
     in
-    let nafter, after = partition t {loc with loc_start= loc.loc_end} in
-    let before, within =
-      partition nafter {loc with loc_end= loc.loc_start}
-    in
+    let nafter, after = partition t loc.loc_end in
+    let before, within = partition nafter loc.loc_start in
     (before, within, after)
 end
 
