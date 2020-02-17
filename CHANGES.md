@@ -28,6 +28,8 @@
   + Fix formatting of attributes on object overrides `{< >}` (#1238) (Etienne
     Millon)
 
+  + Fix attributes on coercion (#1239) (Etienne Millon)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

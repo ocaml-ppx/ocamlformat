@@ -2337,11 +2337,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_atrs ))
   | Pexp_coerce (e1, t1, t2) ->
       hvbox 2
-        (wrap_fits_breaks ~space:false c.conf "(" ")"
-           ( fmt_expression c (sub_exp ~ctx e1)
-           $ opt t1 (fmt "@ : " >$ (sub_typ ~ctx >> fmt_core_type c))
-           $ fmt "@ :> "
-           $ fmt_core_type c (sub_typ ~ctx t2)
+        (wrap_if (parens && has_attr) "(" ")"
+           ( wrap_fits_breaks ~space:false c.conf "(" ")"
+               ( fmt_expression c (sub_exp ~ctx e1)
+               $ opt t1 (fmt "@ : " >$ (sub_typ ~ctx >> fmt_core_type c))
+               $ fmt "@ :> "
+               $ fmt_core_type c (sub_typ ~ctx t2) )
            $ fmt_atrs ))
   | Pexp_while (e1, e2) ->
       hvbox 0
