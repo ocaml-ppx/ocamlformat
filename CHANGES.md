@@ -11,6 +11,8 @@
   + Fix dropped comment after a function after an infix (#1231) (Jules Aguillon)
     eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
 
+  + Fix formatting of empty signature payload `[%a:]` (#1236) (Etienne Millon)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

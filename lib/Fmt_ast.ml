@@ -567,7 +567,9 @@ and fmt_payload c ctx pld =
   | PStr mex ->
       fmt_if (not (List.is_empty mex)) "@ " $ fmt_structure c ctx mex
   | PSig mty ->
-      fmt_if (not (List.is_empty mty)) ":@ " $ fmt_signature c ctx mty
+      str ":"
+      $ fmt_if (not (List.is_empty mty)) "@ "
+      $ fmt_signature c ctx mty
   | PTyp typ -> fmt ":@ " $ fmt_core_type c (sub_typ ~ctx typ)
   | PPat (pat, exp) ->
       let fmt_when exp =
