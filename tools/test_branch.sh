@@ -43,7 +43,7 @@ opts_b=${2-$opts_a}
 rev_b=$(git rev-parse "${opt_b:-HEAD}")
 rev_a=$(git rev-parse "${opt_a:-$(git merge-base master "$rev_b")}")
 
-if [[ "$rev_a" = "$rev_b" ]]; then
+if [[ "$rev_a" = "$rev_b" && "$opts_a" = "$opts_b" ]]; then
   echo "The base branch is the same as the branch to test ($rev_a)"
   exit 1
 fi
