@@ -10,15 +10,11 @@
 ######################################################################
 
 .PHONY: default
-default: exe gen-help
+default: exe
 
 .PHONY: exe
 exe:
 	dune build bin/ocamlformat.exe
-
-.PHONY: gen-help
-gen-help:
-	dune build ocamlformat-help.txt
 
 .PHONY: clean
 clean:
