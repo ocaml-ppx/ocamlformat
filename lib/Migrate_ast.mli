@@ -42,11 +42,13 @@ module Asttypes : sig
 end
 
 module Position : sig
-  val column : Lexing.position -> int
+  type t = Lexing.position
 
-  val compare : Lexing.position -> Lexing.position -> int
+  include Comparator.S with type t := t
 
-  val distance : Lexing.position -> Lexing.position -> int
+  val column : t -> int
+
+  val distance : t -> t -> int
 end
 
 module Location : sig

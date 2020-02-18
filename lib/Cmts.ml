@@ -118,43 +118,34 @@ module CmtSet : sig
       that end before [loc_start], those that start after [loc_end], and
       those within the loc. *)
 end = struct
-  module Order_by_start = struct
-    type t = Location.t
+  type t = Cmt.t list Map.M(Position).t
 
-    include Comparator.Make (struct
-      include Location
-
-      let compare = compare_start
-    end)
-  end
-
-  type t = Cmt.t list Map.M(Order_by_start).t
-
-  let empty = Map.empty (module Order_by_start)
+  let empty = Map.empty (module Position)
 
   let is_empty = Map.is_empty
 
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun map cmt ->
-        let {Cmt.loc; _} = cmt in
-        Map.add_multi map ~key:loc ~data:cmt)
+        let pos = cmt.Cmt.loc.loc_start in
+        Map.add_multi map ~key:pos ~data:cmt)
 
   let to_list map = List.concat (Map.data map)
 
-  let split t (loc : Location.t) =
-    let addo m kvo =
-      Option.fold kvo ~init:m ~f:(fun m (key, data) -> Map.set m ~key ~data)
+  (** Assuming loc_start <= loc_end, the locs are split in 5 sets:
+
+      - a: before start
+      - b: at start
+      - c: after start, before end
+      - d: at end
+      - e: after end *)
+  let split t {Location.loc_start; loc_end; _} =
+    let add_opt kvo init =
+      Option.fold kvo ~init ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
-    let partition map (loc : Location.t) =
-      let before, equal, after = Map.split map loc in
-      let after_or_equal = addo after equal in
-      (before, after_or_equal)
-    in
-    let nafter, after = partition t {loc with loc_start= loc.loc_end} in
-    let before, within =
-      partition nafter {loc with loc_end= loc.loc_start}
-    in
-    (before, within, after)
+    let ( ++ ) = add_opt in
+    let a_b_c, d, e = Map.split t loc_end in
+    let a, b, c = Map.split a_b_c loc_start in
+    (a, b ++ c, d ++ e)
 end
 
 (** Heuristic to determine if two locations should be considered "adjacent".
