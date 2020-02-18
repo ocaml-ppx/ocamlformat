@@ -2191,8 +2191,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    | `Closing_on_separate_line -> "@;<1000 -2>)" ) )) )
   | Pexp_pack me ->
       let fmt_mod m =
-        Params.wrap_exp c.conf c.source ~parens:true ~loc:pexp_loc
-          (str "module " $ m $ fmt_atrs)
+        wrap_if parens "(" ")"
+          ( Params.wrap_exp c.conf c.source ~parens:true ~loc:pexp_loc
+              (str "module " $ m)
+          $ fmt_atrs )
       in
       hovbox 0
         (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)

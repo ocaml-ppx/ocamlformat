@@ -198,3 +198,7 @@ let _ = f ({<x = 1>} [@a])
 let _ = (x :> t) [@a]
 
 let _ = f ((x :> t) [@a])
+
+let _ = (module struct end) [@a]
+
+let _ = f ((module struct end) [@a])
