@@ -16,8 +16,8 @@ open Utils
 
 (** Specification of attributes that are meaningful for recovery *)
 module type ATTRIBUTES = sig
-  module G : GRAMMAR
   (** The Menhir grammar to which these apply *)
+  module G : GRAMMAR
 
   (** Recovery cost
 

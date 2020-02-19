@@ -1,3 +1,2 @@
-version = 0.13.0
 profile = conventional
 parse-docstrings = true
