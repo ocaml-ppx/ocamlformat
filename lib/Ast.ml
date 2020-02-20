@@ -2295,6 +2295,9 @@ end = struct
       , {pexp_desc= Pexp_construct _ | Pexp_variant _; _} )
       when e == exp ->
         true
+    | Exp {pexp_desc= Pexp_field (e, _); _}, {pexp_desc= Pexp_construct _; _}
+      when e == exp ->
+        true
     | Exp {pexp_desc; _}, _ -> (
       match pexp_desc with
       | Pexp_extension

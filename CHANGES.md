@@ -21,6 +21,8 @@
 
   + Fix formatting of empty signature payload `[%a:]` (#1236) (Etienne Millon)
 
+  + Fix parenthesizing when accessing field of construct application (#1247) (Guillaume Petiot)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
