@@ -20,6 +20,6 @@ let _ =
      [@dddddddddd])
 
 let _ =
-  (aa
-     (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd)
-   [@dddddddddd])
+  aa
+    (bbbbbbbbb cccccccccccc dddddddddddddddddddddddddddddddddddddd)
+  [@dddddddddd]
