@@ -204,3 +204,5 @@ let _ = (module M) [@a]
 let _ = f ((module M) [@a])
 
 let _ = (module M : S) [@a]
+
+let _ = f ((module M : S) [@a])
