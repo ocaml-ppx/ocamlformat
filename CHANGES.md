@@ -25,6 +25,9 @@
 
   + Fix parenthesizing when accessing field of construct application (#1247) (Guillaume Petiot)
 
+  + Fix formatting of attributes on object overrides `{< >}` (#1238) (Etienne
+    Millon)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

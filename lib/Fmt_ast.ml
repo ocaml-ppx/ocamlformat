@@ -2399,12 +2399,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt_expression c (sub_exp ~ctx f)
       in
       match l with
-      | [] -> wrap "{<" ">}" (Cmts.fmt_within c pexp_loc)
+      | [] ->
+          wrap_if parens "(" ")"
+            (wrap "{<" ">}" (Cmts.fmt_within c pexp_loc) $ fmt_atrs)
       | _ ->
           hvbox 0
             (wrap_if parens "(" ")"
-               (wrap_fits_breaks ~space:false c.conf "{<" ">}"
-                  (list l "@;<0 1>; " fmt_field))) )
+               ( wrap_fits_breaks ~space:false c.conf "{<" ">}"
+                   (list l "@;<0 1>; " fmt_field)
+               $ fmt_atrs )) )
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
