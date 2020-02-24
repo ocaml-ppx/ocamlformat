@@ -1371,9 +1371,10 @@ let output =
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
 
-let partial =
-  let doc = "Ignore invalid (unparsable) parts of the input." in
-  mk ~default:false Arg.(value & flag & info ["partial"] ~doc ~docs)
+let format_invalid_files =
+  let doc = "Format invalid (unparsable) parts of the input." in
+  mk ~default:false
+    Arg.(value & flag & info ["format-invalid-files"] ~doc ~docs)
 
 let print_config =
   let doc =
@@ -2188,7 +2189,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
-type opts = {debug: bool; margin_check: bool; partial: bool}
+type opts = {debug: bool; margin_check: bool; format_invalid_files: bool}
 
 let validate () =
   let root =
@@ -2213,7 +2214,9 @@ let validate () =
   | Error e -> `Error (false, e)
   | Ok action ->
       let opts =
-        {debug= !debug; margin_check= !margin_check; partial= !partial}
+        { debug= !debug
+        ; margin_check= !margin_check
+        ; format_invalid_files= !format_invalid_files }
       in
       `Ok (action, opts)
 

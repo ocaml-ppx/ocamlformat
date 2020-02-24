@@ -299,7 +299,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
       in
       let fmted_recovered =
-        if opts.Conf.partial then xunit.recover fmted else fmted
+        if opts.Conf.format_invalid_files then xunit.recover fmted else fmted
       in
       match parse xunit.parse conf ~source:fmted_recovered with
       | exception Sys_error msg -> Error (User_error msg)
@@ -380,7 +380,9 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   | exn -> Error (Ocamlformat_bug {exn})
 
 let parse_result xunit conf (opts : Conf.opts) ~source =
-  let source = if opts.partial then xunit.recover source else source in
+  let source =
+    if opts.format_invalid_files then xunit.recover source else source
+  in
   match parse xunit.parse conf ~source with
   | exception exn -> Error (Invalid_source {exn})
   | parsed -> Ok parsed

@@ -496,6 +496,9 @@ OPTIONS
            Formatting is enabled even if no .ocamlformat configuration file
            is found.
 
+       --format-invalid-files
+           Format invalid (unparsable) parts of the input.
+
        -g, --debug
            Generate debugging output.
 
@@ -578,9 +581,6 @@ OPTIONS
            avoided unless it helps legibility; Attention has been given to
            making some syntactic gotchas visually obvious. The janestreet
            profile is used at Jane Street. The default value is default.
-
-       --partial
-           Ignore invalid (unparsable) parts of the input.
 
        --print-config
            Print the configuration determined by the environment variable,
