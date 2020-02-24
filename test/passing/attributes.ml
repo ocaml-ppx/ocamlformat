@@ -199,6 +199,6 @@ let _ = (x :> t) [@a]
 
 let _ = f ((x :> t) [@a])
 
-let _ = (module struct end) [@a]
+let _ = (module M) [@a]
 
-let _ = f ((module struct end) [@a])
+let _ = f ((module M) [@a])
