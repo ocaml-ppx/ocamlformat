@@ -1371,10 +1371,21 @@ let output =
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
 
-let format_invalid_files =
-  let doc = "Format invalid (unparsable) parts of the input." in
-  mk ~default:false
-    Arg.(value & flag & info ["format-invalid-files"] ~doc ~docs)
+let format_invalid_files : [`Never | `Auto] option ref =
+  let doc =
+    "How invalid (unparsable) files are formatted. $(b,never) doesn't do \
+     anything specific and the parsing error will be printed. $(b,auto) \
+     will print invalid parts of the input as verbatim text. The default \
+     value is $(b,never). This option is experimental."
+  in
+  let never = ("never", `Never) in
+  let auto = ("auto", `Auto) in
+  let default = Some `Never in
+  mk ~default
+    Arg.(
+      value
+      & opt (some (enum [never; auto])) None
+      & info ["format-invalid-files"] ~doc ~docs)
 
 let print_config =
   let doc =
@@ -2213,10 +2224,11 @@ let validate () =
   | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
   | Ok action ->
+      let format_invalid_files =
+        match !format_invalid_files with Some `Auto -> true | _ -> false
+      in
       let opts =
-        { debug= !debug
-        ; margin_check= !margin_check
-        ; format_invalid_files= !format_invalid_files }
+        {debug= !debug; margin_check= !margin_check; format_invalid_files}
       in
       `Ok (action, opts)
 
