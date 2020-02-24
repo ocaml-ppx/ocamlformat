@@ -1824,7 +1824,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       ( opn_paren $ str "module " $ m $ fmt "@ : "
                       $ fmt_longident_loc c id )
                   $ fmt_package_type c ctx cnstrs
-                  $ fmt_atrs $ cls_paren ))))
+                  $ cls_paren $ fmt_atrs ))))
   | Pexp_constraint (e, t) ->
       hvbox 2
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
