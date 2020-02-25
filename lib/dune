@@ -21,4 +21,4 @@
   (:standard -open Import))
  ;;INSERT_BISECT_HERE;;
  (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser
-   parse-wyc re uuseg uuseg.string))
+   parse_wyc re uuseg uuseg.string))

@@ -1,6 +1,5 @@
 (library
  (name parse_wyc)
- (public_name parse-wyc)
  (libraries menhirLib ocaml-migrate-parsetree))
 
 (ocamllex lexer)
