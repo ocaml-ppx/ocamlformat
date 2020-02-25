@@ -1373,11 +1373,12 @@ let output =
 
 let format_invalid_files : [`Never | `Auto] option ref =
   let doc =
-    "How invalid (unparsable) files are formatted. $(b,never) doesn't do \
-     anything specific and the parsing error will be printed. $(b,auto) \
+    "How invalid (unparsable) files are formatted. $(b,never) doesn't \
+     format invalid files and the parsing error will be printed. $(b,auto) \
      will print invalid parts of the input as verbatim text. The default \
      value is $(b,never). This option is experimental."
   in
+  let docv = "{never|auto}" in
   let never = ("never", `Never) in
   let auto = ("auto", `Auto) in
   let default = Some `Never in
@@ -1385,7 +1386,7 @@ let format_invalid_files : [`Never | `Auto] option ref =
     Arg.(
       value
       & opt (some (enum [never; auto])) None
-      & info ["format-invalid-files"] ~doc ~docs)
+      & info ["format-invalid-files"] ~doc ~docs ~docv)
 
 let print_config =
   let doc =
