@@ -30,6 +30,8 @@
 
   + Fix attributes on coercion (#1239) (Etienne Millon)
 
+  + Fix formatting of attributes on packed modules (#1243) (Etienne Millon)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

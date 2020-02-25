@@ -198,3 +198,11 @@ let _ = f ({<x = 1>} [@a])
 let _ = (x :> t) [@a]
 
 let _ = f ((x :> t) [@a])
+
+let _ = (module M) [@a]
+
+let _ = f ((module M) [@a])
+
+let _ = (module M : S) [@a]
+
+let _ = f ((module M : S) [@a])

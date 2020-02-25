@@ -1818,13 +1818,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (compose_module
            (fmt_module_expr c (sub_mod ~ctx me))
            ~f:(fun m ->
-             hvbox 2
-               (Cmts.fmt c pexp_loc
-                  ( hovbox 0
-                      ( opn_paren $ str "module " $ m $ fmt "@ : "
-                      $ fmt_longident_loc c id )
-                  $ fmt_package_type c ctx cnstrs
-                  $ fmt_atrs $ cls_paren ))))
+             wrap_if parens "(" ")"
+               (hvbox 2
+                  (Cmts.fmt c pexp_loc
+                     ( hovbox 0
+                         ( opn_paren $ str "module " $ m $ fmt "@ : "
+                         $ fmt_longident_loc c id )
+                     $ fmt_package_type c ctx cnstrs
+                     $ cls_paren $ fmt_atrs )))))
   | Pexp_constraint (e, t) ->
       hvbox 2
         ( wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -2191,8 +2192,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    | `Closing_on_separate_line -> "@;<1000 -2>)" ) )) )
   | Pexp_pack me ->
       let fmt_mod m =
-        Params.wrap_exp c.conf c.source ~parens:true ~loc:pexp_loc
-          (str "module " $ m $ fmt_atrs)
+        wrap_if parens "(" ")"
+          ( Params.wrap_exp c.conf c.source ~parens:true ~loc:pexp_loc
+              (str "module " $ m)
+          $ fmt_atrs )
       in
       hovbox 0
         (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
