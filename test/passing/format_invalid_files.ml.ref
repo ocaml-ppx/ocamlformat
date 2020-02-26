@@ -1,3 +1,5 @@
+Warning: format_invalid_files.ml is invalid, recovering.
+Warning: format_invalid_files.ml is invalid, recovering.
 let foooooo = fooooooooo
 
 let foooooooo = bar baaaaar barrr

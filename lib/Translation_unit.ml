@@ -247,6 +247,7 @@ let with_buffer_formatter ~buffer_size k =
   Buffer.contents buffer
 
 let format xunit ?output_file ~input_name ~source ~parsed conf opts =
+  let open Result.Monad_infix in
   let dump_ast ~suffix ast =
     if opts.Conf.debug then
       Some
@@ -298,98 +299,108 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
       in
-      let fmted_recovered =
-        if opts.Conf.format_invalid_files then xunit.recover fmted else fmted
-      in
-      match parse xunit.parse conf ~source:fmted_recovered with
+      ( match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
-      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
-      | t_new ->
-          (* Ast not preserved ? *)
-          ( if
-            not
-              (xunit.equal ~ignore_doc_comments:(not conf.comment_check) conf
-                 t t_new)
-          then
-            let old_ast = dump_ast ~suffix:".old" (xunit.normalize conf t) in
-            let new_ast =
-              dump_ast ~suffix:".new" (xunit.normalize conf t_new)
-            in
-            let args ~suffix =
-              [ ("output file", dump_formatted ~suffix fmted)
-              ; ("old ast", old_ast)
-              ; ("new ast", new_ast) ]
-              |> List.filter_map ~f:(fun (s, f_opt) ->
-                     Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
-            in
-            if xunit.equal ~ignore_doc_comments:true conf t t_new then
-              let docstrings = xunit.moved_docstrings conf t t_new in
-              let args = args ~suffix:".unequal-docs" in
-              internal_error (`Doc_comment docstrings) args
-            else
-              let args = args ~suffix:".unequal-ast" in
-              internal_error `Ast_changed args ) ;
-          (* Comments not preserved ? *)
-          if conf.comment_check then (
-            ( match Cmts.remaining_comments cmts_t with
-            | [] -> ()
-            | l -> internal_error (`Comment_dropped l) [] ) ;
-            let is_docstring Cmt.{txt; _} =
-              conf.parse_docstrings && Char.equal txt.[0] '*'
-            in
-            let old_docstrings, old_comments =
-              List.partition_tf t.comments ~f:is_docstring
-            in
-            let t_newdocstrings, t_newcomments =
-              List.partition_tf t_new.comments ~f:is_docstring
-            in
-            let f = ellipsis_cmt in
-            let f x = Either.First.map ~f x |> Either.Second.map ~f in
-            let diff_cmts =
-              Sequence.append
-                (Cmts.diff conf old_comments t_newcomments)
-                (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
-              |> Sequence.map ~f
-            in
-            if not (Sequence.is_empty diff_cmts) then
-              let old_ast = dump_ast ~suffix:".old" t.ast in
-              let new_ast = dump_ast ~suffix:".new" t_new.ast in
-              let args =
-                [ ( "diff"
-                  , Some
-                      (Sequence.sexp_of_t
-                         (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
-                         diff_cmts) )
-                ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
-                ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
-                |> List.filter_map ~f:(fun (s, f_opt) ->
-                       Option.map f_opt ~f:(fun f -> (s, f)))
-              in
-              internal_error `Comment args ) ;
-          (* Too many iteration ? *)
-          if i >= conf.max_iters then (
-            Caml.flush_all () ;
-            Error (Unstable {iteration= i; prev= source; next= fmted}) )
-          else
-            (* All good, continue *)
-            print_check ~i:(i + 1) ~conf t_new ~source:fmted
+      | exception exn ->
+          if opts.Conf.format_invalid_files then (
+            match parse xunit.parse conf ~source:(xunit.recover fmted) with
+            | exception exn ->
+                internal_error (`Cannot_parse exn) (exn_args ())
+            | t_new ->
+                Format.fprintf Format.err_formatter
+                  "Warning: %s is invalid, recovering.\n%!" input_name ;
+                Ok t_new )
+          else internal_error (`Cannot_parse exn) (exn_args ())
+      | t_new -> Ok t_new )
+      >>= fun t_new ->
+      (* Ast not preserved ? *)
+      ( if
+        not
+          (xunit.equal ~ignore_doc_comments:(not conf.comment_check) conf t
+             t_new)
+      then
+        let old_ast = dump_ast ~suffix:".old" (xunit.normalize conf t) in
+        let new_ast = dump_ast ~suffix:".new" (xunit.normalize conf t_new) in
+        let args ~suffix =
+          [ ("output file", dump_formatted ~suffix fmted)
+          ; ("old ast", old_ast)
+          ; ("new ast", new_ast) ]
+          |> List.filter_map ~f:(fun (s, f_opt) ->
+                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
+        in
+        if xunit.equal ~ignore_doc_comments:true conf t t_new then
+          let docstrings = xunit.moved_docstrings conf t t_new in
+          let args = args ~suffix:".unequal-docs" in
+          internal_error (`Doc_comment docstrings) args
+        else
+          let args = args ~suffix:".unequal-ast" in
+          internal_error `Ast_changed args ) ;
+      (* Comments not preserved ? *)
+      if conf.comment_check then (
+        ( match Cmts.remaining_comments cmts_t with
+        | [] -> ()
+        | l -> internal_error (`Comment_dropped l) [] ) ;
+        let is_docstring Cmt.{txt; _} =
+          conf.parse_docstrings && Char.equal txt.[0] '*'
+        in
+        let old_docstrings, old_comments =
+          List.partition_tf t.comments ~f:is_docstring
+        in
+        let t_newdocstrings, t_newcomments =
+          List.partition_tf t_new.comments ~f:is_docstring
+        in
+        let f = ellipsis_cmt in
+        let f x = Either.First.map ~f x |> Either.Second.map ~f in
+        let diff_cmts =
+          Sequence.append
+            (Cmts.diff conf old_comments t_newcomments)
+            (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
+          |> Sequence.map ~f
+        in
+        if not (Sequence.is_empty diff_cmts) then
+          let old_ast = dump_ast ~suffix:".old" t.ast in
+          let new_ast = dump_ast ~suffix:".new" t_new.ast in
+          let args =
+            [ ( "diff"
+              , Some
+                  (Sequence.sexp_of_t
+                     (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
+                     diff_cmts) )
+            ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
+            ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
+            |> List.filter_map ~f:(fun (s, f_opt) ->
+                   Option.map f_opt ~f:(fun f -> (s, f)))
+          in
+          internal_error `Comment args ) ;
+      (* Too many iteration ? *)
+      if i >= conf.max_iters then (
+        Caml.flush_all () ;
+        Error (Unstable {iteration= i; prev= source; next= fmted}) )
+      else
+        (* All good, continue *)
+        print_check ~i:(i + 1) ~conf t_new ~source:fmted
   in
   try print_check ~i:1 ~conf parsed ~source with
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
-let parse_result xunit conf (opts : Conf.opts) ~source =
-  let source =
-    if opts.format_invalid_files then xunit.recover source else source
-  in
+let parse_result xunit conf (opts : Conf.opts) ~source ~input_name =
   match parse xunit.parse conf ~source with
-  | exception exn -> Error (Invalid_source {exn})
+  | exception exn ->
+      if opts.format_invalid_files then (
+        match parse xunit.parse conf ~source:(xunit.recover source) with
+        | exception exn -> Error (Invalid_source {exn})
+        | parsed ->
+            Format.fprintf Format.err_formatter
+              "Warning: %s is invalid, recovering.\n%!" input_name ;
+            Ok parsed )
+      else Error (Invalid_source {exn})
   | parsed -> Ok parsed
 
 let parse_and_format xunit ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
   let open Result.Monad_infix in
-  parse_result xunit conf opts ~source
+  parse_result xunit conf opts ~source ~input_name
   >>= fun parsed ->
   format xunit ?output_file ~input_name ~source ~parsed conf opts
