@@ -421,7 +421,7 @@ let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
   in
   vbox 0 (list_fl unindented fmt_line $ fmt_opt epi)
 
-let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
+let fmt_cmt src (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
@@ -433,7 +433,7 @@ let fmt_cmt t (conf : Conf.t) ~fmt_code (cmt : Cmt.t) =
             | _, Some _ -> str line $ fmt "@,*") )
   in
   let fmt_unwrapped_cmt ({txt= s; loc} : Cmt.t) =
-    let begins_line = Source.begins_line t.source loc ~ignore_spaces:false in
+    let begins_line = Source.begins_line src loc ~ignore_spaces:false in
     let is_sp = function ' ' | '\t' -> true | _ -> false in
     let epi =
       (* Preserve position of closing but strip empty lines at the end *)
@@ -540,7 +540,8 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
             (fmt "@ ")
           $ ( match group with
             | [] -> impossible "previous match"
-            | [cmt] -> fmt_cmt t conf cmt ~fmt_code $ maybe_newline ~next cmt
+            | [cmt] ->
+                fmt_cmt t.source conf cmt ~fmt_code $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
                     wrap "(*" "*)" (str (Cmt.txt cmt)))
