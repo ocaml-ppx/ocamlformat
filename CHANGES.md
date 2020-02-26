@@ -32,6 +32,8 @@
 
   + Fix formatting of attributes on packed modules (#1243) (Etienne Millon)
 
+  + Fix parens around binop operations with attributes (#1252) (Guillaume Petiot)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
