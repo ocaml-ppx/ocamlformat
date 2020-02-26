@@ -130,16 +130,24 @@ module Position = struct
   open Lexing
   module Format = Format_
 
+  type t = position
+
   let column {pos_bol; pos_cnum; _} = pos_cnum - pos_bol
 
   let fmt fs {pos_lnum; pos_bol; pos_cnum; _} =
     if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
     else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 
+  let to_string x = Format.asprintf "%a" fmt x
+
+  let sexp_of_t x = Sexp.Atom (to_string x)
+
   let compare_col p1 p2 = Int.compare (column p1) (column p2)
 
   let compare p1 p2 =
     if phys_equal p1 p2 then 0 else Int.compare p1.pos_cnum p2.pos_cnum
+
+  include (val Comparator.make ~compare ~sexp_of_t)
 
   let distance p1 p2 = p2.pos_cnum - p1.pos_cnum
 end

@@ -2269,6 +2269,13 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
+    | ( Str
+          { pstr_desc=
+              Pstr_value
+                (Nonrecursive, [{pvb_pat= {ppat_desc= Ppat_any; _}; _}])
+          ; _ }
+      , _ ) ->
+        false
     | _, exp when has_trailing_attributes_exp exp -> true
     | ( Exp {pexp_desc= Pexp_construct ({txt= Lident id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
@@ -2293,6 +2300,9 @@ end = struct
         true
     | ( Exp {pexp_desc= Pexp_apply (e, _); _}
       , {pexp_desc= Pexp_construct _ | Pexp_variant _; _} )
+      when e == exp ->
+        true
+    | Exp {pexp_desc= Pexp_field (e, _); _}, {pexp_desc= Pexp_construct _; _}
       when e == exp ->
         true
     | Exp {pexp_desc; _}, _ -> (

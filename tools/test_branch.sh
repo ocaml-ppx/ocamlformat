@@ -27,12 +27,12 @@
 
 set -e
 
-opt_a=
-opt_b=
+arg_a=
+arg_b=
 while getopts "a:b:" opt; do
   case "$opt" in
-    a) opt_a=$OPTARG ;;
-    b) opt_b=$OPTARG ;;
+    a) arg_a=$OPTARG ;;
+    b) arg_b=$OPTARG ;;
   esac
 done
 shift $((OPTIND-1))
@@ -40,12 +40,14 @@ shift $((OPTIND-1))
 opts_a=$1
 opts_b=${2-$opts_a}
 
-rev_b=$(git rev-parse "${opt_b:-HEAD}")
-rev_a=$(git rev-parse "${opt_a:-$(git merge-base master "$rev_b")}")
+rev_b=$(git rev-parse "${arg_b:-HEAD}")
+rev_a=$(git rev-parse "${arg_a:-$(git merge-base master "$rev_b")}")
 
 if [[ "$rev_a" = "$rev_b" ]]; then
   echo "The base branch is the same as the branch to test ($rev_a)"
-  exit 1
+  if [[ "$opts_a" = "$opts_b" ]]; then
+      exit 1
+  fi
 fi
 
 # First arg is git rev others are passed to make -C test-extra

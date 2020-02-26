@@ -15,11 +15,15 @@
    (:standard -noassert))))
 
 (rule
- (targets ocamlformat-help.txt)
- (mode promote)
+ (targets ocamlformat-help.actual)
  (action
   (with-stdout-to
    %{targets}
-   (run ./bin/ocamlformat.exe --help=plain))))
+   (run ocamlformat --help=plain))))
+
+(alias
+ (name runtest)
+ (action
+  (diff ocamlformat-help.txt ocamlformat-help.actual)))
 
 (data_only_dirs test-extra)

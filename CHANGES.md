@@ -13,13 +13,24 @@
   + Fix missing parentheses around `let open` (#1229) (Jules Aguillon)
     eg. `M.f (M.(x) [@attr])` would be formatted to `M.f M.(x) [@attr]`, which would crash OCamlformat
 
-  + Remove unecessary parentheses with attributes in extensions and eval items (#1230) (Jules Aguillon)
-    eg. the expression `[%ext (() [@attr])]` or the structure item `(() [@attr]) ;;`
+  + Remove unecessary parentheses with attributes in some structure items:
+    * extensions and eval items (#1230) (Jules Aguillon)
+      eg. the expression `[%ext (() [@attr])]` or the structure item `(() [@attr]) ;;`
+    * `let _ = ...`  constructs (#1244) (Etienne Millon)
 
   + Fix dropped comment after a function after an infix (#1231) (Jules Aguillon)
     eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
 
   + Fix formatting of empty signature payload `[%a:]` (#1236) (Etienne Millon)
+
+  + Fix parenthesizing when accessing field of construct application (#1247) (Guillaume Petiot)
+
+  + Fix formatting of attributes on object overrides `{< >}` (#1238) (Etienne
+    Millon)
+
+  + Fix attributes on coercion (#1239) (Etienne Millon)
+
+  + Fix formatting of attributes on packed modules (#1243) (Etienne Millon)
 
   + Fix align-cases for long patterns (#1204) (Guillaume Petiot)
 
