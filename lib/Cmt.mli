@@ -24,6 +24,6 @@ include Comparator.S with type t := t
 val fmt :
      t
   -> Source.t
-  -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> wrap:bool
+  -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> Fmt.t

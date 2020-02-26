@@ -93,7 +93,7 @@ let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
   in
   vbox 0 (list_fl unindented fmt_line $ fmt_opt epi)
 
-let fmt cmt src (conf : Conf.t) ~fmt_code =
+let fmt cmt src ~wrap:wrap_comments ~fmt_code =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
@@ -127,7 +127,7 @@ let fmt cmt src (conf : Conf.t) ~fmt_code =
     | _ -> str s
   in
   let fmt_non_code cmt =
-    if not conf.wrap_comments then
+    if not wrap_comments then
       match split_asterisk_prefixed cmt with
       | [""] | [_] | [_; ""] -> wrap "(*" "*)" (fmt_unwrapped_cmt cmt)
       | asterisk_prefixed_lines ->
@@ -144,7 +144,7 @@ let fmt cmt src (conf : Conf.t) ~fmt_code =
     let dollar_last = Char.equal str.[String.length str - 1] '$' in
     let len = String.length str - if dollar_last then 2 else 1 in
     let source = String.sub ~pos:1 ~len str in
-    match fmt_code conf source with
+    match fmt_code source with
     | Ok formatted ->
         let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
         hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))

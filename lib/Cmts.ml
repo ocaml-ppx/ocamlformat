@@ -419,7 +419,10 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
           $ ( match group with
             | [] -> impossible "previous match"
             | [cmt] ->
-                Cmt.fmt cmt t.source conf ~fmt_code $ maybe_newline ~next cmt
+                let wrap = conf.wrap_comments in
+                let fmt_code = fmt_code conf in
+                Cmt.fmt cmt t.source ~wrap ~fmt_code
+                $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
                     wrap "(*" "*)" (str (Cmt.txt cmt)))
