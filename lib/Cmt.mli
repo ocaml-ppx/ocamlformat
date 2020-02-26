@@ -20,3 +20,10 @@ val loc : t -> Location.t
 val txt : t -> string
 
 include Comparator.S with type t := t
+
+val fmt :
+     t
+  -> Source.t
+  -> Conf.t
+  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+  -> Fmt.t
