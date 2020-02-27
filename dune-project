@@ -13,3 +13,4 @@
 
 (name ocamlformat)
 (using fmt 1.2)
+(using menhir 2.1)

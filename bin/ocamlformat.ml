@@ -25,6 +25,7 @@ let moved_docstrings f c a b =
 (** Operations on implementation files. *)
 let impl : _ Translation_unit.t =
   { parse= Migrate_ast.Parse.use_file
+  ; recover= Parse_wyc.Make_parsable.use_file
   ; init_cmts= Cmts.init_toplevel
   ; fmt= Fmt_ast.fmt_toplevel
   ; equal= equal Normalize.equal_toplevel
@@ -35,6 +36,7 @@ let impl : _ Translation_unit.t =
 (** Operations on interface files. *)
 let intf : _ Translation_unit.t =
   { parse= Migrate_ast.Parse.interface
+  ; recover= Parse_wyc.Make_parsable.signature
   ; init_cmts= Cmts.init_intf
   ; fmt= Fmt_ast.fmt_signature
   ; equal= equal Normalize.equal_intf

@@ -20,5 +20,5 @@
  (flags
   (:standard -open Import))
  ;;INSERT_BISECT_HERE;;
- (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser re
-   uuseg uuseg.string))
+ (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser
+   parse_wyc re uuseg uuseg.string))

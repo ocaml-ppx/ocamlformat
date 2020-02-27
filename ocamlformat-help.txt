@@ -496,6 +496,12 @@ OPTIONS
            Formatting is enabled even if no .ocamlformat configuration file
            is found.
 
+       --format-invalid-files={never|auto}
+           How invalid (unparsable) files are formatted. never doesn't format
+           invalid files and the parsing error will be printed. auto will
+           print invalid parts of the input as verbatim text. The default
+           value is never. This option is experimental.
+
        -g, --debug
            Generate debugging output.
 

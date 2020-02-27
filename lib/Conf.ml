@@ -1371,6 +1371,23 @@ let output =
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
 
+let format_invalid_files : [`Never | `Auto] option ref =
+  let doc =
+    "How invalid (unparsable) files are formatted. $(b,never) doesn't \
+     format invalid files and the parsing error will be printed. $(b,auto) \
+     will print invalid parts of the input as verbatim text. The default \
+     value is $(b,never). This option is experimental."
+  in
+  let docv = "{never|auto}" in
+  let never = ("never", `Never) in
+  let auto = ("auto", `Auto) in
+  let default = Some `Never in
+  mk ~default
+    Arg.(
+      value
+      & opt (some (enum [never; auto])) None
+      & info ["format-invalid-files"] ~doc ~docs ~docv)
+
 let print_config =
   let doc =
     "Print the configuration determined by the environment variable, the \
@@ -2184,7 +2201,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
-type opts = {debug: bool; margin_check: bool}
+type opts = {debug: bool; margin_check: bool; format_invalid_files: bool}
 
 let validate () =
   let root =
@@ -2208,7 +2225,12 @@ let validate () =
   | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
   | Ok action ->
-      let opts = {debug= !debug; margin_check= !margin_check} in
+      let format_invalid_files =
+        match !format_invalid_files with Some `Auto -> true | _ -> false
+      in
+      let opts =
+        {debug= !debug; margin_check= !margin_check; format_invalid_files}
+      in
       `Ok (action, opts)
 
 let action () = parse info validate

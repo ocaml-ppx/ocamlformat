@@ -968,6 +968,17 @@
  (action (diff for_while.ml for_while.ml.output)))
 
 (rule
+ (targets format_invalid_files.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:format_invalid_files.ml.opts} %{dep:format_invalid_files.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff format_invalid_files.ml.ref format_invalid_files.ml.output)))
+
+(rule
  (targets fun_decl.ml.output)
  (deps .ocamlformat )
  (action

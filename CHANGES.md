@@ -1,5 +1,9 @@
 ### (unreleased)
 
+#### New features
+
+  + Add an option `--format-invalid-files` to print unparsable parts of the input as verbatim text. This feature is still experimental. (#1026) (Guillaume Petiot)
+
 #### Changes
 
   + Add the option `doc-comments-val=before|after` (#1012) (Jules Aguillon)
