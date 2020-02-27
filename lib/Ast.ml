@@ -2269,6 +2269,14 @@ end = struct
     ||
     match (ctx, exp) with
     | Str {pstr_desc= Pstr_eval _; _}, _ -> false
+    | ( _
+      , { pexp_desc=
+            Pexp_apply
+              ({pexp_desc= Pexp_ident {txt= Lident id; _}; _}, _ :: _)
+        ; pexp_attributes= _ :: _
+        ; _ } )
+      when is_infix_id id ->
+        true
     | ( Str
           { pstr_desc=
               Pstr_value
