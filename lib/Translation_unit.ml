@@ -323,7 +323,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
           ; ("old ast", old_ast)
           ; ("new ast", new_ast) ]
           |> List.filter_map ~f:(fun (s, f_opt) ->
-                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
+                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
         if xunit.equal ~ignore_doc_comments:true conf t t_new then
           let docstrings = xunit.moved_docstrings conf t t_new in
@@ -366,7 +366,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
             ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
             ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
             |> List.filter_map ~f:(fun (s, f_opt) ->
-                   Option.map f_opt ~f:(fun f -> (s, f)))
+                   Option.map f_opt ~f:(fun f -> (s, f)) )
           in
           internal_error `Comment args ) ;
       (* Too many iteration ? *)
