@@ -96,6 +96,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff attributes.ml attributes.ml.output)))
 
 (rule
@@ -558,6 +559,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff comments.ml.ref comments.ml.output)))
 
 (rule
@@ -591,6 +593,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff comments_in_record.ml.ref comments_in_record.ml.output)))
 
 (rule
@@ -624,6 +627,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff directives.mlt.ref directives.mlt.output)))
 
 (rule
@@ -657,6 +661,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments-after.ml.ref doc_comments-after.ml.output)))
 
 (rule
@@ -668,6 +673,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments-before.ml.ref doc_comments-before.ml.output)))
 
 (rule
@@ -679,6 +685,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments-val-after.ml.ref doc_comments-val-after.ml.output)))
 
 (rule
@@ -690,6 +697,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments.ml.ref doc_comments.ml.output)))
 
 (rule
@@ -701,6 +709,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments.mli.ref doc_comments.mli.output)))
 
 (rule
@@ -866,6 +875,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff extensions-indent.ml.ref extensions-indent.ml.output)))
 
 (rule
@@ -888,6 +898,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff extensions-sugar_always.ml.ref extensions-sugar_always.ml.output)))
 
 (rule
@@ -899,6 +910,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff extensions.ml.ref extensions.ml.output)))
 
 (rule
@@ -1086,6 +1098,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind-break.ml.ref infix_bind-break.ml.output)))
 
 (rule
@@ -1097,6 +1110,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind-fit_or_vertical-break.ml.ref infix_bind-fit_or_vertical-break.ml.output)))
 
 (rule
@@ -1108,6 +1122,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind-fit_or_vertical.ml.ref infix_bind-fit_or_vertical.ml.output)))
 
 (rule
@@ -1119,6 +1134,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind.ml infix_bind.ml.output)))
 
 (rule
@@ -1394,6 +1410,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_source.ml.ref js_source.ml.output)))
 
 (rule
@@ -1449,6 +1466,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff let_binding-in_indent.ml.ref let_binding-in_indent.ml.output)))
 
 (rule
@@ -1460,6 +1478,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff let_binding-indent.ml.ref let_binding-indent.ml.output)))
 
 (rule
@@ -1471,6 +1490,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff let_binding.ml.ref let_binding.ml.output)))
 
 (rule
@@ -1581,6 +1601,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff match2.ml match2.ml.output)))
 
 (rule
@@ -1680,6 +1701,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff module_item_spacing.mli.ref module_item_spacing.mli.output)))
 
 (rule
@@ -1702,6 +1724,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff monadic_binding.ml monadic_binding.ml.output)))
 
 (rule
@@ -1779,6 +1802,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff open-auto.ml.ref open-auto.ml.output)))
 
 (rule
@@ -1790,6 +1814,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff open-long.ml.ref open-long.ml.output)))
 
 (rule
@@ -1801,6 +1826,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff open-preserve.ml.ref open-preserve.ml.output)))
 
 (rule
@@ -1812,6 +1838,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff open-short.ml.ref open-short.ml.output)))
 
 (rule
@@ -1823,6 +1850,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff open.ml.ref open.ml.output)))
 
 (rule
@@ -2032,6 +2060,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff sequence-preserve.ml.ref sequence-preserve.ml.output)))
 
 (rule
@@ -2043,6 +2072,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff sequence.ml.ref sequence.ml.output)))
 
 (rule
@@ -2076,6 +2106,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff skip.ml skip.ml.output)))
 
 (rule
@@ -2087,6 +2118,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff source.ml.ref source.ml.output)))
 
 (rule
@@ -2230,6 +2262,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-compact-space_around-docked.ml.ref types-compact-space_around-docked.ml.output)))
 
 (rule
@@ -2241,6 +2274,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-compact-space_around.ml.ref types-compact-space_around.ml.output)))
 
 (rule
@@ -2252,6 +2286,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-compact.ml.ref types-compact.ml.output)))
 
 (rule
@@ -2263,6 +2298,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-indent.ml.ref types-indent.ml.output)))
 
 (rule
@@ -2274,6 +2310,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-sparse-space_around.ml.ref types-sparse-space_around.ml.output)))
 
 (rule
@@ -2285,6 +2322,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-sparse.ml.ref types-sparse.ml.output)))
 
 (rule
@@ -2296,6 +2334,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types.ml types.ml.output)))
 
 (rule
