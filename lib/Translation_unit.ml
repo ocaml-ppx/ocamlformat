@@ -88,17 +88,13 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
   | Invalid_source _ when quiet -> ()
   | Invalid_source {exn} -> (
       let reason =
-        (* NOTE: Warning 28 is suppressed due to a difference in exception
-           constructor arit y between OCaml versions. See this
-           ocaml-migrate-parsetree issue for potential future mitigation.
-           https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/34 *)
-        match[@ocaml.warning "-28"] exn with
+        match exn with
         | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
         | Warning50 _ -> " (misplaced documentation comments - warning 50)"
         | _ -> ""
       in
       Format.fprintf fmt "%s: ignoring %S%s\n%!" exe input_name reason ;
-      match[@ocaml.warning "-28"] exn with
+      match exn with
       | Syntaxerr.Error _ | Lexer.Error _ ->
           Location.report_exception fmt exn
       | Warning50 l ->
@@ -153,7 +149,7 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
          https://github.com/ocaml-ppx/ocamlformat/issues.\n\
          %!"
         exe input_name ;
-      match[@ocaml.warning "-28"] exn with
+      match exn with
       | Internal_error (m, l) ->
           let s =
             match m with
