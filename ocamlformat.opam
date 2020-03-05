@@ -24,7 +24,6 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.06"}
-  "ocaml" {with-test & >= "4.08"}
   "alcotest" {with-test}
   "base" {>= "v0.11.0"}
   "base-unix"

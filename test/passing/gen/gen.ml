@@ -6,10 +6,12 @@ type setup =
   ; mutable has_ocp: bool
   ; mutable base_file: string option
   ; mutable extra_deps: string list
-  ; mutable should_fail: bool }
+  ; mutable should_fail: bool
+  ; mutable minimum_ocaml_version: string option }
 
-let read_lines fn =
-  Stdio.In_channel.with_file fn ~f:Stdio.In_channel.input_lines
+let read_lines = Stdio.In_channel.read_lines
+
+let read_file s = Stdio.In_channel.read_all s |> Base.String.rstrip
 
 let add_test ?base_file map src_test_name =
   let s =
@@ -18,7 +20,8 @@ let add_test ?base_file map src_test_name =
     ; has_ocp= false
     ; base_file
     ; extra_deps= []
-    ; should_fail= false }
+    ; should_fail= false
+    ; minimum_ocaml_version= None }
   in
   map := StringMap.add src_test_name s !map ;
   s
@@ -46,6 +49,8 @@ let register_file tests fname =
       | ["ocp"] -> setup.has_ocp <- true
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
+      | ["minimum-ocaml-version"] ->
+          setup.minimum_ocaml_version <- Some (read_file fname)
       | _ -> invalid_arg fname )
   | _ -> ()
 
@@ -63,6 +68,11 @@ let emit_test test_name setup =
   in
   let extra_deps = String.concat " " setup.extra_deps in
   let cmd_prefix = if setup.should_fail then "! " else "" in
+  let enabled_if_line =
+    match setup.minimum_ocaml_version with
+    | None -> ""
+    | Some v -> Printf.sprintf "\n (enabled_if (>= %%{ocaml_version} %s))" v
+  in
   Printf.printf
     {|
 (rule
@@ -73,10 +83,11 @@ let emit_test test_name setup =
      (system "%s%%{bin:ocamlformat}%s %%{dep:%s}"))))
 
 (alias
- (name runtest)
+ (name runtest)%s
  (action (diff %s %s.output)))
 |}
-    test_name extra_deps cmd_prefix opts base_test_name ref_name test_name ;
+    test_name extra_deps cmd_prefix opts base_test_name enabled_if_line
+    ref_name test_name ;
   if setup.has_ocp then
     Printf.printf
       {|
