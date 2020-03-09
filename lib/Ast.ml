@@ -295,7 +295,7 @@ let rec module_type_is_simple x =
   | Pmty_signature (_ :: _)
    |Pmty_with (_, _ :: _ :: _)
    |Pmty_extension _
-   |Pmty_functor (_, _, _) ->
+   |Pmty_functor (_, _) ->
       false
   | Pmty_typeof e -> module_expr_is_simple e
   | Pmty_with (t, ([] | [_])) -> module_type_is_simple t
@@ -303,8 +303,7 @@ let rec module_type_is_simple x =
 and module_expr_is_simple x =
   match x.pmod_desc with
   | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] -> true
-  | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _, _) ->
-      false
+  | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _) -> false
   | Pmod_constraint (e, t) ->
       module_expr_is_simple e && module_type_is_simple t
   | Pmod_apply (a, b) -> module_expr_is_simple a && module_expr_is_simple b
@@ -388,7 +387,7 @@ module Structure_item : Module_item with type t = structure_item = struct
           let rec is_simple_mod me =
             match me.pmod_desc with
             | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-            | Pmod_functor (_, _, me) -> is_simple_mod me
+            | Pmod_functor (_, me) -> is_simple_mod me
             | Pmod_ident i -> longident_is_simple c i.txt
             | _ -> false
           in
@@ -632,7 +631,7 @@ module T = struct
         let m =
           let open Ast_helper in
           Str.module_
-            { pmb_name= {txt= ""; loc= Location.none}
+            { pmb_name= {txt= None; loc= Location.none}
             ; pmb_expr= m
             ; pmb_attributes= []
             ; pmb_loc= Location.none }

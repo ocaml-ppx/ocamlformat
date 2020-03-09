@@ -293,12 +293,15 @@ let sequence (conf : Conf.t) cmts xexp =
 let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
   match mty with
-  | {pmty_desc= Pmty_functor (arg, arg_mty, body); pmty_loc; pmty_attributes}
-    when for_functor_kw
-         || (List.is_empty pmty_attributes && not (String.equal arg.txt "_"))
-    ->
+  | { pmty_desc= Pmty_functor (Named (arg, arg_mty), body)
+    ; pmty_loc
+    ; pmty_attributes }
+    when for_functor_kw || List.is_empty pmty_attributes ->
       let arg =
-        if String.equal "*" arg.txt then {arg with txt= ""} else arg
+        match arg with
+        | {txt= None; _} -> arg
+        | {txt= Some name; _} ->
+            if String.equal "*" name then {arg with txt= None} else arg
       in
       Cmts.relocate cmts ~src:pmty_loc ~before:arg.loc ~after:body.pmty_loc ;
       let body = sub_mty ~ctx body in
@@ -307,25 +310,35 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
         | [] -> functor_type cmts ~for_functor_kw body
         | _ -> ([], body)
       in
-      ((arg, Option.map arg_mty ~f:(sub_mty ~ctx)) :: xargs, xbody)
+      ((arg, Some (sub_mty ~ctx arg_mty)) :: xargs, xbody)
+  | {pmty_desc= Pmty_functor (Unit, body); pmty_attributes; _}
+    when for_functor_kw || List.is_empty pmty_attributes ->
+      let body = sub_mty ~ctx body in
+      let xargs, xbody =
+        match pmty_attributes with
+        | [] -> functor_type cmts ~for_functor_kw body
+        | _ -> ([], body)
+      in
+      (({txt= Some ""; loc= Location.none}, None) :: xargs, xbody)
   | _ -> ([], xmty)
 
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
-  let valid_sugared_name arg =
-    not (String.equal arg.txt "_" && source_is_long me)
-  in
   let ctx = Mod me in
   match me with
-  | {pmod_desc= Pmod_functor (arg, arg_mt, body); pmod_loc; pmod_attributes}
-    when for_functor_kw
-         || (List.is_empty pmod_attributes && valid_sugared_name arg) ->
+  | { pmod_desc= Pmod_functor (Named (arg, arg_mt), body)
+    ; pmod_loc
+    ; pmod_attributes }
+    when for_functor_kw || List.is_empty pmod_attributes ->
       let arg =
-        if String.equal "*" arg.txt then {arg with txt= ""} else arg
+        match arg with
+        | {txt= None; _} -> arg
+        | {txt= Some name; _} ->
+            if String.equal "*" name then {arg with txt= None} else arg
       in
       Cmts.relocate cmts ~src:pmod_loc ~before:arg.loc ~after:body.pmod_loc ;
-      let xarg_mt = Option.map arg_mt ~f:(sub_mty ~ctx) in
+      let xarg_mt = sub_mty ~ctx arg_mt in
       let ctx = Mod body in
       let body = sub_mod ~ctx body in
       let xargs, xbody_me =
@@ -333,7 +346,17 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
         | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      ((arg, xarg_mt) :: xargs, xbody_me)
+      ((arg, Some xarg_mt) :: xargs, xbody_me)
+  | {pmod_desc= Pmod_functor (Unit, body); pmod_attributes; _}
+    when for_functor_kw || List.is_empty pmod_attributes ->
+      let ctx = Mod body in
+      let body = sub_mod ~ctx body in
+      let xargs, xbody_me =
+        match pmod_attributes with
+        | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
+        | _ -> ([], body)
+      in
+      (({txt= Some ""; loc= Location.none}, None) :: xargs, xbody_me)
   | _ -> ([], xme)
 
 let mod_with pmty =

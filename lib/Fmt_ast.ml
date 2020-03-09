@@ -218,6 +218,9 @@ let fmt_longident_loc c ?pre {txt; loc} =
 
 let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (fmt_opt pre $ str txt)
 
+let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
+  Cmts.fmt c loc (fmt_opt pre $ str (Option.value ~default txt))
+
 let char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
   | `Hexadecimal, _ -> Format.sprintf "\\x%02x" (Char.to_int chr)
@@ -1110,7 +1113,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
               (Cmts.fmt c typ.ptyp_loc
                  ( hovbox 0
                      ( Cmts.fmt c ppat_loc
-                         (str "module " $ fmt_str_loc c name)
+                         (str "module " $ fmt_str_loc_opt c name)
                      $ fmt "@ : " $ fmt_longident_loc c id )
                  $ fmt_package_type c ctx cnstrs ))))
   | Ppat_constraint (pat, typ) ->
@@ -1128,7 +1131,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            (fmt "lazy@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_unpack name ->
       wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-        (fmt "module@ " $ fmt_str_loc c name)
+        (fmt "module@ " $ fmt_str_loc_opt c name)
   | Ppat_exception pat ->
       cbox 2
         (wrap_if parens "(" ")"
@@ -3288,10 +3291,10 @@ and fmt_extension_constructor c sep ctx ec =
 and fmt_functor_arg c (name, mt) =
   wrap "(" ")"
     ( match mt with
-    | None -> fmt_str_loc c name
+    | None -> fmt_str_loc_opt c name
     | Some mt ->
         hovbox 0
-          ( hovbox 0 (fmt_str_loc c name $ fmt "@ : ")
+          ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
           $ compose_module (fmt_module_type c mt) ~f:Fn.id ) )
 
 and fmt_module_type c ({ast= mty; _} as xmty) =
@@ -3580,7 +3583,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
     fmt "@ "
     $ maybe_box
         (wrap "(" ")"
-           ( fmt_str_loc c name
+           ( fmt_str_loc_opt c name
            $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi; opn= _} ->
                  (* TODO: handle opn *)
                  str " : "
@@ -3620,7 +3623,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                           opn $ open_hvbox 0
                       | _ -> noop )
                     $ hvbox 4
-                        ( keyword $ str " " $ fmt_str_loc c name
+                        ( keyword $ str " " $ fmt_str_loc_opt c name
                         $ list_pn arg_blks fmt_arg )
                     $ fmt_opt blk_t.pro )
                 $ blk_t.psp $ blk_t.bdy )
@@ -3673,6 +3676,7 @@ and fmt_module_substitution c ctx pms =
       ; pmty_loc= pms_loc
       ; pmty_attributes= [] }
   in
+  let pms_name = {pms_name with txt= Some pms_name.txt} in
   Cmts.fmt c pms_loc
     (fmt_module c (str "module") ~eqty:":=" pms_name [] None (Some xmty)
        pms_attributes)
@@ -3681,6 +3685,7 @@ and fmt_module_type_declaration c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
   update_config_maybe_disabled c pmtd_loc pmtd_attributes
   @@ fun c ->
+  let pmtd_name = {pmtd_name with txt= Some pmtd_name.txt} in
   fmt_module c (str "module type") pmtd_name [] None
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes

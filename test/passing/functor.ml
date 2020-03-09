@@ -55,7 +55,7 @@ module M =
 module type Module_type_fail = sig
   include S
 
-  module F : functor (_ : T) -> sig end
+  module F (_ : T) : sig end
 
   include S
 end
@@ -83,7 +83,7 @@ struct
 end
 
 (* Long syntax should be preserved *)
-module M = functor (_ : S) -> struct end
+module M (_ : S) = struct end
 
 module M (_ : S) = struct end
 

@@ -5817,7 +5817,7 @@ module X (X : sig end) (Y : sig end) (Z : sig end) = struct end
 
 module Y (X : sig end) (Y : sig end) (Z : sig end) = struct end
 
-module Z = functor (_ : sig end) (_ : sig end) (_ : sig end) -> struct end
+module Z (_ : sig end) (_ : sig end) (_ : sig end) = struct end
 
 module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
 functor (X : sig end) () (Z : sig end) -> struct end
