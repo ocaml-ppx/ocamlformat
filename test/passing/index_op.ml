@@ -120,3 +120,9 @@ class free =
   object (m : 'test)
     method get_def = m#state.def
   end
+
+let ( .%{} ) () r = Array.length r
+
+;;
+let a = () in
+a.%{[|1; 2|]}
