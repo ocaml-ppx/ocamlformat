@@ -206,7 +206,7 @@ let is_long_pexp_open source {Parsetree.pexp_desc; _} =
 
 let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
   match pmod_desc with
-  | Pmod_functor (_, {pmod_loc= upto; _}) ->
+  | Pmod_functor (Named ({loc= upto; _}, _), _) ->
       contains_token_between source ~from ~upto Parser.FUNCTOR
   | _ -> false
 
