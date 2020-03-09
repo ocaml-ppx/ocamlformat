@@ -204,12 +204,6 @@ let is_long_pexp_open source {Parsetree.pexp_desc; _} =
       contains_token_between source ~from ~upto Parser.IN
   | _ -> false
 
-let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
-  match pmod_desc with
-  | Pmod_functor (_, {pmod_loc= upto; _}) ->
-      contains_token_between source ~from ~upto Parser.FUNCTOR
-  | _ -> false
-
 let lexbuf_from_loc t (l : Location.t) =
   let s = string_at t l.loc_start l.loc_end in
   Lexing.from_string s

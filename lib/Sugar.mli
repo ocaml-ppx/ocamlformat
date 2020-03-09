@@ -118,7 +118,6 @@ val functor_type :
 val functor_ :
      Cmts.t
   -> for_functor_kw:bool
-  -> source_is_long:(module_expr -> bool)
   -> module_expr Ast.xt
   -> (label option loc * module_type Ast.xt option) list * module_expr Ast.xt
 (** [functor_ cmts for_functor_kw m] returns the list of module types applied
