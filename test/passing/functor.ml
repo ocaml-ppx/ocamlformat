@@ -83,7 +83,7 @@ struct
 end
 
 (* Long syntax should be preserved *)
-module M (_ : S) = struct end
+module M = functor (_ : S) -> struct end
 
 module M (_ : S) = struct end
 
