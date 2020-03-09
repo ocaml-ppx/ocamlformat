@@ -55,7 +55,7 @@ module M =
 module type Module_type_fail = sig
   include S
 
-  module F (_ : T) : sig end
+  module F : functor (_ : T) -> sig end
 
   include S
 end
