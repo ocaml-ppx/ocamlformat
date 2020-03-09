@@ -81,12 +81,15 @@ let parens_kind i =
   let len = String.length i in
   if len <= 2 then None
   else
-    let opn, cls = (i.[len - 2], i.[len - 1]) in
-    match (opn, cls) with
-    | '(', ')' | '[', ']' | '{', '}' ->
-        let txt = String.drop_suffix i 2 in
-        Some (txt, opn, cls)
-    | _ -> None
+    match i with
+    | ".%{;..}" -> Some (".%", '{', '}')
+    | _ -> (
+        let opn, cls = (i.[len - 2], i.[len - 1]) in
+        match (opn, cls) with
+        | '(', ')' | '[', ']' | '{', '}' ->
+            let txt = String.drop_suffix i 2 in
+            Some (txt, opn, cls)
+        | _ -> None )
 
 let index_op_get i =
   match (i.[0], parens_kind i) with
@@ -125,29 +128,35 @@ let all_args_unlabeled args =
       | Some args, (Asttypes.Nolabel, e) -> Some (e :: args)
       | _ -> None)
 
+type sep = Comma | Semi
+
 let index_op_get_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
   match all_args_unlabeled args with
   | None -> None
   | Some args -> (
     match (ident, args) with
     | Ldot (Lident "String", "get"), [_] ->
-        Some ({Location.txt= index_op_string; loc}, args)
+        Some ({Location.txt= index_op_string; loc}, args, Comma)
     | Ldot (Lident "Array", "get"), [_] ->
-        Some ({Location.txt= index_op_array; loc}, args)
+        Some ({Location.txt= index_op_array; loc}, args, Comma)
     | Ldot (Ldot (Lident "Bigarray", "Array1"), "get"), [_] ->
-        Some ({Location.txt= index_op_bigarray; loc}, args)
+        Some ({Location.txt= index_op_bigarray; loc}, args, Comma)
     | Ldot (Ldot (Lident "Bigarray", "Array2"), "get"), [_; _] ->
-        Some ({Location.txt= index_op_bigarray; loc}, args)
+        Some ({Location.txt= index_op_bigarray; loc}, args, Comma)
     | Ldot (Ldot (Lident "Bigarray", "Array3"), "get"), [_; _; _] ->
-        Some ({Location.txt= index_op_bigarray; loc}, args)
+        Some ({Location.txt= index_op_bigarray; loc}, args, Comma)
     | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "get")
       , [{pexp_desc= Pexp_array l; _}] )
       when List.length l > 3 ->
-        Some ({Location.txt= index_op_bigarray; loc}, l)
+        Some ({Location.txt= index_op_bigarray; loc}, l, Comma)
     | lid, args -> (
       match index_op_get_lid lid with
       | None -> None
-      | Some index_op -> Some ({Location.txt= index_op; loc}, args) ) )
+      | Some index_op -> (
+        match args with
+        | [{pexp_desc= Pexp_array idx; _}] ->
+            Some ({Location.txt= index_op; loc}, idx, Semi)
+        | _ -> Some ({Location.txt= index_op; loc}, args, Comma) ) ) )
 
 let index_op_set_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
   match all_args_unlabeled args with
@@ -155,23 +164,27 @@ let index_op_set_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
   | Some args -> (
     match (ident, args) with
     | Ldot (Lident "String", "set"), [a1; e] ->
-        Some ({Location.txt= index_op_string; loc}, [a1], e)
+        Some ({Location.txt= index_op_string; loc}, [a1], Comma, e)
     | Ldot (Lident "Array", "set"), [a1; e] ->
-        Some ({Location.txt= index_op_array; loc}, [a1], e)
+        Some ({Location.txt= index_op_array; loc}, [a1], Comma, e)
     | Ldot (Ldot (Lident "Bigarray", "Array1"), "set"), [a1; e] ->
-        Some ({Location.txt= index_op_bigarray; loc}, [a1], e)
+        Some ({Location.txt= index_op_bigarray; loc}, [a1], Comma, e)
     | Ldot (Ldot (Lident "Bigarray", "Array2"), "set"), [a1; a2; e] ->
-        Some ({Location.txt= index_op_bigarray; loc}, [a1; a2], e)
+        Some ({Location.txt= index_op_bigarray; loc}, [a1; a2], Comma, e)
     | Ldot (Ldot (Lident "Bigarray", "Array3"), "set"), [a1; a2; a3; e] ->
-        Some ({Location.txt= index_op_bigarray; loc}, [a1; a2; a3], e)
+        Some ({Location.txt= index_op_bigarray; loc}, [a1; a2; a3], Comma, e)
     | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "set")
       , [{pexp_desc= Pexp_array l; _}; e] )
       when List.length l > 3 ->
-        Some ({Location.txt= index_op_bigarray; loc}, l, e)
+        Some ({Location.txt= index_op_bigarray; loc}, l, Comma, e)
     | lid, [argi; arge] -> (
       match index_op_set_lid lid with
       | None -> None
-      | Some index_op -> Some ({Location.txt= index_op; loc}, [argi], arge) )
+      | Some index_op -> (
+        match argi.pexp_desc with
+        | Pexp_array idx ->
+            Some ({Location.txt= index_op; loc}, idx, Semi, arge)
+        | _ -> Some ({Location.txt= index_op; loc}, [argi], Comma, arge) ) )
     | _ -> None )
 
 let is_index_op exp =
@@ -1425,7 +1438,7 @@ end = struct
             ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
             , e1 :: indices )
           when Option.is_some (index_op_get_sugar ident indices) ->
-            let _, indices =
+            let _, indices, _ =
               Option.value_exn (index_op_get_sugar ident indices)
             in
             assert (e0 == exp || snd_f e1 || List.exists indices ~f)
@@ -1433,7 +1446,7 @@ end = struct
             ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
             , e1 :: indices )
           when Option.is_some (index_op_set_sugar ident indices) ->
-            let _, indices, e =
+            let _, indices, _, e =
               Option.value_exn (index_op_set_sugar ident indices)
             in
             assert (
@@ -1652,7 +1665,9 @@ end = struct
           if a1 == exp then Some (Dot, Left) else Some (LessMinus, Left)
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, a1) :: args)
         when Option.is_some (index_op_set_sugar ident args) ->
-          let _, _, e = Option.value_exn (index_op_set_sugar ident args) in
+          let _, _, _, e =
+            Option.value_exn (index_op_set_sugar ident args)
+          in
           if a1 == exp then Some (Dot, Left)
           else if e == exp then Some (LessMinus, Right)
           else Some (LessMinus, Left)
@@ -2122,11 +2137,13 @@ end = struct
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
           when Option.is_some (index_op_set_sugar ident args) ->
-            let _, _, e = Option.value_exn (index_op_set_sugar ident args) in
+            let _, _, _, e =
+              Option.value_exn (index_op_set_sugar ident args)
+            in
             continue e
         | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
           when Option.is_some (index_op_get_sugar ident args) ->
-            let _, indices =
+            let _, indices, _ =
               Option.value_exn (index_op_get_sugar ident args)
             in
             continue (List.last_exn indices)
@@ -2205,11 +2222,13 @@ end = struct
           true
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
         when Option.is_some (index_op_set_sugar ident args) ->
-          let _, _, e = Option.value_exn (index_op_set_sugar ident args) in
+          let _, _, _, e =
+            Option.value_exn (index_op_set_sugar ident args)
+          in
           continue e
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
         when Option.is_some (index_op_get_sugar ident args) ->
-          let _, indices =
+          let _, indices, _ =
             Option.value_exn (index_op_get_sugar ident args)
           in
           continue (List.last_exn indices)

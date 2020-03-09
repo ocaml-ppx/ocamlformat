@@ -30,15 +30,20 @@ val index_op_get_lid : Longident.t -> (string * Char.t * Char.t) option
 
 val index_op_set_lid : Longident.t -> (string * Char.t * Char.t) option
 
+type sep = Comma | Semi
+
 val index_op_get_sugar :
      Longident.t Location.loc
   -> (Asttypes.arg_label * expression) list
-  -> ((string * Char.t * Char.t) Location.loc * expression list) option
+  -> ((string * Char.t * Char.t) Location.loc * expression list * sep) option
 
 val index_op_set_sugar :
      Longident.t Location.loc
   -> (Asttypes.arg_label * expression) list
-  -> ((string * Char.t * Char.t) Location.loc * expression list * expression)
+  -> ( (string * Char.t * Char.t) Location.loc
+     * expression list
+     * sep
+     * expression )
      option
 
 val is_monadic_binding_id : string -> bool
