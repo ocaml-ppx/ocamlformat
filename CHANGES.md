@@ -7,6 +7,8 @@
   + Support multi-indices extended indexing operators (#1279, #1277) (Jules Aguillon, Guillaume Petiot)
     This feature has been added in OCaml 4.10.0
 
+  + Handle OCaml 4.10.0 AST (#1276) (Guillaume Petiot)
+
 #### Changes
 
   + Add the option `doc-comments-val=before|after` (#1012) (Jules Aguillon)
