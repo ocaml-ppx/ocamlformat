@@ -1246,19 +1246,15 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
-and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is sep =
-  let sep =
-    match (sep : Ast.sep) with
-    | Comma -> Params.comma_sep
-    | Semi -> Params.semi_sep
-  in
+and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
   wrap_if parens "(" ")"
     (hovbox 0
        ( fmt_expression c (sub_exp ~ctx l)
        $ Cmts.fmt_before c loc
        $ str (Printf.sprintf "%s%c" s opn)
        $ Cmts.fmt_after c loc
-       $ list is (sep c.conf) (fun i -> fmt_expression c (sub_exp ~ctx i))
+       $ list is (Params.comma_sep c.conf) (fun i ->
+             fmt_expression c (sub_exp ~ctx i))
        $ str (Printf.sprintf "%c" cls)
        $ opt set (fun e ->
              fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e)) ))
@@ -1487,18 +1483,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}
       , (Nolabel, s) :: idx )
     when Option.is_some (index_op_get_sugar ident idx) ->
-      let op, idx, sep = Option.value_exn (index_op_get_sugar ident idx) in
+      let op, idx = Option.value_exn (index_op_get_sugar ident idx) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
-      fmt_index_op c ctx ~parens op s idx sep
+      fmt_index_op c ctx ~parens op s idx
   | Pexp_apply
       ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}
       , (Nolabel, s) :: idx_and_e )
     when Option.is_some (index_op_set_sugar ident idx_and_e) ->
-      let op, idx, sep, e =
+      let op, idx, e =
         Option.value_exn (index_op_set_sugar ident idx_and_e)
       in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
-      fmt_index_op c ctx ~parens op s idx sep ~set:e
+      fmt_index_op c ctx ~parens op s idx ~set:e
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident ":="; loc}
         ; pexp_attributes= []
