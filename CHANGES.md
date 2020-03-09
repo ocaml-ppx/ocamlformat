@@ -5,6 +5,7 @@
   + Add an option `--format-invalid-files` to print unparsable parts of the input as verbatim text. This feature is still experimental. (#1026) (Guillaume Petiot)
 
   + Support multi-indices extended indexing operators (#1277) (Guillaume Petiot)
+    This feature has been added in OCaml 4.10.0
 
 #### Changes
 
