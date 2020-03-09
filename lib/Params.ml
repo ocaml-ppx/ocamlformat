@@ -393,3 +393,6 @@ let function_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
 
 let comma_sep (c : Conf.t) : Fmt.s =
   match c.break_separators with `Before -> "@,, " | `After -> ",@;<1 2>"
+
+let semi_sep (c : Conf.t) : Fmt.s =
+  match c.break_separators with `Before -> "@,; " | `After -> ";@;<1 2>"

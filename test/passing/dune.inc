@@ -1728,6 +1728,18 @@
  (action (diff monadic_binding.ml monadic_binding.ml.output)))
 
 (rule
+ (targets multi_index_op.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{dep:multi_index_op.ml}"))))
+
+(alias
+ (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.10.0))
+ (action (diff multi_index_op.ml multi_index_op.ml.output)))
+
+(rule
  (targets need_format.ml.output)
  (deps .ocamlformat )
  (action
