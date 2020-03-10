@@ -26,21 +26,6 @@ val is_infix_id : string -> bool
 val is_infix : expression -> bool
 (** Holds of infix symbol expressions. *)
 
-val index_op_get_lid : Longident.t -> (string * Char.t * Char.t) option
-
-val index_op_set_lid : Longident.t -> (string * Char.t * Char.t) option
-
-val index_op_get_sugar :
-     Longident.t Location.loc
-  -> (Asttypes.arg_label * expression) list
-  -> ((string * Char.t * Char.t) Location.loc * expression list) option
-
-val index_op_set_sugar :
-     Longident.t Location.loc
-  -> (Asttypes.arg_label * expression) list
-  -> ((string * Char.t * Char.t) Location.loc * expression list * expression)
-     option
-
 module Indexing_op : sig
   type brackets = Round | Square | Curly
 

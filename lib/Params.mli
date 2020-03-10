@@ -116,3 +116,6 @@ val function_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
 val comma_sep : Conf.t -> Fmt.s
 (** [comma_sep c] returns the format string used to separate two elements
     with a comma, depending on the `break-separators` option. *)
+
+val semi_sep : Conf.t -> Fmt.s
+(** Like [comma_sep] but use a semicolon as separator. *)

@@ -1246,17 +1246,33 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
-and fmt_index_op c ctx ~parens ?set {txt= s, opn, cls; loc} l is =
+and fmt_index_op c ctx ~parens op =
+  let open Ast.Indexing_op in
+  let wrap_brackets = function
+    | Round -> wrap "(" ")"
+    | Square -> wrap "[" "]"
+    | Curly -> wrap "{" "}"
+  in
+  let fmt_cop cop =
+    list cop.path "" (fun p -> str p $ str ".") $ str cop.opchars
+  in
+  let fmt_args, fmt_op, brackets =
+    let fmt_arg exp = fmt_expression c (sub_exp ~ctx exp) in
+    match op.op with
+    | Defined (arg, cop) -> (fmt_arg arg, fmt_cop cop, cop.brackets)
+    | Extended (args, cop) ->
+        ( list args (Params.semi_sep c.conf) fmt_arg
+        , fmt_cop cop
+        , cop.brackets )
+    | Special (args, brackets) ->
+        (list args (Params.comma_sep c.conf) fmt_arg, noop, brackets)
+  in
   wrap_if parens "(" ")"
     (hovbox 0
-       ( fmt_expression c (sub_exp ~ctx l)
-       $ Cmts.fmt_before c loc
-       $ str (Printf.sprintf "%s%c" s opn)
-       $ Cmts.fmt_after c loc
-       $ list is (Params.comma_sep c.conf) (fun i ->
-             fmt_expression c (sub_exp ~ctx i))
-       $ str (Printf.sprintf "%c" cls)
-       $ opt set (fun e ->
+       ( fmt_expression c (sub_exp ~ctx op.lhs)
+       $ Cmts.fmt_before c op.loc $ str "." $ fmt_op
+       $ wrap_brackets brackets (Cmts.fmt_after c op.loc $ fmt_args)
+       $ opt op.rhs (fun e ->
              fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e)) ))
 
 and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
@@ -1480,21 +1496,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_fun_args c xargs $ fmt "@ ->" )
                   $ fmt "@ " $ fmt_expression c xbody )) ))
   | Pexp_apply
-      ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}
-      , (Nolabel, s) :: idx )
-    when Option.is_some (index_op_get_sugar ident idx) ->
-      let op, idx = Option.value_exn (index_op_get_sugar ident idx) in
+      ({pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}, args)
+    when Option.is_some (Indexing_op.get_sugar ident args) ->
+      let op = Option.value_exn (Indexing_op.get_sugar ident args) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
-      fmt_index_op c ctx ~parens op s idx
-  | Pexp_apply
-      ( {pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}
-      , (Nolabel, s) :: idx_and_e )
-    when Option.is_some (index_op_set_sugar ident idx_and_e) ->
-      let op, idx, e =
-        Option.value_exn (index_op_set_sugar ident idx_and_e)
-      in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
-      fmt_index_op c ctx ~parens op s idx ~set:e
+      fmt_index_op c ctx ~parens op
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident ":="; loc}
         ; pexp_attributes= []
