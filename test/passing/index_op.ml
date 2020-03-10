@@ -131,8 +131,8 @@ let _ = a.*([|a; b|])
 (* Avoid unecessary parentheses *)
 let _ =
   match a with
-  | A -> a.*((match b with B -> b))
-  | B -> a.*((match b with B -> b)) <- D
+  | A -> a.*(match b with B -> b)
+  | B -> a.*(match b with B -> b) <- D
   | C -> ()
 
-let _ = if a then a.*((if a then b)) else c
+let _ = if a then a.*(if a then b) else c

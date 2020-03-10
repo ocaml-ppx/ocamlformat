@@ -1660,7 +1660,7 @@ end = struct
           else
             match op.rhs with
             | Some e when e == exp -> Some (LessMinus, Right)
-            | _ -> Some (LessMinus, Left) )
+            | _ -> None )
       | Pexp_apply
           ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
           let child = if e1 == exp then Left else Right in
@@ -2124,12 +2124,8 @@ end = struct
           ->
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
-          when Option.is_some (Indexing_op.get_sugar ident args) -> (
-          match Option.value_exn (Indexing_op.get_sugar ident args) with
-          | {rhs= Some e; _} -> continue e
-          | {op= Defined (arg, _); _} -> continue arg
-          | {op= Extended (args, _); _} | {op= Special (args, _); _} ->
-              continue (List.last_exn args) )
+          when Option.is_some (Indexing_op.get_sugar ident args) ->
+            false
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
         | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
@@ -2207,9 +2203,7 @@ end = struct
         when Option.is_some (Indexing_op.get_sugar ident args) -> (
         match Option.value_exn (Indexing_op.get_sugar ident args) with
         | {rhs= Some e; _} -> continue e
-        | {op= Defined (arg, _); _} -> continue arg
-        | {op= Extended (args, _); _} | {op= Special (args, _); _} ->
-            continue (List.last_exn args) )
+        | {rhs= None; _} -> false )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (List.last_exn es)
       | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
