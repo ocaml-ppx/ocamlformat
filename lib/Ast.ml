@@ -77,6 +77,112 @@ let is_infix e =
   | Pexp_ident {txt= Lident i; _} -> is_infix_id i
   | _ -> false
 
+module Indexing_op = struct
+  type brackets = Round | Square | Curly
+
+  type custom_operator =
+    {path: string list; opchars: string; brackets: brackets}
+
+  type indexing_op =
+    | Defined of expression * custom_operator
+    | Extended of expression list * custom_operator
+        (** Take a [Pexp_array] of at least 2 elements *)
+    | Special of expression list * brackets
+        (** Desugared to the application of the corresponding [get] function
+            by the parser. (eg. [Array.get], [String.get]) *)
+  type t =
+    { lhs: expression
+    ; op: indexing_op
+    ; rhs: expression option
+    ; loc: Location.t }
+
+  type raw =
+    { opchars: string
+    ; brackets: brackets
+    ; extended: bool  (** eg. [.*{;..}] *)
+    ; has_rhs: bool  (** eg. [.*{}<-] *) }
+
+  let parse ident =
+    match String.chop_prefix ~prefix:"." ident with
+    | None -> None
+    | Some ident ->
+        let ident, has_rhs =
+          match String.chop_suffix ident ~suffix:"<-" with
+          | Some ident -> (ident, true)
+          | None -> (ident, false)
+        in
+        let find_suffix (suffix, brackets, extended) =
+          match String.chop_suffix ident ~suffix with
+          | None -> None
+          | Some opchars -> Some {opchars; brackets; extended; has_rhs}
+        in
+        List.find_map ~f:find_suffix
+          [ ("{}", Curly, false)
+          ; ("[]", Square, false)
+          ; ("()", Round, false)
+          ; ("{;..}", Curly, true)
+          ; ("[;..]", Square, true)
+          ; ("(;..)", Round, true) ]
+
+  let special ~id_tl ~args_tl brackets args =
+    let op = Special (args, brackets) in
+    match (id_tl, args_tl) with
+    | "get", [] -> Some (op, None)
+    | "set", [rhs] -> Some (op, Some rhs)
+    | _ -> None
+
+  let custom ~extended ~rhs op arg1 =
+    match (extended, arg1) with
+    | true, {pexp_desc= Pexp_array (_ :: _ :: _ as args); _} ->
+        Some (Extended (args, op), rhs)
+    | true, _ -> None
+    | false, arg1 -> Some (Defined (arg1, op), rhs)
+
+  let get_sugar_ident ident args =
+    match (Longident.flatten ident, args) with
+    | ["String"; id_tl], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Square [arg1]
+    | ["Array"; id_tl], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Round [arg1]
+    | ["Bigarray"; "Array1"; id_tl], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Curly [arg1]
+    | ["Bigarray"; "Array2"; id_tl], arg1 :: arg2 :: args_tl ->
+        special ~id_tl ~args_tl Curly [arg1; arg2]
+    | ["Bigarray"; "Array3"; id_tl], arg1 :: arg2 :: arg3 :: args_tl ->
+        special ~id_tl ~args_tl Curly [arg1; arg2; arg3]
+    | ( ["Bigarray"; "Genarray"; id_tl]
+      , {pexp_desc= Pexp_array args; _} :: args_tl )
+      when List.length args > 3 ->
+        special ~id_tl ~args_tl Curly args
+    | ident, args -> (
+      match List.rev ident with
+      | [] -> None
+      | ident :: path_rev -> (
+          let path = List.rev path_rev in
+          match parse ident with
+          | None -> None
+          | Some {opchars; brackets; extended; has_rhs} -> (
+              let op = {path; opchars; brackets} in
+              match (has_rhs, args) with
+              | true, [arg1; rhs] -> custom ~extended ~rhs:(Some rhs) op arg1
+              | false, [arg1] -> custom ~extended ~rhs:None op arg1
+              | _, _ -> None ) ) )
+
+  let rec all_args_unlabeled acc = function
+    | [] -> Some (List.rev acc)
+    | (Asttypes.Nolabel, e) :: tl -> all_args_unlabeled (e :: acc) tl
+    | _ :: _ -> None
+
+  let get_sugar ident args =
+    match all_args_unlabeled [] args with
+    | None | Some [] -> None
+    | Some (lhs :: args) -> (
+        let {Location.txt= ident; loc} = ident in
+        match get_sugar_ident ident args with
+        | None -> None
+        | Some (op, rhs) -> Some {lhs; op; rhs; loc} )
+end
+
 let parens_kind i =
   let len = String.length i in
   if len <= 2 then None
