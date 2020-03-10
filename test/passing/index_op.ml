@@ -126,7 +126,3 @@ class free =
 let _ = a.A.B.*(b)
 
 let _ = a.A.B.*(b) <- c
-
-let _ = a.A.B.*(b; c)
-
-let _ = a.A.B.*(b; c) <- d
