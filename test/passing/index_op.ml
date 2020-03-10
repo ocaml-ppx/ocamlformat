@@ -121,8 +121,9 @@ class free =
     method get_def = m#state.def
   end
 
-(** With path *)
+(* With path *)
+let _ = a.A.B.*(b) ; a.A.B.*(b) <- c
 
-let _ = a.A.B.*(b)
+let _ = a.*((a ; b))
 
-let _ = a.A.B.*(b) <- c
+let _ = a.*([|a; b|])
