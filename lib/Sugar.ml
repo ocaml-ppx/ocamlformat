@@ -291,7 +291,7 @@ let sequence (conf : Conf.t) cmts xexp =
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
-  let is_valid = function
+  let valid_sugared_name = function
     | Some "_" -> false
     | Some _ -> true
     | None -> false
@@ -301,8 +301,8 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
   | { pmty_desc= Pmty_functor (Named (arg, arg_mty), body)
     ; pmty_loc
     ; pmty_attributes }
-    when for_functor_kw || (List.is_empty pmty_attributes && is_valid arg.txt)
-    ->
+    when for_functor_kw
+         || (List.is_empty pmty_attributes && valid_sugared_name arg.txt) ->
       Cmts.relocate cmts ~src:pmty_loc ~before:arg.loc ~after:body.pmty_loc ;
       let body = sub_mty ~ctx body in
       let xargs, xbody =
@@ -325,7 +325,7 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
-  let is_valid = function
+  let valid_sugared_name = function
     | Some "_" -> false
     | Some _ -> true
     | None -> false
@@ -337,7 +337,8 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
     ; pmod_attributes }
     when for_functor_kw
          || List.is_empty pmod_attributes
-            && not ((not (is_valid arg.txt)) && source_is_long me) ->
+            && not ((not (valid_sugared_name arg.txt)) && source_is_long me)
+    ->
       Cmts.relocate cmts ~src:pmod_loc ~before:arg.loc ~after:body.pmod_loc ;
       let xarg_mt = sub_mty ~ctx arg_mt in
       let ctx = Mod body in
