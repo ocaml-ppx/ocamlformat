@@ -3288,14 +3288,12 @@ and fmt_extension_constructor c sep ctx ec =
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@" atrs ~suf
        $ fmt_docstring_padded c doc )
 
-and fmt_functor_arg c (name, mt) =
+and fmt_functor_arg c arg =
   wrap "(" ")"
-    ( match mt with
-    | None -> fmt_str_loc_opt c name
-    | Some mt ->
-        hovbox 0
-          ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-          $ compose_module (fmt_module_type c mt) ~f:Fn.id ) )
+    (opt arg (fun (name, mt) ->
+         hovbox 0
+           ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
+           $ compose_module (fmt_module_type c mt) ~f:Fn.id )))
 
 and fmt_module_type c ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
@@ -3563,7 +3561,7 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
 
 and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
     xbody xmty attributes =
-  let f (name, xarg) = (name, Option.map ~f:(fmt_module_type c) xarg) in
+  let f = Option.map ~f:(fun (name, x) -> (name, fmt_module_type c x)) in
   let arg_blks = List.map xargs ~f in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
@@ -3576,31 +3574,31 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
   let box_t = wrap_k blk_t.opn blk_t.cls in
   let box_b = wrap_k blk_b.opn blk_b.cls in
-  let fmt_arg ~prev:_ (name, arg_mtyp) ~next =
+  let fmt_arg ~prev:_ arg_mtyp ~next =
     let maybe_box k =
-      match arg_mtyp with Some {pro= None; _} -> hvbox 0 k | _ -> k
+      match arg_mtyp with Some (_, {pro= None; _}) -> hvbox 0 k | _ -> k
     in
     fmt "@ "
     $ maybe_box
         (wrap "(" ")"
-           ( fmt_str_loc_opt c name
-           $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi; opn= _} ->
-                 (* TODO: handle opn *)
-                 str " : "
-                 $ opt pro (fun pro -> pro $ close_box)
-                 $ psp $ bdy
-                 $ fmt_if_k (Option.is_some pro) cls
-                 $ esp
-                 $ ( match next with
-                   | Some (_, Some {opn; pro= Some _; _}) ->
-                       opn $ open_hvbox 0
-                   | _ -> noop )
-                 $ fmt_opt epi) ))
+           (opt arg_mtyp
+              (fun (name, {pro; psp; bdy; cls; esp; epi; opn= _}) ->
+                (* TODO: handle opn *)
+                fmt_str_loc_opt c name $ str " : "
+                $ opt pro (fun pro -> pro $ close_box)
+                $ psp $ bdy
+                $ fmt_if_k (Option.is_some pro) cls
+                $ esp
+                $ ( match next with
+                  | Some (Some (_, {opn; pro= Some _; _})) ->
+                      opn $ open_hvbox 0
+                  | _ -> noop )
+                $ fmt_opt epi)))
   in
   let single_line =
     Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
     && Option.for_all xmty ~f:(fun x -> module_type_is_simple x.ast)
-    && List.for_all xargs ~f:(fun (_, arg) -> Option.is_none arg)
+    && List.for_all xargs ~f:Option.is_none
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
@@ -3619,7 +3617,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                     (Option.is_some blk_t.pro)
                     0
                     ( ( match arg_blks with
-                      | (_, Some {opn; pro= Some _; _}) :: _ ->
+                      | Some (_, {opn; pro= Some _; _}) :: _ ->
                           opn $ open_hvbox 0
                       | _ -> noop )
                     $ hvbox 4

@@ -310,7 +310,7 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
         | [] -> functor_type cmts ~for_functor_kw body
         | _ -> ([], body)
       in
-      ((arg, Some (sub_mty ~ctx arg_mty)) :: xargs, xbody)
+      (Some (arg, sub_mty ~ctx arg_mty) :: xargs, xbody)
   | {pmty_desc= Pmty_functor (Unit, body); pmty_attributes; _}
     when for_functor_kw || List.is_empty pmty_attributes ->
       let body = sub_mty ~ctx body in
@@ -319,7 +319,7 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
         | [] -> functor_type cmts ~for_functor_kw body
         | _ -> ([], body)
       in
-      (({txt= Some ""; loc= Location.none}, None) :: xargs, xbody)
+      (None :: xargs, xbody)
   | _ -> ([], xmty)
 
 (* The sugar is different when used with the [functor] keyword. The syntax
@@ -348,7 +348,7 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
         | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      ((arg, Some xarg_mt) :: xargs, xbody_me)
+      (Some (arg, xarg_mt) :: xargs, xbody_me)
   | {pmod_desc= Pmod_functor (Unit, body); pmod_attributes; _}
     when for_functor_kw
          || (List.is_empty pmod_attributes && not (source_is_long me)) ->
@@ -359,7 +359,7 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
         | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      (({txt= Some ""; loc= Location.none}, None) :: xargs, xbody_me)
+      (None :: xargs, xbody_me)
   | _ -> ([], xme)
 
 let mod_with pmty =
