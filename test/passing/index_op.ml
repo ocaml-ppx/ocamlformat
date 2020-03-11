@@ -136,3 +136,10 @@ let _ =
   | C -> ()
 
 let _ = if a then a.*(if a then b) else c
+
+(* Parentheses needed *)
+let _ = a.*{(a ; b)}
+
+let _ = a.{(a ; b)}
+
+let _ = a.{a, b}
