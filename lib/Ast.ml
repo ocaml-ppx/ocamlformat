@@ -77,126 +77,124 @@ let is_infix e =
   | Pexp_ident {txt= Lident i; _} -> is_infix_id i
   | _ -> false
 
-let parens_kind i =
-  let len = String.length i in
-  if len <= 2 then None
-  else
-    match i with
-    | ".%{;..}" -> Some (".%", '{', '}')
-    | _ -> (
-        let opn, cls = (i.[len - 2], i.[len - 1]) in
-        match (opn, cls) with
-        | '(', ')' | '[', ']' | '{', '}' ->
-            let txt = String.drop_suffix i 2 in
-            Some (txt, opn, cls)
-        | _ -> None )
+module Indexing_op = struct
+  type brackets = Round | Square | Curly
 
-let index_op_get i =
-  match (i.[0], parens_kind i) with
-  | '.', Some (s, o, c) -> Some (s, o, c)
-  | _ -> None
+  type custom_operator =
+    {path: string list; opchars: string; brackets: brackets}
 
-let index_op_set i =
-  match String.chop_suffix i ~suffix:"<-" with
-  | None -> None
-  | Some i -> index_op_get i
+  type indexing_op =
+    | Defined of expression * custom_operator
+    | Extended of expression list * custom_operator
+        (** Take a [Pexp_array] of at least 2 elements *)
+    | Special of expression list * brackets
+        (** Desugared to the application of the corresponding [get] function
+            by the parser. (eg. [Array.get], [String.get]) *)
 
-let index_op_lid i ~f =
-  match List.rev (Longident.flatten i) with
-  | [] -> impossible "not produced by parser"
-  | last :: rev_firsts -> (
-    match f last with
+  type t =
+    { lhs: expression
+    ; op: indexing_op
+    ; rhs: expression option
+    ; loc: Location.t }
+
+  type raw =
+    { opchars: string
+    ; brackets: brackets
+    ; extended: bool  (** eg. [.*{;..}] *)
+    ; has_rhs: bool  (** eg. [.*{}<-] *) }
+
+  let parse ident =
+    match String.chop_prefix ~prefix:"." ident with
     | None -> None
-    | Some (s, o, c) -> (
-      match List.rev rev_firsts with
-      | [] -> Some (s, o, c)
-      | firsts -> Some (String.concat ("." :: firsts) ^ s, o, c) ) )
+    | Some ident ->
+        let ident, has_rhs =
+          match String.chop_suffix ident ~suffix:"<-" with
+          | Some ident -> (ident, true)
+          | None -> (ident, false)
+        in
+        let find_suffix (suffix, brackets, extended) =
+          match String.chop_suffix ident ~suffix with
+          | None -> None
+          | Some opchars -> Some {opchars; brackets; extended; has_rhs}
+        in
+        List.find_map ~f:find_suffix
+          [ ("{}", Curly, false)
+          ; ("[]", Square, false)
+          ; ("()", Round, false)
+          ; ("{;..}", Curly, true)
+          ; ("[;..]", Square, true)
+          ; ("(;..)", Round, true) ]
 
-let index_op_get_lid = index_op_lid ~f:index_op_get
+  let special ~id_tl ~args_tl brackets args =
+    let op = Special (args, brackets) in
+    match (id_tl, args_tl) with
+    | "get", [] -> Some (op, None)
+    | "set", [rhs] -> Some (op, Some rhs)
+    | _ -> None
 
-let index_op_set_lid = index_op_lid ~f:index_op_set
+  let custom ~extended ~rhs op arg1 =
+    match (extended, arg1) with
+    | true, {pexp_desc= Pexp_array (_ :: _ :: _ as args); _} ->
+        Some (Extended (args, op), rhs)
+    | true, _ -> None
+    | false, arg1 -> Some (Defined (arg1, op), rhs)
 
-let index_op_string = (".", '[', ']')
+  let get_sugar_ident ident args =
+    match (Longident.flatten ident, args) with
+    | ["String"; id_tl], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Square [arg1]
+    | ["Array"; id_tl], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Round [arg1]
+    | ["Bigarray"; "Array1"; id_tl], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Curly [arg1]
+    | ["Bigarray"; "Array2"; id_tl], arg1 :: arg2 :: args_tl ->
+        special ~id_tl ~args_tl Curly [arg1; arg2]
+    | ["Bigarray"; "Array3"; id_tl], arg1 :: arg2 :: arg3 :: args_tl ->
+        special ~id_tl ~args_tl Curly [arg1; arg2; arg3]
+    | ( ["Bigarray"; "Genarray"; id_tl]
+      , {pexp_desc= Pexp_array args; _} :: args_tl )
+      when List.length args > 3 ->
+        special ~id_tl ~args_tl Curly args
+    | ident, args -> (
+      match List.rev ident with
+      | [] -> None
+      | ident :: path_rev -> (
+          let path = List.rev path_rev in
+          match parse ident with
+          | None -> None
+          | Some {opchars; brackets; extended; has_rhs} -> (
+              let op = {path; opchars; brackets} in
+              match (has_rhs, args) with
+              | true, [arg1; rhs] -> custom ~extended ~rhs:(Some rhs) op arg1
+              | false, [arg1] -> custom ~extended ~rhs:None op arg1
+              | _, _ -> None ) ) )
 
-let index_op_array = (".", '(', ')')
+  let rec all_args_unlabeled acc = function
+    | [] -> Some (List.rev acc)
+    | (Asttypes.Nolabel, e) :: tl -> all_args_unlabeled (e :: acc) tl
+    | _ :: _ -> None
 
-let index_op_bigarray = (".", '{', '}')
+  let get_sugar ident args =
+    match all_args_unlabeled [] args with
+    | None | Some [] -> None
+    | Some (lhs :: args) -> (
+        let {Location.txt= ident; loc} = ident in
+        match get_sugar_ident ident args with
+        | None -> None
+        | Some (op, rhs) -> Some {lhs; op; rhs; loc} )
+end
 
-let all_args_unlabeled args =
-  List.fold_right args ~init:(Some []) ~f:(fun arg acc ->
-      match (acc, arg) with
-      | Some args, (Asttypes.Nolabel, e) -> Some (e :: args)
-      | _ -> None)
-
-type sep = Comma | Semi
-
-let index_op_get_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
-  match all_args_unlabeled args with
-  | None -> None
-  | Some args -> (
-    match (ident, args) with
-    | Ldot (Lident "String", "get"), [_] ->
-        Some ({Location.txt= index_op_string; loc}, args, Comma)
-    | Ldot (Lident "Array", "get"), [_] ->
-        Some ({Location.txt= index_op_array; loc}, args, Comma)
-    | Ldot (Ldot (Lident "Bigarray", "Array1"), "get"), [_] ->
-        Some ({Location.txt= index_op_bigarray; loc}, args, Comma)
-    | Ldot (Ldot (Lident "Bigarray", "Array2"), "get"), [_; _] ->
-        Some ({Location.txt= index_op_bigarray; loc}, args, Comma)
-    | Ldot (Ldot (Lident "Bigarray", "Array3"), "get"), [_; _; _] ->
-        Some ({Location.txt= index_op_bigarray; loc}, args, Comma)
-    | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "get")
-      , [{pexp_desc= Pexp_array l; _}] )
-      when List.length l > 3 ->
-        Some ({Location.txt= index_op_bigarray; loc}, l, Comma)
-    | lid, args -> (
-      match index_op_get_lid lid with
-      | None -> None
-      | Some index_op -> (
-        match args with
-        | [{pexp_desc= Pexp_array idx; _}] ->
-            Some ({Location.txt= index_op; loc}, idx, Semi)
-        | _ -> Some ({Location.txt= index_op; loc}, args, Comma) ) ) )
-
-let index_op_set_sugar ({txt= ident; loc} : Longident.t Location.loc) args =
-  match all_args_unlabeled args with
-  | None -> None
-  | Some args -> (
-    match (ident, args) with
-    | Ldot (Lident "String", "set"), [a1; e] ->
-        Some ({Location.txt= index_op_string; loc}, [a1], Comma, e)
-    | Ldot (Lident "Array", "set"), [a1; e] ->
-        Some ({Location.txt= index_op_array; loc}, [a1], Comma, e)
-    | Ldot (Ldot (Lident "Bigarray", "Array1"), "set"), [a1; e] ->
-        Some ({Location.txt= index_op_bigarray; loc}, [a1], Comma, e)
-    | Ldot (Ldot (Lident "Bigarray", "Array2"), "set"), [a1; a2; e] ->
-        Some ({Location.txt= index_op_bigarray; loc}, [a1; a2], Comma, e)
-    | Ldot (Ldot (Lident "Bigarray", "Array3"), "set"), [a1; a2; a3; e] ->
-        Some ({Location.txt= index_op_bigarray; loc}, [a1; a2; a3], Comma, e)
-    | ( Ldot (Ldot (Lident "Bigarray", "Genarray"), "set")
-      , [{pexp_desc= Pexp_array l; _}; e] )
-      when List.length l > 3 ->
-        Some ({Location.txt= index_op_bigarray; loc}, l, Comma, e)
-    | lid, [argi; arge] -> (
-      match index_op_set_lid lid with
-      | None -> None
-      | Some index_op -> (
-        match argi.pexp_desc with
-        | Pexp_array idx ->
-            Some ({Location.txt= index_op; loc}, idx, Semi, arge)
-        | _ -> Some ({Location.txt= index_op; loc}, [argi], Comma, arge) ) )
-    | _ -> None )
+let is_index_op_id ident = Option.is_some (Indexing_op.parse ident)
 
 let is_index_op exp =
   match exp.pexp_desc with
-  | Pexp_ident {txt= Lident i; _} ->
-      Option.is_some (index_op_get i) || Option.is_some (index_op_set i)
+  | Pexp_ident {txt= lident; _} -> (
+    match List.last (Longident.flatten lident) with
+    | Some ident -> is_index_op_id ident
+    | None -> false )
   | _ -> false
 
-let is_symbol_id i =
-  is_prefix_id i || is_infix_id i
-  || Option.is_some (index_op_get i)
-  || Option.is_some (index_op_set i)
+let is_symbol_id i = is_prefix_id i || is_infix_id i || is_index_op_id i
 
 let is_symbol e = is_prefix e || is_infix e || is_index_op e
 
@@ -1436,21 +1434,16 @@ end = struct
             assert (Option.value_map default ~default:false ~f || body == exp)
         | Pexp_apply
             ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
-            , e1 :: indices )
-          when Option.is_some (index_op_get_sugar ident indices) ->
-            let _, indices, _ =
-              Option.value_exn (index_op_get_sugar ident indices)
+            , args )
+          when Option.is_some (Indexing_op.get_sugar ident args) ->
+            let op = Option.value_exn (Indexing_op.get_sugar ident args) in
+            let in_args =
+              match op.op with
+              | Defined (e2, _) -> e2 == exp
+              | Extended (args, _) | Special (args, _) -> List.exists args ~f
             in
-            assert (e0 == exp || snd_f e1 || List.exists indices ~f)
-        | Pexp_apply
-            ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
-            , e1 :: indices )
-          when Option.is_some (index_op_set_sugar ident indices) ->
-            let _, indices, _, e =
-              Option.value_exn (index_op_set_sugar ident indices)
-            in
-            assert (
-              e0 == exp || snd_f e1 || List.exists indices ~f || e == exp )
+            let in_rhs = Option.value_map ~default:false ~f op.rhs in
+            assert (e0 == exp || op.lhs == exp || in_args || in_rhs)
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
         | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
@@ -1660,17 +1653,14 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, a1) :: args)
-        when Option.is_some (index_op_get_sugar ident args) ->
-          if a1 == exp then Some (Dot, Left) else Some (LessMinus, Left)
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, a1) :: args)
-        when Option.is_some (index_op_set_sugar ident args) ->
-          let _, _, _, e =
-            Option.value_exn (index_op_set_sugar ident args)
-          in
+      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, ((_, a1) :: _ as args))
+        when Option.is_some (Indexing_op.get_sugar ident args) -> (
+          let op = Option.value_exn (Indexing_op.get_sugar ident args) in
           if a1 == exp then Some (Dot, Left)
-          else if e == exp then Some (LessMinus, Right)
-          else Some (LessMinus, Left)
+          else
+            match op.rhs with
+            | Some e when e == exp -> Some (LessMinus, Right)
+            | _ -> Some (LessMinus, Left) )
       | Pexp_apply
           ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
           let child = if e1 == exp then Left else Right in
@@ -1750,12 +1740,10 @@ end = struct
         | "!=" -> Some Apply
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-        when Option.is_some (index_op_get_sugar ident args) ->
-          Some Dot
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-        when Option.is_some (index_op_set_sugar ident args) ->
-          Some LessMinus
+      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
+        when Option.is_some (Indexing_op.get_sugar ident args) -> (
+          let op = Option.value_exn (Indexing_op.get_sugar ident args) in
+          match op.rhs with Some _ -> Some LessMinus | _ -> Some Dot )
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [_; _])
         -> (
         match (i.[0], i) with
@@ -2135,18 +2123,13 @@ end = struct
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             continue (List.last_exn cases).pc_rhs
-        | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-          when Option.is_some (index_op_set_sugar ident args) ->
-            let _, _, _, e =
-              Option.value_exn (index_op_set_sugar ident args)
-            in
-            continue e
-        | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-          when Option.is_some (index_op_get_sugar ident args) ->
-            let _, indices, _ =
-              Option.value_exn (index_op_get_sugar ident args)
-            in
-            continue (List.last_exn indices)
+        | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
+          when Option.is_some (Indexing_op.get_sugar ident args) -> (
+          match Option.value_exn (Indexing_op.get_sugar ident args) with
+          | {rhs= Some e; _} -> continue e
+          | {op= Defined (arg, _); _} -> continue arg
+          | {op= Extended (args, _); _} | {op= Special (args, _); _} ->
+              continue (List.last_exn args) )
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
         | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
@@ -2220,18 +2203,13 @@ end = struct
           List.iter cases ~f:(fun case ->
               mark_parenzed_inner_nested_match case.pc_rhs) ;
           true
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-        when Option.is_some (index_op_set_sugar ident args) ->
-          let _, _, _, e =
-            Option.value_exn (index_op_set_sugar ident args)
-          in
-          continue e
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, (Nolabel, _) :: args)
-        when Option.is_some (index_op_get_sugar ident args) ->
-          let _, indices, _ =
-            Option.value_exn (index_op_get_sugar ident args)
-          in
-          continue (List.last_exn indices)
+      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
+        when Option.is_some (Indexing_op.get_sugar ident args) -> (
+        match Option.value_exn (Indexing_op.get_sugar ident args) with
+        | {rhs= Some e; _} -> continue e
+        | {op= Defined (arg, _); _} -> continue arg
+        | {op= Extended (args, _); _} | {op= Special (args, _); _} ->
+            continue (List.last_exn args) )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (List.last_exn es)
       | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _

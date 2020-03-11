@@ -26,25 +26,37 @@ val is_infix_id : string -> bool
 val is_infix : expression -> bool
 (** Holds of infix symbol expressions. *)
 
-val index_op_get_lid : Longident.t -> (string * Char.t * Char.t) option
+module Indexing_op : sig
+  type brackets = Round | Square | Curly
 
-val index_op_set_lid : Longident.t -> (string * Char.t * Char.t) option
+  type custom_operator =
+    { path: string list  (** eg. [a.X.Y.*{b}] *)
+    ; opchars: string
+    ; brackets: brackets }
 
-type sep = Comma | Semi
+  type indexing_op =
+    | Defined of expression * custom_operator
+        (** [.*( a )]: take a single argument *)
+    | Extended of expression list * custom_operator
+        (** [.*( a; b; c )]: take several arguments, separated by [;] *)
+    | Special of expression list * brackets
+        (** [.()], [.\[\]] and bigarray operators: take several arguments,
+            separated by [,] *)
 
-val index_op_get_sugar :
-     Longident.t Location.loc
-  -> (Asttypes.arg_label * expression) list
-  -> ((string * Char.t * Char.t) Location.loc * expression list * sep) option
+  type t =
+    { lhs: expression
+    ; op: indexing_op
+    ; rhs: expression option  (** eg. [a.*{b} <- exp] *)
+    ; loc: Location.t }
 
-val index_op_set_sugar :
-     Longident.t Location.loc
-  -> (Asttypes.arg_label * expression) list
-  -> ( (string * Char.t * Char.t) Location.loc
-     * expression list
-     * sep
-     * expression )
-     option
+  val get_sugar :
+       Longident.t Location.loc
+    -> (Asttypes.arg_label * expression) list
+    -> t option
+  (** [get_sugar ident args] is [Some all] if [ident] is an indexing operator
+      and it's safe to use the sugar syntax, [None] otherwise. [args] should
+      be the arguments of the corresponding [Pexp_apply]. *)
+end
 
 val is_monadic_binding_id : string -> bool
 

@@ -6,3 +6,9 @@ let () =
   let x = Genarray.create Float64 c_layout [|3; 4; 5|] in
   x.%{0; 0; 0} <- 3. ;
   Printf.printf "%f\n" x.%{0; 0; 0}
+
+(** With path *)
+
+let _ = a.A.B.*(b; c)
+
+let _ = a.A.B.*(b; c) <- d

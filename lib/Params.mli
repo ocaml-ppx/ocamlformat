@@ -118,5 +118,4 @@ val comma_sep : Conf.t -> Fmt.s
     with a comma, depending on the `break-separators` option. *)
 
 val semi_sep : Conf.t -> Fmt.s
-(** [semi_sep c] returns the format string used to separate two elements with
-    a semicolon, depending on the `break-separators` option. *)
+(** Like [comma_sep] but use a semicolon as separator. *)
