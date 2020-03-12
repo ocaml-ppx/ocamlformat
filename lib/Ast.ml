@@ -1653,14 +1653,14 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, ((_, a1) :: _ as args))
+      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
         when Option.is_some (Indexing_op.get_sugar ident args) -> (
           let op = Option.value_exn (Indexing_op.get_sugar ident args) in
-          if a1 == exp then Some (Dot, Left)
+          if op.lhs == exp then Some (Dot, Left)
           else
             match op.rhs with
             | Some e when e == exp -> Some (LessMinus, Right)
-            | _ -> Some (LessMinus, Left) )
+            | _ -> Some (Low, Left) )
       | Pexp_apply
           ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
           let child = if e1 == exp then Left else Right in
@@ -2124,12 +2124,8 @@ end = struct
           ->
             continue (List.last_exn cases).pc_rhs
         | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
-          when Option.is_some (Indexing_op.get_sugar ident args) -> (
-          match Option.value_exn (Indexing_op.get_sugar ident args) with
-          | {rhs= Some e; _} -> continue e
-          | {op= Defined (arg, _); _} -> continue arg
-          | {op= Extended (args, _); _} | {op= Special (args, _); _} ->
-              continue (List.last_exn args) )
+          when Option.is_some (Indexing_op.get_sugar ident args) ->
+            false
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
         | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
@@ -2207,9 +2203,7 @@ end = struct
         when Option.is_some (Indexing_op.get_sugar ident args) -> (
         match Option.value_exn (Indexing_op.get_sugar ident args) with
         | {rhs= Some e; _} -> continue e
-        | {op= Defined (arg, _); _} -> continue arg
-        | {op= Extended (args, _); _} | {op= Special (args, _); _} ->
-            continue (List.last_exn args) )
+        | {rhs= None; _} -> false )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (List.last_exn es)
       | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
@@ -2236,6 +2230,11 @@ end = struct
           when e2 == exp && is_infix_id i
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
                       compare_prec p Apply < 0) ->
+            true
+        | Pexp_apply
+            ({pexp_desc= Pexp_ident lid; _}, (_ :: (_, e2) :: _ as args))
+          when e2 == exp && Option.is_some (Indexing_op.get_sugar lid args)
+          ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
