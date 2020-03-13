@@ -10,10 +10,10 @@
  **********************************************************************)
 
 val selected_version :
-  Migrate_parsetree.Versions.OCaml_408.types
+  Migrate_parsetree.Versions.OCaml_410.types
   Migrate_parsetree.Versions.ocaml_version
 
-module Selected_version = Ast_408
+module Selected_version = Ast_410
 module Ast_mapper = Selected_version.Ast_mapper
 module Ast_helper = Selected_version.Ast_helper
 

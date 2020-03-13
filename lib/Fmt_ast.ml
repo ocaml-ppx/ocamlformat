@@ -218,6 +218,9 @@ let fmt_longident_loc c ?pre {txt; loc} =
 
 let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (fmt_opt pre $ str txt)
 
+let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
+  Cmts.fmt c loc (fmt_opt pre $ str (Option.value ~default txt))
+
 let char_escaped c ~loc chr =
   match (c.conf.escape_chars, chr) with
   | `Hexadecimal, _ -> Format.sprintf "\\x%02x" (Char.to_int chr)
@@ -1110,7 +1113,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
               (Cmts.fmt c typ.ptyp_loc
                  ( hovbox 0
                      ( Cmts.fmt c ppat_loc
-                         (str "module " $ fmt_str_loc c name)
+                         (str "module " $ fmt_str_loc_opt c name)
                      $ fmt "@ : " $ fmt_longident_loc c id )
                  $ fmt_package_type c ctx cnstrs ))))
   | Ppat_constraint (pat, typ) ->
@@ -1128,7 +1131,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            (fmt "lazy@ " $ fmt_pattern c (sub_pat ~ctx pat)))
   | Ppat_unpack name ->
       wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-        (fmt "module@ " $ fmt_str_loc c name)
+        (fmt "module@ " $ fmt_str_loc_opt c name)
   | Ppat_exception pat ->
       cbox 2
         (wrap_if parens "(" ")"
@@ -3285,14 +3288,15 @@ and fmt_extension_constructor c sep ctx ec =
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@" atrs ~suf
        $ fmt_docstring_padded c doc )
 
-and fmt_functor_arg c (name, mt) =
-  wrap "(" ")"
-    ( match mt with
-    | None -> fmt_str_loc c name
-    | Some mt ->
-        hovbox 0
-          ( hovbox 0 (fmt_str_loc c name $ fmt "@ : ")
-          $ compose_module (fmt_module_type c mt) ~f:Fn.id ) )
+and fmt_functor_arg c {loc; txt= arg} =
+  match arg with
+  | Sugar.Unit -> Cmts.fmt c loc (str "()")
+  | Sugar.Named (name, mt) ->
+      Cmts.fmt c loc
+        (wrap "(" ")"
+           (hovbox 0
+              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
+              $ compose_module (fmt_module_type c mt) ~f:Fn.id )))
 
 and fmt_module_type c ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
@@ -3560,8 +3564,15 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
 
 and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
     xbody xmty attributes =
-  let f (name, xarg) = (name, Option.map ~f:(fmt_module_type c) xarg) in
-  let arg_blks = List.map xargs ~f in
+  let arg_blks =
+    List.map xargs ~f:(fun {loc; txt} ->
+        let txt =
+          match txt with
+          | Sugar.Unit -> `Unit
+          | Sugar.Named (name, x) -> `Named (name, fmt_module_type c x)
+        in
+        {loc; txt})
+  in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
         let blk = fmt_module_type c xmty in
@@ -3573,31 +3584,35 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
   let box_t = wrap_k blk_t.opn blk_t.cls in
   let box_b = wrap_k blk_b.opn blk_b.cls in
-  let fmt_arg ~prev:_ (name, arg_mtyp) ~next =
+  let fmt_arg ~prev:_ arg_mtyp ~next =
     let maybe_box k =
-      match arg_mtyp with Some {pro= None; _} -> hvbox 0 k | _ -> k
+      match arg_mtyp.txt with
+      | `Named (_, {pro= None; _}) -> hvbox 0 k
+      | _ -> k
     in
     fmt "@ "
     $ maybe_box
-        (wrap "(" ")"
-           ( fmt_str_loc c name
-           $ opt arg_mtyp (fun {pro; psp; bdy; cls; esp; epi; opn= _} ->
-                 (* TODO: handle opn *)
-                 str " : "
-                 $ opt pro (fun pro -> pro $ close_box)
-                 $ psp $ bdy
-                 $ fmt_if_k (Option.is_some pro) cls
-                 $ esp
-                 $ ( match next with
-                   | Some (_, Some {opn; pro= Some _; _}) ->
-                       opn $ open_hvbox 0
-                   | _ -> noop )
-                 $ fmt_opt epi) ))
+        (Cmts.fmt c arg_mtyp.loc
+           (wrap "(" ")"
+              ( match arg_mtyp.txt with
+              | `Unit -> noop
+              | `Named (name, {pro; psp; bdy; cls; esp; epi; opn= _}) ->
+                  (* TODO: handle opn *)
+                  fmt_str_loc_opt c name $ str " : "
+                  $ opt pro (fun pro -> pro $ close_box)
+                  $ psp $ bdy
+                  $ fmt_if_k (Option.is_some pro) cls
+                  $ esp
+                  $ ( match next with
+                    | Some {txt= `Named (_, {opn; pro= Some _; _}); _} ->
+                        opn $ open_hvbox 0
+                    | _ -> noop )
+                  $ fmt_opt epi )))
   in
   let single_line =
     Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
     && Option.for_all xmty ~f:(fun x -> module_type_is_simple x.ast)
-    && List.for_all xargs ~f:(fun (_, arg) -> Option.is_none arg)
+    && List.for_all xargs ~f:(function {txt= Unit; _} -> true | _ -> false)
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
@@ -3616,11 +3631,11 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                     (Option.is_some blk_t.pro)
                     0
                     ( ( match arg_blks with
-                      | (_, Some {opn; pro= Some _; _}) :: _ ->
+                      | {txt= `Named (_, {opn; pro= Some _; _}); _} :: _ ->
                           opn $ open_hvbox 0
                       | _ -> noop )
                     $ hvbox 4
-                        ( keyword $ str " " $ fmt_str_loc c name
+                        ( keyword $ str " " $ fmt_str_loc_opt c name
                         $ list_pn arg_blks fmt_arg )
                     $ fmt_opt blk_t.pro )
                 $ blk_t.psp $ blk_t.bdy )
@@ -3673,6 +3688,7 @@ and fmt_module_substitution c ctx pms =
       ; pmty_loc= pms_loc
       ; pmty_attributes= [] }
   in
+  let pms_name = {pms_name with txt= Some pms_name.txt} in
   Cmts.fmt c pms_loc
     (fmt_module c (str "module") ~eqty:":=" pms_name [] None (Some xmty)
        pms_attributes)
@@ -3681,6 +3697,7 @@ and fmt_module_type_declaration c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
   update_config_maybe_disabled c pmtd_loc pmtd_attributes
   @@ fun c ->
+  let pmtd_name = {pmtd_name with txt= Some pmtd_name.txt} in
   fmt_module c (str "module type") pmtd_name [] None
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes

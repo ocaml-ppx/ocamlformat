@@ -1649,6 +1649,18 @@
  (action (diff module.ml module.ml.output)))
 
 (rule
+ (targets module_anonymous.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{dep:module_anonymous.ml}"))))
+
+(alias
+ (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.10.0))
+ (action (diff module_anonymous.ml module_anonymous.ml.output)))
+
+(rule
  (targets module_attributes.ml.output)
  (deps .ocamlformat )
  (action

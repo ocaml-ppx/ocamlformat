@@ -223,6 +223,8 @@ type t =
 
 let y = f (* a *) (* b *) x
 
+module A (* A *) () (* B *) = (* C *) B
+
 let kk = (* foo *) (module A : T)
 
 let kk = ((* foo *) (module A : T))
