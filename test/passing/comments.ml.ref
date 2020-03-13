@@ -315,6 +315,10 @@ let y =
     (* b *)
     x
 
+module A (* A *) () = (* B *)
+                      (* C *)
+  B
+
 let kk = (* foo *) (module A : T)
 
 let kk = (* foo *) (module A : T)
