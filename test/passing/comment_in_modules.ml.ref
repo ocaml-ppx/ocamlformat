@@ -20,9 +20,9 @@ module Mmmmmmmmmmmmmmmmmmmmmm =
 module Fffffffffffffff (Yyyyyyyyyyyyyyy : Z.S) =
   Gggggggggg (Wwwwwwwwww.Make (Yyyyyyyyyy))
 
-module A ((* comment *) A : sig end) : sig end = struct end
+module A (* comment *) (A : sig end) : sig end = struct end
 
-module A (A : sig end) ((* comment *) B : sig end) : sig end = struct end
+module A (A : sig end) (* comment *) (B : sig end) : sig end = struct end
 
 module A (A : sig end) : sig end = (* comment *) struct end
 

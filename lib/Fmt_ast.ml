@@ -3288,12 +3288,15 @@ and fmt_extension_constructor c sep ctx ec =
        $ fmt_attributes c ~pre:(fmt "@ ") ~key:"@" atrs ~suf
        $ fmt_docstring_padded c doc )
 
-and fmt_functor_arg c arg =
-  wrap "(" ")"
-    (opt arg (fun (name, mt) ->
-         hovbox 0
-           ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-           $ compose_module (fmt_module_type c mt) ~f:Fn.id )))
+and fmt_functor_arg c {loc; txt= arg} =
+  match arg with
+  | Sugar.Unit -> Cmts.fmt c loc (str "()")
+  | Sugar.Named (name, mt) ->
+      Cmts.fmt c loc
+        (wrap "(" ")"
+           (hovbox 0
+              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
+              $ compose_module (fmt_module_type c mt) ~f:Fn.id )))
 
 and fmt_module_type c ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
@@ -3561,8 +3564,15 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
 
 and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
     xbody xmty attributes =
-  let f = Option.map ~f:(fun (name, x) -> (name, fmt_module_type c x)) in
-  let arg_blks = List.map xargs ~f in
+  let arg_blks =
+    List.map xargs ~f:(fun {loc; txt} ->
+        let txt =
+          match txt with
+          | Sugar.Unit -> `Unit
+          | Sugar.Named (name, x) -> `Named (name, fmt_module_type c x)
+        in
+        {loc; txt})
+  in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
         let blk = fmt_module_type c xmty in
@@ -3576,29 +3586,33 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
   let box_b = wrap_k blk_b.opn blk_b.cls in
   let fmt_arg ~prev:_ arg_mtyp ~next =
     let maybe_box k =
-      match arg_mtyp with Some (_, {pro= None; _}) -> hvbox 0 k | _ -> k
+      match arg_mtyp.txt with
+      | `Named (_, {pro= None; _}) -> hvbox 0 k
+      | _ -> k
     in
     fmt "@ "
     $ maybe_box
-        (wrap "(" ")"
-           (opt arg_mtyp
-              (fun (name, {pro; psp; bdy; cls; esp; epi; opn= _}) ->
-                (* TODO: handle opn *)
-                fmt_str_loc_opt c name $ str " : "
-                $ opt pro (fun pro -> pro $ close_box)
-                $ psp $ bdy
-                $ fmt_if_k (Option.is_some pro) cls
-                $ esp
-                $ ( match next with
-                  | Some (Some (_, {opn; pro= Some _; _})) ->
-                      opn $ open_hvbox 0
-                  | _ -> noop )
-                $ fmt_opt epi)))
+        (Cmts.fmt c arg_mtyp.loc
+           (wrap "(" ")"
+              ( match arg_mtyp.txt with
+              | `Unit -> noop
+              | `Named (name, {pro; psp; bdy; cls; esp; epi; opn= _}) ->
+                  (* TODO: handle opn *)
+                  fmt_str_loc_opt c name $ str " : "
+                  $ opt pro (fun pro -> pro $ close_box)
+                  $ psp $ bdy
+                  $ fmt_if_k (Option.is_some pro) cls
+                  $ esp
+                  $ ( match next with
+                    | Some {txt= `Named (_, {opn; pro= Some _; _}); _} ->
+                        opn $ open_hvbox 0
+                    | _ -> noop )
+                  $ fmt_opt epi )))
   in
   let single_line =
     Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
     && Option.for_all xmty ~f:(fun x -> module_type_is_simple x.ast)
-    && List.for_all xargs ~f:Option.is_none
+    && List.for_all xargs ~f:(function {txt= Unit; _} -> true | _ -> false)
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in
@@ -3617,7 +3631,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                     (Option.is_some blk_t.pro)
                     0
                     ( ( match arg_blks with
-                      | Some (_, {opn; pro= Some _; _}) :: _ ->
+                      | {txt= `Named (_, {opn; pro= Some _; _}); _} :: _ ->
                           opn $ open_hvbox 0
                       | _ -> noop )
                     $ hvbox 4

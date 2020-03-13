@@ -106,11 +106,17 @@ val sequence :
 (** [sequence conf cmts exp] returns the list of expressions (with the
     optional extension) from a sequence of expressions [exp]. *)
 
+type functor_arg =
+  | Unit
+  | Named of label option loc * module_type Ast.xt
+      (** Equivalent of the [Parsetree.functor_parameter] type with a
+          contextualized module type. *)
+
 val functor_type :
      Cmts.t
   -> for_functor_kw:bool
   -> module_type Ast.xt
-  -> (label option loc * module_type Ast.xt) option list * module_type Ast.xt
+  -> functor_arg loc list * module_type Ast.xt
 (** [functor_type cmts for_functor_kw m] returns the list of module types
     applied to the functor of module type [m]. [for_functor_kw] indicates if
     the keyword [functor] is used. *)
@@ -120,7 +126,7 @@ val functor_ :
   -> for_functor_kw:bool
   -> source_is_long:(module_expr -> bool)
   -> module_expr Ast.xt
-  -> (label option loc * module_type Ast.xt) option list * module_expr Ast.xt
+  -> functor_arg loc list * module_expr Ast.xt
 (** [functor_ cmts for_functor_kw m] returns the list of module types applied
     to the functor of module [m]. [for_functor_kw] indicates if the keyword
     [functor] is used. *)

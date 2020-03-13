@@ -288,6 +288,8 @@ let sequence (conf : Conf.t) cmts xexp =
   in
   sequence_ xexp
 
+type functor_arg = Unit | Named of label option loc * module_type Ast.xt
+
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
@@ -303,15 +305,15 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
     ; pmty_attributes }
     when for_functor_kw
          || (List.is_empty pmty_attributes && valid_sugared_name arg.txt) ->
-      Cmts.relocate cmts ~src:pmty_loc ~before:arg.loc ~after:body.pmty_loc ;
+      let xarg_mty = sub_mty ~ctx arg_mty in
       let body = sub_mty ~ctx body in
       let xargs, xbody =
         match pmty_attributes with
         | [] -> functor_type cmts ~for_functor_kw body
         | _ -> ([], body)
       in
-      (Some (arg, sub_mty ~ctx arg_mty) :: xargs, xbody)
-  | {pmty_desc= Pmty_functor (Unit, body); pmty_attributes; _}
+      (Location.mkloc (Named (arg, xarg_mty)) pmty_loc :: xargs, xbody)
+  | {pmty_desc= Pmty_functor (Unit, body); pmty_loc; pmty_attributes}
     when for_functor_kw || List.is_empty pmty_attributes ->
       let body = sub_mty ~ctx body in
       let xargs, xbody =
@@ -319,7 +321,7 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
         | [] -> functor_type cmts ~for_functor_kw body
         | _ -> ([], body)
       in
-      (None :: xargs, xbody)
+      (Location.mkloc Unit pmty_loc :: xargs, xbody)
   | _ -> ([], xmty)
 
 (* The sugar is different when used with the [functor] keyword. The syntax
@@ -339,7 +341,6 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
          || List.is_empty pmod_attributes
             && not ((not (valid_sugared_name arg.txt)) && source_is_long me)
     ->
-      Cmts.relocate cmts ~src:pmod_loc ~before:arg.loc ~after:body.pmod_loc ;
       let xarg_mt = sub_mty ~ctx arg_mt in
       let ctx = Mod body in
       let body = sub_mod ~ctx body in
@@ -348,8 +349,8 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
         | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      (Some (arg, xarg_mt) :: xargs, xbody_me)
-  | {pmod_desc= Pmod_functor (Unit, body); pmod_attributes; _}
+      (Location.mkloc (Named (arg, xarg_mt)) pmod_loc :: xargs, xbody_me)
+  | {pmod_desc= Pmod_functor (Unit, body); pmod_loc; pmod_attributes}
     when for_functor_kw
          || (List.is_empty pmod_attributes && not (source_is_long me)) ->
       let ctx = Mod body in
@@ -359,7 +360,7 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
         | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      (None :: xargs, xbody_me)
+      (Location.mkloc Unit pmod_loc :: xargs, xbody_me)
   | _ -> ([], xme)
 
 let mod_with pmty =
