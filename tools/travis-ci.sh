@@ -13,7 +13,7 @@
 
 # Warning: this script should only be called from .travis.yml
 
-set -e
+set -ex
 
 CheckBuild () {
     # before_install
