@@ -2288,9 +2288,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
-           ( fmt_expression c (sub_exp ~ctx e1)
-           $ str "." $ fmt_longident_loc c lid $ fmt_assign_arrow c
-           $ fmt_expression c (sub_exp ~ctx e2)
+           ( wrap_if has_attr "(" ")"
+               ( fmt_expression c (sub_exp ~ctx e1)
+               $ str "." $ fmt_longident_loc c lid $ fmt_assign_arrow c
+               $ fmt_expression c (sub_exp ~ctx e2) )
            $ fmt_atrs ))
   | Pexp_tuple es ->
       let parens =
