@@ -89,6 +89,7 @@ module Make (C : CONFIG) = struct
   let section_name = function
     | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
     | `Operational -> Cmdliner.Manpage.s_options
+    | `Removed -> Cmdliner.Manpage.s_options ^ " (REMOVED OPTIONS)"
 
   let from = `Default
 
@@ -202,6 +203,35 @@ module Make (C : CONFIG) = struct
         all
     in
     any conv ~default ~docv ~names ~doc ~section ~allow_inline ?deprecated
+
+  let removed_option ~names ~version ~msg =
+    let msg =
+      Format.asprintf "This option has been removed in version %s. %s"
+        version msg
+    in
+    let parse _ = Error (`Msg msg) in
+    let converter = Arg.conv (parse, fun _ () -> ()) in
+    let update conf _ = conf and get_value _ = () in
+    let docs = section_name `Removed in
+    let term =
+      Arg.(value & opt (some converter) None & info names ~doc:msg ~docs)
+    in
+    let r = mk ~default:None term in
+    let to_string _ = "" in
+    let cmdline_get () = !r in
+    let opt =
+      { names
+      ; parse
+      ; update
+      ; cmdline_get
+      ; allow_inline= true
+      ; default= ()
+      ; to_string
+      ; get_value
+      ; from
+      ; deprecated= false }
+    in
+    store := Pack opt :: !store
 
   let update_from config name from =
     let is_profile_option_name x =
