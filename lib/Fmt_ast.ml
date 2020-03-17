@@ -2392,8 +2392,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_setinstvar (name, expr) ->
       hvbox 0
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
-           ( fmt_str_loc c name $ fmt_assign_arrow c
-           $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) ))
+           ( wrap_if has_attr "(" ")"
+               ( fmt_str_loc c name $ fmt_assign_arrow c
+               $ hvbox 2 (fmt_expression c (sub_exp ~ctx expr)) )
+           $ fmt_atrs ))
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
   | Pexp_letop {let_; ands; body} ->

@@ -216,3 +216,14 @@ let _ = (0 + 0) [@a]
 let _ = (a.x <- 1) [@a]
 
 let _ = f ((a.x <- 1) [@a])
+
+let _ =
+  object
+    method g = ((a <- b) [@a])
+
+    method h = f ((a <- b) [@a])
+
+    method i =
+      ((a <- b) [@a]) ;
+      ()
+  end
