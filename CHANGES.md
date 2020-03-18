@@ -45,6 +45,8 @@
 
   + Remove unecessary parentheses in the argument of indexing operators (#1280) (Jules Aguillon)
 
+  + Retain attributes on field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
