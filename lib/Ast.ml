@@ -866,14 +866,6 @@ and Requires_sub_terms : sig
 
   val exposed_left_exp : expression -> bool
 
-  val exposed_left_typ : core_type -> bool
-
-  val exposed_right_typ : core_type -> bool
-
-  val exposed_right_label_declaration : label_declaration -> bool
-
-  val exposed_right_row_field : row_field -> bool
-
   val prec_ast : T.t -> prec option
 
   val parenze_typ : core_type In_ctx.xt -> bool
@@ -2406,33 +2398,6 @@ end = struct
     | None -> false
     | Some (Some true) -> true
     | _ -> exposed_right_cl Non_apply cl
-
-  let rec exposed_left_typ typ =
-    match typ.ptyp_desc with
-    | Ptyp_arrow (_, t, _) -> exposed_left_typ t
-    | Ptyp_tuple l -> exposed_left_typ (List.hd_exn l)
-    | Ptyp_object _ -> true
-    | Ptyp_alias (typ, _) -> exposed_left_typ typ
-    | _ -> false
-
-  let rec exposed_right_typ = function
-    | {ptyp_attributes= _ :: _; _} -> false
-    | {ptyp_desc; _} -> (
-      match ptyp_desc with
-      | Ptyp_arrow (_, _, t) -> exposed_right_typ t
-      | Ptyp_tuple l -> exposed_right_typ (List.last_exn l)
-      | Ptyp_object _ -> true
-      | _ -> false )
-
-  let exposed_right_label_declaration = function
-    | {pld_attributes= _ :: _; _} -> false
-    | {pld_type; _} -> exposed_right_typ pld_type
-
-  let exposed_right_row_field = function
-    | {prf_attributes= _ :: _; _} -> false
-    | {prf_desc= Rinherit _; _} -> false
-    | {prf_desc= Rtag (_, _, cs); _} -> (
-      match List.last cs with None -> false | Some x -> exposed_right_typ x )
 
   let parenze_nested_exp {ctx; ast= exp} =
     let infix_prec ast =
