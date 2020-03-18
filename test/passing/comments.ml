@@ -1,3 +1,6 @@
+(*
+*)
+
 let _ = f (*f*)a(*a*) ~b(*comment*) ~c:(*comment*)c' ?d ?e ()
 
 let _ =
