@@ -1966,6 +1966,17 @@
  (action (diff profiles2.ml profiles2.ml.output)))
 
 (rule
+ (targets protected_object_types.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{dep:protected_object_types.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff protected_object_types.ml protected_object_types.ml.output)))
+
+(rule
  (targets recmod.mli.output)
  (deps .ocamlformat )
  (action
