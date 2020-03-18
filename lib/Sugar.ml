@@ -14,7 +14,7 @@ open Asttypes
 open Parsetree
 open Ast
 
-let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
+let rec arrow_typ conf cmts i ({ast= typ; _} as xtyp) =
   let ctx = Typ typ in
   let {ptyp_desc; ptyp_loc; _} = typ in
   match ptyp_desc with
@@ -23,15 +23,15 @@ let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
       Cmts.relocate cmts ~src:ptyp_loc ~before ~after:t2.ptyp_loc ;
       let rest =
         match t2.ptyp_attributes with
-        | [] -> arrow_typ cmts (i + 1) (sub_typ ~ctx t2)
-        | _ -> [(ptyp_loc, Nolabel, sub_typ ~ctx t2)]
+        | [] -> arrow_typ conf cmts (i + 1) (sub_typ conf ~ctx t2)
+        | _ -> [(ptyp_loc, Nolabel, sub_typ conf ~ctx t2)]
       in
-      (ptyp_loc, l, sub_typ ~ctx t1) :: rest
+      (ptyp_loc, l, sub_typ conf ~ctx t1) :: rest
   | _ -> [(ptyp_loc, Nolabel, xtyp)]
 
-let arrow_typ cmts t = arrow_typ cmts 0 t
+let arrow_typ conf cmts t = arrow_typ conf cmts 0 t
 
-let rec class_arrow_typ cmts ({ast= typ; _} as xtyp) =
+let rec class_arrow_typ conf cmts ({ast= typ; _} as xtyp) =
   let ctx = Cty typ in
   let {pcty_desc; pcty_loc; _} = typ in
   match pcty_desc with
@@ -39,10 +39,10 @@ let rec class_arrow_typ cmts ({ast= typ; _} as xtyp) =
       Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:t2.pcty_loc ;
       let rest =
         match t2.pcty_attributes with
-        | [] -> class_arrow_typ cmts (sub_cty ~ctx t2)
+        | [] -> class_arrow_typ conf cmts (sub_cty ~ctx t2)
         | _ -> [(Nolabel, `class_type (sub_cty ~ctx t2))]
       in
-      (l, `core_type (sub_typ ~ctx t1)) :: rest
+      (l, `core_type (sub_typ conf ~ctx t1)) :: rest
   | _ -> [(Nolabel, `class_type xtyp)]
 
 let rec or_pat ?(allow_attribute = true) cmts ({ast= pat; _} as xpat) =
@@ -125,7 +125,7 @@ let infix conf cmts prec xexp =
     let ctx = Exp exp in
     match (assoc, exp) with
     | Left, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal equal_prec prec (prec_ast (Exp exp)) ->
+      when Option.equal equal_prec prec (prec_ast conf (Exp exp)) ->
         let op_args1 = infix_ None (l1, sub_exp conf ~ctx e1) in
         let src = pexp_loc in
         let after = e2.pexp_loc in
@@ -138,7 +138,7 @@ let infix conf cmts prec xexp =
               Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after ) ;
         op_args1 @ [(Some (sub_exp conf ~ctx e0), [(l2, sub_exp conf ~ctx e2)])]
     | Right, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal equal_prec prec (prec_ast (Exp exp)) ->
+      when Option.equal equal_prec prec (prec_ast conf (Exp exp)) ->
         let op_args2 =
           infix_ (Some (sub_exp conf ~ctx e0)) (l2, sub_exp conf ~ctx e2)
         in
@@ -358,7 +358,7 @@ let polynewtype conf cmts pat body =
         let ctx = Exp body in
         match (pvars, body.pexp_desc) with
         | [], Pexp_constraint (exp, typ) ->
-            Some (xpat, pvars0, sub_typ ~ctx typ, sub_exp conf ~ctx exp)
+            Some (xpat, pvars0, sub_typ conf ~ctx typ, sub_exp conf ~ctx exp)
         | ( {txt= pvar; loc= loc1} :: pvars
           , Pexp_newtype ({txt= nvar; loc= loc2}, exp) )
           when String.equal pvar nvar ->

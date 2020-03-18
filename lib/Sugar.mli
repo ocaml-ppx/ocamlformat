@@ -14,14 +14,16 @@ open Asttypes
 open Parsetree
 
 val arrow_typ :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> core_type Ast.xt
   -> (Location.t * arg_label * core_type Ast.xt) list
 (** [arrow_typ cmts ty] returns the list of labeled sub-arrow types of the
     type [ty]. *)
 
 val class_arrow_typ :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> class_type Ast.xt
   -> ( arg_label
      * [`class_type of class_type Ast.xt | `core_type of core_type Ast.xt] )

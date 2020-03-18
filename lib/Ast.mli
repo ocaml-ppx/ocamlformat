@@ -161,7 +161,7 @@ val assoc_of_prec : prec -> assoc
     immediate sub-term of [ctx]. *)
 type 'a xt = private {ctx: t; ast: 'a}
 
-val sub_typ : ctx:t -> core_type -> core_type xt
+val sub_typ : Conf.t -> ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)
 
 val sub_cty : ctx:t -> class_type -> class_type xt
@@ -203,15 +203,15 @@ val exposed_left_exp : expression -> bool
 (** [exposed_left_exp exp] holds if the left-most subexpression of [exp] is a
     prefix operators. *)
 
-val prec_ast : t -> prec option
+val prec_ast : Conf.t -> t -> prec option
 (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
     operators, otherwise returns [None]. *)
 
-val parenze_typ : core_type xt -> bool
+val parenze_typ : Conf.t -> core_type xt -> bool
 (** [parenze_typ xtyp] holds when core_type-in-context [xtyp] should be
     parenthesized. *)
 
-val parenze_cty : class_type xt -> bool
+val parenze_cty : Conf.t -> class_type xt -> bool
 (** [parenze_cty xcty] holds when class_type-in-context [xcty] should be
     parenthesized. *)
 
@@ -227,7 +227,7 @@ val parenze_exp : Conf.t -> expression xt -> bool
 (** [parenze_exp xexp] holds when expression-in-context [xexp] should be
     parenthesized. *)
 
-val parenze_nested_exp : expression xt -> bool
+val parenze_nested_exp : Conf.t -> expression xt -> bool
 (** [parenze_nested_exp xexp] holds when nested expression-in-context [xexp]
     should be parenthesized. *)
 

@@ -804,7 +804,7 @@ module rec In_ctx : sig
 
   val sub_ast : ctx:T.t -> T.t -> T.t xt
 
-  val sub_typ : ctx:T.t -> core_type -> core_type xt
+  val sub_typ : Conf.t -> ctx:T.t -> core_type -> core_type xt
 
   val sub_cty : ctx:T.t -> class_type -> class_type xt
 
@@ -828,7 +828,7 @@ end = struct
 
   let sub_ast ~ctx ast = {ctx; ast}
 
-  let sub_typ ~ctx typ = check parenze_typ {ctx; ast= typ}
+  let sub_typ conf ~ctx typ = check (parenze_typ conf) {ctx; ast= typ}
 
   let sub_cty ~ctx cty = {ctx; ast= cty}
 
@@ -859,15 +859,15 @@ and Requires_sub_terms : sig
 
   val exposed_left_exp : expression -> bool
 
-  val prec_ast : T.t -> prec option
+  val prec_ast : Conf.t -> T.t -> prec option
 
-  val parenze_typ : core_type In_ctx.xt -> bool
+  val parenze_typ : Conf.t -> core_type In_ctx.xt -> bool
 
   val parenze_mty : module_type In_ctx.xt -> bool
 
   val parenze_mod : module_expr In_ctx.xt -> bool
 
-  val parenze_cty : class_type In_ctx.xt -> bool
+  val parenze_cty : Conf.t -> class_type In_ctx.xt -> bool
 
   val parenze_cl : Conf.t -> class_expr In_ctx.xt -> bool
 
@@ -875,7 +875,7 @@ and Requires_sub_terms : sig
 
   val parenze_exp : Conf.t -> expression In_ctx.xt -> bool
 
-  val parenze_nested_exp : expression In_ctx.xt -> bool
+  val parenze_nested_exp : Conf.t -> expression In_ctx.xt -> bool
 end = struct
   open In_ctx
 
@@ -1694,7 +1694,7 @@ end = struct
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
       operators, otherwise returns [None]. *)
-  let prec_ast = function
+  let prec_ast _conf = function
     | Pld _ -> None
     | Typ {ptyp_desc; _} -> (
       match ptyp_desc with
@@ -1793,10 +1793,10 @@ end = struct
       [ctx], indicating that [ast] should be parenthesized. Meaningful for
       binary operators, otherwise returns [None] if [ctx] has no precedence
       or [Some None] if [ctx] does but [ast] does not. *)
-  let ambig_prec ({ast; _} as xast) =
+  let ambig_prec conf ({ast; _} as xast) =
     prec_ctx xast
     >>| fun (prec_ctx, which_child) ->
-    prec_ast ast
+    prec_ast conf ast
     >>| fun prec_ast ->
     match compare_prec prec_ctx prec_ast with
     | 0 ->
@@ -1813,7 +1813,7 @@ end = struct
 
   (** [parenze_typ {ctx; ast}] holds when type [ast] should be parenthesized
       in context [ctx]. *)
-  let parenze_typ ({ctx; ast= typ} as xtyp) =
+  let parenze_typ conf ({ctx; ast= typ} as xtyp) =
     assert_check_typ xtyp ;
     match xtyp with
     | {ast= {ptyp_desc= Ptyp_package _; _}; _} -> true
@@ -1856,15 +1856,15 @@ end = struct
       when List.exists t ~f:(phys_equal typ) ->
         true
     | _ -> (
-      match ambig_prec (sub_ast ~ctx (Typ typ)) with
+      match ambig_prec conf (sub_ast ~ctx (Typ typ)) with
       | Some (Some true) -> true
       | _ -> false )
 
   (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
       parenthesized in context [ctx]. *)
-  let parenze_cty ({ctx; ast= cty} as xcty) =
+  let parenze_cty conf ({ctx; ast= cty} as xcty) =
     assert_check_cty xcty ;
-    match ambig_prec (sub_ast ~ctx (Cty cty)) with
+    match ambig_prec conf (sub_ast ~ctx (Cty cty)) with
     | Some (Some true) -> true
     | _ -> false
 
@@ -2216,8 +2216,8 @@ end = struct
         | Pexp_apply
             ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _ :: (_, e2) :: _)
           when e2 == exp && is_infix_id i
-               && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
-                      compare_prec p Apply < 0) ->
+               && Option.value_map ~default:false (prec_ast conf ctx)
+                    ~f:(fun p -> compare_prec p Apply < 0) ->
             true
         | Pexp_apply
             ({pexp_desc= Pexp_ident lid; _}, (_ :: (_, e2) :: _ as args))
@@ -2227,7 +2227,7 @@ end = struct
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
       in
-      match ambig_prec (sub_ast ~ctx (Exp exp)) with
+      match ambig_prec conf (sub_ast ~ctx (Exp exp)) with
       | None -> false (* ctx not apply *)
       | Some (Some true) -> true (* exp is apply and ambig *)
       | _ -> (
@@ -2395,15 +2395,16 @@ end = struct
       parenthesized in context [ctx]. *)
   and parenze_cl conf ({ctx; ast= cl} as xcl) =
     assert_check_cl xcl ;
-    match ambig_prec (sub_ast ~ctx (Cl cl)) with
+    match ambig_prec conf (sub_ast ~ctx (Cl cl)) with
     | None -> false
     | Some (Some true) -> true
     | _ -> exposed_right_cl conf Non_apply cl
 
-  let parenze_nested_exp {ctx; ast= exp} =
+  let parenze_nested_exp conf {ctx; ast= exp} =
     let infix_prec ast =
       match ast with
-      | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e -> prec_ast ast
+      | Exp {pexp_desc= Pexp_apply (e, _); _} when is_infix e ->
+          prec_ast conf ast
       | Exp
           ( { pexp_desc=
                 Pexp_construct
@@ -2411,7 +2412,7 @@ end = struct
                   , Some {pexp_desc= Pexp_tuple [_; _]; _} )
             ; _ } as exp )
         when not (is_sugared_list exp) ->
-          prec_ast ast
+          prec_ast conf ast
       | _ -> None
     in
     (* Make the precedence explicit for infix operators *)
