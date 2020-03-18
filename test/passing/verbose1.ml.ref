@@ -1,5 +1,5 @@
-Warning: doc-comments: This option is deprecated since version 0.14. Use the more restricted doc-comments-val instead. There is no equivalent to this option in the general case.
-Warning: doc-comments: This option is deprecated since version 0.14. Use the more restricted doc-comments-val instead. There is no equivalent to this option in the general case.
+Warning: doc-comments: This option is deprecated since version 0.14.0. Use the more restricted doc-comments-val instead. There is no equivalent to this option in the general case.
+Warning: doc-comments: This option is deprecated since version 0.14.0. Use the more restricted doc-comments-val instead. There is no equivalent to this option in the general case.
 profile=ocamlformat (file .ocamlformat:1)
 quiet=false (profile ocamlformat (file .ocamlformat:1))
 max-iters=2 (file .ocamlformat:6)
