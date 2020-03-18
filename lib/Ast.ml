@@ -16,14 +16,11 @@ open Parsetree
 
 let extension_sugar = ref `Preserve
 
-let leading_nested_match_parens = ref false
-
 let init, register_reset =
   let l = ref [] in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
     extension_sugar := conf.extension_sugar ;
-    leading_nested_match_parens := conf.leading_nested_match_parens ;
     List.iter !l ~f:(fun f -> f ())
   in
   (init, register)
@@ -2327,7 +2324,7 @@ end = struct
        |Pexp_function cases
        |Pexp_match (_, cases)
        |Pexp_try (_, cases) ->
-          if !leading_nested_match_parens then
+          if conf.leading_nested_match_parens then
             List.iter cases ~f:(fun {pc_rhs; _} ->
                 mark_parenzed_inner_nested_match conf pc_rhs) ;
           List.exists cases ~f:(fun {pc_rhs; _} -> pc_rhs == exp)
