@@ -281,3 +281,5 @@ class type a =
 class a =
   let open[@attr] A in
   b
+
+class t (lazy _) = object end

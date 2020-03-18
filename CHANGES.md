@@ -71,6 +71,8 @@
 
   + Do not crash when a comment contains just a newline (#1290) (Etienne Millon)
 
+  + Handle lazy patterns as arguments to `class` (#1289) (Etienne Millon)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
