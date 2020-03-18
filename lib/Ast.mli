@@ -14,7 +14,7 @@
 open Migrate_ast
 open Parsetree
 
-val init : Conf.t -> unit
+val init : unit -> unit
 (** Initialize internal state *)
 
 val is_prefix : expression -> bool

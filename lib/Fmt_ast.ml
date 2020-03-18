@@ -4453,7 +4453,7 @@ let fmt_code ~debug =
 let entry_point ~f ~ctx ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
-  Ast.init conf ;
+  Ast.init () ;
   let fmt_code = fmt_code ~debug in
   fmt_file ~f ~ctx ~fmt_code ~debug source cmts conf l
 

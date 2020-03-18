@@ -14,13 +14,10 @@
 open Migrate_ast
 open Parsetree
 
-let extension_sugar = ref `Preserve
-
 let init, register_reset =
   let l = ref [] in
   let register f = l := f :: !l in
-  let init (conf : Conf.t) =
-    extension_sugar := conf.extension_sugar ;
+  let init () =
     List.iter !l ~f:(fun f -> f ())
   in
   (init, register)
@@ -1694,7 +1691,7 @@ end = struct
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
       operators, otherwise returns [None]. *)
-  let prec_ast _conf = function
+  let prec_ast (conf : Conf.t) = function
     | Pld _ -> None
     | Typ {ptyp_desc; _} -> (
       match ptyp_desc with
@@ -1765,7 +1762,7 @@ end = struct
                           ; _ } as e )
                       , _ )
                 ; _ } ] )
-        when Poly.(!extension_sugar = `Always)
+        when Poly.(conf.extension_sugar = `Always)
              || Source.extension_using_sugar ~name:ext ~payload:e ->
           Some Apply
       | Pexp_extension
@@ -1774,7 +1771,7 @@ end = struct
               [ { pstr_desc=
                     Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), _)
                 ; _ } ] )
-        when Poly.(!extension_sugar = `Always)
+        when Poly.(conf.extension_sugar = `Always)
              || Source.extension_using_sugar ~name:ext ~payload:e ->
           Some Semi
       | Pexp_setfield _ -> Some LessMinus
