@@ -161,7 +161,9 @@ OPTIONS (CODE FORMATTING STYLE)
            corresponding code. This option has no effect on variant
            declarations because that would change their meaning and on
            structures, signatures and objects for readability. The default
-           value is before.
+           value is before. Warning: This option is deprecated since version
+           0.14. Use the more restricted doc-comments-val instead. There is
+           no equivalent to this option in the general case.
 
        --doc-comments-padding=PADDING
            Add PADDING spaces before doc comments in type declarations. The
@@ -188,11 +190,14 @@ OPTIONS (CODE FORMATTING STYLE)
            control codes but leaves the upper 128 characters unchanged.
            decimal produces ASCII printable characters using decimal escape
            sequences as needed. hexadecimal mode escapes every character. The
-           default value is preserve.
+           default value is preserve. Warning: This option is deprecated
+           since version 0.14. There is no equivalent.
 
        --escape-strings={preserve|decimal|hexadecimal}
            Escape encoding for string literals. See `--escape-chars` for the
            interpretation of the modes. The default value is preserve.
+           Warning: This option is deprecated since version 0.14. There is no
+           equivalent.
 
        --exp-grouping={parens|preserve}
            Style of expression grouping. parens groups expressions using
@@ -204,7 +209,8 @@ OPTIONS (CODE FORMATTING STYLE)
            default value is 2.
 
        --extension-sugar={preserve|always}
-           Extension formatting. The default value is preserve.
+           Extension formatting. The default value is preserve. Warning: This
+           option is deprecated since version 0.14. There is no equivalent.
 
        --field-space={loose|tight|tight-decl}
            Whether or not to use a space between a field name and the rhs.
