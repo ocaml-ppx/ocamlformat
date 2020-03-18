@@ -14,8 +14,6 @@
 open Migrate_ast
 open Parsetree
 
-let parens_ite = ref false
-
 let extension_sugar = ref `Preserve
 
 let leading_nested_match_parens = ref false
@@ -26,7 +24,6 @@ let init, register_reset =
   let init (conf : Conf.t) =
     extension_sugar := conf.extension_sugar ;
     leading_nested_match_parens := conf.leading_nested_match_parens ;
-    parens_ite := conf.parens_ite ;
     List.iter !l ~f:(fun f -> f ())
   in
   (init, register)
@@ -2288,10 +2285,10 @@ end = struct
     | Pld _, {pexp_desc= Pexp_tuple _; _} -> false
     | Cl {pcl_desc= Pcl_apply _; _}, _ -> parenze ()
     | Exp {pexp_desc= Pexp_ifthenelse (_, e, _); _}, {pexp_desc; _}
-      when !parens_ite && e == exp && ifthenelse pexp_desc ->
+      when conf.parens_ite && e == exp && ifthenelse pexp_desc ->
         true
     | Exp {pexp_desc= Pexp_ifthenelse (_, _, Some e); _}, {pexp_desc; _}
-      when !parens_ite && e == exp && ifthenelse pexp_desc ->
+      when conf.parens_ite && e == exp && ifthenelse pexp_desc ->
         true
     | ( Exp
           {pexp_desc= Pexp_apply (op, (Nolabel, _) :: (Nolabel, e1) :: _); _}
