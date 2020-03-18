@@ -219,7 +219,7 @@ let _ = f ((a.x <- 1) [@a])
 
 let _ =
   object
-    method g = ((a <- b) [@a])
+    method g = (a <- b) [@a]
 
     method h = f ((a <- b) [@a])
 
