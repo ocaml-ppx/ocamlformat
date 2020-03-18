@@ -170,7 +170,7 @@ val sub_cty : ctx:t -> class_type -> class_type xt
 val sub_pat : ctx:t -> pattern -> pattern xt
 (** Construct a pattern-in-context. *)
 
-val sub_exp : ctx:t -> expression -> expression xt
+val sub_exp : Conf.t -> ctx:t -> expression -> expression xt
 (** Construct a expression-in-context. *)
 
 val sub_cl : ctx:t -> class_expr -> class_expr xt
@@ -195,7 +195,7 @@ val is_simple : Conf.t -> (expression xt -> int) -> expression xt -> bool
 (** 'Classes' of expressions which are parenthesized differently. *)
 type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
-val exposed_right_exp : cls -> expression -> bool
+val exposed_right_exp : Conf.t -> cls -> expression -> bool
 (** [exposed_right_exp cls exp] holds if there is a right-most subexpression
     of [exp] which is of class [cls] and is not parenthesized. *)
 
@@ -215,7 +215,7 @@ val parenze_cty : class_type xt -> bool
 (** [parenze_cty xcty] holds when class_type-in-context [xcty] should be
     parenthesized. *)
 
-val parenze_cl : class_expr xt -> bool
+val parenze_cl : Conf.t -> class_expr xt -> bool
 (** [parenze_cl xcl] holds when class-in-context [xcl] should be
     parenthesized. *)
 
@@ -223,7 +223,7 @@ val parenze_pat : pattern xt -> bool
 (** [parenze_pat xpat] holds when pattern-in-context [xpat] should be
     parenthesized. *)
 
-val parenze_exp : expression xt -> bool
+val parenze_exp : Conf.t -> expression xt -> bool
 (** [parenze_exp xexp] holds when expression-in-context [xexp] should be
     parenthesized. *)
 

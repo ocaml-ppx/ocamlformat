@@ -41,7 +41,8 @@ type arg_kind =
   | Newtypes of string loc list
 
 val fun_ :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> ?will_keep_first_ast_node:bool
   -> expression Ast.xt
   -> arg_kind list * expression Ast.xt
@@ -51,6 +52,7 @@ val fun_ :
 
 val cl_fun :
      ?will_keep_first_ast_node:bool
+  -> Conf.t
   -> Cmts.t
   -> class_expr Ast.xt
   -> arg_kind list * class_expr Ast.xt
@@ -59,7 +61,8 @@ val cl_fun :
     default, otherwise the [exp] is returned without modification. *)
 
 val infix :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> Ast.prec option
   -> expression Ast.xt
   -> (expression Ast.xt option * (arg_label * expression Ast.xt) list) list
@@ -75,19 +78,21 @@ val list_pat :
     corresponding to a list (empty list or (::) application). *)
 
 val list_exp :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> expression
   -> ((Warnings.loc list * expression Ast.xt) list * Warnings.loc) option
 (** [list_exp cmts exp] returns a list of expressions if [exp] is an
     expression corresponding to a list (empty list or (::) application). *)
 
 val infix_cons :
-  expression Ast.xt -> (Warnings.loc list * expression Ast.xt) list
+  Conf.t -> expression Ast.xt -> (Warnings.loc list * expression Ast.xt) list
 (** [infix_cons exp] returns a list of expressions if [exp] is an expression
     corresponding to a list ((::) application). *)
 
 val ite :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> expression Ast.xt
   -> (expression Ast.xt option * expression Ast.xt * attributes) list
 (** [ite cmts exp] returns a list of conditional expressions from cascading
@@ -140,7 +145,8 @@ val mod_with :
     [m]. *)
 
 val polynewtype :
-     Cmts.t
+     Conf.t
+  -> Cmts.t
   -> pattern
   -> expression
   -> (pattern Ast.xt * label loc list * core_type Ast.xt * expression Ast.xt)

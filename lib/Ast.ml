@@ -14,15 +14,14 @@
 open Migrate_ast
 open Parsetree
 
-let ( init
-    , extension_sugar
-    , register_reset
-    , leading_nested_match_parens
-    , parens_ite ) =
+let parens_ite = ref false
+
+let extension_sugar = ref `Preserve
+
+let leading_nested_match_parens = ref false
+
+let init, register_reset =
   let l = ref [] in
-  let extension_sugar = ref `Preserve in
-  let leading_nested_match_parens = ref false in
-  let parens_ite = ref false in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
     extension_sugar := conf.extension_sugar ;
@@ -30,7 +29,7 @@ let ( init
     parens_ite := conf.parens_ite ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, extension_sugar, register, leading_nested_match_parens, parens_ite)
+  (init, register)
 
 (** Predicates recognizing special symbol identifiers. *)
 
@@ -817,7 +816,7 @@ module rec In_ctx : sig
 
   val sub_pat : ctx:T.t -> pattern -> pattern xt
 
-  val sub_exp : ctx:T.t -> expression -> expression xt
+  val sub_exp : Conf.t -> ctx:T.t -> expression -> expression xt
 
   val sub_cl : ctx:T.t -> class_expr -> class_expr xt
 
@@ -841,7 +840,7 @@ end = struct
 
   let sub_pat ~ctx pat = check parenze_pat {ctx; ast= pat}
 
-  let sub_exp ~ctx exp = check parenze_exp {ctx; ast= exp}
+  let sub_exp conf ~ctx exp = check (parenze_exp conf) {ctx; ast= exp}
 
   let sub_cl ~ctx cl = {ctx; ast= cl}
 
@@ -862,7 +861,7 @@ and Requires_sub_terms : sig
 
   type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
-  val exposed_right_exp : cls -> expression -> bool
+  val exposed_right_exp : Conf.t -> cls -> expression -> bool
 
   val exposed_left_exp : expression -> bool
 
@@ -876,11 +875,11 @@ and Requires_sub_terms : sig
 
   val parenze_cty : class_type In_ctx.xt -> bool
 
-  val parenze_cl : class_expr In_ctx.xt -> bool
+  val parenze_cl : Conf.t -> class_expr In_ctx.xt -> bool
 
   val parenze_pat : pattern In_ctx.xt -> bool
 
-  val parenze_exp : expression In_ctx.xt -> bool
+  val parenze_exp : Conf.t -> expression In_ctx.xt -> bool
 
   val parenze_nested_exp : expression In_ctx.xt -> bool
 end = struct
@@ -1530,8 +1529,8 @@ end = struct
         true
     | Pexp_construct
         ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [e1; e2]; _}) ->
-        is_simple c width (sub_exp ~ctx e1)
-        && is_simple c width (sub_exp ~ctx e2)
+        is_simple c width (sub_exp c ~ctx e1)
+        && is_simple c width (sub_exp c ~ctx e2)
         && fit_margin c (width xexp)
     | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
         is_trivial c e0
@@ -1548,7 +1547,7 @@ end = struct
         && List.for_all e1N ~f:(snd >> is_trivial c)
         && fit_margin c (width xexp)
     | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
-        is_simple c width (sub_exp ~ctx e0)
+        is_simple c width (sub_exp c ~ctx e0)
     | Pexp_extension (_, (PStr [] | PTyp _)) -> true
     | _ -> false
 
@@ -2065,15 +2064,15 @@ end = struct
 
   (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
       which satisfies [mem_cls_exp cls] and is not parenthesized. *)
-  let rec exposed_right_exp =
+  let rec exposed_right_exp conf =
     (* exponential without memoization *)
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
     fun cls exp ->
       let exposed_ () =
         let continue subexp =
-          (not (parenze_exp (sub_exp ~ctx:(Exp exp) subexp)))
-          && exposed_right_exp cls subexp
+          (not (parenze_exp conf (sub_exp conf ~ctx:(Exp exp) subexp)))
+          && exposed_right_exp conf cls subexp
         in
         match exp.pexp_desc with
         | Pexp_assert e
@@ -2135,7 +2134,7 @@ end = struct
       mem_cls_exp cls exp
       || Hashtbl.find_or_add memo (cls, exp) ~default:exposed_
 
-  and exposed_right_cl =
+  and exposed_right_cl conf =
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
     fun cls cl ->
@@ -2143,21 +2142,21 @@ end = struct
         match cl.pcl_desc with
         | Pcl_apply (_, args) ->
             let exp = snd (List.last_exn args) in
-            (not (parenze_exp (sub_exp ~ctx:(Cl cl) exp)))
-            && exposed_right_exp cls exp
+            (not (parenze_exp conf (sub_exp conf ~ctx:(Cl cl) exp)))
+            && exposed_right_exp conf cls exp
         | Pcl_fun (_, _, _, e) ->
-            (not (parenze_cl (sub_cl ~ctx:(Cl cl) e)))
-            && exposed_right_cl cls e
+            (not (parenze_cl conf (sub_cl ~ctx:(Cl cl) e)))
+            && exposed_right_cl conf cls e
         | _ -> false
       in
       mem_cls_cl cls cl
       || Hashtbl.find_or_add memo (cls, cl) ~default:exposed_
 
-  and mark_parenzed_inner_nested_match exp =
+  and mark_parenzed_inner_nested_match conf exp =
     let exposed_ () =
       let continue subexp =
-        if not (parenze_exp (sub_exp ~ctx:(Exp exp) subexp)) then
-          mark_parenzed_inner_nested_match subexp ;
+        if not (parenze_exp conf (sub_exp conf ~ctx:(Exp exp) subexp)) then
+          mark_parenzed_inner_nested_match conf subexp ;
         false
       in
       match exp.pexp_desc with
@@ -2187,12 +2186,12 @@ end = struct
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             List.iter cases ~f:(fun case ->
-                mark_parenzed_inner_nested_match case.pc_rhs) ;
+                mark_parenzed_inner_nested_match conf case.pc_rhs) ;
             true
         | _ -> continue e )
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.iter cases ~f:(fun case ->
-              mark_parenzed_inner_nested_match case.pc_rhs) ;
+              mark_parenzed_inner_nested_match conf case.pc_rhs) ;
           true
       | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
         when Option.is_some (Indexing_op.get_sugar ident args) -> (
@@ -2216,7 +2215,7 @@ end = struct
 
   (** [parenze_exp {ctx; ast}] holds when expression [ast] should be
       parenthesized in context [ctx]. *)
-  and parenze_exp ({ctx; ast= exp} as xexp) =
+  and parenze_exp conf ({ctx; ast= exp} as xexp) =
     let parenze () =
       let is_right_infix_arg ctx_desc exp =
         match ctx_desc with
@@ -2241,8 +2240,8 @@ end = struct
         match ctx with
         | Exp {pexp_desc; _} ->
             if is_right_infix_arg pexp_desc exp then is_sequence exp
-            else exposed_right_exp Non_apply exp
-        | _ -> exposed_right_exp Non_apply exp )
+            else exposed_right_exp conf Non_apply exp
+        | _ -> exposed_right_exp conf Non_apply exp )
     in
     let rec ifthenelse pexp_desc =
       match pexp_desc with
@@ -2333,14 +2332,14 @@ end = struct
        |Pexp_try (_, cases) ->
           if !leading_nested_match_parens then
             List.iter cases ~f:(fun {pc_rhs; _} ->
-                mark_parenzed_inner_nested_match pc_rhs) ;
+                mark_parenzed_inner_nested_match conf pc_rhs) ;
           List.exists cases ~f:(fun {pc_rhs; _} -> pc_rhs == exp)
-          && exposed_right_exp Match exp
+          && exposed_right_exp conf Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
       | Pexp_ifthenelse (_, thn, None) when thn == exp ->
-          exposed_right_exp Then exp
+          exposed_right_exp conf Then exp
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
-          exposed_right_exp ThenElse exp
+          exposed_right_exp conf ThenElse exp
       | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
       | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _) when exp2 == exp
         ->
@@ -2364,7 +2363,7 @@ end = struct
                    when e == exp ->
                      true
                  | _ -> e0 == exp) ->
-          exposed_right_exp Non_apply exp
+          exposed_right_exp conf Non_apply exp
           (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_]); _} as e0))
         when e0 == exp && is_prefix ident ->
@@ -2393,19 +2392,19 @@ end = struct
         when lhs == exp ->
           true
       | Pexp_sequence (lhs, _) when lhs == exp ->
-          exposed_right_exp Let_match exp
+          exposed_right_exp conf Let_match exp
       | Pexp_sequence (_, rhs) when rhs == exp -> false
       | _ -> parenze () )
     | _ -> false
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
       parenthesized in context [ctx]. *)
-  and parenze_cl ({ctx; ast= cl} as xcl) =
+  and parenze_cl conf ({ctx; ast= cl} as xcl) =
     assert_check_cl xcl ;
     match ambig_prec (sub_ast ~ctx (Cl cl)) with
     | None -> false
     | Some (Some true) -> true
-    | _ -> exposed_right_cl Non_apply cl
+    | _ -> exposed_right_cl conf Non_apply cl
 
   let parenze_nested_exp {ctx; ast= exp} =
     let infix_prec ast =
