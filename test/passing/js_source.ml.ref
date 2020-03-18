@@ -9659,8 +9659,8 @@ fun contents -> { contents = (contents [@foo]) }
 
 ;;
 ();
-((();
-  ()) [@foo])
+(();
+()) [@foo]
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
