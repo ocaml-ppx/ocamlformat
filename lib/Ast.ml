@@ -2424,13 +2424,7 @@ end = struct
           ( { pexp_desc=
                 Pexp_construct
                   ( {txt= Lident "::"; loc= _}
-                  , Some
-                      { pexp_desc= Pexp_tuple [_; _]
-                      ; pexp_loc= _
-                      ; pexp_attributes= _
-                      ; _ } )
-            ; pexp_loc= _
-            ; pexp_attributes= _
+                  , Some {pexp_desc= Pexp_tuple [_; _]; _} )
             ; _ } as exp )
         when not (is_sugared_list exp) ->
           prec_ast ast
