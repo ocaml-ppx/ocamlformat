@@ -1358,7 +1358,7 @@ and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
   hvbox 0
     (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
        ( wrap_if has_attr "(" ")"
-           (hvbox_if parens 0 @@ list_pn grps fmt_seq_list)
+           (hvbox_if (parens || has_attr) 0 @@ list_pn grps fmt_seq_list)
        $ fmt_atrs ))
 
 and fmt_infix_op_args c ~parens xexp op_args =

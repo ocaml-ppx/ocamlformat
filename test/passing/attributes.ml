@@ -282,3 +282,9 @@ let _ =
   a ;
   (b1 ; b2) [@a] ;
   c
+
+(* Ensure that adding an attribute doesn't break left-alignment of sequenced
+   expressions *)
+let _ =
+  (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;
+   bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb) [@a]
