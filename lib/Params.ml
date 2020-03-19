@@ -112,6 +112,7 @@ type record_type =
   { docked_before: Fmt.t
   ; break_before: Fmt.t
   ; box_record: Fmt.t -> Fmt.t
+  ; box_spaced: bool
   ; sep_before: Fmt.t
   ; sep_after: Fmt.t
   ; break_after: Fmt.t
@@ -126,6 +127,7 @@ let get_record_type (c : Conf.t) =
       { docked_before= fmt_if dock " {"
       ; break_before= fmt_or_k dock (break space 2) (fmt "@ ")
       ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
+      ; box_spaced= c.space_around_records
       ; sep_before= fmt_or sparse_type_decl "@;<1000 0>; " "@,; "
       ; sep_after= noop
       ; break_after= fmt_if_k dock (break space (-2))
@@ -133,6 +135,7 @@ let get_record_type (c : Conf.t) =
   | `After ->
       { docked_before= fmt_if dock " {"
       ; break_before= fmt_or_k dock (break space 0) (fmt "@ ")
+      ; box_spaced= c.space_around_records
       ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
       ; sep_before= noop
       ; sep_after=

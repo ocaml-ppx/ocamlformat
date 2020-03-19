@@ -3002,7 +3002,10 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
         let fmt_decl ~first ~last x =
           fmt_if_k (not first) p.sep_before
           $ fmt_label_declaration c ctx x ~last
-          $ fmt_if (last && exposed_right_label_declaration x) " "
+          $ fmt_if
+              ( last && (not p.box_spaced)
+              && exposed_right_label_declaration x )
+              " "
           $ fmt_if_k (not last) p.sep_after
         in
         box_manifest
@@ -3138,7 +3141,9 @@ and fmt_constructor_arguments c ctx ~pre = function
       let fmt_ld ~first ~last x =
         fmt_if_k (not first) p.sep_before
         $ fmt_label_declaration c ctx x ~last
-        $ fmt_if (last && exposed_right_label_declaration x) " "
+        $ fmt_if
+            (last && (not p.box_spaced) && exposed_right_label_declaration x)
+            " "
         $ fmt_if_k (not last) p.sep_after
       in
       pre $ p.docked_before $ p.break_before

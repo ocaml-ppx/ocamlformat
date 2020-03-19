@@ -47,8 +47,8 @@
 
   + Retain attributes on field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
 
-  + Avoid unnecessary spacing after object types with attributes (#1296) (Craig Ferguson)
-    * e.g. `{foo : < .. > [@a]}`, ``[`Foo of < .. >[@a]]``
+  + Avoid unnecessary spacing after object types inside records and polymorphic variants,
+    e.g. `{foo : < .. > [@a]}` and `{ foo : < .. > }` (#1296) (Craig Ferguson)
 
 ### 0.13.0 (2020-01-28)
 
