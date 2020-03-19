@@ -858,7 +858,7 @@ and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
   in
   hvbox 0
     ( hvbox 0 (Cmts.fmt c prf_loc row)
-    $ fmt_attributes c ~key:"@" atrs
+    $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs
     $ fmt_docstring_padded c doc )
 
 and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =

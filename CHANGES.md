@@ -17,6 +17,9 @@
     The default for `doc-comments` is changed from `after` to `before`, this
     option will be deleted in the future.
 
+  + Add space between `row_field` attributes and the label or arguments, to be
+    consistent with the non-polymorphic case. (#1299) (Craig Ferguson)
+
 #### Bug fixes
 
   + Fix missing parentheses around `let open` (#1229) (Jules Aguillon)
