@@ -747,11 +747,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let protect_token =
         match List.last rfs with
         | None -> false
-        | Some {prf_desc= Rinherit _; _} -> false
-        | Some {prf_desc= Rtag (_, _, l); _} -> (
-          match List.last l with
-          | None -> false
-          | Some x -> exposed_right_typ x )
+        | Some rf -> exposed_right_row_field rf
       in
       let space_around = c.conf.space_around_variants in
       let closing =
@@ -3008,7 +3004,10 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
         let fmt_decl ~first ~last x =
           fmt_if_k (not first) p.sep_before
           $ fmt_label_declaration c ctx x ~last
-          $ fmt_if (last && exposed_right_typ x.pld_type) " "
+          $ fmt_if
+              ( last && (not p.box_spaced)
+              && exposed_right_label_declaration x )
+              " "
           $ fmt_if_k (not last) p.sep_after
         in
         box_manifest
@@ -3144,7 +3143,9 @@ and fmt_constructor_arguments c ctx ~pre = function
       let fmt_ld ~first ~last x =
         fmt_if_k (not first) p.sep_before
         $ fmt_label_declaration c ctx x ~last
-        $ fmt_if (last && exposed_right_typ x.pld_type) " "
+        $ fmt_if
+            (last && (not p.box_spaced) && exposed_right_label_declaration x)
+            " "
         $ fmt_if_k (not last) p.sep_after
       in
       pre $ p.docked_before $ p.break_before

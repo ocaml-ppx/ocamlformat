@@ -52,6 +52,9 @@
     * field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
     * instance variable set expressions, e.g. `(a <- b) [@a]` (#1288) (Craig Ferguson)
 
+  + Avoid unnecessary spacing after object types inside records and polymorphic variants,
+    e.g. `{foo : < .. > [@a]}` and `{ foo : < .. > }` (#1296) (Craig Ferguson)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
