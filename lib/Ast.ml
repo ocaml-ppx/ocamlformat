@@ -2311,6 +2311,11 @@ end = struct
       , {pexp_desc= Pexp_construct _ | Pexp_variant _; _} )
       when e == exp ->
         true
+    (* Integers must be parenthesed on the lhs of an indexing operator *)
+    | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, left) :: _); _}
+      , {pexp_desc= Pexp_constant (Pconst_integer (_, None)); _} )
+      when exp == left && is_index_op op ->
+        true
     | Exp {pexp_desc= Pexp_field (e, _); _}, {pexp_desc= Pexp_construct _; _}
       when e == exp ->
         true

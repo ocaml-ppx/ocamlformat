@@ -143,3 +143,18 @@ let _ = a.*{(a ; b)}
 let _ = a.{(a ; b)}
 
 let _ = a.{a, b}
+
+(* Integers on the left of indexing operators must be surrounded by
+   parentheses *)
+let _ = (0).*(0)
+
+(* Integers with suffix and floats are fine *)
+let _ = 0l.*(0)
+
+let _ = 0..*(0)
+
+let _ = 0.2.*(0)
+
+let _ = 2e5.*(0)
+
+let _ = 2e-2.*(0)
