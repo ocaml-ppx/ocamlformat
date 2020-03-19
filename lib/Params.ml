@@ -122,28 +122,27 @@ let get_record_type (c : Conf.t) =
   let sparse_type_decl = Poly.(c.type_decl = `Sparse) in
   let space = if c.space_around_records then 1 else 0 in
   let dock = c.dock_collection_brackets in
-  match c.break_separators with
-  | `Before ->
-      { docked_before= fmt_if dock " {"
-      ; break_before= fmt_or_k dock (break space 2) (fmt "@ ")
-      ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
-      ; box_spaced= c.space_around_records
-      ; sep_before= fmt_or sparse_type_decl "@;<1000 0>; " "@,; "
-      ; sep_after= noop
-      ; break_after= fmt_if_k dock (break space (-2))
-      ; docked_after= fmt_if dock "}" }
-  | `After ->
-      { docked_before= fmt_if dock " {"
-      ; break_before= fmt_or_k dock (break space 0) (fmt "@ ")
-      ; box_spaced= c.space_around_records
-      ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
-      ; sep_before= noop
-      ; sep_after=
-          fmt_or_k dock
+  let break_before, sep_before, sep_after =
+    match c.break_separators with
+    | `Before ->
+        ( fmt_or_k dock (break space 2) (fmt "@ ")
+        , fmt_or sparse_type_decl "@;<1000 0>; " "@,; "
+        , noop )
+    | `After ->
+        ( fmt_or_k dock (break space 0) (fmt "@ ")
+        , noop
+        , fmt_or_k dock
             (fmt_or sparse_type_decl "@;<1000 0>" "@ ")
-            (fmt_or sparse_type_decl "@;<1000 2>" "@;<1 2>")
-      ; break_after= fmt_if_k dock (break space (-2))
-      ; docked_after= fmt_if dock "}" }
+            (fmt_or sparse_type_decl "@;<1000 2>" "@;<1 2>") )
+  in
+  { docked_before= fmt_if dock " {"
+  ; break_before
+  ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
+  ; box_spaced= c.space_around_records
+  ; sep_before
+  ; sep_after
+  ; break_after= fmt_if_k dock (break space (-2))
+  ; docked_after= fmt_if dock "}" }
 
 type elements_collection =
   { box: Fmt.t -> Fmt.t
