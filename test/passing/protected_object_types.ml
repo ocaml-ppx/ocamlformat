@@ -14,7 +14,7 @@ type t = A of {foo: < .. > [@a]}
 
 type t = [`Foo of (< .. >[@a])]
 
-type t = [`Foo of < .. >[@a]]
+type t = [`Foo of < .. > [@a]]
 
 let _ =
   object
