@@ -6,6 +6,8 @@ let _ =
     (* some comment *)
     method! x = 2 [@@attr]
 
+    method x = (1 [@attr])
+
     method virtual x : t
 
     method virtual private x : t

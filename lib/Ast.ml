@@ -2279,6 +2279,8 @@ end = struct
           ; _ }
       , _ ) ->
         false
+    (* Object fields do not require parens, even with trailing attributes *)
+    | Exp {pexp_desc= Pexp_object _; _}, _ -> false
     | _, exp when has_trailing_attributes_exp exp -> true
     | ( Exp {pexp_desc= Pexp_construct ({txt= Lident id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
