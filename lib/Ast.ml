@@ -1924,8 +1924,6 @@ end = struct
     | ( Pat {ppat_desc= Ppat_construct _; _}
       , Ppat_construct ({txt= Lident "::"; _}, _) ) ->
         true
-    | Exp {pexp_desc= Pexp_fun (Optional _, _, _, _); _}, Ppat_record _ ->
-        true
     | ( ( Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}
         | Str {pstr_desc= Pstr_value _; _} )
       , ( Ppat_construct (_, Some _)

@@ -1180,6 +1180,17 @@ and fmt_fun_args c ?pro args =
       when String.equal l txt ->
         let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
         cbox 0 (str symbol $ fmt_pattern c xpat)
+    | Val ((Optional _ as lbl), xpat, None) ->
+        let outer_parens, inner_parens =
+          match xpat.ast.ppat_desc with
+          | Ppat_any | Ppat_var _ -> (false, false)
+          | Ppat_unpack _ -> (true, true)
+          | _ -> (true, false)
+        in
+        cbox 2
+          ( fmt_label lbl ":@,"
+          $ wrap_if outer_parens "(" ")"
+              (fmt_pattern ~parens:inner_parens c xpat) )
     | Val (lbl, xpat, None) ->
         cbox 2 (fmt_label lbl ":@," $ fmt_pattern c xpat)
     | Val
