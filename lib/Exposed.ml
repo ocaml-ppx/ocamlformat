@@ -23,21 +23,30 @@ module Right = struct
       | Ptyp_object _ -> true
       | _ -> false )
 
+  let constructor_arguments = function
+    | Pcstr_record _ -> false
+    | Pcstr_tuple args -> (
+      match List.last args with
+      | Some {ptyp_desc= Ptyp_arrow _; _} ->
+          (* Arrows are wrapped in parens in this position:
+
+             type a = A of (t -> <..>) *)
+          false
+      | Some last -> core_type last
+      | None -> false )
+
   let extension_constructor = function
-    | {pext_kind= Pext_decl (Pcstr_tuple args, None); pext_attributes= []; _}
-      -> (
-      match List.rev args with
-      | last :: _ -> core_type last
-      | [] ->
-          assert false (* Pext_decl (Pcstr_tuple [], None) does not occur *)
-      )
-    | _ -> false
+    | {pext_attributes= _ :: _; _} -> false
+    | {pext_kind; _} -> (
+      match pext_kind with
+      | Pext_rebind _ -> false
+      | Pext_decl (_, Some _result) -> false
+      | Pext_decl (args, None) -> constructor_arguments args )
 
   let constructor_declaration = function
     | {pcd_attributes= _ :: _; _} -> false
     | {pcd_res= Some _; _} -> false
-    | {pcd_args= Pcstr_record _; _} -> false
-    | {pcd_args= Pcstr_tuple args; _} -> list ~elt:core_type args
+    | {pcd_args= args; _} -> constructor_arguments args
 
   let type_declaration = function
     | {ptype_attributes= _ :: _; _} -> false
