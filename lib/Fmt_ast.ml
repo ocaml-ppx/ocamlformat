@@ -1234,7 +1234,7 @@ and fmt_body c ?ext ({ast= body; _} as xbody) =
         fmt_cases c ctx cs $ fmt_if parens ")" $ Cmts.fmt_after c pexp_loc )
   | _ -> (noop, fmt_expression c ~eol:(fmt "@;<1000 0>") xbody)
 
-and fmt_index_op c ctx ~parens op =
+and fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op =
   let open Ast.Indexing_op in
   let wrap_brackets = function
     | Round -> wrap "(" ")"
@@ -1255,13 +1255,19 @@ and fmt_index_op c ctx ~parens op =
     | Special (args, brackets) ->
         (list args (Params.comma_sep c.conf) fmt_arg, noop, brackets)
   in
+  let inner_wrap =
+    (* No parens needed if no RHS, e.g. [a.(b) \[@attr\]]*)
+    has_attr && Option.is_some op.rhs
+  in
   wrap_if parens "(" ")"
     (hovbox 0
-       ( fmt_expression c (sub_exp ~ctx op.lhs)
-       $ Cmts.fmt_before c op.loc $ str "." $ fmt_op
-       $ wrap_brackets brackets (Cmts.fmt_after c op.loc $ fmt_args)
-       $ opt op.rhs (fun e ->
-             fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e)) ))
+       ( wrap_if inner_wrap "(" ")"
+           ( fmt_expression c (sub_exp ~ctx op.lhs)
+           $ Cmts.fmt_before c op.loc $ str "." $ fmt_op
+           $ wrap_brackets brackets (Cmts.fmt_after c op.loc $ fmt_args)
+           $ opt op.rhs (fun e ->
+                 fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e)) )
+       $ fmt_atrs ))
 
 and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
     (lbl, ({ast= arg; _} as xarg)) =
@@ -1481,7 +1487,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     when Option.is_some (Indexing_op.get_sugar ident args) ->
       let op = Option.value_exn (Indexing_op.get_sugar ident args) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
-      fmt_index_op c ctx ~parens op
+      fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op
   | Pexp_apply
       ( { pexp_desc= Pexp_ident {txt= Lident ":="; loc}
         ; pexp_attributes= []

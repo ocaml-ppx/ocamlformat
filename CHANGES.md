@@ -51,6 +51,7 @@
   + Retain attributes on various AST nodes:
     * field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
     * instance variable set expressions, e.g. `(a <- b) [@a]` (#1288) (Craig Ferguson)
+    * indexing operators, e.g. `(a.(b)) [@a]` (#1291) (Craig Ferguson)
 
   + Avoid unnecessary spacing after object types inside records and polymorphic variants,
     e.g. `{foo : < .. > [@a]}` and `{ foo : < .. > }` (#1296) (Craig Ferguson)
