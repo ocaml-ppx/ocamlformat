@@ -2,7 +2,7 @@
    keywords. *)
 
 (* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1295
-   (unnecessary tailing spaces added after object types with attributes). *)
+   (unnecessary trailing spaces added after object types with attributes). *)
 
 type t = {foo: (< .. >[@a])}
 
