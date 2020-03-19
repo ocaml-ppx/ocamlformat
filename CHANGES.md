@@ -51,6 +51,7 @@
   + Retain attributes on various AST nodes:
     * field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
     * instance variable set expressions, e.g. `(a <- b) [@a]` (#1288) (Craig Ferguson)
+    * indexing operators, e.g. `(a.(b)) [@a]` (#1291) (Craig Ferguson)
 
 ### 0.13.0 (2020-01-28)
 
