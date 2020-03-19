@@ -541,9 +541,7 @@ and fmt_attribute_or_extension c key maybe_box (pre, pld) =
         Cmts.fmt_after c pexp_loc $ Cmts.fmt_after c pstr_loc
     | _ -> noop
   in
-  let protect_token =
-    match pld with PTyp t -> Exposed.Right.core_type t | _ -> false
-  in
+  let protect_token = Exposed.Right.payload pld in
   let cmts_before = Cmts.fmt_before c pre.loc in
   cmts_before
   $ maybe_box

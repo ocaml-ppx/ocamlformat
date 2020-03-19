@@ -21,6 +21,8 @@ module Right : sig
 
   val row_field : row_field -> bool
 
+  val payload : payload -> bool
+
   val list : elt:('a -> bool) -> 'a list -> bool
   (** [list ~elt l] holds iff [elt] holds of the {i last} element in [l], and
       is [false] if [l] is empty. *)
