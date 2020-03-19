@@ -1259,9 +1259,13 @@ and fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op =
     | Special (args, brackets) ->
         (list args (Params.comma_sep c.conf) fmt_arg, noop, brackets)
   in
+  let inner_wrap =
+    (* No parens needed if no RHS, e.g. [a.(b) \[@attr\]]*)
+    has_attr && Option.is_some op.rhs
+  in
   wrap_if parens "(" ")"
     (hovbox 0
-       ( wrap_if has_attr "(" ")"
+       ( wrap_if inner_wrap "(" ")"
            ( fmt_expression c (sub_exp ~ctx op.lhs)
            $ Cmts.fmt_before c op.loc $ str "." $ fmt_op
            $ wrap_brackets brackets (Cmts.fmt_after c op.loc $ fmt_args)

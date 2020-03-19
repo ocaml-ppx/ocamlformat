@@ -230,9 +230,9 @@ let _ =
       ()
   end
 
-let _ = (a.(b)) [@a]
+let _ = a.(b) [@a]
 
-let _ = f ((a.(b)) [@a])
+let _ = f (a.(b) [@a])
 
 let _ = (a.*?!@{b} <- c) [@a]
 
