@@ -47,6 +47,9 @@
 
   + Retain attributes on field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
 
+  + Avoid unnecesary spacing after object types with attributes (#1296) (Craig Ferguson)
+    * e.g. `{foo : < .. > [@a]}`, ``[`Foo of < .. >[@a]]``
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
