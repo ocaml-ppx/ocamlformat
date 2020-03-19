@@ -126,7 +126,7 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
           first_line tl
     | _ -> str s
   in
-  let fmt_non_code cmt =
+  let fmt_non_code ?(wrap_comments = wrap_comments) cmt =
     if not wrap_comments then
       match split_asterisk_prefixed cmt with
       | [""] | [_] | [_; ""] -> wrap "(*" "*)" (fmt_unwrapped_cmt cmt)
@@ -148,7 +148,7 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
     | Ok formatted ->
         let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
         hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
-    | Error () -> fmt_non_code cmt
+    | Error () -> fmt_non_code ~wrap_comments:false cmt
   in
   match cmt.txt with
   | "" | "$" -> fmt_non_code cmt
