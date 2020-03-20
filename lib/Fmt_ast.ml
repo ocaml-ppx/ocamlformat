@@ -1656,35 +1656,42 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, _); (Nolabel, _)] )
     when is_infix_id id && not (is_monadic_binding_id id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
-      hvbox indent_wrap
-        ( fmt_infix_op_args c ~parens xexp
-            (List.map op_args ~f:(fun (op, args) ->
-                 match op with
-                 | Some ({ast= {pexp_loc; _}; _} as op) ->
-                     (* side effects of Cmts.fmt_before before fmt_expression
-                        is important *)
-                     let has_cmts = Cmts.has_before c.cmts pexp_loc in
-                     let adj = break 1000 0 in
-                     let fmt_before_cmts = Cmts.fmt_before ~adj c pexp_loc in
-                     (* The comments before the first arg are put there, so
-                        that they are printed after the operator and the box
-                        is correctly broken before the following arguments.
-                        Keeping the comments in the arg box would not break
-                        properly the current box. OTOH, relocating the
-                        comments would put them before the operator in some
-                        cases and make the formatting unstable. *)
-                     let fmt_after_cmts =
-                       Cmts.fmt_after c pexp_loc
-                       $ opt (List.hd args) (fun (_, {ast= e; _}) ->
-                             Cmts.fmt_before ~adj c e.pexp_loc)
-                     in
-                     let fmt_op = fmt_expression c op in
-                     ( has_cmts
-                     , fmt_before_cmts
-                     , fmt_after_cmts
-                     , (fmt_op, args) )
-                 | None -> (false, noop, noop, (noop, args))))
-        $ fmt_atrs )
+      let outer_wrap = has_attr && parens in
+      let inner_wrap = has_attr || parens in
+      hvbox_if outer_wrap 0
+        (wrap_if outer_wrap "(" ")"
+           (hvbox indent_wrap
+              ( fmt_infix_op_args c ~parens:inner_wrap xexp
+                  (List.map op_args ~f:(fun (op, args) ->
+                       match op with
+                       | Some ({ast= {pexp_loc; _}; _} as op) ->
+                           (* side effects of Cmts.fmt_before before
+                              fmt_expression is important *)
+                           let has_cmts = Cmts.has_before c.cmts pexp_loc in
+                           let adj = break 1000 0 in
+                           let fmt_before_cmts =
+                             Cmts.fmt_before ~adj c pexp_loc
+                           in
+                           (* The comments before the first arg are put
+                              there, so that they are printed after the
+                              operator and the box is correctly broken before
+                              the following arguments. Keeping the comments
+                              in the arg box would not break properly the
+                              current box. OTOH, relocating the comments
+                              would put them before the operator in some
+                              cases and make the formatting unstable. *)
+                           let fmt_after_cmts =
+                             Cmts.fmt_after c pexp_loc
+                             $ opt (List.hd args) (fun (_, {ast= e; _}) ->
+                                   Cmts.fmt_before ~adj c e.pexp_loc)
+                           in
+                           let fmt_op = fmt_expression c op in
+                           ( has_cmts
+                           , fmt_before_cmts
+                           , fmt_after_cmts
+                           , (fmt_op, args) )
+                       | None -> (false, noop, noop, (noop, args))))
+              $ fmt_atrs )))
   | Pexp_apply (e0, [(Nolabel, e1)]) when is_prefix e0 ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
