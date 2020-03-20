@@ -86,5 +86,6 @@ module Inside_payloads = struct
 
   [@@@a: exception C of a * b * < .. > ]
 
-  [@@@a: exception C of a * b * < .. > [@a]]
+  (* Simple attributes on exceptions not supported pre-4.08 *)
+  [@@@a: exception C of a * b * < .. > [@@a]]
 end
