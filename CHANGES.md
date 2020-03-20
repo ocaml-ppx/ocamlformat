@@ -59,6 +59,9 @@
   + Fix missing parentheses around tuples with attributes. (#1301) (Craig Ferguson)
     Previously, `f ((0, 0) [@a])` would be formatted to `f (0, 0) [@a]`, crashing OCamlformat.
 
+  + Fix crash on the expression `(0).*(0)` (#1304) (Jules Aguillon)
+    It was formatting to `0.*(0)` which parses as an other expression.
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
