@@ -1191,7 +1191,7 @@ and fmt_fun_args c ?pro args =
           ( fmt_label lbl ":@,"
           $ wrap_if outer_parens "(" ")"
               (fmt_pattern ~parens:inner_parens c xpat) )
-    | Val (lbl, xpat, None) ->
+    | Val (((Labelled _ | Nolabel) as lbl), xpat, None) ->
         cbox 2 (fmt_label lbl ":@," $ fmt_pattern c xpat)
     | Val
         ( Optional l
