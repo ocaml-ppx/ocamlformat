@@ -59,6 +59,9 @@
   + Fix missing parentheses around tuples with attributes. (#1301) (Craig Ferguson)
     Previously, `f ((0, 0) [@a])` would be formatted to `f (0, 0) [@a]`, crashing OCamlformat.
 
+  + Avoid emitting `>]` when an object type is contained in an extension point
+    or attribute payload (#1298) (Craig Ferguson)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

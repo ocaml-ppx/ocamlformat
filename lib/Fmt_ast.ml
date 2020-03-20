@@ -541,9 +541,7 @@ and fmt_attribute_or_extension c key maybe_box (pre, pld) =
         Cmts.fmt_after c pexp_loc $ Cmts.fmt_after c pstr_loc
     | _ -> noop
   in
-  let protect_token =
-    match pld with PTyp t -> exposed_right_typ t | _ -> false
-  in
+  let protect_token = Exposed.Right.payload pld in
   let cmts_before = Cmts.fmt_before c pre.loc in
   cmts_before
   $ maybe_box
@@ -744,11 +742,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
               else "@ | " )
               (fmt_row_field c ~max_len_name ctx)
       in
-      let protect_token =
-        match List.last rfs with
-        | None -> false
-        | Some rf -> exposed_right_row_field rf
-      in
+      let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
       let space_around = c.conf.space_around_variants in
       let closing =
         let empty = List.is_empty rfs in
@@ -2938,11 +2932,11 @@ and fmt_tydcl_params c ctx params =
 
 and fmt_class_params c ctx params =
   let fmt_param ~first ~last (ty, vc) =
-    fmt_if (first && exposed_left_typ ty) " "
+    fmt_if (first && Exposed.Left.core_type ty) " "
     $ fmt_if_k (not first) (fmt (Params.comma_sep c.conf))
     $ fmt_variance vc
     $ fmt_core_type c (sub_typ ~ctx ty)
-    $ fmt_if (last && exposed_right_typ ty) " "
+    $ fmt_if (last && Exposed.Right.core_type ty) " "
   in
   fmt_if_k
     (not (List.is_empty params))
@@ -3017,7 +3011,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
           $ fmt_label_declaration c ctx x ~last
           $ fmt_if
               ( last && (not p.box_spaced)
-              && exposed_right_label_declaration x )
+              && Exposed.Right.label_declaration x )
               " "
           $ fmt_if_k (not last) p.sep_after
         in
@@ -3155,7 +3149,7 @@ and fmt_constructor_arguments c ctx ~pre = function
         fmt_if_k (not first) p.sep_before
         $ fmt_label_declaration c ctx x ~last
         $ fmt_if
-            (last && (not p.box_spaced) && exposed_right_label_declaration x)
+            (last && (not p.box_spaced) && Exposed.Right.label_declaration x)
             " "
         $ fmt_if_k (not last) p.sep_after
       in

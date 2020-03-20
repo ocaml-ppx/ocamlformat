@@ -37,3 +37,55 @@ module Space_around = struct
   end
   [@@ocamlformat "space-around-variants"]
 end
+
+module Inside_payloads = struct
+  (* Regression tests for
+     https://github.com/ocaml-ppx/ocamlformat/issues/1267 (failure to protect
+     against object types inside extension and attribute payloads). *)
+
+  let _ = [%ext: < .. > ]
+
+  [%%ext: < .. > ]
+
+  [%%ext
+  ;;
+  ()
+
+  type a = < f: t > ]
+
+  [@@@a: val b : < .. > ]
+
+  let _ = () [@a: val b : < .. > ]
+
+  let _ = () [@@a: val b : < .. > ]
+
+  [@@@a: type x = < .. > ]
+
+  [@@@a:
+  val x : t
+
+  type x = < .. > ]
+
+  [@@@a: type t = < .. > ]
+
+  [@@@a: type t = (< .. >[@a])]
+
+  [@@@a: type a = A of t | B of t | C of < .. > ]
+
+  [@@@a: type a = A of t | B of t | C of (t -> < .. >)]
+
+  [@@@a: type a += C of a * b * < .. > ]
+
+  [@@@a: type a += C of a * b * < .. > [@a]]
+
+  [@@@a: type a += C of (a -> b * < .. >)]
+
+  [@@@a: type a = t constraint t = < .. > ]
+
+  [@@@a: type a = t constraint t = (< .. >[@a])]
+
+  [@@@a: exception C of a * b * < .. > ]
+
+  (* Simple attributes on exceptions not supported pre-4.08 *)
+  [@@@a: exception C of a * b * < .. > [@@a]]
+end
