@@ -56,6 +56,9 @@
   + Avoid unnecessary spacing after object types inside records and polymorphic variants,
     e.g. `{foo : < .. > [@a]}` and `{ foo : < .. > }` (#1296) (Craig Ferguson)
 
+  + Fix missing parentheses around tuples with attributes. (#1301) (Craig Ferguson)
+    Previously, `f ((0, 0) [@a])` would be formatted to `f (0, 0) [@a]`, crashing OCamlformat.
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

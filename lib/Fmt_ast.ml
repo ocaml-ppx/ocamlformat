@@ -2267,11 +2267,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | Str {pstr_desc= Pstr_eval _; _} -> true
         | _ -> false
       in
-      hvbox 0
-        ( Params.wrap_tuple ~parens ~no_parens_if_break c.conf
-            (list es (Params.comma_sep c.conf)
-               (sub_exp ~ctx >> fmt_expression c))
-        $ fmt_atrs )
+      let outer_wrap = has_attr && parens in
+      let inner_wrap = has_attr || parens in
+      hvbox_if outer_wrap 0
+        (wrap_if outer_wrap "(" ")"
+           ( hvbox 0
+               (Params.wrap_tuple ~parens:inner_wrap ~no_parens_if_break
+                  c.conf
+                  (list es (Params.comma_sep c.conf)
+                     (sub_exp ~ctx >> fmt_expression c)))
+           $ fmt_atrs ))
   | Pexp_lazy e ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens

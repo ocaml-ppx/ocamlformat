@@ -237,3 +237,25 @@ let _ = f (a.(b) [@a])
 let _ = (a.*?!@{b} <- c) [@a]
 
 let _ = f ((a.*?!@{b} <- c) [@a])
+
+(* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1256
+   (dropped parentheses around tuples with attributes). *)
+
+;;
+(0, 0) [@a]
+
+let _ = ((0, 0) [@a])
+
+let _ = f ((0, 0) [@a])
+
+(* Ensure that adding an attribute doesn't break left-alignment of tuple
+   components *)
+
+;;
+( a________________________________________
+, b________________________________________ ) [@a]
+
+let _ =
+  f
+    (( a________________________________________
+     , b________________________________________ ) [@a])
