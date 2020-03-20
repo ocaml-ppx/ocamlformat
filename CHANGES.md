@@ -59,6 +59,10 @@
   + Fix missing parentheses around tuples with attributes. (#1301) (Craig Ferguson)
     Previously, `f ((0, 0) [@a])` would be formatted to `f (0, 0) [@a]`, crashing OCamlformat.
 
+  + Preserve cinaps comments containing unparsable code (#1303) (Jules Aguillon)
+    Previously, OCamlformat would fallback to "wrapping" logic, making the comment unreadable
+    and crashing in some cases.
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
