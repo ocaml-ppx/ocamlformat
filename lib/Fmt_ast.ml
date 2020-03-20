@@ -1306,7 +1306,7 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   in
   list_fl groups fmt_args
 
-and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
+and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
   let fmt_sep c ?(force_break = false) xe1 ext xe2 =
     let break =
       let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
@@ -1350,9 +1350,10 @@ and fmt_sequence c ?ext parens width xexp pexp_loc fmt_atrs =
     opt prev f $ list_pn x fmt_seq
   in
   hvbox 0
-    ( Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
-        (hvbox_if parens 0 @@ list_pn grps fmt_seq_list)
-    $ fmt_atrs )
+    (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
+       ( wrap_if has_attr "(" ")"
+           (hvbox_if (parens || has_attr) 0 @@ list_pn grps fmt_seq_list)
+       $ fmt_atrs ))
 
 and fmt_infix_op_args c ~parens xexp op_args =
   let groups =
@@ -2237,9 +2238,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
          && ( Poly.(c.conf.extension_sugar = `Always)
             || Source.extension_using_sugar ~name:ext ~payload:e1
                && List.length (Sugar.sequence c.conf c.cmts xexp) > 1 ) ->
-      fmt_sequence c parens (expression_width c) xexp pexp_loc fmt_atrs ~ext
+      fmt_sequence ~has_attr c parens (expression_width c) xexp pexp_loc
+        fmt_atrs ~ext
   | Pexp_sequence _ ->
-      fmt_sequence c parens (expression_width c) xexp pexp_loc fmt_atrs ?ext
+      fmt_sequence ~has_attr c parens (expression_width c) xexp pexp_loc
+        fmt_atrs ?ext
   | Pexp_setfield (e1, lid, e2) ->
       hvbox 0
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
