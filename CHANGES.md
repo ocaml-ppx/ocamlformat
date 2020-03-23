@@ -51,13 +51,17 @@
   + Retain attributes on various AST nodes:
     * field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
     * instance variable set expressions, e.g. `(a <- b) [@a]` (#1288) (Craig Ferguson)
-    * indexing operators, e.g. `(a.(b)) [@a]` (#1291) (Craig Ferguson)
+    * indexing operators, e.g. `(a.(b)) [@a]` (#1300) (Craig Ferguson)
+    * sequences, e.g. `(a; b) [@a]` (#1291) (Craig Ferguson)
 
   + Avoid unnecessary spacing after object types inside records and polymorphic variants,
     e.g. `{foo : < .. > [@a]}` and `{ foo : < .. > }` (#1296) (Craig Ferguson)
 
   + Fix missing parentheses around tuples with attributes. (#1301) (Craig Ferguson)
     Previously, `f ((0, 0) [@a])` would be formatted to `f (0, 0) [@a]`, crashing OCamlformat.
+
+  + Avoid emitting `>]` when an object type is contained in an extension point
+    or attribute payload (#1298) (Craig Ferguson)
 
   + Fix crash on the expression `(0).*(0)` (#1304) (Jules Aguillon)
     It was formatting to `0.*(0)` which parses as an other expression.

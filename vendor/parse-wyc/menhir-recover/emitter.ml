@@ -137,9 +137,9 @@ end = struct
   open Format
 
   let emit_default_value ppf =
-    (fprintf ppf "open %s\n\n"
-       (String.capitalize (Filename.basename Grammar.basename))
-     [@ocaml.warning "-3"]);
+    fprintf ppf "open %s\n\n"
+      (String.capitalize (Filename.basename Grammar.basename))
+    [@ocaml.warning "-3"];
     fprintf ppf "module Default = struct\n";
     A.default_prelude ppf;
 
