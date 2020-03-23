@@ -30,8 +30,11 @@
       eg. the expression `[%ext (() [@attr])]` or the structure item `(() [@attr]) ;;`
     * `let _ = ...`  constructs (#1244) (Etienne Millon)
 
-  + Fix dropped comment after a function after an infix (#1231) (Jules Aguillon)
-    eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
+  + Fix some bugs related to comments:
+    * after a function on the rhs of an infix (#1231) (Jules Aguillon)
+      eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
+    * in module unpack (#1309) (Jules Aguillon)
+      eg. in the module expression `module M = (val x : S (* A *))`
 
   + Fix formatting of empty signature payload `[%a:]` (#1236) (Etienne Millon)
 

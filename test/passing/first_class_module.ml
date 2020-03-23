@@ -91,3 +91,9 @@ let _ =
   ( module struct
     let a = b
   end )
+
+(* Tests for dropped comment *)
+
+module M = (val x : S (* a *))
+
+module M = (val x (* b *))

@@ -3887,6 +3887,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []; _}
             )
       ; pexp_attributes= []
+      ; pexp_loc
       ; _ } ->
       (* TODO: handle ptyp_loc and pexp_loc *)
       let doc, atrs = doc_atrs pmod_attributes in
@@ -3902,11 +3903,12 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
           @@ hovbox 0
                (wrap_fits_breaks ~space:false c.conf "(" ")"
                   (hvbox 2
-                     ( hovbox 0
-                         ( str "val "
-                         $ fmt_expression c (sub_exp ~ctx e1)
-                         $ fmt "@;<1 2>: " $ fmt_longident_loc c id )
-                     $ fmt_package_type c ctx cnstrs )))
+                     (Cmts.fmt c pexp_loc
+                        ( hovbox 0
+                            ( str "val "
+                            $ fmt_expression c (sub_exp ~ctx e1)
+                            $ fmt "@;<1 2>: " $ fmt_longident_loc c id )
+                        $ fmt_package_type c ctx cnstrs ))))
       ; epi=
           Option.some_if has_epi
             ( Cmts.fmt_after c pmod_loc
