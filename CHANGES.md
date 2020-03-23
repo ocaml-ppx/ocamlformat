@@ -69,6 +69,8 @@
   + Preserve empty doc-comments syntax. (#1311) (Guillaume Petiot)
     Previously `(**)` would be formatted to `(***)`.
 
+  + Do not crash when a comment contains just a newline (#1290) (Etienne Millon)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
