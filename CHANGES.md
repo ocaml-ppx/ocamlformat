@@ -74,6 +74,8 @@
 
   + Do not crash when a comment contains just a newline (#1290) (Etienne Millon)
 
+  + Handle lazy patterns as arguments to `class` (#1289) (Etienne Millon)
+
   + Preserve cinaps comments containing unparsable code (#1303) (Jules Aguillon)
     Previously, OCamlformat would fallback to the "wrapping" logic, making the comment
     unreadable and crashing in some cases.
