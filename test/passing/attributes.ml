@@ -226,7 +226,7 @@ let _ =
     method h = f ((a <- b) [@a])
 
     method i =
-      ((a <- b) [@a]) ;
+      (a <- b) [@a] ;
       ()
   end
 
@@ -259,3 +259,32 @@ let _ =
   f
     (( a________________________________________
      , b________________________________________ ) [@a])
+
+let _ = a [@a] ; b
+
+let _ = f (a [@a] ; b)
+
+let _ = a ; b [@a]
+
+let _ = f (a ; b [@a])
+
+let _ = (a ; b) [@a]
+
+let _ = f ((a ; b) [@a])
+
+let _ = a ; b [@a] ; c
+
+let _ =
+  a ;
+  (b1 ; b2) [@a]
+
+let _ =
+  a ;
+  (b1 ; b2) [@a] ;
+  c
+
+(* Ensure that adding an attribute doesn't break left-alignment of sequenced
+   expressions *)
+let _ =
+  (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;
+   bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb) [@a]
