@@ -292,33 +292,30 @@ type functor_arg = Unit | Named of label option loc * module_type Ast.xt
 
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
-let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
-  let valid_sugared_name = function
-    | Some "_" -> false
-    | Some _ -> true
-    | None -> false
-  in
+let rec functor_type cmts ~for_functor_kw ~source_is_long
+    ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
   match mty with
   | { pmty_desc= Pmty_functor (Named (arg, arg_mty), body)
     ; pmty_loc
     ; pmty_attributes }
     when for_functor_kw
-         || (List.is_empty pmty_attributes && valid_sugared_name arg.txt) ->
+         || (List.is_empty pmty_attributes && not (source_is_long mty)) ->
       let xarg_mty = sub_mty ~ctx arg_mty in
       let body = sub_mty ~ctx body in
       let xargs, xbody =
         match pmty_attributes with
-        | [] -> functor_type cmts ~for_functor_kw body
+        | [] -> functor_type cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
       (Location.mkloc (Named (arg, xarg_mty)) pmty_loc :: xargs, xbody)
   | {pmty_desc= Pmty_functor (Unit, body); pmty_loc; pmty_attributes}
-    when for_functor_kw || List.is_empty pmty_attributes ->
+    when for_functor_kw
+         || (List.is_empty pmty_attributes && not (source_is_long mty)) ->
       let body = sub_mty ~ctx body in
       let xargs, xbody =
         match pmty_attributes with
-        | [] -> functor_type cmts ~for_functor_kw body
+        | [] -> functor_type cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
       (Location.mkloc Unit pmty_loc :: xargs, xbody)
@@ -327,20 +324,13 @@ let rec functor_type cmts ~for_functor_kw ({ast= mty; _} as xmty) =
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
 let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
-  let valid_sugared_name = function
-    | Some "_" -> false
-    | Some _ -> true
-    | None -> false
-  in
   let ctx = Mod me in
   match me with
   | { pmod_desc= Pmod_functor (Named (arg, arg_mt), body)
     ; pmod_loc
     ; pmod_attributes }
     when for_functor_kw
-         || List.is_empty pmod_attributes
-            && not ((not (valid_sugared_name arg.txt)) && source_is_long me)
-    ->
+         || (List.is_empty pmod_attributes && not (source_is_long me)) ->
       let xarg_mt = sub_mty ~ctx arg_mt in
       let ctx = Mod body in
       let body = sub_mod ~ctx body in

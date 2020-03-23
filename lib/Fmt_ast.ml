@@ -123,6 +123,10 @@ let sugar_pmod_functor c ~for_functor_kw pmod =
   let source_is_long = Source.is_long_pmod_functor c.source in
   Sugar.functor_ c.cmts ~for_functor_kw ~source_is_long pmod
 
+let sugar_pmty_functor c ~for_functor_kw pmty =
+  let source_is_long = Source.is_long_pmty_functor c.source in
+  Sugar.functor_type c.cmts ~for_functor_kw ~source_is_long pmty
+
 let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
@@ -3290,7 +3294,7 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
             $ fmt_attributes c ~key:"@" atrs ~pre:(fmt "@ ") ) }
   | Pmty_functor _ ->
       let for_functor_kw = true in
-      let xargs, mt2 = Sugar.functor_type c.cmts ~for_functor_kw xmty in
+      let xargs, mt2 = sugar_pmty_functor c ~for_functor_kw xmty in
       let blk = fmt_module_type c mt2 in
       { blk with
         pro=
@@ -3625,8 +3629,7 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   in
   let xargs, xmty =
     if rec_flag then ([], sub_mty ~ctx pmd_type)
-    else
-      Sugar.functor_type c.cmts ~for_functor_kw:false (sub_mty ~ctx pmd_type)
+    else sugar_pmty_functor c ~for_functor_kw:false (sub_mty ~ctx pmd_type)
   in
   let eqty =
     match xmty.ast.pmty_desc with Pmty_alias _ -> None | _ -> Some ":"
