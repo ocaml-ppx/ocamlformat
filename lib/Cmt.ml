@@ -134,7 +134,9 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
     else
       match split_asterisk_prefixed cmt with
-      | [""] -> str "(* *)"
+      | [] -> assert false
+      | [""] -> assert false
+      | [""; ""] -> str "(* *)"
       | [text] -> str "(*" $ fill_text text ~epi:(str "*)")
       | [text; ""] -> str "(*" $ fill_text text ~epi:(str " *)")
       | asterisk_prefixed_lines ->
