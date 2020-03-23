@@ -1981,6 +1981,7 @@ end = struct
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
+     |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
      |( Exp
           { pexp_desc=
               Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _
