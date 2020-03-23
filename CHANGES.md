@@ -76,6 +76,10 @@
 
   + Handle lazy patterns as arguments to `class` (#1289) (Etienne Millon)
 
+  + Preserve cinaps comments containing unparsable code (#1303) (Jules Aguillon)
+    Previously, OCamlformat would fallback to the "wrapping" logic, making the comment
+    unreadable and crashing in some cases.
+
 ### 0.13.0 (2020-01-28)
 
 #### New features

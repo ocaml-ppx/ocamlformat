@@ -42,3 +42,18 @@ let foo = foo
 (*$QR foo Q.small_int (fun i-> foo i (+) [1;2;3] = List.fold_left (+) i
   [1;2;3] ) *)
 let foo = foo
+
+(* Cinaps comment should not wrap if they don't parse. The first one would
+   crash and the second become a mess *)
+
+(*$(**)"
+"*)
+
+(*$
+  print_newline () ;
+  <SYNTAX ERROR>
+  List.iter
+    (fun s -> Printf.printf "let ( %s ) = Pervasives.( %s )\n" s s)
+    ["+"; "-"; "*"; "/"]
+*)
+(*$*)
