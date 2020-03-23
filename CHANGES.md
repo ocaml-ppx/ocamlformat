@@ -63,6 +63,9 @@
   + Avoid emitting `>]` when an object type is contained in an extension point
     or attribute payload (#1298) (Craig Ferguson)
 
+  + Fix crash on the expression `(0).*(0)` (#1304) (Jules Aguillon)
+    It was formatting to `0.*(0)` which parses as an other expression.
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
