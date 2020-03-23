@@ -150,7 +150,17 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
         hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
     | Error () -> fmt_non_code cmt
   in
-  match cmt.txt with
-  | "" | "$" -> fmt_non_code cmt
-  | str when Char.equal str.[0] '$' -> fmt_code cmt
-  | _ -> fmt_non_code cmt
+  let src_prefix =
+    let pos_cnum = cmt.loc.loc_start.pos_cnum + 4 in
+    let loc_end = {cmt.loc.loc_start with pos_cnum} in
+    Source.string_at src cmt.loc.loc_start loc_end
+  in
+  match src_prefix with
+  (* "(**)" is not parsed as a docstring but as a regular comment containing
+     '*' and would be rewritten as "(***)" *)
+  | "(**)" -> str "(**)"
+  | _ -> (
+    match cmt.txt with
+    | "" | "$" -> fmt_non_code cmt
+    | str when Char.equal str.[0] '$' -> fmt_code cmt
+    | _ -> fmt_non_code cmt )
