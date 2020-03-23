@@ -47,7 +47,7 @@
   + Fix parens around binop operations with attributes (#1252) (Guillaume Petiot)
 
   + Remove unecessary parentheses in the argument of indexing operators (#1280) (Jules Aguillon)
-  
+
   + Retain attributes on various AST nodes:
     * field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
     * instance variable set expressions, e.g. `(a <- b) [@a]` (#1288) (Craig Ferguson)
@@ -65,6 +65,9 @@
 
   + Fix crash on the expression `(0).*(0)` (#1304) (Jules Aguillon)
     It was formatting to `0.*(0)` which parses as an other expression.
+
+  + Preserve empty doc-comments syntax. (#1311) (Guillaume Petiot)
+    Previously `(**)` would be formatted to `(***)`.
 
 ### 0.13.0 (2020-01-28)
 
