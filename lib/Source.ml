@@ -74,11 +74,14 @@ let empty_line_between t p1 p2 =
   Lexing.(p2.pos_lnum - p1.pos_lnum) > 1
   && List.exists (lines_between t p1 p2) ~f:is_line_empty
 
+let sub t ~pos ~len =
+  if String.length t < pos + len || pos < 0 || len < 0 then ""
+  else String.sub t ~pos ~len
+
 let string_at t loc_start loc_end =
   let pos = loc_start.Lexing.pos_cnum
   and len = Position.distance loc_start loc_end in
-  if String.length t < pos + len || pos < 0 || len < 0 then ""
-  else String.sub t ~pos ~len
+  sub t ~pos ~len
 
 let has_cmt_same_line_after t (loc : Location.t) =
   let loc_start = {loc.loc_end with pos_cnum= loc.loc_end.pos_cnum} in

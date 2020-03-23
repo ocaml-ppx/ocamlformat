@@ -152,14 +152,11 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
   in
   match cmt.txt with
   | "*" -> (
-      (* "(**)" is not parsed as a docstring but as a regular comment
-         containing '*' and would be rewritten as "(***)" *)
-      let src_prefix =
-        let pos_cnum = cmt.loc.loc_start.pos_cnum + 4 in
-        let loc_end = {cmt.loc.loc_start with pos_cnum} in
-        Source.string_at src cmt.loc.loc_start loc_end
-      in
-      match src_prefix with "(**)" -> str "(**)" | _ -> str "(***)" )
+    (* "(**)" is not parsed as a docstring but as a regular comment
+       containing '*' and would be rewritten as "(***)" *)
+    match Source.sub src ~pos:cmt.loc.loc_start.pos_cnum ~len:4 with
+    | "(**)" -> str "(**)"
+    | _ -> str "(***)" )
   | "" | "$" -> fmt_non_code cmt
   | str when Char.equal str.[0] '$' -> fmt_code cmt
   | _ -> fmt_non_code cmt

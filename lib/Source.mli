@@ -26,6 +26,8 @@ val has_cmt_same_line_after : t -> Location.t -> bool
 
 val string_at : t -> Lexing.position -> Lexing.position -> string
 
+val sub : t -> pos:int -> len:int -> string
+
 val string_literal :
   t -> [`Normalize | `Preserve] -> Location.t -> string option
 
