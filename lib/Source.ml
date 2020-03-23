@@ -213,6 +213,12 @@ let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
       contains_token_between source ~from ~upto Parser.FUNCTOR
   | _ -> false
 
+let is_long_pmty_functor source Parsetree.{pmty_desc; pmty_loc= from; _} =
+  match pmty_desc with
+  | Pmty_functor (Named ({loc= upto; _}, _), _) ->
+      contains_token_between source ~from ~upto Parser.FUNCTOR
+  | _ -> false
+
 let lexbuf_from_loc t (l : Location.t) =
   let s = string_at t l.loc_start l.loc_end in
   Lexing.from_string s

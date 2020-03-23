@@ -9,6 +9,9 @@
 
   + Handle OCaml 4.10.0 AST (#1276) (Guillaume Petiot)
 
+  + Preserve functor syntax for consistency (#1312) (Guillaume Petiot)
+    Previously both functor syntax: `module M = functor (K : S) -> struct end` and `module M (K : S) = struct end` would be formatted as the latter, the original syntax is now preserved.
+
 #### Changes
 
   + Add the option `doc-comments-val=before|after` (#1012) (Jules Aguillon)
