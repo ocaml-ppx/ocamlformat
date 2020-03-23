@@ -1187,6 +1187,10 @@ and fmt_fun_args c ?pro args =
           | Ppat_unpack _ -> (true, true)
           | _ -> (true, false)
         in
+        (* If the pattern has an attribute, outer parentheses will be added
+           by [fmt_pattern] *)
+        let has_attr = not (List.is_empty xpat.ast.ppat_attributes) in
+        let outer_parens = outer_parens && not has_attr in
         cbox 2
           ( fmt_label lbl ":@,"
           $ wrap_if outer_parens "(" ")"
