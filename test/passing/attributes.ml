@@ -288,3 +288,5 @@ let _ =
 let _ =
   (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;
    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb) [@a]
+
+[@@@a (**b*)]
