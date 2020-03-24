@@ -1168,6 +1168,7 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.07.0))
  (action (diff invalid_docstring.ml.ref invalid_docstring.ml.output)))
 
 (rule
