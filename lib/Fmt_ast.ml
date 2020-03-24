@@ -384,9 +384,9 @@ let parse_docstring ~loc text =
       pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
   in
   match Odoc_parser.parse_comment_raw ~location ~text with
+  | exception _ -> Error ["comment could not be parsed"]
   | {value; warnings= []} -> Ok value
   | {warnings; _} -> Error (List.map warnings ~f:Odoc_model.Error.to_string)
-  | exception _ -> Error ["comment could not be parsed"]
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   let space_i i =
