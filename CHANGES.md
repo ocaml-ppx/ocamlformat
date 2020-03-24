@@ -19,7 +19,7 @@
 
   + Some options are now deprecated:
     * `doc-comments` (#1293, #1012)
-      This option depends on flawed heuristic.
+      This option depends on a flawed heuristic.
       It is replaced by `doc-comments-val` for `val` and `external` declarations.
       There is no equivalent to this option in the general case.
     * `escape-chars`, `escape-strings` and `extension-sugar` (#1293)
