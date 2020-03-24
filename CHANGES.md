@@ -17,6 +17,14 @@
     The default for `doc-comments` is changed from `after` to `before`, this
     option will be deleted in the future.
 
+  + Some options are now deprecated:
+    * `doc-comments` (#1293, #1012)
+      This option depends on flawed heuristic.
+      It is replaced by `doc-comments-val` for `val` and `external` declarations.
+      There is no equivalent to this option in the general case.
+    * `escape-chars`, `escape-strings` and `extension-sugar` (#1293)
+      These options are rarely used and their default behavior is considered to be the right behavior.
+
 #### Bug fixes
 
   + Fix missing parentheses around `let open` (#1229) (Jules Aguillon)
