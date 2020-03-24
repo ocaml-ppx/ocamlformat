@@ -38,9 +38,13 @@ HasNoChangelogNeededLabel () {
     url="https://api.github.com/repos/$TRAVIS_REPO_SLUG/issues/$TRAVIS_PULL_REQUEST/labels"
     response=$(curl -s -L "$url")
     echo "$response"
-    needed=$(jq 'any(.name == "no-changelog-needed")' <<<"$response")
-    [[ $needed = true ]]
-    return
+    # Because of rate limiting, the response may not be what we expect.
+    # Assume the label is not present in this case.
+    if needed=$(jq 'any(.name == "no-changelog-needed")' <<<"$response") &&
+      [[ $needed = true ]]
+    then return 0
+    else return 1
+    fi
 }
 
 CheckChangesModified () {
