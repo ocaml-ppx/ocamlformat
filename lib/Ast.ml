@@ -866,10 +866,6 @@ and Requires_sub_terms : sig
 
   val exposed_left_exp : expression -> bool
 
-  val exposed_left_typ : core_type -> bool
-
-  val exposed_right_typ : core_type -> bool
-
   val prec_ast : T.t -> prec option
 
   val parenze_typ : core_type In_ctx.xt -> bool
@@ -1985,6 +1981,7 @@ end = struct
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
+     |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
      |( Exp
           { pexp_desc=
               Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _
@@ -2279,6 +2276,10 @@ end = struct
           ; _ }
       , _ ) ->
         false
+    (* Object fields do not require parens, even with trailing attributes *)
+    | Exp {pexp_desc= Pexp_object _; _}, _ -> false
+    | Exp {pexp_desc= Pexp_sequence _; _}, {pexp_attributes= _ :: _; _} ->
+        false
     | _, exp when has_trailing_attributes_exp exp -> true
     | ( Exp {pexp_desc= Pexp_construct ({txt= Lident id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
@@ -2304,6 +2305,12 @@ end = struct
     | ( Exp {pexp_desc= Pexp_apply (e, _); _}
       , {pexp_desc= Pexp_construct _ | Pexp_variant _; _} )
       when e == exp ->
+        true
+    (* Integers without suffixes must be parenthesised on the lhs of an
+       indexing operator *)
+    | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, left) :: _); _}
+      , {pexp_desc= Pexp_constant (Pconst_integer (_, None)); _} )
+      when exp == left && is_index_op op ->
         true
     | Exp {pexp_desc= Pexp_field (e, _); _}, {pexp_desc= Pexp_construct _; _}
       when e == exp ->
@@ -2401,21 +2408,6 @@ end = struct
     | Some (Some true) -> true
     | _ -> exposed_right_cl Non_apply cl
 
-  let rec exposed_left_typ typ =
-    match typ.ptyp_desc with
-    | Ptyp_arrow (_, t, _) -> exposed_left_typ t
-    | Ptyp_tuple l -> exposed_left_typ (List.hd_exn l)
-    | Ptyp_object _ -> true
-    | Ptyp_alias (typ, _) -> exposed_left_typ typ
-    | _ -> false
-
-  let rec exposed_right_typ typ =
-    match typ.ptyp_desc with
-    | Ptyp_arrow (_, _, t) -> exposed_right_typ t
-    | Ptyp_tuple l -> exposed_right_typ (List.last_exn l)
-    | Ptyp_object _ -> true
-    | _ -> false
-
   let parenze_nested_exp {ctx; ast= exp} =
     let infix_prec ast =
       match ast with
@@ -2424,13 +2416,7 @@ end = struct
           ( { pexp_desc=
                 Pexp_construct
                   ( {txt= Lident "::"; loc= _}
-                  , Some
-                      { pexp_desc= Pexp_tuple [_; _]
-                      ; pexp_loc= _
-                      ; pexp_attributes= _
-                      ; _ } )
-            ; pexp_loc= _
-            ; pexp_attributes= _
+                  , Some {pexp_desc= Pexp_tuple [_; _]; _} )
             ; _ } as exp )
         when not (is_sugared_list exp) ->
           prec_ast ast

@@ -9,6 +9,9 @@
 
   + Handle OCaml 4.10.0 AST (#1276) (Guillaume Petiot)
 
+  + Preserve functor syntax for consistency (#1312) (Guillaume Petiot)
+    Previously both functor syntax: `module M = functor (K : S) -> struct end` and `module M (K : S) = struct end` would be formatted as the latter, the original syntax is now preserved.
+
 #### Changes
 
   + Add the option `doc-comments-val=before|after` (#1012) (Jules Aguillon)
@@ -25,6 +28,9 @@
     * `escape-chars`, `escape-strings` and `extension-sugar` (#1293)
       These options are rarely used and their default behavior is considered to be the right behavior.
 
+  + Add space between `row_field` attributes and the label or arguments, to be
+    consistent with the non-polymorphic case. (#1299) (Craig Ferguson)
+
 #### Bug fixes
 
   + Fix missing parentheses around `let open` (#1229) (Jules Aguillon)
@@ -35,8 +41,11 @@
       eg. the expression `[%ext (() [@attr])]` or the structure item `(() [@attr]) ;;`
     * `let _ = ...`  constructs (#1244) (Etienne Millon)
 
-  + Fix dropped comment after a function after an infix (#1231) (Jules Aguillon)
-    eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
+  + Fix some bugs related to comments:
+    * after a function on the rhs of an infix (#1231) (Jules Aguillon)
+      eg. the comment in `(x >>= fun y -> y (* A *))` would be dropped
+    * in module unpack (#1309) (Jules Aguillon)
+      eg. in the module expression `module M = (val x : S (* A *))`
 
   + Fix formatting of empty signature payload `[%a:]` (#1236) (Etienne Millon)
 
@@ -52,6 +61,35 @@
   + Fix parens around binop operations with attributes (#1252) (Guillaume Petiot)
 
   + Remove unecessary parentheses in the argument of indexing operators (#1280) (Jules Aguillon)
+
+  + Retain attributes on various AST nodes:
+    * field set expressions, e.g. `(a.x <- b) [@a]` (#1284) (Craig Ferguson)
+    * instance variable set expressions, e.g. `(a <- b) [@a]` (#1288) (Craig Ferguson)
+    * indexing operators, e.g. `(a.(b)) [@a]` (#1300) (Craig Ferguson)
+    * sequences, e.g. `(a; b) [@a]` (#1291) (Craig Ferguson)
+
+  + Avoid unnecessary spacing after object types inside records and polymorphic variants,
+    e.g. `{foo : < .. > [@a]}` and `{ foo : < .. > }` (#1296) (Craig Ferguson)
+
+  + Fix missing parentheses around tuples with attributes. (#1301) (Craig Ferguson)
+    Previously, `f ((0, 0) [@a])` would be formatted to `f (0, 0) [@a]`, crashing OCamlformat.
+
+  + Avoid emitting `>]` when an object type is contained in an extension point
+    or attribute payload (#1298) (Craig Ferguson)
+
+  + Fix crash on the expression `(0).*(0)` (#1304) (Jules Aguillon)
+    It was formatting to `0.*(0)` which parses as an other expression.
+
+  + Preserve empty doc-comments syntax. (#1311) (Guillaume Petiot)
+    Previously `(**)` would be formatted to `(***)`.
+
+  + Do not crash when a comment contains just a newline (#1290) (Etienne Millon)
+
+  + Handle lazy patterns as arguments to `class` (#1289) (Etienne Millon)
+
+  + Preserve cinaps comments containing unparsable code (#1303) (Jules Aguillon)
+    Previously, OCamlformat would fallback to the "wrapping" logic, making the comment
+    unreadable and crashing in some cases.
 
 ### 0.13.0 (2020-01-28)
 

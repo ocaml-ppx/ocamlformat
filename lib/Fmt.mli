@@ -219,4 +219,4 @@ val hovbox_if : ?name:string -> bool -> int -> t -> t
 (** Text filling --------------------------------------------------------*)
 
 val fill_text : ?epi:t -> string -> t
-(** Format a string as filled text wrapped at the margin. *)
+(** Format a non-empty string as filled text wrapped at the margin. *)

@@ -126,7 +126,7 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
           first_line tl
     | _ -> str s
   in
-  let fmt_non_code cmt =
+  let fmt_non_code ?(wrap_comments = wrap_comments) cmt =
     if not wrap_comments then
       match split_asterisk_prefixed cmt with
       | [""] | [_] | [_; ""] -> wrap "(*" "*)" (fmt_unwrapped_cmt cmt)
@@ -134,7 +134,9 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
     else
       match split_asterisk_prefixed cmt with
-      | [""] -> str "(* *)"
+      | [] -> assert false
+      | [""] -> assert false
+      | [""; ""] -> str "(* *)"
       | [text] -> str "(*" $ fill_text text ~epi:(str "*)")
       | [text; ""] -> str "(*" $ fill_text text ~epi:(str " *)")
       | asterisk_prefixed_lines ->
@@ -148,9 +150,15 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
     | Ok formatted ->
         let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
         hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
-    | Error () -> fmt_non_code cmt
+    | Error () -> fmt_non_code ~wrap_comments:false cmt
   in
   match cmt.txt with
+  | "*" -> (
+    (* "(**)" is not parsed as a docstring but as a regular comment
+       containing '*' and would be rewritten as "(***)" *)
+    match Source.sub src ~pos:cmt.loc.loc_start.pos_cnum ~len:4 with
+    | "(**)" -> str "(**)"
+    | _ -> str "(***)" )
   | "" | "$" -> fmt_non_code cmt
   | str when Char.equal str.[0] '$' -> fmt_code cmt
   | _ -> fmt_non_code cmt

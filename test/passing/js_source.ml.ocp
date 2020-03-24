@@ -4877,7 +4877,8 @@ module type PR6513 = sig
     type uri
   end
 
-  module Make (Html5 : T with type 'a wrap = 'a) : S with type u = < foo : Html5.uri >
+  module Make : functor (Html5 : T with type 'a wrap = 'a) ->
+    S with type u = < foo : Html5.uri >
 end
 
 (* Requires -package tyxml
@@ -6094,8 +6095,8 @@ module F4 : functor (X : sig end) -> sig end = F3
 (* fail *)
 
 (* tests for shortened functor notation () *)
-module X (X : sig end) (Y : sig end) (Z : sig end) = struct end
-module Y (X : sig end) (Y : sig end) (Z : sig end) = struct end
+module X (X : sig end) (Y : sig end) = functor (Z : sig end) -> struct end
+module Y = functor (X : sig end) (Y : sig end) (Z : sig end) -> struct end
 module Z = functor (_ : sig end) (_ : sig end) (_ : sig end) -> struct end
 
 module GZ : functor (X : sig end) () (Z : sig end) -> sig end =
@@ -8468,7 +8469,7 @@ module type WEAPON_LIB = sig
   type t = Weapon.t
 
   module T : USERTYPE with type t = t
-  module Make (TV : TYPEVIEW with type t = t) : USERCODE(TV).F
+  module Make : functor (TV : TYPEVIEW with type t = t) -> USERCODE(TV).F
 end
 
 module type X = functor (X : CORE) -> BARECODE

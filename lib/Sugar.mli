@@ -115,6 +115,7 @@ type functor_arg =
 val functor_type :
      Cmts.t
   -> for_functor_kw:bool
+  -> source_is_long:(module_type -> bool)
   -> module_type Ast.xt
   -> functor_arg loc list * module_type Ast.xt
 (** [functor_type cmts for_functor_kw m] returns the list of module types

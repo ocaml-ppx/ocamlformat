@@ -442,3 +442,11 @@ let fooooooooooooooooo =
 (** foooooooooooooooooooooooooooooooooooooooooooooooooo foooooooooooo {b eee + eee eee} *)
 
 (** foooooooooooooooooooooooooooooooooooooooooooooooooo foooooooooooooooo {b + eee + eee eee} *)
+
+val f : int
+
+(***)
+
+val k : int
+
+(**)

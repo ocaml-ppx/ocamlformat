@@ -246,6 +246,7 @@ let utf8_length s =
   Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
 
 let fill_text ?epi text =
+  assert (not (String.is_empty text)) ;
   let fmt_line line =
     let words =
       List.filter ~f:(Fn.non String.is_empty)

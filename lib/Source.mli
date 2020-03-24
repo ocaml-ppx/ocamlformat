@@ -26,6 +26,8 @@ val has_cmt_same_line_after : t -> Location.t -> bool
 
 val string_at : t -> Lexing.position -> Lexing.position -> string
 
+val sub : t -> pos:int -> len:int -> string
+
 val string_literal :
   t -> [`Normalize | `Preserve] -> Location.t -> string option
 
@@ -59,6 +61,11 @@ val is_long_pmod_functor : t -> Parsetree.module_expr -> bool
 (** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a
     [Pmod_functor] expression that is expressed in long ('functor (M) ->')
     form in source. *)
+
+val is_long_pmty_functor : t -> Parsetree.module_type -> bool
+(** [is_long_pmty_functor source mod_type] holds if [mod_type] is a
+    [Pmty_functor] type that is expressed in long ('functor (M) ->') form in
+    source. *)
 
 val begins_line : ?ignore_spaces:bool -> t -> Location.t -> bool
 

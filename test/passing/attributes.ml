@@ -34,7 +34,9 @@ val foo : int
   [@@warning "-99"]
   [@@some long comment]
 
-type t = [`A of int[@default] | `B of (float[@default])]
+type t = A of int [@attr] | B of (float[@attr]) | C [@attr]
+
+type t = [`A of int [@attr] | `B of (float[@attr]) | `C [@attr]]
 
 let[@inline always] f x =
   let[@something] e = 1 in
@@ -212,3 +214,77 @@ let _ = ([] @ []) [@a]
 let _ = ("" ^ "") [@a]
 
 let _ = (0 + 0) [@a]
+
+let _ = (a.x <- 1) [@a]
+
+let _ = f ((a.x <- 1) [@a])
+
+let _ =
+  object
+    method g = (a <- b) [@a]
+
+    method h = f ((a <- b) [@a])
+
+    method i =
+      (a <- b) [@a] ;
+      ()
+  end
+
+let _ = a.(b) [@a]
+
+let _ = f (a.(b) [@a])
+
+let _ = (a.*?!@{b} <- c) [@a]
+
+let _ = f ((a.*?!@{b} <- c) [@a])
+
+(* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1256
+   (dropped parentheses around tuples with attributes). *)
+
+;;
+(0, 0) [@a]
+
+let _ = ((0, 0) [@a])
+
+let _ = f ((0, 0) [@a])
+
+(* Ensure that adding an attribute doesn't break left-alignment of tuple
+   components *)
+
+;;
+( a________________________________________
+, b________________________________________ ) [@a]
+
+let _ =
+  f
+    (( a________________________________________
+     , b________________________________________ ) [@a])
+
+let _ = a [@a] ; b
+
+let _ = f (a [@a] ; b)
+
+let _ = a ; b [@a]
+
+let _ = f (a ; b [@a])
+
+let _ = (a ; b) [@a]
+
+let _ = f ((a ; b) [@a])
+
+let _ = a ; b [@a] ; c
+
+let _ =
+  a ;
+  (b1 ; b2) [@a]
+
+let _ =
+  a ;
+  (b1 ; b2) [@a] ;
+  c
+
+(* Ensure that adding an attribute doesn't break left-alignment of sequenced
+   expressions *)
+let _ =
+  (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;
+   bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb) [@a]

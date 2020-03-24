@@ -74,11 +74,14 @@ let empty_line_between t p1 p2 =
   Lexing.(p2.pos_lnum - p1.pos_lnum) > 1
   && List.exists (lines_between t p1 p2) ~f:is_line_empty
 
+let sub t ~pos ~len =
+  if String.length t < pos + len || pos < 0 || len < 0 then ""
+  else String.sub t ~pos ~len
+
 let string_at t loc_start loc_end =
   let pos = loc_start.Lexing.pos_cnum
   and len = Position.distance loc_start loc_end in
-  if String.length t < pos + len || pos < 0 || len < 0 then ""
-  else String.sub t ~pos ~len
+  sub t ~pos ~len
 
 let has_cmt_same_line_after t (loc : Location.t) =
   let loc_start = {loc.loc_end with pos_cnum= loc.loc_end.pos_cnum} in
@@ -207,6 +210,12 @@ let is_long_pexp_open source {Parsetree.pexp_desc; _} =
 let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
   match pmod_desc with
   | Pmod_functor (Named ({loc= upto; _}, _), _) ->
+      contains_token_between source ~from ~upto Parser.FUNCTOR
+  | _ -> false
+
+let is_long_pmty_functor source Parsetree.{pmty_desc; pmty_loc= from; _} =
+  match pmty_desc with
+  | Pmty_functor (Named ({loc= upto; _}, _), _) ->
       contains_token_between source ~from ~upto Parser.FUNCTOR
   | _ -> false
 

@@ -6,6 +6,8 @@ let _ =
     (* some comment *)
     method! x = 2 [@@attr]
 
+    method x = (1 [@attr])
+
     method virtual x : t
 
     method virtual private x : t
@@ -279,3 +281,5 @@ class type a =
 class a =
   let open[@attr] A in
   b
+
+class t (lazy _) = object end
