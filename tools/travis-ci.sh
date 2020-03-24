@@ -53,8 +53,10 @@ CheckChangesModified () {
         if HasNoChangelogNeededLabel ; then
             echo skipped
         else
-            git diff --exit-code "$TRAVIS_COMMIT_RANGE" -- CHANGES.md \
-                > /dev/null && exit 1 || echo pass
+            if git diff --exit-code "$TRAVIS_COMMIT_RANGE" -- CHANGES.md > /dev/null
+            then echo "The changelog is not uptodate"; exit 1
+            else echo pass
+            fi
         fi
     fi
 }
