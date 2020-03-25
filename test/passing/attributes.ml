@@ -290,3 +290,21 @@ let _ =
    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb) [@a]
 
 [@@@a (**b*)]
+
+let (Foo ((A | B)[@attr])) = ()
+
+let ([((A | B)[@attr]); b; c][@attr]) = ()
+
+let ([|a; (A | B)[@attr]; c|][@attr]) = ()
+
+let {b= (A | B)[@attr]} = ()
+
+let (`Foo ((`A | `B)[@attr])) = ()
+
+let (A | B)[@attr], (A | B)[@attr] = ()
+
+let (A | B)[@attr] = ()
+
+let (Foo ((A | B)[@attr]) : (t[@attr])) = ()
+
+let (M.(A | B)[@attr]) = ()
