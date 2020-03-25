@@ -371,6 +371,9 @@ let find_cmts t pos loc =
     update_cmts t pos ~f:(fun m -> Location.Multimap.remove m loc) ;
   r
 
+let line_dist a b =
+  b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
+
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
     ?(adj = eol) found loc =
@@ -378,9 +381,6 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
   match found with
   | None | Some [] -> noop
   | Some cmts ->
-      let line_dist a b =
-        b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
-      in
       let groups =
         List.group cmts ~break:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
             let vertical_align =
