@@ -1938,16 +1938,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then
-          (wrap "( " " )", true)
-        else if is_monadic_binding exp then (wrap "( " " )", false)
-        else if is_symbol exp then (wrap_if parens "( " " )", false)
-        else (wrap_if parens "(" ")", false)
+          (wrap_if parens "(" ")", wrap "( " " )")
+        else if is_monadic_binding exp then (wrap "( " " )", Fn.id)
+        else if is_symbol exp then (wrap_if parens "( " " )", Fn.id)
+        else (wrap_if parens "(" ")", Fn.id)
       in
       Cmts.fmt c loc
       @@ wrap
-           ( wrap_if wrap_ident "(" ")"
-               (fmt_longident txt $ Cmts.fmt_within c loc)
-           $ fmt_atrs )
+           (wrap_ident (fmt_longident txt $ Cmts.fmt_within c loc) $ fmt_atrs)
   | Pexp_ifthenelse _ ->
       let cnd_exps = Sugar.ite c.cmts xexp in
       let parens_prev_bch = ref false in
