@@ -872,11 +872,19 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         @@ Cmts.fmt c ~pro:(break 1 0) loc (fmt_opt pro $ k)
   | _ -> fun k -> Cmts.fmt c ppat_loc (fmt_opt pro $ k) )
   @@ ( if List.is_empty ppat_attributes then Fn.id
-     else
-       let maybe_wrap =
-         match ppat_desc with Ppat_or _ -> Fn.id | _ -> wrap "(" ")"
+     else fun k ->
+       let parens_attr =
+         match ppat_desc with
+         | Ppat_or _ -> (
+           match ctx0 with
+           | Pat {ppat_desc= Ppat_construct _; _}
+            |Pat {ppat_desc= Ppat_variant _; _} ->
+               true
+           | _ -> false )
+         | _ -> true
        in
-       fun k -> maybe_wrap (k $ fmt_attributes c ~key:"@" ppat_attributes) )
+       wrap_if parens_attr "(" ")"
+         (k $ fmt_attributes c ~key:"@" ppat_attributes) )
   @@
   match ppat_desc with
   | Ppat_any -> str "_"
