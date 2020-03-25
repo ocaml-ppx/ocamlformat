@@ -855,6 +855,22 @@ and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
     $ fmt_attributes c ~pre:(str " ") ~key:"@" atrs
     $ fmt_docstring_padded c doc )
 
+and fmt_pattern_attributes c xpat k =
+  match xpat.ast.ppat_attributes with
+  | [] -> k
+  | attrs ->
+      let parens_attr =
+        match xpat.ast.ppat_desc with
+        | Ppat_or _ -> (
+          match xpat.ctx with
+          | Pat {ppat_desc= Ppat_construct _; _}
+           |Pat {ppat_desc= Ppat_variant _; _} ->
+              true
+          | _ -> false )
+        | _ -> true
+      in
+      wrap_if parens_attr "(" ")" (k $ fmt_attributes c ~key:"@" attrs)
+
 and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   protect c (Pat pat)
   @@
@@ -871,20 +887,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         Cmts.fmt c ~pro:(break 1 0) ppat_loc
         @@ Cmts.fmt c ~pro:(break 1 0) loc (fmt_opt pro $ k)
   | _ -> fun k -> Cmts.fmt c ppat_loc (fmt_opt pro $ k) )
-  @@ ( if List.is_empty ppat_attributes then Fn.id
-     else fun k ->
-       let parens_attr =
-         match ppat_desc with
-         | Ppat_or _ -> (
-           match ctx0 with
-           | Pat {ppat_desc= Ppat_construct _; _}
-            |Pat {ppat_desc= Ppat_variant _; _} ->
-               true
-           | _ -> false )
-         | _ -> true
-       in
-       wrap_if parens_attr "(" ")"
-         (k $ fmt_attributes c ~key:"@" ppat_attributes) )
+  @@ fmt_pattern_attributes c xpat
   @@
   match ppat_desc with
   | Ppat_any -> str "_"
