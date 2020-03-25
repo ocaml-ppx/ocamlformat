@@ -365,6 +365,7 @@ let pop_if_debug t loc =
   if t.debug && t.remove then update_remaining t ~f:(Location.Set.remove loc)
 
 let find_cmts t pos loc =
+  pop_if_debug t loc ;
   let r = find_at_position t loc pos in
   if t.remove then
     update_cmts t pos ~f:(fun m -> Location.Multimap.remove m loc) ;
@@ -374,7 +375,6 @@ let find_cmts t pos loc =
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
     ?(adj = eol) found loc =
   let open Fmt in
-  pop_if_debug t loc ;
   match found with
   | None | Some [] -> noop
   | Some cmts ->
