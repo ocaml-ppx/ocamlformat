@@ -372,10 +372,10 @@ let find_cmts t pos loc =
 
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
-    ?(adj = eol) find loc =
+    ?(adj = eol) found loc =
   let open Fmt in
   pop_if_debug t loc ;
-  match find loc with
+  match found with
   | None | Some [] -> noop
   | Some cmts ->
       let line_dist a b =
@@ -431,20 +431,26 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
               ( close_box
               $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ))
 
-let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj =
-  fmt_cmts t conf (find_cmts t `Before) ~fmt_code ?pro ~epi ?eol ?adj
+let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
+  fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code ?pro ~epi ?eol ?adj loc
 
-let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi =
+let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi loc =
   let open Fmt in
-  let within = fmt_cmts t conf (find_cmts t `Within) ~fmt_code ~pro ?epi in
-  let after =
-    fmt_cmts t conf (find_cmts t `After) ~fmt_code ~pro ?epi ~eol:noop
+  let within =
+    fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code ~pro ?epi loc
   in
-  fun loc -> within loc $ after loc
+  let after =
+    fmt_cmts t conf
+      (find_cmts t `After loc)
+      ~fmt_code ~pro ?epi ~eol:noop loc
+  in
+  within $ after
 
 let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
-    =
-  fmt_cmts t conf (find_cmts t `Within) ~fmt_code ~pro ~epi ~eol:Fmt.noop
+    loc =
+  fmt_cmts t conf
+    (find_cmts t `Within loc)
+    ~fmt_code ~pro ~epi ~eol:Fmt.noop loc
 
 let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =
   let open Fmt in
