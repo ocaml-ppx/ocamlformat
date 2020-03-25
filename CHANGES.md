@@ -20,6 +20,14 @@
     The default for `doc-comments` is changed from `after` to `before`, this
     option will be deleted in the future.
 
+  + Some options are now deprecated:
+    * `doc-comments` (#1293, #1012)
+      This option depends on a flawed heuristic.
+      It is replaced by `doc-comments-val` for `val` and `external` declarations.
+      There is no equivalent to this option in the general case.
+    * `escape-chars`, `escape-strings` and `extension-sugar` (#1293)
+      These options are rarely used and their default behavior is considered to be the right behavior.
+
   + Add space between `row_field` attributes and the label or arguments, to be
     consistent with the non-polymorphic case. (#1299) (Craig Ferguson)
 

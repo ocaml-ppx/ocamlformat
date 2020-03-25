@@ -29,6 +29,8 @@ module Make (C : CONFIG) = struct
   type from =
     [`Default | `Profile of string * updated_from | `Updated of updated_from]
 
+  type deprecated = {msg: string; since_version: string}
+
   type 'a t =
     { names: string list
     ; parse: string -> ('a, [`Msg of string]) Result.t
@@ -39,14 +41,14 @@ module Make (C : CONFIG) = struct
     ; default: 'a
     ; get_value: config -> 'a
     ; from: from
-    ; deprecated: bool }
+    ; deprecated: deprecated option }
 
   type 'a option_decl =
        names:string list
     -> doc:string
     -> section:[`Formatting | `Operational]
     -> ?allow_inline:bool
-    -> ?deprecated:bool
+    -> ?deprecated:deprecated
     -> (config -> 'a -> config)
     -> (config -> 'a)
     -> 'a t
@@ -55,25 +57,34 @@ module Make (C : CONFIG) = struct
 
   let store = ref []
 
+  let deprecated ~since_version msg = {msg; since_version}
+
   let in_attributes ~section cond =
     if cond || Poly.(section = `Operational) then ""
     else " Cannot be set in attributes."
 
-  let deprecated_doc ~deprecated =
-    if deprecated then " Warning: This option is deprecated." else ""
+  let pp_deprecated ppf {msg; since_version} =
+    Format.fprintf ppf "This option is deprecated since version %s. %s"
+      since_version msg
+
+  let deprecated_doc ppf deprecated =
+    match deprecated with
+    | Some deprecated ->
+        Format.fprintf ppf " Warning: %a" pp_deprecated deprecated
+    | None -> ()
 
   let generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated =
     let default = if default then "set" else "unset" in
-    Format.sprintf "%s The flag is $(b,%s) by default.%s%s" doc default
+    Format.asprintf "%s The flag is $(b,%s) by default.%s%a" doc default
       (in_attributes ~section allow_inline)
-      (deprecated_doc ~deprecated)
+      deprecated_doc deprecated
 
   let generated_doc conv ~allow_inline ~doc ~section ~default ~deprecated =
     let default = Format.asprintf "%a" (Arg.conv_printer conv) default in
     let default = if String.is_empty default then "none" else default in
-    Format.sprintf "%s The default value is $(b,%s).%s%s" doc default
+    Format.asprintf "%s The default value is $(b,%s).%s%a" doc default
       (in_attributes ~section allow_inline)
-      (deprecated_doc ~deprecated)
+      deprecated_doc deprecated
 
   let section_name = function
     | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
@@ -82,8 +93,8 @@ module Make (C : CONFIG) = struct
   let from = `Default
 
   let flag ~default ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
-      update get_value =
+      ?(allow_inline = Poly.(section = `Formatting)) ?deprecated update
+      get_value =
     let open Cmdliner in
     let invert_names =
       List.filter_map names ~f:(fun n ->
@@ -121,8 +132,8 @@ module Make (C : CONFIG) = struct
     opt
 
   let any converter ~default ~docv ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false)
-      update get_value =
+      ?(allow_inline = Poly.(section = `Formatting)) ?deprecated update
+      get_value =
     let open Cmdliner in
     let doc =
       generated_doc converter ~allow_inline ~doc ~section ~default
@@ -170,7 +181,7 @@ module Make (C : CONFIG) = struct
     Arg.conv (parse, Arg.conv_printer conv)
 
   let choice ~all ?(removed_values = []) ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?(deprecated = false) =
+      ?(allow_inline = Poly.(section = `Formatting)) ?deprecated =
     let _, default, _ = List.hd_exn all in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let conv = add_removed_values removed_values (Arg.enum opt_names) in
@@ -190,7 +201,7 @@ module Make (C : CONFIG) = struct
            (fun fs (v, _, _) -> fprintf fs "%s" v))
         all
     in
-    any conv ~default ~docv ~names ~doc ~section ~allow_inline ~deprecated
+    any conv ~default ~docv ~names ~doc ~section ~allow_inline ?deprecated
 
   let update_from config name from =
     let is_profile_option_name x =
@@ -212,7 +223,7 @@ module Make (C : CONFIG) = struct
           Pack {p with from= `Profile (profile_name, from)}
       else if List.exists names ~f:(String.equal name) then (
         (* updating a single option (without setting a profile) *)
-        if deprecated then C.warn config "option %s is deprecated" name ;
+        Option.iter deprecated ~f:(C.warn config "%s: %a" name pp_deprecated) ;
         Pack {p with from= `Updated from} )
       else Pack p
     in

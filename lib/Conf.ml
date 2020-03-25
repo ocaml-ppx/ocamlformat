@@ -494,7 +494,12 @@ module Formatting = struct
            change their meaning and on structures, signatures and objects \
            for readability." ) ]
     in
-    C.choice ~names ~all ~doc ~section
+    let deprecated =
+      C.deprecated ~since_version:"0.14.0"
+        "Use the more restricted doc-comments-val instead. There is no \
+         equivalent to this option in the general case."
+    in
+    C.choice ~names ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with doc_comments= x})
       (fun conf -> conf.doc_comments)
 
@@ -563,7 +568,10 @@ module Formatting = struct
         , `Hexadecimal
         , "$(b,hexadecimal) mode escapes every character." ) ]
     in
-    C.choice ~names ~all ~doc ~section
+    let deprecated =
+      C.deprecated ~since_version:"0.14.0" "There is no equivalent."
+    in
+    C.choice ~names ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with escape_chars= x})
       (fun conf -> conf.escape_chars)
 
@@ -578,7 +586,10 @@ module Formatting = struct
       ; ("decimal", `Decimal, "")
       ; ("hexadecimal", `Hexadecimal, "") ]
     in
-    C.choice ~names ~all ~doc ~section
+    let deprecated =
+      C.deprecated ~since_version:"0.14.0" "There is no equivalent."
+    in
+    C.choice ~names ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with escape_strings= x})
       (fun conf -> conf.escape_strings)
 
@@ -612,7 +623,10 @@ module Formatting = struct
     let doc = "Extension formatting." in
     let names = ["extension-sugar"] in
     let all = [("preserve", `Preserve, ""); ("always", `Always, "")] in
-    C.choice ~names ~all ~doc ~section
+    let deprecated =
+      C.deprecated ~since_version:"0.14.0" "There is no equivalent."
+    in
+    C.choice ~names ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with extension_sugar= x})
       (fun conf -> conf.extension_sugar)
 

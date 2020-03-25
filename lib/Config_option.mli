@@ -26,17 +26,21 @@ module Make (C : CONFIG) : sig
 
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
+  type deprecated
+
   type 'a option_decl =
        names:string list
     -> doc:string
     -> section:[`Formatting | `Operational]
     -> ?allow_inline:bool
-    -> ?deprecated:bool
+    -> ?deprecated:deprecated
     -> (config -> 'a -> config)
     -> (config -> 'a)
     -> 'a t
 
   val section_name : [`Formatting | `Operational] -> string
+
+  val deprecated : since_version:string -> string -> deprecated
 
   type removed_value
   (** Indicate that a configuration value has been removed in an ocamlformat
