@@ -6,7 +6,7 @@ let op = if b then ( * ) else ( + ) in
 assert ( * )
 
 ;;
-(( * ) [@a])
+( * ) [@a]
 
 ;;
 assert ( ( * ) [@a] )
