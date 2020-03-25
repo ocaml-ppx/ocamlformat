@@ -85,6 +85,8 @@
 
   + Fix normalization of attributes, fixing the docstrings in attributes (#1314) (Guillaume Petiot)
 
+  + Add missing parentheses around OR-patterns with attributes (#1317) (Guillaume Petiot)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
