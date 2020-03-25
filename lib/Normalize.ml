@@ -25,7 +25,7 @@ type conf =
 let dedup_cmts map_ast ast comments =
   let of_ast map_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
-    let attribute _ atr =
+    let attribute m atr =
       match atr with
       | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
         ; attr_payload=
@@ -40,7 +40,7 @@ let dedup_cmts map_ast ast comments =
         ; _ } ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
           atr
-      | _ -> atr
+      | _ -> Ast_mapper.default_mapper.attribute m atr
     in
     map_ast {Ast_mapper.default_mapper with attribute} ast |> ignore ;
     !docs

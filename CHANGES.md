@@ -83,6 +83,8 @@
     Previously, OCamlformat would fallback to the "wrapping" logic, making the comment
     unreadable and crashing in some cases.
 
+  + Fix normalization of attributes, fixing the docstrings in attributes (#1314) (Guillaume Petiot)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
