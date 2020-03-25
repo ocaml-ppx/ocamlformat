@@ -374,6 +374,21 @@ let find_cmts t pos loc =
 let line_dist a b =
   b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
 
+let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
+  let vertical_align =
+    line_dist a b = 1
+    && Location.compare_start_col a b = 0
+    && Location.compare_end_col a b = 0
+  in
+  let horizontal_align =
+    line_dist a b = 0
+    && Option.value_map (Source.string_between source a.loc_end b.loc_start)
+         ~default:true ~f:(fun x -> String.(strip x |> is_empty))
+  in
+  not
+    ( (Location.is_single_line a margin && Location.is_single_line b margin)
+    && (vertical_align || horizontal_align) )
+
 (** Find, remove, and format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
     ?(adj = eol) found loc =
@@ -382,22 +397,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
   | None | Some [] -> noop
   | Some cmts ->
       let groups =
-        List.group cmts ~break:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-            let vertical_align =
-              line_dist a b = 1
-              && Location.compare_start_col a b = 0
-              && Location.compare_end_col a b = 0
-            in
-            let horizontal_align =
-              line_dist a b = 0
-              && Option.value_map
-                   (Source.string_between t.source a.loc_end b.loc_start)
-                   ~default:true ~f:(fun x -> String.(strip x |> is_empty))
-            in
-            not
-              ( ( Location.is_single_line a conf.margin
-                && Location.is_single_line b conf.margin )
-              && (vertical_align || horizontal_align) ))
+        List.group cmts ~break:(break_comment_group t.source conf.margin)
       in
       let last_loc = Cmt.loc (List.last_exn cmts) in
       let eol_cmt = Source.ends_line t.source last_loc in
