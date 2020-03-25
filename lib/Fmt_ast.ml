@@ -1783,7 +1783,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                p)
         $ fmt_atrs )
   | Pexp_assert e0 ->
-      let paren_body = parenze_exp (sub_exp ~ctx e0) in
+      let paren_body, wrap_symbol =
+        if Ast.is_symbol e0 then (false, wrap "( " " )")
+        else (parenze_exp (sub_exp ~ctx e0), Fn.id)
+      in
       let hint =
         match c.conf.indicate_multiline_delimiters with
         | `Space -> (1, 0)
@@ -1795,7 +1798,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            (hvbox 0
               ( hvbox 2
                   ( fmt_or paren_body "assert (@," "assert@ "
-                  $ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
+                  $ wrap_symbol
+                    @@ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
               $ fits_breaks_if paren_body ")" ~hint ")"
               $ fmt_atrs )))
   | Pexp_constant const ->
@@ -1945,16 +1949,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
         if is_symbol exp && not (List.is_empty pexp_attributes) then
-          (wrap "( " " )", true)
-        else if is_monadic_binding exp then (wrap "( " " )", false)
-        else if is_symbol exp then (wrap_if parens "( " " )", false)
-        else (wrap_if parens "(" ")", false)
+          (wrap_if parens "(" ")", wrap "( " " )")
+        else if is_monadic_binding exp then (wrap "( " " )", Fn.id)
+        else if is_symbol exp then (wrap_if parens "( " " )", Fn.id)
+        else (wrap_if parens "(" ")", Fn.id)
       in
       Cmts.fmt c loc
       @@ wrap
-           ( wrap_if wrap_ident "(" ")"
-               (fmt_longident txt $ Cmts.fmt_within c loc)
-           $ fmt_atrs )
+           (wrap_ident (fmt_longident txt $ Cmts.fmt_within c loc) $ fmt_atrs)
   | Pexp_ifthenelse _ ->
       let cnd_exps = Sugar.ite c.cmts xexp in
       let parens_prev_bch = ref false in
@@ -1973,12 +1975,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                          pexp_attributes)
                     ~fmt_cond:(fmt_expression c) c.source
                 in
+                let wrap_parens =
+                  if Ast.is_symbol xbch.ast then wrap "( " " )"
+                  else p.wrap_parens
+                in
                 parens_prev_bch := parens_bch ;
                 p.box_branch
                   ( p.cond
                   $ p.box_keyword_and_expr
                       ( p.branch_pro
-                      $ p.wrap_parens
+                      $ wrap_parens
                           ( fmt_expression c ~box:false ~parens:false
                               ?pro:p.expr_pro ?eol:p.expr_eol xbch
                           $ p.break_end_branch ) ) )

@@ -2201,6 +2201,17 @@
  (action (diff string_wrapping.ml string_wrapping.ml.output)))
 
 (rule
+ (targets symbol.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{dep:symbol.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff symbol.ml symbol.ml.output)))
+
+(rule
  (targets tag_only.ml.output)
  (deps .ocamlformat )
  (action

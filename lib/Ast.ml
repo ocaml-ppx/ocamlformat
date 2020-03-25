@@ -2022,7 +2022,8 @@ end = struct
       , Pexp_ident {txt= Lident i; _} )
       when e0 == exp && is_infix_id i && List.is_empty exp.pexp_attributes ->
         false
-    | _, Pexp_ident {txt= Lident i; _} when is_infix_id i -> true
+    | _, Pexp_ident {txt= Lident i; _} when is_infix_id i ->
+        List.is_empty exp.pexp_attributes
     | _ -> false
 
   (** 'Classes' of expressions which are parenthesized differently. *)

@@ -87,6 +87,8 @@
 
   + Add missing parentheses around OR-patterns with attributes (#1317) (Guillaume Petiot)
 
+  + Fix spacing inside parens for symbols when the spacing was handled by the englobing exp (#1316) (Guillaume Petiot)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
