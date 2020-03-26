@@ -76,28 +76,26 @@ let protect =
 let update_config ?quiet c l =
   {c with conf= List.fold ~init:c.conf l ~f:(Conf.update ?quiet)}
 
+let fmt_elements_collection ?(first_sep = true) ?(last_sep = true)
+    (p : Params.elements_collection) fmt_x xs =
+  let fmt_one ~first ~last x =
+    fmt_if_k (not (first && first_sep)) p.sep_before
+    $ fmt_x x
+    $ fmt_or_k (last && last_sep) p.sep_after_final p.sep_after_non_final
+  in
+  list_fl xs fmt_one
+
 let fmt_expressions c width sub_exp exprs fmt_expr
     (p : Params.elements_collection) =
   match c.conf.break_collection_expressions with
-  | `Fit_or_vertical ->
-      let fmt_expr ~first ~last e =
-        fmt_if_k (not first) p.sep_before
-        $ fmt_expr e
-        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
-      in
-      list_fl exprs fmt_expr
+  | `Fit_or_vertical -> fmt_elements_collection p fmt_expr exprs
   | `Wrap ->
       let is_simple x = is_simple c.conf width (sub_exp x) in
       let break x1 x2 = not (is_simple x1 && is_simple x2) in
       let grps = List.group exprs ~break in
       let fmt_grp ~first:first_grp ~last:last_grp exprs =
-        let fmt_expr ~first ~last e =
-          fmt_if_k (not (first && first_grp)) p.sep_before
-          $ fmt_expr e
-          $ fmt_or_k (last && last_grp) p.sep_after_final
-              p.sep_after_non_final
-        in
-        list_fl exprs fmt_expr
+        fmt_elements_collection ~first_sep:first_grp ~last_sep:last_grp p
+          fmt_expr exprs
       in
       list_fl grps fmt_grp
 
@@ -949,15 +947,16 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         let p = Params.get_list_pat c.conf ~ctx:ctx0 in
         let offset = if c.conf.dock_collection_brackets then 0 else 2 in
         let cmt_break = break 1 offset in
-        let fmt_pat ~first ~last (locs, xpat) =
-          fmt_if_k (not first) p.sep_before
-          $ Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat)
-          $ fmt_or_k last p.sep_after_final p.sep_after_non_final
+        let pat =
+          fmt_elements_collection p
+            (fun (locs, xpat) ->
+              Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat))
+            loc_xpats
         in
         hvbox 0
           (p.box
              (Cmts.fmt c ppat_loc
-                ( list_fl loc_xpats fmt_pat
+                ( pat
                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
                     ~eol:noop
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )))
@@ -1010,12 +1009,10 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
       in
       let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
-      let fmt_field ~first ~last x =
-        fmt_if_k (not first) p1.sep_before
-        $ fmt_field x
-        $ fmt_or_k
-            (last && not (is_open closed_flag))
-            p1.sep_after_final p1.sep_after_non_final
+      let fmt_fields =
+        fmt_elements_collection
+          ~last_sep:(not (is_open closed_flag))
+          p1 fmt_field flds
       in
       let fmt_underscore =
         if is_open closed_flag then
@@ -1024,19 +1021,16 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         else noop
       in
       hvbox_if parens 0
-        (wrap_if parens "(" ")"
-           (p1.box (list_fl flds fmt_field $ fmt_underscore)))
+        (wrap_if parens "(" ")" (p1.box (fmt_fields $ fmt_underscore)))
   | Ppat_array [] ->
       hvbox 0
         (wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c ppat_loc))
   | Ppat_array pats ->
       let p = Params.get_array_pat c.conf ~ctx:ctx0 in
-      let fmt_pat ~first ~last pat =
-        fmt_if_k (not first) p.sep_before
-        $ fmt_pattern c (sub_pat ~ctx pat)
-        $ fmt_or_k last p.sep_after_final p.sep_after_non_final
-      in
-      p.box (list_fl pats fmt_pat)
+      p.box
+        (fmt_elements_collection p
+           (fun pat -> fmt_pattern c (sub_pat ~ctx pat))
+           pats)
   | Ppat_or _ ->
       let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
@@ -2234,17 +2228,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
       in
       let p1, p2 = Params.get_record_expr c.conf in
-      let fmt_field ~first ~last x =
-        fmt_if_k (not first) p1.sep_before
-        $ fmt_field x
-        $ fmt_or_k last p1.sep_after_final p1.sep_after_non_final
-      in
+      let fmt_fields = fmt_elements_collection p1 fmt_field flds in
       hvbox_if has_attr 0
         ( p1.box
             ( opt default (fun d ->
                   hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
                   $ str "with" $ p2.break_after_with)
-            $ list_fl flds fmt_field )
+            $ fmt_fields )
         $ fmt_atrs )
   | Pexp_extension
       ( ext
