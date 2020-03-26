@@ -452,21 +452,6 @@ let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
     (find_cmts t `Within loc)
     ~fmt_code ~pro ~epi ~eol:Fmt.noop loc
 
-let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =
-  let open Fmt in
-  (* remove the before comments from the map first *)
-  let before = fmt_before t conf ~fmt_code ?pro ?epi ?eol ?adj loc in
-  (* remove the within comments from the map by accepting the continuation *)
-  fun k ->
-    (* delay the after comments until the within comments have been removed *)
-    let after = fmt_after t conf ~fmt_code ?pro ?epi loc in
-    let inner = k in
-    before $ inner $ after
-
-let fmt_list t conf ~fmt_code ?pro ?epi ?eol locs init =
-  List.fold locs ~init ~f:(fun k loc ->
-      fmt t conf ~fmt_code ?pro ?epi ?eol loc @@ k)
-
 let drop_inside t loc =
   let clear pos =
     update_cmts t pos
