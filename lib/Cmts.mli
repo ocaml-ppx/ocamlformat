@@ -90,32 +90,6 @@ val fmt_within :
 (** [fmt_within loc] formats the comments associated with [loc] that appear
     within [loc]. *)
 
-val fmt :
-     t
-  -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
-  -> ?pro:Fmt.t
-  -> ?epi:Fmt.t
-  -> ?eol:Fmt.t
-  -> ?adj:Fmt.t
-  -> Location.t
-  -> Fmt.t
-  -> Fmt.t
-(** [fmt loc format_thunk] wraps [fmt_before] and [fmt_after] around
-    [format_thunk]. *)
-
-val fmt_list :
-     t
-  -> Conf.t
-  -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
-  -> ?pro:Fmt.t
-  -> ?epi:Fmt.t
-  -> ?eol:Fmt.t
-  -> Location.t list
-  -> Fmt.t
-  -> Fmt.t
-(** [fmt_list locs] formats as per [fmt] for each loc in [locs]. *)
-
 val drop_inside : t -> Location.t -> unit
 
 val has_before : t -> Location.t -> bool

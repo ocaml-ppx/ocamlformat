@@ -365,39 +365,39 @@ let pop_if_debug t loc =
   if t.debug && t.remove then update_remaining t ~f:(Location.Set.remove loc)
 
 let find_cmts t pos loc =
+  pop_if_debug t loc ;
   let r = find_at_position t loc pos in
   if t.remove then
     update_cmts t pos ~f:(fun m -> Location.Multimap.remove m loc) ;
   r
 
-(** Find, remove, and format comments for loc. *)
+let line_dist a b =
+  b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
+
+let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
+  let vertical_align =
+    line_dist a b = 1
+    && Location.compare_start_col a b = 0
+    && Location.compare_end_col a b = 0
+  in
+  let horizontal_align =
+    line_dist a b = 0
+    && Option.value_map (Source.string_between source a.loc_end b.loc_start)
+         ~default:true ~f:(fun x -> String.(strip x |> is_empty))
+  in
+  not
+    ( (Location.is_single_line a margin && Location.is_single_line b margin)
+    && (vertical_align || horizontal_align) )
+
+(** Format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
-    ?(adj = eol) find loc =
+    ?(adj = eol) found loc =
   let open Fmt in
-  pop_if_debug t loc ;
-  match find loc with
+  match found with
   | None | Some [] -> noop
   | Some cmts ->
-      let line_dist a b =
-        b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
-      in
       let groups =
-        List.group cmts ~break:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-            let vertical_align =
-              line_dist a b = 1
-              && Location.compare_start_col a b = 0
-              && Location.compare_end_col a b = 0
-            in
-            let horizontal_align =
-              line_dist a b = 0
-              && Option.value_map
-                   (Source.string_between t.source a.loc_end b.loc_start)
-                   ~default:true ~f:(fun x -> String.(strip x |> is_empty))
-            in
-            not
-              ( ( Location.is_single_line a conf.margin
-                && Location.is_single_line b conf.margin )
-              && (vertical_align || horizontal_align) ))
+        List.group cmts ~break:(break_comment_group t.source conf.margin)
       in
       let last_loc = Cmt.loc (List.last_exn cmts) in
       let eol_cmt = Source.ends_line t.source last_loc in
@@ -431,35 +431,26 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
               ( close_box
               $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ))
 
-let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj =
-  fmt_cmts t conf (find_cmts t `Before) ~fmt_code ?pro ~epi ?eol ?adj
+let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
+  fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code ?pro ~epi ?eol ?adj loc
 
-let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi =
+let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi loc =
   let open Fmt in
-  let within = fmt_cmts t conf (find_cmts t `Within) ~fmt_code ~pro ?epi in
-  let after =
-    fmt_cmts t conf (find_cmts t `After) ~fmt_code ~pro ?epi ~eol:noop
+  let within =
+    fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code ~pro ?epi loc
   in
-  fun loc -> within loc $ after loc
+  let after =
+    fmt_cmts t conf
+      (find_cmts t `After loc)
+      ~fmt_code ~pro ?epi ~eol:noop loc
+  in
+  within $ after
 
 let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
-    =
-  fmt_cmts t conf (find_cmts t `Within) ~fmt_code ~pro ~epi ~eol:Fmt.noop
-
-let fmt t conf ~fmt_code ?pro ?epi ?eol ?adj loc =
-  let open Fmt in
-  (* remove the before comments from the map first *)
-  let before = fmt_before t conf ~fmt_code ?pro ?epi ?eol ?adj loc in
-  (* remove the within comments from the map by accepting the continuation *)
-  fun k ->
-    (* delay the after comments until the within comments have been removed *)
-    let after = fmt_after t conf ~fmt_code ?pro ?epi loc in
-    let inner = k in
-    before $ inner $ after
-
-let fmt_list t conf ~fmt_code ?pro ?epi ?eol locs init =
-  List.fold locs ~init ~f:(fun k loc ->
-      fmt t conf ~fmt_code ?pro ?epi ?eol loc @@ k)
+    loc =
+  fmt_cmts t conf
+    (find_cmts t `Within loc)
+    ~fmt_code ~pro ~epi ~eol:Fmt.noop loc
 
 let drop_inside t loc =
   let clear pos =

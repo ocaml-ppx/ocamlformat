@@ -29,15 +29,25 @@ type c =
 module Cmts = struct
   include Cmts
 
-  let fmt c = fmt c.cmts c.conf ~fmt_code:c.fmt_code
-
   let fmt_before c = fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
 
   let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:c.fmt_code
 
   let fmt_after c = fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
 
-  let fmt_list c = fmt_list c.cmts c.conf ~fmt_code:c.fmt_code
+  let fmt c ?pro ?epi ?eol ?adj loc =
+    (* remove the before comments from the map first *)
+    let before = fmt_before c ?pro ?epi ?eol ?adj loc in
+    (* remove the within comments from the map by accepting the continuation *)
+    fun inner ->
+      (* delay the after comments until the within comments have been removed *)
+      let after = fmt_after c ?pro ?epi loc in
+      let open Fmt in
+      before $ inner $ after
+
+  let fmt_list ?pro ?epi ?eol c locs init =
+    List.fold locs ~init ~f:(fun k loc ->
+        fmt ?pro ?epi ?eol ?adj:None c loc k)
 end
 
 type block =
