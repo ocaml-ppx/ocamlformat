@@ -389,7 +389,7 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
     ( (Location.is_single_line a margin && Location.is_single_line b margin)
     && (vertical_align || horizontal_align) )
 
-(** Find, remove, and format comments for loc. *)
+(** Format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
     ?(adj = eol) found loc =
   let open Fmt in
