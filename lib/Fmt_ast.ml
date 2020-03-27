@@ -31,6 +31,8 @@ module Cmts = struct
 
   let fmt_before c = fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
 
+  let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:c.fmt_code
+
   let fmt_after c = fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
 
   let fmt c ?pro ?epi ?eol ?adj loc =
@@ -46,8 +48,6 @@ module Cmts = struct
   let fmt_list ?pro ?epi ?eol c locs init =
     List.fold locs ~init ~f:(fun k loc ->
         fmt ?pro ?epi ?eol ?adj:None c loc k)
-
-  let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:c.fmt_code
 end
 
 type block =
