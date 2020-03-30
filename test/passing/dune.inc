@@ -1160,6 +1160,18 @@
  (action (diff invalid.ml invalid.ml.output)))
 
 (rule
+ (targets invalid_docstring.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{dep:invalid_docstring.ml}"))))
+
+(alias
+ (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.07.0))
+ (action (diff invalid_docstring.ml.ref invalid_docstring.ml.output)))
+
+(rule
  (targets issue114.ml.output)
  (deps .ocamlformat )
  (action

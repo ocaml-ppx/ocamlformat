@@ -97,6 +97,9 @@
 
   + Fix spacing inside parens for symbols when the spacing was handled by the englobing exp (#1316) (Guillaume Petiot)
 
+  + Fix invalid (unparsable) docstrings (#1315) (Guillaume Petiot)
+    When parsing a comment raises an error in odoc, it is printed as-is.
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
