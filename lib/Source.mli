@@ -89,3 +89,7 @@ val loc_of_underscore :
     underscore at the end of the record pattern of location [loc] with fields
     [fields], if the record pattern is open (it ends with an underscore),
     otherwise returns [None]. *)
+
+val locs_of_interval : t -> Location.t -> Location.t * Location.t
+(** Given the location of an interval pattern ['a'..'b'], return the
+    locations of the constants that represent the bounds (['a'] and ['b']). *)

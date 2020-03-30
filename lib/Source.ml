@@ -319,3 +319,19 @@ let loc_of_underscore t flds (ppat_loc : Location.t) =
   let filter = function Parser.UNDERSCORE -> true | _ -> false in
   let tokens = tokens_at t ~filter loc_underscore in
   Option.map (List.hd tokens) ~f:snd
+
+let locs_of_interval source loc =
+  let toks =
+    tokens_at source loc ~filter:(function
+      | CHAR _ | DOTDOT | INT _ | STRING _ | FLOAT _ -> true
+      | _ -> false)
+  in
+  match toks with
+  | [ ((CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
+    ; (DOTDOT, _)
+    ; ((CHAR _ | INT _ | STRING _ | FLOAT _), loc2) ] ->
+      (loc1, loc2)
+  | _ ->
+      impossible
+        "Ppat_interval is only produced by the sequence of 3 tokens: \
+         CONSTANT-DOTDOT-CONSTANT "
