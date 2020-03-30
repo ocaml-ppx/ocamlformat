@@ -33,25 +33,9 @@ val string_literal :
 
 val char_literal : t -> Location.t -> string option
 
-val tokens_at :
-     t
-  -> ?filter:(Parser.token -> bool)
-  -> Location.t
-  -> (Parser.token * Location.t) list
-
 val position_before : t -> Lexing.position -> Lexing.position option
 (** [position_before s pos] returns the starting position of the token
     preceding the position [pos]. *)
-
-val tokens_between :
-     t
-  -> ?filter:(Parser.token -> bool)
-  -> Lexing.position
-  -> Lexing.position
-  -> (Parser.token * Location.t) list
-(** [tokens_between s ~filter from upto] returns the list of tokens starting
-    from [from] and ending before [upto] and respecting the [filter]
-    property. [from] must start before [upto]. *)
 
 val is_long_pexp_open : t -> Parsetree.expression -> bool
 (** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open] expression
