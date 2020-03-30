@@ -79,6 +79,30 @@ To quote (and sed) [prettier's page on option philosophy](https://prettier.io/do
 >
 > The more options ocamlformat has, the further from the above goal it gets. The debates over styles just turn into debates over which ocamlformat options to use.
 
+### How to locally disable ocamlformat?
+
+To disable the formatting of a specific toplevel item you must attach an `[@@ocamlformat "option=VAL"]` attribute to this item in the processed file, such as:
+
+```ocaml
+let do_not_touch
+    (x : t)
+      (y : t)
+        (z : t) = [
+  x; y; z
+] [@@ocamlformat "disable"]
+```
+
+To disable the formatting of a specific expression you must attach an `[@ocamlformat "option=VAL"]` attribute to this expression in the processed file, such as:
+
+```ocaml
+let do_not_touch (x : t) (y : t) (z : t) = [
+  x; y; z
+] [@ocamlformat "disable"]
+```
+
+To disable a whole file, the preferred way is to add the name of the file to a local `.ocamlformat-ignore` file. An `.ocamlformat-ignore` file specifies files that ocamlformat should ignore. Each line in an `.ocamlformat-ignore` file specifies a filename relative to the directory containing the `.ocamlformat-ignore` file.
+Shell-style regular expressions are supported. Lines starting with `#` are ignored and can be used as comments.
+
 ## Features
 
 ### Overview
