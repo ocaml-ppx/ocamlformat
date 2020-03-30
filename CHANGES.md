@@ -10,6 +10,8 @@
 
   + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine, Guillaume Petiot)
 
+  + Fix disabling with attributes on OCaml < 4.08 (#1322) (Etienne Millon)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
