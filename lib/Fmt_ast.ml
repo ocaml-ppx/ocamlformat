@@ -1185,6 +1185,7 @@ and fmt_fun_args c ?pro args =
           match xpat.ast.ppat_desc with
           | Ppat_any | Ppat_var _ -> (false, false)
           | Ppat_unpack _ -> (true, true)
+          | Ppat_tuple _ -> (false, true)
           | _ -> (true, false)
         in
         (* If the pattern has an attribute, outer parentheses will be added

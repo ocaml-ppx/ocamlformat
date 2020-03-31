@@ -174,3 +174,5 @@ let f ?open_:(Int.(zero)[@attr]) = ()
 (* let f ?or_:((Some () | None) [@attr]) = () *)
 
 let f ?unpack:((module P)[@attr]) = ()
+
+let f ?tuple:((1, 2)[@attr]) = ()
