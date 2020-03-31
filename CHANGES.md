@@ -100,6 +100,9 @@
   + Fix invalid (unparsable) docstrings (#1315) (Guillaume Petiot)
     When parsing a comment raises an error in odoc, it is printed as-is.
 
+  + Fix parenthesizing of optional arguments rebound to non-variables, e.g. `let
+    f ?a:(A) = ()` rather than the unparsable `let f ?a:A = ()` (#1305) (Craig Ferguson)
+
 ### 0.13.0 (2020-01-28)
 
 #### New features
