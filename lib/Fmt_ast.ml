@@ -1460,7 +1460,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
     (list_fl groups fmt_op_arg_group)
 
 and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
-    ?ext ({ast= exp; _} as xexp) =
+    ?ext ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Exp exp)
   @@
   let {pexp_desc; pexp_loc; pexp_attributes; pexp_loc_stack} = exp in
@@ -1656,8 +1656,17 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, _); (Nolabel, _)] )
     when is_infix_id id && not (is_monadic_binding_id id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
-      let outer_wrap = has_attr && parens in
-      let inner_wrap = has_attr || parens in
+      let outer_wrap =
+        match ctx0 with
+        | Exp
+            { pexp_desc=
+                Pexp_apply
+                  ({pexp_desc= Pexp_ident {txt= Lident id; loc= _}; _}, _)
+            ; _ }
+          when not (is_infix_id id) ->
+            has_attr && parens
+        | _ -> has_attr && not parens
+      in
       let infix_op_args =
         List.map op_args ~f:(fun (op, args) ->
             match op with
@@ -1686,8 +1695,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox_if outer_wrap 0
         (wrap_if outer_wrap "(" ")"
            (hvbox indent_wrap
-              ( fmt_infix_op_args c ~parens:inner_wrap xexp infix_op_args
-              $ fmt_atrs )))
+              (fmt_infix_op_args ~parens c xexp infix_op_args $ fmt_atrs)))
   | Pexp_apply (e0, [(Nolabel, e1)]) when is_prefix e0 ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
