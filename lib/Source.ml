@@ -97,7 +97,7 @@ let lexbuf_set_pos lexbuf pos =
   lexbuf.Lexing.lex_abs_pos <- pos.Lexing.pos_cnum ;
   lexbuf.lex_curr_p <- pos
 
-let tokens_between t ?(filter = fun _ -> true) loc_start loc_end =
+let tokens_between t ~filter loc_start loc_end =
   let s = string_at t loc_start loc_end in
   let lexbuf = Lexing.from_string s in
   lexbuf_set_pos lexbuf loc_start ;
@@ -110,8 +110,8 @@ let tokens_between t ?(filter = fun _ -> true) loc_start loc_end =
   in
   loop []
 
-let tokens_at t ?filter (l : Location.t) =
-  tokens_between t ?filter l.loc_start l.loc_end
+let tokens_at t ~filter (l : Location.t) =
+  tokens_between t ~filter l.loc_start l.loc_end
 
 let find_after t f (loc : Location.t) =
   let pos_start = loc.loc_end in
