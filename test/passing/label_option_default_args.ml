@@ -109,10 +109,7 @@ let f ?constant:(0 [@attr]) = ()
 
 let f ?open_:(Int.(zero) [@attr]) = ()
 
-(* Test disabled because of existing issue with [Ppat_or] and attributes.
-   @see https://github.com/ocaml-ppx/ocamlformat/issues/1310 *)
-
-(* let f ?or_:((Some () | None) [@attr]) = () *)
+let f ?or_:((Some () | None) [@attr]) = ()
 
 let f ?unpack:((module P) [@attr]) = ()
 

@@ -1181,17 +1181,15 @@ and fmt_fun_args c ?pro args =
         let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
         cbox 0 (str symbol $ fmt_pattern c xpat)
     | Val ((Optional _ as lbl), xpat, None) ->
+        let has_attr = not (List.is_empty xpat.ast.ppat_attributes) in
         let outer_parens, inner_parens =
           match xpat.ast.ppat_desc with
           | Ppat_any | Ppat_var _ -> (false, false)
-          | Ppat_unpack _ -> (true, true)
+          | Ppat_unpack _ -> (not has_attr, true)
           | Ppat_tuple _ -> (false, true)
-          | _ -> (true, false)
+          | Ppat_or _ -> (has_attr, true)
+          | _ -> (not has_attr, false)
         in
-        (* If the pattern has an attribute, outer parentheses will be added
-           by [fmt_pattern] *)
-        let has_attr = not (List.is_empty xpat.ast.ppat_attributes) in
-        let outer_parens = outer_parens && not has_attr in
         cbox 2
           ( fmt_label lbl ":@,"
           $ wrap_if outer_parens "(" ")"
