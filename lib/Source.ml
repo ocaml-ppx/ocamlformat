@@ -97,7 +97,7 @@ let lexbuf_set_pos lexbuf pos =
   lexbuf.Lexing.lex_abs_pos <- pos.Lexing.pos_cnum ;
   lexbuf.lex_curr_p <- pos
 
-let tokens_between t ?(filter = fun _ -> true) loc_start loc_end =
+let tokens_between t ~filter loc_start loc_end =
   let s = string_at t loc_start loc_end in
   let lexbuf = Lexing.from_string s in
   lexbuf_set_pos lexbuf loc_start ;
@@ -110,8 +110,8 @@ let tokens_between t ?(filter = fun _ -> true) loc_start loc_end =
   in
   loop []
 
-let tokens_at t ?filter (l : Location.t) =
-  tokens_between t ?filter l.loc_start l.loc_end
+let tokens_at t ~filter (l : Location.t) =
+  tokens_between t ~filter l.loc_start l.loc_end
 
 let find_after t f (loc : Location.t) =
   let pos_start = loc.loc_end in
@@ -319,3 +319,19 @@ let loc_of_underscore t flds (ppat_loc : Location.t) =
   let filter = function Parser.UNDERSCORE -> true | _ -> false in
   let tokens = tokens_at t ~filter loc_underscore in
   Option.map (List.hd tokens) ~f:snd
+
+let locs_of_interval source loc =
+  let toks =
+    tokens_at source loc ~filter:(function
+      | CHAR _ | DOTDOT | INT _ | STRING _ | FLOAT _ -> true
+      | _ -> false)
+  in
+  match toks with
+  | [ ((CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
+    ; (DOTDOT, _)
+    ; ((CHAR _ | INT _ | STRING _ | FLOAT _), loc2) ] ->
+      (loc1, loc2)
+  | _ ->
+      impossible
+        "Ppat_interval is only produced by the sequence of 3 tokens: \
+         CONSTANT-DOTDOT-CONSTANT "

@@ -915,26 +915,9 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            ))
   | Ppat_constant const ->
       fmt_constant c ~loc:(Location.smallest ppat_loc ppat_loc_stack) const
-  | Ppat_interval (l, u) -> (
-      (* we need to reconstruct locations for both side of the interval *)
-      let toks =
-        Source.tokens_at c.source ppat_loc ~filter:(function
-          | Parser.CHAR _ | Parser.DOTDOT
-           |Parser.(INT _ | STRING _ | FLOAT _) ->
-              true
-          | _ -> false)
-      in
-      match toks with
-      | [ (Parser.(CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
-        ; (Parser.DOTDOT, _)
-        ; (Parser.(CHAR _ | INT _ | STRING _ | FLOAT _), loc2) ] ->
-          fmt_constant ~loc:loc1 c l
-          $ str " .. "
-          $ fmt_constant ~loc:loc2 c u
-      | _ ->
-          impossible
-            "Ppat_interval is only produced by the sequence of 3 tokens: \
-             CONSTANT-DOTDOT-CONSTANT " )
+  | Ppat_interval (l, u) ->
+      let loc1, loc2 = Source.locs_of_interval c.source ppat_loc in
+      fmt_constant ~loc:loc1 c l $ str " .. " $ fmt_constant ~loc:loc2 c u
   | Ppat_tuple pats ->
       let parens = parens || Poly.(c.conf.parens_tuple_patterns = `Always) in
       hvbox 0
