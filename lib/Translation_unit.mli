@@ -11,6 +11,7 @@
 
 open Parse_with_comments
 
+(** Operations on translation units. *)
 type 'a t =
   { init_cmts: debug:bool -> Source.t -> 'a -> Cmt.t list -> Cmts.t
   ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
@@ -29,7 +30,6 @@ type 'a t =
       -> Normalize.docstring_error list
   ; normalize: Conf.t -> 'a with_comments -> 'a
   ; printast: Caml.Format.formatter -> 'a -> unit }
-(** Operations on translation units. *)
 
 type error
 
