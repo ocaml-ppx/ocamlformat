@@ -58,7 +58,7 @@
 
   + Fix formatting of attributes on packed modules (#1243) (Etienne Millon)
 
-  + Fix parens around binop operations with attributes (#1252) (Guillaume Petiot)
+  + Fix parens around binop operations with attributes (#1252, #1306) (Guillaume Petiot, Craig Ferguson)
 
   + Remove unecessary parentheses in the argument of indexing operators (#1280) (Jules Aguillon)
 
