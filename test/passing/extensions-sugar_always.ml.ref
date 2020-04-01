@@ -1,4 +1,4 @@
-Warning: extension-sugar: This option is deprecated since version 0.14.0. There is no equivalent.
+Warning: extension-sugar: This option is deprecated since version 0.14.0. Concrete syntax will now always be preserved.
 let () = [%ext expr] ; ()
 
 let _ = [%ext match x with () -> ()] [@attr y]

@@ -552,6 +552,9 @@ module Formatting = struct
       (fun conf x -> {conf with dock_collection_brackets= x})
       (fun conf -> conf.dock_collection_brackets)
 
+  let concrete_syntax_preserved_msg =
+    "Concrete syntax will now always be preserved."
+
   let escape_chars =
     let doc = "Escape encoding for character literals." in
     let names = ["escape-chars"] in
@@ -569,7 +572,7 @@ module Formatting = struct
         , "$(b,hexadecimal) mode escapes every character." ) ]
     in
     let deprecated =
-      C.deprecated ~since_version:"0.14.0" "There is no equivalent."
+      C.deprecated ~since_version:"0.14.0" concrete_syntax_preserved_msg
     in
     C.choice ~names ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with escape_chars= x})
@@ -587,7 +590,7 @@ module Formatting = struct
       ; ("hexadecimal", `Hexadecimal, "") ]
     in
     let deprecated =
-      C.deprecated ~since_version:"0.14.0" "There is no equivalent."
+      C.deprecated ~since_version:"0.14.0" concrete_syntax_preserved_msg
     in
     C.choice ~names ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with escape_strings= x})
@@ -624,7 +627,7 @@ module Formatting = struct
     let names = ["extension-sugar"] in
     let all = [("preserve", `Preserve, ""); ("always", `Always, "")] in
     let deprecated =
-      C.deprecated ~since_version:"0.14.0" "There is no equivalent."
+      C.deprecated ~since_version:"0.14.0" concrete_syntax_preserved_msg
     in
     C.choice ~names ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with extension_sugar= x})
