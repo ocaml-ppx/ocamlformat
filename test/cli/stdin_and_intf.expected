@@ -1,4 +1,4 @@
 val x : string
 
-module X : S
 (** Make sure this file cannot be parsed as an impl file *)
+module X : S

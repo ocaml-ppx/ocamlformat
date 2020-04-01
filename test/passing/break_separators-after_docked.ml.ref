@@ -110,9 +110,9 @@ type trace_mod_funs = {
 }
 
 module Fooooo = struct
-  type t = {fooooo: fooo; fooooo: fooooooo}
   (** This is a long docstring so that it cannot be on the same line as the
       record type. *)
+  type t = {fooooo: fooo; fooooo: fooooooo}
 
   val select :
     (* The fsevents context *)

@@ -163,22 +163,22 @@ class tttttttttttttttttttttttttt x y =
 
 class c =
   object
-    method a : type a b c. d -> e -> f = g
     (** about a *)
+    method a : type a b c. d -> e -> f = g
 
     (** floatting *)
 
-    method a : 'a. d -> e -> f = g
     (** about a *)
+    method a : 'a. d -> e -> f = g
   end
 
-class a = object end
 (** about a *)
+class a = object end
 
 (** floatting *)
 
-and b = object end
 (** about b *)
+and b = object end
 
 class type x =
   object
