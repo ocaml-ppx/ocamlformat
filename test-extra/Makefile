@@ -39,13 +39,18 @@ code/js_of_ocaml: URI = https://github.com/ocsigen/js_of_ocaml.git
 code/ocaml: URI = https://github.com/ocaml/ocaml.git
 code/dune: URI = https://github.com/ocaml/dune.git
 
-# DIRS += code/owl code/irmin code/index code/duniverse code/dune-release
+# DIRS += code/owl code/irmin code/index code/duniverse code/dune-release \
+# 	code/coq code/mirage code/alcotest code/citty
 # PRUNE_DIRS += code/duniverse/duniverse code/duniverse/examples
 # code/owl: URI = https://github.com/owlbarn/owl
 # code/irmin: URI = https://github.com/mirage/irmin
 # code/index: URI = https://github.com/mirage/index
 # code/duniverse: URI = https://github.com/ocamllabs/duniverse
 # code/dune-release: URI = https://github.com/ocamllabs/dune-release
+# code/coq: URI = https://github.com/coq/coq
+# code/mirage: URI = https://github.com/mirage/mirage
+# code/alcotest: URI = https://github.com/mirage/alcotest
+# code/citty: URI = https://github.com/ocurrent/citty
 
 .PHONY: test_setup
 test_setup: $(ALL_DIRS)
