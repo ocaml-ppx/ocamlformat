@@ -42,9 +42,9 @@ module Make (C : CONFIG) : sig
 
   val deprecated : since_version:string -> string -> deprecated
 
-  type removed_value
   (** Indicate that a configuration value has been removed in an ocamlformat
       release. A message indicating how to migrate will be displayed. *)
+  type removed_value
 
   val removed_value :
     name:string -> version:string -> msg:string -> removed_value

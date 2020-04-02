@@ -1,32 +1,32 @@
-open Module
 (** @deprecated *)
-
 open Module
+
 (** abc
 
     @deprecated *)
+open Module
 
 (** @inline *)
 include sig
   type t
 end
 
+(** @inline *)
 include Type
-(** @inline *)
 
+(** @inline *)
 include module type of Module
-(** @inline *)
 
-module A : B
 (** @deprecated *)
+module A : B
 
 (** @deprecated *)
 module A : sig
   type t
 end
 
-module type A = B
 (** @open *)
+module type A = B
 
 (** @open *)
 module type A = sig
@@ -36,17 +36,17 @@ end
 (** @deprecated *)
 type t = T
 
+(** @deprecated *)
 type t = {a: int}
-(** @deprecated *)
 
+(** @deprecated *)
 type t = ..
-(** @deprecated *)
 
+(** @deprecated *)
 type t
-(** @deprecated *)
 
-type t = t
 (** @deprecated *)
+type t = t
 
 val a : b
 (** @deprecated *)
@@ -55,10 +55,10 @@ val a : b
 
 open Module  (** @deprecated *)
 
-open Module
 (** abc
 
     @deprecated *)
+open Module
 
 (** @inline *)
 include sig
@@ -86,8 +86,8 @@ end
 (** @deprecated *)
 type t = T
 
-type t = {a: int}
 (** @deprecated *)
+type t = {a: int}
 
 type t = ..  (** @deprecated *)
 

@@ -17,8 +17,9 @@
   + Add the option `doc-comments-val=before|after` (#1012) (Jules Aguillon)
     This option set the placement of documentation comment on `val` and `external` only.
     It is set to `after` by default.
-    The default for `doc-comments` is changed from `after` to `before`, this
-    option will be deleted in the future.
+
+  + The default for `doc-comments` is changed from `after` to `before` (#1012, #1325) (Jules Aguillon)
+    This affects both `conventional` (default) and `ocamlformat` profiles.
 
   + Some options are now deprecated:
     * `doc-comments` (#1293, #1012)
