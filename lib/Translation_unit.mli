@@ -12,24 +12,7 @@
 open Parse_with_comments
 
 (** Operations on translation units. *)
-type 'a t =
-  { init_cmts: debug:bool -> Source.t -> 'a -> Cmt.t list -> Cmts.t
-  ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
-  ; parse: Lexing.lexbuf -> 'a
-  ; recover: string -> string
-  ; equal:
-         ignore_doc_comments:bool
-      -> Conf.t
-      -> 'a with_comments
-      -> 'a with_comments
-      -> bool
-  ; moved_docstrings:
-         Conf.t
-      -> 'a with_comments
-      -> 'a with_comments
-      -> Normalize.docstring_error list
-  ; normalize: Conf.t -> 'a with_comments -> 'a
-  ; printast: Caml.Format.formatter -> 'a -> unit }
+type 'a t
 
 type error
 
@@ -67,3 +50,7 @@ val print_error :
   -> unit
 (** [print_error conf ?fmt ~input_name e] prints the error message
     corresponding to error [e] on the [fmt] formatter (stderr by default). *)
+
+val impl : Migrate_ast.Parsetree.toplevel_phrase list t
+
+val intf : Migrate_ast.Parsetree.signature t

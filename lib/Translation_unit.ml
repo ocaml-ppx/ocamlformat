@@ -400,3 +400,34 @@ let parse_and_format xunit ?output_file ~input_name ~source conf opts =
   parse_result xunit conf opts ~source ~input_name
   >>= fun parsed ->
   format xunit ?output_file ~input_name ~source ~parsed conf opts
+
+let normalize norm c {Parse_with_comments.ast; _} = norm c ast
+
+let equal eq ~ignore_doc_comments c a b =
+  eq ~ignore_doc_comments c a.Parse_with_comments.ast
+    b.Parse_with_comments.ast
+
+let moved_docstrings f c a b =
+  f c a.Parse_with_comments.ast b.Parse_with_comments.ast
+
+(** Operations on implementation files. *)
+let impl : _ t =
+  { parse= Migrate_ast.Parse.use_file
+  ; recover= Parse_wyc.Make_parsable.use_file
+  ; init_cmts= Cmts.init_toplevel
+  ; fmt= Fmt_ast.fmt_toplevel
+  ; equal= equal Normalize.equal_toplevel
+  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_toplevel
+  ; normalize= normalize Normalize.toplevel
+  ; printast= Migrate_ast.Printast.use_file }
+
+(** Operations on interface files. *)
+let intf : _ t =
+  { parse= Migrate_ast.Parse.interface
+  ; recover= Parse_wyc.Make_parsable.signature
+  ; init_cmts= Cmts.init_intf
+  ; fmt= Fmt_ast.fmt_signature
+  ; equal= equal Normalize.equal_intf
+  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_intf
+  ; normalize= normalize Normalize.intf
+  ; printast= Migrate_ast.Printast.interface }
