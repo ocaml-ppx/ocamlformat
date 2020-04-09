@@ -35,18 +35,28 @@ CheckBuild () {
 }
 
 HasNoChangelogNeededLabel () {
-    url="https://api.github.com/repos/$TRAVIS_REPO_SLUG/pulls/$TRAVIS_PULL_REQUEST"
-    curl "$url" | jq '.labels|any(.name == "no-changelog-needed")'
+    url="https://api.github.com/repos/$TRAVIS_REPO_SLUG/issues/$TRAVIS_PULL_REQUEST/labels"
+    response=$(curl -s -L "$url")
+    echo "$response"
+    # Because of rate limiting, the response may not be what we expect.
+    # Assume the label is not present in this case.
+    if needed=$(jq 'any(.name == "no-changelog-needed")' <<<"$response") &&
+      [[ $needed = true ]]
+    then return 0
+    else return 1
+    fi
 }
 
 CheckChangesModified () {
     if [ "$TRAVIS_PULL_REQUEST" != false ] && [ "$TRAVIS_BRANCH" = master ]
     then
-        if [ "$(HasNoChangelogNeededLabel)" != false ] ; then
+        if HasNoChangelogNeededLabel ; then
             echo skipped
         else
-            git diff --exit-code "$TRAVIS_BRANCH...$TRAVIS_COMMIT" -- CHANGES.md \
-                > /dev/null && exit 1 || echo pass
+            if git diff --exit-code "$TRAVIS_COMMIT_RANGE" -- CHANGES.md > /dev/null
+            then echo "The changelog is not uptodate"; exit 1
+            else echo pass
+            fi
         fi
     fi
 }
