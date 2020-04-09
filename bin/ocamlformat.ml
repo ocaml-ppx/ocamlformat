@@ -13,37 +13,6 @@
 
 open Ocamlformat_lib
 
-let normalize norm c {Parse_with_comments.ast; _} = norm c ast
-
-let equal eq ~ignore_doc_comments c a b =
-  eq ~ignore_doc_comments c a.Parse_with_comments.ast
-    b.Parse_with_comments.ast
-
-let moved_docstrings f c a b =
-  f c a.Parse_with_comments.ast b.Parse_with_comments.ast
-
-(** Operations on implementation files. *)
-let impl : _ Translation_unit.t =
-  { parse= Migrate_ast.Parse.use_file
-  ; recover= Parse_wyc.Make_parsable.use_file
-  ; init_cmts= Cmts.init_toplevel
-  ; fmt= Fmt_ast.fmt_toplevel
-  ; equal= equal Normalize.equal_toplevel
-  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_toplevel
-  ; normalize= normalize Normalize.toplevel
-  ; printast= Migrate_ast.Printast.use_file }
-
-(** Operations on interface files. *)
-let intf : _ Translation_unit.t =
-  { parse= Migrate_ast.Parse.interface
-  ; recover= Parse_wyc.Make_parsable.signature
-  ; init_cmts= Cmts.init_intf
-  ; fmt= Fmt_ast.fmt_signature
-  ; equal= equal Normalize.equal_intf
-  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_intf
-  ; normalize= normalize Normalize.intf
-  ; printast= Migrate_ast.Printast.interface }
-
 ;;
 Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 
@@ -55,8 +24,8 @@ let format ?output_file ~kind ~input_name ~source conf opts =
   else
     let f =
       match kind with
-      | `Impl -> Translation_unit.parse_and_format impl
-      | `Intf -> Translation_unit.parse_and_format intf
+      | `Impl -> Translation_unit.parse_and_format_impl
+      | `Intf -> Translation_unit.parse_and_format_intf
     in
     f ?output_file ~input_name ~source conf opts
 
