@@ -431,3 +431,7 @@ let intf : _ t =
   ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_intf
   ; normalize= normalize Normalize.intf
   ; printast= Migrate_ast.Printast.interface }
+
+let parse_and_format_impl = parse_and_format impl
+
+let parse_and_format_intf = parse_and_format intf

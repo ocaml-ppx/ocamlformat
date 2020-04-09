@@ -9,21 +9,27 @@
  *                                                                    *
  **********************************************************************)
 
-(** Operations on translation units. *)
-type 'a t
-
 type error
 
-val parse_and_format :
-     'a t
-  -> ?output_file:string
+val parse_and_format_impl :
+     ?output_file:string
   -> input_name:string
   -> source:string
   -> Conf.t
   -> Conf.opts
   -> (string, error) Result.t
-(** [parse_and_format xunit conf ?output_file ~input_name ~source] is similar
-    to [format] but parses the source according to [xunit]. *)
+(** [parse_and_format_impl conf ?output_file ~input_name ~source] parses and
+    formats [source] as a list of toplevel phrases. *)
+
+val parse_and_format_intf :
+     ?output_file:string
+  -> input_name:string
+  -> source:string
+  -> Conf.t
+  -> Conf.opts
+  -> (string, error) Result.t
+(** [parse_and_format_intf conf ?output_file ~input_name ~source] parses and
+    formats [source] as a list of signature items. *)
 
 val print_error :
      ?fmt:Format.formatter
@@ -34,7 +40,3 @@ val print_error :
   -> unit
 (** [print_error conf ?fmt ~input_name e] prints the error message
     corresponding to error [e] on the [fmt] formatter (stderr by default). *)
-
-val impl : Migrate_ast.Parsetree.toplevel_phrase list t
-
-val intf : Migrate_ast.Parsetree.signature t
