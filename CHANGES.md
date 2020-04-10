@@ -1,3 +1,15 @@
+### master (unreleased)
+
+#### New features
+
+  + Make the formatting API public (#1332, Guillaume Petiot)
+
+#### Changes
+
+#### Bug fixes
+
+#### Documentation
+
 ### 0.14.0 (2020-04-02)
 
 #### New features
