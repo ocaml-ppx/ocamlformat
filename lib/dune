@@ -17,6 +17,7 @@
 
 (library
  (name ocamlformat_lib)
+ (public_name ocamlformat-lib)
  (flags
   (:standard -open Import))
  ;;INSERT_BISECT_HERE;;

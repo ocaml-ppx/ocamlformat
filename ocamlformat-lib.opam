@@ -1,0 +1,43 @@
+######################################################################
+#                                                                    #
+#                            OCamlFormat                             #
+#                                                                    #
+#  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  #
+#                                                                    #
+#  This source code is licensed under the MIT license found in the   #
+#  LICENSE file in the root directory of this source tree.           #
+#                                                                    #
+######################################################################
+
+opam-version: "2.0"
+maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
+authors: "Josh Berdine <jjb@fb.com>"
+homepage: "https://github.com/ocaml-ppx/ocamlformat"
+bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
+dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
+license: "MIT"
+build: [
+  ["ocaml" "tools/gen_version.mlt" "lib/Version.ml" version] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+depends: [
+  "ocaml" {>= "4.06"}
+  "alcotest" {with-test}
+  "base" {>= "v0.11.0"}
+  "base-unix"
+  "cmdliner"
+  "dune" {>= "1.11.1"}
+  "fix"
+  "fpath"
+  "menhir"
+  "ocaml-migrate-parsetree" {>= "1.5.0"}
+  "ocp-indent" {with-test}
+  "odoc" {>= "1.4.2"}
+  "re"
+  "stdio"
+  "uuseg" {>= "10.0.0"}
+  "uutf" {>= "1.0.1"}
+]
+synopsis: "Auto-formatter for OCaml code"
+description: "OCamlFormat is a tool to automatically format OCaml code in a uniform style."
