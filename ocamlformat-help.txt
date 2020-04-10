@@ -161,9 +161,7 @@ OPTIONS (CODE FORMATTING STYLE)
            corresponding code. This option has no effect on variant
            declarations because that would change their meaning and on
            structures, signatures and objects for readability. The default
-           value is before. Warning: This option is deprecated since version
-           0.14.0. Use the more restricted doc-comments-val instead. There is
-           no equivalent to this option in the general case.
+           value is before.
 
        --doc-comments-padding=PADDING
            Add PADDING spaces before doc comments in type declarations. The
