@@ -27,7 +27,7 @@ depends: [
   "base" {>= "v0.11.0"}
   "base-unix"
   "cmdliner"
-  "dune" {>= "1.11.1"}
+  "dune" {>= "2.2.0"}
   "fix"
   "fpath"
   "menhir"
