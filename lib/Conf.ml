@@ -494,12 +494,7 @@ module Formatting = struct
            change their meaning and on structures, signatures and objects \
            for readability." ) ]
     in
-    let deprecated =
-      C.deprecated ~since_version:"0.14.0"
-        "Use the more restricted doc-comments-val instead. There is no \
-         equivalent to this option in the general case."
-    in
-    C.choice ~names ~all ~doc ~section ~deprecated
+    C.choice ~names ~all ~doc ~section
       (fun conf x -> {conf with doc_comments= x})
       (fun conf -> conf.doc_comments)
 

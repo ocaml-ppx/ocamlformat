@@ -1,3 +1,10 @@
+### unreleased
+
+#### Changes
+
+  + Revert deprecation of the `doc-comments` option (#1331) (Jules Aguillon)
+    This reverts a change introduced in 0.14.0 (#1293).
+
 ### 0.14.0 (2020-04-02)
 
 #### New features
