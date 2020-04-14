@@ -3596,10 +3596,11 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                     | _ -> noop )
                   $ fmt_opt epi )))
   in
+  let is_unit_arg = function {txt= Sugar.Unit; _} -> true | _ -> false in
   let single_line =
     Option.for_all xbody ~f:(fun x -> module_expr_is_simple x.ast)
     && Option.for_all xmty ~f:(fun x -> module_type_is_simple x.ast)
-    && List.for_all xargs ~f:(function {txt= Unit; _} -> true | _ -> false)
+    && List.for_all xargs ~f:is_unit_arg
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
   let fmt_pro = opt blk_b.pro (fun pro -> fmt "@ " $ pro) in

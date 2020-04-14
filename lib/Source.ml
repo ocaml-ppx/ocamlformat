@@ -93,8 +93,8 @@ let has_cmt_same_line_after t (loc : Location.t) =
     let str = String.lstrip str in
     String.is_prefix str ~prefix:"(*"
 
-let lexbuf_set_pos lexbuf pos =
-  lexbuf.Lexing.lex_abs_pos <- pos.Lexing.pos_cnum ;
+let lexbuf_set_pos (lexbuf : Lexing.lexbuf) (pos : Lexing.position) =
+  lexbuf.lex_abs_pos <- pos.pos_cnum ;
   lexbuf.lex_curr_p <- pos
 
 let tokens_between t ~filter loc_start loc_end =

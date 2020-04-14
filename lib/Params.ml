@@ -13,7 +13,7 @@ module Format = Format_
 open Migrate_ast
 open Fmt
 
-let parens_or_begin_end (c : Conf.t) source ~loc =
+let parens_or_begin_end (c : Conf.t) source ~(loc : Location.t) =
   match c.exp_grouping with
   | `Parens -> `Parens
   | `Preserve ->

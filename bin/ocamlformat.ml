@@ -36,15 +36,15 @@ let to_output_file output_file data =
 
 let source_from_file = function
   | Conf.Stdin -> In_channel.input_all In_channel.stdin
-  | File f -> In_channel.with_file f ~f:In_channel.input_all
+  | Conf.File f -> In_channel.with_file f ~f:In_channel.input_all
 
 let print_error conf opts ~input_name e =
   Translation_unit.print_error ~debug:opts.Conf.debug ~quiet:conf.Conf.quiet
     ~input_name e
 
-let run_action action opts =
+let run_action (action : Conf.action) opts =
   match action with
-  | Conf.Inplace inputs ->
+  | Inplace inputs ->
       let f {Conf.kind; name= input_name; file= input_file; conf} =
         let input_file =
           match input_file with

@@ -60,7 +60,7 @@ let split_asterisk_prefixed {txt; loc= {Location.loc_start; _}} =
   in
   split_asterisk_prefixed_ 0
 
-let unindent_lines ~opn_pos first_line tl_lines =
+let unindent_lines ~(opn_pos : Lexing.position) first_line tl_lines =
   let indent_of_line s =
     (* index of first non-whitespace is indentation, None means white line *)
     String.lfindi s ~f:(fun _ c -> not (Char.is_whitespace c))

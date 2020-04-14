@@ -242,7 +242,8 @@ let with_buffer_formatter ~buffer_size k =
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
-let format xunit ?output_file ~input_name ~source ~parsed conf opts =
+let format xunit ?output_file ~input_name ~source ~parsed conf
+    (opts : Conf.opts) =
   let open Result.Monad_infix in
   let dump_ast ~suffix ast =
     if opts.Conf.debug then

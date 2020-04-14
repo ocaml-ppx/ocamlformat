@@ -106,7 +106,7 @@ let parse_with_recovery entrypoint tokens =
   in
   offer (P.initial entrypoint Lexing.dummy_pos) tokens
 
-let lex_buf lexbuf =
+let lex_buf (lexbuf : Lexing.lexbuf) =
   Lexer.init ();
   let rec loop acc =
     match Lexer.token lexbuf with
@@ -192,7 +192,7 @@ let mk_parsable p m source =
             | [] ->
                 Buffer.add_char buffer c;
                 locs
-            | h :: t ->
+            | (h : Location.t) :: t ->
                 let col_start = h.loc_start.pos_cnum in
                 let col_end = h.loc_end.pos_cnum in
                 if i < col_start then (
