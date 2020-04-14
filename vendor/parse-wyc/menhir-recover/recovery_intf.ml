@@ -5,6 +5,7 @@ module type RECOVERY = sig
 
   type item = G.lr1 * G.production * int
 
+  type recovery = { prefix : int; cases : (G.lr1 option * item list) list }
   (** [prefix] is the size of the known prefix of the stack. It means that in
       the kernel of current state, there is an item whose dot is at position
       [prefix]. (we know the incoming symbols for these stack frames and we can
@@ -16,7 +17,6 @@ module type RECOVERY = sig
 
       The actual list of actions to reduce an item [(state, prod, pos)] is given
       by [Synthesizer.solution (Trail (state, prod, pos))] *)
-  type recovery = { prefix : int; cases : (G.lr1 option * item list) list }
 
   val recover : G.lr1 -> recovery
 end
