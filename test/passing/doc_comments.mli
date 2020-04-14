@@ -450,3 +450,14 @@ val f : int
 val k : int
 
 (**)
+
+(* Regular comments with odoc constructs should be formatted as docstrings:
+
+   - Fooo fooo foo foo foo foo.
+   - Foo foo foo foooooo foo foo foo foo.
+
+   {[
+     @foooooo
+     |-------- core
+   ]}
+*)
