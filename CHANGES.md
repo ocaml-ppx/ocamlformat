@@ -2,7 +2,8 @@
 
 #### Changes
 
-  + Revert depreciation of the `doc-comments` option (#1331) (Jules Aguillon)
+  + Revert deprecation of the `doc-comments` option (#1331) (Jules Aguillon)
+    This reverts a change introduced in 0.14.0 (#1293).
 
 ### 0.14.0 (2020-04-02)
 
