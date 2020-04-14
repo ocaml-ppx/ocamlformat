@@ -3,7 +3,7 @@
 #### Changes
 
   + The default for `doc-comments` is changed to `after` (#1335) (Jules Aguillon)
-    This revert a change introduced in 0.14.0.
+    This reverts a change introduced in 0.14.0 (#1012).
 
   + Revert deprecation of the `doc-comments` option (#1331) (Jules Aguillon)
     This reverts a change introduced in 0.14.0 (#1293).
