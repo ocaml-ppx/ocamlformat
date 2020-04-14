@@ -93,6 +93,21 @@ let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
   in
   vbox 0 (list_fl unindented fmt_line $ fmt_opt epi)
 
+(* has to be duplicated to avoid dependency cycle: cannot have dependency on
+   Fmt_odoc *)
+let parse_docstring ~loc text =
+  let location = loc.Location.loc_start in
+  match Odoc_parser.parse_comment_raw ~location ~text with
+  | exception _ -> Error ["comment could not be parsed"]
+  | {value; warnings= []} -> Ok value
+  | {warnings; _} -> Error (List.map warnings ~f:Odoc_model.Error.to_string)
+
+let has_odoc_syntax (docs : Odoc_parser.Ast.docs) =
+  List.exists docs ~f:(fun x ->
+      match x.Odoc_model.Location_.value with
+      | `Paragraph _ -> false
+      | _ -> true)
+
 let fmt cmt src ~wrap:wrap_comments ~fmt_code =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
@@ -142,7 +157,7 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   in
-  let fmt_code ({txt= str; _} as cmt) =
+  let fmt_code' ({txt= str; _} as cmt) =
     let dollar_last = Char.equal str.[String.length str - 1] '$' in
     let len = String.length str - if dollar_last then 2 else 1 in
     let source = String.sub ~pos:1 ~len str in
@@ -160,5 +175,15 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
     | "(**)" -> str "(**)"
     | _ -> str "(***)" )
   | "" | "$" -> fmt_non_code cmt
-  | str when Char.equal str.[0] '$' -> fmt_code cmt
-  | _ -> fmt_non_code cmt
+  | str when Char.equal str.[0] '$' -> fmt_code' cmt
+  | _ -> (
+    match parse_docstring ~loc:cmt.loc cmt.txt with
+    | Ok parsed ->
+        if has_odoc_syntax parsed then
+          match fmt_code cmt.txt with
+          | Ok formatted ->
+              hvbox 2
+                (wrap "(*" "*)" (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+          | Error () -> fmt_non_code ~wrap_comments:false cmt
+        else fmt_non_code cmt
+    | _ -> fmt_non_code cmt )
