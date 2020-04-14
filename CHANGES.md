@@ -1,3 +1,9 @@
+### unreleased
+
+#### Changes
+
+  + Revert depreciation of the `doc-comments` option (#1331) (Jules Aguillon)
+
 ### 0.14.0 (2020-04-02)
 
 #### New features
