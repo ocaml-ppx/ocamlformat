@@ -1,3 +1,11 @@
+### unreleased
+
+#### Changes
+
+  + Set `doc-comments-val` to `unset` by default (#1340) (Jules Aguillon)
+    Placement of documentation comments on `val` and `external` items is now
+    controled by `doc-comments` unless this option is set.
+
 ### 0.14.1 (2020-04-14)
 
 #### Changes
