@@ -33,7 +33,7 @@ type t =
   ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `After]
-  ; doc_comments_val: [`Before | `After]
+  ; doc_comments_val: [`Before | `After | `Unset]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
@@ -505,7 +505,10 @@ module Formatting = struct
     in
     let names = ["doc-comments-val"] in
     let all =
-      [ ( "after"
+      [ ( "unset"
+        , `Unset
+        , "$(b,unset) lets $(b,doc-comments) set the position" )
+      ; ( "after"
         , `After
         , "$(b,after) puts documentation comments after their corresponding \
            declarations." )
@@ -1660,7 +1663,7 @@ let janestreet_profile =
   ; disable= false
   ; disambiguate_non_breaking_match= false
   ; doc_comments= `Before
-  ; doc_comments_val= `Before
+  ; doc_comments_val= `Unset
   ; doc_comments_padding= 1
   ; doc_comments_tag_only= `Fit
   ; dock_collection_brackets= false
