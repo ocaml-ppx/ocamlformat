@@ -1,4 +1,20 @@
+* Testing on other projects
+
+The =tools/test_branch.sh= script builds 2 revisions of OCamlformat and run them
+on the sources of some projects.
+The list of tested project is (and can be edited) in =test-extra/Makefile=.
+
+The projects sources are cloned into =test-extra/code=.
+Git is used to manage the script's state:
+- staged changes are the diffs introduced by formatting with the first revision
+- unstaged changes are the diffs introduced by upgrading OCamlformat to the
+  second rev
+
 * Release procedure
+
+- Review the impact of the release on real source code:
+  In =test-extra/Makefile=, uncomment the extended list of projects to test
+  and run =tools/test_branch.sh -a "previous_release"=.
 
 - In =CHANGES.md=, change =(unreleased)= with the current date
   Commit
