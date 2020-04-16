@@ -35,3 +35,5 @@ Git is used to manage the script's state:
 - Release on Opam-repository
   =dune-release opam pkg=
   =dune-release opam submit=
+
+- Each release should be announced on [[https://discuss.ocaml.org/]]
