@@ -15,6 +15,8 @@ Git is used to manage the script's state:
 - Review the impact of the release on real source code:
   In =test-extra/Makefile=, uncomment the extended list of projects to test
   and run =tools/test_branch.sh -a "previous_release"=.
+  Diffs should be discussed with the maintainers of these projects to gather
+  feedback before continuing the release.
 
 - In =CHANGES.md=, change =(unreleased)= with the current date
   Commit
