@@ -35,7 +35,7 @@ type t =
   ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `After]
-  ; doc_comments_val: [`Before | `After]
+  ; doc_comments_val: [`Before | `After | `Unset]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool

@@ -465,7 +465,11 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
         then `Fit
         else
           let ((`Before | `After) as conf) =
-            if is_val then c.conf.doc_comments_val else c.conf.doc_comments
+            if is_val then
+              match c.conf.doc_comments_val with
+              | (`Before | `After) as conf -> conf
+              | `Unset -> c.conf.doc_comments
+            else c.conf.doc_comments
           in
           conf
       in
