@@ -507,7 +507,7 @@ module Formatting = struct
     let all =
       [ ( "unset"
         , `Unset
-        , "$(b,unset) lets $(b,doc-comments) set the position" )
+        , "$(b,unset) lets $(b,doc-comments) set the position." )
       ; ( "after"
         , `After
         , "$(b,after) puts documentation comments after their corresponding \
