@@ -919,6 +919,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to fun_function.ml.output
+     (run %{bin:ocamlformat} %{dep:fun_function.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff fun_function.ml fun_function.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to function_indent-never.ml.output
      (run %{bin:ocamlformat} --function-indent=4 --function-indent-nested=never %{dep:function_indent.ml}))))
 
