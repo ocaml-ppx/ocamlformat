@@ -3032,7 +3032,9 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
     | Ptype_variant ctor_decls ->
         let max acc d =
           let len_around = if is_symbol_id d.pcd_name.txt then 4 else 0 in
-          max acc (String.length d.pcd_name.txt + len_around)
+          match d.pcd_args with
+          | Pcstr_tuple [] | Pcstr_record [] -> max acc len_around
+          | _ -> max acc (String.length d.pcd_name.txt + len_around)
         in
         let max_len_name = List.fold_left ctor_decls ~init:0 ~f:max in
         box_manifest
@@ -3144,7 +3146,7 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
     in
     let len_around = if is_symbol_id txt then 4 else 0 in
     let pad =
-      String.make (max_len_name - String.length txt - len_around) ' '
+      String.make (max 0 (max_len_name - String.length txt - len_around)) ' '
     in
     fmt_if_k
       ( c.conf.align_constructors_decl && (not is_empty)
