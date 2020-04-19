@@ -159,7 +159,9 @@ let rec fmt_inline_elements elements =
           | `Superscript -> "^"
           | `Subscript -> "_"
         in
-        wrap_elements "{" "}" ~always_wrap:true (str_normalized s) elems
+        hovbox
+          (1 + String.length s + 1)
+          (wrap_elements "{" "}" ~always_wrap:true (str_normalized s) elems)
         $ aux t
     | `Reference (_kind, rf, txt) :: t ->
         let rf = wrap "{!" "}" (fmt_reference rf) in
