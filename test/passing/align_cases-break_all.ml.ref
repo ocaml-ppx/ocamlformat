@@ -3,19 +3,19 @@ type x =
   | Fooooooooooooo
   | Fooooooooooooooo
   | Foooooooooooooooooo
-  | Foo                 of padding * int array
-  | Foooooooo           of padding * int array
-  | Fooooooooo          of padding * int array
-  | Fooooooooooo        of padding * int array * int array
+  | Foo          of padding * int array
+  | Foooooooo    of padding * int array
+  | Fooooooooo   of padding * int array
+  | Fooooooooooo of padding * int array * int array
   (* fooooooooooooooooo *)
   | Fooooooooooo
       (* fooooooooooooooooooo *) of
       padding * int array * int array
   (* fooooooooooooooooo *)
-  | Foooooooooo         of padding * int array * int array
-  | Foooo               of padding * int array * int array
-  | Fooooooo            of padding * int array * int array
-  | Foooooo             of int array
+  | Foooooooooo  of padding * int array * int array
+  | Foooo        of padding * int array * int array
+  | Fooooooo     of padding * int array * int array
+  | Foooooo      of int array
 
 type x =
   [ `Foooooooooooooo
