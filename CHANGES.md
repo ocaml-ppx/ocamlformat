@@ -2,6 +2,8 @@
 
 #### Changes
 
+  + In `align-constructors-decl` mode, only consider non-constant constructors (#1344) (Josh Berdine)
+
   + Set `doc-comments-val` to `unset` by default (#1340) (Jules Aguillon)
     Placement of documentation comments on `val` and `external` items is now
     controled by `doc-comments` unless this option is set.
