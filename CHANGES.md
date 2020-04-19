@@ -27,6 +27,10 @@
 
    This reverts changes introduced in 0.14.1 (#1335) and 0.14.0 (#1012).
 
+#### Bug fixes
+
+  + Do not clear the emacs `*compilation*` buffer on successful reformat (#1350) (Josh Berdine)
+
 ### 0.14.1 (2020-04-14)
 
 #### Changes
