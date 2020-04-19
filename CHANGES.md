@@ -1,5 +1,9 @@
 ### unreleased
 
+#### Changes
+
+  + Do not break inline elements such as `{i blah}` in docstrings (#1346) (Josh Berdine)
+
 #### Bug fixes
 
   + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine, Guillaume Petiot)
