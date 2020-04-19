@@ -157,25 +157,17 @@ function."
               (error "invalid rcs patch or internal error in ocamlformat--apply-rcs-patch")))))))))
 
 (defun ocamlformat--process-errors (filename tmpfile errorfile errbuf)
-  (if errbuf
-    (with-current-buffer errbuf
-      (if (eq ocamlformat-show-errors 'echo)
-        (message "%s" (buffer-string))
-        (setq buffer-read-only nil)
-        (erase-buffer)
-        ;; Checks the size of errorfile
-        ;; Accessor 'file-attribute-size' only exists in emacs-26 and later
-        (if (> (nth 7 (file-attributes errorfile)) 0)
-          (progn
-            (insert-file-contents errorfile nil nil nil)
-            ;; Convert the ocamlformat stderr to something understood by the
-            ;; compilation mode.
-            (goto-char (point-min))
-            (insert "ocamlformat errors:\n")
-            (while (search-forward-regexp (regexp-quote tmpfile) nil t)
-              (replace-match (file-name-nondirectory filename)))
-            (compilation-mode)
-            (display-buffer errbuf)))))))
+  (with-current-buffer errbuf
+    (if (eq ocamlformat-show-errors 'echo)
+      (message "%s" (buffer-string))
+      (insert-file-contents errorfile nil nil nil)
+      ;; Convert the ocamlformat stderr to something understood by the compilation mode.
+      (goto-char (point-min))
+      (insert "ocamlformat errors:\n")
+      (while (search-forward-regexp (regexp-quote tmpfile) nil t)
+        (replace-match (file-name-nondirectory filename)))
+      (compilation-mode)
+      (display-buffer errbuf))))
 
 (defun ocamlformat--kill-error-buffer (errbuf)
   (let ((win (get-buffer-window errbuf)))
@@ -270,9 +262,14 @@ function."
                    (ocamlformat--replace-buffer-contents outputfile)
 		 (ocamlformat--patch-buffer outputfile))
                (message "Applied ocamlformat"))
-             (message "Could not apply ocamlformat"))
-           (ocamlformat--process-errors
-            (buffer-file-name) bufferfile errorfile errbuf)))
+             (if errbuf
+               (progn
+                 (with-current-buffer errbuf
+                   (setq buffer-read-only nil)
+                   (erase-buffer))
+                 (ocamlformat--process-errors
+                   (buffer-file-name) bufferfile errorfile errbuf)))
+             (message "Could not apply ocamlformat"))))
      (delete-file errorfile)
      (delete-file bufferfile)
      (delete-file outputfile)))
