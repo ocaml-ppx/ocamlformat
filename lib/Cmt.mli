@@ -21,9 +21,13 @@ val txt : t -> string
 
 include Comparator.S with type t := t
 
+type pos = Before | Within | After
+
 val fmt :
      t
   -> Source.t
   -> wrap:bool
+  -> ocp_indent_compat:bool
   -> fmt_code:(string -> (Fmt.t, unit) Result.t)
+  -> pos
   -> Fmt.t

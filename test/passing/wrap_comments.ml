@@ -4,6 +4,56 @@ type t =
   | Aaaaaaaaaa (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb
 
+let _ =
+  [ "a"
+  ; "b"
+  (* first line
+     second line *)
+  ; "c"
+  (* first line
+
+     second line
+  *)
+  ; "d"
+  (* first line
+
+
+     second line *)
+  ; "e"
+  (* first line
+
+     second line
+         *)
+  ; "f"
+  (* first line
+
+     second line
+
+
+         *)
+  ; "g"
+  ]
+
+let _ =
+  let _ =
+    (* This is indented 7
+This 0 *)
+    0
+  in
+  0
+
+let _ =
+  (*no space before
+    no space after*)
+  0
+
+let _ =
+  (* 
+    blah blah
+  *)
+  ()
+;;
+
 [@@@ocamlformat "wrap-comments=false"]
 
 type t =
