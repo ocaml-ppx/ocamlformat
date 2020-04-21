@@ -450,3 +450,33 @@ val f : int
 val k : int
 
 (**)
+
+(** {e foooooooo oooooooooo ooooooooo ooooooooo
+       {i fooooooooooooo oooooooo oooooooooo
+          {b fooooooooooooo oooooooooooo oooooo ooooooo}}} *)
+
+(** {e
+       {i fooooooooooooo oooooooo oooooooooo
+          {b fooooooooooooo oooooooooooo oooooo ooooooo}} foooooooo
+       oooooooooo ooooooooo ooooooooo} *)
+
+(** foooooooooo fooooooooooo
+
+    {e foooooooo oooooooooo ooooooooo ooooooooo
+       {i fooooooooooooo oooooooo oooooooooo
+          {b fooooooooooooo oooooooooooo oooooo ooooooo}} fooooooooooooo
+       foooooooooo fooooo
+       {i fooooooooooooo oooooooo oooooooooo
+          {b fooooooooooooo oooooooooooo oooooo ooooooo}}}
+
+    {e foooooooo oooooooooo ooooooooo ooooooooo
+       {i fooooooooooooo oooooooo oooooooooo}}
+
+    fooooooooooooo foooooooooooooo:
+
+    - foo
+    - {e foooooooo oooooooooo ooooooooo ooooooooo
+         {i fooooooooooooo oooooooo oooooooooo}}
+    - {e foooooooo oooooooooo ooooooooo ooooooooo}
+      {i fooooooooooooo oooooooo oooooooooo}
+    - foo *)
