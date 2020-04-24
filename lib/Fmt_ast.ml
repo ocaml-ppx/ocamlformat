@@ -432,8 +432,8 @@ let fmt_docstring c ?standalone ?pro ?epi doc =
       let epi = docstring_epi ?standalone ?next ?epi ~floating in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
 
-let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
-    ?(fit = false) c doc1 doc2 =
+let fmt_docstring_around_item' ?(force_before = false) ?(fit = false) c doc1
+    doc2 =
   match (doc1, doc2) with
   | Some _, Some _ ->
       ( fmt_docstring c ~epi:(fmt "@\n") doc1
@@ -464,14 +464,9 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
           && fit && is_tag_only doc
         then `Fit
         else
-          let ((`Before | `After) as conf) =
-            if is_val then
-              match c.conf.doc_comments_val with
-              | (`Before | `After) as conf -> conf
-              | `Unset -> c.conf.doc_comments
-            else c.conf.doc_comments
-          in
-          conf
+          match c.conf.doc_comments with
+          | `Before -> `Before
+          | `After -> `After
       in
       let floating_doc = fmt_doc ~epi:(fmt "@\n") floating_doc in
       match placement with
@@ -484,11 +479,11 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
 (** Formats docstrings and decides where to place them Handles the
     [doc-comments] and [doc-comment-tag-only] options Returns the tuple
     [doc_before, doc_after, attrs] *)
-let fmt_docstring_around_item ?is_val ?force_before ?fit c attrs =
+let fmt_docstring_around_item ?force_before ?fit c attrs =
   let doc1, attrs = doc_atrs attrs in
   let doc2, attrs = doc_atrs attrs in
   let doc_before, doc_after =
-    fmt_docstring_around_item' ?is_val ?force_before ?fit c doc1 doc2
+    fmt_docstring_around_item' ?force_before ?fit c doc1 doc2
   in
   (doc_before, doc_after, attrs)
 
@@ -2791,7 +2786,7 @@ and fmt_class_type_field c ctx (cf : class_type_field) =
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c pctf_loc in
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item ~is_val:true ~fit:true c pctf_attributes
+    fmt_docstring_around_item ~fit:true c pctf_attributes
   in
   let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@@" atrs in
   fmt_cmts
@@ -2935,7 +2930,7 @@ and fmt_value_description c ctx vd =
   @@ fun c ->
   let pre = if List.is_empty pval_prim then "val" else "external" in
   let doc_before, doc_after, atrs =
-    fmt_docstring_around_item ~is_val:true c pval_attributes
+    fmt_docstring_around_item c pval_attributes
   in
   let fmt_val_prim s =
     if String.exists s ~f:(function ' ' | '\n' -> true | _ -> false) then

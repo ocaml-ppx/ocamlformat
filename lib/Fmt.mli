@@ -13,11 +13,11 @@
 
 module Format = Format_
 
-(** Format strings that accept no arguments. *)
 type s = (unit, Format.formatter, unit) format
+(** Format strings that accept no arguments. *)
 
-(** Format thunks. *)
 type t
+(** Format thunks. *)
 
 val ( $ ) : t -> t -> t
 (** Format concatenation: [a $ b] formats [a], then [b]. *)

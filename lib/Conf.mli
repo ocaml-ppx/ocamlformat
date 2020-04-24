@@ -11,7 +11,6 @@
 
 (** Configuration options *)
 
-(** Formatting options *)
 type t =
   { align_cases: bool
   ; align_constructors_decl: bool
@@ -35,7 +34,6 @@ type t =
   ; disable: bool
   ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `After]
-  ; doc_comments_val: [`Before | `After | `Unset]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
@@ -87,6 +85,7 @@ type t =
   ; type_decl_indent: int
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
+(** Formatting options *)
 
 type file = Stdin | File of string
 
@@ -102,12 +101,12 @@ type action =
       (** Check whether the input files already are formatted. *)
   | Print_config of t  (** Print the configuration and exit. *)
 
-(** Options changing the tool's behavior *)
 type opts =
   { debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *)
   ; format_invalid_files: bool }
+(** Options changing the tool's behavior *)
 
 val action : unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)

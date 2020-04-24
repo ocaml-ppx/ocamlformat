@@ -1,30 +1,30 @@
-(** @deprecated *)
 open Module
+(** @deprecated *)
 
+open Module
 (** abc
 
     @deprecated *)
-open Module
 
+open Module
 (** @author A *)
-open Module
 
-(** @inline *)
 open Module
-
 (** @inline *)
+
 include Abc
+(** @inline *)
 
 (** @inline *)
 include struct
   type t
 end
 
-(** @inline *)
 include (Module : Type)
-
 (** @inline *)
+
 module A = B
+(** @inline *)
 
 (** @inline *)
 module A : sig
@@ -47,8 +47,8 @@ end = struct
   type t
 end
 
-(** @deprecated abc *)
 module type A = B
+(** @deprecated abc *)
 
 (** @deprecated abc *)
 module type A = sig
@@ -61,20 +61,20 @@ module A : sig
 end =
   B
 
-(** @deprecated *)
 open Module.With_veryyyyyy_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-
 (** @deprecated *)
+
 include Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
-
 (** @deprecated *)
+
 module A = Module.With_very_loooooooooooooooooooooooong_naaaaaaaaaaaaaaaaame
+(** @deprecated *)
 
 (** @deprecated *)
 type t = T
 
-(** @deprecated *)
 type t = t
+(** @deprecated *)
 
 (** @deprecated *)
 let a = b
@@ -85,20 +85,20 @@ type t = t
 
 class b =
   object
-    (** @deprecated *)
     method f = 0
-
     (** @deprecated *)
+
     inherit a
-
     (** @deprecated *)
+
     val x = 1
-
     (** @deprecated *)
+
     constraint 'a = [> ]
-
     (** @deprecated *)
+
     initializer do_init ()
+    (** @deprecated *)
   end
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
@@ -106,10 +106,10 @@ class b =
 open Module
 (** @deprecated *)
 
+open Module
 (** abc
 
     @deprecated *)
-open Module
 
 open Module
 (** @author A *)

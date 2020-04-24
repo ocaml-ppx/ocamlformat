@@ -157,9 +157,9 @@ val assoc_of_prec : prec -> assoc
 (** [assoc_of_prec prec] is the associativity of Ast terms with precedence
     [prec]. (Associativity is uniform across precedence levels.) *)
 
+type 'a xt = private {ctx: t; ast: 'a}
 (** Term-in-context [{ctx; ast}] records that [ast] is (considered to be) an
     immediate sub-term of [ctx]. *)
-type 'a xt = private {ctx: t; ast: 'a}
 
 val sub_typ : ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)

@@ -172,12 +172,6 @@ OPTIONS (CODE FORMATTING STYLE)
            treatment. fit puts doc comments on the same line. The default
            value is default.
 
-       --doc-comments-val={unset|after|before}
-           Documentation comments position on val and external declarations.
-           unset lets doc-comments set the position. after puts documentation
-           comments after their corresponding declarations. before puts them
-           before. The default value is unset.
-
        --dock-collection-brackets
            Dock the brackets of lists, arrays and records, so that when the
            collection does not fit on a single line the brackets are opened
