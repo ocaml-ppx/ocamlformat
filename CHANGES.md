@@ -2,9 +2,13 @@
 
 #### Changes
 
-  + Set `doc-comments-val` to `unset` by default (#1340) (Jules Aguillon)
-    Placement of documentation comments on `val` and `external` items is now
-    controled by `doc-comments` unless this option is set.
+  + Option `doc-comments-val` has been removed to not confuse users and default values of 0.13.0 have been restored (#1354) (Guillaume Petiot, Jules Aguillon)
+
+    This reverts changes introduced in 0.14.1 (#1335) and 0.14.0 (#1012).
+    This also reverts:
+      - Set `doc-comments-val` to `unset` by default (#1340) (Jules Aguillon)
+        Placement of documentation comments on `val` and `external` items is now
+        controled by `doc-comments` unless this option is set.
 
 ### 0.14.1 (2020-04-14)
 
