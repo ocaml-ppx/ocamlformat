@@ -21,8 +21,8 @@
    %{targets}
    (run ocamlformat --help=plain))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action
   (diff ocamlformat-help.txt ocamlformat-help.actual)))
 
