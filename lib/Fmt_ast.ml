@@ -2231,7 +2231,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               (str "module " $ m)
           $ fmt_atrs )
       in
-      hovbox 0
+      hvbox 0
         (compose_module (fmt_module_expr c (sub_mod ~ctx me)) ~f:fmt_mod)
   | Pexp_record (flds, default) ->
       let fmt_field (lid1, f) =

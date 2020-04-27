@@ -104,4 +104,5 @@ let _ =
   ( module struct
     let x = 0
 
-    let y = 1 end )
+    let y = 1
+  end )
