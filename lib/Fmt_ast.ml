@@ -47,7 +47,7 @@ module Cmts = struct
 
   let fmt_list ?pro ?epi ?eol c locs init =
     List.fold locs ~init ~f:(fun k loc ->
-        fmt ?pro ?epi ?eol ?adj:None c loc k)
+        fmt ?pro ?epi ?eol ?adj:None c loc k )
 end
 
 type block =
@@ -947,7 +947,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         let pat =
           fmt_elements_collection p
             (fun (locs, xpat) ->
-              Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat))
+              Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat) )
             loc_xpats
         in
         hvbox 0
@@ -1280,7 +1280,7 @@ and fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op =
            $ Cmts.fmt_before c op.loc $ str "." $ fmt_op
            $ wrap_brackets brackets (Cmts.fmt_after c op.loc $ fmt_args)
            $ opt op.rhs (fun e ->
-                 fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e)) )
+                 fmt_assign_arrow c $ fmt_expression c (sub_exp ~ctx e) ) )
        $ fmt_atrs ))
 
 and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
@@ -1673,11 +1673,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 let fmt_after_cmts =
                   Cmts.fmt_after c pexp_loc
                   $ opt (List.hd args) (fun (_, {ast= e; _}) ->
-                        Cmts.fmt_before ~adj c e.pexp_loc)
+                        Cmts.fmt_before ~adj c e.pexp_loc )
                 in
                 let fmt_op = fmt_expression c op in
                 (has_cmts, fmt_before_cmts, fmt_after_cmts, (fmt_op, args))
-            | None -> (false, noop, noop, (noop, args)))
+            | None -> (false, noop, noop, (noop, args)) )
       in
       hvbox_if outer_wrap 0
         (wrap_if outer_wrap "(" ")"
@@ -2268,7 +2268,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ( p1.box
             ( opt default (fun d ->
                   hvbox 2 (fmt_expression c (sub_exp ~ctx d) $ fmt "@;<1 -2>")
-                  $ str "with" $ p2.break_after_with)
+                  $ str "with" $ p2.break_after_with )
             $ fmt_fields )
         $ fmt_atrs )
   | Pexp_extension
@@ -3575,7 +3575,7 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
           | Sugar.Unit -> `Unit
           | Sugar.Named (name, x) -> `Named (name, fmt_module_type c x)
         in
-        {loc; txt})
+        {loc; txt} )
   in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->

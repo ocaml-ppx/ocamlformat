@@ -324,7 +324,7 @@ let locs_of_interval source loc =
   let toks =
     tokens_at source loc ~filter:(function
       | CHAR _ | DOTDOT | INT _ | STRING _ | FLOAT _ -> true
-      | _ -> false)
+      | _ -> false )
   in
   match toks with
   | [ ((CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
