@@ -2,9 +2,20 @@
 
 #### Changes
 
-  + Set `doc-comments-val` to `unset` by default (#1340) (Jules Aguillon)
-    Placement of documentation comments on `val` and `external` items is now
-    controled by `doc-comments` unless this option is set.
+  + Merge `doc-comments-val` option with `doc-comments`. The placement of documentation comments on `val` and `external` items is now controled by `doc-comments`.
+
+    - `doc-comments=after` becomes `doc-comments=after-when-possible` to take into account the technical limitations of ocamlformat;
+    - `doc-comments=before` is unchanged;
+    - `doc-comments-val` is now replaced with `doc-comments`
+      To reproduce the former behaviors
+      * `doc-comments=before` + `doc-comments-val=before`: now use `doc-comments=before`;
+      * `doc-comments=before` + `doc-comments-val=after`: now use `doc-comments=before-except-val`;
+      * `doc-comments=after` + `doc-comments-val=before`: this behavior did not make much sense and is not available anymore;
+      * `doc-comments=after` + `doc-comments-val=after`: now use `doc-comments=after-when-possible`.
+
+   (#1358) (Josh Berdine, Jules Aguillon, Guillaume Petiot)
+
+   This reverts changes introduced in 0.14.1 (#1335) and 0.14.0 (#1012).
 
 ### 0.14.1 (2020-04-14)
 
