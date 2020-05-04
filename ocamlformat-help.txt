@@ -155,13 +155,15 @@ OPTIONS (CODE FORMATTING STYLE)
            Add parentheses around matching constructs that fit on a single
            line. The flag is unset by default.
 
-       --doc-comments={after|before}
-           Doc comments position. after puts doc comments after the
-           corresponding code. This option has no effect on variant
+       --doc-comments={after-when-possible|before-except-val|before}
+           Doc comments position. after-when-possible puts doc comments after
+           the corresponding code. This option has no effect on variant
            declarations because that would change their meaning and on
-           structures, signatures and objects for readability. before puts
-           comments before the corresponding code. The default value is
-           after.
+           structures, signatures and objects for readability.
+           before-except-val puts doc comments before the corresponding code,
+           but puts doc comments of val and external declarations after the
+           corresponding declarations. before puts comments before the
+           corresponding code. The default value is after-when-possible.
 
        --doc-comments-padding=PADDING
            Add PADDING spaces before doc comments in type declarations. The
@@ -171,12 +173,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Position of doc comments with only tags. default means no special
            treatment. fit puts doc comments on the same line. The default
            value is default.
-
-       --doc-comments-val={unset|after|before}
-           Documentation comments position on val and external declarations.
-           unset lets doc-comments set the position. after puts documentation
-           comments after their corresponding declarations. before puts them
-           before. The default value is unset.
 
        --dock-collection-brackets
            Dock the brackets of lists, arrays and records, so that when the
