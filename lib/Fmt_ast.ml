@@ -466,10 +466,10 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
         else
           let ((`Before | `After) as conf) =
             match c.conf.doc_comments with
-            | `Before -> `Before
+            | `After_when_possible -> `After
             | `Before_except_val when is_val -> `After
             | `Before_except_val -> `Before
-            | `After_when_possible -> `After
+            | `Before -> `Before
           in
           conf
       in
