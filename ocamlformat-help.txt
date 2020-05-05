@@ -191,9 +191,10 @@ OPTIONS (CODE FORMATTING STYLE)
            `doc-comments-val=after` in combination with `doc-comments=before`
            please now use `doc-comments=before-except-val`. If you are using
            `doc-comments-val=after` in combination with `doc-comments=after`
-           then only `doc-comments=after` is now required to achieve the same
-           behavior. If you are using `doc-comments-val=unset` the same
-           behavior can now be achieved by setting `doc-comments` only.
+           then only `doc-comments=after-when-possible` is now required to
+           achieve the same behavior. If you are using
+           `doc-comments-val=unset` the same behavior can now be achieved by
+           setting `doc-comments` only.
 
        --dock-collection-brackets
            Dock the brackets of lists, arrays and records, so that when the

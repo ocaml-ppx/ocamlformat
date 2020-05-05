@@ -539,9 +539,10 @@ module Formatting = struct
          `doc-comments-val=after` in combination with `doc-comments=before` \
          please now use `doc-comments=before-except-val`. If you are using \
          `doc-comments-val=after` in combination with `doc-comments=after` \
-         then only `doc-comments=after` is now required to achieve the same \
-         behavior. If you are using `doc-comments-val=unset` the same \
-         behavior can now be achieved by setting `doc-comments` only."
+         then only `doc-comments=after-when-possible` is now required to \
+         achieve the same behavior. If you are using \
+         `doc-comments-val=unset` the same behavior can now be achieved by \
+         setting `doc-comments` only."
     in
     C.choice ~names ~all ~doc ~section ~deprecated
       ~removed_values:
@@ -558,8 +559,9 @@ module Formatting = struct
                with `doc-comments=before` please now use \
                `doc-comments=before-except-val`. If you are using \
                `doc-comments-val=after` in combination with \
-               `doc-comments=after` then only `doc-comments=after` is now \
-               required to achieve the same behavior."
+               `doc-comments=after` then only \
+               `doc-comments=after-when-possible` is now required to \
+               achieve the same behavior."
         ; C.removed_value ~name:"unset" ~version:"0.14.2"
             ~msg:
               "The same behavior can be achieved by setting `doc-comments` \
