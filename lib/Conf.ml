@@ -2216,8 +2216,7 @@ let validate_action () =
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
-type 'a input =
-  {kind: 'a; name: string; file: file; conf: t; line_range: Line_range.t}
+type 'a input = {kind: 'a; name: string; file: file; conf: t}
 
 type action =
   | In_out of [`Impl | `Intf] input * string option
@@ -2226,7 +2225,6 @@ type action =
   | Print_config of t
 
 let make_action ~enable_outside_detected_project ~root action inputs =
-  let line_range = !line_range in
   let make_file ?(with_conf = fun c -> c) ?name kind file =
     let name = Option.value ~default:file name in
     let conf =
@@ -2234,14 +2232,14 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         (build_config ~enable_outside_detected_project ~root ~file:name
            ~is_stdin:false)
     in
-    {kind; name; file= File file; conf; line_range}
+    {kind; name; file= File file; conf}
   in
   let make_stdin ?(name = "<standard input>") kind =
     let conf =
       build_config ~enable_outside_detected_project ~root ~file:name
         ~is_stdin:false
     in
-    {kind; name; file= Stdin; conf; line_range}
+    {kind; name; file= Stdin; conf}
   in
   match (action, inputs) with
   | `Print_config, inputs ->
@@ -2286,7 +2284,11 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
-type opts = {debug: bool; margin_check: bool; format_invalid_files: bool}
+type opts =
+  { debug: bool
+  ; margin_check: bool
+  ; format_invalid_files: bool
+  ; line_range: Line_range.t }
 
 let validate () =
   let root =
@@ -2314,7 +2316,10 @@ let validate () =
         match !format_invalid_files with Some `Auto -> true | _ -> false
       in
       let opts =
-        {debug= !debug; margin_check= !margin_check; format_invalid_files}
+        { debug= !debug
+        ; margin_check= !margin_check
+        ; format_invalid_files
+        ; line_range= !line_range }
       in
       `Ok (action, opts)
 

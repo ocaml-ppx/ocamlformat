@@ -398,12 +398,12 @@ let parse_result xunit conf (opts : Conf.opts) ~source ~input_name =
       else Error (Invalid_source {exn})
   | parsed -> Ok parsed
 
-let parse_and_format xunit ?output_file ~input_name ~source ~line_range conf
-    opts =
+let parse_and_format xunit ?output_file ~input_name ~source conf
+    (opts : Conf.opts) =
   Location.input_name := input_name ;
   let open Result.Monad_infix in
-  Line_range.apply line_range source ~on_invalid:(Invalid_range line_range)
-    ~f:(fun source ->
+  Line_range.apply opts.line_range source
+    ~on_invalid:(Invalid_range opts.line_range) ~f:(fun source ->
       parse_result xunit conf opts ~source ~input_name
       >>= fun parsed ->
       format xunit ?output_file ~input_name ~source ~parsed conf opts)
