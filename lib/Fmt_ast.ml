@@ -1946,6 +1946,20 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ( fmt_expression c (sub_exp ~ctx exp)
            $ fmt "@,." $ fmt_longident_loc c lid $ fmt_atrs ))
   | Pexp_newtype _ | Pexp_fun _ ->
+      let break_after_arrow =
+        c.conf.break_infix_before_func && c.conf.break_sequences
+        &&
+        (* fun exp is right arg of infix apply *)
+        match ctx0 with
+        | Exp
+            { pexp_desc=
+                Pexp_apply
+                  ( {pexp_desc= Pexp_ident {txt= Lident id; _}; _}
+                  , [_; (_, exp')] )
+            ; _ } ->
+            phys_equal exp exp' && is_infix_id id
+        | _ -> false
+      in
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
       let pre_body, body = fmt_body c ?ext xbody in
       let default_indent = if Option.is_none eol then 2 else 1 in
@@ -1964,7 +1978,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        0 (fmt_fun_args c xargs)
                    $ fmt "@ " )
                $ str "->" $ pre_body )
-           $ fmt "@ " $ body ))
+           $ fmt_or break_after_arrow "@;<1000 0>" "@ "
+           $ body ))
   | Pexp_function cs ->
       let indent = Params.function_indent c.conf ~ctx in
       Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens

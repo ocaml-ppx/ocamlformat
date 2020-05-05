@@ -2,6 +2,8 @@
 
 #### Changes
 
+  + Break after arrow of fun args of infix ops when "break-infix-before-func = true" and "break-sequences = true" (#1359) (Josh Berdine)
+
   + Do not break inline elements such as `{i blah}` in docstrings (#1346) (Josh Berdine)
 
 #### Bug fixes
