@@ -31,7 +31,7 @@ let index_nth s c i =
   go 0 i
 
 let split_lines ~low ~high source =
-  index_nth source '\n' (low - 1)
+  (match low with 1 -> Some 0 | _ -> index_nth source '\n' (low - 1))
   >>= fun s_pos ->
   index_nth source '\n' high
   >>= fun e_pos ->
