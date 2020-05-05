@@ -22,6 +22,8 @@
 
   + Break long literal strings at the margin (#1367) (Guillaume Petiot)
 
+  + Break after a multiline argument in an argument list (#1360) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
