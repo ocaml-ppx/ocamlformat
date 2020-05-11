@@ -665,6 +665,18 @@
  (action (diff doc_comments-after.ml.ref doc_comments-after.ml.output)))
 
 (rule
+ (targets doc_comments-before-except-val.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:doc_comments-before-except-val.ml.opts} %{dep:doc_comments.ml}"))))
+
+(alias
+ (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
+ (action (diff doc_comments-before-except-val.ml.ref doc_comments-before-except-val.ml.output)))
+
+(rule
  (targets doc_comments-before.ml.output)
  (deps .ocamlformat )
  (action
@@ -675,18 +687,6 @@
  (name runtest)
  (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments-before.ml.ref doc_comments-before.ml.output)))
-
-(rule
- (targets doc_comments-val-after.ml.output)
- (deps .ocamlformat )
- (action
-   (with-outputs-to %{targets}
-     (system "%{bin:ocamlformat} %{read-lines:doc_comments-val-after.ml.opts} %{dep:doc_comments.ml}"))))
-
-(alias
- (name runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action (diff doc_comments-val-after.ml.ref doc_comments-val-after.ml.output)))
 
 (rule
  (targets doc_comments.ml.output)

@@ -32,7 +32,7 @@ type t =
   ; comment_check: bool
   ; disable: bool
   ; disambiguate_non_breaking_match: bool
-  ; doc_comments: [`Before | `After]
+  ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
   ; doc_comments_val: [`Before | `After | `Unset]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
@@ -484,24 +484,37 @@ module Formatting = struct
     let doc = "Doc comments position." in
     let names = ["doc-comments"] in
     let all =
-      [ ( "after"
-        , `After
-        , "$(b,after) puts doc comments after the corresponding code. This \
-           option has no effect on variant declarations because that would \
-           change their meaning and on structures, signatures and objects \
-           for readability." )
+      [ ( "after-when-possible"
+        , `After_when_possible
+        , "$(b,after-when-possible) puts doc comments after the \
+           corresponding code. This option has no effect on variant \
+           declarations because that would change their meaning and on \
+           structures, signatures and objects for readability." )
+      ; ( "before-except-val"
+        , `Before_except_val
+        , "$(b,before-except-val) puts doc comments before the \
+           corresponding code, but puts doc comments of $(b,val) and \
+           $(b,external) declarations after the corresponding declarations."
+        )
       ; ( "before"
         , `Before
         , "$(b,before) puts comments before the corresponding code." ) ]
     in
     C.choice ~names ~all ~doc ~section
+      ~removed_values:
+        [ C.removed_value ~name:"after" ~version:"0.14.2"
+            ~msg:
+              "This value has been renamed `after-when-possible` to take \
+               into account the technical limitations of ocamlformat, the \
+               behavior is unchanged." ]
       (fun conf x -> {conf with doc_comments= x})
       (fun conf -> conf.doc_comments)
 
   let doc_comments_val =
     let doc =
       "Documentation comments position on $(b,val) and $(b,external) \
-       declarations."
+       declarations. $(b,Warning:) this option is $(b,deprecated) and will \
+       be removed in OCamlFormat v0.15.0."
     in
     let names = ["doc-comments-val"] in
     let all =
@@ -514,7 +527,45 @@ module Formatting = struct
            declarations." )
       ; ("before", `Before, "$(b,before) puts them before.") ]
     in
-    C.choice ~names ~all ~doc ~section
+    let deprecated =
+      C.deprecated ~since_version:"0.14.2"
+        "$(b,Warning:) this option is $(b,deprecated) and will be removed \
+         in OCamlFormat v0.15.0, please use `doc-comments` instead. If you \
+         are using `doc-comments-val=before` in combination with \
+         `doc-comments=before` then only `doc-comments=before` is now \
+         required to achive the same behavior. If you are using \
+         `doc-comments-val=before` in combination with `doc-comments=after` \
+         this behavior is not available anymore. If you are using \
+         `doc-comments-val=after` in combination with `doc-comments=before` \
+         please now use `doc-comments=before-except-val`. If you are using \
+         `doc-comments-val=after` in combination with `doc-comments=after` \
+         then only `doc-comments=after-when-possible` is now required to \
+         achieve the same behavior. If you are using \
+         `doc-comments-val=unset` the same behavior can now be achieved by \
+         setting `doc-comments` only."
+    in
+    C.choice ~names ~all ~doc ~section ~deprecated
+      ~removed_values:
+        [ C.removed_value ~name:"before" ~version:"0.14.2"
+            ~msg:
+              "If you are using `doc-comments-val=before` in combination \
+               with `doc-comments=before` then only `doc-comments=before` \
+               is now required to achive the same behavior. If you are \
+               using `doc-comments-val=before` in combination with \
+               `doc-comments=after` this behavior is not available anymore."
+        ; C.removed_value ~name:"after" ~version:"0.14.2"
+            ~msg:
+              "If you are using `doc-comments-val=after` in combination \
+               with `doc-comments=before` please now use \
+               `doc-comments=before-except-val`. If you are using \
+               `doc-comments-val=after` in combination with \
+               `doc-comments=after` then only \
+               `doc-comments=after-when-possible` is now required to \
+               achieve the same behavior."
+        ; C.removed_value ~name:"unset" ~version:"0.14.2"
+            ~msg:
+              "The same behavior can be achieved by setting `doc-comments` \
+               only." ]
       (fun conf x -> {conf with doc_comments_val= x})
       (fun conf -> conf.doc_comments_val)
 
@@ -1459,8 +1510,8 @@ let ocamlformat_profile =
   ; comment_check= true
   ; disable= false
   ; disambiguate_non_breaking_match= false
-  ; doc_comments= `Before
-  ; doc_comments_val= `After
+  ; doc_comments= `Before_except_val
+  ; doc_comments_val= `Unset
   ; doc_comments_padding= 2
   ; doc_comments_tag_only= `Default
   ; dock_collection_brackets= false
