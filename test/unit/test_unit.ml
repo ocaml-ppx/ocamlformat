@@ -110,9 +110,62 @@ module Test_noit = struct
   let tests = test_dump @ test_roots @ test_children
 end
 
+let quoted_string =
+  let pp ppf s = Caml.Format.fprintf ppf "%S" s in
+  Alcotest.testable pp String.equal
+
+module Test_line_range = struct
+  let test_apply =
+    let on_invalid = "invalid range" in
+    let test name range str expected =
+      let test_name = "apply: " ^ name in
+      ( test_name
+      , `Quick
+      , fun () ->
+          let got =
+            Line_range.apply range str
+              ~f:(fun s -> Ok ("<\n" ^ String.uppercase s ^ ">\n"))
+              ~on_invalid
+          in
+          Alcotest.check
+            Alcotest.(result quoted_string string)
+            test_name expected got )
+    in
+    [ test "empty"
+        (Line_range.only_between ~low:1 ~high:3)
+        "" (Error on_invalid)
+    ; test "on range"
+        (Line_range.only_between ~low:2 ~high:4)
+        "First line\nSecond line\nThird line\nFourth line\nFifth line"
+        (Ok
+           "First line\n\
+            <\n\
+            SECOND LINE\n\
+            THIRD LINE\n\
+            FOURTH LINE\n\
+            >\n\
+            Fifth line")
+    ; test "on all" Line_range.all
+        "First line\nSecond line\nThird line\nFourth line\nFifth line"
+        (Ok
+           "<\n\
+            FIRST LINE\n\
+            SECOND LINE\n\
+            THIRD LINE\n\
+            FOURTH LINE\n\
+            FIFTH LINE>\n")
+    ; test "range goes after end of string"
+        (Line_range.only_between ~low:2 ~high:100)
+        "First line\nSecond line\nThird line\nFourth line\nFifth line"
+        (Error on_invalid) ]
+
+  let tests = test_apply
+end
+
 let tests =
   [ ("Location", Test_location.tests)
   ; ("non overlapping interval tree", Test_noit.tests)
-  ; ("Ast", Test_ast.tests) ]
+  ; ("Ast", Test_ast.tests)
+  ; ("Line_range", Test_line_range.tests) ]
 
 let () = Alcotest.run "ocamlformat" tests

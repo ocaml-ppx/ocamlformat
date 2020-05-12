@@ -1539,6 +1539,28 @@
  (action (diff let_module.ml.ref let_module.ml.output)))
 
 (rule
+ (targets lines-invalid_range.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "! %{bin:ocamlformat} %{read-lines:lines-invalid_range.ml.opts} %{dep:lines.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff lines-invalid_range.ml.ref lines-invalid_range.ml.output)))
+
+(rule
+ (targets lines.ml.output)
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to %{targets}
+     (system "%{bin:ocamlformat} %{read-lines:lines.ml.opts} %{dep:lines.ml}"))))
+
+(alias
+ (name runtest)
+ (action (diff lines.ml.ref lines.ml.output)))
+
+(rule
  (targets list-space_around.ml.output)
  (deps .ocamlformat )
  (action

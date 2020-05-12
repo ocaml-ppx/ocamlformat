@@ -1,5 +1,13 @@
 ### 0.14.2 (2020-05-11)
 
+#### New features
+
+  + Format only a line range from a file.
+    New option `--lines=X-Y` is available, that allows to format only around these lines (from X to Y included).
+    (#1188) (Etienne Millon)
+
+### 0.14.2 (2020-05-11)
+
 #### Changes
 
   + Merge `doc-comments-val` option with `doc-comments`. The placement of documentation comments on `val` and `external` items is now controled by `doc-comments`.

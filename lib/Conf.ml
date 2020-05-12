@@ -1489,6 +1489,23 @@ let ignore_invalid_options =
   let default = false in
   mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
 
+let map_term f t =
+  let open Term in
+  app (const f) t
+
+let line_range =
+  let doc = "Format only around these lines." in
+  let default = Line_range.all in
+  let to_lines = function
+    | None -> default
+    | Some (low, high) -> Line_range.only_between ~low ~high
+  in
+  mk ~default
+    Arg.(
+      map_term to_lines & value
+      & opt (some (pair ~sep:'-' int int)) None
+      & info ["lines"] ~doc ~docs)
+
 let ocamlformat_profile =
   { align_cases= false
   ; align_constructors_decl= false
@@ -2267,7 +2284,11 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
 
-type opts = {debug: bool; margin_check: bool; format_invalid_files: bool}
+type opts =
+  { debug: bool
+  ; margin_check: bool
+  ; format_invalid_files: bool
+  ; line_range: Line_range.t }
 
 let validate () =
   let root =
@@ -2295,7 +2316,10 @@ let validate () =
         match !format_invalid_files with Some `Auto -> true | _ -> false
       in
       let opts =
-        {debug= !debug; margin_check= !margin_check; format_invalid_files}
+        { debug= !debug
+        ; margin_check= !margin_check
+        ; format_invalid_files
+        ; line_range= !line_range }
       in
       `Ok (action, opts)
 

@@ -107,7 +107,8 @@ type opts =
   { debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *)
-  ; format_invalid_files: bool }
+  ; format_invalid_files: bool
+  ; line_range: Line_range.t }
 
 val action : unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
