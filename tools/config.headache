@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 ##########################################################################
 #                                                                        #
 #                              OCamlFormat                               #
@@ -10,31 +9,17 @@
 #                                                                        #
 ##########################################################################
 
-# usage: bisect.sh [<rev>]
-#
-# The first arg is the revision to test. By default HEAD.
-#
-# Run the testsuite with ppx_bisect enabled.
-
-set -e
-
-if [[ ! -z "$1" ]]; then
-    branch="$1"
-else
-    branch=$(git rev-parse HEAD)
-fi
-
-tmp=`mktemp -d`
-git worktree add --detach "$tmp" "$branch"
-
-sed -i 's/;;INSERT_BISECT_HERE;;/(preprocess (pps bisect_ppx))/' "$tmp/bin/dune" "$tmp/lib/dune"
-
-# Run the tests
-make -C "$tmp" test
-
-dst="coverage"
-bisect-ppx-report -I "$tmp/_build/default" -html "$dst" `find "$tmp" -name 'bisect*.out'`
-echo "Coverage report generated in $dst/"
-echo " => open $dst/index.html"
-
-git worktree remove --force "$tmp"
+# OCaml source
+  ".*\\.ml[itl]?" -> frame open:"(*" line:"*" close:"*)"
+| ".*\\.mly"      -> frame open:"/*" line:"*" close:"*/"
+# dune build
+| "dune"         -> frame open:";" line:";" close:";"
+| "dune-project" -> frame open:";" line:";" close:";"
+| "dune-project" -> skip match:"(lang.*"
+# Misc
+| ".*Makefile.*" -> frame open:"#"  line:"#" close:"#"
+| ".*\.opam"     -> frame open:"#"  line:"#" close:"#"
+| ".*headache"   -> frame open:"#"  line:"#" close:"#"
+# Script file
+| ".*\\.sh" -> frame open:"#"  line:"#" close:"#"
+| ".*\\.sh" -> skip match:"#!.*"

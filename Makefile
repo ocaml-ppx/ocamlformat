@@ -1,13 +1,13 @@
-######################################################################
-#                                                                    #
-#                            OCamlFormat                             #
-#                                                                    #
-#  Copyright (c) 2017-present, Facebook, Inc.  All rights reserved.  #
-#                                                                    #
-#  This source code is licensed under the MIT license found in the   #
-#  LICENSE file in the root directory of this source tree.           #
-#                                                                    #
-######################################################################
+##########################################################################
+#                                                                        #
+#                              OCamlFormat                               #
+#                                                                        #
+#            Copyright (c) Facebook, Inc. and its affiliates.            #
+#                                                                        #
+#      This source code is licensed under the MIT license found in       #
+#      the LICENSE file in the root directory of this source tree.       #
+#                                                                        #
+##########################################################################
 
 .PHONY: default
 default: exe
@@ -32,3 +32,7 @@ regtests:
 
 regtests-promote:
 	dune runtest --auto-promote
+
+headers:
+	tools/update_headers.sh
+	dune build @fmt --auto-promote

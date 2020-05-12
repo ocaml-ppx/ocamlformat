@@ -1,13 +1,13 @@
-(**********************************************************************
- *                                                                    *
- *                            OCamlFormat                             *
- *                                                                    *
- *  Copyright (c) 2019-present, Facebook, Inc.  All rights reserved.  *
- *                                                                    *
- *  This source code is licensed under the MIT license found in the   *
- *  LICENSE file in the root directory of this source tree.           *
- *                                                                    *
- **********************************************************************)
+(**************************************************************************)
+(*                                                                        *)
+(*                              OCamlFormat                               *)
+(*                                                                        *)
+(*            Copyright (c) Facebook, Inc. and its affiliates.            *)
+(*                                                                        *)
+(*      This source code is licensed under the MIT license found in       *)
+(*      the LICENSE file in the root directory of this source tree.       *)
+(*                                                                        *)
+(**************************************************************************)
 
 (** A tree of non-overlapping intervals. Intervals are non-overlapping if
     whenever 2 intervals share more than an end-point, then one contains the
