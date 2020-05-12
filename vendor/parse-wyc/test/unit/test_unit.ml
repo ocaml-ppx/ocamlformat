@@ -320,7 +320,7 @@ module M : sig
 let check_tests checker tests =
   List.map
     (fun (name, input, locs) ->
-      (name, `Quick, fun () -> checker ~name ~input ~locs))
+      (name, `Quick, fun () -> checker ~name ~input ~locs) )
     tests
 
 let tests =

@@ -30,7 +30,11 @@ let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
       wrap_if_fits_or parens "(" ")" k
   | (`Parens | `Begin_end) when not parens -> k
   | `Parens when fits_breaks -> wrap_fits_breaks ~space:false c "(" ")" k
-  | `Parens -> wrap "(" ")" k
+  | `Parens -> (
+    match c.Conf.indicate_multiline_delimiters with
+    | `Space ->
+        Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
+    | _ -> wrap "(" ")" k )
   | `Begin_end ->
       vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
 
@@ -192,7 +196,7 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
                 (wrap_k (str opn) (str cls)
                    ( break space (String.length opn + 1)
                    $ box_collec c 0 k $ break space 0 ))
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k))
+            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
       ; sep_before= break 0 offset $ str "; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop }
@@ -203,7 +207,7 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
               hvbox 0
                 (wrap_k (str opn) (str cls)
                    (break space 2 $ box_collec c 0 k $ break space 0))
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k))
+            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
       ; sep_before= noop
       ; sep_after_non_final=
           fmt_or_k dock (fmt ";@;<1 0>")
@@ -367,10 +371,9 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
                     (str "if" $ fmt_extension_suffix)
                     (str "else if")
                 $ fmt_attributes $ str " " $ fmt_cond xcnd )
-              $ fmt "@ ")
+              $ fmt "@ " )
       ; box_keyword_and_expr=
-          (fun k ->
-            hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k))
+          (fun k -> hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k))
       ; branch_pro= fmt_or parens_bch " " "@ "
       ; wrap_parens=
           wrap_parens

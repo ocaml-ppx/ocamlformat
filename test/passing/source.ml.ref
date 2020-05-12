@@ -1004,7 +1004,7 @@ let id x = x
 let idb1 =
   (fun id ->
     let _ = id true in
-    id)
+    id )
     id
 
 let idb2 : bool -> bool = id
@@ -1100,7 +1100,7 @@ let rec variantize : type t. t ty -> t -> variant =
       VRecord
         (List.map
            (fun (Field {field_type; label; get}) ->
-             (label, variantize field_type (get x)))
+             (label, variantize field_type (get x)) )
            fields)
 
 (* Extraction *)
@@ -1141,7 +1141,7 @@ let rec devariantize : type t. t ty -> variant -> t =
       List.iter2
         (fun (Field {label; field_type; set}) (lab, v) ->
           if label <> lab then raise VariantMismatch ;
-          set builder (devariantize field_type v))
+          set builder (devariantize field_type v) )
         fields fl ;
       of_builder builder
   | _ -> raise VariantMismatch
@@ -1353,12 +1353,12 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
        { sum_proj=
            (function
            | `Nil -> ("Nil", None)
-           | `Cons p -> ("Cons", Some (Tdyn (tcons, p))))
+           | `Cons p -> ("Cons", Some (Tdyn (tcons, p))) )
        ; sum_cases= [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
        ; sum_inj=
            (fun (type c) ->
              ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
-               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ))
+               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ) )
            (* One can also write the type annotation directly *) })
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
@@ -1387,7 +1387,7 @@ let ty_abc : ([`A of int | `B of string | `C], 'e) ty =
     ( (function
       | `A n -> ("A", Some (Tdyn (Int, n)))
       | `B s -> ("B", Some (Tdyn (String, s)))
-      | `C -> ("C", None))
+      | `C -> ("C", None) )
     , function
       | "A", Some (Tdyn (Int, n)) -> `A n
       | "B", Some (Tdyn (String, s)) -> `B s
@@ -1401,7 +1401,8 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
   Rec
     (Sum
        ( (function
-         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p))))
+         | `Nil -> ("Nil", None) | `Cons p -> ("Cons", Some (Tdyn (targ, p)))
+         )
        , function
          | "Nil", None -> `Nil
          | "Cons", Some (Tdyn (Pair (_, Var), (p : a * a vlist))) -> `Cons p
@@ -2800,7 +2801,7 @@ let rec check : type n. n succ fin -> n succ term -> n term option =
   | Leaf -> Some Leaf
   | Fork (t1, t2) ->
       bind (check x t1) (fun t1 ->
-          bind (check x t2) (fun t2 -> Some (Fork (t1, t2))))
+          bind (check x t2) (fun t2 -> Some (Fork (t1, t2))) )
 
 let subst_var x t' y = match thick x y with None -> t' | Some y' -> Var y'
 
@@ -3510,7 +3511,7 @@ let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
       let used = free t in
       let used_expr =
         Subst.fold subst ~init:[] ~f:(fun ~key ~data acc ->
-            if Names.mem s used then data :: acc else acc)
+            if Names.mem s used then data :: acc else acc )
       in
       if List.exists used_expr ~f:(fun t -> Names.mem s (free t)) then
         let name = s ^ string_of_int (next_id ()) in
@@ -3724,7 +3725,7 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
           let used = !!free t in
           let used_expr =
             Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-                if Names.mem s used then data :: acc else acc)
+                if Names.mem s used then data :: acc else acc )
           in
           if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t)) then
             let name = s ^ string_of_int (next_id ()) in
@@ -3936,7 +3937,7 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
           let used = !!free t in
           let used_expr =
             Subst.fold sub ~init:[] ~f:(fun ~key ~data acc ->
-                if Names.mem s used then data :: acc else acc)
+                if Names.mem s used then data :: acc else acc )
           in
           if List.exists used_expr ~f:(fun t -> Names.mem s (!!free t)) then
             let name = s ^ string_of_int (next_id ()) in

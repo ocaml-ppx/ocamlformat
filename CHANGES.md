@@ -1,3 +1,9 @@
+### unreleased
+
+#### Bug fixes
+
+  + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine, Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes

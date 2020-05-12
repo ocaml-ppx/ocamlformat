@@ -35,7 +35,7 @@ let () =
         fprintf ppf "Transitions:\n";
         List.iter
           (fun (sym, (st' : lr1)) ->
-            fprintf ppf " - on %a, goto #%d\n" Print.symbol sym (st' :> int))
+            fprintf ppf " - on %a, goto #%d\n" Print.symbol sym (st' :> int) )
           (Lr1.transitions st);
         fprintf ppf "Reductions:\n";
         List.iter
@@ -43,10 +43,10 @@ let () =
             let p : production = List.hd ps in
             fprintf ppf " - on %a, reduce %d:\n  %a\n" Print.terminal t
               (p :> int)
-              Print.production p)
-          (Lr1.reductions st));
+              Print.production p )
+          (Lr1.reductions st) );
     Production.iter (fun (p : production) ->
-        fprintf ppf "\n# Production p%d\n%a" (p :> int) Print.production p) )
+        fprintf ppf "\n# Production p%d\n%a" (p :> int) Print.production p ) )
 
 module S = Synthesis.Synthesizer (G) (A)
 

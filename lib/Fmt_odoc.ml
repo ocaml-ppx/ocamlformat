@@ -116,7 +116,7 @@ let list_block_elem elems f =
         | Some _ -> fmt "@\n"
         | None -> fmt ""
       in
-      f elem $ break)
+      f elem $ break )
 
 let space_elt : inline_element with_location =
   Location_.(at (span []) (`Space ""))
@@ -267,4 +267,4 @@ let diff c x y =
 let is_tag_only =
   List.for_all ~f:(function
     | {Location_.value= `Tag _; _} -> true
-    | _ -> false)
+    | _ -> false )

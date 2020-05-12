@@ -74,12 +74,12 @@ let with_file input_name output_file suf ext f =
 let dump_ast ~input_name ?output_file ~suffix fmt =
   let ext = ".ast" in
   with_file input_name output_file suffix ext (fun oc ->
-      fmt (Format.formatter_of_out_channel oc))
+      fmt (Format.formatter_of_out_channel oc) )
 
 let dump_formatted ~input_name ?output_file ~suffix fmted =
   let ext = Filename.extension input_name in
   with_file input_name output_file suffix ext (fun oc ->
-      Out_channel.output_string oc fmted)
+      Out_channel.output_string oc fmted )
 
 let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
     =
@@ -194,14 +194,14 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
                        source or disable the formatting using the option \
                        --no-parse-docstrings.\n\
                        %!"
-                      Location.print_loc loc (ellipsis_cmt s))
+                      Location.print_loc loc (ellipsis_cmt s) )
           | `Comment_dropped l when not quiet ->
               List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                   Format.fprintf fmt
                     "%!@{<loc>%a@}:@,\
                      @{<error>Error@}: Comment (* %s *) dropped.\n\
                      %!"
-                    Location.print_loc loc (ellipsis_cmt msg))
+                    Location.print_loc loc (ellipsis_cmt msg) )
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
               if debug then Location.report_exception fmt exn
           | `Warning50 l ->
@@ -210,7 +210,7 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
           | _ -> () ) ;
           if debug then
             List.iter l ~f:(fun (msg, sexp) ->
-                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp))
+                Format.fprintf fmt "  %s: %s\n%!" msg (Sexp.to_string sexp) )
       | exn ->
           Format.fprintf fmt
             "  BUG: unhandled exception. Use [--debug] for details.\n%!" ;
@@ -229,7 +229,7 @@ let check_margin conf ~filename ~fmted =
   List.iteri (String.split_lines fmted) ~f:(fun i line ->
       if String.length line > conf.Conf.margin then
         Format.fprintf Format.err_formatter
-          "Warning: %s:%i exceeds the margin\n%!" filename i)
+          "Warning: %s:%i exceeds the margin\n%!" filename i )
 
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k
@@ -248,7 +248,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
     if opts.Conf.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             xunit.printast fmt ast))
+             xunit.printast fmt ast ))
     else None
   in
   let dump_formatted ~suffix fmted =
@@ -293,7 +293,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
       let exn_args () =
         [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
         |> List.filter_map ~f:(fun (s, f_opt) ->
-               Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
+               Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
       ( match parse xunit.parse conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
@@ -323,7 +323,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
           ; ("old ast", old_ast)
           ; ("new ast", new_ast) ]
           |> List.filter_map ~f:(fun (s, f_opt) ->
-                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
+                 Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
         if xunit.equal ~ignore_doc_comments:true conf t t_new then
           let docstrings = xunit.moved_docstrings conf t t_new in
@@ -366,7 +366,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
             ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
             ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
             |> List.filter_map ~f:(fun (s, f_opt) ->
-                   Option.map f_opt ~f:(fun f -> (s, f)))
+                   Option.map f_opt ~f:(fun f -> (s, f)) )
           in
           internal_error `Comment args ) ;
       (* Too many iteration ? *)

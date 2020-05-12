@@ -284,10 +284,10 @@ let _ =
   try_with (fun () ->
       (* comment before *)
       match get () with None -> do_something () | Some _ -> ()
-      (* do nothing *))
+      (* do nothing *) )
 
 let _ = try_with (fun () -> (* comment before *)
-                            a ; b (* after b *))
+                            a ; b (* after b *) )
 
 let _ =
   match x with

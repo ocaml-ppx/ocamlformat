@@ -225,8 +225,8 @@ module Recover_attributes (G : GRAMMAR) : ATTRIBUTES with module G = G = struct
           "production attributes" (Production.attributes p);
         Array.iter
           (fun (_, _, attrs) ->
-            validate_attributes [ "recover.cost" ] "item attributes" attrs)
-          (Production.rhs p))
+            validate_attributes [ "recover.cost" ] "item attributes" attrs )
+          (Production.rhs p) )
 
   let cost_of_attributes prj attrs =
     Cost.of_int
@@ -234,7 +234,7 @@ module Recover_attributes (G : GRAMMAR) : ATTRIBUTES with module G = G = struct
          (fun total attr ->
            if Attribute.has_label "recover.cost" attr then
              total + int_of_string (Attribute.payload attr)
-           else total)
+           else total )
          0 (prj attrs))
 
   let cost_of_symbol =
@@ -247,7 +247,7 @@ module Recover_attributes (G : GRAMMAR) : ATTRIBUTES with module G = G = struct
     in
     let ft =
       Terminal.tabulate (fun t ->
-          measure ~has_default:(Terminal.typ t = None) Terminal.attributes t)
+          measure ~has_default:(Terminal.typ t = None) Terminal.attributes t )
     in
     let fn =
       Nonterminal.tabulate (measure ~has_default:false Nonterminal.attributes)
@@ -273,7 +273,7 @@ module Recover_attributes (G : GRAMMAR) : ATTRIBUTES with module G = G = struct
     List.iter
       (fun a ->
         if Attribute.has_label "recover.prelude" a then
-          Format.fprintf ppf "%s\n" (Attribute.payload a))
+          Format.fprintf ppf "%s\n" (Attribute.payload a) )
       Grammar.attributes
 
   let default_expr ?(fallback = "raise Not_found") attrs =

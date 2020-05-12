@@ -58,7 +58,7 @@ module Make (Itv : IN) = struct
              | Some children -> parents map children ~ancestors elt
              | None -> ancestors )
              |> Option.some
-           else None))
+           else None ))
 
   let add_root t root = {t with roots= root :: t.roots}
 
@@ -105,7 +105,7 @@ module Make (Itv : IN) = struct
                ( str (Sexp.to_string_hum (Itv.comparator.sexp_of_t root))
                $ wrap_if
                    (not (List.is_empty children))
-                   "@,{" " }" (dump_ tree children) )))
+                   "@,{" " }" (dump_ tree children) ) ))
     in
     set_margin 100000000 $ dump_ tree tree.roots
 end
