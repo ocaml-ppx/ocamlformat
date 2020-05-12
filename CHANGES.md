@@ -6,6 +6,8 @@
 
 #### Bug fixes
 
+  + Do not clear the emacs `*compilation*` buffer on successful reformat (#1350) (Josh Berdine)
+
   + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine, Guillaume Petiot)
 
 ### 0.14.2 (2020-05-11)
@@ -26,10 +28,6 @@
    (#1358) (Josh Berdine, Jules Aguillon, Guillaume Petiot)
 
    This reverts changes introduced in 0.14.1 (#1335) and 0.14.0 (#1012).
-
-#### Bug fixes
-
-  + Do not clear the emacs `*compilation*` buffer on successful reformat (#1350) (Josh Berdine)
 
 ### 0.14.1 (2020-04-14)
 
