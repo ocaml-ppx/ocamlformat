@@ -1,12 +1,12 @@
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (deps
   (source_tree dir1))
  (action
   (run %{bin:ocamlformat} -n 1 -i dir1/dir2/ignore_1.ml)))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (deps
   (source_tree dir1))
  (action

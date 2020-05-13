@@ -56,18 +56,25 @@ let register_file tests fname =
 
 (* ignore dune file, .foo.whatever.swp, etc *)
 
+let cmd should_fail args =
+  let cmd_string = String.concat " " args in
+  if should_fail then
+    Printf.sprintf {|(with-accepted-exit-codes 1
+       (run %s))|}
+      cmd_string
+  else Printf.sprintf {|(run %s)|} cmd_string
+
 let emit_test test_name setup =
-  let open Printf in
   let opts =
-    if setup.has_opts then sprintf " %%{read-lines:%s.opts}" test_name
-    else ""
+    if setup.has_opts then
+      Stdio.In_channel.read_lines (Printf.sprintf "%s.opts" test_name)
+    else []
   in
   let ref_name = if setup.has_ref then test_name ^ ".ref" else test_name in
   let base_test_name =
     match setup.base_file with Some n -> n | None -> test_name
   in
   let extra_deps = String.concat " " setup.extra_deps in
-  let cmd_prefix = if setup.should_fail then "! " else "" in
   let enabled_if_line =
     match setup.minimum_ocaml_version with
     | None -> ""
@@ -76,33 +83,37 @@ let emit_test test_name setup =
   Printf.printf
     {|
 (rule
- (targets %s.output)
  (deps .ocamlformat %s)
  (action
-   (with-outputs-to %%{targets}
-     (system "%s%%{bin:ocamlformat}%s %%{dep:%s}"))))
+   (with-outputs-to %s.output
+     %s)))
 
-(alias
- (name runtest)%s
+(rule
+ (alias runtest)%s
  (action (diff %s %s.output)))
 |}
-    test_name extra_deps cmd_prefix opts base_test_name enabled_if_line
-    ref_name test_name ;
+    extra_deps test_name
+    (cmd setup.should_fail
+       ( ["%{bin:ocamlformat}"] @ opts
+       @ [Printf.sprintf "%%{dep:%s}" base_test_name] ))
+    enabled_if_line ref_name test_name ;
   if setup.has_ocp then
     Printf.printf
       {|
 (rule
- (targets %s.ocp.output)
  (deps .ocp-indent %s)
  (action
-   (with-outputs-to %%{targets}
-     (system "%s%%{bin:ocp-indent} %%{dep:%s}"))))
+   (with-outputs-to %s.ocp.output
+     %s)))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action (diff %s.ocp %s.ocp.output)))
 |}
-      test_name extra_deps cmd_prefix ref_name test_name test_name
+      extra_deps test_name
+      (cmd setup.should_fail
+         ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name])
+      test_name test_name
 
 let () =
   let map = ref StringMap.empty in

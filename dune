@@ -15,11 +15,9 @@
    (:standard -noassert))))
 
 (rule
- (targets ocamlformat-help.actual)
- (action
-  (with-stdout-to
-   %{targets}
-   (run ocamlformat --help=plain))))
+ (with-stdout-to
+  ocamlformat-help.actual
+  (run ocamlformat --help=plain)))
 
 (rule
  (alias runtest)
