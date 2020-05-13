@@ -2153,7 +2153,6 @@
 
 (alias
  (name runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff skip.ml skip.ml.output)))
 
 (rule

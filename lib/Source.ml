@@ -136,8 +136,8 @@ let find_after t f (loc : Location.t) =
 let extend_loc_to_include_attributes t (loc : Location.t)
     (l : Parsetree.attributes) =
   if
-    List.for_all l ~f:(fun ({attr_loc; _} : Parsetree.attribute) ->
-        Location.compare Location.none attr_loc <> 0 )
+    List.exists l ~f:(fun {attr_loc; attr_name; _} ->
+        Location.compare attr_name.loc attr_loc <> 0 )
   then
     (* Starting with OCaml 4.08, attributes have locations *)
     let loc_end =
