@@ -211,3 +211,15 @@ let _ = match () with A -> ( x |> function y -> y (*  *) ) | B -> ()
 let _ = x |> function y -> ( function _ -> y (* A *) ) (* B *)
 
 let _ = () (* This is needed here to avoid the comment above from moving *)
+
+include struct
+  [@@@ocamlformat "break-sequences = true"]
+
+  let () =
+    a____________________________________
+    >>= b____________________________________
+    >>= fun () ->
+    c____________________________________
+    >>= d____________________________________
+    >>= fun () -> e
+end
