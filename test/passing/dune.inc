@@ -1759,6 +1759,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to pre_post_extensions.ml.output
+     (run %{bin:ocamlformat} %{dep:pre_post_extensions.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff pre_post_extensions.ml pre_post_extensions.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to precedence.ml.output
      (run %{bin:ocamlformat} %{dep:precedence.ml}))))
 
