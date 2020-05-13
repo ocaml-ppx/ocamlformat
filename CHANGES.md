@@ -8,6 +8,8 @@
 
   + Restore previous functionality for pre-post extension points (#1342) (Josh Berdine)
 
+  + Fix extra break before `function` body of a `fun` (#1343) (Josh Berdine)
+
   + Do not clear the emacs `*compilation*` buffer on successful reformat (#1350) (Josh Berdine)
 
   + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine, Guillaume Petiot)
