@@ -18,6 +18,8 @@
 
   + Preserve unwrapped comments by not adding artificial breaks when `wrap-comments=false` and `ocp-indent-compat=true` are set to avoid interfering with ocp-indent indentation. (#1352) (Guillaume Petiot)
 
+  + Break long literal strings at the margin (#1367) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
