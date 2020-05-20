@@ -93,7 +93,9 @@ let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
   in
   vbox 0 (list_fl unindented fmt_line $ fmt_opt epi)
 
-let fmt cmt src ~wrap:wrap_comments ~fmt_code =
+type pos = Before | Within | After
+
+let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
@@ -120,16 +122,25 @@ let fmt cmt src ~wrap:wrap_comments ~fmt_code =
     match String.split_lines stripped with
     | first_line :: (_ :: _ as tl)
       when (not begins_line) && not (String.is_empty first_line) ->
-        (* Preserve the first level of indentation *)
-        let starts_with_sp = is_sp first_line.[0] in
-        fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
-          first_line tl
-    | _ -> str s
+        if ocp_indent_compat then
+          (* Not adding artificial breaks and keeping the comment contents
+             verbatim will not interfere with ocp-indent. *)
+          match pos with
+          | Before -> wrap "(*" "*)" (str s)
+          | Within -> wrap "(*" "*)" (str s)
+          | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" (str s)
+        else
+          (* Preserve the first level of indentation *)
+          let starts_with_sp = is_sp first_line.[0] in
+          wrap "(*" "*)"
+            (fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
+               first_line tl)
+    | _ -> wrap "(*" "*)" (str s)
   in
   let fmt_non_code ?(wrap_comments = wrap_comments) cmt =
     if not wrap_comments then
       match split_asterisk_prefixed cmt with
-      | [""] | [_] | [_; ""] -> wrap "(*" "*)" (fmt_unwrapped_cmt cmt)
+      | [""] | [_] | [_; ""] -> fmt_unwrapped_cmt cmt
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
     else

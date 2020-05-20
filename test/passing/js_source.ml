@@ -7512,3 +7512,31 @@ type t = [
   | `XXXX (* ______________________________________ *)
   | `XXXX (* ____________________________________ *)
 ]
+
+type t =
+  { field : ty
+  (* Here is some verbatim formatted text:
+     {v
+       starting at column 7
+     v}*)
+  }
+
+module Intro_sort = struct
+  let foo_fooo_foooo fooo ~foooo m1 m2 m3 m4 m5 =
+    (* Fooooooooooooooooooooooooooo:
+       {v
+          1--o-----o-----o--------------1
+             |     |     |
+          2--o-----|--o--|-----o--o-----2
+                   |  |  |     |  |
+          3--------o--o--|--o--|--o-----3
+                         |  |  |
+          4-----o--------o--o--|-----o--4
+                |              |     |
+          5-----o--------------o-----o--5
+        v} *)
+    foooooooooo fooooo fooo;
+    foooooooooo fooooo fooo;
+    foooooooooo fooooo fooo;
+  ;;
+end

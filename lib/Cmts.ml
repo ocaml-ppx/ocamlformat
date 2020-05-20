@@ -391,7 +391,7 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
 
 (** Format comments for loc. *)
 let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
-    ?(adj = eol) found loc =
+    ?(adj = eol) found loc pos =
   let open Fmt in
   match found with
   | None | Some [] -> noop
@@ -420,8 +420,9 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
             | [] -> impossible "previous match"
             | [cmt] ->
                 let wrap = conf.wrap_comments in
+                let ocp_indent_compat = conf.ocp_indent_compat in
                 let fmt_code = fmt_code conf in
-                Cmt.fmt cmt t.source ~wrap ~fmt_code
+                Cmt.fmt cmt t.source ~wrap ~ocp_indent_compat ~fmt_code pos
                 $ maybe_newline ~next cmt
             | group ->
                 list group "@;<1000 0>" (fun cmt ->
@@ -432,17 +433,21 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
               $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ) )
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
-  fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code ?pro ~epi ?eol ?adj loc
+  fmt_cmts t conf
+    (find_cmts t `Before loc)
+    ~fmt_code ?pro ~epi ?eol ?adj loc Cmt.Before
 
 let fmt_after t conf ~fmt_code ?(pro = Fmt.break 1 0) ?epi loc =
   let open Fmt in
   let within =
-    fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code ~pro ?epi loc
+    fmt_cmts t conf
+      (find_cmts t `Within loc)
+      ~fmt_code ~pro ?epi loc Cmt.Within
   in
   let after =
     fmt_cmts t conf
       (find_cmts t `After loc)
-      ~fmt_code ~pro ?epi ~eol:noop loc
+      ~fmt_code ~pro ?epi ~eol:noop loc Cmt.After
   in
   within $ after
 
@@ -450,7 +455,7 @@ let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
     loc =
   fmt_cmts t conf
     (find_cmts t `Within loc)
-    ~fmt_code ~pro ~epi ~eol:Fmt.noop loc
+    ~fmt_code ~pro ~epi ~eol:Fmt.noop loc Cmt.Within
 
 let drop_inside t loc =
   let clear pos =
