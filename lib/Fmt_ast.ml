@@ -4191,8 +4191,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         || (not (List.is_empty itmJ.pvb_attributes))
         || Ast.break_between c.source ~cmts:c.cmts
              ~has_cmts_before:Cmts.has_before ~has_cmts_after:Cmts.has_after
-             (Exp itmI.pvb_expr, cI.conf)
-             (Exp itmJ.pvb_expr, cJ.conf)
+             (Exp {itmI.pvb_expr with pexp_loc= itmI.pvb_loc}, cI.conf)
+             (Exp {itmJ.pvb_expr with pexp_loc= itmJ.pvb_loc}, cJ.conf)
       in
       let grps = List.group bindings ~break in
       let fmt_grp ~first:first_grp ~last:last_grp bindings =
