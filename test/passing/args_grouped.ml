@@ -61,3 +61,13 @@ let test_file_renamings_from_json =
         assert_raises exc (fun () -> test_output test_input)
   in
   foooooooooooooooo
+
+let gen_with_record_deps ~expand t resolved_forms ~dep_kind =
+  let foooooooooooooooooooooo =
+    expand
+      (* we keep the dir constant here to replicate the old behavior of:
+         (chdir foo %{exe:bar}). This should lookup ./bar rather than
+         ./foo/bar *)
+      resolved_forms ~dir:t.dir ~dep_kind ~expand_var:t.expand_var
+  in
+  {t with expand_var}

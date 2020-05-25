@@ -1334,7 +1334,9 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     let xexp = sub_exp ~ctx x in
     let output =
       Cmts.preserve
-        (fun cmts -> fmt_arg ~first:false ~last:false {c with cmts} (lbl, x))
+        (fun cmts ->
+          let cmts = Cmts.drop_before cmts x.pexp_loc in
+          fmt_arg ~first:false ~last:false {c with cmts} (lbl, x) )
         c.cmts
     in
     let breaks = String.(rstrip output |> is_substring ~substring:"\n   ") in
