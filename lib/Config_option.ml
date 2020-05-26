@@ -100,7 +100,7 @@ module Make (C : CONFIG) = struct
     let open Cmdliner in
     let invert_names =
       List.filter_map names ~f:(fun n ->
-          if String.length n = 1 then None else Some ("no-" ^ n))
+          if String.length n = 1 then None else Some ("no-" ^ n) )
     in
     let doc =
       generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated
@@ -194,7 +194,7 @@ module Make (C : CONFIG) = struct
       asprintf "%s %a" doc
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,")
-           (fun fs (_, _, d) -> fprintf fs "%s" d))
+           (fun fs (_, _, d) -> fprintf fs "%s" d) )
         all
     in
     let docv =
@@ -202,7 +202,7 @@ module Make (C : CONFIG) = struct
       asprintf "@[<1>{%a}@]"
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,|")
-           (fun fs (v, _, _) -> fprintf fs "%s" v))
+           (fun fs (v, _, _) -> fprintf fs "%s" v) )
         all
     in
     any conv ~default ~docv ~names ~doc ~section ~allow_inline ?deprecated
@@ -276,7 +276,7 @@ module Make (C : CONFIG) = struct
                 update_from config name from ;
                 Some (Ok config)
             | Error (`Msg error) -> Some (Error (`Bad_value (name, error)))
-        else None)
+        else None )
     |> Option.value ~default:(Error (`Unknown (name, value)))
 
   let default {default; _} = default

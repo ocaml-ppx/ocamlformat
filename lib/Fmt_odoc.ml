@@ -118,7 +118,7 @@ let list_block_elem elems f =
         | Some _ -> fmt "@\n"
         | None -> fmt ""
       in
-      f elem $ break)
+      f elem $ break )
 
 let space_elt : inline_element with_location =
   Location_.(at (span []) (`Space ""))
@@ -178,7 +178,7 @@ and fmt_nestable_block_element c = function
   | `Modules mods ->
       hovbox 0
         (wrap "{!modules:@," "@,}"
-           (list mods "@ " (fun ref -> fmt_reference ref)))
+           (list mods "@ " (fun ref -> fmt_reference ref)) )
   | `List (k, _syntax, items) when list_should_use_heavy_syntax items ->
       fmt_list_heavy c k items
   | `List (k, _syntax, items) -> fmt_list_light c k items
@@ -268,4 +268,4 @@ let diff c x y =
 let is_tag_only =
   List.for_all ~f:(function
     | {Location_.value= `Tag _; _} -> true
-    | _ -> false)
+    | _ -> false )

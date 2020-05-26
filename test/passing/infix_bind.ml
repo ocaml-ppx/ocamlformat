@@ -110,7 +110,7 @@ let parens =
              ( fmt "function"
              $ fmt_extension_suffix c ext
              $ fmt_attributes c ~key:"@" pexp_attributes
-             $ close_box $ fmt "@ " $ fmt_cases c ctx cs ))
+             $ close_box $ fmt "@ " $ fmt_cases c ctx cs ) )
   | _ ->
       close_box $ fmt "@ " $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody
 
@@ -125,7 +125,7 @@ let parens =
                  ( fmt "function"
                  $ fmt_extension_suffix c ext
                  $ fmt_attributes c ~key:"@" pexp_attributes
-                 $ close_box $ fmt "@ " $ fmt_cases c ctx cs ))
+                 $ close_box $ fmt "@ " $ fmt_cases c ctx cs ) )
       | _ ->
           close_box $ fmt "@ "
           $ fmt_expression c ~eol:(fmt "@;<1000 0>") xbody )

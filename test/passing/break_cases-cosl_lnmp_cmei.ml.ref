@@ -27,8 +27,32 @@ let f =
         | O -> 5
         | P when h x ->
             (function
-            | A -> 6)
+            | A -> 6
+            )
         )
+
+let foo =
+  List.map ~f:(fun x g t h y u ->
+      match x with
+      | E -> 4
+      | Z
+       |P
+       |M ->
+          ( match y with
+          | O -> 5
+          | P when h x ->
+              (function
+              | A -> 6
+              )
+          )
+  ) ;
+  List.map ~f:(fun x g t h y u ->
+      fooooooooooooo foooooooo ;
+      ( match k with
+      | foooo -> foooooooo
+      ) ;
+      fooooooooooooooo fooooooooooooo
+  )
 
 ;;
 match x with
@@ -97,7 +121,8 @@ let foo =
       , Const (Cfun callee_pname)
       , (target_exp, _) :: (Sizeof {typ= cast_typ}, _) :: _
       , loc
-      , _ )
+      , _
+      )
     when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
       analyze_id_assignment (Var.of_id ret_id) target_exp cast_typ loc
 
@@ -230,7 +255,8 @@ let _ =
   match x with
   | { y=
         (* _____________________________________________________________________ *)
-        ( X _ | Y _ ) } ->
+        ( X _ | Y _ )
+    } ->
       ()
 
 let _ =
@@ -238,7 +264,8 @@ let _ =
   | { y=
         ( Z
         (* _____________________________________________________________________ *)
-        | X _ | Y _ ) } ->
+        | X _ | Y _ )
+    } ->
       ()
 
 let foooooooooooooo = function

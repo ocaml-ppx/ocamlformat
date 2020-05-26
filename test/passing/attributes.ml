@@ -216,7 +216,7 @@ let _ =
   f
     (( a_____________________________________
      @ b_____________________________________ )
-     [@a])
+     [@a] )
 
 (* Attribute should wrap as a block *)
 let _ =
@@ -288,7 +288,7 @@ let _ =
   f
     (( a________________________________________
      , b________________________________________ )
-    [@a])
+    [@a] )
 
 let _ = a [@a] ; b
 
@@ -317,7 +317,7 @@ let _ =
    expressions *)
 let _ =
   (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;
-   bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)
+   bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb )
   [@a]
 
 [@@@a (**b*)]

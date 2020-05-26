@@ -24,7 +24,7 @@ let update_multi map ~src ~dst ~f =
   Option.fold (Map.find map src) ~init:(Map.remove map src)
     ~f:(fun new_map src_data ->
       Map.update new_map dst ~f:(fun dst_data ->
-          Option.fold dst_data ~init:src_data ~f))
+          Option.fold dst_data ~init:src_data ~f ) )
 
 let change_multi map key data =
   Map.change map key ~f:(function _ -> Some data)

@@ -103,7 +103,8 @@ let foo =
       ( ColonColon
       , if exp == e2
         then Right
-        else (Left foooooo, foooo, fooo, foooooo, fooooooo, foooooooo) )
+        else (Left foooooo, foooo, fooo, foooooo, fooooooo, foooooooo)
+      )
 
 let foo =
   if cond1
@@ -112,7 +113,8 @@ let foo =
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo)
+        fooooooooooooo
+    )
   )
   else if cond2
   then (
@@ -120,14 +122,16 @@ let foo =
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo)
+        fooooooooooooo
+    )
   )
   else (
     arm3 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo)
+        fooooooooooooo
+    )
   )
 
 let foo =

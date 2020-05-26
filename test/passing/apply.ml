@@ -37,13 +37,13 @@ let whatever a_function_name long_list_one some_other_thing =
   List.map
     (fun long_list_one_elt ->
       do_something_with_a_function_and_some_things a_function_name
-        long_list_one_elt some_other_thing)
+        long_list_one_elt some_other_thing )
     long_list_one
 
 let whatever_labelled a_function_name long_list_one some_other_thing =
   ListLabels.map long_list_one ~f:(fun long_list_one_elt ->
       do_something_with_a_function_and_some_things a_function_name
-        long_list_one_elt some_other_thing)
+        long_list_one_elt some_other_thing )
 
 [@@@ocamlformat "indicate-multiline-delimiters=closing-on-separate-line"]
 
@@ -57,16 +57,32 @@ let whatever a_function_name long_list_one some_other_thing =
   List.map
     (fun long_list_one_elt ->
       do_something_with_a_function_and_some_things a_function_name
-        long_list_one_elt some_other_thing)
+        long_list_one_elt some_other_thing
+      )
     long_list_one
 
 let whatever_labelled a_function_name long_list_one some_other_thing =
   ListLabels.map long_list_one ~f:(fun long_list_one_elt ->
       do_something_with_a_function_and_some_things a_function_name
-        long_list_one_elt some_other_thing)
+        long_list_one_elt some_other_thing
+  )
 
 ;;
 (a - b) ()
 
 ;;
 ((a - b) [@foo]) ()
+
+let _ = M.(loooooooooooooooooooooong + loooooooooooooooooong)
+
+let _ =
+  M.(
+    loooooooooooooooooooooong + loooooooooooooooooong
+    + llllllllllloooooooooooooooooonnnnnnnnnnnnnggggggggggg
+  )
+
+let _ =
+  i'm_a_function loooooooooooong
+    (loooooooooooong looooooooooooooong loooooooooooooong
+       [loooooooooong; loooooooooooong; loooooooooooooooooooooong]
+    )

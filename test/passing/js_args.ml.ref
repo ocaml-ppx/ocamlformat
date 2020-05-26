@@ -41,7 +41,7 @@ let () =
        ( "foo"
        (* In this and similar cases, we want the subsequent lines to align
           with the first expression. *)
-       ^ "bar" )) ;
+       ^ "bar" ) ) ;
   raise (Bug ("foo" ^ "quux" ^ "bar")) ;
   raise (Bug ((foo + quux) ^ "bar")) ;
   raise (Bug ((foo + quux) ^ "bar"))
@@ -52,12 +52,12 @@ let () =
 let () =
   Some
     (Message_store.create s "herd-retransmitter" ~unlink:true
-       Message_store.Message_size.Byte)
+       Message_store.Message_size.Byte )
 
 (* We like the indentation of most arguments, but want to get back towards
    the left margin in a few special cases: *)
 let _ = foo (bar (fun x -> (* special: "fun _ ->" at EOL *)
-                           baz))
+                           baz ))
 
 (* assume no more arguments to "bar" *)
 
@@ -66,7 +66,7 @@ let _ = foo ~a_long_field_name:(check (fun bar -> baz))
 let _ = foo ~a_long_field_name:(check (fun bar -> baz))
 
 let _ = foo (bar (quux (fnord (fun x -> (* any depth *)
-                                        baz))))
+                                        baz )) ) )
 
 (* We also wanted to tweak the operator indentation, making operators like <=
    not special cases in contexts like this: *)
@@ -104,7 +104,7 @@ let _ =
 let _ =
   let entries =
     List.filter (Lazy.force transferstati) ~f:(fun ts ->
-        Pcre.pmatch ~pat ts.RQ.description)
+        Pcre.pmatch ~pat ts.RQ.description )
   in
   x
 
@@ -116,11 +116,11 @@ let _ =
          (f
             (g (fun x ->
                  let name, path = String.lsplit2_exn ~on:'|' x in
-                 (String.strip name, String.strip path))))
+                 (String.strip name, String.strip path) ) ) )
 
 (* open paren ending line like begin *)
 let _ =
   if a (p ^/ "s") [e] = Ok () then
     `S
       (let label count = sprintf "%d s" c ^ if c = 1 then ":" else "s" in
-       x)
+       x )

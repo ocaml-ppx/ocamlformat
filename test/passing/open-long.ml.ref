@@ -300,4 +300,4 @@ open [%ext] [@@attr]
 let g =
   M.f
     ((let open M in
-     x) [@attr])
+     x) [@attr] )

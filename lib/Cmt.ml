@@ -39,7 +39,7 @@ let split_asterisk_prefixed {txt; loc= {Location.loc_start; _}} =
       (String.init len ~f:(function
         | 0 -> '\n'
         | n when n < len - 1 -> ' '
-        | _ -> '*'))
+        | _ -> '*' ) )
   in
   let rec split_asterisk_prefixed_ pos =
     match String.Search_pattern.index pat ~pos ~in_:txt with
@@ -72,7 +72,7 @@ let unindent_lines ~opn_pos first_line tl_lines =
   let min_indent =
     List.fold_left ~init:fl_indent
       ~f:(fun acc s ->
-        Option.value_map ~default:acc ~f:(min acc) (indent_of_line s))
+        Option.value_map ~default:acc ~f:(min acc) (indent_of_line s) )
       tl_lines
   in
   (* Completely trim the first line *)
@@ -103,7 +103,7 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
             match (line, next) with
             | "", None -> fmt ")"
             | _, None -> str line $ fmt "*)"
-            | _, Some _ -> str line $ fmt "@,*") )
+            | _, Some _ -> str line $ fmt "@,*" ) )
   in
   let fmt_unwrapped_cmt {txt= s; loc} =
     let begins_line = Source.begins_line src loc ~ignore_spaces:false in
@@ -133,7 +133,7 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
           let starts_with_sp = is_sp first_line.[0] in
           wrap "(*" "*)"
             (fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
-               first_line tl)
+               first_line tl )
     | _ -> wrap "(*" "*)" (str s)
   in
   let fmt_non_code ?(wrap_comments = wrap_comments) cmt =
@@ -162,7 +162,7 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
         hvbox 2
           (wrap "(*$" cls
              ( fmt "@;" $ formatted
-             $ fmt_if (String.length str > 2) "@;<1 -2>" ))
+             $ fmt_if (String.length str > 2) "@;<1 -2>" ) )
     | Error () -> fmt_non_code ~wrap_comments:false cmt
   in
   match cmt.txt with

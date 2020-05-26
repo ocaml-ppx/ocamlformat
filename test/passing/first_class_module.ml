@@ -53,12 +53,12 @@ let f (module M : S with type a = int and type b = int)
        and type b = int
        and type c = int
        and type d = int
-       and type e = int)
+       and type e = int )
     (module N : SSSS
       with type a = int
        and type b = int
        and type c = int
-       and type d = int)
+       and type d = int )
     (module O : S with type a = int and type b = int and type c = int) =
   M.va + N.vb
 
@@ -97,3 +97,12 @@ let _ =
 module M = (val x : S (* a *))
 
 module M = (val x (* b *))
+
+[@@@ocamlformat "break-struct=natural"]
+
+let _ =
+  ( module struct
+    let x = 0
+
+    let y = 1
+  end )

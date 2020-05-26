@@ -61,12 +61,12 @@ end = struct
         try t fs
         with exn ->
           Format.pp_print_flush fs () ;
-          on_error exn)
+          on_error exn )
 
   let lazy_ f =
     Staged.stage (fun fs ->
         let k = Staged.unstage (f ()) in
-        k fs)
+        k fs )
 end
 
 include T
@@ -107,7 +107,7 @@ let char c = with_pp (fun fs -> Format.pp_print_char fs c)
 
 let str s =
   with_pp (fun fs ->
-      if not (String.is_empty s) then Format.pp_print_string fs s)
+      if not (String.is_empty s) then Format.pp_print_string fs s )
 
 let sp = function
   | Blank -> char ' '
@@ -137,7 +137,7 @@ let list_pn x1N pp =
 
 let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->
-      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x)
+      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x )
 
 let rec list_k l pp_sep pp =
   match l with
@@ -172,7 +172,7 @@ type behavior = Fit | Break
 
 let fits_or_breaks ~level fits nspaces offset breaks =
   with_pp (fun fs ->
-      Format.pp_print_fits_or_breaks fs ~level fits nspaces offset breaks)
+      Format.pp_print_fits_or_breaks fs ~level fits nspaces offset breaks )
 
 let fits_breaks ?force ?(hint = (0, Int.min_value)) ?(level = 0) fits breaks
     =
@@ -205,11 +205,11 @@ let wrap_if_fits_or cnd pre suf k =
 let wrap_fits_breaks_if ?(space = true) c cnd pre suf k =
   match (c.Conf.indicate_multiline_delimiters, space) with
   | `No, false -> wrap_if_k cnd (str pre) (str suf) k
-  | `Space, _ | _, true ->
+  | `Space, _ | `No, true ->
       fits_breaks_if cnd pre (pre ^ " ")
       $ k
       $ fits_breaks_if cnd suf ~hint:(1, 0) suf
-  | `Closing_on_separate_line, false ->
+  | `Closing_on_separate_line, _ ->
       fits_breaks_if cnd pre (pre ^ " ")
       $ k
       $ fits_breaks_if cnd suf ~hint:(1000, 0) suf
@@ -265,25 +265,25 @@ let open_box ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
       debug_box_open ?name "b" n fs ;
-      Format.pp_open_box fs n)
+      Format.pp_open_box fs n )
 
 and open_vbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
       debug_box_open ?name "v" n fs ;
-      Format.pp_open_vbox fs n)
+      Format.pp_open_vbox fs n )
 
 and open_hvbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
       debug_box_open ?name "hv" n fs ;
-      Format.pp_open_hvbox fs n)
+      Format.pp_open_hvbox fs n )
 
 and open_hovbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
       debug_box_open ?name "hov" n fs ;
-      Format.pp_open_hovbox fs n)
+      Format.pp_open_hovbox fs n )
 
 and close_box =
   with_pp (fun fs -> debug_box_close fs ; Format.pp_close_box fs ())
@@ -319,7 +319,7 @@ let fill_text ?epi text =
     let words =
       List.filter ~f:(Fn.non String.is_empty)
         (String.split_on_chars line
-           ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '])
+           ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
     in
     list words "@ " (fun s -> print_as (utf8_length s) s)
   in
@@ -339,7 +339,7 @@ let fill_text ?epi text =
                   | Some str when String.for_all str ~f:Char.is_whitespace ->
                       close_box $ fmt "\n@," $ open_hovbox 0
                   | Some _ when not (String.is_empty curr) -> fmt "@ "
-                  | _ -> noop)))
+                  | _ -> noop ) ) )
       $ fmt_if
           (String.length text > 1 && String.ends_with_whitespace text)
           " "
