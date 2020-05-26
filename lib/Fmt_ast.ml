@@ -2581,13 +2581,15 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
   let fmt_field (cf, c) =
     maybe_disabled c cf.pcf_loc [] @@ fun c -> fmt_class_field c ctx cf
   in
+  let no_attr p = List.is_empty p.ppat_attributes in
   hvbox 2
     ( hvbox 0
         ( str "object"
         $ fmt_extension_suffix c ext
         $ opt self_ (fun self_ ->
-              fmt "@;" $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_)) )
-        )
+              fmt "@;"
+              $ wrap_if (no_attr self_) "(" ")"
+                  (fmt_pattern c (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
     $ ( match fields with
       | ({pcf_desc= Pcf_attribute a; _}, _) :: _
@@ -2615,6 +2617,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | {ptyp_desc= Ptyp_any; ptyp_attributes= []; _} -> None
     | s -> Some s
   in
+  let no_attr typ = List.is_empty typ.ptyp_attributes in
   let fmt_field (cf, c) =
     maybe_disabled c cf.pctf_loc [] @@ fun c -> fmt_class_type_field c ctx cf
   in
@@ -2626,8 +2629,8 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                $ fmt_extension_suffix c ext
                $ opt self_ (fun self_ ->
                      fmt "@;"
-                     $ wrap "(" ")" (fmt_core_type c (sub_typ ~ctx self_)) )
-               )
+                     $ wrap_if (no_attr self_) "(" ")"
+                         (fmt_core_type c (sub_typ ~ctx self_)) ) )
            $ cmts_after_self
            $ ( match fields with
              | ({pctf_desc= Pctf_attribute a; _}, _) :: _
