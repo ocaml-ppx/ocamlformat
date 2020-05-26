@@ -27,6 +27,51 @@ module Test_location = struct
   let tests = test_compare_width_decreasing
 end
 
+module Test_conf = struct
+  let test_check_version =
+    let test name ~expected ~exe res =
+      let test_name = "compare_version: " ^ name in
+      ( test_name
+      , `Quick
+      , fun () ->
+          let got = Conf.check_version ~expected ~exe in
+          Alcotest.check Alcotest.(result unit string) test_name res got )
+    in
+    [ test "empty 'expected'" ~expected:"" ~exe:""
+        (Error "malformed version number \"\".")
+    ; test "invalid 'expected'" ~expected:"0.33..foo" ~exe:""
+        (Error "malformed version number \"0.33..foo\".")
+    ; test "invalid 'exe'" ~expected:"0.14.2" ~exe:"0.33..foo"
+        (Error
+           "expected ocamlformat version to be \"0.14.2\" but got \
+            \"0.33..foo\".")
+    ; test "unknown 'exe'" ~expected:"0.14.2" ~exe:"unknown"
+        (Error
+           "expected ocamlformat version to be \"0.14.2\" but got \
+            \"unknown\".")
+    ; test "equal" ~expected:"0.14.1" ~exe:"0.14.1" (Ok ())
+    ; test "accepted" ~expected:"0.14.1" ~exe:"0.14.1-15-g273f6f6-dirty"
+        (Ok ())
+    ; test "too old" ~expected:"0.14.1" ~exe:"0.14.0"
+        (Error
+           "expected ocamlformat version to be at least \"0.14.1\" but got \
+            \"0.14.0\". Please upgrade.")
+    ; test "too old 2" ~expected:"0.14.1" ~exe:"0.14.0-15-g273f6f6-dirty"
+        (Error
+           "expected ocamlformat version to be at least \"0.14.1\" but got \
+            \"0.14.0-15-g273f6f6-dirty\". Please upgrade.")
+    ; test "too recent" ~expected:"0.14.0" ~exe:"0.14.1"
+        (Error
+           "expected ocamlformat version to be at most \"0.14.0\" but got \
+            \"0.14.1\". Please downgrade.")
+    ; test "too recent 2" ~expected:"0.14.0" ~exe:"0.14.1-15-g273f6f6-dirty"
+        (Error
+           "expected ocamlformat version to be at most \"0.14.0\" but got \
+            \"0.14.1-15-g273f6f6-dirty\". Please downgrade.") ]
+
+  let tests = test_check_version
+end
+
 module Test_noit = struct
   module Itv = struct
     module T = struct
@@ -112,6 +157,7 @@ end
 
 let tests =
   [ ("Location", Test_location.tests)
+  ; ("Conf", Test_conf.tests)
   ; ("non overlapping interval tree", Test_noit.tests)
   ; ("Ast", Test_ast.tests) ]
 

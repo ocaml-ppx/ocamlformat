@@ -35,6 +35,7 @@ depends: [
   "ocp-indent" {with-test}
   "odoc" {>= "1.4.2"}
   "re"
+  "semver2"
   "stdio" {< "v0.14"}
   "uuseg" {>= "10.0.0"}
   "uutf" {>= "1.0.1"}

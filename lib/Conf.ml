@@ -1864,20 +1864,56 @@ let string_of_user_error = function
   | `Unknown (name, _) -> Format.sprintf "Unknown option %S" name
   | `Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
 
+(** strips [exe] version of the attributes that are not used in [expected]. *)
+let strip_version ~expected ~exe =
+  let open Semver in
+  let Semver.{major; minor; patch; prerelease; build} = exe in
+  let prerelease, build =
+    match expected with
+    | {prerelease= []; build= []; _} -> ([], [])
+    | {prerelease= []; _} -> ([], build)
+    | {build= []; _} -> (prerelease, [])
+    | _ -> (prerelease, build)
+  in
+  Option.value_exn (from_parts major minor patch prerelease build)
+
+let check_version ~expected ~exe =
+  match Semver.of_string expected with
+  | Some expected_v -> (
+    match Semver.of_string exe with
+    | Some exe_v -> (
+        let exe_v = strip_version ~expected:expected_v ~exe:exe_v in
+        match Semver.compare exe_v expected_v with
+        | 0 -> Ok ()
+        | x when x < 0 ->
+            Error
+              (Format.sprintf
+                 "expected ocamlformat version to be at least %S but got \
+                  %S. Please upgrade."
+                 expected exe)
+        | _ ->
+            Error
+              (Format.sprintf
+                 "expected ocamlformat version to be at most %S but got %S. \
+                  Please downgrade."
+                 expected exe) )
+    | None ->
+        Error
+          (Format.sprintf "expected ocamlformat version to be %S but got %S."
+             expected exe) )
+  | None -> Error (Format.sprintf "malformed version number %S." expected)
+
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
     let name = String.strip name in
     let value = String.strip value in
     match (name, from) with
-    | "version", `File _ ->
-        if String.equal Version.version value || !no_version_check then
-          Ok config
+    | "version", `File _ -> (
+        if !no_version_check then Ok config
         else
-          Error
-            (`Bad_value
-              ( name
-              , Format.sprintf "expecting %S but got %S" Version.version
-                  value ))
+          match check_version ~expected:value ~exe:Version.version with
+          | Ok () -> Ok config
+          | Error msg -> Error (`Bad_value ("version", msg)) )
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
