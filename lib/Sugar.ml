@@ -119,7 +119,7 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
   fun_ ~will_keep_first_ast_node xexp
 
 let infix cmts prec xexp =
-  let assoc = Option.value_map prec ~default:Non ~f:assoc_of_prec in
+  let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
   let rec infix_ ?(relocate = true) xop ((lbl, {ast= exp; _}) as xexp) =
     assert (Poly.(lbl = Nolabel)) ;
     let ctx = Exp exp in

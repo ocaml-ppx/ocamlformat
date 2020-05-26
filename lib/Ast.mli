@@ -124,13 +124,6 @@ val location : t -> Location.t
 val dump : Format.formatter -> t -> unit
 (** Debug: Dump the representation of an Ast term. *)
 
-(** Associativities of Ast terms *)
-type assoc = Left | Non | Right
-
-val assoc_of_prec : Prec.t -> assoc
-(** [assoc_of_prec prec] is the associativity of Ast terms with precedence
-    [prec]. (Associativity is uniform across precedence levels.) *)
-
 (** Term-in-context [{ctx; ast}] records that [ast] is (considered to be) an
     immediate sub-term of [ctx]. *)
 type 'a xt = private {ctx: t; ast: 'a}

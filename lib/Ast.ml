@@ -719,38 +719,6 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
       true (* always break between an item and a directive *)
   | _ -> assert false
 
-(** Associativities of Ast terms. *)
-type assoc = Left | Non | Right
-
-let string_of_assoc = function
-  | Left -> "Left"
-  | Non -> "Non"
-  | Right -> "Right"
-
-let _ = string_of_assoc
-
-let equal_assoc : assoc -> assoc -> bool = Poly.( = )
-
-(** Compute associativity from precedence, since associativity is uniform
-    across precedence levels. *)
-let assoc_of_prec (x : Prec.t) =
-  match x with
-  | Low | Semi | LessMinus -> Non
-  | ColonEqual -> Right
-  | As -> Non
-  | Comma -> Non
-  | MinusGreater | BarBar | AmperAmper -> Right
-  | InfixOp0 -> Left
-  | InfixOp1 -> Right
-  | ColonColon -> Right
-  | InfixOp2 | InfixOp3 -> Left
-  | InfixOp4 -> Right
-  | UMinus | Apply -> Non
-  | HashOp -> Left
-  | Dot -> Left
-  | High -> Non
-  | Atomic -> Non
-
 (** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be) an
     immediate sub-term of [ctx] as assumed by the operations in
     [Requires_sub_terms]. *)
@@ -1506,6 +1474,7 @@ end = struct
       of [ctx]. Meaningful for binary operators, otherwise returns [None]. *)
   let prec_ctx ctx =
     let open Prec in
+    let open Assoc in
     let is_tuple_lvl1_in_constructor ty = function
       | {ptype_kind= Ptype_variant cd1N; _} ->
           List.exists cd1N ~f:(function
@@ -1760,8 +1729,8 @@ end = struct
     | 0 ->
         (* which child and associativity match: no parens *)
         (* which child and assoc conflict: add parens *)
-        equal_assoc which_child Non
-        || not (equal_assoc (assoc_of_prec prec_ast) which_child)
+        Assoc.equal which_child Non
+        || not (Assoc.equal (Assoc.of_prec prec_ast) which_child)
     | cmp when cmp < 0 ->
         (* ast higher precedence than context: no parens *)
         false
