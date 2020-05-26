@@ -1721,22 +1721,27 @@ end = struct
       binary operators, otherwise returns [None] if [ctx] has no precedence
       or [Some None] if [ctx] does but [ast] does not. *)
   let ambig_prec ({ast; _} as xast) =
-    prec_ctx xast
-    >>| fun (prec_ctx, which_child) ->
-    prec_ast ast
-    >>| fun prec_ast ->
-    match Prec.compare prec_ctx prec_ast with
-    | 0 ->
-        (* which child and associativity match: no parens *)
-        (* which child and assoc conflict: add parens *)
-        Assoc.equal which_child Non
-        || not (Assoc.equal (Assoc.of_prec prec_ast) which_child)
-    | cmp when cmp < 0 ->
-        (* ast higher precedence than context: no parens *)
-        false
-    | _ (* > 0 *) ->
-        (* context higher prec than ast: add parens *)
-        true
+    match prec_ctx xast with
+    | Some (prec_ctx, which_child) -> (
+      match prec_ast ast with
+      | Some prec_ast ->
+          let ambiguous =
+            match Prec.compare prec_ctx prec_ast with
+            | 0 ->
+                (* which child and associativity match: no parens *)
+                (* which child and assoc conflict: add parens *)
+                Assoc.equal which_child Non
+                || not (Assoc.equal (Assoc.of_prec prec_ast) which_child)
+            | cmp when cmp < 0 ->
+                (* ast higher precedence than context: no parens *)
+                false
+            | _ (* > 0 *) ->
+                (* context higher prec than ast: add parens *)
+                true
+          in
+          if ambiguous then `Ambiguous else `Non_ambiguous
+      | None -> `No_prec_ast )
+    | None -> `No_prec_ctx
 
   (** [parenze_typ {ctx; ast}] holds when type [ast] should be parenthesized
       in context [ctx]. *)
@@ -1784,7 +1789,7 @@ end = struct
         true
     | _ -> (
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
-      | Some (Some true) -> true
+      | `Ambiguous -> true
       | _ -> false )
 
   (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
@@ -1792,7 +1797,7 @@ end = struct
   let parenze_cty ({ctx; ast= cty} as xcty) =
     assert_check_cty xcty ;
     match ambig_prec (sub_ast ~ctx (Cty cty)) with
-    | Some (Some true) -> true
+    | `Ambiguous -> true
     | _ -> false
 
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
@@ -2155,8 +2160,8 @@ end = struct
         | _ -> false
       in
       match ambig_prec (sub_ast ~ctx (Exp exp)) with
-      | None -> false (* ctx not apply *)
-      | Some (Some true) -> true (* exp is apply and ambig *)
+      | `No_prec_ctx -> false (* ctx not apply *)
+      | `Ambiguous -> true (* exp is apply and ambig *)
       | _ -> (
         match ctx with
         | Exp {pexp_desc; _} ->
@@ -2323,8 +2328,8 @@ end = struct
   and parenze_cl ({ctx; ast= cl} as xcl) =
     assert_check_cl xcl ;
     match ambig_prec (sub_ast ~ctx (Cl cl)) with
-    | None -> false
-    | Some (Some true) -> true
+    | `No_prec_ctx -> false
+    | `Ambiguous -> true
     | _ -> exposed_right_cl Non_apply cl
 
   let parenze_nested_exp {ctx; ast= exp} =
