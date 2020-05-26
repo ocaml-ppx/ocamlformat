@@ -4,6 +4,8 @@
 
   + Do not break inline elements such as `{i blah}` in docstrings (#1346) (Josh Berdine)
 
+  + Distinguish hash-getter from hash-comparison infix operators (#1376) (Guillaume Petiot)
+
 #### Bug fixes
 
   + Restore previous functionality for pre-post extension points (#1342) (Josh Berdine)
