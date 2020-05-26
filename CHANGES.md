@@ -26,6 +26,8 @@
 
   + Break after a multiline argument in an argument list (#1360) (Guillaume Petiot)
 
+  + Remove unnecessary parens around object (#1379) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
