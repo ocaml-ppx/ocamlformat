@@ -9152,7 +9152,9 @@ let test x = (( ~- ) [@foo])x
 
 let test contents = {contents= (contents [@foo])}
 
-class type t = object ((_[@foo])) end
+class type t = object (_[@foo]) end
+
+class t = object (_[@foo]) end
 
 let test f x = f ~x:(x [@foo])
 
