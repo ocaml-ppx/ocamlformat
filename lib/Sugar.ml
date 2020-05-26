@@ -125,7 +125,7 @@ let infix cmts prec xexp =
     let ctx = Exp exp in
     match (assoc, exp) with
     | Left, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal equal_prec prec (prec_ast (Exp exp)) ->
+      when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
         let op_args1 = infix_ None (l1, sub_exp ~ctx e1) in
         let src = pexp_loc in
         let after = e2.pexp_loc in
@@ -138,7 +138,7 @@ let infix cmts prec xexp =
               Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after ) ;
         op_args1 @ [(Some (sub_exp ~ctx e0), [(l2, sub_exp ~ctx e2)])]
     | Right, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal equal_prec prec (prec_ast (Exp exp)) ->
+      when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
         let op_args2 =
           infix_ (Some (sub_exp ~ctx e0)) (l2, sub_exp ~ctx e2)
         in

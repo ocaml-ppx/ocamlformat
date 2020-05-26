@@ -124,36 +124,10 @@ val location : t -> Location.t
 val dump : Format.formatter -> t -> unit
 (** Debug: Dump the representation of an Ast term. *)
 
-(** Precedence levels of Ast terms. *)
-type prec =
-  | Low
-  | Semi
-  | LessMinus
-  | ColonEqual
-  | As
-  | Comma
-  | MinusGreater
-  | BarBar
-  | AmperAmper
-  | InfixOp0
-  | InfixOp1
-  | ColonColon
-  | InfixOp2
-  | InfixOp3
-  | InfixOp4
-  | UMinus
-  | Apply
-  | HashOp
-  | Dot  (** [x.y] and [x#y] *)
-  | High
-  | Atomic
-
-val equal_prec : prec -> prec -> bool
-
 (** Associativities of Ast terms *)
 type assoc = Left | Non | Right
 
-val assoc_of_prec : prec -> assoc
+val assoc_of_prec : Prec.t -> assoc
 (** [assoc_of_prec prec] is the associativity of Ast terms with precedence
     [prec]. (Associativity is uniform across precedence levels.) *)
 
@@ -203,7 +177,7 @@ val exposed_left_exp : expression -> bool
 (** [exposed_left_exp exp] holds if the left-most subexpression of [exp] is a
     prefix operators. *)
 
-val prec_ast : t -> prec option
+val prec_ast : t -> Prec.t option
 (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
     operators, otherwise returns [None]. *)
 

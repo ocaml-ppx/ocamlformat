@@ -719,59 +719,6 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
       true (* always break between an item and a directive *)
   | _ -> assert false
 
-(** Precedence levels of Ast terms. *)
-type prec =
-  | Low
-  | Semi
-  | LessMinus
-  | ColonEqual
-  | As
-  | Comma
-  | MinusGreater
-  | BarBar
-  | AmperAmper
-  | InfixOp0
-  | InfixOp1
-  | ColonColon
-  | InfixOp2
-  | InfixOp3
-  | InfixOp4
-  | UMinus
-  | Apply
-  | HashOp
-  | Dot
-  | High
-  | Atomic
-
-let compare_prec : prec -> prec -> int = Poly.compare
-
-let equal_prec a b = compare_prec a b = 0
-
-let string_of_prec = function
-  | Low -> "Low"
-  | Semi -> "Semi"
-  | LessMinus -> "LessMinus"
-  | ColonEqual -> "ColonEqual"
-  | As -> "As"
-  | Comma -> "Comma"
-  | MinusGreater -> "MinusGreater"
-  | BarBar -> "BarBar"
-  | AmperAmper -> "AmperAmper"
-  | InfixOp0 -> "InfixOp0"
-  | InfixOp1 -> "InfixOp1"
-  | ColonColon -> "ColonColon"
-  | InfixOp2 -> "InfixOp2"
-  | InfixOp3 -> "InfixOp3"
-  | InfixOp4 -> "InfixOp4"
-  | UMinus -> "UMinus"
-  | Apply -> "Apply"
-  | Dot -> "Dot"
-  | HashOp -> "HashOp"
-  | High -> "High"
-  | Atomic -> "Atomic"
-
-let _ = string_of_prec
-
 (** Associativities of Ast terms. *)
 type assoc = Left | Non | Right
 
@@ -786,7 +733,8 @@ let equal_assoc : assoc -> assoc -> bool = Poly.( = )
 
 (** Compute associativity from precedence, since associativity is uniform
     across precedence levels. *)
-let assoc_of_prec = function
+let assoc_of_prec (x : Prec.t) =
+  match x with
   | Low | Semi | LessMinus -> Non
   | ColonEqual -> Right
   | As -> Non
@@ -866,7 +814,7 @@ and Requires_sub_terms : sig
 
   val exposed_left_exp : expression -> bool
 
-  val prec_ast : T.t -> prec option
+  val prec_ast : T.t -> Prec.t option
 
   val parenze_typ : core_type In_ctx.xt -> bool
 
@@ -1557,6 +1505,7 @@ end = struct
       [ctx]. Also returns whether [ast] is the left, right, or neither child
       of [ctx]. Meaningful for binary operators, otherwise returns [None]. *)
   let prec_ctx ctx =
+    let open Prec in
     let is_tuple_lvl1_in_constructor ty = function
       | {ptype_kind= Ptype_variant cd1N; _} ->
           List.exists cd1N ~f:(function
@@ -1701,7 +1650,9 @@ end = struct
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
       operators, otherwise returns [None]. *)
-  let prec_ast = function
+  let prec_ast =
+    let open Prec in
+    function
     | Pld _ -> None
     | Typ {ptyp_desc; _} -> (
       match ptyp_desc with
@@ -1805,7 +1756,7 @@ end = struct
     >>| fun (prec_ctx, which_child) ->
     prec_ast ast
     >>| fun prec_ast ->
-    match compare_prec prec_ctx prec_ast with
+    match Prec.compare prec_ctx prec_ast with
     | 0 ->
         (* which child and associativity match: no parens *)
         (* which child and assoc conflict: add parens *)
@@ -2224,7 +2175,7 @@ end = struct
             ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _ :: (_, e2) :: _)
           when e2 == exp && is_infix_id i
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
-                      compare_prec p Apply < 0 ) ->
+                      Prec.compare p Apply < 0 ) ->
             true
         | Pexp_apply
             ({pexp_desc= Pexp_ident lid; _}, (_ :: (_, e2) :: _ as args))
@@ -2428,7 +2379,7 @@ end = struct
            noise *)
         false
     | None, _ | _, None -> false
-    | Some p1, Some p2 -> not (equal_prec p1 p2)
+    | Some p1, Some p2 -> not (Prec.equal p1 p2)
 end
 
 include In_ctx
