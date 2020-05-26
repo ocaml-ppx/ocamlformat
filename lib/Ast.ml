@@ -77,6 +77,17 @@ let is_infix e =
   | Pexp_ident {txt= Lident i; _} -> is_infix_id i
   | _ -> false
 
+let is_hash_getter_id i =
+  let is_infix_char = function
+    | '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
+     |'^' | '#' | '.' ->
+        true
+    | _ -> false
+  in
+  match (i.[0], i.[String.length i - 1]) with
+  | '#', ('#' | '.') when String.for_all i ~f:is_infix_char -> true
+  | _ -> false
+
 module Indexing_op = struct
   type brackets = Round | Square | Curly
 

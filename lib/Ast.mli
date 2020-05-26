@@ -26,6 +26,8 @@ val is_infix_id : string -> bool
 val is_infix : expression -> bool
 (** Holds of infix symbol expressions. *)
 
+val is_hash_getter_id : string -> bool
+
 module Indexing_op : sig
   type brackets = Round | Square | Curly
 
