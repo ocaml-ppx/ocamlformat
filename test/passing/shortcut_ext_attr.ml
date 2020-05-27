@@ -3,7 +3,8 @@ let () =
   let%foo[@foo] x = 3 and[@foo] y = 4 in
   [%foo
     (let module M = M in
-    ()) [@foo]] ;
+    ())
+    [@foo]] ;
   [%foo M.(()) [@foo]] ;
   [%foo fun [@foo] x -> ()] ;
   [%foo function[@foo] x -> ()] ;
@@ -12,11 +13,13 @@ let () =
   [%foo
     while () do
       ()
-    done [@foo]] ;
+    done
+    [@foo]] ;
   [%foo
     for x = () to () do
       ()
-    done [@foo]] ;
+    done
+    [@foo]] ;
   () ;%foo
   () ;
   [%foo assert true [@foo]] ;

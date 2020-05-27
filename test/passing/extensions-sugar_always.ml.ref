@@ -83,7 +83,8 @@ let _ =
 let _ =
   [%expr
     let x = e in
-    f y] [@x]
+    f y]
+  [@x]
 
 let _ =
   f

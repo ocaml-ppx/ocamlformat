@@ -1516,7 +1516,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
-  let fmt_atrs = fmt_attributes c ~pre:(str " ") ~key:"@" pexp_attributes in
+  let fmt_atrs = fmt_attributes c ~pre:(fmt "@ ") ~key:"@" pexp_attributes in
   let has_attr = not (List.is_empty pexp_attributes) in
   let parens = Option.value parens ~default:(parenze_exp xexp) in
   let ctx = Exp exp in

@@ -80,7 +80,8 @@ let () =
   and[@foo] y = 4 in
   [%foo
     (let module M = M in
-    ()) [@foo]];
+    ())
+    [@foo]];
   [%foo
     (let open M in
     ()) [@foo]];
@@ -95,11 +96,13 @@ let () =
   [%foo
     while () do
       ()
-    done [@foo]];
+    done
+    [@foo]];
   [%foo
     for x = () to () do
       ()
-    done [@foo]];
+    done
+    [@foo]];
   [%foo assert true [@foo]];
   [%foo lazy x [@foo]];
   [%foo object end [@foo]];
@@ -9662,7 +9665,8 @@ fun contents -> { contents = (contents [@foo]) }
 ;;
 ();
 (();
- ()) [@foo]
+ ())
+[@foo]
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 

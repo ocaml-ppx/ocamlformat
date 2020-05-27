@@ -98,7 +98,8 @@ let () =
   let%foo[@foo] x = 3 and[@foo] y = 4 in
   [%foo
     (let module M = M in
-    ()) [@foo]] ;
+    ())
+    [@foo]] ;
   [%foo
     (let open M in
     ()) [@foo]] ;
@@ -109,11 +110,13 @@ let () =
   [%foo
     while () do
       ()
-    done [@foo]] ;
+    done
+    [@foo]] ;
   [%foo
     for x = () to () do
       ()
-    done [@foo]] ;
+    done
+    [@foo]] ;
   [%foo assert true [@foo]] ;
   [%foo lazy x [@foo]] ;
   [%foo object end [@foo]] ;

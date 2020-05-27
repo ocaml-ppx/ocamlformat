@@ -160,7 +160,8 @@ let length =
      26;
      (* foo *) 27 (* foo *);
      27;
-     27 |] [@foo]
+     27 |]
+  [@foo]
 
 (* this is a list *)
 let length =
@@ -171,7 +172,8 @@ let length =
      17 (* foo *);
      17;
      2777777777777777777777777777777777;
-     27 ] [@foo])
+     27 ]
+  [@foo])
 
 ;;
 Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
@@ -276,7 +278,8 @@ let length =
      27;
      27;
      27;
-     28 |] [@foo]
+     28 |]
+  [@foo]
 
 (* this is a list *)
 let length =
@@ -392,7 +395,8 @@ let length =
      27;
      27;
      27;
-     28 ] [@foo])
+     28 ]
+  [@foo])
 
 class
   [ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,
