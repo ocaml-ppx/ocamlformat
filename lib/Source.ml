@@ -220,6 +220,12 @@ let is_long_pmty_functor source Parsetree.{pmty_desc; pmty_loc= from; _} =
       contains_token_between source ~from ~upto Parser.FUNCTOR
   | _ -> false
 
+let is_anon_fun t Parsetree.{pexp_desc; pexp_loc; _} =
+  match pexp_desc with
+  | Pexp_fun (_, _, pat, _) ->
+      contains_token_between t ~from:pexp_loc ~upto:pat.ppat_loc Parser.FUN
+  | _ -> false
+
 let lexbuf_from_loc t (l : Location.t) =
   let s = string_at t l.loc_start l.loc_end in
   Lexing.from_string s

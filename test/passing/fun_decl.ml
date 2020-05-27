@@ -1,3 +1,5 @@
+let make_compare op = fun lhs rhs foooooooooo -> foooo
+
 [@@@ocamlformat "wrap-fun-args=false"]
 
 let to_loc_trace

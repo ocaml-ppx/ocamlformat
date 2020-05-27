@@ -42,12 +42,14 @@ type arg_kind =
 
 val fun_ :
      Cmts.t
+  -> Source.t
   -> ?will_keep_first_ast_node:bool
+  -> fun_kwd:bool
   -> expression Ast.xt
   -> arg_kind list * expression Ast.xt
-(** [fun_ cmts will_keep_first_ast_node exp] returns the list of arguments
-    and the body of the function [exp]. [will_keep_first_ast_node] is set by
-    default, otherwise the [exp] is returned without modification. *)
+(** [fun_ cmts src will_keep_first_ast_node exp] returns the list of
+    arguments and the body of the function [exp]. [will_keep_first_ast_node]
+    is set by default, otherwise the [exp] is returned without modification. *)
 
 val cl_fun :
      ?will_keep_first_ast_node:bool

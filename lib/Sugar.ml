@@ -63,13 +63,15 @@ type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
   | Newtypes of string loc list
 
-let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
+let fun_ cmts src ?(will_keep_first_ast_node = true) ~fun_kwd xexp =
   let rec fun_ ?(will_keep_first_ast_node = false) ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
     if will_keep_first_ast_node || List.is_empty pexp_attributes then
       match pexp_desc with
-      | Pexp_fun (label, default, pattern, body) ->
+      | Pexp_fun (label, default, pattern, body)
+        when fun_kwd || ((not fun_kwd) && not (Source.is_anon_fun src exp))
+        ->
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pexp_loc ~before:pattern.ppat_loc
               ~after:body.pexp_loc ;

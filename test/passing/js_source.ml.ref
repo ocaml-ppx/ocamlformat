@@ -7408,7 +7408,7 @@ module PR_4557 = struct
       type elt = X.t
       type t = XSet.t XMap.t
 
-      let compare x y = 0
+      let compare = fun x y -> 0
     end
 
     and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
@@ -7438,7 +7438,7 @@ module F (X : Set.OrderedType) = struct
     type elt = X.t
     type t = XSet.t XMap.t
 
-    let compare x y = 0
+    let compare = fun x y -> 0
   end
 
   and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
@@ -9533,7 +9533,7 @@ let g = function
   | { l1 = x; l2 = y; _ } -> ()
 ;;
 
-let h ?l:(p = 1) ?y:u ?(x = 3) = 2
+let h = fun ?l:(p = 1) ?y:u ?(x = 3) -> 2
 
 let _ = function
   | a, s, ba1, ba2, ba3, bg ->

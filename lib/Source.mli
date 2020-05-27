@@ -51,6 +51,8 @@ val is_long_pmty_functor : t -> Parsetree.module_type -> bool
     [Pmty_functor] type that is expressed in long ('functor (M) ->') form in
     source. *)
 
+val is_anon_fun : t -> Parsetree.expression -> bool
+
 val begins_line : ?ignore_spaces:bool -> t -> Location.t -> bool
 
 val ends_line : t -> Location.t -> bool
