@@ -4,6 +4,8 @@
 
   + Do not break inline elements such as `{i blah}` in docstrings (#1346) (Josh Berdine)
 
+  + Preserve `fun` keyword (#1380) (Guillaume Petiot)
+
 #### Bug fixes
 
   + Restore previous functionality for pre-post extension points (#1342) (Josh Berdine)
