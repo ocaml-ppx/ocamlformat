@@ -938,7 +938,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   protect c (Pat pat)
   @@
   let ctx = Pat pat in
-  let {ppat_desc; ppat_attributes; ppat_loc; ppat_loc_stack} = pat in
+  let {ppat_desc; ppat_attributes; ppat_loc; _} = pat in
   update_config_maybe_disabled c ppat_loc ppat_attributes
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
@@ -969,7 +969,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
            ))
   | Ppat_constant const ->
-      fmt_constant c ~loc:(Location.smallest ppat_loc ppat_loc_stack) const
+      fmt_constant c ~loc:(pat_constant_location pat) const
   | Ppat_interval (l, u) ->
       let loc1, loc2 = Source.locs_of_interval c.source ppat_loc in
       fmt_constant ~loc:loc1 c l $ str " .. " $ fmt_constant ~loc:loc2 c u
@@ -1512,7 +1512,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
     ?ext ({ast= exp; ctx= ctx0} as xexp) =
   protect c (Exp exp)
   @@
-  let {pexp_desc; pexp_loc; pexp_attributes; pexp_loc_stack} = exp in
+  let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
@@ -1933,9 +1933,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       wrap_if
         (parens || not (List.is_empty pexp_attributes))
         "(" ")"
-        ( fmt_constant c
-            ~loc:(Location.smallest pexp_loc pexp_loc_stack)
-            ?epi const
+        ( fmt_constant c ~loc:(expr_constant_location exp) ?epi const
         $ fmt_atrs )
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc; _}

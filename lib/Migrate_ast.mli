@@ -39,6 +39,10 @@ module Asttypes : sig
   val is_override : override_flag -> bool
 
   val is_mutable : mutable_flag -> bool
+
+  val pat_constant_location : Parsetree.pattern -> Location.t
+
+  val expr_constant_location : Parsetree.expression -> Location.t
 end
 
 module Position : sig

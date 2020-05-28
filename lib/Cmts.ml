@@ -92,15 +92,13 @@ end = struct
       | Ppat_record (flds, Open) ->
           Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
             ~f:(fun loc -> locs := loc :: !locs)
-      | Ppat_constant _ ->
-          locs := Location.smallest p.ppat_loc p.ppat_loc_stack :: !locs
+      | Ppat_constant _ -> locs := pat_constant_location p :: !locs
       | _ -> () ) ;
       Ast_mapper.default_mapper.pat m p
     in
     let expr m e =
       ( match e.pexp_desc with
-      | Pexp_constant _ ->
-          locs := Location.smallest e.pexp_loc e.pexp_loc_stack :: !locs
+      | Pexp_constant _ -> locs := expr_constant_location e :: !locs
       | _ -> () ) ;
       Ast_mapper.default_mapper.expr m e
     in
