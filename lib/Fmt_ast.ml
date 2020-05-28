@@ -290,6 +290,8 @@ let escape_string mode str =
         Bytes.to_string buf
 
 let fmt_constant c ~loc ?epi const =
+  Cmts.fmt c loc
+  @@
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char

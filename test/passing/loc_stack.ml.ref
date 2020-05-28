@@ -1,6 +1,7 @@
-let _ = 2 (* a *)
-
-(* b *)
+let _ =
+  (* a *)
+  (* b *)
+  2
 
 let _ = (* before match *)
         (* after match *) match x with _ -> 1
