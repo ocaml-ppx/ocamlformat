@@ -969,7 +969,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
            $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
            ))
   | Ppat_constant const ->
-      fmt_constant c ~loc:(pat_constant_location pat) const
+      fmt_constant c ~loc:(Source.loc_of_pat_constant c.source pat) const
   | Ppat_interval (l, u) ->
       let loc1, loc2 = Source.locs_of_interval c.source ppat_loc in
       fmt_constant ~loc:loc1 c l $ str " .. " $ fmt_constant ~loc:loc2 c u
@@ -1930,11 +1930,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               $ fits_breaks_if paren_body ")" ~hint ")"
               $ fmt_atrs )))
   | Pexp_constant const ->
+      let loc = Source.loc_of_expr_constant c.source exp in
       wrap_if
         (parens || not (List.is_empty pexp_attributes))
         "(" ")"
-        ( fmt_constant c ~loc:(expr_constant_location exp) ?epi const
-        $ fmt_atrs )
+        (fmt_constant c ~loc ?epi const $ fmt_atrs)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc; _}
       , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []; _} ) ->

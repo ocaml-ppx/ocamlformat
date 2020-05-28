@@ -28,6 +28,18 @@ module Parsetree = struct
     Poly.equal
 end
 
+module Asttypes = struct
+  include Selected_version.Asttypes
+
+  let is_private = function Private -> true | Public -> false
+
+  let is_open = function Open -> true | Closed -> false
+
+  let is_override = function Override -> true | Fresh -> false
+
+  let is_mutable = function Mutable -> true | Immutable -> false
+end
+
 module Mapper = struct
   let structure = Selected_version.map_structure
 
@@ -242,22 +254,4 @@ module Location = struct
 
     let find_multi map loc = Map.find_multi map loc
   end
-end
-
-module Asttypes = struct
-  include Selected_version.Asttypes
-
-  let is_private = function Private -> true | Public -> false
-
-  let is_open = function Open -> true | Closed -> false
-
-  let is_override = function Override -> true | Fresh -> false
-
-  let is_mutable = function Mutable -> true | Immutable -> false
-
-  let pat_constant_location (p : Parsetree.pattern) =
-    Location.smallest p.ppat_loc p.ppat_loc_stack
-
-  let expr_constant_location (e : Parsetree.expression) =
-    Location.smallest e.pexp_loc e.pexp_loc_stack
 end

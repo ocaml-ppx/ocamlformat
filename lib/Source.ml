@@ -336,3 +336,25 @@ let locs_of_interval source loc =
       impossible
         "Ppat_interval is only produced by the sequence of 3 tokens: \
          CONSTANT-DOTDOT-CONSTANT "
+
+let loc_of_constant t loc (cst : Parsetree.constant) =
+  let loc_of_tok filter =
+    match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
+  in
+  match cst with
+  | Pconst_string _ -> loc_of_tok (function STRING _ -> true | _ -> false)
+  | Pconst_char _ -> loc_of_tok (function CHAR _ -> true | _ -> false)
+  | Pconst_integer _ -> loc_of_tok (function INT _ -> true | _ -> false)
+  | Pconst_float _ -> loc_of_tok (function FLOAT _ -> true | _ -> false)
+
+let loc_of_pat_constant t (p : Parsetree.pattern) =
+  match p.ppat_desc with
+  | Ppat_constant cst ->
+      loc_of_constant t (Location.smallest p.ppat_loc p.ppat_loc_stack) cst
+  | _ -> impossible "loc_of_pat_constant is only called on constants"
+
+let loc_of_expr_constant t (e : Parsetree.expression) =
+  match e.pexp_desc with
+  | Pexp_constant cst ->
+      loc_of_constant t (Location.smallest e.pexp_loc e.pexp_loc_stack) cst
+  | _ -> impossible "loc_of_expr_constant is only called on constants"

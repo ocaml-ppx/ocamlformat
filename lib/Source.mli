@@ -77,3 +77,7 @@ val loc_of_underscore :
 val locs_of_interval : t -> Location.t -> Location.t * Location.t
 (** Given the location of an interval pattern ['a'..'b'], return the
     locations of the constants that represent the bounds (['a'] and ['b']). *)
+
+val loc_of_pat_constant : t -> Parsetree.pattern -> Location.t
+
+val loc_of_expr_constant : t -> Parsetree.expression -> Location.t
