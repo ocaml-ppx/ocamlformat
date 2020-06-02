@@ -24,7 +24,7 @@ build: [
 depends: [
   "ocaml" {>= "4.06"}
   "alcotest" {with-test}
-  "base" {>= "v0.11.0"}
+  "base" {>= "v0.14.0"}
   "base-unix"
   "cmdliner"
   "dune" {>= "2.2.0"}
