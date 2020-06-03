@@ -22,7 +22,7 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml" {>= "4.06" & < "4.11"}
+  "ocaml" {>= "4.06" & < "4.12"}
   "alcotest" {with-test}
   "base" {>= "v0.12.0" & < "v0.14"}
   "base-unix"

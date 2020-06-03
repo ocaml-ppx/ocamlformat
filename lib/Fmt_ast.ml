@@ -296,9 +296,9 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
   | Pconst_char x -> wrap "'" "'" @@ str (char_escaped ~loc c x)
-  | Pconst_string (s, Some delim) ->
+  | Pconst_string (s, _, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
-  | Pconst_string (s, None) -> (
+  | Pconst_string (s, _, None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
         let is_substring substring = String.is_substring s ~substring in
@@ -549,7 +549,7 @@ let rec fmt_extension c ctx key (ext, pld) =
     , PStr
         [ { pstr_desc=
               Pstr_eval
-                ({pexp_desc= Pexp_constant (Pconst_string (s, _)); _}, [])
+                ({pexp_desc= Pexp_constant (Pconst_string (s, _, _)); _}, [])
           ; _ } ]
     , _ ) ->
       str s
@@ -587,7 +587,7 @@ and fmt_attributes c ?pre ?suf ~key attrs =
       , PStr
           [ { pstr_desc=
                 Pstr_eval
-                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
                     ; pexp_attributes= []
                     ; _ }
                   , [] )
