@@ -923,7 +923,12 @@ and fmt_pattern_attributes c xpat k =
            |Pat {ppat_desc= Ppat_variant _; _} ->
               true
           | _ -> false )
-        | _ -> true
+        | _ -> (
+          match xpat.ctx with
+          | Exp {pexp_desc= Pexp_object _; _}
+           |Cl {pcl_desc= Pcl_structure _; _} ->
+              false
+          | _ -> true )
       in
       wrap_if parens_attr "(" ")" (k $ fmt_attributes c ~key:"@" attrs)
 
@@ -2581,15 +2586,14 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
   let fmt_field (cf, c) =
     maybe_disabled c cf.pcf_loc [] @@ fun c -> fmt_class_field c ctx cf
   in
-  let no_attr p = List.is_empty p.ppat_attributes in
   hvbox 2
     ( hvbox 0
         ( str "object"
         $ fmt_extension_suffix c ext
         $ opt self_ (fun self_ ->
               fmt "@;"
-              $ wrap_if (no_attr self_) "(" ")"
-                  (fmt_pattern c (sub_pat ~ctx self_)) ) )
+              $ wrap "(" ")"
+                  (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
     $ ( match fields with
       | ({pcf_desc= Pcf_attribute a; _}, _) :: _
