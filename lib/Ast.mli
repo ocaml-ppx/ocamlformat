@@ -27,6 +27,9 @@ val is_infix : expression -> bool
 (** Holds of infix symbol expressions. *)
 
 val is_hash_getter_id : string -> bool
+(** [is_hash_getter_id id] returns whether [id] is considered a hash-getter
+    operator, of the form [#**#] or [#**.] where [**] can be 0 or more
+    operator chars. *)
 
 module Indexing_op : sig
   type brackets = Round | Square | Curly
