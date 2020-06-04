@@ -60,7 +60,7 @@ val cl_fun :
 
 val infix :
      Cmts.t
-  -> Ast.prec option
+  -> Prec.t option
   -> expression Ast.xt
   -> (expression Ast.xt option * (arg_label * expression Ast.xt) list) list
 (** [infix cmts prec exp] returns the infix operator and the list of operands
