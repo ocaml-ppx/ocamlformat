@@ -121,13 +121,13 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
   fun_ ~will_keep_first_ast_node xexp
 
 let infix cmts prec xexp =
-  let assoc = Option.value_map prec ~default:Non ~f:assoc_of_prec in
+  let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
   let rec infix_ ?(relocate = true) xop ((lbl, {ast= exp; _}) as xexp) =
     assert (Poly.(lbl = Nolabel)) ;
     let ctx = Exp exp in
     match (assoc, exp) with
     | Left, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal equal_prec prec (prec_ast (Exp exp)) ->
+      when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
         let op_args1 = infix_ None (l1, sub_exp ~ctx e1) in
         let src = pexp_loc in
         let after = e2.pexp_loc in
@@ -140,7 +140,7 @@ let infix cmts prec xexp =
               Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after ) ;
         op_args1 @ [(Some (sub_exp ~ctx e0), [(l2, sub_exp ~ctx e2)])]
     | Right, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
-      when Option.equal equal_prec prec (prec_ast (Exp exp)) ->
+      when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
         let op_args2 =
           infix_ (Some (sub_exp ~ctx e0)) (l2, sub_exp ~ctx e2)
         in

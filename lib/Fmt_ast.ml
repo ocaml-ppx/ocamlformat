@@ -1601,12 +1601,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           @@ hvbox 2 (str op $ spc $ fmt_expression c (sub_exp ~ctx e1))
         $ fmt_atrs )
   | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= Lident maybe_hash; loc}
+      ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc}
           ; pexp_attributes= []
           ; pexp_loc
           ; _ } as op )
       , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_ident _; _} as r))] )
-    when String.is_prefix ~prefix:"#" maybe_hash ->
+    when is_hash_getter_id id ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       wrap_if parens "(" ")"
         ( fmt_expression c (sub_exp ~ctx l)

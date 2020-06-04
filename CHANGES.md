@@ -4,6 +4,8 @@
 
   + Do not break inline elements such as `{i blah}` in docstrings (#1346) (Josh Berdine)
 
+  + Distinguish hash-getter from hash-comparison infix operators. Operators of the form `#**#` or `#**.` where `**` can be 0 or more operator chars are considered getter operators and are not surrounded by spaces, as opposed to regular infix operators (#1376) (Guillaume Petiot)
+
   + Preserve `fun` keyword (#1380) (Guillaume Petiot)
 
 #### Bug fixes
