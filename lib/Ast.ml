@@ -1732,12 +1732,8 @@ end = struct
                 (* which child and assoc conflict: add parens *)
                 Assoc.equal which_child Non
                 || not (Assoc.equal (Assoc.of_prec prec_ast) which_child)
-            | cmp when cmp < 0 ->
-                (* ast higher precedence than context: no parens *)
-                false
-            | _ (* > 0 *) ->
-                (* context higher prec than ast: add parens *)
-                true
+            (* add parens only when the context has a higher prec than ast *)
+            | cmp -> cmp >= 0
           in
           if ambiguous then `Ambiguous else `Non_ambiguous
       | None -> `No_prec_ast )
