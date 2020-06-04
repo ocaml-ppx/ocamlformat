@@ -61,16 +61,20 @@ let is_monadic_binding e =
   | Pexp_ident {txt= Lident i; _} -> is_monadic_binding_id i
   | _ -> false
 
-let is_infix_id i =
-  match (i.[0], i) with
-  | ( ( '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
-      | '^' | '#' )
-    , _ )
-   |( _
-    , ( "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
-      | "lsr" | "or" | "||" ) ) ->
+let is_infixopchar = function
+  | '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
+   |'^' | '#' ->
       true
-  | _ -> is_monadic_binding_id i
+  | _ -> false
+
+let is_infix_id i =
+  if is_infixopchar i.[0] then true
+  else
+    match i with
+    | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr" | "lsl"
+     |"lsr" | "or" | "||" ->
+        true
+    | _ -> is_monadic_binding_id i
 
 let is_infix e =
   match e.pexp_desc with
@@ -78,12 +82,7 @@ let is_infix e =
   | _ -> false
 
 let is_hash_getter_id i =
-  let is_infix_char = function
-    | '$' | '%' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '|' | '&' | '@'
-     |'^' | '#' | '.' ->
-        true
-    | _ -> false
-  in
+  let is_infix_char c = Char.equal c '.' || is_infixopchar c in
   match (i.[0], i.[String.length i - 1]) with
   | '#', ('#' | '.') when String.for_all i ~f:is_infix_char -> true
   | _ -> false
