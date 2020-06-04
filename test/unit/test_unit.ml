@@ -54,19 +54,19 @@ module Test_conf = struct
         (Ok ())
     ; test "too old" ~expected:"0.14.1" ~exe:"0.14.0"
         (Error
-           "expected ocamlformat version to be at least \"0.14.1\" but got \
+           "expected ocamlformat version to be \"0.14.1\" but got \
             \"0.14.0\". Please upgrade.")
     ; test "too old 2" ~expected:"0.14.1" ~exe:"0.14.0-15-g273f6f6-dirty"
         (Error
-           "expected ocamlformat version to be at least \"0.14.1\" but got \
+           "expected ocamlformat version to be \"0.14.1\" but got \
             \"0.14.0-15-g273f6f6-dirty\". Please upgrade.")
     ; test "too recent" ~expected:"0.14.0" ~exe:"0.14.1"
         (Error
-           "expected ocamlformat version to be at most \"0.14.0\" but got \
+           "expected ocamlformat version to be \"0.14.0\" but got \
             \"0.14.1\". Please downgrade.")
     ; test "too recent 2" ~expected:"0.14.0" ~exe:"0.14.1-15-g273f6f6-dirty"
         (Error
-           "expected ocamlformat version to be at most \"0.14.0\" but got \
+           "expected ocamlformat version to be \"0.14.0\" but got \
             \"0.14.1-15-g273f6f6-dirty\". Please downgrade.") ]
 
   let tests = test_check_version

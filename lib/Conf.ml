@@ -1880,27 +1880,18 @@ let strip_version ~expected ~exe =
 let check_version ~expected ~exe =
   match Semver.of_string expected with
   | Some expected_v -> (
-    match Semver.of_string exe with
-    | Some exe_v -> (
-        let exe_v = strip_version ~expected:expected_v ~exe:exe_v in
-        match Semver.compare exe_v expected_v with
-        | 0 -> Ok ()
-        | x when x < 0 ->
-            Error
-              (Format.sprintf
-                 "expected ocamlformat version to be at least %S but got \
-                  %S. Please upgrade."
-                 expected exe)
-        | _ ->
-            Error
-              (Format.sprintf
-                 "expected ocamlformat version to be at most %S but got %S. \
-                  Please downgrade."
-                 expected exe) )
-    | None ->
-        Error
-          (Format.sprintf "expected ocamlformat version to be %S but got %S."
-             expected exe) )
+      let err_msg =
+        Format.sprintf "expected ocamlformat version to be %S but got %S."
+          expected exe
+      in
+      match Semver.of_string exe with
+      | Some exe_v -> (
+          let exe_v = strip_version ~expected:expected_v ~exe:exe_v in
+          match Semver.compare exe_v expected_v with
+          | 0 -> Ok ()
+          | x when x < 0 -> Error (err_msg ^ " Please upgrade.")
+          | _ -> Error (err_msg ^ " Please downgrade.") )
+      | None -> Error err_msg )
   | None -> Error (Format.sprintf "malformed version number %S." expected)
 
 let parse_line config ~from s =
