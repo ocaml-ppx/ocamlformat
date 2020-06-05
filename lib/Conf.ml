@@ -1889,7 +1889,7 @@ let check_version ~expected ~exe =
           | x when x < 0 -> Error (err_msg ^ " Please upgrade.")
           | _ -> Error (err_msg ^ " Please downgrade.") )
       | None -> Error err_msg )
-  | None -> Error (Format.sprintf "malformed version number %S." expected)
+  | None -> Result.failf "malformed version number %S." expected
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
