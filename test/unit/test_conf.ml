@@ -18,7 +18,8 @@ let test_check_version =
           \"0.33..foo\".")
   ; test "unknown 'exe'" ~config:"0.14.2" ~exe:"unknown"
       (Error
-         "expected ocamlformat version to be \"0.14.2\" but got \"unknown\".")
+         "expected ocamlformat version to be \"0.14.2\" but got \
+          \"unknown\". Could not determine current ocamlformat version.")
   ; test "equal" ~config:"0.14.1" ~exe:"0.14.1" (Ok ())
   ; test "accepted" ~config:"0.14.1" ~exe:"0.14.1-15-g273f6f6-dirty" (Ok ())
   ; test "too old" ~config:"0.14.1" ~exe:"0.14.0"

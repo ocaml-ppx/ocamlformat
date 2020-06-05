@@ -1888,7 +1888,12 @@ let check_version ~config ~exe =
           | 0 -> Ok ()
           | x when x < 0 -> Error (err_msg ^ " Please upgrade.")
           | _ -> Error (err_msg ^ " Please downgrade.") )
-      | None -> Error err_msg )
+      | None -> (
+        match exe with
+        | "unknown" ->
+            Error
+              (err_msg ^ " Could not determine current ocamlformat version.")
+        | _ -> Error err_msg ) )
   | None -> Result.failf "malformed version number %S." config
 
 let parse_line config ~from s =
