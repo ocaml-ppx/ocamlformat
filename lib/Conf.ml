@@ -1868,13 +1868,10 @@ let string_of_user_error = function
 let strip_version ~expected ~exe =
   let open Semver in
   let Semver.{major; minor; patch; prerelease; build} = exe in
-  let prerelease, build =
-    match expected with
-    | {prerelease= []; build= []; _} -> ([], [])
-    | {prerelease= []; _} -> ([], build)
-    | {build= []; _} -> (prerelease, [])
-    | _ -> (prerelease, build)
+  let prerelease =
+    if List.is_empty expected.prerelease then [] else prerelease
   in
+  let build = if List.is_empty expected.build then [] else build in
   Option.value_exn (from_parts major minor patch prerelease build)
 
 let check_version ~expected ~exe =
