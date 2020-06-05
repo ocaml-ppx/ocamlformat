@@ -1864,32 +1864,32 @@ let string_of_user_error = function
   | `Unknown (name, _) -> Format.sprintf "Unknown option %S" name
   | `Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
 
-(** strips [exe] version of the attributes that are not used in [expected]. *)
-let strip_version ~expected ~exe =
+(** strips [exe] version of the attributes that are not used in [config]. *)
+let strip_version ~config ~exe =
   let open Semver in
   let Semver.{major; minor; patch; prerelease; build} = exe in
   let prerelease =
-    if List.is_empty expected.prerelease then [] else prerelease
+    if List.is_empty config.prerelease then [] else prerelease
   in
-  let build = if List.is_empty expected.build then [] else build in
+  let build = if List.is_empty config.build then [] else build in
   Option.value_exn (from_parts major minor patch prerelease build)
 
-let check_version ~expected ~exe =
-  match Semver.of_string expected with
-  | Some expected_v -> (
+let check_version ~config ~exe =
+  match Semver.of_string config with
+  | Some config_v -> (
       let err_msg =
         Format.sprintf "expected ocamlformat version to be %S but got %S."
-          expected exe
+          config exe
       in
       match Semver.of_string exe with
       | Some exe_v -> (
-          let exe_v = strip_version ~expected:expected_v ~exe:exe_v in
-          match Semver.compare exe_v expected_v with
+          let exe_v = strip_version ~config:config_v ~exe:exe_v in
+          match Semver.compare exe_v config_v with
           | 0 -> Ok ()
           | x when x < 0 -> Error (err_msg ^ " Please upgrade.")
           | _ -> Error (err_msg ^ " Please downgrade.") )
       | None -> Error err_msg )
-  | None -> Result.failf "malformed version number %S." expected
+  | None -> Result.failf "malformed version number %S." config
 
 let parse_line config ~from s =
   let update ~config ~from ~name ~value =
@@ -1899,7 +1899,7 @@ let parse_line config ~from s =
     | "version", `File _ -> (
         if !no_version_check then Ok config
         else
-          match check_version ~expected:value ~exe:Version.version with
+          match check_version ~config:value ~exe:Version.version with
           | Ok () -> Ok config
           | Error msg -> Error (`Bad_value ("version", msg)) )
     | name, `File x ->

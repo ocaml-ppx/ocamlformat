@@ -118,4 +118,4 @@ val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t
 
 val print_config : t -> unit
 
-val check_version : expected:string -> exe:string -> (unit, string) Result.t
+val check_version : config:string -> exe:string -> (unit, string) Result.t
