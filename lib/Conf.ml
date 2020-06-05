@@ -1864,15 +1864,25 @@ let string_of_user_error = function
   | `Unknown (name, _) -> Format.sprintf "Unknown option %S" name
   | `Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
 
-(** strips [exe] version of the attributes that are not used in [config]. *)
-let strip_version ~config ~exe =
-  let open Semver in
-  let Semver.{major; minor; patch; prerelease; build} = exe in
-  let prerelease =
-    if List.is_empty config.prerelease then [] else prerelease
+let compare_version ~(config : Semver.t) ~(exe : Semver.t) =
+  let compare_build = function
+    | [], _ -> `Valid
+    | _, [] -> `Invalid_commit
+    | x, y -> if Poly.equal x y then `Valid else `Invalid_commit
   in
-  let build = if List.is_empty config.build then [] else build in
-  Option.value_exn (from_parts major minor patch prerelease build)
+  if config.major < exe.major then `Too_recent
+  else if config.major > exe.major then `Too_old
+  else if config.minor < exe.minor then `Too_recent
+  else if config.minor > exe.minor then `Too_old
+  else if config.patch < exe.patch then `Too_recent
+  else if config.patch > exe.patch then `Too_old
+  else
+    match (config.prerelease, exe.prerelease) with
+    | [], _ -> compare_build (config.build, exe.build)
+    | _, [] -> `Invalid_commit
+    | x, y ->
+        if Poly.equal x y then compare_build (config.build, exe.build)
+        else `Invalid_commit
 
 let check_version ~config ~exe =
   match Semver.of_string config with
@@ -1883,11 +1893,11 @@ let check_version ~config ~exe =
       in
       match Semver.of_string exe with
       | Some exe_v -> (
-          let exe_v = strip_version ~config:config_v ~exe:exe_v in
-          match Semver.compare exe_v config_v with
-          | 0 -> Ok ()
-          | x when x < 0 -> Error (err_msg ^ " Please upgrade.")
-          | _ -> Error (err_msg ^ " Please downgrade.") )
+        match compare_version ~exe:exe_v ~config:config_v with
+        | `Valid -> Ok ()
+        | `Too_old -> Error (err_msg ^ " Please upgrade.")
+        | `Too_recent -> Error (err_msg ^ " Please downgrade.")
+        | `Invalid_commit -> Error err_msg )
       | None -> (
         match exe with
         | "unknown" ->

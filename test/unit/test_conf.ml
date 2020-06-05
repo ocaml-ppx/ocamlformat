@@ -37,6 +37,17 @@ let test_check_version =
   ; test "too recent 2" ~config:"0.14.0" ~exe:"0.14.1-15-g273f6f6-dirty"
       (Error
          "expected ocamlformat version to be \"0.14.0\" but got \
-          \"0.14.1-15-g273f6f6-dirty\". Please downgrade.") ]
+          \"0.14.1-15-g273f6f6-dirty\". Please downgrade.")
+  ; test "same commit" ~config:"0.14.0-15-g273f6f6" ~exe:"0.14.0-15-g273f6f6"
+      (Ok ())
+  ; test "different commit" ~config:"0.14.0-15-g273f6f6"
+      ~exe:"0.14.0-16-fooooooo"
+      (Error
+         "expected ocamlformat version to be \"0.14.0-15-g273f6f6\" but got \
+          \"0.14.0-16-fooooooo\".")
+  ; test "expected commit" ~config:"0.14.0-15-g273f6f6" ~exe:"0.14.0"
+      (Error
+         "expected ocamlformat version to be \"0.14.0-15-g273f6f6\" but got \
+          \"0.14.0\".") ]
 
 let tests = test_check_version
