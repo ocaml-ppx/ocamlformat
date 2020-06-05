@@ -1,7 +1,5 @@
 let _ = fun (x : int) : int -> some_large_computation
 
-let _ = fun (x : int) -> (some_large_computation : int)
-
 let _ = fun (x : int) : int -> (some_large_computation : int)
 
 let fooo = List.foooo ~f:(fun foooo foooo : bool -> foooooooooooooooooooooo)

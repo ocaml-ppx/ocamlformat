@@ -671,7 +671,7 @@ and type_constr_and_body c xbody =
             (fits_breaks " " ~hint:(1000, 0) "")
             (fmt "@;<0 -1>")
         $ cbox_if c.conf.ocp_indent_compat 0
-            (fmt_core_type c ~pro:":"
+            (fmt_core_type c ~pro:":" ~in_constraint:true
                ~pro_space:(not c.conf.ocp_indent_compat)
                ~box:(not c.conf.ocp_indent_compat)
                (sub_typ ~ctx typ)) )
@@ -680,23 +680,21 @@ and type_constr_and_body c xbody =
   match xbody.ast.pexp_desc with
   | Pexp_constraint
       ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
-      , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ) )
-    when Poly.(Source.typed_expression typ exp = `Type_first) ->
+      , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ) ) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
         ~after:exp.pexp_loc ;
       fmt_cstr_and_xbody typ exp
   | Pexp_constraint
       ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _}) ->
       (None, xbody)
-  | Pexp_constraint (exp, typ)
-    when Poly.(Source.typed_expression typ exp = `Type_first) ->
+  | Pexp_constraint (exp, typ) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
         ~after:exp.pexp_loc ;
       fmt_cstr_and_xbody typ exp
   | _ -> (None, xbody)
 
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
-    ?(pro_space = true) ({ast= typ; _} as xtyp) =
+    ?(pro_space = true) ?(in_constraint = false) ({ast= typ; _} as xtyp) =
   protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
@@ -742,23 +740,24 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
             Poly.(c.conf.break_separators = `Before)
             (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
                (fits_breaks "" "   ")) )
-      $ list xt1N
-          ( if Poly.(c.conf.break_separators = `Before) then
-            if parens then "@;<1 1>-> " else "@ -> "
-          else " ->@;<1 0>" )
-          (fun (locI, lI, xtI) ->
-            let arg_label lbl =
-              match lbl with
-              | Nolabel -> None
-              | Labelled l -> Some (str l $ fmt ":@,")
-              | Optional l -> Some (str "?" $ str l $ fmt ":@,")
-            in
-            let arg =
-              match arg_label lI with
-              | None -> fmt_core_type c xtI
-              | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
-            in
-            hvbox 0 (Cmts.fmt_before c locI $ arg) )
+      $ wrap_if in_constraint "(" ")"
+        @@ list xt1N
+             ( if Poly.(c.conf.break_separators = `Before) then
+               if parens then "@;<1 1>-> " else "@ -> "
+             else " ->@;<1 0>" )
+             (fun (locI, lI, xtI) ->
+               let arg_label lbl =
+                 match lbl with
+                 | Nolabel -> None
+                 | Labelled l -> Some (str l $ fmt ":@,")
+                 | Optional l -> Some (str "?" $ str l $ fmt ":@,")
+               in
+               let arg =
+                 match arg_label lI with
+                 | None -> fmt_core_type c xtI
+                 | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
+               in
+               hvbox 0 (Cmts.fmt_before c locI $ arg) )
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
