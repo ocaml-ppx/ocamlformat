@@ -43,6 +43,13 @@ OPTIONS (CODE FORMATTING STYLE)
        Shell-style regular expressions are supported. Lines starting with #
        are ignored and can be used as comments.
 
+       If the version constraint is set in the .ocamlformat file, then the
+       current project can only be formatted with a specific version of
+       ocamlformat. Using a different version of ocamlformat will display an
+       error message instead of reformatting the whole project in a different
+       way. This check allows the running version to be more specific than
+       the configurated version, but not the other way around.
+
        --align-cases
            Align match/try cases horizontally. The flag is unset by default.
 

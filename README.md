@@ -63,6 +63,8 @@ This ensures two things:
   If somebody else working on the project tries to use a different version,
   they will see an error message instead of reformatting the whole project in a
   different way.
+- This check allows the running version to be more specific than the
+  configurated version, but not the other way around.
 
 ### Can ocamlformat support my style?
 

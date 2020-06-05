@@ -172,7 +172,15 @@ let info =
          $(b,.ocamlformat-enable) file specifies a filename relative to the \
          directory containing the $(b,.ocamlformat-enable) file. \
          Shell-style regular expressions are supported. Lines starting with \
-         $(b,#) are ignored and can be used as comments." ]
+         $(b,#) are ignored and can be used as comments."
+    ; `P
+        "If the $(b,version) constraint is set in the $(b,.ocamlformat) file,\n\
+         then the current project can only be formatted with a specific \
+         version of ocamlformat. Using a different version of ocamlformat \
+         will display an error message instead of reformatting the whole \
+         project in a different way. This check allows the running version \
+         to be more specific than the configurated version, but not the \
+         other way around." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
