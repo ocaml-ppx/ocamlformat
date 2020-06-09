@@ -540,6 +540,21 @@ module Expression : Module_item with type t = expression = struct
     || not (is_simple (i2, c2))
 end
 
+module Value_binding : Module_item with type t = value_binding = struct
+  type t = value_binding
+
+  let is_simple (i, c) =
+    Poly.(c.Conf.module_item_spacing = `Compact)
+    && Location.is_single_line i.pvb_loc c.Conf.margin
+
+  let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
+    has_cmts_after cmts i1.pvb_loc
+    || has_cmts_before cmts i2.pvb_loc
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
 let rec is_trivial c exp =
   match exp.pexp_desc with
   | Pexp_constant (Pconst_string (_, None)) -> true
@@ -589,6 +604,7 @@ module T = struct
     | Cty of class_type
     | Pat of pattern
     | Exp of expression
+    | Vb of value_binding
     | Cl of class_expr
     | Mty of module_type
     | Mod of module_expr
@@ -604,6 +620,13 @@ module T = struct
     | Exp e ->
         Format.fprintf fs "Exp:@\n%a@\n@\n%a" Pprintast.expression e
           (Printast.expression 0) e
+    | Vb b ->
+        let str =
+          let open Ast_helper in
+          Str.value Nonrecursive [b]
+        in
+        Format.fprintf fs "Vb:@\n%a@\n@\n%a" Pprintast.structure [str]
+          Printast.implementation [str]
     | Cl cl ->
         let str =
           let open Ast_helper in
@@ -669,6 +692,7 @@ let attributes = function
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
+  | Vb x -> x.pvb_attributes
   | Cl x -> x.pcl_attributes
   | Mty x -> x.pmty_attributes
   | Mod x -> x.pmod_attributes
@@ -683,6 +707,7 @@ let location = function
   | Cty x -> x.pcty_loc
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
+  | Vb x -> x.pvb_loc
   | Cl x -> x.pcl_loc
   | Mty x -> x.pmty_loc
   | Mod x -> x.pmod_loc
@@ -715,6 +740,9 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
         (i1, c1) (i2, c2)
   | Exp i1, Exp i2 ->
       Expression.break_between s ~cmts ~has_cmts_before ~has_cmts_after
+        (i1, c1) (i2, c2)
+  | Vb i1, Vb i2 ->
+      Value_binding.break_between s ~cmts ~has_cmts_before ~has_cmts_after
         (i1, c1) (i2, c2)
   | Mty _, Mty _ ->
       break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
@@ -973,6 +1001,7 @@ end = struct
                     t == typ
                 | _ -> false ) )
       | _ -> assert false )
+    | Vb _ -> assert false
     | Cl {pcl_desc; _} ->
         assert (
           match pcl_desc with
@@ -1063,6 +1092,7 @@ end = struct
     in
     match (ctx : t) with
     | Exp _ -> assert false
+    | Vb _ -> assert false
     | Pld _ -> assert false
     | Str ctx -> (
       match ctx.pstr_desc with
@@ -1134,6 +1164,7 @@ end = struct
       | Pexp_object {pcstr_fields; _} ->
           assert (check_pcstr_fields pcstr_fields)
       | _ -> assert false )
+    | Vb _ -> assert false
     | Pld _ -> assert false
     | Str ctx -> (
       match ctx.pstr_desc with
@@ -1255,6 +1286,7 @@ end = struct
               | _ -> false ) )
       | Pexp_for (p, _, _, _, _) | Pexp_fun (_, _, p, _) -> assert (p == pat)
       )
+    | Vb ctx -> assert (ctx.pvb_pat == pat)
     | Cl ctx ->
         assert (
           match ctx.pcl_desc with
@@ -1402,6 +1434,7 @@ end = struct
         | Pexp_for (_, e1, e2, _, e3) ->
             assert (e1 == exp || e2 == exp || e3 == exp)
         | Pexp_override e1N -> assert (List.exists e1N ~f:snd_f) )
+    | Vb vb -> assert (vb.pvb_expr == exp)
     | Str str -> (
       match str.pstr_desc with
       | Pstr_eval (e0, _) -> assert (e0 == exp)
@@ -1617,6 +1650,8 @@ end = struct
       ; ast=
           Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
       }
+     |{ctx= Vb _; ast= _}
+     |{ctx= _; ast= Vb _}
      |{ ctx= Cl _
       ; ast= Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _ }
      |{ ctx=
@@ -1719,6 +1754,7 @@ end = struct
       | Pexp_field _ -> Some Dot
       | Pexp_send _ -> Some Dot
       | _ -> None )
+    | Vb _ -> None
     | Cl c -> (
       match c.pcl_desc with
       | Pcl_apply _ -> Some Apply

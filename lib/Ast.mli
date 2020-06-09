@@ -103,6 +103,7 @@ type t =
   | Cty of class_type
   | Pat of pattern
   | Exp of expression
+  | Vb of value_binding
   | Cl of class_expr
   | Mty of module_type
   | Mod of module_expr
