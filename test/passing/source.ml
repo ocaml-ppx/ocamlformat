@@ -7302,6 +7302,7 @@ let test x y = ((+)[@foo]) x y;;
 let test x = ((~-)[@foo]) x;;
 let test contents = { contents = contents[@foo] };;
 class type t = object(_[@foo]) end;;
+class t = object(_[@foo]) end;;
 let test f x = f ~x:(x[@foo]);;
 let f = function ((`A|`B)[@bar]) | `C -> ();;
 let f = function _::(_::_ [@foo]) -> () | _ -> ();;

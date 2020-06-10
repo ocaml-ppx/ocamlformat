@@ -923,7 +923,12 @@ and fmt_pattern_attributes c xpat k =
            |Pat {ppat_desc= Ppat_variant _; _} ->
               true
           | _ -> false )
-        | _ -> true
+        | _ -> (
+          match xpat.ctx with
+          | Exp {pexp_desc= Pexp_object _; _}
+           |Cl {pcl_desc= Pcl_structure _; _} ->
+              false
+          | _ -> true )
       in
       wrap_if parens_attr "(" ")" (k $ fmt_attributes c ~key:"@" attrs)
 
@@ -2586,8 +2591,9 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
         ( str "object"
         $ fmt_extension_suffix c ext
         $ opt self_ (fun self_ ->
-              fmt "@;" $ wrap "(" ")" (fmt_pattern c (sub_pat ~ctx self_)) )
-        )
+              fmt "@;"
+              $ wrap "(" ")"
+                  (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
     $ ( match fields with
       | ({pcf_desc= Pcf_attribute a; _}, _) :: _
@@ -2615,6 +2621,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | {ptyp_desc= Ptyp_any; ptyp_attributes= []; _} -> None
     | s -> Some s
   in
+  let no_attr typ = List.is_empty typ.ptyp_attributes in
   let fmt_field (cf, c) =
     maybe_disabled c cf.pctf_loc [] @@ fun c -> fmt_class_type_field c ctx cf
   in
@@ -2626,8 +2633,8 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                $ fmt_extension_suffix c ext
                $ opt self_ (fun self_ ->
                      fmt "@;"
-                     $ wrap "(" ")" (fmt_core_type c (sub_typ ~ctx self_)) )
-               )
+                     $ wrap_if (no_attr self_) "(" ")"
+                         (fmt_core_type c (sub_typ ~ctx self_)) ) )
            $ cmts_after_self
            $ ( match fields with
              | ({pctf_desc= Pctf_attribute a; _}, _) :: _
