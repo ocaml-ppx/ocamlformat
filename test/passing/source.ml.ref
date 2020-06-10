@@ -1356,9 +1356,11 @@ let ty_list : type a e. (a, e) ty -> (a vlist, e) ty =
            | `Cons p -> ("Cons", Some (Tdyn (tcons, p))) )
        ; sum_cases= [("Nil", TCnoarg Thd); ("Cons", TCarg (Ttl Thd, tcons))]
        ; sum_inj=
-           (fun (type c) ->
-             ( function Thd, Noarg -> `Nil | Ttl Thd, v -> `Cons v
-               : (noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist ) )
+           (fun (type c) :
+                ((noarg -> a * a vlist -> unit, c) ty_sel * c -> a vlist) ->
+              function
+             | Thd, Noarg -> `Nil
+             | Ttl Thd, v -> `Cons v )
            (* One can also write the type annotation directly *) })
 
 let v = variantize Enil (ty_list Int) (`Cons (1, `Cons (2, `Nil)))
@@ -6557,7 +6559,7 @@ end =
   M1
 
 ;;
-fun (x : M1.t) -> (x : M2.t)
+fun (x : M1.t) : M2.t -> x
 
 (* fails *)
 
@@ -8418,7 +8420,7 @@ fun b -> if b then format_of_string "x" else "y"
 fun b -> if b then "x" else format_of_string "y"
 
 ;;
-fun b -> (if b then "x" else "y" : (_, _, _) format)
+fun b : (_, _, _) format -> if b then "x" else "y"
 
 (* PR#7135 *)
 
@@ -9118,7 +9120,7 @@ let f : type a'. a' = assert false
 
 let foo : type a' b'. a' -> b' = fun a -> assert false
 
-let foo : type t'. t' = fun (type t') -> (assert false : t')
+let foo : type t'. t' = fun (type t') : t' -> assert false
 
 let foo : type t. t = assert false
 

@@ -662,8 +662,39 @@ and fmt_type_var s =
   $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
   $ str s
 
+and type_constr_and_body c xbody =
+  let body = xbody.ast in
+  let ctx = Exp body in
+  let fmt_cstr_and_xbody typ exp =
+    ( Some
+        ( fmt_or_k c.conf.ocp_indent_compat
+            (fits_breaks " " ~hint:(1000, 0) "")
+            (fmt "@;<0 -1>")
+        $ cbox_if c.conf.ocp_indent_compat 0
+            (fmt_core_type c ~pro:":" ~in_constraint:true
+               ~pro_space:(not c.conf.ocp_indent_compat)
+               ~box:(not c.conf.ocp_indent_compat)
+               (sub_typ ~ctx typ)) )
+    , sub_exp ~ctx exp )
+  in
+  match xbody.ast.pexp_desc with
+  | Pexp_constraint
+      ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
+      , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ) ) ->
+      Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+        ~after:exp.pexp_loc ;
+      fmt_cstr_and_xbody typ exp
+  | Pexp_constraint
+      ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _}) ->
+      (None, xbody)
+  | Pexp_constraint (exp, typ) ->
+      Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+        ~after:exp.pexp_loc ;
+      fmt_cstr_and_xbody typ exp
+  | _ -> (None, xbody)
+
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
-    ?(pro_space = true) ({ast= typ; _} as xtyp) =
+    ?(pro_space = true) ?(in_constraint = false) ({ast= typ; _} as xtyp) =
   protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
@@ -709,23 +740,24 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
             Poly.(c.conf.break_separators = `Before)
             (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
                (fits_breaks "" "   ")) )
-      $ list xt1N
-          ( if Poly.(c.conf.break_separators = `Before) then
-            if parens then "@;<1 1>-> " else "@ -> "
-          else " ->@;<1 0>" )
-          (fun (locI, lI, xtI) ->
-            let arg_label lbl =
-              match lbl with
-              | Nolabel -> None
-              | Labelled l -> Some (str l $ fmt ":@,")
-              | Optional l -> Some (str "?" $ str l $ fmt ":@,")
-            in
-            let arg =
-              match arg_label lI with
-              | None -> fmt_core_type c xtI
-              | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
-            in
-            hvbox 0 (Cmts.fmt_before c locI $ arg) )
+      $ wrap_if in_constraint "(" ")"
+        @@ list xt1N
+             ( if Poly.(c.conf.break_separators = `Before) then
+               if parens then "@;<1 1>-> " else "@ -> "
+             else " ->@;<1 0>" )
+             (fun (locI, lI, xtI) ->
+               let arg_label lbl =
+                 match lbl with
+                 | Nolabel -> None
+                 | Labelled l -> Some (str l $ fmt ":@,")
+                 | Optional l -> Some (str "?" $ str l $ fmt ":@,")
+               in
+               let arg =
+                 match arg_label lI with
+                 | None -> fmt_core_type c xtI
+                 | Some f -> hovbox 2 (f $ fmt_core_type c xtI)
+               in
+               hvbox 0 (Cmts.fmt_before c locI $ arg) )
   | Ptyp_constr (lid, []) -> fmt_longident_loc c lid
   | Ptyp_constr (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1) $ fmt "@ " $ fmt_longident_loc c lid
@@ -1754,6 +1786,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
           let cmts_before = Cmts.fmt_before c pexp_loc in
           let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx eN1) in
+          let fmt_cstr, xbody = type_constr_and_body c xbody in
           let box =
             match xbody.ast.pexp_desc with
             | Pexp_fun _ | Pexp_function _ -> Some false
@@ -1771,7 +1804,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                               ( str "(fun "
                               $ fmt_attributes c ~key:"@" eN1.pexp_attributes
                                   ~suf:(str " ")
-                              $ fmt_fun_args c xargs $ fmt "@ ->" ) )
+                              $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                              $ fmt "@ ->" ) )
                       $ fmt
                           ( match xbody.ast.pexp_desc with
                           | Pexp_function _ -> "@ "
@@ -2004,6 +2038,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@,." $ fmt_longident_loc c lid $ fmt_atrs ))
   | Pexp_newtype _ | Pexp_fun _ ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
+      let fmt_cstr, xbody = type_constr_and_body c xbody in
       let pre_body, body = fmt_body c ?ext xbody in
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent =
@@ -2019,7 +2054,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ hvbox_if
                        (not c.conf.wrap_fun_args)
                        0 (fmt_fun_args c xargs)
-                   $ fmt "@ " )
+                   $ fmt_opt fmt_cstr $ fmt "@ " )
                $ str "->" $ pre_body )
            $ fmt "@ " $ body ))
   | Pexp_function cs ->
