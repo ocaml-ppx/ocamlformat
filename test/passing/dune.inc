@@ -42,6 +42,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to args_grouped.ml.output
+     (run %{bin:ocamlformat} --profile=ocamlformat --margin=100 %{dep:args_grouped.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff args_grouped.ml args_grouped.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to array.ml.output
      (run %{bin:ocamlformat} %{dep:array.ml}))))
 

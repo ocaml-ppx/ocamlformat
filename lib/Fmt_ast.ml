@@ -1308,30 +1308,41 @@ and expression_width c xe =
     (Cmts.preserve (fun cmts -> fmt_expression {c with cmts} xe) c.cmts)
 
 and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
-  let fmt_args ~first:first_grp ~last:last_grp args =
-    let fmt_arg ~first:_ ~last (lbl, arg) =
-      let ({ast; _} as xarg) = sub_exp ~ctx arg in
-      let box =
-        match ast.pexp_desc with
-        | Pexp_fun _ | Pexp_function _ -> Some false
-        | _ -> None
-      in
-      let epi =
-        match (lbl, last) with
-        | _, true -> None
-        | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
-        | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
-      in
-      hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
-      $ fmt_if_k (not last) (break_unless_newline 1 0)
+  let fmt_arg c ~first:_ ~last (lbl, arg) =
+    let ({ast; _} as xarg) = sub_exp ~ctx arg in
+    let box =
+      match ast.pexp_desc with
+      | Pexp_fun _ | Pexp_function _ -> Some false
+      | _ -> None
     in
-    hovbox
-      (if first_grp then 2 else 0)
-      (list_fl args fmt_arg $ fmt_if_k last_grp global_epi)
-    $ fmt_if_k (not last_grp) (break 1 0)
+    let epi =
+      match (lbl, last) with
+      | _, true -> None
+      | Nolabel, _ -> Some (fits_breaks "" ~hint:(1000, -1) "")
+      | _ -> Some (fits_breaks "" ~hint:(1000, -3) "")
+    in
+    hovbox 2 (fmt_label_arg c ?box ?epi (lbl, xarg))
+    $ fmt_if_k (not last) (break_unless_newline 1 0)
   in
-  let is_simple x = is_simple c.conf (expression_width c) (sub_exp ~ctx x) in
-  let break (_, a1) (_, a2) = not (is_simple a1 && is_simple a2) in
+  let fmt_args ~first ~last args =
+    hovbox
+      (if first then 2 else 0)
+      (list_fl args (fmt_arg c) $ fmt_if_k last global_epi)
+    $ fmt_if_k (not last) (break 1 0)
+  in
+  let is_simple (lbl, x) =
+    let xexp = sub_exp ~ctx x in
+    let output =
+      Cmts.preserve
+        (fun cmts ->
+          let cmts = Cmts.drop_before cmts x.pexp_loc in
+          fmt_arg ~first:false ~last:false {c with cmts} (lbl, x) )
+        c.cmts
+    in
+    let breaks = String.(rstrip output |> is_substring ~substring:"\n   ") in
+    is_simple c.conf (expression_width c) xexp && not breaks
+  in
+  let break x y = not (is_simple x && is_simple y) in
   let groups =
     if c.conf.wrap_fun_args then List.group args ~break
     else List.map args ~f:(fun x -> [x])

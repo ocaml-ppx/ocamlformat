@@ -468,6 +468,10 @@ let drop_inside t loc =
   clear `Within ;
   clear `After
 
+let drop_before t loc =
+  update_cmts t `Before ~f:(fun m -> Location.Multimap.remove m loc) ;
+  t
+
 let has_before t loc =
   pop_if_debug t loc ;
   Location.Multimap.mem t.cmts_before loc

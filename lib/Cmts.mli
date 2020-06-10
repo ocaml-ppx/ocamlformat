@@ -92,6 +92,8 @@ val fmt_within :
 
 val drop_inside : t -> Location.t -> unit
 
+val drop_before : t -> Location.t -> t
+
 val has_before : t -> Location.t -> bool
 (** [has_before t loc] holds if [t] contains some comment before [loc]. *)
 
