@@ -2,11 +2,11 @@ let _ = 'a'
 
 let _ = 'a'
 
-let _ = "asd" (* test *)
+let _ = (* test *) "asd"
 
 let _ = "asd"
 
-let _ = "asd" (* te""st *)
+let _ = (* te""st *) "asd"
 
 let _ = "asd"
 

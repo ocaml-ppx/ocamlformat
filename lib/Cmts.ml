@@ -92,10 +92,19 @@ end = struct
       | Ppat_record (flds, Open) ->
           Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
             ~f:(fun loc -> locs := loc :: !locs)
+      | Ppat_constant _ -> locs := Source.loc_of_pat_constant src p :: !locs
       | _ -> () ) ;
       Ast_mapper.default_mapper.pat m p
     in
-    let mapper = Ast_mapper.{default_mapper with location; pat; attribute} in
+    let expr m e =
+      ( match e.pexp_desc with
+      | Pexp_constant _ -> locs := Source.loc_of_expr_constant src e :: !locs
+      | _ -> () ) ;
+      Ast_mapper.default_mapper.expr m e
+    in
+    let mapper =
+      Ast_mapper.{default_mapper with location; pat; attribute; expr}
+    in
     map_ast mapper ast |> ignore ;
     (of_list !locs, !locs)
 end

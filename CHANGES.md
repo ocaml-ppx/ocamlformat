@@ -28,6 +28,8 @@
 
   + Remove unnecessary parens around object (#1379) (Guillaume Petiot)
 
+  + Fix placement of comments on constants (#1383) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
