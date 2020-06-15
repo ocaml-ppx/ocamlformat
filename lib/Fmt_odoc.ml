@@ -37,12 +37,14 @@ let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
   Buffer.contents dst
 
 let unwrap f s =
-  match (s.[0], s.[String.length s - 1]) with
-  | '[', ']' ->
-      "[" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "]"
-  | '{', '}' ->
-      "{" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "}"
-  | _ -> f s
+  if String.length s > 1 then
+    match (s.[0], s.[String.length s - 1]) with
+    | '[', ']' ->
+        "[" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "]"
+    | '{', '}' ->
+        "{" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "}"
+    | _ -> f s
+  else f s
 
 let escape_brackets s =
   let escapeworthy = function '[' | ']' -> true | _ -> false in
