@@ -36,16 +36,24 @@ let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
   stash len ;
   Buffer.contents dst
 
+let unwrap f s =
+  match (s.[0], s.[String.length s - 1]) with
+  | '[', ']' ->
+      "[" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "]"
+  | '{', '}' ->
+      "{" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "}"
+  | _ -> f s
+
 let escape_brackets s =
   let escapeworthy = function '[' | ']' -> true | _ -> false in
-  ensure_escape ~escapeworthy s
+  unwrap (ensure_escape ~escapeworthy) s
 
 let escape_all s =
   let escapeworthy = function
     | '@' | '{' | '}' | '[' | ']' -> true
     | _ -> false
   in
-  ensure_escape ~escapeworthy s
+  unwrap (ensure_escape ~escapeworthy) s
 
 let split_on_whitespaces =
   String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']

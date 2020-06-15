@@ -448,3 +448,5 @@ val k : int
     - {e foooooooo oooooooooo ooooooooo ooooooooo}
       {i fooooooooooooo oooooooo oooooooooo}
     - foo *)
+
+(** @raise [Invalid_argument] if the argument is [None]. Sometimes [t.\[x\]]. *)
