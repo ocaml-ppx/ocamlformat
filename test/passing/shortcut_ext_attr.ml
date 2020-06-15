@@ -53,22 +53,29 @@ class x =
       method! private x = 3 [@@foo]
 
       initializer x [@@foo]
-    end [@foo]
+    end
+    [@foo]
 
 (* Class type expressions *)
 class type t =
   object
-    inherit t [@@foo]
+    inherit t
+    [@@foo]
 
-    val x : t [@@foo]
+    val x : t
+    [@@foo]
 
-    val mutable x : t [@@foo]
+    val mutable x : t
+    [@@foo]
 
-    method x : t [@@foo]
+    method x : t
+    [@@foo]
 
-    method private x : t [@@foo]
+    method private x : t
+    [@@foo]
 
-    constraint t = t' [@@foo]
+    constraint t = t'
+    [@@foo]
   end[@foo]
 
 (* Type expressions *)
