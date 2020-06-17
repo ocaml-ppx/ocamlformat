@@ -189,3 +189,13 @@ module Longident : sig
   val lident : string -> t
   (** Make a Lident from a dotless string *)
 end
+
+module Parser = Token_latest
+
+module Lexer : sig
+  val token : Lexing.lexbuf -> Parser.token
+
+  type error
+
+  exception Error of error * Location.t
+end

@@ -231,15 +231,15 @@ let string_literal t mode (l : Location.t) =
   let toks =
     tokens_at t
       ~filter:(function
-        | Parser.STRING (_, None) -> true
+        | Parser.STRING (_, _, None) -> true
         | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
             true
         | _ -> false )
       l
   in
   match toks with
-  | [(Parser.STRING (_, None), loc)]
-   |(Parser.STRING (_, None), loc)
+  | [(Parser.STRING (_, _, None), loc)]
+   |(Parser.STRING (_, _, None), loc)
     :: ( Parser.LBRACKETATATAT, _
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )

@@ -268,3 +268,13 @@ module Longident = struct
     assert (not (String.contains s '.')) ;
     Lident s
 end
+
+module Parser = Token_latest
+
+module Lexer = struct
+  let token lexbuf = Lexer.token lexbuf |> Token_latest.of_compiler_libs
+
+  type error = Lexer.error
+
+  exception Error = Lexer.Error
+end
