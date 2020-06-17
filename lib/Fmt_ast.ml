@@ -1035,11 +1035,11 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
           @@
           match ppat_desc with
           | Ppat_var {txt= txt'; _}
-            when field_alias ~field:lid1.txt (Longident.parse txt')
+            when field_alias ~field:lid1.txt (Longident.lident txt')
                  && List.is_empty ppat_attributes ->
               fmt_record_field c lid1
           | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}; ppat_loc; _}, t)
-            when field_alias ~field:lid1.txt (Longident.parse txt)
+            when field_alias ~field:lid1.txt (Longident.lident txt)
                  && List.is_empty ppat_attributes ->
               let typ = sub_typ ~ctx:(Pat pat) t in
               Cmts.fmt c ppat_loc @@ fmt_record_field c ~typ lid1
@@ -2511,7 +2511,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_override l -> (
       let fmt_field ({txt; loc}, f) =
         let eol = fmt "@;<1 3>" in
-        let txt = Longident.parse txt in
+        let txt = Longident.lident txt in
         match f.pexp_desc with
         | Pexp_ident {txt= txt'; loc} when field_alias ~field:txt txt' ->
             Cmts.fmt c ~eol loc @@ fmt_longident txt'

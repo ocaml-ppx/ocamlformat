@@ -255,3 +255,16 @@ module Location = struct
     let find_multi map loc = Map.find_multi map loc
   end
 end
+
+module Longident = struct
+  type t = Longident.t =
+    | Lident of string
+    | Ldot of t * string
+    | Lapply of t * t
+
+  let flatten = Longident.flatten
+
+  let lident s =
+    assert (not (String.contains s '.')) ;
+    Lident s
+end
