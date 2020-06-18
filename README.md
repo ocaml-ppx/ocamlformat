@@ -111,9 +111,9 @@ OCamlFormat requires source code that meets the following conditions:
 
 - Does not trigger warning 50 (“Unexpected documentation comment.”). For code that triggers warning 50, it is unlikely that ocamlformat will happen to preserve the documentation string attachment.
 
-- Parses without any preprocessing, using the version of the standard ocaml (not camlp4) parser used to build ocamlformat. Attributes and extension points should be correctly preserved, but other mechanisms such as camlp4, cppo, etc. will not work.
+- Parses without any preprocessing, using the version of the standard OCaml (not camlp4) parser used to build ocamlformat. Attributes and extension points should be correctly preserved, but other mechanisms such as camlp4, cppo, etc. will not work.
 
-- Is either a module implementation (`.ml`), an interface (`.mli`) or a sequence of toplevel phrases (`.mlt`). dune files in ocaml syntax also work.
+- Is either a module implementation (`.ml`), an interface (`.mli`) or a sequence of toplevel phrases (`.mlt`). dune files in OCaml syntax also work.
 
 Under those conditions, ocamlformat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, ocamlformat enforces the following checks:
 
@@ -233,7 +233,7 @@ You can also view it [online](ocamlformat-help.txt).
 OCamlFormat is influenced by and follows the same basic design as `refmt` for [Reason](https://github.com/facebook/reason), but outputs OCaml instead of Reason.
 
 This tool is not able to deal directly with Reason code (`*.re`/`*.rei` files),
-but it is possible to first convert these files to ocaml syntax using `refmt -p
+but it is possible to first convert these files to OCaml syntax using `refmt -p
 ml` and then running `ocamlformat` on this output.
 
 ## Community
