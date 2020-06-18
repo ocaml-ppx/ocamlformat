@@ -30,17 +30,17 @@ If you are here, you are probably interested in using a formatting tool for your
 code base, so that you do not have to worry about formatting it by hand, and to
 speed up code review by focusing on the important parts.
 
-Ocamlformat is probably what you are after!
+OCamlFormat is probably what you are after!
 But there are some things that you should know before formatting all the things.
 
-### Should I use ocamlformat?
+### Should I use OCamlFormat?
 
-Ocamlformat is already being used by several projects, but it comes with some
+OCamlFormat is already being used by several projects, but it comes with some
 important caveats. This FAQ should help you decide if it can work for you.
 
-Ocamlformat is beta software.
+OCamlFormat is beta software.
 While we do not follow [SemVer](https://semver.org/), we expect the program to change considerably before we reach version 1.0.0.
-In particular, upgrading the ocamlformat package will cause your program to get reformatted.
+In particular, upgrading the `ocamlformat` package will cause your program to get reformatted.
 Sometimes it is relatively pain-free, but sometimes it will make a diff in almost every file.
 This can be a hard price to pay, since this means losing the corresponding git history.
 
@@ -64,22 +64,22 @@ This ensures two things:
   they will see an error message instead of reformatting the whole project in a
   different way.
 
-### Can ocamlformat support my style?
+### Can OCamlFormat support my style?
 
 No.
-It is better to see ocamlformat as a tool to apply *a* style, rather than a tweakable tool to enforce your existing style.
+It is better to see OCamlFormat as a tool to apply *a* style, rather than a tweakable tool to enforce your existing style.
 There are some knobs that you can turn, such as overriding `margin` to determine the maximum line width.
 But it is better not to set individual options to override what the default profile is doing.
 
 To quote (and sed) [prettier's page on option philosophy](https://prettier.io/docs/en/option-philosophy.html):
 
-> Ocamlformat has a few options because of history. **But we don’t want more of them.**
+> OCamlFormat has a few options because of history. **But we don’t want more of them.**
 >
-> By far the biggest reason for adopting ocamlformat is to stop all the on-going debates over styles.
+> By far the biggest reason for adopting OCamlFormat is to stop all the on-going debates over styles.
 >
-> The more options ocamlformat has, the further from the above goal it gets. The debates over styles just turn into debates over which ocamlformat options to use.
+> The more options OCamlFormat has, the further from the above goal it gets. The debates over styles just turn into debates over which OCamlFormat options to use.
 
-### How to locally disable ocamlformat?
+### How to locally disable OCamlFormat?
 
 To disable the formatting of a specific toplevel item you must attach an `[@@ocamlformat "option=VAL"]` attribute to this item in the processed file, such as:
 
@@ -100,7 +100,7 @@ let do_not_touch (x : t) (y : t) (z : t) = [
 ] [@ocamlformat "disable"]
 ```
 
-To disable a whole file, the preferred way is to add the name of the file to a local `.ocamlformat-ignore` file. An `.ocamlformat-ignore` file specifies files that ocamlformat should ignore. Each line in an `.ocamlformat-ignore` file specifies a filename relative to the directory containing the `.ocamlformat-ignore` file.
+To disable a whole file, the preferred way is to add the name of the file to a local `.ocamlformat-ignore` file. An `.ocamlformat-ignore` file specifies files that OCamlFormat should ignore. Each line in an `.ocamlformat-ignore` file specifies a filename relative to the directory containing the `.ocamlformat-ignore` file.
 Shell-style regular expressions are supported. Lines starting with `#` are ignored and can be used as comments.
 
 ## Features
@@ -109,13 +109,13 @@ Shell-style regular expressions are supported. Lines starting with `#` are ignor
 
 OCamlFormat requires source code that meets the following conditions:
 
-- Does not trigger warning 50 (“Unexpected documentation comment.”). For code that triggers warning 50, it is unlikely that ocamlformat will happen to preserve the documentation string attachment.
+- Does not trigger warning 50 (“Unexpected documentation comment.”). For code that triggers warning 50, it is unlikely that OCamlFormat will happen to preserve the documentation string attachment.
 
-- Parses without any preprocessing, using the version of the standard OCaml (not camlp4) parser used to build ocamlformat. Attributes and extension points should be correctly preserved, but other mechanisms such as camlp4, cppo, etc. will not work.
+- Parses without any preprocessing, using the version of the standard OCaml (not camlp4) parser used to build OCamlFormat. Attributes and extension points should be correctly preserved, but other mechanisms such as camlp4, cppo, etc. will not work.
 
 - Is either a module implementation (`.ml`), an interface (`.mli`) or a sequence of toplevel phrases (`.mlt`). dune files in OCaml syntax also work.
 
-Under those conditions, ocamlformat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, ocamlformat enforces the following checks:
+Under those conditions, OCamlFormat is expected to produce output equivalent to the input. As a safety check in case of bugs, prior to terminating or modifying any input file, OCamlFormat enforces the following checks:
 
 - The parse trees obtained by parsing the original and formatted files are equal up to some minor normalization (see [`Normalize`](./src/Normalize.ml)`.equal_impl` or `equal_intf`).
 
