@@ -48,17 +48,11 @@ let dedup_cmts map_ast ast comments =
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
 
-let comment s =
-  (* normalize consecutive whitespace chars to a single space *)
-  String.concat ~sep:" "
-    (List.filter ~f:(Fn.non String.is_empty)
-       (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
-
 let list f fmt l =
   let pp_sep fmt () = Format.fprintf fmt "" in
   Format.pp_print_list ~pp_sep f fmt l
 
-let str fmt s = Format.fprintf fmt "%s" (comment s)
+let str fmt s = Format.fprintf fmt "%s" (Cmt.basic_normalize s)
 
 let ign_loc f fmt with_loc = f fmt with_loc.Odoc_model.Location_.value
 
@@ -168,7 +162,7 @@ let odoc_block_element c fmt = function
 let odoc_docs c fmt elems = list (ign_loc (odoc_block_element c)) fmt elems
 
 let docstring c text =
-  if not c.conf.parse_docstrings then comment text
+  if not c.conf.parse_docstrings then Cmt.basic_normalize text
   else
     let location = Lexing.dummy_pos in
     let parsed = Odoc_parser.parse_comment_raw ~location ~text in

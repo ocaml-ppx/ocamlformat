@@ -111,23 +111,20 @@ module Test_noit = struct
 end
 
 module Test_cmt = struct
-  let test_normalized_string =
-    let normalize_comment s = Printf.sprintf "C(%s)" s in
+  let test_normalize =
     let normalize_impl str = str in
     let test name s expected =
-      let test_name = "normalized_string: " ^ name in
+      let test_name = "normalize: " ^ name in
       ( test_name
       , `Quick
       , fun () ->
           let cmt = Cmt.create s Location.none in
-          let got =
-            Cmt.normalized_string ~normalize_comment ~normalize_impl cmt
-          in
+          let got = Cmt.normalize ~normalize_impl cmt in
           Alcotest.check Alcotest.string test_name expected got )
     in
-    [ test "empty" "" "C()"
-    ; test "dollar" "$" "C($)"
-    ; test "text comment" "hello" "C(hello)"
+    [ test "empty" "" ""
+    ; test "dollar" "$" "$"
+    ; test "text comment" "hello" "hello"
     ; test "code comment" "$x$"
         {|[
   structure_item ([1,0+0]..[1,0+1])
@@ -144,10 +141,10 @@ module Test_cmt = struct
       Pexp_ident "x" ([1,0+0]..[1,0+1])
 ]
 |}
-    ; test "code comment, invalid" "$let$" "C($let$)"
-    ; test "code comment, several $ at end" "$x$$" "C($x$$)" ]
+    ; test "code comment, invalid" "$let$" "$let$"
+    ; test "code comment, several $ at end" "$x$$" "$x$$" ]
 
-  let tests = test_normalized_string
+  let tests = test_normalize
 end
 
 let tests =
