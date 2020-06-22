@@ -482,3 +482,5 @@ val k : int
     - foo *)
 
 (** @raise [Invalid_argument] if the argument is [None]. Sometimes [t.[x]]. *)
+
+(** \[abc\] *)

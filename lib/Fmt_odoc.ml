@@ -36,26 +36,16 @@ let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
   stash len ;
   Buffer.contents dst
 
-let unwrap f s =
-  if String.length s > 1 then
-    match (s.[0], s.[String.length s - 1]) with
-    | '[', ']' ->
-        "[" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "]"
-    | '{', '}' ->
-        "{" ^ f (String.sub s ~pos:1 ~len:(String.length s - 2)) ^ "}"
-    | _ -> f s
-  else f s
-
 let escape_brackets s =
   let escapeworthy = function '[' | ']' -> true | _ -> false in
-  unwrap (ensure_escape ~escapeworthy) s
+  ensure_escape ~escapeworthy s
 
 let escape_all s =
   let escapeworthy = function
     | '@' | '{' | '}' | '[' | ']' -> true
     | _ -> false
   in
-  unwrap (ensure_escape ~escapeworthy) s
+  ensure_escape ~escapeworthy s
 
 let split_on_whitespaces =
   String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
@@ -241,7 +231,7 @@ let fmt_tag c = function
       at $ fmt "param@ " $ str_normalized s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Raise (s, txt) ->
-      at $ fmt "raise@ " $ str_normalized s
+      at $ fmt "raise@ " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Return txt ->
       at $ fmt "return" $ fmt_nestable_block_elements c ~prefix:space txt
