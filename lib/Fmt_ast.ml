@@ -184,12 +184,16 @@ let update_config_maybe_disabled_block c loc l f =
   let c = update_config c l in
   maybe_disabled_k c loc l f fmt
 
-let make_groups c items ast update_config =
+let update_items_config c items update_config =
   let with_config c i =
     let c = update_config c i in
     (c, (i, c))
   in
   let _, items = List.fold_map items ~init:c ~f:with_config in
+  items
+
+let make_groups c items ast update_config =
+  let items = update_items_config c items update_config in
   let break (i1, c1) (i2, c2) =
     Ast.break_between c.source ~cmts:c.cmts ~has_cmts_before:Cmts.has_before
       ~has_cmts_after:Cmts.has_after
