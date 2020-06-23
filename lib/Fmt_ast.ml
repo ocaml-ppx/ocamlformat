@@ -211,17 +211,21 @@ let fmt_groups c ctx grps fmt_grp =
       $ fmt_grp ~first ~last grp
       $ fits_breaks_if ((not break_struct) && not last) "" "\n" )
 
-let fmt_recmodule c ctx items f ast =
+let fmt_recmodule c ctx items fmt_item ast =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
-  let grps = make_groups c items ast update_config in
+  let items = update_items_config c items update_config in
   let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_grp ~first:first_grp ~last:_ itms =
-    list_fl itms (fun ~first ~last:_ (itm, c) ->
-        fmt_if_k (not first) (fmt_or break_struct "@;<1000 0>" "@ ")
-        $ maybe_disabled c (Ast.location (ast itm)) []
-          @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm )
-  in
-  hvbox 0 (fmt_groups c ctx grps fmt_grp)
+  hvbox 0 @@ list_pn items
+  @@ fun ~prev (itm, c) ~next ->
+  let loc = Ast.location (ast itm) in
+  maybe_disabled c loc [] (fun c ->
+      fmt_item c ctx ~rec_flag:true ~first:(Option.is_none prev) itm )
+  $ opt next (fun (i_n, c_n) ->
+        fmt_or_k
+          (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
+          ( fmt_or_k break_struct (str "\n") (fits_breaks "" "\n")
+          $ break 1000 0 )
+          (fmt_or break_struct "@;<1000 0>" "@ ") )
 
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
