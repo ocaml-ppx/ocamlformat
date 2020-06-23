@@ -177,3 +177,25 @@ module Pprintast : sig
 
   val signature : Format.formatter -> Parsetree.signature -> unit
 end
+
+module Longident : sig
+  type t = Longident.t =
+    | Lident of string
+    | Ldot of t * string
+    | Lapply of t * t
+
+  val flatten : t -> string list
+
+  val lident : string -> t
+  (** Make a Lident from a dotless string *)
+end
+
+module Parser = Token_latest
+
+module Lexer : sig
+  val token : Lexing.lexbuf -> Parser.token
+
+  type error
+
+  exception Error of error * Location.t
+end
