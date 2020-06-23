@@ -231,7 +231,7 @@ let fmt_tag c = function
       at $ fmt "param@ " $ str_normalized s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Raise (s, txt) ->
-      at $ fmt "raise@ " $ str_normalized s
+      at $ fmt "raise@ " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Return txt ->
       at $ fmt "return" $ fmt_nestable_block_elements c ~prefix:space txt

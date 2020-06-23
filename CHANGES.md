@@ -30,6 +30,8 @@
 
   + Fix placement of comments on constants (#1383) (Guillaume Petiot)
 
+  + Do not escape `@raise` argument in docstrings (#1391) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
