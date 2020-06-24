@@ -31,7 +31,7 @@ depends: [
   "fix"
   "fpath"
   "menhir"
-  "ocaml-migrate-parsetree" {>= "1.5.0"}
+  "ocaml-migrate-parsetree" {>= "1.7.3"}
   "ocp-indent" {with-test}
   "odoc" {>= "1.4.2"}
   "re"
