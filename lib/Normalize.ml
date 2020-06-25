@@ -486,7 +486,7 @@ let moved_docstrings c get_docstrings s1 s2 =
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
       let l1, l2 = List.unzip l in
       let both, l1 =
-        Compat.List.partition_map l1 ~f:(fun x ->
+        List.partition_map l1 ~f:(fun x ->
             match List.find l2 ~f:(equal x) with
             | Some (l, s) -> First (Moved (fst x, l, s))
             | None -> Second x )

@@ -98,7 +98,7 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
       | Syntaxerr.Error _ | Lexer.Error _ ->
           Location.report_exception fmt exn
       | Warning50 l ->
-          List.iter l ~f:(fun (l, w) -> Compat.print_warning l w) ;
+          List.iter l ~f:(fun (l, w) -> print_warning l w) ;
           Format.fprintf fmt
             "@{<warning>Hint@}: (Warning 50) This file contains a \
              documentation comment (** ... *) that the OCaml compiler does \
@@ -205,8 +205,7 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
               if debug then Location.report_exception fmt exn
           | `Warning50 l ->
-              if debug then
-                List.iter l ~f:(fun (l, w) -> Compat.print_warning l w)
+              if debug then List.iter l ~f:(fun (l, w) -> print_warning l w)
           | _ -> () ) ;
           if debug then
             List.iter l ~f:(fun (msg, sexp) ->

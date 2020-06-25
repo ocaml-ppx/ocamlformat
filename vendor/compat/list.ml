@@ -1,4 +1,5 @@
 open Base
+include List
 
 let partition_map l ~f =
   let fst, snd =
