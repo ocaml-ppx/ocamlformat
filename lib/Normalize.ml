@@ -488,8 +488,8 @@ let moved_docstrings c get_docstrings s1 s2 =
       let both, l1 =
         Utils.List.partition_map l1 ~f:(fun x ->
             match List.find l2 ~f:(equal x) with
-            | Some (l, s) -> `Fst (Moved (fst x, l, s))
-            | None -> `Snd x )
+            | Some (l, s) -> First (Moved (fst x, l, s))
+            | None -> Second x )
       in
       let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
       let l1 = List.map ~f:unstable l1 in
