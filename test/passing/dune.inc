@@ -1398,6 +1398,36 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to let_binding_spacing-double-semicolon.ml.output
+     (run %{bin:ocamlformat} --let-binding-spacing=double-semicolon %{dep:let_binding_spacing.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff let_binding_spacing-double-semicolon.ml.ref let_binding_spacing-double-semicolon.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to let_binding_spacing-sparse.ml.output
+     (run %{bin:ocamlformat} --let-binding-spacing=sparse %{dep:let_binding_spacing.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff let_binding_spacing-sparse.ml.ref let_binding_spacing-sparse.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to let_binding_spacing.ml.output
+     (run %{bin:ocamlformat} --let-binding-spacing=compact %{dep:let_binding_spacing.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff let_binding_spacing.ml let_binding_spacing.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to let_in_constr.ml.output
      (run %{bin:ocamlformat} %{dep:let_in_constr.ml}))))
 
