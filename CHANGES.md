@@ -32,6 +32,8 @@
 
   + Do not escape `@raise` argument in docstrings (#1391) (Guillaume Petiot)
 
+  + Fix missing open line between multi-line let-binding with poly-typexpr (#1372) (Josh Berdine)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
