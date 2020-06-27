@@ -4390,6 +4390,13 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
                 Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                   ~after:exp.pexp_loc ;
                 fmt_cstr_and_xbody typ exp
+            (* The type constraint is always printed before the declaration
+               for functions, for other value bindings we preserve its
+               position. *)
+            | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->
+                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+                  ~after:exp.pexp_loc ;
+                fmt_cstr_and_xbody typ exp
             | _ -> (None, xbody)
           in
           (xpat, xargs, fmt_cstr, xbody)
