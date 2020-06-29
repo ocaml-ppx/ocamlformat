@@ -1,0 +1,11 @@
+(rule
+ (copy# warning/%{read:warning-compat-file} warning.ml))
+
+(rule
+ (targets warning-compat-file)
+ (action
+  (run %{ocaml} %{dep:../../tools/gen_warning_compat.ml} %{ocaml_version})))
+
+(library
+ (name compat)
+ (libraries base compiler-libs.common))

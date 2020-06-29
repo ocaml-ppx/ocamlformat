@@ -41,7 +41,7 @@ let parse parse_ast (conf : Conf.t) ~source =
   Location.init lexbuf !Location.input_name ;
   let w50 = ref [] in
   let t =
-    Compat.with_warning_filter
+    with_warning_filter
       ~filter:(fun loc warn ->
         match warn with
         | Warnings.Bad_docstring _ when conf.comment_check ->

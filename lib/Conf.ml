@@ -2329,7 +2329,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
   | Ok conf -> conf
   | Error error ->
       let w = Warnings.Attribute_payload (txt, error) in
-      if (not c.quiet) && not quiet then Compat.print_warning loc w ;
+      if (not c.quiet) && not quiet then print_warning loc w ;
       c
 
 let print_config = C.print_config

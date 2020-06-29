@@ -9,16 +9,14 @@
  *                                                                    *
  **********************************************************************)
 
-let with_warning_filter ~filter ~f =
-  let warning_printer = !Location.warning_printer in
-  (Location.warning_printer :=
-     fun loc fmt warn ->
-       if filter loc warn then warning_printer loc fmt warn else ()) ;
-  let reset () = Location.warning_printer := warning_printer in
-  try
-    let x = f () in
-    reset () ; x
-  with e -> reset () ; raise e
+let write fn s =
+  let oc = open_out fn in
+  output_string oc s ; close_out oc
 
-let print_warning l w =
-  !Location.warning_printer l Caml.Format.err_formatter w
+let () =
+  let ocaml_version_str = Sys.argv.(1) in
+  let ocaml_version =
+    Scanf.sscanf ocaml_version_str "%u.%u" (fun a b -> (a, b))
+  in
+  write "warning-compat-file"
+    (if ocaml_version < (4, 08) then "lt_408.ml" else "ge_408.ml")
