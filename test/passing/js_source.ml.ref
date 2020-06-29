@@ -4629,7 +4629,7 @@ type foo =
 
 type bar = { x : int }
 
-let f (r : bar) = ({ r with z = 3 } : foo)
+let f (r : bar) : foo = { r with z = 3 }
 
 type foo = { x : int }
 
@@ -4684,8 +4684,8 @@ module Hash2 : sig
 end =
   Hash
 
-let f1 (x : (_, _) Hash1.t) = (x : (_, _) Hashtbl.t)
-let f2 (x : (_, _) Hash2.t) = (x : (_, _) Hashtbl.t)
+let f1 (x : (_, _) Hash1.t) : (_, _) Hashtbl.t = x
+let f2 (x : (_, _) Hash2.t) : (_, _) Hashtbl.t = x
 
 (* Another case, not using include *)
 
@@ -4698,7 +4698,7 @@ end
 module Std' = Std2
 module M' : module type of Std'.M = Std2.M
 
-let f3 (x : M'.t) = (x : Std2.M.t)
+let f3 (x : M'.t) : Std2.M.t = x
 
 (* original report required Core_kernel:
 module type S = sig
@@ -5641,7 +5641,7 @@ module S = String
 module StringSet = Set.Make (String)
 module SSet = Set.Make (S)
 
-let f (x : StringSet.t) = (x : SSet.t)
+let f (x : StringSet.t) : SSet.t = x
 
 (* Also using include (cf. Leo's mail 2013-11-16) *)
 module F (M : sig end) : sig
@@ -5996,7 +5996,7 @@ end
 
 (* ok to convert between structurally equal signatures, and parameters
    are inferred *)
-let f (x : (module S with type t = 'a and type u = 'b)) = (x : (module S'))
+let f (x : (module S with type t = 'a and type u = 'b)) : (module S') = x
 let g x = (x : (module S with type t = 'a and type u = 'b) :> (module S'))
 
 (* with subtyping it is also ok to forget some types *)
@@ -6008,10 +6008,10 @@ end
 
 let g2 x = (x : (module S2 with type t = 'a and type u = 'b) :> (module S'))
 let h x = (x : (module S2 with type t = 'a) :> (module S with type t = 'a))
-let f2 (x : (module S2 with type t = 'a and type u = 'b)) = (x : (module S'))
+let f2 (x : (module S2 with type t = 'a and type u = 'b)) : (module S') = x
 
 (* fail *)
-let k (x : (module S2 with type t = 'a)) = (x : (module S with type t = 'a))
+let k (x : (module S2 with type t = 'a)) : (module S with type t = 'a) = x
 
 (* fail *)
 
@@ -6610,7 +6610,7 @@ type refer1 = < poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 type refer2 = < poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) >
 
 (* Actually this should succeed ... *)
-let f (x : refer1) = (x : refer2)
+let f (x : refer1) : refer2 = x
 
 module Classdef = struct
   class virtual ['a, 'b, 'c] cl0 =
@@ -6646,7 +6646,7 @@ end
 open Pr3918b
 
 let f x = (x : 'a vlist :> 'b vlist)
-let f (x : 'a vlist) = (x : 'b vlist)
+let f (x : 'a vlist) : 'b vlist = x
 
 module type Poly = sig
   type 'a t = 'a constraint 'a = [> ]
@@ -6861,13 +6861,13 @@ module F0 : sig
 end =
   Foobar
 
-let f (x : F0.t) = (x : Foobar.t)
+let f (x : F0.t) : Foobar.t = x
 
 (* fails *)
 
 module F = Foobar
 
-let f (x : F.t) = (x : Foobar.t)
+let f (x : F.t) : Foobar.t = x
 
 module M = struct
   type t = < m : int >
@@ -6935,7 +6935,7 @@ module Bar : sig
 end = struct
   type t = int
 
-  let f (x : int) = (x : t)
+  let f (x : int) : t = x
 end
 
 (* must fail *)
@@ -7036,7 +7036,7 @@ end
 
 module Test2 : module type of Test with type t = Test.t = Test
 
-let f (x : Test.t) = (x : Test2.t)
+let f (x : Test.t) : Test2.t = x
 let f Test2.A = ()
 let a = Test2.A
 
@@ -7379,7 +7379,7 @@ module PR_4758 = struct
     type t
   end
 
-  let f (x : F(C).t) = (x : F(C').t)
+  let f (x : F(C).t) : F(C').t = x
 end
 
 (* PR 4557 *)

@@ -108,7 +108,7 @@ end
 
 let f = (* comment *) function x -> x
 
-let foo x = (* comment *) (y : z)
+let foo x : z = (* comment *) y
 
 let _ =
   (*a*)
