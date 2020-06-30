@@ -35,7 +35,7 @@
    (and (>= 4.06) (< 4.11)))
   (alcotest :with-test)
   (base
-   (and (>= v0.12.0) (< v0.14)))
+   (and (>= v0.12.0) (< v0.15)))
   base-unix
   cmdliner
   fix
@@ -47,7 +47,7 @@
   (odoc
    (>= 1.4.2))
   re
-  (stdio (< v0.14))
+  (stdio (< v0.15))
   (uuseg
    (>= 10.0.0))
   (uutf
