@@ -17,6 +17,8 @@ type s = (unit, Format.formatter, unit) format
 
 type t = Format.formatter -> unit
 
+type sp = Blank | Cut | Space | Break of int * int
+
 let ( $ ) f g x = f x ; g x
 
 let ( >$ ) f g x = f $ g x
@@ -56,6 +58,12 @@ let fmt f fs = Format.fprintf fs f
 let char c fs = Format.pp_print_char fs c
 
 let str s fs = if not (String.is_empty s) then Format.pp_print_string fs s
+
+let sp = function
+  | Blank -> char ' '
+  | Cut -> fmt "@,"
+  | Space -> fmt "@ "
+  | Break (x, y) -> break x y
 
 (** Primitive containers ------------------------------------------------*)
 

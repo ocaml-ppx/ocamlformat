@@ -14,10 +14,12 @@ let foo =
     := entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest ;
   value_end
     := ( entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
-       ) [@foo] ;
+       )
+       [@foo] ;
   value_end
     := ( entry.logdata.value_end - !remove_size + testtesttesttesttesttesttest
-       ) [@foo]
+       )
+       [@foo]
   (* fooooooooooooo *) ;
   (* foooooooooooooooooooo *)
   value_end

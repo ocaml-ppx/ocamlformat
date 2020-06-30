@@ -5,18 +5,24 @@ include struct
 end
 [@warning "item"] [@@warning "structure"]
 
-include M [@warning "item"] [@@warning "structure"]
+include M
+[@warning "item"] [@@warning "structure"]
 
-include (M : S) [@warning "item"] [@@warning "structure"]
+include (M : S)
+[@warning "item"] [@@warning "structure"]
 
-include M (N) [@warning "item"] [@@warning "structure"]
+include M (N)
+[@warning "item"] [@@warning "structure"]
 
-include [%ext] [@warning "item"] [@@warning "structure"]
+include [%ext]
+[@warning "item"] [@@warning "structure"]
 
-include (val M) [@warning "item"] [@@warning "structure"]
+include (val M)
+[@warning "item"] [@@warning "structure"]
 
 include ( val Aaaaaaaaaaaaaaaa.Bbbbbbbbbbbbbbbb.Cccccccccccccccc
-              .Dddddddddddddddd ) [@warning "item"] [@@warning "structure"]
+              .Dddddddddddddddd )
+[@warning "item"] [@@warning "structure"]
 
 include (
   List :
@@ -36,7 +42,8 @@ include (
       with module A := A
      [@warning "-3"] [@warning "-3"]
       with module B := B
-     [@warning "-3"] [@warning "-3"]) ) [@warning "-3"]
+     [@warning "-3"] [@warning "-3"]) )
+[@warning "-3"]
 
 module My_module_name : sig end = struct end
 (* some arbitrary comment *)

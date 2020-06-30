@@ -34,6 +34,8 @@
 
   + Fix missing open line between multi-line let-binding with poly-typexpr (#1372) (Josh Berdine)
 
+  + Remove trailing space after expression when followed by an attribute and break before attributes attached to multi-line phrases (#1382) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes

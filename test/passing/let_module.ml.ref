@@ -9,12 +9,14 @@ let () =
 let () =
   let module X = Map.Make (struct
     type t = t
-  end) [@foo] in
+  end)
+  [@foo] in
   let module K = Foooooooooo in
   (* foooooo *)
   let module X = Map.Make (struct
     type t = t (* foooooooooo *)
-  end) [@foo] in
+  end)
+  [@foo] in
   let module T = X [@foo] in
   let module X = Fooo (struct
     type t = t
