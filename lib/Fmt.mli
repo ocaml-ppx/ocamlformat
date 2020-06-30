@@ -19,6 +19,18 @@ type s = (unit, Format.formatter, unit) format
 (** Format thunks. *)
 type t
 
+type sp =
+  (* [ ] *)
+  | Blank
+  (* [@,] *)
+  | Cut
+  (* [@ ] *)
+  | Space
+  (* [@;] *)
+  | Break of int * int
+
+val sp : sp -> t
+
 val ( $ ) : t -> t -> t
 (** Format concatenation: [a $ b] formats [a], then [b]. *)
 
