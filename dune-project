@@ -1,4 +1,5 @@
 (lang dune 2.7)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                        ;
 ;                              OCamlFormat                               ;
@@ -32,10 +33,14 @@
    "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
-   (and (>= 4.06) (< 4.12)))
+   (and
+    (>= 4.06)
+    (< 4.12)))
   (alcotest :with-test)
   (base
-   (and (>= v0.12.0) (< v0.15)))
+   (and
+    (>= v0.12.0)
+    (< v0.15)))
   base-unix
   cmdliner
   fix
@@ -47,7 +52,8 @@
   (odoc
    (>= 1.4.2))
   re
-  (stdio (< v0.15))
+  (stdio
+   (< v0.15))
   (uuseg
    (>= 10.0.0))
   (uutf
