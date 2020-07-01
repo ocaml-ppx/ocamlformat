@@ -537,6 +537,14 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
       loop l1.loc_end (Cmts.remaining_before c.cmts l2)
   | `Compact -> false
 
+let fmt_quoted_string c key ext s strloc delim =
+  let delim = Option.value delim ~default:"" in
+  Cmts.fmt c strloc
+  @@ wrap_k
+       (str ("{" ^ key ^ ext ^ " " ^ delim ^ "|"))
+       (str ("|" ^ delim ^ "}"))
+       (str s)
+
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
   (* invalid nodes are printed as verbatim *)
@@ -557,6 +565,27 @@ let rec fmt_extension c ctx key (ext, pld) =
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
     ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
+  (* Quoted extensions (since ocaml 4.11) {%ext sep|...|sep} *)
+  | ( ("%" | "%%")
+    , ext
+    , PStr
+        [ { pstr_desc=
+              Pstr_eval
+                ( { pexp_desc=
+                      Pexp_constant (Pconst_string (str, strloc, delim))
+                  ; pexp_loc
+                  ; pexp_loc_stack= _
+                  ; pexp_attributes }
+                , attrs )
+          ; pstr_loc } ]
+    , _ )
+    when Source.is_quoted_string c.source pstr_loc ->
+      let doc, atrs = doc_atrs attrs in
+      fmt_docstring c doc
+      $ Cmts.fmt c pstr_loc @@ hvbox 0 @@ Cmts.fmt c pexp_loc @@ hvbox 0
+        @@ ( fmt_quoted_string c key ext str strloc delim
+           $ fmt_attributes c ~pre:Space ~key:"@" pexp_attributes )
+      $ fmt_attributes c ~pre:Space ~key:"@@" atrs
   | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
 
 and fmt_attribute_or_extension c key maybe_box (pre, pld) =

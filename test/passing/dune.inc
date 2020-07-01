@@ -1890,6 +1890,17 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to quoted_strings.ml.output
+     (run %{bin:ocamlformat} %{dep:quoted_strings.ml}))))
+
+(rule
+ (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.11.0))
+ (action (diff quoted_strings.ml quoted_strings.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to recmod.mli.output
      (run %{bin:ocamlformat} %{dep:recmod.mli}))))
 
