@@ -408,7 +408,9 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   let fmt_parsed parsed =
     fmt_if (space_i 0) " "
     $ Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) parsed
-    $ fmt_if (space_i (String.length str_cmt - 1)) " "
+    $ fmt_if
+        (String.length str_cmt > 1 && space_i (String.length str_cmt - 1))
+        " "
   in
   let fmt_raw str_cmt =
     if c.conf.wrap_comments then fill_text str_cmt else str str_cmt

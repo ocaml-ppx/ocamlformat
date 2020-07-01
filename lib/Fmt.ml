@@ -280,5 +280,8 @@ let fill_text ?epi text =
                       close_box $ fmt "\n@," $ open_hovbox 0
                   | Some _ when not (String.is_empty curr) -> fmt "@ "
                   | _ -> noop )))
-      $ fmt_if (Char.is_whitespace text.[String.length text - 1]) " "
+      $ fmt_if
+          ( String.length text > 1
+          && Char.is_whitespace text.[String.length text - 1] )
+          " "
       $ opt epi Fn.id )
