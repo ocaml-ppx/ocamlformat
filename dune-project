@@ -32,7 +32,7 @@
    "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
-   (and (>= 4.06) (< 4.11)))
+   (and (>= 4.06) (< 4.12)))
   (alcotest :with-test)
   (base
    (and (>= v0.12.0) (< v0.15)))
@@ -42,7 +42,7 @@
   fpath
   menhir
   (ocaml-migrate-parsetree
-   (>= 1.5.0))
+   (>= 1.7.3))
   (ocp-indent :with-test)
   (odoc
    (>= 1.4.2))
