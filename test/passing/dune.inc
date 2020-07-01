@@ -999,6 +999,17 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to hash_types.ml.output
+     (run %{bin:ocamlformat} %{dep:hash_types.ml}))))
+
+(rule
+ (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.11.0))
+ (action (diff hash_types.ml hash_types.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to index_op.ml.output
      (run %{bin:ocamlformat} %{dep:index_op.ml}))))
 
