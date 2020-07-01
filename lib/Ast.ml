@@ -263,7 +263,7 @@ let doc_atrs ?(acc = []) atrs =
                 [ { pstr_desc=
                       Pstr_eval
                         ( { pexp_desc=
-                              Pexp_constant (Pconst_string (doc, None))
+                              Pexp_constant (Pconst_string (doc, _, None))
                           ; pexp_loc= loc
                           ; pexp_attributes= []
                           ; _ }
@@ -557,7 +557,7 @@ end
 
 let rec is_trivial c exp =
   match exp.pexp_desc with
-  | Pexp_constant (Pconst_string (_, None)) -> true
+  | Pexp_constant (Pconst_string (_, _, None)) -> true
   | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
   | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
   | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial c e1

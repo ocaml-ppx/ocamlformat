@@ -32,7 +32,8 @@ let dedup_cmts map_ast ast comments =
             PStr
               [ { pstr_desc=
                     Pstr_eval
-                      ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, _, None))
                         ; pexp_loc
                         ; _ }
                       , [] )
@@ -190,7 +191,7 @@ let make_mapper conf ~ignore_doc_comment =
       , PStr
           [ { pstr_desc=
                 Pstr_eval
-                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
                     ; pexp_loc
                     ; pexp_attributes
                     ; _ }
@@ -209,7 +210,8 @@ let make_mapper conf ~ignore_doc_comment =
                  [ { pstr_desc=
                        Pstr_eval
                          ( { pexp_desc=
-                               Pexp_constant (Pconst_string (doc', None))
+                               Pexp_constant
+                                 (Pconst_string (doc', loc, None))
                            ; pexp_loc= m.location m pexp_loc
                            ; pexp_attributes= m.attributes m pexp_attributes
                            ; pexp_loc_stack= [] }
@@ -405,7 +407,7 @@ let make_docstring_mapper c docstrings =
       , PStr
           [ { pstr_desc=
                 Pstr_eval
-                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
                     ; pexp_loc
                     ; pexp_attributes
                     ; _ }
@@ -420,7 +422,8 @@ let make_docstring_mapper c docstrings =
                  [ { pstr_desc=
                        Pstr_eval
                          ( { pexp_desc=
-                               Pexp_constant (Pconst_string (doc', None))
+                               Pexp_constant
+                                 (Pconst_string (doc', loc, None))
                            ; pexp_loc
                            ; pexp_attributes
                            ; pexp_loc_stack= [] }

@@ -2311,7 +2311,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
       | PStr
           [ { pstr_desc=
                 Pstr_eval
-                  ( { pexp_desc= Pexp_constant (Pconst_string (str, None))
+                  ( { pexp_desc= Pexp_constant (Pconst_string (str, _, None))
                     ; pexp_attributes= []
                     ; _ }
                   , [] )

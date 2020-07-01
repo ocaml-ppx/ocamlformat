@@ -59,7 +59,8 @@ end = struct
         , PStr
             [ { pstr_desc=
                   Pstr_eval
-                    ( { pexp_desc= Pexp_constant (Pconst_string (doc, None))
+                    ( { pexp_desc=
+                          Pexp_constant (Pconst_string (doc, _, None))
                       ; pexp_attributes
                       ; _ }
                     , [] )
@@ -73,7 +74,8 @@ end = struct
                    [ { pstr_desc=
                          Pstr_eval
                            ( { pexp_desc=
-                                 Pexp_constant (Pconst_string (doc, None))
+                                 Pexp_constant
+                                   (Pconst_string (doc, Location.none, None))
                              ; pexp_loc= Location.none
                              ; pexp_attributes=
                                  m.attributes m pexp_attributes
