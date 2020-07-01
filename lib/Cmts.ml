@@ -52,37 +52,23 @@ end = struct
 
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
+  let is_doc_comment attr =
+    match (attr.attr_name, attr.attr_payload) with
+    | ( {txt= "ocaml.doc" | "ocaml.text"; _}
+      , PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( {pexp_desc= Pexp_constant (Pconst_string (_, _, None)); _}
+                  , [] )
+            ; _ } ] ) ->
+        true
+    | _ -> false
+
   let of_ast map_ast ast src =
-    let attribute (m : Ast_mapper.mapper) (attr : attribute) =
-      match (attr.attr_name, attr.attr_payload) with
-      | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; _}
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( { pexp_desc=
-                          Pexp_constant (Pconst_string (doc, _, None))
-                      ; pexp_attributes
-                      ; _ }
-                    , [] )
-              ; _ } ] ) ->
-          (* ignore location of docstrings *)
-          { attr_name= {txt; loc= Location.none}
-          ; attr_loc= Location.none
-          ; attr_payload=
-              m.payload m
-                (PStr
-                   [ { pstr_desc=
-                         Pstr_eval
-                           ( { pexp_desc=
-                                 Pexp_constant
-                                   (Pconst_string (doc, Location.none, None))
-                             ; pexp_loc= Location.none
-                             ; pexp_attributes=
-                                 m.attributes m pexp_attributes
-                             ; pexp_loc_stack= [] }
-                           , [] )
-                     ; pstr_loc= Location.none } ]) }
-      | _ -> Ast_mapper.default_mapper.attribute m attr
+    let attribute (m : Ast_mapper.mapper) attr =
+      (* ignore location of docstrings *)
+      if is_doc_comment attr then attr
+      else Ast_mapper.default_mapper.attribute m attr
     in
     let locs = ref [] in
     let location _ loc =
