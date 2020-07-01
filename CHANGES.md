@@ -36,6 +36,8 @@
 
   + Remove trailing space after expression when followed by an attribute and break before attributes attached to multi-line phrases (#1382) (Guillaume Petiot)
 
+  + Do not add a space to minimal comments `(* *)`, `(** *)` and `(*$ *)` (#1407) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
