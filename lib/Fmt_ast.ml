@@ -403,13 +403,8 @@ let parse_docstring ~loc text =
   | {warnings; _} -> Error (List.map warnings ~f:Odoc_model.Error.to_string)
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
-  let space_i i =
-    let is_space = function
-      | '\t' | '\n' | '\011' | '\012' | '\r' | ' ' -> true
-      | _ -> false
-    in
-    0 <= i && i < String.length str_cmt && is_space str_cmt.[i]
-  in
+  assert (not (String.is_empty str_cmt)) ;
+  let space_i i = Char.is_whitespace str_cmt.[i] in
   let fmt_parsed parsed =
     fmt_if (space_i 0) " "
     $ Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) parsed
