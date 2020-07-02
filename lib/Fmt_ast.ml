@@ -541,8 +541,8 @@ let fmt_quoted_string c key ext s strloc delim =
   let delim = Option.value delim ~default:"" in
   Cmts.fmt c strloc
   @@ wrap_k
-       (str ("{" ^ key ^ ext ^ " " ^ delim ^ "|"))
-       (str ("|" ^ delim ^ "}"))
+       (str (Format.sprintf "{%s%s %s|" key ext delim))
+       (str (Format.sprintf "|%s}" delim))
        (str s)
 
 let rec fmt_extension c ctx key (ext, pld) =
@@ -565,7 +565,7 @@ let rec fmt_extension c ctx key (ext, pld) =
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
     ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
-  (* Quoted extensions (since ocaml 4.11) {%ext sep|...|sep} *)
+  (* Quoted extensions (since ocaml 4.11) {%ext delim|...|delim} *)
   | ( ("%" | "%%")
     , ext
     , PStr
