@@ -176,18 +176,18 @@ let _ =
   foo >>= fun (* foo before *) [@warning "-4"] (* foo after *) x ->
   fooooooooooooooooooooooo
 
-let f = Ok () >>= (*  *) fun _ -> Ok ()
+let f = Ok () >>= (* *) fun _ -> Ok ()
 
 let f =
   (* fooooooooooooooo foooooooooooooooo *)
-  Ok () >>= (*  *) fun _ ->
+  Ok () >>= (* *) fun _ ->
   Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
-let f = Ok () >>= (*  *) function Foo -> Ok ()
+let f = Ok () >>= (* *) function Foo -> Ok ()
 
 let f =
   (* fooooooooooooooo foooooooooooooooo *)
-  Ok () >>= (*  *) function
+  Ok () >>= (* *) function
   | Foo -> Ok foooooooooooooooooooooooooooooooooooooooooooooooooo
 
 let f =
@@ -207,11 +207,11 @@ let f =
 (** The tests below are testing a dropped comment with
     `--no-break-infix-before-func` *)
 
-let _ = x |> fun y -> y (*  *)
+let _ = x |> fun y -> y (* *)
 
-let _ = x |> function y -> y (*  *)
+let _ = x |> function y -> y (* *)
 
-let _ = match () with A -> ( x |> function y -> y (*  *) ) | B -> ()
+let _ = match () with A -> ( x |> function y -> y (* *) ) | B -> ()
 
 let _ = x |> function y -> ( function _ -> y (* A *) ) (* B *)
 

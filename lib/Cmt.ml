@@ -160,7 +160,10 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
     match fmt_code source with
     | Ok formatted ->
         let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
-        hvbox 2 (wrap "(*$" cls (fmt "@;" $ formatted $ fmt "@;<1 -2>"))
+        hvbox 2
+          (wrap "(*$" cls
+             ( fmt "@;" $ formatted
+             $ fmt_if (String.length str > 2) "@;<1 -2>" ))
     | Error () -> fmt_non_code ~wrap_comments:false cmt
   in
   match cmt.txt with

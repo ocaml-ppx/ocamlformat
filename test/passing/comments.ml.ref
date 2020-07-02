@@ -1,8 +1,12 @@
-(*  *)
+(* *)
 
 (**)
 
-(*  *)
+(* *)
+
+(*$*)
+(*$ *)
+(*$  *)
 
 let _ = f (*f*) a (*a*) ~b (*comment*) ~c:(*comment*) c' ?d ?e ()
 
@@ -173,9 +177,9 @@ let _ =
 type t = {a: int [@default a] (* comment *); b: flag}
 
 let () =
-  (*  *)
+  (* *)
 
-  (*  *)
+  (* *)
   ()
 
 (* break when unicode sequence length measured in bytes but ¬ in code points *)

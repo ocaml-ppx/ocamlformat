@@ -404,11 +404,12 @@ let parse_docstring ~loc text =
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   assert (not (String.is_empty str_cmt)) ;
-  let space_i i = Char.is_whitespace str_cmt.[i] in
   let fmt_parsed parsed =
-    fmt_if (space_i 0) " "
+    fmt_if (String.starts_with_whitespace str_cmt) " "
     $ Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) parsed
-    $ fmt_if (space_i (String.length str_cmt - 1)) " "
+    $ fmt_if
+        (String.length str_cmt > 1 && String.ends_with_whitespace str_cmt)
+        " "
   in
   let fmt_raw str_cmt =
     if c.conf.wrap_comments then fill_text str_cmt else str str_cmt
