@@ -180,18 +180,12 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
 let chop_suffix_is_present s ~suffix =
   String.chop_suffix s ~suffix |> Option.value ~default:s
 
-let basic_normalize s =
-  (* normalize consecutive whitespace chars to a single space *)
-  String.concat ~sep:" "
-    (List.filter ~f:(Fn.non String.is_empty)
-       (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
-
-let normalize ~normalize_impl {txt; _} =
+let normalized_string ~normalize_comment ~normalize_impl {txt; _} =
   let str = chop_suffix_is_present txt ~suffix:"$" in
   match String.chop_prefix str ~prefix:"$" with
-  | None -> basic_normalize txt
+  | None -> normalize_comment txt
   | Some str -> (
       let lexbuf = Lexing.from_string str in
       match Migrate_ast.Parse.implementation lexbuf |> normalize_impl with
       | impl -> Caml.Format.asprintf "%a" Printast.implementation impl
-      | exception _ -> basic_normalize txt )
+      | exception _ -> normalize_comment txt )

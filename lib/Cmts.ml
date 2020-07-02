@@ -492,6 +492,9 @@ let remaining_before t loc = Location.Multimap.find_multi t.cmts_before loc
 let remaining_locs t = Location.Set.to_list t.remaining
 
 let diff (conf : Conf.t) x y =
-  let norm_cmt = Cmt.normalize ~normalize_impl:(Normalize.impl conf) in
+  let norm_cmt =
+    Cmt.normalized_string ~normalize_comment:Normalize.comment
+      ~normalize_impl:(Normalize.impl conf)
+  in
   let norm l = Set.of_list (module String) (List.map ~f:norm_cmt l) in
   Set.symmetric_diff (norm x) (norm y)
