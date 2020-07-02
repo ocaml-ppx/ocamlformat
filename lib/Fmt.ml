@@ -268,7 +268,7 @@ let fill_text ?epi text =
       ~equal:(fun x y -> String.is_empty x && String.is_empty y)
       (String.split (String.rstrip text) ~on:'\n')
   in
-  fmt_if (Char.is_whitespace text.[0]) " "
+  fmt_if (String.starts_with_whitespace text) " "
   $ hovbox 0
       ( hvbox 0
           (hovbox 0
@@ -280,8 +280,5 @@ let fill_text ?epi text =
                       close_box $ fmt "\n@," $ open_hovbox 0
                   | Some _ when not (String.is_empty curr) -> fmt "@ "
                   | _ -> noop )))
-      $ fmt_if
-          ( String.length text > 1
-          && Char.is_whitespace text.[String.length text - 1] )
-          " "
+      $ fmt_if (String.ends_with_whitespace text) " "
       $ opt epi Fn.id )
