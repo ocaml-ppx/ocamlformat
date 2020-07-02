@@ -537,13 +537,12 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
       loop l1.loc_end (Cmts.remaining_before c.cmts l2)
   | `Compact -> false
 
-let fmt_quoted_string c key ext s strloc delim =
+let fmt_quoted_string key ext s delim =
   let delim = Option.value delim ~default:"" in
-  Cmts.fmt c strloc
-  @@ wrap_k
-       (str (Format.sprintf "{%s%s %s|" key ext delim))
-       (str (Format.sprintf "|%s}" delim))
-       (str s)
+  wrap_k
+    (str (Format.sprintf "{%s%s %s|" key ext delim))
+    (str (Format.sprintf "|%s}" delim))
+    (str s)
 
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
@@ -571,8 +570,7 @@ let rec fmt_extension c ctx key (ext, pld) =
     , PStr
         [ { pstr_desc=
               Pstr_eval
-                ( { pexp_desc=
-                      Pexp_constant (Pconst_string (str, strloc, delim))
+                ( { pexp_desc= Pexp_constant (Pconst_string (str, _, delim))
                   ; pexp_loc
                   ; pexp_loc_stack= _
                   ; pexp_attributes }
@@ -583,7 +581,7 @@ let rec fmt_extension c ctx key (ext, pld) =
       let doc, atrs = doc_atrs attrs in
       fmt_docstring c doc
       $ Cmts.fmt c pstr_loc @@ hvbox 0 @@ Cmts.fmt c pexp_loc @@ hvbox 0
-        @@ ( fmt_quoted_string c key ext str strloc delim
+        @@ ( fmt_quoted_string key ext str delim
            $ fmt_attributes c ~pre:Space ~key:"@" pexp_attributes )
       $ fmt_attributes c ~pre:Space ~key:"@@" atrs
   | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
