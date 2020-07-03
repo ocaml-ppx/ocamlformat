@@ -564,7 +564,8 @@ let rec fmt_extension c ctx key (ext, pld) =
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
     ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
-  (* Quoted extensions (since ocaml 4.11) {%ext delim|...|delim} *)
+  (* Quoted extensions (since ocaml 4.11) {%ext delim|...|delim}. Comments
+     and attributes are not allowed by the parser. *)
   | ( ("%" | "%%")
     , ext
     , PStr
@@ -573,17 +574,16 @@ let rec fmt_extension c ctx key (ext, pld) =
                 ( { pexp_desc= Pexp_constant (Pconst_string (str, _, delim))
                   ; pexp_loc
                   ; pexp_loc_stack= _
-                  ; pexp_attributes }
-                , attrs )
+                  ; pexp_attributes= [] }
+                , [] )
           ; pstr_loc } ]
     , _ )
     when Source.is_quoted_string c.source pstr_loc ->
-      let doc, atrs = doc_atrs attrs in
-      fmt_docstring c doc
-      $ Cmts.fmt c pstr_loc @@ hvbox 0 @@ Cmts.fmt c pexp_loc @@ hvbox 0
-        @@ ( fmt_quoted_string key ext str delim
-           $ fmt_attributes c ~pre:Space ~key:"@" pexp_attributes )
-      $ fmt_attributes c ~pre:Space ~key:"@@" atrs
+      assert (not (Cmts.has_before c.cmts pexp_loc)) ;
+      assert (not (Cmts.has_after c.cmts pexp_loc)) ;
+      assert (not (Cmts.has_before c.cmts pstr_loc)) ;
+      assert (not (Cmts.has_after c.cmts pstr_loc)) ;
+      hvbox 0 (fmt_quoted_string key ext str delim)
   | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
 
 and fmt_attribute_or_extension c key maybe_box (pre, pld) =
