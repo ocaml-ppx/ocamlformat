@@ -40,7 +40,7 @@
 
 #### New features
 
-  + Support quoted extensions, new ocaml 4.11 feature (#1405) (Guillaume Petiot)
+  + Support quoted extensions (added in ocaml 4.11) (#1405) (Guillaume Petiot)
 
 ### 0.14.2 (2020-05-11)
 
