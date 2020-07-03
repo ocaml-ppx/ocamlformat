@@ -537,12 +537,14 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
       loop l1.loc_end (Cmts.remaining_before c.cmts l2)
   | `Compact -> false
 
-let fmt_quoted_string key ext s delim =
-  let delim = Option.value delim ~default:"" in
-  wrap_k
-    (str (Format.sprintf "{%s%s %s|" key ext delim))
-    (str (Format.sprintf "|%s}" delim))
-    (str s)
+let fmt_quoted_string key ext s = function
+  | None | Some "" ->
+      wrap_k (str (Format.sprintf "{%s%s|" key ext)) (str "|}") (str s)
+  | Some delim ->
+      wrap_k
+        (str (Format.sprintf "{%s%s %s|" key ext delim))
+        (str (Format.sprintf "|%s}" delim))
+        (str s)
 
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
