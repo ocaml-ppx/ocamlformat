@@ -572,7 +572,7 @@ let rec fmt_extension c ctx key (ext, pld) =
     , PStr
         [ { pstr_desc=
               Pstr_eval
-                ( { pexp_desc= Pexp_constant (Pconst_string (str, _, delim))
+                ( { pexp_desc= Pexp_constant (Pconst_string (str, loc, delim))
                   ; pexp_loc
                   ; pexp_loc_stack= _
                   ; pexp_attributes= [] }
@@ -580,6 +580,8 @@ let rec fmt_extension c ctx key (ext, pld) =
           ; pstr_loc } ]
     , _ )
     when Source.is_quoted_string c.source pstr_loc ->
+      assert (not (Cmts.has_before c.cmts loc)) ;
+      assert (not (Cmts.has_after c.cmts loc)) ;
       assert (not (Cmts.has_before c.cmts pexp_loc)) ;
       assert (not (Cmts.has_after c.cmts pexp_loc)) ;
       assert (not (Cmts.has_before c.cmts pstr_loc)) ;
