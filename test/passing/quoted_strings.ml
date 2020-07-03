@@ -1,9 +1,5 @@
 let foo = {%foo | foooooooooooooo |}
 
-let foo = {%foo | foooooooooooooo |} (* A *)
-
-let foo = ({%foo | foooooooooooooo |} [@attr])
-
 let foo = (* A *) ({%foo | foooooooooooooo |} (* B *) [@attr]) (* C *)
 
 let foo = (* A *) {%foo sep| foooooooooooooo |sep}
@@ -24,10 +20,6 @@ let foo = (* A *) ({%foo | foooooooooooooo |} [@attr]) (* B *) [@@attr]
 let foo = (* A *) {%foo sep| foooooooooooooo |sep} (* B *) [@@attr]
 
 {%%foo | foooooooooooooo |}
-
-{%%foo | foooooooooooooo |} (* B *)
-
-{%%foo | foooooooooooooo |} [@@attr]
 
 {%%foo | foooooooooooooo |} (* A *) [@@attr] (* B *)
 
