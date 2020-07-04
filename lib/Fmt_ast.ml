@@ -537,6 +537,14 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
       loop l1.loc_end (Cmts.remaining_before c.cmts l2)
   | `Compact -> false
 
+let fmt_quoted_string key ext s = function
+  | None -> wrap_k (str (Format.sprintf "{%s%s|" key ext)) (str "|}") (str s)
+  | Some delim ->
+      wrap_k
+        (str (Format.sprintf "{%s%s %s|" key ext delim))
+        (str (Format.sprintf "|%s}" delim))
+        (str s)
+
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
   (* invalid nodes are printed as verbatim *)
@@ -557,6 +565,28 @@ let rec fmt_extension c ctx key (ext, pld) =
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
     ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
+  (* Quoted extensions (since ocaml 4.11) {%ext delim|...|delim}. Comments
+     and attributes are not allowed by the parser. *)
+  | ( ("%" | "%%")
+    , ext
+    , PStr
+        [ { pstr_desc=
+              Pstr_eval
+                ( { pexp_desc= Pexp_constant (Pconst_string (str, loc, delim))
+                  ; pexp_loc
+                  ; pexp_loc_stack= _
+                  ; pexp_attributes= [] }
+                , [] )
+          ; pstr_loc } ]
+    , _ )
+    when Source.is_quoted_string c.source pstr_loc ->
+      assert (not (Cmts.has_before c.cmts loc)) ;
+      assert (not (Cmts.has_after c.cmts loc)) ;
+      assert (not (Cmts.has_before c.cmts pexp_loc)) ;
+      assert (not (Cmts.has_after c.cmts pexp_loc)) ;
+      assert (not (Cmts.has_before c.cmts pstr_loc)) ;
+      assert (not (Cmts.has_after c.cmts pstr_loc)) ;
+      hvbox 0 (fmt_quoted_string key ext str delim)
   | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
 
 and fmt_attribute_or_extension c key maybe_box (pre, pld) =

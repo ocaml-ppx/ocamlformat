@@ -358,3 +358,11 @@ let loc_of_expr_constant t (e : Parsetree.expression) =
   | Pexp_constant cst ->
       loc_of_constant t (Location.smallest e.pexp_loc e.pexp_loc_stack) cst
   | _ -> impossible "loc_of_expr_constant is only called on constants"
+
+let is_quoted_string t loc =
+  let toks =
+    tokens_at t loc ~filter:(function
+      | QUOTED_STRING_ITEM _ | QUOTED_STRING_EXPR _ -> true
+      | _ -> false )
+  in
+  not (List.is_empty toks)

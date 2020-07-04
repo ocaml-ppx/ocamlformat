@@ -38,6 +38,10 @@
 
   + Do not add a space to minimal comments `(* *)`, `(** *)` and `(*$ *)` (#1407) (Guillaume Petiot)
 
+#### New features
+
+  + Support quoted extensions (added in ocaml 4.11) (#1405) (Guillaume Petiot)
+
 ### 0.14.2 (2020-05-11)
 
 #### Changes
