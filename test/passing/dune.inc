@@ -91,6 +91,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to attributes.ml.output
      (run %{bin:ocamlformat} %{dep:attributes.ml}))))
@@ -514,6 +515,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to comments.ml.output
      (run %{bin:ocamlformat} --max-iter=4 %{dep:comments.ml}))))
@@ -545,6 +547,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to comments_in_record.ml.output
      (run %{bin:ocamlformat} %{dep:comments_in_record.ml}))))
@@ -576,6 +579,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to directives.mlt.output
      (run %{bin:ocamlformat} %{dep:directives.mlt}))))
@@ -607,6 +611,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments-after.ml.output
      (run %{bin:ocamlformat} --doc-comments=after-when-possible %{dep:doc_comments.ml}))))
@@ -618,6 +623,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments-before-except-val.ml.output
      (run %{bin:ocamlformat} --doc-comments=before-except-val %{dep:doc_comments.ml}))))
@@ -629,6 +635,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments-before.ml.output
      (run %{bin:ocamlformat} --doc-comments=before %{dep:doc_comments.ml}))))
@@ -640,6 +647,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments.ml.output
      (run %{bin:ocamlformat} %{dep:doc_comments.ml}))))
@@ -651,6 +659,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments.mli.output
      (run %{bin:ocamlformat} %{dep:doc_comments.mli}))))
@@ -805,6 +814,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to extensions-indent.ml.output
      (run %{bin:ocamlformat} --max-iters=3 --extension-indent=5 --stritem-extension-indent=3 %{dep:extensions.ml}))))
@@ -826,6 +836,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to extensions-sugar_always.ml.output
      (run %{bin:ocamlformat} --max-iters=3 --extension-sugar=always %{dep:extensions.ml}))))
@@ -837,6 +848,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to extensions.ml.output
      (run %{bin:ocamlformat} --max-iters=3 %{dep:extensions.ml}))))
@@ -998,6 +1010,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.11.0))
  (action
    (with-outputs-to hash_types.ml.output
      (run %{bin:ocamlformat} %{dep:hash_types.ml}))))
@@ -1029,6 +1042,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind-break.ml.output
      (run %{bin:ocamlformat} --break-infix=wrap --break-infix-before-func %{dep:infix_bind.ml}))))
@@ -1040,6 +1054,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind-fit_or_vertical-break.ml.output
      (run %{bin:ocamlformat} --break-infix=fit-or-vertical --break-infix-before-func %{dep:infix_bind.ml}))))
@@ -1051,6 +1066,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind-fit_or_vertical.ml.output
      (run %{bin:ocamlformat} --break-infix=fit-or-vertical --no-break-infix-before-func %{dep:infix_bind.ml}))))
@@ -1062,6 +1078,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind.ml.output
      (run %{bin:ocamlformat} --break-infix=wrap --no-break-infix-before-func %{dep:infix_bind.ml}))))
@@ -1093,6 +1110,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.07.0))
  (action
    (with-outputs-to invalid_docstring.ml.output
      (run %{bin:ocamlformat} %{dep:invalid_docstring.ml}))))
@@ -1324,6 +1342,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_source.ml.output
      (run %{bin:ocamlformat} --max-iters=3 --profile=janestreet %{dep:js_source.ml}))))
@@ -1335,12 +1354,14 @@
 
 (rule
  (deps .ocp-indent )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_source.ml.ocp.output
      (run %{bin:ocp-indent} %{dep:js_source.ml.ref}))))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_source.ml.ocp js_source.ml.ocp.output)))
 
 (rule
@@ -1375,6 +1396,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to let_binding-in_indent.ml.output
      (run %{bin:ocamlformat} --indent-after-in=4 %{dep:let_binding.ml}))))
@@ -1386,6 +1408,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to let_binding-indent.ml.output
      (run %{bin:ocamlformat} --let-binding-indent=6 %{dep:let_binding.ml}))))
@@ -1397,6 +1420,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to let_binding.ml.output
      (run %{bin:ocamlformat} %{dep:let_binding.ml}))))
@@ -1528,6 +1552,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to match2.ml.output
      (run %{bin:ocamlformat} --leading-nested-match-parens %{dep:match2.ml}))))
@@ -1579,6 +1604,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.10.0))
  (action
    (with-outputs-to module_anonymous.ml.output
      (run %{bin:ocamlformat} %{dep:module_anonymous.ml}))))
@@ -1630,6 +1656,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to module_item_spacing.mli.output
      (run %{bin:ocamlformat} --max-iter=3 %{dep:module_item_spacing.mli}))))
@@ -1651,6 +1678,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to monadic_binding.ml.output
      (run %{bin:ocamlformat} %{dep:monadic_binding.ml}))))
@@ -1662,6 +1690,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.10.0))
  (action
    (with-outputs-to multi_index_op.ml.output
      (run %{bin:ocamlformat} %{dep:multi_index_op.ml}))))
@@ -1734,6 +1763,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to open-auto.ml.output
      (run %{bin:ocamlformat} --let-open=auto %{dep:open.ml}))))
@@ -1745,6 +1775,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to open-long.ml.output
      (run %{bin:ocamlformat} --let-open=long %{dep:open.ml}))))
@@ -1756,6 +1787,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to open-preserve.ml.output
      (run %{bin:ocamlformat} --let-open=preserve %{dep:open.ml}))))
@@ -1767,6 +1799,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to open-short.ml.output
      (run %{bin:ocamlformat} --let-open=short %{dep:open.ml}))))
@@ -1778,6 +1811,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to open.ml.output
      (run %{bin:ocamlformat} %{dep:open.ml}))))
@@ -1889,6 +1923,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.11.0))
  (action
    (with-outputs-to quoted_strings.ml.output
      (run %{bin:ocamlformat} %{dep:quoted_strings.ml}))))
@@ -2000,6 +2035,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to sequence-preserve.ml.output
      (run %{bin:ocamlformat} --sequence-blank-line=preserve-one --max-iter=3 %{dep:sequence.ml}))))
@@ -2011,6 +2047,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to sequence.ml.output
      (run %{bin:ocamlformat} --sequence-blank-line=compact --max-iter=3 %{dep:sequence.ml}))))
@@ -2052,6 +2089,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to source.ml.output
      (run %{bin:ocamlformat} --max-iters=3 %{dep:source.ml}))))
@@ -2193,6 +2231,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-compact-space_around-docked.ml.output
      (run %{bin:ocamlformat} --type-decl=compact --space-around-arrays --space-around-lists --space-around-records --space-around-variants --break-separators=after --dock-collection-brackets %{dep:types.ml}))))
@@ -2204,6 +2243,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-compact-space_around.ml.output
      (run %{bin:ocamlformat} --type-decl=compact --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:types.ml}))))
@@ -2215,6 +2255,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-compact.ml.output
      (run %{bin:ocamlformat} --type-decl=compact %{dep:types.ml}))))
@@ -2226,6 +2267,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-indent.ml.output
      (run %{bin:ocamlformat} --type-decl-indent=6 %{dep:types.ml}))))
@@ -2237,6 +2279,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-sparse-space_around.ml.output
      (run %{bin:ocamlformat} --type-decl=sparse --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:types.ml}))))
@@ -2248,6 +2291,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-sparse.ml.output
      (run %{bin:ocamlformat} --type-decl=sparse %{dep:types.ml}))))
@@ -2259,6 +2303,7 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types.ml.output
      (run %{bin:ocamlformat} %{dep:types.ml}))))

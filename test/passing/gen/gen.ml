@@ -83,7 +83,7 @@ let emit_test test_name setup =
   Printf.printf
     {|
 (rule
- (deps .ocamlformat %s)
+ (deps .ocamlformat %s)%s
  (action
    (with-outputs-to %s.output
      %s)))
@@ -92,7 +92,7 @@ let emit_test test_name setup =
  (alias runtest)%s
  (action (diff %s %s.output)))
 |}
-    extra_deps test_name
+    extra_deps enabled_if_line test_name
     (cmd setup.should_fail
        ( ["%{bin:ocamlformat}"] @ opts
        @ [Printf.sprintf "%%{dep:%s}" base_test_name] ))
@@ -101,19 +101,19 @@ let emit_test test_name setup =
     Printf.printf
       {|
 (rule
- (deps .ocp-indent %s)
+ (deps .ocp-indent %s)%s
  (action
    (with-outputs-to %s.ocp.output
      %s)))
 
 (rule
- (alias runtest)
+ (alias runtest)%s
  (action (diff %s.ocp %s.ocp.output)))
 |}
-      extra_deps test_name
+      extra_deps enabled_if_line test_name
       (cmd setup.should_fail
          ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name])
-      test_name test_name
+      enabled_if_line test_name test_name
 
 let () =
   let map = ref StringMap.empty in
