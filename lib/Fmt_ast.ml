@@ -1672,7 +1672,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           String.sub op ~pos:1 ~len:(String.length op - 1)
         else op
       in
-      let spc = fmt_if (exposed_left_exp e1) "@ " in
+      let spc = fmt_if (Exp.exposed_left e1) "@ " in
       wrap_if parens "(" ")"
         ( Cmts.fmt c pexp_loc
           @@ hvbox 2 (str op $ spc $ fmt_expression c (sub_exp ~ctx e1))

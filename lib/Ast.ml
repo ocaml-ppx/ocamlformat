@@ -311,6 +311,12 @@ module Exp = struct
         ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)]) ->
         is_trivial c e1
     | _ -> false
+
+  let rec exposed_left e =
+    match e.pexp_desc with
+    | Pexp_apply (op, _) -> is_prefix op || exposed_left op
+    | Pexp_field (e, _) -> exposed_left e
+    | _ -> false
 end
 
 module Pat = struct
@@ -822,8 +828,6 @@ and Requires_sub_terms : sig
   type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
   val exposed_right_exp : cls -> expression -> bool
-
-  val exposed_left_exp : expression -> bool
 
   val prec_ast : T.t -> Prec.t option
 
@@ -2029,12 +2033,6 @@ end = struct
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
     memo
-
-  let rec exposed_left_exp e =
-    match e.pexp_desc with
-    | Pexp_apply (op, _) -> Exp.is_prefix op || exposed_left_exp op
-    | Pexp_field (e, _) -> exposed_left_exp e
-    | _ -> false
 
   (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
       which satisfies [mem_cls_exp cls] and is not parenthesized. *)
