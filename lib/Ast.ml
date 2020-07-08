@@ -300,6 +300,17 @@ module Exp = struct
      |Pexp_newtype _ | Pexp_try _ ->
         false
     | _ -> List.exists pexp_attributes ~f:Attr.is_doc
+
+  let rec is_trivial c exp =
+    match exp.pexp_desc with
+    | Pexp_constant (Pconst_string (_, _, None)) -> true
+    | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
+    | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
+    | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial c e1
+    | Pexp_apply
+        ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)]) ->
+        is_trivial c e1
+    | _ -> false
 end
 
 module Pat = struct
@@ -586,17 +597,6 @@ module Value_binding = struct
     || (not (is_simple (i1, c1)))
     || not (is_simple (i2, c2))
 end
-
-let rec is_trivial c exp =
-  match exp.pexp_desc with
-  | Pexp_constant (Pconst_string (_, _, None)) -> true
-  | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
-  | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
-  | Pexp_apply (e0, [(_, e1)]) when Exp.is_prefix e0 -> is_trivial c e1
-  | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)])
-    ->
-      is_trivial c e1
-  | _ -> false
 
 type toplevel_item =
   [`Item of structure_item | `Directive of toplevel_directive]
@@ -1487,7 +1487,7 @@ end = struct
   let rec is_simple (c : Conf.t) width ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     match exp.pexp_desc with
-    | Pexp_constant _ -> is_trivial c exp
+    | Pexp_constant _ -> Exp.is_trivial c exp
     | Pexp_field _ | Pexp_ident _ | Pexp_send _
      |Pexp_construct (_, None)
      |Pexp_variant (_, None) ->
@@ -1498,18 +1498,18 @@ end = struct
         && is_simple c width (sub_exp ~ctx e2)
         && fit_margin c (width xexp)
     | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
-        is_trivial c e0
+        Exp.is_trivial c e0
     | Pexp_array e1N | Pexp_tuple e1N ->
-        List.for_all e1N ~f:(is_trivial c) && fit_margin c (width xexp)
+        List.for_all e1N ~f:(Exp.is_trivial c) && fit_margin c (width xexp)
     | Pexp_record (e1N, e0) ->
-        Option.for_all e0 ~f:(is_trivial c)
-        && List.for_all e1N ~f:(snd >> is_trivial c)
+        Option.for_all e0 ~f:(Exp.is_trivial c)
+        && List.for_all e1N ~f:(snd >> Exp.is_trivial c)
         && fit_margin c (width xexp)
     | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident ":="; _}; _}, _) ->
         false
     | Pexp_apply (e0, e1N) ->
-        is_trivial c e0
-        && List.for_all e1N ~f:(snd >> is_trivial c)
+        Exp.is_trivial c e0
+        && List.for_all e1N ~f:(snd >> Exp.is_trivial c)
         && fit_margin c (width xexp)
     | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
         is_simple c width (sub_exp ~ctx e0)
