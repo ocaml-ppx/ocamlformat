@@ -34,9 +34,7 @@ let ( init
 
 (** Predicates recognizing special symbol identifiers. *)
 
-module Char = struct
-  include Char
-
+module Char_id = struct
   let is_kwdop = function
     | '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|'
      |'!' | '%' | ':' | '?' ->
@@ -164,13 +162,13 @@ module String_id = struct
     | _ -> ( match i.[0] with '!' | '?' | '~' -> true | _ -> false )
 
   let is_monadic_binding s =
-    Int.(String.length s > 3)
+    String.length s > 3
     && (String.is_prefix s ~prefix:"let" || String.is_prefix s ~prefix:"and")
     && Option.is_none
-         (String.lfindi s ~pos:3 ~f:(fun _ c -> not (Char.is_kwdop c)))
+         (String.lfindi s ~pos:3 ~f:(fun _ c -> not (Char_id.is_kwdop c)))
 
   let is_infix i =
-    if Char.is_infixop i.[0] then true
+    if Char_id.is_infixop i.[0] then true
     else
       match i with
       | "!=" | "land" | "lor" | "lxor" | "mod" | "::" | ":=" | "asr"
@@ -179,7 +177,7 @@ module String_id = struct
       | _ -> is_monadic_binding i
 
   let is_hash_getter i =
-    let is_infix_char c = Char.equal c '.' || Char.is_infixop c in
+    let is_infix_char c = Char.equal c '.' || Char_id.is_infixop c in
     match (i.[0], i.[String.length i - 1]) with
     | '#', ('#' | '.') when String.for_all i ~f:is_infix_char -> true
     | _ -> false
