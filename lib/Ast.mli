@@ -23,9 +23,6 @@ val is_prefix : expression -> bool
 val is_infix_id : string -> bool
 (** Holds of infix symbols. *)
 
-val is_infix : expression -> bool
-(** Holds of infix symbol expressions. *)
-
 val is_hash_getter_id : string -> bool
 (** [is_hash_getter_id id] returns whether [id] is considered a hash-getter
     operator, of the form [#**#] or [#**.] where [**] can be 0 or more
@@ -80,8 +77,6 @@ val doc_atrs :
      ?acc:(string Location.loc * bool) list
   -> attributes
   -> (string Location.loc * bool) list option * attributes
-
-val longident_is_simple : Conf.t -> Longident.t -> bool
 
 val module_expr_is_simple : module_expr -> bool
 
