@@ -219,49 +219,47 @@ module Exp = struct
   let is_monadic_binding = test_id ~f:Longident.is_monadic_binding
 
   let is_symbol = test_id ~f:Longident.is_symbol
+
+  let is_sequence exp =
+    match exp.pexp_desc with
+    | Pexp_sequence _ -> true
+    | Pexp_extension
+        ( ext
+        , PStr
+            [ { pstr_desc=
+                  Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), [])
+              ; _ } ] )
+      when Source.extension_using_sugar ~name:ext ~payload:e ->
+        true
+    | _ -> false
+
+  let rec is_sugared_list' acc exp =
+    match exp.pexp_desc with
+    | Pexp_construct ({txt= Lident "[]"; _}, None) -> Ok (exp :: acc)
+    | Pexp_construct
+        ( {txt= Lident "::"; _}
+        , Some
+            { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []; _} as tl)]
+            ; pexp_attributes= []
+            ; _ } ) ->
+        is_sugared_list' (exp :: acc) tl
+    | _ -> Error acc
+
+  let is_sugared_list =
+    let memo = Hashtbl.Poly.create () in
+    register_reset (fun () -> Hashtbl.clear memo) ;
+    fun exp ->
+      match Hashtbl.find memo exp with
+      | Some b -> b
+      | None -> (
+        match is_sugared_list' [] exp with
+        | Error l ->
+            List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:false) l ;
+            false
+        | Ok l ->
+            List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
+            true )
 end
-
-(** Predicates recognizing classes of expressions. *)
-
-let is_sequence exp =
-  match exp.pexp_desc with
-  | Pexp_sequence _ -> true
-  | Pexp_extension
-      ( ext
-      , PStr
-          [ { pstr_desc=
-                Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), [])
-            ; _ } ] )
-    when Source.extension_using_sugar ~name:ext ~payload:e ->
-      true
-  | _ -> false
-
-let rec is_sugared_list' acc exp =
-  match exp.pexp_desc with
-  | Pexp_construct ({txt= Lident "[]"; _}, None) -> Ok (exp :: acc)
-  | Pexp_construct
-      ( {txt= Lident "::"; _}
-      , Some
-          { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []; _} as tl)]
-          ; pexp_attributes= []
-          ; _ } ) ->
-      is_sugared_list' (exp :: acc) tl
-  | _ -> Error acc
-
-let is_sugared_list =
-  let memo = Hashtbl.Poly.create () in
-  register_reset (fun () -> Hashtbl.clear memo) ;
-  fun exp ->
-    match Hashtbl.find memo exp with
-    | Some b -> b
-    | None -> (
-      match is_sugared_list' [] exp with
-      | Error l ->
-          List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:false) l ;
-          false
-      | Ok l ->
-          List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
-          true )
 
 let doc_atrs ?(acc = []) atrs =
   let docs, rev_atrs =
@@ -1602,7 +1600,7 @@ end = struct
           Some (Comma, if exp == e0 then Left else Right)
       | Pexp_construct
           ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
-          if is_sugared_list e2 then Some (Semi, Non)
+          if Exp.is_sugared_list e2 then Some (Semi, Non)
           else Some (ColonColon, if exp == e2 then Right else Left)
       | Pexp_array _ -> Some (Semi, Non)
       | Pexp_construct (_, Some _)
@@ -2221,7 +2219,7 @@ end = struct
       | _ -> (
         match ctx with
         | Exp {pexp_desc; _} ->
-            if is_right_infix_arg pexp_desc exp then is_sequence exp
+            if is_right_infix_arg pexp_desc exp then Exp.is_sequence exp
             else exposed_right_exp Non_apply exp
         | _ -> exposed_right_exp Non_apply exp )
     in
@@ -2321,7 +2319,8 @@ end = struct
           exposed_right_exp Then exp
       | Pexp_ifthenelse (_, thn, Some _) when thn == exp ->
           exposed_right_exp ThenElse exp
-      | Pexp_ifthenelse (_, _, Some els) when els == exp -> is_sequence exp
+      | Pexp_ifthenelse (_, _, Some els) when els == exp ->
+          Exp.is_sequence exp
       | Pexp_apply (({pexp_desc= Pexp_new _; _} as exp2), _) when exp2 == exp
         ->
           false
@@ -2398,7 +2397,7 @@ end = struct
                   ( {txt= Lident "::"; loc= _}
                   , Some {pexp_desc= Pexp_tuple [_; _]; _} )
             ; _ } as exp )
-        when not (is_sugared_list exp) ->
+        when not (Exp.is_sugared_list exp) ->
           prec_ast ast
       | _ -> None
     in

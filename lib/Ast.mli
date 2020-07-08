@@ -66,6 +66,9 @@ module Exp : sig
   (** [is_monadic_binding id] returns whether [id] is a monadic binding
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
+
+  val is_sugared_list : expression -> bool
+  (** Holds for expressions that can be sugared into [\[e1; ...; eN\]] form. *)
 end
 
 module Indexing_op : sig
@@ -99,9 +102,6 @@ module Indexing_op : sig
       and it's safe to use the sugar syntax, [None] otherwise. [args] should
       be the arguments of the corresponding [Pexp_apply]. *)
 end
-
-val is_sugared_list : expression -> bool
-(** Holds of expressions that can be sugared into [\[e1; ...; eN\]] form. *)
 
 val doc_atrs :
      ?acc:(string Location.loc * bool) list
