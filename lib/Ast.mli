@@ -18,35 +18,54 @@ val init : Conf.t -> unit
 (** Initialize internal state *)
 
 module String_id : sig
-  val is_symbol : string -> bool
-  (** Holds of prefix or infix symbols. *)
+  val is_prefix : string -> bool
+  (** Holds for prefix symbols. *)
 
   val is_infix : string -> bool
-  (** Holds of infix symbols. *)
+  (** Holds for infix symbols. *)
+
+  val is_symbol : string -> bool
+  (** Holds for prefix or infix symbols. *)
+
+  val is_hash_getter : string -> bool
+  (** [is_hash_getter id] returns whether [id] is considered a hash-getter
+      operator, of the form [#**#] or [#**.] where [**] can be 0 or more
+      operator chars. *)
+
+  val is_monadic_binding : string -> bool
+  (** [is_monadic_binding id] returns whether [id] is a monadic binding
+      operator of the form [let**] or [and**] where [**] can be 1 or more
+      operator chars. *)
 end
 
 module Longident : sig
   include module type of Longident
 
+  val is_infix : t -> bool
+  (** Holds for infix identifiers. *)
+
   val is_hash_getter : t -> bool
-  (** [is_hash_getter_id id] returns whether [id] is considered a hash-getter
+  (** [is_hash_getter id] returns whether [id] is considered a hash-getter
       operator, of the form [#**#] or [#**.] where [**] can be 0 or more
       operator chars. *)
 
-  val is_infix : t -> bool
-  (** Holds of infix symbols. *)
-
   val is_monadic_binding : t -> bool
+  (** [is_monadic_binding id] returns whether [id] is a monadic binding
+      operator of the form [let**] or [and**] where [**] can be 1 or more
+      operator chars. *)
 end
 
 module Exp : sig
   val is_prefix : expression -> bool
-  (** Holds of prefix symbol expressions. *)
-
-  val is_monadic_binding : expression -> bool
+  (** Holds for prefix symbol expressions. *)
 
   val is_symbol : expression -> bool
-  (** Holds of prefix or infix symbols. *)
+  (** Holds for prefix or infix expressions. *)
+
+  val is_monadic_binding : expression -> bool
+  (** [is_monadic_binding id] returns whether [id] is a monadic binding
+      operator of the form [let**] or [and**] where [**] can be 1 or more
+      operator chars. *)
 end
 
 module Indexing_op : sig
