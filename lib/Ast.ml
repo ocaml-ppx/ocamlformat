@@ -435,6 +435,13 @@ module Cl = struct
         false
     | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) -> is_simple e
     | Pcl_constraint (e, t) -> is_simple e && Cty.is_simple t
+
+  (** [mem_cls cls cl] holds if [cl] is in the named class of expressions
+      [cls]. *)
+  let mem_cls cls ast =
+    match (ast, cls) with
+    | {pcl_desc= Pcl_fun _; _}, Non_apply -> true
+    | _ -> false
 end
 
 module Tyd = struct
@@ -2020,13 +2027,6 @@ end = struct
         List.is_empty exp.pexp_attributes
     | _ -> false
 
-  (** [mem_cls_cl cls cl] holds if [cl] is in the named class of expressions
-      [cls]. *)
-  let mem_cls_cl cls ast =
-    match (ast, cls) with
-    | {pcl_desc= Pcl_fun _; _}, Non_apply -> true
-    | _ -> false
-
   let marked_parenzed_inner_nested_match =
     let memo = Hashtbl.Poly.create () in
     register_reset (fun () -> Hashtbl.clear memo) ;
@@ -2119,7 +2119,7 @@ end = struct
             && exposed_right_cl cls e
         | _ -> false
       in
-      mem_cls_cl cls cl
+      Cl.mem_cls cls cl
       || Hashtbl.find_or_add memo (cls, cl) ~default:exposed_
 
   and mark_parenzed_inner_nested_match exp =
