@@ -364,22 +364,7 @@ module Tyd = struct
     | Ptype_variant _ | Ptype_record _ -> false
 end
 
-module type Module_item = sig
-  type t
-
-  val break_between :
-       Source.t
-    -> cmts:'a
-    -> has_cmts_before:('a -> Location.t -> bool)
-    -> has_cmts_after:('a -> Location.t -> bool)
-    -> t * Conf.t
-    -> t * Conf.t
-    -> bool
-end
-
-module Structure_item : Module_item with type t = structure_item = struct
-  type t = structure_item
-
+module Structure_item = struct
   let has_doc itm =
     match itm.pstr_desc with
     | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
@@ -465,9 +450,7 @@ module Structure_item : Module_item with type t = structure_item = struct
         || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
-module Signature_item : Module_item with type t = signature_item = struct
-  type t = signature_item
-
+module Signature_item = struct
   let has_doc itm =
     match itm.psig_desc with
     | Psig_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
@@ -549,9 +532,7 @@ module Signature_item : Module_item with type t = signature_item = struct
         || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
-module Expression : Module_item with type t = expression = struct
-  type t = expression
-
+module Expression = struct
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pexp_loc c.Conf.margin
@@ -564,9 +545,7 @@ module Expression : Module_item with type t = expression = struct
     || not (is_simple (i2, c2))
 end
 
-module Value_binding : Module_item with type t = value_binding = struct
-  type t = value_binding
-
+module Value_binding = struct
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pvb_loc c.Conf.margin
