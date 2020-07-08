@@ -108,15 +108,25 @@ val doc_atrs :
   -> attributes
   -> (string Location.loc * bool) list option * attributes
 
-val module_expr_is_simple : module_expr -> bool
+module Mod : sig
+  val is_simple : module_expr -> bool
+end
 
-val module_type_is_simple : module_type -> bool
+module Mty : sig
+  val is_simple : module_type -> bool
+end
 
-val class_decl_is_simple : class_expr -> bool
+module Cl : sig
+  val is_simple : class_expr -> bool
+end
 
-val class_type_is_simple : class_type -> bool
+module Cty : sig
+  val is_simple : class_type -> bool
+end
 
-val type_decl_is_simple : type_declaration -> bool
+module Tyd : sig
+  val is_simple : type_declaration -> bool
+end
 
 type toplevel_item =
   [`Item of structure_item | `Directive of toplevel_directive]

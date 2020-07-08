@@ -310,7 +310,7 @@ let doc_atrs ?(acc = []) atrs =
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
 
-let rec module_type_is_simple x =
+let rec mty_is_simple x =
   match x.pmty_desc with
   | Pmty_ident _ | Pmty_alias _ | Pmty_signature [] -> true
   | Pmty_signature (_ :: _)
@@ -318,38 +318,51 @@ let rec module_type_is_simple x =
    |Pmty_extension _
    |Pmty_functor (_, _) ->
       false
-  | Pmty_typeof e -> module_expr_is_simple e
-  | Pmty_with (t, ([] | [_])) -> module_type_is_simple t
+  | Pmty_typeof e -> mod_is_simple e
+  | Pmty_with (t, ([] | [_])) -> mty_is_simple t
 
-and module_expr_is_simple x =
+and mod_is_simple x =
   match x.pmod_desc with
   | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] -> true
   | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _) -> false
-  | Pmod_constraint (e, t) ->
-      module_expr_is_simple e && module_type_is_simple t
-  | Pmod_apply (a, b) -> module_expr_is_simple a && module_expr_is_simple b
+  | Pmod_constraint (e, t) -> mod_is_simple e && mty_is_simple t
+  | Pmod_apply (a, b) -> mod_is_simple a && mod_is_simple b
 
-let rec class_decl_is_simple x =
-  match x.pcl_desc with
-  | Pcl_constr _ | Pcl_structure {pcstr_fields= []; _} -> true
-  | Pcl_structure {pcstr_fields= _ :: _; _}
-   |Pcl_let _ | Pcl_open _ | Pcl_extension _ ->
-      false
-  | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) -> class_decl_is_simple e
-  | Pcl_constraint (e, t) -> class_decl_is_simple e && class_type_is_simple t
+module Mty = struct
+  let is_simple = mty_is_simple
+end
 
-and class_type_is_simple x =
-  match x.pcty_desc with
-  | Pcty_constr _ | Pcty_signature {pcsig_fields= []; _} -> true
-  | Pcty_signature {pcsig_fields= _ :: _; _} | Pcty_open _ | Pcty_extension _
-    ->
-      false
-  | Pcty_arrow (_, _, t) -> class_type_is_simple t
+module Mod = struct
+  let is_simple = mod_is_simple
+end
 
-let type_decl_is_simple x =
-  match x.ptype_kind with
-  | Ptype_abstract | Ptype_open -> true
-  | Ptype_variant _ | Ptype_record _ -> false
+module Cty = struct
+  let rec is_simple x =
+    match x.pcty_desc with
+    | Pcty_constr _ | Pcty_signature {pcsig_fields= []; _} -> true
+    | Pcty_signature {pcsig_fields= _ :: _; _}
+     |Pcty_open _ | Pcty_extension _ ->
+        false
+    | Pcty_arrow (_, _, t) -> is_simple t
+end
+
+module Cl = struct
+  let rec is_simple x =
+    match x.pcl_desc with
+    | Pcl_constr _ | Pcl_structure {pcstr_fields= []; _} -> true
+    | Pcl_structure {pcstr_fields= _ :: _; _}
+     |Pcl_let _ | Pcl_open _ | Pcl_extension _ ->
+        false
+    | Pcl_apply (e, _) | Pcl_fun (_, _, _, e) -> is_simple e
+    | Pcl_constraint (e, t) -> is_simple e && Cty.is_simple t
+end
+
+module Tyd = struct
+  let is_simple x =
+    match x.ptype_kind with
+    | Ptype_abstract | Ptype_open -> true
+    | Ptype_variant _ | Ptype_record _ -> false
+end
 
 module type Module_item = sig
   type t
