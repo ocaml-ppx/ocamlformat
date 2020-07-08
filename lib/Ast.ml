@@ -276,6 +276,17 @@ module Exp = struct
         | Ok l ->
             List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
             true )
+
+  let is_simple (i, c) =
+    Poly.(c.Conf.module_item_spacing = `Compact)
+    && Location.is_single_line i.pexp_loc c.Conf.margin
+
+  let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+      (i2, c2) =
+    has_cmts_after cmts i1.pexp_loc
+    || has_cmts_before cmts i2.pexp_loc
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
 end
 
 let doc_atrs ?(acc = []) atrs =
@@ -532,19 +543,6 @@ module Signature_item = struct
         || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
-module Expression = struct
-  let is_simple (i, c) =
-    Poly.(c.Conf.module_item_spacing = `Compact)
-    && Location.is_single_line i.pexp_loc c.Conf.margin
-
-  let break_between _s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
-      (i2, c2) =
-    has_cmts_after cmts i1.pexp_loc
-    || has_cmts_before cmts i2.pexp_loc
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
-end
-
 module Value_binding = struct
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
@@ -742,8 +740,8 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
       Signature_item.break_between s ~cmts ~has_cmts_before ~has_cmts_after
         (i1, c1) (i2, c2)
   | Exp i1, Exp i2 ->
-      Expression.break_between s ~cmts ~has_cmts_before ~has_cmts_after
-        (i1, c1) (i2, c2)
+      Exp.break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+        (i2, c2)
   | Vb i1, Vb i2 ->
       Value_binding.break_between s ~cmts ~has_cmts_before ~has_cmts_after
         (i1, c1) (i2, c2)
