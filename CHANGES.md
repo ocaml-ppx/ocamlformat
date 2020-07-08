@@ -30,7 +30,8 @@
 
   + Fix placement of comments on constants (#1383) (Guillaume Petiot)
 
-  + Do not escape `@raise` argument in docstrings (#1391) (Guillaume Petiot)
+  + Do not escape arguments of some Odoc tags (#1391, 1408) (Guillaume Petiot, Jules Aguillon)
+    The characters `[]{}` must not be escaped in the arguments of `@raise`, `@author`, `@version` and others.
 
   + Fix missing open line between multi-line let-binding with poly-typexpr (#1372) (Josh Berdine)
 

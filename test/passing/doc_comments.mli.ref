@@ -449,7 +449,29 @@ val k : int
       {i fooooooooooooo oooooooo oooooooooo}
     - foo *)
 
+(** Brackets must not be escaped in the first argument of some tags: *)
+
 (** @raise [Invalid_argument] if the argument is [None]. Sometimes [t.\[x\]]. *)
+
+(** @author [Abc] [def] \[hij\] *)
+
+(** @author {Abc} {def} \{hij\} *)
+
+(** @param [id] [def] \[hij\] *)
+
+(** @raise [exn] [def] \[hij\] *)
+
+(** @since [Abc] [def] \[hij\] *)
+
+(** @before [Abc] [def] \[hij\] *)
+
+(** @version [Abc] [def] \[hij\] *)
+
+(** @see <[Abc]> [def] \[hij\] *)
+
+(** @see '[Abc]' [def] \[hij\] *)
+
+(** @see "[Abc]" [def] \[hij\] *)
 
 (** \[abc\] *)
 

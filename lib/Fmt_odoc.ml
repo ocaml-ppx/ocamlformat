@@ -212,23 +212,23 @@ let space = fmt "@ "
 
 let fmt_tag_see c wrap sr txt =
   at $ fmt "see@ "
-  $ wrap (str_normalized sr)
+  $ wrap (str sr)
   $ fmt_nestable_block_elements c ~prefix:space txt
 
 let fmt_tag c = function
-  | `Author s -> at $ fmt "author@ " $ str_normalized s
-  | `Version s -> at $ fmt "version@ " $ str_normalized s
+  | `Author s -> at $ fmt "author@ " $ str s
+  | `Version s -> at $ fmt "version@ " $ str s
   | `See (`Url, sr, txt) -> fmt_tag_see c (wrap "<" ">") sr txt
   | `See (`File, sr, txt) -> fmt_tag_see c (wrap "'" "'") sr txt
   | `See (`Document, sr, txt) -> fmt_tag_see c (wrap "\"" "\"") sr txt
-  | `Since s -> at $ fmt "since@ " $ str_normalized s
+  | `Since s -> at $ fmt "since@ " $ str s
   | `Before (s, txt) ->
-      at $ fmt "before@ " $ str_normalized s
+      at $ fmt "before@ " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Deprecated txt ->
       at $ fmt "deprecated" $ fmt_nestable_block_elements c ~prefix:space txt
   | `Param (s, txt) ->
-      at $ fmt "param@ " $ str_normalized s
+      at $ fmt "param@ " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Raise (s, txt) ->
       at $ fmt "raise@ " $ str s
