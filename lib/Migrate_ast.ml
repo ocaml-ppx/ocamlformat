@@ -264,6 +264,8 @@ module Longident = struct
 
   let flatten = Longident.flatten
 
+  let last = Longident.last
+
   let lident s =
     assert (not (String.contains s '.')) ;
     Lident s

@@ -221,7 +221,7 @@ let rec fmt_longident (li : Longident.t) =
   | Ldot (li, id) ->
       hvbox 0
         ( fmt_longident li $ fmt "@,."
-        $ wrap_if (is_symbol_id id) "( " " )" (str id) )
+        $ wrap_if (String_id.is_symbol id) "( " " )" (str id) )
   | Lapply (li1, li2) ->
       hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
@@ -990,7 +990,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
   match ppat_desc with
   | Ppat_any -> str "_"
   | Ppat_var {txt; loc} ->
-      Cmts.fmt c loc @@ wrap_if (is_symbol_id txt) "( " " )" (str txt)
+      Cmts.fmt c loc @@ wrap_if (String_id.is_symbol txt) "( " " )" (str txt)
   | Ppat_alias (pat, {txt; loc}) ->
       let paren_pat =
         match pat.ppat_desc with
@@ -1001,8 +1001,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
            ( fmt_pattern c ?parens:paren_pat (sub_pat ~ctx pat)
            $ fmt "@ as@ "
-           $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
-           ))
+           $ Cmts.fmt c loc
+               (wrap_if (String_id.is_symbol txt) "( " " )" (str txt)) ))
   | Ppat_constant const ->
       fmt_constant c ~loc:(Source.loc_of_pat_constant c.source pat) const
   | Ppat_interval (l, u) ->
@@ -1678,19 +1678,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           @@ hvbox 2 (str op $ spc $ fmt_expression c (sub_exp ~ctx e1))
         $ fmt_atrs )
   | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc}
+      ( ( { pexp_desc= Pexp_ident {txt= id; loc}
           ; pexp_attributes= []
           ; pexp_loc
           ; _ } as op )
       , [(Nolabel, l); (Nolabel, ({pexp_desc= Pexp_ident _; _} as r))] )
-    when is_hash_getter_id id ->
+    when Longident.is_hash_getter id ->
       Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
       wrap_if parens "(" ")"
         ( fmt_expression c (sub_exp ~ctx l)
         $ fmt_expression c (sub_exp ~ctx op)
         $ fmt_expression c (sub_exp ~ctx r) )
   | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
+      ( ( { pexp_desc= Pexp_ident {txt= id; loc= _}
           ; pexp_attributes= []
           ; pexp_loc= _
           ; _ } as op )
@@ -1698,7 +1698,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; ( Nolabel
           , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) ) ]
       )
-    when is_infix_id id && not c.conf.break_infix_before_func ->
+    when Longident.is_infix id && not c.conf.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
@@ -1708,12 +1708,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let followed_by_infix_op =
         match xbody.ast.pexp_desc with
         | Pexp_apply
-            ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
+            ( { pexp_desc= Pexp_ident {txt= id; loc= _}
               ; pexp_attributes= []
               ; _ }
             , [ (Nolabel, _)
               ; (Nolabel, {pexp_desc= Pexp_fun _ | Pexp_function _; _}) ] )
-          when is_infix_id id ->
+          when Longident.is_infix id ->
             true
         | _ -> false
       in
@@ -1737,14 +1737,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
            $ body $ cmts_after ))
   | Pexp_apply
-      ( ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
-          ; pexp_attributes= []
-          ; _ } as op )
+      ( ( {pexp_desc= Pexp_ident {txt= id; loc= _}; pexp_attributes= []; _}
+        as op )
       , [ (Nolabel, l)
         ; ( Nolabel
           , ({pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes; _} as r)
           ) ] )
-    when is_infix_id id && not c.conf.break_infix_before_func ->
+    when Longident.is_infix id && not c.conf.break_infix_before_func ->
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
@@ -1765,21 +1764,20 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt "@ " $ fmt_cases c (Exp r) cs $ fmt_if parens_r " )"
            $ cmts_after ))
   | Pexp_apply
-      ( { pexp_desc= Pexp_ident {txt= Lident id; loc= _}
+      ( { pexp_desc= Pexp_ident {txt= id; loc= _}
         ; pexp_attributes= []
         ; pexp_loc= _
         ; _ }
       , [(Nolabel, _); (Nolabel, _)] )
-    when is_infix_id id && not (is_monadic_binding_id id) ->
+    when Longident.is_infix id && not (Longident.is_monadic_binding id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
       let outer_wrap =
         match ctx0 with
         | Exp
             { pexp_desc=
-                Pexp_apply
-                  ({pexp_desc= Pexp_ident {txt= Lident id; loc= _}; _}, _)
+                Pexp_apply ({pexp_desc= Pexp_ident {txt= id; loc= _}; _}, _)
             ; _ }
-          when not (is_infix_id id) ->
+          when not (Longident.is_infix id) ->
             has_attr && parens
         | _ -> has_attr && not parens
       in
@@ -1812,7 +1810,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (wrap_if outer_wrap "(" ")"
            (hvbox indent_wrap
               (fmt_infix_op_args ~parens c xexp infix_op_args $ fmt_atrs)))
-  | Pexp_apply (e0, [(Nolabel, e1)]) when is_prefix e0 ->
+  | Pexp_apply (e0, [(Nolabel, e1)]) when Exp.is_prefix e0 ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
            ( fmt_expression c ~box (sub_exp ~ctx e0)
@@ -1946,7 +1944,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_assert e0 ->
       let paren_body, wrap_symbol =
-        if Ast.is_symbol e0 then (false, wrap "( " " )")
+        if Exp.is_symbol e0 then (false, wrap "( " " )")
         else (parenze_exp (sub_exp ~ctx e0), Fn.id)
       in
       let hint =
@@ -2109,10 +2107,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ hvbox 0 (fmt_cases c ctx cs) )
   | Pexp_ident {txt; loc} ->
       let wrap, wrap_ident =
-        if is_symbol exp && not (List.is_empty pexp_attributes) then
+        if Exp.is_symbol exp && not (List.is_empty pexp_attributes) then
           (wrap_if parens "(" ")", wrap "( " " )")
-        else if is_monadic_binding exp then (wrap "( " " )", Fn.id)
-        else if is_symbol exp then (wrap_if parens "( " " )", Fn.id)
+        else if Exp.is_monadic_binding exp then (wrap "( " " )", Fn.id)
+        else if Exp.is_symbol exp then (wrap_if parens "( " " )", Fn.id)
         else (wrap_if parens "(" ")", Fn.id)
       in
       Cmts.fmt c loc
@@ -2136,7 +2134,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     ~fmt_cond:(fmt_expression c) c.source
                 in
                 let wrap_parens =
-                  if Ast.is_symbol xbch.ast then wrap "( " " )"
+                  if Exp.is_symbol xbch.ast then wrap "( " " )"
                   else p.wrap_parens
                 in
                 parens_prev_bch := parens_bch ;
@@ -3092,7 +3090,8 @@ and fmt_value_description c ctx vd =
     ( doc_before
     $ box_fun_sig_args c 2
         ( str pre $ str " "
-        $ Cmts.fmt c loc (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+        $ Cmts.fmt c loc
+            (wrap_if (String_id.is_symbol txt) "( " " )" (str txt))
         $ fmt_core_type c ~pro:":"
             ~box:
               (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
@@ -3177,7 +3176,9 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
         $ fmt "@ |"
     | Ptype_variant ctor_decls ->
         let max acc d =
-          let len_around = if is_symbol_id d.pcd_name.txt then 4 else 0 in
+          let len_around =
+            if String_id.is_symbol d.pcd_name.txt then 4 else 0
+          in
           max acc (String.length d.pcd_name.txt + len_around)
         in
         let max_len_name = List.fold_left ctor_decls ~init:0 ~f:max in
@@ -3288,7 +3289,7 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
       | Pcstr_tuple x -> List.is_empty x
       | Pcstr_record x -> List.is_empty x
     in
-    let len_around = if is_symbol_id txt then 4 else 0 in
+    let len_around = if String_id.is_symbol txt then 4 else 0 in
     let pad =
       String.make (max_len_name - String.length txt - len_around) ' '
     in
@@ -3312,7 +3313,7 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
       ( hovbox 2
           ( hvbox 2
               ( Cmts.fmt c loc
-                  (wrap_if (is_symbol_id txt) "( " " )" (str txt))
+                  (wrap_if (String_id.is_symbol txt) "( " " )" (str txt))
               $ fmt_padding
               $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
           $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@" atrs
