@@ -222,6 +222,12 @@ module Longident = struct
     fit_margin c (length x)
 end
 
+module Attr = struct
+  let is_doc = function
+    | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> false
+    | _ -> true
+end
+
 module Exp = struct
   let test_id ~f = function
     | {pexp_desc= Pexp_ident {txt= i; _}; _} -> f i
@@ -287,6 +293,25 @@ module Exp = struct
     || has_cmts_before cmts i2.pexp_loc
     || (not (is_simple (i1, c1)))
     || not (is_simple (i2, c2))
+
+  let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
+    match pexp_desc with
+    | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
+     |Pexp_newtype _ | Pexp_try _ ->
+        false
+    | _ -> List.exists pexp_attributes ~f:Attr.is_doc
+end
+
+module Pat = struct
+  let has_trailing_attributes {ppat_desc; ppat_attributes; _} =
+    match ppat_desc with
+    | Ppat_construct (_, None)
+     |Ppat_constant _ | Ppat_any | Ppat_var _
+     |Ppat_variant (_, None)
+     |Ppat_record _ | Ppat_array _ | Ppat_type _ | Ppat_unpack _
+     |Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
+        false
+    | _ -> List.exists ppat_attributes ~f:Attr.is_doc
 end
 
 let doc_atrs ?(acc = []) atrs =
@@ -341,10 +366,16 @@ and mod_is_simple x =
 
 module Mty = struct
   let is_simple = mty_is_simple
+
+  let has_trailing_attributes {pmty_attributes; _} =
+    List.exists pmty_attributes ~f:Attr.is_doc
 end
 
 module Mod = struct
   let is_simple = mod_is_simple
+
+  let has_trailing_attributes {pmod_attributes; _} =
+    List.exists pmod_attributes ~f:Attr.is_doc
 end
 
 module Cty = struct
@@ -566,33 +597,6 @@ let rec is_trivial c exp =
     ->
       is_trivial c e1
   | _ -> false
-
-let is_doc = function
-  | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> false
-  | _ -> true
-
-let has_trailing_attributes_exp {pexp_desc; pexp_attributes; _} =
-  match pexp_desc with
-  | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
-   |Pexp_newtype _ | Pexp_try _ ->
-      false
-  | _ -> List.exists pexp_attributes ~f:is_doc
-
-let has_trailing_attributes_pat {ppat_desc; ppat_attributes; _} =
-  match ppat_desc with
-  | Ppat_construct (_, None)
-   |Ppat_constant _ | Ppat_any | Ppat_var _
-   |Ppat_variant (_, None)
-   |Ppat_record _ | Ppat_array _ | Ppat_type _ | Ppat_unpack _
-   |Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
-      false
-  | _ -> List.exists ppat_attributes ~f:is_doc
-
-let has_trailing_attributes_mty {pmty_attributes; _} =
-  List.exists pmty_attributes ~f:is_doc
-
-let has_trailing_attributes_mod {pmod_attributes; _} =
-  List.exists pmod_attributes ~f:is_doc
 
 type toplevel_item =
   [`Item of structure_item | `Directive of toplevel_directive]
@@ -1846,7 +1850,7 @@ end = struct
   (** [parenze_mty {ctx; ast}] holds when module type [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_mty {ctx; ast= mty} =
-    has_trailing_attributes_mty mty
+    Mty.has_trailing_attributes mty
     ||
     match (ctx, mty.pmty_desc) with
     | Str {pstr_desc= Pstr_recmodule _; _}, Pmty_with _ -> true
@@ -1856,7 +1860,7 @@ end = struct
   (** [parenze_mod {ctx; ast}] holds when module expr [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_mod {ctx; ast= m} =
-    has_trailing_attributes_mod m
+    Mod.has_trailing_attributes m
     ||
     match (ctx, m.pmod_desc) with
     | Mod {pmod_desc= Pmod_apply _; _}, Pmod_functor _ -> true
@@ -1866,7 +1870,7 @@ end = struct
       parenthesized in context [ctx]. *)
   let parenze_pat ({ctx; ast= pat} as xpat) =
     assert_check_pat xpat ;
-    has_trailing_attributes_pat pat
+    Pat.has_trailing_attributes pat
     ||
     match (ctx, pat.ppat_desc) with
     | ( Pat
@@ -2247,7 +2251,7 @@ end = struct
     | Exp {pexp_desc= Pexp_object _; _}, _ -> false
     | Exp {pexp_desc= Pexp_sequence _; _}, {pexp_attributes= _ :: _; _} ->
         false
-    | _, exp when has_trailing_attributes_exp exp -> true
+    | _, exp when Exp.has_trailing_attributes exp -> true
     | ( Exp {pexp_desc= Pexp_construct ({txt= id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
       when Longident.is_infix id ->
