@@ -36,6 +36,9 @@ let ( init
     the margin. *)
 let fit_margin (c : Conf.t) x = x * 3 < c.margin
 
+(** 'Classes' of expressions which are parenthesized differently. *)
+type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
+
 (** Predicates recognizing special symbol identifiers. *)
 
 module Char_id = struct
@@ -316,6 +319,24 @@ module Exp = struct
     match e.pexp_desc with
     | Pexp_apply (op, _) -> is_prefix op || exposed_left op
     | Pexp_field (e, _) -> exposed_left e
+    | _ -> false
+
+  (** [mem_cls cls exp] holds if [exp] is in the named class of expressions
+      [cls]. *)
+  let mem_cls cls ast =
+    match (ast, cls) with
+    | {pexp_desc= Pexp_ifthenelse (_, _, None); _}, (Non_apply | ThenElse)
+     |{pexp_desc= Pexp_ifthenelse _; _}, Non_apply
+     |( {pexp_desc= Pexp_sequence _; _}
+      , (Non_apply | Sequence | Then | ThenElse) )
+     |( {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
+      , (Match | Let_match | Non_apply) )
+     |( { pexp_desc=
+            ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
+            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ )
+        ; _ }
+      , (Let_match | Non_apply) ) ->
+        true
     | _ -> false
 end
 
@@ -824,8 +845,6 @@ end
 and Requires_sub_terms : sig
   val is_simple :
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
-
-  type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 
   val exposed_right_exp : cls -> expression -> bool
 
@@ -2001,27 +2020,6 @@ end = struct
         List.is_empty exp.pexp_attributes
     | _ -> false
 
-  (** 'Classes' of expressions which are parenthesized differently. *)
-  type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
-
-  (** [mem_cls_exp cls exp] holds if [exp] is in the named class of
-      expressions [cls]. *)
-  let mem_cls_exp cls ast =
-    match (ast, cls) with
-    | {pexp_desc= Pexp_ifthenelse (_, _, None); _}, (Non_apply | ThenElse)
-     |{pexp_desc= Pexp_ifthenelse _; _}, Non_apply
-     |( {pexp_desc= Pexp_sequence _; _}
-      , (Non_apply | Sequence | Then | ThenElse) )
-     |( {pexp_desc= Pexp_function _ | Pexp_match _ | Pexp_try _; _}
-      , (Match | Let_match | Non_apply) )
-     |( { pexp_desc=
-            ( Pexp_fun _ | Pexp_let _ | Pexp_letop _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_newtype _ | Pexp_open _ )
-        ; _ }
-      , (Let_match | Non_apply) ) ->
-        true
-    | _ -> false
-
   (** [mem_cls_cl cls cl] holds if [cl] is in the named class of expressions
       [cls]. *)
   let mem_cls_cl cls ast =
@@ -2035,7 +2033,7 @@ end = struct
     memo
 
   (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
-      which satisfies [mem_cls_exp cls] and is not parenthesized. *)
+      which satisfies [Exp.mem_cls cls] and is not parenthesized. *)
   let rec exposed_right_exp =
     (* exponential without memoization *)
     let memo = Hashtbl.Poly.create () in
@@ -2103,7 +2101,7 @@ end = struct
          |Pexp_while _ ->
             false
       in
-      mem_cls_exp cls exp
+      Exp.mem_cls cls exp
       || Hashtbl.find_or_add memo (cls, exp) ~default:exposed_
 
   and exposed_right_cl =
