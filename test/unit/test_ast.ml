@@ -6,7 +6,7 @@ let test_is_symbol_id =
     ( symbol
     , `Quick
     , fun () ->
-        let got = Ast.is_symbol_id symbol in
+        let got = Ast.String_id.is_symbol symbol in
         Alcotest.(check bool) "expected" got expected )
   in
   let test_true = List.map ~f:(test ~expected:true) in

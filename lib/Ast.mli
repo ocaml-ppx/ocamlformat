@@ -17,16 +17,37 @@ open Parsetree
 val init : Conf.t -> unit
 (** Initialize internal state *)
 
-val is_prefix : expression -> bool
-(** Holds of prefix symbol expressions. *)
+module String_id : sig
+  val is_symbol : string -> bool
+  (** Holds of prefix or infix symbols. *)
 
-val is_infix_id : string -> bool
-(** Holds of infix symbols. *)
+  val is_infix : string -> bool
+  (** Holds of infix symbols. *)
+end
 
-val is_hash_getter_id : string -> bool
-(** [is_hash_getter_id id] returns whether [id] is considered a hash-getter
-    operator, of the form [#**#] or [#**.] where [**] can be 0 or more
-    operator chars. *)
+module Longident : sig
+  include module type of Longident
+
+  val is_hash_getter : t -> bool
+  (** [is_hash_getter_id id] returns whether [id] is considered a hash-getter
+      operator, of the form [#**#] or [#**.] where [**] can be 0 or more
+      operator chars. *)
+
+  val is_infix : t -> bool
+  (** Holds of infix symbols. *)
+
+  val is_monadic_binding : t -> bool
+end
+
+module Exp : sig
+  val is_prefix : expression -> bool
+  (** Holds of prefix symbol expressions. *)
+
+  val is_monadic_binding : expression -> bool
+
+  val is_symbol : expression -> bool
+  (** Holds of prefix or infix symbols. *)
+end
 
 module Indexing_op : sig
   type brackets = Round | Square | Curly
@@ -59,16 +80,6 @@ module Indexing_op : sig
       and it's safe to use the sugar syntax, [None] otherwise. [args] should
       be the arguments of the corresponding [Pexp_apply]. *)
 end
-
-val is_monadic_binding_id : string -> bool
-
-val is_monadic_binding : expression -> bool
-
-val is_symbol_id : string -> bool
-(** Holds of prefix or infix symbols. *)
-
-val is_symbol : expression -> bool
-(** Holds of prefix or infix symbols. *)
 
 val is_sugared_list : expression -> bool
 (** Holds of expressions that can be sugared into [\[e1; ...; eN\]] form. *)
