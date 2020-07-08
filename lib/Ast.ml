@@ -32,6 +32,10 @@ let ( init
   in
   (init, extension_sugar, register, leading_nested_match_parens, parens_ite)
 
+(** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
+    the margin. *)
+let fit_margin (c : Conf.t) x = x * 3 < c.margin
+
 (** Predicates recognizing special symbol identifiers. *)
 
 module Char_id = struct
@@ -203,6 +207,19 @@ module Longident = struct
   let is_index_op i = Longident.last i |> String_id.is_index_op
 
   let is_symbol i = is_prefix i || is_infix i || is_index_op i
+
+  (** [fit_margin c x] returns [true] if and only if [x] does not exceed 2/3
+      of the margin. *)
+  let fit_margin (c : Conf.t) x = x * 3 < c.margin * 2
+
+  let is_simple c x =
+    let rec length (x : Longident.t) =
+      match x with
+      | Lident x -> String.length x
+      | Ldot (x, y) -> length x + 1 + String.length y
+      | Lapply (x, y) -> length x + length y + 3
+    in
+    fit_margin c (length x)
 end
 
 module Exp = struct
@@ -292,23 +309,6 @@ let doc_atrs ?(acc = []) atrs =
   in
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
-
-(** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
-    the margin. *)
-let fit_margin (c : Conf.t) x = x * 3 < c.margin
-
-(** [longident_fit_margin c x] returns [true] if and only if [x] does not
-    exceed 2/3 of the margin. *)
-let longident_fit_margin (c : Conf.t) x = x * 3 < c.margin * 2
-
-let longident_is_simple c x =
-  let rec length (x : Longident.t) =
-    match x with
-    | Lident x -> String.length x
-    | Ldot (x, y) -> length x + 1 + String.length y
-    | Lapply (x, y) -> length x + length y + 3
-  in
-  longident_fit_margin c (length x)
 
 let rec module_type_is_simple x =
   match x.pmty_desc with
@@ -409,12 +409,12 @@ module Structure_item : Module_item with type t = structure_item = struct
             match me.pmod_desc with
             | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
             | Pmod_functor (_, me) -> is_simple_mod me
-            | Pmod_ident i -> longident_is_simple c i.txt
+            | Pmod_ident i -> Longident.is_simple c i.txt
             | _ -> false
           in
           is_simple_mod me
       | Pstr_open {popen_expr= {pmod_desc= Pmod_ident i; _}; _} ->
-          longident_is_simple c i.txt
+          Longident.is_simple c i.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -497,7 +497,7 @@ module Signature_item : Module_item with type t = signature_item = struct
       | Psig_open {popen_expr= i; _}
        |Psig_module {pmd_type= {pmty_desc= Pmty_alias i; _}; _}
        |Psig_modsubst {pms_manifest= i; _} ->
-          longident_is_simple c i.txt
+          Longident.is_simple c i.txt
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
