@@ -591,7 +591,7 @@ module Signature_item = struct
         || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
-module Value_binding = struct
+module Vb = struct
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pvb_loc c.Conf.margin
@@ -753,8 +753,8 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
       Exp.break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
         (i2, c2)
   | Vb i1, Vb i2 ->
-      Value_binding.break_between s ~cmts ~has_cmts_before ~has_cmts_after
-        (i1, c1) (i2, c2)
+      Vb.break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
+        (i2, c2)
   | Mty _, Mty _ ->
       break_between_modules ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
         (i2, c2)
