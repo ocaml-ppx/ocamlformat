@@ -186,6 +186,8 @@ module Longident : sig
 
   val flatten : t -> string list
 
+  val last : t -> string
+
   val lident : string -> t
   (** Make a Lident from a dotless string *)
 end

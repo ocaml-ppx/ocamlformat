@@ -200,10 +200,7 @@ module Longident = struct
 
   let is_hash_getter = test ~f:String_id.is_hash_getter
 
-  let is_index_op i =
-    match List.last (Longident.flatten i) with
-    | Some ident -> String_id.is_index_op ident
-    | None -> false
+  let is_index_op i = Longident.last i |> String_id.is_index_op
 
   let is_symbol i = is_prefix i || is_infix i || is_index_op i
 end
