@@ -52,22 +52,10 @@ end = struct
 
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
-  let is_doc_comment attr =
-    match (attr.attr_name, attr.attr_payload) with
-    | ( {txt= "ocaml.doc" | "ocaml.text"; _}
-      , PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( {pexp_desc= Pexp_constant (Pconst_string (_, _, None)); _}
-                  , [] )
-            ; _ } ] ) ->
-        true
-    | _ -> false
-
   let of_ast map_ast ast src =
     let attribute (m : Ast_mapper.mapper) attr =
       (* ignore location of docstrings *)
-      if is_doc_comment attr then attr
+      if Ast.Attr.is_doc attr then attr
       else Ast_mapper.default_mapper.attribute m attr
     in
     let locs = ref [] in

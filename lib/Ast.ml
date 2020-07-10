@@ -227,8 +227,8 @@ end
 
 module Attr = struct
   let is_doc = function
-    | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> false
-    | _ -> true
+    | {attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
+    | _ -> false
 end
 
 module Exp = struct
@@ -302,7 +302,7 @@ module Exp = struct
     | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
      |Pexp_newtype _ | Pexp_try _ ->
         false
-    | _ -> List.exists pexp_attributes ~f:Attr.is_doc
+    | _ -> List.exists pexp_attributes ~f:(Fn.non Attr.is_doc)
 
   let rec is_trivial c exp =
     match exp.pexp_desc with
@@ -349,7 +349,7 @@ module Pat = struct
      |Ppat_record _ | Ppat_array _ | Ppat_type _ | Ppat_unpack _
      |Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
         false
-    | _ -> List.exists ppat_attributes ~f:Attr.is_doc
+    | _ -> List.exists ppat_attributes ~f:(Fn.non Attr.is_doc)
 end
 
 let doc_atrs ?(acc = []) atrs =
@@ -406,14 +406,14 @@ module Mty = struct
   let is_simple = mty_is_simple
 
   let has_trailing_attributes {pmty_attributes; _} =
-    List.exists pmty_attributes ~f:Attr.is_doc
+    List.exists pmty_attributes ~f:(Fn.non Attr.is_doc)
 end
 
 module Mod = struct
   let is_simple = mod_is_simple
 
   let has_trailing_attributes {pmod_attributes; _} =
-    List.exists pmod_attributes ~f:Attr.is_doc
+    List.exists pmod_attributes ~f:(Fn.non Attr.is_doc)
 end
 
 module Cty = struct

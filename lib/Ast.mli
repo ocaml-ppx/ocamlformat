@@ -17,6 +17,11 @@ open Parsetree
 val init : Conf.t -> unit
 (** Initialize internal state *)
 
+module Attr : sig
+  val is_doc : attribute -> bool
+  (** Holds for docstrings, that are attributes of the form [(** ... *)]. *)
+end
+
 module String_id : sig
   val is_prefix : string -> bool
   (** Holds for prefix symbols. *)
