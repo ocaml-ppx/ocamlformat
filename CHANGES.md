@@ -39,7 +39,7 @@
 
   + Do not add a space to minimal comments `(* *)`, `(** *)` and `(*$ *)` (#1407) (Guillaume Petiot)
 
-  + Preserve comment position around match keyword (#1414) (Guillaume Petiot)
+  + Preserve comment position around match keyword (only since ocaml 4.08.0) (#1414) (Guillaume Petiot)
 
 #### New features
 
