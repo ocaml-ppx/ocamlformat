@@ -17,6 +17,11 @@ open Parsetree
 val init : Conf.t -> unit
 (** Initialize internal state *)
 
+module Attr : sig
+  val is_doc : attribute -> bool
+  (** Holds for docstrings, that are attributes of the form [(** ... *)]. *)
+end
+
 module String_id : sig
   val is_prefix : string -> bool
   (** Holds for prefix symbols. *)
@@ -66,6 +71,13 @@ module Exp : sig
   (** [is_monadic_binding id] returns whether [id] is a monadic binding
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
+
+  val is_sugared_list : expression -> bool
+  (** Holds for expressions that can be sugared into [\[e1; ...; eN\]] form. *)
+
+  val exposed_left : expression -> bool
+  (** [exposed_left exp] holds if the left-most subexpression of [exp] is a
+      prefix operators. *)
 end
 
 module Indexing_op : sig
@@ -100,23 +112,30 @@ module Indexing_op : sig
       be the arguments of the corresponding [Pexp_apply]. *)
 end
 
-val is_sugared_list : expression -> bool
-(** Holds of expressions that can be sugared into [\[e1; ...; eN\]] form. *)
-
 val doc_atrs :
      ?acc:(string Location.loc * bool) list
   -> attributes
   -> (string Location.loc * bool) list option * attributes
 
-val module_expr_is_simple : module_expr -> bool
+module Mod : sig
+  val is_simple : module_expr -> bool
+end
 
-val module_type_is_simple : module_type -> bool
+module Mty : sig
+  val is_simple : module_type -> bool
+end
 
-val class_decl_is_simple : class_expr -> bool
+module Cl : sig
+  val is_simple : class_expr -> bool
+end
 
-val class_type_is_simple : class_type -> bool
+module Cty : sig
+  val is_simple : class_type -> bool
+end
 
-val type_decl_is_simple : type_declaration -> bool
+module Tyd : sig
+  val is_simple : type_declaration -> bool
+end
 
 type toplevel_item =
   [`Item of structure_item | `Directive of toplevel_directive]
@@ -196,10 +215,6 @@ type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
 val exposed_right_exp : cls -> expression -> bool
 (** [exposed_right_exp cls exp] holds if there is a right-most subexpression
     of [exp] which is of class [cls] and is not parenthesized. *)
-
-val exposed_left_exp : expression -> bool
-(** [exposed_left_exp exp] holds if the left-most subexpression of [exp] is a
-    prefix operators. *)
 
 val prec_ast : t -> Prec.t option
 (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
