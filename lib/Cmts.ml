@@ -75,6 +75,11 @@ end = struct
     let expr m e =
       ( match e.pexp_desc with
       | Pexp_constant _ -> locs := Source.loc_of_expr_constant src e :: !locs
+      | Pexp_match _ -> (
+        match e.pexp_loc_stack with
+        | [] -> ()
+        (* only the first loc of the stack is necessary *)
+        | h :: _ -> locs := h :: !locs )
       | _ -> () ) ;
       Ast_mapper.default_mapper.expr m e
     in
