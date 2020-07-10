@@ -2303,12 +2303,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
              regression with 4.07 Without the line below {[ let () = ( (*
              before *) match (* after *) x with _ -> x) ]} Gets reformatted
              into {[ let () = match (* before *) (* after *) x with _ -> x ]} *)
-          let leading_cmt = Cmts.fmt_before c e0.pexp_loc in
+          let leading_cmt_pre_4_08 =
+            (* This is not fixed before 4.08.0 yet, since 4.08.0 we use the
+               loc_stack of the expression to correctly place the comments. *)
+            if Ocaml_version.(compare sys_version Releases.v4_08_0 < 0) then
+              Cmts.fmt_before c e0.pexp_loc
+            else noop
+          in
           let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
           hvbox indent
             (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
                ~disambiguate:true
-               ( leading_cmt
+               ( leading_cmt_pre_4_08
                $ hvbox 0
                    ( str keyword
                    $ fmt_extension_suffix c ext

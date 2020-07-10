@@ -3,5 +3,6 @@ let _ =
   (* b *)
   2
 
-let _ = (* before match *)
-        (* after match *) match x with _ -> 1
+let _ =
+  (* before match *)
+  match (* after match *) x with _ -> 1

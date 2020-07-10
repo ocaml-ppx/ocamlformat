@@ -6,6 +6,8 @@
 
   + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)
 
+  + Preserve comment position around match keyword (only since ocaml 4.08.0) (#1414, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
