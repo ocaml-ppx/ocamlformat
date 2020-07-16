@@ -123,7 +123,7 @@ let merge_adj merge l =
       match acc with
       | h :: t -> (
           match merge h x with Some m -> m :: t | None -> x :: h :: t )
-      | [] -> x :: acc )
+      | [] -> x :: acc)
     [] l
   |> List.rev
 
@@ -215,7 +215,7 @@ let mk_parsable p m source =
                   t )
                 else
                   failwith
-                    "either no location left or the next locaction is after" )
+                    "either no location left or the next locaction is after")
       in
       match remaining_locs with
       | [] -> Buffer.contents buffer

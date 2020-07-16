@@ -97,12 +97,3 @@ let _ =
 module M = (val x : S (* a *))
 
 module M = (val x (* b *))
-
-[@@@ocamlformat "break-struct=natural"]
-
-let _ =
-  ( module struct
-    let x = 0
-
-    let y = 1
-  end )

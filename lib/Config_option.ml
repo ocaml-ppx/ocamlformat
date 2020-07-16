@@ -98,7 +98,7 @@ module Make (C : CONFIG) = struct
     let open Cmdliner in
     let invert_names =
       List.filter_map names ~f:(fun n ->
-          if String.length n = 1 then None else Some ("no-" ^ n) )
+          if String.length n = 1 then None else Some ("no-" ^ n))
     in
     let doc =
       generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated
@@ -242,7 +242,7 @@ module Make (C : CONFIG) = struct
                 update_from config name from ;
                 Some (Ok config)
             | Error (`Msg error) -> Some (Error (`Bad_value (name, error)))
-        else None )
+        else None)
     |> Option.value ~default:(Error (`Unknown (name, value)))
 
   let default {default; _} = default

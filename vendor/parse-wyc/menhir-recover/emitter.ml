@@ -71,7 +71,7 @@ end = struct
        | Abort | Reduce _ | Shift _ -> ()
        | Seq xs -> iter_list xs
      in
-     List.iter iter_list actions );
+     List.iter iter_list actions);
     let bindings =
       let register actions (occurrences, index) to_share =
         if !occurrences > 1 then (!index, actions) :: to_share else to_share
@@ -149,14 +149,14 @@ end = struct
         | None -> ()
         | Some str ->
             fprintf ppf "    | %s.T %s.T_%s -> %s\n" menhir menhir
-              (Terminal.name t) str );
+              (Terminal.name t) str);
     Nonterminal.iter (fun n ->
         match A.default_nonterminal n with
         | None -> ()
         | Some str ->
             fprintf ppf "    | %s.N %s.N_%s -> %s\n" menhir menhir
               (Nonterminal.mangled_name n)
-              str );
+              str);
     (*fprintf ppf "    | _ -> raise Not_found\n"; should be exhaustive*)
     fprintf ppf "end\n\n";
     fprintf ppf "let default_value = Default.value\n\n"
@@ -182,14 +182,14 @@ end = struct
         let items = G.Lr0.items (G.Lr1.lr0 st) in
         let positions = List.map snd items in
         let depth = List.fold_left max 0 positions in
-        fprintf ppf "%d;" depth );
+        fprintf ppf "%d;" depth);
     fprintf ppf "|]\n\n"
 
   let emit_can_pop ppf =
     Format.fprintf ppf "let can_pop (type a) : a terminal -> bool = function\n";
     G.Terminal.iter (fun t ->
         if G.Terminal.kind t = `REGULAR && G.Terminal.typ t = None then
-          Format.fprintf ppf "  | T_%s -> true\n" (G.Terminal.name t) );
+          Format.fprintf ppf "  | T_%s -> true\n" (G.Terminal.name t));
     Format.fprintf ppf "  | _ -> false\n\n"
 
   module C = Codesharing (G) (S) (R)
@@ -204,7 +204,7 @@ end = struct
               List.map
                 (fun (st', items) ->
                   ( list_last items,
-                    match st' with None -> -1 | Some st' -> Lr1.to_int st' ) )
+                    match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
                 cases
             in
             let cases =
@@ -214,7 +214,7 @@ end = struct
               | xs -> `Select xs
             in
             (cases, Lr1.to_int st) :: acc
-          with _ -> acc )
+          with _ -> acc)
         []
     in
     let all_cases = group_assoc all_cases in
@@ -259,7 +259,7 @@ end = struct
                 (fun (item, cases) ->
                   fprintf ppf "    ";
                   List.iter (fprintf ppf "| %d ") cases;
-                  fprintf ppf "-> %a\n" emit_item item )
+                  fprintf ppf "-> %a\n" emit_item item)
                 xs;
               fprintf ppf "    | _ -> raise Not_found)\n" )
             else
@@ -273,10 +273,10 @@ end = struct
                     (fun (item, cases) ->
                       fprintf ppf "    ";
                       List.iter (fprintf ppf "| %d ") cases;
-                      fprintf ppf "-> %a\n" emit_item item )
+                      fprintf ppf "-> %a\n" emit_item item)
                     xs;
                   fprintf ppf "    | _ -> %a)\n" emit_item item
-              | [] -> assert false ) )
+              | [] -> assert false ))
       all_cases;
 
     fprintf ppf "  | _ -> raise Not_found\n"

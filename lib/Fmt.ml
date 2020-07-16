@@ -87,7 +87,7 @@ let list_pn x1N pp fs =
 let list_fl xs pp fs =
   list_pn xs
     (fun ~prev x ~next fs ->
-      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs )
+      pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x fs)
     fs
 
 let list xs sep pp fs =
@@ -281,7 +281,7 @@ let fill_text ?epi text =
                   | Some str when String.for_all str ~f:Char.is_whitespace ->
                       close_box $ fmt "\n@," $ open_hovbox 0
                   | Some _ when not (String.is_empty curr) -> fmt "@ "
-                  | _ -> noop )))
+                  | _ -> noop)))
       $ fmt_if
           (String.length text > 1 && String.ends_with_whitespace text)
           " "

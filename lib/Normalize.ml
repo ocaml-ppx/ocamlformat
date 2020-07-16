@@ -109,9 +109,9 @@ let rec odoc_nestable_block_element c fmt = function
           let comments = dedup_cmts Mapper.structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-                Location.compare a b )
+                Location.compare a b)
             |> List.iter ~f:(fun {Cmt.txt; _} ->
-                   Caml.Format.fprintf fmt "%s," txt )
+                   Caml.Format.fprintf fmt "%s," txt)
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.implementation
@@ -305,7 +305,7 @@ let make_mapper conf ~ignore_doc_comment =
         List.filter si ~f:(fun si ->
             match si.pstr_desc with
             | Pstr_attribute a -> not (doc_attribute a)
-            | _ -> true )
+            | _ -> true)
       else si
     in
     Ast_mapper.default_mapper.structure m si
@@ -316,7 +316,7 @@ let make_mapper conf ~ignore_doc_comment =
         List.filter si ~f:(fun si ->
             match si.psig_desc with
             | Psig_attribute a -> not (doc_attribute a)
-            | _ -> true )
+            | _ -> true)
       else si
     in
     Ast_mapper.default_mapper.signature m si
@@ -328,7 +328,7 @@ let make_mapper conf ~ignore_doc_comment =
           List.filter si.pcsig_fields ~f:(fun si ->
               match si.pctf_desc with
               | Pctf_attribute a -> not (doc_attribute a)
-              | _ -> true )
+              | _ -> true)
         in
         {si with pcsig_fields}
       else si
@@ -342,7 +342,7 @@ let make_mapper conf ~ignore_doc_comment =
           List.filter si.pcstr_fields ~f:(fun si ->
               match si.pcf_desc with
               | Pcf_attribute a -> not (doc_attribute a)
-              | _ -> true )
+              | _ -> true)
         in
         {si with pcstr_fields}
       else si
@@ -492,7 +492,7 @@ let moved_docstrings c get_docstrings s1 s2 =
         List.partition_map l1 ~f:(fun x ->
             match List.find l2 ~f:(equal x) with
             | Some (l, s) -> First (Moved (fst x, l, s))
-            | None -> Second x )
+            | None -> Second x)
       in
       let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
       let l1 = List.map ~f:unstable l1 in

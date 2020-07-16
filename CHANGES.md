@@ -16,8 +16,6 @@
 
   + Do not clear the emacs `*compilation*` buffer on successful reformat (#1350) (Josh Berdine)
 
-  + Fix regression with `indicate-multiline-delimiters=space` (#1169) (Josh Berdine, Guillaume Petiot)
-
   + Fix disabling with attributes on OCaml < 4.08 (#1322) (Etienne Millon)
 
   + Preserve unwrapped comments by not adding artificial breaks when `wrap-comments=false` and `ocp-indent-compat=true` are set to avoid interfering with ocp-indent indentation. (#1352) (Guillaume Petiot)

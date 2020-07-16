@@ -102,9 +102,9 @@ module Recover (G : GRAMMAR) (S : SYNTHESIZER with module G := G) :
             if pos = 0 then acc
             else
               let cost, _actions = S.solve (S.Tail (st, prod, pos)) in
-              add_item cost (st, prod, pos) acc )
+              add_item cost (st, prod, pos) acc)
           []
-          (Lr0.items (Lr1.lr0 st)) )
+          (Lr0.items (Lr1.lr0 st)))
 
   let step st ntss =
     let seen = ref Bytes.empty in
@@ -150,7 +150,7 @@ module Recover (G : GRAMMAR) (S : SYNTHESIZER with module G := G) :
       tbl1.(Lr1.to_int s2) <- s1 :: tbl1.(Lr1.to_int s2)
     in
     Lr1.iter (fun lr1 ->
-        List.iter (revert_transition lr1) (Lr1.transitions lr1) );
+        List.iter (revert_transition lr1) (Lr1.transitions lr1));
     fun lr1 -> tbl1.(Lr1.to_int lr1)
 
   let expand stuck_states ((st, sts), nts) =
@@ -158,7 +158,7 @@ module Recover (G : GRAMMAR) (S : SYNTHESIZER with module G := G) :
       (fun st' ->
         let nts' = step st' nts in
         if nts' = [] then stuck_states := st' :: !stuck_states;
-        ((st', st' :: sts), nts') )
+        ((st', st' :: sts), nts'))
       (pred st)
 
   let all_stuck_states : (Lr1.t, int ref) Hashtbl.t = Hashtbl.create 7
@@ -205,7 +205,7 @@ module Recover (G : GRAMMAR) (S : SYNTHESIZER with module G := G) :
                         Hashtbl.add all_stuck_states st r;
                         r
                     in
-                    incr r )
+                    incr r)
                   !stuck_states;
                 stuck := true;
                 stuck_states := [];
@@ -232,8 +232,8 @@ module Recover (G : GRAMMAR) (S : SYNTHESIZER with module G := G) :
                (fun (st, tr') acc ->
                  match tr' with
                  | Some { items; _ } -> (st, items) :: acc
-                 | None -> acc )
-               (process_trace trace) [] )
+                 | None -> acc)
+               (process_trace trace) [])
            traces
     in
     if !stuck then
@@ -256,7 +256,7 @@ module Recover (G : GRAMMAR) (S : SYNTHESIZER with module G := G) :
         Format.eprintf
           "# State %d is preventing recovery from %d states:\n%a\n\n%!"
           (Lr1.to_int st) count Print.itemset
-          (Lr0.items (Lr1.lr0 st)) )
+          (Lr0.items (Lr1.lr0 st)))
       all_stuck_states
 
   let report _ppf = ()
