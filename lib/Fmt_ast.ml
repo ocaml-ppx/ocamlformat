@@ -2232,26 +2232,26 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | (`Long | `Short | `Auto) as x -> x
       in
       let force =
-        match (let_open, e0.pexp_desc) with
-        | `Long, _
-         |( _
-          , ( Pexp_let _ | Pexp_extension _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_open _ ) ) ->
-            Some Break
-        | _ -> (
-          match popen_expr.pmod_desc with
-          | Pmod_ident _ -> Option.some_if override Break
-          | _ -> Some Break )
-      in
-      let force =
+        let maybe_break =
+          match let_open with
+          | `Long -> Some Break
+          | `Auto | `Short -> (
+            match e0.pexp_desc with
+            | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
+             |Pexp_letmodule _ | Pexp_open _ ->
+                Some Break
+            | _ -> (
+              match popen_expr.pmod_desc with
+              | Pmod_ident _ -> Option.some_if override Break
+              | _ -> Some Break ) )
+        in
         match (let_open, xexp.ctx, popen_expr.pmod_desc) with
         | `Short, _, Pmod_ident _ when not override -> Some Fit
-        | `Short, _, _ -> force
         | ( (`Auto | `Long)
           , Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}
           , _ ) ->
-            Some (Option.value force ~default:Fit)
-        | (`Auto | `Long), _, _ -> force
+            Some (Option.value maybe_break ~default:Fit)
+        | (`Auto | `Long | `Short), _, _ -> maybe_break
       in
       let can_skip_parens =
         match e0.pexp_desc with
