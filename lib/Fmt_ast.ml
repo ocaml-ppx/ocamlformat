@@ -4246,11 +4246,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
             let epi =
               match c.conf.let_binding_spacing with
               | `Compact -> None
-              | `Sparse ->
-                  let force =
-                    Option.some_if (last && last_grp && last_item) Fit
-                  in
-                  Some (fits_breaks ?force "" "\n")
+              | `Sparse when last && last_grp && last_item -> None
+              | `Sparse -> Some (fits_breaks "" "\n")
               | `Double_semicolon ->
                   Option.some_if (last && last_grp)
                     (fits_breaks "" ~hint:(1000, -2) ";;")
