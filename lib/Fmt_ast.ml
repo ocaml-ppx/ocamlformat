@@ -1836,8 +1836,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | Pexp_fun _ | Pexp_function _ -> Some false
             | _ -> None
           in
-          let fit = Location.is_single_line pexp_loc c.conf.margin in
-          let force = if fit then Fit else Break in
+          let force =
+            if Location.is_single_line pexp_loc c.conf.margin then Fit
+            else Break
+          in
           hvbox 0
             (wrap_if parens "(" ")"
                (hovbox 0
@@ -1865,8 +1867,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_or_k
                           Poly.(
                             c.conf.indicate_multiline_delimiters = `Space)
-                          (fmt_or_k fit (str ")")
-                             (fits_breaks ~force ")" " )"))
+                          (fits_breaks ~force ")" " )")
                           (str ")")
                       $ Cmts.fmt_after c pexp_loc )
                   $ fmt_atrs )))
