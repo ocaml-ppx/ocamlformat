@@ -7559,3 +7559,10 @@ let nullsafe_optimistic_third_party_params_in_non_strict =
     ~default:true
     "Nullsafe: in this mode we treat non annotated third party method \
      params as if they were annotated as nullable."
+
+let foo () =
+  if%bind
+    (* this is a medium length comment of some sort *)
+    this is a medium length expression of_some sort
+  then x
+  else y
