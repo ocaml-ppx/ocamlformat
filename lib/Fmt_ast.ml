@@ -540,8 +540,12 @@ let sequence_blank_line c (l1 : Location.t) (l2 : Location.t) =
 let fmt_quoted_string key ext s = function
   | None -> wrap_k (str (Format.sprintf "{%s%s|" key ext)) (str "|}") (str s)
   | Some delim ->
+      let ext_and_delim =
+        if String.is_empty delim then ext
+        else Format.sprintf "%s %s" ext delim
+      in
       wrap_k
-        (str (Format.sprintf "{%s%s %s|" key ext delim))
+        (str (Format.sprintf "{%s%s|" key ext_and_delim))
         (str (Format.sprintf "|%s}" delim))
         (str s)
 
