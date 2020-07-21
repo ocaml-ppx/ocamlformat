@@ -37,3 +37,149 @@ Git is used to manage the script's state:
   =dune-release opam submit=
 
 - Each release should be announced on [[https://discuss.ocaml.org/]]
+
+* Backporting changes to a point release
+
+Sometimes it is helpful to create a point release, but master contains
+changes that would be unsuitable for a point release.
+
+Suppose the last release is 0.3.5, and since then, master contains new
+features F1 and F2 and a bugfix B.
+
+#+BEGIN_SRC
+release 0.3.5 -> feature F1 -> bugfix B -> feature F2
+tag: 0.3.5                                 branch: master
+#+END_SRC
+
+Instead of reverting F1 and F2 in master, one can create a release branch for
+the 0.3 releases.
+
+The end graph looks like this (if this is the first point release done this
+way in the 0.3.x series):
+
+#+BEGIN_SRC
+release 0.3.5 -> feature F1 -> bugfix B -> feature F2 -> merge commit
+tag: 0.3.5                                               branch: master
+            \                                          /
+              -> bugfix B -> release 0.3.6  ----------
+                             tag: 0.3.6
+                             branch: 0.3
+#+END_SRC
+
+Or (if a previous point release has been made in the same way):
+
+#+BEGIN_SRC
+ past  ->  merge commit -> feature F1 -> bugfix B -> feature F2 -> merge commit
+               /                                       branch: master
+              /                                       /
+ release 0.3.5  -> bugfix B -> release 0.3.6  -------
+ tag: 0.3.5                    tag: 0.3.6
+                               branch: 0.3
+#+END_SRC
+
+Notes:
+- the release branch is always merged into master, not the other way around.
+- version detection relies on git tags, so master will be marked 0.3.5-x
+  before the merge and 0.3.6-x after.
+
+** Step 1: prepare release branch
+
+- Is there an existing release branch?
+  + No (this is the first time we are doing this on the 0.3.x series - first schema above).
+    * Position to the latest 0.3.x release and create a branch named 0.3 here.
+  + Yes, branch 0.3 already exists (ie we already used this technique before - second schema above).
+    * In this case, position to the 0.3 branch, which should be at the latest release (not a merge commit).
+
+- Cherry-pick bugfix (or bugfixes).
+  + These may not apply cleanly, so fix conflicts and QA (using CI, etc) as usual.
+  + For the changelog in particular, the entry for the bugfix should go in a new section, and new features should not appear.
+
+Changelog in master:
+
+#+BEGIN_SRC
+### unreleased
+
+- Feature F1
+
+- Bugfix B
+
+- Feature F2
+
+### 0.3.5
+
+...
+#+END_SRC
+
+Changelog in 0.3 release branch:
+
+#+BEGIN_SRC
+### unreleased
+
+- Bugfix B
+
+### 0.3.5
+
+...
+#+END_SRC
+
+** Step 2: create release
+
+- Create release from branch 0.3 as usual. In particular, change "unreleased"
+  to the new version, 0.3.6.
+
+- Continue process until PR to opam-repository is merged.
+
+** Step 3: merge release branch
+
+- Wait for opam-repository PR to be merged.
+
+- Merge release branch into master.
+  + Not as a PR; as a manual merge.
+  + This may conflict, in particular in the changelog.
+  + To resolve the changelog conflict, add the point release section into master, and remove backported entries from the unreleased section.
+
+Changelog in master before merging:
+
+#+BEGIN_SRC
+### unreleased
+
+- Feature F1
+
+- Bugfix B
+
+- Feature F2
+
+### 0.3.5
+
+...
+#+END_SRC
+
+Changelog in 0.3 release branch:
+
+#+BEGIN_SRC
+### 0.3.6
+
+- Bugfix B
+
+### 0.3.5
+
+...
+#+END_SRC
+
+End state:
+
+#+BEGIN_SRC
+### unreleased
+
+- Feature F1
+
+- Feature F2
+
+### 0.3.6
+
+- Bugfix B
+
+### 0.3.5
+
+...
+#+END_SRC
