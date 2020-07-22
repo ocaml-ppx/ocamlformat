@@ -847,12 +847,16 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       let space_around = c.conf.space_around_variants in
       let closing =
         let empty = List.is_empty rfs in
-        let breaks = Poly.(c.conf.type_decl = `Sparse) && space_around in
+        let force =
+          match c.conf.type_decl with
+          | `Sparse -> Option.some_if space_around Break
+          | `Compact -> None
+        in
         let nspaces = if empty then 0 else 1 in
         let space = (protect_token || space_around) && not empty in
         fits_breaks
           (if space && not empty then " ]" else "]")
-          ~hint:(nspaces, 0) "]" ~force_break_if:breaks
+          ~hint:(nspaces, 0) "]" ?force
       in
       hvbox 0
         ( match (flag, lbls, rfs) with
@@ -1836,7 +1840,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | Pexp_fun _ | Pexp_function _ -> Some false
             | _ -> None
           in
-          let fit = Location.is_single_line pexp_loc c.conf.margin in
+          let force =
+            if Location.is_single_line pexp_loc c.conf.margin then Fit
+            else Break
+          in
           hvbox 0
             (wrap_if parens "(" ")"
                (hovbox 0
@@ -1864,9 +1871,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_or_k
                           Poly.(
                             c.conf.indicate_multiline_delimiters = `Space)
-                          (fmt_or_k fit (str ")")
-                             (fits_breaks ~force_fit_if:fit
-                                ~force_break_if:(not fit) ")" " )"))
+                          (fits_breaks ~force ")" " )")
                           (str ")")
                       $ Cmts.fmt_after c pexp_loc )
                   $ fmt_atrs )))
@@ -2228,36 +2233,37 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         match c.conf.let_open with
         | `Preserve ->
             if Source.is_long_pexp_open c.source exp then `Long else `Short
-        | x -> x
+        | (`Long | `Short | `Auto) as x -> x
       in
-      let force_break_if =
-        match (let_open, e0.pexp_desc) with
-        | `Long, _
-         |( _
-          , ( Pexp_let _ | Pexp_extension _ | Pexp_letexception _
-            | Pexp_letmodule _ | Pexp_open _ ) ) ->
-            true
-        | _ -> (
-          match popen_expr.pmod_desc with
-          | Pmod_ident _ -> override
-          | _ -> true )
-      in
-      let force_fit_if =
+      let force =
+        let maybe_break =
+          match let_open with
+          | `Long -> Some Break
+          | `Auto | `Short -> (
+            match e0.pexp_desc with
+            | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
+             |Pexp_letmodule _ | Pexp_open _ ->
+                Some Break
+            | _ -> (
+              match popen_expr.pmod_desc with
+              | Pmod_ident _ -> Option.some_if override Break
+              | _ -> Some Break ) )
+        in
         match (let_open, xexp.ctx, popen_expr.pmod_desc) with
-        | `Short, _, Pmod_ident _ when not override -> true
-        | `Short, _, _ -> false
-        | _, Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}, _ ->
-            not force_break_if
-        | _ -> false
+        | `Short, _, Pmod_ident _ when not override -> Some Fit
+        | ( (`Auto | `Long)
+          , Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}
+          , _ ) ->
+            Some (Option.value maybe_break ~default:Fit)
+        | (`Auto | `Long | `Short), _, _ -> maybe_break
       in
-      let fits_breaks = fits_breaks ~force_fit_if ~force_break_if
-      and fits_breaks_if = fits_breaks_if ~force_fit_if ~force_break_if in
       let can_skip_parens =
         match e0.pexp_desc with
         | Pexp_array _ | Pexp_record _ -> true
         | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
         | _ -> Option.is_some (Sugar.list_exp c.cmts e0)
       in
+      let force_fit = match force with Some Fit -> true | _ -> false in
       let opn, cls = if can_skip_parens then (".", "") else (".(", ")") in
       let outer_parens, inner_parens =
         if has_attr then (parens, true) else (false, parens)
@@ -2265,18 +2271,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hovbox 0
         (wrap_if outer_parens "(" ")"
            ( hvbox 0
-               ( fits_breaks_if inner_parens "" "("
-               $ fits_breaks "" "let "
+               ( fits_breaks_if ?force inner_parens "" "("
+               $ fits_breaks ?force "" "let "
                $ Cmts.fmt c popen_loc
-                   ( fits_breaks "" (if override then "open! " else "open ")
+                   ( fits_breaks ?force ""
+                       (if override then "open! " else "open ")
                    $ fmt_module_statement c ~attributes noop
                        (sub_mod ~ctx popen_expr) )
-               $ fits_breaks opn " in"
-               $ fmt_or_k force_fit_if (fmt "@;<0 2>")
-                   (fits_breaks "" ~hint:(1000, 0) "")
+               $ fits_breaks ?force opn " in"
+               $ fmt_or_k force_fit (fmt "@;<0 2>")
+                   (fits_breaks ?force "" ~hint:(1000, 0) "")
                $ fmt_expression c (sub_exp ~ctx e0)
-               $ fits_breaks cls ""
-               $ fits_breaks_if inner_parens "" ")" )
+               $ fits_breaks ?force cls ""
+               $ fits_breaks_if ?force inner_parens "" ")" )
            $ fmt_atrs ))
   | Pexp_match (e0, cs) | Pexp_try (e0, cs) -> (
       let keyword =
@@ -4243,9 +4250,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
             let epi =
               match c.conf.let_binding_spacing with
               | `Compact -> None
-              | `Sparse ->
-                  let force_fit_if = last && last_grp && last_item in
-                  Some (fits_breaks ~force_fit_if "" "\n")
+              | `Sparse when last && last_grp && last_item -> None
+              | `Sparse -> Some (fits_breaks "" "\n")
               | `Double_semicolon ->
                   Option.some_if (last && last_grp)
                     (fits_breaks "" ~hint:(1000, -2) ";;")

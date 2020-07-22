@@ -124,22 +124,17 @@ val break_unless_newline : int -> int -> t
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
+type behavior = Fit | Break
+
 val fits_breaks :
-     ?force_fit_if:bool
-  -> ?force_break_if:bool
-  -> ?hint:int * int
-  -> ?level:int
-  -> string
-  -> string
-  -> t
+  ?force:behavior -> ?hint:int * int -> ?level:int -> string -> string -> t
 (** [fits_breaks fits nspaces offset breaks] prints [fits] if the enclosing
     box fits on one line, and otherwise prints [breaks], which is a string
     that optionally follows a break [hint] (that is a pair
     [(nspaces, offset)] equivalent to the break hint ["@;<nspaces offset>"]). *)
 
 val fits_breaks_if :
-     ?force_fit_if:bool
-  -> ?force_break_if:bool
+     ?force:behavior
   -> ?hint:int * int
   -> ?level:int
   -> bool
