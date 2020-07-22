@@ -87,10 +87,13 @@ Notes:
 - Is there an existing release branch?
   + No (this is the first time we are doing this on the 0.3.x series - first schema above).
     * Position to the latest 0.3.x release and create a branch named 0.3 here.
+    * Example: =git checkout 0.3.6 -b 0.3=
   + Yes, branch 0.3 already exists (ie we already used this technique before - second schema above).
     * In this case, position to the 0.3 branch, which should be at the latest release (not a merge commit).
+    * Example: =git checkout 0.3=
 
 - Cherry-pick bugfix (or bugfixes).
+  + Example: =git cherry-pick aaaaa bbbbb=
   + These may not apply cleanly, so fix conflicts and QA (using CI, etc) as usual.
   + For the changelog in particular, the entry for the bugfix should go in a new section, and new features should not appear.
 
@@ -135,6 +138,7 @@ Changelog in 0.3 release branch:
 
 - Merge release branch into master.
   + Not as a PR; as a manual merge.
+  + Example: =git checkout master= followed by =git merge 0.3=.
   + This may conflict, in particular in the changelog.
   + To resolve the changelog conflict, add the point release section into master, and remove backported entries from the unreleased section.
 
