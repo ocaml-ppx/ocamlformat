@@ -2256,14 +2256,20 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hovbox 0
         (wrap_if outer_parens "(" ")"
            ( hvbox 0
-               ( fits_breaks_if ?force inner_parens "" "("
-               $ fits_breaks ?force "" "let "
-               $ Cmts.fmt c popen_loc
-                   ( fits_breaks ?force ""
-                       (if override then "open! " else "open ")
-                   $ fmt_module_statement c ~attributes noop
-                       (sub_mod ~ctx popen_expr) )
-               $ fits_breaks ?force opn " in"
+               ( hvbox 0
+                   ( fits_breaks_if ?force inner_parens "" "("
+                   $ fmt_module_statement c ~attributes
+                       ~keyword:
+                         ( hvbox 0
+                             ( fits_breaks ?force "" "let"
+                             $ fits_breaks ?force "" ~hint:(1, 0) ""
+                             $ Cmts.fmt_before c popen_loc
+                             $ fits_breaks ?force ""
+                                 (if override then "open!" else "open") )
+                         $ fits_breaks ?force "" ~hint:(1, 0) "" )
+                       (sub_mod ~ctx popen_expr)
+                   $ Cmts.fmt_after c popen_loc
+                   $ fits_breaks ?force opn " in" )
                $ fmt_or_k force_fit (fmt "@;<0 2>")
                    (fits_breaks ?force "" ~hint:(1000, 0) "")
                $ fmt_expression c (sub_exp ~ctx e0)
@@ -3854,15 +3860,19 @@ and fmt_open_description c ?(keyword = "open") ~kw_attributes
     $ doc_after )
 
 (** TODO: merge with `fmt_module_declaration` *)
-and fmt_module_statement c ~attributes keyword mod_expr =
+and fmt_module_statement c ~attributes ?keyword mod_expr =
   let blk = fmt_module_expr c mod_expr in
-  let box = wrap_k blk.opn blk.cls in
   let force_before = not (Mod.is_simple mod_expr.ast) in
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~force_before ~fit:true c attributes
   in
+  let has_kwd = Option.is_some keyword in
+  let kwd_and_pro = Option.is_some blk.pro && has_kwd in
   doc_before
-  $ box (hvbox 2 (keyword $ fmt_opt blk.pro) $ blk.psp $ blk.bdy)
+  $ wrap_k blk.opn blk.cls
+      (hvbox_if (Option.is_none blk.pro) 2
+         ( hvbox_if kwd_and_pro 2 (fmt_opt keyword $ fmt_opt blk.pro)
+         $ blk.psp $ blk.bdy ))
   $ blk.esp $ fmt_opt blk.epi
   $ fmt_attributes c ~pre:Blank ~key:"@@" atrs
   $ doc_after
@@ -4190,7 +4200,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc attributes
       @@ fun c ->
-      fmt_module_statement c ~attributes (str "include ")
+      fmt_module_statement c ~attributes ~keyword:(fmt "include@ ")
         (sub_mod ~ctx pincl_mod)
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
@@ -4199,10 +4209,9 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
     ->
       update_config_maybe_disabled c popen_loc attributes
       @@ fun c ->
-      let keyword =
-        str "open" $ fmt_if (is_override popen_override) "!" $ str " "
-      in
-      fmt_module_statement c ~attributes keyword (sub_mod ~ctx popen_expr)
+      fmt_module_statement c ~attributes
+        ~keyword:(fmt_or (is_override popen_override) "open!@ " "open@ ")
+        (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
       fmt_recmodule c ctx bindings fmt_module_binding (fun x ->
