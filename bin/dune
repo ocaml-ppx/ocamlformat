@@ -14,7 +14,7 @@
  (package ocamlformat)
  (modules ocamlformat)
  (flags
-  (:standard -open Import))
+  (:standard -open Base -open Import))
  ;;INSERT_BISECT_HERE;;
  (libraries ocamlformat_lib))
 

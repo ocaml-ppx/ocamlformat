@@ -11,27 +11,12 @@
 
 (** Opened in each source module to establish global namespace *)
 
-include module type of (
-  Base :
-    sig
-      [@@@warning "-3"]
-
-      include
-        module type of Base
-          (* [Filename], [Format], [Scanf] are all deprecated in [Base],
-             erase them and use the ones from the stdlib. *)
-          with module Filename := Base.Filename
-           and module Format := Base.Format
-           and module Scanf := Base.Scanf
-    end )
-
-include module type of Option.Monad_infix
+include module type of Base.Option.Monad_infix
 
 include module type of Stdio
 
-external ( @@ ) : ('a -> 'b) -> 'a -> 'b = "%apply"
-(** Function application: [g @@ f @@ x] is exactly equivalent to [g (f (x))].
-    Right associative. *)
+module Format = Caml.Format
+module Filename = Caml.Filename
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to
