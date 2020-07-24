@@ -4,7 +4,7 @@
 (rule
  (with-stdout-to
   warning-compat-file
-  (run ./gen/gen.exe %{ocaml_version})))
+  (run ./gen/gen.exe)))
 
 (library
  (name compat)
