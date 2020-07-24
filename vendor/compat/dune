@@ -4,7 +4,7 @@
 (rule
  (targets warning-compat-file)
  (action
-  (run %{ocaml} %{dep:../../tools/gen_warning_compat.ml} %{ocaml_version})))
+  (run %{ocaml} %{dep:gen/gen.ml} %{ocaml_version})))
 
 (library
  (name compat)
