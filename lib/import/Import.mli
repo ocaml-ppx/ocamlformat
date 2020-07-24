@@ -63,3 +63,15 @@ module Cmdliner : sig
       [validate] to check usage constraints not expressible in the [Term]
       language. *)
 end
+
+module String : sig
+  include module type of Base.String
+
+  val starts_with_whitespace : string -> bool
+  (** [starts_with_whitespace s] holds if [s] is non empty and starts with a
+      whitespace character. *)
+
+  val ends_with_whitespace : string -> bool
+  (** [ends_with_whitespace s] holds if [s] is non empty and ends with a
+      whitespace character. *)
+end
