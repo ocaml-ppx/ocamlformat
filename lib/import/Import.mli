@@ -11,27 +11,12 @@
 
 (** Opened in each source module to establish global namespace *)
 
-include module type of (
-  Base :
-    sig
-      [@@@warning "-3"]
-
-      include
-        module type of Base
-          (* [Filename], [Format], [Scanf] are all deprecated in [Base],
-             erase them and use the ones from the stdlib. *)
-          with module Filename := Base.Filename
-           and module Format := Base.Format
-           and module Scanf := Base.Scanf
-    end )
-
-include module type of Option.Monad_infix
+include module type of Base.Option.Monad_infix
 
 include module type of Stdio
 
-external ( @@ ) : ('a -> 'b) -> 'a -> 'b = "%apply"
-(** Function application: [g @@ f @@ x] is exactly equivalent to [g (f (x))].
-    Right associative. *)
+module Format = Caml.Format
+module Filename = Caml.Filename
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to
@@ -77,4 +62,16 @@ module Cmdliner : sig
       declared by calls to [mk], using manual and version [info], and calling
       [validate] to check usage constraints not expressible in the [Term]
       language. *)
+end
+
+module String : sig
+  include module type of Base.String
+
+  val starts_with_whitespace : string -> bool
+  (** [starts_with_whitespace s] holds if [s] is non empty and starts with a
+      whitespace character. *)
+
+  val ends_with_whitespace : string -> bool
+  (** [ends_with_whitespace s] holds if [s] is non empty and ends with a
+      whitespace character. *)
 end
