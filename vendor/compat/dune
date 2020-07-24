@@ -2,8 +2,8 @@
  (copy# warning/%{read:warning-compat-file} warning.ml))
 
 (rule
- (targets warning-compat-file)
- (action
+ (with-stdout-to
+  warning-compat-file
   (run ./gen/gen.exe %{ocaml_version})))
 
 (library
