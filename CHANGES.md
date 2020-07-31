@@ -39,6 +39,8 @@
 
   + Do not add a space to minimal comments `(* *)`, `(** *)` and `(*$ *)` (#1407) (Guillaume Petiot)
 
+  + Add missing parens around type annotation in anonymous function (#1433) (Guillaume Petiot)
+
 #### New features
 
   + Support quoted extensions (added in ocaml 4.11) (#1405) (Guillaume Petiot)
