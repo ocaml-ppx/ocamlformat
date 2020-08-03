@@ -1,17 +1,5 @@
 (rule
  (with-outputs-to
-  err_default_several_file.output
-  (with-accepted-exit-codes
-   1
-   (run %{bin:ocamlformat} %{dep:sample/a.ml} %{dep:sample/b.ml}))))
-
-(rule
- (alias runtest)
- (action
-  (diff err_default_several_file.expected err_default_several_file.output)))
-
-(rule
- (with-outputs-to
   err_inplace_and_check.output
   (with-accepted-exit-codes
    1
