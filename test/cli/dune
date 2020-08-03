@@ -1,19 +1,4 @@
 (rule
- (targets stdin_and_impl.output)
- (deps .ocamlformat)
- (action
-  (with-outputs-to
-   stdin_and_impl.output
-   (with-stdin-from
-    sample/b.ml
-    (run %{bin:ocamlformat} --root=. --impl -)))))
-
-(rule
- (alias runtest)
- (action
-  (diff stdin_and_impl.expected stdin_and_impl.output)))
-
-(rule
  (targets stdin_and_intf.output)
  (deps .ocamlformat)
  (action
