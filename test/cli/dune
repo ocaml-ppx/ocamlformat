@@ -1,16 +1,4 @@
 (rule
- (with-outputs-to
-  err_stdin_no_kind.output
-  (with-accepted-exit-codes
-   1
-   (run %{bin:ocamlformat} -))))
-
-(rule
- (alias runtest)
- (action
-  (diff err_stdin_no_kind.expected err_stdin_no_kind.output)))
-
-(rule
  (targets stdin_and_impl.output)
  (deps .ocamlformat)
  (action
