@@ -1,17 +1,4 @@
 (rule
- (targets name_unknown_ext.output)
- (deps .ocamlformat)
- (action
-  (with-outputs-to
-   %{targets}
-   (run %{bin:ocamlformat} --root=. --name b.cpp %{dep:sample/b.ml}))))
-
-(rule
- (alias runtest)
- (action
-  (diff name_unknown_ext.expected name_unknown_ext.output)))
-
-(rule
  (with-outputs-to
   err_stdin_name_unknown_ext.output
   (with-stdin-from
