@@ -36,18 +36,6 @@
 
 (rule
  (with-outputs-to
-  err_no_arg.output
-  (with-accepted-exit-codes
-   1
-   (run %{bin:ocamlformat}))))
-
-(rule
- (alias runtest)
- (action
-  (diff err_no_arg.expected err_no_arg.output)))
-
-(rule
- (with-outputs-to
   err_output_and_check.output
   (with-accepted-exit-codes
    1
