@@ -1,18 +1,4 @@
 (rule
- (with-outputs-to
-  err_several_files_and_name_inplace.output
-  (with-accepted-exit-codes
-   1
-   (run %{bin:ocamlformat} --name foo.ml --check %{dep:sample/a.mli}
-     %{dep:sample/b.ml}))))
-
-(rule
- (alias runtest)
- (action
-  (diff err_several_files_and_name_inplace.expected
-    err_several_files_and_name_inplace.output)))
-
-(rule
  (targets fmterr_file_and_name.output)
  (deps .ocamlformat)
  (action
