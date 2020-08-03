@@ -1,21 +1,4 @@
 (rule
- (targets fmterr_stdin_and_name.output)
- (deps .ocamlformat)
- (action
-  (with-outputs-to
-   fmterr_stdin_and_name.output
-   (with-stdin-from
-    sample/syntax_error.ml
-    (with-accepted-exit-codes
-     1
-     (run %{bin:ocamlformat} --root=. --name foo.ml -))))))
-
-(rule
- (alias runtest)
- (action
-  (diff fmterr_stdin_and_name.expected fmterr_stdin_and_name.output)))
-
-(rule
  (targets fmterr_file_bad_kind.output)
  (deps .ocamlformat)
  (action
