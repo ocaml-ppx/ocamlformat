@@ -1,17 +1,5 @@
 (rule
  (with-outputs-to
-  err_inplace_and_check.output
-  (with-accepted-exit-codes
-   1
-   (run %{bin:ocamlformat} --inplace --check %{dep:sample/a.ml}))))
-
-(rule
- (alias runtest)
- (action
-  (diff err_inplace_and_check.expected err_inplace_and_check.output)))
-
-(rule
- (with-outputs-to
   err_inplace_and_output.output
   (with-accepted-exit-codes
    1
