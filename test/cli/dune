@@ -1,17 +1,5 @@
 (rule
  (with-outputs-to
-  err_stdin_and_file.output
-  (with-accepted-exit-codes
-   1
-   (run %{bin:ocamlformat} %{dep:sample/a.ml} -))))
-
-(rule
- (alias runtest)
- (action
-  (diff err_stdin_and_file.expected err_stdin_and_file.output)))
-
-(rule
- (with-outputs-to
   err_stdin_and_inplace.output
   (with-accepted-exit-codes
    1
