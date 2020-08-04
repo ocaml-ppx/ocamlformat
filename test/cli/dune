@@ -36,25 +36,6 @@
 
 (rule
  (deps
-  (source_tree roots/malformed1))
- (action
-  (with-outputs-to
-   conf_malformed1.output
-   (with-stdin-from
-    sample/a.ml
-    (chdir
-     roots/malformed1
-     (with-accepted-exit-codes
-      1
-      (run %{bin:ocamlformat} --impl -)))))))
-
-(rule
- (alias runtest)
- (action
-  (diff conf_malformed1.expected conf_malformed1.output)))
-
-(rule
- (deps
   (source_tree roots/unknown_option))
  (action
   (with-outputs-to
