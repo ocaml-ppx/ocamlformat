@@ -33,23 +33,3 @@
  (action
   (diff fmterr_removed_option_cmdline.expected
     fmterr_removed_option_cmdline.output)))
-
-(rule
- (deps
-  (source_tree roots/unknown_value))
- (action
-  (with-outputs-to
-   env_unknown_value.output
-   (setenv
-    OCAMLFORMAT
-    "type-decl=unknown"
-    (with-stdin-from
-     sample/a.ml
-     (with-accepted-exit-codes
-      1
-      (run %{bin:ocamlformat} --impl -)))))))
-
-(rule
- (alias runtest)
- (action
-  (diff env_unknown_value.expected env_unknown_value.output)))
