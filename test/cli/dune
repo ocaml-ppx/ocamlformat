@@ -36,29 +36,6 @@
 
 (rule
  (deps
-  (source_tree roots/bad_version))
- (action
-  (with-stderr-to
-   ;; This test's stderr is ignored because it's not stable
-   ;; (it contains the current git rev)
-   %{null}
-   (with-stdout-to
-    conf_bad_version.output
-    (with-stdin-from
-     sample/a.ml
-     (chdir
-      roots/bad_version
-      (with-accepted-exit-codes
-       1
-       (run %{bin:ocamlformat} --impl -))))))))
-
-(rule
- (alias runtest)
- (action
-  (diff conf_bad_version.expected conf_bad_version.output)))
-
-(rule
- (deps
   (source_tree roots/malformed1))
  (action
   (with-outputs-to
