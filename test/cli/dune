@@ -35,21 +35,6 @@
     fmterr_removed_option_cmdline.output)))
 
 (rule
- (targets check_not_formatted.output)
- (deps .ocamlformat)
- (action
-  (with-outputs-to
-   %{targets}
-   (with-accepted-exit-codes
-    1
-    (run %{bin:ocamlformat} --root=. --check %{dep:sample/b.ml})))))
-
-(rule
- (alias runtest)
- (action
-  (diff check_not_formatted.expected check_not_formatted.output)))
-
-(rule
  (targets debug.output)
  (deps .ocamlformat)
  (action
