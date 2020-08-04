@@ -35,19 +35,6 @@
     fmterr_removed_option_cmdline.output)))
 
 (rule
- (targets max_iter_1_ok.output)
- (deps .ocamlformat)
- (action
-  (with-outputs-to
-   %{targets}
-   (run ocamlformat --root=. --max-iters=1 %{dep:sample/a.ml}))))
-
-(rule
- (alias runtest)
- (action
-  (diff max_iter_1_ok.expected max_iter_1_ok.output)))
-
-(rule
  (targets max_iter_1_failing.output)
  (deps .ocamlformat)
  (action
