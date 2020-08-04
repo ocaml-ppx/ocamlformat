@@ -39,25 +39,6 @@
   (source_tree roots/unknown_value))
  (action
   (with-outputs-to
-   conf_unknown_value.output
-   (with-stdin-from
-    sample/a.ml
-    (chdir
-     roots/unknown_value
-     (with-accepted-exit-codes
-      1
-      (run %{bin:ocamlformat} --impl -)))))))
-
-(rule
- (alias runtest)
- (action
-  (diff conf_unknown_value.expected conf_unknown_value.output)))
-
-(rule
- (deps
-  (source_tree roots/unknown_value))
- (action
-  (with-outputs-to
    env_unknown_option.output
    (with-stdin-from
     sample/a.ml
