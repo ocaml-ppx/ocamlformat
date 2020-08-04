@@ -39,26 +39,6 @@
   (source_tree roots/unknown_value))
  (action
   (with-outputs-to
-   env_unknown_option.output
-   (with-stdin-from
-    sample/a.ml
-    (setenv
-     OCAMLFORMAT
-     "unknown=true"
-     (with-accepted-exit-codes
-      1
-      (run %{bin:ocamlformat} --impl -)))))))
-
-(rule
- (alias runtest)
- (action
-  (diff env_unknown_option.expected env_unknown_option.output)))
-
-(rule
- (deps
-  (source_tree roots/unknown_value))
- (action
-  (with-outputs-to
    env_unknown_value.output
    (setenv
     OCAMLFORMAT
