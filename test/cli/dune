@@ -35,21 +35,6 @@
     fmterr_removed_option_cmdline.output)))
 
 (rule
- (targets max_iter_1_failing.output)
- (deps .ocamlformat)
- (action
-  (with-outputs-to
-   %{targets}
-   (with-accepted-exit-codes
-    1
-    (run %{bin:ocamlformat} --root=. --max-iters=1 %{dep:sample/b.ml})))))
-
-(rule
- (alias runtest)
- (action
-  (diff max_iter_1_failing.expected max_iter_1_failing.output)))
-
-(rule
  (deps
   (source_tree roots/bad_version))
  (action
