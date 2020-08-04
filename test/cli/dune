@@ -1,21 +1,4 @@
 (rule
- (targets fmterr_stdin_bad_kind.output)
- (deps .ocamlformat)
- (action
-  (with-outputs-to
-   fmterr_stdin_bad_kind.output
-   (with-stdin-from
-    sample/a.mli
-    (with-accepted-exit-codes
-     1
-     (run %{bin:ocamlformat} --root=. --impl -))))))
-
-(rule
- (alias runtest)
- (action
-  (diff fmterr_stdin_bad_kind.expected fmterr_stdin_bad_kind.output)))
-
-(rule
  (targets fmterr_file_and_name_bad_kind.output)
  (deps .ocamlformat)
  (action
