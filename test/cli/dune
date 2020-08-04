@@ -36,25 +36,6 @@
 
 (rule
  (deps
-  (source_tree roots/unknown_option))
- (action
-  (with-outputs-to
-   conf_unknown_option.output
-   (with-stdin-from
-    sample/a.ml
-    (chdir
-     roots/unknown_option
-     (with-accepted-exit-codes
-      1
-      (run %{bin:ocamlformat} --impl -)))))))
-
-(rule
- (alias runtest)
- (action
-  (diff conf_unknown_option.expected conf_unknown_option.output)))
-
-(rule
- (deps
   (source_tree roots/unknown_value))
  (action
   (with-outputs-to
