@@ -41,6 +41,8 @@
 
   + Add missing parens around type annotation in anonymous function (#1433) (Guillaume Petiot)
 
+  + Fix alignment of 'then' keyword in parenthesised expression (#1421) (Guillaume Petiot)
+
 #### New features
 
   + Support quoted extensions (added in ocaml 4.11) (#1405) (Guillaume Petiot)

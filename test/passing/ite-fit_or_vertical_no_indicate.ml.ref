@@ -41,7 +41,7 @@ f
 ;;
 f
   (if even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
- then
+  then
      ()
   else
     ())
@@ -50,10 +50,18 @@ f
 f
   (if
    and_ even loooooooooooooooooooooooooooooooooooooooooooooooooooooooooonger
- then
+  then
      ()
   else
     ())
+
+let () =
+  f
+    (if a___________________________________________________________________
+    then
+       b_________________________________________________________________
+    else
+      c_________________________________________________________________)
 
 let () = if [@test] true then () else if [@other] true then ()
 
