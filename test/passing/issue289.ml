@@ -3,9 +3,9 @@
 let foo =
   let open Gql in
   [ field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid) ~resolve:(function
-        | _ctx -> x.id )
+        | _ctx -> x.id)
   ; field "id" ~doc:"Toy ID." ~args:[] ~typppp ~resolve:(function _ctx ->
-        x.id )
+        x.id)
   ; field
       "id"
       ~doc:"Toy ID."
@@ -13,10 +13,10 @@ let foo =
       ~typ:(non_null guid)
       ~resolve:(function
         | A -> x.id
-        | B -> c )
+        | B -> c)
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
         | A -> x.id
-        | B -> c )
+        | B -> c)
   ; field
       "id"
       ~doc:"Toy ID."
@@ -24,10 +24,10 @@ let foo =
       ~typppppppppppppppppppp
       ~resolve:(function
         | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc)
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
         | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+        | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc)
   ; field
       "id"
       ~doc:"Toy ID."
@@ -64,23 +64,23 @@ let foo =
 let foo =
   let open Gql in
   [ field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid)
-        ~resolve:(function _ctx -> x.id )
+        ~resolve:(function _ctx -> x.id)
   ; field "id" ~doc:"Toy ID." ~args:[] ~typppp ~resolve:(function _ctx ->
-        x.id )
+        x.id)
   ; field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid)
       ~resolve:(function
       | A -> x.id
-      | B -> c )
+      | B -> c)
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
       | A -> x.id
-      | B -> c )
+      | B -> c)
   ; field "id" ~doc:"Toy ID." ~args:[] ~typppppppppppppppppppp
       ~resolve:(function
       | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc)
   ; field "id" ~doc:"Toy ID." ~args:[] ~resolve:(function
       | AAAAAAAAAAAAAAAAAAAa -> x.idddddddddddddddddddddddddd
-      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc )
+      | BBBBBBBBBBBBBBBB -> ccccccccccccccccccccccc)
   ; field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid)
       ~resolve:(fun _ctx x -> x.id)
   ; field "name" ~doc:"Toy name." ~args:[] ~typ:(non_null string)
@@ -89,7 +89,7 @@ let foo =
       ~resolve:(fun _ctx x -> x.description |> Util.option_of_string)
   ; field "type" ~doc:"Toy type. Possible values are: car, animal, train."
       ~args:[] ~typ:(non_null toy_type_enum) ~resolve:(fun _ctx x ->
-        x.toy_type )
+        x.toy_type)
   ; field "createdAt" ~doc:"Date created." ~args:[]
       ~typ:(non_null Scalar.date_time) ~resolve:(fun _ctx x -> x.created_at)
   ]

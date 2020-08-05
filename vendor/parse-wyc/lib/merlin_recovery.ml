@@ -229,7 +229,7 @@ struct
     let shifted, final, candidates = generate env in
     let candidates =
       rev_filter candidates ~f:(fun t ->
-          not (Parser.env_has_default_reduction t.env) )
+          not (Parser.env_has_default_reduction t.env))
     in
     { shifted; final; candidates = candidate env :: candidates }
 end

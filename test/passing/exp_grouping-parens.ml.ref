@@ -3,14 +3,14 @@ let () =
     (let a = "a" in
      let b = "b" in
      let c = "c" in
-     Lwt.return "test" )
+     Lwt.return "test")
 
 let () =
   Lwt_main.run
     (let a = "a" in
      let b = "b" in
      let c = "c" in
-     Lwt.return "test" )
+     Lwt.return "test")
 
 let () =
   List.iter
@@ -19,7 +19,7 @@ let () =
       let a = "a" in
       let b = "b" in
       let c = "c" in
-      () )
+      ())
     values
 
 let () =
@@ -29,7 +29,7 @@ let () =
       let a = "a" in
       let b = "b" in
       let c = "c" in
-      () )
+      ())
     values
 
 let () =
@@ -90,7 +90,7 @@ let _ =
 
 let _ =
   (let a = b in
-   c )
+   c)
   |> d
 
 let _ =
@@ -100,7 +100,7 @@ let _ =
 
 let _ =
   (let a = b in
-   c )
+   c)
   := d
 
 let _ =
@@ -111,47 +111,47 @@ let _ =
 
 let _ =
   (let a = b in
-   c )
+   c)
   + d
 
 let _ =
   f
     (let a = b in
-     c )
+     c)
 
 let _ =
   (let a = b in
-   c )
+   c)
     d
 
 let _ =
   a#f
     (let a = b in
-     c )
+     c)
 
 let _ =
   (let a = b in
-   c )
+   c)
     #f
 
 let _ =
   A
     (let a = b in
-     c )
+     c)
 
 let _ =
   `A
     (let a = b in
-     c )
+     c)
 
 let _ =
   { x=
       (let a = b in
-       c ) }
+       c) }
 
 let _ =
   { (let a = b in
-     c )
+     c)
     with
     a= b }
 
@@ -162,21 +162,21 @@ let _ =
 let _ =
   x <-
     (let a = b in
-     c )
+     c)
 
 let _ =
   (let a = b in
-   c )
+   c)
     .x
 
 let _ =
   (let a = b in
-   c ).x <-
+   c).x <-
     d
 
 let _ =
   ( (let a = b in
-     c )
+     c)
   , d )
 
 let _ =
@@ -192,15 +192,15 @@ let _ =
   a
   ::
   (let a = b in
-   c )
+   c)
 
 let _ =
   [ (let a = b in
-     c ) ]
+     c) ]
 
 let _ =
   [| (let a = b in
-      c ) |]
+      c) |]
 
 [@@@ocamlformat "if-then-else=compact"]
 

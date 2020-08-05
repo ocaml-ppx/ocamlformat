@@ -32,7 +32,7 @@ module Mapper = struct
                   { pdir_name with loc = mapper.location mapper pdir_name.loc };
                 pdir_arg;
                 pdir_loc = mapper.location mapper pdir_loc;
-              } )
+              })
       use_file
 end
 
@@ -70,7 +70,7 @@ module Parse = struct
       (fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
-        | Ptop_def (_ :: _) | Ptop_dir _ -> true )
+        | Ptop_def (_ :: _) | Ptop_dir _ -> true)
       (Parse.use_file selected_version lexbuf)
 end
 
@@ -99,7 +99,7 @@ module Printast = struct
   let use_file f (x : Parsetree.toplevel_phrase list) =
     List.iter
       (fun (p : Parsetree.toplevel_phrase) ->
-        top_phrase f (to_current.copy_toplevel_phrase p) )
+        top_phrase f (to_current.copy_toplevel_phrase p))
       x
 end
 

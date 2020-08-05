@@ -28,7 +28,7 @@ hvbox 1
               fmt "\\n"
               $ fmt_if_k
                   (not (String.is_empty next))
-                  (str spc $ pre_break 0 "\\" 0) ) )
+                  (str spc $ pre_break 0 "\\" 0)))
   $ str "\"" $ Option.call ~f:epi )
 
 ;;
@@ -47,7 +47,7 @@ hvbox 0
                       $ fmt_core_type c (sub_typ ~ctx typ) )
                   $ fmt_docstring c ~pro:(fmt "@;<2 0>") doc
                   $ fmt_attributes c (fmt " ") ~key:"@" atrs (fmt "") )
-         | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ) )
+         | Oinherit typ -> fmt_core_type c (sub_typ ~ctx typ))
      $ fmt_if
          Poly.(closedness = Open)
          (match fields with [] -> "@ .. " | _ -> "@ ; .. ") ))
@@ -59,7 +59,7 @@ hvbox 0
       ( str txt
       $ opt mt (fun _ ->
             fmt "@ : " $ Option.call ~f:pro_t $ psp_t $ fmt "@;<1 2>" $ bdy_t
-            $ esp_t $ Option.call ~f:epi_t ) )
+            $ esp_t $ Option.call ~f:epi_t) )
   $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
   $ Option.call ~f:epi_e )
 

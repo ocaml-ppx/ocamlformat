@@ -171,7 +171,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
     let table = Array.make Nonterminal.count [] in
     Production.iter (fun p ->
         let nt = Nonterminal.to_int (Production.lhs p) in
-        table.(nt) <- p :: table.(nt) );
+        table.(nt) <- p :: table.(nt));
     fun nt -> table.(Nonterminal.to_int nt)
 
   let cost_of = function
@@ -271,14 +271,14 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
               (fun (item, ((cost, _) as solution)) (prod, pos) ->
                 let ((cost', _) as solution') = solve (Tail (st, prod, pos)) in
                 if cost' < cost then (Some (prod, pos), solution')
-                else (item, solution) )
+                else (item, solution))
               (None, bottom)
               (Lr0.items (Lr1.lr0 st))
           with
           | None, _ ->
               fprintf ppf "no synthesis from %d\n" (Lr1.to_int st);
               acc
-          | Some item, cost -> (item, (cost, st)) :: acc )
+          | Some item, cost -> (item, (cost, st)) :: acc)
         []
     in
     let fprintf = Format.fprintf in
@@ -298,7 +298,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
             fprintf ppf "at cost %d from states %a:\n%a\n\n"
               (cost : Cost.t :> int)
               (Utils.pp_list (fun ppf st -> fprintf ppf "#%d" (Lr1.to_int st)))
-              states print_actions actions )
-          (group_assoc states) )
+              states print_actions actions)
+          (group_assoc states))
       (group_assoc solutions)
 end
