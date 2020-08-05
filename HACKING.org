@@ -25,6 +25,9 @@ Git is used to manage the script's state:
   =dune-release tag a.b.c=
   =git push --tags=
 
+- Check that release binary has a release version number:
+  =dune exec ocamlformat -- --version= should output just =a.b.c=
+
 - Create the archive
   =dune-release distrib=
 
