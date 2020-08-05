@@ -20,11 +20,11 @@ Git is used to manage the script's state:
 
 - If a supported OCaml version does not have CI support, run test suite locally.
 
-- In =CHANGES.md=, change =(unreleased)= with the current date
-  Commit
+- In =CHANGES.md=, change =(unreleased)= with the current version (=a.b.c=)
+  and date. Commit the result.
 
 - Tag and push
-  =dune-release tag a.b.c=
+  =dune-release tag=
   =git push --tags=
 
 - Check that release binary has a release version number:
