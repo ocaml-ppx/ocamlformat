@@ -2080,6 +2080,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to sig_value.mli.output
+     (run %{bin:ocamlformat} %{dep:sig_value.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff sig_value.mli.ref sig_value.mli.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to skip.ml.output
      (run %{bin:ocamlformat} %{dep:skip.ml}))))
 

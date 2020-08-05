@@ -751,12 +751,13 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   $
   let doc, atrs = doc_atrs ptyp_attributes in
   Cmts.fmt c ptyp_loc
+  @@ (fun k -> k $ fmt_docstring c ~pro:(fmt "@ ") doc)
   @@ ( if List.is_empty atrs then Fn.id
      else fun k -> wrap "(" ")" (k $ fmt_attributes c ~pre:Cut ~key:"@" atrs)
      )
   @@
   let parens = parenze_typ xtyp in
-  ( hvbox_if box 0
+  hvbox_if box 0
   @@ wrap_if
        (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
        "(" ")"
@@ -915,8 +916,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         (list t1N (Params.comma_sep c.conf)
            (sub_typ ~ctx >> fmt_core_type c))
       $ fmt "@ "
-      $ fmt_longident_loc c ~pre:(str "#") lid )
-  $ fmt_docstring c ~pro:(fmt "@ ") doc
+      $ fmt_longident_loc c ~pre:(str "#") lid
 
 and fmt_package_type c ctx cnstrs =
   let fmt_cstr ~first ~last:_ (lid, typ) =
