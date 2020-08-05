@@ -18,6 +18,8 @@ Git is used to manage the script's state:
   Diffs should be discussed with the maintainers of these projects to gather
   feedback before continuing the release.
 
+- If a supported OCaml version does not have CI support, run test suite locally.
+
 - In =CHANGES.md=, change =(unreleased)= with the current date
   Commit
 
