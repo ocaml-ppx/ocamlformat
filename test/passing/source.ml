@@ -7372,3 +7372,5 @@ let formula_base x =
   (Expr.typeof x) #== (Lit (Type IntType))
   #&& (x #<= (Expr.int 4))
   #&& ((Expr.int 0) #< x)
+
+let _ = call ~f:(fun pair -> (pair : a * b))

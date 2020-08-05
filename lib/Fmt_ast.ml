@@ -823,8 +823,11 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         $ fmt_core_type c ~box:false (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
-        (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-           (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)))
+        (wrap_if
+           (in_constraint && not parens)
+           "(" ")"
+           (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
+              (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))))
   | Ptyp_var s -> fmt_type_var s
   | Ptyp_variant (rfs, flag, lbls) ->
       let row_fields rfs =
