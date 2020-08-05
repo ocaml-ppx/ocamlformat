@@ -290,9 +290,10 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
     match xcond with
     | Some xcnd ->
         hvbox
-          ( match imd with
-          | `No -> if parens then -1 else 0
-          | `Space | `Closing_on_separate_line -> if parens then -2 else 0 )
+          ( match (parens, imd) with
+          | false, _ -> 0
+          | true, `No -> -1
+          | true, (`Space | `Closing_on_separate_line) -> -2 )
           ( hvbox
               (if parens then 0 else 2)
               ( fmt_if (not first) "else "
