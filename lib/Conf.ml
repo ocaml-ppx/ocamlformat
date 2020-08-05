@@ -2145,8 +2145,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
 
 let kind_of_ext fname =
   match Filename.extension fname with
-  | ".ml" | ".mlt" -> Some `Impl
-  | ".mli" -> Some `Intf
+  | ".ml" | ".mlt" | ".eliom" -> Some `Impl
+  | ".mli" | ".eliomi" -> Some `Intf
   | _ -> None
 
 let validate_inputs () =

@@ -682,6 +682,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to eliom_ext.eliom.output
+     (run %{bin:ocamlformat} %{dep:eliom_ext.eliom}))))
+
+(rule
+ (alias runtest)
+ (action (diff eliom_ext.eliom eliom_ext.eliom.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to empty.ml.output
      (run %{bin:ocamlformat} %{dep:empty.ml}))))
 

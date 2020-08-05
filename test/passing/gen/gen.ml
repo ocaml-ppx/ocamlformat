@@ -28,7 +28,8 @@ let add_test ?base_file map src_test_name =
 
 let register_file tests fname =
   match String.split_on_char '.' fname with
-  | test_name :: (("ml" | "mli" | "mlt") as ext) :: rest -> (
+  | test_name :: (("ml" | "mli" | "mlt" | "eliom" | "eliomi") as ext) :: rest
+    -> (
       let src_test_name = test_name ^ "." ^ ext in
       let setup =
         match StringMap.find src_test_name !tests with

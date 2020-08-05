@@ -47,6 +47,8 @@
 
   + Support quoted extensions (added in ocaml 4.11) (#1405) (Guillaume Petiot)
 
+  + Recognise eliom file extensions (#1430) (Jan Rochel)
+
 ### 0.14.3 (2020-07-22)
 
 #### Changes
