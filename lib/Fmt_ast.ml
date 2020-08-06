@@ -1851,10 +1851,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           ( fmt_args_grouped e0 e1N $ fmt "@ "
                           $ fmt_label lbl ":" $ cmts_before
                           $ hvbox 0
-                              ( str "(fun "
-                              $ fmt_attributes c ~key:"@" eN1.pexp_attributes
-                                  ~suf:(str " ")
-                              $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                              ( hvbox 2
+                                  ( fmt "(fun@ "
+                                  $ fmt_attributes c ~key:"@"
+                                      eN1.pexp_attributes ~suf:(str " ")
+                                  $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
+                                  )
                               $ fmt "@ ->" ) )
                       $ fmt
                           ( match xbody.ast.pexp_desc with
