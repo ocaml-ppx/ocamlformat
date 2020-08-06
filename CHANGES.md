@@ -13,6 +13,7 @@
   + Restore previous functionality for pre-post extension points (#1342, @jberdine)
 
   + Fix extra break before `function` body of a `fun` (#1343, @jberdine)
+    Indent further args of anonymous functions (#1440, @gpetiot)
 
   + Do not clear the emacs `*compilation*` buffer on successful reformat (#1350, @jberdine)
 
