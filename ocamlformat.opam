@@ -10,6 +10,7 @@
 ##########################################################################
 
 opam-version: "2.0"
+version: "0.15"
 maintainer: "OCamlFormat Team <ocamlformat-team@fb.com>"
 authors: "Josh Berdine <jjb@fb.com>"
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
