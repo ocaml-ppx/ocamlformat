@@ -369,7 +369,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
                 ( fmt_or_k first
                     (str "if" $ fmt_extension_suffix)
                     (str "else if")
-                $ fmt_attributes $ str " " $ fmt_cond xcnd )
+                $ fmt_attributes $ fmt "@ " $ fmt_cond xcnd )
               $ fmt "@ ")
       ; box_keyword_and_expr=
           (fun k ->
