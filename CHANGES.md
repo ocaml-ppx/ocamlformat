@@ -5,6 +5,7 @@
 #### Bug fixes
 
   + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)
+  + Specify version in opam file to help with pins and opam constraints (#1445, @facelesspanda)
 
 #### New features
 
