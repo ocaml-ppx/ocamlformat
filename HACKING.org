@@ -12,6 +12,8 @@ Git is used to manage the script's state:
 
 * Release procedure
 
+- Make sure release milestone is green.
+
 - Review the impact of the release on real source code:
   In =test-extra/Makefile=, uncomment the extended list of projects to test
   and run =tools/test_branch.sh -a "previous_release"=.
@@ -40,6 +42,8 @@ Git is used to manage the script's state:
 - Release on Opam-repository
   =dune-release opam pkg=
   =dune-release opam submit=
+
+- Close release milestone.
 
 - Each release should be announced on [[https://discuss.ocaml.org/]]
 
