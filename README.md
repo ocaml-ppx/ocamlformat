@@ -52,7 +52,7 @@ a later release.
 The recommended way is to use a versioned default profile, such as:
 
 ```
-version=0.14.2
+version=0.15.0
 ```
 
 (or replace with the output of `ocamlformat --version`)
