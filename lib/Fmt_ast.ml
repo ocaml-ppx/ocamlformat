@@ -2257,19 +2257,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (wrap_if outer_parens "(" ")"
            ( hvbox 0
                ( hvbox 0
-                   ( fits_breaks_if ?force inner_parens "" "("
+                   ( fits_breaks_if ?force ~level:1 inner_parens "" "("
                    $ fmt_module_statement c ~attributes
                        ~keyword:
                          ( hvbox 0
-                             ( fits_breaks ?force "" "let"
-                             $ fits_breaks ?force "" ~hint:(1, 0) ""
+                             ( fits_breaks ?force ~level:4 "" "let"
+                             $ fits_breaks ?force ~level:4 "" ~hint:(1, 0) ""
                              $ Cmts.fmt_before c popen_loc
-                             $ fits_breaks ?force ""
+                             $ fits_breaks ?force ~level:4 ""
                                  (if override then "open!" else "open") )
-                         $ fits_breaks ?force "" ~hint:(1, 0) "" )
+                         $ fits_breaks ?force ~level:3 "" ~hint:(1, 0) "" )
                        (sub_mod ~ctx popen_expr)
                    $ Cmts.fmt_after c popen_loc
-                   $ fits_breaks ?force opn " in" )
+                   $ fits_breaks ~level:1 ?force opn " in" )
                $ fmt_or_k force_fit (fmt "@;<0 2>")
                    (fits_breaks ?force "" ~hint:(1000, 0) "")
                $ fmt_expression c (sub_exp ~ctx e0)

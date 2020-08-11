@@ -31,7 +31,7 @@ let _ =
   y
 
 let () =
-  ( Term.(
+  ( (let open Term in
     term_result
       ( const Phases.phase1 $ arch $ hub_id $ build_dir $ logs_dir
       $ setup_logs ))
