@@ -397,25 +397,23 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
             fmt_if (line_dist cur_last_loc next_loc > 1) "\n"
         | _ -> noop
       in
-      list_pn groups (fun ~prev group ~next ->
-          fmt_or_k (Option.is_none prev)
-            (fmt_opt pro $ open_vbox 0)
-            (fmt "@ ")
-          $ ( match group with
-            | [] -> impossible "previous match"
-            | [cmt] ->
-                let wrap = conf.wrap_comments in
-                let ocp_indent_compat = conf.ocp_indent_compat in
-                let fmt_code = fmt_code conf in
-                Cmt.fmt cmt t.source ~wrap ~ocp_indent_compat ~fmt_code pos
-                $ maybe_newline ~next cmt
-            | group ->
-                list group "@;<1000 0>" (fun cmt ->
-                    wrap "(*" "*)" (str (Cmt.txt cmt)))
-                $ maybe_newline ~next (List.last_exn group) )
-          $ fmt_if_k (Option.is_none next)
-              ( close_box
-              $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi) ))
+      fmt_opt pro
+      $ vbox 0
+          (list_pn groups (fun ~prev group ~next ->
+               fmt_if (Option.is_some prev) "@ "
+               $
+               match group with
+               | [] -> impossible "previous match"
+               | [cmt] ->
+                   Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
+                     ~ocp_indent_compat:conf.ocp_indent_compat
+                     ~fmt_code:(fmt_code conf) pos
+                   $ maybe_newline ~next cmt
+               | group ->
+                   list group "@;<1000 0>" (fun cmt ->
+                       wrap "(*" "*)" (str (Cmt.txt cmt)))
+                   $ maybe_newline ~next (List.last_exn group)))
+      $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
   fmt_cmts t conf
