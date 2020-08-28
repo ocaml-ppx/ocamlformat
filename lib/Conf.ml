@@ -773,14 +773,14 @@ module Formatting = struct
     in
     let names = ["indicate-multiline-delimiters"] in
     let all =
-      [ ( "space"
-        , `Space
-        , "$(b,space) prints a space inside the delimiter to indicate the \
-           matching one is on a different line." )
-      ; ( "no"
+      [ ( "no"
         , `No
         , "$(b, no) doesn't do anything special to indicate the closing \
            delimiter." )
+      ; ( "space"
+        , `Space
+        , "$(b,space) prints a space inside the delimiter to indicate the \
+           matching one is on a different line." )
       ; ( "closing-on-separate-line"
         , `Closing_on_separate_line
         , "$(b, closing-on-separate-line) makes sure that the closing \
