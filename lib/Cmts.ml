@@ -389,22 +389,22 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
       let adj_cmt = eol_cmt && line_dist last_loc loc = 1 in
       fmt_opt pro
       $ vbox 0
-          (list_pn groups (fun ~prev group ~next ->
-               fmt_if (Option.is_some prev) "@ "
-               $ ( match group with
-                 | [] -> impossible "previous match"
-                 | [cmt] ->
-                     Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
-                       ~ocp_indent_compat:conf.ocp_indent_compat
-                       ~fmt_code:(fmt_code conf) pos
-                 | group ->
-                     list group "@;<1000 0>" (fun cmt ->
-                         wrap "(*" "*)" (str (Cmt.txt cmt))) )
+          (list_pn groups (fun ~prev:_ group ~next ->
+               ( match group with
+               | [] -> impossible "previous match"
+               | [cmt] ->
+                   Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
+                     ~ocp_indent_compat:conf.ocp_indent_compat
+                     ~fmt_code:(fmt_code conf) pos
+               | group ->
+                   list group "@;<1000 0>" (fun cmt ->
+                       wrap "(*" "*)" (str (Cmt.txt cmt))) )
                $
                match next with
                | Some (next :: _) ->
                    let last = List.last_exn group in
                    fmt_if (line_dist (Cmt.loc last) (Cmt.loc next) > 1) "\n"
+                   $ fmt "@ "
                | _ -> noop))
       $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
 
