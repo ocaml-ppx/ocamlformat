@@ -386,11 +386,7 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
       in
       let last_loc = Cmt.loc (List.last_exn cmts) in
       let eol_cmt = Source.ends_line t.source last_loc in
-      let adj_cmt =
-        eol_cmt
-        && last_loc.Location.loc_end.pos_lnum + 1
-           = loc.Location.loc_start.pos_lnum
-      in
+      let adj_cmt = eol_cmt && line_dist last_loc loc = 1 in
       fmt_opt pro
       $ vbox 0
           (list_pn groups (fun ~prev group ~next ->
