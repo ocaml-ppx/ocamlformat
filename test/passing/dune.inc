@@ -2210,6 +2210,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to single_line.mli.output
+     (run %{bin:ocamlformat} %{dep:single_line.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff single_line.mli single_line.mli.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to skip.ml.output
      (run %{bin:ocamlformat} %{dep:skip.ml}))))
 
