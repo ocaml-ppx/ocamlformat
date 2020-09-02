@@ -1623,6 +1623,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to list_and_comments.ml.output
+     (run %{bin:ocamlformat} %{dep:list_and_comments.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff list_and_comments.ml.ref list_and_comments.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to loc_stack.ml.output
      (run %{bin:ocamlformat} -n 3 %{dep:loc_stack.ml}))))
 

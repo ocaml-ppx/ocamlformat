@@ -1,18 +1,6 @@
 (rule
  (deps .ocamlformat)
  (action
-   (with-outputs-to list_and_comments.ml.output
-     (run %{bin:ocamlformat} %{dep:list_and_comments.ml}))))
-
-(rule
- (alias runtest)
- (deps list_and_comments.ml.broken-ref list_and_comments.ml.output)
- (action
-  (diff list_and_comments.ml.broken-ref list_and_comments.ml.output)))
-
-(rule
- (deps .ocamlformat)
- (action
    (with-outputs-to js_functor.ml.output
      (with-accepted-exit-codes
        1
