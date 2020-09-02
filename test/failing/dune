@@ -1,83 +1,14 @@
+(include dune.inc)
+
 (rule
- (deps .ocamlformat)
+ (deps
+  (source_tree .))
  (action
-   (with-outputs-to js_functor.ml.output
-     (with-accepted-exit-codes
-       1
-       (run %{bin:ocamlformat} %{dep:js_functor.ml})))))
+  (with-stdout-to
+   dune.inc.gen
+   (run ./gen/gen.exe))))
 
 (rule
  (alias runtest)
- (deps js_functor.ml.broken-ref js_functor.ml.output)
  (action
-  (diff js_functor.ml.broken-ref js_functor.ml.output)))
-
-(rule
- (deps .ocamlformat)
- (action
-   (with-outputs-to escaped_nl.ml.output
-     (with-accepted-exit-codes
-       1
-       (run %{bin:ocamlformat} %{dep:escaped_nl.ml})))))
-
-(rule
- (alias runtest)
- (deps escaped_nl.ml.broken-ref escaped_nl.ml.output)
- (action
-  (diff escaped_nl.ml.broken-ref escaped_nl.ml.output)))
-
-(rule
- (deps .ocamlformat)
- (action
-   (with-outputs-to comments.ml.output
-     (with-accepted-exit-codes
-       1
-       (run %{bin:ocamlformat} %{dep:comments.ml})))))
-
-(rule
- (alias runtest)
- (deps comments.ml.broken-ref comments.ml.output)
- (action
-  (diff comments.ml.broken-ref comments.ml.output)))
-
-(rule
- (deps .ocamlformat)
- (action
-   (with-outputs-to core_failing.ml.output
-     (with-accepted-exit-codes
-       1
-       (run %{bin:ocamlformat} %{dep:core_failing.ml})))))
-
-(rule
- (alias runtest)
- (deps core_failing.ml.broken-ref core_failing.ml.output)
- (action
-  (diff core_failing.ml.broken-ref core_failing.ml.output)))
-
-(rule
- (deps .ocamlformat)
- (action
-   (with-outputs-to core_passing.ml.output
-     (with-accepted-exit-codes
-       1
-       (run %{bin:ocamlformat} %{dep:core_passing.ml})))))
-
-(rule
- (alias runtest)
- (deps core_passing.ml.broken-ref core_passing.ml.output)
- (action
-  (diff core_passing.ml.broken-ref core_passing.ml.output)))
-
-(rule
- (deps .ocamlformat)
- (action
-   (with-outputs-to edge_cases.ml.output
-     (with-accepted-exit-codes
-       1
-       (run %{bin:ocamlformat} %{dep:edge_cases.ml})))))
-
-(rule
- (alias runtest)
- (deps edge_cases.ml.broken-ref edge_cases.ml.output)
- (action
-  (diff edge_cases.ml.broken-ref edge_cases.ml.output)))
+  (diff dune.inc dune.inc.gen)))
