@@ -1,0 +1,3 @@
+ocamlformat: ignoring "js_bind.ml" (syntax error)
+File "js_bind.ml", line 3, characters 7-8:
+Error: Syntax error: wildcard "_" not expected.

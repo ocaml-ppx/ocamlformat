@@ -1974,6 +1974,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to partial.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff partial.ml.ref partial.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to pre_post_extensions.ml.output
      (run %{bin:ocamlformat} %{dep:pre_post_extensions.ml}))))
 

@@ -1,0 +1,5 @@
+ocamlformat: ignoring "indent_empty.ml" (syntax error)
+File "indent_empty.ml", line 5, characters 0-3:
+Error: Syntax error: 'end' expected
+File "indent_empty.ml", line 1, characters 11-17:
+  This 'struct' might be unmatched
