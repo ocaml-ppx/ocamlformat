@@ -1,13 +1,15 @@
-
-
 let _ =
   ( (* a *) ( (* b *) 2 ))
-
-
 
 let _ = (
   (* before match *)
   match (* after match *) x with
+  | _ -> 1
+)
+
+let _ = (
+  (* before try *)
+  try (* after try *) x with
   | _ -> 1
 )
 

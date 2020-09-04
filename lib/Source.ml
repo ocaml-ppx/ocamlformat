@@ -368,8 +368,7 @@ let is_quoted_string t loc =
   in
   not (List.is_empty toks)
 
-let is_before_match_keyword t exp_loc cmt_loc =
-  let is_match_kwd = function Parser.MATCH -> true | _ -> false in
-  match tokens_at t exp_loc ~filter:is_match_kwd with
+let is_before_match_keyword t kwd exp_loc cmt_loc =
+  match tokens_at t exp_loc ~filter:(Poly.( = ) kwd) with
   | [] -> impossible "is_before_match_keyword is only called on match exprs"
   | (_, match_loc) :: _ -> Location.compare_end cmt_loc match_loc < 0

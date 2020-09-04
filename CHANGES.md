@@ -6,7 +6,7 @@
 
   + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)
 
-  + Preserve comment position around match keyword (#1458, @gpetiot)
+  + Preserve comment position around `match` and `try` keywords (#1458, @gpetiot)
 
 #### New features
 
