@@ -1,0 +1,3 @@
+ocamlformat: ignoring "partial2.ml" (syntax error)
+File "partial2.ml", line 4, characters 0-0:
+Error: Syntax error

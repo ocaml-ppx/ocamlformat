@@ -1,0 +1,3 @@
+ocamlformat: ignoring "record_with.ml" (syntax error)
+File "record_with.ml", line 25, characters 56-57:
+Error: Syntax error: wildcard "_" not expected.

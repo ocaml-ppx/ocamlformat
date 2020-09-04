@@ -32,6 +32,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to alignment.ml.output
+     (run %{bin:ocamlformat} %{dep:alignment.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff alignment.ml.ref alignment.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to apply.ml.output
      (run %{bin:ocamlformat} %{dep:apply.ml}))))
 
@@ -775,6 +785,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to escaped_nl.ml.output
+     (run %{bin:ocamlformat} %{dep:escaped_nl.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff escaped_nl.ml.ref escaped_nl.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to exceptions.ml.output
      (run %{bin:ocamlformat} %{dep:exceptions.ml}))))
 
@@ -1343,6 +1363,56 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to js_args.ml.output
+     (run %{bin:ocamlformat} %{dep:js_args.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_args.ml.ref js_args.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to js_begin.ml.output
+     (run %{bin:ocamlformat} %{dep:js_begin.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_begin.ml.ref js_begin.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to js_fun.ml.output
+     (run %{bin:ocamlformat} %{dep:js_fun.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_fun.ml.ref js_fun.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to js_pattern.ml.output
+     (run %{bin:ocamlformat} %{dep:js_pattern.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_pattern.ml.ref js_pattern.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to js_record.ml.output
+     (run %{bin:ocamlformat} %{dep:js_record.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_record.ml.ref js_record.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to js_sig.mli.output
      (run %{bin:ocamlformat} --profile=janestreet %{dep:js_sig.mli}))))
 
@@ -1373,6 +1443,36 @@
  (alias runtest)
  (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_source.ml.ocp js_source.ml.ocp.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to js_syntax.ml.output
+     (run %{bin:ocamlformat} %{dep:js_syntax.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_syntax.ml.ref js_syntax.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to js_to_do.ml.output
+     (run %{bin:ocamlformat} %{dep:js_to_do.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_to_do.ml.ref js_to_do.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to js_upon.ml.output
+     (run %{bin:ocamlformat} %{dep:js_upon.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_upon.ml.ref js_upon.ml.output)))
 
 (rule
  (deps .ocamlformat )
@@ -1519,6 +1619,16 @@
 (rule
  (alias runtest)
  (action (diff list.ml list.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to list_and_comments.ml.output
+     (run %{bin:ocamlformat} %{dep:list_and_comments.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff list_and_comments.ml.ref list_and_comments.ml.output)))
 
 (rule
  (deps .ocamlformat )
@@ -1864,6 +1974,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to partial.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff partial.ml.ref partial.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to pre_post_extensions.ml.output
      (run %{bin:ocamlformat} %{dep:pre_post_extensions.ml}))))
 
@@ -2096,6 +2216,16 @@
 (rule
  (alias runtest)
  (action (diff sig_value.mli.ref sig_value.mli.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to single_line.mli.output
+     (run %{bin:ocamlformat} %{dep:single_line.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff single_line.mli single_line.mli.output)))
 
 (rule
  (deps .ocamlformat )
