@@ -85,4 +85,4 @@ val loc_of_expr_constant : t -> Parsetree.expression -> Location.t
 val is_quoted_string : t -> Location.t -> bool
 
 val is_before_match_keyword :
-  t -> Parser.token -> Location.t -> Location.t -> bool
+  t -> Parser.token -> exp_loc:Location.t -> cmt_loc:Location.t -> bool

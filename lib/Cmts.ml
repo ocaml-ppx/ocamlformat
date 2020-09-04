@@ -282,8 +282,8 @@ let relocate (t : t) ~src ~before ~after =
 
 let relocate_match_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let f map =
-    let f Cmt.{loc; _} =
-      Source.is_before_match_keyword src tok whole_loc loc
+    let f Cmt.{loc= cmt_loc; _} =
+      Source.is_before_match_keyword src tok ~exp_loc:whole_loc ~cmt_loc
     in
     let before, after =
       List.partition_tf (Location.Multimap.find_multi map matched_loc) ~f
