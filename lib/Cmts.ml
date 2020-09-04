@@ -75,10 +75,6 @@ end = struct
     let expr m e =
       ( match e.pexp_desc with
       | Pexp_constant _ -> locs := Source.loc_of_expr_constant src e :: !locs
-      | Pexp_match _ ->
-          List.iter e.pexp_loc_stack ~f:(fun loc ->
-              if Source.is_before_match_keyword src e.pexp_loc loc then
-                locs := loc :: !locs )
       | _ -> () ) ;
       Ast_mapper.default_mapper.expr m e
     in
@@ -283,6 +279,22 @@ let relocate (t : t) ~src ~before ~after =
       update_remaining t ~f:(fun r ->
           r |> Location.Set.remove src |> Location.Set.add after
           |> Location.Set.add before) )
+
+let relocate_match_cmts (t : t) src ~whole_loc ~matched_loc =
+  let f map =
+    let f Cmt.{loc; _} = Source.is_before_match_keyword src whole_loc loc in
+    let before, after =
+      List.partition_tf (Location.Multimap.find_multi map matched_loc) ~f
+    in
+    let map =
+      List.fold_left ~init:map before ~f:(fun map ->
+          Location.Multimap.add_multi map whole_loc)
+    in
+    Location.Multimap.change_multi map matched_loc after
+  in
+  update_cmts t `Before ~f ;
+  update_cmts t `After ~f ;
+  update_cmts t `Within ~f
 
 (** Initialize global state and place comments. *)
 let init map_ast ~debug source asts comments_n_docstrings =

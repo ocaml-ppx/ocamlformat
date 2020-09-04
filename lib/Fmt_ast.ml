@@ -1561,6 +1561,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
+  ( match exp.pexp_desc with
+  | Pexp_match (e0, _) ->
+      Cmts.relocate_match_cmts c.cmts c.source ~whole_loc:pexp_loc
+        ~matched_loc:e0.pexp_loc
+  | _ -> () ) ;
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:Space ~key:"@" pexp_attributes in
   let has_attr = not (List.is_empty pexp_attributes) in
@@ -2299,23 +2304,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       match compact with
       | None ->
-          (* TODO: remove leading_cmt once we figure out how to not introduce
-             regression with 4.07 Without the line below {[ let () = ( (*
-             before *) match (* after *) x with _ -> x) ]} Gets reformatted
-             into {[ let () = match (* before *) (* after *) x with _ -> x ]} *)
-          let leading_cmt_pre_4_08 =
-            (* This is not fixed before 4.08.0 yet, since 4.08.0 we use the
-               loc_stack of the expression to correctly place the comments. *)
-            if Ocaml_version.(compare sys_version Releases.v4_08_0 < 0) then
-              Cmts.fmt_before c e0.pexp_loc
-            else noop
-          in
           let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
           hvbox indent
             (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
                ~disambiguate:true
-               ( leading_cmt_pre_4_08
-               $ hvbox 0
+               ( hvbox 0
                    ( str keyword
                    $ fmt_extension_suffix c ext
                    $ fmt_attributes c ~key:"@" pexp_attributes

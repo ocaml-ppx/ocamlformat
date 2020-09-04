@@ -55,6 +55,14 @@ val relocate :
     locations) comments before [src] to [before] and comments after [src] to
     [after]. *)
 
+val relocate_match_cmts :
+  t -> Source.t -> whole_loc:Location.t -> matched_loc:Location.t -> unit
+(** Some comments that should be attached to the whole pattern-matching
+    expressions at location [whole_loc] are wrongfully attached to the
+    matched expression at location [matched_loc].
+    [relocate_match_cmts t src ~whole_loc ~matched_loc] relocates these
+    comments according to their position regarding the [match] keyword. *)
+
 val fmt_before :
      t
   -> Conf.t
