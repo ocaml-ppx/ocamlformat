@@ -1632,14 +1632,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to loc_stack.ml.output
      (run %{bin:ocamlformat} -n 3 %{dep:loc_stack.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff loc_stack.ml.ref loc_stack.ml.output)))
 
 (rule
