@@ -13,6 +13,10 @@ let should_inline : Llvm.llvalue -> bool =
   | Some use -> (
     match Llvm.use_succ use with
     | Some _ -> (
+      (* If we are not in the default context, we can only use the OCAMLPATH
+         variable if it is specific to this build context *)
+      (* CR-someday diml: maybe we should actually clear OCAMLPATH in other
+         build contexts *)
       match Llvm.classify_value llv with
       | Instruction
           ( Trunc | ZExt | SExt | FPToUI | FPToSI | UIToFP | SIToFP | FPTrunc

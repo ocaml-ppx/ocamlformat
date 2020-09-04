@@ -287,7 +287,7 @@ let relocate_match_cmts (t : t) src ~whole_loc ~matched_loc =
       List.partition_tf (Location.Multimap.find_multi map matched_loc) ~f
     in
     let map =
-      List.fold_left ~init:map before ~f:(fun map ->
+      List.fold_left ~init:map (List.rev before) ~f:(fun map ->
           Location.Multimap.add_multi map whole_loc)
     in
     Location.Multimap.change_multi map matched_loc after
