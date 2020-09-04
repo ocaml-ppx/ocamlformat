@@ -1561,7 +1561,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
-  ( match exp.pexp_desc with
+  ( match pexp_desc with
   | Pexp_match (e0, _) ->
       Cmts.relocate_match_cmts c.cmts c.source Parser.MATCH
         ~whole_loc:pexp_loc ~matched_loc:e0.pexp_loc
