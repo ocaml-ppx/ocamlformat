@@ -368,7 +368,7 @@ let is_quoted_string t loc =
   in
   not (List.is_empty toks)
 
-let is_before_match_keyword t kwd ~exp_loc ~cmt_loc =
-  match tokens_at t exp_loc ~filter:(Poly.( = ) kwd) with
-  | [] -> impossible "is_before_match_keyword is only called on match exprs"
-  | (_, match_loc) :: _ -> Location.compare_end cmt_loc match_loc < 0
+let loc_of_keyword t loc kwd =
+  match tokens_at t loc ~filter:(Poly.( = ) kwd) with
+  | [] -> None
+  | (_, loc) :: _ -> Some loc

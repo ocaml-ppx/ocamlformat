@@ -281,12 +281,11 @@ let relocate (t : t) ~src ~before ~after =
           |> Location.Set.add before) )
 
 let relocate_match_cmts (t : t) src tok ~whole_loc ~matched_loc =
+  let kwd_loc = Option.value_exn (Source.loc_of_keyword src whole_loc tok) in
   let f map =
-    let f Cmt.{loc= cmt_loc; _} =
-      Source.is_before_match_keyword src tok ~exp_loc:whole_loc ~cmt_loc
-    in
     let before, after =
-      List.partition_tf (Location.Multimap.find_multi map matched_loc) ~f
+      List.partition_tf (Location.Multimap.find_multi map matched_loc)
+        ~f:(fun Cmt.{loc; _} -> Location.compare_end loc kwd_loc < 0)
     in
     let map =
       List.fold_left ~init:map (List.rev before) ~f:(fun map ->
