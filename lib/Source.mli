@@ -84,4 +84,5 @@ val loc_of_expr_constant : t -> Parsetree.expression -> Location.t
 
 val is_quoted_string : t -> Location.t -> bool
 
-val loc_of_keyword : t -> Location.t -> Parser.token -> Location.t option
+val loc_of_first_token_at :
+  t -> Location.t -> Parser.token -> Location.t option
