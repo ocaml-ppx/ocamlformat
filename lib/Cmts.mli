@@ -55,7 +55,7 @@ val relocate :
     locations) comments before [src] to [before] and comments after [src] to
     [after]. *)
 
-val relocate_match_cmts :
+val relocate_pattern_matching_cmts :
      t
   -> Source.t
   -> Parser.token
@@ -63,10 +63,10 @@ val relocate_match_cmts :
   -> matched_loc:Location.t
   -> unit
 (** Some comments that should be attached to the whole pattern-matching
-    expressions at location [whole_loc] are wrongfully attached to the
-    matched expression at location [matched_loc].
-    [relocate_match_cmts t src tok ~whole_loc ~matched_loc] relocates these
-    comments according to their position regarding the [match] keyword. *)
+    expressions ([match-with] or [try-with] expressions) at location
+    [whole_loc] are wrongfully attached to the matched expression at location
+    [matched_loc]. [relocate_pattern_matching_cmts] relocates these comments
+    according to their position regarding the [match] or [try] keyword. *)
 
 val fmt_before :
      t

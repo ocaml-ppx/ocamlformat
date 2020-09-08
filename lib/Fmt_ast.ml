@@ -1563,11 +1563,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   @@ fun c ->
   ( match pexp_desc with
   | Pexp_match (e0, _) ->
-      Cmts.relocate_match_cmts c.cmts c.source Parser.MATCH
+      Cmts.relocate_pattern_matching_cmts c.cmts c.source Parser.MATCH
         ~whole_loc:pexp_loc ~matched_loc:e0.pexp_loc
   | Pexp_try (e0, _) ->
-      Cmts.relocate_match_cmts c.cmts c.source Parser.TRY ~whole_loc:pexp_loc
-        ~matched_loc:e0.pexp_loc
+      Cmts.relocate_pattern_matching_cmts c.cmts c.source Parser.TRY
+        ~whole_loc:pexp_loc ~matched_loc:e0.pexp_loc
   | _ -> () ) ;
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:Space ~key:"@" pexp_attributes in

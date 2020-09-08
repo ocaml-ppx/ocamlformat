@@ -280,7 +280,7 @@ let relocate (t : t) ~src ~before ~after =
           r |> Location.Set.remove src |> Location.Set.add after
           |> Location.Set.add before) )
 
-let relocate_match_cmts (t : t) src tok ~whole_loc ~matched_loc =
+let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let kwd_loc = Option.value_exn (Source.loc_of_keyword src whole_loc tok) in
   let f map =
     let before, after =
