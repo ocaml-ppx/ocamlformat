@@ -294,7 +294,6 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
     Location.Multimap.change_multi map matched_loc after
   in
   update_cmts t `Before ~f ;
-  update_cmts t `After ~f ;
   update_cmts t `Within ~f
 
 (** Initialize global state and place comments. *)
