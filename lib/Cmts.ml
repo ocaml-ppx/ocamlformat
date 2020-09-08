@@ -298,6 +298,16 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   update_cmts t `Before ~f ;
   update_cmts t `Within ~f
 
+let relocate_wrongfully_attached_cmts t src exp =
+  match exp.pexp_desc with
+  | Pexp_match (e0, _) ->
+      relocate_pattern_matching_cmts t src Parser.MATCH
+        ~whole_loc:exp.pexp_loc ~matched_loc:e0.pexp_loc
+  | Pexp_try (e0, _) ->
+      relocate_pattern_matching_cmts t src Parser.TRY ~whole_loc:exp.pexp_loc
+        ~matched_loc:e0.pexp_loc
+  | _ -> ()
+
 (** Initialize global state and place comments. *)
 let init map_ast ~debug source asts comments_n_docstrings =
   let t =
