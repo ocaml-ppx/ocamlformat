@@ -43,11 +43,14 @@
     (< v0.15)))
   base-unix
   cmdliner
+  dune-build-info
   fix
   fpath
   menhir
   (ocaml-migrate-parsetree
-   (>= 1.7.3))
+   (and
+    (>= 1.7.3)
+    (< 2.0.0)))
   (ocp-indent :with-test)
   (odoc
    (>= 1.4.2))
