@@ -1,5 +1,9 @@
 ### unreleased
 
+#### Removed
+
+  + Remove the 'escape-chars' option, deprecated since 0.14.0 (#1462, @gpetiot)
+
 #### Changes
 
 #### Bug fixes
