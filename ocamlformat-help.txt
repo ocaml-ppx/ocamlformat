@@ -202,15 +202,6 @@ OPTIONS (CODE FORMATTING STYLE)
            on the preceding line and closed on the following line. The flag
            is set by default.
 
-       --escape-chars={preserve|decimal|hexadecimal}
-           Escape encoding for character literals. preserve escapes ASCII
-           control codes but leaves the upper 128 characters unchanged.
-           decimal produces ASCII printable characters using decimal escape
-           sequences as needed. hexadecimal mode escapes every character. The
-           default value is preserve. Warning: This option is deprecated
-           since version 0.14.0. Concrete syntax will now always be
-           preserved.
-
        --escape-strings={preserve|decimal|hexadecimal}
            Escape encoding for string literals. See `--escape-chars` for the
            interpretation of the modes. The default value is preserve.

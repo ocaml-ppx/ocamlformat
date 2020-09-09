@@ -234,14 +234,7 @@ let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
   Cmts.fmt c loc (fmt_opt pre $ str (Option.value ~default txt))
 
 let char_escaped c ~loc chr =
-  match (c.conf.escape_chars, chr) with
-  | `Hexadecimal, _ -> Format.sprintf "\\x%02x" (Char.to_int chr)
-  | `Preserve, _ -> (
-    match Source.char_literal c.source loc with
-    | None -> Char.escaped chr
-    | Some c -> c )
-  | _, '\000' .. '\128' -> Char.escaped chr
-  | `Decimal, _ -> Char.escaped chr
+  Option.value (Source.char_literal c.source loc) ~default:(Char.escaped chr)
 
 let escape_string mode str =
   match mode with
