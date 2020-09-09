@@ -37,7 +37,6 @@ type t =
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
-  ; escape_chars: [`Decimal | `Hexadecimal | `Preserve]
   ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
@@ -603,29 +602,6 @@ module Formatting = struct
 
   let concrete_syntax_preserved_msg =
     "Concrete syntax will now always be preserved."
-
-  let escape_chars =
-    let doc = "Escape encoding for character literals." in
-    let names = ["escape-chars"] in
-    let all =
-      [ ( "preserve"
-        , `Preserve
-        , "$(b,preserve) escapes ASCII control codes but leaves the upper \
-           128 characters unchanged." )
-      ; ( "decimal"
-        , `Decimal
-        , "$(b,decimal) produces ASCII printable characters using decimal \
-           escape sequences as needed." )
-      ; ( "hexadecimal"
-        , `Hexadecimal
-        , "$(b,hexadecimal) mode escapes every character." ) ]
-    in
-    let deprecated =
-      C.deprecated ~since_version:"0.14.0" concrete_syntax_preserved_msg
-    in
-    C.choice ~names ~all ~doc ~section ~deprecated
-      (fun conf x -> {conf with escape_chars= x})
-      (fun conf -> conf.escape_chars)
 
   let escape_strings =
     let doc =
@@ -1515,7 +1491,6 @@ let ocamlformat_profile =
   ; doc_comments_padding= 2
   ; doc_comments_tag_only= `Default
   ; dock_collection_brackets= false
-  ; escape_chars= `Preserve
   ; escape_strings= `Preserve
   ; exp_grouping= `Parens
   ; extension_indent= 2
@@ -1588,7 +1563,6 @@ let conventional_profile =
   ; doc_comments_padding= C.default Formatting.doc_comments_padding
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
   ; dock_collection_brackets= C.default Formatting.dock_collection_brackets
-  ; escape_chars= C.default Formatting.escape_chars
   ; escape_strings= C.default Formatting.escape_strings
   ; exp_grouping= C.default Formatting.exp_grouping
   ; extension_indent= C.default Formatting.extension_indent
@@ -1718,7 +1692,6 @@ let janestreet_profile =
   ; doc_comments_padding= 1
   ; doc_comments_tag_only= `Fit
   ; dock_collection_brackets= false
-  ; escape_chars= `Preserve
   ; escape_strings= `Preserve
   ; exp_grouping= `Parens
   ; extension_indent= 2
