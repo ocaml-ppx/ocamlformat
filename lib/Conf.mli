@@ -39,8 +39,6 @@ type t =
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
-  ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
-        (** Escape encoding for string literals. *)
   ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]

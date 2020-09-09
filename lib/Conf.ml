@@ -37,7 +37,6 @@ type t =
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
-  ; escape_strings: [`Decimal | `Hexadecimal | `Preserve]
   ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
   ; extension_sugar: [`Preserve | `Always]
@@ -609,23 +608,11 @@ module Formatting = struct
     let msg = concrete_syntax_preserved_msg in
     C.removed_option ~names ~version ~msg
 
-  let escape_strings =
-    let doc =
-      "Escape encoding for string literals. See `--escape-chars` for the \
-       interpretation of the modes."
-    in
+  let ( (* escape_strings *) ) =
     let names = ["escape-strings"] in
-    let all =
-      [ ("preserve", `Preserve, "")
-      ; ("decimal", `Decimal, "")
-      ; ("hexadecimal", `Hexadecimal, "") ]
-    in
-    let deprecated =
-      C.deprecated ~since_version:"0.14.0" concrete_syntax_preserved_msg
-    in
-    C.choice ~names ~all ~doc ~section ~deprecated
-      (fun conf x -> {conf with escape_strings= x})
-      (fun conf -> conf.escape_strings)
+    let version = "0.16.0" in
+    let msg = concrete_syntax_preserved_msg in
+    C.removed_option ~names ~version ~msg
 
   let exp_grouping =
     let doc = "Style of expression grouping." in
@@ -1497,7 +1484,6 @@ let ocamlformat_profile =
   ; doc_comments_padding= 2
   ; doc_comments_tag_only= `Default
   ; dock_collection_brackets= false
-  ; escape_strings= `Preserve
   ; exp_grouping= `Parens
   ; extension_indent= 2
   ; extension_sugar= `Preserve
@@ -1569,7 +1555,6 @@ let conventional_profile =
   ; doc_comments_padding= C.default Formatting.doc_comments_padding
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
   ; dock_collection_brackets= C.default Formatting.dock_collection_brackets
-  ; escape_strings= C.default Formatting.escape_strings
   ; exp_grouping= C.default Formatting.exp_grouping
   ; extension_indent= C.default Formatting.extension_indent
   ; extension_sugar= C.default Formatting.extension_sugar
@@ -1698,7 +1683,6 @@ let janestreet_profile =
   ; doc_comments_padding= 1
   ; doc_comments_tag_only= `Fit
   ; dock_collection_brackets= false
-  ; escape_strings= `Preserve
   ; exp_grouping= `Parens
   ; extension_indent= 2
   ; extension_sugar= `Preserve

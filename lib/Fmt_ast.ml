@@ -342,17 +342,15 @@ let fmt_constant c ~loc ?epi const =
         let epi = str "\"" $ fmt_opt epi in
         hvbox 1 (str "\"" $ list_pn lines (fmt_line ~epi))
       in
+      let preserve_or_normalize =
+        match c.conf.break_string_literals with
+        | `Never -> `Preserve
+        | `Auto -> `Normalize
+      in
       let s, mode =
-        match (c.conf.break_string_literals, c.conf.escape_strings) with
-        | `Never, `Preserve -> (
-          match Source.string_literal c.source `Preserve loc with
-          | None -> (s, `Decimal)
-          | Some s -> (s, `Preserve) )
-        | `Auto, `Preserve -> (
-          match Source.string_literal c.source `Normalize loc with
-          | None -> (s, `Decimal)
-          | Some s -> (s, `Preserve) )
-        | _ -> (s, c.conf.escape_strings)
+        match Source.string_literal c.source preserve_or_normalize loc with
+        | None -> (s, `Decimal)
+        | Some s -> (s, `Preserve)
       in
       match c.conf.break_string_literals with
       | `Auto when contains_pp_commands s ->

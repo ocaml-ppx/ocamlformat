@@ -202,12 +202,6 @@ OPTIONS (CODE FORMATTING STYLE)
            on the preceding line and closed on the following line. The flag
            is set by default.
 
-       --escape-strings={preserve|decimal|hexadecimal}
-           Escape encoding for string literals. See `--escape-chars` for the
-           interpretation of the modes. The default value is preserve.
-           Warning: This option is deprecated since version 0.14.0. Concrete
-           syntax will now always be preserved.
-
        --exp-grouping={parens|preserve}
            Style of expression grouping. parens groups expressions using
            parentheses. preserve preserves the original grouping syntax
