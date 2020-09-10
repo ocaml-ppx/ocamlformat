@@ -1775,6 +1775,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, _); (Nolabel, _)] )
     when Longident.is_infix id && not (Longident.is_monadic_binding id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
+      let inner_wrap = parens || has_attr in
       let outer_wrap =
         match ctx0 with
         | Exp
@@ -1813,7 +1814,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox_if outer_wrap 0
         (wrap_if outer_wrap "(" ")"
            (hvbox indent_wrap
-              (fmt_infix_op_args ~parens c xexp infix_op_args $ fmt_atrs)))
+              ( fmt_infix_op_args ~parens:inner_wrap c xexp infix_op_args
+              $ fmt_atrs )))
   | Pexp_apply (e0, [(Nolabel, e1)]) when Exp.is_prefix e0 ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
