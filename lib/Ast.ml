@@ -1644,7 +1644,8 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
+      | Pexp_apply
+          ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _}, args)
         when Option.is_some (Indexing_op.get_sugar ident args) -> (
           let op = Option.value_exn (Indexing_op.get_sugar ident args) in
           if op.lhs == exp then Some (Dot, Left)

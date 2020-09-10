@@ -12,6 +12,8 @@
 
   + Fix parentheses around infix applications having attributes (#1464, @gpetiot)
 
+  + Fix parentheses around the index arg of a non-sugared index operation (#1465, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
