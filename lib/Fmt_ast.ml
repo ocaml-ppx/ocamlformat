@@ -4098,22 +4098,13 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             $ fmt_attributes c ~pre:Space ~key:"@" atrs ) }
   | Pmod_unpack e1 ->
       let doc, atrs = doc_atrs pmod_attributes in
-      let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
-      in
-      let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
       { empty with
-        pro=
-          Option.some_if has_pro
-            (Cmts.fmt_before c pmod_loc $ fmt_docstring c ~epi:(fmt "@,") doc)
-      ; bdy=
+        bdy=
           Cmts.fmt c pmod_loc
-          @@ hvbox 2
-               (wrap_fits_breaks ~space:false c.conf "(" ")"
-                  (str "val " $ fmt_expression c (sub_exp ~ctx e1)))
-      ; epi=
-          Option.some_if has_epi
-            ( Cmts.fmt_after c pmod_loc
+            ( fmt_docstring c ~epi:(fmt "@,") doc
+            $ hvbox 2
+                (wrap_fits_breaks ~space:false c.conf "(" ")"
+                   (str "val " $ fmt_expression c (sub_exp ~ctx e1)))
             $ fmt_attributes c ~pre:Space ~key:"@" atrs ) }
   | Pmod_extension x1 ->
       let doc, atrs = doc_atrs pmod_attributes in
