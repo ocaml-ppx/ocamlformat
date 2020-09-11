@@ -3851,12 +3851,11 @@ and fmt_open_description c ?(keyword = "open") ~kw_attributes
   hovbox 0
     ( doc_before $ str keyword
     $ fmt_if (is_override popen_override) "!"
-    $ Cmts.fmt_before c popen_loc
-    $ fmt_attributes c ~key:"@" kw_attributes
-    $ str " "
-    $ fmt_longident_loc c popen_lid
-    $ fmt_attributes c ~pre:Blank ~key:"@@" atrs
-    $ Cmts.fmt_after c popen_loc
+    $ Cmts.fmt c popen_loc
+        ( fmt_attributes c ~key:"@" kw_attributes
+        $ str " "
+        $ fmt_longident_loc c popen_lid
+        $ fmt_attributes c ~pre:Blank ~key:"@@" atrs )
     $ doc_after )
 
 (** TODO: merge with `fmt_module_declaration` *)
