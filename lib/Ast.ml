@@ -156,10 +156,13 @@ module Indexing_op = struct
     match all_args_unlabeled [] args with
     | None | Some [] -> None
     | Some (lhs :: args) -> (
-        let {Location.txt= ident; loc} = ident in
+      match ident with
+      | {pexp_desc= Pexp_ident {txt= ident; loc}; pexp_attributes= []; _}
+        -> (
         match get_sugar_ident ident args with
         | None -> None
         | Some (op, rhs) -> Some {lhs; op; rhs; loc} )
+      | _ -> None )
 end
 
 module String_id = struct
@@ -1420,11 +1423,9 @@ end = struct
                 | _ -> false) )
         | Pexp_fun (_, default, _, body) ->
             assert (Option.value_map default ~default:false ~f || body == exp)
-        | Pexp_apply
-            ( ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _} as e0)
-            , args )
-          when Option.is_some (Indexing_op.get_sugar ident args) ->
-            let op = Option.value_exn (Indexing_op.get_sugar ident args) in
+        | Pexp_apply (e0, args)
+          when Option.is_some (Indexing_op.get_sugar e0 args) ->
+            let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
             let in_args =
               match op.op with
               | Defined (e2, _) -> e2 == exp
@@ -1644,10 +1645,9 @@ end = struct
           match i.[0] with
           | '!' | '?' | '~' -> Some (High, Non)
           | _ -> Some (Apply, Non) ) )
-      | Pexp_apply
-          ({pexp_desc= Pexp_ident ident; pexp_attributes= []; _}, args)
-        when Option.is_some (Indexing_op.get_sugar ident args) -> (
-          let op = Option.value_exn (Indexing_op.get_sugar ident args) in
+      | Pexp_apply (e0, args)
+        when Option.is_some (Indexing_op.get_sugar e0 args) -> (
+          let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
           if op.lhs == exp then Some (Dot, Left)
           else
             match op.rhs with
@@ -1736,9 +1736,9 @@ end = struct
         | "!=" -> Some Apply
         | _ -> (
           match i.[0] with '!' | '?' | '~' -> Some High | _ -> Some Apply ) )
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
-        when Option.is_some (Indexing_op.get_sugar ident args) -> (
-          let op = Option.value_exn (Indexing_op.get_sugar ident args) in
+      | Pexp_apply (e0, args)
+        when Option.is_some (Indexing_op.get_sugar e0 args) -> (
+          let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
           match op.rhs with Some _ -> Some LessMinus | _ -> Some Dot )
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [_; _])
         -> (
@@ -2088,8 +2088,8 @@ end = struct
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             continue (List.last_exn cases).pc_rhs
-        | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
-          when Option.is_some (Indexing_op.get_sugar ident args) ->
+        | Pexp_apply (e0, args)
+          when Option.is_some (Indexing_op.get_sugar e0 args) ->
             false
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
@@ -2164,9 +2164,9 @@ end = struct
           List.iter cases ~f:(fun case ->
               mark_parenzed_inner_nested_match case.pc_rhs) ;
           true
-      | Pexp_apply ({pexp_desc= Pexp_ident ident; _}, args)
-        when Option.is_some (Indexing_op.get_sugar ident args) -> (
-        match Option.value_exn (Indexing_op.get_sugar ident args) with
+      | Pexp_apply (e0, args)
+        when Option.is_some (Indexing_op.get_sugar e0 args) -> (
+        match Option.value_exn (Indexing_op.get_sugar e0 args) with
         | {rhs= Some e; _} -> continue e
         | {rhs= None; _} -> false )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
@@ -2196,10 +2196,8 @@ end = struct
                && Option.value_map ~default:false (prec_ast ctx) ~f:(fun p ->
                       Prec.compare p Apply < 0) ->
             true
-        | Pexp_apply
-            ({pexp_desc= Pexp_ident lid; _}, (_ :: (_, e2) :: _ as args))
-          when e2 == exp && Option.is_some (Indexing_op.get_sugar lid args)
-          ->
+        | Pexp_apply (e0, (_ :: (_, e2) :: _ as args))
+          when e2 == exp && Option.is_some (Indexing_op.get_sugar e0 args) ->
             true
         | Pexp_tuple e1N -> List.last_exn e1N == xexp.ast
         | _ -> false
