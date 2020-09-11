@@ -1,10 +1,18 @@
 ### unreleased
 
+#### Removed
+
+  + Remove the 'escape-chars' option, deprecated since 0.14.0 (#1462, @gpetiot)
+
 #### Changes
 
 #### Bug fixes
 
   + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)
+
+  + Fix parentheses around infix applications having attributes (#1464, @gpetiot)
+
+  + Fix parentheses around the index arg of a non-sugared index operation (#1465, @gpetiot)
 
   + Preserve comment position around `match` and `try` keywords (#1458, @gpetiot)
 

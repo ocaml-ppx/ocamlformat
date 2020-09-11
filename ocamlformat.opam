@@ -17,7 +17,7 @@ bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
 license: "MIT"
 build: [
-  ["ocaml" "tools/gen_version.mlt" "lib/Version.ml" version] {pinned}
+  ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
@@ -27,8 +27,9 @@ depends: [
   "base" {>= "v0.12.0" & < "v0.15"}
   "base-unix"
   "cmdliner"
-  "dune" {>= "2.2.0"}
+  "dune" {>= "2.7.0"}
   "fix"
+  "dune-build-info"
   "fpath"
   "menhir"
   "ocaml-migrate-parsetree" {>= "1.7.3" & < "2.0.0"}

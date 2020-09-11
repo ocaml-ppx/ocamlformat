@@ -234,14 +234,7 @@ let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
   Cmts.fmt c loc (fmt_opt pre $ str (Option.value ~default txt))
 
 let char_escaped c ~loc chr =
-  match (c.conf.escape_chars, chr) with
-  | `Hexadecimal, _ -> Format.sprintf "\\x%02x" (Char.to_int chr)
-  | `Preserve, _ -> (
-    match Source.char_literal c.source loc with
-    | None -> Char.escaped chr
-    | Some c -> c )
-  | _, '\000' .. '\128' -> Char.escaped chr
-  | `Decimal, _ -> Char.escaped chr
+  Option.value (Source.char_literal c.source loc) ~default:(Char.escaped chr)
 
 let escape_string mode str =
   match mode with
@@ -1638,10 +1631,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           ~key:"@"
                       $ fmt_fun_args c xargs $ fmt "@ ->" )
                   $ fmt "@ " $ fmt_expression c xbody )) ))
-  | Pexp_apply
-      ({pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}, args)
-    when Option.is_some (Indexing_op.get_sugar ident args) ->
-      let op = Option.value_exn (Indexing_op.get_sugar ident args) in
+  | Pexp_apply (({pexp_desc= Pexp_ident ident; pexp_loc; _} as e0), args)
+    when Option.is_some (Indexing_op.get_sugar e0 args) ->
+      let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
       fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op
   | Pexp_apply
@@ -1783,6 +1775,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , [(Nolabel, _); (Nolabel, _)] )
     when Longident.is_infix id && not (Longident.is_monadic_binding id) ->
       let op_args = Sugar.infix c.cmts (prec_ast (Exp exp)) xexp in
+      let inner_wrap = parens || has_attr in
       let outer_wrap =
         match ctx0 with
         | Exp
@@ -1821,7 +1814,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox_if outer_wrap 0
         (wrap_if outer_wrap "(" ")"
            (hvbox indent_wrap
-              (fmt_infix_op_args ~parens c xexp infix_op_args $ fmt_atrs)))
+              ( fmt_infix_op_args ~parens:inner_wrap c xexp infix_op_args
+              $ fmt_atrs )))
   | Pexp_apply (e0, [(Nolabel, e1)]) when Exp.is_prefix e0 ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
