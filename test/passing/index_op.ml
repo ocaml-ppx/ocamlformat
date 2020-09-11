@@ -158,3 +158,5 @@ let _ = 0.2.*(0)
 let _ = 2e5.*(0)
 
 let _ = 2e-2.*(0)
+
+let _ = (String.get [@bar]) filename (len - 1) = 'i'

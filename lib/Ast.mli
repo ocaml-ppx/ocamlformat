@@ -104,12 +104,11 @@ module Indexing_op : sig
     ; loc: Location.t }
 
   val get_sugar :
-       Longident.t Location.loc
-    -> (Asttypes.arg_label * expression) list
-    -> t option
-  (** [get_sugar ident args] is [Some all] if [ident] is an indexing operator
-      and it's safe to use the sugar syntax, [None] otherwise. [args] should
-      be the arguments of the corresponding [Pexp_apply]. *)
+    expression -> (Asttypes.arg_label * expression) list -> t option
+  (** [get_sugar e args] is [Some all] if [e] is an identifier that is an
+      indexing operator and it's safe to use the sugar syntax, [None]
+      otherwise. [args] should be the arguments of the corresponding
+      [Pexp_apply]. *)
 end
 
 val doc_atrs :

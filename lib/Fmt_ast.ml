@@ -1630,10 +1630,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           ~key:"@"
                       $ fmt_fun_args c xargs $ fmt "@ ->" )
                   $ fmt "@ " $ fmt_expression c xbody )) ))
-  | Pexp_apply
-      ({pexp_desc= Pexp_ident ident; pexp_attributes= []; pexp_loc; _}, args)
-    when Option.is_some (Indexing_op.get_sugar ident args) ->
-      let op = Option.value_exn (Indexing_op.get_sugar ident args) in
+  | Pexp_apply (({pexp_desc= Pexp_ident ident; pexp_loc; _} as e0), args)
+    when Option.is_some (Indexing_op.get_sugar e0 args) ->
+      let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
       fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op
   | Pexp_apply
