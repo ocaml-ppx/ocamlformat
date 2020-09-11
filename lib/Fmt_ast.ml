@@ -4119,11 +4119,10 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let doc, atrs = doc_atrs pmod_attributes in
       { empty with
         bdy=
-          Cmts.fmt_before c pmod_loc
-          $ fmt_docstring c ~epi:(fmt "@,") doc
-          $ Cmts.fmt c pmod_loc (fmt_extension c ctx "%" x1)
-          $ Cmts.fmt_after c pmod_loc
-          $ fmt_attributes c ~pre:Space ~key:"@" atrs }
+          Cmts.fmt c pmod_loc
+            ( fmt_docstring c ~epi:(fmt "@,") doc
+            $ fmt_extension c ctx "%" x1
+            $ fmt_attributes c ~pre:Space ~key:"@" atrs ) }
 
 and fmt_structure c ctx itms =
   let update_config c i =
