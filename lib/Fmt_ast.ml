@@ -4117,19 +4117,13 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             $ fmt_attributes c ~pre:Space ~key:"@" atrs ) }
   | Pmod_extension x1 ->
       let doc, atrs = doc_atrs pmod_attributes in
-      let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
-      let has_epi =
-        Cmts.has_after c.cmts pmod_loc || not (List.is_empty atrs)
-      in
       { empty with
-        pro=
-          Option.some_if has_pro
-            (Cmts.fmt_before c pmod_loc $ fmt_docstring c ~epi:(fmt "@,") doc)
-      ; bdy= Cmts.fmt c pmod_loc @@ fmt_extension c ctx "%" x1
-      ; epi=
-          Option.some_if has_epi
-            ( Cmts.fmt_after c pmod_loc
-            $ fmt_attributes c ~pre:Space ~key:"@" atrs ) }
+        bdy=
+          Cmts.fmt_before c pmod_loc
+          $ fmt_docstring c ~epi:(fmt "@,") doc
+          $ Cmts.fmt c pmod_loc (fmt_extension c ctx "%" x1)
+          $ Cmts.fmt_after c pmod_loc
+          $ fmt_attributes c ~pre:Space ~key:"@" atrs }
 
 and fmt_structure c ctx itms =
   let update_config c i =
