@@ -243,6 +243,10 @@ let _ = (a.x <- 1) [@a]
 
 let _ = f ((a.x <- 1) [@a])
 
+let _ = (f @@ a) [@attr]
+
+let _ = f ((f @@ a) [@attr])
+
 let _ =
   object
     method g = (a <- b) [@a]
