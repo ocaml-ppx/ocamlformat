@@ -6,6 +6,8 @@
 
 #### Changes
 
+  + Set 'indicate-multiline-delimiters=no' on default profile (#1452, @gpetiot)
+
 #### Bug fixes
 
   + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)

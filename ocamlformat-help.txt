@@ -253,13 +253,13 @@ OPTIONS (CODE FORMATTING STYLE)
            another `let`. The default value is 0. Cannot be set in
            attributes.
 
-       --indicate-multiline-delimiters={space|no|closing-on-separate-line}
+       --indicate-multiline-delimiters={no|space|closing-on-separate-line}
            How to indicate that two matching delimiters live on different
-           lines. space prints a space inside the delimiter to indicate the
-           matching one is on a different line. no doesn't do anything
-           special to indicate the closing delimiter.
-           closing-on-separate-line makes sure that the closing delimiter is
-           on its own line. The default value is space.
+           lines. no doesn't do anything special to indicate the closing
+           delimiter. space prints a space inside the delimiter to indicate
+           the matching one is on a different line. closing-on-separate-line
+           makes sure that the closing delimiter is on its own line. The
+           default value is no.
 
        --indicate-nested-or-patterns={unsafe-no|space}
            Control whether or not to indicate nested or-pattern using
