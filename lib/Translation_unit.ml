@@ -150,21 +150,21 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) added.\n\
                          %!"
-                        Location.print_loc loc_after (ellipsis_cmt msg)
+                        Location.print loc_after (ellipsis_cmt msg)
                     else if Location.compare loc_after Location.none = 0 then
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) dropped.\n\
                          %!"
-                        Location.print_loc loc_before (ellipsis_cmt msg)
+                        Location.print loc_before (ellipsis_cmt msg)
                     else
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
                          @{<error>Error@}: Docstring (** %s *) moved to \
                          @{<loc>%a@}.\n\
                          %!"
-                        Location.print_loc loc_before (ellipsis_cmt msg)
-                        Location.print_loc loc_after
+                        Location.print loc_before (ellipsis_cmt msg)
+                        Location.print loc_after
                 | Normalize.Unstable (loc, s) ->
                     Format.fprintf fmt
                       "%!@{<loc>%a@}:@,\
@@ -174,14 +174,14 @@ let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
                        source or disable the formatting using the option \
                        --no-parse-docstrings.\n\
                        %!"
-                      Location.print_loc loc (ellipsis_cmt s))
+                      Location.print loc (ellipsis_cmt s))
           | `Comment_dropped l when not quiet ->
               List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                   Format.fprintf fmt
                     "%!@{<loc>%a@}:@,\
                      @{<error>Error@}: Comment (* %s *) dropped.\n\
                      %!"
-                    Location.print_loc loc (ellipsis_cmt msg))
+                    Location.print loc (ellipsis_cmt msg))
           | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
               if debug then Location.report_exception fmt exn
           | `Warning50 l ->
@@ -199,7 +199,7 @@ let check_all_locations fmt cmts_t =
   match Cmts.remaining_locs cmts_t with
   | [] -> ()
   | l ->
-      let print l = Format.fprintf fmt "%a\n%!" Location.print_loc l in
+      let print l = Format.fprintf fmt "%a\n%!" Location.print l in
       Format.fprintf fmt
         "Warning: Some locations have not been considered\n%!" ;
       List.iter ~f:print (List.sort l ~compare:Location.compare)
@@ -247,7 +247,7 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
       Some (dump_formatted ~input_name ?output_file ~suffix fmted)
     else None
   in
-  Location.input_name := input_name ;
+  Ocaml_common.Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) t ~source =
     let format ~box_debug =
@@ -392,7 +392,7 @@ let parse_result fragment conf (opts : Conf.opts) ~source ~input_name =
   | parsed -> Ok parsed
 
 let parse_and_format fragment ?output_file ~input_name ~source conf opts =
-  Location.input_name := input_name ;
+  Ocaml_common.Location.input_name := input_name ;
   let open Result.Monad_infix in
   parse_result fragment conf opts ~source ~input_name
   >>= fun parsed ->
