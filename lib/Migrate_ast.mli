@@ -110,6 +110,10 @@ module Location : sig
 
     val add_list : 'a t -> location -> 'a list -> 'a t
 
+    val add_multi : 'a t -> location -> 'a -> 'a t
+
+    val change_multi : 'a t -> location -> 'a list -> 'a t
+
     val update_multi :
          'a t
       -> src:location

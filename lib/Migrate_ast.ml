@@ -228,6 +228,11 @@ module Location = struct
 
     let add_list map key data = Map.add_exn map ~key ~data
 
+    let add_multi map key data = Map.add_multi map ~key ~data
+
+    let change_multi map key data =
+      Map.change map key ~f:(function _ -> Some data)
+
     let remove map loc = Map.remove map loc
 
     let update_multi map ~src ~dst ~f =

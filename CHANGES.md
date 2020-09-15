@@ -16,6 +16,8 @@
 
   + Fix parentheses around the index arg of a non-sugared index operation (#1465, @gpetiot)
 
+  + Preserve comment position around `match` and `try` keywords (#1458, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)

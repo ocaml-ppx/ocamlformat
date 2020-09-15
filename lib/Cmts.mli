@@ -55,6 +55,13 @@ val relocate :
     locations) comments before [src] to [before] and comments after [src] to
     [after]. *)
 
+val relocate_wrongfully_attached_cmts :
+  t -> Source.t -> Parsetree.expression -> unit
+(** [relocate_wrongfully_attached_cmts] relocates wrongfully attached
+    comments, e.g. comments that should be attached to the whole
+    pattern-matching expressions ([match-with] or [try-with] expressions) but
+    are wrongfully attached to the matched expression. *)
+
 val fmt_before :
      t
   -> Conf.t

@@ -367,3 +367,8 @@ let is_quoted_string t loc =
       | _ -> false)
   in
   not (List.is_empty toks)
+
+let loc_of_first_token_at t loc kwd =
+  match tokens_at t loc ~filter:(Poly.( = ) kwd) with
+  | [] -> None
+  | (_, loc) :: _ -> Some loc

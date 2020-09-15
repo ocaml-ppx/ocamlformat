@@ -280,6 +280,34 @@ let relocate (t : t) ~src ~before ~after =
           r |> Location.Set.remove src |> Location.Set.add after
           |> Location.Set.add before) )
 
+let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
+  let kwd_loc =
+    Option.value_exn (Source.loc_of_first_token_at src whole_loc tok)
+  in
+  let f map =
+    let before, after =
+      List.partition_tf (Location.Multimap.find_multi map matched_loc)
+        ~f:(fun Cmt.{loc; _} -> Location.compare_end loc kwd_loc < 0)
+    in
+    let map =
+      List.fold_left ~init:map (List.rev before) ~f:(fun map ->
+          Location.Multimap.add_multi map whole_loc)
+    in
+    Location.Multimap.change_multi map matched_loc after
+  in
+  update_cmts t `Before ~f ;
+  update_cmts t `Within ~f
+
+let relocate_wrongfully_attached_cmts t src exp =
+  match exp.pexp_desc with
+  | Pexp_match (e0, _) ->
+      relocate_pattern_matching_cmts t src Parser.MATCH
+        ~whole_loc:exp.pexp_loc ~matched_loc:e0.pexp_loc
+  | Pexp_try (e0, _) ->
+      relocate_pattern_matching_cmts t src Parser.TRY ~whole_loc:exp.pexp_loc
+        ~matched_loc:e0.pexp_loc
+  | _ -> ()
+
 (** Initialize global state and place comments. *)
 let init map_ast ~debug source asts comments_n_docstrings =
   let t =
