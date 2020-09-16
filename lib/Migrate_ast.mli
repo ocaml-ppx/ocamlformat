@@ -88,51 +88,6 @@ module Location : sig
   val width : t -> int
 
   val is_single_line : t -> int -> bool
-
-  type location = t
-
-  module Set : sig
-    type t
-
-    val empty : t
-
-    val add : location -> t -> t
-
-    val remove : location -> t -> t
-
-    val to_list : t -> location list
-  end
-
-  module Multimap : sig
-    type 'a t
-
-    val empty : 'a t
-
-    val add_list : 'a t -> location -> 'a list -> 'a t
-
-    val add_multi : 'a t -> location -> 'a -> 'a t
-
-    val change_multi : 'a t -> location -> 'a list -> 'a t
-
-    val update_multi :
-         'a t
-      -> src:location
-      -> dst:location
-      -> f:('a list -> 'a list -> 'a list)
-      -> 'a t
-
-    val find : 'a t -> location -> 'a list option
-
-    val remove : 'a t -> location -> 'a t
-
-    val filter : 'a t -> f:('a -> bool) -> 'a t
-
-    val mem : 'a t -> location -> bool
-
-    val to_list : 'a t -> 'a list
-
-    val find_multi : 'a t -> location -> 'a list
-  end
 end
 
 module Parse : sig
