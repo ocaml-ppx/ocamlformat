@@ -91,18 +91,6 @@ module Location : sig
 
   type location = t
 
-  module Set : sig
-    type t
-
-    val empty : t
-
-    val add : location -> t -> t
-
-    val remove : location -> t -> t
-
-    val to_list : t -> location list
-  end
-
   module Multimap : sig
     type 'a t
 

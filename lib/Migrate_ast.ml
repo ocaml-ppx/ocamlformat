@@ -205,24 +205,6 @@ module Location = struct
     let min a b = if width a < width b then a else b in
     List.reduce_exn (loc :: stack) ~f:min
 
-  module Set = struct
-    type t = (location, comparator_witness) Set.t
-
-    let empty =
-      Set.empty
-        ( module struct
-          type t = location
-
-          include Location_comparator
-        end )
-
-    let add key t = Set.add t key
-
-    let remove key t = Set.remove t key
-
-    let to_list t = Set.to_list t
-  end
-
   module Multimap = struct
     type 'a t = (location, 'a list, comparator_witness) Map.t
 

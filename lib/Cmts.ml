@@ -22,7 +22,7 @@ type t =
   ; mutable cmts_after: Cmt.t Location.Multimap.t
   ; mutable cmts_within: Cmt.t Location.Multimap.t
   ; source: Source.t
-  ; mutable remaining: Location.Set.t
+  ; mutable remaining: Set.M(Location).t
   ; remove: bool }
 
 let update_remaining t ~f = t.remaining <- f t.remaining
@@ -276,9 +276,10 @@ let relocate (t : t) ~src ~before ~after =
     update_cmts t `Within
       ~f:(Location.Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
     if t.debug then
-      update_remaining t ~f:(fun r ->
-          r |> Location.Set.remove src |> Location.Set.add after
-          |> Location.Set.add before) )
+      update_remaining t ~f:(fun s ->
+          let s = Set.remove s src in
+          let s = Set.add s after in
+          Set.add s before) )
 
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let kwd_loc =
@@ -316,7 +317,7 @@ let init map_ast ~debug source asts comments_n_docstrings =
     ; cmts_after= Location.Multimap.empty
     ; cmts_within= Location.Multimap.empty
     ; source
-    ; remaining= Location.Set.empty
+    ; remaining= Set.empty (module Location)
     ; remove= true }
   in
   let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
@@ -330,7 +331,7 @@ let init map_ast ~debug source asts comments_n_docstrings =
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
-            update_remaining t ~f:(Location.Set.add loc)) ;
+            update_remaining t ~f:(fun s -> Set.add s loc)) ;
     if debug then (
       let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
@@ -375,7 +376,8 @@ let preserve fmt_x t =
   Buffer.contents buf
 
 let pop_if_debug t loc =
-  if t.debug && t.remove then update_remaining t ~f:(Location.Set.remove loc)
+  if t.debug && t.remove then
+    update_remaining t ~f:(fun s -> Set.remove s loc)
 
 let find_cmts t pos loc =
   pop_if_debug t loc ;
@@ -496,7 +498,7 @@ let remaining_comments t =
 
 let remaining_before t loc = Location.Multimap.find_multi t.cmts_before loc
 
-let remaining_locs t = Location.Set.to_list t.remaining
+let remaining_locs t = Set.to_list t.remaining
 
 let diff (conf : Conf.t) x y =
   let norm z =
