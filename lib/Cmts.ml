@@ -18,9 +18,9 @@ open Parsetree
 
 type t =
   { debug: bool
-  ; mutable cmts_before: Cmt.t Location.Multimap.t
-  ; mutable cmts_after: Cmt.t Location.Multimap.t
-  ; mutable cmts_within: Cmt.t Location.Multimap.t
+  ; mutable cmts_before: Cmt.t Multimap.M(Location).t
+  ; mutable cmts_after: Cmt.t Multimap.M(Location).t
+  ; mutable cmts_within: Cmt.t Multimap.M(Location).t
   ; source: Source.t
   ; mutable remaining: Set.M(Location).t
   ; remove: bool }
@@ -40,7 +40,7 @@ let find_at_position t loc pos =
     | `Before -> t.cmts_before
     | `Within -> t.cmts_within
   in
-  Location.Multimap.find map loc
+  Map.find map loc
 
 module Loc_tree : sig
   include Non_overlapping_interval_tree.S with type itv = Location.t
@@ -222,8 +222,7 @@ let add_cmts t ?prev ?next position loc cmts =
             (position_to_string position)
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next)) ;
-    update_cmts t position ~f:(fun v ->
-        Location.Multimap.add_list v loc cmtl) )
+    update_cmts t position ~f:(Map.add_exn ~key:loc ~data:cmtl) )
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
@@ -270,11 +269,11 @@ let relocate (t : t) ~src ~before ~after =
            ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
     in
     update_cmts t `Before
-      ~f:(Location.Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
+      ~f:(Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
     update_cmts t `After
-      ~f:(Location.Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+      ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
     update_cmts t `Within
-      ~f:(Location.Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+      ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
     if t.debug then
       update_remaining t ~f:(fun s ->
           let s = Set.remove s src in
@@ -287,14 +286,14 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   in
   let f map =
     let before, after =
-      List.partition_tf (Location.Multimap.find_multi map matched_loc)
+      List.partition_tf (Map.find_multi map matched_loc)
         ~f:(fun Cmt.{loc; _} -> Location.compare_end loc kwd_loc < 0)
     in
     let map =
-      List.fold_left ~init:map (List.rev before) ~f:(fun map ->
-          Location.Multimap.add_multi map whole_loc)
+      List.fold_left ~init:map (List.rev before) ~f:(fun map data ->
+          Map.add_multi map ~key:whole_loc ~data)
     in
-    Location.Multimap.change_multi map matched_loc after
+    Multimap.change_multi map matched_loc after
   in
   update_cmts t `Before ~f ;
   update_cmts t `Within ~f
@@ -313,9 +312,9 @@ let relocate_wrongfully_attached_cmts t src exp =
 let init map_ast ~debug source asts comments_n_docstrings =
   let t =
     { debug
-    ; cmts_before= Location.Multimap.empty
-    ; cmts_after= Location.Multimap.empty
-    ; cmts_within= Location.Multimap.empty
+    ; cmts_before= Map.empty (module Location)
+    ; cmts_after= Map.empty (module Location)
+    ; cmts_within= Map.empty (module Location)
     ; source
     ; remaining= Set.empty (module Location)
     ; remove= true }
@@ -382,8 +381,7 @@ let pop_if_debug t loc =
 let find_cmts t pos loc =
   pop_if_debug t loc ;
   let r = find_at_position t loc pos in
-  if t.remove then
-    update_cmts t pos ~f:(fun m -> Location.Multimap.remove m loc) ;
+  if t.remove then update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
   r
 
 let line_dist a b =
@@ -467,7 +465,7 @@ let drop_inside t loc =
   let clear pos =
     update_cmts t pos
       ~f:
-        (Location.Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
+        (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
              not (Location.contains loc cmt_loc)))
   in
   clear `Before ;
@@ -475,28 +473,23 @@ let drop_inside t loc =
   clear `After
 
 let drop_before t loc =
-  update_cmts t `Before ~f:(fun m -> Location.Multimap.remove m loc) ;
+  update_cmts t `Before ~f:(fun m -> Map.remove m loc) ;
   t
 
-let has_before t loc =
-  pop_if_debug t loc ;
-  Location.Multimap.mem t.cmts_before loc
+let has_before t loc = pop_if_debug t loc ; Map.mem t.cmts_before loc
 
-let has_within t loc =
-  pop_if_debug t loc ;
-  Location.Multimap.mem t.cmts_within loc
+let has_within t loc = pop_if_debug t loc ; Map.mem t.cmts_within loc
 
 let has_after t loc =
   pop_if_debug t loc ;
-  Location.Multimap.mem t.cmts_within loc
-  || Location.Multimap.mem t.cmts_after loc
+  Map.mem t.cmts_within loc || Map.mem t.cmts_after loc
 
 (** returns comments that have not been formatted *)
 let remaining_comments t =
-  List.concat_map ~f:Location.Multimap.to_list
+  List.concat_map ~f:Multimap.to_list
     [t.cmts_before; t.cmts_within; t.cmts_after]
 
-let remaining_before t loc = Location.Multimap.find_multi t.cmts_before loc
+let remaining_before t loc = Map.find_multi t.cmts_before loc
 
 let remaining_locs t = Set.to_list t.remaining
 
