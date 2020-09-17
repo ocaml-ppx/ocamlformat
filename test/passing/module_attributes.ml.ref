@@ -20,8 +20,8 @@ include [%ext]
 include (val M)
 [@warning "item"] [@@warning "structure"]
 
-include ( val Aaaaaaaaaaaaaaaa.Bbbbbbbbbbbbbbbb.Cccccccccccccccc
-              .Dddddddddddddddd )
+include
+  (val Aaaaaaaaaaaaaaaa.Bbbbbbbbbbbbbbbb.Cccccccccccccccc.Dddddddddddddddd)
 [@warning "item"] [@@warning "structure"]
 
 include (

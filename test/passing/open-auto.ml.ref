@@ -176,16 +176,13 @@ class a =
 
 let _ =
   (* a *)
-  let (* b *)
-  open (* c *) struct
+  let (* b *) open (* c *) struct
     type t
   end
   (* d *) in
   (* e *)
   (* f *)
-  let (* g *)
-  open (* h *) A (* i *) (B)
-  (* j *) in
+  let (* g *) open (* h *) A (* i *) (B) (* j *) in
   (* k *)
   ()
 
@@ -204,19 +201,21 @@ open struct
   type t
 end
 
-open functor
-       (A : S)
-       ->
-       struct
-         type t
-       end
+open
+  functor
+    (A : S)
+    ->
+    struct
+      type t
+    end
 
-open functor
-       (_ : S)
-       ->
-       struct
-         type t
-       end
+open
+  functor
+    (_ : S)
+    ->
+    struct
+      type t
+    end
 
 open A (B)
 
@@ -232,18 +231,20 @@ let _ =
   let open struct
     type t
   end in
-  let open functor
-             (A : S)
-             ->
-             struct
-               type t
-             end in
-  let open functor
-             (_ : S)
-             ->
-             struct
-               type t
-             end in
+  let open
+    functor
+      (A : S)
+      ->
+      struct
+        type t
+      end in
+  let open
+    functor
+      (_ : S)
+      ->
+      struct
+        type t
+      end in
   let open A (B) in
   let open (A : S) in
   let open (val x) in
@@ -257,19 +258,21 @@ open struct
   type t
 end [@@attr]
 
-open functor
-       (A : S)
-       ->
-       struct
-         type t
-       end [@@attr]
+open
+  functor
+    (A : S)
+    ->
+    struct
+      type t
+    end [@@attr]
 
-open functor
-       (_ : S)
-       ->
-       struct
-         type t
-       end [@@attr]
+open
+  functor
+    (_ : S)
+    ->
+    struct
+      type t
+    end [@@attr]
 
 open A (B) [@@attr]
 
