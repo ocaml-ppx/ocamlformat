@@ -4005,10 +4005,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
   | Pmod_functor _ ->
       let xargs, me = sugar_pmod_functor c ~for_functor_kw:true xmod in
       let doc, atrs = doc_atrs pmod_attributes in
-      let {opn; pro; psp; bdy; cls; esp; epi} = fmt_module_expr c me in
       { empty with
-        opn
-      ; bdy=
+        bdy=
           Cmts.fmt c pmod_loc
             ( fmt_docstring c ~epi:(fmt "@,") doc
             $ hvbox 0
@@ -4018,9 +4016,8 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
                    $ fmt "@;<1 2>"
                    $ list xargs "@;<1 2>" (fmt_functor_arg c)
                    $ fmt "@;<1 2>->@;<1 2>"
-                   $ hvbox 0 (fmt_opt pro $ psp $ bdy $ esp $ fmt_opt epi) ))
-            )
-      ; cls }
+                   $ compose_module (fmt_module_expr c me) ~f:(hvbox 0) )) )
+      }
   | Pmod_ident lid ->
       let doc, atrs = doc_atrs pmod_attributes in
       let has_pro = Cmts.has_before c.cmts pmod_loc || Option.is_some doc in
