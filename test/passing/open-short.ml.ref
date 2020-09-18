@@ -1,3 +1,4 @@
+Warning: let-open: This option is deprecated since version 0.16.0. Concrete syntax will now always be preserved.
 let _ = Some_module.Submodule.(a + b)
 
 let _ = A.(a, b)

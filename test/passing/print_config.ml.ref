@@ -1,3 +1,4 @@
+Warning: let-open: This option is deprecated since version 0.16.0. Concrete syntax will now always be preserved.
 profile=ocamlformat (file .ocamlformat:1)
 quiet=false (profile ocamlformat (file .ocamlformat:1))
 max-iters=2 (environment variable)
