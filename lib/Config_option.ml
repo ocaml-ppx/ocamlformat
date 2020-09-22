@@ -41,6 +41,7 @@ module Make (C : CONFIG) = struct
     ; default: 'a
     ; get_value: config -> 'a
     ; from: from
+    ; removed: bool
     ; deprecated: deprecated option }
 
   type 'a option_decl =
@@ -89,6 +90,7 @@ module Make (C : CONFIG) = struct
   let section_name = function
     | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
     | `Operational -> Cmdliner.Manpage.s_options
+    | `Removed -> Cmdliner.Manpage.s_options ^ " (REMOVED OPTIONS)"
 
   let from = `Default
 
@@ -126,6 +128,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
+      ; removed= false
       ; deprecated }
     in
     store := Pack opt :: !store ;
@@ -157,6 +160,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
+      ; removed= false
       ; deprecated }
     in
     store := Pack opt :: !store ;
@@ -202,6 +206,36 @@ module Make (C : CONFIG) = struct
         all
     in
     any conv ~default ~docv ~names ~doc ~section ~allow_inline ?deprecated
+
+  let removed_option ~names ~version ~msg =
+    let msg =
+      Format.asprintf "This option has been removed in version %s. %s"
+        version msg
+    in
+    let parse _ = Error (`Msg msg) in
+    let converter = Arg.conv (parse, fun _ () -> ()) in
+    let update conf _ = conf and get_value _ = () in
+    let docs = section_name `Removed in
+    let term =
+      Arg.(value & opt (some converter) None & info names ~doc:msg ~docs)
+    in
+    let r = mk ~default:None term in
+    let to_string _ = "" in
+    let cmdline_get () = !r in
+    let opt =
+      { names
+      ; parse
+      ; update
+      ; cmdline_get
+      ; allow_inline= true
+      ; default= ()
+      ; to_string
+      ; get_value
+      ; from
+      ; removed= true
+      ; deprecated= None }
+    in
+    store := Pack opt :: !store
 
   let update_from config name from =
     let is_profile_option_name x =
@@ -263,7 +297,7 @@ module Make (C : CONFIG) = struct
       let compare x y = compare (String.length x) (String.length y) in
       List.max_elt ~compare
     in
-    let on_pack (Pack {names; to_string; get_value; from; _}) =
+    let on_pack (Pack {names; to_string; get_value; from; removed; _}) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
       let aux_from = function
@@ -280,7 +314,8 @@ module Make (C : CONFIG) = struct
         | `Profile (s, p) -> " (profile " ^ s ^ aux_from p ^ ")"
         | `Updated x -> aux_from x
       in
-      Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
+      if not removed then
+        Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
     in
     List.iter !store ~f:on_pack
 end
