@@ -4,6 +4,8 @@
 
   + Remove the 'escape-chars' option, deprecated since 0.14.0 (#1462, @gpetiot)
 
+  + Removed options are now listed in the commandline manual (new REMOVED OPTIONS section) (#1463, @Julow)
+
 #### Changes
 
   + Set 'indicate-multiline-delimiters=no' on default profile (#1452, @gpetiot)
