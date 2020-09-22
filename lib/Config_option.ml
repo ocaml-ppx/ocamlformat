@@ -229,7 +229,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
-      ; deprecated= false }
+      ; deprecated= None }
     in
     store := Pack opt :: !store
 
