@@ -603,6 +603,12 @@ module Formatting = struct
   let concrete_syntax_preserved_msg =
     "Concrete syntax will now always be preserved."
 
+  let ( (* escape_chars *) ) =
+    let names = ["escape-chars"] in
+    let version = "0.16.0" in
+    let msg = concrete_syntax_preserved_msg in
+    C.removed_option ~names ~version ~msg
+
   let escape_strings =
     let doc =
       "Escape encoding for string literals. See `--escape-chars` for the \

@@ -481,6 +481,11 @@ OPTIONS (CODE FORMATTING STYLE)
        --wrap-fun-args
            Style for function call. The flag is set by default.
 
+OPTIONS (REMOVED OPTIONS)
+       --escape-chars=VAL
+           This option has been removed in version 0.16.0. Concrete syntax
+           will now always be preserved.
+
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)
            Aggregate options. Options are specified as a comma-separated list

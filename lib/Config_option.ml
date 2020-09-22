@@ -41,6 +41,7 @@ module Make (C : CONFIG) = struct
     ; default: 'a
     ; get_value: config -> 'a
     ; from: from
+    ; removed: bool
     ; deprecated: deprecated option }
 
   type 'a option_decl =
@@ -127,6 +128,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
+      ; removed= false
       ; deprecated }
     in
     store := Pack opt :: !store ;
@@ -158,6 +160,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
+      ; removed= false
       ; deprecated }
     in
     store := Pack opt :: !store ;
@@ -229,6 +232,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
+      ; removed= true
       ; deprecated= None }
     in
     store := Pack opt :: !store
@@ -293,7 +297,7 @@ module Make (C : CONFIG) = struct
       let compare x y = compare (String.length x) (String.length y) in
       List.max_elt ~compare
     in
-    let on_pack (Pack {names; to_string; get_value; from; _}) =
+    let on_pack (Pack {names; to_string; get_value; from; removed; _}) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
       let aux_from = function
@@ -310,7 +314,8 @@ module Make (C : CONFIG) = struct
         | `Profile (s, p) -> " (profile " ^ s ^ aux_from p ^ ")"
         | `Updated x -> aux_from x
       in
-      Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
+      if not removed then
+        Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
     in
     List.iter !store ~f:on_pack
 end
