@@ -91,10 +91,10 @@ module Printast = struct
 
   let interface f x = interface f (to_current.copy_signature x)
 
-  let expression n f x = expression n f (to_current.copy_expression x)
+  let expression f x = expression 0 f (to_current.copy_expression x)
 
-  let payload n f (x : Parsetree.payload) =
-    payload n f
+  let payload f (x : Parsetree.payload) =
+    payload 0 f
       ( match x with
       | PStr x -> PStr (to_current.copy_structure x)
       | PSig x -> PSig (to_current.copy_signature x)
