@@ -672,13 +672,7 @@ module T = struct
     | Cl cl ->
         let str =
           let open Ast_helper in
-          Str.class_
-            [ { pci_virt= Concrete
-              ; pci_params= []
-              ; pci_name= {txt= ""; loc= Location.none}
-              ; pci_expr= cl
-              ; pci_loc= Location.none
-              ; pci_attributes= [] } ]
+          Str.class_ [Ci.mk {txt= ""; loc= Location.none} cl]
         in
         Format.fprintf fs "Cl:@\n%a@\n%a" Pprintast.structure [str]
           Printast.implementation [str]
@@ -692,24 +686,14 @@ module T = struct
     | Cty cty ->
         let si =
           let open Ast_helper in
-          Sig.class_type
-            [ { pci_virt= Concrete
-              ; pci_params= []
-              ; pci_name= {txt= ""; loc= Location.none}
-              ; pci_expr= cty
-              ; pci_loc= Location.none
-              ; pci_attributes= [] } ]
+          Sig.class_type [Ci.mk {txt= ""; loc= Location.none} cty]
         in
         Format.fprintf fs "Cty:@\n%a@\n%a" Pprintast.signature [si]
           Printast.interface [si]
     | Mod m ->
         let m =
           let open Ast_helper in
-          Str.module_
-            { pmb_name= {txt= None; loc= Location.none}
-            ; pmb_expr= m
-            ; pmb_attributes= []
-            ; pmb_loc= Location.none }
+          Str.module_ (Mb.mk {txt= None; loc= Location.none} m)
         in
         Format.fprintf fs "Mod:@\n%a@\n%a" Pprintast.structure [m]
           Printast.implementation [m]
