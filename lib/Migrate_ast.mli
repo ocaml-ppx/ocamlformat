@@ -116,9 +116,9 @@ module Printast : sig
 
   val interface : Format.formatter -> Parsetree.signature -> unit
 
-  val payload : int -> Format.formatter -> Parsetree.payload -> unit
+  val payload : Format.formatter -> Parsetree.payload -> unit
 
-  val expression : int -> Format.formatter -> Parsetree.expression -> unit
+  val expression : Format.formatter -> Parsetree.expression -> unit
 
   val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
 end

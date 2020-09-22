@@ -656,12 +656,12 @@ module T = struct
     | Top
 
   let dump fs = function
-    | Pld l -> Format.fprintf fs "Pld:@\n%a" (Printast.payload 0) l
+    | Pld l -> Format.fprintf fs "Pld:@\n%a" Printast.payload l
     | Typ t -> Format.fprintf fs "Typ:@\n%a" Pprintast.core_type t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Pprintast.pattern p
     | Exp e ->
         Format.fprintf fs "Exp:@\n%a@\n@\n%a" Pprintast.expression e
-          (Printast.expression 0) e
+          Printast.expression e
     | Vb b ->
         let str =
           let open Ast_helper in
