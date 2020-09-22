@@ -334,10 +334,28 @@
 
 (rule
  (targets fmterr_removed_option.output)
- (deps .ocamlformat)
+ (deps removed_option/.ocamlformat)
  (action
   (with-outputs-to
    fmterr_removed_option.output
+   (with-stdin-from
+    %{dep:sample/a.ml}
+    (with-accepted-exit-codes
+     1
+     (run %{bin:ocamlformat} --name removed_option/a.ml -))))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff fmterr_removed_option.expected
+    fmterr_removed_option.output)))
+
+(rule
+ (targets fmterr_removed_option_cmdline.output)
+ (deps .ocamlformat)
+ (action
+  (with-outputs-to
+   fmterr_removed_option_cmdline.output
    (with-stdin-from
     %{dep:sample/a.mli}
     (with-accepted-exit-codes
@@ -347,8 +365,8 @@
 (rule
  (alias runtest)
  (action
-  (diff fmterr_removed_option.expected
-    fmterr_removed_option.output)))
+  (diff fmterr_removed_option_cmdline.expected
+    fmterr_removed_option_cmdline.output)))
 
 (rule
  (targets check_formatted.output)
