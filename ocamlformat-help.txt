@@ -480,6 +480,10 @@ OPTIONS (REMOVED OPTIONS)
            This option has been removed in version 0.16.0. Concrete syntax
            will now always be preserved.
 
+       --escape-strings=VAL
+           This option has been removed in version 0.16.0. Concrete syntax
+           will now always be preserved.
+
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)
            Aggregate options. Options are specified as a comma-separated list
