@@ -20,6 +20,8 @@
 
   + Add missing break in module statement (#1431, @gpetiot)
 
+  + Indent attributes attached to included modules better (#1468, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
