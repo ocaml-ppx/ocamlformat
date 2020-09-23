@@ -1,7 +1,3 @@
-val selected_version :
-  Migrate_parsetree.Versions.OCaml_408.types
-  Migrate_parsetree.Versions.ocaml_version
-
 module Selected_version = Migrate_parsetree.Ast_408
 module Ast_mapper = Selected_version.Ast_mapper
 module Ast_helper = Selected_version.Ast_helper
@@ -47,38 +43,4 @@ module Mapper : sig
     Ast_mapper.mapper ->
     Parsetree.toplevel_phrase list ->
     Parsetree.toplevel_phrase list
-end
-
-module Parse : sig
-  val implementation : Lexing.lexbuf -> Parsetree.structure
-
-  val interface : Lexing.lexbuf -> Parsetree.signature
-
-  val use_file : Lexing.lexbuf -> Parsetree.toplevel_phrase list
-end
-
-module Printast : sig
-  val implementation : Format.formatter -> Parsetree.structure -> unit
-
-  val interface : Format.formatter -> Parsetree.signature -> unit
-
-  val payload : int -> Format.formatter -> Parsetree.payload -> unit
-
-  val expression : int -> Format.formatter -> Parsetree.expression -> unit
-
-  val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
-end
-
-module Pprintast : sig
-  val core_type : Format.formatter -> Parsetree.core_type -> unit
-
-  val pattern : Format.formatter -> Parsetree.pattern -> unit
-
-  val toplevel_phrase : Format.formatter -> Parsetree.toplevel_phrase -> unit
-
-  val expression : Format.formatter -> Parsetree.expression -> unit
-
-  val structure : Format.formatter -> Parsetree.structure -> unit
-
-  val signature : Format.formatter -> Parsetree.signature -> unit
 end
