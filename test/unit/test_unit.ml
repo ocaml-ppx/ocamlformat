@@ -115,6 +115,7 @@ let tests =
   ; ("non overlapping interval tree", Test_noit.tests)
   ; ("Ast", Test_ast.tests)
   ; ("Literal_lexer", Test_literal_lexer.tests)
-  ; ("Fmt", Test_fmt.tests) ]
+  ; ("Fmt", Test_fmt.tests)
+  ; ("Split_parser", Test_split_parser.tests) ]
 
 let () = Alcotest.run "ocamlformat" tests
