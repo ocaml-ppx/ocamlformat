@@ -58,22 +58,6 @@ module Docstrings = struct
   }
 end
 
-module Parse = struct
-  open Migrate_parsetree
-
-  let implementation = Parse.implementation selected_version
-
-  let interface = Parse.interface selected_version
-
-  let use_file lexbuf =
-    List.filter
-      (fun (p : Parsetree.toplevel_phrase) ->
-        match p with
-        | Ptop_def [] -> false
-        | Ptop_def (_ :: _) | Ptop_dir _ -> true)
-      (Parse.use_file selected_version lexbuf)
-end
-
 module Int = struct
   let compare x y = if x < y then -1 else if x > y then 1 else 0
 end

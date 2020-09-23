@@ -48,11 +48,3 @@ module Mapper : sig
     Parsetree.toplevel_phrase list ->
     Parsetree.toplevel_phrase list
 end
-
-module Parse : sig
-  val implementation : Lexing.lexbuf -> Parsetree.structure
-
-  val interface : Lexing.lexbuf -> Parsetree.signature
-
-  val use_file : Lexing.lexbuf -> Parsetree.toplevel_phrase list
-end
