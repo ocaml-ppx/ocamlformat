@@ -68,17 +68,3 @@ module Printast : sig
 
   val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
 end
-
-module Pprintast : sig
-  val core_type : Format.formatter -> Parsetree.core_type -> unit
-
-  val pattern : Format.formatter -> Parsetree.pattern -> unit
-
-  val toplevel_phrase : Format.formatter -> Parsetree.toplevel_phrase -> unit
-
-  val expression : Format.formatter -> Parsetree.expression -> unit
-
-  val structure : Format.formatter -> Parsetree.structure -> unit
-
-  val signature : Format.formatter -> Parsetree.signature -> unit
-end

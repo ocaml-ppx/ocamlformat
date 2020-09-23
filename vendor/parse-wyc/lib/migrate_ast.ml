@@ -103,23 +103,6 @@ module Printast = struct
       x
 end
 
-module Pprintast = struct
-  open Pprintast
-
-  let structure f x = structure f (to_current.copy_structure x)
-
-  let signature f x = signature f (to_current.copy_signature x)
-
-  let core_type f x = core_type f (to_current.copy_core_type x)
-
-  let expression f x = expression f (to_current.copy_expression x)
-
-  let pattern f x = pattern f (to_current.copy_pattern x)
-
-  let toplevel_phrase f x =
-    toplevel_phrase f (to_current.copy_toplevel_phrase x)
-end
-
 module Int = struct
   let compare x y = if x < y then -1 else if x > y then 1 else 0
 end
