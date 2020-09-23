@@ -4,7 +4,9 @@
 
   + Remove the 'escape-chars' option, deprecated since 0.14.0 (#1462, @gpetiot)
 
-  + Removed options are now listed in the commandline manual (new REMOVED OPTIONS section) (#1463, @Julow)
+  + Remove the 'escape-strings' option, deprecated since 0.14.0 (#1463, @gpetiot)
+
+  + Removed options are now listed in the commandline manual (new REMOVED OPTIONS section) (#1469, @Julow)
 
 #### Changes
 
