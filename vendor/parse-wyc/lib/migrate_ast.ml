@@ -74,35 +74,6 @@ module Parse = struct
       (Parse.use_file selected_version lexbuf)
 end
 
-let to_current =
-  Migrate_parsetree.Versions.(migrate selected_version ocaml_current)
-
-module Printast = struct
-  open Printast
-
-  let implementation f x = implementation f (to_current.copy_structure x)
-
-  let interface f x = interface f (to_current.copy_signature x)
-
-  let expression n f x = expression n f (to_current.copy_expression x)
-
-  let payload n f (x : Parsetree.payload) =
-    payload n f
-      ( match x with
-      | PStr x -> PStr (to_current.copy_structure x)
-      | PSig x -> PSig (to_current.copy_signature x)
-      | PTyp x -> PTyp (to_current.copy_core_type x)
-      | PPat (x, Some y) ->
-          PPat (to_current.copy_pattern x, Some (to_current.copy_expression y))
-      | PPat (x, None) -> PPat (to_current.copy_pattern x, None) )
-
-  let use_file f (x : Parsetree.toplevel_phrase list) =
-    List.iter
-      (fun (p : Parsetree.toplevel_phrase) ->
-        top_phrase f (to_current.copy_toplevel_phrase p))
-      x
-end
-
 module Int = struct
   let compare x y = if x < y then -1 else if x > y then 1 else 0
 end

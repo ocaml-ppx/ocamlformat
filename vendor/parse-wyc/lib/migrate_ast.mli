@@ -56,15 +56,3 @@ module Parse : sig
 
   val use_file : Lexing.lexbuf -> Parsetree.toplevel_phrase list
 end
-
-module Printast : sig
-  val implementation : Format.formatter -> Parsetree.structure -> unit
-
-  val interface : Format.formatter -> Parsetree.signature -> unit
-
-  val payload : int -> Format.formatter -> Parsetree.payload -> unit
-
-  val expression : int -> Format.formatter -> Parsetree.expression -> unit
-
-  val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
-end
