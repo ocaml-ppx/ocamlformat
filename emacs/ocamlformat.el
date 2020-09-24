@@ -189,22 +189,21 @@ function."
 ;; replace-buffer-contents is broken in emacs-26.1
 ;; try to detect broken implementation.
 ;; https://bugzilla.redhat.com/show_bug.cgi?id=1597251
-(setq ocamlformat--support-replace-buffer-contents
-  (if (fboundp 'replace-buffer-contents)
-      (let* ((a (generate-new-buffer "tmp"))
-	     (b (generate-new-buffer "tmp")))
-	(with-current-buffer a
-	  (erase-buffer)
-	  (insert "\u2666\nabc\n"))
-	(let ((ok (with-current-buffer b
-		    (erase-buffer)
-		    (insert "\u2666\naXbc\n")
-		    (replace-buffer-contents a)
-		    (string= (buffer-string) "\u2666\nabc\n"))))
-	  (kill-buffer a)
-	  (kill-buffer b)
-	  ok))
-    nil))
+(defconst ocamlformat--support-replace-buffer-contents
+  (and (fboundp 'replace-buffer-contents)
+       (let* ((a (generate-new-buffer "tmp"))
+              (b (generate-new-buffer "tmp")))
+         (with-current-buffer a
+           (erase-buffer)
+           (insert "\u2666\nabc\n"))
+         (let ((ok (with-current-buffer b
+                     (erase-buffer)
+                     (insert "\u2666\naXbc\n")
+                     (replace-buffer-contents a)
+                     (string= (buffer-string) "\u2666\nabc\n"))))
+           (kill-buffer a)
+           (kill-buffer b)
+           ok))))
 
 (defun ocamlformat--replace-buffer-contents (outputfile)
   (replace-buffer-contents (find-file-noselect outputfile))
