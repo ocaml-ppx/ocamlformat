@@ -1,4 +1,9 @@
-;;; ocamlformat.el --- utility functions to format ocaml code
+;;; ocamlformat.el --- Utility functions to format ocaml code
+
+;; Package-Requires: ((emacs "24.1"))
+;; Version: 0.15.0
+;; Keywords: languages, ocaml
+;; URL: https://github.com/ocaml-ppx/ocamlformat
 
 ;; Copyright (c) 2014 The go-mode Authors. All rights reserved.
 ;; Portions Copyright (c) 2015-present, Facebook, Inc. All rights reserved.
@@ -31,6 +36,10 @@
 
 ;;; Commentary:
 ;;
+;; This package provides utilities to format OCaml code using the ocamlformat
+;; command.  The recommended usage is to format before saving a file:
+;;
+;;   (add-hook 'before-save-hook 'ocamlformat-before-save)
 
 ;;; Code:
 
