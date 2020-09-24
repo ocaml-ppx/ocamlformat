@@ -844,7 +844,10 @@ module Formatting = struct
         )
       ; ("auto", `Auto, "$(b,auto) means the one fitting best is used.") ]
     in
-    C.choice ~names:["let-open"] ~all ~doc ~section
+    let deprecated =
+      C.deprecated ~since_version:"0.16.0" concrete_syntax_preserved_msg
+    in
+    C.choice ~names:["let-open"] ~all ~doc ~section ~deprecated
       (fun conf x -> {conf with let_open= x})
       (fun conf -> conf.let_open)
 

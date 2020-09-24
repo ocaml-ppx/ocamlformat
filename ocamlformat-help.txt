@@ -282,7 +282,9 @@ OPTIONS (CODE FORMATTING STYLE)
            Module open formatting. preserve keeps the original style. short
            means the Module.(...) style is used. long means the let open
            Module in (...) style is used. auto means the one fitting best is
-           used. The default value is preserve.
+           used. The default value is preserve. Warning: This option is
+           deprecated since version 0.16.0. Concrete syntax will now always
+           be preserved.
 
        -m COLS, --margin=COLS
            Format code to fit within COLS columns. The default value is 80.

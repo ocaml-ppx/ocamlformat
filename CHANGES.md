@@ -14,6 +14,8 @@
 
   + Set 'indicate-multiline-delimiters=no' on default profile (#1452, @gpetiot)
 
+  + Option 'let-open' is now deprecated, concrete syntax will always be preserved starting from OCamlFormat v0.17.0, corresponding to the current 'let-open=preserve' behavior. (#1467, @gpetiot)
+
 #### Bug fixes
 
   + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)
