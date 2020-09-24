@@ -15,6 +15,8 @@
 
 (using menhir 2.1)
 
+(cram enable)
+
 (generate_opam_files true)
 
 (authors "Josh Berdine <jjb@fb.com>")

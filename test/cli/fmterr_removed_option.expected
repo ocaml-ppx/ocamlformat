@@ -1,2 +1,0 @@
-ocamlformat: Error while parsing .ocamlformat:
-             For option "escape-chars": This option has been removed in version 0.16.0. Concrete syntax will now always be preserved.
