@@ -174,28 +174,6 @@ OPTIONS (CODE FORMATTING STYLE)
            treatment. fit puts doc comments on the same line. The default
            value is default.
 
-       --doc-comments-val={unset|after|before}
-           Documentation comments position on val and external declarations.
-           Warning: this option is deprecated and will be removed in
-           OCamlFormat v0.15.0. unset lets doc-comments set the position.
-           after puts documentation comments after their corresponding
-           declarations. before puts them before. The default value is unset.
-           Warning: This option is deprecated since version 0.14.2. Warning:
-           this option is deprecated and will be removed in OCamlFormat
-           v0.15.0, please use `doc-comments` instead. If you are using
-           `doc-comments-val=before` in combination with
-           `doc-comments=before` then only `doc-comments=before` is now
-           required to achive the same behavior. If you are using
-           `doc-comments-val=before` in combination with `doc-comments=after`
-           this behavior is not available anymore. If you are using
-           `doc-comments-val=after` in combination with `doc-comments=before`
-           please now use `doc-comments=before-except-val`. If you are using
-           `doc-comments-val=after` in combination with `doc-comments=after`
-           then only `doc-comments=after-when-possible` is now required to
-           achieve the same behavior. If you are using
-           `doc-comments-val=unset` the same behavior can now be achieved by
-           setting `doc-comments` only.
-
        --dock-collection-brackets
            Dock the brackets of lists, arrays and records, so that when the
            collection does not fit on a single line the brackets are opened
@@ -476,6 +454,21 @@ OPTIONS (CODE FORMATTING STYLE)
            Style for function call. The flag is set by default.
 
 OPTIONS (REMOVED OPTIONS)
+       --doc-comments-val=VAL
+           This option has been removed in version 0.16.0. If you are using
+           `doc-comments-val=before` in combination with
+           `doc-comments=before` then only `doc-comments=before` is now
+           required to achive the same behavior. If you are using
+           `doc-comments-val=before` in combination with `doc-comments=after`
+           this behavior is not available anymore. If you are using
+           `doc-comments-val=after` in combination with `doc-comments=before`
+           please now use `doc-comments=before-except-val`. If you are using
+           `doc-comments-val=after` in combination with `doc-comments=after`
+           then only `doc-comments=after-when-possible` is now required to
+           achieve the same behavior. If you are using
+           `doc-comments-val=unset` the same behavior can now be achieved by
+           setting `doc-comments` only.
+
        --escape-chars=VAL
            This option has been removed in version 0.16.0. Concrete syntax
            will now always be preserved.

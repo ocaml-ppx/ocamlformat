@@ -6,6 +6,8 @@
 
   + Remove the 'escape-strings' option, deprecated since 0.14.0 (#1463, @gpetiot)
 
+  + Remove the 'doc-comments-val' option, deprecated since 0.14.2 (#1461, @gpetiot)
+
   + Removed options are now listed in the commandline manual (new REMOVED OPTIONS section) (#1469, @Julow)
 
 #### Changes
