@@ -59,10 +59,11 @@
 
 (defcustom ocamlformat-show-errors 'buffer
     "Where to display ocamlformat error output.
-It can either be displayed in the *compilation* buffer, in the echo area, or not at all.
-Please note that Emacs outputs to the echo area when writing
-files and will overwrite ocamlformat's echo output if used from inside
-a `before-save-hook'."
+
+It can either be displayed in the *compilation* buffer, in the
+echo area, or not at all.  Please note that Emacs outputs to the
+echo area when writing files and will overwrite ocamlformat's
+echo output if used from inside a `before-save-hook'."
     :type '(choice
             (const :tag "*compilation* buffer" buffer)
             (const :tag "Echo area" echo)
@@ -78,8 +79,10 @@ a `before-save-hook'."
   :group 'ocamlformat)
 
 (defcustom ocamlformat-file-kind nil
-  "Add a parse argument to ocamlformat if using an unrecognized extension. It
-    can either be set to 'implementation, 'interface or nil (default)."
+  "Add a parse argument to ocamlformat if using an unrecognized extension.
+
+It can either be set to 'implementation, 'interface or
+nil (default)."
     :type '(choice
             (const :tag "implementation" 'implementation)
             (const :tag "interface" 'interface)
@@ -89,13 +92,15 @@ a `before-save-hook'."
 ;;;###autoload
 (defun ocamlformat-before-save ()
   "Add this to .emacs to run ocamlformat on the current buffer when saving:
- (add-hook 'before-save-hook 'ocamlformat-before-save)."
+
+\(add-hook 'before-save-hook 'ocamlformat-before-save)."
     (interactive)
       (when (eq major-mode 'tuareg-mode) (ocamlformat)))
 
 (defun ocamlformat--goto-line (line)
+  "Move point to the line numbered LINE."
   (goto-char (point-min))
-    (forward-line (1- line)))
+  (forward-line (1- line)))
 
 (defun ocamlformat--delete-whole-line (&optional arg)
     "Delete the current line without putting it in the `kill-ring'.
@@ -142,7 +147,7 @@ function."
         (goto-char (point-min))
         (while (not (eobp))
           (unless (looking-at "^\\([ad]\\)\\([0-9]+\\) \\([0-9]+\\)")
-            (error "invalid rcs patch or internal error in ocamlformat--apply-rcs-patch"))
+            (error "Invalid rcs patch or internal error in ocamlformat--apply-rcs-patch"))
           (forward-line)
           (let ((action (match-string 1))
                 (from (string-to-number (match-string 2)))
@@ -163,12 +168,12 @@ function."
                 (incf line-offset len)
                 (ocamlformat--delete-whole-line len)))
              (t
-              (error "invalid rcs patch or internal error in ocamlformat--apply-rcs-patch")))))))))
+              (error "Invalid rcs patch or internal error in ocamlformat--apply-rcs-patch")))))))))
 
 (defun ocamlformat--process-errors (filename tmpfile errorfile errbuf)
   (with-current-buffer errbuf
     (if (eq ocamlformat-show-errors 'echo)
-      (message "%s" (buffer-string))
+        (message "%s" (buffer-string))
       (insert-file-contents errorfile nil nil nil)
       ;; Convert the ocamlformat stderr to something understood by the compilation mode.
       (goto-char (point-min))
@@ -268,7 +273,7 @@ function."
              (progn
                (if ocamlformat--support-replace-buffer-contents
                    (ocamlformat--replace-buffer-contents outputfile)
-		 (ocamlformat--patch-buffer outputfile))
+                 (ocamlformat--patch-buffer outputfile))
                (message "Applied ocamlformat"))
              (if errbuf
                (progn
