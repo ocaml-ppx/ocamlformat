@@ -9,21 +9,14 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Format = Format_
-
 (** Format OCaml Ast *)
 
-open Migrate_ast
-open Parsetree
-
-val fmt_signature :
-  debug:bool -> Source.t -> Cmts.t -> Conf.t -> signature -> Fmt.t
-(** Format a signature. *)
-
-val fmt_structure :
-  debug:bool -> Source.t -> Cmts.t -> Conf.t -> structure -> Fmt.t
-(** Format a structure. *)
-
-val fmt_toplevel :
-  debug:bool -> Source.t -> Cmts.t -> Conf.t -> toplevel_phrase list -> Fmt.t
-(** Format a toplevel structure. *)
+val fmt_fragment :
+     'a list Migrate_ast.Mapper.fragment
+  -> debug:bool
+  -> Source.t
+  -> Cmts.t
+  -> Conf.t
+  -> 'a list
+  -> Fmt.t
+(** Format a fragment. *)

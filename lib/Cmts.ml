@@ -45,14 +45,13 @@ let find_at_position t loc pos =
 module Loc_tree : sig
   include Non_overlapping_interval_tree.S with type itv = Location.t
 
-  val of_ast :
-    (Ast_mapper.mapper -> 'a -> _) -> 'a -> Source.t -> t * Location.t list
+  val of_ast : 'a Mapper.fragment -> 'a -> Source.t -> t * Location.t list
 end = struct
   include Non_overlapping_interval_tree.Make (Location)
 
   (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 
-  let of_ast map_ast ast src =
+  let of_ast fragment ast src =
     let attribute (m : Ast_mapper.mapper) attr =
       (* ignore location of docstrings *)
       if Ast.Attr.is_doc attr then attr
@@ -81,7 +80,7 @@ end = struct
     let mapper =
       Ast_mapper.{default_mapper with location; pat; attribute; expr}
     in
-    map_ast mapper ast |> ignore ;
+    Mapper.map_ast fragment mapper ast |> ignore ;
     (of_list !locs, !locs)
 end
 
@@ -281,7 +280,7 @@ let relocate (t : t) ~src ~before ~after =
           |> Location.Set.add before) )
 
 (** Initialize global state and place comments. *)
-let init map_ast ~debug source asts comments_n_docstrings =
+let init fragment ~debug source asts comments_n_docstrings =
   let t =
     { debug
     ; cmts_before= Location.Multimap.empty
@@ -291,14 +290,14 @@ let init map_ast ~debug source asts comments_n_docstrings =
     ; remaining= Location.Set.empty
     ; remove= true }
   in
-  let comments = Normalize.dedup_cmts map_ast asts comments_n_docstrings in
+  let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
   if debug then (
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun {Cmt.txt; loc} ->
         Caml.Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast map_ast asts source in
+    let loc_tree, locs = Loc_tree.of_ast fragment asts source in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
@@ -328,16 +327,14 @@ let init map_ast ~debug source asts comments_n_docstrings =
       relocate_loc_stack x.ppat_loc x.ppat_loc_stack ;
       Ast_mapper.default_mapper.pat m x
     in
-    let _ = map_ast Ast_mapper.{default_mapper with pat; typ; expr} asts in
+    let _ =
+      Mapper.map_ast fragment
+        Ast_mapper.{default_mapper with pat; typ; expr}
+        asts
+    in
     ()
   in
   t
-
-let init_impl = init Mapper.structure
-
-let init_intf = init Mapper.signature
-
-let init_toplevel = init Mapper.use_file
 
 let preserve fmt_x t =
   let buf = Buffer.create 128 in
@@ -493,8 +490,8 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let str = String.sub ~pos:1 ~len str in
             try
-              Migrate_ast.Parse.implementation (Lexing.from_string str)
-              |> Normalize.impl conf
+              Migrate_ast.Parse.fragment Structure (Lexing.from_string str)
+              |> Normalize.normalize Structure conf
               |> Caml.Format.asprintf "%a" Printast.implementation
             with _ -> norm_non_code z
           else norm_non_code z

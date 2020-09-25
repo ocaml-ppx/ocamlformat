@@ -33,14 +33,10 @@ module Location : sig
 end
 
 module Mapper : sig
-  val structure :
-    Ast_mapper.mapper -> Parsetree.structure -> Parsetree.structure
+  type 'a fragment =
+    | Structure : Parsetree.structure fragment
+    | Signature : Parsetree.signature fragment
+    | Use_file : Parsetree.toplevel_phrase list fragment
 
-  val signature :
-    Ast_mapper.mapper -> Parsetree.signature -> Parsetree.signature
-
-  val use_file :
-    Ast_mapper.mapper ->
-    Parsetree.toplevel_phrase list ->
-    Parsetree.toplevel_phrase list
+  val map_ast : 'a fragment -> Ast_mapper.mapper -> 'a -> 'a
 end

@@ -131,25 +131,19 @@ module Location : sig
   end
 end
 
-module Parse : sig
-  val implementation : Lexing.lexbuf -> Parsetree.structure
+module Mapper : sig
+  type 'a fragment =
+    | Structure : Parsetree.structure fragment
+    | Signature : Parsetree.signature fragment
+    | Use_file : Parsetree.toplevel_phrase list fragment
 
-  val interface : Lexing.lexbuf -> Parsetree.signature
+  val equal : 'a fragment -> 'a -> 'a -> bool
 
-  val use_file : Lexing.lexbuf -> Parsetree.toplevel_phrase list
+  val map_ast : 'a fragment -> Ast_mapper.mapper -> 'a -> 'a
 end
 
-module Mapper : sig
-  val structure :
-    Ast_mapper.mapper -> Parsetree.structure -> Parsetree.structure
-
-  val signature :
-    Ast_mapper.mapper -> Parsetree.signature -> Parsetree.signature
-
-  val use_file :
-       Ast_mapper.mapper
-    -> Parsetree.toplevel_phrase list
-    -> Parsetree.toplevel_phrase list
+module Parse : sig
+  val fragment : 'a Mapper.fragment -> Lexing.lexbuf -> 'a
 end
 
 module Printast : sig
@@ -162,6 +156,8 @@ module Printast : sig
   val expression : Format.formatter -> Parsetree.expression -> unit
 
   val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
+
+  val fragment : 'a Mapper.fragment -> Format.formatter -> 'a -> unit
 end
 
 module Pprintast : sig
