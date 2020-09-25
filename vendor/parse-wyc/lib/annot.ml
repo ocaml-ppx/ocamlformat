@@ -1,4 +1,4 @@
-open Migrate_ast.Ast_helper
+open Ast_helper
 open Migrate_ast.Parsetree
 
 module type Annotated = sig

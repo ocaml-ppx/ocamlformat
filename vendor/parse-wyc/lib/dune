@@ -1,6 +1,7 @@
 (library
  (name parse_wyc)
- (libraries menhirLib ocaml-migrate-parsetree))
+ (libraries menhirLib ocaml-migrate-parsetree)
+ (modules_without_implementation let_binding))
 
 (ocamllex lexer)
 
