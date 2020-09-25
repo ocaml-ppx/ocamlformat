@@ -28,26 +28,11 @@ open Migrate_ast
 
 type t
 
-val init_impl :
-  debug:bool -> Source.t -> Parsetree.structure -> Cmt.t list -> t
-(** [init_impl source structure comments] associates each comment in
-    [comments] with a source location appearing in [structure]. It uses
-    [Source] to help resolve ambiguities. Initializes the state used by the
-    [fmt] functions. *)
-
-val init_intf :
-  debug:bool -> Source.t -> Parsetree.signature -> Cmt.t list -> t
-(** [init_inft source signature comments] associates each comment in
-    [comments] with a source location appearing in [signature]. It uses
-    [Source] to help resolve ambiguities. Initializes the state used by the
-    [fmt] functions. *)
-
-val init_toplevel :
-  debug:bool -> Source.t -> Parsetree.toplevel_phrase list -> Cmt.t list -> t
-(** [init_toplevel source toplevel comments] associates each comment in
-    [comments] with a source location appearing in [toplevel]. It uses
-    [Source] to help resolve ambiguities. Initializes the state used by the
-    [fmt] functions. *)
+val init :
+  'a Mapper.fragment -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
+(** [init fragment source x comments] associates each comment in [comments]
+    with a source location appearing in [x]. It uses [Source] to help resolve
+    ambiguities. Initializes the state used by the [fmt] functions. *)
 
 val relocate :
   t -> src:Location.t -> before:Location.t -> after:Location.t -> unit

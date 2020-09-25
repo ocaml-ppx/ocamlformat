@@ -32,6 +32,17 @@ module Mapper = struct
                 pdir_loc = mapper.location mapper pdir_loc;
               })
       use_file
+
+  type 'a fragment =
+    | Structure : Parsetree.structure fragment
+    | Signature : Parsetree.signature fragment
+    | Use_file : Parsetree.toplevel_phrase list fragment
+
+  let map_ast (type a) (x : a fragment) : Ast_mapper.mapper -> a -> a =
+    match x with
+    | Structure -> structure
+    | Signature -> signature
+    | Use_file -> use_file
 end
 
 module Docstrings = struct

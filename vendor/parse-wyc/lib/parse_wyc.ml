@@ -90,7 +90,13 @@ module With_recovery : PARSE_INTF = struct
             | _ -> Intermediate parser ) )
 end
 
-let parse_with_recovery entrypoint tokens =
+let entrypoint (type a) : a Mapper.fragment -> _ -> a I.checkpoint =
+  function
+  | Mapper.Structure -> P.Incremental.implementation
+  | Mapper.Signature -> P.Incremental.interface
+  | Mapper.Use_file -> P.Incremental.use_file
+
+let parse_with_recovery fragment tokens =
   let module P = With_recovery in
   let rec step tokens = function
     | P.Error -> failwith "Parsing failed"
@@ -104,7 +110,7 @@ let parse_with_recovery entrypoint tokens =
     in
     step rest (P.step p token)
   in
-  offer (P.initial entrypoint Lexing.dummy_pos) tokens
+  offer (P.initial (entrypoint fragment) Lexing.dummy_pos) tokens
 
 let lex_buf lexbuf =
   Lexer.init ();
@@ -130,8 +136,8 @@ let merge_adj merge l =
 let normalize_locs locs =
   List.sort_uniq Location.compare locs |> merge_adj Location.merge
 
-let invalid_locs p m lexbuf =
-  let ast = parse_with_recovery p (lex_buf lexbuf) in
+let invalid_locs fragment lexbuf =
+  let ast = parse_with_recovery fragment (lex_buf lexbuf) in
   let loc_stack = Stack.create () in
   let loc_list = ref [] in
   let make_mapper () =
@@ -172,12 +178,12 @@ let invalid_locs p m lexbuf =
     }
   in
   let mapper = make_mapper () in
-  ignore ((m mapper) ast);
+  ignore (Mapper.map_ast fragment mapper ast);
   normalize_locs !loc_list
 
-let mk_parsable p m source =
+let mk_parsable fragment source =
   let lexbuf = Lexing.from_string source in
-  match invalid_locs p m lexbuf with
+  match invalid_locs fragment lexbuf with
   | [] -> source
   | invalid_locs -> (
       let wrapper_opn, wrapper_cls = ("[%%invalid.ast.node \"", "\"]") in
@@ -222,17 +228,17 @@ let mk_parsable p m source =
       | _ -> failwith "invalid locations remaining" )
 
 module Invalid_locations = struct
-  let structure = invalid_locs P.Incremental.implementation Mapper.structure
+  let structure = invalid_locs Structure
 
-  let signature = invalid_locs P.Incremental.interface Mapper.signature
+  let signature = invalid_locs Signature
 
-  let use_file = invalid_locs P.Incremental.use_file Mapper.use_file
+  let use_file = invalid_locs Use_file
 end
 
 module Make_parsable = struct
-  let structure = mk_parsable P.Incremental.implementation Mapper.structure
+  let structure = mk_parsable Structure
 
-  let signature = mk_parsable P.Incremental.interface Mapper.signature
+  let signature = mk_parsable Signature
 
-  let use_file = mk_parsable P.Incremental.use_file Mapper.use_file
+  let use_file = mk_parsable Use_file
 end
