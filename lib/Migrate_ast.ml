@@ -128,7 +128,6 @@ end
 
 module Position = struct
   open Lexing
-  module Format = Format_
 
   type t = position
 
@@ -154,7 +153,6 @@ end
 
 module Location = struct
   include Selected_version.Location
-  module Format = Format_
 
   let fmt fs {loc_start; loc_end; loc_ghost} =
     Format.fprintf fs "(%a..%a)%s" Position.fmt loc_start Position.fmt
