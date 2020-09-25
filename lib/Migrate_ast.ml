@@ -64,6 +64,23 @@ module Mapper = struct
                   {pdir_name with loc= mapper.location mapper pdir_name.loc}
               ; pdir_arg
               ; pdir_loc= mapper.location mapper pdir_loc })
+
+  type 'a fragment =
+    | Structure : Parsetree.structure fragment
+    | Signature : Parsetree.signature fragment
+    | Use_file : Parsetree.toplevel_phrase list fragment
+
+  let equal (type a) (x : a fragment) : a -> a -> bool =
+    match x with
+    | Structure -> Parsetree.equal_structure
+    | Signature -> Parsetree.equal_signature
+    | Use_file -> List.equal Parsetree.equal_toplevel_phrase
+
+  let map_ast (type a) (x : a fragment) : Ast_mapper.mapper -> a -> a =
+    match x with
+    | Structure -> structure
+    | Signature -> signature
+    | Use_file -> use_file
 end
 
 module Parse = struct
@@ -79,6 +96,12 @@ module Parse = struct
         match p with
         | Ptop_def [] -> false
         | Ptop_def (_ :: _) | Ptop_dir _ -> true)
+
+  let fragment (type a) (fragment : a Mapper.fragment) lexbuf : a =
+    match fragment with
+    | Mapper.Structure -> implementation lexbuf
+    | Mapper.Signature -> interface lexbuf
+    | Mapper.Use_file -> use_file lexbuf
 end
 
 let to_current =
@@ -107,6 +130,11 @@ module Printast = struct
   let use_file f (x : Parsetree.toplevel_phrase list) =
     List.iter x ~f:(fun (p : Parsetree.toplevel_phrase) ->
         top_phrase f (to_current.copy_toplevel_phrase p))
+
+  let fragment (type a) : a Mapper.fragment -> _ -> a -> _ = function
+    | Mapper.Structure -> implementation
+    | Mapper.Signature -> interface
+    | Mapper.Use_file -> use_file
 end
 
 module Pprintast = struct

@@ -26,7 +26,7 @@ end
 
 exception Warning50 of (Location.t * Warnings.t) list
 
-let parse parse_ast (conf : Conf.t) ~source =
+let parse fragment (conf : Conf.t) ~source =
   let lexbuf = Lexing.from_string source in
   let warnings =
     W.enable 50
@@ -49,7 +49,7 @@ let parse parse_ast (conf : Conf.t) ~source =
             false
         | _ -> not conf.quiet)
       ~f:(fun () ->
-        let ast = parse_ast lexbuf in
+        let ast = Migrate_ast.Parse.fragment fragment lexbuf in
         Warnings.check_fatal () ;
         let comments =
           List.map

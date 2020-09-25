@@ -4531,38 +4531,32 @@ let fmt_toplevel c ctx itms =
 
 (** Entry points *)
 
-let fmt_file ~ctx ~f ~fmt_code ~debug source cmts conf itms =
+let fmt_file (type a) ~ctx ~fmt_code ~debug
+    (fragment : a list Mapper.fragment) source cmts conf (itms : a list) =
   let c = {source; cmts; conf; debug; fmt_code} in
-  match itms with
-  | [] -> Cmts.fmt_after ~pro:noop c Location.none
-  | l -> f c ctx l
+  match (fragment, itms) with
+  | _, [] -> Cmts.fmt_after ~pro:noop c Location.none
+  | Mapper.Structure, l -> fmt_structure c ctx l
+  | Mapper.Signature, l -> fmt_signature c ctx l
+  | Mapper.Use_file, l -> fmt_toplevel c ctx l
 
 let fmt_code ~debug =
   let rec fmt_code conf s =
-    match
-      Parse_with_comments.parse Migrate_ast.Parse.implementation conf
-        ~source:s
-    with
+    match Parse_with_comments.parse Structure conf ~source:s with
     | {ast; comments; _} ->
         let source = Source.create s in
-        let cmts = Cmts.init_impl ~debug source ast comments in
+        let cmts = Cmts.init Structure ~debug source ast comments in
         let ctx = Pld (PStr ast) in
         Ok
-          (fmt_file ~f:fmt_structure ~ctx ~debug source cmts conf ast
+          (fmt_file ~ctx ~debug Mapper.Structure source cmts conf ast
              ~fmt_code)
     | exception _ -> Error ()
   in
   fmt_code
 
-let entry_point ~f ~ctx ~debug source cmts conf l =
+let fmt_fragment fragment ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
   Ast.init conf ;
   let fmt_code = fmt_code ~debug in
-  fmt_file ~f ~ctx ~fmt_code ~debug source cmts conf l
-
-let fmt_signature = entry_point ~f:fmt_signature ~ctx:Top
-
-let fmt_structure = entry_point ~f:fmt_structure ~ctx:Top
-
-let fmt_toplevel = entry_point ~f:fmt_toplevel ~ctx:Top
+  fmt_file ~ctx:Top ~fmt_code ~debug fragment source cmts conf l

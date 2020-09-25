@@ -14,26 +14,6 @@
 open Migrate_ast
 open Parse_with_comments
 
-(** Operations on translation units. *)
-type 'a t =
-  { init_cmts: debug:bool -> Source.t -> 'a -> Cmt.t list -> Cmts.t
-  ; fmt: debug:bool -> Source.t -> Cmts.t -> Conf.t -> 'a -> Fmt.t
-  ; parse: Lexing.lexbuf -> 'a
-  ; recover: string -> string
-  ; equal:
-         ignore_doc_comments:bool
-      -> Conf.t
-      -> 'a with_comments
-      -> 'a with_comments
-      -> bool
-  ; moved_docstrings:
-         Conf.t
-      -> 'a with_comments
-      -> 'a with_comments
-      -> Normalize.docstring_error list
-  ; normalize: Conf.t -> 'a with_comments -> 'a
-  ; printast: Format.formatter -> 'a -> unit }
-
 exception
   Internal_error of
     [ `Cannot_parse of exn
@@ -241,13 +221,25 @@ let with_buffer_formatter ~buffer_size k =
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
-let format xunit ?output_file ~input_name ~source ~parsed conf opts =
+let equal fragment ~ignore_doc_comments c a b =
+  Normalize.equal fragment ~ignore_doc_comments c a.Parse_with_comments.ast
+    b.Parse_with_comments.ast
+
+let normalize fragment c {Parse_with_comments.ast; _} =
+  Normalize.normalize fragment c ast
+
+let recover (type a) : a Mapper.fragment -> _ = function
+  | Mapper.Structure -> Parse_wyc.Make_parsable.structure
+  | Mapper.Signature -> Parse_wyc.Make_parsable.signature
+  | Mapper.Use_file -> Parse_wyc.Make_parsable.use_file
+
+let format fragment ?output_file ~input_name ~source ~parsed conf opts =
   let open Result.Monad_infix in
   let dump_ast ~suffix ast =
     if opts.Conf.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             xunit.printast fmt ast))
+             Migrate_ast.Printast.fragment fragment fmt ast))
     else None
   in
   let dump_formatted ~suffix fmted =
@@ -262,7 +254,7 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
       let open Fmt in
       let source_t = Source.create source in
       let cmts_t =
-        xunit.init_cmts ~debug:opts.debug source_t t.ast t.comments
+        Cmts.init fragment ~debug:opts.debug source_t t.ast t.comments
       in
       let contents =
         with_buffer_formatter ~buffer_size:(String.length source)
@@ -272,7 +264,8 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (xunit.fmt ~debug:opts.debug source_t cmts_t conf t.ast) )
+              (Fmt_ast.fmt_fragment fragment ~debug:opts.debug source_t
+                 cmts_t conf t.ast) )
       in
       (contents, cmts_t)
     in
@@ -294,12 +287,12 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
       in
-      ( match parse xunit.parse conf ~source:fmted with
+      ( match parse fragment conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn ->
           if opts.Conf.format_invalid_files then (
-            match parse xunit.parse conf ~source:(xunit.recover fmted) with
+            match parse fragment conf ~source:(recover fragment fmted) with
             | exception exn ->
                 internal_error (`Cannot_parse exn) (exn_args ())
             | t_new ->
@@ -312,11 +305,13 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
       (* Ast not preserved ? *)
       ( if
         not
-          (xunit.equal ~ignore_doc_comments:(not conf.comment_check) conf t
-             t_new)
+          (equal fragment ~ignore_doc_comments:(not conf.comment_check) conf
+             t t_new)
       then
-        let old_ast = dump_ast ~suffix:".old" (xunit.normalize conf t) in
-        let new_ast = dump_ast ~suffix:".new" (xunit.normalize conf t_new) in
+        let old_ast = dump_ast ~suffix:".old" (normalize fragment conf t) in
+        let new_ast =
+          dump_ast ~suffix:".new" (normalize fragment conf t_new)
+        in
         let args ~suffix =
           [ ("output file", dump_formatted ~suffix fmted)
           ; ("old ast", old_ast)
@@ -324,8 +319,11 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
           |> List.filter_map ~f:(fun (s, f_opt) ->
                  Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)))
         in
-        if xunit.equal ~ignore_doc_comments:true conf t t_new then
-          let docstrings = xunit.moved_docstrings conf t t_new in
+        if equal fragment ~ignore_doc_comments:true conf t t_new then
+          let docstrings =
+            Normalize.moved_docstrings fragment conf
+              t.Parse_with_comments.ast t_new.Parse_with_comments.ast
+          in
           let args = args ~suffix:".unequal-docs" in
           internal_error (`Doc_comment docstrings) args
         else
@@ -380,11 +378,11 @@ let format xunit ?output_file ~input_name ~source ~parsed conf opts =
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
-let parse_result xunit conf (opts : Conf.opts) ~source ~input_name =
-  match parse xunit.parse conf ~source with
+let parse_result fragment conf (opts : Conf.opts) ~source ~input_name =
+  match parse fragment conf ~source with
   | exception exn ->
       if opts.format_invalid_files then (
-        match parse xunit.parse conf ~source:(xunit.recover source) with
+        match parse fragment conf ~source:(recover fragment source) with
         | exception exn -> Error (Invalid_source {exn})
         | parsed ->
             Format.fprintf Format.err_formatter
@@ -393,44 +391,13 @@ let parse_result xunit conf (opts : Conf.opts) ~source ~input_name =
       else Error (Invalid_source {exn})
   | parsed -> Ok parsed
 
-let parse_and_format xunit ?output_file ~input_name ~source conf opts =
+let parse_and_format fragment ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
   let open Result.Monad_infix in
-  parse_result xunit conf opts ~source ~input_name
+  parse_result fragment conf opts ~source ~input_name
   >>= fun parsed ->
-  format xunit ?output_file ~input_name ~source ~parsed conf opts
+  format fragment ?output_file ~input_name ~source ~parsed conf opts
 
-let normalize norm c {Parse_with_comments.ast; _} = norm c ast
+let parse_and_format_impl = parse_and_format Use_file
 
-let equal eq ~ignore_doc_comments c a b =
-  eq ~ignore_doc_comments c a.Parse_with_comments.ast
-    b.Parse_with_comments.ast
-
-let moved_docstrings f c a b =
-  f c a.Parse_with_comments.ast b.Parse_with_comments.ast
-
-(** Operations on implementation files. *)
-let impl : _ t =
-  { parse= Migrate_ast.Parse.use_file
-  ; recover= Parse_wyc.Make_parsable.use_file
-  ; init_cmts= Cmts.init_toplevel
-  ; fmt= Fmt_ast.fmt_toplevel
-  ; equal= equal Normalize.equal_toplevel
-  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_toplevel
-  ; normalize= normalize Normalize.toplevel
-  ; printast= Migrate_ast.Printast.use_file }
-
-(** Operations on interface files. *)
-let intf : _ t =
-  { parse= Migrate_ast.Parse.interface
-  ; recover= Parse_wyc.Make_parsable.signature
-  ; init_cmts= Cmts.init_intf
-  ; fmt= Fmt_ast.fmt_signature
-  ; equal= equal Normalize.equal_intf
-  ; moved_docstrings= moved_docstrings Normalize.moved_docstrings_intf
-  ; normalize= normalize Normalize.intf
-  ; printast= Migrate_ast.Printast.interface }
-
-let parse_and_format_impl = parse_and_format impl
-
-let parse_and_format_intf = parse_and_format intf
+let parse_and_format_intf = parse_and_format Signature

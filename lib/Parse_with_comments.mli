@@ -26,4 +26,7 @@ end
 exception Warning50 of (Location.t * Warnings.t) list
 
 val parse :
-  (Lexing.lexbuf -> 'a) -> Conf.t -> source:string -> 'a with_comments
+     'a Migrate_ast.Mapper.fragment
+  -> Conf.t
+  -> source:string
+  -> 'a with_comments

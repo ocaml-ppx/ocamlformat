@@ -22,8 +22,8 @@ type conf =
       Migrate_ast.Parsetree.structure -> Migrate_ast.Parsetree.structure }
 
 (** Remove comments that duplicate docstrings (or other comments). *)
-let dedup_cmts map_ast ast comments =
-  let of_ast map_ast ast =
+let dedup_cmts fragment ast comments =
+  let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
     let attribute m atr =
       match atr with
@@ -43,10 +43,11 @@ let dedup_cmts map_ast ast comments =
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in
-    map_ast {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+    Mapper.map_ast fragment {Ast_mapper.default_mapper with attribute} ast
+    |> ignore ;
     !docs
   in
-  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast map_ast ast)))
+  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
 let comment s =
   (* normalize consecutive whitespace chars to a single space *)
@@ -103,10 +104,9 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-            Parse_with_comments.parse Migrate_ast.Parse.implementation c.conf
-              ~source:txt
+            Parse_with_comments.parse Structure c.conf ~source:txt
           in
-          let comments = dedup_cmts Mapper.structure ast comments in
+          let comments = dedup_cmts Mapper.Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
                 Location.compare a b)
@@ -178,7 +178,7 @@ let docstring c text =
 let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
 
-let make_mapper conf ~ignore_doc_comment =
+let make_mapper conf ~ignore_doc_comments =
   (* remove locations *)
   let location _ _ = Location.none in
   let doc_attribute = function
@@ -198,7 +198,7 @@ let make_mapper conf ~ignore_doc_comment =
                   , [] )
             ; pstr_loc } ] ) ->
         let doc' =
-          if ignore_doc_comment then "IGNORED"
+          if ignore_doc_comments then "IGNORED"
           else
             let c = {conf; normalize_code= m.structure m} in
             docstring c doc
@@ -223,7 +223,7 @@ let make_mapper conf ~ignore_doc_comment =
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) (atrs : attribute list) =
     let atrs =
-      if ignore_doc_comment then
+      if ignore_doc_comments then
         List.filter atrs ~f:(fun a -> not (doc_attribute a))
       else atrs
     in
@@ -301,7 +301,7 @@ let make_mapper conf ~ignore_doc_comment =
   in
   let structure (m : Ast_mapper.mapper) (si : structure) =
     let si =
-      if ignore_doc_comment then
+      if ignore_doc_comments then
         List.filter si ~f:(fun si ->
             match si.pstr_desc with
             | Pstr_attribute a -> not (doc_attribute a)
@@ -312,7 +312,7 @@ let make_mapper conf ~ignore_doc_comment =
   in
   let signature (m : Ast_mapper.mapper) (si : signature) =
     let si =
-      if ignore_doc_comment then
+      if ignore_doc_comments then
         List.filter si ~f:(fun si ->
             match si.psig_desc with
             | Psig_attribute a -> not (doc_attribute a)
@@ -323,7 +323,7 @@ let make_mapper conf ~ignore_doc_comment =
   in
   let class_signature (m : Ast_mapper.mapper) (si : class_signature) =
     let si =
-      if ignore_doc_comment then
+      if ignore_doc_comments then
         let pcsig_fields =
           List.filter si.pcsig_fields ~f:(fun si ->
               match si.pctf_desc with
@@ -337,7 +337,7 @@ let make_mapper conf ~ignore_doc_comment =
   in
   let class_structure (m : Ast_mapper.mapper) (si : class_structure) =
     let si =
-      if ignore_doc_comment then
+      if ignore_doc_comments then
         let pcstr_fields =
           List.filter si.pcstr_fields ~f:(fun si ->
               match si.pcf_desc with
@@ -363,38 +363,12 @@ let make_mapper conf ~ignore_doc_comment =
   ; class_signature
   ; class_structure }
 
-let mapper c = make_mapper c ~ignore_doc_comment:false
+let normalize fragment c =
+  Mapper.map_ast fragment (make_mapper c ~ignore_doc_comments:false)
 
-let impl c = Mapper.structure (mapper c)
-
-let intf c = Mapper.signature (mapper c)
-
-let toplevel c = Mapper.use_file (mapper c)
-
-let mapper_ignore_doc_comment c = make_mapper c ~ignore_doc_comment:true
-
-let equal_impl ~ignore_doc_comments c ast1 ast2 =
-  let map =
-    if ignore_doc_comments then
-      Mapper.structure (mapper_ignore_doc_comment c)
-    else Mapper.structure (mapper c)
-  in
-  equal_structure (map ast1) (map ast2)
-
-let equal_intf ~ignore_doc_comments c ast1 ast2 =
-  let map =
-    if ignore_doc_comments then
-      Mapper.signature (mapper_ignore_doc_comment c)
-    else Mapper.signature (mapper c)
-  in
-  equal_signature (map ast1) (map ast2)
-
-let equal_toplevel ~ignore_doc_comments c ast1 ast2 =
-  let map =
-    if ignore_doc_comments then Mapper.use_file (mapper_ignore_doc_comment c)
-    else Mapper.use_file (mapper c)
-  in
-  List.equal equal_toplevel_phrase (map ast1) (map ast2)
+let equal fragment ~ignore_doc_comments c ast1 ast2 =
+  let map = Mapper.map_ast fragment (make_mapper c ~ignore_doc_comments) in
+  Mapper.equal fragment (map ast1) (map ast2)
 
 let make_docstring_mapper c docstrings =
   let doc_attribute = function
@@ -439,24 +413,10 @@ let make_docstring_mapper c docstrings =
   in
   {Ast_mapper.default_mapper with attribute; attributes}
 
-let docstrings_impl c s =
+let docstrings (type a) (fragment : a Mapper.fragment) c s =
   let docstrings = ref [] in
-  let (_ : structure) =
-    Mapper.structure (make_docstring_mapper c docstrings) s
-  in
-  !docstrings
-
-let docstrings_intf c s =
-  let docstrings = ref [] in
-  let (_ : signature) =
-    Mapper.signature (make_docstring_mapper c docstrings) s
-  in
-  !docstrings
-
-let docstrings_toplevel c s =
-  let docstrings = ref [] in
-  let (_ : toplevel_phrase list) =
-    Mapper.use_file (make_docstring_mapper c docstrings) s
+  let (_ : a) =
+    Mapper.map_ast fragment (make_docstring_mapper c docstrings) s
   in
   !docstrings
 
@@ -464,10 +424,10 @@ type docstring_error =
   | Moved of Location.t * Location.t * string
   | Unstable of Location.t * string
 
-let moved_docstrings c get_docstrings s1 s2 =
-  let c = {conf= c; normalize_code= impl c} in
-  let d1 = get_docstrings c s1 in
-  let d2 = get_docstrings c s2 in
+let moved_docstrings fragment c s1 s2 =
+  let c = {conf= c; normalize_code= normalize Structure c} in
+  let d1 = docstrings fragment c s1 in
+  let d2 = docstrings fragment c s2 in
   let equal (_, x) (_, y) =
     let b = String.equal (docstring c x) (docstring c y) in
     Caml.Printf.printf "Docstring equal? %b,\n%s\n%s\n" b (docstring c x)
@@ -499,13 +459,6 @@ let moved_docstrings c get_docstrings s1 s2 =
       let l2 = List.map ~f:unstable l2 in
       List.rev_append both (List.rev_append l1 l2)
 
-let moved_docstrings_impl c s1 s2 = moved_docstrings c docstrings_impl s1 s2
-
-let moved_docstrings_intf c s1 s2 = moved_docstrings c docstrings_intf s1 s2
-
-let moved_docstrings_toplevel c s1 s2 =
-  moved_docstrings c docstrings_toplevel s1 s2
-
 let docstring conf =
-  let c = {conf; normalize_code= impl conf} in
-  docstring c
+  let normalize_code = normalize Structure conf in
+  docstring {conf; normalize_code}
