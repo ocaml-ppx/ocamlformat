@@ -81,7 +81,7 @@ module Location : sig
 
   val compare_end_col : t -> t -> int
 
-  val fmt : Format_.formatter -> t -> unit
+  val fmt : Format.formatter -> t -> unit
 
   val smallest : t -> t list -> t
 
