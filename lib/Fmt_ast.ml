@@ -4422,7 +4422,7 @@ let fmt_toplevel c ctx itms =
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
     | _ -> c
   in
-  let grps = make_groups c itms (fun x -> Tli x) update_config in
+  let items = update_items_config c itms update_config in
   let break_struct = c.conf.break_struct || is_top ctx in
   let fmt_item c ~last = function
     | `Item i ->
@@ -4430,13 +4430,14 @@ let fmt_toplevel c ctx itms =
         @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c d
   in
-  let fmt_grp ~first:_ ~last:last_grp itms =
-    list_fl itms (fun ~first ~last (itm, c) ->
-        let last = last && last_grp in
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ fmt_item c ~last itm )
-  in
-  hvbox 0 (fmt_groups c ctx grps fmt_grp)
+  hvbox 0 @@ list_pn items
+  @@ fun ~prev:_ (itm, c) ~next ->
+  fmt_item c ~last:(Option.is_none next) itm
+  $ opt next (fun (i_n, c_n) ->
+        fmt_or_k
+          (break_between c (Tli itm, c.conf) (Tli i_n, c_n.conf))
+          (fmt "\n@;<1000 0>")
+          (fmt_or break_struct "@;<1000 0>" "@ ") )
 
 (** Entry points *)
 
