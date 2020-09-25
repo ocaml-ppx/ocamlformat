@@ -218,7 +218,7 @@ let add_cmts t ?prev ?next position loc cmts =
             Option.value_map next ~default:"no next"
               ~f:(string_between cmt_loc)
           in
-          Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
+          Caml.Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
             (position_to_string position)
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
             cmt_txt (String.escaped btw_next)) ;
@@ -261,7 +261,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
 let relocate (t : t) ~src ~before ~after =
   if t.remove then (
     if t.debug then
-      Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+      Caml.Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
         Location.fmt before Location.fmt after ;
     let merge_and_sort x y =
       List.rev_append x y
@@ -323,7 +323,7 @@ let init map_ast ~debug source asts comments_n_docstrings =
   if debug then (
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun {Cmt.txt; loc} ->
-        Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
+        Caml.Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "")) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast map_ast asts source in

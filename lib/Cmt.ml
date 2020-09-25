@@ -9,7 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Format = Format_
 open Migrate_ast
 
 module T = struct
