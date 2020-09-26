@@ -32,6 +32,8 @@
 
   + Added missing package metadata to `ocamlformat.el` (#1474, @bcc32)
 
+  + Fix `ocamlformat.el` buffer replacement for MacOS Emacs (#1481, @juxd)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
