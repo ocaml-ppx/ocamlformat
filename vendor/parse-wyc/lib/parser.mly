@@ -24,6 +24,7 @@ open Parsetree
 open Ast_helper
 open Docstrings
 open Docstrings.WithMenhir
+open Let_binding
 
 let mkloc = Location.mkloc
 let mknoloc = Location.mknoloc
@@ -560,7 +561,6 @@ let mk_directive ~loc name arg =
 
 %[@recover.prelude
 
-  open Migrate_ast
   open Ast_helper
 
   (* Ast nodes to inject when parsing fails *)
@@ -700,7 +700,7 @@ let mk_directive ~loc name arg =
 %token WHILE
 %token WITH
 %token <string * Location.t> COMMENT
-%token <Migrate_ast.Docstrings.docstring> DOCSTRING
+%token <Docstrings.docstring> DOCSTRING
 
 %token EOL
 
