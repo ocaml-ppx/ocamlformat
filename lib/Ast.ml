@@ -2228,6 +2228,14 @@ end = struct
         false
     (* Object fields do not require parens, even with trailing attributes *)
     | Exp {pexp_desc= Pexp_object _; _}, _ -> false
+    | ( Exp
+          { pexp_desc=
+              Pexp_sequence
+                (({pexp_desc= Pexp_match _ | Pexp_try _; _} as e), _)
+          ; _ }
+      , {pexp_attributes= _ :: _; _} )
+      when e == exp ->
+        true
     | Exp {pexp_desc= Pexp_sequence _; _}, {pexp_attributes= _ :: _; _} ->
         false
     | _, exp when Exp.has_trailing_attributes exp -> true

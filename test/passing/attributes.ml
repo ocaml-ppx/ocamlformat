@@ -352,3 +352,11 @@ let (M.(A | B)[@attr]) = ()
 ;;
 {a____________________________________= b___________________________________}
 [@attr]
+
+let _ =
+  (match[@ocaml.warning "-4"] bar with _ -> ()) ;
+  foo
+
+let _ =
+  (try[@ocaml.warning "-4"] bar with _ -> ()) ;
+  foo
