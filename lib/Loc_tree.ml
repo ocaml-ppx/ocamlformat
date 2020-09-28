@@ -13,39 +13,40 @@ open Migrate_ast
 open Parsetree
 include Non_overlapping_interval_tree.Make (Location)
 
+let cons_option xo xs = match xo with Some x -> x :: xs | None -> xs
+
+let fold src =
+  object
+    inherit [Location.t list] Ppxlib.Ast_traverse.fold as super
+
+    method! location loc locs = loc :: locs
+
+    method! pattern p locs =
+      let extra_loc =
+        match p.ppat_desc with
+        | Ppat_record (flds, Open) ->
+            Source.loc_of_underscore src flds p.ppat_loc
+        | _ -> None
+      in
+      cons_option extra_loc locs |> super#pattern p
+
+    method! attribute attr locs =
+      (* ignore location of docstrings *)
+      if Ast.Attr.is_doc attr then locs else super#attribute attr locs
+
+    (** Ast_traverse recurses down to locations in stacks *)
+    method! location_stack _ l = l
+
+    method! expression e locs =
+      let extra_loc =
+        match e.pexp_desc with
+        | Pexp_constant _ -> Some (Source.loc_of_expr_constant src e)
+        | _ -> None
+      in
+      cons_option extra_loc locs |> super#expression e
+  end
+
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 let of_ast fragment ast src =
-  let locs = ref [] in
-  let add_loc loc = locs := loc :: !locs in
-  let mapper =
-    object
-      inherit Ppxlib.Ast_traverse.map as super
-
-      method! location loc = add_loc loc ; loc
-
-      method! pattern p =
-        ( match p.ppat_desc with
-        | Ppat_record (flds, Open) ->
-            Option.iter
-              (Source.loc_of_underscore src flds p.ppat_loc)
-              ~f:add_loc
-        | _ -> () ) ;
-        super#pattern p
-
-      method! attribute attr =
-        (* ignore location of docstrings *)
-        if Ast.Attr.is_doc attr then attr else super#attribute attr
-
-      (** Ast_traverse recurses down to locations in stacks *)
-      method! location_stack l = l
-
-      method! expression e =
-        ( match e.pexp_desc with
-        | Pexp_constant _ ->
-            locs := Source.loc_of_expr_constant src e :: !locs
-        | _ -> () ) ;
-        super#expression e
-    end
-  in
-  Mapper.map_ast fragment mapper ast |> ignore ;
-  (of_list !locs, !locs)
+  let locs = Mapper.fold_ast fragment (fold src) ast [] in
+  (of_list locs, locs)

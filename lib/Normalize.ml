@@ -24,12 +24,11 @@ type conf =
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts fragment ast comments =
   let of_ast ast =
-    let docs = ref (Set.empty (module Cmt)) in
-    let mapper =
+    let iter =
       object
-        inherit Ppxlib.Ast_traverse.map as super
+        inherit [Set.M(Cmt).t] Ppxlib.Ast_traverse.fold as super
 
-        method! attribute atr =
+        method! attribute atr docs =
           match atr with
           | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
             ; attr_payload=
@@ -43,13 +42,11 @@ let dedup_cmts fragment ast comments =
                           , [] )
                     ; _ } ]
             ; _ } ->
-              docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
-              atr
-          | _ -> super#attribute atr
+              Set.add docs (Cmt.create ("*" ^ doc) pexp_loc)
+          | _ -> super#attribute atr docs
       end
     in
-    Mapper.map_ast fragment mapper ast |> ignore ;
-    !docs
+    Mapper.fold_ast fragment iter ast (Set.empty (module Cmt))
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
@@ -367,57 +364,35 @@ let equal fragment ~ignore_doc_comments c ast1 ast2 =
   let map = Mapper.map_ast fragment (make_mapper c ~ignore_doc_comments) in
   Mapper.equal fragment (map ast1) (map ast2)
 
-let make_docstring_mapper c docstrings =
+let fold_docstrings =
   let doc_attribute = function
     | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
   in
   object
-    inherit Ppxlib.Ast_traverse.map as super
+    inherit [(Location.t * string) list] Ppxlib.Ast_traverse.fold as super
 
-    method! attribute attr =
+    method! attribute attr docstrings =
       match (attr.attr_name, attr.attr_payload) with
-      | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
+      | ( {txt= "ocaml.doc" | "ocaml.text"; loc}
         , PStr
             [ { pstr_desc=
                   Pstr_eval
                     ( { pexp_desc=
-                          Pexp_constant (Pconst_string (doc, str_loc, None))
-                      ; pexp_loc
-                      ; pexp_attributes
+                          Pexp_constant (Pconst_string (doc, _, None))
                       ; _ }
                     , [] )
-              ; pstr_loc } ] ) ->
-          let doc' = docstring c doc in
-          docstrings := (loc, doc) :: !docstrings ;
-          { attr_name= {txt; loc}
-          ; attr_payload=
-              super#payload
-                (PStr
-                   [ { pstr_desc=
-                         Pstr_eval
-                           ( { pexp_desc=
-                                 Pexp_constant
-                                   (Pconst_string (doc', str_loc, None))
-                             ; pexp_loc
-                             ; pexp_attributes
-                             ; pexp_loc_stack= [] }
-                           , [] )
-                     ; pstr_loc } ])
-          ; attr_loc= attr.attr_loc }
-      | _ -> super#attribute attr
+              ; _ } ] ) ->
+          (loc, doc) :: docstrings
+      | _ -> super#attribute attr docstrings
 
     method! attributes atrs =
       let atrs = List.filter atrs ~f:doc_attribute in
       super#attributes (sort_attributes atrs)
   end
 
-let docstrings (type a) (fragment : a Mapper.fragment) c s =
-  let docstrings = ref [] in
-  let (_ : a) =
-    Mapper.map_ast fragment (make_docstring_mapper c docstrings) s
-  in
-  !docstrings
+let docstrings (type a) (fragment : a Mapper.fragment) s =
+  Mapper.fold_ast fragment fold_docstrings s []
 
 type docstring_error =
   | Moved of Location.t * Location.t * string
@@ -425,8 +400,8 @@ type docstring_error =
 
 let moved_docstrings fragment c s1 s2 =
   let c = {conf= c; normalize_code= normalize Structure c} in
-  let d1 = docstrings fragment c s1 in
-  let d2 = docstrings fragment c s2 in
+  let d1 = docstrings fragment s1 in
+  let d2 = docstrings fragment s2 in
   let equal (_, x) (_, y) =
     let b = String.equal (docstring c x) (docstring c y) in
     Caml.Printf.printf "Docstring equal? %b,\n%s\n%s\n" b (docstring c x)

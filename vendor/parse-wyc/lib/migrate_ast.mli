@@ -17,7 +17,7 @@ module Mapper : sig
             Ppxlib.Parsetree.toplevel_phrase list )
           fragment
 
-  val iter_ast : (_, 'ppxlib) fragment -> Ppxlib.Ast_traverse.iter -> 'ppxlib -> unit
+  val fold_ast : (_, 'ppxlib) fragment -> 'a Ppxlib.Ast_traverse.fold -> 'a -> 'ppxlib -> 'a
 
   val to_ppxlib : ('omp, 'ppxlib) fragment -> 'omp -> 'ppxlib
 end

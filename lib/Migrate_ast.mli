@@ -93,6 +93,10 @@ module Mapper : sig
   val equal : 'a fragment -> 'a -> 'a -> bool
 
   val map_ast : 'a fragment -> Ppxlib.Ast_traverse.map -> 'a -> 'a
+
+  val iter_ast : 'a fragment -> Ppxlib.Ast_traverse.iter -> 'a -> unit
+
+  val fold_ast : 'a fragment -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
 end
 
 module Parse : sig

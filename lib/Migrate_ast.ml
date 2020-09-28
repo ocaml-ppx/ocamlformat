@@ -54,6 +54,20 @@ module Mapper = struct
     | Structure -> m#structure
     | Signature -> m#signature
     | Use_file -> m#list m#toplevel_phrase
+
+  let iter_ast (type a) (fragment : a fragment)
+      (i : Ppxlib.Ast_traverse.iter) : a -> unit =
+    match fragment with
+    | Structure -> i#structure
+    | Signature -> i#signature
+    | Use_file -> i#list i#toplevel_phrase
+
+  let fold_ast (type a) (fragment : a fragment)
+      (f : _ Ppxlib.Ast_traverse.fold) : a -> _ =
+    match fragment with
+    | Structure -> f#structure
+    | Signature -> f#signature
+    | Use_file -> f#list f#toplevel_phrase
 end
 
 module Parse = struct

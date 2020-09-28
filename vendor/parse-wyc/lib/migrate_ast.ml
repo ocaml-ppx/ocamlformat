@@ -17,12 +17,12 @@ module Mapper = struct
             Ppxlib.Parsetree.toplevel_phrase list )
           fragment
 
-  let iter_ast (type o p) (fragment:(o, p) fragment) (m:Ppxlib.Ast_traverse.iter) (x:p) =
+  let fold_ast (type o p) (fragment:(o, p) fragment)
+        (m:_ Ppxlib.Ast_traverse.fold) init (x:p) =
     match fragment with
-    | Structure -> m#structure x
-    | Signature -> m#signature x
-    | Use_file -> List.iter m#toplevel_phrase x
-
+    | Structure -> m#structure x init
+    | Signature -> m#signature x init
+    | Use_file -> List.fold_left (fun acc tlp -> m#toplevel_phrase tlp acc) init x
 
   let to_ppxlib (type o p) (f:(o, p) fragment) : o -> p =
     let module Conv = Ppxlib_ast.Select_ast (Ppxlib_ast__.Versions.OCaml_408) in
