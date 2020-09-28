@@ -2204,31 +2204,22 @@ end = struct
       | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
       | _ -> false
     in
-    let sequence ctx_pexp_desc exp =
-      match (ctx_pexp_desc, exp.pexp_attributes) with
-      | ( Pexp_sequence (({pexp_desc= Pexp_match _ | Pexp_try _; _} as e), _)
-        , _ :: _ )
-        when e == exp ->
-          true
-      | Pexp_sequence _, _ :: _ -> false
-      | ( Pexp_sequence
-            ( ( { pexp_desc=
-                    Pexp_extension
-                      ( _
-                      , PStr
-                          [ { pstr_desc=
-                                Pstr_eval
-                                  ({pexp_desc= Pexp_sequence _; _}, [])
-                            ; _ } ] )
-                ; _ } as lhs )
-            , _ )
+    let exp_in_sequence lhs rhs exp =
+      match (lhs.pexp_desc, rhs, exp.pexp_attributes) with
+      | (Pexp_match _ | Pexp_try _), _, _ :: _ when lhs == exp -> true
+      | _, _, _ :: _ -> false
+      | ( Pexp_extension
+            ( _
+            , PStr
+                [ { pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _; _}, [])
+                  ; _ } ] )
+        , _
         , _ )
         when lhs == exp ->
           true
-      | Pexp_sequence (lhs, _), _ when lhs == exp ->
-          exposed_right_exp Let_match exp
-      | Pexp_sequence (_, rhs), _ when rhs == exp -> false
-      | _ -> assert false
+      | _ when lhs == exp -> exposed_right_exp Let_match exp
+      | _ when rhs == exp -> false
+      | _ -> failwith "exp must be lhs or rhs from the parent expression"
     in
     assert_check_exp xexp ;
     is_displaced_prefix_op xexp
@@ -2355,7 +2346,7 @@ end = struct
         when e0 == exp ->
           false
       | Pexp_record (_, Some e0) when e0 == exp -> true
-      | Pexp_sequence _ -> sequence pexp_desc exp
+      | Pexp_sequence (lhs, rhs) -> exp_in_sequence lhs rhs exp
       | _ -> Exp.has_trailing_attributes exp || parenze () )
     | _, exp when Exp.has_trailing_attributes exp -> true
     | _ -> false
