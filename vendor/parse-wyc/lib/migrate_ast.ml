@@ -1,6 +1,5 @@
 module Selected_version = Migrate_parsetree.Ast_408
 module Ast_mapper = Selected_version.Ast_mapper
-module Ast_helper = Selected_version.Ast_helper
 module Parsetree = Selected_version.Parsetree
 module Asttypes = Selected_version.Asttypes
 
@@ -43,28 +42,6 @@ module Mapper = struct
     | Structure -> structure
     | Signature -> signature
     | Use_file -> use_file
-end
-
-module Docstrings = struct
-  include Selected_version.Docstrings
-  open Parsetree
-  open Asttypes
-
-  type let_binding = {
-    lb_pattern : pattern;
-    lb_expression : expression;
-    lb_attributes : attributes;
-    lb_docs : docs Lazy.t;
-    lb_text : text Lazy.t;
-    lb_loc : Location.t;
-  }
-
-  type let_bindings = {
-    lbs_bindings : let_binding list;
-    lbs_rec : rec_flag;
-    lbs_extension : string Asttypes.loc option;
-    lbs_loc : Location.t;
-  }
 end
 
 module Int = struct
