@@ -2204,6 +2204,32 @@ end = struct
       | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
       | _ -> false
     in
+    let sequence ctx_pexp_desc exp =
+      match (ctx_pexp_desc, exp.pexp_attributes) with
+      | ( Pexp_sequence (({pexp_desc= Pexp_match _ | Pexp_try _; _} as e), _)
+        , _ :: _ )
+        when e == exp ->
+          true
+      | Pexp_sequence _, _ :: _ -> false
+      | ( Pexp_sequence
+            ( ( { pexp_desc=
+                    Pexp_extension
+                      ( _
+                      , PStr
+                          [ { pstr_desc=
+                                Pstr_eval
+                                  ({pexp_desc= Pexp_sequence _; _}, [])
+                            ; _ } ] )
+                ; _ } as lhs )
+            , _ )
+        , _ )
+        when lhs == exp ->
+          true
+      | Pexp_sequence (lhs, _), _ when lhs == exp ->
+          exposed_right_exp Let_match exp
+      | Pexp_sequence (_, rhs), _ when rhs == exp -> false
+      | _ -> assert false
+    in
     assert_check_exp xexp ;
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
@@ -2228,17 +2254,6 @@ end = struct
         false
     (* Object fields do not require parens, even with trailing attributes *)
     | Exp {pexp_desc= Pexp_object _; _}, _ -> false
-    | ( Exp
-          { pexp_desc=
-              Pexp_sequence
-                (({pexp_desc= Pexp_match _ | Pexp_try _; _} as e), _)
-          ; _ }
-      , {pexp_attributes= _ :: _; _} )
-      when e == exp ->
-        true
-    | Exp {pexp_desc= Pexp_sequence _; _}, {pexp_attributes= _ :: _; _} ->
-        false
-    | _, exp when Exp.has_trailing_attributes exp -> true
     | ( Exp {pexp_desc= Pexp_construct ({txt= id; _}, _); _}
       , {pexp_attributes= _ :: _; _} )
       when Longident.is_infix id ->
@@ -2340,22 +2355,9 @@ end = struct
         when e0 == exp ->
           false
       | Pexp_record (_, Some e0) when e0 == exp -> true
-      | Pexp_sequence
-          ( ( { pexp_desc=
-                  Pexp_extension
-                    ( _
-                    , PStr
-                        [ { pstr_desc=
-                              Pstr_eval ({pexp_desc= Pexp_sequence _; _}, [])
-                          ; _ } ] )
-              ; _ } as lhs )
-          , _ )
-        when lhs == exp ->
-          true
-      | Pexp_sequence (lhs, _) when lhs == exp ->
-          exposed_right_exp Let_match exp
-      | Pexp_sequence (_, rhs) when rhs == exp -> false
-      | _ -> parenze () )
+      | Pexp_sequence _ -> sequence pexp_desc exp
+      | _ -> Exp.has_trailing_attributes exp || parenze () )
+    | _, exp when Exp.has_trailing_attributes exp -> true
     | _ -> false
 
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be

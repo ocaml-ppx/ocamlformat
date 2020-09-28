@@ -9159,7 +9159,7 @@ let test x y = (( + ) [@foo]) x y
 
 let test x = (( ~- ) [@foo])x
 
-let test contents = {contents= (contents [@foo])}
+let test contents = {contents= contents [@foo]}
 
 class type t = object (_[@foo]) end
 
@@ -9175,7 +9175,7 @@ let f = function _ :: ((_ :: _)[@foo]) -> () | _ -> ()
 function {contents= (contents[@foo])} -> ()
 
 ;;
-fun contents -> {contents= (contents [@foo])}
+fun contents -> {contents= contents [@foo]}
 
 ;;
 () ;
