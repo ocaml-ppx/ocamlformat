@@ -2205,15 +2205,14 @@ end = struct
       | _ -> false
     in
     let exp_in_sequence lhs rhs exp =
-      match (lhs.pexp_desc, rhs, exp.pexp_attributes) with
-      | (Pexp_match _ | Pexp_try _), _, _ :: _ when lhs == exp -> true
-      | _, _, _ :: _ -> false
+      match (lhs.pexp_desc, exp.pexp_attributes) with
+      | (Pexp_match _ | Pexp_try _), _ :: _ when lhs == exp -> true
+      | _, _ :: _ -> false
       | ( Pexp_extension
             ( _
             , PStr
                 [ { pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _; _}, [])
                   ; _ } ] )
-        , _
         , _ )
         when lhs == exp ->
           true

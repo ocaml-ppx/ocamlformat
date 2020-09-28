@@ -9178,6 +9178,9 @@ function {contents= (contents[@foo])} -> ()
 fun contents -> {contents= contents [@foo]}
 
 ;;
+fun contents -> {contents= contents [@foo]; foo}
+
+;;
 () ;
 (() ; ()) [@foo]
 
