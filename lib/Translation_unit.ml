@@ -226,11 +226,6 @@ let equal fragment ~ignore_doc_comments c a b =
 let normalize fragment c {Parse_with_comments.ast; _} =
   Normalize.normalize fragment c ast
 
-let recover (type a) : a Traverse.fragment -> _ = function
-  | Traverse.Structure -> Parse_wyc.Make_parsable.structure
-  | Traverse.Signature -> Parse_wyc.Make_parsable.signature
-  | Traverse.Use_file -> Parse_wyc.Make_parsable.use_file
-
 let format fragment ?output_file ~input_name ~prev_source ~parsed conf opts =
   let open Result.Monad_infix in
   let dump_ast ~suffix ast =
@@ -290,7 +285,10 @@ let format fragment ?output_file ~input_name ~prev_source ~parsed conf opts =
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn ->
           if opts.Conf.format_invalid_files then (
-            match parse fragment conf ~source:(recover fragment fmted) with
+            match
+              parse fragment conf
+                ~source:(Split_parser.Recover.fragment fragment fmted)
+            with
             | exception exn ->
                 internal_error (`Cannot_parse exn) (exn_args ())
             | t_new ->
@@ -380,7 +378,10 @@ let parse_result fragment conf (opts : Conf.opts) ~source ~input_name =
   match parse fragment conf ~source with
   | exception exn ->
       if opts.format_invalid_files then (
-        match parse fragment conf ~source:(recover fragment source) with
+        match
+          parse fragment conf
+            ~source:(Split_parser.Recover.fragment fragment source)
+        with
         | exception exn -> Error (Invalid_source {exn})
         | parsed ->
             Format.fprintf Format.err_formatter

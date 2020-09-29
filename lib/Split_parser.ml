@@ -76,6 +76,16 @@ module Split = struct
     | Mapper.Signature -> split_according_to_tokens input
 end
 
+module Recover = struct
+  let fragment (type a) (fg : a Mapper.fragment) input =
+    Split.fragment fg input
+    |> List.fold_left ~init:"" ~f:(fun acc item ->
+           match Parse.fragment fg (Lexing.from_string item) with
+           | exception _ ->
+               acc ^ "\n\n" ^ Format.sprintf "[%%%%invalid.ast.node %S]" item
+           | _parsed -> acc ^ "\n\n" ^ item)
+end
+
 module Parse = struct
   let fragment (type a) (fg : a Mapper.fragment) input =
     Split.fragment fg input

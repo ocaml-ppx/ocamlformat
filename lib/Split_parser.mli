@@ -15,6 +15,10 @@ module Split : sig
   val fragment : 'a Mapper.fragment -> string -> string list
 end
 
+module Recover : sig
+  val fragment : 'a Mapper.fragment -> string -> string
+end
+
 module Parse : sig
   val fragment : 'a Mapper.fragment -> string -> ('a, string) Result.t list
 end
