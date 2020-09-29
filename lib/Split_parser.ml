@@ -42,7 +42,7 @@ module Split = struct
   let expects_followup str =
     match List.rev (Token.parse str) with
     | [] -> false
-    | (IN | LPAREN | LBRACKET) :: _ -> true
+    | (IN | LPAREN | LBRACKET | STRUCT | SIG | BEGIN) :: _ -> true
     | _ -> false
 
   let split_according_to_tokens input =
@@ -66,7 +66,10 @@ module Split = struct
     |> List.rev
 
   let split_according_to_semisemi input =
-    Astring.String.cuts ~rev:false ~empty:false ~sep:";;" input
+    match Astring.String.cuts ~rev:false ~empty:false ~sep:";;" input with
+    | [] -> []
+    | [h] -> [h]
+    | h :: t -> h :: List.map ~f:(fun x -> ";;" ^ x) t
 
   let fragment (type a) (fg : a Mapper.fragment) input =
     match fg with
