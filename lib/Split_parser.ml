@@ -96,10 +96,11 @@ module Recover = struct
   let fragment (type a) (fg : a Mapper.fragment) input =
     Split.fragment fg input
     |> List.fold_left ~init:"" ~f:(fun acc item ->
+           let append x y = match x with "" -> y | _ -> x ^ "\n\n" ^ y in
            match Parse.fragment fg (Lexing.from_string item) with
            | exception _ ->
-               acc ^ "\n\n" ^ Format.sprintf "[%%%%invalid.ast.node %S]" item
-           | _parsed -> acc ^ "\n\n" ^ item)
+               append acc (Format.sprintf "[%%%%invalid.ast.node %S]" item)
+           | _parsed -> append acc item)
 end
 
 module Parse = struct
