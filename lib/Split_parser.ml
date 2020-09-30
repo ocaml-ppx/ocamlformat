@@ -32,7 +32,7 @@ module Token = struct
     loop []
 end
 
-module Split = struct
+module Line = struct
   let starts_new_item str =
     match Token.parse str with
     | [] -> false
@@ -44,16 +44,21 @@ module Split = struct
     | [] -> false
     | (IN | LPAREN | LBRACKET | STRUCT | SIG | BEGIN) :: _ -> true
     | _ -> false
+end
 
+module Split = struct
   let split_according_to_tokens input =
     Astring.String.cuts ~rev:false ~empty:true ~sep:"\n" input
     |> List.fold_left
          ~f:(fun (ret, prev_lines) line ->
-           if starts_new_item line then
+           if Line.starts_new_item line then
              match first_non_empty prev_lines with
              | None -> (ret, [line])
              | Some last ->
-                 if starts_new_item line && not (expects_followup last) then
+                 if
+                   Line.starts_new_item line
+                   && not (Line.expects_followup last)
+                 then
                    ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
                    , [line] )
                  else (ret, line :: prev_lines)
