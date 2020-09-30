@@ -51,18 +51,16 @@ module Split = struct
     Astring.String.cuts ~rev:false ~empty:true ~sep:"\n" input
     |> List.fold_left
          ~f:(fun (ret, prev_lines) line ->
-           if Line.starts_new_item line then
-             match first_non_empty prev_lines with
-             | None -> (ret, [line])
-             | Some last ->
-                 if
-                   Line.starts_new_item line
-                   && not (Line.expects_followup last)
-                 then
-                   ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
-                   , [line] )
-                 else (ret, line :: prev_lines)
-           else (ret, line :: prev_lines))
+           match first_non_empty prev_lines with
+           | None -> (ret, [line])
+           | Some last ->
+               if
+                 Line.starts_new_item line
+                 && not (Line.expects_followup last)
+               then
+                 ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
+                 , [line] )
+               else (ret, line :: prev_lines))
          ~init:([], [])
     |> (fun (ret, prev_lines) ->
          (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret)
