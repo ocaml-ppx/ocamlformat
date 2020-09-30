@@ -44,6 +44,8 @@ module Line = struct
     | [] -> false
     | (IN | LPAREN | LBRACKET | STRUCT | SIG | BEGIN) :: _ -> true
     | _ -> false
+
+  let indent x = String.(length x - length (lstrip x))
 end
 
 module Split = struct
@@ -53,14 +55,19 @@ module Split = struct
          ~f:(fun (ret, prev_lines) line ->
            match first_non_empty prev_lines with
            | None -> (ret, [line])
-           | Some last ->
-               if
-                 Line.starts_new_item line
-                 && not (Line.expects_followup last)
-               then
-                 ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
-                 , [line] )
-               else (ret, line :: prev_lines))
+           | Some last -> (
+             match first_non_empty (List.rev prev_lines) with
+             | None -> impossible "filtered by previous pattern matching"
+             | Some first ->
+                 if
+                   Line.starts_new_item line
+                   && Line.indent line = Line.indent first
+                   && Line.indent line <= Line.indent last
+                   && not (Line.expects_followup last)
+                 then
+                   ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
+                   , [line] )
+                 else (ret, line :: prev_lines) ))
          ~init:([], [])
     |> (fun (ret, prev_lines) ->
          (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret)
