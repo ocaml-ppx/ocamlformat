@@ -81,11 +81,14 @@ module Split = struct
     | [h] -> [h]
     | h :: t -> h :: List.map ~f:(fun x -> ";;" ^ x) t
 
+  let split_toplevel input =
+    split_according_to_semisemi input
+    |> map_flatten ~f:split_according_to_tokens
+
   let fragment (type a) (fg : a Mapper.fragment) input =
     match fg with
-    | Mapper.Structure | Mapper.Use_file ->
-        split_according_to_semisemi input
-        |> map_flatten ~f:split_according_to_tokens
+    | Mapper.Structure -> split_toplevel input
+    | Mapper.Use_file -> split_toplevel input
     | Mapper.Signature -> split_according_to_tokens input
 end
 
