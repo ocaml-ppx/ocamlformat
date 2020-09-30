@@ -21,7 +21,7 @@ let rec first_non_empty = function
   | "" :: t -> first_non_empty t
   | h :: _ -> Some h
 
-module Token = struct
+module Line = struct
   let parse str =
     let lexbuf = Lexing.from_string str in
     let rec loop acc =
@@ -30,17 +30,15 @@ module Token = struct
       | tok -> loop (tok :: acc)
     in
     loop []
-end
 
-module Line = struct
   let starts_new_item str =
-    match Token.parse str with
+    match parse str with
     | [] -> false
     | (LET | AND | MODULE | CLASS | TYPE | EXCEPTION) :: _ -> true
     | _ -> false
 
   let expects_followup str =
-    match List.rev (Token.parse str) with
+    match List.rev (parse str) with
     | [] -> false
     | (IN | LPAREN | LBRACKET | STRUCT | SIG | BEGIN) :: _ -> true
     | _ -> false
