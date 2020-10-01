@@ -2004,6 +2004,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to object2.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:object2.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff object2.ml.ref object2.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to object_type.ml.output
      (run %{bin:ocamlformat} %{dep:object_type.ml}))))
 
