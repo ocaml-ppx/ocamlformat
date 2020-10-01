@@ -24,17 +24,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to exprs.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:exprs.ml})))))
-
-(rule
- (alias runtest)
- (action (diff exprs.ml.broken-ref exprs.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to ifand.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:ifand.ml})))))

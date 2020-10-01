@@ -857,6 +857,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to exprs.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:exprs.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff exprs.ml.ref exprs.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to extensions-indent.ml.output
      (run %{bin:ocamlformat} --max-iters=3 --extension-indent=5 --stritem-extension-indent=3 %{dep:extensions.ml}))))
 
