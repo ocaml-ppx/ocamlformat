@@ -79,17 +79,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to lwt.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:lwt.ml})))))
-
-(rule
- (alias runtest)
- (action (diff lwt.ml.broken-ref lwt.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to macro.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:macro.ml})))))
