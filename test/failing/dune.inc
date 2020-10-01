@@ -101,17 +101,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to pattern.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:pattern.ml})))))
-
-(rule
- (alias runtest)
- (action (diff pattern.ml.broken-ref pattern.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to ppx_stritem_ext.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:ppx_stritem_ext.ml})))))
