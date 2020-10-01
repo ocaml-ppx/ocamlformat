@@ -1964,6 +1964,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to nesting.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:nesting.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff nesting.ml.ref nesting.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to new.ml.output
      (run %{bin:ocamlformat} %{dep:new.ml}))))
 

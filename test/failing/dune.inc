@@ -90,17 +90,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to nesting.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:nesting.ml})))))
-
-(rule
- (alias runtest)
- (action (diff nesting.ml.broken-ref nesting.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to never_align.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:never_align.ml})))))
