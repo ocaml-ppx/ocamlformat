@@ -1449,6 +1449,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to js_bind.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_bind.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_bind.ml.ref js_bind.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to js_fun.ml.output
      (run %{bin:ocamlformat} --max-iter=3 %{dep:js_fun.ml}))))
 
