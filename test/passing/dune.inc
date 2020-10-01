@@ -1479,6 +1479,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to js_map.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_map.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_map.ml.ref js_map.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to js_pattern.ml.output
      (run %{bin:ocamlformat} %{dep:js_pattern.ml}))))
 

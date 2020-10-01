@@ -68,17 +68,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to js_map.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:js_map.ml})))))
-
-(rule
- (alias runtest)
- (action (diff js_map.ml.broken-ref js_map.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to js_poly.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:js_poly.ml})))))
