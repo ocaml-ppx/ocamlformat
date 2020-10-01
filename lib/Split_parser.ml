@@ -43,6 +43,9 @@ module Line = struct
     | (IN | LPAREN | LBRACKET | STRUCT | SIG | BEGIN) :: _ -> true
     | _ -> false
 
+  let starts_with tok str =
+    match parse str with t :: _ when Poly.(t = tok) -> true | _ -> false
+
   let indent x = String.(length x - length (lstrip x))
 end
 
@@ -74,10 +77,19 @@ module Split = struct
     |> List.rev
 
   let split_according_to_semisemi input =
-    match Astring.String.cuts ~rev:false ~empty:false ~sep:";;" input with
-    | [] -> []
-    | [h] -> [h]
-    | h :: t -> h :: List.map ~f:(fun x -> ";;" ^ x) t
+    Astring.String.cuts ~rev:false ~empty:true ~sep:"\n" input
+    |> List.fold_left
+         ~f:(fun (ret, prev_lines) line ->
+           if Line.starts_with Parser.SEMISEMI line && Line.indent line = 0
+           then
+             ((List.rev prev_lines |> String.concat ~sep:"\n") :: ret, [line])
+           else (ret, line :: prev_lines))
+         ~init:([], [])
+    |> (fun (ret, prev_lines) ->
+         (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret)
+    |> List.map ~f:String.strip
+    |> List.filter ~f:(Fn.non String.is_empty)
+    |> List.rev
 
   let split_toplevel input =
     split_according_to_semisemi input
