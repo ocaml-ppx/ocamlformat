@@ -79,17 +79,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to match_fun.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:match_fun.ml})))))
-
-(rule
- (alias runtest)
- (action (diff match_fun.ml.broken-ref match_fun.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to misc_2019.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:misc_2019.ml})))))

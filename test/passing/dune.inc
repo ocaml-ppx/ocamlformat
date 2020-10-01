@@ -1799,6 +1799,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to match_fun.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:match_fun.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff match_fun.ml.ref match_fun.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to match_indent-never.ml.output
      (run %{bin:ocamlformat} --match-indent=4 --match-indent-nested=never %{dep:match_indent.ml}))))
 
