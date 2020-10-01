@@ -90,17 +90,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to never_align.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:never_align.ml})))))
-
-(rule
- (alias runtest)
- (action (diff never_align.ml.broken-ref never_align.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to object.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:object.ml})))))

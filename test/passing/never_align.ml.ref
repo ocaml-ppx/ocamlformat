@@ -1,0 +1,16 @@
+Warning: never_align.ml is invalid, recovering.
+Warning: never_align.ml is invalid, recovering.
+let _ = a b c
+
+let _ = a b c
+
+let _ = {
+  a
+    b
+    b
+}
+
+let _ = { a
+    b
+    c
+}

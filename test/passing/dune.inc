@@ -1974,6 +1974,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to never_align.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:never_align.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff never_align.ml.ref never_align.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to new.ml.output
      (run %{bin:ocamlformat} %{dep:new.ml}))))
 
