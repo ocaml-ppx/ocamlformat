@@ -1459,6 +1459,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to js_default.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_default.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_default.ml.ref js_default.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to js_fun.ml.output
      (run %{bin:ocamlformat} --max-iter=3 %{dep:js_fun.ml}))))
 

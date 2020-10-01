@@ -1,3 +1,0 @@
-ocamlformat: ignoring "js_default.ml" (syntax error)
-File "js_default.ml", line 5, characters 6-10:
-Error: Syntax error
