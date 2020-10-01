@@ -2,17 +2,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to core_passing.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:core_passing.ml})))))
-
-(rule
- (alias runtest)
- (action (diff core_passing.ml.broken-ref core_passing.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to edge_cases.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:edge_cases.ml})))))

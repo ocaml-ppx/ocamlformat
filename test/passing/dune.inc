@@ -594,6 +594,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to core_passing.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:core_passing.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff core_passing.ml.ref core_passing.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to custom_list.ml.output
      (run %{bin:ocamlformat} %{dep:custom_list.ml}))))
 
