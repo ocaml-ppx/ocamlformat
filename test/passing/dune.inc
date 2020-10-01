@@ -1759,6 +1759,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to macro.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:macro.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff macro.ml.ref macro.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to margin_80.ml.output
      (run %{bin:ocamlformat} --margin=80 %{dep:margin_80.ml}))))
 
