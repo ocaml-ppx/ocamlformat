@@ -35,17 +35,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to js_bench.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:js_bench.ml})))))
-
-(rule
- (alias runtest)
- (action (diff js_bench.ml.broken-ref js_bench.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to js_bind.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:js_bind.ml})))))
