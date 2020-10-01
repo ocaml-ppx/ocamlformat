@@ -1499,6 +1499,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to js_poly.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_poly.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_poly.ml.ref js_poly.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to js_record.ml.output
      (run %{bin:ocamlformat} %{dep:js_record.ml}))))
 

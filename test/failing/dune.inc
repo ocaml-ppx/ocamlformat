@@ -68,17 +68,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to js_poly.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:js_poly.ml})))))
-
-(rule
- (alias runtest)
- (action (diff js_poly.ml.broken-ref js_poly.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to js_test.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:js_test.ml})))))
