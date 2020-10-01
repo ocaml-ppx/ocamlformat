@@ -1,0 +1,9 @@
+Warning: obuild.ml is invalid, recovering.
+Warning: obuild.ml is invalid, recovering.
+type predicate = Pred_Byte | Pred_Native | Pred_Toploop
+
+let _ =
+  { pkg with
+      package_version = projFile.version
+    ; package_description = _
+    ; package_requires = [] }

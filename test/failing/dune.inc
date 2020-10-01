@@ -90,17 +90,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to obuild.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:obuild.ml})))))
-
-(rule
- (alias runtest)
- (action (diff obuild.ml.broken-ref obuild.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to ocamldoc.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:ocamldoc.ml})))))

@@ -1,3 +1,0 @@
-ocamlformat: ignoring "obuild.ml" (syntax error)
-File "obuild.ml", line 9, characters 28-29:
-Error: Syntax error: wildcard "_" not expected.

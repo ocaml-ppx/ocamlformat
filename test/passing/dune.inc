@@ -2024,6 +2024,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to obuild.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:obuild.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff obuild.ml.ref obuild.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to ocp_indent_compat.ml.output
      (run %{bin:ocamlformat} %{dep:ocp_indent_compat.ml}))))
 
