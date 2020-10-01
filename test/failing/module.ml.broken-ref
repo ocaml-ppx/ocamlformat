@@ -1,5 +1,0 @@
-ocamlformat: ignoring "module.ml" (syntax error)
-File "module.ml", line 5, characters 18-22:
-Error: Syntax error: 'end' expected
-File "module.ml", line 3, characters 15-21:
-  This 'struct' might be unmatched

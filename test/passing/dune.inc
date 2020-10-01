@@ -1848,6 +1848,16 @@
 
 (rule
  (deps .ocamlformat )
+ (action
+   (with-outputs-to module2.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:module2.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff module2.ml.ref module2.ml.output)))
+
+(rule
+ (deps .ocamlformat )
  (enabled_if (>= %{ocaml_version} 4.10.0))
  (action
    (with-outputs-to module_anonymous.ml.output
