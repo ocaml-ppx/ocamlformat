@@ -534,6 +534,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to comments2.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:comments2.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff comments2.ml.ref comments2.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to comments_args.ml.output
      (run %{bin:ocamlformat} --max-iter=4 %{dep:comments_args.ml}))))
 

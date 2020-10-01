@@ -2,17 +2,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to comments.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:comments.ml})))))
-
-(rule
- (alias runtest)
- (action (diff comments.ml.broken-ref comments.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to core_failing.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:core_failing.ml})))))
