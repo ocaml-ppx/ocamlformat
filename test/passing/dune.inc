@@ -2286,6 +2286,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to record_with.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:record_with.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff record_with.ml.ref record_with.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to reformat_string.ml.output
      (run %{bin:ocamlformat} --max-iter=2 %{dep:reformat_string.ml}))))
 

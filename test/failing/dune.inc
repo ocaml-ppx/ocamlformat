@@ -112,17 +112,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to record_with.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:record_with.ml})))))
-
-(rule
- (alias runtest)
- (action (diff record_with.ml.broken-ref record_with.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to unit_classes.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:unit_classes.ml})))))
