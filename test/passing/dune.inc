@@ -2114,6 +2114,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to partial2.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial2.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff partial2.ml.ref partial2.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to partial_double_quotes.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial_double_quotes.ml}))))
 

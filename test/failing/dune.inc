@@ -101,17 +101,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to partial2.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:partial2.ml})))))
-
-(rule
- (alias runtest)
- (action (diff partial2.ml.broken-ref partial2.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to pattern.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:pattern.ml})))))

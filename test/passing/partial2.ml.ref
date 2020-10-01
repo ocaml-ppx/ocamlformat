@@ -1,0 +1,4 @@
+Warning: partial2.ml is invalid, recovering.
+if () then () else
+    match () with
+    | () ->
