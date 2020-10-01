@@ -2134,6 +2134,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to ppx_stritem_ext.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:ppx_stritem_ext.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff ppx_stritem_ext.ml.ref ppx_stritem_ext.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to partial_double_quotes.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial_double_quotes.ml}))))
 

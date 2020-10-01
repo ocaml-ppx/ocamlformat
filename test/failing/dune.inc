@@ -101,17 +101,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to ppx_stritem_ext.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:ppx_stritem_ext.ml})))))
-
-(rule
- (alias runtest)
- (action (diff ppx_stritem_ext.ml.broken-ref ppx_stritem_ext.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to quotations2.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:quotations2.ml})))))
