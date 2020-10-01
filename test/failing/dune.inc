@@ -196,14 +196,3 @@
 (rule
  (alias runtest)
  (action (diff unit_values.ml.broken-ref unit_values.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
-   (with-outputs-to with_2.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:with_2.ml})))))
-
-(rule
- (alias runtest)
- (action (diff with_2.ml.broken-ref with_2.ml.output)))

@@ -2688,6 +2688,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to with_2.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:with_2.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff with_2.ml.ref with_2.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to wrap_comments.ml.output
      (run %{bin:ocamlformat} --profile=ocamlformat %{dep:wrap_comments.ml}))))
 
