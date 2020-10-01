@@ -41,6 +41,8 @@
 
   + Consistent positioning of lambda return type annotations when no-break-infix-before-func and pre/post extensions (#1581, @gpetiot)
 
+  + Split invalid files to separately check if fragments can be parsed (#1484, @gpetiot)
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
