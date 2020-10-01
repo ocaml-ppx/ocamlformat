@@ -24,17 +24,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to ifand.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:ifand.ml})))))
-
-(rule
- (alias runtest)
- (action (diff ifand.ml.broken-ref ifand.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to indent_empty.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:indent_empty.ml})))))

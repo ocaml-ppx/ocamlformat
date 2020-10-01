@@ -1069,6 +1069,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to ifand.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:ifand.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff ifand.ml.ref ifand.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to index_op.ml.output
      (run %{bin:ocamlformat} %{dep:index_op.ml}))))
 
