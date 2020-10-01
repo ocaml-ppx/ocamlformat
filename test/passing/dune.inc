@@ -1079,6 +1079,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to indent_empty.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:indent_empty.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff indent_empty.ml.ref indent_empty.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to index_op.ml.output
      (run %{bin:ocamlformat} %{dep:index_op.ml}))))
 

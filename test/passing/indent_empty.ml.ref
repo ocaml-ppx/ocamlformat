@@ -1,0 +1,10 @@
+Warning: indent_empty.ml is invalid, recovering.
+module M = struct
+
+  let f =
+
+end
+
+let g =
+
+  fun x -> 3 + 4 *

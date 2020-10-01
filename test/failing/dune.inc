@@ -24,17 +24,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to indent_empty.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:indent_empty.ml})))))
-
-(rule
- (alias runtest)
- (action (diff indent_empty.ml.broken-ref indent_empty.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to js_2018.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:js_2018.ml})))))
