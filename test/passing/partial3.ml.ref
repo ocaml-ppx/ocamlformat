@@ -1,0 +1,6 @@
+Warning: partial3.ml is invalid, recovering.
+let f () =
+  begin
+    print_endline "hello"
+
+let f x = x + x

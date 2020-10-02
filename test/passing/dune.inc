@@ -2124,6 +2124,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to partial3.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial3.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff partial3.ml.ref partial3.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to pattern.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:pattern.ml}))))
 
