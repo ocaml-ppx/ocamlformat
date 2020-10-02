@@ -34,6 +34,8 @@
 
   + Add missing parentheses around a pattern matching that is the left-hand part of a sequence when an attribute is attached (#1483, @gpetiot)
 
+  + Add missing parentheses around infix operator used to build a function (#1486, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
