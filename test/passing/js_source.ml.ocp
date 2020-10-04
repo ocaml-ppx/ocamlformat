@@ -9634,7 +9634,7 @@ let tail3 = 0 :: ([] [@hello])
 let f ~l:(l[@foo]) = l
 let test x y = (( + ) [@foo]) x y
 let test x = (( ~- ) [@foo])x
-let test contents = { contents = (contents [@foo]) }
+let test contents = { contents = contents [@foo] }
 
 class type t = object (_[@foo]) end
 
@@ -9656,7 +9656,7 @@ function
 | { contents = (contents[@foo]) } -> ()
 
 ;;
-fun contents -> { contents = (contents [@foo]) }
+fun contents -> { contents = contents [@foo] }
 
 ;;
 ();
