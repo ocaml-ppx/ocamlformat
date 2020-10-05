@@ -1,5 +1,0 @@
-ocamlformat: ignoring "js_functor.ml" (syntax error)
-File "js_functor.ml", line 10, characters 4-7:
-Error: Syntax error: 'end' expected
-File "js_functor.ml", line 8, characters 5-11:
-  This 'struct' might be unmatched

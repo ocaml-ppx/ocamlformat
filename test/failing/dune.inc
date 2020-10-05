@@ -35,17 +35,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to js_functor.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:js_functor.ml})))))
-
-(rule
- (alias runtest)
- (action (diff js_functor.ml.broken-ref js_functor.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to js_low_priority.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:js_low_priority.ml})))))
