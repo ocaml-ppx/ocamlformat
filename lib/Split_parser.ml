@@ -66,8 +66,17 @@ module Split = struct
                    && Line.indent line <= Line.indent last
                    && not (Line.expects_followup last)
                  then
-                   ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
-                   , [line] )
+                   match prev_lines with
+                   | cmt :: "" :: prev_lines
+                     when String.is_prefix cmt ~prefix:"(*"
+                          && String.is_suffix cmt ~suffix:"*)" ->
+                       ( (List.rev prev_lines |> String.concat ~sep:"\n")
+                         :: ret
+                       , [line; cmt] )
+                   | _ ->
+                       ( (List.rev prev_lines |> String.concat ~sep:"\n")
+                         :: ret
+                       , [line] )
                  else (ret, line :: prev_lines) ))
          ~init:([], [])
     |> (fun (ret, prev_lines) ->

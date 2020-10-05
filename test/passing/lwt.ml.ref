@@ -1,4 +1,6 @@
 Warning: lwt.ml is invalid, recovering.
+File "lwt.ml", line 14, characters 55-57:
+Warning 2: this is not the end of a comment.
 Warning: lwt.ml is invalid, recovering.
 ;;
 let f () = lwt x = g () in
@@ -16,5 +18,4 @@ let a f x =
   finally ()
 
 (* should'nt break normal try/with imbrication *)
-
 let z f x = try try f x with Exit -> () with _ -> ()
