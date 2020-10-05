@@ -1879,6 +1879,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to misc_2019.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:misc_2019.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff misc_2019.ml.ref misc_2019.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to module.ml.output
      (run %{bin:ocamlformat} %{dep:module.ml}))))
 

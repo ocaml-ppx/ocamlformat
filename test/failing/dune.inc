@@ -35,17 +35,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to misc_2019.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:misc_2019.ml})))))
-
-(rule
- (alias runtest)
- (action (diff misc_2019.ml.broken-ref misc_2019.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to ocamldoc.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:ocamldoc.ml})))))
