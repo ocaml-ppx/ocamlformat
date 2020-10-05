@@ -1,5 +1,0 @@
-ocamlformat: ignoring "unit_classes.ml" (syntax error)
-File "unit_classes.ml", line 23, characters 24-25:
-Error: Syntax error: 'end' expected
-File "unit_classes.ml", line 18, characters 2-8:
-  This 'object' might be unmatched
