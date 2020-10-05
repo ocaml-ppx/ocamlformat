@@ -68,17 +68,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to unit_typedefs.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:unit_typedefs.ml})))))
-
-(rule
- (alias runtest)
- (action (diff unit_typedefs.ml.broken-ref unit_typedefs.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to unit_types.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:unit_types.ml})))))

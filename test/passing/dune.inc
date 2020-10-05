@@ -2762,6 +2762,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to unit_typedefs.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_typedefs.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff unit_typedefs.ml.ref unit_typedefs.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to use_file.mlt.output
      (run %{bin:ocamlformat} %{dep:use_file.mlt}))))
 
