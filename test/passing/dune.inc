@@ -1498,12 +1498,14 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_low_priority.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_low_priority.ml}))))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_low_priority.ml.ref js_low_priority.ml.output)))
 
 (rule
