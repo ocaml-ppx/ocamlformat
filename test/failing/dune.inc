@@ -46,17 +46,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to unit_expr.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:unit_expr.ml})))))
-
-(rule
- (alias runtest)
- (action (diff unit_expr.ml.broken-ref unit_expr.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to unit_extensions.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:unit_extensions.ml})))))
