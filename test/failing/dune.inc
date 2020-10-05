@@ -13,17 +13,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to escaped_nl.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:escaped_nl.ml})))))
-
-(rule
- (alias runtest)
- (action (diff escaped_nl.ml.broken-ref escaped_nl.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to js_2018.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:js_2018.ml})))))

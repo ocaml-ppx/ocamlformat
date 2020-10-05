@@ -807,6 +807,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to escaped_nl2.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:escaped_nl2.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff escaped_nl2.ml.ref escaped_nl2.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to exceptions.ml.output
      (run %{bin:ocamlformat} %{dep:exceptions.ml}))))
 
