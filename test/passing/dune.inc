@@ -2750,6 +2750,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to unit_modtypes.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_modtypes.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff unit_modtypes.ml.ref unit_modtypes.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to use_file.mlt.output
      (run %{bin:ocamlformat} %{dep:use_file.mlt}))))
 

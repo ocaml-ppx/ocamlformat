@@ -1,0 +1,74 @@
+File "unit_modtypes.ml", line 1, characters 0-2:
+Warning 2: this is not the end of a comment.
+File "unit_modtypes.ml", line 1, characters 0-2:
+Warning 2: this is not the end of a comment.
+File "unit_modtypes.ml", line 1, characters 0-2:
+Warning 2: this is not the end of a comment.
+Warning: unit_modtypes.ml is invalid, recovering.
+Warning: unit_modtypes.ml is invalid, recovering.
+(** ocaml module types
+    (http://caml.inria.fr/pub/docs/manual-ocaml/manual018.html) *)
+
+module type T = M.T
+
+module type T = sig end
+
+module type T = sig end
+
+module type T = functor (M : T) (M1 : T1) -> sig end
+
+module type T = sig end
+with type 'a t = 'b
+ and module M = M'.MF(X)
+ and type t' = t''
+
+module type T = sig end
+
+module type T =
+sig
+  val v :
+    t
+
+  external x : 'a =
+    "stub"
+
+  type t =
+    int
+  and t2 =
+    t
+
+  exception Error
+    of int
+
+  class virtual ['a] cl :
+    object
+    end
+  and cl2 :
+    object
+    end
+
+  class type clt =
+    object
+    end
+  and ['a] clt2 =
+    object
+    end
+
+  module M :
+    Sig
+
+  module M (X) (Y):
+    Sig
+
+  module type Sig
+
+  module type Sig1 =
+  sig
+  end
+
+  open
+    M
+
+  include
+    M
+end
