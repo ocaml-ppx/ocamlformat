@@ -1589,6 +1589,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to js_test.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_test.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_test.ml.ref js_test.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to js_to_do.ml.output
      (run %{bin:ocamlformat} %{dep:js_to_do.ml}))))
 

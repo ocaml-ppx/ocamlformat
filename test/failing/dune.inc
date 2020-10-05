@@ -35,17 +35,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to js_test.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:js_test.ml})))))
-
-(rule
- (alias runtest)
- (action (diff js_test.ml.broken-ref js_test.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to misc_2019.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:misc_2019.ml})))))
