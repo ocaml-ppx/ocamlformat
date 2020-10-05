@@ -2731,12 +2731,14 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_classes.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_classes.ml}))))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_classes.ml.ref unit_classes.ml.output)))
 
 (rule
