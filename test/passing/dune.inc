@@ -1590,12 +1590,14 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_test.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_test.ml}))))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_test.ml.ref js_test.ml.output)))
 
 (rule
