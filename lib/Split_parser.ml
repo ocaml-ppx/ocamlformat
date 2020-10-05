@@ -35,7 +35,7 @@ module Line = struct
   let starts_new_item str =
     match parse str with
     | [] -> false
-    | (LET | AND | MODULE | CLASS | TYPE | EXCEPTION) :: _ -> true
+    | (LET | MODULE | CLASS | TYPE | EXCEPTION) :: _ -> true
     | _ -> false
 
   let expects_followup str =

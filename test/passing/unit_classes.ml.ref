@@ -67,15 +67,14 @@ class cl =
     val x = true
   end
 
-and
-  virtual ['a, 'b]
-    cl2 x y :
+and virtual ['a, 'b] cl2 x y :
   object
     val x : bool
-  end = fun x y ->
-  object
-    val x : bool = true
-  end
+  end =
+  fun x y ->
+    object
+      val x : bool = true
+    end
 
 class cl
   : object end
