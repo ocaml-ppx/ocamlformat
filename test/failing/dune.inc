@@ -46,17 +46,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to quotations2.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:quotations2.ml})))))
-
-(rule
- (alias runtest)
- (action (diff quotations2.ml.broken-ref quotations2.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to unit_classes.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:unit_classes.ml})))))

@@ -2283,6 +2283,16 @@
 
 (rule
  (deps .ocamlformat )
+ (action
+   (with-outputs-to quotations2.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:quotations2.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff quotations2.ml.ref quotations2.ml.output)))
+
+(rule
+ (deps .ocamlformat )
  (enabled_if (>= %{ocaml_version} 4.11.0))
  (action
    (with-outputs-to quoted_strings.ml.output
