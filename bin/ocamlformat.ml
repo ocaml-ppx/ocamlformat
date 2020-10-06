@@ -24,8 +24,8 @@ let format ?output_file ~kind ~input_name ~source conf opts =
   else
     let f =
       match kind with
-      | `Impl -> Translation_unit.parse_and_format_impl
-      | `Intf -> Translation_unit.parse_and_format_intf
+      | `Impl -> Translation_unit.parse_and_format Use_file
+      | `Intf -> Translation_unit.parse_and_format Signature
     in
     f ?output_file ~input_name ~source conf opts
 
