@@ -397,7 +397,3 @@ let parse_and_format fragment ?output_file ~input_name ~source conf opts =
   parse_result fragment conf opts ~source ~input_name
   >>= fun parsed ->
   format fragment ?output_file ~input_name ~source ~parsed conf opts
-
-let parse_and_format_impl = parse_and_format Use_file
-
-let parse_and_format_intf = parse_and_format Signature
