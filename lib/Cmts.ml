@@ -13,7 +13,6 @@
 
 module Format = Format_
 open Migrate_ast
-open Asttypes
 open Parsetree
 
 type t =
@@ -41,48 +40,6 @@ let find_at_position t loc pos =
     | `Within -> t.cmts_within
   in
   Map.find map loc
-
-module Loc_tree : sig
-  include Non_overlapping_interval_tree.S with type itv = Location.t
-
-  val of_ast : 'a Mapper.fragment -> 'a -> Source.t -> t * Location.t list
-end = struct
-  include Non_overlapping_interval_tree.Make (Location)
-
-  (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
-
-  let of_ast fragment ast src =
-    let attribute (m : Ast_mapper.mapper) attr =
-      (* ignore location of docstrings *)
-      if Ast.Attr.is_doc attr then attr
-      else Ast_mapper.default_mapper.attribute m attr
-    in
-    let locs = ref [] in
-    let location _ loc =
-      locs := loc :: !locs ;
-      loc
-    in
-    let pat m p =
-      ( match p.ppat_desc with
-      | Ppat_record (flds, Open) ->
-          Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
-            ~f:(fun loc -> locs := loc :: !locs)
-      | Ppat_constant _ -> locs := Source.loc_of_pat_constant src p :: !locs
-      | _ -> () ) ;
-      Ast_mapper.default_mapper.pat m p
-    in
-    let expr m e =
-      ( match e.pexp_desc with
-      | Pexp_constant _ -> locs := Source.loc_of_expr_constant src e :: !locs
-      | _ -> () ) ;
-      Ast_mapper.default_mapper.expr m e
-    in
-    let mapper =
-      Ast_mapper.{default_mapper with location; pat; attribute; expr}
-    in
-    Mapper.map_ast fragment mapper ast |> ignore ;
-    (of_list !locs, !locs)
-end
 
 (** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig
