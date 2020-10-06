@@ -12,7 +12,7 @@
 type error
 
 val parse_and_format :
-     'a list Migrate_ast.Mapper.fragment
+     _ list Migrate_ast.Mapper.fragment
   -> ?output_file:string
   -> input_name:string
   -> source:string
