@@ -36,6 +36,8 @@
 
   + Add missing parentheses around infix operator used to build a function (#1486, @gpetiot)
 
+  + Fix comments around desugared expression (#1487, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
