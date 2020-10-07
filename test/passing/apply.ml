@@ -64,3 +64,9 @@ let whatever_labelled a_function_name long_list_one some_other_thing =
   ListLabels.map long_list_one ~f:(fun long_list_one_elt ->
       do_something_with_a_function_and_some_things a_function_name
         long_list_one_elt some_other_thing)
+
+;;
+(a - b) ()
+
+;;
+((a - b) [@foo]) ()

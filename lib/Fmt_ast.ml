@@ -585,22 +585,18 @@ let rec fmt_extension c ctx key (ext, pld) =
   | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
 
 and fmt_attribute_or_extension c key maybe_box (pre, pld) =
-  let cmts_last =
+  let str_cmts =
     match pld with
-    | PStr [] -> Cmts.fmt_after c pre.loc
-    | PStr [{pstr_desc= Pstr_eval ({pexp_loc; _}, []); pstr_loc; _}] ->
-        Cmts.fmt_after c pexp_loc $ Cmts.fmt_after c pstr_loc
-    | _ -> noop
+    | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] -> Cmts.fmt c pstr_loc
+    | _ -> Fn.id
   in
   let protect_token = Exposed.Right.payload pld in
-  let cmts_before = Cmts.fmt_before c pre.loc in
-  cmts_before
-  $ maybe_box
-      (wrap "[" "]"
-         ( str key $ fmt_str_loc c pre
-         $ fmt_payload c (Pld pld) pld
-         $ fmt_if protect_token " " ))
-  $ cmts_last
+  str_cmts
+  @@ maybe_box
+       (wrap "[" "]"
+          ( str key $ fmt_str_loc c pre
+          $ fmt_payload c (Pld pld) pld
+          $ fmt_if protect_token " " ))
 
 and fmt_attributes c ?pre ?suf ~key attrs =
   let pre =
@@ -1776,6 +1772,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let inner_wrap = parens || has_attr in
       let outer_wrap =
         match ctx0 with
+        (* infix operator used to build a function *)
+        | Exp {pexp_desc= Pexp_apply (f, _); _} when phys_equal f exp ->
+            has_attr && parens
         | Exp
             { pexp_desc=
                 Pexp_apply ({pexp_desc= Pexp_ident {txt= id; loc= _}; _}, _)

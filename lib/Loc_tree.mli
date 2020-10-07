@@ -9,25 +9,9 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type error
+open Migrate_ast
 
-val parse_and_format :
-     _ list Migrate_ast.Mapper.fragment
-  -> ?output_file:string
-  -> input_name:string
-  -> source:string
-  -> Conf.t
-  -> Conf.opts
-  -> (string, error) Result.t
-(** [parse_and_format_impl conf ?output_file ~input_name ~source] parses and
-    formats [source] as a list of fragments. *)
+include Non_overlapping_interval_tree.S with type itv = Location.t
 
-val print_error :
-     ?fmt:Format.formatter
-  -> debug:bool
-  -> quiet:bool
-  -> input_name:string
-  -> error
-  -> unit
-(** [print_error conf ?fmt ~input_name e] prints the error message
-    corresponding to error [e] on the [fmt] formatter (stderr by default). *)
+val of_ast : 'a Mapper.fragment -> 'a -> Source.t -> t * Location.t list
+(** Use Ast_mapper to collect all locs in ast, and create a tree of them. *)

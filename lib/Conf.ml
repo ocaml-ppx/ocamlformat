@@ -1276,13 +1276,15 @@ let inputs =
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
-let kind : [`Impl | `Intf] option ref =
+type kind = Kind : _ list Migrate_ast.Mapper.fragment -> kind
+
+let kind : kind option ref =
   let doc = "Parse file with unrecognized extension as an implementation." in
-  let impl = (Some `Impl, Arg.info ["impl"] ~doc ~docs) in
+  let impl = (Some (Kind Use_file), Arg.info ["impl"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as an interface." in
-  let intf = (Some `Intf, Arg.info ["intf"] ~doc ~docs) in
+  let intf = (Some (Kind Signature), Arg.info ["intf"] ~doc ~docs) in
   let doc = "Deprecated. Same as $(b,impl)." in
-  let use_file = (Some `Impl, Arg.info ["use-file"] ~doc ~docs) in
+  let use_file = (Some (Kind Use_file), Arg.info ["use-file"] ~doc ~docs) in
   let default = None in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
 
@@ -2067,8 +2069,8 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
 
 let kind_of_ext fname =
   match Filename.extension fname with
-  | ".ml" | ".mlt" | ".eliom" -> Some `Impl
-  | ".mli" | ".eliomi" -> Some `Intf
+  | ".ml" | ".mlt" | ".eliom" -> Some (Kind Use_file)
+  | ".mli" | ".eliomi" -> Some (Kind Signature)
   | _ -> None
 
 let validate_inputs () =
@@ -2091,7 +2093,7 @@ let validate_inputs () =
       let kind =
         Option.value ~default:f name
         |> kind_of_ext
-        |> Option.value ~default:`Impl
+        |> Option.value ~default:(Kind Use_file)
       in
       Ok (`Single_file (kind, name, f))
   | _ :: _ :: _, Some _, _ ->
@@ -2102,7 +2104,9 @@ let validate_inputs () =
       List.map inputs ~f:(function
         | Stdin -> Error "Cannot specify stdin together with other inputs"
         | File f ->
-            let kind = Option.value ~default:`Impl (kind_of_ext f) in
+            let kind =
+              Option.value ~default:(Kind Use_file) (kind_of_ext f)
+            in
             Ok (kind, f))
       |> Result.all
       |> Result.map ~f:(fun files -> `Several_files files)
@@ -2121,12 +2125,12 @@ let validate_action () =
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
-type 'a input = {kind: 'a; name: string; file: file; conf: t}
+type input = {kind: kind; name: string; file: file; conf: t}
 
 type action =
-  | In_out of [`Impl | `Intf] input * string option
-  | Inplace of [`Impl | `Intf] input list
-  | Check of [`Impl | `Intf] input list
+  | In_out of input * string option
+  | Inplace of input list
+  | Check of input list
   | Print_config of t
 
 let make_action ~enable_outside_detected_project ~root action inputs =
