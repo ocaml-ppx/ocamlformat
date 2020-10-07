@@ -30,15 +30,15 @@
 
   + Indent attributes attached to included modules better (#1468, @gpetiot)
 
-  + Added missing package metadata to `ocamlformat.el` (#1474, @bcc32)
+  + Clean up `ocamlformat.el` for submission to MELPA (#1476, @bcc32)
+    - Added missing package metadata to `ocamlformat.el` (#1474, @bcc32)
+    - Fix `ocamlformat.el` buffer replacement for MacOS Emacs (#1481, @juxd)
 
   + Add missing parentheses around a pattern matching that is the left-hand part of a sequence when an attribute is attached (#1483, @gpetiot)
 
   + Add missing parentheses around infix operator used to build a function (#1486, @gpetiot)
 
   + Fix comments around desugared expression (#1487, @gpetiot)
-
-  + Fix `ocamlformat.el` buffer replacement for MacOS Emacs (#1481, @juxd)
 
 #### New features
 
