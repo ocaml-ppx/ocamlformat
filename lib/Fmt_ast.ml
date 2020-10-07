@@ -1776,6 +1776,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let inner_wrap = parens || has_attr in
       let outer_wrap =
         match ctx0 with
+        (* infix operator used to build a function *)
+        | Exp {pexp_desc= Pexp_apply (f, _); _} when phys_equal f exp ->
+            has_attr && parens
         | Exp
             { pexp_desc=
                 Pexp_apply ({pexp_desc= Pexp_ident {txt= id; loc= _}; _}, _)
