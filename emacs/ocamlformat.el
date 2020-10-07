@@ -222,9 +222,9 @@ function."
    "Format the current buffer according to the ocamlformat tool."
    (interactive)
    (let* ((ext (file-name-extension buffer-file-name t))
-          (bufferfile (make-temp-file "ocamlformat" nil ext))
-          (outputfile (make-temp-file "ocamlformat" nil ext))
-          (errorfile (make-temp-file "ocamlformat" nil ext))
+          (bufferfile (file-truename (make-temp-file "ocamlformat" nil ext)))
+          (outputfile (file-truename (make-temp-file "ocamlformat" nil ext)))
+          (errorfile (file-truename (make-temp-file "ocamlformat" nil ext)))
           (errbuf
             (cond
               ((eq ocamlformat-show-errors 'buffer)
