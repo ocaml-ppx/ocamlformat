@@ -604,6 +604,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to cppo.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:cppo.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff cppo.ml.ref cppo.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to custom_list.ml.output
      (run %{bin:ocamlformat} %{dep:custom_list.ml}))))
 
