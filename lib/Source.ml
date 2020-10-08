@@ -245,8 +245,8 @@ let string_literal t mode (l : Location.t) =
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
        :: _ ->
-      Some (Literal_lexer.string mode (lexbuf_from_loc t loc))
-  | _ -> None
+      Literal_lexer.string mode (lexbuf_from_loc t loc)
+  | _ -> impossible "Pconst_string is only produced by string literals"
 
 let char_literal t (l : Location.t) =
   (* the location of a [char] might include surrounding comments and
@@ -268,8 +268,8 @@ let char_literal t (l : Location.t) =
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
        :: _ ->
-      Some (Literal_lexer.char (lexbuf_from_loc t loc))
-  | _ -> None
+      Literal_lexer.char (lexbuf_from_loc t loc)
+  | _ -> impossible "Pconst_char is only produced by char literals"
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
   let rec begins_line_ cnum =
