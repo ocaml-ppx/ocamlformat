@@ -713,6 +713,18 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
+ (action
+   (with-outputs-to edge_cases.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:edge_cases.ml}))))
+
+(rule
+ (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
+ (action (diff edge_cases.ml.ref edge_cases.ml.output)))
+
+(rule
+ (deps .ocamlformat )
  (action
    (with-outputs-to eliom_ext.eliom.output
      (run %{bin:ocamlformat} %{dep:eliom_ext.eliom}))))
