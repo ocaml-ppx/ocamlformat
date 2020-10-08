@@ -221,9 +221,7 @@ let is_long_pmty_functor source Parsetree.{pmty_desc; pmty_loc= from; _} =
       contains_token_between source ~from ~upto Parser.FUNCTOR
   | _ -> false
 
-let lexbuf_from_loc t (l : Location.t) =
-  let s = string_at t l.loc_start l.loc_end in
-  Lexing.from_string s
+let string_at_loc t (l : Location.t) = string_at t l.loc_start l.loc_end
 
 let string_literal t mode (l : Location.t) =
   (* the location of a [string] might include surrounding comments and
@@ -245,7 +243,8 @@ let string_literal t mode (l : Location.t) =
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
        :: _ ->
-      Literal_lexer.string mode (lexbuf_from_loc t loc)
+      Option.value_exn ~message:"Parse error while reading string literal"
+        (Literal_lexer.string mode (string_at_loc t loc))
   | _ -> impossible "Pconst_string is only produced by string literals"
 
 let char_literal t (l : Location.t) =
@@ -268,7 +267,8 @@ let char_literal t (l : Location.t) =
        | Parser.LBRACKETATAT, _
        | Parser.LBRACKETAT, _ )
        :: _ ->
-      Literal_lexer.char (lexbuf_from_loc t loc)
+      (Option.value_exn ~message:"Parse error while reading char literal")
+        (Literal_lexer.char (string_at_loc t loc))
   | _ -> impossible "Pconst_char is only produced by char literals"
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
