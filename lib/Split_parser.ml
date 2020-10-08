@@ -26,7 +26,7 @@ module Line = struct
     let lexbuf = Lexing.from_string str in
     let rec loop acc =
       match Lexer.token lexbuf with
-      | exception _ -> List.rev (Parser.EOF :: acc)
+      | exception Lexer.Error _ -> List.rev (Parser.EOF :: acc)
       | Parser.EOF -> List.rev (Parser.EOF :: acc)
       | tok -> loop (tok :: acc)
     in

@@ -226,7 +226,8 @@ module Parser = Token_latest
 
 module Lexer = struct
   let token_with_comments lexbuf =
-    Token_latest.of_compiler_libs (Lexer.token_with_comments lexbuf)
+    try Token_latest.of_compiler_libs (Lexer.token_with_comments lexbuf)
+    with Lexer.Error _ -> Parser.EOF
 
   type error = Lexer.error
 
