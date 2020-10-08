@@ -48,6 +48,10 @@ module Line = struct
     match parse str with t :: _ when Poly.(t = tok) -> true | _ -> false
 
   let indent x = String.(length x - length (lstrip x))
+
+  (* only oneliners for now *)
+  let is_cmt x =
+    String.is_prefix x ~prefix:"(*" && String.is_suffix x ~suffix:"*)"
 end
 
 module Split = struct
@@ -68,9 +72,7 @@ module Split = struct
                    && not (Line.expects_followup last)
                  then
                    match prev_lines with
-                   | cmt :: "" :: prev_lines
-                     when String.is_prefix cmt ~prefix:"(*"
-                          && String.is_suffix cmt ~suffix:"*)" ->
+                   | cmt :: "" :: prev_lines when Line.is_cmt cmt ->
                        ( (List.rev prev_lines |> String.concat ~sep:"\n")
                          :: ret
                        , [line; cmt] )
