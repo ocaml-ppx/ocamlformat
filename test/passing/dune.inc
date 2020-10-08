@@ -1882,12 +1882,14 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to misc_2019.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:misc_2019.ml}))))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff misc_2019.ml.ref misc_2019.ml.output)))
 
 (rule
