@@ -2188,6 +2188,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to partial_double_quotes.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial_double_quotes.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff partial_double_quotes.ml.ref partial_double_quotes.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to pattern.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:pattern.ml}))))
 
@@ -2204,16 +2214,6 @@
 (rule
  (alias runtest)
  (action (diff ppx_stritem_ext.ml.ref ppx_stritem_ext.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
-   (with-outputs-to partial_double_quotes.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial_double_quotes.ml}))))
-
-(rule
- (alias runtest)
- (action (diff partial_double_quotes.ml.ref partial_double_quotes.ml.output)))
 
 (rule
  (deps .ocamlformat )
