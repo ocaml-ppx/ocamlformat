@@ -40,6 +40,8 @@
 
   + Fix comments around desugared expression (#1487, @gpetiot)
 
+  + Fix invalid fragment delimiters of format-invalid-files recovery mode (#1485, @hhugo)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
