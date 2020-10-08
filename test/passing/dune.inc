@@ -1984,6 +1984,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to partial_double_quotes.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:partial_double_quotes.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff partial_double_quotes.ml.ref partial_double_quotes.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to pre_post_extensions.ml.output
      (run %{bin:ocamlformat} %{dep:pre_post_extensions.ml}))))
 
