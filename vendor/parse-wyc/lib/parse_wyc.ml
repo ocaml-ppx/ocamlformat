@@ -186,46 +186,39 @@ let mk_parsable fragment source =
   match invalid_locs fragment lexbuf with
   | [] -> source
   | invalid_locs -> (
-      let wrapper_opn, wrapper_cls = ("[%%invalid.ast.node \"", "\"]") in
+      (* we could be smarter here and choose a [delim] that does not appear in the
+         source. *)
+      let delim = "_i_n_v_a_l_i_d_" in
+      let extension_name = "%%invalid.ast.node" in
+      let wrapper_opn, wrapper_cls =
+        (Printf.sprintf "[%s {%s|" extension_name delim, Printf.sprintf "|%s}]" delim)
+      in
       let wrapper_len = String.length wrapper_opn + String.length wrapper_cls in
+      let source_len = String.length source in
       let len =
-        String.length source + (List.length invalid_locs * wrapper_len)
+        source_len + (List.length invalid_locs * wrapper_len)
       in
       let buffer = Buffer.create len in
-      let remaining_locs =
-        String.foldi source ~init:invalid_locs ~f:(fun i locs c ->
-            match locs with
-            | [] ->
-                Buffer.add_char buffer c;
-                locs
-            | h :: t ->
-                let col_start = h.loc_start.pos_cnum in
-                let col_end = h.loc_end.pos_cnum in
-                if i < col_start then (
-                  Buffer.add_char buffer c;
-                  locs )
-                else if i = col_start then (
-                  Buffer.add_string buffer wrapper_opn;
-                  Buffer.add_char buffer c;
-                  locs )
-                else if i = col_end - 1 && i = String.length source - 1 then (
-                  Buffer.add_char buffer c;
-                  Buffer.add_string buffer wrapper_cls;
-                  t )
-                else if i < col_end then (
-                  Buffer.add_char buffer c;
-                  locs )
-                else if i = col_end then (
-                  Buffer.add_string buffer wrapper_cls;
-                  Buffer.add_char buffer c;
-                  t )
-                else
-                  failwith
-                    "either no location left or the next locaction is after")
+      let rec loop pos locs =
+        match locs with
+        | [] ->
+          Buffer.add_substring buffer source pos (source_len - pos);
+          Buffer.contents buffer
+        | (h : Location.t) :: t ->
+          let col_start = h.loc_start.pos_cnum in
+          let col_end = h.loc_end.pos_cnum in
+          assert (pos <= col_start);
+          assert (col_start < col_end);
+          assert (col_end <= source_len);
+          assert (col_end < source_len || List.length t = 0);
+          Buffer.add_substring buffer source pos (col_start - pos);
+          Buffer.add_string buffer wrapper_opn;
+          Buffer.add_substring buffer source col_start (col_end - col_start);
+          Buffer.add_string buffer wrapper_cls;
+          loop col_end t
       in
-      match remaining_locs with
-      | [] -> Buffer.contents buffer
-      | _ -> failwith "invalid locations remaining" )
+      loop 0 invalid_locs
+    )
 
 module Invalid_locations = struct
   let structure = invalid_locs Structure
