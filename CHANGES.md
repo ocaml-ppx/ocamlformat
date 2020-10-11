@@ -30,7 +30,7 @@
 
   + Indent attributes attached to included modules better (#1468, @gpetiot)
 
-  + Clean up `ocamlformat.el` for submission to MELPA (#1476, @bcc32)
+  + Clean up `ocamlformat.el` for submission to MELPA (#1476, #1495, @bcc32)
     - Added missing package metadata to `ocamlformat.el` (#1474, @bcc32)
     - Fix `ocamlformat.el` buffer replacement for MacOS Emacs (#1481, @juxd)
 
