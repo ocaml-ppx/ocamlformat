@@ -1,6 +1,6 @@
 ;;; ocamlformat.el --- Utility functions to format ocaml code -*- lexical-binding: t; -*-
 
-;; Package-Requires: ((emacs "24.1"))
+;; Package-Requires: ((emacs "24.3"))
 ;; Version: 0.15.0
 ;; Keywords: languages, ocaml
 ;; URL: https://github.com/ocaml-ppx/ocamlformat
@@ -42,6 +42,8 @@
 ;;   (add-hook 'before-save-hook 'ocamlformat-before-save)
 
 ;;; Code:
+
+(require 'cl-lib)
 
 (defcustom ocamlformat-command "ocamlformat"
   "The 'ocamlformat' command."
@@ -158,14 +160,14 @@ function."
                 (forward-line len)
                 (let ((text (buffer-substring start (point))))
                   (with-current-buffer target-buffer
-                    (decf line-offset len)
+                    (cl-decf line-offset len)
                     (goto-char (point-min))
                     (forward-line (- from len line-offset))
                     (insert text)))))
              ((equal action "d")
               (with-current-buffer target-buffer
                 (ocamlformat--goto-line (- from line-offset))
-                (incf line-offset len)
+                (cl-incf line-offset len)
                 (ocamlformat--delete-whole-line len)))
              (t
               (error "Invalid rcs patch or internal error in ocamlformat--apply-rcs-patch")))))))))
