@@ -185,14 +185,6 @@ function."
       (compilation-mode)
       (display-buffer errbuf))))
 
-(defun ocamlformat--kill-error-buffer (errbuf)
-  (let ((win (get-buffer-window errbuf)))
-    (if win
-        (quit-window t win)
-      (with-current-buffer errbuf
-        (erase-buffer))
-      (kill-buffer errbuf))))
-
 ;; replace-buffer-contents is broken in emacs-26.1
 ;; try to detect broken implementation.
 ;; https://bugzilla.redhat.com/show_bug.cgi?id=1597251
