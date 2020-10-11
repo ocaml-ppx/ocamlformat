@@ -266,7 +266,7 @@ function."
           (widen)
           (write-region nil nil bufferfile)
           (if (zerop
-               (apply 'call-process
+               (apply #'call-process
                       ocamlformat-command nil (list :file errorfile) nil
                       (append margin-args enable-args extension-args
                               (list
