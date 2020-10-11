@@ -1,4 +1,4 @@
-;;; ocamlformat.el --- Utility functions to format ocaml code
+;;; ocamlformat.el --- Utility functions to format ocaml code -*- lexical-binding: t; -*-
 
 ;; Package-Requires: ((emacs "24.1"))
 ;; Version: 0.15.0
