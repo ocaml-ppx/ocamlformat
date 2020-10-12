@@ -28,10 +28,9 @@ val string_at : t -> Lexing.position -> Lexing.position -> string
 
 val sub : t -> pos:int -> len:int -> string
 
-val string_literal :
-  t -> [`Normalize | `Preserve] -> Location.t -> string option
+val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
-val char_literal : t -> Location.t -> string option
+val char_literal : t -> Location.t -> string
 
 val position_before : t -> Lexing.position -> Lexing.position option
 (** [position_before s pos] returns the starting position of the token

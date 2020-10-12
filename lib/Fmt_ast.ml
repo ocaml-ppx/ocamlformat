@@ -233,73 +233,24 @@ let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (fmt_opt pre $ str txt)
 let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
   Cmts.fmt c loc (fmt_opt pre $ str (Option.value ~default txt))
 
-let char_escaped c ~loc chr =
-  Option.value (Source.char_literal c.source loc) ~default:(Char.escaped chr)
-
-let escape_string mode str =
-  match mode with
-  | `Hexadecimal ->
-      let buf = Bytes.create (4 * String.length str) in
-      for i = 0 to String.length str - 1 do
-        let src =
-          Bytes.of_string (Printf.sprintf "\\x%02x" (Char.to_int str.[i]))
-        in
-        Bytes.blit ~dst:buf ~dst_pos:(i * 4) ~src ~src_pos:0 ~len:4
-      done ;
-      Bytes.to_string buf
-  | `Preserve -> str
-  | `Decimal ->
-      let n = ref 0 in
-      for i = 0 to String.length str - 1 do
-        let l =
-          match str.[i] with
-          | '"' | '\\' | '\n' | '\t' | '\r' | '\b' -> 2
-          | ' ' .. '~' -> 1
-          | _ -> 4
-        in
-        n := !n + l
-      done ;
-      if !n = String.length str then str
-      else
-        let buf = Bytes.create !n in
-        n := 0 ;
-        let set c = Bytes.set buf !n c ; Int.incr n in
-        for i = 0 to String.length str - 1 do
-          let chr = str.[i] in
-          match chr with
-          | '"' | '\\' -> set '\\' ; set chr
-          | '\n' -> set '\\' ; set 'n'
-          | '\t' -> set '\\' ; set 't'
-          | '\r' -> set '\\' ; set 'r'
-          | '\b' -> set '\\' ; set 'b'
-          | ' ' .. '~' -> set chr
-          | _ ->
-              let code = Char.to_int chr in
-              set '\\' ;
-              set (Char.of_int_exn (48 + (code / 100))) ;
-              set (Char.of_int_exn (48 + (code / 10 % 10))) ;
-              set (Char.of_int_exn (48 + (code % 10)))
-        done ;
-        Bytes.to_string buf
-
 let fmt_constant c ~loc ?epi const =
   Cmts.fmt c loc
   @@
   match const with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
-  | Pconst_char x -> wrap "'" "'" @@ str (char_escaped ~loc c x)
+  | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
   | Pconst_string (s, _, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
-  | Pconst_string (s, _, None) -> (
+  | Pconst_string (_, _, None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
         let is_substring substring = String.is_substring s ~substring in
         List.exists delim ~f:is_substring
       in
-      let fmt_string_auto ~break_on_newlines mode s =
-        let fmt_words ~epi mode s =
-          let words = String.split (escape_string mode s) ~on:' ' in
+      let fmt_string_auto ~break_on_newlines s =
+        let fmt_words ~epi s =
+          let words = String.split s ~on:' ' in
           let fmt_word ~prev:_ curr ~next =
             match next with
             | Some "" -> str curr $ str " "
@@ -324,7 +275,7 @@ let fmt_constant c ~loc ?epi const =
               $ cbreak ~fits:("", 0, "") ~breaks:("\\", 0, "")
           in
           let epi = match next with Some _ -> noop | None -> epi in
-          fmt_words ~epi mode curr $ opt next fmt_next
+          fmt_words ~epi curr $ opt next fmt_next
         in
         let lines = String.split ~on:'\n' s in
         let lines =
@@ -347,20 +298,16 @@ let fmt_constant c ~loc ?epi const =
         | `Never -> `Preserve
         | `Auto -> `Normalize
       in
-      let s, mode =
-        match Source.string_literal c.source preserve_or_normalize loc with
-        | None -> (s, `Decimal)
-        | Some s -> (s, `Preserve)
-      in
+      let s = Source.string_literal c.source preserve_or_normalize loc in
       match c.conf.break_string_literals with
       | `Auto when contains_pp_commands s ->
           let break_on_pp_commands in_ pattern =
             String.substr_replace_all in_ ~pattern ~with_:(pattern ^ "\n")
           in
           List.fold_left delim ~init:s ~f:break_on_pp_commands
-          |> fmt_string_auto mode ~break_on_newlines:true
-      | `Auto -> fmt_string_auto mode ~break_on_newlines:false s
-      | `Never -> wrap "\"" "\"" (str (escape_string mode s)) )
+          |> fmt_string_auto ~break_on_newlines:true
+      | `Auto -> fmt_string_auto ~break_on_newlines:false s
+      | `Never -> wrap "\"" "\"" (str s) )
 
 let fmt_variance = function
   | Covariant -> str "+"
