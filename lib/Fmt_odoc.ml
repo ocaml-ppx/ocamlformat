@@ -81,6 +81,27 @@ let fmt_code_block conf s =
       let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
       box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
 
+(* Specific treatment to format literal strings as verbatim *)
+let fmt_code_span s =
+  let fragments =
+    escape_brackets s
+    |> String.split_on_chars ~on:['"']
+    |> List.fold_left ~init:[] ~f:(fun acc s ->
+           match acc with
+           | [] -> `Regular s :: acc
+           | `Regular _ :: _ -> `Verbatim s :: acc
+           | `Verbatim _ :: _ -> `Regular s :: acc)
+    (* avoid having a space before the closing bracket *)
+    |> (function `Regular "" :: t -> t | x -> x)
+    |> List.rev
+    (* avoid having a space after the opening bracket *)
+    |> (function `Regular "" :: t -> t | x -> x)
+    |> List.map ~f:(function
+         | `Regular s -> str_normalized ~escape:escape_brackets s
+         | `Verbatim s -> wrap "\"" "\"" (str s))
+  in
+  hovbox 0 (wrap "[" "]" (list fragments "@ " Fn.id))
+
 let fmt_reference = ign_loc ~f:str_normalized
 
 (* Decide between using light and heavy syntax for lists *)
@@ -139,10 +160,7 @@ let rec fmt_inline_elements elements =
         $ str_normalized w $ aux t
     | `Space _ :: t -> fmt "@ " $ aux t
     | `Word w :: t -> str_normalized w $ aux t
-    | `Code_span s :: t ->
-        let s = escape_brackets s in
-        hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
-        $ aux t
+    | `Code_span s :: t -> fmt_code_span s $ aux t
     | `Raw_markup (lang, s) :: t ->
         let lang =
           match lang with
