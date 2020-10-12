@@ -9,6 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val string : [`Normalize | `Preserve] -> Caml.Lexing.lexbuf -> string
+val string : [`Normalize | `Preserve] -> string -> string option
 
-val char : Caml.Lexing.lexbuf -> string
+val char : string -> string option

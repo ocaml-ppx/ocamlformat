@@ -21,6 +21,8 @@ let get_stored_string () = Buffer.contents string_buffer
 let store_string_char c = Buffer.add_char string_buffer c
 let store_string s = Buffer.add_string string_buffer s
 
+exception Parse_error
+
 }
 
 let newline = ('\013'* '\010')
@@ -32,7 +34,7 @@ rule string mode = parse
       { reset_string_buffer ();
         string_aux mode lexbuf;
         get_stored_string () }
-  | _ { failwith "not a string literal" }
+  | _ { raise Parse_error }
 
 
 and string_aux mode = parse
@@ -82,7 +84,7 @@ and string_aux mode = parse
       { store_string (Lexing.lexeme lexbuf);
         string_aux mode lexbuf }
   | eof
-      { failwith "not a string literal" }
+      { raise Parse_error }
   | _
       { store_string_char (Lexing.lexeme_char lexbuf 0);
         string_aux mode lexbuf }
@@ -101,4 +103,18 @@ and char = parse
   | "\'" ("\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] as x) "\'"
       { x }
   | _
-      { failwith "not a char literal" }
+      { raise Parse_error }
+
+{
+  let string mode s =
+    let lexbuf = Lexing.from_string s in
+    match string mode lexbuf with
+    | s -> Some s
+    | exception Parse_error -> None
+
+  let char s =
+    let lexbuf = Lexing.from_string s in
+    match char lexbuf with
+    | s -> Some s
+    | exception Parse_error -> None
+}
