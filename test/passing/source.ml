@@ -7375,3 +7375,20 @@ let formula_base x =
   #&& ((Expr.int 0) #< x)
 
 let _ = call ~f:(fun pair -> (pair : a * b))
+
+;;
+f
+  (fun _ -> function
+    | true ->
+        let () = () in
+        () | false -> ())
+  ()
+
+;;
+f
+  (fun _ -> function
+    | true ->
+        let () = () in
+        ()
+        (* comment *) | false -> ())
+  ()
