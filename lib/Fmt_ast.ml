@@ -254,7 +254,7 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
   | Pconst_string (s, _, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
-  | Pconst_string (_, _, None) -> (
+  | Pconst_string (s, _, None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
         let is_substring substring = String.is_substring s ~substring in
@@ -310,7 +310,11 @@ let fmt_constant c ~loc ?epi const =
         | `Never -> `Preserve
         | `Auto -> `Normalize
       in
-      let s = Source.string_literal c.source preserve_or_normalize loc in
+      let s =
+        match Source.string_literal c.source preserve_or_normalize loc with
+        | exception _ -> s
+        | s -> s
+      in
       match c.conf.break_string_literals with
       | `Auto when contains_pp_commands s ->
           let break_on_pp_commands in_ pattern =
