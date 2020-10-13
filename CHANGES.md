@@ -47,7 +47,7 @@
   + Preserve short-form extensions for structure item extensions (#1502, @gpetiot)
     For example `open%ext M` will not get rewritten to `[%%ext open M]`.
 
-  + Do not change the spaces withing the code spans in docstrings (#1499, @gpetiot)
+  + Do not change the spaces within the code spans in docstrings (#1499, @gpetiot)
 
 #### New features
 
