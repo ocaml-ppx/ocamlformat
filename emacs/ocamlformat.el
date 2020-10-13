@@ -1,6 +1,6 @@
-;;; ocamlformat.el --- Utility functions to format ocaml code
+;;; ocamlformat.el --- Utility functions to format ocaml code -*- lexical-binding: t; -*-
 
-;; Package-Requires: ((emacs "24.1"))
+;; Package-Requires: ((emacs "24.3"))
 ;; Version: 0.15.0
 ;; Keywords: languages, ocaml
 ;; URL: https://github.com/ocaml-ppx/ocamlformat
@@ -42,6 +42,8 @@
 ;;   (add-hook 'before-save-hook 'ocamlformat-before-save)
 
 ;;; Code:
+
+(require 'cl-lib)
 
 (defcustom ocamlformat-command "ocamlformat"
   "The 'ocamlformat' command."
@@ -158,19 +160,23 @@ function."
                 (forward-line len)
                 (let ((text (buffer-substring start (point))))
                   (with-current-buffer target-buffer
-                    (decf line-offset len)
+                    (cl-decf line-offset len)
                     (goto-char (point-min))
                     (forward-line (- from len line-offset))
                     (insert text)))))
              ((equal action "d")
               (with-current-buffer target-buffer
                 (ocamlformat--goto-line (- from line-offset))
-                (incf line-offset len)
+                (cl-incf line-offset len)
                 (ocamlformat--delete-whole-line len)))
              (t
               (error "Invalid rcs patch or internal error in ocamlformat--apply-rcs-patch")))))))))
 
 (defun ocamlformat--process-errors (filename tmpfile errorfile errbuf)
+  "Display ocamlformat errors in ERRBUF, a compilation buffer.
+
+Error messages are read from ERRORFILE, and occurrences of
+TMPFILE in the error messages are replaced with FILENAME."
   (with-current-buffer errbuf
     (if (eq ocamlformat-show-errors 'echo)
         (message "%s" (buffer-string))
@@ -182,14 +188,6 @@ function."
         (replace-match (file-name-nondirectory filename)))
       (compilation-mode)
       (display-buffer errbuf))))
-
-(defun ocamlformat--kill-error-buffer (errbuf)
-  (let ((win (get-buffer-window errbuf)))
-    (if win
-        (quit-window t win)
-      (with-current-buffer errbuf
-        (erase-buffer))
-      (kill-buffer errbuf))))
 
 ;; replace-buffer-contents is broken in emacs-26.1
 ;; try to detect broken implementation.
@@ -211,10 +209,19 @@ function."
            ok))))
 
 (defun ocamlformat--replace-buffer-contents (outputfile)
+  "Replace the current buffer's contents with the contents of OUTPUTFILE.
+
+Uses `replace-buffer-contents'."
   (replace-buffer-contents (find-file-noselect outputfile))
   (kill-buffer (get-file-buffer outputfile)))
 
 (defun ocamlformat--patch-buffer (outputfile)
+  "Replace the current buffer's contents with the contents of OUTPUTFILE.
+
+Uses `ocamlformat--apply-rcs-patch' instead of
+`replace-buffer-contents'.  This function is used by
+`ocamlformat' when `ocamlformat--support-replace-buffer-contents'
+is nil."
   (let ((patchbuf (get-buffer-create "*OCamlFormat patch*")))
     (with-current-buffer patchbuf (erase-buffer))
     (call-process-region
@@ -264,7 +271,7 @@ function."
           (widen)
           (write-region nil nil bufferfile)
           (if (zerop
-               (apply 'call-process
+               (apply #'call-process
                       ocamlformat-command nil (list :file errorfile) nil
                       (append margin-args enable-args extension-args
                               (list
