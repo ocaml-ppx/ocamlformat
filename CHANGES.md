@@ -42,6 +42,8 @@
 
   + Fix invalid fragment delimiters of format-invalid-files recovery mode (#1485, @hhugo)
 
+  + Fix misalignment of cases in docked `function` match (#1498, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)

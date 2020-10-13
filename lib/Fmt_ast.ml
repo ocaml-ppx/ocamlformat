@@ -2015,12 +2015,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_newtype _ | Pexp_fun _ ->
       let xargs, xbody = Sugar.fun_ c.cmts xexp in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
+      let body_is_function =
+        match xbody.ast.pexp_desc with Pexp_function _ -> true | _ -> false
+      in
       let pre_body, body = fmt_body c ?ext xbody in
       let default_indent = if Option.is_none eol then 2 else 1 in
       let indent =
         Params.function_indent c.conf ~ctx ~default:default_indent
       in
-      hvbox_if box indent
+      hvbox_if (box || body_is_function) indent
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
            ~disambiguate:true ~fits_breaks:false
            ( hovbox 2
