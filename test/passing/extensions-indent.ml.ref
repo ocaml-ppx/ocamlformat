@@ -209,3 +209,40 @@ let () =
        (* 2 *)
        [@foo "bar"]
        (* 3 *)]
+
+open%ext M
+
+open%ext M
+
+[%%ext open! M]
+
+include%ext M
+
+include%ext M
+
+let x =
+  let open%ext M in
+  x
+
+let x =
+  [%ext
+       let open M in
+       x]
+
+let x =
+  [%ext
+       let open! M in
+       x]
+
+exception%ext E
+
+exception%ext E
+
+let _ =
+  let exception%ext E in
+  x
+
+let _ =
+  [%ext
+       let exception E in
+       x]

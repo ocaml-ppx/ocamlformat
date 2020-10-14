@@ -501,7 +501,12 @@ let rec fmt_extension c ctx key (ext, pld) =
       str s
   | ( _
     , _
-    , PStr [({pstr_desc= Pstr_value _ | Pstr_type _; _} as si)]
+    , PStr
+        [ ( { pstr_desc=
+                ( Pstr_value _ | Pstr_type _ | Pstr_exception _
+                | Pstr_open {popen_override= Fresh; _}
+                | Pstr_include _ )
+            ; _ } as si ) ]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
@@ -2111,7 +2116,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
         ~body_loc:body.pexp_loc ~indent_after_in
   | Pexp_letexception (ext_cstr, exp) ->
-      let pre = fmt "let exception@ " in
+      let pre =
+        str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
+      in
       hvbox 0
         ( wrap_if
             (parens || not (List.is_empty pexp_attributes))
@@ -2212,7 +2219,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                              $ fits_breaks ?force ~level:4 "" ~hint:(1, 0) ""
                              $ Cmts.fmt_before c popen_loc
                              $ fits_breaks ?force ~level:4 ""
-                                 (if override then "open!" else "open") )
+                                 (if override then "open!" else "open")
+                             $ fmt_extension_suffix c ext )
                          $ fits_breaks ?force ~level:3 "" ~hint:(1, 0) "" )
                        (sub_mod ~ctx popen_expr)
                    $ Cmts.fmt_after c popen_loc
@@ -2405,7 +2413,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             ( Pexp_while _ | Pexp_for _ | Pexp_match _
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
-                            | Pexp_function _ )
+                            | Pexp_function _ | Pexp_letexception _
+                            | Pexp_open ({popen_override= Fresh; _}, _) )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )
@@ -4121,14 +4130,14 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       $ cbox 0 ~name:"eval" (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_attributes c ~pre:Space ~key:"@@" atrs
   | Pstr_exception extn_constr ->
+      let pre = str "exception" $ fmt_extension_suffix c ext $ fmt "@ " in
       hvbox 2 ~name:"exn"
-        (fmt_type_exception ~pre:(fmt "exception@ ") c (str ": ") ctx
-           extn_constr)
+        (fmt_type_exception ~pre c (str ": ") ctx extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc attributes
       @@ fun c ->
-      fmt_module_statement c ~attributes ~keyword:(fmt "include@ ")
-        (sub_mod ~ctx pincl_mod)
+      let keyword = str "include" $ fmt_extension_suffix c ext $ fmt "@ " in
+      fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx pincl_mod)
   | Pstr_module binding ->
       fmt_module_binding c ctx ~rec_flag:false ~first:true binding
   | Pstr_open
@@ -4136,9 +4145,14 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
     ->
       update_config_maybe_disabled c popen_loc attributes
       @@ fun c ->
-      fmt_module_statement c ~attributes
-        ~keyword:(fmt_or (is_override popen_override) "open!@ " "open@ ")
-        (sub_mod ~ctx popen_expr)
+      let keyword =
+        fmt_or_k
+          (is_override popen_override)
+          (str "open!")
+          (str "open" $ fmt_extension_suffix c ext)
+        $ fmt "@ "
+      in
+      fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
       fmt_recmodule c ctx bindings fmt_module_binding (fun x ->

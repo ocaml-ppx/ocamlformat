@@ -210,3 +210,35 @@ ___________________________________________________________
 
 let () =
   (* -1 *) begin (* 0 *) % (* 0.5 *) test (* 1 *) [@foo (* 2 *) "bar"] (* 3 *) end
+
+open%ext M
+[%%ext open M]
+[%%ext open! M]
+include%ext M
+[%%ext include M]
+
+let x =
+  let open%ext M in
+  x
+
+let x =
+  [%ext
+    let open M in
+    x]
+
+let x =
+  [%ext
+    let open! M in
+    x]
+
+exception%ext E
+[%%ext exception E]
+
+let _ =
+  let exception%ext E in
+  x
+
+let _ =
+  [%ext
+    let exception E in
+    x]

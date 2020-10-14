@@ -226,7 +226,7 @@ and t = int [@@foo]
 
 [%%foo external x : _ = "" [@@foo]]
 
-[%%foo exception X [@foo]]
+exception%foo X [@foo]
 
 [%%foo module M = M [@@foo]]
 
@@ -236,9 +236,9 @@ and M : S = M [@@foo]]
 
 [%%foo module type S = S [@@foo]]
 
-[%%foo include M [@@foo]]
+include%foo M [@@foo]
 
-[%%foo open M [@@foo]]
+open%foo M [@@foo]
 
 (* Signature items *)
 module type S = sig

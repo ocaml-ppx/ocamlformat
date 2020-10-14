@@ -198,8 +198,8 @@ and t = int [@@foo]
   and M : S = M [@@foo]]
 
 [%%foo module type S = S [@@foo]]
-[%%foo include M [@@foo]]
-[%%foo open M [@@foo]]
+include%foo M [@@foo]
+open%foo M [@@foo]
 
 (* Signature items *)
 module type S = sig
