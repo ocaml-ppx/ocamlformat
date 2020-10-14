@@ -507,7 +507,7 @@ let rec fmt_extension c ctx key (ext, pld) =
                 | Pstr_open {popen_override= Fresh; _}
                 | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
                 | Pstr_modtype _ | Pstr_class_type _ | Pstr_class _
-                | Pstr_typext _ )
+                | Pstr_typext _ | Pstr_primitive _ )
             ; _ } as si ) ]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
@@ -3024,7 +3024,7 @@ and fmt_case c ctx ~first ~last ~padding case =
               | `No -> "@,)"
               | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
 
-and fmt_value_description c ctx vd =
+and fmt_value_description ?ext c ctx vd =
   let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes; pval_loc}
       =
     vd
@@ -3043,7 +3043,9 @@ and fmt_value_description c ctx vd =
   hvbox 0
     ( doc_before
     $ box_fun_sig_args c 2
-        ( str pre $ str " "
+        ( str pre
+        $ fmt_extension_suffix c ext
+        $ str " "
         $ Cmts.fmt c loc
             (wrap_if (String_id.is_symbol txt) "( " " )" (str txt))
         $ fmt_core_type c ~pro:":"
@@ -4160,7 +4162,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         $ fmt "@ "
       in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
-  | Pstr_primitive vd -> fmt_value_description c ctx vd
+  | Pstr_primitive vd -> fmt_value_description ?ext c ctx vd
   | Pstr_recmodule bindings ->
       fmt_recmodule c ctx bindings (fmt_module_binding ?ext) (fun x ->
           Mod x.pmb_expr)

@@ -106,7 +106,7 @@ class%foo x = x [@@foo]
 
 class type%foo x = x [@@foo]
 
-[%%foo external x : _ = "" [@@foo]]
+external%foo x : _ = "" [@@foo]
 
 exception%foo X [@@foo]
 

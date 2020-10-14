@@ -189,7 +189,7 @@ and t = int [@@foo]
 type%foo t += T [@@foo]
 class%foo x = x [@@foo]
 class type%foo x = x [@@foo]
-[%%foo external x : _ = "" [@@foo]]
+external%foo x : _ = "" [@@foo]
 exception%foo X [@foo]
 module%foo M = M [@@foo]
 
