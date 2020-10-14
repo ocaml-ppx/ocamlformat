@@ -115,7 +115,7 @@ module%foo M = M [@@foo]
 module%foo rec M : S = M [@@foo]
 and M : S = M [@@foo]
 
-[%%foo module type S = S [@@foo]]
+module type%foo S = S [@@foo]
 
 include%foo M [@@foo]
 

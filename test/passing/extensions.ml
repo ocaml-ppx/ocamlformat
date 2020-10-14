@@ -260,3 +260,6 @@ let _ =
   [%ext
     let module E = P in
     x]
+
+module type%ext E = P
+[%%ext module type E = P]

@@ -505,7 +505,8 @@ let rec fmt_extension c ctx key (ext, pld) =
         [ ( { pstr_desc=
                 ( Pstr_value _ | Pstr_type _ | Pstr_exception _
                 | Pstr_open {popen_override= Fresh; _}
-                | Pstr_include _ | Pstr_module _ | Pstr_recmodule _ )
+                | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
+                | Pstr_modtype _ )
             ; _ } as si ) ]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
@@ -3788,12 +3789,12 @@ and fmt_module_substitution c ctx pms =
     (fmt_module c "module" ~eqty:":=" pms_name [] None (Some xmty)
        pms_attributes ~rec_flag:false)
 
-and fmt_module_type_declaration c ctx pmtd =
+and fmt_module_type_declaration ?ext c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
   update_config_maybe_disabled c pmtd_loc pmtd_attributes
   @@ fun c ->
   let pmtd_name = {pmtd_name with txt= Some pmtd_name.txt} in
-  fmt_module c "module type" pmtd_name [] None ~rec_flag:false
+  fmt_module ?ext c "module type" pmtd_name [] None ~rec_flag:false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
@@ -4199,7 +4200,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       hvbox 0 ~name:"value"
         (list_fl grps (fun ~first ~last grp ->
              fmt_grp ~first ~last grp $ fmt_if (not last) "\n@;<1000 0>"))
-  | Pstr_modtype mtd -> fmt_module_type_declaration c ctx mtd
+  | Pstr_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
       let box =
