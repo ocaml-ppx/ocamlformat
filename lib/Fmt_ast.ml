@@ -506,7 +506,7 @@ let rec fmt_extension c ctx key (ext, pld) =
                 ( Pstr_value _ | Pstr_type _ | Pstr_exception _
                 | Pstr_open {popen_override= Fresh; _}
                 | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
-                | Pstr_modtype _ )
+                | Pstr_modtype _ | Pstr_class_type _ )
             ; _ } as si ) ]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
@@ -3593,7 +3593,8 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
 
-and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
+and fmt_class_types ?ext c ctx ~pre ~sep (cls : class_type class_infos list)
+    =
   list_fl cls (fun ~first ~last:_ cl ->
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
@@ -3605,6 +3606,7 @@ and fmt_class_types c ctx ~pre ~sep (cls : class_type class_infos list) =
         hovbox 2
           ( hvbox 2
               ( str (if first then pre else "and")
+              $ fmt_if_k first (fmt_extension_suffix c ext)
               $ fmt_virtual_flag cl.pci_virt
               $ fmt "@ "
               $ fmt_class_params c ctx cl.pci_params
@@ -4213,7 +4215,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         $ hvbox_if (not box) 0 ~name:"ext2" (fmt_extension c ctx "%%" ext)
         $ fmt_attributes c ~pre:Space ~key:"@@" atrs
         $ doc_after )
-  | Pstr_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
+  | Pstr_class_type cl ->
+      fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs c ctx cls
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc

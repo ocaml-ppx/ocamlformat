@@ -263,3 +263,12 @@ let _ =
 
 module type%ext E = P
 [%%ext module type E = P]
+
+class type%ext x = y
+[%%ext class type x = y]
+
+class type%ext x = y
+and y = z
+
+[%%ext class type x = y
+and y = z]

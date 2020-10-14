@@ -104,7 +104,7 @@ and t = int [@@foo]
 
 [%%foo class x = x [@@foo]]
 
-[%%foo class type x = x [@@foo]]
+class type%foo x = x [@@foo]
 
 [%%foo external x : _ = "" [@@foo]]
 

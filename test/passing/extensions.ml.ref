@@ -269,3 +269,15 @@ let _ =
 module type%ext E = P
 
 module type%ext E = P
+
+class type%ext x = y
+
+class type%ext x = y
+
+class type%ext x = y
+
+and y = z
+
+class type%ext x = y
+
+and y = z
