@@ -102,7 +102,7 @@ and t = int [@@foo]
 
 [%%foo type t += T [@@foo]]
 
-[%%foo class x = x [@@foo]]
+class%foo x = x [@@foo]
 
 class type%foo x = x [@@foo]
 
