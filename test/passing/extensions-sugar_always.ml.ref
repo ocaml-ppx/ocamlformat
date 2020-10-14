@@ -239,3 +239,21 @@ let _ =
 let _ =
   let exception%ext E in
   x
+
+module%ext E = P
+
+module%ext E = P
+
+module%ext rec K = A
+and L = A
+
+module%ext rec K = A
+and L = A
+
+let _ =
+  let module%ext E = P in
+  x
+
+let _ =
+  let module%ext E = P in
+  x

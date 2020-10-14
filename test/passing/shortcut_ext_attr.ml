@@ -110,11 +110,10 @@ and t = int [@@foo]
 
 exception%foo X [@@foo]
 
-[%%foo module M = M [@@foo]]
+module%foo M = M [@@foo]
 
-[%%foo
-module rec M : S = M [@@foo]
-and M : S = M [@@foo]]
+module%foo rec M : S = M [@@foo]
+and M : S = M [@@foo]
 
 [%%foo module type S = S [@@foo]]
 

@@ -505,7 +505,7 @@ let rec fmt_extension c ctx key (ext, pld) =
         [ ( { pstr_desc=
                 ( Pstr_value _ | Pstr_type _ | Pstr_exception _
                 | Pstr_open {popen_override= Fresh; _}
-                | Pstr_include _ )
+                | Pstr_include _ | Pstr_module _ | Pstr_recmodule _ )
             ; _ } as si ) ]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
@@ -2134,7 +2134,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
   | Pexp_letmodule (name, pmod, exp) ->
-      let keyword = str "let module" $ fmt_extension_suffix c ext in
+      let keyword = "let module" in
       let xargs, xbody =
         sugar_pmod_functor c ~for_functor_kw:false (sub_mod ~ctx pmod)
       in
@@ -2157,7 +2157,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             "(" ")"
             ( hvbox 2
                 (fmt_module c keyword ~eqty:":" name xargs (Some xbody) xmty
-                   [] ~epi:(str "in") ~can_sparse)
+                   [] ~epi:(str "in") ~can_sparse ?ext ~rec_flag:false)
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
         $ fmt_atrs )
@@ -3658,8 +3658,8 @@ and fmt_class_exprs c ctx (cls : class_expr class_infos list) =
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after))
 
-and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
-    xbody xmty attributes =
+and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
+    xargs xbody xmty attributes ~rec_flag =
   let arg_blks =
     List.map xargs ~f:(fun {loc; txt} ->
         let txt =
@@ -3731,8 +3731,11 @@ and fmt_module c ?epi ?(can_sparse = false) keyword ?(eqty = "=") name xargs
                           opn $ open_hvbox 0
                       | _ -> noop )
                     $ hvbox 4
-                        ( keyword $ str " " $ fmt_str_loc_opt c name
-                        $ list_pn arg_blks fmt_arg )
+                        ( str keyword
+                        $ fmt_extension_suffix c ext
+                        $ fmt_if rec_flag " rec" $ str " "
+                        $ fmt_str_loc_opt c name $ list_pn arg_blks fmt_arg
+                        )
                     $ fmt_opt blk_t.pro )
                 $ blk_t.psp $ blk_t.bdy )
             $ blk_t.esp $ fmt_opt blk_t.epi
@@ -3757,10 +3760,7 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
   update_config_maybe_disabled c pmd_loc pmd_attributes
   @@ fun c ->
-  let keyword =
-    if first then if rec_flag then str "module rec" else str "module"
-    else str "and"
-  in
+  let keyword = if first then "module" else "and" in
   let xargs, xmty =
     if rec_flag then ([], sub_mty ~ctx pmd_type)
     else sugar_pmty_functor c ~for_functor_kw:false (sub_mty ~ctx pmd_type)
@@ -3770,7 +3770,7 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
   in
   Cmts.fmt c pmd_loc
     (fmt_module c keyword pmd_name xargs None ?eqty (Some xmty)
-       pmd_attributes)
+       ~rec_flag:(rec_flag && first) pmd_attributes)
 
 and fmt_module_substitution c ctx pms =
   let {pms_name; pms_manifest; pms_attributes; pms_loc} = pms in
@@ -3785,15 +3785,15 @@ and fmt_module_substitution c ctx pms =
   in
   let pms_name = {pms_name with txt= Some pms_name.txt} in
   Cmts.fmt c pms_loc
-    (fmt_module c (str "module") ~eqty:":=" pms_name [] None (Some xmty)
-       pms_attributes)
+    (fmt_module c "module" ~eqty:":=" pms_name [] None (Some xmty)
+       pms_attributes ~rec_flag:false)
 
 and fmt_module_type_declaration c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
   update_config_maybe_disabled c pmtd_loc pmtd_attributes
   @@ fun c ->
   let pmtd_name = {pmtd_name with txt= Some pmtd_name.txt} in
-  fmt_module c (str "module type") pmtd_name [] None
+  fmt_module c "module type" pmtd_name [] None ~rec_flag:false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
@@ -4139,7 +4139,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let keyword = str "include" $ fmt_extension_suffix c ext $ fmt "@ " in
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx pincl_mod)
   | Pstr_module binding ->
-      fmt_module_binding c ctx ~rec_flag:false ~first:true binding
+      fmt_module_binding ?ext c ctx ~rec_flag:false ~first:true binding
   | Pstr_open
       {popen_expr; popen_override; popen_attributes= attributes; popen_loc}
     ->
@@ -4155,7 +4155,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       fmt_module_statement c ~attributes ~keyword (sub_mod ~ctx popen_expr)
   | Pstr_primitive vd -> fmt_value_description c ctx vd
   | Pstr_recmodule bindings ->
-      fmt_recmodule c ctx bindings fmt_module_binding (fun x ->
+      fmt_recmodule c ctx bindings (fmt_module_binding ?ext) (fun x ->
           Mod x.pmb_expr)
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension c ctx te
@@ -4420,13 +4420,11 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
       $ fmt_opt epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
-and fmt_module_binding c ctx ~rec_flag ~first pmb =
+and fmt_module_binding ?ext c ctx ~rec_flag ~first pmb =
   update_config_maybe_disabled c pmb.pmb_loc pmb.pmb_attributes
   @@ fun c ->
-  let keyword =
-    if first then if rec_flag then str "module rec" else str "module"
-    else str "and"
-  in
+  let ext = if first then ext else None in
+  let keyword = if first then "module" else "and" in
   let xargs, xbody =
     sugar_pmod_functor c ~for_functor_kw:false (sub_mod ~ctx pmb.pmb_expr)
   in
@@ -4441,8 +4439,8 @@ and fmt_module_binding c ctx ~rec_flag ~first pmb =
     | _ -> (xbody, None)
   in
   Cmts.fmt c pmb.pmb_loc
-    (fmt_module c keyword ~eqty:":" pmb.pmb_name xargs (Some xbody) xmty
-       pmb.pmb_attributes)
+    (fmt_module ?ext c keyword ~rec_flag:(rec_flag && first) ~eqty:":"
+       pmb.pmb_name xargs (Some xbody) xmty pmb.pmb_attributes)
 
 let fmt_toplevel_directive c dir =
   let fmt_dir_arg = function

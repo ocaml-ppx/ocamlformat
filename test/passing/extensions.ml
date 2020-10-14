@@ -242,3 +242,21 @@ let _ =
   [%ext
     let exception E in
     x]
+
+module%ext E = P
+[%%ext module E = P]
+
+module%ext rec K =A
+and L = A
+
+[%%ext module rec K =A
+and L = A]
+
+let _ =
+  let module%ext E = P in
+  x
+
+let _ =
+  [%ext
+    let module E = P in
+    x]
