@@ -257,7 +257,8 @@ let sequence (conf : Conf.t) cmts xexp =
               ; pstr_loc= _ } ] )
       when List.is_empty pexp_attributes
            && ( Poly.(conf.extension_sugar = `Always)
-              || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
+              || Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
+              ) ->
         let ctx = Exp exp in
         Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;

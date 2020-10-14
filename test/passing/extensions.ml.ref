@@ -212,13 +212,13 @@ let () =
 
 open%ext M
 
-open%ext M
+[%%ext open M]
 
 [%%ext open! M]
 
 include%ext M
 
-include%ext M
+[%%ext include M]
 
 let x =
   let open%ext M in
@@ -236,7 +236,7 @@ let x =
 
 exception%ext E
 
-exception%ext E
+[%%ext exception E]
 
 let _ =
   let exception%ext E in
@@ -249,13 +249,14 @@ let _ =
 
 module%ext E = P
 
-module%ext E = P
+[%%ext module E = P]
 
 module%ext rec K = A
 and L = A
 
-module%ext rec K = A
-and L = A
+[%%ext
+module rec K = A
+and L = A]
 
 let _ =
   let module%ext E = P in
@@ -268,28 +269,28 @@ let _ =
 
 module type%ext E = P
 
-module type%ext E = P
+[%%ext module type E = P]
 
 class%ext x = y
 
-class%ext x = y
-
-class%ext x = y
-
-and y = z
+[%%ext class x = y]
 
 class%ext x = y
 
 and y = z
 
-class type%ext x = y
+[%%ext class x = y
+
+       and y = z]
 
 class type%ext x = y
+
+[%%ext class type x = y]
 
 class type%ext x = y
 
 and y = z
 
-class type%ext x = y
+[%%ext class type x = y
 
-and y = z
+       and y = z]

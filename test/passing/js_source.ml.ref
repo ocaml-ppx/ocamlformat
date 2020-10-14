@@ -38,7 +38,7 @@ x]
 
 let ([%foo 2 + 1] : [%foo bar.baz]) = [%foo "foo"]
 
-module%foo M = [%bar]
+[%%foo module M = [%bar]]
 
 let ([%foo let () = ()] : [%foo type t = t]) = [%foo class c = object end]
 

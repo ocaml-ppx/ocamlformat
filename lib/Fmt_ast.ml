@@ -508,8 +508,11 @@ let rec fmt_extension c ctx key (ext, pld) =
                 | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
                 | Pstr_modtype _ | Pstr_class_type _ | Pstr_class _
                 | Pstr_typext _ | Pstr_primitive _ )
+            ; pstr_loc
             ; _ } as si ) ]
-    , (Pld _ | Str _ | Top) ) ->
+    , (Pld _ | Str _ | Top) )
+    when Poly.(c.conf.extension_sugar = `Always)
+         || Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
     ->
@@ -2364,7 +2367,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ; pstr_loc= _ } ] )
     when List.is_empty pexp_attributes
          && ( Poly.(c.conf.extension_sugar = `Always)
-            || Source.extension_using_sugar ~name:ext ~payload:e1
+            || Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
                && List.length (Sugar.sequence c.conf c.cmts xexp) > 1 ) ->
       fmt_sequence ~has_attr c parens (expression_width c) xexp pexp_loc
         fmt_atrs ~ext
@@ -2423,7 +2426,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               ; pstr_loc= _ } as str ) ] )
     when List.is_empty pexp_attributes
          && ( Poly.(c.conf.extension_sugar = `Always)
-            || Source.extension_using_sugar ~name:ext ~payload:e1 ) ->
+            || Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc )
+    ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
         $ fmt_atrs )

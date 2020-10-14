@@ -258,7 +258,7 @@ module Exp = struct
             [ { pstr_desc=
                   Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), [])
               ; _ } ] )
-      when Source.extension_using_sugar ~name:ext ~payload:e ->
+      when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
         true
     | _ -> false
 
@@ -1758,7 +1758,7 @@ end = struct
                       , _ )
                 ; _ } ] )
         when Poly.(!extension_sugar = `Always)
-             || Source.extension_using_sugar ~name:ext ~payload:e ->
+             || Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
           Some Apply
       | Pexp_extension
           ( ext
@@ -1767,7 +1767,7 @@ end = struct
                     Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), _)
                 ; _ } ] )
         when Poly.(!extension_sugar = `Always)
-             || Source.extension_using_sugar ~name:ext ~payload:e ->
+             || Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
           Some Semi
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
@@ -2060,7 +2060,7 @@ end = struct
                             ; _ } as e )
                         , _ )
                   ; _ } ] )
-          when Source.extension_using_sugar ~name:ext ~payload:e ->
+          when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
         | Pexp_let (_, _, e)
          |Pexp_letop {body= e; _}
@@ -2136,7 +2136,7 @@ end = struct
        |Pexp_letmodule (_, _, e) ->
           continue e
       | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
-        when Source.extension_using_sugar ~name:ext ~payload:e -> (
+        when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc -> (
         match e.pexp_desc with
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
@@ -2199,7 +2199,7 @@ end = struct
     let rec ifthenelse pexp_desc =
       match pexp_desc with
       | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
-        when Source.extension_using_sugar ~name:ext ~payload:e ->
+        when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
           ifthenelse e.pexp_desc
       | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
       | _ -> false
