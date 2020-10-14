@@ -44,6 +44,8 @@
 
   + Fix misalignment of cases in docked `function` match (#1498, @gpetiot)
 
+  + Preserve short-form extensions for structure item extensions (#1502, @gpetiot)
+
 #### New features
 
 ### 0.15.0 (2020-08-06)
