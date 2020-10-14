@@ -100,7 +100,7 @@ type%foo t = int [@@foo]
 
 and t = int [@@foo]
 
-[%%foo type t += T [@@foo]]
+type%foo t += T [@@foo]
 
 class%foo x = x [@@foo]
 

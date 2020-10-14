@@ -506,7 +506,8 @@ let rec fmt_extension c ctx key (ext, pld) =
                 ( Pstr_value _ | Pstr_type _ | Pstr_exception _
                 | Pstr_open {popen_override= Fresh; _}
                 | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
-                | Pstr_modtype _ | Pstr_class_type _ | Pstr_class _ )
+                | Pstr_modtype _ | Pstr_class_type _ | Pstr_class _
+                | Pstr_typext _ )
             ; _ } as si ) ]
     , (Pld _ | Str _ | Top) ) ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
@@ -3301,7 +3302,7 @@ and fmt_constructor_arguments_result c ctx args res =
   in
   fmt_constructor_arguments c ctx ~pre args $ opt res fmt_type
 
-and fmt_type_extension c ctx
+and fmt_type_extension ?ext c ctx
     { ptyext_attributes
     ; ptyext_params
     ; ptyext_path
@@ -3322,7 +3323,9 @@ and fmt_type_extension c ctx
   @@ hvbox 2
        ( fmt_docstring c ~epi:(fmt "@,") doc
        $ hvbox c.conf.type_decl_indent
-           ( str "type "
+           ( str "type"
+           $ fmt_extension_suffix c ext
+           $ str " "
            $ hvbox_if
                (not (List.is_empty ptyext_params))
                0
@@ -4162,7 +4165,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       fmt_recmodule c ctx bindings (fmt_module_binding ?ext) (fun x ->
           Mod x.pmb_expr)
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
-  | Pstr_typext te -> fmt_type_extension c ctx te
+  | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->
       let with_conf c b =
         let c = update_config ~quiet:true c b.pvb_attributes in
