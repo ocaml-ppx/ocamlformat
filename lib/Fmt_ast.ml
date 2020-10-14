@@ -2591,7 +2591,7 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
           str "\n"
       | _ -> noop )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-    $ hvbox 0 (list fields "\n@\n" fmt_field) )
+    $ hvbox 0 (list fields "\n@;<1000 0>" fmt_field) )
   $ fmt_or (List.is_empty fields) "@ " "@\n"
   $ str "end"
 
@@ -2632,7 +2632,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                  str "\n"
              | _ -> noop )
            $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-           $ hvbox 0 (list fields "\n@\n" fmt_field) )
+           $ hvbox 0 (list fields "\n@;<1000 0>" fmt_field) )
        $ fmt_or (List.is_empty fields) "@ " "@\n"
        $ str "end" ))
 
@@ -3624,52 +3624,53 @@ and fmt_class_types ?ext c ctx ~pre ~sep (cls : class_type class_infos list)
           $ fmt_class_type c (sub_cty ~ctx cl.pci_expr)
           $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs )
       in
-      fmt_if (not first) "\n@\n"
+      fmt_if (not first) "\n@;<1000 0>"
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after))
 
 and fmt_class_exprs ?ext c ctx (cls : class_expr class_infos list) =
-  list_fl cls (fun ~first ~last:_ cl ->
-      update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
-      @@ fun c ->
-      let xargs, xbody =
-        match cl.pci_expr.pcl_attributes with
-        | [] ->
-            Sugar.cl_fun c.cmts ~will_keep_first_ast_node:false
-              (sub_cl ~ctx cl.pci_expr)
-        | _ -> ([], sub_cl ~ctx cl.pci_expr)
-      in
-      let ty, e =
-        match xbody.ast with
-        | {pcl_desc= Pcl_constraint (e, t); _} -> (Some t, sub_cl ~ctx e)
-        | _ -> (None, xbody)
-      in
-      let doc_before, doc_after, atrs =
-        let force_before = not (Cl.is_simple cl.pci_expr) in
-        fmt_docstring_around_item ~force_before c cl.pci_attributes
-      in
-      let class_exprs =
-        hovbox 2
-          ( hovbox 2
-              ( box_fun_decl_args c 2
-                  ( hovbox 2
-                      ( str (if first then "class" else "and")
-                      $ fmt_if_k first (fmt_extension_suffix c ext)
-                      $ fmt_virtual_flag cl.pci_virt
-                      $ fmt "@ "
-                      $ fmt_class_params c ctx cl.pci_params
-                      $ fmt_str_loc c cl.pci_name )
-                  $ fmt_if (not (List.is_empty xargs)) "@ "
-                  $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
-              $ opt ty (fun t ->
-                    fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t))
-              $ fmt "@ =" )
-          $ fmt "@;" $ fmt_class_expr c e )
-        $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs
-      in
-      fmt_if (not first) "\n@\n"
-      $ hovbox 0
-        @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after))
+  hvbox 0
+  @@ list_fl cls (fun ~first ~last:_ cl ->
+         update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
+         @@ fun c ->
+         let xargs, xbody =
+           match cl.pci_expr.pcl_attributes with
+           | [] ->
+               Sugar.cl_fun c.cmts ~will_keep_first_ast_node:false
+                 (sub_cl ~ctx cl.pci_expr)
+           | _ -> ([], sub_cl ~ctx cl.pci_expr)
+         in
+         let ty, e =
+           match xbody.ast with
+           | {pcl_desc= Pcl_constraint (e, t); _} -> (Some t, sub_cl ~ctx e)
+           | _ -> (None, xbody)
+         in
+         let doc_before, doc_after, atrs =
+           let force_before = not (Cl.is_simple cl.pci_expr) in
+           fmt_docstring_around_item ~force_before c cl.pci_attributes
+         in
+         let class_exprs =
+           hovbox 2
+             ( hovbox 2
+                 ( box_fun_decl_args c 2
+                     ( hovbox 2
+                         ( str (if first then "class" else "and")
+                         $ fmt_if_k first (fmt_extension_suffix c ext)
+                         $ fmt_virtual_flag cl.pci_virt
+                         $ fmt "@ "
+                         $ fmt_class_params c ctx cl.pci_params
+                         $ fmt_str_loc c cl.pci_name )
+                     $ fmt_if (not (List.is_empty xargs)) "@ "
+                     $ wrap_fun_decl_args c (fmt_fun_args c xargs) )
+                 $ opt ty (fun t ->
+                       fmt " :@ " $ fmt_class_type c (sub_cty ~ctx t))
+                 $ fmt "@ =" )
+             $ fmt "@;" $ fmt_class_expr c e )
+           $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs
+         in
+         fmt_if (not first) "\n@;<1000 0>"
+         $ hovbox 0
+           @@ Cmts.fmt c cl.pci_loc (doc_before $ class_exprs $ doc_after))
 
 and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
     xargs xbody xmty attributes ~rec_flag =

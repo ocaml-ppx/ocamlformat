@@ -277,11 +277,12 @@ class%ext x = y
 
 class%ext x = y
 
-   and y = z
+and y = z
 
-[%%ext class x = y
+[%%ext
+   class x = y
 
-       and y = z]
+   and y = z]
 
 class type%ext x = y
 
@@ -291,6 +292,7 @@ class type%ext x = y
 
    and y = z
 
-[%%ext class type x = y
+[%%ext
+   class type x = y
 
-       and y = z]
+   and y = z]
