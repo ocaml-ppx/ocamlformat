@@ -209,7 +209,9 @@ open%ext M
 
 open%ext M
 
-[%%ext open! M]
+open! %ext M
+
+open! %ext M
 
 include%ext M
 
@@ -224,9 +226,12 @@ let x =
   x
 
 let x =
-  [%ext
-    let open! M in
-    x]
+  let open! %ext M in
+  x
+
+let x =
+  let open! %ext M in
+  x
 
 exception%ext E
 

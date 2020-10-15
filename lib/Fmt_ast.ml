@@ -503,8 +503,7 @@ let rec fmt_extension c ctx key (ext, pld) =
     , _
     , PStr
         [ ( { pstr_desc=
-                ( Pstr_value _ | Pstr_type _ | Pstr_exception _
-                | Pstr_open {popen_override= Fresh; _}
+                ( Pstr_value _ | Pstr_type _ | Pstr_exception _ | Pstr_open _
                 | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
                 | Pstr_modtype _ | Pstr_class_type _ | Pstr_class _
                 | Pstr_typext _ | Pstr_primitive _ )
@@ -2225,6 +2224,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                              $ Cmts.fmt_before c popen_loc
                              $ fits_breaks ?force ~level:4 ""
                                  (if override then "open!" else "open")
+                             $ opt ext (fun _ -> fmt_if override " ")
                              $ fmt_extension_suffix c ext )
                          $ fits_breaks ?force ~level:3 "" ~hint:(1, 0) "" )
                        (sub_mod ~ctx popen_expr)
@@ -2419,7 +2419,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
                             | Pexp_function _ | Pexp_letexception _
-                            | Pexp_open ({popen_override= Fresh; _}, _) )
+                            | Pexp_open _ )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )
@@ -4162,7 +4162,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       let keyword =
         fmt_or_k
           (is_override popen_override)
-          (str "open!")
+          ( str "open!"
+          $ opt ext (fun _ -> str " " $ fmt_extension_suffix c ext) )
           (str "open" $ fmt_extension_suffix c ext)
         $ fmt "@ "
       in

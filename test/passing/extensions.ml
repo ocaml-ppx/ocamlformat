@@ -213,6 +213,7 @@ let () =
 
 open%ext M
 [%%ext open M]
+open! %ext M
 [%%ext open! M]
 include%ext M
 [%%ext include M]
@@ -225,6 +226,10 @@ let x =
   [%ext
     let open M in
     x]
+
+let x =
+  let open! %ext M in
+  x
 
 let x =
   [%ext
