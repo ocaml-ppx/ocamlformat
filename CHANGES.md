@@ -44,6 +44,9 @@
 
   + Fix misalignment of cases in docked `function` match (#1498, @gpetiot)
 
+  + Preserve short-form extensions for structure item extensions (#1502, @gpetiot)
+    For example `open%ext M` will not get rewritten to `[%%ext open M]`.
+
 #### New features
 
 ### 0.15.0 (2020-08-06)

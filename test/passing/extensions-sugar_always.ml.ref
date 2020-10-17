@@ -204,3 +204,89 @@ let () =
     (* 2 *)
     [@foo "bar"]
     (* 3 *)]
+
+open%ext M
+
+open%ext M
+
+open! %ext M
+
+open! %ext M
+
+include%ext M
+
+include%ext M
+
+let x =
+  let open%ext M in
+  x
+
+let x =
+  let open%ext M in
+  x
+
+let x =
+  let open! %ext M in
+  x
+
+let x =
+  let open! %ext M in
+  x
+
+exception%ext E
+
+exception%ext E
+
+let _ =
+  let exception%ext E in
+  x
+
+let _ =
+  let exception%ext E in
+  x
+
+module%ext E = P
+
+module%ext E = P
+
+module%ext rec K = A
+and L = A
+
+module%ext rec K = A
+and L = A
+
+let _ =
+  let module%ext E = P in
+  x
+
+let _ =
+  let module%ext E = P in
+  x
+
+module type%ext E = P
+
+module type%ext E = P
+
+class%ext x = y
+
+class%ext x = y
+
+class%ext x = y
+
+and y = z
+
+class%ext x = y
+
+and y = z
+
+class type%ext x = y
+
+class type%ext x = y
+
+class type%ext x = y
+
+and y = z
+
+class type%ext x = y
+
+and y = z

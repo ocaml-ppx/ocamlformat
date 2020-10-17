@@ -297,10 +297,8 @@ let ends_line t (l : Location.t) =
   else ends_line_ l.loc_end.pos_cnum
 
 let extension_using_sugar ~(name : string Location.loc)
-    ~(payload : Parsetree.expression) =
-  Source_code_position.ascending name.loc.loc_start
-    payload.pexp_loc.loc_start
-  > 0
+    ~(payload : Location.t) =
+  Source_code_position.ascending name.loc.loc_start payload.loc_start > 0
 
 let typed_expression (typ : Parsetree.core_type)
     (expr : Parsetree.expression) =

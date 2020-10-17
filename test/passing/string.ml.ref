@@ -31,12 +31,11 @@ let f ("test"[@test "test"]) = 2
 \ xxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxx \
  xxxxxxxx xxxxxxxxxxx"
 
-[%%c
-external print : str:string -> d:int -> void
+external%c print : str:string -> d:int -> void
   = {|
   printf("%s (%d)\n",$str,$d);
   fflush(stdout);
 |} {|
   printf("%s (%d)\n",$str,$d);
   fflush(stdout);
-|}]
+|}
