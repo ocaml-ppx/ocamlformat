@@ -37,6 +37,9 @@ val ( $ ) : t -> t -> t
 val ( >$ ) : t -> ('b -> t) -> 'b -> t
 (** Pre-compose a format thunk onto a function returning a format thunk. *)
 
+val lazy_ : (unit -> t) -> t
+(** Defer the evaluation of some side effects until formatting happens. *)
+
 val set_margin : int -> t
 (** Set the margin. *)
 
