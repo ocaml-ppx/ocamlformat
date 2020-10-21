@@ -142,6 +142,8 @@ end = struct
             | 0, 0 -> `Before_next
             | 0, _ when infix_symbol_before src loc -> `Before_next
             | 0, _ -> `After_prev
+            | 1, x when x > 1 && Source.empty_line_after src loc ->
+                `After_prev
             | _ -> `Before_next
           in
           let prev, next =
@@ -200,6 +202,10 @@ let rec place t loc_tree ?prev_loc locs cmts =
       let before_curr =
         match prev_loc with
         | None -> before
+        (* Location.none is a special case, it shouldn't be the location of a
+           previous element, so if a comment is at the beginning of the file,
+           it should be placed before the next element. *)
+        | Some prev_loc when Location.(compare prev_loc none) = 0 -> before
         | Some prev_loc ->
             let after_prev, before_curr =
               CmtSet.partition t.source ~prev:prev_loc ~next:curr_loc before
@@ -368,15 +374,12 @@ let find_cmts t pos loc =
   if t.remove then update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
   r
 
-let line_dist a b =
-  b.Location.loc_start.pos_lnum - a.Location.loc_end.pos_lnum
-
 let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
   let vertical_align =
-    line_dist a b = 1 && Location.compare_start_col a b = 0
+    Location.line_difference a b = 1 && Location.compare_start_col a b = 0
   in
   let horizontal_align =
-    line_dist a b = 0
+    Location.line_difference a b = 0
     && List.is_empty
          (Source.tokens_between source a.loc_end b.loc_start
               ~filter:(function _ -> true) )
@@ -385,39 +388,46 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
     ( (Location.is_single_line a margin && Location.is_single_line b margin)
     && (vertical_align || horizontal_align) )
 
+let fmt_cmts_aux t (conf : Conf.t) ?pro cmts ?epi ~fmt_code pos =
+  let open Fmt in
+  let groups =
+    List.group cmts ~break:(break_comment_group t.source conf.margin)
+  in
+  fmt_opt pro
+  $ vbox 0
+      (list_pn groups (fun ~prev:_ group ~next ->
+           ( match group with
+           | [] -> impossible "previous match"
+           | [cmt] ->
+               Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
+                 ~ocp_indent_compat:conf.ocp_indent_compat
+                 ~fmt_code:(fmt_code conf) pos
+           | group ->
+               list group "@;<1000 0>" (fun cmt ->
+                   wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
+           $
+           match next with
+           | Some ({loc= next; _} :: _) ->
+               let Cmt.{loc= last; _} = List.last_exn group in
+               fmt_if (Location.line_difference last next > 1) "\n"
+               $ fmt "@ "
+           | _ -> noop ) )
+  $ fmt_opt epi
+
 (** Format comments for loc. *)
-let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
-    ?(adj = eol) found loc pos =
+let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
+    found loc pos =
   let open Fmt in
   match found with
   | None | Some [] -> noop
   | Some cmts ->
-      let groups =
-        List.group cmts ~break:(break_comment_group t.source conf.margin)
+      let epi =
+        let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+        let eol_cmt = Source.ends_line t.source last_loc in
+        let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
+        fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
       in
-      let last_loc = Cmt.loc (List.last_exn cmts) in
-      let eol_cmt = Source.ends_line t.source last_loc in
-      let adj_cmt = eol_cmt && line_dist last_loc loc = 1 in
-      fmt_opt pro
-      $ vbox 0
-          (list_pn groups (fun ~prev:_ group ~next ->
-               ( match group with
-               | [] -> impossible "previous match"
-               | [cmt] ->
-                   Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
-                     ~ocp_indent_compat:conf.ocp_indent_compat
-                     ~fmt_code:(fmt_code conf) pos
-               | group ->
-                   list group "@;<1000 0>" (fun cmt ->
-                       wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
-               $
-               match next with
-               | Some (next :: _) ->
-                   let last = List.last_exn group in
-                   fmt_if (line_dist (Cmt.loc last) (Cmt.loc next) > 1) "\n"
-                   $ fmt "@ "
-               | _ -> noop ) )
-      $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
+      fmt_cmts_aux t conf ?pro cmts ~epi ~fmt_code pos
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
   fmt_cmts t conf
@@ -443,6 +453,49 @@ let fmt_within t conf ~fmt_code ?(pro = Fmt.break 1 0) ?(epi = Fmt.break 1 0)
   fmt_cmts t conf
     (find_cmts t `Within loc)
     ~fmt_code ~pro ~epi ~eol:Fmt.noop loc Cmt.Within
+
+module Toplevel = struct
+  let fmt_cmts t conf ~fmt_code found (pos : Cmt.pos) =
+    let open Fmt in
+    match found with
+    | None | Some [] -> noop
+    | Some (({loc= first_loc; _} : Cmt.t) :: _ as cmts) ->
+        let pro =
+          match pos with
+          | Before -> noop
+          | Within | After ->
+              if Source.begins_line t.source first_loc then
+                fmt_or
+                  (Source.empty_line_before t.source first_loc)
+                  "\n@;<1000 0>" "@\n"
+              else break 1 0
+        in
+        let epi =
+          let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+          match pos with
+          | Before | Within ->
+              if Source.ends_line t.source last_loc then
+                fmt_or
+                  (Source.empty_line_after t.source last_loc)
+                  "\n@;<1000 0>" "@\n"
+              else break 1 0
+          | After -> noop
+        in
+        fmt_cmts_aux t conf ~pro cmts ~epi ~fmt_code pos
+
+  let fmt_before t conf ~fmt_code loc =
+    fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code Cmt.Before
+
+  let fmt_after t conf ~fmt_code loc =
+    let open Fmt in
+    let within =
+      fmt_cmts t conf (find_cmts t `Within loc) ~fmt_code Cmt.Within
+    in
+    let after =
+      fmt_cmts t conf (find_cmts t `After loc) ~fmt_code Cmt.After
+    in
+    within $ after
+end
 
 let drop_inside t loc =
   let clear pos =

@@ -254,3 +254,8 @@ let kk = ((* foo *) (module A : T))
 let kk = ((module A : T) (* foo *))
 
 let kk = ((* foo *) (module A : T) (* foo *))
+
+let _ = assert (foo (bar + baz <= quux))
+(* this comment should stay attached to the preceding item *)
+
+let _ = foo

@@ -182,9 +182,11 @@ let _ =
   (* f *) let (* g *) open (* h *) A (* i *) (B) (* j *) in (* k *)
   ()
 
-(* l *) open (* m *) struct
+(* l *)
+open (* m *) struct
   type t
-end (* n *)
+end
+(* n *)
 
 open A
 open B

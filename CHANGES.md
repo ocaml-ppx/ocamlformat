@@ -27,6 +27,8 @@
 
   + Fix the vertical alignment test to break down comment groups (#1575, @gpetiot)
 
+  + Preserve spacing of toplevel comments (#1554, @gpetiot)
+
 #### Changes
 
   + Add buffer filename in the logs when applying ocamlformat (#1557, @dannywillems)

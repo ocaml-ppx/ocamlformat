@@ -77,6 +77,8 @@ module Location : sig
 
   val compare_end_col : t -> t -> int
 
+  val line_difference : t -> t -> int
+
   val fmt : Format.formatter -> t -> unit
 
   val smallest : t -> t list -> t

@@ -219,6 +219,16 @@ let ends_line t (l : Location.t) =
       assert (Location.compare next l > 0) ;
       next.loc_start.pos_lnum > l.loc_end.pos_lnum
 
+let empty_line_before t (loc : Location.t) =
+  match find_token_before t ~filter:(fun _ -> true) loc.loc_start with
+  | Some (_, before) -> Location.line_difference before loc > 1
+  | None -> false
+
+let empty_line_after t (loc : Location.t) =
+  match find_token_after t ~filter:(fun _ -> true) loc.loc_end with
+  | Some (_, after) -> Location.line_difference loc after > 1
+  | None -> false
+
 let extension_using_sugar ~(name : string Location.loc)
     ~(payload : Location.t) =
   Source_code_position.ascending name.loc.loc_start payload.loc_start > 0

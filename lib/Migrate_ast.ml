@@ -180,6 +180,8 @@ module Location = struct
 
   let compare_end_col x y = Position.compare_col x.loc_end y.loc_end
 
+  let line_difference fst snd = snd.loc_start.pos_lnum - fst.loc_end.pos_lnum
+
   let contains l1 l2 = compare_start l1 l2 <= 0 && compare_end l1 l2 >= 0
 
   let width x = Position.distance x.loc_start x.loc_end

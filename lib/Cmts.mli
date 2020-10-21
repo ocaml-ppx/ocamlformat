@@ -82,6 +82,26 @@ val fmt_within :
 (** [fmt_within loc] formats the comments associated with [loc] that appear
     within [loc]. *)
 
+module Toplevel : sig
+  val fmt_before :
+       t
+    -> Conf.t
+    -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+    -> Location.t
+    -> Fmt.t
+  (** [fmt_before loc] formats the comments associated with [loc] that appear
+      before [loc]. *)
+
+  val fmt_after :
+       t
+    -> Conf.t
+    -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
+    -> Location.t
+    -> Fmt.t
+  (** [fmt_after loc] formats the comments associated with [loc] that appear
+      after [loc]. *)
+end
+
 val drop_inside : t -> Location.t -> unit
 
 val drop_before : t -> Location.t -> t

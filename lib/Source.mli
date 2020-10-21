@@ -20,6 +20,10 @@ val empty_line_between : t -> Lexing.position -> Lexing.position -> bool
     [p1] and [p2]. The lines containing [p1] and [p2] are not considered
     empty. *)
 
+val empty_line_before : t -> Location.t -> bool
+
+val empty_line_after : t -> Location.t -> bool
+
 val string_between : t -> Lexing.position -> Lexing.position -> string option
 
 val tokens_between :

@@ -496,11 +496,9 @@ type 'a foo2 += D = A | E = B | F = C
 type +'a foo = ..
 type 'a foo += A of (int -> 'a)
 type 'a foo += B of ('a -> int)
-
 (* ERROR: Parameter variances are not satisfied *)
 
 type _ foo += C : ('a -> int) -> 'a foo
-
 (* ERROR: Parameter variances are not satisfied *)
 
 type 'a bar = ..
@@ -2465,8 +2463,7 @@ type tag =
 type 'a poly =
   | AandBTags : [< `TagA of int | `TagB ] poly
   | ATag : [< `TagA of int ] poly
-
-(* constraint 'a = [< `TagA of int | `TagB] *)
+  (* constraint 'a = [< `TagA of int | `TagB] *)
 
 let intA = function
   | `TagA i -> i
@@ -2914,7 +2911,6 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-
 (*  val comp_subst :
     ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
@@ -2967,7 +2963,6 @@ let subst_var x t' y =
 (* val subst_var : 'a succ fin -> 'a term -> 'a succ fin -> 'a term *)
 
 let subst x t' = pre_subst (subst_var x t')
-
 (* val subst : 'a succ fin -> 'a term -> 'a succ term -> 'a term *)
 
 (* 5 A Refinement of Substitution *)
@@ -3012,7 +3007,6 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
 ;;
 
 let subst' d = pre_subst (sub' d)
-
 (*  val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
@@ -3026,7 +3020,6 @@ let flex_flex x y =
 (* val flex_flex : 'a succ fin -> 'a succ fin -> 'a succ ealist *)
 
 let flex_rigid x t = bind (check x t) (fun t' -> Some (asnoc Anil t' x))
-
 (* val flex_rigid : 'a succ fin -> 'a succ term -> 'a succ ealist option *)
 
 let rec amgu : type m. m term -> m term -> m ealist -> m ealist option =
@@ -3052,7 +3045,6 @@ let rec amgu : type m. m term -> m term -> m ealist -> m ealist option =
 ;;
 
 let mgu s t = amgu s t (EAlist Anil)
-
 (* val mgu : 'a term -> 'a term -> 'a ealist option *)
 
 let s = Fork (Var FZ, Fork (Var (FS (FS FZ)), Leaf))
@@ -5090,7 +5082,6 @@ module Bazoinks = struct
 end
 
 module Bug = Foo (Bazoinks) (Bazoinks)
-
 (* PR#6992, reported by Stephen Dolan *)
 
 type (_, _) eq = Eq : ('a, 'a) eq
@@ -5295,7 +5286,6 @@ module rec M : sig
 end = struct
   external f : int -> int = "%identity"
 end
-
 (* with module *)
 
 module type S = sig
@@ -6639,7 +6629,6 @@ module M : sig
 end = struct
   type refer = { poly : 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a) }
 end
-
 (*
   ocamlc -c pr3918a.mli pr3918b.mli
   rm -f pr3918a.cmi
@@ -6687,7 +6676,6 @@ module Make' (Unit : sig end) : Priv' = struct
 end
 
 module A' = Make' ()
-
 (* PR5057 *)
 
 module TT = struct
@@ -7334,7 +7322,6 @@ module Bootstrap2 (MakeDiet : functor (X : ORD) ->
 
   let iter f = Diet.iter (Elt.iter f)
 end
-
 (* PR 4470: simplified from OMake's sources *)
 
 module rec DirElt : sig
@@ -7358,7 +7345,6 @@ and DirHash : sig
 end = struct
   type t = DirCompare.t list
 end
-
 (* PR 4758, PR 4266 *)
 
 module PR_4758 = struct
@@ -7445,7 +7431,6 @@ module F (X : Set.OrderedType) = struct
 
   and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
 end
-
 (* Tests for recursive modules *)
 
 let test number result expected =
@@ -8375,7 +8360,6 @@ module type CORE0 = sig
   module V : VALUE
 
   val setglobal : V.state -> string -> V.value -> unit
-
   (* five more functions common to core and evaluator *)
 end
 
@@ -8383,7 +8367,6 @@ module type CORE = sig
   include CORE0
 
   val apply : V.value -> V.state -> V.value list -> V.value
-
   (* apply function f in state s to list of args *)
 end
 
@@ -9105,7 +9088,6 @@ module OK = struct
     match r with
     | { x; y } -> y + y
   ;;
-
   (* ok *)
 end
 
@@ -9571,7 +9553,6 @@ let () = proj1 (inj2 42)
 let _ = ~-1
 
 class id = [%exp]
-
 (* checkpoint *)
 
 (* Subtyping is "syntactic" *)

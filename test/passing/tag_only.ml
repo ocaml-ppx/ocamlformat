@@ -103,30 +103,25 @@ class b =
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
 
-open Module
-(** @deprecated *)
+open Module  (** @deprecated *)
 
 (** abc
 
     @deprecated *)
 open Module
 
-open Module
-(** @author A *)
+open Module  (** @author A *)
 
-open Module
-(** @inline *)
+open Module  (** @inline *)
 
-include Abc
-(** @inline *)
+include Abc  (** @inline *)
 
 (** @inline *)
 include struct
   type t
 end
 
-include (Module : Type)
-(** @inline *)
+include (Module : Type)  (** @inline *)
 
 module A = B  (** @inline *)
 
