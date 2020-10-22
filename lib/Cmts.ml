@@ -93,40 +93,40 @@ end
     Holds if there is only whitespace between the locations, or if there is a
     [|] character and the first location begins a line and the start column
     of the first location is lower than that of the second location. *)
-let is_adjacent t (l1 : Location.t) (l2 : Location.t) =
-  Option.value_map (Source.string_between t.source l1.loc_end l2.loc_start)
+let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
+  Option.value_map (Source.string_between src l1.loc_end l2.loc_start)
     ~default:false ~f:(fun btw ->
       match String.strip btw with
       | "" -> true
       | "|" ->
-          Source.begins_line t.source l1
+          Source.begins_line src l1
           && Position.column l1.loc_start < Position.column l2.loc_start
       | _ -> false)
 
 (** Whether the symbol preceding location [loc] is an infix symbol or a
     semicolon. If it is the case, comments attached to the following item
     should be kept after the infix symbol. *)
-let infix_symbol_before t (loc : Location.t) =
+let infix_symbol_before src (loc : Location.t) =
   let pos_cnum = loc.loc_end.pos_cnum - 1 in
   let loc_end = {loc.loc_end with pos_cnum} in
-  match Source.position_before t.source loc_end with
+  match Source.position_before src loc_end with
   | Some loc_start ->
       if loc_start.pos_cnum < loc.loc_end.pos_cnum then
-        let str = Source.string_at t.source loc_start loc.loc_end in
+        let str = Source.string_at src loc_start loc.loc_end in
         String.equal str ";" || Ast.String_id.is_infix str
       else false
   | None -> false
 
 (** Heuristic to choose between placing a comment after the previous location
     or before the next one. *)
-let partition_after_prev_or_before_next t ~prev cmts ~next =
+let partition_after_prev_or_before_next src ~prev cmts ~next =
   match CmtSet.to_list cmts with
-  | {loc; _} :: _ as cmtl when is_adjacent t prev loc -> (
+  | {loc; _} :: _ as cmtl when is_adjacent src prev loc -> (
     match
       List.group cmtl ~break:(fun l1 l2 ->
-          not (is_adjacent t (Cmt.loc l1) (Cmt.loc l2)))
+          not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)))
     with
-    | [cmtl] when is_adjacent t (List.last_exn cmtl).loc next ->
+    | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
         let open Location in
         let same_line_as_prev l =
           prev.loc_end.pos_lnum = l.loc_start.pos_lnum
@@ -137,7 +137,7 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
             , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
           with
           | 0, 0 -> impossible "already tested by previous if"
-          | 0, _ when infix_symbol_before t prev -> `Before_next
+          | 0, _ when infix_symbol_before src prev -> `Before_next
           | 0, _ -> `After_prev
           | _ -> `Before_next
         in
@@ -199,8 +199,8 @@ let rec place t loc_tree ?prev_loc locs cmts =
         | None -> before
         | Some prev_loc ->
             let after_prev, before_curr =
-              partition_after_prev_or_before_next t ~prev:prev_loc before
-                ~next:curr_loc
+              partition_after_prev_or_before_next t.source ~prev:prev_loc
+                before ~next:curr_loc
             in
             add_cmts t `After ~prev:prev_loc ~next:curr_loc prev_loc
               after_prev ;
