@@ -81,8 +81,7 @@ let fmt_code_block conf s =
       let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
       box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
 
-let fmt_code_span s =
-  hovbox 0 (wrap "[" "]" (str (escape_brackets (String.strip s))))
+let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
 
 let fmt_reference = ign_loc ~f:str_normalized
 
