@@ -367,17 +367,17 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
 
-let docstring_epi ?(standalone = false) ?next ?epi ~floating =
+let docstring_epi ~standalone ~next ~epi ~floating =
   let epi = if Option.is_some next then fmt "@\n" else fmt_opt epi in
   match next with
   | (None | Some (_, false)) when floating && not standalone ->
       str "\n" $ epi
   | _ -> epi
 
-let fmt_docstring c ?standalone ?pro ?epi doc =
+let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ~prev:_ ({txt; loc}, floating) ~next ->
-      let epi = docstring_epi ?standalone ?next ?epi ~floating in
+      let epi = docstring_epi ~standalone ~next ~epi ~floating in
       fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt))
 
 let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
@@ -396,7 +396,7 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
       let fmt_doc ?epi ?pro doc =
         list_pn doc (fun ~prev:_ (parsed, ({txt; loc}, floating)) ~next ->
             let next = Option.map next ~f:snd in
-            let epi = docstring_epi ?standalone:None ?next ?epi ~floating in
+            let epi = docstring_epi ~standalone:false ~next ~epi ~floating in
             fmt_parsed_docstring c ~loc ~epi ?pro txt parsed)
       in
       let floating_doc, doc =
