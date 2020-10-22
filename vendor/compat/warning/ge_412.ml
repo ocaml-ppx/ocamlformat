@@ -18,5 +18,5 @@ let print_warning l w =
   | None -> ()
 
 let is_unexpected_docstring = function
-  | Warnings.Bad_docstring _ -> true
+  | Warnings.Unexpected_docstring _ -> true
   | _ -> false

@@ -43,11 +43,10 @@ let parse fragment (conf : Conf.t) ~source =
   let t =
     with_warning_filter
       ~filter:(fun loc warn ->
-        match warn with
-        | Warnings.Bad_docstring _ when conf.comment_check ->
-            w50 := (loc, warn) :: !w50 ;
-            false
-        | _ -> not conf.quiet)
+        if is_unexpected_docstring warn && conf.comment_check then (
+          w50 := (loc, warn) :: !w50 ;
+          false )
+        else not conf.quiet)
       ~f:(fun () ->
         let ast = Migrate_ast.Parse.fragment fragment lexbuf in
         Warnings.check_fatal () ;
