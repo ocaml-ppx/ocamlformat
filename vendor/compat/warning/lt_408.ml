@@ -11,3 +11,7 @@ let with_warning_filter ~filter ~f =
 
 let print_warning l w =
   !Location.warning_printer l Caml.Format.err_formatter w
+
+let is_unexpected_docstring = function
+  | Warnings.Bad_docstring _ -> true
+  | _ -> false
