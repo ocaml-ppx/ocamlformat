@@ -131,16 +131,23 @@ let partition_after_prev_or_before_next t ~prev cmts ~next =
         let same_line_as_prev l =
           prev.loc_end.pos_lnum = l.loc_start.pos_lnum
         in
-        let same_line_as_next l =
-          next.loc_start.pos_lnum = l.loc_start.pos_lnum
+        let decide loc =
+          match
+            ( loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
+            , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
+          with
+          | 0, 0 -> impossible "already tested by previous if"
+          | 0, _ when infix_symbol_before t prev -> `Before_next
+          | 0, _ -> `After_prev
+          | _ -> `Before_next
         in
         let prev, next =
           if not (same_line_as_prev next) then
             let next, prev =
-              List.partition_tf cmtl ~f:(fun {Cmt.loc= l1; _} ->
-                  same_line_as_next l1
-                  || (same_line_as_prev l1 && infix_symbol_before t prev)
-                  || not (same_line_as_prev l1))
+              List.partition_tf cmtl ~f:(fun {Cmt.loc= l; _} ->
+                  match decide l with
+                  | `After_prev -> false
+                  | `Before_next -> true)
             in
             (prev, next)
           else ([], cmtl)
