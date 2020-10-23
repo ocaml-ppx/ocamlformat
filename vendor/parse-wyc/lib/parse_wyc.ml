@@ -90,7 +90,8 @@ module With_recovery : PARSE_INTF = struct
             | _ -> Intermediate parser ) )
 end
 
-let entrypoint (type a) : a Mapper.fragment -> _ -> a I.checkpoint = function
+let entrypoint (type o p) : (o, p) Mapper.fragment -> _ -> o I.checkpoint =
+  function
   | Mapper.Structure -> P.Incremental.implementation
   | Mapper.Signature -> P.Incremental.interface
   | Mapper.Use_file -> P.Incremental.use_file
@@ -135,49 +136,46 @@ let merge_adj merge l =
 let normalize_locs locs =
   List.sort_uniq Location.compare locs |> merge_adj Location.merge
 
-let invalid_locs fragment lexbuf =
-  let ast = parse_with_recovery fragment (lex_buf lexbuf) in
+let invalid_locs :
+    type o p. (o, p) Mapper.fragment -> Lexing.lexbuf -> Warnings.loc list =
+ fun fragment lexbuf ->
+  let ast_omp = lex_buf lexbuf |> parse_with_recovery fragment in
+  let ast = Mapper.to_ppxlib fragment ast_omp in
   let loc_stack = Stack.create () in
   let loc_list = ref [] in
-  let make_mapper () =
-    let open Parsetree in
-    let default = Ast_mapper.default_mapper in
-    let expr m e =
-      if Annot.Exp.is_generated e then
-        loc_list := Stack.top loc_stack :: !loc_list;
-      default.expr m e
-    in
-    let class_expr m x =
-      if Annot.Class_exp.is_generated x then
-        loc_list := Stack.top loc_stack :: !loc_list;
-      default.class_expr m x
-    in
-    let wrap mapper loc f x =
-      if Stack.is_empty loc_stack then (
-        Stack.push loc loc_stack;
-        let x = f mapper x in
-        ignore (Stack.pop loc_stack);
-        x )
-      else f mapper x
-    in
-    let structure_item m x = wrap m x.pstr_loc default.structure_item x in
-    let signature_item m x = wrap m x.psig_loc default.signature_item x in
-    let attribute m x =
-      if Annot.Attr.is_generated x then
-        loc_list := Stack.top loc_stack :: !loc_list;
-      default.attribute m x
-    in
-    {
-      Ast_mapper.default_mapper with
-      attribute;
-      expr;
-      class_expr;
-      structure_item;
-      signature_item;
-    }
+  let wrap loc f x =
+    if Stack.is_empty loc_stack then (
+      Stack.push loc loc_stack;
+      let x = f x in
+      ignore (Stack.pop loc_stack);
+      x )
+    else f x
   in
-  let mapper = make_mapper () in
-  ignore (Mapper.map_ast fragment mapper ast);
+  let iter =
+    object
+      inherit Ppxlib.Ast_traverse.iter as super
+
+      method! attribute x =
+        if Annot.Attr.is_generated x then
+          loc_list := Stack.top loc_stack :: !loc_list;
+        super#attribute x
+
+      method! expression e =
+        if Annot.Exp.is_generated e then
+          loc_list := Stack.top loc_stack :: !loc_list;
+        super#expression e
+
+      method! class_expr x =
+        if Annot.Class_exp.is_generated x then
+          loc_list := Stack.top loc_stack :: !loc_list;
+        super#class_expr x
+
+      method! structure_item x = wrap x.pstr_loc super#structure_item x
+
+      method! signature_item x = wrap x.psig_loc super#signature_item x
+    end
+  in
+  Mapper.iter_ast fragment iter ast;
   normalize_locs !loc_list
 
 let mk_parsable fragment source =

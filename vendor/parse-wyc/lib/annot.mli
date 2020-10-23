@@ -1,15 +1,17 @@
-module type Annotated = sig
-  type t
+module Exp : sig
+  val mk : unit -> Migrate_ast.Parsetree.expression
 
-  val mk : unit -> t
-
-  val is_generated : t -> bool
+  val is_generated : Ppxlib.Parsetree.expression -> bool
 end
 
-open Migrate_ast.Parsetree
+module Attr : sig
+  val mk : unit -> Migrate_ast.Parsetree.attribute
 
-module Exp : Annotated with type t = expression
+  val is_generated : Ppxlib.Parsetree.attribute -> bool
+end
 
-module Attr : Annotated with type t = attribute
+module Class_exp : sig
+  val mk : unit -> Migrate_ast.Parsetree.class_expr
 
-module Class_exp : Annotated with type t = class_expr
+  val is_generated : Ppxlib.Parsetree.class_expr -> bool
+end

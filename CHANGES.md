@@ -1,3 +1,9 @@
+### unreleased
+
+#### Internal
+
+  + Use ppxlib instead of ocaml-migrate-parsetree 1.x. (#1482, @emillon)
+
 ### 0.15.0 (2020-08-06)
 
 #### Changes

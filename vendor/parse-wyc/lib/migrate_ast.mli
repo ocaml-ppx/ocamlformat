@@ -1,21 +1,32 @@
 module Selected_version = Migrate_parsetree.Ast_408
-module Ast_mapper = Selected_version.Ast_mapper
 module Parsetree = Selected_version.Parsetree
 module Asttypes = Selected_version.Asttypes
 
-module Location : sig
-  include module type of Selected_version.Location
+module Mapper : sig
+  type ('omp, 'ppxlib) fragment =
+    | Structure
+        : ( Selected_version.Parsetree.structure,
+            Ppxlib.Parsetree.structure )
+          fragment
+    | Signature
+        : ( Selected_version.Parsetree.signature,
+            Ppxlib.Parsetree.signature )
+          fragment
+    | Use_file
+        : ( Selected_version.Parsetree.toplevel_phrase list,
+            Ppxlib.Parsetree.toplevel_phrase list )
+          fragment
 
-  val compare : t -> t -> int
+  val iter_ast :
+    (_, 'ppxlib) fragment -> Ppxlib.Ast_traverse.iter -> 'ppxlib -> unit
 
-  val merge : t -> t -> t option
+  val to_ppxlib : ('omp, 'ppxlib) fragment -> 'omp -> 'ppxlib
 end
 
-module Mapper : sig
-  type 'a fragment =
-    | Structure : Parsetree.structure fragment
-    | Signature : Parsetree.signature fragment
-    | Use_file : Parsetree.toplevel_phrase list fragment
+module Location : sig
+  include module type of Ppxlib.Location
 
-  val map_ast : 'a fragment -> Ast_mapper.mapper -> 'a -> 'a
+  val curr : Lexing.lexbuf -> t
+
+  val merge : t -> t -> t option
 end

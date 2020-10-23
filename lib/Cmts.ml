@@ -13,7 +13,6 @@
 
 module Format = Format_
 open Migrate_ast
-open Asttypes
 open Parsetree
 
 type t =
@@ -41,48 +40,6 @@ let find_at_position t loc pos =
     | `Within -> t.cmts_within
   in
   Location.Multimap.find map loc
-
-module Loc_tree : sig
-  include Non_overlapping_interval_tree.S with type itv = Location.t
-
-  val of_ast : 'a Mapper.fragment -> 'a -> Source.t -> t * Location.t list
-end = struct
-  include Non_overlapping_interval_tree.Make (Location)
-
-  (* Use Ast_mapper to collect all locs in ast, and create tree of them. *)
-
-  let of_ast fragment ast src =
-    let attribute (m : Ast_mapper.mapper) attr =
-      (* ignore location of docstrings *)
-      if Ast.Attr.is_doc attr then attr
-      else Ast_mapper.default_mapper.attribute m attr
-    in
-    let locs = ref [] in
-    let location _ loc =
-      locs := loc :: !locs ;
-      loc
-    in
-    let pat m p =
-      ( match p.ppat_desc with
-      | Ppat_record (flds, Open) ->
-          Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
-            ~f:(fun loc -> locs := loc :: !locs)
-      | Ppat_constant _ -> locs := Source.loc_of_pat_constant src p :: !locs
-      | _ -> () ) ;
-      Ast_mapper.default_mapper.pat m p
-    in
-    let expr m e =
-      ( match e.pexp_desc with
-      | Pexp_constant _ -> locs := Source.loc_of_expr_constant src e :: !locs
-      | _ -> () ) ;
-      Ast_mapper.default_mapper.expr m e
-    in
-    let mapper =
-      Ast_mapper.{default_mapper with location; pat; attribute; expr}
-    in
-    Mapper.map_ast fragment mapper ast |> ignore ;
-    (of_list !locs, !locs)
-end
 
 (** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig
@@ -311,29 +268,27 @@ let init fragment ~debug source asts comments_n_docstrings =
     match locs with
     | [] -> add_cmts t `After ~prev:Location.none Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
-  let () =
-    let relocate_loc_stack loc stack =
-      List.iter stack ~f:(fun src -> relocate t ~src ~before:loc ~after:loc)
-    in
-    let expr (m : Ast_mapper.mapper) x =
-      relocate_loc_stack x.pexp_loc x.pexp_loc_stack ;
-      Ast_mapper.default_mapper.expr m x
-    in
-    let typ (m : Ast_mapper.mapper) x =
-      relocate_loc_stack x.ptyp_loc x.ptyp_loc_stack ;
-      Ast_mapper.default_mapper.typ m x
-    in
-    let pat (m : Ast_mapper.mapper) x =
-      relocate_loc_stack x.ppat_loc x.ppat_loc_stack ;
-      Ast_mapper.default_mapper.pat m x
-    in
-    let _ =
-      Mapper.map_ast fragment
-        Ast_mapper.{default_mapper with pat; typ; expr}
-        asts
-    in
-    ()
+  let relocate_loc_stack loc stack =
+    List.iter stack ~f:(fun src -> relocate t ~src ~before:loc ~after:loc)
   in
+  let mapper =
+    object
+      inherit Ppxlib.Ast_traverse.map as super
+
+      method! pattern x =
+        relocate_loc_stack x.ppat_loc x.ppat_loc_stack ;
+        super#pattern x
+
+      method! core_type x =
+        relocate_loc_stack x.ptyp_loc x.ptyp_loc_stack ;
+        super#core_type x
+
+      method! expression x =
+        relocate_loc_stack x.pexp_loc x.pexp_loc_stack ;
+        super#expression x
+    end
+  in
+  let _ = Mapper.map_ast fragment mapper asts in
   t
 
 let preserve fmt_x t =

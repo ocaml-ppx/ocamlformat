@@ -310,7 +310,7 @@ let rec functor_type cmts ~for_functor_kw ~source_is_long
         | [] -> functor_type cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      (Location.mkloc functor_arg pmty_loc :: xargs, xbody)
+      (Ppxlib.Loc.make ~loc:pmty_loc functor_arg :: xargs, xbody)
   | _ -> ([], xmty)
 
 (* The sugar is different when used with the [functor] keyword. The syntax
@@ -333,7 +333,7 @@ let rec functor_ cmts ~for_functor_kw ~source_is_long ({ast= me; _} as xme) =
         | [] -> functor_ cmts ~for_functor_kw ~source_is_long body
         | _ -> ([], body)
       in
-      (Location.mkloc functor_arg pmod_loc :: xargs, xbody_me)
+      (Ppxlib.Loc.make ~loc:pmod_loc functor_arg :: xargs, xbody_me)
   | _ -> ([], xme)
 
 let mod_with pmty =

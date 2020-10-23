@@ -9,14 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-let selected_version = Migrate_parsetree.Versions.ocaml_411
-
-module Selected_version = Ast_411
-module Ast_mapper = Selected_version.Ast_mapper
-module Ast_helper = Selected_version.Ast_helper
+module Ast_helper = Ppxlib.Ast_helper
 
 module Parsetree = struct
-  include Selected_version.Parsetree
+  include Ppxlib.Parsetree
 
   let equal_core_type : core_type -> core_type -> bool = Poly.equal
 
@@ -29,7 +25,7 @@ module Parsetree = struct
 end
 
 module Asttypes = struct
-  include Selected_version.Asttypes
+  include Ppxlib.Asttypes
 
   let is_private = function Private -> true | Public -> false
 
@@ -41,30 +37,6 @@ module Asttypes = struct
 end
 
 module Mapper = struct
-  let structure = Selected_version.map_structure
-
-  let signature = Selected_version.map_signature
-
-  (* Missing from ocaml_migrate_parsetree *)
-  let use_file (mapper : Ast_mapper.mapper) use_file =
-    let open Parsetree in
-    List.map use_file ~f:(fun toplevel_phrase ->
-        match (toplevel_phrase : toplevel_phrase) with
-        | Ptop_def structure ->
-            Ptop_def (mapper.Ast_mapper.structure mapper structure)
-        | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
-            let pdir_arg =
-              match pdir_arg with
-              | None -> None
-              | Some a ->
-                  Some {a with pdira_loc= mapper.location mapper a.pdira_loc}
-            in
-            Ptop_dir
-              { pdir_name=
-                  {pdir_name with loc= mapper.location mapper pdir_name.loc}
-              ; pdir_arg
-              ; pdir_loc= mapper.location mapper pdir_loc })
-
   type 'a fragment =
     | Structure : Parsetree.structure fragment
     | Signature : Parsetree.signature fragment
@@ -76,22 +48,21 @@ module Mapper = struct
     | Signature -> Parsetree.equal_signature
     | Use_file -> List.equal Parsetree.equal_toplevel_phrase
 
-  let map_ast (type a) (x : a fragment) : Ast_mapper.mapper -> a -> a =
+  let map_ast (type a) (x : a fragment) (m : Ppxlib.Ast_traverse.map) :
+      a -> a =
     match x with
-    | Structure -> structure
-    | Signature -> signature
-    | Use_file -> use_file
+    | Structure -> m#structure
+    | Signature -> m#signature
+    | Use_file -> m#list m#toplevel_phrase
 end
 
 module Parse = struct
-  open Migrate_parsetree
+  let implementation = Ppxlib_ast.Parse.implementation
 
-  let implementation = Parse.implementation selected_version
-
-  let interface = Parse.interface selected_version
+  let interface = Ppxlib_ast.Parse.interface
 
   let use_file lexbuf =
-    List.filter (Parse.use_file selected_version lexbuf)
+    List.filter (Ppxlib_ast.Parse.use_file lexbuf)
       ~f:(fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
@@ -104,32 +75,20 @@ module Parse = struct
     | Mapper.Use_file -> use_file lexbuf
 end
 
-let to_current =
-  Migrate_parsetree.Versions.(migrate selected_version ocaml_current)
-
 module Printast = struct
-  open Printast
+  let pp_sexp ppf sexp = Format.fprintf ppf "%a" (Sexp.pp_hum_indent 2) sexp
 
-  let implementation f x = implementation f (to_current.copy_structure x)
+  let sexp_of = Ppxlib.Ast_traverse.sexp_of
 
-  let interface f x = interface f (to_current.copy_signature x)
+  let implementation ppf x = pp_sexp ppf (sexp_of#structure x)
 
-  let expression f x = expression 0 f (to_current.copy_expression x)
+  let interface ppf x = pp_sexp ppf (sexp_of#signature x)
 
-  let payload f (x : Parsetree.payload) =
-    payload 0 f
-      ( match x with
-      | PStr x -> PStr (to_current.copy_structure x)
-      | PSig x -> PSig (to_current.copy_signature x)
-      | PTyp x -> PTyp (to_current.copy_core_type x)
-      | PPat (x, y) ->
-          PPat
-            ( to_current.copy_pattern x
-            , Option.map ~f:to_current.copy_expression y ) )
+  let expression ppf x = pp_sexp ppf (sexp_of#expression x)
 
-  let use_file f (x : Parsetree.toplevel_phrase list) =
-    List.iter x ~f:(fun (p : Parsetree.toplevel_phrase) ->
-        top_phrase f (to_current.copy_toplevel_phrase p))
+  let payload ppf x = pp_sexp ppf (sexp_of#payload x)
+
+  let use_file ppf x = pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
 
   let fragment (type a) : a Mapper.fragment -> _ -> a -> _ = function
     | Mapper.Structure -> implementation
@@ -137,22 +96,7 @@ module Printast = struct
     | Mapper.Use_file -> use_file
 end
 
-module Pprintast = struct
-  open Pprintast
-
-  let structure f x = structure f (to_current.copy_structure x)
-
-  let signature f x = signature f (to_current.copy_signature x)
-
-  let core_type f x = core_type f (to_current.copy_core_type x)
-
-  let expression f x = expression f (to_current.copy_expression x)
-
-  let pattern f x = pattern f (to_current.copy_pattern x)
-
-  let toplevel_phrase f x =
-    toplevel_phrase f (to_current.copy_toplevel_phrase x)
-end
+module Pprintast = Ppxlib.Pprintast
 
 module Position = struct
   open Lexing
@@ -180,7 +124,7 @@ module Position = struct
 end
 
 module Location = struct
-  include Selected_version.Location
+  include Ppxlib.Location
 
   let fmt fs {loc_start; loc_end; loc_ghost} =
     Format.fprintf fs "(%a..%a)%s" Position.fmt loc_start Position.fmt

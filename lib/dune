@@ -24,4 +24,4 @@
   (:standard -open Base -open Import -open Compat))
  ;;INSERT_BISECT_HERE;;
  (libraries format_ import ocaml-migrate-parsetree odoc.model odoc.parser
-   parse_wyc re uuseg uuseg.string token_latest compat))
+   parse_wyc re uuseg uuseg.string token_latest compat ppxlib))
