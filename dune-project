@@ -49,13 +49,11 @@
   fix
   fpath
   menhir
-  (ocaml-migrate-parsetree
-   (and
-    (>= 1.7.3)
-    (< 2.0.0)))
   (ocp-indent :with-test)
   (odoc
    (>= 1.4.2))
+  (ppxlib
+   (>= 0.18.0))
   re
   (stdio
    (< v0.15))

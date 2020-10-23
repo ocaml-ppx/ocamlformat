@@ -9,16 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val selected_version :
-  Migrate_parsetree.Versions.OCaml_411.types
-  Migrate_parsetree.Versions.ocaml_version
-
-module Selected_version = Ast_411
-module Ast_mapper = Selected_version.Ast_mapper
-module Ast_helper = Selected_version.Ast_helper
+module Ast_helper = Ppxlib.Ast_helper
 
 module Parsetree : sig
-  include module type of Selected_version.Parsetree
+  include module type of Ppxlib.Parsetree
 
   val equal_core_type : core_type -> core_type -> bool
 
@@ -30,7 +24,7 @@ module Parsetree : sig
 end
 
 module Asttypes : sig
-  include module type of Selected_version.Asttypes
+  include module type of Ppxlib.Asttypes
 
   val is_private : private_flag -> bool
 
@@ -52,7 +46,7 @@ module Position : sig
 end
 
 module Location : sig
-  include module type of Selected_version.Location
+  include module type of Ppxlib.Location
 
   type comparator_witness
 
@@ -98,7 +92,7 @@ module Mapper : sig
 
   val equal : 'a fragment -> 'a -> 'a -> bool
 
-  val map_ast : 'a fragment -> Ast_mapper.mapper -> 'a -> 'a
+  val map_ast : 'a fragment -> Ppxlib.Ast_traverse.map -> 'a -> 'a
 end
 
 module Parse : sig
@@ -119,19 +113,7 @@ module Printast : sig
   val fragment : 'a Mapper.fragment -> Format.formatter -> 'a -> unit
 end
 
-module Pprintast : sig
-  val core_type : Format.formatter -> Parsetree.core_type -> unit
-
-  val pattern : Format.formatter -> Parsetree.pattern -> unit
-
-  val toplevel_phrase : Format.formatter -> Parsetree.toplevel_phrase -> unit
-
-  val expression : Format.formatter -> Parsetree.expression -> unit
-
-  val structure : Format.formatter -> Parsetree.structure -> unit
-
-  val signature : Format.formatter -> Parsetree.signature -> unit
-end
+module Pprintast = Ppxlib.Pprintast
 
 module Longident : sig
   type t = Longident.t =

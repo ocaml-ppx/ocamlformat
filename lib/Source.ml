@@ -106,7 +106,7 @@ let tokens_between t ~filter loc_start loc_end =
     match Lexer.token lexbuf with
     | Parser.EOF -> List.rev acc
     | tok ->
-        if filter tok then loop ((tok, Location.curr lexbuf) :: acc)
+        if filter tok then loop ((tok, Location.of_lexbuf lexbuf) :: acc)
         else loop acc
   in
   loop []
@@ -129,7 +129,7 @@ let find_after t f (loc : Location.t) =
   let rec loop () =
     match Lexer.token lexbuf with
     | Parser.EOF -> None
-    | tok -> if f tok then Some (Location.curr lexbuf) else loop ()
+    | tok -> if f tok then Some (Location.of_lexbuf lexbuf) else loop ()
   in
   loop ()
 
