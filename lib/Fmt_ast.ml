@@ -135,6 +135,12 @@ let sugar_pmty_functor c ~for_functor_kw pmty =
   let source_is_long = Source.is_long_pmty_functor c.source in
   Sugar.functor_type c.cmts ~for_functor_kw ~source_is_long pmty
 
+let closing_paren ?force ?(offset = 0) c =
+  match c.conf.indicate_multiline_delimiters with
+  | `No -> str ")"
+  | `Space -> fits_breaks ")" " )" ?force
+  | `Closing_on_separate_line -> fits_breaks ")" ")" ~hint:(1000, offset)
+
 let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
@@ -1833,11 +1839,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Some i when i <= 2 -> "@ "
                             | _ -> "@;<1 2>" ) )
                       $ fmt_expression c ?box xbody
-                      $ ( match c.conf.indicate_multiline_delimiters with
-                        | `Space -> fits_breaks ~force ")" " )"
-                        | `Closing_on_separate_line ->
-                            fits_breaks ")" ~hint:(1000, -2) ")"
-                        | `No -> str ")" )
+                      $ closing_paren c ~force ~offset:(-2)
                       $ Cmts.fmt_after c pexp_loc )
                   $ fmt_atrs ) ) )
       | ( lbl
@@ -1872,12 +1874,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@ ->" )
                    $ fmt "@ "
                    $ cbox 0 (fmt_expression c (sub_exp ~ctx pc_rhs))
-                   $ ( match c.conf.indicate_multiline_delimiters with
-                     | `Space -> fits_breaks ")" " )" ~force
-                     | `Closing_on_separate_line ->
-                         fits_breaks ")" ~hint:(1000, 0) ")"
-                     | `No -> str ")" )
-                   $ Cmts.fmt_after c pexp_loc )
+                   $ closing_paren c ~force $ Cmts.fmt_after c pexp_loc )
                $ fmt_atrs ) )
       | (lbl, ({pexp_desc= Pexp_function cs; pexp_loc; _} as eN)) :: rev_e1N
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
@@ -1897,12 +1894,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       $ fmt_label lbl ":" $ str "(function"
                       $ fmt_attributes c ~pre:Blank ~key:"@"
                           eN.pexp_attributes ) )
-               $ fmt "@ " $ fmt_cases c ctx'' cs
-               $ ( match c.conf.indicate_multiline_delimiters with
-                 | `Space -> fits_breaks ")" " )"
-                 | `Closing_on_separate_line ->
-                     fits_breaks ")" ~hint:(1000, 0) ")"
-                 | `No -> str ")" )
+               $ fmt "@ " $ fmt_cases c ctx'' cs $ closing_paren c
                $ Cmts.fmt_after c pexp_loc $ fmt_atrs ) )
       | _ ->
           let fmt_atrs =
@@ -1915,12 +1907,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           fmt_if parens "("
           $ hvbox 2
               ( fmt_args_grouped ~epi:fmt_atrs e0 e1N1
-              $ fmt_if_k parens
-                  ( match c.conf.indicate_multiline_delimiters with
-                  | `Space -> fits_breaks ")" " )" ~force
-                  | `Closing_on_separate_line ->
-                      fits_breaks ")" ~hint:(1000, -3) ")"
-                  | `No -> str ")" ) ) )
+              $ fmt_if_k parens (closing_paren c ~force ~offset:(-3)) ) )
   | Pexp_array [] ->
       hvbox 0
         ( wrap_fits_breaks c.conf "[|" "|]" (Cmts.fmt_within c pexp_loc)
@@ -1938,12 +1925,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         if Exp.is_symbol e0 then (false, wrap "( " " )")
         else (parenze_exp (sub_exp ~ctx e0), Fn.id)
       in
-      let hint =
-        match c.conf.indicate_multiline_delimiters with
-        | `Space -> (1, 0)
-        | `No -> (0, 0)
-        | `Closing_on_separate_line -> (1000, 0)
-      in
       hovbox 0
         (Params.parens_if parens c.conf
            (hvbox 0
@@ -1951,7 +1932,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   ( fmt_or paren_body "assert (@," "assert@ "
                   $ wrap_symbol
                     @@ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
-              $ fits_breaks_if paren_body ")" ~hint ")"
+              $ fmt_if_k paren_body (closing_paren c)
               $ fmt_atrs ) ) )
   | Pexp_constant const ->
       let loc = Source.loc_of_expr_constant c.source exp in
@@ -1962,13 +1943,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc; _}
       , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []; _} ) ->
-      let opn_paren, cls_paren =
+      let opn_paren =
         match c.conf.indicate_multiline_delimiters with
-        | `No -> (str "(", str ")")
-        | `Space -> (fits_breaks "(" "( ", fits_breaks ")" ~hint:(1, 0) ")")
-        | `Closing_on_separate_line ->
-            (str "(", fits_breaks ")" ~hint:(1000, -2) ")")
+        | `No | `Closing_on_separate_line -> str "("
+        | `Space -> fits_breaks "(" "( "
       in
+      let cls_paren = closing_paren c ~offset:(-2) in
       hovbox 0
         (compose_module
            (fmt_module_expr c (sub_mod ~ctx me))
@@ -4010,18 +3990,13 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             $ str "(" )
       ; psp= fmt "@,"
       ; bdy=
-          ( hvbox 0
-              ( fmt_opt blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
-              $ fmt_opt blk_e.epi $ fmt " :@;<1 2>"
-              $ hvbox 0
-                  ( fmt_opt blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
-                  $ fmt_opt blk_t.epi ) )
-          $
-          match c.conf.indicate_multiline_delimiters with
-          | `Space -> fits_breaks ")" " )"
-          | `No -> str ")"
-          | `Closing_on_separate_line -> fits_breaks ")" ~hint:(1000, -2) ")"
-          )
+          hvbox 0
+            ( fmt_opt blk_e.pro $ blk_e.psp $ blk_e.bdy $ blk_e.esp
+            $ fmt_opt blk_e.epi $ fmt " :@;<1 2>"
+            $ hvbox 0
+                ( fmt_opt blk_t.pro $ blk_t.psp $ blk_t.bdy $ blk_t.esp
+                $ fmt_opt blk_t.epi ) )
+          $ closing_paren c ~offset:(-2)
       ; cls= close_box $ blk_e.cls $ blk_t.cls
       ; esp= noop
       ; epi=
