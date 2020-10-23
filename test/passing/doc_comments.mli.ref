@@ -327,12 +327,12 @@ end
 
 (** {%html:<p>Raw markup</p>%} {%Without language%} {%other:Other language%} *)
 
-(** [Multi Line]
+(** [Multi
+     Line]
 
-    [A lot of spaces]
+    [ A lot of    spaces ]
 
-    [Very
-    looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong] *)
+    [Very looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong] *)
 
 (** {[
       for i = 1 to 3 do
@@ -394,7 +394,7 @@ end
 (** This is a comment with code inside
 
     {[
-      (** This is a comment with code inside [let code inside = f inside] *)
+      (** This is a comment with code inside [ let code inside = f inside ] *)
       let code inside (* comment *) = f inside
     ]} *)
 
@@ -478,3 +478,5 @@ val k : int
 (** *)
 
 (**  *)
+
+(** [trim "  "] is [""] *)
