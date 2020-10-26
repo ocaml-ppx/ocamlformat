@@ -85,7 +85,7 @@ type t =
 
 type file = Stdin | File of string
 
-type kind = Kind : _ list Migrate_ast.Mapper.fragment -> kind
+type kind = Kind : _ list Migrate_ast.Traverse.fragment -> kind
 
 type input = {kind: kind; name: string; file: file; conf: t}
 

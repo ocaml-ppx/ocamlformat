@@ -84,7 +84,7 @@ module Location : sig
   val is_single_line : t -> int -> bool
 end
 
-module Mapper : sig
+module Traverse : sig
   type 'a fragment =
     | Structure : Parsetree.structure fragment
     | Signature : Parsetree.signature fragment
@@ -92,15 +92,15 @@ module Mapper : sig
 
   val equal : 'a fragment -> 'a -> 'a -> bool
 
-  val map_ast : 'a fragment -> Ppxlib.Ast_traverse.map -> 'a -> 'a
+  val map : 'a fragment -> Ppxlib.Ast_traverse.map -> 'a -> 'a
 
-  val iter_ast : 'a fragment -> Ppxlib.Ast_traverse.iter -> 'a -> unit
+  val iter : 'a fragment -> Ppxlib.Ast_traverse.iter -> 'a -> unit
 
-  val fold_ast : 'a fragment -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
+  val fold : 'a fragment -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
 end
 
 module Parse : sig
-  val fragment : 'a Mapper.fragment -> Lexing.lexbuf -> 'a
+  val fragment : 'a Traverse.fragment -> Lexing.lexbuf -> 'a
 end
 
 module Printast : sig
@@ -114,7 +114,7 @@ module Printast : sig
 
   val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
 
-  val fragment : 'a Mapper.fragment -> Format.formatter -> 'a -> unit
+  val fragment : 'a Traverse.fragment -> Format.formatter -> 'a -> unit
 end
 
 module Pprintast = Ppxlib.Pprintast

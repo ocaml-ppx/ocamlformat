@@ -36,7 +36,7 @@ module Asttypes = struct
   let is_mutable = function Mutable -> true | Immutable -> false
 end
 
-module Mapper = struct
+module Traverse = struct
   type 'a fragment =
     | Structure : Parsetree.structure fragment
     | Signature : Parsetree.signature fragment
@@ -48,22 +48,21 @@ module Mapper = struct
     | Signature -> Parsetree.equal_signature
     | Use_file -> List.equal Parsetree.equal_toplevel_phrase
 
-  let map_ast (type a) (x : a fragment) (m : Ppxlib.Ast_traverse.map) :
-      a -> a =
+  let map (type a) (x : a fragment) (m : Ppxlib.Ast_traverse.map) : a -> a =
     match x with
     | Structure -> m#structure
     | Signature -> m#signature
     | Use_file -> m#list m#toplevel_phrase
 
-  let iter_ast (type a) (fragment : a fragment)
-      (i : Ppxlib.Ast_traverse.iter) : a -> unit =
+  let iter (type a) (fragment : a fragment) (i : Ppxlib.Ast_traverse.iter) :
+      a -> unit =
     match fragment with
     | Structure -> i#structure
     | Signature -> i#signature
     | Use_file -> i#list i#toplevel_phrase
 
-  let fold_ast (type a) (fragment : a fragment)
-      (f : _ Ppxlib.Ast_traverse.fold) : a -> _ =
+  let fold (type a) (fragment : a fragment) (f : _ Ppxlib.Ast_traverse.fold)
+      : a -> _ =
     match fragment with
     | Structure -> f#structure
     | Signature -> f#signature
@@ -82,11 +81,11 @@ module Parse = struct
         | Ptop_def [] -> false
         | Ptop_def (_ :: _) | Ptop_dir _ -> true)
 
-  let fragment (type a) (fragment : a Mapper.fragment) lexbuf : a =
+  let fragment (type a) (fragment : a Traverse.fragment) lexbuf : a =
     match fragment with
-    | Mapper.Structure -> implementation lexbuf
-    | Mapper.Signature -> interface lexbuf
-    | Mapper.Use_file -> use_file lexbuf
+    | Traverse.Structure -> implementation lexbuf
+    | Traverse.Signature -> interface lexbuf
+    | Traverse.Use_file -> use_file lexbuf
 end
 
 module Printast = struct
@@ -104,10 +103,10 @@ module Printast = struct
 
   let use_file ppf x = pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
 
-  let fragment (type a) : a Mapper.fragment -> _ -> a -> _ = function
-    | Mapper.Structure -> implementation
-    | Mapper.Signature -> interface
-    | Mapper.Use_file -> use_file
+  let fragment (type a) : a Traverse.fragment -> _ -> a -> _ = function
+    | Traverse.Structure -> implementation
+    | Traverse.Signature -> interface
+    | Traverse.Use_file -> use_file
 end
 
 module Pprintast = Ppxlib.Pprintast

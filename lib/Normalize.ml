@@ -46,7 +46,7 @@ let dedup_cmts fragment ast comments =
           | _ -> super#attribute atr docs
       end
     in
-    Mapper.fold_ast fragment iter ast (Set.empty (module Cmt))
+    Traverse.fold fragment iter ast (Set.empty (module Cmt))
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
@@ -107,7 +107,7 @@ let rec odoc_nestable_block_element c fmt = function
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
             Parse_with_comments.parse Structure c.conf ~source:txt
           in
-          let comments = dedup_cmts Mapper.Structure ast comments in
+          let comments = dedup_cmts Traverse.Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
                 Location.compare a b)
@@ -358,11 +358,11 @@ let make_mapper conf ~ignore_doc_comments =
   end
 
 let normalize fragment c =
-  Mapper.map_ast fragment (make_mapper c ~ignore_doc_comments:false)
+  Traverse.map fragment (make_mapper c ~ignore_doc_comments:false)
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
-  let map = Mapper.map_ast fragment (make_mapper c ~ignore_doc_comments) in
-  Mapper.equal fragment (map ast1) (map ast2)
+  let map = Traverse.map fragment (make_mapper c ~ignore_doc_comments) in
+  Traverse.equal fragment (map ast1) (map ast2)
 
 let fold_docstrings =
   let doc_attribute = function
@@ -391,8 +391,8 @@ let fold_docstrings =
       super#attributes (sort_attributes atrs)
   end
 
-let docstrings (type a) (fragment : a Mapper.fragment) s =
-  Mapper.fold_ast fragment fold_docstrings s []
+let docstrings (type a) (fragment : a Traverse.fragment) s =
+  Traverse.fold fragment fold_docstrings s []
 
 type docstring_error =
   | Moved of Location.t * Location.t * string

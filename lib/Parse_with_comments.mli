@@ -26,7 +26,7 @@ end
 exception Warning50 of (Location.t * Warnings.t) list
 
 val parse :
-     'a Migrate_ast.Mapper.fragment
+     'a Migrate_ast.Traverse.fragment
   -> Conf.t
   -> source:string
   -> 'a with_comments

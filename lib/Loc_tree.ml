@@ -48,5 +48,5 @@ let fold src =
 
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 let of_ast fragment ast src =
-  let locs = Mapper.fold_ast fragment (fold src) ast [] in
+  let locs = Traverse.fold fragment (fold src) ast [] in
   (of_list locs, locs)

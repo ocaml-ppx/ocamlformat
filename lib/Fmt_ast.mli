@@ -12,7 +12,7 @@
 (** Format OCaml Ast *)
 
 val fmt_fragment :
-     'a list Migrate_ast.Mapper.fragment
+     'a list Migrate_ast.Traverse.fragment
   -> debug:bool
   -> Source.t
   -> Cmts.t

@@ -322,7 +322,7 @@ let init fragment ~debug source asts comments_n_docstrings =
         super#expression x
     end
   in
-  Mapper.iter_ast fragment iter asts;
+  Traverse.iter fragment iter asts ;
   t
 
 let preserve fmt_x t =
