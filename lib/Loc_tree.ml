@@ -13,8 +13,6 @@ open Migrate_ast
 open Parsetree
 include Non_overlapping_interval_tree.Make (Location)
 
-let cons_option xo xs = match xo with Some x -> x :: xs | None -> xs
-
 let fold src =
   object
     inherit [Location.t list] Ppxlib.Ast_traverse.fold as super
@@ -25,10 +23,10 @@ let fold src =
       let extra_loc =
         match p.ppat_desc with
         | Ppat_record (flds, Open) ->
-            Source.loc_of_underscore src flds p.ppat_loc
-        | _ -> None
+            Option.to_list (Source.loc_of_underscore src flds p.ppat_loc)
+        | _ -> []
       in
-      cons_option extra_loc locs |> super#pattern p
+      super#pattern p (extra_loc @ locs)
 
     method! attribute attr locs =
       (* ignore location of docstrings *)
@@ -40,10 +38,10 @@ let fold src =
     method! expression e locs =
       let extra_loc =
         match e.pexp_desc with
-        | Pexp_constant _ -> Some (Source.loc_of_expr_constant src e)
-        | _ -> None
+        | Pexp_constant _ -> [Source.loc_of_expr_constant src e]
+        | _ -> []
       in
-      cons_option extra_loc locs |> super#expression e
+      super#expression e (extra_loc @ locs)
   end
 
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
