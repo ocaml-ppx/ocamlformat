@@ -300,14 +300,8 @@ let extension_using_sugar ~(name : string Location.loc)
     ~(payload : Location.t) =
   Source_code_position.ascending name.loc.loc_start payload.loc_start > 0
 
-let typed_expression (typ : Parsetree.core_type)
-    (expr : Parsetree.expression) =
-  if Location.compare_start typ.ptyp_loc expr.pexp_loc < 0 then `Type_first
-  else `Expr_first
-
-let typed_pattern (typ : Parsetree.core_type) (pat : Parsetree.pattern) =
-  if Location.compare_start typ.ptyp_loc pat.ppat_loc < 0 then `Type_first
-  else `Pat_first
+let type_constraint_is_first typ loc =
+  Location.compare_start typ.Parsetree.ptyp_loc loc < 0
 
 let loc_of_underscore t flds (ppat_loc : Location.t) =
   let end_last_field =

@@ -1039,7 +1039,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
               let typ = sub_typ ~ctx:(Pat pat) t
               and rhs = fmt_rhs ~ctx:(Pat pat) p in
               let type_first =
-                Poly.(`Type_first = Source.typed_pattern t p)
+                Source.type_constraint_is_first t p.ppat_loc
               in
               Cmts.fmt c p.ppat_loc
               @@ fmt_record_field c ~typ ~rhs ~type_first lid1
@@ -2338,7 +2338,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1
           | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
               let type_first =
-                Poly.(`Type_first = Source.typed_expression t e)
+                Source.type_constraint_is_first t e.pexp_loc
               in
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~typ:(sub_typ ~ctx t) ~rhs:(fmt_rhs e)
@@ -4369,7 +4369,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
                   , ( {ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as
                     typ ) )
               , _ )
-              when Poly.(Source.typed_expression typ exp = `Type_first) ->
+              when Source.type_constraint_is_first typ exp.pexp_loc ->
                 Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                   ~after:exp.pexp_loc ;
                 fmt_cstr_and_xbody typ exp
@@ -4380,7 +4380,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
              |Pexp_constraint _, Ppat_constraint _ ->
                 (None, xbody)
             | Pexp_constraint (exp, typ), _
-              when Poly.(Source.typed_expression typ exp = `Type_first) ->
+              when Source.type_constraint_is_first typ exp.pexp_loc ->
                 Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                   ~after:exp.pexp_loc ;
                 fmt_cstr_and_xbody typ exp
