@@ -53,6 +53,8 @@
 
   + Comments of type constrained label in record pattern have to be relocated in 4.12 (#1517, @gpetiot)
 
+  + Preserve functor syntax for OCaml 4.12 (#1514, @gpetiot)
+
 #### New features
 
 #### Internal
