@@ -305,9 +305,9 @@ let init fragment ~debug source asts comments_n_docstrings =
   let relocate_loc_stack loc stack =
     List.iter stack ~f:(fun src -> relocate t ~src ~before:loc ~after:loc)
   in
-  let mapper =
+  let iter =
     object
-      inherit Ppxlib.Ast_traverse.map as super
+      inherit Ppxlib.Ast_traverse.iter as super
 
       method! pattern x =
         relocate_loc_stack x.ppat_loc x.ppat_loc_stack ;
@@ -322,7 +322,7 @@ let init fragment ~debug source asts comments_n_docstrings =
         super#expression x
     end
   in
-  let _ = Mapper.map_ast fragment mapper asts in
+  Traverse.iter fragment iter asts ;
   t
 
 let preserve fmt_x t =

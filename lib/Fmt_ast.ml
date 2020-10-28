@@ -4509,13 +4509,13 @@ let fmt_toplevel c ctx itms =
 (** Entry points *)
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug
-    (fragment : a list Mapper.fragment) source cmts conf (itms : a list) =
+    (fragment : a list Traverse.fragment) source cmts conf (itms : a list) =
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
   | _, [] -> Cmts.fmt_after ~pro:noop c Location.none
-  | Mapper.Structure, l -> fmt_structure c ctx l
-  | Mapper.Signature, l -> fmt_signature c ctx l
-  | Mapper.Use_file, l -> fmt_toplevel c ctx l
+  | Traverse.Structure, l -> fmt_structure c ctx l
+  | Traverse.Signature, l -> fmt_signature c ctx l
+  | Traverse.Use_file, l -> fmt_toplevel c ctx l
 
 let fmt_code ~debug =
   let rec fmt_code conf s =
@@ -4524,9 +4524,7 @@ let fmt_code ~debug =
         let source = Source.create s in
         let cmts = Cmts.init Structure ~debug source ast comments in
         let ctx = Pld (PStr ast) in
-        Ok
-          (fmt_file ~ctx ~debug Mapper.Structure source cmts conf ast
-             ~fmt_code)
+        Ok (fmt_file ~ctx ~debug Structure source cmts conf ast ~fmt_code)
     | exception _ -> Error ()
   in
   fmt_code

@@ -13,7 +13,7 @@
 
 open Migrate_ast
 
-val dedup_cmts : 'a Mapper.fragment -> 'a -> Cmt.t list -> Cmt.t list
+val dedup_cmts : 'a Traverse.fragment -> 'a -> Cmt.t list -> Cmt.t list
 
 val comment : string -> string
 (** Normalize a comment. *)
@@ -21,11 +21,11 @@ val comment : string -> string
 val docstring : Conf.t -> string -> string
 (** Normalize a docstring. *)
 
-val normalize : 'a Mapper.fragment -> Conf.t -> 'a -> 'a
+val normalize : 'a Traverse.fragment -> Conf.t -> 'a -> 'a
 (** Normalize an AST fragment. *)
 
 val equal :
-     'a Mapper.fragment
+     'a Traverse.fragment
   -> ignore_doc_comments:bool
   -> Conf.t
   -> 'a
@@ -38,4 +38,4 @@ type docstring_error =
   | Unstable of Location.t * string
 
 val moved_docstrings :
-  'a Mapper.fragment -> Conf.t -> 'a -> 'a -> docstring_error list
+  'a Traverse.fragment -> Conf.t -> 'a -> 'a -> docstring_error list

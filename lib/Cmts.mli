@@ -29,7 +29,7 @@ open Migrate_ast
 type t
 
 val init :
-  'a Mapper.fragment -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
+  'a Traverse.fragment -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
 (** [init fragment source x comments] associates each comment in [comments]
     with a source location appearing in [x]. It uses [Source] to help resolve
     ambiguities. Initializes the state used by the [fmt] functions. *)

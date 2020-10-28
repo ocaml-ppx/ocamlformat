@@ -53,7 +53,7 @@
 
 #### Internal
 
-  + Use ppxlib instead of ocaml-migrate-parsetree 1.x. (#1482, @emillon)
+  + Use ppxlib instead of ocaml-migrate-parsetree 1.x. (#1482, #1510, @emillon)
 
 ### 0.15.0 (2020-08-06)
 

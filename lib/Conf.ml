@@ -1276,7 +1276,7 @@ let inputs =
   mk ~default
     Arg.(value & pos_all file_or_dash default & info [] ~doc ~docv ~docs)
 
-type kind = Kind : _ list Migrate_ast.Mapper.fragment -> kind
+type kind = Kind : _ list Migrate_ast.Traverse.fragment -> kind
 
 let kind : kind option ref =
   let doc = "Parse file with unrecognized extension as an implementation." in

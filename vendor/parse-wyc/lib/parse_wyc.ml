@@ -136,47 +136,73 @@ let merge_adj merge l =
 let normalize_locs locs =
   List.sort_uniq Location.compare locs |> merge_adj Location.merge
 
-let invalid_locs : type o p. (o, p) Mapper.fragment -> Lexing.lexbuf -> Warnings.loc list
-    =
- fun fragment lexbuf ->
-  let ast_omp = lex_buf lexbuf |> parse_with_recovery fragment in
-  let ast = Mapper.to_ppxlib fragment ast_omp in
-  let loc_stack = Stack.create () in
-  let loc_list = ref [] in
-  let wrap loc f x =
-    if Stack.is_empty loc_stack then (
-      Stack.push loc loc_stack;
-      let x = f x in
-      ignore (Stack.pop loc_stack);
-      x )
-    else f x
-  in
-  let iter =
-    object
-      inherit Ppxlib.Ast_traverse.iter as super
+module State = struct
+  type t =
+    { result : Location.t list
+    ; stack : Location.t list
+    }
 
-      method! attribute x =
-        if Annot.Attr.is_generated x then
-          loc_list := Stack.top loc_stack :: !loc_list;
-        super#attribute x
+  let result s = s.result
 
-      method! expression e =
-        if Annot.Exp.is_generated e then
-          loc_list := Stack.top loc_stack :: !loc_list;
-        super#expression e
+  let empty =
+    { result = []
+    ; stack = []
+    }
 
-      method! class_expr x =
-        if Annot.Class_exp.is_generated x then
-          loc_list := Stack.top loc_stack :: !loc_list;
-        super#class_expr x
+  let add s =
+    { s with result = List.hd s.stack :: s.result }
 
-      method! structure_item x = wrap x.pstr_loc super#structure_item x
+  let add_if cond s =
+    if cond then
+      add s
+    else
+      s
 
-      method! signature_item x = wrap x.psig_loc super#signature_item x
-    end
-  in
-  Mapper.iter_ast fragment iter ast;
-  normalize_locs !loc_list
+  let push_on_stack loc s =
+    {s with stack = loc::s.stack}
+
+  let pop_stack s =
+    {s with stack = List.tl s.stack}
+
+  let wrap loc f x s =
+    match s.stack with
+    | [] ->
+      push_on_stack loc s
+      |> f x
+      |> pop_stack
+    | _ -> f x s
+end
+
+let invalid_locs_fold =
+  object
+    inherit [State.t] Ppxlib.Ast_traverse.fold as super
+
+    method! attribute x s =
+      State.add_if (Annot.Attr.is_generated x) s
+      |> super#attribute x
+
+    method! expression e s =
+      State.add_if (Annot.Exp.is_generated e) s
+      |> super#expression e
+
+    method! class_expr x s =
+      State.add_if (Annot.Class_exp.is_generated x) s
+      |> super#class_expr x
+
+    method! structure_item x s =
+      State.wrap x.pstr_loc super#structure_item x s
+
+    method! signature_item x s =
+      State.wrap x.psig_loc super#signature_item x s
+  end
+
+let invalid_locs fragment lexbuf =
+  lex_buf lexbuf
+  |> parse_with_recovery fragment
+  |> Mapper.to_ppxlib fragment
+  |> Mapper.fold_ast fragment invalid_locs_fold State.empty
+  |> State.result
+  |> normalize_locs
 
 let mk_parsable fragment source =
   let lexbuf = Lexing.from_string source in

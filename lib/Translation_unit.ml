@@ -228,10 +228,10 @@ let equal fragment ~ignore_doc_comments c a b =
 let normalize fragment c {Parse_with_comments.ast; _} =
   Normalize.normalize fragment c ast
 
-let recover (type a) : a Mapper.fragment -> _ = function
-  | Mapper.Structure -> Parse_wyc.Make_parsable.structure
-  | Mapper.Signature -> Parse_wyc.Make_parsable.signature
-  | Mapper.Use_file -> Parse_wyc.Make_parsable.use_file
+let recover (type a) : a Traverse.fragment -> _ = function
+  | Traverse.Structure -> Parse_wyc.Make_parsable.structure
+  | Traverse.Signature -> Parse_wyc.Make_parsable.signature
+  | Traverse.Use_file -> Parse_wyc.Make_parsable.use_file
 
 let format fragment ?output_file ~input_name ~source ~parsed conf opts =
   let open Result.Monad_infix in
