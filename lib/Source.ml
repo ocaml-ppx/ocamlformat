@@ -224,15 +224,16 @@ let is_long_pexp_open source {Parsetree.pexp_desc; _} =
 let is_long_functor_syntax src ~from = function
   | Parsetree.Unit -> false
   | Parsetree.Named ({loc= upto; _}, _) -> (
-      (* before 4.12 the functor keyword is the first token of the functor
-         parameter *)
-      contains_token_between src ~from ~upto Parser.FUNCTOR
-      ||
-      (* since 4.12 the functor keyword is just before the loc of the functor
-         parameter *)
-      match last_token_before src from.loc_start with
-      | Some (Parser.FUNCTOR, _) -> true
-      | _ -> false )
+      if Ocaml_version.(compare Parse.parser_version Releases.v4_12) < 0 then
+        (* before 4.12 the functor keyword is the first token of the functor
+           parameter *)
+        contains_token_between src ~from ~upto Parser.FUNCTOR
+      else
+        (* since 4.12 the functor keyword is just before the loc of the
+           functor parameter *)
+        match last_token_before src from.loc_start with
+        | Some (Parser.FUNCTOR, _) -> true
+        | _ -> false )
 
 let is_long_pmod_functor t Parsetree.{pmod_desc; pmod_loc= from; _} =
   match pmod_desc with
