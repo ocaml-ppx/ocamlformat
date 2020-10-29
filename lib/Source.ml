@@ -12,13 +12,13 @@
 open Migrate_ast
 
 (** Concrete syntax. *)
-type t = {text: string; tokens: (Parser.token * Location.t) list}
+type t = {text: string; tokens: (Parser.token * Location.t) array}
 
 let create text =
   let lexbuf = Lexing.from_string text in
   let rec loop acc =
     match Lexer.token lexbuf with
-    | Parser.EOF -> List.rev acc
+    | Parser.EOF -> Array.of_list (List.rev acc)
     | tok -> loop ((tok, Location.of_lexbuf lexbuf) :: acc)
   in
   {text; tokens= loop []}
@@ -102,40 +102,55 @@ let has_cmt_same_line_after (t : t) (loc : Location.t) =
     let str = String.lstrip str in
     String.is_prefix str ~prefix:"(*"
 
+let find_first_token_after t pos =
+  let comp c = Position.compare pos (snd t.tokens.(c)).Location.loc_start in
+  let len = Array.length t.tokens in
+  let rec loop a b =
+    match b - a with
+    | 0 -> a
+    | 1 -> if comp a <= 0 then a else b
+    | _ -> (
+        let c = (a + b) / 2 in
+        match comp c with 0 -> c | x when x < 0 -> loop a c | _ -> loop c b )
+  in
+  if len = 0 || comp (len - 1) > 0 then None else Some (loop 0 (len - 1))
+
 let tokens_between (t : t) ~filter loc_start loc_end =
-  let l = t.tokens in
-  let l =
-    List.drop_while l ~f:(fun (_, tok_loc) ->
-        Position.compare tok_loc.loc_start loc_start < 0 )
-  in
-  let l =
-    List.take_while l ~f:(fun (_, tok_loc) ->
-        Position.compare tok_loc.loc_end loc_end <= 0 )
-  in
-  List.filter_map
-    ~f:(fun ((tok, _) as x) -> if filter tok then Some x else None)
-    l
+  match find_first_token_after t loc_start with
+  | None -> []
+  | Some i ->
+      let rec loop i acc =
+        if i >= Array.length t.tokens then List.rev acc
+        else
+          let ((tok, tok_loc) as x) = t.tokens.(i) in
+          if Position.compare tok_loc.Location.loc_end loc_end > 0 then
+            List.rev acc
+          else
+            let acc = if filter tok then x :: acc else acc in
+            loop (i + 1) acc
+      in
+      loop i []
 
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end
 
 let last_token_before t pos =
-  let rec loop acc l =
-    match l with
-    | [] -> acc
-    | ((_, tok_loc) as x) :: xs ->
-        if Position.compare tok_loc.Location.loc_start pos >= 0 then acc
-        else loop (Some x) xs
-  in
-  loop None t.tokens
+  let len = Array.length t.tokens in
+  match (find_first_token_after t pos, len) with
+  | None, 0 | Some 0, _ -> None
+  | None, i | Some i, _ -> Some t.tokens.(i - 1)
 
 let find_after t f (loc : Location.t) =
-  let l = t.tokens in
-  let l =
-    List.drop_while l ~f:(fun (_, tok_loc) ->
-        Position.compare tok_loc.loc_start loc.loc_end < 0 )
-  in
-  List.find_map l ~f:(fun (tok, loc) -> if f tok then Some loc else None)
+  match find_first_token_after t loc.loc_end with
+  | None -> None
+  | Some i ->
+      let rec loop i =
+        if i >= Array.length t.tokens then None
+        else
+          let tok, tok_loc = t.tokens.(i) in
+          if f tok then Some tok_loc else loop (i + 1)
+      in
+      loop i
 
 let extend_loc_to_include_attributes (t : t) (loc : Location.t)
     (l : Parsetree.attributes) =
