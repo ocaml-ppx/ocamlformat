@@ -86,6 +86,8 @@ module Parse = struct
     | Traverse.Structure -> implementation lexbuf
     | Traverse.Signature -> interface lexbuf
     | Traverse.Use_file -> use_file lexbuf
+
+  let parser_version = Ocaml_version.of_string_exn Sys.ocaml_version
 end
 
 module Printast = struct

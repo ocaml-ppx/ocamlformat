@@ -42,6 +42,7 @@
    (and
     :with-test
     (< 4.12)))
+  ocaml-version
   (alcotest :with-test)
   (base
    (and
