@@ -51,6 +51,8 @@
 
   + Do not change the spaces within the code spans in docstrings (#1499, @gpetiot)
 
+  + Comments of type constrained label in record pattern have to be relocated in 4.12 (#1517, @gpetiot)
+
 #### New features
 
 #### Internal
