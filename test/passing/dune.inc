@@ -2485,6 +2485,18 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.12.0))
+ (action
+   (with-outputs-to unary_hash.ml.output
+     (run %{bin:ocamlformat} %{dep:unary_hash.ml}))))
+
+(rule
+ (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.12.0))
+ (action (diff unary_hash.ml unary_hash.ml.output)))
+
+(rule
+ (deps .ocamlformat )
  (action
    (with-outputs-to unicode.ml.output
      (run %{bin:ocamlformat} --margin=80 --wrap-comments %{dep:unicode.ml}))))
