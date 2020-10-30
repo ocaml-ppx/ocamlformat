@@ -37,6 +37,10 @@
   (ocaml
    (and
     (>= 4.06)
+    (< 4.13)))
+  (ocaml
+   (and
+    :with-test
     (< 4.12)))
   (alcotest :with-test)
   (base
