@@ -114,6 +114,18 @@ let tokens_between t ~filter loc_start loc_end =
 let tokens_at t ~filter (l : Location.t) =
   tokens_between t ~filter l.loc_start l.loc_end
 
+let last_token_before t loc =
+  let loc_start = Lexing.{loc with pos_lnum= 0; pos_bol= 0; pos_cnum= 0} in
+  let s = string_at t loc_start loc in
+  let lexbuf = Lexing.from_string s in
+  lexbuf_set_pos lexbuf loc_start ;
+  let rec loop acc =
+    match Lexer.token lexbuf with
+    | Parser.EOF -> acc
+    | tok -> loop (Some (tok, Location.of_lexbuf lexbuf))
+  in
+  loop None
+
 let find_after t f (loc : Location.t) =
   let pos_start = loc.loc_end in
   let lexbuf =
@@ -209,16 +221,28 @@ let is_long_pexp_open source {Parsetree.pexp_desc; _} =
       contains_token_between source ~from ~upto Parser.IN
   | _ -> false
 
-let is_long_pmod_functor source Parsetree.{pmod_desc; pmod_loc= from; _} =
+let is_long_functor_syntax src ~from = function
+  | Parsetree.Unit -> false
+  | Parsetree.Named ({loc= upto; _}, _) -> (
+      if Ocaml_version.(compare Parse.parser_version Releases.v4_12) < 0 then
+        (* before 4.12 the functor keyword is the first token of the functor
+           parameter *)
+        contains_token_between src ~from ~upto Parser.FUNCTOR
+      else
+        (* since 4.12 the functor keyword is just before the loc of the
+           functor parameter *)
+        match last_token_before src from.loc_start with
+        | Some (Parser.FUNCTOR, _) -> true
+        | _ -> false )
+
+let is_long_pmod_functor t Parsetree.{pmod_desc; pmod_loc= from; _} =
   match pmod_desc with
-  | Pmod_functor (Named ({loc= upto; _}, _), _) ->
-      contains_token_between source ~from ~upto Parser.FUNCTOR
+  | Pmod_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
 
-let is_long_pmty_functor source Parsetree.{pmty_desc; pmty_loc= from; _} =
+let is_long_pmty_functor t Parsetree.{pmty_desc; pmty_loc= from; _} =
   match pmty_desc with
-  | Pmty_functor (Named ({loc= upto; _}, _), _) ->
-      contains_token_between source ~from ~upto Parser.FUNCTOR
+  | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
 
 let string_at_loc t (l : Location.t) = string_at t l.loc_start l.loc_end
