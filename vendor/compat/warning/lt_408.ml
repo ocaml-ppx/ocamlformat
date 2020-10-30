@@ -1,16 +1,5 @@
 open Base
 
-let with_warning_filter ~filter ~f =
-  let warning_printer = !Location.warning_printer in
-  (Location.warning_printer :=
-     fun loc fmt warn ->
-       if filter loc warn then warning_printer loc fmt warn else ()) ;
-  let reset () = Location.warning_printer := warning_printer in
-  try
-    let x = f () in
-    reset () ; x
-  with e -> reset () ; raise e
-
 let print_to_string f =
   let buf = Buffer.create 0 in
   let ppf = Caml.Format.formatter_of_buffer buf in
@@ -40,11 +29,30 @@ let expand_names s =
   |> List.map ~f:(fun s -> s ^ "\n")
   |> String.concat ~sep:""
 
-let print_warning l w =
-  print_to_string (fun ppf -> !Location.warning_printer l ppf w)
+let print_warning_options ~printer ~ppf l w =
+  print_to_string (fun ppf -> printer l ppf w)
   |> expand_names
-  |> Caml.Format.eprintf "%s"
+  |> Caml.Format.fprintf ppf "%s"
+
+let print_warning l w =
+  print_warning_options
+    ~printer:!Location.warning_printer
+    ~ppf:Caml.Format.err_formatter
+    l w
 
 let is_unexpected_docstring = function
   | Warnings.Bad_docstring _ -> true
   | _ -> false
+
+let with_warning_filter ~filter ~f =
+  let printer = !Location.warning_printer in
+  (Location.warning_printer :=
+     fun loc ppf warn ->
+       if filter loc warn then
+         print_warning_options ~printer ~ppf loc warn
+  ) ;
+  let reset () = Location.warning_printer := printer in
+  try
+    let x = f () in
+    reset () ; x
+  with e -> reset () ; raise e
