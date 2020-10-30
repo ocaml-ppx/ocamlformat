@@ -101,6 +101,8 @@ end
 
 module Parse : sig
   val fragment : 'a Traverse.fragment -> Lexing.lexbuf -> 'a
+
+  val parser_version : Ocaml_version.t
 end
 
 module Printast : sig
