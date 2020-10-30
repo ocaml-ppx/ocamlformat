@@ -69,4 +69,4 @@ let f ssssssssss =
     function
     | '0' -> g accuuuuuuuuuum
     | '1' -> h accuuuuuuuuuum
-    | _ -> i accuuuuuuuuuum)
+    | _ -> i accuuuuuuuuuum )

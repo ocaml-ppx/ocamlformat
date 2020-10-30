@@ -112,7 +112,7 @@ let warn ?filename ?lnum fmt =
         | Some file, None -> Format.asprintf "File %a@\n" Fpath.pp file
         | None, _ -> ""
       in
-      warn_raw (Format.asprintf "%sWarning: %s@\n" loc s))
+      warn_raw (Format.asprintf "%sWarning: %s@\n" loc s) )
     fmt
 
 module C = Config_option.Make (struct
@@ -406,7 +406,7 @@ module Formatting = struct
            ~msg:
              "It has been replaced by the new default `auto` value, which \
               breaks lines at newlines and wraps string literals at the \
-              margin.")
+              margin." )
       (fun conf x -> {conf with break_string_literals= x})
       (fun conf -> conf.break_string_literals)
 
@@ -1188,7 +1188,7 @@ let enable_outside_detected_project =
   let witness =
     String.concat ~sep:" or "
       (List.map project_root_witness ~f:(fun name ->
-           Format.sprintf "$(b,%s)" name))
+           Format.sprintf "$(b,%s)" name ) )
   in
   let doc =
     Format.sprintf
@@ -1319,7 +1319,7 @@ let ocp_indent_options =
       , Format.asprintf "$(b,%s) sets %a." ocp_indent
           (Format.pp_print_list
              ~pp_sep:(fun fs () -> Format.fprintf fs " and ")
-             (fun fs x -> Format.fprintf fs "$(b,%s)" x))
+             (fun fs x -> Format.fprintf fs "$(b,%s)" x) )
           l_ocamlformat ) )
   in
   [ alias "base" "let-binding-indent"
@@ -1349,7 +1349,7 @@ let ocp_indent_config =
         asprintf " %a"
           (pp_print_list
              ~pp_sep:(fun fs () -> fprintf fs "@ ")
-             (fun fs s -> fprintf fs "%s" s))
+             (fun fs s -> fprintf fs "%s" s) )
           l
     in
     asprintf "Read .ocp-indent configuration files.%s" supported
@@ -1738,7 +1738,7 @@ let (_profile : t option C.t) =
       selected_profile_ref := p ;
       let new_conf = Option.value p ~default:conf in
       (* The quiet option is cummulative *)
-      {new_conf with quiet= new_conf.quiet || conf.quiet})
+      {new_conf with quiet= new_conf.quiet || conf.quiet} )
     (fun _ -> !selected_profile_ref)
 
 let ocp_indent_normal_profile =
@@ -1801,7 +1801,7 @@ let parse_line config ~from s =
             (`Bad_value
               ( name
               , Format.sprintf "expecting %S but got %S" Version.version
-                  value ))
+                  value ) )
     | name, `File x ->
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
@@ -1853,7 +1853,7 @@ let parse_line config ~from s =
         Result.( >>= )
           (update ~config ~from ~name:"profile" ~value:"janestreet")
           (fun config ->
-            update_many ~config ~from ocp_indent_janestreet_profile)
+            update_many ~config ~from ocp_indent_janestreet_profile )
     | name -> update ~config ~from ~name ~value:"true" )
   | _ -> Error (`Malformed s)
 
@@ -1862,7 +1862,7 @@ let is_project_root ~root dir =
   | Some root -> Fpath.equal dir root
   | None ->
       List.exists project_root_witness ~f:(fun name ->
-          Fpath.(exists (dir / name)))
+          Fpath.(exists (dir / name)) )
 
 let dot_ocp_indent = ".ocp-indent"
 
@@ -1929,7 +1929,7 @@ let read_config_file conf filename_kind =
                     warn ~filename ~lnum:num "ignoring invalid options %S"
                       line ;
                     (conf, errors, Int.succ num)
-                | Error e -> (conf, e :: errors, Int.succ num))
+                | Error e -> (conf, e :: errors, Int.succ num) )
           in
           match List.rev errors with
           | [] -> c
@@ -1939,7 +1939,7 @@ let read_config_file conf filename_kind =
                 | `Ocp_indent _ -> dot_ocp_indent
                 | `Ocamlformat _ -> dot_ocamlformat
               in
-              failwith_user_errors ~kind l)
+              failwith_user_errors ~kind l )
     with Sys_error _ -> conf )
 
 let update_using_env conf =
@@ -2002,10 +2002,10 @@ let is_in_listing_file ~listings ~filename =
                         None )
                 | Error (`Msg msg) ->
                     warn ~filename:listing_file ~lnum:lno "%s" msg ;
-                    None))
+                    None ) )
       with Sys_error err ->
         warn "ignoring %a, %s" Fpath.pp listing_file err ;
-        None)
+        None )
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
@@ -2046,7 +2046,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
      warn ~filename:vfile
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
-       why) ;
+       why ) ;
     {conf with disable= true} )
   else
     let listings = if conf.disable then enables else ignores in
@@ -2062,7 +2062,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let conf, warn_now =
     collect_warnings (fun () ->
-        build_config ~enable_outside_detected_project ~root ~file ~is_stdin)
+        build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
   in
   if not conf.quiet then warn_now () ;
   conf
@@ -2107,7 +2107,7 @@ let validate_inputs () =
             let kind =
               Option.value ~default:(Kind Use_file) (kind_of_ext f)
             in
-            Ok (kind, f))
+            Ok (kind, f) )
       |> Result.all
       |> Result.map ~f:(fun files -> `Several_files files)
 
@@ -2139,7 +2139,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
     let conf =
       with_conf
         (build_config ~enable_outside_detected_project ~root ~file:name
-           ~is_stdin:false)
+           ~is_stdin:false )
     in
     {kind; name; file= File file; conf}
   in
@@ -2248,7 +2248,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
     | _ when String.is_prefix ~prefix:"ocamlformat." txt ->
         Error
           (Format.sprintf "Invalid format: Unknown suffix %S"
-             (String.chop_prefix_exn ~prefix:"ocamlformat." txt))
+             (String.chop_prefix_exn ~prefix:"ocamlformat." txt) )
     | _ -> Ok c
   in
   match result with

@@ -88,7 +88,7 @@ class type ffffffffffffffffffff =
          (   aaaaaaaaaaaaaaaaaaaaaa
           -> bbbbbbbbbbbbbbbbbbbbbb
           -> cccccccccccccccccccccc
-          -> dddddddddddddddddddddd)
+          -> dddddddddddddddddddddd )
       -> bbbbbbbbbbbbbbbbbbbbbb
       -> cccccccccccccccccccccc
       -> dddddddddddddddddddddd

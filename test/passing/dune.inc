@@ -1364,7 +1364,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to js_args.ml.output
-     (run %{bin:ocamlformat} %{dep:js_args.ml}))))
+     (run %{bin:ocamlformat} --max-iter=3 %{dep:js_args.ml}))))
 
 (rule
  (alias runtest)
@@ -1384,7 +1384,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to js_fun.ml.output
-     (run %{bin:ocamlformat} %{dep:js_fun.ml}))))
+     (run %{bin:ocamlformat} --max-iter=3 %{dep:js_fun.ml}))))
 
 (rule
  (alias runtest)

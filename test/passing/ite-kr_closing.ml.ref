@@ -118,7 +118,8 @@ let foo =
       , if exp == e2 then
           Right
         else
-          Left )
+          Left
+      )
 
 let foo =
   if is_sugared_list e2 then
@@ -129,7 +130,8 @@ let foo =
       , if exp == e2 then
           Right
         else
-          (Left foooooo, foooo, fooo, foooooo, fooooooo, foooooooo) )
+          (Left foooooo, foooo, fooo, foooooo, fooooooo, foooooooo)
+      )
 
 let foo =
   if cond1 then (
@@ -137,19 +139,22 @@ let foo =
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo)
+        fooooooooooooo
+    )
   ) else if cond2 then (
     arm2 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo)
+        fooooooooooooo
+    )
   ) else (
     arm3 ;
     foooooooooooooo ;
     fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
-        fooooooooooooo)
+        fooooooooooooo
+    )
   )
 
 let foo =

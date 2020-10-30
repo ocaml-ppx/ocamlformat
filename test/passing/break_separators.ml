@@ -173,7 +173,7 @@ let length =
    ; 17
    ; 2777777777777777777777777777777777
    ; 27 ]
-  [@foo])
+  [@foo] )
 
 ;;
 Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
@@ -181,7 +181,7 @@ Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
      [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo))
      ; ("foooo", fooooooo)
      ; ("foooooo", foooooooo)
-     ; ("fooooooooo", foooooooo) ])
+     ; ("fooooooooo", foooooooo) ] )
 
 (* this is an array *)
 let length =
@@ -396,7 +396,7 @@ let length =
    ; 27
    ; 27
    ; 28 ]
-  [@foo])
+  [@foo] )
 
 class
   [ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

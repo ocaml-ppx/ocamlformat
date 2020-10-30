@@ -55,6 +55,8 @@
 
   + Preserve functor syntax for OCaml 4.12 (#1514, @gpetiot)
 
+  + Fix inconsistencies of the closing parentheses with indicate-multiline-delimiters (#1377, @gpetiot)
+
 #### New features
 
 #### Internal

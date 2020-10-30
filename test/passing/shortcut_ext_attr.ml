@@ -3,7 +3,7 @@ let () =
   let%foo[@foo] x = 3 and[@foo] y = 4 in
   [%foo
     (let module M = M in
-    ())
+    () )
     [@foo]] ;
   [%foo M.(()) [@foo]] ;
   [%foo fun [@foo] x -> ()] ;

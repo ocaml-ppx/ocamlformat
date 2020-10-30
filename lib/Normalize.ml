@@ -54,7 +54,7 @@ let comment s =
   (* normalize consecutive whitespace chars to a single space *)
   String.concat ~sep:" "
     (List.filter ~f:(Fn.non String.is_empty)
-       (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']))
+       (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']) )
 
 let list f fmt l =
   let pp_sep fmt () = Format.fprintf fmt "" in
@@ -110,9 +110,9 @@ let rec odoc_nestable_block_element c fmt = function
           let comments = dedup_cmts Traverse.Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-                Location.compare a b)
+                Location.compare a b )
             |> List.iter ~f:(fun {Cmt.txt; _} ->
-                   Caml.Format.fprintf fmt "%s," txt)
+                   Caml.Format.fprintf fmt "%s," txt )
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.implementation
@@ -218,13 +218,13 @@ let make_mapper conf ~ignore_doc_comments =
                            ( { pexp_desc=
                                  Pexp_constant
                                    (Pconst_string
-                                      (doc', self#location str_loc, None))
+                                      (doc', self#location str_loc, None) )
                              ; pexp_loc= self#location pexp_loc
                              ; pexp_attributes=
                                  self#attributes pexp_attributes
                              ; pexp_loc_stack= [] }
                            , [] )
-                     ; pstr_loc= self#location pstr_loc } ])
+                     ; pstr_loc= self#location pstr_loc } ] )
           ; attr_loc= self#location attr.attr_loc }
       | _ -> super#attribute attr
 
@@ -268,7 +268,7 @@ let make_mapper conf ~ignore_doc_comments =
           self#pattern
             (Pat.or_ ~loc:loc1 ~attrs:attrs1
                (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
-               pat3)
+               pat3 )
       | _ -> super#pattern pat
 
     method! value_binding vb =
@@ -289,13 +289,13 @@ let make_mapper conf ~ignore_doc_comments =
         when equal_core_type t0 t1 ->
           self#value_binding
             (Vb.mk ~loc:pvb_loc ~attrs:pvb_attributes p0
-               (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes e0 t0))
+               (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes e0 t0) )
       (* convert [let (x : t) = e] to [let x = (e : t)] *)
       | Ppat_constraint (p0, t0), _ ->
           self#value_binding
             (Vb.mk ~loc:pvb_loc ~attrs:pvb_attributes p0
                (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes pvb_expr
-                  t0))
+                  t0 ) )
       | _ -> super#value_binding vb
 
     method! structure_item si =
@@ -312,7 +312,7 @@ let make_mapper conf ~ignore_doc_comments =
           List.filter si ~f:(fun si ->
               match si.pstr_desc with
               | Pstr_attribute a -> not (doc_attribute a)
-              | _ -> true)
+              | _ -> true )
         else si
       in
       super#structure si
@@ -323,7 +323,7 @@ let make_mapper conf ~ignore_doc_comments =
           List.filter si ~f:(fun si ->
               match si.psig_desc with
               | Psig_attribute a -> not (doc_attribute a)
-              | _ -> true)
+              | _ -> true )
         else si
       in
       super#signature si
@@ -335,7 +335,7 @@ let make_mapper conf ~ignore_doc_comments =
             List.filter si.pcsig_fields ~f:(fun si ->
                 match si.pctf_desc with
                 | Pctf_attribute a -> not (doc_attribute a)
-                | _ -> true)
+                | _ -> true )
           in
           {si with pcsig_fields}
         else si
@@ -349,7 +349,7 @@ let make_mapper conf ~ignore_doc_comments =
             List.filter si.pcstr_fields ~f:(fun si ->
                 match si.pcf_desc with
                 | Pcf_attribute a -> not (doc_attribute a)
-                | _ -> true)
+                | _ -> true )
           in
           {si with pcstr_fields}
         else si
@@ -426,7 +426,7 @@ let moved_docstrings fragment c s1 s2 =
         List.partition_map l1 ~f:(fun x ->
             match List.find l2 ~f:(equal x) with
             | Some (l, s) -> First (Moved (fst x, l, s))
-            | None -> Second x)
+            | None -> Second x )
       in
       let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
       let l1 = List.map ~f:unstable l1 in

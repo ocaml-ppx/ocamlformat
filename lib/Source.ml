@@ -135,7 +135,7 @@ let find_after t f (loc : Location.t) =
         Bytes.From_string.blit ~src:t ~src_pos:!pos ~dst:bytes ~dst_pos:0
           ~len:to_write ;
         pos := !pos + to_write ;
-        to_write)
+        to_write )
   in
   lexbuf_set_pos lexbuf pos_start ;
   let rec loop () =
@@ -149,13 +149,13 @@ let extend_loc_to_include_attributes t (loc : Location.t)
     (l : Parsetree.attributes) =
   if
     List.exists l ~f:(fun {attr_loc; attr_name; _} ->
-        Location.compare attr_name.loc attr_loc <> 0)
+        Location.compare attr_name.loc attr_loc <> 0 )
   then
     (* Starting with OCaml 4.08, attributes have locations *)
     let loc_end =
       List.fold l ~init:loc
         ~f:(fun acc ({attr_loc; _} : Parsetree.attribute) ->
-          if Location.compare_end attr_loc acc <= 0 then acc else attr_loc)
+          if Location.compare_end attr_loc acc <= 0 then acc else attr_loc )
     in
     if phys_equal loc_end loc then loc
     else
@@ -168,7 +168,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
         ~f:(fun
              (acc : Location.t)
              ({attr_name= {loc; _}; attr_payload= payload; _} :
-               Parsetree.attribute)
+               Parsetree.attribute )
            ->
           if loc.loc_ghost then acc
           else
@@ -182,7 +182,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
               | PPat (p, None) -> p.ppat_loc
               | PPat (_, Some e) -> e.pexp_loc
             in
-            if Location.compare_end loc acc <= 0 then acc else loc)
+            if Location.compare_end loc acc <= 0 then acc else loc )
     in
     if phys_equal last_loc loc then loc
     else
@@ -202,7 +202,7 @@ let extend_loc_to_include_attributes t (loc : Location.t)
              |LBRACKETPERCENT | LBRACKETPERCENTPERCENT | LBRACKETAT
              |LBRACKETATAT | LBRACKETATATAT ->
                 Int.incr count ; false
-            | _ -> false)
+            | _ -> false )
           loc
       in
       match l with
@@ -257,7 +257,7 @@ let string_literal t mode (l : Location.t) =
         | Parser.STRING (_, _, None) -> true
         | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
             true
-        | _ -> false)
+        | _ -> false )
       l
   in
   match toks with
@@ -281,7 +281,7 @@ let char_literal t (l : Location.t) =
         | Parser.CHAR _ -> true
         | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
             true
-        | _ -> false)
+        | _ -> false )
       l
   in
   match toks with
@@ -342,7 +342,7 @@ let locs_of_interval source loc =
   let toks =
     tokens_at source loc ~filter:(function
       | CHAR _ | DOTDOT | INT _ | STRING _ | FLOAT _ -> true
-      | _ -> false)
+      | _ -> false )
   in
   match toks with
   | [ ((CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
@@ -380,7 +380,7 @@ let is_quoted_string t loc =
   let toks =
     tokens_at t loc ~filter:(function
       | QUOTED_STRING_ITEM _ | QUOTED_STRING_EXPR _ -> true
-      | _ -> false)
+      | _ -> false )
   in
   not (List.is_empty toks)
 

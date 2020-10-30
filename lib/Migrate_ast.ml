@@ -79,7 +79,7 @@ module Parse = struct
       ~f:(fun (p : Parsetree.toplevel_phrase) ->
         match p with
         | Ptop_def [] -> false
-        | Ptop_def (_ :: _) | Ptop_dir _ -> true)
+        | Ptop_def (_ :: _) | Ptop_dir _ -> true )
 
   let fragment (type a) (fragment : a Traverse.fragment) lexbuf : a =
     match fragment with

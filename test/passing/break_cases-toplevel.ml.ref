@@ -22,6 +22,22 @@ let f =
           function
           | A -> 6 ) )
 
+let foo =
+  List.map ~f:(fun x g t h y u ->
+      match x with
+      | E -> 4
+      | Z | P | M -> (
+        match y with
+        | O -> 5
+        | P when h x -> (
+            function
+            | A -> 6 ) ) ) ;
+  List.map ~f:(fun x g t h y u ->
+      fooooooooooooo foooooooo ;
+      ( match k with
+      | foooo -> foooooooo ) ;
+      fooooooooooooooo fooooooooooooo )
+
 ;;
 match x with
 | true -> (

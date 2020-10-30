@@ -46,7 +46,7 @@ let parse fragment (conf : Conf.t) ~source =
         if is_unexpected_docstring warn && conf.comment_check then (
           w50 := (loc, warn) :: !w50 ;
           false )
-        else not conf.quiet)
+        else not conf.quiet )
       ~f:(fun () ->
         let ast = Migrate_ast.Parse.fragment fragment lexbuf in
         Warnings.check_fatal () ;
@@ -55,6 +55,6 @@ let parse fragment (conf : Conf.t) ~source =
             ~f:(fun (txt, loc) -> Cmt.create txt loc)
             (Lexer.comments ())
         in
-        {ast; comments; prefix= hash_bang})
+        {ast; comments; prefix= hash_bang} )
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)

@@ -161,14 +161,14 @@ let length =
 let length =
   ([ 0; 14; (* foo *) 14; 17 (* foo *); 17;
      2777777777777777777777777777777777; 27 ]
-  [@foo])
+  [@foo] )
 
 ;;
 Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
   (Foo.foo ~foo ~foo ~foooo:()
      [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo));
        ("foooo", fooooooo); ("foooooo", foooooooo); ("fooooooooo", foooooooo)
-     ])
+     ] )
 
 (* this is an array *)
 let length =
@@ -191,7 +191,7 @@ let length =
      2777777777777777777777777777777777; 27; 27; 27; 27; 27; 27; 27; 27; 27;
      27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 27; 28
    ]
-  [@foo])
+  [@foo] )
 
 class
   [ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,

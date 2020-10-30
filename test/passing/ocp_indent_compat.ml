@@ -59,7 +59,7 @@ module type M = sig
           -> fooooooooooooooooooo
           -> foooooooooooooo
           -> foooooooooooooo * fooooooooooooooooo
-          -> foooooooooooooooo)
+          -> foooooooooooooooo )
          (** an extremely long comment about [x] that does not fit on the
              same line with [x] *)
     -> unit
@@ -69,7 +69,7 @@ let ssmap
     : (module MapT
          with type key = string
           and type data = string
-          and type map = SSMap.map)
+          and type map = SSMap.map )
   =
   ()
 
@@ -77,7 +77,7 @@ let ssmap
     :  (module MapT
           with type key = string
            and type data = string
-           and type map = SSMap.map)
+           and type map = SSMap.map )
     -> unit
   =
   ()
@@ -126,14 +126,14 @@ module type M = sig
           -> fooooooooooooooooooo
           -> foooooooooooooo
           -> foooooooooooooo * fooooooooooooooooo
-          -> foooooooooooooooo)
+          -> foooooooooooooooo )
          (** an extremely long comment about [x] that does not fit on the
              same line with [x] *)
     -> unit
 end
 
-let array_fold_transf (f : numbering -> 'a -> numbering * 'b) n
-    (a : 'a array) : numbering * 'b array =
+let array_fold_transf (f : numbering -> 'a -> numbering * 'b) n (a : 'a array)
+    : numbering * 'b array =
   match Array.length a with 0 -> (n, [||]) | 1 -> x
 
 let to_clambda_function (id, (function_decl : Flambda.function_declaration))

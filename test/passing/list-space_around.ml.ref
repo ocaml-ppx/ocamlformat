@@ -5,7 +5,7 @@ let f x =
   | P
       ({ xxxxxxxxxxxxxxxxxxxxxx }
       :: { yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy }
-         :: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz) ->
+         :: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ) ->
       true
 
 let f x = match x with P [ { xxxxxx }; { yyyyyyyy } ] -> true

@@ -7,7 +7,7 @@ let%client () =
     (* NB The service underlying the server_function isn't available on the
        client before loading the page. *)
     (fun () ->
-      Lwt.async (fun () -> log "Hello from the client to the server!"))
+      Lwt.async (fun () -> log "Hello from the client to the server!") )
 
 [%%shared
 type some_type = int * string list [@@deriving json]
@@ -31,4 +31,4 @@ let%shared () =
   Eliom_registration.Html.register s (fun () () ->
       Lwt.return
         (Eliom_tools.F.html ~title:"hybrid"
-           Html.F.(body [h1 [txt "Salut !"]])))
+           Html.F.(body [h1 [txt "Salut !"]]) ) )

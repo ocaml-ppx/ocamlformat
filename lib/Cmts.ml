@@ -53,7 +53,7 @@ let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
       | "|" ->
           Source.begins_line src l1
           && Position.column l1.loc_start < Position.column l2.loc_start
-      | _ -> false)
+      | _ -> false )
 
 (** Whether the symbol preceding location [loc] is an infix symbol or a
     semicolon. If it is the case, comments attached to the following item
@@ -99,7 +99,7 @@ end = struct
   let of_list cmts =
     List.fold cmts ~init:empty ~f:(fun map cmt ->
         let pos = cmt.Cmt.loc.loc_start in
-        Map.add_multi map ~key:pos ~data:cmt)
+        Map.add_multi map ~key:pos ~data:cmt )
 
   let to_list map = List.concat (Map.data map)
 
@@ -124,7 +124,7 @@ end = struct
     | Cmt.{loc; _} :: _ as cmtl when is_adjacent src prev loc -> (
       match
         List.group cmtl ~break:(fun l1 l2 ->
-            not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)))
+            not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
       with
       | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
           let open Location in
@@ -147,7 +147,7 @@ end = struct
                 List.partition_tf cmtl ~f:(fun {Cmt.loc= l; _} ->
                     match decide l with
                     | `After_prev -> false
-                    | `Before_next -> true)
+                    | `Before_next -> true )
               in
               (prev, next)
             else ([], cmtl)
@@ -184,7 +184,7 @@ let add_cmts t ?prev ?next position loc cmts =
           Caml.Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
             (position_to_string position)
             Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
-            cmt_txt (String.escaped btw_next)) ;
+            cmt_txt (String.escaped btw_next) ) ;
     update_cmts t position ~f:(Map.add_exn ~key:loc ~data:cmtl) )
 
 (** Traverse the location tree from locs, find the deepest location that
@@ -217,7 +217,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
     | None ->
         if t.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
-              Format.eprintf "lost: %s@\n%!" txt) )
+              Format.eprintf "lost: %s@\n%!" txt ) )
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
@@ -240,7 +240,7 @@ let relocate (t : t) ~src ~before ~after =
       update_remaining t ~f:(fun s ->
           let s = Set.remove s src in
           let s = Set.add s after in
-          Set.add s before) )
+          Set.add s before ) )
 
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let kwd_loc =
@@ -253,7 +253,7 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
     in
     let map =
       List.fold_left ~init:map (List.rev before) ~f:(fun map data ->
-          Map.add_multi map ~key:whole_loc ~data)
+          Map.add_multi map ~key:whole_loc ~data )
     in
     Multimap.change_multi map matched_loc after
   in
@@ -286,13 +286,13 @@ let init fragment ~debug source asts comments_n_docstrings =
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun {Cmt.txt; loc} ->
         Caml.Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
-          (if Source.ends_line source loc then "eol" else "")) ) ;
+          (if Source.ends_line source loc then "eol" else "") ) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast fragment asts source in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
-            update_remaining t ~f:(fun s -> Set.add s loc)) ;
+            update_remaining t ~f:(fun s -> Set.add s loc) ) ;
     if debug then (
       let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
       Format.eprintf "\nLoc_tree:\n%!" ;
@@ -384,14 +384,14 @@ let fmt_cmts t (conf : Conf.t) ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n")
                      ~fmt_code:(fmt_code conf) pos
                | group ->
                    list group "@;<1000 0>" (fun cmt ->
-                       wrap "(*" "*)" (str (Cmt.txt cmt))) )
+                       wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
                $
                match next with
                | Some (next :: _) ->
                    let last = List.last_exn group in
                    fmt_if (line_dist (Cmt.loc last) (Cmt.loc next) > 1) "\n"
                    $ fmt "@ "
-               | _ -> noop))
+               | _ -> noop ) )
       $ fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
@@ -424,7 +424,7 @@ let drop_inside t loc =
     update_cmts t pos
       ~f:
         (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
-             not (Location.contains loc cmt_loc)))
+             not (Location.contains loc cmt_loc) ) )
   in
   clear `Before ;
   clear `Within ;

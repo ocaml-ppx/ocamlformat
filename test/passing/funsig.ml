@@ -27,7 +27,7 @@ type t =
   | Cstr of
       (   xxxxxxxxxxxxxxxxxxxxxxxxx
        -> yyyyyyyyyyyyyyyyyyyyyyyyy
-       -> aaaaaaaaaaaaaaaaaaaa)
+       -> aaaaaaaaaaaaaaaaaaaa )
       * bbbbbbbbbbbbbbbbbbbb
 
 type t =
@@ -35,7 +35,7 @@ type t =
       aaaaaaaaaaaaaaaaaaaa
       * (   xxxxxxxxxxxxxxxxxxxxxxxxx
          -> yyyyyyyyyyyyyyyyyyyyyyyyy
-         -> bbbbbbbbbbbbbbbbbbbb)
+         -> bbbbbbbbbbbbbbbbbbbb )
       * cccccccccccccccccccc
 
 type ('aaaa, 'bbbb, 'cccc) t =

@@ -32,7 +32,7 @@ let tests_lazy =
         let pp s =
           Fmt.lazy_ (fun () ->
               r := Some s ;
-              Fmt.str s)
+              Fmt.str s )
         in
         let term = Fmt.fmt_if_k false (pp "hello") in
         let expected = "" in

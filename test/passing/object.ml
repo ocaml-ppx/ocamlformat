@@ -158,7 +158,7 @@ class tttttttttttttttttttttttttt x y =
       inherit f a
 
       method x a b = a + b
-    end)
+    end )
     0
 
 class c =

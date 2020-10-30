@@ -198,7 +198,7 @@ type foooooooooooooooo =
             -> string
             -> int
             -> string
-            -> string option foooooooooooooooooooooooo)
+            -> string option foooooooooooooooooooooooo )
       -> fooooo:string
       -> ?fooooooooo:(unit -> unit Fooo.t)
       -> ?fooooooo:bool
