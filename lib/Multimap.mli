@@ -32,6 +32,15 @@ val update_multi :
 val change_multi :
   ('key, 'value, 'cmp) t -> 'key -> 'value list -> ('key, 'value, 'cmp) t
 
+val partition_multi :
+     ('key, 'value, 'cmp) t
+  -> src:'key
+  -> dst:'key
+  -> f:('value -> bool)
+  -> ('key, 'value, 'cmp) t
+(** Split the values of key [src] with [f], the values satisfying [f] are
+    moved to key [dst] while the others remain associated to key [src]. *)
+
 val filter :
   ('key, 'value, 'cmp) t -> f:('value -> bool) -> ('key, 'value, 'cmp) t
 

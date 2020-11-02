@@ -544,21 +544,13 @@ let rec fmt_extension c ctx key (ext, pld) =
       assert (not (Cmts.has_before c.cmts pstr_loc)) ;
       assert (not (Cmts.has_after c.cmts pstr_loc)) ;
       hvbox 0 (fmt_quoted_string key ext str delim)
-  | _ -> fmt_attribute_or_extension c key Fn.id (ext, pld)
+  | _ -> fmt_attribute_or_extension c key (ext, pld)
 
-and fmt_attribute_or_extension c key maybe_box (pre, pld) =
-  let str_cmts =
-    match pld with
-    | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] -> Cmts.fmt c pstr_loc
-    | _ -> Fn.id
-  in
-  let protect_token = Exposed.Right.payload pld in
-  str_cmts
-  @@ maybe_box
-       (wrap "[" "]"
-          ( str key $ fmt_str_loc c pre
-          $ fmt_payload c (Pld pld) pld
-          $ fmt_if protect_token " " ) )
+and fmt_attribute_or_extension c key (pre, pld) =
+  wrap "[" "]"
+    ( str key $ fmt_str_loc c pre
+    $ fmt_payload c (Pld pld) pld
+    $ fmt_if (Exposed.Right.payload pld) " " )
 
 and fmt_attributes c ?pre ?suf ~key attrs =
   let pre =
@@ -589,7 +581,7 @@ and fmt_attributes c ?pre ?suf ~key attrs =
               c.conf.stritem_extension_indent
           | _ -> c.conf.extension_indent
         in
-        fmt_attribute_or_extension c pre (hvbox indent) (name, pld)
+        hvbox indent (fmt_attribute_or_extension c pre (name, pld))
   in
   let num = List.length attrs in
   let fmt_attr ~first ~last {attr_name; attr_payload; attr_loc} =
@@ -606,7 +598,11 @@ and fmt_payload c ctx pld =
   @@
   match pld with
   | PStr mex ->
-      fmt_if (not (List.is_empty mex)) "@ " $ fmt_structure c ctx mex
+      fmt_if (not (List.is_empty mex)) "@ "
+      $ ( match mex with
+        | [{pstr_desc= Pstr_eval _; pstr_loc; _}] -> Cmts.fmt c pstr_loc
+        | _ -> Fn.id )
+        @@ fmt_structure c ctx mex
   | PSig mty ->
       str ":"
       $ fmt_if (not (List.is_empty mty)) "@ "
