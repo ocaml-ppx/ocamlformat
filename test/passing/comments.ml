@@ -108,6 +108,10 @@ let _ = match e with
   | 3 (* test *) -> e
   | 3 (* test *) :: tail -> e
 
+let _ = if a then b :: c (* d *) else e
+
+let (b :: c (* d *)) = x
+
 module rec A = struct end
 (*test*)
 and B = struct end
