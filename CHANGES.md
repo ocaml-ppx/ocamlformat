@@ -57,6 +57,8 @@
 
   + Fix inconsistencies of the closing parentheses with indicate-multiline-delimiters (#1377, @gpetiot)
 
+  + Fix position of comments around list constructor (::) (#1524, @gpetiot)
+
 #### New features
 
 #### Internal
