@@ -120,7 +120,7 @@ module Position = struct
 
   let column {pos_bol; pos_cnum; _} = pos_cnum - pos_bol
 
-  let fmt fs {pos_lnum; pos_bol; pos_cnum; _} =
+  let fmt fs {pos_lnum; pos_bol; pos_cnum; pos_fname= _} =
     if pos_lnum = -1 then Format.fprintf fs "[%d]" pos_cnum
     else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 
@@ -150,7 +150,13 @@ module Location = struct
 
   let sexp_of_t x = Sexp.Atom (to_string x)
 
-  let compare : t -> t -> int = Poly.compare
+  let compare {loc_start; loc_end; loc_ghost} b =
+    match Position.compare loc_start b.loc_start with
+    | 0 -> (
+      match Position.compare loc_end b.loc_end with
+      | 0 -> Poly.compare loc_ghost b.loc_ghost
+      | c -> c )
+    | c -> c
 
   type location = t
 

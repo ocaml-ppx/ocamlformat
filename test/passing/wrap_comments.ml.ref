@@ -16,12 +16,15 @@ let _ =
   ; "g" ]
 
 let _ =
-  let _ = (* This is indented 7 This 0 *)
-          0 in
+  let _ =
+    (* This is indented 7 This 0 *)
+    0
+  in
   0
 
-let _ = (*no space before no space after*)
-        0
+let _ =
+  (*no space before no space after*)
+  0
 
 let _ =
   (* blah blah *)
