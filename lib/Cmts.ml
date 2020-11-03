@@ -256,6 +256,17 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
 let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
     ~whole_loc =
   match pld with
+  | PStr
+      [ { pstr_desc=
+            Pstr_eval
+              ( { pexp_desc= Pexp_constant (Pconst_string _)
+                ; pexp_loc= _
+                ; pexp_loc_stack= _
+                ; pexp_attributes= _ }
+              , [] )
+        ; pstr_loc } ]
+    when Source.is_quoted_string src pstr_loc ->
+      ()
   | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
       let kwd_loc =
         match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with
