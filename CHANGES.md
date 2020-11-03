@@ -59,6 +59,8 @@
 
   + Fix position of comments around list constructor (::) (#1524, @gpetiot)
 
+  + Fix comments position in extensions (#1525, @gpetiot)
+
 #### New features
 
 #### Internal
