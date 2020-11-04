@@ -195,6 +195,14 @@ module Location = struct
   let smallest loc stack =
     let min a b = if width a < width b then a else b in
     List.reduce_exn (loc :: stack) ~f:min
+
+  let to_span loc =
+    let open Odoc_model.Location_ in
+    { file= loc.loc_start.pos_fname
+    ; start=
+        {line= loc.loc_start.pos_lnum; column= Position.column loc.loc_start}
+    ; end_= {line= loc.loc_end.pos_lnum; column= Position.column loc.loc_end}
+    }
 end
 
 module Longident = struct

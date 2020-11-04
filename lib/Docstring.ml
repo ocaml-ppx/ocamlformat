@@ -9,27 +9,15 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type 'a with_comments =
-  {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
-
-module W : sig
-  type t
-
-  val in_lexer : int list
-
-  val disable : int -> t
-
-  val enable : int -> t
-
-  val to_string : t list -> string
-end
-
-exception Warning50 of (Location.t * Warnings.t) list
-
-exception Odoc_errors of Odoc_model.Error.t list
-
-val parse :
-     'a Migrate_ast.Traverse.fragment
-  -> Conf.t
-  -> source:string
-  -> 'a with_comments
+let parse ~loc text =
+  let location = loc.Location.loc_start in
+  let location =
+    { location with
+      pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
+  in
+  match Odoc_parser.parse_comment_raw ~location ~text with
+  | exception _ ->
+      let span = Migrate_ast.Location.to_span loc in
+      Error [Odoc_model.Error.make "comment could not be parsed" span]
+  | {value; warnings= []} -> Ok value
+  | {warnings; _} -> Error warnings
