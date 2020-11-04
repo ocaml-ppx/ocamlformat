@@ -29,7 +29,7 @@ Git is used to manage the script's state:
   =dune-release tag=
 
 - Check that release binary has a release version number:
-  =dune exec ocamlformat -- --version= should output just =a.b.c=
+  =dune build @install && dune install --prefix _install && ./_install/bin/ocamlformat --version && rm -rf _install= should output just =a.b.c=
 
 - Release in automatic mode
   =dune-release=
