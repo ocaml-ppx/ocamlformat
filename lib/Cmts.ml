@@ -242,16 +242,19 @@ let relocate (t : t) ~src ~before ~after =
           let s = Set.add s after in
           Set.add s before ) )
 
+let relocate_cmts_before (t : t) ~src ~sep ~dst =
+  let f map =
+    Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
+        Location.compare_end loc sep < 0 )
+  in
+  update_cmts t `Before ~f ;
+  update_cmts t `Within ~f
+
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let kwd_loc =
     Option.value_exn (Source.loc_of_first_token_at src whole_loc tok)
   in
-  let f map =
-    Multimap.partition_multi map ~src:matched_loc ~dst:whole_loc
-      ~f:(fun Cmt.{loc; _} -> Location.compare_end loc kwd_loc < 0)
-  in
-  update_cmts t `Before ~f ;
-  update_cmts t `Within ~f
+  relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
 
 let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
     ~whole_loc =
@@ -276,12 +279,7 @@ let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
           | Some loc -> loc
           | None -> impossible "expect token starting extension" )
       in
-      let f map =
-        Multimap.partition_multi map ~src:pstr_loc ~dst:whole_loc
-          ~f:(fun Cmt.{loc; _} -> Location.compare loc kwd_loc < 0)
-      in
-      update_cmts t `Before ~f ;
-      update_cmts t `Within ~f
+      relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc
   | _ -> ()
 
 let relocate_wrongfully_attached_cmts t src exp =
