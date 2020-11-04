@@ -351,13 +351,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     match parsed with
     | _ when not c.conf.parse_docstrings -> fmt_raw str_cmt
     | Ok parsed -> fmt_parsed parsed
-    | Error msgs ->
-        if not c.conf.quiet then
-          List.iter msgs ~f:(fun x ->
-              Caml.Format.eprintf
-                "Warning: Invalid documentation comment:@,%s\n%!"
-                (Odoc_model.Error.to_string x) ) ;
-        fmt_raw str_cmt
+    | Error _ -> impossible "already checked when parsing the input"
   in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
