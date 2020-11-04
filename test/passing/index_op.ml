@@ -160,3 +160,19 @@ let _ = 2e5.*(0)
 let _ = 2e-2.*(0)
 
 let _ = (String.get [@bar]) filename (len - 1) = 'i'
+
+let _ = "hello world".[-8]
+
+let _ = String.get "hello world" (-8)
+
+let _ = String.unsafe_get "hello world" (-8)
+
+let _ = [||].(-8)
+
+let _ = Array.get [||] (-8)
+
+let _ = Array.unsafe_get [||] (-8)
+
+let _ = Bigarray.Genarray.get x [||] (-8)
+
+let _ = Bigarray.Genarray.unsafe_get x [||] (-8)

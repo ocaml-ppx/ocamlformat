@@ -9534,8 +9534,9 @@ let h ?l:(p = 1) ?y:u ?(x = 3) = 2
 
 let _ = function
   | a, s, ba1, ba2, ba3, bg ->
-    ignore (x.(1) + [||].(0) + [| 1 |].(1) + [| 1; 2 |].(2));
-    ignore [ s.[1]; "".[2]; "123".[3] ];
+    ignore
+      (Array.get x 1 + Array.get [||] 0 + Array.get [| 1 |] 1 + Array.get [| 1; 2 |] 2);
+    ignore [ String.get s 1; String.get "" 2; String.get "123" 3 ];
     ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
   | b, s, ba1, ba2, ba3, bg ->
     y.(0) <- 1;
