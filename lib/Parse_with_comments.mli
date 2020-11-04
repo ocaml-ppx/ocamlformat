@@ -33,3 +33,5 @@ val parse :
   -> Conf.t
   -> source:string
   -> 'a with_comments
+(** @raise [Warning50] on misplaced documentation comments.
+    @raise [Odoc_errors] on invalid documentation comments. *)
