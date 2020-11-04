@@ -7,6 +7,9 @@
   + Preserve the syntax of infix set/get operators (#1528, @gpetiot)
     `String.get` and similar calls used to be automatically rewritten to their corresponding infix form `.()`, that was incorrect when using the `-unsafe` compilation flag. Now the concrete syntax of these calls is preserved.
 
+  + Fail on invalid docstrings (#1529, @gpetiot)
+    Invalid docstrings are no longer reported as warnings but make ocamlformat exit with code 1.
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
