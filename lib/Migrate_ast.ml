@@ -136,6 +136,8 @@ module Position = struct
   include (val Comparator.make ~compare ~sexp_of_t)
 
   let distance p1 p2 = p2.pos_cnum - p1.pos_cnum
+
+  let to_point x = Odoc_model.Location_.{line= x.pos_lnum; column= column x}
 end
 
 module Location = struct
@@ -199,10 +201,8 @@ module Location = struct
   let to_span loc =
     let open Odoc_model.Location_ in
     { file= loc.loc_start.pos_fname
-    ; start=
-        {line= loc.loc_start.pos_lnum; column= Position.column loc.loc_start}
-    ; end_= {line= loc.loc_end.pos_lnum; column= Position.column loc.loc_end}
-    }
+    ; start= Position.to_point loc.loc_start
+    ; end_= Position.to_point loc.loc_end }
 end
 
 module Longident = struct
