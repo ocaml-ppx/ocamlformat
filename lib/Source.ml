@@ -103,17 +103,9 @@ let has_cmt_same_line_after (t : t) (loc : Location.t) =
     String.is_prefix str ~prefix:"(*"
 
 let find_first_token_after t pos =
-  let comp c = Position.compare pos (snd t.tokens.(c)).Location.loc_start in
-  let len = Array.length t.tokens in
-  let rec loop a b =
-    match b - a with
-    | 0 -> a
-    | 1 -> if comp a <= 0 then a else b
-    | _ -> (
-        let c = (a + b) / 2 in
-        match comp c with 0 -> c | x when x < 0 -> loop a c | _ -> loop c b )
-  in
-  if len = 0 || comp (len - 1) > 0 then None else Some (loop 0 (len - 1))
+  Array.binary_search t.tokens
+    ~compare:(fun (_, elt) pos -> Position.compare elt.Location.loc_start pos)
+    `First_greater_than_or_equal_to pos
 
 let tokens_between (t : t) ~filter loc_start loc_end =
   match find_first_token_after t loc_start with
