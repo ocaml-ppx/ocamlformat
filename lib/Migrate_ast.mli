@@ -43,6 +43,8 @@ module Position : sig
   val column : t -> int
 
   val distance : t -> t -> int
+
+  val compare : t -> t -> int
 end
 
 module Location : sig
