@@ -23,7 +23,8 @@ val parse_and_format :
     formats [source] as a list of fragments. *)
 
 val print_error :
-     ?fmt:Format.formatter
+     fmt:Format.formatter
+  -> exe:string
   -> debug:bool
   -> quiet:bool
   -> input_name:string

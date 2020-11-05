@@ -18,6 +18,8 @@
 
   + Warnings printed by ocamlformat itself now use the 4.12 style with symbolic names (#1511, #1518, @emillon)
 
+  + Remove extension from executable name in error messages. On Windows, this means that messages now start with "ocamlformat: ..." instead of "ocamlformat.exe: ..." (#1531, @emillon)
+
 #### Bug fixes
 
   + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)
