@@ -1,0 +1,3 @@
+(executable
+ (name test_comments)
+ (libraries cmdliner ocamlformat_lib stdio))
