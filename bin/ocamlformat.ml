@@ -41,8 +41,8 @@ let chop_any_extension s =
 
 let print_error conf opts ~input_name e =
   let exe = chop_any_extension (Filename.basename Caml.Sys.argv.(0)) in
-  Translation_unit.print_error ~exe ~debug:opts.Conf.debug
-    ~quiet:conf.Conf.quiet ~input_name e
+  Translation_unit.print_error ~fmt:Format.err_formatter ~exe
+    ~debug:opts.Conf.debug ~quiet:conf.Conf.quiet ~input_name e
 
 let run_action action opts =
   match action with
