@@ -102,13 +102,13 @@ let has_cmt_same_line_after (t : t) (loc : Location.t) =
     let str = String.lstrip str in
     String.is_prefix str ~prefix:"(*"
 
-let find_first_token_after t pos =
+let find_token t k pos =
   Array.binary_search t.tokens
     ~compare:(fun (_, elt) pos -> Position.compare elt.Location.loc_start pos)
-    `First_greater_than_or_equal_to pos
+    k pos
 
 let tokens_between (t : t) ~filter loc_start loc_end =
-  match find_first_token_after t loc_start with
+  match find_token t `First_greater_than_or_equal_to loc_start with
   | None -> []
   | Some i ->
       let rec loop i acc =
@@ -127,13 +127,12 @@ let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end
 
 let last_token_before t pos =
-  let len = Array.length t.tokens in
-  match (find_first_token_after t pos, len) with
-  | None, 0 | Some 0, _ -> None
-  | None, i | Some i, _ -> Some t.tokens.(i - 1)
+  Option.map
+    (find_token t `Last_strictly_less_than pos)
+    ~f:(fun i -> t.tokens.(i))
 
 let find_after t f (loc : Location.t) =
-  match find_first_token_after t loc.loc_end with
+  match find_token t `First_greater_than_or_equal_to loc.loc_end with
   | None -> None
   | Some i ->
       let rec loop i =
