@@ -233,7 +233,8 @@ let recover (type a) : a Traverse.fragment -> _ = function
   | Traverse.Signature -> Parse_wyc.Make_parsable.signature
   | Traverse.Use_file -> Parse_wyc.Make_parsable.use_file
 
-let format fragment ?output_file ~input_name ~source ~parsed conf opts =
+let format fragment ?output_file ~input_name ~source ~source_recover ~parsed
+    conf opts =
   let open Result.Monad_infix in
   let dump_ast ~suffix ast =
     if opts.Conf.debug then
@@ -249,10 +250,10 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
   in
   Ocaml_common.Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~(conf : Conf.t) t ~source =
+  let rec print_check ~i ~(conf : Conf.t) t ~source ~source_recover =
     let format ~box_debug =
       let open Fmt in
-      let source_t = Source.create source in
+      let source_t = Source.create source_recover in
       let cmts_t =
         Cmts.init fragment ~debug:opts.debug source_t t.ast t.comments
       in
@@ -292,16 +293,17 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn ->
           if opts.Conf.format_invalid_files then (
-            match parse fragment conf ~source:(recover fragment fmted) with
+            let source = recover fragment fmted in
+            match parse fragment conf ~source with
             | exception exn ->
                 internal_error (`Cannot_parse exn) (exn_args ())
             | t_new ->
                 Format.fprintf Format.err_formatter
                   "Warning: %s is invalid, recovering.\n%!" input_name ;
-                Ok t_new )
+                Ok (t_new, source) )
           else internal_error (`Cannot_parse exn) (exn_args ())
-      | t_new -> Ok t_new )
-      >>= fun t_new ->
+      | t_new -> Ok (t_new, fmted) )
+      >>= fun (t_new, source_recover) ->
       (* Ast not preserved ? *)
       ( if
         not
@@ -372,9 +374,9 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
         Error (Unstable {iteration= i; prev= source; next= fmted}) )
       else
         (* All good, continue *)
-        print_check ~i:(i + 1) ~conf t_new ~source:fmted
+        print_check ~i:(i + 1) ~conf t_new ~source:fmted ~source_recover
   in
-  try print_check ~i:1 ~conf parsed ~source with
+  try print_check ~i:1 ~conf parsed ~source ~source_recover with
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
@@ -382,18 +384,20 @@ let parse_result fragment conf (opts : Conf.opts) ~source ~input_name =
   match parse fragment conf ~source with
   | exception exn ->
       if opts.format_invalid_files then (
-        match parse fragment conf ~source:(recover fragment source) with
+        let source = recover fragment source in
+        match parse fragment conf ~source with
         | exception exn -> Error (Invalid_source {exn})
         | parsed ->
             Format.fprintf Format.err_formatter
               "Warning: %s is invalid, recovering.\n%!" input_name ;
-            Ok parsed )
+            Ok (parsed, source) )
       else Error (Invalid_source {exn})
-  | parsed -> Ok parsed
+  | parsed -> Ok (parsed, source)
 
 let parse_and_format fragment ?output_file ~input_name ~source conf opts =
   Ocaml_common.Location.input_name := input_name ;
   let open Result.Monad_infix in
   parse_result fragment conf opts ~source ~input_name
-  >>= fun parsed ->
-  format fragment ?output_file ~input_name ~source ~parsed conf opts
+  >>= fun (parsed, source_recover) ->
+  format fragment ?output_file ~input_name ~source ~source_recover ~parsed
+    conf opts

@@ -214,7 +214,7 @@ let mk_parsable fragment source =
       let delim = "_i_n_v_a_l_i_d_" in
       let extension_name = "%%invalid.ast.node" in
       let wrapper_opn, wrapper_cls =
-        (Printf.sprintf "[%s {%s|" extension_name delim, Printf.sprintf "|%s}]" delim)
+        (Printf.sprintf "[%s {%s|" extension_name delim, Printf.sprintf "\n;;|%s}]" delim)
       in
       let wrapper_len = String.length wrapper_opn + String.length wrapper_cls in
       let source_len = String.length source in
