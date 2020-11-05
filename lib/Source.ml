@@ -357,14 +357,14 @@ let locs_of_interval source loc =
          CONSTANT-DOTDOT-CONSTANT "
 
 let loc_of_constant t loc (cst : Parsetree.constant) =
-  let loc_of_tok filter =
-    match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
+  let filter : Parser.token -> bool =
+    match cst with
+    | Pconst_string _ -> ( function STRING _ -> true | _ -> false )
+    | Pconst_char _ -> ( function CHAR _ -> true | _ -> false )
+    | Pconst_integer _ -> ( function INT _ -> true | _ -> false )
+    | Pconst_float _ -> ( function FLOAT _ -> true | _ -> false )
   in
-  match cst with
-  | Pconst_string _ -> loc_of_tok (function STRING _ -> true | _ -> false)
-  | Pconst_char _ -> loc_of_tok (function CHAR _ -> true | _ -> false)
-  | Pconst_integer _ -> loc_of_tok (function INT _ -> true | _ -> false)
-  | Pconst_float _ -> loc_of_tok (function FLOAT _ -> true | _ -> false)
+  match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
 
 let loc_of_pat_constant t (p : Parsetree.pattern) =
   match p.ppat_desc with
