@@ -24,6 +24,7 @@ val parse_and_format :
 
 val print_error :
      ?fmt:Format.formatter
+  -> exe:string
   -> debug:bool
   -> quiet:bool
   -> input_name:string

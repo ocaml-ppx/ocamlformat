@@ -61,9 +61,8 @@ let dump_formatted ~input_name ?output_file ~suffix fmted =
   with_file input_name output_file suffix ext (fun oc ->
       Out_channel.output_string oc fmted )
 
-let print_error ?(fmt = Format.err_formatter) ~debug ~quiet ~input_name error
-    =
-  let exe = Filename.basename Caml.Sys.argv.(0) in
+let print_error ?(fmt = Format.err_formatter) ~exe ~debug ~quiet ~input_name
+    error =
   match error with
   | Invalid_source _ when quiet -> ()
   | Invalid_source {exn} -> (
