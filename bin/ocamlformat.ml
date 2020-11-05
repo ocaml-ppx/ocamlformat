@@ -34,8 +34,13 @@ let source_from_file = function
   | Conf.Stdin -> In_channel.input_all In_channel.stdin
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
+let chop_any_extension s =
+  match Filename.chop_extension s with
+  | r -> r
+  | exception Invalid_argument _ -> s
+
 let print_error conf opts ~input_name e =
-  let exe = Filename.basename Caml.Sys.argv.(0) in
+  let exe = chop_any_extension (Filename.basename Caml.Sys.argv.(0)) in
   Translation_unit.print_error ~exe ~debug:opts.Conf.debug
     ~quiet:conf.Conf.quiet ~input_name e
 
