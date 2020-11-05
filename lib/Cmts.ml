@@ -489,6 +489,7 @@ let diff (conf : Conf.t) x y =
             let str = String.sub ~pos:1 ~len str in
             try
               Migrate_ast.Parse.fragment Structure (Lexing.from_string str)
+                Lexer.token
               |> Normalize.normalize Structure conf
               |> Caml.Format.asprintf "%a" Printast.implementation
             with _ -> norm_non_code z

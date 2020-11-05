@@ -106,6 +106,7 @@ let rec odoc_nestable_block_element c fmt = function
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
             Parse_with_comments.parse Structure c.conf ~source:txt
+              ~invalid:[]
           in
           let comments = dedup_cmts Traverse.Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =

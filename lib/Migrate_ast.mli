@@ -84,6 +84,8 @@ module Location : sig
   val width : t -> int
 
   val is_single_line : t -> int -> bool
+
+  val to_string : t -> string
 end
 
 module Traverse : sig
@@ -102,7 +104,11 @@ module Traverse : sig
 end
 
 module Parse : sig
-  val fragment : 'a Traverse.fragment -> Lexing.lexbuf -> 'a
+  val fragment :
+       'a Traverse.fragment
+    -> Lexing.lexbuf
+    -> (Lexing.lexbuf -> Parser.token)
+    -> 'a
 
   val parser_version : Ocaml_version.t
 end

@@ -4547,7 +4547,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug
 
 let fmt_code ~debug =
   let rec fmt_code conf s =
-    match Parse_with_comments.parse Structure conf ~source:s with
+    match Parse_with_comments.parse Structure conf ~source:s ~invalid:[] with
     | {ast; comments; _} ->
         let source = Source.create s in
         let cmts = Cmts.init Structure ~debug source ast comments in

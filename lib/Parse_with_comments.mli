@@ -29,4 +29,5 @@ val parse :
      'a Migrate_ast.Traverse.fragment
   -> Conf.t
   -> source:string
+  -> invalid:Location.t list
   -> 'a with_comments

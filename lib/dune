@@ -18,4 +18,4 @@
  ;;INSERT_BISECT_HERE;;
  (libraries format_ import ocaml-migrate-parsetree ocaml-version odoc.model
    odoc.parser parse_wyc re uuseg uuseg.string token_latest compat
-   dune-build-info ppxlib))
+   dune-build-info ppxlib ppxlib.ast))
