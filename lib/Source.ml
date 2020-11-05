@@ -235,7 +235,11 @@ let is_long_functor_syntax (t : t) ~from = function
       else
         (* since 4.12 the functor keyword is just before the loc of the
            functor parameter *)
-        match find_token_before t ~filter:(fun _ -> true) from.loc_start with
+        match
+          find_token_before t
+            ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
+            from.loc_start
+        with
         | Some (Parser.FUNCTOR, _) -> true
         | _ -> false )
 
