@@ -19,6 +19,7 @@ let create text =
   let rec loop acc =
     match Lexer.token lexbuf with
     | Parser.EOF -> Array.of_list_rev acc
+    | Parser.EOL -> loop acc
     | tok -> loop ((tok, Location.of_lexbuf lexbuf) :: acc)
   in
   {text; tokens= loop []}
