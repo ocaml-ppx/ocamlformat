@@ -83,6 +83,16 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
+val ocamlformat_profile : t
+
+val conventional_profile : t
+
+val compact_profile : t
+
+val sparse_profile : t
+
+val janestreet_profile : t
+
 type file = Stdin | File of string
 
 type kind = Kind : _ list Migrate_ast.Traverse.fragment -> kind
