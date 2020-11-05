@@ -24,20 +24,6 @@ let create text =
   in
   {text; tokens= loop []}
 
-let position_before (t : t) (pos : Lexing.position) =
-  let is_closing c =
-    Char.equal c ')' || Char.equal c ']' || Char.equal c '}'
-  in
-  let maybe_check_alphanum c =
-    if Char.is_alphanum t.text.[pos.pos_cnum] then false
-    else Char.is_alphanum c
-  in
-  let f _ c =
-    maybe_check_alphanum c || Char.is_whitespace c || is_closing c
-  in
-  let pos_cnum_opt = String.rfindi t.text ~pos:pos.pos_cnum ~f in
-  Option.map pos_cnum_opt ~f:(fun x -> {pos with pos_cnum= x + 1})
-
 let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
   let pos = p1.pos_cnum in
   let len = Position.distance p1 p2 in

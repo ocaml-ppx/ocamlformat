@@ -26,15 +26,17 @@ val has_cmt_same_line_after : t -> Location.t -> bool
 
 val string_at : t -> Lexing.position -> Lexing.position -> string
 
+val find_token_before :
+     t
+  -> filter:(Parser.token -> bool)
+  -> Lexing.position
+  -> (Parser.token * Location.t) option
+
 val sub : t -> pos:int -> len:int -> string
 
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
 val char_literal : t -> Location.t -> string
-
-val position_before : t -> Lexing.position -> Lexing.position option
-(** [position_before s pos] returns the starting position of the token
-    preceding the position [pos]. *)
 
 val is_long_pexp_open : t -> Parsetree.expression -> bool
 (** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open] expression
