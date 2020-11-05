@@ -242,23 +242,45 @@ let relocate (t : t) ~src ~before ~after =
           let s = Set.add s after in
           Set.add s before ) )
 
+let relocate_cmts_before (t : t) ~src ~sep ~dst =
+  let f map =
+    Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
+        Location.compare_end loc sep < 0 )
+  in
+  update_cmts t `Before ~f ;
+  update_cmts t `Within ~f
+
 let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   let kwd_loc =
     Option.value_exn (Source.loc_of_first_token_at src whole_loc tok)
   in
-  let f map =
-    let before, after =
-      List.partition_tf (Map.find_multi map matched_loc)
-        ~f:(fun Cmt.{loc; _} -> Location.compare_end loc kwd_loc < 0)
-    in
-    let map =
-      List.fold_left ~init:map (List.rev before) ~f:(fun map data ->
-          Map.add_multi map ~key:whole_loc ~data )
-    in
-    Multimap.change_multi map matched_loc after
-  in
-  update_cmts t `Before ~f ;
-  update_cmts t `Within ~f
+  relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
+
+let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
+    ~whole_loc =
+  match pld with
+  | PStr
+      [ { pstr_desc=
+            Pstr_eval
+              ( { pexp_desc= Pexp_constant (Pconst_string _)
+                ; pexp_loc= _
+                ; pexp_loc_stack= _
+                ; pexp_attributes= _ }
+              , [] )
+        ; pstr_loc } ]
+    when Source.is_quoted_string src pstr_loc ->
+      ()
+  | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
+      let kwd_loc =
+        match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with
+        | Some loc -> loc
+        | None -> (
+          match Source.loc_of_first_token_at src whole_loc PERCENT with
+          | Some loc -> loc
+          | None -> impossible "expect token starting extension" )
+      in
+      relocate_cmts_before t ~src:pstr_loc ~sep:kwd_loc ~dst:whole_loc
+  | _ -> ()
 
 let relocate_wrongfully_attached_cmts t src exp =
   match exp.pexp_desc with
@@ -268,6 +290,7 @@ let relocate_wrongfully_attached_cmts t src exp =
   | Pexp_try (e0, _) ->
       relocate_pattern_matching_cmts t src Parser.TRY ~whole_loc:exp.pexp_loc
         ~matched_loc:e0.pexp_loc
+  | Pexp_extension ext -> relocate_ext_cmts t src ext ~whole_loc:exp.pexp_loc
   | _ -> ()
 
 (** Initialize global state and place comments. *)

@@ -29,6 +29,14 @@ let update_multi map ~src ~dst ~f =
 let change_multi map key data =
   Map.change map key ~f:(function _ -> Some data)
 
+let partition_multi map ~src ~dst ~f =
+  let move, dontmove = List.partition_tf (Map.find_multi map src) ~f in
+  let map =
+    List.fold_left ~init:map (List.rev move) ~f:(fun map data ->
+        Map.add_multi map ~key:dst ~data )
+  in
+  change_multi map src dontmove
+
 let filter map ~f = Map.map map ~f:(List.filter ~f)
 
 let to_list map = Map.to_alist map |> List.concat_map ~f:snd

@@ -287,3 +287,5 @@ and y = z
 
 [%%ext class type x = y
 and y = z]
+
+let _ = (* bar *) [%expr (* comment *) foo (* blabla *)]
