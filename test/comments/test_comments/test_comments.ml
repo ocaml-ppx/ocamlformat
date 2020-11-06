@@ -164,18 +164,8 @@ let unlex_token = function
   | WHILE -> "while"
   | WITH -> "with"
 
-(** Ignore location diff *)
-let token_equal a b =
-  let open Migrate_ast.Parser in
-  match (a, b) with
-  | STRING (a, _, a'), STRING (b, _, b') -> a = b && a' = b'
-  | ( QUOTED_STRING_EXPR (a, _, a', _, a'')
-    , QUOTED_STRING_EXPR (b, _, b', _, b'') )
-   |( QUOTED_STRING_ITEM (a, _, a', _, a'')
-    , QUOTED_STRING_ITEM (b, _, b', _, b'') ) ->
-      a = b && a' = b' && a'' = b''
-  | COMMENT (a, _), COMMENT (b, _) -> a = b
-  | a, b -> a = b
+(** Can't use polymorphic equal because of location arguments in some tokens. *)
+let token_equal a b = String.equal (unlex_token a) (unlex_token b)
 
 let print_hunk fmt (tokens, start, end_) =
   (* Add a token of context before and after. *)
@@ -191,7 +181,7 @@ let print_hunk fmt (tokens, start, end_) =
     Format.fprintf fmt " %s" tok_s
   done
 
-let print_diff ~insert_offset a b script =
+let print_diff a b script =
   let f (a_start, a_end, delta) d =
     let i, delta =
       match d with
@@ -202,17 +192,23 @@ let print_diff ~insert_offset a b script =
     (min i a_start, max i a_end, delta)
   in
   let start, a_end, delta = List.fold_left f (max_int, min_int, 0) script in
-  Format.printf "insertion offset = %d@\nbefore:%a@\n after:%a@\n" insert_offset
-    print_hunk (a, start, a_end) print_hunk
+  Format.printf "before:%a@\n after:%a@\n" print_hunk (a, start, a_end)
+    print_hunk
     (b, start, a_end + delta)
 
 let run file =
-  let conf = Conf.ocamlformat_profile
+  let conf =
+    { Conf.ocamlformat_profile with
+      break_cases= `Fit
+    ; margin= 77
+    ; parse_docstrings= true
+    ; wrap_comments= true }
   and opts =
     Conf.{debug= false; margin_check= false; format_invalid_files= false}
   in
   let initial_source = Stdio.In_channel.read_all file in
   let toffs = List.map snd (lex_source initial_source) in
+  let pr_ins = Format.printf "insertion offset = %d@\n%!" in
   let insert = "(* toto *)" in
   insert_at_every_offsets insert toffs initial_source
     ~f:(fun insert_offset source ->
@@ -225,8 +221,9 @@ let run file =
           let a = lex source and b = lex formatted in
           match Diff.(levenshtein_script Array) ~equal:token_equal a b with
           | [] -> ()
-          | script -> print_diff ~insert_offset a b script )
+          | script -> pr_ins insert_offset ; print_diff a b script )
       | Error err ->
+          pr_ins insert_offset ;
           Translation_unit.print_error ~debug:false ~quiet:true
             ~input_name:file err )
 
