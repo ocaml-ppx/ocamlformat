@@ -177,46 +177,37 @@ let token_equal a b =
   | COMMENT (a, _), COMMENT (b, _) -> a = b
   | a, b -> a = b
 
-let diff_sources a b =
-  let a, a_offsets = List.split (lex_source a)
-  and b = List.map fst (lex_source b) in
-  let a_offsets = Array.of_list a_offsets
-  and a = Array.of_list a
-  and b = Array.of_list b in
-  let add i tok = (`Add, a_offsets.(i), tok)
-  and del i tok = (`Del, a_offsets.(i), tok) in
-  let diff =
-    Diff.(levenshtein_script Array) ~equal:token_equal a b
-    |> List.fold_left
-         (fun acc -> function
-           | Diff.Insert {expected; actual} -> add expected b.(actual) :: acc
-           | Delete {expected} -> del expected a.(expected) :: acc
-           | Substitute {expected; actual} ->
-               del expected a.(expected) :: add expected b.(actual) :: acc )
-         []
-  in
-  diff
-
-(** On top of [unlex_token] with special cases. *)
-let print_token = function
-  | Migrate_ast.Parser.EOL -> "<NL>"
-  | EOF -> "<EOF>"
-  | tok -> unlex_token tok
-
-let print_diff insert_offset insert_len diff =
-  let pp_diff =
-    let pp_log fmt (op, offset, tok) =
-      let op = match op with `Add -> '+' | `Del -> '-' in
-      Format.fprintf fmt "%d: %c %s" offset op (print_token tok)
+let print_hunk fmt (tokens, start, end_) =
+  (* Add a token of context before and after. *)
+  let start = max 0 (start - 1)
+  and end_ = min (Array.length tokens - 1) (end_ + 1) in
+  for i = start to end_ do
+    let tok_s =
+      match tokens.(i) with
+      (* Special case to be able to print on one line *)
+      | Migrate_ast.Parser.EOL -> "<NL>"
+      | tok -> unlex_token tok
     in
-    Format.pp_print_list pp_log
+    Format.fprintf fmt " %s" tok_s
+  done
+
+let print_diff ~insert_offset a b script =
+  let f (a_start, a_end, delta) d =
+    let i, delta =
+      match d with
+      | Diff.Insert {expected; _} -> (expected, delta + 1)
+      | Delete {expected} -> (expected, delta - 1)
+      | Substitute {expected; _} -> (expected, delta)
+    in
+    (min i a_start, max i a_end, delta)
   in
-  Format.printf "@[<v 2>DIFF (inserted at %d-%d):@ %a@]@\n" insert_offset
-    (insert_offset + insert_len)
-    pp_diff diff
+  let start, a_end, delta = List.fold_left f (max_int, min_int, 0) script in
+  Format.printf "insertion offset = %d@\nbefore:%a@\n after:%a@\n" insert_offset
+    print_hunk (a, start, a_end) print_hunk
+    (b, start, a_end + delta)
 
 let run file =
-  let conf = Conf.conventional_profile
+  let conf = Conf.ocamlformat_profile
   and opts =
     Conf.{debug= false; margin_check= false; format_invalid_files= false}
   in
@@ -230,9 +221,11 @@ let run file =
           ~input_name:file ~source conf opts
       with
       | Ok formatted -> (
-        match diff_sources source formatted with
-        | [] -> ()
-        | diff -> print_diff insert_offset (String.length insert) diff )
+          let lex inp = Array.map fst (Array.of_list (lex_source inp)) in
+          let a = lex source and b = lex formatted in
+          match Diff.(levenshtein_script Array) ~equal:token_equal a b with
+          | [] -> ()
+          | script -> print_diff ~insert_offset a b script )
       | Error err ->
           Translation_unit.print_error ~debug:false ~quiet:true
             ~input_name:file err )
