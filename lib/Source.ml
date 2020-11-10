@@ -74,8 +74,8 @@ let empty_line_between (t : t) p1 p2 =
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end
 
-let find_token_before t ~filter pos =
-  match find_token t `Last_strictly_less_than pos with
+let find_token_before t ~filter (loc : Location.t) =
+  match find_token t `Last_strictly_less_than loc.loc_start with
   | None -> None
   | Some i ->
       let rec loop i =
@@ -194,7 +194,7 @@ let is_long_functor_syntax (t : t) ~from = function
         match
           find_token_before t
             ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
-            from.loc_start
+            from
         with
         | Some (Parser.FUNCTOR, _) -> true
         | _ -> false )
@@ -258,29 +258,20 @@ let char_literal t (l : Location.t) =
   | _ -> impossible "Pconst_char is only produced by char literals"
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
-  let rec begins_line_ cnum =
-    cnum = 0
-    ||
-    let cnum = cnum - 1 in
-    match t.text.[cnum] with
-    | '\n' | '\r' -> true
-    | c when Char.is_whitespace c && ignore_spaces -> begins_line_ cnum
-    | _ -> false
-  in
-  begins_line_ l.loc_start.pos_cnum
+  if not ignore_spaces then Position.column l.loc_start = 0
+  else
+    match find_token_before t ~filter:(fun _ -> true) l with
+    | None -> true
+    | Some (_, prev) ->
+        assert (Location.compare prev l < 0) ;
+        prev.loc_end.pos_lnum < l.loc_start.pos_lnum
 
 let ends_line t (l : Location.t) =
-  let len = String.length t.text in
-  let rec ends_line_ cnum =
-    if cnum >= len then true
-    else
-      match t.text.[cnum] with
-      | '\n' | '\r' -> true
-      | c when Char.is_whitespace c -> ends_line_ (cnum + 1)
-      | _ -> false
-  in
-  if Location.compare Location.none l = 0 then false
-  else ends_line_ l.loc_end.pos_cnum
+  match find_token_after t ~filter:(fun _ -> true) l with
+  | None -> true
+  | Some (_, next) ->
+      assert (Location.compare next l > 0) ;
+      next.loc_start.pos_lnum > l.loc_end.pos_lnum
 
 let extension_using_sugar ~(name : string Location.loc)
     ~(payload : Location.t) =

@@ -29,7 +29,7 @@ val string_at : t -> Lexing.position -> Lexing.position -> string
 val find_token_before :
      t
   -> filter:(Parser.token -> bool)
-  -> Lexing.position
+  -> Location.t
   -> (Parser.token * Location.t) option
 
 val sub : t -> pos:int -> len:int -> string
