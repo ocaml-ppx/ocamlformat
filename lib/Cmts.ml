@@ -55,19 +55,21 @@ let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
           && Position.column l1.loc_start < Position.column l2.loc_start
       | _ -> false )
 
-(** Whether the symbol preceding location [loc] is an infix symbol or a
-    semicolon. If it is the case, comments attached to the following item
-    should be kept after the infix symbol. *)
+(** Whether the symbol preceding location [loc] is an infix symbol
+    (corresponding to [Ast.String_id.is_infix]) or a semicolon. If it is the
+    case, comments attached to the following item should be kept after the
+    infix symbol. *)
 let infix_symbol_before src (loc : Location.t) =
-  let pos_cnum = loc.loc_end.pos_cnum - 1 in
-  let loc_end = {loc.loc_end with pos_cnum} in
-  match Source.position_before src loc_end with
-  | Some loc_start ->
-      if loc_start.pos_cnum < loc.loc_end.pos_cnum then
-        let str = Source.string_at src loc_start loc.loc_end in
-        String.equal str ";" || Ast.String_id.is_infix str
-      else false
-  | None -> false
+  match
+    Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
+  with
+  | Some
+      ( ( SEMI | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
+        | INFIXOP4 _ | COLONCOLON | COLONEQUAL | BARBAR | LESSMINUS | EQUAL
+        | COLON | LETOP _ | ANDOP _ | DOTDOT | DOTOP _ | AMPERAMPER )
+      , _ ) ->
+      true
+  | _ -> false
 
 (** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig
@@ -137,7 +139,7 @@ end = struct
               , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
             with
             | 0, 0 -> impossible "already tested by previous if"
-            | 0, _ when infix_symbol_before src prev -> `Before_next
+            | 0, _ when infix_symbol_before src loc -> `Before_next
             | 0, _ -> `After_prev
             | _ -> `Before_next
           in
