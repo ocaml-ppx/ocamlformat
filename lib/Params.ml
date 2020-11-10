@@ -16,12 +16,14 @@ open Fmt
 let parens_or_begin_end (c : Conf.t) source ~loc =
   match c.exp_grouping with
   | `Parens -> `Parens
-  | `Preserve ->
-      let str =
-        String.lstrip
-          (Source.string_at source loc.Location.loc_start loc.loc_end)
-      in
-      if String.is_prefix ~prefix:"begin" str then `Begin_end else `Parens
+  | `Preserve -> (
+    match
+      Source.find_token_after source
+        ~filter:(fun _ -> true)
+        loc.Location.loc_start
+    with
+    | Some (Token_latest.BEGIN, _) -> `Begin_end
+    | None | Some _ -> `Parens )
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
   if disambiguate && c.Conf.disambiguate_non_breaking_match then

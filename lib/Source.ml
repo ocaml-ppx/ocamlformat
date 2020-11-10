@@ -29,12 +29,10 @@ let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
   then None
   else Some (String.sub t.text ~pos ~len)
 
-let string_at (t : t) loc_start loc_end =
-  let pos = loc_start.Lexing.pos_cnum
-  and len = Position.distance loc_start loc_end in
+let string_at t (l : Location.t) =
+  let pos = l.loc_start.Lexing.pos_cnum
+  and len = Position.distance l.loc_start l.loc_end in
   String.sub t.text ~pos ~len
-
-let string_at_loc t (l : Location.t) = string_at t l.loc_start l.loc_end
 
 let find_token t k pos =
   Array.binary_search t.tokens
@@ -70,8 +68,8 @@ let empty_line_between (t : t) p1 p2 =
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end
 
-let find_token_before t ~filter (loc : Location.t) =
-  match find_token t `Last_strictly_less_than loc.loc_start with
+let find_token_before t ~filter pos =
+  match find_token t `Last_strictly_less_than pos with
   | None -> None
   | Some i ->
       let rec loop i =
@@ -82,8 +80,8 @@ let find_token_before t ~filter (loc : Location.t) =
       in
       loop i
 
-let find_token_after t ~filter (loc : Location.t) =
-  match find_token t `First_greater_than_or_equal_to loc.loc_end with
+let find_token_after t ~filter pos =
+  match find_token t `First_greater_than_or_equal_to pos with
   | None -> None
   | Some i ->
       let rec loop i =
@@ -95,7 +93,7 @@ let find_token_after t ~filter (loc : Location.t) =
       loop i
 
 let has_cmt_same_line_after t (loc : Location.t) =
-  match find_token_after t ~filter:(fun _ -> true) loc with
+  match find_token_after t ~filter:(fun _ -> true) loc.loc_end with
   | None -> false
   | Some ((COMMENT _ | DOCSTRING _), nloc) ->
       nloc.loc_start.pos_lnum = loc.loc_end.pos_lnum
@@ -159,7 +157,7 @@ let extend_loc_to_include_attributes (t : t) (loc : Location.t)
              |LBRACKETATAT | LBRACKETATATAT ->
                 Int.incr count ; false
             | _ -> false )
-          loc
+          loc.loc_end
       in
       match l with
       | None -> impossible "Invariant of the token stream"
@@ -190,7 +188,7 @@ let is_long_functor_syntax (t : t) ~from = function
         match
           find_token_before t
             ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
-            from
+            from.loc_start
         with
         | Some (Parser.FUNCTOR, _) -> true
         | _ -> false )
@@ -226,7 +224,7 @@ let string_literal t mode (l : Location.t) =
        | Parser.LBRACKETAT, _ )
        :: _ ->
       Option.value_exn ~message:"Parse error while reading string literal"
-        (Literal_lexer.string mode (string_at_loc t loc))
+        (Literal_lexer.string mode (string_at t loc))
   | _ -> impossible "Pconst_string is only produced by string literals"
 
 let char_literal t (l : Location.t) =
@@ -250,20 +248,20 @@ let char_literal t (l : Location.t) =
        | Parser.LBRACKETAT, _ )
        :: _ ->
       (Option.value_exn ~message:"Parse error while reading char literal")
-        (Literal_lexer.char (string_at_loc t loc))
+        (Literal_lexer.char (string_at t loc))
   | _ -> impossible "Pconst_char is only produced by char literals"
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
   if not ignore_spaces then Position.column l.loc_start = 0
   else
-    match find_token_before t ~filter:(fun _ -> true) l with
+    match find_token_before t ~filter:(fun _ -> true) l.loc_start with
     | None -> true
     | Some (_, prev) ->
         assert (Location.compare prev l < 0) ;
         prev.loc_end.pos_lnum < l.loc_start.pos_lnum
 
 let ends_line t (l : Location.t) =
-  match find_token_after t ~filter:(fun _ -> true) l with
+  match find_token_after t ~filter:(fun _ -> true) l.loc_end with
   | None -> true
   | Some (_, next) ->
       assert (Location.compare next l > 0) ;

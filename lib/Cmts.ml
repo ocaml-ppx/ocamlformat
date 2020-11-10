@@ -60,7 +60,9 @@ let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
     case, comments attached to the following item should be kept after the
     infix symbol. *)
 let infix_symbol_before src (loc : Location.t) =
-  match Source.find_token_before src ~filter:(function _ -> true) loc with
+  match
+    Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
+  with
   | Some
       ( ( SEMI | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
         | INFIXOP4 _ | COLONCOLON | COLONEQUAL | BARBAR | LESSMINUS | EQUAL

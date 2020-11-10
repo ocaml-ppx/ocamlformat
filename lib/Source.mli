@@ -22,14 +22,20 @@ val empty_line_between : t -> Lexing.position -> Lexing.position -> bool
 
 val string_between : t -> Lexing.position -> Lexing.position -> string option
 
+val string_at : t -> Location.t -> string
+
 val has_cmt_same_line_after : t -> Location.t -> bool
 
-val string_at : t -> Lexing.position -> Lexing.position -> string
+val find_token_after :
+     t
+  -> filter:(Parser.token -> bool)
+  -> Lexing.position
+  -> (Parser.token * Location.t) option
 
 val find_token_before :
      t
   -> filter:(Parser.token -> bool)
-  -> Location.t
+  -> Lexing.position
   -> (Parser.token * Location.t) option
 
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
