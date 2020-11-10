@@ -859,6 +859,8 @@ and Requires_sub_terms : sig
   val parenze_exp : expression In_ctx.xt -> bool
 
   val parenze_nested_exp : expression In_ctx.xt -> bool
+
+  val is_displaced_infix_op : expression In_ctx.xt -> bool
 end = struct
   open In_ctx
 

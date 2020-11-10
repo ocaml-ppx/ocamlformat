@@ -3023,6 +3023,7 @@ and fmt_case c ctx ~first ~last ~padding case =
   let parens_here, parens_for_exp =
     if align_nested_match then (false, Some false)
     else if c.conf.leading_nested_match_parens then (false, None)
+    else if is_displaced_infix_op xrhs then (false, None)
     else (parenze_exp xrhs, Some false)
   in
   (* side effects of Cmts.fmt_before before [fmt_lhs] is important *)

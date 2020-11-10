@@ -59,7 +59,7 @@
 
   + Preserve functor syntax for OCaml 4.12 (#1514, @gpetiot)
 
-  + Fix inconsistencies of the closing parentheses with indicate-multiline-delimiters (#1377, @gpetiot)
+  + Fix inconsistencies of the closing parentheses with indicate-multiline-delimiters (#1377, #1540, @gpetiot)
 
   + Fix position of comments around list constructor (::) (#1524, @gpetiot)
 

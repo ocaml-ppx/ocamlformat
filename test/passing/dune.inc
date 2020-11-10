@@ -1063,6 +1063,36 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to indicate_multiline_delimiters-cosl.ml.output
+     (run %{bin:ocamlformat} --indicate-multiline-delimiters=closing-on-separate-line %{dep:indicate_multiline_delimiters.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff indicate_multiline_delimiters-cosl.ml.ref indicate_multiline_delimiters-cosl.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to indicate_multiline_delimiters-space.ml.output
+     (run %{bin:ocamlformat} --indicate-multiline-delimiters=space %{dep:indicate_multiline_delimiters.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff indicate_multiline_delimiters-space.ml.ref indicate_multiline_delimiters-space.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to indicate_multiline_delimiters.ml.output
+     (run %{bin:ocamlformat} --indicate-multiline-delimiters=no %{dep:indicate_multiline_delimiters.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff indicate_multiline_delimiters.ml indicate_multiline_delimiters.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to infix_arg_grouping.ml.output
      (run %{bin:ocamlformat} %{dep:infix_arg_grouping.ml}))))
 
