@@ -250,3 +250,7 @@ val parenze_mty : module_type xt -> bool
 val parenze_mod : module_expr xt -> bool
 (** [parenze_mod xmod] holds when module_expr-in-context [xmod] should be
     parenthesized. *)
+
+val is_displaced_infix_op : expression xt -> bool
+(** [is_displaced_infix_op xexp] holds if an expression-in-context [xexp] is
+    an infix op that is not fully applied. *)
