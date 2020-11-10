@@ -19,6 +19,7 @@ let create text =
   let rec loop acc =
     match Lexer.token lexbuf with
     | Parser.EOF -> Array.of_list_rev acc
+    | Parser.EOL -> loop acc
     | tok -> loop ((tok, Location.of_lexbuf lexbuf) :: acc)
   in
   {text; tokens= loop []}
@@ -92,15 +93,7 @@ let string_at (t : t) loc_start loc_end =
   and len = Position.distance loc_start loc_end in
   sub t ~pos ~len
 
-let has_cmt_same_line_after (t : t) (loc : Location.t) =
-  let loc_start = {loc.loc_end with pos_cnum= loc.loc_end.pos_cnum} in
-  let loc_end = {loc.loc_end with pos_cnum= loc_start.pos_cnum + 20} in
-  let str = string_at t loc_start loc_end in
-  if String.is_empty str then false
-  else if Char.equal str.[0] '\n' then false
-  else
-    let str = String.lstrip str in
-    String.is_prefix str ~prefix:"(*"
+let string_at_loc t (l : Location.t) = string_at t l.loc_start l.loc_end
 
 let find_token t k pos =
   Array.binary_search t.tokens
@@ -126,22 +119,36 @@ let tokens_between (t : t) ~filter loc_start loc_end =
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end
 
-let last_token_before t pos =
-  Option.map
-    (find_token t `Last_strictly_less_than pos)
-    ~f:(fun i -> t.tokens.(i))
+let find_token_before t ~filter pos =
+  match find_token t `Last_strictly_less_than pos with
+  | None -> None
+  | Some i ->
+      let rec loop i =
+        if i < 0 then None
+        else
+          let ((tok, _) as elt) = t.tokens.(i) in
+          if filter tok then Some elt else loop (i - 1)
+      in
+      loop i
 
-let find_after t f (loc : Location.t) =
+let find_token_after t ~filter (loc : Location.t) =
   match find_token t `First_greater_than_or_equal_to loc.loc_end with
   | None -> None
   | Some i ->
       let rec loop i =
         if i >= Array.length t.tokens then None
         else
-          let tok, tok_loc = t.tokens.(i) in
-          if f tok then Some tok_loc else loop (i + 1)
+          let ((tok, _) as elt) = t.tokens.(i) in
+          if filter tok then Some elt else loop (i + 1)
       in
       loop i
+
+let has_cmt_same_line_after t (loc : Location.t) =
+  match find_token_after t ~filter:(fun _ -> true) loc with
+  | None -> false
+  | Some ((COMMENT _ | DOCSTRING _), nloc) ->
+      nloc.loc_start.pos_lnum = loc.loc_end.pos_lnum
+  | Some _ -> false
 
 let extend_loc_to_include_attributes (t : t) (loc : Location.t)
     (l : Parsetree.attributes) =
@@ -190,8 +197,8 @@ let extend_loc_to_include_attributes (t : t) (loc : Location.t)
       in
       let count = ref 0 in
       let l =
-        find_after t
-          (function
+        find_token_after t
+          ~filter:(function
             | RBRACKET ->
                 if !count = 0 then true else (Int.decr count ; false)
             (* It is not clear that an LBRACKET* will ever happen in
@@ -205,7 +212,7 @@ let extend_loc_to_include_attributes (t : t) (loc : Location.t)
       in
       match l with
       | None -> impossible "Invariant of the token stream"
-      | Some e -> {loc with loc_end= e.loc_end}
+      | Some (_, e) -> {loc with loc_end= e.loc_end}
 
 let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   let filter = Poly.( = ) tok in
@@ -229,7 +236,11 @@ let is_long_functor_syntax (t : t) ~from = function
       else
         (* since 4.12 the functor keyword is just before the loc of the
            functor parameter *)
-        match last_token_before t from.loc_start with
+        match
+          find_token_before t
+            ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
+            from.loc_start
+        with
         | Some (Parser.FUNCTOR, _) -> true
         | _ -> false )
 
@@ -242,8 +253,6 @@ let is_long_pmty_functor t Parsetree.{pmty_desc; pmty_loc= from; _} =
   match pmty_desc with
   | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
-
-let string_at_loc t (l : Location.t) = string_at t l.loc_start l.loc_end
 
 let string_literal t mode (l : Location.t) =
   (* the location of a [string] might include surrounding comments and
@@ -353,14 +362,14 @@ let locs_of_interval source loc =
          CONSTANT-DOTDOT-CONSTANT "
 
 let loc_of_constant t loc (cst : Parsetree.constant) =
-  let loc_of_tok filter =
-    match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
+  let filter : Parser.token -> bool =
+    match cst with
+    | Pconst_string _ -> ( function STRING _ -> true | _ -> false )
+    | Pconst_char _ -> ( function CHAR _ -> true | _ -> false )
+    | Pconst_integer _ -> ( function INT _ -> true | _ -> false )
+    | Pconst_float _ -> ( function FLOAT _ -> true | _ -> false )
   in
-  match cst with
-  | Pconst_string _ -> loc_of_tok (function STRING _ -> true | _ -> false)
-  | Pconst_char _ -> loc_of_tok (function CHAR _ -> true | _ -> false)
-  | Pconst_integer _ -> loc_of_tok (function INT _ -> true | _ -> false)
-  | Pconst_float _ -> loc_of_tok (function FLOAT _ -> true | _ -> false)
+  match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
 
 let loc_of_pat_constant t (p : Parsetree.pattern) =
   match p.ppat_desc with
