@@ -45,6 +45,8 @@ module Position : sig
   val distance : t -> t -> int
 
   val compare : t -> t -> int
+
+  val to_string : t -> string
 end
 
 module Location : sig
@@ -140,7 +142,7 @@ end
 module Parser = Token_latest
 
 module Lexer : sig
-  val token : Lexing.lexbuf -> Parser.token
+  val tokens : string -> (Parser.token * Location.t) array
 
   type error
 

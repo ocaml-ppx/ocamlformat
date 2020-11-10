@@ -14,19 +14,7 @@ open Migrate_ast
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}
 
-let create text =
-  let lexbuf = Lexing.from_string text in
-  let rec loop acc =
-    match Lexer.token lexbuf with
-    | Parser.EOF -> Array.of_list_rev acc
-    | Parser.EOL -> loop acc
-    (* The location in lexbuf are invalid for comments *)
-    | Parser.COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
-    | Parser.DOCSTRING ds as tok ->
-        loop ((tok, Docstrings.docstring_loc ds) :: acc)
-    | tok -> loop ((tok, Location.of_lexbuf lexbuf) :: acc)
-  in
-  {text; tokens= loop []}
+let create text = {text; tokens= Lexer.tokens text}
 
 let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
   let pos = p1.pos_cnum in
@@ -75,14 +63,13 @@ let tokens_between (t : t) ~filter loc_start loc_end =
 
 let empty_line_between (t : t) p1 p2 =
   let l = tokens_between t ~filter:(function _ -> true) p1 p2 in
-  let rec loop prev_lnum l =
+  let rec loop (prev : Lexing.position) (l : (_ * Location.t) list) =
     match l with
-    | [] -> p2.pos_lnum - prev_lnum > 1
-    | (_, x) :: xs ->
-        x.Location.loc_start.pos_lnum - prev_lnum > 1
-        || loop x.loc_end.pos_lnum xs
+    | [] -> p2.pos_lnum - prev.pos_lnum > 1
+    | (_tok, x) :: xs ->
+        x.loc_start.pos_lnum - prev.pos_lnum > 1 || loop x.loc_end xs
   in
-  loop p1.pos_lnum l
+  loop p1 l
 
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end

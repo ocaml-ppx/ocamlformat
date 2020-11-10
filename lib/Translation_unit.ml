@@ -248,9 +248,9 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
   Ocaml_common.Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) t ~source =
+    let source_t = Source.create source in
     let format ~box_debug =
       let open Fmt in
-      let source_t = Source.create source in
       let cmts_t =
         Cmts.init fragment ~debug:opts.debug source_t t.ast t.comments
       in
