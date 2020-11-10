@@ -21,8 +21,9 @@ let create text =
     | Parser.EOF -> Array.of_list_rev acc
     | Parser.EOL -> loop acc
     (* The location in lexbuf are invalid for comments *)
-    | Parser.COMMENT (_,loc) as tok -> loop ((tok, loc) :: acc)
-    | Parser.DOCSTRING ds as tok -> loop ((tok, Docstrings.docstring_loc ds) :: acc)
+    | Parser.COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
+    | Parser.DOCSTRING ds as tok ->
+        loop ((tok, Docstrings.docstring_loc ds) :: acc)
     | tok -> loop ((tok, Location.of_lexbuf lexbuf) :: acc)
   in
   {text; tokens= loop []}
