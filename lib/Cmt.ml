@@ -166,12 +166,13 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
     | Error () -> fmt_non_code ~wrap_comments:false cmt
   in
   match cmt.txt with
-  | "*" -> (
-    (* "(**)" is not parsed as a docstring but as a regular comment
-       containing '*' and would be rewritten as "(***)" *)
-    match Source.sub src ~pos:cmt.loc.loc_start.pos_cnum ~len:4 with
-    | "(**)" -> str "(**)"
-    | _ -> str "(***)" )
+  | "*" ->
+      if
+        (* "(**)" is not parsed as a docstring but as a regular comment
+           containing '*' and would be rewritten as "(***)" *)
+        Location.width cmt.loc = 4
+      then str "(**)"
+      else str "(***)"
   | "" | "$" -> fmt_non_code cmt
   | str when Char.equal str.[0] '$' -> fmt_code cmt
   | _ -> fmt_non_code cmt

@@ -32,8 +32,6 @@ val find_token_before :
   -> Location.t
   -> (Parser.token * Location.t) option
 
-val sub : t -> pos:int -> len:int -> string
-
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
 val char_literal : t -> Location.t -> string

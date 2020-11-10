@@ -29,14 +29,10 @@ let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
   then None
   else Some (String.sub t.text ~pos ~len)
 
-let sub (t : t) ~pos ~len =
-  if String.length t.text < pos + len || pos < 0 || len < 0 then ""
-  else String.sub t.text ~pos ~len
-
 let string_at (t : t) loc_start loc_end =
   let pos = loc_start.Lexing.pos_cnum
   and len = Position.distance loc_start loc_end in
-  sub t ~pos ~len
+  String.sub t.text ~pos ~len
 
 let string_at_loc t (l : Location.t) = string_at t l.loc_start l.loc_end
 
