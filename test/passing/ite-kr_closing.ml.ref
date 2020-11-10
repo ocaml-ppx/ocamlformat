@@ -193,3 +193,10 @@ let foo =
   else if Poly.(assoc_of_prec prec_ast = which_child && which_child <> Non)
   then
     foo
+
+let _ =
+  if fooo then ( +
+   ) else if bar then ( *
+   ) else if foobar then ( /
+   ) else ( -
+   )
