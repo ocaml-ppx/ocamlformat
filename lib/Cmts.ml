@@ -55,9 +55,10 @@ let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
           && Position.column l1.loc_start < Position.column l2.loc_start
       | _ -> false )
 
-(** Whether the symbol preceding location [loc] is an infix symbol or a
-    semicolon. If it is the case, comments attached to the following item
-    should be kept after the infix symbol. *)
+(** Whether the symbol preceding location [loc] is an infix symbol
+    (corresponding to [Ast.String_id.is_infix]) or a semicolon. If it is the
+    case, comments attached to the following item should be kept after the
+    infix symbol. *)
 let infix_symbol_before src (loc : Location.t) =
   match
     Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
