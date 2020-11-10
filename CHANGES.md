@@ -20,7 +20,7 @@
 
   + Remove extension from executable name in error messages. On Windows, this means that messages now start with "ocamlformat: ..." instead of "ocamlformat.exe: ..." (#1531, @emillon)
 
-  + Using tokens instead of string manipulation when inspecting the original source (#1526, @hhugo, #1532, @gpetiot)
+  + Using tokens instead of string manipulation when inspecting the original source (#1526, @hhugo, #1532, @gpetiot, #1533 @hhugo)
 
 #### Bug fixes
 
