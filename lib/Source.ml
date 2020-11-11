@@ -14,15 +14,7 @@ open Migrate_ast
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}
 
-let create text =
-  let lexbuf = Lexing.from_string text in
-  let rec loop acc =
-    match Lexer.token lexbuf with
-    | Parser.EOF -> Array.of_list_rev acc
-    | Parser.EOL -> loop acc
-    | tok -> loop ((tok, Location.of_lexbuf lexbuf) :: acc)
-  in
-  {text; tokens= loop []}
+let create text = {text; tokens= Lexer.tokens text}
 
 let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
   let pos = p1.pos_cnum in
@@ -36,39 +28,6 @@ let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
     (* can happen e.g. if source is not available *)
   then None
   else Some (String.sub t.text ~pos ~len)
-
-(** Lines between [p1] and [p2]. Lines are represented their (offset, length)
-    in the source. The first and last line (containing [p1] and [p2]) are
-    ignored. *)
-let lines_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
-  let rec loop acc off lnum =
-    if lnum >= p2.pos_lnum then acc (* ignore last line *)
-    else
-      match String.index_from t.text off '\n' with
-      | None -> acc (* ignore last line *)
-      | Some endl -> loop ((off, endl - off) :: acc) (endl + 1) (lnum + 1)
-  in
-  (* ignore first line *)
-  match String.index_from t.text p1.pos_cnum '\n' with
-  | None -> []
-  | Some endl -> loop [] (endl + 1) (p1.pos_lnum + 1)
-
-(** Returns the index of the first char that [f] match. Only consider [len]
-    characters starting at [pos]. *)
-let string_lcontains ~pos ~len s ~f =
-  let end_ = pos + len in
-  let rec loop i =
-    if i >= end_ then None else if f s.[i] then Some i else loop (i + 1)
-  in
-  loop pos
-
-let empty_line_between (t : t) p1 p2 =
-  let non_whitespace c = not (Char.is_whitespace c) in
-  let is_line_empty (off, len) =
-    Option.is_none (string_lcontains ~pos:off ~len t.text ~f:non_whitespace)
-  in
-  Lexing.(p2.pos_lnum - p1.pos_lnum) > 1
-  && List.exists (lines_between t p1 p2) ~f:is_line_empty
 
 let sub (t : t) ~pos ~len =
   if String.length t.text < pos + len || pos < 0 || len < 0 then ""
@@ -101,6 +60,16 @@ let tokens_between (t : t) ~filter loc_start loc_end =
             loop (i + 1) acc
       in
       loop i []
+
+let empty_line_between (t : t) p1 p2 =
+  let l = tokens_between t ~filter:(function _ -> true) p1 p2 in
+  let rec loop (prev : Lexing.position) (l : (_ * Location.t) list) =
+    match l with
+    | [] -> p2.pos_lnum - prev.pos_lnum > 1
+    | (_tok, x) :: xs ->
+        x.loc_start.pos_lnum - prev.pos_lnum > 1 || loop x.loc_end xs
+  in
+  loop p1 l
 
 let tokens_at t ~filter (l : Location.t) : (Parser.token * Location.t) list =
   tokens_between t ~filter l.loc_start l.loc_end

@@ -28,6 +28,7 @@ exception Warning50 of (Location.t * Warnings.t) list
 
 let parse fragment (conf : Conf.t) ~source =
   let lexbuf = Lexing.from_string source in
+  Location.init lexbuf !Location.input_name ;
   let warnings =
     W.enable 50
     :: (if conf.quiet then List.map ~f:W.disable W.in_lexer else [])
@@ -38,7 +39,6 @@ let parse fragment (conf : Conf.t) ~source =
     let len = lexbuf.lex_last_pos in
     String.sub source ~pos:0 ~len
   in
-  Location.init lexbuf !Location.input_name ;
   let w50 = ref [] in
   let t =
     with_warning_filter

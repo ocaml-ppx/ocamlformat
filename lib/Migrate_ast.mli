@@ -140,7 +140,7 @@ end
 module Parser = Token_latest
 
 module Lexer : sig
-  val token : Lexing.lexbuf -> Parser.token
+  val tokens : string -> (Parser.token * Location.t) array
 
   type error
 
