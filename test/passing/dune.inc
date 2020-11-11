@@ -961,16 +961,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to format_invalid_files_with_locations.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:format_invalid_files_with_locations.ml}))))
-
-(rule
- (alias runtest)
- (action (diff format_invalid_files_with_locations.ml.ref format_invalid_files_with_locations.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to fun_decl.ml.output
      (run %{bin:ocamlformat} %{dep:fun_decl.ml}))))
 

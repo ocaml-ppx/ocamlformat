@@ -68,6 +68,17 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to format_invalid_files_with_locations.ml.output
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:format_invalid_files_with_locations.ml})))))
+
+(rule
+ (alias runtest)
+ (action (diff format_invalid_files_with_locations.ml.broken-ref format_invalid_files_with_locations.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to ifand.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:ifand.ml})))))
