@@ -215,24 +215,8 @@ end
 module Parser = Token_latest
 
 module Lexer = struct
-  let tokens text =
-    let lexbuf = Lexing.from_string text in
-    let rec loop acc =
-      match
-        Token_latest.of_compiler_libs (Lexer.token_with_comments lexbuf)
-      with
-      | Parser.EOF -> Array.of_list_rev acc
-      | Parser.EOL -> loop acc
-      (* The location in lexbuf are invalid for comments *)
-      | Parser.COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
-      | Parser.DOCSTRING ds as tok ->
-          loop ((tok, Docstrings.docstring_loc ds) :: acc)
-      | tok ->
-          let loc = Location.of_lexbuf lexbuf in
-          loop ((tok, loc) :: acc)
-    in
-    Lexer.skip_hash_bang lexbuf ;
-    loop []
+  let token_with_comments lexbuf =
+    Token_latest.of_compiler_libs (Lexer.token_with_comments lexbuf)
 
   type error = Lexer.error
 

@@ -9,7 +9,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type 'a with_comments = {ast: 'a; comments: Cmt.t list; prefix: string}
+type 'a with_comments =
+  {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
 
 module W : sig
   type t

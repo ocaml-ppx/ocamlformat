@@ -11,6 +11,7 @@ module K = struct
 begin
   let x = in
   ()
+;;
 
 let foooooo = fooooo foooooooo
 

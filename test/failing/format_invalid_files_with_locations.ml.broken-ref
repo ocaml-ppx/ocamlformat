@@ -1,4 +1,0 @@
-Warning: format_invalid_files_with_locations.ml is invalid, recovering.
-ocamlformat: Cannot process "format_invalid_files_with_locations.ml".
-  Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
-  BUG: unhandled exception. Use [--debug] for details.

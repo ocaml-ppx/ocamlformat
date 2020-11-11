@@ -231,7 +231,7 @@ let recover (type a) : a Traverse.fragment -> _ = function
   | Traverse.Signature -> Parse_wyc.Make_parsable.signature
   | Traverse.Use_file -> Parse_wyc.Make_parsable.use_file
 
-let format fragment ?output_file ~input_name ~source ~parsed conf opts =
+let format fragment ?output_file ~input_name ~prev_source ~parsed conf opts =
   let open Result.Monad_infix in
   let dump_ast ~suffix ast =
     if opts.Conf.debug then
@@ -247,22 +247,22 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
   in
   Ocaml_common.Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~(conf : Conf.t) t ~source =
-    let source_t = Source.create source in
+  let rec print_check ~i ~(conf : Conf.t) ~prev_source t =
     let format ~box_debug =
       let open Fmt in
       let cmts_t =
-        Cmts.init fragment ~debug:opts.debug source_t t.ast t.comments
+        Cmts.init fragment ~debug:opts.debug t.source t.ast t.comments
       in
       let contents =
-        with_buffer_formatter ~buffer_size:(String.length source)
+        with_buffer_formatter
+          ~buffer_size:(String.length (Source.text t.source))
           ( set_margin conf.margin
           $ opt conf.max_indent set_max_indent
           $ fmt_if_k
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (Fmt_ast.fmt_fragment fragment ~debug:opts.debug source_t
+              (Fmt_ast.fmt_fragment fragment ~debug:opts.debug t.source
                  cmts_t conf t.ast ) )
       in
       (contents, cmts_t)
@@ -273,7 +273,7 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
     let conf = if opts.debug then conf else {conf with Conf.quiet= true} in
-    if String.equal source fmted then (
+    if String.equal prev_source fmted then (
       if opts.debug then check_all_locations Format.err_formatter cmts_t ;
       if opts.Conf.margin_check then
         check_margin conf ~fmted
@@ -367,12 +367,14 @@ let format fragment ?output_file ~input_name ~source ~parsed conf opts =
       (* Too many iteration ? *)
       if i >= conf.max_iters then (
         Caml.flush_all () ;
-        Error (Unstable {iteration= i; prev= source; next= fmted}) )
+        Error
+          (Unstable {iteration= i; prev= Source.text t.source; next= fmted})
+        )
       else
         (* All good, continue *)
-        print_check ~i:(i + 1) ~conf t_new ~source:fmted
+        print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new
   in
-  try print_check ~i:1 ~conf parsed ~source with
+  try print_check ~i:1 ~conf ~prev_source parsed with
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
@@ -394,4 +396,5 @@ let parse_and_format fragment ?output_file ~input_name ~source conf opts =
   let open Result.Monad_infix in
   parse_result fragment conf opts ~source ~input_name
   >>= fun parsed ->
-  format fragment ?output_file ~input_name ~source ~parsed conf opts
+  format fragment ?output_file ~input_name ~prev_source:source ~parsed conf
+    opts
