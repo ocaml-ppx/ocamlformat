@@ -31,8 +31,8 @@ let tokens lexbuf =
   let rec loop acc =
     match Migrate_ast.Lexer.token_with_comments lexbuf with
     (* The location in lexbuf are invalid for comments *)
-    | Parser.COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
-    | Parser.DOCSTRING ds as tok ->
+    | Token_latest.COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
+    | Token_latest.DOCSTRING ds as tok ->
         loop ((tok, Docstrings.docstring_loc ds) :: acc)
     | tok -> (
         let loc = Ppxlib.Location.of_lexbuf lexbuf in
