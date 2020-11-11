@@ -37,7 +37,7 @@ let tokens lexbuf =
     | tok -> (
         let loc = Ppxlib.Location.of_lexbuf lexbuf in
         let acc = (tok, loc) :: acc in
-        match tok with Parser.EOF -> List.rev acc | _ -> loop acc )
+        match tok with Token_latest.EOF -> List.rev acc | _ -> loop acc )
   in
   loop []
 
