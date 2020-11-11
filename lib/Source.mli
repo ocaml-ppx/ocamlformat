@@ -15,8 +15,6 @@ type t
 
 val create : text:string -> tokens:(Parser.token * Location.t) list -> t
 
-val text : t -> string
-
 val empty_line_between : t -> Lexing.position -> Lexing.position -> bool
 (** [empty_line_between t p1 p2] is [true] if there is an empty line between
     [p1] and [p2]. The lines containing [p1] and [p2] are not considered

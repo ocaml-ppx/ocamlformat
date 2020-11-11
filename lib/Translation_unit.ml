@@ -255,7 +255,7 @@ let format fragment ?output_file ~input_name ~prev_source ~parsed conf opts =
       in
       let contents =
         with_buffer_formatter
-          ~buffer_size:(String.length (Source.text t.source))
+          ~buffer_size:(String.length prev_source)
           ( set_margin conf.margin
           $ opt conf.max_indent set_max_indent
           $ fmt_if_k
@@ -367,9 +367,7 @@ let format fragment ?output_file ~input_name ~prev_source ~parsed conf opts =
       (* Too many iteration ? *)
       if i >= conf.max_iters then (
         Caml.flush_all () ;
-        Error
-          (Unstable {iteration= i; prev= Source.text t.source; next= fmted})
-        )
+        Error (Unstable {iteration= i; prev= prev_source; next= fmted}) )
       else
         (* All good, continue *)
         print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new

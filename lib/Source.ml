@@ -21,8 +21,6 @@ let create ~text ~tokens =
   in
   {text; tokens= Array.of_list tokens}
 
-let text t = t.text
-
 let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
   let pos = p1.pos_cnum in
   let len = Position.distance p1 p2 in
