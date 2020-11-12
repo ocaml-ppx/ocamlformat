@@ -48,7 +48,7 @@
 
   + Fix invalid fragment delimiters of format-invalid-files recovery mode (#1485, @hhugo)
 
-  + Fix parsing of invalid file wrt original source handling (#1534, @hhugo)
+  + Fix parsing of invalid file wrt original source handling (#1542, @hhugo)
 
   + Fix misalignment of cases in docked `function` match (#1498, @gpetiot)
 
