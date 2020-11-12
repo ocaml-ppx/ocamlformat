@@ -1,0 +1,6 @@
+(env
+ (_
+  (binaries
+   (test_comments/test_comments.exe as test_comments))))
+
+(cram (deps %{bin:test_comments}))
