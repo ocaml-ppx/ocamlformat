@@ -2100,7 +2100,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   Params.get_if_then_else c.conf ~first ~last ~parens
                     ~parens_bch ~parens_prev_bch:!parens_prev_bch ~xcond
                     ~expr_loc:pexp_loc ~bch_loc:xbch.ast.pexp_loc
-                    ~fmt_extension_suffix:(fmt_extension_suffix c ext)
+                    ~fmt_extension_suffix:
+                      (Option.map ext ~f:(fun _ ->
+                           fmt_extension_suffix c ext ) )
                     ~fmt_attributes:
                       (fmt_attributes c ~pre:Blank ~key:"@" pexp_attributes)
                     ~fmt_cond:(fmt_expression c) c.source

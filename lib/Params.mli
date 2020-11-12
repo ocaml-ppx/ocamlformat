@@ -100,7 +100,7 @@ val get_if_then_else :
   -> xcond:Migrate_ast.Parsetree.expression Ast.xt option
   -> expr_loc:Location.t
   -> bch_loc:Location.t
-  -> fmt_extension_suffix:Fmt.t
+  -> fmt_extension_suffix:Fmt.t option
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(Migrate_ast.Parsetree.expression Ast.xt -> Fmt.t)
   -> Source.t

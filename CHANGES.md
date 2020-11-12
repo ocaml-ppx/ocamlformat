@@ -24,7 +24,7 @@
 
 #### Bug fixes
 
-  + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, @gpetiot)
+  + Fix break between keyword and expr with `if-then-else=keyword-first` (#1419, #1543, @gpetiot)
 
   + Fix parentheses around infix applications having attributes (#1464, @gpetiot)
 
