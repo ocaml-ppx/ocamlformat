@@ -962,7 +962,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to format_invalid_files_with_locations.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto -n 3 %{dep:format_invalid_files_with_locations.ml}))))
+     (run %{bin:ocamlformat} --format-invalid-files=auto --max-iter 3 %{dep:format_invalid_files_with_locations.ml}))))
 
 (rule
  (alias runtest)
