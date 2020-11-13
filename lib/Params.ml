@@ -320,7 +320,7 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
               (if parens then 0 else 2)
               ( fmt_if (not first) "else "
               $ str "if"
-              $ fmt_if_k first fmt_extension_suffix
+              $ fmt_if_k first (fmt_opt fmt_extension_suffix)
               $ fmt_attributes $ fmt "@ " $ fmt_cond xcnd )
           $ fmt "@ then" )
     | None -> str "else"
@@ -389,9 +389,11 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
           opt xcond (fun xcnd ->
               hvbox 2
                 ( fmt_or_k first
-                    (str "if" $ fmt_extension_suffix)
+                    (str "if" $ fmt_opt fmt_extension_suffix)
                     (str "else if")
-                $ fmt_attributes $ fmt "@ " $ fmt_cond xcnd )
+                $ fmt_attributes
+                $ fmt_or (Option.is_some fmt_extension_suffix) "@ " " "
+                $ fmt_cond xcnd )
               $ fmt "@ " )
       ; box_keyword_and_expr=
           (fun k -> hvbox 2 (fmt_or (Option.is_some xcond) "then" "else" $ k))
