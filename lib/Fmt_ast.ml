@@ -2535,14 +2535,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         let eol = fmt "@;<1 3>" in
         let txt = Longident.lident txt in
         match f.pexp_desc with
-        | Pexp_ident {txt= txt'; loc} when field_alias ~field:txt txt' ->
+        | Pexp_ident {txt= txt'; loc}
+          when field_alias ~field:txt txt' && List.is_empty f.pexp_attributes
+          ->
             Cmts.fmt c ~eol loc @@ fmt_longident txt'
-        | Pexp_constraint
-            (({pexp_desc= Pexp_ident {txt= txt'; loc}; _} as e), t)
-          when field_alias ~field:txt txt' ->
-            Cmts.fmt c ~eol loc @@ fmt_expression c (sub_exp ~ctx:(Exp f) e)
-            $ str " : "
-            $ fmt_core_type c (sub_typ ~ctx:(Exp f) t)
         | _ ->
             Cmts.fmt c ~eol loc @@ fmt_longident txt
             $ str " = "

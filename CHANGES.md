@@ -65,6 +65,8 @@
 
   + Fix comments position in extensions (#1525, @gpetiot)
 
+  + Fix formatting of field override with constraint (#1544, @gpetiot)
+
 #### New features
 
 ### 0.15.1 (2020-11-02)
