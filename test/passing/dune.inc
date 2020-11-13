@@ -1994,6 +1994,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to override.ml.output
+     (run %{bin:ocamlformat} %{dep:override.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff override.ml.ref override.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to parens_tuple_patterns.ml.output
      (run %{bin:ocamlformat} %{dep:parens_tuple_patterns.ml}))))
 
