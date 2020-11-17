@@ -58,6 +58,10 @@
   (ocaml-migrate-parsetree
    (>= 2.1.0))
   (ocp-indent :with-test)
+  (bisect_ppx
+   (and
+    :with-test
+    (>= 2.5.0)))
   (odoc
    (>= 1.4.2))
   (ppxlib
