@@ -14,7 +14,12 @@ open Migrate_ast
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}
 
-let create text = {text; tokens= Lexer.tokens text}
+let create ~text ~tokens =
+  let tokens =
+    List.filter tokens ~f:(fun (tok, _) ->
+        match tok with Parser.EOL | Parser.EOF -> false | _ -> true )
+  in
+  {text; tokens= Array.of_list tokens}
 
 let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
   let pos = p1.pos_cnum in

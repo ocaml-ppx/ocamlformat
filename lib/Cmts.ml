@@ -490,8 +490,8 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let str = String.sub ~pos:1 ~len str in
             try
-              Migrate_ast.Parse.fragment Structure (Lexing.from_string str)
-              |> Normalize.normalize Structure conf
+              let t = Parse_with_comments.parse Structure conf ~source:str in
+              Normalize.normalize Structure conf t.ast
               |> Caml.Format.asprintf "%a" Printast.implementation
             with _ -> norm_non_code z
           else norm_non_code z

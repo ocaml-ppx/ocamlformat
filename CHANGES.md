@@ -1,3 +1,9 @@
+### unreleased
+
+#### Bug fixes
+
+  + Fix parsing of invalid file wrt original source handling (#1542, @hhugo)
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
