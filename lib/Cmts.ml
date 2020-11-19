@@ -48,8 +48,7 @@ let find_at_position t loc pos =
 let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
   match
     Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
-      | Token_latest.(COMMENT _ | DOCSTRING _) -> false
-      | _ -> true )
+        | _ -> true )
   with
   | [] -> true
   | [(Token_latest.BAR, _)] ->
