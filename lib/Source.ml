@@ -104,69 +104,16 @@ let has_cmt_same_line_after t (loc : Location.t) =
       nloc.loc_start.pos_lnum = loc.loc_end.pos_lnum
   | Some _ -> false
 
-let extend_loc_to_include_attributes (t : t) (loc : Location.t)
+let extend_loc_to_include_attributes (loc : Location.t)
     (l : Parsetree.attributes) =
-  if
-    List.exists l ~f:(fun {attr_loc; attr_name; _} ->
-        Location.compare attr_name.loc attr_loc <> 0 )
-  then
-    (* Starting with OCaml 4.08, attributes have locations *)
-    let loc_end =
-      List.fold l ~init:loc
-        ~f:(fun acc ({attr_loc; _} : Parsetree.attribute) ->
-          if Location.compare_end attr_loc acc <= 0 then acc else attr_loc )
-    in
-    if phys_equal loc_end loc then loc
-    else
-      { loc with
-        Location.loc_end=
-          {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum} }
+  let loc_end =
+    List.fold l ~init:loc
+      ~f:(fun acc ({attr_loc; _} : Parsetree.attribute) ->
+        if Location.compare_end attr_loc acc <= 0 then acc else attr_loc )
+  in
+  if phys_equal loc_end loc then loc
   else
-    let last_loc =
-      List.fold l ~init:loc
-        ~f:(fun
-             (acc : Location.t)
-             ({attr_name= {loc; _}; attr_payload= payload; _} :
-               Parsetree.attribute )
-           ->
-          if loc.loc_ghost then acc
-          else
-            let loc =
-              match payload with
-              | PStr [] -> loc
-              | PStr l -> (List.last_exn l).Parsetree.pstr_loc
-              | PSig [] -> loc
-              | PSig l -> (List.last_exn l).Parsetree.psig_loc
-              | PTyp c -> c.ptyp_loc
-              | PPat (p, None) -> p.ppat_loc
-              | PPat (_, Some e) -> e.pexp_loc
-            in
-            if Location.compare_end loc acc <= 0 then acc else loc )
-    in
-    if phys_equal last_loc loc then loc
-    else
-      let loc =
-        { loc with
-          loc_end= {loc.loc_end with pos_cnum= last_loc.loc_end.pos_cnum} }
-      in
-      let count = ref 0 in
-      let l =
-        find_token_after t
-          ~filter:(function
-            | RBRACKET ->
-                if !count = 0 then true else (Int.decr count ; false)
-            (* It is not clear that an LBRACKET* will ever happen in
-               practice, we're just being defensive here. *)
-            | LBRACKET | LBRACKETBAR | LBRACKETLESS | LBRACKETGREATER
-             |LBRACKETPERCENT | LBRACKETPERCENTPERCENT | LBRACKETAT
-             |LBRACKETATAT | LBRACKETATATAT ->
-                Int.incr count ; false
-            | _ -> false )
-          loc.loc_end
-      in
-      match l with
-      | None -> impossible "Invariant of the token stream"
-      | Some (_, e) -> {loc with loc_end= e.loc_end}
+    {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
 
 let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   let filter = Poly.( = ) tok in

@@ -10,7 +10,7 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "2.7"}
-  "ocaml" {>= "4.06" & < "4.13"}
+  "ocaml" {>= "4.08" & < "4.13"}
   "ocaml" {with-test & < "4.12"}
   "ocaml-version"
   "alcotest" {with-test}

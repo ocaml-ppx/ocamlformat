@@ -64,7 +64,7 @@ val extension_using_sugar :
   name:string Location.loc -> payload:Location.t -> bool
 
 val extend_loc_to_include_attributes :
-  t -> Location.t -> Parsetree.attributes -> Location.t
+  Location.t -> Parsetree.attributes -> Location.t
 
 val type_constraint_is_first : Parsetree.core_type -> Location.t -> bool
 

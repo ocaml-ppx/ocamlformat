@@ -78,7 +78,6 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to indent_empty.ml.output
      (with-accepted-exit-codes 1
@@ -86,7 +85,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff indent_empty.ml.broken-ref indent_empty.ml.output)))
 
 (rule
@@ -146,7 +144,6 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_functor.ml.output
      (with-accepted-exit-codes 1
@@ -154,7 +151,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_functor.ml.broken-ref js_functor.ml.output)))
 
 (rule
@@ -247,7 +243,6 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to module.ml.output
      (with-accepted-exit-codes 1
@@ -255,12 +250,10 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff module.ml.broken-ref module.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to nesting.ml.output
      (with-accepted-exit-codes 1
@@ -268,12 +261,10 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff nesting.ml.broken-ref nesting.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to never_align.ml.output
      (with-accepted-exit-codes 1
@@ -281,7 +272,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff never_align.ml.broken-ref never_align.ml.output)))
 
 (rule
@@ -374,7 +364,6 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_classes.ml.output
      (with-accepted-exit-codes 1
@@ -382,7 +371,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_classes.ml.broken-ref unit_classes.ml.output)))
 
 (rule
@@ -398,7 +386,6 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_extensions.ml.output
      (with-accepted-exit-codes 1
@@ -406,12 +393,10 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_extensions.ml.broken-ref unit_extensions.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_lex.ml.output
      (with-accepted-exit-codes 1
@@ -419,12 +404,10 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_lex.ml.broken-ref unit_lex.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_modtypes.ml.output
      (with-accepted-exit-codes 1
@@ -432,7 +415,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_modtypes.ml.broken-ref unit_modtypes.ml.output)))
 
 (rule
@@ -459,7 +441,6 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_values.ml.output
      (with-accepted-exit-codes 1
@@ -467,7 +448,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_values.ml.broken-ref unit_values.ml.output)))
 
 (rule

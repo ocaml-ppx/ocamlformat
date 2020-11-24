@@ -36,7 +36,7 @@
  (depends
   (ocaml
    (and
-    (>= 4.06)
+    (>= 4.08)
     (< 4.13)))
   (ocaml
    (and

@@ -101,14 +101,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to attributes.ml.output
      (run %{bin:ocamlformat} %{dep:attributes.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff attributes.ml attributes.ml.output)))
 
 (rule
@@ -525,14 +523,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to comments.ml.output
      (run %{bin:ocamlformat} --max-iter=4 %{dep:comments.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff comments.ml.ref comments.ml.output)))
 
 (rule
@@ -557,14 +553,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to comments_in_record.ml.output
      (run %{bin:ocamlformat} %{dep:comments_in_record.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff comments_in_record.ml.ref comments_in_record.ml.output)))
 
 (rule
@@ -589,14 +583,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to directives.mlt.output
      (run %{bin:ocamlformat} %{dep:directives.mlt}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff directives.mlt.ref directives.mlt.output)))
 
 (rule
@@ -621,62 +613,52 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments-after.ml.output
      (run %{bin:ocamlformat} --doc-comments=after-when-possible %{dep:doc_comments.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments-after.ml.ref doc_comments-after.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments-before-except-val.ml.output
      (run %{bin:ocamlformat} --doc-comments=before-except-val %{dep:doc_comments.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments-before-except-val.ml.ref doc_comments-before-except-val.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments-before.ml.output
      (run %{bin:ocamlformat} --doc-comments=before %{dep:doc_comments.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments-before.ml.ref doc_comments-before.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments.ml.output
      (run %{bin:ocamlformat} %{dep:doc_comments.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments.ml.ref doc_comments.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to doc_comments.mli.output
      (run %{bin:ocamlformat} %{dep:doc_comments.mli}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff doc_comments.mli.ref doc_comments.mli.output)))
 
 (rule
@@ -844,14 +826,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to extensions-indent.ml.output
      (run %{bin:ocamlformat} --max-iters=3 --extension-indent=5 --stritem-extension-indent=3 %{dep:extensions.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff extensions-indent.ml.ref extensions-indent.ml.output)))
 
 (rule
@@ -866,26 +846,22 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to extensions-sugar_always.ml.output
      (run %{bin:ocamlformat} --max-iters=3 --extension-sugar=always %{dep:extensions.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff extensions-sugar_always.ml.ref extensions-sugar_always.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to extensions.ml.output
      (run %{bin:ocamlformat} --max-iters=3 %{dep:extensions.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff extensions.ml.ref extensions.ml.output)))
 
 (rule
@@ -1112,50 +1088,42 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind-break.ml.output
      (run %{bin:ocamlformat} --break-infix=wrap --break-infix-before-func %{dep:infix_bind.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind-break.ml.ref infix_bind-break.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind-fit_or_vertical-break.ml.output
      (run %{bin:ocamlformat} --break-infix=fit-or-vertical --break-infix-before-func %{dep:infix_bind.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind-fit_or_vertical-break.ml.ref infix_bind-fit_or_vertical-break.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind-fit_or_vertical.ml.output
      (run %{bin:ocamlformat} --break-infix=fit-or-vertical --no-break-infix-before-func %{dep:infix_bind.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind-fit_or_vertical.ml.ref infix_bind-fit_or_vertical.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to infix_bind.ml.output
      (run %{bin:ocamlformat} --break-infix=wrap --no-break-infix-before-func %{dep:infix_bind.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff infix_bind.ml infix_bind.ml.output)))
 
 (rule
@@ -1180,14 +1148,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.07.0))
  (action
    (with-outputs-to invalid_docstring.ml.output
      (run %{bin:ocamlformat} %{dep:invalid_docstring.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.07.0))
  (action (diff invalid_docstring.ml.ref invalid_docstring.ml.output)))
 
 (rule
@@ -1462,26 +1428,22 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_source.ml.output
      (run %{bin:ocamlformat} --max-iters=3 --profile=janestreet %{dep:js_source.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_source.ml.ref js_source.ml.output)))
 
 (rule
  (deps .ocp-indent )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_source.ml.ocp.output
      (run %{bin:ocp-indent} %{dep:js_source.ml.ref}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_source.ml.ocp js_source.ml.ocp.output)))
 
 (rule
@@ -1546,38 +1508,32 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to let_binding-in_indent.ml.output
      (run %{bin:ocamlformat} --indent-after-in=4 %{dep:let_binding.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff let_binding-in_indent.ml.ref let_binding-in_indent.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to let_binding-indent.ml.output
      (run %{bin:ocamlformat} --let-binding-indent=6 %{dep:let_binding.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff let_binding-indent.ml.ref let_binding-indent.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to let_binding.ml.output
      (run %{bin:ocamlformat} %{dep:let_binding.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff let_binding.ml.ref let_binding.ml.output)))
 
 (rule
@@ -1712,14 +1668,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to match2.ml.output
      (run %{bin:ocamlformat} --leading-nested-match-parens %{dep:match2.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff match2.ml match2.ml.output)))
 
 (rule
@@ -1816,14 +1770,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to module_item_spacing.mli.output
      (run %{bin:ocamlformat} --max-iter=3 %{dep:module_item_spacing.mli}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff module_item_spacing.mli.ref module_item_spacing.mli.output)))
 
 (rule
@@ -1838,14 +1790,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to monadic_binding.ml.output
      (run %{bin:ocamlformat} %{dep:monadic_binding.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff monadic_binding.ml monadic_binding.ml.output)))
 
 (rule
@@ -1923,14 +1873,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to open.ml.output
      (run %{bin:ocamlformat} %{dep:open.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff open.ml.ref open.ml.output)))
 
 (rule
@@ -2177,26 +2125,22 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to sequence-preserve.ml.output
      (run %{bin:ocamlformat} --sequence-blank-line=preserve-one --max-iter=3 %{dep:sequence.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff sequence-preserve.ml.ref sequence-preserve.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to sequence.ml.output
      (run %{bin:ocamlformat} --sequence-blank-line=compact --max-iter=3 %{dep:sequence.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff sequence.ml.ref sequence.ml.output)))
 
 (rule
@@ -2251,14 +2195,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to source.ml.output
      (run %{bin:ocamlformat} --max-iters=3 %{dep:source.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff source.ml.ref source.ml.output)))
 
 (rule
@@ -2393,86 +2335,72 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-compact-space_around-docked.ml.output
      (run %{bin:ocamlformat} --type-decl=compact --space-around-arrays --space-around-lists --space-around-records --space-around-variants --break-separators=after --dock-collection-brackets %{dep:types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-compact-space_around-docked.ml.ref types-compact-space_around-docked.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-compact-space_around.ml.output
      (run %{bin:ocamlformat} --type-decl=compact --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-compact-space_around.ml.ref types-compact-space_around.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-compact.ml.output
      (run %{bin:ocamlformat} --type-decl=compact %{dep:types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-compact.ml.ref types-compact.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-indent.ml.output
      (run %{bin:ocamlformat} --type-decl-indent=6 %{dep:types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-indent.ml.ref types-indent.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-sparse-space_around.ml.output
      (run %{bin:ocamlformat} --type-decl=sparse --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-sparse-space_around.ml.ref types-sparse-space_around.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types-sparse.ml.output
      (run %{bin:ocamlformat} --type-decl=sparse %{dep:types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types-sparse.ml.ref types-sparse.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to types.ml.output
      (run %{bin:ocamlformat} %{dep:types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff types.ml types.ml.output)))
 
 (rule
