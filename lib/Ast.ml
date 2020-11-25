@@ -158,7 +158,8 @@ module Indexing_op = struct
     | Some (lhs :: args) -> (
       match ident with
       | {pexp_desc= Pexp_ident {txt= ident; loc}; pexp_attributes= []; _}
-        -> (
+      (* We only use the sugared form if it was already used in the source. *)
+        when loc.loc_ghost -> (
         match get_sugar_ident ident args with
         | None -> None
         | Some (op, rhs) -> Some {lhs; op; rhs; loc} )

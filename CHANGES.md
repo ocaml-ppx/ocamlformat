@@ -4,6 +4,9 @@
 
   + Fix parsing of invalid file wrt original source handling (#1542, @hhugo)
 
+  + Preserve the syntax of infix set/get operators (#1528, @gpetiot)
+    `String.get` and similar calls used to be automatically rewritten to their corresponding infix form `.()`, that was incorrect when using the `-unsafe` compilation flag. Now the concrete syntax of these calls is preserved.
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
