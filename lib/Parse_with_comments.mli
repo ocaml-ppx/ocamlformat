@@ -26,12 +26,9 @@ end
 
 exception Warning50 of (Location.t * Warnings.t) list
 
-exception Odoc_errors of Odoc_model.Error.t list
-
 val parse :
      'a Migrate_ast.Traverse.fragment
   -> Conf.t
   -> source:string
   -> 'a with_comments
-(** @raise [Warning50] on misplaced documentation comments.
-    @raise [Odoc_errors] on invalid documentation comments. *)
+(** @raise [Warning50] on misplaced documentation comments. *)

@@ -21,3 +21,7 @@ let parse ~loc text =
       Error [Odoc_model.Error.make "comment could not be parsed" span]
   | {value; warnings= []} -> Ok value
   | {warnings; _} -> Error warnings
+
+let warn fmt warning =
+  Format.fprintf fmt "Warning: Invalid documentation comment:@,%s\n%!"
+    (Odoc_model.Error.to_string warning)

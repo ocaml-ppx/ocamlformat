@@ -27,8 +27,6 @@ end
 
 exception Warning50 of (Location.t * Warnings.t) list
 
-exception Odoc_errors of Odoc_model.Error.t list
-
 let tokens lexbuf =
   let rec loop acc =
     match Migrate_ast.Lexer.token_with_comments lexbuf with
@@ -42,6 +40,33 @@ let tokens lexbuf =
         match tok with Token_latest.EOF -> List.rev acc | _ -> loop acc )
   in
   loop []
+
+let check_docstrings (conf : Conf.t) =
+  object
+    inherit Ppxlib.Ast_traverse.iter as super
+
+    method! attribute x =
+      match x with
+      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
+        ; attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, _, None))
+                        ; pexp_loc= loc
+                        ; pexp_attributes= []
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ } -> (
+        match Docstring.parse ~loc doc with
+        | Ok _ -> ()
+        | Error warnings ->
+            if not conf.quiet then
+              List.iter warnings ~f:(Docstring.warn Format.err_formatter) )
+      | _ -> () ; super#attribute x
+  end
 
 let fresh_lexbuf source =
   let lexbuf = Lexing.from_string source in
@@ -70,34 +95,8 @@ let parse fragment (conf : Conf.t) ~source =
         else not conf.quiet )
       ~f:(fun () ->
         let ast = Migrate_ast.Parse.fragment fragment lexbuf in
-        let check_docstrings =
-          object
-            inherit Ppxlib.Ast_traverse.iter as super
-
-            method! attribute x =
-              match x with
-              | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
-                ; attr_payload=
-                    PStr
-                      [ { pstr_desc=
-                            Pstr_eval
-                              ( { pexp_desc=
-                                    Pexp_constant
-                                      (Pconst_string (doc, _, None))
-                                ; pexp_loc= loc
-                                ; pexp_attributes= []
-                                ; _ }
-                              , [] )
-                        ; _ } ]
-                ; _ } -> (
-                match Docstring.parse ~loc doc with
-                | Ok _ -> ()
-                | Error warnings -> raise (Odoc_errors warnings) )
-              | _ -> () ; super#attribute x
-          end
-        in
         if conf.parse_docstrings then
-          Migrate_ast.Traverse.iter fragment check_docstrings ast ;
+          Migrate_ast.Traverse.iter fragment (check_docstrings conf) ast ;
         Warnings.check_fatal () ;
         let comments =
           List.map

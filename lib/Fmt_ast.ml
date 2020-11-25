@@ -351,7 +351,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     match parsed with
     | _ when not c.conf.parse_docstrings -> fmt_raw str_cmt
     | Ok parsed -> fmt_parsed parsed
-    | Error _ -> impossible "already checked when parsing the input"
+    | Error _ -> fmt_raw str_cmt
   in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)

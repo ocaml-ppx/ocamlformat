@@ -69,8 +69,6 @@ let print_error ~fmt ~exe ~debug ~quiet ~input_name error =
         match exn with
         | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
         | Warning50 _ -> " (misplaced documentation comments - warning 50)"
-        | Parse_with_comments.Odoc_errors _ ->
-            " (invalid documentation comments)"
         | _ -> ""
       in
       Format.fprintf fmt "%s: ignoring %S%s\n%!" exe input_name reason ;
@@ -89,9 +87,6 @@ let print_error ~fmt ~exe ~debug ~quiet ~input_name error =
              (though it might not be consistent with the ocaml compilers \
              and odoc), you can set the --no-comment-check option.\n\
              %!"
-      | Parse_with_comments.Odoc_errors l ->
-          List.iter l ~f:(fun x ->
-              Format.fprintf fmt "%s\n%!" (Odoc_model.Error.to_string x) )
       | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
   | Unstable {iteration; prev; next} ->
       if debug then (

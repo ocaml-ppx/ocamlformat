@@ -1183,8 +1183,7 @@
  (enabled_if (>= %{ocaml_version} 4.07.0))
  (action
    (with-outputs-to invalid_docstring.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:invalid_docstring.ml})))))
+     (run %{bin:ocamlformat} %{dep:invalid_docstring.ml}))))
 
 (rule
  (alias runtest)

@@ -13,3 +13,5 @@ val parse :
      loc:Warnings.loc
   -> string
   -> (Odoc_parser.Ast.docs, Odoc_model.Error.t list) Result.t
+
+val warn : Format.formatter -> Odoc_model.Error.t -> unit
