@@ -6,6 +6,8 @@
 
   + Fix extraneous parenthesis after 'let open' with 'closing-on-separate-line' (#1612, @Julow)
 
+  + Fix the disabled structure items with attributes (#1551, @gpetiot)
+
 #### Changes
 
   + Use dune instrumentation backend for bisect_ppx (#1550, @tmattio)
