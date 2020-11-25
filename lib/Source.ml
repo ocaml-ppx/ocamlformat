@@ -106,13 +106,21 @@ let has_cmt_same_line_after t (loc : Location.t) =
   | Some _ -> false
 
 let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
+  let loc_start =
+    List.fold l ~init:loc
+      ~f:(fun acc ({attr_loc; _} : Parsetree.attribute) ->
+        if Location.compare_start attr_loc acc >= 0 then acc else attr_loc )
+  in
   let loc_end =
     List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->
         if Location.compare_end attr_loc acc <= 0 then acc else attr_loc )
   in
-  if phys_equal loc_end loc then loc
+  if phys_equal loc_end loc && phys_equal loc_start loc then loc
   else
-    {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
+    { loc with
+      loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}
+    ; loc_start= {loc.loc_start with pos_cnum= loc_start.loc_start.pos_cnum}
+    }
 
 let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   let filter = Poly.( = ) tok in

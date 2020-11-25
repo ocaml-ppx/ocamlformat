@@ -604,6 +604,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to disabled_attr.ml.output
+     (run %{bin:ocamlformat} %{dep:disabled_attr.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff disabled_attr.ml disabled_attr.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to disambiguate.ml.output
      (run %{bin:ocamlformat} %{dep:disambiguate.ml}))))
 

@@ -120,6 +120,10 @@ module Pat : sig
   val is_simple : pattern -> bool
 end
 
+module Structure_item : sig
+  val attributes : structure_item -> attributes
+end
+
 module Mod : sig
   val is_simple : module_expr -> bool
 end

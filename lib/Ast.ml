@@ -447,6 +447,32 @@ module Tyd = struct
 end
 
 module Structure_item = struct
+  let attributes itm =
+    match itm.pstr_desc with
+    | Pstr_attribute attr -> [attr]
+    | Pstr_eval (_, attrs) -> attrs
+    | Pstr_value (_, vb) -> List.concat_map vb ~f:(fun x -> x.pvb_attributes)
+    | Pstr_primitive {pval_attributes= attrs; _} -> attrs
+    | Pstr_type (_, t) -> List.concat_map t ~f:(fun x -> x.ptype_attributes)
+    | Pstr_typext {ptyext_attributes= attrs; _} -> attrs
+    | Pstr_recmodule m ->
+        List.concat_map m ~f:(fun x -> x.pmb_expr.pmod_attributes)
+    | Pstr_modtype {pmtd_attributes= attrs; _} -> attrs
+    | Pstr_open {popen_attributes= attrs; _} -> attrs
+    | Pstr_extension (_, attrs) -> attrs
+    | Pstr_class_type ct -> List.concat_map ct ~f:(fun x -> x.pci_attributes)
+    | Pstr_class c -> List.concat_map c ~f:(fun x -> x.pci_attributes)
+    | Pstr_include
+        {pincl_mod= {pmod_attributes= attrs1; _}; pincl_attributes= attrs2; _}
+     |Pstr_exception
+        { ptyexn_attributes= attrs1
+        ; ptyexn_constructor= {pext_attributes= attrs2; _}
+        ; _ }
+     |Pstr_module
+        {pmb_attributes= attrs1; pmb_expr= {pmod_attributes= attrs2; _}; _}
+      ->
+        List.append attrs1 attrs2
+
   let has_doc itm =
     match itm.pstr_desc with
     | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))

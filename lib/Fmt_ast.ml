@@ -4534,7 +4534,7 @@ let fmt_toplevel c ctx itms =
   let break_struct = c.conf.break_struct || is_top ctx in
   let fmt_item c ~last = function
     | `Item i ->
-        maybe_disabled c i.pstr_loc []
+        maybe_disabled c i.pstr_loc (Ast.Structure_item.attributes i)
         @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c d
   in
