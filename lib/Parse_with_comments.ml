@@ -41,33 +41,6 @@ let tokens lexbuf =
   in
   loop []
 
-let check_docstrings (conf : Conf.t) =
-  object
-    inherit Ppxlib.Ast_traverse.iter as super
-
-    method! attribute x =
-      match x with
-      | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
-        ; attr_payload=
-            PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( { pexp_desc=
-                            Pexp_constant (Pconst_string (doc, _, None))
-                        ; pexp_loc= loc
-                        ; pexp_attributes= []
-                        ; _ }
-                      , [] )
-                ; _ } ]
-        ; _ } -> (
-        match Docstring.parse ~loc doc with
-        | Ok _ -> ()
-        | Error warnings ->
-            if not conf.quiet then
-              List.iter warnings ~f:(Docstring.warn Format.err_formatter) )
-      | _ -> () ; super#attribute x
-  end
-
 let fresh_lexbuf source =
   let lexbuf = Lexing.from_string source in
   Location.init lexbuf !Location.input_name ;
@@ -95,8 +68,6 @@ let parse fragment (conf : Conf.t) ~source =
         else not conf.quiet )
       ~f:(fun () ->
         let ast = Migrate_ast.Parse.fragment fragment lexbuf in
-        if conf.parse_docstrings then
-          Migrate_ast.Traverse.iter fragment (check_docstrings conf) ast ;
         Warnings.check_fatal () ;
         let comments =
           List.map

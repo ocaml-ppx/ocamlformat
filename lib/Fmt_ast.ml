@@ -351,7 +351,10 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     match parsed with
     | _ when not c.conf.parse_docstrings -> fmt_raw str_cmt
     | Ok parsed -> fmt_parsed parsed
-    | Error _ -> fmt_raw str_cmt
+    | Error msgs ->
+        if not c.conf.quiet then
+          List.iter msgs ~f:(Docstring.warn Stdlib.Format.err_formatter) ;
+        fmt_raw str_cmt
   in
   Cmts.fmt c loc
   @@ vbox_if (Option.is_none pro) 0 (fmt_opt pro $ wrap "(**" "*)" doc $ epi)
