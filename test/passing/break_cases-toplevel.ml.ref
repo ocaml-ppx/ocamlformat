@@ -197,7 +197,8 @@ let handler =
 
 let _ =
   match abc with
-  | Fooooooooooooooooo (* comment *) | Baaaaaaaaaaaaaaaar
+  | Fooooooooooooooooo (* comment *)
+  | Baaaaaaaaaaaaaaaar
   (* comment *)
   | Baaaaaaaaaaaaaaaaz (* comment *) ->
       ()
@@ -218,27 +219,28 @@ let _ =
       ()
 
 let foooooooooooooo = function
-  | Fooo (* fooooo foo foo foooooo foooooooo foooooooooooo *) | Foo
-  (* foooooo foooo fooooo fooooooo fooooooo fooooo *)
-  | Foooooooooooooooo (* foooooo foooo fooooooooooo *) | Foooooooooooooo _
+  | Fooo (* fooooo foo foo foooooo foooooooo foooooooooooo *)
+  | Foo (* foooooo foooo fooooo fooooooo fooooooo fooooo *)
+  | Foooooooooooooooo (* foooooo foooo fooooooooooo *)
+  | Foooooooooooooo _
   (* Foooooooooooooooooooooooooooo fooooooooooooooooooooooooooo fooooooooo.
      Foooooooooooooooooooooooooooooooooooo foooooooooooooooooooooooo foooooo.
      Foooooooooooooooooooooooooooooooooooooo foooooooooooooooooooo
      foooooooooooooooooo foooooooo. Foooooooooooo fooooooooooo fooooooooooooo
      foooooooooooooo foooooo. *)
-  | Foooooooooo | FooooFoooooFoooooo
-  (* fooooooooooooooooooooooooooooooooooo *)
+  | Foooooooooo
+  | FooooFoooooFoooooo (* fooooooooooooooooooooooooooooooooooo *)
   | Foooo
-  (* Fooo foooo fooooo foooooooo fooooooooo foooooooooooo fooooooooo fooo *)
+    (* Fooo foooo fooooo foooooooo fooooooooo foooooooooooo fooooooooo fooo *)
     ->
       Foooooooooo.Foooooo
   | Foooo {foooo_fooo= {foooooooooo}} ->
       Foooo_Foooo_fooooooo.get_foooooooooo fooooo_fooo
 
 let get_nullability = function
-  | ArrayAccess | OptimisticFallback
-  (* non-null is the most optimistic type *)
+  | ArrayAccess
+  | OptimisticFallback (* non-null is the most optimistic type *)
   | Undef
-  (* This is a very special case, assigning non-null is a technical trick *)
+    (* This is a very special case, assigning non-null is a technical trick *)
     ->
       Nullability.Nonnull
