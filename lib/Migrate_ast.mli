@@ -84,6 +84,8 @@ module Location : sig
   val width : t -> int
 
   val is_single_line : t -> int -> bool
+
+  val to_span : t -> Odoc_model.Location_.span
 end
 
 module Traverse : sig

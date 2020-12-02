@@ -7,6 +7,8 @@
   + Preserve the syntax of infix set/get operators (#1528, @gpetiot)
     `String.get` and similar calls used to be automatically rewritten to their corresponding infix form `.()`, that was incorrect when using the `-unsafe` compilation flag. Now the concrete syntax of these calls is preserved.
 
+  + Add location of invalid docstring in warning messages (#1529, @gpetiot)
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
