@@ -9946,3 +9946,9 @@ let foo () =
   then x
   else y
 ;;
+
+let xxxxxx =
+  let%map (* _____________________________
+             __________ *) () = yyyyyyyy in
+  { zzzzzzzzzzzzz }
+;;

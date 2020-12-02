@@ -7392,3 +7392,8 @@ f
         ()
         (* comment *) | false -> ())
   ()
+
+let xxxxxx =
+  let%map (* _____________________________
+             __________ *)()            = yyyyyyyy in
+  { zzzzzzzzzzzzz }
