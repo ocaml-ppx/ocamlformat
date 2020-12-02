@@ -236,6 +236,13 @@ type t =
   | A (* A *) (* | B *)
   | C
 
+type foo = Alpha | Beta [@@ocaml.warning "-37" (* Explanation of warning *)]
+
+type foo =
+  | Alpha______________________________
+  | Beta_______________________________ 
+  [@@ocaml.warning "-37" (* Explanation of warning *)]
+
 let y = f (* a *) (* b *) x
 
 module A (* A *) () (* B *) = (* C *) B
