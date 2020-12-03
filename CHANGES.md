@@ -9,6 +9,8 @@
 
   + Add location of invalid docstring in warning messages (#1529, @gpetiot)
 
+  + Fix comments on the same line as prev and next elements (#1556, @gpetiot)
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
