@@ -930,7 +930,8 @@ and fmt_pattern_attributes c xpat k =
       Params.parens_if parens_attr c.conf
         (k $ fmt_attributes c ~key:"@" attrs)
 
-and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
+and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
+    =
   protect c (Pat pat)
   @@
   let ctx = Pat pat in
@@ -946,6 +947,7 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
         Cmts.fmt c ~pro:(break 1 0) ppat_loc
         @@ Cmts.fmt c ~pro:(break 1 0) loc (fmt_opt pro $ k)
   | _ -> fun k -> Cmts.fmt c ppat_loc (fmt_opt pro $ k) )
+  @@ hovbox_if box 0
   @@ fmt_pattern_attributes c xpat
   @@
   match ppat_desc with
@@ -1109,7 +1111,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
       let break {ast= p1; _} {ast= p2; _} =
         Poly.(c.conf.break_cases = `Nested)
         || (not (is_simple p1))
-        || not (is_simple p2)
+        || (not (is_simple p2))
+        || Cmts.has_after c.cmts p1.ppat_loc
       in
       let open_box =
         match c.conf.break_cases with
@@ -1145,7 +1148,8 @@ and fmt_pattern c ?pro ?parens ({ctx= ctx0; ast= pat} as xpat) =
                       Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
                         ~space:(space xpat.ast)
                   in
-                  leading_cmt $ fmt_pattern c ~pro xpat
+                  leading_cmt
+                  $ fmt_pattern c ~box:true ~pro xpat
                   $ fmt_if_k last close_box ) )
         $ fmt_or_k nested
             (fits_breaks (if parens then ")" else "") "")

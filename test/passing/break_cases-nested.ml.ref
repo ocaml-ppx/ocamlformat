@@ -231,7 +231,7 @@ let foooooooooooooo = function
   | Foooooooooo
   | FooooFoooooFoooooo (* fooooooooooooooooooooooooooooooooooo *)
   | Foooo
-  (* Fooo foooo fooooo foooooooo fooooooooo foooooooooooo fooooooooo fooo *)
+    (* Fooo foooo fooooo foooooooo fooooooooo foooooooooooo fooooooooo fooo *)
     ->
       Foooooooooo.Foooooo
   | Foooo {foooo_fooo= {foooooooooo}} ->
@@ -241,6 +241,6 @@ let get_nullability = function
   | ArrayAccess
   | OptimisticFallback (* non-null is the most optimistic type *)
   | Undef
-  (* This is a very special case, assigning non-null is a technical trick *)
+    (* This is a very special case, assigning non-null is a technical trick *)
     ->
       Nullability.Nonnull
