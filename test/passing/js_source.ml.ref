@@ -53,8 +53,13 @@ let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? { x }]
 
 [%%foo: module M : [%baz]]
 
-let ([%foo: include S with type t = t] : [%foo: val x : t
-                                                val y : t]) = [%foo: type t = t]
+let ([%foo: include S with type t = t] :
+      [%foo:
+        val x : t
+        val y : t])
+  =
+  [%foo: type t = t]
+;;
 
 let int_with_custom_modifier = 1234567890_1234567890_1234567890_1234567890_1234567890z
 let float_with_custom_modifier = 1234567890_1234567890_1234567890_1234567890_1234567890.z
