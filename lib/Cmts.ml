@@ -41,37 +41,6 @@ let find_at_position t loc pos =
   in
   Map.find map loc
 
-(** Heuristic to determine if two locations should be considered "adjacent".
-    Holds if there is only whitespace between the locations, or if there is a
-    [|] character and the first location begins a line and the start column
-    of the first location is lower than that of the second location. *)
-let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
-  match
-    Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
-        | _ -> true )
-  with
-  | [] -> true
-  | [(Token_latest.BAR, _)] ->
-      Source.begins_line src l1
-      && Position.column l1.loc_start < Position.column l2.loc_start
-  | _ -> false
-
-(** Whether the symbol preceding location [loc] is an infix symbol
-    (corresponding to [Ast.String_id.is_infix]) or a semicolon. If it is the
-    case, comments attached to the following item should be kept after the
-    infix symbol. *)
-let infix_symbol_before src (loc : Location.t) =
-  match
-    Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
-  with
-  | Some
-      ( ( SEMI | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
-        | INFIXOP4 _ | COLONCOLON | COLONEQUAL | BARBAR | LESSMINUS | EQUAL
-        | COLON | LETOP _ | ANDOP _ | DOTDOT | DOTOP _ | AMPERAMPER )
-      , _ ) ->
-      true
-  | _ -> false
-
 (** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig
   type t
@@ -122,43 +91,17 @@ end = struct
     let a, b, c = Map.split a_b_c loc_start in
     (a, b ++ c, d ++ e)
 
-  let partition src ~prev ~next cmts =
-    match to_list cmts with
-    | Cmt.{loc; _} :: _ as cmtl when is_adjacent src prev loc -> (
-      match
-        List.group cmtl ~break:(fun l1 l2 ->
-            not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
-      with
-      | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
-          let open Location in
-          let same_line_as_prev l =
-            prev.loc_end.pos_lnum = l.loc_start.pos_lnum
-          in
-          let decide loc =
-            match
-              ( loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
-              , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
-            with
-            | 0, 0 -> `Before_next
-            | 0, _ when infix_symbol_before src loc -> `Before_next
-            | 0, _ -> `After_prev
-            | _ -> `Before_next
-          in
-          let prev, next =
-            if not (same_line_as_prev next) then
-              let next, prev =
-                List.partition_tf cmtl ~f:(fun {Cmt.loc= l; _} ->
-                    match decide l with
-                    | `After_prev -> false
-                    | `Before_next -> true )
-              in
-              (prev, next)
-            else ([], cmtl)
-          in
-          (of_list prev, of_list next)
-      | after :: befores -> (of_list after, of_list (List.concat befores))
-      | [] -> impossible "by parent match" )
-    | _ -> (empty, cmts)
+  let partition src ~prev:prev_loc ~next:next_loc cmts =
+    Map.partition_tf cmts ~f:(fun cmts ->
+        (* always at least one cmt *)
+        let first = Cmt.loc @@ List.hd_exn cmts in
+        let last = Cmt.loc @@ List.last_exn cmts in
+        let curr = {first with loc_end= last.loc_end} in
+        let prev = Source.relative_info_from_prev src ~curr ~prev:prev_loc in
+        let next = Source.relative_info_from_next src ~curr ~next:next_loc in
+        match Source.cmt_placement ~prev ~prev_loc ~next ~next_loc src with
+        | After_prev -> true
+        | Before_next -> false )
 end
 
 let position_to_string = function
@@ -200,6 +143,10 @@ let rec place t loc_tree ?prev_loc locs cmts =
       let before_curr =
         match prev_loc with
         | None -> before
+        (* Location.none is a special case, it shouldn't be the location of a
+           previous element, so if a comment is at the beginning of the file,
+           it should be placed before the next element. *)
+        | Some prev_loc when Location.(compare prev_loc none) = 0 -> before
         | Some prev_loc ->
             let after_prev, before_curr =
               CmtSet.partition t.source ~prev:prev_loc ~next:curr_loc before

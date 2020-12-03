@@ -94,3 +94,42 @@ val is_quoted_string : t -> Location.t -> bool
 
 val loc_of_first_token_at :
   t -> Location.t -> Parser.token -> Location.t option
+
+(** Whether the starting column of the comment is before, after or is the
+    same as the starting column of the other item. *)
+type column_diff = Before | Same | After
+
+type attached = bool
+
+type prev = Same_line | After of attached * column_diff
+
+type next = Same_line | Before of attached * column_diff
+
+type 'a relative_info =
+  { position: 'a
+  ; tokens_between: Parser.token list
+        (** List of tokens between the comment and the other item. *) }
+
+val relative_info_from_prev :
+  t -> curr:Location.t -> prev:Location.t -> prev relative_info
+(** [relative_info_from_prev src curr prev] returns the source information
+    related to the item of location [curr] and another AST node of location
+    [prev] positioned before. *)
+
+val relative_info_from_next :
+  t -> curr:Location.t -> next:Location.t -> next relative_info
+(** [relative_info_from_next src curr next] returns the source information
+    related to the item of location [curr] and another AST node of location
+    [next] positioned after. *)
+
+type cmt_placement = After_prev | Before_next
+
+val cmt_placement :
+     prev:prev relative_info
+  -> prev_loc:Location.t
+  -> next:next relative_info
+  -> next_loc:Location.t
+  -> t
+  -> cmt_placement
+(** Heuristic to choose between placing a comment after the previous location
+    or before the next one. *)

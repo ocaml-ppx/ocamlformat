@@ -169,7 +169,7 @@ let list_pat cmts pat =
     let {ppat_desc; ppat_loc= src; _} = pat in
     match ppat_desc with
     | Ppat_construct ({txt= Lident "[]"; loc}, None) ->
-        Cmts.relocate cmts ~src ~before:loc ~after:loc ;
+        Cmts.relocate cmts ~src:loc ~before:src ~after:src ;
         Some (List.rev acc, loc)
     | Ppat_construct
         ( {txt= Lident "::"; loc}
@@ -178,6 +178,7 @@ let list_pat cmts pat =
             ; ppat_loc
             ; ppat_attributes= []
             ; _ } ) ->
+        Cmts.relocate cmts ~src:loc ~before:hd.ppat_loc ~after:tl.ppat_loc ;
         list_pat_ tl (([src; loc; ppat_loc], sub_pat ~ctx hd) :: acc)
     | _ -> None
   in

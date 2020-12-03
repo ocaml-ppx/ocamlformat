@@ -1203,7 +1203,8 @@ and ('a, 'e, 'b) ty_sum =
   ; sum_cases: (string * ('e, 'b) ty_case) list
   ; sum_inj: 'c. ('b, 'c) ty_sel * 'c -> 'a }
 
-and 'e ty_dyn = (* dynamic type *)
+and 'e ty_dyn =
+  (* dynamic type *)
   | Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 and (_, _) ty_sel =
@@ -9272,7 +9273,7 @@ f
     | true ->
         let () = () in
         ()
-    (* comment *)
+        (* comment *)
     | false -> () )
   ()
 

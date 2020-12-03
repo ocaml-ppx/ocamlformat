@@ -287,3 +287,148 @@ let loc_of_first_token_at t loc kwd =
   match tokens_at t loc ~filter:(Poly.( = ) kwd) with
   | [] -> None
   | (_, loc) :: _ -> Some loc
+
+type column_diff = Before | Same | After
+
+type attached = bool
+
+type prev = Same_line | After of attached * column_diff
+
+type next = Same_line | Before of attached * column_diff
+
+type 'a relative_info = {position: 'a; tokens_between: Parser.token list}
+
+let tokens_no_cmt src ~(fst_loc : Location.t) ~(snd_loc : Location.t) =
+  let filter = function Parser.COMMENT _ -> false | _ -> true in
+  tokens_between src fst_loc.loc_end snd_loc.loc_start ~filter
+  |> List.map ~f:fst
+
+let column_diff ~(curr : Location.t) ~(other : Location.t) : column_diff =
+  let col = Position.column in
+  let cmp = col curr.loc_start - col other.loc_start in
+  if cmp < 0 then Before else if cmp = 0 then Same else After
+
+let relative_info_from_prev src ~(curr : Location.t) ~(prev : Location.t) =
+  let column_diff = column_diff ~curr ~other:prev in
+  let position =
+    match curr.loc_start.pos_lnum - prev.loc_end.pos_lnum with
+    | 0 -> (Same_line : prev)
+    | 1 -> After (true, column_diff)
+    | _ -> After (false, column_diff)
+  in
+  let tokens_between = tokens_no_cmt src ~fst_loc:prev ~snd_loc:curr in
+  {position; tokens_between}
+
+let relative_info_from_next src ~(curr : Location.t) ~(next : Location.t) =
+  let column_diff = column_diff ~curr ~other:next in
+  let position =
+    match next.loc_start.pos_lnum - curr.loc_end.pos_lnum with
+    | 0 -> Same_line
+    | 1 -> Before (true, column_diff)
+    | _ -> Before (false, column_diff)
+  in
+  let tokens_between = tokens_no_cmt src ~fst_loc:curr ~snd_loc:next in
+  {position; tokens_between}
+
+type cmt_placement = After_prev | Before_next
+
+let can_attach_cmt ~before (tk, _) =
+  let open Parser in
+  match tk with
+  (* keywords *)
+  | WITH | WHILE | WHEN | VIRTUAL | VAL | UNDERSCORE | TYPE | TRY | TRUE
+   |TO | THEN | STRUCT | SIG | REC | PRIVATE | OPEN | OF | OBJECT | NONREC
+   |NEW | MUTABLE | MODULE | METHOD | MATCH | LETOP _ | LET | LAZY
+   |INITIALIZER | INHERIT | INCLUDE | IN | IF | HASHOP _ | FUNCTOR
+   |FUNCTION | FUN | FOR | ASSERT | AS | ANDOP _ | AND | FALSE | EXTERNAL
+   |EXCEPTION | CLASS | BEGIN | DONE | DO | END | ELSE | DOWNTO ->
+      true
+  (* non-terminal *)
+  | UIDENT _ | STRING _ | LIDENT _ | LABEL _ | INT _ | FLOAT _ | CHAR _
+   |COMMENT _ | DOCSTRING _ | QUOTED_STRING_ITEM _ | QUOTED_STRING_EXPR _ ->
+      true
+  (* opening symbols allowing comments *)
+  | LPAREN | LBRACKETLESS | LBRACKETGREATER | LBRACKETBAR | LBRACKET
+   |LBRACELESS | LBRACE | BACKQUOTE | LBRACKETATATAT ->
+      before
+  (* opening symbols not allowing comments *)
+  | LBRACKETPERCENTPERCENT | LBRACKETPERCENT | LBRACKETATAT | LBRACKETAT ->
+      false
+  (* closing symbols *)
+  | RPAREN | RBRACKET | RBRACE | GREATERRBRACKET | GREATERRBRACE
+   |BARRBRACKET ->
+      not before
+  (* infix operators, used to accept comments, but let's change that *)
+  | INFIXOP4 _ | INFIXOP3 _ | INFIXOP2 _ | INFIXOP1 _ | INFIXOP0 _ -> false
+  (* other symbols and operators *)
+  | TILDE | STAR | SEMISEMI | SEMI | QUOTE | QUESTION | PREFIXOP _ | PLUSEQ
+   |PLUSDOT | PLUS | PERCENT | OR | OPTLABEL _ | MINUSGREATER | MINUSDOT
+   |MINUS | LESSMINUS | LESS | HASH | GREATER | EQUAL | EOL | EOF | DOTDOT
+   |DOT | CONSTRAINT | COMMA | COLONGREATER | COLONEQUAL | COLONCOLON
+   |COLON | DOTOP _ | BARBAR | BAR | BANG | AMPERSAND | AMPERAMPER ->
+      false
+
+let is_infix_op tk =
+  let open Parser in
+  match tk with
+  | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _ | INFIXOP4 _ -> true
+  | _ -> false
+
+let is_bar = function Parser.BAR, _ -> true | _ -> false
+
+let cmt_placement ~(prev : prev relative_info) ~prev_loc
+    ~(next : next relative_info) ~next_loc src =
+  match (prev.tokens_between, next.tokens_between) with
+  | [], [] -> (
+      let filter _ = true in
+      match
+        (tokens_at src prev_loc ~filter, tokens_at src next_loc ~filter)
+      with
+      | (_ :: _ as ptokens), ntoken :: _ -> (
+          let ptoken = List.last_exn ptokens in
+          if can_attach_cmt ~before:true ntoken then
+            if can_attach_cmt ~before:false ptoken then
+              match (prev.position, next.position) with
+              | After (false, _), Before (false, _) -> Before_next
+              (* Floating comments between toplevel items must be attached to
+                 the next item, otherwise group of comments are split. *)
+              | After (true, Same), Before (false, Same) -> Before_next
+              | After (true, _), Before (false, _) -> After_prev
+              | After (false, _), Before (true, _) -> Before_next
+              | After (true, c1), Before (true, c2) -> (
+                match (c1, c2) with
+                | Before, _ -> Before_next
+                | After, Same -> Before_next
+                | After, _ -> After_prev
+                | Same, Same -> Before_next
+                | Same, _ -> After_prev )
+              | Same_line, Before (false, _) -> After_prev
+              (* In record fields, the `;` is part of the item and so is not
+                 in the [tokens_between] list. *)
+              | Same_line, Before (true, Same) -> Before_next
+              | _ -> (
+                (* Comments after infix operators are attached before the
+                   following elements, for legacy reasons (would need to be
+                   fixed one day). *)
+                match tokens_at src prev_loc ~filter:(fun _ -> true) with
+                | [(tk, _)] when is_infix_op tk -> Before_next
+                | [(Parser.STRING _, _)] -> After_prev
+                | [(Parser.LIDENT _, _)] -> After_prev
+                | [(Parser.(TRUE | FALSE), _)] -> After_prev
+                | [(_, _)] -> Before_next
+                | _ -> After_prev )
+            else Before_next
+          else
+            (* if the comment is vertically aligned with the bar of a pattern *)
+            match (prev.position, next.position) with
+            | After (_, (Before | Same)), Before (_, (Before | Same))
+              when is_bar ntoken ->
+                Before_next
+            | _ -> After_prev )
+      | _ -> Before_next )
+  | [], [Parser.BAR] -> (
+    match (prev.position, next.position) with
+    | After (true, Before), Before (true, Before) -> Before_next
+    | _ -> After_prev )
+  | ([] | [Parser.SEMI]), _ :: _ -> After_prev
+  | _ -> Before_next

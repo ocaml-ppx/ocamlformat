@@ -586,14 +586,16 @@ and fmt_attributes c ?pre ?suf ~key attrs =
         hvbox indent (fmt_attribute_or_extension c pre (name, pld))
   in
   let num = List.length attrs in
-  let fmt_attr ~first ~last {attr_name; attr_payload; attr_loc} =
-    fmt_or_k first (open_hvbox 0) (fmt "@ ")
+  let fmt_attr ~first ~last:_ {attr_name; attr_payload; attr_loc} =
+    fmt_if_k (not first) (fmt "@ ")
     $ hvbox 0
-        (Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload)))
-    $ fmt_if_k last (close_box $ fmt_opt suf)
+        (Cmts.fmt ~adj:(fmt "@;") c attr_loc
+           (fmt_attribute c key (attr_name, attr_payload)) )
   in
   fmt_if_k (num > 0)
-    (fmt_opt pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
+    ( fmt_opt pre
+    $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr)
+    $ fmt_opt suf )
 
 and fmt_payload c ctx pld =
   protect c (Pld pld)
@@ -996,7 +998,8 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
         let pat =
           fmt_elements_collection p
             (fun (locs, xpat) ->
-              Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat) )
+              Cmts.fmt_list c ~eol:cmt_break locs
+                (hvbox 0 (fmt_pattern c xpat)) )
             loc_xpats
         in
         hvbox 0
@@ -1007,8 +1010,11 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
                     ~eol:noop
                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc ) ) )
     | None ->
+        let has_cmts =
+          Cmts.has_before c.cmts ppat_loc || Cmts.has_after c.cmts ppat_loc
+        in
         hvbox 0
-          (Params.parens_if parens c.conf
+          (Params.parens_if (parens || has_cmts) c.conf
              (Cmts.fmt c ppat_loc
                 ( fmt_pattern c (sub_pat ~ctx x)
                 $ fmt "@ "
@@ -1155,21 +1161,21 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
             (fits_breaks (if parens then ")" else "") "")
             (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")") )
   | Ppat_constraint
-      ( {ppat_desc= Ppat_unpack name; ppat_attributes= []; ppat_loc; _}
+      ( {ppat_desc= Ppat_unpack name; ppat_attributes= []; ppat_loc= _; _}
       , ( { ptyp_desc= Ptyp_package (id, cnstrs)
           ; ptyp_attributes= []
-          ; ptyp_loc= (* TODO: use ptyp_loc *) _
+          ; ptyp_loc= _
           ; _ } as typ ) ) ->
+      (* The comments are correctly handled by the functions called here, no
+         need to call Cmts functions again here. *)
       let ctx = Typ typ in
       hovbox 0
         (Params.parens_if parens c.conf
            (hvbox 1
-              (Cmts.fmt c typ.ptyp_loc
-                 ( hovbox 0
-                     ( Cmts.fmt c ppat_loc
-                         (str "module " $ fmt_str_loc_opt c name)
-                     $ fmt "@ : " $ fmt_longident_loc c id )
-                 $ fmt_package_type c ctx cnstrs ) ) ) )
+              ( hovbox 0
+                  ( str "module " $ fmt_str_loc_opt c name $ fmt "@ : "
+                  $ fmt_longident_loc c id )
+              $ fmt_package_type c ctx cnstrs ) ) )
   | Ppat_constraint (pat, typ) ->
       hvbox 2
         (Params.parens_if parens c.conf
@@ -1623,26 +1629,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; _ }
       , [(Nolabel, r); (Nolabel, v)] )
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
-      let cmts_before =
-        let adj =
-          fmt_if Poly.(c.conf.assignment_operator = `End_line) "@,"
-        in
-        Cmts.fmt_before c loc ~pro:(break 1 2) ~epi:adj ~adj
-      in
-      let cmts_after = Cmts.fmt_after c loc ~pro:noop ~epi:noop in
-      Params.parens_if parens c.conf
-        (hovbox 0
-           ( match c.conf.assignment_operator with
-           | `Begin_line ->
-               hvbox 0 (fmt_expression c (sub_exp ~ctx r) $ cmts_before)
-               $ fmt "@;<1 2>:= " $ cmts_after
-               $ hvbox 2 (fmt_expression c (sub_exp ~ctx v))
-           | `End_line ->
-               hvbox 0
-                 (fmt_expression c (sub_exp ~ctx r) $ cmts_before $ str " :=")
-               $ fmt "@;<1 2>" $ cmts_after
-               $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ) )
+      Cmts.relocate c.cmts ~src:loc ~before:r.pexp_loc ~after:v.pexp_loc ;
+      Cmts.fmt c pexp_loc
+      @@ wrap_if parens "(" ")"
+           (hovbox 0
+              ( match c.conf.assignment_operator with
+              | `Begin_line ->
+                  hvbox 2 (fmt_expression c (sub_exp ~ctx r))
+                  $ fmt "@;<1 2>:= "
+                  $ hvbox 2 (fmt_expression c (sub_exp ~ctx v))
+              | `End_line ->
+                  hvbox 2 (fmt_expression c (sub_exp ~ctx r) $ str " :=")
+                  $ fmt "@;<1 2>"
+                  $ hvbox 2 (fmt_expression c (sub_exp ~ctx v)) ) )
   | Pexp_apply
       ( { pexp_desc=
             Pexp_ident
@@ -2286,12 +2285,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
         ~disambiguate:true
         (hvbox 2
-           ( hvbox 0
-               ( str "try"
-               $ fmt_extension_suffix c ext
-               $ fmt_attributes c ~key:"@" pexp_attributes
-               $ fmt "@;<1 2>"
-               $ fmt_expression c (sub_exp ~ctx e0) )
+           ( hvbox 2
+               ( hvbox 0
+                   ( str "try"
+                   $ fmt_extension_suffix c ext
+                   $ fmt_attributes c ~key:"@" pexp_attributes )
+               $ break 1 0
+               $ fmt_expression ~box:false c (sub_exp ~ctx e0) )
            $ break 1 (-2)
            $ hvbox 0
                ( hvbox 0
@@ -3269,7 +3269,7 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
   (* Force break if comment before pcd_loc, it would interfere with an
      eventual comment placed after the previous constructor *)
   fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
-  $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
+  $ Cmts.fmt_before ~adj:(break 1000 0) ~epi:(break 1000 0) c pcd_loc
   $ Cmts.fmt_before c loc
   $ fmt_or_k first (if_newline "| ") (str "| ")
   $ hvbox ~name:"constructor_decl" 0
@@ -4473,12 +4473,9 @@ let fmt_toplevel_directive c dir =
     match pdir_arg with
     | None -> noop
     | Some {pdira_desc; pdira_loc; _} ->
-        str " "
-        $ Cmts.fmt_before ~epi:(str " ") c pdira_loc
-        $ fmt_dir_arg pdira_desc
-        $ Cmts.fmt_after c pdira_loc
+        fmt "@ " $ hvbox 2 (Cmts.fmt c pdira_loc (fmt_dir_arg pdira_desc))
   in
-  Cmts.fmt c pdir_loc (fmt ";;@\n" $ name $ args)
+  Cmts.fmt c pdir_loc (fmt ";;@\n" $ hvbox 2 (name $ args))
 
 let flatten_ptop =
   List.concat_map ~f:(function

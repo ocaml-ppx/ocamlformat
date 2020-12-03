@@ -190,8 +190,8 @@ let () =
 
 type t =
   | Aaaaaaaaaa
-  (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-     tempor incididunt ut labore et dolore magna aliqua. *)
+    (* Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+       eiusmod tempor incididunt ut labore et dolore magna aliqua. *)
   | Bbbbbbbbbb (* foo *)
   | Bbbbbbbbbb
 
@@ -208,13 +208,12 @@ let () =
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 let rec fooooooooooo = function
-  (*XX*)
-  | x :: t (*YY*) -> k
+  | ((*XX*) x :: t (*YY*)) -> k
   (* AA*)
   | [ (*BB*)
       (* CC *)
-    x
-    (* DD *)
+      x
+      (* DD *)
     ; (* EE *)
       y
       (* FF *)
@@ -222,40 +221,43 @@ let rec fooooooooooo = function
   (* HH *) ->
       k
   (* AA*)
-  (*BB*)
-  (* CC *)
-  | x (* DD *) :: (* EE *) t
-  (* FF *)
-  (* GG *)
+  | ((*BB*)
+     (* CC *)
+    x
+    (* DD *)
+    :: (* EE *)
+    t
+    (* FF *)
+    (* GG *) )
   (* HH *) ->
       k
   (* AA*)
-  (*BB*)
-  (* CC *)
-  | x
+  | ((*BB*)
+     (* CC *)
+    x
     (* DD *)
     (* XX *)
     :: (* YY *)
        (* EE *)
     t
-  (* FF *)
-  (* GG *)
+    (* FF *)
+    (* GG *) )
   (* HH *) ->
       k
   (* AA *)
-  (* BB *)
-  | (module (* CC *)
+  | ((* BB *)
+    (module (* CC *)
             (* DD *) F (* EE *) : (* FF *) M (* GG *) )
     (* HH *)
     :: (* II *)
     t
-  (* JJ *)
+    (* JJ *) )
   (* KK *) ->
       foo
 
 let%map
-    (* __________________________________________________________________________________________ *)
-    _ =
+    (* __________________________________________________________________________________________ *) _
+    =
   ()
 
 type t = < (* a *)
@@ -313,14 +315,13 @@ type t =
 
 type t =
   (* | B *)
-  | A
-  (* A *)
+  | A (* A *)
   | C
 
 type t =
   | A
-  (* A *)
-  (* | B *)
+    (* A *)
+    (* | B *)
   | C
 
 type foo = Alpha | Beta
@@ -333,9 +334,8 @@ type foo =
 
 let y =
   f
-    (* a *)
-    (* b *)
-    x
+  (* a *)
+  (* b *) x
 
 module A (* A *) () = (* B *)
                       (* C *)

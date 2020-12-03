@@ -112,10 +112,7 @@ let () =
 
 let () =
   (* Open the repo *)
-  initialise
-  (* Perform a subsequent action *)
-  >>= subsequent_action
-  (* Keep going... *)
-  >|= another_action
-  (* And finally do this *)
+  initialise (* Perform a subsequent action *)
+  >>= subsequent_action (* Keep going... *)
+  >|= another_action (* And finally do this *)
   |> fun t -> final_action t

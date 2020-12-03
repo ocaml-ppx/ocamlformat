@@ -174,8 +174,7 @@ let _ =
   match x with A -> [%expr match y with e -> ( match e with x -> x )]
 
 type t = {a: int}
-[@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
-(* comment *)
+[@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx] (* comment *)
 [@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
 
 module type A = sig
@@ -184,8 +183,7 @@ end
 
 module M = struct
   type t
-  [@@immediate]
-  (* ______________________________________ *)
+  [@@immediate] (* ______________________________________ *)
   [@@deriving variants, sexp_of]
 end
 

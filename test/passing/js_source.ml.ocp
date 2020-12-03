@@ -1161,7 +1161,8 @@ and ('a, 'e, 'b) ty_sum =
   ; sum_inj : 'c. ('b, 'c) ty_sel * 'c -> 'a
   }
 
-and 'e ty_dyn = (* dynamic type *)
+and 'e ty_dyn =
+  (* dynamic type *)
   | Tdyn : ('a, 'e) ty * 'a -> 'e ty_dyn
 
 and (_, _) ty_sel =
@@ -9953,7 +9954,11 @@ let foo () =
 ;;
 
 let xxxxxx =
-  let%map (* _____________________________
-             __________ *) () = yyyyyyyy in
+  let%map
+    (* _____________________________
+           __________ *) ()
+    =
+    yyyyyyyy
+  in
   { zzzzzzzzzzzzz }
 ;;

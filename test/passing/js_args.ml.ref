@@ -39,9 +39,8 @@ let () =
   raise
     (Bug
        ( "foo"
-       (* In this and similar cases, we want the subsequent lines to align
-          with the first expression. *)
-       ^ "bar" ) ) ;
+         (* In this and similar cases, we want the subsequent lines to align
+            with the first expression. *) ^ "bar" ) ) ;
   raise (Bug ("foo" ^ "quux" ^ "bar")) ;
   raise (Bug ((foo + quux) ^ "bar")) ;
   raise (Bug ((foo + quux) ^ "bar"))
