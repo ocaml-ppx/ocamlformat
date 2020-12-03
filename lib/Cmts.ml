@@ -138,7 +138,7 @@ end = struct
               ( loc.loc_start.pos_lnum - prev.loc_end.pos_lnum
               , next.loc_start.pos_lnum - loc.loc_end.pos_lnum )
             with
-            | 0, 0 -> impossible "already tested by previous if"
+            | 0, 0 -> `Before_next
             | 0, _ when infix_symbol_before src loc -> `Before_next
             | 0, _ -> `After_prev
             | _ -> `Before_next

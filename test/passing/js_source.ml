@@ -7566,3 +7566,8 @@ let foo () =
     this is a medium length expression of_some sort
   then x
   else y
+
+let xxxxxx =
+  let%map (* _____________________________
+             __________ *)()            = yyyyyyyy in
+  { zzzzzzzzzzzzz }

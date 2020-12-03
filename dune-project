@@ -53,7 +53,8 @@
   dune-build-info
   fix
   fpath
-  menhir
+  (menhir
+   (>= 20180528))
   (ocp-indent :with-test)
   (odoc
    (>= 1.4.2))

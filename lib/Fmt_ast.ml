@@ -335,17 +335,6 @@ let fmt_direction_flag = function
 let fmt_virtual_flag f =
   match f with Virtual -> fmt "@ virtual" | Concrete -> noop
 
-let parse_docstring ~loc text =
-  let location = loc.Location.loc_start in
-  let location =
-    { location with
-      pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
-  in
-  match Odoc_parser.parse_comment_raw ~location ~text with
-  | exception _ -> Error ["comment could not be parsed"]
-  | {value; warnings= []} -> Ok value
-  | {warnings; _} -> Error (List.map warnings ~f:Odoc_model.Error.to_string)
-
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
   assert (not (String.is_empty str_cmt)) ;
   let fmt_parsed parsed =
@@ -364,10 +353,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     | Ok parsed -> fmt_parsed parsed
     | Error msgs ->
         if not c.conf.quiet then
-          List.iter msgs
-            ~f:
-              (Caml.Format.eprintf
-                 "Warning: Invalid documentation comment:@,%s\n%!" ) ;
+          List.iter msgs ~f:(Docstring.warn Stdlib.Format.err_formatter) ;
         fmt_raw str_cmt
   in
   Cmts.fmt c loc
@@ -384,7 +370,7 @@ let fmt_docstring c ?(standalone = false) ?pro ?epi doc =
   list_pn (Option.value ~default:[] doc)
     (fun ~prev:_ ({txt; loc}, floating) ~next ->
       let epi = docstring_epi ~standalone ~next ~epi ~floating in
-      fmt_parsed_docstring c ~loc ?pro ~epi txt (parse_docstring ~loc txt) )
+      fmt_parsed_docstring c ~loc ?pro ~epi txt (Docstring.parse ~loc txt) )
 
 let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
     ?(fit = false) c doc1 doc2 =
@@ -408,7 +394,7 @@ let fmt_docstring_around_item' ?(is_val = false) ?(force_before = false)
       let floating_doc, doc =
         doc
         |> List.map ~f:(fun (({txt; loc}, _) as doc) ->
-               (parse_docstring ~loc txt, doc) )
+               (Docstring.parse ~loc txt, doc) )
         |> List.partition_tf ~f:(fun (_, (_, floating)) -> floating)
       in
       let placement =
