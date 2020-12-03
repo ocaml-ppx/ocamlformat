@@ -11,6 +11,8 @@
 
   + Fix comments on the same line as prev and next elements (#1556, @gpetiot)
 
+  + Break or-patterns after comments and preserve their position at the end of line (#1555, @gpetiot)
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
