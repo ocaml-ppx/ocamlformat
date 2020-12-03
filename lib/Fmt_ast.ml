@@ -1105,18 +1105,10 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
           match i.[0] with '-' | '+' -> true | _ -> false )
         | _ -> false
       in
-      let is_simple {ppat_desc; _} =
-        match ppat_desc with
-        | Ppat_any | Ppat_constant _ | Ppat_var _
-         |Ppat_variant (_, (None | Some {ppat_desc= Ppat_any; _}))
-         |Ppat_construct (_, (None | Some {ppat_desc= Ppat_any; _})) ->
-            true
-        | _ -> false
-      in
       let break {ast= p1; _} {ast= p2; _} =
         Poly.(c.conf.break_cases = `Nested)
-        || (not (is_simple p1))
-        || (not (is_simple p2))
+        || (not (Pat.is_simple p1))
+        || (not (Pat.is_simple p2))
         || Cmts.has_after c.cmts p1.ppat_loc
       in
       let open_box =
