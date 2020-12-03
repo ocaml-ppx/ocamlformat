@@ -1091,12 +1091,11 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
            (fun pat -> fmt_pattern c (sub_pat ~ctx pat))
            pats )
   | Ppat_or _ ->
-      let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
         match ctx0 with
-        | Pat {ppat_desc= Ppat_or _; _} -> not has_doc
-        | Exp {pexp_desc= Pexp_match _ | Pexp_try _ | Pexp_function _; _} ->
-            not has_doc
+        | Pat {ppat_desc= Ppat_or _; _}
+         |Exp {pexp_desc= Pexp_match _ | Pexp_try _ | Pexp_function _; _} ->
+            List.is_empty xpat.ast.ppat_attributes
         | _ -> false
       in
       let xpats = Sugar.or_pat c.cmts xpat in
