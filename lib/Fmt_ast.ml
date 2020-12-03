@@ -1128,7 +1128,7 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
       hvbox 0
         ( list_fl (List.group xpats ~break)
             (fun ~first:first_grp ~last:_ xpat_grp ->
-              list_fl xpat_grp (fun ~first ~last xpat ->
+              list_fl xpat_grp (fun ~first ~last:_ xpat ->
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
                   let loc = xpat.ast.ppat_loc in
@@ -1154,9 +1154,8 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
                       Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
                         ~space:(space xpat.ast)
                   in
-                  leading_cmt
-                  $ fmt_pattern c ~box:true ~pro xpat
-                  $ fmt_if_k last close_box ) )
+                  leading_cmt $ fmt_pattern c ~box:true ~pro xpat )
+              $ close_box )
         $ fmt_or_k nested
             (fits_breaks (if parens then ")" else "") "")
             (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")") )
