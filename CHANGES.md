@@ -1,5 +1,9 @@
 ### unreleased
 
+#### Removed
+
+  + Remove the 'let-open' option, deprecated since 0.16.0 (#1563, @gpetiot)
+
 #### Bug fixes
 
   + Fix parsing of invalid file wrt original source handling (#1542, @hhugo)
