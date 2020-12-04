@@ -9,26 +9,9 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type 'a with_comments =
-  {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
-
-module W : sig
-  type t
-
-  val in_lexer : int list
-
-  val disable : int -> t
-
-  val enable : int -> t
-
-  val to_string : t list -> string
-end
-
-exception Warning50 of (Location.t * Warnings.t) list
-
 val parse :
-     'a Migrate_ast.Traverse.fragment
-  -> Conf.t
-  -> source:string
-  -> 'a with_comments
-(** @raise [Warning50] on misplaced documentation comments. *)
+     loc:Warnings.loc
+  -> string
+  -> (Odoc_parser.Ast.docs, Odoc_model.Error.t list) Result.t
+
+val warn : Format.formatter -> Odoc_model.Error.t -> unit

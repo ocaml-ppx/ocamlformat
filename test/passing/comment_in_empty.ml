@@ -25,7 +25,8 @@ let _ = f "asd" (* te""st *) 3
 let x = function
   | [ (* empty list pat *) ]
    |[| (* empty array pat *) |]
-   |( (* unit pat *) ) | "" (* comment *) ->
+   |( (* unit pat *) )
+   |"" (* comment *) ->
       ()
 
 let x =
