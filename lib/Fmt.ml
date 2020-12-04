@@ -137,16 +137,17 @@ let list_pn x1N pp =
   | [] -> noop
   | [x1] -> lazy_ (fun () -> pp ~prev:None x1 ~next:None)
   | x1 :: (x2 :: _ as x2N) ->
-      lazy_ (fun () -> pp ~prev:None x1 ~next:(Some x2))
-      $
-      let rec list_pn_ prev = function
-        | [] -> noop
-        | [xI] -> lazy_ (fun () -> pp ~prev:(Some prev) xI ~next:None)
-        | xI :: (xJ :: _ as xJN) ->
-            lazy_ (fun () -> pp ~prev:(Some prev) xI ~next:(Some xJ))
-            $ list_pn_ xI xJN
+      let l =
+        let rec aux (prev, acc) = function
+          | [] -> List.rev acc
+          | [xI] -> aux (xI, (Some prev, xI, None) :: acc) []
+          | xI :: (xJ :: _ as xJN) ->
+              aux (xI, (Some prev, xI, Some xJ) :: acc) xJN
+        in
+        aux (x1, [(None, x1, Some x2)]) x2N
       in
-      list_pn_ x1 x2N
+      with_pp (fun fs ->
+          List.iter l ~f:(fun (prev, x, next) -> eval fs (pp ~prev x ~next)) )
 
 let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->

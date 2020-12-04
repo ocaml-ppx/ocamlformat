@@ -1537,6 +1537,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to large_string.ml.output
+     (run %{bin:ocamlformat} --profile=janestreet %{dep:large_string.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff large_string.ml large_string.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to lazy.ml.output
      (run %{bin:ocamlformat} %{dep:lazy.ml}))))
 
