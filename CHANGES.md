@@ -16,8 +16,10 @@
   + Fix comments on the same line as prev and next elements (#1556, @gpetiot)
 
   + Break or-patterns after comments and preserve their position at the end of line (#1555, @gpetiot)
-  
+
   + Fix linebreak between signature items of the same group (#1560, @gpetiot)
+
+  + Fix stack overflow on large string constants (#1562, @gpetiot)
 
 #### Changes
 
