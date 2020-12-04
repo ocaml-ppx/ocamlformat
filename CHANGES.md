@@ -13,6 +13,10 @@
 
   + Break or-patterns after comments and preserve their position at the end of line (#1555, @gpetiot)
 
+#### Changes
+
+  + Add buffer filename in the logs when applying ocamlformat (#1557, @dannywillems)
+
 ### 0.16.0 (2020-11-16)
 
 #### Removed
