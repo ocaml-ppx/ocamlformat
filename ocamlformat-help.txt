@@ -278,14 +278,6 @@ OPTIONS (CODE FORMATTING STYLE)
            ... = and before the in if the module declaration does not fit on
            a single line. The default value is compact.
 
-       --let-open={preserve|short|long|auto}
-           Module open formatting. preserve keeps the original style. short
-           means the Module.(...) style is used. long means the let open
-           Module in (...) style is used. auto means the one fitting best is
-           used. The default value is preserve. Warning: This option is
-           deprecated since version 0.16.0. Concrete syntax will now always
-           be preserved.
-
        -m COLS, --margin=COLS
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.
@@ -477,6 +469,10 @@ OPTIONS (REMOVED OPTIONS)
 
        --escape-strings=VAL
            This option has been removed in version 0.16.0. Concrete syntax
+           will now always be preserved.
+
+       --let-open=VAL
+           This option has been removed in version 0.17.0. Concrete syntax
            will now always be preserved.
 
 OPTIONS

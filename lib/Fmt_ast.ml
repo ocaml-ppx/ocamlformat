@@ -1464,11 +1464,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
      |Pexp_letmodule _ | Pexp_match _ | Pexp_newtype _ | Pexp_sequence _
      |Pexp_try _ ->
         true
-    | Pexp_open _ -> (
-      match c.conf.let_open with
-      | `Auto | `Long -> true
-      | `Short -> false
-      | `Preserve -> Source.is_long_pexp_open c.source exp )
+    | Pexp_open _ -> Source.is_long_pexp_open c.source exp
     | _ -> false
   in
   let fmt_arg very_last ~first:_ ~last ((_, xarg) as lbl_xarg) =
@@ -2203,10 +2199,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       , e0 ) ->
       let override = is_override flag in
       let let_open =
-        match c.conf.let_open with
-        | `Preserve ->
-            if Source.is_long_pexp_open c.source exp then `Long else `Short
-        | (`Long | `Short | `Auto) as x -> x
+        if Source.is_long_pexp_open c.source exp then `Long else `Short
       in
       let force =
         let maybe_break =
