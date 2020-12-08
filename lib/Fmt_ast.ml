@@ -1981,7 +1981,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       Params.parens_if parens c.conf (fmt_longident_loc c lid $ fmt_atrs)
   | Pexp_construct
       ( {txt= Lident "::"; loc}
-      , Some {pexp_desc= Pexp_tuple [x; y]; pexp_attributes= []; _} ) -> (
+      , Some {pexp_desc= Pexp_tuple [x; y]; pexp_attributes= []; pexp_loc; _}
+      ) -> (
     match Sugar.list_exp c.cmts exp with
     | Some (loc_xes, nil_loc) ->
         let p = Params.get_list_expr c.conf in
@@ -2001,7 +2002,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
              $ fmt_atrs ) )
     | None ->
         Params.parens_if parens c.conf
-        @@ Cmts.fmt c loc
+        @@ Cmts.fmt c pexp_loc
         @@ hvbox indent_wrap
              ( fmt_expression c (sub_exp ~ctx x)
              $ fmt "@ "
