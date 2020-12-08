@@ -146,8 +146,8 @@ let list_pn x1N pp =
         in
         aux (x1, [(None, x1, Some x2)]) x2N
       in
-      with_pp (fun fs ->
-          List.iter l ~f:(fun (prev, x, next) -> eval fs (pp ~prev x ~next)) )
+      List.fold_left l ~init:noop ~f:(fun acc (prev, x, next) ->
+          acc $ lazy_ (fun () -> pp ~prev x ~next) )
 
 let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->
