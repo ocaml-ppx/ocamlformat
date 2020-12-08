@@ -62,3 +62,5 @@ let x = function
       ()
 
 let _ = f ~x:(a :: b) (* comment *) ~y
+
+let _ = f ((* comment *) x :: y)
