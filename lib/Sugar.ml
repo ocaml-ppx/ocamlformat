@@ -203,29 +203,6 @@ let list_exp cmts exp =
   in
   list_exp_ exp []
 
-let infix_cons cmts xexp =
-  let rec infix_cons_ ({ast= exp; _} as xexp) =
-    let ctx = Exp exp in
-    let {pexp_desc; pexp_loc= l1; _} = exp in
-    match pexp_desc with
-    | Pexp_construct
-        ( {txt= Lident "::"; loc= l2}
-        , Some
-            { pexp_desc= Pexp_tuple [hd; tl]
-            ; pexp_loc= l3
-            ; pexp_attributes= []
-            ; _ } ) ->
-        Cmts.relocate cmts ~src:l1 ~before:hd.pexp_loc ~after:tl.pexp_loc ;
-        let xtl =
-          match tl.pexp_attributes with
-          | [] -> infix_cons_ (sub_exp ~ctx tl)
-          | _ -> [([], sub_exp ~ctx tl)]
-        in
-        ([l1; l2; l3], sub_exp ~ctx hd) :: xtl
-    | _ -> [([], xexp)]
-  in
-  infix_cons_ xexp
-
 let rec ite cmts ({ast= exp; _} as xexp) =
   let ctx = Exp exp in
   let {pexp_desc; pexp_loc; pexp_attributes; _} = exp in
