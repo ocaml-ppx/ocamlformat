@@ -2006,7 +2006,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         @@ hvbox indent_wrap
              ( fmt_expression c (sub_exp ~ctx x)
              $ fmt "@ "
-             $ hvbox 0
+             $ hovbox 0
                  ( Cmts.fmt c ~pro:noop loc (fmt "::@ ")
                  $ fmt_expression c (sub_exp ~ctx y) )
              $ fmt_atrs ) )
