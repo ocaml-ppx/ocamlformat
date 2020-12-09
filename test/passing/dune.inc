@@ -1925,54 +1925,6 @@
  (deps .ocamlformat )
  (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
-   (with-outputs-to open-auto.ml.output
-     (run %{bin:ocamlformat} --let-open=auto %{dep:open.ml}))))
-
-(rule
- (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action (diff open-auto.ml.ref open-auto.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action
-   (with-outputs-to open-long.ml.output
-     (run %{bin:ocamlformat} --let-open=long %{dep:open.ml}))))
-
-(rule
- (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action (diff open-long.ml.ref open-long.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action
-   (with-outputs-to open-preserve.ml.output
-     (run %{bin:ocamlformat} --let-open=preserve %{dep:open.ml}))))
-
-(rule
- (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action (diff open-preserve.ml.ref open-preserve.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action
-   (with-outputs-to open-short.ml.output
-     (run %{bin:ocamlformat} --let-open=short %{dep:open.ml}))))
-
-(rule
- (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action (diff open-short.ml.ref open-short.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
- (action
    (with-outputs-to open.ml.output
      (run %{bin:ocamlformat} %{dep:open.ml}))))
 
@@ -2075,7 +2027,7 @@
  (deps .ocamlformat dir1/dir2/.ocamlformat dir1/dir2/print_config.ml)
  (action
    (with-outputs-to print_config.ml.output
-     (run %{bin:ocamlformat} dir1/dir2/print_config.ml --print-config --let-open=short --config=max-iters=2 %{dep:print_config.ml}))))
+     (run %{bin:ocamlformat} dir1/dir2/print_config.ml --print-config --config=max-iters=2 %{dep:print_config.ml}))))
 
 (rule
  (alias runtest)

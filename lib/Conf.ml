@@ -52,7 +52,6 @@ type t =
   ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
-  ; let_open: [`Preserve | `Auto | `Short | `Long]
   ; margin: int
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
@@ -831,25 +830,11 @@ module Formatting = struct
       (fun conf x -> {conf with let_module= x})
       (fun conf -> conf.let_module)
 
-  let let_open =
-    let doc = "Module open formatting." in
-    let all =
-      [ ("preserve", `Preserve, "$(b,preserve) keeps the original style.")
-      ; ( "short"
-        , `Short
-        , "$(b,short) means the $(i,Module.(...)) style is used." )
-      ; ( "long"
-        , `Long
-        , "$(b,long) means the $(i,let open Module in (...)) style is used."
-        )
-      ; ("auto", `Auto, "$(b,auto) means the one fitting best is used.") ]
-    in
-    let deprecated =
-      C.deprecated ~since_version:"0.16.0" concrete_syntax_preserved_msg
-    in
-    C.choice ~names:["let-open"] ~all ~doc ~section ~deprecated
-      (fun conf x -> {conf with let_open= x})
-      (fun conf -> conf.let_open)
+  let ( (* let_open *) ) =
+    let names = ["let-open"] in
+    let version = "0.17.0" in
+    let msg = concrete_syntax_preserved_msg in
+    C.removed_option ~names ~version ~msg
 
   let margin =
     let docv = "COLS" in
@@ -1463,7 +1448,6 @@ let ocamlformat_profile =
   ; let_binding_indent= 2
   ; let_binding_spacing= `Compact
   ; let_module= `Compact
-  ; let_open= `Preserve
   ; margin= 80
   ; match_indent= 0
   ; match_indent_nested= `Never
@@ -1536,7 +1520,6 @@ let conventional_profile =
   ; let_binding_indent= C.default Formatting.let_binding_indent
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_module= C.default Formatting.let_module
-  ; let_open= C.default Formatting.let_open
   ; margin= C.default Formatting.margin
   ; match_indent= C.default Formatting.match_indent
   ; match_indent_nested= C.default Formatting.match_indent_nested
@@ -1660,7 +1643,6 @@ let janestreet_profile =
   ; let_binding_indent= 2
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
-  ; let_open= `Preserve
   ; margin= 90
   ; match_indent= 0
   ; match_indent_nested= `Never
