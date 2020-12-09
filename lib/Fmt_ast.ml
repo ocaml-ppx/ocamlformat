@@ -2205,7 +2205,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         let maybe_break =
           match let_open with
           | `Long -> Some Break
-          | `Auto | `Short -> (
+          | `Short -> (
             match e0.pexp_desc with
             | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
              |Pexp_letmodule _ | Pexp_open _ ->
@@ -2217,11 +2217,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         in
         match (let_open, xexp.ctx, popen_expr.pmod_desc) with
         | `Short, _, Pmod_ident _ when not override -> Some Fit
-        | ( (`Auto | `Long)
-          , Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}
-          , _ ) ->
+        | `Long, Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}, _ ->
             Some (Option.value maybe_break ~default:Fit)
-        | (`Auto | `Long | `Short), _, _ -> maybe_break
+        | (`Long | `Short), _, _ -> maybe_break
       in
       let can_skip_parens =
         match e0.pexp_desc with
