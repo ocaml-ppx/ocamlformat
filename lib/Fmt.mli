@@ -30,6 +30,9 @@ val sp : sp -> t
 val ( $ ) : t -> t -> t
 (** Format concatenation: [a $ b] formats [a], then [b]. *)
 
+val sequence : t list -> t
+(** Format concatenation of n elements. *)
+
 val ( >$ ) : t -> ('b -> t) -> 'b -> t
 (** Pre-compose a format thunk onto a function returning a format thunk. *)
 

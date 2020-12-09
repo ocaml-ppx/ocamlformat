@@ -99,6 +99,19 @@ let cbreak ~fits ~breaks =
 
 let noop = with_pp (fun _ -> ())
 
+let sequence l =
+  let rec go l len =
+    match l with
+    | [] -> noop
+    | [x] -> x
+    | l ->
+        let a_len = len / 2 in
+        let b_len = len - a_len in
+        let a, b = List.split_n l a_len in
+        go a a_len $ go b b_len
+  in
+  go l (List.length l)
+
 let fmt f = with_pp (fun fs -> Format.fprintf fs f)
 
 (** Primitive types -----------------------------------------------------*)
@@ -139,11 +152,7 @@ let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->
       pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x )
 
-let rec list_k l pp_sep pp =
-  match l with
-  | [] -> noop
-  | [x] -> pp x
-  | x :: xs -> pp x $ pp_sep $ list_k xs pp_sep pp
+let list_k l sep f = List.map l ~f |> List.intersperse ~sep |> sequence
 
 let list xs sep pp = list_k xs (fmt sep) pp
 
