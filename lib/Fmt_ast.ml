@@ -2198,14 +2198,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; popen_loc }
       , e0 ) ->
       let override = is_override flag in
-      let let_open =
-        if Source.is_long_pexp_open c.source exp then `Long else `Short
-      in
+      let long_syntax = Source.is_long_pexp_open c.source exp in
       let force =
         let maybe_break =
-          match let_open with
-          | `Long -> Some Break
-          | `Short -> (
+          if long_syntax then Some Break
+          else
             match e0.pexp_desc with
             | Pexp_let _ | Pexp_extension _ | Pexp_letexception _
              |Pexp_letmodule _ | Pexp_open _ ->
@@ -2213,13 +2210,14 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             | _ -> (
               match popen_expr.pmod_desc with
               | Pmod_ident _ -> Option.some_if override Break
-              | _ -> Some Break ) )
+              | _ -> Some Break )
         in
-        match (let_open, xexp.ctx, popen_expr.pmod_desc) with
-        | `Short, _, Pmod_ident _ when not override -> Some Fit
-        | `Long, Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}, _ ->
+        match (xexp.ctx, popen_expr.pmod_desc) with
+        | _, Pmod_ident _ when (not override) && not long_syntax -> Some Fit
+        | Exp {pexp_desc= Pexp_apply _ | Pexp_construct _; _}, _
+          when long_syntax ->
             Some (Option.value maybe_break ~default:Fit)
-        | (`Long | `Short), _, _ -> maybe_break
+        | _ -> maybe_break
       in
       let can_skip_parens =
         match e0.pexp_desc with
