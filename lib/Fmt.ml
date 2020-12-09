@@ -152,11 +152,7 @@ let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->
       pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x )
 
-let rec list_k l pp_sep pp =
-  match l with
-  | [] -> noop
-  | [x] -> pp x
-  | x :: xs -> pp x $ pp_sep $ list_k xs pp_sep pp
+let list_k l sep f = List.map l ~f |> List.intersperse ~sep |> sequence
 
 let list xs sep pp = list_k xs (fmt sep) pp
 
