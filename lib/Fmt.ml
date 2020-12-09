@@ -139,15 +139,16 @@ let list_pn x1N pp =
   | x1 :: (x2 :: _ as x2N) ->
       let l =
         let rec aux (prev, acc) = function
-          | [] -> List.rev acc
+          | [] -> acc
           | [xI] -> aux (xI, (Some prev, xI, None) :: acc) []
           | xI :: (xJ :: _ as xJN) ->
               aux (xI, (Some prev, xI, Some xJ) :: acc) xJN
         in
         aux (x1, [(None, x1, Some x2)]) x2N
       in
-      List.fold_left l ~init:noop ~f:(fun acc (prev, x, next) ->
-          acc $ lazy_ (fun () -> pp ~prev x ~next) )
+      List.rev_map l ~f:(fun (prev, x, next) ->
+          lazy_ (fun () -> pp ~prev x ~next) )
+      |> sequence
 
 let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->
