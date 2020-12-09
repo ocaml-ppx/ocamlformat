@@ -75,4 +75,21 @@ let tests_list_pn =
         let l = ["a"; "b"; "c"; "d"; "e"] in
         Fmt.fmt_if_k false (Fmt.list_pn l pp_spy) ) ]
 
-let tests = tests_lazy @ tests_list_pn
+let tests_sequence =
+  let test name term ~expected =
+    ( "sequence: " ^ name
+    , `Quick
+    , fun () ->
+        let got = eval_fmt term in
+        Alcotest.check Alcotest.string Caml.__LOC__ expected got )
+  in
+  [ test "1 element" (Fmt.sequence [Fmt.char 'c']) ~expected:"c"
+  ; test "empty list" (Fmt.sequence []) ~expected:""
+  ; test "list"
+      (Fmt.sequence [Fmt.str "a"; Fmt.str "b"; Fmt.str "c"; Fmt.str "d"])
+      ~expected:"abcd"
+  ; test "long list"
+      (Fmt.sequence (List.init 300_000 ~f:(fun _ -> Fmt.noop)))
+      ~expected:"" ]
+
+let tests = tests_lazy @ tests_list_pn @ tests_sequence

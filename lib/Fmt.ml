@@ -99,6 +99,19 @@ let cbreak ~fits ~breaks =
 
 let noop = with_pp (fun _ -> ())
 
+let sequence l =
+  let rec go l len =
+    match l with
+    | [] -> noop
+    | [x] -> x
+    | l ->
+        let a_len = len / 2 in
+        let b_len = len - a_len in
+        let a, b = List.split_n l a_len in
+        go a a_len $ go b b_len
+  in
+  go l (List.length l)
+
 let fmt f = with_pp (fun fs -> Format.fprintf fs f)
 
 (** Primitive types -----------------------------------------------------*)
