@@ -4240,7 +4240,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       in
       hvbox 0 ~name:"value"
         (list_fl grps (fun ~first ~last grp ->
-             fmt_grp ~first ~last grp $ fmt_if (not last) "@;<1000 0>" ) )
+             fmt_grp ~first ~last grp $ fmt_if (not last) "\n@;<1000 0>" ) )
   | Pstr_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
