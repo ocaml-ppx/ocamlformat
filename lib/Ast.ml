@@ -627,6 +627,27 @@ module Vb = struct
     || not (is_simple (i2, c2))
 end
 
+module Class_field = struct
+  let has_doc itm = Option.is_some (fst (doc_atrs itm.pcf_attributes))
+
+  let is_simple (itm, c) =
+    match c.Conf.module_item_spacing with
+    | `Compact | `Preserve ->
+        Location.is_single_line itm.pcf_loc c.Conf.margin
+    | `Sparse -> false
+
+  let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
+      =
+    has_cmts_after cmts i1.pcf_loc
+    || has_cmts_before cmts i2.pcf_loc
+    || has_doc i1 || has_doc i2
+    ||
+    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    | `Preserve, `Preserve ->
+        Source.empty_line_between s i1.pcf_loc.loc_end i2.pcf_loc.loc_start
+    | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
+end
+
 type toplevel_item =
   [`Item of structure_item | `Directive of toplevel_directive]
 
@@ -644,6 +665,7 @@ module T = struct
     | Mod of module_expr
     | Sig of signature_item
     | Str of structure_item
+    | Clf of class_field
     | Tli of toplevel_item
     | Top
 
@@ -695,6 +717,7 @@ module T = struct
     | Str s | Tli (`Item s) ->
         Format.fprintf fs "Str:@\n%a@\n%a" Pprintast.structure [s]
           Printast.implementation [s]
+    | Clf clf -> Format.fprintf fs "Clf:@\n%a@\n" Pprintast.class_field clf
     | Tli (`Directive d) ->
         Format.fprintf fs "Dir:@\n%a" Pprintast.toplevel_phrase (Ptop_dir d)
     | Top -> Format.pp_print_string fs "Top"
@@ -716,6 +739,7 @@ let attributes = function
   | Mod x -> x.pmod_attributes
   | Sig _ -> []
   | Str _ -> []
+  | Clf x -> x.pcf_attributes
   | Top -> []
   | Tli _ -> []
 
@@ -731,6 +755,7 @@ let location = function
   | Mod x -> x.pmod_loc
   | Sig x -> x.psig_loc
   | Str x -> x.pstr_loc
+  | Clf x -> x.pcf_loc
   | Tli (`Item x) -> x.pstr_loc
   | Tli (`Directive x) -> x.pdir_loc
   | Top -> Location.none
@@ -770,6 +795,9 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
         (i1, c1) (i2, c2)
   | Tli (`Directive _), Tli (`Directive _) | Tli _, Tli _ ->
       true (* always break between an item and a directive *)
+  | Clf i1, Clf i2 ->
+      Class_field.break_between s ~cmts ~has_cmts_before ~has_cmts_after
+        (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be) an
@@ -1085,6 +1113,7 @@ end = struct
       | Pstr_extension ((_, PTyp t), _) -> assert (t == typ)
       | Pstr_extension (_, _) -> assert false
       | _ -> assert false )
+    | Clf _ -> assert false
     | Top | Tli _ -> assert false
 
   let assert_check_typ xtyp =
@@ -1157,6 +1186,7 @@ end = struct
           | Pcl_constraint (_, x) -> x == cty
           | Pcl_extension _ -> false
           | Pcl_open _ -> false )
+    | Clf _ -> assert false
     | Mty _ -> assert false
     | Mod _ -> assert false
 
@@ -1212,6 +1242,7 @@ end = struct
           | Pcl_open (_, x) -> x == cl
           | Pcl_constr _ -> false
           | Pcl_extension _ -> false )
+    | Clf _ -> assert false
     | Mty _ -> assert false
     | Mod _ -> assert false
 
@@ -1319,6 +1350,7 @@ end = struct
       | Pstr_value (_, bindings) -> assert (check_bindings bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | _ -> assert false )
+    | Clf x -> assert (check_pcstr_fields [x])
     | Top | Tli _ -> assert false
 
   let assert_check_pat xpat =
@@ -1484,6 +1516,7 @@ end = struct
         in
         assert (loop ctx)
     | Cty _ -> assert false
+    | Clf x -> assert (check_pcstr_fields [x])
     | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
 
   let assert_check_exp xexp =
@@ -1659,18 +1692,20 @@ end = struct
       match pcl_desc with Pcl_apply _ -> Some (Apply, Non) | _ -> None )
     | { ctx= Exp _
       ; ast=
-          Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _ | Str _
-      }
+          ( Pld _ | Top | Tli _ | Pat _ | Cl _ | Mty _ | Mod _ | Sig _
+          | Str _ | Clf _ ) }
      |{ctx= Vb _; ast= _}
      |{ctx= _; ast= Vb _}
      |{ ctx= Cl _
-      ; ast= Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _ }
+      ; ast=
+          Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Clf _
+      }
      |{ ctx=
           ( Pld _ | Top | Tli _ | Typ _ | Cty _ | Pat _ | Mty _ | Mod _
-          | Sig _ | Str _ )
+          | Sig _ | Str _ | Clf _ )
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Exp _ | Cl _ | Mty _ | Mod _
-          | Sig _ | Str _ ) } ->
+          | Sig _ | Str _ | Clf _ ) } ->
         None
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
@@ -1750,7 +1785,7 @@ end = struct
       | Pcl_apply _ -> Some Apply
       | Pcl_structure _ -> Some Apply
       | _ -> None )
-    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ -> None
+    | Top | Pat _ | Mty _ | Mod _ | Sig _ | Str _ | Tli _ | Clf _ -> None
 
   (** [ambig_prec {ctx; ast}] holds when [ast] is ambiguous in its context
       [ctx], indicating that [ast] should be parenthesized. Meaningful for
@@ -2290,7 +2325,7 @@ end = struct
                      true
                  | _ -> e0 == exp ) ->
           exposed_right_exp Non_apply exp
-          (* Non_apply is perhaps pessimistic *)
+      (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_]); _} as e0))
         when e0 == exp && Exp.is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)

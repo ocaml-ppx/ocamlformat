@@ -2600,23 +2600,20 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
-  let _, fields =
-    List.fold_map fields ~init:c ~f:(fun c i ->
-        let c =
-          match i.pcf_desc with
-          | Pcf_attribute atr -> update_config c [atr]
-          | _ -> c
-        in
-        (c, (i, c)) )
-  in
+  let update_config c i = update_config c i.pcf_attributes in
   let cmts_after_self = Cmts.fmt_after c self_.ppat_loc in
   let self_ =
     match self_ with
     | {ppat_desc= Ppat_any; ppat_attributes= []; _} -> None
     | s -> Some s
   in
-  let fmt_field (cf, c) =
-    maybe_disabled c cf.pcf_loc [] @@ fun c -> fmt_class_field c ctx cf
+  let grps = make_groups c fields (fun x -> Clf x) update_config in
+  let break_struct = c.conf.break_struct || is_top ctx in
+  let fmt_grp ~first:_ ~last:_ itms =
+    list_fl itms (fun ~first ~last:_ (itm, c) ->
+        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+        $ maybe_disabled c itm.pcf_loc []
+          @@ fun c -> fmt_class_field c ctx itm )
   in
   hvbox 2
     ( hvbox 0
@@ -2627,13 +2624,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
               $ Params.parens c.conf
                   (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
-    $ ( match fields with
-      | ({pcf_desc= Pcf_attribute a; _}, _) :: _
-        when Option.is_some (fst (doc_atrs [a])) ->
-          str "\n"
-      | _ -> noop )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-    $ hvbox 0 (list fields "\n@;<1000 0>" fmt_field) )
+    $ hvbox 0 (fmt_groups c ctx grps fmt_grp) )
   $ fmt_or (List.is_empty fields) "@ " "@\n"
   $ str "end"
 
@@ -4248,7 +4240,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       in
       hvbox 0 ~name:"value"
         (list_fl grps (fun ~first ~last grp ->
-             fmt_grp ~first ~last grp $ fmt_if (not last) "\n@;<1000 0>" ) )
+             fmt_grp ~first ~last grp $ fmt_if (not last) "@;<1000 0>" ) )
   | Pstr_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
