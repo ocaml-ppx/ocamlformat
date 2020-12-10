@@ -10,6 +10,8 @@
 
 + Use dune instrumentation backend for bisect_ppx (#1550, @tmattio)
 
++ Format objects and classes in a compact way (#1569, @bikallem)
+
 #### New features
 
 ### 0.17.0 (2021-02-15)
