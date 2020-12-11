@@ -194,6 +194,7 @@ class type x =
 
 class x =
   object
+
     (** floatting1 *)
 
     (** floatting2 *)

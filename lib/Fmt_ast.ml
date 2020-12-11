@@ -2600,7 +2600,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
-  let update_config c i = update_config c i.pcf_attributes in
+  let update_config c i =
+    match i.pcf_desc with
+    | Pcf_attribute atr -> update_config c [atr]
+    | _ -> c
+  in
   let cmts_after_self = Cmts.fmt_after c self_.ppat_loc in
   let self_ =
     match self_ with
@@ -2624,20 +2628,21 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
               $ Params.parens c.conf
                   (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
+    $ ( match fields with
+      | {pcf_desc= Pcf_attribute a; _} :: _
+        when Option.is_some (fst (doc_atrs [a])) ->
+          str "\n"
+      | _ -> noop )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
     $ hvbox 0 (fmt_groups c ctx grps fmt_grp) )
   $ fmt_or (List.is_empty fields) "@ " "@\n"
   $ str "end"
 
 and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
-  let _, fields =
-    List.fold_map fields ~init:c ~f:(fun c i ->
-        let c =
-          match i.pctf_desc with
-          | Pctf_attribute atr -> update_config c [atr]
-          | _ -> c
-        in
-        (c, (i, c)) )
+  let update_config c i =
+    match i.pctf_desc with
+    | Pctf_attribute atr -> update_config c [atr]
+    | _ -> c
   in
   let cmts_after_self = Cmts.fmt_after c self_.ptyp_loc in
   let self_ =
@@ -2646,8 +2651,13 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | s -> Some s
   in
   let no_attr typ = List.is_empty typ.ptyp_attributes in
-  let fmt_field (cf, c) =
-    maybe_disabled c cf.pctf_loc [] @@ fun c -> fmt_class_type_field c ctx cf
+  let grps = make_groups c fields (fun x -> Ctf x) update_config in
+  let break_struct = c.conf.break_struct || is_top ctx in
+  let fmt_grp ~first:_ ~last:_ itms =
+    list_fl itms (fun ~first ~last:_ (itm, c) ->
+        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
+        $ maybe_disabled c itm.pctf_loc []
+          @@ fun c -> fmt_class_type_field c ctx itm )
   in
   hvbox 0
     (Params.parens_if parens c.conf
@@ -2661,12 +2671,12 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                          (fmt_core_type c (sub_typ ~ctx self_)) ) )
            $ cmts_after_self
            $ ( match fields with
-             | ({pctf_desc= Pctf_attribute a; _}, _) :: _
+             | {pctf_desc= Pctf_attribute a; _} :: _
                when Option.is_some (fst (doc_atrs [a])) ->
                  str "\n"
              | _ -> noop )
            $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-           $ hvbox 0 (list fields "\n@;<1000 0>" fmt_field) )
+           $ hvbox 0 (fmt_groups c ctx grps fmt_grp) )
        $ fmt_or (List.is_empty fields) "@ " "@\n"
        $ str "end" ) )
 
