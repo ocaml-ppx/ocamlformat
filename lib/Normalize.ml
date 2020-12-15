@@ -18,11 +18,10 @@ open Ast_helper
 
 type conf =
   { conf: Conf.t
-  ; normalize_code:
-      Migrate_ast.Parsetree.structure -> Migrate_ast.Parsetree.structure }
+  ; normalize_code: Migrate_ast.Parsetree.t -> Migrate_ast.Parsetree.t }
 
 (** Remove comments that duplicate docstrings (or other comments). *)
-let dedup_cmts fragment ast comments =
+let dedup_cmts ast comments =
   let of_ast ast =
     let iter =
       object
@@ -46,7 +45,7 @@ let dedup_cmts fragment ast comments =
           | _ -> super#attribute atr docs
       end
     in
-    Traverse.fold fragment iter ast (Set.empty (module Cmt))
+    Parsetree.fold iter ast (Set.empty (module Cmt))
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
@@ -105,9 +104,9 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-            Parse_with_comments.parse Structure c.conf ~source:txt
+            Parse_with_comments.parse ~kind:Structure c.conf ~source:txt
           in
-          let comments = dedup_cmts Traverse.Structure ast comments in
+          let comments = dedup_cmts ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
                 Location.compare a b )
@@ -115,8 +114,8 @@ let rec odoc_nestable_block_element c fmt = function
                    Caml.Format.fprintf fmt "%s," txt )
           in
           let ast = c.normalize_code ast in
-          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.implementation
-            ast print_comments comments
+          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.ast ast
+            print_comments comments
         with _ -> txt
       in
       fpf fmt "Code_block,%a" str txt
@@ -185,7 +184,7 @@ let make_mapper conf ~ignore_doc_comments =
     | _ -> false
   in
   object (self)
-    inherit Ppxlib.Ast_traverse.map as super
+    inherit Parsetree.map as super
 
     (** Remove locations *)
     method! location _ = Location.none
@@ -206,7 +205,7 @@ let make_mapper conf ~ignore_doc_comments =
           let doc' =
             if ignore_doc_comments then "IGNORED"
             else
-              let c = {conf; normalize_code= self#structure} in
+              let c = {conf; normalize_code= self#ast} in
               docstring c doc
           in
           { attr_name= {txt; loc= self#location loc}
@@ -357,12 +356,11 @@ let make_mapper conf ~ignore_doc_comments =
       super#class_structure si
   end
 
-let normalize fragment c =
-  Traverse.map fragment (make_mapper c ~ignore_doc_comments:false)
+let normalize c = Parsetree.map (make_mapper c ~ignore_doc_comments:false)
 
-let equal fragment ~ignore_doc_comments c ast1 ast2 =
-  let map = Traverse.map fragment (make_mapper c ~ignore_doc_comments) in
-  Traverse.equal fragment (map ast1) (map ast2)
+let equal ~ignore_doc_comments c ast1 ast2 =
+  let map = Parsetree.map (make_mapper c ~ignore_doc_comments) in
+  Parsetree.equal (map ast1) (map ast2)
 
 let fold_docstrings =
   let doc_attribute = function
@@ -391,17 +389,16 @@ let fold_docstrings =
       super#attributes (sort_attributes atrs)
   end
 
-let docstrings (type a) (fragment : a Traverse.fragment) s =
-  Traverse.fold fragment fold_docstrings s []
+let docstrings s = Parsetree.fold fold_docstrings s []
 
 type docstring_error =
   | Moved of Location.t * Location.t * string
   | Unstable of Location.t * string
 
-let moved_docstrings fragment c s1 s2 =
-  let c = {conf= c; normalize_code= normalize Structure c} in
-  let d1 = docstrings fragment s1 in
-  let d2 = docstrings fragment s2 in
+let moved_docstrings c s1 s2 =
+  let c = {conf= c; normalize_code= normalize c} in
+  let d1 = docstrings s1 in
+  let d2 = docstrings s2 in
   let equal (_, x) (_, y) =
     let b = String.equal (docstring c x) (docstring c y) in
     Caml.Printf.printf "Docstring equal? %b,\n%s\n%s\n" b (docstring c x)
@@ -434,5 +431,5 @@ let moved_docstrings fragment c s1 s2 =
       List.rev_append both (List.rev_append l1 l2)
 
 let docstring conf =
-  let normalize_code = normalize Structure conf in
+  let normalize_code = normalize conf in
   docstring {conf; normalize_code}

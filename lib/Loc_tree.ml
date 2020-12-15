@@ -45,6 +45,6 @@ let fold src =
   end
 
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
-let of_ast fragment ast src =
-  let locs = Traverse.fold fragment (fold src) ast [] in
+let of_ast ast src =
+  let locs = Parsetree.fold (fold src) ast [] in
   (of_list locs, locs)

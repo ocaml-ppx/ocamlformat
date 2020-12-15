@@ -9,13 +9,4 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Format OCaml Ast *)
-
-val fmt_ast :
-     debug:bool
-  -> Source.t
-  -> Cmts.t
-  -> Conf.t
-  -> Migrate_ast.Parsetree.t
-  -> Fmt.t
-(** Format a fragment. *)
+type t = Structure | Signature | Use_file

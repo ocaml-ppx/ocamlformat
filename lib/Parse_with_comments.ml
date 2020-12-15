@@ -51,7 +51,7 @@ let fresh_lexbuf source =
   in
   (lexbuf, hash_bang)
 
-let parse fragment (conf : Conf.t) ~source =
+let parse ~kind (conf : Conf.t) ~source =
   let warnings =
     W.enable 50
     :: (if conf.quiet then List.map ~f:W.disable W.in_lexer else [])
@@ -67,7 +67,7 @@ let parse fragment (conf : Conf.t) ~source =
           false )
         else not conf.quiet )
       ~f:(fun () ->
-        let ast = Migrate_ast.Parse.fragment fragment lexbuf in
+        let ast = Migrate_ast.Parse.ast ~kind lexbuf in
         Warnings.check_fatal () ;
         let comments =
           List.map

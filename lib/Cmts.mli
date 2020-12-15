@@ -28,10 +28,9 @@ open Migrate_ast
 
 type t
 
-val init :
-  'a Traverse.fragment -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
-(** [init fragment source x comments] associates each comment in [comments]
-    with a source location appearing in [x]. It uses [Source] to help resolve
+val init : debug:bool -> Source.t -> Parsetree.t -> Cmt.t list -> t
+(** [init source x comments] associates each comment in [comments] with a
+    source location appearing in [x]. It uses [Source] to help resolve
     ambiguities. Initializes the state used by the [fmt] functions. *)
 
 val relocate :

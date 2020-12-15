@@ -16,11 +16,29 @@ module Parsetree : sig
 
   val equal_core_type : core_type -> core_type -> bool
 
-  val equal_structure : structure -> structure -> bool
+  type use_file = toplevel_phrase list
 
-  val equal_signature : signature -> signature -> bool
+  type t =
+    | Past_str of structure
+    | Past_sig of signature
+    | Past_usf of use_file
 
-  val equal_toplevel_phrase : toplevel_phrase -> toplevel_phrase -> bool
+  val equal : t -> t -> bool
+
+  class map :
+    object
+      inherit Ppxlib.Ast_traverse.map
+
+      method use_file : use_file -> use_file
+
+      method ast : t -> t
+    end
+
+  val map : map -> t -> t
+
+  val iter : Ppxlib.Ast_traverse.iter -> t -> unit
+
+  val fold : 'r Ppxlib.Ast_traverse.fold -> t -> 'r -> 'r
 end
 
 module Asttypes : sig
@@ -93,23 +111,8 @@ module Location : sig
   val to_span : t -> Odoc_model.Location_.span
 end
 
-module Traverse : sig
-  type 'a fragment =
-    | Structure : Parsetree.structure fragment
-    | Signature : Parsetree.signature fragment
-    | Use_file : Parsetree.toplevel_phrase list fragment
-
-  val equal : 'a fragment -> 'a -> 'a -> bool
-
-  val map : 'a fragment -> Ppxlib.Ast_traverse.map -> 'a -> 'a
-
-  val iter : 'a fragment -> Ppxlib.Ast_traverse.iter -> 'a -> unit
-
-  val fold : 'a fragment -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
-end
-
 module Parse : sig
-  val fragment : 'a Traverse.fragment -> Lexing.lexbuf -> 'a
+  val ast : kind:Syntax.t -> Lexing.lexbuf -> Parsetree.t
 
   val parser_version : Ocaml_version.t
 end
@@ -125,7 +128,7 @@ module Printast : sig
 
   val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
 
-  val fragment : 'a Traverse.fragment -> Format.formatter -> 'a -> unit
+  val ast : Format.formatter -> Parsetree.t -> unit
 end
 
 module Pprintast = Ppxlib.Pprintast
