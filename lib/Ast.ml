@@ -2360,7 +2360,7 @@ end = struct
                      true
                  | _ -> e0 == exp ) ->
           exposed_right_exp Non_apply exp
-      (* Non_apply is perhaps pessimistic *)
+          (* Non_apply is perhaps pessimistic *)
       | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_]); _} as e0))
         when e0 == exp && Exp.is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
