@@ -499,8 +499,7 @@ let rec fmt_extension c ctx key (ext, pld) =
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
     ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
-  (* Quoted extensions (since ocaml 4.11) {%ext delim|...|delim}. Comments
-     and attributes are not allowed by the parser. *)
+  (* Quoted extensions (since ocaml 4.11). *)
   | ( ("%" | "%%")
     , ext
     , PStr
@@ -514,6 +513,7 @@ let rec fmt_extension c ctx key (ext, pld) =
           ; pstr_loc } ]
     , _ )
     when Source.is_quoted_string c.source pstr_loc ->
+      (* Comments and attributes are not allowed by the parser *)
       assert (not (Cmts.has_before c.cmts loc)) ;
       assert (not (Cmts.has_after c.cmts loc)) ;
       assert (not (Cmts.has_before c.cmts pexp_loc)) ;
