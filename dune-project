@@ -55,6 +55,12 @@
   fpath
   (menhir
    (>= 20180528))
+  (menhirLib
+   (>= 20201214))
+  (menhirSdk
+   (>= 20201214))
+  (ocaml-migrate-parsetree
+   (>= 2.1.0))
   (ocp-indent :with-test)
   (odoc
    (>= 1.4.2))
