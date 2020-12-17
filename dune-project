@@ -56,9 +56,9 @@
   (menhir
    (>= 20180528))
   (menhirLib
-   (>= 20201214))
+   (>= 20200624))
   (menhirSdk
-   (>= 20201214))
+   (>= 20200624))
   (ocaml-migrate-parsetree
    (>= 2.1.0))
   (ocp-indent :with-test)
