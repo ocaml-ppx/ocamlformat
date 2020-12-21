@@ -46,14 +46,15 @@ let find_at_position t loc pos =
     [|] character and the first location begins a line and the start column
     of the first location is lower than that of the second location. *)
 let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
-  Option.value_map (Source.string_between src l1.loc_end l2.loc_start)
-    ~default:false ~f:(fun btw ->
-      match String.strip btw with
-      | "" -> true
-      | "|" ->
-          Source.begins_line src l1
-          && Position.column l1.loc_start < Position.column l2.loc_start
-      | _ -> false )
+  match
+    Source.tokens_between src l1.loc_end l2.loc_start ~filter:(function
+        | _ -> true )
+  with
+  | [] -> true
+  | [(Token_latest.BAR, _)] ->
+      Source.begins_line src l1
+      && Position.column l1.loc_start < Position.column l2.loc_start
+  | _ -> false
 
 (** Whether the symbol preceding location [loc] is an infix symbol
     (corresponding to [Ast.String_id.is_infix]) or a semicolon. If it is the
@@ -378,8 +379,9 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
   in
   let horizontal_align =
     line_dist a b = 0
-    && Option.value_map (Source.string_between source a.loc_end b.loc_start)
-         ~default:true ~f:(fun x -> String.(strip x |> is_empty))
+    && List.is_empty
+         (Source.tokens_between source a.loc_end b.loc_start
+              ~filter:(function _ -> true) )
   in
   not
     ( (Location.is_single_line a margin && Location.is_single_line b margin)
