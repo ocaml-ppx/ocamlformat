@@ -23,6 +23,8 @@
 
   + Fix stack overflow on large string constants (#1562, @gpetiot)
 
+  + Fix comment position around list cons operator (#1567, @gpetiot)
+
 #### Changes
 
   + Add buffer filename in the logs when applying ocamlformat (#1557, @dannywillems)

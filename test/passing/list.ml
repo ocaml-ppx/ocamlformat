@@ -60,3 +60,7 @@ let x = function
       (* "exercitation ullamco laboris nisi ut aliquip ex ea commodo " *)
     ] ->
       ()
+
+let _ = f ~x:(a :: b) (* comment *) ~y
+
+let _ = f ((* comment *) x :: y)
