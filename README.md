@@ -47,6 +47,8 @@ This can be a hard price to pay, since this means losing the corresponding git h
 If you use a custom configuration, options you rely on might also get removed in
 a later release.
 
+Moreover if you adopt OCamlFormat in one project it will not break your workflow in your other projects. Indeed OCamlFormat modifies a file only if it can find an `.ocamlformat` file, so adding a save hook in your editor will only simplify your workflow in projects using OCamlFormat.
+
 ### What configuration should I use?
 
 The recommended way is to use a versioned default profile, such as:
