@@ -151,7 +151,7 @@ let drop_while ~f s =
 let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
   if not c.conf.disable then f c
   else
-    let loc = Source.extend_loc_to_include_attributes c.source loc l in
+    let loc = Source.extend_loc_to_include_attributes loc l in
     Cmts.drop_inside c.cmts loc ;
     let s = Source.string_at c.source loc in
     let indent_of_first_line = Position.column loc.loc_start in

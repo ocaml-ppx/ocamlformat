@@ -4,6 +4,8 @@
 
   + Remove the 'let-open' option, deprecated since 0.16.0 (#1563, @gpetiot)
 
+  + Remove support for OCaml 4.06 and 4.07, minimal version requirement bumped to OCaml 4.08 (#1549, @gpetiot)
+
 #### Bug fixes
 
   + Fix parsing of invalid file wrt original source handling (#1542, @hhugo)
