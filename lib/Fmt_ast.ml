@@ -517,10 +517,8 @@ let rec fmt_extension c ctx key (ext, pld) =
       assert (not (Cmts.has_before c.cmts loc)) ;
       assert (not (Cmts.has_after c.cmts loc)) ;
       assert (not (Cmts.has_before c.cmts pexp_loc)) ;
-      assert (not (Cmts.has_after c.cmts pexp_loc)) ;
       assert (not (Cmts.has_before c.cmts pstr_loc)) ;
-      assert (not (Cmts.has_after c.cmts pstr_loc)) ;
-      hvbox 0 (fmt_quoted_string key ext str delim)
+      Cmts.fmt c pexp_loc @@ hvbox 0 (fmt_quoted_string key ext str delim)
   | _ -> fmt_attribute_or_extension c key (ext, pld)
 
 and fmt_invalid_or_extension c ctx key (ext, pld) loc =
