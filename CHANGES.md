@@ -25,6 +25,8 @@
 
   + Fix comment position around list cons operator (#1567, @gpetiot)
 
+  + Fix the vertical alignment test to break down comment groups (#1575, @gpetiot)
+
 #### Changes
 
   + Add buffer filename in the logs when applying ocamlformat (#1557, @dannywillems)

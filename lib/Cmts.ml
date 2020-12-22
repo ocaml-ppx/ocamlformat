@@ -373,9 +373,7 @@ let line_dist a b =
 
 let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
   let vertical_align =
-    line_dist a b = 1
-    && Location.compare_start_col a b = 0
-    && Location.compare_end_col a b = 0
+    line_dist a b = 1 && Location.compare_start_col a b = 0
   in
   let horizontal_align =
     line_dist a b = 0
