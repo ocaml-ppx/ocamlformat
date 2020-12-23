@@ -996,7 +996,8 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
         let pat =
           fmt_elements_collection p
             (fun (locs, xpat) ->
-              Cmts.fmt_list c ~eol:cmt_break locs (fmt_pattern c xpat) )
+              Cmts.fmt_list c ~eol:cmt_break locs
+                (hvbox 0 (fmt_pattern c xpat)) )
             loc_xpats
         in
         hvbox 0
