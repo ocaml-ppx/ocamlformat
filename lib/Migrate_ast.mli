@@ -78,6 +78,9 @@ module Location : sig
   val compare_end_col : t -> t -> int
 
   val line_difference : t -> t -> int
+  (** [line_difference x y] returns the difference between the line at the
+      start of [y] and at the end of [x]. [x] must precede [y], undefined
+      behavior otherwise, or if one location includes the other. *)
 
   val fmt : Format.formatter -> t -> unit
 
