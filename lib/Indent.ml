@@ -37,6 +37,25 @@ let matching_loc loc locs locs' =
   | Unequal_lengths ->
       Error (`Msg "Cannot match pre-post formatting locations.")
 
+let indent_aux ~lines ~range:(low, high) ~indentation_of_line =
+  let nlines = List.length lines in
+  let rec aux ?prev acc i =
+    if i > high then Ok (List.rev acc)
+    else if i >= low then
+      let line = Option.value (List.nth lines (i - 1)) ~default:"" in
+      if String.(is_empty (strip line)) then aux ?prev (0 :: acc) (i + 1)
+      else
+        indentation_of_line ?prev ~i ~line nlines
+        >>= fun indent -> aux ~prev:(indent, line) (indent :: acc) (i + 1)
+    else
+      let line = Option.value (List.nth lines (i - 1)) ~default:"" in
+      if String.(is_empty (strip line)) then aux ?prev acc (i + 1)
+      else
+        indentation_of_line ?prev ~i ~line nlines
+        >>= fun indent -> aux ~prev:(indent, line) acc (i + 1)
+  in
+  aux [] low
+
 let last_token x =
   let lexbuf = Lexing.from_string x in
   let rec loop acc =
@@ -46,92 +65,52 @@ let last_token x =
   in
   loop None
 
-let indentation_1_line ?prev (loctree, locs) (_, locs') formatted_src nlines
-    ~i =
-  if i = nlines + 1 then Ok 0
-  else
-    match loc_of_line loctree locs i with
-    | Some loc -> (
-        matching_loc loc locs locs'
-        >>= fun (loc' : Location.t) ->
-        let indent =
-          match
-            Source.find_first_token_on_line formatted_src
-              loc'.loc_start.pos_lnum
-          with
-          | Some (_, loc) -> Position.column loc.loc_start
-          | None -> impossible "cannot happen"
-        in
-        match prev with
-        | Some (prev_indent, prev_line)
-          when indent = prev_indent || indent = 0 -> (
-          (* in case this is a line that is split but could fit on a single
-             line, consecutive lines will have the same indentation, we try
-             to infer some artificial indentation here, even though it will
-             be squeezed together and fit on a single line when the whole
-             file is reformatted *)
-          match last_token prev_line with
-          | Some tok -> (
-            match Source.indent_after_token tok with
-            | Some i -> Ok (prev_indent + i)
-            | None -> Ok indent )
-          | None -> Ok indent )
-        | _ -> Ok indent )
-    | None -> Ok 0
-
 let indent_from_locs fragment ~unformatted:(ast, source)
-    ~formatted:(formatted_ast, formatted_source) ~lines ~range:(low, high) =
-  let nlines = List.length lines in
-  let locs = Loc_tree.of_ast fragment ast source in
-  let locs' = Loc_tree.of_ast fragment formatted_ast formatted_source in
-  let rec aux ?prev acc i =
-    if i > high then Ok (List.rev acc)
-    else if i >= low then
-      let line = Option.value (List.nth lines (i - 1)) ~default:"" in
-      if String.is_empty (String.strip line) then aux ?prev (0 :: acc) (i + 1)
-      else
-        indentation_1_line ?prev locs locs' formatted_source nlines ~i
-        >>= fun indent -> aux ~prev:(indent, line) (indent :: acc) (i + 1)
+    ~formatted:(formatted_ast, formatted_source) ~lines ~range =
+  let loctree, locs = Loc_tree.of_ast fragment ast source in
+  let _, locs' = Loc_tree.of_ast fragment formatted_ast formatted_source in
+  let indentation_of_line ?prev ~i ~line:_ nlines =
+    if i = nlines + 1 then Ok 0
     else
-      let line = Option.value (List.nth lines (i - 1)) ~default:"" in
-      if String.is_empty (String.strip line) then aux ?prev acc (i + 1)
-      else
-        indentation_1_line ?prev locs locs' formatted_source nlines ~i
-        >>= fun indent -> aux ~prev:(indent, line) acc (i + 1)
+      match loc_of_line loctree locs i with
+      | Some loc -> (
+          matching_loc loc locs locs'
+          >>= fun (loc' : Location.t) ->
+          let indent =
+            match
+              Source.find_first_token_on_line formatted_source
+                loc'.loc_start.pos_lnum
+            with
+            | Some (_, loc) -> Position.column loc.loc_start
+            | None -> impossible "cannot happen"
+          in
+          match prev with
+          | Some (prev_indent, prev_line)
+            when indent = prev_indent || indent = 0 -> (
+            match last_token prev_line with
+            | Some tok -> (
+              match Source.indent_after_token tok with
+              | Some i -> Ok (prev_indent + i)
+              | None -> Ok indent )
+            | None -> Ok indent )
+          | _ -> Ok indent )
+      | None -> Ok 0
   in
-  aux [] low
+  indent_aux ~lines ~range ~indentation_of_line
 
-let indentation_of_line l = String.(length l - length (lstrip l))
-
-let indentation_1_line_fallback ?prev nlines ~i ~line =
-  if i = nlines + 1 then Ok 0
-  else
-    let indent = indentation_of_line line in
-    match prev with
-    | Some (prev_indent, prev_line) -> (
-      match last_token prev_line with
-      | Some tok -> (
-        match Source.indent_after_token tok with
-        | Some i -> Ok (prev_indent + i)
+let indent_from_lines ~lines ~range =
+  let indentation_of_line ?prev ~i ~line nlines =
+    if i = nlines + 1 then Ok 0
+    else
+      let indent = String.(length line - length (lstrip line)) in
+      match prev with
+      | Some (prev_indent, prev_line) -> (
+        match last_token prev_line with
+        | Some tok -> (
+          match Source.indent_after_token tok with
+          | Some i -> Ok (prev_indent + i)
+          | None -> Ok indent )
         | None -> Ok indent )
-      | None -> Ok indent )
-    | _ -> Ok indent
-
-let indent_from_lines ~lines ~range:(low, high) =
-  let nlines = List.length lines in
-  let rec aux ?prev acc i =
-    if i > high then Ok (List.rev acc)
-    else if i >= low then
-      let line = Option.value (List.nth lines (i - 1)) ~default:"" in
-      if String.is_empty (String.strip line) then aux ?prev (0 :: acc) (i + 1)
-      else
-        indentation_1_line_fallback ?prev nlines ~i ~line
-        >>= fun indent -> aux ~prev:(indent, line) (indent :: acc) (i + 1)
-    else
-      let line = Option.value (List.nth lines (i - 1)) ~default:"" in
-      if String.is_empty (String.strip line) then aux ?prev acc (i + 1)
-      else
-        let indent = indentation_of_line line in
-        aux ~prev:(indent, line) acc (i + 1)
+      | _ -> Ok indent
   in
-  aux [] low
+  indent_aux ~lines ~range ~indentation_of_line
