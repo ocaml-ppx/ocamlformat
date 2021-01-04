@@ -216,3 +216,11 @@ let _ = match () with A -> ( x |> function y -> y (* *) ) | B -> ()
 let _ = x |> function y -> ( function _ -> y (* A *) ) (* B *)
 
 let _ = () (* This is needed here to avoid the comment above from moving *)
+
+let encoder f =
+  let field_encode = unstage (t f.ftype) in
+  stagged @@ fun x k : t -> field_encode (f.fget x) k
+
+let encoder f =
+  let field_encode = unstage (t f.ftype) in
+  stagged @@ fun x k : t -> field_encode (f.fget x) k

@@ -1687,6 +1687,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
+      let fmt_cstr, xbody = type_constr_and_body c xbody in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
       let followed_by_infix_op =
@@ -1715,7 +1716,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            ~suf:(str " ")
                        $ hvbox_if
                            (not c.conf.wrap_fun_args)
-                           4 (fmt_fun_args c xargs)
+                           4
+                           (fmt_fun_args c xargs $ fmt_opt fmt_cstr)
                        $ fmt "@ ->" ) )
                $ pre_body )
            $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
