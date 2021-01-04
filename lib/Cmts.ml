@@ -388,31 +388,28 @@ let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
     ( (Location.is_single_line a margin && Location.is_single_line b margin)
     && (vertical_align || horizontal_align) )
 
-let fmt_cmts_aux t (conf : Conf.t) ?pro cmts ?epi ~fmt_code pos =
+let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
   let groups =
     List.group cmts ~break:(break_comment_group t.source conf.margin)
   in
-  fmt_opt pro
-  $ vbox 0
-      (list_pn groups (fun ~prev:_ group ~next ->
-           ( match group with
-           | [] -> impossible "previous match"
-           | [cmt] ->
-               Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
-                 ~ocp_indent_compat:conf.ocp_indent_compat
-                 ~fmt_code:(fmt_code conf) pos
-           | group ->
-               list group "@;<1000 0>" (fun cmt ->
-                   wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
-           $
-           match next with
-           | Some ({loc= next; _} :: _) ->
-               let Cmt.{loc= last; _} = List.last_exn group in
-               fmt_if (Location.line_difference last next > 1) "\n"
-               $ fmt "@ "
-           | _ -> noop ) )
-  $ fmt_opt epi
+  vbox 0
+    (list_pn groups (fun ~prev:_ group ~next ->
+         ( match group with
+         | [] -> impossible "previous match"
+         | [cmt] ->
+             Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
+               ~ocp_indent_compat:conf.ocp_indent_compat
+               ~fmt_code:(fmt_code conf) pos
+         | group ->
+             list group "@;<1000 0>" (fun cmt ->
+                 wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
+         $
+         match next with
+         | Some ({loc= next; _} :: _) ->
+             let Cmt.{loc= last; _} = List.last_exn group in
+             fmt_if (Location.line_difference last next > 1) "\n" $ fmt "@ "
+         | _ -> noop ) )
 
 (** Format comments for loc. *)
 let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
@@ -427,7 +424,7 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
         let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
         fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
       in
-      fmt_cmts_aux t conf ?pro cmts ~epi ~fmt_code pos
+      fmt_opt pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
 let fmt_before t conf ~fmt_code ?pro ?(epi = Fmt.break 1 0) ?eol ?adj loc =
   fmt_cmts t conf
@@ -481,7 +478,7 @@ module Toplevel = struct
               else break 1 0
           | After -> noop
         in
-        fmt_cmts_aux t conf ~pro cmts ~epi ~fmt_code pos
+        pro $ fmt_cmts_aux t conf cmts ~fmt_code pos $ epi
 
   let fmt_before t conf ~fmt_code loc =
     fmt_cmts t conf (find_cmts t `Before loc) ~fmt_code Cmt.Before
