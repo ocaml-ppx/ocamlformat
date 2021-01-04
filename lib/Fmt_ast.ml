@@ -1561,6 +1561,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; _ }
       , e2 ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call) in
+      let fmt_cstr, xbody = type_constr_and_body c xbody in
       let is_simple x = is_simple c.conf (expression_width c) x in
       let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
       let grps =
@@ -1578,7 +1579,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       ( fmt_str_loc c name $ str " fun "
                       $ fmt_attributes c ~suf:(str " ") call.pexp_attributes
                           ~key:"@"
-                      $ fmt_fun_args c xargs $ fmt "@ ->" )
+                      $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->"
+                      )
                   $ fmt "@ " $ fmt_expression c xbody ) )
            $ fmt "@ ;@ "
            $ list grps " ;@;<1000 0>" fmt_grp ) )
@@ -1598,6 +1600,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           ; pstr_loc= _ } as pld ) ] )
             ; _ } ) ] ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) retn) in
+      let fmt_cstr, xbody = type_constr_and_body c xbody in
       hvbox 0
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
            ( fmt_expression c (sub_exp ~ctx e0)
@@ -1610,7 +1613,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                       ( fmt_str_loc c name $ str " fun "
                       $ fmt_attributes c ~suf:(str " ") retn.pexp_attributes
                           ~key:"@"
-                      $ fmt_fun_args c xargs $ fmt "@ ->" )
+                      $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->"
+                      )
                   $ fmt "@ " $ fmt_expression c xbody ) ) ) )
   | Pexp_apply (({pexp_desc= Pexp_ident ident; pexp_loc; _} as e0), args)
     when Option.is_some (Indexing_op.get_sugar e0 args) ->
@@ -1688,6 +1692,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
+      let fmt_cstr, xbody = type_constr_and_body c xbody in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
       let followed_by_infix_op =
@@ -1716,7 +1721,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            ~suf:(str " ")
                        $ hvbox_if
                            (not c.conf.wrap_fun_args)
-                           4 (fmt_fun_args c xargs)
+                           4
+                           (fmt_fun_args c xargs $ fmt_opt fmt_cstr)
                        $ fmt "@ ->" ) )
                $ pre_body )
            $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
