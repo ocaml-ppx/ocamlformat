@@ -31,6 +31,8 @@
 
   + Add buffer filename in the logs when applying ocamlformat (#1557, @dannywillems)
 
+  + Improve comment position in pattern collection (#1576, @gpetiot)
+  
   + Consistent positioning of lambda return type annotations when no-break-infix-before-func and pre/post extensions (#1581, @gpetiot)
 
 ### 0.16.0 (2020-11-16)
