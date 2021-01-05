@@ -190,11 +190,9 @@ let _ =
   ()
 
 (* l *)
-
 open (* m *) struct
   type t
 end
-
 (* n *)
 
 open A

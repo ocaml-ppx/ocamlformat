@@ -492,7 +492,6 @@ module M_S : S = M
 let is_s x = match x with M_S.A _ -> true | _ -> false
 
 let a2 = M_S.A 20
-
 (* ERROR: Cannot create a value using a private constructor *)
 
 (* Extensions can be rebound *)
@@ -552,11 +551,9 @@ type +'a foo = ..
 type 'a foo += A of (int -> 'a)
 
 type 'a foo += B of ('a -> int)
-
 (* ERROR: Parameter variances are not satisfied *)
 
 type _ foo += C : ('a -> int) -> 'a foo
-
 (* ERROR: Parameter variances are not satisfied *)
 
 type 'a bar = ..
@@ -646,7 +643,6 @@ let _ =
     (object
        method m = 3
     end )
-
 (* Invald_arg *)
 
 (* Typed names *)
@@ -999,12 +995,10 @@ let fint (type t) (x : t) (tag : t ty) = match tag with Int -> x > 0
 
 let f (type t) (x : t) (tag : t ty) =
   match tag with Int -> x > 0 | Bool -> x
-
 (* val f : 'a -> 'a ty -> bool = <fun> *)
 
 let g (type t) (x : t) (tag : t ty) =
   match tag with Bool -> x | Int -> x > 0
-
 (* Error: This expression has type bool but an expression was expected of
    type t = int *)
 
@@ -1055,7 +1049,6 @@ let rec variantize : type t. t ty -> t -> variant =
   | List ty1 ->
       VList (List.map (variantize ty1) x) (* t = 'a list for some 'a *)
   | Pair (ty1, ty2) -> VPair (variantize ty1 (fst x), variantize ty2 (snd x))
-
 (* t = ('a, 'b) for some 'a and 'b *)
 
 exception VariantMismatch
@@ -2283,7 +2276,6 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | Tbool, Tbool -> 1
   | Tvar var, tb -> 2
   | _ -> .
-
 (* error *)
 
 (* let x = f Tint (Tvar Zero) ;; *)
@@ -2403,7 +2395,6 @@ type tag = [`TagA | `TagB | `TagC]
 type 'a poly =
   | AandBTags : [< `TagA of int | `TagB] poly
   | ATag : [< `TagA of int] poly
-
 (* constraint 'a = [< `TagA of int | `TagB] *)
 
 let intA = function `TagA i -> i
@@ -2417,7 +2408,6 @@ type _ wrapPoly =
 
 let example6 : type a. a wrapPoly -> a -> int =
  fun w -> match w with WrapPoly ATag -> intA | WrapPoly _ -> intA
-
 (* This should not be allowed *)
 
 let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
@@ -2542,7 +2532,6 @@ let f (Aux x) =
   | Succ (Succ (Succ Zero)) -> "3"
   | Succ (Succ (Succ (Succ Zero))) -> "4"
   | _ -> .
-
 (* error *)
 
 type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
@@ -2776,7 +2765,6 @@ let rec pre_subst f = function
   | Fork (t1, t2) -> Fork (pre_subst f t1, pre_subst f t2)
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-
 (* val comp_subst : ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin ->
    'c term *)
 
@@ -2790,7 +2778,6 @@ let rec thin : type n. n succ fin -> n fin -> n succ fin =
   | FS x, FS y -> FS (thin x y)
 
 let bind t f = match t with None -> None | Some x -> f x
-
 (* val bind : 'a option -> ('a -> 'b option) -> 'b option *)
 
 let rec thick : type n. n succ fin -> n succ fin -> n fin option =
@@ -2815,11 +2802,9 @@ let rec check : type n. n succ fin -> n succ term -> n term option =
           bind (check x t2) (fun t2 -> Some (Fork (t1, t2))) )
 
 let subst_var x t' y = match thick x y with None -> t' | Some y' -> Var y'
-
 (* val subst_var : 'a succ fin -> 'a term -> 'a succ fin -> 'a term *)
 
 let subst x t' = pre_subst (subst_var x t')
-
 (* val subst : 'a succ fin -> 'a term -> 'a succ term -> 'a term *)
 
 (* 5 A Refinement of Substitution *)
@@ -2860,7 +2845,6 @@ let rec sub' : type m. m ealist -> m fin -> m term = function
         (fun t' -> weaken_term (subst_var x t t'))
 
 let subst' d = pre_subst (sub' d)
-
 (* val subst' : 'a ealist -> 'a term -> 'a term *)
 
 (* 6 First-Order Unification *)
@@ -2869,11 +2853,9 @@ let flex_flex x y =
   match thick x y with
   | Some y' -> asnoc Anil (Var y') x
   | None -> EAlist Anil
-
 (* val flex_flex : 'a succ fin -> 'a succ fin -> 'a succ ealist *)
 
 let flex_rigid x t = bind (check x t) (fun t' -> Some (asnoc Anil t' x))
-
 (* val flex_rigid : 'a succ fin -> 'a succ term -> 'a succ ealist option *)
 
 let rec amgu : type m. m term -> m term -> m ealist -> m ealist option =
@@ -2898,7 +2880,6 @@ let rec amgu : type m. m term -> m term -> m ealist -> m ealist option =
         (fun (EAlist d) -> Some (asnoc d r z))
 
 let mgu s t = amgu s t (EAlist Anil)
-
 (* val mgu : 'a term -> 'a term -> 'a ealist option *)
 
 let s = Fork (Var FZ, Fork (Var (FS (FS FZ)), Leaf))
@@ -3642,7 +3623,6 @@ let () =
   print_newline () ;
   print e3 ;
   print_newline ()
-
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
@@ -3859,7 +3839,6 @@ let () =
   print_newline () ;
   print e3 ;
   print_newline ()
-
 (* Full fledge version, using objects to structure code *)
 
 open StdLabels
@@ -4784,7 +4763,6 @@ module A_annotated_alias : S with type t = (module A.A_S) = A
 let _ = f (module A_annotated_alias) (* ok *)
 
 let _ = f (module A_annotated_alias : S with type t = (module A.A_S))
-
 (* ok *)
 
 module A_alias = A
@@ -4798,7 +4776,6 @@ let _ = f (module A_alias_expanded : S with type t = (module A.A_S)) (* ok *)
 let _ = f (module A_alias_expanded) (* ok *)
 
 let _ = f (module A_alias : S with type t = (module A.A_S))
-
 (* doesn't type *)
 
 let _ = f (module A_alias) (* doesn't type either *)
@@ -4815,7 +4792,6 @@ module Bazoinks = struct
 end
 
 module Bug = Foo (Bazoinks) (Bazoinks)
-
 (* PR#6992, reported by Stephen Dolan *)
 
 type (_, _) eq = Eq : ('a, 'a) eq
@@ -5024,7 +5000,6 @@ module rec M : sig
 end = struct
   external f : int -> int = "%identity"
 end
-
 (* with module *)
 
 module type S = sig
@@ -6353,7 +6328,6 @@ module M : sig
 end = struct
   type refer = {poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a)}
 end
-
 (* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c pr3918c.ml *)
 
 open Pr3918b
@@ -6398,7 +6372,6 @@ module Make' (Unit : sig end) : Priv' = struct
 end
 
 module A' = Make' ()
-
 (* PR5057 *)
 
 module TT = struct
@@ -6417,7 +6390,6 @@ let () =
     ()
   in
   f `A
-
 (* This one should fail *)
 
 let f flag =
@@ -7024,7 +6996,6 @@ struct
 
   let iter f = Diet.iter (Elt.iter f)
 end
-
 (* PR 4470: simplified from OMake's sources *)
 
 module rec DirElt : sig
@@ -7044,7 +7015,6 @@ and DirHash : sig
 end = struct
   type t = DirCompare.t list
 end
-
 (* PR 4758, PR 4266 *)
 
 module PR_4758 = struct
@@ -7139,7 +7109,6 @@ module F (X : Set.OrderedType) = struct
 
   and ModSet : (Set.S with type elt = Mod.t) = Set.Make (Mod)
 end
-
 (* Tests for recursive modules *)
 
 let test number result expected =
@@ -8021,7 +7990,6 @@ module type CORE0 = sig
   module V : VALUE
 
   val setglobal : V.state -> string -> V.value -> unit
-
   (* five more functions common to core and evaluator *)
 end
 
@@ -8029,7 +7997,6 @@ module type CORE = sig
   include CORE0
 
   val apply : V.value -> V.state -> V.value list -> V.value
-
   (* apply function f in state s to list of args *)
 end
 
@@ -8480,7 +8447,6 @@ let f :
     -> int = function
   | A, A, A, A, A, A, A, _, U, U -> 1
   | _, _, _, _, _, _, _, G, _, _ -> 1
-
 (*| _ -> _ *)
 
 (* Unused cases *)
@@ -8685,12 +8651,9 @@ module OK = struct
   let f2 r =
     ignore (r : t) ;
     r.x
-
   (* non principal *)
 
-  let f3 (r : t) = match r with {x; y} -> y + y
-
-  (* ok *)
+  let f3 (r : t) = match r with {x; y} -> y + y (* ok *)
 end
 
 module F1 = struct
@@ -9093,7 +9056,6 @@ let () = proj1 (inj2 42)
 let _ = ~-1
 
 class id = [%exp]
-
 (* checkpoint *)
 
 (* Subtyping is "syntactic" *)

@@ -45,6 +45,12 @@ module Cmts = struct
       let open Fmt in
       before $ inner $ after
 
+  module Toplevel = struct
+    let fmt_before c = Toplevel.fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
+
+    let fmt_after c = Toplevel.fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
+  end
+
   let fmt_list ?pro ?epi ?eol c locs init =
     List.fold locs ~init ~f:(fun k loc ->
         fmt ?pro ?epi ?eol ?adj:None c loc k )
@@ -3537,17 +3543,9 @@ and fmt_signature c ctx itms =
 and fmt_signature_item c ?ext {ast= si; _} =
   protect c (Sig si)
   @@
-  let eol = fmt "\n@;<1000 0>" in
-  let epi = eol in
-  let adj = fmt "@\n" in
-  let fmt_cmts_before = Cmts.fmt_before c ~epi ~eol ~adj si.psig_loc in
-  let maybe_box =
-    Location.is_single_line si.psig_loc c.conf.margin
-    && Source.has_cmt_same_line_after c.source si.psig_loc
-  in
-  let pro = fmt_or maybe_box "@ " "\n@;<1000 0>" in
-  let fmt_cmts_after = Cmts.fmt_after ~pro c si.psig_loc in
-  (fun k -> fmt_cmts_before $ hvbox_if maybe_box 0 (k $ fmt_cmts_after))
+  let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.psig_loc in
+  let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.psig_loc in
+  (fun k -> fmt_cmts_before $ hvbox 0 (k $ fmt_cmts_after))
   @@
   let ctx = Sig si in
   match si.psig_desc with
@@ -4125,19 +4123,9 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
     match ctx with Pld (PStr [_]) -> true | _ -> false
   in
   let ctx = Str si in
-  let eol = fmt "\n@;<1000 0>" in
-  let epi = eol in
-  let adj = fmt "@;<1000 0>" in
-  let fmt_cmts_before = Cmts.fmt_before c ~epi ~eol ~adj si.pstr_loc in
-  let maybe_box =
-    Location.is_single_line si.pstr_loc c.conf.margin
-    && Source.has_cmt_same_line_after c.source si.pstr_loc
-  in
-  let pro = fmt_or maybe_box "@ " "\n@;<1000 0>" in
-  let fmt_cmts_after = Cmts.fmt_after ~pro c si.pstr_loc in
-  (fun k ->
-    fmt_cmts_before $ hvbox_if maybe_box 0 ~name:"stri" (k $ fmt_cmts_after)
-    )
+  let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
+  let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
+  (fun k -> fmt_cmts_before $ hvbox 0 ~name:"stri" (k $ fmt_cmts_after))
   @@
   match si.pstr_desc with
   | Pstr_attribute atr ->
