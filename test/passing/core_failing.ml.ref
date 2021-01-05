@@ -12,8 +12,8 @@ let _ =
            Fn.forever (fun () ->
                match read_finaliser_queue () with
                | None -> Thread.delay 1.0
-               | Some f -> Exn.handle_uncaught ~exit:false f))
-         ())
+               | Some f -> Exn.handle_uncaught ~exit:false f ) )
+         () )
   in
   ()
 

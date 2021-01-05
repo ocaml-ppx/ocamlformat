@@ -1,6 +1,4 @@
 Warning: comments2.ml is invalid, recovering.
-File "comments2.ml", line 64, characters 41-43:
-Warning 2: this is not the end of a comment.
 Warning: comments2.ml is invalid, recovering.
 (* A *)
 

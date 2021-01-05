@@ -17,8 +17,7 @@ Warning 2: this is not the end of a comment.
 File "edge_cases.ml", line 1, characters 0-2:
 Warning 2: this is not the end of a comment.
 Warning: edge_cases.ml is invalid, recovering.
-File "edge_cases.ml", line 19, characters 62-64:
-Warning 2: this is not the end of a comment.
+Warning: edge_cases.ml is invalid, recovering.
 Warning: edge_cases.ml is invalid, recovering.
 (* this could be fixed, but we actually want to handle the first case
    differently for when there is only one case (see next examples) *)
@@ -46,7 +45,6 @@ let f g = g @@ fun x -> x
 let f g = g @@ fun x -> x
 
 (* the above should probably be consistent with: *)
-
 let f x y = y + match x with A -> 0
 
 let f x y = y + match x with A -> 0
@@ -78,3 +76,4 @@ let d = `d
 
 let a = b
     function (_ : [ `c ]) -> d
+;;

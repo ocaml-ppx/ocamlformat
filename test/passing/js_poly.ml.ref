@@ -16,3 +16,4 @@ if _ then
 else
   assert_branch_has_node branch node >>| fun () ->
   { t with node; floating }
+;;

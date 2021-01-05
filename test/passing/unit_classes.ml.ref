@@ -85,7 +85,6 @@ class type virtual ['a] clty =
   end
 
 (* objects *)
-
 val a : < >
 
 let () = ()
@@ -110,7 +109,6 @@ val a :
 let () = ()
 
 (* #-types *)
-
 val a : #M.meth
 
 val a : 'a #M.meth
@@ -118,7 +116,6 @@ val a : 'a #M.meth
 val a : ('a, 'b * 'c) #M.meth
 
 (* object types *)
-
 type a = < >
 
 let () = ()

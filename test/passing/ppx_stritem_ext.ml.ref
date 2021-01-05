@@ -2,7 +2,7 @@ Warning: ppx_stritem_ext.ml is invalid, recovering.
 Warning: ppx_stritem_ext.ml is invalid, recovering.
 let x = 3
 
-let%a x = [3; 2]
+[%%a let x = [3; 2]]
 
 module S = sig
 

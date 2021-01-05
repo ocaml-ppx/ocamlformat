@@ -15,7 +15,6 @@ let old_good =
   foo bar qaz +>>= fun x -> hey ho lala +>>= fun y -> return (x, y)
 
 (* generalizations based on Tuareg code *)
-
 let old_good =
   foo bar qaz
   *>>| fun x ->

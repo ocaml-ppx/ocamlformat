@@ -595,7 +595,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to core_passing.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:core_passing.ml}))))
+     (run %{bin:ocamlformat} --format-invalid-files=auto --max-iter=3 %{dep:core_passing.ml}))))
 
 (rule
  (alias runtest)
@@ -715,7 +715,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to edge_cases.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:edge_cases.ml}))))
+     (run %{bin:ocamlformat} --format-invalid-files=auto --max-iter=3 %{dep:edge_cases.ml}))))
 
 (rule
  (alias runtest)
