@@ -2124,6 +2124,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to ocamldoc.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:ocamldoc.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff ocamldoc.ml.ref ocamldoc.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to ocp_indent_compat.ml.output
      (run %{bin:ocamlformat} %{dep:ocp_indent_compat.ml}))))
 
