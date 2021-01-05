@@ -2788,6 +2788,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to unit_extensions.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto --max-iter=3 %{dep:unit_extensions.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff unit_extensions.ml.ref unit_extensions.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to unit_modtypes.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_modtypes.ml}))))
 
