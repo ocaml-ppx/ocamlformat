@@ -12,13 +12,13 @@
 open Migrate_ast
 
 module Split : sig
-  val fragment : 'a Mapper.fragment -> string -> string list
+  val fragment : 'a Traverse.fragment -> string -> string list
 end
 
 module Recover : sig
-  val fragment : 'a Mapper.fragment -> string -> string
+  val fragment : 'a Traverse.fragment -> string -> string
 end
 
 module Parse : sig
-  val fragment : 'a Mapper.fragment -> string -> ('a, string) Result.t list
+  val fragment : 'a Traverse.fragment -> string -> ('a, string) Result.t list
 end

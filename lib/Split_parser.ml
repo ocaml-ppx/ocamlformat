@@ -25,7 +25,7 @@ module Line = struct
   let parse str =
     let lexbuf = Lexing.from_string str in
     let rec loop acc =
-      match Lexer.token lexbuf with
+      match Lexer.token_with_comments lexbuf with
       | Parser.EOF -> List.rev (Parser.EOF :: acc)
       | tok -> loop (tok :: acc)
     in
@@ -106,11 +106,11 @@ module Split = struct
     split_according_to_semisemi input
     |> map_flatten ~f:split_according_to_tokens
 
-  let fragment (type a) (fg : a Mapper.fragment) input =
+  let fragment (type a) (fg : a Traverse.fragment) input =
     match fg with
-    | Mapper.Structure -> split_toplevel input
-    | Mapper.Use_file -> split_toplevel input
-    | Mapper.Signature -> split_according_to_tokens input
+    | Structure -> split_toplevel input
+    | Use_file -> split_toplevel input
+    | Signature -> split_according_to_tokens input
 end
 
 module Recover = struct
@@ -118,7 +118,7 @@ module Recover = struct
 
   let sep = "_i_n_v_a_l_i_d_"
 
-  let fragment (type a) (fg : a Mapper.fragment) input =
+  let fragment (type a) (fg : a Traverse.fragment) input =
     Split.fragment fg input
     |> List.fold_left ~init:"" ~f:(fun acc item ->
            match Parse.fragment fg (Lexing.from_string item) with
@@ -130,7 +130,7 @@ module Recover = struct
 end
 
 module Parse = struct
-  let fragment (type a) (fg : a Mapper.fragment) input =
+  let fragment (type a) (fg : a Traverse.fragment) input =
     Split.fragment fg input
     |> List.fold_left ~init:[] ~f:(fun acc item ->
            match Parse.fragment fg (Lexing.from_string item) with
