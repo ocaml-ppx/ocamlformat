@@ -713,14 +713,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to edge_cases.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:edge_cases.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff edge_cases.ml.ref edge_cases.ml.output)))
 
 (rule
@@ -1520,14 +1518,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_low_priority.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_low_priority.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_low_priority.ml.ref js_low_priority.ml.output)))
 
 (rule
@@ -1612,14 +1608,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to js_test.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_test.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff js_test.ml.ref js_test.ml.output)))
 
 (rule
@@ -1904,14 +1898,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to misc_2019.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:misc_2019.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff misc_2019.ml.ref misc_2019.ml.output)))
 
 (rule
@@ -2311,14 +2303,12 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to quotations2.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:quotations2.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff quotations2.ml.ref quotations2.ml.output)))
 
 (rule
@@ -2757,62 +2747,52 @@
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_classes.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_classes.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_classes.ml.ref unit_classes.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_expr.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_expr.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_expr.ml.ref unit_expr.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_modtypes.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_modtypes.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_modtypes.ml.ref unit_modtypes.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_typedefs.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_typedefs.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_typedefs.ml.ref unit_typedefs.ml.output)))
 
 (rule
  (deps .ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action
    (with-outputs-to unit_types.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_types.ml}))))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.08.0))
  (action (diff unit_types.ml.ref unit_types.ml.output)))
 
 (rule
