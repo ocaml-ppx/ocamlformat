@@ -1,3 +1,0 @@
-ocamlformat: ignoring "js_comment.ml" (syntax error)
-File "js_comment.ml", line 165, characters 2-4:
-Error: Syntax error

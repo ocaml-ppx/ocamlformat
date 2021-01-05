@@ -2,17 +2,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to js_comment.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:js_comment.ml})))))
-
-(rule
- (alias runtest)
- (action (diff js_comment.ml.broken-ref js_comment.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to ocamldoc.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:ocamldoc.ml})))))

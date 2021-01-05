@@ -1499,6 +1499,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to js_comment.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_comment.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff js_comment.ml.ref js_comment.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to js_default.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_default.ml}))))
 
