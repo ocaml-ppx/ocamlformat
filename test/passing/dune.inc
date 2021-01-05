@@ -2798,6 +2798,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to unit_lex.ml.output
+     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_lex.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff unit_lex.ml.ref unit_lex.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to unit_modtypes.ml.output
      (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:unit_modtypes.ml}))))
 
