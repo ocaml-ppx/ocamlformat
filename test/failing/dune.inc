@@ -2,17 +2,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to js_2018.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:js_2018.ml})))))
-
-(rule
- (alias runtest)
- (action (diff js_2018.ml.broken-ref js_2018.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to js_comment.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:js_comment.ml})))))
