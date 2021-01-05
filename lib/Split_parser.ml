@@ -14,7 +14,7 @@ open Migrate_ast
 let map_flatten l ~f =
   List.rev
   @@ List.fold_left ~init:[] l ~f:(fun acc str ->
-         List.rev_append (f str) acc)
+         List.rev_append (f str) acc )
 
 let rec first_non_empty = function
   | [] -> None
@@ -79,10 +79,10 @@ module Split = struct
                        ( (List.rev prev_lines |> String.concat ~sep:"\n")
                          :: ret
                        , [line] )
-                 else (ret, line :: prev_lines) ))
+                 else (ret, line :: prev_lines) ) )
          ~init:([], [])
     |> (fun (ret, prev_lines) ->
-         (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret)
+         (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret )
     |> List.map ~f:String.strip
     |> List.filter ~f:(Fn.non String.is_empty)
     |> List.rev
@@ -94,10 +94,10 @@ module Split = struct
            if Line.starts_with Parser.SEMISEMI line && Line.indent line = 0
            then
              ((List.rev prev_lines |> String.concat ~sep:"\n") :: ret, [line])
-           else (ret, line :: prev_lines))
+           else (ret, line :: prev_lines) )
          ~init:([], [])
     |> (fun (ret, prev_lines) ->
-         (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret)
+         (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret )
     |> List.map ~f:String.strip
     |> List.filter ~f:(Fn.non String.is_empty)
     |> List.rev
@@ -125,8 +125,8 @@ module Recover = struct
            | exception _ ->
                append acc
                  (Format.sprintf "[%%%%invalid.ast.node {%s|%s|%s}]" sep item
-                    sep)
-           | _parsed -> append acc item)
+                    sep )
+           | _parsed -> append acc item )
 end
 
 module Parse = struct
@@ -135,6 +135,6 @@ module Parse = struct
     |> List.fold_left ~init:[] ~f:(fun acc item ->
            match Parse.fragment fg (Lexing.from_string item) with
            | exception _ -> Error item :: acc
-           | parsed -> Ok parsed :: acc)
+           | parsed -> Ok parsed :: acc )
     |> List.rev
 end
