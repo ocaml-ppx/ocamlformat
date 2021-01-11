@@ -16,6 +16,8 @@
 
 #### New features
 
+  + Expose a RPC interface through a new binary ocamlformat-rpc and a new library ocamlformat-rpc-lib (#1586, @gpetiot, @voodoos)
+
 ### 0.17.0 (2021-02-15)
 
 #### Removed

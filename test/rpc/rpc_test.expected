@@ -1,0 +1,104 @@
+Starting then doing nothing
+[ocf] proposed versions: v1
+[ocf] client V1 selected
+[ocf] Halt
+Sending requests
+[ocf] proposed versions: v1
+[ocf] client V1 selected
+[ocf] Format 'char -> string'
+Output: char -> string
+
+[ocf] Format 'int -> int'
+Output: int -> int
+
+[ocf] Format ' int    (* foo *) 
+
+ ->     int  (* bar *)'
+Output: int (* foo *) -> int (* bar *)
+
+[ocf] Config
+Error: Unknown configuration value (foo, bar)
+[ocf] Config
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa ->
+bbb ->
+ccc ->
+ddd ->
+eee ->
+fff ->
+ggg
+
+[ocf] Config
+[ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
+Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
+
+[ocf] Format 'val x :
+ 
+int'
+Output: val x : int
+
+[ocf] Format 'x + y * z'
+Output: x + (y * z)
+
+[ocf] Format 'let x = 4 in x'
+Output: let x = 4 in
+x
+
+[ocf] Format 'sig end'
+Output: sig end
+
+[ocf] Format 'sig
+
+ val x : foo -> bar
+  (** this does something *)
+
+ val f : a -> b -> c ->
+
+ d     end'
+Output:
+sig
+  val x : foo -> bar
+  (** this does something *)
+
+  val f : a -> b -> c -> d
+end
+
+[ocf] Format '
+let ssmap
+    :  (module MapT
+          with type key = string
+           and type data = string
+           and type map = SSMap.map )
+    -> unit
+  =
+  ()
+'
+Output:
+let ssmap :
+    (module MapT
+       with type key = string
+        and type data = string
+        and type map = SSMap.map) ->
+    unit =
+  ()
+
+[ocf] Config
+[ocf] Format '
+let ssmap
+    :  (module MapT
+          with type key = string
+           and type data = string
+           and type map = SSMap.map )
+    -> unit
+  =
+  ()
+'
+Output:
+let ssmap
+    :  (module MapT with type key = string and type data = string and type map = SSMap.map)
+    -> unit
+  =
+  ()
+;;
+
+[ocf] Halt

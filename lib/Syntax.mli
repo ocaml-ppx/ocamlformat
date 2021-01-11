@@ -9,4 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type t = Structure | Signature | Use_file
+type t =
+  | Structure
+  | Signature
+  | Use_file
+  | Core_type
+  | Module_type
+  | Expression

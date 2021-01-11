@@ -1,3 +1,4 @@
 (test
  (name test_unit)
+ (package ocamlformat)
  (libraries alcotest parse_wyc))

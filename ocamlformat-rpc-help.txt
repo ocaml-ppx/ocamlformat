@@ -1,0 +1,53 @@
+NAME
+       ocamlformat-rpc - RPC mode for OCamlFormat, a tool to format OCaml
+       code.
+
+SYNOPSIS
+       ocamlformat-rpc [OPTION]... 
+
+DESCRIPTION
+       ocamlformat-rpc listens to RPC requests, provided on the standard
+       input, and prints the response on the standard output.
+
+COMMANDS
+       Before the client and the server agree on a common version to use the
+       following commands are available: Halt to close the connection to the
+       RPC; Version v to ask the server to use version v. If the server
+       agrees upon the version he will send the reply Version v and the
+       protocol version is set to v, to use another version later the client
+       has to close the connexion and start a new one. If the server cannot
+       use version v he might propose another version w by sending the reply
+       Version w that the client can accept by sending the same request for
+       version w, or propose another version. If the server cannot propose
+       another version it will close the connection. Unknown commands are
+       ignored.
+
+       Once the client and the server agree on a common version, the requests
+       you can send may differ from one version to another.
+
+       On version v1, the supported RPC commands are:
+
+       - Halt to close the connection to the RPC
+
+       - Config CSEXP: submits a list of (key, value) pairs (as a canonical
+       s-expression) to update OCamlFormat's configuration (please refer to
+       ocamlformat --help to know more about the available options). The
+       accepted configuration is sent as a reply of the same form. The
+       configuration can be reset to its default value by sending the pair
+       ("profile", "default").
+
+       - Format CSEXP: submits a canonical s-expression CSEXP to be formatted
+       by OCamlFormat, the formatted output is sent as a reply of the same
+       form Format CSEXP
+
+       Unknown commands are ignored.
+
+OPTIONS
+       --help[=FMT] (default=auto)
+           Show this help in format FMT. The value FMT must be one of `auto',
+           `pager', `groff' or `plain'. With `auto', the format is `pager` or
+           `plain' whenever the TERM env var is `dumb' or undefined.
+
+       --version
+           Show version information.
+

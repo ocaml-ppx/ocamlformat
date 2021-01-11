@@ -8,4 +8,5 @@
 
 (library
  (name compat)
+ (package ocamlformat)
  (libraries base compiler-libs.common))

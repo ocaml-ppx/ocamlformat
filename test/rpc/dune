@@ -1,0 +1,16 @@
+(test
+ (name rpc_test)
+ (libraries ocamlformat-rpc-lib spawn)
+ (deps %{bin:ocamlformat-rpc})
+ (modules rpc_test)
+ (package ocamlformat-rpc)
+ (action
+  (run %{test} %{bin:ocamlformat-rpc})))
+
+(test
+ (name rpc_test_fail)
+ (libraries ocamlformat-rpc-lib spawn)
+ (modules rpc_test_fail)
+ (package ocamlformat-rpc)
+ (action
+  (run %{test} not-installed-ocamlformat-rpc)))
