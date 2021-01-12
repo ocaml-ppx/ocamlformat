@@ -189,11 +189,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Indentation of items inside extension nodes (COLS columns). The
            default value is 2.
 
-       --extension-sugar={preserve|always}
-           Extension formatting. The default value is preserve. Warning: This
-           option is deprecated since version 0.14.0. Concrete syntax will
-           now always be preserved.
-
        --field-space={loose|tight|tight-decl}
            Whether or not to use a space between a field name and the rhs.
            This option affects records and objects. loose does. tight does
@@ -469,6 +464,10 @@ OPTIONS (REMOVED OPTIONS)
 
        --escape-strings=VAL
            This option has been removed in version 0.16.0. Concrete syntax
+           will now always be preserved.
+
+       --extension-sugar=VAL
+           This option has been removed in version 0.17.0. Concrete syntax
            will now always be preserved.
 
        --let-open=VAL

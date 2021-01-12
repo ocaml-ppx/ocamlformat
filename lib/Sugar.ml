@@ -218,7 +218,7 @@ let rec ite cmts ({ast= exp; _} as xexp) =
       [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
   | _ -> [(None, xexp, pexp_attributes)]
 
-let sequence (conf : Conf.t) cmts xexp =
+let sequence cmts xexp =
   let rec sequence_ ?(allow_attribute = true) ({ast= exp; _} as xexp) =
     let ctx = Exp exp in
     let {pexp_desc; pexp_loc; _} = exp in
@@ -234,9 +234,7 @@ let sequence (conf : Conf.t) cmts xexp =
                     , _ )
               ; pstr_loc= _ } ] )
       when List.is_empty pexp_attributes
-           && ( Poly.(conf.extension_sugar = `Always)
-              || Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
-              ) ->
+           && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
         let ctx = Exp exp in
         Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;

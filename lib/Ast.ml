@@ -14,23 +14,17 @@
 open Migrate_ast
 open Parsetree
 
-let ( init
-    , extension_sugar
-    , register_reset
-    , leading_nested_match_parens
-    , parens_ite ) =
+let init, register_reset, leading_nested_match_parens, parens_ite =
   let l = ref [] in
-  let extension_sugar = ref `Preserve in
   let leading_nested_match_parens = ref false in
   let parens_ite = ref false in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
-    extension_sugar := conf.extension_sugar ;
     leading_nested_match_parens := conf.leading_nested_match_parens ;
     parens_ite := conf.parens_ite ;
     List.iter !l ~f:(fun f -> f ())
   in
-  (init, extension_sugar, register, leading_nested_match_parens, parens_ite)
+  (init, register, leading_nested_match_parens, parens_ite)
 
 (** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
     the margin. *)
@@ -1760,8 +1754,7 @@ end = struct
                           ; _ } as e )
                       , _ )
                 ; _ } ] )
-        when Poly.(!extension_sugar = `Always)
-             || Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
+        when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
           Some Apply
       | Pexp_extension
           ( ext
@@ -1769,8 +1762,7 @@ end = struct
               [ { pstr_desc=
                     Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), _)
                 ; _ } ] )
-        when Poly.(!extension_sugar = `Always)
-             || Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
+        when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
           Some Semi
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus

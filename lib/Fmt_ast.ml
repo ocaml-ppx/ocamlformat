@@ -499,8 +499,7 @@ let rec fmt_extension c ctx key (ext, pld) =
             ; pstr_loc
             ; _ } as si ) ]
     , (Pld _ | Str _ | Top) )
-    when Poly.(c.conf.extension_sugar = `Always)
-         || Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
+    when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
     ->
@@ -1428,7 +1427,7 @@ and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
   let break (_, xexp1) (_, xexp2) =
     not (is_simple xexp1 && is_simple xexp2)
   in
-  let elts = Sugar.sequence c.conf c.cmts xexp in
+  let elts = Sugar.sequence c.cmts xexp in
   ( match elts with
   | (None, _) :: (first_ext, _) :: _ ->
       let compare {txt= x; _} {txt= y; _} = String.compare x y in
@@ -1572,7 +1571,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let break xexp1 xexp2 = not (is_simple xexp1 && is_simple xexp2) in
       let grps =
         List.group
-          (List.map ~f:snd (Sugar.sequence c.conf c.cmts (sub_exp ~ctx e2)))
+          (List.map ~f:snd (Sugar.sequence c.cmts (sub_exp ~ctx e2)))
           ~break
       in
       let fmt_grp grp = list grp " ;@ " (fmt_expression c) in
@@ -2382,9 +2381,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   , _ )
             ; pstr_loc= _ } ] )
     when List.is_empty pexp_attributes
-         && ( Poly.(c.conf.extension_sugar = `Always)
-            || Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
-               && List.length (Sugar.sequence c.conf c.cmts xexp) > 1 ) ->
+         && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc
+         && List.length (Sugar.sequence c.cmts xexp) > 1 ->
       fmt_sequence ~has_attr c parens (expression_width c) xexp pexp_loc
         fmt_atrs ~ext
   | Pexp_sequence _ ->
@@ -2441,9 +2439,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     , _ )
               ; pstr_loc= _ } as str ) ] )
     when List.is_empty pexp_attributes
-         && ( Poly.(c.conf.extension_sugar = `Always)
-            || Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc )
-    ->
+         && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
         $ fmt_atrs )
