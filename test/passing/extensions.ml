@@ -292,6 +292,20 @@ let _ = (* bar *) [%expr (* comment *) foo (* blabla *)]
 
 let _ = assert%lwt false
 let _ = [%lwt assert false]
+let _ = f (assert%lwt false)
+let _ = f [%lwt assert false]
 
 let _ = lazy%ext e
 let _ = [%ext lazy e]
+let _ = f (lazy%ext e)
+let _ = f [%ext lazy e]
+
+let _ = object%ext method x = y end
+let _ = [%ext object method x = y end]
+let _ = f (object%ext method x = y end)
+let _ = f [%ext object method x = y end]
+
+let _ = new%ext x
+let _ = [%ext new x]
+let _ = f (new%ext x)
+let _ = f [%ext new x]
