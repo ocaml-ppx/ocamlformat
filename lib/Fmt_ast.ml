@@ -2424,7 +2424,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_lazy e ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
-           (fmt "lazy@ " $ fmt_expression c (sub_exp ~ctx e) $ fmt_atrs) )
+           ( str "lazy"
+           $ fmt_extension_suffix c ext
+           $ fmt "@ "
+           $ fmt_expression c (sub_exp ~ctx e)
+           $ fmt_atrs ) )
   | Pexp_extension
       ( ext
       , PStr
@@ -2435,7 +2439,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
                             | Pexp_function _ | Pexp_letexception _
-                            | Pexp_open _ | Pexp_assert _ )
+                            | Pexp_open _ | Pexp_assert _ | Pexp_lazy _ )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )

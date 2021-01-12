@@ -1751,7 +1751,7 @@ end = struct
                               ( Pexp_new _ | Pexp_object _ | Pexp_while _
                               | Pexp_for _ | Pexp_function _ | Pexp_fun _
                               | Pexp_try _ | Pexp_match _ | Pexp_let _
-                              | Pexp_assert _ )
+                              | Pexp_assert _ | Pexp_lazy _ )
                           ; _ } as e )
                       , _ )
                 ; _ } ] )
@@ -2052,7 +2052,7 @@ end = struct
                                 | Pexp_ifthenelse _ | Pexp_sequence _
                                 | Pexp_new _ | Pexp_letmodule _
                                 | Pexp_object _ | Pexp_function _
-                                | Pexp_assert _ )
+                                | Pexp_assert _ | Pexp_lazy _ )
                             ; pexp_attributes= []
                             ; _ } as e )
                         , _ )

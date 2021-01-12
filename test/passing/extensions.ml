@@ -292,3 +292,6 @@ let _ = (* bar *) [%expr (* comment *) foo (* blabla *)]
 
 let _ = assert%lwt false
 let _ = [%lwt assert false]
+
+let _ = lazy%ext e
+let _ = [%ext lazy e]
