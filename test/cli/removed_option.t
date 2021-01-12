@@ -2,6 +2,13 @@
 
 Setting a removed option on the command line should display an error message:
 
+  $ ocamlformat a.ml --extension-sugar preserve
+  ocamlformat: option `--extension-sugar': This option has been removed in
+               version 0.17.0. Concrete syntax will now always be preserved.
+  Usage: ocamlformat [OPTION]... [SRC]...
+  Try `ocamlformat --help' for more information.
+  [1]
+
   $ ocamlformat a.ml --let-open preserve
   ocamlformat: option `--let-open': This option has been removed in version
                0.17.0. Concrete syntax will now always be preserved.
