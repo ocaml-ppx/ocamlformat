@@ -40,7 +40,6 @@ type t =
   ; dock_collection_brackets: bool
   ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
-  ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; function_indent: int
   ; function_indent_nested: [`Always | `Auto | `Never]

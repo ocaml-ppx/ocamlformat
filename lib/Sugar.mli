@@ -94,12 +94,9 @@ val ite :
     [(Some c1, e1); (Some c2, e2); (None, e3)]. *)
 
 val sequence :
-     Conf.t
-  -> Cmts.t
-  -> expression Ast.xt
-  -> (label loc option * expression Ast.xt) list
-(** [sequence conf cmts exp] returns the list of expressions (with the
-    optional extension) from a sequence of expressions [exp]. *)
+  Cmts.t -> expression Ast.xt -> (label loc option * expression Ast.xt) list
+(** [sequence cmts exp] returns the list of expressions (with the optional
+    extension) from a sequence of expressions [exp]. *)
 
 type functor_arg =
   | Unit

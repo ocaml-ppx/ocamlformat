@@ -38,7 +38,6 @@ type t =
   ; dock_collection_brackets: bool
   ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
-  ; extension_sugar: [`Preserve | `Always]
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; function_indent: int
   ; function_indent_nested: [`Always | `Auto | `Never]
@@ -598,16 +597,11 @@ module Formatting = struct
       (fun conf x -> {conf with extension_indent= x})
       (fun conf -> conf.extension_indent)
 
-  let extension_sugar =
-    let doc = "Extension formatting." in
+  let ( (* extension_sugar *) ) =
     let names = ["extension-sugar"] in
-    let all = [("preserve", `Preserve, ""); ("always", `Always, "")] in
-    let deprecated =
-      C.deprecated ~since_version:"0.14.0" concrete_syntax_preserved_msg
-    in
-    C.choice ~names ~all ~doc ~section ~deprecated
-      (fun conf x -> {conf with extension_sugar= x})
-      (fun conf -> conf.extension_sugar)
+    let version = "0.17.0" in
+    let msg = concrete_syntax_preserved_msg in
+    C.removed_option ~names ~version ~msg
 
   let field_space =
     let doc =
@@ -1434,7 +1428,6 @@ let ocamlformat_profile =
   ; dock_collection_brackets= false
   ; exp_grouping= `Parens
   ; extension_indent= 2
-  ; extension_sugar= `Preserve
   ; field_space= `Tight
   ; function_indent= 2
   ; function_indent_nested= `Never
@@ -1503,7 +1496,6 @@ let conventional_profile =
   ; dock_collection_brackets= C.default Formatting.dock_collection_brackets
   ; exp_grouping= C.default Formatting.exp_grouping
   ; extension_indent= C.default Formatting.extension_indent
-  ; extension_sugar= C.default Formatting.extension_sugar
   ; field_space= C.default Formatting.field_space
   ; function_indent= C.default Formatting.function_indent
   ; function_indent_nested= C.default Formatting.function_indent_nested
@@ -1629,7 +1621,6 @@ let janestreet_profile =
   ; dock_collection_brackets= false
   ; exp_grouping= `Parens
   ; extension_indent= 2
-  ; extension_sugar= `Preserve
   ; field_space= `Loose
   ; function_indent= 2
   ; function_indent_nested= `Never

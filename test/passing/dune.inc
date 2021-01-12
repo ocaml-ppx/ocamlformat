@@ -847,16 +847,6 @@
 (rule
  (deps .ocamlformat )
  (action
-   (with-outputs-to extensions-sugar_always.ml.output
-     (run %{bin:ocamlformat} --max-iters=3 --extension-sugar=always %{dep:extensions.ml}))))
-
-(rule
- (alias runtest)
- (action (diff extensions-sugar_always.ml.ref extensions-sugar_always.ml.output)))
-
-(rule
- (deps .ocamlformat )
- (action
    (with-outputs-to extensions.ml.output
      (run %{bin:ocamlformat} --max-iters=3 %{dep:extensions.ml}))))
 
