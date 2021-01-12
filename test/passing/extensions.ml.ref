@@ -300,3 +300,7 @@ class type x = y
 and y = z]
 
 let _ = (* bar *) [%expr (* comment *) foo (* blabla *)]
+
+let _ = assert%lwt false
+
+let _ = [%lwt assert false]

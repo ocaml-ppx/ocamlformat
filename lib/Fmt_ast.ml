@@ -1953,7 +1953,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (Params.parens_if parens c.conf
            (hvbox 0
               ( hvbox 2
-                  ( fmt_or paren_body "assert (@," "assert@ "
+                  ( str "assert"
+                  $ fmt_extension_suffix c ext
+                  $ fmt_or paren_body " (@," "@ "
                   $ wrap_symbol
                     @@ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
               $ fmt_if_k paren_body (closing_paren c)
@@ -2433,7 +2435,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
                             | Pexp_function _ | Pexp_letexception _
-                            | Pexp_open _ )
+                            | Pexp_open _ | Pexp_assert _ )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )

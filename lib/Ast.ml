@@ -1750,7 +1750,8 @@ end = struct
                       ( ( { pexp_desc=
                               ( Pexp_new _ | Pexp_object _ | Pexp_while _
                               | Pexp_for _ | Pexp_function _ | Pexp_fun _
-                              | Pexp_try _ | Pexp_match _ | Pexp_let _ )
+                              | Pexp_try _ | Pexp_match _ | Pexp_let _
+                              | Pexp_assert _ )
                           ; _ } as e )
                       , _ )
                 ; _ } ] )
@@ -2050,7 +2051,8 @@ end = struct
                                 | Pexp_try _ | Pexp_let _ | Pexp_letop _
                                 | Pexp_ifthenelse _ | Pexp_sequence _
                                 | Pexp_new _ | Pexp_letmodule _
-                                | Pexp_object _ | Pexp_function _ )
+                                | Pexp_object _ | Pexp_function _
+                                | Pexp_assert _ )
                             ; pexp_attributes= []
                             ; _ } as e )
                         , _ )
