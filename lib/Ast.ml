@@ -1751,7 +1751,8 @@ end = struct
                               ( Pexp_new _ | Pexp_object _ | Pexp_while _
                               | Pexp_for _ | Pexp_function _ | Pexp_fun _
                               | Pexp_try _ | Pexp_match _ | Pexp_let _
-                              | Pexp_assert _ | Pexp_lazy _ )
+                              | Pexp_assert _ | Pexp_lazy _
+                              | Pexp_ifthenelse _ )
                           ; _ } as e )
                       , _ )
                 ; _ } ] )

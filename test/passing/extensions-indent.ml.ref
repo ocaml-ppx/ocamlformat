@@ -341,6 +341,14 @@ let _ =
            method x = y
          end]
 
+let _ = if%ext x then y else z
+
+let _ = [%ext if x then y else z]
+
+let _ = f (if%ext x then y else z)
+
+let _ = f [%ext if x then y else z]
+
 let _ = new%ext x
 
 let _ = [%ext new x]

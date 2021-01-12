@@ -305,6 +305,11 @@ let _ = [%ext object method x = y end]
 let _ = f (object%ext method x = y end)
 let _ = f [%ext object method x = y end]
 
+let _ = if%ext x then y else z
+let _ = [%ext if x then y else z]
+let _ = f (if%ext x then y else z)
+let _ = f [%ext if x then y else z]
+
 let _ = new%ext x
 let _ = [%ext new x]
 let _ = f (new%ext x)
