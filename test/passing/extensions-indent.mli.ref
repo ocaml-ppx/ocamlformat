@@ -33,3 +33,7 @@ exception%ext E
 include%ext M
 
 [%%ext include M]
+
+module type%ext T = M
+
+[%%ext module type T = M]

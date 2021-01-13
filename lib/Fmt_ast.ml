@@ -504,7 +504,9 @@ let rec fmt_extension c ctx key (ext, pld) =
   | ( _
     , _
     , PSig
-        [ ( { psig_desc= Psig_type _ | Psig_exception _ | Psig_include _
+        [ ( { psig_desc=
+                ( Psig_type _ | Psig_exception _ | Psig_include _
+                | Psig_modtype _ )
             ; psig_loc
             ; _ } as si ) ]
     , (Pld _ | Sig _ | Top) )
@@ -3605,7 +3607,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
             $ esp $ fmt_opt epi
             $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs )
         $ doc_after )
-  | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
+  | Psig_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Psig_module md ->
       hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
   | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution c ctx ms)
