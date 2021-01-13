@@ -325,3 +325,13 @@ let _ = x >>= begin%ext y >>= z end
 let _ = x >>= [%ext begin y >>= z end]
 let _ = f (begin%ext y >>= z end)
 let _ = f [%ext begin y >>= z end]
+
+let _ = (module%ext S)
+let _ = [%ext (module S)]
+let _ = f (module%ext S)
+let _ = f [%ext (module S)]
+
+let _ = (module%ext S : S)
+let _ = [%ext (module S : S)]
+let _ = f (module%ext S : S)
+let _ = f [%ext (module S : S)]

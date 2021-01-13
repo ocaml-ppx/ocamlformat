@@ -1973,8 +1973,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                (hvbox 2
                   (Cmts.fmt c pexp_loc
                      ( hovbox 0
-                         ( opn_paren $ str "module " $ m $ fmt "@ : "
-                         $ fmt_longident_loc c id )
+                         ( opn_paren $ str "module"
+                         $ fmt_extension_suffix c ext
+                         $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id
+                         )
                      $ fmt_package_type c ctx cnstrs
                      $ cls_paren $ fmt_atrs ) ) ) ) )
   | Pexp_constraint (e, t) ->
@@ -2320,7 +2322,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_mod m =
         Params.parens_if parens c.conf
           ( Params.wrap_exp c.conf c.source ~parens:true ~loc:pexp_loc
-              (str "module " $ m)
+              (str "module" $ fmt_extension_suffix c ext $ char ' ' $ m)
           $ fmt_atrs )
       in
       hvbox 0
@@ -2429,7 +2431,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
                             | Pexp_function _ | Pexp_letexception _
-                            | Pexp_open _ | Pexp_assert _ | Pexp_lazy _ )
+                            | Pexp_open _ | Pexp_assert _ | Pexp_lazy _
+                            | Pexp_pack _
+                            | Pexp_constraint
+                                ( { pexp_desc= Pexp_pack _
+                                  ; pexp_attributes= []
+                                  ; _ }
+                                , { ptyp_desc= Ptyp_package _
+                                  ; ptyp_attributes= []
+                                  ; _ } ) )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )
