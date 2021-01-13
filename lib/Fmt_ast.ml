@@ -488,22 +488,6 @@ let fmt_quoted_string key ext s = function
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
   | _, "invalid.ast.node", _, _ -> assert false
-  | ( _
-    , _
-    , PStr
-        [ ( { pstr_desc=
-                ( Pstr_value _ | Pstr_type _ | Pstr_exception _ | Pstr_open _
-                | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
-                | Pstr_modtype _ | Pstr_class_type _ | Pstr_class _
-                | Pstr_typext _ | Pstr_primitive _ )
-            ; pstr_loc
-            ; _ } as si ) ]
-    , (Pld _ | Str _ | Top) )
-    when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
-      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
-  | _, _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
-    when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
-      fmt_signature_item c ~ext (sub_sig ~ctx si)
   (* Quoted extensions (since ocaml 4.11). *)
   | ( ("%" | "%%")
     , ext
@@ -526,6 +510,12 @@ let rec fmt_extension c ctx key (ext, pld) =
       assert (not (Cmts.has_before c.cmts pstr_loc)) ;
       assert (not (Cmts.has_after c.cmts pstr_loc)) ;
       hvbox 0 (fmt_quoted_string key ext str delim)
+  | _, _, PStr [({pstr_loc; _} as si)], (Pld _ | Str _ | Top)
+    when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
+      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
+  | _, _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
+    when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
+      fmt_signature_item c ~ext (sub_sig ~ctx si)
   | _ -> fmt_attribute_or_extension c key (ext, pld)
 
 and fmt_invalid_or_extension c ctx key (ext, pld) loc =
