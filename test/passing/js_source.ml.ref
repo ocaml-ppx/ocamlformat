@@ -215,7 +215,7 @@ module type S = sig
   and t' = int [@@foo]
 
   [%%foo: type t += T [@@foo]]
-  [%%foo: exception X [@foo]]
+  exception%foo X [@foo]
   [%%foo: module M : S [@@foo]]
 
   [%%foo:

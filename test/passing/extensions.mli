@@ -25,3 +25,7 @@ fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
 val foooooooooooooooooooooo : fooooooooooo
 
 val fooooooooooooooooooooooooooo : fooooo]
+
+exception%ext E
+
+[%%ext exception E]

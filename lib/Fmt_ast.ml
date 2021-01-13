@@ -501,8 +501,11 @@ let rec fmt_extension c ctx key (ext, pld) =
     , (Pld _ | Str _ | Top) )
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
-  | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
-    ->
+  | ( _
+    , _
+    , PSig [({psig_desc= Psig_type _ | Psig_exception _; psig_loc; _} as si)]
+    , (Pld _ | Sig _ | Top) )
+    when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
   (* Quoted extensions (since ocaml 4.11). *)
   | ( ("%" | "%%")
@@ -3556,8 +3559,8 @@ and fmt_signature_item c ?ext {ast= si; _} =
       fmt_docstring c ~standalone:true ~epi:noop doc
       $ fmt_attributes c ~key:"@@@" atrs
   | Psig_exception exc ->
-      hvbox 2
-        (fmt_type_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
+      let pre = str "exception" $ fmt_extension_suffix c ext $ fmt "@ " in
+      hvbox 2 (fmt_type_exception ~pre c (fmt " of@ ") ctx exc)
   | Psig_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
       let box =
