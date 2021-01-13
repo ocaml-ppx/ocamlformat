@@ -507,7 +507,7 @@ let rec fmt_extension c ctx key (ext, pld) =
         [ ( { psig_desc=
                 ( Psig_type _ | Psig_exception _ | Psig_include _
                 | Psig_modtype _ | Psig_module _ | Psig_recmodule _
-                | Psig_modsubst _ )
+                | Psig_modsubst _ | Psig_open _ )
             ; psig_loc
             ; _ } as si ) ]
     , (Pld _ | Sig _ | Top) )
@@ -3613,7 +3613,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
       hvbox 0
         (fmt_module_declaration ?ext c ctx ~rec_flag:false ~first:true md)
   | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution ?ext c ctx ms)
-  | Psig_open od -> fmt_open_description c ~kw_attributes:[] od
+  | Psig_open od -> fmt_open_description ?ext c ~kw_attributes:[] od
   | Psig_recmodule mds ->
       fmt_recmodule c ctx mds (fmt_module_declaration ?ext) (fun x ->
           Mty x.pmd_type )
@@ -3834,16 +3834,22 @@ and fmt_module_type_declaration ?ext c ctx pmtd =
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
-and fmt_open_description c ?(keyword = "open") ~kw_attributes
+and fmt_open_description ?ext c ?(keyword = "open") ~kw_attributes
     {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~fit:true c popen_attributes
   in
+  let keyword =
+    fmt_or_k
+      (is_override popen_override)
+      ( str keyword $ str "!"
+      $ opt ext (fun _ -> str " " $ fmt_extension_suffix c ext) )
+      (str keyword $ fmt_extension_suffix c ext)
+  in
   hovbox 0
-    ( doc_before $ str keyword
-    $ fmt_if (is_override popen_override) "!"
+    ( doc_before $ keyword
     $ Cmts.fmt c popen_loc
         ( fmt_attributes c ~key:"@" kw_attributes
         $ str " "

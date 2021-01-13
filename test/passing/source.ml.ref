@@ -264,7 +264,7 @@ module type S = sig
 
   include%foo M [@@foo]
 
-  [%%foo: open M [@@foo]]
+  open%foo M [@@foo]
 
   [%%foo: class x : t [@@foo]]
 

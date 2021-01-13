@@ -224,7 +224,7 @@ module type S = sig
   module%foo M = M [@@foo]
   module type%foo S = S [@@foo]
   include%foo M [@@foo]
-  [%%foo: open M [@@foo]]
+  open%foo M [@@foo]
   [%%foo: class x : t [@@foo]]
   [%%foo: class type x = x [@@foo]]
 end
