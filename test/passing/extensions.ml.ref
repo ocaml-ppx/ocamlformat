@@ -356,3 +356,19 @@ let _ = [%ext new x]
 let _ = f (new%ext x)
 
 let _ = f [%ext new x]
+
+[@@@ocamlformat "exp-grouping=preserve"]
+
+(* TODO: begin/end keywords must be preserved *)
+
+let _ = [%ext y >>= z]
+
+let _ = [%ext y >>= z]
+
+let _ = x >>= [%ext y >>= z]
+
+let _ = x >>= [%ext y >>= z]
+
+let _ = f [%ext y >>= z]
+
+let _ = f [%ext y >>= z]
