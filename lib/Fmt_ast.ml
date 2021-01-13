@@ -508,7 +508,7 @@ let rec fmt_extension c ctx key (ext, pld) =
                 ( Psig_type _ | Psig_exception _ | Psig_include _
                 | Psig_modtype _ | Psig_module _ | Psig_recmodule _
                 | Psig_modsubst _ | Psig_open _ | Psig_typext _
-                | Psig_value _ )
+                | Psig_value _ | Psig_class _ | Psig_class_type _ )
             ; psig_loc
             ; _ } as si ) ]
     , (Pld _ | Sig _ | Top) )
@@ -3621,8 +3621,9 @@ and fmt_signature_item c ?ext {ast= si; _} =
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension ?ext c ctx te
   | Psig_value vd -> fmt_value_description ?ext c ctx vd
-  | Psig_class cl -> fmt_class_types c ctx ~pre:"class" ~sep:":" cl
-  | Psig_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
+  | Psig_class cl -> fmt_class_types ?ext c ctx ~pre:"class" ~sep:":" cl
+  | Psig_class_type cl ->
+      fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
 
 and fmt_class_types ?ext c ctx ~pre ~sep (cls : class_type class_infos list)

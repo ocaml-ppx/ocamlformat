@@ -72,3 +72,11 @@ val%foo x : t
 external%foo x : t = ""
 
 [%%foo: external x : t = ""]
+
+class%foo x : t
+
+[%%foo: class x : t]
+
+class type%foo x = x
+
+[%%foo: class type x = x]
