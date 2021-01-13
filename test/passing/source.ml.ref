@@ -253,13 +253,12 @@ module type S = sig
 
   exception%foo X [@foo]
 
-  [%%foo: module M : S [@@foo]]
+  module%foo M : S [@@foo]
 
-  [%%foo:
-  module rec M : S [@@foo]
-  and M : S [@@foo]]
+  module%foo rec M : S [@@foo]
+  and M : S [@@foo]
 
-  [%%foo: module M = M [@@foo]]
+  module%foo M = M [@@foo]
 
   module type%foo S = S [@@foo]
 

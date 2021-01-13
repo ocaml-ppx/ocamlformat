@@ -506,7 +506,8 @@ let rec fmt_extension c ctx key (ext, pld) =
     , PSig
         [ ( { psig_desc=
                 ( Psig_type _ | Psig_exception _ | Psig_include _
-                | Psig_modtype _ )
+                | Psig_modtype _ | Psig_module _ | Psig_recmodule _
+                | Psig_modsubst _ )
             ; psig_loc
             ; _ } as si ) ]
     , (Pld _ | Sig _ | Top) )
@@ -3609,11 +3610,12 @@ and fmt_signature_item c ?ext {ast= si; _} =
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Psig_module md ->
-      hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
-  | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution c ctx ms)
+      hvbox 0
+        (fmt_module_declaration ?ext c ctx ~rec_flag:false ~first:true md)
+  | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution ?ext c ctx ms)
   | Psig_open od -> fmt_open_description c ~kw_attributes:[] od
   | Psig_recmodule mds ->
-      fmt_recmodule c ctx mds fmt_module_declaration (fun x ->
+      fmt_recmodule c ctx mds (fmt_module_declaration ?ext) (fun x ->
           Mty x.pmd_type )
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Psig_typext te -> fmt_type_extension c ctx te
@@ -3790,10 +3792,11 @@ and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
             (fmt "@;<1 -2>")
           $ epi ) )
 
-and fmt_module_declaration c ctx ~rec_flag ~first pmd =
+and fmt_module_declaration ?ext c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
   update_config_maybe_disabled c pmd_loc pmd_attributes
   @@ fun c ->
+  let ext = if first then ext else None in
   let keyword = if first then "module" else "and" in
   let xargs, xmty =
     if rec_flag then ([], sub_mty ~ctx pmd_type)
@@ -3803,10 +3806,10 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
     match xmty.ast.pmty_desc with Pmty_alias _ -> None | _ -> Some ":"
   in
   Cmts.fmt c pmd_loc
-    (fmt_module c keyword pmd_name xargs None ?eqty (Some xmty)
+    (fmt_module ?ext c keyword pmd_name xargs None ?eqty (Some xmty)
        ~rec_flag:(rec_flag && first) pmd_attributes )
 
-and fmt_module_substitution c ctx pms =
+and fmt_module_substitution ?ext c ctx pms =
   let {pms_name; pms_manifest; pms_attributes; pms_loc} = pms in
   update_config_maybe_disabled c pms_loc pms_attributes
   @@ fun c ->
@@ -3819,7 +3822,7 @@ and fmt_module_substitution c ctx pms =
   in
   let pms_name = {pms_name with txt= Some pms_name.txt} in
   Cmts.fmt c pms_loc
-    (fmt_module c "module" ~eqty:":=" pms_name [] None (Some xmty)
+    (fmt_module ?ext c "module" ~eqty:":=" pms_name [] None (Some xmty)
        pms_attributes ~rec_flag:false )
 
 and fmt_module_type_declaration ?ext c ctx pmtd =

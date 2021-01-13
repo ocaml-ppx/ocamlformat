@@ -37,3 +37,18 @@ include%ext M
 module type%ext T = M
 
 [%%ext module type T = M]
+
+module%ext T : M
+
+[%%ext: module T : M]
+
+module%ext rec T : M
+and Z : Q
+
+[%%ext:
+module rec T : M
+and Z : Q]
+
+module%ext T := M
+
+[%%ext: module T := M]
