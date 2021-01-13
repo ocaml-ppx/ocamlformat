@@ -501,18 +501,7 @@ let rec fmt_extension c ctx key (ext, pld) =
     , (Pld _ | Str _ | Top) )
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
-  | ( _
-    , _
-    , PSig
-        [ ( { psig_desc=
-                ( Psig_type _ | Psig_exception _ | Psig_include _
-                | Psig_modtype _ | Psig_module _ | Psig_recmodule _
-                | Psig_modsubst _ | Psig_open _ | Psig_typext _
-                | Psig_value _ | Psig_class _ | Psig_class_type _
-                | Psig_typesubst _ )
-            ; psig_loc
-            ; _ } as si ) ]
-    , (Pld _ | Sig _ | Top) )
+  | _, _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
   (* Quoted extensions (since ocaml 4.11). *)
