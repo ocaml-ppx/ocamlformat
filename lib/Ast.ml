@@ -1681,7 +1681,7 @@ end = struct
 
   (** [prec_ast ast] is the precedence of [ast]. Meaningful for binary
       operators, otherwise returns [None]. *)
-  let prec_ast =
+  let rec prec_ast =
     let open Prec in
     function
     | Pld _ -> None
@@ -1742,30 +1742,9 @@ end = struct
        |Pexp_variant (_, Some _)
        |Pexp_while _ | Pexp_new _ | Pexp_object _ ->
           Some Apply
-      | Pexp_extension
-          ( ext
-          , PStr
-              [ { pstr_desc=
-                    Pstr_eval
-                      ( ( { pexp_desc=
-                              ( Pexp_new _ | Pexp_object _ | Pexp_while _
-                              | Pexp_for _ | Pexp_function _ | Pexp_fun _
-                              | Pexp_try _ | Pexp_match _ | Pexp_let _
-                              | Pexp_assert _ | Pexp_lazy _
-                              | Pexp_ifthenelse _ )
-                          ; _ } as e )
-                      , _ )
-                ; _ } ] )
+      | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
-          Some Apply
-      | Pexp_extension
-          ( ext
-          , PStr
-              [ { pstr_desc=
-                    Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), _)
-                ; _ } ] )
-        when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
-          Some Semi
+          prec_ast (Exp e)
       | Pexp_setfield _ -> Some LessMinus
       | Pexp_setinstvar _ -> Some LessMinus
       | Pexp_field _ -> Some Dot
@@ -2045,18 +2024,7 @@ end = struct
         | Pexp_extension
             ( ext
             , PStr
-                [ { pstr_desc=
-                      Pstr_eval
-                        ( ( { pexp_desc=
-                                ( Pexp_while _ | Pexp_for _ | Pexp_match _
-                                | Pexp_try _ | Pexp_let _ | Pexp_letop _
-                                | Pexp_ifthenelse _ | Pexp_sequence _
-                                | Pexp_new _ | Pexp_letmodule _
-                                | Pexp_object _ | Pexp_function _
-                                | Pexp_assert _ | Pexp_lazy _ )
-                            ; pexp_attributes= []
-                            ; _ } as e )
-                        , _ )
+                [ { pstr_desc= Pstr_eval (({pexp_attributes= []; _} as e), _)
                   ; _ } ] )
           when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
