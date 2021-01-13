@@ -508,7 +508,8 @@ let rec fmt_extension c ctx key (ext, pld) =
                 ( Psig_type _ | Psig_exception _ | Psig_include _
                 | Psig_modtype _ | Psig_module _ | Psig_recmodule _
                 | Psig_modsubst _ | Psig_open _ | Psig_typext _
-                | Psig_value _ | Psig_class _ | Psig_class_type _ )
+                | Psig_value _ | Psig_class _ | Psig_class_type _
+                | Psig_typesubst _ )
             ; psig_loc
             ; _ } as si ) ]
     , (Pld _ | Sig _ | Top) )

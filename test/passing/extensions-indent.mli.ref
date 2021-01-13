@@ -80,3 +80,7 @@ class%foo x : t
 class type%foo x = x
 
 [%%foo: class type x = x]
+
+type%ext t := x
+
+[%%ext: type t := x]
