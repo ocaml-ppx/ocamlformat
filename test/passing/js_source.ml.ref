@@ -207,8 +207,8 @@ open%foo M [@@foo]
 
 (* Signature items *)
 module type S = sig
-  [%%foo: val x : t [@@foo]]
-  [%%foo: external x : t = "" [@@foo]]
+  val%foo x : t [@@foo]
+  external%foo x : t = "" [@@foo]
 
   type%foo t = int [@@foo]
 

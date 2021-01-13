@@ -64,3 +64,11 @@ open! %ext M
 type%foo t += T
 
 [%%foo: type t += T]
+
+val%foo x : t
+
+[%%foo: val x : t]
+
+external%foo x : t = ""
+
+[%%foo: external x : t = ""]
