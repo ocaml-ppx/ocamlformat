@@ -60,3 +60,7 @@ open! %ext M
 [%%ext open M]
 
 [%%ext open! M]
+
+type%foo t += T
+
+[%%foo: type t += T]
