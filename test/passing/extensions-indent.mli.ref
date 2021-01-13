@@ -29,3 +29,7 @@ val fooooooooooooooooooooooooooo : fooooo]
 exception%ext E
 
 [%%ext exception E]
+
+include%ext M
+
+[%%ext include M]

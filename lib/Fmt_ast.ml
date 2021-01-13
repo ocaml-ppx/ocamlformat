@@ -503,7 +503,10 @@ let rec fmt_extension c ctx key (ext, pld) =
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | ( _
     , _
-    , PSig [({psig_desc= Psig_type _ | Psig_exception _; psig_loc; _} as si)]
+    , PSig
+        [ ( { psig_desc= Psig_type _ | Psig_exception _ | Psig_include _
+            ; psig_loc
+            ; _ } as si ) ]
     , (Pld _ | Sig _ | Top) )
     when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
@@ -3582,13 +3585,14 @@ and fmt_signature_item c ?ext {ast= si; _} =
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
+        let kwd = str "include" $ fmt_extension_suffix c ext in
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me; pmty_loc; pmty_attributes= _} ->
-            ( str "include"
+            ( kwd
               $ Cmts.fmt c ~pro:(str " ") ~epi:noop pmty_loc
                   (fmt "@ module type of")
             , fmt_module_expr c (sub_mod ~ctx me) )
-        | _ -> (str "include", fmt_module_type c (sub_mty ~ctx pincl_mod))
+        | _ -> (kwd, fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       let box = wrap_k opn cls in
       hvbox 0
