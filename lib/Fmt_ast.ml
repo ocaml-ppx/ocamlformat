@@ -1211,8 +1211,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
               ; ppat_attributes= []
               ; _ } as pat )
           , _ ) )
-    when List.is_empty ppat_attributes
-         && Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
+    when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
       hvbox 0 (fmt_pattern ~ext c ~box (sub_pat ~ctx pat))
   | Ppat_extension ext ->
       hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)

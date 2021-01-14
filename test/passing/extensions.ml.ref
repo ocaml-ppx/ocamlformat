@@ -406,5 +406,6 @@ let _ =
   | (module%ext M : S) -> k
   | [%ext (module M : S)] -> k
   | (exception%ext e) -> k
+  | ((exception%ext e)[@attr]) -> k
   | [%ext? exception e] -> k
   | _ -> default
