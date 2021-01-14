@@ -388,3 +388,11 @@ let _ = [%ext (module S : S)]
 let _ = f (module%ext S : S)
 
 let _ = f [%ext (module S : S)]
+
+let _ = x ;%ext y
+
+let _ = [%ext x ; y]
+
+let _ = f (x ;%ext y)
+
+let _ = f [%ext x ; y]
