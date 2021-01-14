@@ -284,17 +284,6 @@ module Exp = struct
             List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
             true )
 
-  let is_simple (i, c) =
-    Poly.(c.Conf.module_item_spacing = `Compact)
-    && Location.is_single_line i.pexp_loc c.Conf.margin
-
-  let break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
-      =
-    has_cmts_after cmts i1.pexp_loc
-    || has_cmts_before cmts i2.pexp_loc
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
-
   let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
     match pexp_desc with
     | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
@@ -767,9 +756,6 @@ let break_between s ~cmts ~has_cmts_before ~has_cmts_after (i1, c1) (i2, c2)
   | Sig i1, Sig i2 ->
       Signature_item.break_between s ~cmts ~has_cmts_before ~has_cmts_after
         (i1, c1) (i2, c2)
-  | Exp i1, Exp i2 ->
-      Exp.break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
-        (i2, c2)
   | Vb i1, Vb i2 ->
       Vb.break_between ~cmts ~has_cmts_before ~has_cmts_after (i1, c1)
         (i2, c2)
