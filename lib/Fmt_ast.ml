@@ -1091,12 +1091,11 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
            (fun pat -> fmt_pattern c (sub_pat ~ctx pat))
            pats )
   | Ppat_or _ ->
-      let has_doc = not (List.is_empty xpat.ast.ppat_attributes) in
       let nested =
         match ctx0 with
-        | Pat {ppat_desc= Ppat_or _; _} -> not has_doc
-        | Exp {pexp_desc= Pexp_match _ | Pexp_try _ | Pexp_function _; _} ->
-            not has_doc
+        | Pat {ppat_desc= Ppat_or _; _}
+         |Exp {pexp_desc= Pexp_match _ | Pexp_try _ | Pexp_function _; _} ->
+            List.is_empty xpat.ast.ppat_attributes
         | _ -> false
       in
       let xpats = Sugar.or_pat c.cmts xpat in
@@ -1106,18 +1105,10 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
           match i.[0] with '-' | '+' -> true | _ -> false )
         | _ -> false
       in
-      let is_simple {ppat_desc; _} =
-        match ppat_desc with
-        | Ppat_any | Ppat_constant _ | Ppat_var _
-         |Ppat_variant (_, (None | Some {ppat_desc= Ppat_any; _}))
-         |Ppat_construct (_, (None | Some {ppat_desc= Ppat_any; _})) ->
-            true
-        | _ -> false
-      in
       let break {ast= p1; _} {ast= p2; _} =
         Poly.(c.conf.break_cases = `Nested)
-        || (not (is_simple p1))
-        || (not (is_simple p2))
+        || (not (Pat.is_simple p1))
+        || (not (Pat.is_simple p2))
         || Cmts.has_after c.cmts p1.ppat_loc
       in
       let open_box =
@@ -1128,7 +1119,7 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
       hvbox 0
         ( list_fl (List.group xpats ~break)
             (fun ~first:first_grp ~last:_ xpat_grp ->
-              list_fl xpat_grp (fun ~first ~last xpat ->
+              list_fl xpat_grp (fun ~first ~last:_ xpat ->
                   (* side effects of Cmts.fmt_before before [fmt_pattern] is
                      important *)
                   let loc = xpat.ast.ppat_loc in
@@ -1154,9 +1145,8 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
                       Params.get_or_pattern_sep c.conf ~ctx:ctx0 ~cmts_before
                         ~space:(space xpat.ast)
                   in
-                  leading_cmt
-                  $ fmt_pattern c ~box:true ~pro xpat
-                  $ fmt_if_k last close_box ) )
+                  leading_cmt $ fmt_pattern c ~box:true ~pro xpat )
+              $ close_box )
         $ fmt_or_k nested
             (fits_breaks (if parens then ")" else "") "")
             (fits_breaks (if parens then ")" else "") ~hint:(1, 2) ")") )

@@ -339,6 +339,14 @@ module Exp = struct
 end
 
 module Pat = struct
+  let is_simple {ppat_desc; _} =
+    match ppat_desc with
+    | Ppat_any | Ppat_constant _ | Ppat_var _
+     |Ppat_variant (_, (None | Some {ppat_desc= Ppat_any; _}))
+     |Ppat_construct (_, (None | Some {ppat_desc= Ppat_any; _})) ->
+        true
+    | _ -> false
+
   let has_trailing_attributes {ppat_desc; ppat_attributes; _} =
     match ppat_desc with
     | Ppat_construct (_, None)
