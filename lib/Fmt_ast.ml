@@ -516,6 +516,9 @@ let rec fmt_extension c ctx key (ext, pld) =
   | _, _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
+  | _, _, PPat (({ppat_loc; _} as pat), _), (Pld _ | Top)
+    when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
+      fmt_pattern c ~ext (sub_pat ~ctx pat)
   | _ -> fmt_attribute_or_extension c key (ext, pld)
 
 and fmt_invalid_or_extension c ctx key (ext, pld) loc =
@@ -925,8 +928,8 @@ and fmt_pattern_attributes c xpat k =
       Params.parens_if parens_attr c.conf
         (k $ fmt_attributes c ~key:"@" attrs)
 
-and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
-    =
+and fmt_pattern ?ext c ?pro ?parens ?(box = false)
+    ({ctx= ctx0; ast= pat} as xpat) =
   protect c (Pat pat)
   @@
   let ctx = Pat pat in
@@ -1163,7 +1166,9 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
               (Cmts.fmt c typ.ptyp_loc
                  ( hovbox 0
                      ( Cmts.fmt c ppat_loc
-                         (str "module " $ fmt_str_loc_opt c name)
+                         ( str "module"
+                         $ fmt_extension_suffix c ext
+                         $ char ' ' $ fmt_str_loc_opt c name )
                      $ fmt "@ : " $ fmt_longident_loc c id )
                  $ fmt_package_type c ctx cnstrs ) ) ) )
   | Ppat_constraint (pat, typ) ->
@@ -1178,14 +1183,37 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
   | Ppat_lazy pat ->
       cbox 2
         (Params.parens_if parens c.conf
-           (fmt "lazy@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
+           ( str "lazy"
+           $ fmt_extension_suffix c ext
+           $ fmt "@ "
+           $ fmt_pattern c (sub_pat ~ctx pat) ) )
   | Ppat_unpack name ->
       wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-        (fmt "module@ " $ fmt_str_loc_opt c name)
+        ( str "module"
+        $ fmt_extension_suffix c ext
+        $ fmt "@ " $ fmt_str_loc_opt c name )
   | Ppat_exception pat ->
       cbox 2
         (Params.parens_if parens c.conf
-           (fmt "exception@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
+           ( fmt "exception"
+           $ fmt_extension_suffix c ext
+           $ fmt "@ "
+           $ fmt_pattern c (sub_pat ~ctx pat) ) )
+  | Ppat_extension
+      ( ext
+      , PPat
+          ( ( { ppat_desc=
+                  ( Ppat_lazy _ | Ppat_unpack _ | Ppat_exception _
+                  | Ppat_constraint
+                      ( {ppat_desc= Ppat_unpack _; _}
+                      , {ptyp_desc= Ptyp_package _; _} ) )
+              ; ppat_loc
+              ; ppat_attributes= []
+              ; _ } as pat )
+          , _ ) )
+    when List.is_empty ppat_attributes
+         && Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
+      hvbox 0 (fmt_pattern ~ext c ~box (sub_pat ~ctx pat))
   | Ppat_extension ext ->
       hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
   | Ppat_open (lid, pat) ->

@@ -340,3 +340,15 @@ let _ = (x ;%ext y)
 let _ = [%ext x; y]
 let _ = f (x ;%ext y)
 let _ = f [%ext x; y]
+
+let _ =
+  match w with
+  | (lazy%ext x) when x = y -> k
+  | [%ext lazy x] when x = y -> k
+  | (module%ext M) -> k
+  | [%ext (module M)] -> k
+  | (module%ext M : S) -> k
+  | [%ext (module M : S)] -> k
+  | (exception%ext e) -> k
+  | [%ext? exception e] -> k
+  | _ -> default
