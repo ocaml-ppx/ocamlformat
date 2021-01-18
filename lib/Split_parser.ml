@@ -54,53 +54,43 @@ module Line = struct
 end
 
 module Split = struct
-  let split_according_to_tokens input =
+  let split input ~f =
     Astring.String.cuts ~rev:false ~empty:true ~sep:"\n" input
-    |> List.fold_left
-         ~f:(fun (ret, prev_lines) line ->
-           match first_non_empty prev_lines with
-           | None -> (ret, [line])
-           | Some last -> (
-             match first_non_empty (List.rev prev_lines) with
-             | None -> impossible "filtered by previous pattern matching"
-             | Some first ->
-                 if
-                   Line.starts_new_item line
-                   && Line.indent line = Line.indent first
-                   && Line.indent line <= Line.indent last
-                   && not (Line.expects_followup last)
-                 then
-                   match prev_lines with
-                   | cmt :: "" :: prev_lines when Line.is_cmt cmt ->
-                       ( (List.rev prev_lines |> String.concat ~sep:"\n")
-                         :: ret
-                       , [line; cmt] )
-                   | _ ->
-                       ( (List.rev prev_lines |> String.concat ~sep:"\n")
-                         :: ret
-                       , [line] )
-                 else (ret, line :: prev_lines) ) )
-         ~init:([], [])
+    |> List.fold_left ~init:([], []) ~f
     |> (fun (ret, prev_lines) ->
          (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret )
     |> List.map ~f:String.strip
     |> List.filter ~f:(Fn.non String.is_empty)
     |> List.rev
 
+  let split_according_to_tokens input =
+    split input ~f:(fun (ret, prev_lines) line ->
+        match first_non_empty prev_lines with
+        | None -> (ret, [line])
+        | Some last -> (
+          match first_non_empty (List.rev prev_lines) with
+          | None -> impossible "filtered by previous pattern matching"
+          | Some first ->
+              if
+                Line.starts_new_item line
+                && Line.indent line = Line.indent first
+                && Line.indent line <= Line.indent last
+                && not (Line.expects_followup last)
+              then
+                match prev_lines with
+                | cmt :: "" :: prev_lines when Line.is_cmt cmt ->
+                    ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
+                    , [line; cmt] )
+                | _ ->
+                    ( (List.rev prev_lines |> String.concat ~sep:"\n") :: ret
+                    , [line] )
+              else (ret, line :: prev_lines) ) )
+
   let split_according_to_semisemi input =
-    Astring.String.cuts ~rev:false ~empty:true ~sep:"\n" input
-    |> List.fold_left
-         ~f:(fun (ret, prev_lines) line ->
-           if Line.starts_with Parser.SEMISEMI line && Line.indent line = 0
-           then
-             ((List.rev prev_lines |> String.concat ~sep:"\n") :: ret, [line])
-           else (ret, line :: prev_lines) )
-         ~init:([], [])
-    |> (fun (ret, prev_lines) ->
-         (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret )
-    |> List.map ~f:String.strip
-    |> List.filter ~f:(Fn.non String.is_empty)
-    |> List.rev
+    split input ~f:(fun (ret, prev_lines) line ->
+        if Line.starts_with Parser.SEMISEMI line && Line.indent line = 0 then
+          ((List.rev prev_lines |> String.concat ~sep:"\n") :: ret, [line])
+        else (ret, line :: prev_lines) )
 
   let split_toplevel input =
     split_according_to_semisemi input
