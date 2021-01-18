@@ -31,6 +31,8 @@
 
   + Preserve spacing of toplevel comments (#1554, @gpetiot)
 
+  + Support more sugared extension points (#1587, @gpetiot)
+
 #### Changes
 
   + Add buffer filename in the logs when applying ocamlformat (#1557, @dannywillems)

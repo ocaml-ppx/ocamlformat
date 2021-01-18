@@ -488,22 +488,6 @@ let fmt_quoted_string key ext s = function
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
   | _, "invalid.ast.node", _, _ -> assert false
-  | ( _
-    , _
-    , PStr
-        [ ( { pstr_desc=
-                ( Pstr_value _ | Pstr_type _ | Pstr_exception _ | Pstr_open _
-                | Pstr_include _ | Pstr_module _ | Pstr_recmodule _
-                | Pstr_modtype _ | Pstr_class_type _ | Pstr_class _
-                | Pstr_typext _ | Pstr_primitive _ )
-            ; pstr_loc
-            ; _ } as si ) ]
-    , (Pld _ | Str _ | Top) )
-    when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
-      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
-  | _, _, PSig [({psig_desc= Psig_type _; _} as si)], (Pld _ | Sig _ | Top)
-    ->
-      fmt_signature_item c ~ext (sub_sig ~ctx si)
   (* Quoted extensions (since ocaml 4.11). *)
   | ( ("%" | "%%")
     , ext
@@ -526,6 +510,15 @@ let rec fmt_extension c ctx key (ext, pld) =
       assert (not (Cmts.has_before c.cmts pstr_loc)) ;
       assert (not (Cmts.has_after c.cmts pstr_loc)) ;
       hvbox 0 (fmt_quoted_string key ext str delim)
+  | _, _, PStr [({pstr_loc; _} as si)], (Pld _ | Str _ | Top)
+    when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
+      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
+  | _, _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
+    when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
+      fmt_signature_item c ~ext (sub_sig ~ctx si)
+  | _, _, PPat (({ppat_loc; _} as pat), _), (Pld _ | Top)
+    when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
+      fmt_pattern c ~ext (sub_pat ~ctx pat)
   | _ -> fmt_attribute_or_extension c key (ext, pld)
 
 and fmt_invalid_or_extension c ctx key (ext, pld) loc =
@@ -935,8 +928,8 @@ and fmt_pattern_attributes c xpat k =
       Params.parens_if parens_attr c.conf
         (k $ fmt_attributes c ~key:"@" attrs)
 
-and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
-    =
+and fmt_pattern ?ext c ?pro ?parens ?(box = false)
+    ({ctx= ctx0; ast= pat} as xpat) =
   protect c (Pat pat)
   @@
   let ctx = Pat pat in
@@ -1163,7 +1156,9 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
               (Cmts.fmt c typ.ptyp_loc
                  ( hovbox 0
                      ( Cmts.fmt c ppat_loc
-                         (str "module " $ fmt_str_loc_opt c name)
+                         ( str "module"
+                         $ fmt_extension_suffix c ext
+                         $ char ' ' $ fmt_str_loc_opt c name )
                      $ fmt "@ : " $ fmt_longident_loc c id )
                  $ fmt_package_type c ctx cnstrs ) ) ) )
   | Ppat_constraint (pat, typ) ->
@@ -1178,14 +1173,36 @@ and fmt_pattern c ?pro ?parens ?(box = false) ({ctx= ctx0; ast= pat} as xpat)
   | Ppat_lazy pat ->
       cbox 2
         (Params.parens_if parens c.conf
-           (fmt "lazy@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
+           ( str "lazy"
+           $ fmt_extension_suffix c ext
+           $ fmt "@ "
+           $ fmt_pattern c (sub_pat ~ctx pat) ) )
   | Ppat_unpack name ->
       wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
-        (fmt "module@ " $ fmt_str_loc_opt c name)
+        ( str "module"
+        $ fmt_extension_suffix c ext
+        $ fmt "@ " $ fmt_str_loc_opt c name )
   | Ppat_exception pat ->
       cbox 2
         (Params.parens_if parens c.conf
-           (fmt "exception@ " $ fmt_pattern c (sub_pat ~ctx pat)) )
+           ( fmt "exception"
+           $ fmt_extension_suffix c ext
+           $ fmt "@ "
+           $ fmt_pattern c (sub_pat ~ctx pat) ) )
+  | Ppat_extension
+      ( ext
+      , PPat
+          ( ( { ppat_desc=
+                  ( Ppat_lazy _ | Ppat_unpack _ | Ppat_exception _
+                  | Ppat_constraint
+                      ( {ppat_desc= Ppat_unpack _; _}
+                      , {ptyp_desc= Ptyp_package _; _} ) )
+              ; ppat_loc
+              ; ppat_attributes= []
+              ; _ } as pat )
+          , _ ) )
+    when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
+      hvbox 0 (fmt_pattern ~ext c ~box (sub_pat ~ctx pat))
   | Ppat_extension ext ->
       hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
   | Ppat_open (lid, pat) ->
@@ -1943,7 +1960,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         (Params.parens_if parens c.conf
            (hvbox 0
               ( hvbox 2
-                  ( fmt_or paren_body "assert (@," "assert@ "
+                  ( str "assert"
+                  $ fmt_extension_suffix c ext
+                  $ fmt_or paren_body " (@," "@ "
                   $ wrap_symbol
                     @@ fmt_expression c ~parens:false (sub_exp ~ctx e0) )
               $ fmt_if_k paren_body (closing_paren c)
@@ -1971,8 +1990,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                (hvbox 2
                   (Cmts.fmt c pexp_loc
                      ( hovbox 0
-                         ( opn_paren $ str "module " $ m $ fmt "@ : "
-                         $ fmt_longident_loc c id )
+                         ( opn_paren $ str "module"
+                         $ fmt_extension_suffix c ext
+                         $ char ' ' $ m $ fmt "@ : " $ fmt_longident_loc c id
+                         )
                      $ fmt_package_type c ctx cnstrs
                      $ cls_paren $ fmt_atrs ) ) ) ) )
   | Pexp_constraint (e, t) ->
@@ -2318,7 +2339,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_mod m =
         Params.parens_if parens c.conf
           ( Params.wrap_exp c.conf c.source ~parens:true ~loc:pexp_loc
-              (str "module " $ m)
+              (str "module" $ fmt_extension_suffix c ext $ char ' ' $ m)
           $ fmt_atrs )
       in
       hvbox 0
@@ -2412,7 +2433,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_lazy e ->
       hvbox 2
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
-           (fmt "lazy@ " $ fmt_expression c (sub_exp ~ctx e) $ fmt_atrs) )
+           ( str "lazy"
+           $ fmt_extension_suffix c ext
+           $ fmt "@ "
+           $ fmt_expression c (sub_exp ~ctx e)
+           $ fmt_atrs ) )
   | Pexp_extension
       ( ext
       , PStr
@@ -2423,7 +2448,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                             | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
                             | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
                             | Pexp_function _ | Pexp_letexception _
-                            | Pexp_open _ )
+                            | Pexp_open _ | Pexp_assert _ | Pexp_lazy _
+                            | Pexp_pack _
+                            | Pexp_constraint
+                                ( { pexp_desc= Pexp_pack _
+                                  ; pexp_attributes= []
+                                  ; _ }
+                                , { ptyp_desc= Ptyp_package _
+                                  ; ptyp_attributes= []
+                                  ; _ } ) )
                         ; pexp_attributes= []
                         ; _ } as e1 )
                     , _ )
@@ -3540,8 +3573,8 @@ and fmt_signature_item c ?ext {ast= si; _} =
       fmt_docstring c ~standalone:true ~epi:noop doc
       $ fmt_attributes c ~key:"@@@" atrs
   | Psig_exception exc ->
-      hvbox 2
-        (fmt_type_exception ~pre:(fmt "exception@ ") c (fmt " of@ ") ctx exc)
+      let pre = str "exception" $ fmt_extension_suffix c ext $ fmt "@ " in
+      hvbox 2 (fmt_type_exception ~pre c (fmt " of@ ") ctx exc)
   | Psig_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
       let box =
@@ -3563,13 +3596,14 @@ and fmt_signature_item c ?ext {ast= si; _} =
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
+        let kwd = str "include" $ fmt_extension_suffix c ext in
         match pincl_mod with
         | {pmty_desc= Pmty_typeof me; pmty_loc; pmty_attributes= _} ->
-            ( str "include"
+            ( kwd
               $ Cmts.fmt c ~pro:(str " ") ~epi:noop pmty_loc
                   (fmt "@ module type of")
             , fmt_module_expr c (sub_mod ~ctx me) )
-        | _ -> (str "include", fmt_module_type c (sub_mty ~ctx pincl_mod))
+        | _ -> (kwd, fmt_module_type c (sub_mty ~ctx pincl_mod))
       in
       let box = wrap_k opn cls in
       hvbox 0
@@ -3582,19 +3616,21 @@ and fmt_signature_item c ?ext {ast= si; _} =
             $ esp $ fmt_opt epi
             $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs )
         $ doc_after )
-  | Psig_modtype mtd -> fmt_module_type_declaration c ctx mtd
+  | Psig_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Psig_module md ->
-      hvbox 0 (fmt_module_declaration c ctx ~rec_flag:false ~first:true md)
-  | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution c ctx ms)
-  | Psig_open od -> fmt_open_description c ~kw_attributes:[] od
+      hvbox 0
+        (fmt_module_declaration ?ext c ctx ~rec_flag:false ~first:true md)
+  | Psig_modsubst ms -> hvbox 0 (fmt_module_substitution ?ext c ctx ms)
+  | Psig_open od -> fmt_open_description ?ext c ~kw_attributes:[] od
   | Psig_recmodule mds ->
-      fmt_recmodule c ctx mds fmt_module_declaration (fun x ->
+      fmt_recmodule c ctx mds (fmt_module_declaration ?ext) (fun x ->
           Mty x.pmd_type )
   | Psig_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
-  | Psig_typext te -> fmt_type_extension c ctx te
-  | Psig_value vd -> fmt_value_description c ctx vd
-  | Psig_class cl -> fmt_class_types c ctx ~pre:"class" ~sep:":" cl
-  | Psig_class_type cl -> fmt_class_types c ctx ~pre:"class type" ~sep:"=" cl
+  | Psig_typext te -> fmt_type_extension ?ext c ctx te
+  | Psig_value vd -> fmt_value_description ?ext c ctx vd
+  | Psig_class cl -> fmt_class_types ?ext c ctx ~pre:"class" ~sep:":" cl
+  | Psig_class_type cl ->
+      fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
 
 and fmt_class_types ?ext c ctx ~pre ~sep (cls : class_type class_infos list)
@@ -3765,10 +3801,11 @@ and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
             (fmt "@;<1 -2>")
           $ epi ) )
 
-and fmt_module_declaration c ctx ~rec_flag ~first pmd =
+and fmt_module_declaration ?ext c ctx ~rec_flag ~first pmd =
   let {pmd_name; pmd_type; pmd_attributes; pmd_loc} = pmd in
   update_config_maybe_disabled c pmd_loc pmd_attributes
   @@ fun c ->
+  let ext = if first then ext else None in
   let keyword = if first then "module" else "and" in
   let xargs, xmty =
     if rec_flag then ([], sub_mty ~ctx pmd_type)
@@ -3778,10 +3815,10 @@ and fmt_module_declaration c ctx ~rec_flag ~first pmd =
     match xmty.ast.pmty_desc with Pmty_alias _ -> None | _ -> Some ":"
   in
   Cmts.fmt c pmd_loc
-    (fmt_module c keyword pmd_name xargs None ?eqty (Some xmty)
+    (fmt_module ?ext c keyword pmd_name xargs None ?eqty (Some xmty)
        ~rec_flag:(rec_flag && first) pmd_attributes )
 
-and fmt_module_substitution c ctx pms =
+and fmt_module_substitution ?ext c ctx pms =
   let {pms_name; pms_manifest; pms_attributes; pms_loc} = pms in
   update_config_maybe_disabled c pms_loc pms_attributes
   @@ fun c ->
@@ -3794,7 +3831,7 @@ and fmt_module_substitution c ctx pms =
   in
   let pms_name = {pms_name with txt= Some pms_name.txt} in
   Cmts.fmt c pms_loc
-    (fmt_module c "module" ~eqty:":=" pms_name [] None (Some xmty)
+    (fmt_module ?ext c "module" ~eqty:":=" pms_name [] None (Some xmty)
        pms_attributes ~rec_flag:false )
 
 and fmt_module_type_declaration ?ext c ctx pmtd =
@@ -3806,16 +3843,22 @@ and fmt_module_type_declaration ?ext c ctx pmtd =
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
-and fmt_open_description c ?(keyword = "open") ~kw_attributes
+and fmt_open_description ?ext c ?(keyword = "open") ~kw_attributes
     {popen_expr= popen_lid; popen_override; popen_attributes; popen_loc} =
   update_config_maybe_disabled c popen_loc popen_attributes
   @@ fun c ->
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~fit:true c popen_attributes
   in
+  let keyword =
+    fmt_or_k
+      (is_override popen_override)
+      ( str keyword $ str "!"
+      $ opt ext (fun _ -> str " " $ fmt_extension_suffix c ext) )
+      (str keyword $ fmt_extension_suffix c ext)
+  in
   hovbox 0
-    ( doc_before $ str keyword
-    $ fmt_if (is_override popen_override) "!"
+    ( doc_before $ keyword
     $ Cmts.fmt c popen_loc
         ( fmt_attributes c ~key:"@" kw_attributes
         $ str " "
