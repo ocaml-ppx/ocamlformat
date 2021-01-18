@@ -18,7 +18,3 @@ end
 module Recover : sig
   val fragment : 'a Traverse.fragment -> string -> string
 end
-
-module Parse : sig
-  val fragment : 'a Traverse.fragment -> string -> ('a, string) Result.t list
-end

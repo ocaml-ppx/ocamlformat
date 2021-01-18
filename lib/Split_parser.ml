@@ -128,13 +128,3 @@ module Recover = struct
                     sep )
            | _parsed -> append acc item )
 end
-
-module Parse = struct
-  let fragment (type a) (fg : a Traverse.fragment) input =
-    Split.fragment fg input
-    |> List.fold_left ~init:[] ~f:(fun acc item ->
-           match Parse.fragment fg (Lexing.from_string item) with
-           | exception _ -> Error item :: acc
-           | parsed -> Ok parsed :: acc )
-    |> List.rev
-end
