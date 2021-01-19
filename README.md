@@ -203,6 +203,47 @@ To pass the option `--disable-outside-detected-project` (or `--disable`) to OCam
 
 Other OCamlFormat options can be set in .ocamlformat configuration files.
 
+#### With use-package
+
+A basic configuration with [use-package](https://github.com/jwiegley/use-package):
+
+```elisp
+(use-package ocamlformat
+  :custom (ocamlformat-enable 'enable-outside-detected-project)
+  :hook (before-save . ocamlformat-before-save)
+  )
+```
+
+Sometimes you need to have a switch for OCamlFormat (because of version conflicts or because you don't want to install it in every switch, for example). Considering your OCamlFormat switch is named `ocamlformat`:
+
+```elisp
+(use-package ocamlformat
+  :load-path
+  (lambda ()
+    (concat
+         ;; Never use "/" or "\" since this is not portable (opam-user-setup does this though)
+         ;; Always use file-name-as-directory since this will append the correct separator if needed
+         ;; (or use a package that does it well like https://github.com/rejeep/f.el)
+         ;; This is the verbose and not package depending version:
+         (file-name-as-directory
+          ;; Couldn't find an option to remove the newline so a substring is needed
+          (substring (shell-command-to-string "opam config var share --switch=ocamlformat --safe") 0 -1))
+         (file-name-as-directory "emacs")
+         (file-name-as-directory "site-lisp")))
+  :custom
+  (ocamlformat-enable 'enable-outside-detected-project)
+  (ocamlformat-command
+   (concat
+    (file-name-as-directory
+     (substring (shell-command-to-string "opam config var bin --switch=ocamlformat --safe") 0 -1))
+    "ocamlformat"))
+  :hook (before-save . ocamlformat-before-save)
+  )
+```
+(Notice the `:custom` to customize the OCamlFormat binary)
+
+This could be made simpler (by defining an elisp variable corresponding to the switch prefix when loading tuareg, for example)
+
 ### Vim setup
 
 - be sure the `ocamlformat` binary can be found in PATH
