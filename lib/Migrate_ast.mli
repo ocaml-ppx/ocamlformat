@@ -9,8 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Ast_helper = Ppxlib.Ast_helper
-
 module Asttypes : sig
   include module type of Ppxlib.Asttypes
 

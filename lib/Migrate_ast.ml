@@ -9,8 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Ast_helper = Ppxlib.Ast_helper
-
 module Asttypes = struct
   include Ppxlib.Asttypes
 
