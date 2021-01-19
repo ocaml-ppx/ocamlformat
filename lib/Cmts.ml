@@ -12,8 +12,7 @@
 (** Placing and formatting comments in a parsetree. *)
 
 module Format = Format_
-module Location = Migrate_ast.Location
-module Position = Migrate_ast.Position
+open Migrate_ast
 open Ast_passes
 
 type t =

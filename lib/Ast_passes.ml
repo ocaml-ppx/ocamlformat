@@ -57,7 +57,7 @@ module Ast0 = struct
 
     let use_file lexbuf =
       List.filter (Ppxlib_ast.Parse.use_file lexbuf)
-        ~f:(fun (p : Parsetree.toplevel_phrase) ->
+        ~f:(fun (p : toplevel_phrase) ->
           match p with
           | Ptop_def [] -> false
           | Ptop_def (_ :: _) | Ptop_dir _ -> true )
