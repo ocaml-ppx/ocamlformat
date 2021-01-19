@@ -113,8 +113,8 @@ let rec odoc_nestable_block_element c fmt = function
                    Caml.Format.fprintf fmt "%s," txt )
           in
           let ast = c.normalize_code ast in
-          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.ast ast
-            print_comments comments
+          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
+            Ast_passes.Ast_final.Printast.ast ast print_comments comments
         with _ -> txt
       in
       fpf fmt "Code_block,%a" str txt

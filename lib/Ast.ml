@@ -11,8 +11,9 @@
 
 (** Abstract syntax tree term *)
 
-open Migrate_ast
-open Parsetree
+module Location = Migrate_ast.Location
+open Ast_passes.Ast_final
+module Printast = Ast_passes.Ast_final.Printast
 
 let init, register_reset, leading_nested_match_parens, parens_ite =
   let l = ref [] in
@@ -193,7 +194,7 @@ module String_id = struct
 end
 
 module Longident = struct
-  include Longident
+  include Migrate_ast.Longident
 
   let test ~f = function Longident.Lident i -> f i | _ -> false
 

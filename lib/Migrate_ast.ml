@@ -42,29 +42,6 @@ module Parse = struct
   let parser_version = Ocaml_version.sys_version
 end
 
-module Printast = struct
-  let pp_sexp ppf sexp = Format.fprintf ppf "%a" (Sexp.pp_hum_indent 2) sexp
-
-  let sexp_of = Ppxlib.Ast_traverse.sexp_of
-
-  let implementation ppf x = pp_sexp ppf (sexp_of#structure x)
-
-  let interface ppf x = pp_sexp ppf (sexp_of#signature x)
-
-  let expression ppf x = pp_sexp ppf (sexp_of#expression x)
-
-  let payload ppf x = pp_sexp ppf (sexp_of#payload x)
-
-  let use_file ppf x = pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
-
-  let ast ppf = function
-    | Ast_passes.Ast_final.Past_str x -> implementation ppf x
-    | Ast_passes.Ast_final.Past_sig x -> interface ppf x
-    | Ast_passes.Ast_final.Past_usf x -> use_file ppf x
-end
-
-module Pprintast = Ppxlib.Pprintast
-
 module Position = struct
   open Lexing
 

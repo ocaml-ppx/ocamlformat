@@ -51,6 +51,33 @@ module Ast0 = struct
     | Past_usf x -> f#list f#toplevel_phrase x acc
 end
 
-module Ast_final = Ast0
+module Ast_final = struct
+  include Ast0
+
+  module Printast = struct
+    let pp_sexp ppf sexp =
+      Format.fprintf ppf "%a" (Sexp.pp_hum_indent 2) sexp
+
+    let sexp_of = Ppxlib.Ast_traverse.sexp_of
+
+    let implementation ppf x = pp_sexp ppf (sexp_of#structure x)
+
+    let interface ppf x = pp_sexp ppf (sexp_of#signature x)
+
+    let expression ppf x = pp_sexp ppf (sexp_of#expression x)
+
+    let payload ppf x = pp_sexp ppf (sexp_of#payload x)
+
+    let use_file ppf x =
+      pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
+
+    let ast ppf = function
+      | Past_str x -> implementation ppf x
+      | Past_sig x -> interface ppf x
+      | Past_usf x -> use_file ppf x
+  end
+
+  module Pprintast = Ppxlib.Pprintast
+end
 
 let run = Fn.id

@@ -12,7 +12,8 @@
 (** Placing and formatting comments in a parsetree. *)
 
 module Format = Format_
-open Migrate_ast
+module Location = Migrate_ast.Location
+module Position = Migrate_ast.Position
 open Ast_passes
 
 type t =
@@ -544,7 +545,7 @@ let diff (conf : Conf.t) x y =
               Parse_with_comments.parse ~kind:Structure conf ~source:str
               |> (fun {ast; _} -> Ast_passes.run ast)
               |> Normalize.normalize conf
-              |> Caml.Format.asprintf "%a" Printast.ast
+              |> Caml.Format.asprintf "%a" Ast_passes.Ast_final.Printast.ast
             with _ -> norm_non_code z
           else norm_non_code z
     in

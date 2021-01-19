@@ -11,7 +11,7 @@
 
 (** Translation units *)
 
-open Migrate_ast
+module Location = Migrate_ast.Location
 open Parse_with_comments
 
 exception
@@ -236,7 +236,7 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
     if opts.Conf.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             Migrate_ast.Printast.ast fmt ast ) )
+             Ast_passes.Ast_final.Printast.ast fmt ast ) )
     else None
   in
   let dump_formatted ~suffix fmted =

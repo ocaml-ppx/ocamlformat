@@ -85,22 +85,6 @@ module Parse : sig
   val parser_version : Ocaml_version.t
 end
 
-module Printast : sig
-  val implementation : Format.formatter -> Parsetree.structure -> unit
-
-  val interface : Format.formatter -> Parsetree.signature -> unit
-
-  val payload : Format.formatter -> Parsetree.payload -> unit
-
-  val expression : Format.formatter -> Parsetree.expression -> unit
-
-  val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
-
-  val ast : Format.formatter -> Ast_passes.Ast_final.t -> unit
-end
-
-module Pprintast = Ppxlib.Pprintast
-
 module Longident : sig
   type t = Longident.t =
     | Lident of string
