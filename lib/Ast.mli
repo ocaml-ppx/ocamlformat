@@ -11,6 +11,7 @@
 
 (** Abstract syntax tree terms *)
 
+open Migrate_ast
 open Ast_passes.Ast_final
 
 val init : Conf.t -> unit
@@ -43,7 +44,7 @@ module String_id : sig
 end
 
 module Longident : sig
-  include module type of Migrate_ast.Longident
+  include module type of Longident
 
   val is_infix : t -> bool
   (** Holds for infix identifiers. *)

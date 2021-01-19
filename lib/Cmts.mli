@@ -40,7 +40,7 @@ val relocate :
     [after]. *)
 
 val relocate_wrongfully_attached_cmts :
-  t -> Source.t -> Parsetree.expression -> unit
+  t -> Source.t -> Ast_final.expression -> unit
 (** [relocate_wrongfully_attached_cmts] relocates wrongfully attached
     comments, e.g. comments that should be attached to the whole
     pattern-matching expressions ([match-with] or [try-with] expressions) but
