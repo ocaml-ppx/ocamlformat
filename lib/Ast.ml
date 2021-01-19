@@ -193,7 +193,7 @@ module String_id = struct
 end
 
 module Longident = struct
-  include Migrate_ast.Longident
+  include Longident
 
   let test ~f = function Longident.Lident i -> f i | _ -> false
 
