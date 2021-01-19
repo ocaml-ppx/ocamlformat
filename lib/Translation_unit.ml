@@ -297,6 +297,7 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
           else internal_error (`Cannot_parse exn) (exn_args ())
       | t_new -> Ok t_new )
       >>= fun t_new ->
+      let t_new = {t_new with ast= Ast_passes.run t_new.ast} in
       (* Ast not preserved ? *)
       ( if
         not
@@ -388,4 +389,5 @@ let parse_and_format ~kind ?output_file ~input_name ~source conf opts =
   let open Result.Monad_infix in
   parse_result ~kind conf opts ~source ~input_name
   >>= fun parsed ->
+  let parsed = {parsed with ast= Ast_passes.run parsed.ast} in
   format ~kind ?output_file ~input_name ~prev_source:source ~parsed conf opts

@@ -2196,7 +2196,7 @@ let validate () =
 
 let action () = parse info validate
 
-open Migrate_ast.Parsetree
+open Ast_passes.Ast_final
 
 let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
   let result =

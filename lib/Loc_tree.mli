@@ -9,9 +9,9 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Migrate_ast
+open Ast_passes
 
 include Non_overlapping_interval_tree.S with type itv = Location.t
 
-val of_ast : Parsetree.t -> Source.t -> t * Location.t list
+val of_ast : Ast_final.t -> Source.t -> t * Location.t list
 (** Use Ast_mapper to collect all locs in ast, and create a tree of them. *)

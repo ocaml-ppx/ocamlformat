@@ -27,8 +27,5 @@ end
 exception Warning50 of (Location.t * Warnings.t) list
 
 val parse :
-     kind:Syntax.t
-  -> Conf.t
-  -> source:string
-  -> Migrate_ast.Parsetree.t with_comments
+  kind:Syntax.t -> Conf.t -> source:string -> Ast_passes.Ast0.t with_comments
 (** @raise [Warning50] on misplaced documentation comments. *)

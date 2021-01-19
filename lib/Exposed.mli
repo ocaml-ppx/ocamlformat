@@ -15,8 +15,7 @@
     These are used to avoid emitting the sequences [\{<], [\[<], [>\}] and
     [>\]], which are reserved keywords. *)
 
-open Migrate_ast
-open Parsetree
+open Ast_passes.Ast_final
 
 (** Predicates for [<] on the LHS of printed AST nodes. *)
 module Left : sig

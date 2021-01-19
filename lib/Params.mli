@@ -10,6 +10,7 @@
 (**************************************************************************)
 
 module Format = Format_
+open Ast_passes.Ast_final
 
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
@@ -97,12 +98,12 @@ val get_if_then_else :
   -> parens:bool
   -> parens_bch:bool
   -> parens_prev_bch:bool
-  -> xcond:Migrate_ast.Parsetree.expression Ast.xt option
+  -> xcond:expression Ast.xt option
   -> expr_loc:Location.t
   -> bch_loc:Location.t
   -> fmt_extension_suffix:Fmt.t option
   -> fmt_attributes:Fmt.t
-  -> fmt_cond:(Migrate_ast.Parsetree.expression Ast.xt -> Fmt.t)
+  -> fmt_cond:(expression Ast.xt -> Fmt.t)
   -> Source.t
   -> if_then_else
 

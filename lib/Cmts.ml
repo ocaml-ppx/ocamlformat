@@ -13,7 +13,7 @@
 
 module Format = Format_
 open Migrate_ast
-open Parsetree
+open Ast_passes
 
 type t =
   { debug: bool
@@ -267,6 +267,7 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
 
 let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
     ~whole_loc =
+  let open Ast_final in
   match pld with
   | PStr
       [ { pstr_desc=
@@ -292,6 +293,7 @@ let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
   | _ -> ()
 
 let relocate_wrongfully_attached_cmts t src exp =
+  let open Ast_final in
   match exp.pexp_desc with
   | Pexp_match (e0, _) ->
       relocate_pattern_matching_cmts t src Parser.MATCH
@@ -354,7 +356,7 @@ let init ~debug source asts comments_n_docstrings =
         super#expression x
     end
   in
-  Parsetree.iter iter asts ; t
+  Ast_final.iter iter asts ; t
 
 let preserve fmt_x t =
   let buf = Buffer.create 128 in
@@ -539,10 +541,9 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let str = String.sub ~pos:1 ~len str in
             try
-              let t =
-                Parse_with_comments.parse ~kind:Structure conf ~source:str
-              in
-              Normalize.normalize conf t.ast
+              Parse_with_comments.parse ~kind:Structure conf ~source:str
+              |> (fun {ast; _} -> Ast_passes.run ast)
+              |> Normalize.normalize conf
               |> Caml.Format.asprintf "%a" Printast.ast
             with _ -> norm_non_code z
           else norm_non_code z

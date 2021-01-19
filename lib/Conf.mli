@@ -104,7 +104,7 @@ type opts =
 val action : unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
 
-val update : ?quiet:bool -> t -> Migrate_ast.Parsetree.attribute -> t
+val update : ?quiet:bool -> t -> Ast_passes.Ast_final.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
 

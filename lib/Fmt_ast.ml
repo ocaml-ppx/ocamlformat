@@ -15,7 +15,7 @@ module Format = Format_
 
 open Migrate_ast
 open Asttypes
-open Parsetree
+open Ast_passes.Ast_final
 open Ast
 open Fmt
 
@@ -4562,6 +4562,7 @@ let fmt_code ~debug =
   let rec fmt_code conf s =
     match Parse_with_comments.parse ~kind:Structure conf ~source:s with
     | {ast= Past_str str as ast; comments; source; prefix= _} ->
+        let ast = Ast_passes.run ast in
         let cmts = Cmts.init ~debug source ast comments in
         let ctx = Pld (PStr str) in
         Ok (fmt_file ~ctx ~debug source cmts conf ast ~fmt_code)

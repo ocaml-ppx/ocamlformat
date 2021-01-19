@@ -11,36 +11,6 @@
 
 module Ast_helper = Ppxlib.Ast_helper
 
-module Parsetree : sig
-  include module type of Ppxlib.Parsetree
-
-  val equal_core_type : core_type -> core_type -> bool
-
-  type use_file = toplevel_phrase list
-
-  type t =
-    | Past_str of structure
-    | Past_sig of signature
-    | Past_usf of use_file
-
-  val equal : t -> t -> bool
-
-  class map :
-    object
-      inherit Ppxlib.Ast_traverse.map
-
-      method use_file : use_file -> use_file
-
-      method ast : t -> t
-    end
-
-  val map : map -> t -> t
-
-  val iter : Ppxlib.Ast_traverse.iter -> t -> unit
-
-  val fold : 'r Ppxlib.Ast_traverse.fold -> t -> 'r -> 'r
-end
-
 module Asttypes : sig
   include module type of Ppxlib.Asttypes
 
@@ -112,7 +82,7 @@ module Location : sig
 end
 
 module Parse : sig
-  val ast : kind:Syntax.t -> Lexing.lexbuf -> Parsetree.t
+  val ast : kind:Syntax.t -> Lexing.lexbuf -> Ast_passes.Ast0.t
 
   val parser_version : Ocaml_version.t
 end
@@ -128,7 +98,7 @@ module Printast : sig
 
   val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
 
-  val ast : Format.formatter -> Parsetree.t -> unit
+  val ast : Format.formatter -> Ast_passes.Ast_final.t -> unit
 end
 
 module Pprintast = Ppxlib.Pprintast

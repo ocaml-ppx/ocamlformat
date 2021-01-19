@@ -11,48 +11,6 @@
 
 module Ast_helper = Ppxlib.Ast_helper
 
-module Parsetree = struct
-  include Ppxlib.Parsetree
-
-  let equal_core_type : core_type -> core_type -> bool = Poly.equal
-
-  type use_file = toplevel_phrase list
-
-  type t =
-    | Past_str of structure
-    | Past_sig of signature
-    | Past_usf of use_file
-
-  class map =
-    object (self)
-      inherit Ppxlib.Ast_traverse.map
-
-      method use_file x = List.map x ~f:self#toplevel_phrase
-
-      method ast =
-        function
-        | Past_str x -> Past_str (self#structure x)
-        | Past_sig x -> Past_sig (self#signature x)
-        | Past_usf x -> Past_usf (self#use_file x)
-    end
-
-  let equal : t -> t -> bool = Poly.equal
-
-  let map (m : map) : t -> t = m#ast
-
-  let iter (i : Ppxlib.Ast_traverse.iter) : t -> unit = function
-    | Past_str x -> i#structure x
-    | Past_sig x -> i#signature x
-    | Past_usf x -> i#list i#toplevel_phrase x
-
-  let fold (f : 'a Ppxlib.Ast_traverse.fold) : t -> 'a -> 'a =
-   fun x acc ->
-    match x with
-    | Past_str x -> f#structure x acc
-    | Past_sig x -> f#signature x acc
-    | Past_usf x -> f#list f#toplevel_phrase x acc
-end
-
 module Asttypes = struct
   include Ppxlib.Asttypes
 
@@ -77,7 +35,7 @@ module Parse = struct
         | Ptop_def [] -> false
         | Ptop_def (_ :: _) | Ptop_dir _ -> true )
 
-  let ast ~(kind : Syntax.t) lexbuf : Parsetree.t =
+  let ast ~(kind : Syntax.t) lexbuf : Ast_passes.Ast0.t =
     match kind with
     | Structure -> Past_str (implementation lexbuf)
     | Signature -> Past_sig (interface lexbuf)
@@ -102,9 +60,9 @@ module Printast = struct
   let use_file ppf x = pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
 
   let ast ppf = function
-    | Parsetree.Past_str x -> implementation ppf x
-    | Parsetree.Past_sig x -> interface ppf x
-    | Parsetree.Past_usf x -> use_file ppf x
+    | Ast_passes.Ast_final.Past_str x -> implementation ppf x
+    | Ast_passes.Ast_final.Past_sig x -> interface ppf x
+    | Ast_passes.Ast_final.Past_usf x -> use_file ppf x
 end
 
 module Pprintast = Ppxlib.Pprintast

@@ -24,11 +24,11 @@
     are multiple Ast terms with the same location. *)
 
 module Format = Format_
-open Migrate_ast
+open Ast_passes
 
 type t
 
-val init : debug:bool -> Source.t -> Parsetree.t -> Cmt.t list -> t
+val init : debug:bool -> Source.t -> Ast_final.t -> Cmt.t list -> t
 (** [init source x comments] associates each comment in [comments] with a
     source location appearing in [x]. It uses [Source] to help resolve
     ambiguities. Initializes the state used by the [fmt] functions. *)

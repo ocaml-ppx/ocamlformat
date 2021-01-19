@@ -16,6 +16,6 @@ val fmt_ast :
   -> Source.t
   -> Cmts.t
   -> Conf.t
-  -> Migrate_ast.Parsetree.t
+  -> Ast_passes.Ast_final.t
   -> Fmt.t
 (** Format a fragment. *)
