@@ -49,6 +49,27 @@ module Ast0 = struct
     | Past_str x -> f#structure x acc
     | Past_sig x -> f#signature x acc
     | Past_usf x -> f#list f#toplevel_phrase x acc
+
+  module Parse = struct
+    let implementation = Ppxlib_ast.Parse.implementation
+
+    let interface = Ppxlib_ast.Parse.interface
+
+    let use_file lexbuf =
+      List.filter (Ppxlib_ast.Parse.use_file lexbuf)
+        ~f:(fun (p : Parsetree.toplevel_phrase) ->
+          match p with
+          | Ptop_def [] -> false
+          | Ptop_def (_ :: _) | Ptop_dir _ -> true )
+
+    let ast ~(kind : Syntax.t) lexbuf : t =
+      match kind with
+      | Structure -> Past_str (implementation lexbuf)
+      | Signature -> Past_sig (interface lexbuf)
+      | Use_file -> Past_usf (use_file lexbuf)
+
+    let parser_version = Ocaml_version.sys_version
+  end
 end
 
 module Ast_final = struct

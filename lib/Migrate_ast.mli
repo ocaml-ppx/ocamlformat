@@ -79,12 +79,6 @@ module Location : sig
   val to_span : t -> Odoc_model.Location_.span
 end
 
-module Parse : sig
-  val ast : kind:Syntax.t -> Lexing.lexbuf -> Ast_passes.Ast0.t
-
-  val parser_version : Ocaml_version.t
-end
-
 module Longident : sig
   type t = Longident.t =
     | Lident of string

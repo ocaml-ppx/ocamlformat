@@ -1053,9 +1053,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
           | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}; ppat_loc; _}, t)
             when field_alias ~field:lid1.txt (Longident.lident txt)
                  && List.is_empty ppat_attributes ->
-              if
-                Ocaml_version.(compare Parse.parser_version Releases.v4_12)
-                >= 0
+              let parser_version = Ast_passes.Ast0.Parse.parser_version in
+              if Ocaml_version.(compare parser_version Releases.v4_12) >= 0
               then
                 Cmts.relocate c.cmts ~src:ppat_loc ~before:lid1.loc
                   ~after:lid1.loc ;

@@ -130,7 +130,8 @@ let is_long_pexp_open source {Parsetree.pexp_desc; _} =
 let is_long_functor_syntax (t : t) ~from = function
   | Parsetree.Unit -> false
   | Parsetree.Named ({loc= upto; _}, _) -> (
-      if Ocaml_version.(compare Parse.parser_version Releases.v4_12) < 0 then
+      let parser_version = Ast_passes.Ast0.Parse.parser_version in
+      if Ocaml_version.(compare parser_version Releases.v4_12) < 0 then
         (* before 4.12 the functor keyword is the first token of the functor
            parameter *)
         contains_token_between t ~from ~upto Parser.FUNCTOR

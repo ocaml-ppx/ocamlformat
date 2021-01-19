@@ -67,7 +67,7 @@ let parse ~kind (conf : Conf.t) ~source =
           false )
         else not conf.quiet )
       ~f:(fun () ->
-        let ast = Migrate_ast.Parse.ast ~kind lexbuf in
+        let ast = Ast_passes.Ast0.Parse.ast ~kind lexbuf in
         Warnings.check_fatal () ;
         let comments =
           List.map

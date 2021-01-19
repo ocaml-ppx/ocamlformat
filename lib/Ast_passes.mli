@@ -18,6 +18,12 @@ module Ast0 : sig
     | Past_str of structure
     | Past_sig of signature
     | Past_usf of use_file
+
+  module Parse : sig
+    val ast : kind:Syntax.t -> Lexing.lexbuf -> t
+
+    val parser_version : Ocaml_version.t
+  end
 end
 
 module Ast_final : sig
