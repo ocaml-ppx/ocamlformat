@@ -11,7 +11,7 @@
 
 (** Abstract syntax tree term *)
 
-module Location = Migrate_ast.Location
+open Migrate_ast
 open Ast_passes.Ast_final
 
 let init, register_reset, leading_nested_match_parens, parens_ite =

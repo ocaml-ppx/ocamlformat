@@ -11,8 +11,8 @@
 
 open Migrate_ast
 open Asttypes
-open Parsetree
 open Ast
+open Ast_passes.Ast_final
 
 let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
   let ctx = Typ typ in

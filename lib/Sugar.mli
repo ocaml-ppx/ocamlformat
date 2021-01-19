@@ -11,7 +11,7 @@
 
 open Migrate_ast
 open Asttypes
-open Parsetree
+open Ast_passes.Ast_final
 
 val arrow_typ :
      Cmts.t
@@ -101,8 +101,8 @@ val sequence :
 type functor_arg =
   | Unit
   | Named of label option loc * module_type Ast.xt
-      (** Equivalent of the [Parsetree.functor_parameter] type with a
-          contextualized module type. *)
+      (** Equivalent of the [functor_parameter] type with a contextualized
+          module type. *)
 
 val functor_type :
      Cmts.t
