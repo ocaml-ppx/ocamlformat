@@ -188,7 +188,7 @@ This feature is often the behavior you can expect from OCamlFormat when it is di
 - add `(require 'ocamlformat)` to `.emacs`
 
 - optionally add the following to `.emacs` to bind `C-M-<tab>` to the ocamlformat command and install a hook to run ocamlformat when saving:
-```
+```elisp
 (add-hook 'tuareg-mode-hook (lambda ()
   (define-key tuareg-mode-map (kbd "C-M-<tab>") #'ocamlformat)
   (add-hook 'before-save-hook #'ocamlformat-before-save)))
@@ -242,7 +242,7 @@ Sometimes you need to have a switch for OCamlFormat (because of version conflict
 ```
 (Notice the `:custom` to customize the OCamlFormat binary)
 
-This could be made simpler (by defining an elisp variable corresponding to the switch prefix when loading tuareg, for example)
+This could be made simpler (by defining an elisp variable corresponding to the switch prefix when loading tuareg, for example) but it allows to have a full configuration in one place only which is often less error prone.
 
 ### Vim setup
 
