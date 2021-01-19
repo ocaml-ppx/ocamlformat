@@ -1500,7 +1500,7 @@
  (deps .ocamlformat )
  (action
    (with-outputs-to js_comment.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:js_comment.ml}))))
+     (run %{bin:ocamlformat} --format-invalid-files=auto --max-iters=3 %{dep:js_comment.ml}))))
 
 (rule
  (alias runtest)

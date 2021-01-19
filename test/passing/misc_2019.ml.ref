@@ -1,15 +1,3 @@
-File "misc_2019.ml", line 1, characters 56-58:
-Warning 2: this is not the end of a comment.
-File "misc_2019.ml", line 1, characters 0-2:
-Warning 2: this is not the end of a comment.
-File "misc_2019.ml", line 1, characters 2-4:
-Warning 2: this is not the end of a comment.
-File "misc_2019.ml", line 1, characters 56-58:
-Warning 2: this is not the end of a comment.
-File "misc_2019.ml", line 1, characters 0-2:
-Warning 2: this is not the end of a comment.
-File "misc_2019.ml", line 1, characters 2-4:
-Warning 2: this is not the end of a comment.
 Warning: misc_2019.ml is invalid, recovering.
 Warning: misc_2019.ml is invalid, recovering.
 module Unsafe_blit = struct

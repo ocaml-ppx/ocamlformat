@@ -1,11 +1,3 @@
-File "js_low_priority.ml", line 1, characters 40-42:
-Warning 2: this is not the end of a comment.
-File "js_low_priority.ml", line 1, characters 74-76:
-Warning 2: this is not the end of a comment.
-File "js_low_priority.ml", line 1, characters 40-42:
-Warning 2: this is not the end of a comment.
-File "js_low_priority.ml", line 1, characters 74-76:
-Warning 2: this is not the end of a comment.
 Warning: js_low_priority.ml is invalid, recovering.
 Warning: js_low_priority.ml is invalid, recovering.
 (* Relatively low priority Jane Street indentation bugs. *)

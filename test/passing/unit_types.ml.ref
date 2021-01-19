@@ -1,7 +1,3 @@
-File "unit_types.ml", line 1, characters 0-2:
-Warning 2: this is not the end of a comment.
-File "unit_types.ml", line 1, characters 0-2:
-Warning 2: this is not the end of a comment.
 Warning: unit_types.ml is invalid, recovering.
 (** ocaml type expressions
     (http://caml.inria.fr/pub/docs/manual-ocaml/types.html)

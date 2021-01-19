@@ -53,9 +53,69 @@ module Line = struct
     String.is_prefix x ~prefix:"(*" && String.is_suffix x ~suffix:"*)"
 end
 
+module Cmt_lexer = struct
+  type token = Cmt of string | Other of string
+
+  let lex_comments input =
+    let rec aux acc pos =
+      if pos >= String.length input then acc
+      else
+        match String.substr_index ~pos ~pattern:"(*" input with
+        | Some opn -> (
+            let acc =
+              if opn = pos then acc
+              else Other (String.sub ~pos ~len:(opn - pos) input) :: acc
+            in
+            match String.substr_index ~pos:opn ~pattern:"*)" input with
+            | Some cls ->
+                aux
+                  (Cmt (String.sub ~pos:opn ~len:(cls - opn + 2) input)
+                   :: acc )
+                  (cls + 2)
+            | None ->
+                Cmt
+                  (String.sub ~pos:opn
+                     ~len:(String.length input - opn)
+                     input )
+                :: acc )
+        | None ->
+            Other (String.sub ~pos ~len:(String.length input - pos) input)
+            :: acc
+    in
+    List.rev (aux [] 0)
+end
+
 module Split = struct
+  let concat str = function [] -> [str] | x :: xs -> (x ^ str) :: xs
+
+  let add_all ~from ~to_:init =
+    List.fold_left from ~init ~f:(fun acc x -> x :: acc)
+
+  let split_on_linebreaks lexed =
+    let rec aux (acc, break) = function
+      | [] -> if break then "" :: acc else acc
+      | Cmt_lexer.Cmt x :: xs ->
+          aux ((if break then x :: acc else concat x acc), false) xs
+      | Cmt_lexer.Other x :: xs -> (
+        match Astring.String.cuts ~rev:false ~empty:true ~sep:"\n" x with
+        | [] -> impossible "should at least contain an empty string"
+        | x :: others as cuts -> (
+          match List.last_exn cuts with
+          | "" -> (
+            match List.rev (List.tl_exn (List.rev cuts)) with
+            | [] -> aux (acc, true) xs
+            | x :: others ->
+                let acc = add_all ~from:others ~to_:(concat x acc) in
+                aux (acc, true) xs )
+          | _ ->
+              let acc = add_all ~from:others ~to_:(concat x acc) in
+              aux (acc, false) xs ) )
+    in
+    List.rev (aux ([], false) lexed)
+
   let split input ~f =
-    Astring.String.cuts ~rev:false ~empty:true ~sep:"\n" input
+    Cmt_lexer.lex_comments input
+    |> split_on_linebreaks
     |> List.fold_left ~init:([], []) ~f
     |> (fun (ret, prev_lines) ->
          (List.rev prev_lines |> Astring.String.concat ~sep:"\n") :: ret )

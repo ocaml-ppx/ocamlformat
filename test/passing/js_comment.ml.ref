@@ -1,59 +1,20 @@
-File "js_comment.ml", line 1, characters 25-27:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 49-51:
-Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 0-2:
 Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 0-2:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 0-2:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 59-61:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 16-18:
 Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 0-2:
 Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 3-5:
 Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 3-5:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 75-77:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 13-15:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 25-27:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 25-27:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 49-51:
-Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 0-2:
 Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 0-2:
 Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 0-2:
 Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 59-61:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 16-18:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 0-2:
-Warning 2: this is not the end of a comment.
 File "js_comment.ml", line 1, characters 3-5:
 Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 3-5:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 3-5:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 75-77:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 13-15:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 1, characters 13-15:
-Warning 2: this is not the end of a comment.
-File "js_comment.ml", line 5, characters 0-2:
-Warning 2: this is not the end of a comment.
+Warning: js_comment.ml is invalid, recovering.
 Warning: js_comment.ml is invalid, recovering.
 Warning: js_comment.ml is invalid, recovering.
 (* ocp-indent is not going to be confused by comment-embedded tokens. *)
@@ -80,93 +41,49 @@ type cfg = {foo: int; (* ignore-CR someone: float? *)
    everything is fine.
 
    For example, this is OK: *)
-
 type t = {foo: int; bar: string; (* ignore-CR someone: float? *)
                                  baz: string}
 
 (* but Tuareg messes this up *)
-type t= {
-  foo : int;
-  (* ignore-CR someone: float? *)
-  bar : string;
-}
-
-
+type t = {foo: int; (* ignore-CR someone: float? *)
+                    bar: string}
 
 (* Now that we have support for {v v} and {[ ]}, reindent inside comments,
-   unless they are explicitly delimited as code or pre-formatted text.  These
+   unless they are explicitly delimited as code or pre-formatted text. These
    three all end up flattened to the same level. *)
-(*
+(* type t = { (* This is a comment *) a: int; } *)
+(* type t = { (* This is a comment *) a: int; } *)
+(* type t = { (* This is a comment *) a: int; } *)
 
-type t = {
-  (* This is a comment *)
-  a: int;
-}
-*)
-(*
-   type t = {
-   (* This is a comment *)
-   a: int;
-   }
-*)
-(*
-       type t = {
-         (* This is a comment *)
-         a: int;
-       }
-*)
-
-
-
-(* Possible to-do warning: Star-prefixed lines are allowed and indented a little
-   less, to line up with the star in the opening comment parenthesis.  Maybe we
-   don't care enough about them to worry about it, though. *)
-
-
+(* Possible to-do warning: Star-prefixed lines are allowed and indented a
+   little less, to line up with the star in the opening comment parenthesis.
+   Maybe we don't care enough about them to worry about it, though. *)
 
 (** Doc comment text should be aligned with the first line, so indented more
-than otherwise. *)
+    than otherwise. *)
 
-(* We're now using some ocamldoc block syntax to control indentation, and sweeks
-and the rest of us have been relying on it, in and out of doc comments.
+(* We're now using some ocamldoc block syntax to control indentation, and
+   sweeks and the rest of us have been relying on it, in and out of doc
+   comments.
 
-{[
+   {[ let code = should be reindented like code so as to work also with vim
+   ]}
 
-let code =
-should be reindented like code
-so as to work also with vim
-]}
+   {v g This is totally verbatim text and shouldn't be reindented. It
+   probably doesn't matter what the indentation of the first line of a
+   verbatim block is. But how will this be done in vim? xx yy zz c v}
 
-    {v g
-   This is totally verbatim text and shouldn't be reindented.  It
- probably doesn't matter what the indentation of the first line of a
-verbatim block is.  But how will this be done in vim?
- xx
-  yy
-   zz
-    c  v}
-
-Does this even confront ocp-indent?  I think, when reindenting whole files,
-source code blocks do confront ocp-indent.
-*)
-
-
+   Does this even confront ocp-indent? I think, when reindenting whole files,
+   source code blocks do confront ocp-indent. *)
 
 (* {v
 
-(* comments embedded in verbatim sections *)
-(* want to be able to verbatim-out big chunks of code *)
+   (* comments embedded in verbatim sections *) (* want to be able to
+   verbatim-out big chunks of code *)
 
-v} *)
+   v} *)
 
-
-
-(* {v
-
-non-comments in verbatim sections
-duh
-
-v} *)
+(* {v non-comments in verbatim sections duh v} *)
 
 module M = struct
   let x = 0
