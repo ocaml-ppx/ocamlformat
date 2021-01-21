@@ -38,10 +38,6 @@
    (and
     (>= 4.08)
     (< 4.13)))
-  (ocaml
-   (and
-    :with-test
-    (< 4.12)))
   ocaml-version
   (alcotest :with-test)
   (base
