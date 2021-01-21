@@ -48,5 +48,5 @@ build: [
 ]
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
 pin-depends: [
-  "ppxlib" "git+https://github.com/ocaml-ppx/ppxlib.git#ast-4.12"
+  "ppxlib.dev" "git+https://github.com/ocaml-ppx/ppxlib.git#ast-4.12"
 ]
