@@ -12,7 +12,7 @@
 open Migrate_ast
 open Result.Monad_infix
 
-let indent_aux ~lines ~range:(low, high) ~indentation_of_line =
+let indent_aux ~lines ~range:(low, high) ~indent_line =
   let nlines = List.length lines in
   let rec aux ?prev acc i =
     if i > high then Ok (List.rev acc)
@@ -20,13 +20,13 @@ let indent_aux ~lines ~range:(low, high) ~indentation_of_line =
       let line = Option.value (List.nth lines (i - 1)) ~default:"" in
       if String.(is_empty (strip line)) then aux ?prev (0 :: acc) (i + 1)
       else
-        indentation_of_line ?prev ~i ~line nlines
+        indent_line ?prev ~i ~line nlines
         >>= fun indent -> aux ~prev:(indent, line) (indent :: acc) (i + 1)
     else
       let line = Option.value (List.nth lines (i - 1)) ~default:"" in
       if String.(is_empty (strip line)) then aux ?prev acc (i + 1)
       else
-        indentation_of_line ?prev ~i ~line nlines
+        indent_line ?prev ~i ~line nlines
         >>= fun indent -> aux ~prev:(indent, line) acc (i + 1)
   in
   aux [] low
@@ -68,11 +68,11 @@ module Valid_ast = struct
     | Unequal_lengths ->
         Error (`Msg "Cannot match pre-post formatting locations.")
 
-  let indent fragment ~unformatted:(ast, source)
+  let indent_range fragment ~unformatted:(ast, source)
       ~formatted:(formatted_ast, formatted_source) ~lines ~range =
     let loctree, locs = Loc_tree.of_ast fragment ast source in
     let _, locs' = Loc_tree.of_ast fragment formatted_ast formatted_source in
-    let indentation_of_line ?prev ~i ~line:_ nlines =
+    let indent_line ?prev ~i ~line:_ nlines =
       if i = nlines + 1 then Ok 0
       else
         match loc_of_line loctree locs i with
@@ -99,24 +99,23 @@ module Valid_ast = struct
             | _ -> Ok indent )
         | None -> Ok 0
     in
-    indent_aux ~lines ~range ~indentation_of_line
+    indent_aux ~lines ~range ~indent_line
 end
 
 module Partial_ast = struct
-  let indent ~lines ~range =
-    let indentation_of_line ?prev ~i ~line nlines =
-      if i = nlines + 1 then Ok 0
-      else
-        let indent = String.(length line - length (lstrip line)) in
-        match prev with
-        | Some (prev_indent, prev_line) -> (
-          match last_token prev_line with
-          | Some tok -> (
-            match Source.indent_after_token tok with
-            | Some i -> Ok (prev_indent + i)
-            | None -> Ok indent )
+  let indent_line ?prev ~i ~line nlines =
+    if i = nlines + 1 then Ok 0
+    else
+      let indent = String.(length line - length (lstrip line)) in
+      match prev with
+      | Some (prev_indent, prev_line) -> (
+        match last_token prev_line with
+        | Some tok -> (
+          match Source.indent_after_token tok with
+          | Some i -> Ok (prev_indent + i)
           | None -> Ok indent )
-        | _ -> Ok indent
-    in
-    indent_aux ~lines ~range ~indentation_of_line
+        | None -> Ok indent )
+      | _ -> Ok indent
+
+  let indent_range ~lines ~range = indent_aux ~lines ~range ~indent_line
 end

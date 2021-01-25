@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 module Valid_ast : sig
-  val indent :
+  val indent_range :
        'a Migrate_ast.Traverse.fragment
     -> unformatted:'a * Source.t
     -> formatted:'a * Source.t
@@ -20,7 +20,10 @@ module Valid_ast : sig
 end
 
 module Partial_ast : sig
-  val indent :
+  val indent_line :
+    ?prev:int * string -> i:int -> line:string -> int -> (int, 'a) Result.t
+
+  val indent_range :
        lines:string list
     -> range:int * int
     -> (int list, [`Msg of string]) Result.t

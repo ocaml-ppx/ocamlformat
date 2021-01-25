@@ -435,7 +435,7 @@ let indentation fragment ~input_name ~source ~range:(low, high) conf opts =
       ((parsed.ast, parsed.source), (formatted_ast.ast, formatted_ast.source))
     with
   | Ok (unformatted, formatted) ->
-      Indent.Valid_ast.indent fragment ~unformatted ~formatted ~lines
+      Indent.Valid_ast.indent_range fragment ~unformatted ~formatted ~lines
         ~range:(low, high)
-  | Error _ -> Indent.Partial_ast.indent ~lines ~range:(low, high) )
+  | Error _ -> Indent.Partial_ast.indent_range ~lines ~range:(low, high) )
   |> Result.map_error ~f:(fun (`Msg s) -> Ocamlformat_bug {exn= failwith s})
