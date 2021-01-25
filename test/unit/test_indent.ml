@@ -28,13 +28,44 @@ module Partial_ast = struct
           let output = prepare_output input indent in
           Alcotest.(check string) test_name expected output )
     in
-    [ test "" ~input:{|
+    [ test "empty" ~input:{||} ~expected:{|
+^|}
+    ; test "after if" ~input:{|
+if|} ~expected:{|
+if
+  ^|}
+    ; test "after then" ~input:{|
 let foo () =
   if bar then|}
         ~expected:{|
 let foo () =
   if bar then
-    ^|} ]
+    ^|}
+    ; test "after module struct" ~input:{|
+module M = struct|}
+        ~expected:{|
+module M = struct
+  ^|}
+    ; test "after module sig" ~input:{|
+module M : sig|}
+        ~expected:{|
+module M : sig
+  ^|}
+    ; test "after =" ~input:{|
+let x =
+  let y =|}
+        ~expected:{|
+let x =
+  let y =
+    ^|}
+    ; test "after = but over indented"
+        ~input:{|
+let x =
+      let y =|}
+        ~expected:{|
+let x =
+      let y =
+        ^|} ]
 
   let tests = tests_indent_line
 end
