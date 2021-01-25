@@ -423,19 +423,18 @@ let indentation fragment ~input_name ~source ~range:(low, high) conf opts =
   let lines = String.split_lines source in
   let nlines = List.length lines in
   check_range nlines (low, high)
-  >>= fun () ->
+  >>| fun () ->
   Ocaml_common.Location.input_name := input_name ;
-  ( match
-      force_parse_quiet fragment ~source conf
-      >>= fun parsed ->
-      format fragment ~input_name ~prev_source:source ~parsed conf opts
-      >>= fun formatted_source ->
-      force_parse_quiet fragment ~source:formatted_source conf
-      >>| fun formatted_ast ->
-      ((parsed.ast, parsed.source), (formatted_ast.ast, formatted_ast.source))
-    with
+  match
+    force_parse_quiet fragment ~source conf
+    >>= fun parsed ->
+    format fragment ~input_name ~prev_source:source ~parsed conf opts
+    >>= fun formatted_source ->
+    force_parse_quiet fragment ~source:formatted_source conf
+    >>| fun formatted_ast ->
+    ((parsed.ast, parsed.source), (formatted_ast.ast, formatted_ast.source))
+  with
   | Ok (unformatted, formatted) ->
       Indent.Valid_ast.indent_range fragment ~unformatted ~formatted ~lines
         ~range:(low, high)
-  | Error _ -> Indent.Partial_ast.indent_range ~lines ~range:(low, high) )
-  |> Result.map_error ~f:(fun (`Msg s) -> Ocamlformat_bug {exn= failwith s})
+  | Error _ -> Indent.Partial_ast.indent_range ~lines ~range:(low, high)

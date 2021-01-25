@@ -16,15 +16,11 @@ module Valid_ast : sig
     -> formatted:'a * Source.t
     -> lines:string list
     -> range:int * int
-    -> (int list, [`Msg of string]) Result.t
+    -> int list
 end
 
 module Partial_ast : sig
-  val indent_line :
-    ?prev:int * string -> i:int -> line:string -> int -> (int, 'a) Result.t
+  val indent_line : ?prev:int * string -> i:int -> line:string -> int -> int
 
-  val indent_range :
-       lines:string list
-    -> range:int * int
-    -> (int list, [`Msg of string]) Result.t
+  val indent_range : lines:string list -> range:int * int -> int list
 end

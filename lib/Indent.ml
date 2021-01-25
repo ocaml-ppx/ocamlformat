@@ -10,24 +10,23 @@
 (**************************************************************************)
 
 open Migrate_ast
-open Result.Monad_infix
 
 let indent_aux ~lines ~range:(low, high) ~indent_line =
   let nlines = List.length lines in
   let rec aux ?prev acc i =
-    if i > high then Ok (List.rev acc)
+    if i > high then List.rev acc
     else if i >= low then
       let line = Option.value (List.nth lines (i - 1)) ~default:"" in
       if String.(is_empty (strip line)) then aux ?prev (0 :: acc) (i + 1)
       else
-        indent_line ?prev ~i ~line nlines
-        >>= fun indent -> aux ~prev:(indent, line) (indent :: acc) (i + 1)
+        let indent = indent_line ?prev ~i ~line nlines in
+        aux ~prev:(indent, line) (indent :: acc) (i + 1)
     else
       let line = Option.value (List.nth lines (i - 1)) ~default:"" in
       if String.(is_empty (strip line)) then aux ?prev acc (i + 1)
       else
-        indent_line ?prev ~i ~line nlines
-        >>= fun indent -> aux ~prev:(indent, line) acc (i + 1)
+        let indent = indent_line ?prev ~i ~line nlines in
+        aux ~prev:(indent, line) acc (i + 1)
   in
   aux [] low
 
@@ -61,24 +60,22 @@ module Valid_ast = struct
     | Ok assoc -> (
         let equal x y = Location.compare x y = 0 in
         match List.Assoc.find assoc ~equal loc with
-        | Some loc -> Ok loc
+        | Some loc -> loc
         | None ->
-            Error (`Msg "Cannot find matching location in formatted output.")
-        )
+            impossible "Cannot find matching location in formatted output." )
     | Unequal_lengths ->
-        Error (`Msg "Cannot match pre-post formatting locations.")
+        impossible "Cannot match pre-post formatting locations."
 
   let indent_range fragment ~unformatted:(ast, source)
       ~formatted:(formatted_ast, formatted_source) ~lines ~range =
     let loctree, locs = Loc_tree.of_ast fragment ast source in
     let _, locs' = Loc_tree.of_ast fragment formatted_ast formatted_source in
     let indent_line ?prev ~i ~line:_ nlines =
-      if i = nlines + 1 then Ok 0
+      if i = nlines + 1 then 0
       else
         match loc_of_line loctree locs i with
         | Some loc -> (
-            matching_loc loc locs locs'
-            >>= fun (loc' : Location.t) ->
+            let loc' = matching_loc loc locs locs' in
             let indent =
               match
                 Source.find_first_token_on_line formatted_source
@@ -93,18 +90,18 @@ module Valid_ast = struct
               match last_token prev_line with
               | Some tok -> (
                 match Source.indent_after_token tok with
-                | Some i -> Ok (prev_indent + i)
-                | None -> Ok indent )
-              | None -> Ok indent )
-            | _ -> Ok indent )
-        | None -> Ok 0
+                | Some i -> prev_indent + i
+                | None -> indent )
+              | None -> indent )
+            | _ -> indent )
+        | None -> 0
     in
     indent_aux ~lines ~range ~indent_line
 end
 
 module Partial_ast = struct
   let indent_line ?prev ~i ~line nlines =
-    if i = nlines + 1 then Ok 0
+    if i = nlines + 1 then 0
     else
       let indent = String.(length line - length (lstrip line)) in
       match prev with
@@ -112,10 +109,10 @@ module Partial_ast = struct
         match last_token prev_line with
         | Some tok -> (
           match Source.indent_after_token tok with
-          | Some i -> Ok (prev_indent + i)
-          | None -> Ok indent )
-        | None -> Ok indent )
-      | _ -> Ok indent
+          | Some i -> prev_indent + i
+          | None -> indent )
+        | None -> indent )
+      | _ -> indent
 
   let indent_range ~lines ~range = indent_aux ~lines ~range ~indent_line
 end
