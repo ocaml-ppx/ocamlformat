@@ -12,31 +12,6 @@
 open Migrate_ast
 open Result.Monad_infix
 
-let rec loc_of_line loctree locs line =
-  match locs with
-  | [] -> None
-  | (h : Location.t) :: t ->
-      if h.loc_start.pos_lnum = line then Some h
-      else if h.loc_start.pos_lnum <= line && line <= h.loc_end.pos_lnum then
-        match Loc_tree.children loctree h with
-        | [] -> Some h
-        | children -> (
-          match loc_of_line loctree children line with
-          | Some loc -> Some loc
-          | None -> Some h )
-      else loc_of_line loctree t line
-
-let matching_loc loc locs locs' =
-  match List.zip locs locs' with
-  | Ok assoc -> (
-      let equal x y = Location.compare x y = 0 in
-      match List.Assoc.find assoc ~equal loc with
-      | Some loc -> Ok loc
-      | None ->
-          Error (`Msg "Cannot find matching location in formatted output.") )
-  | Unequal_lengths ->
-      Error (`Msg "Cannot match pre-post formatting locations.")
-
 let indent_aux ~lines ~range:(low, high) ~indentation_of_line =
   let nlines = List.length lines in
   let rec aux ?prev acc i =
@@ -65,52 +40,83 @@ let last_token x =
   in
   loop None
 
-let indent_from_locs fragment ~unformatted:(ast, source)
-    ~formatted:(formatted_ast, formatted_source) ~lines ~range =
-  let loctree, locs = Loc_tree.of_ast fragment ast source in
-  let _, locs' = Loc_tree.of_ast fragment formatted_ast formatted_source in
-  let indentation_of_line ?prev ~i ~line:_ nlines =
-    if i = nlines + 1 then Ok 0
-    else
-      match loc_of_line loctree locs i with
-      | Some loc -> (
-          matching_loc loc locs locs'
-          >>= fun (loc' : Location.t) ->
-          let indent =
-            match
-              Source.find_first_token_on_line formatted_source
-                loc'.loc_start.pos_lnum
-            with
-            | Some (_, loc) -> Position.column loc.loc_start
-            | None -> impossible "cannot happen"
-          in
-          match prev with
-          | Some (prev_indent, prev_line)
-            when indent = prev_indent || indent = 0 -> (
-            match last_token prev_line with
-            | Some tok -> (
-              match Source.indent_after_token tok with
-              | Some i -> Ok (prev_indent + i)
-              | None -> Ok indent )
-            | None -> Ok indent )
-          | _ -> Ok indent )
-      | None -> Ok 0
-  in
-  indent_aux ~lines ~range ~indentation_of_line
+module Valid_ast = struct
+  let rec loc_of_line loctree locs line =
+    match locs with
+    | [] -> None
+    | (h : Location.t) :: t ->
+        if h.loc_start.pos_lnum = line then Some h
+        else if h.loc_start.pos_lnum <= line && line <= h.loc_end.pos_lnum
+        then
+          match Loc_tree.children loctree h with
+          | [] -> Some h
+          | children -> (
+            match loc_of_line loctree children line with
+            | Some loc -> Some loc
+            | None -> Some h )
+        else loc_of_line loctree t line
 
-let indent_from_lines ~lines ~range =
-  let indentation_of_line ?prev ~i ~line nlines =
-    if i = nlines + 1 then Ok 0
-    else
-      let indent = String.(length line - length (lstrip line)) in
-      match prev with
-      | Some (prev_indent, prev_line) -> (
-        match last_token prev_line with
-        | Some tok -> (
-          match Source.indent_after_token tok with
-          | Some i -> Ok (prev_indent + i)
+  let matching_loc loc locs locs' =
+    match List.zip locs locs' with
+    | Ok assoc -> (
+        let equal x y = Location.compare x y = 0 in
+        match List.Assoc.find assoc ~equal loc with
+        | Some loc -> Ok loc
+        | None ->
+            Error (`Msg "Cannot find matching location in formatted output.")
+        )
+    | Unequal_lengths ->
+        Error (`Msg "Cannot match pre-post formatting locations.")
+
+  let indent fragment ~unformatted:(ast, source)
+      ~formatted:(formatted_ast, formatted_source) ~lines ~range =
+    let loctree, locs = Loc_tree.of_ast fragment ast source in
+    let _, locs' = Loc_tree.of_ast fragment formatted_ast formatted_source in
+    let indentation_of_line ?prev ~i ~line:_ nlines =
+      if i = nlines + 1 then Ok 0
+      else
+        match loc_of_line loctree locs i with
+        | Some loc -> (
+            matching_loc loc locs locs'
+            >>= fun (loc' : Location.t) ->
+            let indent =
+              match
+                Source.find_first_token_on_line formatted_source
+                  loc'.loc_start.pos_lnum
+              with
+              | Some (_, loc) -> Position.column loc.loc_start
+              | None -> impossible "cannot happen"
+            in
+            match prev with
+            | Some (prev_indent, prev_line)
+              when indent = prev_indent || indent = 0 -> (
+              match last_token prev_line with
+              | Some tok -> (
+                match Source.indent_after_token tok with
+                | Some i -> Ok (prev_indent + i)
+                | None -> Ok indent )
+              | None -> Ok indent )
+            | _ -> Ok indent )
+        | None -> Ok 0
+    in
+    indent_aux ~lines ~range ~indentation_of_line
+end
+
+module Partial_ast = struct
+  let indent ~lines ~range =
+    let indentation_of_line ?prev ~i ~line nlines =
+      if i = nlines + 1 then Ok 0
+      else
+        let indent = String.(length line - length (lstrip line)) in
+        match prev with
+        | Some (prev_indent, prev_line) -> (
+          match last_token prev_line with
+          | Some tok -> (
+            match Source.indent_after_token tok with
+            | Some i -> Ok (prev_indent + i)
+            | None -> Ok indent )
           | None -> Ok indent )
-        | None -> Ok indent )
-      | _ -> Ok indent
-  in
-  indent_aux ~lines ~range ~indentation_of_line
+        | _ -> Ok indent
+    in
+    indent_aux ~lines ~range ~indentation_of_line
+end

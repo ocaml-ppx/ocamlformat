@@ -9,15 +9,19 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val indent_from_locs :
-     'a Migrate_ast.Traverse.fragment
-  -> unformatted:'a * Source.t
-  -> formatted:'a * Source.t
-  -> lines:string list
-  -> range:int * int
-  -> (int list, [`Msg of string]) Result.t
+module Valid_ast : sig
+  val indent :
+       'a Migrate_ast.Traverse.fragment
+    -> unformatted:'a * Source.t
+    -> formatted:'a * Source.t
+    -> lines:string list
+    -> range:int * int
+    -> (int list, [`Msg of string]) Result.t
+end
 
-val indent_from_lines :
-     lines:string list
-  -> range:int * int
-  -> (int list, [`Msg of string]) Result.t
+module Partial_ast : sig
+  val indent :
+       lines:string list
+    -> range:int * int
+    -> (int list, [`Msg of string]) Result.t
+end
