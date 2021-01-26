@@ -403,8 +403,8 @@ let force_parse_quiet fragment ~source conf =
   | exception _ -> (
     match parse fragment conf ~source:(recover fragment source) with
     | exception exn -> Error (Invalid_source {exn})
-    | parsed -> Ok parsed )
-  | parsed -> Ok parsed
+    | parsed -> Ok (parsed, true) )
+  | parsed -> Ok (parsed, false)
 
 let check_line nlines i =
   (* the last line of the buffer (nlines + 1) should not raise an error *)
@@ -511,16 +511,21 @@ let indentation fragment ~input_name ~source ~range:(low, high) conf opts =
   Ocaml_common.Location.input_name := input_name ;
   match
     force_parse_quiet fragment ~source conf
-    >>= fun parsed ->
-    let filtered_ast = filter fragment parsed.ast ~range:(low, high) in
-    let source =
-      slice_source fragment parsed.ast ~range:(low, high) source
+    >>= fun (parsed, recovered) ->
+    let source, parsed =
+      if recovered then (source, parsed)
+      else
+        let filtered_ast = filter fragment parsed.ast ~range:(low, high) in
+        let source =
+          slice_source fragment parsed.ast ~range:(low, high) source
+        in
+        let parsed = {parsed with ast= filtered_ast} in
+        (source, parsed)
     in
-    let parsed = {parsed with ast= filtered_ast} in
     format fragment ~input_name ~prev_source:source ~parsed conf opts
     >>= fun formatted_source ->
     force_parse_quiet fragment ~source:formatted_source conf
-    >>| fun formatted_ast ->
+    >>| fun (formatted_ast, _) ->
     ((parsed.ast, parsed.source), (formatted_ast.ast, formatted_ast.source))
   with
   | Ok (unformatted, formatted) ->
