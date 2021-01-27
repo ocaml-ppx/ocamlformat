@@ -19,8 +19,8 @@ val parse_and_format :
   -> Conf.t
   -> Conf.opts
   -> (string, error) Result.t
-(** [parse_and_format_impl ~kind conf ?output_file ~input_name ~source]
-    parses and formats [source] as a list of fragments. *)
+(** [parse_and_format ~kind conf ?output_file ~input_name ~source] parses and
+    formats [source] as a list of fragments. *)
 
 val print_error :
      fmt:Format.formatter
