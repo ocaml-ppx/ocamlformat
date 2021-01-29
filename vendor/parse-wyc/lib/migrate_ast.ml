@@ -32,24 +32,3 @@ module Mapper = struct
     | Signature -> To_ppxlib.copy_signature
     | Use_file -> List.map To_ppxlib.copy_toplevel_phrase
 end
-
-module Int = struct
-  let compare x y = if x < y then -1 else if x > y then 1 else 0
-end
-
-module Position = struct
-  open Lexing
-
-  let compare p1 p2 = Int.compare p1.pos_cnum p2.pos_cnum
-end
-
-module Location = struct
-  include Ppxlib.Location
-
-  let curr = of_lexbuf
-
-  let merge x y =
-    if Position.compare x.loc_end y.loc_start >= 0 then
-      Some { x with loc_end = y.loc_end }
-    else None
-end

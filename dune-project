@@ -56,7 +56,7 @@
    (>= 20200624))
   (menhirSdk
    (>= 20200624))
-  (ocp-indent :with-test)
+  ocp-indent
   (bisect_ppx
    (and
     :with-test
@@ -102,7 +102,7 @@
    (>= 20200624))
   (menhirSdk
    (>= 20200624))
-  (ocp-indent :with-test)
+  ocp-indent
   (bisect_ppx
    (and
     :with-test

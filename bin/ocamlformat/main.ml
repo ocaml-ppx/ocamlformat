@@ -12,6 +12,7 @@
 (** OCamlFormat *)
 
 open Ocamlformat_lib
+open Result.Monad_infix
 
 ;;
 Caml.at_exit (Format.pp_print_flush Format.err_formatter)
@@ -76,6 +77,12 @@ let run_action action opts =
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | Print_config conf -> Conf.print_config conf ; Ok ()
+  | Numeric ({kind; file; name= input_name; conf}, range) ->
+      let conf = {conf with quiet= true} in
+      let source = source_from_file file in
+      Translation_unit.numeric kind ~input_name ~source ~range conf opts
+      |> Result.map_error ~f:(fun e -> [(fun () -> print_error conf opts e)])
+      >>| List.iter ~f:(fun i -> Stdio.print_endline (Int.to_string i))
 
 ;;
 match Conf.action () with

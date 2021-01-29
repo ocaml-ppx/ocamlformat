@@ -12,6 +12,8 @@
 module Error : sig
   type t
 
+  val user_error : string -> t
+
   val equal : t -> t -> bool
 
   val print : ?debug:bool -> ?quiet:bool -> Format.formatter -> t -> unit
@@ -25,5 +27,18 @@ val parse_and_format :
   -> Conf.t
   -> Conf.opts
   -> (string, Error.t) Result.t
-(** [parse_and_format kind conf ?output_file ~input_name ~source] parses and
-    formats [source] as a list of fragments. *)
+(** [parse_and_format kind ?output_file ~input_name ~source conf opts] parses
+    and formats [source] as a list of fragments. *)
+
+val numeric :
+     Syntax.t
+  -> input_name:string
+  -> source:string
+  -> range:int * int
+  -> Conf.t
+  -> Conf.opts
+  -> (int list, Error.t) Result.t
+(** [numeric ~input_name ~source ~range conf opts] returns the indentation of
+    the range of lines [range] (line numbers ranging from 1 to number of
+    lines), where the line numbers are relative to [source] and the
+    indentation is relative to the formatted output. *)

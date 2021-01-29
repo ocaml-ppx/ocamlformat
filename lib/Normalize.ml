@@ -103,7 +103,8 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-            Parse_with_comments.parse Structure c.conf ~source:txt
+            Parse_with_comments.parse Ast_passes.Ast0.Parse.ast Structure
+              c.conf ~source:txt
           in
           let ast = Ast_passes.run Structure Structure ast in
           let comments = dedup_cmts Structure ast comments in

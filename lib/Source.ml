@@ -45,6 +45,16 @@ let find_token t k pos =
     ~compare:(fun (_, elt) pos -> Position.compare elt.Location.loc_start pos)
     k pos
 
+let find_first_token_on_line t line =
+  match
+    Array.binary_search t.tokens
+      ~compare:(fun (_, elt) -> Int.compare elt.Location.loc_start.pos_lnum)
+      `First_equal_to line
+  with
+  | None -> None
+  | Some i when i >= Array.length t.tokens -> None
+  | Some i -> Some t.tokens.(i)
+
 let tokens_between (t : t) ~filter loc_start loc_end =
   match find_token t `First_greater_than_or_equal_to loc_start with
   | None -> []

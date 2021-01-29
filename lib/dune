@@ -21,6 +21,7 @@
   format_
   ocaml-version
   ocamlformat_stdlib
+  ocp-indent.lib
   odoc.model
   odoc.parser
   parse_wyc

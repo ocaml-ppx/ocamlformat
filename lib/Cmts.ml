@@ -537,7 +537,8 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let str = String.sub ~pos:1 ~len str in
             try
-              Parse_with_comments.parse Structure conf ~source:str
+              Parse_with_comments.parse Ast_passes.Ast0.Parse.ast Structure
+                conf ~source:str
               |> (fun {ast; _} -> Ast_passes.run Structure Structure ast)
               |> Normalize.normalize Structure conf
               |> Caml.Format.asprintf "%a"

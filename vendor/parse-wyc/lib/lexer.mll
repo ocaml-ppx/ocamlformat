@@ -16,7 +16,6 @@
 (* The lexer definition *)
 
 {
-open Migrate_ast
 open Lexing
 open Misc
 open Parser
@@ -49,7 +48,7 @@ let keyword_table =
     "done", DONE;
     "downto", DOWNTO;
     "else", ELSE;
-    "end", END false;
+    "end", END;
     "exception", EXCEPTION;
     "external", EXTERNAL;
     "false", FALSE;

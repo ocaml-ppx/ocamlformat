@@ -225,8 +225,8 @@ let mkpat_opt_constraint ~loc p = function
 (*let expecting loc nonterm =
     raise Syntaxerr.(Error(Expecting(make_loc loc, nonterm)))*)
 
-let not_expecting loc nonterm =
-    raise Syntaxerr.(Error(Not_expecting(make_loc loc, nonterm)))
+(*let not_expecting loc nonterm =
+    raise Syntaxerr.(Error(Not_expecting(make_loc loc, nonterm)))*)
 
 let dotop ~left ~right ~assign ~ext ~multi =
   let assign = if assign then "<-" else "" in
@@ -431,7 +431,9 @@ let text_sig pos = Sig.text (rhs_text pos)
 let text_cstr pos = Cf.text (rhs_text pos)
 let text_csig pos = Ctf.text (rhs_text pos)
 let text_def pos =
-  List.map (fun def -> Ptop_def [def]) (Str.text (rhs_text pos))
+  (* Change required for parse-wyc *)
+  [Ptop_def (Str.text (rhs_text pos))]
+  (*List.map (fun def -> Ptop_def [def]) (Str.text (rhs_text pos))*)
 
 let extra_text startpos endpos text items =
   match items with
@@ -570,17 +572,9 @@ let mk_directive ~loc name arg =
 
 %[@recover.prelude
 
-  open Ast_helper
-
   (* Ast nodes to inject when parsing fails *)
 
   let default_loc = Ast_helper.default_loc
-
-  let default_pattern () = Pat.any ~loc:!default_loc ()
-
-  let default_module_expr () = Mod.structure ~loc:!default_loc[]
-  let default_module_type () = Mty.signature ~loc:!default_loc[]
-
 ]
 
 /* Tokens */
@@ -597,6 +591,7 @@ let mk_directive ~loc name arg =
 %token BARRBRACKET
 %token BEGIN
 %token <char> CHAR
+  [@recover.expr '?']
 %token CLASS
 %token COLON
 %token COLONCOLON
@@ -610,13 +605,14 @@ let mk_directive ~loc name arg =
 %token DOTDOT
 %token DOWNTO
 %token ELSE
-%token <bool> END [@recover.expr true]
+%token END
 %token EOF
 %token EQUAL
 %token EXCEPTION
 %token EXTERNAL
 %token FALSE
 %token <string * char option> FLOAT
+  [@recover.expr ("<invalid-float>", None)]
 %token FOR
 %token FUN
 %token FUNCTION
@@ -640,6 +636,7 @@ let mk_directive ~loc name arg =
 %token <string * char option> INT
   [@recover.expr ("<invalid-int>", None)]
 %token <string> LABEL
+  [@recover.expr "<invalid-label>"]
 %token LAZY
 %token LBRACE
 %token LBRACELESS
@@ -678,6 +675,7 @@ let mk_directive ~loc name arg =
 %token PLUSDOT
 %token PLUSEQ
 %token <string> PREFIXOP
+  [@recover.expr "<invalid-prefixop>"]
 %token PRIVATE
 %token QUESTION
 %token QUOTE
@@ -1218,13 +1216,9 @@ module_name:
    which are resolved by precedence declarations. This is concise but fragile.
    Perhaps in the future an explicit stratification could be used. *)
 
-module_expr:
-  | STRUCT attrs = attributes s = structure generated = END
-      { let attrs =
-          if generated then Annot.Attr.mk () :: attrs
-          else attrs
-        in
-        mkmod ~loc:$sloc ~attrs (Pmod_structure s) }
+module_expr [@recover.expr Annot.Mod.mk ()]:
+  | STRUCT attrs = attributes s = structure END
+      { mkmod ~loc:$sloc ~attrs (Pmod_structure s) }
   (*| STRUCT attributes structure error
       { unclosed "struct" $loc($1) "end" $loc($4) }*)
   | FUNCTOR attrs = attributes args = functor_args MINUSGREATER me = module_expr
@@ -1515,13 +1509,9 @@ open_description:
 
 /* Module types */
 
-module_type:
-  | SIG attrs = attributes s = signature generated = END
-      { let attrs =
-          if generated then Annot.Attr.mk () :: attrs
-          else attrs
-        in
-        mkmty ~loc:$sloc ~attrs (Pmty_signature s) }
+module_type [@recover.expr Annot.Mty.mk ()]:
+  | SIG attrs = attributes s = signature END
+      { mkmty ~loc:$sloc ~attrs (Pmty_signature s) }
   (*| SIG attributes signature error
       { unclosed "sig" $loc($1) "end" $loc($4) }*)
   | FUNCTOR attrs = attributes args = functor_args
@@ -1778,7 +1768,7 @@ formal_class_parameters:
 
 (* Class expressions. *)
 
-class_expr [@recover.expr Annot.Class_exp.mk ()]:
+class_expr [@recover.expr Annot.Cl.mk ()]:
     class_simple_expr
       { $1 }
   | FUN attributes class_fun_def
@@ -1813,12 +1803,8 @@ class_simple_expr:
     (*| LPAREN class_expr COLON class_type error
         { unclosed "(" $loc($1) ")" $loc($5) }*)
     ) { $1 }
-  | OBJECT attributes class_structure generated = END
-    { let attrs =
-        if generated then Annot.Attr.mk () :: $2
-        else $2
-      in
-      mkclass ~loc:$sloc ~attrs (Pcl_structure $3) }
+  | OBJECT attributes class_structure END
+    { mkclass ~loc:$sloc ~attrs:$2 (Pcl_structure $3) }
 ;
 
 class_fun_def:
@@ -1919,7 +1905,7 @@ method_:
 
 /* Class types */
 
-class_type:
+class_type [@recover.expr Annot.Cty.mk ()]:
     class_signature
       { $1 }
   | mkcty(
@@ -2200,8 +2186,8 @@ expr [@recover.expr Annot.Exp.mk ()]:
       { dotop_set ~loc:$sloc (ldot $3) brace $4 $1 $6 $9 }
   | expr attribute
       { Exp.attr $1 $2 }
-  | UNDERSCORE
-     { not_expecting $loc($1) "wildcard \"_\"" }
+  (*| UNDERSCORE
+     { not_expecting $loc($1) "wildcard \"_\"" }*)
 ;
 %inline expr_attrs:
   | LET MODULE ext_attributes mkrhs(module_name) module_binding_body IN seq_expr
@@ -2635,7 +2621,7 @@ type_constraint:
    [pattern_no_exn], we create a parameterized definition [pattern_(self)]
    and instantiate it twice. *)
 
-pattern:
+pattern [@recover.expr Annot.Pat.mk ()]:
     pattern_(pattern)
       { $1 }
   | EXCEPTION ext_attributes pattern %prec prec_constr_appl
@@ -3607,7 +3593,7 @@ rec_flag:
 ;
 %inline no_nonrec_flag:
     /* empty */ { Recursive }
-  | NONREC      { not_expecting $loc "nonrec flag" }
+  (*| NONREC      { not_expecting $loc "nonrec flag" }*)
 ;
 direction_flag:
     TO                                          { Upto }
@@ -3771,7 +3757,7 @@ ext:
 ;
 %inline no_ext:
   | /* empty */     { None }
-  | PERCENT attr_id { not_expecting $loc "extension" }
+  (*| PERCENT attr_id { not_expecting $loc "extension" }*)
 ;
 %inline ext_attributes:
   ext attributes    { $1, $2 }

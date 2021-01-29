@@ -1282,6 +1282,20 @@ let name =
   mk ~default
     Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
 
+let numeric =
+  let doc =
+    "Instead of re-formatting the file, output one integer per line \
+     corresponding to the indentation value, printing as many values as \
+     lines in the range between lines X and Y (included)."
+  in
+  let default = None in
+  let docv = "X-Y" in
+  mk ~default
+    Arg.(
+      value
+      & opt (some (pair ~sep:'-' int int)) default
+      & info ["numeric"] ~doc ~docs ~docv)
+
 let ocp_indent_options =
   let unsupported ocp_indent = (ocp_indent, ([], "")) in
   let alias ocp_indent ocamlformat =
@@ -1346,23 +1360,6 @@ let output =
       value
       & opt (some string) default
       & info ["o"; "output"] ~doc ~docs ~docv)
-
-let format_invalid_files : [`Never | `Auto] option ref =
-  let doc =
-    "How invalid (unparsable) files are formatted. $(b,never) doesn't \
-     format invalid files and the parsing error will be printed. $(b,auto) \
-     will print invalid parts of the input as verbatim text. The default \
-     value is $(b,never). This option is experimental."
-  in
-  let docv = "{never|auto}" in
-  let never = ("never", `Never) in
-  let auto = ("auto", `Auto) in
-  let default = Some `Never in
-  mk ~default
-    Arg.(
-      value
-      & opt (some (enum [never; auto])) None
-      & info ["format-invalid-files"] ~doc ~docs ~docv)
 
 let print_config =
   let doc =
@@ -2089,7 +2086,8 @@ let validate_action () =
       [ Option.map ~f:(fun o -> (`Output o, "--output")) !output
       ; Option.some_if !inplace (`Inplace, "--inplace")
       ; Option.some_if !check (`Check, "--check")
-      ; Option.some_if !print_config (`Print_config, "--print-config") ]
+      ; Option.some_if !print_config (`Print_config, "--print-config")
+      ; Option.map ~f:(fun r -> (`Numeric r, "--numeric")) !numeric ]
   with
   | [] -> Ok `No_action
   | [(action, _)] -> Ok action
@@ -2103,6 +2101,7 @@ type action =
   | Inplace of input list
   | Check of input list
   | Print_config of t
+  | Numeric of input * (int * int)
 
 let make_action ~enable_outside_detected_project ~root action inputs =
   let make_file ?(with_conf = fun c -> c) ?name kind file =
@@ -2136,9 +2135,9 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         build_config ~enable_outside_detected_project ~root ~file ~is_stdin
       in
       Ok (Print_config conf)
-  | (`No_action | `Output _ | `Inplace | `Check), `No_input ->
+  | (`No_action | `Output _ | `Inplace | `Check | `Numeric _), `No_input ->
       Error "Must specify at least one input file, or `-` for stdin"
-  | (`No_action | `Output _), `Several_files _ ->
+  | (`No_action | `Output _ | `Numeric _), `Several_files _ ->
       Error
         "Must specify exactly one input file without --inplace or --check"
   | `Inplace, `Stdin _ ->
@@ -2163,8 +2162,12 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       in
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
+  | `Numeric range, `Stdin (name, kind) ->
+      Ok (Numeric (make_stdin ?name kind, range))
+  | `Numeric range, `Single_file (kind, name, f) ->
+      Ok (Numeric (make_file ?name kind f, range))
 
-type opts = {debug: bool; margin_check: bool; format_invalid_files: bool}
+type opts = {debug: bool; margin_check: bool}
 
 let validate () =
   let root =
@@ -2188,12 +2191,7 @@ let validate () =
   | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
   | Ok action ->
-      let format_invalid_files =
-        match !format_invalid_files with Some `Auto -> true | _ -> false
-      in
-      let opts =
-        {debug= !debug; margin_check= !margin_check; format_invalid_files}
-      in
+      let opts = {debug= !debug; margin_check= !margin_check} in
       `Ok (action, opts)
 
 let action () = parse info validate

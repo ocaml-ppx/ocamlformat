@@ -1074,8 +1074,20 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to format_invalid_files-0.ml.output
+     (run %{bin:ocamlformat} --numeric=11-13 %{dep:tests/format_invalid_files.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/format_invalid_files-0.ml.ref format_invalid_files-0.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to format_invalid_files.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:tests/format_invalid_files.ml}))))
+     (run %{bin:ocamlformat} --numeric=7-8 %{dep:tests/format_invalid_files.ml}))))
 
 (rule
  (alias runtest)
@@ -1087,7 +1099,7 @@
  (package ocamlformat)
  (action
    (with-outputs-to format_invalid_files_with_locations.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto --max-iter 3 %{dep:tests/format_invalid_files_with_locations.ml}))))
+     (run %{bin:ocamlformat} --numeric=1-11 %{dep:tests/format_invalid_files_with_locations.ml}))))
 
 (rule
  (alias runtest)
@@ -2296,7 +2308,7 @@
  (package ocamlformat)
  (action
    (with-outputs-to partial.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:tests/partial.ml}))))
+     (run %{bin:ocamlformat} --numeric=2-14 %{dep:tests/partial.ml}))))
 
 (rule
  (alias runtest)
@@ -2308,7 +2320,7 @@
  (package ocamlformat)
  (action
    (with-outputs-to partial_double_quotes.ml.output
-     (run %{bin:ocamlformat} --format-invalid-files=auto %{dep:tests/partial_double_quotes.ml}))))
+     (run %{bin:ocamlformat} --numeric=1-1 %{dep:tests/partial_double_quotes.ml}))))
 
 (rule
  (alias runtest)
