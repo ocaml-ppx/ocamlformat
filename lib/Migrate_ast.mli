@@ -74,6 +74,9 @@ module Location : sig
 
   val is_single_line : t -> int -> bool
 
+  val pp_loc :
+    (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a loc -> unit
+
   val of_lexbuf : Lexing.lexbuf -> t
 
   val print : Format.formatter -> t -> unit

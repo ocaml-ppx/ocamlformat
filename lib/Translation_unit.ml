@@ -513,8 +513,8 @@ let check_range nlines (low, high) =
   else
     Error (Error.User_error (Format.sprintf "Invalid range %i-%i" low high))
 
-let numeric (type a b) (fg : a list Extended_ast.t)
-    (std_fg : b list Std_ast.t) ~input_name ~source ~range conf =
+let numeric (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
+    ~input_name ~source ~range conf =
   let lines = String.split_lines source in
   let nlines = List.length lines in
   check_range nlines range
@@ -544,12 +544,36 @@ let numeric (type a b) (fg : a list Extended_ast.t)
     | Ok parsed -> Ok parsed
     | Error _ -> parse_result recover fg conf ~source:src ~input_name
   in
-  match parse_or_recover ~src:source with
-  | Ok parsed -> (
-    match parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name with
-    | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
-    | Error _ -> fallback () )
-  | Error _ -> fallback ()
+  (* Slice the file if it is too long *)
+  if nlines > 100 then
+    let sliced_src, sliced_range = Slicer.fragment fg ~range source in
+    match parse_or_recover ~src:sliced_src with
+    | Ok parsed -> (
+      match
+        parse_result Std_ast.Parse.ast std_fg conf ~source:sliced_src
+          ~input_name
+      with
+      | Ok std_parsed ->
+          indent_parsed parsed std_parsed ~src:sliced_src ~range:sliced_range
+      | Error _ -> fallback () )
+    | Error _ -> (
+      match parse_or_recover ~src:source with
+      | Ok parsed -> (
+        match
+          parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+        with
+        | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
+        | Error _ -> fallback () )
+      | Error _ -> fallback () )
+  else
+    match parse_or_recover ~src:source with
+    | Ok parsed -> (
+      match
+        parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+      with
+      | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
+      | Error _ -> fallback () )
+    | Error _ -> fallback ()
 
 let numeric = function
   | Syntax.Structure -> numeric Structure Structure
