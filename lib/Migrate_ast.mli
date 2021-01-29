@@ -33,6 +33,8 @@ module Position : sig
   val distance : t -> t -> int
 
   val compare : t -> t -> int
+
+  val pp : Format.formatter -> t -> unit
 end
 
 module Location : sig
@@ -79,6 +81,11 @@ module Location : sig
   val is_single_line : t -> int -> bool
 
   val to_span : t -> Odoc_model.Location_.span
+
+  val pp : Format.formatter -> t -> unit
+
+  val pp_loc :
+    (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a loc -> unit
 
   val of_lexbuf : Lexing.lexbuf -> t
 

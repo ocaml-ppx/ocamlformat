@@ -48,6 +48,11 @@ module Position = struct
   let distance p1 p2 = p2.pos_cnum - p1.pos_cnum
 
   let to_point x = Odoc_model.Location_.{line= x.pos_lnum; column= column x}
+
+  let pp fs {pos_fname; pos_lnum; pos_bol; pos_cnum} =
+    Format.fprintf fs
+      "@[<2>{ pos_fname= %S;@;pos_lnum= %i;@;pos_bol= %i;@;pos_cnum= %i }@]"
+      pos_fname pos_lnum pos_bol pos_cnum
 end
 
 module Location = struct
@@ -115,6 +120,14 @@ module Location = struct
     { file= loc.loc_start.pos_fname
     ; start= Position.to_point loc.loc_start
     ; end_= Position.to_point loc.loc_end }
+
+  let pp fs {loc_ghost; loc_start; loc_end} =
+    Format.fprintf fs
+      "@[<2>{ loc_ghost= %b;@;loc_start= %a;@;loc_end= %a }@]" loc_ghost
+      Position.pp loc_start Position.pp loc_end
+
+  let pp_loc f fs {txt; loc} =
+    Format.fprintf fs "@[<2>{ txt= %a;@;loc= %a }@]" f txt pp loc
 
   let of_lexbuf (lexbuf : Lexing.lexbuf) =
     { loc_start= lexbuf.lex_start_p
