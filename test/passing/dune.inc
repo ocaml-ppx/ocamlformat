@@ -1128,6 +1128,18 @@
 
 (rule
  (deps .ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.12.0))
+ (action
+   (with-outputs-to injectivity.ml.output
+     (run %{bin:ocamlformat} %{dep:injectivity.ml}))))
+
+(rule
+ (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.12.0))
+ (action (diff injectivity.ml injectivity.ml.output)))
+
+(rule
+ (deps .ocamlformat )
  (action
    (with-outputs-to invalid.ml.output
      (run %{bin:ocamlformat} %{dep:invalid.ml}))))

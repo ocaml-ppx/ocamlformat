@@ -11,7 +11,6 @@ bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "2.7"}
   "ocaml" {>= "4.08" & < "4.13"}
-  "ocaml" {with-test & < "4.12"}
   "ocaml-version"
   "alcotest" {with-test}
   "base" {>= "v0.12.0" & < "v0.15"}
@@ -26,7 +25,7 @@ depends: [
   "ocaml-migrate-parsetree" {>= "2.1.0"}
   "ocp-indent" {with-test}
   "odoc" {>= "1.4.2"}
-  "ppxlib" {>= "0.18.0"}
+  "ppxlib" {>= "0.22.0"}
   "re"
   "stdio" {< "v0.15"}
   "uuseg" {>= "10.0.0"}

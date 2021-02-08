@@ -321,10 +321,20 @@ let fmt_constant c ~loc ?epi const =
       | `Auto -> fmt_string_auto ~break_on_newlines:false s
       | `Never -> wrap "\"" "\"" (str s) )
 
-let fmt_variance = function
-  | Covariant -> str "+"
-  | Contravariant -> str "-"
-  | Invariant -> noop
+module Variance = struct
+  let default = (NoVariance, NoInjectivity)
+
+  let fmt_variance = function
+    | Covariant -> str "+"
+    | Contravariant -> str "-"
+    | NoVariance -> noop
+
+  let fmt_injectivity = function
+    | Injective -> str "!"
+    | NoInjectivity -> noop
+
+  let fmt (v, i) = fmt_variance v $ fmt_injectivity i
+end
 
 let fmt_label lbl sep =
   match lbl with
@@ -2683,7 +2693,7 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
   let ctx = Cty typ in
   match pcty_desc with
   | Pcty_constr (name, params) ->
-      let params = List.map params ~f:(fun x -> (x, Invariant)) in
+      let params = List.map params ~f:(fun x -> (x, Variance.default)) in
       fmt_class_params c ctx params
       $ fmt_longident_loc c name
       $ fmt_attributes c ~key:"@" atrs
@@ -2733,7 +2743,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
   @@
   match pcl_desc with
   | Pcl_constr (name, params) ->
-      let params = List.map params ~f:(fun x -> (x, Invariant)) in
+      let params = List.map params ~f:(fun x -> (x, Variance.default)) in
       fmt_class_params c ctx params $ fmt_longident_loc c name $ fmt_atrs
   | Pcl_structure {pcstr_fields; pcstr_self} ->
       hvbox 0
@@ -3103,14 +3113,14 @@ and fmt_tydcl_params c ctx params =
         (List.length params > 1)
         "(" ")"
         (list params (Params.comma_sep c.conf) (fun (ty, vc) ->
-             fmt_variance vc $ fmt_core_type c (sub_typ ~ctx ty) ) )
+             Variance.fmt vc $ fmt_core_type c (sub_typ ~ctx ty) ) )
     $ fmt "@ " )
 
 and fmt_class_params c ctx params =
   let fmt_param ~first ~last (ty, vc) =
     fmt_if (first && Exposed.Left.core_type ty) " "
     $ fmt_if_k (not first) (fmt (Params.comma_sep c.conf))
-    $ fmt_variance vc
+    $ Variance.fmt vc
     $ fmt_core_type c (sub_typ ~ctx ty)
     $ fmt_if (last && Exposed.Right.core_type ty) " "
   in
