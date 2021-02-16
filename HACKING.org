@@ -34,6 +34,8 @@ Git is used to manage the script's state:
 
 - Release in automatic mode
   =dune-release=
+  Until dune-release.1.5.0 is released the =master= branch of dune-release
+  should be used.
 
 - Close release milestone.
 
