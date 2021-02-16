@@ -23,7 +23,8 @@ Git is used to manage the script's state:
 - If a supported OCaml version does not have CI support, run test suite locally.
 
 - In =CHANGES.md=, change =(unreleased)= with the current version (=a.b.c=)
-  and date. Commit the result.
+  and date. In =README.md=, update the recommended version to use in
+  =.ocamlformat= files. Commit and push the changes.
 
 - Tag
   =dune-release tag=
