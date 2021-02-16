@@ -24,13 +24,20 @@ Git is used to manage the script's state:
 
 - In =CHANGES.md=, change =(unreleased)= with the current version (=a.b.c=)
   and date. In =README.md=, update the recommended version to use in
-  =.ocamlformat= files. Commit and push the changes.
+  =.ocamlformat= files. Commit the changes.
 
 - Tag
   =dune-release tag=
 
 - Check that release binary has a release version number:
   =dune build @install && dune install --prefix _install && ./_install/bin/ocamlformat --version && rm -rf _install= should output just =a.b.c=
+
+- Linting
+  =dune-release lint=
+
+- Amend the release commit if necessary.
+
+- Push the changes.
 
 - Release in automatic mode
   =dune-release=
