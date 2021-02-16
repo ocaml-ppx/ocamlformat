@@ -35,9 +35,11 @@ Git is used to manage the script's state:
 - Linting
   =dune-release lint=
 
-- Amend the release commit if necessary.
+- Amend the release commit if necessary and update the tag
+  =dune-release tag --force=
 
-- Push the changes.
+- Push the changes
+  =git push --tags=
 
 - Release in automatic mode
   =dune-release=
