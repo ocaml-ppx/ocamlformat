@@ -50,6 +50,29 @@ Git is used to manage the script's state:
 
 - Each release should be announced on [[https://discuss.ocaml.org/]]
 
+- Create a Windows asset:
+
+  + install a compatible version of dune-release
+
+  + checkout release tag: =git checkout a.b.c=
+
+  + =dune clean=
+
+  + =dune-release distrib --skip-tests= (ignore the error about a directory
+  that can not be deleted)
+
+  + check release version number:
+  =_build/ocamlformat-a.b.c/_build/install/default/bin/ocamlformat.exe --version=
+  should output just =a.b.b=
+
+  + =cp _build/ocamlformat-a.b.c/_build/install/default/bin/ocamlformat.exe ./ocamlformat-a.b.c.exe=
+
+  + Go to https://github.com/ocaml-ppx/ocamlformat/releases/edit/a.b.c
+
+  + Add binary
+
+  + Click on "Update release"
+
 * Backporting changes to a point release
 
 Sometimes it is helpful to create a point release, but master contains
