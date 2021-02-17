@@ -23,7 +23,8 @@ Git is used to manage the script's state:
 - If a supported OCaml version does not have CI support, run test suite locally.
 
 - In =CHANGES.md=, change =(unreleased)= with the current version (=a.b.c=)
-  and date. Commit the result.
+  and date. In =README.md=, update the recommended version to use in
+  =.ocamlformat= files. Commit the changes.
 
 - Tag
   =dune-release tag=
@@ -31,8 +32,19 @@ Git is used to manage the script's state:
 - Check that release binary has a release version number:
   =dune build @install && dune install --prefix _install && ./_install/bin/ocamlformat --version && rm -rf _install= should output just =a.b.c=
 
+- Linting
+  =dune-release lint=
+
+- Amend the release commit if necessary and update the tag
+  =dune-release tag --force=
+
+- Push the changes
+  =git push --tags=
+
 - Release in automatic mode
   =dune-release=
+  Until dune-release.1.5.0 is released the =master= branch of dune-release
+  should be used.
 
 - Close release milestone.
 
