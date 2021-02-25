@@ -1,0 +1,49 @@
+(library
+ (name uucp)
+ (public_name uucp)
+ (libraries uchar)
+ (flags :standard -w -27-39))
+
+(rule
+ (targets
+   uucp_age_data.ml
+   uucp_name_data.ml
+   uucp_alpha_data.ml
+   uucp_block_data.ml
+   uucp_break_data.ml
+   uucp_case_data.ml
+   uucp_case_fold_data.ml
+   uucp_case_map_data.ml
+   uucp_case_nfkc_data.ml
+   uucp_cjk_data.ml
+   uucp_emoji_data.ml
+   uucp_func_data.ml
+   uucp_gc_data.ml
+   uucp_gen_data.ml
+   uucp_hangul_data.ml
+   uucp_id_data.ml
+   uucp_num_data.ml
+   uucp_script_data.ml
+   uucp_white_data.ml)
+  (mode fallback)
+  (deps ../support/ucd.xml)
+  (action (run ../support/gen_props.exe
+         -age uucp_age_data.ml
+         -name uucp_name_data.ml
+         -alpha uucp_alpha_data.ml
+         -block uucp_block_data.ml
+         -break uucp_break_data.ml
+         -case uucp_case_data.ml
+         -case-fold uucp_case_fold_data.ml
+         -case-map uucp_case_map_data.ml
+         -case-nfkc uucp_case_nfkc_data.ml
+         -cjk uucp_cjk_data.ml
+         -emoji uucp_emoji_data.ml
+         -func uucp_func_data.ml
+         -gc uucp_gc_data.ml
+         -gen uucp_gen_data.ml
+         -hangul uucp_hangul_data.ml
+         -id uucp_id_data.ml
+         -num uucp_num_data.ml
+         -script uucp_script_data.ml
+         -white uucp_white_data.ml %{deps})))

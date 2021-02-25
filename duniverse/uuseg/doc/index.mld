@@ -1,0 +1,10 @@
+{0 Uuseg {%html: <span class="version">%%VERSION%%</span>%}}
+
+Uuseg segments Unicode text. See {!Uuseg} for more details.
+
+{1:api API}
+
+{!modules:
+Uuseg
+Uuseg_string
+}

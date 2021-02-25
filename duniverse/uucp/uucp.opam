@@ -1,0 +1,23 @@
+opam-version: "2.0"
+maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
+authors: [ "The uucp programmers" ]
+homepage: "https://erratique.ch/software/uucp"
+doc: "https://erratique.ch/software/uucp/doc/Uucp"
+dev-repo: "git+https://github.com/dune-universe/uucp.git"
+bug-reports: "https://github.com/dbuenzli/uucp/issues"
+tags: [ "unicode" "text" "character" "org:erratique" ]
+license: "ISC"
+depends: [
+ "uchar"
+ "ocaml" {>= "4.03.0"}
+ "dune" {>="1.3"}
+ ]
+conflicts: [ "uutf" {< "1.0.1"}
+             "cmdliner" {< "1.0.0"} ]
+build: [
+ [ "dune" "subst" ] {pinned}
+ [ "dune" "build" "-p" name "-j" jobs]
+]
+url {
+  src: "git://github.com/dune-universe/uucp.git#duniverse-v13.0.0"
+}

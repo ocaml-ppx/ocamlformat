@@ -1,0 +1,17 @@
+(library
+ (name uuseg)
+ (public_name uuseg)
+ (wrapped false)
+ (modules uuseg_base uuseg_buf uuseg_grapheme_cluster uuseg_word uuseg_sentence uuseg_line_break uuseg)
+ (libraries uchar uucp)
+ (flags :standard -w -50-39-37-32)
+)
+
+(library
+ (name uuseg_string)
+ (public_name uuseg.string)
+ (wrapped false)
+ (modules uuseg_string)
+ (libraries uuseg uutf)
+ (flags :standard -w -50-39-37-32)
+)
