@@ -1876,6 +1876,16 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to open-closing-on-separate-line.ml.output
+     (run %{bin:ocamlformat} --indicate-multiline-delimiters=closing-on-separate-line %{dep:open.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff open-closing-on-separate-line.ml.ref open-closing-on-separate-line.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to open.ml.output
      (run %{bin:ocamlformat} %{dep:open.ml}))))
 
