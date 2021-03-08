@@ -403,14 +403,7 @@ let parse_and_format (type a b) (fg0 : a list Ast_passes.Ast0.t)
   format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
     opts
 
-let parse_and_format ~kind ?output_file ~input_name ~source conf opts =
-  match kind with
-  | Syntax.Structure ->
-      parse_and_format Structure Structure ?output_file ~input_name ~source
-        conf opts
-  | Syntax.Signature ->
-      parse_and_format Signature Signature ?output_file ~input_name ~source
-        conf opts
-  | Syntax.Use_file ->
-      parse_and_format Use_file Use_file ?output_file ~input_name ~source
-        conf opts
+let parse_and_format = function
+  | Syntax.Structure -> parse_and_format Structure Structure
+  | Syntax.Signature -> parse_and_format Signature Signature
+  | Syntax.Use_file -> parse_and_format Use_file Use_file

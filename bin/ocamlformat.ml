@@ -22,7 +22,7 @@ Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 let format ?output_file ~kind ~input_name ~source conf opts =
   if conf.Conf.disable then Ok source
   else
-    Translation_unit.parse_and_format ~kind ?output_file ~input_name ~source
+    Translation_unit.parse_and_format kind ?output_file ~input_name ~source
       conf opts
 
 let to_output_file output_file data =
