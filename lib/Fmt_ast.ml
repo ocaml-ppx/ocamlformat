@@ -4548,31 +4548,31 @@ let fmt_toplevel c ctx itms =
 
 (** Entry points *)
 
-let fmt_file ~ctx ~fmt_code ~debug source cmts conf fg =
+let fmt_file (type a) ~ctx ~fmt_code ~debug
+    (fragment : a list Ast_passes.Ast_final.t) source cmts conf
+    (itms : a list) =
   let c = {source; cmts; conf; debug; fmt_code} in
-  match fg with
-  | Past_str [] | Past_sig [] | Past_usf [] ->
-      Cmts.fmt_after ~pro:noop c Location.none
-  | Past_str l -> fmt_structure c ctx l
-  | Past_sig l -> fmt_signature c ctx l
-  | Past_usf l -> fmt_toplevel c ctx l
+  match (fragment, itms) with
+  | _, [] -> Cmts.fmt_after ~pro:noop c Location.none
+  | Structure, l -> fmt_structure c ctx l
+  | Signature, l -> fmt_signature c ctx l
+  | Use_file, l -> fmt_toplevel c ctx l
 
 let fmt_code ~debug =
   let rec fmt_code conf s =
-    match Parse_with_comments.parse ~kind:Structure conf ~source:s with
-    | {ast= Past_str str as ast; comments; source; prefix= _} ->
-        let ast = Ast_passes.run ast in
-        let cmts = Cmts.init ~debug source ast comments in
-        let ctx = Pld (PStr str) in
-        Ok (fmt_file ~ctx ~debug source cmts conf ast ~fmt_code)
-    | {ast= _; _} -> Error ()
+    match Parse_with_comments.parse Structure conf ~source:s with
+    | {ast; comments; source; prefix= _} ->
+        let ast = Ast_passes.run Structure Structure ast in
+        let cmts = Cmts.init Structure ~debug source ast comments in
+        let ctx = Pld (PStr ast) in
+        Ok (fmt_file ~ctx ~debug Structure source cmts conf ast ~fmt_code)
     | exception _ -> Error ()
   in
   fmt_code
 
-let fmt_ast ~debug source cmts conf fg =
+let fmt_ast fragment ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
   Ast.init conf ;
   let fmt_code = fmt_code ~debug in
-  fmt_file ~ctx:Top ~fmt_code ~debug source cmts conf fg
+  fmt_file ~ctx:Top ~fmt_code ~debug fragment source cmts conf l

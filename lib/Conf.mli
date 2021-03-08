@@ -83,7 +83,9 @@ type t =
 
 type file = Stdin | File of string
 
-type input = {kind: Syntax.t; name: string; file: file; conf: t}
+type kind = Kind : _ list Ast_passes.Ast_final.t -> kind
+
+type input = {kind: kind; name: string; file: file; conf: t}
 
 type action =
   | In_out of input * string option

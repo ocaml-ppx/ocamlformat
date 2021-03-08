@@ -12,10 +12,11 @@
 (** Format OCaml Ast *)
 
 val fmt_ast :
-     debug:bool
+     'a list Ast_passes.Ast_final.t
+  -> debug:bool
   -> Source.t
   -> Cmts.t
   -> Conf.t
-  -> Ast_passes.Ast_final.t
+  -> 'a list
   -> Fmt.t
 (** Format a fragment. *)

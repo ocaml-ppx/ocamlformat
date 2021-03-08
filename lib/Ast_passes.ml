@@ -16,39 +16,35 @@ module Ast0 = struct
 
   type use_file = toplevel_phrase list
 
-  type t =
-    | Past_str of structure
-    | Past_sig of signature
-    | Past_usf of use_file
+  type 'a t =
+    | Structure : structure t
+    | Signature : signature t
+    | Use_file : use_file t
+
+  let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
   class map =
-    object (self)
+    object
       inherit Ppxlib.Ast_traverse.map
-
-      method use_file x = List.map x ~f:self#toplevel_phrase
-
-      method ast =
-        function
-        | Past_str x -> Past_str (self#structure x)
-        | Past_sig x -> Past_sig (self#signature x)
-        | Past_usf x -> Past_usf (self#use_file x)
     end
 
-  let equal : t -> t -> bool = Poly.equal
-
-  let map (m : map) : t -> t = m#ast
-
-  let iter (i : Ppxlib.Ast_traverse.iter) : t -> unit = function
-    | Past_str x -> i#structure x
-    | Past_sig x -> i#signature x
-    | Past_usf x -> i#list i#toplevel_phrase x
-
-  let fold (f : 'a Ppxlib.Ast_traverse.fold) : t -> 'a -> 'a =
-   fun x acc ->
+  let map (type a) (x : a t) (m : Ppxlib.Ast_traverse.map) : a -> a =
     match x with
-    | Past_str x -> f#structure x acc
-    | Past_sig x -> f#signature x acc
-    | Past_usf x -> f#list f#toplevel_phrase x acc
+    | Structure -> m#structure
+    | Signature -> m#signature
+    | Use_file -> m#list m#toplevel_phrase
+
+  let iter (type a) (fg : a t) (i : Ppxlib.Ast_traverse.iter) : a -> unit =
+    match fg with
+    | Structure -> i#structure
+    | Signature -> i#signature
+    | Use_file -> i#list i#toplevel_phrase
+
+  let fold (type a) (fg : a t) (f : _ Ppxlib.Ast_traverse.fold) : a -> _ =
+    match fg with
+    | Structure -> f#structure
+    | Signature -> f#signature
+    | Use_file -> f#list f#toplevel_phrase
 
   module Parse = struct
     let implementation = Ppxlib_ast.Parse.implementation
@@ -62,11 +58,11 @@ module Ast0 = struct
           | Ptop_def [] -> false
           | Ptop_def (_ :: _) | Ptop_dir _ -> true )
 
-    let ast ~(kind : Syntax.t) lexbuf : t =
-      match kind with
-      | Structure -> Past_str (implementation lexbuf)
-      | Signature -> Past_sig (interface lexbuf)
-      | Use_file -> Past_usf (use_file lexbuf)
+    let ast (type a) (fg : a t) lexbuf : a =
+      match fg with
+      | Structure -> implementation lexbuf
+      | Signature -> interface lexbuf
+      | Use_file -> use_file lexbuf
 
     let parser_version = Ocaml_version.sys_version
   end
@@ -92,13 +88,20 @@ module Ast_final = struct
     let use_file ppf x =
       pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
 
-    let ast ppf = function
-      | Past_str x -> implementation ppf x
-      | Past_sig x -> interface ppf x
-      | Past_usf x -> use_file ppf x
+    let ast (type a) : a t -> _ -> a -> _ = function
+      | Structure -> implementation
+      | Signature -> interface
+      | Use_file -> use_file
   end
 
   module Pprintast = Ppxlib.Pprintast
+
+  let mk (type a b) (fg0 : a Ast0.t) (fg_final : b t) : a -> b =
+    match (fg0, fg_final) with
+    | Structure, Structure -> Fn.id
+    | Signature, Signature -> Fn.id
+    | Use_file, Use_file -> Fn.id
+    | _ -> failwith "impossible"
 end
 
-let run = Fn.id
+let run = Ast_final.mk

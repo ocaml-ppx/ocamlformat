@@ -305,7 +305,7 @@ let relocate_wrongfully_attached_cmts t src exp =
   | _ -> ()
 
 (** Initialize global state and place comments. *)
-let init ~debug source asts comments_n_docstrings =
+let init fragment ~debug source asts comments_n_docstrings =
   let t =
     { debug
     ; cmts_before= Map.empty (module Location)
@@ -315,14 +315,14 @@ let init ~debug source asts comments_n_docstrings =
     ; remaining= Set.empty (module Location)
     ; remove= true }
   in
-  let comments = Normalize.dedup_cmts asts comments_n_docstrings in
+  let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
   if debug then (
     Format.eprintf "\nComments:\n%!" ;
     List.iter comments ~f:(fun {Cmt.txt; loc} ->
         Caml.Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
           (if Source.ends_line source loc then "eol" else "") ) ) ;
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast asts source in
+    let loc_tree, locs = Loc_tree.of_ast fragment asts source in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
@@ -356,7 +356,8 @@ let init ~debug source asts comments_n_docstrings =
         super#expression x
     end
   in
-  Ast_final.iter iter asts ; t
+  Ast_final.iter fragment iter asts ;
+  t
 
 let preserve fmt_x t =
   let buf = Buffer.create 128 in
@@ -541,10 +542,11 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let str = String.sub ~pos:1 ~len str in
             try
-              Parse_with_comments.parse ~kind:Structure conf ~source:str
-              |> (fun {ast; _} -> Ast_passes.run ast)
-              |> Normalize.normalize conf
-              |> Caml.Format.asprintf "%a" Ast_passes.Ast_final.Printast.ast
+              Parse_with_comments.parse Structure conf ~source:str
+              |> (fun {ast; _} -> Ast_passes.run Structure Structure ast)
+              |> Normalize.normalize Structure conf
+              |> Caml.Format.asprintf "%a"
+                   Ast_passes.Ast_final.Printast.implementation
             with _ -> norm_non_code z
           else norm_non_code z
     in

@@ -12,7 +12,8 @@
 type error
 
 val parse_and_format :
-     kind:Syntax.t
+     _ list Ast_passes.Ast0.t
+  -> _ list Ast_passes.Ast_final.t
   -> ?output_file:string
   -> input_name:string
   -> source:string

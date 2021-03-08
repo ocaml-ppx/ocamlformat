@@ -14,13 +14,13 @@ module Ast0 : sig
 
   type use_file = toplevel_phrase list
 
-  type t =
-    | Past_str of structure
-    | Past_sig of signature
-    | Past_usf of use_file
+  type 'a t =
+    | Structure : structure t
+    | Signature : signature t
+    | Use_file : use_file t
 
   module Parse : sig
-    val ast : kind:Syntax.t -> Lexing.lexbuf -> t
+    val ast : 'a t -> Lexing.lexbuf -> 'a
 
     val parser_version : Ocaml_version.t
   end
@@ -33,27 +33,23 @@ module Ast_final : sig
 
   type use_file = toplevel_phrase list
 
-  type t =
-    | Past_str of structure
-    | Past_sig of signature
-    | Past_usf of use_file
+  type 'a t =
+    | Structure : structure t
+    | Signature : signature t
+    | Use_file : use_file t
 
-  val equal : t -> t -> bool
+  val equal : 'a t -> 'a -> 'a -> bool
 
   class map :
     object
       inherit Ppxlib.Ast_traverse.map
-
-      method use_file : use_file -> use_file
-
-      method ast : t -> t
     end
 
-  val map : map -> t -> t
+  val map : 'a t -> Ppxlib.Ast_traverse.map -> 'a -> 'a
 
-  val iter : Ppxlib.Ast_traverse.iter -> t -> unit
+  val iter : 'a t -> Ppxlib.Ast_traverse.iter -> 'a -> unit
 
-  val fold : 'r Ppxlib.Ast_traverse.fold -> t -> 'r -> 'r
+  val fold : 'a t -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
 
   module Printast : sig
     val implementation : Format.formatter -> structure -> unit
@@ -66,10 +62,10 @@ module Ast_final : sig
 
     val use_file : Format.formatter -> toplevel_phrase list -> unit
 
-    val ast : Format.formatter -> t -> unit
+    val ast : 'a t -> Format.formatter -> 'a -> unit
   end
 
   module Pprintast = Ppxlib.Pprintast
 end
 
-val run : Ast0.t -> Ast_final.t
+val run : 'a Ast0.t -> 'b Ast_final.t -> 'a -> 'b

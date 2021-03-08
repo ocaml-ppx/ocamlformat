@@ -16,10 +16,11 @@ open Asttypes
 open Ast_passes
 open Ast_helper
 
-type conf = {conf: Conf.t; normalize_code: Ast_final.t -> Ast_final.t}
+type conf =
+  {conf: Conf.t; normalize_code: Ast_final.structure -> Ast_final.structure}
 
 (** Remove comments that duplicate docstrings (or other comments). *)
-let dedup_cmts ast comments =
+let dedup_cmts fragment ast comments =
   let of_ast ast =
     let iter =
       object
@@ -43,7 +44,7 @@ let dedup_cmts ast comments =
           | _ -> super#attribute atr docs
       end
     in
-    Ast_final.fold iter ast (Set.empty (module Cmt))
+    Ast_final.fold fragment iter ast (Set.empty (module Cmt))
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
@@ -102,10 +103,10 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-            Parse_with_comments.parse ~kind:Structure c.conf ~source:txt
+            Parse_with_comments.parse Structure c.conf ~source:txt
           in
-          let ast = Ast_passes.run ast in
-          let comments = dedup_cmts ast comments in
+          let ast = Ast_passes.run Structure Structure ast in
+          let comments = dedup_cmts Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
                 Location.compare a b )
@@ -114,7 +115,8 @@ let rec odoc_nestable_block_element c fmt = function
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
-            Ast_passes.Ast_final.Printast.ast ast print_comments comments
+            Ast_passes.Ast_final.Printast.implementation ast print_comments
+            comments
         with _ -> txt
       in
       fpf fmt "Code_block,%a" str txt
@@ -205,7 +207,7 @@ let make_mapper conf ~ignore_doc_comments =
           let doc' =
             if ignore_doc_comments then "IGNORED"
             else
-              let c = {conf; normalize_code= self#ast} in
+              let c = {conf; normalize_code= self#structure} in
               docstring c doc
           in
           { attr_name= {txt; loc= self#location loc}
@@ -356,11 +358,12 @@ let make_mapper conf ~ignore_doc_comments =
       super#class_structure si
   end
 
-let normalize c = Ast_final.map (make_mapper c ~ignore_doc_comments:false)
+let normalize fragment c =
+  Ast_final.map fragment (make_mapper c ~ignore_doc_comments:false)
 
-let equal ~ignore_doc_comments c ast1 ast2 =
-  let map = Ast_final.map (make_mapper c ~ignore_doc_comments) in
-  Ast_final.equal (map ast1) (map ast2)
+let equal fragment ~ignore_doc_comments c ast1 ast2 =
+  let map = Ast_final.map fragment (make_mapper c ~ignore_doc_comments) in
+  Ast_final.equal fragment (map ast1) (map ast2)
 
 let fold_docstrings =
   let doc_attribute = function
@@ -389,16 +392,17 @@ let fold_docstrings =
       super#attributes (sort_attributes atrs)
   end
 
-let docstrings s = Ast_final.fold fold_docstrings s []
+let docstrings (type a) (fragment : a Ast_final.t) s =
+  Ast_final.fold fragment fold_docstrings s []
 
 type docstring_error =
   | Moved of Location.t * Location.t * string
   | Unstable of Location.t * string
 
-let moved_docstrings c s1 s2 =
-  let c = {conf= c; normalize_code= normalize c} in
-  let d1 = docstrings s1 in
-  let d2 = docstrings s2 in
+let moved_docstrings fragment c s1 s2 =
+  let c = {conf= c; normalize_code= normalize Structure c} in
+  let d1 = docstrings fragment s1 in
+  let d2 = docstrings fragment s2 in
   let equal (_, x) (_, y) =
     let b = String.equal (docstring c x) (docstring c y) in
     Caml.Printf.printf "Docstring equal? %b,\n%s\n%s\n" b (docstring c x)
@@ -431,5 +435,5 @@ let moved_docstrings c s1 s2 =
       List.rev_append both (List.rev_append l1 l2)
 
 let docstring conf =
-  let normalize_code = normalize conf in
+  let normalize_code = normalize Structure conf in
   docstring {conf; normalize_code}

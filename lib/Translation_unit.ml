@@ -219,24 +219,27 @@ let with_buffer_formatter ~buffer_size k =
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
   Buffer.contents buffer
 
-let equal ~ignore_doc_comments c a b =
-  Normalize.equal ~ignore_doc_comments c a.Parse_with_comments.ast
+let equal fragment ~ignore_doc_comments c a b =
+  Normalize.equal fragment ~ignore_doc_comments c a.Parse_with_comments.ast
     b.Parse_with_comments.ast
 
-let normalize c {Parse_with_comments.ast; _} = Normalize.normalize c ast
+let normalize fragment c {Parse_with_comments.ast; _} =
+  Normalize.normalize fragment c ast
 
-let recover = function
-  | Syntax.Structure -> Parse_wyc.Make_parsable.structure
-  | Syntax.Signature -> Parse_wyc.Make_parsable.signature
-  | Syntax.Use_file -> Parse_wyc.Make_parsable.use_file
+let recover (type a) : a Ast_passes.Ast0.t -> _ = function
+  | Structure -> Parse_wyc.Make_parsable.structure
+  | Signature -> Parse_wyc.Make_parsable.signature
+  | Use_file -> Parse_wyc.Make_parsable.use_file
 
-let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
+let format (type a b) (fg0 : a list Ast_passes.Ast0.t)
+    (fgN : b list Ast_passes.Ast_final.t) ?output_file ~input_name
+    ~prev_source ~parsed conf opts =
   let open Result.Monad_infix in
-  let dump_ast ~suffix ast =
+  let dump_ast fg ~suffix ast =
     if opts.Conf.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             Ast_passes.Ast_final.Printast.ast fmt ast ) )
+             Ast_passes.Ast_final.Printast.ast fg fmt ast ) )
     else None
   in
   let dump_formatted ~suffix fmted =
@@ -249,7 +252,9 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
   let rec print_check ~i ~(conf : Conf.t) ~prev_source t =
     let format ~box_debug =
       let open Fmt in
-      let cmts_t = Cmts.init ~debug:opts.debug t.source t.ast t.comments in
+      let cmts_t =
+        Cmts.init fgN ~debug:opts.debug t.source t.ast t.comments
+      in
       let contents =
         with_buffer_formatter
           ~buffer_size:(String.length prev_source)
@@ -259,8 +264,8 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (Fmt_ast.fmt_ast ~debug:opts.debug t.source cmts_t conf t.ast)
-          )
+              (Fmt_ast.fmt_ast fgN ~debug:opts.debug t.source cmts_t conf
+                 t.ast ) )
       in
       (contents, cmts_t)
     in
@@ -282,12 +287,12 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      ( match parse ~kind conf ~source:fmted with
+      ( match parse fg0 conf ~source:fmted with
       | exception Sys_error msg -> Error (User_error msg)
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn ->
           if opts.Conf.format_invalid_files then (
-            match parse ~kind conf ~source:(recover kind fmted) with
+            match parse fg0 conf ~source:(recover fg0 fmted) with
             | exception exn ->
                 internal_error (`Cannot_parse exn) (exn_args ())
             | t_new ->
@@ -297,14 +302,17 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
           else internal_error (`Cannot_parse exn) (exn_args ())
       | t_new -> Ok t_new )
       >>= fun t_new ->
-      let t_new = {t_new with ast= Ast_passes.run t_new.ast} in
+      let t_new = {t_new with ast= Ast_passes.run fg0 fgN t_new.ast} in
       (* Ast not preserved ? *)
       ( if
         not
-          (equal ~ignore_doc_comments:(not conf.comment_check) conf t t_new)
+          (equal fgN ~ignore_doc_comments:(not conf.comment_check) conf t
+             t_new )
       then
-        let old_ast = dump_ast ~suffix:".old" (normalize conf t) in
-        let new_ast = dump_ast ~suffix:".new" (normalize conf t_new) in
+        let old_ast = dump_ast fgN ~suffix:".old" (normalize fgN conf t) in
+        let new_ast =
+          dump_ast fgN ~suffix:".new" (normalize fgN conf t_new)
+        in
         let args ~suffix =
           [ ("output file", dump_formatted ~suffix fmted)
           ; ("old ast", old_ast)
@@ -312,9 +320,9 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
           |> List.filter_map ~f:(fun (s, f_opt) ->
                  Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
-        if equal ~ignore_doc_comments:true conf t t_new then
+        if equal fgN ~ignore_doc_comments:true conf t t_new then
           let docstrings =
-            Normalize.moved_docstrings conf t.Parse_with_comments.ast
+            Normalize.moved_docstrings fgN conf t.Parse_with_comments.ast
               t_new.Parse_with_comments.ast
           in
           let args = args ~suffix:".unequal-docs" in
@@ -345,8 +353,8 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
           |> Sequence.map ~f
         in
         if not (Sequence.is_empty diff_cmts) then
-          let old_ast = dump_ast ~suffix:".old" t.ast in
-          let new_ast = dump_ast ~suffix:".new" t_new.ast in
+          let old_ast = dump_ast fgN ~suffix:".old" t.ast in
+          let new_ast = dump_ast fgN ~suffix:".new" t_new.ast in
           let args =
             [ ( "diff"
               , Some
@@ -371,11 +379,11 @@ let format ~kind ?output_file ~input_name ~prev_source ~parsed conf opts =
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn})
 
-let parse_result ~kind conf (opts : Conf.opts) ~source ~input_name =
-  match parse ~kind conf ~source with
+let parse_result fragment conf (opts : Conf.opts) ~source ~input_name =
+  match parse fragment conf ~source with
   | exception exn ->
       if opts.format_invalid_files then (
-        match parse ~kind conf ~source:(recover kind source) with
+        match parse fragment conf ~source:(recover fragment source) with
         | exception exn -> Error (Invalid_source {exn})
         | parsed ->
             Format.fprintf Format.err_formatter
@@ -384,10 +392,13 @@ let parse_result ~kind conf (opts : Conf.opts) ~source ~input_name =
       else Error (Invalid_source {exn})
   | parsed -> Ok parsed
 
-let parse_and_format ~kind ?output_file ~input_name ~source conf opts =
+let parse_and_format (type a b) (fg0 : a list Ast_passes.Ast0.t)
+    (fgN : b list Ast_passes.Ast_final.t) ?output_file ~input_name ~source
+    conf opts =
   Ocaml_common.Location.input_name := input_name ;
   let open Result.Monad_infix in
-  parse_result ~kind conf opts ~source ~input_name
+  parse_result fg0 conf opts ~source ~input_name
   >>= fun parsed ->
-  let parsed = {parsed with ast= Ast_passes.run parsed.ast} in
-  format ~kind ?output_file ~input_name ~prev_source:source ~parsed conf opts
+  let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
+  format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
+    opts
