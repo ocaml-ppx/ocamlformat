@@ -8,6 +8,8 @@
 
 #### Changes
 
++ Use dune instrumentation backend for bisect_ppx (#1550, @tmattio)
+
 #### New features
 
 ### 0.17.0 (2021-02-15)
