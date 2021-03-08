@@ -32,7 +32,7 @@
  (name ocamlformat)
  (synopsis "Auto-formatter for OCaml code")
  (description
-   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
    (and
