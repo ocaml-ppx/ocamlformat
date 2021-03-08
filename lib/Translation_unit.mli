@@ -12,15 +12,14 @@
 type error
 
 val parse_and_format :
-     _ list Ast_passes.Ast0.t
-  -> _ list Ast_passes.Ast_final.t
+     kind:Syntax.t
   -> ?output_file:string
   -> input_name:string
   -> source:string
   -> Conf.t
   -> Conf.opts
   -> (string, error) Result.t
-(** [parse_and_format conf ?output_file ~input_name ~source] parses and
+(** [parse_and_format ~kind conf ?output_file ~input_name ~source] parses and
     formats [source] as a list of fragments. *)
 
 val print_error :
