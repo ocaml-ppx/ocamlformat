@@ -628,7 +628,12 @@ module Vb = struct
 end
 
 module Class_field = struct
-  let has_doc itm = Option.is_some (fst (doc_atrs itm.pcf_attributes))
+  let has_doc itm =
+    Option.is_some (fst (doc_atrs itm.pcf_attributes))
+    ||
+    match itm.pcf_desc with
+    | Pcf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | _ -> false
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
@@ -649,7 +654,12 @@ module Class_field = struct
 end
 
 module Class_type_field = struct
-  let has_doc itm = Option.is_some (fst (doc_atrs itm.pctf_attributes))
+  let has_doc itm =
+    Option.is_some (fst (doc_atrs itm.pctf_attributes))
+    ||
+    match itm.pctf_desc with
+    | Pctf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | _ -> false
 
   let is_simple (itm, c) =
     match c.Conf.module_item_spacing with
