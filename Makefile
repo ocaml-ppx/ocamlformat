@@ -34,6 +34,12 @@ regtests:
 regtests-promote:
 	dune runtest --auto-promote
 
+coverage:
+	dune runtest --instrument-with bisect_ppx --force
+	bisect-ppx-report html
+	echo "Coverage report generated in _coverage/"
+	echo " => open _coverage/index.html"
+
 headers:
 	tools/update_headers.sh
 	dune build @fmt --auto-promote

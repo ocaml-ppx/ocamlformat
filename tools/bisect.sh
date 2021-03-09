@@ -18,23 +18,15 @@
 
 set -e
 
-if [[ ! -z "$1" ]]; then
+if [[ -n "$1" ]]; then
     branch="$1"
 else
     branch=$(git rev-parse HEAD)
 fi
 
-tmp=`mktemp -d`
+tmp=$(mktemp -d)
 git worktree add --detach "$tmp" "$branch"
 
-sed -i 's/;;INSERT_BISECT_HERE;;/(preprocess (pps bisect_ppx))/' "$tmp/bin/dune" "$tmp/lib/dune"
-
-# Run the tests
-make -C "$tmp" test
-
-dst="coverage"
-bisect-ppx-report -I "$tmp/_build/default" -html "$dst" `find "$tmp" -name 'bisect*.out'`
-echo "Coverage report generated in $dst/"
-echo " => open $dst/index.html"
+make -C "$tmp" coverage
 
 git worktree remove --force "$tmp"

@@ -32,7 +32,7 @@
  (name ocamlformat)
  (synopsis "Auto-formatter for OCaml code")
  (description
-   "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style.")
  (depends
   (ocaml
    (and
@@ -58,6 +58,10 @@
   (ocaml-migrate-parsetree
    (>= 2.1.0))
   (ocp-indent :with-test)
+  (bisect_ppx
+   (and
+    :with-test
+    (>= 2.5.0)))
   (odoc
    (>= 1.4.2))
   (ppxlib

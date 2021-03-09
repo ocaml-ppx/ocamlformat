@@ -15,7 +15,8 @@
  (modules ocamlformat)
  (flags
   (:standard -open Base -open Import))
- ;;INSERT_BISECT_HERE;;
+ (instrumentation
+  (backend bisect_ppx))
  (libraries ocamlformat_lib))
 
 (rule
