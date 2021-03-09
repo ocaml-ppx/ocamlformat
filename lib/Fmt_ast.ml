@@ -739,11 +739,12 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       | Some pro when c.conf.ocp_indent_compat ->
           fits_breaks ""
             (String.make (Int.max 1 (indent - String.length pro)) ' ')
-      | _ ->
+      | _ when box ->
           fmt_if_k
             Poly.(c.conf.break_separators = `Before)
             (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
-               (fits_breaks "" "   ") ) )
+               (fits_breaks "" "   ") )
+      | _ -> noop )
       $ wrap_if in_constraint "(" ")"
         @@ list xt1N
              ( if Poly.(c.conf.break_separators = `Before) then

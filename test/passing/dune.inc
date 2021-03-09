@@ -1956,6 +1956,36 @@
 (rule
  (deps .ocamlformat )
  (action
+   (with-outputs-to polytypes-default.ml.output
+     (run %{bin:ocamlformat} --profile=default %{dep:polytypes.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff polytypes-default.ml.ref polytypes-default.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to polytypes-janestreet.ml.output
+     (run %{bin:ocamlformat} --profile=janestreet %{dep:polytypes.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff polytypes-janestreet.ml.ref polytypes-janestreet.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
+   (with-outputs-to polytypes.ml.output
+     (run %{bin:ocamlformat} %{dep:polytypes.ml}))))
+
+(rule
+ (alias runtest)
+ (action (diff polytypes.ml polytypes.ml.output)))
+
+(rule
+ (deps .ocamlformat )
+ (action
    (with-outputs-to pre_post_extensions.ml.output
      (run %{bin:ocamlformat} %{dep:pre_post_extensions.ml}))))
 
