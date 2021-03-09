@@ -122,19 +122,12 @@ class x =
   let[@foo] x = 3 in
   object
     inherit x [@@foo]
-
     val x = 3 [@@foo]
-
     val virtual x : t [@@foo]
-
     val! mutable x = 3 [@@foo]
-
     method x = 3 [@@foo]
-
     method virtual x : t [@@foo]
-
     method! private x = 3 [@@foo]
-
     initializer x [@@foo]
   end [@foo]
 
@@ -142,21 +135,13 @@ class x =
 class type t =
   object
     inherit t [@@foo]
-
     val x : t [@@foo]
-
     val mutable x : t [@@foo]
-
     method x : t [@@foo]
-
     method private x : t [@@foo]
-
     constraint t = t' [@@foo]
-
     [@@@abc]
-
     [%%id]
-
     [@@@aaa]
   end[@foo]
 
@@ -263,7 +248,6 @@ class type castable =
 class type foo_t =
   object
     inherit castable
-
     method foo : string
   end
 
@@ -284,7 +268,6 @@ class foo : foo_t =
 class type bar_t =
   object
     inherit foo
-
     method bar : string
   end
 
@@ -300,9 +283,7 @@ class bar : bar_t =
       | other -> super#cast other
 
     method bar = "bar"
-
     [@@@id]
-
     [%%id]
   end
 
@@ -3858,9 +3839,7 @@ let ( !! ) = Lazy.force
 class type ['a, 'b] ops =
   object
     method free : x:'b -> ?y:'c -> Names.t
-
     method subst : sub:'a Subst.t -> 'b -> 'a
-
     method eval : 'b -> 'a
   end
 
@@ -3877,7 +3856,6 @@ class ['a] var_ops =
       | Not_found -> x
 
     method free (`Var s) = Names.singleton s
-
     method eval (#var as v) = v
   end
 
@@ -4108,9 +4086,7 @@ let ( !! ) = Lazy.force
 class type ['a, 'b] ops =
   object
     method free : 'b -> Names.t
-
     method subst : sub:'a Subst.t -> 'b -> 'a
-
     method eval : 'b -> 'a
   end
 
@@ -4125,7 +4101,6 @@ let var =
       | Not_found -> x
 
     method free (`Var s) = Names.singleton s
-
     method eval (#var as v) = v
   end
 ;;
@@ -6112,7 +6087,6 @@ class type exp =
 class app e1 e2 : exp =
   object
     val l = e1
-
     val r = e2
 
     method eval env =
@@ -6131,9 +6105,7 @@ class virtual ['subject, 'event] observer =
 class ['event] subject =
   object (self : 'subject)
     val mutable observers : ('subject, 'event) observer list = []
-
     method add_observer obs = observers <- obs :: observers
-
     method notify_observers (e : 'event) = List.iter (fun x -> x#notify self e) observers
   end
 
@@ -6142,18 +6114,14 @@ type id = int
 class entity (id : id) =
   object
     val ent_destroy_subject = new subject
-
     method destroy_subject : id subject = ent_destroy_subject
-
     method entity_id = id
   end
 
 class ['entity] entity_container =
   object (self)
     inherit ['entity, id] observer as observer
-
     method add_entity (e : 'entity) = e#destroy_subject#add_observer self
-
     method notify _ id = ()
   end
 
@@ -6173,7 +6141,6 @@ class world =
 class c v =
   object
     initializer print_endline v
-
     val v = 42
   end
 
@@ -6204,7 +6171,6 @@ class virtual ['a] c =
 let o =
   object (s : 'a)
     inherit ['a] c
-
     method m = 42
   end
 ;;
@@ -6238,7 +6204,6 @@ end
 class c (x : int) =
   object
     inherit M.c x
-
     method x : bool = x
   end
 
@@ -6253,14 +6218,12 @@ class alfa =
 class bravo a =
   object
     val y = (a :> alfa)
-
     initializer y#x "bravo initialized"
   end
 
 class charlie a =
   object
     inherit bravo a
-
     initializer y#x "charlie initialized"
   end
 
@@ -6270,43 +6233,29 @@ exception Out_of_range
 class type ['a] cursor =
   object
     method get : 'a
-
     method incr : unit -> unit
-
     method is_last : bool
   end
 
 class type ['a] storage =
   object ('self)
     method first : 'a cursor
-
     method len : int
-
     method nth : int -> 'a cursor
-
     method copy : 'self
-
     method sub : int -> int -> 'self
-
     method concat : 'a storage -> 'self
-
     method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b
-
     method iter : ('a -> unit) -> unit
   end
 
 class virtual ['a, 'cursor] storage_base =
   object (self : 'self)
     constraint 'cursor = 'a #cursor
-
     method virtual first : 'cursor
-
     method virtual len : int
-
     method virtual copy : 'self
-
     method virtual sub : int -> int -> 'self
-
     method virtual concat : 'a storage -> 'self
 
     method fold : 'b. ('a -> int -> 'b -> 'b) -> 'b -> 'b =
@@ -6334,16 +6283,13 @@ class virtual ['a, 'cursor] storage_base =
 class type ['a] obj_input_channel =
   object
     method get : unit -> 'a
-
     method close : unit -> unit
   end
 
 class type ['a] obj_output_channel =
   object
     method put : 'a -> unit
-
     method flush : unit -> unit
-
     method close : unit -> unit
   end
 
@@ -6415,19 +6361,12 @@ module UText = struct
   class text_raw buf =
     object (self : 'self)
       inherit [cursor] ustorage_base
-
       val contents = buf
-
       method first = new cursor (self :> text_raw) 0
-
       method len = String.length contents / 4
-
       method get i = get_buf contents (4 * i)
-
       method nth i = new cursor (self :> text_raw) i
-
       method copy = {<contents = String.copy contents>}
-
       method sub pos len = {<contents = String.sub contents (pos * 4) (len * 4)>}
 
       method concat (text : ustorage) =
@@ -6440,20 +6379,15 @@ module UText = struct
   and cursor text i =
     object
       val contents = text
-
       val mutable pos = i
-
       method get = contents#get pos
-
       method incr () = pos <- pos + 1
-
       method is_last = pos + 1 >= contents#len
     end
 
   class string_raw buf =
     object
       inherit text_raw buf
-
       method set i u = set_buf contents (4 * i) u
     end
 
@@ -6536,7 +6470,6 @@ class virtual name = object end
 and func (args_ty, ret_ty) =
   object (self)
     inherit name
-
     val mutable memo_args = None
 
     method arguments =
@@ -6588,7 +6521,6 @@ module Classdef = struct
   class virtual ['a, 'b] cl1 =
     object
       method virtual raise_trouble : int -> 'a
-
       method virtual m : 'a -> 'b -> int
     end
 
@@ -6613,7 +6545,6 @@ module Classdef = struct
   class virtual ['a, 'b] cl1 =
     object
       method virtual raise_trouble : int -> 'a
-
       method virtual m : 'a -> 'b -> int
     end
 
@@ -7890,7 +7821,6 @@ end = struct
   class d =
     object (self)
       inherit Class1.c as super
-
       method m (x : int) = super#m 0
     end
 end
@@ -8586,7 +8516,6 @@ let f x (type a) (y : a) = x = y
 class ['a] c =
   object (self)
     method m : 'a -> 'a = fun x -> x
-
     method n : 'a -> 'a = fun (type g) (x : g) -> self#m x
   end
 
@@ -9590,7 +9519,6 @@ let _ =
 class ['a] c () =
   object
     constraint 'a = < .. > -> unit
-
     method m : 'a = fun x -> ()
   end
 

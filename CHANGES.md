@@ -4,11 +4,13 @@
 
 #### Bug fixes
 
-+ Fix extraneous parenthesis after 'let open' with 'closing-on-separate-line' (#1612, @Julow)
+  + Fix extraneous parenthesis after 'let open' with 'closing-on-separate-line' (#1612, @Julow)
 
 #### Changes
 
-+ Use dune instrumentation backend for bisect_ppx (#1550, @tmattio)
+  + Use dune instrumentation backend for bisect_ppx (#1550, @tmattio)
+
+  + Format objects and classes consistently with structure and signature items (#1569, @bikallem)
 
 #### New features
 

@@ -156,6 +156,8 @@ type t =
   | Mod of module_expr
   | Sig of signature_item
   | Str of structure_item
+  | Clf of class_field
+  | Ctf of class_type_field
   | Tli of toplevel_item
   | Top
 
