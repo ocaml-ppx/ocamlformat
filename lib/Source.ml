@@ -107,8 +107,7 @@ let has_cmt_same_line_after t (loc : Location.t) =
 
 let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   let loc_start =
-    List.fold l ~init:loc
-      ~f:(fun acc ({attr_loc; _} : Parsetree.attribute) ->
+    List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->
         if Location.compare_start attr_loc acc >= 0 then acc else attr_loc )
   in
   let loc_end =
