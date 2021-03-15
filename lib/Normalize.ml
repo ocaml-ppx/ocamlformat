@@ -13,13 +13,11 @@
 
 open Migrate_ast
 open Asttypes
-open Parsetree
+open Ast_passes
 open Ast_helper
 
 type conf =
-  { conf: Conf.t
-  ; normalize_code:
-      Migrate_ast.Parsetree.structure -> Migrate_ast.Parsetree.structure }
+  {conf: Conf.t; normalize_code: Ast_final.structure -> Ast_final.structure}
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts fragment ast comments =
@@ -46,7 +44,7 @@ let dedup_cmts fragment ast comments =
           | _ -> super#attribute atr docs
       end
     in
-    Traverse.fold fragment iter ast (Set.empty (module Cmt))
+    Ast_final.fold fragment iter ast (Set.empty (module Cmt))
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
@@ -107,7 +105,8 @@ let rec odoc_nestable_block_element c fmt = function
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
             Parse_with_comments.parse Structure c.conf ~source:txt
           in
-          let comments = dedup_cmts Traverse.Structure ast comments in
+          let ast = Ast_passes.run Structure Structure ast in
+          let comments = dedup_cmts Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
                 Location.compare a b )
@@ -115,8 +114,9 @@ let rec odoc_nestable_block_element c fmt = function
                    Caml.Format.fprintf fmt "%s," txt )
           in
           let ast = c.normalize_code ast in
-          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]" Printast.implementation
-            ast print_comments comments
+          Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
+            Ast_passes.Ast_final.Printast.implementation ast print_comments
+            comments
         with _ -> txt
       in
       fpf fmt "Code_block,%a" str txt
@@ -176,16 +176,17 @@ let docstring c text =
     Format.asprintf "Docstring(%a)%!" (odoc_docs c)
       parsed.Odoc_model.Error.value
 
-let sort_attributes : attributes -> attributes =
+let sort_attributes : Ast_final.attributes -> Ast_final.attributes =
   List.sort ~compare:Poly.compare
 
 let make_mapper conf ~ignore_doc_comments =
+  let open Ast_final in
   let doc_attribute = function
     | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
   in
   object (self)
-    inherit Ppxlib.Ast_traverse.map as super
+    inherit map as super
 
     (** Remove locations *)
     method! location _ = Location.none
@@ -358,15 +359,15 @@ let make_mapper conf ~ignore_doc_comments =
   end
 
 let normalize fragment c =
-  Traverse.map fragment (make_mapper c ~ignore_doc_comments:false)
+  Ast_final.map fragment (make_mapper c ~ignore_doc_comments:false)
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
-  let map = Traverse.map fragment (make_mapper c ~ignore_doc_comments) in
-  Traverse.equal fragment (map ast1) (map ast2)
+  let map = Ast_final.map fragment (make_mapper c ~ignore_doc_comments) in
+  Ast_final.equal fragment (map ast1) (map ast2)
 
 let fold_docstrings =
   let doc_attribute = function
-    | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
+    | Ast_final.{attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
     | _ -> false
   in
   object
@@ -391,8 +392,8 @@ let fold_docstrings =
       super#attributes (sort_attributes atrs)
   end
 
-let docstrings (type a) (fragment : a Traverse.fragment) s =
-  Traverse.fold fragment fold_docstrings s []
+let docstrings (type a) (fragment : a Ast_final.t) s =
+  Ast_final.fold fragment fold_docstrings s []
 
 type docstring_error =
   | Moved of Location.t * Location.t * string

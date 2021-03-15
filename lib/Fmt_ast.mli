@@ -11,8 +11,8 @@
 
 (** Format OCaml Ast *)
 
-val fmt_fragment :
-     'a list Migrate_ast.Traverse.fragment
+val fmt_ast :
+     'a list Ast_passes.Ast_final.t
   -> debug:bool
   -> Source.t
   -> Cmts.t

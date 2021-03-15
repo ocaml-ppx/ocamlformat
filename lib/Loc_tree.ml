@@ -9,8 +9,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Migrate_ast
-open Parsetree
+module Location = Migrate_ast.Location
+open Ast_passes.Ast_final
 include Non_overlapping_interval_tree.Make (Location)
 
 let fold src =
@@ -46,5 +46,5 @@ let fold src =
 
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 let of_ast fragment ast src =
-  let locs = Traverse.fold fragment (fold src) ast [] in
+  let locs = Ast_passes.Ast_final.fold fragment (fold src) ast [] in
   (of_list locs, locs)

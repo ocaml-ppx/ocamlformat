@@ -9,23 +9,4 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type 'a with_comments =
-  {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
-
-module W : sig
-  type t
-
-  val in_lexer : int list
-
-  val disable : int -> t
-
-  val enable : int -> t
-
-  val to_string : t list -> string
-end
-
-exception Warning50 of (Location.t * Warnings.t) list
-
-val parse :
-  'a Ast_passes.Ast0.t -> Conf.t -> source:string -> 'a with_comments
-(** @raise [Warning50] on misplaced documentation comments. *)
+type t = Structure | Signature | Use_file

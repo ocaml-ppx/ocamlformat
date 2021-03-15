@@ -11,18 +11,6 @@
 
 module Ast_helper = Ppxlib.Ast_helper
 
-module Parsetree : sig
-  include module type of Ppxlib.Parsetree
-
-  val equal_core_type : core_type -> core_type -> bool
-
-  val equal_structure : structure -> structure -> bool
-
-  val equal_signature : signature -> signature -> bool
-
-  val equal_toplevel_phrase : toplevel_phrase -> toplevel_phrase -> bool
-end
-
 module Asttypes : sig
   include module type of Ppxlib.Asttypes
 
@@ -92,43 +80,6 @@ module Location : sig
 
   val to_span : t -> Odoc_model.Location_.span
 end
-
-module Traverse : sig
-  type 'a fragment =
-    | Structure : Parsetree.structure fragment
-    | Signature : Parsetree.signature fragment
-    | Use_file : Parsetree.toplevel_phrase list fragment
-
-  val equal : 'a fragment -> 'a -> 'a -> bool
-
-  val map : 'a fragment -> Ppxlib.Ast_traverse.map -> 'a -> 'a
-
-  val iter : 'a fragment -> Ppxlib.Ast_traverse.iter -> 'a -> unit
-
-  val fold : 'a fragment -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
-end
-
-module Parse : sig
-  val fragment : 'a Traverse.fragment -> Lexing.lexbuf -> 'a
-
-  val parser_version : Ocaml_version.t
-end
-
-module Printast : sig
-  val implementation : Format.formatter -> Parsetree.structure -> unit
-
-  val interface : Format.formatter -> Parsetree.signature -> unit
-
-  val payload : Format.formatter -> Parsetree.payload -> unit
-
-  val expression : Format.formatter -> Parsetree.expression -> unit
-
-  val use_file : Format.formatter -> Parsetree.toplevel_phrase list -> unit
-
-  val fragment : 'a Traverse.fragment -> Format.formatter -> 'a -> unit
-end
-
-module Pprintast = Ppxlib.Pprintast
 
 module Longident : sig
   type t = Longident.t =

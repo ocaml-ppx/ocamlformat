@@ -11,19 +11,6 @@
 
 module Ast_helper = Ppxlib.Ast_helper
 
-module Parsetree = struct
-  include Ppxlib.Parsetree
-
-  let equal_core_type : core_type -> core_type -> bool = Poly.equal
-
-  let equal_structure : structure -> structure -> bool = Poly.equal
-
-  let equal_signature : signature -> signature -> bool = Poly.equal
-
-  let equal_toplevel_phrase : toplevel_phrase -> toplevel_phrase -> bool =
-    Poly.equal
-end
-
 module Asttypes = struct
   include Ppxlib.Asttypes
 
@@ -35,83 +22,6 @@ module Asttypes = struct
 
   let is_mutable = function Mutable -> true | Immutable -> false
 end
-
-module Traverse = struct
-  type 'a fragment =
-    | Structure : Parsetree.structure fragment
-    | Signature : Parsetree.signature fragment
-    | Use_file : Parsetree.toplevel_phrase list fragment
-
-  let equal (type a) (x : a fragment) : a -> a -> bool =
-    match x with
-    | Structure -> Parsetree.equal_structure
-    | Signature -> Parsetree.equal_signature
-    | Use_file -> List.equal Parsetree.equal_toplevel_phrase
-
-  let map (type a) (x : a fragment) (m : Ppxlib.Ast_traverse.map) : a -> a =
-    match x with
-    | Structure -> m#structure
-    | Signature -> m#signature
-    | Use_file -> m#list m#toplevel_phrase
-
-  let iter (type a) (fragment : a fragment) (i : Ppxlib.Ast_traverse.iter) :
-      a -> unit =
-    match fragment with
-    | Structure -> i#structure
-    | Signature -> i#signature
-    | Use_file -> i#list i#toplevel_phrase
-
-  let fold (type a) (fragment : a fragment) (f : _ Ppxlib.Ast_traverse.fold)
-      : a -> _ =
-    match fragment with
-    | Structure -> f#structure
-    | Signature -> f#signature
-    | Use_file -> f#list f#toplevel_phrase
-end
-
-module Parse = struct
-  let implementation = Ppxlib_ast.Parse.implementation
-
-  let interface = Ppxlib_ast.Parse.interface
-
-  let use_file lexbuf =
-    List.filter (Ppxlib_ast.Parse.use_file lexbuf)
-      ~f:(fun (p : Parsetree.toplevel_phrase) ->
-        match p with
-        | Ptop_def [] -> false
-        | Ptop_def (_ :: _) | Ptop_dir _ -> true )
-
-  let fragment (type a) (fragment : a Traverse.fragment) lexbuf : a =
-    match fragment with
-    | Traverse.Structure -> implementation lexbuf
-    | Traverse.Signature -> interface lexbuf
-    | Traverse.Use_file -> use_file lexbuf
-
-  let parser_version = Ocaml_version.sys_version
-end
-
-module Printast = struct
-  let pp_sexp ppf sexp = Format.fprintf ppf "%a" (Sexp.pp_hum_indent 2) sexp
-
-  let sexp_of = Ppxlib.Ast_traverse.sexp_of
-
-  let implementation ppf x = pp_sexp ppf (sexp_of#structure x)
-
-  let interface ppf x = pp_sexp ppf (sexp_of#signature x)
-
-  let expression ppf x = pp_sexp ppf (sexp_of#expression x)
-
-  let payload ppf x = pp_sexp ppf (sexp_of#payload x)
-
-  let use_file ppf x = pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
-
-  let fragment (type a) : a Traverse.fragment -> _ -> a -> _ = function
-    | Traverse.Structure -> implementation
-    | Traverse.Signature -> interface
-    | Traverse.Use_file -> use_file
-end
-
-module Pprintast = Ppxlib.Pprintast
 
 module Position = struct
   open Lexing

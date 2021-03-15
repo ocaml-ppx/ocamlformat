@@ -12,7 +12,7 @@
 (** Abstract syntax tree terms *)
 
 open Migrate_ast
-open Parsetree
+open Ast_passes.Ast_final
 
 val init : Conf.t -> unit
 (** Initialize internal state *)

@@ -67,7 +67,7 @@ let parse fragment (conf : Conf.t) ~source =
           false )
         else not conf.quiet )
       ~f:(fun () ->
-        let ast = Migrate_ast.Parse.fragment fragment lexbuf in
+        let ast = Ast_passes.Ast0.Parse.ast fragment lexbuf in
         Warnings.check_fatal () ;
         let comments =
           List.map

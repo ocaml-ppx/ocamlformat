@@ -10,6 +10,7 @@
 (**************************************************************************)
 
 open Migrate_ast
+open Ast_passes.Ast_final
 
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}
@@ -104,11 +105,9 @@ let has_cmt_same_line_after t (loc : Location.t) =
       nloc.loc_start.pos_lnum = loc.loc_end.pos_lnum
   | Some _ -> false
 
-let extend_loc_to_include_attributes (loc : Location.t)
-    (l : Parsetree.attributes) =
+let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   let loc_end =
-    List.fold l ~init:loc
-      ~f:(fun acc ({attr_loc; _} : Parsetree.attribute) ->
+    List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->
         if Location.compare_end attr_loc acc <= 0 then acc else attr_loc )
   in
   if phys_equal loc_end loc then loc
@@ -121,16 +120,17 @@ let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   Source_code_position.ascending from upto < 0
   && not (List.is_empty (tokens_between t ~filter from upto))
 
-let is_long_pexp_open source {Parsetree.pexp_desc; _} =
+let is_long_pexp_open source {pexp_desc; _} =
   match pexp_desc with
   | Pexp_open ({popen_loc= from; _}, {pexp_loc= upto; _}) ->
       contains_token_between source ~from ~upto Parser.IN
   | _ -> false
 
 let is_long_functor_syntax (t : t) ~from = function
-  | Parsetree.Unit -> false
-  | Parsetree.Named ({loc= upto; _}, _) -> (
-      if Ocaml_version.(compare Parse.parser_version Releases.v4_12) < 0 then
+  | Unit -> false
+  | Named ({loc= upto; _}, _) -> (
+      let parser_version = Ast_passes.Ast0.Parse.parser_version in
+      if Ocaml_version.(compare parser_version Releases.v4_12) < 0 then
         (* before 4.12 the functor keyword is the first token of the functor
            parameter *)
         contains_token_between t ~from ~upto Parser.FUNCTOR
@@ -145,12 +145,12 @@ let is_long_functor_syntax (t : t) ~from = function
         | Some (Parser.FUNCTOR, _) -> true
         | _ -> false )
 
-let is_long_pmod_functor t Parsetree.{pmod_desc; pmod_loc= from; _} =
+let is_long_pmod_functor t {pmod_desc; pmod_loc= from; _} =
   match pmod_desc with
   | Pmod_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
 
-let is_long_pmty_functor t Parsetree.{pmty_desc; pmty_loc= from; _} =
+let is_long_pmty_functor t {pmty_desc; pmty_loc= from; _} =
   match pmty_desc with
   | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
@@ -234,12 +234,12 @@ let extension_using_sugar ~(name : string Location.loc)
   Source_code_position.ascending name.loc.loc_start payload.loc_start > 0
 
 let type_constraint_is_first typ loc =
-  Location.compare_start typ.Parsetree.ptyp_loc loc < 0
+  Location.compare_start typ.ptyp_loc loc < 0
 
 let loc_of_underscore t flds (ppat_loc : Location.t) =
   let end_last_field =
     match List.last flds with
-    | Some (_, p) -> p.Parsetree.ppat_loc.loc_end
+    | Some (_, p) -> p.ppat_loc.loc_end
     | None -> ppat_loc.loc_start
   in
   let loc_underscore = {ppat_loc with loc_start= end_last_field} in
@@ -263,7 +263,7 @@ let locs_of_interval source loc =
         "Ppat_interval is only produced by the sequence of 3 tokens: \
          CONSTANT-DOTDOT-CONSTANT "
 
-let loc_of_constant t loc (cst : Parsetree.constant) =
+let loc_of_constant t loc (cst : constant) =
   let filter : Parser.token -> bool =
     match cst with
     | Pconst_string _ -> ( function STRING _ -> true | _ -> false )
@@ -273,13 +273,13 @@ let loc_of_constant t loc (cst : Parsetree.constant) =
   in
   match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
 
-let loc_of_pat_constant t (p : Parsetree.pattern) =
+let loc_of_pat_constant t (p : pattern) =
   match p.ppat_desc with
   | Ppat_constant cst ->
       loc_of_constant t (Location.smallest p.ppat_loc p.ppat_loc_stack) cst
   | _ -> impossible "loc_of_pat_constant is only called on constants"
 
-let loc_of_expr_constant t (e : Parsetree.expression) =
+let loc_of_expr_constant t (e : expression) =
   match e.pexp_desc with
   | Pexp_constant cst ->
       loc_of_constant t (Location.smallest e.pexp_loc e.pexp_loc_stack) cst

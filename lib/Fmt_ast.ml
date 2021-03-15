@@ -15,7 +15,7 @@ module Format = Format_
 
 open Migrate_ast
 open Asttypes
-open Parsetree
+open Ast_passes.Ast_final
 open Ast
 open Fmt
 
@@ -1053,9 +1053,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
           | Ppat_constraint ({ppat_desc= Ppat_var {txt; _}; ppat_loc; _}, t)
             when field_alias ~field:lid1.txt (Longident.lident txt)
                  && List.is_empty ppat_attributes ->
-              if
-                Ocaml_version.(compare Parse.parser_version Releases.v4_12)
-                >= 0
+              let parser_version = Ast_passes.Ast0.Parse.parser_version in
+              if Ocaml_version.(compare parser_version Releases.v4_12) >= 0
               then
                 Cmts.relocate c.cmts ~src:ppat_loc ~before:lid1.loc
                   ~after:lid1.loc ;
@@ -4550,18 +4549,20 @@ let fmt_toplevel c ctx itms =
 (** Entry points *)
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug
-    (fragment : a list Traverse.fragment) source cmts conf (itms : a list) =
+    (fragment : a list Ast_passes.Ast_final.t) source cmts conf
+    (itms : a list) =
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
   | _, [] -> Cmts.fmt_after ~pro:noop c Location.none
-  | Traverse.Structure, l -> fmt_structure c ctx l
-  | Traverse.Signature, l -> fmt_signature c ctx l
-  | Traverse.Use_file, l -> fmt_toplevel c ctx l
+  | Structure, l -> fmt_structure c ctx l
+  | Signature, l -> fmt_signature c ctx l
+  | Use_file, l -> fmt_toplevel c ctx l
 
 let fmt_code ~debug =
   let rec fmt_code conf s =
     match Parse_with_comments.parse Structure conf ~source:s with
     | {ast; comments; source; prefix= _} ->
+        let ast = Ast_passes.run Structure Structure ast in
         let cmts = Cmts.init Structure ~debug source ast comments in
         let ctx = Pld (PStr ast) in
         Ok (fmt_file ~ctx ~debug Structure source cmts conf ast ~fmt_code)
@@ -4569,7 +4570,7 @@ let fmt_code ~debug =
   in
   fmt_code
 
-let fmt_fragment fragment ~debug source cmts conf l =
+let fmt_ast fragment ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
   Ast.init conf ;

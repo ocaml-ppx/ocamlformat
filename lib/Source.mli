@@ -10,6 +10,7 @@
 (**************************************************************************)
 
 open Migrate_ast
+open Ast_passes.Ast_final
 
 type t
 
@@ -53,16 +54,16 @@ val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
 
 val char_literal : t -> Location.t -> string
 
-val is_long_pexp_open : t -> Parsetree.expression -> bool
+val is_long_pexp_open : t -> expression -> bool
 (** [is_long_pexp_open source exp] holds if [exp] is a [Pexp_open] expression
     that is expressed in long ('let open') form in source. *)
 
-val is_long_pmod_functor : t -> Parsetree.module_expr -> bool
+val is_long_pmod_functor : t -> module_expr -> bool
 (** [is_long_pmod_functor source mod_exp] holds if [mod_exp] is a
     [Pmod_functor] expression that is expressed in long ('functor (M) ->')
     form in source. *)
 
-val is_long_pmty_functor : t -> Parsetree.module_type -> bool
+val is_long_pmty_functor : t -> module_type -> bool
 (** [is_long_pmty_functor source mod_type] holds if [mod_type] is a
     [Pmty_functor] type that is expressed in long ('functor (M) ->') form in
     source. *)
@@ -74,13 +75,12 @@ val ends_line : t -> Location.t -> bool
 val extension_using_sugar :
   name:string Location.loc -> payload:Location.t -> bool
 
-val extend_loc_to_include_attributes :
-  Location.t -> Parsetree.attributes -> Location.t
+val extend_loc_to_include_attributes : Location.t -> attributes -> Location.t
 
-val type_constraint_is_first : Parsetree.core_type -> Location.t -> bool
+val type_constraint_is_first : core_type -> Location.t -> bool
 
 val loc_of_underscore :
-  t -> ('a * Parsetree.pattern) list -> Location.t -> Location.t option
+  t -> ('a * pattern) list -> Location.t -> Location.t option
 (** [loc_of_underscore source fields loc] returns the location of the
     underscore at the end of the record pattern of location [loc] with fields
     [fields], if the record pattern is open (it ends with an underscore),
@@ -90,9 +90,9 @@ val locs_of_interval : t -> Location.t -> Location.t * Location.t
 (** Given the location of an interval pattern ['a'..'b'], return the
     locations of the constants that represent the bounds (['a'] and ['b']). *)
 
-val loc_of_pat_constant : t -> Parsetree.pattern -> Location.t
+val loc_of_pat_constant : t -> pattern -> Location.t
 
-val loc_of_expr_constant : t -> Parsetree.expression -> Location.t
+val loc_of_expr_constant : t -> expression -> Location.t
 
 val is_quoted_string : t -> Location.t -> bool
 

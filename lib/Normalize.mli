@@ -11,9 +11,9 @@
 
 (** Normalize abstract syntax trees *)
 
-open Migrate_ast
+open Ast_passes
 
-val dedup_cmts : 'a Traverse.fragment -> 'a -> Cmt.t list -> Cmt.t list
+val dedup_cmts : 'a Ast_final.t -> 'a -> Cmt.t list -> Cmt.t list
 
 val comment : string -> string
 (** Normalize a comment. *)
@@ -21,16 +21,11 @@ val comment : string -> string
 val docstring : Conf.t -> string -> string
 (** Normalize a docstring. *)
 
-val normalize : 'a Traverse.fragment -> Conf.t -> 'a -> 'a
+val normalize : 'a Ast_final.t -> Conf.t -> 'a -> 'a
 (** Normalize an AST fragment. *)
 
 val equal :
-     'a Traverse.fragment
-  -> ignore_doc_comments:bool
-  -> Conf.t
-  -> 'a
-  -> 'a
-  -> bool
+  'a Ast_final.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 (** Compare fragments for equality up to normalization. *)
 
 type docstring_error =
@@ -38,4 +33,4 @@ type docstring_error =
   | Unstable of Location.t * string
 
 val moved_docstrings :
-  'a Traverse.fragment -> Conf.t -> 'a -> 'a -> docstring_error list
+  'a Ast_final.t -> Conf.t -> 'a -> 'a -> docstring_error list

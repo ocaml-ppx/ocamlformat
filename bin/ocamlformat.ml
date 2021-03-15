@@ -19,11 +19,11 @@ Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 ;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
-let format ?output_file ~kind:(Conf.Kind k) ~input_name ~source conf opts =
+let format ?output_file ~kind ~input_name ~source conf opts =
   if conf.Conf.disable then Ok source
   else
-    Translation_unit.parse_and_format k ?output_file ~input_name ~source conf
-      opts
+    Translation_unit.parse_and_format kind ?output_file ~input_name ~source
+      conf opts
 
 let to_output_file output_file data =
   match output_file with

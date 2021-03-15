@@ -9,8 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Migrate_ast
-open Parsetree
+open Ast_passes.Ast_final
 
 module Left = struct
   let rec core_type typ =
