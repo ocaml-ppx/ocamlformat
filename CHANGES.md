@@ -6,7 +6,7 @@
 
   + Fix extraneous parenthesis after 'let open' with 'closing-on-separate-line' (#1612, @Julow)
 
-  + Remove unnecessary spaces between polytype quantification and arrow-type body (#1615, @gpetiot)
+  + Add missing break between polytype quantification and arrow-type body (#1615, @gpetiot)
 
 #### Changes
 
