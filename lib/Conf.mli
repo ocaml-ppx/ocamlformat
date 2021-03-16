@@ -81,6 +81,8 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
+val default_profile : t
+
 type file = Stdin | File of string
 
 type input = {kind: Syntax.t; name: string; file: file; conf: t}
