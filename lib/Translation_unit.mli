@@ -9,7 +9,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type error
+module Error : sig
+  type t
+
+  val equal : t -> t -> bool
+
+  val print : ?debug:bool -> ?quiet:bool -> Format.formatter -> t -> unit
+end
 
 val parse_and_format :
      Syntax.t
@@ -18,17 +24,6 @@ val parse_and_format :
   -> source:string
   -> Conf.t
   -> Conf.opts
-  -> (string, error) Result.t
+  -> (string, Error.t) Result.t
 (** [parse_and_format kind conf ?output_file ~input_name ~source] parses and
     formats [source] as a list of fragments. *)
-
-val print_error :
-     fmt:Format.formatter
-  -> exe:string
-  -> debug:bool
-  -> quiet:bool
-  -> input_name:string
-  -> error
-  -> unit
-(** [print_error conf ?fmt ~input_name e] prints the error message
-    corresponding to error [e] on the [fmt] formatter (stderr by default). *)

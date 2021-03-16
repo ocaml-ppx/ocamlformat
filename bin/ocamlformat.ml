@@ -34,15 +34,8 @@ let source_from_file = function
   | Conf.Stdin -> In_channel.input_all In_channel.stdin
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
-let chop_any_extension s =
-  match Filename.chop_extension s with
-  | r -> r
-  | exception Invalid_argument _ -> s
-
-let print_error conf opts ~input_name e =
-  let exe = chop_any_extension (Filename.basename Caml.Sys.argv.(0)) in
-  Translation_unit.print_error ~fmt:Format.err_formatter ~exe
-    ~debug:opts.Conf.debug ~quiet:conf.Conf.quiet ~input_name e
+let print_error ({quiet; _} : Conf.t) ({debug; _} : Conf.opts) e =
+  Translation_unit.Error.print Format.err_formatter ~debug ~quiet e
 
 let run_action action opts =
   match action with
@@ -62,7 +55,7 @@ let run_action action opts =
             if not (String.equal formatted source) then
               Out_channel.write_all input_file ~data:formatted ;
             Ok ()
-        | Error e -> Error (fun () -> print_error conf opts ~input_name e)
+        | Error e -> Error (fun () -> print_error conf opts e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | In_out ({kind; file; name= input_name; conf}, output_file) -> (
@@ -71,7 +64,7 @@ let run_action action opts =
       | Ok s ->
           to_output_file output_file s ;
           Ok ()
-      | Error e -> Error [(fun () -> print_error conf opts ~input_name e)] )
+      | Error e -> Error [(fun () -> print_error conf opts e)] )
   | Check inputs ->
       let f {Conf.kind; name= input_name; file; conf} =
         let source = source_from_file file in
@@ -79,7 +72,7 @@ let run_action action opts =
         match result with
         | Ok res when String.equal res source -> Ok ()
         | Ok _ -> Error (fun () -> ())
-        | Error e -> Error (fun () -> print_error conf opts ~input_name e)
+        | Error e -> Error (fun () -> print_error conf opts e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | Print_config conf -> Conf.print_config conf ; Ok ()
