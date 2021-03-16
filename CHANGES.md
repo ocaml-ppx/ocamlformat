@@ -6,6 +6,8 @@
 
   + Fix extraneous parenthesis after 'let open' with 'closing-on-separate-line' (#1612, @Julow)
 
+  + Add missing break between polytype quantification and arrow-type body (#1615, @gpetiot)
+
 #### Changes
 
   + Use dune instrumentation backend for bisect_ppx (#1550, @tmattio)

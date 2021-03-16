@@ -782,7 +782,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
       hovbox_if box 0
         ( list a1N "@ " (fun {txt; _} -> fmt_type_var txt)
         $ fmt ".@ "
-        $ fmt_core_type c ~box:false (sub_typ ~ctx t) )
+        $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
         (wrap_if
