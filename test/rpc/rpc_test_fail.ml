@@ -25,11 +25,6 @@ let start () =
   ( match
       let input, output = Unix.open_process_args prog argv in
       let pid = Unix.process_pid (input, output) in
-      log "[ocf] proposed versions: @[<hv>%a@]\n%!"
-        (Format.pp_print_list
-           ~pp_sep:(fun fs () -> Format.fprintf fs ",@ ")
-           Format.pp_print_string )
-        supported_versions ;
       Ocf.pick_client ~pid input output supported_versions
       >>| fun client ->
       (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;

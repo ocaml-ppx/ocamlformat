@@ -1,9 +1,7 @@
 Starting then doing nothing
-[ocf] proposed versions: v1
 [ocf] client V1 selected
 [ocf] Halt
 Sending requests
-[ocf] proposed versions: v1
 [ocf] client V1 selected
 [ocf] Format 'char -> string'
 Output: char -> string
