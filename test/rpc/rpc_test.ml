@@ -22,18 +22,27 @@ let state : state ref = ref Uninitialized
 let start () =
   let prog = Sys.argv.(1) in
   let argv = [|"ocamlformat-rpc"|] in
-  let input, output = Unix.open_process_args prog argv in
-  let pid = Unix.process_pid (input, output) in
-  log "[ocf] proposed versions: @[<hv>%a@]\n%!"
-    (Format.pp_print_list
-       ~pp_sep:(fun fs () -> Format.fprintf fs ",@ ")
-       Format.pp_print_string )
-    supported_versions ;
-  Ocf.pick_client ~pid input output supported_versions
-  >>| (fun client ->
-        (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;
-        state := Running client ;
-        client )
+  ( match
+      let input, output = Unix.open_process_args prog argv in
+      let pid = Unix.process_pid (input, output) in
+      log "[ocf] proposed versions: @[<hv>%a@]\n%!"
+        (Format.pp_print_list
+           ~pp_sep:(fun fs () -> Format.fprintf fs ",@ ")
+           Format.pp_print_string )
+        supported_versions ;
+      Ocf.pick_client ~pid input output supported_versions
+      >>| fun client ->
+      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;
+      state := Running client ;
+      client
+    with
+  | exception _ ->
+      Error
+        (`Msg
+          "OCamlFormat-RPC did not respond. Check that a compatible version \
+           of the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is \
+           installed." )
+  | x -> x )
   |> Result.map_error ~f:(fun (`Msg msg) ->
          state := Errored ;
          log
