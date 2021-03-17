@@ -1,6 +1,6 @@
 (test
  (name rpc_test)
- (libraries ocamlformat-rpc-lib spawn)
+ (libraries ocamlformat-rpc-lib unix)
  (deps %{bin:ocamlformat-rpc})
  (modules rpc_test)
  (package ocamlformat-rpc)
@@ -9,7 +9,7 @@
 
 (test
  (name rpc_test_fail)
- (libraries ocamlformat-rpc-lib spawn)
+ (libraries ocamlformat-rpc-lib unix)
  (modules rpc_test_fail)
  (package ocamlformat-rpc)
  (action
