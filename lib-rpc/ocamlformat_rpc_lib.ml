@@ -188,7 +188,8 @@ let pick_client ~pid input output versions =
             Error
               (`Msg
                 "OCamlFormat-RPC did not respond. Check that a compatible \
-                 version of the OCamlFormat RPC server is installed." ) )
+                 version of the OCamlFormat RPC server (ocamlformat-rpc >= \
+                 0.18.0) is installed." ) )
   in
   aux versions
 
