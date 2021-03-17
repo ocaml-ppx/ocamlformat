@@ -38,7 +38,8 @@ let start () =
          state := Errored ;
          log
            "An error occured while initializing and configuring ocamlformat:\n\
-            %s"
+            %s\n\
+            %!"
            msg ;
          `No_process )
 
