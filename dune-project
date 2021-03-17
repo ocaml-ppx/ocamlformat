@@ -93,8 +93,6 @@
     (< v0.15)))
   base-unix
   cmdliner
-  (csexp :with-test)
-  (sexplib0 :with-test)
   dune-build-info
   fix
   fpath
