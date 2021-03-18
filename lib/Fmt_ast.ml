@@ -4549,14 +4549,20 @@ let fmt_toplevel c ctx itms =
 (** Entry points *)
 
 let fmt_file (type a) ~ctx ~fmt_code ~debug
-    (fragment : a list Ast_passes.Ast_final.t) source cmts conf
-    (itms : a list) =
+    (fragment : a Ast_passes.Ast_final.t) source cmts conf (itms : a) =
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
-  | _, [] -> Cmts.fmt_after ~pro:noop c Location.none
+  | Structure, [] | Signature, [] | Use_file, [] ->
+      Cmts.fmt_after ~pro:noop c Location.none
   | Structure, l -> fmt_structure c ctx l
   | Signature, l -> fmt_signature c ctx l
   | Use_file, l -> fmt_toplevel c ctx l
+  | Core_type, ty -> fmt_core_type c (sub_typ ~ctx:(Pld (PTyp ty)) ty)
+  | Module_type, mty ->
+      compose_module ~f:Fn.id
+        (fmt_module_type c (sub_mty ~ctx:(Mty mty) mty))
+  | Expression, e ->
+      fmt_expression c (sub_exp ~ctx:(Str (Ast_helper.Str.eval e)) e)
 
 let fmt_code ~debug =
   let rec fmt_code conf s =

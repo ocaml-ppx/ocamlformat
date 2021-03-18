@@ -1,0 +1,4 @@
+(library
+ (name ocamlformat_rpc_lib)
+ (public_name ocamlformat-rpc-lib)
+ (libraries csexp sexplib0))

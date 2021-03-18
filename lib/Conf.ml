@@ -2229,4 +2229,7 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
       if (not c.quiet) && not quiet then print_warning loc w ;
       c
 
+let update_value config ~name ~value =
+  C.update ~config ~from:`Commandline ~name ~value ~inline:false
+
 let print_config = C.print_config

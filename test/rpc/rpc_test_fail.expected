@@ -1,0 +1,8 @@
+Starting then doing nothing
+An error occured while initializing and configuring ocamlformat:
+OCamlFormat-RPC did not respond. Check that a compatible version of the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is installed.
+No process
+Sending requests
+No process
+No process
+No process

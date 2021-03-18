@@ -1,2 +1,3 @@
 (cram
+ (package ocamlformat)
  (deps %{bin:ocamlformat}))

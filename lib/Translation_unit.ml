@@ -243,10 +243,13 @@ let recover (type a) : a Ast_passes.Ast0.t -> _ = function
   | Structure -> Parse_wyc.Make_parsable.structure
   | Signature -> Parse_wyc.Make_parsable.signature
   | Use_file -> Parse_wyc.Make_parsable.use_file
+  | Core_type -> failwith "no recovery for core_type"
+  | Module_type -> failwith "no recovery for module_type"
+  | Expression -> failwith "no recovery for expression"
 
-let format (type a b) (fg0 : a list Ast_passes.Ast0.t)
-    (fgN : b list Ast_passes.Ast_final.t) ?output_file ~input_name
-    ~prev_source ~parsed conf opts =
+let format (type a b) (fg0 : a Ast_passes.Ast0.t)
+    (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~prev_source
+    ~parsed conf opts =
   let open Result.Monad_infix in
   let dump_ast fg ~suffix ast =
     if opts.Conf.debug then
@@ -407,9 +410,9 @@ let parse_result fragment conf (opts : Conf.opts) ~source ~input_name =
       else Error (Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
-let parse_and_format (type a b) (fg0 : a list Ast_passes.Ast0.t)
-    (fgN : b list Ast_passes.Ast_final.t) ?output_file ~input_name ~source
-    conf opts =
+let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
+    (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
+    opts =
   Ocaml_common.Location.input_name := input_name ;
   let open Result.Monad_infix in
   parse_result fg0 conf opts ~source ~input_name
@@ -422,3 +425,6 @@ let parse_and_format = function
   | Syntax.Structure -> parse_and_format Structure Structure
   | Syntax.Signature -> parse_and_format Signature Signature
   | Syntax.Use_file -> parse_and_format Use_file Use_file
+  | Syntax.Core_type -> parse_and_format Core_type Core_type
+  | Syntax.Module_type -> parse_and_format Module_type Module_type
+  | Syntax.Expression -> parse_and_format Expression Expression

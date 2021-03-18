@@ -110,4 +110,15 @@ val update : ?quiet:bool -> t -> Ast_passes.Ast_final.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
 
+val update_value :
+     t
+  -> name:string
+  -> value:string
+  -> ( t
+     , [ `Bad_value of string * string
+       | `Malformed of string
+       | `Misplaced of string * string
+       | `Unknown of string * string ] )
+     Result.t
+
 val print_config : t -> unit

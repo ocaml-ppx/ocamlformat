@@ -20,6 +20,9 @@ module Ast0 = struct
     | Structure : structure t
     | Signature : signature t
     | Use_file : use_file t
+    | Core_type : core_type t
+    | Module_type : module_type t
+    | Expression : expression t
 
   let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
@@ -33,18 +36,27 @@ module Ast0 = struct
     | Structure -> m#structure
     | Signature -> m#signature
     | Use_file -> m#list m#toplevel_phrase
+    | Core_type -> m#core_type
+    | Module_type -> m#module_type
+    | Expression -> m#expression
 
   let iter (type a) (fg : a t) (i : Ppxlib.Ast_traverse.iter) : a -> unit =
     match fg with
     | Structure -> i#structure
     | Signature -> i#signature
     | Use_file -> i#list i#toplevel_phrase
+    | Core_type -> i#core_type
+    | Module_type -> i#module_type
+    | Expression -> i#expression
 
   let fold (type a) (fg : a t) (f : _ Ppxlib.Ast_traverse.fold) : a -> _ =
     match fg with
     | Structure -> f#structure
     | Signature -> f#signature
     | Use_file -> f#list f#toplevel_phrase
+    | Core_type -> f#core_type
+    | Module_type -> f#module_type
+    | Expression -> f#expression
 
   module Parse = struct
     let implementation = Ppxlib_ast.Parse.implementation
@@ -58,11 +70,30 @@ module Ast0 = struct
           | Ptop_def [] -> false
           | Ptop_def (_ :: _) | Ptop_dir _ -> true )
 
+    let core_type = Ppxlib_ast.Parse.core_type
+
+    let module_type (lx : Lexing.lexbuf) =
+      let pre = "module X : " in
+      let lex_buffer_len = lx.lex_buffer_len + String.length pre in
+      let input = Bytes.to_string lx.lex_buffer in
+      let lex_buffer = Bytes.of_string (pre ^ input) in
+      let lx = {lx with lex_buffer; lex_buffer_len} in
+      match interface lx with
+      | [{psig_desc= Psig_module {pmd_type; _}; _}] -> pmd_type
+      | _ ->
+          failwith
+            (Format.sprintf "Syntax error: %s is not a module type" input)
+
+    let expression = Ppxlib_ast.Parse.expression
+
     let ast (type a) (fg : a t) lexbuf : a =
       match fg with
       | Structure -> implementation lexbuf
       | Signature -> interface lexbuf
       | Use_file -> use_file lexbuf
+      | Core_type -> core_type lexbuf
+      | Module_type -> module_type lexbuf
+      | Expression -> expression lexbuf
 
     let parser_version = Ocaml_version.sys_version
   end
@@ -88,10 +119,17 @@ module Ast_final = struct
     let use_file ppf x =
       pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
 
+    let core_type ppf x = pp_sexp ppf (sexp_of#core_type x)
+
+    let module_type ppf x = pp_sexp ppf (sexp_of#module_type x)
+
     let ast (type a) : a t -> _ -> a -> _ = function
       | Structure -> implementation
       | Signature -> interface
       | Use_file -> use_file
+      | Core_type -> core_type
+      | Module_type -> module_type
+      | Expression -> expression
   end
 
   module Pprintast = Ppxlib.Pprintast
@@ -101,7 +139,10 @@ module Ast_final = struct
     | Structure, Structure -> Fn.id
     | Signature, Signature -> Fn.id
     | Use_file, Use_file -> Fn.id
-    | _ -> failwith "impossible"
+    | Core_type, Core_type -> Fn.id
+    | Module_type, Module_type -> Fn.id
+    | Expression, Expression -> Fn.id
+    | _ -> failwith "Ast_final.mk: missing transformations (impossible)"
 end
 
 let run = Ast_final.mk

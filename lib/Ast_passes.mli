@@ -18,6 +18,9 @@ module Ast0 : sig
     | Structure : structure t
     | Signature : signature t
     | Use_file : use_file t
+    | Core_type : core_type t
+    | Module_type : module_type t
+    | Expression : expression t
 
   module Parse : sig
     val ast : 'a t -> Lexing.lexbuf -> 'a
@@ -37,6 +40,9 @@ module Ast_final : sig
     | Structure : structure t
     | Signature : signature t
     | Use_file : use_file t
+    | Core_type : core_type t
+    | Module_type : module_type t
+    | Expression : expression t
 
   val equal : 'a t -> 'a -> 'a -> bool
 

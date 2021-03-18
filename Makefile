@@ -14,7 +14,7 @@ default: exe
 
 .PHONY: exe
 exe:
-	dune build bin/ocamlformat.exe
+	dune build bin/ocamlformat/main.exe bin/ocamlformat-rpc/main.exe
 
 .PHONY: clean
 clean:
