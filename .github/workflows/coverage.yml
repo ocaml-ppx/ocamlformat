@@ -22,11 +22,6 @@ jobs:
           path: ~/.opam
           key: ${{ matrix.os }}-${{ matrix.ocaml-version }}-${{ hashFiles('*.opam') }}-opam
 
-      - name: Setup OCaml ${{ matrix.ocaml-version }}
-        uses: avsm/setup-ocaml@v1
-        with:
-          ocaml-version: ${{ matrix.ocaml-version }}
-
       - name: Send coverage stats to Coveralls
         run: |
           opam exec -- dune runtest --instrument-with bisect_ppx --force
