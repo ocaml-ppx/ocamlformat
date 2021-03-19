@@ -10,7 +10,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          # - windows-latest Windows doesn't work yet
+        ocaml-version:
+          # Don't include every versions. OCaml-CI already covers that
+          - 4.11.1
+        include:
+          - os: ubuntu-latest # Enable coverage only on a single build
+            send-coverage: true
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -22,10 +36,23 @@ jobs:
           path: ~/.opam
           key: ${{ matrix.os }}-${{ matrix.ocaml-version }}-${{ hashFiles('*.opam') }}-opam
 
-      - name: Send coverage stats to Coveralls
+      - name: Setup OCaml ${{ matrix.ocaml-version }}
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: ${{ matrix.ocaml-version }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          dune runtest --instrument-with bisect_ppx --force
-          bisect-ppx-report send-to Coveralls
+          opam pin add -n .
+          opam depext -y -t ocamlformat
+          opam install --deps-only -t ocamlformat
+
+      - name: Send coverage stats to Coveralls
+        if: matrix.send-coverage == true
+        run: |
+          opam exec -- dune runtest --instrument-with bisect_ppx --force
+          opam exec -- bisect-ppx-report send-to Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PULL_REQUEST_NUMBER: ${{ github.event.number }}
