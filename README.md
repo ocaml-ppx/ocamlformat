@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml-ppx%2Focamlformat%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml-ppx/ocamlformat)
+[![Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml-ppx%2Focamlformat%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml-ppx/ocamlformat) [![Coverage Status](https://coveralls.io/repos/github/ocaml-ppx/ocamlformat/badge.svg)](https://coveralls.io/github/ocaml-ppx/ocamlformat)
 
 # OCamlFormat
 
