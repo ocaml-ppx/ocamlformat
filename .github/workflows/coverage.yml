@@ -44,9 +44,9 @@ jobs:
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          opam pin add -n .
-          opam depext -y -t ocamlformat
-          opam install --deps-only -t ocamlformat
+          opam pin add -y .
+          opam depext -y -t ./*.opam
+          opam install --deps-only -t ./*.opam
 
       - name: Send coverage stats to Coveralls
         if: matrix.send-coverage == true
