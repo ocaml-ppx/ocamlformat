@@ -21,7 +21,7 @@
 
 (authors "Josh Berdine <jjb@fb.com>")
 
-(maintainers "OCamlFormat Team <ocamlformat-team@fb.com>")
+(maintainers "OCamlFormat Team <ocamlformat-dev@lists.ocaml.org>")
 
 (license MIT)
 
