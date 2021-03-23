@@ -1,6 +1,6 @@
 (library
  (name parse_wyc)
- (libraries menhirLib ocaml-migrate-parsetree ppxlib)
+ (libraries menhirLib ppxlib)
  (package ocamlformat)
  (modules_without_implementation let_binding))
 
