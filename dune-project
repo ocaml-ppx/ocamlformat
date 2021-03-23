@@ -55,8 +55,6 @@
    (>= 20200624))
   (menhirSdk
    (>= 20200624))
-  (ocaml-migrate-parsetree
-   (>= 2.1.0))
   (ocp-indent :with-test)
   (bisect_ppx
    (and
@@ -102,8 +100,6 @@
    (>= 20200624))
   (menhirSdk
    (>= 20200624))
-  (ocaml-migrate-parsetree
-   (>= 2.1.0))
   (ocp-indent :with-test)
   (bisect_ppx
    (and
