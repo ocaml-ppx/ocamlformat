@@ -1,3 +1,8 @@
 (cram
  (package ocamlformat)
  (deps %{bin:ocamlformat}))
+
+(cram
+ (applies_to large_string)
+ (enabled_if
+  (<> %{os_type} Win32)))
