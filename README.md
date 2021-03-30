@@ -54,7 +54,7 @@ Moreover if you adopt OCamlFormat in one project it will not break your workflow
 The recommended way is to use a versioned default profile, such as:
 
 ```
-version=0.17.0
+version=0.18.0
 ```
 
 (or replace with the output of `ocamlformat --version`)
