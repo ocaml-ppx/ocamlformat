@@ -1,7 +1,5 @@
 ### 0.18.0 (2021-03-30)
 
-#### Removed
-
 #### Bug fixes
 
   + Fix extraneous parenthesis after `let open` with `closing-on-separate-line` (#1612, @Julow)
