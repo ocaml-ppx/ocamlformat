@@ -8,9 +8,32 @@ type setup =
   ; mutable extra_deps: string list
   ; mutable minimum_ocaml_version: string option }
 
-let read_lines = Stdio.In_channel.read_lines
+let read_lines file =
+  let ic = Stdlib.open_in file in
+  let rec aux acc =
+    match Stdlib.input_line ic with
+    | exception End_of_file ->
+        Stdlib.close_in ic ;
+        List.rev acc
+    | line -> aux (line :: acc)
+  in
+  aux []
 
-let read_file s = Stdio.In_channel.read_all s |> Base.String.rstrip
+let read_file file =
+  let ic = Stdlib.open_in file in
+  let buf = Buffer.create 32 in
+  let rec aux buf =
+    match Stdlib.input_line ic with
+    | exception End_of_file ->
+      Stdlib.close_in ic ;
+      let ret = Buffer.contents buf |> String.trim in
+      Buffer.clear buf ;
+      ret
+    | line ->
+      Buffer.add_string buf line ;
+      aux buf
+  in
+  aux buf
 
 let add_test ?base_file map src_test_name =
   let s =
@@ -61,8 +84,7 @@ let cmd args =
 
 let emit_test test_name setup =
   let opts =
-    if setup.has_opts then
-      Stdio.In_channel.read_lines (Printf.sprintf "%s.opts" test_name)
+    if setup.has_opts then read_lines (Printf.sprintf "%s.opts" test_name)
     else []
   in
   let ref_name =

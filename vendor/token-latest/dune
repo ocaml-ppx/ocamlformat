@@ -1,6 +1,5 @@
 (library
  (name token_latest)
- (package ocamlformat)
  (libraries compiler-libs))
 
 (rule
