@@ -10,7 +10,7 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "2.8"}
-  "ocaml"
+  "ocaml" {>= "4.08" & < "4.13"}
   "csexp"
   "sexplib0"
   "odoc" {with-doc}
