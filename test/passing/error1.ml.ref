@@ -1,3 +1,0 @@
-ocamlformat: ignoring "error1.ml" (syntax error)
-File "error1.ml", line 2, characters 0-0:
-Error: Syntax error

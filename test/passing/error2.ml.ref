@@ -1,3 +1,0 @@
-ocamlformat: ignoring "error2.ml" (syntax error)
-File "error2.ml", line 1, characters 0-1:
-Error: String literal not terminated

@@ -1,0 +1,2 @@
+tests/dir1/dir2/.ocamlformat
+tests/dir1/dir2/print_config.ml

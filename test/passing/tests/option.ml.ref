@@ -1,16 +1,16 @@
-File "option.ml", line 63, characters 17-28:
+File "tests/option.ml", line 63, characters 17-28:
 Warning 47 [attribute-payload]: illegal payload for attribute 'ocamlformat'.
 margin not allowed here
-File "option.ml", line 13, characters 3-19:
+File "tests/option.ml", line 13, characters 3-19:
 Warning 47 [attribute-payload]: illegal payload for attribute 'ocamlformat.typo'.
 Invalid format: Unknown suffix "typo"
-File "option.ml", line 21, characters 3-14:
+File "tests/option.ml", line 21, characters 3-14:
 Warning 47 [attribute-payload]: illegal payload for attribute 'ocamlformat'.
 Invalid format: String expected
-File "option.ml", line 28, characters 3-14:
+File "tests/option.ml", line 28, characters 3-14:
 Warning 47 [attribute-payload]: illegal payload for attribute 'ocamlformat'.
 For option "if-then-else": invalid value `bad', expected one of `compact', `fit-or-vertical', `keyword-first' or `k-r'
-File "option.ml", line 39, characters 14-25:
+File "tests/option.ml", line 39, characters 14-25:
 Warning 47 [attribute-payload]: illegal payload for attribute 'ocamlformat'.
 For option "if-then-else": invalid value `bad', expected one of `compact', `fit-or-vertical', `keyword-first' or `k-r'
 let _ =
