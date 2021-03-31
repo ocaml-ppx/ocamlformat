@@ -1,3 +1,0 @@
-ocamlformat: ignoring "core_failing.ml" (syntax error)
-File "core_failing.ml", line 18, characters 6-7:
-Error: Syntax error

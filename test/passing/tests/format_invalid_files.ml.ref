@@ -1,0 +1,18 @@
+Warning: tests/format_invalid_files.ml is invalid, recovering.
+Warning: tests/format_invalid_files.ml is invalid, recovering.
+let foooooo = fooooooooo
+
+let foooooooo = bar baaaaar barrr
+
+module K = struct
+  let k
+
+;;
+begin
+  let x = in
+  ()
+;;
+
+let foooooo = fooooo foooooooo
+
+let k =

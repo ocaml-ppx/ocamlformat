@@ -1,0 +1,5 @@
+ocamlformat: ignoring "tests/never_align.ml" (syntax error)
+File "tests/never_align.ml", line 13, characters 4-5:
+Error: Syntax error: '}' expected
+File "tests/never_align.ml", line 11, characters 8-9:
+  This '{' might be unmatched

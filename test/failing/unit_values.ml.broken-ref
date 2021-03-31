@@ -1,5 +1,0 @@
-File "unit_values.ml", line 6, characters 10-11:
-Alert deprecated: ISO-Latin1 characters in identifiers
-ocamlformat: ignoring "unit_values.ml" (syntax error)
-File "unit_values.ml", line 6, characters 11-12:
-Error: Illegal character (\136)

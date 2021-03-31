@@ -1,0 +1,5 @@
+ocamlformat: ignoring "tests/nesting.ml" (syntax error)
+File "tests/nesting.ml", line 35, characters 0-0:
+Error: Syntax error: 'end' expected
+File "tests/nesting.ml", line 1, characters 11-17:
+  This 'struct' might be unmatched

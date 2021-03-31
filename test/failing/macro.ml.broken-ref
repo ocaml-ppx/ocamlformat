@@ -1,3 +1,0 @@
-ocamlformat: ignoring "macro.ml" (syntax error)
-File "macro.ml", line 3, characters 0-7:
-Error: Syntax error

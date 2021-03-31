@@ -1,6 +1,9 @@
 (rule
- (deps enable_outside_detected_project/dune-project
-   enable_outside_detected_project/main.ml .ocamlformat)
+ (deps
+  enable_outside_detected_project/dune-project
+  enable_outside_detected_project/main.ml
+  .ocamlformat)
+ (package ocamlformat)
  (action
   (with-stdout-to
    enable_outside_detected_project.output
@@ -10,12 +13,17 @@
 
 (rule
  (alias runtest)
+ (package ocamlformat)
  (action
-  (diff enable_outside_detected_project.expected
-    enable_outside_detected_project.output)))
+  (diff
+   enable_outside_detected_project.expected
+   enable_outside_detected_project.output)))
 
 (rule
- (deps outside_detected_project/dune-project outside_detected_project/main.ml)
+ (deps
+  outside_detected_project/dune-project
+  outside_detected_project/main.ml)
+ (package ocamlformat)
  (action
   (with-outputs-to
    outside_detected_project.output
@@ -25,12 +33,14 @@
 
 (rule
  (alias runtest)
+ (package ocamlformat)
  (action
   (diff outside_detected_project.expected outside_detected_project.output)))
 
 (rule
  (deps
   (source_tree outside_detected_project_with_name))
+ (package ocamlformat)
  (action
   (with-outputs-to
    outside_detected_project_with_name.output
@@ -40,6 +50,8 @@
 
 (rule
  (alias runtest)
+ (package ocamlformat)
  (action
-  (diff outside_detected_project_with_name.expected
-    outside_detected_project_with_name.output)))
+  (diff
+   outside_detected_project_with_name.expected
+   outside_detected_project_with_name.output)))

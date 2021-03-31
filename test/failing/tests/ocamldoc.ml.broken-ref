@@ -1,0 +1,3 @@
+ocamlformat: ignoring "tests/ocamldoc.ml" (syntax error)
+File "tests/ocamldoc.ml", line 75, characters 0-5:
+Error: Syntax error

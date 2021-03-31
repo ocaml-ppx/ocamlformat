@@ -1,0 +1,4 @@
+Warning: Invalid documentation comment:
+File "tests/invalid_docstring.ml", line 1, characters 0-7:
+comment could not be parsed
+(**{v*)

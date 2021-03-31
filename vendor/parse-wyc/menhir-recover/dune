@@ -1,5 +1,3 @@
 (executable
  (name main)
- (public_name main)
- (package ocamlformat)
  (libraries fix menhirLib menhirSdk))

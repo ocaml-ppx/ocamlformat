@@ -1,0 +1,16 @@
+Warning: tests/format_invalid_files_with_locations.ml is invalid, recovering.
+Warning: Invalid documentation comment:
+File "tests/format_invalid_files_with_locations.ml", line 10, characters 22-22:
+End of text is not allowed in '[...]' (code).
+Warning: tests/format_invalid_files_with_locations.ml is invalid, recovering.
+Warning: tests/format_invalid_files_with_locations.ml is invalid, recovering.
+let x = 1 + (;;
+
+(* asd *)
+
+let x = "\064"
+
+let x = "@"
+
+(** parse [ docstring *)
+let x = 0

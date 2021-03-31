@@ -1,3 +1,0 @@
-ocamlformat: ignoring "match_fun.ml" (syntax error)
-File "match_fun.ml", line 5, characters 0-0:
-Error: Syntax error

@@ -1,0 +1,3 @@
+ocamlformat: ignoring "tests/js_2018.ml" (syntax error)
+File "tests/js_2018.ml", line 14, characters 0-3:
+Error: Syntax error

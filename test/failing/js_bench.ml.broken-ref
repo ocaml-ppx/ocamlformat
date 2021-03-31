@@ -1,3 +1,0 @@
-ocamlformat: ignoring "js_bench.ml" (syntax error)
-File "js_bench.ml", line 13, characters 28-34:
-Error: Syntax error

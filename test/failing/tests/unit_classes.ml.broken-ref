@@ -1,0 +1,5 @@
+ocamlformat: ignoring "tests/unit_classes.ml" (syntax error)
+File "tests/unit_classes.ml", line 23, characters 24-25:
+Error: Syntax error: 'end' expected
+File "tests/unit_classes.ml", line 18, characters 2-8:
+  This 'object' might be unmatched
