@@ -1,0 +1,3 @@
+ocamlformat: ignoring "tests/ifand.ml" (syntax error)
+File "tests/ifand.ml", line 4, characters 7-8:
+Error: Syntax error: wildcard "_" not expected.

@@ -1,0 +1,3 @@
+ocamlformat: ignoring "tests/pattern.ml" (syntax error)
+File "tests/pattern.ml", line 68, characters 11-12:
+Error: Syntax error: operator expected.

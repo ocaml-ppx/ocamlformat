@@ -1,3 +1,0 @@
-ocamlformat: ignoring "js_map.ml" (syntax error)
-File "js_map.ml", line 3, characters 4-5:
-Error: Syntax error: wildcard "_" not expected.

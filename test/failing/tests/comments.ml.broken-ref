@@ -1,0 +1,3 @@
+ocamlformat: ignoring "tests/comments.ml" (syntax error)
+File "tests/comments.ml", line 64, characters 0-6:
+Error: Syntax error

@@ -1,0 +1,5 @@
+ocamlformat: ignoring "tests/unit_extensions.ml" (syntax error)
+File "tests/unit_extensions.ml", line 101, characters 8-11:
+Error: Syntax error: ')' expected
+File "tests/unit_extensions.ml", line 100, characters 4-5:
+  This '(' might be unmatched

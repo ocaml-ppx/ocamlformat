@@ -1,3 +1,0 @@
-ocamlformat: ignoring "ppx_stritem_ext.ml" (syntax error)
-File "ppx_stritem_ext.ml", line 10, characters 11-14:
-Error: Syntax error

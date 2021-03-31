@@ -1,0 +1,5 @@
+File "tests/unit_lex.ml", line 18, characters 4-10:
+Alert deprecated: ISO-Latin1 characters in identifiers
+ocamlformat: ignoring "tests/unit_lex.ml" (syntax error)
+File "tests/unit_lex.ml", line 20, characters 2-3:
+Error: Syntax error: wildcard "_" not expected.

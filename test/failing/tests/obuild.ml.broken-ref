@@ -1,0 +1,3 @@
+ocamlformat: ignoring "tests/obuild.ml" (syntax error)
+File "tests/obuild.ml", line 9, characters 28-29:
+Error: Syntax error: wildcard "_" not expected.
