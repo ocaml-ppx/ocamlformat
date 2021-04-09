@@ -81,6 +81,8 @@ val k : k
 
     @see <foo> foo
 
+    @see <https://slash-create.js.org/#/docs/main/latest/class/SlashCreator?scrollTo=registerCommandsIn> this url is very long
+
     @since foo
 
     @before foo [foo]

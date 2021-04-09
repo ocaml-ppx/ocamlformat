@@ -210,7 +210,7 @@ let at = char '@'
 let space = fmt "@ "
 
 let fmt_tag_see c wrap sr txt =
-  at $ fmt "see@ "
+  at $ str "see "
   $ wrap (str sr)
   $ fmt_nestable_block_elements c ~prefix:space txt
 
