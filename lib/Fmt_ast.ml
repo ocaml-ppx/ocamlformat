@@ -2187,6 +2187,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             0
         | _ -> c.conf.indent_after_in
       in
+      let bindings = Sugar.value_bindings bindings in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let parens = parens || not (List.is_empty pexp_attributes) in
       fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
@@ -2598,9 +2599,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             0
         | _ -> c.conf.indent_after_in
       in
+      let bindings = Sugar.binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       let parens = parens || not (List.is_empty pexp_attributes) in
-      fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr (let_ :: ands)
+      fmt_let c ctx ~ext ~rec_flag:Nonrecursive ~bindings ~parens
+        ~loc:pexp_loc ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
         ~body_loc:body.pexp_loc ~indent_after_in
 
 and fmt_class_structure c ~ctx ?ext self_ fields =
@@ -2780,6 +2783,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
         | Pcl_let _ -> 0
         | _ -> c.conf.indent_after_in
       in
+      let bindings = Sugar.value_bindings bindings in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       let parens = parens || not (List.is_empty pcl_attributes) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
@@ -4245,6 +4249,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
             let op, rec_flag =
               value_binding_op_rec (first && first_grp) rec_flag
             in
+            let op = {txt= op; loc= Location.none} in
             fmt_if (not first) "@;<1000 0>"
             $ fmt_value_binding c op ~rec_flag
                 ?ext:(if first && first_grp then ext else None)
@@ -4281,41 +4286,10 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (fmt_in indent) in
-    let {pvb_pat; pvb_expr; pvb_attributes= attributes; pvb_loc= loc} =
-      binding
-    in
-    let op, rec_flag = value_binding_op_rec first rec_flag in
-    fmt_value_binding c op ~rec_flag ?ext ctx ~in_ ~attributes ~loc pvb_pat
-      pvb_expr
-    $ fmt_if (not last)
-        ( match c.conf.let_and with
-        | `Sparse -> "@;<1000 0>"
-        | `Compact -> "@ " )
-  in
-  let blank_line_after_in =
-    let last_bind = List.last_exn bindings in
-    sequence_blank_line c last_bind.pvb_loc body_loc
-  in
-  Params.wrap_exp c.conf c.source ~loc
-    ~parens:(parens || not (List.is_empty attributes))
-    ~fits_breaks:false
-    (vbox 0
-       ( hvbox 0 (list_fl bindings fmt_binding)
-       $ ( if blank_line_after_in then fmt "\n@,"
-         else break 1000 indent_after_in )
-       $ hvbox 0 fmt_expr ) )
-  $ fmt_atrs
-
-and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings ~body_loc
-    ~indent_after_in =
-  let fmt_binding ~first ~last binding =
-    let ext = if first then ext else None in
-    let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
-    let {pbop_op= {txt= op; _}; pbop_pat; pbop_exp; pbop_loc= loc} =
-      binding
-    in
-    fmt_value_binding c op ~rec_flag:false ?ext ~in_ ctx ~attributes:[] ~loc
-      pbop_pat pbop_exp
+    let Sugar.{lb_op; lb_pat; lb_exp; lb_attrs; lb_loc} = binding in
+    let rec_flag = first && Asttypes.is_recursive rec_flag in
+    fmt_value_binding c lb_op ~rec_flag ?ext ctx ~in_ ~attributes:lb_attrs
+      ~loc:lb_loc lb_pat lb_exp
     $ fmt_if (not last)
         ( match c.conf.let_and with
         | `Sparse -> "@;<1000 0>"
@@ -4325,10 +4299,11 @@ and fmt_let_op c ctx ~ext ~parens ~fmt_atrs ~fmt_expr bindings ~body_loc
     let last_bind = List.last_exn bindings in
     (* The location of the first binding (just after `let`) is wrong, it
        contains the whole letop expression *)
-    let last_bind_expr_loc = last_bind.pbop_exp.pexp_loc in
-    sequence_blank_line c last_bind_expr_loc body_loc
+    sequence_blank_line c last_bind.lb_exp.pexp_loc body_loc
   in
-  wrap_if parens "(" ")"
+  Params.wrap_exp c.conf c.source ~loc
+    ~parens:(parens || not (List.is_empty attributes))
+    ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
        $ ( if blank_line_after_in then fmt "\n@,"
@@ -4455,7 +4430,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
           ( hovbox 4
               ( box_fun_decl_args c 4
                   ( hovbox 4
-                      ( str let_op
+                      ( fmt_str_loc c let_op
                       $ fmt_extension_suffix c ext
                       $ fmt_attributes c ~key:"@" at_attrs
                       $ fmt_if rec_flag " rec"
