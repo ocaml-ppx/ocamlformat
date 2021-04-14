@@ -227,7 +227,7 @@ let fmt_tag c = function
   | `Deprecated txt ->
       at $ fmt "deprecated" $ fmt_nestable_block_elements c ~prefix:space txt
   | `Param (s, txt) ->
-      at $ fmt "param@ " $ str s
+      at $ str "param " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Raise (s, txt) ->
       at $ fmt "raise@ " $ str s

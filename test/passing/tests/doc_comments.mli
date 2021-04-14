@@ -93,6 +93,8 @@ val k : k
 
     @param foo [foo]
 
+    @param Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar
+
     @raise foo [foo]
 
     @return [foo]
