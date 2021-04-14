@@ -216,7 +216,7 @@ let fmt_tag_see c wrap sr txt =
 
 let fmt_tag c = function
   | `Author s -> at $ str "author " $ str s
-  | `Version s -> at $ fmt "version@ " $ str s
+  | `Version s -> at $ str "version " $ str s
   | `See (`Url, sr, txt) -> fmt_tag_see c (wrap "<" ">") sr txt
   | `See (`File, sr, txt) -> fmt_tag_see c (wrap "'" "'") sr txt
   | `See (`Document, sr, txt) -> fmt_tag_see c (wrap "\"" "\"") sr txt
