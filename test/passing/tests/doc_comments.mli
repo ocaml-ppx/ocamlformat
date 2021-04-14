@@ -77,6 +77,8 @@ val k : k
 
     @author foo
 
+    @author Foooooooooooooooooooooooooooooooooooo Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+
     @version foo
 
     @see <foo> foo

@@ -215,7 +215,7 @@ let fmt_tag_see c wrap sr txt =
   $ fmt_nestable_block_elements c ~prefix:space txt
 
 let fmt_tag c = function
-  | `Author s -> at $ fmt "author@ " $ str s
+  | `Author s -> at $ str "author " $ str s
   | `Version s -> at $ fmt "version@ " $ str s
   | `See (`Url, sr, txt) -> fmt_tag_see c (wrap "<" ">") sr txt
   | `See (`File, sr, txt) -> fmt_tag_see c (wrap "'" "'") sr txt
