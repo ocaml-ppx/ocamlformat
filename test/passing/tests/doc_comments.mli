@@ -97,6 +97,8 @@ val k : k
 
     @raise foo [foo]
 
+    @raise Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar
+
     @return [foo]
 
     @inline

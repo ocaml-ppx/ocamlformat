@@ -89,6 +89,8 @@ val k : k
     @param Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
     Foo bar
     @raise foo [foo]
+    @raise Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+    Foo bar
     @return [foo]
     @inline
     @canonical foo *)

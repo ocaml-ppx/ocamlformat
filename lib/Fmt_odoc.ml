@@ -230,7 +230,7 @@ let fmt_tag c = function
       at $ str "param " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Raise (s, txt) ->
-      at $ fmt "raise@ " $ str s
+      at $ str "raise " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Return txt ->
       at $ fmt "return" $ fmt_nestable_block_elements c ~prefix:space txt
