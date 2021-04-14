@@ -116,7 +116,7 @@ let list_block_elem elems f =
                  (n :> block_element) ->
             fmt "\n@\n"
         | Some _ -> fmt "@\n"
-        | None -> fmt ""
+        | None -> noop
       in
       f elem $ break )
 
@@ -225,7 +225,7 @@ let fmt_tag c = function
       at $ str "before " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Deprecated txt ->
-      at $ fmt "deprecated" $ fmt_nestable_block_elements c ~prefix:space txt
+      at $ str "deprecated" $ fmt_nestable_block_elements c ~prefix:space txt
   | `Param (s, txt) ->
       at $ str "param " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
@@ -233,7 +233,7 @@ let fmt_tag c = function
       at $ str "raise " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Return txt ->
-      at $ fmt "return" $ fmt_nestable_block_elements c ~prefix:space txt
+      at $ str "return" $ fmt_nestable_block_elements c ~prefix:space txt
   | `Inline -> at $ str "inline"
   | `Open -> at $ str "open"
   | `Closed -> at $ str "closed"
@@ -246,7 +246,7 @@ let fmt_block_element c = function
       let lbl =
         match lbl with
         | Some lbl -> str ":" $ str_normalized lbl
-        | None -> fmt ""
+        | None -> noop
       in
       let elems =
         if List.is_empty elems then elems else space_elt :: elems
