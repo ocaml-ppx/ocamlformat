@@ -89,6 +89,8 @@ val k : k
 
     @since foo
 
+    @since Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+
     @before foo [foo]
 
     @before Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar

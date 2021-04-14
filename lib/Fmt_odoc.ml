@@ -220,7 +220,7 @@ let fmt_tag c = function
   | `See (`Url, sr, txt) -> fmt_tag_see c (wrap "<" ">") sr txt
   | `See (`File, sr, txt) -> fmt_tag_see c (wrap "'" "'") sr txt
   | `See (`Document, sr, txt) -> fmt_tag_see c (wrap "\"" "\"") sr txt
-  | `Since s -> at $ fmt "since@ " $ str s
+  | `Since s -> at $ str "since " $ str s
   | `Before (s, txt) ->
       at $ str "before " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt

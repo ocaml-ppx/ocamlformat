@@ -83,6 +83,7 @@ val k : k
     @see <https://slash-create.js.org/#/docs/main/latest/class/SlashCreator?scrollTo=registerCommandsIn>
     this url is very long
     @since foo
+    @since Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
     @before foo [foo]
     @before Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
     Foo bar
