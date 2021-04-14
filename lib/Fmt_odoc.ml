@@ -237,7 +237,7 @@ let fmt_tag c = function
   | `Inline -> at $ str "inline"
   | `Open -> at $ str "open"
   | `Closed -> at $ str "closed"
-  | `Canonical ref -> at $ fmt "canonical@ " $ fmt_reference ref
+  | `Canonical ref -> at $ str "canonical " $ fmt_reference ref
 
 let fmt_block_element c = function
   | `Tag tag -> hovbox 0 (fmt_tag c tag)

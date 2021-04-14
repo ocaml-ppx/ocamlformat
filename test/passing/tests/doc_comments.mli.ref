@@ -98,7 +98,8 @@ val k : k
     Foo bar
     @return [foo]
     @inline
-    @canonical foo *)
+    @canonical foo
+    @canonical Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar *)
 
 val x : x
 (** a comment

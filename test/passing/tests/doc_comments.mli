@@ -111,7 +111,9 @@ val k : k
 
     @inline
 
-    @canonical foo *)
+    @canonical foo
+
+    @canonical Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar *)
 
 val x : x
 (** a comment
