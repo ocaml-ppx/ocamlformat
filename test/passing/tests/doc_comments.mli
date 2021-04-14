@@ -91,6 +91,8 @@ val k : k
 
     @deprecated [foo]
 
+    @deprecated Foooooooooooooooooooooooooooooooooooo Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar
+
     @param foo [foo]
 
     @param Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar
