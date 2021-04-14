@@ -116,7 +116,7 @@ let list_block_elem elems f =
                  (n :> block_element) ->
             fmt "\n@\n"
         | Some _ -> fmt "@\n"
-        | None -> fmt ""
+        | None -> noop
       in
       f elem $ break )
 
@@ -209,44 +209,39 @@ let at = char '@'
 
 let space = fmt "@ "
 
-let fmt_tag_see c wrap sr txt =
-  at $ fmt "see@ "
-  $ wrap (str sr)
-  $ fmt_nestable_block_elements c ~prefix:space txt
+let fmt_tag_args ?arg ?txt c tag =
+  at $ str tag
+  $ opt arg (fun x -> char ' ' $ x)
+  $ opt txt (fun x -> fmt_nestable_block_elements c ~prefix:space x)
+
+let wrap_see = function
+  | `Url -> wrap "<" ">"
+  | `File -> wrap "'" "'"
+  | `Document -> wrap "\"" "\""
 
 let fmt_tag c = function
-  | `Author s -> at $ fmt "author@ " $ str s
-  | `Version s -> at $ fmt "version@ " $ str s
-  | `See (`Url, sr, txt) -> fmt_tag_see c (wrap "<" ">") sr txt
-  | `See (`File, sr, txt) -> fmt_tag_see c (wrap "'" "'") sr txt
-  | `See (`Document, sr, txt) -> fmt_tag_see c (wrap "\"" "\"") sr txt
-  | `Since s -> at $ fmt "since@ " $ str s
-  | `Before (s, txt) ->
-      at $ fmt "before@ " $ str s
-      $ fmt_nestable_block_elements c ~prefix:space txt
-  | `Deprecated txt ->
-      at $ fmt "deprecated" $ fmt_nestable_block_elements c ~prefix:space txt
-  | `Param (s, txt) ->
-      at $ fmt "param@ " $ str s
-      $ fmt_nestable_block_elements c ~prefix:space txt
-  | `Raise (s, txt) ->
-      at $ fmt "raise@ " $ str s
-      $ fmt_nestable_block_elements c ~prefix:space txt
-  | `Return txt ->
-      at $ fmt "return" $ fmt_nestable_block_elements c ~prefix:space txt
-  | `Inline -> at $ str "inline"
-  | `Open -> at $ str "open"
-  | `Closed -> at $ str "closed"
-  | `Canonical ref -> at $ fmt "canonical@ " $ fmt_reference ref
+  | `Author s -> fmt_tag_args c "author" ~arg:(str s)
+  | `Version s -> fmt_tag_args c "version" ~arg:(str s)
+  | `See (k, sr, txt) -> fmt_tag_args c "see" ~arg:(wrap_see k (str sr)) ~txt
+  | `Since s -> fmt_tag_args c "since" ~arg:(str s)
+  | `Before (s, txt) -> fmt_tag_args c "before" ~arg:(str s) ~txt
+  | `Deprecated txt -> fmt_tag_args c "deprecated" ~txt
+  | `Param (s, txt) -> fmt_tag_args c "param" ~arg:(str s) ~txt
+  | `Raise (s, txt) -> fmt_tag_args c "raise" ~arg:(str s) ~txt
+  | `Return txt -> fmt_tag_args c "return" ~txt
+  | `Inline -> fmt_tag_args c "inline"
+  | `Open -> fmt_tag_args c "open"
+  | `Closed -> fmt_tag_args c "closed"
+  | `Canonical ref -> fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
 
 let fmt_block_element c = function
-  | `Tag tag -> hovbox 0 (fmt_tag c tag)
+  | `Tag tag -> hovbox 2 (fmt_tag c tag)
   | `Heading (lvl, lbl, elems) ->
       let lvl = Int.to_string lvl in
       let lbl =
         match lbl with
         | Some lbl -> str ":" $ str_normalized lbl
-        | None -> fmt ""
+        | None -> noop
       in
       let elems =
         if List.is_empty elems then elems else space_elt :: elems
