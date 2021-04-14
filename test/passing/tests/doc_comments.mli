@@ -87,6 +87,8 @@ val k : k
 
     @before foo [foo]
 
+    @before Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar
+
     @deprecated [foo]
 
     @param foo [foo]

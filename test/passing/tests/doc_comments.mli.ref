@@ -82,6 +82,8 @@ val k : k
     this url is very long
     @since foo
     @before foo [foo]
+    @before Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar
+    Foo bar
     @deprecated [foo]
     @param foo [foo]
     @raise foo [foo]

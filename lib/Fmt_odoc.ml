@@ -222,7 +222,7 @@ let fmt_tag c = function
   | `See (`Document, sr, txt) -> fmt_tag_see c (wrap "\"" "\"") sr txt
   | `Since s -> at $ fmt "since@ " $ str s
   | `Before (s, txt) ->
-      at $ fmt "before@ " $ str s
+      at $ str "before " $ str s
       $ fmt_nestable_block_elements c ~prefix:space txt
   | `Deprecated txt ->
       at $ fmt "deprecated" $ fmt_nestable_block_elements c ~prefix:space txt
