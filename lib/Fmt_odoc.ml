@@ -235,7 +235,7 @@ let fmt_tag c = function
   | `Canonical ref -> fmt_tag_args c "canonical" ~arg:(fmt_reference ref)
 
 let fmt_block_element c = function
-  | `Tag tag -> hovbox 0 (fmt_tag c tag)
+  | `Tag tag -> hovbox 2 (fmt_tag c tag)
   | `Heading (lvl, lbl, elems) ->
       let lvl = Int.to_string lvl in
       let lbl =
