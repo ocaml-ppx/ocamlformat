@@ -201,9 +201,8 @@ and fmt_list_light c kind items =
   in
   vbox 0 (list items "@," fmt_item)
 
-and fmt_nestable_block_elements c ?(prefix = noop) = function
-  | [] -> noop
-  | elems -> prefix $ list_block_elem elems (fmt_nestable_block_element c)
+and fmt_nestable_block_elements c elems =
+  list_block_elem elems (fmt_nestable_block_element c)
 
 let at = char '@'
 
@@ -212,7 +211,9 @@ let space = fmt "@ "
 let fmt_tag_args ?arg ?txt c tag =
   at $ str tag
   $ opt arg (fun x -> char ' ' $ x)
-  $ opt txt (fun x -> fmt_nestable_block_elements c ~prefix:space x)
+  $ opt txt (function
+      | [] -> noop
+      | x -> space $ hovbox 0 (fmt_nestable_block_elements c x) )
 
 let wrap_see = function
   | `Url -> wrap "<" ">"
