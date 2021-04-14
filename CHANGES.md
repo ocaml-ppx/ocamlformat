@@ -6,7 +6,7 @@
 
 #### Bug fixes
 
-  + Fix formatting of `@see` odoc tags: the referenced parameter should be on the same line (#1634, @gpetiot)
+  + Fix formatting of odoc tags: the argument should be on the same line, indent description that wraps (#1634, @gpetiot)
 
 #### Changes
 
