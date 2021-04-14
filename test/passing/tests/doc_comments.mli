@@ -101,6 +101,8 @@ val k : k
 
     @param foo [foo]
 
+    @param Foooooooooooooo_Baaaaaaaaaaaaar Fooooooooooo foooooooooooo fooooooooooo baaaaaaaaar
+
     @param Foooooooooooooooooooooooooooooooooooo_baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar Foo bar
 
     @raise foo [foo]

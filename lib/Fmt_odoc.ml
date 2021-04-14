@@ -203,7 +203,9 @@ and fmt_list_light c kind items =
 
 and fmt_nestable_block_elements c ?(prefix = noop) = function
   | [] -> noop
-  | elems -> prefix $ list_block_elem elems (fmt_nestable_block_element c)
+  | elems ->
+      prefix
+      $ hovbox 0 (list_block_elem elems (fmt_nestable_block_element c))
 
 let at = char '@'
 
