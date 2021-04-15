@@ -2183,7 +2183,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let bindings = Sugar.value_bindings bindings in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      let parens = parens || not (List.is_empty pexp_attributes) in
       fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
         ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
         ~body_loc:body.pexp_loc ~indent_after_in
@@ -2595,7 +2594,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let bindings = Sugar.binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      let parens = parens || not (List.is_empty pexp_attributes) in
       fmt_let c ctx ~ext ~rec_flag:Nonrecursive ~bindings ~parens
         ~loc:pexp_loc ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
         ~body_loc:body.pexp_loc ~indent_after_in
@@ -2779,7 +2777,6 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
       in
       let bindings = Sugar.value_bindings bindings in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
-      let parens = parens || not (List.is_empty pcl_attributes) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
         ~indent_after_in
@@ -4272,6 +4269,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     ~body_loc ~attributes ~indent_after_in =
+  let parens = parens || not (List.is_empty attributes) in
   let fmt_in indent =
     match c.conf.break_before_in with
     | `Fit_or_vertical -> break 1 (-indent) $ str "in"
