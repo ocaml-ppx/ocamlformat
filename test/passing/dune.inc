@@ -2419,7 +2419,7 @@
  (package ocamlformat)
  (action
    (with-outputs-to print_config.ml.output
-     (run %{bin:ocamlformat} tests/dir1/dir2/print_config.ml --print-config --config=max-iters=2 %{dep:tests/print_config.ml}))))
+     (run %{bin:ocamlformat} %{dep:tests/dir1/dir2/print_config.ml} --print-config --config=max-iters=2 %{dep:tests/print_config.ml}))))
 
 (rule
  (alias runtest)
