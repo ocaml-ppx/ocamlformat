@@ -24,6 +24,8 @@
   outside_detected_project/dune-project
   outside_detected_project/main.ml)
  (package ocamlformat)
+ (enabled_if
+  (<> %{os_type} Win32))
  (action
   (with-outputs-to
    outside_detected_project.output
