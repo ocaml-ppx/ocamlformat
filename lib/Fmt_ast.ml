@@ -204,12 +204,6 @@ let fmt_groups c ctx grps fmt_grp =
       $ fmt_grp ~first ~last grp
       $ fits_breaks_if ((not break_struct) && not last) "" "\n" )
 
-let value_binding_op_rec first rec_flag =
-  match (first, rec_flag) with
-  | true, Recursive -> ("let", true)
-  | true, Nonrecursive -> ("let", false)
-  | false, _ -> ("and", false)
-
 let fmt_recmodule c ctx items f ast =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
   let grps = make_groups c items ast update_config in
@@ -4218,17 +4212,23 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->
-      let with_conf c b =
-        let c = update_config ~quiet:true c b.pvb_attributes in
+      let bindings = Sugar.value_bindings bindings in
+      let with_conf c (b : Sugar.let_binding) =
+        let c = update_config ~quiet:true c b.lb_attrs in
         (c, (b, c))
       in
       let _, bindings = List.fold_map bindings ~init:c ~f:with_conf in
+      let is_simple ((i : Sugar.let_binding), (c : Conf.t)) =
+        Poly.(c.module_item_spacing = `Compact)
+        && Location.is_single_line i.lb_loc c.margin
+      in
       let break (itmI, cI) (itmJ, cJ) =
-        (not (List.is_empty itmI.pvb_attributes))
-        || (not (List.is_empty itmJ.pvb_attributes))
-        || Ast.break_between c.source ~cmts:c.cmts
-             ~has_cmts_before:Cmts.has_before ~has_cmts_after:Cmts.has_after
-             (Vb itmI, cI.conf) (Vb itmJ, cJ.conf)
+        (not (List.is_empty itmI.Sugar.lb_attrs))
+        || (not (List.is_empty itmJ.Sugar.lb_attrs))
+        || Cmts.has_after c.cmts itmI.lb_loc
+        || Cmts.has_before c.cmts itmJ.lb_loc
+        || (not (is_simple (itmI, cI.conf)))
+        || not (is_simple (itmJ, cJ.conf))
       in
       let grps = List.group bindings ~break in
       let fmt_grp ~first:first_grp ~last:last_grp bindings =
@@ -4242,15 +4242,8 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                   Option.some_if (last && last_grp)
                     (fits_breaks "" ~hint:(1000, -2) ";;")
             in
-            let op, rec_flag =
-              value_binding_op_rec (first && first_grp) rec_flag
-            in
-            let binding : Sugar.let_binding =
-              { lb_op= {txt= op; loc= Location.none}
-              ; lb_pat= binding.pvb_pat
-              ; lb_exp= binding.pvb_expr
-              ; lb_attrs= binding.pvb_attributes
-              ; lb_loc= binding.pvb_loc }
+            let rec_flag =
+              first && first_grp && Asttypes.is_recursive rec_flag
             in
             let ext = if first && first_grp then ext else None in
             fmt_if (not first) "@;<1000 0>"
