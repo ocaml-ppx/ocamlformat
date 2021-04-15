@@ -8,6 +8,8 @@
 
   + Fix formatting of odoc tags: the argument should be on the same line, indent description that wraps (#1634, #1635, @gpetiot)
 
+  + Consistently format let bindings and monadic let bindings, do not drop comments before monadic bindings (#1636, @gpetiot)
+
 #### Changes
 
 #### New features
