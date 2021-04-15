@@ -4242,18 +4242,19 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
                   Option.some_if (last && last_grp)
                     (fits_breaks "" ~hint:(1000, -2) ";;")
             in
-            let {pvb_pat; pvb_expr; pvb_attributes= attributes; pvb_loc= loc}
-                =
-              binding
-            in
             let op, rec_flag =
               value_binding_op_rec (first && first_grp) rec_flag
             in
-            let op = {txt= op; loc= Location.none} in
+            let binding : Sugar.let_binding =
+              { lb_op= {txt= op; loc= Location.none}
+              ; lb_pat= binding.pvb_pat
+              ; lb_exp= binding.pvb_expr
+              ; lb_attrs= binding.pvb_attributes
+              ; lb_loc= binding.pvb_loc }
+            in
+            let ext = if first && first_grp then ext else None in
             fmt_if (not first) "@;<1000 0>"
-            $ fmt_value_binding c op ~rec_flag
-                ?ext:(if first && first_grp then ext else None)
-                ctx ?epi ~attributes ~loc pvb_pat pvb_expr )
+            $ fmt_value_binding c ~rec_flag ?ext ctx ?epi binding )
       in
       hvbox 0 ~name:"value"
         (list_fl grps (fun ~first ~last grp ->
@@ -4286,10 +4287,8 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (fmt_in indent) in
-    let Sugar.{lb_op; lb_pat; lb_exp; lb_attrs; lb_loc} = binding in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
-    fmt_value_binding c lb_op ~rec_flag ?ext ctx ~in_ ~attributes:lb_attrs
-      ~loc:lb_loc lb_pat lb_exp
+    fmt_value_binding c ~rec_flag ?ext ctx ~in_ binding
     $ fmt_if (not last)
         ( match c.conf.let_and with
         | `Sparse -> "@;<1000 0>"
@@ -4311,15 +4310,15 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
-and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
-    pvb_pat pvb_expr =
-  update_config_maybe_disabled c loc attributes
+and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
+  let Sugar.{lb_op; lb_pat; lb_exp; lb_attrs; lb_loc} = binding in
+  update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
-  let doc1, atrs = doc_atrs attributes in
+  let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
   let xpat, xargs, fmt_cstr, xbody =
     let ({ast= pat; _} as xpat) =
-      match (pvb_pat.ppat_desc, pvb_expr.pexp_desc) with
+      match (lb_pat.ppat_desc, lb_exp.pexp_desc) with
       (* recognize and undo the pattern of code introduced by
          ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
          https://caml.inria.fr/mantis/view.php?id=7344 *)
@@ -4328,15 +4327,15 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
             , {ptyp_desc= Ptyp_poly ([], typ1); _} )
         , Pexp_constraint (_, typ2) )
         when equal_core_type typ1 typ2 ->
-          Cmts.relocate c.cmts ~src:pvb_pat.ppat_loc ~before:pat.ppat_loc
+          Cmts.relocate c.cmts ~src:lb_pat.ppat_loc ~before:pat.ppat_loc
             ~after:pat.ppat_loc ;
-          sub_pat ~ctx:(Pat pvb_pat) pat
-      | _ -> sub_pat ~ctx pvb_pat
+          sub_pat ~ctx:(Pat lb_pat) pat
+      | _ -> sub_pat ~ctx lb_pat
     in
     let pat_is_extension {ppat_desc; _} =
       match ppat_desc with Ppat_extension _ -> true | _ -> false
     in
-    let ({ast= body; _} as xbody) = sub_exp ~ctx pvb_expr in
+    let ({ast= body; _} as xbody) = sub_exp ~ctx lb_exp in
     if
       (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
     then (xpat, [], None, xbody)
@@ -4418,19 +4417,19 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
     | _ -> c.conf.let_binding_indent
   in
   let f {attr_name= {loc; _}; _} =
-    Location.compare_start loc pvb_expr.pexp_loc < 1
+    Location.compare_start loc lb_exp.pexp_loc < 1
   in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let pre_body, body = fmt_body c xbody in
   let pat_has_cmt = Cmts.has_before c.cmts xpat.ast.ppat_loc in
   fmt_docstring c ~epi:(fmt "@\n") doc1
-  $ Cmts.fmt_before c loc
+  $ Cmts.fmt_before c lb_loc
   $ hvbox indent
       ( hovbox 2
           ( hovbox 4
               ( box_fun_decl_args c 4
                   ( hovbox 4
-                      ( fmt_str_loc c let_op
+                      ( fmt_str_loc c lb_op
                       $ fmt_extension_suffix c ext
                       $ fmt_attributes c ~key:"@" at_attrs
                       $ fmt_if rec_flag " rec"
@@ -4445,7 +4444,7 @@ and fmt_value_binding c let_op ~rec_flag ?ext ?in_ ?epi ctx ~attributes ~loc
               (fits_breaks " =" ~hint:(1000, 0) "=")
               (fmt "@;<1 2>=")
           $ pre_body )
-      $ fmt "@ " $ body $ Cmts.fmt_after c loc
+      $ fmt "@ " $ body $ Cmts.fmt_after c lb_loc
       $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" at_at_attrs
       $ (match in_ with Some in_ -> in_ indent | None -> noop)
       $ fmt_opt epi )
