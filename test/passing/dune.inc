@@ -2415,16 +2415,16 @@
 
 (rule
  (deps tests/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
- (package ocamlformat)
  (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
  (action
    (with-outputs-to print_config.ml.output
      (run %{bin:ocamlformat} tests/dir1/dir2/print_config.ml --print-config --config=max-iters=2 %{dep:tests/print_config.ml}))))
 
 (rule
  (alias runtest)
- (package ocamlformat)
  (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
  (action (diff tests/print_config.ml.ref print_config.ml.output)))
 
 (rule
@@ -2985,30 +2985,30 @@
 
 (rule
  (deps tests/.ocamlformat )
- (package ocamlformat)
  (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
  (action
    (with-outputs-to verbose1.ml.output
      (run %{bin:ocamlformat} --print-config --doc-comments=before --config=doc-comments=before %{dep:tests/verbose1.ml}))))
 
 (rule
  (alias runtest)
- (package ocamlformat)
  (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
  (action (diff tests/verbose1.ml.ref verbose1.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )
- (package ocamlformat)
  (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
  (action
    (with-outputs-to verbose2.ml.output
      (run %{bin:ocamlformat} --print-config --doc-comments=before --config=doc-comments=before %{dep:tests/verbose2.ml}))))
 
 (rule
  (alias runtest)
- (package ocamlformat)
  (enabled_if (<> %{os_type} Win32))
+ (package ocamlformat)
  (action (diff tests/verbose2.ml.ref verbose2.ml.output)))
 
 (rule
