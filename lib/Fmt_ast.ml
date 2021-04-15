@@ -2169,6 +2169,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
         ~attributes:pexp_attributes rec_flag bindings body
+  | Pexp_letop {let_; ands; body} ->
+      let bindings = Sugar.binding_ops (let_ :: ands) in
+      let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
+      fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
+        ~attributes:pexp_attributes Nonrecursive bindings body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2558,11 +2563,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_atrs ) )
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
-  | Pexp_letop {let_; ands; body} ->
-      let bindings = Sugar.binding_ops (let_ :: ands) in
-      let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
-        ~attributes:pexp_attributes Nonrecursive bindings body
 
 and fmt_let_bindings c ~ctx ?ext ~parens ~loc ~attributes ~fmt_atrs ~fmt_expr
     rec_flag bindings body =
