@@ -178,3 +178,7 @@ let _ =
 
 
 let _ = f (let+ a b = c in d)
+
+let () =
+  let* x = 1 (* blah *) and* y = 2 in
+  ()

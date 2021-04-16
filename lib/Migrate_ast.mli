@@ -21,6 +21,8 @@ module Asttypes : sig
   val is_override : override_flag -> bool
 
   val is_mutable : mutable_flag -> bool
+
+  val is_recursive : rec_flag -> bool
 end
 
 module Position : sig

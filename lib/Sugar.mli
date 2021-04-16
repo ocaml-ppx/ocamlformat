@@ -147,3 +147,14 @@ val polynewtype :
     Can be rewritten as:
 
     {[ let f : type r s. r s t = e ]} *)
+
+type let_binding =
+  { lb_op: string loc
+  ; lb_pat: pattern
+  ; lb_exp: expression
+  ; lb_attrs: attribute list
+  ; lb_loc: Location.t }
+
+val value_bindings : value_binding list -> let_binding list
+
+val binding_ops : binding_op list -> let_binding list

@@ -347,3 +347,26 @@ let polynewtype cmts pat body =
         ~after:pat2.ppat_loc ;
       polynewtype_ pvars body
   | _ -> None
+
+type let_binding =
+  { lb_op: string loc
+  ; lb_pat: pattern
+  ; lb_exp: expression
+  ; lb_attrs: attribute list
+  ; lb_loc: Location.t }
+
+let value_bindings vbs =
+  List.mapi vbs ~f:(fun i vb ->
+      { lb_op= Location.{txt= (if i = 0 then "let" else "and"); loc= none}
+      ; lb_pat= vb.pvb_pat
+      ; lb_exp= vb.pvb_expr
+      ; lb_attrs= vb.pvb_attributes
+      ; lb_loc= vb.pvb_loc } )
+
+let binding_ops bos =
+  List.map bos ~f:(fun bo ->
+      { lb_op= bo.pbop_op
+      ; lb_pat= bo.pbop_pat
+      ; lb_exp= bo.pbop_exp
+      ; lb_attrs= []
+      ; lb_loc= bo.pbop_loc } )
