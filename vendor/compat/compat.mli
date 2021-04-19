@@ -1,3 +1,4 @@
+module Cmdliner = Cmdliner_ext
 module List = List
 module String = String
 module Warning = Warning

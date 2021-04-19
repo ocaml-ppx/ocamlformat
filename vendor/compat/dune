@@ -16,4 +16,4 @@
 
 (library
  (name compat)
- (libraries base compiler-libs.common either))
+ (libraries base cmdliner compiler-libs.common either))
