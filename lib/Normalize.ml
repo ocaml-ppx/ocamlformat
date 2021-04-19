@@ -426,8 +426,8 @@ let moved_docstrings fragment c s1 s2 =
       let both, l1 =
         List.partition_map l1 ~f:(fun x ->
             match List.find l2 ~f:(equal x) with
-            | Some (l, s) -> First (Moved (fst x, l, s))
-            | None -> Second x )
+            | Some (l, s) -> Left (Moved (fst x, l, s))
+            | None -> Right x )
       in
       let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
       let l1 = List.map ~f:unstable l1 in

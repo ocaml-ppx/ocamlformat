@@ -8,4 +8,4 @@
 
 (library
  (name compat)
- (libraries base compiler-libs.common))
+ (libraries base compiler-libs.common either))

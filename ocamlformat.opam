@@ -17,6 +17,7 @@ depends: [
   "base-unix"
   "cmdliner"
   "dune-build-info"
+  "either"
   "fix"
   "fpath"
   "menhir" {>= "20180528"}
