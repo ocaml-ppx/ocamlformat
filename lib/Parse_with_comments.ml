@@ -60,9 +60,9 @@ let parse fragment (conf : Conf.t) ~source =
   let w50 = ref [] in
   let t =
     let lexbuf, hash_bang = fresh_lexbuf source in
-    with_warning_filter
+    Warning.with_warning_filter
       ~filter:(fun loc warn ->
-        if is_unexpected_docstring warn && conf.comment_check then (
+        if Warning.is_unexpected_docstring warn && conf.comment_check then (
           w50 := (loc, warn) :: !w50 ;
           false )
         else not conf.quiet )

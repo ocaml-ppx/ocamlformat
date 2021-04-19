@@ -1,2 +1,2 @@
 module List = List
-include Warning
+module Warning = Warning
