@@ -23,10 +23,6 @@ val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 val impossible : string -> _
 (** Indicate why the call is expected to be impossible. *)
 
-val check : ('a -> _) -> 'a -> 'a
-(** Asserting identity: [check f x] asserts that [f x] does not raise and
-    returns [x]. *)
-
 module Fpath : sig
   include module type of Fpath
 

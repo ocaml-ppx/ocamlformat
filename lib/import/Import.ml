@@ -20,12 +20,6 @@ let ( >> ) f g x = g (f x)
 
 let impossible msg = failwith msg
 
-let check f x =
-  assert (
-    ignore (f x) ;
-    true ) ;
-  x
-
 module Fpath = struct
   include Fpath
 
