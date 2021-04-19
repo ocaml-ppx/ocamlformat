@@ -11,7 +11,9 @@
 
 (** Opened in each source module to establish global namespace *)
 
-open Base
+include Base
+include Stdio
+include Compat
 module Format = Caml.Format
 module Filename = Caml.Filename
 
