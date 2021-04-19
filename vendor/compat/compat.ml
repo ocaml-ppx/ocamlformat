@@ -1,4 +1,5 @@
 module List = List
+module String = String
 module Warning = Warning
 
 module Parser = struct
