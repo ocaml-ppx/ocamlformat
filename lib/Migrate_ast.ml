@@ -134,8 +134,6 @@ module Longident = struct
     Lident s
 end
 
-module Parser = Parser
-
 module Lexer = struct
   let token_with_comments lexbuf =
     Parser.of_compiler_libs (Lexer.token_with_comments lexbuf)
