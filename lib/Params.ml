@@ -23,7 +23,7 @@ let parens_or_begin_end (c : Conf.t) source ~loc =
         ~filter:(fun _ -> true)
         loc.Location.loc_start
     with
-    | Some (Token_latest.BEGIN, _) -> `Begin_end
+    | Some (BEGIN, _) -> `Begin_end
     | None | Some _ -> `Parens )
 
 let parens_if parens (c : Conf.t) ?(disambiguate = false) k =

@@ -134,11 +134,11 @@ module Longident = struct
     Lident s
 end
 
-module Parser = Token_latest
+module Parser = Parser
 
 module Lexer = struct
   let token_with_comments lexbuf =
-    Token_latest.of_compiler_libs (Lexer.token_with_comments lexbuf)
+    Parser.of_compiler_libs (Lexer.token_with_comments lexbuf)
 
   type error = Lexer.error
 

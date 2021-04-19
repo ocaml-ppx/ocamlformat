@@ -27,7 +27,5 @@
   re
   uuseg
   uuseg.string
-  token_latest
-  compat
   dune-build-info
   ppxlib))

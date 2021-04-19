@@ -6,6 +6,14 @@
   warning-compat-file
   (run warning/gen/gen.exe)))
 
+(rule
+ (with-stdout-to
+  dir-name
+  (run token-latest/detect/detect.exe)))
+
+(rule
+ (copy token-latest/%{read:dir-name}/token_latest.ml token_latest.ml))
+
 (library
  (name compat)
  (libraries base compiler-libs.common either))
