@@ -11,8 +11,6 @@
 
 (** Opened in each source module to establish global namespace *)
 
-include module type of Stdio
-
 module Format = Caml.Format
 module Filename = Caml.Filename
 

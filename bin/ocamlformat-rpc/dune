@@ -14,7 +14,7 @@
  (public_name ocamlformat-rpc)
  (package ocamlformat-rpc)
  (flags
-  (:standard -open Base -open Import))
+  (:standard -open Base -open Stdio -open Import))
  (instrumentation
   (backend bisect_ppx))
  (libraries ocamlformat_lib ocamlformat-rpc-lib))
