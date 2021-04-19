@@ -11,8 +11,6 @@
 
 (** Opened in each source module to establish global namespace *)
 
-include module type of Base.Option.Monad_infix
-
 include module type of Stdio
 
 module Format = Caml.Format
