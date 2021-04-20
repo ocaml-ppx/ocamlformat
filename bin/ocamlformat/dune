@@ -15,7 +15,7 @@
  (package ocamlformat)
  (modules main)
  (flags
-  (:standard -open Import))
+  (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
  (libraries ocamlformat_lib))

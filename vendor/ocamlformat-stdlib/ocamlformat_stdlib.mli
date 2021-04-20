@@ -1,10 +1,21 @@
+include module type of Base
+include module type of Stdio
 module Cmdliner = Cmdliner_ext
 module Fpath = Fpath_ext
-module List = List
-module String = String
+module List = List_ext
+module String = String_ext
 module Warning = Warning
+module Format = Caml.Format
+module Filename = Caml.Filename
 
 module Parser : sig
   include module type of Parser with type token = Token_latest.token
   include module type of Token_latest
 end
+
+val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
+(** Composition of functions: [(f >> g) x] is exactly equivalent to
+    [g (f (x))]. Left associative. *)
+
+val impossible : string -> _
+(** Indicate why the call is expected to be impossible. *)

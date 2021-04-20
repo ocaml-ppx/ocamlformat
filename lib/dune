@@ -14,13 +14,13 @@
 (library
  (name ocamlformat_lib)
  (flags
-  (:standard -open Import))
+  (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
  (libraries
   format_
-  import
   ocaml-version
+  ocamlformat_stdlib
   odoc.model
   odoc.parser
   parse_wyc
