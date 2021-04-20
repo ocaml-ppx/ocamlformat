@@ -8,11 +8,7 @@ module String = String_ext
 module Warning = Warning
 module Format = Caml.Format
 module Filename = Caml.Filename
-
-module Parser = struct
-  include Parser
-  include Token_latest
-end
+module Parser = Token_latest
 
 let ( >> ) f g x = g (f x)
 

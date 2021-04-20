@@ -7,11 +7,7 @@ module String = String_ext
 module Warning = Warning
 module Format = Caml.Format
 module Filename = Caml.Filename
-
-module Parser : sig
-  include module type of Parser with type token = Token_latest.token
-  include module type of Token_latest
-end
+module Parser = Token_latest
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to
