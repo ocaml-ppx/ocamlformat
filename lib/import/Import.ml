@@ -13,7 +13,7 @@
 
 include Base
 include Stdio
-include Compat
+include Ocamlformat_stdlib
 module Format = Caml.Format
 module Filename = Caml.Filename
 

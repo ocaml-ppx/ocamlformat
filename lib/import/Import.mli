@@ -15,7 +15,7 @@ include module type of Base
 
 include module type of Stdio
 
-include module type of Compat
+include module type of Ocamlformat_stdlib
 
 module Format = Caml.Format
 module Filename = Caml.Filename
