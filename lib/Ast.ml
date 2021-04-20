@@ -26,12 +26,6 @@ let init, register_reset, leading_nested_match_parens, parens_ite =
   in
   (init, register, leading_nested_match_parens, parens_ite)
 
-let check f x =
-  assert (
-    ignore (f x) ;
-    true ) ;
-  x
-
 (** [fit_margin c x] returns [true] if and only if [x] does not exceed 1/3 of
     the margin. *)
 let fit_margin (c : Conf.t) x = x * 3 < c.margin
