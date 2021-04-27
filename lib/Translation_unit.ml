@@ -65,7 +65,7 @@ module Error = struct
         | Syntaxerr.Error _ | Lexer.Error _ ->
             Location.report_exception fmt exn
         | Warning50 l ->
-            List.iter l ~f:(fun (l, w) -> print_warning l w) ;
+            List.iter l ~f:(fun (l, w) -> Warning.print_warning l w) ;
             Format.fprintf fmt
               "@{<warning>Hint@}: (Warning 50) This file contains a \
                documentation comment (** ... *) that the OCaml compiler \
@@ -174,7 +174,7 @@ module Error = struct
                 if debug then Location.report_exception fmt exn
             | `Warning50 l ->
                 if debug then
-                  List.iter l ~f:(fun (l, w) -> print_warning l w)
+                  List.iter l ~f:(fun (l, w) -> Warning.print_warning l w)
             | _ -> () ) ;
             if debug then
               List.iter l ~f:(fun (msg, sexp) ->

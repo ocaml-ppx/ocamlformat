@@ -31,13 +31,12 @@ let tokens lexbuf =
   let rec loop acc =
     match Migrate_ast.Lexer.token_with_comments lexbuf with
     (* The location in lexbuf are invalid for comments *)
-    | Token_latest.COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
-    | Token_latest.DOCSTRING ds as tok ->
-        loop ((tok, Docstrings.docstring_loc ds) :: acc)
+    | COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
+    | DOCSTRING ds as tok -> loop ((tok, Docstrings.docstring_loc ds) :: acc)
     | tok -> (
         let loc = Ppxlib.Location.of_lexbuf lexbuf in
         let acc = (tok, loc) :: acc in
-        match tok with Token_latest.EOF -> List.rev acc | _ -> loop acc )
+        match tok with EOF -> List.rev acc | _ -> loop acc )
   in
   loop []
 
@@ -60,9 +59,9 @@ let parse fragment (conf : Conf.t) ~source =
   let w50 = ref [] in
   let t =
     let lexbuf, hash_bang = fresh_lexbuf source in
-    with_warning_filter
+    Warning.with_warning_filter
       ~filter:(fun loc warn ->
-        if is_unexpected_docstring warn && conf.comment_check then (
+        if Warning.is_unexpected_docstring warn && conf.comment_check then (
           w50 := (loc, warn) :: !w50 ;
           false )
         else not conf.quiet )

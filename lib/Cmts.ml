@@ -51,7 +51,7 @@ let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
         | _ -> true )
   with
   | [] -> true
-  | [(Token_latest.BAR, _)] ->
+  | [(BAR, _)] ->
       Source.begins_line src l1
       && Position.column l1.loc_start < Position.column l2.loc_start
   | _ -> false

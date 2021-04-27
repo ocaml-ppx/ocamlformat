@@ -1,0 +1,19 @@
+(rule
+ (copy# warning/%{read:warning-compat-file} warning.ml))
+
+(rule
+ (with-stdout-to
+  warning-compat-file
+  (run warning/gen/gen.exe)))
+
+(rule
+ (with-stdout-to
+  dir-name
+  (run token-latest/detect/detect.exe)))
+
+(rule
+ (copy token-latest/%{read:dir-name}/token_latest.ml token_latest.ml))
+
+(library
+ (name ocamlformat_stdlib)
+ (libraries base cmdliner compiler-libs.common either fpath stdio unix))

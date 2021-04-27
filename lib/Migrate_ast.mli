@@ -97,8 +97,6 @@ module Longident : sig
   (** Make a Lident from a dotless string *)
 end
 
-module Parser = Token_latest
-
 module Lexer : sig
   val token_with_comments : Lexing.lexbuf -> Parser.token
 

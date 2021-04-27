@@ -546,7 +546,7 @@ and fmt_invalid_or_extension c ctx key (ext, pld) loc =
             ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
             loc.Location.loc_end
         with
-        | Some (Token_latest.SEMISEMI, loc_semi) ->
+        | Some (SEMISEMI, loc_semi) ->
             if loc.loc_end.pos_lnum = loc_semi.loc_start.pos_lnum then
               str ";;"
             else fmt "@;<1000 0>;;"
