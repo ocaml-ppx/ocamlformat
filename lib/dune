@@ -15,4 +15,4 @@
   (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat_kernel))
+ (libraries ocamlformat_kernel unix))
