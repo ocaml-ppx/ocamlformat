@@ -9,10 +9,23 @@
 ;                                                                        ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(ocamllex Literal_lexer)
+
 (library
- (name ocamlformat_lib)
+ (name ocamlformat_kernel)
  (flags
   (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat_kernel))
+ (libraries
+  format_
+  ocaml-version
+  ocamlformat_stdlib
+  odoc.model
+  odoc.parser
+  parse_wyc
+  re
+  uuseg
+  uuseg.string
+  dune-build-info
+  ppxlib))

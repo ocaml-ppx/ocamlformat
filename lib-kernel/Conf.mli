@@ -122,3 +122,5 @@ val update_value :
      Result.t
 
 val print_config : t -> unit
+
+val janestreet_profile : t

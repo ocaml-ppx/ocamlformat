@@ -73,7 +73,7 @@ let rec rpc_main = function
                   V1.Command.output stdout (`Format formatted) ;
                   Stop ()
               | Error e ->
-                  Translation_unit.Error.print Format.str_formatter e ;
+                  Ocamlformat_lib.Translation_unit.Error.print Format.str_formatter e ;
                   Continue () )
             (* The formatting functions are ordered in such a way that the
                ones expecting a keyword first (like signatures) are placed
