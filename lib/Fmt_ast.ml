@@ -1711,7 +1711,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
-      let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx r) in
+      let xr = sub_exp ~ctx r in
+      let parens_r = parenze_exp xr in
+      let xargs, xbody = Sugar.fun_ c.cmts xr in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
       let indent_wrap = if parens then -2 else 0 in
       let pre_body, body = fmt_body c ?ext xbody in
@@ -1736,7 +1738,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    $ hovbox 2
                        ( hvbox 0
                            ( fmt_expression c (sub_exp ~ctx op)
-                           $ fmt "@ " $ cmts_before $ str "fun " )
+                           $ fmt "@ " $ cmts_before $ fmt_if parens_r "("
+                           $ str "fun " )
                        $ fmt_attributes c ~key:"@" pexp_attributes
                            ~suf:(str " ")
                        $ hvbox_if
@@ -1746,7 +1749,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                        $ fmt "@ ->" ) )
                $ pre_body )
            $ fmt_or followed_by_infix_op "@;<1000 0>" "@ "
-           $ body $ cmts_after ) )
+           $ body $ fmt_if parens_r ")" $ cmts_after ) )
   | Pexp_apply
       ( ( {pexp_desc= Pexp_ident {txt= id; loc= _}; pexp_attributes= []; _}
         as op )

@@ -10,6 +10,8 @@
 
   + Consistently format let bindings and monadic let bindings, do not drop comments before monadic bindings (#1636, @gpetiot)
 
+  + Add missing parens around function at RHS of infix op (#1642, @gpetiot)
+
 #### Changes
 
 #### New features
