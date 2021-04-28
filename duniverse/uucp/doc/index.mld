@@ -1,0 +1,13 @@
+{0 Uucp {%html: <span class="version">%%VERSION%%</span>%}}
+
+Uucp provides efficient access to a selection of character properties
+of the Unicode character database.
+
+Consult {{!page-unicode}this page} for a minimal Unicode introduction
+and OCaml Unicode tips.
+
+{1:api API}
+
+{!modules:
+Uucp
+}

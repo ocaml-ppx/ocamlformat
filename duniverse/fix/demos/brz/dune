@@ -1,0 +1,17 @@
+(library
+  (name Brzozowski)
+  (modules Brzozowski ListAux)
+  (libraries fix seq)
+)
+
+(test
+  (name Main)
+  (modules Main)
+  (libraries Brzozowski)
+)
+
+(test
+  (name TestGen)
+  (modules TestGen)
+  (libraries Brzozowski regenerate)
+)
