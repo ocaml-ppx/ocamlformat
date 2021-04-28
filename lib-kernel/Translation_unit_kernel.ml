@@ -43,7 +43,6 @@ module Error = struct
     | User_error of string
 
   let equal : t -> t -> bool = Poly.equal
-
 end
 
 let with_file input_name output_file suf ext f =
