@@ -1,0 +1,22 @@
+(copy_files ../src/*_base.ml)
+(copy_files ../src/uucp_fmt.ml)
+(copy_files ../src/*_map.ml)
+(copy_files ../src/*_[crt]map*.ml)
+
+(executables
+ (names gen gen_age gen_alpha gen_block gen_break gen_case
+        gen_case_fold gen_case_map gen_case_nfkc gen_cjk gen_func
+        gen_gc gen_gen gen_hangul gen_id gen_name gen_num gen_props
+        gen_script gen_white)
+ (libraries uucd)
+ (flags :standard -w -27-39))
+
+(rule
+ (targets ucd.xml)
+ (mode promote)
+ (action
+   (progn
+     (run curl -OL http://www.unicode.org/Public/13.0.0/ucdxml/ucd.all.grouped.zip)
+     (run unzip ucd.all.grouped.zip)
+     (run mv ucd.all.grouped.xml ucd.xml)
+     (run rm ucd.all.grouped.zip))))

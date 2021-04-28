@@ -1,0 +1,11 @@
+true : bin_annot, safe_string
+
+<_b0> : -traverse
+<src> : include
+<support> : include
+<test> : include
+
+<support/gen*.{ml,mli,byte,native}> : package(uucd)
+<test/test.{ml,mli,byte,native}> : package(uucd)
+<test/examples.{ml,mli,byte,native}> : package(uutf), package(uunf)
+<test/ucharinfo.{ml,mli,byte,native}> : package(uutf uunf cmdliner)

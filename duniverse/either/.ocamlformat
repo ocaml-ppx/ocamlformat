@@ -1,0 +1,3 @@
+version = 0.15.0
+parse-docstrings = true
+module-item-spacing = compact

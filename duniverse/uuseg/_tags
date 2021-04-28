@@ -1,0 +1,10 @@
+true : bin_annot, safe_string
+
+<_b0> : -traverse
+<src> : include
+<src/*> : package(uucp)
+<src/uuseg_string*> : package(uutf)
+
+<test> : include
+<test/*> : package(uutf), package(uucp)
+<test/usegtrip.*> : package(cmdliner)

@@ -1,0 +1,31 @@
+opam-version: "2.0"
+maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
+authors: ["Daniel Bünzli <daniel.buenzl i@erratique.ch>"]
+homepage: "https://erratique.ch/software/uuseg"
+doc: "https://erratique.ch/software/uuseg"
+dev-repo: "git+https://github.com/dune-universe/uuseg.git"
+bug-reports: "https://github.com/dbuenzli/uuseg/issues"
+tags: [ "segmentation" "text" "unicode" "org:erratique" ]
+license: "ISC"
+depends: [ "ocaml" {>= "4.01.0"}
+           "dune"
+           "uchar"
+           "uucp" {>= "13.0.0" & < "14.0.0"}
+           "uutf"
+]
+conflicts: [ "uutf" {< "1.0.0"} ]
+build: [
+ [ "dune" "subst" ] {pinned}
+ [ "dune" "build" "-p" name "-j" jobs ]
+]
+synopsis: "Unicode text segmentation for OCaml"
+description: """
+Uuseg is an OCaml library for segmenting Unicode text. It implements
+the locale independent [Unicode text segmentation algorithms][1] to
+detect grapheme cluster, word and sentence boundaries and the
+[Unicode line breaking algorithm][2] to detect line break
+opportunities.
+"""
+url {
+  src: "git://github.com/dune-universe/uuseg.git#duniverse-v13.0.0"
+}

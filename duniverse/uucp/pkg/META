@@ -1,0 +1,7 @@
+description = "Unicode character properties"
+version = "%%VERSION_NUM%%"
+requires = ""
+archive(byte) = "uucp.cma"
+archive(native) = "uucp.cmxa"
+plugin(byte) = "uucp.cma"
+plugin(native) = "uucp.cmxs"
