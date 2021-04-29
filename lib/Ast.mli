@@ -22,6 +22,11 @@ module Attr : sig
   (** Holds for docstrings, that are attributes of the form [(** ... *)]. *)
 end
 
+module Token : sig
+  val is_infix : Parser.token -> bool
+  (** Holds for infix symbols. *)
+end
+
 module String_id : sig
   val is_prefix : string -> bool
   (** Holds for prefix symbols. *)
