@@ -1,5 +1,5 @@
 open! Base
-open Ocamlformat_unix
+open Ocamlformat_lib
 
 let test_parse_and_format kind_name ~fg test_name ~input ~expected =
   let test_name =

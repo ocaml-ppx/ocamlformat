@@ -12,8 +12,6 @@
 
 #### Changes
 
-  + Move non-portable bits of ocamlformat_lib into ocamlformat_unix (#1644, @pmwhite)
-
 #### New features
 
 ### 0.18.0 (2021-03-30)

@@ -1,6 +1,6 @@
 include Fpath
 
-let cwd () = Caml.Sys.getcwd () |> v
+let cwd () = Unix.getcwd () |> v
 
 let exists p = to_string p |> Caml.Sys.file_exists
 

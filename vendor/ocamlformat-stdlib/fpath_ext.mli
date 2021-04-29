@@ -1,7 +1,7 @@
 include module type of Fpath
 
 val cwd : unit -> t
-(** Current working directory. *)
+(** Current working directory, relying on [Unix]. *)
 
 val exists : t -> bool
 (** [exists p] returns whether the given path [p] exists. *)
