@@ -11,7 +11,7 @@
 
 (** OCamlFormat-RPC *)
 
-open Ocamlformat_lib
+open Ocamlformat_unix
 open Ocamlformat_rpc_lib
 
 ;;

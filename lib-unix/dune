@@ -9,22 +9,10 @@
 ;                                                                        ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(executable
- (name main)
- (public_name ocamlformat-rpc)
- (package ocamlformat-rpc)
+(library
+ (name ocamlformat_unix)
  (flags
   (:standard -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
- (libraries ocamlformat_unix ocamlformat-rpc-lib))
-
-(rule
- (with-stdout-to
-  ocamlformat-rpc.1
-  (run ./main.exe --help=groff)))
-
-(install
- (section man)
- (files ocamlformat-rpc.1)
- (package ocamlformat-rpc))
+ (libraries ocamlformat_lib unix))

@@ -9,25 +9,14 @@
 (*                                                                        *)
 (**************************************************************************)
 
-exception
-  Internal_error of
-    [ `Cannot_parse of exn
-    | `Ast_changed
-    | `Doc_comment of Normalize.docstring_error list
-    | `Comment
-    | `Comment_dropped of Cmt.t list
-    | `Warning50 of (Location.t * Warnings.t) list ]
-    * (string * Sexp.t) list
+open Ocamlformat_lib
 
 module Error : sig
-  type t =
-    | Invalid_source of {exn: exn; input_name: string}
-    | Unstable of
-        {iteration: int; prev: string; next: string; input_name: string}
-    | Ocamlformat_bug of {exn: exn; input_name: string}
-    | User_error of string
+  type t = Translation_unit.Error.t
 
   val equal : t -> t -> bool
+
+  val print : ?debug:bool -> ?quiet:bool -> Format.formatter -> t -> unit
 end
 
 val parse_and_format :

@@ -83,6 +83,8 @@ type t =
 
 val default_profile : t
 
+val janestreet_profile : t
+
 type file = Stdin | File of string
 
 type input = {kind: Syntax.t; name: string; file: file; conf: t}
