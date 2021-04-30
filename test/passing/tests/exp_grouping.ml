@@ -130,6 +130,7 @@ let _ =
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
+  else if y then begin f 0; f 2 end
   else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
@@ -143,6 +144,7 @@ let _ =
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
+  else if y then begin f 0; f 2 end
   else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
@@ -156,6 +158,7 @@ let _ =
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
+  else if y then begin f 0; f 2 end
   else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
@@ -169,6 +172,7 @@ let _ =
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
+  else if y then begin f 0; f 2 end
   else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo

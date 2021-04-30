@@ -10,6 +10,8 @@
 
   + Consistently format let bindings and monadic let bindings, do not drop comments before monadic bindings (#1636, @gpetiot)
 
+  + Add missing spaces inside begin-end delimiting an ite branch (#1646, @gpetiot)
+
 #### Changes
 
 #### New features

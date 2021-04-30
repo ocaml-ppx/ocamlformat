@@ -208,6 +208,7 @@ let _ =
   if x then (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
+  else if y then (f 0 ; f 2)
   else (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
@@ -218,6 +219,8 @@ let _ =
   if x then (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
+  else if y then (
+    f 0 ; f 2 )
   else (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
@@ -229,6 +232,8 @@ let _ =
   then (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
+  else if y
+  then (f 0 ; f 2)
   else (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo )
@@ -239,6 +244,8 @@ let _ =
   if x then (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo
+  ) else if y then (
+    f 0 ; f 2
   ) else (
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo
