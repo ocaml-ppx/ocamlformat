@@ -24,3 +24,8 @@ let t4 :
   =
   ()
 ;;
+
+let foo : type a. a =
+  (* aaaaaa *)
+  failwith "foo"
+;;
