@@ -347,3 +347,8 @@ let _ = assert (foo (bar + baz <= quux))
 (* this comment should stay attached to the preceding item *)
 
 let _ = foo
+
+let a =
+  [ b
+    (*  *)
+    (* c *) ]
