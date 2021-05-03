@@ -16,4 +16,4 @@
 
 (library
  (name ocamlformat_stdlib)
- (libraries base cmdliner compiler-libs.common either fpath stdio unix))
+ (libraries base cmdliner compiler-libs.common either fpath stdio))
