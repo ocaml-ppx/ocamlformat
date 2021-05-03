@@ -20,6 +20,7 @@ val wrap_exp :
      Conf.t
   -> ?disambiguate:bool
   -> ?fits_breaks:bool
+  -> ?offset_closing_paren:int
   -> parens:bool
   -> loc:Location.t
   -> Source.t
