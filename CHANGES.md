@@ -12,6 +12,8 @@
 
 #### Changes
 
+  + Use consistent positioning for doc-comments in recursive type definitions (#1647, @gpetiot)
+
 #### New features
 
 ### 0.18.0 (2021-03-30)

@@ -283,3 +283,9 @@ let _ = ()
 
 (** @see 'file' *)
 (** @see "title" *)
+
+(** Foo *)
+type 'a or_subexpr = Sub of expression | Literal of 'a
+
+(** Bar *)
+and word = string or_subexpr list

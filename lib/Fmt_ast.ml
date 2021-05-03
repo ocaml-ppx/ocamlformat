@@ -494,6 +494,10 @@ let fmt_quoted_string key ext s = function
         (str (Format.sprintf "|%s}" delim))
         (str s)
 
+(* Docstring cannot be placed after variant declarations *)
+let force_docstring_before ty =
+  match ty.ptype_kind with Ptype_variant _ -> true | _ -> false
+
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
   | _, "invalid.ast.node", _, _ -> assert false
@@ -3116,7 +3120,8 @@ and fmt_class_params c ctx params =
     (hvbox 0
        (wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param) $ fmt "@ ") )
 
-and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
+and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=")
+    ~force_before decl =
   let { ptype_name= {txt; loc}
       ; ptype_params
       ; ptype_cstrs
@@ -3213,10 +3218,6 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
     fmt_if_k
       (not (List.is_empty cstrs))
       (fmt "@ " $ hvbox 0 (list cstrs "@ " fmt_cstr))
-  in
-  (* Docstring cannot be placed after variant declarations *)
-  let force_before =
-    match ptype_kind with Ptype_variant _ -> true | _ -> false
   in
   let doc_before, doc_after, atrs =
     let fit = Tyd.is_simple decl in
@@ -3885,13 +3886,16 @@ and fmt_with_constraint c ctx = function
   | Pwith_type (ident, td) ->
       fmt_type_declaration ~pre:" type" c ctx
         ~fmt_name:(fmt_longident_loc c ident)
+        ~force_before:(force_docstring_before td)
         td
   | Pwith_module (m1, m2) ->
       str " module " $ fmt_longident_loc c m1 $ str " = "
       $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
       fmt_type_declaration ~pre:" type" c ~eq:":=" ctx
-        ~fmt_name:(fmt_longident_loc c lid) td
+        ~fmt_name:(fmt_longident_loc c lid)
+        ~force_before:(force_docstring_before td)
+        td
   | Pwith_modsubst (m1, m2) ->
       str " module " $ fmt_longident_loc c m1 $ str " := "
       $ fmt_longident_loc c m2
@@ -4130,6 +4134,7 @@ and fmt_structure c ctx itms =
   hvbox 0 (fmt_groups c ctx grps fmt_grp)
 
 and fmt_type c ?ext ?eq rec_flag decls ctx =
+  let force_before = List.exists decls ~f:force_docstring_before in
   let fmt_decl ~first ~last decl =
     let pre =
       match (first, rec_flag) with
@@ -4138,7 +4143,8 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
       | false, _ -> "and"
     in
     let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?eq ?ext ctx decl $ fmt_if (not last) "\n@ "
+    fmt_type_declaration c ~pre ?eq ?ext ctx decl ~force_before
+    $ fmt_if (not last) "\n@ "
   in
   vbox 0 (list_fl decls fmt_decl)
 
