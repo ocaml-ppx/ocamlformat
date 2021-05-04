@@ -10,6 +10,10 @@
 
   + Consistently format let bindings and monadic let bindings, do not drop comments before monadic bindings (#1636, @gpetiot)
 
+  + Fix dropped comments attached to pattern constrained by polynewtype (#1645, @gpetiot)
+
+  + Fix comment attachment on infix operators (#1643, @gpetiot)
+
   + Add missing spaces inside begin-end delimiting an ite branch (#1646, @gpetiot)
 
 #### Changes
