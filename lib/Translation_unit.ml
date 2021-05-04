@@ -91,9 +91,9 @@ module Error = struct
             Filename.temp_file input_name (Printf.sprintf ".next%s" ext)
           in
           Out_channel.write_all n ~data:next ;
-          ignore (Unix.system (Printf.sprintf "diff %S %S 1>&2" p n)) ;
-          Unix.unlink p ;
-          Unix.unlink n ) ;
+          ignore (Caml.Sys.command (Printf.sprintf "diff %S %S 1>&2" p n)) ;
+          Caml.Sys.remove p ;
+          Caml.Sys.remove n ) ;
         if iteration <= 1 then
           Format.fprintf fmt
             "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
