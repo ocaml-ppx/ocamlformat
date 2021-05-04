@@ -28,6 +28,8 @@
 
   + Consistently format comments attached to let-and bindings located at toplevel (#1663, @gpetiot)
 
+  + Fix comment attachment so that comments starting a line are attached to the previous node (#1650, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
