@@ -14,6 +14,8 @@
 
   + Fix comment attachment on infix operators (#1643, @gpetiot)
 
+  + Add missing spaces inside begin-end delimiting an ite branch (#1646, @gpetiot)
+
 #### Changes
 
 #### New features
