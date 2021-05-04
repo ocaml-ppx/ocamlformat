@@ -12,6 +12,8 @@
 
   + Fix dropped comments attached to pattern constrained by polynewtype (#1645, @gpetiot)
 
+  + Fix comment attachment on infix operators (#1643, @gpetiot)
+
 #### Changes
 
 #### New features
