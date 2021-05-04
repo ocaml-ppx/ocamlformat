@@ -12,6 +12,9 @@
 module Format = Format_
 open Ast_passes.Ast_final
 
+val parens_or_begin_end :
+  Conf.t -> Source.t -> loc:Location.t -> [`Parens | `Begin_end]
+
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
 val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t

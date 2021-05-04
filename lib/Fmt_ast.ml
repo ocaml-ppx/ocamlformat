@@ -1528,11 +1528,18 @@ and fmt_infix_op_args c ~parens xexp op_args =
       | `Closing_on_separate_line -> ("(", Some (1000, 0), ")")
     else ("", None, "")
   in
-  wrap_if_k
-    (parens || Ast.parenze_nested_exp xexp)
-    (fits_breaks "(" opn)
-    (fits_breaks ")" ?hint cls)
-    (list_fl groups fmt_op_arg_group)
+  match
+    Params.parens_or_begin_end c.conf c.source ~loc:xexp.ast.pexp_loc
+  with
+  | `Parens ->
+      wrap_if_k
+        (parens || Ast.parenze_nested_exp xexp)
+        (fits_breaks "(" opn)
+        (fits_breaks ")" ?hint cls)
+        (list_fl groups fmt_op_arg_group)
+  | `Begin_end ->
+      wrap "begin@;<1 2>@[<0>" "@]@;<1000 0>end"
+        (list_fl groups fmt_op_arg_group)
 
 and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
   let indent = Params.match_indent c.conf ~ctx:xexp.ctx in

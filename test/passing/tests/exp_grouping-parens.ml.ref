@@ -261,3 +261,13 @@ let _ =
     | B -> fooooooooooooo
     | C -> fooooooooooooo
     | D -> fooooooooooooo )
+
+let () =
+  ( add_test
+  @@
+  let test_name = "Test 1" in
+  test_name >:: fun _ -> assert_equal "a" "a" ) ;
+  add_test
+  @@
+  let test_name = "Test 2" in
+  test_name >:: fun _ -> assert_equal "b" "b"
