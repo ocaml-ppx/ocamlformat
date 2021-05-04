@@ -42,7 +42,8 @@ let parens c ?disambiguate k = parens_if true c ?disambiguate k
 
 module Exp = struct
   module Infix_op_arg = struct
-    let wrap (c : Conf.t) ?(parens_nested = false) ~parens ~loc source k =
+    let wrap (c : Conf.t) ?(parens_nested = false) ~ext ~parens ~loc source k
+        =
       match parens_or_begin_end c source ~loc with
       | `Parens when parens || parens_nested ->
           let opn, hint, cls =
@@ -58,7 +59,11 @@ module Exp = struct
             k
       | `Parens -> k
       | `Begin_end ->
-          vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
+          vbox 2
+            (wrap_k
+               (str "begin" $ ext)
+               (str "end")
+               (wrap_k (break 1 0) (break 1000 ~-2) k) )
   end
 
   let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)

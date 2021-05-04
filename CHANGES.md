@@ -24,6 +24,8 @@
 
   + Preserve begin-end keywords around infix operators (#1652, @gpetiot)
 
+  + Preserve `begin%ext` syntax for infix opererator expressions (#1653, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)

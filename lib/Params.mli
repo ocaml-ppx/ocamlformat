@@ -21,6 +21,7 @@ module Exp : sig
     val wrap :
          Conf.t
       -> ?parens_nested:bool
+      -> ext:Fmt.t
       -> parens:bool
       -> loc:Location.t
       -> Source.t

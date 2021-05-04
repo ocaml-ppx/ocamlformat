@@ -359,13 +359,10 @@ let _ = f [%ext new x]
 
 [@@@ocamlformat "exp-grouping=preserve"]
 
-(* TODO: begin/end keywords must be preserved *)
-
 let _ =
-  [%ext
-       begin
-         y >>= z
-       end]
+  begin%ext
+    y >>= z
+  end
 
 let _ =
   [%ext
@@ -375,10 +372,9 @@ let _ =
 
 let _ =
   x
-  >>= [%ext
-           begin
-             y >>= z
-           end]
+  >>= begin%ext
+        y >>= z
+      end
 
 let _ =
   x
@@ -389,10 +385,9 @@ let _ =
 
 let _ =
   f
-    [%ext
-         begin
-           y >>= z
-         end]
+    begin%ext
+      y >>= z
+    end
 
 let _ =
   f
