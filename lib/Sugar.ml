@@ -325,27 +325,28 @@ let mod_with pmty =
   let l_rev, m = mod_with_ pmty in
   (List.rev l_rev, m)
 
+let rec polynewtype_ cmts pvars body relocs =
+  let ctx = Exp body in
+  match (pvars, body.pexp_desc) with
+  | [], Pexp_constraint (exp, typ) ->
+      let relocs = (body.pexp_loc, exp.pexp_loc) :: relocs in
+      Some (sub_typ ~ctx typ, sub_exp ~ctx exp, relocs)
+  | pvar :: pvars, Pexp_newtype (nvar, exp)
+    when String.equal pvar.txt nvar.txt ->
+      let relocs = (nvar.loc, pvar.loc) :: relocs in
+      polynewtype_ cmts pvars exp relocs
+  | _ -> None
+
 let polynewtype cmts pat body =
   let ctx = Pat pat in
   match pat.ppat_desc with
-  | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, _); _}) ->
-      let pvars0 = pvars in
-      let xpat = sub_pat ~ctx pat2 in
-      let rec polynewtype_ pvars body =
-        let ctx = Exp body in
-        match (pvars, body.pexp_desc) with
-        | [], Pexp_constraint (exp, typ) ->
-            Some (xpat, pvars0, sub_typ ~ctx typ, sub_exp ~ctx exp)
-        | ( {txt= pvar; loc= loc1} :: pvars
-          , Pexp_newtype ({txt= nvar; loc= loc2}, exp) )
-          when String.equal pvar nvar ->
-            Cmts.relocate cmts ~src:loc2 ~before:loc1 ~after:loc1 ;
-            polynewtype_ pvars exp
-        | _ -> None
-      in
-      Cmts.relocate cmts ~src:pat.ppat_loc ~before:pat2.ppat_loc
-        ~after:pat2.ppat_loc ;
-      polynewtype_ pvars body
+  | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, _); _}) -> (
+    match polynewtype_ cmts pvars body [(pat.ppat_loc, pat2.ppat_loc)] with
+    | Some (typ, exp, relocs) ->
+        List.iter relocs ~f:(fun (src, dst) ->
+            Cmts.relocate cmts ~src ~before:dst ~after:dst ) ;
+        Some (sub_pat ~ctx pat2, pvars, typ, exp)
+    | None -> None )
   | _ -> None
 
 type let_binding =

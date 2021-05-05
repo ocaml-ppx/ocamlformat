@@ -64,13 +64,8 @@ let infix_symbol_before src (loc : Location.t) =
   match
     Source.find_token_before src ~filter:(function _ -> true) loc.loc_start
   with
-  | Some
-      ( ( SEMI | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
-        | INFIXOP4 _ | COLONCOLON | COLONEQUAL | BARBAR | LESSMINUS | EQUAL
-        | COLON | LETOP _ | ANDOP _ | DOTDOT | DOTOP _ | AMPERAMPER )
-      , _ ) ->
-      true
-  | _ -> false
+  | Some (x, _) -> Ast.Token.is_infix x
+  | None -> false
 
 (** Sets of comments supporting splitting by locations. *)
 module CmtSet : sig

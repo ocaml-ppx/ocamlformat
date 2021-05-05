@@ -306,8 +306,10 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
     match (exp_grouping_bch, imd) with
     | `Parens, `Space -> wrap_k (brk oh_space) (brk ch_sp)
     | `Parens, `No -> wrap_k (brk oh_other) noop
-    | `Parens, `Closing_on_separate_line | `Begin_end, _ ->
-        wrap_k (brk oh_other) (brk ch_sl)
+    | `Parens, `Closing_on_separate_line -> wrap_k (brk oh_other) (brk ch_sl)
+    | `Begin_end, _ ->
+        let _, offset = ch_sl in
+        wrap_k (brk oh_other) (break 1000 offset)
   in
   let cond () =
     match xcond with
