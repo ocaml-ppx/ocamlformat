@@ -12,9 +12,4 @@ Error: Formatting of doc-comment is unstable (e.g. parses as a list or not depen
 >     - registered into {!resolvers}
 >     - used as a service with {!serve_with_handler\]/\{!serve}
 > 
-6c7
-<     {!register_protocol}. However, blablabla.
----
->     {!register_protocol}. However, blablabla. 
-\ No newline at end of file
 Please tighten up this comment in the source or disable the formatting using the option --no-parse-docstrings.

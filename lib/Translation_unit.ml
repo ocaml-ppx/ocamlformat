@@ -52,7 +52,7 @@ module Error = struct
     let n = Filename.temp_file input_name (Printf.sprintf ".next%s" ext) in
     Out_channel.write_all p ~data:prev ;
     Out_channel.write_all n ~data:next ;
-    ignore (Caml.Sys.command (Printf.sprintf "diff %S %S 1>&2" p n)) ;
+    ignore (Caml.Sys.command (Printf.sprintf "diff %S %S -w -B -d 1>&2" p n)) ;
     Caml.Sys.remove p ;
     Caml.Sys.remove n
 
