@@ -16,6 +16,8 @@
 
   + Add missing spaces inside begin-end delimiting an ite branch (#1646, @gpetiot)
 
+  + Add missing parens around function at RHS of infix op (#1642, @gpetiot)
+
 #### Changes
 
 #### New features

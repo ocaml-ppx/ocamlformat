@@ -225,3 +225,10 @@ let encoder f =
 let encoder f =
   let field_encode = unstage (t f.ftype) in
   stagged @@ fun x k : t -> field_encode (f.fget x) k
+
+let default =
+  command ## hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
+  command ## hasPermission
+  #= (fun ctx ->
+  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo ) ;
+  foo
