@@ -1538,7 +1538,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
         (fits_breaks ")" ?hint cls)
         (list_fl groups fmt_op_arg_group)
   | `Begin_end ->
-      wrap "begin@;<1 2>@[<0>" "@]@;<1000 0>end"
+      Params.wrap_exp c.conf c.source ~loc:xexp.ast.pexp_loc ~parens:true
         (list_fl groups fmt_op_arg_group)
 
 and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
