@@ -49,7 +49,7 @@ let whatever_labelled a_function_name long_list_one some_other_thing =
 
 let cartesian_product' long_list_one long_list_two =
   List.concat
-    ( long_list_one
+    (long_list_one
     |> List.map (fun v1 -> long_list_two |> List.map (fun v2 -> (v1, v2)))
     )
 
