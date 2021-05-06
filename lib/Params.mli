@@ -21,6 +21,9 @@ val wrap_exp :
   -> ?disambiguate:bool
   -> ?fits_breaks:bool
   -> ?offset_closing_paren:int
+       (** Offset of the closing paren in case the line has been broken and
+           the option [indicate-multiline-delimiters] is set to
+           [closing-on-separate-line]. By default the offset is 0. *)
   -> parens:bool
   -> loc:Location.t
   -> Source.t
