@@ -93,14 +93,16 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch source ~loc =
       (match grouping with `Parens -> " (" | `Begin_end -> "@;<1 0>begin")
   in
   let close_paren_branch =
-    fmt_if parens_branch
+    fmt_if_k parens_branch
       ( match grouping with
       | `Parens -> (
         match c.indicate_multiline_delimiters with
-        | `Space -> "@ )"
-        | `No -> "@,)"
-        | `Closing_on_separate_line -> "@;<1000 -2>)" )
-      | `Begin_end -> "@;<1000 -2>end" )
+        | `Space -> fmt "@ )"
+        | `No -> fmt "@,)"
+        | `Closing_on_separate_line -> fmt "@;<1000 -2>)" )
+      | `Begin_end ->
+          let offset = match c.break_cases with `Nested -> 0 | _ -> -2 in
+          fits_breaks " end" ~level:1 ~hint:(1000, offset) "end" )
   in
   match c.break_cases with
   | `Fit ->
