@@ -3,10 +3,10 @@ ocamlformat: Cannot process "tests/unstable_docstrings.mli".
   BUG: doc comments changed.
 File "_none_", line 0, characters -1--1::
 Error: Formatting of doc-comment is unstable (e.g. parses as a list or not depending on the margin):
-diff --git a/tmp/buildb962b3.dune/unstable_docstringsd7a255.prev.mli b/tmp/buildb962b3.dune/unstable_docstrings8f0f7e.next.mli
+diff --git before after
 index 0621d851..7623c4d5 100644
---- a/tmp/buildb962b3.dune/unstable_docstringsd7a255.prev.mli
-+++ b/tmp/buildb962b3.dune/unstable_docstrings8f0f7e.next.mli
+--- before
++++ after
 @@ -1,6 +1,7 @@
   Blablabla. Otherwise, the given protocol can not be:
 -    {ul
