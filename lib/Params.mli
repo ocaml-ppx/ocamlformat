@@ -12,9 +12,6 @@
 module Format = Format_
 open Ast_passes.Ast_final
 
-val parens_or_begin_end :
-  Conf.t -> Source.t -> loc:Location.t -> [`Parens | `Begin_end]
-
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
 val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
@@ -39,10 +36,18 @@ type cases =
   ; box_pattern_arrow: Fmt.t -> Fmt.t
   ; break_before_arrow: Fmt.t
   ; break_after_arrow: Fmt.t
-  ; break_after_opening_paren: Fmt.t }
+  ; open_paren_branch: Fmt.t
+  ; break_after_opening_paren: Fmt.t
+  ; close_paren_branch: Fmt.t }
 
 val get_cases :
-  Conf.t -> first:bool -> indent:int -> parens_here:bool -> cases
+     Conf.t
+  -> first:bool
+  -> indent:int
+  -> parens_branch:bool
+  -> Source.t
+  -> loc:Location.t
+  -> cases
 
 val wrap_tuple :
   Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t

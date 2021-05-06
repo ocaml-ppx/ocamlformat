@@ -82,9 +82,26 @@ type cases =
   ; box_pattern_arrow: Fmt.t -> Fmt.t
   ; break_before_arrow: Fmt.t
   ; break_after_arrow: Fmt.t
-  ; break_after_opening_paren: Fmt.t }
+  ; open_paren_branch: Fmt.t
+  ; break_after_opening_paren: Fmt.t
+  ; close_paren_branch: Fmt.t }
 
-let get_cases (c : Conf.t) ~first ~indent ~parens_here =
+let get_cases (c : Conf.t) ~first ~indent ~parens_branch source ~loc =
+  let grouping = parens_or_begin_end c source ~loc in
+  let open_paren_branch =
+    fmt_if parens_branch
+      (match grouping with `Parens -> " (" | `Begin_end -> "@;<1 0>begin")
+  in
+  let close_paren_branch =
+    fmt_if parens_branch
+      ( match grouping with
+      | `Parens -> (
+        match c.indicate_multiline_delimiters with
+        | `Space -> "@ )"
+        | `No -> "@,)"
+        | `Closing_on_separate_line -> "@;<1000 -2>)" )
+      | `Begin_end -> "@;<1000 -2>end" )
+  in
   match c.break_cases with
   | `Fit ->
       { leading_space= fmt_if (not first) "@ "
@@ -93,31 +110,39 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_here =
       ; box_pattern_arrow= hovbox 2
       ; break_before_arrow= fmt "@;<1 0>"
       ; break_after_arrow= noop
-      ; break_after_opening_paren= fmt "@ " }
+      ; open_paren_branch
+      ; break_after_opening_paren= fmt "@ "
+      ; close_paren_branch }
   | `Nested ->
       { leading_space= fmt_if (not first) "@ "
       ; bar= fmt_or_k first (if_newline "| ") (str "| ")
       ; box_all= Fn.id
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
-      ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
-      ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>" }
+      ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
+      ; open_paren_branch
+      ; break_after_opening_paren= fmt_or (indent > 2) "@;<1 4>" "@;<1 2>"
+      ; close_paren_branch }
   | `Fit_or_vertical ->
       { leading_space= break_unless_newline 1000 0
       ; bar= str "| "
       ; box_all= hovbox indent
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
-      ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
-      ; break_after_opening_paren= fmt "@ " }
+      ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
+      ; open_paren_branch
+      ; break_after_opening_paren= fmt "@ "
+      ; close_paren_branch }
   | `Toplevel | `All ->
       { leading_space= break_unless_newline 1000 0
       ; bar= str "| "
       ; box_all= hvbox indent
       ; box_pattern_arrow= hovbox 0
       ; break_before_arrow= fmt "@;<1 2>"
-      ; break_after_arrow= fmt_if (not parens_here) "@;<0 3>"
-      ; break_after_opening_paren= fmt "@ " }
+      ; break_after_arrow= fmt_if (not parens_branch) "@;<0 3>"
+      ; open_paren_branch
+      ; break_after_opening_paren= fmt "@ "
+      ; close_paren_branch }
 
 let wrap_collec c ~space_around opn cls =
   if space_around then wrap_k (str opn $ char ' ') (break 1 0 $ str cls)

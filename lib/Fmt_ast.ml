@@ -3022,7 +3022,7 @@ and fmt_case c ctx ~first ~last ~padding case =
     | (Pexp_match _ | Pexp_try _), `Align -> last
     | _ -> false
   in
-  let parens_here, parens_for_exp =
+  let parens_branch, parens_for_exp =
     if align_nested_match then (false, Some false)
     else if c.conf.leading_nested_match_parens then (false, None)
     else if is_displaced_infix_op xrhs then (false, None)
@@ -3042,9 +3042,9 @@ and fmt_case c ctx ~first ~last ~padding case =
       (fmt "@;<1000 0>")
   in
   let indent = if align_nested_match then 0 else indent in
-  let p = Params.get_cases c.conf ~first ~indent ~parens_here in
-  let grouping =
-    Params.parens_or_begin_end c.conf c.source ~loc:pc_rhs.pexp_loc
+  let p =
+    Params.get_cases c.conf ~first ~indent ~parens_branch c.source
+      ~loc:pc_rhs.pexp_loc
   in
   p.leading_space $ leading_cmt
   $ p.box_all
@@ -3056,21 +3056,11 @@ and fmt_case c ctx ~first ~last ~padding case =
                     fmt "@;<1 2>when " $ fmt_expression c (sub_exp ~ctx g) )
               )
           $ p.break_before_arrow $ str "->" $ p.break_after_arrow
-          $ fmt_if parens_here
-              ( match grouping with
-              | `Parens -> " ("
-              | `Begin_end -> "@;<1 0>begin" ) )
+          $ p.open_paren_branch )
       $ p.break_after_opening_paren
       $ hovbox 0
           ( fmt_expression ?eol c ?parens:parens_for_exp xrhs
-          $ fmt_if parens_here
-              ( match grouping with
-              | `Parens -> (
-                match c.conf.indicate_multiline_delimiters with
-                | `Space -> "@ )"
-                | `No -> "@,)"
-                | `Closing_on_separate_line -> "@;<1000 -2>)" )
-              | `Begin_end -> "@;<1000 -2>end" ) ) )
+          $ p.close_paren_branch ) )
 
 and fmt_value_description ?ext c ctx vd =
   let {pval_name= {txt; loc}; pval_type; pval_prim; pval_attributes; pval_loc}
