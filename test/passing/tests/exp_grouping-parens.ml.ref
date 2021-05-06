@@ -253,6 +253,7 @@ let _ =
 
 let _ =
   match x with
+  | A -> ( match B with A -> fooooooooooooo )
   | A -> ( match B with A -> fooooooooooooo | B -> fooooooooooooo )
   | A -> (
     match B with

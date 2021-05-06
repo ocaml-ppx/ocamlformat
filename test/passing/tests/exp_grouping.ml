@@ -183,6 +183,10 @@ let _ =
   | A -> begin
     match B with
     | A -> fooooooooooooo
+  end
+  | A -> begin
+    match B with
+    | A -> fooooooooooooo
     | B -> fooooooooooooo
   end
   | A -> begin
