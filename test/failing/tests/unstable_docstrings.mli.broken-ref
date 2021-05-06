@@ -1,4 +1,4 @@
-ocamlformat: Cannot process "tests/unstable_docstrings.ml".
+ocamlformat: Cannot process "tests/unstable_docstrings.mli".
   Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
   BUG: doc comments changed.
 File "_none_", line 0, characters -1--1::
