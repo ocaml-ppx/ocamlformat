@@ -26,14 +26,6 @@ exception
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
 
-let ellipsis n msg =
-  let msg = String.strip msg in
-  if n > 0 && String.length msg > (n * 2) + 10 then
-    Format.sprintf "%s ... %s" (String.prefix msg n) (String.suffix msg n)
-  else msg
-
-let ellipsis_cmt = ellipsis 50
-
 let chop_any_extension s =
   match Filename.chop_extension s with
   | r -> r
@@ -50,6 +42,26 @@ module Error = struct
     | User_error of string
 
   let equal : t -> t -> bool = Poly.equal
+
+  let print_diff input_name ~prev ~next =
+    let ext = Filename.extension input_name in
+    let input_name =
+      Filename.chop_extension (Filename.basename input_name)
+    in
+    let p = Filename.temp_file input_name (Printf.sprintf ".prev%s" ext) in
+    let n = Filename.temp_file input_name (Printf.sprintf ".next%s" ext) in
+    Out_channel.write_all p ~data:prev ;
+    Out_channel.write_all n ~data:next ;
+    let anonymize =
+      "sed 's/a\\/tmp\\/[^ ]*/before/g' | sed 's/b\\/tmp\\/[^ ]*/after/g' | \
+       sed '/index .*/d'"
+    in
+    ignore
+      (Caml.Sys.command
+         (Printf.sprintf "git diff --no-index -u %S %S | %s 1>&2" p n
+            anonymize ) ) ;
+    Caml.Sys.remove p ;
+    Caml.Sys.remove n
 
   let print ?(debug = false) ?(quiet = false) fmt = function
     | Invalid_source _ when quiet -> ()
@@ -78,22 +90,7 @@ module Error = struct
                %!"
         | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
     | Unstable {iteration; prev; next; input_name} ->
-        if debug then (
-          let ext = Filename.extension input_name in
-          let input_name =
-            Filename.chop_extension (Filename.basename input_name)
-          in
-          let p =
-            Filename.temp_file input_name (Printf.sprintf ".prev%s" ext)
-          in
-          Out_channel.write_all p ~data:prev ;
-          let n =
-            Filename.temp_file input_name (Printf.sprintf ".next%s" ext)
-          in
-          Out_channel.write_all n ~data:next ;
-          ignore (Caml.Sys.command (Printf.sprintf "diff %S %S 1>&2" p n)) ;
-          Caml.Sys.remove p ;
-          Caml.Sys.remove n ) ;
+        if debug then print_diff input_name ~prev ~next ;
         if iteration <= 1 then
           Format.fprintf fmt
             "%s: %S was not already formatted. ([max-iters = 1])\n%!" exe
@@ -131,45 +128,61 @@ module Error = struct
             ( match m with
             | `Doc_comment l when not quiet ->
                 List.iter l ~f:(function
+                  | Normalize.Added (loc, msg) ->
+                      Format.fprintf fmt
+                        "%!@{<loc>%a@}:@,\
+                         @{<error>Error@}: Docstring (** %s *) added.\n\
+                         %!"
+                        Location.print loc msg
+                  | Normalize.Removed (loc, msg) ->
+                      Format.fprintf fmt
+                        "%!@{<loc>%a@}:@,\
+                         @{<error>Error@}: Docstring (** %s *) dropped.\n\
+                         %!"
+                        Location.print loc msg
                   | Normalize.Moved (loc_before, loc_after, msg) ->
                       if Location.compare loc_before Location.none = 0 then
                         Format.fprintf fmt
                           "%!@{<loc>%a@}:@,\
                            @{<error>Error@}: Docstring (** %s *) added.\n\
                            %!"
-                          Location.print loc_after (ellipsis_cmt msg)
+                          Location.print loc_after msg
                       else if Location.compare loc_after Location.none = 0
                       then
                         Format.fprintf fmt
                           "%!@{<loc>%a@}:@,\
                            @{<error>Error@}: Docstring (** %s *) dropped.\n\
                            %!"
-                          Location.print loc_before (ellipsis_cmt msg)
+                          Location.print loc_before msg
                       else
                         Format.fprintf fmt
                           "%!@{<loc>%a@}:@,\
                            @{<error>Error@}: Docstring (** %s *) moved to \
                            @{<loc>%a@}.\n\
                            %!"
-                          Location.print loc_before (ellipsis_cmt msg)
-                          Location.print loc_after
-                  | Normalize.Unstable (loc, s) ->
+                          Location.print loc_before msg Location.print
+                          loc_after
+                  | Normalize.Unstable (loc, x, y) ->
                       Format.fprintf fmt
                         "%!@{<loc>%a@}:@,\
-                         @{<error>Error@}: Formatting of (** %s *) is \
+                         @{<error>Error@}: Formatting of doc-comment is \
                          unstable (e.g. parses as a list or not depending \
-                         on the margin), please tighten up this comment in \
-                         the source or disable the formatting using the \
-                         option --no-parse-docstrings.\n\
+                         on the margin):\n\
                          %!"
-                        Location.print loc (ellipsis_cmt s) )
+                        Location.print loc ;
+                      print_diff input_name ~prev:x ~next:y ;
+                      Format.fprintf fmt
+                        "Please tighten up this comment in the source or \
+                         disable the formatting using the option \
+                         --no-parse-docstrings.\n\
+                         %!" )
             | `Comment_dropped l when not quiet ->
                 List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
                     Format.fprintf fmt
                       "%!@{<loc>%a@}:@,\
                        @{<error>Error@}: Comment (* %s *) dropped.\n\
                        %!"
-                      Location.print loc (ellipsis_cmt msg) )
+                      Location.print loc msg )
             | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
                 if debug then Location.report_exception fmt exn
             | `Warning50 l ->
@@ -360,13 +373,10 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
         let t_newdocstrings, t_newcomments =
           List.partition_tf t_new.comments ~f:is_docstring
         in
-        let f = ellipsis_cmt in
-        let f x = Either.First.map ~f x |> Either.Second.map ~f in
         let diff_cmts =
           Sequence.append
             (Cmts.diff conf old_comments t_newcomments)
             (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
-          |> Sequence.map ~f
         in
         if not (Sequence.is_empty diff_cmts) then
           let old_ast = dump_ast fgN ~suffix:".old" t.ast in

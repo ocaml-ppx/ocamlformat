@@ -24,6 +24,8 @@
 
 #### Changes
 
+  + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
+
 #### New features
 
 ### 0.18.0 (2021-03-30)

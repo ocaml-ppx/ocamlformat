@@ -397,42 +397,26 @@ let docstrings (type a) (fragment : a Ast_final.t) s =
 
 type docstring_error =
   | Moved of Location.t * Location.t * string
-  | Unstable of Location.t * string
+  | Unstable of Location.t * string * string
+  | Added of Location.t * string
+  | Removed of Location.t * string
 
 let moved_docstrings fragment c s1 s2 =
   let c = {conf= c; normalize_code= normalize Structure c} in
   let d1 = docstrings fragment s1 in
   let d2 = docstrings fragment s2 in
-  let equal (_, x) (_, y) =
-    let b = String.equal (docstring c x) (docstring c y) in
-    Caml.Printf.printf "Docstring equal? %b,\n%s\n%s\n" b (docstring c x)
-      (docstring c y) ;
-    b
-  in
-  let unstable (x, y) = Unstable (x, y) in
-  match List.zip_exn d1 d2 with
-  | exception _ ->
+  let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  match List.zip d1 d2 with
+  | Unequal_lengths ->
       (* We only return the ones that are not in both lists. *)
-      (* [l1] contains the ones that disappeared. *)
       let l1 = List.filter d1 ~f:(fun x -> not (List.mem ~equal d2 x)) in
-      let l1 = List.map ~f:unstable l1 in
-      (* [l2] contains the ones that appeared. *)
+      let l1 = List.map ~f:(fun (loc, x) -> Removed (loc, x)) l1 in
       let l2 = List.filter d2 ~f:(fun x -> not (List.mem ~equal d1 x)) in
-      let l2 = List.map ~f:unstable l2 in
+      let l2 = List.map ~f:(fun (loc, x) -> Added (loc, x)) l2 in
       List.rev_append l1 l2
-  | l ->
+  | Ok l ->
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
-      let l1, l2 = List.unzip l in
-      let both, l1 =
-        List.partition_map l1 ~f:(fun x ->
-            match List.find l2 ~f:(equal x) with
-            | Some (l, s) -> Left (Moved (fst x, l, s))
-            | None -> Right x )
-      in
-      let l2 = List.filter l2 ~f:(fun x -> not (List.mem ~equal l1 x)) in
-      let l1 = List.map ~f:unstable l1 in
-      let l2 = List.map ~f:unstable l2 in
-      List.rev_append both (List.rev_append l1 l2)
+      List.map ~f:(fun ((loc, x), (_, y)) -> Unstable (loc, x, y)) l
 
 let docstring conf =
   let normalize_code = normalize Structure conf in

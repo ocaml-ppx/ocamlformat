@@ -30,7 +30,9 @@ val equal :
 
 type docstring_error =
   | Moved of Location.t * Location.t * string
-  | Unstable of Location.t * string
+  | Unstable of Location.t * string * string
+  | Added of Location.t * string
+  | Removed of Location.t * string
 
 val moved_docstrings :
   'a Ast_final.t -> Conf.t -> 'a -> 'a -> docstring_error list

@@ -536,6 +536,19 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to unstable_docstrings.mli.output
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} %{dep:tests/unstable_docstrings.mli})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/unstable_docstrings.mli.broken-ref unstable_docstrings.mli.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to with_2.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:tests/with_2.ml})))))
