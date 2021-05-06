@@ -4,7 +4,6 @@ ocamlformat: Cannot process "tests/unstable_docstrings.mli".
 File "_none_", line 0, characters -1--1::
 Error: Formatting of doc-comment is unstable (e.g. parses as a list or not depending on the margin):
 diff --git before after
-index 0621d851..7623c4d5 100644
 --- before
 +++ after
 @@ -1,6 +1,7 @@

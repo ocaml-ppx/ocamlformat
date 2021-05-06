@@ -53,7 +53,8 @@ module Error = struct
     Out_channel.write_all p ~data:prev ;
     Out_channel.write_all n ~data:next ;
     let anonymize =
-      "sed 's/a\\/tmp\\/[^ ]*/before/g' | sed 's/b\\/tmp\\/[^ ]*/after/g'"
+      "sed 's/a\\/tmp\\/[^ ]*/before/g' | sed 's/b\\/tmp\\/[^ ]*/after/g' | \
+       sed '/index .*/d'"
     in
     ignore
       (Caml.Sys.command
