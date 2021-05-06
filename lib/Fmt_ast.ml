@@ -2102,7 +2102,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       hvbox_if (box || body_is_function) indent
         (Params.wrap_exp c.conf c.source ~loc:pexp_loc ~parens
-           ~disambiguate:true ~fits_breaks:false
+           ~disambiguate:true ~fits_breaks:false ~offset_closing_paren:(-2)
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "

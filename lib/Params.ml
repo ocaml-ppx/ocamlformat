@@ -41,7 +41,7 @@ let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
 let parens c ?disambiguate k = parens_if true c ?disambiguate k
 
 let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
-    ~parens ~loc source k =
+    ?(offset_closing_paren = 0) ~parens ~loc source k =
   match parens_or_begin_end c source ~loc with
   | `Parens when disambiguate && c.Conf.disambiguate_non_breaking_match ->
       wrap_if_fits_or parens "(" ")" k
@@ -52,7 +52,8 @@ let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
     | `Space ->
         Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1, 0) ")"
     | `Closing_on_separate_line ->
-        Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1000, 0) ")"
+        Fmt.fits_breaks "(" "(" $ k
+        $ Fmt.fits_breaks ")" ~hint:(1000, offset_closing_paren) ")"
     | _ -> wrap "(" ")" k )
   | `Begin_end ->
       vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))

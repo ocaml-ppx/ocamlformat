@@ -20,6 +20,8 @@
 
   + Preserve begin-end keywords delimiting match cases (#1651, @gpetiot)
 
+  + Fix alignment of closing paren on separate line for anonymous functions (#1649, @gpetiot)
+
 #### Changes
 
 #### New features
