@@ -18,6 +18,8 @@
 
   + Add missing parens around function at RHS of infix op (#1642, @gpetiot)
 
+  + Preserve begin-end keywords delimiting match cases (#1651, @gpetiot)
+
 #### Changes
 
 #### New features
