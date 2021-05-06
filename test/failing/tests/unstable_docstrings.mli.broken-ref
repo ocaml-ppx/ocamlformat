@@ -3,13 +3,21 @@ ocamlformat: Cannot process "tests/unstable_docstrings.mli".
   BUG: doc comments changed.
 File "_none_", line 0, characters -1--1::
 Error: Formatting of doc-comment is unstable (e.g. parses as a list or not depending on the margin):
-2,4c2,5
-<     {ul
-<     {- registered into {!resolvers}}
-<     {- used as a service with {!serve_with_handler]/{!serve}}}
----
-> 
->     - registered into {!resolvers}
->     - used as a service with {!serve_with_handler\]/\{!serve}
-> 
+diff --git a/tmp/buildb962b3.dune/unstable_docstringsd7a255.prev.mli b/tmp/buildb962b3.dune/unstable_docstrings8f0f7e.next.mli
+index 0621d851..7623c4d5 100644
+--- a/tmp/buildb962b3.dune/unstable_docstringsd7a255.prev.mli
++++ b/tmp/buildb962b3.dune/unstable_docstrings8f0f7e.next.mli
+@@ -1,6 +1,7 @@
+  Blablabla. Otherwise, the given protocol can not be:
+-    {ul
+-    {- registered into {!resolvers}}
+-    {- used as a service with {!serve_with_handler]/{!serve}}}
++
++    - registered into {!resolvers}
++    - used as a service with {!serve_with_handler\]/\{!serve}
++
+     [protocol] can be hidden - but must be registered with
+-    {!register_protocol}. However, blablabla.
++    {!register_protocol}. However, blablabla. 
+\ No newline at end of file
 Please tighten up this comment in the source or disable the formatting using the option --no-parse-docstrings.
