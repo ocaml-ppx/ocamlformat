@@ -40,27 +40,29 @@ let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
 
 let parens c ?disambiguate k = parens_if true c ?disambiguate k
 
-let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
-    ?(offset_closing_paren = 0) ?(infix_op_arg = false)
-    ?(parens_nested = false) ~parens ~loc source k =
-  if infix_op_arg then
-    match parens_or_begin_end c source ~loc with
-    | `Parens when parens || parens_nested ->
-        let opn, hint, cls =
-          if parens || Poly.(c.infix_precedence = `Parens) then
-            match c.indicate_multiline_delimiters with
-            | `Space -> ("( ", Some (1, 0), ")")
-            | `No -> ("(", Some (0, 0), ")")
-            | `Closing_on_separate_line -> ("(", Some (1000, 0), ")")
-          else ("", None, "")
-        in
-        wrap_if_k (parens || parens_nested) (Fmt.fits_breaks "(" opn)
-          (Fmt.fits_breaks ")" ?hint cls)
-          k
-    | `Parens -> k
-    | `Begin_end ->
-        vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
-  else
+module Exp = struct
+  module Infix_op_arg = struct
+    let wrap (c : Conf.t) ?(parens_nested = false) ~parens ~loc source k =
+      match parens_or_begin_end c source ~loc with
+      | `Parens when parens || parens_nested ->
+          let opn, hint, cls =
+            if parens || Poly.(c.infix_precedence = `Parens) then
+              match c.indicate_multiline_delimiters with
+              | `Space -> ("( ", Some (1, 0), ")")
+              | `No -> ("(", Some (0, 0), ")")
+              | `Closing_on_separate_line -> ("(", Some (1000, 0), ")")
+            else ("", None, "")
+          in
+          wrap_if_k (parens || parens_nested) (Fmt.fits_breaks "(" opn)
+            (Fmt.fits_breaks ")" ?hint cls)
+            k
+      | `Parens -> k
+      | `Begin_end ->
+          vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
+  end
+
+  let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
+      ?(offset_closing_paren = 0) ~parens ~loc source k =
     match parens_or_begin_end c source ~loc with
     | `Parens when disambiguate && c.Conf.disambiguate_non_breaking_match ->
         wrap_if_fits_or parens "(" ")" k
@@ -76,6 +78,7 @@ let wrap_exp (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
       | `No -> wrap "(" ")" k )
     | `Begin_end ->
         vbox 2 (wrap "begin" "end" (wrap_k (break 1 0) (break 1000 ~-2) k))
+end
 
 let get_or_pattern_sep ?(cmts_before = false) ?(space = false) (c : Conf.t)
     ~ctx =
