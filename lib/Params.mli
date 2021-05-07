@@ -27,6 +27,9 @@ val wrap_exp :
        (** Offset of the closing paren in case the line has been broken and
            the option [indicate-multiline-delimiters] is set to
            [closing-on-separate-line]. By default the offset is 0. *)
+  -> ?infix_op_arg:bool
+       (** Whether the expression is an argument of an infix operation. *)
+  -> ?parens_nested:bool
   -> parens:bool
   -> loc:Location.t
   -> Source.t
