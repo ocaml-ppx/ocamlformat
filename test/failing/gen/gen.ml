@@ -6,7 +6,7 @@ type setup =
   ; mutable has_ocp: bool
   ; mutable base_file: string option
   ; mutable extra_deps: string list
-  ; mutable minimum_ocaml_version: string option }
+  ; mutable enabled_if: string option }
 
 let read_lines file =
   let ic = Stdlib.open_in file in
@@ -39,7 +39,7 @@ let add_test ?base_file map src_test_name =
     ; has_ocp= false
     ; base_file
     ; extra_deps= []
-    ; minimum_ocaml_version= None }
+    ; enabled_if= None }
   in
   map := StringMap.add src_test_name s !map ;
   s
@@ -68,8 +68,7 @@ let register_file tests fname =
       | ["broken-ref"] -> setup.has_ref <- true
       | ["ocp"] -> setup.has_ocp <- true
       | ["deps"] -> setup.extra_deps <- read_lines fname
-      | ["minimum-ocaml-version"] ->
-          setup.minimum_ocaml_version <- Some (read_file fname)
+      | ["enabled-if"] -> setup.enabled_if <- Some (read_file fname)
       | _ -> invalid_arg fname )
   | _ -> ()
 
@@ -94,9 +93,9 @@ let emit_test test_name setup =
   in
   let extra_deps = String.concat " " setup.extra_deps in
   let enabled_if_line =
-    match setup.minimum_ocaml_version with
+    match setup.enabled_if with
     | None -> ""
-    | Some v -> Printf.sprintf "\n (enabled_if (>= %%{ocaml_version} %s))" v
+    | Some v -> Printf.sprintf "\n (enabled_if %s)" v
   in
   Printf.printf
     {|
