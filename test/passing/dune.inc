@@ -2415,13 +2415,15 @@
 
 (rule
  (deps tests/.ocamlformat tests/dir1/dir2/.ocamlformat tests/dir1/dir2/print_config.ml)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
    (with-outputs-to print_config.ml.output
-     (run %{bin:ocamlformat} tests/dir1/dir2/print_config.ml --print-config --config=max-iters=2 %{dep:tests/print_config.ml}))))
+     (run %{bin:ocamlformat} %{dep:tests/dir1/dir2/print_config.ml} --print-config --config=max-iters=2 %{dep:tests/print_config.ml}))))
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/print_config.ml.ref print_config.ml.output)))
 
@@ -2983,6 +2985,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
    (with-outputs-to verbose1.ml.output
@@ -2990,11 +2993,13 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/verbose1.ml.ref verbose1.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
    (with-outputs-to verbose2.ml.output
@@ -3002,6 +3007,7 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/verbose2.ml.ref verbose2.ml.output)))
 

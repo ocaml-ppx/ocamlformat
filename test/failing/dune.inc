@@ -534,6 +534,7 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action
    (with-outputs-to unstable_docstrings.mli.output
@@ -542,6 +543,7 @@
 
 (rule
  (alias runtest)
+ (enabled_if (<> %{os_type} Win32))
  (package ocamlformat)
  (action (diff tests/unstable_docstrings.mli.broken-ref unstable_docstrings.mli.output)))
 

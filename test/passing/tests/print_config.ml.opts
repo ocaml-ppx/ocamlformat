@@ -1,3 +1,3 @@
-tests/dir1/dir2/print_config.ml
+%{dep:tests/dir1/dir2/print_config.ml}
 --print-config
 --config=max-iters=2
