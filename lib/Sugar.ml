@@ -174,10 +174,11 @@ let list_pat cmts pat =
     | Ppat_construct
         ( {txt= Lident "::"; loc}
         , Some
-            { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []; _} as tl)]
-            ; ppat_loc
-            ; ppat_attributes= []
-            ; _ } ) ->
+            ( []
+            , { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []; _} as tl)]
+              ; ppat_loc
+              ; ppat_attributes= []
+              ; _ } ) ) ->
         list_pat_ tl (([src; loc; ppat_loc], sub_pat ~ctx hd) :: acc)
     | _ -> None
   in

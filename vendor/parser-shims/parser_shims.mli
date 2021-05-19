@@ -5,6 +5,16 @@ module List : sig
   (** @since ocaml-4.10 *)
 end
 
+module Int : sig
+  include module type of Int
+
+  val min : int -> int -> int
+  (** @since ocaml-4.13.0 *)
+
+  val max : int -> int -> int
+  (** @since ocaml-4.13.0 *)
+end
+
 module Misc : sig
   include module type of Misc
 

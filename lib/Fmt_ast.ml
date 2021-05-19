@@ -971,8 +971,10 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_construct (lid, None) -> fmt_longident_loc c lid
   | Ppat_construct
       ( {txt= Lident "::"; loc}
-      , Some {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []; ppat_loc; _}
-      ) -> (
+      , Some
+          ( []
+          , {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []; ppat_loc; _}
+          ) ) -> (
     match Sugar.list_pat c.cmts pat with
     | Some (loc_xpats, nil_loc) ->
         let p = Params.get_list_pat c.conf ~ctx:ctx0 in
@@ -1000,11 +1002,17 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                 $ fmt "@ "
                 $ Cmts.fmt c ~pro:noop loc (str ":: ")
                 $ fmt_pattern c (sub_pat ~ctx y) ) ) ) )
-  | Ppat_construct (lid, Some pat) ->
-      cbox 2
-        (Params.parens_if parens c.conf
-           ( fmt_longident_loc c lid $ fmt "@ "
-           $ fmt_pattern c (sub_pat ~ctx pat) ) )
+  | Ppat_construct (lid, Some (exists, pat)) ->
+      ( match exists with
+      | [] -> noop
+      | names ->
+          cbox 0
+            (Params.parens c.conf
+               (str "type " $ list names "@ " (fmt_str_loc c)) ) )
+      $ cbox 2
+          (Params.parens_if parens c.conf
+             ( fmt_longident_loc c lid $ fmt "@ "
+             $ fmt_pattern c (sub_pat ~ctx pat) ) )
   | Ppat_variant (lbl, None) -> str "`" $ str lbl
   | Ppat_variant (lbl, Some pat) ->
       cbox 2
@@ -3591,6 +3599,8 @@ and fmt_signature_item c ?ext {ast= si; _} =
             $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs )
         $ doc_after )
   | Psig_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
+  | Psig_modtypesubst mtd ->
+      fmt_module_type_declaration ?ext ~eqty:":=" c ctx mtd
   | Psig_module md ->
       hvbox 0
         (fmt_module_declaration ?ext c ctx ~rec_flag:false ~first:true md)
@@ -3808,12 +3818,12 @@ and fmt_module_substitution ?ext c ctx pms =
     (fmt_module ?ext c "module" ~eqty:":=" pms_name [] None (Some xmty)
        pms_attributes ~rec_flag:false )
 
-and fmt_module_type_declaration ?ext c ctx pmtd =
+and fmt_module_type_declaration ?ext ?eqty c ctx pmtd =
   let {pmtd_name; pmtd_type; pmtd_attributes; pmtd_loc} = pmtd in
   update_config_maybe_disabled c pmtd_loc pmtd_attributes
   @@ fun c ->
   let pmtd_name = {pmtd_name with txt= Some pmtd_name.txt} in
-  fmt_module ?ext c "module type" pmtd_name [] None ~rec_flag:false
+  fmt_module ?ext ?eqty c "module type" pmtd_name [] None ~rec_flag:false
     (Option.map pmtd_type ~f:(sub_mty ~ctx))
     pmtd_attributes
 
@@ -3872,6 +3882,20 @@ and fmt_with_constraint c ctx = function
   | Pwith_modsubst (m1, m2) ->
       str " module " $ fmt_longident_loc c m1 $ str " := "
       $ fmt_longident_loc c m2
+  | Pwith_modtype (m1, m2) ->
+      let m1 =
+        { m1 with
+          txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
+      in
+      let m2 = Some (sub_mty ~ctx m2) in
+      fmt_module c "module type" m1 [] None ~rec_flag:false m2 []
+  | Pwith_modtypesubst (m1, m2) ->
+      let m1 =
+        { m1 with
+          txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
+      in
+      let m2 = Some (sub_mty ~ctx m2) in
+      fmt_module c ~eqty:":=" "module type" m1 [] None ~rec_flag:false m2 []
 
 and maybe_generative c ~ctx = function
   | {pmod_desc= Pmod_structure []; pmod_attributes= []; pmod_loc}

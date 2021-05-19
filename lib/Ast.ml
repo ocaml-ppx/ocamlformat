@@ -344,7 +344,7 @@ module Pat = struct
     match ppat_desc with
     | Ppat_any | Ppat_constant _ | Ppat_var _
      |Ppat_variant (_, (None | Some {ppat_desc= Ppat_any; _}))
-     |Ppat_construct (_, (None | Some {ppat_desc= Ppat_any; _})) ->
+     |Ppat_construct (_, (None | Some ([], {ppat_desc= Ppat_any; _}))) ->
         true
     | _ -> false
 
@@ -553,6 +553,7 @@ module Signature_item = struct
      |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
      |Psig_typext {ptyext_attributes= atrs; _}
      |Psig_modtype {pmtd_attributes= atrs; _}
+     |Psig_modtypesubst {pmtd_attributes= atrs; _}
      |Psig_modsubst {pms_attributes= atrs; _}
      |Psig_open {popen_attributes= atrs; _}
      |Psig_extension (_, atrs)
@@ -1310,12 +1311,13 @@ end = struct
         | Ppat_array p1N | Ppat_tuple p1N -> assert (List.exists p1N ~f)
         | Ppat_record (p1N, _) -> assert (List.exists p1N ~f:snd_f)
         | Ppat_construct
-            ({txt= Lident "::"; _}, Some {ppat_desc= Ppat_tuple [p1; p2]; _})
+            ( {txt= Lident "::"; _}
+            , Some (_, {ppat_desc= Ppat_tuple [p1; p2]; _}) )
          |Ppat_or (p1, p2) ->
             assert (p1 == pat || p2 == pat)
         | Ppat_alias (p1, _)
          |Ppat_constraint (p1, _)
-         |Ppat_construct (_, Some p1)
+         |Ppat_construct (_, Some (_, p1))
          |Ppat_exception p1
          |Ppat_lazy p1
          |Ppat_open (_, p1)
@@ -1925,7 +1927,7 @@ end = struct
           { ppat_desc=
               Ppat_construct
                 ( {txt= Lident "::"; _}
-                , Some {ppat_desc= Ppat_tuple [_; tl]; _} )
+                , Some (_, {ppat_desc= Ppat_tuple [_; tl]; _}) )
           ; _ }
       , Ppat_construct ({txt= Lident "::"; _}, _) )
       when tl == pat ->
@@ -1934,7 +1936,7 @@ end = struct
           { ppat_desc=
               Ppat_construct
                 ( {txt= Lident "::"; _}
-                , Some {ppat_desc= Ppat_tuple [_; _]; _} )
+                , Some (_, {ppat_desc= Ppat_tuple [_; _]; _}) )
           ; _ }
       , inner ) -> (
       match inner with
