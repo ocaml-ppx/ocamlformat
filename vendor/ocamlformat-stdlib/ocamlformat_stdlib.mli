@@ -7,7 +7,6 @@ module String = String_ext
 module Warning = Warning
 module Format = Caml.Format
 module Filename = Caml.Filename
-module Parser = Token_latest
 
 val ( >> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** Composition of functions: [(f >> g) x] is exactly equivalent to

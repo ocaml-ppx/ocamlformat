@@ -1,0 +1,12 @@
+(library
+ (name ocaml_412)
+ (modules_without_implementation let_binding)
+ (flags
+  (:standard -w -9))
+ (libraries compiler-libs.common menhirLib))
+
+(ocamllex lexer)
+
+(menhir
+ (flags --strict --inspection --unused-tokens --table --cmly)
+ (modules parser))

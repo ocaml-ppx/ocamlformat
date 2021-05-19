@@ -20,9 +20,8 @@
 
 *)
 
-open Docstrings
-open Migrate_parsetree.Ast_412
 open Asttypes
+open Docstrings
 open Parsetree
 
 type 'a with_loc = 'a Location.loc

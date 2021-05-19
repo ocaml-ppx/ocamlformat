@@ -13,38 +13,35 @@
 
 open Migrate_ast
 open Asttypes
-open Ast_passes
+open Ast_passes.Ast_final
 open Ast_helper
 
-type conf =
-  {conf: Conf.t; normalize_code: Ast_final.structure -> Ast_final.structure}
+type conf = {conf: Conf.t; normalize_code: structure -> structure}
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts fragment ast comments =
   let of_ast ast =
-    let iter =
-      object
-        inherit [Set.M(Cmt).t] Ppxlib.Ast_traverse.fold as super
-
-        method! attribute atr docs =
-          match atr with
-          | { attr_payload=
-                PStr
-                  [ { pstr_desc=
-                        Pstr_eval
-                          ( { pexp_desc=
-                                Pexp_constant (Pconst_string (doc, _, None))
-                            ; pexp_loc
-                            ; _ }
-                          , [] )
-                    ; _ } ]
-            ; _ }
-            when Ast.Attr.is_doc atr ->
-              Set.add docs (Cmt.create ("*" ^ doc) pexp_loc)
-          | _ -> super#attribute atr docs
-      end
+    let docs = ref (Set.empty (module Cmt)) in
+    let attribute m atr =
+      match atr with
+      | { attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, _, None))
+                        ; pexp_loc
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ }
+        when Ast.Attr.is_doc atr ->
+          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          atr
+      | _ -> Ast_mapper.default_mapper.attribute m atr
     in
-    Ast_final.fold fragment iter ast (Set.empty (module Cmt))
+    map fragment {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+    !docs
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
 
@@ -177,111 +174,120 @@ let docstring c text =
     Format.asprintf "Docstring(%a)%!" (odoc_docs c)
       parsed.Odoc_model.Error.value
 
-let sort_attributes : Ast_final.attributes -> Ast_final.attributes =
+let sort_attributes : attributes -> attributes =
   List.sort ~compare:Poly.compare
 
 let make_mapper conf ~ignore_doc_comments =
-  let open Ast_final in
-  object (self)
-    inherit map as super
-
-    (** Remove locations *)
-    method! location _ = Location.none
-
-    method! attribute attr =
-      match attr.attr_payload with
-      | PStr
-          [ ( { pstr_desc=
-                  Pstr_eval
-                    ( ( { pexp_desc=
-                            Pexp_constant (Pconst_string (doc, str_loc, None))
-                        ; _ } as exp )
-                    , [] )
-              ; _ } as pstr ) ]
-        when Ast.Attr.is_doc attr ->
-          let doc' = docstring {conf; normalize_code= self#structure} doc in
-          super#attribute
-            { attr with
-              attr_payload=
-                PStr
-                  [ { pstr with
-                      pstr_desc=
-                        Pstr_eval
-                          ( { exp with
-                              pexp_desc=
-                                Pexp_constant
-                                  (Pconst_string (doc', str_loc, None)) }
-                          , [] ) } ] }
-      | _ -> super#attribute attr
-
-    (** Sort attributes *)
-    method! attributes atrs =
-      let atrs =
-        if ignore_doc_comments then
-          List.filter atrs ~f:(fun a -> not (Ast.Attr.is_doc a))
-        else atrs
-      in
-      super#attributes (sort_attributes atrs)
-
-    method! expression exp =
-      match exp.pexp_desc with
-      | Pexp_poly ({pexp_desc= Pexp_constraint (e, t); _}, None) ->
-          self#expression {exp with pexp_desc= Pexp_poly (e, Some t)}
-      | _ -> super#expression exp
-
-    method! location_stack _ = []
-
-    method! pattern pat =
-      let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
-      (* normalize nested or patterns *)
-      match ppat_desc with
-      | Ppat_or
-          ( pat1
-          , { ppat_desc= Ppat_or (pat2, pat3)
-            ; ppat_loc= loc2
-            ; ppat_attributes= attrs2
-            ; _ } ) ->
-          self#pattern
-            (Pat.or_ ~loc:loc1 ~attrs:attrs1
-               (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
-               pat3 )
-      | _ -> super#pattern pat
-  end
+  (* remove locations *)
+  let location _ _ = Location.none in
+  let attribute (m : Ast_mapper.mapper) (attr : attribute) =
+    match attr.attr_payload with
+    | PStr
+        [ ( { pstr_desc=
+                Pstr_eval
+                  ( ( { pexp_desc=
+                          Pexp_constant (Pconst_string (doc, str_loc, None))
+                      ; _ } as exp )
+                  , [] )
+            ; _ } as pstr ) ]
+      when Ast.Attr.is_doc attr ->
+        let doc' = docstring {conf; normalize_code= m.structure m} doc in
+        Ast_mapper.default_mapper.attribute m
+          { attr with
+            attr_payload=
+              PStr
+                [ { pstr with
+                    pstr_desc=
+                      Pstr_eval
+                        ( { exp with
+                            pexp_desc=
+                              Pexp_constant
+                                (Pconst_string (doc', str_loc, None))
+                          ; pexp_loc_stack= [] }
+                        , [] ) } ] }
+    | _ -> Ast_mapper.default_mapper.attribute m attr
+  in
+  (* sort attributes *)
+  let attributes (m : Ast_mapper.mapper) (atrs : attribute list) =
+    let atrs =
+      if ignore_doc_comments then
+        List.filter atrs ~f:(fun a -> not (Ast.Attr.is_doc a))
+      else atrs
+    in
+    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
+  in
+  let expr (m : Ast_mapper.mapper) exp =
+    let exp = {exp with pexp_loc_stack= []} in
+    match exp.pexp_desc with
+    | Pexp_poly ({pexp_desc= Pexp_constraint (e, t); _}, None) ->
+        m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
+    | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t); _}) -> m.expr m e
+    | _ -> Ast_mapper.default_mapper.expr m exp
+  in
+  let pat (m : Ast_mapper.mapper) pat =
+    let pat = {pat with ppat_loc_stack= []} in
+    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
+    (* normalize nested or patterns *)
+    match ppat_desc with
+    | Ppat_or
+        ( pat1
+        , { ppat_desc= Ppat_or (pat2, pat3)
+          ; ppat_loc= loc2
+          ; ppat_attributes= attrs2
+          ; _ } ) ->
+        m.pat m
+          (Pat.or_ ~loc:loc1 ~attrs:attrs1
+             (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
+             pat3 )
+    | _ -> Ast_mapper.default_mapper.pat m pat
+  in
+  let typ (m : Ast_mapper.mapper) typ =
+    let typ = {typ with ptyp_loc_stack= []} in
+    Ast_mapper.default_mapper.typ m typ
+  in
+  { Ast_mapper.default_mapper with
+    location
+  ; attribute
+  ; attributes
+  ; expr
+  ; pat
+  ; typ }
 
 let normalize fragment ~ignore_doc_comments c =
-  Ast_final.map fragment (make_mapper c ~ignore_doc_comments)
+  map fragment (make_mapper c ~ignore_doc_comments)
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
   let map = normalize fragment c ~ignore_doc_comments in
-  Ast_final.equal fragment (map ast1) (map ast2)
+  equal fragment (map ast1) (map ast2)
 
 let normalize = normalize ~ignore_doc_comments:false
 
-let fold_docstrings =
-  object
-    inherit [(Location.t * string) list] Ppxlib.Ast_traverse.fold as super
+let make_docstring_mapper docstrings =
+  let attribute (m : Ast_mapper.mapper) attr =
+    match (attr.attr_name, attr.attr_payload) with
+    | ( {txt= "ocaml.doc" | "ocaml.text"; loc}
+      , PStr
+          [ { pstr_desc=
+                Pstr_eval
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
+                    ; _ }
+                  , [] )
+            ; _ } ] ) ->
+        docstrings := (loc, doc) :: !docstrings ;
+        attr
+    | _ -> Ast_mapper.default_mapper.attribute m attr
+  in
+  (* sort attributes *)
+  let attributes (m : Ast_mapper.mapper) atrs =
+    let atrs = List.filter atrs ~f:Ast.Attr.is_doc in
+    Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
+  in
+  {Ast_mapper.default_mapper with attribute; attributes}
 
-    method! attribute attr docstrings =
-      match (attr.attr_name, attr.attr_payload) with
-      | ( {txt= "ocaml.doc" | "ocaml.text"; loc}
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( { pexp_desc=
-                          Pexp_constant (Pconst_string (doc, _, None))
-                      ; _ }
-                    , [] )
-              ; _ } ] ) ->
-          (loc, doc) :: docstrings
-      | _ -> super#attribute attr docstrings
-
-    method! attributes atrs =
-      let atrs = List.filter atrs ~f:Ast.Attr.is_doc in
-      super#attributes (sort_attributes atrs)
-  end
-
-let docstrings (type a) (fragment : a Ast_final.t) s =
-  Ast_final.fold fragment fold_docstrings s []
+let docstrings (type a) (fragment : a t) s =
+  let docstrings = ref [] in
+  let (_ : a) = map fragment (make_docstring_mapper docstrings) s in
+  !docstrings
 
 type docstring_error =
   | Moved of Location.t * Location.t * string

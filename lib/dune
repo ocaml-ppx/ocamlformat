@@ -14,12 +14,12 @@
 (library
  (name ocamlformat_lib)
  (flags
-  (:standard -open Ocamlformat_stdlib))
+  (:standard -open Ocaml_412 -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
  (libraries
   format_
-  ocaml-version
+  ocaml_412
   ocamlformat_stdlib
   ocp-indent.lib
   odoc.model
@@ -28,5 +28,4 @@
   re
   uuseg
   uuseg.string
-  dune-build-info
-  ppxlib))
+  dune-build-info))

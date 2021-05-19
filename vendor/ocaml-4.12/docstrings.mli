@@ -13,7 +13,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Migrate_parsetree.Ast_412
 (** Documentation comments
 
   {b Warning:} this module is unstable and part of
@@ -23,6 +22,9 @@ open Migrate_parsetree.Ast_412
 
 (** (Re)Initialise all docstring state *)
 val init : unit -> unit
+
+(** Emit warnings for unattached and ambiguous docstrings *)
+val warn_bad_docstrings : unit -> unit
 
 (** {2 Docstrings} *)
 

@@ -9,10 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Ast_helper = Ppxlib.Ast_helper
+module Ast_helper = Ast_helper
 
 module Asttypes = struct
-  include Ppxlib.Asttypes
+  include Asttypes
 
   let is_private = function Private -> true | Public -> false
 
@@ -53,7 +53,7 @@ module Position = struct
 end
 
 module Location = struct
-  include Ppxlib.Location
+  include Location
 
   let fmt fs {loc_start; loc_end; loc_ghost} =
     Format.fprintf fs "(%a..%a)%s" Position.fmt loc_start Position.fmt
@@ -117,6 +117,17 @@ module Location = struct
     { file= loc.loc_start.pos_fname
     ; start= Position.to_point loc.loc_start
     ; end_= Position.to_point loc.loc_end }
+
+  let of_lexbuf (lexbuf : Lexing.lexbuf) =
+    { loc_start= lexbuf.lex_start_p
+    ; loc_end= lexbuf.lex_curr_p
+    ; loc_ghost= false }
+
+  let print ppf t =
+    Caml.Format.fprintf ppf "File \"%s\", line %d, characters %d-%d:"
+      t.loc_start.pos_fname t.loc_start.pos_lnum
+      (t.loc_start.pos_cnum - t.loc_start.pos_bol)
+      (t.loc_end.pos_cnum - t.loc_start.pos_bol)
 end
 
 module Longident = struct
@@ -132,13 +143,4 @@ module Longident = struct
   let lident s =
     assert (not (String.contains s '.')) ;
     Lident s
-end
-
-module Lexer = struct
-  let token_with_comments lexbuf =
-    Parser.of_compiler_libs (Lexer.token_with_comments lexbuf)
-
-  type error = Lexer.error
-
-  exception Error = Lexer.Error
 end

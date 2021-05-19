@@ -445,11 +445,11 @@ let check_tests parse pprint tests =
     tests
 
 module Pp = struct
-  let structure = Ppxlib.Pprintast.structure
+  let structure = Ocaml_412.Pprintast.structure
 
-  let signature = Ppxlib.Pprintast.signature
+  let signature = Ocaml_412.Pprintast.signature
 
-  let toplevel_phrase = Ppxlib.Pprintast.toplevel_phrase
+  let toplevel_phrase = Ocaml_412.Pprintast.toplevel_phrase
 
   let use_file fs lx =
     Format.pp_print_list

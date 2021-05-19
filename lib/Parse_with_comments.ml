@@ -9,6 +9,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Migrate_ast
+
 type 'a with_comments =
   {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
 
@@ -29,12 +31,12 @@ exception Warning50 of (Location.t * Warnings.t) list
 
 let tokens lexbuf =
   let rec loop acc =
-    match Migrate_ast.Lexer.token_with_comments lexbuf with
+    match Lexer.token_with_comments lexbuf with
     (* The location in lexbuf are invalid for comments *)
     | COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
     | DOCSTRING ds as tok -> loop ((tok, Docstrings.docstring_loc ds) :: acc)
     | tok -> (
-        let loc = Ppxlib.Location.of_lexbuf lexbuf in
+        let loc = Location.of_lexbuf lexbuf in
         let acc = (tok, loc) :: acc in
         match tok with EOF -> List.rev acc | _ -> loop acc )
   in

@@ -718,12 +718,7 @@ module T = struct
     | Typ t -> Format.fprintf fs "Typ:@\n%a" Pprintast.core_type t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Pprintast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Pprintast.expression e
-    | Vb b ->
-        let str =
-          let open Ast_helper in
-          Str.value Nonrecursive [b]
-        in
-        Format.fprintf fs "Vb:@\n%a" Pprintast.structure [str]
+    | Vb b -> Format.fprintf fs "Vb:@\n%a" Pprintast.binding b
     | Cl cl -> Format.fprintf fs "Cl:@\n%a" Pprintast.class_expr cl
     | Mty mt -> Format.fprintf fs "Mty:@\n%a" Pprintast.module_type mt
     | Cty cty -> Format.fprintf fs "Cty:@\n%a" Pprintast.class_type cty

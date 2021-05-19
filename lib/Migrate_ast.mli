@@ -9,10 +9,10 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Ast_helper = Ppxlib.Ast_helper
+module Ast_helper = Ast_helper
 
 module Asttypes : sig
-  include module type of Ppxlib.Asttypes
+  include module type of Asttypes
 
   val is_private : private_flag -> bool
 
@@ -38,7 +38,7 @@ module Position : sig
 end
 
 module Location : sig
-  include module type of Ppxlib.Location
+  include module type of Location
 
   type comparator_witness
 
@@ -81,6 +81,10 @@ module Location : sig
   val is_single_line : t -> int -> bool
 
   val to_span : t -> Odoc_model.Location_.span
+
+  val of_lexbuf : Lexing.lexbuf -> t
+
+  val print : Format.formatter -> t -> unit
 end
 
 module Longident : sig
@@ -95,12 +99,4 @@ module Longident : sig
 
   val lident : string -> t
   (** Make a Lident from a dotless string *)
-end
-
-module Lexer : sig
-  val token_with_comments : Lexing.lexbuf -> Parser.token
-
-  type error
-
-  exception Error of error * Location.t
 end
