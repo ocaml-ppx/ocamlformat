@@ -44,15 +44,14 @@ OPTIONS (CODE FORMATTING STYLE)
        are ignored and can be used as comments.
 
        --align-cases
-           Align match/try cases horizontally. The flag is unset by default.
+           Align match/try cases vertically. The flag is unset by default.
 
        --align-constructors-decl
-           Align type declarations horizontally. The flag is unset by
-           default.
+           Align type declarations vertically. The flag is unset by default.
 
        --align-variants-decl
-           Align type variants declarations horizontally. The flag is unset
-           by default.
+           Align type variants declarations vertically. The flag is unset by
+           default.
 
        --assignment-operator={end-line|begin-line}
            Position of the assignment operator. end-line positions assignment
