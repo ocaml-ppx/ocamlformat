@@ -176,21 +176,21 @@ module Formatting = struct
   let section = `Formatting
 
   let align_cases =
-    let doc = "Align match/try cases horizontally." in
+    let doc = "Align match/try cases vertically." in
     let names = ["align-cases"] in
     C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with align_cases= x})
       (fun conf -> conf.align_cases)
 
   let align_constructors_decl =
-    let doc = "Align type declarations horizontally." in
+    let doc = "Align type declarations vertically." in
     let names = ["align-constructors-decl"] in
     C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with align_constructors_decl= x})
       (fun conf -> conf.align_constructors_decl)
 
   let align_variants_decl =
-    let doc = "Align type variants declarations horizontally." in
+    let doc = "Align type variants declarations vertically." in
     let names = ["align-variants-decl"] in
     C.flag ~default:false ~names ~doc ~section
       (fun conf x -> {conf with align_variants_decl= x})
