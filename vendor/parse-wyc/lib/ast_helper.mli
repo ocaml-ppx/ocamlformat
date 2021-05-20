@@ -21,7 +21,7 @@
 *)
 
 open Docstrings
-open Migrate_parsetree.Ast_408
+open Migrate_parsetree.Ast_412
 open Asttypes
 open Parsetree
 
@@ -30,6 +30,7 @@ type loc = Location.t
 
 type lid = Longident.t with_loc
 type str = string with_loc
+type str_opt = string option with_loc
 type attrs = attribute list
 
 (** {1 Default locations} *)
@@ -45,7 +46,8 @@ val with_default_loc: loc -> (unit -> 'a) -> 'a
 
 module Const : sig
   val char : char -> constant
-  val string : ?quotation_delimiter:string -> string -> constant
+  val string :
+    ?quotation_delimiter:string -> ?loc:Location.t -> string -> constant
   val integer : ?suffix:char -> string -> constant
   val int : ?suffix:char -> int -> constant
   val int32 : ?suffix:char -> int32 -> constant
@@ -117,7 +119,7 @@ module Pat:
     val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
     val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
     val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
-    val unpack: ?loc:loc -> ?attrs:attrs -> str -> pattern
+    val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
     val open_: ?loc:loc -> ?attrs:attrs  -> lid -> pattern -> pattern
     val exception_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
     val extension: ?loc:loc -> ?attrs:attrs -> extension -> pattern
@@ -169,8 +171,8 @@ module Exp:
     val setinstvar: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
     val override: ?loc:loc -> ?attrs:attrs -> (str * expression) list
                   -> expression
-    val letmodule: ?loc:loc -> ?attrs:attrs -> str -> module_expr -> expression
-                   -> expression
+    val letmodule: ?loc:loc -> ?attrs:attrs -> str_opt -> module_expr
+                   -> expression -> expression
     val letexception:
       ?loc:loc -> ?attrs:attrs -> extension_constructor -> expression
       -> expression
@@ -203,7 +205,7 @@ module Val:
 module Type:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
-      ?params:(core_type * variance) list ->
+      ?params:(core_type * (variance * injectivity)) list ->
       ?cstrs:(core_type * core_type * loc) list ->
       ?kind:type_kind -> ?priv:private_flag -> ?manifest:core_type -> str ->
       type_declaration
@@ -219,8 +221,8 @@ module Type:
 module Te:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
-      ?params:(core_type * variance) list -> ?priv:private_flag ->
-      lid -> extension_constructor list -> type_extension
+      ?params:(core_type * (variance * injectivity)) list ->
+      ?priv:private_flag -> lid -> extension_constructor list -> type_extension
 
     val mk_exception: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
       extension_constructor -> type_exception
@@ -247,7 +249,7 @@ module Mty:
     val alias: ?loc:loc -> ?attrs:attrs -> lid -> module_type
     val signature: ?loc:loc -> ?attrs:attrs -> signature -> module_type
     val functor_: ?loc:loc -> ?attrs:attrs ->
-      str -> module_type option -> module_type -> module_type
+      functor_parameter -> module_type -> module_type
     val with_: ?loc:loc -> ?attrs:attrs -> module_type ->
       with_constraint list -> module_type
     val typeof_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type
@@ -263,7 +265,7 @@ module Mod:
     val ident: ?loc:loc -> ?attrs:attrs -> lid -> module_expr
     val structure: ?loc:loc -> ?attrs:attrs -> structure -> module_expr
     val functor_: ?loc:loc -> ?attrs:attrs ->
-      str -> module_type option -> module_expr -> module_expr
+      functor_parameter -> module_expr -> module_expr
     val apply: ?loc:loc -> ?attrs:attrs -> module_expr -> module_expr ->
       module_expr
     val constraint_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type ->
@@ -322,7 +324,7 @@ module Str:
 module Md:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
-      str -> module_type -> module_declaration
+      str_opt -> module_type -> module_declaration
   end
 
 (** Module substitutions *)
@@ -343,7 +345,7 @@ module Mtd:
 module Mb:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
-      str -> module_expr -> module_binding
+      str_opt -> module_expr -> module_binding
   end
 
 (** Opens *)
@@ -453,7 +455,8 @@ module Cf:
 module Ci:
   sig
     val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
-      ?virt:virtual_flag -> ?params:(core_type * variance) list ->
+      ?virt:virtual_flag ->
+      ?params:(core_type * (variance * injectivity)) list ->
       str -> 'a -> 'a class_infos
   end
 

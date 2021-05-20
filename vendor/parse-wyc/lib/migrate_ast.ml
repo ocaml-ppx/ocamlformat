@@ -1,4 +1,4 @@
-module Selected_version = Migrate_parsetree.Ast_408
+module Selected_version = Migrate_parsetree.Ast_412
 module Parsetree = Selected_version.Parsetree
 module Asttypes = Selected_version.Asttypes
 
@@ -25,7 +25,7 @@ module Mapper = struct
     | Use_file -> List.fold_left (fun acc tlp -> m#toplevel_phrase tlp acc) init x
 
   let to_ppxlib (type o p) (f:(o, p) fragment) : o -> p =
-    let module Conv = Ppxlib_ast.Select_ast (Ppxlib_ast__.Versions.OCaml_408) in
+    let module Conv = Ppxlib_ast.Select_ast (Ppxlib_ast__.Versions.OCaml_412) in
     let module To_ppxlib = Conv.Of_ocaml in
     match f with
     | Structure -> To_ppxlib.copy_structure
