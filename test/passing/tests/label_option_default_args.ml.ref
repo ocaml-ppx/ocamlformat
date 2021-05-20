@@ -68,10 +68,11 @@ let (* 0 *) f
 let f ?l:(C x) = e
 
 let (* 0 *) f
-    ?l:(
-      (* 1 *)
-      (* 2 *)
-      (* 3 *) C (* 4 *) x (* 5 *) ) =
+    ?l:((* 1 *)
+        (* 2 *)
+        (* 3 *)
+        C (* 4 *) x
+        (* 5 *) ) =
   (* 6 *) e
 
 let f ?(x = d) = e
@@ -115,10 +116,12 @@ let (* 0 *) f
 let f ?l:(C x = d) = e
 
 let (* 0 *) f
-    ?l:(
-      (* 1 *)
-      (* 2 *)
-      (* 3 *) C (* 4 *) x (* 5 *) = (* 6 *) d (* 7 *)) =
+    ?l:
+      ((* 1 *)
+       (* 2 *)
+       (* 3 *)
+       C (* 4 *) x
+       (* 5 *) = (* 6 *) d (* 7 *)) =
   (* 8 *) e
 
 (* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1260

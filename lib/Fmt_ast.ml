@@ -941,11 +941,10 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
   ( match ppat_desc with
   | Ppat_or _ -> Fn.id
-  | Ppat_construct ({txt; loc}, _) when Poly.(txt <> Longident.Lident "::")
-    ->
+  | Ppat_construct ({txt; _}, _) when Poly.(txt <> Longident.Lident "::") ->
+      let has_cmts_before = Cmts.has_before c.cmts ppat_loc in
       fun k ->
-        Cmts.fmt c ~pro:(break 1 0) ppat_loc
-        @@ Cmts.fmt c ~pro:(break 1 0) loc (fmt_opt pro $ k)
+        hvbox_if has_cmts_before 0 @@ Cmts.fmt c ppat_loc @@ (fmt_opt pro $ k)
   | _ -> fun k -> Cmts.fmt c ppat_loc (fmt_opt pro $ k) )
   @@ hovbox_if box 0
   @@ fmt_pattern_attributes c xpat
