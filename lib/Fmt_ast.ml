@@ -1467,7 +1467,7 @@ and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
            (hvbox_if (parens || has_attr) 0 @@ list_pn grps fmt_seq_list)
        $ fmt_atrs ) )
 
-and fmt_infix_op_args c ~parens xexp op_args =
+and fmt_infix_op_args ?ext c ~parens xexp op_args =
   let groups =
     let width xe = expression_width c xe in
     let not_simple (_, arg) = not (is_simple c.conf width arg) in
@@ -1521,6 +1521,7 @@ and fmt_infix_op_args c ~parens xexp op_args =
     $ fmt_if_k (not last_grp) (break 1 0)
   in
   Params.Exp.Infix_op_arg.wrap c.conf c.source ~loc:xexp.ast.pexp_loc ~parens
+    ~ext:(fmt_extension_suffix c ext)
     ~parens_nested:(Ast.parenze_nested_exp xexp)
     (list_fl groups fmt_op_arg_group)
 
@@ -1817,7 +1818,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       hvbox_if outer_wrap 0
         (Params.parens_if outer_wrap c.conf
            (hvbox indent_wrap
-              ( fmt_infix_op_args ~parens:inner_wrap c xexp infix_op_args
+              ( fmt_infix_op_args ?ext ~parens:inner_wrap c xexp infix_op_args
               $ fmt_atrs ) ) )
   | Pexp_apply (e0, [(Nolabel, e1)]) when Exp.is_prefix e0 ->
       hvbox 2
@@ -2452,6 +2453,29 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                     , _ )
               ; pstr_loc= _ } as str ) ] )
     when List.is_empty pexp_attributes
+         && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
+      hvbox 0
+        ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)
+        $ fmt_atrs )
+  | Pexp_extension
+      ( ext
+      , PStr
+          [ ( { pstr_desc=
+                  Pstr_eval
+                    ( ( { pexp_desc=
+                            Pexp_apply
+                              ( { pexp_desc= Pexp_ident {txt= id; loc= _}
+                                ; pexp_attributes= []
+                                ; pexp_loc= _
+                                ; _ }
+                              , [(Nolabel, _); (Nolabel, _)] )
+                        ; pexp_attributes= []
+                        ; _ } as e1 )
+                    , _ )
+              ; pstr_loc= _ } as str ) ] )
+    when Longident.is_infix id
+         && (not (Longident.is_monadic_binding id))
+         && List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
       hvbox 0
         ( fmt_expression c ~box ?eol ~parens ~ext (sub_exp ~ctx:(Str str) e1)

@@ -317,8 +317,6 @@ let _ = f [%ext new x]
 
 [@@@ocamlformat "exp-grouping=preserve"]
 
-(* TODO: begin/end keywords must be preserved *)
-
 let _ = begin%ext y >>= z end
 let _ = [%ext begin y >>= z end]
 let _ = x >>= begin%ext y >>= z end
