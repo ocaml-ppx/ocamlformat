@@ -26,6 +26,8 @@
 
   + Preserve `begin%ext` syntax for infix opererator expressions (#1653, @gpetiot)
 
+  + Fix the disabled structure items with attributes (#1551, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
