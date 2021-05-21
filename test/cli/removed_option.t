@@ -57,3 +57,23 @@ An error is also reported if a removed option is set in an .ocamlformat file:
   ocamlformat: Error while parsing .ocamlformat:
                For option "escape-chars": This option has been removed in version 0.16.0. Concrete syntax will now always be preserved.
   [1]
+
+Setting an option to a deprecated value on the command line should also display an error message:
+
+  $ ocamlformat a.ml --break-separators=after-and-docked
+  ocamlformat: option `--break-separators': value `after-and-docked` has been
+               removed in version 0.12. One can get a similar behaviour by
+               setting `break-separators=after`, `space-around-lists=false`,
+               and `dock-collection-brackets=false`.
+  Usage: ocamlformat [OPTION]... [SRC]...
+  Try `ocamlformat --help' for more information.
+  [1]
+
+  $ ocamlformat a.ml --break-string-literals=wrap
+  ocamlformat: option `--break-string-literals': value `wrap` has been removed
+               in version 0.12. It has been replaced by the new default `auto`
+               value, which breaks lines at newlines and wraps string literals
+               at the margin.
+  Usage: ocamlformat [OPTION]... [SRC]...
+  Try `ocamlformat --help' for more information.
+  [1]

@@ -375,19 +375,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-   (with-outputs-to break_separators-after_docked_transition_message.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} --break-separators=after-and-docked %{dep:tests/break_separators.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_separators-after_docked_transition_message.ml.ref break_separators-after_docked_transition_message.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
    (with-outputs-to break_separators-after_docked_wrap.ml.output
      (run %{bin:ocamlformat} --break-separators=after --break-collection-expressions=wrap --dock-collection-brackets %{dep:tests/break_separators.ml}))))
 
@@ -479,19 +466,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/break_string_literals-never.ml.ref break_string_literals-never.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-   (with-outputs-to break_string_literals-wrap.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} --break-string-literals=wrap %{dep:tests/break_string_literals.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_string_literals-wrap.ml.ref break_string_literals-wrap.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )
