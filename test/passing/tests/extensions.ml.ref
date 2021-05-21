@@ -361,17 +361,45 @@ let _ = f [%ext new x]
 
 (* TODO: begin/end keywords must be preserved *)
 
-let _ = [%ext y >>= z]
+let _ =
+  [%ext
+    begin
+      y >>= z
+    end]
 
-let _ = [%ext y >>= z]
+let _ =
+  [%ext
+    begin
+      y >>= z
+    end]
 
-let _ = x >>= [%ext y >>= z]
+let _ =
+  x
+  >>= [%ext
+        begin
+          y >>= z
+        end]
 
-let _ = x >>= [%ext y >>= z]
+let _ =
+  x
+  >>= [%ext
+        begin
+          y >>= z
+        end]
 
-let _ = f [%ext y >>= z]
+let _ =
+  f
+    [%ext
+      begin
+        y >>= z
+      end]
 
-let _ = f [%ext y >>= z]
+let _ =
+  f
+    [%ext
+      begin
+        y >>= z
+      end]
 
 let _ = (module%ext S)
 

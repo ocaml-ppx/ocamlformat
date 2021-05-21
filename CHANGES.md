@@ -22,6 +22,8 @@
 
   + Fix alignment of closing paren on separate line for anonymous functions (#1649, @gpetiot)
 
+  + Preserve begin-end keywords around infix operators (#1652, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)

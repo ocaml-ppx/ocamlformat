@@ -16,19 +16,32 @@ val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
 val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
-val wrap_exp :
-     Conf.t
-  -> ?disambiguate:bool
-  -> ?fits_breaks:bool
-  -> ?offset_closing_paren:int
-       (** Offset of the closing paren in case the line has been broken and
-           the option [indicate-multiline-delimiters] is set to
-           [closing-on-separate-line]. By default the offset is 0. *)
-  -> parens:bool
-  -> loc:Location.t
-  -> Source.t
-  -> Fmt.t
-  -> Fmt.t
+module Exp : sig
+  module Infix_op_arg : sig
+    val wrap :
+         Conf.t
+      -> ?parens_nested:bool
+      -> parens:bool
+      -> loc:Location.t
+      -> Source.t
+      -> Fmt.t
+      -> Fmt.t
+  end
+
+  val wrap :
+       Conf.t
+    -> ?disambiguate:bool
+    -> ?fits_breaks:bool
+    -> ?offset_closing_paren:int
+         (** Offset of the closing paren in case the line has been broken and
+             the option [indicate-multiline-delimiters] is set to
+             [closing-on-separate-line]. By default the offset is 0. *)
+    -> parens:bool
+    -> loc:Location.t
+    -> Source.t
+    -> Fmt.t
+    -> Fmt.t
+end
 
 val get_or_pattern_sep :
   ?cmts_before:bool -> ?space:bool -> Conf.t -> ctx:Ast.t -> Fmt.t
