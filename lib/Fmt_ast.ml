@@ -4341,32 +4341,45 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
   let pre_body, body = fmt_body c lb_exp in
   let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
+  let toplevel, in_, cmts_before, cmts_after =
+    match in_ with
+    | Some in_ ->
+        (false, in_ indent, Cmts.fmt_before c lb_loc, Cmts.fmt_after c lb_loc)
+    | None ->
+        ( true
+        , noop
+        , Cmts.Toplevel.fmt_before c lb_loc
+        , Cmts.Toplevel.fmt_after c lb_loc )
+  in
   fmt_docstring c ~epi:(fmt "@\n") doc1
-  $ Cmts.fmt_before c lb_loc
+  $ cmts_before
   $ hvbox indent
-      ( hovbox 2
-          ( hovbox 4
-              ( box_fun_decl_args c 4
+      ( hvbox_if toplevel 0
+          ( hvbox_if toplevel indent
+              ( hovbox 2
                   ( hovbox 4
-                      ( fmt_str_loc c lb_op
-                      $ fmt_extension_suffix c ext
-                      $ fmt_attributes c ~key:"@" at_attrs
-                      $ fmt_if rec_flag " rec"
-                      $ fmt_or pat_has_cmt "@ " " "
-                      $ fmt_pattern c lb_pat )
-                  $ fmt_if_k
-                      (not (List.is_empty xargs))
-                      (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
-                  )
-              $ fmt_cstr )
-          $ fmt_or_k c.conf.ocp_indent_compat
-              (fits_breaks " =" ~hint:(1000, 0) "=")
-              (fmt "@;<1 2>=")
-          $ pre_body )
-      $ fmt "@ " $ body $ Cmts.fmt_after c lb_loc
+                      ( box_fun_decl_args c 4
+                          ( hovbox 4
+                              ( fmt_str_loc c lb_op
+                              $ fmt_extension_suffix c ext
+                              $ fmt_attributes c ~key:"@" at_attrs
+                              $ fmt_if rec_flag " rec"
+                              $ fmt_or pat_has_cmt "@ " " "
+                              $ fmt_pattern c lb_pat )
+                          $ fmt_if_k
+                              (not (List.is_empty xargs))
+                              ( fmt "@ "
+                              $ wrap_fun_decl_args c (fmt_fun_args c xargs)
+                              ) )
+                      $ fmt_cstr )
+                  $ fmt_or_k c.conf.ocp_indent_compat
+                      (fits_breaks " =" ~hint:(1000, 0) "=")
+                      (fmt "@;<1 2>=")
+                  $ pre_body )
+              $ fmt "@ " $ body )
+          $ cmts_after )
       $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" at_at_attrs
-      $ (match in_ with Some in_ -> in_ indent | None -> noop)
-      $ fmt_opt epi )
+      $ in_ $ fmt_opt epi )
   $ fmt_docstring c ~pro:(fmt "@\n") doc2
 
 and fmt_module_binding ?ext c ctx ~rec_flag ~first pmb =
