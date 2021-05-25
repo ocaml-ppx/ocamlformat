@@ -134,24 +134,16 @@ val mod_with :
 module Let_binding : sig
   type t =
     { lb_op: string loc
-    ; lb_pat: pattern
-    ; lb_exp: expression
+    ; lb_pat: pattern Ast.xt
+    ; lb_typ:
+        [ `Polynewtype of label loc list * core_type Ast.xt
+        | `Other of arg_kind list * core_type Ast.xt
+        | `None of arg_kind list ]
+    ; lb_exp: expression Ast.xt
     ; lb_attrs: attribute list
     ; lb_loc: Location.t }
 
-  val of_value_bindings : value_binding list -> t list
+  val of_value_bindings : Cmts.t -> ctx:Ast.t -> value_binding list -> t list
 
-  val of_binding_ops : binding_op list -> t list
-
-  type reloc_type_cstr =
-    | Polynewtype_cstr of
-        pattern Ast.xt
-        * label loc list
-        * core_type Ast.xt
-        * expression Ast.xt
-    | Other_cstr of
-        pattern Ast.xt * arg_kind list * core_type Ast.xt * expression Ast.xt
-    | No_cstr of pattern Ast.xt * arg_kind list * expression Ast.xt
-
-  val relocate_type_cstr : Cmts.t -> ctx:Ast.t -> t -> reloc_type_cstr
+  val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
 end

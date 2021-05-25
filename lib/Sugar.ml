@@ -352,34 +352,16 @@ let polynewtype cmts pat body =
 module Let_binding = struct
   type t =
     { lb_op: string loc
-    ; lb_pat: pattern
-    ; lb_exp: expression
+    ; lb_pat: pattern xt
+    ; lb_typ:
+        [ `Polynewtype of label loc list * core_type xt
+        | `Other of arg_kind list * core_type xt
+        | `None of arg_kind list ]
+    ; lb_exp: expression xt
     ; lb_attrs: attribute list
     ; lb_loc: Location.t }
 
-  let of_value_bindings vbs =
-    List.mapi vbs ~f:(fun i vb ->
-        { lb_op= Location.{txt= (if i = 0 then "let" else "and"); loc= none}
-        ; lb_pat= vb.pvb_pat
-        ; lb_exp= vb.pvb_expr
-        ; lb_attrs= vb.pvb_attributes
-        ; lb_loc= vb.pvb_loc } )
-
-  let of_binding_ops bos =
-    List.map bos ~f:(fun bo ->
-        { lb_op= bo.pbop_op
-        ; lb_pat= bo.pbop_pat
-        ; lb_exp= bo.pbop_exp
-        ; lb_attrs= []
-        ; lb_loc= bo.pbop_loc } )
-
-  type reloc_type_cstr =
-    | Polynewtype_cstr of
-        pattern xt * label loc list * core_type xt * expression xt
-    | Other_cstr of pattern xt * arg_kind list * core_type xt * expression xt
-    | No_cstr of pattern xt * arg_kind list * expression xt
-
-  let relocate_type_cstr cmts ~ctx {lb_pat; lb_exp; _} =
+  let type_cstr cmts ~ctx lb_pat lb_exp =
     let ({ast= pat; _} as xpat) =
       match (lb_pat.ppat_desc, lb_exp.pexp_desc) with
       (* recognize and undo the pattern of code introduced by
@@ -401,11 +383,11 @@ module Let_binding = struct
     let ({ast= body; _} as xbody) = sub_exp ~ctx lb_exp in
     if
       (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
-    then No_cstr (xpat, [], xbody)
+    then (xpat, `None [], xbody)
     else
       match polynewtype cmts pat body with
       | Some (xpat, pvars, xtyp, xbody) ->
-          Polynewtype_cstr (xpat, pvars, xtyp, xbody)
+          (xpat, `Polynewtype (pvars, xtyp), xbody)
       | None -> (
           let xpat =
             match xpat.ast.ppat_desc with
@@ -429,22 +411,42 @@ module Let_binding = struct
             when Source.type_constraint_is_first typ exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                 ~after:exp.pexp_loc ;
-              Other_cstr (xpat, xargs, sub_typ ~ctx typ, sub_exp ~ctx exp)
+              (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
           | ( Pexp_constraint
                 ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _})
             , _ )
            |Pexp_constraint _, Ppat_constraint _ ->
-              No_cstr (xpat, xargs, xbody)
+              (xpat, `None xargs, xbody)
           | Pexp_constraint (exp, typ), _
             when Source.type_constraint_is_first typ exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                 ~after:exp.pexp_loc ;
-              Other_cstr (xpat, xargs, sub_typ ~ctx typ, sub_exp ~ctx exp)
+              (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
           (* The type constraint is always printed before the declaration for
              functions, for other value bindings we preserve its position. *)
           | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
                 ~after:exp.pexp_loc ;
-              Other_cstr (xpat, xargs, sub_typ ~ctx typ, sub_exp ~ctx exp)
-          | _ -> No_cstr (xpat, xargs, xbody) )
+              (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
+          | _ -> (xpat, `None xargs, xbody) )
+
+  let of_value_bindings cmts ~ctx vbs =
+    List.mapi vbs ~f:(fun i vb ->
+        let pat, typ, exp = type_cstr cmts ~ctx vb.pvb_pat vb.pvb_expr in
+        { lb_op= Location.{txt= (if i = 0 then "let" else "and"); loc= none}
+        ; lb_pat= pat
+        ; lb_typ= typ
+        ; lb_exp= exp
+        ; lb_attrs= vb.pvb_attributes
+        ; lb_loc= vb.pvb_loc } )
+
+  let of_binding_ops cmts ~ctx bos =
+    List.map bos ~f:(fun bo ->
+        let pat, typ, exp = type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp in
+        { lb_op= bo.pbop_op
+        ; lb_pat= pat
+        ; lb_typ= typ
+        ; lb_exp= exp
+        ; lb_attrs= []
+        ; lb_loc= bo.pbop_loc } )
 end

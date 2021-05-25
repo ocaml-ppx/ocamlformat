@@ -2160,16 +2160,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                               ?pro:p.expr_pro ?eol:p.expr_eol xbch
                           $ p.break_end_branch ) ) )
                 $ fmt_if_k (not last) p.space_between_branches ) ) )
-  | Pexp_let (rec_flag, bindings, body) ->
-      let bindings = Sugar.Let_binding.of_value_bindings bindings in
+  | Pexp_let (rec_flag, bd, body) ->
+      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
         ~attributes:pexp_attributes rec_flag bindings body
   | Pexp_letop {let_; ands; body} ->
-      let bindings = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
+      let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
-        ~attributes:pexp_attributes Nonrecursive bindings body
+        ~attributes:pexp_attributes Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2775,13 +2775,13 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
-  | Pcl_let (rec_flag, bindings, body) ->
+  | Pcl_let (rec_flag, bd, body) ->
       let indent_after_in =
         match body.pcl_desc with
         | Pcl_let _ -> 0
         | _ -> c.conf.indent_after_in
       in
-      let bindings = Sugar.Let_binding.of_value_bindings bindings in
+      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
@@ -4214,12 +4214,12 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->
-      let bindings = Sugar.Let_binding.of_value_bindings bindings in
+      let bd = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bindings in
       let with_conf c (b : Sugar.Let_binding.t) =
         let c = update_config ~quiet:true c b.lb_attrs in
         (c, (b, c))
       in
-      let _, bindings = List.fold_map bindings ~init:c ~f:with_conf in
+      let _, bindings = List.fold_map bd ~init:c ~f:with_conf in
       let is_simple ((i : Sugar.Let_binding.t), (c : Conf.t)) =
         Poly.(c.module_item_spacing = `Compact)
         && Location.is_single_line i.lb_loc c.margin
@@ -4294,7 +4294,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     let last_bind = List.last_exn bindings in
     (* The location of the first binding (just after `let`) is wrong, it
        contains the whole letop expression *)
-    sequence_blank_line c last_bind.lb_exp.pexp_loc body_loc
+    sequence_blank_line c last_bind.lb_exp.ast.pexp_loc body_loc
   in
   Params.Exp.wrap c.conf c.source ~loc
     ~parens:(parens || not (List.is_empty attributes))
@@ -4306,15 +4306,16 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
-and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
-  let Sugar.Let_binding.{lb_op; lb_exp; lb_attrs; lb_loc; _} = binding in
+and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
+    ({lb_op; lb_pat; lb_typ; lb_exp; lb_attrs; lb_loc} : Sugar.Let_binding.t)
+    =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
-  let xpat, xargs, fmt_cstr, xbody =
-    match Sugar.Let_binding.relocate_type_cstr c.cmts ~ctx binding with
-    | Polynewtype_cstr (xpat, pvars, xtyp, xbody) ->
+  let xargs, fmt_cstr =
+    match lb_typ with
+    | `Polynewtype (pvars, xtyp) ->
         let fmt_cstr =
           fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
           $ hvbox 0
@@ -4322,24 +4323,24 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
               $ list pvars " " (fmt_str_loc c)
               $ fmt ".@ " $ fmt_core_type c xtyp )
         in
-        (xpat, [], fmt_cstr, xbody)
-    | Other_cstr (xpat, xargs, xtyp, xbody) ->
-        (xpat, xargs, fmt_type_cstr c ~in_constraint:false xtyp, xbody)
-    | No_cstr (xpat, xargs, xbody) -> (xpat, xargs, noop, xbody)
+        ([], fmt_cstr)
+    | `Other (xargs, xtyp) ->
+        (xargs, fmt_type_cstr c ~in_constraint:false xtyp)
+    | `None xargs -> (xargs, noop)
   in
   let indent =
-    match xbody.ast.pexp_desc with
+    match lb_exp.ast.pexp_desc with
     | Pexp_function _ ->
         Params.function_indent c.conf ~ctx ~default:c.conf.let_binding_indent
     | Pexp_fun _ -> c.conf.let_binding_indent - 1
     | _ -> c.conf.let_binding_indent
   in
   let f {attr_name= {loc; _}; _} =
-    Location.compare_start loc lb_exp.pexp_loc < 1
+    Location.compare_start loc lb_exp.ast.pexp_loc < 1
   in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
-  let pre_body, body = fmt_body c xbody in
-  let pat_has_cmt = Cmts.has_before c.cmts xpat.ast.ppat_loc in
+  let pre_body, body = fmt_body c lb_exp in
+  let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c lb_loc
   $ hvbox indent
@@ -4352,7 +4353,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
                       $ fmt_attributes c ~key:"@" at_attrs
                       $ fmt_if rec_flag " rec"
                       $ fmt_or pat_has_cmt "@ " " "
-                      $ fmt_pattern c xpat )
+                      $ fmt_pattern c lb_pat )
                   $ fmt_if_k
                       (not (List.is_empty xargs))
                       (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
