@@ -2159,12 +2159,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           $ p.break_end_branch ) ) )
                 $ fmt_if_k (not last) p.space_between_branches ) ) )
   | Pexp_let (rec_flag, bindings, body) ->
-      let bindings = Sugar.value_bindings bindings in
+      let bindings = Sugar.Let_binding.of_value_bindings bindings in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
         ~attributes:pexp_attributes rec_flag bindings body
   | Pexp_letop {let_; ands; body} ->
-      let bindings = Sugar.binding_ops (let_ :: ands) in
+      let bindings = Sugar.Let_binding.of_binding_ops (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
         ~attributes:pexp_attributes Nonrecursive bindings body
@@ -2779,7 +2779,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
         | Pcl_let _ -> 0
         | _ -> c.conf.indent_after_in
       in
-      let bindings = Sugar.value_bindings bindings in
+      let bindings = Sugar.Let_binding.of_value_bindings bindings in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
@@ -4212,19 +4212,19 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->
-      let bindings = Sugar.value_bindings bindings in
-      let with_conf c (b : Sugar.let_binding) =
+      let bindings = Sugar.Let_binding.of_value_bindings bindings in
+      let with_conf c (b : Sugar.Let_binding.t) =
         let c = update_config ~quiet:true c b.lb_attrs in
         (c, (b, c))
       in
       let _, bindings = List.fold_map bindings ~init:c ~f:with_conf in
-      let is_simple ((i : Sugar.let_binding), (c : Conf.t)) =
+      let is_simple ((i : Sugar.Let_binding.t), (c : Conf.t)) =
         Poly.(c.module_item_spacing = `Compact)
         && Location.is_single_line i.lb_loc c.margin
       in
       let break (itmI, cI) (itmJ, cJ) =
-        (not (List.is_empty itmI.Sugar.lb_attrs))
-        || (not (List.is_empty itmJ.Sugar.lb_attrs))
+        (not (List.is_empty itmI.Sugar.Let_binding.lb_attrs))
+        || (not (List.is_empty itmJ.Sugar.Let_binding.lb_attrs))
         || Cmts.has_after c.cmts itmI.lb_loc
         || Cmts.has_before c.cmts itmJ.lb_loc
         || (not (is_simple (itmI, cI.conf)))
@@ -4305,7 +4305,9 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   $ fmt_atrs
 
 and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
-  let Sugar.{lb_op; lb_pat; lb_exp; lb_attrs; lb_loc} = binding in
+  let Sugar.Let_binding.{lb_op; lb_pat; lb_exp; lb_attrs; lb_loc} =
+    binding
+  in
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let doc1, atrs = doc_atrs lb_attrs in
