@@ -195,3 +195,29 @@ let _ =
 let () =
   let* x = 1 (* blah *) and* y = 2 in
   ()
+
+let x = ()
+(* after x *)
+
+let y = ()
+
+let x = ()
+(* after x *)
+
+and y = ()
+
+(** doc x *)
+let x = () [@@foo]
+(* after x *)
+
+(** doc y *)
+let y = () [@@foo]
+(* after y *)
+
+(** doc x *)
+let x = ()
+(* after x *)
+
+(** doc y *)
+and y = () [@@foo]
+(* after y *)
