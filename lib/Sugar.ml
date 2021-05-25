@@ -337,6 +337,16 @@ let rec polynewtype_ cmts pvars body relocs =
       polynewtype_ cmts pvars exp relocs
   | _ -> None
 
+(** [polynewtype cmts pat exp] returns expression of a type-constrained
+    pattern [pat] with body [exp]. e.g.:
+
+    {v
+      let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
+    v}
+
+    Can be rewritten as:
+
+    {[ let f : type r s. r s t = e ]} *)
 let polynewtype cmts pat body =
   let ctx = Pat pat in
   match pat.ppat_desc with
