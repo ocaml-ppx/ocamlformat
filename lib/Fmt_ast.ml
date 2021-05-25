@@ -657,19 +657,21 @@ and fmt_type_var s =
   $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
   $ str s
 
+and fmt_type_cstr c ~in_constraint xtyp =
+  fmt_or_k c.conf.ocp_indent_compat
+    (fits_breaks " " ~hint:(1000, 0) "")
+    (fmt "@;<0 -1>")
+  $ cbox_if c.conf.ocp_indent_compat 0
+      (fmt_core_type c ~pro:":" ~in_constraint
+         ~pro_space:(not c.conf.ocp_indent_compat)
+         ~box:(not c.conf.ocp_indent_compat)
+         xtyp )
+
 and type_constr_and_body c xbody =
   let body = xbody.ast in
   let ctx = Exp body in
   let fmt_cstr_and_xbody typ exp =
-    ( Some
-        ( fmt_or_k c.conf.ocp_indent_compat
-            (fits_breaks " " ~hint:(1000, 0) "")
-            (fmt "@;<0 -1>")
-        $ cbox_if c.conf.ocp_indent_compat 0
-            (fmt_core_type c ~pro:":" ~in_constraint:true
-               ~pro_space:(not c.conf.ocp_indent_compat)
-               ~box:(not c.conf.ocp_indent_compat)
-               (sub_typ ~ctx typ) ) )
+    ( Some (fmt_type_cstr c ~in_constraint:true (sub_typ ~ctx typ))
     , sub_exp ~ctx exp )
   in
   match xbody.ast.pexp_desc with
@@ -4322,17 +4324,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
         in
         (xpat, [], fmt_cstr, xbody)
     | Other_cstr (xpat, xargs, xtyp, xbody) ->
-        let fmt_cstr =
-          fmt_or_k c.conf.ocp_indent_compat
-            (fits_breaks " " ~hint:(1000, 0) "")
-            (fmt "@;<0 -1>")
-          $ cbox_if c.conf.ocp_indent_compat 0
-              (fmt_core_type c ~pro:":"
-                 ~pro_space:(not c.conf.ocp_indent_compat)
-                 ~box:(not c.conf.ocp_indent_compat)
-                 xtyp )
-        in
-        (xpat, xargs, fmt_cstr, xbody)
+        (xpat, xargs, fmt_type_cstr c ~in_constraint:false xtyp, xbody)
     | No_cstr (xpat, xargs, xbody) -> (xpat, xargs, noop, xbody)
   in
   let indent =
