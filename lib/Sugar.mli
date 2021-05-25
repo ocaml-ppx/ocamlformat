@@ -159,4 +159,16 @@ module Let_binding : sig
   val of_value_bindings : value_binding list -> t list
 
   val of_binding_ops : binding_op list -> t list
+
+  type reloc_type_cstr =
+    | Polynewtype_cstr of
+        pattern Ast.xt
+        * label loc list
+        * core_type Ast.xt
+        * expression Ast.xt
+    | Other_cstr of
+        pattern Ast.xt * arg_kind list * core_type Ast.xt * expression Ast.xt
+    | No_cstr of pattern Ast.xt * arg_kind list * expression Ast.xt
+
+  val relocate_type_cstr : Cmts.t -> ctx:Ast.t -> t -> reloc_type_cstr
 end

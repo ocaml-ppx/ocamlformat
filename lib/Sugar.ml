@@ -372,4 +372,79 @@ module Let_binding = struct
         ; lb_exp= bo.pbop_exp
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )
+
+  type reloc_type_cstr =
+    | Polynewtype_cstr of
+        pattern xt * label loc list * core_type xt * expression xt
+    | Other_cstr of pattern xt * arg_kind list * core_type xt * expression xt
+    | No_cstr of pattern xt * arg_kind list * expression xt
+
+  let relocate_type_cstr cmts ~ctx {lb_pat; lb_exp; _} =
+    let ({ast= pat; _} as xpat) =
+      match (lb_pat.ppat_desc, lb_exp.pexp_desc) with
+      (* recognize and undo the pattern of code introduced by
+         ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
+         https://caml.inria.fr/mantis/view.php?id=7344 *)
+      | ( Ppat_constraint
+            ( ({ppat_desc= Ppat_var _; _} as pat)
+            , {ptyp_desc= Ptyp_poly ([], typ1); _} )
+        , Pexp_constraint (_, typ2) )
+        when equal_core_type typ1 typ2 ->
+          Cmts.relocate cmts ~src:lb_pat.ppat_loc ~before:pat.ppat_loc
+            ~after:pat.ppat_loc ;
+          sub_pat ~ctx:(Pat lb_pat) pat
+      | _ -> sub_pat ~ctx lb_pat
+    in
+    let pat_is_extension {ppat_desc; _} =
+      match ppat_desc with Ppat_extension _ -> true | _ -> false
+    in
+    let ({ast= body; _} as xbody) = sub_exp ~ctx lb_exp in
+    if
+      (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
+    then No_cstr (xpat, [], xbody)
+    else
+      match polynewtype cmts pat body with
+      | Some (xpat, pvars, xtyp, xbody) ->
+          Polynewtype_cstr (xpat, pvars, xtyp, xbody)
+      | None -> (
+          let xpat =
+            match xpat.ast.ppat_desc with
+            | Ppat_constraint (p, {ptyp_desc= Ptyp_poly ([], _); _}) ->
+                sub_pat ~ctx:xpat.ctx p
+            | _ -> xpat
+          in
+          let xargs, ({ast= body; _} as xbody) =
+            match pat with
+            | {ppat_desc= Ppat_var _; ppat_attributes= []; _} ->
+                fun_ cmts ~will_keep_first_ast_node:false xbody
+            | _ -> ([], xbody)
+          in
+          let ctx = Exp body in
+          match (body.pexp_desc, pat.ppat_desc) with
+          | ( Pexp_constraint
+                ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
+                , ({ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as typ)
+                )
+            , _ )
+            when Source.type_constraint_is_first typ exp.pexp_loc ->
+              Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+                ~after:exp.pexp_loc ;
+              Other_cstr (xpat, xargs, sub_typ ~ctx typ, sub_exp ~ctx exp)
+          | ( Pexp_constraint
+                ({pexp_desc= Pexp_pack _; _}, {ptyp_desc= Ptyp_package _; _})
+            , _ )
+           |Pexp_constraint _, Ppat_constraint _ ->
+              No_cstr (xpat, xargs, xbody)
+          | Pexp_constraint (exp, typ), _
+            when Source.type_constraint_is_first typ exp.pexp_loc ->
+              Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+                ~after:exp.pexp_loc ;
+              Other_cstr (xpat, xargs, sub_typ ~ctx typ, sub_exp ~ctx exp)
+          (* The type constraint is always printed before the declaration for
+             functions, for other value bindings we preserve its position. *)
+          | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->
+              Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
+                ~after:exp.pexp_loc ;
+              Other_cstr (xpat, xargs, sub_typ ~ctx typ, sub_exp ~ctx exp)
+          | _ -> No_cstr (xpat, xargs, xbody) )
 end

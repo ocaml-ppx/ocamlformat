@@ -4305,105 +4305,36 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   $ fmt_atrs
 
 and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
-  let Sugar.Let_binding.{lb_op; lb_pat; lb_exp; lb_attrs; lb_loc} =
-    binding
-  in
+  let Sugar.Let_binding.{lb_op; lb_exp; lb_attrs; lb_loc; _} = binding in
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
   let xpat, xargs, fmt_cstr, xbody =
-    let ({ast= pat; _} as xpat) =
-      match (lb_pat.ppat_desc, lb_exp.pexp_desc) with
-      (* recognize and undo the pattern of code introduced by
-         ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
-         https://caml.inria.fr/mantis/view.php?id=7344 *)
-      | ( Ppat_constraint
-            ( ({ppat_desc= Ppat_var _; _} as pat)
-            , {ptyp_desc= Ptyp_poly ([], typ1); _} )
-        , Pexp_constraint (_, typ2) )
-        when equal_core_type typ1 typ2 ->
-          Cmts.relocate c.cmts ~src:lb_pat.ppat_loc ~before:pat.ppat_loc
-            ~after:pat.ppat_loc ;
-          sub_pat ~ctx:(Pat lb_pat) pat
-      | _ -> sub_pat ~ctx lb_pat
-    in
-    let pat_is_extension {ppat_desc; _} =
-      match ppat_desc with Ppat_extension _ -> true | _ -> false
-    in
-    let ({ast= body; _} as xbody) = sub_exp ~ctx lb_exp in
-    if
-      (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
-    then (xpat, [], None, xbody)
-    else
-      match Sugar.polynewtype c.cmts pat body with
-      | Some (xpat, pvars, xtyp, xbody) ->
-          let fmt_cstr =
-            fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
-            $ hvbox 0
-                ( str "type "
-                $ list pvars " " (fmt_str_loc c)
-                $ fmt ".@ " $ fmt_core_type c xtyp )
-          in
-          (xpat, [], Some fmt_cstr, xbody)
-      | None ->
-          let xpat =
-            match xpat.ast.ppat_desc with
-            | Ppat_constraint (p, {ptyp_desc= Ptyp_poly ([], _); _}) ->
-                sub_pat ~ctx:xpat.ctx p
-            | _ -> xpat
-          in
-          let xargs, ({ast= body; _} as xbody) =
-            match pat with
-            | {ppat_desc= Ppat_var _; ppat_attributes= []; _} ->
-                Sugar.fun_ c.cmts ~will_keep_first_ast_node:false xbody
-            | _ -> ([], xbody)
-          in
-          let fmt_cstr, xbody =
-            let ctx = Exp body in
-            let fmt_cstr_and_xbody typ exp =
-              ( Some
-                  ( fmt_or_k c.conf.ocp_indent_compat
-                      (fits_breaks " " ~hint:(1000, 0) "")
-                      (fmt "@;<0 -1>")
-                  $ cbox_if c.conf.ocp_indent_compat 0
-                      (fmt_core_type c ~pro:":"
-                         ~pro_space:(not c.conf.ocp_indent_compat)
-                         ~box:(not c.conf.ocp_indent_compat)
-                         (sub_typ ~ctx typ) ) )
-              , sub_exp ~ctx exp )
-            in
-            match (body.pexp_desc, pat.ppat_desc) with
-            | ( Pexp_constraint
-                  ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
-                  , ( {ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as
-                    typ ) )
-              , _ )
-              when Source.type_constraint_is_first typ exp.pexp_loc ->
-                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                  ~after:exp.pexp_loc ;
-                fmt_cstr_and_xbody typ exp
-            | ( Pexp_constraint
-                  ( {pexp_desc= Pexp_pack _; _}
-                  , {ptyp_desc= Ptyp_package _; _} )
-              , _ )
-             |Pexp_constraint _, Ppat_constraint _ ->
-                (None, xbody)
-            | Pexp_constraint (exp, typ), _
-              when Source.type_constraint_is_first typ exp.pexp_loc ->
-                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                  ~after:exp.pexp_loc ;
-                fmt_cstr_and_xbody typ exp
-            (* The type constraint is always printed before the declaration
-               for functions, for other value bindings we preserve its
-               position. *)
-            | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->
-                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                  ~after:exp.pexp_loc ;
-                fmt_cstr_and_xbody typ exp
-            | _ -> (None, xbody)
-          in
-          (xpat, xargs, fmt_cstr, xbody)
+    match Sugar.Let_binding.relocate_type_cstr c.cmts ~ctx binding with
+    | Polynewtype_cstr (xpat, pvars, xtyp, xbody) ->
+        let fmt_cstr =
+          fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
+          $ hvbox 0
+              ( str "type "
+              $ list pvars " " (fmt_str_loc c)
+              $ fmt ".@ " $ fmt_core_type c xtyp )
+        in
+        (xpat, [], Some fmt_cstr, xbody)
+    | Other_cstr (xpat, xargs, xtyp, xbody) ->
+        let fmt_cstr =
+          Some
+            ( fmt_or_k c.conf.ocp_indent_compat
+                (fits_breaks " " ~hint:(1000, 0) "")
+                (fmt "@;<0 -1>")
+            $ cbox_if c.conf.ocp_indent_compat 0
+                (fmt_core_type c ~pro:":"
+                   ~pro_space:(not c.conf.ocp_indent_compat)
+                   ~box:(not c.conf.ocp_indent_compat)
+                   xtyp ) )
+        in
+        (xpat, xargs, fmt_cstr, xbody)
+    | No_cstr (xpat, xargs, xbody) -> (xpat, xargs, None, xbody)
   in
   let indent =
     match xbody.ast.pexp_desc with
