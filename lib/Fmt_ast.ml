@@ -4320,21 +4320,20 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
               $ list pvars " " (fmt_str_loc c)
               $ fmt ".@ " $ fmt_core_type c xtyp )
         in
-        (xpat, [], Some fmt_cstr, xbody)
+        (xpat, [], fmt_cstr, xbody)
     | Other_cstr (xpat, xargs, xtyp, xbody) ->
         let fmt_cstr =
-          Some
-            ( fmt_or_k c.conf.ocp_indent_compat
-                (fits_breaks " " ~hint:(1000, 0) "")
-                (fmt "@;<0 -1>")
-            $ cbox_if c.conf.ocp_indent_compat 0
-                (fmt_core_type c ~pro:":"
-                   ~pro_space:(not c.conf.ocp_indent_compat)
-                   ~box:(not c.conf.ocp_indent_compat)
-                   xtyp ) )
+          fmt_or_k c.conf.ocp_indent_compat
+            (fits_breaks " " ~hint:(1000, 0) "")
+            (fmt "@;<0 -1>")
+          $ cbox_if c.conf.ocp_indent_compat 0
+              (fmt_core_type c ~pro:":"
+                 ~pro_space:(not c.conf.ocp_indent_compat)
+                 ~box:(not c.conf.ocp_indent_compat)
+                 xtyp )
         in
         (xpat, xargs, fmt_cstr, xbody)
-    | No_cstr (xpat, xargs, xbody) -> (xpat, xargs, None, xbody)
+    | No_cstr (xpat, xargs, xbody) -> (xpat, xargs, noop, xbody)
   in
   let indent =
     match xbody.ast.pexp_desc with
@@ -4366,7 +4365,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
                       (not (List.is_empty xargs))
                       (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
                   )
-              $ fmt_opt fmt_cstr )
+              $ fmt_cstr )
           $ fmt_or_k c.conf.ocp_indent_compat
               (fits_breaks " =" ~hint:(1000, 0) "=")
               (fmt "@;<1 2>=")
