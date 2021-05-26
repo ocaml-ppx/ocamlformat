@@ -22,19 +22,6 @@ let create ~text ~tokens =
   in
   {text; tokens= Array.of_list tokens}
 
-let string_between (t : t) (p1 : Lexing.position) (p2 : Lexing.position) =
-  let pos = p1.pos_cnum in
-  let len = Position.distance p1 p2 in
-  if
-    len < 0 || pos < 0
-    (* can happen e.g. if comment is within a parenthesized expression *)
-  then None
-  else if
-    String.length t.text < pos + len
-    (* can happen e.g. if source is not available *)
-  then None
-  else Some (String.sub t.text ~pos ~len)
-
 let string_at t (l : Location.t) =
   let pos = l.loc_start.Lexing.pos_cnum
   and len = Position.distance l.loc_start l.loc_end in
