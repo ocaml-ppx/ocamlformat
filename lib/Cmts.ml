@@ -311,26 +311,30 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; remove= true }
   in
   let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
-  if debug then (
-    Format.eprintf "\nComments:\n%!" ;
-    List.iter comments ~f:(fun {Cmt.txt; loc} ->
-        Caml.Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
-          (if Source.ends_line source loc then "eol" else "") ) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast fragment asts source in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
             update_remaining t ~f:(fun s -> Set.add s loc) ) ;
-    if debug then (
-      let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
-      Format.eprintf "\nLoc_tree:\n%!" ;
-      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ;
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
-    match locs with
+    ( match locs with
     | [] -> add_cmts t `After ~prev:Location.none Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
+    if debug then (
+      let dump fs lt =
+        let get_cmts pos loc =
+          let cmts = find_at_position t loc pos in
+          Option.map cmts ~f:(fun cmts -> List.map cmts ~f:Cmt.txt)
+        in
+        let cmts_before = get_cmts `Before in
+        let cmts_within = get_cmts `Within in
+        let cmts_after = get_cmts `After in
+        Fmt.eval fs (Loc_tree.dump ~cmts_before ~cmts_within ~cmts_after lt)
+      in
+      Format.eprintf "\nLoc_tree:\n%!" ;
+      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ) ;
   t
 
 let preserve fmt_x t =

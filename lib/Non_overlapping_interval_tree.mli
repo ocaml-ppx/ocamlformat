@@ -34,7 +34,12 @@ module type S = sig
 
   val children : t -> itv -> itv list
 
-  val dump : t -> Fmt.t
+  val dump :
+       ?cmts_before:(itv -> string list option)
+    -> ?cmts_within:(itv -> string list option)
+    -> ?cmts_after:(itv -> string list option)
+    -> t
+    -> Fmt.t
   (** Debug: dump debug representation of tree. *)
 end
 
