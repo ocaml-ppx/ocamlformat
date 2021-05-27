@@ -250,7 +250,7 @@ let fmt_constant c ~loc ?epi const =
   | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
   | Pconst_string (s, _, Some delim) ->
       wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
-  | Pconst_string (_, _, None) -> (
+  | Pconst_string (_, loc', None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
         let is_substring substring = String.is_substring s ~substring in
@@ -307,6 +307,8 @@ let fmt_constant c ~loc ?epi const =
         | `Auto -> `Normalize
       in
       let s = Source.string_literal c.source preserve_or_normalize loc in
+      Cmts.fmt c loc'
+      @@
       match c.conf.break_string_literals with
       | `Auto when contains_pp_commands s ->
           let break_on_pp_commands in_ pattern =
@@ -3217,7 +3219,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
     let fit = Tyd.is_simple decl in
     fmt_docstring_around_item ~force_before ~fit c ptype_attributes
   in
-  Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
+  hovbox 0 @@ Cmts.fmt c loc @@ Cmts.fmt c ptype_loc
   @@ hvbox 0
        ( doc_before
        $ hvbox 0

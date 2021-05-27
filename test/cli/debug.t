@@ -66,7 +66,6 @@
             before: (* before x binding #1 *)
             before: (* before x binding #2 *)
      {"([5,90+2]..[5,90+122])"
-              after: (* after unit *)
        {"([5,90+21]..[5,90+22])"
                 before: (* before x *)
                 after: (* after x #1 *)
@@ -74,7 +73,8 @@
         "([5,90+77]..[5,90+122])"
                 before: (* before unit *)
                 within: (* within unit #1 *)
-                within: (* within unit #2 *) }
+                within: (* within unit #2 *)
+                after: (* after unit *) }
       "([6,233+2]..[6,233+3])" } }
   
   
@@ -87,7 +87,6 @@
             before: (* before x binding #1 *)
             before: (* before x binding #2 *)
      {"([5,90+2]..[5,90+122])"
-              after: (* after unit *)
        {"([5,90+21]..[5,90+22])"
                 before: (* before x *)
                 after: (* after x #1 *)
@@ -95,7 +94,8 @@
         "([5,90+77]..[5,90+122])"
                 before: (* before unit *)
                 within: (* within unit #1 *)
-                within: (* within unit #2 *) }
+                within: (* within unit #2 *)
+                after: (* after unit *) }
       "([6,233+2]..[6,233+3])" } }
   
   

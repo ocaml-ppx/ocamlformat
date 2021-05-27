@@ -448,7 +448,6 @@ end
 
 type foo += private B2 = M.B1
 type foo += B3 = M.B1 (* Error: rebind private extension *)
-
 type foo += C = Unknown (* Error: unbound extension *)
 
 (* Extensions can be rebound even if type is closed *)
@@ -542,7 +541,6 @@ let n2 = extension_name (Bar 1)
 let t = extension_id (Bar 2) = extension_id (Bar 3) (* true *)
 
 let f = extension_id (Bar 2) = extension_id Foo (* false *)
-
 let is_foo x = extension_id Foo = extension_id x
 
 type foo += Foo
@@ -2298,10 +2296,8 @@ let f : type env a. (env, a) typ -> (env, a) typ -> int =
   | Tint, Tint -> 0
   | Tbool, Tbool -> 1
   | Tvar var, tb -> 2
-  | _ -> .
+  | _ -> . (* error *)
 ;;
-
-(* error *)
 
 (* let x = f Tint (Tvar Zero) ;; *)
 type inkind =
@@ -2464,10 +2460,8 @@ let example6 : type a. a wrapPoly -> a -> int =
   fun w ->
   match w with
   | WrapPoly ATag -> intA
-  | WrapPoly _ -> intA
+  | WrapPoly _ -> intA (* This should not be allowed *)
 ;;
-
-(* This should not be allowed *)
 
 let _ = example6 (WrapPoly AandBTags) `TagB (* This causes a seg fault *)
 
@@ -2617,10 +2611,8 @@ let f (Aux x) =
   | Succ (Succ Zero) -> "2"
   | Succ (Succ (Succ Zero)) -> "3"
   | Succ (Succ (Succ (Succ Zero))) -> "4"
-  | _ -> .
+  | _ -> . (* error *)
 ;;
-
-(* error *)
 
 type _ t = C : ((('a -> 'o) -> 'o) -> ('b -> 'o) -> 'o) t
 
@@ -2774,7 +2766,6 @@ type _ t = I : int t
 let f (type a) (x : a t) =
   let module M = struct
     let (I : a t) = x (* fail because of toplevel let *)
-
     let x = (I : a t)
   end
   in
@@ -2791,7 +2782,6 @@ let bad (type a) =
       val e : (int, a) eq
     end = struct
       let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
-
       let e : (int, a) eq = Refl
     end
   end
@@ -8279,9 +8269,7 @@ end
 
 module type VALUE = sig
   type value (* a Lua value *)
-
   type state (* the state of a Lua interpreter *)
-
   type usert (* a user-defined value *)
 end
 
@@ -9007,16 +8995,13 @@ module OK = struct
 
   let f2 r =
     ignore (r : t);
-    r.x
+    r.x (* non principal *)
   ;;
-
-  (* non principal *)
 
   let f3 (r : t) =
     match r with
-    | { x; y } -> y + y
+    | { x; y } -> y + y (* ok *)
   ;;
-  (* ok *)
 end
 
 module F1 = struct
