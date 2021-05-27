@@ -248,9 +248,10 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
   | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
-  | Pconst_string (s, _, Some delim) ->
-      wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
-  | Pconst_string (_, _, None) -> (
+  | Pconst_string (s, loc', Some delim) ->
+      Cmts.fmt c loc'
+      @@ wrap_k (str ("{" ^ delim ^ "|")) (str ("|" ^ delim ^ "}")) (str s)
+  | Pconst_string (_, loc', None) -> (
       let delim = ["@,"; "@;"] in
       let contains_pp_commands s =
         let is_substring substring = String.is_substring s ~substring in
@@ -307,6 +308,8 @@ let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
         | `Auto -> `Normalize
       in
       let s = Source.string_literal c.source preserve_or_normalize loc in
+      Cmts.fmt c loc'
+      @@
       match c.conf.break_string_literals with
       | `Auto when contains_pp_commands s ->
           let break_on_pp_commands in_ pattern =

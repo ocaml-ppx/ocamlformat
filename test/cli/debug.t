@@ -153,8 +153,6 @@
               Pexp_let Nonrec
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
-                comments
-                   after: (* after unit *)
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -170,11 +168,13 @@
                     before: (* before unit *)
                     within: (* within unit #1 *)
                     within: (* within unit #2 *)
+                     after: (* after unit *)
                     Pexp_construct "()" (a.ml[5,90+77]..[5,90+122])
                     comments
                       before: (* before unit *)
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
+                       after: (* after unit *)
                     None
               ]
               expression (a.ml[6,233+2]..[6,233+3])
@@ -205,8 +205,6 @@
               Pexp_let Nonrec
               [
                 <def> (a.ml[5,90+2]..[5,90+122])
-                comments
-                   after: (* after unit *)
                   pattern (a.ml[5,90+21]..[5,90+22])
                   comments
                     before: (* before x *)
@@ -222,11 +220,13 @@
                     before: (* before unit *)
                     within: (* within unit #1 *)
                     within: (* within unit #2 *)
+                     after: (* after unit *)
                     Pexp_construct "()" (a.ml[5,90+77]..[5,90+122])
                     comments
                       before: (* before unit *)
                       within: (* within unit #1 *)
                       within: (* within unit #2 *)
+                       after: (* after unit *)
                     None
               ]
               expression (a.ml[6,233+2]..[6,233+3])
