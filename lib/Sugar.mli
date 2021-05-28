@@ -131,30 +131,19 @@ val mod_with :
 (** [mod_with m] returns the list of [with type] constraints of module type
     [m]. *)
 
-val polynewtype :
-     Cmts.t
-  -> pattern
-  -> expression
-  -> (pattern Ast.xt * label loc list * core_type Ast.xt * expression Ast.xt)
-     option
-(** [polynewtype cmts pat exp] returns expression of a type-constrained
-    pattern [pat] with body [exp]. e.g.:
+module Let_binding : sig
+  type t =
+    { lb_op: string loc
+    ; lb_pat: pattern Ast.xt
+    ; lb_typ:
+        [ `Polynewtype of label loc list * core_type Ast.xt
+        | `Other of arg_kind list * core_type Ast.xt
+        | `None of arg_kind list ]
+    ; lb_exp: expression Ast.xt
+    ; lb_attrs: attribute list
+    ; lb_loc: Location.t }
 
-    {v
-      let f: 'r 's. 'r 's t = fun (type r) -> fun (type s) -> (e : r s t)
-    v}
+  val of_value_bindings : Cmts.t -> ctx:Ast.t -> value_binding list -> t list
 
-    Can be rewritten as:
-
-    {[ let f : type r s. r s t = e ]} *)
-
-type let_binding =
-  { lb_op: string loc
-  ; lb_pat: pattern
-  ; lb_exp: expression
-  ; lb_attrs: attribute list
-  ; lb_loc: Location.t }
-
-val value_bindings : value_binding list -> let_binding list
-
-val binding_ops : binding_op list -> let_binding list
+  val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
+end

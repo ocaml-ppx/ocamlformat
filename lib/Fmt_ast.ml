@@ -657,19 +657,21 @@ and fmt_type_var s =
   $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
   $ str s
 
+and fmt_type_cstr c ~in_constraint xtyp =
+  fmt_or_k c.conf.ocp_indent_compat
+    (fits_breaks " " ~hint:(1000, 0) "")
+    (fmt "@;<0 -1>")
+  $ cbox_if c.conf.ocp_indent_compat 0
+      (fmt_core_type c ~pro:":" ~in_constraint
+         ~pro_space:(not c.conf.ocp_indent_compat)
+         ~box:(not c.conf.ocp_indent_compat)
+         xtyp )
+
 and type_constr_and_body c xbody =
   let body = xbody.ast in
   let ctx = Exp body in
   let fmt_cstr_and_xbody typ exp =
-    ( Some
-        ( fmt_or_k c.conf.ocp_indent_compat
-            (fits_breaks " " ~hint:(1000, 0) "")
-            (fmt "@;<0 -1>")
-        $ cbox_if c.conf.ocp_indent_compat 0
-            (fmt_core_type c ~pro:":" ~in_constraint:true
-               ~pro_space:(not c.conf.ocp_indent_compat)
-               ~box:(not c.conf.ocp_indent_compat)
-               (sub_typ ~ctx typ) ) )
+    ( Some (fmt_type_cstr c ~in_constraint:true (sub_typ ~ctx typ))
     , sub_exp ~ctx exp )
   in
   match xbody.ast.pexp_desc with
@@ -2158,16 +2160,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                               ?pro:p.expr_pro ?eol:p.expr_eol xbch
                           $ p.break_end_branch ) ) )
                 $ fmt_if_k (not last) p.space_between_branches ) ) )
-  | Pexp_let (rec_flag, bindings, body) ->
-      let bindings = Sugar.value_bindings bindings in
+  | Pexp_let (rec_flag, bd, body) ->
+      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
         ~attributes:pexp_attributes rec_flag bindings body
   | Pexp_letop {let_; ands; body} ->
-      let bindings = Sugar.binding_ops (let_ :: ands) in
+      let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
-        ~attributes:pexp_attributes Nonrecursive bindings body
+        ~attributes:pexp_attributes Nonrecursive bd body
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2773,13 +2775,13 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
   | Pcl_apply (e0, e1N1) ->
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
-  | Pcl_let (rec_flag, bindings, body) ->
+  | Pcl_let (rec_flag, bd, body) ->
       let indent_after_in =
         match body.pcl_desc with
         | Pcl_let _ -> 0
         | _ -> c.conf.indent_after_in
       in
-      let bindings = Sugar.value_bindings bindings in
+      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
@@ -4212,19 +4214,19 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->
-      let bindings = Sugar.value_bindings bindings in
-      let with_conf c (b : Sugar.let_binding) =
+      let bd = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bindings in
+      let with_conf c (b : Sugar.Let_binding.t) =
         let c = update_config ~quiet:true c b.lb_attrs in
         (c, (b, c))
       in
-      let _, bindings = List.fold_map bindings ~init:c ~f:with_conf in
-      let is_simple ((i : Sugar.let_binding), (c : Conf.t)) =
+      let _, bindings = List.fold_map bd ~init:c ~f:with_conf in
+      let is_simple ((i : Sugar.Let_binding.t), (c : Conf.t)) =
         Poly.(c.module_item_spacing = `Compact)
         && Location.is_single_line i.lb_loc c.margin
       in
       let break (itmI, cI) (itmJ, cJ) =
-        (not (List.is_empty itmI.Sugar.lb_attrs))
-        || (not (List.is_empty itmJ.Sugar.lb_attrs))
+        (not (List.is_empty itmI.Sugar.Let_binding.lb_attrs))
+        || (not (List.is_empty itmJ.Sugar.Let_binding.lb_attrs))
         || Cmts.has_after c.cmts itmI.lb_loc
         || Cmts.has_before c.cmts itmJ.lb_loc
         || (not (is_simple (itmI, cI.conf)))
@@ -4292,7 +4294,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     let last_bind = List.last_exn bindings in
     (* The location of the first binding (just after `let`) is wrong, it
        contains the whole letop expression *)
-    sequence_blank_line c last_bind.lb_exp.pexp_loc body_loc
+    sequence_blank_line c last_bind.lb_exp.ast.pexp_loc body_loc
   in
   Params.Exp.wrap c.conf c.source ~loc
     ~parens:(parens || not (List.is_empty attributes))
@@ -4304,118 +4306,41 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
-and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
-  let Sugar.{lb_op; lb_pat; lb_exp; lb_attrs; lb_loc} = binding in
+and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
+    ({lb_op; lb_pat; lb_typ; lb_exp; lb_attrs; lb_loc} : Sugar.Let_binding.t)
+    =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let doc1, atrs = doc_atrs lb_attrs in
   let doc2, atrs = doc_atrs atrs in
-  let xpat, xargs, fmt_cstr, xbody =
-    let ({ast= pat; _} as xpat) =
-      match (lb_pat.ppat_desc, lb_exp.pexp_desc) with
-      (* recognize and undo the pattern of code introduced by
-         ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
-         https://caml.inria.fr/mantis/view.php?id=7344 *)
-      | ( Ppat_constraint
-            ( ({ppat_desc= Ppat_var _; _} as pat)
-            , {ptyp_desc= Ptyp_poly ([], typ1); _} )
-        , Pexp_constraint (_, typ2) )
-        when equal_core_type typ1 typ2 ->
-          Cmts.relocate c.cmts ~src:lb_pat.ppat_loc ~before:pat.ppat_loc
-            ~after:pat.ppat_loc ;
-          sub_pat ~ctx:(Pat lb_pat) pat
-      | _ -> sub_pat ~ctx lb_pat
-    in
-    let pat_is_extension {ppat_desc; _} =
-      match ppat_desc with Ppat_extension _ -> true | _ -> false
-    in
-    let ({ast= body; _} as xbody) = sub_exp ~ctx lb_exp in
-    if
-      (not (List.is_empty xbody.ast.pexp_attributes)) || pat_is_extension pat
-    then (xpat, [], None, xbody)
-    else
-      match Sugar.polynewtype c.cmts pat body with
-      | Some (xpat, pvars, xtyp, xbody) ->
-          let fmt_cstr =
-            fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
-            $ hvbox 0
-                ( str "type "
-                $ list pvars " " (fmt_str_loc c)
-                $ fmt ".@ " $ fmt_core_type c xtyp )
-          in
-          (xpat, [], Some fmt_cstr, xbody)
-      | None ->
-          let xpat =
-            match xpat.ast.ppat_desc with
-            | Ppat_constraint (p, {ptyp_desc= Ptyp_poly ([], _); _}) ->
-                sub_pat ~ctx:xpat.ctx p
-            | _ -> xpat
-          in
-          let xargs, ({ast= body; _} as xbody) =
-            match pat with
-            | {ppat_desc= Ppat_var _; ppat_attributes= []; _} ->
-                Sugar.fun_ c.cmts ~will_keep_first_ast_node:false xbody
-            | _ -> ([], xbody)
-          in
-          let fmt_cstr, xbody =
-            let ctx = Exp body in
-            let fmt_cstr_and_xbody typ exp =
-              ( Some
-                  ( fmt_or_k c.conf.ocp_indent_compat
-                      (fits_breaks " " ~hint:(1000, 0) "")
-                      (fmt "@;<0 -1>")
-                  $ cbox_if c.conf.ocp_indent_compat 0
-                      (fmt_core_type c ~pro:":"
-                         ~pro_space:(not c.conf.ocp_indent_compat)
-                         ~box:(not c.conf.ocp_indent_compat)
-                         (sub_typ ~ctx typ) ) )
-              , sub_exp ~ctx exp )
-            in
-            match (body.pexp_desc, pat.ppat_desc) with
-            | ( Pexp_constraint
-                  ( ({pexp_desc= Pexp_pack _; pexp_attributes= []; _} as exp)
-                  , ( {ptyp_desc= Ptyp_package _; ptyp_attributes= []; _} as
-                    typ ) )
-              , _ )
-              when Source.type_constraint_is_first typ exp.pexp_loc ->
-                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                  ~after:exp.pexp_loc ;
-                fmt_cstr_and_xbody typ exp
-            | ( Pexp_constraint
-                  ( {pexp_desc= Pexp_pack _; _}
-                  , {ptyp_desc= Ptyp_package _; _} )
-              , _ )
-             |Pexp_constraint _, Ppat_constraint _ ->
-                (None, xbody)
-            | Pexp_constraint (exp, typ), _
-              when Source.type_constraint_is_first typ exp.pexp_loc ->
-                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                  ~after:exp.pexp_loc ;
-                fmt_cstr_and_xbody typ exp
-            (* The type constraint is always printed before the declaration
-               for functions, for other value bindings we preserve its
-               position. *)
-            | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->
-                Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                  ~after:exp.pexp_loc ;
-                fmt_cstr_and_xbody typ exp
-            | _ -> (None, xbody)
-          in
-          (xpat, xargs, fmt_cstr, xbody)
+  let xargs, fmt_cstr =
+    match lb_typ with
+    | `Polynewtype (pvars, xtyp) ->
+        let fmt_cstr =
+          fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
+          $ hvbox 0
+              ( str "type "
+              $ list pvars " " (fmt_str_loc c)
+              $ fmt ".@ " $ fmt_core_type c xtyp )
+        in
+        ([], fmt_cstr)
+    | `Other (xargs, xtyp) ->
+        (xargs, fmt_type_cstr c ~in_constraint:false xtyp)
+    | `None xargs -> (xargs, noop)
   in
   let indent =
-    match xbody.ast.pexp_desc with
+    match lb_exp.ast.pexp_desc with
     | Pexp_function _ ->
         Params.function_indent c.conf ~ctx ~default:c.conf.let_binding_indent
     | Pexp_fun _ -> c.conf.let_binding_indent - 1
     | _ -> c.conf.let_binding_indent
   in
   let f {attr_name= {loc; _}; _} =
-    Location.compare_start loc lb_exp.pexp_loc < 1
+    Location.compare_start loc lb_exp.ast.pexp_loc < 1
   in
   let at_attrs, at_at_attrs = List.partition_tf atrs ~f in
-  let pre_body, body = fmt_body c xbody in
-  let pat_has_cmt = Cmts.has_before c.cmts xpat.ast.ppat_loc in
+  let pre_body, body = fmt_body c lb_exp in
+  let pat_has_cmt = Cmts.has_before c.cmts lb_pat.ast.ppat_loc in
   fmt_docstring c ~epi:(fmt "@\n") doc1
   $ Cmts.fmt_before c lb_loc
   $ hvbox indent
@@ -4428,12 +4353,12 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx binding =
                       $ fmt_attributes c ~key:"@" at_attrs
                       $ fmt_if rec_flag " rec"
                       $ fmt_or pat_has_cmt "@ " " "
-                      $ fmt_pattern c xpat )
+                      $ fmt_pattern c lb_pat )
                   $ fmt_if_k
                       (not (List.is_empty xargs))
                       (fmt "@ " $ wrap_fun_decl_args c (fmt_fun_args c xargs))
                   )
-              $ fmt_opt fmt_cstr )
+              $ fmt_cstr )
           $ fmt_or_k c.conf.ocp_indent_compat
               (fits_breaks " =" ~hint:(1000, 0) "=")
               (fmt "@;<1 2>=")
