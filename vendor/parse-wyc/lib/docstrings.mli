@@ -13,7 +13,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Migrate_parsetree.Ast_408
+open Migrate_parsetree.Ast_412
 (** Documentation comments
 
   {b Warning:} this module is unstable and part of

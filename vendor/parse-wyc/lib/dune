@@ -1,6 +1,8 @@
 (library
  (name parse_wyc)
  (libraries menhirLib ppxlib)
+ (flags
+  (:standard -w -9))
  (modules_without_implementation let_binding))
 
 (ocamllex lexer)
