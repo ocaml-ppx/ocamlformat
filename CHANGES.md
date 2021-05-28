@@ -26,6 +26,8 @@
 
   + Preserve `begin%ext` syntax for infix opererator expressions (#1653, @gpetiot)
 
+  + Consistently format comments attached to let-and bindings located at toplevel (#1663, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)

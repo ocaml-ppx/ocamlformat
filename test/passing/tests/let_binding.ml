@@ -182,3 +182,32 @@ let _ = f (let+ a b = c in d)
 let () =
   let* x = 1 (* blah *) and* y = 2 in
   ()
+
+let x = ()
+(* after x *)
+
+let y = ()
+
+let x = ()
+(* after x *)
+
+and y = ()
+
+let x = ()
+[@@foo]
+(* after x *)
+(** doc x *)
+
+let y = ()
+[@@foo]
+(* after y *)
+(** doc y *)
+
+let x = ()
+(* after x *)
+(** doc x *)
+
+and y = ()
+[@@foo]
+(* after y *)
+(** doc y *)
