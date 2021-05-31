@@ -1,6 +1,7 @@
-let impl_tests =
-  let valid_test =
-    {|
+module Structure = struct
+  module Inputs = struct
+    let valid_test =
+      {|
 let fooooooooooooooo =
   let fooooooooooooo =
     let foooooooooooooo =
@@ -11,10 +12,11 @@ let fooooooooooooooo =
   fooooooooooooooooo;
   foooooooooooooo
 |}
-  in
-  let invalid_after_eq_test = {|let fooooooooooooooo =|} in
-  let invalid_after_in_test =
-    {| (* line 1 *)
+
+    let invalid_after_eq_test = {|let fooooooooooooooo =|}
+
+    let invalid_after_in_test =
+      {| (* line 1 *)
 let fooooooooooooooooooooo = (* line 2 *)
   let foooooooooooooooooooo =
     let foooooooooooooooo =
@@ -23,9 +25,9 @@ let fooooooooooooooooooooo = (* line 2 *)
     foooooo
   in (* line 8 *)
 |}
-  in
-  let invalid_seq_modules_test =
-    {|
+
+    let invalid_seq_modules_test =
+      {|
 module M = struct
   let foooooo = foooo
 
@@ -34,34 +36,37 @@ module M = struct
   let foooooooooooo = fooooo
 end
 |}
-  in
-  let not_closed_module_test =
-    {|
+
+    let not_closed_module_test =
+      {|
 module M = struct
   let foo = foo
   let foo =
 |}
-  in
-  let not_closed_module_test_2 = {|
+
+    let not_closed_module_test_2 = {|
 module M = struct
   let foo = foo in
-|} in
-  let not_closed_sig = {|
+|}
+
+    let not_closed_sig = {|
 module K : sig
   type t
-|} in
-  let not_closed_begin = {| let x = if x then begin a |} in
-  let not_closed_if = {| let x = if k |} in
-  let not_closed_if_2 = {| let x = if k then |} in
-  let invalid_if = {| let x = if k then else |} in
-  let invalid_if_2 = {| let x = if k then x else |} in
-  let not_closed_class = {| class c = object |} in
-  let not_closed_class_2 = {| class c |} in
-  let not_closed_class_3 = {| class c = |} in
-  let not_closed_class_4 = {| class |} in
-  let binop = {| x + |} in
-  let many_not_closed =
-    {|
+|}
+
+    let not_closed_begin = {| let x = if x then begin a |}
+    let not_closed_if = {| let x = if k |}
+    let not_closed_if_2 = {| let x = if k then |}
+    let invalid_if = {| let x = if k then else |}
+    let invalid_if_2 = {| let x = if k then x else |}
+    let not_closed_class = {| class c = object |}
+    let not_closed_class_2 = {| class c |}
+    let not_closed_class_3 = {| class c = |}
+    let not_closed_class_4 = {| class |}
+    let binop = {| x + |}
+
+    let many_not_closed =
+      {|
 let foooooo
 = fooooooooo
 
@@ -83,16 +88,17 @@ let foooooo =
 
 let k =
 |}
-  in
-  let _escape_error = {|
+
+    let _escape_error = {|
 try foo () with ;;
 
 (3 : );;
 
 (3 :> );;
-|} in
-  let _expecting =
-    {|
+|}
+
+    let _expecting =
+      {|
 let f = function
   | 3 as 3 -> ()
 ;;
@@ -125,22 +131,25 @@ let f = function
   | (module -> ()
 ;;
 |}
-  in
-  let _pr7847 = {| external x : unit -> (int,int)`A.t = "x" |} in
-  let unclosed_class_simpl_expr1 = {|
+
+    let _pr7847 = {| external x : unit -> (int,int)`A.t = "x" |}
+
+    let unclosed_class_simpl_expr1 = {|
 class c = object
   method x = 1
-|} in
-  let _unclosed_class_simpl_expr2 = {| class c = (object end : object end |} in
-  let _unclosed_class_simpl_expr3 = {| class c = (object end |} in
-  let _unclosed_object = {| let o = object |} in
-  let _unclosed_paren_module_expr1 = {| module M = (struct end : sig end |} in
-  let _unclosed_paren_module_expr2 = {| module M = (struct end |} in
-  let _unclosed_paren_module_expr3 = {| module M = (val 3 : |} in
-  let _unclosed_paren_module_expr4 = {| module M = (val 3 :> |} in
-  let _unclosed_paren_module_expr5 = {| module M = (val 3 |} in
-  let _unclosed_simple_expr =
-    {|
+|}
+
+    let _unclosed_class_simpl_expr2 = {| class c = (object end : object end |}
+    let _unclosed_class_simpl_expr3 = {| class c = (object end |}
+    let _unclosed_object = {| let o = object |}
+    let _unclosed_paren_module_expr1 = {| module M = (struct end : sig end |}
+    let _unclosed_paren_module_expr2 = {| module M = (struct end |}
+    let _unclosed_paren_module_expr3 = {| module M = (val 3 : |}
+    let _unclosed_paren_module_expr4 = {| module M = (val 3 :> |}
+    let _unclosed_paren_module_expr5 = {| module M = (val 3 |}
+
+    let _unclosed_simple_expr =
+      {|
 (3; 2;;
 
 begin 3; 2;;
@@ -187,9 +196,9 @@ List.(module struct end :;;
 
 (=;
 |}
-  in
-  let _unclosed_simple_pattern =
-    {|
+
+    let _unclosed_simple_pattern =
+      {|
 let f = function
   | List.(_
 ;;
@@ -224,33 +233,37 @@ let f = function
   | [| 3; 4;
 ;;
 |}
-  in
-  let unclosed_struct = {|
+
+    let unclosed_struct = {|
 module M = struct
   type t = T
-|} in
-  [
-    ("empty", "", []);
-    ("valid", valid_test, []);
-    ("invalid after eq", invalid_after_eq_test, [ ((1, 0), (1, 22)) ]);
-    ("invalid after in", invalid_after_in_test, [ ((2, 0), (8, 4)) ]);
-    ("invalid seq modules", invalid_seq_modules_test, [ ((2, 0), (7, 28)) ]);
-    ("not closed module", not_closed_module_test, [ ((2, 0), (4, 11)) ]);
-    ("not closed module 2", not_closed_module_test_2, [ ((2, 0), (3, 18)) ]);
-    ("not closed sig", not_closed_sig, [ ((2, 0), (3, 8)) ]);
-    ("not closed begin", not_closed_begin, [ ((1, 1), (1, 26)) ]);
-    ("not closed if", not_closed_if, [ ((1, 1), (1, 13)) ]);
-    ("not closed if 2", not_closed_if_2, [ ((1, 1), (1, 18)) ]);
-    ("invalid if", invalid_if, [ ((1, 1), (1, 18)) ]);
-    ("invalid if 2", invalid_if_2, [ ((1, 1), (1, 25)) ]);
-    ("not closed class", not_closed_class, [ ((1, 1), (1, 17)) ]);
-    ("not closed class 2", not_closed_class_2, [ ((1, 1), (1, 8)) ]);
-    ("not closed class 3", not_closed_class_3, [ ((1, 1), (1, 10)) ]);
-    ("not closed class 4", not_closed_class_4, [ ((1, 1), (1, 6)) ]);
-    ("binop", binop, [ ((1, 1), (1, 4)) ]);
-    ( "many not closed",
-      many_not_closed,
-      [ ((8, 0), (14, 4)); ((21, 0), (21, 7)) ] );
+|}
+  end
+
+  let common_tests =
+    let open Inputs in
+    [
+      ("empty", "", []);
+      ("valid", valid_test, []);
+      ("invalid after eq", invalid_after_eq_test, [ ((1, 0), (1, 22)) ]);
+      ("invalid after in", invalid_after_in_test, [ ((2, 0), (8, 4)) ]);
+      ("invalid seq modules", invalid_seq_modules_test, [ ((2, 0), (7, 28)) ]);
+      ("not closed module", not_closed_module_test, [ ((2, 0), (4, 11)) ]);
+      ("not closed module 2", not_closed_module_test_2, [ ((2, 0), (3, 18)) ]);
+      ("not closed sig", not_closed_sig, [ ((2, 0), (3, 8)) ]);
+      ("not closed begin", not_closed_begin, [ ((1, 1), (1, 26)) ]);
+      ("not closed if", not_closed_if, [ ((1, 1), (1, 13)) ]);
+      ("not closed if 2", not_closed_if_2, [ ((1, 1), (1, 18)) ]);
+      ("invalid if", invalid_if, [ ((1, 1), (1, 18)) ]);
+      ("invalid if 2", invalid_if_2, [ ((1, 1), (1, 25)) ]);
+      ("not closed class", not_closed_class, [ ((1, 1), (1, 17)) ]);
+      ("not closed class 2", not_closed_class_2, [ ((1, 1), (1, 8)) ]);
+      ("not closed class 3", not_closed_class_3, [ ((1, 1), (1, 10)) ]);
+      ("not closed class 4", not_closed_class_4, [ ((1, 1), (1, 6)) ]);
+      ("binop", binop, [ ((1, 1), (1, 4)) ]);
+      ( "many not closed",
+        many_not_closed,
+        [ ((8, 0), (14, 4)); ((21, 0), (21, 7)) ] );
     (*
     ( "escape_error",
       escape_error,
@@ -267,9 +280,9 @@ module M = struct
       ] );
     ("pr7847", pr7847, [ ((1, 1), (1, 41)) ]);
 *)
-    ( "unclosed class simpl expr1",
-      unclosed_class_simpl_expr1,
-      [ ((2, 0), (3, 14)) ] );
+      ( "unclosed class simpl expr1",
+        unclosed_class_simpl_expr1,
+        [ ((2, 0), (3, 14)) ] );
     (*
     ( "unclosed class simpl expr2",
       unclosed_class_simpl_expr2,
@@ -296,26 +309,48 @@ module M = struct
     ("unclosed simple expr", unclosed_simple_expr, [ ((2, 0), (46, 3)) ]);
     ("unclosed simple pattern", unclosed_simple_pattern, [ ((2, 0), (34, 2)) ]);
 *)
-    ("unclosed struct", unclosed_struct, [ ((2, 0), (3, 12)) ]);
-  ]
+      ("unclosed struct", unclosed_struct, [ ((2, 0), (3, 12)) ]);
+    ]
 
-let intf_tests =
-  let _unclosed_class_signature = {| class c : object |} in
-  let _unclosed_paren_module_type = {| module M : (sig end |} in
-  let unclosed_sig = {|
+  let specific_tests = []
+
+  let tests = common_tests @ specific_tests
+end
+
+module Signature = struct
+  module Inputs = struct
+    let _unclosed_class_signature = {| class c : object |}
+    let _unclosed_paren_module_type = {| module M : (sig end |}
+
+    let unclosed_sig = {|
 module M : sig
   type t = T
- |} in
-  [
-    ("empty", "", []);
+ |}
+  end
+
+  let tests =
+    let open Inputs in
+    [
+      ("empty", "", []);
     (*
     ("unclosed class signature", unclosed_class_signature, [ ((1, 1), (1, 17)) ]);
     ( "unclosed paren module type",
       unclosed_paren_module_type,
       [ ((1, 1), (1, 20)) ] );
 *)
-    ("unclosed sig", unclosed_sig, [ ((2, 0), (3, 12)) ]);
+      ("unclosed sig", unclosed_sig, [ ((2, 0), (3, 12)) ]);
   ]
+end
+
+module Use_file = struct
+  module Inputs = Structure.Inputs
+
+  let common_tests = Structure.common_tests
+
+  let specific_tests = []
+
+  let tests = common_tests @ specific_tests
+end
 
 let check_tests checker tests =
   List.map
@@ -325,9 +360,9 @@ let check_tests checker tests =
 
 let tests =
   [
-    ("impl", check_tests Utils.check_impl impl_tests);
-    ("intf", check_tests Utils.check_intf intf_tests);
-    ("use_file", check_tests Utils.check_use_file impl_tests);
+    ("impl", check_tests Utils.check_impl Structure.tests);
+    ("intf", check_tests Utils.check_intf Signature.tests);
+    ("use_file", check_tests Utils.check_use_file Use_file.tests);
   ]
 
 let () = Alcotest.run "Parse_wyc" tests
