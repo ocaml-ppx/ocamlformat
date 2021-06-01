@@ -1,6 +1,5 @@
 module P = Parser
 module I = P.MenhirInterpreter
-open Compat
 open Migrate_ast
 
 module R =
@@ -123,138 +122,12 @@ let lex_buf lexbuf =
   in
   loop []
 
-let merge_adj merge l =
-  List.fold_left
-    (fun acc x ->
-      match acc with
-      | h :: t -> (
-          match merge h x with Some m -> m :: t | None -> x :: h :: t )
-      | [] -> x :: acc)
-    [] l
-  |> List.rev
+let parse fragment lexbuf =
+  let tokens = lex_buf lexbuf in
+  parse_with_recovery fragment tokens |> Mapper.to_ppxlib fragment
 
-let normalize_locs locs =
-  List.sort_uniq Location.compare locs |> merge_adj Location.merge
+let structure = parse Structure
 
-module State = struct
-  type t =
-    { result : Location.t list
-    ; stack : Location.t list
-    }
+let signature = parse Signature
 
-  let result s = s.result
-
-  let empty =
-    { result = []
-    ; stack = []
-    }
-
-  let add s =
-    { s with result = List.hd s.stack :: s.result }
-
-  let add_if cond s =
-    if cond then
-      add s
-    else
-      s
-
-  let push_on_stack loc s =
-    {s with stack = loc::s.stack}
-
-  let pop_stack s =
-    {s with stack = List.tl s.stack}
-
-  let wrap loc f x s =
-    match s.stack with
-    | [] ->
-      push_on_stack loc s
-      |> f x
-      |> pop_stack
-    | _ -> f x s
-end
-
-let invalid_locs_fold =
-  object
-    inherit [State.t] Ppxlib.Ast_traverse.fold as super
-
-    method! attribute x s =
-      State.add_if (Annot.Attr.is_generated x) s
-      |> super#attribute x
-
-    method! expression e s =
-      State.add_if (Annot.Exp.is_generated e) s
-      |> super#expression e
-
-    method! class_expr x s =
-      State.add_if (Annot.Class_exp.is_generated x) s
-      |> super#class_expr x
-
-    method! structure_item x s =
-      State.wrap x.pstr_loc super#structure_item x s
-
-    method! signature_item x s =
-      State.wrap x.psig_loc super#signature_item x s
-  end
-
-let invalid_locs fragment lexbuf =
-  lex_buf lexbuf
-  |> parse_with_recovery fragment
-  |> Mapper.to_ppxlib fragment
-  |> Mapper.fold_ast fragment invalid_locs_fold State.empty
-  |> State.result
-  |> normalize_locs
-
-let mk_parsable fragment source =
-  let lexbuf = Lexing.from_string source in
-  match invalid_locs fragment lexbuf with
-  | [] -> source
-  | invalid_locs -> (
-      (* we could be smarter here and choose a [delim] that does not appear in the
-         source. *)
-      let delim = "_i_n_v_a_l_i_d_" in
-      let extension_name = "%%invalid.ast.node" in
-      let wrapper_opn, wrapper_cls =
-        (Printf.sprintf "[%s {%s|" extension_name delim, Printf.sprintf "|%s}]" delim)
-      in
-      let wrapper_len = String.length wrapper_opn + String.length wrapper_cls in
-      let source_len = String.length source in
-      let len =
-        source_len + (List.length invalid_locs * wrapper_len)
-      in
-      let buffer = Buffer.create len in
-      let rec loop pos locs =
-        match locs with
-        | [] ->
-          Buffer.add_substring buffer source pos (source_len - pos);
-          Buffer.contents buffer
-        | (h : Location.t) :: t ->
-          let col_start = h.loc_start.pos_cnum in
-          let col_end = h.loc_end.pos_cnum in
-          assert (pos <= col_start);
-          assert (col_start < col_end);
-          assert (col_end <= source_len);
-          assert (col_end < source_len || List.length t = 0);
-          Buffer.add_substring buffer source pos (col_start - pos);
-          Buffer.add_string buffer wrapper_opn;
-          Buffer.add_substring buffer source col_start (col_end - col_start);
-          Buffer.add_string buffer wrapper_cls;
-          loop col_end t
-      in
-      loop 0 invalid_locs
-    )
-
-module Invalid_locations = struct
-  let structure = invalid_locs Structure
-
-  let signature = invalid_locs Signature
-
-  let use_file = invalid_locs Use_file
-end
-
-module Make_parsable = struct
-  let structure = mk_parsable Structure
-
-  let signature = mk_parsable Signature
-
-  let use_file = mk_parsable Use_file
-end
+let use_file = parse Use_file

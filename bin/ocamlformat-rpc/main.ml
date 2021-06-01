@@ -34,9 +34,7 @@ type state = Waiting_for_version | Version_defined of (V.t * Conf.t)
 
 let format fg conf source =
   let input_name = "<rpc input>" in
-  let opts =
-    Conf.{debug= false; margin_check= false; format_invalid_files= false}
-  in
+  let opts = Conf.{debug= false; margin_check= false} in
   Translation_unit.parse_and_format fg ~input_name ~source conf opts
 
 let rec rpc_main = function

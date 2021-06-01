@@ -21,11 +21,3 @@ module Mapper : sig
 
   val to_ppxlib : ('omp, 'ppxlib) fragment -> 'omp -> 'ppxlib
 end
-
-module Location : sig
-  include module type of Ppxlib.Location
-
-  val curr : Lexing.lexbuf -> t
-
-  val merge : t -> t -> t option
-end

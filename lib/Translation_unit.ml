@@ -13,6 +13,7 @@
 
 module Location = Migrate_ast.Location
 open Parse_with_comments
+open Result.Monad_infix
 
 exception
   Internal_error of
@@ -40,6 +41,8 @@ module Error = struct
         {iteration: int; prev: string; next: string; input_name: string}
     | Ocamlformat_bug of {exn: exn; input_name: string}
     | User_error of string
+
+  let user_error x = User_error x
 
   let equal : t -> t -> bool = Poly.equal
 
@@ -252,10 +255,10 @@ let equal fragment ~ignore_doc_comments c a b =
 let normalize fragment c {Parse_with_comments.ast; _} =
   Normalize.normalize fragment c ast
 
-let recover (type a) : a Ast_passes.Ast0.t -> _ = function
-  | Structure -> Parse_wyc.Make_parsable.structure
-  | Signature -> Parse_wyc.Make_parsable.signature
-  | Use_file -> Parse_wyc.Make_parsable.use_file
+let recover (type a) : a Ast_passes.Ast0.t -> _ -> a = function
+  | Structure -> Parse_wyc.structure
+  | Signature -> Parse_wyc.signature
+  | Use_file -> Parse_wyc.use_file
   | Core_type -> failwith "no recovery for core_type"
   | Module_type -> failwith "no recovery for module_type"
   | Expression -> failwith "no recovery for expression"
@@ -316,19 +319,10 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      ( match parse fg0 conf ~source:fmted with
+      ( match parse Ast_passes.Ast0.Parse.ast fg0 conf ~source:fmted with
       | exception Sys_error msg -> Error (Error.User_error msg)
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
-      | exception exn ->
-          if opts.Conf.format_invalid_files then (
-            match parse fg0 conf ~source:(recover fg0 fmted) with
-            | exception exn ->
-                internal_error (`Cannot_parse exn) (exn_args ())
-            | t_new ->
-                Format.fprintf Format.err_formatter
-                  "Warning: %s is invalid, recovering.\n%!" input_name ;
-                Ok t_new )
-          else internal_error (`Cannot_parse exn) (exn_args ())
+      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
       | t_new -> Ok t_new )
       >>= fun t_new ->
       let t_new = {t_new with ast= Ast_passes.run fg0 fgN t_new.ast} in
@@ -407,25 +401,17 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn; input_name})
 
-let parse_result fragment conf (opts : Conf.opts) ~source ~input_name =
-  match parse fragment conf ~source with
-  | exception exn ->
-      if opts.format_invalid_files then (
-        match parse fragment conf ~source:(recover fragment source) with
-        | exception exn -> Error (Error.Invalid_source {exn; input_name})
-        | parsed ->
-            Format.fprintf Format.err_formatter
-              "Warning: %s is invalid, recovering.\n%!" input_name ;
-            Ok parsed )
-      else Error (Invalid_source {exn; input_name})
+let parse_result ?(f = Ast_passes.Ast0.Parse.ast) fragment conf ~source
+    ~input_name =
+  match parse f fragment conf ~source with
+  | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
 let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
     (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
     opts =
   Ocaml_common.Location.input_name := input_name ;
-  let open Result.Monad_infix in
-  parse_result fg0 conf opts ~source ~input_name
+  parse_result fg0 conf ~source ~input_name
   >>= fun parsed ->
   let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
   format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
@@ -438,3 +424,57 @@ let parse_and_format = function
   | Syntax.Core_type -> parse_and_format Core_type Core_type
   | Syntax.Module_type -> parse_and_format Module_type Module_type
   | Syntax.Expression -> parse_and_format Expression Expression
+
+let check_line nlines i =
+  (* the last line of the buffer (nlines + 1) should not raise an error *)
+  if 1 <= i && i <= nlines + 1 then Ok ()
+  else Error (Error.User_error (Format.sprintf "Invalid line number %i" i))
+
+let check_range nlines (low, high) =
+  check_line nlines low
+  >>= fun () ->
+  check_line nlines high
+  >>= fun () ->
+  if low <= high then Ok ()
+  else
+    Error (Error.User_error (Format.sprintf "Invalid range %i-%i" low high))
+
+let numeric (type a b) (fg0 : a list Ast_passes.Ast0.t)
+    (fgN : b list Ast_passes.Ast_final.t) ~input_name ~source ~range conf
+    opts =
+  let lines = String.split_lines source in
+  let nlines = List.length lines in
+  check_range nlines range
+  >>| fun () ->
+  Ocaml_common.Location.input_name := input_name ;
+  let fallback () = Indent.Partial_ast.indent_range ~source ~range in
+  let indent_parsed parsed ~src ~range =
+    let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
+    let {ast= parsed_ast; source= parsed_src; _} = parsed in
+    match format fg0 fgN ~input_name ~prev_source:src ~parsed conf opts with
+    | Ok fmted_src -> (
+      match parse_result fg0 ~source:fmted_src conf ~input_name with
+      | Ok {ast= fmted_ast; source= fmted_src; _} ->
+          let fmted_ast = Ast_passes.run fg0 fgN fmted_ast in
+          Indent.Valid_ast.indent_range fgN ~lines ~range
+            ~unformatted:(parsed_ast, parsed_src, src)
+            ~formatted:(fmted_ast, fmted_src)
+      | Error _ -> fallback () )
+    | Error _ -> fallback ()
+  in
+  let parse_or_recover ~src =
+    match parse_result fg0 conf ~source:src ~input_name with
+    | Ok parsed -> Ok parsed
+    | Error _ -> parse_result ~f:recover fg0 conf ~source:src ~input_name
+  in
+  match parse_or_recover ~src:source with
+  | Ok parsed -> indent_parsed parsed ~src:source ~range
+  | Error _ -> fallback ()
+
+let numeric = function
+  | Syntax.Structure -> numeric Structure Structure
+  | Syntax.Signature -> numeric Signature Signature
+  | Syntax.Use_file -> numeric Use_file Use_file
+  | Syntax.Core_type -> failwith "numeric not implemented for Core_type"
+  | Syntax.Module_type -> failwith "numeric not implemented for Module_type"
+  | Syntax.Expression -> failwith "numeric not implemented for Expression"

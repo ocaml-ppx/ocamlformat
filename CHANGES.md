@@ -34,6 +34,11 @@
 
 #### New features
 
+  + Emacs integration:
+    - Indent a line or a region with ocamlformat when pressing <TAB>
+    - Break the line and reindent the cursor when pressing <ENTER>
+  (#1639, @gpetiot)
+
 ### 0.18.0 (2021-03-30)
 
 #### Bug fixes

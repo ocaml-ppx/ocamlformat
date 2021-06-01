@@ -9,27 +9,16 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type 'a with_comments =
-  {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
-
-module W : sig
-  type t
-
-  val in_lexer : int list
-
-  val disable : int -> t
-
-  val enable : int -> t
-
-  val to_string : t list -> string
+module Valid_ast : sig
+  val indent_range :
+       'a Ast_passes.Ast_final.t
+    -> unformatted:'a * Source.t * string
+    -> formatted:'a * Source.t
+    -> lines:string list
+    -> range:int * int
+    -> int list
 end
 
-exception Warning50 of (Location.t * Warnings.t) list
-
-val parse :
-     ('a Ast_passes.Ast0.t -> Lexing.lexbuf -> 'a)
-  -> 'a Ast_passes.Ast0.t
-  -> Conf.t
-  -> source:string
-  -> 'a with_comments
-(** @raise [Warning50] on misplaced documentation comments. *)
+module Partial_ast : sig
+  val indent_range : source:string -> range:int * int -> int list
+end

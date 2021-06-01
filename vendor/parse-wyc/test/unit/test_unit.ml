@@ -243,28 +243,62 @@ module M = struct
   let common_tests =
     let open Inputs in
     [
-      ("empty", "", []);
-      ("valid", valid_test, []);
-      ("invalid after eq", invalid_after_eq_test, [ ((1, 0), (1, 22)) ]);
-      ("invalid after in", invalid_after_in_test, [ ((2, 0), (8, 4)) ]);
-      ("invalid seq modules", invalid_seq_modules_test, [ ((2, 0), (7, 28)) ]);
-      ("not closed module", not_closed_module_test, [ ((2, 0), (4, 11)) ]);
-      ("not closed module 2", not_closed_module_test_2, [ ((2, 0), (3, 18)) ]);
-      ("not closed sig", not_closed_sig, [ ((2, 0), (3, 8)) ]);
-      ("not closed begin", not_closed_begin, [ ((1, 1), (1, 26)) ]);
-      ("not closed if", not_closed_if, [ ((1, 1), (1, 13)) ]);
-      ("not closed if 2", not_closed_if_2, [ ((1, 1), (1, 18)) ]);
-      ("invalid if", invalid_if, [ ((1, 1), (1, 18)) ]);
-      ("invalid if 2", invalid_if_2, [ ((1, 1), (1, 25)) ]);
-      ("not closed class", not_closed_class, [ ((1, 1), (1, 17)) ]);
-      ("not closed class 2", not_closed_class_2, [ ((1, 1), (1, 8)) ]);
-      ("not closed class 3", not_closed_class_3, [ ((1, 1), (1, 10)) ]);
-      ("not closed class 4", not_closed_class_4, [ ((1, 1), (1, 6)) ]);
-      ("binop", binop, [ ((1, 1), (1, 4)) ]);
-      ( "many not closed",
-        many_not_closed,
-        [ ((8, 0), (14, 4)); ((21, 0), (21, 7)) ] );
-    (*
+      ("empty", "", "");
+      ( "valid",
+        valid_test,
+        {|let fooooooooooooooo =
+  let fooooooooooooo =
+    let foooooooooooooo = foooooooooooooo in (fooooo, fooooooo) in
+  fooooooooooooooooo; foooooooooooooo|}
+      );
+      ( "invalid after eq",
+        invalid_after_eq_test,
+        "let fooooooooooooooo = [%merlin.hole ]" );
+      ( "invalid after in",
+        invalid_after_in_test,
+        {|let fooooooooooooooooooooo =
+  let foooooooooooooooooooo = let foooooooooooooooo = foooooooo in foooooo in
+  [%merlin.hole ]|}
+      );
+      ( "invalid seq modules",
+        invalid_seq_modules_test,
+        {|module M =
+  struct
+    let foooooo = foooo
+    let foooooooooooooo =
+      let foooooooooooo = fooooo <- [%merlin.hole ] in [%merlin.hole ]
+  end|}
+      );
+      ( "not closed module",
+        not_closed_module_test,
+        {|module M = struct let foo = foo
+                  let foo = [%merlin.hole ] end|}
+      );
+      ( "not closed module 2",
+        not_closed_module_test_2,
+        "module M = struct ;;let foo = foo in [%merlin.hole ] end" );
+      ( "not closed sig",
+        not_closed_sig,
+        {|module K : sig type t +=  
+                 | <invalid-uident>  end = [%merlin.hole ] |}
+      );
+      ( "not closed begin",
+        not_closed_begin,
+        "let x = if x then a <- [%merlin.hole ]" );
+      ( "not closed if",
+        not_closed_if,
+        "let x = if k <- [%merlin.hole ] then [%merlin.hole ]" );
+      ("not closed if 2", not_closed_if_2, "let x = if k then [%merlin.hole ]");
+      ("invalid if", invalid_if, "let x = if k then [%merlin.hole ]");
+      ("invalid if 2", invalid_if_2, "let x = if k then x else [%merlin.hole ]");
+      ("not closed class", not_closed_class, "class c = object  end");
+      ("not closed class 2", not_closed_class_2, "class c = [%merlin.hole ]");
+      ("not closed class 3", not_closed_class_3, "class c = [%merlin.hole ]");
+      ( "not closed class 4",
+        not_closed_class_4,
+        "class <invalid-lident> = [%merlin.hole ]" );
+      ("binop", binop, ";;x + ([%merlin.hole ])");
+      (*
     ( "escape_error",
       escape_error,
       [ ((2, 0), (2, 18)); ((4, 0), (4, 8)); ((6, 0), (6, 9)) ] );
@@ -282,7 +316,7 @@ module M = struct
 *)
       ( "unclosed class simpl expr1",
         unclosed_class_simpl_expr1,
-        [ ((2, 0), (3, 14)) ] );
+        "class c = object method x = 1 end" );
     (*
     ( "unclosed class simpl expr2",
       unclosed_class_simpl_expr2,
@@ -309,10 +343,26 @@ module M = struct
     ("unclosed simple expr", unclosed_simple_expr, [ ((2, 0), (46, 3)) ]);
     ("unclosed simple pattern", unclosed_simple_pattern, [ ((2, 0), (34, 2)) ]);
 *)
-      ("unclosed struct", unclosed_struct, [ ((2, 0), (3, 12)) ]);
+      ( "unclosed struct",
+        unclosed_struct,
+        {|module M = struct type t =
+                    | T  end|} );
     ]
 
-  let specific_tests = []
+  let specific_tests =
+    let open Inputs in
+    [
+      ( "many not closed",
+        many_not_closed,
+        {|let foooooo = fooooooooo
+let foooooooo = bar baaaaar barrr
+module K =
+  (struct let k = [%merlin.hole ]
+          let x = [%merlin.hole ] end)(struct  end)
+let foooooo = fooooo foooooooo
+let k = [%merlin.hole ]|}
+      );
+    ]
 
   let tests = common_tests @ specific_tests
 end
@@ -330,39 +380,89 @@ module M : sig
 
   let tests =
     let open Inputs in
+    let open Structure.Inputs in
     [
-      ("empty", "", []);
+      ("empty", "", "");
     (*
     ("unclosed class signature", unclosed_class_signature, [ ((1, 1), (1, 17)) ]);
     ( "unclosed paren module type",
       unclosed_paren_module_type,
       [ ((1, 1), (1, 20)) ] );
 *)
-      ("unclosed sig", unclosed_sig, [ ((2, 0), (3, 12)) ]);
-  ]
+      ( "unclosed sig",
+        unclosed_sig,
+        {|module M : sig type t =
+                 | T  end|} );
+      ( "not closed sig",
+        not_closed_sig,
+        {|module K : sig type t +=  
+                 | <invalid-uident>  end|}
+      );
+    ]
 end
 
 module Use_file = struct
   module Inputs = Structure.Inputs
 
-  let common_tests = Structure.common_tests
+  let common_tests =
+    List.map
+      (fun (name, input, output) ->
+        match output with
+        | "" -> (name, input, output)
+        | _ -> (name, input, "\n" ^ output))
+      Structure.common_tests
 
-  let specific_tests = []
+  let specific_tests =
+    let open Inputs in
+    [
+      ( "many not closed",
+        many_not_closed,
+        {|
+let foooooo = fooooooooo
+
+let foooooooo = bar baaaaar barrr
+
+module K =
+  (struct let k = [%merlin.hole ]
+          let x = [%merlin.hole ] end)(struct  end)
+
+let foooooo = fooooo foooooooo
+
+let k = [%merlin.hole ]|}
+      );
+    ]
 
   let tests = common_tests @ specific_tests
 end
 
-let check_tests checker tests =
+let check_tests parse pprint tests =
   List.map
-    (fun (name, input, locs) ->
-      (name, `Quick, fun () -> checker ~name ~input ~locs))
+    (fun (name, input, expected) ->
+      let lexbuf = Lexing.from_string input in
+      Format.fprintf Format.str_formatter "%a" pprint (parse lexbuf);
+      let actual = Format.flush_str_formatter () in
+      (name, `Quick, fun () -> Alcotest.(check string) name expected actual))
     tests
+
+module Pp = struct
+  let structure = Ppxlib.Pprintast.structure
+
+  let signature = Ppxlib.Pprintast.signature
+
+  let toplevel_phrase = Ppxlib.Pprintast.toplevel_phrase
+
+  let use_file fs lx =
+    Format.pp_print_list
+      ~pp_sep:(fun fs () -> Format.fprintf fs "@\n")
+      (fun fs x -> Format.fprintf fs "%a" toplevel_phrase x)
+      fs lx
+end
 
 let tests =
   [
-    ("impl", check_tests Utils.check_impl Structure.tests);
-    ("intf", check_tests Utils.check_intf Signature.tests);
-    ("use_file", check_tests Utils.check_use_file Use_file.tests);
+    ("impl", check_tests Parse_wyc.structure Pp.structure Structure.tests);
+    ("intf", check_tests Parse_wyc.signature Pp.signature Signature.tests);
+    ("use_file", check_tests Parse_wyc.use_file Pp.use_file Use_file.tests);
   ]
 
 let () = Alcotest.run "Parse_wyc" tests

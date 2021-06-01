@@ -95,13 +95,13 @@ type action =
   | Check of input list
       (** Check whether the input files already are formatted. *)
   | Print_config of t  (** Print the configuration and exit. *)
+  | Numeric of input * (int * int)
 
 (** Options changing the tool's behavior *)
 type opts =
   { debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
-        (** Check whether the formatted output exceeds the margin. *)
-  ; format_invalid_files: bool }
+        (** Check whether the formatted output exceeds the margin. *) }
 
 val action : unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
