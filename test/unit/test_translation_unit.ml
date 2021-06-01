@@ -332,7 +332,7 @@ x + y|}) ]
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
 let test_numeric_file =
-  let fmt_ast_source = read_file "../../lib/Fmt_ast.ml" in
+  let _fmt_ast_source = read_file "../../lib/Fmt_ast.ml" in
   let partial_source = read_file "../passing/tests/partial.ml" in
   let inv_with_loc_source =
     read_file "../passing/tests/format_invalid_files_with_locations.ml"
@@ -351,11 +351,12 @@ let test_numeric_file =
           Alcotest.(result (list int) err)
           test_name expected got )
   in
-  [ make_test "fmt_ast.ml (26)" ~source:fmt_ast_source ~range:(26, 26)
-      ~expected:(Ok [2])
-  ; make_test "fmt_ast.ml (111)" ~source:fmt_ast_source ~range:(111, 111)
-      ~expected:(Ok [6])
-  ; make_test "partial.ml (1-14)" ~source:partial_source ~range:(1, 14)
+  [ (* Takes too long! Un-comment once the --numeric feature is optimized:
+
+       make_test "fmt_ast.ml (26)" ~source:fmt_ast_source ~range:(26, 26)
+       ~expected:(Ok [2]) ; make_test "fmt_ast.ml (111)"
+       ~source:fmt_ast_source ~range:(111, 111) ~expected:(Ok [6]) *)
+    make_test "partial.ml (1-14)" ~source:partial_source ~range:(1, 14)
       ~expected:(Ok [0; 2; 2; 2; 2; 4; 6; 6; 6; 4; 4; 4; 0; 4])
   ; make_test "partial.ml (2-14)" ~source:partial_source ~range:(2, 14)
       ~expected:(Ok [5; 5; 5; 5; 7; 9; 9; 9; 7; 7; 7; 0; 7])
