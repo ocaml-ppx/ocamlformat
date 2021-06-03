@@ -2,8 +2,8 @@
  (name ocaml_412)
  (modules_without_implementation let_binding)
  (flags
-  (:standard -w -9))
- (libraries compiler-libs.common menhirLib))
+  (:standard -w -9 -open Parser_shims))
+ (libraries compiler-libs.common menhirLib parser_shims))
 
 (ocamllex lexer)
 
