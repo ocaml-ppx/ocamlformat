@@ -94,16 +94,6 @@ module Ast_final = struct
   module Pprintast = struct
     include Pprintast
 
-    let payload fs = function
-      | PStr s -> structure fs s
-      | PSig s -> signature fs s
-      | PTyp t -> core_type fs t
-      | PPat (p, None) -> pattern fs p
-      | PPat (p, Some e) ->
-          pattern fs p ;
-          Format.pp_print_string fs " when " ;
-          expression fs e
-
     let use_file = Format.pp_print_list top_phrase
 
     let ast (type a) : a t -> _ -> a -> _ = function

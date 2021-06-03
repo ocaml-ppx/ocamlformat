@@ -49,8 +49,6 @@ module Ast_final : sig
   module Pprintast : sig
     include module type of Pprintast
 
-    val payload : Format.formatter -> payload -> unit
-
     val ast : 'a t -> Format.formatter -> 'a -> unit
   end
 end
