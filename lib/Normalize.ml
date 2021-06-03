@@ -116,7 +116,7 @@ let rec odoc_nestable_block_element c fmt = function
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
-            Ast_passes.Ast_final.Printast.implementation ast print_comments
+            Ast_passes.Ast_final.Pprintast.structure ast print_comments
             comments
         with _ -> txt
       in

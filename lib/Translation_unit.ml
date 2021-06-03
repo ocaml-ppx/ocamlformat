@@ -271,7 +271,7 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
     if opts.Conf.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             Ast_passes.Ast_final.Printast.ast fg fmt ast ) )
+             Ast_passes.Ast_final.Pprintast.ast fg fmt ast ) )
     else None
   in
   let dump_formatted ~suffix fmted =

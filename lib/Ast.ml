@@ -713,53 +713,23 @@ module T = struct
     | Top
 
   let dump fs = function
-    | Pld l -> Format.fprintf fs "Pld:@\n%a" Printast.payload l
+    | Pld l -> Format.fprintf fs "Pld:@\n%a" Pprintast.payload l
     | Typ t -> Format.fprintf fs "Typ:@\n%a" Pprintast.core_type t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Pprintast.pattern p
-    | Exp e ->
-        Format.fprintf fs "Exp:@\n%a@\n@\n%a" Pprintast.expression e
-          Printast.expression e
+    | Exp e -> Format.fprintf fs "Exp:@\n%a" Pprintast.expression e
     | Vb b ->
         let str =
           let open Ast_helper in
           Str.value Nonrecursive [b]
         in
-        Format.fprintf fs "Vb:@\n%a@\n@\n%a" Pprintast.structure [str]
-          Printast.implementation [str]
-    | Cl cl ->
-        let str =
-          let open Ast_helper in
-          Str.class_ [Ci.mk {txt= ""; loc= Location.none} cl]
-        in
-        Format.fprintf fs "Cl:@\n%a@\n%a" Pprintast.structure [str]
-          Printast.implementation [str]
-    | Mty mt ->
-        let si =
-          let open Ast_helper in
-          Sig.modtype (Mtd.mk {txt= ""; loc= Location.none} ~typ:mt)
-        in
-        Format.fprintf fs "Mty:@\n%a@\n%a" Pprintast.signature [si]
-          Printast.interface [si]
-    | Cty cty ->
-        let si =
-          let open Ast_helper in
-          Sig.class_type [Ci.mk {txt= ""; loc= Location.none} cty]
-        in
-        Format.fprintf fs "Cty:@\n%a@\n%a" Pprintast.signature [si]
-          Printast.interface [si]
-    | Mod m ->
-        let m =
-          let open Ast_helper in
-          Str.module_ (Mb.mk {txt= None; loc= Location.none} m)
-        in
-        Format.fprintf fs "Mod:@\n%a@\n%a" Pprintast.structure [m]
-          Printast.implementation [m]
-    | Sig s ->
-        Format.fprintf fs "Sig:@\n%a@\n%a" Pprintast.signature [s]
-          Printast.interface [s]
+        Format.fprintf fs "Vb:@\n%a" Pprintast.structure [str]
+    | Cl cl -> Format.fprintf fs "Cl:@\n%a" Pprintast.class_expr cl
+    | Mty mt -> Format.fprintf fs "Mty:@\n%a" Pprintast.module_type mt
+    | Cty cty -> Format.fprintf fs "Cty:@\n%a" Pprintast.class_type cty
+    | Mod m -> Format.fprintf fs "Mod:@\n%a" Pprintast.module_expr m
+    | Sig s -> Format.fprintf fs "Sig:@\n%a" Pprintast.signature_item s
     | Str s | Tli (`Item s) ->
-        Format.fprintf fs "Str:@\n%a@\n%a" Pprintast.structure [s]
-          Printast.implementation [s]
+        Format.fprintf fs "Str:@\n%a" Pprintast.structure_item s
     | Clf clf -> Format.fprintf fs "Clf:@\n%a@\n" Pprintast.class_field clf
     | Ctf ctf ->
         Format.fprintf fs "Ctf:@\n%a@\n" Pprintast.class_type_field ctf

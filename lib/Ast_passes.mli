@@ -57,21 +57,13 @@ module Ast_final : sig
 
   val fold : 'a t -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
 
-  module Printast : sig
-    val implementation : Format.formatter -> structure -> unit
-
-    val interface : Format.formatter -> signature -> unit
+  module Pprintast : sig
+    include module type of Ppxlib.Pprintast
 
     val payload : Format.formatter -> payload -> unit
 
-    val expression : Format.formatter -> expression -> unit
-
-    val use_file : Format.formatter -> toplevel_phrase list -> unit
-
     val ast : 'a t -> Format.formatter -> 'a -> unit
   end
-
-  module Pprintast = Ppxlib.Pprintast
 end
 
 val run : 'a Ast0.t -> 'b Ast_final.t -> 'a -> 'b
