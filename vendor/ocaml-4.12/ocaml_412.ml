@@ -10,6 +10,5 @@ module Parse = Parse
 module Parser = Parser
 module Parsetree = Parsetree
 module Pprintast = Pprintast
-module Printast = Printast
 module Syntaxerr = Syntaxerr
 module Warnings = Warnings
