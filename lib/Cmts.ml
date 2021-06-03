@@ -542,7 +542,7 @@ let diff (conf : Conf.t) x y =
               |> (fun {ast; _} -> Ast_passes.run Structure Structure ast)
               |> Normalize.normalize Structure conf
               |> Caml.Format.asprintf "%a"
-                   Ast_passes.Ast_final.Printast.implementation
+                   Ast_passes.Ast_final.Pprintast.structure
             with _ -> norm_non_code z
           else norm_non_code z
     in

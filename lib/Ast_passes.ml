@@ -102,37 +102,29 @@ end
 module Ast_final = struct
   include Ast0
 
-  module Printast = struct
-    let pp_sexp ppf sexp =
-      Format.fprintf ppf "%a" (Sexp.pp_hum_indent 2) sexp
+  module Pprintast = struct
+    include Ppxlib.Pprintast
 
-    let sexp_of = Ppxlib.Ast_traverse.sexp_of
+    let payload fs = function
+      | PStr s -> structure fs s
+      | PSig s -> signature fs s
+      | PTyp t -> core_type fs t
+      | PPat (p, None) -> pattern fs p
+      | PPat (p, Some e) ->
+          pattern fs p ;
+          Format.pp_print_string fs " when " ;
+          expression fs e
 
-    let implementation ppf x = pp_sexp ppf (sexp_of#structure x)
-
-    let interface ppf x = pp_sexp ppf (sexp_of#signature x)
-
-    let expression ppf x = pp_sexp ppf (sexp_of#expression x)
-
-    let payload ppf x = pp_sexp ppf (sexp_of#payload x)
-
-    let use_file ppf x =
-      pp_sexp ppf (List.sexp_of_t sexp_of#toplevel_phrase x)
-
-    let core_type ppf x = pp_sexp ppf (sexp_of#core_type x)
-
-    let module_type ppf x = pp_sexp ppf (sexp_of#module_type x)
+    let use_file = Format.pp_print_list top_phrase
 
     let ast (type a) : a t -> _ -> a -> _ = function
-      | Structure -> implementation
-      | Signature -> interface
+      | Structure -> structure
+      | Signature -> signature
       | Use_file -> use_file
       | Core_type -> core_type
       | Module_type -> module_type
       | Expression -> expression
   end
-
-  module Pprintast = Ppxlib.Pprintast
 
   let mk (type a b) (fg0 : a Ast0.t) (fg_final : b t) : a -> b =
     match (fg0, fg_final) with
