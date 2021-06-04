@@ -32,6 +32,8 @@
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
 
+  + Use UTF8 length of strings, not only in wrapped comments (#1673, @jberdine)
+
 #### New features
 
   + Emacs integration:
