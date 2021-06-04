@@ -118,9 +118,12 @@ let fmt f = with_pp (fun fs -> Format.fprintf fs f)
 
 let char c = with_pp (fun fs -> Format.pp_print_char fs c)
 
+let utf8_length s =
+  Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
+
 let str s =
   with_pp (fun fs ->
-      if not (String.is_empty s) then Format.pp_print_string fs s )
+      if not (String.is_empty s) then Format.pp_print_as fs (utf8_length s) s )
 
 let sp = function
   | Blank -> char ' '
@@ -319,11 +322,6 @@ and hovbox_if ?name cnd n = wrap_if_k cnd (open_hovbox ?name n) close_box
 
 (** Text filling --------------------------------------------------------*)
 
-let utf8_length s =
-  Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
-
-let print_as size s = with_pp (fun fs -> Format.pp_print_as fs size s)
-
 let fill_text ?epi text =
   assert (not (String.is_empty text)) ;
   let fmt_line line =
@@ -332,7 +330,7 @@ let fill_text ?epi text =
         (String.split_on_chars line
            ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
     in
-    list words "@ " (fun s -> print_as (utf8_length s) s)
+    list words "@ " str
   in
   let lines =
     List.remove_consecutive_duplicates
