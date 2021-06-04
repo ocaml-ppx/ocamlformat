@@ -530,3 +530,7 @@ val k : int
 (**  *)
 
 (** [trim "  "] is [""] *)
+
+(** [trms (c × (Σᵢ₌₁ⁿ cᵢ × Πⱼ₌₁ᵐᵢ Xᵢⱼ^pᵢⱼ))]
+    is the sequence of terms [Xᵢⱼ] for each [i] and [j]. *)
+
