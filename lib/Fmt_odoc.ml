@@ -89,7 +89,8 @@ let fmt_code_block conf s1 s2 =
       let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
       box (wrap_code (vbox 0 (list_fl lines fmt_line)))
 
-let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
+let fmt_code_span s =
+  hovbox 0 (wrap "[" "]" (str_normalized ~escape:escape_brackets s))
 
 let fmt_reference = ign_loc ~f:str_normalized
 
