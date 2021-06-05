@@ -345,14 +345,14 @@ let fill_text ?(epi = "") text =
   in
   str pro
   $ hovbox 0
-      ( hvbox 0
-          (hovbox 0
-             (list_pn lines (fun ~prev:_ curr ~next ->
+      (hvbox 0
+         (hovbox 0
+            ( list_pn lines (fun ~prev:_ curr ~next ->
                   fmt_line curr
                   $
                   match next with
                   | Some str when String.for_all str ~f:Char.is_whitespace ->
                       close_box $ fmt "\n@," $ open_hovbox 0
                   | Some _ when not (String.is_empty curr) -> fmt "@ "
-                  | _ -> str_as (String.length epi) "" ) ) )
-      $ str_as 0 epi )
+                  | _ -> noop )
+            $ str_as (String.length epi) epi ) ) )

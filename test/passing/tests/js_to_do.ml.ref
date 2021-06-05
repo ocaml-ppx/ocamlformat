@@ -1,7 +1,6 @@
 (* Indentation that Jane Street needs to think about and make precise.
 
-   These are long term ideas, possibly even conflicting with other
-   tests. *)
+   These are long term ideas, possibly even conflicting with other tests. *)
 
 (* js-args *)
 
@@ -23,16 +22,16 @@ let _ =
    analogies are included in js-type.ml, (meant to be) consistent with the
    proposed type indentation.
 
-   Second, and more divergently, the proposed indentation of function
-   types is based on the idea of aligning the arguments, even the first
-   argument, even where that means automatically inserting spaces within
-   lines. This applies to the extra spaces in ":__unit" and
-   "(____Config.Network.t" below.
+   Second, and more divergently, the proposed indentation of function types
+   is based on the idea of aligning the arguments, even the first argument,
+   even where that means automatically inserting spaces within lines. This
+   applies to the extra spaces in ":__unit" and "(____Config.Network.t"
+   below.
 
-   We believe this fits into a more general incorporation of alignment
-   into ocp-indent, to replace our internal alignment tool with a
-   syntax-aware one. We like to align things for readability, like big
-   records, record types, lists used to build tables, etc.
+   We believe this fits into a more general incorporation of alignment into
+   ocp-indent, to replace our internal alignment tool with a syntax-aware
+   one. We like to align things for readability, like big records, record
+   types, lists used to build tables, etc.
 
    The proposal also includes indenting "->" in the circumstances below
    relative to the enclosing "()", by two spaces. In a sense, this happens

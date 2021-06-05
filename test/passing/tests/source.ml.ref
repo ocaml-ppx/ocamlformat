@@ -3162,9 +3162,9 @@ Error: Types marked with the immediate attribute must be
 
 (* Implicit unpack allows to omit the signature in (val ...) expressions.
 
-   It also adds (module M : S) and (module M) patterns, relying on
-   implicit (val ...) for the implementation. Such patterns can only be used
-   in function definition, match clauses, and let ... in.
+   It also adds (module M : S) and (module M) patterns, relying on implicit
+   (val ...) for the implementation. Such patterns can only be used in
+   function definition, match clauses, and let ... in.
 
    New: implicit pack is also supported, and you only need to be able to
    infer the the module type path from the context. *)
@@ -4585,8 +4585,8 @@ end
 (* Requires -package tyxml module type PR6513_orig = sig module type S = sig
    type t type u end
 
-   module Make: functor (Html5: Html5_sigs.T with type 'a Xml.wrap = 'a
-   and type 'a wrap = 'a and type 'a list_wrap = 'a list) -> S with type t =
+   module Make: functor (Html5: Html5_sigs.T with type 'a Xml.wrap = 'a and
+   type 'a wrap = 'a and type 'a list_wrap = 'a list) -> S with type t =
    Html5_types.div Html5.elt and type u = < foo: Html5.uri > end *)
 module type S = sig
   include Set.S
@@ -5867,8 +5867,7 @@ let f (x : entity entity_container) = ()
 (* class world = object val entity_container : entity entity_container = new
    entity_container
 
-   method add_entity (s : entity) = entity_container#add_entity (s :>
-   entity)
+   method add_entity (s : entity) = entity_container#add_entity (s :> entity)
 
    end *)
 (* Two v's in the same class *)
@@ -7272,14 +7271,14 @@ end
 (* module type ASig = sig type a val a:a val print:a -> unit end module type
    BSig = sig type b val b:b val print:b -> unit end
 
-   module A = struct type a = int let a = 0 let print = print_int end
-   module B = struct type b = float let b = 0.0 let print = print_float end
+   module A = struct type a = int let a = 0 let print = print_int end module
+   B = struct type b = float let b = 0.0 let print = print_float end
 
    module MakeA (Empty:sig end) : ASig = A module MakeB (Empty:sig end) :
    BSig = B
 
-   module rec NewA : ASig = MakeA (struct end) and NewB : BSig with type b
-   = NewA.a = MakeB (struct end);; *)
+   module rec NewA : ASig = MakeA (struct end) and NewB : BSig with type b =
+   NewA.a = MakeB (struct end);; *)
 
 (* Expressions and bindings *)
 
