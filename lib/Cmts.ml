@@ -331,27 +331,6 @@ let init fragment ~debug source asts comments_n_docstrings =
     match locs with
     | [] -> add_cmts t `After ~prev:Location.none Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
-  let relocate_loc_stack loc stack =
-    List.iter stack ~f:(fun src -> relocate t ~src ~before:loc ~after:loc)
-  in
-  let iter =
-    object
-      inherit Ppxlib.Ast_traverse.iter as super
-
-      method! pattern x =
-        relocate_loc_stack x.ppat_loc x.ppat_loc_stack ;
-        super#pattern x
-
-      method! core_type x =
-        relocate_loc_stack x.ptyp_loc x.ptyp_loc_stack ;
-        super#core_type x
-
-      method! expression x =
-        relocate_loc_stack x.pexp_loc x.pexp_loc_stack ;
-        super#expression x
-    end
-  in
-  Ast_final.iter fragment iter asts ;
   t
 
 let preserve fmt_x t =
