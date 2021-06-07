@@ -28,8 +28,7 @@ let dedup_cmts fragment ast comments =
 
         method! attribute atr docs =
           match atr with
-          | { attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}
-            ; attr_payload=
+          | { attr_payload=
                 PStr
                   [ { pstr_desc=
                         Pstr_eval
@@ -39,7 +38,8 @@ let dedup_cmts fragment ast comments =
                             ; _ }
                           , [] )
                     ; _ } ]
-            ; _ } ->
+            ; _ }
+            when Ast.Attr.is_doc atr ->
               Set.add docs (Cmt.create ("*" ^ doc) pexp_loc)
           | _ -> super#attribute atr docs
       end
@@ -182,10 +182,6 @@ let sort_attributes : Ast_final.attributes -> Ast_final.attributes =
 
 let make_mapper conf ~ignore_doc_comments =
   let open Ast_final in
-  let doc_attribute = function
-    | {attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
-    | _ -> false
-  in
   object (self)
     inherit map as super
 
@@ -193,66 +189,44 @@ let make_mapper conf ~ignore_doc_comments =
     method! location _ = Location.none
 
     method! attribute attr =
-      match (attr.attr_name, attr.attr_payload) with
-      | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc}
-        , PStr
-            [ { pstr_desc=
+      match attr.attr_payload with
+      | PStr
+          [ ( { pstr_desc=
                   Pstr_eval
-                    ( { pexp_desc=
-                          Pexp_constant (Pconst_string (doc, str_loc, None))
-                      ; pexp_loc
-                      ; pexp_attributes
-                      ; _ }
+                    ( ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, str_loc, None))
+                        ; _ } as exp )
                     , [] )
-              ; pstr_loc } ] ) ->
-          let doc' =
-            if ignore_doc_comments then "IGNORED"
-            else
-              let c = {conf; normalize_code= self#structure} in
-              docstring c doc
-          in
-          { attr_name= {txt; loc= self#location loc}
-          ; attr_payload=
-              self#payload
-                (PStr
-                   [ { pstr_desc=
-                         Pstr_eval
-                           ( { pexp_desc=
-                                 Pexp_constant
-                                   (Pconst_string
-                                      (doc', self#location str_loc, None) )
-                             ; pexp_loc= self#location pexp_loc
-                             ; pexp_attributes=
-                                 self#attributes pexp_attributes
-                             ; pexp_loc_stack= [] }
-                           , [] )
-                     ; pstr_loc= self#location pstr_loc } ] )
-          ; attr_loc= self#location attr.attr_loc }
+              ; _ } as pstr ) ]
+        when Ast.Attr.is_doc attr ->
+          let doc' = docstring {conf; normalize_code= self#structure} doc in
+          super#attribute
+            { attr with
+              attr_payload=
+                PStr
+                  [ { pstr with
+                      pstr_desc=
+                        Pstr_eval
+                          ( { exp with
+                              pexp_desc=
+                                Pexp_constant
+                                  (Pconst_string (doc', str_loc, None)) }
+                          , [] ) } ] }
       | _ -> super#attribute attr
 
     (** Sort attributes *)
     method! attributes atrs =
       let atrs =
         if ignore_doc_comments then
-          List.filter atrs ~f:(fun a -> not (doc_attribute a))
+          List.filter atrs ~f:(fun a -> not (Ast.Attr.is_doc a))
         else atrs
       in
       super#attributes (sort_attributes atrs)
 
     method! expression exp =
-      let exp = {exp with pexp_loc_stack= []} in
-      let {pexp_desc; pexp_attributes; _} = exp in
-      match pexp_desc with
-      (* convert [(c1; c2); c3] to [c1; (c2; c3)] *)
-      | Pexp_sequence
-          ({pexp_desc= Pexp_sequence (e1, e2); pexp_attributes= []; _}, e3)
-        ->
-          self#expression
-            (Exp.sequence e1 (Exp.sequence ~attrs:pexp_attributes e2 e3))
+      match exp.pexp_desc with
       | Pexp_poly ({pexp_desc= Pexp_constraint (e, t); _}, None) ->
           self#expression {exp with pexp_desc= Pexp_poly (e, Some t)}
-      | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t); _}) ->
-          self#expression e
       | _ -> super#expression exp
 
     method! location_stack _ = []
@@ -272,105 +246,18 @@ let make_mapper conf ~ignore_doc_comments =
                (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
                pat3 )
       | _ -> super#pattern pat
-
-    method! value_binding vb =
-      let { pvb_pat= {ppat_desc; ppat_loc; ppat_attributes; _}
-          ; pvb_expr
-          ; pvb_loc
-          ; pvb_attributes } =
-        vb
-      in
-      match (ppat_desc, pvb_expr.pexp_desc) with
-      (* recognize and undo the pattern of code introduced by
-         ocaml/ocaml@fd0dc6a0fbf73323c37a73ea7e8ffc150059d6ff to fix
-         https://caml.inria.fr/mantis/view.php?id=7344 *)
-      | ( Ppat_constraint
-            ( ({ppat_desc= Ppat_var _; _} as p0)
-            , {ptyp_desc= Ptyp_poly ([], t0); _} )
-        , Pexp_constraint (e0, t1) )
-        when equal_core_type t0 t1 ->
-          self#value_binding
-            (Vb.mk ~loc:pvb_loc ~attrs:pvb_attributes p0
-               (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes e0 t0) )
-      (* convert [let (x : t) = e] to [let x = (e : t)] *)
-      | Ppat_constraint (p0, t0), _ ->
-          self#value_binding
-            (Vb.mk ~loc:pvb_loc ~attrs:pvb_attributes p0
-               (Exp.constraint_ ~loc:ppat_loc ~attrs:ppat_attributes pvb_expr
-                  t0 ) )
-      | _ -> super#value_binding vb
-
-    method! structure_item si =
-      match si.pstr_desc with
-      | Pstr_eval ({pexp_desc= Pexp_extension e; _}, []) ->
-          let e = self#extension e in
-          let pstr_loc = self#location si.pstr_loc in
-          {pstr_desc= Pstr_extension (e, []); pstr_loc}
-      | _ -> super#structure_item si
-
-    method! structure si =
-      let si =
-        if ignore_doc_comments then
-          List.filter si ~f:(fun si ->
-              match si.pstr_desc with
-              | Pstr_attribute a -> not (doc_attribute a)
-              | _ -> true )
-        else si
-      in
-      super#structure si
-
-    method! signature si =
-      let si =
-        if ignore_doc_comments then
-          List.filter si ~f:(fun si ->
-              match si.psig_desc with
-              | Psig_attribute a -> not (doc_attribute a)
-              | _ -> true )
-        else si
-      in
-      super#signature si
-
-    method! class_signature si =
-      let si =
-        if ignore_doc_comments then
-          let pcsig_fields =
-            List.filter si.pcsig_fields ~f:(fun si ->
-                match si.pctf_desc with
-                | Pctf_attribute a -> not (doc_attribute a)
-                | _ -> true )
-          in
-          {si with pcsig_fields}
-        else si
-      in
-      super#class_signature si
-
-    method! class_structure si =
-      let si =
-        if ignore_doc_comments then
-          let pcstr_fields =
-            List.filter si.pcstr_fields ~f:(fun si ->
-                match si.pcf_desc with
-                | Pcf_attribute a -> not (doc_attribute a)
-                | _ -> true )
-          in
-          {si with pcstr_fields}
-        else si
-      in
-      super#class_structure si
   end
 
-let normalize fragment c =
-  Ast_final.map fragment (make_mapper c ~ignore_doc_comments:false)
+let normalize fragment ~ignore_doc_comments c =
+  Ast_final.map fragment (make_mapper c ~ignore_doc_comments)
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
-  let map = Ast_final.map fragment (make_mapper c ~ignore_doc_comments) in
+  let map = normalize fragment c ~ignore_doc_comments in
   Ast_final.equal fragment (map ast1) (map ast2)
 
+let normalize = normalize ~ignore_doc_comments:false
+
 let fold_docstrings =
-  let doc_attribute = function
-    | Ast_final.{attr_name= {txt= "ocaml.doc" | "ocaml.text"; _}; _} -> true
-    | _ -> false
-  in
   object
     inherit [(Location.t * string) list] Ppxlib.Ast_traverse.fold as super
 
@@ -389,7 +276,7 @@ let fold_docstrings =
       | _ -> super#attribute attr docstrings
 
     method! attributes atrs =
-      let atrs = List.filter atrs ~f:doc_attribute in
+      let atrs = List.filter atrs ~f:Ast.Attr.is_doc in
       super#attributes (sort_attributes atrs)
   end
 
