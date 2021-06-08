@@ -131,14 +131,7 @@ module Location = struct
 end
 
 module Longident = struct
-  type t = Longident.t =
-    | Lident of string
-    | Ldot of t * string
-    | Lapply of t * t
-
-  let flatten = Longident.flatten
-
-  let last = Longident.last
+  include Longident
 
   let lident s =
     assert (not (String.contains s '.')) ;

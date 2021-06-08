@@ -88,14 +88,7 @@ module Location : sig
 end
 
 module Longident : sig
-  type t = Longident.t =
-    | Lident of string
-    | Ldot of t * string
-    | Lapply of t * t
-
-  val flatten : t -> string list
-
-  val last : t -> string
+  include module type of Longident
 
   val lident : string -> t
   (** Make a Lident from a dotless string *)
