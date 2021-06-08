@@ -158,34 +158,10 @@ end = struct
     | _ -> (empty, cmts)
 end
 
-let position_to_string = function
-  | `Before -> "before"
-  | `After -> "after"
-  | `Within -> "within"
-
-let add_cmts t ?prev ?next position loc cmts =
-  if not (CmtSet.is_empty cmts) then (
+let add_cmts t position loc cmts =
+  if not (CmtSet.is_empty cmts) then
     let cmtl = CmtSet.to_list cmts in
-    if t.debug then
-      List.iter cmtl ~f:(fun {Cmt.txt= cmt_txt; loc= cmt_loc} ->
-          let string_between (l1 : Location.t) (l2 : Location.t) =
-            match Source.string_between t.source l1.loc_end l2.loc_start with
-            | None -> "swapped"
-            | Some s -> s
-          in
-          let btw_prev =
-            Option.value_map prev ~default:"no prev"
-              ~f:(Fn.flip string_between cmt_loc)
-          in
-          let btw_next =
-            Option.value_map next ~default:"no next"
-              ~f:(string_between cmt_loc)
-          in
-          Caml.Format.eprintf "add %s %a: %a \"%s\" %s \"%s\"@\n%!"
-            (position_to_string position)
-            Location.fmt loc Location.fmt cmt_loc (String.escaped btw_prev)
-            cmt_txt (String.escaped btw_next) ) ;
-    update_cmts t position ~f:(Map.add_exn ~key:loc ~data:cmtl) )
+    update_cmts t position ~f:(Map.add_exn ~key:loc ~data:cmtl)
 
 (** Traverse the location tree from locs, find the deepest location that
     contains each comment, intersperse comments between that location's
@@ -205,19 +181,17 @@ let rec place t loc_tree ?prev_loc locs cmts =
             let after_prev, before_curr =
               CmtSet.partition t.source ~prev:prev_loc ~next:curr_loc before
             in
-            add_cmts t `After ~prev:prev_loc ~next:curr_loc prev_loc
-              after_prev ;
+            add_cmts t `After prev_loc after_prev ;
             before_curr
       in
-      add_cmts t `Before ?prev:prev_loc ~next:curr_loc curr_loc before_curr ;
+      add_cmts t `Before curr_loc before_curr ;
       ( match Loc_tree.children loc_tree curr_loc with
-      | [] ->
-          add_cmts t `Within ?prev:prev_loc ~next:curr_loc curr_loc within
+      | [] -> add_cmts t `Within curr_loc within
       | children -> place t loc_tree children within ) ;
       place t loc_tree ~prev_loc:curr_loc next_locs after
   | [] -> (
     match prev_loc with
-    | Some prev_loc -> add_cmts t `After ~prev:prev_loc prev_loc cmts
+    | Some prev_loc -> add_cmts t `After prev_loc cmts
     | None ->
         if t.debug then
           List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
@@ -311,26 +285,30 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; remove= true }
   in
   let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
-  if debug then (
-    Format.eprintf "\nComments:\n%!" ;
-    List.iter comments ~f:(fun {Cmt.txt; loc} ->
-        Caml.Format.eprintf "%a %s %s@\n%!" Location.fmt loc txt
-          (if Source.ends_line source loc then "eol" else "") ) ) ;
   if not (List.is_empty comments) then (
     let loc_tree, locs = Loc_tree.of_ast fragment asts source in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
             update_remaining t ~f:(fun s -> Set.add s loc) ) ;
-    if debug then (
-      let dump fs lt = Fmt.eval fs (Loc_tree.dump lt) in
-      Format.eprintf "\nLoc_tree:\n%!" ;
-      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ;
     let locs = Loc_tree.roots loc_tree in
     let cmts = CmtSet.of_list comments in
-    match locs with
-    | [] -> add_cmts t `After ~prev:Location.none Location.none cmts
+    ( match locs with
+    | [] -> add_cmts t `After Location.none cmts
     | _ -> place t loc_tree locs cmts ) ;
+    if debug then (
+      let dump fs lt =
+        let get_cmts pos loc =
+          let cmts = find_at_position t loc pos in
+          Option.map cmts ~f:(fun cmts -> List.map cmts ~f:Cmt.txt)
+        in
+        let cmts_before = get_cmts `Before in
+        let cmts_within = get_cmts `Within in
+        let cmts_after = get_cmts `After in
+        Fmt.eval fs (Loc_tree.dump ~cmts_before ~cmts_within ~cmts_after lt)
+      in
+      Format.eprintf "\nLoc_tree:\n%!" ;
+      Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ) ;
   t
 
 let preserve fmt_x t =

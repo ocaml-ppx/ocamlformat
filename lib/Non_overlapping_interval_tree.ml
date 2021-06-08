@@ -30,7 +30,12 @@ module type S = sig
 
   val children : t -> itv -> itv list
 
-  val dump : t -> Fmt.t
+  val dump :
+       ?cmts_before:(itv -> string list option)
+    -> ?cmts_within:(itv -> string list option)
+    -> ?cmts_after:(itv -> string list option)
+    -> t
+    -> Fmt.t
   (** Debug: dump debug representation of tree. *)
 end
 
@@ -95,14 +100,25 @@ module Make (Itv : IN) = struct
 
   let children {map; _} elt = Option.value ~default:[] (Map.find map elt)
 
-  let dump tree =
+  let dump ?cmts_before ?cmts_within ?cmts_after tree =
     let open Fmt in
+    let dump_cmts lbl cmts loc =
+      opt cmts (fun find ->
+          opt (find loc) (fun cmts ->
+              break 1 8
+              $ list cmts "@;<1 8>" (fun k ->
+                    str lbl $ str ": " $ wrap "(*" "*)" (str k) ) ) )
+    in
     let rec dump_ tree roots =
       vbox 0
         (list roots "@," (fun root ->
              let children = children tree root in
              vbox 1
-               ( str (Sexp.to_string_hum (Itv.comparator.sexp_of_t root))
+               ( vbox 0
+                   ( str (Sexp.to_string_hum (Itv.comparator.sexp_of_t root))
+                   $ dump_cmts "before" cmts_before root
+                   $ dump_cmts "within" cmts_within root
+                   $ dump_cmts "after" cmts_after root )
                $ wrap_if
                    (not (List.is_empty children))
                    "@,{" " }" (dump_ tree children) ) ) )

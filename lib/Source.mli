@@ -25,8 +25,6 @@ val empty_line_before : t -> Location.t -> bool
 
 val empty_line_after : t -> Location.t -> bool
 
-val string_between : t -> Lexing.position -> Lexing.position -> string option
-
 val tokens_between :
      t
   -> filter:(Parser.token -> bool)
