@@ -4,3 +4,14 @@ module List : sig
   val find_map : ('a -> 'b option) -> 'a list -> 'b option
   (** @since ocaml-4.10 *)
 end
+
+module Misc : sig
+  include module type of Misc
+
+  module Color : sig
+    include module type of Color
+
+    val default_setting : setting
+    (** @since ocaml-4.09 *)
+  end
+end

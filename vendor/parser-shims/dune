@@ -1,2 +1,3 @@
 (library
- (name parser_shims))
+ (name parser_shims)
+ (libraries compiler-libs.common))

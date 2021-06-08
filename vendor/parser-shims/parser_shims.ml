@@ -9,3 +9,13 @@ module List = struct
         | None -> find_map f l
         end
 end
+
+module Misc = struct
+  include Misc
+
+  module Color = struct
+    include Color
+
+    let default_setting = Auto
+  end
+end
