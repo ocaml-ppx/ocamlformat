@@ -47,7 +47,7 @@ module Position = struct
 
   let distance p1 p2 = p2.pos_cnum - p1.pos_cnum
 
-  let to_point x = Odoc_model.Location_.{line= x.pos_lnum; column= column x}
+  let to_point x = Odoc_parser.Location.{line= x.pos_lnum; column= column x}
 end
 
 module Location = struct
@@ -111,7 +111,7 @@ module Location = struct
     List.reduce_exn (loc :: stack) ~f:min
 
   let to_span loc =
-    let open Odoc_model.Location_ in
+    let open Odoc_parser.Location in
     { file= loc.loc_start.pos_fname
     ; start= Position.to_point loc.loc_start
     ; end_= Position.to_point loc.loc_end }

@@ -11,7 +11,7 @@
 
 open Fmt
 open Odoc_parser.Ast
-module Location_ = Odoc_model.Location_
+module Location_ = Odoc_parser.Location
 
 type conf = {fmt_code: string -> (Fmt.t, unit) Result.t}
 
