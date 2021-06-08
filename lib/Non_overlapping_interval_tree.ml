@@ -105,15 +105,16 @@ module Make (Itv : IN) = struct
     let dump_cmts lbl cmts loc =
       opt cmts (fun find ->
           opt (find loc) (fun cmts ->
-              list cmts "@ " (fun k ->
-                  fmt "@;" $ str lbl $ str ": " $ wrap "(*" "*)" (str k) ) ) )
+              break 1 8
+              $ list cmts "@;<1 8>" (fun k ->
+                    str lbl $ str ": " $ wrap "(*" "*)" (str k) ) ) )
     in
     let rec dump_ tree roots =
       vbox 0
         (list roots "@," (fun root ->
              let children = children tree root in
              vbox 1
-               ( hvbox 1
+               ( vbox 0
                    ( str (Sexp.to_string_hum (Itv.comparator.sexp_of_t root))
                    $ dump_cmts "before" cmts_before root
                    $ dump_cmts "within" cmts_within root
