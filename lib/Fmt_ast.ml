@@ -3361,11 +3361,15 @@ and fmt_functor_arg c {loc; txt= arg} =
   match arg with
   | Sugar.Unit -> Cmts.fmt c loc (str "()")
   | Sugar.Named (name, mt) ->
+      let mty = fmt_module_type c mt in
       Cmts.fmt c loc
         (wrap "(" ")"
            (hovbox 0
-              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ : ")
-              $ compose_module (fmt_module_type c mt) ~f:Fn.id ) ) )
+              ( hovbox 0 (fmt_str_loc_opt c name $ fmt "@ :")
+              $
+              match mty.pro with
+              | Some _ -> str " " $ compose_module mty ~f:Fn.id
+              | None -> break 1 2 $ compose_module mty ~f:(hvbox 0) ) ) )
 
 and fmt_module_type c ({ast= mty; _} as xmty) =
   let ctx = Mty mty in
@@ -3396,21 +3400,26 @@ and fmt_module_type c ({ast= mty; _} as xmty) =
   | Pmty_functor _ ->
       let for_functor_kw = true in
       let xargs, mt2 = sugar_pmty_functor c ~for_functor_kw xmty in
+      let doc, atrs = doc_atrs pmty_attributes in
       let blk = fmt_module_type c mt2 in
-      { blk with
-        pro=
-          Some
-            ( str "functor"
-            $ fmt_attributes c ~pre:Blank pmty_attributes
-            $ fmt "@;<1 2>"
-            $ list xargs "@;<1 2>" (fmt_functor_arg c)
-            $ fmt "@;<1 2>->"
-            $ opt blk.pro (fun pro -> str " " $ pro) )
-      ; epi= Some (fmt_opt blk.epi $ Cmts.fmt_after c pmty_loc)
-      ; psp=
-          fmt_or_k (Option.is_none blk.pro)
-            (fits_breaks " " ~hint:(1, 2) "")
-            blk.psp }
+      { empty with
+        opn= open_hvbox 0
+      ; cls= close_box
+      ; bdy=
+          Cmts.fmt c pmty_loc
+            ( fmt_docstring c ~epi:(fmt "@,") doc
+            $ hovbox 0
+                ( hovbox 0
+                    ( hvbox 2
+                        ( str "functor"
+                        $ fmt_attributes c ~pre:Blank atrs
+                        $ fmt "@;"
+                        $ list xargs "@;" (fmt_functor_arg c)
+                        $ fmt "@;->" )
+                    $ opt blk.pro (fun pro -> fmt "@ " $ pro) )
+                $ break (if Option.is_none blk.pro then 1 else 0) 2
+                $ blk.opn $ blk.bdy $ blk.esp $ blk.cls )
+            $ fmt_opt blk.epi ) }
   | Pmty_with _ ->
       let wcs, mt = Sugar.mod_with (sub_mty ~ctx mty) in
       let fmt_cstr ~first ~last:_ wc =
@@ -3629,45 +3638,55 @@ and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
         in
         {loc; txt} )
   in
+  let single_line_mty =
+    Option.for_all xmty ~f:(fun x -> Mty.is_simple x.ast)
+  in
   let blk_t =
     Option.value_map xmty ~default:empty ~f:(fun xmty ->
         let blk = fmt_module_type c xmty in
         { blk with
           pro=
-            Some (str " " $ str eqty $ opt blk.pro (fun pro -> str " " $ pro))
+            Some
+              ( str " " $ str eqty
+              $ opt blk.pro (fun pro ->
+                    fmt_or single_line_mty "@;<1 2>" " " $ pro ) )
         ; psp= fmt_if (Option.is_none blk.pro) "@;<1 2>" $ blk.psp } )
   in
   let blk_b = Option.value_map xbody ~default:empty ~f:(fmt_module_expr c) in
   let box_t = wrap_k blk_t.opn blk_t.cls in
   let box_b = wrap_k blk_b.opn blk_b.cls in
-  let fmt_arg ~prev:_ arg_mtyp ~next =
-    let maybe_box k =
+  let fmt_arg ~prev arg_mtyp ~next =
+    let maybe_box =
       match arg_mtyp.txt with
-      | `Named (_, {pro= None; _}) -> hvbox 0 k
-      | _ -> k
+      | `Named (_, {pro= None; _}) -> true
+      | _ -> Option.is_some prev || Option.is_some next
     in
     fmt "@ "
-    $ maybe_box
+    $ hvbox_if maybe_box 0
         (Cmts.fmt c arg_mtyp.loc
            (wrap "(" ")"
               ( match arg_mtyp.txt with
               | `Unit -> noop
               | `Named (name, {pro; psp; bdy; cls; esp; epi; opn= _}) ->
                   (* TODO: handle opn *)
-                  fmt_str_loc_opt c name $ str " : "
-                  $ opt pro (fun pro -> pro $ close_box)
+                  fmt_str_loc_opt c name $ fmt " :"
+                  $ ( match pro with
+                    | Some pro ->
+                        str " " $ pro
+                        $ fmt_if_k (Option.is_none next) close_box
+                    | None -> break 1 2 )
                   $ psp $ bdy
                   $ fmt_if_k (Option.is_some pro) cls
                   $ esp
                   $ ( match next with
                     | Some {txt= `Named (_, {opn; pro= Some _; _}); _} ->
-                        opn $ open_hvbox 0
+                        opn $ fmt_if_k (not maybe_box) (open_hvbox 0)
                     | _ -> noop )
                   $ fmt_opt epi ) ) )
   in
   let single_line =
     Option.for_all xbody ~f:(fun x -> Mod.is_simple x.ast)
-    && Option.for_all xmty ~f:(fun x -> Mty.is_simple x.ast)
+    && single_line_mty
     && List.for_all xargs ~f:(function {txt= Unit; _} -> true | _ -> false)
   in
   let compact =

@@ -72,16 +72,17 @@ module type S = sig
   exception E
 end
 
-module type S' = functor
-  (A : A)
-  (B : sig
-     type t
-   end)
-  (Cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-   : sig
-     type t
-   end)
-  -> S with type t = B.t
+module type S' =
+  functor
+    (A : A)
+    (B : sig
+       type t
+     end)
+    (Cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+     : sig
+       type t
+     end)
+    -> S with type t = B.t
 
 module M : sig
   include (* foo *) module type of K

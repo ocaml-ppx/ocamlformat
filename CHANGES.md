@@ -22,6 +22,7 @@
 - Fix spacing between recursive module bindings and recursive module declarations (#2217, @gpetiot)
 - ocamlformat-rpc: use binary mode for stdin/stdout (#2218, @rgrinberg)
 - Fix interpretation of glob pattern in `.ocamlformat-ignore` under Windows (#2206, @nojb)
+- Fix misaligned higher-order functor parameters (#1768, @gpetiot)
 
 ### Changes
 

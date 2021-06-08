@@ -116,3 +116,43 @@ let _ =
         N with type t = t (* ff *) )
   in
   ()
+
+module F1
+    (G : functor (_ : T) -> T)
+    (A : sig
+      val x : int
+    end) =
+struct end
+
+module F2
+    (G :
+      functor (_ : T) ->
+        T_________________________________________________________________________)
+    (A : sig
+      val x : int
+    end) =
+struct end
+
+module F3
+    (G :
+      functor
+        (_ : T____________________________________________)
+        (_ : T____________________________________________)
+        -> T)
+    (A : sig
+      val x : int
+    end) =
+struct end
+
+module M = struct
+  module M (F : sig end) (X : sig end) = struct end
+end
+
+module M = struct
+  module F
+      (X : sig
+        module type T
+      end)
+      (Res : X.T) =
+  Res
+  end

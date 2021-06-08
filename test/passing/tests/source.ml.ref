@@ -183,11 +183,9 @@ type t = [%foo: ((module M)[@foo])]
 module M = (functor [@foo] (M : S) -> (val x) [@foo] (struct end [@foo]))
 
 (* Module type expression *)
-module type S = functor [@foo]
-  (M : S)
-  -> functor
-  (_ : (module type of M) [@foo])
-  -> sig end [@foo]
+module type S =
+  functor [@foo] (M : S) ->
+    functor (_ : (module type of M) [@foo]) -> sig end [@foo]
 
 module type S = functor (_ : S) (_ : S) -> S
 
@@ -2534,11 +2532,13 @@ let f : type a o. ((a -> o) -> o) t -> (a -> o) -> o =
 
 type (_, _) t = A : ('a, 'a) t | B : string -> ('a, 'b) t
 
-module M (A : sig
-  module type T
-end) (B : sig
-  module type T
-end) =
+module M
+    (A : sig
+      module type T
+    end)
+    (B : sig
+      module type T
+    end) =
 struct
   let f : ((module A.T), (module B.T)) t -> string = function B s -> s
 end
@@ -4507,11 +4507,12 @@ let f (module M : S with type t = int) = {M.a= 0}
 
 let flag = ref false
 
-module F (S : sig
-  module type T
-end)
-(A : S.T)
-(B : S.T) =
+module F
+    (S : sig
+      module type T
+    end)
+    (A : S.T)
+    (B : S.T) =
 struct
   module X = (val if !flag then (module A) else (module B) : S.T)
 end
@@ -4560,8 +4561,9 @@ module type PR6513 = sig
     type uri
   end
 
-  module Make : functor (Html5 : T with type 'a wrap = 'a) ->
-    S with type u = < foo: Html5.uri >
+  module Make :
+    functor (Html5 : T with type 'a wrap = 'a) ->
+      S with type u = < foo: Html5.uri >
 end
 
 (* Requires -package tyxml module type PR6513_orig = sig module type S = sig
@@ -4755,11 +4757,13 @@ let _ = f (module A_alias : S with type t = (module A.A_S))
 
 let _ = f (module A_alias) (* doesn't type either *)
 
-module Foo (Bar : sig
-  type a = private [> `A]
-end) (Baz : module type of struct
-  include Bar
-end) =
+module Foo
+    (Bar : sig
+      type a = private [> `A]
+    end)
+    (Baz : module type of struct
+      include Bar
+    end) =
 struct end
 
 module Bazoinks = struct
@@ -5184,11 +5188,12 @@ module F (X : sig end) = struct
   module N' = N
 end
 
-module G : functor (X : sig end) -> sig
-  module N' : sig
-    val x : int
-  end
-end =
+module G :
+  functor (X : sig end) -> sig
+    module N' : sig
+      val x : int
+    end
+  end =
   F
 
 module M5 = G (struct end) ;;
@@ -5360,11 +5365,13 @@ module M = struct
   type t = Y.t
 end
 
-module F (Y : sig
-  type t
-end) (M : sig
-  type t = Y.t
-end) =
+module F
+    (Y : sig
+      type t
+    end)
+    (M : sig
+      type t = Y.t
+    end) =
 struct end
 
 module G = F (M.Y)
@@ -6938,9 +6945,10 @@ end
 
 type 'a tree = E | N of 'a tree * 'a * 'a tree
 
-module Bootstrap2 (MakeDiet : functor (X : ORD) ->
-  SET with type t = X.t tree and type elt = X.t) : SET with type elt = int =
-struct
+module Bootstrap2
+    (MakeDiet :
+      functor (X : ORD) -> SET with type t = X.t tree and type elt = X.t) :
+  SET with type elt = int = struct
   type elt = int
 
   module rec Elt : sig
@@ -7361,9 +7369,9 @@ module type HEAP = sig
   val deleteMin : heap -> heap
 end
 
-module Bootstrap (MakeH : functor (Element : ORDERED) ->
-  HEAP with module Elem = Element)
-(Element : ORDERED) : HEAP with module Elem = Element = struct
+module Bootstrap
+    (MakeH : functor (Element : ORDERED) -> HEAP with module Elem = Element)
+    (Element : ORDERED) : HEAP with module Elem = Element = struct
   module Elem = Element
 
   module rec BE : sig
@@ -8048,8 +8056,9 @@ module type BARECODE = sig
 end
 
 module USERCODE (X : TYPEVIEW) = struct
-  module type F = functor (C : CORE with type V.usert = X.combined) ->
-    BARECODE with type state := C.V.state
+  module type F =
+    functor (C : CORE with type V.usert = X.combined) ->
+      BARECODE with type state := C.V.state
 end
 
 module Weapon = struct

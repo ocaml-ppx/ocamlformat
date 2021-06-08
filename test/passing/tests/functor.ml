@@ -12,14 +12,12 @@ module type M = functor (S : S) (T : T) -> U
 
 module type M = functor (S : S) () -> sig end
 
-module type M = functor
-  (SSSSS : SSSSSSSSSSSSSS)
-  (TTTTT : TTTTTTTTTTTTTTTT)
-  -> sig
-  val t1 : a
+module type M =
+  functor (SSSSS : SSSSSSSSSSSSSS) (TTTTT : TTTTTTTTTTTTTTTT) -> sig
+    val t1 : a
 
-  val t2 : b
-end
+    val t2 : b
+  end
 
 module M : functor () -> sig end = functor () -> struct end
 
@@ -60,21 +58,23 @@ module type Module_type_fail = sig
   include S
 end
 
-module type KV_MAKER = functor (G : Irmin_git.G) (C : Irmin.Contents.S) ->
-  S
-    with type key = string list
-     and type step = string
-     and type contents = C.t
-     and type branch = string
-     and module Git = G
+module type KV_MAKER =
+  functor (G : Irmin_git.G) (C : Irmin.Contents.S) ->
+    S
+      with type key = string list
+       and type step = string
+       and type contents = C.t
+       and type branch = string
+       and module Git = G
 
 module Make
     (TT : TableFormat.TABLES)
     (IT : InspectionTableFormat.TABLES with type 'a lr1state = int)
-    (ET : EngineTypes.TABLE
-            with type terminal = int
-             and type nonterminal = int
-             and type semantic_value = Obj.t)
+    (ET :
+      EngineTypes.TABLE
+        with type terminal = int
+         and type nonterminal = int
+         and type semantic_value = Obj.t)
     (E : sig
       type 'a env = (ET.state, ET.semantic_value, ET.token) EngineTypes.env
     end) =
@@ -88,3 +88,44 @@ module M = functor (_ : S) -> struct end
 module M (_ : S) = struct end
 
 module M : functor (_ : S) -> S' = functor (_ : S) -> struct end
+
+module type Bootstrap =
+  functor
+    (MakeH :
+       functor (Element : ORDERED) -> sig
+         module Elem : sig
+           type t = Element.t
+
+           val eq : t -> t -> bool
+         end
+
+         val eq : t -> t -> bool
+       end)
+    (Element : ORDERED)
+    -> sig
+    val eq : t -> t -> bool
+  end
+
+module type Compat =
+  functor
+    (_ : sig
+       val equal :
+            Types.constructor_description
+         -> Types.constructor_description
+         -> bool
+     end)
+    -> sig
+    val compat : pattern -> pattern -> bool
+  end
+
+module M : sig
+  module F :
+    functor
+      (X : sig
+         type x
+       end)
+      (X : sig
+         type y
+       end)
+      -> sig end
+end = struct end
