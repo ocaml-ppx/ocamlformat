@@ -30,6 +30,8 @@
 
   + Remove double parens around a functor in a module application (#1681, @gpetiot)
 
+  + Improve breaking of comments to avoid violating the margin (#1676, @jberdine)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
