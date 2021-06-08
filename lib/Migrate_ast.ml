@@ -9,8 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-module Ast_helper = Ast_helper
-
 module Asttypes = struct
   include Asttypes
 
