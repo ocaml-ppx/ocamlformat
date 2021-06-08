@@ -14,4 +14,11 @@ module Misc : sig
     val default_setting : setting
     (** @since ocaml-4.09 *)
   end
+
+  module Error_style : sig
+    include module type of Error_style
+
+    val default_setting : setting
+    (** @since ocaml-4.09 *)
+  end
 end

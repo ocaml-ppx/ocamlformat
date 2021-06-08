@@ -18,4 +18,10 @@ module Misc = struct
 
     let default_setting = Auto
   end
+
+  module Error_style = struct
+    include Error_style
+
+    let default_setting = Contextual
+  end
 end
