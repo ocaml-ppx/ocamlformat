@@ -1909,6 +1909,9 @@ end = struct
     Mod.has_trailing_attributes m
     ||
     match (ctx, m.pmod_desc) with
+    (* The RHS of an application is always parenthesized already. *)
+    | Mod {pmod_desc= Pmod_apply (_, x); _}, Pmod_functor _ when m == x ->
+        false
     | Mod {pmod_desc= Pmod_apply _; _}, Pmod_functor _ -> true
     | _ -> false
 

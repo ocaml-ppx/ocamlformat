@@ -88,3 +88,11 @@ module M = functor (_ : S) -> struct end
 module M (_ : S) = struct end
 
 module M : functor (_ : S) -> S' = functor (_ : S) -> struct end
+
+module _ = F (functor (X : T) -> X)
+module _ =
+  F
+    (functor
+       (X____________________________ : T)
+       ->
+       X____________________________)
