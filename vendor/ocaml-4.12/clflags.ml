@@ -25,11 +25,7 @@ let applicative_functors = ref true     (* -no-app-funct *)
 let for_package = ref (None: string option) (* -for-pack *)
 let transparent_modules = ref false     (* -trans-mod *)
 let locations = ref true                (* -d(no-)locations *)
-
-let unsafe_string =
-  if Config.safe_string then ref false
-  else ref (not Config.default_safe_string)
-                                   (* -safe-string / -unsafe-string *)
+let unsafe_string = ref false           (* -safe-string / -unsafe-string *)
 let color = ref None (* -color *)
 let error_style = ref None (* -error-style *)
 let unboxed_types = ref false
