@@ -521,7 +521,8 @@ let foooooooooooo =
 
 let foooooooooooo =
   { foooooooooooooo with
-    (* foooooooooooooooo fooooooooooooooooooooooooo foooooooooooooooooooooo *)
+    (* foooooooooooooooo fooooooooooooooooooooooooo
+       foooooooooooooooooooooo *)
     fooooooooooooooooooooooooooooo= fooooooooooooo
   ; fooooooooooooo= foooooooooooooo }
 

@@ -121,9 +121,9 @@ let char c = with_pp (fun fs -> Format.pp_print_char fs c)
 let utf8_length s =
   Uuseg_string.fold_utf_8 `Grapheme_cluster (fun n _ -> n + 1) 0 s
 
-let str s =
-  with_pp (fun fs ->
-      if not (String.is_empty s) then Format.pp_print_as fs (utf8_length s) s )
+let str_as n s = with_pp (fun fs -> Format.pp_print_as fs n s)
+
+let str s = if String.is_empty s then noop else str_as (utf8_length s) s
 
 let sp = function
   | Blank -> char ' '
@@ -322,7 +322,7 @@ and hovbox_if ?name cnd n = wrap_if_k cnd (open_hovbox ?name n) close_box
 
 (** Text filling --------------------------------------------------------*)
 
-let fill_text ?epi text =
+let fill_text ?(epi = "") text =
   assert (not (String.is_empty text)) ;
   let fmt_line line =
     let words =
@@ -337,19 +337,21 @@ let fill_text ?epi text =
       ~equal:(fun x y -> String.is_empty x && String.is_empty y)
       (String.split (String.rstrip text) ~on:'\n')
   in
-  fmt_if (String.starts_with_whitespace text) " "
-  $ hovbox 0
-      ( hvbox 0
-          (hovbox 0
-             (list_pn lines (fun ~prev:_ curr ~next ->
-                  fmt_line curr
-                  $
-                  match next with
-                  | Some str when String.for_all str ~f:Char.is_whitespace ->
-                      close_box $ fmt "\n@," $ open_hovbox 0
-                  | Some _ when not (String.is_empty curr) -> fmt "@ "
-                  | _ -> noop ) ) )
-      $ fmt_if
-          (String.length text > 1 && String.ends_with_whitespace text)
-          " "
-      $ opt epi Fn.id )
+  let pro = if String.starts_with_whitespace text then " " else "" in
+  let epi =
+    if String.length text > 1 && String.ends_with_whitespace text then
+      " " ^ epi
+    else epi
+  in
+  str pro
+  $ hvbox 0
+      (hovbox 0
+         ( list_pn lines (fun ~prev:_ curr ~next ->
+               fmt_line curr
+               $
+               match next with
+               | Some str when String.for_all str ~f:Char.is_whitespace ->
+                   close_box $ fmt "\n@," $ open_hovbox 0
+               | Some _ when not (String.is_empty curr) -> fmt "@ "
+               | _ -> noop )
+         $ str epi ) )

@@ -38,9 +38,11 @@ module Cmts = struct
   let fmt c ?pro ?epi ?eol ?adj loc =
     (* remove the before comments from the map first *)
     let before = fmt_before c ?pro ?epi ?eol ?adj loc in
-    (* remove the within comments from the map by accepting the continuation *)
+    (* remove the within comments from the map by accepting the
+       continuation *)
     fun inner ->
-      (* delay the after comments until the within comments have been removed *)
+      (* delay the after comments until the within comments have been
+         removed *)
       let after = fmt_after c ?pro ?epi loc in
       let open Fmt in
       before $ inner $ after
@@ -1809,7 +1811,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         when List.for_all rev_e1N ~f:(fun (_, eI) ->
                  is_simple c.conf (fun _ -> 0) (sub_exp ~ctx eI) ) ->
           let e1N = List.rev rev_e1N in
-          (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
+          (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is
+             important *)
           let cmts_before = Cmts.fmt_before c pexp_loc in
           let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx eN1) in
           let fmt_cstr, xbody = type_constr_and_body c xbody in

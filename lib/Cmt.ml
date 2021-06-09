@@ -147,8 +147,8 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
       | [] -> assert false
       | [""] -> assert false
       | [""; ""] -> str "(* *)"
-      | [text] -> str "(*" $ fill_text text ~epi:(str "*)")
-      | [text; ""] -> str "(*" $ fill_text text ~epi:(str " *)")
+      | [text] -> str "(*" $ fill_text text ~epi:"*)"
+      | [text; ""] -> str "(*" $ fill_text text ~epi:" *)"
       | asterisk_prefixed_lines ->
           fmt_asterisk_prefixed_lines asterisk_prefixed_lines
   in

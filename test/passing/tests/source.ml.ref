@@ -6321,7 +6321,8 @@ module M : sig
 end = struct
   type refer = {poly: 'a 'b 'c. (('b, 'c) #Classdef.cl2 as 'a)}
 end
-(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c pr3918c.ml *)
+(* ocamlc -c pr3918a.mli pr3918b.mli rm -f pr3918a.cmi ocamlc -c
+   pr3918c.ml *)
 
 open Pr3918b
 
