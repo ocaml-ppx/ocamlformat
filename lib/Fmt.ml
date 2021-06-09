@@ -355,4 +355,4 @@ let fill_text ?(epi = "") text =
                       close_box $ fmt "\n@," $ open_hovbox 0
                   | Some _ when not (String.is_empty curr) -> fmt "@ "
                   | _ -> noop )
-            $ str_as (String.length epi) epi ) ) )
+            $ str epi ) ) )
