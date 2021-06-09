@@ -28,6 +28,8 @@
 
   + Consistently format comments attached to let-and bindings located at toplevel (#1663, @gpetiot)
 
+  + Remove double parens around a functor in a module application (#1681, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)

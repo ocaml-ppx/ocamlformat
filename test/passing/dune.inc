@@ -61,6 +61,20 @@
 
 (rule
  (deps tests/.ocamlformat )
+ (enabled_if (>= %{ocaml_version} 4.10.0))
+ (package ocamlformat)
+ (action
+   (with-outputs-to apply_functor.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/apply_functor.ml}))))
+
+(rule
+ (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.10.0))
+ (package ocamlformat)
+ (action (diff tests/apply_functor.ml apply_functor.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
    (with-outputs-to args_grouped.ml.output
