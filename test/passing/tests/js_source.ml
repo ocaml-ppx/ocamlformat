@@ -7571,3 +7571,5 @@ let xxxxxx =
   let%map (* _____________________________
              __________ *)()            = yyyyyyyy in
   { zzzzzzzzzzzzz }
+
+module M = struct end (* comment long enough to force line splitting *) [@ocaml.warning ""]

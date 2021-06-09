@@ -139,6 +139,16 @@ end = struct
             | 0, _ -> `After_prev
             | 1, x when x > 1 && Source.empty_line_after src loc ->
                 `After_prev
+            (* Avoiding non-stabilizing comments in situations like:
+             *
+             * < module M = struct end (* ... *)
+             * <                       [@ocaml.warning ""]
+             * ---
+             * > module M = struct end
+             * > (* ... *) [@ocaml.warning ""]
+             *)
+            | 1, 0 when Source.begins_line ~ignore_spaces:false src loc ->
+                `After_prev
             | _ -> `Before_next
           in
           let prev, next =
