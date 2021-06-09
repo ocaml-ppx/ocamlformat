@@ -2292,6 +2292,10 @@ end = struct
       , {pexp_desc= Pexp_construct _ | Pexp_variant _; _} )
       when e == exp ->
         true
+    | ( Exp {pexp_desc= Pexp_apply (op1, [(_, e)]); _}
+      , {pexp_desc= Pexp_apply (_, [(_, x); _]); _} )
+      when e == exp && Exp.is_prefix op1 && Exp.exposed_left x ->
+        true
     (* Integers without suffixes must be parenthesised on the lhs of an
        indexing operator *)
     | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, left) :: _); _}
