@@ -394,11 +394,23 @@ With ARG, perform this action that many times."
 (defun set-newline-and-indent ()
   (local-set-key (kbd "RET") 'custom_newline-and-indent))
 
-(add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
-(add-hook 'tuareg-mode-hook 'set-newline-and-indent)
+(defun ocamlformat-version ()
+  "Get the version of the installed ocamlformat."
+  (car
+   (split-string
+    (shell-command-to-string (format "%s --version" ocamlformat-command))
+    "-")))
 
-(add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup  t)
-(add-hook 'caml-mode-hook 'set-newline-and-indent)
+(defun enable-indent ()
+  "Whether the indentation feature is enabled."
+  (version<= "0.19.0" (ocamlformat-version)))
+
+(if (enable-indent)
+  (progn
+    (add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
+    (add-hook 'tuareg-mode-hook 'set-newline-and-indent)
+    (add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup  t)
+    (add-hook 'caml-mode-hook 'set-newline-and-indent)))
 
 (provide 'ocamlformat)
 
