@@ -400,7 +400,9 @@ With ARG, perform this action that many times."
    (split-string
     (shell-command-to-string
      (format "%s --version" (shell-quote-argument ocamlformat-command)))
-    "-")))
+    "-"
+    t
+    split-string-default-separators)))
 
 (defun enable-indent ()
   "Whether the indentation feature is enabled."
