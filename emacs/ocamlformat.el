@@ -398,7 +398,8 @@ With ARG, perform this action that many times."
   "Get the version of the installed ocamlformat."
   (car
    (split-string
-    (shell-command-to-string (format "%s --version" ocamlformat-command))
+    (shell-command-to-string
+     (format "%s --version" (shell-quote-argument ocamlformat-command)))
     "-")))
 
 (defun enable-indent ()
