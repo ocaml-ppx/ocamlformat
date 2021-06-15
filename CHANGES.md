@@ -40,10 +40,10 @@
 
 #### New features
 
-  + Emacs integration:
+  + Emacs integration (disabled for ocamlformat < 0.19.0):
     - Indent a line or a region with ocamlformat when pressing <TAB>
     - Break the line and reindent the cursor when pressing <ENTER>
-  (#1639, @gpetiot)
+  (#1639, #1685, @gpetiot)
 
 ### 0.18.0 (2021-03-30)
 
