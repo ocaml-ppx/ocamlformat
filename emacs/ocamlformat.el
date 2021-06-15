@@ -408,12 +408,11 @@ With ARG, perform this action that many times."
   "Whether the indentation feature is enabled."
   (version<= "0.19.0" (ocamlformat-version)))
 
-(if (enable-indent)
-  (progn
-    (add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
-    (add-hook 'tuareg-mode-hook 'set-newline-and-indent)
-    (add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup  t)
-    (add-hook 'caml-mode-hook 'set-newline-and-indent)))
+(when (enable-indent)
+  (add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
+  (add-hook 'tuareg-mode-hook 'set-newline-and-indent)
+  (add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup  t)
+  (add-hook 'caml-mode-hook 'set-newline-and-indent))
 
 (provide 'ocamlformat)
 
