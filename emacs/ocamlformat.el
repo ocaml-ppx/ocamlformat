@@ -389,7 +389,7 @@ With ARG, perform this action that many times."
     (newline nil t)
     (insert "x")
     (ocamlformat-line)
-    (delete-backward-char 1 nil)))
+    (delete-char -1)))
 
 (defun ocamlformat-set-newline-and-indent ()
   "Bind RET to `ocamlformat-newline-and-indent'."
