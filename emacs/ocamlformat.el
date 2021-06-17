@@ -367,11 +367,16 @@ is nil."
   (interactive nil)
   (ocamlformat-region (point) (point)))
 
+(defun ocamlformat--enable-indent ()
+  "Whether the indentation feature is enabled."
+  (version<= "0.19.0" (ocamlformat-version)))
+
 ;;;###autoload
 (defun ocamlformat-setup-indent ()
   (interactive nil)
-  (setq-local indent-line-function #'ocamlformat-line)
-  (setq-local indent-region-function #'ocamlformat-region))
+  (when (ocamlformat--enable-indent)
+    (setq-local indent-line-function #'ocamlformat-line)
+    (setq-local indent-region-function #'ocamlformat-region)))
 
 ;;;###autoload
 (defun ocamlformat-caml-mode-setup ()
@@ -393,7 +398,8 @@ With ARG, perform this action that many times."
 
 (defun ocamlformat-set-newline-and-indent ()
   "Bind RET to `ocamlformat-newline-and-indent'."
-  (local-set-key (kbd "RET") 'ocamlformat-newline-and-indent))
+  (when (ocamlformat--enable-indent)
+    (local-set-key (kbd "RET") 'ocamlformat-newline-and-indent)))
 
 (defun ocamlformat-version ()
   "Get the version of the installed ocamlformat."
@@ -405,15 +411,10 @@ With ARG, perform this action that many times."
     t
     split-string-default-separators)))
 
-(defun ocamlformat--enable-indent ()
-  "Whether the indentation feature is enabled."
-  (version<= "0.19.0" (ocamlformat-version)))
-
-(when (ocamlformat--enable-indent)
-  (add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
-  (add-hook 'tuareg-mode-hook 'ocamlformat-set-newline-and-indent)
-  (add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup  t)
-  (add-hook 'caml-mode-hook 'ocamlformat-set-newline-and-indent))
+(add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
+(add-hook 'tuareg-mode-hook 'ocamlformat-set-newline-and-indent)
+(add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup t)
+(add-hook 'caml-mode-hook 'ocamlformat-set-newline-and-indent)
 
 (provide 'ocamlformat)
 
