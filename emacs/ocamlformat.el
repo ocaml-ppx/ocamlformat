@@ -378,7 +378,7 @@ is nil."
   (ocamlformat-setup-indent)
   (local-unset-key "\t"))  ;; caml-mode rebinds TAB !
 
-(defun custom_newline-and-indent (&optional arg)
+(defun ocamlformat-newline-and-indent (&optional arg)
   "Insert a newline, then indent according to `ocamlformat-line'.
 With ARG, perform this action that many times."
   (interactive "*p")
@@ -391,8 +391,9 @@ With ARG, perform this action that many times."
     (ocamlformat-line)
     (delete-backward-char 1 nil)))
 
-(defun set-newline-and-indent ()
-  (local-set-key (kbd "RET") 'custom_newline-and-indent))
+(defun ocamlformat-set-newline-and-indent ()
+  "Bind RET to `ocamlformat-newline-and-indent'."
+  (local-set-key (kbd "RET") 'ocamlformat-newline-and-indent))
 
 (defun ocamlformat-version ()
   "Get the version of the installed ocamlformat."
@@ -404,15 +405,15 @@ With ARG, perform this action that many times."
     t
     split-string-default-separators)))
 
-(defun enable-indent ()
+(defun ocamlformat--enable-indent ()
   "Whether the indentation feature is enabled."
   (version<= "0.19.0" (ocamlformat-version)))
 
-(when (enable-indent)
+(when (ocamlformat--enable-indent)
   (add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
-  (add-hook 'tuareg-mode-hook 'set-newline-and-indent)
+  (add-hook 'tuareg-mode-hook 'ocamlformat-set-newline-and-indent)
   (add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup  t)
-  (add-hook 'caml-mode-hook 'set-newline-and-indent))
+  (add-hook 'caml-mode-hook 'ocamlformat-set-newline-and-indent))
 
 (provide 'ocamlformat)
 
