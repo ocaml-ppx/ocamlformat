@@ -370,8 +370,8 @@ is nil."
 ;;;###autoload
 (defun ocamlformat-setup-indent ()
   (interactive nil)
-  (set (make-local-variable 'indent-line-function) #'ocamlformat-line)
-  (set (make-local-variable 'indent-region-function) #'ocamlformat-region))
+  (setq-local indent-line-function #'ocamlformat-line)
+  (setq-local indent-region-function #'ocamlformat-region))
 
 ;;;###autoload
 (defun ocamlformat-caml-mode-setup ()
