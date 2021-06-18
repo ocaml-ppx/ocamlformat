@@ -4096,17 +4096,11 @@ and fmt_structure c ctx itms =
     | Pstr_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let items = update_items_config c itms update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
-  hvbox 0 @@ list_pn items
-  @@ fun ~prev:_ (itm, c) ~next ->
-  maybe_disabled c itm.pstr_loc [] (fun c ->
-      fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx itm) )
-  $ opt next (fun (i_n, c_n) ->
-        fmt_or_k
-          (break_between c (Str itm, c.conf) (Str i_n, c_n.conf))
-          (fmt "\n@;<1000 0>")
-          (fmt_or break_struct "@;<1000 0>" "@ ") )
+  let fmt_item c ctx ~prev:_ ~next i =
+    fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
+  in
+  let ast x = Str x in
+  fmt_item_list c ctx update_config ast fmt_item itms
 
 and fmt_type c ?ext ?eq rec_flag decls ctx =
   let fmt_decl ~first ~last decl =
