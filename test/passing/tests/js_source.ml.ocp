@@ -214,20 +214,17 @@ module type S = sig
 end
 
 type t = ..
-type t += A
+type t += A;;
 
-;;
-[%extension_constructor A]
-;;
+[%extension_constructor A];;
 ([%extension_constructor A] : extension_constructor)
 
 module M = struct
   type extension_constructor = int
 end
 
-open M
+open M;;
 
-;;
 ([%extension_constructor A] : extension_constructor)
 
 (* By using two types we can have a recursive constraint *)
@@ -298,14 +295,13 @@ let pop_castable () =
     c
   | [] -> raise Not_found
 ;;
+;;
 
 (* We can add foos and bars to this list, and retrive them *)
 
-;;
 push_castable (new foo)
 ;;
-push_castable (new bar)
-;;
+push_castable (new bar);;
 push_castable (new foo)
 
 let c1 : castable = pop_castable ()
@@ -871,8 +867,8 @@ let f = function
   | ((Some _)[@foooo]) -> 2
   | None -> 3
 ;;
-
 ;;
+
 print_endline
   (string_of_int
      (f
@@ -2557,8 +2553,8 @@ end = struct
 
   let comp = Eq
 end
-
 ;;
+
 match M.comp with
 | Diff -> false
 
@@ -2575,8 +2571,8 @@ end = struct
 
   let comp = Eq
 end
-
 ;;
+
 match M.comp with
 | Diff -> false
 
@@ -2735,8 +2731,8 @@ end = struct
 
   let eq = Y
 end
-
 ;;
+
 f B.eq
 
 type (_, _) t =
@@ -3369,9 +3365,8 @@ let f (module M : S with type t = int) = M.x
 let f (module M : S with type t = 'a) = M.x
 
 (* Error *)
-let f (type a) (module M : S with type t = a) = M.x
+let f (type a) (module M : S with type t = a) = M.x;;
 
-;;
 f
   (module struct
     type t = int
@@ -3379,9 +3374,8 @@ f
     let x = 1
   end)
 
-type 'a s = { s : (module S with type t = 'a) }
+type 'a s = { s : (module S with type t = 'a) };;
 
-;;
 { s =
     (module struct
       type t = int
@@ -3418,19 +3412,18 @@ let m =
     let x = 3
   end : S)
 ;;
-
 ;;
-f m 1 m
 
-;;
+f m 1 m;;
+
 f
   m
   1
   (module struct
     let x = 2
   end)
-
 ;;
+
 let (module M) = m in
 M.x
 
@@ -3447,10 +3440,9 @@ module M = (val m)
 module type S' = sig
   val f : int -> int
 end
+;;
 
 (* Even works with recursion, but must be fully explicit *)
-
-;;
 let rec (module M : S') =
   (module struct
     let f n = if n <= 0 then 1 else n * M.f (n - 1)
@@ -3592,9 +3584,8 @@ let ssmap =
 ;;
 
 let ssmap = (module SSMap : MapT with type key = _ and type data = _ and type map = _)
-let ssmap : (_, _, _) map = (module SSMap)
+let ssmap : (_, _, _) map = (module SSMap);;
 
-;;
 add ssmap
 
 open StdLabels
@@ -4444,22 +4435,20 @@ end
 (* fails *)
 (* PR#5835 *)
 let f ~x = x + 1
-
 ;;
+
 f ?x:0
 
 (* PR#6352 *)
 let foo (f : unit -> unit) = ()
-let g ?x () = ()
+let g ?x () = ();;
 
-;;
 foo
   (();
    g)
+;;
 
 (* PR#5748 *)
-
-;;
 foo (fun ?opt () -> ())
 
 (* fails *)
@@ -4553,23 +4542,18 @@ type t =
   { x : int
   ; y : int
   }
+;;
 
-;;
-{ x = 3; z = 2 }
-;;
-fun { x = 3; z = 2 } -> ()
+{ x = 3; z = 2 };;
+fun { x = 3; z = 2 } -> ();;
 
 (* mixed labels *)
-
-;;
 { x = 3; contents = 2 }
 
 (* private types *)
-type u = private { mutable u : int }
+type u = private { mutable u : int };;
 
-;;
-{ u = 3 }
-;;
+{ u = 3 };;
 fun x -> x.u <- 3
 
 (* Punning and abbreviations *)
@@ -4601,9 +4585,8 @@ let f (r : bar) : foo = { r with z = 3 }
 
 type foo = { x : int }
 
-let r : foo = { ZZZ.x = 2 }
+let r : foo = { ZZZ.x = 2 };;
 
-;;
 (ZZZ.X : int option)
 
 (* PR#5865 *)
@@ -5221,9 +5204,8 @@ module Simple = struct
   end
 end
 
-module EM = Simple.Register (Simple.M)
+module EM = Simple.Register (Simple.M);;
 
-;;
 Simple.M.key
 
 module Simple2 = struct
@@ -5359,26 +5341,24 @@ end
 module F (X : sig end) = struct
   let x = 3
 end
-
 ;;
+
 F.x
 
 (* fail *)
-module C = Char
+module C = Char;;
 
-;;
 C.chr 66
 
-module C' : module type of Char = C
+module C' : module type of Char = C;;
 
-;;
 C'.chr 66
 
 module C3 = struct
   include Char
 end
-
 ;;
+
 C3.chr 66
 
 let f x =
@@ -5395,9 +5375,8 @@ let g x =
 ;;
 
 module F (X : sig end) = Char
-module C4 = F ()
+module C4 = F ();;
 
-;;
 C4.chr 66
 
 module G (X : sig end) = struct
@@ -5414,8 +5393,8 @@ module M' = struct
 
   module N' = N
 end
-
 ;;
+
 M'.N'.x
 
 module M'' : sig
@@ -5424,8 +5403,8 @@ module M'' : sig
   end
 end =
   M'
-
 ;;
+
 M''.N'.x
 
 module M2 = struct
@@ -5439,8 +5418,8 @@ module M3 : sig
 end = struct
   include M'
 end
-
 ;;
+
 M3.N'.x
 
 module M3' : sig
@@ -5449,8 +5428,8 @@ module M3' : sig
   end
 end =
   M2
-
 ;;
+
 M3'.N'.x
 
 module M4 : sig
@@ -5464,8 +5443,8 @@ end = struct
 
   module N' = N
 end
-
 ;;
+
 M4.N'.x
 
 module F (X : sig end) = struct
@@ -5483,9 +5462,8 @@ module G : functor (X : sig end) -> sig
 end =
   F
 
-module M5 = G ()
+module M5 = G ();;
 
-;;
 M5.N'.x
 
 module M = struct
@@ -5508,8 +5486,8 @@ module M1 : sig
   module N' = N
 end =
   M
-
 ;;
+
 M1.N'.x
 
 module M2 : sig
@@ -5525,13 +5503,12 @@ end = (
 
     module N' = N
   end)
-
 ;;
+
 M2.N'.x
 
-open M
+open M;;
 
-;;
 N'.x
 
 module M = struct
@@ -5547,10 +5524,9 @@ module M1 : sig
   module C' = C
 end =
   M
+;;
 
 (* sound, but should probably fail *)
-
-;;
 M1.C'.escaped 'A'
 
 module M2 : sig
@@ -5566,17 +5542,15 @@ end = (
 
     module C' = C
   end)
+;;
 
-;;
-M2.C'.chr 66
-;;
+M2.C'.chr 66;;
 StdLabels.List.map
 
 module Q = Queue
 
-exception QE = Q.Empty
+exception QE = Q.Empty;;
 
-;;
 try Q.pop (Q.create ()) with
 | QE -> "Ok"
 
@@ -5588,9 +5562,8 @@ end = struct
   module C = Complex
 end
 
-module C = Complex
+module C = Complex;;
 
-;;
 C.one.Complex.re
 
 include C
@@ -5639,9 +5612,8 @@ module A = struct
   let empty = S.empty
 end
 
-module A1 = A
+module A1 = A;;
 
-;;
 A1.empty = A.empty
 
 (* PR#3476 *)
@@ -5894,8 +5866,8 @@ module rec R : sig
 end = struct
   module M = M
 end
-
 ;;
+
 R.M.f 3
 
 module rec R : sig
@@ -5903,8 +5875,8 @@ module rec R : sig
 end = struct
   module M = M
 end
-
 ;;
+
 R.M.f 3
 
 open A
@@ -6142,8 +6114,8 @@ class c v =
     initializer print_endline v
     val v = 42
   end
-
 ;;
+
 new c "42"
 
 (* Two hidden v's in the same class! *)
@@ -6158,8 +6130,8 @@ class c (v : int) =
          end)
         "42"
   end
-
 ;;
+
 (new c 42)#v0
 
 class virtual ['a] c =
@@ -6802,8 +6774,8 @@ module M2 : sig
   type t = private < m : int ; .. >
 end =
   M1
-
 ;;
+
 fun (x : M1.t) : M2.t -> x
 
 (* fails *)
@@ -6812,10 +6784,9 @@ module M3 : sig
   type t = private M1.t
 end =
   M1
+;;
 
-;;
-fun x -> (x : M3.t :> M1.t)
-;;
+fun x -> (x : M3.t :> M1.t);;
 fun x -> (x : M3.t :> M.t)
 
 module M4 : sig
@@ -8195,37 +8166,31 @@ module N = struct
 end
 
 open M
-open N
+open N;;
 
-;;
-A
-;;
-B
-;;
+A;;
+B;;
 C
 
 include M
-open M
+open M;;
 
-;;
 C
 
 module L = struct
   type v = V
 end
 
-open L
+open L;;
 
-;;
 V
 
 module L = struct
   type v = V
 end
 
-open L
+open L;;
 
-;;
 V
 
 type t1 = A
@@ -8647,15 +8612,13 @@ external s : int -> int = "s" [@@untagged]
 external t : float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
-let _ = raise Exit 3
+let _ = raise Exit 3;;
 
 (* comment 9644 of PR#6000 *)
 
-;;
 fun b -> if b then format_of_string "x" else "y"
 ;;
-fun b -> if b then "x" else format_of_string "y"
-;;
+fun b -> if b then "x" else format_of_string "y";;
 fun b : (_, _, _) format -> if b then "x" else "y"
 
 (* PR#7135 *)
@@ -8902,22 +8865,18 @@ let f : label choice -> bool = function
 (* warn *)
 exception A
 
-type a = A
+type a = A;;
 
-;;
-A
-;;
-raise A
-;;
-fun (A : a) -> ()
+A;;
+raise A;;
+fun (A : a) -> ();;
 
-;;
 function
 | Not_found -> 1
 | A -> 2
 | _ -> 3
-
 ;;
+
 try raise A with
 | A -> 2
 
@@ -9398,8 +9357,8 @@ end = struct
   type t = ..
   type t += Private_ext
 end
-
 ;;
+
 for i = 10 downto 0 do
   ()
 done
@@ -9562,15 +9521,14 @@ let f = function
   | _ :: ((_ :: _)[@foo]) -> ()
   | _ -> ()
 ;;
-
 ;;
+
 function
 | { contents = (contents[@foo]) } -> ()
-
 ;;
-fun contents -> { contents = contents [@foo] }
 
-;;
+fun contents -> { contents = contents [@foo] };;
+
 ();
 (();
  ()) [@foo]
@@ -9614,8 +9572,8 @@ module Indexop = struct
     let ( .%{} ) = Hashtbl.find
     let ( .%{}<- ) = Hashtbl.add
   end
-
   ;;
+
   let h = Hashtbl.create 17 in
   h.Def.%["one"] <- 1;
   h.Def.%("two") <- 2;
@@ -9635,8 +9593,8 @@ include struct
     end)
   ;;
 end
-
 ;;
+
 if fffffffffffffff aaaaa bb
 then (if b then aaaaaaaaaaaaaaaa ffff)
 else aaaaaaaaaaaa qqqqqqqqqqq

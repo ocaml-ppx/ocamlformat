@@ -4094,7 +4094,14 @@ and fmt_structure c ctx itms =
     | _ -> c
   in
   let fmt_item c ctx ~prev:_ ~next i =
-    fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
+    let semisemi =
+      match next with
+      | Some ({pstr_desc= Pstr_eval _; _}, _) -> true
+      | _ -> false
+    in
+    hvbox_if semisemi 0
+      ( fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
+      $ fmt_if semisemi "@,;;" )
   in
   let ast x = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
@@ -4112,12 +4119,9 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
   in
   vbox 0 (list_fl decls fmt_decl)
 
-and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
+and fmt_structure_item c ~last:last_item ?ext {ctx= _; ast= si} =
   protect c (Str si)
   @@
-  let skip_double_semi =
-    match ctx with Pld (PStr [_]) -> true | _ -> false
-  in
   let ctx = Str si in
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
@@ -4130,8 +4134,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
       $ fmt_attributes c ~key:"@@@" atrs
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
-      fmt_if (not skip_double_semi) ";;@;<1000 0>"
-      $ fmt_docstring c doc
+      fmt_docstring c doc
       $ cbox 0 ~name:"eval" (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_attributes c ~pre:Space ~key:"@@" atrs
   | Pstr_exception extn_constr ->
@@ -4353,7 +4356,7 @@ let fmt_toplevel_directive c dir =
         $ fmt_dir_arg pdira_desc
         $ Cmts.fmt_after c pdira_loc
   in
-  Cmts.fmt c pdir_loc (fmt ";;@\n" $ name $ args)
+  Cmts.fmt c pdir_loc (name $ args)
 
 let flatten_ptop =
   List.concat_map ~f:(function
@@ -4366,10 +4369,19 @@ let fmt_toplevel c ctx itms =
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
     | _ -> c
   in
-  let fmt_item c ctx ~prev:_ ~next = function
-    | `Item i ->
-        fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
-    | `Directive d -> fmt_toplevel_directive c d
+  let fmt_item c ctx ~prev:_ ~next itm =
+    let semisemi =
+      match (itm, next) with
+      | _, Some (`Item {pstr_desc= Pstr_eval _; _}, _) -> true
+      | `Item _, Some (`Directive _, _) -> true
+      | _ -> false
+    in
+    hvbox_if semisemi 0
+      ( ( match itm with
+        | `Item i ->
+            fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
+        | `Directive d -> fmt_toplevel_directive c d )
+      $ fmt_if semisemi "@,;;" )
   in
   let ast x = Tli x in
   fmt_item_list c ctx update_config ast fmt_item itms
