@@ -2602,14 +2602,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
     | {ppat_desc= Ppat_any; ppat_attributes= []; _} -> None
     | s -> Some s
   in
-  let grps = make_groups c fields (fun x -> Clf x) update_config in
+  let fields = update_items_config c fields update_config in
   let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_grp ~first:_ ~last:_ itms =
-    list_fl itms (fun ~first ~last:_ (itm, c) ->
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c itm.pcf_loc []
-          @@ fun c -> fmt_class_field c ctx itm )
-  in
   hvbox 2
     ( hvbox 0
         ( str "object"
@@ -2620,13 +2614,21 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
                   (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
     $ ( match fields with
-      | {pcf_desc= Pcf_attribute a; _} :: _
+      | ({pcf_desc= Pcf_attribute a; _}, _) :: _
         when Option.is_some (fst (doc_atrs [a])) ->
           str "\n"
       | _ -> noop )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-    $ hvbox 0 (fmt_groups c ctx grps fmt_grp) )
-  $ fmt_or (List.is_empty fields) "@ " "@\n"
+    $ hvbox 0
+      @@ list_pn fields (fun ~prev:_ (itm, c) ~next ->
+             maybe_disabled c itm.pcf_loc [] (fun c ->
+                 fmt_class_field c ctx itm )
+             $ opt next (fun (i_n, c_n) ->
+                   fmt_or_k
+                     (break_between c (Clf itm, c.conf) (Clf i_n, c_n.conf))
+                     (fmt "\n@;<1000 0>")
+                     (fmt_or break_struct "@;<1000 0>" "@ ") ) ) )
+  $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
 
 and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
