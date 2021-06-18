@@ -196,20 +196,25 @@ let update_items_config c items update_config =
   let _, items = List.fold_map items ~init:c ~f:with_config in
   items
 
-let fmt_recmodule c ctx items fmt_item ast =
-  let update_config c i = update_config c (Ast.attributes (ast i)) in
+let fmt_item_list c ctx update_config ast fmt_item items =
   let items = update_items_config c items update_config in
   let break_struct = c.conf.break_struct || is_top ctx in
   hvbox 0 @@ list_pn items
   @@ fun ~prev (itm, c) ~next ->
   let loc = Ast.location (ast itm) in
-  maybe_disabled c loc [] (fun c ->
-      fmt_item c ctx ~rec_flag:true ~first:(Option.is_none prev) itm )
+  maybe_disabled c loc [] (fun c -> fmt_item c ctx ~prev ~next itm)
   $ opt next (fun (i_n, c_n) ->
         fmt_or_k
           (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
           (fmt "\n@;<1000 0>")
           (fmt_or break_struct "@;<1000 0>" "@ ") )
+
+let fmt_recmodule c ctx items fmt_item ast =
+  let update_config c i = update_config c (Ast.attributes (ast i)) in
+  let fmt_item c ctx ~prev ~next:_ i =
+    fmt_item c ctx ~rec_flag:true ~first:(Option.is_none prev) i
+  in
+  fmt_item_list c ctx update_config ast fmt_item items
 
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
