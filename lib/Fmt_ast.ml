@@ -2591,8 +2591,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
     | {ppat_desc= Ppat_any; ppat_attributes= []; _} -> None
     | s -> Some s
   in
-  let fields = update_items_config c fields update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
+  let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_field c ctx i in
+  let ast x = Clf x in
   hvbox 2
     ( hvbox 0
         ( str "object"
@@ -2603,20 +2603,12 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
                   (fmt_pattern c ~parens:false (sub_pat ~ctx self_)) ) )
     $ cmts_after_self
     $ ( match fields with
-      | ({pcf_desc= Pcf_attribute a; _}, _) :: _
+      | {pcf_desc= Pcf_attribute a; _} :: _
         when Option.is_some (fst (doc_atrs [a])) ->
           str "\n"
       | _ -> noop )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-    $ hvbox 0
-      @@ list_pn fields (fun ~prev:_ (itm, c) ~next ->
-             maybe_disabled c itm.pcf_loc [] (fun c ->
-                 fmt_class_field c ctx itm )
-             $ opt next (fun (i_n, c_n) ->
-                   fmt_or_k
-                     (break_between c (Clf itm, c.conf) (Clf i_n, c_n.conf))
-                     (fmt "\n@;<1000 0>")
-                     (fmt_or break_struct "@;<1000 0>" "@ ") ) ) )
+    $ fmt_item_list c ctx update_config ast fmt_item fields )
   $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
 
