@@ -4386,22 +4386,13 @@ let fmt_toplevel c ctx itms =
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
     | _ -> c
   in
-  let items = update_items_config c itms update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_item c ~last = function
+  let fmt_item c ctx ~prev:_ ~next = function
     | `Item i ->
-        maybe_disabled c i.pstr_loc []
-        @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx i)
+        fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c d
   in
-  hvbox 0 @@ list_pn items
-  @@ fun ~prev:_ (itm, c) ~next ->
-  fmt_item c ~last:(Option.is_none next) itm
-  $ opt next (fun (i_n, c_n) ->
-        fmt_or_k
-          (break_between c (Tli itm, c.conf) (Tli i_n, c_n.conf))
-          (fmt "\n@;<1000 0>")
-          (fmt_or break_struct "@;<1000 0>" "@ ") )
+  let ast x = Tli x in
+  fmt_item_list c ctx update_config ast fmt_item itms
 
 (** Entry points *)
 
