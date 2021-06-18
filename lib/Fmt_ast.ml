@@ -208,8 +208,7 @@ let fmt_recmodule c ctx items fmt_item ast =
   $ opt next (fun (i_n, c_n) ->
         fmt_or_k
           (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
-          ( fmt_or_k break_struct (str "\n") (fits_breaks "" "\n")
-          $ break 1000 0 )
+          (fmt "\n@;<1000 0>")
           (fmt_or break_struct "@;<1000 0>" "@ ") )
 
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
@@ -3543,13 +3542,16 @@ and fmt_signature c ctx itms =
     | _ -> c
   in
   let items = update_items_config c itms update_config in
+  let break_struct = c.conf.break_struct || is_top ctx in
   hvbox 0 @@ list_pn items
   @@ fun ~prev:_ (itm, c) ~next ->
   maybe_disabled c itm.psig_loc [] (fun c ->
       fmt_signature_item c (sub_sig ~ctx itm) )
   $ opt next (fun (i_n, c_n) ->
-        fmt_if (break_between c (Sig itm, c.conf) (Sig i_n, c_n.conf)) "\n"
-        $ break 1000 0 )
+        fmt_or_k
+          (break_between c (Sig itm, c.conf) (Sig i_n, c_n.conf))
+          (fmt "\n@;<1000 0>")
+          (fmt_or break_struct "@;<1000 0>" "@ ") )
 
 and fmt_signature_item c ?ext {ast= si; _} =
   protect c (Sig si)
