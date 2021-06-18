@@ -4201,7 +4201,7 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         Poly.(c.module_item_spacing = `Compact)
         && Location.is_single_line i.lb_loc c.margin
       in
-      let break (itmI, cI) (itmJ, cJ) =
+      let double_break (itmI, cI) (itmJ, cJ) =
         (not (List.is_empty itmI.Sugar.Let_binding.lb_attrs))
         || (not (List.is_empty itmJ.Sugar.Let_binding.lb_attrs))
         || Cmts.has_after c.cmts itmI.lb_loc
@@ -4209,28 +4209,24 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
         || (not (is_simple (itmI, cI.conf)))
         || not (is_simple (itmJ, cJ.conf))
       in
-      let grps = List.group bindings ~break in
-      let fmt_grp ~first:first_grp ~last:last_grp bindings =
-        list_fl bindings (fun ~first ~last (binding, c) ->
-            let epi =
-              match c.conf.let_binding_spacing with
-              | `Compact -> None
-              | `Sparse when last && last_grp && last_item -> None
-              | `Sparse -> Some (fits_breaks "" "\n")
-              | `Double_semicolon ->
-                  Option.some_if (last && last_grp)
-                    (fits_breaks "" ~hint:(1000, -2) ";;")
-            in
-            let rec_flag =
-              first && first_grp && Asttypes.is_recursive rec_flag
-            in
-            let ext = if first && first_grp then ext else None in
-            fmt_if (not first) "@;<1000 0>"
-            $ fmt_value_binding c ~rec_flag ?ext ctx ?epi binding )
-      in
       hvbox 0 ~name:"value"
-        (list_fl grps (fun ~first ~last grp ->
-             fmt_grp ~first ~last grp $ fmt_if (not last) "\n@;<1000 0>" ) )
+        (list_pn bindings (fun ~prev (binding, c) ~next ->
+             let first = Option.is_none prev in
+             let last = Option.is_none next in
+             let epi =
+               match c.conf.let_binding_spacing with
+               | `Compact -> None
+               | `Sparse when last && last_item -> None
+               | `Sparse -> Some (fits_breaks "" "\n")
+               | `Double_semicolon ->
+                   Option.some_if last (fits_breaks "" ~hint:(1000, -2) ";;")
+             in
+             let rec_flag = first && Asttypes.is_recursive rec_flag in
+             let ext = if first then ext else None in
+             fmt_value_binding c ~rec_flag ?ext ctx ?epi binding
+             $ opt next (fun (i_n, c_n) ->
+                   fmt_if (double_break (binding, c) (i_n, c_n)) "\n"
+                   $ break 1000 0 ) ) )
   | Pstr_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
