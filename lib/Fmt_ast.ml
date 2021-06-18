@@ -196,21 +196,6 @@ let update_items_config c items update_config =
   let _, items = List.fold_map items ~init:c ~f:with_config in
   items
 
-let make_groups c items ast update_config =
-  let items = update_items_config c items update_config in
-  let break (i1, c1) (i2, c2) =
-    break_between c (ast i1, c1.conf) (ast i2, c2.conf)
-  in
-  List.group items ~break
-
-let fmt_groups c ctx grps fmt_grp =
-  let break_struct = c.conf.break_struct || is_top ctx in
-  list_fl grps (fun ~first ~last grp ->
-      fmt_if (break_struct && not first) "\n@;<1000 0>"
-      $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
-      $ fmt_grp ~first ~last grp
-      $ fits_breaks_if ((not break_struct) && not last) "" "\n" )
-
 let fmt_recmodule c ctx items fmt_item ast =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
   let items = update_items_config c items update_config in
@@ -2644,14 +2629,8 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | s -> Some s
   in
   let no_attr typ = List.is_empty typ.ptyp_attributes in
-  let grps = make_groups c fields (fun x -> Ctf x) update_config in
+  let fields = update_items_config c fields update_config in
   let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_grp ~first:_ ~last:_ itms =
-    list_fl itms (fun ~first ~last:_ (itm, c) ->
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c itm.pctf_loc []
-          @@ fun c -> fmt_class_type_field c ctx itm )
-  in
   hvbox 0
     (Params.parens_if parens c.conf
        ( hvbox 2
@@ -2664,13 +2643,22 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                          (fmt_core_type c (sub_typ ~ctx self_)) ) )
            $ cmts_after_self
            $ ( match fields with
-             | {pctf_desc= Pctf_attribute a; _} :: _
+             | ({pctf_desc= Pctf_attribute a; _}, _) :: _
                when Option.is_some (fst (doc_atrs [a])) ->
                  str "\n"
              | _ -> noop )
            $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-           $ hvbox 0 (fmt_groups c ctx grps fmt_grp) )
-       $ fmt_or (List.is_empty fields) "@ " "@\n"
+           $ hvbox 0
+             @@ list_pn fields (fun ~prev:_ (itm, c) ~next ->
+                    maybe_disabled c itm.pctf_loc [] (fun c ->
+                        fmt_class_type_field c ctx itm )
+                    $ opt next (fun (i_n, c_n) ->
+                          fmt_or_k
+                            (break_between c (Ctf itm, c.conf)
+                               (Ctf i_n, c_n.conf) )
+                            (fmt "\n@;<1000 0>")
+                            (fmt_or break_struct "@;<1000 0>" "@ ") ) ) )
+       $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
        $ str "end" ) )
 
 and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
