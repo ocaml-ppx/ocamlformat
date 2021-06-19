@@ -4169,42 +4169,25 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->
-      let bd = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bindings in
-      let with_conf c (b : Sugar.Let_binding.t) =
-        let c = update_config ~quiet:true c b.lb_attrs in
-        (c, (b, c))
+      let update_config c i = update_config ~quiet:true c i.pvb_attributes in
+      let ast x = Vb x in
+      let fmt_item c ctx ~prev ~next b =
+        let first = Option.is_none prev in
+        let last = Option.is_none next in
+        let b = Sugar.Let_binding.of_value_binding c.cmts ~ctx ~first b in
+        let epi =
+          match c.conf.let_binding_spacing with
+          | `Compact -> None
+          | `Sparse when last && last_item -> None
+          | `Sparse -> Some (fits_breaks "" "\n")
+          | `Double_semicolon ->
+              Option.some_if last (fits_breaks "" ~hint:(1000, -2) ";;")
+        in
+        let rec_flag = first && Asttypes.is_recursive rec_flag in
+        let ext = if first then ext else None in
+        fmt_value_binding c ~rec_flag ?ext ctx ?epi b
       in
-      let _, bindings = List.fold_map bd ~init:c ~f:with_conf in
-      let is_simple ((i : Sugar.Let_binding.t), (c : Conf.t)) =
-        Poly.(c.module_item_spacing = `Compact)
-        && Location.is_single_line i.lb_loc c.margin
-      in
-      let double_break (itmI, cI) (itmJ, cJ) =
-        (not (List.is_empty itmI.Sugar.Let_binding.lb_attrs))
-        || (not (List.is_empty itmJ.Sugar.Let_binding.lb_attrs))
-        || Cmts.has_after c.cmts itmI.lb_loc
-        || Cmts.has_before c.cmts itmJ.lb_loc
-        || (not (is_simple (itmI, cI.conf)))
-        || not (is_simple (itmJ, cJ.conf))
-      in
-      hvbox 0 ~name:"value"
-        (list_pn bindings (fun ~prev (binding, c) ~next ->
-             let first = Option.is_none prev in
-             let last = Option.is_none next in
-             let epi =
-               match c.conf.let_binding_spacing with
-               | `Compact -> None
-               | `Sparse when last && last_item -> None
-               | `Sparse -> Some (fits_breaks "" "\n")
-               | `Double_semicolon ->
-                   Option.some_if last (fits_breaks "" ~hint:(1000, -2) ";;")
-             in
-             let rec_flag = first && Asttypes.is_recursive rec_flag in
-             let ext = if first then ext else None in
-             fmt_value_binding c ~rec_flag ?ext ctx ?epi binding
-             $ opt next (fun (i_n, c_n) ->
-                   fmt_if (double_break (binding, c) (i_n, c_n)) "\n"
-                   $ break 1000 0 ) ) )
+      fmt_item_list c ctx update_config ast fmt_item bindings
   | Pstr_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
