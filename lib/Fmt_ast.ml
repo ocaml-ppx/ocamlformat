@@ -58,6 +58,10 @@ module Cmts = struct
         fmt ?pro ?epi ?eol ?adj:None c loc k )
 end
 
+let break_between {source; cmts; _} =
+  Ast.break_between source ~cmts ~has_cmts_before:Cmts.has_before
+    ~has_cmts_after:Cmts.has_after
+
 type block =
   { opn: Fmt.t
   ; pro: Fmt.t option
@@ -184,39 +188,33 @@ let update_config_maybe_disabled_block c loc l f =
   let c = update_config c l in
   maybe_disabled_k c loc l f fmt
 
-let make_groups c items ast update_config =
+let update_items_config c items update_config =
   let with_config c i =
     let c = update_config c i in
     (c, (i, c))
   in
   let _, items = List.fold_map items ~init:c ~f:with_config in
-  let break (i1, c1) (i2, c2) =
-    Ast.break_between c.source ~cmts:c.cmts ~has_cmts_before:Cmts.has_before
-      ~has_cmts_after:Cmts.has_after
-      (ast i1, c1.conf)
-      (ast i2, c2.conf)
-  in
-  List.group items ~break
+  items
 
-let fmt_groups c ctx grps fmt_grp =
+let fmt_item_list c ctx update_config ast fmt_item items =
+  let items = update_items_config c items update_config in
   let break_struct = c.conf.break_struct || is_top ctx in
-  list_fl grps (fun ~first ~last grp ->
-      fmt_if (break_struct && not first) "\n@;<1000 0>"
-      $ fmt_if ((not break_struct) && not first) "@;<1000 0>"
-      $ fmt_grp ~first ~last grp
-      $ fits_breaks_if ((not break_struct) && not last) "" "\n" )
+  hvbox 0 @@ list_pn items
+  @@ fun ~prev (itm, c) ~next ->
+  let loc = Ast.location (ast itm) in
+  maybe_disabled c loc [] (fun c -> fmt_item c ctx ~prev ~next itm)
+  $ opt next (fun (i_n, c_n) ->
+        fmt_or_k
+          (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
+          (fmt "\n@;<1000 0>")
+          (fmt_or break_struct "@;<1000 0>" "@ ") )
 
-let fmt_recmodule c ctx items f ast =
+let fmt_recmodule c ctx items fmt_item ast =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
-  let grps = make_groups c items ast update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_grp ~first:first_grp ~last:_ itms =
-    list_fl itms (fun ~first ~last:_ (itm, c) ->
-        fmt_if_k (not first) (fmt_or break_struct "@;<1000 0>" "@ ")
-        $ maybe_disabled c (Ast.location (ast itm)) []
-          @@ fun c -> f c ctx ~rec_flag:true ~first:(first && first_grp) itm )
+  let fmt_item c ctx ~prev ~next:_ i =
+    fmt_item c ctx ~rec_flag:true ~first:(Option.is_none prev) i
   in
-  hvbox 0 (fmt_groups c ctx grps fmt_grp)
+  fmt_item_list c ctx update_config ast fmt_item items
 
 (* In several places, naked newlines (i.e. not "@\n") are used to avoid
    trailing space in open lines. *)
@@ -2593,14 +2591,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
     | {ppat_desc= Ppat_any; ppat_attributes= []; _} -> None
     | s -> Some s
   in
-  let grps = make_groups c fields (fun x -> Clf x) update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_grp ~first:_ ~last:_ itms =
-    list_fl itms (fun ~first ~last:_ (itm, c) ->
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c itm.pcf_loc []
-          @@ fun c -> fmt_class_field c ctx itm )
-  in
+  let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_field c ctx i in
+  let ast x = Clf x in
   hvbox 2
     ( hvbox 0
         ( str "object"
@@ -2616,8 +2608,8 @@ and fmt_class_structure c ~ctx ?ext self_ fields =
           str "\n"
       | _ -> noop )
     $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-    $ hvbox 0 (fmt_groups c ctx grps fmt_grp) )
-  $ fmt_or (List.is_empty fields) "@ " "@\n"
+    $ fmt_item_list c ctx update_config ast fmt_item fields )
+  $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
   $ str "end"
 
 and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
@@ -2633,14 +2625,8 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
     | s -> Some s
   in
   let no_attr typ = List.is_empty typ.ptyp_attributes in
-  let grps = make_groups c fields (fun x -> Ctf x) update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_grp ~first:_ ~last:_ itms =
-    list_fl itms (fun ~first ~last:_ (itm, c) ->
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c itm.pctf_loc []
-          @@ fun c -> fmt_class_type_field c ctx itm )
-  in
+  let fmt_item c ctx ~prev:_ ~next:_ i = fmt_class_type_field c ctx i in
+  let ast x = Ctf x in
   hvbox 0
     (Params.parens_if parens c.conf
        ( hvbox 2
@@ -2658,8 +2644,8 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
                  str "\n"
              | _ -> noop )
            $ fmt_if (not (List.is_empty fields)) "@;<1000 0>"
-           $ hvbox 0 (fmt_groups c ctx grps fmt_grp) )
-       $ fmt_or (List.is_empty fields) "@ " "@\n"
+           $ fmt_item_list c ctx update_config ast fmt_item fields )
+       $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
        $ str "end" ) )
 
 and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
@@ -3543,13 +3529,11 @@ and fmt_signature c ctx itms =
     | Psig_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let grps = make_groups c itms (fun x -> Sig x) update_config in
-  let fmt_grp (i, c) =
-    maybe_disabled c i.psig_loc []
-    @@ fun c -> fmt_signature_item c (sub_sig ~ctx i)
+  let fmt_item c ctx ~prev:_ ~next:_ i =
+    fmt_signature_item c (sub_sig ~ctx i)
   in
-  let fmt_grp itms = list itms "@;<1000 0>" fmt_grp in
-  hvbox 0 (list grps "\n@;<1000 0>" fmt_grp)
+  let ast x = Sig x in
+  fmt_item_list c ctx update_config ast fmt_item itms
 
 and fmt_signature_item c ?ext {ast= si; _} =
   protect c (Sig si)
@@ -4112,16 +4096,11 @@ and fmt_structure c ctx itms =
     | Pstr_attribute atr -> update_config c [atr]
     | _ -> c
   in
-  let grps = make_groups c itms (fun x -> Str x) update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_grp ~first:_ ~last:last_grp itms =
-    list_fl itms (fun ~first ~last (itm, c) ->
-        let last = last && last_grp in
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ maybe_disabled c itm.pstr_loc []
-          @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx itm) )
+  let fmt_item c ctx ~prev:_ ~next i =
+    fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
   in
-  hvbox 0 (fmt_groups c ctx grps fmt_grp)
+  let ast x = Str x in
+  fmt_item_list c ctx update_config ast fmt_item itms
 
 and fmt_type c ?ext ?eq rec_flag decls ctx =
   let fmt_decl ~first ~last decl =
@@ -4190,46 +4169,25 @@ and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   | Pstr_type (rec_flag, decls) -> fmt_type c ?ext rec_flag decls ctx
   | Pstr_typext te -> fmt_type_extension ?ext c ctx te
   | Pstr_value (rec_flag, bindings) ->
-      let bd = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bindings in
-      let with_conf c (b : Sugar.Let_binding.t) =
-        let c = update_config ~quiet:true c b.lb_attrs in
-        (c, (b, c))
+      let update_config c i = update_config ~quiet:true c i.pvb_attributes in
+      let ast x = Vb x in
+      let fmt_item c ctx ~prev ~next b =
+        let first = Option.is_none prev in
+        let last = Option.is_none next in
+        let b = Sugar.Let_binding.of_value_binding c.cmts ~ctx ~first b in
+        let epi =
+          match c.conf.let_binding_spacing with
+          | `Compact -> None
+          | `Sparse when last && last_item -> None
+          | `Sparse -> Some (fits_breaks "" "\n")
+          | `Double_semicolon ->
+              Option.some_if last (fits_breaks "" ~hint:(1000, -2) ";;")
+        in
+        let rec_flag = first && Asttypes.is_recursive rec_flag in
+        let ext = if first then ext else None in
+        fmt_value_binding c ~rec_flag ?ext ctx ?epi b
       in
-      let _, bindings = List.fold_map bd ~init:c ~f:with_conf in
-      let is_simple ((i : Sugar.Let_binding.t), (c : Conf.t)) =
-        Poly.(c.module_item_spacing = `Compact)
-        && Location.is_single_line i.lb_loc c.margin
-      in
-      let break (itmI, cI) (itmJ, cJ) =
-        (not (List.is_empty itmI.Sugar.Let_binding.lb_attrs))
-        || (not (List.is_empty itmJ.Sugar.Let_binding.lb_attrs))
-        || Cmts.has_after c.cmts itmI.lb_loc
-        || Cmts.has_before c.cmts itmJ.lb_loc
-        || (not (is_simple (itmI, cI.conf)))
-        || not (is_simple (itmJ, cJ.conf))
-      in
-      let grps = List.group bindings ~break in
-      let fmt_grp ~first:first_grp ~last:last_grp bindings =
-        list_fl bindings (fun ~first ~last (binding, c) ->
-            let epi =
-              match c.conf.let_binding_spacing with
-              | `Compact -> None
-              | `Sparse when last && last_grp && last_item -> None
-              | `Sparse -> Some (fits_breaks "" "\n")
-              | `Double_semicolon ->
-                  Option.some_if (last && last_grp)
-                    (fits_breaks "" ~hint:(1000, -2) ";;")
-            in
-            let rec_flag =
-              first && first_grp && Asttypes.is_recursive rec_flag
-            in
-            let ext = if first && first_grp then ext else None in
-            fmt_if (not first) "@;<1000 0>"
-            $ fmt_value_binding c ~rec_flag ?ext ctx ?epi binding )
-      in
-      hvbox 0 ~name:"value"
-        (list_fl grps (fun ~first ~last grp ->
-             fmt_grp ~first ~last grp $ fmt_if (not last) "\n@;<1000 0>" ) )
+      fmt_item_list c ctx update_config ast fmt_item bindings
   | Pstr_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
   | Pstr_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
@@ -4411,21 +4369,13 @@ let fmt_toplevel c ctx itms =
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
     | _ -> c
   in
-  let grps = make_groups c itms (fun x -> Tli x) update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
-  let fmt_item c ~last = function
+  let fmt_item c ctx ~prev:_ ~next = function
     | `Item i ->
-        maybe_disabled c i.pstr_loc []
-        @@ fun c -> fmt_structure_item c ~last (sub_str ~ctx i)
+        fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
     | `Directive d -> fmt_toplevel_directive c d
   in
-  let fmt_grp ~first:_ ~last:last_grp itms =
-    list_fl itms (fun ~first ~last (itm, c) ->
-        let last = last && last_grp in
-        fmt_if_k (not first) (fmt_or break_struct "@\n" "@ ")
-        $ fmt_item c ~last itm )
-  in
-  hvbox 0 (fmt_groups c ctx grps fmt_grp)
+  let ast x = Tli x in
+  fmt_item_list c ctx update_config ast fmt_item itms
 
 (** Entry points *)
 

@@ -627,6 +627,8 @@ module Signature_item = struct
 end
 
 module Vb = struct
+  let has_doc itm = Option.is_some (fst (doc_atrs itm.pvb_attributes))
+
   let is_simple (i, c) =
     Poly.(c.Conf.module_item_spacing = `Compact)
     && Location.is_single_line i.pvb_loc c.Conf.margin
@@ -635,6 +637,7 @@ module Vb = struct
       =
     has_cmts_after cmts i1.pvb_loc
     || has_cmts_before cmts i2.pvb_loc
+    || has_doc i1 || has_doc i2
     || (not (is_simple (i1, c1)))
     || not (is_simple (i2, c2))
 end

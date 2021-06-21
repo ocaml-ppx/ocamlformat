@@ -440,15 +440,17 @@ module Let_binding = struct
               (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
           | _ -> (xpat, `None xargs, xbody) )
 
-  let of_value_bindings cmts ~ctx vbs =
-    List.mapi vbs ~f:(fun i vb ->
-        let pat, typ, exp = type_cstr cmts ~ctx vb.pvb_pat vb.pvb_expr in
-        { lb_op= Location.{txt= (if i = 0 then "let" else "and"); loc= none}
-        ; lb_pat= pat
-        ; lb_typ= typ
-        ; lb_exp= exp
-        ; lb_attrs= vb.pvb_attributes
-        ; lb_loc= vb.pvb_loc } )
+  let of_value_binding cmts ~ctx ~first vb =
+    let pat, typ, exp = type_cstr cmts ~ctx vb.pvb_pat vb.pvb_expr in
+    { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
+    ; lb_pat= pat
+    ; lb_typ= typ
+    ; lb_exp= exp
+    ; lb_attrs= vb.pvb_attributes
+    ; lb_loc= vb.pvb_loc }
+
+  let of_value_bindings cmts ~ctx =
+    List.mapi ~f:(fun i -> of_value_binding cmts ~ctx ~first:(i = 0))
 
   let of_binding_ops cmts ~ctx bos =
     List.map bos ~f:(fun bo ->
