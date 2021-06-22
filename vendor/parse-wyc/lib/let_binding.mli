@@ -1,5 +1,3 @@
-open Migrate_ast
-
 type let_binding = {
   lb_pattern : Parsetree.pattern;
   lb_expression : Parsetree.expression;

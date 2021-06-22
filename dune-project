@@ -38,7 +38,6 @@
    (and
     (>= 4.08)
     (< 4.13)))
-  ocaml-version
   (alcotest :with-test)
   (base
    (and
@@ -63,8 +62,6 @@
     (>= 2.5.0)))
   (odoc
    (>= 1.4.2))
-  (ppxlib
-   (>= 0.22.0))
   re
   (stdio
    (< v0.15))
@@ -83,7 +80,6 @@
    (and
     (>= 4.08)
     (< 4.13)))
-  ocaml-version
   ocamlformat-rpc-lib
   (alcotest :with-test)
   (base
@@ -109,8 +105,6 @@
     (>= 2.5.0)))
   (odoc
    (>= 1.4.2))
-  (ppxlib
-   (>= 0.22.0))
   re
   (stdio
    (< v0.15))

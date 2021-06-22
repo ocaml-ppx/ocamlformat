@@ -15,15 +15,9 @@
 
 (** Helpers to produce Parsetree fragments *)
 
-open Docstrings
-open Migrate_parsetree.Ast_412
-
-module Int = struct
-  let to_string = string_of_int
-end
-
 open Asttypes
 open Parsetree
+open Docstrings
 
 type 'a with_loc = 'a Location.loc
 type loc = Location.t

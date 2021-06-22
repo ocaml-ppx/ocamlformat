@@ -1,3 +1,5 @@
 ocamlformat: ignoring "tests/escaped_nl.ml" (syntax error)
 File "tests/escaped_nl.ml", line 33, characters 9-10:
+33 | let c1 = '
+              ^
 Error: Syntax error

@@ -1,5 +1,5 @@
 open Ast_helper
-open Migrate_ast.Parsetree
+open Parsetree
 
 module Ext = struct
   let mk () = (Location.mkloc "merlin.hole" !default_loc, PStr [])

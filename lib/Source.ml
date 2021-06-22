@@ -123,24 +123,18 @@ let is_long_pexp_open source {pexp_desc; _} =
       contains_token_between source ~from ~upto Parser.IN
   | _ -> false
 
-let is_long_functor_syntax (t : t) ~from = function
+let is_long_functor_syntax (t : t) ~(from : Location.t) = function
   | Unit -> false
-  | Named ({loc= upto; _}, _) -> (
-      let parser_version = Ast_passes.Ast0.Parse.parser_version in
-      if Ocaml_version.(compare parser_version Releases.v4_12) < 0 then
-        (* before 4.12 the functor keyword is the first token of the functor
-           parameter *)
-        contains_token_between t ~from ~upto Parser.FUNCTOR
-      else
-        (* since 4.12 the functor keyword is just before the loc of the
-           functor parameter *)
-        match
-          find_token_before t
-            ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
-            from.loc_start
-        with
-        | Some (Parser.FUNCTOR, _) -> true
-        | _ -> false )
+  | Named ({loc= _; _}, _) -> (
+    (* since 4.12 the functor keyword is just before the loc of the functor
+       parameter *)
+    match
+      find_token_before t
+        ~filter:(function COMMENT _ | DOCSTRING _ -> false | _ -> true)
+        from.loc_start
+    with
+    | Some (Parser.FUNCTOR, _) -> true
+    | _ -> false )
 
 let is_long_pmod_functor t {pmod_desc; pmod_loc= from; _} =
   match pmod_desc with

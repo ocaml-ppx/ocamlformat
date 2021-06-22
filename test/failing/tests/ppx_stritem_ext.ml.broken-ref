@@ -1,3 +1,5 @@
 ocamlformat: ignoring "tests/ppx_stritem_ext.ml" (syntax error)
 File "tests/ppx_stritem_ext.ml", line 10, characters 11-14:
+10 | module S = sig
+                ^^^
 Error: Syntax error

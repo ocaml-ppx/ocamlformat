@@ -1,23 +1,23 @@
 module Exp : sig
-  val mk : unit -> Migrate_ast.Parsetree.expression
+  val mk : unit -> Parsetree.expression
 end
 
 module Cl : sig
-  val mk : unit -> Migrate_ast.Parsetree.class_expr
+  val mk : unit -> Parsetree.class_expr
 end
 
 module Cty : sig
-  val mk : unit -> Migrate_ast.Parsetree.class_type
+  val mk : unit -> Parsetree.class_type
 end
 
 module Pat : sig
-  val mk : unit -> Migrate_ast.Parsetree.pattern
+  val mk : unit -> Parsetree.pattern
 end
 
 module Mty : sig
-  val mk : unit -> Migrate_ast.Parsetree.module_type
+  val mk : unit -> Parsetree.module_type
 end
 
 module Mod : sig
-  val mk : unit -> Migrate_ast.Parsetree.module_expr
+  val mk : unit -> Parsetree.module_expr
 end

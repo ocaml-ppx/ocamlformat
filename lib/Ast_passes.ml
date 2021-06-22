@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 module Ast0 = struct
-  include Ppxlib.Parsetree
+  include Parsetree
 
   let equal_core_type : core_type -> core_type -> bool = Poly.equal
 
@@ -26,51 +26,42 @@ module Ast0 = struct
 
   let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
 
-  class map =
-    object
-      inherit Ppxlib.Ast_traverse.map
-    end
+  (* Missing from ocaml_migrate_parsetree *)
+  let use_file (mapper : Ast_mapper.mapper) use_file =
+    let open Parsetree in
+    List.map use_file ~f:(fun toplevel_phrase ->
+        match (toplevel_phrase : toplevel_phrase) with
+        | Ptop_def structure -> Ptop_def (mapper.structure mapper structure)
+        | Ptop_dir {pdir_name; pdir_arg; pdir_loc} ->
+            let pdir_arg =
+              match pdir_arg with
+              | None -> None
+              | Some a ->
+                  Some {a with pdira_loc= mapper.location mapper a.pdira_loc}
+            in
+            Ptop_dir
+              { pdir_name=
+                  {pdir_name with loc= mapper.location mapper pdir_name.loc}
+              ; pdir_arg
+              ; pdir_loc= mapper.location mapper pdir_loc } )
 
-  let map (type a) (x : a t) (m : Ppxlib.Ast_traverse.map) : a -> a =
+  let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
     match x with
-    | Structure -> m#structure
-    | Signature -> m#signature
-    | Use_file -> m#list m#toplevel_phrase
-    | Core_type -> m#core_type
-    | Module_type -> m#module_type
-    | Expression -> m#expression
-
-  let iter (type a) (fg : a t) (i : Ppxlib.Ast_traverse.iter) : a -> unit =
-    match fg with
-    | Structure -> i#structure
-    | Signature -> i#signature
-    | Use_file -> i#list i#toplevel_phrase
-    | Core_type -> i#core_type
-    | Module_type -> i#module_type
-    | Expression -> i#expression
-
-  let fold (type a) (fg : a t) (f : _ Ppxlib.Ast_traverse.fold) : a -> _ =
-    match fg with
-    | Structure -> f#structure
-    | Signature -> f#signature
-    | Use_file -> f#list f#toplevel_phrase
-    | Core_type -> f#core_type
-    | Module_type -> f#module_type
-    | Expression -> f#expression
+    | Structure -> m.structure m
+    | Signature -> m.signature m
+    | Use_file -> use_file m
+    | Core_type -> m.typ m
+    | Module_type -> m.module_type m
+    | Expression -> m.expr m
 
   module Parse = struct
-    let implementation = Ppxlib_ast.Parse.implementation
+    let implementation = Parse.implementation
 
-    let interface = Ppxlib_ast.Parse.interface
+    let interface = Parse.interface
 
-    let use_file lexbuf =
-      List.filter (Ppxlib_ast.Parse.use_file lexbuf)
-        ~f:(fun (p : toplevel_phrase) ->
-          match p with
-          | Ptop_def [] -> false
-          | Ptop_def (_ :: _) | Ptop_dir _ -> true )
+    let use_file = Parse.use_file
 
-    let core_type = Ppxlib_ast.Parse.core_type
+    let core_type = Parse.core_type
 
     let module_type (lx : Lexing.lexbuf) =
       let pre = "module X : " in
@@ -84,7 +75,7 @@ module Ast0 = struct
           failwith
             (Format.sprintf "Syntax error: %s is not a module type" input)
 
-    let expression = Ppxlib_ast.Parse.expression
+    let expression = Parse.expression
 
     let ast (type a) (fg : a t) lexbuf : a =
       match fg with
@@ -94,8 +85,6 @@ module Ast0 = struct
       | Core_type -> core_type lexbuf
       | Module_type -> module_type lexbuf
       | Expression -> expression lexbuf
-
-    let parser_version = Ocaml_version.sys_version
   end
 end
 
@@ -103,17 +92,7 @@ module Ast_final = struct
   include Ast0
 
   module Pprintast = struct
-    include Ppxlib.Pprintast
-
-    let payload fs = function
-      | PStr s -> structure fs s
-      | PSig s -> signature fs s
-      | PTyp t -> core_type fs t
-      | PPat (p, None) -> pattern fs p
-      | PPat (p, Some e) ->
-          pattern fs p ;
-          Format.pp_print_string fs " when " ;
-          expression fs e
+    include Pprintast
 
     let use_file = Format.pp_print_list top_phrase
 

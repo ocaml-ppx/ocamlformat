@@ -1,6 +1,5 @@
 module P = Parser
 module I = P.MenhirInterpreter
-open Migrate_ast
 
 module R =
   Merlin_recovery.Make
@@ -89,13 +88,7 @@ module With_recovery : PARSE_INTF = struct
             | _ -> Intermediate parser ) )
 end
 
-let entrypoint (type o p) : (o, p) Mapper.fragment -> _ -> o I.checkpoint =
-  function
-  | Mapper.Structure -> P.Incremental.implementation
-  | Mapper.Signature -> P.Incremental.interface
-  | Mapper.Use_file -> P.Incremental.use_file
-
-let parse_with_recovery fragment tokens =
+let parse_with_recovery entrypoint tokens =
   let module P = With_recovery in
   let rec step tokens = function
     | P.Error -> failwith "Parsing failed"
@@ -109,7 +102,7 @@ let parse_with_recovery fragment tokens =
     in
     step rest (P.step p token)
   in
-  offer (P.initial (entrypoint fragment) Lexing.dummy_pos) tokens
+  offer (P.initial entrypoint Lexing.dummy_pos) tokens
 
 let lex_buf lexbuf =
   Lexer.init ();
@@ -122,12 +115,12 @@ let lex_buf lexbuf =
   in
   loop []
 
-let parse fragment lexbuf =
+let parse parse lexbuf =
   let tokens = lex_buf lexbuf in
-  parse_with_recovery fragment tokens |> Mapper.to_ppxlib fragment
+  parse_with_recovery parse tokens
 
-let structure = parse Structure
+let structure = parse P.Incremental.implementation
 
-let signature = parse Signature
+let signature = parse P.Incremental.interface
 
-let use_file = parse Use_file
+let use_file = parse P.Incremental.use_file

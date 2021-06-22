@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 module Ast0 : sig
-  include module type of Ppxlib.Parsetree
+  include module type of Parsetree
 
   type use_file = toplevel_phrase list
 
@@ -24,13 +24,11 @@ module Ast0 : sig
 
   module Parse : sig
     val ast : 'a t -> Lexing.lexbuf -> 'a
-
-    val parser_version : Ocaml_version.t
   end
 end
 
 module Ast_final : sig
-  include module type of Ppxlib.Parsetree
+  include module type of Parsetree
 
   val equal_core_type : core_type -> core_type -> bool
 
@@ -46,21 +44,10 @@ module Ast_final : sig
 
   val equal : 'a t -> 'a -> 'a -> bool
 
-  class map :
-    object
-      inherit Ppxlib.Ast_traverse.map
-    end
-
-  val map : 'a t -> Ppxlib.Ast_traverse.map -> 'a -> 'a
-
-  val iter : 'a t -> Ppxlib.Ast_traverse.iter -> 'a -> unit
-
-  val fold : 'a t -> 'r Ppxlib.Ast_traverse.fold -> 'a -> 'r -> 'r
+  val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
 
   module Pprintast : sig
-    include module type of Ppxlib.Pprintast
-
-    val payload : Format.formatter -> payload -> unit
+    include module type of Pprintast
 
     val ast : 'a t -> Format.formatter -> 'a -> unit
   end

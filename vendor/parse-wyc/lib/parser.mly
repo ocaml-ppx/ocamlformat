@@ -17,7 +17,6 @@
 
 %{
 
-open Migrate_parsetree.Ast_412
 open Asttypes
 open Longident
 open Parsetree

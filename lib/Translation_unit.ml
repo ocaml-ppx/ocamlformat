@@ -279,7 +279,7 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
       Some (dump_formatted ~input_name ?output_file ~suffix fmted)
     else None
   in
-  Ocaml_common.Location.input_name := input_name ;
+  Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
   let rec print_check ~i ~(conf : Conf.t) ~prev_source t =
     let format ~box_debug =
@@ -410,7 +410,7 @@ let parse_result ?(f = Ast_passes.Ast0.Parse.ast) fragment conf ~source
 let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
     (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
     opts =
-  Ocaml_common.Location.input_name := input_name ;
+  Location.input_name := input_name ;
   parse_result fg0 conf ~source ~input_name
   >>= fun parsed ->
   let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
@@ -446,7 +446,7 @@ let numeric (type a b) (fg0 : a list Ast_passes.Ast0.t)
   let nlines = List.length lines in
   check_range nlines range
   >>| fun () ->
-  Ocaml_common.Location.input_name := input_name ;
+  Location.input_name := input_name ;
   let fallback () = Indent.Partial_ast.indent_range ~source ~range in
   let indent_parsed parsed ~src ~range =
     let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in

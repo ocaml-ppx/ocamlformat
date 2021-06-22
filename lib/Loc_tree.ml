@@ -13,38 +13,35 @@ module Location = Migrate_ast.Location
 open Ast_passes.Ast_final
 include Non_overlapping_interval_tree.Make (Location)
 
-let fold src =
-  object
-    inherit [Location.t list] Ppxlib.Ast_traverse.fold as super
-
-    method! location loc locs = loc :: locs
-
-    method! pattern p locs =
-      let extra_loc =
-        match p.ppat_desc with
-        | Ppat_record (flds, Open) ->
-            Option.to_list (Source.loc_of_underscore src flds p.ppat_loc)
-        | _ -> []
-      in
-      super#pattern p (extra_loc @ locs)
-
-    method! attribute attr locs =
-      (* ignore location of docstrings *)
-      if Ast.Attr.is_doc attr then locs else super#attribute attr locs
-
-    (** Ast_traverse recurses down to locations in stacks *)
-    method! location_stack _ l = l
-
-    method! expression e locs =
-      let extra_loc =
-        match e.pexp_desc with
-        | Pexp_constant _ -> [Source.loc_of_expr_constant src e]
-        | _ -> []
-      in
-      super#expression e (extra_loc @ locs)
-  end
-
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
 let of_ast fragment ast src =
-  let locs = Ast_passes.Ast_final.fold fragment (fold src) ast [] in
-  (of_list locs, locs)
+  let attribute (m : Ast_mapper.mapper) attr =
+    (* ignore location of docstrings *)
+    if Ast.Attr.is_doc attr then attr
+    else Ast_mapper.default_mapper.attribute m attr
+  in
+  let locs = ref [] in
+  let location _ loc =
+    locs := loc :: !locs ;
+    loc
+  in
+  let pat m p =
+    ( match p.ppat_desc with
+    | Ppat_record (flds, Open) ->
+        Option.iter (Source.loc_of_underscore src flds p.ppat_loc)
+          ~f:(fun loc -> locs := loc :: !locs)
+    | Ppat_constant _ -> locs := Source.loc_of_pat_constant src p :: !locs
+    | _ -> () ) ;
+    Ast_mapper.default_mapper.pat m p
+  in
+  let expr m e =
+    ( match e.pexp_desc with
+    | Pexp_constant _ -> locs := Source.loc_of_expr_constant src e :: !locs
+    | _ -> () ) ;
+    Ast_mapper.default_mapper.expr m e
+  in
+  let mapper =
+    Ast_mapper.{default_mapper with location; pat; attribute; expr}
+  in
+  Ast_passes.Ast_final.map fragment mapper ast |> ignore ;
+  (of_list !locs, !locs)

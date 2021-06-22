@@ -1,0 +1,3 @@
+(library
+ (name parser_shims)
+ (libraries compiler-libs.common))

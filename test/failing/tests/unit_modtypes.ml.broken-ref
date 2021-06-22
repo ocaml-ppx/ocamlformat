@@ -1,5 +1,9 @@
 ocamlformat: ignoring "tests/unit_modtypes.ml" (syntax error)
 File "tests/unit_modtypes.ml", line 66, characters 13-14:
+66 |   module M (X) (Y):
+                  ^
 Error: Syntax error: 'end' expected
 File "tests/unit_modtypes.ml", line 34, characters 0-3:
+34 | sig
+     ^^^
   This 'sig' might be unmatched
