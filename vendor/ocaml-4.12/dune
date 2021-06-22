@@ -1,6 +1,5 @@
 (library
  (name ocaml_412)
- (modules_without_implementation let_binding)
  (flags
   (:standard -w -9 -open Parser_shims))
  (libraries compiler-libs.common menhirLib parser_shims))
@@ -8,6 +7,7 @@
 (ocamllex lexer)
 
 (menhir
+ (infer false)
  (flags
   --lalr
   --explain
@@ -30,3 +30,15 @@
   --strategy
   simplified)
  (modules parser))
+
+(rule
+ (targets asttypes.ml)
+ (mode fallback)
+ (action
+  (copy# asttypes.mli %{targets})))
+
+(rule
+ (targets parsetree.ml)
+ (mode fallback)
+ (action
+  (copy# parsetree.mli %{targets})))
