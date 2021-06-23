@@ -2056,7 +2056,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.10.0))
  (package ocamlformat)
  (action
    (with-outputs-to module_anonymous.ml.output
@@ -2064,7 +2063,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.10.0))
  (package ocamlformat)
  (action (diff tests/module_anonymous.ml module_anonymous.ml.output)))
 
