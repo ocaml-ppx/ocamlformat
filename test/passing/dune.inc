@@ -61,7 +61,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.10.0))
  (package ocamlformat)
  (action
    (with-outputs-to apply_functor.ml.output
@@ -69,7 +68,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.10.0))
  (package ocamlformat)
  (action (diff tests/apply_functor.ml apply_functor.ml.output)))
 
@@ -1218,7 +1216,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.11.0))
  (package ocamlformat)
  (action
    (with-outputs-to hash_types.ml.output
@@ -1226,7 +1223,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.11.0))
  (package ocamlformat)
  (action (diff tests/hash_types.ml hash_types.ml.output)))
 
@@ -1352,7 +1348,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.12.0))
  (package ocamlformat)
  (action
    (with-outputs-to injectivity.ml.output
@@ -1360,7 +1355,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.12.0))
  (package ocamlformat)
  (action (diff tests/injectivity.ml injectivity.ml.output)))
 
@@ -2160,7 +2154,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.10.0))
  (package ocamlformat)
  (action
    (with-outputs-to multi_index_op.ml.output
@@ -2168,7 +2161,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.10.0))
  (package ocamlformat)
  (action (diff tests/multi_index_op.ml multi_index_op.ml.output)))
 
@@ -2465,7 +2457,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.11.0))
  (package ocamlformat)
  (action
    (with-outputs-to quoted_strings.ml.output
@@ -2473,7 +2464,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.11.0))
  (package ocamlformat)
  (action (diff tests/quoted_strings.ml quoted_strings.ml.output)))
 
@@ -2947,7 +2937,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (>= %{ocaml_version} 4.12.0))
  (package ocamlformat)
  (action
    (with-outputs-to unary_hash.ml.output
@@ -2955,7 +2944,6 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.12.0))
  (package ocamlformat)
  (action (diff tests/unary_hash.ml unary_hash.ml.output)))
 
