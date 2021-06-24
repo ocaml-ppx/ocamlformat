@@ -4184,7 +4184,8 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
           | `Sparse when last && last_item -> None
           | `Sparse -> Some (fits_breaks "" "\n")
           | `Double_semicolon ->
-              Option.some_if last (fits_breaks "" ~hint:(1000, -2) ";;")
+              Option.some_if (last && not semisemi)
+                (fits_breaks "" ~hint:(1000, -2) ";;")
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
         let ext = if first then ext else None in

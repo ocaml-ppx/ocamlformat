@@ -295,7 +295,6 @@ let pop_castable () =
     c
   | [] -> raise Not_found
 ;;
-;;
 
 (* We can add foos and bars to this list, and retrive them *)
 
@@ -865,7 +864,6 @@ let f = function
   | Some (module M : S3) when M.x -> 1
   | ((Some _)[@foooo]) -> 2
   | None -> 3
-;;
 ;;
 
 print_endline
@@ -3410,7 +3408,6 @@ let m =
   (module struct
     let x = 3
   end : S)
-;;
 ;;
 
 f m 1 m;;
@@ -9517,7 +9514,6 @@ let f = function
 let f = function
   | _ :: ((_ :: _)[@foo]) -> ()
   | _ -> ()
-;;
 ;;
 
 function
