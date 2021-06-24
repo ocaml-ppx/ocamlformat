@@ -354,8 +354,7 @@ let pop_castable () =
 
 (* We can add foos and bars to this list, and retrive them *)
 
-push_castable (new foo)
-;;
+push_castable (new foo);;
 
 push_castable (new bar);;
 
@@ -4190,8 +4189,7 @@ end
 
 (* fails *)
 (* PR#5835 *)
-let f ~x = x + 1
-;;
+let f ~x = x + 1;;
 
 f ?x:0
 
@@ -8346,8 +8344,7 @@ let _ = raise Exit 3;;
 
 (* comment 9644 of PR#6000 *)
 
-fun b -> if b then format_of_string "x" else "y"
-;;
+fun b -> if b then format_of_string "x" else "y";;
 
 fun b -> if b then "x" else format_of_string "y";;
 

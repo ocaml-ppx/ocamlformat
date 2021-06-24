@@ -13,8 +13,7 @@
 (* comments *)
 (* comments *)
 
-let () = 3
-;;
+let () = 3;;
 
 2;;
 
