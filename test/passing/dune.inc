@@ -2058,6 +2058,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to mod_type_subst.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/mod_type_subst.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/mod_type_subst.ml mod_type_subst.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to module.ml.output
      (run %{bin:ocamlformat} %{dep:tests/module.ml}))))
 
