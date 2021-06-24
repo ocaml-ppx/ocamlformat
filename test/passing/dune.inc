@@ -2178,6 +2178,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to named_existentials.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/named_existentials.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/named_existentials.ml named_existentials.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to need_format.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} --max-iters=1 %{dep:tests/need_format.ml})))))

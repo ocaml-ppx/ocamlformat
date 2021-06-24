@@ -1003,16 +1003,17 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
                 $ Cmts.fmt c ~pro:noop loc (str ":: ")
                 $ fmt_pattern c (sub_pat ~ctx y) ) ) ) )
   | Ppat_construct (lid, Some (exists, pat)) ->
-      ( match exists with
-      | [] -> noop
-      | names ->
-          cbox 0
-            (Params.parens c.conf
-               (str "type " $ list names "@ " (fmt_str_loc c)) ) )
-      $ cbox 2
-          (Params.parens_if parens c.conf
-             ( fmt_longident_loc c lid $ fmt "@ "
-             $ fmt_pattern c (sub_pat ~ctx pat) ) )
+      cbox 2
+        (Params.parens_if parens c.conf
+           ( fmt_longident_loc c lid $ fmt "@ "
+           $ ( match exists with
+             | [] -> noop
+             | names ->
+                 hvbox 0
+                   (Params.parens c.conf
+                      (str "type " $ list names "@ " (fmt_str_loc c)) )
+                 $ fmt "@ " )
+           $ fmt_pattern c (sub_pat ~ctx pat) ) )
   | Ppat_variant (lbl, None) -> str "`" $ str lbl
   | Ppat_variant (lbl, Some pat) ->
       cbox 2
