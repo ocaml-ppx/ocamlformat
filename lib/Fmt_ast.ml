@@ -2143,12 +2143,16 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                           $ p.break_end_branch ) ) )
                 $ fmt_if_k (not last) p.space_between_branches ) ) )
   | Pexp_let (rec_flag, bd, body) ->
-      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
+      let bindings =
+        Sugar.Let_binding.of_value_bindings c.cmts c.source ~ctx bd
+      in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
         ~attributes:pexp_attributes rec_flag bindings body
   | Pexp_letop {let_; ands; body} ->
-      let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
+      let bd =
+        Sugar.Let_binding.of_binding_ops c.cmts c.source ~ctx (let_ :: ands)
+      in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
       fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
         ~attributes:pexp_attributes Nonrecursive bd body
@@ -2751,7 +2755,9 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
         | Pcl_let _ -> 0
         | _ -> c.conf.indent_after_in
       in
-      let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
+      let bindings =
+        Sugar.Let_binding.of_value_bindings c.cmts c.source ~ctx bd
+      in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
@@ -4201,7 +4207,9 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
       let fmt_item c ctx ~prev ~next b =
         let first = Option.is_none prev in
         let last = Option.is_none next in
-        let b = Sugar.Let_binding.of_value_binding c.cmts ~ctx ~first b in
+        let b =
+          Sugar.Let_binding.of_value_binding c.cmts c.source ~ctx ~first b
+        in
         let epi =
           match c.conf.let_binding_spacing with
           | `Compact -> None
@@ -4268,8 +4276,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   $ fmt_atrs
 
 and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
-    ({lb_op; lb_pat; lb_typ; lb_exp; lb_attrs; lb_loc} : Sugar.Let_binding.t)
-    =
+    {lb_op; lb_pat; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let doc1, atrs = doc_atrs lb_attrs in
@@ -4333,11 +4340,13 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
                               $ wrap_fun_decl_args c (fmt_fun_args c xargs)
                               ) )
                       $ fmt_cstr )
-                  $ fmt_or_k c.conf.ocp_indent_compat
-                      (fits_breaks " =" ~hint:(1000, 0) "=")
-                      (fmt "@;<1 2>=")
-                  $ pre_body )
-              $ fmt "@ " $ body )
+                  $ fmt_if_k (not lb_pun)
+                      (fmt_or_k c.conf.ocp_indent_compat
+                         (fits_breaks " =" ~hint:(1000, 0) "=")
+                         (fmt "@;<1 2>=") )
+                  $ fmt_if_k (not lb_pun) pre_body )
+              $ fmt_if (not lb_pun) "@ "
+              $ fmt_if_k (not lb_pun) body )
           $ cmts_after )
       $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" at_at_attrs
       $ in_ $ fmt_opt epi )

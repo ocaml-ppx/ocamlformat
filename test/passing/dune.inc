@@ -1914,6 +1914,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to let_punning.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/let_punning.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_punning.ml let_punning.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to list-space_around.ml.output
      (run %{bin:ocamlformat} --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:tests/list.ml}))))
 
