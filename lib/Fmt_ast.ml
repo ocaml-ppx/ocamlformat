@@ -3895,14 +3895,16 @@ and fmt_with_constraint c ctx = function
           txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
       in
       let m2 = Some (sub_mty ~ctx m2) in
-      fmt_module c "module type" m1 [] None ~rec_flag:false m2 []
+      break 1 2 $ fmt_module c "module type" m1 [] None ~rec_flag:false m2 []
   | Pwith_modtypesubst (m1, m2) ->
       let m1 =
         { m1 with
           txt= Some (Caml.Format.asprintf "%a" Pprintast.longident m1.txt) }
       in
       let m2 = Some (sub_mty ~ctx m2) in
-      fmt_module c ~eqty:":=" "module type" m1 [] None ~rec_flag:false m2 []
+      break 1 2
+      $ fmt_module c ~eqty:":=" "module type" m1 [] None ~rec_flag:false m2
+          []
 
 and maybe_generative c ~ctx = function
   | {pmod_desc= Pmod_structure []; pmod_attributes= []; pmod_loc}
