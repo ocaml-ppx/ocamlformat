@@ -459,7 +459,7 @@ let test_use_file_file =
   in
   [ make_test "fmt_ast.ml (12)" ~range:(12, 12) ~input:fmt_ast_source
       ~new_range:(1, 1) ~expected:{|module Format = Format_|}
-  ; make_test "fmt_ast.ml (111)" ~range:(111, 111) ~input:fmt_ast_source
+  ; make_test "fmt_ast.ml (117)" ~range:(117, 117) ~input:fmt_ast_source
       ~new_range:(8, 8)
       ~expected:
         {|let fmt_expressions c width sub_exp exprs fmt_expr
