@@ -24,6 +24,10 @@ module type Client_S = sig
 
   type cmd
 
+  val to_sexp : t -> Sexplib0.Sexp.t
+
+  val of_sexp : Sexplib0.Sexp.t -> (t, [> `Msg of string]) result
+
   val pid : t -> int
 
   val mk : pid:int -> in_channel -> out_channel -> t
@@ -57,6 +61,10 @@ module V1 :
           | `Format of string ]
 
 type client = [`V1 of V1.Client.t]
+
+val sexp_of_client : client -> Sexplib0.Sexp.t
+
+val client_of_sexp : Sexplib0.Sexp.t -> (client, [> `Msg of string]) result
 
 val pick_client :
      pid:int
