@@ -24,6 +24,10 @@ module type Client_S = sig
 
   type cmd
 
+  val to_sexp : t -> Sexplib0.Sexp.t
+
+  val of_sexp : Sexplib0.Sexp.t -> (t, [> `Msg of string]) result
+
   val pid : t -> int
 
   val mk : pid:int -> in_channel -> out_channel -> t
@@ -58,6 +62,10 @@ module V1 :
 
 type client = [`V1 of V1.Client.t]
 
+val sexp_of_client : client -> Sexplib0.Sexp.t
+
+val client_of_sexp : Sexplib0.Sexp.t -> (client, [> `Msg of string]) result
+
 val pick_client :
      pid:int
   -> in_channel
@@ -76,3 +84,10 @@ val config :
   (string * string) list -> client -> (unit, [> `Msg of string]) result
 
 val format : string -> client -> (string, [> `Msg of string]) result
+
+val new_session : client -> unit
+(** Indicates the client there is one new user. *)
+
+val end_session : client -> unit
+(** Indicates the client one user closed its session. The halt signal will be
+    sent when all sessions of a client are closed. *)
