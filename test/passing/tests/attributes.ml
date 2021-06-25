@@ -245,6 +245,8 @@ let _ = (f @@ a) [@attr]
 
 let _ = f ((f @@ a) [@attr])
 
+let _ = f 1 ([e; f] [@a])
+
 let _ =
   object
     method g = (a <- b) [@a]
@@ -320,7 +322,7 @@ let _ =
 
 let (Foo ((A | B) [@attr])) = ()
 
-let ([((A | B) [@attr]); b; c] [@attr]) = ()
+let ([(A | B) [@attr]; b; c] [@attr]) = ()
 
 let ([|a; (A | B) [@attr]; c|] [@attr]) = ()
 

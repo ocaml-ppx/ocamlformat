@@ -24,6 +24,9 @@
 
 #### Changes
 
+  + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
+    Comments are now wrapped around list elements instead of causing a break.
+
 #### New features
 
   + Handle merlin typed holes (#1698, @gpetiot)

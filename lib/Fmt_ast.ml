@@ -52,10 +52,6 @@ module Cmts = struct
 
     let fmt_after c = Toplevel.fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
   end
-
-  let fmt_list ?pro ?epi ?eol c locs init =
-    List.fold locs ~init ~f:(fun k loc ->
-        fmt ?pro ?epi ?eol ?adj:None c loc k )
 end
 
 let break_between {source; cmts; _} =
@@ -970,34 +966,14 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       , Some
           ( []
           , {ppat_desc= Ppat_tuple [x; y]; ppat_attributes= []; ppat_loc; _}
-          ) ) -> (
-    match Sugar.list_pat c.cmts pat with
-    | Some (loc_xpats, nil_loc) ->
-        let p = Params.get_list_pat c.conf ~ctx:ctx0 in
-        let offset = if c.conf.dock_collection_brackets then 0 else 2 in
-        let cmt_break = break 1 offset in
-        let pat =
-          fmt_elements_collection p
-            (fun (locs, xpat) ->
-              Cmts.fmt_list c ~eol:cmt_break locs
-                (hvbox 0 (fmt_pattern c xpat)) )
-            loc_xpats
-        in
-        hvbox 0
-          (p.box
-             (Cmts.fmt c ppat_loc
-                ( pat
-                $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop nil_loc
-                    ~eol:noop
-                $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc ) ) )
-    | None ->
-        hvbox 0
-          (Params.parens_if parens c.conf
-             (Cmts.fmt c ppat_loc
-                ( fmt_pattern c (sub_pat ~ctx x)
-                $ fmt "@ "
-                $ Cmts.fmt c ~pro:noop loc (str ":: ")
-                $ fmt_pattern c (sub_pat ~ctx y) ) ) ) )
+          ) ) ->
+      hvbox 0
+        (Params.parens_if parens c.conf
+           (Cmts.fmt c ppat_loc
+              ( fmt_pattern c (sub_pat ~ctx x)
+              $ fmt "@ "
+              $ Cmts.fmt c ~pro:noop loc (str ":: ")
+              $ fmt_pattern c (sub_pat ~ctx y) ) ) )
   | Ppat_construct (lid, Some (exists, pat)) ->
       cbox 2
         (Params.parens_if parens c.conf
@@ -1070,6 +1046,12 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       p.box
         (fmt_elements_collection p
            (fun pat -> fmt_pattern c (sub_pat ~ctx pat))
+           pats )
+  | Ppat_list pats ->
+      let p = Params.get_list_pat c.conf ~ctx:ctx0 in
+      p.box
+        (fmt_elements_collection p
+           (sub_pat ~ctx >> fmt_pattern c >> hvbox 0)
            pats )
   | Ppat_or _ ->
       let nested =
@@ -1196,9 +1178,10 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_open (lid, pat) ->
       let can_skip_parens =
         match pat.ppat_desc with
-        | Ppat_array _ | Ppat_record _ -> true
+        | Ppat_array _ | Ppat_list _ | Ppat_record _ -> true
         | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
-        | _ -> Option.is_some (Sugar.list_pat c.cmts pat)
+        | Ppat_construct ({txt= Lident "[]"; _}, None) -> true
+        | _ -> false
       in
       let opn, cls = if can_skip_parens then (".", "") else (".(", ")") in
       cbox 0
@@ -1949,6 +1932,18 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                (sub_exp ~ctx >> fmt_expression c)
                p )
         $ fmt_atrs )
+  | Pexp_list e1N ->
+      let p = Params.get_list_expr c.conf in
+      hvbox_if has_attr 0
+        (Params.parens_if parens c.conf
+           ( p.box
+               (fmt_expressions c (expression_width c) (sub_exp ~ctx) e1N
+                  (fun e ->
+                    let fmt_cmts = Cmts.fmt c ~eol:(break 1 0) e.pexp_loc in
+                    hvbox 0 @@ fmt_cmts
+                    @@ (sub_exp ~ctx >> fmt_expression c) e )
+                  p )
+           $ fmt_atrs ) )
   | Pexp_assert e0 ->
       let paren_body, wrap_symbol =
         if Exp.is_symbol e0 then (false, wrap "( " " )")
@@ -2016,33 +2011,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       Params.parens_if parens c.conf (fmt_longident_loc c lid $ fmt_atrs)
   | Pexp_construct
       ( {txt= Lident "::"; loc= _}
-      , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []; _} ) -> (
-    match Sugar.list_exp c.cmts exp with
-    | Some (loc_xes, nil_loc) ->
-        let p = Params.get_list_expr c.conf in
-        let offset = if c.conf.dock_collection_brackets then 0 else 2 in
-        let cmt_break = break 1 offset in
-        hvbox_if has_attr 0
-          (Params.parens_if has_attr c.conf
-             ( p.box
-                 ( fmt_expressions c (expression_width c) snd loc_xes
-                     (fun (locs, xexp) ->
-                       Cmts.fmt_list c ~eol:cmt_break locs
-                       @@ fmt_expression c xexp )
-                     p
-                 $ Cmts.fmt_before c ~pro:cmt_break ~epi:noop ~eol:noop
-                     nil_loc
-                 $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
-             $ fmt_atrs ) )
-    | None ->
-        let loc_args = Sugar.infix_cons c.cmts xexp in
-        Cmts.fmt c pexp_loc
-        @@ hvbox indent_wrap
-             ( fmt_infix_op_args c ~parens xexp
-                 (List.map loc_args ~f:(fun (loc, arg) ->
-                      let fmt_op = opt loc (fmt_longident_loc c) in
-                      (false, noop, noop, (fmt_op, [(Nolabel, arg)])) ) )
-             $ fmt_atrs ) )
+      , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []; _} ) ->
+      let loc_args = Sugar.infix_cons c.cmts xexp in
+      Cmts.fmt c pexp_loc
+      @@ hvbox indent_wrap
+           ( fmt_infix_op_args c ~parens xexp
+               (List.map loc_args ~f:(fun (loc, arg) ->
+                    let fmt_op = opt loc (fmt_longident_loc c) in
+                    (false, noop, noop, (fmt_op, [(Nolabel, arg)])) ) )
+           $ fmt_atrs )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =
         match c.conf.indicate_multiline_delimiters with
@@ -2245,11 +2222,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         && (not (Cmts.has_after c.cmts e0.pexp_loc))
         &&
         match e0.pexp_desc with
-        | (Pexp_array _ | Pexp_record _)
+        | (Pexp_array _ | Pexp_list _ | Pexp_record _)
           when List.is_empty e0.pexp_attributes ->
             true
         | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
-        | _ -> Option.is_some (Sugar.list_exp c.cmts e0)
+        | Pexp_construct ({txt= Lident "[]"; _}, None) -> true
+        | _ -> false
       in
       let force_fit = match force with Some Fit -> true | _ -> false in
       let opn, cls = if can_skip_parens then (".", "") else (".(", ")") in
