@@ -11,6 +11,16 @@
 
 open Sexplib0
 
+module Magic = struct
+  let int_of_ic : in_channel -> int = Obj.magic
+
+  let ic_of_int : int -> in_channel = Obj.magic
+
+  let int_of_oc : out_channel -> int = Obj.magic
+
+  let oc_of_int : int -> out_channel = Obj.magic
+end
+
 module type Command_S = sig
   type t
 
@@ -25,6 +35,10 @@ module type Client_S = sig
   type t
 
   type cmd
+
+  val to_sexp : t -> Sexp.t
+
+  val of_sexp : Sexp.t -> (t, [> `Msg of string]) result
 
   val pid : t -> int
 
@@ -128,6 +142,32 @@ module V1 :
 
     type cmd = Command.t
 
+    let to_sexp {pid; input; output} =
+      let open Sexp in
+      List
+        [ Atom "Pid"
+        ; Atom (string_of_int pid)
+        ; Atom "Input"
+        ; Atom (string_of_int (Magic.int_of_ic input))
+        ; Atom "Output"
+        ; Atom (string_of_int (Magic.int_of_oc output)) ]
+
+    let of_sexp =
+      let open Sexp in
+      function
+      | List
+          [ Atom "Pid"
+          ; Atom pid
+          ; Atom "Input"
+          ; Atom input
+          ; Atom "Output"
+          ; Atom output ] ->
+          let pid = int_of_string pid in
+          let input = Magic.ic_of_int (int_of_string input) in
+          let output = Magic.oc_of_int (int_of_string output) in
+          Ok {pid; input; output}
+      | _ -> Error (`Msg "V1.Client.of_sexp: invalid sexp")
+
     let pid t = t.pid
 
     let mk ~pid input output = {pid; input; output}
@@ -160,6 +200,17 @@ module V1 :
 end
 
 type client = [`V1 of V1.Client.t]
+
+let sexp_of_client =
+  let open Sexp in
+  function `V1 c -> List [Atom "V1"; V1.Client.to_sexp c]
+
+let client_of_sexp =
+  let open Sexp in
+  function
+  | List [Atom "V1"; c] -> (
+    match V1.Client.of_sexp c with Ok c -> Ok (`V1 c) | Error x -> Error x )
+  | _ -> Error (`Msg "client_of_sexp: invalid sexp")
 
 let get_client ~pid input output = function
   | "v1" | "V1" -> Some (`V1 (V1.Client.mk ~pid input output))
