@@ -251,3 +251,17 @@ let halt = function `V1 cl -> V1.Client.halt cl
 let config c = function `V1 cl -> V1.Client.config c cl
 
 let format x = function `V1 cl -> V1.Client.format x cl
+
+(** Session management *)
+
+let sessions : (client, int) Hashtbl.t = Hashtbl.create 8
+
+let new_session (t : client) =
+  let count = Option.value (Hashtbl.find_opt sessions t) ~default:0 in
+  let count = count + 1 in
+  Hashtbl.replace sessions t count
+
+let end_session (t : client) =
+  let count = Option.value (Hashtbl.find_opt sessions t) ~default:0 in
+  let count = count - 1 in
+  if count <= 0 then ignore @@ halt t else Hashtbl.replace sessions t count
