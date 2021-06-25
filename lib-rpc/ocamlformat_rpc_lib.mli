@@ -84,3 +84,10 @@ val config :
   (string * string) list -> client -> (unit, [> `Msg of string]) result
 
 val format : string -> client -> (string, [> `Msg of string]) result
+
+val new_session : client -> unit
+(** Indicates the client there is one new user. *)
+
+val end_session : client -> unit
+(** Indicates the client one user closed its session. The halt signal will be
+    sent when all sessions of a client are closed. *)
