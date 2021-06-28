@@ -79,23 +79,28 @@ let rec odoc_inline_element fmt = function
       let txt =
         String.filter txt ~f:(function '\\' -> false | _ -> true)
       in
-      fpf fmt "Word,%a" str txt
-  | `Code_span txt -> fpf fmt "Code_span,%a" str txt
-  | `Raw_markup (Some lang, txt) -> fpf fmt "Raw_html:%s,%a" lang str txt
-  | `Raw_markup (None, txt) -> fpf fmt "Raw_html,%a" str txt
+      fpf fmt "Word(%a)" str txt
+  | `Code_span txt -> fpf fmt "Code_span(%a)" str txt
+  | `Raw_markup (Some lang, txt) -> fpf fmt "Raw_markup(%s,%a)" lang str txt
+  | `Raw_markup (None, txt) -> fpf fmt "Raw_markup(%a)" str txt
   | `Styled (style, elems) ->
-      fpf fmt "Styled,%a,%a" odoc_style style odoc_inline_elements elems
+      fpf fmt "Styled(%a,%a)" odoc_style style odoc_inline_elements elems
   | `Reference (_kind, ref, content) ->
-      fpf fmt "Reference,%a,%a" odoc_reference ref odoc_inline_elements
+      fpf fmt "Reference(%a,%a)" odoc_reference ref odoc_inline_elements
         content
   | `Link (txt, content) ->
-      fpf fmt "Link,%a,%a" str txt odoc_inline_elements content
+      fpf fmt "Link(%a,%a)" str txt odoc_inline_elements content
 
 and odoc_inline_elements fmt elems =
   list (ign_loc odoc_inline_element) fmt elems
 
 let rec odoc_nestable_block_element c fmt = function
-  | `Paragraph elms -> fpf fmt "Paragraph,%a" odoc_inline_elements elms
+  | `Paragraph elms ->
+      (* Paragraphs must not be considered for the normalized form. They are
+         only structural and the shape of a docstring organized in paragraphs
+         only depend on linebreaks, which may be changed by the
+         formatting. *)
+      odoc_inline_elements fmt elms
   | `Code_block txt ->
       let txt =
         try
@@ -117,41 +122,41 @@ let rec odoc_nestable_block_element c fmt = function
             comments
         with _ -> txt
       in
-      fpf fmt "Code_block,%a" str txt
-  | `Verbatim txt -> fpf fmt "Verbatim,%a" str txt
-  | `Modules mods -> fpf fmt "Modules,%a" (list odoc_reference) mods
+      fpf fmt "Code_block(%a)" str txt
+  | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
+  | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->
       let ord = match ord with `Unordered -> "U" | `Ordered -> "O" in
       let list_item fmt elems =
         fpf fmt "Item(%a)" (odoc_nestable_block_elements c) elems
       in
-      fpf fmt "List,%s,%a" ord (list list_item) items
+      fpf fmt "List(%s,%a)" ord (list list_item) items
 
 and odoc_nestable_block_elements c fmt elems =
   list (ign_loc (odoc_nestable_block_element c)) fmt elems
 
 let odoc_tag c fmt = function
-  | `Author txt -> fpf fmt "Author,%a" str txt
+  | `Author txt -> fpf fmt "Author(%a)" str txt
   | `Deprecated elems ->
-      fpf fmt "Deprecated,%a" (odoc_nestable_block_elements c) elems
+      fpf fmt "Deprecated(%a)" (odoc_nestable_block_elements c) elems
   | `Param (p, elems) ->
-      fpf fmt "Param,%a,%a" str p (odoc_nestable_block_elements c) elems
+      fpf fmt "Param(%a,%a)" str p (odoc_nestable_block_elements c) elems
   | `Raise (p, elems) ->
-      fpf fmt "Raise,%a,%a" str p (odoc_nestable_block_elements c) elems
+      fpf fmt "Raise(%a,%a)" str p (odoc_nestable_block_elements c) elems
   | `Return elems ->
-      fpf fmt "Return,%a" (odoc_nestable_block_elements c) elems
+      fpf fmt "Return(%a)" (odoc_nestable_block_elements c) elems
   | `See (kind, txt, elems) ->
       let kind =
         match kind with `Url -> "U" | `File -> "F" | `Document -> "D"
       in
-      fpf fmt "See,%s,%a,%a" kind str txt
+      fpf fmt "See(%s,%a,%a)" kind str txt
         (odoc_nestable_block_elements c)
         elems
-  | `Since txt -> fpf fmt "Since,%a" str txt
+  | `Since txt -> fpf fmt "Since(%a)" str txt
   | `Before (p, elems) ->
-      fpf fmt "Before,%a,%a" str p (odoc_nestable_block_elements c) elems
-  | `Version txt -> fpf fmt "Version,%a" str txt
-  | `Canonical ref -> fpf fmt "Canonical,%a" odoc_reference ref
+      fpf fmt "Before(%a,%a)" str p (odoc_nestable_block_elements c) elems
+  | `Version txt -> fpf fmt "Version(%a)" str txt
+  | `Canonical ref -> fpf fmt "Canonical(%a)" odoc_reference ref
   | `Inline -> fpf fmt "Inline"
   | `Open -> fpf fmt "Open"
   | `Closed -> fpf fmt "Closed"
@@ -160,8 +165,8 @@ let odoc_block_element c fmt = function
   | `Heading (lvl, lbl, content) ->
       let lvl = Int.to_string lvl in
       let lbl = match lbl with Some lbl -> lbl | None -> "" in
-      fpf fmt "Heading,%s,%a,%a" lvl str lbl odoc_inline_elements content
-  | `Tag tag -> fpf fmt "Tag,%a" (odoc_tag c) tag
+      fpf fmt "Heading(%s,%a,%a)" lvl str lbl odoc_inline_elements content
+  | `Tag tag -> fpf fmt "Tag(%a)" (odoc_tag c) tag
   | #nestable_block_element as elm -> odoc_nestable_block_element c fmt elm
 
 let odoc_docs c fmt elems = list (ign_loc (odoc_block_element c)) fmt elems
