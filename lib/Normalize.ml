@@ -183,13 +183,13 @@ let make_mapper conf ~ignore_doc_comments =
   let attribute (m : Ast_mapper.mapper) (attr : attribute) =
     match attr.attr_payload with
     | PStr
-        [ { pstr_desc=
-              Pstr_eval
-                ( ( { pexp_desc=
-                        Pexp_constant (Pconst_string (doc, str_loc, None))
-                    ; _ } as exp )
-                , [] )
-          ; _ } as pstr ]
+        [ ( { pstr_desc=
+                Pstr_eval
+                  ( ( { pexp_desc=
+                          Pexp_constant (Pconst_string (doc, str_loc, None))
+                      ; _ } as exp )
+                  , [] )
+            ; _ } as pstr ) ]
       when Ast.Attr.is_doc attr ->
         let doc' = docstring {conf; normalize_code= m.structure m} doc in
         Ast_mapper.default_mapper.attribute m

@@ -514,10 +514,10 @@ let rec fmt_extension c ctx key (ext, pld) =
       assert (not (Cmts.has_before c.cmts pstr_loc)) ;
       assert (not (Cmts.has_after c.cmts pstr_loc)) ;
       hvbox 0 (fmt_quoted_string key ext str delim)
-  | _, _, PStr [{pstr_loc; _} as si], (Pld _ | Str _ | Top)
+  | _, _, PStr [({pstr_loc; _} as si)], (Pld _ | Str _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
       fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
-  | _, _, PSig [{psig_loc; _} as si], (Pld _ | Sig _ | Top)
+  | _, _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
   | _, _, PPat (({ppat_loc; _} as pat), _), (Pld _ | Top)
@@ -1522,9 +1522,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             Pexp_extension
               ( name
               , PStr
-                  [ { pstr_desc=
-                        Pstr_eval (({pexp_desc= Pexp_fun _; _} as call), [])
-                    ; pstr_loc= _ } as pld ] )
+                  [ ( { pstr_desc=
+                          Pstr_eval (({pexp_desc= Pexp_fun _; _} as call), [])
+                      ; pstr_loc= _ } as pld ) ] )
         ; _ }
       , e2 ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) call) in
@@ -1561,10 +1561,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                 Pexp_extension
                   ( name
                   , PStr
-                      [ { pstr_desc=
-                            Pstr_eval
-                              (({pexp_desc= Pexp_fun _; _} as retn), [])
-                        ; pstr_loc= _ } as pld ] )
+                      [ ( { pstr_desc=
+                              Pstr_eval
+                                (({pexp_desc= Pexp_fun _; _} as retn), [])
+                          ; pstr_loc= _ } as pld ) ] )
             ; _ } ) ] ) ->
       let xargs, xbody = Sugar.fun_ c.cmts (sub_exp ~ctx:(Str pld) retn) in
       let fmt_cstr, xbody = type_constr_and_body c xbody in
@@ -2384,26 +2384,26 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_extension
       ( ext
       , PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( ( { pexp_desc=
-                          ( Pexp_while _ | Pexp_for _ | Pexp_match _
-                          | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
-                          | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
-                          | Pexp_function _ | Pexp_letexception _
-                          | Pexp_open _ | Pexp_assert _ | Pexp_lazy _
-                          | Pexp_pack _
-                          | Pexp_constraint
-                              ( { pexp_desc= Pexp_pack _
-                                ; pexp_attributes= []
-                                ; _ }
-                              , { ptyp_desc= Ptyp_package _
-                                ; ptyp_attributes= []
-                                ; _ } ) )
-                      ; pexp_attributes= []
-                      ; _ } as e1 )
-                  , _ )
-            ; pstr_loc= _ } as str ] )
+          [ ( { pstr_desc=
+                  Pstr_eval
+                    ( ( { pexp_desc=
+                            ( Pexp_while _ | Pexp_for _ | Pexp_match _
+                            | Pexp_try _ | Pexp_let _ | Pexp_ifthenelse _
+                            | Pexp_new _ | Pexp_letmodule _ | Pexp_object _
+                            | Pexp_function _ | Pexp_letexception _
+                            | Pexp_open _ | Pexp_assert _ | Pexp_lazy _
+                            | Pexp_pack _
+                            | Pexp_constraint
+                                ( { pexp_desc= Pexp_pack _
+                                  ; pexp_attributes= []
+                                  ; _ }
+                                , { ptyp_desc= Ptyp_package _
+                                  ; ptyp_attributes= []
+                                  ; _ } ) )
+                        ; pexp_attributes= []
+                        ; _ } as e1 )
+                    , _ )
+              ; pstr_loc= _ } as str ) ] )
     when List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
       hvbox 0
@@ -2412,19 +2412,19 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_extension
       ( ext
       , PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( ( { pexp_desc=
-                          Pexp_apply
-                            ( { pexp_desc= Pexp_ident {txt= id; loc= _}
-                              ; pexp_attributes= []
-                              ; pexp_loc= _
-                              ; _ }
-                            , [(Nolabel, _); (Nolabel, _)] )
-                      ; pexp_attributes= []
-                      ; _ } as e1 )
-                  , _ )
-            ; pstr_loc= _ } as str ] )
+          [ ( { pstr_desc=
+                  Pstr_eval
+                    ( ( { pexp_desc=
+                            Pexp_apply
+                              ( { pexp_desc= Pexp_ident {txt= id; loc= _}
+                                ; pexp_attributes= []
+                                ; pexp_loc= _
+                                ; _ }
+                              , [(Nolabel, _); (Nolabel, _)] )
+                        ; pexp_attributes= []
+                        ; _ } as e1 )
+                    , _ )
+              ; pstr_loc= _ } as str ) ] )
     when Longident.is_infix id
          && (not (Longident.is_monadic_binding id))
          && List.is_empty pexp_attributes

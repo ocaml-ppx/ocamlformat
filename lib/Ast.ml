@@ -1955,7 +1955,7 @@ end = struct
      |( ( Pat
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ )
+                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
             ; _ }
         | Exp {pexp_desc= Pexp_fun _; _} )
       , Ppat_alias _ )
