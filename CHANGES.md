@@ -32,6 +32,8 @@
 
   + Improve breaking of comments to avoid violating the margin (#1676, @jberdine)
 
+  + Fix parentheses around successive unary operations (#1696, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
