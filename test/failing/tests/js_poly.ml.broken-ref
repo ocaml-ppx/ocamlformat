@@ -1,5 +1,0 @@
-ocamlformat: ignoring "tests/js_poly.ml" (syntax error)
-File "tests/js_poly.ml", line 3, characters 7-8:
-3 |     if _ then
-           ^
-Error: Syntax error: wildcard "_" not expected.

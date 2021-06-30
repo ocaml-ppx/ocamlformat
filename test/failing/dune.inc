@@ -81,19 +81,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-   (with-outputs-to ifand.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:tests/ifand.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/ifand.ml.broken-ref ifand.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
    (with-outputs-to indent_empty.ml.output
      (with-accepted-exit-codes 1
        (run %{bin:ocamlformat} %{dep:tests/indent_empty.ml})))))
@@ -128,19 +115,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/js_bench.ml.broken-ref js_bench.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-   (with-outputs-to js_bind.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:tests/js_bind.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/js_bind.ml.broken-ref js_bind.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -193,32 +167,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/js_low_priority.ml.broken-ref js_low_priority.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-   (with-outputs-to js_map.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:tests/js_map.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/js_map.ml.broken-ref js_map.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-   (with-outputs-to js_poly.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:tests/js_poly.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/js_poly.ml.broken-ref js_poly.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -323,32 +271,6 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/never_align.ml.broken-ref never_align.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-   (with-outputs-to object.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:tests/object.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/object.ml.broken-ref object.ml.output)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-   (with-outputs-to obuild.ml.output
-     (with-accepted-exit-codes 1
-       (run %{bin:ocamlformat} %{dep:tests/obuild.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/obuild.ml.broken-ref obuild.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )

@@ -1230,6 +1230,30 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to holes.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/holes.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/holes.ml.ref holes.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+   (with-outputs-to ifand.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/ifand.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/ifand.ml.ref ifand.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to index_op.ml.output
      (run %{bin:ocamlformat} %{dep:tests/index_op.ml}))))
 
@@ -1662,6 +1686,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to js_bind.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/js_bind.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/js_bind.ml.ref js_bind.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to js_fun.ml.output
      (run %{bin:ocamlformat} --max-iter=3 %{dep:tests/js_fun.ml}))))
 
@@ -1674,6 +1710,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to js_map.ml.output
+     (run %{bin:ocamlformat} --max-iter=3 %{dep:tests/js_map.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/js_map.ml.ref js_map.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to js_pattern.ml.output
      (run %{bin:ocamlformat} %{dep:tests/js_pattern.ml}))))
 
@@ -1681,6 +1729,18 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/js_pattern.ml.ref js_pattern.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+   (with-outputs-to js_poly.ml.output
+     (run %{bin:ocamlformat} --max-iter=3 %{dep:tests/js_poly.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/js_poly.ml.ref js_poly.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )
@@ -2203,6 +2263,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to object2.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/object2.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/object2.ml.ref object2.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to object_type.ml.output
      (run %{bin:ocamlformat} %{dep:tests/object_type.ml}))))
 
@@ -2210,6 +2282,18 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/object_type.ml.ref object_type.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+   (with-outputs-to obuild.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/obuild.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/obuild.ml.ref obuild.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )
