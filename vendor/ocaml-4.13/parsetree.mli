@@ -387,6 +387,8 @@ and expression_desc =
         (* [%id] *)
   | Pexp_unreachable
         (* . *)
+  | Pexp_hole
+        (* _ *)
 
 and case =   (* (P -> E) or (P when E0 -> E) *)
     {
@@ -887,6 +889,8 @@ and module_expr_desc =
         (* (val E) *)
   | Pmod_extension of extension
         (* [%id] *)
+  | Pmod_hole
+        (* _ *)
 
 and structure = structure_item list
 

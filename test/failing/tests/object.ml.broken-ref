@@ -1,5 +1,0 @@
-ocamlformat: ignoring "tests/object.ml" (syntax error)
-File "tests/object.ml", line 4, characters 17-18:
-4 |     method bar = _
-                     ^
-Error: Syntax error: wildcard "_" not expected.

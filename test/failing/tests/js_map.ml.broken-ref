@@ -1,5 +1,0 @@
-ocamlformat: ignoring "tests/js_map.ml" (syntax error)
-File "tests/js_map.ml", line 3, characters 4-5:
-3 |     _)
-        ^
-Error: Syntax error: wildcard "_" not expected.

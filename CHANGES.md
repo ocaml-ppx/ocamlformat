@@ -10,6 +10,8 @@
 
 #### New features
 
+  + Handle merlin typed holes (#1698, @gpetiot)
+
 ### 0.19.0 (2021-07-16)
 
 #### Bug fixes
