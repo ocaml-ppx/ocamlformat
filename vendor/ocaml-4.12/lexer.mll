@@ -115,6 +115,7 @@ let comment_start_loc = ref [];;
 let in_comment () = !comment_start_loc <> [];;
 let is_in_string = ref false
 let in_string () = !is_in_string
+let merlin_mode = ref false
 let print_warnings = ref true
 
 (* Escaped chars are interpreted in strings unless they are in comments. *)
@@ -320,6 +321,19 @@ let () =
           None
     )
 
+let extend lexbuf =
+  let lex_buffer_len = lexbuf.lex_buffer_len + 1 in
+  let lex_buffer =
+    Bytes.init lex_buffer_len
+      (fun i ->
+         if i <= lexbuf.lex_curr_pos then
+           Bytes.get lexbuf.lex_buffer i
+         else
+           Bytes.get lexbuf.lex_buffer (i - 1)
+      )
+  in
+  { lexbuf with lex_buffer; lex_buffer_len }
+
 }
 
 let newline = ('\013'* '\010')
@@ -370,7 +384,7 @@ let literal_modifier = ['G'-'Z' 'g'-'z']
 
 let type_disambig = ['/'] ['0'-'9']+
 
-rule token = parse
+rule token_common = parse
   | ('\\' as bs) newline {
       if not !escaped_newlines then error lexbuf (Illegal_character bs);
       update_loc lexbuf None 1 false 0;
@@ -401,15 +415,8 @@ rule token = parse
   | "?" (lowercase_latin1 identchar_latin1 * as name) ':'
       { warn_latin1 lexbuf;
         OPTLABEL name }
-  | lowercase identchar * type_disambig as name
-      { try Hashtbl.find keyword_table name
-        with Not_found -> TLIDENT name }
-  | lowercase_latin1 identchar_latin1 * type_disambig as name
-      { warn_latin1 lexbuf; TLIDENT name }
-  | uppercase identchar * type_disambig as name
-      { TUIDENT name } (* No capitalized keywords *)
-  | uppercase_latin1 identchar_latin1 * type_disambig as name
-      { warn_latin1 lexbuf; TUIDENT name }
+  | "val"
+      { merlin_mode := true; VAL }
   | lowercase identchar * as name
       { try Hashtbl.find keyword_table name
         with Not_found -> LIDENT name }
@@ -586,6 +593,24 @@ rule token = parse
   | eof { EOF }
   | (_ as illegal_char)
       { error lexbuf (Illegal_character illegal_char) }
+
+and token = parse
+  | _
+    { (if !merlin_mode then token_merlin_mode else token_common)
+      (extend lexbuf) }
+
+and token_merlin_mode = parse
+  | lowercase identchar * type_disambig as name
+      { try Hashtbl.find keyword_table name
+        with Not_found -> TLIDENT name }
+  | lowercase_latin1 identchar_latin1 * type_disambig as name
+      { warn_latin1 lexbuf; TLIDENT name }
+  | uppercase identchar * type_disambig as name
+      { TUIDENT name } (* No capitalized keywords *)
+  | uppercase_latin1 identchar_latin1 * type_disambig as name
+      { warn_latin1 lexbuf; TUIDENT name }
+  | _
+      { token_common (extend lexbuf) }
 
 and directive = parse
   | ([' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
