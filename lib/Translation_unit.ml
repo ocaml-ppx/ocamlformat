@@ -71,13 +71,14 @@ module Error = struct
     | Invalid_source {exn; input_name} -> (
         let reason =
           match exn with
-          | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
+          | Syntaxerr.Error _ | Lexer.Error _ | Lexer_merlin.Error _ ->
+              " (syntax error)"
           | Warning50 _ -> " (misplaced documentation comments - warning 50)"
           | _ -> ""
         in
         Format.fprintf fmt "%s: ignoring %S%s\n%!" exe input_name reason ;
         match exn with
-        | Syntaxerr.Error _ | Lexer.Error _ ->
+        | Syntaxerr.Error _ | Lexer.Error _ | Lexer_merlin.Error _ ->
             Location.report_exception fmt exn
         | Warning50 l ->
             List.iter l ~f:(fun (l, w) -> Warning.print_warning l w) ;
@@ -186,7 +187,9 @@ module Error = struct
                        @{<error>Error@}: Comment (* %s *) dropped.\n\
                        %!"
                       Location.print loc msg )
-            | `Cannot_parse ((Syntaxerr.Error _ | Lexer.Error _) as exn) ->
+            | `Cannot_parse
+                ( (Syntaxerr.Error _ | Lexer.Error _ | Lexer_merlin.Error _)
+                as exn ) ->
                 if debug then Location.report_exception fmt exn
             | `Warning50 l ->
                 if debug then

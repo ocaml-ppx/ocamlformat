@@ -7397,3 +7397,6 @@ let xxxxxx =
   let%map (* _____________________________
              __________ *)()            = yyyyyyyy in
   { zzzzzzzzzzzzz }
+
+let _ = a/2
+let _ = a/2n

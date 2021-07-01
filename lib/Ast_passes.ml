@@ -57,11 +57,11 @@ module Ast0 = struct
   module Parse = struct
     let implementation = Parse.implementation
 
-    let interface = Parse.interface
+    let interface = Parse_merlin.interface
 
     let use_file = Parse.use_file
 
-    let core_type = Parse.core_type
+    let core_type = Parse_merlin.core_type
 
     let module_type (lx : Lexing.lexbuf) =
       let pre = "module X : " in
