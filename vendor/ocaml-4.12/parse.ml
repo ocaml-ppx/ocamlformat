@@ -105,32 +105,25 @@ let rec loop lexbuf in_error checkpoint =
           let start0 = lexbuf.lex_start_p in
           let curr0 = lexbuf.lex_curr_p in
           let tok = token lexbuf in
+          let triple = (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
           match tok with
           | (UIDENT _ | LIDENT _) -> (
-              let triple = (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
               let checkpoint' = I.offer checkpoint triple in
               match checkpoint' with
               | I.InputNeeded _ -> (
-                  let triple' =
-                    (Parser.INFIXOP3 "/",
-                     lexbuf.lex_curr_p,
-                     { lexbuf.lex_curr_p with
-                       pos_cnum= lexbuf.lex_curr_p.pos_cnum + 1 } )
-                  in
-                  let checkpoint'' = I.offer checkpoint' triple' in
-                  match checkpoint'' with
-                  | I.InputNeeded _ ->
-                      (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
-                  | _ -> (
-                      lexbuf.lex_start_p <- start0;
-                      lexbuf.lex_curr_p <- curr0;
-                      let tok = type_disambiguation lexbuf in
-                      (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
-                    )
+                  if I.acceptable
+                       checkpoint' (Parser.INFIXOP3 "/") lexbuf.lex_curr_p
+                  then
+                    triple
+                  else (
+                    lexbuf.lex_start_p <- start0;
+                    lexbuf.lex_curr_p <- curr0;
+                    let tok = type_disambiguation lexbuf in
+                    (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+                  )
                 )
-              |_ ->triple)
-          | _ ->
-              (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+              |_ -> triple )
+          | _ -> triple
       in
       let checkpoint = I.offer checkpoint triple in
       loop lexbuf in_error checkpoint
