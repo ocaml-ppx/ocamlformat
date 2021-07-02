@@ -24,6 +24,11 @@ let token lexbuf =
   last_token := token;
   token
 
+let type_disambiguation lexbuf =
+  let token = Lexer.type_disambiguation lexbuf in
+  last_token := token;
+  token
+
 let rec skip_phrase lexbuf =
   match token lexbuf with
   | Parser.SEMISEMI | Parser.EOF -> ()
@@ -97,8 +102,43 @@ let rec loop lexbuf in_error checkpoint =
              looking for the next ';;'.  *)
           (Parser.EOF, lexbuf.Lexing.lex_curr_p, lexbuf.Lexing.lex_curr_p)
         else
-          let token = token lexbuf in
-          (token, lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p)
+          let start0, curr0 = lexbuf.lex_start_p, lexbuf.lex_curr_p in
+          let checkpoint_before_id lexbuf =
+            lexbuf.Lexing.lex_start_p <- start0;
+            lexbuf.Lexing.lex_curr_p <- curr0
+          in
+          let tok = token lexbuf in
+          let start1, curr1 = lexbuf.lex_start_p, lexbuf.lex_curr_p in
+          let checkpoint_after_id lexbuf =
+            lexbuf.Lexing.lex_start_p <- start1;
+            lexbuf.Lexing.lex_curr_p <- curr1
+          in
+          match tok with
+          | UIDENT _ as id -> (
+              match token lexbuf with
+              | INFIXOP3 "/" ->
+                  checkpoint_before_id lexbuf;
+                  let tok = type_disambiguation lexbuf in
+                  (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+              | _ ->
+                  checkpoint_after_id lexbuf;
+                  (id, lexbuf.lex_start_p, lexbuf.lex_curr_p) )
+          | LIDENT _ as id -> (
+              match token lexbuf with
+              | INFIXOP3 "/" -> (
+                  match token lexbuf with
+                  | INT (_, None) ->
+                      checkpoint_before_id lexbuf;
+                      let tok = type_disambiguation lexbuf in
+                      (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+                  |  _ ->
+                      checkpoint_after_id lexbuf;
+                      (id, lexbuf.lex_start_p, lexbuf.lex_curr_p) )
+              | _ ->
+                  checkpoint_after_id lexbuf;
+                  (id, lexbuf.lex_start_p, lexbuf.lex_curr_p) )
+          | _ ->
+              (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
       in
       let checkpoint = I.offer checkpoint triple in
       loop lexbuf in_error checkpoint
