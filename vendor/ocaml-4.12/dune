@@ -6,6 +6,8 @@
 
 (ocamllex lexer)
 
+(ocamllex lexer_merlin)
+
 (menhir
  (infer false)
  (flags

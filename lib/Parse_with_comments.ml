@@ -29,9 +29,21 @@ end
 
 exception Warning50 of (Location.t * Warnings.t) list
 
-let tokens lexbuf =
+let token_with_comments (type a) : a Ast_passes.Ast0.t -> _ -> _ = function
+  | Structure | Use_file | Expression -> Lexer.token_with_comments
+  | Signature | Core_type | Module_type -> Lexer_merlin.token_with_comments
+
+let skip_hash_bang (type a) : a Ast_passes.Ast0.t -> _ -> _ = function
+  | Structure | Use_file | Expression -> Lexer.skip_hash_bang
+  | Signature | Core_type | Module_type -> Lexer_merlin.skip_hash_bang
+
+let comments (type a) : a Ast_passes.Ast0.t -> _ -> _ = function
+  | Structure | Use_file | Expression -> Lexer.comments
+  | Signature | Core_type | Module_type -> Lexer_merlin.comments
+
+let tokens fragment lexbuf =
   let rec loop acc =
-    match Lexer.token_with_comments lexbuf with
+    match token_with_comments fragment lexbuf with
     (* The location in lexbuf are invalid for comments *)
     | COMMENT (_, loc) as tok -> loop ((tok, loc) :: acc)
     | DOCSTRING ds as tok -> loop ((tok, Docstrings.docstring_loc ds) :: acc)
@@ -42,11 +54,11 @@ let tokens lexbuf =
   in
   loop []
 
-let fresh_lexbuf source =
+let fresh_lexbuf fragment source =
   let lexbuf = Lexing.from_string source in
   Location.init lexbuf !Location.input_name ;
   let hash_bang =
-    Lexer.skip_hash_bang lexbuf ;
+    skip_hash_bang fragment lexbuf ;
     let len = lexbuf.lex_last_pos in
     String.sub source ~pos:0 ~len
   in
@@ -60,7 +72,7 @@ let parse parse fragment (conf : Conf.t) ~source =
   Warnings.parse_options false (W.to_string warnings) ;
   let w50 = ref [] in
   let t =
-    let lexbuf, hash_bang = fresh_lexbuf source in
+    let lexbuf, hash_bang = fresh_lexbuf fragment source in
     Warning.with_warning_filter
       ~filter:(fun loc warn ->
         if Warning.is_unexpected_docstring warn && conf.comment_check then (
@@ -73,11 +85,11 @@ let parse parse fragment (conf : Conf.t) ~source =
         let comments =
           List.map
             ~f:(fun (txt, loc) -> Cmt.create txt loc)
-            (Lexer.comments ())
+            (comments fragment ())
         in
         let tokens =
-          let lexbuf, _ = fresh_lexbuf source in
-          tokens lexbuf
+          let lexbuf, _ = fresh_lexbuf fragment source in
+          tokens fragment lexbuf
         in
         let source = Source.create ~text:source ~tokens in
         {ast; comments; prefix= hash_bang; source} )
