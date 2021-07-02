@@ -102,41 +102,33 @@ let rec loop lexbuf in_error checkpoint =
              looking for the next ';;'.  *)
           (Parser.EOF, lexbuf.Lexing.lex_curr_p, lexbuf.Lexing.lex_curr_p)
         else
-          let start0, curr0 = lexbuf.lex_start_p, lexbuf.lex_curr_p in
-          let checkpoint_before_id lexbuf =
-            lexbuf.Lexing.lex_start_p <- start0;
-            lexbuf.Lexing.lex_curr_p <- curr0
-          in
+          let start0 = lexbuf.lex_start_p in
+          let curr0 = lexbuf.lex_curr_p in
           let tok = token lexbuf in
-          let start1, curr1 = lexbuf.lex_start_p, lexbuf.lex_curr_p in
-          let checkpoint_after_id lexbuf =
-            lexbuf.Lexing.lex_start_p <- start1;
-            lexbuf.Lexing.lex_curr_p <- curr1
-          in
           match tok with
-          | UIDENT _ as id -> (
-              match token lexbuf with
-              | INFIXOP3 "/" ->
-                  checkpoint_before_id lexbuf;
-                  let tok = type_disambiguation lexbuf in
-                  (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
-              | _ ->
-                  checkpoint_after_id lexbuf;
-                  (id, lexbuf.lex_start_p, lexbuf.lex_curr_p) )
-          | LIDENT _ as id -> (
-              match token lexbuf with
-              | INFIXOP3 "/" -> (
-                  match token lexbuf with
-                  | INT (_, None) ->
-                      checkpoint_before_id lexbuf;
+          | (UIDENT _ | LIDENT _) -> (
+              let triple = (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
+              let checkpoint' = I.offer checkpoint triple in
+              match checkpoint' with
+              | I.InputNeeded _ -> (
+                  let triple' =
+                    (Parser.INFIXOP3 "/",
+                     lexbuf.lex_curr_p,
+                     { lexbuf.lex_curr_p with
+                       pos_cnum= lexbuf.lex_curr_p.pos_cnum + 1 } )
+                  in
+                  let checkpoint'' = I.offer checkpoint' triple' in
+                  match checkpoint'' with
+                  | I.InputNeeded _ ->
+                      (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+                  | _ -> (
+                      lexbuf.lex_start_p <- start0;
+                      lexbuf.lex_curr_p <- curr0;
                       let tok = type_disambiguation lexbuf in
                       (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
-                  |  _ ->
-                      checkpoint_after_id lexbuf;
-                      (id, lexbuf.lex_start_p, lexbuf.lex_curr_p) )
-              | _ ->
-                  checkpoint_after_id lexbuf;
-                  (id, lexbuf.lex_start_p, lexbuf.lex_curr_p) )
+                    )
+                )
+              |_ ->triple)
           | _ ->
               (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
       in
