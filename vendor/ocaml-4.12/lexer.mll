@@ -401,15 +401,6 @@ rule token = parse
   | "?" (lowercase_latin1 identchar_latin1 * as name) ':'
       { warn_latin1 lexbuf;
         OPTLABEL name }
-  | lowercase identchar * type_disambig as name
-      { try Hashtbl.find keyword_table name
-        with Not_found -> TLIDENT name }
-  | lowercase_latin1 identchar_latin1 * type_disambig as name
-      { warn_latin1 lexbuf; TLIDENT name }
-  | uppercase identchar * type_disambig as name
-      { TUIDENT name } (* No capitalized keywords *)
-  | uppercase_latin1 identchar_latin1 * type_disambig as name
-      { warn_latin1 lexbuf; TUIDENT name }
   | lowercase identchar * as name
       { try Hashtbl.find keyword_table name
         with Not_found -> LIDENT name }
@@ -586,6 +577,17 @@ rule token = parse
   | eof { EOF }
   | (_ as illegal_char)
       { error lexbuf (Illegal_character illegal_char) }
+
+and type_disambiguation = parse
+  | lowercase identchar * type_disambig as name
+      { try Hashtbl.find keyword_table name
+        with Not_found -> TLIDENT name }
+  | lowercase_latin1 identchar_latin1 * type_disambig as name
+      { warn_latin1 lexbuf; TLIDENT name }
+  | uppercase identchar * type_disambig as name
+      { TUIDENT name } (* No capitalized keywords *)
+  | uppercase_latin1 identchar_latin1 * type_disambig as name
+      { warn_latin1 lexbuf; TUIDENT name }
 
 and directive = parse
   | ([' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*

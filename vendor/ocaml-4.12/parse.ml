@@ -24,6 +24,11 @@ let token lexbuf =
   last_token := token;
   token
 
+let type_disambiguation lexbuf =
+  let token = Lexer.type_disambiguation lexbuf in
+  last_token := token;
+  token
+
 let rec skip_phrase lexbuf =
   match token lexbuf with
   | Parser.SEMISEMI | Parser.EOF -> ()
@@ -97,8 +102,28 @@ let rec loop lexbuf in_error checkpoint =
              looking for the next ';;'.  *)
           (Parser.EOF, lexbuf.Lexing.lex_curr_p, lexbuf.Lexing.lex_curr_p)
         else
-          let token = token lexbuf in
-          (token, lexbuf.Lexing.lex_start_p, lexbuf.Lexing.lex_curr_p)
+          let start0 = lexbuf.lex_start_p in
+          let curr0 = lexbuf.lex_curr_p in
+          let tok = token lexbuf in
+          let triple = (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
+          match tok with
+          | (UIDENT _ | LIDENT _) -> (
+              let checkpoint' = I.offer checkpoint triple in
+              match checkpoint' with
+              | I.InputNeeded _ -> (
+                  if I.acceptable
+                       checkpoint' (Parser.INFIXOP3 "/") lexbuf.lex_curr_p
+                  then
+                    triple
+                  else (
+                    lexbuf.lex_start_p <- start0;
+                    lexbuf.lex_curr_p <- curr0;
+                    let tok = type_disambiguation lexbuf in
+                    (tok, lexbuf.lex_start_p, lexbuf.lex_curr_p)
+                  )
+                )
+              |_ -> triple )
+          | _ -> triple
       in
       let checkpoint = I.offer checkpoint triple in
       loop lexbuf in_error checkpoint
