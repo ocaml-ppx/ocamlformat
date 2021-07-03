@@ -272,6 +272,13 @@ OPTIONS (CODE FORMATTING STYLE)
            ... = and before the in if the module declaration does not fit on
            a single line. The default value is compact.
 
+       --line-endings={native|unix}
+           Line endings used. native means that the formatted output will use
+           the line endings used by the host OS, i.e., LF on Unix and CRLF on
+           Windows. unix means that the formatted output will use Unix line
+           endings (LF) regardless of the host OS. The default value is
+           native. Cannot be set in attributes.
+
        -m COLS, --margin=COLS
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.
