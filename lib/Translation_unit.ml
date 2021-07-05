@@ -467,9 +467,19 @@ let numeric (type a b) (fg0 : a list Ast_passes.Ast0.t)
     | Ok parsed -> Ok parsed
     | Error _ -> parse_result ~f:recover fg0 conf ~source:src ~input_name
   in
-  match parse_or_recover ~src:source with
-  | Ok parsed -> indent_parsed parsed ~src:source ~range
-  | Error _ -> fallback ()
+  (* Slice the file if it is too long *)
+  if nlines > 100 then
+    let sliced_src, sliced_range = Slicer.fragment fgN ~range source in
+    match parse_or_recover ~src:sliced_src with
+    | Ok parsed -> indent_parsed parsed ~src:sliced_src ~range:sliced_range
+    | Error _ -> (
+      match parse_result fg0 conf ~source ~input_name with
+      | Ok parsed -> indent_parsed parsed ~src:source ~range
+      | Error _ -> fallback () )
+  else
+    match parse_or_recover ~src:source with
+    | Ok parsed -> indent_parsed parsed ~src:source ~range
+    | Error _ -> fallback ()
 
 let numeric = function
   | Syntax.Structure -> numeric Structure Structure
