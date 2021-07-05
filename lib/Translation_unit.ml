@@ -235,9 +235,20 @@ let check_margin conf ~filename ~fmted =
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k
 
-let with_buffer_formatter ~buffer_size k =
+let with_buffer_formatter ~line_endings ~buffer_size k =
   let buffer = Buffer.create buffer_size in
   let fs = Format_.formatter_of_buffer buffer in
+  let ({Format_.out_string; _} as fs_funs) =
+    Format_.pp_get_formatter_out_functions fs ()
+  in
+  let fs_funs =
+    { fs_funs with
+      Format_.out_newline=
+        ( match line_endings with
+        | `Lf -> fun () -> out_string "\n" 0 1
+        | `Crlf -> fun () -> out_string "\r\n" 0 2 ) }
+  in
+  Format_.pp_set_formatter_out_functions fs fs_funs ;
   Fmt.eval fs k ;
   Format_.pp_print_flush fs () ;
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
@@ -283,7 +294,7 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
         Cmts.init fgN ~debug:opts.debug t.source t.ast t.comments
       in
       let contents =
-        with_buffer_formatter
+        with_buffer_formatter ~line_endings:conf.Conf.line_endings
           ~buffer_size:(String.length prev_source)
           ( set_margin conf.margin
           $ opt conf.max_indent set_max_indent

@@ -24,63 +24,55 @@ let format ?output_file ~kind ~input_name ~source conf opts =
     Translation_unit.parse_and_format kind ?output_file ~input_name ~source
       conf opts
 
-let write_all ~binary output_file ~data =
-  Out_channel.with_file ~binary output_file ~f:(fun oc ->
+let write_all output_file ~data =
+  Out_channel.with_file ~binary:true output_file ~f:(fun oc ->
       Out_channel.output_string oc data )
 
-let to_output_file ~binary output_file data =
+let to_output_file output_file data =
   match output_file with
   | None ->
-      Out_channel.set_binary_mode Out_channel.stdout binary ;
+      Out_channel.set_binary_mode Out_channel.stdout true ;
       Out_channel.output_string Out_channel.stdout data
-  | Some output_file -> write_all ~binary output_file ~data
+  | Some output_file -> write_all output_file ~data
 
-let source_from_file ~binary = function
-  | Conf.Stdin ->
-      In_channel.set_binary_mode In_channel.stdin binary ;
-      In_channel.input_all In_channel.stdin
-  | File f -> In_channel.with_file ~binary f ~f:In_channel.input_all
+let source_from_file = function
+  | Conf.Stdin -> In_channel.input_all In_channel.stdin
+  | File f -> In_channel.with_file f ~f:In_channel.input_all
 
 let print_error ({quiet; _} : Conf.t) ({debug; _} : Conf.opts) e =
   Translation_unit.Error.print Format.err_formatter ~debug ~quiet e
-
-let binary conf =
-  match conf.Conf.line_endings with `Native -> false | `Unix -> true
 
 let run_action action opts =
   match action with
   | Conf.Inplace inputs ->
       let f {Conf.kind; name= input_name; file= input_file; conf} =
-        let binary = binary conf in
         let input_file =
           match input_file with
           | File f -> f
           | _ -> impossible "checked by validate"
         in
         let source =
-          In_channel.with_file ~binary input_file ~f:In_channel.input_all
+          In_channel.with_file input_file ~f:In_channel.input_all
         in
         let result = format ~kind ~input_name ~source conf opts in
         match result with
         | Ok formatted ->
             if not (String.equal formatted source) then
-              write_all ~binary input_file ~data:formatted ;
+              write_all input_file ~data:formatted ;
             Ok ()
         | Error e -> Error (fun () -> print_error conf opts e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | In_out ({kind; file; name= input_name; conf}, output_file) -> (
-      let binary = binary conf in
-      let source = source_from_file ~binary file in
+      let source = source_from_file file in
       match format ?output_file ~kind ~input_name ~source conf opts with
       | Ok s ->
-          to_output_file ~binary output_file s ;
+          to_output_file output_file s ;
           Ok ()
       | Error e -> Error [(fun () -> print_error conf opts e)] )
   | Check inputs ->
       let f {Conf.kind; name= input_name; file; conf} =
-        let binary = binary conf in
-        let source = source_from_file ~binary file in
+        let source = source_from_file file in
         let result = format ~kind ~input_name ~source conf opts in
         match result with
         | Ok res when String.equal res source -> Ok ()
@@ -91,8 +83,7 @@ let run_action action opts =
   | Print_config conf -> Conf.print_config conf ; Ok ()
   | Numeric ({kind; file; name= input_name; conf}, range) ->
       let conf = {conf with quiet= true} in
-      let binary = binary conf in
-      let source = source_from_file ~binary file in
+      let source = source_from_file file in
       Translation_unit.numeric kind ~input_name ~source ~range conf opts
       |> Result.map_error ~f:(fun e -> [(fun () -> print_error conf opts e)])
       >>| List.iter ~f:(fun i -> Stdio.print_endline (Int.to_string i))

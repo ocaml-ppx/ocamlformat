@@ -51,7 +51,7 @@ type t =
   ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
-  ; line_endings: [`Native | `Unix]
+  ; line_endings: [`Lf | `Crlf]
   ; margin: int
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
@@ -834,15 +834,8 @@ module Formatting = struct
   let line_endings =
     let doc = "Line endings used." in
     let all =
-      [ ( "native"
-        , `Native
-        , "$(b,native) means that the formatted output will use the line \
-           endings used by the host OS, i.e., LF on Unix and CRLF on \
-           Windows." )
-      ; ( "unix"
-        , `Unix
-        , "$(b,unix) means that the formatted output will use Unix line \
-           endings (LF) regardless of the host OS." ) ]
+      [ ("lf", `Lf, "Use Unix line endings.")
+      ; ("crlf", `Crlf, "Use Windows line endings.") ]
     in
     C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~section
       (fun conf x -> {conf with line_endings= x})
@@ -1455,7 +1448,7 @@ let ocamlformat_profile =
   ; let_binding_indent= 2
   ; let_binding_spacing= `Compact
   ; let_module= `Compact
-  ; line_endings= `Native
+  ; line_endings= `Lf
   ; margin= 80
   ; match_indent= 0
   ; match_indent_nested= `Never
@@ -1652,7 +1645,7 @@ let janestreet_profile =
   ; let_binding_indent= 2
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
-  ; line_endings= `Native
+  ; line_endings= `Lf
   ; margin= 90
   ; match_indent= 0
   ; match_indent_nested= `Never
