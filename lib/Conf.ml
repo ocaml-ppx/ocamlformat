@@ -834,8 +834,8 @@ module Formatting = struct
   let line_endings =
     let doc = "Line endings used." in
     let all =
-      [ ("lf", `Lf, "Use Unix line endings.")
-      ; ("crlf", `Crlf, "Use Windows line endings.") ]
+      [ ("lf", `Lf, "$(b,lf) uses Unix line endings.")
+      ; ("crlf", `Crlf, "$(b,crlf) uses Windows line endings.") ]
     in
     C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~section
       (fun conf x -> {conf with line_endings= x})
