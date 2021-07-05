@@ -235,20 +235,9 @@ let check_margin conf ~filename ~fmted =
 let with_optional_box_debug ~box_debug k =
   if box_debug then Fmt.with_box_debug k else k
 
-let with_buffer_formatter ~line_endings ~buffer_size k =
+let with_buffer_formatter ~buffer_size k =
   let buffer = Buffer.create buffer_size in
   let fs = Format_.formatter_of_buffer buffer in
-  let ({Format_.out_string; _} as fs_funs) =
-    Format_.pp_get_formatter_out_functions fs ()
-  in
-  let fs_funs =
-    { fs_funs with
-      Format_.out_newline=
-        ( match line_endings with
-        | `Lf -> fun () -> out_string "\n" 0 1
-        | `Crlf -> fun () -> out_string "\r\n" 0 2 ) }
-  in
-  Format_.pp_set_formatter_out_functions fs fs_funs ;
   Fmt.eval fs k ;
   Format_.pp_print_flush fs () ;
   if Buffer.length buffer > 0 then Format_.pp_print_newline fs () ;
@@ -294,7 +283,7 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
         Cmts.init fgN ~debug:opts.debug t.source t.ast t.comments
       in
       let contents =
-        with_buffer_formatter ~line_endings:conf.Conf.line_endings
+        with_buffer_formatter
           ~buffer_size:(String.length prev_source)
           ( set_margin conf.margin
           $ opt conf.max_indent set_max_indent
@@ -423,6 +412,30 @@ let parse_result ?(f = Ast_passes.Ast0.Parse.ast) fragment conf ~source
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
+let normalize_eol ~line_endings s =
+  let buf = Buffer.create (String.length s) in
+  let rec loop seen_cr i =
+    if i = String.length s then (
+      if seen_cr then Buffer.add_char buf '\r' ;
+      Buffer.contents buf )
+    else
+      match (s.[i], line_endings) with
+      | '\r', _ ->
+          if seen_cr then Buffer.add_char buf '\r' ;
+          loop true (i + 1)
+      | '\n', `Crlf ->
+          Buffer.add_string buf "\r\n" ;
+          loop false (i + 1)
+      | '\n', `Lf ->
+          Buffer.add_char buf '\n' ;
+          loop false (i + 1)
+      | c, _ ->
+          if seen_cr then Buffer.add_char buf '\r' ;
+          Buffer.add_char buf c ;
+          loop false (i + 1)
+  in
+  loop false 0
+
 let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
     (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
     opts =
@@ -432,6 +445,8 @@ let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
   let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
   format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
     opts
+  >>= fun formatted ->
+  Ok (normalize_eol ~line_endings:conf.Conf.line_endings formatted)
 
 let parse_and_format = function
   | Syntax.Structure -> parse_and_format Structure Structure
