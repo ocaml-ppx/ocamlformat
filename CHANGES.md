@@ -45,8 +45,6 @@
     - Break the line and reindent the cursor when pressing <ENTER>
   (#1639, #1685, @gpetiot) (#1687, @bcc32)
 
-  + Type identifiers can have a disambiguation suffix (e.g. `t/2`), as produced by the compiler (#1697, @trefis)
-
 ### 0.18.0 (2021-03-30)
 
 #### Bug fixes
