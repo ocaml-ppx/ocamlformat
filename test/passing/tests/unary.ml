@@ -49,3 +49,5 @@ let _ = +.(f x)
 and _ = -.(f x)
 
 let _ = ~-(f r.x)
+
+let _ = -(!array_ref.(0))
