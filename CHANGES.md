@@ -50,6 +50,8 @@
     - Break the line and reindent the cursor when pressing <ENTER>
   (#1639, #1685, @gpetiot) (#1687, @bcc32)
 
+  + Handle merlin typed holes (#1698, @gpetiot)
+
 ### 0.18.0 (2021-03-30)
 
 #### Bug fixes
