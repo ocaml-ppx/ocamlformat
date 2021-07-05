@@ -77,9 +77,6 @@ module Exp : sig
       operator of the form [let**] or [and**] where [**] can be 1 or more
       operator chars. *)
 
-  val is_sugared_list : expression -> bool
-  (** Holds for expressions that can be sugared into [\[e1; ...; eN\]] form. *)
-
   val exposed_left : expression -> bool
   (** [exposed_left exp] holds if the left-most subexpression of [exp] is a
       prefix operators. *)

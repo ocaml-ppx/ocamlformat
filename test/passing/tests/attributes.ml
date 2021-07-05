@@ -324,7 +324,7 @@ let _ =
 
 let (Foo ((A | B)[@attr])) = ()
 
-let ([((A | B)[@attr]); b; c][@attr]) = ()
+let ([(A | B)[@attr]; b; c][@attr]) = ()
 
 let ([|a; (A | B)[@attr]; c|][@attr]) = ()
 

@@ -43,6 +43,9 @@
 
   + Use UTF8 length of strings, not only in wrapped comments (#1673, @jberdine)
 
+  + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
+    Comments are now wrapped around list elements instead of causing a break.
+
 #### New features
 
   + Emacs integration (disabled for ocamlformat < 0.19.0):

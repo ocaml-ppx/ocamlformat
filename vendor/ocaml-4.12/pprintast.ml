@@ -453,6 +453,8 @@ and simple_pattern ctxt (f:Format.formatter) (x:pattern) : unit =
     | Ppat_var ({txt = txt;_}) -> protect_ident f txt
     | Ppat_array l ->
         pp f "@[<2>[|%a|]@]"  (list (pattern1 ctxt) ~sep:";") l
+    | Ppat_list l ->
+        pp f "@[<2>[%a]@]"  (list (pattern1 ctxt) ~sep:";") l
     | Ppat_unpack { txt = None } ->
         pp f "(module@ _)@ "
     | Ppat_unpack { txt = Some s } ->
@@ -491,7 +493,7 @@ and simple_pattern ctxt (f:Format.formatter) (x:pattern) : unit =
     | Ppat_open (lid, p) ->
         let with_paren =
         match p.ppat_desc with
-        | Ppat_array _ | Ppat_record _
+        | Ppat_array _ | Ppat_list _ | Ppat_record _
         | Ppat_construct (({txt=Lident ("()"|"[]");_}), _) -> false
         | _ -> true in
         pp f "@[<2>%a.%a @]" longident_loc lid
@@ -809,6 +811,9 @@ and simple_expr ctxt f x =
           (list longident_x_expression ~sep:";@;") l
     | Pexp_array (l) ->
         pp f "@[<0>@[<2>[|%a|]@]@]"
+          (list (simple_expr (under_semi ctxt)) ~sep:";") l
+    | Pexp_list (l) ->
+        pp f "@[<0>@[<2>[%a]@]@]"
           (list (simple_expr (under_semi ctxt)) ~sep:";") l
     | Pexp_while (e1, e2) ->
         let fmt : (_,_,_) format = "@[<2>while@;%a@;do@;%a@;done@]" in
