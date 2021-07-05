@@ -710,9 +710,6 @@ let mk_directive ~loc name arg =
 
 %token EOL
 
-%token <string> TUIDENT
-%token <string> TLIDENT
-
 /* Precedences and associativities.
 
 Tokens and rules have precedences.  A reduce/reduce conflict is resolved
@@ -3516,27 +3513,17 @@ label_longident:
     mk_longident(mod_longident, LIDENT) { $1 }
 ;
 type_longident:
-  /*mk_longident(mod_ext_longident, LIDENT)  { $1 }*/
-  mk_longident(mod_ext_longident, disambiguated_lident)  { $1 }
+    mk_longident(mod_ext_longident, LIDENT)  { $1 }
 ;
 mod_longident:
     mk_longident(mod_longident, UIDENT)  { $1 }
 ;
 mod_ext_longident:
-    /*mk_longident(mod_ext_longident, UIDENT) { $1 }*/
-    mk_longident(mod_ext_longident, disambiguated_uident) { $1 }
+    mk_longident(mod_ext_longident, UIDENT) { $1 }
   | mod_ext_longident LPAREN mod_ext_longident RPAREN
       { lapply ~loc:$sloc $1 $3 }
   | mod_ext_longident LPAREN error
       { expecting $loc($3) "module path" }
-;
-disambiguated_lident:
-    LIDENT { $1 }
-  | TLIDENT { $1 }
-;
-disambiguated_uident:
-    UIDENT { $1 }
-  | TUIDENT { $1 }
 ;
 mty_longident:
     mk_longident(mod_ext_longident,ident) { $1 }
