@@ -31,8 +31,11 @@ let write_all output_file ~data =
 let to_output_file output_file data =
   match output_file with
   | None ->
+      Out_channel.flush Out_channel.stdout ;
       Out_channel.set_binary_mode Out_channel.stdout true ;
-      Out_channel.output_string Out_channel.stdout data
+      Out_channel.output_string Out_channel.stdout data ;
+      Out_channel.flush Out_channel.stdout ;
+      Out_channel.set_binary_mode Out_channel.stdout false
   | Some output_file -> write_all output_file ~data
 
 let source_from_file = function

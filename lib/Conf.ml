@@ -87,7 +87,7 @@ let warn_raw, collect_warnings =
   let delayed_warning_list = ref [] in
   let warn_ s =
     if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
-    else Format.eprintf "%s" s
+    else Format.eprintf "%s%!" s
   in
   let collect_warnings f =
     let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
