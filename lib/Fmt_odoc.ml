@@ -67,9 +67,8 @@ let fmt_verbatim_block s =
   in
   hvbox 0 (wrap "{v" "v}" content)
 
-let fmt_code_block conf s1 s2 =
+let fmt_code_block conf _s1 s2 =
   let s2 = Odoc_parser.Loc.value s2 in
-  let _s1 = Option.map s1 ~f:Odoc_parser.Loc.value in
   match conf.fmt_code s2 with
   | Ok formatted -> hvbox 0 (wrap "{[@;<1 2>" "@ ]}" formatted)
   | Error () ->
