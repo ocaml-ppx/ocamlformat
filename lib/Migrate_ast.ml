@@ -46,8 +46,6 @@ module Position = struct
   include (val Comparator.make ~compare ~sexp_of_t)
 
   let distance p1 p2 = p2.pos_cnum - p1.pos_cnum
-
-  let to_point x = Odoc_parser.Loc.{line= x.pos_lnum; column= column x}
 end
 
 module Location = struct
@@ -109,12 +107,6 @@ module Location = struct
   let smallest loc stack =
     let min a b = if width a < width b then a else b in
     List.reduce_exn (loc :: stack) ~f:min
-
-  let to_span loc =
-    let open Odoc_parser.Loc in
-    { file= loc.loc_start.pos_fname
-    ; start= Position.to_point loc.loc_start
-    ; end_= Position.to_point loc.loc_end }
 
   let of_lexbuf (lexbuf : Lexing.lexbuf) =
     { loc_start= lexbuf.lex_start_p
