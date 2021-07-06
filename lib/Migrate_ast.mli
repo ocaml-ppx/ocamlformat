@@ -78,7 +78,7 @@ module Location : sig
 
   val is_single_line : t -> int -> bool
 
-  val to_span : t -> Odoc_parser.Location.span
+  val to_span : t -> Odoc_parser.Loc.span
 
   val of_lexbuf : Lexing.lexbuf -> t
 
