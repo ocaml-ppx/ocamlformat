@@ -2,8 +2,4 @@ ocamlformat: ignoring "tests/js_functor.ml" (syntax error)
 File "tests/js_functor.ml", line 10, characters 4-7:
 10 |     end)
          ^^^
-Error: Syntax error: 'end' expected
-File "tests/js_functor.ml", line 8, characters 5-11:
-8 |     (struct
-         ^^^^^^
-  This 'struct' might be unmatched
+Error: Syntax error

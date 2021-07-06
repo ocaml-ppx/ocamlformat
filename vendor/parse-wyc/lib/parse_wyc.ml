@@ -7,8 +7,7 @@ module R =
     (struct
       include Parser_recover
 
-      let default_value loc x =
-        Default.default_loc := loc;
+      let default_value _loc x =
         default_value x
 
       let guide _ = false

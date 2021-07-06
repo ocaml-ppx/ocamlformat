@@ -174,10 +174,11 @@ let list_pat cmts pat =
     | Ppat_construct
         ( {txt= Lident "::"; loc}
         , Some
-            { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []; _} as tl)]
-            ; ppat_loc
-            ; ppat_attributes= []
-            ; _ } ) ->
+            ( []
+            , { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []; _} as tl)]
+              ; ppat_loc
+              ; ppat_attributes= []
+              ; _ } ) ) ->
         list_pat_ tl (([src; loc; ppat_loc], sub_pat ~ctx hd) :: acc)
     | _ -> None
   in
@@ -368,6 +369,7 @@ module Let_binding = struct
         | `Other of arg_kind list * core_type xt
         | `None of arg_kind list ]
     ; lb_exp: expression xt
+    ; lb_pun: bool
     ; lb_attrs: attribute list
     ; lb_loc: Location.t }
 
@@ -440,25 +442,35 @@ module Let_binding = struct
               (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
           | _ -> (xpat, `None xargs, xbody) )
 
-  let of_value_binding cmts ~ctx ~first vb =
+  let of_value_binding cmts src ~ctx ~first vb =
     let pat, typ, exp = type_cstr cmts ~ctx vb.pvb_pat vb.pvb_expr in
     { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
     ; lb_pat= pat
     ; lb_typ= typ
     ; lb_exp= exp
+    ; lb_pun=
+        List.is_empty
+          (Source.tokens_between src
+             ~filter:(function EQUAL -> true | _ -> false)
+             vb.pvb_loc.loc_start vb.pvb_loc.loc_end )
     ; lb_attrs= vb.pvb_attributes
     ; lb_loc= vb.pvb_loc }
 
-  let of_value_bindings cmts ~ctx =
-    List.mapi ~f:(fun i -> of_value_binding cmts ~ctx ~first:(i = 0))
+  let of_value_bindings cmts src ~ctx =
+    List.mapi ~f:(fun i -> of_value_binding cmts src ~ctx ~first:(i = 0))
 
-  let of_binding_ops cmts ~ctx bos =
+  let of_binding_ops cmts src ~ctx bos =
     List.map bos ~f:(fun bo ->
         let pat, typ, exp = type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp in
         { lb_op= bo.pbop_op
         ; lb_pat= pat
         ; lb_typ= typ
         ; lb_exp= exp
+        ; lb_pun=
+            List.is_empty
+              (Source.tokens_between src
+                 ~filter:(function EQUAL -> true | _ -> false)
+                 bo.pbop_loc.loc_start bo.pbop_loc.loc_end )
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )
 end

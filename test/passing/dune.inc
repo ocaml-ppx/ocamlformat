@@ -1914,6 +1914,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to let_punning.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/let_punning.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/let_punning.ml let_punning.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to list-space_around.ml.output
      (run %{bin:ocamlformat} --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:tests/list.ml}))))
 
@@ -2046,6 +2058,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to mod_type_subst.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/mod_type_subst.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/mod_type_subst.ml mod_type_subst.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to module.ml.output
      (run %{bin:ocamlformat} %{dep:tests/module.ml}))))
 
@@ -2161,6 +2185,18 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/multi_index_op.ml multi_index_op.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+   (with-outputs-to named_existentials.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/named_existentials.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/named_existentials.ml named_existentials.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )

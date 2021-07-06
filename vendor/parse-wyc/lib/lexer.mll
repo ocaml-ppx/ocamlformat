@@ -27,6 +27,7 @@ type error =
   | Unterminated_comment of Location.t
   | Unterminated_string
   | Unterminated_string_in_comment of Location.t * Location.t
+  | Empty_character_literal
   | Keyword_as_label of string
   | Invalid_literal of string
   | Invalid_directive of string * string option
@@ -73,7 +74,7 @@ let keyword_table =
     "of", OF;
     "open", OPEN;
     "or", OR;
-    (*  "parser", PARSER; *)
+(*  "parser", PARSER; *)
     "private", PRIVATE;
     "rec", REC;
     "sig", SIG;
@@ -412,6 +413,8 @@ rule token = parse
       { CHAR(char_for_hexadecimal_code lexbuf 3) }
   | "\'" ("\\" _ as esc)
       { error lexbuf (Illegal_escape (esc, None)) }
+  | "\'\'"
+      { error lexbuf Empty_character_literal }
   | "(*"
       { let s, loc = wrap_comment_lexer comment lexbuf in
         COMMENT (s, loc) }

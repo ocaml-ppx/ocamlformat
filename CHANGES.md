@@ -47,6 +47,12 @@
 
 #### New features
 
+  + Implement OCaml 4.13 features
+    - Named existentials in pattern-matching (ocaml#9584)
+    - Let-punning (ocaml#10013)
+    - Module type substitutions (ocaml#10133)
+  (#1680, @gpetiot)
+
   + Emacs integration (disabled for ocamlformat < 0.19.0):
     - Indent a line or a region with ocamlformat when pressing <TAB>
     - Break the line and reindent the cursor when pressing <ENTER>

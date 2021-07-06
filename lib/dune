@@ -14,12 +14,12 @@
 (library
  (name ocamlformat_lib)
  (flags
-  (:standard -open Ocaml_412 -open Ocamlformat_stdlib))
+  (:standard -open Ocaml_413 -open Ocamlformat_stdlib))
  (instrumentation
   (backend bisect_ppx))
  (libraries
   format_
-  ocaml_412
+  ocaml_413
   ocamlformat_stdlib
   ocp-indent.lib
   odoc.model

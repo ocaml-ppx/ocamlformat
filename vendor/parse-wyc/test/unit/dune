@@ -1,4 +1,6 @@
 (test
  (name test_unit)
  (package ocamlformat)
+ (flags
+  (:standard -open Ocaml_413))
  (libraries alcotest parse_wyc))

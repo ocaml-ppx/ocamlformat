@@ -10,6 +10,13 @@ module List = struct
         end
 end
 
+module Int = struct
+  include Int
+
+  let min x y = if x <= y then x else y
+  let max x y = if x >= y then x else y
+end
+
 module Misc = struct
   include Misc
 
