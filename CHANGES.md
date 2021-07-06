@@ -43,6 +43,8 @@
 
   + Use UTF8 length of strings, not only in wrapped comments (#1673, @jberdine)
 
+  + Improve position of `;;` tokens (#1688, @gpetiot)
+
 #### New features
 
   + Emacs integration (disabled for ocamlformat < 0.19.0):

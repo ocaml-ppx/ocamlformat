@@ -147,7 +147,6 @@ let x =
 
 let x =
   let open struct
-    ;;
     let open struct
       let counter = ref 0
     end in

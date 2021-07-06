@@ -242,25 +242,24 @@ class type ['a] tsv =
   object
     inherit [ < sep: [`tab] ; comment: [`sharp] ; .. > as 'a] tabular
   end
-
 ;;
+
 {< (* Debug.print ("free var: "^string_of_int x); *)
    free_vars = IntSet.add x free_vars >}
-
 ;;
-{<(* Debug.print ("free var: "^string_of_int x); *) free_vars>}
 
-;;
+{<(* Debug.print ("free var: "^string_of_int x); *) free_vars>};;
+
 {< (* Debug.print ("free var: "^string_of_int x); *)
    very_loooooooooooong_identifier >}
-
 ;;
+
 {< (* Debug.print ("free var: "^string_of_int x); *)
    x = (Some k : t)
  ; (* Debug.print ("free var: "^string_of_int x); *)
    y = yet another value >}
-
 ;;
+
 {< (* check: e is effectively the index associated with e, and check that
       already in *)
    x = y >}
