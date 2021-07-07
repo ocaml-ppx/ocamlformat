@@ -7,6 +7,7 @@
 set -euo pipefail
 
 opam_url=https://github.com/fdopen/opam-repository-mingw/releases/download/0.0.0.2/opam64.tar.xz
+opam_archive=$(basename ${opam_url})
 
 build_dir=_build-mingw64
 
@@ -14,11 +15,11 @@ mkdir -p ${build_dir}
 
 cd ${build_dir}
 
-curl -O -L ${opam_url}
+[ -f ${opam_archive} ] || curl -O -L ${opam_url}
 
-tar xf $(basename ${opam_url})
+[ -d opam64 ] || tar xf ${opam_archive}
 
-bash opam64/install.sh --prefix $(pwd)
+[ -f bin/opam.exe ] || bash opam64/install.sh --prefix $(pwd)
 
 export PATH=$(pwd)/bin:${PATH}
 
