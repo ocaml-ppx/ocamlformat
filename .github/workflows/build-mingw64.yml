@@ -9,7 +9,7 @@ on:
 
 env:
   CYGWINSETUP: setup-x86_64.exe
-  PACKAGES: git,m4,rsync,patchutils,make,curl,unzip,mingw64-x86_64-binutils,mingw64-x86_64-gcc-core,mingw64-x86_64-headers,mingw64-x86_64-runtime
+  PACKAGES: git,m4,patchutils,make,curl,unzip,mingw64-x86_64-binutils,mingw64-x86_64-gcc-core,mingw64-x86_64-headers,mingw64-x86_64-runtime
   SITE: https://mirrors.kernel.org/sourceware/cygwin
 
 jobs:
