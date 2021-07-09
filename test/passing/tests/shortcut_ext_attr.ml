@@ -30,8 +30,8 @@ let () =
   [%foo
     match[@foo] () with
     | [%foo? (* Pattern expressions *)
-        ((lazy x)[@foo])] -> ()
-    | [%foo? ((exception x)[@foo])] -> ()]
+        ((lazy x) [@foo])] -> ()
+    | [%foo? ((exception x) [@foo])] -> ()]
 
 (* Class expressions *)
 class x =

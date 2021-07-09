@@ -67,7 +67,7 @@ type loooooooooooooong_type =
       [ `Looooooooooooooooooong_type of int  (** Doc *)
       | `Looooooooooooooooooooong_variant of string (* Comment *) ]
 
-let (`A | `B)[@bar] = ()
+let (`A | `B) [@bar] = ()
 
 type t =
       | Internal_error of

@@ -222,11 +222,11 @@ let o =
         Int_bin_comparison (self#expression a, op, self#expression b)
   end
 
-class f = fun [@inline] (b[@inline]) -> object end
+class f = fun [@inline] (b [@inline]) -> object end
 
 class f = [%test] [@test]
 
-class f a (b[@inline]) = object end
+class f a (b [@inline]) = object end
 
 class f =
   object (self)
