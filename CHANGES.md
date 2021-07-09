@@ -65,6 +65,11 @@
     - Break the line and reindent the cursor when pressing <ENTER>
   (#1639, #1685, @gpetiot) (#1687, @bcc32)
 
+#### Internal
+
+  + A script `tools/build-mingw64.sh` is provided to build a native Windows
+    binary of `ocamlformat` using `mingw64` toolchain under Cygwin.
+
 ### 0.18.0 (2021-03-30)
 
 #### Bug fixes

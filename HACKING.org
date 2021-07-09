@@ -222,3 +222,23 @@ End state:
 
 ...
 #+END_SRC
+
+* Building on Windows
+
+`ocamlformat` can be built as a native Windows binary using the `mingw64`
+toolchain under Cygwin. The following Cygwin packages are required:
+
+- `git`, `curl`, `unzip`
+- `m4`, `patchutils`, `make`
+- `mingw64-x86_64-binutils`, `mingw64-x86_64-gcc-core`, `mingw64-x86_64-headers`, `mingw64-x86_64-runtime`
+
+The binary is built by executing `bash tools/build-mingw64.sh` from the root of
+the repository. The first time the script is launched, it will install `opam` in
+the subdirectory `_build-mingw64` and use it to install all the dependencies of
+`ocamlformat` and then build the binary. Subsequent launches of the script will
+only rebuild `ocamlformat`. If you need to start from scratch again, simply
+remove the `_build-mingw64` directory.
+
+This script can also be triggered as a GitHub Action named `build-mingw64` which
+will build the binary in a GitHub worker and upload it back to GitHub. To
+retrieve it, select the Action run in question and scroll down to "Artifacts".

@@ -1,0 +1,43 @@
+name: Build mingw64 binary
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        required: true
+        default: 'master'
+
+env:
+  CYGWINSETUP: setup-x86_64.exe
+  PACKAGES: git,m4,patchutils,make,curl,unzip,mingw64-x86_64-binutils,mingw64-x86_64-gcc-core,mingw64-x86_64-headers,mingw64-x86_64-runtime
+  SITE: https://mirrors.kernel.org/sourceware/cygwin
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      SHELLOPTS: igncr
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v1
+        with:
+          ref: ${{ github.event.inputs.ref }}
+      - name: Download Cygwin Installer
+        run: |
+          curl.exe -o C:\${{ env.CYGWINSETUP }} https://www.cygwin.com/${{ env.CYGWINSETUP }}
+        shell: cmd
+      - name: Setup Cygwin
+        run: |
+          C:\${{ env.CYGWINSETUP }} -A -q -D -L -g -o -s ${{ env.SITE }} -l C:\cygwin64-cache -R C:\cygwin64 -C Base -P ${{ env.PACKAGES }}
+        shell: cmd
+      - name: Run Build Script
+        run: |
+          cd '${{ github.workspace }}'
+          bash tools/build-mingw64.sh
+        shell: C:\cygwin64\bin\bash.exe --login --norc '{0}'
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ocamlformat-${{ github.event.inputs.ref }}.exe
+          path: ${{ github.workspace }}\_build\install\default\bin\ocamlformat.exe
+          if-no-files-found: error
