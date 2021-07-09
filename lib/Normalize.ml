@@ -98,7 +98,7 @@ let rec odoc_nestable_block_element c fmt = function
          only structural and the shape of a docstring organized in paragraphs
          only depend on linebreaks, which may be changed by the
          formatting. *)
-      odoc_inline_elements fmt elms
+      fpf fmt "Paragraph(%a)" odoc_inline_elements elms
   | `Code_block (_, txt) ->
       let txt = Odoc_parser.Loc.value txt in
       let txt =
