@@ -10,13 +10,11 @@
 (**************************************************************************)
 
 val fmt :
-     fmt_code:(string -> (Fmt.t, unit) Result.t)
-  -> Odoc_parser.Ast.docs
-  -> Fmt.t
+  fmt_code:(string -> (Fmt.t, unit) Result.t) -> Odoc_parser.Ast.t -> Fmt.t
 
 val diff :
   Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
 (** Difference between two lists of doc comments. *)
 
-val is_tag_only : Odoc_parser.Ast.docs -> bool
+val is_tag_only : Odoc_parser.Ast.t -> bool
 (** [true] if the documentation only contains tags *)

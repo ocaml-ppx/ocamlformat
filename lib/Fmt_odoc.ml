@@ -11,7 +11,7 @@
 
 open Fmt
 open Odoc_parser.Ast
-module Location_ = Odoc_model.Location_
+module Loc = Odoc_parser.Loc
 
 type conf = {fmt_code: string -> (Fmt.t, unit) Result.t}
 
@@ -56,7 +56,7 @@ let str_normalized ?(escape = escape_all) s =
   |> List.filter ~f:(Fn.non String.is_empty)
   |> fun s -> list s "@ " (fun s -> escape s |> str)
 
-let ign_loc ~f with_loc = f with_loc.Location_.value
+let ign_loc ~f with_loc = f with_loc.Loc.value
 
 let fmt_verbatim_block s =
   let force_break = String.contains s '\n' in
@@ -67,8 +67,9 @@ let fmt_verbatim_block s =
   in
   hvbox 0 (wrap "{v" "v}" content)
 
-let fmt_code_block conf s =
-  match conf.fmt_code s with
+let fmt_code_block conf _s1 s2 =
+  let s2 = Odoc_parser.Loc.value s2 in
+  match conf.fmt_code s2 with
   | Ok formatted -> hvbox 0 (wrap "{[@;<1 2>" "@ ]}" formatted)
   | Error () ->
       let fmt_line ~first ~last:_ l =
@@ -77,7 +78,7 @@ let fmt_code_block conf s =
         else if String.length l = 0 then str "\n"
         else fmt "@," $ str l
       in
-      let lines = String.split_lines s in
+      let lines = String.split_lines s2 in
       let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
       box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
 
@@ -89,7 +90,7 @@ let fmt_reference = ign_loc ~f:str_normalized
 let list_should_use_heavy_syntax items =
   let heavy_nestable_block_elements = function
     (* More than one element or contains a list *)
-    | [{Location_.value= `List _; _}] | _ :: _ :: _ -> true
+    | [{Loc.value= `List _; _}] | _ :: _ :: _ -> true
     | [] | [_] -> false
   in
   List.exists items ~f:heavy_nestable_block_elements
@@ -107,10 +108,10 @@ let block_element_should_break elem next =
    depending on [block_element_should_break] *)
 let list_block_elem elems f =
   list_pn elems (fun ~prev:_ elem ~next ->
-      let elem = elem.Location_.value in
+      let elem = elem.Loc.value in
       let break =
         match next with
-        | Some {Location_.value= n; _}
+        | Some {Loc.value= n; _}
           when block_element_should_break
                  (elem :> block_element)
                  (n :> block_element) ->
@@ -120,8 +121,7 @@ let list_block_elem elems f =
       in
       f elem $ break )
 
-let space_elt : inline_element with_location =
-  Location_.(at (span []) (`Space ""))
+let space_elt : inline_element with_location = Loc.(at (span []) (`Space ""))
 
 let rec fmt_inline_elements elements =
   let wrap_elements opn cls ~always_wrap hd = function
@@ -173,7 +173,7 @@ let rec fmt_inline_elements elements =
 
 and fmt_nestable_block_element c = function
   | `Paragraph elems -> fmt_inline_elements elems
-  | `Code_block s -> fmt_code_block c s
+  | `Code_block (s1, s2) -> fmt_code_block c s1 s2
   | `Verbatim s -> fmt_verbatim_block s
   | `Modules mods ->
       hovbox 0
@@ -251,7 +251,7 @@ let fmt_block_element c = function
   | #nestable_block_element as elm ->
       hovbox 0 (fmt_nestable_block_element c elm)
 
-let fmt ~fmt_code (docs : docs) =
+let fmt ~fmt_code (docs : t) =
   vbox 0 (list_block_elem docs (fmt_block_element {fmt_code}))
 
 let diff c x y =
@@ -262,6 +262,4 @@ let diff c x y =
   Set.symmetric_diff (norm x) (norm y)
 
 let is_tag_only =
-  List.for_all ~f:(function
-    | {Location_.value= `Tag _; _} -> true
-    | _ -> false )
+  List.for_all ~f:(function {Loc.value= `Tag _; _} -> true | _ -> false)

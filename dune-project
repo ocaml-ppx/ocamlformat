@@ -61,8 +61,8 @@
    (and
     :with-test
     (>= 2.5.0)))
-  (odoc
-   (>= 1.4.2))
+  (odoc-parser
+   (>= 0.9.0))
   re
   (stdio
    (< v0.15))
@@ -104,8 +104,8 @@
    (and
     :with-test
     (>= 2.5.0)))
-  (odoc
-   (>= 1.4.2))
+  (odoc-parser
+   (>= 0.9.0))
   re
   (stdio
    (< v0.15))

@@ -15,13 +15,11 @@ let parse ~loc text =
     { location with
       pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
   in
-  match Odoc_parser.parse_comment_raw ~location ~text with
-  | exception _ ->
-      let span = Migrate_ast.Location.to_span loc in
-      Error [Odoc_model.Error.make "comment could not be parsed" span]
-  | {value; warnings= []} -> Ok value
-  | {warnings; _} -> Error warnings
+  let v = Odoc_parser.parse_comment ~location ~text in
+  match Odoc_parser.warnings v with
+  | [] -> Ok (Odoc_parser.ast v)
+  | warnings -> Error warnings
 
 let warn fmt warning =
   Format.fprintf fmt "Warning: Invalid documentation comment:@,%s\n%!"
-    (Odoc_model.Error.to_string warning)
+    (Odoc_parser.Warning.to_string warning)

@@ -1,4 +1,7 @@
 Warning: Invalid documentation comment:
-File "tests/invalid_docstring.ml", line 1, characters 0-7:
-comment could not be parsed
+File "tests/invalid_docstring.ml", line 1, characters 5-5:
+End of text is not allowed in '{v ... v}' (verbatim text).
+Warning: Invalid documentation comment:
+File "tests/invalid_docstring.ml", line 1, characters 3-5:
+'{v ... v}' (verbatim text) should not be empty.
 (**{v*)

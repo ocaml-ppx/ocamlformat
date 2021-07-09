@@ -22,8 +22,7 @@
   ocaml_413
   ocamlformat_stdlib
   ocp-indent.lib
-  odoc.model
-  odoc.parser
+  odoc-parser
   parse_wyc
   re
   uuseg

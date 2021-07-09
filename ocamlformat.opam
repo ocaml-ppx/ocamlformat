@@ -25,11 +25,12 @@ depends: [
   "menhirSdk" {>= "20200624"}
   "ocp-indent"
   "bisect_ppx" {with-test & >= "2.5.0"}
-  "odoc" {>= "1.4.2"}
+  "odoc-parser" {>= "0.9.0"}
   "re"
   "stdio" {< "v0.15"}
   "uuseg" {>= "10.0.0"}
   "uutf" {>= "1.0.1"}
+  "odoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {dev}
