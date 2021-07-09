@@ -63,6 +63,8 @@ let fpf = Format.fprintf
 
 let odoc_reference = ign_loc str
 
+let option f fmt = function Some v -> f fmt v | None -> ()
+
 let odoc_style fmt = function
   | `Bold -> fpf fmt "Bold"
   | `Italic -> fpf fmt "Italic"
@@ -94,7 +96,7 @@ and odoc_inline_elements fmt elems =
 
 let rec odoc_nestable_block_element c fmt = function
   | `Paragraph elms -> fpf fmt "Paragraph(%a)" odoc_inline_elements elms
-  | `Code_block (_, txt) ->
+  | `Code_block (metadata, txt) ->
       let txt = Odoc_parser.Loc.value txt in
       let txt =
         try
@@ -116,7 +118,7 @@ let rec odoc_nestable_block_element c fmt = function
             comments
         with _ -> txt
       in
-      fpf fmt "Code_block(%a)" str txt
+      fpf fmt "Code_block(%a, %a)" (option (ign_loc str)) metadata str txt
   | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt
   | `Modules mods -> fpf fmt "Modules(%a)" (list odoc_reference) mods
   | `List (ord, _syntax, items) ->

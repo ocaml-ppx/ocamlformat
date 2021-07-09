@@ -67,10 +67,17 @@ let fmt_verbatim_block s =
   in
   hvbox 0 (wrap "{v" "v}" content)
 
-let fmt_code_block conf _s1 s2 =
+let fmt_metadata s = str "@" $ str s
+
+let fmt_code_block conf s1 s2 =
+  let wrap_code x =
+    str "{"
+    $ opt s1 (ign_loc ~f:fmt_metadata)
+    $ fmt "[@;<1 2>" $ x $ fmt "@ ]}"
+  in
   let s2 = Odoc_parser.Loc.value s2 in
   match conf.fmt_code s2 with
-  | Ok formatted -> hvbox 0 (wrap "{[@;<1 2>" "@ ]}" formatted)
+  | Ok formatted -> hvbox 0 (wrap_code formatted)
   | Error () ->
       let fmt_line ~first ~last:_ l =
         let l = String.rstrip l in
@@ -80,7 +87,7 @@ let fmt_code_block conf _s1 s2 =
       in
       let lines = String.split_lines s2 in
       let box = match lines with _ :: _ :: _ -> vbox 0 | _ -> hvbox 0 in
-      box (wrap "{[@;<1 2>" "@ ]}" (vbox 0 (list_fl lines fmt_line)))
+      box (wrap_code (vbox 0 (list_fl lines fmt_line)))
 
 let fmt_code_span s = hovbox 0 (wrap "[" "]" (str (escape_brackets s)))
 

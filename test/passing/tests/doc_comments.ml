@@ -289,3 +289,5 @@ let _ = ()
 starts with linebreaks
 *)
 let a = 1
+
+(** {@metadata[ Code block with metadata field ]} *)
