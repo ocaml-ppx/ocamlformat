@@ -69,7 +69,7 @@
   (#1639, #1685, @gpetiot) (#1687, @bcc32)
 
   + Add 'line-endings=lf|crlf' option to specify the line endings used in the
-    formatted output.
+    formatted output. (#1703, @nojb)
 
 #### Internal
 
