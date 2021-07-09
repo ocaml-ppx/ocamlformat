@@ -913,7 +913,7 @@ and fmt_pattern_attributes c xpat k =
           | _ -> true )
       in
       Params.parens_if parens_attr c.conf
-        (k $ fmt_attributes c ~key:"@" attrs)
+        (k $ fmt_attributes c ~pre:Space ~key:"@" attrs)
 
 and fmt_pattern ?ext c ?pro ?parens ?(box = false)
     ({ctx= ctx0; ast= pat} as xpat) =

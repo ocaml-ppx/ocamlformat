@@ -1,6 +1,6 @@
 let _ = (function[@warning "-4"] None -> true | _ -> false) None
 
-let f (x[@warning ""]) = ()
+let f (x [@warning ""]) = ()
 
 let v = (fun [@inline] x -> x) 1
 
@@ -105,33 +105,33 @@ type u =
 [@@deriving something]
 [@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
 
-let ((A, B)[@test]) = ()
+let ((A, B) [@test]) = ()
 
-let ((lazy a)[@test]) = ()
+let ((lazy a) [@test]) = ()
 
-let ((exception a)[@test]) = ()
+let ((exception a) [@test]) = ()
 
-let ((B x)[@test]) = ()
+let ((B x) [@test]) = ()
 
-let ((`B x)[@test]) = ()
+let ((`B x) [@test]) = ()
 
-let (B[@test]) = ()
+let (B [@test]) = ()
 
-let (`B[@test]) = ()
+let (`B [@test]) = ()
 
-let (B.(A)[@test]) = ()
+let (B.(A) [@test]) = ()
 
-let ('x' .. 'z'[@test]) = ()
+let ('x' .. 'z' [@test]) = ()
 
-let (#test[@test]) = ()
+let (#test [@test]) = ()
 
-let ((module X)[@test]) = ()
+let ((module X) [@test]) = ()
 
-let (a[@test]) = ()
+let (a [@test]) = ()
 
-let (_[@test]) = ()
+let (_ [@test]) = ()
 
-let (""[@test]) = ()
+let ("" [@test]) = ()
 
 let _ = f x ~f:(fun [@test] x -> x)
 
@@ -149,7 +149,7 @@ let f = fun [@test] x y -> ()
 
 let f y = fun [@test] y -> ()
 
-let (f[@test]) = fun y -> fun [@test] y -> ()
+let (f [@test]) = fun y -> fun [@test] y -> ()
 
 module type T = sig
   class subst :
@@ -318,23 +318,23 @@ let _ =
 
 [@@@a (**b*)]
 
-let (Foo ((A | B)[@attr])) = ()
+let (Foo ((A | B) [@attr])) = ()
 
-let ([((A | B)[@attr]); b; c][@attr]) = ()
+let ([((A | B) [@attr]); b; c] [@attr]) = ()
 
-let ([|a; (A | B)[@attr]; c|][@attr]) = ()
+let ([|a; (A | B) [@attr]; c|] [@attr]) = ()
 
-let {b= (A | B)[@attr]} = ()
+let {b= (A | B) [@attr]} = ()
 
-let (`Foo ((`A | `B)[@attr])) = ()
+let (`Foo ((`A | `B) [@attr])) = ()
 
-let (A | B)[@attr], (A | B)[@attr] = ()
+let (A | B) [@attr], (A | B) [@attr] = ()
 
-let (A | B)[@attr] = ()
+let (A | B) [@attr] = ()
 
-let (Foo ((A | B)[@attr]) : (t[@attr])) = ()
+let (Foo ((A | B) [@attr]) : (t[@attr])) = ()
 
-let (M.(A | B)[@attr]) = ();;
+let (M.(A | B) [@attr]) = ();;
 
 (a_______________________________________________________________________________
 [@attr]) ()
@@ -355,3 +355,17 @@ let _ =
 let _ =
   (try[@ocaml.warning "-4"] bar with _ -> ()) ;
   foo
+
+let pp f ({cf_interface; cf_is_objc_block; cf_virtual} [@warning "+9"]) = ()
+
+let pp f
+    ({cf_assign_last_arg; cf_injected_destructor; cf_interface}
+      [@warning "+9"] ) =
+  ()
+
+let pp f
+    ({ cf_assign_last_arg
+     ; cf_injected_destructor
+     ; cf_interface
+     ; cf_is_objc_block } [@warning "+9"] ) =
+  ()

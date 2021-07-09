@@ -1,6 +1,6 @@
 [@@@foo]
 
-let ((x[@foo]) : (unit[@foo])) = (() [@foo]) [@@foo]
+let ((x [@foo]) : (unit[@foo])) = (() [@foo]) [@@foo]
 
 type t = Foo of (t[@foo]) [@foo] [@@foo]
 
@@ -112,8 +112,8 @@ let () =
   [%foo
     match[@foo] () with
     | [%foo? (* Pattern expressions *)
-        ((lazy x)[@foo])] -> ()
-    | [%foo? ((exception x)[@foo])] -> ()]
+        ((lazy x) [@foo])] -> ()
+    | [%foo? ((exception x) [@foo])] -> ()]
 ;;
 
 (* Class expressions *)
@@ -862,7 +862,7 @@ end
 
 let f = function
   | Some (module M : S3) when M.x -> 1
-  | ((Some _)[@foooo]) -> 2
+  | ((Some _) [@foooo]) -> 2
   | None -> 3
 ;;
 
@@ -9376,7 +9376,7 @@ class c =
   end
 
 let f = function
-  | (x[@wee]) -> ()
+  | (x [@wee]) -> ()
 ;;
 
 let f = function
@@ -9387,13 +9387,13 @@ let f = function
 let f = function
   | [| x1; x2 |] -> ()
   | [||] -> ()
-  | ([| x |][@foo]) -> ()
+  | ([| x |] [@foo]) -> ()
   | _ -> ()
 ;;
 
 let g = function
   | { l = x } -> ()
-  | ({ l1 = x; l2 = y }[@foo]) -> ()
+  | ({ l1 = x; l2 = y } [@foo]) -> ()
   | { l1 = x; l2 = y; _ } -> ()
 ;;
 
@@ -9496,28 +9496,28 @@ let g x y = ~$(x.contents) y.contents
 let tail1 = ([ 1; 2 ] [@hello])
 let tail2 = 0 :: ([ 1; 2 ] [@hello])
 let tail3 = 0 :: ([] [@hello])
-let f ~l:(l[@foo]) = l
+let f ~l:(l [@foo]) = l
 let test x y = (( + ) [@foo]) x y
 let test x = (( ~- ) [@foo])x
 let test contents = { contents = contents [@foo] }
 
 class type t = object (_[@foo]) end
 
-class t = object (_[@foo]) end
+class t = object (_ [@foo]) end
 
 let test f x = f ~x:(x [@foo])
 
 let f = function
-  | (`A | `B)[@bar] | `C -> ()
+  | (`A | `B) [@bar] | `C -> ()
 ;;
 
 let f = function
-  | _ :: ((_ :: _)[@foo]) -> ()
+  | _ :: ((_ :: _) [@foo]) -> ()
   | _ -> ()
 ;;
 
 function
-| { contents = (contents[@foo]) } -> ()
+| { contents = (contents [@foo]) } -> ()
 ;;
 
 fun contents -> { contents = contents [@foo] };;

@@ -37,6 +37,8 @@
   + Fix normalization of odoc paragraphs (#1695, @gpetiot)
     Paragraphs must not be considered for the normalized form. They are only structural and the shape of a docstring organized in paragraphs only depend on linebreaks, which may be changed by the formatting.
 
+  + Add missing break between pattern and attribute (#1711, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)

@@ -162,14 +162,14 @@ let f ?open_:(Int.(zero)) = ()
 let f ?unpack:((module P)) = ()
 
 (* May need extra parens to handle attributes *)
-let f ?any:(_[@attr]) = ()
+let f ?any:(_ [@attr]) = ()
 
-let f ?constant:(0[@attr]) = ()
+let f ?constant:(0 [@attr]) = ()
 
-let f ?open_:(Int.(zero)[@attr]) = ()
+let f ?open_:(Int.(zero) [@attr]) = ()
 
-let f ?or_:((Some () | None)[@attr]) = ()
+let f ?or_:((Some () | None) [@attr]) = ()
 
-let f ?unpack:((module P)[@attr]) = ()
+let f ?unpack:((module P) [@attr]) = ()
 
-let f ?tuple:((1, 2)[@attr]) = ()
+let f ?tuple:((1, 2) [@attr]) = ()
