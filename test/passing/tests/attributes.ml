@@ -355,3 +355,17 @@ let _ =
 let _ =
   (try[@ocaml.warning "-4"] bar with _ -> ()) ;
   foo
+
+let pp f ({cf_interface; cf_is_objc_block; cf_virtual} [@warning "+9"]) = ()
+
+let pp f
+    ({cf_assign_last_arg; cf_injected_destructor; cf_interface}
+      [@warning "+9"] ) =
+  ()
+
+let pp f
+    ({ cf_assign_last_arg
+     ; cf_injected_destructor
+     ; cf_interface
+     ; cf_is_objc_block } [@warning "+9"] ) =
+  ()
