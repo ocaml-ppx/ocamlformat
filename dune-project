@@ -119,6 +119,7 @@
  (synopsis "Auto-formatter for OCaml code (RPC mode)")
  (description
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style. This package defines a RPC interface to OCamlFormat")
+ (license MIT)
  (depends
   (ocaml
    (and
