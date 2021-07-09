@@ -286,3 +286,45 @@ let g =
   M.f
     ((let open M in
      x) [@attr] )
+
+let _ = M.({f} [@warning "foo"])
+
+let _ = M.((* A *) {f})
+
+let _ = M.({f} (* B *))
+
+let _ = M.((* A *) {f} (* B *))
+
+let _ = M.((* A *) {f} (* B *) [@warning "foo"] (* C *))
+
+let _ = M.([|f|] [@warning "foo"])
+
+let _ = M.((* A *) [|f|])
+
+let _ = M.([|f|] (* B *))
+
+let _ = M.((* A *) [|f|] (* B *))
+
+let _ = M.((* A *) [|f|] (* B *) [@warning "foo"] (* C *))
+
+let _ = M.([f] [@warning "foo"])
+
+let _ = M.((* A *) [f])
+
+let _ = M.([f] (* B *))
+
+let _ = M.([f] (* B *)) (* after *)
+
+let _ = M.((* A *) [f] (* B *))
+
+let _ = M.((* A *) ([f] (* B *) [@warning "foo"] (* C *)))
+
+let _ = M.((f, f) [@warning "foo"])
+
+let _ = M.((* A *) (f, f))
+
+let _ = M.((f, f) (* B *))
+
+let _ = M.((* A *) (f, f) (* B *))
+
+let _ = M.((* A *) ((f, f) (* B *) [@warning "foo"] (* C *)))

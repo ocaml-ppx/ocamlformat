@@ -39,6 +39,8 @@
 
   + Add missing break between pattern and attribute (#1711, @gpetiot)
 
+  + Add missing parentheses around expression having attributes or comments inside a shorthand let-open clause (#1708, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)

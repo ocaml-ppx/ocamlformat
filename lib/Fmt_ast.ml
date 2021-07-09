@@ -2232,8 +2232,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | _ -> maybe_break
       in
       let can_skip_parens =
+        (not (Cmts.has_before c.cmts e0.pexp_loc))
+        && (not (Cmts.has_after c.cmts e0.pexp_loc))
+        &&
         match e0.pexp_desc with
-        | Pexp_array _ | Pexp_record _ -> true
+        | (Pexp_array _ | Pexp_record _)
+          when List.is_empty e0.pexp_attributes ->
+            true
         | Pexp_tuple _ -> Poly.(c.conf.parens_tuple = `Always)
         | _ -> Option.is_some (Sugar.list_exp c.cmts e0)
       in
