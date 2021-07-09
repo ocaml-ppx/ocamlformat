@@ -3,9 +3,6 @@ ocamlformat: Cannot process "tests/unstable_docstrings.mli".
   BUG: doc comments changed.
 File "_none_", line 0, characters -1--1::
 Error: Formatting of doc-comment is unstable (e.g. parses as a list or not depending on the margin):
-diff --git before after
---- before
-+++ after
 @@ -1,6 +1,7 @@
   Blablabla. Otherwise, the given protocol can not be:
 -    {ul
