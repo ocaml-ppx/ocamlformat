@@ -38,7 +38,7 @@
 
   + Add missing parentheses around expression having attributes or comments inside a shorthand let-open clause (#1708, @gpetiot)
 
-  + Do not consider leading star '*' when formatting doc comments (#1712, @hhugo)
+  + Do not consider leading star '*' when checking the diff of doc comments (#1712, @hhugo)
 
 #### Changes
 
