@@ -534,3 +534,12 @@ val k : int
 (** [trms (c × (Σᵢ₌₁ⁿ cᵢ × Πⱼ₌₁ᵐᵢ Xᵢⱼ^pᵢⱼ))]
     is the sequence of terms [Xᵢⱼ] for each [i] and [j]. *)
 
+(**
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lacinia odio sit amet lobortis fringilla. Mauris diam massa, vulputate sit amet lacus id, vestibulum bibendum lectus. Nullam tristique justo nisi, gravida dapibus mi pulvinar at. Suspendisse pellentesque odio quis ipsum tempor luctus.
+
+Cras ultrices, magna sit amet faucibus molestie, sapien dolor ullamcorper lorem, vel viverra tortor augue vel massa. Suspendisse nunc nisi, consequat et ante nec, efficitur dapibus ipsum. Aenean vitae pellentesque odio. Integer et ornare tellus, at tristique elit.
+
+Phasellus et nisi id neque ultrices vestibulum vitae non tortor. Mauris aliquet at risus sed rhoncus. Ut condimentum rhoncus orci, sit amet eleifend erat tempus quis.
+
+*)
