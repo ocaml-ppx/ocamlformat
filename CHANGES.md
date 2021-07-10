@@ -34,12 +34,11 @@
 
   + Fix parentheses around successive unary operations (#1696, @gpetiot)
 
-  + Fix normalization of odoc paragraphs (#1695, @gpetiot)
-    Paragraphs must not be considered for the normalized form. They are only structural and the shape of a docstring organized in paragraphs only depend on linebreaks, which may be changed by the formatting.
-
   + Add missing break between pattern and attribute (#1711, @gpetiot)
 
   + Add missing parentheses around expression having attributes or comments inside a shorthand let-open clause (#1708, @gpetiot)
+
+  + Do not consider leading star '*' when formatting doc comments (#1712, @hhugo)
 
 #### Changes
 
