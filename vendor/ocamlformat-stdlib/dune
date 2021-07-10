@@ -2,4 +2,4 @@
  (name ocamlformat_stdlib)
  (flags
   (:standard -open Ocaml_413))
- (libraries base cmdliner ocaml_413 either fpath stdio))
+ (libraries base cmdliner ocaml_413 fpath stdio))

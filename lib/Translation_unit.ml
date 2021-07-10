@@ -360,16 +360,16 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
         | l -> internal_error (`Comment_dropped l) [] ) ;
         let is_docstring (Cmt.{txt; loc} as cmt) =
           match txt with
-          | "" | "*" -> Stdlib.Either.Right cmt
+          | "" | "*" -> Either.Second cmt
           | _ when Char.equal txt.[0] '*' ->
               (* Doc comments here (comming directly from the lexer) include
                  their leading star *. It is not part of the docstring and
                  should be dropped. *)
               let txt = String.drop_prefix txt 1 in
               let cmt = Cmt.create txt loc in
-              if conf.parse_docstrings then Stdlib.Either.Left cmt
-              else Stdlib.Either.Right cmt
-          | _ -> Stdlib.Either.Right cmt
+              if conf.parse_docstrings then Either.First cmt
+              else Either.Second cmt
+          | _ -> Either.Second cmt
         in
         let old_docstrings, old_comments =
           List.partition_map t.comments ~f:is_docstring
