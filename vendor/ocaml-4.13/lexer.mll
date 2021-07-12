@@ -234,6 +234,32 @@ let is_keyword name = Hashtbl.mem keyword_table name
 let check_label_name lexbuf name =
   if is_keyword name then error lexbuf (Keyword_as_label name)
 
+(* To "unlex" a few characters *)
+let set_lexeme_length buf n = (
+  let open Lexing in
+  if n < 0 then
+    invalid_arg "set_lexeme_length: offset should be positive";
+  if n > buf.lex_curr_pos - buf.lex_start_pos then
+    invalid_arg "set_lexeme_length: offset larger than lexeme";
+  buf.lex_curr_pos <- buf.lex_start_pos + n;
+  buf.lex_curr_p <- {buf.lex_start_p
+                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
+)
+
+let keyword_or_lident name =
+  match Hashtbl.find keyword_table name with
+  | kw -> kw
+  | exception Not_found -> LIDENT name
+
+let fallback lexbuf = function
+  | TLIDENT (ident, _) ->
+    set_lexeme_length lexbuf (String.length ident);
+    Some (keyword_or_lident ident)
+  | TUIDENT (ident, _) ->
+    set_lexeme_length lexbuf (String.length ident);
+    Some (UIDENT ident)
+  | _ -> None
+
 (* Update the current location with file name and line number. *)
 
 let update_loc lexbuf file line absolute chars =
@@ -374,6 +400,7 @@ let hex_float_literal =
   ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
   (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
 let literal_modifier = ['G'-'Z' 'g'-'z']
+let type_disambig = ['/'] ['0'-'9']+
 
 rule token = parse
   | ('\\' as bs) newline {
@@ -406,15 +433,25 @@ rule token = parse
   | "?" (lowercase_latin1 identchar_latin1 * as name) ':'
       { warn_latin1 lexbuf;
         OPTLABEL name }
+
+  | (lowercase identchar * as ident) type_disambig as name
+      { TLIDENT (ident, name) }
+  | (lowercase_latin1 identchar_latin1 * as ident) type_disambig as name
+      { warn_latin1 lexbuf; TLIDENT (ident, name) }
+  | (uppercase identchar * as ident) type_disambig as name
+      { TUIDENT (ident, name) }
+  | (uppercase_latin1 identchar_latin1 * as ident) type_disambig as name
+      { warn_latin1 lexbuf; TUIDENT (ident, name) }
+
   | lowercase identchar * as name
-      { try Hashtbl.find keyword_table name
-        with Not_found -> LIDENT name }
+      { keyword_or_lident name }
   | lowercase_latin1 identchar_latin1 * as name
       { warn_latin1 lexbuf; LIDENT name }
   | uppercase identchar * as name
       { UIDENT name } (* No capitalized keywords *)
   | uppercase_latin1 identchar_latin1 * as name
       { warn_latin1 lexbuf; UIDENT name }
+
   | int_literal as lit { INT (lit, None) }
   | (int_literal as lit) (literal_modifier as modif)
       { INT (lit, Some modif) }

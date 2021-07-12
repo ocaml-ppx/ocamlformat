@@ -765,6 +765,9 @@ let mk_directive ~loc name arg =
 
 %token EOL                    "\\n"      (* not great, but EOL is unused *)
 
+%token <string * string> TUIDENT (* First string is the identifier alone, the second includes disambiguation *)
+%token <string * string> TLIDENT
+
 /* Precedences and associativities.
 
 Tokens and rules have precedences.  A reduce/reduce conflict is resolved
@@ -3597,13 +3600,14 @@ label_longident:
     mk_longident(mod_longident, LIDENT) { $1 }
 ;
 type_longident:
-    mk_longident(mod_ext_longident, LIDENT)  { $1 }
+    mk_longident(mod_ext_longident, disambiguated_lident)  { $1 }
 ;
 mod_longident:
     mk_longident(mod_longident, UIDENT)  { $1 }
 ;
 mod_ext_longident:
-    mk_longident(mod_ext_longident, UIDENT) { $1 }
+    (*mk_longident(mod_ext_longident, UIDENT) { $1 }*)
+    mk_longident(mod_ext_longident, disambiguated_uident) { $1 }
   | mod_ext_longident LPAREN mod_ext_longident RPAREN
       { lapply ~loc:$sloc $1 $3 }
   | mod_ext_longident LPAREN error
@@ -3617,6 +3621,14 @@ clty_longident:
 ;
 class_longident:
    mk_longident(mod_longident,LIDENT) { $1 }
+;
+disambiguated_lident:
+    LIDENT { $1 }
+  | TLIDENT { snd $1 }
+;
+disambiguated_uident:
+    UIDENT { $1 }
+  | TUIDENT { snd $1 }
 ;
 
 /* BEGIN AVOID */
