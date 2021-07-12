@@ -55,14 +55,9 @@ module Error = struct
     let n = Filename.temp_file input_name (Printf.sprintf ".next%s" ext) in
     Out_channel.write_all p ~data:prev ;
     Out_channel.write_all n ~data:next ;
-    let anonymize =
-      "sed 's/a\\/tmp\\/[^ ]*/before/g' | sed 's/b\\/tmp\\/[^ ]*/after/g' | \
-       sed '/index .*/d'"
-    in
     ignore
       (Caml.Sys.command
-         (Printf.sprintf "git diff --no-index -u %S %S | %s 1>&2" p n
-            anonymize ) ) ;
+         (Printf.sprintf "git diff --no-index -u %S %S | sed '1,4d' 1>&2" p n) ) ;
     Caml.Sys.remove p ;
     Caml.Sys.remove n
 
