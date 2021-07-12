@@ -723,6 +723,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to disambiguated_types.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/disambiguated_types.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/disambiguated_types.ml disambiguated_types.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to doc_comments-after.ml.output
      (run %{bin:ocamlformat} --doc-comments=after-when-possible %{dep:tests/doc_comments.ml}))))
 
