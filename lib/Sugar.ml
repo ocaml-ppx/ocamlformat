@@ -224,10 +224,10 @@ let infix_cons cmts xexp =
         Cmts.relocate cmts ~src:l3 ~before:hd.pexp_loc ~after:tl.pexp_loc ;
         match tl.pexp_attributes with
         | [] ->
-            infix_cons_ ~cons_opt:(l3, cons) (sub_exp ~ctx tl)
+            infix_cons_ ~cons_opt:cons (sub_exp ~ctx tl)
               ((cons_opt, sub_exp ~ctx hd) :: acc)
         | _ ->
-            (Some (l3, cons), sub_exp ~ctx tl)
+            (Some cons, sub_exp ~ctx tl)
             :: (cons_opt, sub_exp ~ctx hd)
             :: acc )
     | _ -> (cons_opt, xexp) :: acc

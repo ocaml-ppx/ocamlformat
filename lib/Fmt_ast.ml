@@ -2028,19 +2028,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         Cmts.fmt c pexp_loc
         @@ hvbox indent_wrap
              ( fmt_infix_op_args c ~parens xexp
-                 (List.map loc_args ~f:(fun (locs, arg) ->
-                      match locs with
-                      | Some (loc, op) ->
-                          let has_cmts = Cmts.has_before c.cmts loc in
-                          let fmt_before_cmts = Cmts.fmt_before c loc in
-                          let fmt_op = fmt_longident_loc c op in
-                          let fmt_after_cmts = Cmts.fmt_after c loc in
-                          ( has_cmts
-                          , fmt_before_cmts
-                          , fmt_after_cmts
-                          , (fmt_op, [(Nolabel, arg)]) )
-                      | None -> (false, noop, noop, (noop, [(Nolabel, arg)])) )
-                 )
+                 (List.map loc_args ~f:(fun (loc, arg) ->
+                      let fmt_op = opt loc (fmt_longident_loc c) in
+                      (false, noop, noop, (fmt_op, [(Nolabel, arg)])) ) )
              $ fmt_atrs ) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =
