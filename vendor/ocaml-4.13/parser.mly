@@ -766,6 +766,8 @@ let mk_directive ~loc name arg =
 
 %token EOL                    "\\n"      (* not great, but EOL is unused *)
 
+%token <string> TYPE_DISAMBIGUATOR "2" (* just an example *)
+
 /* Precedences and associativities.
 
 Tokens and rules have precedences.  A reduce/reduce conflict is resolved
@@ -3611,12 +3613,18 @@ label_longident:
 ;
 type_longident:
     mk_longident(mod_ext_longident, LIDENT)  { $1 }
+  | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
 ;
 mod_longident:
     mk_longident(mod_longident, UIDENT)  { $1 }
 ;
+mod_ext_longident_:
+    UIDENT                          { Lident $1 }
+  | UIDENT SLASH TYPE_DISAMBIGUATOR { Lident ($1 ^ "/" ^ $3) }
+  | mod_ext_longident DOT UIDENT    { Ldot($1,$3) }
+;
 mod_ext_longident:
-    mk_longident(mod_ext_longident, UIDENT) { $1 }
+    mod_ext_longident_ { $1 }
   | mod_ext_longident LPAREN mod_ext_longident RPAREN
       { lapply ~loc:$sloc $1 $3 }
   | mod_ext_longident LPAREN error
