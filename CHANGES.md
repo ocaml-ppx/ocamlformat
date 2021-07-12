@@ -48,7 +48,7 @@
 
   + Improve position of `;;` tokens (#1688, @gpetiot)
 
-  + Depend on `odoc-parser` instead of `odoc` (#1683, @kit-ty-kate, @jonludlam)
+  + Depend on `odoc-parser` instead of `odoc` (#1683, #1713, @kit-ty-kate, @jonludlam, @julow)
     The parser from odoc has been split from the main odoc package and put into its own package, `odoc-parser`.
 
 #### New features
