@@ -61,8 +61,14 @@ let x = function
     ] ->
       ()
 
-let _ = f ~x:(a :: b) (* comment *) ~y
+let _ = f (* A *) ~x:(a :: b) (* B *) ~y
 
-let _ = f ((* comment *) x :: y)
+let _ = f (* A *) ~x:((* B *) a :: b (* C *)) (* D *) ~y
+
+let _ = f ~x:((* A *) a (* B *) :: (* C *) b (* D *) :: (* E *) c (* F *)) ~y
+
+let _ = f ((* A *) x (* B *) :: (* C *) y (* D *) :: (* E *) z (* F *))
+
+let _ = abc :: (* def :: *) ghi :: jkl
 
 let _ = abc :: def (* :: ghi *) :: jkl

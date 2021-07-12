@@ -2025,19 +2025,23 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
              $ fmt_atrs ) )
     | None ->
         let loc_args = Sugar.infix_cons c.cmts xexp in
-        hvbox indent_wrap
-          ( fmt_infix_op_args c ~parens xexp
-              (List.mapi loc_args ~f:(fun i (locs, arg) ->
-                   let f l = Cmts.has_before c.cmts l in
-                   let has_cmts = List.exists ~f locs in
-                   let fmt_before_cmts = list locs "" (Cmts.fmt_before c) in
-                   let fmt_op = fmt_if (i > 0) "::" in
-                   let fmt_after_cmts = list locs "" (Cmts.fmt_after c) in
-                   ( has_cmts
-                   , fmt_before_cmts
-                   , fmt_after_cmts
-                   , (fmt_op, [(Nolabel, arg)]) ) ) )
-          $ fmt_atrs ) )
+        Cmts.fmt c pexp_loc
+        @@ hvbox indent_wrap
+             ( fmt_infix_op_args c ~parens xexp
+                 (List.map loc_args ~f:(fun (locs, arg) ->
+                      match locs with
+                      | Some (loc, op) ->
+                          let has_cmts = Cmts.has_before c.cmts loc in
+                          let fmt_before_cmts = Cmts.fmt_before c loc in
+                          let fmt_op = fmt_longident_loc c op in
+                          let fmt_after_cmts = Cmts.fmt_after c loc in
+                          ( has_cmts
+                          , fmt_before_cmts
+                          , fmt_after_cmts
+                          , (fmt_op, [(Nolabel, arg)]) )
+                      | None -> (false, noop, noop, (noop, [(Nolabel, arg)])) )
+                 )
+             $ fmt_atrs ) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =
         match c.conf.indicate_multiline_delimiters with

@@ -82,7 +82,9 @@ val list_exp :
     expression corresponding to a list (empty list or (::) application). *)
 
 val infix_cons :
-  Cmts.t -> expression Ast.xt -> (Warnings.loc list * expression Ast.xt) list
+     Cmts.t
+  -> expression Ast.xt
+  -> ((Warnings.loc * Longident.t loc) option * expression Ast.xt) list
 (** [infix_cons exp] returns a list of expressions if [exp] is an expression
     corresponding to a list ((::) application). *)
 
