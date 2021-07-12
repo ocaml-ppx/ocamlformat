@@ -739,6 +739,7 @@ let mk_directive ~loc name arg =
 %token HASH                   "#"
 %token <string> HASHOP        "##" (* just an example *)
 %token SIG                    "sig"
+%token SLASH                  "/"
 %token STAR                   "*"
 %token <string * Location.t * string option>
        STRING                 "\"hello\"" (* just an example *)
@@ -813,7 +814,7 @@ The precedences must be listed from low to high.
 %nonassoc LBRACKETAT
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
-%left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
+%left     PERCENT SLASH INFIXOP3 STAR                 /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
@@ -3561,6 +3562,7 @@ operator:
   | PLUSEQ        {"+="}
   | MINUS          {"-"}
   | MINUSDOT      {"-."}
+  | SLASH          {"/"}
   | STAR           {"*"}
   | PERCENT        {"%"}
   | EQUAL          {"="}
