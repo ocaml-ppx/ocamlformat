@@ -292,7 +292,7 @@ let a = 1
 
 (** {@metadata[ Code block with metadata field ]} *)
 
-(** {@some_tag[ Code block with metadata field. This is a big block that should hopefully break} ] *)
+(** {@some_tag[ Code block with metadata field. This is a big block that should hopefully break ]} *)
 
 (** {@ocaml[
       let _ =

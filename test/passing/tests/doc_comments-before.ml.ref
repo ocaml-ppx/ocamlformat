@@ -1,6 +1,3 @@
-Warning: Invalid documentation comment:
-File "tests/doc_comments.ml", line 295, characters 99-99:
-End of text is not allowed in '{[...]}' (code block).
 (** test *)
 module A = B
 
@@ -299,8 +296,9 @@ let a = 1
 
 (** {@metadata[ Code block with metadata field ]} *)
 
-(** {@some_tag[ Code block with metadata field. This is a big block that
-    should hopefully break} ] *)
+(** {@some_tag[
+      Code block with metadata field. This is a big block that should hopefully break
+    ]} *)
 
 (** {@ocaml[
       let _ =
