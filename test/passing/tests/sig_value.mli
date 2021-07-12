@@ -8,4 +8,4 @@ val f : f:((string * string)[@att]) (** doc doc doc doc doc doc doc doc doc doc 
 val f : f:((string * string)[@att]) -> unit
 val f : f:((string * string)) (** doc *) -> unit
 
-val f : t/1 -> f:(unit -> unit t/2) -> unit M/2.t/2
+val f : t/1 -> f:(unit -> unit t/2) -> unit M/2.t

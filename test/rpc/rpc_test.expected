@@ -35,8 +35,8 @@ Output: aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg
 int'
 Output: val x : int
 
-[ocf] Format 'val write : 'a    t/1 -> 'a ->unit M/2.t/2'
-Output: val write : 'a t/1 -> 'a -> unit M/2.t/2
+[ocf] Format 'val write : 'a    t/1 -> 'a ->unit M/2.t'
+Output: val write : 'a t/1 -> 'a -> unit M/2.t
 
 [ocf] Format 'x + y * z'
 Output: x + (y * z)
