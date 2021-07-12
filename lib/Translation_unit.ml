@@ -353,14 +353,24 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
         ( match Cmts.remaining_comments cmts_t with
         | [] -> ()
         | l -> internal_error (`Comment_dropped l) [] ) ;
-        let is_docstring Cmt.{txt; _} =
-          conf.parse_docstrings && Char.equal txt.[0] '*'
+        let is_docstring (Cmt.{txt; loc} as cmt) =
+          match txt with
+          | "" | "*" -> Either.Second cmt
+          | _ when Char.equal txt.[0] '*' ->
+              (* Doc comments here (comming directly from the lexer) include
+                 their leading star *. It is not part of the docstring and
+                 should be dropped. *)
+              let txt = String.drop_prefix txt 1 in
+              let cmt = Cmt.create txt loc in
+              if conf.parse_docstrings then Either.First cmt
+              else Either.Second cmt
+          | _ -> Either.Second cmt
         in
         let old_docstrings, old_comments =
-          List.partition_tf t.comments ~f:is_docstring
+          List.partition_map t.comments ~f:is_docstring
         in
         let t_newdocstrings, t_newcomments =
-          List.partition_tf t_new.comments ~f:is_docstring
+          List.partition_map t_new.comments ~f:is_docstring
         in
         let diff_cmts =
           Sequence.append

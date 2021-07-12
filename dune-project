@@ -47,7 +47,6 @@
   base-unix
   cmdliner
   dune-build-info
-  either
   fix
   fpath
   (menhir
@@ -90,7 +89,6 @@
   base-unix
   cmdliner
   dune-build-info
-  either
   fix
   fpath
   (menhir
