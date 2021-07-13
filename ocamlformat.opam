@@ -28,7 +28,6 @@ depends: [
   "re"
   "stdio" {< "v0.15"}
   "uuseg" {>= "10.0.0"}
-  "uutf" {>= "1.0.1"}
   "odoc" {with-doc}
 ]
 build: [
