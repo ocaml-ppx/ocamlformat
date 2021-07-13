@@ -759,13 +759,13 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-   (with-outputs-to doc_comments-parse-docstrings.mli.output
-     (run %{bin:ocamlformat} --parse-docstrings %{dep:tests/doc_comments.mli}))))
+   (with-outputs-to doc_comments-no-parse-docstrings.mli.output
+     (run %{bin:ocamlformat} --no-parse-docstrings --max-iters=3 %{dep:tests/doc_comments.mli}))))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/doc_comments-parse-docstrings.mli.ref doc_comments-parse-docstrings.mli.output)))
+ (action (diff tests/doc_comments-no-parse-docstrings.mli.ref doc_comments-no-parse-docstrings.mli.output)))
 
 (rule
  (deps tests/.ocamlformat )
