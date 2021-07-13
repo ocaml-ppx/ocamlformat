@@ -66,9 +66,7 @@
   (stdio
    (< v0.15))
   (uuseg
-   (>= 10.0.0))
-  (uutf
-   (>= 1.0.1))))
+   (>= 10.0.0))))
 
 (package
  (name ocamlformat-rpc)
@@ -108,9 +106,7 @@
   (stdio
    (< v0.15))
   (uuseg
-   (>= 10.0.0))
-  (uutf
-   (>= 1.0.1))))
+   (>= 10.0.0))))
 
 (package
  (name ocamlformat-rpc-lib)
