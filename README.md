@@ -252,8 +252,9 @@ This could be made simpler (by defining an elisp variable corresponding to the s
 
 Optional: You can change the options passed to OCamlFormat (to use the option `--disable-outside-detected-project` for example), you can [customize NeoFormat](https://github.com/sbdchd/neoformat#config-optional) with:
 ```
+let g:opambin = substitute(system('opam config var bin'),'\n$','','''')
 let g:neoformat_ocaml_ocamlformat = {
-            \ 'exe': 'ocamlformat',
+            \ 'exe': g:opambin . '/ocamlformat',
             \ 'no_append': 1,
             \ 'stdin': 1,
             \ 'args': ['--disable-outside-detected-project', '--name', '"%:p"', '-']
