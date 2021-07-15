@@ -1207,7 +1207,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
         $ wrap_k (str opn) (str cls)
             (fmt "@;<0 2>" $ fmt_pattern c (sub_pat ~ctx pat)) )
 
-and fmt_fun_args c ?pro args =
+and fmt_fun_args c args =
   let fmt_fun_arg (a : Sugar.arg_kind) =
     match a with
     | Val
@@ -1289,9 +1289,7 @@ and fmt_fun_args c ?pro args =
           (Params.parens c.conf
              (str "type " $ list names "@ " (fmt_str_loc c)) )
   in
-  fmt_if_k
-    (not (List.is_empty args))
-    (fmt_opt pro $ list args "@;" fmt_fun_arg)
+  list args "@;" fmt_fun_arg
 
 (** The second returned value of [fmt_body] belongs to a box of level N-1 if
     the first returned value belongs to a box of level N. *)
