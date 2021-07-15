@@ -497,6 +497,13 @@ let fmt_quoted_string key ext s = function
         (str (Format.sprintf "|%s}" delim))
         (str s)
 
+let fmt_type_var s =
+  str "'"
+  (* [' a'] is a valid type variable, the space is required to not lex as a
+     char. https://github.com/ocaml/ocaml/pull/2034 *)
+  $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
+  $ str s
+
 let rec fmt_extension c ctx key (ext, pld) =
   match (key, ext.txt, pld, ctx) with
   (* Quoted extensions (since ocaml 4.11). *)
@@ -633,13 +640,6 @@ and fmt_record_field c ?typ ?rhs ?constraint_loc lid1 =
   Cmts.fmt_before c lid1.loc
   $ cbox 0
       (fmt_longident_loc c lid1 $ Cmts.fmt_after c lid1.loc $ fmt_type_rhs)
-
-and fmt_type_var s =
-  str "'"
-  (* [' a'] is a valid type variable, the space is required to not lex as a
-     char. https://github.com/ocaml/ocaml/pull/2034 *)
-  $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
-  $ str s
 
 and fmt_type_cstr c ?constraint_ctx xtyp =
   fmt_or_k c.conf.ocp_indent_compat
