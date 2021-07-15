@@ -235,7 +235,7 @@ let rec fmt_longident (li : Longident.t) =
       hvbox 2 (fmt_longident li1 $ wrap "@,(" ")" (fmt_longident li2))
 
 let fmt_longident_loc c ?pre {txt; loc} =
-  Cmts.fmt c loc (fmt_opt pre $ fmt_longident txt)
+  Cmts.fmt c loc (opt pre str $ fmt_longident txt)
 
 let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre str $ str txt)
 
@@ -859,17 +859,17 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         (wrap "< " " >"
            ( list fields "@ ; " fmt_field
            $ fmt_if (is_open closedness) "@ ; .." ) )
-  | Ptyp_class (lid, []) -> fmt_longident_loc c ~pre:(str "#") lid
+  | Ptyp_class (lid, []) -> fmt_longident_loc c ~pre:"#" lid
   | Ptyp_class (lid, [t1]) ->
       fmt_core_type c (sub_typ ~ctx t1)
       $ fmt "@ "
-      $ fmt_longident_loc c ~pre:(str "#") lid
+      $ fmt_longident_loc c ~pre:"#" lid
   | Ptyp_class (lid, t1N) ->
       wrap_fits_breaks c.conf "(" ")"
         (list t1N (Params.comma_sep c.conf)
            (sub_typ ~ctx >> fmt_core_type c) )
       $ fmt "@ "
-      $ fmt_longident_loc c ~pre:(str "#") lid
+      $ fmt_longident_loc c ~pre:"#" lid
 
 and fmt_package_type c ctx cnstrs =
   let fmt_cstr ~first ~last:_ (lid, typ) =
@@ -1157,7 +1157,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
              | Exp {pexp_desc= Pexp_let _; _} -> fmt "@ : "
              | _ -> fmt " :@ " )
            $ fmt_core_type c (sub_typ ~ctx typ) ) )
-  | Ppat_type lid -> fmt_longident_loc c ~pre:(str "#") lid
+  | Ppat_type lid -> fmt_longident_loc c ~pre:"#" lid
   | Ppat_lazy pat ->
       cbox 2
         (Params.parens_if parens c.conf
