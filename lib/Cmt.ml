@@ -90,11 +90,11 @@ let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
     in
     fmt_if_k (not first) sep $ sp $ str (String.rstrip s)
   in
-  vbox 0 (list_fl unindented fmt_line $ fmt_opt epi)
+  vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
 
 type pos = Before | Within | After
 
-let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
+let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
   let open Fmt in
   let fmt_asterisk_prefixed_lines lines =
     vbox 1
@@ -106,7 +106,6 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
             | _, Some _ -> str line $ fmt "@,*" ) )
   in
   let fmt_unwrapped_cmt {txt= s; loc} =
-    let begins_line = Source.begins_line src loc ~ignore_spaces:false in
     let is_sp = function ' ' | '\t' -> true | _ -> false in
     let epi =
       (* Preserve position of closing but strip empty lines at the end *)
@@ -119,8 +118,7 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
     in
     let stripped = String.rstrip s in
     match String.split_lines stripped with
-    | first_line :: (_ :: _ as tl)
-      when (not begins_line) && not (String.is_empty first_line) ->
+    | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->
         if ocp_indent_compat then
           (* Not adding artificial breaks and keeping the comment contents
              verbatim will not interfere with ocp-indent. *)
@@ -159,7 +157,7 @@ let fmt cmt src ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
     match fmt_code source with
     | Ok formatted ->
         let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
-        hvbox 2
+        hvbox 2 ~name:"code"
           (wrap "(*$" cls
              ( fmt "@;" $ formatted
              $ fmt_if (String.length str > 2) "@;<1 -2>" ) )

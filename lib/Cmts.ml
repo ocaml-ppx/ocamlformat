@@ -347,12 +347,12 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let groups =
     List.group cmts ~break:(break_comment_group t.source conf.margin)
   in
-  vbox 0
+  vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
          | [cmt] ->
-             Cmt.fmt cmt t.source ~wrap:conf.wrap_comments
+             Cmt.fmt cmt ~wrap:conf.wrap_comments
                ~ocp_indent_compat:conf.ocp_indent_compat
                ~fmt_code:(fmt_code conf) pos
          | group ->

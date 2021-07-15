@@ -47,7 +47,7 @@ let foo = foo
    crash and the second become a mess *)
 
 (*$(**)"
-"*)
+  "*)
 
 (*$
   print_newline () ;

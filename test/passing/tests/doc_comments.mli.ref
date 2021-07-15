@@ -515,3 +515,13 @@ val k : int
     Phasellus et nisi id neque ultrices vestibulum vitae non tortor. Mauris
     aliquet at risus sed rhoncus. Ut condimentum rhoncus orci, sit amet
     eleifend erat tempus quis. *)
+
+(** {[ (* a b *) ]} *)
+
+val a :
+     fooooooooooooooooooooooooooo (** {[ (* a b *) ]} *)
+  -> fooooooooooooooooooooooooo
+
+type x = {a: t  (** {[ (* a b *) ]} *); b: [`A  (** {[ (* a b *) ]} *)]}
+
+type x = A of a  (** {[ (* a b *) ]} *) | B of b  (** {[ (* a b *) ]} *)

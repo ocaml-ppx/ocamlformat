@@ -40,6 +40,8 @@
 
   + Do not consider leading star '*' when checking the diff of doc comments (#1712, @hhugo)
 
+  + Fix formatting of multiline non-wrapping comments (#1723, @gpetiot)
+
 #### Changes
 
   + Improve the diff of unstable docstrings displayed in error messages (#1654, @gpetiot)
