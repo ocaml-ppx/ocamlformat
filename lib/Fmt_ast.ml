@@ -539,46 +539,40 @@ and fmt_attribute_or_extension c key (pre, pld) =
     $ fmt_payload c (Pld pld) pld
     $ fmt_if (Exposed.Right.payload pld) " " )
 
+and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
+  hvbox 0 @@ Cmts.fmt c attr_loc
+  @@
+  match (attr_name, attr_payload) with
+  | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true; _}}
+    , PStr
+        [ { pstr_desc=
+              Pstr_eval
+                ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
+                  ; pexp_attributes= []
+                  ; _ }
+                , [] )
+          ; _ } ] ) ->
+      fmt_or (String.equal txt "ocaml.text") "@ " " "
+      $ wrap "(**" "*)" (str doc)
+  | name, pld ->
+      let indent =
+        match pld with
+        | (PStr _ | PSig _) when String.equal key "@@@" ->
+            c.conf.stritem_extension_indent
+        | _ -> c.conf.extension_indent
+      in
+      hvbox indent (fmt_attribute_or_extension c key (name, pld))
+
 and fmt_attributes c ?pre ?suf ~key attrs =
-  let pre =
-    match pre with
-    (* Breaking before an attribute can confuse ocp-indent that will produce
-       a suboptimal indentation. *)
-    | Some Space when c.conf.ocp_indent_compat -> Some Blank
-    | Some pre -> Some pre
-    | None -> None
-  in
-  let pre = Option.map pre ~f:sp in
-  let fmt_attribute c pre = function
-    | ( {txt= ("ocaml.doc" | "ocaml.text") as txt; loc= {loc_ghost= true; _}}
-      , PStr
-          [ { pstr_desc=
-                Pstr_eval
-                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
-                    ; pexp_attributes= []
-                    ; _ }
-                  , [] )
-            ; _ } ] ) ->
-        fmt_or (String.equal txt "ocaml.text") "@ " " "
-        $ wrap "(**" "*)" (str doc)
-    | name, pld ->
-        let indent =
-          match pld with
-          | (PStr _ | PSig _) when String.equal pre "@@@" ->
-              c.conf.stritem_extension_indent
-          | _ -> c.conf.extension_indent
-        in
-        hvbox indent (fmt_attribute_or_extension c pre (name, pld))
-  in
   let num = List.length attrs in
-  let fmt_attr ~first ~last {attr_name; attr_payload; attr_loc} =
-    fmt_or_k first (open_hvbox 0) (fmt "@ ")
-    $ hvbox 0
-        (Cmts.fmt c attr_loc (fmt_attribute c key (attr_name, attr_payload)))
-    $ fmt_if_k last (close_box $ fmt_opt suf)
-  in
   fmt_if_k (num > 0)
-    (fmt_opt pre $ hvbox_if (num > 1) 0 (list_fl attrs fmt_attr))
+    ( opt pre (function
+        (* Breaking before an attribute can confuse ocp-indent that will
+           produce a suboptimal indentation. *)
+        | Space when c.conf.ocp_indent_compat -> sp Blank
+        | pre -> sp pre )
+    $ hvbox_if (num > 1) 0
+        (hvbox 0 (list attrs "@ " (fmt_attribute c ~key)) $ opt suf str) )
 
 and fmt_payload c ctx pld =
   protect c (Pld pld)
@@ -1574,7 +1568,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   ( str "%"
                   $ hovbox 2
                       ( fmt_str_loc c name $ str " fun "
-                      $ fmt_attributes c ~suf:(str " ") call.pexp_attributes
+                      $ fmt_attributes c ~suf:" " call.pexp_attributes
                           ~key:"@"
                       $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->"
                       )
@@ -1608,7 +1602,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   ( str "%"
                   $ hovbox 2
                       ( fmt_str_loc c name $ str " fun "
-                      $ fmt_attributes c ~suf:(str " ") retn.pexp_attributes
+                      $ fmt_attributes c ~suf:" " retn.pexp_attributes
                           ~key:"@"
                       $ fmt_fun_args c xargs $ fmt_opt fmt_cstr $ fmt "@ ->"
                       )
@@ -1717,8 +1711,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                            ( fmt_expression c (sub_exp ~ctx op)
                            $ fmt "@ " $ cmts_before $ fmt_if parens_r "("
                            $ str "fun " )
-                       $ fmt_attributes c ~key:"@" pexp_attributes
-                           ~suf:(str " ")
+                       $ fmt_attributes c ~key:"@" pexp_attributes ~suf:" "
                        $ hvbox_if
                            (not c.conf.wrap_fun_args)
                            4
@@ -1844,7 +1837,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                               ( hvbox 2
                                   ( fmt "(fun@ "
                                   $ fmt_attributes c ~key:"@"
-                                      eN1.pexp_attributes ~suf:(str " ")
+                                      eN1.pexp_attributes ~suf:" "
                                   $ fmt_fun_args c xargs $ fmt_opt fmt_cstr
                                   )
                               $ fmt "@ ->" ) )
@@ -2082,7 +2075,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "
-                   $ fmt_attributes c ~key:"@" pexp_attributes ~suf:(str " ")
+                   $ fmt_attributes c ~key:"@" pexp_attributes ~suf:" "
                    $ hvbox_if
                        (not c.conf.wrap_fun_args)
                        0 (fmt_fun_args c xargs)
@@ -2747,7 +2740,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
            ( hovbox 2
                ( box_fun_decl_args c 0
                    ( str "fun "
-                   $ fmt_attributes c ~key:"@" pcl_attributes ~suf:(str " ")
+                   $ fmt_attributes c ~key:"@" pcl_attributes ~suf:" "
                    $ wrap_fun_decl_args c (fmt_fun_args c xargs)
                    $ fmt "@ " )
                $ str "->" )
@@ -3403,8 +3396,8 @@ and fmt_extension_constructor c sep ctx ec =
   let doc, atrs = doc_atrs pext_attributes in
   let suf =
     match pext_kind with
-    | Pext_decl (_, None) | Pext_rebind _ -> noop
-    | Pext_decl (_, Some _) -> str " "
+    | Pext_decl (_, None) | Pext_rebind _ -> None
+    | Pext_decl (_, Some _) -> Some " "
   in
   Cmts.fmt c pext_loc
   @@ hvbox 4
@@ -3418,7 +3411,7 @@ and fmt_extension_constructor c sep ctx ec =
            | Pext_decl (args, res) ->
                fmt_constructor_arguments_result c ctx args res
            | Pext_rebind lid -> str " = " $ fmt_longident_loc c lid )
-       $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@" atrs ~suf
+       $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@" atrs ?suf
        $ fmt_docstring_padded c doc )
 
 and fmt_functor_arg c {loc; txt= arg} =
