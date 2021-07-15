@@ -3132,7 +3132,7 @@ and fmt_class_params c ctx params =
     (hvbox 0
        (wrap_fits_breaks c.conf "[" "]" (list_fl params fmt_param) $ fmt "@ ") )
 
-and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
+and fmt_type_declaration c ?ext ?(pre = "") ctx ?name ?(eq = "=") decl =
   let { ptype_name= {txt; loc}
       ; ptype_params
       ; ptype_cstrs
@@ -3167,7 +3167,8 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
           (not (List.is_empty ptype_params))
           0
           ( fmt_tydcl_params c ctx ptype_params
-          $ Option.value fmt_name ~default:(str txt) )
+          $ Option.value_map name ~default:(str txt) ~f:(fmt_longident_loc c)
+          )
       $ k )
   in
   let fmt_manifest_kind =
@@ -3894,16 +3895,13 @@ and fmt_module_statement c ~attributes ?keyword mod_expr =
   $ doc_after
 
 and fmt_with_constraint c ctx ~pre = function
-  | Pwith_type (ident, td) ->
-      fmt_type_declaration ~pre:(pre ^ " type") c ctx
-        ~fmt_name:(fmt_longident_loc c ident)
-        td
+  | Pwith_type (lid, td) ->
+      fmt_type_declaration ~pre:(pre ^ " type") c ctx ~name:lid td
   | Pwith_module (m1, m2) ->
       str pre $ str " module " $ fmt_longident_loc c m1 $ str " = "
       $ fmt_longident_loc c m2
   | Pwith_typesubst (lid, td) ->
-      fmt_type_declaration ~pre:(pre ^ " type") c ~eq:":=" ctx
-        ~fmt_name:(fmt_longident_loc c lid) td
+      fmt_type_declaration ~pre:(pre ^ " type") c ~eq:":=" ctx ~name:lid td
   | Pwith_modsubst (m1, m2) ->
       str pre $ str " module " $ fmt_longident_loc c m1 $ str " := "
       $ fmt_longident_loc c m2
