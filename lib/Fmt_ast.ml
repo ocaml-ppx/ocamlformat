@@ -237,10 +237,10 @@ let rec fmt_longident (li : Longident.t) =
 let fmt_longident_loc c ?pre {txt; loc} =
   Cmts.fmt c loc (fmt_opt pre $ fmt_longident txt)
 
-let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (fmt_opt pre $ str txt)
+let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (opt pre str $ str txt)
 
 let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
-  Cmts.fmt c loc (fmt_opt pre $ str (Option.value ~default txt))
+  Cmts.fmt c loc (opt pre str $ str (Option.value ~default txt))
 
 let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
   Cmts.fmt c loc
@@ -900,7 +900,7 @@ and fmt_row_field c ctx {prf_desc; prf_attributes= atrs; prf_loc}
                    (fits_breaks ~level:2 "" pad) )
           | None -> noop
         in
-        fmt_str_loc c ~pre:(str "`") name
+        fmt_str_loc c ~pre:"`" name
         $ fmt_padding
         $ fmt_if (not (const && List.is_empty typs)) " of@ "
         $ fmt_if (const && not (List.is_empty typs)) " & "
@@ -2824,7 +2824,7 @@ and fmt_class_field_kind c ctx = function
           in
           Cmts.relocate c.cmts ~src:pexp_loc ~before ~after:e.pexp_loc ;
           ( fmt "@ : type "
-            $ list args "@ " (fun name -> fmt_str_loc c name)
+            $ list args "@ " (fmt_str_loc c)
             $ fmt_core_type ~pro:"." ~pro_space:false c (sub_typ ~ctx t)
           , noop
           , fmt "@;<1 2>="
@@ -4419,7 +4419,7 @@ let fmt_toplevel_directive c ~semisemi dir =
     | Pdir_bool bool -> str (Bool.to_string bool)
   in
   let {pdir_name= name; pdir_arg; pdir_loc} = dir in
-  let name = fmt_str_loc c name ~pre:(str "#") in
+  let name = fmt_str_loc c name ~pre:"#" in
   let args =
     match pdir_arg with
     | None -> noop
