@@ -771,6 +771,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to doc_comments-no-wrap.mli.output
+     (run %{bin:ocamlformat} --no-wrap-comments %{dep:tests/doc_comments.mli}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/doc_comments-no-wrap.mli.ref doc_comments-no-wrap.mli.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to doc_comments.ml.output
      (run %{bin:ocamlformat} %{dep:tests/doc_comments.ml}))))
 
