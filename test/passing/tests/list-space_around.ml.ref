@@ -61,8 +61,30 @@ let x = function
     ] ->
       ()
 
-let _ = f ~x:(a :: b) (* comment *) ~y
+let _ = f (* A *) ~x:(a :: b) (* B *) ~y
 
-let _ = f ((* comment *) x :: y)
+let _ = f (* A *) ~x:((* B *) a :: b (* C *)) (* D *) ~y
+
+let _ = f ~x:((* A *) a (* B *) :: (* C *) b (* D *) :: (* E *) c (* F *)) ~y
+
+let _ = f ((* A *) x (* B *) :: (* C *) y (* D *) :: (* E *) z (* F *))
+
+let _ = abc :: (* def :: *) ghi :: jkl
 
 let _ = abc :: def (* :: ghi *) :: jkl
+
+let _ = (c :: l1) @ foo (l2 @ l)
+
+let _ =
+  make_single_trace create_loc message
+  :: make_single_trace create_loc create_message
+  :: List.map call_chain ~f:(fun foooooooooooooooooooooooooooo ->
+         fooooooooooooooooooooooooooooooo foooooooooooo [] )
+  :: foooooooo :: fooooooooooooooooo
+
+let _ =
+  fooooooo
+    ( mk_var i (tfo_combine (nuc_p_o3'_60_tfo n) align) n
+    :: mk_var i (tfo_combine (nuc_p_o3'_180_tfo n) align) n
+    :: mk_var i (tfo_combine (nuc_p_o3'_275_tfo n) align) n
+    :: domains )

@@ -2004,9 +2004,8 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_construct (lid, None) ->
       Params.parens_if parens c.conf (fmt_longident_loc c lid $ fmt_atrs)
   | Pexp_construct
-      ( {txt= Lident "::"; loc}
-      , Some {pexp_desc= Pexp_tuple [x; y]; pexp_attributes= []; pexp_loc; _}
-      ) -> (
+      ( {txt= Lident "::"; loc= _}
+      , Some {pexp_desc= Pexp_tuple [_; _]; pexp_attributes= []; _} ) -> (
     match Sugar.list_exp c.cmts exp with
     | Some (loc_xes, nil_loc) ->
         let p = Params.get_list_expr c.conf in
@@ -2025,14 +2024,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                  $ Cmts.fmt_after c ~pro:(fmt "@ ") ~epi:noop nil_loc )
              $ fmt_atrs ) )
     | None ->
-        Params.parens_if parens c.conf
-        @@ Cmts.fmt c pexp_loc
+        let loc_args = Sugar.infix_cons c.cmts xexp in
+        Cmts.fmt c pexp_loc
         @@ hvbox indent_wrap
-             ( fmt_expression c (sub_exp ~ctx x)
-             $ fmt "@ "
-             $ hovbox 0
-                 ( Cmts.fmt c ~pro:noop loc (fmt "::@ ")
-                 $ fmt_expression c (sub_exp ~ctx y) )
+             ( fmt_infix_op_args c ~parens xexp
+                 (List.map loc_args ~f:(fun (loc, arg) ->
+                      let fmt_op = opt loc (fmt_longident_loc c) in
+                      (false, noop, noop, (fmt_op, [(Nolabel, arg)])) ) )
              $ fmt_atrs ) )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =
