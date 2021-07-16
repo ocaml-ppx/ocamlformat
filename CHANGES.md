@@ -68,6 +68,9 @@
     - Break the line and reindent the cursor when pressing <ENTER>
   (#1639, #1685, @gpetiot) (#1687, @bcc32)
 
+  + Add 'line-endings=lf|crlf' option to specify the line endings used in the
+    formatted output. (#1703, @nojb)
+
 #### Internal
 
   + A script `tools/build-mingw64.sh` is provided to build a native Windows

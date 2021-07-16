@@ -51,6 +51,7 @@ type t =
   ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
+  ; line_endings: [`Lf | `Crlf]
   ; margin: int
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
@@ -86,7 +87,7 @@ let warn_raw, collect_warnings =
   let delayed_warning_list = ref [] in
   let warn_ s =
     if !delay_warning then delayed_warning_list := s :: !delayed_warning_list
-    else Format.eprintf "%s" s
+    else Format.eprintf "%s%!" s
   in
   let collect_warnings f =
     let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
@@ -830,6 +831,16 @@ module Formatting = struct
     let msg = concrete_syntax_preserved_msg in
     C.removed_option ~names ~version ~msg
 
+  let line_endings =
+    let doc = "Line endings used." in
+    let all =
+      [ ("lf", `Lf, "$(b,lf) uses Unix line endings.")
+      ; ("crlf", `Crlf, "$(b,crlf) uses Windows line endings.") ]
+    in
+    C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~section
+      (fun conf x -> {conf with line_endings= x})
+      (fun conf -> conf.line_endings)
+
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
@@ -1437,6 +1448,7 @@ let ocamlformat_profile =
   ; let_binding_indent= 2
   ; let_binding_spacing= `Compact
   ; let_module= `Compact
+  ; line_endings= `Lf
   ; margin= 80
   ; match_indent= 0
   ; match_indent_nested= `Never
@@ -1508,6 +1520,7 @@ let conventional_profile =
   ; let_binding_indent= C.default Formatting.let_binding_indent
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_module= C.default Formatting.let_module
+  ; line_endings= C.default Formatting.line_endings
   ; margin= C.default Formatting.margin
   ; match_indent= C.default Formatting.match_indent
   ; match_indent_nested= C.default Formatting.match_indent_nested
@@ -1632,6 +1645,7 @@ let janestreet_profile =
   ; let_binding_indent= 2
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
+  ; line_endings= `Lf
   ; margin= 90
   ; match_indent= 0
   ; match_indent_nested= `Never

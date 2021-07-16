@@ -272,6 +272,11 @@ OPTIONS (CODE FORMATTING STYLE)
            ... = and before the in if the module declaration does not fit on
            a single line. The default value is compact.
 
+       --line-endings={lf|crlf}
+           Line endings used. lf uses Unix line endings. crlf uses Windows
+           line endings. The default value is lf. Cannot be set in
+           attributes.
+
        -m COLS, --margin=COLS
            Format code to fit within COLS columns. The default value is 80.
            Cannot be set in attributes.

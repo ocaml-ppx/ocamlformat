@@ -24,10 +24,19 @@ let format ?output_file ~kind ~input_name ~source conf opts =
     Translation_unit.parse_and_format kind ?output_file ~input_name ~source
       conf opts
 
+let write_all output_file ~data =
+  Out_channel.with_file ~binary:true output_file ~f:(fun oc ->
+      Out_channel.output_string oc data )
+
 let to_output_file output_file data =
   match output_file with
-  | None -> Out_channel.output_string Out_channel.stdout data
-  | Some output_file -> Out_channel.write_all output_file ~data
+  | None ->
+      Out_channel.flush Out_channel.stdout ;
+      Out_channel.set_binary_mode Out_channel.stdout true ;
+      Out_channel.output_string Out_channel.stdout data ;
+      Out_channel.flush Out_channel.stdout ;
+      Out_channel.set_binary_mode Out_channel.stdout false
+  | Some output_file -> write_all output_file ~data
 
 let source_from_file = function
   | Conf.Stdin -> In_channel.input_all In_channel.stdin
@@ -52,7 +61,7 @@ let run_action action opts =
         match result with
         | Ok formatted ->
             if not (String.equal formatted source) then
-              Out_channel.write_all input_file ~data:formatted ;
+              write_all input_file ~data:formatted ;
             Ok ()
         | Error e -> Error (fun () -> print_error conf opts e)
       in

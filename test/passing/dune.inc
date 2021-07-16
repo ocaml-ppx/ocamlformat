@@ -675,6 +675,30 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to crlf_to_crlf.ml.output
+     (run %{bin:ocamlformat} --line-endings=crlf %{dep:tests/crlf_to_crlf.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/crlf_to_crlf.ml.ref crlf_to_crlf.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+   (with-outputs-to crlf_to_lf.ml.output
+     (run %{bin:ocamlformat} --line-endings=lf %{dep:tests/crlf_to_lf.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/crlf_to_lf.ml.ref crlf_to_lf.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to custom_list.ml.output
      (run %{bin:ocamlformat} %{dep:tests/custom_list.ml}))))
 

@@ -412,6 +412,30 @@ let parse_result ?(f = Ast_passes.Ast0.Parse.ast) fragment conf ~source
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
+let normalize_eol ~line_endings s =
+  let buf = Buffer.create (String.length s) in
+  let rec loop seen_cr i =
+    if i = String.length s then (
+      if seen_cr then Buffer.add_char buf '\r' ;
+      Buffer.contents buf )
+    else
+      match (s.[i], line_endings) with
+      | '\r', _ ->
+          if seen_cr then Buffer.add_char buf '\r' ;
+          loop true (i + 1)
+      | '\n', `Crlf ->
+          Buffer.add_string buf "\r\n" ;
+          loop false (i + 1)
+      | '\n', `Lf ->
+          Buffer.add_char buf '\n' ;
+          loop false (i + 1)
+      | c, _ ->
+          if seen_cr then Buffer.add_char buf '\r' ;
+          Buffer.add_char buf c ;
+          loop false (i + 1)
+  in
+  loop false 0
+
 let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
     (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
     opts =
@@ -421,6 +445,8 @@ let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
   let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
   format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
     opts
+  >>= fun formatted ->
+  Ok (normalize_eol ~line_endings:conf.Conf.line_endings formatted)
 
 let parse_and_format = function
   | Syntax.Structure -> parse_and_format Structure Structure
