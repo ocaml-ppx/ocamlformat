@@ -97,6 +97,7 @@ let () =
   protect_unit @@ config [("margin", "80")] ;
   protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
   protect_string @@ format "val x :\n \nint" ;
+  protect_string @@ format "val write : 'a    t/1 -> 'a ->unit M/2.t" ;
   protect_string @@ format "x + y * z" ;
   protect_string @@ format "let x = 4 in x" ;
   protect_string @@ format "sig end" ;

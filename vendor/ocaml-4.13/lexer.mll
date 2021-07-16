@@ -234,6 +234,37 @@ let is_keyword name = Hashtbl.mem keyword_table name
 let check_label_name lexbuf name =
   if is_keyword name then error lexbuf (Keyword_as_label name)
 
+(* To "unlex" a few characters *)
+let set_lexeme_length buf n = (
+  let open Lexing in
+  if n < 0 then
+    invalid_arg "set_lexeme_length: offset should be positive";
+  if n > buf.lex_curr_pos - buf.lex_start_pos then
+    invalid_arg "set_lexeme_length: offset larger than lexeme";
+  buf.lex_curr_pos <- buf.lex_start_pos + n;
+  buf.lex_curr_p <- {buf.lex_start_p
+                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
+)
+
+let disambiguate lexbuf txt =
+  let pos = ref 0 in
+  let len = String.length txt in
+  let is_digit c = c >= '0' && c <= '9' in
+  while !pos < len && is_digit txt.[!pos] do incr pos done;
+  let txt =
+    if !pos < len then (
+      set_lexeme_length lexbuf !pos;
+      String.sub txt 0 !pos
+    ) else
+      txt
+  in
+  TYPE_DISAMBIGUATOR txt
+
+let try_disambiguate lexbuf = function
+  | INT (txt, None) -> Some (disambiguate lexbuf txt)
+  | FLOAT (txt, _)  -> Some (disambiguate lexbuf txt)
+  | _ -> None
+
 (* Update the current location with file name and line number. *)
 
 let update_loc lexbuf file line absolute chars =
@@ -573,6 +604,7 @@ rule token = parse
   | "**" symbolchar * as op
             { INFIXOP4 op }
   | '%'     { PERCENT }
+  | '/'     { SLASH }
   | ['*' '/' '%'] symbolchar * as op
             { INFIXOP3 op }
   | '#' symbolchar_or_hash + as op
