@@ -106,8 +106,7 @@ let fmt_elements_collection ?(first_sep = true) ?(last_sep = true)
   in
   list_fl xs fmt_one
 
-let fmt_expressions c width sub_exp exprs fmt_expr
-    (p : Params.elements_collection) =
+let fmt_expressions c width sub_exp exprs fmt_expr p =
   match c.conf.break_collection_expressions with
   | `Fit_or_vertical -> fmt_elements_collection p fmt_expr exprs
   | `Wrap ->
@@ -3641,8 +3640,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
       fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
   | Psig_typesubst decls -> fmt_type c ?ext ~eq:":=" Recursive decls ctx
 
-and fmt_class_types ?ext c ctx ~pre ~sep (cls : class_type class_infos list)
-    =
+and fmt_class_types ?ext c ctx ~pre ~sep cls =
   list_fl cls (fun ~first ~last:_ cl ->
       update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
       @@ fun c ->
@@ -3667,7 +3665,7 @@ and fmt_class_types ?ext c ctx ~pre ~sep (cls : class_type class_infos list)
       $ hovbox 0
         @@ Cmts.fmt c cl.pci_loc (doc_before $ class_types $ doc_after) )
 
-and fmt_class_exprs ?ext c ctx (cls : class_expr class_infos list) =
+and fmt_class_exprs ?ext c ctx cls =
   hvbox 0
   @@ list_fl cls (fun ~first ~last:_ cl ->
          update_config_maybe_disabled c cl.pci_loc cl.pci_attributes
