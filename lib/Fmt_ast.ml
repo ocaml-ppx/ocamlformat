@@ -2678,7 +2678,7 @@ and fmt_class_signature c ~ctx ~parens ?ext self_ fields =
        $ fmt_or (List.is_empty fields) "@ " "@;<1000 0>"
        $ str "end" ) )
 
-and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
+and fmt_class_type c ({ast= typ; _} as xtyp) =
   protect c (Cty typ)
   @@
   let {pcty_desc; pcty_loc; pcty_attributes} = typ in
@@ -2688,7 +2688,7 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
   Cmts.fmt c pcty_loc
   @@
   let parens = parenze_cty xtyp in
-  ( hvbox_if box 0
+  ( hvbox 0
   @@ Params.parens_if parens c.conf
   @@
   let ctx = Cty typ in
@@ -2715,8 +2715,7 @@ and fmt_class_type c ?(box = true) ({ast= typ; _} as xtyp) =
           | `core_type ct -> arg_label lI $ fmt_core_type c ct
           | `class_type ct -> arg_label lI $ fmt_class_type c ct )
       in
-      hvbox_if box 0 (list xt1N "@;-> " fmt_arg)
-      $ fmt_attributes c ~key:"@" atrs
+      hvbox 0 (list xt1N "@;-> " fmt_arg) $ fmt_attributes c ~key:"@" atrs
   | Pcty_extension ext ->
       fmt_extension c ctx "%" ext $ fmt_attributes c ~key:"@" atrs
   | Pcty_open (popen, cl) ->
