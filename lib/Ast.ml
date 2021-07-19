@@ -404,7 +404,7 @@ let rec mty_is_simple x =
 
 and mod_is_simple x =
   match x.pmod_desc with
-  | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] -> true
+  | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] | Pmod_hole -> true
   | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _) -> false
   | Pmod_constraint (e, t) -> mod_is_simple e && mty_is_simple t
   | Pmod_apply (a, b) -> mod_is_simple a && mod_is_simple b
@@ -1338,7 +1338,7 @@ end = struct
        |Pexp_newtype _ | Pexp_open _ | Pexp_override _ | Pexp_pack _
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
-       |Pexp_unreachable | Pexp_variant _ | Pexp_while _ ->
+       |Pexp_unreachable | Pexp_variant _ | Pexp_while _ | Pexp_hole ->
           assert false
       | Pexp_extension (_, ext) -> assert (check_extensions ext)
       | Pexp_object {pcstr_self; pcstr_fields} ->
@@ -1434,7 +1434,7 @@ end = struct
             assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, ext) -> assert (check_extensions ext)
         | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
-         |Pexp_unreachable ->
+         |Pexp_unreachable | Pexp_hole ->
             assert false
         | Pexp_object {pcstr_fields; _} ->
             assert (check_pcstr_fields pcstr_fields)
@@ -2108,7 +2108,7 @@ end = struct
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
          |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
          |Pexp_variant (_, None)
-         |Pexp_while _ ->
+         |Pexp_hole | Pexp_while _ ->
             false
       in
       Exp.mem_cls cls exp
@@ -2186,7 +2186,7 @@ end = struct
        |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_unreachable
        |Pexp_variant (_, None)
-       |Pexp_while _ ->
+       |Pexp_hole | Pexp_while _ ->
           false
     in
     Hashtbl.find_or_add marked_parenzed_inner_nested_match exp

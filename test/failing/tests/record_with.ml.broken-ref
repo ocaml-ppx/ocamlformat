@@ -1,5 +1,5 @@
 ocamlformat: ignoring "tests/record_with.ml" (syntax error)
-File "tests/record_with.ml", line 25, characters 56-57:
-25 |                                                bzeefe = _;
-                                                             ^
-Error: Syntax error: wildcard "_" not expected.
+File "tests/record_with.ml", line 28, characters 0-3:
+28 | let b =
+     ^^^
+Error: Syntax error

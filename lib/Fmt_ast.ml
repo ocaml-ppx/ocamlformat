@@ -198,6 +198,8 @@ let update_items_config c items update_config =
 
 let box_semisemi b k = hvbox_if b 0 (k $ fmt_if b "@,;;")
 
+let fmt_hole () = str "_"
+
 let fmt_item_list c ctx update_config ast fmt_item items =
   let items = update_items_config c items update_config in
   let break_struct = c.conf.break_struct || is_top ctx in
@@ -2572,6 +2574,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            $ fmt_atrs ) )
   | Pexp_poly _ ->
       impossible "only used for methods, handled during method formatting"
+  | Pexp_hole -> hvbox 0 (fmt_hole () $ fmt_atrs)
 
 and fmt_let_bindings c ~ctx ?ext ~parens ~loc ~attributes ~fmt_atrs ~fmt_expr
     rec_flag bindings body =
@@ -4123,6 +4126,14 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
           Cmts.fmt c pmod_loc
             ( fmt_docstring c ~epi:(fmt "@,") doc
             $ fmt_extension c ctx "%" x1
+            $ fmt_attributes c ~pre:Space ~key:"@" atrs ) }
+  | Pmod_hole ->
+      let doc, atrs = doc_atrs pmod_attributes in
+      { empty with
+        bdy=
+          Cmts.fmt c pmod_loc
+            ( fmt_docstring c ~epi:(fmt "@,") doc
+            $ fmt_hole ()
             $ fmt_attributes c ~pre:Space ~key:"@" atrs ) }
 
 and fmt_structure c ctx itms =
