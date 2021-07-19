@@ -23,9 +23,6 @@
 
 (maintainers "OCamlFormat Team <ocamlformat-dev@lists.ocaml.org>")
 
-(license
- "OCamlFormat is distributed under the MIT license. Parts of the OCaml library are vendored for OCamlFormat and distributed under their original LGPL 2.1 license.")
-
 (source
  (github ocaml-ppx/ocamlformat))
 
@@ -50,11 +47,11 @@
   fix
   fpath
   (menhir
-   (>= 20180528))
+   (>= 20201216))
   (menhirLib
-   (>= 20200624))
+   (>= 20201216))
   (menhirSdk
-   (>= 20200624))
+   (>= 20201216))
   ocp-indent
   (bisect_ppx
    (and
@@ -62,7 +59,8 @@
     (>= 2.5.0)))
   (odoc-parser
    (>= 0.9.0))
-  re
+  (re
+   (>= 1.7.2))
   (stdio
    (< v0.15))
   (uuseg
@@ -92,11 +90,11 @@
   fix
   fpath
   (menhir
-   (>= 20180528))
+   (>= 20201216))
   (menhirLib
-   (>= 20200624))
+   (>= 20201216))
   (menhirSdk
-   (>= 20200624))
+   (>= 20201216))
   ocp-indent
   (bisect_ppx
    (and
@@ -104,7 +102,8 @@
     (>= 2.5.0)))
   (odoc-parser
    (>= 0.9.0))
-  re
+  (re
+   (>= 1.7.2))
   (stdio
    (< v0.15))
   (uuseg
