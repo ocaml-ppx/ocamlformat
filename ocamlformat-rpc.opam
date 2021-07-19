@@ -20,9 +20,9 @@ depends: [
   "dune-build-info"
   "fix"
   "fpath"
-  "menhir" {>= "20180528"}
-  "menhirLib" {>= "20200624"}
-  "menhirSdk" {>= "20200624"}
+  "menhir" {>= "20201216"}
+  "menhirLib" {>= "20201216"}
+  "menhirSdk" {>= "20201216"}
   "ocp-indent"
   "bisect_ppx" {with-test & >= "2.5.0"}
   "odoc-parser" {>= "0.9.0"}

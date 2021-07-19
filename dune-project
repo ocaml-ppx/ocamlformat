@@ -50,11 +50,11 @@
   fix
   fpath
   (menhir
-   (>= 20180528))
+   (>= 20201216))
   (menhirLib
-   (>= 20200624))
+   (>= 20201216))
   (menhirSdk
-   (>= 20200624))
+   (>= 20201216))
   ocp-indent
   (bisect_ppx
    (and
@@ -92,11 +92,11 @@
   fix
   fpath
   (menhir
-   (>= 20180528))
+   (>= 20201216))
   (menhirLib
-   (>= 20200624))
+   (>= 20201216))
   (menhirSdk
-   (>= 20200624))
+   (>= 20201216))
   ocp-indent
   (bisect_ppx
    (and
