@@ -5,8 +5,6 @@ description:
   "OCamlFormat is a tool to automatically format OCaml code in a uniform style."
 maintainer: ["OCamlFormat Team <ocamlformat-dev@lists.ocaml.org>"]
 authors: ["Josh Berdine <jjb@fb.com>"]
-license:
-  "OCamlFormat is distributed under the MIT license. Parts of the OCaml library are vendored for OCamlFormat and distributed under their original LGPL 2.1 license."
 homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
@@ -46,3 +44,4 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
+license: ["MIT" "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"] # OCamlFormat is distributed under the MIT license. Parts of the OCaml library are vendored for OCamlFormat and distributed under their original LGPL 2.1 license

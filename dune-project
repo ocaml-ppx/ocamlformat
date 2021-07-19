@@ -23,9 +23,6 @@
 
 (maintainers "OCamlFormat Team <ocamlformat-dev@lists.ocaml.org>")
 
-(license
- "OCamlFormat is distributed under the MIT license. Parts of the OCaml library are vendored for OCamlFormat and distributed under their original LGPL 2.1 license.")
-
 (source
  (github ocaml-ppx/ocamlformat))
 
