@@ -242,7 +242,7 @@ let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
 let fmt_constant c ~loc ?epi const =
   Cmts.fmt c loc
   @@
-  match const with
+  match const.pconst_desc with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
   | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
@@ -502,7 +502,9 @@ let rec fmt_extension c ctx key (ext, pld) =
     , PStr
         [ { pstr_desc=
               Pstr_eval
-                ( { pexp_desc= Pexp_constant (Pconst_string (str, loc, delim))
+                ( { pexp_desc=
+                      Pexp_constant
+                        {pconst_desc= Pconst_string (str, loc, delim); _}
                   ; pexp_loc
                   ; pexp_loc_stack= _
                   ; pexp_attributes= [] }
@@ -543,7 +545,9 @@ and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
     , PStr
         [ { pstr_desc=
               Pstr_eval
-                ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
+                ( { pexp_desc=
+                      Pexp_constant
+                        {pconst_desc= Pconst_string (doc, _, None); _}
                   ; pexp_attributes= []
                   ; _ }
                 , [] )
@@ -1069,7 +1073,9 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       let xpats = Sugar.or_pat c.cmts xpat in
       let space p =
         match p.ppat_desc with
-        | Ppat_constant (Pconst_integer (i, _) | Pconst_float (i, _)) -> (
+        | Ppat_constant
+            {pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _}
+          -> (
           match i.[0] with '-' | '+' -> true | _ -> false )
         | _ -> false
       in

@@ -245,7 +245,7 @@ let locs_of_interval source loc =
 
 let loc_of_constant t loc (cst : constant) =
   let filter : Parser.token -> bool =
-    match cst with
+    match cst.pconst_desc with
     | Pconst_string _ -> ( function STRING _ -> true | _ -> false )
     | Pconst_char _ -> ( function CHAR _ -> true | _ -> false )
     | Pconst_integer _ -> ( function INT _ -> true | _ -> false )

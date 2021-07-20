@@ -304,7 +304,7 @@ let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
   | PStr
       [ { pstr_desc=
             Pstr_eval
-              ( { pexp_desc= Pexp_constant (Pconst_string _)
+              ( { pexp_desc= Pexp_constant {pconst_desc= Pconst_string _; _}
                 ; pexp_loc= _
                 ; pexp_loc_stack= _
                 ; pexp_attributes= _ }
