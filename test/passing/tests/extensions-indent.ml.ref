@@ -14,8 +14,8 @@ val f : compare:[%compare: 'a] -> sexp_of:[%sexp_of: 'a] -> t
 let invariant t =
   Invariant.invariant [%here] t [%sexp_of: t] (fun () ->
       assert (check_t_invariant t) )
-;;
 
+;;
 [%e?
      ( xxxxxxxxx
      , xxxxxxxxxxxxx
@@ -23,8 +23,8 @@ let invariant t =
      , xxxxxxxxxxxxxx
      , xxxxxxxxxxx
      , xxxxxxxxxxxxxxxxxxxx )]
-;;
 
+;;
 [%e?
      ( xxxxxxxxx
      , xxxxxxxxxxxxx
@@ -51,15 +51,20 @@ let _ = ([%ext? (x : x)] : [%ext? (x : x)])
    11111111111111111111111 22222222222222222222222 33333333333333333333333]
 
 [%%ext
-11111111111111111111 ;;
+;;
+11111111111111111111
 
+;;
 22222222222222222222]
 
 [%%ext
-11111111111111111111 ;;
+;;
+11111111111111111111
 
-22222222222222222222 ;;
+;;
+22222222222222222222
 
+;;
 33333333333333333333]
 
 [%%ext
@@ -183,8 +188,9 @@ let _ = [%ext "foo" ; "bar"]
 let this_function_has_a_long_name plus very many arguments =
   "and a kind of long body"
 
-[%%expect {||}] ;;
+[%%expect {||}]
 
+;;
 [%expect {|
 ___________________________________________________________
 |}]

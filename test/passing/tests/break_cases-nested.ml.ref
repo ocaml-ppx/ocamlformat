@@ -27,8 +27,8 @@ let foo =
       fooooooooooooo foooooooo ;
       (match k with foooo -> foooooooo) ;
       fooooooooooooooo fooooooooooooo )
-;;
 
+;;
 match x with
 | true -> (
   match y with
@@ -38,8 +38,8 @@ match x with
       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" )
 | false ->
     "cccccccccccccccccccccccccccccc"
-;;
 
+;;
 match x with
 | "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", yyyyyyyyyy
   when fffffffffffffff bbbbbbbbbb yyyyyyyyyy ->

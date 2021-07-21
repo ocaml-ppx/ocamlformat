@@ -27,5 +27,7 @@ Make sure the locations of errors in repl files are right.
   [1]
 
   $ ocamlformat --repl-file empty_line_begin.repl
-  # foo bar ;;
-  - : 0
+  ocamlformat: Cannot process "empty_line_begin.repl".
+    Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
+    BUG: generating invalid ocaml syntax.
+  [1]

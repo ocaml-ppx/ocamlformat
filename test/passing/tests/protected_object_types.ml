@@ -48,6 +48,7 @@ module Inside_payloads = struct
   [%%ext: < .. > ]
 
   [%%ext
+  ;;
   ()
 
   type a = < f: t > ]

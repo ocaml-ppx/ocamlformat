@@ -11,10 +11,12 @@
 
 (** OCamlFormat *)
 
-open Ocamlformat ;;
+open Ocamlformat
 
-Caml.at_exit (Format.pp_print_flush Format.err_formatter) ;;
+;;
+Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 
+;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 let format ?output_file ~kind ~input_name ~source (conf : Conf.t) =
@@ -91,8 +93,8 @@ let run_action action =
       Translation_unit.numeric kind ~input_name ~source ~range conf
       |> List.iter ~f:(fun i -> Stdio.print_endline (Int.to_string i)) ;
       Ok ()
-;;
 
+;;
 match Conf.action () with
 | Ok (`Ok action) -> (
   match run_action action with

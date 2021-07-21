@@ -209,13 +209,6 @@ let update_items_config c items update_config =
   let _, items = List.fold_map items ~init:c ~f:with_config in
   items
 
-let box_semisemi c ~parent_ctx b k =
-  let space = Poly.(c.conf.fmt_opts.sequence_style = `Separator) in
-  match parent_ctx with
-  | _ when not b -> k
-  | Rep -> k $ fmt_if space " " $ str ";;"
-  | _ -> hvbox 0 (k $ fmt_or space "@;" "@," $ str ";;")
-
 let fmt_hole () = str "_"
 
 let fmt_item_list c ctx update_config ast fmt_item items =
@@ -550,7 +543,7 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
       hvbox 0 (fmt_quoted_string (Ext.Key.to_string key) ext str delim)
   | _, PStr [({pstr_loc; _} as si)], (Pld _ | Str _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
-      fmt_structure_item c ~last:true ~ext ~semisemi:false (sub_str ~ctx si)
+      fmt_structure_item c ~last:true ~ext (sub_str ~ctx si)
   | _, PSig [({psig_loc; _} as si)], (Pld _ | Sig _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:psig_loc ->
       fmt_signature_item c ~ext (sub_sig ~ctx si)
@@ -4139,13 +4132,7 @@ and fmt_structure c ctx itms =
     | _ -> c
   in
   let fmt_item c ctx ~prev:_ ~next i =
-    let semisemi =
-      match next with
-      | Some ({pstr_desc= Pstr_eval _; _}, _) -> true
-      | _ -> false
-    in
-    fmt_structure_item c ~last:(Option.is_none next) ~semisemi
-      (sub_str ~ctx i)
+    fmt_structure_item c ~last:(Option.is_none next) (sub_str ~ctx i)
   in
   let ast x = Str x in
   fmt_item_list c ctx update_config ast fmt_item itms
@@ -4164,23 +4151,23 @@ and fmt_type c ?ext ?eq rec_flag decls ctx =
   let ast x = Td x in
   fmt_item_list c ctx update_config ast fmt_decl decls
 
-and fmt_structure_item c ~last:last_item ?ext ~semisemi
-    {ctx= parent_ctx; ast= si} =
+and fmt_structure_item c ~last:last_item ?ext {ctx; ast= si} =
   protect c (Str si)
   @@
+  let skip_double_semi =
+    match ctx with Pld (PStr [_]) -> true | _ -> false
+  in
   let ctx = Str si in
   let fmt_cmts_before = Cmts.Toplevel.fmt_before c si.pstr_loc in
   let fmt_cmts_after = Cmts.Toplevel.fmt_after c si.pstr_loc in
-  (fun k ->
-    fmt_cmts_before
-    $ hvbox 0 ~name:"stri"
-        (box_semisemi c ~parent_ctx semisemi (k $ fmt_cmts_after)) )
+  (fun k -> fmt_cmts_before $ hvbox 0 ~name:"stri" (k $ fmt_cmts_after))
   @@
   match si.pstr_desc with
   | Pstr_attribute attr -> fmt_floating_attributes_and_docstrings c [attr]
   | Pstr_eval (exp, atrs) ->
       let doc, atrs = doc_atrs atrs in
-      fmt_docstring c doc
+      fmt_if (not skip_double_semi) ";;@;<1000 0>"
+      $ fmt_docstring c doc
       $ cbox 0 ~name:"eval" (fmt_expression c (sub_exp ~ctx exp))
       $ fmt_item_attributes c ~pre:Space atrs
   | Pstr_exception extn_constr ->
@@ -4226,8 +4213,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi
           | `Sparse when last && last_item -> None
           | `Sparse -> Some (fits_breaks "" "\n")
           | `Double_semicolon ->
-              Option.some_if (last && not semisemi)
-                (fits_breaks "" ~hint:(1000, -2) ";;")
+              Option.some_if last (fits_breaks "" ~hint:(1000, -2) ";;")
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
         let ext = if first then ext else None in
@@ -4394,7 +4380,7 @@ and fmt_module_binding ?ext c ctx ~rec_flag ~first pmb =
     (fmt_module ?ext c keyword ~rec_flag:(rec_flag && first) ~eqty:":"
        pmb.pmb_name xargs (Some xbody) xmty pmb.pmb_attributes )
 
-let fmt_toplevel_directive c ~semisemi dir =
+let fmt_toplevel_directive c dir =
   let fmt_dir_arg = function
     | Pdir_string s -> str (Printf.sprintf "%S" s)
     | Pdir_int (lit, Some m) -> str (Printf.sprintf "%s%c" lit m)
@@ -4413,14 +4399,14 @@ let fmt_toplevel_directive c ~semisemi dir =
         $ fmt_dir_arg pdira_desc
         $ Cmts.fmt_after c pdira_loc
   in
-  Cmts.fmt c pdir_loc (box_semisemi c ~parent_ctx:Top semisemi (name $ args))
+  Cmts.fmt c pdir_loc (fmt ";;@\n" $ name $ args)
 
 let flatten_ptop =
   List.concat_map ~f:(function
     | Ptop_def items -> List.map items ~f:(fun i -> `Item i)
     | Ptop_dir d -> [`Directive d] )
 
-let fmt_toplevel ?(force_semisemi = false) c ctx itms =
+let fmt_toplevel c ctx itms =
   let itms = flatten_ptop itms in
   let update_config c = function
     | `Item {pstr_desc= Pstr_attribute atr; _} -> update_config c [atr]
@@ -4428,22 +4414,16 @@ let fmt_toplevel ?(force_semisemi = false) c ctx itms =
   in
   let fmt_item c ctx ~prev:_ ~next itm =
     let last = Option.is_none next in
-    let semisemi =
-      match (itm, next) with
-      | _, Some (`Item {pstr_desc= Pstr_eval _; _}, _) -> true
-      | `Item _, Some (`Directive _, _) -> true
-      | _ -> force_semisemi && last
-    in
     match itm with
-    | `Item i -> fmt_structure_item c ~last ~semisemi (sub_str ~ctx i)
-    | `Directive d -> fmt_toplevel_directive c ~semisemi d
+    | `Item i -> fmt_structure_item c ~last (sub_str ~ctx i)
+    | `Directive d -> fmt_toplevel_directive c d
   in
   let ast x = Tli x in
   fmt_item_list c ctx update_config ast fmt_item itms
 
 let fmt_repl_phrase c ctx {prepl_phrase; prepl_output} =
   str "# "
-  $ fmt_toplevel ~force_semisemi:true c ctx [prepl_phrase]
+  $ fmt_toplevel c ctx [prepl_phrase]
   $ fmt_if_k
       (not (String.is_empty prepl_output))
       (break 1000 0 $ str prepl_output)

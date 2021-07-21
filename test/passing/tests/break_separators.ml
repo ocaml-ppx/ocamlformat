@@ -174,8 +174,8 @@ let length =
   ; 2777777777777777777777777777777777
   ; 27 ]
   [@foo]
-;;
 
+;;
 Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
   (Foo.foo ~foo ~foo ~foooo:()
      [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo))
@@ -604,13 +604,3 @@ let g () =
      ; gggggggggg
      ; hhhhhhhhhh |] ->
       fooooooooo
-
-let () = match x with _, (* line 1 line 2 *) Some _ -> x
-
-let () =
-  match x with
-  | ( _
-    , (* verrrrrrrrrrrrrrrrrrrrrrrry looooooooooooooooong line 1
-         veeeeeeeeeeeeeeeeeeeeeryyyy loooooooooooooooooong line 2 *)
-      Some _ ) ->
-      x

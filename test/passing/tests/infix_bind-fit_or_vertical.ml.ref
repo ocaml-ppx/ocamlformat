@@ -1,11 +1,12 @@
+;;
 f x >>= fun y ->
 g y >>= fun () ->
 f x >>= fun y ->
 g y >>= fun () ->
 f x >>= fun y ->
 g y >>= fun () -> y ()
-;;
 
+;;
 f x >>= function
 | A -> (
     g y >>= fun () ->
@@ -14,82 +15,87 @@ f x >>= function
     | x -> (
         f x >>= fun y ->
         g y >>= function _ -> y () ) )
+
 ;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
-
+;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
 |> fun x -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
 |> fun xxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxx ->
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
+
 ;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> fun x -> x ;;
-
+;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 |> fun xxxxxx xxxxxxxxxx xxxxxxxx xxxxxxxx -> x
+
 ;;
+eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x
 
-eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxx xxxxxxxxxxxxx -> x ;;
-
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee
 |> fun xxxxxxxx xxxxxxxxx xxxxxxxxxxxxx -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> fun xxxxxxxxxxxxx ->
 xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeee
 |> fun xxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxxxxxxx xxxxxxxxx ->
 xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
+
 ;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x ;;
-
+;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
 | xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
 |> function
 | x -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeeee
   eeeeeeeeeeee eeeeeeeeee
 |> function
 | xxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxx ->
     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
+
 ;;
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x
 
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function x -> x ;;
-
+;;
 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee |> function
 | xxxxxx, xxxxxxxxxx, xxxxxxxx, xxxxxxxx -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function xxxxxxxxx, xxxxxxxxxxxxx -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee eeeeeeeeeeeeeeeeeee |> function
 | xxxxxxxx, xxxxxxxxx, xxxxxxxxxxxxx -> x
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeeeeeeeeeee |> function
 | xxxxxxxxxxxxx -> xxxxxxxx xxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx
-;;
 
+;;
 eeeeeeeeeeeee eeeeeeeeee |> function
 | xxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxxxxxxx, xxxxxxxxx ->
     xxxxxxxxxxx xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx xxxxxxxxxxx
@@ -224,13 +230,3 @@ let default =
   command##hasPermission #= (fun ctx ->
   foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo) ;
   foo
-
-let _ = ( let* ) x (fun y -> z)
-
-let _ = ( let* ) x (function y -> z)
-
-let _ = f (( let* ) x (fun y -> z))
-
-let _ = f (( let* ) x (function y -> z))
-
-let _ = ((x >>= fun () -> ()) [@a])

@@ -1,14 +1,15 @@
+;;
 vbox 1
   ( str (Sexp.to_string_hum (Itv.sexp_of_t root))
   $ wrap_if (not (List.is_empty children)) "@,{" " }" (dump_ tree children)
   )
-;;
 
+;;
 user_error
   ( "version mismatch: .ocamlformat requested " ^ value ^ " but version is "
   ^ Version.version )
-;;
 
+;;
 hvbox 1
   ( str "\""
   $ list_pn lines (fun ?prev curr ?next ->
@@ -29,8 +30,8 @@ hvbox 1
                   (not (String.is_empty next))
                   (str spc $ pre_break 0 "\\" 0) ) )
   $ str "\"" $ Option.call ~f:epi )
-;;
 
+;;
 hvbox 0
   (wrap_fits_breaks "<" ">"
      ( list fields "@ ; " (function
@@ -50,8 +51,8 @@ hvbox 0
      $ fmt_if
          Poly.(closedness = Open)
          (match fields with [] -> "@ .. " | _ -> "@ ; .. ") ) )
-;;
 
+;;
 hvbox 0
   ( fmt "functor@ "
   $ wrap "(" ")"
@@ -89,8 +90,8 @@ let sigma_seed =
   create_seed_vars
     ( (* formals already there plus new ones *)
       prop.Prop.sigma @ sigma_new_formals )
-;;
 
+;;
 match
   "\"" ^ line ^ " \""
   |> (* split by whitespace *)
