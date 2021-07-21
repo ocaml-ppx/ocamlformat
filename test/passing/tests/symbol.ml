@@ -1,9 +1,12 @@
+;;
 let op = if b then ( * ) else ( + ) in
 ()
+
 ;;
+assert ( * )
 
-assert ( * );;
+;;
+( * ) [@a]
 
-( * ) [@a];;
-
+;;
 assert ( ( * ) [@a] )

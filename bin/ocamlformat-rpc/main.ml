@@ -12,10 +12,12 @@
 (** OCamlFormat-RPC *)
 
 open Ocamlformat_lib
-open Ocamlformat_rpc_lib;;
+open Ocamlformat_rpc_lib
 
-Caml.at_exit (Format.pp_print_flush Format.err_formatter);;
+;;
+Caml.at_exit (Format.pp_print_flush Format.err_formatter)
 
+;;
 Caml.at_exit (Format_.pp_print_flush Format_.err_formatter)
 
 module V = struct
