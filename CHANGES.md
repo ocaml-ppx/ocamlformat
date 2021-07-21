@@ -8,6 +8,8 @@
 
   + Fix normalization of sequences of expressions (#1731, @gpetiot)
 
+  + Add missing parenthesis around constrained pattern in class (#1734, @gpetiot)
+
 #### Changes
 
 #### New features
