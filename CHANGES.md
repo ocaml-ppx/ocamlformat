@@ -6,6 +6,8 @@
 
 #### Bug fixes
 
+  + Fix normalization of sequences of expressions (#1731, @gpetiot)
+
 #### Changes
 
 #### New features
