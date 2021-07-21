@@ -10,6 +10,8 @@
 
   + Type constrained patterns are now always parenthesized, parentheses were missing in a class context (#1734, @gpetiot)
 
+  + Fix formatting of type coercions (#1739, @gpetiot)
+
 #### Changes
 
 #### New features
