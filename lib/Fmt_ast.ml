@@ -4309,6 +4309,15 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
               $ fmt ".@ " $ fmt_core_type c xtyp )
         in
         ([], fmt_cstr)
+    | `Coerce (xtyp1, xtyp2) ->
+        let fmt_cstr =
+          opt xtyp1 (fun xtyp1 ->
+              fmt_or c.conf.ocp_indent_compat "@ : " " :@ "
+              $ fmt_core_type c xtyp1 )
+          $ fmt_or c.conf.ocp_indent_compat "@ :> " " :>@ "
+          $ fmt_core_type c xtyp2
+        in
+        ([], fmt_cstr)
     | `Other (xargs, xtyp) ->
         (xargs, fmt_type_cstr c ~in_constraint:false xtyp)
     | `None xargs -> (xargs, noop)
