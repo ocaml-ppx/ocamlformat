@@ -282,3 +282,7 @@ class a =
   b
 
 class t (lazy _) = object end
+
+class virtual c =
+  let (mc_exit : _) = () in
+  object end
