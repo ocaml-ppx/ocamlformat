@@ -1968,9 +1968,8 @@ end = struct
         | Str {pstr_desc= Pstr_value _; _} )
       , Ppat_constraint _ ) ->
         true
-    | Pat _, Ppat_constraint _
+    | _, Ppat_constraint _
      |_, Ppat_unpack _
-     |_, Ppat_constraint ({ppat_desc= Ppat_unpack _; _}, _)
      |( Pat
           { ppat_desc=
               ( Ppat_alias _ | Ppat_array _ | Ppat_constraint _
@@ -1997,16 +1996,10 @@ end = struct
      |Pat _, Ppat_lazy _
      |Pat _, Ppat_exception _
      |Exp {pexp_desc= Pexp_fun _; _}, Ppat_or _
-     |Cl _, Ppat_constraint _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_tuple _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_construct _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_alias _
      |Cl {pcl_desc= Pcl_fun _; _}, Ppat_lazy _
-     |( Exp
-          { pexp_desc=
-              Pexp_fun _ | Pexp_function _ | Pexp_match _ | Pexp_try _
-          ; _ }
-      , Ppat_constraint _ )
      |Exp {pexp_desc= Pexp_let _ | Pexp_letop _; _}, Ppat_exception _
      |( Exp {pexp_desc= Pexp_fun _; _}
       , (Ppat_construct _ | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _) ) ->
@@ -2022,7 +2015,6 @@ end = struct
           | {pvb_pat; pvb_expr= {pexp_desc= Pexp_constraint _; _}; _} ->
               pvb_pat == pat
           | _ -> false )
-    | Pld _, Ppat_constraint _ -> true
     | _ -> false
 
   (** Check if an exp is a prefix op that is not fully applied *)
