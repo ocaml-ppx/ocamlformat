@@ -172,3 +172,11 @@ let _ = Array.unsafe_get [||] (-8)
 let _ = Bigarray.Genarray.get x [||] (-8)
 
 let _ = Bigarray.Genarray.unsafe_get x [||] (-8)
+
+let _ = [%p (Some).(tickers)]
+
+let _ = [%p (Explicit).(0 / 2)]
+
+let _ = [%p Some.(tickers)]
+
+let _ = [%p Explicit.(0 / 2)]
