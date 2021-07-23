@@ -75,6 +75,31 @@ let tests_list_pn =
         let l = ["a"; "b"; "c"; "d"; "e"] in
         Fmt.fmt_if_k false (Fmt.list_pn l pp_spy) ) ]
 
+let tests_list_k =
+  let test name ~expected ~expected_calls f =
+    ( "list_k: " ^ name
+    , `Quick
+    , fun () ->
+        let calls = ref [] in
+        let record_call x = calls := x :: !calls in
+        let pp_spy x = record_call x ; Fmt.str x in
+        let term = f pp_spy in
+        let got = eval_fmt term in
+        Alcotest.check Alcotest.(string) Caml.__LOC__ expected got ;
+        let got_calls = List.rev !calls in
+        Alcotest.check
+          Alcotest.(list string)
+          Caml.__LOC__ expected_calls got_calls )
+  in
+  [ test "evaluation order" ~expected:"a b c d e"
+      ~expected_calls:["a"; "b"; "c"; "d"; "e"] (fun pp_spy ->
+        let l = ["a"; "b"; "c"; "d"; "e"] in
+        Fmt.list_k l (Fmt.str " ") pp_spy )
+  ; test "does not call pp if not formatting" ~expected:"" ~expected_calls:[]
+      (fun pp_spy ->
+        let l = ["a"; "b"; "c"; "d"; "e"] in
+        Fmt.fmt_if_k false (Fmt.list_k l (Fmt.str " ") pp_spy) ) ]
+
 let tests_sequence =
   let test name term ~expected =
     ( "sequence: " ^ name
@@ -92,4 +117,4 @@ let tests_sequence =
       (Fmt.sequence (List.init 300_000 ~f:(fun _ -> Fmt.noop)))
       ~expected:"" ]
 
-let tests = tests_lazy @ tests_list_pn @ tests_sequence
+let tests = tests_lazy @ tests_list_pn @ tests_list_k @ tests_sequence
