@@ -371,26 +371,44 @@ let doc_atrs ?(acc = []) atrs =
   let docs = match docs with [] -> None | l -> Some (List.rev l) in
   (docs, List.rev rev_atrs)
 
-let rec mty_is_simple x =
+let with_constraint_is_simple = function
+  | Pwith_module (_, _) | Pwith_modsubst (_, _) -> true
+  | Pwith_type (_, _)
+   |Pwith_modtype (_, _)
+   |Pwith_modtypesubst (_, _)
+   |Pwith_typesubst (_, _) ->
+      false
+
+let rec mty_is_simple ?(allow_with_constraints = true) cc x =
   match x.pmty_desc with
-  | Pmty_ident _ | Pmty_alias _ | Pmty_signature [] -> true
+  | Pmty_signature [] -> not (cc.cmts_within x.pmty_loc)
+  | Pmty_ident _ | Pmty_alias _ | Pmty_extension (_, (PStr [] | PSig [])) ->
+      true
   | Pmty_signature (_ :: _)
    |Pmty_with (_, _ :: _ :: _)
    |Pmty_extension _
    |Pmty_functor (_, _) ->
       false
-  | Pmty_typeof e -> mod_is_simple e
-  | Pmty_with (t, ([] | [_])) -> mty_is_simple t
+  | Pmty_typeof e -> mod_is_simple cc e
+  | Pmty_with (_, []) -> impossible "not produced by parser"
+  | Pmty_with (t, [wc]) ->
+      allow_with_constraints
+      && mty_is_simple ~allow_with_constraints:false cc t
+      && with_constraint_is_simple wc
 
-and mod_is_simple x =
+and mod_is_simple cc x =
   match x.pmod_desc with
-  | Pmod_ident _ | Pmod_unpack _ | Pmod_structure [] | Pmod_hole -> true
+  | Pmod_structure [] -> not (cc.cmts_within x.pmod_loc)
+  | Pmod_ident _ | Pmod_unpack _
+   |Pmod_extension (_, (PStr [] | PSig []))
+   |Pmod_hole ->
+      true
   | Pmod_structure (_ :: _) | Pmod_extension _ | Pmod_functor (_, _) -> false
-  | Pmod_constraint (e, t) -> mod_is_simple e && mty_is_simple t
-  | Pmod_apply (a, b) -> mod_is_simple a && mod_is_simple b
+  | Pmod_constraint (e, t) -> mod_is_simple cc e && mty_is_simple cc t
+  | Pmod_apply (a, b) -> mod_is_simple cc a && mod_is_simple cc b
 
 module Mty = struct
-  let is_simple = mty_is_simple
+  let is_simple x = mty_is_simple x
 
   let has_trailing_attributes {pmty_attributes; _} =
     List.exists pmty_attributes ~f:(Fn.non Attr.is_doc)
@@ -470,23 +488,18 @@ module Structure_item = struct
      |Pstr_class [] ->
         false
 
-  let is_simple (itm, c) =
+  let is_simple cc (itm, c) =
     match c.Conf.module_item_spacing with
     | `Compact | `Preserve ->
         Location.is_single_line itm.pstr_loc c.Conf.margin
     | `Sparse -> (
       match itm.pstr_desc with
       | Pstr_include {pincl_mod= me; _} | Pstr_module {pmb_expr= me; _} ->
-          let rec is_simple_mod me =
-            match me.pmod_desc with
-            | Pmod_apply (me1, me2) -> is_simple_mod me1 && is_simple_mod me2
-            | Pmod_functor (_, me) -> is_simple_mod me
-            | Pmod_ident i -> Longident.is_simple c i.txt
-            | _ -> false
-          in
-          is_simple_mod me
+          Mod.is_simple cc me
+          && Location.is_single_line itm.pstr_loc c.Conf.margin
       | Pstr_open {popen_expr= {pmod_desc= Pmod_ident i; _}; _} ->
           Longident.is_simple c i.txt
+          && Location.is_single_line itm.pstr_loc c.Conf.margin
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -509,7 +522,8 @@ module Structure_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between s ({cmts_before; cmts_after; _} as cc) (i1, c1) (i2, c2)
+      =
     cmts_after i1.pstr_loc || cmts_before i2.pstr_loc || has_doc i1
     || has_doc i2
     ||
@@ -517,8 +531,8 @@ module Structure_item = struct
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.pstr_loc.loc_end i2.pstr_loc.loc_start
     | _ ->
-        (not (is_simple (i1, c1)))
-        || (not (is_simple (i2, c2)))
+        (not (is_simple cc (i1, c1)))
+        || (not (is_simple cc (i2, c2)))
         || not (allow_adjacent (i1, c1) (i2, c2))
 end
 
@@ -557,16 +571,18 @@ module Signature_item = struct
      |Psig_class [] ->
         false
 
-  let is_simple (itm, c) =
+  let is_simple cc (itm, c) =
     match c.Conf.module_item_spacing with
     | `Compact | `Preserve ->
         Location.is_single_line itm.psig_loc c.Conf.margin
     | `Sparse -> (
       match itm.psig_desc with
-      | Psig_open {popen_expr= i; _}
-       |Psig_module {pmd_type= {pmty_desc= Pmty_alias i; _}; _}
-       |Psig_modsubst {pms_manifest= i; _} ->
+      | Psig_open {popen_expr= i; _} | Psig_modsubst {pms_manifest= i; _} ->
           Longident.is_simple c i.txt
+          && Location.is_single_line itm.psig_loc c.Conf.margin
+      | Psig_include {pincl_mod= me; _} | Psig_module {pmd_type= me; _} ->
+          Mty.is_simple cc me
+          && Location.is_single_line itm.psig_loc c.Conf.margin
       | _ -> false )
 
   let allow_adjacent (itmI, cI) (itmJ, cJ) =
@@ -590,7 +606,8 @@ module Signature_item = struct
       | _ -> false )
     | _ -> true
 
-  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between s ({cmts_before; cmts_after; _} as cc) (i1, c1) (i2, c2)
+      =
     cmts_after i1.psig_loc || cmts_before i2.psig_loc || has_doc i1
     || has_doc i2
     ||
@@ -598,8 +615,8 @@ module Signature_item = struct
     | `Preserve, `Preserve ->
         Source.empty_line_between s i1.psig_loc.loc_end i2.psig_loc.loc_start
     | _ ->
-        (not (is_simple (i1, c1)))
-        || (not (is_simple (i2, c2)))
+        (not (is_simple cc (i1, c1)))
+        || (not (is_simple cc (i2, c2)))
         || not (allow_adjacent (i1, c1) (i2, c2))
 end
 

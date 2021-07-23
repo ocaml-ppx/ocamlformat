@@ -3594,7 +3594,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
       update_config_maybe_disabled c pincl_loc pincl_attributes
       @@ fun c ->
       let doc_before, doc_after, atrs =
-        let force_before = not (Mty.is_simple pincl_mod) in
+        let force_before = not (Mty.is_simple (cmt_checker c) pincl_mod) in
         fmt_docstring_around_item c ~force_before ~fit:true pincl_attributes
       in
       let keyword, {opn; pro; psp; bdy; cls; esp; epi} =
@@ -3755,8 +3755,9 @@ and fmt_module c ?ext ?epi ?(can_sparse = false) keyword ?(eqty = "=") name
                   $ fmt_opt epi ) ) )
   in
   let single_line =
-    Option.for_all xbody ~f:(fun x -> Mod.is_simple x.ast)
-    && Option.for_all xmty ~f:(fun x -> Mty.is_simple x.ast)
+    let cc = cmt_checker c in
+    Option.for_all xbody ~f:(fun x -> Mod.is_simple cc x.ast)
+    && Option.for_all xmty ~f:(fun x -> Mty.is_simple cc x.ast)
     && List.for_all xargs ~f:(function {txt= Unit; _} -> true | _ -> false)
   in
   let compact = Poly.(c.conf.let_module = `Compact) || not can_sparse in
@@ -3873,7 +3874,7 @@ and fmt_open_description ?ext c ?(keyword = "open") ~kw_attributes
 (** TODO: merge with `fmt_module_declaration` *)
 and fmt_module_statement c ~attributes ?keyword mod_expr =
   let blk = fmt_module_expr c mod_expr in
-  let force_before = not (Mod.is_simple mod_expr.ast) in
+  let force_before = not (Mod.is_simple (cmt_checker c) mod_expr.ast) in
   let doc_before, doc_after, atrs =
     fmt_docstring_around_item ~force_before ~fit:true c attributes
   in
@@ -3941,7 +3942,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let fmt_rator =
         let break_struct =
           c.conf.break_struct && can_break_before_struct
-          && not (Mod.is_simple me_a)
+          && not (Mod.is_simple (cmt_checker c) me_a)
         in
         fmt_docstring c ~epi:(fmt "@,") doc
         $ box_f (blk_f.psp $ fmt_opt blk_f.pro $ blk_f.bdy)

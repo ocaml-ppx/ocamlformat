@@ -128,11 +128,11 @@ module Pat : sig
 end
 
 module Mod : sig
-  val is_simple : module_expr -> bool
+  val is_simple : cmt_checker -> module_expr -> bool
 end
 
 module Mty : sig
-  val is_simple : module_type -> bool
+  val is_simple : cmt_checker -> module_type -> bool
 end
 
 module Cl : sig

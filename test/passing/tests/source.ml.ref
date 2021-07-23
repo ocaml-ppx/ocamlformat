@@ -4353,7 +4353,6 @@ module Std = struct
 end
 
 open Std
-
 module Hash1 : module type of Hash = Hash
 
 module Hash2 : sig
@@ -4374,7 +4373,6 @@ module Std2 = struct
 end
 
 module Std' = Std2
-
 module M' : module type of Std'.M = Std2.M
 
 let f3 (x : M'.t) : Std2.M.t = x
@@ -4392,7 +4390,6 @@ let f3 (x : M'.t) : Std2.M.t = x
    (Coverage.t, 'a) Hashtbl2.t end *)
 module type INCLUDING = sig
   include module type of List
-
   include module type of ListLabels
 end
 
@@ -4837,7 +4834,6 @@ module F (_ : sig end) = struct
 end
 
 module M = struct end
-
 module N = M
 
 module G (X : F(N).S) : A.S = X
@@ -4847,7 +4843,6 @@ module F (_ : sig end) = struct
 end
 
 module M = struct end
-
 module N = M
 
 module G (X : F(N).S) : F(M).S = X
@@ -5309,7 +5304,6 @@ end
 
 module T = struct
   module M = struct end
-
   include F (M)
 end
 
@@ -5343,7 +5337,6 @@ end
 
 module M = struct
   module X = struct end
-
   module Y = FF (X) (* XXX *)
 
   type t = Y.t
@@ -5363,7 +5356,6 @@ module G = F (M.Y)
 (* PR#6307 *)
 
 module A1 = struct end
-
 module A2 = struct end
 
 module L1 = struct
@@ -5414,7 +5406,6 @@ end
 
 module type S' = sig
   module I = Int2
-
   include S with module I := I
 end
 
@@ -5487,7 +5478,6 @@ module type S' = S with module M = H'
 (* PR#6376 *)
 module type Alias = sig
   module N : sig end
-
   module M = N
 end
 
@@ -5552,7 +5542,6 @@ end
 module type S = sig
   module M : sig
     module N : sig end
-
     module P : sig end
   end
 
@@ -5565,7 +5554,6 @@ end
 module R = struct
   module M = struct
     module N = struct end
-
     module P = struct end
   end
 
@@ -5740,7 +5728,6 @@ module H () = F ()
 
 (* Alias *)
 module U = struct end
-
 module M = F ()
 
 (* ok *)
@@ -7723,7 +7710,6 @@ end
 
 module type S = sig
   include S1
-
   include S1
 end
 
@@ -7967,7 +7953,6 @@ end
 
 module type EVALUATOR = sig
   module Value : VALUE
-
   module Ast : AST with module Value := Value
 
   type state = Value.state
@@ -8025,7 +8010,6 @@ end
 
 module type COMBINED_TYPE = sig
   module T : USERTYPE
-
   include COMBINED_COMMON with module T := T
 end
 

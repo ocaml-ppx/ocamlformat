@@ -60,11 +60,8 @@ module type M = sig
      [@test])
 
   module T : module type of X [@test5]
-
   module T : (module type of X) [@test6]
-
   module T : [%ext] [@test7]
-
   module T = T [@@test8]
 end
 

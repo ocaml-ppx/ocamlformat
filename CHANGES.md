@@ -45,6 +45,8 @@
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
     Comments are now wrapped around list elements instead of causing a break.
 
+  + Improve spacing of module items (#1743, @gpetiot)
+
 #### New features
 
   + Handle merlin typed holes (#1698, @gpetiot)
