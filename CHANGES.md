@@ -10,6 +10,8 @@
 
   + Type constrained patterns are now always parenthesized, parentheses were missing in a class context (#1734, @gpetiot)
 
+  + Support sugared form of coercions in let bindings (#1739, @gpetiot)
+
 #### Changes
 
 #### New features

@@ -543,6 +543,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to coerce.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/coerce.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/coerce.ml coerce.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to comment_breaking.ml.output
      (run %{bin:ocamlformat} %{dep:tests/comment_breaking.ml}))))
 
