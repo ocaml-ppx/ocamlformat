@@ -157,7 +157,8 @@ let list_fl xs pp =
   list_pn xs (fun ~prev x ~next ->
       pp ~first:(Option.is_none prev) ~last:(Option.is_none next) x )
 
-let list_k l sep f = List.map l ~f |> List.intersperse ~sep |> sequence
+let list_k l sep f =
+  list_fl l (fun ~first:_ ~last x -> f x $ if last then noop else sep)
 
 let list xs sep pp = list_k xs (fmt sep) pp
 
