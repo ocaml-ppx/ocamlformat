@@ -29,6 +29,7 @@ end
 
 include T
 include Comparator.Make (T)
+open Fmt
 
 let create txt loc = {txt; loc}
 
@@ -80,7 +81,6 @@ let unindent_lines ~opn_pos first_line tl_lines =
   :: List.map ~f:(fun s -> String.drop_prefix s min_indent) tl_lines
 
 let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
-  let open Fmt in
   let is_white_line s = String.for_all s ~f:Char.is_whitespace in
   let unindented = unindent_lines ~opn_pos first_line tl_lines in
   let fmt_line ~first ~last:_ s =
@@ -94,83 +94,74 @@ let fmt_multiline_cmt ?epi ~opn_pos ~starts_with_sp first_line tl_lines =
 
 type pos = Before | Within | After
 
+let fmt_asterisk_prefixed_lines lines =
+  vbox 1
+    ( fmt "(*"
+    $ list_fl lines (fun ~first:_ ~last line ->
+          match line with
+          | "" when last -> fmt ")"
+          | _ -> str line $ fmt_or last "*)" "@,*" ) )
+
+let fmt_as_code ~dollar_suf formatted =
+  let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
+  hvbox 2 ~name:"code" @@ wrap "(*$@;" cls (formatted $ fmt "@;<1 -2>")
+
+let fmt_unwrapped ~ocp_indent_compat {txt= s; loc} pos =
+  let is_sp = function ' ' | '\t' -> true | _ -> false in
+  match String.split_lines (String.rstrip s) with
+  | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->
+      if ocp_indent_compat then
+        (* Not adding artificial breaks and keeping the comment contents
+           verbatim will not interfere with ocp-indent. *)
+        match pos with
+        | Before -> wrap "(*" "*)" @@ str s
+        | Within -> wrap "(*" "*)" @@ str s
+        | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" @@ str s
+      else
+        let epi =
+          (* Preserve position of closing but strip empty lines at the end *)
+          match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
+          | Some i when Char.( = ) s.[i] '\n' ->
+              break 1000 (-2) (* Break before closing *)
+          | Some i when i < String.length s - 1 ->
+              str " " (* Preserve a space at the end *)
+          | _ -> noop
+        in
+        (* Preserve the first level of indentation *)
+        let starts_with_sp = is_sp first_line.[0] in
+        wrap "(*" "*)"
+        @@ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
+             first_line tl
+  | _ -> wrap "(*" "*)" @@ str s
+
 let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
-  let open Fmt in
-  let fmt_asterisk_prefixed_lines lines =
-    vbox 1
-      ( fmt "(*"
-      $ list_pn lines (fun ~prev:_ line ~next ->
-            match (line, next) with
-            | "", None -> fmt ")"
-            | _, None -> str line $ fmt "*)"
-            | _, Some _ -> str line $ fmt "@,*" ) )
-  in
-  let fmt_unwrapped_cmt {txt= s; loc} =
-    let is_sp = function ' ' | '\t' -> true | _ -> false in
-    let epi =
-      (* Preserve position of closing but strip empty lines at the end *)
-      match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
-      | Some i when Char.( = ) s.[i] '\n' ->
-          break 1000 (-2) (* Break before closing *)
-      | Some i when i < String.length s - 1 ->
-          str " " (* Preserve a space at the end *)
-      | _ -> noop
-    in
-    let stripped = String.rstrip s in
-    match String.split_lines stripped with
-    | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->
-        if ocp_indent_compat then
-          (* Not adding artificial breaks and keeping the comment contents
-             verbatim will not interfere with ocp-indent. *)
-          match pos with
-          | Before -> wrap "(*" "*)" (str s)
-          | Within -> wrap "(*" "*)" (str s)
-          | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" (str s)
-        else
-          (* Preserve the first level of indentation *)
-          let starts_with_sp = is_sp first_line.[0] in
-          wrap "(*" "*)"
-            (fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
-               first_line tl )
-    | _ -> wrap "(*" "*)" (str s)
-  in
-  let fmt_non_code ?(wrap_comments = wrap_comments) cmt =
-    if not wrap_comments then
+  let mode =
+    match cmt.txt with
+    | "" -> impossible "not produced by parser"
+    (* "(**)" is not parsed as a docstring but as a regular comment
+       containing '*' and would be rewritten as "(***)" *)
+    | "*" when Location.width cmt.loc = 4 -> `Verbatim "(**)"
+    | "*" -> `Verbatim "(***)"
+    | "$" -> `Verbatim "(*$*)"
+    | str when Char.equal str.[0] '$' -> (
+        let dollar_suf = Char.equal str.[String.length str - 1] '$' in
+        let len = String.length str - if dollar_suf then 2 else 1 in
+        let source = String.sub ~pos:1 ~len str in
+        match fmt_code source with
+        | Ok formatted -> `Code (formatted, dollar_suf)
+        | Error () -> `Unwrapped cmt )
+    | _ -> (
       match split_asterisk_prefixed cmt with
-      | [""] | [_] | [_; ""] -> fmt_unwrapped_cmt cmt
-      | asterisk_prefixed_lines ->
-          fmt_asterisk_prefixed_lines asterisk_prefixed_lines
-    else
-      match split_asterisk_prefixed cmt with
-      | [] -> assert false
-      | [""] -> assert false
-      | [""; ""] -> str "(* *)"
-      | [text] -> str "(*" $ fill_text text ~epi:"*)"
-      | [text; ""] -> str "(*" $ fill_text text ~epi:" *)"
-      | asterisk_prefixed_lines ->
-          fmt_asterisk_prefixed_lines asterisk_prefixed_lines
+      | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
+      | [""; ""] -> `Verbatim "(* *)"
+      | [text] when wrap_comments -> `Wrapped (text, "*)")
+      | [text; ""] when wrap_comments -> `Wrapped (text, " *)")
+      | [_] | [_; ""] -> `Unwrapped cmt
+      | lines -> `Asterisk_prefixed lines )
   in
-  let fmt_code ({txt= str; _} as cmt) =
-    let dollar_last = Char.equal str.[String.length str - 1] '$' in
-    let len = String.length str - if dollar_last then 2 else 1 in
-    let source = String.sub ~pos:1 ~len str in
-    match fmt_code source with
-    | Ok formatted ->
-        let cls : Fmt.s = if dollar_last then "$*)" else "*)" in
-        hvbox 2 ~name:"code"
-          (wrap "(*$" cls
-             ( fmt "@;" $ formatted
-             $ fmt_if (String.length str > 2) "@;<1 -2>" ) )
-    | Error () -> fmt_non_code ~wrap_comments:false cmt
-  in
-  match cmt.txt with
-  | "*" ->
-      if
-        (* "(**)" is not parsed as a docstring but as a regular comment
-           containing '*' and would be rewritten as "(***)" *)
-        Location.width cmt.loc = 4
-      then str "(**)"
-      else str "(***)"
-  | "" | "$" -> fmt_non_code cmt
-  | str when Char.equal str.[0] '$' -> fmt_code cmt
-  | _ -> fmt_non_code cmt
+  match mode with
+  | `Verbatim x -> str x
+  | `Code (x, dollar_suf) -> fmt_as_code ~dollar_suf x
+  | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
+  | `Unwrapped x -> fmt_unwrapped ~ocp_indent_compat x pos
+  | `Asterisk_prefixed x -> fmt_asterisk_prefixed_lines x
