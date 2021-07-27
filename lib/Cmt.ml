@@ -105,30 +105,26 @@ module Unwrapped = struct
     vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
 
   let fmt ~ocp_indent_compat {txt= s; loc} pos =
-    let is_sp = function ' ' | '\t' -> true | _ -> false in
     match String.split_lines (String.rstrip s) with
     | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->
-        if ocp_indent_compat then
-          (* Not adding artificial breaks and keeping the comment contents
-             verbatim will not interfere with ocp-indent. *)
-          match pos with
-          | Before -> wrap "(*" "*)" @@ str s
-          | Within -> wrap "(*" "*)" @@ str s
-          | After -> break_unless_newline 1000 0 $ wrap "(*" "*)" @@ str s
-        else
-          let epi =
-            (* Preserve position of closing but strip empty lines at the
-               end *)
-            match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
-            | Some i when Char.( = ) s.[i] '\n' ->
-                break 1000 (-2) (* Break before closing *)
-            | Some i when i < String.length s - 1 ->
-                str " " (* Preserve a space at the end *)
-            | _ -> noop
-          in
-          (* Preserve the first level of indentation *)
-          let starts_with_sp = is_sp first_line.[0] in
-          wrap "(*" "*)"
+        let is_sp = function ' ' | '\t' -> true | _ -> false in
+        let epi =
+          (* Preserve position of closing but strip empty lines at the end *)
+          match String.rfindi s ~f:(fun _ c -> not (is_sp c)) with
+          | Some i when Char.( = ) s.[i] '\n' ->
+              break 1000 (-2) (* Break before closing *)
+          | Some i when i < String.length s - 1 ->
+              str " " (* Preserve a space at the end *)
+          | _ -> noop
+        in
+        (* Preserve the first level of indentation *)
+        let starts_with_sp = is_sp first_line.[0] in
+        (* Not adding artificial breaks and keeping the comment contents
+           verbatim will not interfere with ocp-indent. *)
+        ( match pos with
+        | After when ocp_indent_compat -> break_unless_newline 1000 0
+        | _ -> noop )
+        $ wrap "(*" "*)"
           @@ fmt_multiline_cmt ~opn_pos:loc.loc_start ~epi ~starts_with_sp
                first_line tl
     | _ -> wrap "(*" "*)" @@ str s
