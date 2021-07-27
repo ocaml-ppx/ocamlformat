@@ -912,7 +912,7 @@ let g (type t) (x : t) (tag : t ty) =
 ;;
 
 (* Error: This expression has type bool but an expression was expected of type
-t = int *)
+   t = int *)
 
 let id x = x
 
@@ -2883,8 +2883,8 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-(*  val comp_subst :
-    ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
+(* val comp_subst :
+   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
 (* 4 The Occur-Check, through thick and thin *)
 
@@ -3229,8 +3229,8 @@ val test_bar : unit -> unit = <fun>
 |}]
 
 (* Uncomment these to test. Should see substantial speedup!
-let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
-let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
+   let () = Printf.printf "No @@immediate: %fs\n" (test test_foo)
+   let () = Printf.printf "With @@immediate: %fs\n" (test test_bar) *)
 
 (* INVALID DECLARATIONS *)
 
@@ -4647,20 +4647,20 @@ module M' : module type of Std'.M = Std2.M
 let f3 (x : M'.t) : Std2.M.t = x
 
 (* original report required Core_kernel:
-module type S = sig
-open Core_kernel.Std
+   module type S = sig
+   open Core_kernel.Std
 
-module Hashtbl1 : module type of Hashtbl
-module Hashtbl2 : sig
-  include (module type of Hashtbl)
-end
+   module Hashtbl1 : module type of Hashtbl
+   module Hashtbl2 : sig
+     include (module type of Hashtbl)
+   end
 
-module Coverage : Core_kernel.Std.Hashable
+   module Coverage : Core_kernel.Std.Hashable
 
-type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
-type doesnt_type = unit
-  constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
-end
+   type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
+   type doesnt_type = unit
+     constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
+   end
 *)
 module type INCLUDING = sig
   include module type of List
@@ -4827,20 +4827,20 @@ module type PR6513 = sig
 end
 
 (* Requires -package tyxml
-module type PR6513_orig = sig
-module type S =
-sig
-        type t
-        type u
-end
+   module type PR6513_orig = sig
+   module type S =
+   sig
+           type t
+           type u
+   end
 
-module Make: functor (Html5: Html5_sigs.T
-                             with type 'a Xml.wrap = 'a and
-                             type 'a wrap = 'a and
-                             type 'a list_wrap = 'a list)
-                     -> S with type t = Html5_types.div Html5.elt and
-                               type u = < foo: Html5.uri >
-end
+   module Make: functor (Html5: Html5_sigs.T
+                                with type 'a Xml.wrap = 'a and
+                                type 'a wrap = 'a and
+                                type 'a list_wrap = 'a list)
+                        -> S with type t = Html5_types.div Html5.elt and
+                                  type u = < foo: Html5.uri >
+   end
 *)
 module type S = sig
   include Set.S
@@ -5049,9 +5049,9 @@ struct
 end
 
 (* This would allow:
-module FixId = Fix (struct type 'a f = 'a end)
- let bad : (int, string) eq = FixId.uniq Eq Eq
- let _ = Printf.printf "Oh dear: %s" (cast bad 42)
+   module FixId = Fix (struct type 'a f = 'a end)
+    let bad : (int, string) eq = FixId.uniq Eq Eq
+    let _ = Printf.printf "Oh dear: %s" (cast bad 42)
 *)
 module M = struct
   module type S = sig
@@ -5634,7 +5634,7 @@ struct end
 module G = F (M.Y)
 
 (*module N = G (M);;
-module N = F (M.Y) (M);;*)
+  module N = F (M.Y) (M);;*)
 
 (* PR#6307 *)
 
@@ -5693,16 +5693,16 @@ end
 (* fail *)
 
 (* (* if the above succeeded, one could break invariants *)
-module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
+   module rec M2 : S' = M2;; (* should succeed! (but this is bad) *)
 
-let M2.W eq = W Eq;;
+   let M2.W eq = W Eq;;
 
-let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
-module SInt2 = Set.Make(Int2);;
-let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
-let s' : SInt2.t = conv eq s;;
-SInt2.elements s';;
-SInt2.mem 2 s';; (* invariants are broken *)
+   let s = List.fold_right SInt.add [1;2;3] SInt.empty;;
+   module SInt2 = Set.Make(Int2);;
+   let conv : type a b. (a,b) eq -> a -> b = fun Eq x -> x;;
+   let s' : SInt2.t = conv eq s;;
+   SInt2.elements s';;
+   SInt2.mem 2 s';; (* invariants are broken *)
 *)
 
 (* Check behavior with submodules *)
@@ -5886,7 +5886,7 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-module C : sig module L : module type of List end = A
+   module C : sig module L : module type of List end = A
 *)
 
 include D'
@@ -5907,7 +5907,7 @@ end = struct
 end
 
 (* The following introduces a (useless) dependency on A:
-module C : sig module L : module type of List end = A
+   module C : sig module L : module type of List end = A
 *)
 
 (* No dependency on D *)
@@ -9709,7 +9709,7 @@ let g =
   f
     ~x
       (* this is a multiple-line-spanning
-                comment *)
+         comment *)
     ~y
 ;;
 
@@ -9718,7 +9718,7 @@ let f =
     ~x:
       very_long_variable_name
       (* this is a multiple-line-spanning
-       comment *)
+         comment *)
     ~y
 ;;
 
@@ -9757,9 +9757,9 @@ type t =
 type t =
   { field : ty
         (* Here is some verbatim formatted text:
-     {v
-       starting at column 7
-     v}*)
+           {v
+             starting at column 7
+           v}*)
   }
 
 module Intro_sort = struct
@@ -9811,7 +9811,11 @@ let foo () =
 ;;
 
 let xxxxxx =
-  let%map (* _____________________________
-             __________ *) () = yyyyyyyy in
+  let%map
+      (* _____________________________
+         __________ *) ()
+    =
+    yyyyyyyy
+  in
   { zzzzzzzzzzzzz }
 ;;

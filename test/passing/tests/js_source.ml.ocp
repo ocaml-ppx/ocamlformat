@@ -2883,8 +2883,8 @@ let rec pre_subst f = function
 ;;
 
 let comp_subst f g (x : 'a fin) = pre_subst f (g x)
-(*  val comp_subst :
-    ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
+(* val comp_subst :
+   ('b fin -> 'c term) -> ('a fin -> 'b term) -> 'a fin -> 'c term *)
 
 (* 4 The Occur-Check, through thick and thin *)
 
@@ -4652,14 +4652,14 @@ let f3 (x : M'.t) : Std2.M.t = x
 
    module Hashtbl1 : module type of Hashtbl
    module Hashtbl2 : sig
-   include (module type of Hashtbl)
+     include (module type of Hashtbl)
    end
 
    module Coverage : Core_kernel.Std.Hashable
 
    type types = unit constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl1.t
    type doesnt_type = unit
-   constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
+     constraint 'a Coverage.Table.t = (Coverage.t, 'a) Hashtbl2.t
    end
 *)
 module type INCLUDING = sig
@@ -4830,16 +4830,16 @@ end
    module type PR6513_orig = sig
    module type S =
    sig
-        type t
-        type u
+           type t
+           type u
    end
 
    module Make: functor (Html5: Html5_sigs.T
-                             with type 'a Xml.wrap = 'a and
-                             type 'a wrap = 'a and
-                             type 'a list_wrap = 'a list)
-                     -> S with type t = Html5_types.div Html5.elt and
-                               type u = < foo: Html5.uri >
+                                with type 'a Xml.wrap = 'a and
+                                type 'a wrap = 'a and
+                                type 'a list_wrap = 'a list)
+                        -> S with type t = Html5_types.div Html5.elt and
+                                  type u = < foo: Html5.uri >
    end
 *)
 module type S = sig
@@ -5050,8 +5050,8 @@ end
 
 (* This would allow:
    module FixId = Fix (struct type 'a f = 'a end)
-   let bad : (int, string) eq = FixId.uniq Eq Eq
-   let _ = Printf.printf "Oh dear: %s" (cast bad 42)
+    let bad : (int, string) eq = FixId.uniq Eq Eq
+    let _ = Printf.printf "Oh dear: %s" (cast bad 42)
 *)
 module M = struct
   module type S = sig
@@ -9709,7 +9709,7 @@ let g =
   f
     ~x
     (* this is a multiple-line-spanning
-              comment *)
+       comment *)
     ~y
 ;;
 
@@ -9758,8 +9758,8 @@ type t =
   { field : ty
   (* Here is some verbatim formatted text:
      {v
-       starting at column 7
-     v}*)
+             starting at column 7
+           v}*)
   }
 
 module Intro_sort = struct
@@ -9811,7 +9811,11 @@ let foo () =
 ;;
 
 let xxxxxx =
-  let%map (* _____________________________
-             __________ *) () = yyyyyyyy in
+  let%map
+    (* _____________________________
+       __________ *) ()
+    =
+    yyyyyyyy
+  in
   { zzzzzzzzzzzzz }
 ;;
