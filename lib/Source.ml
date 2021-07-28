@@ -146,29 +146,9 @@ let is_long_pmty_functor t {pmty_desc; pmty_loc= from; _} =
   | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
 
-let string_literal t mode (l : Location.t) =
-  (* the location of a [string] might include surrounding comments and
-     attributes because of [reloc_{exp,pat}] and a [string] can be found in
-     attributes payloads. {[ f ((* comments *) "c" [@attributes]) ]} *)
-  let toks =
-    tokens_at t
-      ~filter:(function
-        | Parser.STRING (_, _, None) -> true
-        | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
-            true
-        | _ -> false )
-      l
-  in
-  match toks with
-  | [(Parser.STRING (_, _, None), loc)]
-   |(Parser.STRING (_, _, None), loc)
-    :: ( Parser.LBRACKETATATAT, _
-       | Parser.LBRACKETATAT, _
-       | Parser.LBRACKETAT, _ )
-       :: _ ->
-      Option.value_exn ~message:"Parse error while reading string literal"
-        (Literal_lexer.string mode (string_at t loc))
-  | _ -> impossible "Pconst_string is only produced by string literals"
+let string_literal t mode loc =
+  Option.value_exn ~message:"Parse error while reading string literal"
+    (Literal_lexer.string mode (string_at t loc))
 
 let char_literal t loc =
   Option.value_exn ~message:"Parse error while reading char literal"
