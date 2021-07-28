@@ -45,8 +45,8 @@ module Const = struct
     integer ?loc ~suffix (Nativeint.to_string i)
   let float ?loc ?suffix f = mk ?loc (Pconst_float (f, suffix))
   let char ?loc c = mk ?loc (Pconst_char c)
-  let string ?loc ?quotation_delimiter ?(iloc= !default_loc) s =
-    mk ?loc (Pconst_string (s, iloc, quotation_delimiter))
+  let string ?quotation_delimiter ?(loc= !default_loc) s =
+    mk ~loc (Pconst_string (s, loc, quotation_delimiter))
 end
 
 module Attr = struct

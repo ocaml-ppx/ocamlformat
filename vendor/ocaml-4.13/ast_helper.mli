@@ -48,8 +48,7 @@ module Const : sig
 
   val char : ?loc:loc -> char -> constant
   val string :
-    ?loc:loc ->
-    ?quotation_delimiter:string -> ?iloc:Location.t -> string -> constant
+    ?quotation_delimiter:string -> ?loc:Location.t -> string -> constant
   val integer : ?loc:loc -> ?suffix:char -> string -> constant
   val int : ?loc:loc -> ?suffix:char -> int -> constant
   val int32 : ?loc:loc -> ?suffix:char -> int32 -> constant
