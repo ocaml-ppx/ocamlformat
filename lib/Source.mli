@@ -76,14 +76,6 @@ val extend_loc_to_include_attributes : Location.t -> attributes -> Location.t
 
 val type_constraint_is_first : core_type -> Location.t -> bool
 
-val locs_of_interval : t -> Location.t -> Location.t * Location.t
-(** Given the location of an interval pattern ['a'..'b'], return the
-    locations of the constants that represent the bounds (['a'] and ['b']). *)
-
-val loc_of_pat_constant : t -> pattern -> Location.t
-
-val loc_of_expr_constant : t -> expression -> Location.t
-
 val is_quoted_string : t -> Location.t -> bool
 
 val loc_of_first_token_at :

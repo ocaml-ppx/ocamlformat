@@ -227,44 +227,6 @@ let extension_using_sugar ~(name : string Location.loc)
 let type_constraint_is_first typ loc =
   Location.compare_start typ.ptyp_loc loc < 0
 
-let locs_of_interval source loc =
-  let toks =
-    tokens_at source loc ~filter:(function
-      | CHAR _ | DOTDOT | INT _ | STRING _ | FLOAT _ -> true
-      | _ -> false )
-  in
-  match toks with
-  | [ ((CHAR _ | INT _ | STRING _ | FLOAT _), loc1)
-    ; (DOTDOT, _)
-    ; ((CHAR _ | INT _ | STRING _ | FLOAT _), loc2) ] ->
-      (loc1, loc2)
-  | _ ->
-      impossible
-        "Ppat_interval is only produced by the sequence of 3 tokens: \
-         CONSTANT-DOTDOT-CONSTANT "
-
-let loc_of_constant t loc (cst : constant) =
-  let filter : Parser.token -> bool =
-    match cst.pconst_desc with
-    | Pconst_string _ -> ( function STRING _ -> true | _ -> false )
-    | Pconst_char _ -> ( function CHAR _ -> true | _ -> false )
-    | Pconst_integer _ -> ( function INT _ -> true | _ -> false )
-    | Pconst_float _ -> ( function FLOAT _ -> true | _ -> false )
-  in
-  match tokens_at t loc ~filter with [(_, loc)] -> loc | _ -> loc
-
-let loc_of_pat_constant t (p : pattern) =
-  match p.ppat_desc with
-  | Ppat_constant cst ->
-      loc_of_constant t (Location.smallest p.ppat_loc p.ppat_loc_stack) cst
-  | _ -> impossible "loc_of_pat_constant is only called on constants"
-
-let loc_of_expr_constant t (e : expression) =
-  match e.pexp_desc with
-  | Pexp_constant cst ->
-      loc_of_constant t (Location.smallest e.pexp_loc e.pexp_loc_stack) cst
-  | _ -> impossible "loc_of_expr_constant is only called on constants"
-
 let is_quoted_string t loc =
   let toks =
     tokens_at t loc ~filter:(function

@@ -239,10 +239,10 @@ let fmt_str_loc c ?pre {txt; loc} = Cmts.fmt c loc (fmt_opt pre $ str txt)
 let fmt_str_loc_opt c ?pre ?(default = "_") {txt; loc} =
   Cmts.fmt c loc (fmt_opt pre $ str (Option.value ~default txt))
 
-let fmt_constant c ~loc ?epi const =
+let fmt_constant c ?epi {pconst_desc; pconst_loc= loc} =
   Cmts.fmt c loc
   @@
-  match const.pconst_desc with
+  match pconst_desc with
   | Pconst_integer (lit, suf) | Pconst_float (lit, suf) ->
       str lit $ opt suf char
   | Pconst_char _ -> wrap "'" "'" @@ str (Source.char_literal c.source loc)
@@ -956,11 +956,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            $ fmt "@ as@ "
            $ Cmts.fmt c loc
                (wrap_if (String_id.is_symbol txt) "( " " )" (str txt)) ) )
-  | Ppat_constant const ->
-      fmt_constant c ~loc:(Source.loc_of_pat_constant c.source pat) const
-  | Ppat_interval (l, u) ->
-      let loc1, loc2 = Source.locs_of_interval c.source ppat_loc in
-      fmt_constant ~loc:loc1 c l $ str " .. " $ fmt_constant ~loc:loc2 c u
+  | Ppat_constant const -> fmt_constant c const
+  | Ppat_interval (l, u) -> fmt_constant c l $ str " .. " $ fmt_constant c u
   | Ppat_tuple pats ->
       let parens = parens || Poly.(c.conf.parens_tuple_patterns = `Always) in
       hvbox 0
@@ -1972,11 +1969,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               $ fmt_if_k paren_body (closing_paren c)
               $ fmt_atrs ) ) )
   | Pexp_constant const ->
-      let loc = Source.loc_of_expr_constant c.source exp in
       Params.parens_if
         (parens || not (List.is_empty pexp_attributes))
         c.conf
-        (fmt_constant c ~loc ?epi const $ fmt_atrs)
+        (fmt_constant c ?epi const $ fmt_atrs)
   | Pexp_constraint
       ( {pexp_desc= Pexp_pack me; pexp_attributes= []; pexp_loc; _}
       , {ptyp_desc= Ptyp_package (id, cnstrs); ptyp_attributes= []; _} ) ->
