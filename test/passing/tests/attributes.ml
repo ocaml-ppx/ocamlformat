@@ -371,3 +371,13 @@ let pp f
      ; cf_interface
      ; cf_is_objc_block } [@warning "+9"] ) =
   ()
+
+let _ = f ((* comments *) "c" [@attributes])
+
+let _ = f ((* comments *) 'c' [@attributes])
+
+let _ = function ("foo" [@attr]) -> ("bar" [@attr2])
+
+let _ = function
+  | ('A' [@attr]) -> ('B' [@attr2])
+  | ('A' .. 'B' [@attr2]) -> ()
