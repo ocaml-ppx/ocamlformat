@@ -170,29 +170,9 @@ let string_literal t mode (l : Location.t) =
         (Literal_lexer.string mode (string_at t loc))
   | _ -> impossible "Pconst_string is only produced by string literals"
 
-let char_literal t (l : Location.t) =
-  (* the location of a [char] might include surrounding comments and
-     attributes because of [reloc_{exp,pat}] and a [char] can be found in
-     attributes payloads. {[ f ((* comments *) 'c' [@attributes]) ]} *)
-  let toks =
-    tokens_at t
-      ~filter:(function
-        | Parser.CHAR _ -> true
-        | Parser.LBRACKETAT | Parser.LBRACKETATAT | Parser.LBRACKETATATAT ->
-            true
-        | _ -> false )
-      l
-  in
-  match toks with
-  | [(Parser.CHAR _, loc)]
-   |(Parser.CHAR _, loc)
-    :: ( Parser.LBRACKETATATAT, _
-       | Parser.LBRACKETATAT, _
-       | Parser.LBRACKETAT, _ )
-       :: _ ->
-      (Option.value_exn ~message:"Parse error while reading char literal")
-        (Literal_lexer.char (string_at t loc))
-  | _ -> impossible "Pconst_char is only produced by char literals"
+let char_literal t loc =
+  Option.value_exn ~message:"Parse error while reading char literal"
+    (Literal_lexer.char (string_at t loc))
 
 let begins_line ?(ignore_spaces = true) t (l : Location.t) =
   if not ignore_spaces then Position.column l.loc_start = 0
