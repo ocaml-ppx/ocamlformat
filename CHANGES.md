@@ -12,7 +12,7 @@
 
   + Support sugared form of coercions in let bindings (#1739, @gpetiot)
 
-  + Add missing parentheses around constructor in indexing op (#1740, @gpetiot)
+  + Add missing parentheses around constructor used as indexing op (#1740, @gpetiot)
 
 #### Changes
 
