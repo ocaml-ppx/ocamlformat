@@ -1857,16 +1857,16 @@ let dot_ocamlformat_ignore = ".ocamlformat-ignore"
 
 let dot_ocamlformat_enable = ".ocamlformat-enable"
 
-let rec collect_files ~enable_outside_detected_project ~root ~segs ~ignores
-    ~enables ~files =
+let rec collect_files ~enable_outside_detected_project ~root ~volume ~segs
+    ~ignores ~enables ~files =
   match segs with
   | [] | [""] -> (ignores, enables, files, None)
   | "" :: upper_segs ->
-      collect_files ~enable_outside_detected_project ~root ~segs:upper_segs
-        ~ignores ~enables ~files
+      collect_files ~enable_outside_detected_project ~root ~volume
+        ~segs:upper_segs ~ignores ~enables ~files
   | _ :: upper_segs ->
       let sep = Fpath.dir_sep in
-      let dir = String.concat ~sep (List.rev segs) |> Fpath.v in
+      let dir = Fpath.v (volume ^ String.concat ~sep (List.rev segs)) in
       let ignores =
         let filename = Fpath.(dir / dot_ocamlformat_ignore) in
         if Fpath.exists filename then filename :: ignores else ignores
@@ -1886,8 +1886,8 @@ let rec collect_files ~enable_outside_detected_project ~root ~segs ~ignores
       if is_project_root ~root dir && not enable_outside_detected_project
       then (ignores, enables, files, Some dir)
       else
-        collect_files ~enable_outside_detected_project ~root ~segs:upper_segs
-          ~ignores ~enables ~files
+        collect_files ~enable_outside_detected_project ~root ~volume
+          ~segs:upper_segs ~ignores ~enables ~files
 
 exception Conf_error of string
 
@@ -1996,10 +1996,11 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
   let file_abs = Fpath.(vfile |> to_absolute |> normalize) in
   let dir = Fpath.(file_abs |> split_base |> fst) in
+  let volume, dir = Fpath.split_volume dir in
   let segs = Fpath.segs dir |> List.rev in
   let ignores, enables, files, project_root =
-    collect_files ~enable_outside_detected_project ~root ~segs ~ignores:[]
-      ~enables:[] ~files:[]
+    collect_files ~enable_outside_detected_project ~root ~volume ~segs
+      ~ignores:[] ~enables:[] ~files:[]
   in
   let files =
     match (xdg_config, enable_outside_detected_project) with
