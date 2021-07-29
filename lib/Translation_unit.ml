@@ -446,7 +446,11 @@ let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
   format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
     opts
   >>= fun formatted ->
-  Ok (normalize_eol ~line_endings:conf.Conf.line_endings formatted)
+  Ok
+    ( match conf.Conf.line_endings with
+    | `Lf_unnormalized -> formatted
+    | (`Lf | `Crlf) as line_endings -> normalize_eol ~line_endings formatted
+    )
 
 let parse_and_format = function
   | Syntax.Structure -> parse_and_format Structure Structure

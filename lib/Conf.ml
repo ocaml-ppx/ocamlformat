@@ -51,7 +51,7 @@ type t =
   ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
-  ; line_endings: [`Lf | `Crlf]
+  ; line_endings: [`Lf | `Lf_unnormalized | `Crlf]
   ; margin: int
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
@@ -835,6 +835,10 @@ module Formatting = struct
     let doc = "Line endings used." in
     let all =
       [ ("lf", `Lf, "$(b,lf) uses Unix line endings.")
+      ; ( "lf-unnormalized"
+        , `Lf_unnormalized
+        , "$(b,lf-unnormalized) uses Unix line endings, but does not modify \
+           embedded newlines in quoted strings or comments." )
       ; ("crlf", `Crlf, "$(b,crlf) uses Windows line endings.") ]
     in
     C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~section
@@ -1645,7 +1649,7 @@ let janestreet_profile =
   ; let_binding_indent= 2
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
-  ; line_endings= `Lf
+  ; line_endings= `Lf_unnormalized
   ; margin= 90
   ; match_indent= 0
   ; match_indent_nested= `Never

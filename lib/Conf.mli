@@ -53,7 +53,7 @@ type t =
   ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
-  ; line_endings: [`Lf | `Crlf]
+  ; line_endings: [`Lf | `Lf_unnormalized | `Crlf]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; match_indent: int
   ; match_indent_nested: [`Always | `Auto | `Never]
