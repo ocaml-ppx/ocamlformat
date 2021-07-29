@@ -20,6 +20,10 @@
 
   + Handle merlin typed holes (#1698, @gpetiot)
 
+  + Add `line-endings=lf-unnormalized` option to use LF as line endings in the
+    formatted output, but without modifying newlines in string literals or
+    comments. (#1703, @nojb)
+
 ### 0.19.0 (2021-07-16)
 
 #### Bug fixes
