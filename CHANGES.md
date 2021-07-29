@@ -16,6 +16,8 @@
 
   + Honour .ocamlformat-ignore on Windows (#1752, @nojb)
 
+  + Avoid normalizing newlines inside quoted strings `{|...|}` (#1754, @nojb)
+
 #### Changes
 
 #### New features
