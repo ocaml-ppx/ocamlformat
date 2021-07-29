@@ -180,3 +180,19 @@ let _ = [%p (Explicit).(0 / 2)]
 let _ = [%p Some.(tickers)]
 
 let _ = [%p Explicit.(0 / 2)]
+
+let _ = (Some).(tickers)
+
+let _ = (Explicit).(0 / 2)
+
+let _ = Some.(tickers)
+
+let _ = Explicit.(0 / 2)
+
+let _ = f (Some).(tickers)
+
+let _ = f (Explicit).(0 / 2)
+
+let _ = f Some.(tickers)
+
+let _ = f Explicit.(0 / 2)
