@@ -259,15 +259,15 @@ let recover (type a) : a Ast_passes.Ast0.t -> _ -> a = function
   | Expression -> failwith "no recovery for expression"
 
 let strconst_mapper locs =
-  let expr self e =
-    match e.Parsetree.pexp_desc with
-    | Pexp_constant
-        (Pconst_string (_, {Location.loc_start; loc_end; _}, Some _)) ->
+  let constant self c =
+    match c with
+    | Parsetree.Pconst_string (_, {Location.loc_start; loc_end; _}, Some _)
+      ->
         locs := (loc_start.Lexing.pos_cnum, loc_end.Lexing.pos_cnum) :: !locs ;
-        e
-    | _ -> Ast_mapper.default_mapper.expr self e
+        c
+    | _ -> Ast_mapper.default_mapper.constant self c
   in
-  {Ast_mapper.default_mapper with expr}
+  {Ast_mapper.default_mapper with constant}
 
 let collect_strlocs (type a) (fgN : a Ast_passes.Ast_final.t) (ast : a) :
     (int * int) list =
@@ -433,38 +433,32 @@ let parse_result ?(f = Ast_passes.Ast0.Parse.ast) fragment conf ~source
 
 let normalize_eol ~strlocs ~line_endings s =
   let buf = Buffer.create (String.length s) in
-  let rec loop locs seen_cr i =
-    if i = String.length s then (
-      if seen_cr then Buffer.add_char buf '\r' ;
-      Buffer.contents buf )
+  let add_cr n = Buffer.add_string buf (String.init n ~f:(fun _ -> '\r')) in
+  let rec normalize_segment ~seen_cr i stop =
+    if i = stop then add_cr seen_cr
     else
       match s.[i] with
-      | '\r' ->
-          if seen_cr then Buffer.add_char buf '\r' ;
-          loop locs true (i + 1)
+      | '\r' -> normalize_segment ~seen_cr:(seen_cr + 1) (i + 1) stop
       | '\n' ->
-          let rec inside = function
-            | (c1, c2) :: locs' as locs ->
-                if i < c1 then (false, locs)
-                else if c2 < i then inside locs'
-                else (true, locs)
-            | [] -> (false, [])
-          in
-          let inside, locs = inside locs in
-          if inside then (
-            if seen_cr then Buffer.add_char buf '\r' ;
-            Buffer.add_char buf '\n' ;
-            loop locs false (i + 1) )
-          else (
-            Buffer.add_string buf
-              (match line_endings with `Crlf -> "\r\n" | `Lf -> "\n") ;
-            loop locs false (i + 1) )
+          Buffer.add_string buf
+            (match line_endings with `Crlf -> "\r\n" | `Lf -> "\n") ;
+          normalize_segment ~seen_cr:0 (i + 1) stop
       | c ->
-          if seen_cr then Buffer.add_char buf '\r' ;
+          add_cr seen_cr ;
           Buffer.add_char buf c ;
-          loop locs false (i + 1)
+          normalize_segment ~seen_cr:0 (i + 1) stop
   in
-  loop strlocs false 0
+  let rec loop locs i =
+    match locs with
+    | [] ->
+        normalize_segment ~seen_cr:0 i (String.length s) ;
+        Buffer.contents buf
+    | (start, stop) :: xs ->
+        normalize_segment ~seen_cr:0 i start ;
+        Buffer.add_substring buf s ~pos:start ~len:(stop - start) ;
+        loop xs stop
+  in
+  loop strlocs 0
 
 let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
     (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
