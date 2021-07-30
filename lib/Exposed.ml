@@ -50,8 +50,8 @@ module Right = struct
     | {pext_kind; _} -> (
       match pext_kind with
       | Pext_rebind _ -> false
-      | Pext_decl (_, Some _result) -> false
-      | Pext_decl (args, None) -> constructor_arguments args )
+      | Pext_decl (_, _, Some _result) -> false
+      | Pext_decl (_, args, None) -> constructor_arguments args )
 
   let constructor_declaration = function
     | {pcd_attributes= _ :: _; _} -> false

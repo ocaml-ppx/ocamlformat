@@ -159,6 +159,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to binders.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/binders.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/binders.ml binders.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to break_before_in-auto.ml.output
      (run %{bin:ocamlformat} --break-before-in=auto %{dep:tests/break_before_in.ml}))))
 
