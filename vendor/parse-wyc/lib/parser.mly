@@ -821,7 +821,7 @@ The precedences must be listed from low to high.
 %nonassoc below_DOT
 %nonassoc DOT DOTOP
 /* Finally, the first tokens of simple_expr are above everything else. */
-%nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT INT
+%nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT INT OBJECT
           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
           NEW PREFIXOP STRING TRUE UIDENT
           LBRACKETPERCENT QUOTED_STRING_EXPR
@@ -2311,10 +2311,6 @@ expr [@recover.expr Annot.Exp.mk ()]:
       { Pexp_assert $3, $2 }
   | LAZY ext_attributes simple_expr %prec below_HASH
       { Pexp_lazy $3, $2 }
-  | OBJECT ext_attributes class_structure END
-      { Pexp_object $3, $2 }
-  (*| OBJECT ext_attributes class_structure error
-      { unclosed "object" $loc($1) "end" $loc($4) }*)
 ;
 %inline expr_:
   | simple_expr nonempty_llist(labeled_simple_expr)
@@ -2367,6 +2363,10 @@ simple_expr:
       { Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $4), $6), $3 }
   (*| LPAREN MODULE ext_attributes module_expr COLON error
       { unclosed "(" $loc($1) ")" $loc($6) }*)
+  | OBJECT ext_attributes class_structure END
+      { Pexp_object $3, $2 }
+  (*| OBJECT ext_attributes class_structure error
+      { unclosed "object" $loc($1) "end" $loc($4) }*)
 ;
 %inline simple_expr_:
   | mkrhs(val_longident)
