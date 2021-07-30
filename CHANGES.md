@@ -14,6 +14,8 @@
 
   + Add missing parentheses around constructor used as indexing op (#1740, @gpetiot)
 
+  + Honour .ocamlformat-ignore on Windows (#1752, @nojb)
+
 #### Changes
 
 #### New features
