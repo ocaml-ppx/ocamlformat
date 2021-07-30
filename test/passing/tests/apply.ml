@@ -83,3 +83,7 @@ let _ =
     (loooooooooooong looooooooooooooong loooooooooooooong
        [loooooooooong; loooooooooooong; loooooooooooooooooooooong]
     )
+
+let _ =
+  let f ~y = y + 1 in
+  f ~(y : int)

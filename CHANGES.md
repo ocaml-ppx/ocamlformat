@@ -22,6 +22,9 @@
 
   + Handle merlin typed holes (#1698, @gpetiot)
 
+  + Handle punned labelled arguments with type constraint in function applications.
+    For example, function application of the form `foo ~(x:int)` instead of the explicit `foo ~x:(x:int)`. (ocaml#10434) (#1756, @gpetiot)
+
 ### 0.19.0 (2021-07-16)
 
 #### Bug fixes

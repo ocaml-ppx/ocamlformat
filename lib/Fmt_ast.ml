@@ -1350,6 +1350,16 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
   | (Labelled l | Optional l), Pexp_ident {txt= Lident i; loc}
     when String.equal l i && List.is_empty arg.pexp_attributes ->
       Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
+  | ( (Labelled l | Optional l)
+    , Pexp_constraint ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
+    when String.equal l i && List.is_empty arg.pexp_attributes ->
+      let lbl =
+        match lbl with
+        | Labelled _ -> str "~"
+        | Optional _ -> str "?"
+        | Nolabel -> noop
+      in
+      lbl $ fmt_expression c ~box ?epi ?parens xarg
   | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
 
 and expression_width c xe =
