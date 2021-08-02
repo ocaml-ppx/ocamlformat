@@ -3273,7 +3273,12 @@ and fmt_label_declaration c ctx ?(last = false) decl =
 
 and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
     =
-  let {pcd_name= {txt; loc}; pcd_args; pcd_res; pcd_attributes; pcd_loc} =
+  let { pcd_name= {txt; loc}
+      ; pcd_vars
+      ; pcd_args
+      ; pcd_res
+      ; pcd_attributes
+      ; pcd_loc } =
     cstr_decl
   in
   update_config_maybe_disabled c pcd_loc pcd_attributes
@@ -3311,16 +3316,17 @@ and fmt_constructor_declaration c ctx ~max_len_name ~first ~last:_ cstr_decl
               ( Cmts.fmt c loc
                   (wrap_if (String_id.is_symbol txt) "( " " )" (str txt))
               $ fmt_padding
-              $ fmt_constructor_arguments_result c ctx pcd_args pcd_res )
+              $ fmt_constructor_arguments_result c ctx pcd_vars pcd_args
+                  pcd_res )
           $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@" atrs
           $ fmt_docstring_padded c doc )
       $ Cmts.fmt_after c ~pro:(fmt_or c.conf.wrap_comments "@ " " ") pcd_loc
       )
 
-and fmt_constructor_arguments c ctx ~pre = function
+and fmt_constructor_arguments ?vars c ctx ~pre = function
   | Pcstr_tuple [] -> noop
   | Pcstr_tuple typs ->
-      pre $ fmt "@ "
+      pre $ fmt "@ " $ fmt_opt vars
       $ hvbox 0 (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c))
   | Pcstr_record lds ->
       let p = Params.get_record_type c.conf in
@@ -3336,13 +3342,20 @@ and fmt_constructor_arguments c ctx ~pre = function
       $ p.box_record (list_fl lds fmt_ld)
       $ p.break_after $ p.docked_after
 
-and fmt_constructor_arguments_result c ctx args res =
+and fmt_constructor_arguments_result c ctx vars args res =
   let pre = fmt_or (Option.is_none res) " of" " :" in
   let before_type = match args with Pcstr_tuple [] -> ": " | _ -> "-> " in
   let fmt_type typ =
     fmt "@ " $ str before_type $ fmt_core_type c (sub_typ ~ctx typ)
   in
-  fmt_constructor_arguments c ctx ~pre args $ opt res fmt_type
+  let fmt_vars =
+    match vars with
+    | [] -> noop
+    | _ ->
+        hvbox 0 (list vars "@ " (fun {txt; _} -> fmt_type_var txt))
+        $ fmt ".@ "
+  in
+  fmt_constructor_arguments c ctx ~pre ~vars:fmt_vars args $ opt res fmt_type
 
 and fmt_type_extension ?ext c ctx
     { ptyext_attributes
@@ -3356,8 +3369,8 @@ and fmt_type_extension ?ext c ctx
   let fmt_ctor ctor =
     let sep =
       match ctor.pext_kind with
-      | Pext_decl (_, Some _) -> fmt " :@ "
-      | Pext_decl (_, None) | Pext_rebind _ -> fmt " of@ "
+      | Pext_decl (_, _, Some _) -> fmt " :@ "
+      | Pext_decl (_, _, None) | Pext_rebind _ -> fmt " of@ "
     in
     hvbox 0 (fmt_extension_constructor c sep ctx ctor)
   in
@@ -3406,8 +3419,8 @@ and fmt_extension_constructor c sep ctx ec =
   let doc, atrs = doc_atrs pext_attributes in
   let suf =
     match pext_kind with
-    | Pext_decl (_, None) | Pext_rebind _ -> None
-    | Pext_decl (_, Some _) -> Some " "
+    | Pext_decl (_, _, None) | Pext_rebind _ -> None
+    | Pext_decl (_, _, Some _) -> Some " "
   in
   Cmts.fmt c pext_loc
   @@ hvbox 4
@@ -3415,11 +3428,11 @@ and fmt_extension_constructor c sep ctx ec =
            ( fmt_str_loc c pext_name
            $
            match pext_kind with
-           | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), None) -> noop
-           | Pext_decl ((Pcstr_tuple [] | Pcstr_record []), Some res) ->
+           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record []), None) -> noop
+           | Pext_decl (_, (Pcstr_tuple [] | Pcstr_record []), Some res) ->
                sep $ fmt_core_type c (sub_typ ~ctx res)
-           | Pext_decl (args, res) ->
-               fmt_constructor_arguments_result c ctx args res
+           | Pext_decl (vars, args, res) ->
+               fmt_constructor_arguments_result c ctx vars args res
            | Pext_rebind lid -> str " = " $ fmt_longident_loc c lid )
        $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@" atrs ?suf
        $ fmt_docstring_padded c doc )

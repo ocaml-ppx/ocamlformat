@@ -25,6 +25,8 @@
   + Handle punned labelled arguments with type constraint in function applications.
     For example, function application of the form `foo ~(x:int)` instead of the explicit `foo ~x:(x:int)`. (ocaml#10434) (#1756, @gpetiot)
 
+  + Allow explicit binders for type variables (ocaml#10437) (#1757, @gpetiot)
+
 ### 0.19.0 (2021-07-16)
 
 #### Bug fixes

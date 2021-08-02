@@ -932,7 +932,7 @@ end = struct
     in
     let check_ext {pext_kind; _} =
       match pext_kind with
-      | Pext_decl (cstr, t0) -> check_cstr cstr || Option.exists t0 ~f
+      | Pext_decl (_, cstr, t0) -> check_cstr cstr || Option.exists t0 ~f
       | _ -> false
     in
     let check_typext {ptyext_params; ptyext_constructors; _} =
@@ -1597,7 +1597,7 @@ end = struct
       | _ -> false
     in
     let is_tuple_lvl1_in_ext_constructor ty = function
-      | {pext_kind= Pext_decl (Pcstr_tuple t1N, _); _} ->
+      | {pext_kind= Pext_decl (_, Pcstr_tuple t1N, _); _} ->
           List.exists t1N ~f:(phys_equal ty)
       | _ -> false
     in
@@ -1869,14 +1869,14 @@ end = struct
               { pstr_desc=
                   Pstr_exception
                     { ptyexn_constructor=
-                        {pext_kind= Pext_decl (Pcstr_tuple t, _); _}
+                        {pext_kind= Pext_decl (_, Pcstr_tuple t, _); _}
                     ; _ }
               ; _ }
           | Sig
               { psig_desc=
                   Psig_exception
                     { ptyexn_constructor=
-                        {pext_kind= Pext_decl (Pcstr_tuple t, _); _}
+                        {pext_kind= Pext_decl (_, Pcstr_tuple t, _); _}
                     ; _ }
               ; _ } ) }
       when List.exists t ~f:(phys_equal typ) ->
