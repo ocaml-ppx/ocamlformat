@@ -1926,13 +1926,13 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-   (with-outputs-to labelled_args-412.ml.output
-     (run %{bin:ocamlformat} --ocaml-version=4.12 %{dep:tests/labelled_args.ml}))))
+   (with-outputs-to labelled_args-414.ml.output
+     (run %{bin:ocamlformat} --ocaml-version=4.14.0 %{dep:tests/labelled_args.ml}))))
 
 (rule
  (alias runtest)
  (package ocamlformat)
- (action (diff tests/labelled_args-412.ml.ref labelled_args-412.ml.output)))
+ (action (diff tests/labelled_args-414.ml.ref labelled_args-414.ml.output)))
 
 (rule
  (deps tests/.ocamlformat )

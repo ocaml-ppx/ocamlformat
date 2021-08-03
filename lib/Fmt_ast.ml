@@ -1354,7 +1354,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
     , Pexp_constraint ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
     when String.equal l i
          && List.is_empty arg.pexp_attributes
-         && Ocaml_version.(compare c.conf.ocaml_version Releases.v4_13 >= 0)
+         && Ocaml_version.(compare c.conf.ocaml_version Releases.v4_14 >= 0)
     ->
       let lbl =
         match lbl with

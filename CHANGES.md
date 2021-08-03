@@ -26,7 +26,7 @@
 
   + Handle punned labelled arguments with type constraint in function applications.
     For example, function application of the form `foo ~(x:int)` instead of the explicit `foo ~x:(x:int)`. (ocaml#10434) (#1756, #1759, @gpetiot)
-    This syntax is only produced when the output syntax is at least OCaml 4.13.
+    This syntax is only produced when the output syntax is at least OCaml 4.14.
 
   + Allow explicit binders for type variables (ocaml#10437) (#1757, @gpetiot)
 

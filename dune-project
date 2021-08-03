@@ -52,7 +52,8 @@
    (>= 20201216))
   (menhirSdk
    (>= 20201216))
-  ocaml-version
+  (ocaml-version
+   (>= 3.2.0))
   ocp-indent
   (bisect_ppx
    (and
@@ -96,7 +97,8 @@
    (>= 20201216))
   (menhirSdk
    (>= 20201216))
-  ocaml-version
+  (ocaml-version
+   (>= 3.2.0))
   ocp-indent
   (bisect_ppx
    (and
