@@ -258,6 +258,24 @@ let recover (type a) : a Ast_passes.Ast0.t -> _ -> a = function
   | Module_type -> failwith "no recovery for module_type"
   | Expression -> failwith "no recovery for expression"
 
+let strconst_mapper locs =
+  let constant self c =
+    match c with
+    | Parsetree.Pconst_string (_, {Location.loc_start; loc_end; _}, Some _)
+      ->
+        locs := (loc_start.Lexing.pos_cnum, loc_end.Lexing.pos_cnum) :: !locs ;
+        c
+    | _ -> Ast_mapper.default_mapper.constant self c
+  in
+  {Ast_mapper.default_mapper with constant}
+
+let collect_strlocs (type a) (fgN : a Ast_passes.Ast_final.t) (ast : a) :
+    (int * int) list =
+  let locs = ref [] in
+  let _ = Ast_passes.Ast_final.map fgN (strconst_mapper locs) ast in
+  let compare (c1, _) (c2, _) = Stdlib.compare c1 c2 in
+  List.sort ~compare !locs
+
 let format (type a b) (fg0 : a Ast_passes.Ast0.t)
     (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~prev_source
     ~parsed conf opts =
@@ -307,7 +325,8 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
       if opts.Conf.margin_check then
         check_margin conf ~fmted
           ~filename:(Option.value output_file ~default:input_name) ;
-      Ok fmted )
+      let strlocs = collect_strlocs fgN t.ast in
+      Ok (strlocs, fmted) )
     else
       let exn_args () =
         [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
@@ -412,29 +431,34 @@ let parse_result ?(f = Ast_passes.Ast0.Parse.ast) fragment conf ~source
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
-let normalize_eol ~line_endings s =
+let normalize_eol ~strlocs ~line_endings s =
   let buf = Buffer.create (String.length s) in
-  let rec loop seen_cr i =
-    if i = String.length s then (
-      if seen_cr then Buffer.add_char buf '\r' ;
-      Buffer.contents buf )
+  let add_cr n = Buffer.add_string buf (String.init n ~f:(fun _ -> '\r')) in
+  let rec normalize_segment ~seen_cr i stop =
+    if i = stop then add_cr seen_cr
     else
-      match (s.[i], line_endings) with
-      | '\r', _ ->
-          if seen_cr then Buffer.add_char buf '\r' ;
-          loop true (i + 1)
-      | '\n', `Crlf ->
-          Buffer.add_string buf "\r\n" ;
-          loop false (i + 1)
-      | '\n', `Lf ->
-          Buffer.add_char buf '\n' ;
-          loop false (i + 1)
-      | c, _ ->
-          if seen_cr then Buffer.add_char buf '\r' ;
+      match s.[i] with
+      | '\r' -> normalize_segment ~seen_cr:(seen_cr + 1) (i + 1) stop
+      | '\n' ->
+          Buffer.add_string buf
+            (match line_endings with `Crlf -> "\r\n" | `Lf -> "\n") ;
+          normalize_segment ~seen_cr:0 (i + 1) stop
+      | c ->
+          add_cr seen_cr ;
           Buffer.add_char buf c ;
-          loop false (i + 1)
+          normalize_segment ~seen_cr:0 (i + 1) stop
   in
-  loop false 0
+  let rec loop locs i =
+    match locs with
+    | [] ->
+        normalize_segment ~seen_cr:0 i (String.length s) ;
+        Buffer.contents buf
+    | (start, stop) :: xs ->
+        normalize_segment ~seen_cr:0 i start ;
+        Buffer.add_substring buf s ~pos:start ~len:(stop - start) ;
+        loop xs stop
+  in
+  loop strlocs 0
 
 let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
     (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
@@ -445,8 +469,8 @@ let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
   let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
   format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
     opts
-  >>= fun formatted ->
-  Ok (normalize_eol ~line_endings:conf.Conf.line_endings formatted)
+  >>= fun (strlocs, formatted) ->
+  Ok (normalize_eol ~strlocs ~line_endings:conf.Conf.line_endings formatted)
 
 let parse_and_format = function
   | Syntax.Structure -> parse_and_format Structure Structure
@@ -483,7 +507,7 @@ let numeric (type a b) (fg0 : a list Ast_passes.Ast0.t)
     let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
     let {ast= parsed_ast; source= parsed_src; _} = parsed in
     match format fg0 fgN ~input_name ~prev_source:src ~parsed conf opts with
-    | Ok fmted_src -> (
+    | Ok (_, fmted_src) -> (
       match parse_result fg0 ~source:fmted_src conf ~input_name with
       | Ok {ast= fmted_ast; source= fmted_src; _} ->
           let fmted_ast = Ast_passes.run fg0 fgN fmted_ast in
