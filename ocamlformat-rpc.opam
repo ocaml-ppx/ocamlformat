@@ -21,6 +21,7 @@ depends: [
   "menhir" {>= "20201216"}
   "menhirLib" {>= "20201216"}
   "menhirSdk" {>= "20201216"}
+  "ocaml-version"
   "ocp-indent"
   "bisect_ppx" {with-test & >= "2.5.0"}
   "odoc-parser" {>= "0.9.0"}

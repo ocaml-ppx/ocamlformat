@@ -63,6 +63,7 @@ type t =
             [max_iters] iterations. *)
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
+  ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]

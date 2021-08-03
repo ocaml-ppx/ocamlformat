@@ -80,9 +80,16 @@ module Make (C : CONFIG) = struct
       (in_attributes ~section allow_inline)
       deprecated_doc deprecated
 
-  let generated_doc conv ~allow_inline ~doc ~section ~default ~deprecated =
-    let default = Format.asprintf "%a" (Arg.conv_printer conv) default in
-    let default = if String.is_empty default then "none" else default in
+  let generated_doc ?default_doc conv ~allow_inline ~doc ~section ~default
+      ~deprecated =
+    let default_doc =
+      match default_doc with
+      | Some x -> x
+      | None -> Format.asprintf "%a" (Arg.conv_printer conv) default
+    in
+    let default =
+      if String.is_empty default_doc then "none" else default_doc
+    in
     Format.asprintf "%s The default value is $(b,%s).%s%a" doc default
       (in_attributes ~section allow_inline)
       deprecated_doc deprecated
@@ -134,13 +141,13 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  let any converter ~default ~docv ~names ~doc ~section
+  let any ?default_doc converter ~default ~docv ~names ~doc ~section
       ?(allow_inline = Poly.(section = `Formatting)) ?deprecated update
       get_value =
     let open Cmdliner in
     let doc =
-      generated_doc converter ~allow_inline ~doc ~section ~default
-        ~deprecated
+      generated_doc converter ?default_doc ~allow_inline ~doc ~section
+        ~default ~deprecated
     in
     let docs = section_name section in
     let term =

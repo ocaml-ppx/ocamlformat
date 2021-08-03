@@ -59,6 +59,7 @@ type t =
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
   ; nested_match: [`Wrap | `Align]
+  ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
@@ -171,6 +172,14 @@ let info =
          $(b,#) are ignored and can be used as comments." ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
+
+let ocaml_version_conv =
+  let parse x =
+    match Ocaml_version.of_string x with
+    | Ok x -> `Ok x
+    | Error (`Msg x) -> `Error x
+  in
+  (parse, Ocaml_version.pp)
 
 (** Options affecting formatting *)
 module Formatting = struct
@@ -935,6 +944,16 @@ module Formatting = struct
       (fun conf x -> {conf with nested_match= x})
       (fun conf -> conf.nested_match)
 
+  let ocaml_version =
+    let docv = "V" in
+    let doc = "Version of OCaml syntax of the output." in
+    let default = Ocaml_version.sys_version in
+    let default_doc = "the currently installed OCaml version" in
+    C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~default_doc
+      ~doc ~docv ~section
+      (fun conf x -> {conf with ocaml_version= x})
+      (fun conf -> conf.ocaml_version)
+
   let ocp_indent_compat =
     let doc =
       "Attempt to generate output which does not change (much) when \
@@ -1456,6 +1475,7 @@ let ocamlformat_profile =
   ; max_iters= 10
   ; module_item_spacing= `Sparse
   ; nested_match= `Wrap
+  ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= false
   ; parens_ite= false
   ; parens_tuple= `Always
@@ -1528,6 +1548,7 @@ let conventional_profile =
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
   ; nested_match= C.default Formatting.nested_match
+  ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
@@ -1653,6 +1674,7 @@ let janestreet_profile =
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
   ; nested_match= `Wrap
+  ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only

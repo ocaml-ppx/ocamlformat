@@ -1352,7 +1352,10 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
       Cmts.fmt c loc @@ Cmts.fmt c ?eol arg.pexp_loc @@ fmt_label lbl ""
   | ( (Labelled l | Optional l)
     , Pexp_constraint ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, _) )
-    when String.equal l i && List.is_empty arg.pexp_attributes ->
+    when String.equal l i
+         && List.is_empty arg.pexp_attributes
+         && Ocaml_version.(compare c.conf.ocaml_version Releases.v4_13 >= 0)
+    ->
       let lbl =
         match lbl with
         | Labelled _ -> str "~"
