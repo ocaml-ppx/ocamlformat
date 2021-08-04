@@ -21,8 +21,16 @@ type t =
   ; mutable cmts_after: Cmt.t Multimap.M(Location).t
   ; mutable cmts_within: Cmt.t Multimap.M(Location).t
   ; source: Source.t
-  ; mutable remaining: Set.M(Location).t
-  ; remove: bool }
+  ; mutable remaining: Set.M(Location).t }
+
+let copy {debug; cmts_before; cmts_after; cmts_within; source; remaining} =
+  {debug; cmts_before; cmts_after; cmts_within; source; remaining}
+
+let restore src ~into =
+  into.cmts_before <- src.cmts_before ;
+  into.cmts_after <- src.cmts_after ;
+  into.cmts_within <- src.cmts_within ;
+  into.remaining <- src.remaining
 
 let update_remaining t ~f = t.remaining <- f t.remaining
 
@@ -199,26 +207,24 @@ let rec place t loc_tree ?prev_loc locs cmts =
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
 let relocate (t : t) ~src ~before ~after =
-  if t.remove then (
-    if t.debug then
-      Caml.Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
-        Location.fmt before Location.fmt after ;
-    let merge_and_sort x y =
-      List.rev_append x y
-      |> List.sort
-           ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
-    in
-    update_cmts t `Before
-      ~f:(Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
-    update_cmts t `After
-      ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
-    update_cmts t `Within
-      ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
-    if t.debug then
-      update_remaining t ~f:(fun s ->
-          let s = Set.remove s src in
-          let s = Set.add s after in
-          Set.add s before ) )
+  if t.debug then
+    Caml.Format.eprintf "relocate %a to %a and %a@\n%!" Location.fmt src
+      Location.fmt before Location.fmt after ;
+  let merge_and_sort x y =
+    List.rev_append x y
+    |> List.sort ~compare:(Comparable.lift Location.compare_start ~f:Cmt.loc)
+  in
+  update_cmts t `Before
+    ~f:(Multimap.update_multi ~src ~dst:before ~f:merge_and_sort) ;
+  update_cmts t `After
+    ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+  update_cmts t `Within
+    ~f:(Multimap.update_multi ~src ~dst:after ~f:merge_and_sort) ;
+  if t.debug then
+    update_remaining t ~f:(fun s ->
+        let s = Set.remove s src in
+        let s = Set.add s after in
+        Set.add s before )
 
 let relocate_cmts_before (t : t) ~src ~sep ~dst =
   let f map =
@@ -281,8 +287,7 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; cmts_after= Map.empty (module Location)
     ; cmts_within= Map.empty (module Location)
     ; source
-    ; remaining= Set.empty (module Location)
-    ; remove= true }
+    ; remaining= Set.empty (module Location) }
   in
   let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
   if not (List.is_empty comments) then (
@@ -311,21 +316,23 @@ let init fragment ~debug source asts comments_n_docstrings =
       Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ) ;
   t
 
-let preserve fmt_x t =
-  let buf = Buffer.create 128 in
-  let fs = Format.formatter_of_buffer buf in
-  Fmt.eval fs (fmt_x {t with remove= false}) ;
-  Format.pp_print_flush fs () ;
-  Buffer.contents buf
+let preserve f t =
+  let original = copy t in
+  let finally () = restore original ~into:t in
+  Exn.protect ~finally ~f:(fun () ->
+      let buf = Buffer.create 128 in
+      let fs = Format.formatter_of_buffer buf in
+      Fmt.eval fs (f ()) ;
+      Format.pp_print_flush fs () ;
+      Buffer.contents buf )
 
 let pop_if_debug t loc =
-  if t.debug && t.remove then
-    update_remaining t ~f:(fun s -> Set.remove s loc)
+  if t.debug then update_remaining t ~f:(fun s -> Set.remove s loc)
 
 let find_cmts t pos loc =
   pop_if_debug t loc ;
   let r = find_at_position t loc pos in
-  if t.remove then update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
+  update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
   r
 
 let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
