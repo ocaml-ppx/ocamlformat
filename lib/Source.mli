@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 open Migrate_ast
-open Ast_passes.Ast_final
+open Ocamlformat_ast
 
 type t
 

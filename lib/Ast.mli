@@ -12,7 +12,7 @@
 (** Abstract syntax tree terms *)
 
 open Migrate_ast
-open Ast_passes.Ast_final
+open Ocamlformat_ast
 
 val init : Conf.t -> unit
 (** Initialize internal state *)

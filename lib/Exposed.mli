@@ -15,7 +15,7 @@
     These are used to avoid emitting the sequences [\{<], [\[<], [>\}] and
     [>\]], which are reserved keywords. *)
 
-open Ast_passes.Ast_final
+open Ocamlformat_ast
 
 (** Predicates for [<] on the LHS of printed AST nodes. *)
 module Left : sig

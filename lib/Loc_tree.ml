@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 module Location = Migrate_ast.Location
-open Ast_passes.Ast_final
+open Ocamlformat_ast
 include Non_overlapping_interval_tree.Make (Location)
 
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
@@ -43,5 +43,5 @@ let of_ast fragment ast src =
   let mapper =
     Ast_mapper.{default_mapper with location; pat; attribute; expr}
   in
-  Ast_passes.Ast_final.map fragment mapper ast |> ignore ;
+  map fragment mapper ast |> ignore ;
   (of_list !locs, !locs)

@@ -9,7 +9,32 @@
 (*                                                                        *)
 (**************************************************************************)
 
-include Non_overlapping_interval_tree.S with type itv = Location.t
+(** Interface over the AST defined in vendor/ocaml-4.13 *)
 
-val of_ast : 'a Ocamlformat_ast.t -> 'a -> Source.t -> t * Location.t list
-(** Use Ast_mapper to collect all locs in ast, and create a tree of them. *)
+include module type of Parsetree
+
+type use_file = toplevel_phrase list
+
+type 'a t =
+  | Structure : structure t
+  | Signature : signature t
+  | Use_file : use_file t
+  | Core_type : core_type t
+  | Module_type : module_type t
+  | Expression : expression t
+
+module Parse : sig
+  val ast : 'a t -> Lexing.lexbuf -> 'a
+end
+
+val equal_core_type : core_type -> core_type -> bool
+
+val equal : 'a t -> 'a -> 'a -> bool
+
+val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
+
+module Pprintast : sig
+  include module type of Pprintast
+
+  val ast : 'a t -> Format.formatter -> 'a -> unit
+end
