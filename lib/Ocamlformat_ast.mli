@@ -9,8 +9,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Interface over the AST defined in vendor/ocaml-4.13 *)
-
 include module type of Parsetree
 
 type use_file = toplevel_phrase list
