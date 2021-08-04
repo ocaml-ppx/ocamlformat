@@ -19,16 +19,11 @@ val comment : string -> string
 val docstring : Conf.t -> string -> string
 (** Normalize a docstring. *)
 
-val normalize : 'a Ocamlformat_ast.t -> Conf.t -> 'a -> 'a
+val normalize : 'a Std_ast.t -> Conf.t -> 'a -> 'a
 (** Normalize an AST fragment. *)
 
 val equal :
-     'a Ocamlformat_ast.t
-  -> ignore_doc_comments:bool
-  -> Conf.t
-  -> 'a
-  -> 'a
-  -> bool
+  'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 (** Compare fragments for equality up to normalization. *)
 
 type docstring_error =
@@ -38,4 +33,4 @@ type docstring_error =
   | Removed of Location.t * string
 
 val moved_docstrings :
-  'a Ocamlformat_ast.t -> Conf.t -> 'a -> 'a -> docstring_error list
+  'a Std_ast.t -> Conf.t -> 'a -> 'a -> docstring_error list

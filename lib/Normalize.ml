@@ -13,13 +13,14 @@
 
 open Migrate_ast
 open Asttypes
-open Ocamlformat_ast
+open Std_ast
 open Ast_helper
 
 type conf = {conf: Conf.t; normalize_code: structure -> structure}
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts fragment ast comments =
+  let open Ocamlformat_ast in
   let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
     let attribute m atr =

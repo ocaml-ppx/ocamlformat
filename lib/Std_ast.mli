@@ -9,27 +9,32 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type 'a with_comments =
-  {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
+(** Interface over the AST defined in vendor/ocaml-4.13 *)
 
-module W : sig
-  type t
+include module type of Parsetree
 
-  val in_lexer : int list
+type use_file = toplevel_phrase list
 
-  val disable : int -> t
+type 'a t =
+  | Structure : structure t
+  | Signature : signature t
+  | Use_file : use_file t
+  | Core_type : core_type t
+  | Module_type : module_type t
+  | Expression : expression t
 
-  val enable : int -> t
-
-  val to_string : t list -> string
+module Parse : sig
+  val ast : 'a t -> Lexing.lexbuf -> 'a
 end
 
-exception Warning50 of (Location.t * Warnings.t) list
+val equal_core_type : core_type -> core_type -> bool
 
-val parse :
-     ('b -> Lexing.lexbuf -> 'a)
-  -> 'b
-  -> Conf.t
-  -> source:string
-  -> 'a with_comments
-(** @raise [Warning50] on misplaced documentation comments. *)
+val equal : 'a t -> 'a -> 'a -> bool
+
+val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
+
+module Pprintast : sig
+  include module type of Pprintast
+
+  val ast : 'a t -> Format.formatter -> 'a -> unit
+end
