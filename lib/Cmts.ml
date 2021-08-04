@@ -426,19 +426,50 @@ let find_cmts t pos loc =
   update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
   r
 
-let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
-  let vertical_align =
-    Location.line_difference a b = 1 && Location.compare_start_col a b = 0
+let break_comment_group source {Cmt.loc= a; _} {Cmt.loc= b; _} =
+  let filter _ = true in
+  match Source.tokens_between source a.loc_end b.loc_start ~filter with
+  | [] ->
+      let vertical_align =
+        Location.line_difference a b = 1
+        && Location.compare_start_col a b = 0
+      in
+      let horizontal_align = Location.line_difference a b = 0 in
+      not (vertical_align || horizontal_align)
+  | _ -> true
+
+let group cmts src =
+  let stars_sep = function
+    | "*" -> false
+    | x -> String.for_all x ~f:(function '*' -> true | _ -> false)
   in
-  let horizontal_align =
-    Location.line_difference a b = 0
-    && List.is_empty
-         (Source.tokens_between source a.loc_end b.loc_start
-              ~filter:(function _ -> true) )
+  let rec aux status acc = function
+    | [] -> (
+        List.rev
+        @@
+        match status with
+        | `New -> acc
+        | `Header x -> `Header (List.rev x) :: acc
+        | `Regular x -> `Regular (List.rev x) :: acc )
+    | (h : Cmt.t) :: t -> (
+      match status with
+      | `New ->
+          if stars_sep h.txt then aux (`Header [h]) acc t
+          else aux (`Regular [h]) acc t
+      | `Header curr_grp ->
+          if stars_sep h.txt then
+            aux `New (`Header (List.rev (h :: curr_grp)) :: acc) t
+          else aux (`Header (h :: curr_grp)) acc t
+      | `Regular curr_grp ->
+          if stars_sep h.txt then
+            aux (`Header [h]) (`Regular (List.rev curr_grp) :: acc) t
+          else
+            let last = List.hd_exn curr_grp in
+            if break_comment_group src last h then
+              aux (`Regular [h]) (`Regular (List.rev curr_grp) :: acc) t
+            else aux (`Regular (h :: curr_grp)) acc t )
   in
-  not
-    ( (Location.is_single_line a margin && Location.is_single_line b margin)
-    && (vertical_align || horizontal_align) )
+  aux `New [] cmts
 
 module Asterisk_prefixed = struct
   let split Cmt.{txt; loc= {Location.loc_start; _}} =
@@ -579,25 +610,28 @@ let fmt_cmt (cmt : Cmt.t) ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code
 
 let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
   let open Fmt in
-  let groups =
-    List.group cmts ~break:(break_comment_group t.source conf.margin)
-  in
+  let groups = group cmts t.source in
   vbox 0 ~name:"cmts"
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
-         | [] -> impossible "previous match"
-         | [cmt] ->
-             fmt_cmt cmt ~wrap:conf.wrap_comments
-               ~ocp_indent_compat:conf.ocp_indent_compat
-               ~fmt_code:(fmt_code conf) pos
-         | group ->
+         | `Header [] | `Regular [] -> impossible "previous match"
+         | `Regular group ->
+             list group "@;<1000 0>" (fun cmt ->
+                 fmt_cmt cmt ~wrap:conf.wrap_comments
+                   ~ocp_indent_compat:conf.ocp_indent_compat
+                   ~fmt_code:(fmt_code conf) pos )
+         | `Header group ->
              list group "@;<1000 0>" (fun cmt ->
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
          $
          match next with
-         | Some ({loc= next; _} :: _) ->
-             let Cmt.{loc= last; _} = List.last_exn group in
-             fmt_if (Location.line_difference last next > 1) "\n" $ fmt "@ "
+         | Some (`Header ({loc= next; _} :: _))
+          |Some (`Regular ({loc= next; _} :: _)) -> (
+           match group with
+           | `Regular x | `Header x ->
+               let Cmt.{loc= last; _} = List.last_exn x in
+               fmt_if (Location.line_difference last next > 1) "\n"
+               $ fmt "@ " )
          | _ -> noop ) )
 
 (** Format comments for loc. *)

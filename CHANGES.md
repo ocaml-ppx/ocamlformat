@@ -10,6 +10,8 @@
 
   + Fix indentation of module binding RHS (#1969, @gpetiot)
 
+  + Do not check if a comment fits on a single line when splitting comment groups (#1879, @gpetiot)
+
 #### Changes
 
   + Variant expressions with no argument are considered "simple" (not inducing a break e.g. as an argument of an application) (#1968, @gpetiot)
