@@ -23,8 +23,6 @@ type 'a t =
   | Module_type : module_type t
   | Expression : expression t
 
-let equal (type a) (_ : a t) : a -> a -> bool = Poly.equal
-
 (* Missing from ocaml_migrate_parsetree *)
 let use_file (mapper : Ast_mapper.mapper) use_file =
   let open Parsetree in

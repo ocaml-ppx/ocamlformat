@@ -27,8 +27,6 @@ module Parse : sig
   val ast : 'a t -> Lexing.lexbuf -> 'a
 end
 
-val equal_core_type : core_type -> core_type -> bool
-
 val equal : 'a t -> 'a -> 'a -> bool
 
 val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
