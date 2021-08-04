@@ -1366,8 +1366,7 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
   | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
 
 and expression_width c xe =
-  String.length
-    (Cmts.preserve (fun cmts -> fmt_expression {c with cmts} xe) c.cmts)
+  String.length (Cmts.preserve (fun () -> fmt_expression c xe) c.cmts)
 
 and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   let fmt_arg c ~first:_ ~last (lbl, arg) =
@@ -1396,8 +1395,8 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
     let xexp = sub_exp ~ctx x in
     let output =
       Cmts.preserve
-        (fun cmts ->
-          let cmts = Cmts.drop_before cmts x.pexp_loc in
+        (fun () ->
+          let cmts = Cmts.drop_before c.cmts x.pexp_loc in
           fmt_arg ~first:false ~last:false {c with cmts} (lbl, x) )
         c.cmts
     in
@@ -2973,9 +2972,7 @@ and fmt_cases c ctx cs =
     if Option.is_some pc_guard then None
     else
       let xpat = sub_pat ~ctx pc_lhs in
-      let fmted =
-        Cmts.preserve (fun cmts -> fmt_pattern {c with cmts} xpat) c.cmts
-      in
+      let fmted = Cmts.preserve (fun () -> fmt_pattern c xpat) c.cmts in
       let len = String.length fmted in
       if len * 3 >= c.conf.margin || String.contains fmted '\n' then None
       else Some len

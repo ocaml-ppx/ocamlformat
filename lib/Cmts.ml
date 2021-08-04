@@ -26,6 +26,12 @@ type t =
 let copy {debug; cmts_before; cmts_after; cmts_within; source; remaining} =
   {debug; cmts_before; cmts_after; cmts_within; source; remaining}
 
+let restore src ~into =
+  into.cmts_before <- src.cmts_before ;
+  into.cmts_after <- src.cmts_after ;
+  into.cmts_within <- src.cmts_within ;
+  into.remaining <- src.remaining
+
 let update_remaining t ~f = t.remaining <- f t.remaining
 
 let update_cmts t pos ~f =
@@ -310,12 +316,15 @@ let init fragment ~debug source asts comments_n_docstrings =
       Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ) ;
   t
 
-let preserve fmt_x t =
-  let buf = Buffer.create 128 in
-  let fs = Format.formatter_of_buffer buf in
-  Fmt.eval fs (fmt_x (copy t)) ;
-  Format.pp_print_flush fs () ;
-  Buffer.contents buf
+let preserve f t =
+  let original = copy t in
+  let finally () = restore original ~into:t in
+  Exn.protect ~finally ~f:(fun () ->
+      let buf = Buffer.create 128 in
+      let fs = Format.formatter_of_buffer buf in
+      Fmt.eval fs (f ()) ;
+      Format.pp_print_flush fs () ;
+      Buffer.contents buf )
 
 let pop_if_debug t loc =
   if t.debug then update_remaining t ~f:(fun s -> Set.remove s loc)
