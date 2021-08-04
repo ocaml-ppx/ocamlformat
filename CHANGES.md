@@ -18,6 +18,8 @@
 
   + Avoid normalizing newlines inside quoted strings `{|...|}` (#1754, @nojb, @hhugo)
 
+  + Add missing normalization of code spans in docstrings (#1736, @jberdine)
+
 #### Changes
 
 #### New features
