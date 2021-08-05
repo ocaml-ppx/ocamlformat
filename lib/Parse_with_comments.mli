@@ -27,7 +27,8 @@ end
 exception Warning50 of (Location.t * Warnings.t) list
 
 val parse :
-     ('b -> Lexing.lexbuf -> 'a)
+     ?disable_w50:bool
+  -> ('b -> Lexing.lexbuf -> 'a)
   -> 'b
   -> Conf.t
   -> source:string

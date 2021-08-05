@@ -332,7 +332,10 @@ let format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      ( match parse Extended_ast.Parse.ast fg conf ~source:fmted with
+      ( match
+          parse Extended_ast.Parse.ast ~disable_w50:true fg conf
+            ~source:fmted
+        with
       | exception Sys_error msg -> Error (Error.User_error msg)
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
@@ -431,8 +434,8 @@ let format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn; input_name})
 
-let parse_result f fragment conf ~source ~input_name =
-  match parse f fragment conf ~source with
+let parse_result ?disable_w50 f fragment conf ~source ~input_name =
+  match parse ?disable_w50 f fragment conf ~source with
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
@@ -468,7 +471,8 @@ let normalize_eol ~strlocs ~line_endings s =
 let parse_and_format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
     ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
-  parse_result Extended_ast.Parse.ast fg conf ~source ~input_name
+  parse_result Extended_ast.Parse.ast ~disable_w50:true fg conf ~source
+    ~input_name
   >>= fun parsed ->
   parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
   >>= fun std_parsed ->
