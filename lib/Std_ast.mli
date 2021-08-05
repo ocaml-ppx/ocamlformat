@@ -9,28 +9,30 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Normalize abstract syntax trees *)
+(** Interface over the AST defined in vendor/ocaml-4.13 *)
 
-val dedup_cmts : 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
+include module type of Parsetree
 
-val comment : string -> string
-(** Normalize a comment. *)
+type use_file = toplevel_phrase list
 
-val docstring : Conf.t -> string -> string
-(** Normalize a docstring. *)
+type 'a t =
+  | Structure : structure t
+  | Signature : signature t
+  | Use_file : use_file t
+  | Core_type : core_type t
+  | Module_type : module_type t
+  | Expression : expression t
 
-val normalize : 'a Std_ast.t -> Conf.t -> 'a -> 'a
-(** Normalize an AST fragment. *)
+module Parse : sig
+  val ast : 'a t -> Lexing.lexbuf -> 'a
+end
 
-val equal :
-  'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
-(** Compare fragments for equality up to normalization. *)
+val equal : 'a t -> 'a -> 'a -> bool
 
-type docstring_error =
-  | Moved of Location.t * Location.t * string
-  | Unstable of Location.t * string * string
-  | Added of Location.t * string
-  | Removed of Location.t * string
+val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
 
-val moved_docstrings :
-  'a Std_ast.t -> Conf.t -> 'a -> 'a -> docstring_error list
+module Pprintast : sig
+  include module type of Pprintast
+
+  val ast : 'a t -> Format.formatter -> 'a -> unit
+end

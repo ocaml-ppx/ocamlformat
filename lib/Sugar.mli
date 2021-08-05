@@ -11,7 +11,7 @@
 
 open Migrate_ast
 open Asttypes
-open Ast_passes.Ast_final
+open Extended_ast
 
 val arrow_typ :
      Cmts.t

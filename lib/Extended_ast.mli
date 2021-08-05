@@ -9,28 +9,28 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Normalize abstract syntax trees *)
+include module type of Parsetree
 
-val dedup_cmts : 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
+type use_file = toplevel_phrase list
 
-val comment : string -> string
-(** Normalize a comment. *)
+type 'a t =
+  | Structure : structure t
+  | Signature : signature t
+  | Use_file : use_file t
+  | Core_type : core_type t
+  | Module_type : module_type t
+  | Expression : expression t
 
-val docstring : Conf.t -> string -> string
-(** Normalize a docstring. *)
+module Parse : sig
+  val ast : 'a t -> Lexing.lexbuf -> 'a
+end
 
-val normalize : 'a Std_ast.t -> Conf.t -> 'a -> 'a
-(** Normalize an AST fragment. *)
+val equal_core_type : core_type -> core_type -> bool
 
-val equal :
-  'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
-(** Compare fragments for equality up to normalization. *)
+val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
 
-type docstring_error =
-  | Moved of Location.t * Location.t * string
-  | Unstable of Location.t * string * string
-  | Added of Location.t * string
-  | Removed of Location.t * string
+module Pprintast : sig
+  include module type of Pprintast
 
-val moved_docstrings :
-  'a Std_ast.t -> Conf.t -> 'a -> 'a -> docstring_error list
+  val ast : 'a t -> Format.formatter -> 'a -> unit
+end

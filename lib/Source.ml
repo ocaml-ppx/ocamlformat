@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 open Migrate_ast
-open Ast_passes.Ast_final
+open Extended_ast
 
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}

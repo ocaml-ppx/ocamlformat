@@ -9,9 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ast_passes
-
 include Non_overlapping_interval_tree.S with type itv = Location.t
 
-val of_ast : 'a Ast_final.t -> 'a -> Source.t -> t * Location.t list
+val of_ast : 'a Extended_ast.t -> 'a -> Source.t -> t * Location.t list
 (** Use Ast_mapper to collect all locs in ast, and create a tree of them. *)

@@ -250,7 +250,7 @@ let equal fragment ~ignore_doc_comments c a b =
 let normalize fragment c {Parse_with_comments.ast; _} =
   Normalize.normalize fragment c ast
 
-let recover (type a) : a Ast_passes.Ast0.t -> _ -> a = function
+let recover (type a) : a Extended_ast.t -> _ -> a = function
   | Structure -> Parse_wyc.structure
   | Signature -> Parse_wyc.signature
   | Use_file -> Parse_wyc.use_file
@@ -269,22 +269,21 @@ let strconst_mapper locs =
   in
   {Ast_mapper.default_mapper with constant}
 
-let collect_strlocs (type a) (fgN : a Ast_passes.Ast_final.t) (ast : a) :
+let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
     (int * int) list =
   let locs = ref [] in
-  let _ = Ast_passes.Ast_final.map fgN (strconst_mapper locs) ast in
+  let _ = Extended_ast.map fg (strconst_mapper locs) ast in
   let compare (c1, _) (c2, _) = Stdlib.compare c1 c2 in
   List.sort ~compare !locs
 
-let format (type a b) (fg0 : a Ast_passes.Ast0.t)
-    (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~prev_source
-    ~parsed conf opts =
+let format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
+    ?output_file ~input_name ~prev_source ~parsed ~std_parsed conf opts =
   let open Result.Monad_infix in
   let dump_ast fg ~suffix ast =
     if opts.Conf.debug then
       Some
         (dump_ast ~input_name ?output_file ~suffix (fun fmt ->
-             Ast_passes.Ast_final.Pprintast.ast fg fmt ast ) )
+             Std_ast.Pprintast.ast fg fmt ast ) )
     else None
   in
   let dump_formatted ~suffix fmted =
@@ -294,11 +293,11 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
   in
   Location.input_name := input_name ;
   (* iterate until formatting stabilizes *)
-  let rec print_check ~i ~(conf : Conf.t) ~prev_source t =
+  let rec print_check ~i ~(conf : Conf.t) ~prev_source t std_t =
     let format ~box_debug =
       let open Fmt in
       let cmts_t =
-        Cmts.init fgN ~debug:opts.debug t.source t.ast t.comments
+        Cmts.init fg ~debug:opts.debug t.source t.ast t.comments
       in
       let contents =
         with_buffer_formatter
@@ -309,7 +308,7 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
               (not (String.is_empty t.prefix))
               (str t.prefix $ fmt "@.")
           $ with_optional_box_debug ~box_debug
-              (Fmt_ast.fmt_ast fgN ~debug:opts.debug t.source cmts_t conf
+              (Fmt_ast.fmt_ast fg ~debug:opts.debug t.source cmts_t conf
                  t.ast ) )
       in
       (contents, cmts_t)
@@ -325,7 +324,7 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
       if opts.Conf.margin_check then
         check_margin conf ~fmted
           ~filename:(Option.value output_file ~default:input_name) ;
-      let strlocs = collect_strlocs fgN t.ast in
+      let strlocs = collect_strlocs fg t.ast in
       Ok (strlocs, fmted) )
     else
       let exn_args () =
@@ -333,22 +332,31 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      ( match parse Ast_passes.Ast0.Parse.ast fg0 conf ~source:fmted with
+      ( match
+          parse Extended_ast.Parse.ast ~disable_w50:true fg conf
+            ~source:fmted
+        with
       | exception Sys_error msg -> Error (Error.User_error msg)
-      | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
       | t_new -> Ok t_new )
       >>= fun t_new ->
-      let t_new = {t_new with ast= Ast_passes.run fg0 fgN t_new.ast} in
+      ( match parse Std_ast.Parse.ast std_fg conf ~source:fmted with
+      | exception Sys_error msg -> Error (Error.User_error msg)
+      | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
+      | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
+      | std_t_new -> Ok std_t_new )
+      >>= fun std_t_new ->
       (* Ast not preserved ? *)
       ( if
         not
-          (equal fgN ~ignore_doc_comments:(not conf.comment_check) conf t
-             t_new )
+          (equal std_fg ~ignore_doc_comments:(not conf.comment_check) conf
+             std_t std_t_new )
       then
-        let old_ast = dump_ast fgN ~suffix:".old" (normalize fgN conf t) in
+        let old_ast =
+          dump_ast std_fg ~suffix:".old" (normalize std_fg conf std_t)
+        in
         let new_ast =
-          dump_ast fgN ~suffix:".new" (normalize fgN conf t_new)
+          dump_ast std_fg ~suffix:".new" (normalize std_fg conf std_t_new)
         in
         let args ~suffix =
           [ ("output file", dump_formatted ~suffix fmted)
@@ -357,9 +365,9 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
           |> List.filter_map ~f:(fun (s, f_opt) ->
                  Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
-        if equal fgN ~ignore_doc_comments:true conf t t_new then
+        if equal std_fg ~ignore_doc_comments:true conf t t_new then
           let docstrings =
-            Normalize.moved_docstrings fgN conf t.Parse_with_comments.ast
+            Normalize.moved_docstrings std_fg conf t.Parse_with_comments.ast
               t_new.Parse_with_comments.ast
           in
           let args = args ~suffix:".unequal-docs" in
@@ -397,8 +405,8 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
             (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
         in
         if not (Sequence.is_empty diff_cmts) then
-          let old_ast = dump_ast fgN ~suffix:".old" t.ast in
-          let new_ast = dump_ast fgN ~suffix:".new" t_new.ast in
+          let old_ast = dump_ast std_fg ~suffix:".old" std_t.ast in
+          let new_ast = dump_ast std_fg ~suffix:".new" std_t_new.ast in
           let args =
             [ ( "diff"
               , Some
@@ -419,15 +427,14 @@ let format (type a b) (fg0 : a Ast_passes.Ast0.t)
           ) )
       else
         (* All good, continue *)
-        print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new
+        print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new std_t_new
   in
-  try print_check ~i:1 ~conf ~prev_source parsed with
+  try print_check ~i:1 ~conf ~prev_source parsed std_parsed with
   | Sys_error msg -> Error (User_error msg)
   | exn -> Error (Ocamlformat_bug {exn; input_name})
 
-let parse_result ?(f = Ast_passes.Ast0.Parse.ast) fragment conf ~source
-    ~input_name =
-  match parse f fragment conf ~source with
+let parse_result ?disable_w50 f fragment conf ~source ~input_name =
+  match parse ?disable_w50 f fragment conf ~source with
   | exception exn -> Error (Error.Invalid_source {exn; input_name})
   | parsed -> Ok parsed
 
@@ -460,15 +467,16 @@ let normalize_eol ~strlocs ~line_endings s =
   in
   loop strlocs 0
 
-let parse_and_format (type a b) (fg0 : a Ast_passes.Ast0.t)
-    (fgN : b Ast_passes.Ast_final.t) ?output_file ~input_name ~source conf
-    opts =
+let parse_and_format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
+    ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
-  parse_result fg0 conf ~source ~input_name
+  parse_result Extended_ast.Parse.ast ~disable_w50:true fg conf ~source
+    ~input_name
   >>= fun parsed ->
-  let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
-  format fg0 fgN ?output_file ~input_name ~prev_source:source ~parsed conf
-    opts
+  parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+  >>= fun std_parsed ->
+  format fg std_fg ?output_file ~input_name ~prev_source:source ~parsed
+    ~std_parsed conf opts
   >>= fun (strlocs, formatted) ->
   Ok (normalize_eol ~strlocs ~line_endings:conf.Conf.line_endings formatted)
 
@@ -494,36 +502,44 @@ let check_range nlines (low, high) =
   else
     Error (Error.User_error (Format.sprintf "Invalid range %i-%i" low high))
 
-let numeric (type a b) (fg0 : a list Ast_passes.Ast0.t)
-    (fgN : b list Ast_passes.Ast_final.t) ~input_name ~source ~range conf
-    opts =
+let numeric (type a) (fg : a list Extended_ast.t) (std_fg : a list Std_ast.t)
+    ~input_name ~source ~range conf opts =
   let lines = String.split_lines source in
   let nlines = List.length lines in
   check_range nlines range
   >>| fun () ->
   Location.input_name := input_name ;
   let fallback () = Indent.Partial_ast.indent_range ~source ~range in
-  let indent_parsed parsed ~src ~range =
-    let parsed = {parsed with ast= Ast_passes.run fg0 fgN parsed.ast} in
+  let indent_parsed parsed std_parsed ~src ~range =
     let {ast= parsed_ast; source= parsed_src; _} = parsed in
-    match format fg0 fgN ~input_name ~prev_source:src ~parsed conf opts with
+    match
+      format fg std_fg ~input_name ~prev_source:src ~parsed ~std_parsed conf
+        opts
+    with
     | Ok (_, fmted_src) -> (
-      match parse_result fg0 ~source:fmted_src conf ~input_name with
+      match
+        parse_result Extended_ast.Parse.ast fg ~source:fmted_src conf
+          ~input_name
+      with
       | Ok {ast= fmted_ast; source= fmted_src; _} ->
-          let fmted_ast = Ast_passes.run fg0 fgN fmted_ast in
-          Indent.Valid_ast.indent_range fgN ~lines ~range
+          Indent.Valid_ast.indent_range fg ~lines ~range
             ~unformatted:(parsed_ast, parsed_src, src)
             ~formatted:(fmted_ast, fmted_src)
       | Error _ -> fallback () )
     | Error _ -> fallback ()
   in
   let parse_or_recover ~src =
-    match parse_result fg0 conf ~source:src ~input_name with
+    match
+      parse_result Extended_ast.Parse.ast fg conf ~source:src ~input_name
+    with
     | Ok parsed -> Ok parsed
-    | Error _ -> parse_result ~f:recover fg0 conf ~source:src ~input_name
+    | Error _ -> parse_result recover fg conf ~source:src ~input_name
   in
   match parse_or_recover ~src:source with
-  | Ok parsed -> indent_parsed parsed ~src:source ~range
+  | Ok parsed -> (
+    match parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name with
+    | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
+    | Error _ -> fallback () )
   | Error _ -> fallback ()
 
 let numeric = function

@@ -12,7 +12,7 @@
 (** Format OCaml Ast *)
 
 val fmt_ast :
-     'a Ast_passes.Ast_final.t
+     'a Extended_ast.t
   -> debug:bool
   -> Source.t
   -> Cmts.t

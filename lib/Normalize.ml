@@ -13,13 +13,14 @@
 
 open Migrate_ast
 open Asttypes
-open Ast_passes.Ast_final
+open Std_ast
 open Ast_helper
 
 type conf = {conf: Conf.t; normalize_code: structure -> structure}
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts fragment ast comments =
+  let open Extended_ast in
   let of_ast ast =
     let docs = ref (Set.empty (module Cmt)) in
     let attribute m atr =
@@ -101,10 +102,9 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-            Parse_with_comments.parse Ast_passes.Ast0.Parse.ast Structure
-              c.conf ~source:txt
+            Parse_with_comments.parse Extended_ast.Parse.ast Structure c.conf
+              ~source:txt
           in
-          let ast = Ast_passes.run Structure Structure ast in
           let comments = dedup_cmts Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
@@ -114,8 +114,7 @@ let rec odoc_nestable_block_element c fmt = function
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
-            Ast_passes.Ast_final.Pprintast.structure ast print_comments
-            comments
+            Extended_ast.Pprintast.structure ast print_comments comments
         with _ -> txt
       in
       fpf fmt "Code_block(%a, %a)" (option (ign_loc str)) metadata str txt
