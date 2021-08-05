@@ -337,7 +337,6 @@ let format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
             ~source:fmted
         with
       | exception Sys_error msg -> Error (Error.User_error msg)
-      | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
       | t_new -> Ok t_new )
       >>= fun t_new ->
