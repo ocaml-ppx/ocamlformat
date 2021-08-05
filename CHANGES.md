@@ -18,6 +18,10 @@
 
   + Avoid normalizing newlines inside quoted strings `{|...|}` (#1754, @nojb, @hhugo)
 
+  + Fix quadratic behavior when certain constructs are nested. This corresponds
+    to the cases where a partial layout is triggered to determine if a construct
+    fits on a single line for example. (#1750, #1766, @emillon)
+
 #### Changes
 
 #### New features

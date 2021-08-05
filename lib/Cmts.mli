@@ -126,6 +126,11 @@ val diff :
   Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)
 
-val preserve : (unit -> Fmt.t) -> t -> string
+type layout_cache_key =
+  | Arg of Asttypes.arg_label * Parsetree.expression
+  | Pattern of Parsetree.pattern
+  | Expression of Parsetree.expression
+
+val preserve : cache_key:layout_cache_key -> (unit -> Fmt.t) -> t -> string
 (** [preserve f t] formats like [f ()] but returns a string and does not
     consume comments from [t]. *)
