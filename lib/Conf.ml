@@ -948,7 +948,7 @@ module Formatting = struct
     let docv = "V" in
     let doc = "Version of OCaml syntax of the output." in
     let default = Ocaml_version.sys_version in
-    let default_doc = "the currently installed OCaml version" in
+    let default_doc = "the version of OCaml used to build OCamlFormat" in
     C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~default_doc
       ~doc ~docv ~section
       (fun conf x -> {conf with ocaml_version= x})

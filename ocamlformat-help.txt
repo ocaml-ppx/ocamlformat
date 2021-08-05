@@ -366,7 +366,7 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --ocaml-version=V
            Version of OCaml syntax of the output. The default value is the
-           currently installed OCaml version.
+           version of OCaml used to build OCamlFormat.
 
        --ocp-indent-compat
            Attempt to generate output which does not change (much) when
