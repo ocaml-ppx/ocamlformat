@@ -241,7 +241,7 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
 
 let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
     ~whole_loc =
-  let open Ocamlformat_ast in
+  let open Extended_ast in
   match pld with
   | PStr
       [ { pstr_desc=
@@ -267,7 +267,7 @@ let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
   | _ -> ()
 
 let relocate_wrongfully_attached_cmts t src exp =
-  let open Ocamlformat_ast in
+  let open Extended_ast in
   match exp.pexp_desc with
   | Pexp_match (e0, _) ->
       relocate_pattern_matching_cmts t src Parser.MATCH
@@ -500,12 +500,12 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
             match
-              Parse_with_comments.parse Ocamlformat_ast.Parse.ast Structure
-                conf ~source
+              Parse_with_comments.parse Extended_ast.Parse.ast Structure conf
+                ~source
             with
             | exception _ -> norm_non_code z
             | {ast; _} ->
-                Caml.Format.asprintf "%a" Ocamlformat_ast.Pprintast.structure
+                Caml.Format.asprintf "%a" Extended_ast.Pprintast.structure
                   (Normalize.normalize Structure conf ast)
           else norm_non_code z
     in

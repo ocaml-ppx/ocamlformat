@@ -2234,7 +2234,7 @@ let validate () =
 
 let action () = parse info validate
 
-open Ocamlformat_ast
+open Extended_ast
 
 let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
   let result =

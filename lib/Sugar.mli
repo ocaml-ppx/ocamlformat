@@ -11,7 +11,7 @@
 
 open Migrate_ast
 open Asttypes
-open Ocamlformat_ast
+open Extended_ast
 
 val arrow_typ :
      Cmts.t

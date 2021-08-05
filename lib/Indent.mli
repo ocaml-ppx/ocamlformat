@@ -11,7 +11,7 @@
 
 module Valid_ast : sig
   val indent_range :
-       'a Ocamlformat_ast.t
+       'a Extended_ast.t
     -> unformatted:'a * Source.t * string
     -> formatted:'a * Source.t
     -> lines:string list

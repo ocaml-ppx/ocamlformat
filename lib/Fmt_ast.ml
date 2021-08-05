@@ -15,7 +15,7 @@ module Format = Format_
 
 open Migrate_ast
 open Asttypes
-open Ocamlformat_ast
+open Extended_ast
 open Ast
 open Fmt
 
@@ -4466,7 +4466,7 @@ let fmt_toplevel c ctx itms =
 
 (** Entry points *)
 
-let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Ocamlformat_ast.t)
+let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Extended_ast.t)
     source cmts conf (itms : a) =
   let c = {source; cmts; conf; debug; fmt_code} in
   match (fragment, itms) with
@@ -4484,10 +4484,7 @@ let fmt_file (type a) ~ctx ~fmt_code ~debug (fragment : a Ocamlformat_ast.t)
 
 let fmt_code ~debug =
   let rec fmt_code conf s =
-    match
-      Parse_with_comments.parse Ocamlformat_ast.Parse.ast Structure conf
-        ~source:s
-    with
+    match Parse_with_comments.parse Parse.ast Structure conf ~source:s with
     | {ast; comments; source; prefix= _} ->
         let cmts = Cmts.init Structure ~debug source ast comments in
         let ctx = Pld (PStr ast) in

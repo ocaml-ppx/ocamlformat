@@ -11,7 +11,7 @@
 
 module Format = Format_
 module Location = Migrate_ast.Location
-open Ocamlformat_ast
+open Extended_ast
 open Fmt
 
 let parens_or_begin_end (c : Conf.t) source ~loc =

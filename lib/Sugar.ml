@@ -12,7 +12,7 @@
 open Migrate_ast
 open Asttypes
 open Ast
-open Ocamlformat_ast
+open Extended_ast
 
 let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
   let ctx = Typ typ in

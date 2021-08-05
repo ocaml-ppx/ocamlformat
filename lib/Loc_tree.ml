@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 module Location = Migrate_ast.Location
-open Ocamlformat_ast
+open Extended_ast
 include Non_overlapping_interval_tree.Make (Location)
 
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)

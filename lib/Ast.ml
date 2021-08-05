@@ -12,7 +12,7 @@
 (** Abstract syntax tree term *)
 
 open Migrate_ast
-open Ocamlformat_ast
+open Extended_ast
 
 let init, register_reset, leading_nested_match_parens, parens_ite =
   let l = ref [] in

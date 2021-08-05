@@ -11,7 +11,7 @@
 
 (** Normalize abstract syntax trees *)
 
-val dedup_cmts : 'a Ocamlformat_ast.t -> 'a -> Cmt.t list -> Cmt.t list
+val dedup_cmts : 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
 
 val comment : string -> string
 (** Normalize a comment. *)

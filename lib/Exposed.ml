@@ -9,7 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-open Ocamlformat_ast
+open Extended_ast
 
 module Left = struct
   let rec core_type typ =

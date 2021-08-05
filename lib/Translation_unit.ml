@@ -250,7 +250,7 @@ let equal fragment ~ignore_doc_comments c a b =
 let normalize fragment c {Parse_with_comments.ast; _} =
   Normalize.normalize fragment c ast
 
-let recover (type a) : a Ocamlformat_ast.t -> _ -> a = function
+let recover (type a) : a Extended_ast.t -> _ -> a = function
   | Structure -> Parse_wyc.structure
   | Signature -> Parse_wyc.signature
   | Use_file -> Parse_wyc.use_file
@@ -269,14 +269,14 @@ let strconst_mapper locs =
   in
   {Ast_mapper.default_mapper with constant}
 
-let collect_strlocs (type a) (fg : a Ocamlformat_ast.t) (ast : a) :
+let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
     (int * int) list =
   let locs = ref [] in
-  let _ = Ocamlformat_ast.map fg (strconst_mapper locs) ast in
+  let _ = Extended_ast.map fg (strconst_mapper locs) ast in
   let compare (c1, _) (c2, _) = Stdlib.compare c1 c2 in
   List.sort ~compare !locs
 
-let format (type a) (fg : a Ocamlformat_ast.t) (std_fg : a Std_ast.t)
+let format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed conf opts =
   let open Result.Monad_infix in
   let dump_ast fg ~suffix ast =
@@ -332,7 +332,7 @@ let format (type a) (fg : a Ocamlformat_ast.t) (std_fg : a Std_ast.t)
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
-      ( match parse Ocamlformat_ast.Parse.ast fg conf ~source:fmted with
+      ( match parse Extended_ast.Parse.ast fg conf ~source:fmted with
       | exception Sys_error msg -> Error (Error.User_error msg)
       | exception Warning50 l -> internal_error (`Warning50 l) (exn_args ())
       | exception exn -> internal_error (`Cannot_parse exn) (exn_args ())
@@ -465,10 +465,10 @@ let normalize_eol ~strlocs ~line_endings s =
   in
   loop strlocs 0
 
-let parse_and_format (type a) (fg : a Ocamlformat_ast.t)
-    (std_fg : a Std_ast.t) ?output_file ~input_name ~source conf opts =
+let parse_and_format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
+    ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
-  parse_result Ocamlformat_ast.Parse.ast fg conf ~source ~input_name
+  parse_result Extended_ast.Parse.ast fg conf ~source ~input_name
   >>= fun parsed ->
   parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
   >>= fun std_parsed ->
@@ -499,8 +499,8 @@ let check_range nlines (low, high) =
   else
     Error (Error.User_error (Format.sprintf "Invalid range %i-%i" low high))
 
-let numeric (type a) (fg : a list Ocamlformat_ast.t)
-    (std_fg : a list Std_ast.t) ~input_name ~source ~range conf opts =
+let numeric (type a) (fg : a list Extended_ast.t) (std_fg : a list Std_ast.t)
+    ~input_name ~source ~range conf opts =
   let lines = String.split_lines source in
   let nlines = List.length lines in
   check_range nlines range
@@ -515,7 +515,7 @@ let numeric (type a) (fg : a list Ocamlformat_ast.t)
     with
     | Ok (_, fmted_src) -> (
       match
-        parse_result Ocamlformat_ast.Parse.ast fg ~source:fmted_src conf
+        parse_result Extended_ast.Parse.ast fg ~source:fmted_src conf
           ~input_name
       with
       | Ok {ast= fmted_ast; source= fmted_src; _} ->
@@ -527,7 +527,7 @@ let numeric (type a) (fg : a list Ocamlformat_ast.t)
   in
   let parse_or_recover ~src =
     match
-      parse_result Ocamlformat_ast.Parse.ast fg conf ~source:src ~input_name
+      parse_result Extended_ast.Parse.ast fg conf ~source:src ~input_name
     with
     | Ok parsed -> Ok parsed
     | Error _ -> parse_result recover fg conf ~source:src ~input_name

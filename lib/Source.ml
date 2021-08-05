@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 open Migrate_ast
-open Ocamlformat_ast
+open Extended_ast
 
 (** Concrete syntax. *)
 type t = {text: string; tokens: (Parser.token * Location.t) array}

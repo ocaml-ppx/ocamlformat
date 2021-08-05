@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 module Format = Format_
-open Ocamlformat_ast
+open Extended_ast
 
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 

@@ -28,7 +28,7 @@ module Format = Format_
 type t
 
 val init :
-  'a Ocamlformat_ast.t -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
+  'a Extended_ast.t -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
 (** [init fragment source x comments] associates each comment in [comments]
     with a source location appearing in [x]. It uses [Source] to help resolve
     ambiguities. Initializes the state used by the [fmt] functions. *)
@@ -40,7 +40,7 @@ val relocate :
     [after]. *)
 
 val relocate_wrongfully_attached_cmts :
-  t -> Source.t -> Ocamlformat_ast.expression -> unit
+  t -> Source.t -> Extended_ast.expression -> unit
 (** [relocate_wrongfully_attached_cmts] relocates wrongfully attached
     comments, e.g. comments that should be attached to the whole
     pattern-matching expressions ([match-with] or [try-with] expressions) but
