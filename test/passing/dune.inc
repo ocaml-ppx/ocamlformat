@@ -1494,6 +1494,18 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+   (with-outputs-to issue1750.ml.output
+     (run %{bin:ocamlformat} %{dep:tests/issue1750.ml}))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/issue1750.ml issue1750.ml.output)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
    (with-outputs-to issue289.ml.output
      (run %{bin:ocamlformat} %{dep:tests/issue289.ml}))))
 

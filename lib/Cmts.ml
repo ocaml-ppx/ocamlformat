@@ -14,16 +14,74 @@
 module Format = Format_
 open Migrate_ast
 
+type layout_cache_key =
+  | Arg of Asttypes.arg_label * Parsetree.expression
+  | Pattern of Parsetree.pattern
+  | Expression of Parsetree.expression
+
+module Layout_cache = struct
+  module Key = struct
+    type t = layout_cache_key
+
+    let expression_to_string e =
+      Caml.Format.asprintf "%a" Pprintast.expression e
+
+    let pattern_to_string e = Caml.Format.asprintf "%a" Pprintast.pattern e
+
+    let sexp_of_arg_label = function
+      | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
+      | Labelled label -> List [Atom "Labelled"; sexp_of_string label]
+      | Optional label -> List [Atom "Optional"; sexp_of_string label]
+
+    let sexp_of_t = function
+      | Arg (label, expression) ->
+          Sexp.List
+            [ Atom "Arg"
+            ; sexp_of_arg_label label
+            ; sexp_of_string (expression_to_string expression) ]
+      | Pattern pattern ->
+          List [Atom "Pattern"; sexp_of_string (pattern_to_string pattern)]
+      | Expression expression ->
+          List
+            [ Atom "Expression"
+            ; sexp_of_string (expression_to_string expression) ]
+
+    let compare = Poly.compare
+
+    let hash = Hashtbl.hash
+  end
+
+  let create () = Hashtbl.create (module Key)
+
+  type t = string Hashtbl.M(Key).t
+
+  let memo t ~key ~f = Hashtbl.find_or_add t key ~default:f
+end
+
 type t =
   { debug: bool
   ; mutable cmts_before: Cmt.t Multimap.M(Location).t
   ; mutable cmts_after: Cmt.t Multimap.M(Location).t
   ; mutable cmts_within: Cmt.t Multimap.M(Location).t
   ; source: Source.t
-  ; mutable remaining: Set.M(Location).t }
+  ; mutable remaining: Set.M(Location).t
+  ; layout_cache: Layout_cache.t }
 
-let copy {debug; cmts_before; cmts_after; cmts_within; source; remaining} =
-  {debug; cmts_before; cmts_after; cmts_within; source; remaining}
+let copy
+    { debug
+    ; cmts_before
+    ; cmts_after
+    ; cmts_within
+    ; source
+    ; remaining
+    ; layout_cache } =
+  { debug
+  ; cmts_before
+  ; cmts_after
+  ; cmts_within
+  ; source
+  ; remaining
+  ; layout_cache }
 
 let restore src ~into =
   into.cmts_before <- src.cmts_before ;
@@ -286,7 +344,8 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; cmts_after= Map.empty (module Location)
     ; cmts_within= Map.empty (module Location)
     ; source
-    ; remaining= Set.empty (module Location) }
+    ; remaining= Set.empty (module Location)
+    ; layout_cache= Layout_cache.create () }
   in
   let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
   if not (List.is_empty comments) then (
@@ -315,7 +374,7 @@ let init fragment ~debug source asts comments_n_docstrings =
       Format.eprintf "@\n%a@\n@\n%!" dump loc_tree ) ) ;
   t
 
-let preserve f t =
+let preserve_nomemo f t =
   let original = copy t in
   let finally () = restore original ~into:t in
   Exn.protect ~finally ~f:(fun () ->
@@ -324,6 +383,10 @@ let preserve f t =
       Fmt.eval fs (f ()) ;
       Format.pp_print_flush fs () ;
       Buffer.contents buf )
+
+let preserve ~cache_key f t =
+  Layout_cache.memo t.layout_cache ~key:cache_key ~f:(fun () ->
+      preserve_nomemo f t )
 
 let pop_if_debug t loc =
   if t.debug then update_remaining t ~f:(fun s -> Set.remove s loc)
