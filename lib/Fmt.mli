@@ -20,9 +20,9 @@ type s = (unit, Format.formatter, unit) format
 type t
 
 type sp =
-  | Blank  (** [ ] *)
+  | Blank  (** [ ] *)
   | Cut  (** [@,] *)
-  | Space  (** [@ ] *)
+  | Space  (** [@ ] *)
   | Break of int * int  (** [@;] *)
 
 val sp : sp -> t
