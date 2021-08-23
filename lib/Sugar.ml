@@ -163,47 +163,6 @@ let infix cmts prec xexp =
   in
   infix_ None ~relocate:false (Nolabel, xexp)
 
-let list_pat cmts pat =
-  let rec list_pat_ pat acc =
-    let ctx = Pat pat in
-    let {ppat_desc; ppat_loc= src; _} = pat in
-    match ppat_desc with
-    | Ppat_construct ({txt= Lident "[]"; loc}, None) ->
-        Cmts.relocate cmts ~src ~before:loc ~after:loc ;
-        Some (List.rev acc, loc)
-    | Ppat_construct
-        ( {txt= Lident "::"; loc}
-        , Some
-            ( []
-            , { ppat_desc= Ppat_tuple [hd; ({ppat_attributes= []; _} as tl)]
-              ; ppat_loc
-              ; ppat_attributes= []
-              ; _ } ) ) ->
-        list_pat_ tl (([src; loc; ppat_loc], sub_pat ~ctx hd) :: acc)
-    | _ -> None
-  in
-  list_pat_ pat []
-
-let list_exp cmts exp =
-  let rec list_exp_ exp acc =
-    let ctx = Exp exp in
-    let {pexp_desc; pexp_loc= src; _} = exp in
-    match pexp_desc with
-    | Pexp_construct ({txt= Lident "[]"; loc}, None) ->
-        Cmts.relocate cmts ~src ~before:loc ~after:loc ;
-        Some (List.rev acc, loc)
-    | Pexp_construct
-        ( {txt= Lident "::"; loc}
-        , Some
-            { pexp_desc= Pexp_tuple [hd; ({pexp_attributes= []; _} as tl)]
-            ; pexp_loc
-            ; pexp_attributes= []
-            ; _ } ) ->
-        list_exp_ tl (([src; loc; pexp_loc], sub_exp ~ctx hd) :: acc)
-    | _ -> None
-  in
-  list_exp_ exp []
-
 let infix_cons cmts xexp =
   let rec infix_cons_ ?cons_opt ({ast= exp; _} as xexp) acc =
     let ctx = Exp exp in

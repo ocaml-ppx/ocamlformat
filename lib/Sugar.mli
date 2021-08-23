@@ -67,20 +67,6 @@ val infix :
     applied to this operator from expression [exp]. [prec] is the precedence
     of the infix operator. *)
 
-val list_pat :
-     Cmts.t
-  -> pattern
-  -> ((Warnings.loc list * pattern Ast.xt) list * Warnings.loc) option
-(** [list_pat cmts pat] returns a list of patterns if [pat] is a pattern
-    corresponding to a list (empty list or (::) application). *)
-
-val list_exp :
-     Cmts.t
-  -> expression
-  -> ((Warnings.loc list * expression Ast.xt) list * Warnings.loc) option
-(** [list_exp cmts exp] returns a list of expressions if [exp] is an
-    expression corresponding to a list (empty list or (::) application). *)
-
 val infix_cons :
      Cmts.t
   -> expression Ast.xt

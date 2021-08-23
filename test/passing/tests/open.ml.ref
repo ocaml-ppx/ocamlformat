@@ -317,7 +317,7 @@ let _ = M.([f] (* B *)) (* after *)
 
 let _ = M.((* A *) [f] (* B *))
 
-let _ = M.((* A *) ([f] (* B *) [@warning "foo"] (* C *)))
+let _ = M.((* A *) [f] (* B *) [@warning "foo"] (* C *))
 
 let _ = M.((f, f) [@warning "foo"])
 

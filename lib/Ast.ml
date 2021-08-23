@@ -269,33 +269,6 @@ module Exp = struct
         true
     | _ -> false
 
-  let rec is_sugared_list' acc exp =
-    match exp.pexp_desc with
-    | Pexp_construct ({txt= Lident "[]"; _}, None) -> Ok (exp :: acc)
-    | Pexp_construct
-        ( {txt= Lident "::"; _}
-        , Some
-            { pexp_desc= Pexp_tuple [_; ({pexp_attributes= []; _} as tl)]
-            ; pexp_attributes= []
-            ; _ } ) ->
-        is_sugared_list' (exp :: acc) tl
-    | _ -> Error acc
-
-  let is_sugared_list =
-    let memo = Hashtbl.Poly.create () in
-    register_reset (fun () -> Hashtbl.clear memo) ;
-    fun exp ->
-      match Hashtbl.find memo exp with
-      | Some b -> b
-      | None -> (
-        match is_sugared_list' [] exp with
-        | Error l ->
-            List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:false) l ;
-            false
-        | Ok l ->
-            List.iter ~f:(fun e -> Hashtbl.set memo ~key:e ~data:true) l ;
-            true )
-
   let has_trailing_attributes {pexp_desc; pexp_attributes; _} =
     match pexp_desc with
     | Pexp_fun _ | Pexp_function _ | Pexp_ifthenelse _ | Pexp_match _
@@ -353,8 +326,8 @@ module Pat = struct
     | Ppat_construct (_, None)
      |Ppat_constant _ | Ppat_any | Ppat_var _
      |Ppat_variant (_, None)
-     |Ppat_record _ | Ppat_array _ | Ppat_type _ | Ppat_unpack _
-     |Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
+     |Ppat_record _ | Ppat_array _ | Ppat_list _ | Ppat_type _
+     |Ppat_unpack _ | Ppat_extension _ | Ppat_open _ | Ppat_interval _ ->
         false
     | _ -> List.exists ppat_attributes ~f:(Fn.non Attr.is_doc)
 end
@@ -1308,7 +1281,8 @@ end = struct
         let f pI = pI == pat in
         let snd_f (_, pI) = pI == pat in
         match ctx.ppat_desc with
-        | Ppat_array p1N | Ppat_tuple p1N -> assert (List.exists p1N ~f)
+        | Ppat_array p1N | Ppat_list p1N | Ppat_tuple p1N ->
+            assert (List.exists p1N ~f)
         | Ppat_record (p1N, _) -> assert (List.exists p1N ~f:snd_f)
         | Ppat_construct
             ( {txt= Lident "::"; _}
@@ -1331,10 +1305,10 @@ end = struct
             assert false )
     | Exp ctx -> (
       match ctx.pexp_desc with
-      | Pexp_apply _ | Pexp_array _ | Pexp_assert _ | Pexp_coerce _
-       |Pexp_constant _ | Pexp_constraint _ | Pexp_construct _
-       |Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _ | Pexp_lazy _
-       |Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
+      | Pexp_apply _ | Pexp_array _ | Pexp_list _ | Pexp_assert _
+       |Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
+       |Pexp_construct _ | Pexp_field _ | Pexp_ident _ | Pexp_ifthenelse _
+       |Pexp_lazy _ | Pexp_letexception _ | Pexp_letmodule _ | Pexp_new _
        |Pexp_newtype _ | Pexp_open _ | Pexp_override _ | Pexp_pack _
        |Pexp_poly _ | Pexp_record _ | Pexp_send _ | Pexp_sequence _
        |Pexp_setfield _ | Pexp_setinstvar _ | Pexp_tuple _
@@ -1467,7 +1441,8 @@ end = struct
             assert (e0 == exp || op.lhs == exp || in_args || in_rhs)
         | Pexp_apply (e0, e1N) ->
             assert (e0 == exp || List.exists e1N ~f:snd_f)
-        | Pexp_tuple e1N | Pexp_array e1N -> assert (List.exists e1N ~f)
+        | Pexp_tuple e1N | Pexp_array e1N | Pexp_list e1N ->
+            assert (List.exists e1N ~f)
         | Pexp_construct (_, e) | Pexp_variant (_, e) ->
             assert (Option.exists e ~f)
         | Pexp_record (e1N, e0) ->
@@ -1564,7 +1539,7 @@ end = struct
         && fit_margin c (width xexp)
     | Pexp_construct (_, Some e0) | Pexp_variant (_, Some e0) ->
         Exp.is_trivial c e0
-    | Pexp_array e1N | Pexp_tuple e1N ->
+    | Pexp_array e1N | Pexp_list e1N | Pexp_tuple e1N ->
         List.for_all e1N ~f:(Exp.is_trivial c) && fit_margin c (width xexp)
     | Pexp_record (e1N, e0) ->
         Option.for_all e0 ~f:(Exp.is_trivial c)
@@ -1659,9 +1634,11 @@ end = struct
           Some (Comma, if exp == e0 then Left else Right)
       | Pexp_construct
           ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
-          if Exp.is_sugared_list e2 then Some (Semi, Non)
-          else Some (ColonColon, if exp == e2 then Right else Left)
-      | Pexp_array _ -> Some (Semi, Non)
+          Some (ColonColon, if exp == e2 then Right else Left)
+      | Pexp_construct
+          ({txt= Lident "[]"; _}, Some {pexp_desc= Pexp_tuple [_; _]; _}) ->
+          Some (Semi, Non)
+      | Pexp_array _ | Pexp_list _ -> Some (Semi, Non)
       | Pexp_construct (_, Some _)
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
@@ -1972,14 +1949,14 @@ end = struct
      |_, Ppat_unpack _
      |( Pat
           { ppat_desc=
-              ( Ppat_alias _ | Ppat_array _ | Ppat_constraint _
+              ( Ppat_alias _ | Ppat_array _ | Ppat_list _ | Ppat_constraint _
               | Ppat_construct _ | Ppat_variant _ )
           ; _ }
       , Ppat_tuple _ )
      |( ( Pat
             { ppat_desc=
                 ( Ppat_construct _ | Ppat_exception _ | Ppat_or _
-                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ )
+                | Ppat_lazy _ | Ppat_tuple _ | Ppat_variant _ | Ppat_list _ )
             ; _ }
         | Exp {pexp_desc= Pexp_fun _; _} )
       , Ppat_alias _ )
@@ -1988,7 +1965,7 @@ end = struct
      |( Pat
           { ppat_desc=
               ( Ppat_construct _ | Ppat_exception _ | Ppat_tuple _
-              | Ppat_variant _ )
+              | Ppat_variant _ | Ppat_list _ )
           ; _ }
       , Ppat_or _ )
      |Pat {ppat_desc= Ppat_lazy _; _}, Ppat_tuple _
@@ -2094,7 +2071,8 @@ end = struct
             false
         | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
         | Pexp_tuple es -> continue (List.last_exn es)
-        | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
+        | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
+         |Pexp_constraint _
          |Pexp_construct (_, None)
          |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
          |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
@@ -2172,7 +2150,8 @@ end = struct
         | {rhs= None; _} -> false )
       | Pexp_apply (_, args) -> continue (snd (List.last_exn args))
       | Pexp_tuple es -> continue (List.last_exn es)
-      | Pexp_array _ | Pexp_coerce _ | Pexp_constant _ | Pexp_constraint _
+      | Pexp_array _ | Pexp_list _ | Pexp_coerce _ | Pexp_constant _
+       |Pexp_constraint _
        |Pexp_construct (_, None)
        |Pexp_extension _ | Pexp_field _ | Pexp_for _ | Pexp_ident _
        |Pexp_new _ | Pexp_object _ | Pexp_override _ | Pexp_pack _
@@ -2371,7 +2350,17 @@ end = struct
           false
       | Pexp_record (_, Some e0) when e0 == exp -> true
       | Pexp_sequence (lhs, rhs) -> exp_in_sequence lhs rhs exp
-      | _ -> Exp.has_trailing_attributes exp || parenze () )
+      | Pexp_apply (_, args)
+        when List.exists args ~f:(fun (_, e0) ->
+                 match (e0.pexp_desc, e0.pexp_attributes) with
+                 | Pexp_list _, _ :: _ when e0 == exp -> true
+                 | _ -> false ) ->
+          true
+      | _ -> (
+        match exp.pexp_desc with
+        | Pexp_list _ -> false
+        | _ -> Exp.has_trailing_attributes exp || parenze () ) )
+    | _, {pexp_desc= Pexp_list _; _} -> false
     | _, exp when Exp.has_trailing_attributes exp -> true
     | _ -> false
 
@@ -2390,12 +2379,11 @@ end = struct
       | Exp {pexp_desc= Pexp_apply (e, _); _} when Exp.is_infix e ->
           prec_ast ast
       | Exp
-          ( { pexp_desc=
-                Pexp_construct
-                  ( {txt= Lident "::"; loc= _}
-                  , Some {pexp_desc= Pexp_tuple [_; _]; _} )
-            ; _ } as exp )
-        when not (Exp.is_sugared_list exp) ->
+          { pexp_desc=
+              Pexp_construct
+                ( {txt= Lident "::"; loc= _}
+                , Some {pexp_desc= Pexp_tuple [_; _]; _} )
+          ; _ } ->
           prec_ast ast
       | _ -> None
     in

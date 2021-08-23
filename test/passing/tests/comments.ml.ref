@@ -209,7 +209,8 @@ let rec fooooooooooo = function
   (* AA*)
   | [ (*BB*)
       (* CC *)
-    x (* DD *)
+      x
+      (* DD *)
     ; (* EE *)
       y
       (* FF *)
