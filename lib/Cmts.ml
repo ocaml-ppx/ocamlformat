@@ -563,12 +563,12 @@ let diff (conf : Conf.t) x y =
             let len = String.length str - chars_removed in
             let source = String.sub ~pos:1 ~len str in
             match
-              Parse_with_comments.parse Extended_ast.Parse.ast Structure conf
+              Parse_with_comments.parse Std_ast.Parse.ast Structure conf
                 ~source
             with
             | exception _ -> norm_non_code z
             | {ast; _} ->
-                Caml.Format.asprintf "%a" Extended_ast.Pprintast.structure
+                Caml.Format.asprintf "%a" Std_ast.Pprintast.structure
                   (Normalize.normalize Structure conf ast)
           else norm_non_code z
     in

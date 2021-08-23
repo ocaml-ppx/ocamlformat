@@ -11,12 +11,13 @@
 
 (** Normalize abstract syntax trees *)
 
-open Migrate_ast
-open Asttypes
-open Std_ast
-open Ast_helper
+type conf =
+  {conf: Conf.t; normalize_code: Std_ast.structure -> Std_ast.structure}
 
-type conf = {conf: Conf.t; normalize_code: structure -> structure}
+let is_doc = function
+  | Std_ast.{attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} ->
+      true
+  | _ -> false
 
 (** Remove comments that duplicate docstrings (or other comments). *)
 let dedup_cmts fragment ast comments =
@@ -37,6 +38,34 @@ let dedup_cmts fragment ast comments =
                 ; _ } ]
         ; _ }
         when Ast.Attr.is_doc atr ->
+          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          atr
+      | _ -> Ast_mapper.default_mapper.attribute m atr
+    in
+    map fragment {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+    !docs
+  in
+  Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
+
+let dedup_cmts_std fragment ast comments =
+  let open Std_ast in
+  let open Ocaml_413 in
+  let of_ast ast =
+    let docs = ref (Set.empty (module Cmt)) in
+    let attribute m atr =
+      match atr with
+      | { attr_payload=
+            PStr
+              [ { pstr_desc=
+                    Pstr_eval
+                      ( { pexp_desc=
+                            Pexp_constant (Pconst_string (doc, _, None))
+                        ; pexp_loc
+                        ; _ }
+                      , [] )
+                ; _ } ]
+        ; _ }
+        when is_doc atr ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
@@ -102,19 +131,19 @@ let rec odoc_nestable_block_element c fmt = function
       let txt =
         try
           let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
-            Parse_with_comments.parse Extended_ast.Parse.ast Structure c.conf
+            Parse_with_comments.parse Std_ast.Parse.ast Structure c.conf
               ~source:txt
           in
-          let comments = dedup_cmts Structure ast comments in
+          let comments = dedup_cmts_std Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
             List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
-                Location.compare a b )
+                Migrate_ast.Location.compare a b )
             |> List.iter ~f:(fun {Cmt.txt; _} ->
                    Caml.Format.fprintf fmt "%s," txt )
           in
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
-            Extended_ast.Pprintast.structure ast print_comments comments
+            Std_ast.Pprintast.structure ast print_comments comments
         with _ -> txt
       in
       fpf fmt "Code_block(%a, %a)" (option (ign_loc str)) metadata str txt
@@ -174,10 +203,13 @@ let docstring c text =
     let parsed = Odoc_parser.parse_comment ~location ~text in
     Format.asprintf "Docstring(%a)%!" (odoc_docs c) (Odoc_parser.ast parsed)
 
-let sort_attributes : attributes -> attributes =
+let sort_attributes : Std_ast.attributes -> Std_ast.attributes =
   List.sort ~compare:Poly.compare
 
 let make_mapper conf ~ignore_doc_comments =
+  let open Std_ast in
+  let open Ocaml_413 in
+  let open Ast_helper in
   (* remove locations *)
   let location _ _ = Location.none in
   let attribute (m : Ast_mapper.mapper) (attr : attribute) =
@@ -190,7 +222,7 @@ let make_mapper conf ~ignore_doc_comments =
                       ; _ } as exp )
                   , [] )
             ; _ } as pstr ) ]
-      when Ast.Attr.is_doc attr ->
+      when is_doc attr ->
         let doc' = docstring {conf; normalize_code= m.structure m} doc in
         Ast_mapper.default_mapper.attribute m
           { attr with
@@ -211,7 +243,7 @@ let make_mapper conf ~ignore_doc_comments =
   let attributes (m : Ast_mapper.mapper) (atrs : attribute list) =
     let atrs =
       if ignore_doc_comments then
-        List.filter atrs ~f:(fun a -> not (Ast.Attr.is_doc a))
+        List.filter atrs ~f:(fun a -> not (is_doc a))
       else atrs
     in
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
@@ -265,15 +297,17 @@ let make_mapper conf ~ignore_doc_comments =
   ; typ }
 
 let normalize fragment ~ignore_doc_comments c =
-  map fragment (make_mapper c ~ignore_doc_comments)
+  Std_ast.map fragment (make_mapper c ~ignore_doc_comments)
 
 let equal fragment ~ignore_doc_comments c ast1 ast2 =
   let map = normalize fragment c ~ignore_doc_comments in
-  equal fragment (map ast1) (map ast2)
+  Std_ast.equal fragment (map ast1) (map ast2)
 
 let normalize = normalize ~ignore_doc_comments:false
 
 let make_docstring_mapper docstrings =
+  let open Std_ast in
+  let open Ocaml_413 in
   let attribute (m : Ast_mapper.mapper) attr =
     match (attr.attr_name, attr.attr_payload) with
     | ( {txt= "ocaml.doc" | "ocaml.text"; loc}
@@ -290,14 +324,14 @@ let make_docstring_mapper docstrings =
   in
   (* sort attributes *)
   let attributes (m : Ast_mapper.mapper) atrs =
-    let atrs = List.filter atrs ~f:Ast.Attr.is_doc in
+    let atrs = List.filter atrs ~f:is_doc in
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   {Ast_mapper.default_mapper with attribute; attributes}
 
-let docstrings (type a) (fragment : a t) s =
+let docstrings (type a) (fragment : a Std_ast.t) s =
   let docstrings = ref [] in
-  let (_ : a) = map fragment (make_docstring_mapper docstrings) s in
+  let (_ : a) = Std_ast.map fragment (make_docstring_mapper docstrings) s in
   !docstrings
 
 type docstring_error =
