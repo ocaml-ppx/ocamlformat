@@ -1,0 +1,5 @@
+(library
+ (name ocaml_common)
+ (flags
+  (:standard -w -9 -open Parser_shims))
+ (libraries parser_shims))

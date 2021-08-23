@@ -276,7 +276,7 @@ let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
   let compare (c1, _) (c2, _) = Stdlib.compare c1 c2 in
   List.sort ~compare !locs
 
-let format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
+let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
     ?output_file ~input_name ~prev_source ~parsed ~std_parsed conf opts =
   let open Result.Monad_infix in
   let dump_ast fg ~suffix ast =
@@ -365,10 +365,10 @@ let format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
           |> List.filter_map ~f:(fun (s, f_opt) ->
                  Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
-        if equal std_fg ~ignore_doc_comments:true conf t t_new then
+        if equal std_fg ~ignore_doc_comments:true conf std_t std_t_new then
           let docstrings =
-            Normalize.moved_docstrings std_fg conf t.Parse_with_comments.ast
-              t_new.Parse_with_comments.ast
+            Normalize.moved_docstrings std_fg conf
+              std_t.Parse_with_comments.ast std_t_new.Parse_with_comments.ast
           in
           let args = args ~suffix:".unequal-docs" in
           internal_error (`Doc_comment docstrings) args
@@ -467,8 +467,8 @@ let normalize_eol ~strlocs ~line_endings s =
   in
   loop strlocs 0
 
-let parse_and_format (type a) (fg : a Extended_ast.t) (std_fg : a Std_ast.t)
-    ?output_file ~input_name ~source conf opts =
+let parse_and_format (type a b) (fg : a Extended_ast.t)
+    (std_fg : b Std_ast.t) ?output_file ~input_name ~source conf opts =
   Location.input_name := input_name ;
   parse_result Extended_ast.Parse.ast ~disable_w50:true fg conf ~source
     ~input_name
@@ -502,8 +502,8 @@ let check_range nlines (low, high) =
   else
     Error (Error.User_error (Format.sprintf "Invalid range %i-%i" low high))
 
-let numeric (type a) (fg : a list Extended_ast.t) (std_fg : a list Std_ast.t)
-    ~input_name ~source ~range conf opts =
+let numeric (type a b) (fg : a list Extended_ast.t)
+    (std_fg : b list Std_ast.t) ~input_name ~source ~range conf opts =
   let lines = String.split_lines source in
   let nlines = List.length lines in
   check_range nlines range

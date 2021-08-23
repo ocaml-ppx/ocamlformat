@@ -9,6 +9,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Ocaml_413_extended
 include Parsetree
 
 let equal_core_type : core_type -> core_type -> bool = Poly.equal
