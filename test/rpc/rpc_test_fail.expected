@@ -1,8 +1,8 @@
 Starting then doing nothing
-An error occured while initializing and configuring ocamlformat:
-OCamlFormat-RPC did not respond. Check that a compatible version of the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is installed.
-No process
+[ocf] Halt
 Sending requests
-No process
-No process
-No process
+[ocf] Config
+Error: failing to set configuration: unknown error
+[ocf] Format 'char -> string'
+Error: failing to format input: unknown error
+[ocf] Halt

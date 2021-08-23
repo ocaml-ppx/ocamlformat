@@ -1,8 +1,6 @@
 Starting then doing nothing
-[ocf] client V1 selected
 [ocf] Halt
 Sending requests
-[ocf] client V1 selected
 [ocf] Format 'char -> string'
 Output: char -> string
 

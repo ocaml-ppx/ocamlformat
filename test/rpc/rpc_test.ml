@@ -13,9 +13,7 @@ module Ocf = Ocamlformat_rpc_lib
 
 let log = Format.printf
 
-let supported_versions = ["v1"]
-
-type state = Uninitialized | Running of Ocf.client | Errored
+type state = Uninitialized | Running of Ocf.Client.t | Errored
 
 let state : state ref = ref Uninitialized
 
@@ -25,9 +23,7 @@ let start () =
   ( match
       let input, output = Unix.open_process_args prog argv in
       let pid = Unix.process_pid (input, output) in
-      Ocf.pick_client ~pid input output supported_versions
-      >>| fun client ->
-      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;
+      let client = Ocf.Client.mk ~pid input output in
       state := Running client ;
       client
     with
@@ -37,7 +33,7 @@ let start () =
           "OCamlFormat-RPC did not respond. Check that a compatible version \
            of the OCamlFormat RPC server (ocamlformat-rpc >= 0.18.0) is \
            installed." )
-  | x -> x )
+  | x -> Ok x )
   |> Result.map_error ~f:(fun (`Msg msg) ->
          state := Errored ;
          log
@@ -51,24 +47,24 @@ let get_client () =
   match !state with
   | Uninitialized -> start ()
   | Running cl ->
-      let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
+      let i, _ = Unix.waitpid [WNOHANG] (Ocf.Client.pid cl) in
       if i = 0 then Ok cl else start ()
   | Errored -> Error `No_process
 
 let config c =
-  get_client () >>= fun cl -> log "[ocf] Config\n%!" ; Ocf.config c cl
+  get_client () >>= fun cl -> log "[ocf] Config\n%!" ; Ocf.Client.config c cl
 
 let format x =
   get_client ()
   >>= fun cl ->
   log "[ocf] Format '%s'\n%!" x ;
-  Ocf.format x cl
+  Ocf.Client.format x cl
 
 let halt () =
   get_client ()
   >>= fun cl ->
   log "[ocf] Halt\n%!" ;
-  Ocf.halt cl >>| fun () -> state := Uninitialized
+  Ocf.Client.halt cl >>| fun () -> state := Uninitialized
 
 let protect_unit x =
   match x with
