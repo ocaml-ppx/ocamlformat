@@ -91,9 +91,8 @@ let docs_attr ds =
   let open Parsetree in
   let body = ds.ds_body in
   let loc = ds.ds_loc in
-  let const = { pconst_desc= Pconst_string(body,loc,None); pconst_loc= loc } in
   let exp =
-    { pexp_desc = Pexp_constant const;
+    { pexp_desc = Pexp_constant (Pconst_string(body, loc, None));
       pexp_loc = loc;
       pexp_loc_stack = [];
       pexp_attributes = []; }
@@ -144,9 +143,8 @@ let text_attr ds =
   let open Parsetree in
   let body = ds.ds_body in
   let loc = ds.ds_loc in
-  let const = { pconst_desc= Pconst_string(body,loc,None); pconst_loc= loc } in
   let exp =
-    { pexp_desc = Pexp_constant const;
+    { pexp_desc = Pexp_constant (Pconst_string(body, loc, None));
       pexp_loc = loc;
       pexp_loc_stack = [];
       pexp_attributes = []; }

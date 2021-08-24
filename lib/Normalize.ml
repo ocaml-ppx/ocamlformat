@@ -219,10 +219,7 @@ let make_mapper conf ~ignore_doc_comments =
         [ ( { pstr_desc=
                 Pstr_eval
                   ( ( { pexp_desc=
-                          Pexp_constant
-                            ( { pconst_desc=
-                                  Pconst_string (doc, str_loc, None)
-                              ; _ } as c )
+                          Pexp_constant (Pconst_string (doc, str_loc, None))
                       ; _ } as exp )
                   , [] )
             ; _ } as pstr ) ]
@@ -238,9 +235,7 @@ let make_mapper conf ~ignore_doc_comments =
                         ( { exp with
                             pexp_desc=
                               Pexp_constant
-                                { c with
-                                  pconst_desc=
-                                    Pconst_string (doc', str_loc, None) }
+                                (Pconst_string (doc', str_loc, None))
                           ; pexp_loc_stack= [] }
                         , [] ) } ] }
     | _ -> Ast_mapper.default_mapper.attribute m attr
@@ -320,9 +315,7 @@ let make_docstring_mapper docstrings =
       , PStr
           [ { pstr_desc=
                 Pstr_eval
-                  ( { pexp_desc=
-                        Pexp_constant
-                          {pconst_desc= Pconst_string (doc, _, None); _}
+                  ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
                     ; _ }
                   , [] )
             ; _ } ] ) ->
