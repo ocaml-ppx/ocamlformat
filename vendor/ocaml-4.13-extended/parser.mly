@@ -715,6 +715,7 @@ let mk_directive ~loc name arg =
 %token HASH                   "#"
 %token <string> HASHOP        "##" (* just an example *)
 %token SIG                    "sig"
+%token SLASH                  "/"
 %token STAR                   "*"
 %token <string * Location.t * string option>
        STRING                 "\"hello\"" (* just an example *)
@@ -740,6 +741,8 @@ let mk_directive ~loc name arg =
 %token <Docstrings.docstring> DOCSTRING "(** documentation *)"
 
 %token EOL                    "\\n"      (* not great, but EOL is unused *)
+
+%token <string> TYPE_DISAMBIGUATOR "2" (* just an example *)
 
 /* Precedences and associativities.
 
@@ -789,7 +792,7 @@ The precedences must be listed from low to high.
 %nonassoc LBRACKETAT
 %right    COLONCOLON                    /* expr (e :: e :: e) */
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
-%left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
+%left     PERCENT SLASH INFIXOP3 STAR                 /* expr (e OP e OP e) */
 %right    INFIXOP4                      /* expr (e OP e OP e) */
 %nonassoc prec_unary_minus prec_unary_plus /* unary - */
 %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
@@ -3543,6 +3546,7 @@ operator:
   | PLUSEQ        {"+="}
   | MINUS          {"-"}
   | MINUSDOT      {"-."}
+  | SLASH          {"/"}
   | STAR           {"*"}
   | PERCENT        {"%"}
   | EQUAL          {"="}
@@ -3591,12 +3595,18 @@ label_longident:
 ;
 type_longident:
     mk_longident(mod_ext_longident, LIDENT)  { $1 }
+  | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
 ;
 mod_longident:
     mk_longident(mod_longident, UIDENT)  { $1 }
 ;
+mod_ext_longident_:
+    UIDENT                          { Lident $1 }
+  | UIDENT SLASH TYPE_DISAMBIGUATOR { Lident ($1 ^ "/" ^ $3) }
+  | mod_ext_longident DOT UIDENT    { Ldot($1,$3) }
+;
 mod_ext_longident:
-    mk_longident(mod_ext_longident, UIDENT) { $1 }
+    mod_ext_longident_ { $1 }
   | mod_ext_longident LPAREN mod_ext_longident RPAREN
       { lapply ~loc:$sloc $1 $3 }
   | mod_ext_longident LPAREN error
