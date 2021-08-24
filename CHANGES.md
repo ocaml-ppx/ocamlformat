@@ -22,6 +22,8 @@
     to the cases where a partial layout is triggered to determine if a construct
     fits on a single line for example. (#1750, #1766, @emillon)
 
+  + Fix non stabilizing comments after infix operators (`*`, `%`, `#`-ops) (#1776, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)

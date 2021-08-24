@@ -354,3 +354,37 @@ let a =
   [ b
     (*  *)
     (* c *) ]
+
+let _ =
+  1
+  + (* foooooooooooooooooooooooo fooooooooooooooo fooooooooooooooooo *)
+  fooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+  - (* fooooooooooooo foooooooooooooooooooooo foooooooooooooooooooo *)
+  foooooooooooooo foooooooooooooo foooooooooooooooooo fooooooooo
+  % (* foooooooooooooooo foooooooooooo foooooooooooooooooo *)
+  fooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+  / (* foooooooooooooooooooooooo fooooooooooooooo fooooooooooooooooo *)
+  barrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+  * (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  $ (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  & (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  = (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  > (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  < (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  @ foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  ^ (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  || (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo
+    fooooooooooooooo
+    #= (* convert from foos to bars blah blah blah blah blah blah blah
+          blah *)
+    foooooooooooooooooooooooo
+    foooooooooooooooo fooooooooooooooo

@@ -53,9 +53,9 @@ module Token = struct
   let is_infix = function
     | Parser.AMPERAMPER | AMPERSAND | ANDOP _ | BAR | BARBAR | COLON
      |COLONCOLON | COLONEQUAL | DOTDOT | DOTOP _ | EQUAL | GREATER
-     |INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _ | INFIXOP4 _ | LESS
-     |LESSMINUS | LETOP _ | MINUS | MINUSDOT | MINUSGREATER | PLUS
-     |PLUSDOT | PLUSEQ | SEMI ->
+     |HASHOP _ | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
+     |INFIXOP4 _ | LESS | LESSMINUS | LETOP _ | MINUS | MINUSDOT
+     |MINUSGREATER | PERCENT | PLUS | PLUSDOT | PLUSEQ | SEMI | STAR ->
         true
     | _ -> false
 end
