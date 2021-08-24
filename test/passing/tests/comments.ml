@@ -277,3 +277,21 @@ let _ =
   barrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
   * (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  $ (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  & (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  = (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  > (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  < (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  @ (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  ^ (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  || (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+  #= (* convert from foos to bars blah blah blah blah blah blah blah blah *)
+  foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
