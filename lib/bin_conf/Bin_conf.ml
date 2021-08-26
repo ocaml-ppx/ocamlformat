@@ -397,7 +397,20 @@ let is_in_listing_file ~listings ~filename =
                         let re =
                           let pathname = true and anchored = true in
                           let f = Fpath.to_string f in
-                          Re.(Glob.glob ~pathname ~anchored f |> compile)
+                          let f =
+                            if Sys.win32 then
+                              (* Use only forward slashes in the pattern as
+                                 these match match both forward and backward
+                                 slashes in ocaml-re when using the
+                                 "~match_backslashes" flag. *)
+                              String.concat ~sep:"/"
+                                (String.split_on_chars f ~on:['\\'])
+                            else f
+                          in
+                          Re.(
+                            Glob.glob ~pathname ~anchored
+                              ~match_backslashes:Sys.win32 f
+                            |> compile )
                         in
                         Option.some_if (Re.execp re filename) loc
                       with Re.Glob.Parse_error ->
