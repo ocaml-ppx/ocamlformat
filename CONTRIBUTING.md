@@ -18,7 +18,7 @@ We actively welcome pull requests.
 
 1. Prior to investing a large amount of time into significant or invasive changes, or those that affect the output, it is likely more efficient to first open an issue for discussion and planning.
 2. If you are not familiar with the project, focus first on the [Good first issues](https://github.com/ocaml-ppx/ocamlformat/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A%22Good-first-issue+%3A%2B1%3A%22).
-3. Fork the repository and create your branch from `master`.
+3. Fork the repository and create your branch from `main`.
 4. If you have added code that should be tested, add tests (they should be located in the `tests/passing` directory).
 '.
 5. Ensure the test suite passes (see [Running the tests](#running-the-tests)).
@@ -37,7 +37,7 @@ The second part of `make test` is to ensure the test suite passes. You should no
 
 Once `make test` passes, pull requests should be tested on the code in a set of external repositories. This can be done by executing `tools/test_branch.sh <rev>` where `<rev>` is the git revision/branch containing the pull request's changes. If a pull request affects an option, `OCAMLFORMAT=<option>=<value> tools/test_branch.sh <rev>` should also be run to test with the option enabled.
 
-The `tools/test_branch.sh` script runs two versions of `ocamlformat` (the specified branch, or `HEAD` if omitted, and its merge base with master) on the test code and reports the differences in the formatted code. Formatting failures may also be reported on the terminal, these will need to be fixed before a pull request can be merged. The differences should be inspected to ensure they are as intended. Pull requests changing the format of code should generally introduce an option to enable the alternate style (if in doubt, open an issue for discussion). Any differences in the formatted code with the option disabled should be summarized and explained in the pull request discussion.
+The `tools/test_branch.sh` script runs two versions of `ocamlformat` (the specified branch, or `HEAD` if omitted, and its merge base with main) on the test code and reports the differences in the formatted code. Formatting failures may also be reported on the terminal, these will need to be fixed before a pull request can be merged. The differences should be inspected to ensure they are as intended. Pull requests changing the format of code should generally introduce an option to enable the alternate style (if in doubt, open an issue for discussion). Any differences in the formatted code with the option disabled should be summarized and explained in the pull request discussion.
 
 To benefit from the autocompletion of git branch names in the `tools/test_branch.sh` script, if you use the `bash` shell, add the following line to your `~/.bashrc` file:
 ```

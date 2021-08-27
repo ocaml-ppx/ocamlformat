@@ -14,7 +14,7 @@
 # usage: test_branch.sh [-a=rev] [-b=rev] [<option>=<value>*] [<option>=<value>*]
 #
 # -a set the base branch and -b the test branch. The default value for
-# the base branch is the merge-base between the test branch and master.
+# the base branch is the merge-base between the test branch and main.
 # The default value for the test branch is HEAD.
 #
 # The first arg is the value of OCAMLFORMAT to be used when formatting
@@ -41,7 +41,7 @@ opts_a=$1
 opts_b=${2-$opts_a}
 
 rev_b=$(git rev-parse "${arg_b:-HEAD}")
-rev_a=$(git rev-parse "${arg_a:-$(git merge-base master "$rev_b")}")
+rev_a=$(git rev-parse "${arg_a:-$(git merge-base main "$rev_b")}")
 
 if [[ "$rev_a" = "$rev_b" ]]; then
   echo "The base branch is the same as the branch to test ($rev_a)"
