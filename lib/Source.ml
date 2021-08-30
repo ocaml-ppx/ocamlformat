@@ -227,17 +227,6 @@ let extension_using_sugar ~(name : string Location.loc)
 let type_constraint_is_first typ loc =
   Location.compare_start typ.ptyp_loc loc < 0
 
-let loc_of_underscore t flds (ppat_loc : Location.t) =
-  let end_last_field =
-    match List.last flds with
-    | Some (_, p) -> p.ppat_loc.loc_end
-    | None -> ppat_loc.loc_start
-  in
-  let loc_underscore = {ppat_loc with loc_start= end_last_field} in
-  let filter = function Parser.UNDERSCORE -> true | _ -> false in
-  let tokens = tokens_at t ~filter loc_underscore in
-  Option.map (List.hd tokens) ~f:snd
-
 let locs_of_interval source loc =
   let toks =
     tokens_at source loc ~filter:(function

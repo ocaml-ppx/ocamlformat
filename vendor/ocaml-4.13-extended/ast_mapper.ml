@@ -500,7 +500,10 @@ module P = struct
     | Ppat_variant (l, p) -> variant ~loc ~attrs l (map_opt (sub.pat sub) p)
     | Ppat_record (lpl, cf) ->
         record ~loc ~attrs
-               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl) cf
+               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl)
+               (match cf with
+                | Closed -> Closed
+                | Open loc -> Open (sub.location sub loc))
     | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
     | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)

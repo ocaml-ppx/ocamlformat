@@ -44,6 +44,8 @@ type override_flag = Override | Fresh
 
 type closed_flag = Closed | Open
 
+type closed_flag_loc = Closed | Open of Location.t
+
 type label = string
 
 type arg_label =

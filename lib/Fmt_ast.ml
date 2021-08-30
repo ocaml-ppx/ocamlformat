@@ -1024,17 +1024,12 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
           | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
       in
       let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
-      let fmt_fields =
-        fmt_elements_collection
-          ~last_sep:(not (is_open closed_flag))
-          p1 fmt_field flds
+      let last_sep, fmt_underscore =
+        match closed_flag with
+        | Closed -> (true, noop)
+        | Open loc -> (false, Cmts.fmt c loc p2.wildcard)
       in
-      let fmt_underscore =
-        if is_open closed_flag then
-          opt (Source.loc_of_underscore c.source flds ppat_loc) (fun loc ->
-              Cmts.fmt c loc p2.wildcard )
-        else noop
-      in
+      let fmt_fields = fmt_elements_collection ~last_sep p1 fmt_field flds in
       hvbox_if parens 0
         (Params.parens_if parens c.conf
            (p1.box (fmt_fields $ fmt_underscore)) )

@@ -1091,8 +1091,8 @@ reversed_bar_llist(X):
 listx(delimiter, X, Y):
 | x = X ioption(delimiter)
     { [x], None }
-| x = X delimiter y = Y delimiter?
-    { [x], Some y }
+| x = X delimiter Y delimiter?
+    { [x], Some (make_loc $loc($3)) }
 | x = X
   delimiter
   tail = listx(delimiter, X, Y)
@@ -2809,7 +2809,9 @@ pattern_comma_list(self):
 %inline record_pat_content:
   listx(SEMI, record_pat_field, UNDERSCORE)
     { let fields, closed = $1 in
-      let closed = match closed with Some () -> Open | None -> Closed in
+      let closed : closed_flag_loc =
+        match closed with Some loc -> Open loc | None -> Closed
+      in
       fields, closed }
 ;
 %inline record_pat_field:
@@ -3441,7 +3443,7 @@ meth_list:
   | head = inherit_field
       { [head], Closed }
   | DOTDOT
-      { [], Open }
+      { [], (Open : closed_flag) }
 ;
 %inline field:
   mkrhs(label) COLON poly_type_no_attr attributes
