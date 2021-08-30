@@ -122,7 +122,7 @@ val action :
   unit -> (action Cmdliner.Cmd.eval_ok, Cmdliner.Cmd.eval_error) Result.t
 (** Formatting action: input type and source, and output destination. *)
 
-val update : ?quiet:bool -> t -> Extended_ast.attribute -> t
+val update : ?quiet:bool -> t -> Parsetree.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
 

@@ -284,7 +284,7 @@ module M = struct
       );
       ( "not closed begin",
         not_closed_begin,
-        "let x = if x then a <- [%merlin.hole ]" );
+        "let x = if x then (a <- [%merlin.hole ])" );
       ( "not closed if",
         not_closed_if,
         "let x = if k <- [%merlin.hole ] then [%merlin.hole ]" );

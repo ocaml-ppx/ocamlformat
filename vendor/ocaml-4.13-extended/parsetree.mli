@@ -400,6 +400,8 @@ and expression_desc =
         (* . *)
   | Pexp_hole
         (* _ *)
+  | Pexp_beginend of expression option
+        (* begin E end *)
 
 and case =   (* (P -> E) or (P when E0 -> E) *)
     {

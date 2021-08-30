@@ -18,15 +18,7 @@ val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
 module Exp : sig
   module Infix_op_arg : sig
-    val wrap :
-         Conf.t
-      -> ?parens_nested:bool
-      -> ext:Fmt.t
-      -> parens:bool
-      -> loc:Location.t
-      -> Source.t
-      -> Fmt.t
-      -> Fmt.t
+    val wrap : Conf.t -> ?parens_nested:bool -> parens:bool -> Fmt.t -> Fmt.t
   end
 
   val wrap :
@@ -38,8 +30,6 @@ module Exp : sig
              the option [indicate-multiline-delimiters] is set to
              [closing-on-separate-line]. By default the offset is 0. *)
     -> parens:bool
-    -> loc:Location.t
-    -> Source.t
     -> Fmt.t
     -> Fmt.t
 end
@@ -59,13 +49,7 @@ type cases =
   ; close_paren_branch: Fmt.t }
 
 val get_cases :
-     Conf.t
-  -> first:bool
-  -> indent:int
-  -> parens_branch:bool
-  -> Source.t
-  -> loc:Location.t
-  -> cases
+  Conf.t -> first:bool -> indent:int -> parens_branch:bool -> cases
 
 val wrap_tuple :
   Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t
@@ -126,11 +110,9 @@ val get_if_then_else :
   -> parens_prev_bch:bool
   -> xcond:expression Ast.xt option
   -> expr_loc:Location.t
-  -> bch_loc:Location.t
   -> fmt_extension_suffix:Fmt.t option
   -> fmt_attributes:Fmt.t
   -> fmt_cond:(expression Ast.xt -> Fmt.t)
-  -> Source.t
   -> if_then_else
 
 val match_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
