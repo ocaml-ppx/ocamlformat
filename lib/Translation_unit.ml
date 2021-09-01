@@ -259,8 +259,8 @@ let recover (type a) : a Extended_ast.t -> _ -> a = function
   | Expression -> failwith "no recovery for expression"
 
 let strconst_mapper locs =
-  let constant self (c : Ocaml_413_extended.Parsetree.constant) =
-    match c.pconst_desc with
+  let constant self c =
+    match c.Parsetree.pconst_desc with
     | Parsetree.Pconst_string (_, {Location.loc_start; loc_end; _}, Some _)
       ->
         locs := (loc_start.Lexing.pos_cnum, loc_end.Lexing.pos_cnum) :: !locs ;
