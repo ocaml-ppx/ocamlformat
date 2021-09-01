@@ -14,7 +14,7 @@ open Extended_ast
 include Non_overlapping_interval_tree.Make (Location)
 
 (** Use Ast_mapper to collect all locs in ast, and create tree of them. *)
-let of_ast fragment ast _src =
+let of_ast fragment ast =
   let attribute (m : Ast_mapper.mapper) attr =
     (* ignore location of docstrings *)
     if Ast.Attr.is_doc attr then attr

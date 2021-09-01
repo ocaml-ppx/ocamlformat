@@ -349,7 +349,7 @@ let init fragment ~debug source asts comments_n_docstrings =
   in
   let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast fragment asts source in
+    let loc_tree, locs = Loc_tree.of_ast fragment asts in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
