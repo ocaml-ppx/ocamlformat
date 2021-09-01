@@ -76,13 +76,6 @@ val extend_loc_to_include_attributes : Location.t -> attributes -> Location.t
 
 val type_constraint_is_first : core_type -> Location.t -> bool
 
-val loc_of_underscore :
-  t -> ('a * pattern) list -> Location.t -> Location.t option
-(** [loc_of_underscore source fields loc] returns the location of the
-    underscore at the end of the record pattern of location [loc] with fields
-    [fields], if the record pattern is open (it ends with an underscore),
-    otherwise returns [None]. *)
-
 val locs_of_interval : t -> Location.t -> Location.t * Location.t
 (** Given the location of an interval pattern ['a'..'b'], return the
     locations of the constants that represent the bounds (['a'] and ['b']). *)

@@ -371,7 +371,7 @@ and core_type1 ctxt f x =
           | Oinherit ct ->
             pp f "@[<hov2>%a@ @]" (core_type ctxt) ct
         in
-        let field_var f = function
+        let field_var f : Asttypes.closed_flag -> unit = function
           | Asttypes.Closed -> ()
           | Asttypes.Open ->
               match l with

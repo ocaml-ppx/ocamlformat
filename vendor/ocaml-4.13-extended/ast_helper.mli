@@ -112,8 +112,8 @@ module Pat:
     val construct: ?loc:loc -> ?attrs:attrs ->
       lid -> (str list * pattern) option -> pattern
     val variant: ?loc:loc -> ?attrs:attrs -> label -> pattern option -> pattern
-    val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list -> closed_flag
-                -> pattern
+    val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list
+                -> closed_flag_loc -> pattern
     val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
     val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
