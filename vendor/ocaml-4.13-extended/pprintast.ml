@@ -371,7 +371,7 @@ and core_type1 ctxt f x =
           | Oinherit ct ->
             pp f "@[<hov2>%a@ @]" (core_type ctxt) ct
         in
-        let field_var f : Asttypes.closed_flag -> _ = function
+        let field_var f : Asttypes.closed_flag -> unit = function
           | Asttypes.Closed -> ()
           | Asttypes.Open ->
               match l with
@@ -484,7 +484,7 @@ and simple_pattern ctxt (f:Format.formatter) (x:pattern) : unit =
         begin match closed with
         | Closed ->
             pp f "@[<2>{@;%a@;}@]" (list longident_x_pattern ~sep:";@;") l
-        | Open _ ->
+        | _ ->
             pp f "@[<2>{@;%a;_}@]" (list longident_x_pattern ~sep:";@;") l
         end
     | Ppat_tuple l ->
