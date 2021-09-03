@@ -3117,30 +3117,26 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
       ; ptype_params
       ; ptype_cstrs
       ; ptype_kind
-      ; ptype_private
-      ; ptype_manifest
+      ; ptype_private= priv
+      ; ptype_manifest= m
       ; ptype_attributes
       ; ptype_loc } =
     decl
   in
   update_config_maybe_disabled c ptype_loc ptype_attributes
   @@ fun c ->
-  let fmt_manifest ~priv decl =
-    let break_before_manifest_kind =
-      match ptype_kind with
-      | Ptype_abstract -> fmt "@ "
-      | Ptype_variant _ | Ptype_record _ | Ptype_open -> fmt "@;<1 4>"
-    in
-    let fmt_manifest typ =
-      fmt_private_flag priv $ break_before_manifest_kind
-      $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx typ)
-    in
-    let eq = str " " $ str eq in
-    match (ptype_manifest, decl) with
-    | Some m, Some d -> eq $ fmt_manifest m $ str " =" $ d
-    | Some m, None -> eq $ fmt_manifest m
-    | None, Some d -> eq $ d
-    | None, None -> noop
+  let fmt_abstract_manifest = function
+    | Some m ->
+        str " " $ str eq $ fmt_private_flag priv $ fmt "@ "
+        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx m)
+    | None -> noop
+  in
+  let fmt_manifest = function
+    | Some m ->
+        str " " $ str eq $ break 1 4
+        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx m)
+        $ str " =" $ fmt_private_flag priv
+    | None -> str " " $ str eq $ fmt_private_flag priv
   in
   let box_manifest k =
     hvbox c.conf.type_decl_indent
@@ -3155,13 +3151,9 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
       $ k )
   in
   let fmt_manifest_kind =
-    let priv = ptype_private in
     match ptype_kind with
-    | Ptype_abstract -> box_manifest (fmt_manifest ~priv None)
-    | Ptype_variant [] ->
-        box_manifest
-          (fmt_manifest ~priv:Public (Some (fmt_private_flag priv)))
-        $ fmt "@ |"
+    | Ptype_abstract -> box_manifest (fmt_abstract_manifest m)
+    | Ptype_variant [] -> box_manifest (fmt_manifest m) $ fmt "@ |"
     | Ptype_variant ctor_decls ->
         let max acc d =
           let len_around =
@@ -3170,8 +3162,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
           max acc (String.length d.pcd_name.txt + len_around)
         in
         let max_len_name = List.fold_left ctor_decls ~init:0 ~f:max in
-        box_manifest
-          (fmt_manifest ~priv:Public (Some (fmt_private_flag priv)))
+        box_manifest (fmt_manifest m)
         $ fmt "@ "
         $ list_fl ctor_decls
             (fmt_constructor_declaration c ~max_len_name ctx)
@@ -3186,16 +3177,11 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
               " "
           $ fmt_if_k (not last) p.sep_after
         in
-        box_manifest
-          (fmt_manifest ~priv:Public
-             (Some (fmt_private_flag priv $ p.docked_before)) )
+        box_manifest (fmt_manifest m $ p.docked_before)
         $ p.break_before
         $ p.box_record (list_fl lbl_decls fmt_decl)
         $ p.break_after $ p.docked_after
-    | Ptype_open ->
-        box_manifest
-          (fmt_manifest ~priv:Public
-             (Some (fmt_private_flag priv $ str " ..")) )
+    | Ptype_open -> box_manifest (fmt_manifest m $ str " ..")
   in
   let fmt_cstr (t1, t2, loc) =
     Cmts.fmt c loc
