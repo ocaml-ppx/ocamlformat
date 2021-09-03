@@ -4811,27 +4811,6 @@
 
 (rule
  (deps tests/.ocamlformat )
- (enabled_if (<> %{os_type} Win32))
- (package ocamlformat)
- (action
-  (with-stdout-to verbose2.ml.stdout
-   (with-stderr-to verbose2.ml.stderr
-     (run %{bin:ocamlformat} --print-config --doc-comments=before --config=doc-comments=before %{dep:tests/verbose2.ml})))))
-
-(rule
- (alias runtest)
- (enabled_if (<> %{os_type} Win32))
- (package ocamlformat)
- (action (diff tests/verbose2.ml.ref verbose2.ml.stdout)))
-
-(rule
- (alias runtest)
- (enabled_if (<> %{os_type} Win32))
- (package ocamlformat)
- (action (diff tests/verbose2.ml.err verbose2.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
   (with-stdout-to wrap_comments.ml.stdout
