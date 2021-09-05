@@ -40,49 +40,4 @@
  (action
   (diff ocamlformat-rpc-help.txt ocamlformat-rpc-help.actual)))
 
-(rule
- (action
-  (with-stdout-to
-   upstream-parser.mly
-   (run
-    curl
-    -s
-    -o
-    -
-    https://raw.githubusercontent.com/ocaml/ocaml/4.13/parsing/parser.mly))))
-
-(rule
- (deps
-  (:upstream upstream-parser.mly)
-  (:std vendor/ocaml-4.13/parser.mly))
- (action
-  (with-stdout-to
-   diff-upstream-std.patch.actual
-   (run diff %{upstream} %{std}))))
-
-(rule
- (alias runtest)
- (deps
-  (:expected diff-upstream-std.patch)
-  (:actual diff-upstream-std.patch.actual))
- (action
-  (diff %{expected} %{actual})))
-
-(rule
- (deps
-  (:std vendor/ocaml-4.13/parser.mly)
-  (:ext vendor/ocaml-4.13-extended/parser.mly))
- (action
-  (with-stdout-to
-   diff-std-ext.patch.actual
-   (run diff %{std} %{ext}))))
-
-(rule
- (alias runtest)
- (deps
-  (:expected diff-std-ext.patch)
-  (:actual diff-std-ext.patch.actual))
- (action
-  (diff %{expected} %{actual})))
-
 (data_only_dirs test-extra)
