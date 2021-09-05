@@ -28,7 +28,8 @@ let files =
 
 let usage () =
   let exe = Filename.basename Sys.executable_name in
-  Printf.printf "usage:\n\n%s diff DIR1 DIR2\n\n%s import VERSION DIR" exe exe ;
+  Printf.printf "usage:\n\n%s diff DIR1 DIR2\n\n%s import VERSION DIR" exe
+    exe ;
   exit 1
 
 let () =
