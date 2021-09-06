@@ -4,6 +4,8 @@
 
 #### Deprecated
 
+  + Options `--align-cases`, `--align-constructors-decl` and `--align-variants-decl` are now deprecated (#1793, @gpetiot)
+
 #### Bug fixes
 
   + Fix normalization of sequences of expressions (#1731, @gpetiot)
