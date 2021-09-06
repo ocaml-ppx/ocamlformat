@@ -72,6 +72,7 @@ let register_file tests fname =
       | ["deps"] -> setup.extra_deps <- read_lines fname
       | ["should-fail"] -> setup.should_fail <- true
       | ["enabled-if"] -> setup.enabled_if <- Some (read_file fname)
+      | ["err"] -> ()
       | _ -> invalid_arg fname )
   | _ -> ()
 
@@ -95,6 +96,7 @@ let emit_test test_name setup =
   let ref_name =
     "tests/" ^ if setup.has_ref then test_name ^ ".ref" else test_name
   in
+  let err_name = "tests/" ^ test_name ^ ".err" in
   let base_test_name =
     "tests/" ^ match setup.base_file with Some n -> n | None -> test_name
   in
@@ -110,19 +112,25 @@ let emit_test test_name setup =
  (deps tests/.ocamlformat %s)%s
  (package ocamlformat)
  (action
-   (with-outputs-to %s.output
-     %s)))
+  (with-stdout-to %s.stdout
+   (with-stderr-to %s.stderr
+     %s))))
 
 (rule
  (alias runtest)%s
  (package ocamlformat)
- (action (diff %s %s.output)))
+ (action (diff %s %s.stdout)))
+
+(rule
+ (alias runtest)%s
+ (package ocamlformat)
+ (action (diff %s %s.stderr)))
 |}
-    extra_deps enabled_if_line test_name
+    extra_deps enabled_if_line test_name test_name
     (cmd setup.should_fail
        ( ["%{bin:ocamlformat}"] @ opts
        @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
-    enabled_if_line ref_name test_name ;
+    enabled_if_line ref_name test_name enabled_if_line err_name test_name ;
   if setup.has_ocp then
     Printf.printf
       {|
