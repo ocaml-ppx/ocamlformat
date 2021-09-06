@@ -63,7 +63,7 @@ let mkmod ~loc ?attrs d = Mod.mk ~loc:(make_loc loc) ?attrs d
 let mkstr ~loc d = Str.mk ~loc:(make_loc loc) d
 let mkclass ~loc ?attrs d = Cl.mk ~loc:(make_loc loc) ?attrs d
 let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
-let mkcst ~loc c = Const.mk ~loc:(make_loc loc) c
+let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
 
 let pstr_typext (te, ext) =
   (Pstr_typext te, ext)
@@ -3485,23 +3485,23 @@ meth_list:
 
 constant:
   | INT          { let (n, m) = $1 in
-                   mkcst ~loc:$sloc (Pconst_integer (n, m)) }
-  | CHAR         { mkcst ~loc:$sloc (Pconst_char $1) }
+                   mkconst ~loc:$sloc (Pconst_integer (n, m)) }
+  | CHAR         { mkconst ~loc:$sloc (Pconst_char $1) }
   | STRING       { let (s, strloc, d) = $1 in
-                   mkcst ~loc:$sloc (Pconst_string (s,strloc,d)) }
+                   mkconst ~loc:$sloc (Pconst_string (s,strloc,d)) }
   | FLOAT        { let (f, m) = $1 in
-                   mkcst ~loc:$sloc (Pconst_float (f, m)) }
+                   mkconst ~loc:$sloc (Pconst_float (f, m)) }
 ;
 signed_constant:
     constant     { $1 }
   | MINUS INT    { let (n, m) = $2 in
-                   mkcst ~loc:$sloc (Pconst_integer("-" ^ n, m)) }
+                   mkconst ~loc:$sloc (Pconst_integer("-" ^ n, m)) }
   | MINUS FLOAT  { let (f, m) = $2 in
-                   mkcst ~loc:$sloc (Pconst_float("-" ^ f, m)) }
+                   mkconst ~loc:$sloc (Pconst_float("-" ^ f, m)) }
   | PLUS INT     { let (n, m) = $2 in
-                   mkcst ~loc:$sloc (Pconst_integer (n, m)) }
+                   mkconst ~loc:$sloc (Pconst_integer (n, m)) }
   | PLUS FLOAT   { let (f, m) = $2 in
-                   mkcst ~loc:$sloc (Pconst_float(f, m)) }
+                   mkconst ~loc:$sloc (Pconst_float(f, m)) }
 ;
 
 /* Identifiers and long identifiers */
