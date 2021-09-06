@@ -1,0 +1,3 @@
+Warning: align-variants-decl: This option is deprecated since version 0.20.0. Vertical alignment is no longer a promoted behavior.
+Warning: align-constructors-decl: This option is deprecated since version 0.20.0. Vertical alignment is no longer a promoted behavior.
+Warning: align-cases: This option is deprecated since version 0.20.0. Vertical alignment is no longer a promoted behavior.
