@@ -19,3 +19,14 @@
   (with-stdout-to
    diff-parsers-upstream-std.patch
    (run %{diff-parsers} diff ocaml-4.13-upstream ocaml-4.13))))
+
+(rule
+ (deps
+  (source_tree ocaml-4.13-extended/)
+  (source_tree parse-wyc/lib/)
+  (:diff-parsers ../tools/diff-parsers/diff_parsers.exe))
+ (mode promote)
+ (action
+  (with-stdout-to
+   diff-parsers-ext-parsewyc.patch
+   (run %{diff-parsers} diff ocaml-4.13-extended parse-wyc/lib))))
