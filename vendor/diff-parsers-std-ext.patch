@@ -1,6 +1,6 @@
 --- ocaml-4.13/ast_helper.ml
 +++ ocaml-4.13-extended/ast_helper.ml
-@@ -155,10 +155,11 @@
+@@@@
    let tuple ?loc ?attrs a = mk ?loc ?attrs (Ppat_tuple a)
    let construct ?loc ?attrs a b = mk ?loc ?attrs (Ppat_construct (a, b))
    let variant ?loc ?attrs a b = mk ?loc ?attrs (Ppat_variant (a, b))
@@ -12,7 +12,7 @@
    let type_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_type a)
    let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_lazy a)
    let unpack ?loc ?attrs a = mk ?loc ?attrs (Ppat_unpack a)
-@@ -188,10 +189,11 @@
+@@@@
    let variant ?loc ?attrs a b = mk ?loc ?attrs (Pexp_variant (a, b))
    let record ?loc ?attrs a b = mk ?loc ?attrs (Pexp_record (a, b))
    let field ?loc ?attrs a b = mk ?loc ?attrs (Pexp_field (a, b))
@@ -26,7 +26,7 @@
    let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
 --- ocaml-4.13/ast_helper.mli
 +++ ocaml-4.13-extended/ast_helper.mli
-@@ -110,13 +110,14 @@
+@@@@
      val interval: ?loc:loc -> ?attrs:attrs -> constant -> constant -> pattern
      val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
      val construct: ?loc:loc -> ?attrs:attrs ->
@@ -43,7 +43,7 @@
      val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
      val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
      val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
-@@ -152,10 +153,11 @@
+@@@@
                  -> expression option -> expression
      val field: ?loc:loc -> ?attrs:attrs -> expression -> lid -> expression
      val setfield: ?loc:loc -> ?attrs:attrs -> expression -> lid -> expression
@@ -57,7 +57,7 @@
      val while_: ?loc:loc -> ?attrs:attrs -> expression -> expression
 --- ocaml-4.13/ast_mapper.ml
 +++ ocaml-4.13-extended/ast_mapper.ml
-@@ -417,10 +417,11 @@
+@@@@
          field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
      | Pexp_setfield (e1, lid, e2) ->
          setfield ~loc ~attrs (sub.expr sub e1) (map_loc sub lid)
@@ -69,7 +69,7 @@
            (map_opt (sub.expr sub) e3)
      | Pexp_sequence (e1, e2) ->
          sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
-@@ -497,12 +498,16 @@
+@@@@
               (fun (vl, p) -> List.map (map_loc sub) vl, sub.pat sub p)
               p)
      | Ppat_variant (l, p) -> variant ~loc ~attrs l (map_opt (sub.pat sub) p)
@@ -89,7 +89,7 @@
      | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
 --- ocaml-4.13/asttypes.mli
 +++ ocaml-4.13-extended/asttypes.mli
-@@ -42,10 +42,12 @@
+@@@@
  
  type override_flag = Override | Fresh
  
@@ -104,7 +104,7 @@
    | Labelled of string (*  label:T -> ... *)
 --- ocaml-4.13/parser.mly
 +++ ocaml-4.13-extended/parser.mly
-@@ -87,11 +87,10 @@
+@@@@
    Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
  let mkcf ~loc ?attrs ?docs d =
    Cf.mk ~loc:(make_loc loc) ?attrs ?docs d
@@ -116,7 +116,7 @@
    if x.Location.loc_ghost
    then acc
    else x :: acc
-@@ -176,35 +175,10 @@
+@@@@
  let mkpat_cons_desc consloc args =
    Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
  let mkpat_cons ~loc consloc args =
@@ -152,7 +152,7 @@
  
  let mkexp_constraint ~loc e (t1, t2) =
    match t1, t2 with
-@@ -1118,11 +1092,11 @@
+@@@@
     semantic value is a pair of a list of [X]s and an optional [Y]. *)
  
  listx(delimiter, X, Y):
@@ -165,7 +165,7 @@
    delimiter
    tail = listx(delimiter, X, Y)
      { let xs, y = tail in
-@@ -2440,18 +2414,15 @@
+@@@@
          Pexp_open(od, mkexp ~loc:($startpos($3), $endpos) (Pexp_array [])) }
    | mod_longident DOT
      LBRACKETBAR expr_semi_list error
@@ -186,7 +186,7 @@
        { Pexp_open(od, mkexp ~loc:$loc($3) (Pexp_construct($3, None))) }
    | mod_longident DOT
      LBRACKET expr_semi_list error
-@@ -2816,11 +2787,11 @@
+@@@@
        { let (fields, closed) = $2 in
          Ppat_record(fields, closed) }
      | LBRACE record_pat_content error
@@ -199,7 +199,7 @@
      | LBRACKETBAR pattern_semi_list BARRBRACKET
        { Ppat_array $2 }
      | LBRACKETBAR BARRBRACKET
-@@ -2841,11 +2812,13 @@
+@@@@
  (* A label-pattern list is a nonempty list of label-pattern pairs, optionally
     followed with an UNDERSCORE, separated-or-terminated with semicolons. *)
  %inline record_pat_content:
@@ -216,7 +216,7 @@
    octy = preceded(COLON, core_type)?
 --- ocaml-4.13/parsetree.mli
 +++ ocaml-4.13-extended/parsetree.mli
-@@ -226,18 +226,20 @@
+@@@@
           *)
    | Ppat_variant of label * pattern option
          (* `A             (None)
@@ -238,7 +238,7 @@
    | Ppat_constraint of pattern * core_type
          (* (P : T) *)
    | Ppat_type of Longident.t loc
-@@ -327,10 +329,12 @@
+@@@@
          (* E.l *)
    | Pexp_setfield of expression * Longident.t loc * expression
          (* E1.l <- E2 *)
@@ -253,7 +253,7 @@
    | Pexp_while of expression * expression
 --- ocaml-4.13/pprintast.ml
 +++ ocaml-4.13-extended/pprintast.ml
-@@ -369,11 +369,11 @@
+@@@@
              pp f "@[<hov2>%s: %a@ %a@ @]" l.txt
                (core_type ctxt) ct (attributes ctxt) x.pof_attributes
            | Oinherit ct ->
@@ -266,7 +266,7 @@
                match l with
                | [] -> pp f ".."
                | _ -> pp f " ;.."
-@@ -460,10 +460,12 @@
+@@@@
          pp f  "%s" x
      | Ppat_any -> pp f "_";
      | Ppat_var ({txt = txt;_}) -> protect_ident f txt
@@ -279,7 +279,7 @@
      | Ppat_unpack { txt = Some s } ->
          pp f "(module@ %s)@ " s
      | Ppat_type li ->
-@@ -498,11 +500,11 @@
+@@@@
          pp f "@[<2>exception@;%a@]" (pattern1 ctxt) p
      | Ppat_extension e -> extension ctxt f e
      | Ppat_open (lid, p) ->
@@ -292,7 +292,7 @@
          pp f "@[<2>%a.%a @]" longident_loc lid
            (paren with_paren @@ pattern1 ctxt) p
      | _ -> paren true (pattern ctxt) f x
-@@ -817,10 +819,13 @@
+@@@@
            (option ~last:" with@;" (simple_expr ctxt)) eo
            (list longident_x_expression ~sep:";@;") l
      | Pexp_array (l) ->

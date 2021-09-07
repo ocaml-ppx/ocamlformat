@@ -1,6 +1,6 @@
 --- ocaml-4.13-extended/lexer.mll
 +++ parse-wyc/lib/lexer.mll
-@@ -253,14 +253,14 @@
+@@@@
  
  let escaped_newlines = ref false
  
@@ -18,7 +18,7 @@
  let comment_list = ref []
  
  let add_comment com =
-@@ -272,10 +272,11 @@
+@@@@
    in
      add_comment com
  
@@ -30,7 +30,7 @@
  open Format
  
  let prepare_error loc = function
-@@ -324,10 +325,11 @@
+@@@@
        | Error (err, loc) ->
            Some (prepare_error loc err)
        | _ ->
@@ -42,7 +42,7 @@
  
  let newline = ('\013'* '\010')
  let blank = [' ' '\009' '\012']
-@@ -486,23 +488,23 @@
+@@@@
                 comment lexbuf)
              lexbuf
          in
@@ -70,7 +70,7 @@
          lexbuf.lex_curr_p <- { curpos with pos_cnum = curpos.pos_cnum - 1 };
          STAR
        }
-@@ -713,19 +715,19 @@
+@@@@
    | '\\' _
        { if not (in_comment ()) then begin
  (*  Should be an error, but we are very lax.
@@ -96,7 +96,7 @@
    | eof
 --- ocaml-4.13-extended/parser.mly
 +++ parse-wyc/lib/parser.mly
-@@ -20,18 +20,26 @@
+@@@@
     text comprised between the markers [BEGIN AVOID] and -----------
     [END AVOID] has been removed. This file should be formatted in
     such a way that this results in a clean removal of certain
@@ -123,7 +123,7 @@
  let mknoloc = Location.mknoloc
  
  let make_loc (startpos, endpos) = {
-@@ -192,19 +200,19 @@
+@@@@
  
  let mkpat_opt_constraint ~loc p = function
    | None -> p
@@ -149,7 +149,7 @@
     syntactic form is recognized by the parser but is in fact incorrect. This
     idiom is used in a few places to produce ad hoc syntax error messages. *)
  
-@@ -215,12 +223,12 @@
+@@@@
     (unexpected) syntax error and do not achieve the desired effect. This could
     also lead a completion system to propose completions which in fact are
     incorrect. In order to avoid these problems, the productions that use
@@ -164,7 +164,7 @@
  type paren_kind = Paren | Brace | Bracket
  
  (* We classify the dimension of indices: Bigarray distinguishes
-@@ -339,13 +347,13 @@
+@@@@
      | None -> []
      | Some expr -> [Nolabel, expr] in
    let args = (Nolabel,array) :: index @ set_arg in
@@ -180,7 +180,7 @@
    if !Clflags.applicative_functors
    then Lapply(p1, p2)
    else raise (Syntaxerr.Error(
-@@ -444,11 +452,13 @@
+@@@@
  let text_str pos = Str.text (rhs_text pos)
  let text_sig pos = Sig.text (rhs_text pos)
  let text_cstr pos = Cf.text (rhs_text pos)
@@ -195,7 +195,7 @@
    match items with
    | [] ->
        let post = rhs_post_text endpos in
-@@ -470,24 +480,10 @@
+@@@@
  
  let extra_rhs_core_type ct ~pos =
    let docs = rhs_info pos in
@@ -220,7 +220,7 @@
      lb_pattern = p;
      lb_expression = e;
      lb_is_pun = is_pun;
-@@ -497,11 +493,11 @@
+@@@@
                 else symbol_text_lazy (fst loc));
      lb_loc = make_loc loc;
    }
@@ -233,7 +233,7 @@
  let mklbs ext rf lb =
    let lbs = {
      lbs_bindings = [];
-@@ -620,10 +616,11 @@
+@@@@
  %token BAR                    "|"
  %token BARBAR                 "||"
  %token BARRBRACKET            "|]"
@@ -245,7 +245,7 @@
  %token COLONCOLON             "::"
  %token COLONEQUAL             ":="
  %token COLONGREATER           ":>"
-@@ -640,10 +637,11 @@
+@@@@
  %token EQUAL                  "="
  %token EXCEPTION              "exception"
  %token EXTERNAL               "external"
@@ -257,7 +257,7 @@
  %token FUNCTION               "function"
  %token FUNCTOR                "functor"
  %token GREATER                ">"
-@@ -661,11 +659,13 @@
+@@@@
  %token <string> LETOP         "let*" (* just an example *)
  %token <string> ANDOP         "and*" (* just an example *)
  %token INHERIT                "inherit"
@@ -271,7 +271,7 @@
  %token LBRACELESS             "{<"
  %token LBRACKET               "["
  %token LBRACKETBAR            "[|"
-@@ -675,10 +675,11 @@
+@@@@
  %token LBRACKETPERCENTPERCENT "[%%"
  %token LESS                   "<"
  %token LESSMINUS              "<-"
@@ -283,7 +283,7 @@
  %token LBRACKETATAT           "[@@"
  %token LBRACKETATATAT         "[@@@"
  %token MATCH                  "match"
-@@ -699,10 +700,11 @@
+@@@@
  %token PERCENT                "%"
  %token PLUS                   "+"
  %token PLUSDOT                "+."
@@ -295,7 +295,7 @@
  %token QUOTE                  "'"
  %token RBRACE                 "}"
  %token RBRACKET               "]"
-@@ -714,10 +716,11 @@
+@@@@
  %token <string> HASHOP        "##" (* just an example *)
  %token SIG                    "sig"
  %token STAR                   "*"
@@ -307,7 +307,7 @@
  %token <string * Location.t * string * Location.t * string option>
         QUOTED_STRING_ITEM     "{%%hello|world|}" (* just an example *)
  %token STRUCT                 "struct"
-@@ -726,10 +729,11 @@
+@@@@
  %token TO                     "to"
  %token TRUE                   "true"
  %token TRY                    "try"
@@ -319,7 +319,7 @@
  %token VIRTUAL                "virtual"
  %token WHEN                   "when"
  %token WHILE                  "while"
-@@ -1254,15 +1258,15 @@
+@@@@
  (* The syntax of module expressions is not properly stratified. The cases of
     functors, functor applications, and attributes interact and cause conflicts,
     which are resolved by precedence declarations. This is concise but fragile.
@@ -338,7 +338,7 @@
            List.fold_left (fun acc (startpos, arg) ->
              mkmod ~loc:(startpos, $endpos) (Pmod_functor (arg, acc))
            ) me args
-@@ -1297,27 +1301,27 @@
+@@@@
  
  paren_module_expr:
      (* A module expression annotated with a module type. *)
@@ -376,7 +376,7 @@
  (* The various ways of annotating a core language expression that
     produces a first-class module that we wish to unpack. *)
  %inline expr_colon_package_type:
-@@ -1550,15 +1554,15 @@
+@@@@
  
  (* -------------------------------------------------------------------------- *)
  
@@ -395,7 +395,7 @@
        %prec below_WITH
        { wrap_mty_attrs ~loc:$sloc attrs (
            List.fold_left (fun acc (startpos, arg) ->
-@@ -1567,12 +1571,12 @@
+@@@@
          ) }
    | MODULE TYPE OF attributes module_expr %prec below_LBRACKETAT
        { mkmty ~loc:$sloc ~attrs:$4 (Pmty_typeof $5) }
@@ -410,7 +410,7 @@
    | mkmty(
        mkrhs(mty_longident)
          { Pmty_ident $1 }
-@@ -1708,12 +1712,12 @@
+@@@@
      let attrs = attrs1 @ attrs2 in
      let loc = make_loc $sloc in
      let docs = symbol_docs $sloc in
@@ -425,7 +425,7 @@
  (* A group of recursive module declarations. *)
  %inline rec_module_declarations:
    xlist(rec_module_declaration, and_module_declaration)
-@@ -1828,11 +1832,11 @@
+@@@@
  
  (* -------------------------------------------------------------------------- *)
  
@@ -438,7 +438,7 @@
    | FUN attributes class_fun_def
        { wrap_class_attrs ~loc:$sloc $3 $2 }
    | let_bindings(no_ext) IN class_expr
-@@ -1851,21 +1855,21 @@
+@@@@
      ) { $1 }
  ;
  class_simple_expr:
@@ -466,7 +466,7 @@
      { mkclass ~loc:$sloc ~attrs:$2 (Pcl_structure $3) }
  ;
  
-@@ -1965,11 +1969,11 @@
+@@@@
          Cfk_concrete ($1, poly_exp)), $2 }
  ;
  
@@ -479,7 +479,7 @@
    | mkcty(
        label = arg_label
        domain = tuple_type
-@@ -1985,12 +1989,12 @@
+@@@@
      | extension
          { Pcty_extension $1 }
      ) { $1 }
@@ -494,7 +494,7 @@
    | LET OPEN override_flag attributes mkrhs(mod_longident) IN class_signature
        { let loc = ($startpos($2), $endpos($5)) in
          let od = Opn.mk ~override:$3 ~loc:(make_loc loc) $5 in
-@@ -2210,22 +2214,22 @@
+@@@@
      { array, d, Brace,   i, r }
    | array=simple_expr d=dot LBRACKET i=index RBRACKET r=right
      { array, d, Bracket, i, r }
@@ -520,7 +520,7 @@
    | expr_attrs
        { let desc, attrs = $1 in
          mkexp_attrs ~loc:$sloc desc attrs }
-@@ -2250,14 +2254,12 @@
+@@@@
    | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
      { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
    | expr attribute
@@ -537,7 +537,7 @@
  %inline expr_attrs:
    | LET MODULE ext_attributes mkrhs(module_name) module_binding_body IN seq_expr
        { Pexp_letmodule($4, $5, $7), $3 }
-@@ -2276,12 +2278,12 @@
+@@@@
        { (mk_newtypes ~loc:$sloc $5 $7).pexp_desc, $2 }
    | MATCH ext_attributes seq_expr WITH match_cases
        { Pexp_match($3, $5), $2 }
@@ -552,7 +552,7 @@
    | IF ext_attributes seq_expr THEN expr
        { Pexp_ifthenelse($3, $5, None), $2 }
    | WHILE ext_attributes seq_expr DO seq_expr DONE
-@@ -2312,20 +2314,20 @@
+@@@@
  ;
  
  simple_expr:
@@ -577,7 +577,7 @@
        mkexp_attrs ~loc:$sloc desc attrs }
    | mkexp(simple_expr_)
        { $1 }
-@@ -2333,24 +2335,24 @@
+@@@@
  %inline simple_expr_attrs:
    | BEGIN ext = ext attrs = attributes e = seq_expr END
        { e.pexp_desc, (ext, attrs @ e.pexp_attributes) }
@@ -608,7 +608,7 @@
    | mkrhs(val_longident)
        { Pexp_ident ($1) }
    | constant
-@@ -2363,81 +2365,81 @@
+@@@@
        { Pexp_apply($1, [Nolabel,$2]) }
    | op(BANG {"!"}) simple_expr
        { Pexp_apply($1, [Nolabel,$2]) }
@@ -710,7 +710,7 @@
      simple_expr %prec below_HASH
        { (Nolabel, $1) }
    | LABEL simple_expr %prec below_HASH
-@@ -2495,12 +2497,12 @@
+@@@@
  ;
  let_binding_body:
    | let_binding_body_no_punning
@@ -725,7 +725,7 @@
       would then generate bindings such as [let x], which are rejected by the
       auxiliary function [addlb] via a call to [syntax_error]. *)
  /* END AVOID */
-@@ -2643,12 +2645,12 @@
+@@@@
  ;
  type_constraint:
      COLON core_type                             { (Some $2, None) }
@@ -740,7 +740,7 @@
  /* Patterns */
  
  (* Whereas [pattern] is an arbitrary pattern, [pattern_no_exn] is a pattern
-@@ -2668,11 +2670,11 @@
+@@@@
  
     In order to avoid duplication between the definitions of [pattern] and
     [pattern_no_exn], we create a parameterized definition [pattern_(self)]
@@ -753,7 +753,7 @@
    | EXCEPTION ext_attributes pattern %prec prec_constr_appl
        { mkpat_attrs ~loc:$sloc (Ppat_exception $3) $2}
  ;
-@@ -2690,20 +2692,20 @@
+@@@@
    | pattern_gen
        { $1 }
    | mkpat(
@@ -780,7 +780,7 @@
  
  pattern_gen:
      simple_pattern
-@@ -2760,52 +2762,52 @@
+@@@@
      { Ppat_open($1, mkpat ~loc:$sloc (Ppat_construct($3, None))) }
    | mkrhs(mod_longident) DOT mkrhs(LPAREN RPAREN {Lident "()"})
      { Ppat_open($1, mkpat ~loc:$sloc (Ppat_construct($3, None))) }
@@ -852,7 +852,7 @@
    ps = separated_or_terminated_nonempty_list(SEMI, pattern)
      { ps }
  ;
-@@ -3010,18 +3012,18 @@
+@@@@
    | PLUS                                    { Covariant, NoInjectivity }
    | MINUS                                   { Contravariant, NoInjectivity }
    | BANG                                    { NoVariance, Injective }
@@ -875,7 +875,7 @@
  (* A sequence of constructor declarations is either a single BAR, which
     means that the list is empty, or a nonempty BAR-separated list of
     declarations, with an optional leading BAR. *)
-@@ -3446,11 +3448,11 @@
+@@@@
        { [head], Closed }
    | head = field
    | head = inherit_field
@@ -888,7 +888,7 @@
    mkrhs(label) COLON poly_type_no_attr attributes
      { let info = symbol_info $endpos in
        let attrs = add_info_attrs info $4 in
-@@ -3499,17 +3501,17 @@
+@@@@
      UIDENT                    { $1 }
    | LIDENT                    { $1 }
  ;
@@ -910,7 +910,7 @@
      PREFIXOP                                    { $1 }
    | LETOP                                       { $1 }
    | ANDOP                                       { $1 }
-@@ -3588,12 +3590,12 @@
+@@@@
  ;
  mod_ext_longident:
      mk_longident(mod_ext_longident, UIDENT) { $1 }
@@ -925,7 +925,7 @@
      mk_longident(mod_ext_longident,ident) { $1 }
  ;
  clty_longident:
-@@ -3657,11 +3659,11 @@
+@@@@
    | NONREC                                      { Nonrecursive }
  ;
  %inline no_nonrec_flag:
@@ -938,7 +938,7 @@
  direction_flag:
      TO                                          { Upto }
    | DOWNTO                                      { Downto }
-@@ -3823,11 +3825,11 @@
+@@@@
    | PERCENT attr_id { Some $2 }
  ;
  %inline no_ext:

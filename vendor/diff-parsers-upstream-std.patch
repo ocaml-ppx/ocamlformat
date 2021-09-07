@@ -1,6 +1,6 @@
 --- ocaml-4.13-upstream/ast_helper.ml
 +++ ocaml-4.13/ast_helper.ml
-@@ -211,10 +211,11 @@
+@@@@
    let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
    let letop ?loc ?attrs let_ ands body =
      mk ?loc ?attrs (Pexp_letop {let_; ands; body})
@@ -12,7 +12,7 @@
      {
       pc_lhs = lhs;
       pc_guard = guard;
-@@ -255,10 +256,11 @@
+@@@@
      mk ?loc ?attrs (Pmod_functor (arg, body))
    let apply ?loc ?attrs m1 m2 = mk ?loc ?attrs (Pmod_apply (m1, m2))
    let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
@@ -24,7 +24,7 @@
  module Sig = struct
    let mk ?(loc = !default_loc) d = {psig_desc = d; psig_loc = loc}
  
-@@ -527,13 +529,14 @@
+@@@@
         add_text_attrs text (add_docs_attrs docs attrs);
       ptype_loc = loc;
      }
@@ -40,7 +40,7 @@
       pcd_loc = loc;
       pcd_attributes = add_info_attrs info attrs;
      }
-@@ -579,14 +582,14 @@
+@@@@
       pext_loc = loc;
       pext_attributes = add_docs_attrs docs (add_info_attrs info attrs);
      }
@@ -59,7 +59,7 @@
    let rebind ?(loc = !default_loc) ?(attrs = [])
 --- ocaml-4.13-upstream/ast_helper.mli
 +++ ocaml-4.13/ast_helper.mli
-@@ -190,10 +190,11 @@
+@@@@
      val extension: ?loc:loc -> ?attrs:attrs -> extension -> expression
      val unreachable: ?loc:loc -> ?attrs:attrs -> unit -> expression
  
@@ -71,7 +71,7 @@
  (** Value declarations *)
  module Val:
    sig
-@@ -209,11 +210,12 @@
+@@@@
        ?cstrs:(core_type * core_type * loc) list ->
        ?kind:type_kind -> ?priv:private_flag -> ?manifest:core_type -> str ->
        type_declaration
@@ -85,7 +85,7 @@
        ?mut:mutable_flag -> str -> core_type -> label_declaration
    end
  
-@@ -229,11 +231,12 @@
+@@@@
  
      val constructor: ?loc:loc -> ?attrs:attrs -> ?docs:docs -> ?info:info ->
        str -> extension_constructor_kind -> extension_constructor
@@ -99,7 +99,7 @@
        str -> lid -> extension_constructor
    end
  
-@@ -270,10 +273,11 @@
+@@@@
        module_expr
      val constraint_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type ->
        module_expr
@@ -113,7 +113,7 @@
    sig
 --- ocaml-4.13-upstream/ast_mapper.ml
 +++ ocaml-4.13/ast_mapper.ml
-@@ -204,12 +204,14 @@
+@@@@
      let attrs = sub.attributes sub ptyexn_attributes in
      Te.mk_exception ~loc ~attrs
        (sub.extension_constructor sub ptyexn_constructor)
@@ -130,7 +130,7 @@
  
    let map_extension_constructor sub
        {pext_name;
-@@ -351,10 +353,11 @@
+@@@@
      | Pmod_constraint (m, mty) ->
          constraint_ ~loc ~attrs (sub.module_expr sub m)
                      (sub.module_type sub mty)
@@ -142,7 +142,7 @@
      let open Str in
      let loc = sub.location sub loc in
      match desc with
-@@ -459,10 +462,11 @@
+@@@@
      | Pexp_letop {let_; ands; body} ->
          letop ~loc ~attrs (sub.binding_op sub let_)
            (List.map (sub.binding_op sub) ands) (sub.expr sub body)
@@ -154,7 +154,7 @@
      let open Exp in
      let op = map_loc sub pbop_op in
      let pat = sub.pat sub pbop_pat in
-@@ -697,13 +701,15 @@
+@@@@
             ~attrs:(this.attributes this pvb_attributes)
        );
  
@@ -173,7 +173,7 @@
        );
 --- ocaml-4.13-upstream/parser.mly
 +++ ocaml-4.13/parser.mly
-@@ -206,21 +206,21 @@
+@@@@
  let mkstrexp e attrs =
    { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
  
@@ -198,7 +198,7 @@
    raise Syntaxerr.Escape_error
  
  let unclosed opening_name opening_loc closing_name closing_loc =
-@@ -387,16 +387,16 @@
+@@@@
    loc_map Longident.last id
  
  let loc_lident (id : string Location.loc) : Longident.t Location.loc =
@@ -220,7 +220,7 @@
    Pat.mk ~loc:lbl.loc  (Ppat_var (loc_last lbl))
  
  let mk_newtypes ~loc newtypes exp =
-@@ -822,13 +822,13 @@
+@@@@
  %nonassoc HASH                         /* simple_expr/toplevel_directive */
  %left     HASHOP
  %nonassoc below_DOT
@@ -236,7 +236,7 @@
  
  /* Entry points */
  
-@@ -1309,10 +1309,13 @@
+@@@@
          { (* TODO review mkmod location *)
            Pmod_apply(me1, mkmod ~loc:$sloc (Pmod_structure [])) }
      | (* An extension. *)
@@ -250,7 +250,7 @@
  ;
  
  (* A parenthesized module expression is a module expression that begins
-@@ -2273,12 +2276,14 @@
+@@@@
    | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
      { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
    | expr attribute
@@ -265,7 +265,7 @@
  %inline expr_attrs:
    | LET MODULE ext_attributes mkrhs(module_name) module_binding_body IN seq_expr
        { Pexp_letmodule($4, $5, $7), $3 }
-@@ -2312,14 +2317,10 @@
+@@@@
        { Pexp_for($3, $5, $7, $6, $9), $2 }
    | ASSERT ext_attributes simple_expr %prec below_HASH
        { Pexp_assert $3, $2 }
@@ -280,7 +280,7 @@
    | simple_expr nonempty_llist(labeled_simple_expr)
        { Pexp_apply($1, $2) }
    | expr_comma_list %prec below_COMMA
-@@ -2368,10 +2369,14 @@
+@@@@
        { Pexp_pack $4, $3 }
    | LPAREN MODULE ext_attributes module_expr COLON package_type RPAREN
        { Pexp_constraint (ghexp ~loc:$sloc (Pexp_pack $4), $6), $3 }
@@ -295,7 +295,7 @@
    | mkrhs(val_longident)
        { Pexp_ident ($1) }
    | constant
-@@ -2403,10 +2408,12 @@
+@@@@
        { Pexp_send($1, $3) }
    | simple_expr op(HASHOP) simple_expr
        { mkinfix $1 $2 $3 }
@@ -308,7 +308,7 @@
    | mod_longident DOT LPAREN seq_expr error
        { unclosed "(" $loc($3) ")" $loc($5) }
    | LBRACE record_expr_content RBRACE
-@@ -2465,10 +2472,13 @@
+@@@@
    | LABEL simple_expr %prec below_HASH
        { (Labelled $1, $2) }
    | TILDE label = LIDENT
@@ -322,7 +322,7 @@
          (Optional label, mkexpvar ~loc label) }
    | OPTLABEL simple_expr %prec below_HASH
        { (Optional $1, $2) }
-@@ -2494,19 +2504,15 @@
+@@@@
          let loc = Location.(t.ptyp_loc.loc_start, t.ptyp_loc.loc_end) in
          let typ = ghtyp ~loc (Ptyp_poly([],t)) in
          let patloc = ($startpos($1), $endpos($2)) in
@@ -346,7 +346,7 @@
            wrap_type_annotation ~loc:$sloc $4 $6 $8 in
          let loc = ($startpos($1), $endpos($6)) in
          (ghpat ~loc (Ppat_constraint($1, poly)), exp) }
-@@ -2631,34 +2637,34 @@
+@@@@
  ;
  %inline record_expr_field:
    | label = mkrhs(label_longident)
@@ -388,7 +388,7 @@
  ;
  %inline expr_semi_list:
    es = separated_or_terminated_nonempty_list(SEMI, expr)
-@@ -2842,22 +2848,22 @@
+@@@@
  ;
  %inline record_pat_field:
    label = mkrhs(label_longident)
@@ -415,7 +415,7 @@
  
  /* Value descriptions */
  
-@@ -2865,11 +2871,11 @@
+@@@@
    VAL
    ext = ext
    attrs1 = attributes
@@ -428,7 +428,7 @@
        let loc = make_loc $sloc in
        let docs = symbol_docs $sloc in
        Val.mk id ty ~attrs ~loc ~docs,
-@@ -2882,11 +2888,11 @@
+@@@@
    EXTERNAL
    ext = ext
    attrs1 = attributes
@@ -441,7 +441,7 @@
    attrs2 = post_item_attributes
      { let attrs = attrs1 @ attrs2 in
        let loc = make_loc $sloc in
-@@ -3060,24 +3066,24 @@
+@@@@
     [generic_constructor_declaration], whose semantic action is neutral -- it
     merely returns a tuple. *)
  generic_constructor_declaration(opening):
@@ -471,7 +471,7 @@
  str_exception_declaration:
    sig_exception_declaration
      { $1 }
-@@ -3098,32 +3104,37 @@
+@@@@
  sig_exception_declaration:
    EXCEPTION
    ext = ext
@@ -518,7 +518,7 @@
  constructor_arguments:
    | tys = inline_separated_nonempty_llist(STAR, atomic_type)
      %prec below_HASH
-@@ -3184,12 +3195,12 @@
+@@@@
        { $1 }
  ;
  %inline extension_constructor_declaration(opening):
@@ -535,7 +535,7 @@
    cid = mkrhs(constr_ident)
 --- ocaml-4.13-upstream/parsetree.mli
 +++ ocaml-4.13/parsetree.mli
-@@ -140,10 +140,12 @@
+@@@@
             - As the core_type of a Pexp_poly node.
  
             - As the pld_type field of a label_declaration.
@@ -548,7 +548,7 @@
    | Ptyp_package of package_type
          (* (module S) *)
    | Ptyp_extension of extension
-@@ -377,18 +379,20 @@
+@@@@
             (module ME : S) is represented as
             Pexp_constraint(Pexp_pack, Ptyp_package S) *)
    | Pexp_open of open_declaration * expression
@@ -570,7 +570,7 @@
      {
       pc_lhs: pattern;
       pc_guard: expression option;
-@@ -475,10 +479,11 @@
+@@@@
  *)
  
  and constructor_declaration =
@@ -582,7 +582,7 @@
       pcd_loc: Location.t;
       pcd_attributes: attributes; (* C of ... [@id1] [@id2] *)
      }
-@@ -524,15 +529,16 @@
+@@@@
      ptyexn_loc: Location.t;
      ptyexn_attributes: attributes; (* ... [@@id1] [@@id2] *)
    }
@@ -603,7 +603,7 @@
        (*
           | C = D
         *)
-@@ -885,10 +891,12 @@
+@@@@
          (* (ME : MT) *)
    | Pmod_unpack of expression
          (* (val E) *)
@@ -618,7 +618,7 @@
      {
 --- ocaml-4.13-upstream/pprintast.ml
 +++ ocaml-4.13/pprintast.ml
-@@ -826,10 +826,12 @@
+@@@@
          let fmt:(_,_,_)format =
            "@[<hv0>@[<hv2>@[<2>for %a =@;%a@;%a%a@;do@]@;%a@]@;done@]" in
          let expression = expression ctxt in
@@ -631,7 +631,7 @@
  and attributes ctxt f l =
    List.iter (attribute ctxt f) l
  
-@@ -863,38 +865,38 @@
+@@@@
  and exception_declaration ctxt f x =
    pp f "@[<hov2>exception@ %a@]%a"
      (extension_constructor ctxt) x.ptyexn_constructor
@@ -693,7 +693,7 @@
  and class_type ctxt f x =
    match x.pcty_desc with
    | Pcty_signature cs ->
-@@ -1085,11 +1087,10 @@
+@@@@
    | Pwith_modsubst (li, li2) ->
        pp f "module %a :=@ %a" longident_loc li longident_loc li2
    | Pwith_modtypesubst (li, mty) ->
@@ -705,7 +705,7 @@
    else match x.pmty_desc with
      | Pmty_ident li ->
          pp f "%a" longident_loc li;
-@@ -1229,10 +1230,12 @@
+@@@@
          pp f "(%a)(%a)" (module_expr ctxt) me1 (module_expr ctxt) me2
          (* Cf: #7200 *)
      | Pmod_unpack e ->
@@ -718,7 +718,7 @@
  
  and payload ctxt f = function
    | PStr [{pstr_desc = Pstr_eval (e, attrs)}] ->
-@@ -1544,11 +1547,12 @@
+@@@@
            pp f "@;%a" (core_type ctxt) y
    in
    let constructor_declaration f pcd =
@@ -732,7 +732,7 @@
      let intro f =
        if x.ptype_manifest = None then ()
        else pp f "@;="
-@@ -1587,15 +1591,19 @@
+@@@@
      private_flag x.ptyext_private (* Cf: #7200 *)
      (list ~sep:"" extension_constructor)
      x.ptyext_constructors
@@ -753,7 +753,7 @@
        pp f "%s%a@;%a" name
          (fun f -> function
             | Pcstr_tuple [] -> ()
-@@ -1603,11 +1611,12 @@
+@@@@
               pp f "@;of@;%a" (list (core_type1 ctxt) ~sep:"@;*@;") l
             | Pcstr_record l -> pp f "@;of@;%a" (record_declaration ctxt) l
          ) args
@@ -767,7 +767,7 @@
             | Pcstr_tuple l -> pp f "%a@;->@;%a"
                                  (list (core_type1 ctxt) ~sep:"@;*@;") l
                                  (core_type1 ctxt) r
-@@ -1618,12 +1627,13 @@
+@@@@
          (attributes ctxt) attrs
  
  and extension_constructor ctxt f x =
@@ -783,7 +783,7 @@
          longident_loc li
          (attributes ctxt) x.pext_attributes
  
-@@ -1696,5 +1706,14 @@
+@@@@
  let core_type = core_type reset_ctxt
  let pattern = pattern reset_ctxt
  let signature = signature reset_ctxt
@@ -800,7 +800,7 @@
 +let payload = payload reset_ctxt
 --- ocaml-4.13-upstream/pprintast.mli
 +++ ocaml-4.13/pprintast.mli
-@@ -38,9 +38,18 @@
+@@@@
  val module_expr: Format.formatter -> Parsetree.module_expr -> unit
  
  val toplevel_phrase : Format.formatter -> Parsetree.toplevel_phrase -> unit
