@@ -3509,7 +3509,7 @@ val_extra_ident:
 ;
 val_ident:
     LIDENT                    { $1 }
-  (*| val_extra_ident           { $1 }*)
+  | val_extra_ident           { $1 }
 ;
 operator:
     PREFIXOP                                    { $1 }
