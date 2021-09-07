@@ -45,18 +45,18 @@ OPTIONS (CODE FORMATTING STYLE)
 
        --align-cases
            Align match/try cases vertically. The flag is unset by default.
-           Warning: This option is deprecated since version 0.20.0. Vertical
-           alignment is no longer a promoted behavior.
+           Warning: This option is deprecated since version 0.20.0. It will
+           be removed by version 1.0.
 
        --align-constructors-decl
            Align type declarations vertically. The flag is unset by default.
-           Warning: This option is deprecated since version 0.20.0. Vertical
-           alignment is no longer a promoted behavior.
+           Warning: This option is deprecated since version 0.20.0. It will
+           be removed by version 1.0.
 
        --align-variants-decl
            Align type variants declarations vertically. The flag is unset by
            default. Warning: This option is deprecated since version 0.20.0.
-           Vertical alignment is no longer a promoted behavior.
+           It will be removed by version 1.0.
 
        --assignment-operator={end-line|begin-line}
            Position of the assignment operator. end-line positions assignment
