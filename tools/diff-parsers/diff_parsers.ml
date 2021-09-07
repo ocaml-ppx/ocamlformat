@@ -1,10 +1,9 @@
 let diff d1 d2 f =
   let f1 = Filename.concat d1 f in
   let f2 = Filename.concat d2 f in
-  Sys.command
-    (Printf.sprintf
-       {|[ -f %s ] && diff -U 5 %s %s | sed -E 's/^(\-\-\-|\+\+\+) ([^[:space:]]*).*$/\1 \2/'|}
-       f2 f1 f2 )
+  if Sys.file_exists f2 then
+    Sys.command (Printf.sprintf {|diff -U 5 -L %s %s -L %s %s|} f1 f1 f2 f2)
+  else 0
 
 let import version dir f =
   Sys.command
