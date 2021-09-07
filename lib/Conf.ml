@@ -185,24 +185,29 @@ let ocaml_version_conv =
 module Formatting = struct
   let section = `Formatting
 
+  let removed_by_v1_0 = "It will be removed by version 1.0."
+
   let align_cases =
     let doc = "Align match/try cases vertically." in
     let names = ["align-cases"] in
-    C.flag ~default:false ~names ~doc ~section
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.flag ~default:false ~names ~doc ~section ~deprecated
       (fun conf x -> {conf with align_cases= x})
       (fun conf -> conf.align_cases)
 
   let align_constructors_decl =
     let doc = "Align type declarations vertically." in
     let names = ["align-constructors-decl"] in
-    C.flag ~default:false ~names ~doc ~section
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.flag ~default:false ~names ~doc ~section ~deprecated
       (fun conf x -> {conf with align_constructors_decl= x})
       (fun conf -> conf.align_constructors_decl)
 
   let align_variants_decl =
     let doc = "Align type variants declarations vertically." in
     let names = ["align-variants-decl"] in
-    C.flag ~default:false ~names ~doc ~section
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.flag ~default:false ~names ~doc ~section ~deprecated
       (fun conf x -> {conf with align_variants_decl= x})
       (fun conf -> conf.align_variants_decl)
 
