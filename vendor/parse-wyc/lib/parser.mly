@@ -22,6 +22,13 @@
    such a way that this results in a clean removal of certain
    symbols, productions, or declarations. */
 
+/* parse-wyc:
+   Compared to upstream, rules with errors on the RHS (between [BEGIN AVOID]
+   and [END AVOID]) are commented. Some rules definition are kept to minimize
+   the diff as long as the call sites are commented. This is necessary to
+   trigger the recovery in case of invalid input, instead of triggering the
+   error rules. */
+
 %{
 
 open Asttypes
