@@ -1,5 +1,5 @@
---- ocaml-4.13-extended/lexer.mll	2021-09-04 00:39:54.626532722 +0800
-+++ parse-wyc/lib/lexer.mll	2021-09-04 00:39:54.686533572 +0800
+--- ocaml-4.13-extended/lexer.mll
++++ parse-wyc/lib/lexer.mll
 @@ -253,14 +253,14 @@
  
  let escaped_newlines = ref false
@@ -134,8 +134,8 @@
          string lexbuf
        }
    | eof
---- ocaml-4.13-extended/parser.mly	2021-09-04 00:39:54.634532835 +0800
-+++ parse-wyc/lib/parser.mly	2021-09-04 00:39:54.690533629 +0800
+--- ocaml-4.13-extended/parser.mly
++++ parse-wyc/lib/parser.mly
 @@ -28,10 +28,11 @@
  open Longident
  open Parsetree

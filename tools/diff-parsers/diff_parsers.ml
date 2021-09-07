@@ -2,7 +2,9 @@ let diff d1 d2 f =
   let f1 = Filename.concat d1 f in
   let f2 = Filename.concat d2 f in
   Sys.command
-    (Printf.sprintf "[ -f %s ] && diff -U 5 %s %s" f2 f1 f2)
+    (Printf.sprintf
+       {|[ -f %s ] && diff -U 5 %s %s | sed -E 's/^(\-\-\-|\+\+\+) ([^[:space:]]*).*$/\1 \2/'|}
+       f2 f1 f2 )
 
 let import version dir f =
   Sys.command
