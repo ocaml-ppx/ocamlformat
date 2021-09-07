@@ -1089,6 +1089,7 @@ and with_constraint ctxt f = function
   | Pwith_modtypesubst (li, mty) ->
       pp f "module type %a :=@ %a" longident_loc li (module_type ctxt) mty;
 
+
 and module_type1 ctxt f x =
   if x.pmty_attributes <> [] then module_type ctxt f x
   else match x.pmty_desc with

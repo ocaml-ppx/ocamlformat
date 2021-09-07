@@ -239,18 +239,6 @@
    match x.pcty_desc with
    | Pcty_signature cs ->
 @@@@
-   | Pwith_modsubst (li, li2) ->
-       pp f "module %a :=@ %a" longident_loc li longident_loc li2
-   | Pwith_modtypesubst (li, mty) ->
-       pp f "module type %a :=@ %a" longident_loc li (module_type ctxt) mty;
- 
--
- and module_type1 ctxt f x =
-   if x.pmty_attributes <> [] then module_type ctxt f x
-   else match x.pmty_desc with
-     | Pmty_ident li ->
-         pp f "%a" longident_loc li;
-@@@@
          pp f "(%a)(%a)" (module_expr ctxt) me1 (module_expr ctxt) me2
          (* Cf: #7200 *)
      | Pmod_unpack e ->
