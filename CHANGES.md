@@ -2,6 +2,8 @@
 
 #### Removed
 
+  + Remove the version handshake from the RPC protocol, the old 'Version' command will now be ignored for compatibility with software using an older version of the library. (#1775, @gpetiot)
+
 #### Deprecated
 
   + Profiles `compact` and `sparse` are now deprecated and will be removed by version 1.0 (#1803, @gpetiot)
