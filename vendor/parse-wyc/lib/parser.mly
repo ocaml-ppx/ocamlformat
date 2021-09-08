@@ -158,9 +158,9 @@ let neg_string f =
 let mkuminus ~oploc name arg =
   match name, arg.pexp_desc with
   | "-", Pexp_constant({pconst_desc= Pconst_integer (n,m); _} as c) ->
-      Pexp_constant({ c with pconst_desc= Pconst_integer(neg_string n,m)})
+      Pexp_constant({c with pconst_desc= Pconst_integer(neg_string n,m)})
   | ("-" | "-."), Pexp_constant({pconst_desc= Pconst_float (f, m); _} as c) ->
-      Pexp_constant({ c with pconst_desc= Pconst_float(neg_string f, m)})
+      Pexp_constant({c with pconst_desc= Pconst_float(neg_string f, m)})
   | _ ->
       Pexp_apply(mkoperator ~loc:oploc ("~" ^ name), [Nolabel, arg])
 
