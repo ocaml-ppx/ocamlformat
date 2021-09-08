@@ -1,3 +1,14 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                              OCamlFormat                               *)
+(*                                                                        *)
+(*            Copyright (c) Facebook, Inc. and its affiliates.            *)
+(*                                                                        *)
+(*      This source code is licensed under the MIT license found in       *)
+(*      the LICENSE file in the root directory of this source tree.       *)
+(*                                                                        *)
+(**************************************************************************)
+
 let diff d1 d2 f =
   let f1 = Filename.concat d1 f in
   let f2 = Filename.concat d2 f in
