@@ -40,14 +40,44 @@ let maybe_skip_phrase lexbuf =
   | Parser.SEMISEMI | Parser.EOF -> ()
   | _ -> skip_phrase lexbuf
 
-type 'a parser =
-  (Lexing.lexbuf -> Parser.token) -> Lexing.lexbuf -> 'a
+type 'a parser = Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
 
 let wrap (parser : 'a parser) lexbuf : 'a =
   try
     Docstrings.init ();
     Lexer.init ();
-    let ast = parser token lexbuf in
+    let open Parser.MenhirInterpreter in
+    let rec fix_resume = function
+      | InputNeeded _ | Accepted _ | Rejected | HandlingError _ as cp -> cp
+      | Shifting (_, _, _) | AboutToReduce (_, _) as cp ->
+        fix_resume (resume ~strategy:`Simplified cp)
+    in
+    let rec offer_input lexbuf cp tok =
+      let ptok = Lexing.(tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
+      match fix_resume (offer cp ptok) with
+      | InputNeeded _ as cp ->
+          offer_input lexbuf cp (token lexbuf)
+      | Accepted x -> Some x
+      | Rejected -> None
+      | Shifting (_, _, _) | AboutToReduce (_, _) ->
+          assert false
+      | HandlingError _ as cp' ->
+        match Lexer.try_disambiguate lexbuf tok with
+        | Some tok' -> offer_input lexbuf cp tok'
+        | None -> main_loop lexbuf cp'
+    and main_loop lexbuf = function
+      | InputNeeded _ as cp ->
+          offer_input lexbuf cp (token lexbuf)
+      | Accepted x -> Some x
+      | Rejected -> None
+      | Shifting (_, _, _) | AboutToReduce (_, _) | HandlingError _ as cp ->
+        main_loop lexbuf (resume ~strategy:`Simplified cp)
+    in
+    let ast =
+      match main_loop lexbuf (parser lexbuf.Lexing.lex_curr_p) with
+      | Some ast -> ast
+      | None -> raise Parsing.Parse_error
+    in
     Parsing.clear_parser();
     Docstrings.warn_bad_docstrings ();
     last_token := Parser.EOF;
@@ -88,20 +118,20 @@ let wrap (parser : 'a parser) lexbuf : 'a =
    In either case, the parser will not attempt to read one token past
    the syntax error. *)
 
-let implementation = wrap Parser.implementation
-and interface = wrap Parser.interface
-and toplevel_phrase = wrap Parser.toplevel_phrase
-and use_file = wrap Parser.use_file
-and core_type = wrap Parser.parse_core_type
-and expression = wrap Parser.parse_expression
-and pattern = wrap Parser.parse_pattern
+let implementation = wrap Parser.Incremental.implementation
+and interface = wrap Parser.Incremental.interface
+and toplevel_phrase = wrap Parser.Incremental.toplevel_phrase
+and use_file = wrap Parser.Incremental.use_file
+and core_type = wrap Parser.Incremental.parse_core_type
+and expression = wrap Parser.Incremental.parse_expression
+and pattern = wrap Parser.Incremental.parse_pattern
 
-let longident = wrap Parser.parse_any_longident
-let val_ident = wrap Parser.parse_val_longident
-let constr_ident= wrap Parser.parse_constr_longident
-let extended_module_path = wrap Parser.parse_mod_ext_longident
-let simple_module_path = wrap Parser.parse_mod_longident
-let type_ident = wrap Parser.parse_mty_longident
+let longident = wrap Parser.Incremental.parse_any_longident
+let val_ident = wrap Parser.Incremental.parse_val_longident
+let constr_ident= wrap Parser.Incremental.parse_constr_longident
+let extended_module_path = wrap Parser.Incremental.parse_mod_ext_longident
+let simple_module_path = wrap Parser.Incremental.parse_mod_longident
+let type_ident = wrap Parser.Incremental.parse_mty_longident
 
 (* Error reporting for Syntaxerr *)
 (* The code has been moved here so that one can reuse Pprintast.tyvar *)

@@ -43,6 +43,8 @@
 
   + Add a new `ocaml-version` option to select the version of OCaml syntax of the output (#1759, @gpetiot)
 
+  + Allow disambiguated global identifiers (like t/2) so they can be formatted by tools like OCaml-LSP (#1716, @let-def)
+
 ### 0.19.0 (2021-07-16)
 
 #### Bug fixes

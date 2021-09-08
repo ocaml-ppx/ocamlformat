@@ -55,7 +55,8 @@ module Token = struct
      |COLONCOLON | COLONEQUAL | DOTDOT | DOTOP _ | EQUAL | GREATER
      |HASHOP _ | INFIXOP0 _ | INFIXOP1 _ | INFIXOP2 _ | INFIXOP3 _
      |INFIXOP4 _ | LESS | LESSMINUS | LETOP _ | MINUS | MINUSDOT
-     |MINUSGREATER | PERCENT | PLUS | PLUSDOT | PLUSEQ | SEMI | STAR ->
+     |MINUSGREATER | PERCENT | PLUS | PLUSDOT | PLUSEQ | SEMI | SLASH | STAR
+      ->
         true
     | _ -> false
 end
