@@ -260,7 +260,7 @@ let recover (type a) : a Extended_ast.t -> _ -> a = function
 
 let strconst_mapper locs =
   let constant self c =
-    match c with
+    match c.Parsetree.pconst_desc with
     | Parsetree.Pconst_string (_, {Location.loc_start; loc_end; _}, Some _)
       ->
         locs := (loc_start.Lexing.pos_cnum, loc_end.Lexing.pos_cnum) :: !locs ;
@@ -511,7 +511,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
   Location.input_name := input_name ;
   let fallback () = Indent.Partial_ast.indent_range ~source ~range in
   let indent_parsed parsed std_parsed ~src ~range =
-    let {ast= parsed_ast; source= parsed_src; _} = parsed in
+    let {ast= parsed_ast; _} = parsed in
     match
       format fg std_fg ~input_name ~prev_source:src ~parsed ~std_parsed conf
         opts
@@ -523,8 +523,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
       with
       | Ok {ast= fmted_ast; source= fmted_src; _} ->
           Indent.Valid_ast.indent_range fg ~lines ~range
-            ~unformatted:(parsed_ast, parsed_src, src)
-            ~formatted:(fmted_ast, fmted_src)
+            ~unformatted:(parsed_ast, src) ~formatted:(fmted_ast, fmted_src)
       | Error _ -> fallback () )
     | Error _ -> fallback ()
   in

@@ -31,7 +31,8 @@ let dedup_cmts fragment ast comments =
               [ { pstr_desc=
                     Pstr_eval
                       ( { pexp_desc=
-                            Pexp_constant (Pconst_string (doc, _, None))
+                            Pexp_constant
+                              {pconst_desc= Pconst_string (doc, _, None); _}
                         ; pexp_loc
                         ; _ }
                       , [] )

@@ -278,7 +278,7 @@ module Exp = struct
 
   let rec is_trivial c exp =
     match exp.pexp_desc with
-    | Pexp_constant (Pconst_string (_, _, None)) -> true
+    | Pexp_constant {pconst_desc= Pconst_string (_, _, None); _} -> true
     | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
     | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
     | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial c e1
@@ -345,7 +345,8 @@ let doc_atrs ?(acc = []) atrs =
                 [ { pstr_desc=
                       Pstr_eval
                         ( { pexp_desc=
-                              Pexp_constant (Pconst_string (doc, _, None))
+                              Pexp_constant
+                                {pconst_desc= Pconst_string (doc, _, None); _}
                           ; pexp_loc= loc
                           ; pexp_attributes= []
                           ; _ }
@@ -1735,7 +1736,8 @@ end = struct
           ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple _; _}) ->
           Some ColonColon
       | Pexp_construct (_, Some _) -> Some Apply
-      | Pexp_constant (Pconst_integer (i, _) | Pconst_float (i, _)) -> (
+      | Pexp_constant
+          {pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _} -> (
         match i.[0] with '-' | '+' -> Some UMinus | _ -> Some Atomic )
       | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc; _}; _}, [_])
         -> (
@@ -2276,7 +2278,8 @@ end = struct
     (* Integers without suffixes must be parenthesised on the lhs of an
        indexing operator *)
     | ( Exp {pexp_desc= Pexp_apply (op, (Nolabel, left) :: _); _}
-      , {pexp_desc= Pexp_constant (Pconst_integer (_, None)); _} )
+      , { pexp_desc= Pexp_constant {pconst_desc= Pconst_integer (_, None); _}
+        ; _ } )
       when exp == left && Exp.is_index_op op ->
         true
     | Exp {pexp_desc= Pexp_field (e, _); _}, {pexp_desc= Pexp_construct _; _}

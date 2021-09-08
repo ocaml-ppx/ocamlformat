@@ -1,6 +1,39 @@
 --- ocaml-4.13/ast_helper.ml
 +++ ocaml-4.13-extended/ast_helper.ml
 @@@@
+ 
+ let with_default_loc l f =
+   Misc.protect_refs [Misc.R (default_loc, l)] f
+ 
+ module Const = struct
+-  let integer ?suffix i = Pconst_integer (i, suffix)
+-  let int ?suffix i = integer ?suffix (Int.to_string i)
+-  let int32 ?(suffix='l') i = integer ~suffix (Int32.to_string i)
+-  let int64 ?(suffix='L') i = integer ~suffix (Int64.to_string i)
+-  let nativeint ?(suffix='n') i = integer ~suffix (Nativeint.to_string i)
+-  let float ?suffix f = Pconst_float (f, suffix)
+-  let char c = Pconst_char c
++  let mk ?(loc = !default_loc) d =
++    {pconst_desc = d;
++     pconst_loc = loc}
++
++  let integer ?loc ?suffix i = mk ?loc (Pconst_integer (i, suffix))
++  let int ?loc ?suffix i = integer ?loc ?suffix (Int.to_string i)
++  let int32 ?loc ?(suffix='l') i = integer ?loc ~suffix (Int32.to_string i)
++  let int64 ?loc ?(suffix='L') i = integer ?loc ~suffix (Int64.to_string i)
++  let nativeint ?loc ?(suffix='n') i =
++    integer ?loc ~suffix (Nativeint.to_string i)
++  let float ?loc ?suffix f = mk ?loc (Pconst_float (f, suffix))
++  let char ?loc c = mk ?loc (Pconst_char c)
+   let string ?quotation_delimiter ?(loc= !default_loc) s =
+-    Pconst_string (s, loc, quotation_delimiter)
++    mk ~loc (Pconst_string (s, loc, quotation_delimiter))
+ end
+ 
+ module Attr = struct
+   let mk ?(loc= !default_loc) name payload =
+     { attr_name = name;
+@@@@
    let tuple ?loc ?attrs a = mk ?loc ?attrs (Ppat_tuple a)
    let construct ?loc ?attrs a b = mk ?loc ?attrs (Ppat_construct (a, b))
    let variant ?loc ?attrs a b = mk ?loc ?attrs (Ppat_variant (a, b))
@@ -26,6 +59,35 @@
    let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
 --- ocaml-4.13/ast_helper.mli
 +++ ocaml-4.13-extended/ast_helper.mli
+@@@@
+         of the provided function. *)
+ 
+ (** {1 Constants} *)
+ 
+ module Const : sig
+-  val char : char -> constant
++  val mk: ?loc:loc -> constant_desc -> constant
++
++  val char : ?loc:loc -> char -> constant
+   val string :
+     ?quotation_delimiter:string -> ?loc:Location.t -> string -> constant
+-  val integer : ?suffix:char -> string -> constant
+-  val int : ?suffix:char -> int -> constant
+-  val int32 : ?suffix:char -> int32 -> constant
+-  val int64 : ?suffix:char -> int64 -> constant
+-  val nativeint : ?suffix:char -> nativeint -> constant
+-  val float : ?suffix:char -> string -> constant
++  val integer : ?loc:loc -> ?suffix:char -> string -> constant
++  val int : ?loc:loc -> ?suffix:char -> int -> constant
++  val int32 : ?loc:loc -> ?suffix:char -> int32 -> constant
++  val int64 : ?loc:loc -> ?suffix:char -> int64 -> constant
++  val nativeint : ?loc:loc -> ?suffix:char -> nativeint -> constant
++  val float : ?loc:loc -> ?suffix:char -> string -> constant
+ end
+ 
+ (** {1 Attributes} *)
+ module Attr : sig
+   val mk: ?loc:loc -> str -> payload -> attribute
 @@@@
      val interval: ?loc:loc -> ?attrs:attrs -> constant -> constant -> pattern
      val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
@@ -58,6 +120,37 @@
 --- ocaml-4.13/ast_mapper.ml
 +++ ocaml-4.13-extended/ast_mapper.ml
 @@@@
+ let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
+ 
+ module C = struct
+   (* Constants *)
+ 
+-  let map sub c = match c with
+-    | Pconst_integer _
+-    | Pconst_char _
+-    | Pconst_float _
+-      -> c
+-    | Pconst_string (s, loc, quotation_delimiter) ->
+-        let loc = sub.location sub loc in
+-        Const.string ~loc ?quotation_delimiter s
++  let map sub { pconst_desc; pconst_loc } =
++    let loc = sub.location sub pconst_loc in
++    let desc =
++      match pconst_desc with
++      | Pconst_integer _
++      | Pconst_char _
++      | Pconst_float _ ->
++          pconst_desc
++      | Pconst_string (s, loc, quotation_delimiter) ->
++          Pconst_string (s, sub.location sub loc, quotation_delimiter)
++    in
++    Const.mk ~loc desc
+ end
+ 
+ module T = struct
+   (* Type expressions for the core language *)
+ 
+@@@@
          field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
      | Pexp_setfield (e1, lid, e2) ->
          setfield ~loc ~attrs (sub.expr sub e1) (map_loc sub lid)
@@ -87,6 +180,44 @@
          constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
      | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
      | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
+@@@@
+     raise (Invalid_argument "extension_of_error: expected kind Report_error");
+   let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
+   let extension_of_sub sub =
+     { loc = sub.loc; txt = "ocaml.error" },
+     PStr ([Str.eval (Exp.constant
+-                       (Pconst_string (str_of_pp sub.txt, sub.loc, None)))])
++                       (Const.mk (Pconst_string (str_of_pp sub.txt, sub.loc, None))))])
+   in
+   { loc = main.loc; txt = "ocaml.error" },
+   PStr (Str.eval (Exp.constant
+-                    (Pconst_string (str_of_pp main.txt, main.loc, None))) ::
++                    (Const.mk (Pconst_string (str_of_pp main.txt, main.loc, None)))) ::
+         List.map (fun msg -> Str.extension (extension_of_sub msg)) sub)
+ 
+ let attribute_of_warning loc s =
+   Attr.mk
+     {loc; txt = "ocaml.ppwarning" }
+-    (PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, loc, None)))]))
++    (PStr ([Str.eval ~loc (Exp.constant (Const.mk (Pconst_string (s, loc, None))))]))
+ 
+ let cookies = ref String.Map.empty
+ 
+ let get_cookie k =
+   try Some (String.Map.find k !cookies)
+@@@@
+         raise_errorf "Internal error: invalid [@@@ocaml.ppx.context] syntax"
+ 
+   let restore fields =
+     let field name payload =
+       let rec get_string = function
+-        | { pexp_desc = Pexp_constant (Pconst_string (str, _, None)) } -> str
++        | { pexp_desc = Pexp_constant {pconst_desc= Pconst_string (str, _, None); _ } } -> str
+         | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
+                              { %s }] string syntax" name
+       and get_bool pexp =
+         match pexp with
+         | {pexp_desc = Pexp_construct ({txt = Longident.Lident "true"},
 --- ocaml-4.13/asttypes.mli
 +++ ocaml-4.13-extended/asttypes.mli
 @@@@
@@ -102,8 +233,52 @@
  type arg_label =
      Nolabel
    | Labelled of string (*  label:T -> ... *)
+--- ocaml-4.13/docstrings.ml
++++ ocaml-4.13-extended/docstrings.ml
+@@@@
+ 
+ let docs_attr ds =
+   let open Parsetree in
+   let body = ds.ds_body in
+   let loc = ds.ds_loc in
++  let const = { pconst_desc= Pconst_string(body,loc,None); pconst_loc= loc } in
+   let exp =
+-    { pexp_desc = Pexp_constant (Pconst_string(body, loc, None));
++    { pexp_desc = Pexp_constant const;
+       pexp_loc = loc;
+       pexp_loc_stack = [];
+       pexp_attributes = []; }
+   in
+   let item =
+@@@@
+ 
+ let text_attr ds =
+   let open Parsetree in
+   let body = ds.ds_body in
+   let loc = ds.ds_loc in
++  let const = { pconst_desc= Pconst_string(body,loc,None); pconst_loc= loc } in
+   let exp =
+-    { pexp_desc = Pexp_constant (Pconst_string(body, loc, None));
++    { pexp_desc = Pexp_constant const;
+       pexp_loc = loc;
+       pexp_loc_stack = [];
+       pexp_attributes = []; }
+   in
+   let item =
 --- ocaml-4.13/parser.mly
 +++ ocaml-4.13-extended/parser.mly
+@@@@
+ let mksig ~loc d = Sig.mk ~loc:(make_loc loc) d
+ let mkmod ~loc ?attrs d = Mod.mk ~loc:(make_loc loc) ?attrs d
+ let mkstr ~loc d = Str.mk ~loc:(make_loc loc) d
+ let mkclass ~loc ?attrs d = Cl.mk ~loc:(make_loc loc) ?attrs d
+ let mkcty ~loc ?attrs d = Cty.mk ~loc:(make_loc loc) ?attrs d
++let mkconst ~loc c = Const.mk ~loc:(make_loc loc) c
+ 
+ let pstr_typext (te, ext) =
+   (Pstr_typext te, ext)
+ let pstr_primitive (vd, ext) =
+   (Pstr_primitive vd, ext)
 @@@@
    Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
  let mkcf ~loc ?attrs ?docs d =
@@ -116,6 +291,35 @@
    if x.Location.loc_ghost
    then acc
    else x :: acc
+@@@@
+   then String.sub f 1 (String.length f - 1)
+   else "-" ^ f
+ 
+ let mkuminus ~oploc name arg =
+   match name, arg.pexp_desc with
+-  | "-", Pexp_constant(Pconst_integer (n,m)) ->
+-      Pexp_constant(Pconst_integer(neg_string n,m))
+-  | ("-" | "-."), Pexp_constant(Pconst_float (f, m)) ->
+-      Pexp_constant(Pconst_float(neg_string f, m))
++  | "-", Pexp_constant({pconst_desc= Pconst_integer (n,m); _} as c) ->
++      Pexp_constant({c with pconst_desc= Pconst_integer(neg_string n,m)})
++  | ("-" | "-."), Pexp_constant({pconst_desc= Pconst_float (f, m); _} as c) ->
++      Pexp_constant({c with pconst_desc= Pconst_float(neg_string f, m)})
+   | _ ->
+       Pexp_apply(mkoperator ~loc:oploc ("~" ^ name), [Nolabel, arg])
+ 
+ let mkuplus ~oploc name arg =
+   let desc = arg.pexp_desc in
+   match name, desc with
+-  | "+", Pexp_constant(Pconst_integer _)
+-  | ("+" | "+."), Pexp_constant(Pconst_float _) -> desc
++  | "+", Pexp_constant({pconst_desc= Pconst_integer _; _})
++  | ("+" | "+."), Pexp_constant({pconst_desc= Pconst_float _; _}) -> desc
+   | _ ->
+       Pexp_apply(mkoperator ~loc:oploc ("~" ^ name), [Nolabel, arg])
+ 
+ (* TODO define an abstraction boundary between locations-as-pairs
+    and locations-as-Location.t; it should be clear when we move from
 @@@@
  let mkpat_cons_desc consloc args =
    Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
@@ -152,6 +356,20 @@
  
  let mkexp_constraint ~loc e (t1, t2) =
    match t1, t2 with
+@@@@
+ let wrap_mksig_ext ~loc (item, ext) =
+   wrap_sig_ext ~loc (mksig ~loc item) ext
+ 
+ let mk_quotedext ~loc (id, idloc, str, strloc, delim) =
+   let exp_id = mkloc id idloc in
+-  let e = ghexp ~loc (Pexp_constant (Pconst_string (str, strloc, delim))) in
++  let const = Const.mk ~loc:strloc (Pconst_string (str, strloc, delim)) in
++  let e = ghexp ~loc (Pexp_constant const) in
+   (exp_id, PStr [mkstrexp e []])
+ 
+ let text_str pos = Str.text (rhs_text pos)
+ let text_sig pos = Sig.text (rhs_text pos)
+ let text_cstr pos = Cf.text (rhs_text pos)
 @@@@
     semantic value is a pair of a list of [X]s and an optional [Y]. *)
  
@@ -214,8 +432,74 @@
  %inline record_pat_field:
    label = mkrhs(label_longident)
    octy = preceded(COLON, core_type)?
+@@@@
+ ;
+ 
+ /* Constants */
+ 
+ constant:
+-  | INT          { let (n, m) = $1 in Pconst_integer (n, m) }
+-  | CHAR         { Pconst_char $1 }
+-  | STRING       { let (s, strloc, d) = $1 in Pconst_string (s, strloc, d) }
+-  | FLOAT        { let (f, m) = $1 in Pconst_float (f, m) }
++  | INT          { let (n, m) = $1 in
++                   mkconst ~loc:$sloc (Pconst_integer (n, m)) }
++  | CHAR         { mkconst ~loc:$sloc (Pconst_char $1) }
++  | STRING       { let (s, strloc, d) = $1 in
++                   mkconst ~loc:$sloc (Pconst_string (s,strloc,d)) }
++  | FLOAT        { let (f, m) = $1 in
++                   mkconst ~loc:$sloc (Pconst_float (f, m)) }
+ ;
+ signed_constant:
+     constant     { $1 }
+-  | MINUS INT    { let (n, m) = $2 in Pconst_integer("-" ^ n, m) }
+-  | MINUS FLOAT  { let (f, m) = $2 in Pconst_float("-" ^ f, m) }
+-  | PLUS INT     { let (n, m) = $2 in Pconst_integer (n, m) }
+-  | PLUS FLOAT   { let (f, m) = $2 in Pconst_float(f, m) }
++  | MINUS INT    { let (n, m) = $2 in
++                   mkconst ~loc:$sloc (Pconst_integer("-" ^ n, m)) }
++  | MINUS FLOAT  { let (f, m) = $2 in
++                   mkconst ~loc:$sloc (Pconst_float("-" ^ f, m)) }
++  | PLUS INT     { let (n, m) = $2 in
++                   mkconst ~loc:$sloc (Pconst_integer (n, m)) }
++  | PLUS FLOAT   { let (f, m) = $2 in
++                   mkconst ~loc:$sloc (Pconst_float(f, m)) }
+ ;
+ 
+ /* Identifiers and long identifiers */
+ 
+ ident:
 --- ocaml-4.13/parsetree.mli
 +++ ocaml-4.13-extended/parsetree.mli
+@@@@
+ 
+ *)
+ 
+ open Asttypes
+ 
+-type constant =
++type constant_desc =
+     Pconst_integer of string * char option
+   (* 3 3l 3L 3n
+ 
+      Suffixes [g-z][G-Z] are accepted by the parser.
+      Suffixes except 'l', 'L' and 'n' are rejected by the typechecker
+@@@@
+ 
+      Suffixes [g-z][G-Z] are accepted by the parser.
+      Suffixes are rejected by the typechecker.
+   *)
+ 
++type constant = {
++  pconst_desc : constant_desc;
++  pconst_loc : Location.t;
++}
++
+ type location_stack = Location.t list
+ 
+ (** {1 Extension points} *)
+ 
+ type attribute = {
 @@@@
           *)
    | Ppat_variant of label * pattern option
@@ -253,6 +537,20 @@
    | Pexp_while of expression * expression
 --- ocaml-4.13/pprintast.ml
 +++ ocaml-4.13-extended/pprintast.ml
+@@@@
+   | Lapply (y,s) ->
+       pp f "%a(%a)" longident y longident s
+ 
+ let longident_loc f x = pp f "%a" longident x.txt
+ 
+-let constant f = function
++let constant f x =
++  match x.pconst_desc with
+   | Pconst_char i ->
+       pp f "%C"  i
+   | Pconst_string (i, _, None) ->
+       pp f "%S" i
+   | Pconst_string (i, _, Some delim) ->
 @@@@
              pp f "@[<hov2>%s: %a@ %a@ @]" l.txt
                (core_type ctxt) ct (attributes ctxt) x.pof_attributes

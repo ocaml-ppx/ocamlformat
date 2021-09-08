@@ -304,7 +304,7 @@ let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
   | PStr
       [ { pstr_desc=
             Pstr_eval
-              ( { pexp_desc= Pexp_constant (Pconst_string _)
+              ( { pexp_desc= Pexp_constant {pconst_desc= Pconst_string _; _}
                 ; pexp_loc= _
                 ; pexp_loc_stack= _
                 ; pexp_attributes= _ }
@@ -349,7 +349,7 @@ let init fragment ~debug source asts comments_n_docstrings =
   in
   let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
   if not (List.is_empty comments) then (
-    let loc_tree, locs = Loc_tree.of_ast fragment asts source in
+    let loc_tree, locs = Loc_tree.of_ast fragment asts in
     if debug then
       List.iter locs ~f:(fun loc ->
           if not (Location.compare loc Location.none = 0) then
