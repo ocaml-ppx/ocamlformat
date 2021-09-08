@@ -1,0 +1,308 @@
+--- ocaml-4.13/ast_helper.ml
++++ ocaml-4.13-extended/ast_helper.ml
+@@@@
+   let tuple ?loc ?attrs a = mk ?loc ?attrs (Ppat_tuple a)
+   let construct ?loc ?attrs a b = mk ?loc ?attrs (Ppat_construct (a, b))
+   let variant ?loc ?attrs a b = mk ?loc ?attrs (Ppat_variant (a, b))
+   let record ?loc ?attrs a b = mk ?loc ?attrs (Ppat_record (a, b))
+   let array ?loc ?attrs a = mk ?loc ?attrs (Ppat_array a)
++  let list ?loc ?attrs a = mk ?loc ?attrs (Ppat_list a)
+   let or_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_or (a, b))
+   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Ppat_constraint (a, b))
+   let type_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_type a)
+   let lazy_ ?loc ?attrs a = mk ?loc ?attrs (Ppat_lazy a)
+   let unpack ?loc ?attrs a = mk ?loc ?attrs (Ppat_unpack a)
+@@@@
+   let variant ?loc ?attrs a b = mk ?loc ?attrs (Pexp_variant (a, b))
+   let record ?loc ?attrs a b = mk ?loc ?attrs (Pexp_record (a, b))
+   let field ?loc ?attrs a b = mk ?loc ?attrs (Pexp_field (a, b))
+   let setfield ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_setfield (a, b, c))
+   let array ?loc ?attrs a = mk ?loc ?attrs (Pexp_array a)
++  let list ?loc ?attrs a = mk ?loc ?attrs (Pexp_list a)
+   let ifthenelse ?loc ?attrs a b c = mk ?loc ?attrs (Pexp_ifthenelse (a, b, c))
+   let sequence ?loc ?attrs a b = mk ?loc ?attrs (Pexp_sequence (a, b))
+   let while_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_while (a, b))
+   let for_ ?loc ?attrs a b c d e = mk ?loc ?attrs (Pexp_for (a, b, c, d, e))
+   let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_constraint (a, b))
+--- ocaml-4.13/ast_helper.mli
++++ ocaml-4.13-extended/ast_helper.mli
+@@@@
+     val interval: ?loc:loc -> ?attrs:attrs -> constant -> constant -> pattern
+     val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
+     val construct: ?loc:loc -> ?attrs:attrs ->
+       lid -> (str list * pattern) option -> pattern
+     val variant: ?loc:loc -> ?attrs:attrs -> label -> pattern option -> pattern
+-    val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list -> closed_flag
+-                -> pattern
++    val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list
++                -> closed_flag_loc -> pattern
+     val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
++    val list: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
+     val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
+     val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
+     val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
+     val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
+     val unpack: ?loc:loc -> ?attrs:attrs -> str_opt -> pattern
+@@@@
+                 -> expression option -> expression
+     val field: ?loc:loc -> ?attrs:attrs -> expression -> lid -> expression
+     val setfield: ?loc:loc -> ?attrs:attrs -> expression -> lid -> expression
+                   -> expression
+     val array: ?loc:loc -> ?attrs:attrs -> expression list -> expression
++    val list: ?loc:loc -> ?attrs:attrs -> expression list -> expression
+     val ifthenelse: ?loc:loc -> ?attrs:attrs -> expression -> expression
+                     -> expression option -> expression
+     val sequence: ?loc:loc -> ?attrs:attrs -> expression -> expression
+                   -> expression
+     val while_: ?loc:loc -> ?attrs:attrs -> expression -> expression
+--- ocaml-4.13/ast_mapper.ml
++++ ocaml-4.13-extended/ast_mapper.ml
+@@@@
+         field ~loc ~attrs (sub.expr sub e) (map_loc sub lid)
+     | Pexp_setfield (e1, lid, e2) ->
+         setfield ~loc ~attrs (sub.expr sub e1) (map_loc sub lid)
+           (sub.expr sub e2)
+     | Pexp_array el -> array ~loc ~attrs (List.map (sub.expr sub) el)
++    | Pexp_list el -> list ~loc ~attrs (List.map (sub.expr sub) el)
+     | Pexp_ifthenelse (e1, e2, e3) ->
+         ifthenelse ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
+           (map_opt (sub.expr sub) e3)
+     | Pexp_sequence (e1, e2) ->
+         sequence ~loc ~attrs (sub.expr sub e1) (sub.expr sub e2)
+@@@@
+              (fun (vl, p) -> List.map (map_loc sub) vl, sub.pat sub p)
+              p)
+     | Ppat_variant (l, p) -> variant ~loc ~attrs l (map_opt (sub.pat sub) p)
+     | Ppat_record (lpl, cf) ->
+         record ~loc ~attrs
+-               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl) cf
++               (List.map (map_tuple (map_loc sub) (sub.pat sub)) lpl)
++               (match cf with
++                | Closed -> Closed
++                | Open loc -> Open (sub.location sub loc))
+     | Ppat_array pl -> array ~loc ~attrs (List.map (sub.pat sub) pl)
++    | Ppat_list pl -> list ~loc ~attrs (List.map (sub.pat sub) pl)
+     | Ppat_or (p1, p2) -> or_ ~loc ~attrs (sub.pat sub p1) (sub.pat sub p2)
+     | Ppat_constraint (p, t) ->
+         constraint_ ~loc ~attrs (sub.pat sub p) (sub.typ sub t)
+     | Ppat_type s -> type_ ~loc ~attrs (map_loc sub s)
+     | Ppat_lazy p -> lazy_ ~loc ~attrs (sub.pat sub p)
+--- ocaml-4.13/asttypes.mli
++++ ocaml-4.13-extended/asttypes.mli
+@@@@
+ 
+ type override_flag = Override | Fresh
+ 
+ type closed_flag = Closed | Open
+ 
++type closed_flag_loc = Closed | Open of Location.t
++
+ type label = string
+ 
+ type arg_label =
+     Nolabel
+   | Labelled of string (*  label:T -> ... *)
+--- ocaml-4.13/parser.mly
++++ ocaml-4.13-extended/parser.mly
+@@@@
+   Ctf.mk ~loc:(make_loc loc) ?attrs ?docs d
+ let mkcf ~loc ?attrs ?docs d =
+   Cf.mk ~loc:(make_loc loc) ?attrs ?docs d
+ 
+ let mkrhs rhs loc = mkloc rhs (make_loc loc)
+-let ghrhs rhs loc = mkloc rhs (ghost_loc loc)
+ 
+ let push_loc x acc =
+   if x.Location.loc_ghost
+   then acc
+   else x :: acc
+@@@@
+ let mkpat_cons_desc consloc args =
+   Ppat_construct(mkrhs (Lident "::") consloc, Some ([], args))
+ let mkpat_cons ~loc consloc args =
+   mkpat ~loc (mkpat_cons_desc consloc args)
+ 
+-let ghexp_cons_desc consloc args =
+-  Pexp_construct(ghrhs (Lident "::") consloc, Some args)
+-let ghpat_cons_desc consloc args =
+-  Ppat_construct(ghrhs (Lident "::") consloc, Some ([], args))
+-
+-let rec mktailexp nilloc = let open Location in function
+-    [] ->
+-      let nil = ghloc ~loc:nilloc (Lident "[]") in
+-      Pexp_construct (nil, None), nilloc
+-  | e1 :: el ->
+-      let exp_el, el_loc = mktailexp nilloc el in
+-      let loc = (e1.pexp_loc.loc_start, snd el_loc) in
+-      let arg = ghexp ~loc (Pexp_tuple [e1; ghexp ~loc:el_loc exp_el]) in
+-      ghexp_cons_desc loc arg, loc
+-
+-let rec mktailpat nilloc = let open Location in function
+-    [] ->
+-      let nil = ghloc ~loc:nilloc (Lident "[]") in
+-      Ppat_construct (nil, None), nilloc
+-  | p1 :: pl ->
+-      let pat_pl, el_loc = mktailpat nilloc pl in
+-      let loc = (p1.ppat_loc.loc_start, snd el_loc) in
+-      let arg = ghpat ~loc (Ppat_tuple [p1; ghpat ~loc:el_loc pat_pl]) in
+-      ghpat_cons_desc loc arg, loc
+-
+ let mkstrexp e attrs =
+   { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
+ 
+ let mkexp_constraint ~loc e (t1, t2) =
+   match t1, t2 with
+@@@@
+    semantic value is a pair of a list of [X]s and an optional [Y]. *)
+ 
+ listx(delimiter, X, Y):
+ | x = X ioption(delimiter)
+     { [x], None }
+-| x = X delimiter y = Y delimiter?
++| x = X delimiter y = mkloc(Y) delimiter?
+     { [x], Some y }
+ | x = X
+   delimiter
+   tail = listx(delimiter, X, Y)
+     { let xs, y = tail in
+@@@@
+         Pexp_open(od, mkexp ~loc:($startpos($3), $endpos) (Pexp_array [])) }
+   | mod_longident DOT
+     LBRACKETBAR expr_semi_list error
+       { unclosed "[|" $loc($3) "|]" $loc($5) }
+   | LBRACKET expr_semi_list RBRACKET
+-      { fst (mktailexp $loc($3) $2) }
++      { Pexp_list $2 }
+   | LBRACKET expr_semi_list error
+       { unclosed "[" $loc($1) "]" $loc($3) }
+   | od=open_dot_declaration DOT LBRACKET expr_semi_list RBRACKET
+-      { let list_exp =
+-          (* TODO: review the location of list_exp *)
+-          let tail_exp, _tail_loc = mktailexp $loc($5) $4 in
+-          mkexp ~loc:($startpos($3), $endpos) tail_exp in
++      { let list_exp = mkexp ~loc:($startpos($3), $endpos) (Pexp_list $4) in
+         Pexp_open(od, list_exp) }
+   | od=open_dot_declaration DOT mkrhs(LBRACKET RBRACKET {Lident "[]"})
+       { Pexp_open(od, mkexp ~loc:$loc($3) (Pexp_construct($3, None))) }
+   | mod_longident DOT
+     LBRACKET expr_semi_list error
+@@@@
+       { let (fields, closed) = $2 in
+         Ppat_record(fields, closed) }
+     | LBRACE record_pat_content error
+       { unclosed "{" $loc($1) "}" $loc($3) }
+     | LBRACKET pattern_semi_list RBRACKET
+-      { fst (mktailpat $loc($3) $2) }
++      { Ppat_list $2 }
+     | LBRACKET pattern_semi_list error
+       { unclosed "[" $loc($1) "]" $loc($3) }
+     | LBRACKETBAR pattern_semi_list BARRBRACKET
+       { Ppat_array $2 }
+     | LBRACKETBAR BARRBRACKET
+@@@@
+ (* A label-pattern list is a nonempty list of label-pattern pairs, optionally
+    followed with an UNDERSCORE, separated-or-terminated with semicolons. *)
+ %inline record_pat_content:
+   listx(SEMI, record_pat_field, UNDERSCORE)
+     { let fields, closed = $1 in
+-      let closed = match closed with Some () -> Open | None -> Closed in
++      let closed : closed_flag_loc =
++        match closed with Some {loc; _} -> Open loc | None -> Closed
++      in
+       fields, closed }
+ ;
+ %inline record_pat_field:
+   label = mkrhs(label_longident)
+   octy = preceded(COLON, core_type)?
+--- ocaml-4.13/parsetree.mli
++++ ocaml-4.13-extended/parsetree.mli
+@@@@
+          *)
+   | Ppat_variant of label * pattern option
+         (* `A             (None)
+            `A P           (Some P)
+          *)
+-  | Ppat_record of (Longident.t loc * pattern) list * closed_flag
++  | Ppat_record of (Longident.t loc * pattern) list * closed_flag_loc
+         (* { l1=P1; ...; ln=Pn }     (flag = Closed)
+            { l1=P1; ...; ln=Pn; _}   (flag = Open)
+ 
+            Invariant: n > 0
+          *)
+   | Ppat_array of pattern list
+         (* [| P1; ...; Pn |] *)
++  | Ppat_list of pattern list
++        (* [ P1; ...; Pn ] *)
+   | Ppat_or of pattern * pattern
+         (* P1 | P2 *)
+   | Ppat_constraint of pattern * core_type
+         (* (P : T) *)
+   | Ppat_type of Longident.t loc
+@@@@
+         (* E.l *)
+   | Pexp_setfield of expression * Longident.t loc * expression
+         (* E1.l <- E2 *)
+   | Pexp_array of expression list
+         (* [| E1; ...; En |] *)
++  | Pexp_list of expression list
++        (* [ E1; ...; En ] *)
+   | Pexp_ifthenelse of expression * expression * expression option
+         (* if E1 then E2 else E3 *)
+   | Pexp_sequence of expression * expression
+         (* E1; E2 *)
+   | Pexp_while of expression * expression
+--- ocaml-4.13/pprintast.ml
++++ ocaml-4.13-extended/pprintast.ml
+@@@@
+             pp f "@[<hov2>%s: %a@ %a@ @]" l.txt
+               (core_type ctxt) ct (attributes ctxt) x.pof_attributes
+           | Oinherit ct ->
+             pp f "@[<hov2>%a@ @]" (core_type ctxt) ct
+         in
+-        let field_var f = function
++        let field_var f : Asttypes.closed_flag -> unit = function
+           | Asttypes.Closed -> ()
+           | Asttypes.Open ->
+               match l with
+               | [] -> pp f ".."
+               | _ -> pp f " ;.."
+@@@@
+         pp f  "%s" x
+     | Ppat_any -> pp f "_";
+     | Ppat_var ({txt = txt;_}) -> protect_ident f txt
+     | Ppat_array l ->
+         pp f "@[<2>[|%a|]@]"  (list (pattern1 ctxt) ~sep:";") l
++    | Ppat_list l ->
++        pp f "@[<2>[%a]@]"  (list (pattern1 ctxt) ~sep:";") l
+     | Ppat_unpack { txt = None } ->
+         pp f "(module@ _)@ "
+     | Ppat_unpack { txt = Some s } ->
+         pp f "(module@ %s)@ " s
+     | Ppat_type li ->
+@@@@
+         pp f "@[<2>exception@;%a@]" (pattern1 ctxt) p
+     | Ppat_extension e -> extension ctxt f e
+     | Ppat_open (lid, p) ->
+         let with_paren =
+         match p.ppat_desc with
+-        | Ppat_array _ | Ppat_record _
++        | Ppat_array _ | Ppat_list _ | Ppat_record _
+         | Ppat_construct (({txt=Lident ("()"|"[]");_}), None) -> false
+         | _ -> true in
+         pp f "@[<2>%a.%a @]" longident_loc lid
+           (paren with_paren @@ pattern1 ctxt) p
+     | _ -> paren true (pattern ctxt) f x
+@@@@
+           (option ~last:" with@;" (simple_expr ctxt)) eo
+           (list longident_x_expression ~sep:";@;") l
+     | Pexp_array (l) ->
+         pp f "@[<0>@[<2>[|%a|]@]@]"
+           (list (simple_expr (under_semi ctxt)) ~sep:";") l
++    | Pexp_list (l) ->
++        pp f "@[<0>@[<2>[%a]@]@]"
++          (list (simple_expr (under_semi ctxt)) ~sep:";") l
+     | Pexp_while (e1, e2) ->
+         let fmt : (_,_,_) format = "@[<2>while@;%a@;do@;%a@;done@]" in
+         pp f fmt (expression ctxt) e1 (expression ctxt) e2
+     | Pexp_for (s, e1, e2, df, e3) ->
+         let fmt:(_,_,_)format =

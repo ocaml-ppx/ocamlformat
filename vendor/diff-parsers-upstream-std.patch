@@ -1,0 +1,289 @@
+--- ocaml-4.13-upstream/ast_helper.ml
++++ ocaml-4.13/ast_helper.ml
+@@@@
+   let open_ ?loc ?attrs a b = mk ?loc ?attrs (Pexp_open (a, b))
+   let letop ?loc ?attrs let_ ands body =
+     mk ?loc ?attrs (Pexp_letop {let_; ands; body})
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pexp_extension a)
+   let unreachable ?loc ?attrs () = mk ?loc ?attrs Pexp_unreachable
++  let hole  ?loc ?attrs () = mk ?loc ?attrs Pexp_hole
+ 
+   let case lhs ?guard rhs =
+     {
+      pc_lhs = lhs;
+      pc_guard = guard;
+@@@@
+     mk ?loc ?attrs (Pmod_functor (arg, body))
+   let apply ?loc ?attrs m1 m2 = mk ?loc ?attrs (Pmod_apply (m1, m2))
+   let constraint_ ?loc ?attrs m mty = mk ?loc ?attrs (Pmod_constraint (m, mty))
+   let unpack ?loc ?attrs e = mk ?loc ?attrs (Pmod_unpack e)
+   let extension ?loc ?attrs a = mk ?loc ?attrs (Pmod_extension a)
++  let hole ?loc ?attrs () = mk ?loc ?attrs Pmod_hole
+ end
+ 
+ module Sig = struct
+   let mk ?(loc = !default_loc) d = {psig_desc = d; psig_loc = loc}
+ 
+--- ocaml-4.13-upstream/ast_helper.mli
++++ ocaml-4.13/ast_helper.mli
+@@@@
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> expression
+     val unreachable: ?loc:loc -> ?attrs:attrs -> unit -> expression
+ 
+     val case: pattern -> ?guard:expression -> expression -> case
+     val binding_op: str -> pattern -> expression -> loc -> binding_op
++    val hole: ?loc:loc -> ?attrs:attrs -> unit -> expression
+   end
+ 
+ (** Value declarations *)
+ module Val:
+   sig
+@@@@
+       module_expr
+     val constraint_: ?loc:loc -> ?attrs:attrs -> module_expr -> module_type ->
+       module_expr
+     val unpack: ?loc:loc -> ?attrs:attrs -> expression -> module_expr
+     val extension: ?loc:loc -> ?attrs:attrs -> extension -> module_expr
++    val hole: ?loc:loc -> ?attrs:attrs -> unit -> module_expr
+   end
+ 
+ (** Signature items *)
+ module Sig:
+   sig
+--- ocaml-4.13-upstream/ast_mapper.ml
++++ ocaml-4.13/ast_mapper.ml
+@@@@
+     | Pmod_constraint (m, mty) ->
+         constraint_ ~loc ~attrs (sub.module_expr sub m)
+                     (sub.module_type sub mty)
+     | Pmod_unpack e -> unpack ~loc ~attrs (sub.expr sub e)
+     | Pmod_extension x -> extension ~loc ~attrs (sub.extension sub x)
++    | Pmod_hole -> hole ~loc ~attrs ()
+ 
+   let map_structure_item sub {pstr_loc = loc; pstr_desc = desc} =
+     let open Str in
+     let loc = sub.location sub loc in
+     match desc with
+@@@@
+     | Pexp_letop {let_; ands; body} ->
+         letop ~loc ~attrs (sub.binding_op sub let_)
+           (List.map (sub.binding_op sub) ands) (sub.expr sub body)
+     | Pexp_extension x -> extension ~loc ~attrs (sub.extension sub x)
+     | Pexp_unreachable -> unreachable ~loc ~attrs ()
++    | Pexp_hole -> hole ~loc ~attrs ()
+ 
+   let map_binding_op sub {pbop_op; pbop_pat; pbop_exp; pbop_loc} =
+     let open Exp in
+     let op = map_loc sub pbop_op in
+     let pat = sub.pat sub pbop_pat in
+--- ocaml-4.13-upstream/parser.mly
++++ ocaml-4.13/parser.mly
+@@@@
+ %nonassoc below_DOT
+ %nonassoc DOT DOTOP
+ /* Finally, the first tokens of simple_expr are above everything else. */
+ %nonassoc BACKQUOTE BANG BEGIN CHAR FALSE FLOAT INT OBJECT
+           LBRACE LBRACELESS LBRACKET LBRACKETBAR LIDENT LPAREN
+-          NEW PREFIXOP STRING TRUE UIDENT
++          NEW PREFIXOP STRING TRUE UIDENT UNDERSCORE
+           LBRACKETPERCENT QUOTED_STRING_EXPR
+ 
+ 
+ /* Entry points */
+ 
+@@@@
+         { (* TODO review mkmod location *)
+           Pmod_apply(me1, mkmod ~loc:$sloc (Pmod_structure [])) }
+     | (* An extension. *)
+       ex = extension
+         { Pmod_extension ex }
++    | (* A hole. *)
++      UNDERSCORE
++        { Pmod_hole }
+     )
+     { $1 }
+ ;
+ 
+ (* A parenthesized module expression is a module expression that begins
+@@@@
+   | indexop_expr(qualified_dotop, expr_semi_list, LESSMINUS v=expr {Some v})
+     { mk_indexop_expr user_indexing_operators ~loc:$sloc $1 }
+   | expr attribute
+       { Exp.attr $1 $2 }
+ /* BEGIN AVOID */
++  (*
+   | UNDERSCORE
+      { not_expecting $loc($1) "wildcard \"_\"" }
++  *)
+ /* END AVOID */
+ ;
+ %inline expr_attrs:
+   | LET MODULE ext_attributes mkrhs(module_name) module_binding_body IN seq_expr
+       { Pexp_letmodule($4, $5, $7), $3 }
+@@@@
+       { Pexp_send($1, $3) }
+   | simple_expr op(HASHOP) simple_expr
+       { mkinfix $1 $2 $3 }
+   | extension
+       { Pexp_extension $1 }
++  | UNDERSCORE
++      { Pexp_hole }
+   | od=open_dot_declaration DOT mkrhs(LPAREN RPAREN {Lident "()"})
+       { Pexp_open(od, mkexp ~loc:($loc($3)) (Pexp_construct($3, None))) }
+   | mod_longident DOT LPAREN seq_expr error
+       { unclosed "(" $loc($3) ")" $loc($5) }
+   | LBRACE record_expr_content RBRACE
+--- ocaml-4.13-upstream/parsetree.mli
++++ ocaml-4.13/parsetree.mli
+@@@@
+            let* P = E and* P = E in E *)
+   | Pexp_extension of extension
+         (* [%id] *)
+   | Pexp_unreachable
+         (* . *)
++  | Pexp_hole
++        (* _ *)
+ 
+ and case =   (* (P -> E) or (P when E0 -> E) *)
+     {
+      pc_lhs: pattern;
+      pc_guard: expression option;
+@@@@
+         (* (ME : MT) *)
+   | Pmod_unpack of expression
+         (* (val E) *)
+   | Pmod_extension of extension
+         (* [%id] *)
++  | Pmod_hole
++        (* _ *)
+ 
+ and structure = structure_item list
+ 
+ and structure_item =
+     {
+--- ocaml-4.13-upstream/pprintast.ml
++++ ocaml-4.13/pprintast.ml
+@@@@
+         let fmt:(_,_,_)format =
+           "@[<hv0>@[<hv2>@[<2>for %a =@;%a@;%a%a@;do@]@;%a@]@;done@]" in
+         let expression = expression ctxt in
+         pp f fmt (pattern ctxt) s expression e1 direction_flag
+           df expression e2 expression e3
++    | Pexp_hole ->
++        pp f "_"
+     | _ ->  paren true (expression ctxt) f x
+ 
+ and attributes ctxt f l =
+   List.iter (attribute ctxt f) l
+ 
+@@@@
+ and exception_declaration ctxt f x =
+   pp f "@[<hov2>exception@ %a@]%a"
+     (extension_constructor ctxt) x.ptyexn_constructor
+     (item_attributes ctxt) x.ptyexn_attributes
+ 
++and class_type_field ctxt f x =
++  match x.pctf_desc with
++  | Pctf_inherit (ct) ->
++      pp f "@[<2>inherit@ %a@]%a" (class_type ctxt) ct
++        (item_attributes ctxt) x.pctf_attributes
++  | Pctf_val (s, mf, vf, ct) ->
++      pp f "@[<2>val @ %a%a%s@ :@ %a@]%a"
++        mutable_flag mf virtual_flag vf s.txt (core_type ctxt) ct
++        (item_attributes ctxt) x.pctf_attributes
++  | Pctf_method (s, pf, vf, ct) ->
++      pp f "@[<2>method %a %a%s :@;%a@]%a"
++        private_flag pf virtual_flag vf s.txt (core_type ctxt) ct
++        (item_attributes ctxt) x.pctf_attributes
++  | Pctf_constraint (ct1, ct2) ->
++      pp f "@[<2>constraint@ %a@ =@ %a@]%a"
++        (core_type ctxt) ct1 (core_type ctxt) ct2
++        (item_attributes ctxt) x.pctf_attributes
++  | Pctf_attribute a -> floating_attribute ctxt f a
++  | Pctf_extension e ->
++      item_extension ctxt f e;
++      item_attributes ctxt f x.pctf_attributes
++
+ and class_signature ctxt f { pcsig_self = ct; pcsig_fields = l ;_} =
+-  let class_type_field f x =
+-    match x.pctf_desc with
+-    | Pctf_inherit (ct) ->
+-        pp f "@[<2>inherit@ %a@]%a" (class_type ctxt) ct
+-          (item_attributes ctxt) x.pctf_attributes
+-    | Pctf_val (s, mf, vf, ct) ->
+-        pp f "@[<2>val @ %a%a%s@ :@ %a@]%a"
+-          mutable_flag mf virtual_flag vf s.txt (core_type ctxt) ct
+-          (item_attributes ctxt) x.pctf_attributes
+-    | Pctf_method (s, pf, vf, ct) ->
+-        pp f "@[<2>method %a %a%s :@;%a@]%a"
+-          private_flag pf virtual_flag vf s.txt (core_type ctxt) ct
+-          (item_attributes ctxt) x.pctf_attributes
+-    | Pctf_constraint (ct1, ct2) ->
+-        pp f "@[<2>constraint@ %a@ =@ %a@]%a"
+-          (core_type ctxt) ct1 (core_type ctxt) ct2
+-          (item_attributes ctxt) x.pctf_attributes
+-    | Pctf_attribute a -> floating_attribute ctxt f a
+-    | Pctf_extension e ->
+-        item_extension ctxt f e;
+-        item_attributes ctxt f x.pctf_attributes
+-  in
+   pp f "@[<hv0>@[<hv2>object@[<1>%a@]@ %a@]@ end@]"
+     (fun f -> function
+          {ptyp_desc=Ptyp_any; ptyp_attributes=[]; _} -> ()
+        | ct -> pp f " (%a)" (core_type ctxt) ct) ct
+-    (list class_type_field ~sep:"@;") l
++    (list (class_type_field ctxt) ~sep:"@;") l
+ 
+ (* call [class_signature] called by [class_signature] *)
+ and class_type ctxt f x =
+   match x.pcty_desc with
+   | Pcty_signature cs ->
+@@@@
+         pp f "(%a)(%a)" (module_expr ctxt) me1 (module_expr ctxt) me2
+         (* Cf: #7200 *)
+     | Pmod_unpack e ->
+         pp f "(val@ %a)" (expression ctxt) e
+     | Pmod_extension e -> extension ctxt f e
++    | Pmod_hole ->
++        pp f "_"
+ 
+ and structure ctxt f x = list ~sep:"@\n" (structure_item ctxt) f x
+ 
+ and payload ctxt f = function
+   | PStr [{pstr_desc = Pstr_eval (e, attrs)}] ->
+@@@@
+ let core_type = core_type reset_ctxt
+ let pattern = pattern reset_ctxt
+ let signature = signature reset_ctxt
+ let structure = structure reset_ctxt
+ let module_expr = module_expr reset_ctxt
++let module_type = module_type reset_ctxt
++let class_field = class_field reset_ctxt
++let class_type_field = class_type_field reset_ctxt
++let class_expr = class_expr reset_ctxt
++let class_type = class_type reset_ctxt
++let structure_item = structure_item reset_ctxt
++let signature_item = signature_item reset_ctxt
++let binding = binding reset_ctxt
++let payload = payload reset_ctxt
+--- ocaml-4.13-upstream/pprintast.mli
++++ ocaml-4.13/pprintast.mli
+@@@@
+ val module_expr: Format.formatter -> Parsetree.module_expr -> unit
+ 
+ val toplevel_phrase : Format.formatter -> Parsetree.toplevel_phrase -> unit
+ val top_phrase: Format.formatter -> Parsetree.toplevel_phrase -> unit
+ 
++val class_field: Format.formatter -> Parsetree.class_field -> unit
++val class_type_field: Format.formatter -> Parsetree.class_type_field -> unit
++val class_expr: Format.formatter -> Parsetree.class_expr -> unit
++val class_type: Format.formatter -> Parsetree.class_type -> unit
++val module_type: Format.formatter -> Parsetree.module_type -> unit
++val structure_item: Format.formatter -> Parsetree.structure_item -> unit
++val signature_item: Format.formatter -> Parsetree.signature_item -> unit
++val binding: Format.formatter -> Parsetree.value_binding -> unit
++val payload: Format.formatter -> Parsetree.payload -> unit
+ 
+ val tyvar: Format.formatter -> string -> unit
+   (** Print a type variable name, taking care of the special treatment
+       required for the single quote character in second position. *)
