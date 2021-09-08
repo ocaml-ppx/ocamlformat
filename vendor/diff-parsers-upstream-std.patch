@@ -76,8 +76,195 @@
      let open Exp in
      let op = map_loc sub pbop_op in
      let pat = sub.pat sub pbop_pat in
+--- ocaml-4.13-upstream/lexer.mll
++++ ocaml-4.13/lexer.mll
+@@@@
+ let is_keyword name = Hashtbl.mem keyword_table name
+ 
+ let check_label_name lexbuf name =
+   if is_keyword name then error lexbuf (Keyword_as_label name)
+ 
++(* To "unlex" a few characters *)
++let set_lexeme_length buf n = (
++  let open Lexing in
++  if n < 0 then
++    invalid_arg "set_lexeme_length: offset should be positive";
++  if n > buf.lex_curr_pos - buf.lex_start_pos then
++    invalid_arg "set_lexeme_length: offset larger than lexeme";
++  buf.lex_curr_pos <- buf.lex_start_pos + n;
++  buf.lex_curr_p <- {buf.lex_start_p
++                     with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
++)
++
++let disambiguate lexbuf txt =
++  let pos = ref 0 in
++  let len = String.length txt in
++  let is_digit c = c >= '0' && c <= '9' in
++  while !pos < len && is_digit txt.[!pos] do incr pos done;
++  let txt =
++    if !pos < len then (
++      set_lexeme_length lexbuf !pos;
++      String.sub txt 0 !pos
++    ) else
++      txt
++  in
++  TYPE_DISAMBIGUATOR txt
++
++let try_disambiguate lexbuf = function
++  | INT (txt, None) -> Some (disambiguate lexbuf txt)
++  | FLOAT (txt, _)  -> Some (disambiguate lexbuf txt)
++  | _ -> None
++
+ (* Update the current location with file name and line number. *)
+ 
+ let update_loc lexbuf file line absolute chars =
+   let pos = lexbuf.lex_curr_p in
+   let new_file = match file with
+@@@@
+   | ['+' '-'] symbolchar * as op
+             { INFIXOP2 op }
+   | "**" symbolchar * as op
+             { INFIXOP4 op }
+   | '%'     { PERCENT }
++  | '/'     { SLASH }
+   | ['*' '/' '%'] symbolchar * as op
+             { INFIXOP3 op }
+   | '#' symbolchar_or_hash + as op
+             { HASHOP op }
+   | "let" kwdopchar dotsymbolchar * as op
+--- ocaml-4.13-upstream/parse.ml
++++ ocaml-4.13/parse.ml
+@@@@
+ let maybe_skip_phrase lexbuf =
+   match !last_token with
+   | Parser.SEMISEMI | Parser.EOF -> ()
+   | _ -> skip_phrase lexbuf
+ 
+-type 'a parser =
+-  (Lexing.lexbuf -> Parser.token) -> Lexing.lexbuf -> 'a
++type 'a parser = Lexing.position -> 'a Parser.MenhirInterpreter.checkpoint
+ 
+ let wrap (parser : 'a parser) lexbuf : 'a =
+   try
+     Docstrings.init ();
+     Lexer.init ();
+-    let ast = parser token lexbuf in
++    let open Parser.MenhirInterpreter in
++    let rec fix_resume = function
++      | InputNeeded _ | Accepted _ | Rejected | HandlingError _ as cp -> cp
++      | Shifting (_, _, _) | AboutToReduce (_, _) as cp ->
++        fix_resume (resume ~strategy:`Simplified cp)
++    in
++    let rec offer_input lexbuf cp tok =
++      let ptok = Lexing.(tok, lexbuf.lex_start_p, lexbuf.lex_curr_p) in
++      match fix_resume (offer cp ptok) with
++      | InputNeeded _ as cp ->
++          offer_input lexbuf cp (token lexbuf)
++      | Accepted x -> Some x
++      | Rejected -> None
++      | Shifting (_, _, _) | AboutToReduce (_, _) ->
++          assert false
++      | HandlingError _ as cp' ->
++        match Lexer.try_disambiguate lexbuf tok with
++        | Some tok' -> offer_input lexbuf cp tok'
++        | None -> main_loop lexbuf cp'
++    and main_loop lexbuf = function
++      | InputNeeded _ as cp ->
++          offer_input lexbuf cp (token lexbuf)
++      | Accepted x -> Some x
++      | Rejected -> None
++      | Shifting (_, _, _) | AboutToReduce (_, _) | HandlingError _ as cp ->
++        main_loop lexbuf (resume ~strategy:`Simplified cp)
++    in
++    let ast =
++      match main_loop lexbuf (parser lexbuf.Lexing.lex_curr_p) with
++      | Some ast -> ast
++      | None -> raise Parsing.Parse_error
++    in
+     Parsing.clear_parser();
+     Docstrings.warn_bad_docstrings ();
+     last_token := Parser.EOF;
+     ast
+   with
+@@@@
+      a production whose semantic action raises an exception.
+ 
+    In either case, the parser will not attempt to read one token past
+    the syntax error. *)
+ 
+-let implementation = wrap Parser.implementation
+-and interface = wrap Parser.interface
+-and toplevel_phrase = wrap Parser.toplevel_phrase
+-and use_file = wrap Parser.use_file
+-and core_type = wrap Parser.parse_core_type
+-and expression = wrap Parser.parse_expression
+-and pattern = wrap Parser.parse_pattern
+-
+-let longident = wrap Parser.parse_any_longident
+-let val_ident = wrap Parser.parse_val_longident
+-let constr_ident= wrap Parser.parse_constr_longident
+-let extended_module_path = wrap Parser.parse_mod_ext_longident
+-let simple_module_path = wrap Parser.parse_mod_longident
+-let type_ident = wrap Parser.parse_mty_longident
++let implementation = wrap Parser.Incremental.implementation
++and interface = wrap Parser.Incremental.interface
++and toplevel_phrase = wrap Parser.Incremental.toplevel_phrase
++and use_file = wrap Parser.Incremental.use_file
++and core_type = wrap Parser.Incremental.parse_core_type
++and expression = wrap Parser.Incremental.parse_expression
++and pattern = wrap Parser.Incremental.parse_pattern
++
++let longident = wrap Parser.Incremental.parse_any_longident
++let val_ident = wrap Parser.Incremental.parse_val_longident
++let constr_ident= wrap Parser.Incremental.parse_constr_longident
++let extended_module_path = wrap Parser.Incremental.parse_mod_ext_longident
++let simple_module_path = wrap Parser.Incremental.parse_mod_longident
++let type_ident = wrap Parser.Incremental.parse_mty_longident
+ 
+ (* Error reporting for Syntaxerr *)
+ (* The code has been moved here so that one can reuse Pprintast.tyvar *)
+ 
+ let prepare_error err =
 --- ocaml-4.13-upstream/parser.mly
 +++ ocaml-4.13/parser.mly
+@@@@
+ %token SEMI                   ";"
+ %token SEMISEMI               ";;"
+ %token HASH                   "#"
+ %token <string> HASHOP        "##" (* just an example *)
+ %token SIG                    "sig"
++%token SLASH                  "/"
+ %token STAR                   "*"
+ %token <string * Location.t * string option>
+        STRING                 "\"hello\"" (* just an example *)
+ %token <string * Location.t * string * Location.t * string option>
+        QUOTED_STRING_EXPR     "{%hello|world|}"  (* just an example *)
+@@@@
+ %token <string * Location.t> COMMENT    "(* comment *)"
+ %token <Docstrings.docstring> DOCSTRING "(** documentation *)"
+ 
+ %token EOL                    "\\n"      (* not great, but EOL is unused *)
+ 
++%token <string> TYPE_DISAMBIGUATOR "2" (* just an example *)
++
+ /* Precedences and associativities.
+ 
+ Tokens and rules have precedences.  A reduce/reduce conflict is resolved
+ in favor of the first rule (in source file order).  A shift/reduce conflict
+ is resolved by comparing the precedence and associativity of the token to
+@@@@
+ %right    INFIXOP1                      /* expr (e OP e OP e) */
+ %nonassoc below_LBRACKETAT
+ %nonassoc LBRACKETAT
+ %right    COLONCOLON                    /* expr (e :: e :: e) */
+ %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ /* expr (e OP e OP e) */
+-%left     PERCENT INFIXOP3 STAR                 /* expr (e OP e OP e) */
++%left     PERCENT SLASH INFIXOP3 STAR                 /* expr (e OP e OP e) */
+ %right    INFIXOP4                      /* expr (e OP e OP e) */
+ %nonassoc prec_unary_minus prec_unary_plus /* unary - */
+ %nonassoc prec_constant_constructor     /* cf. simple_expr (C versus C x) */
+ %nonassoc prec_constr_appl              /* above AS BAR COLONCOLON COMMA */
+ %nonassoc below_HASH
 @@@@
  %nonassoc below_DOT
  %nonassoc DOT DOTOP
@@ -133,6 +320,42 @@
    | mod_longident DOT LPAREN seq_expr error
        { unclosed "(" $loc($3) ")" $loc($5) }
    | LBRACE record_expr_content RBRACE
+@@@@
+   | PLUS           {"+"}
+   | PLUSDOT       {"+."}
+   | PLUSEQ        {"+="}
+   | MINUS          {"-"}
+   | MINUSDOT      {"-."}
++  | SLASH          {"/"}
+   | STAR           {"*"}
+   | PERCENT        {"%"}
+   | EQUAL          {"="}
+   | LESS           {"<"}
+   | GREATER        {">"}
+@@@@
+ label_longident:
+     mk_longident(mod_longident, LIDENT) { $1 }
+ ;
+ type_longident:
+     mk_longident(mod_ext_longident, LIDENT)  { $1 }
++  | LIDENT SLASH TYPE_DISAMBIGUATOR          { Lident ($1 ^ "/" ^ $3) }
+ ;
+ mod_longident:
+     mk_longident(mod_longident, UIDENT)  { $1 }
+ ;
++mod_ext_longident_:
++    UIDENT                          { Lident $1 }
++  | UIDENT SLASH TYPE_DISAMBIGUATOR { Lident ($1 ^ "/" ^ $3) }
++  | mod_ext_longident DOT UIDENT    { Ldot($1,$3) }
++;
+ mod_ext_longident:
+-    mk_longident(mod_ext_longident, UIDENT) { $1 }
++    mod_ext_longident_ { $1 }
+   | mod_ext_longident LPAREN mod_ext_longident RPAREN
+       { lapply ~loc:$sloc $1 $3 }
+   | mod_ext_longident LPAREN error
+       { expecting $loc($3) "module path" }
+ ;
 --- ocaml-4.13-upstream/parsetree.mli
 +++ ocaml-4.13/parsetree.mli
 @@@@
