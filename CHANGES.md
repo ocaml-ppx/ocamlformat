@@ -26,6 +26,8 @@
 
   + Fix non stabilizing comments after infix operators (`*`, `%`, `#`-ops) (#1776, @gpetiot)
 
+  + Fix excessive break and wrong indentation after a short-open when `indicate-multiline-delimiters=closing-on-separate-line` (#1786, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)

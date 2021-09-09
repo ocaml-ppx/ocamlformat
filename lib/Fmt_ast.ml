@@ -2247,7 +2247,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             fits_breaks ?force cls ""
             $ fits_breaks_if inner_parens ?force "" ")"
         | `Closing_on_separate_line ->
-            fmt_if_k force_fit (break 0 0)
+            fmt_if_k (force_fit && not can_skip_parens) (break 0 0)
             $ fits_breaks ?force cls ""
             $ fits_breaks_if inner_parens ?force "" ~hint:(1000, 0) ")"
       in
