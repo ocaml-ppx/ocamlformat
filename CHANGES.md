@@ -28,6 +28,8 @@
 
   + Fix excessive break and wrong indentation after a short-open when `indicate-multiline-delimiters=closing-on-separate-line` (#1786, @gpetiot)
 
+  + Take the 'in' location into consideration to decide whether there is a blank line after a let-binding. The issue lies with the option `sequence-blank-line=preserve-one` that didn't take the location of 'in' into consideration, so the linebreak before 'in' (that should not be preserved) was confused with a linebreak after 'in' (that should be preserved when this option is set). (#1798, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
