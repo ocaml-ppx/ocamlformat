@@ -128,6 +128,18 @@ let _ =
   (* some comment *)
   next statement
 
+let _ =
+  let _ =
+    Fooooooooo.
+      [
+        (swap_1_c, { minimum_transfert_amount = 0. });
+        (swap_2_c, { minimum_transfert_amount = 0. });
+        (swap_3_c, { minimum_transfert_amount = 0. });
+      ]
+    
+  in
+  ()
+
 [@@@ocamlformat "indicate-multiline-delimiters=closing-on-separate-line"]
 
 let foo x y =
