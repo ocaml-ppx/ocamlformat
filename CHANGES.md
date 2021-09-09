@@ -32,6 +32,8 @@
 
   + Add parentheses around type alias used as type constraint (#1801, @gpetiot)
 
+  + Fix alignment of comments inside a tuple pattern and remove incorrect linebreak (#1797, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
