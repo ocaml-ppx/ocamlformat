@@ -4274,9 +4274,19 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   in
   let blank_line_after_in =
     let last_bind = List.last_exn bindings in
-    (* The location of the first binding (just after `let`) is wrong, it
-       contains the whole letop expression *)
-    sequence_blank_line c last_bind.lb_exp.ast.pexp_loc body_loc
+    let loc_binding =
+      (* The location of the first binding (just after `let`) is wrong, it
+         contains the whole letop expression *)
+      let loc_binding_exp = last_bind.lb_exp.ast.pexp_loc in
+      (* `in` is not included in the location *)
+      let filter = function Parser.IN -> true | _ -> false in
+      match
+        Source.find_token_after c.source ~filter loc_binding_exp.loc_end
+      with
+      | Some (IN, loc) -> loc
+      | _ -> loc_binding_exp
+    in
+    sequence_blank_line c loc_binding body_loc
   in
   Params.Exp.wrap c.conf c.source ~loc
     ~parens:(parens || not (List.is_empty attributes))
