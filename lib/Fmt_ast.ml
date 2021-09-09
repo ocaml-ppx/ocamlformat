@@ -939,13 +939,10 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   update_config_maybe_disabled c ppat_loc ppat_attributes
   @@ fun c ->
   let parens = match parens with Some b -> b | None -> parenze_pat xpat in
-  ( match ppat_desc with
-  | Ppat_or _ -> Fn.id
-  | _ -> (
-    match ctx0 with
-    | Pat {ppat_desc= Ppat_tuple _; _} ->
-        fun k -> hvbox 0 @@ Cmts.fmt c ppat_loc @@ (fmt_opt pro $ k)
-    | _ -> fun k -> Cmts.fmt c ppat_loc @@ (fmt_opt pro $ k) ) )
+  (match ctx0 with Pat {ppat_desc= Ppat_tuple _; _} -> hvbox 0 | _ -> Fn.id)
+  @@ ( match ppat_desc with
+     | Ppat_or _ -> Fn.id
+     | _ -> fun k -> Cmts.fmt c ppat_loc @@ (fmt_opt pro $ k) )
   @@ hovbox_if box 0
   @@ fmt_pattern_attributes c xpat
   @@
