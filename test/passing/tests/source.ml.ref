@@ -4465,7 +4465,7 @@ type t = t a wrap
 module T = struct
   let foo : 't wrap -> 't wrap -> unit = fun _ _ -> ()
 
-  let bar : 'a a wrap as 'a = `A
+  let bar : ('a a wrap as 'a) = `A
 end
 
 module Good : sig
@@ -9182,3 +9182,5 @@ f
 let xxxxxx =
   let%map (* _____________________________ __________ *) () = yyyyyyyy in
   {zzzzzzzzzzzzz}
+
+let _ = fun (x : int as 'a) : (int as 'a) -> x

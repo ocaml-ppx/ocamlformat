@@ -7397,3 +7397,5 @@ let xxxxxx =
   let%map (* _____________________________
              __________ *)()            = yyyyyyyy in
   { zzzzzzzzzzzzz }
+
+let _ = fun (x : int as 'a) -> (x : int as 'a)

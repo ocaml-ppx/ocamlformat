@@ -1827,7 +1827,8 @@ end = struct
     | { ast= {ptyp_desc= Ptyp_alias _; _}
       ; ctx=
           ( Str {pstr_desc= Pstr_typext _; _}
-          | Sig {psig_desc= Psig_typext _; _} ) } ->
+          | Sig {psig_desc= Psig_typext _; _}
+          | Exp {pexp_desc= Pexp_constraint _; _} ) } ->
         true
     | { ast= {ptyp_desc= Ptyp_alias _; _}
       ; ctx=
