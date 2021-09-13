@@ -705,7 +705,9 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
   match ptyp_desc with
   | Ptyp_alias (typ, txt) ->
       hvbox 0
-        (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ " $ fmt_type_var txt)
+        (wrap_if in_constraint "(" ")"
+           ( fmt_core_type c (sub_typ ~ctx typ)
+           $ fmt "@ as@ " $ fmt_type_var txt ) )
   | Ptyp_any -> str "_"
   | Ptyp_arrow _ ->
       let xt1N = Sugar.arrow_typ c.cmts xtyp in
