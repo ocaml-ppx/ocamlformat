@@ -353,8 +353,11 @@ OPTIONS (CODE FORMATTING STYLE)
            familiar and "conventional" appearing as the available options
            allow. default is an alias for the conventional profile. The
            compact profile is similar to ocamlformat but opts for a generally
-           more compact code style. The sparse profile is similar to
-           ocamlformat but opts for a generally more sparse code style. The
+           more compact code style. Warning: Value `compact` is deprecated
+           since version 0.20.0. It will be removed by version 1.0. The
+           sparse profile is similar to ocamlformat but opts for a generally
+           more sparse code style. Warning: Value `sparse` is deprecated
+           since version 0.20.0. It will be removed by version 1.0. The
            ocamlformat profile aims to take advantage of the strengths of a
            parsetree-based auto-formatter, and to limit the consequences of
            the weaknesses imposed by the current implementation. This is a
