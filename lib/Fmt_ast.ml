@@ -671,6 +671,11 @@ and type_constr_and_body c xbody =
       fmt_cstr_and_xbody typ exp
   | _ -> (None, xbody)
 
+(* The context of [xtyp] refers to the RHS of the expression (namely
+   Pexp_constraint) and does not give a relevant information as to whether
+   [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
+   of the expression, i.e. if the expression is part of a `fun`
+   expression. *)
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(pro_space = true) ?constraint_ctx ({ast= typ; _} as xtyp) =
   protect c (Typ typ)
