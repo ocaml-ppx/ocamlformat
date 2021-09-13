@@ -6,6 +6,8 @@
 
   + Options `--align-cases`, `--align-constructors-decl` and `--align-variants-decl` are now deprecated and will be removed by version 1.0 (#1793, @gpetiot)
 
+  + Option 'wrap-comments' is now deprecated and will be removed by version 1.0 (#1804, @gpetiot)
+
 #### Bug fixes
 
   + Fix normalization of sequences of expressions (#1731, @gpetiot)
