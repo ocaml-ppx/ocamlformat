@@ -1147,7 +1147,8 @@ module Formatting = struct
        wrapped. Consecutive comments with both left and right margin \
        aligned are not wrapped either."
     in
-    C.flag ~default:false ~names:["wrap-comments"] ~doc ~section
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
+    C.flag ~default:false ~names:["wrap-comments"] ~doc ~section ~deprecated
       (fun conf x -> {conf with wrap_comments= x})
       (fun conf -> conf.wrap_comments)
 

@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 Warning: tests/field.ml:13 exceeds the margin
 Warning: tests/field.ml:15 exceeds the margin
 Warning: tests/field.ml:19 exceeds the margin

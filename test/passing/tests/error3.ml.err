@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: ignoring "tests/error3.ml" (misplaced documentation comments - warning 50)
 File "tests/error3.ml", line 2, characters 0-13:
 2 | (** a or b *)

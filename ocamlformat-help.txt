@@ -451,6 +451,8 @@ OPTIONS (CODE FORMATTING STYLE)
            with vertically-aligned asterisks on the left margin are not
            wrapped. Consecutive comments with both left and right margin
            aligned are not wrapped either. The flag is unset by default.
+           Warning: This option is deprecated since version 0.20.0. It will
+           be removed by version 1.0.
 
        --wrap-fun-args
            Style for function call. The flag is set by default.

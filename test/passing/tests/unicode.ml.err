@@ -1,2 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 Warning: tests/unicode.ml:5 exceeds the margin
 Warning: tests/unicode.ml:11 exceeds the margin

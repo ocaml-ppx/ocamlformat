@@ -1,1 +1,2 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: "tests/need_format.ml" was not already formatted. ([max-iters = 1])

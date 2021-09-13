@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: ignoring "tests/nesting.ml" (syntax error)
 File "tests/nesting.ml", line 35, characters 0-0:
 Error: Syntax error: 'end' expected

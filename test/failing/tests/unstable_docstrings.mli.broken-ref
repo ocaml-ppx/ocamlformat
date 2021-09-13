@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: Cannot process "tests/unstable_docstrings.mli".
   Please report this bug at https://github.com/ocaml-ppx/ocamlformat/issues.
   BUG: doc comments changed.

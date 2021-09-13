@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: ignoring "tests/macro.ml" (syntax error)
 File "tests/macro.ml", line 3, characters 0-7:
 3 | INCLUDE "bar"

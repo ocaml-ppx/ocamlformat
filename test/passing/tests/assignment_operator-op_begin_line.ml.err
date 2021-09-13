@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 Warning: tests/assignment_operator.ml:13 exceeds the margin
 Warning: tests/assignment_operator.ml:15 exceeds the margin
 Warning: tests/assignment_operator.ml:19 exceeds the margin

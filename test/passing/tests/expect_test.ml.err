@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 Warning: tests/expect_test.ml:9 exceeds the margin
 Warning: tests/expect_test.ml:15 exceeds the margin
 Warning: tests/expect_test.ml:24 exceeds the margin

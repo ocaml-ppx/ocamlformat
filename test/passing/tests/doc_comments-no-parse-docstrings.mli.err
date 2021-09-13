@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 Warning: tests/doc_comments.mli:10 exceeds the margin
 Warning: tests/doc_comments.mli:90 exceeds the margin
 Warning: tests/doc_comments.mli:96 exceeds the margin

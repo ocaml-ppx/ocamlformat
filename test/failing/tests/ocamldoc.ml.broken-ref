@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: ignoring "tests/ocamldoc.ml" (syntax error)
 File "tests/ocamldoc.ml", line 75, characters 0-5:
 75 | class type my_class_type =

@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: ignoring "tests/unit_typedefs.ml" (syntax error)
 File "tests/unit_typedefs.ml", line 20, characters 3-4:
 20 |    (-'c,-'d))

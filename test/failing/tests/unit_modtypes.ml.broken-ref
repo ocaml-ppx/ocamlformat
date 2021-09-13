@@ -1,3 +1,4 @@
+Warning: wrap-comments: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 ocamlformat: ignoring "tests/unit_modtypes.ml" (syntax error)
 File "tests/unit_modtypes.ml", line 66, characters 13-14:
 66 |   module M (X) (Y):
