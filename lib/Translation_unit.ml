@@ -402,7 +402,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         let diff_cmts =
           Sequence.append
             (Cmts.diff conf old_comments t_newcomments)
-            (Fmt_odoc.diff conf old_docstrings t_newdocstrings)
+            (Normalize.diff_docstrings conf old_docstrings t_newdocstrings)
         in
         if not (Sequence.is_empty diff_cmts) then
           let old_ast = dump_ast std_fg ~suffix:".old" std_t.ast in

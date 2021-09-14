@@ -27,6 +27,7 @@ val fmt :
      t
   -> wrap:bool
   -> ocp_indent_compat:bool
+  -> parse_docstrings:bool
   -> fmt_code:(string -> (Fmt.t, unit) Result.t)
   -> pos
   -> Fmt.t

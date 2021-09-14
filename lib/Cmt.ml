@@ -134,15 +134,16 @@ module Unwrapped = struct
     | _ -> wrap "(*" "*)" @@ str s
 end
 
-let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
+let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~parse_docstrings
+    ~fmt_code pos =
   let mode =
     match cmt.txt with
     | "" -> impossible "not produced by parser"
     (* "(**)" is not parsed as a docstring but as a regular comment
        containing '*' and would be rewritten as "(***)" *)
-    | "*" when Location.width cmt.loc = 4 -> `Verbatim "(**)"
-    | "*" -> `Verbatim "(***)"
-    | "$" -> `Verbatim "(*$*)"
+    | "*" when Location.width cmt.loc = 4 -> `Verbatim ""
+    | "*" -> `Verbatim "*"
+    | "$" -> `Verbatim "$"
     | str when Char.equal str.[0] '$' -> (
         let dollar_suf = Char.equal str.[String.length str - 1] '$' in
         let cls : Fmt.s = if dollar_suf then "$*)" else "*)" in
@@ -151,18 +152,31 @@ let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
         match fmt_code source with
         | Ok formatted -> `Code (formatted, cls)
         | Error () -> `Unwrapped cmt )
+    | str when Char.equal str.[0] '=' && parse_docstrings -> (
+        let len = String.length str - 1 in
+        let source = String.sub ~pos:1 ~len str in
+        match Docstring.parse ~loc:cmt.loc source with
+        | Ok parsed -> `Docstring parsed
+        | Error _ -> `Unwrapped cmt )
     | _ -> (
       match Asterisk_prefixed.split cmt with
       | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
-      | [""; ""] -> `Verbatim "(* *)"
+      | [""; ""] -> `Verbatim " "
       | [text] when wrap_comments -> `Wrapped (text, "*)")
       | [text; ""] when wrap_comments -> `Wrapped (text, " *)")
       | [_] | [_; ""] -> `Unwrapped cmt
       | lines -> `Asterisk_prefixed lines )
   in
   match mode with
-  | `Verbatim x -> str x
+  | `Verbatim x -> wrap "(*" "*)" @@ str x
   | `Code (x, cls) -> hvbox 2 @@ wrap "(*$@;" cls (x $ fmt "@;<1 -2>")
   | `Wrapped (x, epi) -> str "(*" $ fill_text x ~epi
   | `Unwrapped x -> Unwrapped.fmt ~ocp_indent_compat x pos
+  | `Docstring x ->
+      wrap "(*= " "*)"
+        ( fmt_if (String.starts_with_whitespace cmt.txt) " "
+        $ Fmt_odoc.fmt ~fmt_code x
+        $ fmt_if
+            (String.length cmt.txt > 1 && String.ends_with_whitespace cmt.txt)
+            " " )
   | `Asterisk_prefixed x -> Asterisk_prefixed.fmt x

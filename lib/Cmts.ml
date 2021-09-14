@@ -423,6 +423,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
          | [cmt] ->
              Cmt.fmt cmt ~wrap:conf.wrap_comments
                ~ocp_indent_compat:conf.ocp_indent_compat
+               ~parse_docstrings:conf.parse_docstrings
                ~fmt_code:(fmt_code conf) pos
          | group ->
              list group "@;<1000 0>" (fun cmt ->
@@ -551,12 +552,11 @@ let remaining_locs t = Set.to_list t.remaining
 
 let diff (conf : Conf.t) x y =
   let norm z =
-    let norm_non_code {Cmt.txt; _} = Normalize.comment txt in
-    let f z =
-      match Cmt.txt z with
-      | "" | "$" -> norm_non_code z
-      | str ->
-          if Char.equal str.[0] '$' then
+    let f Cmt.{txt; loc} =
+      let kind =
+        match txt with
+        | "" | "$" -> `Verbatim txt
+        | str when Char.equal str.[0] '$' -> (
             let chars_removed =
               if Char.equal str.[String.length str - 1] '$' then 2 else 1
             in
@@ -566,11 +566,22 @@ let diff (conf : Conf.t) x y =
               Parse_with_comments.parse Std_ast.Parse.ast Structure conf
                 ~source
             with
-            | exception _ -> norm_non_code z
-            | {ast; _} ->
-                Caml.Format.asprintf "%a" Std_ast.Pprintast.structure
-                  (Normalize.normalize Structure conf ast)
-          else norm_non_code z
+            | exception _ -> `Verbatim str
+            | {ast; _} -> `Code ast )
+        | str when Char.equal str.[0] '=' && conf.parse_docstrings -> (
+            let len = String.length str - 1 in
+            let source = String.sub ~pos:1 ~len str in
+            match Docstring.parse ~loc source with
+            | Ok _ -> `Docstring source
+            | Error _ -> `Verbatim str )
+        | str -> `Verbatim str
+      in
+      match kind with
+      | `Verbatim x -> Normalize.comment x
+      | `Code x ->
+          Caml.Format.asprintf "%a" Std_ast.Pprintast.structure
+            (Normalize.normalize Structure conf x)
+      | `Docstring x -> Normalize.docstring conf loc x
     in
     Set.of_list (module String) (List.map ~f z)
   in

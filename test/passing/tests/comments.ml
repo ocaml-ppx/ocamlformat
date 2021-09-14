@@ -295,3 +295,24 @@ let _ =
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
   #= (* convert from foos to bars blah blah blah blah blah blah blah blah *)
   foooooooooooooooooooooooo foooooooooooooooo fooooooooooooooo
+
+let _ =
+  if something then
+(*= {[
+      let _ =
+       f
+       @@
+       { aaa= aaa bbb ccc  
+         ; bbb= aaa bbb ccc
+
+       ; ccc= aaa bbb ccc }
+       >>= fun () ->
+       let _ = x in
+       f @@ g @@ h @@ fun x -> y
+    ]} *)
+    fooooooo (*= {v We need this
+                    to stay verbatim! v} *)
+  else
+    { fooo : int (*= [f] [x] *) (*= [k] [zz] [zz] *)
+    ; fooo : k (*= {[ f x y ]} *)
+    ; fooo : k (*= {[ f x y ]} *) }

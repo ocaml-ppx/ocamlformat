@@ -16,7 +16,7 @@ val dedup_cmts : 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
 val comment : string -> string
 (** Normalize a comment. *)
 
-val docstring : Conf.t -> string -> string
+val docstring : Conf.t -> Location.t -> string -> string
 (** Normalize a docstring. *)
 
 val normalize : 'a Std_ast.t -> Conf.t -> 'a -> 'a
@@ -34,3 +34,7 @@ type docstring_error =
 
 val moved_docstrings :
   'a Std_ast.t -> Conf.t -> 'a -> 'a -> docstring_error list
+
+val diff_docstrings :
+  Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
+(** Difference between two lists of doc comments. *)

@@ -197,12 +197,12 @@ let odoc_block_element c fmt = function
 
 let odoc_docs c fmt elems = list (ign_loc (odoc_block_element c)) fmt elems
 
-let docstring c text =
-  if not c.conf.parse_docstrings then comment text
-  else
-    let location = Lexing.dummy_pos in
-    let parsed = Odoc_parser.parse_comment ~location ~text in
-    Format.asprintf "Docstring(%a)%!" (odoc_docs c) (Odoc_parser.ast parsed)
+let docstring c loc text =
+  if c.conf.parse_docstrings then
+    match Docstring.parse ~loc text with
+    | Ok parsed -> Format.asprintf "Docstring(%a)%!" (odoc_docs c) parsed
+    | Error _ -> comment text
+  else comment text
 
 let sort_attributes : Std_ast.attributes -> Std_ast.attributes =
   List.sort ~compare:Poly.compare
@@ -224,7 +224,9 @@ let make_mapper conf ~ignore_doc_comments =
                   , [] )
             ; _ } as pstr ) ]
       when is_doc attr ->
-        let doc' = docstring {conf; normalize_code= m.structure m} doc in
+        let doc' =
+          docstring {conf; normalize_code= m.structure m} attr.attr_loc doc
+        in
         Ast_mapper.default_mapper.attribute m
           { attr with
             attr_payload=
@@ -345,7 +347,9 @@ let moved_docstrings fragment c s1 s2 =
   let c = {conf= c; normalize_code= normalize Structure c} in
   let d1 = docstrings fragment s1 in
   let d2 = docstrings fragment s2 in
-  let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
+  let equal (l1, x) (l2, y) =
+    String.equal (docstring c l1 x) (docstring c l2 y)
+  in
   match List.zip d1 d2 with
   | Unequal_lengths ->
       (* We only return the ones that are not in both lists. *)
@@ -358,6 +362,13 @@ let moved_docstrings fragment c s1 s2 =
       let l = List.filter l ~f:(fun (x, y) -> not (equal x y)) in
       List.map ~f:(fun ((loc, x), (_, y)) -> Unstable (loc, x, y)) l
 
-let docstring conf =
+let docstring conf loc =
   let normalize_code = normalize Structure conf in
-  docstring {conf; normalize_code}
+  docstring {conf; normalize_code} loc
+
+let diff_docstrings conf x y =
+  let norm z =
+    let f Cmt.{txt; loc} = docstring conf loc txt in
+    Set.of_list (module String) (List.map ~f z)
+  in
+  Set.symmetric_diff (norm x) (norm y)
