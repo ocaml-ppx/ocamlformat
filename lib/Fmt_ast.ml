@@ -638,12 +638,12 @@ and fmt_type_var s =
   $ fmt_if (String.length s > 1 && Char.equal s.[1] '\'') " "
   $ str s
 
-and fmt_type_cstr c ~in_constraint xtyp =
+and fmt_type_cstr c ?constraint_ctx xtyp =
   fmt_or_k c.conf.ocp_indent_compat
     (fits_breaks " " ~hint:(1000, 0) "")
     (fmt "@;<0 -1>")
   $ cbox_if c.conf.ocp_indent_compat 0
-      (fmt_core_type c ~pro:":" ~in_constraint
+      (fmt_core_type c ~pro:":" ?constraint_ctx
          ~pro_space:(not c.conf.ocp_indent_compat)
          ~box:(not c.conf.ocp_indent_compat)
          xtyp )
@@ -652,7 +652,7 @@ and type_constr_and_body c xbody =
   let body = xbody.ast in
   let ctx = Exp body in
   let fmt_cstr_and_xbody typ exp =
-    ( Some (fmt_type_cstr c ~in_constraint:true (sub_typ ~ctx typ))
+    ( Some (fmt_type_cstr c ~constraint_ctx:`Fun (sub_typ ~ctx typ))
     , sub_exp ~ctx exp )
   in
   match xbody.ast.pexp_desc with
@@ -671,8 +671,13 @@ and type_constr_and_body c xbody =
       fmt_cstr_and_xbody typ exp
   | _ -> (None, xbody)
 
+(* The context of [xtyp] refers to the RHS of the expression (namely
+   Pexp_constraint) and does not give a relevant information as to whether
+   [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
+   of the expression, i.e. if the expression is part of a `fun`
+   expression. *)
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
-    ?(pro_space = true) ?(in_constraint = false) ({ast= typ; _} as xtyp) =
+    ?(pro_space = true) ?constraint_ctx ({ast= typ; _} as xtyp) =
   protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
@@ -702,10 +707,17 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
        c.conf
   @@
   let ctx = Typ typ in
+  let parenze_constraint_ctx =
+    match constraint_ctx with
+    | Some `Fun when not parens -> wrap "(" ")"
+    | _ -> Fn.id
+  in
   match ptyp_desc with
   | Ptyp_alias (typ, txt) ->
       hvbox 0
-        (fmt_core_type c (sub_typ ~ctx typ) $ fmt "@ as@ " $ fmt_type_var txt)
+        (parenze_constraint_ctx
+           ( fmt_core_type c (sub_typ ~ctx typ)
+           $ fmt "@ as@ " $ fmt_type_var txt ) )
   | Ptyp_any -> str "_"
   | Ptyp_arrow _ ->
       let xt1N = Sugar.arrow_typ c.cmts xtyp in
@@ -721,7 +733,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
             Poly.(c.conf.break_separators = `Before)
             (fmt_or_k c.conf.ocp_indent_compat (fits_breaks "" "")
                (fits_breaks "" "   ") ) )
-      $ wrap_if in_constraint "(" ")"
+      $ parenze_constraint_ctx
         @@ list xt1N
              ( if Poly.(c.conf.break_separators = `Before) then
                if parens then "@;<1 1>-> " else "@ -> "
@@ -762,9 +774,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
         $ fmt_core_type c ~box:true (sub_typ ~ctx t) )
   | Ptyp_tuple typs ->
       hvbox 0
-        (wrap_if
-           (in_constraint && not parens)
-           "(" ")"
+        (parenze_constraint_ctx
            (wrap_fits_breaks_if ~space:false c.conf parens "(" ")"
               (list typs "@ * " (sub_typ ~ctx >> fmt_core_type c)) ) )
   | Ptyp_var s -> fmt_type_var s
@@ -4314,8 +4324,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
           $ fmt_core_type c xtyp2
         in
         ([], fmt_cstr)
-    | `Other (xargs, xtyp) ->
-        (xargs, fmt_type_cstr c ~in_constraint:false xtyp)
+    | `Other (xargs, xtyp) -> (xargs, fmt_type_cstr c xtyp)
     | `None xargs -> (xargs, noop)
   in
   let indent =
