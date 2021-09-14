@@ -6,6 +6,8 @@
 
   + Options `--align-cases`, `--align-constructors-decl` and `--align-variants-decl` are now deprecated and will be removed by version 1.0 (#1793, @gpetiot)
 
+  + Option `disambiguate-non-breaking-match` is now deprecated and will be removed by version 1.0 (#1805, @gpetiot)
+
 #### Bug fixes
 
   + Fix normalization of sequences of expressions (#1731, @gpetiot)

@@ -484,9 +484,10 @@ module Formatting = struct
     let doc =
       "Add parentheses around matching constructs that fit on a single line."
     in
+    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
     C.flag
       ~names:["disambiguate-non-breaking-match"]
-      ~default:false ~doc ~section
+      ~default:false ~doc ~section ~deprecated
       (fun conf x -> {conf with disambiguate_non_breaking_match= x})
       (fun conf -> conf.disambiguate_non_breaking_match)
 
