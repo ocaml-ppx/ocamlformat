@@ -1222,7 +1222,7 @@ and fmt_fun_args c ?pro args =
         , None )
       when String.equal l txt ->
         let symbol = match lbl with Labelled _ -> "~" | _ -> "?" in
-        cbox 0 (str symbol $ fmt_pattern c xpat)
+        cbox 0 (str symbol $ fmt_pattern ~box:true c xpat)
     | Val ((Optional _ as lbl), xpat, None) ->
         let has_attr = not (List.is_empty xpat.ast.ppat_attributes) in
         let outer_parens, inner_parens =
@@ -1235,8 +1235,9 @@ and fmt_fun_args c ?pro args =
         in
         cbox 2
           ( fmt_label lbl ":@,"
-          $ Params.parens_if outer_parens c.conf
-              (fmt_pattern ~parens:inner_parens c xpat) )
+          $ hovbox 0
+            @@ Params.parens_if outer_parens c.conf
+                 (fmt_pattern ~parens:inner_parens c xpat) )
     | Val (((Labelled _ | Nolabel) as lbl), xpat, None) ->
         cbox 2 (fmt_label lbl ":@," $ fmt_pattern c xpat)
     | Val
@@ -1247,7 +1248,8 @@ and fmt_fun_args c ?pro args =
       when String.equal l txt ->
         cbox 0
           (wrap "?(" ")"
-             ( fmt_pattern c xpat $ fmt " =@;<1 2>"
+             ( fmt_pattern c ~box:true xpat
+             $ fmt " =@;<1 2>"
              $ hovbox 2 (fmt_expression c xexp) ) )
     | Val
         ( Optional l
@@ -1262,7 +1264,7 @@ and fmt_fun_args c ?pro args =
       when String.equal l txt ->
         cbox 0
           (wrap "?(" ")"
-             ( fmt_pattern c ~parens:false xpat
+             ( fmt_pattern c ~parens:false ~box:true xpat
              $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
     | Val (Optional l, xpat, Some xexp) ->
         let parens =
@@ -1273,7 +1275,7 @@ and fmt_fun_args c ?pro args =
         cbox 2
           ( str "?" $ str l
           $ wrap_k (fmt ":@,(") (str ")")
-              ( fmt_pattern c ?parens xpat
+              ( fmt_pattern c ?parens ~box:true xpat
               $ fmt " =@;<1 2>" $ fmt_expression c xexp ) )
     | Val ((Labelled _ | Nolabel), _, Some _) ->
         impossible "not accepted by parser"
