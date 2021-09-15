@@ -22,6 +22,8 @@ module Make (C : CONFIG) = struct
 
   type config = C.config
 
+  type kind = Formatting | Operational
+
   type parsed_from = [`File of Fpath.t * int | `Attribute]
 
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
@@ -29,7 +31,11 @@ module Make (C : CONFIG) = struct
   type from =
     [`Default | `Profile of string * updated_from | `Updated of updated_from]
 
-  type deprecated = {msg: string; since_version: string}
+  type deprecated = {dmsg: string; dversion: string}
+
+  type removed = {rmsg: string; rversion: string}
+
+  type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
 
   type 'a t =
     { names: string list
@@ -41,15 +47,14 @@ module Make (C : CONFIG) = struct
     ; default: 'a
     ; get_value: config -> 'a
     ; from: from
-    ; removed: bool
-    ; deprecated: deprecated option }
+    ; status: status }
 
   type 'a option_decl =
        names:string list
     -> doc:string
-    -> section:[`Formatting | `Operational]
+    -> kind:kind
     -> ?allow_inline:bool
-    -> ?deprecated:deprecated
+    -> ?status:[`Valid | `Deprecated of deprecated]
     -> (config -> 'a -> config)
     -> (config -> 'a)
     -> 'a t
@@ -58,30 +63,35 @@ module Make (C : CONFIG) = struct
 
   let store = ref []
 
-  let deprecated ~since_version msg = {msg; since_version}
+  let deprecated ~since_version:dversion dmsg = {dmsg; dversion}
 
-  let in_attributes ~section cond =
-    if cond || Poly.(section = `Operational) then ""
-    else " Cannot be set in attributes."
+  let removed ~since_version:rversion rmsg = {rmsg; rversion}
 
-  let pp_deprecated ppf {msg; since_version} =
-    Format.fprintf ppf "This option is deprecated since version %s. %s"
-      since_version msg
+  let in_attributes cond = function
+    | Operational -> ""
+    | Formatting -> if cond then "" else " Cannot be set in attributes."
 
-  let deprecated_doc ppf deprecated =
-    match deprecated with
-    | Some deprecated ->
-        Format.fprintf ppf " Warning: %a" pp_deprecated deprecated
-    | None -> ()
+  let pp_deprecated ppf {dmsg; dversion= v} =
+    Format.fprintf ppf "This option is deprecated since version %s. %s" v
+      dmsg
 
-  let generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated =
+  let pp_removed ppf {rmsg; rversion= v} =
+    Format.fprintf ppf "This option has been removed in version %s. %s" v
+      rmsg
+
+  let status_doc ppf = function
+    | `Valid -> ()
+    | `Deprecated x -> Format.fprintf ppf " Warning: %a" pp_deprecated x
+    | `Removed _ -> ()
+
+  let generated_flag_doc ~allow_inline ~doc ~kind ~default ~status =
     let default = if default then "set" else "unset" in
     Format.asprintf "%s The flag is $(b,%s) by default.%s%a" doc default
-      (in_attributes ~section allow_inline)
-      deprecated_doc deprecated
+      (in_attributes allow_inline kind)
+      status_doc status
 
-  let generated_doc ?default_doc conv ~allow_inline ~doc ~section ~default
-      ~deprecated =
+  let generated_doc ?default_doc conv ~allow_inline ~doc ~kind ~default
+      ~status =
     let default_doc =
       match default_doc with
       | Some x -> x
@@ -91,29 +101,36 @@ module Make (C : CONFIG) = struct
       if String.is_empty default_doc then "none" else default_doc
     in
     Format.asprintf "%s The default value is $(b,%s).%s%a" doc default
-      (in_attributes ~section allow_inline)
-      deprecated_doc deprecated
+      (in_attributes allow_inline kind)
+      status_doc status
 
-  let section_name = function
-    | `Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
-    | `Operational -> Cmdliner.Manpage.s_options
-    | `Removed -> Cmdliner.Manpage.s_options ^ " (REMOVED OPTIONS)"
+  let section_name kind status =
+    match status with
+    | `Valid -> (
+      match kind with
+      | Formatting -> Cmdliner.Manpage.s_options ^ " (CODE FORMATTING STYLE)"
+      | Operational -> Cmdliner.Manpage.s_options )
+    | `Deprecated _ -> Cmdliner.Manpage.s_options ^ " (DEPRECATED)"
+    | `Removed _ -> Cmdliner.Manpage.s_options ^ " (REMOVED)"
 
   let from = `Default
 
-  let flag ~default ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?deprecated update
+  (* somehow necessary *)
+  let map_status : [`Valid | `Deprecated of deprecated] -> status = function
+    | `Valid -> `Valid
+    | `Deprecated x -> `Deprecated x
+
+  let flag ~default ~names ~doc ~kind
+      ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
       get_value =
     let open Cmdliner in
     let invert_names =
       List.filter_map names ~f:(fun n ->
           if String.length n = 1 then None else Some ("no-" ^ n) )
     in
-    let doc =
-      generated_flag_doc ~allow_inline ~doc ~section ~default ~deprecated
-    in
+    let doc = generated_flag_doc ~allow_inline ~doc ~kind ~default ~status in
     let invert_doc = "Unset $(b," ^ List.last_exn names ^ ")." in
-    let docs = section_name section in
+    let docs = section_name kind status in
     let term =
       Arg.(
         value
@@ -121,7 +138,7 @@ module Make (C : CONFIG) = struct
             [ (Some true, info names ~doc ~docs)
             ; (Some false, info invert_names ~doc:invert_doc ~docs) ])
     in
-    let parse = Arg.(conv_parser bool) in
+    let parse = Arg.conv_parser Arg.bool in
     let r = mk ~default:None term in
     let to_string = Bool.to_string in
     let cmdline_get () = !r in
@@ -135,25 +152,24 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
-      ; removed= false
-      ; deprecated }
+      ; status= map_status status }
     in
     store := Pack opt :: !store ;
     opt
 
-  let any ?default_doc converter ~default ~docv ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?deprecated update
+  let any ?default_doc converter ~default ~docv ~names ~doc ~kind
+      ?(allow_inline = Poly.(kind = Formatting)) ?(status = `Valid) update
       get_value =
     let open Cmdliner in
     let doc =
-      generated_doc converter ?default_doc ~allow_inline ~doc ~section
-        ~default ~deprecated
+      generated_doc converter ?default_doc ~allow_inline ~doc ~kind ~default
+        ~status
     in
-    let docs = section_name section in
+    let docs = section_name kind status in
     let term =
       Arg.(value & opt (some converter) None & info names ~doc ~docs ~docv)
     in
-    let parse s = Arg.conv_parser converter s in
+    let parse = Arg.conv_parser converter in
     let r = mk ~default:None term in
     let to_string = Format.asprintf "%a%!" (Arg.conv_printer converter) in
     let cmdline_get () = !r in
@@ -167,8 +183,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
-      ; removed= false
-      ; deprecated }
+      ; status= map_status status }
     in
     store := Pack opt :: !store ;
     opt
@@ -191,8 +206,8 @@ module Make (C : CONFIG) = struct
     in
     Arg.conv (parse, Arg.conv_printer conv)
 
-  let choice ~all ?(removed_values = []) ~names ~doc ~section
-      ?(allow_inline = Poly.(section = `Formatting)) ?deprecated =
+  let choice ~all ?(removed_values = []) ~names ~doc ~kind
+      ?(allow_inline = Poly.(kind = Formatting)) ?status =
     let _, default, _ = List.hd_exn all in
     let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
     let conv = add_removed_values removed_values (Arg.enum opt_names) in
@@ -212,17 +227,17 @@ module Make (C : CONFIG) = struct
            (fun fs (v, _, _) -> fprintf fs "%s" v) )
         all
     in
-    any conv ~default ~docv ~names ~doc ~section ~allow_inline ?deprecated
+    any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status
 
   let removed_option ~names ~version ~msg =
-    let msg =
-      Format.asprintf "This option has been removed in version %s. %s"
-        version msg
-    in
+    let removed = {rversion= version; rmsg= msg} in
+    let status = `Removed removed in
+    let msg = Format.asprintf "%a" pp_removed removed in
     let parse _ = Error (`Msg msg) in
     let converter = Arg.conv (parse, fun _ () -> ()) in
     let update conf _ = conf and get_value _ = () in
-    let docs = section_name `Removed in
+    let kind = (* not used *) Formatting in
+    let docs = section_name kind status in
     let term =
       Arg.(value & opt (some converter) None & info names ~doc:msg ~docs)
     in
@@ -239,8 +254,7 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
-      ; removed= true
-      ; deprecated= None }
+      ; status }
     in
     store := Pack opt :: !store
 
@@ -253,7 +267,7 @@ module Make (C : CONFIG) = struct
         Some (to_string (get_value config))
       else None
     in
-    let on_pack (Pack ({names; deprecated; _} as p)) =
+    let on_pack (Pack ({names; status; _} as p)) =
       if is_profile_option_name name then
         if is_profile_option_name (List.hd_exn names) then
           (* updating --profile option *)
@@ -264,7 +278,9 @@ module Make (C : CONFIG) = struct
           Pack {p with from= `Profile (profile_name, from)}
       else if List.exists names ~f:(String.equal name) then (
         (* updating a single option (without setting a profile) *)
-        Option.iter deprecated ~f:(C.warn config "%s: %a" name pp_deprecated) ;
+        ( match status with
+        | `Deprecated d -> C.warn config "%s: %a" name pp_deprecated d
+        | _ -> () ) ;
         Pack {p with from= `Updated from} )
       else Pack p
     in
@@ -304,7 +320,7 @@ module Make (C : CONFIG) = struct
       let compare x y = compare (String.length x) (String.length y) in
       List.max_elt ~compare
     in
-    let on_pack (Pack {names; to_string; get_value; from; removed; _}) =
+    let on_pack (Pack {names; to_string; get_value; from; status; _}) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
       let aux_from = function
@@ -321,8 +337,10 @@ module Make (C : CONFIG) = struct
         | `Profile (s, p) -> " (profile " ^ s ^ aux_from p ^ ")"
         | `Updated x -> aux_from x
       in
-      if not removed then
-        Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
+      match status with
+      | `Valid | `Deprecated _ ->
+          Format.eprintf "%s=%s%s\n%!" name value (aux_from from)
+      | `Removed _ -> ()
     in
     List.iter !store ~f:on_pack
 end
