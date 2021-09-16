@@ -95,13 +95,6 @@ let find_token_after t ~filter pos =
       in
       loop i
 
-let has_cmt_same_line_after t (loc : Location.t) =
-  match find_token_after t ~filter:(fun _ -> true) loc.loc_end with
-  | None -> false
-  | Some ((COMMENT _ | DOCSTRING _), nloc) ->
-      nloc.loc_start.pos_lnum = loc.loc_end.pos_lnum
-  | Some _ -> false
-
 let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   let loc_end =
     List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->

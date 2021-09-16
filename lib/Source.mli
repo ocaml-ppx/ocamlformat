@@ -33,8 +33,6 @@ val tokens_between :
 
 val string_at : t -> Location.t -> string
 
-val has_cmt_same_line_after : t -> Location.t -> bool
-
 val find_token_after :
      t
   -> filter:(Parser.token -> bool)
