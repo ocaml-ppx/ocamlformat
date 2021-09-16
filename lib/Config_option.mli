@@ -22,25 +22,33 @@ module Make (C : CONFIG) : sig
 
   type 'a t
 
+  type kind = Formatting | Operational
+
   type parsed_from = [`File of Fpath.t * int | `Attribute]
 
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
   type deprecated
 
+  type removed
+
+  type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
+
   type 'a option_decl =
        names:string list
     -> doc:string
-    -> section:[`Formatting | `Operational]
+    -> kind:kind
     -> ?allow_inline:bool
-    -> ?deprecated:deprecated
+    -> ?status:[`Valid | `Deprecated of deprecated]
     -> (config -> 'a -> config)
     -> (config -> 'a)
     -> 'a t
 
-  val section_name : [`Formatting | `Operational] -> string
+  val section_name : kind -> status -> string
 
   val deprecated : since_version:string -> string -> deprecated
+
+  val removed : since_version:string -> string -> removed
 
   (** Indicate that a configuration value has been removed in an ocamlformat
       release. A message indicating how to migrate will be displayed. *)
