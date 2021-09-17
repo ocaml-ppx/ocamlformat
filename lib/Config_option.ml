@@ -201,15 +201,21 @@ module Make (C : CONFIG) = struct
         Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s
           v msg
 
+      let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =
+        Format.fprintf ppf
+          "Value `%s` of option `%s` is deprecated since version %s. %s" val_
+          opt v msg
+
       let status_doc s ppf = function
         | `Valid -> ()
         | `Deprecated x ->
             Format.fprintf ppf " Warning: %a" (pp_deprecated s) x
 
-      let warn_if_deprecated conf (s, _, _, status) =
+      let warn_if_deprecated conf opt (s, _, _, status) =
         match status with
         | `Valid -> ()
-        | `Deprecated d -> C.warn conf "%a" (pp_deprecated s) d
+        | `Deprecated d ->
+            C.warn conf "%a" (pp_deprecated_with_name ~opt ~val_:s) d
     end
 
     module Removed = struct
@@ -238,7 +244,7 @@ module Make (C : CONFIG) = struct
 
   let choice ~all ?(removed_values = []) ~names ~doc ~kind
       ?(allow_inline = Poly.(kind = Formatting)) ?status update =
-    let _, default, _, _ = List.hd_exn all in
+    let name, default, _, _ = List.hd_exn all in
     let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
     let conv =
       Value.Removed.add_parse_errors removed_values (Arg.enum opt_names)
@@ -262,7 +268,7 @@ module Make (C : CONFIG) = struct
     in
     let update conf x =
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
-      | Some opt -> Value.Ok.warn_if_deprecated conf opt
+      | Some value -> Value.Ok.warn_if_deprecated conf name value
       | None -> () ) ;
       update conf x
     in
