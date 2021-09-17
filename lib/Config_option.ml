@@ -188,35 +188,63 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  type removed_value = {name: string; version: string; msg: string}
+  module Value = struct
+    module Valid = struct
+      type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
 
-  let removed_value ~name ~version ~msg = {name; version; msg}
+      let pp_deprecated s ppf {dmsg= msg; dversion= v} =
+        Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s
+          v msg
 
-  let removed_values ~names ~version ~msg =
-    List.map names ~f:(fun name -> removed_value ~name ~version ~msg)
+      let status_doc s ppf = function
+        | `Valid -> ()
+        | `Deprecated x ->
+            Format.fprintf ppf " Warning: %a" (pp_deprecated s) x
 
-  let add_removed_values values conv =
-    let parse s =
-      match List.find values ~f:(fun {name; _} -> String.equal name s) with
-      | Some {name; version; msg} ->
-          Format.kasprintf
-            (fun s -> Error (`Msg s))
-            "value `%s` has been removed in version %s. %s" name version msg
-      | None -> Arg.conv_parser conv s
-    in
-    Arg.conv (parse, Arg.conv_printer conv)
+      let warn_if_deprecated conf (s, _, _, status) =
+        match status with
+        | `Valid -> ()
+        | `Deprecated d -> C.warn conf "%a" (pp_deprecated s) d
+    end
+
+    module Removed = struct
+      type t = {name: string; version: string; msg: string}
+
+      let mk ~name ~version ~msg = {name; version; msg}
+
+      let mk_list ~names ~version ~msg =
+        List.map names ~f:(fun name -> mk ~name ~version ~msg)
+
+      let add_parse_errors values conv =
+        let parse s =
+          match
+            List.find values ~f:(fun {name; _} -> String.equal name s)
+          with
+          | Some {name; version; msg} ->
+              Format.kasprintf
+                (fun s -> Error (`Msg s))
+                "value `%s` has been removed in version %s. %s" name version
+                msg
+          | None -> Arg.conv_parser conv s
+        in
+        Arg.conv (parse, Arg.conv_printer conv)
+    end
+  end
 
   let choice ~all ?(removed_values = []) ~names ~doc ~kind
-      ?(allow_inline = Poly.(kind = Formatting)) ?status =
-    let _, default, _ = List.hd_exn all in
-    let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
-    let conv = add_removed_values removed_values (Arg.enum opt_names) in
+      ?(allow_inline = Poly.(kind = Formatting)) ?status update =
+    let _, default, _, _ = List.hd_exn all in
+    let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
+    let conv =
+      Value.Removed.add_parse_errors removed_values (Arg.enum opt_names)
+    in
     let doc =
       let open Format in
       asprintf "%s %a" doc
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,")
-           (fun fs (_, _, d) -> fprintf fs "%s" d) )
+           (fun fs (s, _, d, st) ->
+             fprintf fs "%s%a" d (Value.Valid.status_doc s) st ) )
         all
     in
     let docv =
@@ -224,10 +252,16 @@ module Make (C : CONFIG) = struct
       asprintf "@[<1>{%a}@]"
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,|")
-           (fun fs (v, _, _) -> fprintf fs "%s" v) )
+           (fun fs (v, _, _, _) -> fprintf fs "%s" v) )
         all
     in
-    any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status
+    let update conf x =
+      ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
+      | Some opt -> Value.Valid.warn_if_deprecated conf opt
+      | None -> () ) ;
+      update conf x
+    in
+    any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
 
   let removed_option ~names ~version ~msg =
     let removed = {rversion= version; rmsg= msg} in
