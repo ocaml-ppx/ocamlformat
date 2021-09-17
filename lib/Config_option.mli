@@ -51,35 +51,32 @@ module Make (C : CONFIG) : sig
   val removed : since_version:string -> string -> removed
 
   module Value : sig
-    module Ok : sig
-      type 'a t
+    type 'a t
 
-      val valid : name:string -> doc:string -> 'a -> 'a t
+    val valid : name:string -> doc:string -> 'a -> 'a t
 
-      val deprecated :
-        name:string -> doc:string -> deprecated:deprecated -> 'a -> 'a t
-    end
+    val deprecated :
+      name:string -> doc:string -> deprecated:deprecated -> 'a -> 'a t
+  end
 
-    module Removed : sig
-      (** Indicate that a configuration value has been removed in an
-          ocamlformat release. A message indicating how to migrate will be
-          displayed. *)
-      type t
+  module Value_removed : sig
+    (** Indicate that a configuration value has been removed in an
+        ocamlformat release. A message indicating how to migrate will be
+        displayed. *)
+    type t
 
-      val mk : name:string -> version:string -> msg:string -> t
-      (** [name] is the configuration value that was removed in version
-          [version]. [msg] explains how to get the former behaviour. *)
+    val mk : name:string -> version:string -> msg:string -> t
+    (** [name] is the configuration value that was removed in version
+        [version]. [msg] explains how to get the former behaviour. *)
 
-      val mk_list :
-        names:string list -> version:string -> msg:string -> t list
-      (** Shorthand for [mk] when [version] and [msg] are shared. This can be
-          used when multiple values are removed at the same time. *)
-    end
+    val mk_list : names:string list -> version:string -> msg:string -> t list
+    (** Shorthand for [mk] when [version] and [msg] are shared. This can be
+        used when multiple values are removed at the same time. *)
   end
 
   val choice :
-       all:'a Value.Ok.t list
-    -> ?removed_values:Value.Removed.t list
+       all:'a Value.t list
+    -> ?removed_values:Value_removed.t list
     -> 'a option_decl
 
   val flag : default:bool -> bool option_decl

@@ -189,57 +189,53 @@ module Make (C : CONFIG) = struct
     opt
 
   module Value = struct
-    module Ok = struct
-      type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
+    type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
 
-      let valid ~name ~doc value = (name, value, doc, `Valid)
+    let valid ~name ~doc value = (name, value, doc, `Valid)
 
-      let deprecated ~name ~doc ~deprecated value =
-        (name, value, doc, `Deprecated deprecated)
+    let deprecated ~name ~doc ~deprecated value =
+      (name, value, doc, `Deprecated deprecated)
 
-      let pp_deprecated s ppf {dmsg= msg; dversion= v} =
-        Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s
-          v msg
+    let pp_deprecated s ppf {dmsg= msg; dversion= v} =
+      Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s v
+        msg
 
-      let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =
-        Format.fprintf ppf
-          "Value `%s` of option `%s` is deprecated since version %s. %s" val_
-          opt v msg
+    let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =
+      Format.fprintf ppf
+        "Value `%s` of option `%s` is deprecated since version %s. %s" val_
+        opt v msg
 
-      let status_doc s ppf = function
-        | `Valid -> ()
-        | `Deprecated x ->
-            Format.fprintf ppf " Warning: %a" (pp_deprecated s) x
+    let status_doc s ppf = function
+      | `Valid -> ()
+      | `Deprecated x ->
+          Format.fprintf ppf " Warning: %a" (pp_deprecated s) x
 
-      let warn_if_deprecated conf opt (s, _, _, status) =
-        match status with
-        | `Valid -> ()
-        | `Deprecated d ->
-            C.warn conf "%a" (pp_deprecated_with_name ~opt ~val_:s) d
-    end
+    let warn_if_deprecated conf opt (s, _, _, status) =
+      match status with
+      | `Valid -> ()
+      | `Deprecated d ->
+          C.warn conf "%a" (pp_deprecated_with_name ~opt ~val_:s) d
+  end
 
-    module Removed = struct
-      type t = {name: string; version: string; msg: string}
+  module Value_removed = struct
+    type t = {name: string; version: string; msg: string}
 
-      let mk ~name ~version ~msg = {name; version; msg}
+    let mk ~name ~version ~msg = {name; version; msg}
 
-      let mk_list ~names ~version ~msg =
-        List.map names ~f:(fun name -> mk ~name ~version ~msg)
+    let mk_list ~names ~version ~msg =
+      List.map names ~f:(fun name -> mk ~name ~version ~msg)
 
-      let add_parse_errors values conv =
-        let parse s =
-          match
-            List.find values ~f:(fun {name; _} -> String.equal name s)
-          with
-          | Some {name; version; msg} ->
-              Format.kasprintf
-                (fun s -> Error (`Msg s))
-                "value `%s` has been removed in version %s. %s" name version
-                msg
-          | None -> Arg.conv_parser conv s
-        in
-        Arg.conv (parse, Arg.conv_printer conv)
-    end
+    let add_parse_errors values conv =
+      let parse s =
+        match List.find values ~f:(fun {name; _} -> String.equal name s) with
+        | Some {name; version; msg} ->
+            Format.kasprintf
+              (fun s -> Error (`Msg s))
+              "value `%s` has been removed in version %s. %s" name version
+              msg
+        | None -> Arg.conv_parser conv s
+      in
+      Arg.conv (parse, Arg.conv_printer conv)
   end
 
   let choice ~all ?(removed_values = []) ~names ~doc ~kind
@@ -248,7 +244,7 @@ module Make (C : CONFIG) = struct
     let name = List.hd_exn names in
     let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
     let conv =
-      Value.Removed.add_parse_errors removed_values (Arg.enum opt_names)
+      Value_removed.add_parse_errors removed_values (Arg.enum opt_names)
     in
     let doc =
       let open Format in
@@ -256,7 +252,7 @@ module Make (C : CONFIG) = struct
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,")
            (fun fs (s, _, d, st) ->
-             fprintf fs "%s%a" d (Value.Ok.status_doc s) st ) )
+             fprintf fs "%s%a" d (Value.status_doc s) st ) )
         all
     in
     let docv =
@@ -269,7 +265,7 @@ module Make (C : CONFIG) = struct
     in
     let update conf x =
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
-      | Some value -> Value.Ok.warn_if_deprecated conf name value
+      | Some value -> Value.warn_if_deprecated conf name value
       | None -> () ) ;
       update conf x
     in
