@@ -244,7 +244,8 @@ module Make (C : CONFIG) = struct
 
   let choice ~all ?(removed_values = []) ~names ~doc ~kind
       ?(allow_inline = Poly.(kind = Formatting)) ?status update =
-    let name, default, _, _ = List.hd_exn all in
+    let _, default, _, _ = List.hd_exn all in
+    let name = List.hd_exn names in
     let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
     let conv =
       Value.Removed.add_parse_errors removed_values (Arg.enum opt_names)
