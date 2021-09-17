@@ -191,10 +191,10 @@ module Make (C : CONFIG) = struct
   module Value = struct
     type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
 
-    let valid ~name ~doc value = (name, value, doc, `Valid)
-
-    let deprecated ~name ~doc ~deprecated value =
-      (name, value, doc, `Deprecated deprecated)
+    let make ?deprecated ~name ~doc value =
+      match deprecated with
+      | None -> (name, value, doc, `Valid)
+      | Some x -> (name, value, doc, `Deprecated x)
 
     let pp_deprecated s ppf {dmsg= msg; dversion= v} =
       Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s v
@@ -220,10 +220,10 @@ module Make (C : CONFIG) = struct
   module Value_removed = struct
     type t = {name: string; version: string; msg: string}
 
-    let mk ~name ~version ~msg = {name; version; msg}
+    let make ~name ~version ~msg = {name; version; msg}
 
-    let mk_list ~names ~version ~msg =
-      List.map names ~f:(fun name -> mk ~name ~version ~msg)
+    let make_list ~names ~version ~msg =
+      List.map names ~f:(fun name -> make ~name ~version ~msg)
 
     let add_parse_errors values conv =
       let parse s =

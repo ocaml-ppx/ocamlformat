@@ -53,10 +53,8 @@ module Make (C : CONFIG) : sig
   module Value : sig
     type 'a t
 
-    val valid : name:string -> doc:string -> 'a -> 'a t
-
-    val deprecated :
-      name:string -> doc:string -> deprecated:deprecated -> 'a -> 'a t
+    val make :
+      ?deprecated:deprecated -> name:string -> doc:string -> 'a -> 'a t
   end
 
   module Value_removed : sig
@@ -65,11 +63,12 @@ module Make (C : CONFIG) : sig
         displayed. *)
     type t
 
-    val mk : name:string -> version:string -> msg:string -> t
+    val make : name:string -> version:string -> msg:string -> t
     (** [name] is the configuration value that was removed in version
         [version]. [msg] explains how to get the former behaviour. *)
 
-    val mk_list : names:string list -> version:string -> msg:string -> t list
+    val make_list :
+      names:string list -> version:string -> msg:string -> t list
     (** Shorthand for [mk] when [version] and [msg] are shared. This can be
         used when multiple values are removed at the same time. *)
   end
