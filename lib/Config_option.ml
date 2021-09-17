@@ -191,7 +191,7 @@ module Make (C : CONFIG) = struct
   module Value = struct
     type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
 
-    let make ?deprecated ~name ~doc value =
+    let make ?deprecated ~name value doc =
       match deprecated with
       | None -> (name, value, doc, `Valid)
       | Some x -> (name, value, doc, `Deprecated x)

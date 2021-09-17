@@ -216,15 +216,13 @@ module Formatting = struct
     let names = ["assignment-operator"] in
     let all =
       [ C.Value.make ~name:"end-line" `End_line
-          ~doc:
-            "$(b,end-line) positions assignment operators (`:=` and `<-`) \
-             at the end of the line and breaks after it if the whole \
-             assignment expression does not fit on a single line."
+          "$(b,end-line) positions assignment operators (`:=` and `<-`) at \
+           the end of the line and breaks after it if the whole assignment \
+           expression does not fit on a single line."
       ; C.Value.make ~name:"begin-line" `Begin_line
-          ~doc:
-            "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
-             at the beginning of the line and breaks before it if the whole \
-             assignment expression does not fit on a single line." ]
+          "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
+           at the beginning of the line and breaks before it if the whole \
+           assignment expression does not fit on a single line." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with assignment_operator= x})
@@ -238,14 +236,12 @@ module Formatting = struct
     let names = ["break-before-in"] in
     let all =
       [ C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~doc:
-            "$(b,fit-or-vertical) will always break the line before the \
-             $(i,in) keyword if the whole $(i,let) binding does not fit on \
-             a single line."
+          "$(b,fit-or-vertical) will always break the line before the \
+           $(i,in) keyword if the whole $(i,let) binding does not fit on a \
+           single line."
       ; C.Value.make ~name:"auto" `Auto
-          ~doc:
-            "$(b,auto) will only break the line if the $(i,in) keyword does \
-             not fit on the previous line." ]
+          "$(b,auto) will only break the line if the $(i,in) keyword does \
+           not fit on the previous line." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_before_in= x})
@@ -256,27 +252,22 @@ module Formatting = struct
     let names = ["break-cases"] in
     let all =
       [ C.Value.make ~name:"fit" `Fit
-          ~doc:
-            "Specifying $(b,fit) lets pattern matches break at the margin \
-             naturally."
+          "Specifying $(b,fit) lets pattern matches break at the margin \
+           naturally."
       ; C.Value.make ~name:"nested" `Nested
-          ~doc:
-            "$(b,nested) forces a break after nested or-patterns to \
-             highlight the case body. Note that with $(b,nested), the \
-             $(b,indicate-nested-or-patterns) option is not needed, and so \
-             ignored."
+          "$(b,nested) forces a break after nested or-patterns to highlight \
+           the case body. Note that with $(b,nested), the \
+           $(b,indicate-nested-or-patterns) option is not needed, and so \
+           ignored."
       ; C.Value.make ~name:"toplevel" `Toplevel
-          ~doc:
-            "$(b,toplevel) forces top-level cases (i.e. not nested \
-             or-patterns) to break across lines, otherwise break naturally \
-             at the margin."
+          "$(b,toplevel) forces top-level cases (i.e. not nested \
+           or-patterns) to break across lines, otherwise break naturally at \
+           the margin."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~doc:
-            "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
-             line, otherwise breaks."
+          "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
+           line, otherwise breaks."
       ; C.Value.make ~name:"all" `All
-          ~doc:"$(b,all) forces all pattern matches to break across lines."
-      ]
+          "$(b,all) forces all pattern matches to break across lines." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_cases= x})
@@ -289,13 +280,11 @@ module Formatting = struct
     let names = ["break-collection-expressions"] in
     let all =
       [ C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~doc:
-            "$(b,fit-or-vertical) vertically breaks expressions if they do \
-             not fit on a single line."
+          "$(b,fit-or-vertical) vertically breaks expressions if they do \
+           not fit on a single line."
       ; C.Value.make ~name:"wrap" `Wrap
-          ~doc:
-            "$(b,wrap) will group simple expressions and try to format them \
-             in a single line." ]
+          "$(b,wrap) will group simple expressions and try to format them \
+           in a single line." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_collection_expressions= x})
@@ -305,16 +294,13 @@ module Formatting = struct
     let doc = "Style for function declarations and types." in
     let names = ["break-fun-decl"] in
     let all =
-      [ C.Value.make ~name:"wrap" `Wrap
-          ~doc:"$(b,wrap) breaks only if necessary."
+      [ C.Value.make ~name:"wrap" `Wrap "$(b,wrap) breaks only if necessary."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~doc:
-            "$(b,fit-or-vertical) vertically breaks arguments if they do \
-             not fit on a single line."
+          "$(b,fit-or-vertical) vertically breaks arguments if they do not \
+           fit on a single line."
       ; C.Value.make ~name:"smart" `Smart
-          ~doc:
-            "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
-             arguments on their line if they fit." ]
+          "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
+           on their line if they fit." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_fun_decl= x})
@@ -324,16 +310,13 @@ module Formatting = struct
     let doc = "Style for function signatures." in
     let names = ["break-fun-sig"] in
     let all =
-      [ C.Value.make ~name:"wrap" `Wrap
-          ~doc:"$(b,wrap) breaks only if necessary."
+      [ C.Value.make ~name:"wrap" `Wrap "$(b,wrap) breaks only if necessary."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~doc:
-            "$(b,fit-or-vertical) vertically breaks arguments if they do \
-             not fit on a single line."
+          "$(b,fit-or-vertical) vertically breaks arguments if they do not \
+           fit on a single line."
       ; C.Value.make ~name:"smart" `Smart
-          ~doc:
-            "$(b,smart) is like $(b,fit-or-vertical) but try to fit \
-             arguments on their line if they fit." ]
+          "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
+           on their line if they fit." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_fun_sig= x})
@@ -344,13 +327,11 @@ module Formatting = struct
     let names = ["break-infix"] in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap
-          ~doc:
-            "$(b,wrap) will group simple expressions and try to format them \
-             in a single line."
+          "$(b,wrap) will group simple expressions and try to format them \
+           in a single line."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~doc:
-            "$(b,fit-or-vertical) vertically breaks expressions if they do \
-             not fit on a single line." ]
+          "$(b,fit-or-vertical) vertically breaks expressions if they do \
+           not fit on a single line." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_infix= x})
@@ -375,9 +356,9 @@ module Formatting = struct
     let names = ["break-separators"] in
     let all =
       [ C.Value.make ~name:"after" `After
-          ~doc:"$(b,after) breaks the expressions after the separator."
+          "$(b,after) breaks the expressions after the separator."
       ; C.Value.make ~name:"before" `Before
-          ~doc:"$(b,before) breaks the expressions before the separator." ]
+          "$(b,before) breaks the expressions before the separator." ]
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
@@ -403,13 +384,11 @@ module Formatting = struct
     let names = ["break-string-literals"] in
     let all =
       [ C.Value.make ~name:"auto" `Auto
-          ~doc:
-            "$(b,auto) mode breaks lines at newlines and wraps string \
-             literals at the margin."
+          "$(b,auto) mode breaks lines at newlines and wraps string \
+           literals at the margin."
       ; C.Value.make ~name:"never" `Never
-          ~doc:
-            "$(b,never) mode formats string literals as they are parsed, in \
-             particular, with escape sequences expanded." ]
+          "$(b,never) mode formats string literals as they are parsed, in \
+           particular, with escape sequences expanded." ]
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
@@ -428,11 +407,10 @@ module Formatting = struct
     let names = ["break-struct"] in
     let all =
       [ C.Value.make ~name:"force" `Force
-          ~doc:"$(b,force) will break struct-end phrases unconditionally."
+          "$(b,force) will break struct-end phrases unconditionally."
       ; C.Value.make ~name:"natural" `Natural
-          ~doc:
-            "$(b,natural) will break struct-end phrases naturally at the \
-             margin." ]
+          "$(b,natural) will break struct-end phrases naturally at the \
+           margin." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_struct= Poly.(x = `Force)})
@@ -457,12 +435,11 @@ module Formatting = struct
     let names = ["cases-matching-exp-indent"] in
     let all =
       [ C.Value.make ~name:"normal" `Normal
-          ~doc:"$(b,normal) indents as it would any other expression."
+          "$(b,normal) indents as it would any other expression."
       ; C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) forces an indentation of 2, unless \
-             $(b,nested-match) is set to $(b,align) and we're on the last \
-             case." ]
+          "$(b,compact) forces an indentation of 2, unless \
+           $(b,nested-match) is set to $(b,align) and we're on the last \
+           case." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with cases_matching_exp_indent= x})
@@ -494,19 +471,16 @@ module Formatting = struct
     let names = ["doc-comments"] in
     let all =
       [ C.Value.make ~name:"after-when-possible" `After_when_possible
-          ~doc:
-            "$(b,after-when-possible) puts doc comments after the \
-             corresponding code. This option has no effect on variant \
-             declarations because that would change their meaning and on \
-             structures, signatures and objects for readability."
+          "$(b,after-when-possible) puts doc comments after the \
+           corresponding code. This option has no effect on variant \
+           declarations because that would change their meaning and on \
+           structures, signatures and objects for readability."
       ; C.Value.make ~name:"before-except-val" `Before_except_val
-          ~doc:
-            "$(b,before-except-val) puts doc comments before the \
-             corresponding code, but puts doc comments of $(b,val) and \
-             $(b,external) declarations after the corresponding \
-             declarations."
+          "$(b,before-except-val) puts doc comments before the \
+           corresponding code, but puts doc comments of $(b,val) and \
+           $(b,external) declarations after the corresponding declarations."
       ; C.Value.make ~name:"before" `Before
-          ~doc:"$(b,before) puts comments before the corresponding code." ]
+          "$(b,before) puts comments before the corresponding code." ]
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
@@ -533,9 +507,9 @@ module Formatting = struct
     let names = ["doc-comments-tag-only"] in
     let all =
       [ C.Value.make ~name:"default" `Default
-          ~doc:"$(b,default) means no special treatment."
+          "$(b,default) means no special treatment."
       ; C.Value.make ~name:"fit" `Fit
-          ~doc:"$(b,fit) puts doc comments on the same line." ]
+          "$(b,fit) puts doc comments on the same line." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with doc_comments_tag_only= x})
@@ -591,11 +565,10 @@ module Formatting = struct
     let names = ["exp-grouping"] in
     let all =
       [ C.Value.make ~name:"parens" `Parens
-          ~doc:"$(b,parens) groups expressions using parentheses."
+          "$(b,parens) groups expressions using parentheses."
       ; C.Value.make ~name:"preserve" `Preserve
-          ~doc:
-            "$(b,preserve) preserves the original grouping syntax \
-             (parentheses or $(i,begin)/$(i,end))." ]
+          "$(b,preserve) preserves the original grouping syntax \
+           (parentheses or $(i,begin)/$(i,end))." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with exp_grouping= x})
@@ -624,15 +597,13 @@ module Formatting = struct
     in
     let names = ["field-space"] in
     let all =
-      [ C.Value.make ~name:"loose" `Loose ~doc:"$(b,loose) does."
+      [ C.Value.make ~name:"loose" `Loose "$(b,loose) does."
       ; C.Value.make ~name:"tight" `Tight
-          ~doc:
-            "$(b,tight) does not use a space between a field name and the \
-             punctuation symbol (`:` or `=`)."
+          "$(b,tight) does not use a space between a field name and the \
+           punctuation symbol (`:` or `=`)."
       ; C.Value.make ~name:"tight-decl" `Tight_decl
-          ~doc:
-            "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
-             for instantiations." ]
+          "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
+           for instantiations." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with field_space= x})
@@ -654,13 +625,12 @@ module Formatting = struct
     let names = ["function-indent-nested"] in
     let all =
       [ C.Value.make ~name:"never" `Never
-          ~doc:
-            "$(b,never) only applies $(b,function-indent) if the function \
-             block starts a line."
+          "$(b,never) only applies $(b,function-indent) if the function \
+           block starts a line."
       ; C.Value.make ~name:"always" `Always
-          ~doc:"$(b,always) always apply $(b,function-indent)."
+          "$(b,always) always apply $(b,function-indent)."
       ; C.Value.make ~name:"auto" `Auto
-          ~doc:"$(b,auto) applies $(b,function-indent) when seen fit." ]
+          "$(b,auto) applies $(b,function-indent) when seen fit." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with function_indent_nested= x})
@@ -671,21 +641,17 @@ module Formatting = struct
     let names = ["if-then-else"] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) tries to format an if-then-else expression on a \
-             single line."
+          "$(b,compact) tries to format an if-then-else expression on a \
+           single line."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          ~doc:
-            "$(b,fit-or-vertical) vertically breaks branches if they do not \
-             fit on a single line."
+          "$(b,fit-or-vertical) vertically breaks branches if they do not \
+           fit on a single line."
       ; C.Value.make ~name:"keyword-first" `Keyword_first
-          ~doc:
-            "$(b,keyword-first) formats if-then-else expressions such that \
-             the if-then-else keywords are the first on the line."
+          "$(b,keyword-first) formats if-then-else expressions such that \
+           the if-then-else keywords are the first on the line."
       ; C.Value.make ~name:"k-r" `K_R
-          ~doc:
-            "$(b,k-r) formats if-then-else expressions with parentheses \
-             that match the K&R style." ]
+          "$(b,k-r) formats if-then-else expressions with parentheses that \
+           match the K&R style." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with if_then_else= x})
@@ -709,18 +675,15 @@ module Formatting = struct
     let names = ["indicate-multiline-delimiters"] in
     let all =
       [ C.Value.make ~name:"no" `No
-          ~doc:
-            "$(b, no) doesn't do anything special to indicate the closing \
-             delimiter."
+          "$(b, no) doesn't do anything special to indicate the closing \
+           delimiter."
       ; C.Value.make ~name:"space" `Space
-          ~doc:
-            "$(b,space) prints a space inside the delimiter to indicate the \
-             matching one is on a different line."
+          "$(b,space) prints a space inside the delimiter to indicate the \
+           matching one is on a different line."
       ; C.Value.make ~name:"closing-on-separate-line"
           `Closing_on_separate_line
-          ~doc:
-            "$(b, closing-on-separate-line) makes sure that the closing \
-             delimiter is on its own line." ]
+          "$(b, closing-on-separate-line) makes sure that the closing \
+           delimiter is on its own line." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with indicate_multiline_delimiters= x})
@@ -734,15 +697,13 @@ module Formatting = struct
     let names = ["indicate-nested-or-patterns"] in
     let all =
       [ C.Value.make ~name:"unsafe-no" `Unsafe_no
-          ~doc:
-            "$(b,unsafe-no) does not indicate nested or-patterns. Warning: \
-             this can produce confusing code where a short body of a match \
-             case is visually hidden by surrounding long patterns, leading \
-             to misassociation between patterns and body expressions."
+          "$(b,unsafe-no) does not indicate nested or-patterns. Warning: \
+           this can produce confusing code where a short body of a match \
+           case is visually hidden by surrounding long patterns, leading to \
+           misassociation between patterns and body expressions."
       ; C.Value.make ~name:"space" `Space
-          ~doc:
-            "$(b,space) starts lines of nested or-patterns with \" |\" \
-             rather than \"| \"." ]
+          "$(b,space) starts lines of nested or-patterns with \" |\" rather \
+           than \"| \"." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with indicate_nested_or_patterns= x})
@@ -756,13 +717,11 @@ module Formatting = struct
     let names = ["infix-precedence"] in
     let all =
       [ C.Value.make ~name:"indent" `Indent
-          ~doc:
-            "$(b,indent) uses indentation to explicitly disambiguate \
-             precedences of infix operators."
+          "$(b,indent) uses indentation to explicitly disambiguate \
+           precedences of infix operators."
       ; C.Value.make ~name:"parens" `Parens
-          ~doc:
-            "$(b,parens) uses parentheses to explicitly disambiguate \
-             precedences of infix operators." ]
+          "$(b,parens) uses parentheses to explicitly disambiguate \
+           precedences of infix operators." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with infix_precedence= x})
@@ -780,11 +739,10 @@ module Formatting = struct
     let names = ["let-and"] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) will try to format `let p = e and p = e` in a \
-             single line."
+          "$(b,compact) will try to format `let p = e and p = e` in a \
+           single line."
       ; C.Value.make ~name:"sparse" `Sparse
-          ~doc:"$(b,sparse) will always break between them." ]
+          "$(b,sparse) will always break between them." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with let_and= x})
@@ -806,18 +764,14 @@ module Formatting = struct
     let names = ["let-binding-spacing"] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) spacing separates adjacent let bindings in a \
-             module according to module-item-spacing."
+          "$(b,compact) spacing separates adjacent let bindings in a module \
+           according to module-item-spacing."
       ; C.Value.make ~name:"sparse" `Sparse
-          ~doc:
-            "$(b,sparse) places two open lines between a multi-line \
-             module-level let binding and the next."
+          "$(b,sparse) places two open lines between a multi-line \
+           module-level let binding and the next."
       ; C.Value.make ~name:"double-semicolon" `Double_semicolon
-          ~doc:
-            "$(b,double-semicolon) places double semicolons and an open \
-             line between a multi-line module-level let binding and the \
-             next." ]
+          "$(b,double-semicolon) places double semicolons and an open line \
+           between a multi-line module-level let binding and the next." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with let_binding_spacing= x})
@@ -827,15 +781,13 @@ module Formatting = struct
     let doc = "Module binding formatting." in
     let all =
       [ C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) does not break a line after the $(i,let module \
-             ... =) and before the $(i,in) if the module declaration does \
-             not fit on a single line."
+          "$(b,compact) does not break a line after the $(i,let module ... \
+           =) and before the $(i,in) if the module declaration does not fit \
+           on a single line."
       ; C.Value.make ~name:"sparse" `Sparse
-          ~doc:
-            "$(b,sparse) breaks a line after $(i,let module ... =) and \
-             before the $(i,in) if the module declaration does not fit on a \
-             single line." ]
+          "$(b,sparse) breaks a line after $(i,let module ... =) and before \
+           the $(i,in) if the module declaration does not fit on a single \
+           line." ]
     in
     C.choice ~names:["let-module"] ~all ~doc ~kind
       (fun conf x -> {conf with let_module= x})
@@ -850,9 +802,9 @@ module Formatting = struct
   let line_endings =
     let doc = "Line endings used." in
     let all =
-      [ C.Value.make ~name:"lf" `Lf ~doc:"$(b,lf) uses Unix line endings."
+      [ C.Value.make ~name:"lf" `Lf "$(b,lf) uses Unix line endings."
       ; C.Value.make ~name:"crlf" `Crlf
-          ~doc:"$(b,crlf) uses Windows line endings." ]
+          "$(b,crlf) uses Windows line endings." ]
     in
     C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~kind
       (fun conf x -> {conf with line_endings= x})
@@ -882,13 +834,12 @@ module Formatting = struct
     let names = ["match-indent-nested"] in
     let all =
       [ C.Value.make ~name:"never" `Never
-          ~doc:
-            "$(b,never) only applies $(b,match-indent) if the match block \
-             starts a line."
+          "$(b,never) only applies $(b,match-indent) if the match block \
+           starts a line."
       ; C.Value.make ~name:"always" `Always
-          ~doc:"$(b,always) always apply $(b,match-indent)."
+          "$(b,always) always apply $(b,match-indent)."
       ; C.Value.make ~name:"auto" `Auto
-          ~doc:"$(b,auto) applies $(b,match-indent) when seen fit." ]
+          "$(b,auto) applies $(b,match-indent) when seen fit." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with match_indent_nested= x})
@@ -918,15 +869,13 @@ module Formatting = struct
     let names = ["module-item-spacing"] in
     let all =
       [ C.Value.make ~name:"sparse" `Sparse
-          ~doc:"$(b,sparse) will always break a line between two items."
+          "$(b,sparse) will always break a line between two items."
       ; C.Value.make ~name:"preserve" `Preserve
-          ~doc:
-            "$(b,preserve) will not leave open lines between one-liners of \
-             similar sorts unless there is an open line in the input."
+          "$(b,preserve) will not leave open lines between one-liners of \
+           similar sorts unless there is an open line in the input."
       ; C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) will not leave open lines between one-liners of \
-             similar sorts." ]
+          "$(b,compact) will not leave open lines between one-liners of \
+           similar sorts." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with module_item_spacing= x})
@@ -940,13 +889,11 @@ module Formatting = struct
     let names = ["nested-match"] in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap
-          ~doc:
-            "$(b,wrap) wraps the nested pattern-matching with parentheses \
-             and adds indentation."
+          "$(b,wrap) wraps the nested pattern-matching with parentheses and \
+           adds indentation."
       ; C.Value.make ~name:"align" `Align
-          ~doc:
-            "$(b,align) vertically aligns the nested pattern-matching under \
-             the encompassing pattern-matching." ]
+          "$(b,align) vertically aligns the nested pattern-matching under \
+           the encompassing pattern-matching." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with nested_match= x})
@@ -987,11 +934,10 @@ module Formatting = struct
     let names = ["parens-tuple"] in
     let all =
       [ C.Value.make ~name:"always" `Always
-          ~doc:"$(b,always) always uses parentheses around tuples."
+          "$(b,always) always uses parentheses around tuples."
       ; C.Value.make ~name:"multi-line-only" `Multi_line_only
-          ~doc:
-            "$(b,multi-line-only) mode will try to skip parens for \
-             single-line tuples." ]
+          "$(b,multi-line-only) mode will try to skip parens for \
+           single-line tuples." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with parens_tuple= x})
@@ -1002,12 +948,10 @@ module Formatting = struct
     let names = ["parens-tuple-patterns"] in
     let all =
       [ C.Value.make ~name:"multi-line-only" `Multi_line_only
-          ~doc:
-            "$(b,multi-line-only) mode will try to skip parens for \
-             single-line tuple patterns."
+          "$(b,multi-line-only) mode will try to skip parens for \
+           single-line tuple patterns."
       ; C.Value.make ~name:"always" `Always
-          ~doc:"$(b,always) always uses parentheses around tuples patterns."
-      ]
+          "$(b,always) always uses parentheses around tuples patterns." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with parens_tuple_patterns= x})
@@ -1025,13 +969,11 @@ module Formatting = struct
     let names = ["sequence-blank-line"] in
     let all =
       [ C.Value.make ~name:"preserve-one" `Preserve_one
-          ~doc:
-            "$(b,preserve) will keep a blank line between two expressions \
-             of a sequence if the input contains at least one."
+          "$(b,preserve) will keep a blank line between two expressions of \
+           a sequence if the input contains at least one."
       ; C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) will not keep any blank line between expressions \
-             of a sequence." ]
+          "$(b,compact) will not keep any blank line between expressions of \
+           a sequence." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with sequence_blank_line= x})
@@ -1042,11 +984,11 @@ module Formatting = struct
     let names = ["sequence-style"] in
     let all =
       [ C.Value.make ~name:"terminator" `Terminator
-          ~doc:"$(b,terminator) only puts spaces after semicolons."
+          "$(b,terminator) only puts spaces after semicolons."
       ; C.Value.make ~name:"separator" `Separator
-          ~doc:"$(b,separator) puts spaces before and after semicolons."
+          "$(b,separator) puts spaces before and after semicolons."
       ; C.Value.make ~name:"before" `Before
-          ~doc:"$(b,before) breaks the sequence before semicolons." ]
+          "$(b,before) breaks the sequence before semicolons." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with sequence_style= x})
@@ -1059,11 +1001,9 @@ module Formatting = struct
     let names = ["single-case"] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) will try to format a single case on a single line."
+          "$(b,compact) will try to format a single case on a single line."
       ; C.Value.make ~name:"sparse" `Sparse
-          ~doc:"$(b,sparse) will always break the line before a single case."
-      ]
+          "$(b,sparse) will always break the line before a single case." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with single_case= x})
@@ -1113,13 +1053,11 @@ module Formatting = struct
     let names = ["type-decl"] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
-          ~doc:
-            "$(b,compact) will try to format constructors and records \
-             definition in a single line."
+          "$(b,compact) will try to format constructors and records \
+           definition in a single line."
       ; C.Value.make ~name:"sparse" `Sparse
-          ~doc:
-            "$(b,sparse) will always break between constructors and record \
-             fields." ]
+          "$(b,sparse) will always break between constructors and record \
+           fields." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with type_decl= x})
@@ -1707,40 +1645,35 @@ let (_profile : t option C.t) =
   let names = profile_option_names in
   let all =
     [ C.Value.make ~name:"conventional" (Some conventional_profile)
-        ~doc:
-          "The $(b,conventional) profile aims to be as familiar and \
-           \"conventional\" appearing as the available options allow."
+        "The $(b,conventional) profile aims to be as familiar and \
+         \"conventional\" appearing as the available options allow."
     ; C.Value.make ~name:"default" (Some default_profile)
-        ~doc:"$(b,default) is an alias for the $(b,conventional) profile."
+        "$(b,default) is an alias for the $(b,conventional) profile."
     ; C.Value.make ~name:"compact" (Some compact_profile)
-        ~doc:
-          "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
-           for a generally more compact code style."
+        "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more compact code style."
     ; C.Value.make ~name:"sparse" (Some sparse_profile)
-        ~doc:
-          "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
-           for a generally more sparse code style."
+        "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
+         for a generally more sparse code style."
     ; C.Value.make ~name:"ocamlformat" (Some ocamlformat_profile)
-        ~doc:
-          "The $(b,ocamlformat) profile aims to take advantage of the \
-           strengths of a parsetree-based auto-formatter, and to limit the \
-           consequences of the weaknesses imposed by the current \
-           implementation. This is a style which optimizes for what the \
-           formatter can do best, rather than to match the style of any \
-           existing code. General guidelines that have directed the design \
-           include: Legibility, in the sense of making it as hard as \
-           possible for quick visual parsing to give the wrong \
-           interpretation, is of highest priority; Whenever possible the \
-           high-level structure of the code should be obvious by looking \
-           only at the left margin, in particular, it should not be \
-           necessary to visually jump from left to right hunting for \
-           critical keywords, tokens, etc; All else equal compact code is \
-           preferred as reading without scrolling is easier, so indentation \
-           or white space is avoided unless it helps legibility; Attention \
-           has been given to making some syntactic gotchas visually \
-           obvious."
+        "The $(b,ocamlformat) profile aims to take advantage of the \
+         strengths of a parsetree-based auto-formatter, and to limit the \
+         consequences of the weaknesses imposed by the current \
+         implementation. This is a style which optimizes for what the \
+         formatter can do best, rather than to match the style of any \
+         existing code. General guidelines that have directed the design \
+         include: Legibility, in the sense of making it as hard as possible \
+         for quick visual parsing to give the wrong interpretation, is of \
+         highest priority; Whenever possible the high-level structure of \
+         the code should be obvious by looking only at the left margin, in \
+         particular, it should not be necessary to visually jump from left \
+         to right hunting for critical keywords, tokens, etc; All else \
+         equal compact code is preferred as reading without scrolling is \
+         easier, so indentation or white space is avoided unless it helps \
+         legibility; Attention has been given to making some syntactic \
+         gotchas visually obvious."
     ; C.Value.make ~name:"janestreet" (Some janestreet_profile)
-        ~doc:"The $(b,janestreet) profile is used at Jane Street." ]
+        "The $(b,janestreet) profile is used at Jane Street." ]
   in
   C.choice ~names ~all ~doc ~kind:C.Formatting
     (fun conf p ->

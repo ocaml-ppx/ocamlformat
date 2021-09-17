@@ -53,8 +53,7 @@ module Make (C : CONFIG) : sig
   module Value : sig
     type 'a t
 
-    val make :
-      ?deprecated:deprecated -> name:string -> doc:string -> 'a -> 'a t
+    val make : ?deprecated:deprecated -> name:string -> 'a -> string -> 'a t
   end
 
   module Value_removed : sig
