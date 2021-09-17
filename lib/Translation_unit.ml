@@ -534,12 +534,16 @@ let numeric (type a b) (fg : a list Extended_ast.t)
     | Ok parsed -> Ok parsed
     | Error _ -> parse_result recover fg conf ~source:src ~input_name
   in
-  match parse_or_recover ~src:source with
-  | Ok parsed -> (
-    match parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name with
-    | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
-    | Error _ -> fallback () )
-  | Error _ -> fallback ()
+  if conf.disable then fallback ()
+  else
+    match parse_or_recover ~src:source with
+    | Ok parsed -> (
+      match
+        parse_result Std_ast.Parse.ast std_fg conf ~source ~input_name
+      with
+      | Ok std_parsed -> indent_parsed parsed std_parsed ~src:source ~range
+      | Error _ -> fallback () )
+    | Error _ -> fallback ()
 
 let numeric = function
   | Syntax.Structure -> numeric Structure Structure
