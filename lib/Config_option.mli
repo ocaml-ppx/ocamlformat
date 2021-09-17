@@ -51,8 +51,13 @@ module Make (C : CONFIG) : sig
   val removed : since_version:string -> string -> removed
 
   module Value : sig
-    module Valid : sig
-      type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
+    module Ok : sig
+      type 'a t
+
+      val valid : name:string -> doc:string -> 'a -> 'a t
+
+      val deprecated :
+        name:string -> doc:string -> deprecated:deprecated -> 'a -> 'a t
     end
 
     module Removed : sig
@@ -73,7 +78,7 @@ module Make (C : CONFIG) : sig
   end
 
   val choice :
-       all:'a Value.Valid.t list
+       all:'a Value.Ok.t list
     -> ?removed_values:Value.Removed.t list
     -> 'a option_decl
 

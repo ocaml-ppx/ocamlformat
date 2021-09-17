@@ -189,8 +189,13 @@ module Make (C : CONFIG) = struct
     opt
 
   module Value = struct
-    module Valid = struct
+    module Ok = struct
       type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
+
+      let valid ~name ~doc value = (name, value, doc, `Valid)
+
+      let deprecated ~name ~doc ~deprecated value =
+        (name, value, doc, `Deprecated deprecated)
 
       let pp_deprecated s ppf {dmsg= msg; dversion= v} =
         Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s
@@ -244,7 +249,7 @@ module Make (C : CONFIG) = struct
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,")
            (fun fs (s, _, d, st) ->
-             fprintf fs "%s%a" d (Value.Valid.status_doc s) st ) )
+             fprintf fs "%s%a" d (Value.Ok.status_doc s) st ) )
         all
     in
     let docv =
@@ -257,7 +262,7 @@ module Make (C : CONFIG) = struct
     in
     let update conf x =
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
-      | Some opt -> Value.Valid.warn_if_deprecated conf opt
+      | Some opt -> Value.Ok.warn_if_deprecated conf opt
       | None -> () ) ;
       update conf x
     in
