@@ -1128,10 +1128,12 @@ let disable_conf_files =
 let disable_outside_detected_project =
   let doc =
     Format.sprintf
-      "$(b,Warning:) this option is $(b,deprecated) and will be removed in \
+      "$(b,Warning:) this option is $(b,deprecated) and will be removed by \
        OCamlFormat v1.0."
   in
   let default = false in
+  let deprecated = C.deprecated ~since_version:"0.10.0" removed_by_v1_0 in
+  let docs = C.section_name Operational (`Deprecated deprecated) in
   mk ~default
     Arg.(value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
 
