@@ -12,7 +12,7 @@
 
 #### Bug fixes
 
-  + Fix normalization of sequences of expressions (#1731, @gpetiot)
+  + Fix normalization of sequences of expressions (#1731, #1815, @gpetiot)
 
   + Type constrained patterns are now always parenthesized, parentheses were missing in a class context (#1734, @gpetiot)
 
