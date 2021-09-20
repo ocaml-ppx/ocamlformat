@@ -50,23 +50,31 @@ module Make (C : CONFIG) : sig
 
   val removed : since_version:string -> string -> removed
 
-  (** Indicate that a configuration value has been removed in an ocamlformat
-      release. A message indicating how to migrate will be displayed. *)
-  type removed_value
+  module Value : sig
+    type 'a t
 
-  val removed_value :
-    name:string -> version:string -> msg:string -> removed_value
-  (** [name] is the configuration value that was removed in version
-      [version]. [msg] explains how to get the former behaviour. *)
+    val make : ?deprecated:deprecated -> name:string -> 'a -> string -> 'a t
+  end
 
-  val removed_values :
-    names:string list -> version:string -> msg:string -> removed_value list
-  (** Shorthand for [removed_value] when [version] and [msg] are shared. This
-      can be used when multiple values are removed at the same time. *)
+  module Value_removed : sig
+    (** Indicate that a configuration value has been removed in an
+        ocamlformat release. A message indicating how to migrate will be
+        displayed. *)
+    type t
+
+    val make : name:string -> version:string -> msg:string -> t
+    (** [name] is the configuration value that was removed in version
+        [version]. [msg] explains how to get the former behaviour. *)
+
+    val make_list :
+      names:string list -> version:string -> msg:string -> t list
+    (** Shorthand for [mk] when [version] and [msg] are shared. This can be
+        used when multiple values are removed at the same time. *)
+  end
 
   val choice :
-       all:(string * 'a * string) list
-    -> ?removed_values:removed_value list
+       all:'a Value.t list
+    -> ?removed_values:Value_removed.t list
     -> 'a option_decl
 
   val flag : default:bool -> bool option_decl

@@ -188,35 +188,71 @@ module Make (C : CONFIG) = struct
     store := Pack opt :: !store ;
     opt
 
-  type removed_value = {name: string; version: string; msg: string}
+  module Value = struct
+    type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
 
-  let removed_value ~name ~version ~msg = {name; version; msg}
+    let make ?deprecated ~name value doc =
+      match deprecated with
+      | None -> (name, value, doc, `Valid)
+      | Some x -> (name, value, doc, `Deprecated x)
 
-  let removed_values ~names ~version ~msg =
-    List.map names ~f:(fun name -> removed_value ~name ~version ~msg)
+    let pp_deprecated s ppf {dmsg= msg; dversion= v} =
+      Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s v
+        msg
 
-  let add_removed_values values conv =
-    let parse s =
-      match List.find values ~f:(fun {name; _} -> String.equal name s) with
-      | Some {name; version; msg} ->
-          Format.kasprintf
-            (fun s -> Error (`Msg s))
-            "value `%s` has been removed in version %s. %s" name version msg
-      | None -> Arg.conv_parser conv s
-    in
-    Arg.conv (parse, Arg.conv_printer conv)
+    let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =
+      Format.fprintf ppf
+        "option `%s`: value `%s` is deprecated since version %s. %s" opt val_
+        v msg
+
+    let status_doc s ppf = function
+      | `Valid -> ()
+      | `Deprecated x ->
+          Format.fprintf ppf " Warning: %a" (pp_deprecated s) x
+
+    let warn_if_deprecated conf opt (s, _, _, status) =
+      match status with
+      | `Valid -> ()
+      | `Deprecated d ->
+          C.warn conf "%a" (pp_deprecated_with_name ~opt ~val_:s) d
+  end
+
+  module Value_removed = struct
+    type t = {name: string; version: string; msg: string}
+
+    let make ~name ~version ~msg = {name; version; msg}
+
+    let make_list ~names ~version ~msg =
+      List.map names ~f:(fun name -> make ~name ~version ~msg)
+
+    let add_parse_errors values conv =
+      let parse s =
+        match List.find values ~f:(fun {name; _} -> String.equal name s) with
+        | Some {name; version; msg} ->
+            Format.kasprintf
+              (fun s -> Error (`Msg s))
+              "value `%s` has been removed in version %s. %s" name version
+              msg
+        | None -> Arg.conv_parser conv s
+      in
+      Arg.conv (parse, Arg.conv_printer conv)
+  end
 
   let choice ~all ?(removed_values = []) ~names ~doc ~kind
-      ?(allow_inline = Poly.(kind = Formatting)) ?status =
-    let _, default, _ = List.hd_exn all in
-    let opt_names = List.map all ~f:(fun (x, y, _) -> (x, y)) in
-    let conv = add_removed_values removed_values (Arg.enum opt_names) in
+      ?(allow_inline = Poly.(kind = Formatting)) ?status update =
+    let _, default, _, _ = List.hd_exn all in
+    let name = List.hd_exn names in
+    let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
+    let conv =
+      Value_removed.add_parse_errors removed_values (Arg.enum opt_names)
+    in
     let doc =
       let open Format in
       asprintf "%s %a" doc
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,")
-           (fun fs (_, _, d) -> fprintf fs "%s" d) )
+           (fun fs (s, _, d, st) ->
+             fprintf fs "%s%a" d (Value.status_doc s) st ) )
         all
     in
     let docv =
@@ -224,10 +260,16 @@ module Make (C : CONFIG) = struct
       asprintf "@[<1>{%a}@]"
         (pp_print_list
            ~pp_sep:(fun fs () -> fprintf fs "@,|")
-           (fun fs (v, _, _) -> fprintf fs "%s" v) )
+           (fun fs (v, _, _, _) -> fprintf fs "%s" v) )
         all
     in
-    any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status
+    let update conf x =
+      ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
+      | Some value -> Value.warn_if_deprecated conf name value
+      | None -> () ) ;
+      update conf x
+    in
+    any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
 
   let removed_option ~names ~version ~msg =
     let removed = {rversion= version; rmsg= msg} in
