@@ -202,8 +202,8 @@ module Make (C : CONFIG) = struct
 
     let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =
       Format.fprintf ppf
-        "Value `%s` of option `%s` is deprecated since version %s. %s" val_
-        opt v msg
+        "option `%s`: value `%s` is deprecated since version %s. %s" opt val_
+        v msg
 
     let status_doc s ppf = function
       | `Valid -> ()
