@@ -181,11 +181,11 @@ let ocaml_version_conv =
   in
   (parse, Ocaml_version.pp)
 
+let removed_by_v1_0 = "It will be removed by version 1.0."
+
 (** Options affecting formatting *)
 module Formatting = struct
   let kind = C.Formatting
-
-  let removed_by_v1_0 = "It will be removed by version 1.0."
 
   let align_cases =
     let doc = "Align match/try cases vertically." in
@@ -1650,9 +1650,11 @@ let (_profile : t option C.t) =
     ; C.Value.make ~name:"default" (Some default_profile)
         "$(b,default) is an alias for the $(b,conventional) profile."
     ; C.Value.make ~name:"compact" (Some compact_profile)
+        ~deprecated:(C.deprecated ~since_version:"0.20.0" removed_by_v1_0)
         "The $(b,compact) profile is similar to $(b,ocamlformat) but opts \
          for a generally more compact code style."
     ; C.Value.make ~name:"sparse" (Some sparse_profile)
+        ~deprecated:(C.deprecated ~since_version:"0.20.0" removed_by_v1_0)
         "The $(b,sparse) profile is similar to $(b,ocamlformat) but opts \
          for a generally more sparse code style."
     ; C.Value.make ~name:"ocamlformat" (Some ocamlformat_profile)
