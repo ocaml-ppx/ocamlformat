@@ -501,6 +501,10 @@ OPTIONS (DEPRECATED)
            default. Warning: This option is deprecated since version 0.20.0.
            It will be removed by version 1.0.
 
+       --disable-outside-detected-project
+           Warning: this option is deprecated and will be removed by
+           OCamlFormat v1.0.
+
        --disambiguate-non-breaking-match
            Add parentheses around matching constructs that fit on a single
            line. The flag is unset by default. Warning: This option is
@@ -538,10 +542,6 @@ OPTIONS
 
        --disable-conf-files
            Disable .ocamlformat configuration files.
-
-       --disable-outside-detected-project
-           Warning: this option is deprecated and will be removed in
-           OCamlFormat v1.0.
 
        --enable-outside-detected-project
            Read .ocamlformat config files outside the current project. The
