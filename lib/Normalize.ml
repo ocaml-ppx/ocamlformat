@@ -251,21 +251,11 @@ let make_mapper conf ~ignore_doc_comments =
   in
   let expr (m : Ast_mapper.mapper) exp =
     let exp = {exp with pexp_loc_stack= []} in
-    let {pexp_desc; pexp_loc= loc1; pexp_attributes= attrs1; _} = exp in
+    let {pexp_desc; _} = exp in
     match pexp_desc with
     | Pexp_poly ({pexp_desc= Pexp_constraint (e, t); _}, None) ->
         m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
     | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t); _}) -> m.expr m e
-    | Pexp_sequence
-        ( exp1
-        , { pexp_desc= Pexp_sequence (exp2, exp3)
-          ; pexp_loc= loc2
-          ; pexp_attributes= attrs2
-          ; _ } ) ->
-        m.expr m
-          (Exp.sequence ~loc:loc1 ~attrs:attrs1
-             (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
-             exp3 )
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =

@@ -230,27 +230,28 @@ let sequence cmts xexp =
           ~after:e2.pexp_loc ;
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
         then [(None, xexp)]
-        else if Ast.exposed_right_exp Ast.Let_match e1 then
-          [(None, sub_exp ~ctx e1); (Some ext, sub_exp ~ctx e2)]
         else
-          let l1 = sequence_ ~allow_attribute:false (sub_exp ~ctx e1) in
           let l2 =
-            match sequence_ ~allow_attribute:false (sub_exp ~ctx e2) with
-            | [] -> []
-            | (_, e2) :: l2 -> (Some ext, e2) :: l2
+            if Ast.exposed_right_exp Ast.Let_match e1 then
+              [(Some ext, sub_exp ~ctx e2)]
+            else
+              match sequence_ ~allow_attribute:false (sub_exp ~ctx e2) with
+              | [] -> []
+              | (_, e2) :: l2 -> (Some ext, e2) :: l2
           in
-          List.append l1 l2
+          (None, sub_exp ~ctx e1) :: l2
     | Pexp_sequence (e1, e2) ->
         Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
           ~after:e2.pexp_loc ;
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
         then [(None, xexp)]
-        else if Ast.exposed_right_exp Ast.Let_match e1 then
-          [(None, sub_exp ~ctx e1); (None, sub_exp ~ctx e2)]
         else
-          List.append
-            (sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
-            (sequence_ ~allow_attribute:false (sub_exp ~ctx e2))
+          let l2 =
+            if Ast.exposed_right_exp Ast.Let_match e1 then
+              [(None, sub_exp ~ctx e2)]
+            else sequence_ ~allow_attribute:false (sub_exp ~ctx e2)
+          in
+          (None, sub_exp ~ctx e1) :: l2
     | _ -> [(None, xexp)]
   in
   sequence_ xexp

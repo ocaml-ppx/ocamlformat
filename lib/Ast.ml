@@ -2205,6 +2205,8 @@ end = struct
     in
     let exp_in_sequence lhs rhs exp =
       match (lhs.pexp_desc, exp.pexp_attributes) with
+      (* already parenthesized if attributes are attached *)
+      | Pexp_sequence _, [] when lhs == exp -> true
       | (Pexp_match _ | Pexp_try _), _ :: _ when lhs == exp -> true
       | _, _ :: _ -> false
       | ( Pexp_extension
