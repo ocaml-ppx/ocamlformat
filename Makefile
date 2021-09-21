@@ -45,4 +45,4 @@ headers:
 	dune build @fmt --auto-promote
 
 bench:
-	@dune exec -- ./bench/bench.exe
+	@dune build @runbench
