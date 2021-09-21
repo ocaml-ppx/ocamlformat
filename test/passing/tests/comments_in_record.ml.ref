@@ -23,8 +23,8 @@ let { (* cmts *)
     ; a
     ; (* b *) b
     ; (* c *) c
-    ; d=
-        (* d *)
+    ; (* d *)
+      d=
         (D : loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int)
     ; (* e *)
       e: loooooooooooooooooooooooooooooooooooooooooooooooooooooooong_int } =
@@ -65,12 +65,14 @@ let _ =
   { (* a *) a (* a' *)= (* b *) b (* b' *)
   ; (* c *) c (* c' *): (* d *) d (* d' *) = (* e *) e (* e' *)
   ; (* f *) f (* f' *)
-  ; (* g *) g (* g' *)=
-      (* j *) ((* h *) h (* h' *) : (* i *) i (* i' *)) (* j' *) }
+  ; (* j *)
+    (* g *) g (* g' *)= ((* h *) h (* h' *) : (* i *) i (* i' *))
+    (* j' *) }
 
 let { (* a *) a (* a' *)= (* b *) b (* b' *)
     ; (* c *) c (* c' *): (* d *) d (* d' *) = (* e *) e (* e' *)
     ; (* f *) f (* f' *)
-    ; (* g *) g (* g' *)=
-        (* j *) ((* h *) h (* h' *) : (* i *) i (* i' *)) (* j' *) } =
+    ; (* j *)
+      (* g *) g (* g' *)= ((* h *) h (* h' *) : (* i *) i (* i' *))
+      (* j' *) } =
   x
