@@ -115,6 +115,10 @@ module Make (C : CONFIG) = struct
 
   let from = `Default
 
+  let longest =
+    let compare x y = compare (String.length x) (String.length y) in
+    List.max_elt ~compare
+
   (* somehow necessary *)
   let map_status : [`Valid | `Deprecated of deprecated] -> status = function
     | `Valid -> `Valid
@@ -241,7 +245,7 @@ module Make (C : CONFIG) = struct
   let choice ~all ?(removed_values = []) ~names ~doc ~kind
       ?(allow_inline = Poly.(kind = Formatting)) ?status update =
     let _, default, _, _ = List.hd_exn all in
-    let name = List.hd_exn names in
+    let name = Option.value_exn (longest names) in
     let opt_names = List.map all ~f:(fun (x, y, _, _) -> (x, y)) in
     let conv =
       Value_removed.add_parse_errors removed_values (Arg.enum opt_names)
@@ -358,10 +362,6 @@ module Make (C : CONFIG) = struct
     List.fold !store ~init:config ~f:on_pack
 
   let print_config c =
-    let longest =
-      let compare x y = compare (String.length x) (String.length y) in
-      List.max_elt ~compare
-    in
     let on_pack (Pack {names; to_string; get_value; from; status; _}) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
