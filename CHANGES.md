@@ -38,6 +38,8 @@
     Fix formatting of labelled arguments containing comments.
     (#1797, @gpetiot)
 
+  + Emacs: only hook ocamlformat mode on tuareg/caml modes when ocamlformat is not disabled (#1814, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
