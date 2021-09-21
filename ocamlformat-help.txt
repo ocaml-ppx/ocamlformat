@@ -629,7 +629,7 @@ OPTIONS
            subdirectories.
 
        --use-file
-           Parse file with unrecognized extension as toplevel phrases.
+           Deprecated. Same as impl.
 
        --version
            Show version information.
