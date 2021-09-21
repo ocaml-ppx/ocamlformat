@@ -1234,7 +1234,7 @@ let kind : Syntax.t option ref =
   let impl = (Some Syntax.Use_file, Arg.info ["impl"] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as an interface." in
   let intf = (Some Syntax.Signature, Arg.info ["intf"] ~doc ~docs) in
-  let doc = "Parse file with unrecognized extension as toplevel phrases." in
+  let doc = "Deprecated. Same as $(b,impl)." in
   let use_file = (Some Syntax.Use_file, Arg.info ["use-file"] ~doc ~docs) in
   let default = None in
   mk ~default Arg.(value & vflag default [impl; intf; use_file])
