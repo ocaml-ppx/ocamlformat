@@ -72,6 +72,51 @@
    (>= 1.0.1))))
 
 (package
+ (name ocamlformat-bench)
+ (synopsis "Benchmark for OCamlFormat")
+ (description "Benchmark for OCamlFormat.")
+ (depends
+  (ocaml
+   (and
+    (>= 4.08)
+    (< 4.14)))
+  (alcotest :with-test)
+  (base
+   (and
+    (>= v0.12.0)
+    (< v0.15)))
+  base-unix
+  cmdliner
+  dune-build-info
+  either
+  fix
+  fpath
+  (menhir
+   (>= 20201216))
+  (menhirLib
+   (>= 20201216))
+  (menhirSdk
+   (>= 20201216))
+  (ocaml-version
+   (>= 3.2.0))
+  ocp-indent
+  (bisect_ppx
+   (and
+    :with-test
+    (>= 2.5.0)))
+  (odoc-parser
+   (>= 0.9.0))
+  (re
+   (>= 1.7.2))
+  (stdio
+   (< v0.15))
+  (uuseg
+   (>= 10.0.0))
+  (uutf
+   (>= 1.0.1))
+  yojson))
+
+(package
  (name ocamlformat-rpc)
  (synopsis "Auto-formatter for OCaml code (RPC mode)")
  (description

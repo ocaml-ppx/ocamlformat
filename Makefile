@@ -14,7 +14,7 @@ default: exe
 
 .PHONY: exe
 exe:
-	dune build bin/ocamlformat/main.exe bin/ocamlformat-rpc/main.exe
+	@dune build bin/ocamlformat/main.exe bin/ocamlformat-rpc/main.exe
 
 .PHONY: clean
 clean:
@@ -43,3 +43,7 @@ coverage:
 headers:
 	tools/update_headers.sh
 	dune build @fmt --auto-promote
+
+.PHONY: bench
+bench:
+	@dune build @runbench
