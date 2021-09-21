@@ -44,6 +44,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'vc)
 
 (defcustom ocamlformat-command "ocamlformat"
   "The 'ocamlformat' command."
@@ -426,7 +427,7 @@ With ARG, perform this action that many times."
   ('enable-outside-detected-project (ocamlformat--add-hooks))
   ;; only hook if there is an .ocamlformat file at the root of the project
   ('enable
-   (if (file-exists-p (concat default-directory ".ocamlformat"))
+   (if (vc-find-root default-directory ".ocamlformat")
     (ocamlformat--add-hooks))))
 
 (provide 'ocamlformat)
