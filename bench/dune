@@ -4,10 +4,6 @@
  (package ocamlformat-bench)
  (libraries bechamel bechamel-js ocamlformat_lib stdio))
 
-(alias
- (name bench)
- (deps ./bench.exe))
-
 (rule
  (alias runbench)
  (action
