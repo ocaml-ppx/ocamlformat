@@ -2246,6 +2246,13 @@ end = struct
       , {pexp_desc= Pexp_construct _ | Pexp_variant _; _} )
       when e == exp ->
         true
+    | ( Exp {pexp_desc= Pexp_apply (e, _ :: _); _}
+      , {pexp_desc= Pexp_apply (op1, args); pexp_attributes; _} )
+      when e == exp && Exp.is_prefix op1 -> (
+      match (args, pexp_attributes) with
+      | _, _ :: _ -> true
+      | [(Nolabel, _)], _ -> false
+      | _ -> true )
     | ( Exp {pexp_desc= Pexp_apply (e0, ((_, e) :: _ as args)); _}
       , {pexp_desc= Pexp_construct _; _} )
       when e == exp && Option.is_some (Indexing_op.get_sugar e0 args) ->
