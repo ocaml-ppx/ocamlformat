@@ -1,0 +1,20 @@
+(executable
+ (name bench)
+ (public_name bench)
+ (package ocamlformat-bench)
+ (libraries bechamel bechamel-js ocamlformat_lib stdio))
+
+(alias
+ (name bench)
+ (deps ./bench.exe))
+
+(rule
+ (alias runbench)
+ (action
+  (run ./bench.exe)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat-bench)
+ (deps bench.exe)
+ (action (progn)))

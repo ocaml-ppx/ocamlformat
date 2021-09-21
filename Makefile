@@ -43,3 +43,6 @@ coverage:
 headers:
 	tools/update_headers.sh
 	dune build @fmt --auto-promote
+
+bench:
+	@dune exec -- ./bench/bench.exe
