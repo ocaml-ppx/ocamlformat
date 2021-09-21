@@ -16,7 +16,7 @@ let source_from_file f =
   Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
 let inputs =
-  let source_ml = source_from_file "source.ml" in
+  let source_ml = source_from_file "test/passing/tests/source.ml" in
   [ { name= "format:conventional"
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
