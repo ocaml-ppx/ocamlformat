@@ -44,6 +44,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'vc)
 
 (defcustom ocamlformat-command "ocamlformat"
   "The 'ocamlformat' command."
@@ -411,10 +412,23 @@ With ARG, perform this action that many times."
     t
     split-string-default-separators)))
 
-(add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
-(add-hook 'tuareg-mode-hook 'ocamlformat-set-newline-and-indent)
-(add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup t)
-(add-hook 'caml-mode-hook 'ocamlformat-set-newline-and-indent)
+(defun ocamlformat--add-hooks ()
+  "Link ocamlformat with tuareg-mode and caml-mode."
+  (progn
+    (add-hook 'tuareg-mode-hook 'ocamlformat-setup-indent t)
+    (add-hook 'tuareg-mode-hook 'ocamlformat-set-newline-and-indent)
+    (add-hook 'caml-mode-hook 'ocamlformat-caml-mode-setup t)
+    (add-hook 'caml-mode-hook 'ocamlformat-set-newline-and-indent)))
+
+(pcase ocamlformat-enable
+  ;; never hook
+  ('disable '())
+  ;; always hook
+  ('enable-outside-detected-project (ocamlformat--add-hooks))
+  ;; only hook if there is an .ocamlformat file at the root of the project
+  ('enable
+   (if (vc-find-root default-directory ".ocamlformat")
+    (ocamlformat--add-hooks))))
 
 (provide 'ocamlformat)
 
