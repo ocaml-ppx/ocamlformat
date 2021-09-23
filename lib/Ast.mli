@@ -118,6 +118,11 @@ val doc_atrs :
   -> attributes
   -> (string Location.loc * bool) list option * attributes
 
+type cmt_checker =
+  { cmts_before: Location.t -> bool
+  ; cmts_within: Location.t -> bool
+  ; cmts_after: Location.t -> bool }
+
 module Pat : sig
   val is_simple : pattern -> bool
 end
@@ -166,13 +171,7 @@ type t =
 val is_top : t -> bool
 
 val break_between :
-     Source.t
-  -> cmts:'a
-  -> has_cmts_before:('a -> Location.t -> bool)
-  -> has_cmts_after:('a -> Location.t -> bool)
-  -> t * Conf.t
-  -> t * Conf.t
-  -> bool
+  Source.t -> cmt_checker -> t * Conf.t -> t * Conf.t -> bool
 
 val attributes : t -> attributes
 

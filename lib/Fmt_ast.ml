@@ -54,9 +54,12 @@ module Cmts = struct
   end
 end
 
-let break_between {source; cmts; _} =
-  Ast.break_between source ~cmts ~has_cmts_before:Cmts.has_before
-    ~has_cmts_after:Cmts.has_after
+let cmt_checker {cmts; _} =
+  { cmts_before= Cmts.has_before cmts
+  ; cmts_within= Cmts.has_within cmts
+  ; cmts_after= Cmts.has_after cmts }
+
+let break_between c = Ast.break_between c.source (cmt_checker c)
 
 type block =
   { opn: Fmt.t
