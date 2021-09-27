@@ -6,11 +6,13 @@
 
 (rule
  (alias runbench)
- (action
-  (run ./bench.exe)))
+ (package ocamlformat-bench)
+ (deps source_bench.ml %{bin:bench})
+ (action (run %{bin:bench} run)))
 
 (rule
- (alias runtest)
- (package ocamlformat-bench)
- (deps bench.exe)
- (action (progn)))
+ (target source_bench.ml)
+ (deps source.ml)
+ (action
+  (with-stdout-to %{target}
+   (run %{bin:cat} %{deps} %{deps} %{deps} %{deps} %{deps}))))

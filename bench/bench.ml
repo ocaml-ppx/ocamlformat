@@ -12,11 +12,10 @@ type input =
   ; conf: Conf.t
   ; action: [`Format | `Numeric of range] }
 
-let source_from_file f =
-  Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
-
 let inputs =
-  let source_ml = source_from_file "test/passing/tests/source.ml" in
+  let source_ml =
+    Stdio.In_channel.read_all "source_bench.ml"
+  in
   [ { name= "format:conventional"
     ; input_name= "source.ml"
     ; kind= Syntax.Structure
@@ -73,11 +72,14 @@ let benchmark () =
 let nothing _ = Ok ()
 
 let () =
-  let results = benchmark () in
-  let results =
-    let open Bechamel_js in
-    emit ~dst:(Channel stdout) nothing ~compare ~x_label:Measure.run
-      ~y_label:(Measure.label Instance.monotonic_clock)
-      results
-  in
-  match results with Ok () -> () | Error (`Msg err) -> invalid_arg err
+  match Sys.argv with
+  | [| _; "run"; _; |] -> (
+      let results = benchmark () in
+      let results =
+        let open Bechamel_js in
+        emit ~dst:(Channel stdout) nothing ~compare ~x_label:Measure.run
+          ~y_label:(Measure.label Instance.monotonic_clock)
+          results
+      in
+      match results with Ok () -> () | Error (`Msg err) -> invalid_arg err )
+  | _ -> ()
