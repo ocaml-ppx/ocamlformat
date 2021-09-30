@@ -13,5 +13,5 @@ let p =
   (x, y, z)
 
 let q =
-  let%foo x and y and z in
+  let%foo x = x and y = y and z = z in
   (x, y, z)
