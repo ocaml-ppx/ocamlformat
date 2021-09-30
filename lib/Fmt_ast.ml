@@ -1368,8 +1368,10 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
   | (Labelled _ | Optional _), _ when Cmts.has_after c.cmts xarg.ast.pexp_loc
     ->
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
-      hvbox_if box 0
-        ( fmt_expression c ~pro:(fmt_label lbl ":@,") ~box ?epi ?parens xarg
+      hvbox_if box 2
+        ( hvbox 0
+            (fmt_expression c ~pro:(fmt_label lbl ":@,") ~box ?epi ?parens
+               xarg )
         $ cmts_after )
   | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
 
