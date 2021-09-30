@@ -55,8 +55,7 @@ let usage () =
 
 let diff files d1 d2 =
   let codes = List.map (diff d1 d2) files in
-  let non_zero = List.filter (function 0 | 1 -> false | _ -> true) codes in
-  match non_zero with [] -> () | first :: _ -> exit first
+  List.iter (function 0 | 1 -> () | c -> exit c) codes
 
 let () =
   let l = List.tl (Array.to_list Sys.argv) in
