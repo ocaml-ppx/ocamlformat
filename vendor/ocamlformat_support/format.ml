@@ -62,18 +62,15 @@ type box_type = CamlinternalFormatBasics.block_type =
   | Pp_hbox | Pp_vbox | Pp_hvbox | Pp_hovbox | Pp_box | Pp_fits
 
 
-type fits_or_breaks = {
-  fits: string * int * string;   (* when the line is not split *)
-  breaks: string * int * string; (* when the line is split *)
-}
-
-
 (* The pretty-printing tokens definition:
    are either text to print or pretty printing
    elements that drive indentation and line splitting. *)
 type pp_token =
   | Pp_text of string          (* normal text *)
-  | Pp_break of fits_or_breaks (* complete break *)
+  | Pp_break of {              (* complete break *)
+      fits: string * int * string;   (* line is not split *)
+      breaks: string * int * string; (* line is split *)
+    }
   | Pp_tbreak of int * int     (* go to next tabulation *)
   | Pp_stab                    (* set a tabulation *)
   | Pp_begin of int * box_type (* beginning of a box *)
