@@ -44,5 +44,6 @@ headers:
 	tools/update_headers.sh
 	dune build @fmt --auto-promote
 
+.PHONY: bench
 bench:
 	@dune build @runbench
