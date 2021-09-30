@@ -598,7 +598,7 @@ and fmt_payload c ctx pld =
       in
       fmt "?@ " $ fmt_pattern c (sub_pat ~ctx pat) $ opt exp fmt_when
 
-and fmt_record_field c ?typ ?rhs ?constraint_loc lid1 =
+and fmt_record_field c ?typ ?rhs ?(type_first = false) lid1 =
   let fmt_type ?(parens = false) t =
     str ": " $ fmt_core_type c t $ fmt_if parens ")"
   in
@@ -612,20 +612,11 @@ and fmt_record_field c ?typ ?rhs ?constraint_loc lid1 =
   in
   let fmt_type_rhs =
     match (typ, rhs) with
-    | Some t, Some r -> (
-      match constraint_loc with
-      | Some (`Constraint_lid loc) ->
-          field_space
-          $ Cmts.fmt_before c loc ~pro:(Fmt.break 1 0) ~epi:noop
-          $ fmt_type t $ fmt "@ " $ fmt_rhs r $ Cmts.fmt_after c loc
-      | Some (`Constraint_exp loc) ->
-          field_space $ fmt "=@;<1 2>"
-          $ hvbox 0
-            @@ Cmts.fmt c loc
-                 (str "(" $ cbox 0 r $ str " " $ fmt_type ~parens:true t)
-      | None ->
+    | Some t, Some r ->
+        if type_first then field_space $ fmt_type t $ fmt "@ " $ fmt_rhs r
+        else
           field_space $ fmt_rhs ~parens:true r $ str " "
-          $ fmt_type ~parens:true t )
+          $ fmt_type ~parens:true t
     | Some t, None -> field_space $ fmt_type t
     | None, Some r -> field_space $ fmt_rhs r
     | None, None -> noop
@@ -1035,12 +1026,11 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
           | Ppat_constraint (p, t) when List.is_empty ppat_attributes ->
               let typ = sub_typ ~ctx:(Pat pat) t
               and rhs = fmt_rhs ~ctx:(Pat pat) p in
-              let constraint_loc =
-                if Source.type_constraint_is_first t p.ppat_loc then
-                  `Constraint_lid ppat_loc
-                else `Constraint_exp ppat_loc
+              let type_first =
+                Source.type_constraint_is_first t p.ppat_loc
               in
-              fmt_record_field c ~typ ~rhs ~constraint_loc lid1
+              Cmts.fmt c p.ppat_loc
+              @@ fmt_record_field c ~typ ~rhs ~type_first lid1
           | _ -> fmt_record_field c ~rhs:(fmt_rhs ~ctx pat) lid1 )
       in
       let p1, p2 = Params.get_record_pat c.conf ~ctx:ctx0 in
@@ -2353,13 +2343,12 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1
           | Pexp_constraint (e, t) when List.is_empty f.pexp_attributes ->
-              let constraint_loc =
-                if Source.type_constraint_is_first t e.pexp_loc then
-                  `Constraint_lid f.pexp_loc
-                else `Constraint_exp f.pexp_loc
+              let type_first =
+                Source.type_constraint_is_first t e.pexp_loc
               in
-              fmt_record_field c ~typ:(sub_typ ~ctx t) ~rhs:(fmt_rhs e)
-                ~constraint_loc lid1
+              Cmts.fmt c f.pexp_loc
+              @@ fmt_record_field c ~typ:(sub_typ ~ctx t) ~rhs:(fmt_rhs e)
+                   ~type_first lid1
           | _ ->
               Cmts.fmt c f.pexp_loc
               @@ fmt_record_field c ~rhs:(fmt_rhs f) lid1 )
