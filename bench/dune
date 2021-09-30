@@ -7,8 +7,8 @@
 (rule
  (alias runbench)
  (package ocamlformat-bench)
- (deps source_bench.ml %{bin:bench})
- (action (run %{bin:bench} run)))
+ (deps source_bench.ml)
+ (action (run ./bench.exe run)))
 
 (rule
  (target source_bench.ml)
