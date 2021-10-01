@@ -1,3 +1,5 @@
+Warning: module-item-spacing: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
+Warning: module-item-spacing: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
 profile=ocamlformat (file tests/.ocamlformat:1)
 quiet=false (profile ocamlformat (file tests/.ocamlformat:1))
 max-iters=2 (environment variable)
