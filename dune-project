@@ -87,6 +87,7 @@
   bechamel-js
   cmdliner
   dune-build-info
+  either
   fix
   fpath
   (menhir
