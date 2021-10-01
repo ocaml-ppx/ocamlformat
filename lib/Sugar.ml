@@ -444,24 +444,20 @@ module Let_binding = struct
               (xpat, `Coerce (typ1, sub_typ ~ctx typ2), sub_exp ~ctx exp)
           | _ -> (xpat, `None xargs, xbody) )
 
-  let of_value_binding cmts src ~ctx ~first vb =
+  let of_value_binding cmts ~ctx ~first vb =
     let pat, typ, exp = type_cstr cmts ~ctx vb.pvb_pat vb.pvb_expr in
     { lb_op= Location.{txt= (if first then "let" else "and"); loc= none}
     ; lb_pat= pat
     ; lb_typ= typ
     ; lb_exp= exp
-    ; lb_pun=
-        List.is_empty
-          (Source.tokens_between src
-             ~filter:(function EQUAL -> true | _ -> false)
-             vb.pvb_loc.loc_start vb.pvb_loc.loc_end )
+    ; lb_pun= false
     ; lb_attrs= vb.pvb_attributes
     ; lb_loc= vb.pvb_loc }
 
-  let of_value_bindings cmts src ~ctx =
-    List.mapi ~f:(fun i -> of_value_binding cmts src ~ctx ~first:(i = 0))
+  let of_value_bindings cmts ~ctx =
+    List.mapi ~f:(fun i -> of_value_binding cmts ~ctx ~first:(i = 0))
 
-  let of_binding_ops cmts src ~ctx bos =
+  let of_binding_ops cmts ~ctx bos =
     List.map bos ~f:(fun bo ->
         let pat, typ, exp = type_cstr cmts ~ctx bo.pbop_pat bo.pbop_exp in
         { lb_op= bo.pbop_op
@@ -469,10 +465,10 @@ module Let_binding = struct
         ; lb_typ= typ
         ; lb_exp= exp
         ; lb_pun=
-            List.is_empty
-              (Source.tokens_between src
-                 ~filter:(function EQUAL -> true | _ -> false)
-                 bo.pbop_loc.loc_start bo.pbop_loc.loc_end )
+            ( match (pat.ast.ppat_desc, exp.ast.pexp_desc) with
+            | Ppat_var {txt= v; _}, Pexp_ident {txt= Lident e; _} ->
+                String.equal v e
+            | _ -> false )
         ; lb_attrs= []
         ; lb_loc= bo.pbop_loc } )
 end
