@@ -1,0 +1,7 @@
+(rule
+ (target source_bench.ml)
+ (deps source.ml)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{bin:cat} %{deps} %{deps} %{deps} %{deps} %{deps}))))
