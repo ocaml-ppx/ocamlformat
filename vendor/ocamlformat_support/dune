@@ -1,3 +1,5 @@
 (library
  (name format_)
- (libraries either))
+ (flags
+  (:standard -open Parser_shims))
+ (libraries either parser_shims))

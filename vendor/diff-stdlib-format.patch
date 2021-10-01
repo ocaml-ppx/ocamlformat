@@ -22,19 +22,6 @@
  and stag = ..
  
 @@@@
-   format_string state before;
-   pp_output_newline state;
-   state.pp_is_new_line <- true;
-   let indent = state.pp_margin - width + offset in
-   (* Don't indent more than pp_max_indent. *)
--  let real_indent = Int.min state.pp_max_indent indent in
-+  let real_indent = min state.pp_max_indent indent in
-   state.pp_current_indent <- real_indent;
-   state.pp_space_left <- state.pp_margin - state.pp_current_indent;
-   pp_output_indent state state.pp_current_indent;
-   format_string state after
- 
-@@@@
  
    The main pretty printing functions.
  
@@ -217,19 +204,6 @@
     split the line;
     a cut is a break hint that prints nothing if the break does not split the
     line. *)
-@@@@
-       if state.pp_max_indent <= state.pp_margin
-       then state.pp_max_indent else
-       (* If possible maintain pp_min_space_left to its actual value,
-          if this leads to a too small max_indent, take half of the
-          new margin, if it is greater than 1. *)
--       Int.max (Int.max (state.pp_margin - state.pp_min_space_left)
-+       max (max (state.pp_margin - state.pp_min_space_left)
-                 (state.pp_margin / 2)) 1 in
-     (* Rebuild invariants. *)
-     pp_set_max_indent state new_max_indent
- 
- 
 --- ocaml-4.13-upstream/format.mli
 +++ ocamlformat_support/format.mli
 @@@@
