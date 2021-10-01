@@ -9,14 +9,9 @@
 (menhir
  (infer false)
  (flags
+  :standard
   --lalr
-  --explain
-  --dump
   --strict
-  -lg
-  1
-  -la
-  1
   --unused-token
   COMMENT
   --unused-token
