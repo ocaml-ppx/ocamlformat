@@ -2242,7 +2242,9 @@ expr [@recover.expr Annot.Exp.mk ()]:
   | pbop_op = mkrhs(LETOP) bindings = letop_bindings IN body = seq_expr
       { let (pbop_pat, pbop_exp, rev_ands) = bindings in
         let ands = List.rev rev_ands in
-        let pbop_loc = make_loc $sloc in
+        let pbop_loc =
+          { (make_loc $sloc) with loc_end= pbop_exp.pexp_loc.loc_end }
+        in
         let let_ = {pbop_op; pbop_pat; pbop_exp; pbop_loc} in
         mkexp ~loc:$sloc (Pexp_letop{ let_; ands; body}) }
   | expr COLONCOLON expr
