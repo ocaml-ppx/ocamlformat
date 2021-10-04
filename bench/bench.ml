@@ -83,12 +83,12 @@ let () =
   let y_label = Measure.label Instance.monotonic_clock in
   match emit ~dst nothing ~compare ~x_label ~y_label results with
   | Ok () ->
-      let open Yojson.Safe in
+      let open Yojson.Basic in
       let js_output =
         `Assoc
           [ ("name", `String "ocamlformat")
-          ; ("results", `Tuple [from_string (Buffer.contents b)]) ]
+          ; ("results", `List [from_string (Buffer.contents b)]) ]
       in
       Buffer.clear b ;
-      Stdio.print_endline (to_string js_output)
+      Format.fprintf Format.std_formatter "%a\n" pp js_output
   | Error (`Msg err) -> Buffer.clear b ; invalid_arg err
