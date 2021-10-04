@@ -1370,8 +1370,9 @@ and fmt_label_arg ?(box = true) ?epi ?parens ?eol c
       let cmts_after = Cmts.fmt_after c xarg.ast.pexp_loc in
       hvbox_if box 2
         ( hvbox_if box 0
-            (fmt_expression c ~pro:(fmt_label lbl ":@,") ~box ?epi ?parens
-               xarg )
+            (fmt_expression c
+               ~pro:(fmt_label lbl ":@;<0 2>")
+               ~box ?epi ?parens xarg )
         $ cmts_after )
   | _ -> fmt_label lbl ":@," $ fmt_expression c ~box ?epi ?parens xarg
 
