@@ -49,6 +49,17 @@ a later release.
 
 Moreover if you adopt OCamlFormat in one project it will not break your workflow in your other projects. Indeed OCamlFormat modifies a file only if it can find an `.ocamlformat` file, so adding a save hook in your editor will only simplify your workflow in projects using OCamlFormat.
 
+### Using OCamlFormat without breaking `git blame`
+
+* Create `.git-blame-ignore-revs` in your project
+* Add revision(s) where the code was re-formatted
+```
+# Apply new formatting with OCamlFormat
+2ceaf76b9f84cb632327c1479d0f30acfa3eeba2
+```
+* Run `git config --local blame.ignoreRevsFile .git-blame-ignore-revs`
+* All future use of `git blame` will now provide blame information omitting the reformatting commits: lines that were changed or added by an ignored commit will be blamed on the previous commit that changed that line or nearby lines.
+
 ### What configuration should I use?
 
 The recommended way is to use a versioned default profile, such as:
