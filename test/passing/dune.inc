@@ -111,6 +111,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to args_grouped-conventional.ml.stdout
+   (with-stderr-to args_grouped-conventional.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --profile=conventional --margin=30 %{dep:tests/args_grouped.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/args_grouped-conventional.ml.ref args_grouped-conventional.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/args_grouped-conventional.ml.err args_grouped-conventional.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to args_grouped.ml.stdout
    (with-stderr-to args_grouped.ml.stderr
      (run %{bin:ocamlformat} --margin-check --profile=ocamlformat --margin=100 %{dep:tests/args_grouped.ml})))))

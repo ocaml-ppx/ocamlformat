@@ -70,3 +70,11 @@ let gen_with_record_deps ~expand t resolved_forms ~dep_kind =
       resolved_forms ~dir:t.dir ~dep_kind ~expand_var:t.expand_var
   in
   {t with expand_var}
+
+let f =
+  very_long_function_name
+    ~very_long_variable_name:(very_long expression)
+      (* this is a
+         multiple-line-spanning
+         comment *)
+    ~y
