@@ -24,7 +24,7 @@ depends: [
   "menhirSdk" {>= "20201216"}
   "ocaml-version" {>= "3.3.0"}
   "ocp-indent"
-  "odoc-parser" {>= "0.9.0"}
+  "odoc-parser" {>= "1.0.0"}
   "re" {>= "1.7.2"}
   "stdio" {< "v0.15"}
   "uuseg" {>= "10.0.0"}
