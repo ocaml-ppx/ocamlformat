@@ -40,6 +40,8 @@
 
   + Emacs: only hook ocamlformat mode on tuareg/caml modes when ocamlformat is not disabled (#1814, @gpetiot)
 
+  + Fix boxing of labelled arguments, avoid having a linebreak after a label when the argument has a comment attached (#1830, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
