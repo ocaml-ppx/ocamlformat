@@ -13,7 +13,7 @@
  (name bench)
  (public_name bench)
  (package ocamlformat-bench)
- (libraries bechamel bechamel-js ocamlformat_lib stdio))
+ (libraries bechamel bechamel-js ocamlformat_lib stdio yojson))
 
 (rule
  (alias runbench)

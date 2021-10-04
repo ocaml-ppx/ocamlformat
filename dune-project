@@ -112,7 +112,8 @@
   (uuseg
    (>= 10.0.0))
   (uutf
-   (>= 1.0.1))))
+   (>= 1.0.1))
+  yojson))
 
 (package
  (name ocamlformat-rpc)

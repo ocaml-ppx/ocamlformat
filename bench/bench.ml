@@ -54,7 +54,7 @@ let tests =
 
 let benchmark () =
   let ols =
-    Analyze.ols ~bootstrap:0 ~r_square:true ~predictors:Measure.[|run|]
+    Analyze.ols ~bootstrap:0 ~r_square:false ~predictors:Measure.[|run|]
   in
   let instances =
     Instance.[minor_allocated; major_allocated; monotonic_clock]
@@ -76,10 +76,19 @@ let nothing _ = Ok ()
 
 let () =
   let open Bechamel_js in
+  let b = Buffer.create 128 in
   let results = benchmark () in
-  let dst = Channel stdout in
+  let dst = Buffer b in
   let x_label = Measure.run in
   let y_label = Measure.label Instance.monotonic_clock in
   match emit ~dst nothing ~compare ~x_label ~y_label results with
-  | Ok () -> ()
-  | Error (`Msg err) -> invalid_arg err
+  | Ok () ->
+      let open Yojson.Safe in
+      let js_output =
+        `Assoc
+          [ ("name", `String "ocamlformat")
+          ; ("results", `Tuple [from_string (Buffer.contents b)]) ]
+      in
+      Buffer.clear b ;
+      Stdio.print_endline (to_string js_output)
+  | Error (`Msg err) -> Buffer.clear b ; invalid_arg err
