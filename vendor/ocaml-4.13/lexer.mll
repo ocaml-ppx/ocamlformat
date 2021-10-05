@@ -619,7 +619,7 @@ rule token = parse
 
 and directive = parse
   | ([' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
-        ("\"" ([^ '\010' '\013' '\"' ] * as name) "\"") as directive)
+        ("\"" ([^ '\010' '\013' '\"' ] * as _name) "\"") as directive)
         [^ '\010' '\013'] *
       {
         match int_of_string num with
@@ -627,12 +627,10 @@ and directive = parse
             (* PR#7165 *)
             let explanation = "line number out of range" in
             error lexbuf (Invalid_directive ("#" ^ directive, Some explanation))
-        | line_num ->
-           (* Documentation says that the line number should be
-              positive, but we have never guarded against this and it
-              might have useful hackish uses. *)
-            update_loc lexbuf (Some name) (line_num - 1) true 0;
-            token lexbuf
+        | _line_num ->
+           (* Line directives are not preserved by the lexer so we error out. *)
+           let explanation = "line directive are not supported" in
+           error lexbuf (Invalid_directive ("#" ^ directive, Some explanation))
       }
 and comment = parse
     "(*"

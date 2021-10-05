@@ -3168,6 +3168,25 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to line_directives.ml.stdout
+   (with-stderr-to line_directives.ml.stderr
+     (with-accepted-exit-codes 1
+       (run %{bin:ocamlformat} --margin-check %{dep:tests/line_directives.ml}))))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/line_directives.ml.ref line_directives.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/line_directives.ml.err line_directives.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to list-space_around.ml.stdout
    (with-stderr-to list-space_around.ml.stderr
      (run %{bin:ocamlformat} --margin-check --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:tests/list.ml})))))
