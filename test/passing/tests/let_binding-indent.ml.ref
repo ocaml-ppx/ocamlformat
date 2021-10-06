@@ -223,7 +223,9 @@ and y = () [@@foo]
 (* after y *)
 
 let _ =
-      let* (* xxx *) () = xxx
+      let* () =
+            (* xxx *)
+            xxx
       and* () =
             (* yyy *)
             yyy
