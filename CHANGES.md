@@ -47,6 +47,8 @@
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
     Comments are now wrapped around list elements instead of causing a break.
 
+  + Line directives now cause OCamlFormat to emit an error, they were previously silently ignored (#1845, @gpetiot)
+
 #### New features
 
   + Handle merlin typed holes (#1698, @gpetiot)
