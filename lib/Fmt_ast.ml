@@ -4296,7 +4296,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
   let lb_pun =
-    Ocaml_version.(compare c.conf.ocaml_version Releases.v4_13 >= 0)
+    Ocaml_version.(compare c.conf.ocaml_version Releases.v4_13_0 >= 0)
     && lb_pun
   in
   let doc1, atrs = doc_atrs lb_attrs in

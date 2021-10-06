@@ -60,7 +60,7 @@
   + Allow disambiguated global identifiers (like t/2) so they can be formatted by tools like OCaml-LSP (#1716, @let-def)
 
   + Handle let operator punning uniformly with other punning forms.
-    Normalizes let operator to the punned form where possible, if output syntax version is at least OCaml 4.13. (#1834, @jberdine)
+    Normalizes let operator to the punned form where possible, if output syntax version is at least OCaml 4.13.0. (#1834, #1846, @jberdine)
 
 ### 0.19.0 (2021-07-16)
 
