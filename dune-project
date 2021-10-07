@@ -99,10 +99,6 @@
   (ocaml-version
    (>= 3.2.0))
   ocp-indent
-  (bisect_ppx
-   (and
-    :with-test
-    (>= 2.5.0)))
   (odoc-parser
    (>= 0.9.0))
   (re
