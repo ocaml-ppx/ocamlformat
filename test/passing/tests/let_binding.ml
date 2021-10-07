@@ -211,14 +211,3 @@ and y = ()
 [@@foo]
 (* after y *)
 (** doc y *)
-
-
-let _ =
-  let* () =
-    (* xxx *)
-    xxx
-  and* () =
-    (* yyy *)
-    yyy
-  in
-  zzz
