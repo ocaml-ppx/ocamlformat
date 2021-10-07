@@ -4286,8 +4286,6 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   in
   let blank_line_after_in =
     let last_bind = List.last_exn bindings in
-    (* The location of the first binding (just after `let`) is wrong, it
-       contains the whole letop expression *)
     sequence_blank_line c last_bind.lb_exp.ast.pexp_loc body_loc
   in
   Params.Exp.wrap c.conf c.source ~loc
