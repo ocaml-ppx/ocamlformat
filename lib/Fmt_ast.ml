@@ -1705,7 +1705,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; ( Nolabel
           , ({pexp_desc= Pexp_fun _; pexp_loc; pexp_attributes; _} as r) ) ]
       )
-    when Longident.is_infix id && not c.conf.break_infix_before_func ->
+    when Longident.is_infix id
+         && (not (Longident.is_monadic_binding id))
+         && not c.conf.break_infix_before_func ->
       (* side effects of Cmts.fmt c.cmts before Sugar.fun_ is important *)
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
@@ -1754,7 +1756,9 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         ; ( Nolabel
           , ({pexp_desc= Pexp_function cs; pexp_loc; pexp_attributes; _} as r)
           ) ] )
-    when Longident.is_infix id && not c.conf.break_infix_before_func ->
+    when Longident.is_infix id
+         && (not (Longident.is_monadic_binding id))
+         && not c.conf.break_infix_before_func ->
       let cmts_before = Cmts.fmt_before c pexp_loc in
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
