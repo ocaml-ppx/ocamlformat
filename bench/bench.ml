@@ -134,4 +134,4 @@ let json_of_ols_results ?name (results : Bechamel.Analyze.OLS.t results) :
 let () =
   let results = benchmark () in
   let js_output = json_of_ols_results results in
-  Format.printf  "%s\n" (Yojson.Safe.to_string js_output)
+  Format.printf "%s\n" (Yojson.Safe.to_string js_output)
