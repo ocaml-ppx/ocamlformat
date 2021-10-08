@@ -617,6 +617,20 @@ module Vb = struct
     || not (is_simple (i2, c2))
 end
 
+module Td = struct
+  let has_doc itm = Option.is_some (fst (doc_atrs itm.ptype_attributes))
+
+  let is_simple (i, c) =
+    Poly.(c.Conf.module_item_spacing = `Compact)
+    && Location.is_single_line i.ptype_loc c.Conf.margin
+
+  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+    cmts_after i1.ptype_loc || cmts_before i2.ptype_loc || has_doc i1
+    || has_doc i2
+    || (not (is_simple (i1, c1)))
+    || not (is_simple (i2, c2))
+end
+
 module Class_field = struct
   let has_doc itm =
     Option.is_some (fst (doc_atrs itm.pcf_attributes))
@@ -673,6 +687,7 @@ module T = struct
   type t =
     | Pld of payload
     | Typ of core_type
+    | Td of type_declaration
     | Cty of class_type
     | Pat of pattern
     | Exp of expression
@@ -690,6 +705,7 @@ module T = struct
   let dump fs = function
     | Pld l -> Format.fprintf fs "Pld:@\n%a" Pprintast.payload l
     | Typ t -> Format.fprintf fs "Typ:@\n%a" Pprintast.core_type t
+    | Td t -> Format.fprintf fs "Td:@\n%a" Pprintast.type_declaration t
     | Pat p -> Format.fprintf fs "Pat:@\n%a" Pprintast.pattern p
     | Exp e -> Format.fprintf fs "Exp:@\n%a" Pprintast.expression e
     | Vb b -> Format.fprintf fs "Vb:@\n%a" Pprintast.binding b
@@ -715,6 +731,7 @@ let is_top = function Top -> true | _ -> false
 let attributes = function
   | Pld _ -> []
   | Typ x -> x.ptyp_attributes
+  | Td x -> x.ptype_attributes
   | Cty x -> x.pcty_attributes
   | Pat x -> x.ppat_attributes
   | Exp x -> x.pexp_attributes
@@ -732,6 +749,7 @@ let attributes = function
 let location = function
   | Pld _ -> Location.none
   | Typ x -> x.ptyp_loc
+  | Td x -> x.ptype_loc
   | Cty x -> x.pcty_loc
   | Pat x -> x.ppat_loc
   | Exp x -> x.pexp_loc
@@ -771,6 +789,7 @@ let break_between s cc (i1, c1) (i2, c2) =
       true (* always break between an item and a directive *)
   | Clf i1, Clf i2 -> Class_field.break_between s cc (i1, c1) (i2, c2)
   | Ctf i1, Ctf i2 -> Class_type_field.break_between s cc (i1, c1) (i2, c2)
+  | Td i1, Td i2 -> Td.break_between cc (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be) an
@@ -970,6 +989,10 @@ end = struct
               | {pof_desc= Otag (_, t1); _} -> typ == t1
               | {pof_desc= Oinherit t1; _} -> typ == t1 ) )
       | Ptyp_class (_, l) -> assert (List.exists l ~f) )
+    | Td {ptype_manifest; _} -> (
+      match ptype_manifest with
+      | Some t -> assert (t == typ)
+      | None -> assert false )
     | Cty {pcty_desc; _} ->
         assert (
           match pcty_desc with
@@ -1148,6 +1171,7 @@ end = struct
     | Top -> assert false
     | Tli _ -> assert false
     | Typ _ -> assert false
+    | Td _ -> assert false
     | Pat _ -> assert false
     | Cl ctx ->
         assert (
@@ -1204,6 +1228,7 @@ end = struct
     | Top -> assert false
     | Tli _ -> assert false
     | Typ _ -> assert false
+    | Td _ -> assert false
     | Pat _ -> assert false
     | Cl {pcl_desc; _} ->
         assert (
@@ -1257,6 +1282,7 @@ end = struct
       match ctx.ptyp_desc with
       | Ptyp_extension (_, ext) -> assert (check_extensions ext)
       | _ -> assert false )
+    | Td _ -> assert false
     | Pat ctx -> (
         let f pI = pI == pat in
         let snd_f (_, pI) = pI == pat in
@@ -1498,7 +1524,8 @@ end = struct
     | Cty _ -> assert false
     | Ctf _ -> assert false
     | Clf x -> assert (check_pcstr_fields [x])
-    | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ -> assert false
+    | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ | Td _ ->
+        assert false
 
   let assert_check_exp xexp =
     let dump {ctx; ast= exp} = dump ctx (Exp exp) in
@@ -1679,6 +1706,8 @@ end = struct
           | Str _ | Clf _ | Ctf _ ) }
      |{ctx= Vb _; ast= _}
      |{ctx= _; ast= Vb _}
+     |{ctx= Td _; ast= _}
+     |{ctx= _; ast= Td _}
      |{ ctx= Cl _
       ; ast=
           ( Pld _ | Top | Tli _ | Pat _ | Mty _ | Mod _ | Sig _ | Str _
@@ -1706,6 +1735,7 @@ end = struct
       | Ptyp_any | Ptyp_var _ | Ptyp_constr _ | Ptyp_object _
        |Ptyp_class _ | Ptyp_variant _ | Ptyp_poly _ | Ptyp_extension _ ->
           None )
+    | Td _ -> None
     | Cty {pcty_desc; _} -> (
       match pcty_desc with Pcty_arrow _ -> Some MinusGreater | _ -> None )
     | Exp {pexp_desc; _} -> (

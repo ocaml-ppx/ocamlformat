@@ -679,8 +679,8 @@ and type_constr_and_body c xbody =
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
    of the expression, i.e. if the expression is part of a `fun`
    expression. *)
-and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
-    ?(pro_space = true) ?constraint_ctx ({ast= typ; _} as xtyp) =
+and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
+    ({ast= typ; ctx} as xtyp) =
   protect c (Typ typ)
   @@
   let {ptyp_desc; ptyp_attributes; ptyp_loc; _} = typ in
@@ -709,6 +709,7 @@ and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
        (match typ.ptyp_desc with Ptyp_tuple _ -> false | _ -> parens)
        c.conf
   @@
+  let in_type_declaration = match ctx with Td _ -> true | _ -> false in
   let ctx = Typ typ in
   let parenze_constraint_ctx =
     match constraint_ctx with
@@ -3148,13 +3149,13 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
   let fmt_abstract_manifest = function
     | Some m ->
         str " " $ str eq $ fmt_private_flag priv $ fmt "@ "
-        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx m)
+        $ fmt_core_type c (sub_typ ~ctx:(Td decl) m)
     | None -> noop
   in
   let fmt_manifest = function
     | Some m ->
         str " " $ str eq $ break 1 4
-        $ fmt_core_type c ~in_type_declaration:true (sub_typ ~ctx m)
+        $ fmt_core_type c (sub_typ ~ctx:(Td decl) m)
         $ str " =" $ fmt_private_flag priv
     | None -> str " " $ str eq $ fmt_private_flag priv
   in
@@ -4169,17 +4170,18 @@ and fmt_structure c ctx itms =
   fmt_item_list c ctx update_config ast fmt_item itms
 
 and fmt_type c ?ext ?eq rec_flag decls ctx =
-  let fmt_decl ~first ~last decl =
+  let update_config c td = update_config c td.ptype_attributes in
+  let is_rec = Asttypes.is_recursive rec_flag in
+  let fmt_decl c ctx ~prev ~next:_ decl =
+    let first = Option.is_none prev in
     let pre =
-      match (first, rec_flag) with
-      | true, Recursive -> "type"
-      | true, Nonrecursive -> "type nonrec"
-      | false, _ -> "and"
+      if first then if is_rec then "type" else "type nonrec" else "and"
     in
     let ext = if first then ext else None in
-    fmt_type_declaration c ~pre ?eq ?ext ctx decl $ fmt_if (not last) "\n@ "
+    fmt_type_declaration c ~pre ?eq ?ext ctx decl
   in
-  vbox 0 (list_fl decls fmt_decl)
+  let ast x = Td x in
+  fmt_item_list c ctx update_config ast fmt_decl decls
 
 and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
   protect c (Str si)

@@ -57,6 +57,8 @@
 
   + Line directives now cause OCamlFormat to emit an error, they were previously silently ignored (#1845, @gpetiot)
 
+  + Apply option 'module-item-spacing' on mutually recursive type declarations for more consistency (#1854, @gpetiot)
+
 #### New features
 
   + Handle merlin typed holes (#1698, @gpetiot)

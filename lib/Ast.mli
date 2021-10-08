@@ -154,6 +154,7 @@ type toplevel_item =
 type t =
   | Pld of payload
   | Typ of core_type
+  | Td of type_declaration
   | Cty of class_type
   | Pat of pattern
   | Exp of expression
