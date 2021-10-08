@@ -46,6 +46,8 @@
 
   + Fix application of a monadic binding when 'break-infix-before-func=false' (#1849, @gpetiot)
 
+  + Fix dropped comments attached to a sequence in a sugared extension node (#1853, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
