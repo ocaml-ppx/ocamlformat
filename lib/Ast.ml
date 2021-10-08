@@ -2250,8 +2250,7 @@ end = struct
       , {pexp_desc= Pexp_apply (op1, args); pexp_attributes; _} )
       when e == exp && Exp.is_prefix op1 -> (
       match (args, pexp_attributes) with
-      | _, _ :: _ -> true
-      | [(Nolabel, _)], _ -> false
+      | [(Nolabel, _)], [] -> false
       | _ -> true )
     | ( Exp {pexp_desc= Pexp_apply (e0, ((_, e) :: _ as args)); _}
       , {pexp_desc= Pexp_construct _; _} )
