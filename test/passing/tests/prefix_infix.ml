@@ -17,3 +17,5 @@ let z = (( ! ) ~x:4 [@attr]) 1 2 ~c:3
 let z = (( ! ) [@attr]) 1 2 ~c:3
 
 let z = (( ! ) [@attr])
+
+let i x = (!r [@attr]) x
