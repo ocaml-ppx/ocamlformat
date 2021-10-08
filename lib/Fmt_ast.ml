@@ -679,7 +679,6 @@ and type_constr_and_body c xbody =
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
    of the expression, i.e. if the expression is part of a `fun`
    expression. *)
-
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(pro_space = true) ?constraint_ctx ({ast= typ; _} as xtyp) =
   protect c (Typ typ)
