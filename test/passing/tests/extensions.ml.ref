@@ -427,6 +427,9 @@ let _ =
   | [%ext? exception e] -> k
   | _ -> default
 
-let a = Lwt.return () ;%lwt Lwt.return 1
+let a =
+  (* test *)
+  Lwt.return () ;%lwt Lwt.return 1
 
-let a = f (* test *) (Lwt.return () ;%lwt Lwt.return 1)
+let a = f ((* test *)
+           Lwt.return () ;%lwt Lwt.return 1)
