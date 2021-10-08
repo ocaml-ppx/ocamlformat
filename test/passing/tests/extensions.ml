@@ -351,3 +351,14 @@ let _ =
   | (exception%ext e) [@attr] -> k
   | [%ext? exception e] -> k
   | _ -> default
+
+let a =
+  (* test *)
+  Lwt.return ();%lwt
+  Lwt.return 1
+
+let a =
+  f (
+    (* test *)
+    Lwt.return ();%lwt
+    Lwt.return 1 )
