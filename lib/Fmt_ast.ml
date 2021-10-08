@@ -679,6 +679,7 @@ and type_constr_and_body c xbody =
    [xtyp] should be parenthesized. [constraint_ctx] gives the higher context
    of the expression, i.e. if the expression is part of a `fun`
    expression. *)
+
 and fmt_core_type c ?(box = true) ?(in_type_declaration = false) ?pro
     ?(pro_space = true) ?constraint_ctx ({ast= typ; _} as xtyp) =
   protect c (Typ typ)
@@ -4286,7 +4287,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
   in
   let blank_line_after_in =
     let last_bind = List.last_exn bindings in
-    sequence_blank_line c last_bind.lb_exp.ast.pexp_loc body_loc
+    sequence_blank_line c last_bind.lb_loc body_loc
   in
   Params.Exp.wrap c.conf c.source ~loc
     ~parens:(parens || not (List.is_empty attributes))
