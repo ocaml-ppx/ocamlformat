@@ -42,6 +42,8 @@
 
   + Fix boxing of labelled arguments, avoid having a linebreak after a label when the argument has a comment attached (#1830, @gpetiot)
 
+  + Add missing parentheses around application of prefix op when applied to other operands (#1825, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
