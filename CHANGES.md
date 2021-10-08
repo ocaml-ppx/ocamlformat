@@ -44,6 +44,8 @@
 
   + Add missing parentheses around application of prefix op when applied to other operands (#1825, @gpetiot)
 
+  + Fix application of a monadic binding when 'break-infix-before-func=false' (#1849, @gpetiot)
+
 #### Changes
 
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)

@@ -219,3 +219,11 @@ let default =
   command##hasPermission #= (fun ctx ->
   foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo) ;
   foo
+
+let _ = ( let* ) x (fun y -> z)
+
+let _ = ( let* ) x (function y -> z)
+
+let _ = f (( let* ) x (fun y -> z))
+
+let _ = f (( let* ) x (function y -> z))
