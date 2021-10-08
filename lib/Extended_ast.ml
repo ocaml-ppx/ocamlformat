@@ -75,7 +75,22 @@ module Parse = struct
 
   let expression = Parse.expression
 
+  let fix_letop_locs =
+    let binding_op (m : Ast_mapper.mapper) b =
+      let b' =
+        let loc_start = b.pbop_op.loc.loc_start in
+        let loc_end = b.pbop_exp.pexp_loc.loc_end in
+        {b with pbop_loc= {b.pbop_loc with loc_start; loc_end}}
+      in
+      Ast_mapper.default_mapper.binding_op m b'
+    in
+    Ast_mapper.{default_mapper with binding_op}
+
+  let normalize fg = map fg fix_letop_locs
+
   let ast (type a) (fg : a t) lexbuf : a =
+    normalize fg
+    @@
     match fg with
     | Structure -> implementation lexbuf
     | Signature -> interface lexbuf
