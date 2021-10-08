@@ -1,21 +1,20 @@
-val fffffffff : aaaaaa -> bbbbbbbbbb ccccccccc -> dddd
+val fffffffff: aaaaaa -> bbbbbbbbbb ccccccccc -> dddd
 
-val fffffffff :
-  aaaaaa -> bbbbbbbbbb ccccccccc -> dddd -> dddd -> dddd -> dddd
+val fffffffff: aaaaaa -> bbbbbbbbbb ccccccccc -> dddd -> dddd -> dddd -> dddd
 
-val fffffffff :
+val fffffffff:
   aaaaaa -> (bbbbbbbbbb ccccccccc -> int) -> bbbbbbbbbb ccccccccc -> dddd
 
-val fffffffff :
+val fffffffff:
      eeee:('a, 'b) aaaaaa
   -> (bbbbbbbbbb ccccccccc -> int)
   -> bbbbbbbbbb ccccccccc
   -> dddd
   -> dddd
 
-val m : (module S with type t = t)
+val m: (module S with type t = t)
 
-val f :
+val f:
   ( 'aaaaaaaaaaaaaaaaaaaa
   ,    xxxxxxxxxxxxxxxxxxxxxxxxx
     -> yyyyyyyyyyyyyyyyyyyyyyyyy
@@ -41,16 +40,16 @@ type t =
 type ('aaaa, 'bbbb, 'cccc) t =
   llll:('aaaa, 'bbbb, 'cccc) s -> dddddd list -> 'aaaa * 'cccc -> 'bbbb uuuuu
 
-external ident : a -> b -> c -> d = "something"
+external ident: a -> b -> c -> d = "something"
 
-external ident : a -> b -> c -> d = "something" "else"
+external ident: a -> b -> c -> d = "something" "else"
 
-val ident : a -> b -> c -> d
+val ident: a -> b -> c -> d
 
-val ident :
+val ident:
   arg1_is_loooooooooooooooooooooooooooooooong -> arg2 -> arg3 -> arg4
 
-external ident :
+external ident:
   arg1_is_loooooooooooooooooooooooooooooooong -> arg2 -> arg3 -> arg4
   = "something" "else"
 

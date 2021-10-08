@@ -94,7 +94,7 @@ module type r =
 module type fst = sig
   module type t
 
-  val x : (module t)
+  val x: (module t)
 end
 
 module type ext
@@ -112,7 +112,7 @@ module type S = sig
     module type T
   end
 
-  val x : (module M.T)
+  val x: (module M.T)
 end
 
 module type R = S with module type M.T := sig end
@@ -121,7 +121,7 @@ module type S = sig
   module M : sig
     module type T
 
-    val x : (module T)
+    val x: (module T)
   end
 end
 
@@ -170,7 +170,7 @@ end
 module type fst = sig
   module type t := sig end
 
-  val x : (module t)
+  val x: (module t)
 end
 
 module type hidden = sig
@@ -180,7 +180,7 @@ module type hidden = sig
 
   include t
 
-  val x : (module t)
+  val x: (module t)
 
-  val x : int
+  val x: int
 end

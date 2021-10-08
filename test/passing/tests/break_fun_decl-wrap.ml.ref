@@ -78,13 +78,13 @@ class type ffffffffffffffffffff =
       -> cccccccccccccccccccccc
       -> dddddddddddddddddddddd
 
-    val ffffffffffffffffffff :
+    val ffffffffffffffffffff:
          aaaaaaaaaaaaaaaaaaaaaa
       -> bbbbbbbbbbbbbbbbbbbbbb
       -> cccccccccccccccccccccc
       -> dddddddddddddddddddddd
 
-    val ffffffffffffffffffff :
+    val ffffffffffffffffffff:
          (   aaaaaaaaaaaaaaaaaaaaaa
           -> bbbbbbbbbbbbbbbbbbbbbb
           -> cccccccccccccccccccccc

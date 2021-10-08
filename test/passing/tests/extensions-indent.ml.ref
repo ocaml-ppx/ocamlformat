@@ -9,7 +9,7 @@ let _ =
       let%test x = d in
       d
 
-val f : compare:[%compare: 'a] -> sexp_of:[%sexp_of: 'a] -> t
+val f: compare:[%compare: 'a] -> sexp_of:[%sexp_of: 'a] -> t
 
 let invariant t =
   Invariant.invariant [%here] t [%sexp_of: t] (fun () ->

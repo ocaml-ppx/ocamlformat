@@ -61,9 +61,9 @@ class type t =
   object
     inherit t [@@foo]
 
-    val x : t [@@foo]
+    val x: t [@@foo]
 
-    val mutable x : t [@@foo]
+    val mutable x: t [@@foo]
 
     method x : t [@@foo]
 
@@ -100,7 +100,7 @@ class%foo x = x [@@foo]
 
 class type%foo x = x [@@foo]
 
-external%foo x : _ = "" [@@foo]
+external%foo x: _ = "" [@@foo]
 
 exception%foo X [@@foo]
 
@@ -117,9 +117,9 @@ open%foo M [@@foo]
 
 (* Signature items *)
 module type S = sig
-  [%%foo: val x : t [@@foo]]
+  [%%foo: val x: t [@@foo]]
 
-  [%%foo: external x : t = "" [@@foo]]
+  [%%foo: external x: t = "" [@@foo]]
 
   type%foo t = int [@@foo]
 

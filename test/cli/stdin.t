@@ -18,7 +18,7 @@ Nominal cases:
   let x = 1
 
   $ echo 'val x :     int' | ocamlformat --intf -
-  val x : int
+  val x: int
 
 The kind of syntax --impl/--intf is inferred from the name:
 

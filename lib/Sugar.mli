@@ -13,14 +13,14 @@ open Migrate_ast
 open Asttypes
 open Extended_ast
 
-val arrow_typ :
+val arrow_typ:
      Cmts.t
   -> core_type Ast.xt
   -> (Location.t * arg_label * core_type Ast.xt) list
 (** [arrow_typ cmts ty] returns the list of labeled sub-arrow types of the
     type [ty]. *)
 
-val class_arrow_typ :
+val class_arrow_typ:
      Cmts.t
   -> class_type Ast.xt
   -> ( arg_label
@@ -29,7 +29,7 @@ val class_arrow_typ :
 (** [class_arrow_typ cmts ty] returns the list of labeled sub_arrow types of
     the class type [ty]. *)
 
-val or_pat :
+val or_pat:
   ?allow_attribute:bool -> Cmts.t -> pattern Ast.xt -> pattern Ast.xt list
 (** [or_pat allow_attribute cmts pat] returns the list of patterns of a
     pattern disjunction. [allow_attribute] is set by default, otherwise
@@ -40,7 +40,7 @@ type arg_kind =
   | Val of arg_label * pattern Ast.xt * expression Ast.xt option
   | Newtypes of string loc list
 
-val fun_ :
+val fun_:
      Cmts.t
   -> ?will_keep_first_ast_node:bool
   -> expression Ast.xt
@@ -49,7 +49,7 @@ val fun_ :
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
 
-val cl_fun :
+val cl_fun:
      ?will_keep_first_ast_node:bool
   -> Cmts.t
   -> class_expr Ast.xt
@@ -58,7 +58,7 @@ val cl_fun :
     and the body of the function [exp]. [will_keep_first_ast_node] is set by
     default, otherwise the [exp] is returned without modification. *)
 
-val infix :
+val infix:
      Cmts.t
   -> Prec.t option
   -> expression Ast.xt
@@ -67,14 +67,14 @@ val infix :
     applied to this operator from expression [exp]. [prec] is the precedence
     of the infix operator. *)
 
-val infix_cons :
+val infix_cons:
      Cmts.t
   -> expression Ast.xt
   -> (Longident.t loc option * expression Ast.xt) list
 (** [infix_cons exp] returns a list of expressions if [exp] is an expression
     corresponding to a list ((::) application). *)
 
-val ite :
+val ite:
      Cmts.t
   -> expression Ast.xt
   -> (expression Ast.xt option * expression Ast.xt * attributes) list
@@ -86,7 +86,7 @@ val ite :
     will return the following list:
     [(Some c1, e1); (Some c2, e2); (None, e3)]. *)
 
-val sequence :
+val sequence:
   Cmts.t -> expression Ast.xt -> (label loc option * expression Ast.xt) list
 (** [sequence cmts exp] returns the list of expressions (with the optional
     extension) from a sequence of expressions [exp]. *)
@@ -97,7 +97,7 @@ type functor_arg =
       (** Equivalent of the [functor_parameter] type with a contextualized
           module type. *)
 
-val functor_type :
+val functor_type:
      Cmts.t
   -> for_functor_kw:bool
   -> source_is_long:(module_type -> bool)
@@ -107,7 +107,7 @@ val functor_type :
     applied to the functor of module type [m]. [for_functor_kw] indicates if
     the keyword [functor] is used. *)
 
-val functor_ :
+val functor_:
      Cmts.t
   -> for_functor_kw:bool
   -> source_is_long:(module_expr -> bool)
@@ -117,7 +117,7 @@ val functor_ :
     to the functor of module [m]. [for_functor_kw] indicates if the keyword
     [functor] is used. *)
 
-val mod_with :
+val mod_with:
      module_type Ast.xt
   -> (with_constraint list * Warnings.loc * attributes) list
      * module_type Ast.xt
@@ -138,10 +138,10 @@ module Let_binding : sig
     ; lb_attrs: attribute list
     ; lb_loc: Location.t }
 
-  val of_value_binding :
+  val of_value_binding:
     Cmts.t -> ctx:Ast.t -> first:bool -> value_binding -> t
 
-  val of_value_bindings : Cmts.t -> ctx:Ast.t -> value_binding list -> t list
+  val of_value_bindings: Cmts.t -> ctx:Ast.t -> value_binding list -> t list
 
-  val of_binding_ops : Cmts.t -> ctx:Ast.t -> binding_op list -> t list
+  val of_binding_ops: Cmts.t -> ctx:Ast.t -> binding_op list -> t list
 end

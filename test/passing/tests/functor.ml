@@ -16,9 +16,9 @@ module type M = functor
   (SSSSS : SSSSSSSSSSSSSS)
   (TTTTT : TTTTTTTTTTTTTTTT)
   -> sig
-  val t1 : a
+  val t1: a
 
-  val t2 : b
+  val t2: b
 end
 
 module M : functor () -> sig end = functor () -> struct end

@@ -12,14 +12,14 @@
 module Error : sig
   type t
 
-  val user_error : string -> t
+  val user_error: string -> t
 
-  val equal : t -> t -> bool
+  val equal: t -> t -> bool
 
-  val print : ?debug:bool -> ?quiet:bool -> Format.formatter -> t -> unit
+  val print: ?debug:bool -> ?quiet:bool -> Format.formatter -> t -> unit
 end
 
-val parse_and_format :
+val parse_and_format:
      Syntax.t
   -> ?output_file:string
   -> input_name:string
@@ -30,7 +30,7 @@ val parse_and_format :
 (** [parse_and_format kind ?output_file ~input_name ~source conf opts] parses
     and formats [source] as a list of fragments. *)
 
-val numeric :
+val numeric:
      Syntax.t
   -> input_name:string
   -> source:string

@@ -27,26 +27,26 @@ module Format = Format_
 
 type t
 
-val init :
+val init:
   'a Extended_ast.t -> debug:bool -> Source.t -> 'a -> Cmt.t list -> t
 (** [init fragment source x comments] associates each comment in [comments]
     with a source location appearing in [x]. It uses [Source] to help resolve
     ambiguities. Initializes the state used by the [fmt] functions. *)
 
-val relocate :
+val relocate:
   t -> src:Location.t -> before:Location.t -> after:Location.t -> unit
 (** [relocate src before after] moves (changes the association with
     locations) comments before [src] to [before] and comments after [src] to
     [after]. *)
 
-val relocate_wrongfully_attached_cmts :
+val relocate_wrongfully_attached_cmts:
   t -> Source.t -> Extended_ast.expression -> unit
 (** [relocate_wrongfully_attached_cmts] relocates wrongfully attached
     comments, e.g. comments that should be attached to the whole
     pattern-matching expressions ([match-with] or [try-with] expressions) but
     are wrongfully attached to the matched expression. *)
 
-val fmt_before :
+val fmt_before:
      t
   -> Conf.t
   -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
@@ -59,7 +59,7 @@ val fmt_before :
 (** [fmt_before loc] formats the comments associated with [loc] that appear
     before [loc]. *)
 
-val fmt_after :
+val fmt_after:
      t
   -> Conf.t
   -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
@@ -70,7 +70,7 @@ val fmt_after :
 (** [fmt_after loc] formats the comments associated with [loc] that appear
     after [loc]. *)
 
-val fmt_within :
+val fmt_within:
      t
   -> Conf.t
   -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
@@ -82,7 +82,7 @@ val fmt_within :
     within [loc]. *)
 
 module Toplevel : sig
-  val fmt_before :
+  val fmt_before:
        t
     -> Conf.t
     -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
@@ -91,7 +91,7 @@ module Toplevel : sig
   (** [fmt_before loc] formats the comments associated with [loc] that appear
       before [loc]. *)
 
-  val fmt_after :
+  val fmt_after:
        t
     -> Conf.t
     -> fmt_code:(Conf.t -> string -> (Fmt.t, unit) Result.t)
@@ -101,25 +101,25 @@ module Toplevel : sig
       after [loc]. *)
 end
 
-val drop_inside : t -> Location.t -> unit
+val drop_inside: t -> Location.t -> unit
 
-val drop_before : t -> Location.t -> t
+val drop_before: t -> Location.t -> t
 
-val has_before : t -> Location.t -> bool
+val has_before: t -> Location.t -> bool
 (** [has_before t loc] holds if [t] contains some comment before [loc]. *)
 
-val has_within : t -> Location.t -> bool
+val has_within: t -> Location.t -> bool
 (** [has_within t loc] holds if [t] contains some comment within [loc]. *)
 
-val has_after : t -> Location.t -> bool
+val has_after: t -> Location.t -> bool
 (** [has_after t loc] holds if [t] contains some comment after [loc]. *)
 
-val remaining_comments : t -> Cmt.t list
+val remaining_comments: t -> Cmt.t list
 (** Returns comments that have not been formatted yet. *)
 
-val remaining_locs : t -> Location.t list
+val remaining_locs: t -> Location.t list
 
-val remaining_before : t -> Location.t -> Cmt.t list
+val remaining_before: t -> Location.t -> Cmt.t list
 (** [remaining_before c loc] returns the comments before [loc] *)
 
 type layout_cache_key =
@@ -127,6 +127,6 @@ type layout_cache_key =
   | Pattern of Parsetree.pattern
   | Expression of Parsetree.expression
 
-val preserve : cache_key:layout_cache_key -> (unit -> Fmt.t) -> t -> string
+val preserve: cache_key:layout_cache_key -> (unit -> Fmt.t) -> t -> string
 (** [preserve f t] formats like [f ()] but returns a string and does not
     consume comments from [t]. *)

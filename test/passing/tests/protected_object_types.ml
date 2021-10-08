@@ -52,16 +52,16 @@ module Inside_payloads = struct
 
   type a = < f: t > ]
 
-  [@@@a: val b : < .. > ]
+  [@@@a: val b: < .. > ]
 
-  let _ = () [@a: val b : < .. > ]
+  let _ = () [@a: val b: < .. > ]
 
-  let _ = () [@@a: val b : < .. > ]
+  let _ = () [@@a: val b: < .. > ]
 
   [@@@a: type x = < .. > ]
 
   [@@@a:
-  val x : t
+  val x: t
 
   type x = < .. > ]
 

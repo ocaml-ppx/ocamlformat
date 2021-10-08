@@ -16,15 +16,15 @@ module Error : sig
     | Misplaced of string * string
     | Unknown of string * [`Msg of string] option
 
-  val to_string : t -> string
+  val to_string: t -> string
 end
 
 module type CONFIG = sig
   type config
 
-  val profile_option_names : string list
+  val profile_option_names: string list
 
-  val warn : config -> ('a, Format.formatter, unit, unit) format4 -> 'a
+  val warn: config -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
 module Make (C : CONFIG) : sig
@@ -54,16 +54,16 @@ module Make (C : CONFIG) : sig
     -> (config -> 'a)
     -> 'a t
 
-  val section_name : kind -> status -> string
+  val section_name: kind -> status -> string
 
-  val deprecated : since:Version.t -> string -> deprecated
+  val deprecated: since:Version.t -> string -> deprecated
 
-  val removed : since:Version.t -> string -> removed
+  val removed: since:Version.t -> string -> removed
 
   module Value : sig
     type 'a t
 
-    val make : ?deprecated:deprecated -> name:string -> 'a -> string -> 'a t
+    val make: ?deprecated:deprecated -> name:string -> 'a -> string -> 'a t
   end
 
   module Value_removed : sig
@@ -72,40 +72,40 @@ module Make (C : CONFIG) : sig
         displayed. *)
     type t
 
-    val make : name:string -> since:Version.t -> msg:string -> t
+    val make: name:string -> since:Version.t -> msg:string -> t
     (** [name] is the configuration value that was removed in version
         [since]. [msg] explains how to get the former behaviour. *)
 
-    val make_list :
+    val make_list:
       names:string list -> since:Version.t -> msg:string -> t list
     (** Shorthand for [mk] when [since] and [msg] are shared. This can be
         used when multiple values are removed at the same time. *)
   end
 
-  val choice :
+  val choice:
        all:'a Value.t list
     -> ?removed_values:Value_removed.t list
     -> 'a option_decl
 
-  val flag : default:bool -> bool option_decl
+  val flag: default:bool -> bool option_decl
 
-  val any :
+  val any:
        ?default_doc:string
     -> 'a Cmdliner.Arg.conv
     -> default:'a
     -> docv:string
     -> 'a option_decl
 
-  val removed_option :
+  val removed_option:
     names:string list -> since:Version.t -> msg:string -> unit
   (** Declare an option as removed. Using such an option will result in an
       helpful error including [msg] and [since]. *)
 
-  val default : 'a t -> 'a
+  val default: 'a t -> 'a
 
-  val update_using_cmdline : config -> config
+  val update_using_cmdline: config -> config
 
-  val update :
+  val update:
        config:config
     -> from:updated_from
     -> name:string
@@ -113,5 +113,5 @@ module Make (C : CONFIG) : sig
     -> inline:bool
     -> (config, Error.t) Result.t
 
-  val print_config : config -> unit
+  val print_config: config -> unit
 end

@@ -33,8 +33,8 @@ type t =
   | High
   | Atomic
 
-val compare : t -> t -> int
+val compare: t -> t -> int
 
-val equal : t -> t -> bool
+val equal: t -> t -> bool
 
-val to_string : t -> string
+val to_string: t -> string

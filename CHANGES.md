@@ -8,6 +8,8 @@
 
 #### Changes
 
+  + Apply option 'field-space' to values in signatures for more consistency (#1855, @gpetiot)
+
 #### New features
 
 ### 0.20.1 (2021-12-13)

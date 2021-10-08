@@ -15,18 +15,18 @@ type 'a with_comments =
 module W : sig
   type t
 
-  val in_lexer : int list
+  val in_lexer: int list
 
-  val disable : int -> t
+  val disable: int -> t
 
-  val enable : int -> t
+  val enable: int -> t
 
-  val to_string : t list -> string
+  val to_string: t list -> string
 end
 
 exception Warning50 of (Location.t * Warnings.t) list
 
-val parse :
+val parse:
      ?disable_w50:bool
   -> ('b -> Lexing.lexbuf -> 'a)
   -> 'b

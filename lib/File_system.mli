@@ -9,13 +9,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val project_root_witness : string list
+val project_root_witness: string list
 
 type configuration_file = Ocamlformat of Fpath.t | Ocp_indent of Fpath.t
 
-val is_ocp_indent_file : configuration_file -> bool
+val is_ocp_indent_file: configuration_file -> bool
 
-val root_ocamlformat_file : root:Fpath.t option -> Fpath.t
+val root_ocamlformat_file: root:Fpath.t option -> Fpath.t
 
 type t =
   { ignore_files: Fpath.t list
@@ -23,7 +23,7 @@ type t =
   ; configuration_files: configuration_file list
   ; project_root: Fpath.t option }
 
-val make :
+val make:
      enable_outside_detected_project:bool
   -> disable_conf_files:bool
   -> root:Fpath.t option

@@ -106,7 +106,7 @@ module type A = sig
 
       [@@@attr something]
 
-      val virtual mutable a : int
+      val virtual mutable a: int
 
       method virtual private b : int -> int -> int
     end

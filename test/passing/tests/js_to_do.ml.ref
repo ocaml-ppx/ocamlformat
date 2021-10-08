@@ -38,7 +38,7 @@ let _ =
    first, and then the first argument is aligned accordingly. So, there's no
    manual indentation or spacing below. *)
 
-val instances :
+val instances:
      unit
   -> (    Config.Network.t
        -> (App.t * Config.instance * Config.app) list
@@ -47,7 +47,7 @@ val instances :
      , 'm )
      Command.Spec.t
 
-val instances :
+val instances:
      unit
   -> (    Config.Network.t
        -> (App.t * Config.instance * Config.app) list
@@ -57,7 +57,7 @@ val instances :
      Command.Spec.t
 
 (* presumed analog with stars *)
-val instances :
+val instances:
   unit
   * ( Config.Network.t
       * (App.t * Config.instance * Config.app) list

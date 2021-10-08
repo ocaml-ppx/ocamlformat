@@ -59,9 +59,9 @@ let ([%foo? Bar x | Baz x] : [%foo? #bar]) = [%foo? {x}]
 
 let ([%foo: include S with type t = t] :
       [%foo:
-        val x : t
+        val x: t
 
-        val y : t] ) =
+        val y: t] ) =
   [%foo: type t = t]
 
 let int_with_custom_modifier =
@@ -155,9 +155,9 @@ class type t =
   object
     inherit t [@@foo]
 
-    val x : t [@@foo]
+    val x: t [@@foo]
 
-    val mutable x : t [@@foo]
+    val mutable x: t [@@foo]
 
     method x : t [@@foo]
 
@@ -217,7 +217,7 @@ class%foo x = x [@@foo]
 
 class type%foo x = x [@@foo]
 
-external%foo x : _ = "" [@@foo]
+external%foo x: _ = "" [@@foo]
 
 exception%foo X [@foo]
 
@@ -234,9 +234,9 @@ open%foo M [@@foo]
 
 (* Signature items *)
 module type S = sig
-  val%foo x : t [@@foo]
+  val%foo x: t [@@foo]
 
-  external%foo x : t = "" [@@foo]
+  external%foo x: t = "" [@@foo]
 
   type%foo t = int [@@foo]
 
@@ -639,20 +639,20 @@ module Msg : sig
 
   type result = Result : 'a tag * 'a -> result
 
-  val write : 'a tag -> 'a -> unit
+  val write: 'a tag -> 'a -> unit
 
-  val read : unit -> result
+  val read: unit -> result
 
   type 'a tag += Int : int tag
 
   module type Desc = sig
     type t
 
-    val label : string
+    val label: string
 
-    val write : t -> string
+    val write: t -> string
 
-    val read : string -> t
+    val read: string -> t
   end
 
   module Define (D : Desc) : sig
@@ -712,11 +712,11 @@ end = struct
   module type Desc = sig
     type t
 
-    val label : string
+    val label: string
 
-    val write : t -> string
+    val write: t -> string
 
-    val read : string -> t
+    val read: string -> t
   end
 
   module Define (D : Desc) = struct
@@ -786,11 +786,11 @@ let () =
 module type S = sig
   type t
 
-  val to_string : t -> string
+  val to_string: t -> string
 
-  val apply : t -> t
+  val apply: t -> t
 
-  val x : t
+  val x: t
 end
 
 let create (type s) to_string apply x =
@@ -832,11 +832,11 @@ let () =
 module TypEq : sig
   type ('a, 'b) t
 
-  val apply : ('a, 'b) t -> 'a -> 'b
+  val apply: ('a, 'b) t -> 'a -> 'b
 
-  val refl : ('a, 'a) t
+  val refl: ('a, 'a) t
 
-  val sym : ('a, 'b) t -> ('b, 'a) t
+  val sym: ('a, 'b) t -> ('b, 'a) t
 end = struct
   type ('a, 'b) t = unit
 
@@ -855,11 +855,11 @@ module rec Typ : sig
 
     type t2
 
-    val eq : (t, t1 * t2) TypEq.t
+    val eq: (t, t1 * t2) TypEq.t
 
-    val t1 : t1 Typ.typ
+    val t1: t1 Typ.typ
 
-    val t2 : t2 Typ.typ
+    val t2: t2 Typ.typ
   end
 
   type 'a typ =
@@ -874,11 +874,11 @@ end = struct
 
     type t2
 
-    val eq : (t, t1 * t2) TypEq.t
+    val eq: (t, t1 * t2) TypEq.t
 
-    val t1 : t1 Typ.typ
+    val t1: t1 Typ.typ
 
-    val t2 : t2 Typ.typ
+    val t2: t2 Typ.typ
   end
 
   type 'a typ =
@@ -911,7 +911,7 @@ let pair (type s1 s2) t1 t2 =
   Pair pair
 
 module rec Print : sig
-  val to_string : 'a Typ.typ -> 'a -> string
+  val to_string: 'a Typ.typ -> 'a -> string
 end = struct
   let to_string (type s) t x =
     match t with
@@ -948,7 +948,7 @@ let _f (x : (module X.S)) : (module Y.S) = x
 
 (* PR#6194, main example *)
 module type S3 = sig
-  val x : bool
+  val x: bool
 end
 
 let f = function
@@ -2350,7 +2350,7 @@ end
 module B : sig
   type (_, _) t = Eq : ('a, 'a) t
 
-  val f : 'a -> 'b -> ('a, 'b) t
+  val f: 'a -> 'b -> ('a, 'b) t
 end = struct
   type (_, _) t = Eq : ('a, 'a) t
 
@@ -2428,7 +2428,7 @@ type (_, _) t = Any : ('a, 'b) t | Eq : ('a, 'a) t
 module M : sig
   type s = private [> `A]
 
-  val eq : (s, [`A | `B]) t
+  val eq: (s, [`A | `B]) t
 end = struct
   type s = [`A | `B]
 
@@ -2442,7 +2442,7 @@ let () = print_endline (f M.eq)
 module N : sig
   type s = private < a: int ; .. >
 
-  val eq : (s, < a: int ; b: bool >) t
+  val eq: (s, < a: int ; b: bool >) t
 end = struct
   type s = < a: int ; b: bool >
 
@@ -2460,7 +2460,7 @@ end
 module M : sig
   type t = T
 
-  val comp : (U.t, t) comp
+  val comp: (U.t, t) comp
 end = struct
   include U
 
@@ -2477,7 +2477,7 @@ end
 module M : sig
   type t = {x: int}
 
-  val comp : (U.t, t) comp
+  val comp: (U.t, t) comp
 end = struct
   include U
 
@@ -2616,7 +2616,7 @@ end
 and B : sig
   type t
 
-  val eq : (B.t list, t) eqp
+  val eq: (B.t list, t) eqp
 end = struct
   type t = A.t
 
@@ -2668,7 +2668,7 @@ type (_, _) eq = Refl : ('a, 'a) eq
 let bad (type a) =
   let module N = struct
     module rec M : sig
-      val e : (int, a) eq
+      val e: (int, a) eq
     end = struct
       let (Refl : (int, a) eq) = M.e (* must fail for soundness *)
 
@@ -3012,7 +3012,7 @@ module FM_valid : S
 module Foo : sig
   type t
 
-  val x : t ref
+  val x: t ref
 end = struct
   type t = int
 
@@ -3026,7 +3026,7 @@ module Foo : sig type t val x : t ref end
 module Bar : sig
   type t [@@immediate]
 
-  val x : t ref
+  val x: t ref
 end = struct
   type t = int
 
@@ -3187,7 +3187,7 @@ let sort_cmp (type s) cmp =
 module type S = sig
   type t
 
-  val x : t
+  val x: t
 end
 
 let f (module M : S with type t = int) = M.x
@@ -3225,7 +3225,7 @@ let f {s= (module M)} = M.x
 let f {s= (module M)} {s= (module N)} = M.x + N.x
 
 module type S = sig
-  val x : int
+  val x: int
 end
 
 let f (module M : S) y (module N : S) = M.x + y + N.x
@@ -3264,7 +3264,7 @@ class c =
 module M = (val m)
 
 module type S' = sig
-  val f : int -> int
+  val f: int -> int
 end
 ;;
 
@@ -3283,7 +3283,7 @@ module type S = sig
 
   type u
 
-  val x : t * u
+  val x: t * u
 end
 
 let f (l : (module S with type t = int and type u = bool) list) =
@@ -3295,11 +3295,11 @@ let f (l : (module S with type t = int and type u = bool) list) =
 module TypEq : sig
   type ('a, 'b) t
 
-  val apply : ('a, 'b) t -> 'a -> 'b
+  val apply: ('a, 'b) t -> 'a -> 'b
 
-  val refl : ('a, 'a) t
+  val refl: ('a, 'a) t
 
-  val sym : ('a, 'b) t -> ('b, 'a) t
+  val sym: ('a, 'b) t -> ('b, 'a) t
 end = struct
   type ('a, 'b) t = ('a -> 'b) * ('b -> 'a)
 
@@ -3318,11 +3318,11 @@ module rec Typ : sig
 
     and t2
 
-    val eq : (t, t1 * t2) TypEq.t
+    val eq: (t, t1 * t2) TypEq.t
 
-    val t1 : t1 Typ.typ
+    val t1: t1 Typ.typ
 
-    val t2 : t2 Typ.typ
+    val t2: t2 Typ.typ
   end
 
   type 'a typ =
@@ -3371,9 +3371,9 @@ module type MapT = sig
 
   type map
 
-  val of_t : data t -> map
+  val of_t: data t -> map
 
-  val to_t : map -> data t
+  val to_t: map -> data t
 end
 
 type ('k, 'd, 'm) map =
@@ -4078,20 +4078,18 @@ module Permissioned : sig
   type ('a, -'perms) t
 
   include sig
-    val t_of_sexp :
-      (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
+    val t_of_sexp: (sexp -> 'a) -> (sexp -> 'perms) -> sexp -> ('a, 'perms) t
 
-    val sexp_of_t :
-      ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
+    val sexp_of_t: ('a -> sexp) -> ('perms -> sexp) -> ('a, 'perms) t -> sexp
   end
 
   module Int : sig
     type nonrec -'perms t = (int, 'perms) t
 
     include sig
-      val t_of_sexp : (sexp -> 'perms) -> sexp -> 'perms t
+      val t_of_sexp: (sexp -> 'perms) -> sexp -> 'perms t
 
-      val sexp_of_t : ('perms -> sexp) -> 'perms t -> sexp
+      val sexp_of_t: ('perms -> sexp) -> 'perms t -> sexp
     end
   end
 end = struct
@@ -4140,7 +4138,7 @@ let r = {{x= 0; y= 0} with x= 0}
 
 let r' : string foo = r
 
-external foo : int = "%ignore"
+external foo: int = "%ignore"
 
 let _ = foo ()
 
@@ -4180,9 +4178,9 @@ module type PR6505 = sig
 
   and 'o abs constraint 'o = 'o is_an_object
 
-  val abs : 'o is_an_object -> 'o abs
+  val abs: 'o is_an_object -> 'o abs
 
-  val unabs : 'o abs -> 'o
+  val unabs: 'o abs -> 'o
 end
 
 (* fails *)
@@ -4403,7 +4401,7 @@ module X = struct
   module type SIG = sig
     type t = int
 
-    val x : t
+    val x: t
   end
 
   module F (Y : SIG) : SIG = struct
@@ -4425,7 +4423,7 @@ module X2 = struct
   module type SIG = sig
     type t = int
 
-    val x : t
+    val x: t
   end
 
   module F (Y : SIG) (Z : SIG) = struct
@@ -4448,7 +4446,7 @@ module F (M : sig
 
   type 'a u = string
 
-  val f : unit -> _ u t
+  val f: unit -> _ u t
 end) =
 struct
   let t = M.f ()
@@ -4467,16 +4465,16 @@ module T = struct
 end
 
 module Good : sig
-  val bar : t
+  val bar: t
 
-  val foo : t -> t -> unit
+  val foo: t -> t -> unit
 end =
   T
 
 module Bad : sig
-  val foo : t -> t -> unit
+  val foo: t -> t -> unit
 
-  val bar : t
+  val bar: t
 end =
   T
 
@@ -4515,7 +4513,7 @@ end
 module type S = sig
   type t
 
-  val x : t
+  val x: t
 end
 
 module Float = struct
@@ -4569,7 +4567,7 @@ module type S = sig
   include Set.S
 
   module E : sig
-    val x : int
+    val x: int
   end
 end
 
@@ -4784,7 +4782,7 @@ module M = struct
   module type S = sig
     type a
 
-    val v : a
+    val v: a
   end
 
   type 'a s = (module S with type a = 'a)
@@ -4853,26 +4851,26 @@ module G (X : F(N).S) : F(M).S = X
 module M : sig
   type make_dec
 
-  val add_dec : make_dec -> unit
+  val add_dec: make_dec -> unit
 end = struct
   type u
 
   module Fast : sig
     type 'd t
 
-    val create : unit -> 'd t
+    val create: unit -> 'd t
 
     module type S = sig
       module Data : sig
         type t
       end
 
-      val key : Data.t t
+      val key: Data.t t
     end
 
     module Register (D : S) : sig end
 
-    val attach : 'd t -> 'd -> unit
+    val attach: 'd t -> 'd -> unit
   end = struct
     type 'd t = unit
 
@@ -4883,7 +4881,7 @@ end = struct
         type t
       end
 
-      val key : Data.t t
+      val key: Data.t t
     end
 
     module Register (D : S) = struct end
@@ -4916,7 +4914,7 @@ module Simple = struct
       type t
     end
 
-    val key : Data.t t
+    val key: Data.t t
   end
 
   module Register (D : S) = struct
@@ -4944,7 +4942,7 @@ module Simple2 = struct
       type t
     end
 
-    val key : Data.t t
+    val key: Data.t t
   end
 
   module M = struct
@@ -4965,9 +4963,9 @@ module Simple2 = struct
 end
 
 module rec M : sig
-  external f : int -> int = "%identity"
+  external f: int -> int = "%identity"
 end = struct
-  external f : int -> int = "%identity"
+  external f: int -> int = "%identity"
 end
 (* with module *)
 
@@ -5006,7 +5004,7 @@ class type c =
   end
 
 module M : sig
-  val v : (#c as 'a) -> 'a
+  val v: (#c as 'a) -> 'a
 end = struct
   let v x =
     ignore (x :> c) ;
@@ -5115,7 +5113,7 @@ M'.N'.x
 
 module M'' : sig
   module N' : sig
-    val x : int
+    val x: int
   end
 end =
   M'
@@ -5129,7 +5127,7 @@ end
 
 module M3 : sig
   module N' : sig
-    val x : int
+    val x: int
   end
 end = struct
   include M'
@@ -5140,7 +5138,7 @@ M3.N'.x
 
 module M3' : sig
   module N' : sig
-    val x : int
+    val x: int
   end
 end =
   M2
@@ -5150,7 +5148,7 @@ M3'.N'.x
 
 module M4 : sig
   module N' : sig
-    val x : int
+    val x: int
   end
 end = struct
   module N = struct
@@ -5173,7 +5171,7 @@ end
 
 module G : functor (X : sig end) -> sig
   module N' : sig
-    val x : int
+    val x: int
   end
 end =
   F
@@ -5196,7 +5194,7 @@ end
 
 module M1 : sig
   module N : sig
-    val x : int
+    val x: int
   end
 
   module N' = N
@@ -5208,13 +5206,13 @@ M1.N'.x
 
 module M2 : sig
   module N' : sig
-    val x : int
+    val x: int
   end
 end = (
   M :
     sig
       module N : sig
-        val x : int
+        val x: int
       end
 
       module N' = N
@@ -5234,7 +5232,7 @@ end
 
 module M1 : sig
   module C : sig
-    val escaped : char -> string
+    val escaped: char -> string
   end
 
   module C' = C
@@ -5247,13 +5245,13 @@ M1.C'.escaped 'A'
 
 module M2 : sig
   module C' : sig
-    val chr : int -> char
+    val chr: int -> char
   end
 end = (
   M :
     sig
       module C : sig
-        val chr : int -> char
+        val chr: int -> char
       end
 
       module C' = C
@@ -5466,7 +5464,7 @@ module type S = sig
   module M : sig
     type t
 
-    val x : t
+    val x: t
   end
 end
 
@@ -5582,7 +5580,7 @@ end
 
 module rec R : sig
   module M : sig
-    val f : 'a -> 'a
+    val f: 'a -> 'a
   end
 end = struct
   module M = M
@@ -5684,7 +5682,7 @@ module type S3 = sig
 
   type t
 
-  val x : int
+  val x: int
 end
 
 let g3 x = (x : (module S3 with type t = 'a and type u = 'b) :> (module S'))
@@ -5694,7 +5692,7 @@ let g3 x = (x : (module S3 with type t = 'a and type u = 'b) :> (module S'))
 
 (* Without type *)
 module type S = sig
-  val x : int
+  val x: int
 end
 
 let v =
@@ -5716,7 +5714,7 @@ module H (X : sig end) = (val v)
 module type S = sig
   type t
 
-  val x : t
+  val x: t
 end
 
 let v =
@@ -5892,7 +5890,7 @@ module M : sig
   class c :
     'a
     -> object
-         val x : 'b
+         val x: 'b
        end
 end = struct
   class c x =
@@ -6225,7 +6223,7 @@ end
 type 'par t = 'par
 
 module M : sig
-  val x : < m: 'a. 'a >
+  val x: < m: 'a. 'a >
 end = struct
   let x : < m: 'a. 'a t > = Obj.magic ()
 end
@@ -6365,9 +6363,9 @@ let f flag =
 module type S = sig
   type +'a t
 
-  val foo : [`A] t -> unit
+  val foo: [`A] t -> unit
 
-  val bar : [< `A | `B] t -> unit
+  val bar: [< `A | `B] t -> unit
 end
 
 module Make (T : S) = struct
@@ -6385,11 +6383,11 @@ type 'a termk = [`Dia of 'a | `Box of 'a | 'a termpc]
 module type T = sig
   type term
 
-  val map : (term -> term) -> term -> term
+  val map: (term -> term) -> term -> term
 
-  val nnf : term -> term
+  val nnf: term -> term
 
-  val nnf_not : term -> term
+  val nnf_not: term -> term
 end
 
 module Fpc (X : T with type term = private [> 'a termpc] as 'a) = struct
@@ -6443,7 +6441,7 @@ and sexp = private untyped wrapped
 
 class type ['a] s3 =
   object
-    val underlying : 'a t
+    val underlying: 'a t
   end
 
 class ['a] s3object r : ['a] s3 =
@@ -6547,7 +6545,7 @@ end =
 module Bar : sig
   type t = private Foobar.t
 
-  val f : int -> t
+  val f: int -> t
 end = struct
   type t = int
 
@@ -6559,7 +6557,7 @@ end
 module M : sig
   type t = private T of int
 
-  val mk : int -> t
+  val mk: int -> t
 end = struct
   type t = T of int
 
@@ -6569,7 +6567,7 @@ end
 module M1 : sig
   type t = M.t
 
-  val mk : int -> t
+  val mk: int -> t
 end = struct
   type t = M.t
 
@@ -6579,7 +6577,7 @@ end
 module M2 : sig
   type t = M.t
 
-  val mk : int -> t
+  val mk: int -> t
 end = struct
   include M
 end
@@ -6587,14 +6585,14 @@ end
 module M3 : sig
   type t = M.t
 
-  val mk : int -> t
+  val mk: int -> t
 end =
   M
 
 module M4 : sig
   type t = M.t = T of int
 
-  val mk : int -> t
+  val mk: int -> t
 end =
   M
 
@@ -6603,14 +6601,14 @@ end =
 module M5 : sig
   type t = M.t = private T of int
 
-  val mk : int -> t
+  val mk: int -> t
 end =
   M
 
 module M6 : sig
   type t = private T of int
 
-  val mk : int -> t
+  val mk: int -> t
 end =
   M
 
@@ -6619,7 +6617,7 @@ module M' : sig
 
   type t = t_priv
 
-  val mk : int -> t
+  val mk: int -> t
 end = struct
   type t_priv = T of int
 
@@ -6631,7 +6629,7 @@ end
 module M3' : sig
   type t = M'.t
 
-  val mk : int -> t
+  val mk: int -> t
 end =
   M'
 
@@ -6879,7 +6877,7 @@ module PR_4450_2 = struct
 
     and 'a t = private < map: 'b. ('a -> 'b) -> 'b wrap ; .. >
 
-    val create : 'a list -> 'a t
+    val create: 'a list -> 'a t
   end
 
   module MyMap (X : MyT) = struct
@@ -6897,7 +6895,7 @@ module PR_4450_2 = struct
 
     and 'a t = < map: 'b. ('a -> 'b) -> 'b wrap >
 
-    val create : 'a list -> 'a t
+    val create: 'a list -> 'a t
   end = struct
     include MyMap (MyList)
 
@@ -6911,7 +6909,7 @@ end
 module type ORD = sig
   type t
 
-  val compare : t -> t -> int
+  val compare: t -> t -> int
 end
 
 module type SET = sig
@@ -6919,7 +6917,7 @@ module type SET = sig
 
   type t
 
-  val iter : (elt -> unit) -> t -> unit
+  val iter: (elt -> unit) -> t -> unit
 end
 
 type 'a tree = E | N of 'a tree * 'a * 'a tree
@@ -6932,9 +6930,9 @@ struct
   module rec Elt : sig
     type t = I of int * int | D of int * Diet.t * int
 
-    val compare : t -> t -> int
+    val compare: t -> t -> int
 
-    val iter : (int -> unit) -> t -> unit
+    val iter: (int -> unit) -> t -> unit
   end = struct
     type t = I of int * int | D of int * Diet.t * int
 
@@ -7020,7 +7018,7 @@ module PR_4557 = struct
 
       type t = XSet.t XMap.t
 
-      val compare : t -> t -> int
+      val compare: t -> t -> int
     end = struct
       module XSet = Set.Make (X)
       module XMap = Map.Make (X)
@@ -7054,7 +7052,7 @@ module F (X : Set.OrderedType) = struct
 
     type t = XSet.t XMap.t
 
-    val compare : t -> t -> int
+    val compare: t -> t -> int
   end = struct
     module XSet = Set.Make (X)
     module XMap = Map.Make (X)
@@ -7080,7 +7078,7 @@ let test number result expected =
 module rec A : sig
   type t = Leaf of int | Node of ASet.t
 
-  val compare : t -> t -> int
+  val compare: t -> t -> int
 end = struct
   type t = Leaf of int | Node of ASet.t
 
@@ -7106,7 +7104,7 @@ let _ =
 (* Simple value recursion *)
 
 module rec Fib : sig
-  val f : int -> int
+  val f: int -> int
 end = struct
   let f x = if x < 2 then 1 else Fib.f (x - 1) + Fib.f (x - 2)
 end
@@ -7116,7 +7114,7 @@ let _ = test 20 (Fib.f 10) 89
 (* Update function by infix *)
 
 module rec Fib2 : sig
-  val f : int -> int
+  val f: int -> int
 end = struct
   let rec g x = Fib2.f (x - 1) + Fib2.f (x - 2)
 
@@ -7132,7 +7130,7 @@ let _ =
     try
       let module A = struct
         module rec Bad : sig
-          val f : int -> int
+          val f: int -> int
         end = struct
           let f =
             let y = Bad.f 5 in
@@ -7152,13 +7150,13 @@ let _ =
 (* Reordering of evaluation based on dependencies *)
 
 module rec After : sig
-  val x : int
+  val x: int
 end = struct
   let x = Before.x + 1
 end
 
 and Before : sig
-  val x : int
+  val x: int
 end = struct
   let x = 3
 end
@@ -7170,7 +7168,7 @@ let _ = test 40 After.x 4
 module rec Strengthen : sig
   type t
 
-  val f : t -> t
+  val f: t -> t
 end = struct
   type t = A | B
 
@@ -7182,7 +7180,7 @@ end
 module rec Strengthen2 : sig
   type t
 
-  val f : t -> t
+  val f: t -> t
 
   module M : sig
     type u
@@ -7220,7 +7218,7 @@ end
 module rec PolyRec : sig
   type 'a t = Leaf of 'a | Node of 'a list t * 'a list t
 
-  val depth : 'a t -> int
+  val depth: 'a t -> int
 end = struct
   type 'a t = Leaf of 'a | Node of 'a list t * 'a list t
 
@@ -7256,11 +7254,11 @@ module rec Expr : sig
     | Add of t * t
     | Binding of Binding.t * t
 
-  val make_let : string -> t -> t -> t
+  val make_let: string -> t -> t -> t
 
-  val fv : t -> StringSet.t
+  val fv: t -> StringSet.t
 
-  val simpl : t -> t
+  val simpl: t -> t
 end = struct
   type t =
     | Var of string
@@ -7290,11 +7288,11 @@ end
 and Binding : sig
   type t = (string * Expr.t) list
 
-  val fv : t -> StringSet.t
+  val fv: t -> StringSet.t
 
-  val bv : t -> StringSet.t
+  val bv: t -> StringSet.t
 
-  val simpl : t -> t
+  val simpl: t -> t
 end = struct
   type t = (string * Expr.t) list
 
@@ -7322,11 +7320,11 @@ let _ =
 module type ORDERED = sig
   type t
 
-  val eq : t -> t -> bool
+  val eq: t -> t -> bool
 
-  val lt : t -> t -> bool
+  val lt: t -> t -> bool
 
-  val leq : t -> t -> bool
+  val leq: t -> t -> bool
 end
 
 module type HEAP = sig
@@ -7334,17 +7332,17 @@ module type HEAP = sig
 
   type heap
 
-  val empty : heap
+  val empty: heap
 
-  val isEmpty : heap -> bool
+  val isEmpty: heap -> bool
 
-  val insert : Elem.t -> heap -> heap
+  val insert: Elem.t -> heap -> heap
 
-  val merge : heap -> heap -> heap
+  val merge: heap -> heap -> heap
 
-  val findMin : heap -> Elem.t
+  val findMin: heap -> Elem.t
 
-  val deleteMin : heap -> heap
+  val deleteMin: heap -> heap
 end
 
 module Bootstrap (MakeH : functor (Element : ORDERED) ->
@@ -7355,11 +7353,11 @@ module Bootstrap (MakeH : functor (Element : ORDERED) ->
   module rec BE : sig
     type t = E | H of Elem.t * PrimH.heap
 
-    val eq : t -> t -> bool
+    val eq: t -> t -> bool
 
-    val lt : t -> t -> bool
+    val lt: t -> t -> bool
 
-    val leq : t -> t -> bool
+    val leq: t -> t -> bool
   end = struct
     type t = E | H of Elem.t * PrimH.heap
 
@@ -7514,7 +7512,7 @@ let _ =
       end
 
       and BadClass2 : sig
-        val x : int
+        val x: int
       end = struct
         let x = (new BadClass1.c)#m
       end
@@ -7525,12 +7523,12 @@ let _ =
 (* Coercions *)
 
 module rec Coerce1 : sig
-  val g : int -> int
+  val g: int -> int
 
-  val f : int -> int
+  val f: int -> int
 end = struct
   module A : sig
-    val f : int -> int
+    val f: int -> int
   end =
     Coerce1
 
@@ -7554,7 +7552,7 @@ module CoerceF (S : sig end) = struct
 end
 
 module rec Coerce2 : sig
-  val f1 : unit -> int
+  val f1: unit -> int
 end =
   CoerceF (Coerce3)
 
@@ -7563,7 +7561,7 @@ and Coerce3 : sig end = struct end
 let _ = test 81 (Coerce2.f1 ()) 1
 
 module Coerce4 (A : sig
-  val f : int -> int
+  val f: int -> int
 end) =
 struct
   let x = 0
@@ -7572,9 +7570,9 @@ struct
 end
 
 module rec Coerce5 : sig
-  val blabla : int -> int
+  val blabla: int -> int
 
-  val f : int -> int
+  val f: int -> int
 end = struct
   let blabla x = 0
 
@@ -7582,7 +7580,7 @@ end = struct
 end
 
 and Coerce6 : sig
-  val at : int -> int
+  val at: int -> int
 end =
   Coerce4 (Coerce5)
 
@@ -7593,7 +7591,7 @@ let _ = test 82 (Coerce6.at 100) 5
 module rec F : sig
   type t = X of int | Y of int
 
-  val f : t -> bool
+  val f: t -> bool
 end = struct
   type t = X of int | Y of int
 
@@ -7606,7 +7604,7 @@ let _ =
 
 (* PR#4316 *)
 module G (S : sig
-  val x : int Lazy.t
+  val x: int Lazy.t
 end) =
 struct
   include S
@@ -7619,7 +7617,7 @@ end
 let _ = Lazy.force M1.x
 
 module rec M2 : sig
-  val x : int Lazy.t
+  val x: int Lazy.t
 end =
   G (M1)
 
@@ -7628,7 +7626,7 @@ let _ = test 102 (Lazy.force M2.x) 3
 let _ = Gc.full_major () (* will shortcut forwarding in M1.x *)
 
 module rec M3 : sig
-  val x : int Lazy.t
+  val x: int Lazy.t
 end =
   G (M1)
 
@@ -7686,7 +7684,7 @@ module type S = sig
 end
 
 module F (X : sig
-  val x : (module S)
+  val x: (module S)
 end) =
 struct
   module A = (val X.x)
@@ -7758,9 +7756,9 @@ module M : sig
 
   and v = v t
 
-  val f : int -> u
+  val f: int -> u
 
-  val g : v -> bool
+  val g: v -> bool
 end = struct
   type 'a t = 'a
 
@@ -7942,14 +7940,14 @@ end
 module type CORE0 = sig
   module V : VALUE
 
-  val setglobal : V.state -> string -> V.value -> unit
+  val setglobal: V.state -> string -> V.value -> unit
   (* five more functions common to core and evaluator *)
 end
 
 module type CORE = sig
   include CORE0
 
-  val apply : V.value -> V.state -> V.value list -> V.value
+  val apply: V.value -> V.state -> V.value list -> V.value
   (* apply function f in state s to list of args *)
 end
 
@@ -7960,7 +7958,7 @@ module type AST = sig
 
   type program
 
-  val get_value : chunk -> Value.value
+  val get_value: chunk -> Value.value
 end
 
 module type EVALUATOR = sig
@@ -7974,7 +7972,7 @@ module type EVALUATOR = sig
 
   exception Error of string
 
-  val compile : Ast.program -> string
+  val compile: Ast.program -> string
 
   include CORE0 with module V := Value
 end
@@ -7982,7 +7980,7 @@ end
 module type PARSER = sig
   type chunk
 
-  val parse : string -> chunk
+  val parse: string -> chunk
 end
 
 module type INTERP = sig
@@ -7990,17 +7988,17 @@ module type INTERP = sig
 
   module Parser : PARSER with type chunk = Ast.chunk
 
-  val dostring : state -> string -> value list
+  val dostring: state -> string -> value list
 
-  val mk : unit -> state
+  val mk: unit -> state
 end
 
 module type USERTYPE = sig
   type t
 
-  val eq : t -> t -> bool
+  val eq: t -> t -> bool
 
-  val to_string : t -> string
+  val to_string: t -> string
 end
 
 module type TYPEVIEW = sig
@@ -8008,7 +8006,7 @@ module type TYPEVIEW = sig
 
   type t
 
-  val map : (combined -> t) * (t -> combined)
+  val map: (combined -> t) * (t -> combined)
 end
 
 module type COMBINED_COMMON = sig
@@ -8030,7 +8028,7 @@ end
 module type BARECODE = sig
   type state
 
-  val init : state -> unit
+  val init: state -> unit
 end
 
 module USERCODE (X : TYPEVIEW) = struct
@@ -8068,13 +8066,13 @@ with module M = M
 module type Printable = sig
   type t
 
-  val print : Format.formatter -> t -> unit
+  val print: Format.formatter -> t -> unit
 end
 
 module type Comparable = sig
   type t
 
-  val compare : t -> t -> int
+  val compare: t -> t -> int
 end
 
 module type PrintableComparable = sig
@@ -8103,7 +8101,7 @@ module type ComparableInt = Comparable with type t := int
 module type S = sig
   type t
 
-  val f : t -> t
+  val f: t -> t
 end
 
 module type S' = S with type t := int
@@ -8111,7 +8109,7 @@ module type S' = S with type t := int
 module type S = sig
   type 'a t
 
-  val map : ('a -> 'b) -> 'a t -> 'b t
+  val map: ('a -> 'b) -> 'a t -> 'b t
 end
 
 module type S1 = S with type 'a t := 'a list
@@ -8129,7 +8127,7 @@ module type S = sig
     type arg
   end
 
-  val f : T.exp -> T.arg
+  val f: T.exp -> T.arg
 end
 
 module M = struct
@@ -8185,156 +8183,156 @@ class ['a] c =
 
 (* Fails *)
 
-external a : (int[@untagged]) -> unit = "a" "a_nat"
+external a: (int[@untagged]) -> unit = "a" "a_nat"
 
-external b : (int32[@unboxed]) -> unit = "b" "b_nat"
+external b: (int32[@unboxed]) -> unit = "b" "b_nat"
 
-external c : (int64[@unboxed]) -> unit = "c" "c_nat"
+external c: (int64[@unboxed]) -> unit = "c" "c_nat"
 
-external d : (nativeint[@unboxed]) -> unit = "d" "d_nat"
+external d: (nativeint[@unboxed]) -> unit = "d" "d_nat"
 
-external e : (float[@unboxed]) -> unit = "e" "e_nat"
+external e: (float[@unboxed]) -> unit = "e" "e_nat"
 
 type t = private int
 
-external f : (t[@untagged]) -> unit = "f" "f_nat"
+external f: (t[@untagged]) -> unit = "f" "f_nat"
 
 module M : sig
-  external a : int -> (int[@untagged]) = "a" "a_nat"
+  external a: int -> (int[@untagged]) = "a" "a_nat"
 
-  external b : (int[@untagged]) -> int = "b" "b_nat"
+  external b: (int[@untagged]) -> int = "b" "b_nat"
 end = struct
-  external a : int -> (int[@untagged]) = "a" "a_nat"
+  external a: int -> (int[@untagged]) = "a" "a_nat"
 
-  external b : (int[@untagged]) -> int = "b" "b_nat"
+  external b: (int[@untagged]) -> int = "b" "b_nat"
 end
 
 module Global_attributes = struct
   [@@@ocaml.warning "-3"]
 
-  external a : float -> float = "a" "noalloc" "a_nat" "float"
+  external a: float -> float = "a" "noalloc" "a_nat" "float"
 
-  external b : float -> float = "b" "noalloc" "b_nat"
+  external b: float -> float = "b" "noalloc" "b_nat"
 
-  external c : float -> float = "c" "c_nat" "float"
+  external c: float -> float = "c" "c_nat" "float"
 
-  external d : float -> float = "d" "noalloc"
+  external d: float -> float = "d" "noalloc"
 
-  external e : float -> float = "e"
+  external e: float -> float = "e"
 
   (* Should output a warning: no native implementation provided *)
-  external f : (int32[@unboxed]) -> (int32[@unboxed]) = "f" "noalloc"
+  external f: (int32[@unboxed]) -> (int32[@unboxed]) = "f" "noalloc"
 
-  external g : int32 -> int32 = "g" "g_nat" [@@unboxed] [@@noalloc]
+  external g: int32 -> int32 = "g" "g_nat" [@@unboxed] [@@noalloc]
 
-  external h : (int[@untagged]) -> (int[@untagged]) = "h" "h_nat" "noalloc"
+  external h: (int[@untagged]) -> (int[@untagged]) = "h" "h_nat" "noalloc"
 
-  external i : int -> int = "i" "i_nat" [@@untagged] [@@noalloc]
+  external i: int -> int = "i" "i_nat" [@@untagged] [@@noalloc]
 end
 
 module Old_style_warning = struct
   [@@@ocaml.warning "+3"]
 
-  external a : float -> float = "a" "noalloc" "a_nat" "float"
+  external a: float -> float = "a" "noalloc" "a_nat" "float"
 
-  external b : float -> float = "b" "noalloc" "b_nat"
+  external b: float -> float = "b" "noalloc" "b_nat"
 
-  external c : float -> float = "c" "c_nat" "float"
+  external c: float -> float = "c" "c_nat" "float"
 
-  external d : float -> float = "d" "noalloc"
+  external d: float -> float = "d" "noalloc"
 
-  external e : float -> float = "c" "float"
+  external e: float -> float = "c" "float"
 end
 
 (* Bad: attributes not reported in the interface *)
 
 module Bad1 : sig
-  external f : int -> int = "f" "f_nat"
+  external f: int -> int = "f" "f_nat"
 end = struct
-  external f : int -> (int[@untagged]) = "f" "f_nat"
+  external f: int -> (int[@untagged]) = "f" "f_nat"
 end
 
 module Bad2 : sig
-  external f : int -> int = "a" "a_nat"
+  external f: int -> int = "a" "a_nat"
 end = struct
-  external f : (int[@untagged]) -> int = "f" "f_nat"
+  external f: (int[@untagged]) -> int = "f" "f_nat"
 end
 
 module Bad3 : sig
-  external f : float -> float = "f" "f_nat"
+  external f: float -> float = "f" "f_nat"
 end = struct
-  external f : float -> (float[@unboxed]) = "f" "f_nat"
+  external f: float -> (float[@unboxed]) = "f" "f_nat"
 end
 
 module Bad4 : sig
-  external f : float -> float = "a" "a_nat"
+  external f: float -> float = "a" "a_nat"
 end = struct
-  external f : (float[@unboxed]) -> float = "f" "f_nat"
+  external f: (float[@unboxed]) -> float = "f" "f_nat"
 end
 
 (* Bad: attributes in the interface but not in the implementation *)
 
 module Bad5 : sig
-  external f : int -> (int[@untagged]) = "f" "f_nat"
+  external f: int -> (int[@untagged]) = "f" "f_nat"
 end = struct
-  external f : int -> int = "f" "f_nat"
+  external f: int -> int = "f" "f_nat"
 end
 
 module Bad6 : sig
-  external f : (int[@untagged]) -> int = "f" "f_nat"
+  external f: (int[@untagged]) -> int = "f" "f_nat"
 end = struct
-  external f : int -> int = "a" "a_nat"
+  external f: int -> int = "a" "a_nat"
 end
 
 module Bad7 : sig
-  external f : float -> (float[@unboxed]) = "f" "f_nat"
+  external f: float -> (float[@unboxed]) = "f" "f_nat"
 end = struct
-  external f : float -> float = "f" "f_nat"
+  external f: float -> float = "f" "f_nat"
 end
 
 module Bad8 : sig
-  external f : (float[@unboxed]) -> float = "f" "f_nat"
+  external f: (float[@unboxed]) -> float = "f" "f_nat"
 end = struct
-  external f : float -> float = "a" "a_nat"
+  external f: float -> float = "a" "a_nat"
 end
 
 (* Bad: unboxed or untagged with the wrong type *)
 
-external g : (float[@untagged]) -> float = "g" "g_nat"
+external g: (float[@untagged]) -> float = "g" "g_nat"
 
-external h : (int[@unboxed]) -> float = "h" "h_nat"
+external h: (int[@unboxed]) -> float = "h" "h_nat"
 
 (* Bad: unboxing the function type *)
-external i : (int -> float[@unboxed]) = "i" "i_nat"
+external i: (int -> float[@unboxed]) = "i" "i_nat"
 
 (* Bad: unboxing a "deep" sub-type. *)
-external j : int -> (float[@unboxed]) * float = "j" "j_nat"
+external j: int -> (float[@unboxed]) * float = "j" "j_nat"
 
 (* This should be rejected, but it is quite complicated to do in the current
    state of things *)
 
-external k : int -> (float[@unboxd]) = "k" "k_nat"
+external k: int -> (float[@unboxd]) = "k" "k_nat"
 
 (* Bad: old style annotations + new style attributes *)
 
-external l : float -> float = "l" "l_nat" "float" [@@unboxed]
+external l: float -> float = "l" "l_nat" "float" [@@unboxed]
 
-external m : (float[@unboxed]) -> float = "m" "m_nat" "float"
+external m: (float[@unboxed]) -> float = "m" "m_nat" "float"
 
-external n : float -> float = "n" "noalloc" [@@noalloc]
+external n: float -> float = "n" "noalloc" [@@noalloc]
 
 (* Warnings: unboxed / untagged without any native implementation *)
-external o : (float[@unboxed]) -> float = "o"
+external o: (float[@unboxed]) -> float = "o"
 
-external p : float -> (float[@unboxed]) = "p"
+external p: float -> (float[@unboxed]) = "p"
 
-external q : (int[@untagged]) -> float = "q"
+external q: (int[@untagged]) -> float = "q"
 
-external r : int -> (int[@untagged]) = "r"
+external r: int -> (int[@untagged]) = "r"
 
-external s : int -> int = "s" [@@untagged]
+external s: int -> int = "s" [@@untagged]
 
-external t : float -> float = "t" [@@unboxed]
+external t: float -> float = "t" [@@unboxed]
 
 let _ = ignore ( + )
 
@@ -8443,7 +8441,7 @@ module A : sig
 
   type b
 
-  val eq : (a, b) cmp
+  val eq: (a, b) cmp
 end = struct
   type a
 
@@ -8535,7 +8533,7 @@ end
 module type T = sig
   type _ is_t = Is : ('a, 'b) TypEq.t -> 'a is_t
 
-  val is_t : unit -> unit is_t option
+  val is_t: unit -> unit is_t option
 end
 
 module Make (M : T) = struct
@@ -8890,7 +8888,7 @@ end = struct
 end
 
 module Unused_exception_outside_patterns : sig
-  val falsity : exn -> bool
+  val falsity: exn -> bool
 end = struct
   exception Nobody_constructs_me
 
@@ -8900,7 +8898,7 @@ end
 module Unused_extension_outside_patterns : sig
   type t = ..
 
-  val falsity : t -> bool
+  val falsity: t -> bool
 end = struct
   type t = ..
 

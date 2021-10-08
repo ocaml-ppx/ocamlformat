@@ -10,7 +10,7 @@
 (**************************************************************************)
 
 module Valid_ast : sig
-  val indent_range :
+  val indent_range:
        'a Extended_ast.t
     -> unformatted:'a * string
     -> formatted:'a * Source.t
@@ -20,5 +20,5 @@ module Valid_ast : sig
 end
 
 module Partial_ast : sig
-  val indent_range : source:string -> range:int * int -> int list
+  val indent_range: source:string -> range:int * int -> int list
 end

@@ -12,9 +12,9 @@
 module type IN = sig
   include Comparator.S
 
-  val contains : t -> t -> bool
+  val contains: t -> t -> bool
 
-  val compare_width_decreasing : t -> t -> int
+  val compare_width_decreasing: t -> t -> int
 end
 
 module type S = sig
@@ -22,15 +22,15 @@ module type S = sig
 
   type t
 
-  val of_list : itv list -> t
+  val of_list: itv list -> t
   (** If there are duplicates in the input list, earlier elements will be
       ancestors of later elements. *)
 
-  val roots : t -> itv list
+  val roots: t -> itv list
 
-  val children : t -> itv -> itv list
+  val children: t -> itv -> itv list
 
-  val dump : t -> Fmt.t
+  val dump: t -> Fmt.t
   (** Debug: dump debug representation of tree. *)
 end
 

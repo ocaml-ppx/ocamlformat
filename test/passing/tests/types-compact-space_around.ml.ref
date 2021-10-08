@@ -75,12 +75,12 @@ type t =
         [ `Moved of Location.t * Location.t * string
         | `Unstable of Location.t * string ] ]
 
-val x :
+val x:
   [ `X of int
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
         fooooooooooooooooooo fooooooooooooooo *) ]
 
-val x :
+val x:
   [ `X of
     int
     * foooooooooooooo
@@ -90,12 +90,12 @@ val x :
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
         fooooooooooooooooooo fooooooooooooooo *) ]
 
-val x :
+val x:
   [ `X of int (* booooom *)
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
         fooooooooooooooooooo fooooooooooooooo *) ]
 
-val x :
+val x:
   [ `X of
     int
     * foooooooooooooo

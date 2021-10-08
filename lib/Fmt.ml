@@ -21,16 +21,16 @@ module Format = Format_
 module T : sig
   type t
 
-  val ( $ ) : t -> t -> t
+  val ( $ ): t -> t -> t
   (** Sequence *)
 
-  val with_pp : (Format.formatter -> unit) -> t
+  val with_pp: (Format.formatter -> unit) -> t
   (** Use an arbitrary pretty-printing function *)
 
-  val protect : t -> on_error:(exn -> unit) -> t
+  val protect: t -> on_error:(exn -> unit) -> t
   (** Exception handler *)
 
-  val lazy_ : (unit -> t) -> t
+  val lazy_: (unit -> t) -> t
   (** Defer the evaluation of some side effects until formatting happens.
 
       This can matter if for example a list of [t] is built, and then only
@@ -39,7 +39,7 @@ module T : sig
 
       See [tests_lazy] in [Test_fmt]. *)
 
-  val eval : Format.formatter -> t -> unit
+  val eval: Format.formatter -> t -> unit
   (** Main function to evaluate a term using an actual formatter. *)
 end = struct
   type t = (Format.formatter -> unit) Staged.t

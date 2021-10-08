@@ -12,13 +12,13 @@
 module Format = Format_
 open Extended_ast
 
-val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens_if: bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
-val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens: Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
 module Exp : sig
   module Infix_op_arg : sig
-    val wrap :
+    val wrap:
          Conf.t
       -> ?parens_nested:bool
       -> ext:Fmt.t
@@ -29,7 +29,7 @@ module Exp : sig
       -> Fmt.t
   end
 
-  val wrap :
+  val wrap:
        Conf.t
     -> ?disambiguate:bool
     -> ?fits_breaks:bool
@@ -44,7 +44,7 @@ module Exp : sig
     -> Fmt.t
 end
 
-val get_or_pattern_sep :
+val get_or_pattern_sep:
   ?cmts_before:bool -> ?space:bool -> Conf.t -> ctx:Ast.t -> Fmt.t
 
 type cases =
@@ -58,7 +58,7 @@ type cases =
   ; break_after_opening_paren: Fmt.t
   ; close_paren_branch: Fmt.t }
 
-val get_cases :
+val get_cases:
      Conf.t
   -> first:bool
   -> indent:int
@@ -67,7 +67,7 @@ val get_cases :
   -> loc:Location.t
   -> cases
 
-val wrap_tuple :
+val wrap_tuple:
   Conf.t -> parens:bool -> no_parens_if_break:bool -> Fmt.t -> Fmt.t
 
 type record_type =
@@ -80,7 +80,7 @@ type record_type =
   ; break_after: Fmt.t
   ; docked_after: Fmt.t }
 
-val get_record_type : Conf.t -> record_type
+val get_record_type: Conf.t -> record_type
 
 type elements_collection =
   { box: Fmt.t -> Fmt.t
@@ -92,19 +92,19 @@ type elements_collection_record_expr = {break_after_with: Fmt.t}
 
 type elements_collection_record_pat = {wildcard: Fmt.t}
 
-val get_record_expr :
+val get_record_expr:
   Conf.t -> elements_collection * elements_collection_record_expr
 
-val get_list_expr : Conf.t -> elements_collection
+val get_list_expr: Conf.t -> elements_collection
 
-val get_array_expr : Conf.t -> elements_collection
+val get_array_expr: Conf.t -> elements_collection
 
-val get_record_pat :
+val get_record_pat:
   Conf.t -> ctx:Ast.t -> elements_collection * elements_collection_record_pat
 
-val get_list_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_list_pat: Conf.t -> ctx:Ast.t -> elements_collection
 
-val get_array_pat : Conf.t -> ctx:Ast.t -> elements_collection
+val get_array_pat: Conf.t -> ctx:Ast.t -> elements_collection
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
@@ -117,7 +117,7 @@ type if_then_else =
   ; break_end_branch: Fmt.t
   ; space_between_branches: Fmt.t }
 
-val get_if_then_else :
+val get_if_then_else:
      Conf.t
   -> first:bool
   -> last:bool
@@ -133,21 +133,21 @@ val get_if_then_else :
   -> Source.t
   -> if_then_else
 
-val match_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
+val match_indent: ?default:int -> Conf.t -> ctx:Ast.t -> int
 (** [match_indent c ~ctx ~default] returns the indentation used for the
     pattern-matching in context [ctx], depending on the `match-indent-nested`
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
 
-val function_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
+val function_indent: ?default:int -> Conf.t -> ctx:Ast.t -> int
 (** [function_indent c ~ctx ~default] returns the indentation used for the
     function in context [ctx], depending on the `function-indent-nested`
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)
 
-val comma_sep : Conf.t -> Fmt.s
+val comma_sep: Conf.t -> Fmt.s
 (** [comma_sep c] returns the format string used to separate two elements
     with a comma, depending on the `break-separators` option. *)
 
-val semi_sep : Conf.t -> Fmt.s
+val semi_sep: Conf.t -> Fmt.s
 (** Like [comma_sep] but use a semicolon as separator. *)

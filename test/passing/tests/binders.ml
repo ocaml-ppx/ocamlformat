@@ -1,6 +1,6 @@
-external f : 'a -> 'a = "asdf"
+external f: 'a -> 'a = "asdf"
 
-external g :
+external g:
   'aaaaaaa 'aaaaaaaaaaaaaaa 'aaaaaaaaaaaaaaaaaaaaaa 'aaaaaaaaaaaaaa 'aaaaaaa
   'fooooo_foooooo. 'a -> 'a -> 'a = "asdf"
 

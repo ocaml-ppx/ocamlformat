@@ -1,29 +1,31 @@
 [@@@ocamlformat "ocp-indent-compat=true"]
 
 (* Bad: unboxing the function type *)
-external i : (int -> float[@unboxed]) = "i" "i_nat"
+external i: (int -> float[@unboxed]) = "i" "i_nat"
 
 module type M = sig
-  val action : action
+  val action: action
   (** Formatting action: input type and source, and output destination. *)
 
-  val doc_atrs
-    :  (string Location.loc * payload) list
+  val doc_atrs:  (string Location.loc * payload) list
     -> (string Location.loc * bool) list option
        * (string Location.loc * payload) list
 
   val transl_modtype_longident
-    (* from Typemod *)
-    : (Location.t -> Env.t -> Longident.t -> Path.t) ref
+    (* from Typemod *): (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val transl_modtype_longident
     (* foooooooooo fooooooooooooo foooooooooooo foooooooooooooo
-       foooooooooooooo foooooooooooo *)
-    : (Location.t -> Env.t -> Longident.t -> Path.t) ref
+       foooooooooooooo foooooooooooo *): (Location.t
+                                          -> Env.t
+                                          -> Longident.t
+                                          -> Path.t )
+                                         ref
 
-  val imported_sets_of_closures_table
-    : Simple_value_approx.function_declarations option
-      Set_of_closures_id.Tbl.t
+  val imported_sets_of_closures_table: Simple_value_approx
+                                       .function_declarations
+                                       option
+                                       Set_of_closures_id.Tbl.t
 
   type 'a option_decl =
     names:string list
@@ -34,9 +36,8 @@ module type M = sig
     -> (config -> 'a)
     -> 'a t
 
-  val select
-    :  (* The fsevents context *)
-       env
+  val select:  (* The fsevents context *)
+               env
     -> (* Additional file descriptor to select for reading *)
        ?read_fdl:fd_select list
     -> (* Additional file descriptor to select for writing *)
@@ -47,21 +48,19 @@ module type M = sig
        (event list -> unit)
     -> unit
 
-  val f
-    :  x:t
-         (** an extremely long comment about [x] that does not fit on the
-             same line with [x] *)
+  val f:  x:t
+            (** an extremely long comment about [x] that does not fit on the
+                same line with [x] *)
     -> unit
 
-  val f
-    :  fooooooooooooooooo:
-         (fooooooooooooooo
-          -> fooooooooooooooooooo
-          -> foooooooooooooo
-          -> foooooooooooooo * fooooooooooooooooo
-          -> foooooooooooooooo )
-         (** an extremely long comment about [x] that does not fit on the
-             same line with [x] *)
+  val f:  fooooooooooooooooo:
+            (fooooooooooooooo
+             -> fooooooooooooooooooo
+             -> foooooooooooooo
+             -> foooooooooooooo * fooooooooooooooooo
+             -> foooooooooooooooo )
+            (** an extremely long comment about [x] that does not fit on the
+                same line with [x] *)
     -> unit
 end
 
@@ -90,18 +89,18 @@ let long_function_name
 [@@@ocamlformat "ocp-indent-compat=false"]
 
 module type M = sig
-  val transl_modtype_longident (* from Typemod *) :
+  val transl_modtype_longident (* from Typemod *):
     (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
   val transl_modtype_longident
     (* foooooooooo fooooooooooooo foooooooooooo foooooooooooooo
-       foooooooooooooo foooooooooooo *) :
+       foooooooooooooo foooooooooooo *):
     (Location.t -> Env.t -> Longident.t -> Path.t) ref
 
-  val imported_sets_of_closures_table :
+  val imported_sets_of_closures_table:
     Simple_value_approx.function_declarations option Set_of_closures_id.Tbl.t
 
-  val select :
+  val select:
        (* The fsevents context *)
        env
     -> (* Additional file descriptor to select for reading *)
@@ -114,13 +113,13 @@ module type M = sig
        (event list -> unit)
     -> unit
 
-  val f :
+  val f:
        x:t
          (** an extremely long comment about [x] that does not fit on the
              same line with [x] *)
     -> unit
 
-  val f :
+  val f:
        fooooooooooooooooo:
          (   fooooooooooooooo
           -> fooooooooooooooooooo

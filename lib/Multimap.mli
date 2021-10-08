@@ -22,17 +22,17 @@ end) : sig
   type nonrec 'value t = (K.t, 'value, K.comparator_witness) t
 end
 
-val update_multi :
+val update_multi:
      ('key, 'value, 'cmp) t
   -> src:'key
   -> dst:'key
   -> f:('value list -> 'value list -> 'value list)
   -> ('key, 'value, 'cmp) t
 
-val change_multi :
+val change_multi:
   ('key, 'value, 'cmp) t -> 'key -> 'value list -> ('key, 'value, 'cmp) t
 
-val partition_multi :
+val partition_multi:
      ('key, 'value, 'cmp) t
   -> src:'key
   -> dst:'key
@@ -41,7 +41,7 @@ val partition_multi :
 (** Split the values of key [src] with [f], the values satisfying [f] are
     moved to key [dst] while the others remain associated to key [src]. *)
 
-val filter :
+val filter:
   ('key, 'value, 'cmp) t -> f:('value -> bool) -> ('key, 'value, 'cmp) t
 
-val to_list : (_, 'value, _) t -> 'value list
+val to_list: (_, 'value, _) t -> 'value list

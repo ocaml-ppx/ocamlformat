@@ -112,7 +112,7 @@ module Fooooo = struct
       record type. *)
   type t = {fooooo: fooo; fooooo: fooooooo}
 
-  val select :
+  val select:
     (* The fsevents context *)
     env ->
     (* Additional file descriptor to select for reading *)
@@ -129,7 +129,7 @@ end
 [@@@ocamlformat "type-decl=sparse"]
 
 module X = struct
-  val select :
+  val select:
     (* The fsevents context *)
     env ->
     (* Additional file descriptor to select for reading *)

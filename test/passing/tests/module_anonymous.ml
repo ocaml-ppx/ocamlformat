@@ -10,7 +10,7 @@ end =
 and _ : sig
   type t = A.t
 
-  val x : int * int
+  val x: int * int
 end = struct
   type t = B.t
 

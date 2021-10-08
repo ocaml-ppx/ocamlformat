@@ -1,5 +1,5 @@
 module type S = sig
-  val x : unit -> unit
+  val x: unit -> unit
 end
 
 let get = failwith "TODO"

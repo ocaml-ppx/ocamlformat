@@ -22,9 +22,9 @@ fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
   foooooooooooooooooooooooooooo]
 
 [%%ext
-val foooooooooooooooooooooo : fooooooooooo
+val foooooooooooooooooooooo: fooooooooooo
 
-val fooooooooooooooooooooooooooo : fooooo]
+val fooooooooooooooooooooooooooo: fooooo]
 
 exception%ext E
 
@@ -65,13 +65,13 @@ type%foo t += T
 
 [%%foo: type t += T]
 
-val%foo x : t
+val%foo x: t
 
-[%%foo: val x : t]
+[%%foo: val x: t]
 
-external%foo x : t = ""
+external%foo x: t = ""
 
-[%%foo: external x : t = ""]
+[%%foo: external x: t = ""]
 
 class%foo x : t
 

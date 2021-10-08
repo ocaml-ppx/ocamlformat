@@ -12,10 +12,10 @@
 (** Associativities of Ast terms *)
 type t = Left | Non | Right
 
-val to_string : t -> string
+val to_string: t -> string
 
-val equal : t -> t -> bool
+val equal: t -> t -> bool
 
-val of_prec : Prec.t -> t
+val of_prec: Prec.t -> t
 (** [of_prec prec] is the associativity of Ast terms with precedence [prec].
     (Associativity is uniform across precedence levels.) *)

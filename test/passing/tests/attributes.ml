@@ -4,9 +4,9 @@ let f (x [@warning ""]) = ()
 
 let v = (fun [@inline] x -> x) 1
 
-external f : (float[@unboxed]) -> int = "blah" [@@noalloc]
+external f: (float[@unboxed]) -> int = "blah" [@@noalloc]
 
-val x : ?x:unit (** not dropped *) -> unit
+val x: ?x:unit (** not dropped *) -> unit
 
 type t =
   { a: int
@@ -25,10 +25,10 @@ type t =
         [@drop_if somethingelse]
         (** docstring that is long enough to break *) }
 
-val foo : int
+val foo: int
   [@@deprecated "it is good the salad"] [@@warning "-32"] [@@warning "-99"]
 
-val foo : int
+val foo: int
   [@@deprecated "it is good the salad"]
   [@@warning "-32"]
   [@@warning "-99"]
@@ -143,7 +143,7 @@ let () = ()
 
 and[@warning "-32"] f = ()
 
-external x : a -> b -> (a -> b[@test]) = ""
+external x: a -> b -> (a -> b[@test]) = ""
 
 let f = fun [@test] x y -> ()
 

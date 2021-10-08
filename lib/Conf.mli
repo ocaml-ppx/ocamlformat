@@ -83,7 +83,7 @@ type t =
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
 
-val default_profile : t
+val default_profile: t
 
 type file = Stdin | File of string
 
@@ -105,14 +105,14 @@ type opts =
   ; margin_check: bool
         (** Check whether the formatted output exceeds the margin. *) }
 
-val action : unit -> (action * opts) Cmdliner.Term.result
+val action: unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)
 
-val update : ?quiet:bool -> t -> Extended_ast.attribute -> t
+val update: ?quiet:bool -> t -> Extended_ast.attribute -> t
 (** [update ?quiet c a] updates configuration [c] after reading attribute
     [a]. [quiet] is false by default. *)
 
-val update_value :
+val update_value:
   t -> name:string -> value:string -> (t, Config_option.Error.t) Result.t
 
-val print_config : t -> unit
+val print_config: t -> unit

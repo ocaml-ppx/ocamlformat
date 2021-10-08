@@ -1,7 +1,7 @@
-val f : unit
+val f: unit
 (** docstring *)
 (* comment *)
 
-val g : unit
+val g: unit
 (** docstring *)
 (* comment *)

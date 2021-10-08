@@ -879,8 +879,8 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
               (* label loc * attributes * core_type -> object_field *)
               let field_loose =
                 match c.conf.field_space with
-                | `Loose | `Tight_decl -> true
-                | `Tight -> false
+                | `Loose -> true
+                | `Tight | `Tight_decl -> false
               in
               fmt_str_loc c lab_loc $ fmt_if field_loose " " $ fmt ":@ "
               $ fmt_core_type c (sub_typ ~ctx typ)
@@ -2981,12 +2981,17 @@ and fmt_class_type_field c ctx cf =
         $ fmt " :@ "
         $ fmt_core_type c (sub_typ ~ctx ty) )
   | Pctf_val (name, mut, virt, ty) ->
+      let field_loose =
+        match c.conf.field_space with
+        | `Loose -> true
+        | `Tight | `Tight_decl -> false
+      in
       box_fun_sig_args c 2
         ( hovbox 4
             ( str "val" $ fmt_virtual_flag virt
             $ fmt_if (is_mutable mut) "@ mutable"
             $ fmt "@ " $ fmt_str_loc c name )
-        $ fmt " :@ "
+        $ fmt_if field_loose " " $ fmt ":@ "
         $ fmt_core_type c (sub_typ ~ctx ty) )
   | Pctf_constraint (t1, t2) ->
       fmt "constraint@ "
@@ -3113,6 +3118,11 @@ and fmt_value_description ?ext c ctx vd =
       wrap "{|" "|}" (str s)
     else wrap "\"" "\"" (str (String.escaped s))
   in
+  let pro_space =
+    match c.conf.field_space with
+    | `Loose -> true
+    | `Tight | `Tight_decl -> false
+  in
   hvbox 0
     ( doc_before
     $ box_fun_sig_args c 2
@@ -3124,7 +3134,7 @@ and fmt_value_description ?ext c ctx vd =
         $ fmt_core_type c ~pro:":"
             ~box:
               (not (c.conf.ocp_indent_compat && is_arrow_or_poly pval_type))
-            ~pro_space:true (sub_typ ~ctx pval_type)
+            ~pro_space (sub_typ ~ctx pval_type)
         $ fmt_if (not (List.is_empty pval_prim)) "@ = "
         $ list pval_prim " " fmt_val_prim )
     $ fmt_item_attributes c ~pre:(Break (1, 2)) atrs

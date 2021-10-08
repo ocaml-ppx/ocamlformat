@@ -26,15 +26,15 @@ type 'a t =
   | Expression : expression t
 
 module Parse : sig
-  val ast : 'a t -> Lexing.lexbuf -> 'a
+  val ast: 'a t -> Lexing.lexbuf -> 'a
 end
 
-val equal : 'a t -> 'a -> 'a -> bool
+val equal: 'a t -> 'a -> 'a -> bool
 
-val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
+val map: 'a t -> Ast_mapper.mapper -> 'a -> 'a
 
 module Pprintast : sig
   include module type of Pprintast
 
-  val ast : 'a t -> Format.formatter -> 'a -> unit
+  val ast: 'a t -> Format.formatter -> 'a -> unit
 end

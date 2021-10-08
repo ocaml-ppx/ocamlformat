@@ -9,5 +9,5 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val dedup_cmts : 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
+val dedup_cmts: 'a Extended_ast.t -> 'a -> Cmt.t list -> Cmt.t list
 (** Remove comments that duplicate docstrings (or other comments). *)

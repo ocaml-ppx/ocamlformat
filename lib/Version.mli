@@ -11,11 +11,11 @@
 
 type t = V0_10_0 | V0_12_0 | V0_14_2 | V0_16_0 | V0_17_0 | V0_20_0 | V1_0_0
 
-val to_string : t -> string
+val to_string: t -> string
 
-val pp : Format.formatter -> t -> unit
+val pp: Format.formatter -> t -> unit
 
-val current : string
+val current: string
 (** A version number, or "unknown". This is provided by [dune-build-info],
     which means that it will be resolved in the following way:
 

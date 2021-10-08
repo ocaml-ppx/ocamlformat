@@ -3,7 +3,7 @@ module type S = sig end
 type t = (module S)
 
 module type S = sig
-  val x : int
+  val x: int
 end
 
 module M = struct
@@ -18,7 +18,7 @@ let () =
   ()
 
 module type S = sig
-  val x : int
+  val x: int
 end
 
 module M = struct
@@ -38,11 +38,11 @@ let v = f (module M : S with type t = t)
 module type S = sig
   type a
 
-  val va : a
+  val va: a
 
   type b
 
-  val vb : b
+  val vb: b
 end
 
 let f (module M : S with type a = int and type b = int) = M.va + M.vb
@@ -63,7 +63,7 @@ let f (module M : S with type a = int and type b = int)
   M.va + N.vb
 
 module type M = sig
-  val storage : (module S with type t = t)
+  val storage: (module S with type t = t)
 end
 
 let _ =

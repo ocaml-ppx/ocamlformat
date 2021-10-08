@@ -11,14 +11,14 @@ type block =
 (** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod *)
 include M with type t := t
 
-val escape : string -> string
+val escape: string -> string
 (** [escape s] escapes [s] from the doc language. *)
 
 type title = string * int * string * string * string
 
 (** {1:standard-section-names Standard section names} *)
 
-val s_name : string
+val s_name: string
 
 (** {1:section-maps Section maps}
 
@@ -26,19 +26,19 @@ val s_name : string
 
 type smap
 
-val smap_append_block : smap -> sec:string -> block -> smap
+val smap_append_block: smap -> sec:string -> block -> smap
 (** [smap_append_block smap sec b] appends [b] at the end of section [sec]
     creating it at the right place if needed. *)
 
 (** {1:content-boilerplate Content boilerplate} *)
 
-val s_environment_intro : block
+val s_environment_intro: block
 
 (** {1:output Output} *)
 
 type format = [`Auto | `Pager | `Plain | `Groff]
 
-val print :
+val print:
      ?errs:Format.formatter
   -> ?subst:(string -> string option)
   -> format
@@ -49,7 +49,7 @@ val print :
 (** {1:printers-and-escapes-used-by-cmdliner-module Printers and escapes used
     by Cmdliner module} *)
 
-val subst_vars :
+val subst_vars:
      errs:Format.formatter
   -> subst:(string -> string option)
   -> Buffer.t
@@ -61,7 +61,7 @@ val subst_vars :
 
     @raise Invalid_argument in case of illegal syntax. *)
 
-val doc_to_plain :
+val doc_to_plain:
      errs:Format.formatter
   -> subst:(string -> string option)
   -> Buffer.t
@@ -72,7 +72,7 @@ val doc_to_plain :
 
     @raise Invalid_argument in case of illegal syntax. *)
 
-val k : k
+val k: k
 (** this is a comment
 
     @author foo
@@ -104,7 +104,7 @@ val k : k
     @canonical foo
     @canonical Foooooooooooooooooooooooooooooooooooo.Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar *)
 
-val x : x
+val x: x
 (** a comment
 
     @version foo *)
@@ -224,24 +224,24 @@ val x : x
 (** generic command: ∀xs.[foot]-[post] *)
 
 (** A *)
-val foo : int -> unit
+val foo: int -> unit
 (** B *)
 
 (** C *)
 
 (** A *)
-val foo : int -> unit
+val foo: int -> unit
 (** B *)
 
 module Foo : sig
   (** A *)
-  val foo : int -> unit
+  val foo: int -> unit
   (** B *)
 
   (** C *)
 
   (** A *)
-  val foo : int -> unit
+  val foo: int -> unit
   (** B *)
 end
 
@@ -437,11 +437,11 @@ end
 (** foooooooooooooooooooooooooooooooooooooooooooooooooo foooooooooooooooo
     {b + eee + eee eee} *)
 
-val f : int
+val f: int
 
 (***)
 
-val k : int
+val k: int
 
 (**)
 
@@ -530,7 +530,7 @@ val k : int
          b *)
     ]} *)
 
-val a :
+val a:
      fooooooooooooooooooooooooooo
      (** {[
            (* a

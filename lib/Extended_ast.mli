@@ -24,33 +24,33 @@ type 'a t =
   | Expression : expression t
 
 module Parse : sig
-  val ast : 'a t -> Lexing.lexbuf -> 'a
+  val ast: 'a t -> Lexing.lexbuf -> 'a
 end
 
-val equal_core_type : core_type -> core_type -> bool
+val equal_core_type: core_type -> core_type -> bool
 
-val map : 'a t -> Ast_mapper.mapper -> 'a -> 'a
+val map: 'a t -> Ast_mapper.mapper -> 'a -> 'a
 
 module Pprintast : sig
   include module type of Pprintast
 
-  val ast : 'a t -> Format.formatter -> 'a -> unit
+  val ast: 'a t -> Format.formatter -> 'a -> unit
 end
 
 module Printast : sig
-  val ast : 'a t -> Format.formatter -> 'a -> unit
+  val ast: 'a t -> Format.formatter -> 'a -> unit
 end
 
 module Asttypes : sig
   include module type of Asttypes
 
-  val is_private : private_flag -> bool
+  val is_private: private_flag -> bool
 
-  val is_open : closed_flag -> bool
+  val is_open: closed_flag -> bool
 
-  val is_override : override_flag -> bool
+  val is_override: override_flag -> bool
 
-  val is_mutable : mutable_flag -> bool
+  val is_mutable: mutable_flag -> bool
 
-  val is_recursive : rec_flag -> bool
+  val is_recursive: rec_flag -> bool
 end

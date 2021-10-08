@@ -14,11 +14,11 @@ open Sexplib0
 module type Command_S = sig
   type t
 
-  val read_input : Stdlib.in_channel -> t
+  val read_input: Stdlib.in_channel -> t
 
-  val to_sexp : t -> Sexp.t
+  val to_sexp: t -> Sexp.t
 
-  val output : Stdlib.out_channel -> t -> unit
+  val output: Stdlib.out_channel -> t -> unit
 end
 
 module type Client_S = sig
@@ -26,18 +26,18 @@ module type Client_S = sig
 
   type cmd
 
-  val pid : t -> int
+  val pid: t -> int
 
-  val mk : pid:int -> in_channel -> out_channel -> t
+  val mk: pid:int -> in_channel -> out_channel -> t
 
-  val query : cmd -> t -> cmd
+  val query: cmd -> t -> cmd
 
-  val halt : t -> (unit, [> `Msg of string]) result
+  val halt: t -> (unit, [> `Msg of string]) result
 
-  val config :
+  val config:
     (string * string) list -> t -> (unit, [> `Msg of string]) result
 
-  val format : string -> t -> (string, [> `Msg of string]) result
+  val format: string -> t -> (string, [> `Msg of string]) result
 end
 
 module type V = sig

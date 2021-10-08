@@ -11,7 +11,7 @@
 
 (** Format OCaml Ast *)
 
-val fmt_ast :
+val fmt_ast:
      'a Extended_ast.t
   -> debug:bool
   -> Source.t

@@ -825,25 +825,25 @@ let break_between s cc (i1, c1) (i2, c2) =
 module rec In_ctx : sig
   type 'a xt = private {ctx: T.t; ast: 'a}
 
-  val sub_ast : ctx:T.t -> T.t -> T.t xt
+  val sub_ast: ctx:T.t -> T.t -> T.t xt
 
-  val sub_typ : ctx:T.t -> core_type -> core_type xt
+  val sub_typ: ctx:T.t -> core_type -> core_type xt
 
-  val sub_cty : ctx:T.t -> class_type -> class_type xt
+  val sub_cty: ctx:T.t -> class_type -> class_type xt
 
-  val sub_pat : ctx:T.t -> pattern -> pattern xt
+  val sub_pat: ctx:T.t -> pattern -> pattern xt
 
-  val sub_exp : ctx:T.t -> expression -> expression xt
+  val sub_exp: ctx:T.t -> expression -> expression xt
 
-  val sub_cl : ctx:T.t -> class_expr -> class_expr xt
+  val sub_cl: ctx:T.t -> class_expr -> class_expr xt
 
-  val sub_mty : ctx:T.t -> module_type -> module_type xt
+  val sub_mty: ctx:T.t -> module_type -> module_type xt
 
-  val sub_mod : ctx:T.t -> module_expr -> module_expr xt
+  val sub_mod: ctx:T.t -> module_expr -> module_expr xt
 
-  val sub_sig : ctx:T.t -> signature_item -> signature_item xt
+  val sub_sig: ctx:T.t -> signature_item -> signature_item xt
 
-  val sub_str : ctx:T.t -> structure_item -> structure_item xt
+  val sub_str: ctx:T.t -> structure_item -> structure_item xt
 end = struct
   open Requires_sub_terms
 
@@ -873,30 +873,30 @@ end
 (** Operations determining precedence and necessary parenthesization of terms
     based on their super-terms. *)
 and Requires_sub_terms : sig
-  val is_simple :
+  val is_simple:
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
 
-  val exposed_right_exp : cls -> expression -> bool
+  val exposed_right_exp: cls -> expression -> bool
 
-  val prec_ast : T.t -> Prec.t option
+  val prec_ast: T.t -> Prec.t option
 
-  val parenze_typ : core_type In_ctx.xt -> bool
+  val parenze_typ: core_type In_ctx.xt -> bool
 
-  val parenze_mty : module_type In_ctx.xt -> bool
+  val parenze_mty: module_type In_ctx.xt -> bool
 
-  val parenze_mod : module_expr In_ctx.xt -> bool
+  val parenze_mod: module_expr In_ctx.xt -> bool
 
-  val parenze_cty : class_type In_ctx.xt -> bool
+  val parenze_cty: class_type In_ctx.xt -> bool
 
-  val parenze_cl : class_expr In_ctx.xt -> bool
+  val parenze_cl: class_expr In_ctx.xt -> bool
 
-  val parenze_pat : pattern In_ctx.xt -> bool
+  val parenze_pat: pattern In_ctx.xt -> bool
 
-  val parenze_exp : expression In_ctx.xt -> bool
+  val parenze_exp: expression In_ctx.xt -> bool
 
-  val parenze_nested_exp : expression In_ctx.xt -> bool
+  val parenze_nested_exp: expression In_ctx.xt -> bool
 
-  val is_displaced_infix_op : expression In_ctx.xt -> bool
+  val is_displaced_infix_op: expression In_ctx.xt -> bool
 end = struct
   open In_ctx
 

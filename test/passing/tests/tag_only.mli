@@ -48,7 +48,7 @@ type t
 (** @deprecated *)
 type t = t
 
-val a : b
+val a: b
 (** @deprecated *)
 
 [@@@ocamlformat "doc-comments-tag-only=fit"]
@@ -95,5 +95,5 @@ type t  (** @deprecated *)
 
 type t = t  (** @deprecated *)
 
-val a : b
+val a: b
 (** @deprecated *)

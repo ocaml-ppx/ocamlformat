@@ -81,7 +81,7 @@ let _ =
   | "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" -> ()
 
 module type M = sig
-  val f (* A list of [name], [count] pairs. *) : (string * int) list -> int
+  val f (* A list of [name], [count] pairs. *): (string * int) list -> int
 end
 
 let _ = f ~f:(fun a b -> c) (* comment *) ~f:(fun a b -> c)

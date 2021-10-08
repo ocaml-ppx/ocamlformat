@@ -9,20 +9,20 @@
 (*                                                                        *)
 (**************************************************************************)
 
-val ast : 'a Std_ast.t -> Conf.t -> 'a -> 'a
+val ast: 'a Std_ast.t -> Conf.t -> 'a -> 'a
 (** Normalize an AST fragment. *)
 
-val equal :
+val equal:
   'a Std_ast.t -> ignore_doc_comments:bool -> Conf.t -> 'a -> 'a -> bool
 (** Compare fragments for equality up to normalization. *)
 
-val moved_docstrings :
+val moved_docstrings:
   'a Std_ast.t -> Conf.t -> 'a -> 'a -> Docstring.error list
 
-val diff_docstrings :
+val diff_docstrings:
   Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
 (** Difference between two lists of doc comments. *)
 
-val diff_cmts :
+val diff_cmts:
   Conf.t -> Cmt.t list -> Cmt.t list -> (string, string) Either.t Sequence.t
 (** Difference between two lists of comments. *)

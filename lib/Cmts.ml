@@ -138,20 +138,19 @@ let infix_symbol_before src (loc : Location.t) =
 module CmtSet : sig
   type t
 
-  val of_list : Cmt.t list -> t
+  val of_list: Cmt.t list -> t
 
-  val to_list : t -> Cmt.t list
+  val to_list: t -> Cmt.t list
   (** ordered by start location *)
 
-  val is_empty : t -> bool
+  val is_empty: t -> bool
 
-  val split : t -> Location.t -> t * t * t
+  val split: t -> Location.t -> t * t * t
   (** [split s {loc_start; loc_end}] splits [s] into the subset of comments
       that end before [loc_start], those that start after [loc_end], and
       those within the loc. *)
 
-  val partition :
-    Source.t -> prev:Location.t -> next:Location.t -> t -> t * t
+  val partition: Source.t -> prev:Location.t -> next:Location.t -> t -> t * t
   (** Heuristic to choose between placing a comment after the previous
       location or before the next one. *)
 end = struct

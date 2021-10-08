@@ -103,13 +103,13 @@ type t =
         ]
       ]
 
-val x :
+val x:
   [ `X of int
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
         fooooooooooooooooooo fooooooooooooooo *)
   ]
 
-val x :
+val x:
   [ `X of
     int
     * foooooooooooooo
@@ -120,13 +120,13 @@ val x :
         fooooooooooooooooooo fooooooooooooooo *)
   ]
 
-val x :
+val x:
   [ `X of int (* booooom *)
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
         fooooooooooooooooooo fooooooooooooooo *)
   ]
 
-val x :
+val x:
   [ `X of
     int
     * foooooooooooooo

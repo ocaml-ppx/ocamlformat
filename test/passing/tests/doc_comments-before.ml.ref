@@ -52,7 +52,7 @@ module Comment_placement : sig
   end
 
   (** Val *)
-  val a : b
+  val a: b
 
   (** Exception *)
   exception E
@@ -71,7 +71,7 @@ module Comment_placement : sig
   open M
 
   (** External *)
-  external a : b = "c"
+  external a: b = "c"
 
   (** Rec module *)
   module rec A : B
@@ -106,7 +106,7 @@ module Comment_placement : sig
   [%%some extension]
 
   (** A *)
-  external a : b = "double_comment"
+  external a: b = "double_comment"
   (** B *)
 
   (** This comment goes before *)
@@ -128,7 +128,7 @@ module Comment_placement : sig
 
   (** Doc comment still goes after *)
   module Make (Config : sig
-    val blah : string
+    val blah: string
 
     (* this could be a really long signature *)
   end) : S
@@ -183,7 +183,7 @@ end = struct
   open M
 
   (** External *)
-  external a : b = "c"
+  external a: b = "c"
 
   (** Rec module *)
   module rec A : B = C
@@ -242,7 +242,7 @@ end = struct
   (* ;; *)
 
   (** A *)
-  external a : b = "double_comment"
+  external a: b = "double_comment"
   (** B *)
 end
 
