@@ -72,6 +72,8 @@
   + Handle let operator punning uniformly with other punning forms.
     Normalizes let operator to the punned form where possible, if output syntax version is at least OCaml 4.13.0. (#1834, #1846, @jberdine)
 
+  + Format comments of the form `(*= xx *)` as docstrings when `parse-docstrings` is set (#1810, @gpetiot)
+
 ### 0.19.0 (2021-07-16)
 
 #### Bug fixes
