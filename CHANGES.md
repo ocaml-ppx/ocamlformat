@@ -48,8 +48,6 @@
 
 #### Changes
 
-  + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
-
   + Preserve bracketed lists in the Parsetree (#1694, @gpetiot)
     Comments are now wrapped around list elements instead of causing a break.
 

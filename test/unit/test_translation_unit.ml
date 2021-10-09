@@ -106,7 +106,7 @@ File "<test>", line 1, characters 11-14:
            \    capabilities : ServerCapabilities.t;\n\
            \    serverInfo : serverInfo option;\n\
            \  }\n\n\
-           \  val t_of_yojson : Json.t -> t\n\
+           \  val t_of_yojson : Json.t -> t\n\n\
            \  val yojson_of_t : t -> Json.t\n\n\
            \  val create :\n\
            \    capabilities:ServerCapabilities.t -> ?serverInfo:serverInfo \
