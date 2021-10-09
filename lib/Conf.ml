@@ -868,14 +868,14 @@ module Formatting = struct
     let doc = "Spacing between items of structures and signatures." in
     let names = ["module-item-spacing"] in
     let all =
-      [ C.Value.make ~name:"compact" `Compact
-          "$(b,compact) will not leave open lines between one-liners of \
-           similar sorts."
-      ; C.Value.make ~name:"sparse" `Sparse
+      [ C.Value.make ~name:"sparse" `Sparse
           "$(b,sparse) will always break a line between two items."
       ; C.Value.make ~name:"preserve" `Preserve
           "$(b,preserve) will not leave open lines between one-liners of \
-           similar sorts unless there is an open line in the input." ]
+           similar sorts unless there is an open line in the input."
+      ; C.Value.make ~name:"compact" `Compact
+          "$(b,compact) will not leave open lines between one-liners of \
+           similar sorts." ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with module_item_spacing= x})
