@@ -625,11 +625,15 @@ module Td = struct
     | `Compact | `Preserve -> Location.is_single_line i.ptype_loc c.margin
     | `Sparse -> false
 
-  let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
+  let break_between s {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.ptype_loc || cmts_before i2.ptype_loc || has_doc i1
     || has_doc i2
-    || (not (is_simple (i1, c1)))
-    || not (is_simple (i2, c2))
+    ||
+    match Conf.(c1.module_item_spacing, c2.module_item_spacing) with
+    | `Preserve, `Preserve ->
+        Source.empty_line_between s i1.ptype_loc.loc_end
+          i2.ptype_loc.loc_start
+    | _ -> (not (is_simple (i1, c1))) || not (is_simple (i2, c2))
 end
 
 module Class_field = struct
@@ -790,7 +794,7 @@ let break_between s cc (i1, c1) (i2, c2) =
       true (* always break between an item and a directive *)
   | Clf i1, Clf i2 -> Class_field.break_between s cc (i1, c1) (i2, c2)
   | Ctf i1, Ctf i2 -> Class_type_field.break_between s cc (i1, c1) (i2, c2)
-  | Td i1, Td i2 -> Td.break_between cc (i1, c1) (i2, c2)
+  | Td i1, Td i2 -> Td.break_between s cc (i1, c1) (i2, c2)
   | _ -> assert false
 
 (** Term-in-context, [{ctx; ast}] records that [ast] is (considered to be) an
