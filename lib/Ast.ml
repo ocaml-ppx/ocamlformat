@@ -620,9 +620,10 @@ end
 module Td = struct
   let has_doc itm = Option.is_some (fst (doc_atrs itm.ptype_attributes))
 
-  let is_simple (i, c) =
-    Poly.(c.Conf.module_item_spacing = `Compact)
-    && Location.is_single_line i.ptype_loc c.Conf.margin
+  let is_simple (i, (c : Conf.t)) =
+    match c.module_item_spacing with
+    | `Compact | `Preserve -> Location.is_single_line i.ptype_loc c.margin
+    | `Sparse -> false
 
   let break_between {cmts_before; cmts_after; _} (i1, c1) (i2, c2) =
     cmts_after i1.ptype_loc || cmts_before i2.ptype_loc || has_doc i1
