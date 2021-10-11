@@ -53,36 +53,14 @@ let map (type a) (x : a t) (m : Ast_mapper.mapper) : a -> a =
   | Expression -> m.expr m
 
 module Parse = struct
-  let implementation = Parse.implementation
-
-  let interface = Parse.interface
-
-  let use_file = Parse.use_file
-
-  let core_type = Parse.core_type
-
-  let module_type (lx : Lexing.lexbuf) =
-    let pre = "module X : " in
-    let lex_buffer_len = lx.lex_buffer_len + String.length pre in
-    let input = Bytes.to_string lx.lex_buffer in
-    let lex_buffer = Bytes.of_string (pre ^ input) in
-    let lx = {lx with lex_buffer; lex_buffer_len} in
-    match interface lx with
-    | [{psig_desc= Psig_module {pmd_type; _}; _}] -> pmd_type
-    | _ ->
-        failwith
-          (Format.sprintf "Syntax error: %s is not a module type" input)
-
-  let expression = Parse.expression
-
   let ast (type a) (fg : a t) lexbuf : a =
     match fg with
-    | Structure -> implementation lexbuf
-    | Signature -> interface lexbuf
-    | Use_file -> use_file lexbuf
-    | Core_type -> core_type lexbuf
-    | Module_type -> module_type lexbuf
-    | Expression -> expression lexbuf
+    | Structure -> Parse.implementation lexbuf
+    | Signature -> Parse.interface lexbuf
+    | Use_file -> Parse.use_file lexbuf
+    | Core_type -> Parse.core_type lexbuf
+    | Module_type -> Parse.module_type lexbuf
+    | Expression -> Parse.expression lexbuf
 end
 
 module Pprintast = struct
