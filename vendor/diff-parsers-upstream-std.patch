@@ -53,6 +53,20 @@
 --- ocaml-4.13-upstream/ast_mapper.ml
 +++ ocaml-4.13/ast_mapper.ml
 @@@@
+   type_exception: mapper -> type_exception -> type_exception;
+   type_kind: mapper -> type_kind -> type_kind;
+   value_binding: mapper -> value_binding -> value_binding;
+   value_description: mapper -> value_description -> value_description;
+   with_constraint: mapper -> with_constraint -> with_constraint;
++  directive_argument: mapper -> directive_argument -> directive_argument;
++  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
++  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
+ }
+ 
+ let map_fst f (x, y) = (f x, y)
+ let map_snd f (x, y) = (x, f y)
+ let map_tuple f1 f2 (x, y) = (f1 x, f2 y)
+@@@@
      | Pmod_constraint (m, mty) ->
          constraint_ ~loc ~attrs (sub.module_expr sub m)
                      (sub.module_type sub mty)
@@ -76,6 +90,49 @@
      let open Exp in
      let op = map_loc sub pbop_op in
      let pat = sub.pat sub pbop_pat in
+@@@@
+          | PStr x -> PStr (this.structure this x)
+          | PSig x -> PSig (this.signature this x)
+          | PTyp x -> PTyp (this.typ this x)
+          | PPat (x, g) -> PPat (this.pat this x, map_opt (this.expr this) g)
+       );
++
++    directive_argument =
++      (fun this a ->
++         { pdira_desc= a.pdira_desc
++         ; pdira_loc= this.location this a.pdira_loc} );
++
++    toplevel_directive =
++      (fun this d ->
++         { pdir_name= map_loc this d.pdir_name
++         ; pdir_arg= map_opt (this.directive_argument this) d.pdir_arg
++         ; pdir_loc= this.location this d.pdir_loc } );
++
++    toplevel_phrase =
++      (fun this -> function
++         | Ptop_def s -> Ptop_def (this.structure this s)
++         | Ptop_dir d -> Ptop_dir (this.toplevel_directive this d) );
+   }
+ 
+ let extension_of_error {kind; main; sub} =
+   if kind <> Location.Report_error then
+     raise (Invalid_argument "extension_of_error: expected kind Report_error");
+--- ocaml-4.13-upstream/ast_mapper.mli
++++ ocaml-4.13/ast_mapper.mli
+@@@@
+   type_exception: mapper -> type_exception -> type_exception;
+   type_kind: mapper -> type_kind -> type_kind;
+   value_binding: mapper -> value_binding -> value_binding;
+   value_description: mapper -> value_description -> value_description;
+   with_constraint: mapper -> with_constraint -> with_constraint;
++  directive_argument: mapper -> directive_argument -> directive_argument;
++  toplevel_directive: mapper -> toplevel_directive -> toplevel_directive;
++  toplevel_phrase: mapper -> toplevel_phrase -> toplevel_phrase;
+ }
+ (** A mapper record implements one "method" per syntactic category,
+     using an open recursion style: each method takes as its first
+     argument the mapper to be applied to children in the syntax
+     tree. *)
 --- ocaml-4.13-upstream/lexer.mll
 +++ ocaml-4.13/lexer.mll
 @@@@
