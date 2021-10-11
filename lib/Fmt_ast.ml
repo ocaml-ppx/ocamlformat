@@ -1462,13 +1462,32 @@ and fmt_sequence c ?ext ~has_attr parens width xexp fmt_atrs =
        $ fmt_atrs ) )
 
 and fmt_infix_op_args c ~parens xexp op_args =
+  let op_prec = prec_ast (Exp xexp.ast) in
   let groups =
     let width xe = expression_width c xe in
     let not_simple arg = not (is_simple c.conf width arg) in
     let break (has_cmts, _, _, (_, arg1)) (_, _, _, (_, arg2)) =
       has_cmts || not_simple arg1 || not_simple arg2
     in
-    match c.conf.fmt_opts.break_infix with
+    let break_infix =
+      match c.conf.fmt_opts.break_infix with
+      | `Wrap -> `Wrap
+      | `Fit_or_vertical -> `Fit_or_vertical
+      | `Auto -> (
+        match op_prec with
+        | Some p when Prec.compare p InfixOp1 < 0 -> `Fit_or_vertical
+        | Some _ ->
+            if
+              List.exists op_args ~f:(fun (_, _, _, (_, {ast= arg; _})) ->
+                  match Ast.prec_ast (Exp arg) with
+                  | Some p when Prec.compare p Apply <= 0 -> true
+                  | Some _ -> false
+                  | None -> false )
+            then `Fit_or_vertical
+            else `Wrap
+        | None -> impossible "Pexp_apply expressions always have a prec" )
+    in
+    match break_infix with
     | `Wrap -> List.group op_args ~break
     | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
   in
@@ -1518,9 +1537,12 @@ and fmt_pat_cons c ~parens args =
   let groups =
     let not_simple arg = not (Pat.is_simple arg.ast) in
     let break args1 args2 = not_simple args1 || not_simple args2 in
+    (* [break-infix = auto] is not applicable for patterns as there are no
+       infix operators allowed besides [::], falling back on
+       [fit-or-vertical] is arbitrary. *)
     match c.conf.fmt_opts.break_infix with
     | `Wrap -> List.group args ~break
-    | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) args
+    | `Fit_or_vertical | `Auto -> List.map ~f:(fun x -> [x]) args
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in

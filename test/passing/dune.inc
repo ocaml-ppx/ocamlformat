@@ -642,6 +642,60 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to break_infix-fit-or-vertical.ml.stdout
+   (with-stderr-to break_infix-fit-or-vertical.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-infix=fit-or-vertical %{dep:tests/break_infix.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_infix-fit-or-vertical.ml.ref break_infix-fit-or-vertical.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_infix-fit-or-vertical.ml.err break_infix-fit-or-vertical.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_infix-wrap.ml.stdout
+   (with-stderr-to break_infix-wrap.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-infix=wrap %{dep:tests/break_infix.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_infix-wrap.ml.ref break_infix-wrap.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_infix-wrap.ml.err break_infix-wrap.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to break_infix.ml.stdout
+   (with-stderr-to break_infix.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --break-infix=auto %{dep:tests/break_infix.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_infix.ml.ref break_infix.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/break_infix.ml.err break_infix.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to break_record.ml.stdout
    (with-stderr-to break_record.ml.stderr
      (run %{bin:ocamlformat} --margin-check --profile=janestreet --margin=58 %{dep:tests/break_record.ml})))))
