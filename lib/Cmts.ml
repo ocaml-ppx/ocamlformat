@@ -297,8 +297,7 @@ let relocate_pattern_matching_cmts (t : t) src tok ~whole_loc ~matched_loc =
   in
   relocate_cmts_before t ~src:matched_loc ~sep:kwd_loc ~dst:whole_loc
 
-let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
-    ~whole_loc =
+let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   let open Extended_ast in
   match pld with
   | PStr
@@ -311,6 +310,18 @@ let relocate_ext_cmts (t : t) src ((_pre : string Location.loc), pld)
               , [] )
         ; pstr_loc } ]
     when Source.is_quoted_string src pstr_loc ->
+      ()
+  | PStr
+      [ { pstr_desc=
+            Pstr_eval
+              ( { pexp_desc= Pexp_sequence (e1, _)
+                ; pexp_loc= _
+                ; pexp_loc_stack= _
+                ; pexp_attributes }
+              , [] )
+        ; pstr_loc= _ } ]
+    when List.is_empty pexp_attributes
+         && Source.extension_using_sugar ~name:pre ~payload:e1.pexp_loc ->
       ()
   | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
       let kwd_loc =
