@@ -31,6 +31,18 @@ open Ast_helper
 open Docstrings
 open Docstrings.WithMenhir
 
+let cmt_tbl = Hashtbl.create 32
+
+let add_cmts_before loc cmts =
+  match Hashtbl.find_opt cmt_tbl loc with
+  | Some (before, after) -> Hashtbl.replace cmt_tbl loc (before @ cmts, after)
+  | None -> Hashtbl.add cmt_tbl loc (cmts, [])
+
+let add_cmts_after loc cmts =
+  match Hashtbl.find_opt cmt_tbl loc with
+  | Some (before, after) -> Hashtbl.replace cmt_tbl loc (before, after @ cmts)
+  | None -> Hashtbl.add cmt_tbl loc ([], cmts)
+
 let mkloc = Location.mkloc
 let mknoloc = Location.mknoloc
 
@@ -1107,6 +1119,13 @@ listx(delimiter, X, Y):
     { let xs, y = tail in
       x :: xs, y }
 
+%inline cmts_around(X):
+  | c1 = llist(COMMENT) x = X c2 = llist(COMMENT)
+      { add_cmts_before $loc(x) c1;
+        add_cmts_after $loc(x) c2;
+        x }
+;
+
 (* -------------------------------------------------------------------------- *)
 
 (* Entry points. *)
@@ -1239,7 +1258,7 @@ functor_arg:
     LPAREN RPAREN
       { $startpos, Unit }
   | (* An argument accompanied with an explicit type. *)
-    LPAREN x = mkrhs(module_name) COLON mty = module_type RPAREN
+    LPAREN x = cmts_around(mkrhs(module_name)) COLON mty = cmts_around(module_type) RPAREN
       { $startpos, Named (x, mty) }
 ;
 
