@@ -41,7 +41,6 @@
    (and
     (>= v0.12.0)
     (< v0.15)))
-  base-unix
   cmdliner
   dune-build-info
   either
@@ -82,7 +81,6 @@
    (and
     (>= v0.12.0)
     (< v0.15)))
-  base-unix
   bechamel
   bechamel-js
   cmdliner
@@ -127,7 +125,6 @@
    (and
     (>= v0.12.0)
     (< v0.15)))
-  base-unix
   cmdliner
   dune-build-info
   either
