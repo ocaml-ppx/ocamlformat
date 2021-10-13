@@ -120,7 +120,7 @@ val update_value :
      , [ `Bad_value of string * string
        | `Malformed of string
        | `Misplaced of string * string
-       | `Unknown of string * string ] )
+       | `Unknown of string * [`Msg of string] option ] )
      Result.t
 
 val print_config : t -> unit

@@ -102,7 +102,7 @@ module Make (C : CONFIG) : sig
     -> value:string
     -> inline:bool
     -> ( config
-       , [ `Unknown of string * string
+       , [ `Unknown of string * [`Msg of string] option
          | `Bad_value of string * string
          | `Malformed of string
          | `Misplaced of string * string ] )
