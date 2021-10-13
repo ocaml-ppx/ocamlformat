@@ -125,6 +125,8 @@ and use_file = wrap Parser.Incremental.use_file
 and core_type = wrap Parser.Incremental.parse_core_type
 and expression = wrap Parser.Incremental.parse_expression
 and pattern = wrap Parser.Incremental.parse_pattern
+let module_type = wrap Parser.Incremental.parse_module_type
+let module_expr = wrap Parser.Incremental.parse_module_expr
 
 let longident = wrap Parser.Incremental.parse_any_longident
 let val_ident = wrap Parser.Incremental.parse_val_longident
