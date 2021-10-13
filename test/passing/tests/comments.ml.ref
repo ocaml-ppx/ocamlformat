@@ -21,21 +21,13 @@ let _ =
   ()
 
 let _ = ((*comment*) a (*comment*), b)
-
 let foo = function Blah ((* old *) x, y) -> ()
-
 let foo = function Blah (x (* old *), y) -> ()
-
 let foo = function Blah, (* old *) (x, y) -> ()
-
 let foo = function Blah (x, y) (* old *) -> ()
-
 let foo = function Blah, (x, y (* old *)) -> ()
-
 let foo = function Blah, (x, (* old *) y) -> ()
-
 let foo = function (x, y) (* old *), z -> ()
-
 let _ = if (* a0 *) b (* c0 *) then (* d0 *) e (* f0 *) else (* g0 *) h
 (* i0 *)
 
@@ -85,19 +77,12 @@ module type M = sig
 end
 
 let _ = f ~f:(fun a b -> c) (* comment *) ~f:(fun a b -> c)
-
 let _ = f (fun x -> g h) (* comment *) ~f:(fun a b -> c)
-
 let _ = f (g h) (* comment *) ~f:(fun a b -> c)
-
 let _ = f (0 + 0 (* test *) + (1 * 1) (* test *))
-
 let _ = f ((1 * 1) (* test *) + (0 + 0) (* test *))
-
 let _ = match e with 3 (* test *) -> e | 3 (* test *) :: tail -> e
-
 let _ = if a then b :: c (* d *) else e
-
 let (b :: c (* d *)) = x
 
 module rec A = struct end
@@ -111,7 +96,6 @@ module type T = sig
 end
 
 let f = (* comment *) function x -> x
-
 let foo x : z = (* comment *) y
 
 let _ =
@@ -338,9 +322,7 @@ module A (* A *) () =
   B
 
 let kk = (* foo *) (module A : T)
-
 let kk = (* foo *) (module A : T)
-
 let kk = (module A : T) (* foo *)
 
 let kk = (* foo *) (module A : T) (* foo *)

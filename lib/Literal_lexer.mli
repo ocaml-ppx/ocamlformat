@@ -10,5 +10,4 @@
 (**************************************************************************)
 
 val string : [`Normalize | `Preserve] -> string -> string option
-
 val char : string -> string option

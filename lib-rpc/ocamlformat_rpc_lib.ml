@@ -15,23 +15,17 @@ module type Command_S = sig
   type t
 
   val read_input : Stdlib.in_channel -> t
-
   val to_sexp : t -> Sexp.t
-
   val output : Stdlib.out_channel -> t -> unit
 end
 
 module type Client_S = sig
   type t
-
   type cmd
 
   val pid : t -> int
-
   val mk : pid:int -> in_channel -> out_channel -> t
-
   val query : cmd -> t -> cmd
-
   val halt : t -> (unit, [> `Msg of string]) result
 
   val config :
@@ -42,7 +36,6 @@ end
 
 module type V = sig
   module Command : Command_S
-
   module Client : Client_S with type cmd = Command.t
 end
 
@@ -125,11 +118,9 @@ module V1 :
 
   module Client = struct
     type t = {pid: int; input: in_channel; output: out_channel}
-
     type cmd = Command.t
 
     let pid t = t.pid
-
     let mk ~pid input output = {pid; input; output}
 
     let query command t =
@@ -194,9 +185,6 @@ let pick_client ~pid input output versions =
   aux versions
 
 let pid = function `V1 cl -> V1.Client.pid cl
-
 let halt = function `V1 cl -> V1.Client.halt cl
-
 let config c = function `V1 cl -> V1.Client.config c cl
-
 let format x = function `V1 cl -> V1.Client.format x cl

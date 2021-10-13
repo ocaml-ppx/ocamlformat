@@ -30,9 +30,7 @@ module Cmts = struct
   include Cmts
 
   let fmt_before c = fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
-
   let fmt_within c = fmt_within c.cmts c.conf ~fmt_code:c.fmt_code
-
   let fmt_after c = fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
 
   let fmt c ?pro ?epi ?eol ?adj loc =
@@ -49,7 +47,6 @@ module Cmts = struct
 
   module Toplevel = struct
     let fmt_before c = Toplevel.fmt_before c.cmts c.conf ~fmt_code:c.fmt_code
-
     let fmt_after c = Toplevel.fmt_after c.cmts c.conf ~fmt_code:c.fmt_code
   end
 end
@@ -195,7 +192,6 @@ let update_items_config c items update_config =
   items
 
 let box_semisemi b k = hvbox_if b 0 (k $ fmt_if b "@,;;")
-
 let fmt_hole () = str "_"
 
 let fmt_item_list c ctx update_config ast fmt_item items =
@@ -545,7 +541,6 @@ let rec fmt_extension_aux c ctx ~key (ext, pld) =
         $ fmt_if (Exposed.Right.payload pld) " " )
 
 and fmt_extension = fmt_extension_aux ~key:Ext.Key.Regular
-
 and fmt_item_extension = fmt_extension_aux ~key:Ext.Key.Item
 
 and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
@@ -591,7 +586,6 @@ and fmt_attributes_aux c ?pre ?suf ~key attrs =
         (hvbox 0 (list attrs "@ " (fmt_attribute c ~key)) $ opt suf str) )
 
 and fmt_attributes = fmt_attributes_aux ~key:Attr.Key.Regular
-
 and fmt_item_attributes = fmt_attributes_aux ~key:Attr.Key.Item
 
 and fmt_attributes_and_docstrings_aux c ~key attrs =

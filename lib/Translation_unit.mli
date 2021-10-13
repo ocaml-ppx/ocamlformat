@@ -13,9 +13,7 @@ module Error : sig
   type t
 
   val user_error : string -> t
-
   val equal : t -> t -> bool
-
   val print : ?debug:bool -> ?quiet:bool -> Format.formatter -> t -> unit
 end
 

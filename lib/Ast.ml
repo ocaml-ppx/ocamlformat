@@ -211,7 +211,6 @@ module String_id = struct
     | _ -> false
 
   let is_index_op ident = Option.is_some (Indexing_op.parse ident)
-
   let is_symbol i = is_prefix i || is_infix i || is_index_op i
 end
 
@@ -219,17 +218,11 @@ module Longident = struct
   include Longident
 
   let test ~f = function Longident.Lident i -> f i | _ -> false
-
   let is_prefix = test ~f:String_id.is_prefix
-
   let is_monadic_binding = test ~f:String_id.is_monadic_binding
-
   let is_infix = test ~f:String_id.is_infix
-
   let is_hash_getter = test ~f:String_id.is_hash_getter
-
   let is_index_op i = Longident.last i |> String_id.is_index_op
-
   let is_symbol i = is_prefix i || is_infix i || is_index_op i
 
   (** [fit_margin c x] returns [true] if and only if [x] does not exceed 2/3
@@ -275,13 +268,9 @@ module Exp = struct
     | _ -> false
 
   let is_prefix = test_id ~f:Longident.is_prefix
-
   let is_infix = test_id ~f:Longident.is_infix
-
   let is_index_op = test_id ~f:Longident.is_index_op
-
   let is_monadic_binding = test_id ~f:Longident.is_monadic_binding
-
   let is_symbol = test_id ~f:Longident.is_symbol
 
   let is_sequence exp =
@@ -826,23 +815,14 @@ module rec In_ctx : sig
   type 'a xt = private {ctx: T.t; ast: 'a}
 
   val sub_ast : ctx:T.t -> T.t -> T.t xt
-
   val sub_typ : ctx:T.t -> core_type -> core_type xt
-
   val sub_cty : ctx:T.t -> class_type -> class_type xt
-
   val sub_pat : ctx:T.t -> pattern -> pattern xt
-
   val sub_exp : ctx:T.t -> expression -> expression xt
-
   val sub_cl : ctx:T.t -> class_expr -> class_expr xt
-
   val sub_mty : ctx:T.t -> module_type -> module_type xt
-
   val sub_mod : ctx:T.t -> module_expr -> module_expr xt
-
   val sub_sig : ctx:T.t -> signature_item -> signature_item xt
-
   val sub_str : ctx:T.t -> structure_item -> structure_item xt
 end = struct
   open Requires_sub_terms
@@ -850,23 +830,14 @@ end = struct
   type 'a xt = {ctx: T.t; ast: 'a}
 
   let sub_ast ~ctx ast = {ctx; ast}
-
   let sub_typ ~ctx typ = check parenze_typ {ctx; ast= typ}
-
   let sub_cty ~ctx cty = {ctx; ast= cty}
-
   let sub_pat ~ctx pat = check parenze_pat {ctx; ast= pat}
-
   let sub_exp ~ctx exp = check parenze_exp {ctx; ast= exp}
-
   let sub_cl ~ctx cl = {ctx; ast= cl}
-
   let sub_mty ~ctx mty = {ctx; ast= mty}
-
   let sub_mod ~ctx mod_ = {ctx; ast= mod_}
-
   let sub_sig ~ctx sig_ = {ctx; ast= sig_}
-
   let sub_str ~ctx str = {ctx; ast= str}
 end
 
@@ -877,25 +848,15 @@ and Requires_sub_terms : sig
     Conf.t -> (expression In_ctx.xt -> int) -> expression In_ctx.xt -> bool
 
   val exposed_right_exp : cls -> expression -> bool
-
   val prec_ast : T.t -> Prec.t option
-
   val parenze_typ : core_type In_ctx.xt -> bool
-
   val parenze_mty : module_type In_ctx.xt -> bool
-
   val parenze_mod : module_expr In_ctx.xt -> bool
-
   val parenze_cty : class_type In_ctx.xt -> bool
-
   val parenze_cl : class_expr In_ctx.xt -> bool
-
   val parenze_pat : pattern In_ctx.xt -> bool
-
   val parenze_exp : expression In_ctx.xt -> bool
-
   val parenze_nested_exp : expression In_ctx.xt -> bool
-
   val is_displaced_infix_op : expression In_ctx.xt -> bool
 end = struct
   open In_ctx

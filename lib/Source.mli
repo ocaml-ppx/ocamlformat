@@ -21,7 +21,6 @@ val empty_line_between : t -> Lexing.position -> Lexing.position -> bool
     empty. *)
 
 val empty_line_before : t -> Location.t -> bool
-
 val empty_line_after : t -> Location.t -> bool
 
 val tokens_between :
@@ -46,7 +45,6 @@ val find_token_before :
   -> (Parser.token * Location.t) option
 
 val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
-
 val char_literal : t -> Location.t -> string
 
 val is_long_pexp_open : t -> expression -> bool
@@ -64,16 +62,13 @@ val is_long_pmty_functor : t -> module_type -> bool
     source. *)
 
 val begins_line : ?ignore_spaces:bool -> t -> Location.t -> bool
-
 val ends_line : t -> Location.t -> bool
 
 val extension_using_sugar :
   name:string Location.loc -> payload:Location.t -> bool
 
 val extend_loc_to_include_attributes : Location.t -> attributes -> Location.t
-
 val type_constraint_is_first : core_type -> Location.t -> bool
-
 val is_quoted_string : t -> Location.t -> bool
 
 val loc_of_first_token_at :

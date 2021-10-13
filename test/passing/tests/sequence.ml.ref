@@ -13,7 +13,6 @@ let foo x y =
   important_function x
 
 let foo x y = do_some_setup y ; important_function x
-
 let foo x y = do_some_setup y ; important_function x
 
 let foo x y =

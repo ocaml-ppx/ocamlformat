@@ -1,5 +1,4 @@
 let%server log str = Lwt_io.write_line Lwt_io.stdout str
-
 let%client log = ~%(Eliom_client.server_function [%derive.json: string] log)
 
 let%client () =
@@ -11,7 +10,6 @@ let%client () =
 
 [%%shared
 type some_type = int * string list [@@deriving json]
-
 type another_type = A of some_type | B of another_type [@@deriving json]]
 
 let%server ( (s : int Eliom_shared.React.S.t)

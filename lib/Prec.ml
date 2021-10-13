@@ -34,7 +34,6 @@ type t =
   | Atomic
 
 let compare : t -> t -> int = Poly.compare
-
 let equal a b = compare a b = 0
 
 let to_string = function

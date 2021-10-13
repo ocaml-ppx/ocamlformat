@@ -21,9 +21,7 @@ module Position = struct
     else Format.fprintf fs "[%d,%d+%d]" pos_lnum pos_bol (pos_cnum - pos_bol)
 
   let to_string x = Format.asprintf "%a" fmt x
-
   let sexp_of_t x = Sexp.Atom (to_string x)
-
   let compare_col p1 p2 = Int.compare (column p1) (column p2)
 
   let compare p1 p2 =
@@ -43,7 +41,6 @@ module Location = struct
       (if loc_ghost then " ghost" else "")
 
   let to_string x = Format.asprintf "%a" fmt x
-
   let sexp_of_t x = Sexp.Atom (to_string x)
 
   let compare {loc_start; loc_end; loc_ghost} b =
@@ -60,26 +57,18 @@ module Location = struct
     type t = location
 
     let sexp_of_t = sexp_of_t
-
     let compare = compare
   end)
 
   include Location_comparator
 
   let compare_start x y = Position.compare x.loc_start y.loc_start
-
   let compare_start_col x y = Position.compare_col x.loc_start y.loc_start
-
   let compare_end x y = Position.compare x.loc_end y.loc_end
-
   let compare_end_col x y = Position.compare_col x.loc_end y.loc_end
-
   let line_difference fst snd = snd.loc_start.pos_lnum - fst.loc_end.pos_lnum
-
   let contains l1 l2 = compare_start l1 l2 <= 0 && compare_end l1 l2 >= 0
-
   let width x = Position.distance x.loc_start x.loc_end
-
   let descending cmp a b = -cmp a b
 
   let compare_width_decreasing =

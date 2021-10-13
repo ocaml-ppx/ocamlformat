@@ -1,7 +1,5 @@
 let _ = List.map ~f:(( + ) (M.f x))
-
 let id x = x
-
 let plus a ?(b = 0) c = a + b + c;;
 
 id (plus 1) ~b:1;;
@@ -14,13 +12,9 @@ id (plus 1) ~b:1;;
 (id (plus 1)) ~b:1
 
 let ( !!! ) a ~b = a + b
-
 let _ = ( !!! ) a b
-
 let _ = ( !!! ) ~b
-
 let _ = !!!!a b d
-
 let _ = ( + ) a b c d
 
 let cartesian_product l1 l2 =
@@ -67,7 +61,6 @@ let whatever_labelled a_function_name long_list_one some_other_thing =
 ;;
 
 (a - b) ();;
-
 ((a - b) [@foo]) ()
 
 let _ = M.(loooooooooooooooooooooong + loooooooooooooooooong)

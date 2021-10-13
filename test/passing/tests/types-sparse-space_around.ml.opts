@@ -3,3 +3,4 @@
 --space-around-lists
 --space-around-records
 --space-around-variants
+--max-iters=3

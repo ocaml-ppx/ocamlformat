@@ -11,9 +11,7 @@ let foo () =
 module type S = sig end
 
 type t = (module S)
-
 type 'a monoid_a = (module Monoid with type t = 'a)
-
 type 'a monoid_a = (module Monoid with type F.t = 'a)
 
 let sumi (type a) ((module A) : a monoid_a) (n : a) = A.mappend n A.mempty
@@ -62,7 +60,6 @@ module U :
       | `Format of string ] = struct end
 
 module U = (val S : S with type t = int and type u = int)
-
 module U = (val S : S with type t = int and type u = int)
 
 module type S = sig

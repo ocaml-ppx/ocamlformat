@@ -13,17 +13,11 @@ let f x = ghi x
 
 (* common *)
 let x = try x with a -> b | c -> d
-
 let x = try x with a -> b | c -> d
-
 let x = try x with a -> b | c -> d
-
 let z = some_function argument
-
 let () = f a b ~c d
-
 let () = f a b ~c:1. d
-
 let () = My_module.f a b ~c d
 
 (* This last case is where Tuareg is inconsistent with the others. *)
@@ -62,7 +56,6 @@ let _ = foo (bar (fun x -> (* special: "fun _ ->" at EOL *)
 (* assume no more arguments to "bar" *)
 
 let _ = foo ~a_long_field_name:(check (fun bar -> baz))
-
 let _ = foo ~a_long_field_name:(check (fun bar -> baz))
 
 let _ = foo (bar (quux (fnord (fun x -> (* any depth *)

@@ -13,7 +13,6 @@
 type t = Left | Non | Right
 
 let to_string = function Left -> "Left" | Non -> "Non" | Right -> "Right"
-
 let equal : t -> t -> bool = Poly.( = )
 
 (** Compute associativity from precedence, since associativity is uniform

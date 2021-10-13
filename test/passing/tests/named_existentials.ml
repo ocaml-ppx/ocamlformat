@@ -1,5 +1,4 @@
 let ok1 = function Dyn (type a) ((w, x) : a ty * a) -> ignore (x : a)
-
 let ok2 = function Dyn (type a) ((w, x) : _ * a) -> ignore (x : a)
 
 type u = C : 'a * ('a -> 'b list) -> u

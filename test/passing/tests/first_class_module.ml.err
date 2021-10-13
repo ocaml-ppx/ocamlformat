@@ -1,2 +1,2 @@
 Warning: break-struct: This option is deprecated since version 0.20.0. It will be removed by version 1.0.0.
-Warning: tests/first_class_module.ml:73 exceeds the margin
+Warning: tests/first_class_module.ml:69 exceeds the margin

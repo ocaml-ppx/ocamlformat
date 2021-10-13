@@ -1,5 +1,4 @@
 let () = [%ext expr] ; ()
-
 let _ = (match%ext x with () -> ()) [@attr y]
 
 let _ =
@@ -52,19 +51,15 @@ let _ = ([%ext? (x : x)] : [%ext? (x : x)])
 
 [%%ext
 11111111111111111111;;
-
 22222222222222222222]
 
 [%%ext
 11111111111111111111;;
-
 22222222222222222222;;
-
 33333333333333333333]
 
 [%%ext
 let foooooooooooooooo = foooo
-
 let fooooooooooooooo = foo]
 
 let _ = [%stri let [%p xxx] = fun (t : [%t tt]) (ut : [%t tt]) -> [%e xxx]]
@@ -102,17 +97,11 @@ let _ =
       done )
 
 let _ = function%ext x -> x
-
 let _ = f (function%ext x -> x)
-
 let _ = f (function%ext x -> x) x
-
 let _ = [%ext function x -> x]
-
 let _ = f [%ext function x -> x]
-
 let _ = f [%ext function x -> x] x
-
 let _ = f ([%ext e] [@attr]) x
 
 let _ =
@@ -141,15 +130,11 @@ let _ =
   with _ -> assert false
 
 let%lwt f = function _ -> ()
-
 type%any_extension t = < a: 'a >
 
 let value = f [%any_extension function 0 -> false | _ -> true]
-
 let value = [%any_extension fun x -> y] x
-
 let value = f [%any_extension try x with x -> false | _ -> true]
-
 let value = f [%any_extension match x with x -> false | _ -> true]
 
 let foo =
@@ -201,15 +186,10 @@ let () =
     () (* 1 *) [@foo (* 2 *) "bar"] (* 3 *)]
 
 open%ext M
-
 [%%ext open M]
-
 open! %ext M
-
 [%%ext open! M]
-
 include%ext M
-
 [%%ext include M]
 
 let x =
@@ -231,7 +211,6 @@ let x =
     x]
 
 exception%ext E
-
 [%%ext exception E]
 
 let _ =
@@ -244,7 +223,6 @@ let _ =
     x]
 
 module%ext E = P
-
 [%%ext module E = P]
 
 module%ext rec K = A
@@ -264,11 +242,8 @@ let _ =
     x]
 
 module type%ext E = P
-
 [%%ext module type E = P]
-
 class%ext x = y
-
 [%%ext class x = y]
 
 class%ext x = y
@@ -281,7 +256,6 @@ class x = y
 and y = z]
 
 class type%ext x = y
-
 [%%ext class type x = y]
 
 class type%ext x = y
@@ -294,37 +268,21 @@ class type x = y
 and y = z]
 
 let _ = (* bar *) [%expr (* comment *) foo (* blabla *)]
-
 let _ = assert%lwt false
-
 let _ = [%lwt assert false]
-
 let _ = f (assert%lwt false)
-
 let _ = f [%lwt assert false]
-
 let _ = (assert%lwt false) [@attr]
-
 let _ = [%lwt assert false] [@attr]
-
 let _ = f ((assert%lwt false) [@attr])
-
 let _ = f ([%lwt assert false] [@attr])
-
 let _ = lazy%ext e
-
 let _ = [%ext lazy e]
-
 let _ = f (lazy%ext e)
-
 let _ = f [%ext lazy e]
-
 let _ = (lazy%ext e) [@attr]
-
 let _ = [%ext lazy e] [@attr]
-
 let _ = f ((lazy%ext e) [@attr])
-
 let _ = f ([%ext lazy e] [@attr])
 
 let _ =
@@ -380,113 +338,58 @@ let _ =
     [@attr] )
 
 let _ = if%ext x then y else z
-
 let _ = [%ext if x then y else z]
-
 let _ = f (if%ext x then y else z)
-
 let _ = f [%ext if x then y else z]
-
 let _ = (if%ext x then y else z) [@attr]
-
 let _ = [%ext if x then y else z] [@attr]
-
 let _ = f ((if%ext x then y else z) [@attr])
-
 let _ = f ([%ext if x then y else z] [@attr])
-
 let _ = match%ext x with _ -> x
-
 let _ = [%ext match x with _ -> x]
-
 let _ = f (match%ext x with _ -> x)
-
 let _ = f [%ext match x with _ -> x]
-
 let _ = (match%ext x with _ -> x) [@attr]
-
 let _ = [%ext match x with _ -> x] [@attr]
-
 let _ = f ((match%ext x with _ -> x) [@attr])
-
 let _ = f ([%ext match x with _ -> x] [@attr])
-
 let _ = try%ext x with _ -> x
-
 let _ = [%ext try x with _ -> x]
-
 let _ = f (try%ext x with _ -> x)
-
 let _ = f [%ext try x with _ -> x]
-
 let _ = (try%ext x with _ -> x) [@attr]
-
 let _ = [%ext try x with _ -> x] [@attr]
-
 let _ = f ((try%ext x with _ -> x) [@attr])
-
 let _ = f ([%ext try x with _ -> x] [@attr])
-
 let _ = fun%ext x -> x
-
 let _ = [%ext fun x -> x]
-
 let _ = f (fun%ext x -> x)
-
 let _ = f [%ext fun x -> x]
-
 let _ = (fun%ext x -> x) [@attr]
-
 let _ = [%ext fun x -> x] [@attr]
-
 let _ = f ((fun%ext x -> x) [@attr])
-
 let _ = f ([%ext fun x -> x] [@attr])
-
 let _ = function%ext x -> x
-
 let _ = [%ext function x -> x]
-
 let _ = f (function%ext x -> x)
-
 let _ = f [%ext function x -> x]
-
 let _ = (function%ext x -> x) [@attr]
-
 let _ = [%ext function x -> x] [@attr]
-
 let _ = f ((function%ext x -> x) [@attr])
-
 let _ = f ([%ext function x -> x] [@attr])
-
 let _ = new%ext x
-
 let _ = [%ext new x]
-
 let _ = f (new%ext x)
-
 let _ = f [%ext new x]
-
 let _ = (new%ext x) [@attr]
-
 let _ = [%ext new x] [@attr]
-
 let _ = f ((new%ext x) [@attr])
-
 let _ = f ([%ext new x] [@attr])
-
 let _ = x ;%ext y
-
 let _ = [%ext x ; y]
-
 let _ = f (x ;%ext y)
-
 let _ = f [%ext x ; y]
-
 let _ = (x ;%ext y) [@attr]
-
 let _ = [%ext x ; y] [@attr]
-
 let _ = f ((x ;%ext y) [@attr])
-
 let _ = f ([%ext x ; y] [@attr])

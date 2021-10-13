@@ -532,5 +532,4 @@ val a :
   -> fooooooooooooooooooooooooo
 
 type x = {a: t  (** {[ (* a b *) ]} *); b: [`A  (** {[ (* a b *) ]} *)]}
-
 type x = A of a  (** {[ (* a b *) ]} *) | B of b  (** {[ (* a b *) ]} *)

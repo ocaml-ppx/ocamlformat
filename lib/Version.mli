@@ -12,7 +12,6 @@
 type t = V0_10_0 | V0_12_0 | V0_14_2 | V0_16_0 | V0_17_0 | V0_20_0 | V1_0_0
 
 val to_string : t -> string
-
 val pp : Format.formatter -> t -> unit
 
 val current : string

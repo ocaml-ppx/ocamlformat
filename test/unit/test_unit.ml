@@ -47,7 +47,6 @@ module Test_noit = struct
       Poly.compare (sa, -ea) (sb, -eb)
 
     let pp ppf (s, e) = Caml.Format.fprintf ppf "(%d, %d)" s e
-
     let equal = Poly.equal
   end
 

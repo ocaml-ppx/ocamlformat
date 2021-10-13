@@ -229,7 +229,6 @@ type elements_collection =
   ; sep_after_final: Fmt.t }
 
 type elements_collection_record_expr = {break_after_with: Fmt.t}
-
 type elements_collection_record_pat = {wildcard: Fmt.t}
 
 let get_record_expr (c : Conf.t) =

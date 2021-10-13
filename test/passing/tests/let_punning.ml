@@ -1,11 +1,8 @@
 let ( let* ) x f = f x
-
 let ( and* ) a b = (a, b)
 
 let x = 1
-
 and y = 2
-
 and z = 3
 
 let p =

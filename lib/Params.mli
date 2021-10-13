@@ -13,7 +13,6 @@ module Format = Format_
 open Extended_ast
 
 val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
-
 val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
 
 module Exp : sig
@@ -89,21 +88,18 @@ type elements_collection =
   ; sep_after_final: Fmt.t }
 
 type elements_collection_record_expr = {break_after_with: Fmt.t}
-
 type elements_collection_record_pat = {wildcard: Fmt.t}
 
 val get_record_expr :
   Conf.t -> elements_collection * elements_collection_record_expr
 
 val get_list_expr : Conf.t -> elements_collection
-
 val get_array_expr : Conf.t -> elements_collection
 
 val get_record_pat :
   Conf.t -> ctx:Ast.t -> elements_collection * elements_collection_record_pat
 
 val get_list_pat : Conf.t -> ctx:Ast.t -> elements_collection
-
 val get_array_pat : Conf.t -> ctx:Ast.t -> elements_collection
 
 type if_then_else =

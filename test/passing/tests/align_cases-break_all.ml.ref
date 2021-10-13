@@ -114,7 +114,6 @@ let _ =
   | _      -> 0
 
 type x = Foooooooo of int | Fooooooooooooo of int
-
 type x = [`Foooooooo of int | `Fooooooooooooo of int]
 
 [@@@ocamlformat "type-decl=sparse"]

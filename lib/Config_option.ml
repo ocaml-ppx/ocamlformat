@@ -29,7 +29,6 @@ module type CONFIG = sig
   type config
 
   val profile_option_names : string list
-
   val warn : config -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
@@ -37,20 +36,15 @@ module Make (C : CONFIG) = struct
   open Cmdliner
 
   type config = C.config
-
   type kind = Formatting | Operational
-
   type parsed_from = [`File of Fpath.t * int | `Attribute]
-
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
 
   type from =
     [`Default | `Profile of string * updated_from | `Updated of updated_from]
 
   type deprecated = {dmsg: string; dversion: Version.t}
-
   type removed = {rmsg: string; rversion: Version.t}
-
   type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
 
   type 'a t =
@@ -78,9 +72,7 @@ module Make (C : CONFIG) = struct
   type pack = Pack : 'a t -> pack
 
   let store = ref []
-
   let deprecated ~since:dversion dmsg = {dmsg; dversion}
-
   let removed ~since:rversion rmsg = {rmsg; rversion}
 
   let in_attributes cond = function

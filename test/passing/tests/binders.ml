@@ -5,9 +5,7 @@ external g :
   'fooooo_foooooo. 'a -> 'a -> 'a = "asdf"
 
 type f = Foo : 'a -> t
-
 type f = Foo : 'a -> 'a
-
 type g = Foo : 'a. 'a -> t
 
 type g =

@@ -8,6 +8,8 @@
 
 #### Changes
 
+  + Set 'module-item-spacing=compact' in the ocamlformat profile (#1868, @gpetiot)
+
 #### New features
 
 ### 0.20.1 (2021-12-13)

@@ -18,7 +18,6 @@ module C = struct
 
     module rec B : sig
       type t
-
       type z
     end
 
@@ -53,7 +52,6 @@ include A (struct
 end)
 
 let x : (module S) = (module struct end)
-
 let x = (module struct end : S)
 
 module rec A : (sig
@@ -64,7 +62,6 @@ with type t = int) = struct
 end
 
 module A (_ : S) = struct end
-
 module A : functor (_ : S) -> S' = functor (_ : S) -> struct end
 
 let helper ?x =

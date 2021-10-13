@@ -1109,7 +1109,6 @@ end
    formatting *)
 
 let kind = C.Operational
-
 let docs = C.section_name kind `Valid
 
 let comment_check =
@@ -1423,7 +1422,7 @@ let ocamlformat_profile =
   ; match_indent_nested= `Never
   ; max_indent= None
   ; max_iters= 10
-  ; module_item_spacing= `Sparse
+  ; module_item_spacing= `Compact
   ; nested_match= `Wrap
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= false

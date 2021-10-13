@@ -1,5 +1,4 @@
 type t = A : t
-
 type t = A : t * 'b -> t
 
 type (_, _, _, _, _) gadt =
@@ -13,7 +12,5 @@ type (_, _, _, _, _) gadt =
       -> ('a, 'c, long_name * 'k, 't, 'v) gadt
 
 type _ t = ..
-
 type _ t += A : int | B : int -> int
-
 type t = A : (int -> int) -> int

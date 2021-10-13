@@ -17,13 +17,11 @@ module type IN = sig
   include Comparator.S
 
   val contains : t -> t -> bool
-
   val compare_width_decreasing : t -> t -> int
 end
 
 module type S = sig
   type itv
-
   type t
 
   val of_list : itv list -> t
@@ -31,7 +29,6 @@ module type S = sig
       ancestors of later elements. *)
 
   val roots : t -> itv list
-
   val children : t -> itv -> itv list
 
   val dump : t -> Fmt.t

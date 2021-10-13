@@ -47,7 +47,6 @@ module Layout_cache = struct
             ; sexp_of_string (expression_to_string expression) ]
 
     let compare = Poly.compare
-
     let hash = Hashtbl.hash
   end
 
@@ -158,7 +157,6 @@ end = struct
   type t = Cmt.t list Map.M(Position).t
 
   let empty = Map.empty (module Position)
-
   let is_empty = Map.is_empty
 
   let of_list cmts =
@@ -696,7 +694,6 @@ let drop_before t loc =
   t
 
 let has_before t loc = pop_if_debug t loc ; Map.mem t.cmts_before loc
-
 let has_within t loc = pop_if_debug t loc ; Map.mem t.cmts_within loc
 
 let has_after t loc =
@@ -709,5 +706,4 @@ let remaining_comments t =
     [t.cmts_before; t.cmts_within; t.cmts_after]
 
 let remaining_before t loc = Map.find_multi t.cmts_before loc
-
 let remaining_locs t = Set.to_list t.remaining

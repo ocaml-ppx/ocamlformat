@@ -16,11 +16,8 @@ module W : sig
   type t
 
   val in_lexer : int list
-
   val disable : int -> t
-
   val enable : int -> t
-
   val to_string : t list -> string
 end
 

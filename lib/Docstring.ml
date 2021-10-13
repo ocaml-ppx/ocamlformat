@@ -48,15 +48,10 @@ let list f fmt l =
   Format.pp_print_list ~pp_sep f fmt l
 
 let str fmt s = Format.fprintf fmt "%s" (normalize_text s)
-
 let ign_loc f fmt with_loc = f fmt with_loc.Odoc_parser.Loc.value
-
 let fpf = Format.fprintf
-
 let odoc_reference = ign_loc str
-
 let option f fmt = function Some v -> f fmt v | None -> ()
-
 let pair fmt_a fmt_b fmt (a, b) = fpf fmt "(%a,%a)" fmt_a a fmt_b b
 
 let odoc_style fmt = function

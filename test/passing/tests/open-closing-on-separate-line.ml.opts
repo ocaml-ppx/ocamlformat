@@ -1,1 +1,2 @@
 --indicate-multiline-delimiters=closing-on-separate-line
+--max-iters=3

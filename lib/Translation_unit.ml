@@ -43,7 +43,6 @@ module Error = struct
     | User_error of string
 
   let user_error x = User_error x
-
   let equal : t -> t -> bool = Poly.equal
 
   let print_diff input_name ~prev ~next =

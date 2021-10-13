@@ -23,25 +23,17 @@ module type CONFIG = sig
   type config
 
   val profile_option_names : string list
-
   val warn : config -> ('a, Format.formatter, unit, unit) format4 -> 'a
 end
 
 module Make (C : CONFIG) : sig
   type config = C.config
-
   type 'a t
-
   type kind = Formatting | Operational
-
   type parsed_from = [`File of Fpath.t * int | `Attribute]
-
   type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
-
   type deprecated
-
   type removed
-
   type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
 
   type 'a option_decl =
@@ -55,9 +47,7 @@ module Make (C : CONFIG) : sig
     -> 'a t
 
   val section_name : kind -> status -> string
-
   val deprecated : since:Version.t -> string -> deprecated
-
   val removed : since:Version.t -> string -> removed
 
   module Value : sig
@@ -102,7 +92,6 @@ module Make (C : CONFIG) : sig
       helpful error including [msg] and [since]. *)
 
   val default : 'a t -> 'a
-
   val update_using_cmdline : config -> config
 
   val update :

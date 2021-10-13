@@ -19,11 +19,8 @@ let is_project_root ~root dir =
           Fpath.(exists (dir / name)) )
 
 let dot_ocp_indent = ".ocp-indent"
-
 let dot_ocamlformat = ".ocamlformat"
-
 let dot_ocamlformat_ignore = ".ocamlformat-ignore"
-
 let dot_ocamlformat_enable = ".ocamlformat-enable"
 
 type configuration_file = Ocamlformat of Fpath.t | Ocp_indent of Fpath.t

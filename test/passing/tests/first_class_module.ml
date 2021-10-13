@@ -26,13 +26,9 @@ module M = struct
 end
 
 let m = (module M : S)
-
 let f ((module M : S) as u) = ignore u ; M.x
-
 let f (T {m= (module M)}) = ignore u ; M.x
-
 let f (T {m= (module M : S)}) = ignore u ; M.x
-
 let v = f (module M : S with type t = t)
 
 module type S = sig
@@ -79,7 +75,6 @@ let _ =
   : Ephemeron.S )
 
 let _ = (module Ephemeron (HHHHHHHHHHHHHHH) (HHHHHHHHHHHHH) : Ephemeron.S)
-
 let _ = (module Ephemeron (HHH) : Ephemeron.S)
 
 let _ =
@@ -95,14 +90,8 @@ let _ =
 (* Tests for dropped comment *)
 
 module M = (val x : S (* a *))
-
 module M = (val x (* b *))
 
 [@@@ocamlformat "break-struct=natural"]
 
-let _ =
-  ( module struct
-    let x = 0
-
-    let y = 1
-  end )
+let _ = (module struct let x = 0 let y = 1 end)

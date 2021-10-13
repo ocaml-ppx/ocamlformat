@@ -13,7 +13,6 @@ type ('key, 'value, 'cmp) t = ('key, 'value list, 'cmp) Map.t
 
 module M (K : sig
   type t
-
   type comparator_witness
 end) =
 struct
@@ -38,5 +37,4 @@ let partition_multi map ~src ~dst ~f =
   change_multi map src dontmove
 
 let filter map ~f = Map.map map ~f:(List.filter ~f)
-
 let to_list map = Map.to_alist map |> List.concat_map ~f:snd

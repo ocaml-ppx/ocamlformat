@@ -1,11 +1,8 @@
 let _ = (function[@warning "-4"] None -> true | _ -> false) None
-
 let f (x [@warning ""]) = ()
-
 let v = (fun [@inline] x -> x) 1
 
 external f : (float[@unboxed]) -> int = "blah" [@@noalloc]
-
 val x : ?x:unit (** not dropped *) -> unit
 
 type t =
@@ -35,7 +32,6 @@ val foo : int
   [@@some long comment]
 
 type t = A of int [@attr] | B of (float[@attr]) | C [@attr]
-
 type t = [`A of int [@attr] | `B of (float[@attr]) | `C [@attr]]
 
 let[@inline always] f x =
@@ -46,9 +42,7 @@ module type M = S [@test1]
 
 module type M = sig
   module T (T : sig end) : (S with type t = r [@test2])
-
   module T (S : S [@test]) : S
-
   module T : (S with type t = (r[@test3]) [@test4])
 
   module T :
@@ -60,26 +54,18 @@ module type M = sig
      [@test])
 
   module T : module type of X [@test5]
-
   module T : (module type of X) [@test6]
-
   module T : [%ext] [@test7]
-
   module T = T [@@test8]
 end
 
 let f = fun [@inline] [@inline never] x -> x
-
 let g = fun [@inline] [@something_else] [@ocaml.inline] x -> x
-
 let h x = (g [@inlined] [@ocaml.inlined never]) x
-
 let v = (fun [@inline] [@inlined] x -> x) 1
-
 let[@inline] i = fun [@inline] x -> x;;
 
 if [@test] true then () else ();;
-
 if [@test] true then () else if [@test] true then () else ()
 
 let _ = ((A [@test]), (() [@test]), ([] [@test]), [||] [@test])
@@ -106,49 +92,30 @@ type u =
 [@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
 
 let ((A, B) [@test]) = ()
-
 let ((lazy a) [@test]) = ()
-
 let ((exception a) [@test]) = ()
-
 let ((B x) [@test]) = ()
-
 let ((`B x) [@test]) = ()
-
 let (B [@test]) = ()
-
 let (`B [@test]) = ()
-
 let (B.(A) [@test]) = ()
-
 let ('x' .. 'z' [@test]) = ()
-
 let (#test [@test]) = ()
-
 let ((module X) [@test]) = ()
-
 let (a [@test]) = ()
-
 let (_ [@test]) = ()
-
 let ("" [@test]) = ()
-
 let _ = f x ~f:(fun [@test] x -> x)
-
 let _ = f x ~f:(function [@test] x -> x)
-
 let _ = f x ~f:(function [@test] X -> x | X -> x)
 
 let () = ()
-
 and[@warning "-32"] f = ()
 
 external x : a -> b -> (a -> b[@test]) = ""
 
 let f = fun [@test] x y -> ()
-
 let f y = fun [@test] y -> ()
-
 let (f [@test]) = fun y -> fun [@test] y -> ()
 
 module type T = sig
@@ -161,11 +128,8 @@ module type T = sig
 end
 
 let _ = fun [@inlined always] x y -> z
-
 let () = assert ((assert false [@imp Show]) 1.0 = "1.")
-
 let () = f (assert false)
-
 let _ = match x with A -> [%expr match y with e -> e]
 
 let _ =
@@ -188,25 +152,15 @@ module M = struct
 end
 
 let _ = {<>} [@a]
-
 let _ = f ({<>} [@a])
-
 let _ = {<x = 1>} [@a]
-
 let _ = f ({<x = 1>} [@a])
-
 let _ = (x :> t) [@a]
-
 let _ = f ((x :> t) [@a])
-
 let _ = (module M) [@a]
-
 let _ = f ((module M) [@a])
-
 let _ = (module M : S) [@a]
-
 let _ = f ((module M : S) [@a])
-
 let _ = ([] @ []) [@a]
 
 (* Infix operator should left-align with the inner parens *)
@@ -228,29 +182,19 @@ let _ =
   [@a]
 
 let _ = f (([] @ []) [@a])
-
 let _ = ("" ^ "") [@a]
-
 let _ = f (("" ^ "") [@a])
-
 let _ = (0 + 0) [@a]
-
 let _ = f ((0 + 0) [@a])
-
 let _ = (a.x <- 1) [@a]
-
 let _ = f ((a.x <- 1) [@a])
-
 let _ = (f @@ a) [@attr]
-
 let _ = f ((f @@ a) [@attr])
-
 let _ = f 1 ([e; f] [@a])
 
 let _ =
   object
     method g = (a <- b) [@a]
-
     method h = f ((a <- b) [@a])
 
     method i =
@@ -259,11 +203,8 @@ let _ =
   end
 
 let _ = a.(b) [@a]
-
 let _ = f (a.(b) [@a])
-
 let _ = (a.*?!@{b} <- c) [@a]
-
 let _ = f ((a.*?!@{b} <- c) [@a]);;
 
 (* Regression tests for https://github.com/ocaml-ppx/ocamlformat/issues/1256
@@ -272,7 +213,6 @@ let _ = f ((a.*?!@{b} <- c) [@a]);;
 (0, 0) [@a]
 
 let _ = ((0, 0) [@a])
-
 let _ = f ((0, 0) [@a]);;
 
 (* Ensure that adding an attribute doesn't break left-alignment of tuple
@@ -289,17 +229,11 @@ let _ =
     [@a] )
 
 let _ = a [@a] ; b
-
 let _ = f (a [@a] ; b)
-
 let _ = a ; b [@a]
-
 let _ = f (a ; b [@a])
-
 let _ = (a ; b) [@a]
-
 let _ = f ((a ; b) [@a])
-
 let _ = a ; b [@a] ; c
 
 let _ =
@@ -321,21 +255,13 @@ let _ =
 [@@@a (**b*)]
 
 let (Foo ((A | B) [@attr])) = ()
-
 let ([(A | B) [@attr]; b; c] [@attr]) = ()
-
 let ([|a; (A | B) [@attr]; c|] [@attr]) = ()
-
 let {b= (A | B) [@attr]} = ()
-
 let (`Foo ((`A | `B) [@attr])) = ()
-
 let (A | B) [@attr], (A | B) [@attr] = ()
-
 let (A | B) [@attr] = ()
-
 let (Foo ((A | B) [@attr]) : (t[@attr])) = ()
-
 let (M.(A | B) [@attr]) = ();;
 
 (a_______________________________________________________________________________
@@ -373,9 +299,7 @@ let pp f
   ()
 
 let _ = f ((* comments *) "c" [@attributes])
-
 let _ = f ((* comments *) 'c' [@attributes])
-
 let _ = function ("foo" [@attr]) -> ("bar" [@attr2])
 
 let _ = function
