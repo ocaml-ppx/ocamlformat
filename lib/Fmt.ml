@@ -210,9 +210,6 @@ let wrap_if cnd pre suf = wrap_if_k cnd (fmt pre) (fmt suf)
 
 and wrap pre suf = wrap_k (fmt pre) (fmt suf)
 
-let wrap_if_fits_and cnd pre suf k =
-  fits_breaks_if cnd pre "" $ k $ fits_breaks_if cnd suf ""
-
 let wrap_if_fits_or cnd pre suf k =
   if cnd then wrap_k (str pre) (str suf) k
   else fits_breaks pre "" $ k $ fits_breaks suf ""

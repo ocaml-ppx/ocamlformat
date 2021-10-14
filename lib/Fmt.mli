@@ -160,10 +160,6 @@ val wrap_if : bool -> s -> s -> t -> t
 val wrap_if_k : bool -> t -> t -> t -> t
 (** As [wrap_if], but prologue and epilogue may be arbitrary format thunks. *)
 
-val wrap_if_fits_and : bool -> string -> string -> t -> t
-(** As [wrap_if_fits], but prologue and epilogue are formatted subject to the
-    additional condition. *)
-
 val wrap_if_fits_or : bool -> string -> string -> t -> t
 (** As [wrap_if_fits], but prologue and epilogue can be forced by the
     additional condition. *)
