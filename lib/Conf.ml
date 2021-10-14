@@ -1731,7 +1731,9 @@ let ocp_indent_janestreet_profile =
 let string_of_user_error = function
   | `Malformed line -> Format.sprintf "Invalid format %S" line
   | `Misplaced (name, _) -> Format.sprintf "%s not allowed here" name
-  | `Unknown (name, _) -> Format.sprintf "Unknown option %S" name
+  | `Unknown (name, None) -> Format.sprintf "Unknown option %S" name
+  | `Unknown (name, Some (`Msg msg)) ->
+      Format.sprintf "Unknown option %S: %s" name msg
   | `Bad_value (name, msg) -> Format.sprintf "For option %S: %s" name msg
 
 let parse_line config ~from s =

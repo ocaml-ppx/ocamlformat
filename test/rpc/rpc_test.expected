@@ -15,7 +15,7 @@ Output: int -> int
 Output: int (* foo *) -> int (* bar *)
 
 [ocf] Config
-Error: Unknown configuration value (foo, bar)
+Error: Unknown configuration option foo
 [ocf] Config
 [ocf] Format 'aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg'
 Output: aaa ->

@@ -109,8 +109,8 @@ let rec rpc_main = function
                 | `Misplaced (x, y) ->
                     Format.sprintf "Misplaced configuration value (%s, %s)" x
                       y
-                | `Unknown (x, y) ->
-                    Format.sprintf "Unknown configuration value (%s, %s)" x y
+                | `Unknown (x, _) ->
+                    Format.sprintf "Unknown configuration option %s" x
               in
               V1.Command.output stdout (`Error msg) ;
               Out_channel.flush stdout ;

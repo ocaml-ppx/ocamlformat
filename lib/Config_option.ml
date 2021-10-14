@@ -345,8 +345,21 @@ module Make (C : CONFIG) = struct
                 update_from config name from ;
                 Some (Ok config)
             | Error (`Msg error) -> Some (Error (`Bad_value (name, error)))
-        else None )
-    |> Option.value ~default:(Error (`Unknown (name, value)))
+        else
+          match
+            List.find names ~f:(fun x -> String.equal ("no-" ^ x) name)
+          with
+          | Some valid_name ->
+              let error =
+                Format.sprintf
+                  "%S is the short form for \"%s=false\". It is only \
+                   accepted on command line, please use \"%s=false\" or \
+                   \"%s=true\" instead."
+                  name valid_name valid_name valid_name
+              in
+              Some (Error (`Unknown (name, Some (`Msg error))))
+          | None -> None )
+    |> Option.value ~default:(Error (`Unknown (name, None)))
 
   let default {default; _} = default
 

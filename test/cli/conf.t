@@ -26,6 +26,14 @@ Invalid option:
                Unknown option "unknown_option"
   [1]
 
+Invalid option (short negated form):
+
+  $ echo 'no-wrap-comments' > .ocamlformat
+  $ echo 'let x = 1' | ocamlformat --impl -
+  ocamlformat: Error while parsing .ocamlformat:
+               Unknown option "no-wrap-comments": "no-wrap-comments" is the short form for "wrap-comments=false". It is only accepted on command line, please use "wrap-comments=false" or "wrap-comments=true" instead.
+  [1]
+
 Invalid value:
 
   $ echo 'field-space = unknown_value' > .ocamlformat
