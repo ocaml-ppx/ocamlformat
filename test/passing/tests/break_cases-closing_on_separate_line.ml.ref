@@ -293,24 +293,3 @@ let get_nullability = function
     (* This is a very special case, assigning non-null is a technical
        trick *) ->
       Nullability.Nonnull
-
-[@@@ocamlformat "exp-grouping=preserve"]
-
-let _ =
-  match x with
-  | A -> begin
-    match B with
-    | A -> fooooooooooooo
-  end
-  | A -> begin
-    match B with
-    | A -> fooooooooooooo
-    | B -> fooooooooooooo
-  end
-  | A -> begin
-    match B with
-    | A -> fooooooooooooo
-    | B -> fooooooooooooo
-    | C -> fooooooooooooo
-    | D -> fooooooooooooo
-  end
