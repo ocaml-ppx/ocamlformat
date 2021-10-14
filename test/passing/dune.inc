@@ -795,6 +795,24 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
+  (with-stdout-to cases_exp_grouping.ml.stdout
+   (with-stderr-to cases_exp_grouping.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve %{dep:tests/cases_exp_grouping.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/cases_exp_grouping.ml.ref cases_exp_grouping.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/cases_exp_grouping.ml.err cases_exp_grouping.ml.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
   (with-stdout-to cinaps.ml.stdout
    (with-stderr-to cinaps.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/cinaps.ml})))))
@@ -1675,6 +1693,24 @@
  (alias runtest)
  (package ocamlformat)
  (action (diff tests/extensions.mli.err extensions.mli.stderr)))
+
+(rule
+ (deps tests/.ocamlformat )
+ (package ocamlformat)
+ (action
+  (with-stdout-to extensions_exp_grouping.ml.stdout
+   (with-stderr-to extensions_exp_grouping.ml.stderr
+     (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve %{dep:tests/extensions_exp_grouping.ml})))))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/extensions_exp_grouping.ml.ref extensions_exp_grouping.ml.stdout)))
+
+(rule
+ (alias runtest)
+ (package ocamlformat)
+ (action (diff tests/extensions_exp_grouping.ml.err extensions_exp_grouping.ml.stderr)))
 
 (rule
  (deps tests/.ocamlformat )
