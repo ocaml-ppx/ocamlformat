@@ -48,6 +48,8 @@
 
   + Fix dropped comments attached to a sequence in a sugared extension node (#1853, @gpetiot)
 
+  + Add missing parentheses around exception type (#1873, @gpetiot)
+
 #### Changes
 
   + Set 'module-item-spacing=compact' in the default/conventional profile (#1848, @gpetiot)
