@@ -2182,9 +2182,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             ( hvbox 0
                 ( hvbox 2
                     (hvbox 2
-                       ( pre
-                       $ fmt_extension_constructor c (str ": ") ctx ext_cstr
-                       ) )
+                       (pre $ fmt_extension_constructor c ctx ext_cstr) )
                 $ fmt "@ in" )
             $ fmt "@;<1000 0>"
             $ fmt_expression c (sub_exp ~ctx exp) )
@@ -3365,14 +3363,7 @@ and fmt_type_extension ?ext c ctx
     ; ptyext_loc } =
   let c = update_config c ptyext_attributes in
   let doc, atrs = doc_atrs ptyext_attributes in
-  let fmt_ctor ctor =
-    let sep =
-      match ctor.pext_kind with
-      | Pext_decl (_, _, Some _) -> fmt " :@ "
-      | Pext_decl (_, _, None) | Pext_rebind _ -> fmt " of@ "
-    in
-    hvbox 0 (fmt_extension_constructor c sep ctx ctor)
-  in
+  let fmt_ctor ctor = hvbox 0 (fmt_extension_constructor c ctx ctor) in
   Cmts.fmt c ptyext_loc
   @@ hvbox 2
        ( fmt_docstring c ~epi:(fmt "@,") doc
@@ -3393,7 +3384,7 @@ and fmt_type_extension ?ext c ctx
                  $ fmt_ctor x ) )
        $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs )
 
-and fmt_type_exception ~pre c sep ctx
+and fmt_type_exception ~pre c ctx
     {ptyexn_attributes; ptyexn_constructor; ptyexn_loc} =
   let doc1, atrs = doc_atrs ptyexn_attributes in
   let doc1 = Option.value ~default:[] doc1 in
@@ -3406,16 +3397,20 @@ and fmt_type_exception ~pre c sep ctx
   Cmts.fmt c ptyexn_loc
     (hvbox 0
        ( doc_before
-       $ hvbox 2
-           (pre $ fmt_extension_constructor c sep ctx ptyexn_constructor)
+       $ hvbox 2 (pre $ fmt_extension_constructor c ctx ptyexn_constructor)
        $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs
        $ doc_after ) )
 
-and fmt_extension_constructor c sep ctx ec =
+and fmt_extension_constructor c ctx ec =
   let {pext_name; pext_kind; pext_attributes; pext_loc} = ec in
   update_config_maybe_disabled c pext_loc pext_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs pext_attributes in
+  let sep =
+    match pext_kind with
+    | Pext_decl (_, _, Some _) -> fmt " :@ "
+    | Pext_decl (_, _, None) | Pext_rebind _ -> fmt " of@ "
+  in
   let suf =
     match pext_kind with
     | Pext_decl (_, _, None) | Pext_rebind _ -> None
@@ -3585,7 +3580,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
       $ fmt_attributes c ~key:"@@@" atrs
   | Psig_exception exc ->
       let pre = str "exception" $ fmt_extension_suffix c ext $ fmt "@ " in
-      hvbox 2 (fmt_type_exception ~pre c (fmt " of@ ") ctx exc)
+      hvbox 2 (fmt_type_exception ~pre c ctx exc)
   | Psig_extension (ext, atrs) ->
       let doc_before, doc_after, atrs = fmt_docstring_around_item c atrs in
       let box =
@@ -4205,8 +4200,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
       $ fmt_attributes c ~pre:Space ~key:"@@" atrs
   | Pstr_exception extn_constr ->
       let pre = str "exception" $ fmt_extension_suffix c ext $ fmt "@ " in
-      hvbox 2 ~name:"exn"
-        (fmt_type_exception ~pre c (str ": ") ctx extn_constr)
+      hvbox 2 ~name:"exn" (fmt_type_exception ~pre c ctx extn_constr)
   | Pstr_include {pincl_mod; pincl_attributes= attributes; pincl_loc} ->
       update_config_maybe_disabled c pincl_loc attributes
       @@ fun c ->
