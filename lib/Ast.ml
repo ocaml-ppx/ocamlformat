@@ -1837,6 +1837,9 @@ end = struct
     match xtyp with
     | {ast= {ptyp_desc= Ptyp_package _; _}; _} -> true
     | {ast= {ptyp_desc= Ptyp_alias _; _}; ctx= Typ _} -> true
+    | { ast= {ptyp_desc= Ptyp_arrow _ | Ptyp_tuple _; _}
+      ; ctx= Typ {ptyp_desc= Ptyp_class _; _} } ->
+        true
     | { ast= {ptyp_desc= Ptyp_alias _; _}
       ; ctx=
           ( Str {pstr_desc= Pstr_typext _; _}
@@ -1856,23 +1859,10 @@ end = struct
                        | _ -> false )
                | _ -> false ) ->
         true
-    | { ast= {ptyp_desc= Ptyp_alias _; _}
+    | { ast= {ptyp_desc= Ptyp_alias _ | Ptyp_arrow _ | Ptyp_tuple _; _}
       ; ctx=
-          ( Str
-              { pstr_desc=
-                  Pstr_exception
-                    { ptyexn_constructor=
-                        {pext_kind= Pext_decl (_, Pcstr_tuple t, _); _}
-                    ; _ }
-              ; _ }
-          | Sig
-              { psig_desc=
-                  Psig_exception
-                    { ptyexn_constructor=
-                        {pext_kind= Pext_decl (_, Pcstr_tuple t, _); _}
-                    ; _ }
-              ; _ } ) }
-      when List.exists t ~f:(phys_equal typ) ->
+          ( Str {pstr_desc= Pstr_exception _; _}
+          | Sig {psig_desc= Psig_exception _; _} ) } ->
         true
     | _ -> (
       match ambig_prec (sub_ast ~ctx (Typ typ)) with
