@@ -48,7 +48,7 @@
 
   + Fix dropped comments attached to a sequence in a sugared extension node (#1853, @gpetiot)
 
-  + Add missing parentheses around exception type (#1873, @gpetiot)
+  + Fix formatting of exception types, and add missing parentheses (#1873, @gpetiot)
 
 #### Changes
 
