@@ -24,7 +24,8 @@ type input =
   ; action: [`Format | `Numeric of range] }
 
 let inputs =
-  let source_ml = Stdio.In_channel.read_all "test/source_bench.ml" in
+  let dir = "_build/default/bench/test" in
+  let source_ml = Stdio.In_channel.read_all (dir ^ "/source_bench.ml") in
   [ { name= "format:conventional"
     ; input_name= "source.ml"
     ; kind= Syntax.Structure

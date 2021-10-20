@@ -46,4 +46,6 @@ headers:
 
 .PHONY: bench
 bench:
-	@dune build @runbench
+	@dune build bench/test/source_bench.ml
+	@dune build bench/bench.exe
+	@dune exec bench/bench.exe
