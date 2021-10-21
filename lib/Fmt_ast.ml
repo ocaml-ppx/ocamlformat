@@ -1967,14 +1967,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         $ fmt_atrs )
   | Pexp_list e1N ->
       let p = Params.get_list_expr c.conf in
+      let offset = if c.conf.dock_collection_brackets then 0 else 2 in
+      let cmt_break = break 1 offset in
       hvbox_if has_attr 0
         (Params.parens_if parens c.conf
            ( p.box
                (fmt_expressions c (expression_width c) (sub_exp ~ctx) e1N
                   (fun e ->
-                    let fmt_cmts = Cmts.fmt c ~eol:(break 1 0) e.pexp_loc in
-                    hvbox 0 @@ fmt_cmts
-                    @@ (sub_exp ~ctx >> fmt_expression c) e )
+                    let fmt_cmts = Cmts.fmt c ~eol:cmt_break e.pexp_loc in
+                    fmt_cmts @@ (sub_exp ~ctx >> fmt_expression c) e )
                   p )
            $ fmt_atrs ) )
   | Pexp_assert e0 ->
