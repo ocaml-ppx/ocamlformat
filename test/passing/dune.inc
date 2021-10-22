@@ -4541,24 +4541,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to types-indent.ml.stdout
-   (with-stderr-to types-indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --type-decl-indent=6 %{dep:tests/types.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-indent.ml.ref types-indent.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-indent.ml.err types-indent.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to types-sparse-space_around.ml.stdout
    (with-stderr-to types-sparse-space_around.ml.stderr
      (run %{bin:ocamlformat} --margin-check --type-decl=sparse --space-around-arrays --space-around-lists --space-around-records --space-around-variants %{dep:tests/types.ml})))))

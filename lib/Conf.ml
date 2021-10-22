@@ -62,7 +62,6 @@ type t =
   ; space_around_variants: bool
   ; stritem_extension_indent: int
   ; type_decl: [`Compact | `Sparse]
-  ; type_decl_indent: int
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
@@ -973,16 +972,11 @@ module Formatting = struct
       (fun conf x -> {conf with type_decl= x})
       (fun conf -> conf.type_decl)
 
-  let type_decl_indent =
-    let docv = "COLS" in
-    let doc =
-      "Indentation of type declarations ($(docv) columns) if they do not \
-       fit on a single line."
-    in
+  let ( (* type_decl_indent *) ) =
     let names = ["type-decl-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
-      (fun conf x -> {conf with type_decl_indent= x})
-      (fun conf -> conf.type_decl_indent)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let wrap_comments =
     let doc =
@@ -1182,8 +1176,7 @@ let ocp_indent_options =
       , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
           ocamlformat ) )
   in
-  [ alias "type" "type-decl-indent"
-  ; alias "match_clause" "cases-exp-indent"
+  [ alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
   ; unsupported "strict_else"
@@ -1311,7 +1304,6 @@ let ocamlformat_profile =
   ; space_around_variants= false
   ; stritem_extension_indent= 0
   ; type_decl= `Compact
-  ; type_decl_indent= 2
   ; wrap_comments= false
   ; wrap_fun_args= true }
 
@@ -1370,7 +1362,6 @@ let conventional_profile =
   ; space_around_variants= C.default Formatting.space_around_variants
   ; stritem_extension_indent= C.default Formatting.stritem_extension_indent
   ; type_decl= C.default Formatting.type_decl
-  ; type_decl_indent= C.default Formatting.type_decl_indent
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
 
@@ -1428,7 +1419,6 @@ let janestreet_profile =
   ; space_around_variants= true
   ; stritem_extension_indent= 0
   ; type_decl= `Sparse
-  ; type_decl_indent= 2
   ; wrap_comments= false
   ; wrap_fun_args= false }
 

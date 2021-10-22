@@ -3060,7 +3060,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
     | None -> str " " $ str eq $ fmt_private_flag priv
   in
   let box_manifest k =
-    hvbox c.conf.type_decl_indent
+    hvbox 2
       ( str pre
       $ fmt_extension_suffix c ext
       $ str " "
@@ -3121,8 +3121,7 @@ and fmt_type_declaration c ?ext ?(pre = "") ctx ?fmt_name ?(eq = "=") decl =
   @@ hvbox 0
        ( doc_before
        $ hvbox 0
-           ( hvbox c.conf.type_decl_indent
-               (fmt_manifest_kind $ fmt_cstrs ptype_cstrs)
+           ( hvbox 2 (fmt_manifest_kind $ fmt_cstrs ptype_cstrs)
            $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs )
        $ doc_after )
 
@@ -3241,7 +3240,7 @@ and fmt_type_extension ?ext c ctx
   Cmts.fmt c ptyext_loc
   @@ hvbox 2
        ( fmt_docstring c ~epi:(fmt "@,") doc
-       $ hvbox c.conf.type_decl_indent
+       $ hvbox 2
            ( str "type"
            $ fmt_extension_suffix c ext
            $ str " "
