@@ -1556,7 +1556,7 @@
  (action
   (with-stdout-to extensions-indent.ml.stdout
    (with-stderr-to extensions-indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iters=3 --extension-indent=5 --stritem-extension-indent=3 %{dep:tests/extensions.ml})))))
+     (run %{bin:ocamlformat} --margin-check --max-iters=3 --extension-indent=5 %{dep:tests/extensions.ml})))))
 
 (rule
  (alias runtest)
@@ -1574,7 +1574,7 @@
  (action
   (with-stdout-to extensions-indent.mli.stdout
    (with-stderr-to extensions-indent.mli.stderr
-     (run %{bin:ocamlformat} --margin-check --extension-indent=5 --stritem-extension-indent=3 %{dep:tests/extensions.mli})))))
+     (run %{bin:ocamlformat} --margin-check --extension-indent=5 %{dep:tests/extensions.mli})))))
 
 (rule
  (alias runtest)

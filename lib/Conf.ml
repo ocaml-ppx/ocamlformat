@@ -60,7 +60,6 @@ type t =
   ; space_around_lists: bool
   ; space_around_records: bool
   ; space_around_variants: bool
-  ; stritem_extension_indent: int
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
@@ -946,16 +945,11 @@ module Formatting = struct
       (fun conf x -> {conf with space_around_variants= x})
       (fun conf -> conf.space_around_variants)
 
-  let stritem_extension_indent =
-    let docv = "COLS" in
-    let doc =
-      "Indentation of structure items inside extension nodes ($(docv) \
-       columns)."
-    in
+  let ( (* stritem_extension_indent *) ) =
     let names = ["stritem-extension-indent"] in
-    C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
-      (fun conf x -> {conf with stritem_extension_indent= x})
-      (fun conf -> conf.stritem_extension_indent)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let type_decl =
     let doc = "Style of type declaration." in
@@ -1177,7 +1171,6 @@ let ocp_indent_options =
           ocamlformat ) )
   in
   [ alias "match_clause" "cases-exp-indent"
-  ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
   ; unsupported "strict_else"
   ; unsupported "strict_comments"
@@ -1302,7 +1295,6 @@ let ocamlformat_profile =
   ; space_around_lists= false
   ; space_around_records= false
   ; space_around_variants= false
-  ; stritem_extension_indent= 0
   ; type_decl= `Compact
   ; wrap_comments= false
   ; wrap_fun_args= true }
@@ -1360,7 +1352,6 @@ let conventional_profile =
   ; space_around_lists= C.default Formatting.space_around_lists
   ; space_around_records= C.default Formatting.space_around_records
   ; space_around_variants= C.default Formatting.space_around_variants
-  ; stritem_extension_indent= C.default Formatting.stritem_extension_indent
   ; type_decl= C.default Formatting.type_decl
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args }
@@ -1417,7 +1408,6 @@ let janestreet_profile =
   ; space_around_lists= true
   ; space_around_records= true
   ; space_around_variants= true
-  ; stritem_extension_indent= 0
   ; type_decl= `Sparse
   ; wrap_comments= false
   ; wrap_fun_args= false }

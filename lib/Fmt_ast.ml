@@ -560,8 +560,7 @@ and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
   | name, pld ->
       let indent =
         match pld with
-        | (PStr _ | PSig _) when String.equal key "@@@" ->
-            c.conf.stritem_extension_indent
+        | (PStr _ | PSig _) when String.equal key "@@@" -> 0
         | _ -> c.conf.extension_indent
       in
       hvbox indent (fmt_attribute_or_extension c key (name, pld))
@@ -3461,7 +3460,7 @@ and fmt_signature_item c ?ext {ast= si; _} =
         | PTyp _ | PPat _ | PStr [_] | PSig [_] -> true
         | PStr _ | PSig _ -> false
       in
-      hvbox_if box c.conf.stritem_extension_indent
+      hvbox_if box 0
         ( doc_before
         $ hvbox_if (not box) 0 (fmt_extension c ctx "%%" ext)
         $ fmt_attributes c ~pre:(Break (1, 0)) ~key:"@@" atrs
@@ -4130,7 +4129,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
         | PTyp _ | PPat _ | PStr [_] | PSig [_] -> true
         | PStr _ | PSig _ -> false
       in
-      hvbox_if box c.conf.stritem_extension_indent ~name:"ext1"
+      hvbox_if box 0 ~name:"ext1"
         ( doc_before
         $ hvbox_if (not box) 0 ~name:"ext2" (fmt_extension c ctx "%%" ext)
         $ fmt_attributes c ~pre:Space ~key:"@@" atrs

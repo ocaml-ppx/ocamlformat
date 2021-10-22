@@ -50,7 +50,7 @@ let _ = ([%ext? (x : x)] : [%ext? (x : x)])
 [%%ext 11111111111111111111]
 
 [%%ext
-   11111111111111111111111 22222222222222222222222 33333333333333333333333]
+11111111111111111111111 22222222222222222222222 33333333333333333333333]
 
 [%%ext
 11111111111111111111;;
@@ -167,15 +167,15 @@ let foo =
          foooooooooooooooooooooooooooo]
 
 [%%foooooooooo:
-   fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
-   foooooooooooooooooooooooooooooooooo
-   foooooooooooooooooooooooooooo
-   foooooooooooooooooooooooooooo]
+fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooo]
 
 [@@@foooooooooo
-   fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
-     foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
-     foooooooooooooooooooooooooooo]
+fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+  foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
+  foooooooooooooooooooooooooooo]
 
 let _ =
   [%ext
@@ -258,8 +258,8 @@ module%ext rec K = A
 and L = A
 
 [%%ext
-   module rec K = A
-   and L = A]
+module rec K = A
+and L = A]
 
 let _ =
   let module%ext E = P in
@@ -283,9 +283,9 @@ class%ext x = y
 and y = z
 
 [%%ext
-   class x = y
+class x = y
 
-   and y = z]
+and y = z]
 
 class type%ext x = y
 
@@ -296,9 +296,9 @@ class type%ext x = y
 and y = z
 
 [%%ext
-   class type x = y
+class type x = y
 
-   and y = z]
+and y = z]
 
 let _ = (* bar *) [%expr (* comment *) foo (* blabla *)]
 

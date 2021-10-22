@@ -11,15 +11,15 @@ type t =
        foooooooooooooooooooooooooooo]
 
 [%%foooooooooo:
-   fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
-   foooooooooooooooooooooooooooooooooo
-   foooooooooooooooooooooooooooo
-   foooooooooooooooooooooooooooo]
+fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooo
+foooooooooooooooooooooooooooo]
 
 [@@@foooooooooo
-   fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
-     foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
-     foooooooooooooooooooooooooooo]
+fooooooooooooooooooooooooooo foooooooooooooooooooooooooooooooooo
+  foooooooooooooooooooooooooooooooooo foooooooooooooooooooooooooooo
+  foooooooooooooooooooooooooooo]
 
 [%%ext
 val foooooooooooooooooooooo : fooooooooooo
@@ -46,8 +46,8 @@ module%ext rec T : M
 and Z : Q
 
 [%%ext:
-   module rec T : M
-   and Z : Q]
+module rec T : M
+and Z : Q]
 
 module%ext T := M
 

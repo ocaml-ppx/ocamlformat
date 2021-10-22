@@ -64,7 +64,6 @@ type t =
   ; space_around_lists: bool
   ; space_around_records: bool
   ; space_around_variants: bool
-  ; stritem_extension_indent: int
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool }
