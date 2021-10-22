@@ -3259,24 +3259,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to match_indent.ml.stdout
-   (with-stderr-to match_indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --match-indent=4 %{dep:tests/match_indent.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/match_indent.ml.ref match_indent.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/match_indent.ml.err match_indent.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to max_indent.ml.stdout
    (with-stderr-to max_indent.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-indent=2 %{dep:tests/max_indent.ml})))))

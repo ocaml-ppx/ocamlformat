@@ -45,7 +45,6 @@ type t =
   ; let_module: [`Compact | `Sparse]
   ; line_endings: [`Lf | `Crlf]
   ; margin: int
-  ; match_indent: int
   ; max_indent: int option
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
@@ -761,13 +760,11 @@ module Formatting = struct
       (fun conf x -> {conf with margin= x})
       (fun conf -> conf.margin)
 
-  let match_indent =
-    let docv = "COLS" in
-    let doc = "Indentation of match/try cases ($(docv) columns)." in
+  let ( (* match_indent *) ) =
     let names = ["match-indent"] in
-    C.any Arg.int ~names ~default:0 ~doc ~docv ~kind
-      (fun conf x -> {conf with match_indent= x})
-      (fun conf -> conf.match_indent)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* match_indent_nested *) ) =
     let names = ["match-indent-nested"] in
@@ -1205,7 +1202,7 @@ let ocp_indent_options =
   in
   [ alias "base" "let-binding-indent"
   ; alias "type" "type-decl-indent"
-  ; multi_alias "with" ["function-indent"; "match-indent"]
+  ; multi_alias "with" ["function-indent"]
   ; alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
@@ -1317,7 +1314,6 @@ let ocamlformat_profile =
   ; let_module= `Compact
   ; line_endings= `Lf
   ; margin= 80
-  ; match_indent= 0
   ; max_indent= None
   ; max_iters= 10
   ; module_item_spacing= `Sparse
@@ -1379,7 +1375,6 @@ let conventional_profile =
   ; let_module= C.default Formatting.let_module
   ; line_endings= C.default Formatting.line_endings
   ; margin= C.default Formatting.margin
-  ; match_indent= C.default Formatting.match_indent
   ; max_indent= C.default Formatting.max_indent
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
@@ -1440,7 +1435,6 @@ let janestreet_profile =
   ; let_module= `Sparse
   ; line_endings= `Lf
   ; margin= 90
-  ; match_indent= 0
   ; max_indent= None
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact

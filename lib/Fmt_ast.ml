@@ -1510,8 +1510,7 @@ and fmt_infix_op_args ?ext c ~parens xexp op_args =
     (list_fl groups fmt_op_arg_group)
 
 and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
-  let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
-  hvbox indent
+  hvbox 0
     (Params.Exp.wrap c.conf c.source ~loc:xexp.ast.pexp_loc ~parens
        ( hvbox 0
            ( str keyword
