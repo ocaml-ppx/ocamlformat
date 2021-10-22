@@ -2140,13 +2140,15 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_let (rec_flag, bd, body) ->
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
-        ~attributes:pexp_attributes rec_flag bindings body
+      fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
+        ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
+        ~body_loc:body.pexp_loc
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      fmt_let_bindings c ~ctx ?ext ~parens ~loc:pexp_loc ~fmt_atrs ~fmt_expr
-        ~attributes:pexp_attributes Nonrecursive bd body
+      fmt_let c ctx ~ext ~rec_flag:Nonrecursive ~bindings:bd ~parens
+        ~loc:pexp_loc ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
+        ~body_loc:body.pexp_loc
   | Pexp_letexception (ext_cstr, exp) ->
       let pre =
         str "let exception" $ fmt_extension_suffix c ext $ fmt "@ "
@@ -2565,27 +2567,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       impossible "only used for methods, handled during method formatting"
   | Pexp_hole -> hvbox 0 (fmt_hole () $ fmt_atrs)
 
-and fmt_let_bindings c ~ctx ?ext ~parens ~loc ~attributes ~fmt_atrs ~fmt_expr
-    rec_flag bindings body =
-  let indent_after_in =
-    match body.pexp_desc with
-    | Pexp_let _ | Pexp_letmodule _
-     |Pexp_extension
-        ( _
-        , PStr
-            [ { pstr_desc=
-                  Pstr_eval
-                    ( { pexp_desc= Pexp_let _ | Pexp_letmodule _
-                      ; pexp_attributes= []
-                      ; _ }
-                    , _ )
-              ; pstr_loc= _ } ] ) ->
-        0
-    | _ -> c.conf.indent_after_in
-  in
-  fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc ~attributes ~fmt_atrs
-    ~fmt_expr ~body_loc:body.pexp_loc ~indent_after_in
-
 and fmt_class_structure c ~ctx ?ext self_ fields =
   let update_config c i =
     match i.pcf_desc with
@@ -2746,16 +2727,10 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
       Params.parens_if parens c.conf
         (hvbox 2 (fmt_args_grouped e0 e1N1) $ fmt_atrs)
   | Pcl_let (rec_flag, bd, body) ->
-      let indent_after_in =
-        match body.pcl_desc with
-        | Pcl_let _ -> 0
-        | _ -> c.conf.indent_after_in
-      in
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
       fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
-        ~indent_after_in
   | Pcl_constraint (e, t) ->
       hvbox 2
         (wrap_fits_breaks ~space:false c.conf "(" ")"
@@ -4171,7 +4146,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
   | Pstr_class cls -> fmt_class_exprs ?ext c ctx cls
 
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
-    ~body_loc ~attributes ~indent_after_in =
+    ~body_loc ~attributes =
   let parens = parens || not (List.is_empty attributes) in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
@@ -4192,8 +4167,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     ~fits_breaks:false
     (vbox 0
        ( hvbox 0 (list_fl bindings fmt_binding)
-       $ ( if blank_line_after_in then fmt "\n@,"
-         else break 1000 indent_after_in )
+       $ fmt_or blank_line_after_in "\n@," "@;<1000 0>"
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 

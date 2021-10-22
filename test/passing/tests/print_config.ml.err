@@ -34,7 +34,6 @@ leading-nested-match-parens=false (profile ocamlformat (file tests/.ocamlformat:
 infix-precedence=indent (profile ocamlformat (file tests/.ocamlformat:1))
 indicate-nested-or-patterns=space (profile ocamlformat (file tests/.ocamlformat:1))
 indicate-multiline-delimiters=space (profile ocamlformat (file tests/.ocamlformat:1))
-indent-after-in=0 (profile ocamlformat (file tests/.ocamlformat:1))
 if-then-else=compact (profile ocamlformat (file tests/.ocamlformat:1))
 function-indent-nested=never (profile ocamlformat (file tests/.ocamlformat:1))
 function-indent=2 (profile ocamlformat (file tests/.ocamlformat:1))

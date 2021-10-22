@@ -2952,24 +2952,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to let_binding-in_indent.ml.stdout
-   (with-stderr-to let_binding-in_indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --indent-after-in=4 %{dep:tests/let_binding.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/let_binding-in_indent.ml.ref let_binding-in_indent.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/let_binding-in_indent.ml.err let_binding-in_indent.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to let_binding-indent.ml.stdout
    (with-stderr-to let_binding-indent.ml.stderr
      (run %{bin:ocamlformat} --margin-check --let-binding-indent=6 %{dep:tests/let_binding.ml})))))

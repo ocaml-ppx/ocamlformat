@@ -36,7 +36,6 @@ type t =
   ; function_indent: int
   ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
-  ; indent_after_in: int
   ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
@@ -621,16 +620,11 @@ module Formatting = struct
       (fun conf x -> {conf with if_then_else= x})
       (fun conf -> conf.if_then_else)
 
-  let indent_after_in =
-    let docv = "COLS" in
-    let doc =
-      "Indentation ($(docv) columns) after `let ... in`, unless followed by \
-       another `let`."
-    in
+  let ( (* indent_after_in *) ) =
     let names = ["indent-after-in"] in
-    C.any Arg.int ~names ~default:0 ~doc ~docv ~kind ~allow_inline:false
-      (fun conf x -> {conf with indent_after_in= x})
-      (fun conf -> conf.indent_after_in)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let indicate_multiline_delimiters =
     let doc =
@@ -1239,7 +1233,6 @@ let ocp_indent_options =
   in
   [ alias "base" "let-binding-indent"
   ; alias "type" "type-decl-indent"
-  ; alias "in" "indent-after-in"
   ; multi_alias "with" ["function-indent"; "match-indent"]
   ; alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
@@ -1345,7 +1338,6 @@ let ocamlformat_profile =
   ; function_indent= 2
   ; function_indent_nested= `Never
   ; if_then_else= `Compact
-  ; indent_after_in= 0
   ; indicate_multiline_delimiters= `Space
   ; indicate_nested_or_patterns= `Space
   ; infix_precedence= `Indent
@@ -1407,7 +1399,6 @@ let conventional_profile =
   ; function_indent= C.default Formatting.function_indent
   ; function_indent_nested= C.default Formatting.function_indent_nested
   ; if_then_else= C.default Formatting.if_then_else
-  ; indent_after_in= C.default Formatting.indent_after_in
   ; indicate_multiline_delimiters=
       C.default Formatting.indicate_multiline_delimiters
   ; indicate_nested_or_patterns=
@@ -1474,7 +1465,6 @@ let janestreet_profile =
   ; function_indent= 2
   ; function_indent_nested= `Never
   ; if_then_else= `Keyword_first
-  ; indent_after_in= 0
   ; indicate_multiline_delimiters= `No
   ; indicate_nested_or_patterns= `Unsafe_no
   ; infix_precedence= `Parens

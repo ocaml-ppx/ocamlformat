@@ -38,7 +38,6 @@ type t =
   ; function_indent: int
   ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
-  ; indent_after_in: int
   ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
   ; infix_precedence: [`Indent | `Parens]
