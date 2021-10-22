@@ -33,7 +33,6 @@ type t =
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
   ; exp_grouping: [`Parens | `Preserve]
-  ; extension_indent: int
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]

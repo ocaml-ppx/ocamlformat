@@ -561,7 +561,7 @@ and fmt_attribute c ~key {attr_name; attr_payload; attr_loc} =
       let indent =
         match pld with
         | (PStr _ | PSig _) when String.equal key "@@@" -> 0
-        | _ -> c.conf.extension_indent
+        | _ -> 2
       in
       hvbox indent (fmt_attribute_or_extension c key (name, pld))
 
@@ -762,8 +762,7 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         (list t1N (Params.comma_sep c.conf)
            (sub_typ ~ctx >> fmt_core_type c) )
       $ fmt "@ " $ fmt_longident_loc c lid
-  | Ptyp_extension ext ->
-      hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
+  | Ptyp_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
   | Ptyp_package (id, cnstrs) ->
       hvbox 2
         ( hovbox 0 (fmt "module@ " $ fmt_longident_loc c id)
@@ -1166,8 +1165,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
           , _ ) )
     when Source.extension_using_sugar ~name:ext ~payload:ppat_loc ->
       hvbox 0 (fmt_pattern ~ext c ~box (sub_pat ~ctx pat))
-  | Ppat_extension ext ->
-      hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
+  | Ppat_extension ext -> hvbox 2 (fmt_extension c ctx "%" ext)
   | Ppat_open (lid, pat) ->
       let can_skip_parens =
         match pat.ppat_desc with
@@ -1564,7 +1562,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let fmt_grp grp = list grp " ;@ " (fmt_expression c) in
       hvbox 0
         (Params.parens_if parens c.conf
-           ( hvbox c.conf.extension_indent
+           ( hvbox 2
                (wrap "[" "]"
                   ( str "%"
                   $ hovbox 2
@@ -1598,7 +1596,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ( fmt_expression c (sub_exp ~ctx e0)
            $ fmt "@\n"
            $ Cmts.fmt c loc (fmt "|>@\n")
-           $ hvbox c.conf.extension_indent
+           $ hvbox 2
                (wrap "[" "]"
                   ( str "%"
                   $ hovbox 2
@@ -2462,8 +2460,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_extension ext ->
       hvbox 0
         (Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens
-           ( hvbox c.conf.extension_indent (fmt_extension c ctx "%" ext)
-           $ fmt_atrs ) )
+           (hvbox 2 (fmt_extension c ctx "%" ext) $ fmt_atrs) )
   | Pexp_for (p1, e1, e2, dir, e3) ->
       hvbox 0
         (Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens

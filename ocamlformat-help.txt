@@ -159,10 +159,6 @@ OPTIONS (CODE FORMATTING STYLE)
            parentheses. preserve preserves the original grouping syntax
            (parentheses or begin/end). The default value is parens.
 
-       --extension-indent=COLS
-           Indentation of items inside extension nodes (COLS columns). The
-           default value is 2.
-
        --field-space={loose|tight|tight-decl}
            Whether or not to use a space between a field name and the rhs.
            This option affects records and objects. loose does. tight does
@@ -439,6 +435,10 @@ OPTIONS (REMOVED)
        --escape-strings=VAL
            This option has been removed in version 0.16.0. Concrete syntax
            will now always be preserved.
+
+       --extension-indent=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
 
        --extension-sugar=VAL
            This option has been removed in version 0.17.0. Concrete syntax

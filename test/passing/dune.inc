@@ -1554,42 +1554,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to extensions-indent.ml.stdout
-   (with-stderr-to extensions-indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --max-iters=3 --extension-indent=5 %{dep:tests/extensions.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/extensions-indent.ml.ref extensions-indent.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/extensions-indent.ml.err extensions-indent.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to extensions-indent.mli.stdout
-   (with-stderr-to extensions-indent.mli.stderr
-     (run %{bin:ocamlformat} --margin-check --extension-indent=5 %{dep:tests/extensions.mli})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/extensions-indent.mli.ref extensions-indent.mli.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/extensions-indent.mli.err extensions-indent.mli.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to extensions.ml.stdout
    (with-stderr-to extensions.ml.stderr
      (run %{bin:ocamlformat} --margin-check --max-iters=3 %{dep:tests/extensions.ml})))))

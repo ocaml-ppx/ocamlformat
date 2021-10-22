@@ -31,7 +31,6 @@ type t =
   ; doc_comments_tag_only: [`Fit | `Default]
   ; dock_collection_brackets: bool
   ; exp_grouping: [`Parens | `Preserve]
-  ; extension_indent: int
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
@@ -530,15 +529,11 @@ module Formatting = struct
       (fun conf x -> {conf with exp_grouping= x})
       (fun conf -> conf.exp_grouping)
 
-  let extension_indent =
-    let docv = "COLS" in
-    let doc =
-      "Indentation of items inside extension nodes ($(docv) columns)."
-    in
+  let ( (* extension_indent *) ) =
     let names = ["extension-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      (fun conf x -> {conf with extension_indent= x})
-      (fun conf -> conf.extension_indent)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* extension_sugar *) ) =
     let names = ["extension-sugar"] in
@@ -1266,7 +1261,6 @@ let ocamlformat_profile =
   ; doc_comments_tag_only= `Default
   ; dock_collection_brackets= false
   ; exp_grouping= `Parens
-  ; extension_indent= 2
   ; field_space= `Tight
   ; if_then_else= `Compact
   ; indicate_multiline_delimiters= `Space
@@ -1320,7 +1314,6 @@ let conventional_profile =
   ; doc_comments_tag_only= C.default Formatting.doc_comments_tag_only
   ; dock_collection_brackets= C.default Formatting.dock_collection_brackets
   ; exp_grouping= C.default Formatting.exp_grouping
-  ; extension_indent= C.default Formatting.extension_indent
   ; field_space= C.default Formatting.field_space
   ; if_then_else= C.default Formatting.if_then_else
   ; indicate_multiline_delimiters=
@@ -1379,7 +1372,6 @@ let janestreet_profile =
   ; doc_comments_tag_only= `Fit
   ; dock_collection_brackets= false
   ; exp_grouping= `Parens
-  ; extension_indent= 2
   ; field_space= `Loose
   ; if_then_else= `Keyword_first
   ; indicate_multiline_delimiters= `No

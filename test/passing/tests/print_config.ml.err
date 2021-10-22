@@ -31,7 +31,6 @@ indicate-nested-or-patterns=space (profile ocamlformat (file tests/.ocamlformat:
 indicate-multiline-delimiters=space (profile ocamlformat (file tests/.ocamlformat:1))
 if-then-else=compact (profile ocamlformat (file tests/.ocamlformat:1))
 field-space=tight (profile ocamlformat (file tests/.ocamlformat:1))
-extension-indent=2 (profile ocamlformat (file tests/.ocamlformat:1))
 exp-grouping=parens (profile ocamlformat (file tests/.ocamlformat:1))
 dock-collection-brackets=false (profile ocamlformat (file tests/.ocamlformat:1))
 doc-comments-tag-only=default (profile ocamlformat (file tests/.ocamlformat:1))
