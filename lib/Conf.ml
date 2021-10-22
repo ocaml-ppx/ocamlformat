@@ -13,7 +13,6 @@
 
 type t =
   { assignment_operator: [`Begin_line | `End_line]
-  ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
   ; break_infix: [`Wrap | `Fit_or_vertical]
@@ -216,24 +215,11 @@ module Formatting = struct
       (fun conf x -> {conf with assignment_operator= x})
       (fun conf -> conf.assignment_operator)
 
-  let break_before_in =
-    let doc =
-      "Whether the line should break before the $(i,in) keyword of a \
-       $(i,let) binding."
-    in
+  let ( (* break_before_in *) ) =
     let names = ["break-before-in"] in
-    let all =
-      [ C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
-          "$(b,fit-or-vertical) will always break the line before the \
-           $(i,in) keyword if the whole $(i,let) binding does not fit on a \
-           single line."
-      ; C.Value.make ~name:"auto" `Auto
-          "$(b,auto) will only break the line if the $(i,in) keyword does \
-           not fit on the previous line." ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_before_in= x})
-      (fun conf -> conf.break_before_in)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let break_cases =
     let doc = "Break pattern match cases." in
@@ -1349,7 +1335,6 @@ let ignore_invalid_options =
 
 let ocamlformat_profile =
   { assignment_operator= `End_line
-  ; break_before_in= `Fit_or_vertical
   ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
   ; break_infix= `Wrap
@@ -1413,7 +1398,6 @@ let ocamlformat_profile =
 
 let conventional_profile =
   { assignment_operator= C.default Formatting.assignment_operator
-  ; break_before_in= C.default Formatting.break_before_in
   ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
       C.default Formatting.break_collection_expressions
@@ -1483,7 +1467,6 @@ let default_profile = conventional_profile
 
 let janestreet_profile =
   { assignment_operator= `Begin_line
-  ; break_before_in= `Fit_or_vertical
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=
       ocamlformat_profile.break_collection_expressions

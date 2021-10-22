@@ -237,42 +237,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_before_in-auto.ml.stdout
-   (with-stderr-to break_before_in-auto.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-before-in=auto %{dep:tests/break_before_in.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_before_in-auto.ml.ref break_before_in-auto.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_before_in-auto.ml.err break_before_in-auto.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to break_before_in.ml.stdout
-   (with-stderr-to break_before_in.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-before-in=fit-or-vertical %{dep:tests/break_before_in.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_before_in.ml break_before_in.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_before_in.ml.err break_before_in.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_cases-align.ml.stdout
    (with-stderr-to break_cases-align.ml.stderr
      (run %{bin:ocamlformat} --margin-check --nested-match=align --break-cases=all %{dep:tests/break_cases.ml})))))

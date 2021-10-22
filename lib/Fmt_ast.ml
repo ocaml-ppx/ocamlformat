@@ -4174,14 +4174,9 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
 and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     ~body_loc ~attributes ~indent_after_in =
   let parens = parens || not (List.is_empty attributes) in
-  let fmt_in indent =
-    match c.conf.break_before_in with
-    | `Fit_or_vertical -> break 1 (-indent) $ str "in"
-    | `Auto -> fits_breaks " in" ~hint:(1, -indent) "in"
-  in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
-    let in_ indent = fmt_if_k last (fmt_in indent) in
+    let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
     fmt_value_binding c ~rec_flag ?ext ctx ~in_ binding
     $ fmt_if (not last)

@@ -52,13 +52,6 @@ OPTIONS (CODE FORMATTING STYLE)
            assignment expression does not fit on a single line. The default
            value is end-line.
 
-       --break-before-in={fit-or-vertical|auto}
-           Whether the line should break before the in keyword of a let
-           binding. fit-or-vertical will always break the line before the in
-           keyword if the whole let binding does not fit on a single line.
-           auto will only break the line if the in keyword does not fit on
-           the previous line. The default value is fit-or-vertical.
-
        --break-cases={fit|nested|toplevel|fit-or-vertical|all}
            Break pattern match cases. Specifying fit lets pattern matches
            break at the margin naturally. nested forces a break after nested
@@ -459,6 +452,10 @@ OPTIONS (REMOVED)
        --align-variants-decl=VAL
            This option has been removed in version 1.0.0. Vertical alignment
            is not supported anymore.
+
+       --break-before-in=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
 
        --disable-outside-detected-project=VAL
            This option has been removed in version 1.0.0. Please use
