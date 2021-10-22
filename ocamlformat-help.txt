@@ -107,11 +107,6 @@ OPTIONS (CODE FORMATTING STYLE)
            literals as they are parsed, in particular, with escape sequences
            expanded. The default value is auto.
 
-       --break-struct={force|natural}
-           Break struct-end module items. force will break struct-end phrases
-           unconditionally. natural will break struct-end phrases naturally
-           at the margin. The default value is force.
-
        --cases-exp-indent=COLS
            Indentation of cases expressions (COLS columns). See also the
            cases-matching-exp-indent and nested-match options. The default
@@ -395,6 +390,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --break-sequences=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --break-struct=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

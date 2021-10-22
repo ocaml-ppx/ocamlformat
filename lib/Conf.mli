@@ -23,7 +23,6 @@ type t =
   ; break_separators: [`Before | `After]
   ; break_string_literals: [`Auto | `Never]
         (** How to potentially break string literals into new lines. *)
-  ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
   ; comment_check: bool

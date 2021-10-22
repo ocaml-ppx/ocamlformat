@@ -21,7 +21,6 @@ type t =
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After]
   ; break_string_literals: [`Auto | `Never]
-  ; break_struct: bool
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [`Normal | `Compact]
   ; comment_check: bool
@@ -361,19 +360,11 @@ module Formatting = struct
       (fun conf x -> {conf with break_string_literals= x})
       (fun conf -> conf.break_string_literals)
 
-  let break_struct =
-    let doc = "Break struct-end module items." in
+  let ( (* break_struct *) ) =
     let names = ["break-struct"] in
-    let all =
-      [ C.Value.make ~name:"force" `Force
-          "$(b,force) will break struct-end phrases unconditionally."
-      ; C.Value.make ~name:"natural" `Natural
-          "$(b,natural) will break struct-end phrases naturally at the \
-           margin." ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_struct= Poly.(x = `Force)})
-      (fun conf -> if conf.break_struct then `Force else `Natural)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let cases_exp_indent =
     let docv = "COLS" in
@@ -1238,7 +1229,6 @@ let ocamlformat_profile =
   ; break_fun_sig= `Wrap
   ; break_separators= `Before
   ; break_string_literals= `Auto
-  ; break_struct= true
   ; cases_exp_indent= 4
   ; cases_matching_exp_indent= `Compact
   ; comment_check= true
@@ -1290,7 +1280,6 @@ let conventional_profile =
   ; break_fun_sig= C.default Formatting.break_fun_sig
   ; break_separators= C.default Formatting.break_separators
   ; break_string_literals= C.default Formatting.break_string_literals
-  ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
   ; cases_matching_exp_indent= C.default Formatting.cases_matching_exp_indent
   ; comment_check= C.default comment_check
@@ -1347,7 +1336,6 @@ let janestreet_profile =
   ; break_fun_sig= `Fit_or_vertical
   ; break_separators= `Before
   ; break_string_literals= `Auto
-  ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2
   ; cases_matching_exp_indent= `Normal
   ; comment_check= true

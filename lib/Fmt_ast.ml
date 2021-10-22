@@ -201,16 +201,13 @@ let fmt_hole () = str "_"
 
 let fmt_item_list c ctx update_config ast fmt_item items =
   let items = update_items_config c items update_config in
-  let break_struct = c.conf.break_struct || is_top ctx in
   hvbox 0 @@ list_pn items
   @@ fun ~prev (itm, c) ~next ->
   let loc = Ast.location (ast itm) in
   maybe_disabled c loc [] (fun c -> fmt_item c ctx ~prev ~next itm)
   $ opt next (fun (i_n, c_n) ->
-        fmt_or_k
-          (break_between c (ast itm, c.conf) (ast i_n, c_n.conf))
-          (fmt "\n@;<1000 0>")
-          (fmt_or break_struct "@;<1000 0>" "@ ") )
+        fmt_if (break_between c (ast itm, c.conf) (ast i_n, c_n.conf)) "\n"
+        $ break 1000 0 )
 
 let fmt_recmodule c ctx items fmt_item ast =
   let update_config c i = update_config c (Ast.attributes (ast i)) in
@@ -3805,8 +3802,7 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
       let box_f = wrap_k blk_f.opn blk_f.cls in
       let fmt_rator =
         let break_struct =
-          c.conf.break_struct && can_break_before_struct
-          && not (Mod.is_simple me_a)
+          can_break_before_struct && not (Mod.is_simple me_a)
         in
         fmt_docstring c ~epi:(fmt "@,") doc
         $ box_f (blk_f.psp $ fmt_opt blk_f.pro $ blk_f.bdy)
@@ -3937,14 +3933,10 @@ and fmt_module_expr ?(can_break_before_struct = false) c ({ast= m; _} as xmod)
             ( before
             $ fmt_docstring c ~epi:(fmt "@,") doc
             $ str "struct" $ fmt_if empty " " )
-      ; psp=
-          fmt_if_k (not empty)
-            (fmt_or c.conf.break_struct "@;<1000 2>" "@;<1 2>")
+      ; psp= fmt_if (not empty) "@;<1000 2>"
       ; bdy= within $ fmt_structure c ctx sis
       ; cls= noop
-      ; esp=
-          fmt_if_k (not empty)
-            (fmt_or c.conf.break_struct "@;<1000 0>" "@;<1 0>")
+      ; esp= fmt_if (not empty) "@;<1000 0>"
       ; epi=
           Some (str "end" $ after $ fmt_attributes c ~pre:Space ~key:"@" atrs)
       }

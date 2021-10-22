@@ -687,24 +687,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_struct.ml.stdout
-   (with-stderr-to break_struct.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/break_struct.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_struct.ml.ref break_struct.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_struct.ml.err break_struct.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to cases_exp_grouping.ml.stdout
    (with-stderr-to cases_exp_grouping.ml.stderr
      (run %{bin:ocamlformat} --margin-check --exp-grouping=preserve %{dep:tests/cases_exp_grouping.ml})))))
