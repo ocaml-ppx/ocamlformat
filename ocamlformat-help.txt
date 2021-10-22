@@ -460,6 +460,10 @@ OPTIONS (REMOVED)
            This option has been removed in version 1.0.0. Vertical alignment
            is not supported anymore.
 
+       --disambiguate-non-breaking-match=VAL
+           This option has been removed in version 1.0.0. Forced
+           disambiguation is not supported anymore.
+
        --doc-comments-val=VAL
            This option has been removed in version 0.16.0. If you are using
            `doc-comments-val=before` in combination with
@@ -495,15 +499,6 @@ OPTIONS (DEPRECATED)
        --disable-outside-detected-project
            Warning: this option is deprecated and will be removed by
            OCamlFormat v1.0.
-
-       --disambiguate-non-breaking-match
-           Add parentheses around matching constructs that fit on a single
-           line. The flag is unset by default. Warning: This option is
-           deprecated since version 0.20.0. It will be removed by version
-           1.0.
-
-       --no-disambiguate-non-breaking-match
-           Unset disambiguate-non-breaking-match.
 
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)

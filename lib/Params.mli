@@ -12,9 +12,9 @@
 module Format = Format_
 open Extended_ast
 
-val parens_if : bool -> Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens_if : bool -> Conf.t -> Fmt.t -> Fmt.t
 
-val parens : Conf.t -> ?disambiguate:bool -> Fmt.t -> Fmt.t
+val parens : Conf.t -> Fmt.t -> Fmt.t
 
 module Exp : sig
   module Infix_op_arg : sig
@@ -31,7 +31,6 @@ module Exp : sig
 
   val wrap :
        Conf.t
-    -> ?disambiguate:bool
     -> ?fits_breaks:bool
     -> ?offset_closing_paren:int
          (** Offset of the closing paren in case the line has been broken and

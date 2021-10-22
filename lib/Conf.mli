@@ -30,7 +30,6 @@ type t =
   ; cases_matching_exp_indent: [`Normal | `Compact]
   ; comment_check: bool
   ; disable: bool
-  ; disambiguate_non_breaking_match: bool
   ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
   ; doc_comments_padding: int
   ; doc_comments_tag_only: [`Fit | `Default]

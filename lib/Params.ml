@@ -26,10 +26,8 @@ let parens_or_begin_end (c : Conf.t) source ~loc =
     | Some (BEGIN, _) -> `Begin_end
     | None | Some _ -> `Parens )
 
-let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
-  if disambiguate && c.Conf.disambiguate_non_breaking_match then
-    wrap_if_fits_or parens "(" ")" k
-  else if not parens then k
+let parens_if parens (c : Conf.t) k =
+  if not parens then k
   else
     match c.Conf.indicate_multiline_delimiters with
     | `Space ->
@@ -38,7 +36,7 @@ let parens_if parens (c : Conf.t) ?(disambiguate = false) k =
         Fmt.fits_breaks "(" "(" $ k $ Fmt.fits_breaks ")" ~hint:(1000, 0) ")"
     | `No -> wrap "(" ")" k
 
-let parens c ?disambiguate k = parens_if true c ?disambiguate k
+let parens c k = parens_if true c k
 
 module Exp = struct
   module Infix_op_arg = struct
@@ -66,11 +64,9 @@ module Exp = struct
                (wrap_k (break 1 0) (break 1000 ~-2) k) )
   end
 
-  let wrap (c : Conf.t) ?(disambiguate = false) ?(fits_breaks = true)
-      ?(offset_closing_paren = 0) ~parens ~loc source k =
+  let wrap (c : Conf.t) ?(fits_breaks = true) ?(offset_closing_paren = 0)
+      ~parens ~loc source k =
     match parens_or_begin_end c source ~loc with
-    | `Parens when disambiguate && c.Conf.disambiguate_non_breaking_match ->
-        wrap_if_fits_or parens "(" ")" k
     | (`Parens | `Begin_end) when not parens -> k
     | `Parens when fits_breaks -> wrap_fits_breaks ~space:false c "(" ")" k
     | `Parens -> (

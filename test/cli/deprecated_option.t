@@ -2,13 +2,7 @@
 
 Setting a deprecated option or a deprecated option value on the command line should display a warning message:
 
-  $ ocamlformat a.ml --disambiguate-non-breaking-match
-  Warning: disambiguate-non-breaking-match: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
-  let x = y
+
 
 A warning is also reported if a deprecated option or a deprecated option value is set in an .ocamlformat file:
 
-  $ echo 'disambiguate-non-breaking-match = true' > .ocamlformat
-  $ ocamlformat a.ml
-  Warning: disambiguate-non-breaking-match: This option is deprecated since version 0.20.0. It will be removed by version 1.0.
-  let x = y

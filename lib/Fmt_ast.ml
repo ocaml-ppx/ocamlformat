@@ -1514,7 +1514,6 @@ and fmt_match c ~parens ?ext ctx xexp cs e0 keyword =
   let indent = Params.match_indent c.conf ~ctx:xexp.ctx in
   hvbox indent
     (Params.Exp.wrap c.conf c.source ~loc:xexp.ast.pexp_loc ~parens
-       ~disambiguate:true
        ( hvbox 0
            ( str keyword
            $ fmt_extension_suffix c ext
@@ -2074,7 +2073,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       hvbox_if (box || body_is_function) indent
         (Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens
-           ~disambiguate:true ~fits_breaks:false ~offset_closing_paren:(-2)
+           ~fits_breaks:false ~offset_closing_paren:(-2)
            ( hovbox 2
                ( hovbox 4
                    ( str "fun "
@@ -2088,7 +2087,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_function cs ->
       let indent = Params.function_indent c.conf ~ctx in
       Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens
-        ~disambiguate:true ~fits_breaks:false
+        ~fits_breaks:false
         ( hvbox 2
             ( str "function"
             $ fmt_extension_suffix c ext
@@ -2283,7 +2282,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         else (parenze_exp xpc_rhs, Some false)
       in
       Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens
-        ~disambiguate:true
         (hvbox 2
            ( hvbox 0
                ( str "try"

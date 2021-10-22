@@ -1137,24 +1137,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to disambiguate.ml.stdout
-   (with-stderr-to disambiguate.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/disambiguate.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/disambiguate.ml disambiguate.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/disambiguate.ml.err disambiguate.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to disambiguated_types.ml.stdout
    (with-stderr-to disambiguated_types.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/disambiguated_types.ml})))))
