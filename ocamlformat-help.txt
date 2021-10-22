@@ -454,6 +454,18 @@ OPTIONS (CODE FORMATTING STYLE)
            Style for function call. The flag is set by default.
 
 OPTIONS (REMOVED)
+       --align-cases=VAL
+           This option has been removed in version 1.0.0. Vertical alignment
+           is not supported anymore.
+
+       --align-constructors-decl=VAL
+           This option has been removed in version 1.0.0. Vertical alignment
+           is not supported anymore.
+
+       --align-variants-decl=VAL
+           This option has been removed in version 1.0.0. Vertical alignment
+           is not supported anymore.
+
        --doc-comments-val=VAL
            This option has been removed in version 0.16.0. If you are using
            `doc-comments-val=before` in combination with
@@ -486,21 +498,6 @@ OPTIONS (REMOVED)
            will now always be preserved.
 
 OPTIONS (DEPRECATED)
-       --align-cases
-           Align match/try cases vertically. The flag is unset by default.
-           Warning: This option is deprecated since version 0.20.0. It will
-           be removed by version 1.0.
-
-       --align-constructors-decl
-           Align type declarations vertically. The flag is unset by default.
-           Warning: This option is deprecated since version 0.20.0. It will
-           be removed by version 1.0.
-
-       --align-variants-decl
-           Align type variants declarations vertically. The flag is unset by
-           default. Warning: This option is deprecated since version 0.20.0.
-           It will be removed by version 1.0.
-
        --disable-outside-detected-project
            Warning: this option is deprecated and will be removed by
            OCamlFormat v1.0.
@@ -510,15 +507,6 @@ OPTIONS (DEPRECATED)
            line. The flag is unset by default. Warning: This option is
            deprecated since version 0.20.0. It will be removed by version
            1.0.
-
-       --no-align-cases
-           Unset align-cases.
-
-       --no-align-constructors-decl
-           Unset align-constructors-decl.
-
-       --no-align-variants-decl
-           Unset align-variants-decl.
 
        --no-disambiguate-non-breaking-match
            Unset disambiguate-non-breaking-match.

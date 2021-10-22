@@ -12,10 +12,7 @@
 (** Configuration options *)
 
 type t =
-  { align_cases: bool
-  ; align_constructors_decl: bool
-  ; align_variants_decl: bool
-  ; assignment_operator: [`Begin_line | `End_line]
+  { assignment_operator: [`Begin_line | `End_line]
   ; break_before_in: [`Fit_or_vertical | `Auto]
   ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
   ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
@@ -187,29 +184,23 @@ let removed_by_v1_0 = "It will be removed by version 1.0."
 module Formatting = struct
   let kind = C.Formatting
 
-  let align_cases =
-    let doc = "Align match/try cases vertically." in
+  let ( (* align_cases *) ) =
+    let msg = "Vertical alignment is not supported anymore." in
     let names = ["align-cases"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.flag ~default:false ~names ~doc ~kind ~status:(`Deprecated deprecated)
-      (fun conf x -> {conf with align_cases= x})
-      (fun conf -> conf.align_cases)
+    let version = "1.0.0" in
+    C.removed_option ~names ~version ~msg
 
-  let align_constructors_decl =
-    let doc = "Align type declarations vertically." in
+  let ( (* align_constructors_decl *) ) =
+    let msg = "Vertical alignment is not supported anymore." in
     let names = ["align-constructors-decl"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.flag ~default:false ~names ~doc ~kind ~status:(`Deprecated deprecated)
-      (fun conf x -> {conf with align_constructors_decl= x})
-      (fun conf -> conf.align_constructors_decl)
+    let version = "1.0.0" in
+    C.removed_option ~names ~version ~msg
 
-  let align_variants_decl =
-    let doc = "Align type variants declarations vertically." in
+  let ( (* align_variants_decl *) ) =
+    let msg = "Vertical alignment is not supported anymore." in
     let names = ["align-variants-decl"] in
-    let deprecated = C.deprecated ~since_version:"0.20.0" removed_by_v1_0 in
-    C.flag ~default:false ~names ~doc ~kind ~status:(`Deprecated deprecated)
-      (fun conf x -> {conf with align_variants_decl= x})
-      (fun conf -> conf.align_variants_decl)
+    let version = "1.0.0" in
+    C.removed_option ~names ~version ~msg
 
   let assignment_operator =
     let doc = "Position of the assignment operator." in
@@ -1371,10 +1362,7 @@ let ignore_invalid_options =
   mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
 
 let ocamlformat_profile =
-  { align_cases= false
-  ; align_constructors_decl= false
-  ; align_variants_decl= false
-  ; assignment_operator= `End_line
+  { assignment_operator= `End_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Nested
   ; break_collection_expressions= `Fit_or_vertical
@@ -1439,10 +1427,7 @@ let ocamlformat_profile =
   ; wrap_fun_args= true }
 
 let conventional_profile =
-  { align_cases= C.default Formatting.align_cases
-  ; align_constructors_decl= C.default Formatting.align_constructors_decl
-  ; align_variants_decl= C.default Formatting.align_variants_decl
-  ; assignment_operator= C.default Formatting.assignment_operator
+  { assignment_operator= C.default Formatting.assignment_operator
   ; break_before_in= C.default Formatting.break_before_in
   ; break_cases= C.default Formatting.break_cases
   ; break_collection_expressions=
@@ -1569,10 +1554,7 @@ let sparse_profile =
   ; wrap_fun_args= false }
 
 let janestreet_profile =
-  { align_constructors_decl= false
-  ; align_cases= false
-  ; align_variants_decl= false
-  ; assignment_operator= `Begin_line
+  { assignment_operator= `Begin_line
   ; break_before_in= `Fit_or_vertical
   ; break_cases= `Fit_or_vertical
   ; break_collection_expressions=

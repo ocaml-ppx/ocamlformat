@@ -62,6 +62,3 @@ break-collection-expressions=fit-or-vertical (profile ocamlformat (file tests/.o
 break-cases=fit (file tests/.ocamlformat:2)
 break-before-in=fit-or-vertical (profile ocamlformat (file tests/.ocamlformat:1))
 assignment-operator=end-line (profile ocamlformat (file tests/.ocamlformat:1))
-align-variants-decl=false (profile ocamlformat (file tests/.ocamlformat:1))
-align-constructors-decl=false (profile ocamlformat (file tests/.ocamlformat:1))
-align-cases=false (profile ocamlformat (file tests/.ocamlformat:1))
