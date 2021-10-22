@@ -177,8 +177,6 @@ let ocaml_version_conv =
   in
   (parse, Ocaml_version.pp)
 
-let removed_by_v1_0 = "It will be removed by version 1.0."
-
 (** Options affecting formatting *)
 module Formatting = struct
   let kind = C.Formatting
@@ -1110,17 +1108,11 @@ let disable_conf_files =
   mk ~default:false
     Arg.(value & flag & info ["disable-conf-files"] ~doc ~docs)
 
-let disable_outside_detected_project =
-  let doc =
-    Format.sprintf
-      "$(b,Warning:) this option is $(b,deprecated) and will be removed by \
-       OCamlFormat v1.0."
-  in
-  let default = false in
-  let deprecated = C.deprecated ~since_version:"0.10.0" removed_by_v1_0 in
-  let docs = C.section_name Operational (`Deprecated deprecated) in
-  mk ~default
-    Arg.(value & flag & info ["disable-outside-detected-project"] ~doc ~docs)
+let ( (* disable_outside_detected_project *) ) =
+  let names = ["disable-outside-detected-project"] in
+  let version = "1.0.0" in
+  let msg = "Please use $(b,enable-outside-detected-project) instead." in
+  C.removed_option ~names ~version ~msg
 
 let enable_outside_detected_project =
   let witness =
@@ -2073,10 +2065,6 @@ let validate () =
   let enable_outside_detected_project =
     !enable_outside_detected_project && Option.is_none root
   in
-  if !disable_outside_detected_project then
-    warn
-      "option `--disable-outside-detected-project` is deprecated and will \
-       be removed in OCamlFormat v1.0." ;
   match
     let open Result in
     validate_action ()

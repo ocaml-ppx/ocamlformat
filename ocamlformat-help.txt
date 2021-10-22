@@ -460,6 +460,10 @@ OPTIONS (REMOVED)
            This option has been removed in version 1.0.0. Vertical alignment
            is not supported anymore.
 
+       --disable-outside-detected-project=VAL
+           This option has been removed in version 1.0.0. Please use
+           enable-outside-detected-project instead.
+
        --disambiguate-non-breaking-match=VAL
            This option has been removed in version 1.0.0. Forced
            disambiguation is not supported anymore.
@@ -494,11 +498,6 @@ OPTIONS (REMOVED)
        --let-open=VAL
            This option has been removed in version 0.17.0. Concrete syntax
            will now always be preserved.
-
-OPTIONS (DEPRECATED)
-       --disable-outside-detected-project
-           Warning: this option is deprecated and will be removed by
-           OCamlFormat v1.0.
 
 OPTIONS
        -c VAL, --config=VAL (absent OCAMLFORMAT env)
