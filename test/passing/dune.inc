@@ -2438,7 +2438,7 @@
  (action
   (with-stdout-to ite-fit_or_vertical.ml.stdout
    (with-stderr-to ite-fit_or_vertical.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --if-then-else=fit-or-vertical %{dep:tests/ite.ml})))))
+     (run %{bin:ocamlformat} --margin-check --if-then-else=fit-or-vertical --max-iter=3 %{dep:tests/ite.ml})))))
 
 (rule
  (alias runtest)
@@ -2456,7 +2456,7 @@
  (action
   (with-stdout-to ite-fit_or_vertical_closing.ml.stdout
    (with-stderr-to ite-fit_or_vertical_closing.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --if-then-else fit-or-vertical --indicate-multiline-delimiters=closing-on-separate-line %{dep:tests/ite.ml})))))
+     (run %{bin:ocamlformat} --margin-check --if-then-else fit-or-vertical --indicate-multiline-delimiters=closing-on-separate-line --max-iter=3 %{dep:tests/ite.ml})))))
 
 (rule
  (alias runtest)
@@ -2474,7 +2474,7 @@
  (action
   (with-stdout-to ite-fit_or_vertical_no_indicate.ml.stdout
    (with-stderr-to ite-fit_or_vertical_no_indicate.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --if-then-else=fit-or-vertical --indicate-multiline-delimiters=no %{dep:tests/ite.ml})))))
+     (run %{bin:ocamlformat} --margin-check --if-then-else=fit-or-vertical --indicate-multiline-delimiters=no --max-iter=3 %{dep:tests/ite.ml})))))
 
 (rule
  (alias runtest)

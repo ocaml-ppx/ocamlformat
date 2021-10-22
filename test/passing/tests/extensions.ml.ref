@@ -1,4 +1,6 @@
-let () = [%ext expr] ; ()
+let () =
+  [%ext expr] ;
+  ()
 
 let _ = [%ext match x with () -> ()] [@attr y]
 
@@ -118,7 +120,9 @@ let _ = f ([%ext e] [@attr]) x
 let _ =
   a ;%ext
   b ;
-  [%ext a ; b]
+  [%ext
+    a ;
+    b]
 
 let _ = try%lwt Lwt.return 2 with _ -> assert false
 
@@ -178,7 +182,10 @@ let _ =
     let+ a = b in
     c]
 
-let _ = [%ext "foo" ; "bar"]
+let _ =
+  [%ext
+    "foo" ;
+    "bar"]
 
 let this_function_has_a_long_name plus very many arguments =
   "and a kind of long body"

@@ -34,8 +34,18 @@ let _ =
 let x =
   let g =
     match x with
-    | `A -> ( fun id -> function A -> e ; e | _ -> () )
-    | `B -> ( fun id -> function A -> e ; e | _ -> () )
+    | `A -> (
+        fun id -> function
+          | A ->
+              e ;
+              e
+          | _ -> () )
+    | `B -> (
+        fun id -> function
+          | A ->
+              e ;
+              e
+          | _ -> () )
   in
   ()
 

@@ -88,7 +88,9 @@ let _ = (x.*(y) <- z) := []
 
 let _ = ((x.*(y) <- z), [])
 
-let _ = x.*(y) <- z ; []
+let _ =
+  x.*(y) <- z ;
+  []
 
 let _ = (x.(y) <- z) @ []
 
@@ -96,7 +98,9 @@ let _ = (x.(y) <- z) := []
 
 let _ = ((x.(y) <- z), [])
 
-let _ = x.(y) <- z ; []
+let _ =
+  x.(y) <- z ;
+  []
 
 let _ = (x.y <- z) @ []
 
@@ -118,9 +122,13 @@ class free =
   end
 
 (* With path *)
-let _ = a.A.B.*(b) ; a.A.B.*(b) <- c
+let _ =
+  a.A.B.*(b) ;
+  a.A.B.*(b) <- c
 
-let _ = a.*((a ; b))
+let _ =
+  a.*(( a ;
+        b ))
 
 let _ = a.*([|a; b|])
 
@@ -134,9 +142,13 @@ let _ =
 let _ = if a then a.*(if a then b) else c
 
 (* Parentheses needed *)
-let _ = a.*{(a ; b)}
+let _ =
+  a.*{( a ;
+        b )}
 
-let _ = a.{(a ; b)}
+let _ =
+  a.{( a ;
+       b )}
 
 let _ = a.{a, b}
 

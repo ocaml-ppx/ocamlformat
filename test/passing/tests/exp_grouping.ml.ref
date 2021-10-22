@@ -221,7 +221,8 @@ let _ =
     Fooo fooo
   end
   else if y then begin
-    f 0 ; f 2
+    f 0 ;
+    f 2
   end
   else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
@@ -236,7 +237,8 @@ let _ =
     Fooo fooo
   end
   else if y then begin
-    f 0 ; f 2
+    f 0 ;
+    f 2
   end
   else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
@@ -253,7 +255,8 @@ let _ =
   end
   else if y
   then begin
-    f 0 ; f 2
+    f 0 ;
+    f 2
   end
   else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
@@ -267,7 +270,8 @@ let _ =
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo
   end else if y then begin
-    f 0 ; f 2
+    f 0 ;
+    f 2
   end else begin
     foo.fooooo <- Fooo.foo fooo foo.fooooo ;
     Fooo fooo

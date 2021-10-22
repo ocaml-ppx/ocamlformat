@@ -20,7 +20,6 @@ type t =
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After]
-  ; break_sequences: bool
   ; break_string_literals: [`Auto | `Never]
   ; break_struct: bool
   ; cases_exp_indent: int
@@ -344,14 +343,11 @@ module Formatting = struct
       (fun conf x -> {conf with break_separators= x})
       (fun conf -> conf.break_separators)
 
-  let break_sequences =
-    let doc =
-      "Force sequence expressions to break irrespective of margin."
-    in
+  let ( (* break_sequences *) ) =
     let names = ["break-sequences"] in
-    C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with break_sequences= x})
-      (fun conf -> conf.break_sequences)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let break_string_literals =
     let doc = "Break string literals." in
@@ -1342,7 +1338,6 @@ let ocamlformat_profile =
   ; break_fun_decl= `Wrap
   ; break_fun_sig= `Wrap
   ; break_separators= `Before
-  ; break_sequences= false
   ; break_string_literals= `Auto
   ; break_struct= true
   ; cases_exp_indent= 4
@@ -1406,7 +1401,6 @@ let conventional_profile =
   ; break_fun_decl= C.default Formatting.break_fun_decl
   ; break_fun_sig= C.default Formatting.break_fun_sig
   ; break_separators= C.default Formatting.break_separators
-  ; break_sequences= C.default Formatting.break_sequences
   ; break_string_literals= C.default Formatting.break_string_literals
   ; break_struct= Poly.(C.default Formatting.break_struct = `Force)
   ; cases_exp_indent= C.default Formatting.cases_exp_indent
@@ -1475,7 +1469,6 @@ let janestreet_profile =
   ; break_fun_decl= `Fit_or_vertical
   ; break_fun_sig= `Fit_or_vertical
   ; break_separators= `Before
-  ; break_sequences= true
   ; break_string_literals= `Auto
   ; break_struct= ocamlformat_profile.break_struct
   ; cases_exp_indent= 2

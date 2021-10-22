@@ -51,7 +51,6 @@ cases-matching-exp-indent=compact (profile ocamlformat (file tests/.ocamlformat:
 cases-exp-indent=4 (profile ocamlformat (file tests/.ocamlformat:1))
 break-struct=force (profile ocamlformat (file tests/.ocamlformat:1))
 break-string-literals=auto (profile ocamlformat (file tests/.ocamlformat:1))
-break-sequences=false (profile ocamlformat (file tests/.ocamlformat:1))
 break-separators=before (profile ocamlformat (file tests/.ocamlformat:1))
 break-infix-before-func=true (profile ocamlformat (file tests/.ocamlformat:1))
 break-infix=wrap (profile ocamlformat (file tests/.ocamlformat:1))

@@ -82,7 +82,10 @@ let tests_list_k =
     , fun () ->
         let calls = ref [] in
         let record_call x = calls := x :: !calls in
-        let pp_spy x = record_call x ; Fmt.str x in
+        let pp_spy x =
+          record_call x ;
+          Fmt.str x
+        in
         let term = f pp_spy in
         let got = eval_fmt term in
         Alcotest.check Alcotest.(string) Caml.__LOC__ expected got ;

@@ -83,7 +83,9 @@ let run_action action opts =
         | Error e -> Error (fun () -> print_error conf opts e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
-  | Print_config conf -> Conf.print_config conf ; Ok ()
+  | Print_config conf ->
+      Conf.print_config conf ;
+      Ok ()
   | Numeric ({kind; file; name= input_name; conf}, range) ->
       let conf = {conf with quiet= true} in
       let source = source_from_file file in

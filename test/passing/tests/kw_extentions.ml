@@ -33,7 +33,12 @@ let () =
   (match%ext x with _ -> ()) ;
   match%ext x with _ -> ()
 
-let () = () ; () ;%ext () ; () ;%ext ()
+let () =
+  () ;
+  () ;%ext
+  () ;
+  () ;%ext
+  ()
 
 let _ =
   let%ext () = () and () = () in

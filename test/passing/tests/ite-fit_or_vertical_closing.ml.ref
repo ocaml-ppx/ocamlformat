@@ -1,4 +1,10 @@
-let _ = if b then e else (e1 ; e2)
+let _ =
+  if b then
+    e
+  else (
+    e1 ;
+    e2
+  )
 
 let _ =
   if b then
@@ -10,7 +16,8 @@ let _ =
 
 let _ =
   if b then (
-    e1 ; e2
+    e1 ;
+    e2
   ) else (
     something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
     this is more

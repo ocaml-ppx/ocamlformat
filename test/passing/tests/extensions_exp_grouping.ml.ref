@@ -51,13 +51,25 @@ let _ = f (module%ext S : S)
 
 let _ = f [%ext (module S : S)]
 
-let _ = x ;%ext y
+let _ =
+  x ;%ext
+  y
 
-let _ = [%ext x ; y]
+let _ =
+  [%ext
+    x ;
+    y]
 
-let _ = f (x ;%ext y)
+let _ =
+  f
+    ( x ;%ext
+      y )
 
-let _ = f [%ext x ; y]
+let _ =
+  f
+    [%ext
+      x ;
+      y]
 
 let _ =
   match w with
@@ -74,7 +86,11 @@ let _ =
 
 let a =
   (* test *)
-  Lwt.return () ;%lwt Lwt.return 1
+  Lwt.return () ;%lwt
+  Lwt.return 1
 
-let a = f ((* test *)
-           Lwt.return () ;%lwt Lwt.return 1)
+let a =
+  f
+    ( (* test *)
+      Lwt.return () ;%lwt
+      Lwt.return 1 )

@@ -3478,7 +3478,9 @@ let map_lambda ~map_rec : _ lambda -> _ = function
 
 let next_id =
   let current = ref 3 in
-  fun () -> incr current ; !current
+  fun () ->
+    incr current ;
+    !current
 
 let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
   | #var as x -> subst_var ~subst x
@@ -3587,11 +3589,22 @@ let rec print = function
   | `Abs (id, l) ->
       print_string (" " ^ id ^ " . ") ;
       print l
-  | `App (l1, l2) -> print l1 ; print_string " " ; print l2
+  | `App (l1, l2) ->
+      print l1 ;
+      print_string " " ;
+      print l2
   | `Num x -> print_int x
-  | `Add (e1, e2) -> print e1 ; print_string " + " ; print e2
-  | `Neg e -> print_string "-" ; print e
-  | `Mult (e1, e2) -> print e1 ; print_string " * " ; print e2
+  | `Add (e1, e2) ->
+      print e1 ;
+      print_string " + " ;
+      print e2
+  | `Neg e ->
+      print_string "-" ;
+      print e
+  | `Mult (e1, e2) ->
+      print e1 ;
+      print_string " * " ;
+      print e2
 
 let () =
   let e1 = eval1 (`App (`Abs ("x", `Var "x"), `Var "y")) in
@@ -3666,7 +3679,9 @@ type 'a lambda = [`Var of string | `Abs of string * 'a | `App of 'a * 'a]
 
 let next_id =
   let current = ref 3 in
-  fun () -> incr current ; !current
+  fun () ->
+    incr current ;
+    !current
 
 class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
   let var : 'a var_ops = new var_ops
@@ -3803,11 +3818,22 @@ let rec print = function
   | `Abs (id, l) ->
       print_string (" " ^ id ^ " . ") ;
       print l
-  | `App (l1, l2) -> print l1 ; print_string " " ; print l2
+  | `App (l1, l2) ->
+      print l1 ;
+      print_string " " ;
+      print l2
   | `Num x -> print_int x
-  | `Add (e1, e2) -> print e1 ; print_string " + " ; print e2
-  | `Neg e -> print_string "-" ; print e
-  | `Mult (e1, e2) -> print e1 ; print_string " * " ; print e2
+  | `Add (e1, e2) ->
+      print e1 ;
+      print_string " + " ;
+      print e2
+  | `Neg e ->
+      print_string "-" ;
+      print e
+  | `Mult (e1, e2) ->
+      print e1 ;
+      print_string " * " ;
+      print e2
 
 let () =
   let e1 = lambda#eval (`App (`Abs ("x", `Var "x"), `Var "y")) in
@@ -3880,7 +3906,9 @@ type 'a lambda = [`Var of string | `Abs of string * 'a | `App of 'a * 'a]
 
 let next_id =
   let current = ref 3 in
-  fun () -> incr current ; !current
+  fun () ->
+    incr current ;
+    !current
 
 let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
   let free = lazy !!ops#free
@@ -4009,11 +4037,22 @@ let rec print = function
   | `Abs (id, l) ->
       print_string (" " ^ id ^ " . ") ;
       print l
-  | `App (l1, l2) -> print l1 ; print_string " " ; print l2
+  | `App (l1, l2) ->
+      print l1 ;
+      print_string " " ;
+      print l2
   | `Num x -> print_int x
-  | `Add (e1, e2) -> print e1 ; print_string " + " ; print e2
-  | `Neg e -> print_string "-" ; print e
-  | `Mult (e1, e2) -> print e1 ; print_string " * " ; print e2
+  | `Add (e1, e2) ->
+      print e1 ;
+      print_string " + " ;
+      print e2
+  | `Neg e ->
+      print_string "-" ;
+      print e
+  | `Mult (e1, e2) ->
+      print e1 ;
+      print_string " * " ;
+      print e2
 
 let () =
   let e1 = lambda#eval (`App (`Abs ("x", `Var "x"), `Var "y")) in
@@ -4198,7 +4237,10 @@ let foo (f : unit -> unit) = ()
 
 let g ?x () = ();;
 
-foo (() ; g);;
+foo
+  ( () ;
+    g )
+;;
 
 (* PR#5748 *)
 foo (fun ?opt () -> ())
@@ -4240,7 +4282,9 @@ let f x (g : [< `Foo]) =
 
 (* f : 'a -> [< `Foo ] -> 'a *)
 
-let rec x = [|x|] ; 1.
+let rec x =
+  [|x|] ;
+  1.
 
 let rec x =
   let u = [|y|] in
@@ -5791,7 +5835,9 @@ class app e1 e2 : exp =
 
     method eval env =
       match l with
-      | `Abs (var, body) -> Hashtbl.add env var r ; body
+      | `Abs (var, body) ->
+          Hashtbl.add env var r ;
+          body
       | _ -> `App (l, r)
   end
 
@@ -5992,7 +6038,8 @@ class virtual ['a, 'cursor] storage_base =
     method iter proc =
       let p = self#first in
       for i = 0 to self#len - 2 do
-        proc p#get ; p#incr ()
+        proc p#get ;
+        p#incr ()
       done ;
       if self#len > 0 then proc p#get else ()
   end
@@ -6075,7 +6122,8 @@ module UText = struct
 
   let make_buf init =
     let s = String.create (init#len lsl 2) in
-    init_buf s 0 init ; s
+    init_buf s 0 init ;
+    s
 
   class text_raw buf =
     object (self : 'self)
@@ -9048,7 +9096,10 @@ let foo : type t. t = assert false
 
 let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
-let f x = x.contents <- (print_string "coucou" ; x.contents)
+let f x =
+  x.contents <-
+    ( print_string "coucou" ;
+      x.contents )
 
 let ( ~$ ) x = Some x
 
@@ -9091,7 +9142,9 @@ fun contents -> {contents= contents [@foo]};;
 fun contents -> {contents= contents [@foo]; foo};;
 
 () ;
-(() ; ()) [@foo]
+(() ;
+ () )
+[@foo]
 
 (* https://github.com/LexiFi/gen_js_api/issues/61 *)
 
@@ -9138,7 +9191,9 @@ module Indexop = struct
   ;;
 
   let h = Hashtbl.create 17 in
-  h.Def.%["one"] <- 1 ; h.Def.%("two") <- 2 ; h.Def.%{"three"} <- 3
+  h.Def.%["one"] <- 1 ;
+  h.Def.%("two") <- 2 ;
+  h.Def.%{"three"} <- 3
 
   let x, y, z = Def.(h.%["one"], h.%("two"), h.%{"three"})
 end

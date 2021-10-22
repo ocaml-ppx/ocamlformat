@@ -36,7 +36,9 @@ let _ =
 
     [@@@attr]
 
-    initializer f x ; 9
+    initializer
+    f x ;
+    9
 
     method x =
       let f = {<a; b = e>} in

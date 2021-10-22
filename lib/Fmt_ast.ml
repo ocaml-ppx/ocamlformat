@@ -1404,14 +1404,15 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
   list_fl groups fmt_args
 
 and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
-  let fmt_sep c ?(force_break = false) xe1 ext xe2 =
+  let fmt_sep c xe1 ext xe2 =
     let break =
       let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
       if sequence_blank_line c l1 l2 then fmt "\n@;<1000 0>"
-      else if c.conf.break_sequences || force_break then fmt "@;<1000 0>"
-      else if parens && Poly.(c.conf.sequence_style = `Before) then
-        fmt "@;<1 -2>"
-      else fmt "@;<1 0>"
+      else
+        let offset =
+          if parens && Poly.(c.conf.sequence_style = `Before) then -2 else 0
+        in
+        break 1000 offset
     in
     match c.conf.sequence_style with
     | `Before ->
@@ -1442,7 +1443,7 @@ and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
     let f prev =
       let prev = snd (List.last_exn prev) in
       let ext, curr = List.hd_exn x in
-      fmt_sep c ~force_break:true prev ext curr
+      fmt_sep c prev ext curr
     in
     opt prev f $ list_pn x fmt_seq
   in

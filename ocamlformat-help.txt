@@ -101,10 +101,6 @@ OPTIONS (CODE FORMATTING STYLE)
            before breaks the expressions before the separator. The default
            value is after.
 
-       --break-sequences
-           Force sequence expressions to break irrespective of margin. The
-           flag is set by default.
-
        --break-string-literals={auto|never}
            Break string literals. auto mode breaks lines at newlines and
            wraps string literals at the margin. never mode formats string
@@ -292,9 +288,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-break-infix-before-func
            Unset break-infix-before-func.
 
-       --no-break-sequences
-           Unset break-sequences.
-
        --no-disable
            Unset disable.
 
@@ -454,6 +447,10 @@ OPTIONS (REMOVED)
            is not supported anymore.
 
        --break-before-in=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --break-sequences=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

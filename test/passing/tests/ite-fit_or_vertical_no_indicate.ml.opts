@@ -1,2 +1,3 @@
 --if-then-else=fit-or-vertical
 --indicate-multiline-delimiters=no
+--max-iter=3

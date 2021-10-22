@@ -13,7 +13,9 @@ let read_lines file =
   let ic = Stdlib.open_in file in
   let rec aux acc =
     match Stdlib.input_line ic with
-    | exception End_of_file -> Stdlib.close_in ic ; List.rev acc
+    | exception End_of_file ->
+        Stdlib.close_in ic ;
+        List.rev acc
     | line -> aux (line :: acc)
   in
   aux []
@@ -26,7 +28,8 @@ let read_file file =
     | exception End_of_file ->
         Stdlib.close_in ic ;
         let ret = Buffer.contents buf |> String.trim in
-        Buffer.clear buf ; ret
+        Buffer.clear buf ;
+        ret
     | line ->
         Buffer.add_string buf line ;
         aux buf

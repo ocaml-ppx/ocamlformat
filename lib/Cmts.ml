@@ -543,9 +543,13 @@ let drop_before t loc =
   update_cmts t `Before ~f:(fun m -> Map.remove m loc) ;
   t
 
-let has_before t loc = pop_if_debug t loc ; Map.mem t.cmts_before loc
+let has_before t loc =
+  pop_if_debug t loc ;
+  Map.mem t.cmts_before loc
 
-let has_within t loc = pop_if_debug t loc ; Map.mem t.cmts_within loc
+let has_within t loc =
+  pop_if_debug t loc ;
+  Map.mem t.cmts_within loc
 
 let has_after t loc =
   pop_if_debug t loc ;

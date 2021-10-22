@@ -21,7 +21,6 @@ type t =
   ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
   ; break_separators: [`Before | `After]
-  ; break_sequences: bool
   ; break_string_literals: [`Auto | `Never]
         (** How to potentially break string literals into new lines. *)
   ; break_struct: bool

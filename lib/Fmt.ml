@@ -47,7 +47,9 @@ end = struct
   let ( $ ) f g =
     let f = Staged.unstage f in
     let g = Staged.unstage g in
-    Staged.stage (fun x -> f x ; g x)
+    Staged.stage (fun x ->
+        f x ;
+        g x )
 
   let with_pp f = Staged.stage f
 
@@ -298,7 +300,9 @@ and open_hovbox ?name n =
       Format.pp_open_hovbox fs n )
 
 and close_box =
-  with_pp (fun fs -> debug_box_close fs ; Format.pp_close_box fs ())
+  with_pp (fun fs ->
+      debug_box_close fs ;
+      Format.pp_close_box fs () )
 
 (** Wrapping boxes ------------------------------------------------------*)
 

@@ -288,27 +288,51 @@ let _ =
      , b________________________________________ )
     [@a] )
 
-let _ = a [@a] ; b
+let _ =
+  a [@a] ;
+  b
 
-let _ = f (a [@a] ; b)
-
-let _ = a ; b [@a]
-
-let _ = f (a ; b [@a])
-
-let _ = (a ; b) [@a]
-
-let _ = f ((a ; b) [@a])
-
-let _ = a ; b [@a] ; c
+let _ =
+  f
+    ( a [@a] ;
+      b )
 
 let _ =
   a ;
-  (b1 ; b2) [@a]
+  b [@a]
+
+let _ =
+  f
+    ( a ;
+      b [@a] )
+
+let _ =
+  (a ;
+   b )
+  [@a]
+
+let _ =
+  f
+    ( (a ;
+       b )
+    [@a] )
 
 let _ =
   a ;
-  (b1 ; b2) [@a] ;
+  b [@a] ;
+  c
+
+let _ =
+  a ;
+  (b1 ;
+   b2 )
+  [@a]
+
+let _ =
+  a ;
+  (b1 ;
+   b2 )
+  [@a] ;
   c
 
 (* Ensure that adding an attribute doesn't break left-alignment of sequenced
