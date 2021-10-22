@@ -237,24 +237,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_cases-align.ml.stdout
-   (with-stderr-to break_cases-align.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --nested-match=align --break-cases=all %{dep:tests/break_cases.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-align.ml.ref break_cases-align.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_cases-align.ml.err break_cases-align.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_cases-all.ml.stdout
    (with-stderr-to break_cases-all.ml.stderr
      (run %{bin:ocamlformat} --margin-check --break-cases=all %{dep:tests/break_cases.ml})))))

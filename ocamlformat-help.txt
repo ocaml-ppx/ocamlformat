@@ -244,13 +244,6 @@ OPTIONS (CODE FORMATTING STYLE)
            leave open lines between one-liners of similar sorts unless there
            is an open line in the input. The default value is compact.
 
-       --nested-match={wrap|align}
-           Style of a pattern-matching nested in the last case of another
-           pattern-matching. wrap wraps the nested pattern-matching with
-           parentheses and adds indentation. align vertically aligns the
-           nested pattern-matching under the encompassing pattern-matching.
-           The default value is wrap.
-
        --no-break-infix-before-func
            Unset break-infix-before-func.
 
@@ -469,6 +462,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --match-indent-nested=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --nested-match=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

@@ -45,7 +45,6 @@ type t =
   ; max_indent: int option
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
-  ; nested_match: [`Wrap | `Align]
   ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool
   ; parens_ite: bool
@@ -792,23 +791,11 @@ module Formatting = struct
       (fun conf x -> {conf with module_item_spacing= x})
       (fun conf -> conf.module_item_spacing)
 
-  let nested_match =
-    let doc =
-      "Style of a pattern-matching nested in the last case of another \
-       pattern-matching."
-    in
+  let ( (* nested_match *) ) =
     let names = ["nested-match"] in
-    let all =
-      [ C.Value.make ~name:"wrap" `Wrap
-          "$(b,wrap) wraps the nested pattern-matching with parentheses and \
-           adds indentation."
-      ; C.Value.make ~name:"align" `Align
-          "$(b,align) vertically aligns the nested pattern-matching under \
-           the encompassing pattern-matching." ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with nested_match= x})
-      (fun conf -> conf.nested_match)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ocaml_version =
     let docv = "V" in
@@ -1275,7 +1262,6 @@ let ocamlformat_profile =
   ; max_indent= None
   ; max_iters= 10
   ; module_item_spacing= `Sparse
-  ; nested_match= `Wrap
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= false
   ; parens_ite= false
@@ -1331,7 +1317,6 @@ let conventional_profile =
   ; max_indent= C.default Formatting.max_indent
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
-  ; nested_match= C.default Formatting.nested_match
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
@@ -1386,7 +1371,6 @@ let janestreet_profile =
   ; max_indent= None
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
-  ; nested_match= `Wrap
   ; ocaml_version= C.default Formatting.ocaml_version
   ; ocp_indent_compat= true
   ; parens_ite= true
