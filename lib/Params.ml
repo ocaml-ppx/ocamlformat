@@ -463,8 +463,9 @@ let get_if_then_else (c : Conf.t) ~first ~last ~parens ~parens_bch
       ; break_end_branch= noop
       ; space_between_branches= fmt "@ " }
 
-let function_indent ?(default = 0) (c : Conf.t) ~(ctx : Ast.t) =
-  match ctx with Top | Sig _ | Str _ -> c.function_indent | _ -> default
+let function_indent ?(default = 0) = function
+  | Ast.Top | Sig _ | Str _ -> 2
+  | _ -> default
 
 let comma_sep (c : Conf.t) : Fmt.s =
   match c.break_separators with `Before -> "@,, " | `After -> ",@;<1 2>"

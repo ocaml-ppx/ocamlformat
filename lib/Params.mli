@@ -132,8 +132,8 @@ val get_if_then_else :
   -> Source.t
   -> if_then_else
 
-val function_indent : ?default:int -> Conf.t -> ctx:Ast.t -> int
-(** [function_indent c ~ctx ~default] returns the indentation used for the
+val function_indent : ?default:int -> Ast.t -> int
+(** [function_indent ctx ~default] returns the indentation used for the
     function in context [ctx], depending on the `function-indent-nested`
     option, or using the [default] indentation (0 if not provided) if the
     option does not apply. *)

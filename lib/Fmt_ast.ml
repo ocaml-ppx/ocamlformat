@@ -1738,7 +1738,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       let cmts_after = Cmts.fmt_after c pexp_loc in
       let xr = sub_exp ~ctx r in
       let parens_r = parenze_exp xr in
-      let indent = Params.function_indent c.conf ~ctx in
+      let indent = Params.function_indent ctx in
       Params.parens_if parens c.conf
         (hvbox indent
            ( hvbox 0
@@ -1901,9 +1901,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           let e1N = List.rev rev_e1N in
           let ctx'' = Exp eN in
           let default_indent = if c.conf.wrap_fun_args then 2 else 4 in
-          let indent =
-            Params.function_indent c.conf ~ctx ~default:default_indent
-          in
+          let indent = Params.function_indent ctx ~default:default_indent in
           hvbox indent
             (Params.parens_if parens c.conf
                ( hovbox 2
@@ -2066,9 +2064,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
       in
       let pre_body, body = fmt_body c ?ext xbody in
       let default_indent = if Option.is_none eol then 2 else 1 in
-      let indent =
-        Params.function_indent c.conf ~ctx ~default:default_indent
-      in
+      let indent = Params.function_indent ctx ~default:default_indent in
       hvbox_if (box || body_is_function) indent
         (Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens
            ~fits_breaks:false ~offset_closing_paren:(-2)
@@ -2083,7 +2079,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ str "->" $ pre_body )
            $ fmt "@ " $ body ) )
   | Pexp_function cs ->
-      let indent = Params.function_indent c.conf ~ctx in
+      let indent = Params.function_indent ctx in
       Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens
         ~fits_breaks:false
         ( hvbox 2
@@ -4206,7 +4202,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
   let indent =
     match lb_exp.ast.pexp_desc with
     | Pexp_function _ ->
-        Params.function_indent c.conf ~ctx ~default:c.conf.let_binding_indent
+        Params.function_indent ctx ~default:c.conf.let_binding_indent
     | Pexp_fun _ -> c.conf.let_binding_indent - 1
     | _ -> c.conf.let_binding_indent
   in

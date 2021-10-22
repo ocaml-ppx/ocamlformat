@@ -33,7 +33,6 @@ type t =
   ; exp_grouping: [`Parens | `Preserve]
   ; extension_indent: int
   ; field_space: [`Tight | `Loose | `Tight_decl]
-  ; function_indent: int
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
@@ -569,13 +568,11 @@ module Formatting = struct
       (fun conf x -> {conf with field_space= x})
       (fun conf -> conf.field_space)
 
-  let function_indent =
-    let docv = "COLS" in
-    let doc = "Indentation of function cases ($(docv) columns)." in
+  let ( (* function_indent *) ) =
     let names = ["function-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      (fun conf x -> {conf with function_indent= x})
-      (fun conf -> conf.function_indent)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* function_indent_nested *) ) =
     let names = ["function-indent-nested"] in
@@ -1191,18 +1188,8 @@ let ocp_indent_options =
       , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
           ocamlformat ) )
   in
-  let multi_alias ocp_indent l_ocamlformat =
-    ( ocp_indent
-    , ( l_ocamlformat
-      , Format.asprintf "$(b,%s) sets %a." ocp_indent
-          (Format.pp_print_list
-             ~pp_sep:(fun fs () -> Format.fprintf fs " and ")
-             (fun fs x -> Format.fprintf fs "$(b,%s)" x) )
-          l_ocamlformat ) )
-  in
   [ alias "base" "let-binding-indent"
   ; alias "type" "type-decl-indent"
-  ; multi_alias "with" ["function-indent"]
   ; alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
@@ -1302,7 +1289,6 @@ let ocamlformat_profile =
   ; exp_grouping= `Parens
   ; extension_indent= 2
   ; field_space= `Tight
-  ; function_indent= 2
   ; if_then_else= `Compact
   ; indicate_multiline_delimiters= `Space
   ; indicate_nested_or_patterns= `Space
@@ -1360,7 +1346,6 @@ let conventional_profile =
   ; exp_grouping= C.default Formatting.exp_grouping
   ; extension_indent= C.default Formatting.extension_indent
   ; field_space= C.default Formatting.field_space
-  ; function_indent= C.default Formatting.function_indent
   ; if_then_else= C.default Formatting.if_then_else
   ; indicate_multiline_delimiters=
       C.default Formatting.indicate_multiline_delimiters
@@ -1423,7 +1408,6 @@ let janestreet_profile =
   ; exp_grouping= `Parens
   ; extension_indent= 2
   ; field_space= `Loose
-  ; function_indent= 2
   ; if_then_else= `Keyword_first
   ; indicate_multiline_delimiters= `No
   ; indicate_nested_or_patterns= `Unsafe_no
