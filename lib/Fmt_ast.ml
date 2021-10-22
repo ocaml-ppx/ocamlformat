@@ -1477,14 +1477,14 @@ and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
 
 and fmt_infix_op_args ?ext c ~parens xexp op_args =
   let groups =
-    let width xe = expression_width c xe in
-    let not_simple (_, arg) = not (is_simple c.conf width arg) in
-    let exists_not_simple args = List.exists args ~f:not_simple in
-    let break (has_cmts, _, _, (_, args1)) (_, _, _, (_, args2)) =
-      has_cmts || exists_not_simple args1 || exists_not_simple args2
-    in
     match c.conf.break_infix with
-    | `Wrap -> List.group op_args ~break
+    | `Wrap ->
+        let width xe = expression_width c xe in
+        let not_simple arg = not (is_simple c.conf width arg) in
+        let break (has_cmts, _, _, _, _, arg1) (_, _, _, _, _, arg2) =
+          has_cmts || not_simple arg1 || not_simple arg2
+        in
+        List.group op_args ~break
     | `Fit_or_vertical -> List.map ~f:(fun x -> [x]) op_args
   in
   let is_not_indented {ast= exp; _} =
@@ -1496,35 +1496,32 @@ and fmt_infix_op_args ?ext c ~parens xexp op_args =
     | Pexp_open _ -> Source.is_long_pexp_open c.source exp
     | _ -> false
   in
-  let fmt_arg very_last ~first:_ ~last ((_, xarg) as lbl_xarg) =
+  let fmt_arg very_last lbl xarg =
     let parens =
       ((not very_last) && exposed_right_exp Ast.Non_apply xarg.ast)
       || parenze_exp xarg
     in
     let box =
       match xarg.ast.pexp_desc with
-      | Pexp_fun _ | Pexp_function _ -> Some (not last)
-      | _ -> None
+      | Pexp_fun _ | Pexp_function _ -> false
+      | _ -> true
     in
-    fmt_label_arg c ?box ~parens lbl_xarg $ fmt_if (not last) "@ "
+    fmt_label_arg c ~box ~parens (lbl, xarg)
   in
   let fmt_op_arg_group ~first:first_grp ~last:last_grp args =
     let indent = if first_grp && parens then -2 else 0 in
     hovbox indent
       (list_fl args
-         (fun ~first ~last (_, cmts_before, cmts_after, (op, xargs)) ->
+         (fun ~first ~last (_, cmts_before, cmts_after, op, lbl, xarg) ->
            let very_first = first_grp && first in
            let very_last = last_grp && last in
            cmts_before
            $ hvbox 0
                ( op
-               $ ( match xargs with
-                 | (_, e) :: _ when very_last && is_not_indented e ->
-                     fmt "@ "
-                 | _ -> fmt_if (not very_first) " " )
+               $ ( if very_last && is_not_indented xarg then fmt "@ "
+                 else fmt_if (not very_first) " " )
                $ cmts_after
-               $ hovbox_if (not very_last) 2
-                   (list_fl xargs (fmt_arg very_last)) )
+               $ hovbox_if (not very_last) 2 (fmt_arg very_last lbl xarg) )
            $ fmt_if_k (not last) (break 1 0) ) )
     $ fmt_if_k (not last_grp) (break 1 0)
   in
@@ -1802,7 +1799,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         | _ -> has_attr && not parens
       in
       let infix_op_args =
-        List.map op_args ~f:(fun (op, args) ->
+        List.map op_args ~f:(fun (op, lbl, arg) ->
             match op with
             | Some ({ast= {pexp_loc; _}; _} as op) ->
                 (* side effects of Cmts.fmt_before before fmt_expression is
@@ -1819,12 +1816,11 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                    unstable. *)
                 let fmt_after_cmts =
                   Cmts.fmt_after c pexp_loc
-                  $ opt (List.hd args) (fun (_, {ast= e; _}) ->
-                        Cmts.fmt_before ~adj c e.pexp_loc )
+                  $ Cmts.fmt_before ~adj c arg.ast.pexp_loc
                 in
                 let fmt_op = fmt_expression c op in
-                (has_cmts, fmt_before_cmts, fmt_after_cmts, (fmt_op, args))
-            | None -> (false, noop, noop, (noop, args)) )
+                (has_cmts, fmt_before_cmts, fmt_after_cmts, fmt_op, lbl, arg)
+            | None -> (false, noop, noop, noop, lbl, arg) )
       in
       hvbox_if outer_wrap 0
         (Params.parens_if outer_wrap c.conf
@@ -2051,7 +2047,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
            ( fmt_infix_op_args c ~parens xexp
                (List.map loc_args ~f:(fun (loc, arg) ->
                     let fmt_op = opt loc (fmt_longident_loc c) in
-                    (false, noop, noop, (fmt_op, [(Nolabel, arg)])) ) )
+                    (false, noop, noop, fmt_op, Nolabel, arg) ) )
            $ fmt_atrs )
   | Pexp_construct (({txt= Lident "::"; loc= _} as lid), Some arg) ->
       let opn, cls =

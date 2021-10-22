@@ -62,7 +62,7 @@ val infix :
      Cmts.t
   -> Prec.t option
   -> expression Ast.xt
-  -> (expression Ast.xt option * (arg_label * expression Ast.xt) list) list
+  -> (expression Ast.xt option * arg_label * expression Ast.xt) list
 (** [infix cmts prec exp] returns the infix operator and the list of operands
     applied to this operator from expression [exp]. [prec] is the precedence
     of the infix operator. *)
