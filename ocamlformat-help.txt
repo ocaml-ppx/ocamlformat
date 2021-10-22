@@ -174,12 +174,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Indentation of function cases (COLS columns). The default value is
            2.
 
-       --function-indent-nested={never|always|auto}
-           Whether the function-indent parameter should be applied even when
-           in a sub-block. never only applies function-indent if the function
-           block starts a line. always always apply function-indent. auto
-           applies function-indent when seen fit. The default value is never.
-
        --if-then-else={compact|fit-or-vertical|keyword-first|k-r}
            If-then-else formatting. compact tries to format an if-then-else
            expression on a single line. fit-or-vertical vertically breaks
@@ -478,6 +472,10 @@ OPTIONS (REMOVED)
            This option has been removed in version 0.17.0. Concrete syntax
            will now always be preserved.
 
+       --function-indent-nested=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
        --indent-after-in=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
@@ -576,7 +574,7 @@ OPTIONS
            sets function-indent and match-indent. match_clause is an alias
            for cases-exp-indent. ppx_stritem_ext is an alias for
            stritem-extension-indent. max_indent is an alias for max-indent.
-           strict_with sets function-indent-nested and match-indent-nested.
+           strict_with sets match-indent-nested.
 
        --print-config
            Print the configuration determined by the environment variable,

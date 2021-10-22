@@ -34,7 +34,6 @@ type t =
   ; extension_indent: int
   ; field_space: [`Tight | `Loose | `Tight_decl]
   ; function_indent: int
-  ; function_indent_nested: [`Always | `Auto | `Never]
   ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
   ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
   ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
@@ -580,24 +579,11 @@ module Formatting = struct
       (fun conf x -> {conf with function_indent= x})
       (fun conf -> conf.function_indent)
 
-  let function_indent_nested =
-    let doc =
-      "Whether the $(b,function-indent) parameter should be applied even \
-       when in a sub-block."
-    in
+  let ( (* function_indent_nested *) ) =
     let names = ["function-indent-nested"] in
-    let all =
-      [ C.Value.make ~name:"never" `Never
-          "$(b,never) only applies $(b,function-indent) if the function \
-           block starts a line."
-      ; C.Value.make ~name:"always" `Always
-          "$(b,always) always apply $(b,function-indent)."
-      ; C.Value.make ~name:"auto" `Auto
-          "$(b,auto) applies $(b,function-indent) when seen fit." ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with function_indent_nested= x})
-      (fun conf -> conf.function_indent_nested)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let if_then_else =
     let doc = "If-then-else formatting." in
@@ -1237,8 +1223,7 @@ let ocp_indent_options =
   ; alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
-  ; multi_alias "strict_with"
-      ["function-indent-nested"; "match-indent-nested"]
+  ; multi_alias "strict_with" ["match-indent-nested"]
   ; unsupported "strict_else"
   ; unsupported "strict_comments"
   ; unsupported "align_ops"
@@ -1336,7 +1321,6 @@ let ocamlformat_profile =
   ; extension_indent= 2
   ; field_space= `Tight
   ; function_indent= 2
-  ; function_indent_nested= `Never
   ; if_then_else= `Compact
   ; indicate_multiline_delimiters= `Space
   ; indicate_nested_or_patterns= `Space
@@ -1397,7 +1381,6 @@ let conventional_profile =
   ; extension_indent= C.default Formatting.extension_indent
   ; field_space= C.default Formatting.field_space
   ; function_indent= C.default Formatting.function_indent
-  ; function_indent_nested= C.default Formatting.function_indent_nested
   ; if_then_else= C.default Formatting.if_then_else
   ; indicate_multiline_delimiters=
       C.default Formatting.indicate_multiline_delimiters
@@ -1463,7 +1446,6 @@ let janestreet_profile =
   ; extension_indent= 2
   ; field_space= `Loose
   ; function_indent= 2
-  ; function_indent_nested= `Never
   ; if_then_else= `Keyword_first
   ; indicate_multiline_delimiters= `No
   ; indicate_nested_or_patterns= `Unsafe_no

@@ -1824,27 +1824,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to function_indent-never.ml.stdout
-   (with-stderr-to function_indent-never.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --function-indent=4 --function-indent-nested=never %{dep:tests/function_indent.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/function_indent-never.ml.ref function_indent-never.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/function_indent-never.ml.err function_indent-never.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to function_indent.ml.stdout
    (with-stderr-to function_indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --function-indent=4 --function-indent-nested=always %{dep:tests/function_indent.ml})))))
+     (run %{bin:ocamlformat} --margin-check --function-indent=4 %{dep:tests/function_indent.ml})))))
 
 (rule
  (alias runtest)
