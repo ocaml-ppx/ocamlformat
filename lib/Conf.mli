@@ -48,7 +48,6 @@ type t =
   ; line_endings: [`Lf | `Crlf]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; match_indent: int
-  ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option
   ; max_iters: int
         (** Fail if output of formatting does not stabilize within

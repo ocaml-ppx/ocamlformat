@@ -3259,27 +3259,9 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to match_indent-never.ml.stdout
-   (with-stderr-to match_indent-never.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --match-indent=4 --match-indent-nested=never %{dep:tests/match_indent.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/match_indent-never.ml.ref match_indent-never.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/match_indent-never.ml.err match_indent-never.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to match_indent.ml.stdout
    (with-stderr-to match_indent.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --match-indent=4 --match-indent-nested=always %{dep:tests/match_indent.ml})))))
+     (run %{bin:ocamlformat} --margin-check --match-indent=4 %{dep:tests/match_indent.ml})))))
 
 (rule
  (alias runtest)

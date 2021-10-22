@@ -46,7 +46,6 @@ type t =
   ; line_endings: [`Lf | `Crlf]
   ; margin: int
   ; match_indent: int
-  ; match_indent_nested: [`Always | `Auto | `Never]
   ; max_indent: int option
   ; max_iters: int
   ; module_item_spacing: [`Compact | `Preserve | `Sparse]
@@ -770,24 +769,11 @@ module Formatting = struct
       (fun conf x -> {conf with match_indent= x})
       (fun conf -> conf.match_indent)
 
-  let match_indent_nested =
-    let doc =
-      "Whether the $(b,match-indent) parameter should be applied even when \
-       in a sub-block."
-    in
+  let ( (* match_indent_nested *) ) =
     let names = ["match-indent-nested"] in
-    let all =
-      [ C.Value.make ~name:"never" `Never
-          "$(b,never) only applies $(b,match-indent) if the match block \
-           starts a line."
-      ; C.Value.make ~name:"always" `Always
-          "$(b,always) always apply $(b,match-indent)."
-      ; C.Value.make ~name:"auto" `Auto
-          "$(b,auto) applies $(b,match-indent) when seen fit." ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with match_indent_nested= x})
-      (fun conf -> conf.match_indent_nested)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let default_max_indent =
     (* Creating a fresh formatter in case the value of max-indent has been
@@ -1223,7 +1209,6 @@ let ocp_indent_options =
   ; alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
-  ; multi_alias "strict_with" ["match-indent-nested"]
   ; unsupported "strict_else"
   ; unsupported "strict_comments"
   ; unsupported "align_ops"
@@ -1333,7 +1318,6 @@ let ocamlformat_profile =
   ; line_endings= `Lf
   ; margin= 80
   ; match_indent= 0
-  ; match_indent_nested= `Never
   ; max_indent= None
   ; max_iters= 10
   ; module_item_spacing= `Sparse
@@ -1396,7 +1380,6 @@ let conventional_profile =
   ; line_endings= C.default Formatting.line_endings
   ; margin= C.default Formatting.margin
   ; match_indent= C.default Formatting.match_indent
-  ; match_indent_nested= C.default Formatting.match_indent_nested
   ; max_indent= C.default Formatting.max_indent
   ; max_iters= C.default max_iters
   ; module_item_spacing= C.default Formatting.module_item_spacing
@@ -1458,7 +1441,6 @@ let janestreet_profile =
   ; line_endings= `Lf
   ; margin= 90
   ; match_indent= 0
-  ; match_indent_nested= `Never
   ; max_indent= None
   ; max_iters= ocamlformat_profile.max_iters
   ; module_item_spacing= `Compact
