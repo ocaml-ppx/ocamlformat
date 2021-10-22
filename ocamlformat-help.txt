@@ -212,11 +212,6 @@ OPTIONS (CODE FORMATTING STYLE)
            in a single line. sparse will always break between them. The
            default value is compact.
 
-       --let-binding-indent=COLS
-           Indentation of let binding expressions (COLS columns) if they do
-           not fit on a single line. The default value is 2. Cannot be set in
-           attributes.
-
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
            let bindings in a module according to module-item-spacing. sparse
@@ -470,6 +465,10 @@ OPTIONS (REMOVED)
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 
+       --let-binding-indent=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
        --let-open=VAL
            This option has been removed in version 0.17.0. Concrete syntax
            will now always be preserved.
@@ -567,11 +566,10 @@ OPTIONS
            omitted.
 
        --ocp-indent-config
-           Read .ocp-indent configuration files. base is an alias for
-           let-binding-indent. type is an alias for type-decl-indent.
-           match_clause is an alias for cases-exp-indent. ppx_stritem_ext is
-           an alias for stritem-extension-indent. max_indent is an alias for
-           max-indent.
+           Read .ocp-indent configuration files. type is an alias for
+           type-decl-indent. match_clause is an alias for cases-exp-indent.
+           ppx_stritem_ext is an alias for stritem-extension-indent.
+           max_indent is an alias for max-indent.
 
        --print-config
            Print the configuration determined by the environment variable,

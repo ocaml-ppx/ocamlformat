@@ -41,7 +41,6 @@ type t =
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
-  ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
   ; line_endings: [`Lf | `Crlf]

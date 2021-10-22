@@ -2135,13 +2135,13 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_let (rec_flag, bd, body) ->
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
+      fmt_let c ~ext ~rec_flag ~bindings ~parens ~loc:pexp_loc
         ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
         ~body_loc:body.pexp_loc
   | Pexp_letop {let_; ands; body} ->
       let bd = Sugar.Let_binding.of_binding_ops c.cmts ~ctx (let_ :: ands) in
       let fmt_expr = fmt_expression c (sub_exp ~ctx body) in
-      fmt_let c ctx ~ext ~rec_flag:Nonrecursive ~bindings:bd ~parens
+      fmt_let c ~ext ~rec_flag:Nonrecursive ~bindings:bd ~parens
         ~loc:pexp_loc ~attributes:pexp_attributes ~fmt_atrs ~fmt_expr
         ~body_loc:body.pexp_loc
   | Pexp_letexception (ext_cstr, exp) ->
@@ -2724,7 +2724,7 @@ and fmt_class_expr c ?eol ?(box = true) ({ast= exp; _} as xexp) =
   | Pcl_let (rec_flag, bd, body) ->
       let bindings = Sugar.Let_binding.of_value_bindings c.cmts ~ctx bd in
       let fmt_expr = fmt_class_expr c (sub_cl ~ctx body) in
-      fmt_let c ctx ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
+      fmt_let c ~ext:None ~rec_flag ~bindings ~parens ~loc:pcl_loc
         ~attributes:pcl_attributes ~fmt_atrs ~fmt_expr ~body_loc:body.pcl_loc
   | Pcl_constraint (e, t) ->
       hvbox 2
@@ -4120,7 +4120,7 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
         in
         let rec_flag = first && Asttypes.is_recursive rec_flag in
         let ext = if first then ext else None in
-        fmt_value_binding c ~rec_flag ?ext ctx ?epi b
+        fmt_value_binding c ~rec_flag ?ext ?epi b
       in
       fmt_item_list c ctx update_config ast fmt_item bindings
   | Pstr_modtype mtd -> fmt_module_type_declaration ?ext c ctx mtd
@@ -4140,14 +4140,14 @@ and fmt_structure_item c ~last:last_item ?ext ~semisemi {ctx= _; ast= si} =
       fmt_class_types ?ext c ctx ~pre:"class type" ~sep:"=" cl
   | Pstr_class cls -> fmt_class_exprs ?ext c ctx cls
 
-and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
+and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     ~body_loc ~attributes =
   let parens = parens || not (List.is_empty attributes) in
   let fmt_binding ~first ~last binding =
     let ext = if first then ext else None in
     let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
-    fmt_value_binding c ~rec_flag ?ext ctx ~in_ binding
+    fmt_value_binding c ~rec_flag ?ext ~in_ binding
     $ fmt_if (not last)
         ( match c.conf.let_and with
         | `Sparse -> "@;<1000 0>"
@@ -4166,7 +4166,7 @@ and fmt_let c ctx ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
        $ hvbox 0 fmt_expr ) )
   $ fmt_atrs
 
-and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
+and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi
     {lb_op; lb_pat; lb_typ; lb_exp; lb_attrs; lb_loc; lb_pun} =
   update_config_maybe_disabled c lb_loc lb_attrs
   @@ fun c ->
@@ -4199,13 +4199,7 @@ and fmt_value_binding c ~rec_flag ?ext ?in_ ?epi ctx
     | `Other (xargs, xtyp) -> (xargs, fmt_type_cstr c xtyp)
     | `None xargs -> (xargs, noop)
   in
-  let indent =
-    match lb_exp.ast.pexp_desc with
-    | Pexp_function _ ->
-        Params.function_indent ctx ~default:c.conf.let_binding_indent
-    | Pexp_fun _ -> c.conf.let_binding_indent - 1
-    | _ -> c.conf.let_binding_indent
-  in
+  let indent = match lb_exp.ast.pexp_desc with Pexp_fun _ -> 1 | _ -> 2 in
   let f {attr_name= {loc; _}; _} =
     Location.compare_start loc lb_exp.ast.pexp_loc < 1
   in

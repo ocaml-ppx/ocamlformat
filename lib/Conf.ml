@@ -39,7 +39,6 @@ type t =
   ; infix_precedence: [`Indent | `Parens]
   ; leading_nested_match_parens: bool
   ; let_and: [`Compact | `Sparse]
-  ; let_binding_indent: int
   ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
   ; let_module: [`Compact | `Sparse]
   ; line_endings: [`Lf | `Crlf]
@@ -687,16 +686,11 @@ module Formatting = struct
       (fun conf x -> {conf with let_and= x})
       (fun conf -> conf.let_and)
 
-  let let_binding_indent =
-    let docv = "COLS" in
-    let doc =
-      "Indentation of let binding expressions ($(docv) columns) if they do \
-       not fit on a single line."
-    in
+  let ( (* let_binding_indent *) ) =
     let names = ["let-binding-indent"] in
-    C.any Arg.int ~names ~default:2 ~doc ~docv ~kind ~allow_inline:false
-      (fun conf x -> {conf with let_binding_indent= x})
-      (fun conf -> conf.let_binding_indent)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
@@ -1188,8 +1182,7 @@ let ocp_indent_options =
       , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
           ocamlformat ) )
   in
-  [ alias "base" "let-binding-indent"
-  ; alias "type" "type-decl-indent"
+  [ alias "type" "type-decl-indent"
   ; alias "match_clause" "cases-exp-indent"
   ; alias "ppx_stritem_ext" "stritem-extension-indent"
   ; alias "max_indent" "max-indent"
@@ -1295,7 +1288,6 @@ let ocamlformat_profile =
   ; infix_precedence= `Indent
   ; leading_nested_match_parens= false
   ; let_and= `Compact
-  ; let_binding_indent= 2
   ; let_binding_spacing= `Compact
   ; let_module= `Compact
   ; line_endings= `Lf
@@ -1355,7 +1347,6 @@ let conventional_profile =
   ; leading_nested_match_parens=
       C.default Formatting.leading_nested_match_parens
   ; let_and= C.default Formatting.let_and
-  ; let_binding_indent= C.default Formatting.let_binding_indent
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_module= C.default Formatting.let_module
   ; line_endings= C.default Formatting.line_endings
@@ -1414,7 +1405,6 @@ let janestreet_profile =
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true
   ; let_and= `Sparse
-  ; let_binding_indent= 2
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
   ; line_endings= `Lf
