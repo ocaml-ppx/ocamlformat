@@ -3800,24 +3800,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to parens_tuple_patterns.ml.stdout
-   (with-stderr-to parens_tuple_patterns.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/parens_tuple_patterns.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/parens_tuple_patterns.ml parens_tuple_patterns.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/parens_tuple_patterns.ml.err parens_tuple_patterns.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to partial.ml.stdout
    (with-stderr-to partial.ml.stderr
      (run %{bin:ocamlformat} --margin-check --numeric=2-14 %{dep:tests/partial.ml})))))

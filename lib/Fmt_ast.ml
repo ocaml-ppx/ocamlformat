@@ -946,7 +946,6 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
   | Ppat_constant const -> fmt_constant c const
   | Ppat_interval (l, u) -> fmt_constant c l $ str " .. " $ fmt_constant c u
   | Ppat_tuple pats ->
-      let parens = parens || Poly.(c.conf.parens_tuple_patterns = `Always) in
       hvbox 0
         (Params.wrap_tuple ~parens ~no_parens_if_break:false c.conf
            (list pats (Params.comma_sep c.conf)
@@ -1174,7 +1173,6 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
       let can_skip_parens =
         match pat.ppat_desc with
         | Ppat_array _ | Ppat_list _ | Ppat_record _ -> true
-        | Ppat_tuple _ -> Poly.(c.conf.parens_tuple_patterns = `Always)
         | Ppat_construct ({txt= Lident "[]"; _}, None) -> true
         | _ -> false
       in

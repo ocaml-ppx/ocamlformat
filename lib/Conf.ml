@@ -57,7 +57,6 @@ type t =
   ; ocp_indent_compat: bool
   ; parens_ite: bool
   ; parens_tuple: [`Always | `Multi_line_only]
-  ; parens_tuple_patterns: [`Always | `Multi_line_only]
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [`Compact | `Preserve_one]
@@ -908,19 +907,11 @@ module Formatting = struct
       (fun conf x -> {conf with parens_tuple= x})
       (fun conf -> conf.parens_tuple)
 
-  let parens_tuple_patterns =
-    let doc = "Parens tuple patterns." in
+  let ( (* parens_tuple_patterns *) ) =
     let names = ["parens-tuple-patterns"] in
-    let all =
-      [ C.Value.make ~name:"multi-line-only" `Multi_line_only
-          "$(b,multi-line-only) mode will try to skip parens for \
-           single-line tuple patterns."
-      ; C.Value.make ~name:"always" `Always
-          "$(b,always) always uses parentheses around tuples patterns." ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with parens_tuple_patterns= x})
-      (fun conf -> conf.parens_tuple_patterns)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let parse_docstrings =
     let doc = "Parse and format docstrings." in
@@ -1375,7 +1366,6 @@ let ocamlformat_profile =
   ; ocp_indent_compat= false
   ; parens_ite= false
   ; parens_tuple= `Always
-  ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false
   ; quiet= false
   ; sequence_blank_line= `Compact
@@ -1441,7 +1431,6 @@ let conventional_profile =
   ; ocp_indent_compat= C.default Formatting.ocp_indent_compat
   ; parens_ite= C.default Formatting.parens_ite
   ; parens_tuple= C.default Formatting.parens_tuple
-  ; parens_tuple_patterns= C.default Formatting.parens_tuple_patterns
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
@@ -1506,7 +1495,6 @@ let janestreet_profile =
   ; ocp_indent_compat= true
   ; parens_ite= true
   ; parens_tuple= `Multi_line_only
-  ; parens_tuple_patterns= `Multi_line_only
   ; parse_docstrings= false
   ; quiet= ocamlformat_profile.quiet
   ; sequence_blank_line= `Compact
