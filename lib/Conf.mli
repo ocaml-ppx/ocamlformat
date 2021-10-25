@@ -13,35 +13,36 @@
 
 (** Formatting options *)
 type t =
-  { assignment_operator: [`Begin_line | `End_line]
-  ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
-  ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
-  ; break_infix: [`Wrap | `Fit_or_vertical]
+  { assignment_operator: [ `Begin_line | `End_line ]
+  ; break_cases: [ `Fit | `Nested | `Toplevel | `Fit_or_vertical | `All ]
+  ; break_collection_expressions: [ `Wrap | `Fit_or_vertical ]
+  ; break_infix: [ `Wrap | `Fit_or_vertical ]
   ; break_infix_before_func: bool
-  ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
-  ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
-  ; break_separators: [`Before | `After]
-  ; break_string_literals: [`Auto | `Never]
+  ; break_fun_decl: [ `Wrap | `Fit_or_vertical | `Smart ]
+  ; break_fun_sig: [ `Wrap | `Fit_or_vertical | `Smart ]
+  ; break_separators: [ `Before | `After ]
+  ; break_string_literals: [ `Auto | `Never ]
         (** How to potentially break string literals into new lines. *)
   ; cases_exp_indent: int
-  ; cases_matching_exp_indent: [`Normal | `Compact]
+  ; cases_matching_exp_indent: [ `Normal | `Compact ]
   ; comment_check: bool
   ; disable: bool
-  ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
+  ; doc_comments: [ `Before | `Before_except_val | `After_when_possible ]
   ; doc_comments_padding: int
-  ; doc_comments_tag_only: [`Fit | `Default]
+  ; doc_comments_tag_only: [ `Fit | `Default ]
   ; dock_collection_brackets: bool
-  ; exp_grouping: [`Parens | `Preserve]
-  ; field_space: [`Tight | `Loose | `Tight_decl]
-  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
-  ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
-  ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
-  ; infix_precedence: [`Indent | `Parens]
+  ; exp_grouping: [ `Parens | `Preserve ]
+  ; field_space: [ `Tight | `Loose | `Tight_decl ]
+  ; if_then_else: [ `Compact | `Fit_or_vertical | `Keyword_first | `K_R ]
+  ; indicate_multiline_delimiters:
+      [ `No | `Space | `Closing_on_separate_line ]
+  ; indicate_nested_or_patterns: [ `Space | `Unsafe_no ]
+  ; infix_precedence: [ `Indent | `Parens ]
   ; leading_nested_match_parens: bool
-  ; let_and: [`Compact | `Sparse]
-  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
-  ; let_module: [`Compact | `Sparse]
-  ; line_endings: [`Lf | `Crlf]
+  ; let_and: [ `Compact | `Sparse ]
+  ; let_binding_spacing: [ `Compact | `Sparse | `Double_semicolon ]
+  ; let_module: [ `Compact | `Sparse ]
+  ; line_endings: [ `Lf | `Crlf ]
   ; margin: int  (** Format code to fit within [margin] columns. *)
   ; max_indent: int option
   ; max_iters: int
@@ -50,14 +51,13 @@ type t =
   ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool  (** Try to indent like ocp-indent *)
   ; parens_ite: bool
-  ; parens_tuple: [`Always | `Multi_line_only]
+  ; parens_tuple: [ `Always | `Multi_line_only ]
   ; parse_docstrings: bool
   ; quiet: bool
-  ; sequence_blank_line: [`Compact | `Preserve_one]
-  ; sequence_style: [`Before | `Separator | `Terminator]
-  ; single_case: [`Compact | `Sparse]
-  ; space_around_variants: bool
-  ; type_decl: [`Compact | `Sparse]
+  ; sequence_blank_line: [ `Compact | `Preserve_one ]
+  ; sequence_style: [ `Before | `Separator | `Terminator ]
+  ; single_case: [ `Compact | `Sparse ]
+  ; type_decl: [ `Compact | `Sparse ]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool
   }
@@ -99,7 +99,7 @@ val update_value :
      , [ `Bad_value of string * string
        | `Malformed of string
        | `Misplaced of string * string
-       | `Unknown of string * [`Msg of string] option ] )
+       | `Unknown of string * [ `Msg of string ] option ] )
      Result.t
 
 val print_config : t -> unit

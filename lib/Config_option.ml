@@ -21,19 +21,21 @@ module Make (C : CONFIG) = struct
 
   type config = C.config
   type kind = Formatting | Operational
-  type parsed_from = [`File of Fpath.t * int | `Attribute]
-  type updated_from = [`Env | `Commandline | `Parsed of parsed_from]
+  type parsed_from = [ `File of Fpath.t * int | `Attribute ]
+  type updated_from = [ `Env | `Commandline | `Parsed of parsed_from ]
 
   type from =
-    [`Default | `Profile of string * updated_from | `Updated of updated_from]
+    [ `Default
+    | `Profile of string * updated_from
+    | `Updated of updated_from ]
 
   type deprecated = { dmsg: string; dversion: string }
   type removed = { rmsg: string; rversion: string }
-  type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
+  type status = [ `Valid | `Deprecated of deprecated | `Removed of removed ]
 
   type 'a t =
     { names: string list
-    ; parse: string -> ('a, [`Msg of string]) Result.t
+    ; parse: string -> ('a, [ `Msg of string ]) Result.t
     ; update: config -> 'a -> config
     ; allow_inline: bool
     ; cmdline_get: unit -> 'a option
@@ -49,7 +51,7 @@ module Make (C : CONFIG) = struct
     -> doc:string
     -> kind:kind
     -> ?allow_inline:bool
-    -> ?status:[`Valid | `Deprecated of deprecated]
+    -> ?status:[ `Valid | `Deprecated of deprecated ]
     -> (config -> 'a -> config)
     -> (config -> 'a)
     -> 'a t
@@ -113,7 +115,8 @@ module Make (C : CONFIG) = struct
     List.max_elt ~compare
 
   (* somehow necessary *)
-  let map_status : [`Valid | `Deprecated of deprecated] -> status = function
+  let map_status : [ `Valid | `Deprecated of deprecated ] -> status =
+    function
     | `Valid -> `Valid
     | `Deprecated x -> `Deprecated x
 
@@ -189,7 +192,7 @@ module Make (C : CONFIG) = struct
     opt
 
   module Value = struct
-    type 'a t = string * 'a * string * [`Valid | `Deprecated of deprecated]
+    type 'a t = string * 'a * string * [ `Valid | `Deprecated of deprecated ]
 
     let make ?deprecated ~name value doc =
       match deprecated with

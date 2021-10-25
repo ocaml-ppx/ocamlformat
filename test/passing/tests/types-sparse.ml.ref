@@ -24,7 +24,8 @@ type t =
 
 type t =
   [ `A
-  | `B ]
+  | `B
+  ]
 
 type loooooooooong_type =
   { looooooooooooong_field: looooooooooooong_type
@@ -45,33 +46,38 @@ type t += B = A
 type 'a foo = A of (int -> 'a)
 type 'a foo += A of (int -> 'a)
 type 'a foo += A : (int -> 'a) -> int foo
-type t = [ | a]
-type t = private [< a]
-type t = private [> a]
-
-type t =
-  [ a
-  | b ]
+type t = [ | a ]
+type t = private [< a ]
+type t = private [> a ]
 
 type t =
   [ a
   | b
-  | `C ]
+  ]
+
+type t =
+  [ a
+  | b
+  | `C
+  ]
 
 type t =
   [ `a
-  | b ]
+  | b
+  ]
 
 type t = |
 type t = [> ]
 
 type loooooooooooooong_type =
   [ `Looooooooooooooooooong_type of int
-  | `Looooooooooooooooooooong_variant of string ]
+  | `Looooooooooooooooooooong_variant of string
+  ]
 
 type loooooooooooooong_type =
   [ `Looooooooooooooooooong_type of int  (** Doc *)
-  | `Looooooooooooooooooooong_variant of string (* Comment *) ]
+  | `Looooooooooooooooooooong_variant of string (* Comment *)
+  ]
 
 let (`A | `B) [@bar] = ()
 
@@ -79,12 +85,15 @@ type t =
   | Internal_error of
       [ `Doc_comment of
         [ `Moved of Location.t * Location.t * string
-        | `Unstable of Location.t * string ] ]
+        | `Unstable of Location.t * string
+        ]
+      ]
 
 val x :
   [ `X of int
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 val x :
   [ `X of
@@ -94,12 +103,14 @@ val x :
     * fooooooooooo foooooooooo
     * foooooooooooo
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 val x :
   [ `X of int (* booooom *)
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 val x :
   [ `X of
@@ -110,7 +121,8 @@ val x :
     * foooooooooooo
     (* boooooom *)
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 type voting_period =
       Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind =
@@ -208,7 +220,8 @@ end
 type t =
   [ `A  (** A *)
   | `B [@b]  (** B *)
-  | (p[@p]) (* P *) ]
+  | (p[@p]) (* P *)
+  ]
 
 type foooooooooooooooo =
      ?fooooooooo:(string -> unit)

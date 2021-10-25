@@ -2,14 +2,14 @@ type t =
   { a: int (* some comment *)
   ; b: float
   ; c: string
-  ; d: [`something_looooooooooooooooooooooooooooooooong]
+  ; d: [ `something_looooooooooooooooooooooooooooooooong ]
   }
 
 type t =
   { a: int  (** some comment *)
   ; b: float
   ; c: string
-  ; d: [`something_looooooooooooooooooooooooooooooooong]
+  ; d: [ `something_looooooooooooooooooooooooooooooooong ]
   }
 
 type t = { a: int (* Comment *); b: int (* Comment *) }

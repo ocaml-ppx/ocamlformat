@@ -28,7 +28,7 @@ module type M = sig
   type 'a option_decl =
     names:string list
     -> doc:string
-    -> section:[`Formatting | `Operational]
+    -> section:[ `Formatting | `Operational ]
     -> ?allow_inline:bool
     -> (config -> 'a -> config)
     -> (config -> 'a)

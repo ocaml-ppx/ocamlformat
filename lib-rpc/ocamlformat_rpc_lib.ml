@@ -26,12 +26,12 @@ module type Client_S = sig
   val pid : t -> int
   val mk : pid:int -> in_channel -> out_channel -> t
   val query : cmd -> t -> cmd
-  val halt : t -> (unit, [> `Msg of string]) result
+  val halt : t -> (unit, [> `Msg of string ]) result
 
   val config :
-    (string * string) list -> t -> (unit, [> `Msg of string]) result
+    (string * string) list -> t -> (unit, [> `Msg of string ]) result
 
-  val format : string -> t -> (string, [> `Msg of string]) result
+  val format : string -> t -> (string, [> `Msg of string ]) result
 end
 
 module type V = sig
@@ -42,8 +42,8 @@ end
 module Csexp = Csexp.Make (Sexp)
 
 module Init :
-  Command_S with type t = [`Halt | `Unknown | `Version of string] = struct
-  type t = [`Halt | `Unknown | `Version of string]
+  Command_S with type t = [ `Halt | `Unknown | `Version of string ] = struct
+  type t = [ `Halt | `Unknown | `Version of string ]
 
   let read_input in_channel =
     let open Sexp in
@@ -150,7 +150,7 @@ module V1 :
   end
 end
 
-type client = [`V1 of V1.Client.t]
+type client = [ `V1 of V1.Client.t ]
 
 let get_client ~pid input output = function
   | "v1" | "V1" -> Some (`V1 (V1.Client.mk ~pid input output))

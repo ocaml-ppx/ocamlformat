@@ -796,28 +796,23 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
               else "@ | " )
               (fmt_row_field c ctx)
       in
-      let protect_token = Exposed.Right.(list ~elt:row_field) rfs in
-      let space_around = c.conf.space_around_variants in
       let closing =
         let empty = List.is_empty rfs in
         let force =
           match c.conf.type_decl with
-          | `Sparse -> Option.some_if space_around Break
+          | `Sparse -> Some Break
           | `Compact -> None
         in
         let nspaces = if empty then 0 else 1 in
-        let space = (protect_token || space_around) && not empty in
         fits_breaks
-          (if space && not empty then " ]" else "]")
+          (if not empty then " ]" else "]")
           ~hint:(nspaces, 0) "]" ?force
       in
       hvbox 0
         ( match (flag, lbls, rfs) with
         | Closed, None, [ { prf_desc= Rinherit _; _ } ] ->
             str "[ | " $ row_fields rfs $ closing
-        | Closed, None, _ ->
-            let opening = if space_around then "[ " else "[" in
-            fits_breaks opening "[ " $ row_fields rfs $ closing
+        | Closed, None, _ -> fits_breaks "[ " "[ " $ row_fields rfs $ closing
         | Open, None, _ -> str "[> " $ row_fields rfs $ closing
         | Closed, Some [], _ -> str "[< " $ row_fields rfs $ closing
         | Closed, Some ls, _ ->

@@ -41,7 +41,7 @@ val y : k
 val x : k
 val y : k
 
-type c = { a: int; b: toto; c: char * char * char; d: [`Foo | `Bar] }
+type c = { a: int; b: toto; c: char * char * char; d: [ `Foo | `Bar ] }
 
 val z : this one is pretty looooooooooooooooooooooooooooooooooong
 val z : so is this oooooooooooooooooooooooooooooooooooooooooooone
@@ -87,7 +87,7 @@ val cr0_em : foo
 module C : sig
   type config = t
   type 'a t
-  type parsed_from = [`File of Fpath.t * int | `Attribute]
+  type parsed_from = [ `File of Fpath.t * int | `Attribute ]
 end
 
 module A := A

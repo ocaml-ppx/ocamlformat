@@ -24,7 +24,8 @@ val class_arrow_typ :
      Cmts.t
   -> class_type Ast.xt
   -> ( arg_label
-     * [`class_type of class_type Ast.xt | `core_type of core_type Ast.xt] )
+     * [ `class_type of class_type Ast.xt | `core_type of core_type Ast.xt ]
+     )
      list
 (** [class_arrow_typ cmts ty] returns the list of labeled sub_arrow types of
     the class type [ty]. *)

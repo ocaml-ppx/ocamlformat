@@ -44,7 +44,7 @@ val find_token_before :
   -> Lexing.position
   -> (Parser.token * Location.t) option
 
-val string_literal : t -> [`Normalize | `Preserve] -> Location.t -> string
+val string_literal : t -> [ `Normalize | `Preserve ] -> Location.t -> string
 val char_literal : t -> Location.t -> string
 
 val is_long_pexp_open : t -> expression -> bool

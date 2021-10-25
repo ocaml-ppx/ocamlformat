@@ -151,7 +151,7 @@ module Tyd : sig
 end
 
 type toplevel_item =
-  [`Item of structure_item | `Directive of toplevel_directive]
+  [ `Item of structure_item | `Directive of toplevel_directive ]
 
 (** Ast terms of various forms. *)
 type t =

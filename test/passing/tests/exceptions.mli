@@ -31,7 +31,7 @@ exception E : (t as 'a)
 exception E : (t * t)
 exception E : (t -> t)
 exception E : (module M)
-exception E : [`X | `Y]
+exception E : [ `X | `Y ]
 exception E : 'x
 exception E : < x ; y ; .. >
 exception E : #c
@@ -49,7 +49,7 @@ exception E of (t as 'a)
 exception E of (t * t)
 exception E of (t -> t)
 exception E of (module M)
-exception E of [`X | `Y]
+exception E of [ `X | `Y ]
 exception E of 'x
 exception E of < x ; y ; .. >
 exception E of #c

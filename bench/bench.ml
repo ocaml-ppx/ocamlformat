@@ -21,7 +21,7 @@ type input =
   ; kind: Syntax.t
   ; source: string
   ; conf: Conf.t
-  ; action: [`Format | `Numeric of range]
+  ; action: [ `Format | `Numeric of range ]
   }
 
 let inputs =

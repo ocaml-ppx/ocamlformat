@@ -12,48 +12,48 @@
 (** Configuration options *)
 
 type t =
-  { assignment_operator: [`Begin_line | `End_line]
-  ; break_cases: [`Fit | `Nested | `Toplevel | `Fit_or_vertical | `All]
-  ; break_collection_expressions: [`Wrap | `Fit_or_vertical]
-  ; break_infix: [`Wrap | `Fit_or_vertical]
+  { assignment_operator: [ `Begin_line | `End_line ]
+  ; break_cases: [ `Fit | `Nested | `Toplevel | `Fit_or_vertical | `All ]
+  ; break_collection_expressions: [ `Wrap | `Fit_or_vertical ]
+  ; break_infix: [ `Wrap | `Fit_or_vertical ]
   ; break_infix_before_func: bool
-  ; break_fun_decl: [`Wrap | `Fit_or_vertical | `Smart]
-  ; break_fun_sig: [`Wrap | `Fit_or_vertical | `Smart]
-  ; break_separators: [`Before | `After]
-  ; break_string_literals: [`Auto | `Never]
+  ; break_fun_decl: [ `Wrap | `Fit_or_vertical | `Smart ]
+  ; break_fun_sig: [ `Wrap | `Fit_or_vertical | `Smart ]
+  ; break_separators: [ `Before | `After ]
+  ; break_string_literals: [ `Auto | `Never ]
   ; cases_exp_indent: int
-  ; cases_matching_exp_indent: [`Normal | `Compact]
+  ; cases_matching_exp_indent: [ `Normal | `Compact ]
   ; comment_check: bool
   ; disable: bool
-  ; doc_comments: [`Before | `Before_except_val | `After_when_possible]
+  ; doc_comments: [ `Before | `Before_except_val | `After_when_possible ]
   ; doc_comments_padding: int
-  ; doc_comments_tag_only: [`Fit | `Default]
+  ; doc_comments_tag_only: [ `Fit | `Default ]
   ; dock_collection_brackets: bool
-  ; exp_grouping: [`Parens | `Preserve]
-  ; field_space: [`Tight | `Loose | `Tight_decl]
-  ; if_then_else: [`Compact | `Fit_or_vertical | `Keyword_first | `K_R]
-  ; indicate_multiline_delimiters: [`No | `Space | `Closing_on_separate_line]
-  ; indicate_nested_or_patterns: [`Space | `Unsafe_no]
-  ; infix_precedence: [`Indent | `Parens]
+  ; exp_grouping: [ `Parens | `Preserve ]
+  ; field_space: [ `Tight | `Loose | `Tight_decl ]
+  ; if_then_else: [ `Compact | `Fit_or_vertical | `Keyword_first | `K_R ]
+  ; indicate_multiline_delimiters:
+      [ `No | `Space | `Closing_on_separate_line ]
+  ; indicate_nested_or_patterns: [ `Space | `Unsafe_no ]
+  ; infix_precedence: [ `Indent | `Parens ]
   ; leading_nested_match_parens: bool
-  ; let_and: [`Compact | `Sparse]
-  ; let_binding_spacing: [`Compact | `Sparse | `Double_semicolon]
-  ; let_module: [`Compact | `Sparse]
-  ; line_endings: [`Lf | `Crlf]
+  ; let_and: [ `Compact | `Sparse ]
+  ; let_binding_spacing: [ `Compact | `Sparse | `Double_semicolon ]
+  ; let_module: [ `Compact | `Sparse ]
+  ; line_endings: [ `Lf | `Crlf ]
   ; margin: int
   ; max_indent: int option
   ; max_iters: int
   ; ocaml_version: Ocaml_version.t
   ; ocp_indent_compat: bool
   ; parens_ite: bool
-  ; parens_tuple: [`Always | `Multi_line_only]
+  ; parens_tuple: [ `Always | `Multi_line_only ]
   ; parse_docstrings: bool
   ; quiet: bool
-  ; sequence_blank_line: [`Compact | `Preserve_one]
-  ; sequence_style: [`Before | `Separator | `Terminator]
-  ; single_case: [`Compact | `Sparse]
-  ; space_around_variants: bool
-  ; type_decl: [`Compact | `Sparse]
+  ; sequence_blank_line: [ `Compact | `Preserve_one ]
+  ; sequence_style: [ `Before | `Separator | `Terminator ]
+  ; single_case: [ `Compact | `Sparse ]
+  ; type_decl: [ `Compact | `Sparse ]
   ; wrap_comments: bool
   ; wrap_fun_args: bool
   }
@@ -922,12 +922,11 @@ module Formatting = struct
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
-  let space_around_variants =
-    let doc = "Add a space inside the delimiters of variants." in
+  let ( (* space_around_variants *) ) =
     let names = [ "space-around-variants" ] in
-    C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> { conf with space_around_variants= x })
-      (fun conf -> conf.space_around_variants)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* stritem_extension_indent *) ) =
     let names = [ "stritem-extension-indent" ] in
@@ -1276,7 +1275,6 @@ let ocamlformat_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Separator
   ; single_case= `Compact
-  ; space_around_variants= false
   ; type_decl= `Compact
   ; wrap_comments= false
   ; wrap_fun_args= true
@@ -1327,7 +1325,6 @@ let conventional_profile =
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
-  ; space_around_variants= C.default Formatting.space_around_variants
   ; type_decl= C.default Formatting.type_decl
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args
@@ -1377,7 +1374,6 @@ let janestreet_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
-  ; space_around_variants= true
   ; type_decl= `Sparse
   ; wrap_comments= false
   ; wrap_fun_args= false

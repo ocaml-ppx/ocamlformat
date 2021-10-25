@@ -1,1 +1,1 @@
-type 'a t = 'a list constraint 'a = [< `X]
+type 'a t = 'a list constraint 'a = [< `X ]

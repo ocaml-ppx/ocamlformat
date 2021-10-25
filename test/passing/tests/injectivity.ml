@@ -66,7 +66,7 @@ struct
 end
 
 module rec R : sig
-  type !'a t = [`A of 'a S.t]
+  type !'a t = [ `A of 'a S.t ]
 end =
   R
 

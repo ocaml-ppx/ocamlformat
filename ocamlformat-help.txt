@@ -253,9 +253,6 @@ OPTIONS (CODE FORMATTING STYLE)
        --no-parse-docstrings
            Unset parse-docstrings.
 
-       --no-space-around-variants
-           Unset space-around-variants.
-
        --no-wrap-comments
            Unset wrap-comments.
 
@@ -322,10 +319,6 @@ OPTIONS (CODE FORMATTING STYLE)
            compact will try to format a single case on a single line. sparse
            will always break the line before a single case. The default value
            is compact.
-
-       --space-around-variants
-           Add a space inside the delimiters of variants. The flag is set by
-           default.
 
        --type-decl={compact|sparse}
            Style of type declaration. compact will try to format constructors
@@ -457,6 +450,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --space-around-records=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --space-around-variants=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

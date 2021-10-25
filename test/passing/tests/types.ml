@@ -8,7 +8,7 @@ let _ = ignore Async_unix.Fd.(([ stdin (); stdout (); stderr () ] : t list))
 
 type t = { x: int }
 type t = { a: int; b: int }
-type t = [`A | `B]
+type t = [ `A | `B ]
 
 type loooooooooong_type =
   { looooooooooooong_field: looooooooooooong_type; field2: type2 }
@@ -27,12 +27,12 @@ type t += B = A
 type 'a foo = A of (int -> 'a)
 type 'a foo += A of (int -> 'a)
 type 'a foo += A : (int -> 'a) -> int foo
-type t = [ | a]
-type t = private [< a]
-type t = private [> a]
-type t = [a | b]
-type t = [a | b | `C]
-type t = [`a | b]
+type t = [ | a ]
+type t = private [< a ]
+type t = private [> a ]
+type t = [ a | b ]
+type t = [ a | b | `C ]
+type t = [ `a | b ]
 type t = |
 type t = [> ]
 
@@ -164,7 +164,7 @@ module type A = sig
   type t := ..
 end
 
-type t = [`A  (** A *) | `B [@b]  (** B *) | (p[@p]) (* P *)]
+type t = [ `A  (** A *) | `B [@b]  (** B *) | (p[@p]) (* P *) ]
 
 type foooooooooooooooo =
      ?fooooooooo:(string -> unit)
