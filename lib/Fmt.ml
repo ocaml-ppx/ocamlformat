@@ -60,10 +60,10 @@ end = struct
   let protect t ~on_error =
     let t = Staged.unstage t in
     Staged.stage (fun fs ->
-        try t fs
-        with exn ->
-          Format.pp_print_flush fs () ;
-          on_error exn )
+        try t fs with
+        | exn ->
+            Format.pp_print_flush fs () ;
+            on_error exn )
 
   let lazy_ f =
     Staged.stage (fun fs ->

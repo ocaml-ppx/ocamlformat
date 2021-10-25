@@ -53,7 +53,6 @@ type t =
   ; quiet: bool
   ; sequence_blank_line: [ `Compact | `Preserve_one ]
   ; sequence_style: [ `Before | `Separator | `Terminator ]
-  ; single_case: [ `Compact | `Sparse ]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool
   }

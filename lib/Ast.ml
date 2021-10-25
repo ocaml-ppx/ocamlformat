@@ -822,11 +822,12 @@ end = struct
       try
         ignore (f x) ;
         true
-      with exc ->
-        let bt = Caml.Printexc.get_backtrace () in
-        dump x Format.err_formatter ;
-        Format.eprintf "%s%!" bt ;
-        raise exc )
+      with
+      | exc ->
+          let bt = Caml.Printexc.get_backtrace () in
+          dump x Format.err_formatter ;
+          Format.eprintf "%s%!" bt ;
+          raise exc )
 
   (** Predicates to check the claimed sub-term relation. *)
 

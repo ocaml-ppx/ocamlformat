@@ -155,7 +155,8 @@ let rec odoc_nestable_block_element c fmt = function
           let ast = c.normalize_code ast in
           Caml.Format.asprintf "AST,%a,COMMENTS,[%a]"
             Std_ast.Pprintast.structure ast print_comments comments
-        with _ -> txt
+        with
+        | _ -> txt
       in
       fpf fmt "Code_block(%a, %a)" (option (ign_loc str)) metadata str txt
   | `Verbatim txt -> fpf fmt "Verbatim(%a)" str txt

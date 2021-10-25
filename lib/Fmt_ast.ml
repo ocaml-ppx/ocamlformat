@@ -2299,42 +2299,6 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                $ fmt_expression c (sub_exp ~ctx e0)
                $ closing )
            $ fmt_atrs ) )
-  | Pexp_try (e0, [ { pc_lhs; pc_guard; pc_rhs } ])
-    when Poly.(c.conf.single_case = `Compact && c.conf.break_cases <> `All)
-    ->
-      (* side effects of Cmts.fmt_before before [fmt_pattern] is important *)
-      let xpc_rhs = sub_exp ~ctx pc_rhs in
-      let leading_cmt = Cmts.fmt_before c pc_lhs.ppat_loc in
-      let parens_here, parens_for_exp =
-        if c.conf.leading_nested_match_parens then (false, None)
-        else (parenze_exp xpc_rhs, Some false)
-      in
-      Params.Exp.wrap c.conf c.source ~loc:pexp_loc ~parens
-        (hvbox 2
-           ( hvbox 0
-               ( str "try"
-               $ fmt_extension_suffix c ext
-               $ fmt_attributes c ~key:"@" pexp_attributes
-               $ fmt "@;<1 2>"
-               $ fmt_expression c (sub_exp ~ctx e0) )
-           $ break 1 (-2)
-           $ hvbox 0
-               ( hvbox 0
-                   ( fmt "with@ " $ leading_cmt
-                   $ hvbox 0
-                       ( fmt_pattern c ~pro:(if_newline "| ")
-                           (sub_pat ~ctx pc_lhs)
-                       $ opt pc_guard (fun g ->
-                             fmt "@ when "
-                             $ fmt_expression c (sub_exp ~ctx g) )
-                       $ fmt "@ ->" $ fmt_if parens_here " (" ) )
-               $ fmt "@;<1 2>"
-               $ cbox 0 (fmt_expression c ?parens:parens_for_exp xpc_rhs) )
-           $ fmt_if parens_here
-               ( match c.conf.indicate_multiline_delimiters with
-               | `No -> ")"
-               | `Space -> " )"
-               | `Closing_on_separate_line -> "@;<1000 -2>)" ) ) )
   | Pexp_match (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "match"
   | Pexp_try (e0, cs) -> fmt_match c ~parens ?ext ctx xexp cs e0 "try"
   | Pexp_pack me ->

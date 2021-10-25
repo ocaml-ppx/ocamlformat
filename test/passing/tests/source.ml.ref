@@ -1178,7 +1178,8 @@ let rec devariantize : type t e. e ty_env -> (t, e) ty -> variant -> t =
       | TCarg (sel, t), Some a -> ops.sum_inj (sel, devariantize e t a)
       | TCnoarg sel, None -> ops.sum_inj (sel, Noarg)
       | _ -> raise VariantMismatch
-    with Not_found -> raise VariantMismatch )
+    with
+    | Not_found -> raise VariantMismatch )
   | _ -> raise VariantMismatch
 
 (* First attempt: represent 1-constructor variants using Conv *)
@@ -6995,7 +6996,8 @@ let _ =
         end
       end in
       false
-    with Undefined_recursive_module _ -> true
+    with
+    | Undefined_recursive_module _ -> true
   in
   test 30 res true
 
@@ -7366,7 +7368,8 @@ let _ =
       end
     end in
     test 71 true false
-  with Undefined_recursive_module _ -> test 71 true true
+  with
+  | Undefined_recursive_module _ -> test 71 true true
 
 (* Coercions *)
 

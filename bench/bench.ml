@@ -88,8 +88,8 @@ let process_results results =
       Hashtbl.iter
         (fun test_name ols ->
           let metrics =
-            try Hashtbl.find metrics_by_test test_name
-            with Not_found -> Hashtbl.create 16
+            try Hashtbl.find metrics_by_test test_name with
+            | Not_found -> Hashtbl.create 16
           in
           Hashtbl.add metrics metric_name ols ;
           Hashtbl.replace metrics_by_test test_name metrics )

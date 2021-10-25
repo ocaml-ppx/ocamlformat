@@ -48,11 +48,9 @@ match x with
 | false -> "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 ;;
 
-try f x
-with
+try f x with
 (* this comment is intended to refer to the entire case below *)
-| Caml.Not_found ->
-  ()
+| Caml.Not_found -> ()
 ;;
 
 match x with

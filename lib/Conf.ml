@@ -50,7 +50,6 @@ type t =
   ; quiet: bool
   ; sequence_blank_line: [ `Compact | `Preserve_one ]
   ; sequence_style: [ `Before | `Separator | `Terminator ]
-  ; single_case: [ `Compact | `Sparse ]
   ; wrap_comments: bool
   ; wrap_fun_args: bool
   }
@@ -859,21 +858,11 @@ module Formatting = struct
       (fun conf x -> { conf with sequence_style= x })
       (fun conf -> conf.sequence_style)
 
-  let single_case =
-    let doc =
-      "Style of pattern matching expressions with only a single case."
-    in
+  let ( (* single_case *) ) =
     let names = [ "single-case" ] in
-    let all =
-      [ C.Value.make ~name:"compact" `Compact
-          "$(b,compact) will try to format a single case on a single line."
-      ; C.Value.make ~name:"sparse" `Sparse
-          "$(b,sparse) will always break the line before a single case."
-      ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> { conf with single_case= x })
-      (fun conf -> conf.single_case)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* space_around_arrays *) ) =
     let names = [ "space-around-arrays" ] in
@@ -1235,7 +1224,6 @@ let ocamlformat_profile =
   ; quiet= false
   ; sequence_blank_line= `Compact
   ; sequence_style= `Separator
-  ; single_case= `Compact
   ; wrap_comments= false
   ; wrap_fun_args= true
   }
@@ -1282,7 +1270,6 @@ let conventional_profile =
   ; quiet= C.default quiet
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
-  ; single_case= C.default Formatting.single_case
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args
   }
@@ -1328,7 +1315,6 @@ let janestreet_profile =
   ; quiet= ocamlformat_profile.quiet
   ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
-  ; single_case= `Sparse
   ; wrap_comments= false
   ; wrap_fun_args= false
   }
@@ -1587,7 +1573,8 @@ let read_config_file conf filename_kind =
                 | `Ocamlformat _ -> dot_ocamlformat
               in
               failwith_user_errors ~kind l )
-    with Sys_error _ -> conf )
+    with
+    | Sys_error _ -> conf )
 
 let update_using_env conf =
   let f (config, errors) (name, value) =
@@ -1644,16 +1631,18 @@ let is_in_listing_file ~listings ~filename =
                         in
                         Option.some_if (Re.execp re filename)
                           (listing_file, lno)
-                      with Re.Glob.Parse_error ->
-                        warn ~filename:listing_file ~lnum:lno
-                          "pattern %s cannot be parsed" line ;
-                        None )
+                      with
+                      | Re.Glob.Parse_error ->
+                          warn ~filename:listing_file ~lnum:lno
+                            "pattern %s cannot be parsed" line ;
+                          None )
                 | Error (`Msg msg) ->
                     warn ~filename:listing_file ~lnum:lno "%s" msg ;
                     None ) )
-      with Sys_error err ->
-        warn "ignoring %a, %s" Fpath.pp listing_file err ;
-        None )
+      with
+      | Sys_error err ->
+          warn "ignoring %a, %s" Fpath.pp listing_file err ;
+          None )
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
   let vfile = Fpath.v file in
