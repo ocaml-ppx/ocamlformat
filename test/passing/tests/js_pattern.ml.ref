@@ -5,7 +5,7 @@ let f x = match x with _ -> 0
 let f x = match x with _ -> 0
 
 let check_price t = function
-  | {Exec.trade_at_settlement= None | Some false} -> ()
+  | { Exec.trade_at_settlement= None | Some false } -> ()
 
 let check_price t = function simpler -> () | other -> ()
 

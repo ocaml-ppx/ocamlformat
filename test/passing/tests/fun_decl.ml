@@ -36,7 +36,8 @@ let translate_captured
     { Clang_ast_t.lci_captured_var
     ; lci_init_captured_vardecl
     ; lci_capture_this
-    ; lci_capture_kind } ((trans_results_acc, captured_vars_acc) as acc) =
+    ; lci_capture_kind
+    } ((trans_results_acc, captured_vars_acc) as acc) =
   ()
 
 [@@@ocamlformat "wrap-fun-args=true"]
@@ -59,7 +60,8 @@ let translate_captured
     { Clang_ast_t.lci_captured_var
     ; lci_init_captured_vardecl
     ; lci_capture_this
-    ; lci_capture_kind } ((trans_results_acc, captured_vars_acc) as acc) =
+    ; lci_capture_kind
+    } ((trans_results_acc, captured_vars_acc) as acc) =
   ()
 
 let f ssssssssss =

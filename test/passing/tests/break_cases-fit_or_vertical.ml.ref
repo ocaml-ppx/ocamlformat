@@ -57,8 +57,9 @@ let is_sequence exp =
   | Pexp_sequence _
    |Pexp_extension
       ( _
-      , PStr [ {pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _} ]
-      ) -> true
+      , PStr
+          [ { pstr_desc= Pstr_eval ({ pexp_desc= Pexp_sequence _ }, []); _ }
+          ] ) -> true
   | _ -> false
 
 let _ =
@@ -94,7 +95,7 @@ let foo =
   | Call
       ( (ret_id, _)
       , Const (Cfun callee_pname)
-      , (target_exp, _) :: (Sizeof {typ= cast_typ}, _) :: _
+      , (target_exp, _) :: (Sizeof { typ= cast_typ }, _) :: _
       , loc
       , _ )
     when Typ.Procname.equal callee_pname BuiltinDecl.__cast ->
@@ -120,8 +121,9 @@ let is_sequence exp =
   | Pexp_sequence _
   | Pexp_extension
       ( _
-      , PStr [ {pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _} ]
-      ) -> true
+      , PStr
+          [ { pstr_desc= Pstr_eval ({ pexp_desc= Pexp_sequence _ }, []); _ }
+          ] ) -> true
   | _ -> false
 
 let () =
@@ -206,7 +208,8 @@ let _ =
   match x with
   | { y=
         (* _____________________________________________________________________ *)
-        ( X _ | Y _ ) } -> ()
+        ( X _ | Y _ )
+    } -> ()
 
 let _ =
   match x with
@@ -214,7 +217,8 @@ let _ =
         ( Z
         (* _____________________________________________________________________ *)
         | X _
-        | Y _ ) } -> ()
+        | Y _ )
+    } -> ()
 
 let foooooooooooooo = function
   | Fooo (* fooooo foo foo foooooo foooooooo foooooooooooo *)
@@ -231,7 +235,7 @@ let foooooooooooooo = function
   | Foooo
     (* Fooo foooo fooooo foooooooo fooooooooo foooooooooooo fooooooooo
        fooo *) -> Foooooooooo.Foooooo
-  | Foooo {foooo_fooo= {foooooooooo}} ->
+  | Foooo { foooo_fooo= { foooooooooo } } ->
       Foooo_Foooo_fooooooo.get_foooooooooo fooooo_fooo
 
 let get_nullability = function

@@ -96,7 +96,7 @@ eeeeeeeeeeeee eeeeeeeeee |> function
 
 let parens =
   match body with
-  | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc} ->
+  | { pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc } ->
       update_config_maybe_disabled c pexp_loc pexp_attributes @@ fun c ->
       fmt "@ "
       $ Cmts.fmt c.cmts pexp_loc
@@ -110,7 +110,7 @@ let parens =
 
 let parens =
   match body with
-  | {pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc} -> (
+  | { pexp_desc= Pexp_function cs; pexp_attributes; pexp_loc } -> (
       update_config_maybe_disabled c pexp_loc pexp_attributes @@ function
       | _ ->
           fmt "@ "
@@ -138,7 +138,7 @@ let foo =
   get_store_tree s >>= function
   | None -> f t >|= fun x -> Ok x (* no transaction is needed *)
   | Some (origin, old_tree) ->
-      let batch = {repo; tree= old_tree; origin} in
+      let batch = { repo; tree= old_tree; origin } in
       let b = Batch batch in
       foo
 

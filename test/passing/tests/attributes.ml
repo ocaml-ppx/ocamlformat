@@ -9,7 +9,8 @@ type t =
   { a: int
   ; b: int [@default 1] [@drop_if]
   ; c: int [@default 1] [@drop_if]
-        (** docstring that is long enough to break *) }
+        (** docstring that is long enough to break *)
+  }
 
 type t =
   { a: int
@@ -20,7 +21,8 @@ type t =
   ; c: someloooooooooooooooooooooooooooooong typ
         [@default looooooooooooooooooooooooooooooooooooooooong]
         [@drop_if somethingelse]
-        (** docstring that is long enough to break *) }
+        (** docstring that is long enough to break *)
+  }
 
 val foo : int
   [@@deprecated "it is good the salad"] [@@warning "-32"] [@@warning "-99"]
@@ -74,7 +76,8 @@ type blocklist =
   { f1: int [@version 1, 1, 0]  (** short comment *)
   ; f2: (int64 * int64) list
         (** loooooooooooooooooooooooooooooong
-            commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *) }
+            commmmmmmmmmmmmmmmmmmmmmmmmmmmmmmment *)
+  }
 
 type blocklist =
   | F1 of int [@version 1, 1, 0]  (** short comment *)
@@ -136,7 +139,7 @@ let _ = match x with A -> [%expr match y with e -> e]
 let _ =
   match x with A -> [%expr match y with e -> ( match e with x -> x )]
 
-type t = {a: int}
+type t = { a: int }
 [@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
 (* comment *)
 [@@deriving xxxxxxxxxxxxxxxxxxxxxxxxxxx]
@@ -288,7 +291,7 @@ let _ =
 let (Foo ((A | B) [@attr])) = ()
 let ([ (A | B) [@attr]; b; c ] [@attr]) = ()
 let ([| a; (A | B) [@attr]; c |] [@attr]) = ()
-let {b= (A | B) [@attr]} = ()
+let { b= (A | B) [@attr] } = ()
 let (`Foo ((`A | `B) [@attr])) = ()
 let (A | B) [@attr], (A | B) [@attr] = ()
 let (A | B) [@attr] = ()
@@ -304,7 +307,8 @@ let (M.(A | B) [@attr]) = ();;
 [@attr]
 ;;
 
-{a____________________________________= b___________________________________}
+{ a____________________________________= b___________________________________
+}
 [@attr]
 
 let _ =
@@ -315,10 +319,11 @@ let _ =
   (try[@ocaml.warning "-4"] bar with _ -> ()) ;
   foo
 
-let pp f ({cf_interface; cf_is_objc_block; cf_virtual} [@warning "+9"]) = ()
+let pp f ({ cf_interface; cf_is_objc_block; cf_virtual } [@warning "+9"]) =
+  ()
 
 let pp f
-    ({cf_assign_last_arg; cf_injected_destructor; cf_interface}
+    ({ cf_assign_last_arg; cf_injected_destructor; cf_interface }
       [@warning "+9"] ) =
   ()
 
@@ -326,7 +331,8 @@ let pp f
     ({ cf_assign_last_arg
      ; cf_injected_destructor
      ; cf_interface
-     ; cf_is_objc_block } [@warning "+9"] ) =
+     ; cf_is_objc_block
+     } [@warning "+9"] ) =
   ()
 
 let _ = f ((* comments *) "c" [@attributes])

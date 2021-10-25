@@ -88,7 +88,8 @@ module Indexing_op : sig
   type custom_operator =
     { path: string list  (** eg. [a.X.Y.*{b}] *)
     ; opchars: string
-    ; brackets: brackets }
+    ; brackets: brackets
+    }
 
   type indexing_op =
     | Defined of expression * custom_operator
@@ -103,7 +104,8 @@ module Indexing_op : sig
     { lhs: expression
     ; op: indexing_op
     ; rhs: expression option  (** eg. [a.*{b} <- exp] *)
-    ; loc: Location.t }
+    ; loc: Location.t
+    }
 
   val get_sugar :
     expression -> (Asttypes.arg_label * expression) list -> t option
@@ -121,7 +123,8 @@ val doc_atrs :
 type cmt_checker =
   { cmts_before: Location.t -> bool
   ; cmts_within: Location.t -> bool
-  ; cmts_after: Location.t -> bool }
+  ; cmts_after: Location.t -> bool
+  }
 
 module Pat : sig
   val is_simple : pattern -> bool
@@ -179,7 +182,7 @@ val dump : Format.formatter -> t -> unit
 
 (** Term-in-context [{ctx; ast}] records that [ast] is (considered to be) an
     immediate sub-term of [ctx]. *)
-type 'a xt = private {ctx: t; ast: 'a}
+type 'a xt = private { ctx: t; ast: 'a }
 
 val sub_typ : ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)

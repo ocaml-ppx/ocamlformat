@@ -24,7 +24,7 @@ let foooooooooo =
 
 let fooooooooooooo =
   match lbls with
-  | (_, {lbl_all}, _) :: _ ->
+  | (_, { lbl_all }, _) :: _ ->
     let t =
       Array.map
         (fun lbl -> (mknoloc (Longident.Lident "?temp?"), lbl, omega))
@@ -35,7 +35,8 @@ let fooooooooooooo =
 let foooooooooo =
   match fooooooooooooo with
   | Pexp_construct
-      ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [ _; e2 ]; _}) ->
+      ({ txt= Lident "::"; _ }, Some { pexp_desc= Pexp_tuple [ _; e2 ]; _ })
+    ->
     if is_sugared_list e2 then Some (Semi, Non)
     else Some (ColonColon, if exp == e2 then Right else Left)
 
@@ -44,18 +45,19 @@ let foooooooooooooooooooooooooo =
   | Pexp_apply
       ( { pexp_desc=
             Pexp_ident
-              {txt= Lident (("~-" | "~-." | "~+" | "~+.") as op); loc}
+              { txt= Lident (("~-" | "~-." | "~+" | "~+.") as op); loc }
         ; pexp_loc
         ; pexp_attributes= []
-        ; _ }
+        ; _
+        }
       , [ (Nolabel, e1) ] ) ->
     fooooooooooooooooooooooooooooooooooooo
 
 let fooooooooooooooooooooooooooooooooooo =
   match foooooooooooooooooooooo with
   | ( Ppat_constraint
-        ( ({ppat_desc= Ppat_var _; _} as p0)
-        , {ptyp_desc= Ptyp_poly ([], t0); _} )
+        ( ({ ppat_desc= Ppat_var _; _ } as p0)
+        , { ptyp_desc= Ptyp_poly ([], t0); _ } )
     , Pexp_constraint (e0, t1) )
     when Poly.(t0 = t1) ->
     m.value_binding m

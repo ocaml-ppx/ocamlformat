@@ -20,7 +20,8 @@ module Ocp_indent = struct
       ; in_lines
       ; adaptive= true
       ; indent_empty= false
-      ; kind= Numeric on_indent }
+      ; kind= Numeric on_indent
+      }
     in
     let stream = Nstream.of_string source in
     IndentPrinter.proceed output stream IndentBlock.empty init

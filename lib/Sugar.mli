@@ -136,7 +136,8 @@ module Let_binding : sig
     ; lb_exp: expression Ast.xt
     ; lb_pun: bool
     ; lb_attrs: attribute list
-    ; lb_loc: Location.t }
+    ; lb_loc: Location.t
+    }
 
   val of_value_binding :
     Cmts.t -> ctx:Ast.t -> first:bool -> value_binding -> t

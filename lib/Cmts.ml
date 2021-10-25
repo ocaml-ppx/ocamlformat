@@ -66,7 +66,8 @@ type t =
   ; mutable cmts_within: Cmt.t Multimap.M(Location).t
   ; source: Source.t
   ; mutable remaining: Set.M(Location).t
-  ; layout_cache: Layout_cache.t }
+  ; layout_cache: Layout_cache.t
+  }
 
 let copy
     { debug
@@ -75,14 +76,16 @@ let copy
     ; cmts_within
     ; source
     ; remaining
-    ; layout_cache } =
+    ; layout_cache
+    } =
   { debug
   ; cmts_before
   ; cmts_after
   ; cmts_within
   ; source
   ; remaining
-  ; layout_cache }
+  ; layout_cache
+  }
 
 let restore src ~into =
   into.cmts_before <- src.cmts_before ;
@@ -173,7 +176,7 @@ end = struct
       - c: after start, before end
       - d: at end
       - e: after end *)
-  let split t {Location.loc_start; loc_end; _} =
+  let split t { Location.loc_start; loc_end; _ } =
     let add_opt kvo init =
       Option.fold kvo ~init ~f:(fun m (key, data) -> Map.set m ~key ~data)
     in
@@ -184,7 +187,7 @@ end = struct
 
   let partition src ~prev ~next cmts =
     match to_list cmts with
-    | Cmt.{loc; _} :: _ as cmtl when is_adjacent src prev loc -> (
+    | Cmt.{ loc; _ } :: _ as cmtl when is_adjacent src prev loc -> (
       match
         List.group cmtl ~break:(fun l1 l2 ->
             not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
@@ -209,7 +212,7 @@ end = struct
           let prev, next =
             if not (same_line_as_prev next) then
               let next, prev =
-                List.partition_tf cmtl ~f:(fun {Cmt.loc= l; _} ->
+                List.partition_tf cmtl ~f:(fun { Cmt.loc= l; _ } ->
                     match decide l with
                     | `After_prev -> false
                     | `Before_next -> true )
@@ -259,7 +262,7 @@ let rec place t loc_tree ?prev_loc locs cmts =
     | Some prev_loc -> add_cmts t `After prev_loc cmts
     | None ->
         if t.debug then
-          List.iter (CmtSet.to_list cmts) ~f:(fun {Cmt.txt; _} ->
+          List.iter (CmtSet.to_list cmts) ~f:(fun { Cmt.txt; _ } ->
               Format.eprintf "lost: %s@\n%!" txt ) )
 
 (** Relocate comments, for Ast transformations such as sugaring. *)
@@ -285,7 +288,7 @@ let relocate (t : t) ~src ~before ~after =
 
 let relocate_cmts_before (t : t) ~src ~sep ~dst =
   let f map =
-    Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{loc; _} ->
+    Multimap.partition_multi map ~src ~dst ~f:(fun Cmt.{ loc; _ } ->
         Location.compare_end loc sep < 0 )
   in
   update_cmts t `Before ~f ;
@@ -303,12 +306,14 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
   | PStr
       [ { pstr_desc=
             Pstr_eval
-              ( { pexp_desc= Pexp_constant {pconst_desc= Pconst_string _; _}
+              ( { pexp_desc= Pexp_constant { pconst_desc= Pconst_string _; _ }
                 ; pexp_loc= _
                 ; pexp_loc_stack= _
-                ; pexp_attributes= _ }
+                ; pexp_attributes= _
+                }
               , [] )
-        ; pstr_loc }
+        ; pstr_loc
+        }
       ]
     when Source.is_quoted_string src pstr_loc ->
       ()
@@ -318,14 +323,16 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
               ( { pexp_desc= Pexp_sequence (e1, _)
                 ; pexp_loc= _
                 ; pexp_loc_stack= _
-                ; pexp_attributes }
+                ; pexp_attributes
+                }
               , [] )
-        ; pstr_loc= _ }
+        ; pstr_loc= _
+        }
       ]
     when List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:pre ~payload:e1.pexp_loc ->
       ()
-  | PStr [ {pstr_desc= Pstr_eval _; pstr_loc; _} ] ->
+  | PStr [ { pstr_desc= Pstr_eval _; pstr_loc; _ } ] ->
       let kwd_loc =
         match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with
         | Some loc -> loc
@@ -358,7 +365,8 @@ let init fragment ~debug source asts comments_n_docstrings =
     ; cmts_within= Map.empty (module Location)
     ; source
     ; remaining= Set.empty (module Location)
-    ; layout_cache= Layout_cache.create () }
+    ; layout_cache= Layout_cache.create ()
+    }
   in
   let comments = Normalize.dedup_cmts fragment asts comments_n_docstrings in
   if not (List.is_empty comments) then (
@@ -410,7 +418,7 @@ let find_cmts t pos loc =
   update_cmts t pos ~f:(fun m -> Map.remove m loc) ;
   r
 
-let break_comment_group source margin {Cmt.loc= a; _} {Cmt.loc= b; _} =
+let break_comment_group source margin { Cmt.loc= a; _ } { Cmt.loc= b; _ } =
   let vertical_align =
     Location.line_difference a b = 1 && Location.compare_start_col a b = 0
   in
@@ -442,8 +450,8 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
                  wrap "(*" "*)" (str (Cmt.txt cmt)) ) )
          $
          match next with
-         | Some ({loc= next; _} :: _) ->
-             let Cmt.{loc= last; _} = List.last_exn group in
+         | Some ({ loc= next; _ } :: _) ->
+             let Cmt.{ loc= last; _ } = List.last_exn group in
              fmt_if (Location.line_difference last next > 1) "\n" $ fmt "@ "
          | _ -> noop ) )
 
@@ -455,7 +463,7 @@ let fmt_cmts t conf ~fmt_code ?pro ?epi ?(eol = Fmt.fmt "@\n") ?(adj = eol)
   | None | Some [] -> noop
   | Some cmts ->
       let epi =
-        let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+        let ({ loc= last_loc; _ } : Cmt.t) = List.last_exn cmts in
         let eol_cmt = Source.ends_line t.source last_loc in
         let adj_cmt = eol_cmt && Location.line_difference last_loc loc = 1 in
         fmt_or_k eol_cmt (fmt_or_k adj_cmt adj eol) (fmt_opt epi)
@@ -492,7 +500,7 @@ module Toplevel = struct
     let open Fmt in
     match found with
     | None | Some [] -> noop
-    | Some (({loc= first_loc; _} : Cmt.t) :: _ as cmts) ->
+    | Some (({ loc= first_loc; _ } : Cmt.t) :: _ as cmts) ->
         let pro =
           match pos with
           | Before -> noop
@@ -504,7 +512,7 @@ module Toplevel = struct
               else break 1 0
         in
         let epi =
-          let ({loc= last_loc; _} : Cmt.t) = List.last_exn cmts in
+          let ({ loc= last_loc; _ } : Cmt.t) = List.last_exn cmts in
           match pos with
           | Before | Within ->
               if Source.ends_line t.source last_loc then
@@ -534,7 +542,7 @@ let drop_inside t loc =
   let clear pos =
     update_cmts t pos
       ~f:
-        (Multimap.filter ~f:(fun {Cmt.loc= cmt_loc; _} ->
+        (Multimap.filter ~f:(fun { Cmt.loc= cmt_loc; _ } ->
              not (Location.contains loc cmt_loc) ) )
   in
   clear `Before ;
@@ -567,7 +575,7 @@ let remaining_locs t = Set.to_list t.remaining
 
 let diff (conf : Conf.t) x y =
   let norm z =
-    let norm_non_code {Cmt.txt; _} = Normalize.comment txt in
+    let norm_non_code { Cmt.txt; _ } = Normalize.comment txt in
     let f z =
       match Cmt.txt z with
       | "" | "$" -> norm_non_code z
@@ -583,7 +591,7 @@ let diff (conf : Conf.t) x y =
                 ~source
             with
             | exception _ -> norm_non_code z
-            | {ast; _} ->
+            | { ast; _ } ->
                 Caml.Format.asprintf "%a" Std_ast.Pprintast.structure
                   (Normalize.normalize Structure conf ast)
           else norm_non_code z

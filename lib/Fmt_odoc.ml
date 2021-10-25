@@ -13,7 +13,7 @@ open Fmt
 open Odoc_parser.Ast
 module Loc = Odoc_parser.Loc
 
-type conf = {fmt_code: string -> (Fmt.t, unit) Result.t}
+type conf = { fmt_code: string -> (Fmt.t, unit) Result.t }
 
 (** Escape characters if they are not already escaped. [escapeworthy] should
     be [true] if the character should be escaped, [false] otherwise. *)
@@ -96,7 +96,7 @@ let fmt_reference = ign_loc ~f:str_normalized
 let list_should_use_heavy_syntax items =
   let heavy_nestable_block_elements = function
     (* More than one element or contains a list *)
-    | [ {Loc.value= `List _; _} ] | _ :: _ :: _ -> true
+    | [ { Loc.value= `List _; _ } ] | _ :: _ :: _ -> true
     | [] | [ _ ] -> false
   in
   List.exists items ~f:heavy_nestable_block_elements
@@ -117,7 +117,7 @@ let list_block_elem elems f =
       let elem = elem.Loc.value in
       let break =
         match next with
-        | Some {Loc.value= n; _}
+        | Some { Loc.value= n; _ }
           when block_element_should_break
                  (elem :> block_element)
                  (n :> block_element) ->
@@ -257,14 +257,14 @@ let fmt_block_element c = function
       hovbox 0 (fmt_nestable_block_element c elm)
 
 let fmt ~fmt_code (docs : t) =
-  vbox 0 (list_block_elem docs (fmt_block_element {fmt_code}))
+  vbox 0 (list_block_elem docs (fmt_block_element { fmt_code }))
 
 let diff c x y =
   let norm z =
-    let f Cmt.{txt; _} = Normalize.docstring c txt in
+    let f Cmt.{ txt; _ } = Normalize.docstring c txt in
     Set.of_list (module String) (List.map ~f z)
   in
   Set.symmetric_diff (norm x) (norm y)
 
 let is_tag_only =
-  List.for_all ~f:(function {Loc.value= `Tag _; _} -> true | _ -> false)
+  List.for_all ~f:(function { Loc.value= `Tag _; _ } -> true | _ -> false)

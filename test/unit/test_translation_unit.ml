@@ -14,7 +14,7 @@ let test_parse_and_format kind_name ~fg test_name ~input ~expected =
       let actual =
         Translation_unit.parse_and_format fg ~input_name:"<test>"
           ~source:input Conf.default_profile
-          Conf.{debug= false; margin_check= false}
+          Conf.{ debug= false; margin_check= false }
         |> Result.map_error ~f:(fun e ->
                Translation_unit.Error.print Stdlib.Format.str_formatter e ;
                Stdlib.Format.flush_str_formatter () )
@@ -140,7 +140,7 @@ let test_numeric =
     ( test_name
     , `Quick
     , fun () ->
-        let opts = Conf.{debug= false; margin_check= false} in
+        let opts = Conf.{ debug= false; margin_check= false } in
         let got =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
             Conf.default_profile opts
@@ -346,7 +346,7 @@ let test_numeric_file =
     ( test_name
     , `Quick
     , fun () ->
-        let opts = Conf.{debug= false; margin_check= false} in
+        let opts = Conf.{ debug= false; margin_check= false } in
         let got =
           Translation_unit.numeric Use_file ~input_name:"_" ~source ~range
             Conf.default_profile opts

@@ -41,13 +41,13 @@ let source_from_file = function
   | Conf.Stdin -> In_channel.input_all In_channel.stdin
   | File f -> In_channel.with_file f ~f:In_channel.input_all
 
-let print_error ({quiet; _} : Conf.t) ({debug; _} : Conf.opts) e =
+let print_error ({ quiet; _ } : Conf.t) ({ debug; _ } : Conf.opts) e =
   Translation_unit.Error.print Format.err_formatter ~debug ~quiet e
 
 let run_action action opts =
   match action with
   | Conf.Inplace inputs ->
-      let f {Conf.kind; name= input_name; file= input_file; conf} =
+      let f { Conf.kind; name= input_name; file= input_file; conf } =
         let input_file =
           match input_file with
           | File f -> f
@@ -65,7 +65,7 @@ let run_action action opts =
         | Error e -> Error (fun () -> print_error conf opts e)
       in
       Result.combine_errors_unit (List.map inputs ~f)
-  | In_out ({kind; file; name= input_name; conf}, output_file) -> (
+  | In_out ({ kind; file; name= input_name; conf }, output_file) -> (
       let source = source_from_file file in
       match format ?output_file ~kind ~input_name ~source conf opts with
       | Ok s ->
@@ -73,7 +73,7 @@ let run_action action opts =
           Ok ()
       | Error e -> Error [ (fun () -> print_error conf opts e) ] )
   | Check inputs ->
-      let f {Conf.kind; name= input_name; file; conf} =
+      let f { Conf.kind; name= input_name; file; conf } =
         let source = source_from_file file in
         let result = format ~kind ~input_name ~source conf opts in
         match result with
@@ -85,8 +85,8 @@ let run_action action opts =
   | Print_config conf ->
       Conf.print_config conf ;
       Ok ()
-  | Numeric ({kind; file; name= input_name; conf}, range) ->
-      let conf = {conf with quiet= true} in
+  | Numeric ({ kind; file; name= input_name; conf }, range) ->
+      let conf = { conf with quiet= true } in
       let source = source_from_file file in
       Translation_unit.numeric kind ~input_name ~source ~range conf opts
       |> Result.map_error ~f:(fun e ->

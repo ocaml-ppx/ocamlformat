@@ -158,7 +158,7 @@ let _ =
     (*f*)
     x
 
-type t = {a: int [@default a] (* comment *); b: flag}
+type t = { a: int [@default a] (* comment *); b: flag }
 
 let () =
   (* *)
@@ -288,7 +288,7 @@ let _ =
   | None -> ()
 
 type prefix =
-  {sib_extend: int  (** add more as needed *) (* extended sib index bit *)}
+  { sib_extend: int  (** add more as needed *) (* extended sib index bit *) }
 
 type t =
   | A (* A *)

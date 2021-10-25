@@ -13,10 +13,10 @@ module Test_location = struct
           Alcotest.check Alcotest.int test_name expected got )
     in
     let make_pos pos_cnum =
-      {Lexing.pos_fname= "fname"; pos_lnum= 0; pos_bol= 0; pos_cnum}
+      { Lexing.pos_fname= "fname"; pos_lnum= 0; pos_bol= 0; pos_cnum }
     in
     let make_loc s e loc_ghost =
-      {Location.loc_start= make_pos s; loc_end= make_pos e; loc_ghost}
+      { Location.loc_start= make_pos s; loc_end= make_pos e; loc_ghost }
     in
     [ test "equal" (make_loc 0 0 false) (make_loc 0 0 false) 0
     ; test "different start" (make_loc 0 0 false) (make_loc 1 0 false) (-1)

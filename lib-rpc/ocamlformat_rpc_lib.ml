@@ -117,11 +117,11 @@ module V1 :
   end
 
   module Client = struct
-    type t = {pid: int; input: in_channel; output: out_channel}
+    type t = { pid: int; input: in_channel; output: out_channel }
     type cmd = Command.t
 
     let pid t = t.pid
-    let mk ~pid input output = {pid; input; output}
+    let mk ~pid input output = { pid; input; output }
 
     let query command t =
       Command.output t.output command ;

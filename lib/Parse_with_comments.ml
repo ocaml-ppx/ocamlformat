@@ -12,7 +12,7 @@
 open Migrate_ast
 
 type 'a with_comments =
-  {ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t}
+  { ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t }
 
 module W = struct
   type t = int
@@ -78,6 +78,6 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
           tokens lexbuf
         in
         let source = Source.create ~text:source ~tokens in
-        {ast; comments; prefix= hash_bang; source} )
+        { ast; comments; prefix= hash_bang; source } )
   in
   match List.rev !w50 with [] -> t | w50 -> raise (Warning50 w50)

@@ -6,12 +6,12 @@ type uu += B of 'a * (< leq: 'a > as 'a)
 
 let _ = ignore Async_unix.Fd.(([ stdin (); stdout (); stderr () ] : t list))
 
-type t = {x: int}
-type t = {a: int; b: int}
+type t = { x: int }
+type t = { a: int; b: int }
 type t = [`A | `B]
 
 type loooooooooong_type =
-  {looooooooooooong_field: looooooooooooong_type; field2: type2}
+  { looooooooooooong_field: looooooooooooong_type; field2: type2 }
 
 type t = A of (int * int) * int
 type t = A of int * int
@@ -110,7 +110,8 @@ type ( 'context
   { on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in }
+  ; on_objc_cpp: 'context -> 'f_in
+  }
 
 type ( 'context
      , 'f_in
@@ -131,7 +132,8 @@ type ( 'context
   { on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in
   ; on_objc_cpp: 'context -> 'f_in
-  ; on_objc_cpp: 'context -> 'f_in }
+  ; on_objc_cpp: 'context -> 'f_in
+  }
 
 type ( 'context
      , 'f_in
@@ -155,8 +157,8 @@ module type A = sig
   type t := A.t = A | B
   type t := A | B
 
-  type t := A.t = {a: int; b: int}
-  and t := {a: int; b: int}
+  type t := A.t = { a: int; b: int }
+  and t := { a: int; b: int }
 
   type t := A.t = ..
   type t := ..
@@ -180,4 +182,4 @@ type foooooooooooooooo =
 type ' a' t = ' a'
 type ' a' t = ' a' option
 type ' a' t = int as ' a'
-type t = {a: ' a'. ' a' t'}
+type t = { a: ' a'. ' a' t' }

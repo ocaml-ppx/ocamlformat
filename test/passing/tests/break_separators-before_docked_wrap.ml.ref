@@ -100,7 +100,7 @@ let _ =
 
 [@@@ocamlformat "type-decl=compact"]
 
-type t = {aaaaaaaaa: aaaa; bbbbbbbbb: bbbb}
+type t = { aaaaaaaaa: aaaa; bbbbbbbbb: bbbb }
 
 type trace_mod_funs = {
     trace_mod: bool option
@@ -110,7 +110,7 @@ type trace_mod_funs = {
 module Fooooo = struct
   (** This is a long docstring so that it cannot be on the same line as the
       record type. *)
-  type t = {fooooo: fooo; fooooo: fooooooo}
+  type t = { fooooo: fooo; fooooo: fooooooo }
 
   val select :
        (* The fsevents context *)
@@ -153,8 +153,8 @@ type trace_mod_funs = {
   ; trace_funs: bool Map.M(String).t
 }
 
-let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
-  {aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb}
+let x { aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa } =
+  { aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb }
 
 let x
     {
@@ -316,8 +316,8 @@ type t =
   -> (string Location.loc * bool) list option
      * (string Location.loc * payload) list
 
-let x {aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa} =
-  {aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb}
+let x { aaaaaaaaaaaaaa; aaaaaaaaaaaaa; aaaaaaaaaa } =
+  { aaaaaaaaaaaa= aaaaaaaaaaaaaaaaa; bbbbbbbbbbbbb= bbb bb bbbbbb }
 
 let x
     {

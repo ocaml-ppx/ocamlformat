@@ -25,8 +25,8 @@ module Right = struct
   let list ~elt l = match List.last l with None -> false | Some x -> elt x
 
   let rec core_type = function
-    | {ptyp_attributes= _ :: _; _} -> false
-    | {ptyp_desc; _} -> (
+    | { ptyp_attributes= _ :: _; _ } -> false
+    | { ptyp_desc; _ } -> (
       match ptyp_desc with
       | Ptyp_arrow (_, _, t) -> core_type t
       | Ptyp_tuple l -> core_type (List.last_exn l)
@@ -37,7 +37,7 @@ module Right = struct
     | Pcstr_record _ -> false
     | Pcstr_tuple args -> (
       match List.last args with
-      | Some {ptyp_desc= Ptyp_arrow _; _} ->
+      | Some { ptyp_desc= Ptyp_arrow _; _ } ->
           (* Arrows are wrapped in parens in this position:
 
              type a = A of (t -> <..>) *)
@@ -46,60 +46,60 @@ module Right = struct
       | None -> false )
 
   let extension_constructor = function
-    | {pext_attributes= _ :: _; _} -> false
-    | {pext_kind; _} -> (
+    | { pext_attributes= _ :: _; _ } -> false
+    | { pext_kind; _ } -> (
       match pext_kind with
       | Pext_rebind _ -> false
       | Pext_decl (_, _, Some _result) -> false
       | Pext_decl (_, args, None) -> constructor_arguments args )
 
   let constructor_declaration = function
-    | {pcd_attributes= _ :: _; _} -> false
-    | {pcd_res= Some _; _} -> false
-    | {pcd_args= args; _} -> constructor_arguments args
+    | { pcd_attributes= _ :: _; _ } -> false
+    | { pcd_res= Some _; _ } -> false
+    | { pcd_args= args; _ } -> constructor_arguments args
 
   let type_declaration = function
-    | {ptype_attributes= _ :: _; _} -> false
-    | {ptype_cstrs= _ :: _ as cstrs; _} ->
+    | { ptype_attributes= _ :: _; _ } -> false
+    | { ptype_cstrs= _ :: _ as cstrs; _ } ->
         (* type a = ... constraint left = < ... > *)
         list ~elt:(fun (_left, right, _loc) -> core_type right) cstrs
-    | {ptype_kind= Ptype_open | Ptype_record _; _} -> false
-    | {ptype_kind= Ptype_abstract; ptype_manifest= None; _} -> false
-    | {ptype_kind= Ptype_abstract; ptype_manifest= Some manifest; _} ->
+    | { ptype_kind= Ptype_open | Ptype_record _; _ } -> false
+    | { ptype_kind= Ptype_abstract; ptype_manifest= None; _ } -> false
+    | { ptype_kind= Ptype_abstract; ptype_manifest= Some manifest; _ } ->
         (* type a = < ... > *)
         core_type manifest
-    | {ptype_kind= Ptype_variant cdecls; _} ->
+    | { ptype_kind= Ptype_variant cdecls; _ } ->
         (* type a = ... | C of < ... > *)
         list ~elt:constructor_declaration cdecls
 
   let type_extension = function
-    | {ptyext_attributes= _ :: _; _} -> false
+    | { ptyext_attributes= _ :: _; _ } -> false
     (* type a += A of ... * ... * < ... > *)
-    | {ptyext_constructors; _} ->
+    | { ptyext_constructors; _ } ->
         list ~elt:extension_constructor ptyext_constructors
 
   let label_declaration = function
-    | {pld_attributes= _ :: _; _} -> false
-    | {pld_type; _} -> core_type pld_type
+    | { pld_attributes= _ :: _; _ } -> false
+    | { pld_type; _ } -> core_type pld_type
 
   let row_field = function
-    | {prf_attributes= _ :: _; _} -> false
-    | {prf_desc= Rinherit _; _} -> false
-    | {prf_desc= Rtag (_, _, cs); _} -> (
+    | { prf_attributes= _ :: _; _ } -> false
+    | { prf_desc= Rinherit _; _ } -> false
+    | { prf_desc= Rtag (_, _, cs); _ } -> (
       match List.last cs with None -> false | Some x -> core_type x )
 
   (* exception C of ... * ... * < ... > *)
   let type_exception = function
-    | {ptyexn_attributes= _ :: _; _} -> false
-    | {ptyexn_constructor; _} -> extension_constructor ptyexn_constructor
+    | { ptyexn_attributes= _ :: _; _ } -> false
+    | { ptyexn_constructor; _ } -> extension_constructor ptyexn_constructor
 
   (* val x : < ... > *)
   let value_description = function
-    | {pval_attributes= _ :: _; _} -> false
-    | {pval_prim= _ :: _; _} -> false
-    | {pval_type= ct; _} -> core_type ct
+    | { pval_attributes= _ :: _; _ } -> false
+    | { pval_prim= _ :: _; _ } -> false
+    | { pval_type= ct; _ } -> core_type ct
 
-  let structure_item {pstr_desc; pstr_loc= _} =
+  let structure_item { pstr_desc; pstr_loc= _ } =
     match pstr_desc with
     | Pstr_type (_recflag, typedecls) -> list ~elt:type_declaration typedecls
     | Pstr_typext te -> type_extension te
@@ -110,7 +110,7 @@ module Right = struct
      |Pstr_extension _ | Pstr_value _ | Pstr_eval _ ->
         false
 
-  let signature_item {psig_desc; psig_loc= _} =
+  let signature_item { psig_desc; psig_loc= _ } =
     match psig_desc with
     | Psig_value vd -> value_description vd
     | Psig_type (_recflag, typedecls) -> list ~elt:type_declaration typedecls

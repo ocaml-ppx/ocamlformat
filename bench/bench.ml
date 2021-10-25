@@ -21,7 +21,8 @@ type input =
   ; kind: Syntax.t
   ; source: string
   ; conf: Conf.t
-  ; action: [`Format | `Numeric of range] }
+  ; action: [`Format | `Numeric of range]
+  }
 
 let inputs =
   let dir = "_build/default/bench/test" in
@@ -31,14 +32,15 @@ let inputs =
     ; kind= Syntax.Structure
     ; source= source_ml
     ; conf= Conf.default_profile
-    ; action= `Format }
+    ; action= `Format
+    }
   ]
 
-let opts = Conf.{debug= false; margin_check= false}
+let opts = Conf.{ debug= false; margin_check= false }
 
 let tests =
   List.map
-    (fun {name; input_name; kind; source; conf; action} ->
+    (fun { name; input_name; kind; source; conf; action } ->
       Test.make
         ~name:(Caml.Format.sprintf "%s (%s)" name input_name)
         ( Staged.stage

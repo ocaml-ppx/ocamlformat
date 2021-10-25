@@ -13,14 +13,14 @@ open Migrate_ast
 open Extended_ast
 
 (** Concrete syntax. *)
-type t = {text: string; tokens: (Parser.token * Location.t) array}
+type t = { text: string; tokens: (Parser.token * Location.t) array }
 
 let create ~text ~tokens =
   let tokens =
     List.filter tokens ~f:(fun (tok, _) ->
         match tok with Parser.EOL | Parser.EOF -> false | _ -> true )
   in
-  {text; tokens= Array.of_list tokens}
+  { text; tokens= Array.of_list tokens }
 
 let string_at t (l : Location.t) =
   let pos = l.loc_start.Lexing.pos_cnum
@@ -97,12 +97,14 @@ let find_token_after t ~filter pos =
 
 let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
   let loc_end =
-    List.fold l ~init:loc ~f:(fun acc ({attr_loc; _} : attribute) ->
+    List.fold l ~init:loc ~f:(fun acc ({ attr_loc; _ } : attribute) ->
         if Location.compare_end attr_loc acc <= 0 then acc else attr_loc )
   in
   if phys_equal loc_end loc then loc
   else
-    {loc with loc_end= {loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum}}
+    { loc with
+      loc_end= { loc.loc_end with pos_cnum= loc_end.loc_end.pos_cnum }
+    }
 
 let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   let filter = Poly.( = ) tok in
@@ -110,15 +112,15 @@ let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   Source_code_position.ascending from upto < 0
   && not (List.is_empty (tokens_between t ~filter from upto))
 
-let is_long_pexp_open source {pexp_desc; _} =
+let is_long_pexp_open source { pexp_desc; _ } =
   match pexp_desc with
-  | Pexp_open ({popen_loc= from; _}, {pexp_loc= upto; _}) ->
+  | Pexp_open ({ popen_loc= from; _ }, { pexp_loc= upto; _ }) ->
       contains_token_between source ~from ~upto Parser.IN
   | _ -> false
 
 let is_long_functor_syntax (t : t) ~(from : Location.t) = function
   | Unit -> false
-  | Named ({loc= _; _}, _) -> (
+  | Named ({ loc= _; _ }, _) -> (
     (* since 4.12 the functor keyword is just before the loc of the functor
        parameter *)
     match
@@ -129,12 +131,12 @@ let is_long_functor_syntax (t : t) ~(from : Location.t) = function
     | Some (Parser.FUNCTOR, _) -> true
     | _ -> false )
 
-let is_long_pmod_functor t {pmod_desc; pmod_loc= from; _} =
+let is_long_pmod_functor t { pmod_desc; pmod_loc= from; _ } =
   match pmod_desc with
   | Pmod_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false
 
-let is_long_pmty_functor t {pmty_desc; pmty_loc= from; _} =
+let is_long_pmty_functor t { pmty_desc; pmty_loc= from; _ } =
   match pmty_desc with
   | Pmty_functor (fp, _) -> is_long_functor_syntax t ~from fp
   | _ -> false

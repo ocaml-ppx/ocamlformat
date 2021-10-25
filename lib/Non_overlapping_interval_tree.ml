@@ -40,9 +40,9 @@ module Make (Itv : IN) = struct
   (* simple but (asymptotically) suboptimal implementation *)
 
   type itv = Itv.t
-  type t = {roots: Itv.t list; map: Itv.t list Map.M(Itv).t}
+  type t = { roots: Itv.t list; map: Itv.t list Map.M(Itv).t }
 
-  let empty = {roots= []; map= Map.empty (module Itv)}
+  let empty = { roots= []; map= Map.empty (module Itv) }
   let roots t = t.roots
 
   let map_add_multi map ~key ~data =
@@ -60,12 +60,12 @@ module Make (Itv : IN) = struct
              |> Option.some
            else None ) )
 
-  let add_root t root = {t with roots= root :: t.roots}
+  let add_root t root = { t with roots= root :: t.roots }
 
   let add_child t ~parent ~child =
-    {t with map= map_add_multi t.map ~key:parent ~data:child}
+    { t with map= map_add_multi t.map ~key:parent ~data:child }
 
-  let map_lists ~f {roots; map} = {roots= f roots; map= Map.map map ~f}
+  let map_lists ~f { roots; map } = { roots= f roots; map= Map.map map ~f }
 
   let rec find_in_previous t elt = function
     | [] -> parents t.map t.roots elt ~ancestors:[]
@@ -93,7 +93,7 @@ module Make (Itv : IN) = struct
     |> snd
     |> map_lists ~f:(List.sort ~compare:Itv.compare_width_decreasing)
 
-  let children {map; _} elt = Option.value ~default:[] (Map.find map elt)
+  let children { map; _ } elt = Option.value ~default:[] (Map.find map elt)
 
   let dump ?cmts_before ?cmts_within ?cmts_after tree =
     let open Fmt in

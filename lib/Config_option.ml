@@ -27,8 +27,8 @@ module Make (C : CONFIG) = struct
   type from =
     [`Default | `Profile of string * updated_from | `Updated of updated_from]
 
-  type deprecated = {dmsg: string; dversion: string}
-  type removed = {rmsg: string; rversion: string}
+  type deprecated = { dmsg: string; dversion: string }
+  type removed = { rmsg: string; rversion: string }
   type status = [`Valid | `Deprecated of deprecated | `Removed of removed]
 
   type 'a t =
@@ -41,7 +41,8 @@ module Make (C : CONFIG) = struct
     ; default: 'a
     ; get_value: config -> 'a
     ; from: from
-    ; status: status }
+    ; status: status
+    }
 
   type 'a option_decl =
        names:string list
@@ -56,18 +57,18 @@ module Make (C : CONFIG) = struct
   type pack = Pack : 'a t -> pack
 
   let store = ref []
-  let deprecated ~since_version:dversion dmsg = {dmsg; dversion}
-  let removed ~since_version:rversion rmsg = {rmsg; rversion}
+  let deprecated ~since_version:dversion dmsg = { dmsg; dversion }
+  let removed ~since_version:rversion rmsg = { rmsg; rversion }
 
   let in_attributes cond = function
     | Operational -> ""
     | Formatting -> if cond then "" else " Cannot be set in attributes."
 
-  let pp_deprecated ppf {dmsg; dversion= v} =
+  let pp_deprecated ppf { dmsg; dversion= v } =
     Format.fprintf ppf "This option is deprecated since version %s. %s" v
       dmsg
 
-  let pp_removed ppf {rmsg; rversion= v} =
+  let pp_removed ppf { rmsg; rversion= v } =
     Format.fprintf ppf "This option has been removed in version %s. %s" v
       rmsg
 
@@ -149,7 +150,8 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
-      ; status= map_status status }
+      ; status= map_status status
+      }
     in
     store := Pack opt :: !store ;
     opt
@@ -180,7 +182,8 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
-      ; status= map_status status }
+      ; status= map_status status
+      }
     in
     store := Pack opt :: !store ;
     opt
@@ -193,11 +196,11 @@ module Make (C : CONFIG) = struct
       | None -> (name, value, doc, `Valid)
       | Some x -> (name, value, doc, `Deprecated x)
 
-    let pp_deprecated s ppf {dmsg= msg; dversion= v} =
+    let pp_deprecated s ppf { dmsg= msg; dversion= v } =
       Format.fprintf ppf "Value `%s` is deprecated since version %s. %s" s v
         msg
 
-    let pp_deprecated_with_name ~opt ~val_ ppf {dmsg= msg; dversion= v} =
+    let pp_deprecated_with_name ~opt ~val_ ppf { dmsg= msg; dversion= v } =
       Format.fprintf ppf
         "option `%s`: value `%s` is deprecated since version %s. %s" opt val_
         v msg
@@ -215,17 +218,19 @@ module Make (C : CONFIG) = struct
   end
 
   module Value_removed = struct
-    type t = {name: string; version: string; msg: string}
+    type t = { name: string; version: string; msg: string }
 
-    let make ~name ~version ~msg = {name; version; msg}
+    let make ~name ~version ~msg = { name; version; msg }
 
     let make_list ~names ~version ~msg =
       List.map names ~f:(fun name -> make ~name ~version ~msg)
 
     let add_parse_errors values conv =
       let parse s =
-        match List.find values ~f:(fun {name; _} -> String.equal name s) with
-        | Some {name; version; msg} ->
+        match
+          List.find values ~f:(fun { name; _ } -> String.equal name s)
+        with
+        | Some { name; version; msg } ->
             Format.kasprintf
               (fun s -> Error (`Msg s))
               "value `%s` has been removed in version %s. %s" name version
@@ -269,7 +274,7 @@ module Make (C : CONFIG) = struct
     any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
 
   let removed_option ~names ~version ~msg =
-    let removed = {rversion= version; rmsg= msg} in
+    let removed = { rversion= version; rmsg= msg } in
     let status = `Removed removed in
     let msg = Format.asprintf "%a" pp_removed removed in
     let parse _ = Error (`Msg msg) in
@@ -293,7 +298,8 @@ module Make (C : CONFIG) = struct
       ; to_string
       ; get_value
       ; from
-      ; status }
+      ; status
+      }
     in
     store := Pack opt :: !store
 
@@ -301,33 +307,33 @@ module Make (C : CONFIG) = struct
     let is_profile_option_name x =
       List.exists C.profile_option_names ~f:(String.equal x)
     in
-    let on_pack (Pack {names; get_value; to_string; _}) =
+    let on_pack (Pack { names; get_value; to_string; _ }) =
       if is_profile_option_name (List.hd_exn names) then
         Some (to_string (get_value config))
       else None
     in
-    let on_pack (Pack ({names; status; _} as p)) =
+    let on_pack (Pack ({ names; status; _ } as p)) =
       if is_profile_option_name name then
         if is_profile_option_name (List.hd_exn names) then
           (* updating --profile option *)
-          Pack {p with from= `Updated from}
+          Pack { p with from= `Updated from }
         else
           let profile_name = List.find_map_exn !store ~f:on_pack in
           (* updating other options when --profile is set *)
-          Pack {p with from= `Profile (profile_name, from)}
+          Pack { p with from= `Profile (profile_name, from) }
       else if List.exists names ~f:(String.equal name) then (
         (* updating a single option (without setting a profile) *)
         ( match status with
         | `Deprecated d -> C.warn config "%s: %a" name pp_deprecated d
         | _ -> () ) ;
-        Pack {p with from= `Updated from} )
+        Pack { p with from= `Updated from } )
       else Pack p
     in
     store := List.map !store ~f:on_pack
 
   let update ~config ~from ~name ~value ~inline =
     List.find_map !store
-      ~f:(fun (Pack {names; parse; update; allow_inline; _}) ->
+      ~f:(fun (Pack { names; parse; update; allow_inline; _ }) ->
         if List.exists names ~f:(String.equal name) then
           if inline && not allow_inline then
             Some (Error (`Misplaced (name, value)))
@@ -354,10 +360,10 @@ module Make (C : CONFIG) = struct
           | None -> None )
     |> Option.value ~default:(Error (`Unknown (name, None)))
 
-  let default {default; _} = default
+  let default { default; _ } = default
 
   let update_using_cmdline config =
-    let on_pack config (Pack {cmdline_get; update; names; _}) =
+    let on_pack config (Pack { cmdline_get; update; names; _ }) =
       match cmdline_get () with
       | None -> config
       | Some x ->
@@ -368,7 +374,7 @@ module Make (C : CONFIG) = struct
     List.fold !store ~init:config ~f:on_pack
 
   let print_config c =
-    let on_pack (Pack {names; to_string; get_value; from; status; _}) =
+    let on_pack (Pack { names; to_string; get_value; from; status; _ }) =
       let name = Option.value_exn (longest names) in
       let value = to_string (get_value c) in
       let aux_from = function

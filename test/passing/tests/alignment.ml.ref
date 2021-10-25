@@ -10,7 +10,8 @@ let _ =
       foo
   | Some s ->
       { fww= (s_src, OpamFormat.make_string (OpamFilename.to_string s))
-      ; gdd= yy }
+      ; gdd= yy
+      }
 
 let _ = [ x; y ] @ z
 let _ = [ x; y ] @ z

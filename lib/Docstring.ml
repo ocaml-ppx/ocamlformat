@@ -13,7 +13,8 @@ let parse ~loc text =
   let location = loc.Location.loc_start in
   let location =
     { location with
-      pos_cnum= location.pos_cnum + 3 (* Length of comment opening *) }
+      pos_cnum= location.pos_cnum + 3 (* Length of comment opening *)
+    }
   in
   let v = Odoc_parser.parse_comment ~location ~text in
   match Odoc_parser.warnings v with

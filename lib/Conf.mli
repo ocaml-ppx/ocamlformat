@@ -56,16 +56,16 @@ type t =
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
-  ; space_around_records: bool
   ; space_around_variants: bool
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
-  ; wrap_fun_args: bool }
+  ; wrap_fun_args: bool
+  }
 
 val default_profile : t
 
 type file = Stdin | File of string
-type input = {kind: Syntax.t; name: string; file: file; conf: t}
+type input = { kind: Syntax.t; name: string; file: file; conf: t }
 
 type action =
   | In_out of input * string option
@@ -81,7 +81,8 @@ type action =
 type opts =
   { debug: bool  (** Generate debugging output if true. *)
   ; margin_check: bool
-        (** Check whether the formatted output exceeds the margin. *) }
+        (** Check whether the formatted output exceeds the margin. *)
+  }
 
 val action : unit -> (action * opts) Cmdliner.Term.result
 (** Formatting action: input type and source, and output destination. *)

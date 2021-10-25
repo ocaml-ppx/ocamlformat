@@ -52,11 +52,11 @@ type t =
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
-  ; space_around_records: bool
   ; space_around_variants: bool
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool
-  ; wrap_fun_args: bool }
+  ; wrap_fun_args: bool
+  }
 
 let profile_option_names = [ "p"; "profile" ]
 
@@ -198,7 +198,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with assignment_operator= x})
+      (fun conf x -> { conf with assignment_operator= x })
       (fun conf -> conf.assignment_operator)
 
   let ( (* break_before_in *) ) =
@@ -231,7 +231,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_cases= x})
+      (fun conf x -> { conf with break_cases= x })
       (fun conf -> conf.break_cases)
 
   let break_collection_expressions =
@@ -249,7 +249,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_collection_expressions= x})
+      (fun conf x -> { conf with break_collection_expressions= x })
       (fun conf -> conf.break_collection_expressions)
 
   let break_fun_decl =
@@ -266,7 +266,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_fun_decl= x})
+      (fun conf x -> { conf with break_fun_decl= x })
       (fun conf -> conf.break_fun_decl)
 
   let break_fun_sig =
@@ -283,7 +283,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_fun_sig= x})
+      (fun conf x -> { conf with break_fun_sig= x })
       (fun conf -> conf.break_fun_sig)
 
   let break_infix =
@@ -299,7 +299,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with break_infix= x})
+      (fun conf x -> { conf with break_infix= x })
       (fun conf -> conf.break_infix)
 
   let break_infix_before_func =
@@ -310,7 +310,7 @@ module Formatting = struct
     in
     let names = [ "break-infix-before-func" ] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with break_infix_before_func= x})
+      (fun conf x -> { conf with break_infix_before_func= x })
       (fun conf -> conf.break_infix_before_func)
 
   let break_separators =
@@ -334,7 +334,7 @@ module Formatting = struct
                `break-separators=after`, `space-around-lists=false`, and \
                `dock-collection-brackets=false`."
         ]
-      (fun conf x -> {conf with break_separators= x})
+      (fun conf x -> { conf with break_separators= x })
       (fun conf -> conf.break_separators)
 
   let ( (* break_sequences *) ) =
@@ -364,7 +364,7 @@ module Formatting = struct
              "It has been replaced by the new default `auto` value, which \
               breaks lines at newlines and wraps string literals at the \
               margin." )
-      (fun conf x -> {conf with break_string_literals= x})
+      (fun conf x -> { conf with break_string_literals= x })
       (fun conf -> conf.break_string_literals)
 
   let ( (* break_struct *) ) =
@@ -381,7 +381,7 @@ module Formatting = struct
     in
     let names = [ "cases-exp-indent" ] in
     C.any Arg.int ~names ~default:4 ~doc ~docv ~kind ~allow_inline:false
-      (fun conf x -> {conf with cases_exp_indent= x})
+      (fun conf x -> { conf with cases_exp_indent= x })
       (fun conf -> conf.cases_exp_indent)
 
   let cases_matching_exp_indent =
@@ -400,7 +400,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with cases_matching_exp_indent= x})
+      (fun conf x -> { conf with cases_matching_exp_indent= x })
       (fun conf -> conf.cases_matching_exp_indent)
 
   let disable =
@@ -410,7 +410,7 @@ module Formatting = struct
        \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])."
     in
     C.flag ~names:[ "disable" ] ~default:false ~doc ~kind
-      (fun conf x -> {conf with disable= x})
+      (fun conf x -> { conf with disable= x })
       (fun conf -> conf.disable)
 
   let ( (* disambiguate_non_breaking_match *) ) =
@@ -444,7 +444,7 @@ module Formatting = struct
                into account the technical limitations of ocamlformat, the \
                behavior is unchanged."
         ]
-      (fun conf x -> {conf with doc_comments= x})
+      (fun conf x -> { conf with doc_comments= x })
       (fun conf -> conf.doc_comments)
 
   let doc_comments_padding =
@@ -454,7 +454,7 @@ module Formatting = struct
     in
     let names = [ "doc-comments-padding" ] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
-      (fun conf x -> {conf with doc_comments_padding= x})
+      (fun conf x -> { conf with doc_comments_padding= x })
       (fun conf -> conf.doc_comments_padding)
 
   let doc_comments_tag_only =
@@ -468,7 +468,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with doc_comments_tag_only= x})
+      (fun conf x -> { conf with doc_comments_tag_only= x })
       (fun conf -> conf.doc_comments_tag_only)
 
   let ( (* doc_comments_val *) ) =
@@ -498,7 +498,7 @@ module Formatting = struct
     in
     let names = [ "dock-collection-brackets" ] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with dock_collection_brackets= x})
+      (fun conf x -> { conf with dock_collection_brackets= x })
       (fun conf -> conf.dock_collection_brackets)
 
   let concrete_syntax_preserved_msg =
@@ -528,7 +528,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with exp_grouping= x})
+      (fun conf x -> { conf with exp_grouping= x })
       (fun conf -> conf.exp_grouping)
 
   let ( (* extension_indent *) ) =
@@ -560,7 +560,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with field_space= x})
+      (fun conf x -> { conf with field_space= x })
       (fun conf -> conf.field_space)
 
   let ( (* function_indent *) ) =
@@ -594,7 +594,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with if_then_else= x})
+      (fun conf x -> { conf with if_then_else= x })
       (fun conf -> conf.if_then_else)
 
   let ( (* indent_after_in *) ) =
@@ -622,7 +622,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with indicate_multiline_delimiters= x})
+      (fun conf x -> { conf with indicate_multiline_delimiters= x })
       (fun conf -> conf.indicate_multiline_delimiters)
 
   let indicate_nested_or_patterns =
@@ -643,7 +643,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with indicate_nested_or_patterns= x})
+      (fun conf x -> { conf with indicate_nested_or_patterns= x })
       (fun conf -> conf.indicate_nested_or_patterns)
 
   let infix_precedence =
@@ -662,14 +662,14 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with infix_precedence= x})
+      (fun conf x -> { conf with infix_precedence= x })
       (fun conf -> conf.infix_precedence)
 
   let leading_nested_match_parens =
     let doc = "Nested match parens formatting." in
     let names = [ "leading-nested-match-parens" ] in
     C.flag ~default:false ~names ~doc ~kind ~allow_inline:false
-      (fun conf x -> {conf with leading_nested_match_parens= x})
+      (fun conf x -> { conf with leading_nested_match_parens= x })
       (fun conf -> conf.leading_nested_match_parens)
 
   let let_and =
@@ -684,7 +684,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with let_and= x})
+      (fun conf x -> { conf with let_and= x })
       (fun conf -> conf.let_and)
 
   let ( (* let_binding_indent *) ) =
@@ -709,7 +709,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with let_binding_spacing= x})
+      (fun conf x -> { conf with let_binding_spacing= x })
       (fun conf -> conf.let_binding_spacing)
 
   let let_module =
@@ -726,7 +726,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names:[ "let-module" ] ~all ~doc ~kind
-      (fun conf x -> {conf with let_module= x})
+      (fun conf x -> { conf with let_module= x })
       (fun conf -> conf.let_module)
 
   let ( (* let_open *) ) =
@@ -744,7 +744,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names:[ "line-endings" ] ~all ~doc ~allow_inline:false ~kind
-      (fun conf x -> {conf with line_endings= x})
+      (fun conf x -> { conf with line_endings= x })
       (fun conf -> conf.line_endings)
 
   let margin =
@@ -752,7 +752,7 @@ module Formatting = struct
     let doc = "Format code to fit within $(docv) columns." in
     C.any Arg.int ~names:[ "m"; "margin" ] ~default:80 ~doc ~docv ~kind
       ~allow_inline:false
-      (fun conf x -> {conf with margin= x})
+      (fun conf x -> { conf with margin= x })
       (fun conf -> conf.margin)
 
   let ( (* match_indent *) ) =
@@ -783,7 +783,7 @@ module Formatting = struct
       Arg.(some ~none:default_max_indent int)
       ~names:[ "max-indent" ] ~doc ~docv ~kind ~default:None
       ~allow_inline:false
-      (fun conf x -> {conf with max_indent= x})
+      (fun conf x -> { conf with max_indent= x })
       (fun conf -> conf.max_indent)
 
   let ( (* module_item_spacing *) ) =
@@ -805,7 +805,7 @@ module Formatting = struct
     let default_doc = "the version of OCaml used to build OCamlFormat" in
     C.any ocaml_version_conv ~names:[ "ocaml-version" ] ~default ~default_doc
       ~doc ~docv ~kind
-      (fun conf x -> {conf with ocaml_version= x})
+      (fun conf x -> { conf with ocaml_version= x })
       (fun conf -> conf.ocaml_version)
 
   let ocp_indent_compat =
@@ -815,7 +815,7 @@ module Formatting = struct
     in
     let names = [ "ocp-indent-compat" ] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with ocp_indent_compat= x})
+      (fun conf x -> { conf with ocp_indent_compat= x })
       (fun conf -> conf.ocp_indent_compat)
 
   let parens_ite =
@@ -825,7 +825,7 @@ module Formatting = struct
     in
     let names = [ "parens-ite" ] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with parens_ite= x})
+      (fun conf x -> { conf with parens_ite= x })
       (fun conf -> conf.parens_ite)
 
   let parens_tuple =
@@ -840,7 +840,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with parens_tuple= x})
+      (fun conf x -> { conf with parens_tuple= x })
       (fun conf -> conf.parens_tuple)
 
   let ( (* parens_tuple_patterns *) ) =
@@ -853,7 +853,7 @@ module Formatting = struct
     let doc = "Parse and format docstrings." in
     let names = [ "parse-docstrings" ] in
     C.flag ~default:false ~names ~doc ~kind
-      (fun conf x -> {conf with parse_docstrings= x})
+      (fun conf x -> { conf with parse_docstrings= x })
       (fun conf -> conf.parse_docstrings)
 
   let sequence_blank_line =
@@ -869,7 +869,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with sequence_blank_line= x})
+      (fun conf x -> { conf with sequence_blank_line= x })
       (fun conf -> conf.sequence_blank_line)
 
   let sequence_style =
@@ -885,7 +885,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with sequence_style= x})
+      (fun conf x -> { conf with sequence_style= x })
       (fun conf -> conf.sequence_style)
 
   let single_case =
@@ -901,7 +901,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with single_case= x})
+      (fun conf x -> { conf with single_case= x })
       (fun conf -> conf.single_case)
 
   let ( (* space_around_arrays *) ) =
@@ -916,18 +916,17 @@ module Formatting = struct
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
-  let space_around_records =
-    let doc = "Add a space inside the delimiters of records." in
+  let ( (* space_around_records *) ) =
     let names = [ "space-around-records" ] in
-    C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_records= x})
-      (fun conf -> conf.space_around_records)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let space_around_variants =
     let doc = "Add a space inside the delimiters of variants." in
     let names = [ "space-around-variants" ] in
     C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_variants= x})
+      (fun conf x -> { conf with space_around_variants= x })
       (fun conf -> conf.space_around_variants)
 
   let ( (* stritem_extension_indent *) ) =
@@ -949,7 +948,7 @@ module Formatting = struct
       ]
     in
     C.choice ~names ~all ~doc ~kind
-      (fun conf x -> {conf with type_decl= x})
+      (fun conf x -> { conf with type_decl= x })
       (fun conf -> conf.type_decl)
 
   let ( (* type_decl_indent *) ) =
@@ -968,7 +967,7 @@ module Formatting = struct
        aligned are not wrapped either."
     in
     C.flag ~default:false ~names:[ "wrap-comments" ] ~doc ~kind
-      (fun conf x -> {conf with wrap_comments= x})
+      (fun conf x -> { conf with wrap_comments= x })
       (fun conf -> conf.wrap_comments)
 
   let wrap_fun_args =
@@ -976,7 +975,7 @@ module Formatting = struct
     let doc = "Style for function call." in
     let names = [ "wrap-fun-args" ] in
     C.flag ~default ~names ~doc ~kind
-      (fun conf wrap_fun_args -> {conf with wrap_fun_args})
+      (fun conf wrap_fun_args -> { conf with wrap_fun_args })
       (fun conf -> conf.wrap_fun_args)
 end
 
@@ -994,7 +993,7 @@ let comment_check =
      to turn off. May be set in $(b,.ocamlformat)."
   in
   C.flag ~default ~names:[ "comment-check" ] ~doc ~kind
-    (fun conf x -> {conf with comment_check= x})
+    (fun conf x -> { conf with comment_check= x })
     (fun conf -> conf.comment_check)
 
 let disable_conf_attrs =
@@ -1039,13 +1038,13 @@ let max_iters =
      iterations. May be set in $(b,.ocamlformat)."
   in
   C.any Arg.int ~names:[ "n"; "max-iters" ] ~default:10 ~doc ~docv ~kind
-    (fun conf x -> {conf with max_iters= x})
+    (fun conf x -> { conf with max_iters= x })
     (fun conf -> conf.max_iters)
 
 let quiet =
   let doc = "Quiet. May be set in $(b,.ocamlformat)." in
   C.flag ~default:false ~names:[ "q"; "quiet" ] ~doc ~kind
-    (fun conf x -> {conf with quiet= x})
+    (fun conf x -> { conf with quiet= x })
     (fun conf -> conf.quiet)
 
 (* Other Flags *)
@@ -1277,11 +1276,11 @@ let ocamlformat_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Separator
   ; single_case= `Compact
-  ; space_around_records= false
   ; space_around_variants= false
   ; type_decl= `Compact
   ; wrap_comments= false
-  ; wrap_fun_args= true }
+  ; wrap_fun_args= true
+  }
 
 let conventional_profile =
   { assignment_operator= C.default Formatting.assignment_operator
@@ -1328,11 +1327,11 @@ let conventional_profile =
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
-  ; space_around_records= C.default Formatting.space_around_records
   ; space_around_variants= C.default Formatting.space_around_variants
   ; type_decl= C.default Formatting.type_decl
   ; wrap_comments= C.default Formatting.wrap_comments
-  ; wrap_fun_args= C.default Formatting.wrap_fun_args }
+  ; wrap_fun_args= C.default Formatting.wrap_fun_args
+  }
 
 let default_profile = conventional_profile
 
@@ -1378,11 +1377,11 @@ let janestreet_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
-  ; space_around_records= true
   ; space_around_variants= true
   ; type_decl= `Sparse
   ; wrap_comments= false
-  ; wrap_fun_args= false }
+  ; wrap_fun_args= false
+  }
 
 let selected_profile_ref = ref (Some default_profile)
 
@@ -1434,7 +1433,7 @@ let (_profile : t option C.t) =
       selected_profile_ref := p ;
       let new_conf = Option.value p ~default:conf in
       (* The quiet option is cummulative *)
-      {new_conf with quiet= new_conf.quiet || conf.quiet} )
+      { new_conf with quiet= new_conf.quiet || conf.quiet } )
     (fun _ -> !selected_profile_ref)
 
 let ocp_indent_normal_profile =
@@ -1746,7 +1745,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
        why ) ;
-    {conf with disable= true} )
+    { conf with disable= true } )
   else
     let listings = if conf.disable then enables else ignores in
     match is_in_listing_file ~listings ~filename:file_abs with
@@ -1755,7 +1754,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
         if !debug then
           Format.eprintf "File %a: %s in %a:%d@\n" Fpath.pp file_abs status
             Fpath.pp file lno ;
-        {conf with disable= not conf.disable}
+        { conf with disable= not conf.disable }
     | None -> conf
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
@@ -1824,7 +1823,7 @@ let validate_action () =
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
-type input = {kind: Syntax.t; name: string; file: file; conf: t}
+type input = { kind: Syntax.t; name: string; file: file; conf: t }
 
 type action =
   | In_out of input * string option
@@ -1841,14 +1840,14 @@ let make_action ~enable_outside_detected_project ~root action inputs =
         (build_config ~enable_outside_detected_project ~root ~file:name
            ~is_stdin:false )
     in
-    {kind; name; file= File file; conf}
+    { kind; name; file= File file; conf }
   in
   let make_stdin ?(name = "<standard input>") kind =
     let conf =
       build_config ~enable_outside_detected_project ~root ~file:name
         ~is_stdin:false
     in
-    {kind; name; file= Stdin; conf}
+    { kind; name; file= Stdin; conf }
   in
   match (action, inputs) with
   | `Print_config, inputs ->
@@ -1888,7 +1887,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
       Ok (Check [ make_file ?name kind f ])
   | `Check, `Several_files files ->
       let f (kind, f) =
-        make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
+        make_file ~with_conf:(fun c -> { c with max_iters= 1 }) kind f
       in
       Ok (Check (List.map files ~f))
   | `Check, `Stdin (name, kind) -> Ok (Check [ make_stdin ?name kind ])
@@ -1897,7 +1896,7 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   | `Numeric range, `Single_file (kind, name, f) ->
       Ok (Numeric (make_file ?name kind f, range))
 
-type opts = {debug: bool; margin_check: bool}
+type opts = { debug: bool; margin_check: bool }
 
 let validate () =
   let root =
@@ -1917,14 +1916,14 @@ let validate () =
   | exception Conf_error e -> `Error (false, e)
   | Error e -> `Error (false, e)
   | Ok action ->
-      let opts = {debug= !debug; margin_check= !margin_check} in
+      let opts = { debug= !debug; margin_check= !margin_check } in
       `Ok (action, opts)
 
 let action () = parse info validate
 
 open Extended_ast
 
-let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
+let update ?(quiet = false) c { attr_name= { txt; loc }; attr_payload; _ } =
   let result =
     match txt with
     | "ocamlformat" -> (
@@ -1934,11 +1933,13 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
                 Pstr_eval
                   ( { pexp_desc=
                         Pexp_constant
-                          {pconst_desc= Pconst_string (str, _, None); _}
+                          { pconst_desc= Pconst_string (str, _, None); _ }
                     ; pexp_attributes= []
-                    ; _ }
+                    ; _
+                    }
                   , [] )
-            ; _ }
+            ; _
+            }
           ] ->
           parse_line ~from:`Attribute c str
           |> Result.map_error ~f:string_of_user_error

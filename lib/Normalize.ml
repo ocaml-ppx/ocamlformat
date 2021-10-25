@@ -12,10 +12,11 @@
 (** Normalize abstract syntax trees *)
 
 type conf =
-  {conf: Conf.t; normalize_code: Std_ast.structure -> Std_ast.structure}
+  { conf: Conf.t; normalize_code: Std_ast.structure -> Std_ast.structure }
 
 let is_doc = function
-  | Std_ast.{attr_name= {Location.txt= "ocaml.doc" | "ocaml.text"; _}; _} ->
+  | Std_ast.{ attr_name= { Location.txt= "ocaml.doc" | "ocaml.text"; _ }; _ }
+    ->
       true
   | _ -> false
 
@@ -32,19 +33,24 @@ let dedup_cmts fragment ast comments =
                     Pstr_eval
                       ( { pexp_desc=
                             Pexp_constant
-                              {pconst_desc= Pconst_string (doc, _, None); _}
+                              { pconst_desc= Pconst_string (doc, _, None)
+                              ; _
+                              }
                         ; pexp_loc
-                        ; _ }
+                        ; _
+                        }
                       , [] )
-                ; _ }
+                ; _
+                }
               ]
-        ; _ }
+        ; _
+        }
         when Ast.Attr.is_doc atr ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in
-    map fragment {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+    map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore ;
     !docs
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
@@ -63,17 +69,20 @@ let dedup_cmts_std fragment ast comments =
                       ( { pexp_desc=
                             Pexp_constant (Pconst_string (doc, _, None))
                         ; pexp_loc
-                        ; _ }
+                        ; _
+                        }
                       , [] )
-                ; _ }
+                ; _
+                }
               ]
-        ; _ }
+        ; _
+        }
         when is_doc atr ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in
-    map fragment {Ast_mapper.default_mapper with attribute} ast |> ignore ;
+    map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore ;
     !docs
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
@@ -130,15 +139,15 @@ let rec odoc_nestable_block_element c fmt = function
       let txt = Odoc_parser.Loc.value txt in
       let txt =
         try
-          let ({ast; comments; _} : _ Parse_with_comments.with_comments) =
+          let ({ ast; comments; _ } : _ Parse_with_comments.with_comments) =
             Parse_with_comments.parse Std_ast.Parse.ast Structure c.conf
               ~source:txt
           in
           let comments = dedup_cmts_std Structure ast comments in
           let print_comments fmt (l : Cmt.t list) =
-            List.sort l ~compare:(fun {Cmt.loc= a; _} {Cmt.loc= b; _} ->
+            List.sort l ~compare:(fun { Cmt.loc= a; _ } { Cmt.loc= b; _ } ->
                 Migrate_ast.Location.compare a b )
-            |> List.iter ~f:(fun {Cmt.txt; _} ->
+            |> List.iter ~f:(fun { Cmt.txt; _ } ->
                    Caml.Format.fprintf fmt "%s," txt )
           in
           let ast = c.normalize_code ast in
@@ -219,12 +228,14 @@ let make_mapper conf ~ignore_doc_comments =
                 Pstr_eval
                   ( ( { pexp_desc=
                           Pexp_constant (Pconst_string (doc, str_loc, None))
-                      ; _ } as exp )
+                      ; _
+                      } as exp )
                   , [] )
-            ; _ } as pstr )
+            ; _
+            } as pstr )
         ]
       when is_doc attr ->
-        let doc' = docstring {conf; normalize_code= m.structure m} doc in
+        let doc' = docstring { conf; normalize_code= m.structure m } doc in
         Ast_mapper.default_mapper.attribute m
           { attr with
             attr_payload=
@@ -236,9 +247,12 @@ let make_mapper conf ~ignore_doc_comments =
                             pexp_desc=
                               Pexp_constant
                                 (Pconst_string (doc', str_loc, None))
-                          ; pexp_loc_stack= [] }
-                        , [] ) }
-                ] }
+                          ; pexp_loc_stack= []
+                          }
+                        , [] )
+                  }
+                ]
+          }
     | _ -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
@@ -251,18 +265,19 @@ let make_mapper conf ~ignore_doc_comments =
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
   let expr (m : Ast_mapper.mapper) exp =
-    let exp = {exp with pexp_loc_stack= []} in
-    let {pexp_desc; pexp_loc= loc1; pexp_attributes= attrs1; _} = exp in
+    let exp = { exp with pexp_loc_stack= [] } in
+    let { pexp_desc; pexp_loc= loc1; pexp_attributes= attrs1; _ } = exp in
     match pexp_desc with
-    | Pexp_poly ({pexp_desc= Pexp_constraint (e, t); _}, None) ->
-        m.expr m {exp with pexp_desc= Pexp_poly (e, Some t)}
-    | Pexp_constraint (e, {ptyp_desc= Ptyp_poly ([], _t); _}) -> m.expr m e
+    | Pexp_poly ({ pexp_desc= Pexp_constraint (e, t); _ }, None) ->
+        m.expr m { exp with pexp_desc= Pexp_poly (e, Some t) }
+    | Pexp_constraint (e, { ptyp_desc= Ptyp_poly ([], _t); _ }) -> m.expr m e
     | Pexp_sequence
         ( exp1
         , { pexp_desc= Pexp_sequence (exp2, exp3)
           ; pexp_loc= loc2
           ; pexp_attributes= attrs2
-          ; _ } ) ->
+          ; _
+          } ) ->
         m.expr m
           (Exp.sequence ~loc:loc1 ~attrs:attrs1
              (Exp.sequence ~loc:loc2 ~attrs:attrs2 exp1 exp2)
@@ -270,8 +285,8 @@ let make_mapper conf ~ignore_doc_comments =
     | _ -> Ast_mapper.default_mapper.expr m exp
   in
   let pat (m : Ast_mapper.mapper) pat =
-    let pat = {pat with ppat_loc_stack= []} in
-    let {ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _} = pat in
+    let pat = { pat with ppat_loc_stack= [] } in
+    let { ppat_desc; ppat_loc= loc1; ppat_attributes= attrs1; _ } = pat in
     (* normalize nested or patterns *)
     match ppat_desc with
     | Ppat_or
@@ -279,7 +294,8 @@ let make_mapper conf ~ignore_doc_comments =
         , { ppat_desc= Ppat_or (pat2, pat3)
           ; ppat_loc= loc2
           ; ppat_attributes= attrs2
-          ; _ } ) ->
+          ; _
+          } ) ->
         m.pat m
           (Pat.or_ ~loc:loc1 ~attrs:attrs1
              (Pat.or_ ~loc:loc2 ~attrs:attrs2 pat1 pat2)
@@ -287,7 +303,7 @@ let make_mapper conf ~ignore_doc_comments =
     | _ -> Ast_mapper.default_mapper.pat m pat
   in
   let typ (m : Ast_mapper.mapper) typ =
-    let typ = {typ with ptyp_loc_stack= []} in
+    let typ = { typ with ptyp_loc_stack= [] } in
     Ast_mapper.default_mapper.typ m typ
   in
   { Ast_mapper.default_mapper with
@@ -296,7 +312,8 @@ let make_mapper conf ~ignore_doc_comments =
   ; attributes
   ; expr
   ; pat
-  ; typ }
+  ; typ
+  }
 
 let normalize fragment ~ignore_doc_comments c =
   Std_ast.map fragment (make_mapper c ~ignore_doc_comments)
@@ -312,14 +329,16 @@ let make_docstring_mapper docstrings =
   let open Ocaml_413 in
   let attribute (m : Ast_mapper.mapper) attr =
     match (attr.attr_name, attr.attr_payload) with
-    | ( {txt= "ocaml.doc" | "ocaml.text"; loc}
+    | ( { txt= "ocaml.doc" | "ocaml.text"; loc }
       , PStr
           [ { pstr_desc=
                 Pstr_eval
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
-                    ; _ }
+                    ; _
+                    }
                   , [] )
-            ; _ }
+            ; _
+            }
           ] ) ->
         docstrings := (loc, doc) :: !docstrings ;
         attr
@@ -330,7 +349,7 @@ let make_docstring_mapper docstrings =
     let atrs = List.filter atrs ~f:is_doc in
     Ast_mapper.default_mapper.attributes m (sort_attributes atrs)
   in
-  {Ast_mapper.default_mapper with attribute; attributes}
+  { Ast_mapper.default_mapper with attribute; attributes }
 
 let docstrings (type a) (fragment : a Std_ast.t) s =
   let docstrings = ref [] in
@@ -344,7 +363,7 @@ type docstring_error =
   | Removed of Location.t * string
 
 let moved_docstrings fragment c s1 s2 =
-  let c = {conf= c; normalize_code= normalize Structure c} in
+  let c = { conf= c; normalize_code= normalize Structure c } in
   let d1 = docstrings fragment s1 in
   let d2 = docstrings fragment s2 in
   let equal (_, x) (_, y) = String.equal (docstring c x) (docstring c y) in
@@ -362,4 +381,4 @@ let moved_docstrings fragment c s1 s2 =
 
 let docstring conf =
   let normalize_code = normalize Structure conf in
-  docstring {conf; normalize_code}
+  docstring { conf; normalize_code }

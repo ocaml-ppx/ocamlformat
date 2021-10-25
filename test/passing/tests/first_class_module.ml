@@ -31,11 +31,11 @@ let f ((module M : S) as u) =
   ignore u ;
   M.x
 
-let f (T {m= (module M)}) =
+let f (T { m= (module M) }) =
   ignore u ;
   M.x
 
-let f (T {m= (module M : S)}) =
+let f (T { m= (module M : S) }) =
   ignore u ;
   M.x
 

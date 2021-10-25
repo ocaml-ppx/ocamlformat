@@ -37,7 +37,7 @@ end
 type t = T
 
 (** @deprecated *)
-type t = {a: int}
+type t = { a: int }
 
 (** @deprecated *)
 type t = ..
@@ -87,7 +87,7 @@ end
 type t = T
 
 (** @deprecated *)
-type t = {a: int}
+type t = { a: int }
 
 type t = ..  (** @deprecated *)
 

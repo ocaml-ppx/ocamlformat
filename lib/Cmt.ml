@@ -12,11 +12,11 @@
 open Migrate_ast
 
 module T = struct
-  type t = {txt: string; loc: Location.t}
+  type t = { txt: string; loc: Location.t }
 
   let loc t = t.loc
   let txt t = t.txt
-  let create txt loc = {txt; loc}
+  let create txt loc = { txt; loc }
 
   let compare =
     Comparable.lexicographic
@@ -24,7 +24,7 @@ module T = struct
       ; Comparable.lift Location.compare ~f:loc
       ]
 
-  let sexp_of_t {txt; loc} =
+  let sexp_of_t { txt; loc } =
     Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
 end
 
@@ -35,7 +35,7 @@ open Fmt
 type pos = Before | Within | After
 
 module Asterisk_prefixed = struct
-  let split {txt; loc= {Location.loc_start; _}} =
+  let split { txt; loc= { Location.loc_start; _ } } =
     let len = Position.column loc_start + 3 in
     let pat =
       String.Search_pattern.create
@@ -103,7 +103,7 @@ module Unwrapped = struct
     in
     vbox 0 ~name:"multiline" (list_fl unindented fmt_line $ fmt_opt epi)
 
-  let fmt ~ocp_indent_compat {txt= s; loc} pos =
+  let fmt ~ocp_indent_compat { txt= s; loc } pos =
     let is_sp = function ' ' | '\t' -> true | _ -> false in
     match String.split_lines (String.rstrip s) with
     | first_line :: (_ :: _ as tl) when not (String.is_empty first_line) ->

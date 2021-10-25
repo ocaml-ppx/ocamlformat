@@ -147,13 +147,15 @@ let _ =
 let _ =
   { x=
       (let a = b in
-       c ) }
+       c )
+  }
 
 let _ =
   { (let a = b in
      c )
     with
-    a= b }
+    a= b
+  }
 
 let _ =
   {< x = let a = b in

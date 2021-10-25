@@ -131,7 +131,7 @@ module Comment_placement : sig
   module Gen () : S
   (** Generative functor *)
 end = struct
-  type t = {a: int}
+  type t = { a: int }
   (** Type *)
 
   (** Variant declaration *)
@@ -292,7 +292,7 @@ let a = 1
 
 (** {@ocaml[
       let _ =
-        f @@ {aaa= aaa bbb ccc; bbb= aaa bbb ccc; ccc= aaa bbb ccc}
+        f @@ { aaa= aaa bbb ccc; bbb= aaa bbb ccc; ccc= aaa bbb ccc }
         >>= fun () ->
         let _ = x in
         f @@ g @@ h @@ fun x -> y

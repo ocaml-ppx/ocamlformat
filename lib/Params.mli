@@ -54,7 +54,8 @@ type cases =
   ; break_after_arrow: Fmt.t
   ; open_paren_branch: Fmt.t
   ; break_after_opening_paren: Fmt.t
-  ; close_paren_branch: Fmt.t }
+  ; close_paren_branch: Fmt.t
+  }
 
 val get_cases :
      Conf.t
@@ -76,7 +77,8 @@ type record_type =
   ; sep_before: Fmt.t
   ; sep_after: Fmt.t
   ; break_after: Fmt.t
-  ; docked_after: Fmt.t }
+  ; docked_after: Fmt.t
+  }
 
 val get_record_type : Conf.t -> record_type
 
@@ -84,10 +86,11 @@ type elements_collection =
   { box: Fmt.t -> Fmt.t
   ; sep_before: Fmt.t
   ; sep_after_non_final: Fmt.t
-  ; sep_after_final: Fmt.t }
+  ; sep_after_final: Fmt.t
+  }
 
-type elements_collection_record_expr = {break_after_with: Fmt.t}
-type elements_collection_record_pat = {wildcard: Fmt.t}
+type elements_collection_record_expr = { break_after_with: Fmt.t }
+type elements_collection_record_pat = { wildcard: Fmt.t }
 
 val get_record_expr :
   Conf.t -> elements_collection * elements_collection_record_expr
@@ -110,7 +113,8 @@ type if_then_else =
   ; expr_pro: Fmt.t option
   ; expr_eol: Fmt.t option
   ; break_end_branch: Fmt.t
-  ; space_between_branches: Fmt.t }
+  ; space_between_branches: Fmt.t
+  }
 
 val get_if_then_else :
      Conf.t

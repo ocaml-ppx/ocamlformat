@@ -36,10 +36,10 @@ let exe = chop_any_extension (Filename.basename Caml.Sys.argv.(0))
 
 module Error = struct
   type t =
-    | Invalid_source of {exn: exn; input_name: string}
+    | Invalid_source of { exn: exn; input_name: string }
     | Unstable of
-        {iteration: int; prev: string; next: string; input_name: string}
-    | Ocamlformat_bug of {exn: exn; input_name: string}
+        { iteration: int; prev: string; next: string; input_name: string }
+    | Ocamlformat_bug of { exn: exn; input_name: string }
     | User_error of string
 
   let user_error x = User_error x
@@ -62,7 +62,7 @@ module Error = struct
 
   let print ?(debug = false) ?(quiet = false) fmt = function
     | Invalid_source _ when quiet -> ()
-    | Invalid_source {exn; input_name} -> (
+    | Invalid_source { exn; input_name } -> (
         let reason =
           match exn with
           | Syntaxerr.Error _ | Lexer.Error _ -> " (syntax error)"
@@ -86,7 +86,7 @@ module Error = struct
                and odoc), you can set the --no-comment-check option.\n\
                %!"
         | exn -> Format.fprintf fmt "%s\n%!" (Exn.to_string exn) )
-    | Unstable {iteration; prev; next; input_name} ->
+    | Unstable { iteration; prev; next; input_name } ->
         if debug then print_diff input_name ~prev ~next ;
         if iteration <= 1 then
           Format.fprintf fmt
@@ -103,7 +103,7 @@ module Error = struct
             "  BUG: formatting did not stabilize after %i iterations.\n%!"
             iteration )
     | User_error msg -> Format.fprintf fmt "%s: %s.\n%!" exe msg
-    | Ocamlformat_bug {exn; input_name} -> (
+    | Ocamlformat_bug { exn; input_name } -> (
         Format.fprintf fmt
           "%s: Cannot process %S.\n\
           \  Please report this bug at \
@@ -174,7 +174,7 @@ module Error = struct
                          --no-parse-docstrings.\n\
                          %!" )
             | `Comment_dropped l when not quiet ->
-                List.iter l ~f:(fun Cmt.{txt= msg; loc} ->
+                List.iter l ~f:(fun Cmt.{ txt= msg; loc } ->
                     Format.fprintf fmt
                       "%!@{<loc>%a@}:@,\
                        @{<error>Error@}: Comment (* %s *) dropped.\n\
@@ -246,7 +246,7 @@ let equal fragment ~ignore_doc_comments c a b =
   Normalize.equal fragment ~ignore_doc_comments c a.Parse_with_comments.ast
     b.Parse_with_comments.ast
 
-let normalize fragment c {Parse_with_comments.ast; _} =
+let normalize fragment c { Parse_with_comments.ast; _ } =
   Normalize.normalize fragment c ast
 
 let recover (type a) : a Extended_ast.t -> _ -> a = function
@@ -260,13 +260,13 @@ let recover (type a) : a Extended_ast.t -> _ -> a = function
 let strconst_mapper locs =
   let constant self c =
     match c.Parsetree.pconst_desc with
-    | Parsetree.Pconst_string (_, {Location.loc_start; loc_end; _}, Some _)
+    | Parsetree.Pconst_string (_, { Location.loc_start; loc_end; _ }, Some _)
       ->
         locs := (loc_start.Lexing.pos_cnum, loc_end.Lexing.pos_cnum) :: !locs ;
         c
     | _ -> Ast_mapper.default_mapper.constant self c
   in
-  {Ast_mapper.default_mapper with constant}
+  { Ast_mapper.default_mapper with constant }
 
 let collect_strlocs (type a) (fg : a Extended_ast.t) (ast : a) :
     (int * int) list =
@@ -317,7 +317,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       |> dump_formatted ~suffix:".boxes"
       |> (ignore : string option -> unit) ;
     let fmted, cmts_t = format ~box_debug:false in
-    let conf = if opts.debug then conf else {conf with Conf.quiet= true} in
+    let conf = if opts.debug then conf else { conf with Conf.quiet= true } in
     if String.equal prev_source fmted then (
       if opts.debug then check_all_locations Format.err_formatter cmts_t ;
       if opts.Conf.margin_check then
@@ -380,7 +380,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         ( match Cmts.remaining_comments cmts_t with
         | [] -> ()
         | l -> internal_error (`Comment_dropped l) [] ) ;
-        let is_docstring (Cmt.{txt; loc} as cmt) =
+        let is_docstring (Cmt.{ txt; loc } as cmt) =
           match txt with
           | "" | "*" -> Either.Second cmt
           | _ when Char.equal txt.[0] '*' ->
@@ -424,19 +424,19 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       if i >= conf.max_iters then (
         Caml.flush_all () ;
         Error
-          (Unstable {iteration= i; prev= prev_source; next= fmted; input_name}
-          ) )
+          (Unstable
+             { iteration= i; prev= prev_source; next= fmted; input_name } ) )
       else
         (* All good, continue *)
         print_check ~i:(i + 1) ~conf ~prev_source:fmted t_new std_t_new
   in
   try print_check ~i:1 ~conf ~prev_source parsed std_parsed with
   | Sys_error msg -> Error (User_error msg)
-  | exn -> Error (Ocamlformat_bug {exn; input_name})
+  | exn -> Error (Ocamlformat_bug { exn; input_name })
 
 let parse_result ?disable_w50 f fragment conf ~source ~input_name =
   match parse ?disable_w50 f fragment conf ~source with
-  | exception exn -> Error (Error.Invalid_source {exn; input_name})
+  | exception exn -> Error (Error.Invalid_source { exn; input_name })
   | parsed -> Ok parsed
 
 let normalize_eol ~strlocs ~line_endings s =
@@ -512,7 +512,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
   Location.input_name := input_name ;
   let fallback () = Indent.Partial_ast.indent_range ~source ~range in
   let indent_parsed parsed std_parsed ~src ~range =
-    let {ast= parsed_ast; _} = parsed in
+    let { ast= parsed_ast; _ } = parsed in
     match
       format fg std_fg ~input_name ~prev_source:src ~parsed ~std_parsed conf
         opts
@@ -522,7 +522,7 @@ let numeric (type a b) (fg : a list Extended_ast.t)
         parse_result Extended_ast.Parse.ast fg ~source:fmted_src conf
           ~input_name
       with
-      | Ok {ast= fmted_ast; source= fmted_src; _} ->
+      | Ok { ast= fmted_ast; source= fmted_src; _ } ->
           Indent.Valid_ast.indent_range fg ~lines ~range
             ~unformatted:(parsed_ast, src) ~formatted:(fmted_ast, fmted_src)
       | Error _ -> fallback () )

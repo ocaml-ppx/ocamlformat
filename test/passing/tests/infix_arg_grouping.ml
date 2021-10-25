@@ -62,7 +62,7 @@ hvbox 0
   $ fmt " ->@ " $ Option.call ~f:pro_e $ psp_e $ bdy_e $ esp_e
   $ Option.call ~f:epi_e )
 
-let to_json {integers; floats; strings} =
+let to_json { integers; floats; strings } =
   `Assoc
     [ ("int", yojson_of_integers integers)
     ; ("double", yojson_of_floats floats)

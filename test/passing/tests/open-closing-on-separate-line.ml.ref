@@ -75,8 +75,8 @@ let () =
   x y z
 
 let x =
-  let Cstruct.{buffer= bigstring; off= offset; len= length} =
-    Cstruct.{toto= foooo}
+  let Cstruct.{ buffer= bigstring; off= offset; len= length } =
+    Cstruct.{ toto= foooo }
   in
   fooooooooo
 
@@ -285,11 +285,11 @@ let g =
      ) [@attr]
     )
 
-let _ = M.({f} [@warning "foo"])
-let _ = M.((* A *) {f})
-let _ = M.({f} (* B *))
-let _ = M.((* A *) {f} (* B *))
-let _ = M.((* A *) {f} (* B *) [@warning "foo"] (* C *))
+let _ = M.({ f } [@warning "foo"])
+let _ = M.((* A *) { f })
+let _ = M.({ f } (* B *))
+let _ = M.((* A *) { f } (* B *))
+let _ = M.((* A *) { f } (* B *) [@warning "foo"] (* C *))
 let _ = M.([| f |] [@warning "foo"])
 let _ = M.((* A *) [| f |])
 let _ = M.([| f |] (* B *))
@@ -311,9 +311,9 @@ let _ = M.((* A *) ((f, f) (* B *) [@warning "foo"] (* C *)))
 let _ =
   let _ =
     Fooooooo.
-      [ (swap_1_c, {minimum_transfert_amount= 0.})
-      ; (swap_2_c, {minimum_transfert_amount= 0.})
-      ; (swap_3_c, {minimum_transfert_amount= 0.})
+      [ (swap_1_c, { minimum_transfert_amount= 0. })
+      ; (swap_2_c, { minimum_transfert_amount= 0. })
+      ; (swap_3_c, { minimum_transfert_amount= 0. })
       ]
   in
   ()
