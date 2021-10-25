@@ -419,7 +419,7 @@
  (action
   (with-stdout-to break_fun_decl-smart.ml.stdout
    (with-stderr-to break_fun_decl-smart.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --break-fun-decl=smart --break-fun-sig=smart %{dep:tests/break_fun_decl.ml})))))
+     (run %{bin:ocamlformat} --margin-check --break-fun-decl=smart %{dep:tests/break_fun_decl.ml})))))
 
 (rule
  (alias runtest)

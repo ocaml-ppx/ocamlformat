@@ -18,7 +18,7 @@ type t =
   ; break_infix: [ `Wrap | `Fit_or_vertical ]
   ; break_infix_before_func: bool
   ; break_fun_decl: [ `Wrap | `Fit_or_vertical | `Smart ]
-  ; break_fun_sig: [ `Wrap | `Fit_or_vertical | `Smart ]
+  ; break_fun_sig: [ `Wrap | `Fit_or_vertical ]
   ; break_separators: [ `Before | `After ]
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [ `Normal | `Compact ]
@@ -275,12 +275,13 @@ module Formatting = struct
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks arguments if they do not \
            fit on a single line."
-      ; C.Value.make ~name:"smart" `Smart
-          "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
-           on their line if they fit."
       ]
     in
     C.choice ~names ~all ~doc ~kind
+      ~removed_values:
+        [ C.Value_removed.make ~name:"smart" ~version:"1.0.0"
+            ~msg:"This is not supported anymore"
+        ]
       (fun conf x -> { conf with break_fun_sig= x })
       (fun conf -> conf.break_fun_sig)
 

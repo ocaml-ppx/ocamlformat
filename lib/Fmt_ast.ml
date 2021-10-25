@@ -137,7 +137,7 @@ let box_fun_sig_args c =
   match c.conf.break_fun_sig with
   | _ when c.conf.ocp_indent_compat -> hvbox
   | `Fit_or_vertical -> hvbox
-  | `Wrap | `Smart -> hovbox
+  | `Wrap -> hovbox
 
 let sugar_pmod_functor c ~for_functor_kw pmod =
   let source_is_long = Source.is_long_pmod_functor c.source in

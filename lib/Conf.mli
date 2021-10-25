@@ -19,7 +19,7 @@ type t =
   ; break_infix: [ `Wrap | `Fit_or_vertical ]
   ; break_infix_before_func: bool
   ; break_fun_decl: [ `Wrap | `Fit_or_vertical | `Smart ]
-  ; break_fun_sig: [ `Wrap | `Fit_or_vertical | `Smart ]
+  ; break_fun_sig: [ `Wrap | `Fit_or_vertical ]
   ; break_separators: [ `Before | `After ]
   ; cases_exp_indent: int
   ; cases_matching_exp_indent: [ `Normal | `Compact ]
