@@ -86,7 +86,8 @@ let%foo _ = ()
 
 (* Expressions *)
 let () =
-  let%foo[@foo] x = 3 and[@foo] y = 4 in
+  let%foo[@foo] x = 3
+  and[@foo] y = 4 in
   [%foo
     (let module M = M in
     () )
@@ -3268,7 +3269,8 @@ let map_lambda ~map_rec : _ lambda -> _ = function
       let t' = map_rec t in
       if t == t' then l else `Abs (s, t')
   | `App (t1, t2) as l ->
-      let t'1 = map_rec t1 and t'2 = map_rec t2 in
+      let t'1 = map_rec t1
+      and t'2 = map_rec t2 in
       if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
 
 let next_id =
@@ -3326,13 +3328,15 @@ let map_expr ~map_rec : _ expr -> _ = function
   | #var as x -> x
   | `Num _ as x -> x
   | `Add (x, y) as e ->
-      let x' = map_rec x and y' = map_rec y in
+      let x' = map_rec x
+      and y' = map_rec y in
       if x == x' && y == y' then e else `Add (x', y')
   | `Neg x as e ->
       let x' = map_rec x in
       if x == x' then e else `Neg x'
   | `Mult (x, y) as e ->
-      let x' = map_rec x and y' = map_rec y in
+      let x' = map_rec x
+      and y' = map_rec y in
       if x == x' && y == y' then e else `Mult (x', y')
 
 let subst_expr ~subst_rec ~subst : _ expr -> _ = function
@@ -3492,7 +3496,8 @@ class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
           let t' = f t in
           if t == t' then l else `Abs (s, t')
       | `App (t1, t2) as l ->
-          let t'1 = f t1 and t'2 = f t2 in
+          let t'1 = f t1
+          and t'2 = f t2 in
           if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
 
     method subst ~sub =
@@ -3552,13 +3557,15 @@ class ['a] expr_ops (ops : ('a, 'a) #ops Lazy.t) =
       | #var as x -> x
       | `Num _ as x -> x
       | `Add (x, y) as e ->
-          let x' = f x and y' = f y in
+          let x' = f x
+          and y' = f y in
           if x == x' && y == y' then e else `Add (x', y')
       | `Neg x as e ->
           let x' = f x in
           if x == x' then e else `Neg x'
       | `Mult (x, y) as e ->
-          let x' = f x and y' = f y in
+          let x' = f x
+          and y' = f y in
           if x == x' && y == y' then e else `Mult (x', y')
 
     method subst ~sub =
@@ -3713,7 +3720,8 @@ let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
           let t' = f t in
           if t == t' then l else `Abs (s, t')
       | `App (t1, t2) as l ->
-          let t'1 = f t1 and t'2 = f t2 in
+          let t'1 = f t1
+          and t'2 = f t2 in
           if t'1 == t1 && t'2 == t2 then l else `App (t'1, t'2)
 
     method subst ~sub =
@@ -3770,13 +3778,15 @@ let expr_ops (ops : ('a, 'a) #ops Lazy.t) =
       | #var as x -> x
       | `Num _ as x -> x
       | `Add (x, y) as e ->
-          let x' = f x and y' = f y in
+          let x' = f x
+          and y' = f y in
           if x == x' && y == y' then e else `Add (x', y')
       | `Neg x as e ->
           let x' = f x in
           if x == x' then e else `Neg x'
       | `Mult (x, y) as e ->
-          let x' = f x and y' = f y in
+          let x' = f x
+          and y' = f y in
           if x == x' && y == y' then e else `Mult (x', y')
 
     method subst ~sub =

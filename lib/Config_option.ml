@@ -282,7 +282,8 @@ module Make (C : CONFIG) = struct
     let msg = Format.asprintf "%a" pp_removed removed in
     let parse _ = Error (`Msg msg) in
     let converter = Arg.conv (parse, fun _ () -> ()) in
-    let update conf _ = conf and get_value _ = () in
+    let update conf _ = conf
+    and get_value _ = () in
     let kind = (* not used *) Formatting in
     let docs = section_name kind status in
     let term =

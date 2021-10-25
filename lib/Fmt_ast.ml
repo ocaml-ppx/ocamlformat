@@ -951,7 +951,8 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
            (list pats (Params.comma_sep c.conf)
               (sub_pat ~ctx >> fmt_pattern c) ) )
   | Ppat_construct ({ txt= Lident (("()" | "[]") as txt); loc }, None) ->
-      let opn = txt.[0] and cls = txt.[1] in
+      let opn = txt.[0]
+      and cls = txt.[1] in
       Cmts.fmt c loc
         (hvbox 0
            (wrap_k (char opn) (char cls)
@@ -1421,7 +1422,8 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
 and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
   let fmt_sep c xe1 ext xe2 =
     let break =
-      let l1 = xe1.ast.pexp_loc and l2 = xe2.ast.pexp_loc in
+      let l1 = xe1.ast.pexp_loc
+      and l2 = xe2.ast.pexp_loc in
       if sequence_blank_line c l1 l2 then fmt "\n@;<1000 0>"
       else
         let offset =
@@ -2042,8 +2044,10 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
             $ fmt_core_type c (sub_typ ~ctx t) )
         $ fmt_atrs )
   | Pexp_construct ({ txt= Lident (("()" | "[]") as txt); loc }, None) ->
-      let opn = char txt.[0] and cls = char txt.[1] in
-      let pro = str " " and epi = str " " in
+      let opn = char txt.[0]
+      and cls = char txt.[1] in
+      let pro = str " "
+      and epi = str " " in
       Cmts.fmt c loc
       @@ hvbox 0
            (Params.parens_if parens c.conf
@@ -4222,10 +4226,7 @@ and fmt_let c ~ext ~rec_flag ~bindings ~parens ~fmt_atrs ~fmt_expr ~loc
     let in_ indent = fmt_if_k last (break 1 (-indent) $ str "in") in
     let rec_flag = first && Asttypes.is_recursive rec_flag in
     fmt_value_binding c ~rec_flag ?ext ~in_ binding
-    $ fmt_if (not last)
-        ( match c.conf.let_and with
-        | `Sparse -> "@;<1000 0>"
-        | `Compact -> "@ " )
+    $ fmt_if (not last) "@;<1000 0>"
   in
   let blank_line_after_in =
     let last_bind = List.last_exn bindings in

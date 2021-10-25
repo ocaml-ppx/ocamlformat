@@ -108,7 +108,8 @@ let extend_loc_to_include_attributes (loc : Location.t) (l : attributes) =
 
 let contains_token_between t ~(from : Location.t) ~(upto : Location.t) tok =
   let filter = Poly.( = ) tok in
-  let from = from.loc_start and upto = upto.loc_start in
+  let from = from.loc_start
+  and upto = upto.loc_start in
   Source_code_position.ascending from upto < 0
   && not (List.is_empty (tokens_between t ~filter from upto))
 

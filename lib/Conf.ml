@@ -37,7 +37,6 @@ type t =
   ; indicate_nested_or_patterns: [ `Space | `Unsafe_no ]
   ; infix_precedence: [ `Indent | `Parens ]
   ; leading_nested_match_parens: bool
-  ; let_and: [ `Compact | `Sparse ]
   ; let_binding_spacing: [ `Compact | `Sparse | `Double_semicolon ]
   ; let_module: [ `Compact | `Sparse ]
   ; line_endings: [ `Lf | `Crlf ]
@@ -672,20 +671,11 @@ module Formatting = struct
       (fun conf x -> { conf with leading_nested_match_parens= x })
       (fun conf -> conf.leading_nested_match_parens)
 
-  let let_and =
-    let doc = "Style of let_and." in
+  let ( (* let_and *) ) =
     let names = [ "let-and" ] in
-    let all =
-      [ C.Value.make ~name:"compact" `Compact
-          "$(b,compact) will try to format `let p = e and p = e` in a \
-           single line."
-      ; C.Value.make ~name:"sparse" `Sparse
-          "$(b,sparse) will always break between them."
-      ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> { conf with let_and= x })
-      (fun conf -> conf.let_and)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* let_binding_indent *) ) =
     let names = [ "let-binding-indent" ] in
@@ -1259,7 +1249,6 @@ let ocamlformat_profile =
   ; indicate_nested_or_patterns= `Space
   ; infix_precedence= `Indent
   ; leading_nested_match_parens= false
-  ; let_and= `Compact
   ; let_binding_spacing= `Compact
   ; let_module= `Compact
   ; line_endings= `Lf
@@ -1309,7 +1298,6 @@ let conventional_profile =
   ; infix_precedence= C.default Formatting.infix_precedence
   ; leading_nested_match_parens=
       C.default Formatting.leading_nested_match_parens
-  ; let_and= C.default Formatting.let_and
   ; let_binding_spacing= C.default Formatting.let_binding_spacing
   ; let_module= C.default Formatting.let_module
   ; line_endings= C.default Formatting.line_endings
@@ -1358,7 +1346,6 @@ let janestreet_profile =
   ; indicate_nested_or_patterns= `Unsafe_no
   ; infix_precedence= `Parens
   ; leading_nested_match_parens= true
-  ; let_and= `Sparse
   ; let_binding_spacing= `Double_semicolon
   ; let_module= `Sparse
   ; line_endings= `Lf
@@ -1683,7 +1670,8 @@ let is_in_listing_file ~listings ~filename =
                       try
                         let filename = Fpath.to_string filename in
                         let re =
-                          let pathname = true and anchored = true in
+                          let pathname = true
+                          and anchored = true in
                           let f = Fpath.to_string f in
                           Re.(Glob.glob ~pathname ~anchored f |> compile)
                         in

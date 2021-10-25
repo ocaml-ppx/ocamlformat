@@ -41,7 +41,8 @@ let () =
   ()
 
 let _ =
-  let%ext () = () and () = () in
+  let%ext () = ()
+  and () = () in
   ()
 
 let () =

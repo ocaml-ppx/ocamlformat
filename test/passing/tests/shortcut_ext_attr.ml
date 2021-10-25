@@ -1,6 +1,7 @@
 (* Expressions *)
 let () =
-  let%foo[@foo] x = 3 and[@foo] y = 4 in
+  let%foo[@foo] x = 3
+  and[@foo] y = 4 in
   [%foo
     (let module M = M in
     () )

@@ -198,11 +198,6 @@ OPTIONS (CODE FORMATTING STYLE)
            Nested match parens formatting. The flag is unset by default.
            Cannot be set in attributes.
 
-       --let-and={compact|sparse}
-           Style of let_and. compact will try to format `let p = e and p = e`
-           in a single line. sparse will always break between them. The
-           default value is compact.
-
        --let-binding-spacing={compact|sparse|double-semicolon}
            Spacing between let binding. compact spacing separates adjacent
            let bindings in a module according to module-item-spacing. sparse
@@ -410,6 +405,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --indent-after-in=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --let-and=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

@@ -123,7 +123,8 @@ let test_parse_and_format_expression =
 
 let reindent ~source ~range:(low, high) indents =
   let lines = String.split_lines source in
-  let low = low - 1 and high = high - 1 in
+  let low = low - 1
+  and high = high - 1 in
   String.concat ~sep:"\n"
   @@ List.mapi lines ~f:(fun i line ->
          if i < low then line
