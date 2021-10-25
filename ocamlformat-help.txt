@@ -308,12 +308,6 @@ OPTIONS (CODE FORMATTING STYLE)
            will always break the line before a single case. The default value
            is compact.
 
-       --type-decl={compact|sparse}
-           Style of type declaration. compact will try to format constructors
-           and records definition in a single line. sparse will always break
-           between constructors and record fields. The default value is
-           compact.
-
        --wrap-comments
            Wrap comments and docstrings. Comments and docstrings are divided
            into paragraphs by open lines (two or more consecutive newlines),
@@ -454,6 +448,10 @@ OPTIONS (REMOVED)
            supported anymore.
 
        --stritem-extension-indent=VAL
+           This option has been removed in version 1.0.0. This is not
+           supported anymore.
+
+       --type-decl=VAL
            This option has been removed in version 1.0.0. This is not
            supported anymore.
 

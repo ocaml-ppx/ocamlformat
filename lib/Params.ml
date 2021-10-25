@@ -199,20 +199,15 @@ type record_type =
   }
 
 let get_record_type (c : Conf.t) =
-  let sparse_type_decl = Poly.(c.type_decl = `Sparse) in
   let dock = c.dock_collection_brackets in
   let break_before, sep_before, sep_after =
     match c.break_separators with
     | `Before ->
-        ( fmt_or_k dock (break 1 2) (fmt "@ ")
-        , fmt_or sparse_type_decl "@;<1000 0>; " "@,; "
-        , noop )
+        (fmt_or_k dock (break 1 2) (fmt "@ "), fmt "@;<1000 0>; ", noop)
     | `After ->
         ( fmt_or_k dock (break 1 0) (fmt "@ ")
         , noop
-        , fmt_or_k dock
-            (fmt_or sparse_type_decl "@;<1000 0>" "@ ")
-            (fmt_or sparse_type_decl "@;<1000 2>" "@;<1 2>") )
+        , fmt_or dock "@;<1000 0>" "@;<1000 2>" )
   in
   { docked_before= fmt_if dock " {"
   ; break_before

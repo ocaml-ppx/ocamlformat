@@ -13,7 +13,10 @@ open Migrate_ast
 open Extended_ast
 
 (** Concrete syntax. *)
-type t = { text: string; tokens: (Parser.token * Location.t) array }
+type t =
+  { text: string
+  ; tokens: (Parser.token * Location.t) array
+  }
 
 let create ~text ~tokens =
   let tokens =

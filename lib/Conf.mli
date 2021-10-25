@@ -54,15 +54,22 @@ type t =
   ; sequence_blank_line: [ `Compact | `Preserve_one ]
   ; sequence_style: [ `Before | `Separator | `Terminator ]
   ; single_case: [ `Compact | `Sparse ]
-  ; type_decl: [ `Compact | `Sparse ]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool
   }
 
 val default_profile : t
 
-type file = Stdin | File of string
-type input = { kind: Syntax.t; name: string; file: file; conf: t }
+type file =
+  | Stdin
+  | File of string
+
+type input =
+  { kind: Syntax.t
+  ; name: string
+  ; file: file
+  ; conf: t
+  }
 
 type action =
   | In_out of input * string option
@@ -96,7 +103,8 @@ val update_value :
      , [ `Bad_value of string * string
        | `Malformed of string
        | `Misplaced of string * string
-       | `Unknown of string * [ `Msg of string ] option ] )
+       | `Unknown of string * [ `Msg of string ] option
+       ] )
      Result.t
 
 val print_config : t -> unit

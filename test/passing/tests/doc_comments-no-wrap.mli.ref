@@ -6,7 +6,8 @@ type block =
   | `Pre of string
   | `I of string * string
   | `Noblank
-  | `Blocks of block list ]
+  | `Blocks of block list
+  ]
 
 (** Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod *)
 include M with type t := t
@@ -36,7 +37,12 @@ val s_environment_intro : block
 
 (** {1:output Output} *)
 
-type format = [ `Auto | `Pager | `Plain | `Groff ]
+type format =
+  [ `Auto
+  | `Pager
+  | `Plain
+  | `Groff
+  ]
 
 val print :
      ?errs:Format.formatter
@@ -542,7 +548,8 @@ type x =
         (** {[
               (* a
                  b *)
-            ]} *) ]
+            ]} *)
+      ]
   }
 
 type x =

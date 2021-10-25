@@ -51,7 +51,6 @@ type t =
   ; sequence_blank_line: [ `Compact | `Preserve_one ]
   ; sequence_style: [ `Before | `Separator | `Terminator ]
   ; single_case: [ `Compact | `Sparse ]
-  ; type_decl: [ `Compact | `Sparse ]
   ; wrap_comments: bool
   ; wrap_fun_args: bool
   }
@@ -906,21 +905,11 @@ module Formatting = struct
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
-  let type_decl =
-    let doc = "Style of type declaration." in
+  let ( (* type_decl *) ) =
     let names = [ "type-decl" ] in
-    let all =
-      [ C.Value.make ~name:"compact" `Compact
-          "$(b,compact) will try to format constructors and records \
-           definition in a single line."
-      ; C.Value.make ~name:"sparse" `Sparse
-          "$(b,sparse) will always break between constructors and record \
-           fields."
-      ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> { conf with type_decl= x })
-      (fun conf -> conf.type_decl)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* type_decl_indent *) ) =
     let names = [ "type-decl-indent" ] in
@@ -1051,7 +1040,9 @@ let inplace =
   let default = false in
   mk ~default Arg.(value & flag & info [ "i"; "inplace" ] ~doc ~docs)
 
-type file = Stdin | File of string
+type file =
+  | Stdin
+  | File of string
 
 let inputs =
   let docv = "SRC" in
@@ -1245,7 +1236,6 @@ let ocamlformat_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Separator
   ; single_case= `Compact
-  ; type_decl= `Compact
   ; wrap_comments= false
   ; wrap_fun_args= true
   }
@@ -1293,7 +1283,6 @@ let conventional_profile =
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
-  ; type_decl= C.default Formatting.type_decl
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args
   }
@@ -1340,7 +1329,6 @@ let janestreet_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
-  ; type_decl= `Sparse
   ; wrap_comments= false
   ; wrap_fun_args= false
   }
@@ -1786,7 +1774,12 @@ let validate_action () =
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
-type input = { kind: Syntax.t; name: string; file: file; conf: t }
+type input =
+  { kind: Syntax.t
+  ; name: string
+  ; file: file
+  ; conf: t
+  }
 
 type action =
   | In_out of input * string option
@@ -1859,7 +1852,10 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   | `Numeric range, `Single_file (kind, name, f) ->
       Ok (Numeric (make_file ?name kind f, range))
 
-type opts = { debug: bool; margin_check: bool }
+type opts =
+  { debug: bool
+  ; margin_check: bool
+  }
 
 let validate () =
   let root =

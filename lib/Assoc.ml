@@ -10,7 +10,10 @@
 (**************************************************************************)
 
 (** Associativities of Ast terms. *)
-type t = Left | Non | Right
+type t =
+  | Left
+  | Non
+  | Right
 
 let to_string = function Left -> "Left" | Non -> "Non" | Right -> "Right"
 let equal : t -> t -> bool = Poly.( = )

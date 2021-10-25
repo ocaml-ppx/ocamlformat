@@ -22,7 +22,8 @@ exception
     | `Doc_comment of Normalize.docstring_error list
     | `Comment
     | `Comment_dropped of Cmt.t list
-    | `Warning50 of (Location.t * Warnings.t) list ]
+    | `Warning50 of (Location.t * Warnings.t) list
+    ]
     * (string * Sexp.t) list
 
 let internal_error msg kvs = raise (Internal_error (msg, kvs))
@@ -36,10 +37,20 @@ let exe = chop_any_extension (Filename.basename Caml.Sys.argv.(0))
 
 module Error = struct
   type t =
-    | Invalid_source of { exn: exn; input_name: string }
+    | Invalid_source of
+        { exn: exn
+        ; input_name: string
+        }
     | Unstable of
-        { iteration: int; prev: string; next: string; input_name: string }
-    | Ocamlformat_bug of { exn: exn; input_name: string }
+        { iteration: int
+        ; prev: string
+        ; next: string
+        ; input_name: string
+        }
+    | Ocamlformat_bug of
+        { exn: exn
+        ; input_name: string
+        }
     | User_error of string
 
   let user_error x = User_error x

@@ -10,7 +10,10 @@
 (**************************************************************************)
 
 (** Associativities of Ast terms *)
-type t = Left | Non | Right
+type t =
+  | Left
+  | Non
+  | Right
 
 val to_string : t -> string
 val equal : t -> t -> bool

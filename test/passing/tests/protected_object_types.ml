@@ -47,8 +47,19 @@ module Inside_payloads = struct
 
   [@@@a: type t = < .. > ]
   [@@@a: type t = (< .. >[@a])]
-  [@@@a: type a = A of t | B of t | C of < .. > ]
-  [@@@a: type a = A of t | B of t | C of (t -> < .. >)]
+
+  [@@@a:
+  type a =
+    | A of t
+    | B of t
+    | C of < .. > ]
+
+  [@@@a:
+  type a =
+    | A of t
+    | B of t
+    | C of (t -> < .. >)]
+
   [@@@a: type a += C of a * b * < .. > ]
   [@@@a: type a += C of a * b * < .. > [@a]]
   [@@@a: type a += C of (a -> b * < .. >)]

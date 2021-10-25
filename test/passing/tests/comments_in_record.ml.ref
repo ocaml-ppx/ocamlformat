@@ -12,13 +12,10 @@ type t =
   ; d: [ `something_looooooooooooooooooooooooooooooooong ]
   }
 
-type t = { a: int (* Comment *); b: int (* Comment *) }
-
 type t =
   { a: int (* Comment *)
   ; b: int (* Comment *)
   }
-[@@ocamlformat "type-decl=sparse"]
 
 let { (* cmts *)
       pat
@@ -50,7 +47,10 @@ type t =
   }
 
 type t =
-  | Tuple of { elts: t vector; packed: bool }
+  | Tuple of
+      { elts: t vector
+      ; packed: bool
+      }
   | Struct of
       { name: string
       ; elts: t vector (* possibly cyclic, name unique *)

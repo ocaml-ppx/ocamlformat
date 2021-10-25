@@ -158,7 +158,10 @@ let _ =
     (*f*)
     x
 
-type t = { a: int [@default a] (* comment *); b: flag }
+type t =
+  { a: int [@default a] (* comment *)
+  ; b: flag
+  }
 
 let () =
   (* *)
@@ -297,8 +300,7 @@ type t =
 
 type t =
   (* | B *)
-  | A
-  (* A *)
+  | A (* A *)
   | C
 
 type t =
@@ -307,7 +309,9 @@ type t =
   (* | B *)
   | C
 
-type foo = Alpha | Beta
+type foo =
+  | Alpha
+  | Beta
 [@@ocaml.warning "-37" (* Explanation of warning *)]
 
 type foo =

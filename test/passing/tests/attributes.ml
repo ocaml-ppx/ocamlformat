@@ -33,8 +33,16 @@ val foo : int
   [@@warning "-99"]
   [@@some long comment]
 
-type t = A of int [@attr] | B of (float[@attr]) | C [@attr]
-type t = [ `A of int [@attr] | `B of (float[@attr]) | `C [@attr] ]
+type t =
+  | A of int [@attr]
+  | B of (float[@attr])
+  | C [@attr]
+
+type t =
+  [ `A of int [@attr]
+  | `B of (float[@attr])
+  | `C [@attr]
+  ]
 
 let[@inline always] f x =
   let[@something] e = 1 in

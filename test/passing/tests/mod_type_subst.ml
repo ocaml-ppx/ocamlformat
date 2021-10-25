@@ -52,12 +52,16 @@ module type R = S with module type M.T := sig end
 (** Adding equalities *)
 
 module type base = sig
-  type t = X of int | Y of float
+  type t =
+    | X of int
+    | Y of float
 end
 
 module type u = sig
   module type t = sig
-    type t = X of int | Y of float
+    type t =
+      | X of int
+      | Y of float
   end
 
   module M : t
@@ -66,7 +70,9 @@ end
 module type s = u with module type t := base
 
 module type base = sig
-  type t = X of int | Y of float
+  type t =
+    | X of int
+    | Y of float
 end
 
 module type u = sig
@@ -74,7 +80,9 @@ module type u = sig
   type y
 
   module type t = sig
-    type t = X of x | Y of y
+    type t =
+      | X of x
+      | Y of y
   end
 
   module M : t

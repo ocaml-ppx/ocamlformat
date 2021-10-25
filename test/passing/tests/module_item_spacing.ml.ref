@@ -41,7 +41,11 @@ and c = { a: int; b: toto; c: char * char * char; d: [ `Foo | `Bar ] }
 and z = this one is pretty looooooooooooooooooooooooooooooooooong
 and z = so is this oooooooooooooooooooooooooooooooooooooooooooone
 
-type k = A | B | K of int * char * string | E
+type k =
+  | A
+  | B
+  | K of int * char * string
+  | E
 
 let x = 1
 let z = this one (is short)

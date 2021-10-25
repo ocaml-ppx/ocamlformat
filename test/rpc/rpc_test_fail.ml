@@ -13,7 +13,10 @@ module Ocf = Ocamlformat_rpc_lib
 let log = Format.printf
 let supported_versions = [ "v1" ]
 
-type state = Uninitialized | Running of Ocf.client | Errored
+type state =
+  | Uninitialized
+  | Running of Ocf.client
+  | Errored
 
 let state : state ref = ref Uninitialized
 

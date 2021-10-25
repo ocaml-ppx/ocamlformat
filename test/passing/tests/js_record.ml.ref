@@ -1,4 +1,7 @@
-type x = { foo: int; bar: int }
+type x =
+  { foo: int
+  ; bar: int
+  }
 
 let x = { x with foo= 3; bar= 5 }
 

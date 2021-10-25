@@ -12,7 +12,10 @@
 open Migrate_ast
 
 module T = struct
-  type t = { txt: string; loc: Location.t }
+  type t =
+    { txt: string
+    ; loc: Location.t
+    }
 
   let loc t = t.loc
   let txt t = t.txt
@@ -32,7 +35,10 @@ include T
 include Comparator.Make (T)
 open Fmt
 
-type pos = Before | Within | After
+type pos =
+  | Before
+  | Within
+  | After
 
 module Asterisk_prefixed = struct
   let split { txt; loc= { Location.loc_start; _ } } =

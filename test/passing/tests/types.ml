@@ -1,17 +1,36 @@
-type uu = A of int | B of (< leq: 'a > as 'a)
-type uu = A of int | B of (< leq: 'a > as 'a) * 'a
-type uu = A of (int as 'a) | B of 'a * (< leq: 'a > as 'a)
+type uu =
+  | A of int
+  | B of (< leq: 'a > as 'a)
+
+type uu =
+  | A of int
+  | B of (< leq: 'a > as 'a) * 'a
+
+type uu =
+  | A of (int as 'a)
+  | B of 'a * (< leq: 'a > as 'a)
+
 type uu += A of (int as 'a)
 type uu += B of 'a * (< leq: 'a > as 'a)
 
 let _ = ignore Async_unix.Fd.(([ stdin (); stdout (); stderr () ] : t list))
 
 type t = { x: int }
-type t = { a: int; b: int }
-type t = [ `A | `B ]
+
+type t =
+  { a: int
+  ; b: int
+  }
+
+type t =
+  [ `A
+  | `B
+  ]
 
 type loooooooooong_type =
-  { looooooooooooong_field: looooooooooooong_type; field2: type2 }
+  { looooooooooooong_field: looooooooooooong_type
+  ; field2: type2
+  }
 
 type t = A of (int * int) * int
 type t = A of int * int
@@ -30,19 +49,35 @@ type 'a foo += A : (int -> 'a) -> int foo
 type t = [ | a ]
 type t = private [< a ]
 type t = private [> a ]
-type t = [ a | b ]
-type t = [ a | b | `C ]
-type t = [ `a | b ]
+
+type t =
+  [ a
+  | b
+  ]
+
+type t =
+  [ a
+  | b
+  | `C
+  ]
+
+type t =
+  [ `a
+  | b
+  ]
+
 type t = |
 type t = [> ]
 
 type loooooooooooooong_type =
   [ `Looooooooooooooooooong_type of int
-  | `Looooooooooooooooooooong_variant of string ]
+  | `Looooooooooooooooooooong_variant of string
+  ]
 
 type loooooooooooooong_type =
   [ `Looooooooooooooooooong_type of int  (** Doc *)
-  | `Looooooooooooooooooooong_variant of string (* Comment *) ]
+  | `Looooooooooooooooooooong_variant of string (* Comment *)
+  ]
 
 let (`A | `B) [@bar] = ()
 
@@ -50,12 +85,15 @@ type t =
   | Internal_error of
       [ `Doc_comment of
         [ `Moved of Location.t * Location.t * string
-        | `Unstable of Location.t * string ] ]
+        | `Unstable of Location.t * string
+        ]
+      ]
 
 val x :
   [ `X of int
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 val x :
   [ `X of
@@ -65,12 +103,14 @@ val x :
     * fooooooooooo foooooooooo
     * foooooooooooo
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 val x :
   [ `X of int (* booooom *)
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 val x :
   [ `X of
@@ -81,7 +121,8 @@ val x :
     * foooooooooooo
     (* boooooom *)
     (** foooooooooooooooo foooooooooooooooooooooooo fooooooooooooooooooooooo
-        fooooooooooooooooooo fooooooooooooooo *) ]
+        fooooooooooooooooooo fooooooooooooooo *)
+  ]
 
 type voting_period =
       Tezos_client_alpha.Proto_alpha.Alpha_context.Voting_period.kind =
@@ -154,17 +195,33 @@ module type A = sig
   type a := A.a
   and b := A.b
 
-  type t := A.t = A | B
-  type t := A | B
+  type t := A.t =
+    | A
+    | B
 
-  type t := A.t = { a: int; b: int }
-  and t := { a: int; b: int }
+  type t :=
+    | A
+    | B
+
+  type t := A.t =
+    { a: int
+    ; b: int
+    }
+
+  and t :=
+    { a: int
+    ; b: int
+    }
 
   type t := A.t = ..
   type t := ..
 end
 
-type t = [ `A  (** A *) | `B [@b]  (** B *) | (p[@p]) (* P *) ]
+type t =
+  [ `A  (** A *)
+  | `B [@b]  (** B *)
+  | (p[@p]) (* P *)
+  ]
 
 type foooooooooooooooo =
      ?fooooooooo:(string -> unit)

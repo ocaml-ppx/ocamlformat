@@ -4307,42 +4307,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to types-compact.ml.stdout
-   (with-stderr-to types-compact.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --type-decl=compact %{dep:tests/types.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-compact.ml.ref types-compact.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-compact.ml.err types-compact.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
-  (with-stdout-to types-sparse.ml.stdout
-   (with-stderr-to types-sparse.ml.stderr
-     (run %{bin:ocamlformat} --margin-check --type-decl=sparse %{dep:tests/types.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-sparse.ml.ref types-sparse.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/types-sparse.ml.err types-sparse.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to types.ml.stdout
    (with-stderr-to types.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/types.ml})))))

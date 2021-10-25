@@ -133,7 +133,8 @@ module Let_binding : sig
         [ `Polynewtype of label loc list * core_type Ast.xt
         | `Coerce of core_type Ast.xt option * core_type Ast.xt
         | `Other of arg_kind list * core_type Ast.xt
-        | `None of arg_kind list ]
+        | `None of arg_kind list
+        ]
     ; lb_exp: expression Ast.xt
     ; lb_pun: bool
     ; lb_attrs: attribute list

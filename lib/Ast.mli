@@ -83,7 +83,10 @@ module Exp : sig
 end
 
 module Indexing_op : sig
-  type brackets = Round | Square | Curly
+  type brackets =
+    | Round
+    | Square
+    | Curly
 
   type custom_operator =
     { path: string list  (** eg. [a.X.Y.*{b}] *)
@@ -151,7 +154,9 @@ module Tyd : sig
 end
 
 type toplevel_item =
-  [ `Item of structure_item | `Directive of toplevel_directive ]
+  [ `Item of structure_item
+  | `Directive of toplevel_directive
+  ]
 
 (** Ast terms of various forms. *)
 type t =
@@ -182,7 +187,10 @@ val dump : Format.formatter -> t -> unit
 
 (** Term-in-context [{ctx; ast}] records that [ast] is (considered to be) an
     immediate sub-term of [ctx]. *)
-type 'a xt = private { ctx: t; ast: 'a }
+type 'a xt = private
+  { ctx: t
+  ; ast: 'a
+  }
 
 val sub_typ : ctx:t -> core_type -> core_type xt
 (** Construct a core_type-in-context. *)
@@ -216,7 +224,13 @@ val is_simple : Conf.t -> (expression xt -> int) -> expression xt -> bool
     applications of other simple expressions. *)
 
 (** 'Classes' of expressions which are parenthesized differently. *)
-type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
+type cls =
+  | Let_match
+  | Match
+  | Non_apply
+  | Sequence
+  | Then
+  | ThenElse
 
 val exposed_right_exp : cls -> expression -> bool
 (** [exposed_right_exp cls exp] holds if there is a right-most subexpression

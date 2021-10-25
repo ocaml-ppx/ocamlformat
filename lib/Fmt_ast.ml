@@ -784,22 +784,15 @@ and fmt_core_type c ?(box = true) ?pro ?(pro_space = true) ?constraint_ctx
         | [] -> Cmts.fmt_within c ~pro:noop ptyp_loc
         | _ ->
             list rfs
-              ( if in_type_declaration && Poly.(c.conf.type_decl = `Sparse)
-              then "@;<1000 0>| "
-              else "@ | " )
+              (if in_type_declaration then "@;<1000 0>| " else "@ | ")
               (fmt_row_field c ctx)
       in
       let closing =
         let empty = List.is_empty rfs in
-        let force =
-          match c.conf.type_decl with
-          | `Sparse -> Some Break
-          | `Compact -> None
-        in
         let nspaces = if empty then 0 else 1 in
         fits_breaks
           (if not empty then " ]" else "]")
-          ~hint:(nspaces, 0) "]" ?force
+          ~hint:(nspaces, 0) "]" ~force:Break
       in
       hvbox 0
         ( match (flag, lbls, rfs) with
@@ -3222,11 +3215,9 @@ and fmt_constructor_declaration c ctx ~first ~last:_ cstr_decl =
   update_config_maybe_disabled c pcd_loc pcd_attributes
   @@ fun c ->
   let doc, atrs = doc_atrs pcd_attributes in
-  let has_cmt_before = Cmts.has_before c.cmts pcd_loc in
-  let sparse = Poly.( = ) c.conf.type_decl `Sparse in
   (* Force break if comment before pcd_loc, it would interfere with an
      eventual comment placed after the previous constructor *)
-  fmt_if_k (not first) (fmt_or (sparse || has_cmt_before) "@;<1000 0>" "@ ")
+  fmt_if (not first) "@;<1000 0>"
   $ Cmts.fmt_before ~epi:(break 1000 0) c pcd_loc
   $ Cmts.fmt_before c loc
   $ fmt_or_k first (if_newline "| ") (str "| ")

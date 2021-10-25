@@ -19,12 +19,30 @@ end
 module Make (C : CONFIG) : sig
   type config = C.config
   type 'a t
-  type kind = Formatting | Operational
-  type parsed_from = [ `File of Fpath.t * int | `Attribute ]
-  type updated_from = [ `Env | `Commandline | `Parsed of parsed_from ]
+
+  type kind =
+    | Formatting
+    | Operational
+
+  type parsed_from =
+    [ `File of Fpath.t * int
+    | `Attribute
+    ]
+
+  type updated_from =
+    [ `Env
+    | `Commandline
+    | `Parsed of parsed_from
+    ]
+
   type deprecated
   type removed
-  type status = [ `Valid | `Deprecated of deprecated | `Removed of removed ]
+
+  type status =
+    [ `Valid
+    | `Deprecated of deprecated
+    | `Removed of removed
+    ]
 
   type 'a option_decl =
        names:string list
@@ -94,7 +112,8 @@ module Make (C : CONFIG) : sig
        , [ `Unknown of string * [ `Msg of string ] option
          | `Bad_value of string * string
          | `Malformed of string
-         | `Misplaced of string * string ] )
+         | `Misplaced of string * string
+         ] )
        Result.t
 
   val print_config : config -> unit

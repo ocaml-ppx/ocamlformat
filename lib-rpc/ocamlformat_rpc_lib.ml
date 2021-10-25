@@ -42,8 +42,17 @@ end
 module Csexp = Csexp.Make (Sexp)
 
 module Init :
-  Command_S with type t = [ `Halt | `Unknown | `Version of string ] = struct
-  type t = [ `Halt | `Unknown | `Version of string ]
+  Command_S
+    with type t =
+          [ `Halt
+          | `Unknown
+          | `Version of string
+          ] = struct
+  type t =
+    [ `Halt
+    | `Unknown
+    | `Version of string
+    ]
 
   let read_input in_channel =
     let open Sexp in
@@ -70,14 +79,16 @@ module V1 :
           | `Unknown
           | `Error of string
           | `Config of (string * string) list
-          | `Format of string ] = struct
+          | `Format of string
+          ] = struct
   module Command = struct
     type t =
       [ `Halt
       | `Unknown
       | `Error of string
       | `Config of (string * string) list
-      | `Format of string ]
+      | `Format of string
+      ]
 
     let read_input in_channel =
       let open Sexp in
@@ -117,7 +128,12 @@ module V1 :
   end
 
   module Client = struct
-    type t = { pid: int; input: in_channel; output: out_channel }
+    type t =
+      { pid: int
+      ; input: in_channel
+      ; output: out_channel
+      }
+
     type cmd = Command.t
 
     let pid t = t.pid

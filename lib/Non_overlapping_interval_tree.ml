@@ -40,7 +40,11 @@ module Make (Itv : IN) = struct
   (* simple but (asymptotically) suboptimal implementation *)
 
   type itv = Itv.t
-  type t = { roots: Itv.t list; map: Itv.t list Map.M(Itv).t }
+
+  type t =
+    { roots: Itv.t list
+    ; map: Itv.t list Map.M(Itv).t
+    }
 
   let empty = { roots= []; map= Map.empty (module Itv) }
   let roots t = t.roots

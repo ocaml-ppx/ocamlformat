@@ -268,7 +268,9 @@ let sequence cmts xexp =
   in
   sequence_ xexp
 
-type functor_arg = Unit | Named of label option loc * module_type Ast.xt
+type functor_arg =
+  | Unit
+  | Named of label option loc * module_type Ast.xt
 
 (* The sugar is different when used with the [functor] keyword. The syntax
    M(A : A)(B : B) cannot handle [_] as module name. *)
@@ -371,7 +373,8 @@ module Let_binding = struct
         [ `Polynewtype of label loc list * core_type xt
         | `Coerce of core_type xt option * core_type xt
         | `Other of arg_kind list * core_type xt
-        | `None of arg_kind list ]
+        | `None of arg_kind list
+        ]
     ; lb_exp: expression xt
     ; lb_pun: bool
     ; lb_attrs: attribute list

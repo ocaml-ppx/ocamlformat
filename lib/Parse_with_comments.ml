@@ -12,7 +12,11 @@
 open Migrate_ast
 
 type 'a with_comments =
-  { ast: 'a; comments: Cmt.t list; prefix: string; source: Source.t }
+  { ast: 'a
+  ; comments: Cmt.t list
+  ; prefix: string
+  ; source: Source.t
+  }
 
 module W = struct
   type t = int

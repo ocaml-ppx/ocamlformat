@@ -37,7 +37,13 @@ let init, register_reset, leading_nested_match_parens, parens_ite =
 let fit_margin (c : Conf.t) x = x * 3 < c.margin
 
 (** 'Classes' of expressions which are parenthesized differently. *)
-type cls = Let_match | Match | Non_apply | Sequence | Then | ThenElse
+type cls =
+  | Let_match
+  | Match
+  | Non_apply
+  | Sequence
+  | Then
+  | ThenElse
 
 (** Predicates recognizing special symbol identifiers. *)
 
@@ -68,10 +74,16 @@ module Token = struct
 end
 
 module Indexing_op = struct
-  type brackets = Round | Square | Curly
+  type brackets =
+    | Round
+    | Square
+    | Curly
 
   type custom_operator =
-    { path: string list; opchars: string; brackets: brackets }
+    { path: string list
+    ; opchars: string
+    ; brackets: brackets
+    }
 
   type indexing_op =
     | Defined of expression * custom_operator
@@ -625,7 +637,9 @@ module Class_type_field = struct
 end
 
 type toplevel_item =
-  [ `Item of structure_item | `Directive of toplevel_directive ]
+  [ `Item of structure_item
+  | `Directive of toplevel_directive
+  ]
 
 (** Ast terms of various forms. *)
 module T = struct
@@ -741,7 +755,10 @@ let break_between cc (i1, c1) (i2, c2) =
     immediate sub-term of [ctx] as assumed by the operations in
     [Requires_sub_terms]. *)
 module rec In_ctx : sig
-  type 'a xt = private { ctx: T.t; ast: 'a }
+  type 'a xt = private
+    { ctx: T.t
+    ; ast: 'a
+    }
 
   val sub_ast : ctx:T.t -> T.t -> T.t xt
   val sub_typ : ctx:T.t -> core_type -> core_type xt
@@ -756,7 +773,10 @@ module rec In_ctx : sig
 end = struct
   open Requires_sub_terms
 
-  type 'a xt = { ctx: T.t; ast: 'a }
+  type 'a xt =
+    { ctx: T.t
+    ; ast: 'a
+    }
 
   let sub_ast ~ctx ast = { ctx; ast }
   let sub_typ ~ctx typ = check parenze_typ { ctx; ast= typ }

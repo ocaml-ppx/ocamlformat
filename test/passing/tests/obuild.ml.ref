@@ -1,4 +1,7 @@
-type predicate = Pred_Byte | Pred_Native | Pred_Toploop
+type predicate =
+  | Pred_Byte
+  | Pred_Native
+  | Pred_Toploop
 
 let _ =
   { pkg with

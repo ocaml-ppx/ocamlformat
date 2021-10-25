@@ -20,18 +20,43 @@ module Make (C : CONFIG) = struct
   open Cmdliner
 
   type config = C.config
-  type kind = Formatting | Operational
-  type parsed_from = [ `File of Fpath.t * int | `Attribute ]
-  type updated_from = [ `Env | `Commandline | `Parsed of parsed_from ]
+
+  type kind =
+    | Formatting
+    | Operational
+
+  type parsed_from =
+    [ `File of Fpath.t * int
+    | `Attribute
+    ]
+
+  type updated_from =
+    [ `Env
+    | `Commandline
+    | `Parsed of parsed_from
+    ]
 
   type from =
     [ `Default
     | `Profile of string * updated_from
-    | `Updated of updated_from ]
+    | `Updated of updated_from
+    ]
 
-  type deprecated = { dmsg: string; dversion: string }
-  type removed = { rmsg: string; rversion: string }
-  type status = [ `Valid | `Deprecated of deprecated | `Removed of removed ]
+  type deprecated =
+    { dmsg: string
+    ; dversion: string
+    }
+
+  type removed =
+    { rmsg: string
+    ; rversion: string
+    }
+
+  type status =
+    [ `Valid
+    | `Deprecated of deprecated
+    | `Removed of removed
+    ]
 
   type 'a t =
     { names: string list
@@ -221,7 +246,11 @@ module Make (C : CONFIG) = struct
   end
 
   module Value_removed = struct
-    type t = { name: string; version: string; msg: string }
+    type t =
+      { name: string
+      ; version: string
+      ; msg: string
+      }
 
     let make ~name ~version ~msg = { name; version; msg }
 

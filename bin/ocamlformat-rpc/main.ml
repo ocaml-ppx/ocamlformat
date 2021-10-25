@@ -27,7 +27,9 @@ module V = struct
   let to_string = function V1 -> "v1"
 end
 
-type state = Waiting_for_version | Version_defined of (V.t * Conf.t)
+type state =
+  | Waiting_for_version
+  | Version_defined of (V.t * Conf.t)
 
 let format fg conf source =
   let input_name = "<rpc input>" in

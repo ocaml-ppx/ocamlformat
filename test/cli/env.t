@@ -7,7 +7,7 @@ Invalid option:
 
 Invalid value:
 
-  $ echo 'let x = 1' | OCAMLFORMAT="type-decl=unknown" ocamlformat --impl -
+  $ echo 'let x = 1' | OCAMLFORMAT="exp-grouping=unknown" ocamlformat --impl -
   ocamlformat: Error while parsing OCAMLFORMAT environment variable:
-               For option "type-decl": invalid value `unknown', expected either `compact' or `sparse'
+               For option "exp-grouping": invalid value `unknown', expected either `parens' or `preserve'
   [1]

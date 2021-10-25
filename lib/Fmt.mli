@@ -126,7 +126,9 @@ val break_unless_newline : int -> int -> t
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
-type behavior = Fit | Break
+type behavior =
+  | Fit
+  | Break
 
 val fits_breaks :
   ?force:behavior -> ?hint:int * int -> ?level:int -> string -> string -> t

@@ -11,7 +11,10 @@
 
 open Migrate_ast
 
-type t = private { txt: string; loc: Location.t }
+type t = private
+  { txt: string
+  ; loc: Location.t
+  }
 
 val create : string -> Location.t -> t
 val loc : t -> Location.t
@@ -19,7 +22,10 @@ val txt : t -> string
 
 include Comparator.S with type t := t
 
-type pos = Before | Within | After
+type pos =
+  | Before
+  | Within
+  | After
 
 val fmt :
      t

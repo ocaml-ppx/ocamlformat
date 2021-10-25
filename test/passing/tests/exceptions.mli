@@ -22,7 +22,9 @@ exception
   Internal_error of
     [ `Doc_comment of
       [ `Moved of Location.t * Location.t * string
-      | `Unstable of Location.t * string ] ]
+      | `Unstable of Location.t * string
+      ]
+    ]
 
 exception E : _
 exception E : t

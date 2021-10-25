@@ -12,7 +12,9 @@
 (** Normalize abstract syntax trees *)
 
 type conf =
-  { conf: Conf.t; normalize_code: Std_ast.structure -> Std_ast.structure }
+  { conf: Conf.t
+  ; normalize_code: Std_ast.structure -> Std_ast.structure
+  }
 
 let is_doc = function
   | Std_ast.{ attr_name= { Location.txt= "ocaml.doc" | "ocaml.text"; _ }; _ }

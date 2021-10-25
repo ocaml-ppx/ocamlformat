@@ -74,7 +74,12 @@ end
 include T
 
 type s = (unit, Format.formatter, unit) format
-type sp = Blank | Cut | Space | Break of int * int
+
+type sp =
+  | Blank
+  | Cut
+  | Space
+  | Break of int * int
 
 let ( >$ ) f g x = f $ g x
 
@@ -178,7 +183,9 @@ let break_unless_newline n o =
 
 (** Conditional on breaking of enclosing box ----------------------------*)
 
-type behavior = Fit | Break
+type behavior =
+  | Fit
+  | Break
 
 let fits_or_breaks ~level fits nspaces offset breaks =
   with_pp (fun fs ->
