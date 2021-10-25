@@ -176,11 +176,8 @@ let get_cases (c : Conf.t) ~first ~indent ~parens_branch source ~loc =
       ; close_paren_branch
       }
 
-let wrap_collec c ~space_around opn cls =
-  if space_around then wrap_k (str opn $ char ' ') (break 1 0 $ str cls)
-  else wrap_fits_breaks c opn cls
-
-let wrap_record c = wrap_collec c ~space_around:true "{" "}"
+let wrap_collec opn cls = wrap_k (str opn $ char ' ') (break 1 0 $ str cls)
+let wrap_record = wrap_collec "{" "}"
 
 let wrap_tuple (c : Conf.t) ~parens ~no_parens_if_break =
   if parens then wrap_fits_breaks c "(" ")"
@@ -211,7 +208,7 @@ let get_record_type (c : Conf.t) =
   in
   { docked_before= fmt_if dock " {"
   ; break_before
-  ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record c k))
+  ; box_record= (fun k -> if dock then k else hvbox 0 (wrap_record k))
   ; box_spaced= true
   ; sep_before
   ; sep_after
@@ -233,7 +230,7 @@ let get_record_expr (c : Conf.t) =
   let dock = c.dock_collection_brackets in
   let box k =
     if dock then hvbox 0 (wrap "{" "}" (break 1 2 $ k $ break 1 0))
-    else hvbox 0 (wrap_record c k)
+    else hvbox 0 (wrap_record k)
   in
   ( ( match c.break_separators with
     | `Before ->
@@ -255,8 +252,7 @@ let box_collec (c : Conf.t) =
   | `Wrap -> hovbox
   | `Fit_or_vertical -> hvbox
 
-let collection_expr (c : Conf.t) ~space_around opn cls =
-  let space = if space_around then 1 else 0 in
+let collection_expr (c : Conf.t) opn cls =
   let dock = c.dock_collection_brackets in
   let offset = if dock then -2 else String.length opn - 1 in
   match c.break_separators with
@@ -266,9 +262,9 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
             if dock then
               hvbox 0
                 (wrap_k (str opn) (str cls)
-                   ( break space (String.length opn + 1)
-                   $ box_collec c 0 k $ break space 0 ) )
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
+                   ( break 1 (String.length opn + 1)
+                   $ box_collec c 0 k $ break 1 0 ) )
+            else box_collec c 0 (wrap_collec opn cls k) )
       ; sep_before= break 0 offset $ str "; "
       ; sep_after_non_final= noop
       ; sep_after_final= noop
@@ -279,8 +275,8 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
             if dock then
               hvbox 0
                 (wrap_k (str opn) (str cls)
-                   (break space 2 $ box_collec c 0 k $ break space 0) )
-            else box_collec c 0 (wrap_collec c ~space_around opn cls k) )
+                   (break 1 2 $ box_collec c 0 k $ break 1 0) )
+            else box_collec c 0 (wrap_collec opn cls k) )
       ; sep_before= noop
       ; sep_after_non_final=
           fmt_or_k dock (fmt ";@;<1 0>")
@@ -288,11 +284,10 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
       ; sep_after_final= fmt_if_k dock (fits_breaks ~level:1 "" ";")
       }
 
-let get_list_expr c = collection_expr c ~space_around:true "[" "]"
-let get_array_expr c = collection_expr c ~space_around:true "[|" "|]"
+let get_list_expr c = collection_expr c "[" "]"
+let get_array_expr c = collection_expr c "[|" "|]"
 
-let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
-  let space = if space_around then 1 else 0 in
+let box_pattern_docked (c : Conf.t) ~ctx opn cls k =
   let indent_opn, indent_cls =
     match (ctx, c.break_separators) with
     | Ast.Exp { pexp_desc= Pexp_match _ | Pexp_try _; _ }, `Before ->
@@ -302,29 +297,28 @@ let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
     | _ -> (0, 0)
   in
   hvbox indent_opn
-    (wrap_k (str opn) (str cls) (break space 2 $ k $ break space indent_cls))
+    (wrap_k (str opn) (str cls) (break 1 2 $ k $ break 1 indent_cls))
 
 let get_record_pat (c : Conf.t) ~ctx =
   let params, _ = get_record_expr c in
   let box =
-    if c.dock_collection_brackets then
-      box_pattern_docked c ~ctx ~space_around:true "{" "}"
+    if c.dock_collection_brackets then box_pattern_docked c ~ctx "{" "}"
     else params.box
   in
   ( { params with box }
   , { wildcard= params.sep_before $ str "_" $ params.sep_after_final } )
 
-let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
-  let params = collection_expr c ~space_around opn cls in
+let collection_pat (c : Conf.t) ~ctx opn cls =
+  let params = collection_expr c opn cls in
   let box =
     if c.dock_collection_brackets then
-      box_collec c 0 >> box_pattern_docked c ~ctx ~space_around opn cls
+      box_collec c 0 >> box_pattern_docked c ~ctx opn cls
     else params.box
   in
   { params with box }
 
-let get_list_pat c ~ctx = collection_pat c ~ctx ~space_around:true "[" "]"
-let get_array_pat c ~ctx = collection_pat c ~ctx ~space_around:true "[|" "|]"
+let get_list_pat c ~ctx = collection_pat c ~ctx "[" "]"
+let get_array_pat c ~ctx = collection_pat c ~ctx "[|" "|]"
 
 type if_then_else =
   { box_branch: Fmt.t -> Fmt.t
