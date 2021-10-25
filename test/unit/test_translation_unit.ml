@@ -23,11 +23,11 @@ let test_parse_and_format kind_name ~fg test_name ~input ~expected =
 
 let test_parse_and_format_signature =
   let make_test = test_parse_and_format "signature" ~fg:Signature in
-  [make_test "val" ~input:"val x :\n \nint" ~expected:(Ok "val x : int\n")]
+  [ make_test "val" ~input:"val x :\n \nint" ~expected:(Ok "val x : int\n") ]
 
 let test_parse_and_format_use_file =
   let make_test = test_parse_and_format "use_file" ~fg:Use_file in
-  [make_test "let" ~input:"let x =\n\n y" ~expected:(Ok "let x = y\n")]
+  [ make_test "let" ~input:"let x =\n\n y" ~expected:(Ok "let x = y\n") ]
 
 let test_parse_and_format_core_type =
   let make_test = test_parse_and_format "core_type" ~fg:Core_type in
@@ -43,7 +43,8 @@ let test_parse_and_format_core_type =
 File "<test>", line 1, characters 0-2:
 Error: Syntax error
 |}
-        ) ]
+        )
+  ]
 
 let test_parse_and_format_module_type =
   let make_test = test_parse_and_format "module_type" ~fg:Module_type in
@@ -111,12 +112,14 @@ File "<test>", line 1, characters 0-3:
            \  val create :\n\
            \    capabilities:ServerCapabilities.t -> ?serverInfo:serverInfo \
             -> unit -> t\n\
-            end\n" ) ]
+            end\n" )
+  ]
 
 let test_parse_and_format_expression =
   let make_test = test_parse_and_format "expression" ~fg:Expression in
   [ make_test "List.map" ~input:"List.map (fun x->\nx*x) [(1 + 9); 2;3] "
-      ~expected:(Ok "List.map (fun x -> x * x) [ 1 + 9; 2; 3 ]\n") ]
+      ~expected:(Ok "List.map (fun x -> x * x) [ 1 + 9; 2; 3 ]\n")
+  ]
 
 let reindent ~source ~range:(low, high) indents =
   let lines = String.split_lines source in
@@ -327,7 +330,8 @@ let x =
 let x =
   3
 in
-x + y|}) ]
+x + y|})
+  ]
 
 let read_file f = Stdio.In_channel.with_file f ~f:Stdio.In_channel.input_all
 
@@ -357,15 +361,16 @@ let test_numeric_file =
        ~expected:(Ok [2]) ; make_test "fmt_ast.ml (111)"
        ~source:fmt_ast_source ~range:(111, 111) ~expected:(Ok [6]) *)
     make_test "partial.ml (1-14)" ~source:partial_source ~range:(1, 14)
-      ~expected:(Ok [0; 2; 2; 2; 2; 4; 6; 6; 6; 4; 4; 4; 0; 4])
+      ~expected:(Ok [ 0; 2; 2; 2; 2; 4; 6; 6; 6; 4; 4; 4; 0; 4 ])
   ; make_test "partial.ml (2-14)" ~source:partial_source ~range:(2, 14)
-      ~expected:(Ok [5; 5; 5; 5; 7; 9; 9; 9; 7; 7; 7; 0; 7])
+      ~expected:(Ok [ 5; 5; 5; 5; 7; 9; 9; 9; 7; 7; 7; 0; 7 ])
   ; make_test "format_invalid_files_with_locations.ml (7-11)" ~range:(7, 11)
       ~source:inv_with_loc_source
-      ~expected:(Ok [21; 21; 0; 21; 21])
+      ~expected:(Ok [ 21; 21; 0; 21; 21 ])
   ; make_test "format_invalid_files_with_locations.ml (10-11)"
       ~range:(10, 11) ~source:inv_with_loc_source
-      ~expected:(Ok [0; 0]) ]
+      ~expected:(Ok [ 0; 0 ])
+  ]
 
 let tests =
   List.concat

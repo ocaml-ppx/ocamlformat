@@ -74,5 +74,5 @@ let _ =
 let _ =
   i'm_a_function loooooooooooong
     (loooooooooooong looooooooooooooong loooooooooooooong
-       [loooooooooong; loooooooooooong; loooooooooooooooooooooong]
+       [ loooooooooong; loooooooooooong; loooooooooooooooooooooong ]
     )

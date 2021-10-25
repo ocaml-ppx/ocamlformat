@@ -207,7 +207,8 @@ let _ =
 
 let _ =
   [ (let a = b in
-     c ) ]
+     c )
+  ]
 
 let _ =
   [| (let a = b in

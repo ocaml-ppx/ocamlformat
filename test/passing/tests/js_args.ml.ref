@@ -112,7 +112,7 @@ let _ =
 
 (* open paren ending line like begin *)
 let _ =
-  if a (p ^/ "s") [e] = Ok () then
+  if a (p ^/ "s") [ e ] = Ok () then
     `S
       (let label count = sprintf "%d s" c ^ if c = 1 then ":" else "s" in
        x )

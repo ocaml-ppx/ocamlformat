@@ -283,9 +283,7 @@ let collection_expr (c : Conf.t) ~space_around opn cls =
             (char ';' $ break 1 (String.length opn + 1))
       ; sep_after_final= fmt_if_k dock (fits_breaks ~level:1 "" ";") }
 
-let get_list_expr (c : Conf.t) =
-  collection_expr c ~space_around:c.space_around_lists "[" "]"
-
+let get_list_expr c = collection_expr c ~space_around:true "[" "]"
 let get_array_expr c = collection_expr c ~space_around:true "[|" "|]"
 
 let box_pattern_docked (c : Conf.t) ~ctx ~space_around opn cls k =
@@ -320,9 +318,7 @@ let collection_pat (c : Conf.t) ~ctx ~space_around opn cls =
   in
   {params with box}
 
-let get_list_pat (c : Conf.t) ~ctx =
-  collection_pat c ~ctx ~space_around:c.space_around_lists "[" "]"
-
+let get_list_pat c ~ctx = collection_pat c ~ctx ~space_around:true "[" "]"
 let get_array_pat c ~ctx = collection_pat c ~ctx ~space_around:true "[|" "|]"
 
 type if_then_else =

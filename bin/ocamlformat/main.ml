@@ -71,7 +71,7 @@ let run_action action opts =
       | Ok s ->
           to_output_file output_file s ;
           Ok ()
-      | Error e -> Error [(fun () -> print_error conf opts e)] )
+      | Error e -> Error [ (fun () -> print_error conf opts e) ] )
   | Check inputs ->
       let f {Conf.kind; name= input_name; file; conf} =
         let source = source_from_file file in
@@ -89,7 +89,8 @@ let run_action action opts =
       let conf = {conf with quiet= true} in
       let source = source_from_file file in
       Translation_unit.numeric kind ~input_name ~source ~range conf opts
-      |> Result.map_error ~f:(fun e -> [(fun () -> print_error conf opts e)])
+      |> Result.map_error ~f:(fun e ->
+             [ (fun () -> print_error conf opts e) ] )
       >>| List.iter ~f:(fun i -> Stdio.print_endline (Int.to_string i))
 ;;
 

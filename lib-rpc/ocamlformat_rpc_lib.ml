@@ -49,14 +49,14 @@ module Init :
     let open Sexp in
     match Csexp.input in_channel with
     | Ok (Atom "Halt") -> `Halt
-    | Ok (List [Atom "Version"; Atom v]) -> `Version v
+    | Ok (List [ Atom "Version"; Atom v ]) -> `Version v
     | Ok _ -> `Unknown
     | Error _msg -> `Halt
 
   let to_sexp =
     let open Sexp in
     function
-    | `Version v -> List [Atom "Version"; Atom v] | _ -> assert false
+    | `Version v -> List [ Atom "Version"; Atom v ] | _ -> assert false
 
   let output channel t =
     to_sexp t |> Csexp.to_channel channel ;
@@ -82,18 +82,18 @@ module V1 :
     let read_input in_channel =
       let open Sexp in
       match Csexp.input in_channel with
-      | Ok (List [Atom "Format"; Atom x]) -> `Format x
-      | Ok (List [Atom "Config"; List l]) ->
+      | Ok (List [ Atom "Format"; Atom x ]) -> `Format x
+      | Ok (List [ Atom "Config"; List l ]) ->
           let c =
             List.fold_left
               (fun acc -> function
-                | List [Atom name; Atom value] -> (name, value) :: acc
+                | List [ Atom name; Atom value ] -> (name, value) :: acc
                 | _ -> acc )
               [] l
             |> List.rev
           in
           `Config c
-      | Ok (List [Atom "Error"; Atom x]) -> `Error x
+      | Ok (List [ Atom "Error"; Atom x ]) -> `Error x
       | Ok (Atom "Halt") -> `Halt
       | Ok _ -> `Unknown
       | Error _msg -> `Halt
@@ -101,13 +101,13 @@ module V1 :
     let to_sexp =
       let open Sexp in
       function
-      | `Format x -> List [Atom "Format"; Atom x]
+      | `Format x -> List [ Atom "Format"; Atom x ]
       | `Config c ->
           let l =
-            List.map (fun (name, value) -> List [Atom name; Atom value]) c
+            List.map (fun (name, value) -> List [ Atom name; Atom value ]) c
           in
-          List [Atom "Config"; List l]
-      | `Error x -> List [Atom "Error"; Atom x]
+          List [ Atom "Config"; List l ]
+      | `Error x -> List [ Atom "Error"; Atom x ]
       | `Halt -> Atom "Halt"
       | _ -> assert false
 

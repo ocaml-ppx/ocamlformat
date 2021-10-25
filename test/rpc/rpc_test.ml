@@ -11,7 +11,7 @@ open Result.Infix
 module Ocf = Ocamlformat_rpc_lib
 
 let log = Format.printf
-let supported_versions = ["v1"]
+let supported_versions = [ "v1" ]
 
 type state = Uninitialized | Running of Ocf.client | Errored
 
@@ -49,7 +49,7 @@ let get_client () =
   match !state with
   | Uninitialized -> start ()
   | Running cl ->
-      let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
+      let i, _ = Unix.waitpid [ WNOHANG ] (Ocf.pid cl) in
       if i = 0 then Ok cl else start ()
   | Errored -> Error `No_process
 
@@ -92,10 +92,10 @@ let () =
   protect_string @@ format "char -> string" ;
   protect_string @@ format "int -> int" ;
   protect_string @@ format " int    (* foo *) \n\n ->     int  (* bar *)" ;
-  protect_unit @@ config [("foo", "bar")] ;
-  protect_unit @@ config [("margin", "10")] ;
+  protect_unit @@ config [ ("foo", "bar") ] ;
+  protect_unit @@ config [ ("margin", "10") ] ;
   protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
-  protect_unit @@ config [("margin", "80")] ;
+  protect_unit @@ config [ ("margin", "80") ] ;
   protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
   protect_string @@ format "val x :\n \nint" ;
   protect_string @@ format "val write : 'a    t/1 -> 'a ->unit M/2.t" ;
@@ -122,6 +122,6 @@ let ssmap
 |}
   in
   protect_string @@ format some_function ;
-  protect_unit @@ config [("profile", "janestreet")] ;
+  protect_unit @@ config [ ("profile", "janestreet") ] ;
   protect_string @@ format some_function ;
   protect_unit @@ halt ()

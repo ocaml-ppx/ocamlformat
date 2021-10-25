@@ -52,14 +52,13 @@ type t =
   ; sequence_blank_line: [`Compact | `Preserve_one]
   ; sequence_style: [`Before | `Separator | `Terminator]
   ; single_case: [`Compact | `Sparse]
-  ; space_around_lists: bool
   ; space_around_records: bool
   ; space_around_variants: bool
   ; type_decl: [`Compact | `Sparse]
   ; wrap_comments: bool
   ; wrap_fun_args: bool }
 
-let profile_option_names = ["p"; "profile"]
+let profile_option_names = [ "p"; "profile" ]
 
 open Cmdliner
 
@@ -149,7 +148,8 @@ let info =
          $(b,.ocamlformat-enable) file specifies a filename relative to the \
          directory containing the $(b,.ocamlformat-enable) file. \
          Shell-style regular expressions are supported. Lines starting with \
-         $(b,#) are ignored and can be used as comments." ]
+         $(b,#) are ignored and can be used as comments."
+    ]
   in
   Term.info "ocamlformat" ~version:Version.version ~doc ~man
 
@@ -167,25 +167,25 @@ module Formatting = struct
 
   let ( (* align_cases *) ) =
     let msg = "Vertical alignment is not supported anymore." in
-    let names = ["align-cases"] in
+    let names = [ "align-cases" ] in
     let version = "1.0.0" in
     C.removed_option ~names ~version ~msg
 
   let ( (* align_constructors_decl *) ) =
     let msg = "Vertical alignment is not supported anymore." in
-    let names = ["align-constructors-decl"] in
+    let names = [ "align-constructors-decl" ] in
     let version = "1.0.0" in
     C.removed_option ~names ~version ~msg
 
   let ( (* align_variants_decl *) ) =
     let msg = "Vertical alignment is not supported anymore." in
-    let names = ["align-variants-decl"] in
+    let names = [ "align-variants-decl" ] in
     let version = "1.0.0" in
     C.removed_option ~names ~version ~msg
 
   let assignment_operator =
     let doc = "Position of the assignment operator." in
-    let names = ["assignment-operator"] in
+    let names = [ "assignment-operator" ] in
     let all =
       [ C.Value.make ~name:"end-line" `End_line
           "$(b,end-line) positions assignment operators (`:=` and `<-`) at \
@@ -194,21 +194,22 @@ module Formatting = struct
       ; C.Value.make ~name:"begin-line" `Begin_line
           "$(b,begin-line) positions assignment operators (`:=` and `<-`) \
            at the beginning of the line and breaks before it if the whole \
-           assignment expression does not fit on a single line." ]
+           assignment expression does not fit on a single line."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with assignment_operator= x})
       (fun conf -> conf.assignment_operator)
 
   let ( (* break_before_in *) ) =
-    let names = ["break-before-in"] in
+    let names = [ "break-before-in" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let break_cases =
     let doc = "Break pattern match cases." in
-    let names = ["break-cases"] in
+    let names = [ "break-cases" ] in
     let all =
       [ C.Value.make ~name:"fit" `Fit
           "Specifying $(b,fit) lets pattern matches break at the margin \
@@ -226,7 +227,8 @@ module Formatting = struct
           "$(b,fit-or-vertical) tries to fit all or-patterns on the same \
            line, otherwise breaks."
       ; C.Value.make ~name:"all" `All
-          "$(b,all) forces all pattern matches to break across lines." ]
+          "$(b,all) forces all pattern matches to break across lines."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_cases= x})
@@ -236,14 +238,15 @@ module Formatting = struct
     let doc =
       "Break collection expressions (lists and arrays) elements by elements."
     in
-    let names = ["break-collection-expressions"] in
+    let names = [ "break-collection-expressions" ] in
     let all =
       [ C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks expressions if they do \
            not fit on a single line."
       ; C.Value.make ~name:"wrap" `Wrap
           "$(b,wrap) will group simple expressions and try to format them \
-           in a single line." ]
+           in a single line."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_collection_expressions= x})
@@ -251,7 +254,7 @@ module Formatting = struct
 
   let break_fun_decl =
     let doc = "Style for function declarations and types." in
-    let names = ["break-fun-decl"] in
+    let names = [ "break-fun-decl" ] in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap "$(b,wrap) breaks only if necessary."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
@@ -259,7 +262,8 @@ module Formatting = struct
            fit on a single line."
       ; C.Value.make ~name:"smart" `Smart
           "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
-           on their line if they fit." ]
+           on their line if they fit."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_fun_decl= x})
@@ -267,7 +271,7 @@ module Formatting = struct
 
   let break_fun_sig =
     let doc = "Style for function signatures." in
-    let names = ["break-fun-sig"] in
+    let names = [ "break-fun-sig" ] in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap "$(b,wrap) breaks only if necessary."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
@@ -275,7 +279,8 @@ module Formatting = struct
            fit on a single line."
       ; C.Value.make ~name:"smart" `Smart
           "$(b,smart) is like $(b,fit-or-vertical) but try to fit arguments \
-           on their line if they fit." ]
+           on their line if they fit."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_fun_sig= x})
@@ -283,14 +288,15 @@ module Formatting = struct
 
   let break_infix =
     let doc = "Break sequence of infix operators." in
-    let names = ["break-infix"] in
+    let names = [ "break-infix" ] in
     let all =
       [ C.Value.make ~name:"wrap" `Wrap
           "$(b,wrap) will group simple expressions and try to format them \
            in a single line."
       ; C.Value.make ~name:"fit-or-vertical" `Fit_or_vertical
           "$(b,fit-or-vertical) vertically breaks expressions if they do \
-           not fit on a single line." ]
+           not fit on a single line."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with break_infix= x})
@@ -302,7 +308,7 @@ module Formatting = struct
        specially: do not break after the operator so that the first line of \
        the function appears docked at the end of line after the operator."
     in
-    let names = ["break-infix-before-func"] in
+    let names = [ "break-infix-before-func" ] in
     C.flag ~default:false ~names ~doc ~kind
       (fun conf x -> {conf with break_infix_before_func= x})
       (fun conf -> conf.break_infix_before_func)
@@ -312,12 +318,13 @@ module Formatting = struct
       "Break before or after separators such as `;` in list or record \
        expressions."
     in
-    let names = ["break-separators"] in
+    let names = [ "break-separators" ] in
     let all =
       [ C.Value.make ~name:"after" `After
           "$(b,after) breaks the expressions after the separator."
       ; C.Value.make ~name:"before" `Before
-          "$(b,before) breaks the expressions before the separator." ]
+          "$(b,before) breaks the expressions before the separator."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
@@ -325,31 +332,33 @@ module Formatting = struct
             ~msg:
               "One can get a similar behaviour by setting \
                `break-separators=after`, `space-around-lists=false`, and \
-               `dock-collection-brackets=false`." ]
+               `dock-collection-brackets=false`."
+        ]
       (fun conf x -> {conf with break_separators= x})
       (fun conf -> conf.break_separators)
 
   let ( (* break_sequences *) ) =
-    let names = ["break-sequences"] in
+    let names = [ "break-sequences" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let break_string_literals =
     let doc = "Break string literals." in
-    let names = ["break-string-literals"] in
+    let names = [ "break-string-literals" ] in
     let all =
       [ C.Value.make ~name:"auto" `Auto
           "$(b,auto) mode breaks lines at newlines and wraps string \
            literals at the margin."
       ; C.Value.make ~name:"never" `Never
           "$(b,never) mode formats string literals as they are parsed, in \
-           particular, with escape sequences expanded." ]
+           particular, with escape sequences expanded."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
         (C.Value_removed.make_list
-           ~names:["newlines"; "newlines-and-wrap"; "wrap"]
+           ~names:[ "newlines"; "newlines-and-wrap"; "wrap" ]
            ~version:"0.12"
            ~msg:
              "It has been replaced by the new default `auto` value, which \
@@ -359,7 +368,7 @@ module Formatting = struct
       (fun conf -> conf.break_string_literals)
 
   let ( (* break_struct *) ) =
-    let names = ["break-struct"] in
+    let names = [ "break-struct" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
@@ -370,7 +379,7 @@ module Formatting = struct
       "Indentation of cases expressions ($(docv) columns). See also the \
        $(b,cases-matching-exp-indent) and $(b,nested-match) options."
     in
-    let names = ["cases-exp-indent"] in
+    let names = [ "cases-exp-indent" ] in
     C.any Arg.int ~names ~default:4 ~doc ~docv ~kind ~allow_inline:false
       (fun conf x -> {conf with cases_exp_indent= x})
       (fun conf -> conf.cases_exp_indent)
@@ -380,14 +389,15 @@ module Formatting = struct
       "Indentation of cases right-hand sides which are `match` or `try` \
        expressions."
     in
-    let names = ["cases-matching-exp-indent"] in
+    let names = [ "cases-matching-exp-indent" ] in
     let all =
       [ C.Value.make ~name:"normal" `Normal
           "$(b,normal) indents as it would any other expression."
       ; C.Value.make ~name:"compact" `Compact
           "$(b,compact) forces an indentation of 2, unless \
            $(b,nested-match) is set to $(b,align) and we're on the last \
-           case." ]
+           case."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with cases_matching_exp_indent= x})
@@ -399,19 +409,19 @@ module Formatting = struct
        automatic code formatting. One can also use $(b,[@@@ocamlformat \
        \"enable\"]) instead of $(b,[@@@ocamlformat \"disable=false\"])."
     in
-    C.flag ~names:["disable"] ~default:false ~doc ~kind
+    C.flag ~names:[ "disable" ] ~default:false ~doc ~kind
       (fun conf x -> {conf with disable= x})
       (fun conf -> conf.disable)
 
   let ( (* disambiguate_non_breaking_match *) ) =
-    let names = ["disambiguate-non-breaking-match"] in
+    let names = [ "disambiguate-non-breaking-match" ] in
     let version = "1.0.0" in
     let msg = "Forced disambiguation is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let doc_comments =
     let doc = "Doc comments position." in
-    let names = ["doc-comments"] in
+    let names = [ "doc-comments" ] in
     let all =
       [ C.Value.make ~name:"after-when-possible" `After_when_possible
           "$(b,after-when-possible) puts doc comments after the \
@@ -423,7 +433,8 @@ module Formatting = struct
            corresponding code, but puts doc comments of $(b,val) and \
            $(b,external) declarations after the corresponding declarations."
       ; C.Value.make ~name:"before" `Before
-          "$(b,before) puts comments before the corresponding code." ]
+          "$(b,before) puts comments before the corresponding code."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       ~removed_values:
@@ -431,7 +442,8 @@ module Formatting = struct
             ~msg:
               "This value has been renamed `after-when-possible` to take \
                into account the technical limitations of ocamlformat, the \
-               behavior is unchanged." ]
+               behavior is unchanged."
+        ]
       (fun conf x -> {conf with doc_comments= x})
       (fun conf -> conf.doc_comments)
 
@@ -440,26 +452,27 @@ module Formatting = struct
     let doc =
       "Add $(docv) spaces before doc comments in type declarations."
     in
-    let names = ["doc-comments-padding"] in
+    let names = [ "doc-comments-padding" ] in
     C.any Arg.int ~names ~default:2 ~doc ~docv ~kind
       (fun conf x -> {conf with doc_comments_padding= x})
       (fun conf -> conf.doc_comments_padding)
 
   let doc_comments_tag_only =
     let doc = "Position of doc comments with only tags." in
-    let names = ["doc-comments-tag-only"] in
+    let names = [ "doc-comments-tag-only" ] in
     let all =
       [ C.Value.make ~name:"default" `Default
           "$(b,default) means no special treatment."
       ; C.Value.make ~name:"fit" `Fit
-          "$(b,fit) puts doc comments on the same line." ]
+          "$(b,fit) puts doc comments on the same line."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with doc_comments_tag_only= x})
       (fun conf -> conf.doc_comments_tag_only)
 
   let ( (* doc_comments_val *) ) =
-    let names = ["doc-comments-val"] in
+    let names = [ "doc-comments-val" ] in
     let version = "0.16.0" in
     let msg =
       "If you are using `doc-comments-val=before` in combination with \
@@ -483,7 +496,7 @@ module Formatting = struct
        collection does not fit on a single line the brackets are opened on \
        the preceding line and closed on the following line."
     in
-    let names = ["dock-collection-brackets"] in
+    let names = [ "dock-collection-brackets" ] in
     C.flag ~default:true ~names ~doc ~kind
       (fun conf x -> {conf with dock_collection_brackets= x})
       (fun conf -> conf.dock_collection_brackets)
@@ -492,39 +505,40 @@ module Formatting = struct
     "Concrete syntax will now always be preserved."
 
   let ( (* escape_chars *) ) =
-    let names = ["escape-chars"] in
+    let names = [ "escape-chars" ] in
     let version = "0.16.0" in
     let msg = concrete_syntax_preserved_msg in
     C.removed_option ~names ~version ~msg
 
   let ( (* escape_strings *) ) =
-    let names = ["escape-strings"] in
+    let names = [ "escape-strings" ] in
     let version = "0.16.0" in
     let msg = concrete_syntax_preserved_msg in
     C.removed_option ~names ~version ~msg
 
   let exp_grouping =
     let doc = "Style of expression grouping." in
-    let names = ["exp-grouping"] in
+    let names = [ "exp-grouping" ] in
     let all =
       [ C.Value.make ~name:"parens" `Parens
           "$(b,parens) groups expressions using parentheses."
       ; C.Value.make ~name:"preserve" `Preserve
           "$(b,preserve) preserves the original grouping syntax \
-           (parentheses or $(i,begin)/$(i,end))." ]
+           (parentheses or $(i,begin)/$(i,end))."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with exp_grouping= x})
       (fun conf -> conf.exp_grouping)
 
   let ( (* extension_indent *) ) =
-    let names = ["extension-indent"] in
+    let names = [ "extension-indent" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let ( (* extension_sugar *) ) =
-    let names = ["extension-sugar"] in
+    let names = [ "extension-sugar" ] in
     let version = "0.17.0" in
     let msg = concrete_syntax_preserved_msg in
     C.removed_option ~names ~version ~msg
@@ -534,7 +548,7 @@ module Formatting = struct
       "Whether or not to use a space between a field name and the rhs. This \
        option affects records and objects."
     in
-    let names = ["field-space"] in
+    let names = [ "field-space" ] in
     let all =
       [ C.Value.make ~name:"loose" `Loose "$(b,loose) does."
       ; C.Value.make ~name:"tight" `Tight
@@ -542,27 +556,28 @@ module Formatting = struct
            punctuation symbol (`:` or `=`)."
       ; C.Value.make ~name:"tight-decl" `Tight_decl
           "$(b,tight-decl) is $(b,tight) for declarations and $(b,loose) \
-           for instantiations." ]
+           for instantiations."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with field_space= x})
       (fun conf -> conf.field_space)
 
   let ( (* function_indent *) ) =
-    let names = ["function-indent"] in
+    let names = [ "function-indent" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let ( (* function_indent_nested *) ) =
-    let names = ["function-indent-nested"] in
+    let names = [ "function-indent-nested" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let if_then_else =
     let doc = "If-then-else formatting." in
-    let names = ["if-then-else"] in
+    let names = [ "if-then-else" ] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) tries to format an if-then-else expression on a \
@@ -575,14 +590,15 @@ module Formatting = struct
            the if-then-else keywords are the first on the line."
       ; C.Value.make ~name:"k-r" `K_R
           "$(b,k-r) formats if-then-else expressions with parentheses that \
-           match the K&R style." ]
+           match the K&R style."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with if_then_else= x})
       (fun conf -> conf.if_then_else)
 
   let ( (* indent_after_in *) ) =
-    let names = ["indent-after-in"] in
+    let names = [ "indent-after-in" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
@@ -591,7 +607,7 @@ module Formatting = struct
     let doc =
       "How to indicate that two matching delimiters live on different lines."
     in
-    let names = ["indicate-multiline-delimiters"] in
+    let names = [ "indicate-multiline-delimiters" ] in
     let all =
       [ C.Value.make ~name:"no" `No
           "$(b, no) doesn't do anything special to indicate the closing \
@@ -602,7 +618,8 @@ module Formatting = struct
       ; C.Value.make ~name:"closing-on-separate-line"
           `Closing_on_separate_line
           "$(b, closing-on-separate-line) makes sure that the closing \
-           delimiter is on its own line." ]
+           delimiter is on its own line."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with indicate_multiline_delimiters= x})
@@ -613,7 +630,7 @@ module Formatting = struct
       "Control whether or not to indicate nested or-pattern using \
        indentation."
     in
-    let names = ["indicate-nested-or-patterns"] in
+    let names = [ "indicate-nested-or-patterns" ] in
     let all =
       [ C.Value.make ~name:"unsafe-no" `Unsafe_no
           "$(b,unsafe-no) does not indicate nested or-patterns. Warning: \
@@ -622,7 +639,8 @@ module Formatting = struct
            misassociation between patterns and body expressions."
       ; C.Value.make ~name:"space" `Space
           "$(b,space) starts lines of nested or-patterns with \" |\" rather \
-           than \"| \"." ]
+           than \"| \"."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with indicate_nested_or_patterns= x})
@@ -633,14 +651,15 @@ module Formatting = struct
       "Use indentation or also discretionary parentheses to explicitly \
        disambiguate precedences of infix operators."
     in
-    let names = ["infix-precedence"] in
+    let names = [ "infix-precedence" ] in
     let all =
       [ C.Value.make ~name:"indent" `Indent
           "$(b,indent) uses indentation to explicitly disambiguate \
            precedences of infix operators."
       ; C.Value.make ~name:"parens" `Parens
           "$(b,parens) uses parentheses to explicitly disambiguate \
-           precedences of infix operators." ]
+           precedences of infix operators."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with infix_precedence= x})
@@ -648,34 +667,35 @@ module Formatting = struct
 
   let leading_nested_match_parens =
     let doc = "Nested match parens formatting." in
-    let names = ["leading-nested-match-parens"] in
+    let names = [ "leading-nested-match-parens" ] in
     C.flag ~default:false ~names ~doc ~kind ~allow_inline:false
       (fun conf x -> {conf with leading_nested_match_parens= x})
       (fun conf -> conf.leading_nested_match_parens)
 
   let let_and =
     let doc = "Style of let_and." in
-    let names = ["let-and"] in
+    let names = [ "let-and" ] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) will try to format `let p = e and p = e` in a \
            single line."
       ; C.Value.make ~name:"sparse" `Sparse
-          "$(b,sparse) will always break between them." ]
+          "$(b,sparse) will always break between them."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with let_and= x})
       (fun conf -> conf.let_and)
 
   let ( (* let_binding_indent *) ) =
-    let names = ["let-binding-indent"] in
+    let names = [ "let-binding-indent" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let let_binding_spacing =
     let doc = "Spacing between let binding." in
-    let names = ["let-binding-spacing"] in
+    let names = [ "let-binding-spacing" ] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) spacing separates adjacent let bindings in a module \
@@ -685,7 +705,8 @@ module Formatting = struct
            module-level let binding and the next."
       ; C.Value.make ~name:"double-semicolon" `Double_semicolon
           "$(b,double-semicolon) places double semicolons and an open line \
-           between a multi-line module-level let binding and the next." ]
+           between a multi-line module-level let binding and the next."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with let_binding_spacing= x})
@@ -701,14 +722,15 @@ module Formatting = struct
       ; C.Value.make ~name:"sparse" `Sparse
           "$(b,sparse) breaks a line after $(i,let module ... =) and before \
            the $(i,in) if the module declaration does not fit on a single \
-           line." ]
+           line."
+      ]
     in
-    C.choice ~names:["let-module"] ~all ~doc ~kind
+    C.choice ~names:[ "let-module" ] ~all ~doc ~kind
       (fun conf x -> {conf with let_module= x})
       (fun conf -> conf.let_module)
 
   let ( (* let_open *) ) =
-    let names = ["let-open"] in
+    let names = [ "let-open" ] in
     let version = "0.17.0" in
     let msg = concrete_syntax_preserved_msg in
     C.removed_option ~names ~version ~msg
@@ -718,28 +740,29 @@ module Formatting = struct
     let all =
       [ C.Value.make ~name:"lf" `Lf "$(b,lf) uses Unix line endings."
       ; C.Value.make ~name:"crlf" `Crlf
-          "$(b,crlf) uses Windows line endings." ]
+          "$(b,crlf) uses Windows line endings."
+      ]
     in
-    C.choice ~names:["line-endings"] ~all ~doc ~allow_inline:false ~kind
+    C.choice ~names:[ "line-endings" ] ~all ~doc ~allow_inline:false ~kind
       (fun conf x -> {conf with line_endings= x})
       (fun conf -> conf.line_endings)
 
   let margin =
     let docv = "COLS" in
     let doc = "Format code to fit within $(docv) columns." in
-    C.any Arg.int ~names:["m"; "margin"] ~default:80 ~doc ~docv ~kind
+    C.any Arg.int ~names:[ "m"; "margin" ] ~default:80 ~doc ~docv ~kind
       ~allow_inline:false
       (fun conf x -> {conf with margin= x})
       (fun conf -> conf.margin)
 
   let ( (* match_indent *) ) =
-    let names = ["match-indent"] in
+    let names = [ "match-indent" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let ( (* match_indent_nested *) ) =
-    let names = ["match-indent-nested"] in
+    let names = [ "match-indent-nested" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
@@ -758,19 +781,19 @@ module Formatting = struct
     in
     C.any
       Arg.(some ~none:default_max_indent int)
-      ~names:["max-indent"] ~doc ~docv ~kind ~default:None
+      ~names:[ "max-indent" ] ~doc ~docv ~kind ~default:None
       ~allow_inline:false
       (fun conf x -> {conf with max_indent= x})
       (fun conf -> conf.max_indent)
 
   let ( (* module_item_spacing *) ) =
-    let names = ["module-item-spacing"] in
+    let names = [ "module-item-spacing" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let ( (* nested_match *) ) =
-    let names = ["nested-match"] in
+    let names = [ "nested-match" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
@@ -780,7 +803,7 @@ module Formatting = struct
     let doc = "Version of OCaml syntax of the output." in
     let default = Ocaml_version.sys_version in
     let default_doc = "the version of OCaml used to build OCamlFormat" in
-    C.any ocaml_version_conv ~names:["ocaml-version"] ~default ~default_doc
+    C.any ocaml_version_conv ~names:[ "ocaml-version" ] ~default ~default_doc
       ~doc ~docv ~kind
       (fun conf x -> {conf with ocaml_version= x})
       (fun conf -> conf.ocaml_version)
@@ -790,7 +813,7 @@ module Formatting = struct
       "Attempt to generate output which does not change (much) when \
        post-processing with ocp-indent."
     in
-    let names = ["ocp-indent-compat"] in
+    let names = [ "ocp-indent-compat" ] in
     C.flag ~default:false ~names ~doc ~kind
       (fun conf x -> {conf with ocp_indent_compat= x})
       (fun conf -> conf.ocp_indent_compat)
@@ -800,48 +823,50 @@ module Formatting = struct
       "Uses parentheses around if-then-else branches that spread across \
        multiple lines."
     in
-    let names = ["parens-ite"] in
+    let names = [ "parens-ite" ] in
     C.flag ~default:false ~names ~doc ~kind
       (fun conf x -> {conf with parens_ite= x})
       (fun conf -> conf.parens_ite)
 
   let parens_tuple =
     let doc = "Parens tuple expressions." in
-    let names = ["parens-tuple"] in
+    let names = [ "parens-tuple" ] in
     let all =
       [ C.Value.make ~name:"always" `Always
           "$(b,always) always uses parentheses around tuples."
       ; C.Value.make ~name:"multi-line-only" `Multi_line_only
           "$(b,multi-line-only) mode will try to skip parens for \
-           single-line tuples." ]
+           single-line tuples."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with parens_tuple= x})
       (fun conf -> conf.parens_tuple)
 
   let ( (* parens_tuple_patterns *) ) =
-    let names = ["parens-tuple-patterns"] in
+    let names = [ "parens-tuple-patterns" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let parse_docstrings =
     let doc = "Parse and format docstrings." in
-    let names = ["parse-docstrings"] in
+    let names = [ "parse-docstrings" ] in
     C.flag ~default:false ~names ~doc ~kind
       (fun conf x -> {conf with parse_docstrings= x})
       (fun conf -> conf.parse_docstrings)
 
   let sequence_blank_line =
     let doc = "Blank line between expressions of a sequence." in
-    let names = ["sequence-blank-line"] in
+    let names = [ "sequence-blank-line" ] in
     let all =
       [ C.Value.make ~name:"preserve-one" `Preserve_one
           "$(b,preserve) will keep a blank line between two expressions of \
            a sequence if the input contains at least one."
       ; C.Value.make ~name:"compact" `Compact
           "$(b,compact) will not keep any blank line between expressions of \
-           a sequence." ]
+           a sequence."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with sequence_blank_line= x})
@@ -849,14 +874,15 @@ module Formatting = struct
 
   let sequence_style =
     let doc = "Style of sequence." in
-    let names = ["sequence-style"] in
+    let names = [ "sequence-style" ] in
     let all =
       [ C.Value.make ~name:"terminator" `Terminator
           "$(b,terminator) only puts spaces after semicolons."
       ; C.Value.make ~name:"separator" `Separator
           "$(b,separator) puts spaces before and after semicolons."
       ; C.Value.make ~name:"before" `Before
-          "$(b,before) breaks the sequence before semicolons." ]
+          "$(b,before) breaks the sequence before semicolons."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with sequence_style= x})
@@ -866,67 +892,68 @@ module Formatting = struct
     let doc =
       "Style of pattern matching expressions with only a single case."
     in
-    let names = ["single-case"] in
+    let names = [ "single-case" ] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) will try to format a single case on a single line."
       ; C.Value.make ~name:"sparse" `Sparse
-          "$(b,sparse) will always break the line before a single case." ]
+          "$(b,sparse) will always break the line before a single case."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with single_case= x})
       (fun conf -> conf.single_case)
 
   let ( (* space_around_arrays *) ) =
-    let names = ["space-around-arrays"] in
+    let names = [ "space-around-arrays" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
-  let space_around_lists =
-    let doc = "Add a space inside the delimiters of lists." in
-    let names = ["space-around-lists"] in
-    C.flag ~default:true ~names ~doc ~kind
-      (fun conf x -> {conf with space_around_lists= x})
-      (fun conf -> conf.space_around_lists)
+  let ( (* space_around_lists *) ) =
+    let names = [ "space-around-lists" ] in
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let space_around_records =
     let doc = "Add a space inside the delimiters of records." in
-    let names = ["space-around-records"] in
+    let names = [ "space-around-records" ] in
     C.flag ~default:true ~names ~doc ~kind
       (fun conf x -> {conf with space_around_records= x})
       (fun conf -> conf.space_around_records)
 
   let space_around_variants =
     let doc = "Add a space inside the delimiters of variants." in
-    let names = ["space-around-variants"] in
+    let names = [ "space-around-variants" ] in
     C.flag ~default:true ~names ~doc ~kind
       (fun conf x -> {conf with space_around_variants= x})
       (fun conf -> conf.space_around_variants)
 
   let ( (* stritem_extension_indent *) ) =
-    let names = ["stritem-extension-indent"] in
+    let names = [ "stritem-extension-indent" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
 
   let type_decl =
     let doc = "Style of type declaration." in
-    let names = ["type-decl"] in
+    let names = [ "type-decl" ] in
     let all =
       [ C.Value.make ~name:"compact" `Compact
           "$(b,compact) will try to format constructors and records \
            definition in a single line."
       ; C.Value.make ~name:"sparse" `Sparse
           "$(b,sparse) will always break between constructors and record \
-           fields." ]
+           fields."
+      ]
     in
     C.choice ~names ~all ~doc ~kind
       (fun conf x -> {conf with type_decl= x})
       (fun conf -> conf.type_decl)
 
   let ( (* type_decl_indent *) ) =
-    let names = ["type-decl-indent"] in
+    let names = [ "type-decl-indent" ] in
     let version = "1.0.0" in
     let msg = "This is not supported anymore." in
     C.removed_option ~names ~version ~msg
@@ -940,14 +967,14 @@ module Formatting = struct
        wrapped. Consecutive comments with both left and right margin \
        aligned are not wrapped either."
     in
-    C.flag ~default:false ~names:["wrap-comments"] ~doc ~kind
+    C.flag ~default:false ~names:[ "wrap-comments" ] ~doc ~kind
       (fun conf x -> {conf with wrap_comments= x})
       (fun conf -> conf.wrap_comments)
 
   let wrap_fun_args =
     let default = true in
     let doc = "Style for function call." in
-    let names = ["wrap-fun-args"] in
+    let names = [ "wrap-fun-args" ] in
     C.flag ~default ~names ~doc ~kind
       (fun conf wrap_fun_args -> {conf with wrap_fun_args})
       (fun conf -> conf.wrap_fun_args)
@@ -956,7 +983,7 @@ end
 (* Flags that can be modified in the config file that don't affect
    formatting *)
 
-let project_root_witness = [".git"; ".hg"; "dune-project"]
+let project_root_witness = [ ".git"; ".hg"; "dune-project" ]
 let kind = C.Operational
 let docs = C.section_name kind `Valid
 
@@ -966,22 +993,22 @@ let comment_check =
     "Control whether to check comments and documentation comments. Unsafe \
      to turn off. May be set in $(b,.ocamlformat)."
   in
-  C.flag ~default ~names:["comment-check"] ~doc ~kind
+  C.flag ~default ~names:[ "comment-check" ] ~doc ~kind
     (fun conf x -> {conf with comment_check= x})
     (fun conf -> conf.comment_check)
 
 let disable_conf_attrs =
   let doc = "Disable configuration in attributes." in
   mk ~default:false
-    Arg.(value & flag & info ["disable-conf-attrs"] ~doc ~docs)
+    Arg.(value & flag & info [ "disable-conf-attrs" ] ~doc ~docs)
 
 let disable_conf_files =
   let doc = "Disable .ocamlformat configuration files." in
   mk ~default:false
-    Arg.(value & flag & info ["disable-conf-files"] ~doc ~docs)
+    Arg.(value & flag & info [ "disable-conf-files" ] ~doc ~docs)
 
 let ( (* disable_outside_detected_project *) ) =
-  let names = ["disable-outside-detected-project"] in
+  let names = [ "disable-outside-detected-project" ] in
   let version = "1.0.0" in
   let msg = "Please use $(b,enable-outside-detected-project) instead." in
   C.removed_option ~names ~version ~msg
@@ -1002,7 +1029,8 @@ let enable_outside_detected_project =
   in
   let default = false in
   mk ~default
-    Arg.(value & flag & info ["enable-outside-detected-project"] ~doc ~docs)
+    Arg.(
+      value & flag & info [ "enable-outside-detected-project" ] ~doc ~docs)
 
 let max_iters =
   let docv = "N" in
@@ -1010,13 +1038,13 @@ let max_iters =
     "Fail if output of formatting does not stabilize within $(docv) \
      iterations. May be set in $(b,.ocamlformat)."
   in
-  C.any Arg.int ~names:["n"; "max-iters"] ~default:10 ~doc ~docv ~kind
+  C.any Arg.int ~names:[ "n"; "max-iters" ] ~default:10 ~doc ~docv ~kind
     (fun conf x -> {conf with max_iters= x})
     (fun conf -> conf.max_iters)
 
 let quiet =
   let doc = "Quiet. May be set in $(b,.ocamlformat)." in
-  C.flag ~default:false ~names:["q"; "quiet"] ~doc ~kind
+  C.flag ~default:false ~names:[ "q"; "quiet" ] ~doc ~kind
     (fun conf x -> {conf with quiet= x})
     (fun conf -> conf.quiet)
 
@@ -1027,7 +1055,7 @@ let check =
     "Check whether the input files already are formatted. Mutually \
      exclusive with --inplace and --output."
   in
-  mk ~default:false Arg.(value & flag & info ["check"] ~doc ~docs)
+  mk ~default:false Arg.(value & flag & info [ "check" ] ~doc ~docs)
 
 let config =
   let doc =
@@ -1041,17 +1069,17 @@ let config =
   let list_assoc = Arg.(list ~sep:',' assoc) in
   mk ~default
     Arg.(
-      value & opt list_assoc default & info ["c"; "config"] ~doc ~docs ~env)
+      value & opt list_assoc default & info [ "c"; "config" ] ~doc ~docs ~env)
 
 let debug =
   let doc = "Generate debugging output." in
   let default = false in
-  mk ~default Arg.(value & flag & info ["g"; "debug"] ~doc ~docs)
+  mk ~default Arg.(value & flag & info [ "g"; "debug" ] ~doc ~docs)
 
 let inplace =
   let doc = "Format in-place, overwriting input file(s)." in
   let default = false in
-  mk ~default Arg.(value & flag & info ["i"; "inplace"] ~doc ~docs)
+  mk ~default Arg.(value & flag & info [ "i"; "inplace" ] ~doc ~docs)
 
 type file = Stdin | File of string
 
@@ -1080,17 +1108,19 @@ let inputs =
 
 let kind : Syntax.t option ref =
   let doc = "Parse file with unrecognized extension as an implementation." in
-  let impl = (Some Syntax.Use_file, Arg.info ["impl"] ~doc ~docs) in
+  let impl = (Some Syntax.Use_file, Arg.info [ "impl" ] ~doc ~docs) in
   let doc = "Parse file with unrecognized extension as an interface." in
-  let intf = (Some Syntax.Signature, Arg.info ["intf"] ~doc ~docs) in
+  let intf = (Some Syntax.Signature, Arg.info [ "intf" ] ~doc ~docs) in
   let doc = "Deprecated. Same as $(b,impl)." in
-  let use_file = (Some Syntax.Use_file, Arg.info ["use-file"] ~doc ~docs) in
+  let use_file =
+    (Some Syntax.Use_file, Arg.info [ "use-file" ] ~doc ~docs)
+  in
   let default = None in
-  mk ~default Arg.(value & vflag default [impl; intf; use_file])
+  mk ~default Arg.(value & vflag default [ impl; intf; use_file ])
 
 let margin_check =
   let doc = "Emit a warning if the formatted output exceeds the margin." in
-  mk ~default:false Arg.(value & flag & info ["margin-check"] ~doc ~docs)
+  mk ~default:false Arg.(value & flag & info [ "margin-check" ] ~doc ~docs)
 
 let name =
   let docv = "NAME" in
@@ -1103,7 +1133,8 @@ let name =
   in
   let default = None in
   mk ~default
-    Arg.(value & opt (some string) default & info ["name"] ~doc ~docs ~docv)
+    Arg.(
+      value & opt (some string) default & info [ "name" ] ~doc ~docs ~docv)
 
 let numeric =
   let doc =
@@ -1117,13 +1148,13 @@ let numeric =
     Arg.(
       value
       & opt (some (pair ~sep:'-' int int)) default
-      & info ["numeric"] ~doc ~docs ~docv)
+      & info [ "numeric" ] ~doc ~docs ~docv)
 
 let ocp_indent_options =
   let unsupported ocp_indent = (ocp_indent, ([], "")) in
   let alias ocp_indent ocamlformat =
     ( ocp_indent
-    , ( [ocamlformat]
+    , ( [ ocamlformat ]
       , Printf.sprintf "$(b,%s) is an alias for $(b,%s)." ocp_indent
           ocamlformat ) )
   in
@@ -1132,7 +1163,8 @@ let ocp_indent_options =
   ; unsupported "strict_else"
   ; unsupported "strict_comments"
   ; unsupported "align_ops"
-  ; unsupported "align_params" ]
+  ; unsupported "align_params"
+  ]
 
 let ocp_indent_config =
   let doc =
@@ -1153,7 +1185,7 @@ let ocp_indent_config =
     asprintf "Read .ocp-indent configuration files.%s" supported
   in
   let default = false in
-  mk ~default Arg.(value & flag & info ["ocp-indent-config"] ~doc ~docs)
+  mk ~default Arg.(value & flag & info [ "ocp-indent-config" ] ~doc ~docs)
 
 let output =
   let docv = "DST" in
@@ -1166,7 +1198,7 @@ let output =
     Arg.(
       value
       & opt (some string) default
-      & info ["o"; "output"] ~doc ~docs ~docv)
+      & info [ "o"; "output" ] ~doc ~docs ~docv)
 
 let print_config =
   let doc =
@@ -1178,7 +1210,7 @@ let print_config =
      current working directory otherwise."
   in
   let default = false in
-  mk ~default Arg.(value & flag & info ["print-config"] ~doc ~docs)
+  mk ~default Arg.(value & flag & info [ "print-config" ] ~doc ~docs)
 
 let root =
   let docv = "DIR" in
@@ -1188,7 +1220,7 @@ let root =
   in
   let default = None in
   mk ~default
-    Arg.(value & opt (some dir) default & info ["root"] ~doc ~docs ~docv)
+    Arg.(value & opt (some dir) default & info [ "root" ] ~doc ~docs ~docv)
 
 let no_version_check =
   let doc =
@@ -1196,12 +1228,13 @@ let no_version_check =
      .ocamlformat."
   in
   let default = false in
-  mk ~default Arg.(value & flag & info ["no-version-check"] ~doc ~docs)
+  mk ~default Arg.(value & flag & info [ "no-version-check" ] ~doc ~docs)
 
 let ignore_invalid_options =
   let doc = "Ignore invalid options (e.g. in .ocamlformat)." in
   let default = false in
-  mk ~default Arg.(value & flag & info ["ignore-invalid-option"] ~doc ~docs)
+  mk ~default
+    Arg.(value & flag & info [ "ignore-invalid-option" ] ~doc ~docs)
 
 let ocamlformat_profile =
   { assignment_operator= `End_line
@@ -1244,7 +1277,6 @@ let ocamlformat_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Separator
   ; single_case= `Compact
-  ; space_around_lists= false
   ; space_around_records= false
   ; space_around_variants= false
   ; type_decl= `Compact
@@ -1296,7 +1328,6 @@ let conventional_profile =
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
   ; sequence_style= C.default Formatting.sequence_style
   ; single_case= C.default Formatting.single_case
-  ; space_around_lists= C.default Formatting.space_around_lists
   ; space_around_records= C.default Formatting.space_around_records
   ; space_around_variants= C.default Formatting.space_around_variants
   ; type_decl= C.default Formatting.type_decl
@@ -1347,7 +1378,6 @@ let janestreet_profile =
   ; sequence_blank_line= `Compact
   ; sequence_style= `Terminator
   ; single_case= `Sparse
-  ; space_around_lists= true
   ; space_around_records= true
   ; space_around_variants= true
   ; type_decl= `Sparse
@@ -1386,7 +1416,8 @@ let (_profile : t option C.t) =
          legibility; Attention has been given to making some syntactic \
          gotchas visually obvious."
     ; C.Value.make ~name:"janestreet" (Some janestreet_profile)
-        "The $(b,janestreet) profile is used at Jane Street." ]
+        "The $(b,janestreet) profile is used at Jane Street."
+    ]
   in
   C.choice ~names ~all ~doc ~kind:C.Formatting
     ~removed_values:
@@ -1397,7 +1428,8 @@ let (_profile : t option C.t) =
       ; C.Value_removed.make ~name:"sparse" ~version:"1.0.0"
           ~msg:
             "The $(b,sparse) profile is similar to $(b,ocamlformat) but \
-             opts for a generally more sparse code style." ]
+             opts for a generally more sparse code style."
+      ]
     (fun conf p ->
       selected_profile_ref := p ;
       let new_conf = Option.value p ~default:conf in
@@ -1417,7 +1449,8 @@ let ocp_indent_normal_profile =
   ; ("strict_else", "always")
   ; ("strict_comments", "false")
   ; ("align_ops", "true")
-  ; ("align_params", "auto") ]
+  ; ("align_params", "auto")
+  ]
 
 let ocp_indent_apprentice_profile =
   [ ("base", "2")
@@ -1430,7 +1463,8 @@ let ocp_indent_apprentice_profile =
   ; ("strict_else", "always")
   ; ("strict_comments", "false")
   ; ("align_ops", "true")
-  ; ("align_params", "always") ]
+  ; ("align_params", "always")
+  ]
 
 let ocp_indent_janestreet_profile =
   [ ("base", "2")
@@ -1444,7 +1478,8 @@ let ocp_indent_janestreet_profile =
   ; ("strict_else", "always")
   ; ("strict_comments", "true")
   ; ("align_ops", "true")
-  ; ("align_params", "always") ]
+  ; ("align_params", "always")
+  ]
 
 let string_of_user_error = function
   | `Malformed line -> Format.sprintf "Invalid format %S" line
@@ -1501,14 +1536,14 @@ let parse_line config ~from s =
   in
   let s = String.strip s in
   match String.split ~on:'=' s with
-  | [] | [""] -> Ok config
-  | [name; value] ->
+  | [] | [ "" ] -> Ok config
+  | [ name; value ] ->
       let name = String.strip name in
       let value = String.strip value in
       if List.Assoc.mem ocp_indent_options ~equal:String.equal name then
         update_ocp_indent_option ~config ~from ~name ~value
       else update ~config ~from ~name ~value
-  | [s] -> (
+  | [ s ] -> (
     match String.strip s with
     | "" -> impossible "previous match"
     (* special case for disable/enable *)
@@ -1538,7 +1573,7 @@ let dot_ocamlformat_enable = ".ocamlformat-enable"
 let rec collect_files ~enable_outside_detected_project ~root ~volume ~segs
     ~ignores ~enables ~files =
   match segs with
-  | [] | [""] -> (ignores, enables, files, None)
+  | [] | [ "" ] -> (ignores, enables, files, None)
   | "" :: upper_segs ->
       collect_files ~enable_outside_detected_project ~root ~volume
         ~segs:upper_segs ~ignores ~enables ~files
@@ -1740,20 +1775,20 @@ let kind_of_ext fname =
 let validate_inputs () =
   match (!inputs, !kind, !name) with
   | [], _, _ -> Ok `No_input
-  | [Stdin], None, None ->
+  | [ Stdin ], None, None ->
       Error
         "Must specify at least one of --name, --impl or --intf when reading \
          from stdin"
-  | [Stdin], Some kind, name -> Ok (`Stdin (name, kind))
-  | [Stdin], None, Some name -> (
+  | [ Stdin ], Some kind, name -> Ok (`Stdin (name, kind))
+  | [ Stdin ], None, Some name -> (
     match kind_of_ext name with
     | Some kind -> Ok (`Stdin (Some name, kind))
     | None ->
         Error
           "Cannot deduce file kind from passed --name. Please specify \
            --impl or --intf" )
-  | [File f], Some kind, name -> Ok (`Single_file (kind, name, f))
-  | [File f], None, name ->
+  | [ File f ], Some kind, name -> Ok (`Single_file (kind, name, f))
+  | [ File f ], None, name ->
       let kind =
         Option.value ~default:f name
         |> kind_of_ext
@@ -1781,10 +1816,11 @@ let validate_action () =
       ; Option.some_if !inplace (`Inplace, "--inplace")
       ; Option.some_if !check (`Check, "--check")
       ; Option.some_if !print_config (`Print_config, "--print-config")
-      ; Option.map ~f:(fun r -> (`Numeric r, "--numeric")) !numeric ]
+      ; Option.map ~f:(fun r -> (`Numeric r, "--numeric")) !numeric
+      ]
   with
   | [] -> Ok `No_action
-  | [(action, _)] -> Ok action
+  | [ (action, _) ] -> Ok action
   | (_, a1) :: (_, a2) :: _ ->
       Error (Printf.sprintf "Cannot specify %s with %s" a1 a2)
 
@@ -1845,17 +1881,17 @@ let make_action ~enable_outside_detected_project ~root action inputs =
   | `Output output, `Stdin (name, kind) ->
       Ok (In_out (make_stdin ?name kind, Some output))
   | `Inplace, `Single_file (kind, name, f) ->
-      Ok (Inplace [make_file ?name kind f])
+      Ok (Inplace [ make_file ?name kind f ])
   | `Inplace, `Several_files files ->
       Ok (Inplace (List.map files ~f:(fun (kind, f) -> make_file kind f)))
   | `Check, `Single_file (kind, name, f) ->
-      Ok (Check [make_file ?name kind f])
+      Ok (Check [ make_file ?name kind f ])
   | `Check, `Several_files files ->
       let f (kind, f) =
         make_file ~with_conf:(fun c -> {c with max_iters= 1}) kind f
       in
       Ok (Check (List.map files ~f))
-  | `Check, `Stdin (name, kind) -> Ok (Check [make_stdin ?name kind])
+  | `Check, `Stdin (name, kind) -> Ok (Check [ make_stdin ?name kind ])
   | `Numeric range, `Stdin (name, kind) ->
       Ok (Numeric (make_stdin ?name kind, range))
   | `Numeric range, `Single_file (kind, name, f) ->
@@ -1902,7 +1938,8 @@ let update ?(quiet = false) c {attr_name= {txt; loc}; attr_payload; _} =
                     ; pexp_attributes= []
                     ; _ }
                   , [] )
-            ; _ } ] ->
+            ; _ }
+          ] ->
           parse_line ~from:`Attribute c str
           |> Result.map_error ~f:string_of_user_error
       | _ -> Error "Invalid format: String expected" )

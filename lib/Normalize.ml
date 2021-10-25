@@ -36,7 +36,8 @@ let dedup_cmts fragment ast comments =
                         ; pexp_loc
                         ; _ }
                       , [] )
-                ; _ } ]
+                ; _ }
+              ]
         ; _ }
         when Ast.Attr.is_doc atr ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
@@ -64,7 +65,8 @@ let dedup_cmts_std fragment ast comments =
                         ; pexp_loc
                         ; _ }
                       , [] )
-                ; _ } ]
+                ; _ }
+              ]
         ; _ }
         when is_doc atr ->
           docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
@@ -80,7 +82,8 @@ let comment s =
   (* normalize consecutive whitespace chars to a single space *)
   String.concat ~sep:" "
     (List.filter ~f:(Fn.non String.is_empty)
-       (String.split_on_chars s ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']) )
+       (String.split_on_chars s
+          ~on:[ '\t'; '\n'; '\011'; '\012'; '\r'; ' ' ] ) )
 
 let list f fmt l =
   let pp_sep fmt () = Format.fprintf fmt "" in
@@ -218,7 +221,8 @@ let make_mapper conf ~ignore_doc_comments =
                           Pexp_constant (Pconst_string (doc, str_loc, None))
                       ; _ } as exp )
                   , [] )
-            ; _ } as pstr ) ]
+            ; _ } as pstr )
+        ]
       when is_doc attr ->
         let doc' = docstring {conf; normalize_code= m.structure m} doc in
         Ast_mapper.default_mapper.attribute m
@@ -233,7 +237,8 @@ let make_mapper conf ~ignore_doc_comments =
                               Pexp_constant
                                 (Pconst_string (doc', str_loc, None))
                           ; pexp_loc_stack= [] }
-                        , [] ) } ] }
+                        , [] ) }
+                ] }
     | _ -> Ast_mapper.default_mapper.attribute m attr
   in
   (* sort attributes *)
@@ -314,7 +319,8 @@ let make_docstring_mapper docstrings =
                   ( { pexp_desc= Pexp_constant (Pconst_string (doc, _, None))
                     ; _ }
                   , [] )
-            ; _ } ] ) ->
+            ; _ }
+          ] ) ->
         docstrings := (loc, doc) :: !docstrings ;
         attr
     | _ -> Ast_mapper.default_mapper.attribute m attr

@@ -1,11 +1,11 @@
 (* preferred list style *)
-let z = f [y; foo ~f:(fun () -> arg)]
-let z = f [y; foo ~f:(fun () -> arg)]
+let z = f [ y; foo ~f:(fun () -> arg) ]
+let z = f [ y; foo ~f:(fun () -> arg) ]
 
 (* legacy list style *)
-let _ = [f (fun x -> x); f (fun x -> x); f (fun x -> x)]
-let _ = [f (fun x -> x); f (fun x -> x); f (fun x -> x)]
-let _ = [f (fun x -> x); f (fun x -> x); f (fun x -> x)]
+let _ = [ f (fun x -> x); f (fun x -> x); f (fun x -> x) ]
+let _ = [ f (fun x -> x); f (fun x -> x); f (fun x -> x) ]
+let _ = [ f (fun x -> x); f (fun x -> x); f (fun x -> x) ]
 
 let _ =
   x

@@ -48,7 +48,7 @@ let escape_all s =
   ensure_escape ~escapeworthy s
 
 let split_on_whitespaces =
-  String.split_on_chars ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' ']
+  String.split_on_chars ~on:[ '\t'; '\n'; '\011'; '\012'; '\r'; ' ' ]
 
 (** Escape special characters and normalize whitespaces *)
 let str_normalized ?(escape = escape_all) s =
@@ -96,8 +96,8 @@ let fmt_reference = ign_loc ~f:str_normalized
 let list_should_use_heavy_syntax items =
   let heavy_nestable_block_elements = function
     (* More than one element or contains a list *)
-    | [{Loc.value= `List _; _}] | _ :: _ :: _ -> true
-    | [] | [_] -> false
+    | [ {Loc.value= `List _; _} ] | _ :: _ :: _ -> true
+    | [] | [ _ ] -> false
   in
   List.exists items ~f:heavy_nestable_block_elements
 
@@ -191,7 +191,7 @@ and fmt_nestable_block_element c = function
 
 and fmt_list_heavy c kind items =
   let fmt_item elems =
-    let box = match elems with [_] -> hvbox 3 | _ -> vbox 3 in
+    let box = match elems with [ _ ] -> hvbox 3 | _ -> vbox 3 in
     box (wrap "{- " "@;<1 -3>}" (fmt_nestable_block_elements c elems))
   and start : s =
     match kind with `Unordered -> "{ul@," | `Ordered -> "{ol@,"

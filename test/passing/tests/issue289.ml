@@ -2,8 +2,12 @@
 
 let foo =
   let open Gql in
-  [ field "id" ~doc:"Toy ID." ~args:[] ~typ:(non_null guid) ~resolve:(function
-        | _ctx -> x.id )
+  [ field
+      "id"
+      ~doc:"Toy ID."
+      ~args:[]
+      ~typ:(non_null guid)
+      ~resolve:(function _ctx -> x.id)
   ; field "id" ~doc:"Toy ID." ~args:[] ~typppp ~resolve:(function _ctx ->
         x.id )
   ; field
@@ -57,7 +61,8 @@ let foo =
       ~doc:"Date created."
       ~args:[]
       ~typ:(non_null Scalar.date_time)
-      ~resolve:(fun _ctx x -> x.created_at) ]
+      ~resolve:(fun _ctx x -> x.created_at)
+  ]
 
 [@@@ocamlformat "wrap-fun-args=true"]
 

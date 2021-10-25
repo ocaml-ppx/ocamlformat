@@ -29,4 +29,4 @@ let%shared () =
   Eliom_registration.Html.register s (fun () () ->
       Lwt.return
         (Eliom_tools.F.html ~title:"hybrid"
-           Html.F.(body [h1 [txt "Salut !"]]) ) )
+           Html.F.(body [ h1 [ txt "Salut !" ] ]) ) )

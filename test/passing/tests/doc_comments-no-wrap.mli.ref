@@ -361,7 +361,7 @@ end
       print_newline () ;
       List.iter
         (fun s -> Printf.printf "let ( %s ) = Pervasives.( %s )\n" s s)
-        ["+"; "-"; "*"; "/"]
+        [ "+"; "-"; "*"; "/" ]
     ]} *)
 
 (** {[
@@ -399,13 +399,15 @@ end
       let fooooooooooooooooo =
         [ foooooooooooooooooooooooooooooooo;
           foooooooooooooooooooooooooooooooo;
-          foooooooooooooooooooooooooooooooo ]
+          foooooooooooooooooooooooooooooooo
+        ]
     ]}
     {[
       let fooooooooooooooooo =
         [ foooooooooooooooooooooooooooooooo
         ; foooooooooooooooooooooooooooooooo
-        ; foooooooooooooooooooooooooooooooo ]
+        ; foooooooooooooooooooooooooooooooo
+        ]
     ]} *)
 
 (** This is a comment with code inside

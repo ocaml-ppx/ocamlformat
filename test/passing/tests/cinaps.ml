@@ -13,7 +13,7 @@ let x = 1
   print_newline () ;
   List.iter
     (fun s -> Printf.printf "let ( %s ) = Pervasives.( %s )\n" s s)
-    ["+"; "-"; "*"; "/"]
+    [ "+"; "-"; "*"; "/" ]
 *)
 (*$*)
 let y = 2

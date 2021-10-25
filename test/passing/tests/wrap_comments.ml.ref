@@ -13,7 +13,8 @@ let _ =
   ; "d" (* first line second line *)
   ; "e" (* first line second line *)
   ; "f" (* first line second line *)
-  ; "g" ]
+  ; "g"
+  ]
 
 let _ =
   let _ =
@@ -107,7 +108,8 @@ let _ =
 
        second line
     *)
-  ; "g" ]
+  ; "g"
+  ]
 
 let _ =
   let _ =

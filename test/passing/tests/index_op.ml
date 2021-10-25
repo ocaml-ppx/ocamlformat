@@ -44,9 +44,9 @@ let _ = s.{1, 2, 3, 4} <- 1
 
 let () =
   let m = Mat.zeros 5 5 in
-  m.Mat.${[[2]; [5]]} |> ignore ;
+  m.Mat.${[ [ 2 ]; [ 5 ] ]} |> ignore ;
   let open Mat in
-  m.${[[2]; [5]]} |> ignore
+  m.${[ [ 2 ]; [ 5 ] ]} |> ignore
 
 let _ = (x.*{(y, z)} <- w) @ []
 let _ = (x.{y, z} <- w) @ []

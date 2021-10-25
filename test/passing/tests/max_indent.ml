@@ -35,7 +35,7 @@ let fooooooooooooo =
 let foooooooooo =
   match fooooooooooooo with
   | Pexp_construct
-      ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
+      ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [ _; e2 ]; _}) ->
     if is_sugared_list e2 then Some (Semi, Non)
     else Some (ColonColon, if exp == e2 then Right else Left)
 
@@ -48,7 +48,7 @@ let foooooooooooooooooooooooooo =
         ; pexp_loc
         ; pexp_attributes= []
         ; _ }
-      , [(Nolabel, e1)] ) ->
+      , [ (Nolabel, e1) ] ) ->
     fooooooooooooooooooooooooooooooooooooo
 
 let fooooooooooooooooooooooooooooooooooo =

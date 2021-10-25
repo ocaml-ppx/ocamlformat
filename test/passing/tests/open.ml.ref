@@ -39,19 +39,19 @@ let () =
 let () =
   (let open Arg in
   let doc = "Output all." in
-  value & flag & info ["all"] ~doc)
+  value & flag & info [ "all" ] ~doc)
   $
   let open Arg in
   let doc = "Commit to git." in
-  value & flag & info ["commit"; "c"] ~doc
+  value & flag & info [ "commit"; "c" ] ~doc
 
 let () =
   Arg.(
     let doc = "Output all." in
-    value & flag & info ["all"] ~doc)
+    value & flag & info [ "all" ] ~doc)
   $ Arg.(
       let doc = "Commit to git." in
-      value & flag & info ["commit"; "c"] ~doc)
+      value & flag & info [ "commit"; "c" ] ~doc)
 
 let () = X.(f y i)
 let () = X.(i)
@@ -285,13 +285,13 @@ let _ = M.((* A *) [| f |])
 let _ = M.([| f |] (* B *))
 let _ = M.((* A *) [| f |] (* B *))
 let _ = M.((* A *) [| f |] (* B *) [@warning "foo"] (* C *))
-let _ = M.([f] [@warning "foo"])
-let _ = M.((* A *) [f])
-let _ = M.([f] (* B *))
-let _ = M.([f] (* B *)) (* after *)
+let _ = M.([ f ] [@warning "foo"])
+let _ = M.((* A *) [ f ])
+let _ = M.([ f ] (* B *))
+let _ = M.([ f ] (* B *)) (* after *)
 
-let _ = M.((* A *) [f] (* B *))
-let _ = M.((* A *) [f] (* B *) [@warning "foo"] (* C *))
+let _ = M.((* A *) [ f ] (* B *))
+let _ = M.((* A *) [ f ] (* B *) [@warning "foo"] (* C *))
 let _ = M.((f, f) [@warning "foo"])
 let _ = M.((* A *) (f, f))
 let _ = M.((f, f) (* B *))
@@ -303,6 +303,7 @@ let _ =
     Fooooooo.
       [ (swap_1_c, {minimum_transfert_amount= 0.})
       ; (swap_2_c, {minimum_transfert_amount= 0.})
-      ; (swap_3_c, {minimum_transfert_amount= 0.}) ]
+      ; (swap_3_c, {minimum_transfert_amount= 0.})
+      ]
   in
   ()

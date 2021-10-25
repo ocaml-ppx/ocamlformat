@@ -198,7 +198,8 @@ let rec fooooooooooo = function
     ; (* EE *)
       y
       (* FF *)
-      (* GG *) ]
+      (* GG *)
+    ]
   (* HH *) ->
       k
   (* AA*)
@@ -338,7 +339,8 @@ let _ = foo
 let a =
   [ b
     (*  *)
-    (* c *) ]
+    (* c *)
+  ]
 
 let _ =
   1

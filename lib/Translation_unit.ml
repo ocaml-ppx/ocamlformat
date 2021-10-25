@@ -327,7 +327,7 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
       Ok (strlocs, fmted) )
     else
       let exn_args () =
-        [("output file", dump_formatted ~suffix:".invalid-ast" fmted)]
+        [ ("output file", dump_formatted ~suffix:".invalid-ast" fmted) ]
         |> List.filter_map ~f:(fun (s, f_opt) ->
                Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
       in
@@ -360,7 +360,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
         let args ~suffix =
           [ ("output file", dump_formatted ~suffix fmted)
           ; ("old ast", old_ast)
-          ; ("new ast", new_ast) ]
+          ; ("new ast", new_ast)
+          ]
           |> List.filter_map ~f:(fun (s, f_opt) ->
                  Option.map f_opt ~f:(fun f -> (s, String.sexp_of_t f)) )
         in
@@ -413,7 +414,8 @@ let format (type a b) (fg : a Extended_ast.t) (std_fg : b Std_ast.t)
                      (Either.sexp_of_t String.sexp_of_t String.sexp_of_t)
                      diff_cmts ) )
             ; ("old ast", Option.map old_ast ~f:String.sexp_of_t)
-            ; ("new ast", Option.map new_ast ~f:String.sexp_of_t) ]
+            ; ("new ast", Option.map new_ast ~f:String.sexp_of_t)
+            ]
             |> List.filter_map ~f:(fun (s, f_opt) ->
                    Option.map f_opt ~f:(fun f -> (s, f)) )
           in

@@ -77,7 +77,8 @@ let _ =
   match something with
   | [ very_very_long_field_name_running_out_of_space
     ; another_very_very_long_field_name_running_out_of_space
-    ; _ ] ->
+    ; _
+    ] ->
       0
   | _ -> 1
 
@@ -174,7 +175,8 @@ let length =
   ; 17 (* foo *)
   ; 17
   ; 2777777777777777777777777777777777
-  ; 27 ]
+  ; 27
+  ]
   [@foo]
 ;;
 
@@ -183,7 +185,8 @@ Fooooooo.foo ~foooooooooooooo ~fooooooooo:""
      [ ("fooooo", Foo.fooo ~foooo ~foooo:(foooo >*> fooooo))
      ; ("foooo", fooooooo)
      ; ("foooooo", foooooooo)
-     ; ("fooooooooo", foooooooo) ] )
+     ; ("fooooooooo", foooooooo)
+     ] )
 
 (* this is an array *)
 let length =
@@ -398,7 +401,8 @@ let length =
   ; 27
   ; 27
   ; 27
-  ; 28 ]
+  ; 28
+  ]
   [@foo]
 
 class
@@ -558,7 +562,8 @@ let f () =
       ; eeeeeeeee
       ; ffffffffff
       ; gggggggggg
-      ; hhhhhhhhhh ]
+      ; hhhhhhhhhh
+      ]
     =
     some_value
   in
@@ -597,7 +602,8 @@ let g () =
     ; eeeeeeeee
     ; ffffffffff
     ; gggggggggg
-    ; hhhhhhhhhh ] ->
+    ; hhhhhhhhhh
+    ] ->
       fooooooooo
   | [| aaaaaaaa
      ; bbbbbbbbbb

@@ -21,7 +21,8 @@ module T = struct
   let compare =
     Comparable.lexicographic
       [ Comparable.lift String.compare ~f:txt
-      ; Comparable.lift Location.compare ~f:loc ]
+      ; Comparable.lift Location.compare ~f:loc
+      ]
 
   let sexp_of_t {txt; loc} =
     Sexp.Atom (Format.asprintf "%s %a" txt Migrate_ast.Location.fmt loc)
@@ -50,12 +51,12 @@ module Asterisk_prefixed = struct
       | _ ->
           let drop = function ' ' | '\t' -> true | _ -> false in
           let line = String.rstrip ~drop (String.drop_prefix txt pos) in
-          if String.is_empty line then [" "]
+          if String.is_empty line then [ " " ]
           else if Char.equal line.[String.length line - 1] '\n' then
-            [String.drop_suffix line 1; ""]
+            [ String.drop_suffix line 1; "" ]
           else if Char.is_whitespace txt.[String.length txt - 1] then
-            [line ^ " "]
-          else [line]
+            [ line ^ " " ]
+          else [ line ]
     in
     split_ 0
 
@@ -151,11 +152,11 @@ let fmt cmt ~wrap:wrap_comments ~ocp_indent_compat ~fmt_code pos =
         | Error () -> `Unwrapped cmt )
     | _ -> (
       match Asterisk_prefixed.split cmt with
-      | [] | [""] -> impossible "not produced by split_asterisk_prefixed"
-      | [""; ""] -> `Verbatim "(* *)"
-      | [text] when wrap_comments -> `Wrapped (text, "*)")
-      | [text; ""] when wrap_comments -> `Wrapped (text, " *)")
-      | [_] | [_; ""] -> `Unwrapped cmt
+      | [] | [ "" ] -> impossible "not produced by split_asterisk_prefixed"
+      | [ ""; "" ] -> `Verbatim "(* *)"
+      | [ text ] when wrap_comments -> `Wrapped (text, "*)")
+      | [ text; "" ] when wrap_comments -> `Wrapped (text, " *)")
+      | [ _ ] | [ _; "" ] -> `Unwrapped cmt
       | lines -> `Asterisk_prefixed lines )
   in
   match mode with

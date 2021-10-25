@@ -87,9 +87,10 @@ type u =
   | C of int * int
       [@doc
         [ "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-        ; "Etiam vel mauris fermentum, condimentum quam a, porta nisi" ]]
+        ; "Etiam vel mauris fermentum, condimentum quam a, porta nisi"
+        ]]
 [@@deriving something]
-[@@doc ["Ut at dolor a eros venenatis maximus ut at nisi."]]
+[@@doc [ "Ut at dolor a eros venenatis maximus ut at nisi." ]]
 
 let ((A, B) [@test]) = ()
 let ((lazy a) [@test]) = ()
@@ -190,7 +191,7 @@ let _ = (a.x <- 1) [@a]
 let _ = f ((a.x <- 1) [@a])
 let _ = (f @@ a) [@attr]
 let _ = f ((f @@ a) [@attr])
-let _ = f 1 ([e; f] [@a])
+let _ = f 1 ([ e; f ] [@a])
 
 let _ =
   object
@@ -285,7 +286,7 @@ let _ =
 [@@@a (**b*)]
 
 let (Foo ((A | B) [@attr])) = ()
-let ([(A | B) [@attr]; b; c] [@attr]) = ()
+let ([ (A | B) [@attr]; b; c ] [@attr]) = ()
 let ([| a; (A | B) [@attr]; c |] [@attr]) = ()
 let {b= (A | B) [@attr]} = ()
 let (`Foo ((`A | `B) [@attr])) = ()

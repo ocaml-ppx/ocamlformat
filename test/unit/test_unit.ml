@@ -33,7 +33,7 @@ module Test_noit = struct
       type t = int * int
 
       let sexp_of_t (s, e) =
-        Base.Sexp.List [Base.Int.sexp_of_t s; Base.Int.sexp_of_t e]
+        Base.Sexp.List [ Base.Int.sexp_of_t s; Base.Int.sexp_of_t e ]
 
       let compare = Poly.compare
     end
@@ -66,13 +66,14 @@ module Test_noit = struct
           Alcotest.check Alcotest.string test_name expected got )
     in
     [ test "empty" [] ""
-    ; test "singleton" [(1, 2)] "(1 2)"
-    ; test "disjoint" [(1, 2); (3, 5)] "(1 2)\n(3 5)"
-    ; test "same start" [(1, 2); (1, 3)] "(1 3)\n {(1 2) }"
-    ; test "same end" [(2, 3); (1, 3)] "(1 3)\n {(2 3) }"
+    ; test "singleton" [ (1, 2) ] "(1 2)"
+    ; test "disjoint" [ (1, 2); (3, 5) ] "(1 2)\n(3 5)"
+    ; test "same start" [ (1, 2); (1, 3) ] "(1 3)\n {(1 2) }"
+    ; test "same end" [ (2, 3); (1, 3) ] "(1 3)\n {(2 3) }"
     ; test "inclusion"
-        [(1, 8); (2, 7); (3, 6); (4, 5)]
-        "(1 8)\n {(2 7)\n   {(3 6)\n     {(4 5) } } }" ]
+        [ (1, 8); (2, 7); (3, 6); (4, 5) ]
+        "(1 8)\n {(2 7)\n   {(3 6)\n     {(4 5) } } }"
+    ]
 
   let test_roots =
     let test name l expected =
@@ -85,9 +86,10 @@ module Test_noit = struct
           Alcotest.check itv_list test_name expected got )
     in
     [ test "empty" [] []
-    ; test "singleton" [(1, 2)] [(1, 2)]
-    ; test "disjoint" [(1, 2); (3, 4)] [(1, 2); (3, 4)]
-    ; test "inclusion" [(1, 2); (3, 6); (4, 5)] [(1, 2); (3, 6)] ]
+    ; test "singleton" [ (1, 2) ] [ (1, 2) ]
+    ; test "disjoint" [ (1, 2); (3, 4) ] [ (1, 2); (3, 4) ]
+    ; test "inclusion" [ (1, 2); (3, 6); (4, 5) ] [ (1, 2); (3, 6) ]
+    ]
 
   let test_children =
     let test name l i expected =
@@ -100,11 +102,12 @@ module Test_noit = struct
           Alcotest.check itv_list test_name expected got )
     in
     [ test "empty" [] (1, 2) []
-    ; test "no children" [(1, 2)] (1, 2) []
-    ; test "not present" [(1, 2)] (3, 4) []
-    ; test "one level" [(1, 2); (3, 6); (4, 5)] (3, 6) [(4, 5)]
-    ; test "two levels" [(1, 2); (3, 8); (4, 7); (5, 6)] (3, 8) [(4, 7)]
-    ; test "no partial results" [(1, 2); (3, 6); (4, 5)] (3, 5) [] ]
+    ; test "no children" [ (1, 2) ] (1, 2) []
+    ; test "not present" [ (1, 2) ] (3, 4) []
+    ; test "one level" [ (1, 2); (3, 6); (4, 5) ] (3, 6) [ (4, 5) ]
+    ; test "two levels" [ (1, 2); (3, 8); (4, 7); (5, 6) ] (3, 8) [ (4, 7) ]
+    ; test "no partial results" [ (1, 2); (3, 6); (4, 5) ] (3, 5) []
+    ]
 
   let tests = test_dump @ test_roots @ test_children
 end
@@ -116,6 +119,7 @@ let tests =
   ; ("Indent", Test_indent.tests)
   ; ("Literal_lexer", Test_literal_lexer.tests)
   ; ("Fmt", Test_fmt.tests)
-  ; ("Translation_unit", Test_translation_unit.tests) ]
+  ; ("Translation_unit", Test_translation_unit.tests)
+  ]
 
 let () = Alcotest.run "ocamlformat" tests

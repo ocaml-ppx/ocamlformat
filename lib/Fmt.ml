@@ -103,7 +103,7 @@ let sequence l =
   let rec go l len =
     match l with
     | [] -> noop
-    | [x] -> x
+    | [ x ] -> x
     | l ->
         let a_len = len / 2 in
         let b_len = len - a_len in
@@ -137,16 +137,16 @@ let opt o f = Option.value_map ~default:noop ~f o
 let list_pn x1N pp =
   match x1N with
   | [] -> noop
-  | [x1] -> lazy_ (fun () -> pp ~prev:None x1 ~next:None)
+  | [ x1 ] -> lazy_ (fun () -> pp ~prev:None x1 ~next:None)
   | x1 :: (x2 :: _ as x2N) ->
       let l =
         let rec aux (prev, acc) = function
           | [] -> acc
-          | [xI] -> aux (xI, (Some prev, xI, None) :: acc) []
+          | [ xI ] -> aux (xI, (Some prev, xI, None) :: acc) []
           | xI :: (xJ :: _ as xJN) ->
               aux (xI, (Some prev, xI, Some xJ) :: acc) xJN
         in
-        aux (x1, [(None, x1, Some x2)]) x2N
+        aux (x1, [ (None, x1, Some x2) ]) x2N
       in
       List.rev_map l ~f:(fun (prev, x, next) ->
           lazy_ (fun () -> pp ~prev x ~next) )
@@ -314,7 +314,7 @@ let fill_text ?(epi = "") text =
     let words =
       List.filter ~f:(Fn.non String.is_empty)
         (String.split_on_chars line
-           ~on:['\t'; '\n'; '\011'; '\012'; '\r'; ' '] )
+           ~on:[ '\t'; '\n'; '\011'; '\012'; '\r'; ' ' ] )
     in
     list words "@ " str
   in

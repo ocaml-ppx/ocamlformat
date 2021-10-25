@@ -132,7 +132,8 @@ module Make (C : CONFIG) = struct
         value
         & vflag None
             [ (Some true, info names ~doc ~docs)
-            ; (Some false, info invert_names ~doc:invert_doc ~docs) ])
+            ; (Some false, info invert_names ~doc:invert_doc ~docs)
+            ])
     in
     let parse = Arg.conv_parser Arg.bool in
     let r = mk ~default:None term in

@@ -31,7 +31,8 @@ let inputs =
     ; kind= Syntax.Structure
     ; source= source_ml
     ; conf= Conf.default_profile
-    ; action= `Format } ]
+    ; action= `Format }
+  ]
 
 let opts = Conf.{debug= false; margin_check= false}
 
@@ -58,7 +59,7 @@ let benchmark () =
     Analyze.ols ~bootstrap:0 ~r_square:false ~predictors:Measure.[| run |]
   in
   let instances =
-    Instance.[minor_allocated; major_allocated; monotonic_clock]
+    Instance.[ minor_allocated; major_allocated; monotonic_clock ]
   in
   let cfg =
     Benchmark.cfg ~limit:2000 ~quota:(Time.second 0.5) ~kde:(Some 1000) ()
@@ -96,13 +97,13 @@ let process_results results =
 
 let json_of_ols ols =
   match Bechamel.Analyze.OLS.estimates ols with
-  | Some [x] -> `Float x
+  | Some [ x ] -> `Float x
   | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
   | None -> `List []
 
 let json_of_string_ols ols =
   match ols with
-  | Some [x] -> `Float x
+  | Some [ x ] -> `Float x
   | Some estimates -> `List (List.map (fun x -> `Float x) estimates)
   | None -> `List []
 
@@ -119,11 +120,11 @@ let json_of_ols_results ?name (results : Bechamel.Analyze.OLS.t results) :
              |> List.of_seq
              |> fun bindings -> `Assoc bindings
            in
-           `Assoc [("name", `String test_name); ("metrics", metrics)] )
+           `Assoc [ ("name", `String test_name); ("metrics", metrics) ] )
     |> List.of_seq
     |> fun items -> `List items
   in
-  let bindings = [("results", results)] in
+  let bindings = [ ("results", results) ] in
   let bindings =
     match name with
     | Some name -> ("name", `String name) :: bindings

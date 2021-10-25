@@ -66,12 +66,12 @@ let register_file tests fname =
       in
       match rest with
       | [] -> ()
-      | ["output"] | ["ocp"; "output"] -> ()
-      | ["opts"] -> setup.has_opts <- true
-      | ["broken-ref"] -> setup.has_ref <- true
-      | ["ocp"] -> setup.has_ocp <- true
-      | ["deps"] -> setup.extra_deps <- read_lines fname
-      | ["enabled-if"] -> setup.enabled_if <- Some (read_file fname)
+      | [ "output" ] | [ "ocp"; "output" ] -> ()
+      | [ "opts" ] -> setup.has_opts <- true
+      | [ "broken-ref" ] -> setup.has_ref <- true
+      | [ "ocp" ] -> setup.has_ocp <- true
+      | [ "deps" ] -> setup.extra_deps <- read_lines fname
+      | [ "enabled-if" ] -> setup.enabled_if <- Some (read_file fname)
       | _ -> invalid_arg fname )
   | _ -> ()
 
@@ -116,8 +116,8 @@ let emit_test test_name setup =
 |}
     extra_deps enabled_if_line test_name
     (cmd
-       ( ["%{bin:ocamlformat}"] @ opts
-       @ [Printf.sprintf "%%{dep:%s}" base_test_name] ) )
+       ( [ "%{bin:ocamlformat}" ] @ opts
+       @ [ Printf.sprintf "%%{dep:%s}" base_test_name ] ) )
     enabled_if_line ref_name test_name ;
   if setup.has_ocp then
     Printf.printf
@@ -135,7 +135,7 @@ let emit_test test_name setup =
  (action (diff tests/%s.ocp %s.ocp.output)))
 |}
       extra_deps enabled_if_line test_name
-      (cmd ["%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name])
+      (cmd [ "%{bin:ocp-indent}"; Printf.sprintf "%%{dep:%s}" ref_name ])
       enabled_if_line test_name test_name
 
 let () =

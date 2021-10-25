@@ -1,6 +1,7 @@
 let f x = function
-  | C | P (this, test, [is; wide; enough; _to; break], [the; line]) | A | K
-    ->
+  | C
+   |P (this, test, [ is; wide; enough; _to; break ], [ the; line ])
+   |A | K ->
       1
   | D ->
       let a = "this" in
@@ -57,8 +58,9 @@ let is_sequence exp =
   match exp.pexp_desc with
   | Pexp_sequence _
    |Pexp_extension
-      (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}])
-    ->
+      ( _
+      , PStr [ {pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _} ]
+      ) ->
       true
   | _ -> false
 
@@ -110,7 +112,7 @@ let mod_int c1 c2 is_safe dbg =
 
 let merge_columns l old_table =
   let rec aux = function
-    | [] | [None] -> ([], [])
+    | [] | [ None ] -> ([], [])
   in
   foooooooooooooooooooooooooo fooooooooooooooooooooo
 
@@ -120,8 +122,9 @@ let is_sequence exp =
   match exp.pexp_desc with
   | Pexp_sequence _
   | Pexp_extension
-      (_, PStr [{pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _}])
-    ->
+      ( _
+      , PStr [ {pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _}, []); _} ]
+      ) ->
       true
   | _ -> false
 

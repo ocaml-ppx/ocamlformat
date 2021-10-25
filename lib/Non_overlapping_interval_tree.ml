@@ -46,7 +46,7 @@ module Make (Itv : IN) = struct
   let roots t = t.roots
 
   let map_add_multi map ~key ~data =
-    Map.update map key ~f:(function None -> [data] | Some l -> data :: l)
+    Map.update map key ~f:(function None -> [ data ] | Some l -> data :: l)
 
   (** Descend tree from roots, find deepest node that contains elt. *)
   let rec parents map roots ~ancestors elt =
@@ -70,7 +70,7 @@ module Make (Itv : IN) = struct
   let rec find_in_previous t elt = function
     | [] -> parents t.map t.roots elt ~ancestors:[]
     | p :: ancestors when Itv.contains p elt ->
-        parents t.map [p] elt ~ancestors
+        parents t.map [ p ] elt ~ancestors
     | _ :: px -> find_in_previous t elt px
 
   (** Add elements in decreasing width order to construct tree from roots to

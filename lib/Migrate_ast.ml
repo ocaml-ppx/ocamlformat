@@ -86,7 +86,8 @@ module Location = struct
   let descending cmp a b = -cmp a b
 
   let compare_width_decreasing =
-    Comparable.lexicographic [compare_start; descending compare_end; compare]
+    Comparable.lexicographic
+      [ compare_start; descending compare_end; compare ]
 
   let is_single_line x margin =
     (* The last character of a line can exceed the margin if it is not

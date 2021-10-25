@@ -11,7 +11,7 @@ open Result.Infix
 module Ocf = Ocamlformat_rpc_lib
 
 let log = Format.printf
-let supported_versions = ["v1"]
+let supported_versions = [ "v1" ]
 
 type state = Uninitialized | Running of Ocf.client | Errored
 
@@ -49,7 +49,7 @@ let get_client () =
   match !state with
   | Uninitialized -> start ()
   | Running cl ->
-      let i, _ = Unix.waitpid [WNOHANG] (Ocf.pid cl) in
+      let i, _ = Unix.waitpid [ WNOHANG ] (Ocf.pid cl) in
       if i = 0 then Ok cl else start ()
   | Errored -> Error `No_process
 
@@ -89,6 +89,6 @@ let () =
 
 let () =
   log "Sending requests\n%!" ;
-  protect_unit @@ config [("profile", "janestreet")] ;
+  protect_unit @@ config [ ("profile", "janestreet") ] ;
   protect_string @@ format "char -> string" ;
   protect_unit @@ halt ()

@@ -112,13 +112,14 @@ module Indexing_op = struct
           ; ("()", Round, false)
           ; ("{;..}", Curly, true)
           ; ("[;..]", Square, true)
-          ; ("(;..)", Round, true) ]
+          ; ("(;..)", Round, true)
+          ]
 
   let special ~id_tl ~args_tl brackets args =
     let op = Special (args, brackets) in
     match (id_tl, args_tl) with
     | "get", [] -> Some (op, None)
-    | "set", [rhs] -> Some (op, Some rhs)
+    | "set", [ rhs ] -> Some (op, Some rhs)
     | _ -> None
 
   let custom ~extended ~rhs op arg1 =
@@ -130,17 +131,17 @@ module Indexing_op = struct
 
   let get_sugar_ident ident args =
     match (Longident.flatten ident, args) with
-    | ["String"; id_tl], arg1 :: args_tl ->
-        special ~id_tl ~args_tl Square [arg1]
-    | ["Array"; id_tl], arg1 :: args_tl ->
-        special ~id_tl ~args_tl Round [arg1]
-    | ["Bigarray"; "Array1"; id_tl], arg1 :: args_tl ->
-        special ~id_tl ~args_tl Curly [arg1]
-    | ["Bigarray"; "Array2"; id_tl], arg1 :: arg2 :: args_tl ->
-        special ~id_tl ~args_tl Curly [arg1; arg2]
-    | ["Bigarray"; "Array3"; id_tl], arg1 :: arg2 :: arg3 :: args_tl ->
-        special ~id_tl ~args_tl Curly [arg1; arg2; arg3]
-    | ( ["Bigarray"; "Genarray"; id_tl]
+    | [ "String"; id_tl ], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Square [ arg1 ]
+    | [ "Array"; id_tl ], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Round [ arg1 ]
+    | [ "Bigarray"; "Array1"; id_tl ], arg1 :: args_tl ->
+        special ~id_tl ~args_tl Curly [ arg1 ]
+    | [ "Bigarray"; "Array2"; id_tl ], arg1 :: arg2 :: args_tl ->
+        special ~id_tl ~args_tl Curly [ arg1; arg2 ]
+    | [ "Bigarray"; "Array3"; id_tl ], arg1 :: arg2 :: arg3 :: args_tl ->
+        special ~id_tl ~args_tl Curly [ arg1; arg2; arg3 ]
+    | ( [ "Bigarray"; "Genarray"; id_tl ]
       , {pexp_desc= Pexp_array args; _} :: args_tl )
       when List.length args > 3 ->
         special ~id_tl ~args_tl Curly args
@@ -154,8 +155,9 @@ module Indexing_op = struct
           | Some {opchars; brackets; extended; has_rhs} -> (
               let op = {path; opchars; brackets} in
               match (has_rhs, args) with
-              | true, [arg1; rhs] -> custom ~extended ~rhs:(Some rhs) op arg1
-              | false, [arg1] -> custom ~extended ~rhs:None op arg1
+              | true, [ arg1; rhs ] ->
+                  custom ~extended ~rhs:(Some rhs) op arg1
+              | false, [ arg1 ] -> custom ~extended ~rhs:None op arg1
               | _, _ -> None ) ) )
 
   let rec all_args_unlabeled acc = function
@@ -246,7 +248,8 @@ module Exp = struct
         , PStr
             [ { pstr_desc=
                   Pstr_eval (({pexp_desc= Pexp_sequence _; _} as e), [])
-              ; _ } ] )
+              ; _ }
+            ] )
       when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
         true
     | _ -> false
@@ -263,9 +266,9 @@ module Exp = struct
     | Pexp_constant {pconst_desc= Pconst_string (_, _, None); _} -> true
     | Pexp_constant _ | Pexp_field _ | Pexp_ident _ | Pexp_send _ -> true
     | Pexp_construct (_, exp) -> Option.for_all exp ~f:(is_trivial c)
-    | Pexp_apply (e0, [(_, e1)]) when is_prefix e0 -> is_trivial c e1
+    | Pexp_apply (e0, [ (_, e1) ]) when is_prefix e0 -> is_trivial c e1
     | Pexp_apply
-        ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [(_, e1)]) ->
+        ({pexp_desc= Pexp_ident {txt= Lident "not"; _}; _}, [ (_, e1) ]) ->
         is_trivial c e1
     | _ -> false
 
@@ -333,7 +336,8 @@ let doc_atrs ?(acc = []) atrs =
                           ; pexp_attributes= []
                           ; _ }
                         , [] )
-                  ; _ } ]
+                  ; _ }
+                ]
           ; _ } -> (
           match (txt, docs) with
           | "ocaml.doc", (_, false) :: _ ->
@@ -356,7 +360,7 @@ let rec mty_is_simple x =
    |Pmty_functor (_, _) ->
       false
   | Pmty_typeof e -> mod_is_simple e
-  | Pmty_with (t, ([] | [_])) -> mty_is_simple t
+  | Pmty_with (t, ([] | [ _ ])) -> mty_is_simple t
 
 and mod_is_simple x =
   match x.pmod_desc with
@@ -417,7 +421,7 @@ end
 module Structure_item = struct
   let has_doc itm =
     match itm.pstr_desc with
-    | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pstr_attribute atr -> Option.is_some (fst (doc_atrs [ atr ]))
     | Pstr_eval (_, atrs)
      |Pstr_value (_, {pvb_attributes= atrs; _} :: _)
      |Pstr_primitive {pval_attributes= atrs; _}
@@ -476,7 +480,7 @@ end
 module Signature_item = struct
   let has_doc itm =
     match itm.psig_desc with
-    | Psig_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Psig_attribute atr -> Option.is_some (fst (doc_atrs [ atr ]))
     | Psig_value {pval_attributes= atrs; _}
      |Psig_type (_, {ptype_attributes= atrs; _} :: _)
      |Psig_typesubst ({ptype_attributes= atrs; _} :: _)
@@ -565,7 +569,7 @@ module Class_field = struct
     Option.is_some (fst (doc_atrs itm.pcf_attributes))
     ||
     match itm.pcf_desc with
-    | Pcf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pcf_attribute atr -> Option.is_some (fst (doc_atrs [ atr ]))
     | _ -> false
 
   let is_simple (itm, c) = Location.is_single_line itm.pcf_loc c.Conf.margin
@@ -582,7 +586,7 @@ module Class_type_field = struct
     Option.is_some (fst (doc_atrs itm.pctf_attributes))
     ||
     match itm.pctf_desc with
-    | Pctf_attribute atr -> Option.is_some (fst (doc_atrs [atr]))
+    | Pctf_attribute atr -> Option.is_some (fst (doc_atrs [ atr ]))
     | _ -> false
 
   let is_simple (itm, c) = Location.is_single_line itm.pctf_loc c.Conf.margin
@@ -1179,7 +1183,7 @@ end = struct
         | Ppat_record (p1N, _) -> assert (List.exists p1N ~f:snd_f)
         | Ppat_construct
             ( {txt= Lident "::"; _}
-            , Some (_, {ppat_desc= Ppat_tuple [p1; p2]; _}) )
+            , Some (_, {ppat_desc= Ppat_tuple [ p1; p2 ]; _}) )
          |Ppat_or (p1, p2) ->
             assert (p1 == pat || p2 == pat)
         | Ppat_alias (p1, _)
@@ -1241,7 +1245,7 @@ end = struct
       | Pstr_value (_, bindings) -> assert (check_bindings bindings)
       | Pstr_extension ((_, ext), _) -> assert (check_extensions ext)
       | _ -> assert false )
-    | Clf x -> assert (check_pcstr_fields [x])
+    | Clf x -> assert (check_pcstr_fields [ x ])
     | Ctf _ -> assert false
     | Top | Tli _ -> assert false
 
@@ -1252,7 +1256,7 @@ end = struct
   let check_exp {ctx; ast= exp} =
     let check_extensions = function
       | PPat (_, Some e) -> e == exp
-      | PStr [{pstr_desc= Pstr_eval (e, _); _}] -> e == exp
+      | PStr [ {pstr_desc= Pstr_eval (e, _); _} ] -> e == exp
       | _ -> false
     in
     let check_pcstr_fields pcstr_fields =
@@ -1296,8 +1300,8 @@ end = struct
         let snd_f (_, eI) = eI == exp in
         match ctx.pexp_desc with
         | Pexp_construct
-            ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [e1; e2]; _})
-          ->
+            ( {txt= Lident "::"; _}
+            , Some {pexp_desc= Pexp_tuple [ e1; e2 ]; _} ) ->
             assert (e1 == exp || e2 == exp)
         | Pexp_extension (_, ext) -> assert (check_extensions ext)
         | Pexp_constant _ | Pexp_ident _ | Pexp_new _ | Pexp_pack _
@@ -1410,7 +1414,7 @@ end = struct
         assert (loop ctx)
     | Cty _ -> assert false
     | Ctf _ -> assert false
-    | Clf x -> assert (check_pcstr_fields [x])
+    | Clf x -> assert (check_pcstr_fields [ x ])
     | Mod _ | Top | Tli _ | Typ _ | Pat _ | Mty _ | Sig _ | Td _ ->
         assert false
 
@@ -1427,7 +1431,8 @@ end = struct
      |Pexp_variant (_, None) ->
         true
     | Pexp_construct
-        ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [e1; e2]; _}) ->
+        ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [ e1; e2 ]; _})
+      ->
         is_simple c width (sub_exp ~ctx e1)
         && is_simple c width (sub_exp ~ctx e2)
         && fit_margin c (width xexp)
@@ -1445,7 +1450,7 @@ end = struct
         Exp.is_trivial c e0
         && List.for_all e1N ~f:(snd >> Exp.is_trivial c)
         && fit_margin c (width xexp)
-    | Pexp_extension (_, PStr [{pstr_desc= Pstr_eval (e0, []); _}]) ->
+    | Pexp_extension (_, PStr [ {pstr_desc= Pstr_eval (e0, []); _} ]) ->
         is_simple c width (sub_exp ~ctx e0)
     | Pexp_extension (_, (PStr [] | PTyp _)) -> true
     | _ -> false
@@ -1527,17 +1532,19 @@ end = struct
       | Pexp_tuple (e0 :: _) ->
           Some (Comma, if exp == e0 then Left else Right)
       | Pexp_construct
-          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e2]; _}) ->
+          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [ _; e2 ]; _})
+        ->
           Some (ColonColon, if exp == e2 then Right else Left)
       | Pexp_construct
-          ({txt= Lident "[]"; _}, Some {pexp_desc= Pexp_tuple [_; _]; _}) ->
+          ({txt= Lident "[]"; _}, Some {pexp_desc= Pexp_tuple [ _; _ ]; _})
+        ->
           Some (Semi, Non)
       | Pexp_array _ | Pexp_list _ -> Some (Semi, Non)
       | Pexp_construct (_, Some _)
        |Pexp_assert _ | Pexp_lazy _
        |Pexp_variant (_, Some _) ->
           Some (Apply, Non)
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc}; _}, [_])
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc}; _}, [ _ ])
         -> (
         match i with
         | "~-" | "~-." | "~+" | "~+." ->
@@ -1559,7 +1566,8 @@ end = struct
             | Some e when e == exp -> Some (LessMinus, Right)
             | _ -> Some (Low, Left) )
       | Pexp_apply
-          ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [(_, e1); _]) -> (
+          ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [ (_, e1); _ ])
+        -> (
           let child = if e1 == exp then Left else Right in
           match (i.[0], i) with
           | _, ":=" -> Some (ColonEqual, child)
@@ -1635,7 +1643,7 @@ end = struct
       | Pexp_constant
           {pconst_desc= Pconst_integer (i, _) | Pconst_float (i, _); _} -> (
         match i.[0] with '-' | '+' -> Some UMinus | _ -> Some Atomic )
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc; _}; _}, [_])
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; loc; _}; _}, [ _ ])
         -> (
         match i with
         | "~-" | "~-." | "~+." | "~+" ->
@@ -1651,7 +1659,7 @@ end = struct
         when Option.is_some (Indexing_op.get_sugar e0 args) -> (
           let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
           match op.rhs with Some _ -> Some LessMinus | _ -> Some Dot )
-      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [_; _])
+      | Pexp_apply ({pexp_desc= Pexp_ident {txt= Lident i; _}; _}, [ _; _ ])
         -> (
         match (i.[0], i) with
         | _, ":=" -> Some ColonEqual
@@ -1672,7 +1680,7 @@ end = struct
        |Pexp_variant (_, Some _)
        |Pexp_while _ | Pexp_new _ | Pexp_object _ ->
           Some Apply
-      | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
+      | Pexp_extension (ext, PStr [ {pstr_desc= Pstr_eval (e, _); _} ])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
           prec_ast (Exp e)
       | Pexp_setfield _ -> Some LessMinus
@@ -1792,7 +1800,7 @@ end = struct
           { ppat_desc=
               Ppat_construct
                 ( {txt= Lident "::"; _}
-                , Some (_, {ppat_desc= Ppat_tuple [_; tl]; _}) )
+                , Some (_, {ppat_desc= Ppat_tuple [ _; tl ]; _}) )
           ; _ }
       , Ppat_construct ({txt= Lident "::"; _}, _) )
       when tl == pat ->
@@ -1801,7 +1809,7 @@ end = struct
           { ppat_desc=
               Ppat_construct
                 ( {txt= Lident "::"; _}
-                , Some (_, {ppat_desc= Ppat_tuple [_; _]; _}) )
+                , Some (_, {ppat_desc= Ppat_tuple [ _; _ ]; _}) )
           ; _ }
       , inner ) -> (
       match inner with
@@ -1885,7 +1893,7 @@ end = struct
   (** Check if an exp is a prefix op that is not fully applied *)
   let is_displaced_prefix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _)]); _}
+    | ( Exp {pexp_desc= Pexp_apply (e0, [ (Nolabel, _) ]); _}
       , Pexp_ident {txt= i; _} )
       when e0 == exp && Longident.is_prefix i ->
         false
@@ -1895,7 +1903,7 @@ end = struct
   (** Check if an exp is an infix op that is not fully applied *)
   let is_displaced_infix_op {ctx; ast= exp} =
     match (ctx, exp.pexp_desc) with
-    | ( Exp {pexp_desc= Pexp_apply (e0, [(Nolabel, _); (Nolabel, _)]); _}
+    | ( Exp {pexp_desc= Pexp_apply (e0, [ (Nolabel, _); (Nolabel, _) ]); _}
       , Pexp_ident {txt= i; _} )
       when e0 == exp && Longident.is_infix i
            && List.is_empty exp.pexp_attributes ->
@@ -1924,7 +1932,7 @@ end = struct
         match exp.pexp_desc with
         | Pexp_assert e
          |Pexp_construct
-            ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e]; _})
+            ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [ _; e ]; _})
          |Pexp_construct (_, Some e)
          |Pexp_fun (_, _, _, e)
          |Pexp_ifthenelse (_, e, None)
@@ -1941,7 +1949,8 @@ end = struct
             ( ext
             , PStr
                 [ { pstr_desc= Pstr_eval (({pexp_attributes= []; _} as e), _)
-                  ; _ } ] )
+                  ; _ }
+                ] )
           when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
             continue e
         | Pexp_let (_, _, e)
@@ -2000,7 +2009,7 @@ end = struct
       match exp.pexp_desc with
       | Pexp_assert e
        |Pexp_construct
-          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [_; e]; _})
+          ({txt= Lident "::"; _}, Some {pexp_desc= Pexp_tuple [ _; e ]; _})
        |Pexp_construct (_, Some e)
        |Pexp_ifthenelse (_, e, None)
        |Pexp_ifthenelse (_, _, Some e)
@@ -2018,7 +2027,7 @@ end = struct
        |Pexp_letexception (_, e)
        |Pexp_letmodule (_, _, e) ->
           continue e
-      | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
+      | Pexp_extension (ext, PStr [ {pstr_desc= Pstr_eval (e, _); _} ])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc -> (
         match e.pexp_desc with
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
@@ -2082,7 +2091,7 @@ end = struct
     in
     let rec ifthenelse pexp_desc =
       match pexp_desc with
-      | Pexp_extension (ext, PStr [{pstr_desc= Pstr_eval (e, _); _}])
+      | Pexp_extension (ext, PStr [ {pstr_desc= Pstr_eval (e, _); _} ])
         when Source.extension_using_sugar ~name:ext ~payload:e.pexp_loc ->
           ifthenelse e.pexp_desc
       | Pexp_let _ | Pexp_match _ | Pexp_try _ -> true
@@ -2096,7 +2105,8 @@ end = struct
             ( _
             , PStr
                 [ { pstr_desc= Pstr_eval ({pexp_desc= Pexp_sequence _; _}, [])
-                  ; _ } ] )
+                  ; _ }
+                ] )
         , _ )
         when lhs == exp ->
           true
@@ -2122,7 +2132,7 @@ end = struct
     | ( Str
           { pstr_desc=
               Pstr_value
-                (Nonrecursive, [{pvb_pat= {ppat_desc= Ppat_any; _}; _}])
+                (Nonrecursive, [ {pvb_pat= {ppat_desc= Ppat_any; _}; _} ])
           ; _ }
       , _ ) ->
         false
@@ -2157,14 +2167,14 @@ end = struct
       , {pexp_desc= Pexp_apply (op1, args); pexp_attributes; _} )
       when e == exp && Exp.is_prefix op1 -> (
       match (args, pexp_attributes) with
-      | [(Nolabel, _)], [] -> false
+      | [ (Nolabel, _) ], [] -> false
       | _ -> true )
     | ( Exp {pexp_desc= Pexp_apply (e0, ((_, e) :: _ as args)); _}
       , {pexp_desc= Pexp_construct _; _} )
       when e == exp && Option.is_some (Indexing_op.get_sugar e0 args) ->
         true
-    | ( Exp {pexp_desc= Pexp_apply (op1, [(_, e)]); _}
-      , {pexp_desc= Pexp_apply (_, [(_, x); _]); _} )
+    | ( Exp {pexp_desc= Pexp_apply (op1, [ (_, e) ]); _}
+      , {pexp_desc= Pexp_apply (_, [ (_, x); _ ]); _} )
       when e == exp && Exp.is_prefix op1 && Exp.exposed_left x ->
         true
     (* Integers without suffixes must be parenthesised on the lhs of an
@@ -2190,7 +2200,8 @@ end = struct
                             | Pexp_try (_, cases) )
                         ; _ }
                       , _ )
-                ; _ } ] )
+                ; _ }
+              ] )
        |Pexp_function cases
        |Pexp_match (_, cases)
        |Pexp_try (_, cases) ->
@@ -2216,7 +2227,8 @@ end = struct
                     , PStr
                         [ { pstr_desc=
                               Pstr_eval ({pexp_desc= Pexp_new _; _}, [])
-                          ; _ } ] )
+                          ; _ }
+                        ] )
               ; _ } as exp2 )
           , _ )
         when exp2 == exp ->
@@ -2230,7 +2242,8 @@ end = struct
                  | _ -> e0 == exp ) ->
           exposed_right_exp Non_apply exp
           (* Non_apply is perhaps pessimistic *)
-      | Pexp_record (_, Some ({pexp_desc= Pexp_apply (ident, [_]); _} as e0))
+      | Pexp_record
+          (_, Some ({pexp_desc= Pexp_apply (ident, [ _ ]); _} as e0))
         when e0 == exp && Exp.is_prefix ident ->
           (* don't put parens around [!e] in [{ !e with a; b }] *)
           false
@@ -2277,7 +2290,7 @@ end = struct
           { pexp_desc=
               Pexp_construct
                 ( {txt= Lident "::"; loc= _}
-                , Some {pexp_desc= Pexp_tuple [_; _]; _} )
+                , Some {pexp_desc= Pexp_tuple [ _; _ ]; _} )
           ; _ } ->
           prec_ast ast
       | _ -> None

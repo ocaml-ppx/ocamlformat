@@ -24,10 +24,10 @@ let rec arrow_typ cmts i ({ast= typ; _} as xtyp) =
       let rest =
         match t2.ptyp_attributes with
         | [] -> arrow_typ cmts (i + 1) (sub_typ ~ctx t2)
-        | _ -> [(ptyp_loc, Nolabel, sub_typ ~ctx t2)]
+        | _ -> [ (ptyp_loc, Nolabel, sub_typ ~ctx t2) ]
       in
       (ptyp_loc, l, sub_typ ~ctx t1) :: rest
-  | _ -> [(ptyp_loc, Nolabel, xtyp)]
+  | _ -> [ (ptyp_loc, Nolabel, xtyp) ]
 
 let arrow_typ cmts t = arrow_typ cmts 0 t
 
@@ -40,10 +40,10 @@ let rec class_arrow_typ cmts ({ast= typ; _} as xtyp) =
       let rest =
         match t2.pcty_attributes with
         | [] -> class_arrow_typ cmts (sub_cty ~ctx t2)
-        | _ -> [(Nolabel, `class_type (sub_cty ~ctx t2))]
+        | _ -> [ (Nolabel, `class_type (sub_cty ~ctx t2)) ]
       in
       (l, `core_type (sub_typ ~ctx t1)) :: rest
-  | _ -> [(Nolabel, `class_type xtyp)]
+  | _ -> [ (Nolabel, `class_type xtyp) ]
 
 let rec or_pat ?(allow_attribute = true) cmts ({ast= pat; _} as xpat) =
   let ctx = Pat pat in
@@ -56,8 +56,8 @@ let rec or_pat ?(allow_attribute = true) cmts ({ast= pat; _} as xpat) =
   | {ppat_desc= Ppat_or (pat1, pat2); ppat_loc; _} when allow_attribute ->
       Cmts.relocate cmts ~src:ppat_loc ~before:pat1.ppat_loc
         ~after:pat2.ppat_loc ;
-      [sub_pat ~ctx pat1; sub_pat ~ctx pat2]
-  | _ -> [xpat]
+      [ sub_pat ~ctx pat1; sub_pat ~ctx pat2 ]
+  | _ -> [ xpat ]
 
 type arg_kind =
   | Val of arg_label * pattern xt * expression xt option
@@ -88,7 +88,7 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
           let xargs =
             match xargs with
             | Newtypes names :: xargs -> Newtypes (name :: names) :: xargs
-            | xargs -> Newtypes [name] :: xargs
+            | xargs -> Newtypes [ name ] :: xargs
           in
           (xargs, xbody)
       | _ -> ([], xexp)
@@ -124,7 +124,7 @@ let infix cmts prec xexp =
     assert (Poly.(lbl = Nolabel)) ;
     let ctx = Exp exp in
     match (assoc, exp) with
-    | Left, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
+    | Left, {pexp_desc= Pexp_apply (e0, [ (l1, e1); (l2, e2) ]); pexp_loc; _}
       when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
         let op_args1 = infix_ None (l1, sub_exp ~ctx e1) in
         let src = pexp_loc in
@@ -136,8 +136,8 @@ let infix cmts prec xexp =
         | _ ->
             if relocate then
               Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after ) ;
-        op_args1 @ [(Some (sub_exp ~ctx e0), [(l2, sub_exp ~ctx e2)])]
-    | Right, {pexp_desc= Pexp_apply (e0, [(l1, e1); (l2, e2)]); pexp_loc; _}
+        op_args1 @ [ (Some (sub_exp ~ctx e0), [ (l2, sub_exp ~ctx e2) ]) ]
+    | Right, {pexp_desc= Pexp_apply (e0, [ (l1, e1); (l2, e2) ]); pexp_loc; _}
       when Option.equal Prec.equal prec (prec_ast (Exp exp)) ->
         let op_args2 =
           infix_ (Some (sub_exp ~ctx e0)) (l2, sub_exp ~ctx e2)
@@ -158,8 +158,8 @@ let infix cmts prec xexp =
           | Some (_, {ast= {pexp_loc= after; _}; _}) -> may_relocate ~after
           | None -> may_relocate ~after )
         | _ -> may_relocate ~after ) ;
-        (xop, [(l1, sub_exp ~ctx e1)]) :: op_args2
-    | _ -> [(xop, [xexp])]
+        (xop, [ (l1, sub_exp ~ctx e1) ]) :: op_args2
+    | _ -> [ (xop, [ xexp ]) ]
   in
   infix_ None ~relocate:false (Nolabel, xexp)
 
@@ -171,7 +171,7 @@ let infix_cons cmts xexp =
     | Pexp_construct
         ( ({txt= Lident "::"; _} as cons)
         , Some
-            { pexp_desc= Pexp_tuple [hd; tl]
+            { pexp_desc= Pexp_tuple [ hd; tl ]
             ; pexp_loc= l3
             ; pexp_attributes= []
             ; _ } ) -> (
@@ -205,8 +205,8 @@ let rec ite cmts ({ast= exp; _} as xexp) =
   | Pexp_ifthenelse (cnd, thn, None) ->
       Cmts.relocate cmts ~src:pexp_loc ~before:cnd.pexp_loc
         ~after:thn.pexp_loc ;
-      [(Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)]
-  | _ -> [(None, xexp, pexp_attributes)]
+      [ (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes) ]
+  | _ -> [ (None, xexp, pexp_attributes) ]
 
 let sequence cmts xexp =
   let rec sequence_ ?(allow_attribute = true) ({ast= exp; _} as xexp) =
@@ -222,19 +222,20 @@ let sequence cmts xexp =
                         ; pexp_attributes
                         ; _ } as exp )
                     , _ )
-              ; pstr_loc } ] )
+              ; pstr_loc }
+            ] )
       when List.is_empty pexp_attributes
            && Source.extension_using_sugar ~name:ext ~payload:e1.pexp_loc ->
         let ctx = Exp exp in
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
-        then [(None, xexp)]
+        then [ (None, xexp) ]
         else (
           Cmts.relocate cmts ~src:pstr_loc ~before:e1.pexp_loc
             ~after:e2.pexp_loc ;
           Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
             ~after:e2.pexp_loc ;
           if Ast.exposed_right_exp Ast.Let_match e1 then
-            [(None, sub_exp ~ctx e1); (Some ext, sub_exp ~ctx e2)]
+            [ (None, sub_exp ~ctx e1); (Some ext, sub_exp ~ctx e2) ]
           else
             let l1 = sequence_ ~allow_attribute:false (sub_exp ~ctx e1) in
             let l2 =
@@ -245,17 +246,17 @@ let sequence cmts xexp =
             List.append l1 l2 )
     | Pexp_sequence (e1, e2) ->
         if (not allow_attribute) && not (List.is_empty exp.pexp_attributes)
-        then [(None, xexp)]
+        then [ (None, xexp) ]
         else (
           Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
             ~after:e2.pexp_loc ;
           if Ast.exposed_right_exp Ast.Let_match e1 then
-            [(None, sub_exp ~ctx e1); (None, sub_exp ~ctx e2)]
+            [ (None, sub_exp ~ctx e1); (None, sub_exp ~ctx e2) ]
           else
             List.append
               (sequence_ ~allow_attribute:false (sub_exp ~ctx e1))
               (sequence_ ~allow_attribute:false (sub_exp ~ctx e2)) )
-    | _ -> [(None, xexp)]
+    | _ -> [ (None, xexp) ]
   in
   sequence_ xexp
 
@@ -345,7 +346,7 @@ let polynewtype cmts pat body =
   let ctx = Pat pat in
   match pat.ppat_desc with
   | Ppat_constraint (pat2, {ptyp_desc= Ptyp_poly (pvars, _); _}) -> (
-    match polynewtype_ cmts pvars body [(pat.ppat_loc, pat2.ppat_loc)] with
+    match polynewtype_ cmts pvars body [ (pat.ppat_loc, pat2.ppat_loc) ] with
     | Some (typ, exp, relocs) ->
         List.iter relocs ~f:(fun (src, dst) ->
             Cmts.relocate cmts ~src ~before:dst ~after:dst ) ;

@@ -83,7 +83,8 @@ let rec rpc_main = function
             ; format Signature
             ; format Module_type
             ; format Expression
-            ; format Use_file ] ;
+            ; format Use_file
+            ] ;
           rpc_main state
       | `Config c -> (
           let rec update conf = function
@@ -156,7 +157,8 @@ let info =
         "- $(b,Format) $(i,CSEXP): submits a canonical s-expression \
          $(i,CSEXP) to be formatted by OCamlFormat, the formatted output is \
          sent as a reply of the same form $(b,Format) $(i,CSEXP)"
-    ; `P "Unknown commands are ignored." ]
+    ; `P "Unknown commands are ignored."
+    ]
   in
   Term.info "ocamlformat-rpc" ~version:Version.version ~doc ~man
 

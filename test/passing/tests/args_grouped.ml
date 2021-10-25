@@ -25,7 +25,7 @@ let eval location exp0 astate =
     | Var id ->
         Ok (eval_var (* error in case of missing history? *) [] (Var.of_id id) astate)
     | Lvar pvar ->
-        Ok (eval_var [ValueHistory.VariableAccessed (pvar, location)] (Var.of_pvar pvar) astate)
+        Ok (eval_var [ ValueHistory.VariableAccessed (pvar, location) ] (Var.of_pvar pvar) astate)
     | Lfield (exp', field, _) ->
         goooooooo
   in

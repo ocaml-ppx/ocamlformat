@@ -30,21 +30,23 @@ module Layout_cache = struct
 
     let sexp_of_arg_label = function
       | Asttypes.Nolabel -> Sexp.Atom "Nolabel"
-      | Labelled label -> List [Atom "Labelled"; sexp_of_string label]
-      | Optional label -> List [Atom "Optional"; sexp_of_string label]
+      | Labelled label -> List [ Atom "Labelled"; sexp_of_string label ]
+      | Optional label -> List [ Atom "Optional"; sexp_of_string label ]
 
     let sexp_of_t = function
       | Arg (label, expression) ->
           Sexp.List
             [ Atom "Arg"
             ; sexp_of_arg_label label
-            ; sexp_of_string (expression_to_string expression) ]
+            ; sexp_of_string (expression_to_string expression)
+            ]
       | Pattern pattern ->
-          List [Atom "Pattern"; sexp_of_string (pattern_to_string pattern)]
+          List [ Atom "Pattern"; sexp_of_string (pattern_to_string pattern) ]
       | Expression expression ->
           List
             [ Atom "Expression"
-            ; sexp_of_string (expression_to_string expression) ]
+            ; sexp_of_string (expression_to_string expression)
+            ]
 
     let compare = Poly.compare
     let hash = Hashtbl.hash
@@ -115,7 +117,7 @@ let is_adjacent src (l1 : Location.t) (l2 : Location.t) =
         | _ -> true )
   with
   | [] -> true
-  | [(BAR, _)] ->
+  | [ (BAR, _) ] ->
       Source.begins_line src l1
       && Position.column l1.loc_start < Position.column l2.loc_start
   | _ -> false
@@ -187,7 +189,7 @@ end = struct
         List.group cmtl ~break:(fun l1 l2 ->
             not (is_adjacent src (Cmt.loc l1) (Cmt.loc l2)) )
       with
-      | [cmtl] when is_adjacent src (List.last_exn cmtl).loc next ->
+      | [ cmtl ] when is_adjacent src (List.last_exn cmtl).loc next ->
           let open Location in
           let same_line_as_prev l =
             prev.loc_end.pos_lnum = l.loc_start.pos_lnum
@@ -306,7 +308,8 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
                 ; pexp_loc_stack= _
                 ; pexp_attributes= _ }
               , [] )
-        ; pstr_loc } ]
+        ; pstr_loc }
+      ]
     when Source.is_quoted_string src pstr_loc ->
       ()
   | PStr
@@ -317,11 +320,12 @@ let relocate_ext_cmts (t : t) src (pre, pld) ~whole_loc =
                 ; pexp_loc_stack= _
                 ; pexp_attributes }
               , [] )
-        ; pstr_loc= _ } ]
+        ; pstr_loc= _ }
+      ]
     when List.is_empty pexp_attributes
          && Source.extension_using_sugar ~name:pre ~payload:e1.pexp_loc ->
       ()
-  | PStr [{pstr_desc= Pstr_eval _; pstr_loc; _}] ->
+  | PStr [ {pstr_desc= Pstr_eval _; pstr_loc; _} ] ->
       let kwd_loc =
         match Source.loc_of_first_token_at src whole_loc LBRACKETPERCENT with
         | Some loc -> loc
@@ -429,7 +433,7 @@ let fmt_cmts_aux t (conf : Conf.t) cmts ~fmt_code pos =
     (list_pn groups (fun ~prev:_ group ~next ->
          ( match group with
          | [] -> impossible "previous match"
-         | [cmt] ->
+         | [ cmt ] ->
              Cmt.fmt cmt ~wrap:conf.wrap_comments
                ~ocp_indent_compat:conf.ocp_indent_compat
                ~fmt_code:(fmt_code conf) pos
@@ -556,7 +560,7 @@ let has_after t loc =
 (** returns comments that have not been formatted *)
 let remaining_comments t =
   List.concat_map ~f:Multimap.to_list
-    [t.cmts_before; t.cmts_within; t.cmts_after]
+    [ t.cmts_before; t.cmts_within; t.cmts_after ]
 
 let remaining_before t loc = Map.find_multi t.cmts_before loc
 let remaining_locs t = Set.to_list t.remaining
