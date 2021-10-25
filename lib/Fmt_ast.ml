@@ -91,8 +91,8 @@ let protect =
     Fmt.protect pp ~on_error:(fun exc ->
         if !first && c.debug then (
           let bt = Caml.Printexc.get_backtrace () in
-          Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt ;
-          first := false ) ;
+          Caml.Format.eprintf "@\nFAIL@\n%a@\n%s@.%!" Ast.dump ast bt;
+          first := false );
         raise exc )
 
 let update_config ?quiet c l =
@@ -157,14 +157,14 @@ let drop_while ~f s =
   let i = ref 0 in
   while !i < String.length s && f !i s.[!i] do
     Int.incr i
-  done ;
+  done;
   String.sub s ~pos:!i ~len:(String.length s - !i)
 
 let maybe_disabled_k c (loc : Location.t) (l : attributes) f k =
   if not c.conf.disable then f c
   else
     let loc = Source.extend_loc_to_include_attributes loc l in
-    Cmts.drop_inside c.cmts loc ;
+    Cmts.drop_inside c.cmts loc;
     let s = Source.string_at c.source loc in
     let indent_of_first_line = Position.column loc.loc_start in
     let l = String.split ~on:'\n' s in
@@ -344,7 +344,7 @@ let virtual_or_override = function
   | Cfk_concrete (Fresh, _) -> noop
 
 let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
-  assert (not (String.is_empty str_cmt)) ;
+  assert (not (String.is_empty str_cmt));
   let fmt_parsed parsed =
     fmt_if (String.starts_with_whitespace str_cmt) " "
     $ Fmt_odoc.fmt ~fmt_code:(c.fmt_code c.conf) parsed
@@ -361,7 +361,7 @@ let fmt_parsed_docstring c ~loc ?pro ~epi str_cmt parsed =
     | Ok parsed -> fmt_parsed parsed
     | Error msgs ->
         if not c.conf.quiet then
-          List.iter msgs ~f:(Docstring.warn Stdlib.Format.err_formatter) ;
+          List.iter msgs ~f:(Docstring.warn Stdlib.Format.err_formatter);
         fmt_raw str_cmt
   in
   Cmts.fmt c loc
@@ -509,12 +509,12 @@ let rec fmt_extension c ctx key (ext, pld) =
     , _ )
     when Source.is_quoted_string c.source pstr_loc ->
       (* Comments and attributes are not allowed by the parser *)
-      assert (not (Cmts.has_before c.cmts loc)) ;
-      assert (not (Cmts.has_after c.cmts loc)) ;
-      assert (not (Cmts.has_before c.cmts pexp_loc)) ;
-      assert (not (Cmts.has_after c.cmts pexp_loc)) ;
-      assert (not (Cmts.has_before c.cmts pstr_loc)) ;
-      assert (not (Cmts.has_after c.cmts pstr_loc)) ;
+      assert (not (Cmts.has_before c.cmts loc));
+      assert (not (Cmts.has_after c.cmts loc));
+      assert (not (Cmts.has_before c.cmts pexp_loc));
+      assert (not (Cmts.has_after c.cmts pexp_loc));
+      assert (not (Cmts.has_before c.cmts pstr_loc));
+      assert (not (Cmts.has_after c.cmts pstr_loc));
       hvbox 0 (fmt_quoted_string key ext str delim)
   | _, _, PStr [ ({ pstr_loc; _ } as si) ], (Pld _ | Str _ | Top)
     when Source.extension_using_sugar ~name:ext ~payload:pstr_loc ->
@@ -660,14 +660,14 @@ and type_constr_and_body c xbody =
       ( ({ pexp_desc= Pexp_pack _; pexp_attributes= []; _ } as exp)
       , ({ ptyp_desc= Ptyp_package _; ptyp_attributes= []; _ } as typ) ) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-        ~after:exp.pexp_loc ;
+        ~after:exp.pexp_loc;
       fmt_cstr_and_xbody typ exp
   | Pexp_constraint
       ({ pexp_desc= Pexp_pack _; _ }, { ptyp_desc= Ptyp_package _; _ }) ->
       (None, xbody)
   | Pexp_constraint (exp, typ) ->
       Cmts.relocate c.cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-        ~after:exp.pexp_loc ;
+        ~after:exp.pexp_loc;
       fmt_cstr_and_xbody typ exp
   | _ -> (None, xbody)
 
@@ -994,7 +994,7 @@ and fmt_pattern ?ext c ?pro ?parens ?(box = false)
             when field_alias ~field:lid1.txt (Longident.lident txt)
                  && List.is_empty ppat_attributes ->
               Cmts.relocate c.cmts ~src:ppat_loc ~before:lid1.loc
-                ~after:lid1.loc ;
+                ~after:lid1.loc;
               let typ = sub_typ ~ctx:(Pat pat) t in
               Cmts.fmt c ppat_loc @@ fmt_record_field c ~typ lid1
           | Ppat_constraint ({ ppat_desc= Ppat_unpack _; ppat_loc; _ }, _) ->
@@ -1407,25 +1407,10 @@ and fmt_args_grouped ?epi:(global_epi = noop) c ctx args =
 
 and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
   let fmt_sep c xe1 ext xe2 =
-    let break =
-      let l1 = xe1.ast.pexp_loc
-      and l2 = xe2.ast.pexp_loc in
-      if sequence_blank_line c l1 l2 then fmt "\n@;<1000 0>"
-      else
-        let offset =
-          if parens && Poly.(c.conf.sequence_style = `Before) then -2 else 0
-        in
-        break 1000 offset
-    in
-    match c.conf.sequence_style with
-    | `Before ->
-        break $ str ";"
-        $ fmt_extension_suffix c ext
-        $ fmt_or_k (Option.is_some ext)
-            (fmt_or parens "@ " "@;<1 2>")
-            (str " ")
-    | `Separator -> str " ;" $ fmt_extension_suffix c ext $ break
-    | `Terminator -> str ";" $ fmt_extension_suffix c ext $ break
+    str ";"
+    $ fmt_extension_suffix c ext
+    $ fmt_if (sequence_blank_line c xe1.ast.pexp_loc xe2.ast.pexp_loc) "\n"
+    $ break 1000 0
   in
   let is_simple x = is_simple c.conf width x in
   let break (_, xexp1) (_, xexp2) =
@@ -1436,7 +1421,7 @@ and fmt_sequence c ?ext ~has_attr parens width xexp pexp_loc fmt_atrs =
   | (None, _) :: (first_ext, _) :: _ ->
       let compare { txt= x; _ } { txt= y; _ } = String.compare x y in
       assert (Option.compare compare first_ext ext = 0)
-  | _ -> impossible "at least two elements" ) ;
+  | _ -> impossible "at least two elements" );
   let grps = List.group elts ~break in
   let fmt_seq ~prev (ext, curr) ~next:_ =
     let f (_, prev) = fmt_sep c prev ext curr in
@@ -1533,7 +1518,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   let { pexp_desc; pexp_loc; pexp_attributes; _ } = exp in
   update_config_maybe_disabled c pexp_loc pexp_attributes
   @@ fun c ->
-  Cmts.relocate_wrongfully_attached_cmts c.cmts c.source exp ;
+  Cmts.relocate_wrongfully_attached_cmts c.cmts c.source exp;
   let fmt_cmts = Cmts.fmt c ?eol pexp_loc in
   let fmt_atrs = fmt_attributes c ~pre:Space ~key:"@" pexp_attributes in
   let has_attr = not (List.is_empty pexp_attributes) in
@@ -1626,7 +1611,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
   | Pexp_apply (({ pexp_desc= Pexp_ident ident; pexp_loc; _ } as e0), args)
     when Option.is_some (Indexing_op.get_sugar e0 args) ->
       let op = Option.value_exn (Indexing_op.get_sugar e0 args) in
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc ;
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:ident.loc ~after:ident.loc;
       fmt_index_op c ctx ~fmt_atrs ~has_attr ~parens op
   | Pexp_apply
       ( { pexp_desc= Pexp_ident { txt= Lident ":="; loc }
@@ -1636,7 +1621,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
         }
       , [ (Nolabel, r); (Nolabel, v) ] )
     when is_simple c.conf (expression_width c) (sub_exp ~ctx r) ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc;
       let cmts_before =
         let adj =
           fmt_if Poly.(c.conf.assignment_operator = `End_line) "@,"
@@ -1683,7 +1668,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           } as op )
       , [ (Nolabel, l); (Nolabel, ({ pexp_desc= Pexp_ident _; _ } as r)) ] )
     when Longident.is_hash_getter id ->
-      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc ;
+      Cmts.relocate c.cmts ~src:pexp_loc ~before:loc ~after:loc;
       Params.parens_if parens c.conf
         ( fmt_expression c (sub_exp ~ctx l)
         $ fmt_expression c (sub_exp ~ctx op)
@@ -2152,7 +2137,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
                   if Exp.is_symbol xbch.ast then wrap "( " " )"
                   else p.wrap_parens
                 in
-                parens_prev_bch := parens_bch ;
+                parens_prev_bch := parens_bch;
                 p.box_branch
                   ( p.cond
                   $ p.box_keyword_and_expr
@@ -2202,7 +2187,7 @@ and fmt_expression c ?(box = true) ?pro ?epi ?eol ?parens ?(indent_wrap = 0)
           ; pmod_attributes= []
           } ->
             Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
-              ~after:body_mt.pmty_loc ;
+              ~after:body_mt.pmty_loc;
             (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
         | _ -> (xbody, None)
       in
@@ -2773,7 +2758,7 @@ and fmt_class_field_kind c ctx = function
           let before =
             match args with x :: _ -> x.loc | [] -> e.pexp_loc
           in
-          Cmts.relocate c.cmts ~src:pexp_loc ~before ~after:e.pexp_loc ;
+          Cmts.relocate c.cmts ~src:pexp_loc ~before ~after:e.pexp_loc;
           ( fmt "@ : type "
             $ list args "@ " (fun name -> fmt_str_loc c name)
             $ fmt_core_type ~pro:"." ~pro_space:false c (sub_typ ~ctx t)
@@ -2797,13 +2782,13 @@ and fmt_class_field_kind c ctx = function
         match (xbody.ast, poly) with
         | { pexp_desc= Pexp_constraint (e, t); pexp_loc; _ }, None ->
             Cmts.relocate c.cmts ~src:pexp_loc ~before:t.ptyp_loc
-              ~after:e.pexp_loc ;
+              ~after:e.pexp_loc;
             (Some t, sub_exp ~ctx e)
         | { pexp_desc= Pexp_constraint _; _ }, Some _ -> (poly, xbody)
         | _, poly -> (poly, xbody)
       in
       Cmts.relocate c.cmts ~src:pexp_loc ~before:e.ast.pexp_loc
-        ~after:e.ast.pexp_loc ;
+        ~after:e.ast.pexp_loc;
       ( noop
       , fmt_if (not (List.is_empty xargs)) "@ "
         $ wrap_fun_decl_args c (fmt_fun_args c xargs)
@@ -4287,7 +4272,7 @@ and fmt_module_binding ?ext c ctx ~rec_flag ~first pmb =
       ; pmod_attributes= []
       } ->
         Cmts.relocate c.cmts ~src:pmod_loc ~before:body_me.pmod_loc
-          ~after:body_mt.pmty_loc ;
+          ~after:body_mt.pmty_loc;
         (sub_mod ~ctx body_me, Some (sub_mty ~ctx body_mt))
     | _ -> (xbody, None)
   in
@@ -4375,6 +4360,6 @@ let fmt_code ~debug =
 let fmt_ast fragment ~debug source cmts conf l =
   (* [Ast.init] should be called only once per file. In particular, we don't
      want to call it when formatting comments *)
-  Ast.init conf ;
+  Ast.init conf;
   let fmt_code = fmt_code ~debug in
   fmt_file ~ctx:Top ~fmt_code ~debug fragment source cmts conf l

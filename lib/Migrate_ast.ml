@@ -115,6 +115,6 @@ module Longident = struct
   include Longident
 
   let lident s =
-    assert (not (String.contains s '.')) ;
+    assert (not (String.contains s '.'));
     Lident s
 end

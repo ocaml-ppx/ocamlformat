@@ -45,12 +45,12 @@ let foo =
             | A -> 6
           )
       )
-  ) ;
+  );
   List.map ~f:(fun x g t h y u ->
-      fooooooooooooo foooooooo ;
+      fooooooooooooo foooooooo;
       ( match k with
       | foooo -> foooooooo
-      ) ;
+      );
       fooooooooooooooo fooooooooooooo
   )
 ;;

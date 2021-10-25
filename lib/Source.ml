@@ -159,14 +159,14 @@ let begins_line ?(ignore_spaces = true) t (l : Location.t) =
     match find_token_before t ~filter:(fun _ -> true) l.loc_start with
     | None -> true
     | Some (_, prev) ->
-        assert (Location.compare prev l < 0) ;
+        assert (Location.compare prev l < 0);
         prev.loc_end.pos_lnum < l.loc_start.pos_lnum
 
 let ends_line t (l : Location.t) =
   match find_token_after t ~filter:(fun _ -> true) l.loc_end with
   | None -> true
   | Some (_, next) ->
-      assert (Location.compare next l > 0) ;
+      assert (Location.compare next l > 0);
       next.loc_start.pos_lnum > l.loc_end.pos_lnum
 
 let empty_line_before t (loc : Location.t) =

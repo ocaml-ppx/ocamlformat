@@ -48,11 +48,11 @@ let dedup_cmts fragment ast comments =
         ; _
         }
         when Ast.Attr.is_doc atr ->
-          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc);
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in
-    map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore ;
+    map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore;
     !docs
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
@@ -80,11 +80,11 @@ let dedup_cmts_std fragment ast comments =
         ; _
         }
         when is_doc atr ->
-          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc) ;
+          docs := Set.add !docs (Cmt.create ("*" ^ doc) pexp_loc);
           atr
       | _ -> Ast_mapper.default_mapper.attribute m atr
     in
-    map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore ;
+    map fragment { Ast_mapper.default_mapper with attribute } ast |> ignore;
     !docs
   in
   Set.(to_list (diff (of_list (module Cmt) comments) (of_ast ast)))
@@ -343,7 +343,7 @@ let make_docstring_mapper docstrings =
             ; _
             }
           ] ) ->
-        docstrings := (loc, doc) :: !docstrings ;
+        docstrings := (loc, doc) :: !docstrings;
         attr
     | _ -> Ast_mapper.default_mapper.attribute m attr
   in

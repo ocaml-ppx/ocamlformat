@@ -22,7 +22,7 @@ let _ =
     [@@@attr]
 
     initializer
-    f x ;
+    f x;
     9
 
     method x =

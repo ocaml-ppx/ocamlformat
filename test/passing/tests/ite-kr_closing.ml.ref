@@ -2,7 +2,7 @@ let _ =
   if b then
     e
   else (
-    e1 ;
+    e1;
     e2
   )
 
@@ -10,25 +10,25 @@ let _ =
   if b then
     e
   else (
-    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more
   )
 
 let _ =
   if b then (
-    e1 ;
+    e1;
     e2
   ) else (
-    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more
   )
 
 let _ =
   if b then (
-    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more
   ) else if b1 then (
-    something loooooooooooooooooooooooooooooooong enough to_trigger a break ;
+    something loooooooooooooooooooooooooooooooong enough to_trigger a break;
     this is more
   ) else
     e
@@ -137,23 +137,23 @@ let foo =
 
 let foo =
   if cond1 then (
-    arm1 ;
-    foooooooooooooo ;
-    fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
+    arm1;
+    foooooooooooooo;
+    fooooooooooooooooooo fooooooooooooooo foooooooooooo;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo
     )
   ) else if cond2 then (
-    arm2 ;
-    foooooooooooooo ;
-    fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
+    arm2;
+    foooooooooooooo;
+    fooooooooooooooooooo fooooooooooooooo foooooooooooo;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo
     )
   ) else (
-    arm3 ;
-    foooooooooooooo ;
-    fooooooooooooooooooo fooooooooooooooo foooooooooooo ;
+    arm3;
+    foooooooooooooo;
+    fooooooooooooooooooo fooooooooooooooo foooooooooooo;
     List.foo ~fooooooo:foooooooooooooooo ~foo:(fun fooooooooo ->
         fooooooooooooo
     )

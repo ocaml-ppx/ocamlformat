@@ -20,7 +20,7 @@ let rec arrow_typ cmts i ({ ast= typ; _ } as xtyp) =
   match ptyp_desc with
   | Ptyp_arrow (l, t1, t2) ->
       let before = if i > 0 then ptyp_loc else t1.ptyp_loc in
-      Cmts.relocate cmts ~src:ptyp_loc ~before ~after:t2.ptyp_loc ;
+      Cmts.relocate cmts ~src:ptyp_loc ~before ~after:t2.ptyp_loc;
       let rest =
         match t2.ptyp_attributes with
         | [] -> arrow_typ cmts (i + 1) (sub_typ ~ctx t2)
@@ -36,7 +36,7 @@ let rec class_arrow_typ cmts ({ ast= typ; _ } as xtyp) =
   let { pcty_desc; pcty_loc; _ } = typ in
   match pcty_desc with
   | Pcty_arrow (l, t1, t2) ->
-      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:t2.pcty_loc ;
+      Cmts.relocate cmts ~src:pcty_loc ~before:t1.ptyp_loc ~after:t2.pcty_loc;
       let rest =
         match t2.pcty_attributes with
         | [] -> class_arrow_typ cmts (sub_cty ~ctx t2)
@@ -50,12 +50,12 @@ let rec or_pat ?(allow_attribute = true) cmts ({ ast= pat; _ } as xpat) =
   match pat with
   | { ppat_desc= Ppat_or (pat1, pat2); ppat_loc; ppat_attributes= []; _ } ->
       Cmts.relocate cmts ~src:ppat_loc ~before:pat1.ppat_loc
-        ~after:pat2.ppat_loc ;
+        ~after:pat2.ppat_loc;
       or_pat ~allow_attribute:false cmts (sub_pat ~ctx pat1)
       @ or_pat ~allow_attribute:false cmts (sub_pat ~ctx pat2)
   | { ppat_desc= Ppat_or (pat1, pat2); ppat_loc; _ } when allow_attribute ->
       Cmts.relocate cmts ~src:ppat_loc ~before:pat1.ppat_loc
-        ~after:pat2.ppat_loc ;
+        ~after:pat2.ppat_loc;
       [ sub_pat ~ctx pat1; sub_pat ~ctx pat2 ]
   | _ -> [ xpat ]
 
@@ -73,7 +73,7 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
       | Pexp_fun (label, default, pattern, body) ->
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pexp_loc ~before:pattern.ppat_loc
-              ~after:body.pexp_loc ;
+              ~after:body.pexp_loc;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           ( Val
               ( label
@@ -84,7 +84,7 @@ let fun_ cmts ?(will_keep_first_ast_node = true) xexp =
       | Pexp_newtype (name, body) ->
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pexp_loc ~before:body.pexp_loc
-              ~after:body.pexp_loc ;
+              ~after:body.pexp_loc;
           let xargs, xbody = fun_ (sub_exp ~ctx body) in
           let xargs =
             match xargs with
@@ -107,7 +107,7 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
       | Pcl_fun (label, default, pattern, body) ->
           if not will_keep_first_ast_node then
             Cmts.relocate cmts ~src:pcl_loc ~before:pattern.ppat_loc
-              ~after:body.pcl_loc ;
+              ~after:body.pcl_loc;
           let xargs, xbody = fun_ (sub_cl ~ctx body) in
           ( Val
               ( label
@@ -123,7 +123,7 @@ let cl_fun ?(will_keep_first_ast_node = true) cmts xexp =
 let infix cmts prec xexp =
   let assoc = Option.value_map prec ~default:Assoc.Non ~f:Assoc.of_prec in
   let rec infix_ ?(relocate = true) xop ((lbl, { ast= exp; _ }) as xexp) =
-    assert (Poly.(lbl = Nolabel)) ;
+    assert (Poly.(lbl = Nolabel));
     let ctx = Exp exp in
     match (assoc, exp) with
     | ( Left
@@ -138,7 +138,7 @@ let infix cmts prec xexp =
             if relocate then Cmts.relocate cmts ~src ~before ~after
         | _ ->
             if relocate then
-              Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after ) ;
+              Cmts.relocate cmts ~src ~before:e0.pexp_loc ~after );
         op_args1 @ [ (Some (sub_exp ~ctx e0), [ (l2, sub_exp ~ctx e2) ]) ]
     | ( Right
       , { pexp_desc= Pexp_apply (e0, [ (l1, e1); (l2, e2) ]); pexp_loc; _ } )
@@ -162,7 +162,7 @@ let infix cmts prec xexp =
           | Some (_, { ast= { pexp_loc= after; _ }; _ }) ->
               may_relocate ~after
           | None -> may_relocate ~after )
-        | _ -> may_relocate ~after ) ;
+        | _ -> may_relocate ~after );
         (xop, [ (l1, sub_exp ~ctx e1) ]) :: op_args2
     | _ -> [ (xop, [ xexp ]) ]
   in
@@ -185,8 +185,8 @@ let infix_cons cmts xexp =
         | [] -> ()
         | _ ->
             Cmts.relocate cmts ~src:l1 ~before:hd.pexp_loc ~after:tl.pexp_loc
-        ) ;
-        Cmts.relocate cmts ~src:l3 ~before:hd.pexp_loc ~after:tl.pexp_loc ;
+        );
+        Cmts.relocate cmts ~src:l3 ~before:hd.pexp_loc ~after:tl.pexp_loc;
         match tl.pexp_attributes with
         | [] ->
             infix_cons_ ~cons_opt:cons (sub_exp ~ctx tl)
@@ -205,12 +205,12 @@ let rec ite cmts ({ ast= exp; _ } as xexp) =
   match pexp_desc with
   | Pexp_ifthenelse (cnd, thn, Some els) ->
       Cmts.relocate cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:els.pexp_loc ;
+        ~after:els.pexp_loc;
       (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes)
       :: ite cmts (sub_exp ~ctx els)
   | Pexp_ifthenelse (cnd, thn, None) ->
       Cmts.relocate cmts ~src:pexp_loc ~before:cnd.pexp_loc
-        ~after:thn.pexp_loc ;
+        ~after:thn.pexp_loc;
       [ (Some (sub_exp ~ctx cnd), sub_exp ~ctx thn, pexp_attributes) ]
   | _ -> [ (None, xexp, pexp_attributes) ]
 
@@ -239,9 +239,9 @@ let sequence cmts xexp =
         then [ (None, xexp) ]
         else (
           Cmts.relocate cmts ~src:pstr_loc ~before:e1.pexp_loc
-            ~after:e2.pexp_loc ;
+            ~after:e2.pexp_loc;
           Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
-            ~after:e2.pexp_loc ;
+            ~after:e2.pexp_loc;
           if Ast.exposed_right_exp Ast.Let_match e1 then
             [ (None, sub_exp ~ctx e1); (Some ext, sub_exp ~ctx e2) ]
           else
@@ -257,7 +257,7 @@ let sequence cmts xexp =
         then [ (None, xexp) ]
         else (
           Cmts.relocate cmts ~src:pexp_loc ~before:e1.pexp_loc
-            ~after:e2.pexp_loc ;
+            ~after:e2.pexp_loc;
           if Ast.exposed_right_exp Ast.Let_match e1 then
             [ (None, sub_exp ~ctx e1); (None, sub_exp ~ctx e2) ]
           else
@@ -360,7 +360,7 @@ let polynewtype cmts pat body =
     match polynewtype_ cmts pvars body [ (pat.ppat_loc, pat2.ppat_loc) ] with
     | Some (typ, exp, relocs) ->
         List.iter relocs ~f:(fun (src, dst) ->
-            Cmts.relocate cmts ~src ~before:dst ~after:dst ) ;
+            Cmts.relocate cmts ~src ~before:dst ~after:dst );
         Some (sub_pat ~ctx pat2, pvars, typ, exp)
     | None -> None )
   | _ -> None
@@ -393,13 +393,13 @@ module Let_binding = struct
         , Pexp_constraint (_, typ2) )
         when equal_core_type typ1 typ2 ->
           Cmts.relocate cmts ~src:lb_pat.ppat_loc ~before:pat.ppat_loc
-            ~after:pat.ppat_loc ;
+            ~after:pat.ppat_loc;
           sub_pat ~ctx:(Pat lb_pat) pat
       | ( Ppat_constraint (pat, { ptyp_desc= Ptyp_poly ([], typ1); _ })
         , Pexp_coerce (_, _, typ2) )
         when equal_core_type typ1 typ2 ->
           Cmts.relocate cmts ~src:lb_pat.ppat_loc ~before:pat.ppat_loc
-            ~after:pat.ppat_loc ;
+            ~after:pat.ppat_loc;
           sub_pat ~ctx:(Pat lb_pat) pat
       | _ -> sub_pat ~ctx lb_pat
     in
@@ -436,7 +436,7 @@ module Let_binding = struct
             , _ )
             when Source.type_constraint_is_first typ exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                ~after:exp.pexp_loc ;
+                ~after:exp.pexp_loc;
               (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
           | ( Pexp_constraint
                 ( { pexp_desc= Pexp_pack _; _ }
@@ -447,18 +447,18 @@ module Let_binding = struct
           | Pexp_constraint (exp, typ), _
             when Source.type_constraint_is_first typ exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                ~after:exp.pexp_loc ;
+                ~after:exp.pexp_loc;
               (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
           (* The type constraint is always printed before the declaration for
              functions, for other value bindings we preserve its position. *)
           | Pexp_constraint (exp, typ), _ when not (List.is_empty xargs) ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                ~after:exp.pexp_loc ;
+                ~after:exp.pexp_loc;
               (xpat, `Other (xargs, sub_typ ~ctx typ), sub_exp ~ctx exp)
           | Pexp_coerce (exp, typ1, typ2), _
             when Source.type_constraint_is_first typ2 exp.pexp_loc ->
               Cmts.relocate cmts ~src:body.pexp_loc ~before:exp.pexp_loc
-                ~after:exp.pexp_loc ;
+                ~after:exp.pexp_loc;
               let typ1 = Option.map typ1 ~f:(sub_typ ~ctx) in
               (xpat, `Coerce (typ1, sub_typ ~ctx typ2), sub_exp ~ctx exp)
           | _ -> (xpat, `None xargs, xbody) )

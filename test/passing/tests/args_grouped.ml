@@ -42,10 +42,10 @@ let declare_locals_and_ret tenv pdesc (prop_ : Prop.normal Prop.t) =
 let bottom_up fooooooooooo =
   let empty = Int.equal 0 !scheduled && Queue.is_empty pending in
   if empty then (
-    remaining := 0 ;
+    remaining := 0;
     L.progress "Finished call graph scheduling, %d procs remaining (in, or reaching, cycles).@."
-      (CallGraph.n_procs syntactic_call_graph) ;
-    if Config.debug_level_analysis > 0 then CallGraph.to_dotty syntactic_call_graph "cycles.dot" ;
+      (CallGraph.n_procs syntactic_call_graph);
+    if Config.debug_level_analysis > 0 then CallGraph.to_dotty syntactic_call_graph "cycles.dot";
     foooooooooooooooooo )
   else fooooooooooooooooo
 

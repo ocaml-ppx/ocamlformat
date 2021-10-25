@@ -37,13 +37,13 @@ let x =
     | `A -> (
         fun id -> function
           | A ->
-              e ;
+              e;
               e
           | _ -> () )
     | `B -> (
         fun id -> function
           | A ->
-              e ;
+              e;
               e
           | _ -> () )
   in

@@ -26,8 +26,8 @@ let init, register_reset, leading_nested_match_parens, parens_ite =
   let parens_ite = ref false in
   let register f = l := f :: !l in
   let init (conf : Conf.t) =
-    leading_nested_match_parens := conf.leading_nested_match_parens ;
-    parens_ite := conf.parens_ite ;
+    leading_nested_match_parens := conf.leading_nested_match_parens;
+    parens_ite := conf.parens_ite;
     List.iter !l ~f:(fun f -> f ())
   in
   (init, register, leading_nested_match_parens, parens_ite)
@@ -820,13 +820,13 @@ end = struct
   let assert_no_raise ~f ~dump x =
     assert (
       try
-        ignore (f x) ;
+        ignore (f x);
         true
       with
       | exc ->
           let bt = Caml.Printexc.get_backtrace () in
-          dump x Format.err_formatter ;
-          Format.eprintf "%s%!" bt ;
+          dump x Format.err_formatter;
+          Format.eprintf "%s%!" bt;
           raise exc )
 
   (** Predicates to check the claimed sub-term relation. *)
@@ -1794,7 +1794,7 @@ end = struct
   (** [parenze_typ {ctx; ast}] holds when type [ast] should be parenthesized
       in context [ctx]. *)
   let parenze_typ ({ ctx; ast= typ } as xtyp) =
-    assert_check_typ xtyp ;
+    assert_check_typ xtyp;
     match xtyp with
     | { ast= { ptyp_desc= Ptyp_package _; _ }; _ } -> true
     | { ast= { ptyp_desc= Ptyp_alias _; _ }; ctx= Typ _ } -> true
@@ -1837,7 +1837,7 @@ end = struct
   (** [parenze_cty {ctx; ast}] holds when class type [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_cty ({ ctx; ast= cty } as xcty) =
-    assert_check_cty xcty ;
+    assert_check_cty xcty;
     match ambig_prec (sub_ast ~ctx (Cty cty)) with
     | `Ambiguous -> true
     | _ -> false
@@ -1867,7 +1867,7 @@ end = struct
   (** [parenze_pat {ctx; ast}] holds when pattern [ast] should be
       parenthesized in context [ctx]. *)
   let parenze_pat ({ ctx; ast= pat } as xpat) =
-    assert_check_pat xpat ;
+    assert_check_pat xpat;
     Pat.has_trailing_attributes pat
     ||
     match (ctx, pat.ppat_desc) with
@@ -1994,7 +1994,7 @@ end = struct
 
   let marked_parenzed_inner_nested_match =
     let memo = Hashtbl.Poly.create () in
-    register_reset (fun () -> Hashtbl.clear memo) ;
+    register_reset (fun () -> Hashtbl.clear memo);
     memo
 
   (** [exposed cls exp] holds if there is a right-most subexpression of [exp]
@@ -2002,7 +2002,7 @@ end = struct
   let rec exposed_right_exp =
     (* exponential without memoization *)
     let memo = Hashtbl.Poly.create () in
-    register_reset (fun () -> Hashtbl.clear memo) ;
+    register_reset (fun () -> Hashtbl.clear memo);
     fun cls exp ->
       let exposed_ () =
         let continue subexp =
@@ -2066,7 +2066,7 @@ end = struct
 
   and exposed_right_cl =
     let memo = Hashtbl.Poly.create () in
-    register_reset (fun () -> Hashtbl.clear memo) ;
+    register_reset (fun () -> Hashtbl.clear memo);
     fun cls cl ->
       let exposed_ () =
         match cl.pcl_desc with
@@ -2086,7 +2086,7 @@ end = struct
     let exposed_ () =
       let continue subexp =
         if not (parenze_exp (sub_exp ~ctx:(Exp exp) subexp)) then
-          mark_parenzed_inner_nested_match subexp ;
+          mark_parenzed_inner_nested_match subexp;
         false
       in
       match exp.pexp_desc with
@@ -2117,12 +2117,12 @@ end = struct
         | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases)
           ->
             List.iter cases ~f:(fun case ->
-                mark_parenzed_inner_nested_match case.pc_rhs ) ;
+                mark_parenzed_inner_nested_match case.pc_rhs );
             true
         | _ -> continue e )
       | Pexp_function cases | Pexp_match (_, cases) | Pexp_try (_, cases) ->
           List.iter cases ~f:(fun case ->
-              mark_parenzed_inner_nested_match case.pc_rhs ) ;
+              mark_parenzed_inner_nested_match case.pc_rhs );
           true
       | Pexp_apply (e0, args)
         when Option.is_some (Indexing_op.get_sugar e0 args) -> (
@@ -2200,7 +2200,7 @@ end = struct
       | _ when rhs == exp -> false
       | _ -> failwith "exp must be lhs or rhs from the parent expression"
     in
-    assert_check_exp xexp ;
+    assert_check_exp xexp;
     is_displaced_prefix_op xexp
     || is_displaced_infix_op xexp
     || Hashtbl.find marked_parenzed_inner_nested_match exp
@@ -2305,7 +2305,7 @@ end = struct
        |Pexp_try (_, cases) ->
           if !leading_nested_match_parens then
             List.iter cases ~f:(fun { pc_rhs; _ } ->
-                mark_parenzed_inner_nested_match pc_rhs ) ;
+                mark_parenzed_inner_nested_match pc_rhs );
           List.exists cases ~f:(fun { pc_rhs; _ } -> pc_rhs == exp)
           && exposed_right_exp Match exp
       | Pexp_ifthenelse (cnd, _, _) when cnd == exp -> false
@@ -2379,7 +2379,7 @@ end = struct
   (** [parenze_cl {ctx; ast}] holds when class expr [ast] should be
       parenthesized in context [ctx]. *)
   and parenze_cl ({ ctx; ast= cl } as xcl) =
-    assert_check_cl xcl ;
+    assert_check_cl xcl;
     match ambig_prec (sub_ast ~ctx (Cl cl)) with
     | `No_prec_ctx -> false
     | `Ambiguous -> true

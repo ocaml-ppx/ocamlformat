@@ -44,13 +44,13 @@ let rec rpc_main = function
     | `Version vstr -> (
       match V.handshake vstr with
       | `Handled v ->
-          Init.output stdout (`Version vstr) ;
-          Out_channel.flush stdout ;
+          Init.output stdout (`Version vstr);
+          Out_channel.flush stdout;
           rpc_main (Version_defined (v, Conf.default_profile))
       | `Propose_another v ->
           let vstr = V.to_string v in
-          Init.output stdout (`Version vstr) ;
-          Out_channel.flush stdout ;
+          Init.output stdout (`Version vstr);
+          Out_channel.flush stdout;
           rpc_main Waiting_for_version ) )
   | Version_defined (v, conf) as state -> (
     match v with
@@ -66,11 +66,11 @@ let rec rpc_main = function
             ~f:(fun () try_formatting ->
               match try_formatting conf x with
               | Ok formatted ->
-                  ignore (Format.flush_str_formatter ()) ;
-                  V1.Command.output stdout (`Format formatted) ;
+                  ignore (Format.flush_str_formatter ());
+                  V1.Command.output stdout (`Format formatted);
                   Stop ()
               | Error e ->
-                  Translation_unit.Error.print Format.str_formatter e ;
+                  Translation_unit.Error.print Format.str_formatter e;
                   Continue () )
             (* The formatting functions are ordered in such a way that the
                ones expecting a keyword first (like signatures) are placed
@@ -86,7 +86,7 @@ let rec rpc_main = function
             ; format Module_type
             ; format Expression
             ; format Use_file
-            ] ;
+            ];
           rpc_main state
       | `Config c -> (
           let rec update conf = function
@@ -98,8 +98,8 @@ let rec rpc_main = function
           in
           match update conf c with
           | Ok conf ->
-              V1.Command.output stdout (`Config c) ;
-              Out_channel.flush stdout ;
+              V1.Command.output stdout (`Config c);
+              Out_channel.flush stdout;
               rpc_main (Version_defined (v, conf))
           | Error e ->
               let msg =
@@ -114,8 +114,8 @@ let rec rpc_main = function
                 | `Unknown (x, _) ->
                     Format.sprintf "Unknown configuration option %s" x
               in
-              V1.Command.output stdout (`Error msg) ;
-              Out_channel.flush stdout ;
+              V1.Command.output stdout (`Error msg);
+              Out_channel.flush stdout;
               rpc_main state ) ) )
 
 let rpc_main () = rpc_main Waiting_for_version

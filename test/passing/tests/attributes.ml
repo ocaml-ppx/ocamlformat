@@ -210,7 +210,7 @@ let _ =
     method h = f ((a <- b) [@a])
 
     method i =
-      (a <- b) [@a] ;
+      (a <- b) [@a];
       ()
   end
 
@@ -241,56 +241,56 @@ let _ =
     [@a] )
 
 let _ =
-  a [@a] ;
+  a [@a];
   b
 
 let _ =
   f
-    ( a [@a] ;
+    ( a [@a];
       b )
 
 let _ =
-  a ;
+  a;
   b [@a]
 
 let _ =
   f
-    ( a ;
+    ( a;
       b [@a] )
 
 let _ =
-  (a ;
+  (a;
    b )
   [@a]
 
 let _ =
   f
-    ( (a ;
+    ( (a;
        b )
     [@a] )
 
 let _ =
-  a ;
-  b [@a] ;
+  a;
+  b [@a];
   c
 
 let _ =
-  a ;
-  (b1 ;
+  a;
+  (b1;
    b2 )
   [@a]
 
 let _ =
-  a ;
-  (b1 ;
+  a;
+  (b1;
    b2 )
-  [@a] ;
+  [@a];
   c
 
 (* Ensure that adding an attribute doesn't break left-alignment of sequenced
    expressions *)
 let _ =
-  (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ;
+  (aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;
    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb )
   [@a]
 
@@ -320,11 +320,11 @@ let (M.(A | B) [@attr]) = ();;
 [@attr]
 
 let _ =
-  (match[@ocaml.warning "-4"] bar with _ -> ()) ;
+  (match[@ocaml.warning "-4"] bar with _ -> ());
   foo
 
 let _ =
-  (try[@ocaml.warning "-4"] bar with _ -> ()) ;
+  (try[@ocaml.warning "-4"] bar with _ -> ());
   foo
 
 let pp f ({ cf_interface; cf_is_objc_block; cf_virtual } [@warning "+9"]) =

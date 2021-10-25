@@ -1,5 +1,5 @@
 let () =
-  [%ext expr] ;
+  [%ext expr];
   ()
 
 let _ = [%ext match x with () -> ()] [@attr y]
@@ -75,7 +75,7 @@ let _ =
   [ x
   ; x
     ---> [%expr
-           [%e x ~loc [%expr x] x] ;
+           [%e x ~loc [%expr x] x];
            iter tail]
   ; x
   ]
@@ -113,10 +113,10 @@ let _ = f [%ext function x -> x] x
 let _ = f ([%ext e] [@attr]) x
 
 let _ =
-  a ;%ext
-  b ;
+  a;%ext
+  b;
   [%ext
-    a ;
+    a;
     b]
 
 let _ = try%lwt Lwt.return 2 with _ -> assert false
@@ -177,7 +177,7 @@ let _ =
 
 let _ =
   [%ext
-    "foo" ;
+    "foo";
     "bar"]
 
 let this_function_has_a_long_name plus very many arguments =

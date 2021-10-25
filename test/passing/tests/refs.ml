@@ -1,17 +1,17 @@
 let _ =
-  x := 2 ;
+  x := 2;
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :=
-    2 ;
+    2;
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx :=
     something very
-      looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
+      looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong;
   xxxxxxxxxxxxx xxxxxxxxxxx xxxxxxxxxxxx xxxxxxxxx xxxxxxxxxxxxx xxxxxxxxxx
     xxxxxxxxxxxxx
   := something very
-       looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
+       looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong;
   xx :=
     something very
-      loooooooooooooooooooooooooooooooooooooooooooooooooooooooong ;
+      loooooooooooooooooooooooooooooooooooooooooooooooooooooooong;
   if something loooooooooooong then
     xx :=
       something very

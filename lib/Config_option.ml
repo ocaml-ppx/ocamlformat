@@ -181,7 +181,7 @@ module Make (C : CONFIG) = struct
       ; status= map_status status
       }
     in
-    store := Pack opt :: !store ;
+    store := Pack opt :: !store;
     opt
 
   let any ?default_doc converter ~default ~docv ~names ~doc ~kind
@@ -213,7 +213,7 @@ module Make (C : CONFIG) = struct
       ; status= map_status status
       }
     in
-    store := Pack opt :: !store ;
+    store := Pack opt :: !store;
     opt
 
   module Value = struct
@@ -300,7 +300,7 @@ module Make (C : CONFIG) = struct
     let update conf x =
       ( match List.find all ~f:(fun (_, v, _, _) -> Poly.(x = v)) with
       | Some value -> Value.warn_if_deprecated conf name value
-      | None -> () ) ;
+      | None -> () );
       update conf x
     in
     any conv ~default ~docv ~names ~doc ~kind ~allow_inline ?status update
@@ -358,7 +358,7 @@ module Make (C : CONFIG) = struct
         (* updating a single option (without setting a profile) *)
         ( match status with
         | `Deprecated d -> C.warn config "%s: %a" name pp_deprecated d
-        | _ -> () ) ;
+        | _ -> () );
         Pack { p with from= `Updated from } )
       else Pack p
     in
@@ -374,7 +374,7 @@ module Make (C : CONFIG) = struct
             match parse value with
             | Ok packed_value ->
                 let config = update config packed_value in
-                update_from config name from ;
+                update_from config name from;
                 Some (Ok config)
             | Error (`Msg error) -> Some (Error (`Bad_value (name, error)))
         else
@@ -401,7 +401,7 @@ module Make (C : CONFIG) = struct
       | None -> config
       | Some x ->
           let config = update config x in
-          update_from config (List.hd_exn names) `Commandline ;
+          update_from config (List.hd_exn names) `Commandline;
           config
     in
     List.fold !store ~init:config ~f:on_pack

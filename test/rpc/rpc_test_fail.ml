@@ -28,8 +28,8 @@ let start () =
       let pid = Unix.process_pid (input, output) in
       Ocf.pick_client ~pid input output supported_versions
       >>| fun client ->
-      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;
-      state := Running client ;
+      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!");
+      state := Running client;
       client
     with
   | exception _ ->
@@ -40,12 +40,12 @@ let start () =
            installed." )
   | x -> x )
   |> Result.map_error ~f:(fun (`Msg msg) ->
-         state := Errored ;
+         state := Errored;
          log
            "An error occured while initializing and configuring ocamlformat:\n\
             %s\n\
             %!"
-           msg ;
+           msg;
          `No_process )
 
 let get_client () =
@@ -59,19 +59,19 @@ let get_client () =
 let config c =
   get_client ()
   >>= fun cl ->
-  log "[ocf] Config\n%!" ;
+  log "[ocf] Config\n%!";
   Ocf.config c cl
 
 let format x =
   get_client ()
   >>= fun cl ->
-  log "[ocf] Format '%s'\n%!" x ;
+  log "[ocf] Format '%s'\n%!" x;
   Ocf.format x cl
 
 let halt () =
   get_client ()
   >>= fun cl ->
-  log "[ocf] Halt\n%!" ;
+  log "[ocf] Halt\n%!";
   Ocf.halt cl >>| fun () -> state := Uninitialized
 
 let protect_unit x =
@@ -87,11 +87,11 @@ let protect_string x =
   | Error `No_process -> log "No process\n%!"
 
 let () =
-  log "Starting then doing nothing\n%!" ;
+  log "Starting then doing nothing\n%!";
   protect_unit @@ halt ()
 
 let () =
-  log "Sending requests\n%!" ;
-  protect_unit @@ config [ ("profile", "janestreet") ] ;
-  protect_string @@ format "char -> string" ;
+  log "Sending requests\n%!";
+  protect_unit @@ config [ ("profile", "janestreet") ];
+  protect_string @@ format "char -> string";
   protect_unit @@ halt ()

@@ -48,7 +48,7 @@ end = struct
     let f = Staged.unstage f in
     let g = Staged.unstage g in
     Staged.stage (fun x ->
-        f x ;
+        f x;
         g x )
 
   let with_pp f = Staged.stage f
@@ -62,7 +62,7 @@ end = struct
     Staged.stage (fun fs ->
         try t fs with
         | exn ->
-            Format.pp_print_flush fs () ;
+            Format.pp_print_flush fs ();
             on_error exn )
 
   let lazy_ f =
@@ -257,7 +257,7 @@ let debug_box_open ?name box_kind n fs =
     let openning = if n = 0 then name else Format.sprintf "%s<%d" name n in
     pp_color_k (box_depth_color ())
       (fun fs -> Format.fprintf fs "@<0>[@<0>%s@<0>>" openning)
-      fs ;
+      fs;
     Int.incr box_depth )
 
 let debug_box_close fs =
@@ -266,7 +266,7 @@ let debug_box_close fs =
       (* mismatched close, red background *)
       pp_color_k 41 (fun fs -> Format.fprintf fs "@<0>]") fs
     else (
-      Int.decr box_depth ;
+      Int.decr box_depth;
       pp_color_k (box_depth_color ())
         (fun fs -> Format.fprintf fs "@<0>]")
         fs )
@@ -276,30 +276,30 @@ let apply_max_indent n = Option.value_map !max_indent ~f:(min n) ~default:n
 let open_box ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "b" n fs ;
+      debug_box_open ?name "b" n fs;
       Format.pp_open_box fs n )
 
 and open_vbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "v" n fs ;
+      debug_box_open ?name "v" n fs;
       Format.pp_open_vbox fs n )
 
 and open_hvbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "hv" n fs ;
+      debug_box_open ?name "hv" n fs;
       Format.pp_open_hvbox fs n )
 
 and open_hovbox ?name n =
   with_pp (fun fs ->
       let n = apply_max_indent n in
-      debug_box_open ?name "hov" n fs ;
+      debug_box_open ?name "hov" n fs;
       Format.pp_open_hovbox fs n )
 
 and close_box =
   with_pp (fun fs ->
-      debug_box_close fs ;
+      debug_box_close fs;
       Format.pp_close_box fs () )
 
 (** Wrapping boxes ------------------------------------------------------*)
@@ -316,7 +316,7 @@ and hovbox_if ?name cnd n = wrap_if_k cnd (open_hovbox ?name n) close_box
 (** Text filling --------------------------------------------------------*)
 
 let fill_text ?(epi = "") text =
-  assert (not (String.is_empty text)) ;
+  assert (not (String.is_empty text));
   let fmt_line line =
     let words =
       List.filter ~f:(Fn.non String.is_empty)

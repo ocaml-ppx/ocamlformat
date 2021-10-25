@@ -22,9 +22,9 @@ let of_ast fragment ast =
   in
   let locs = ref [] in
   let location _ loc =
-    locs := loc :: !locs ;
+    locs := loc :: !locs;
     loc
   in
   let mapper = Ast_mapper.{ default_mapper with location; attribute } in
-  map fragment mapper ast |> ignore ;
+  map fragment mapper ast |> ignore;
   (of_list !locs, !locs)

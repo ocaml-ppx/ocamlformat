@@ -51,7 +51,7 @@ let usage () =
      %s diff parser DIR1 DIR2\n\n\
      %s diff stdlib DIR1 DIR2\n\n\
      %s import VERSION DIR\n"
-    exe exe exe ;
+    exe exe exe;
   exit 1
 
 let diff files d1 d2 =

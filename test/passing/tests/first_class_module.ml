@@ -28,15 +28,15 @@ end
 let m = (module M : S)
 
 let f ((module M : S) as u) =
-  ignore u ;
+  ignore u;
   M.x
 
 let f (T { m= (module M) }) =
-  ignore u ;
+  ignore u;
   M.x
 
 let f (T { m= (module M : S) }) =
-  ignore u ;
+  ignore u;
   M.x
 
 let v = f (module M : S with type t = t)

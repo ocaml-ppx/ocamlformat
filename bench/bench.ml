@@ -91,10 +91,10 @@ let process_results results =
             try Hashtbl.find metrics_by_test test_name with
             | Not_found -> Hashtbl.create 16
           in
-          Hashtbl.add metrics metric_name ols ;
+          Hashtbl.add metrics metric_name ols;
           Hashtbl.replace metrics_by_test test_name metrics )
         result )
-    results ;
+    results;
   metrics_by_test
 
 let json_of_ols ols =

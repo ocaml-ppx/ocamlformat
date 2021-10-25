@@ -30,10 +30,10 @@ let write_all output_file ~data =
 let to_output_file output_file data =
   match output_file with
   | None ->
-      Out_channel.flush Out_channel.stdout ;
-      Out_channel.set_binary_mode Out_channel.stdout true ;
-      Out_channel.output_string Out_channel.stdout data ;
-      Out_channel.flush Out_channel.stdout ;
+      Out_channel.flush Out_channel.stdout;
+      Out_channel.set_binary_mode Out_channel.stdout true;
+      Out_channel.output_string Out_channel.stdout data;
+      Out_channel.flush Out_channel.stdout;
       Out_channel.set_binary_mode Out_channel.stdout false
   | Some output_file -> write_all output_file ~data
 
@@ -60,7 +60,7 @@ let run_action action opts =
         match result with
         | Ok formatted ->
             if not (String.equal formatted source) then
-              write_all input_file ~data:formatted ;
+              write_all input_file ~data:formatted;
             Ok ()
         | Error e -> Error (fun () -> print_error conf opts e)
       in
@@ -69,7 +69,7 @@ let run_action action opts =
       let source = source_from_file file in
       match format ?output_file ~kind ~input_name ~source conf opts with
       | Ok s ->
-          to_output_file output_file s ;
+          to_output_file output_file s;
           Ok ()
       | Error e -> Error [ (fun () -> print_error conf opts e) ] )
   | Check inputs ->
@@ -83,7 +83,7 @@ let run_action action opts =
       in
       Result.combine_errors_unit (List.map inputs ~f)
   | Print_config conf ->
-      Conf.print_config conf ;
+      Conf.print_config conf;
       Ok ()
   | Numeric ({ kind; file; name= input_name; conf }, range) ->
       let conf = { conf with quiet= true } in
@@ -99,7 +99,7 @@ match Conf.action () with
   match run_action action opts with
   | Ok () -> Caml.exit 0
   | Error errors ->
-      List.iter errors ~f:(fun error -> error ()) ;
+      List.iter errors ~f:(fun error -> error ());
       Caml.exit 1 )
 | `Version | `Help -> Caml.exit 0
 | `Error _ -> Caml.exit 1

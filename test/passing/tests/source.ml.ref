@@ -94,29 +94,29 @@ let () =
   [%foo
     (let module M = M in
     () )
-    [@foo]] ;
+    [@foo]];
   [%foo
     (let open M in
-    ()) [@foo]] ;
-  [%foo fun [@foo] x -> ()] ;
-  [%foo function[@foo] x -> ()] ;
-  [%foo try[@foo] () with _ -> ()] ;
-  [%foo if [@foo] () then () else ()] ;
+    ()) [@foo]];
+  [%foo fun [@foo] x -> ()];
+  [%foo function[@foo] x -> ()];
+  [%foo try[@foo] () with _ -> ()];
+  [%foo if [@foo] () then () else ()];
   [%foo
     while () do
       ()
     done
-    [@foo]] ;
+    [@foo]];
   [%foo
     for x = () to () do
       ()
     done
-    [@foo]] ;
-  [%foo assert true [@foo]] ;
-  [%foo lazy x [@foo]] ;
-  [%foo object end [@foo]] ;
-  [%foo (3 [@foo])] ;
-  [%foo new x [@foo]] ;
+    [@foo]];
+  [%foo assert true [@foo]];
+  [%foo lazy x [@foo]];
+  [%foo object end [@foo]];
+  [%foo (3 [@foo])];
+  [%foo new x [@foo]];
   [%foo
     match[@foo] () with
     | [%foo? (* Pattern expressions *)
@@ -297,7 +297,7 @@ let push_castable (c : #castable) = clist := (c :> castable) :: !clist
 let pop_castable () =
   match !clist with
   | c :: rest ->
-      clist := rest ;
+      clist := rest;
       c
   | [] -> raise Not_found
 ;;
@@ -808,7 +808,7 @@ end = struct
 end
 
 let () =
-  print_endline (Print.to_string int 10) ;
+  print_endline (Print.to_string int 10);
   print_endline (Print.to_string (pair int (pair str int)) (123, ("A", 456)))
 
 (* #6262: first-class modules and module type aliases *)
@@ -1017,13 +1017,13 @@ let rec devariantize : type t. t ty -> variant -> t =
   | Pair (ty1, ty2), VPair (x1, x2) ->
       (devariantize ty1 x1, devariantize ty2 x2)
   | Record { fields; create_builder; of_builder }, VRecord fl ->
-      if List.length fields <> List.length fl then raise VariantMismatch ;
+      if List.length fields <> List.length fl then raise VariantMismatch;
       let builder = create_builder () in
       List.iter2
         (fun (Field { label; field_type; set }) (lab, v) ->
-          if label <> lab then raise VariantMismatch ;
+          if label <> lab then raise VariantMismatch;
           set builder (devariantize field_type v) )
-        fields fl ;
+        fields fl;
       of_builder builder
   | _ -> raise VariantMismatch
 
@@ -2967,7 +2967,7 @@ module Bar : sig type t [@@immediate] val x : t ref end
 
 let test f =
   let start = Sys.time () in
-  f () ;
+  f ();
   Sys.time () -. start
 
 [%%expect {|
@@ -3389,7 +3389,7 @@ let map_lambda ~map_rec : _ lambda -> _ = function
 let next_id =
   let current = ref 3 in
   fun () ->
-    incr current ;
+    incr current;
     !current
 
 let subst_lambda ~subst_rec ~free ~subst : _ lambda -> _ = function
@@ -3497,23 +3497,23 @@ let rec eval : lexpr -> _ = function
 let rec print = function
   | `Var id -> print_string id
   | `Abs (id, l) ->
-      print_string (" " ^ id ^ " . ") ;
+      print_string (" " ^ id ^ " . ");
       print l
   | `App (l1, l2) ->
-      print l1 ;
-      print_string " " ;
+      print l1;
+      print_string " ";
       print l2
   | `Num x -> print_int x
   | `Add (e1, e2) ->
-      print e1 ;
-      print_string " + " ;
+      print e1;
+      print_string " + ";
       print e2
   | `Neg e ->
-      print_string "-" ;
+      print_string "-";
       print e
   | `Mult (e1, e2) ->
-      print e1 ;
-      print_string " * " ;
+      print e1;
+      print_string " * ";
       print e2
 
 let () =
@@ -3523,11 +3523,11 @@ let () =
     eval
       (`Add (`App (`Abs ("x", `Mult (`Var "x", `Var "x")), `Num 2), `Num 5))
   in
-  print e1 ;
-  print_newline () ;
-  print e2 ;
-  print_newline () ;
-  print e3 ;
+  print e1;
+  print_newline ();
+  print e2;
+  print_newline ();
+  print e3;
   print_newline ()
 (* Full fledge version, using objects to structure code *)
 
@@ -3591,7 +3591,7 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-    incr current ;
+    incr current;
     !current
 
 class ['a] lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
@@ -3734,23 +3734,23 @@ let lexpr = lazy_fix (new lexpr_ops)
 let rec print = function
   | `Var id -> print_string id
   | `Abs (id, l) ->
-      print_string (" " ^ id ^ " . ") ;
+      print_string (" " ^ id ^ " . ");
       print l
   | `App (l1, l2) ->
-      print l1 ;
-      print_string " " ;
+      print l1;
+      print_string " ";
       print l2
   | `Num x -> print_int x
   | `Add (e1, e2) ->
-      print e1 ;
-      print_string " + " ;
+      print e1;
+      print_string " + ";
       print e2
   | `Neg e ->
-      print_string "-" ;
+      print_string "-";
       print e
   | `Mult (e1, e2) ->
-      print e1 ;
-      print_string " * " ;
+      print e1;
+      print_string " * ";
       print e2
 
 let () =
@@ -3760,11 +3760,11 @@ let () =
     lexpr#eval
       (`Add (`App (`Abs ("x", `Mult (`Var "x", `Var "x")), `Num 2), `Num 5))
   in
-  print e1 ;
-  print_newline () ;
-  print e2 ;
-  print_newline () ;
-  print e3 ;
+  print e1;
+  print_newline ();
+  print e2;
+  print_newline ();
+  print e3;
   print_newline ()
 (* Full fledge version, using objects to structure code *)
 
@@ -3826,7 +3826,7 @@ type 'a lambda =
 let next_id =
   let current = ref 3 in
   fun () ->
-    incr current ;
+    incr current;
     !current
 
 let lambda_ops (ops : ('a, 'a) #ops Lazy.t) =
@@ -3961,23 +3961,23 @@ let lexpr = lazy_fix lexpr_ops
 let rec print = function
   | `Var id -> print_string id
   | `Abs (id, l) ->
-      print_string (" " ^ id ^ " . ") ;
+      print_string (" " ^ id ^ " . ");
       print l
   | `App (l1, l2) ->
-      print l1 ;
-      print_string " " ;
+      print l1;
+      print_string " ";
       print l2
   | `Num x -> print_int x
   | `Add (e1, e2) ->
-      print e1 ;
-      print_string " + " ;
+      print e1;
+      print_string " + ";
       print e2
   | `Neg e ->
-      print_string "-" ;
+      print_string "-";
       print e
   | `Mult (e1, e2) ->
-      print e1 ;
-      print_string " * " ;
+      print e1;
+      print_string " * ";
       print e2
 
 let () =
@@ -3987,11 +3987,11 @@ let () =
     lexpr#eval
       (`Add (`App (`Abs ("x", `Mult (`Var "x", `Var "x")), `Num 2), `Num 5))
   in
-  print e1 ;
-  print_newline () ;
-  print e2 ;
-  print_newline () ;
-  print e3 ;
+  print e1;
+  print_newline ();
+  print e2;
+  print_newline ();
+  print e3;
   print_newline ()
 
 type sexp =
@@ -4154,7 +4154,7 @@ let foo (f : unit -> unit) = ()
 let g ?x () = ();;
 
 foo
-  ( () ;
+  ( ();
     g )
 ;;
 
@@ -4177,11 +4177,11 @@ type ab =
 let f (x : [ `A ]) = match x with #ab -> 1
 
 let f x =
-  ignore (match x with #ab -> 1) ;
+  ignore (match x with #ab -> 1);
   ignore (x : [ `A ])
 
 let f x =
-  ignore (match x with `A | `B -> 1) ;
+  ignore (match x with `A | `B -> 1);
   ignore (x : [ `A ])
 
 let f (x : [< `A | `B ]) = match x with `A | `B | `C -> 0
@@ -4201,7 +4201,7 @@ let f x (g : [< `Foo ]) =
 (* f : 'a -> [< `Foo ] -> 'a *)
 
 let rec x =
-  [| x |] ;
+  [| x |];
   1.
 
 let rec x =
@@ -4947,7 +4947,7 @@ module M : sig
   val v : (#c as 'a) -> 'a
 end = struct
   let v x =
-    ignore (x :> c) ;
+    ignore (x :> c);
     x
 end
 
@@ -5703,7 +5703,7 @@ class app e1 e2 : exp =
     method eval env =
       match l with
       | `Abs (var, body) ->
-          Hashtbl.add env var r ;
+          Hashtbl.add env var r;
           body
       | _ -> `App (l, r)
   end
@@ -5873,7 +5873,7 @@ class virtual ['a, 'cursor] storage_base =
           if count >= self#len then a
           else
             let a' = f cur#get count a in
-            cur#incr () ;
+            cur#incr ();
             loop (count + 1) a'
         in
         loop 0 a0
@@ -5881,9 +5881,9 @@ class virtual ['a, 'cursor] storage_base =
     method iter proc =
       let p = self#first in
       for i = 0 to self#len - 2 do
-        proc p#get ;
+        proc p#get;
         p#incr ()
-      done ;
+      done;
       if self#len > 0 then proc p#get else ()
   end
 
@@ -5938,9 +5938,9 @@ module UText = struct
 
   let set_buf s i u =
     let n = UChar.uint_code u in
-    s.[i] <- Char.chr (n lsr 24) ;
-    s.[i + 1] <- Char.chr ((n lsr 16) lor 0xff) ;
-    s.[i + 2] <- Char.chr ((n lsr 8) lor 0xff) ;
+    s.[i] <- Char.chr (n lsr 24);
+    s.[i + 1] <- Char.chr ((n lsr 16) lor 0xff);
+    s.[i + 2] <- Char.chr ((n lsr 8) lor 0xff);
     s.[i + 3] <- Char.chr (n lor 0xff)
 
   let init_buf buf pos init =
@@ -5948,14 +5948,14 @@ module UText = struct
     else
       let cur = init#first in
       for i = 0 to init#len - 2 do
-        set_buf buf (pos + (i lsl 2)) cur#get ;
+        set_buf buf (pos + (i lsl 2)) cur#get;
         cur#incr ()
-      done ;
+      done;
       set_buf buf (pos + ((init#len - 1) lsl 2)) cur#get
 
   let make_buf init =
     let s = String.create (init#len lsl 2) in
-    init_buf s 0 init ;
+    init_buf s 0 init;
     s
 
   class text_raw buf =
@@ -5973,8 +5973,8 @@ module UText = struct
 
       method concat (text : ustorage) =
         let buf = String.create (String.length contents + (4 * text#len)) in
-        String.blit contents 0 buf 0 (String.length contents) ;
-        init_buf buf (String.length contents) text ;
+        String.blit contents 0 buf 0 (String.length contents);
+        init_buf buf (String.length contents) text;
         {<contents = buf>}
     end
 
@@ -6000,14 +6000,14 @@ module UText = struct
     let buf = String.make (4 * String.length s) '\000' in
     for i = 0 to String.length s - 1 do
       buf.[4 * i] <- s.[i]
-    done ;
+    done;
     new text_raw buf
 
   let make len u =
     let s = String.create (4 * len) in
     for i = 0 to len - 1 do
       set_buf s (4 * i) u
-    done ;
+    done;
     new string_raw s
 
   let create len = make len (UChar.chr 0)
@@ -6070,7 +6070,7 @@ and func (args_ty, ret_ty) =
       | Some xs -> xs
       | None ->
           let args = List.map (fun ty -> new argument (self, ty)) args_ty in
-          memo_args <- Some args ;
+          memo_args <- Some args;
           args
   end
 
@@ -6235,8 +6235,8 @@ end
 
 module Make (T : S) = struct
   let f x =
-    T.foo x ;
-    T.bar x ;
+    T.foo x;
+    T.bar x;
     (x :> [ `A | `C ] T.t)
 end
 
@@ -6925,7 +6925,7 @@ end
 
 let test number result expected =
   if result = expected then Printf.printf "Test %d passed.\n" number
-  else Printf.printf "Test %d FAILED.\n" number ;
+  else Printf.printf "Test %d FAILED.\n" number;
   flush stdout
 
 (* Tree of sets *)
@@ -6954,10 +6954,10 @@ and ASet : (Set.S with type elt = A.t) = Set.Make (A)
 let _ =
   let x = A.Node (ASet.add (A.Leaf 3) (ASet.singleton (A.Leaf 2))) in
   let y = A.Node (ASet.add (A.Leaf 1) (ASet.singleton x)) in
-  test 10 (A.compare x x) 0 ;
-  test 11 (A.compare x (A.Leaf 3)) 1 ;
-  test 12 (A.compare (A.Leaf 0) x) (-1) ;
-  test 13 (A.compare y y) 0 ;
+  test 10 (A.compare x x) 0;
+  test 11 (A.compare x (A.Leaf 3)) 1;
+  test 12 (A.compare (A.Leaf 0) x) (-1);
+  test 13 (A.compare y y) 0;
   test 14 (A.compare x y) 1
 
 (* Simple value recursion *)
@@ -7172,7 +7172,7 @@ let _ =
     Expr.make_let "x" (Expr.Add (Expr.Var "y", Expr.Const 0)) (Expr.Var "x")
   in
   let e' = Expr.make_let "x" (Expr.Var "y") (Expr.Var "x") in
-  test 50 (StringSet.elements (Expr.fv e)) [ "y" ] ;
+  test 50 (StringSet.elements (Expr.fv e)) [ "y" ];
   test 51 (Expr.simpl e) e'
 
 (* Okasaki's bootstrapping *)
@@ -7313,8 +7313,8 @@ module C = Bootstrap (LeftistHeap) (Ints)
 
 let _ =
   let h = List.fold_right C.insert [ 6; 4; 8; 7; 3; 1 ] C.empty in
-  test 60 (C.findMin h) 1 ;
-  test 61 (C.findMin (C.deleteMin h)) 3 ;
+  test 60 (C.findMin h) 1;
+  test 61 (C.findMin (C.deleteMin h)) 3;
   test 62 (C.findMin (C.deleteMin (C.deleteMin h))) 4
 
 (* Classes *)
@@ -7445,7 +7445,7 @@ end = struct
 end
 
 let _ =
-  test 100 (F.f (F.X 1)) false ;
+  test 100 (F.f (F.X 1)) false;
   test 101 (F.f (F.Y 2)) true
 
 (* PR#4316 *)
@@ -7986,9 +7986,9 @@ let () =
   let string_inj, string_proj = property () in
   let i = int_inj 3 in
   let s = string_inj "abc" in
-  Printf.printf "%B\n%!" (int_proj i = None) ;
-  Printf.printf "%B\n%!" (int_proj s = None) ;
-  Printf.printf "%B\n%!" (string_proj i = None) ;
+  Printf.printf "%B\n%!" (int_proj i = None);
+  Printf.printf "%B\n%!" (int_proj s = None);
+  Printf.printf "%B\n%!" (string_proj i = None);
   Printf.printf "%B\n%!" (string_proj s = None)
 
 let sort_uniq (type s) cmp l =
@@ -8405,7 +8405,7 @@ module OK = struct
   let f1 (r : t) = r.x (* ok *)
 
   let f2 r =
-    ignore (r : t) ;
+    ignore (r : t);
     r.x
   (* non principal *)
 
@@ -8424,7 +8424,7 @@ module F2 = struct
   open M1
 
   let f r =
-    ignore (r : t) ;
+    ignore (r : t);
     match r with { x; y } -> y + y
 end
 
@@ -8595,7 +8595,7 @@ module F5 = struct
   open M
 
   let f r =
-    ignore (r : foo) ;
+    ignore (r : foo);
     { r with x= 2; z= 3 }
 end
 
@@ -8612,7 +8612,7 @@ module F6 = struct
   open M
 
   let f r =
-    ignore (r : foo) ;
+    ignore (r : foo);
     { r with x= 3; a= 4 }
 end
 
@@ -8818,22 +8818,22 @@ let _ = function
         ( Array.get x 1
         + Array.get [||] 0
         + Array.get [| 1 |] 1
-        + Array.get [| 1; 2 |] 2 ) ;
-      ignore [ String.get s 1; String.get "" 2; String.get "123" 3 ] ;
+        + Array.get [| 1; 2 |] 2 );
+      ignore [ String.get s 1; String.get "" 2; String.get "123" 3 ];
       ignore (ba1.{0} + ba2.{1, 2} + ba3.{3, 4, 5}) ignore bg.{1, 2, 3, 4}
   | b, s, ba1, ba2, ba3, bg ->
-      y.(0) <- 1 ;
-      s.[1] <- 'c' ;
-      ba1.{1} <- 2 ;
-      ba2.{1, 2} <- 3 ;
-      ba3.{1, 2, 3} <- 4 ;
+      y.(0) <- 1;
+      s.[1] <- 'c';
+      ba1.{1} <- 2;
+      ba2.{1, 2} <- 3;
+      ba3.{1, 2, 3} <- 4;
       bg.{1, 2, 3, 4, 5} <- 0
 
 let f (type t) () =
   let exception F of t in
-  () ;
+  ();
   let exception G of t in
-  () ;
+  ();
   let exception E of t in
   ( (fun x -> E x)
   , function E _ -> print_endline "OK" | _ -> print_endline "KO" )
@@ -8887,7 +8887,7 @@ let foo : type a' b' c' t. a' -> b' -> c' -> t = fun a b c -> assert false
 
 let f x =
   x.contents <-
-    ( print_string "coucou" ;
+    ( print_string "coucou";
       x.contents )
 
 let ( ~$ ) x = Some x
@@ -8917,8 +8917,8 @@ function { contents= (contents [@foo]) } -> ();;
 fun contents -> { contents= contents [@foo] };;
 fun contents -> { contents= contents [@foo]; foo };;
 
-() ;
-(() ;
+();
+(();
  () )
 [@foo]
 
@@ -8964,8 +8964,8 @@ module Indexop = struct
   ;;
 
   let h = Hashtbl.create 17 in
-  h.Def.%["one"] <- 1 ;
-  h.Def.%("two") <- 2 ;
+  h.Def.%["one"] <- 1;
+  h.Def.%("two") <- 2;
   h.Def.%{"three"} <- 3
 
   let x, y, z = Def.(h.%["one"], h.%("two"), h.%{"three"})

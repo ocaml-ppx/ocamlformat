@@ -16,7 +16,7 @@ let test_parse_and_format kind_name ~fg test_name ~input ~expected =
           ~source:input Conf.default_profile
           Conf.{ debug= false; margin_check= false }
         |> Result.map_error ~f:(fun e ->
-               Translation_unit.Error.print Stdlib.Format.str_formatter e ;
+               Translation_unit.Error.print Stdlib.Format.str_formatter e;
                Stdlib.Format.flush_str_formatter () )
       in
       Alcotest.(check (result string string)) test_name expected actual )

@@ -52,7 +52,6 @@ type t =
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [ `Compact | `Preserve_one ]
-  ; sequence_style: [ `Before | `Separator | `Terminator ]
   ; wrap_comments: bool  (** Wrap comments at margin. *)
   ; wrap_fun_args: bool
   }

@@ -39,17 +39,17 @@ let () =
 let () =
   foooooooo
     begin
-      fooooooooooooo ;
-      foooooooo foooooooooooo ;
-      fooooooooooo foooooooooo ;
+      fooooooooooooo;
+      foooooooo foooooooooooo;
+      fooooooooooo foooooooooo;
       foooooooooooooooo
     end
 
 let () =
   foooooooo
-    ( fooooooooooooo ;
-      foooooooo foooooooooooo ;
-      fooooooooooo foooooooooo ;
+    ( fooooooooooooo;
+      foooooooo foooooooooooo;
+      fooooooooooo foooooooooo;
       foooooooooooooooo )
 
 let () =
@@ -221,15 +221,15 @@ let _ =
 
 let _ =
   if x then begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
   else if y then begin
-    f 0 ;
+    f 0;
     f 2
   end
   else begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
 
@@ -237,15 +237,15 @@ let _ =
 
 let _ =
   if x then begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
   else if y then begin
-    f 0 ;
+    f 0;
     f 2
   end
   else begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
 
@@ -254,16 +254,16 @@ let _ =
 let _ =
   if x
   then begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
   else if y
   then begin
-    f 0 ;
+    f 0;
     f 2
   end
   else begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
 
@@ -271,13 +271,13 @@ let _ =
 
 let _ =
   if x then begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end else if y then begin
-    f 0 ;
+    f 0;
     f 2
   end else begin
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   end
 
@@ -299,7 +299,7 @@ let () =
     @@
     let test_name = "Test 1" in
     test_name >:: fun _ -> assert_equal "a" "a"
-  end ;
+  end;
   begin
     add_test
     @@

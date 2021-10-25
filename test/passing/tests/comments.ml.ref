@@ -279,7 +279,7 @@ let _ =
 let _ =
   try_with (fun () ->
       (* comment before *)
-      a ;
+      a;
       b (* after b *) )
 
 let _ =

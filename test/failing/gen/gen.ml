@@ -14,7 +14,7 @@ let read_lines file =
   let rec aux acc =
     match Stdlib.input_line ic with
     | exception End_of_file ->
-        Stdlib.close_in ic ;
+        Stdlib.close_in ic;
         List.rev acc
     | line -> aux (line :: acc)
   in
@@ -26,12 +26,12 @@ let read_file file =
   let rec aux buf =
     match Stdlib.input_line ic with
     | exception End_of_file ->
-        Stdlib.close_in ic ;
+        Stdlib.close_in ic;
         let ret = Buffer.contents buf |> String.trim in
-        Buffer.clear buf ;
+        Buffer.clear buf;
         ret
     | line ->
-        Buffer.add_string buf line ;
+        Buffer.add_string buf line;
         aux buf
   in
   aux buf
@@ -46,7 +46,7 @@ let add_test ?base_file map src_test_name =
     ; enabled_if= None
     }
   in
-  map := StringMap.add src_test_name s !map ;
+  map := StringMap.add src_test_name s !map;
   s
 
 let register_file tests fname =
@@ -120,7 +120,7 @@ let emit_test test_name setup =
     (cmd
        ( [ "%{bin:ocamlformat}" ] @ opts
        @ [ Printf.sprintf "%%{dep:%s}" base_test_name ] ) )
-    enabled_if_line ref_name test_name ;
+    enabled_if_line ref_name test_name;
   if setup.has_ocp then
     Printf.printf
       {|
@@ -142,5 +142,5 @@ let emit_test test_name setup =
 
 let () =
   let map = ref StringMap.empty in
-  Sys.readdir "./tests" |> Array.iter (register_file map) ;
+  Sys.readdir "./tests" |> Array.iter (register_file map);
   StringMap.iter emit_test !map

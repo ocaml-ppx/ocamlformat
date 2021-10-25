@@ -2,7 +2,7 @@ let%expect_test _ = e
 let%bench "test" = fun () -> ()
 
 let%expect_test _ =
-  assert false ;
+  assert false;
   [%expect.unreachable]
   [@@expect.uncaught_exn
     {|
@@ -15,7 +15,7 @@ let%expect_test _ =
       Called from file "collector/expect_test_collector.ml", line 225, characters 12-19 |}]
 
 let _ =
-  assert false ;
+  assert false;
   [%expect.unreachable]
   [@@expect.uncaught_exn
     {|

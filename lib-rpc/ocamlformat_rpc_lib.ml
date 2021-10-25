@@ -68,7 +68,7 @@ module Init :
     | `Version v -> List [ Atom "Version"; Atom v ] | _ -> assert false
 
   let output channel t =
-    to_sexp t |> Csexp.to_channel channel ;
+    to_sexp t |> Csexp.to_channel channel;
     Stdlib.flush channel
 end
 
@@ -123,7 +123,7 @@ module V1 :
       | _ -> assert false
 
     let output channel t =
-      to_sexp t |> Csexp.to_channel channel ;
+      to_sexp t |> Csexp.to_channel channel;
       Stdlib.flush channel
   end
 
@@ -140,13 +140,13 @@ module V1 :
     let mk ~pid input output = { pid; input; output }
 
     let query command t =
-      Command.output t.output command ;
+      Command.output t.output command;
       Command.read_input t.input
 
     let halt t =
       match
-        Command.output t.output `Halt ;
-        close_in t.input ;
+        Command.output t.output `Halt;
+        close_in t.input;
         close_out t.output
       with
       | exception _ -> Error (`Msg "failing to close connection to server")
@@ -182,8 +182,8 @@ let pick_client ~pid input output versions =
     | [] -> Error (`Msg "Version negociation failed")
     | latest :: others -> (
         let version = `Version latest in
-        Csexp.to_channel output (Init.to_sexp version) ;
-        flush output ;
+        Csexp.to_channel output (Init.to_sexp version);
+        flush output;
         match Init.read_input input with
         | `Version v when v = latest -> get_client_exn ~pid input output v
         | `Version v -> (

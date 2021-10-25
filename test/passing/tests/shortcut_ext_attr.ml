@@ -5,29 +5,29 @@ let () =
   [%foo
     (let module M = M in
     () )
-    [@foo]] ;
-  [%foo M.(()) [@foo]] ;
-  [%foo fun [@foo] x -> ()] ;
-  [%foo function[@foo] x -> ()] ;
-  [%foo try[@foo] () with _ -> ()] ;
-  [%foo if [@foo] () then () else ()] ;
+    [@foo]];
+  [%foo M.(()) [@foo]];
+  [%foo fun [@foo] x -> ()];
+  [%foo function[@foo] x -> ()];
+  [%foo try[@foo] () with _ -> ()];
+  [%foo if [@foo] () then () else ()];
   [%foo
     while () do
       ()
     done
-    [@foo]] ;
+    [@foo]];
   [%foo
     for x = () to () do
       ()
     done
-    [@foo]] ;
-  () ;%foo
-  () ;
-  [%foo assert true [@foo]] ;
-  [%foo lazy x [@foo]] ;
-  [%foo object end [@foo]] ;
-  [%foo (3 [@foo])] ;
-  [%foo new x [@foo]] ;
+    [@foo]];
+  ();%foo
+  ();
+  [%foo assert true [@foo]];
+  [%foo lazy x [@foo]];
+  [%foo object end [@foo]];
+  [%foo (3 [@foo])];
+  [%foo new x [@foo]];
   [%foo
     match[@foo] () with
     | [%foo? (* Pattern expressions *)

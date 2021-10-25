@@ -6,7 +6,7 @@ let _ =
   | Some s ->
       [ Variable (s_src, OpamFormat.make_string (OpamFilename.to_string s))
       ; yy
-      ] ;
+      ];
       foo
   | Some s ->
       { fww= (s_src, OpamFormat.make_string (OpamFilename.to_string s))

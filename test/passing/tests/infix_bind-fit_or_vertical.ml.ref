@@ -131,11 +131,11 @@ let parens =
 
 let end_gen_implementation ?toplevel ~ppf_dump
     (clambda : clambda_and_constants) =
-  Emit.begin_assembly () ;
+  Emit.begin_assembly ();
   ( clambda
   ++ Profile.record "cmm" (Cmmgen.compunit ~ppf_dump)
   ++ Profile.record "compile_phrases" (List.iter (compile_phrase ~ppf_dump))
-  ++ fun () -> () ) ;
+  ++ fun () -> () );
   fooooooooooooooo
 
 let foo =
@@ -219,9 +219,9 @@ let encoder f =
   stagged @@ fun x k : t -> field_encode (f.fget x) k
 
 let default =
-  command##hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo) ;
+  command##hasPermission #= (fun ctx -> foooooooooooooooooo fooooooooooo);
   command##hasPermission #= (fun ctx ->
-  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo) ;
+  foooooooooooooooooo fooooooooooo foooooo fooooooooo foooooooooo);
   foo
 
 let _ = ( let* ) x (fun y -> z)

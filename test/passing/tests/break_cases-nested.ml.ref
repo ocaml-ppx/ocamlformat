@@ -24,10 +24,10 @@ let foo =
       | E ->
           4
       | Z | P | M -> (
-        match y with O -> 5 | P when h x -> ( function A -> 6 ) ) ) ;
+        match y with O -> 5 | P when h x -> ( function A -> 6 ) ) );
   List.map ~f:(fun x g t h y u ->
-      fooooooooooooo foooooooo ;
-      (match k with foooo -> foooooooo) ;
+      fooooooooooooo foooooooo;
+      (match k with foooo -> foooooooo);
       fooooooooooooooo fooooooooooooo )
 ;;
 

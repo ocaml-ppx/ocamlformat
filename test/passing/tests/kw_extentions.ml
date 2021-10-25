@@ -9,15 +9,15 @@ let _ =
   Lwt.return_unit
 
 let () =
-  if%ext true then () else () ;
-  if%ext true then () else if true then () else () ;
+  if%ext true then () else ();
+  if%ext true then () else if true then () else ();
   let%ext x = () in
   for%ext i = 1 to 10 do
     ()
-  done ;
+  done;
   while%ext false do
     ()
-  done ;
+  done;
   match%ext x with _ -> ()
 
 let () =
@@ -25,19 +25,19 @@ let () =
   try%ext x with _ -> ()
 
 let () =
-  if%ext true then () else () ;
-  if%ext true then () else if true then () else () ;
+  if%ext true then () else ();
+  if%ext true then () else if true then () else ();
   if%ext true then () else ()
 
 let () =
-  (match%ext x with _ -> ()) ;
+  (match%ext x with _ -> ());
   match%ext x with _ -> ()
 
 let () =
-  () ;
-  () ;%ext
-  () ;
-  () ;%ext
+  ();
+  ();%ext
+  ();
+  ();%ext
   ()
 
 let _ =
@@ -46,13 +46,13 @@ let _ =
   ()
 
 let () =
-  f (fun () -> ()) ;%ext
+  f (fun () -> ());%ext
   f ()
 
 let () =
-  f (fun () -> ()) ;%ext
-  g (fun () -> ()) ;
-  h (fun () -> ()) ;%ext
-  i () ;
-  j () ;%ext
+  f (fun () -> ());%ext
+  g (fun () -> ());
+  h (fun () -> ());%ext
+  i ();
+  j ();%ext
   f ()

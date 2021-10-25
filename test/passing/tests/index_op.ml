@@ -7,9 +7,9 @@ let ( .@() ) = Hashtbl.find
 let ( .@()<- ) = Hashtbl.add
 let h = Hashtbl.create 17;;
 
-h.@("One") <- 1 ;
-assert (h.@{"One"} = 1) ;
-print_int h.@{"One"} ;
+h.@("One") <- 1;
+assert (h.@{"One"} = 1);
+print_int h.@{"One"};
 assert (h.?["Two"] = None)
 
 (* from GPR#1392 *)
@@ -44,7 +44,7 @@ let _ = s.{1, 2, 3, 4} <- 1
 
 let () =
   let m = Mat.zeros 5 5 in
-  m.Mat.${[ [ 2 ]; [ 5 ] ]} |> ignore ;
+  m.Mat.${[ [ 2 ]; [ 5 ] ]} |> ignore;
   let open Mat in
   m.${[ [ 2 ]; [ 5 ] ]} |> ignore
 
@@ -55,7 +55,7 @@ let _ = (x.*(y) <- z) := []
 let _ = ((x.*(y) <- z), [])
 
 let _ =
-  x.*(y) <- z ;
+  x.*(y) <- z;
   []
 
 let _ = (x.(y) <- z) @ []
@@ -63,7 +63,7 @@ let _ = (x.(y) <- z) := []
 let _ = ((x.(y) <- z), [])
 
 let _ =
-  x.(y) <- z ;
+  x.(y) <- z;
   []
 
 let _ = (x.y <- z) @ []
@@ -71,7 +71,7 @@ let _ = (x.y <- z) := []
 let _ = ((x.y <- z), [])
 
 let _ =
-  x.y <- z ;
+  x.y <- z;
   []
 
 let _ = x.(y) <- (z.(w) <- u)
@@ -84,11 +84,11 @@ class free =
 
 (* With path *)
 let _ =
-  a.A.B.*(b) ;
+  a.A.B.*(b);
   a.A.B.*(b) <- c
 
 let _ =
-  a.*(( a ;
+  a.*(( a;
         b ))
 
 let _ = a.*([| a; b |])
@@ -104,11 +104,11 @@ let _ = if a then a.*(if a then b) else c
 
 (* Parentheses needed *)
 let _ =
-  a.*{( a ;
+  a.*{( a;
         b )}
 
 let _ =
-  a.{( a ;
+  a.{( a;
        b )}
 
 let _ = a.{a, b}

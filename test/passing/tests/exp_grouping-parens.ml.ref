@@ -34,16 +34,16 @@ let () =
 
 let () =
   foooooooo
-    ( fooooooooooooo ;
-      foooooooo foooooooooooo ;
-      fooooooooooo foooooooooo ;
+    ( fooooooooooooo;
+      foooooooo foooooooooooo;
+      fooooooooooo foooooooooo;
       foooooooooooooooo )
 
 let () =
   foooooooo
-    ( fooooooooooooo ;
-      foooooooo foooooooooooo ;
-      fooooooooooo foooooooooo ;
+    ( fooooooooooooo;
+      foooooooo foooooooooooo;
+      fooooooooooo foooooooooo;
       foooooooooooooooo )
 
 let () =
@@ -210,26 +210,26 @@ let _ =
 
 let _ =
   if x then (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo )
   else if y then (
-    f 0 ;
+    f 0;
     f 2 )
   else (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo )
 
 [@@@ocamlformat "if-then-else=fit-or-vertical"]
 
 let _ =
   if x then (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo )
   else if y then (
-    f 0 ;
+    f 0;
     f 2 )
   else (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo )
 
 [@@@ocamlformat "if-then-else=keyword-first"]
@@ -237,27 +237,27 @@ let _ =
 let _ =
   if x
   then (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo )
   else if y
   then (
-    f 0 ;
+    f 0;
     f 2 )
   else (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo )
 
 [@@@ocamlformat "if-then-else=k-r"]
 
 let _ =
   if x then (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   ) else if y then (
-    f 0 ;
+    f 0;
     f 2
   ) else (
-    foo.fooooo <- Fooo.foo fooo foo.fooooo ;
+    foo.fooooo <- Fooo.foo fooo foo.fooooo;
     Fooo fooo
   )
 
@@ -276,7 +276,7 @@ let () =
   ( add_test
   @@
   let test_name = "Test 1" in
-  test_name >:: fun _ -> assert_equal "a" "a" ) ;
+  test_name >:: fun _ -> assert_equal "a" "a" );
   add_test
   @@
   let test_name = "Test 2" in

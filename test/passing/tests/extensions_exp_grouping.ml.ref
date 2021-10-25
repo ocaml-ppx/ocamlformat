@@ -45,23 +45,23 @@ let _ = f (module%ext S : S)
 let _ = f [%ext (module S : S)]
 
 let _ =
-  x ;%ext
+  x;%ext
   y
 
 let _ =
   [%ext
-    x ;
+    x;
     y]
 
 let _ =
   f
-    ( x ;%ext
+    ( x;%ext
       y )
 
 let _ =
   f
     [%ext
-      x ;
+      x;
       y]
 
 let _ =
@@ -79,11 +79,11 @@ let _ =
 
 let a =
   (* test *)
-  Lwt.return () ;%lwt
+  Lwt.return ();%lwt
   Lwt.return 1
 
 let a =
   f
     ( (* test *)
-      Lwt.return () ;%lwt
+      Lwt.return ();%lwt
       Lwt.return 1 )

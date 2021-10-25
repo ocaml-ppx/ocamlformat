@@ -28,8 +28,8 @@ let start () =
       let pid = Unix.process_pid (input, output) in
       Ocf.pick_client ~pid input output supported_versions
       >>| fun client ->
-      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!") ;
-      state := Running client ;
+      (match client with `V1 _ -> log "[ocf] client V1 selected\n%!");
+      state := Running client;
       client
     with
   | exception _ ->
@@ -40,12 +40,12 @@ let start () =
            installed." )
   | x -> x )
   |> Result.map_error ~f:(fun (`Msg msg) ->
-         state := Errored ;
+         state := Errored;
          log
            "An error occured while initializing and configuring ocamlformat:\n\
             %s\n\
             %!"
-           msg ;
+           msg;
          `No_process )
 
 let get_client () =
@@ -59,19 +59,19 @@ let get_client () =
 let config c =
   get_client ()
   >>= fun cl ->
-  log "[ocf] Config\n%!" ;
+  log "[ocf] Config\n%!";
   Ocf.config c cl
 
 let format x =
   get_client ()
   >>= fun cl ->
-  log "[ocf] Format '%s'\n%!" x ;
+  log "[ocf] Format '%s'\n%!" x;
   Ocf.format x cl
 
 let halt () =
   get_client ()
   >>= fun cl ->
-  log "[ocf] Halt\n%!" ;
+  log "[ocf] Halt\n%!";
   Ocf.halt cl >>| fun () -> state := Uninitialized
 
 let protect_unit x =
@@ -87,31 +87,31 @@ let protect_string x =
   | Error `No_process -> log "No process\n%!"
 
 let () =
-  log "Starting then doing nothing\n%!" ;
+  log "Starting then doing nothing\n%!";
   protect_unit @@ halt ()
 
 let () =
-  log "Sending requests\n%!" ;
-  protect_string @@ format "char -> string" ;
-  protect_string @@ format "int -> int" ;
-  protect_string @@ format " int    (* foo *) \n\n ->     int  (* bar *)" ;
-  protect_unit @@ config [ ("foo", "bar") ] ;
-  protect_unit @@ config [ ("margin", "10") ] ;
-  protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
-  protect_unit @@ config [ ("margin", "80") ] ;
-  protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg" ;
-  protect_string @@ format "val x :\n \nint" ;
-  protect_string @@ format "val write : 'a    t/1 -> 'a ->unit M/2.t" ;
-  protect_string @@ format "x + y * z" ;
-  protect_string @@ format "let x = 4 in x" ;
-  protect_string @@ format "sig end" ;
+  log "Sending requests\n%!";
+  protect_string @@ format "char -> string";
+  protect_string @@ format "int -> int";
+  protect_string @@ format " int    (* foo *) \n\n ->     int  (* bar *)";
+  protect_unit @@ config [ ("foo", "bar") ];
+  protect_unit @@ config [ ("margin", "10") ];
+  protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg";
+  protect_unit @@ config [ ("margin", "80") ];
+  protect_string @@ format "aaa -> bbb -> ccc -> ddd -> eee -> fff -> ggg";
+  protect_string @@ format "val x :\n \nint";
+  protect_string @@ format "val write : 'a    t/1 -> 'a ->unit M/2.t";
+  protect_string @@ format "x + y * z";
+  protect_string @@ format "let x = 4 in x";
+  protect_string @@ format "sig end";
   protect_string
   @@ format
        "sig\n\n\
        \ val x : foo -> bar\n\
        \  (** this does something *)\n\n\
        \ val f : a -> b -> c ->\n\n\
-       \ d     end" ;
+       \ d     end";
   let some_function =
     {|
 let ssmap
@@ -124,7 +124,7 @@ let ssmap
   ()
 |}
   in
-  protect_string @@ format some_function ;
-  protect_unit @@ config [ ("profile", "janestreet") ] ;
-  protect_string @@ format some_function ;
+  protect_string @@ format some_function;
+  protect_unit @@ config [ ("profile", "janestreet") ];
+  protect_string @@ format some_function;
   protect_unit @@ halt ()

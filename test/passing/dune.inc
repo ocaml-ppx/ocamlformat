@@ -633,24 +633,6 @@
  (deps tests/.ocamlformat )
  (package ocamlformat)
  (action
-  (with-stdout-to break_sequence_before.ml.stdout
-   (with-stderr-to break_sequence_before.ml.stderr
-     (run %{bin:ocamlformat} --margin-check %{dep:tests/break_sequence_before.ml})))))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_sequence_before.ml break_sequence_before.ml.stdout)))
-
-(rule
- (alias runtest)
- (package ocamlformat)
- (action (diff tests/break_sequence_before.ml.err break_sequence_before.ml.stderr)))
-
-(rule
- (deps tests/.ocamlformat )
- (package ocamlformat)
- (action
   (with-stdout-to break_string_literals.ml.stdout
    (with-stderr-to break_string_literals.ml.stderr
      (run %{bin:ocamlformat} --margin-check %{dep:tests/break_string_literals.ml})))))

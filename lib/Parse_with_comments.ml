@@ -46,9 +46,9 @@ let tokens lexbuf =
 
 let fresh_lexbuf source =
   let lexbuf = Lexing.from_string source in
-  Location.init lexbuf !Location.input_name ;
+  Location.init lexbuf !Location.input_name;
   let hash_bang =
-    Lexer.skip_hash_bang lexbuf ;
+    Lexer.skip_hash_bang lexbuf;
     let len = lexbuf.lex_last_pos in
     String.sub source ~pos:0 ~len
   in
@@ -59,19 +59,19 @@ let parse ?(disable_w50 = false) parse fragment (conf : Conf.t) ~source =
     if conf.quiet then List.map ~f:W.disable W.in_lexer else []
   in
   let warnings = if disable_w50 then warnings else W.enable 50 :: warnings in
-  ignore @@ Warnings.parse_options false (W.to_string warnings) ;
+  ignore @@ Warnings.parse_options false (W.to_string warnings);
   let w50 = ref [] in
   let t =
     let lexbuf, hash_bang = fresh_lexbuf source in
     Warning.with_warning_filter
       ~filter:(fun loc warn ->
         if Warning.is_unexpected_docstring warn && conf.comment_check then (
-          w50 := (loc, warn) :: !w50 ;
+          w50 := (loc, warn) :: !w50;
           false )
         else not conf.quiet )
       ~f:(fun () ->
         let ast = parse fragment lexbuf in
-        Warnings.check_fatal () ;
+        Warnings.check_fatal ();
         let comments =
           List.map
             ~f:(fun (txt, loc) -> Cmt.create txt loc)

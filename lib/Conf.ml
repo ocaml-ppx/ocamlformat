@@ -49,7 +49,6 @@ type t =
   ; parse_docstrings: bool
   ; quiet: bool
   ; sequence_blank_line: [ `Compact | `Preserve_one ]
-  ; sequence_style: [ `Before | `Separator | `Terminator ]
   ; wrap_comments: bool
   ; wrap_fun_args: bool
   }
@@ -67,12 +66,12 @@ let warn_raw, collect_warnings =
   in
   let collect_warnings f =
     let old_flag, old_list = (!delay_warning, !delayed_warning_list) in
-    delay_warning := true ;
-    delayed_warning_list := [] ;
+    delay_warning := true;
+    delayed_warning_list := [];
     let res = f () in
     let collected = List.rev !delayed_warning_list in
-    delay_warning := old_flag ;
-    delayed_warning_list := old_list ;
+    delay_warning := old_flag;
+    delayed_warning_list := old_list;
     (res, fun () -> List.iter ~f:warn_ collected)
   in
   (warn_, collect_warnings)
@@ -842,21 +841,11 @@ module Formatting = struct
       (fun conf x -> { conf with sequence_blank_line= x })
       (fun conf -> conf.sequence_blank_line)
 
-  let sequence_style =
-    let doc = "Style of sequence." in
+  let ( (* sequence_style *) ) =
     let names = [ "sequence-style" ] in
-    let all =
-      [ C.Value.make ~name:"terminator" `Terminator
-          "$(b,terminator) only puts spaces after semicolons."
-      ; C.Value.make ~name:"separator" `Separator
-          "$(b,separator) puts spaces before and after semicolons."
-      ; C.Value.make ~name:"before" `Before
-          "$(b,before) breaks the sequence before semicolons."
-      ]
-    in
-    C.choice ~names ~all ~doc ~kind
-      (fun conf x -> { conf with sequence_style= x })
-      (fun conf -> conf.sequence_style)
+    let version = "1.0.0" in
+    let msg = "This is not supported anymore." in
+    C.removed_option ~names ~version ~msg
 
   let ( (* single_case *) ) =
     let names = [ "single-case" ] in
@@ -1223,7 +1212,6 @@ let ocamlformat_profile =
   ; parse_docstrings= false
   ; quiet= false
   ; sequence_blank_line= `Compact
-  ; sequence_style= `Separator
   ; wrap_comments= false
   ; wrap_fun_args= true
   }
@@ -1269,7 +1257,6 @@ let conventional_profile =
   ; parse_docstrings= C.default Formatting.parse_docstrings
   ; quiet= C.default quiet
   ; sequence_blank_line= C.default Formatting.sequence_blank_line
-  ; sequence_style= C.default Formatting.sequence_style
   ; wrap_comments= C.default Formatting.wrap_comments
   ; wrap_fun_args= C.default Formatting.wrap_fun_args
   }
@@ -1314,7 +1301,6 @@ let janestreet_profile =
   ; parse_docstrings= false
   ; quiet= ocamlformat_profile.quiet
   ; sequence_blank_line= `Compact
-  ; sequence_style= `Terminator
   ; wrap_comments= false
   ; wrap_fun_args= false
   }
@@ -1366,7 +1352,7 @@ let (_profile : t option C.t) =
              opts for a generally more sparse code style."
       ]
     (fun conf p ->
-      selected_profile_ref := p ;
+      selected_profile_ref := p;
       let new_conf = Option.value p ~default:conf in
       (* The quiet option is cummulative *)
       { new_conf with quiet= new_conf.quiet || conf.quiet } )
@@ -1442,7 +1428,7 @@ let parse_line config ~from s =
         C.update ~config ~from:(`Parsed (`File x)) ~name ~value ~inline:false
     | name, `Attribute ->
         if !disable_conf_attrs then (
-          warn "Configuration in attribute %S ignored." s ;
+          warn "Configuration in attribute %S ignored." s;
           Ok config )
         else
           C.update ~config
@@ -1560,7 +1546,7 @@ let read_config_file conf filename_kind =
                 | Ok conf -> (conf, errors, Int.succ num)
                 | Error _ when !ignore_invalid_options ->
                     warn ~filename ~lnum:num "ignoring invalid options %S"
-                      line ;
+                      line;
                     (conf, errors, Int.succ num)
                 | Error e -> (conf, e :: errors, Int.succ num) )
           in
@@ -1634,14 +1620,14 @@ let is_in_listing_file ~listings ~filename =
                       with
                       | Re.Glob.Parse_error ->
                           warn ~filename:listing_file ~lnum:lno
-                            "pattern %s cannot be parsed" line ;
+                            "pattern %s cannot be parsed" line;
                           None )
                 | Error (`Msg msg) ->
-                    warn ~filename:listing_file ~lnum:lno "%s" msg ;
+                    warn ~filename:listing_file ~lnum:lno "%s" msg;
                     None ) )
       with
       | Sys_error err ->
-          warn "ignoring %a, %s" Fpath.pp listing_file err ;
+          warn "ignoring %a, %s" Fpath.pp listing_file err;
           None )
 
 let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
@@ -1684,7 +1670,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
      warn ~filename:vfile
        "Ocamlformat disabled because [--enable-outside-detected-project] is \
         not set and %s"
-       why ) ;
+       why );
     { conf with disable= true } )
   else
     let listings = if conf.disable then enables else ignores in
@@ -1693,7 +1679,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
         let status = if conf.disable then "enabled" else "ignored" in
         if !debug then
           Format.eprintf "File %a: %s in %a:%d@\n" Fpath.pp file_abs status
-            Fpath.pp file lno ;
+            Fpath.pp file lno;
         { conf with disable= not conf.disable }
     | None -> conf
 
@@ -1702,7 +1688,7 @@ let build_config ~enable_outside_detected_project ~root ~file ~is_stdin =
     collect_warnings (fun () ->
         build_config ~enable_outside_detected_project ~root ~file ~is_stdin )
   in
-  if not conf.quiet then warn_now () ;
+  if not conf.quiet then warn_now ();
   conf
 
 let kind_of_ext fname =
@@ -1902,7 +1888,7 @@ let update ?(quiet = false) c { attr_name= { txt; loc }; attr_payload; _ } =
   | Ok conf -> conf
   | Error error ->
       let w = Warnings.Attribute_payload (txt, error) in
-      if (not c.quiet) && not quiet then Warning.print_warning loc w ;
+      if (not c.quiet) && not quiet then Warning.print_warning loc w;
       c
 
 let update_value config ~name ~value =

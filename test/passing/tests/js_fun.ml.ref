@@ -21,13 +21,13 @@ let () = expr >>| function x -> 3 | y -> 4
 let () = expr >>| function x -> 3 | y -> 4
 
 let f =
-  f >>= m (fun f x -> y) ;
+  f >>= m (fun f x -> y);
   z
 
 let f =
-  f |> m (fun f x -> y) ;
+  f |> m (fun f x -> y);
   z
 
 let f =
-  f |> m (fun f x -> y) ;
+  f |> m (fun f x -> y);
   z

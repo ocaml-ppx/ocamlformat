@@ -29,11 +29,11 @@ let ensure_escape ?(escape_char = '\\') ~escapeworthy s =
       escapeworthy s.[i]
       && not (String.Escaping.is_char_escaped s ~escape_char i)
     then (
-      stash i ;
-      prev_off := i ;
+      stash i;
+      prev_off := i;
       Buffer.add_char dst escape_char )
-  done ;
-  stash len ;
+  done;
+  stash len;
   Buffer.contents dst
 
 let escape_brackets s =
